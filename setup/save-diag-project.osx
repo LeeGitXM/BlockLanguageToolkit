@@ -1,0 +1,23 @@
+#!/bin/sh
+#
+# To be run after modifications to the SCT gateway. Save elements of the 
+# installation for later restoration.
+#
+# Run from the setup area.
+PROJECT=sct
+USER=chuck
+dir=`pwd`
+base=`basename $dir`
+if [ "$base" != "setup" ]
+then
+    echo "ERROR: $0: must be executed from the 'setup' directory."
+	exit 2
+fi
+GATEWAY_DIR=/usr/local/ignition
+DIST=$dir/../dist
+mkdir -p $DIST
+ignition stop
+pushd $GATEWAY_DIR
+jar -cf $DIST/$PROJECT.project.$USER.jar data user-lib
+popd
+ignition start

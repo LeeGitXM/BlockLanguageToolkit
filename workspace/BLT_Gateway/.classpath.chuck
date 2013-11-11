@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/Core_Common"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/SCT_Common"/>
+	<classpathentry kind="lib" path="/Users/chuckc/Development/ils/repo/ignition-sdk/ignition-common.jar"/>
+	<classpathentry kind="lib" path="/Users/chuckc/Development/ils/repo/ignition-sdk/gateway-api.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/Users/chuckc/Development/ils/repo/external-jars/log4j-1.2.16.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/Core_Gateway"/>
+	<classpathentry kind="lib" path="/Users/chuckc/Development/ils/repo/external-jars/gson-2.2.2.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

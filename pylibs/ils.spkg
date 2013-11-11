@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects timestamp="Fri Oct 18 14:54:57 MDT 2013" framework.version="7.6.3.2013090513" fpmi.version="6.6.3.1354">
+	<o cls="com.inductiveautomation.ignition.common.script.ScriptLibrary">
+		<o-c m="setScripts" s="1;java.util.Map">
+			<o cls="java.util.HashMap">
+				<o-c m="put" s="2;O;O">
+					<str>ils.dataPump.pumpData</str>
+					<str># This is called asynchronously so that it will run in its own thread, therefore
+# Ignition can&apos;t (won&apos;t) pass any arguments.  We can assume that immediately after it 
+# is called that the simulator window is still open, but we can&apos;t assume it stays open
+# for the duration of the simulation.
+
+def pumpData():
+	import system, string, time
+
+	# Get the simulation window and such the data out of the table
+	window = system.gui.getWindow(&quot;Data Pump/Data Pump&quot;)
+	table = window.rootContainer.getComponent(&quot;Table&quot;)
+	ds = table.data
+	pds = system.dataset.toPyDataSet(ds)
+	
+	tagPath = window.rootContainer.getComponent(&quot;TagPrefixField&quot;).text
+	dataPumpPath = &quot;[]Data Pump/&quot;
+
+	system.tag.writeToTag(dataPumpPath + &quot;command&quot;, &quot;Run&quot;)
+	system.tag.writeToTag(dataPumpPath + &quot;simulationState&quot;, &quot;Running&quot;)
+	
+	# We have to give these writes a chance to get there
+	time.sleep(1)	
+	
+	i = 0
+	for row in pds:
+		print &quot;Concluding at &quot;, time.strftime(&quot;%H:%M:%S&quot;)
+		
+		command = system.tag.getTagValue(dataPumpPath + &apos;command&apos;)
+		print command
+		if command == &quot;Abort&quot;:
+			break
+
+		system.tag.writeToTag(dataPumpPath + &quot;lineNumber&quot;, i)
+		j = 0
+		for val in row:
+			if (j == 0):
+				j = j
+			else:
+				tagname = ds.getColumnName(j)
+#				print tagname, &quot; = &quot;, val
+				fullTagPath = tagPath + tagname
+				status = system.tag.write(fullTagPath, val)
+				print &quot;Tag: %s, Value: %s, Status: %s&quot; % (fullTagPath, str(val), str(status) )
+
+			j = j + 1
+		
+		timeDelay = window.rootContainer.getComponent(&quot;TimeDelaySlider&quot;).value	
+		print &quot;Waiting for &quot;, timeDelay, &quot; seconds.&quot;
+		time.sleep(timeDelay)	
+		
+		i = i + 1
+	
+	print &quot;Done Pumping!&quot;
+	system.tag.writeToTag(dataPumpPath + &quot;simulationState&quot;, &quot;Idle&quot;)</str>
+				</o-c>
+				<o-c m="put" s="2;O;O">
+					<str>ils.dataPump.dataTokens</str>
+					<str># This takes a comma delimited text string and validates each of the tokens as tags.
+# If a token is a tag then the tagname is written to the array/sequence
+
+def dataTokens(txt, data, maxColumns):
+	import system, string
+
+	# Ignore lines that begin with a # because it is a comment
+	if (txt[0] != &quot;#&quot;):
+		tokens = txt.split(&apos;,&apos;)
+	
+		# The first token should be blamk because the first column is always the datetime
+		record = []
+		i = 1
+	
+		for token in tokens:
+			if (token != &quot;&quot; and token != &quot;\n&quot; and i &lt;= maxColumns):
+				record.append(token)
+			i = i + 1
+
+		# If the number of tokens doesn&apos;t match the number of columns then the record is of no use.
+		if len(record) == maxColumns:
+			data.append(record)
+
+	return data</str>
+				</o-c>
+				<o-c m="put" s="2;O;O">
+					<str>ils.user</str>
+					<str># Copyright 2013 ILS Automation
+#
+# Methods associated with users and permissions
+#
+# Return true if the current user has the specified role.
+# The check is made inside a source of users.
+def hasRole(source,role):
+	import system
+	username = system.tag.getTagValue(&quot;[System]Client/User/UserName&quot;)
+	user = system.user.getUser(source,username)
+	roles = user.getRoles()
+	
+	result = False
+	for r in roles:
+		if r == role:
+			result = True
+			break
+	return result</str>
+				</o-c>
+				<o-c m="put" s="2;O;O">
+					<str>ils.dataPump.reset</str>
+					<str>def hardReset():
+	import system, string, time
+
+	system.tag.writeToTag(&quot;[]/Data Pump/simulationState&quot;, &quot;Idle&quot;)
+	system.tag.writeToTag(&quot;[]/Data Pump/command&quot;, &quot;Abort&quot;)
+	system.tag.writeToTag(&quot;[]/Data Pump/lineNumber&quot;, -1)</str>
+				</o-c>
+				<o-c m="put" s="2;O;O">
+					<str>ils.dataPump.loadFile</str>
+					<str>def loadFile(rootContainer, filename):
+	import system, app
+	
+	print &quot;Filename: &quot; + filename
+	
+	# Now try the same thing using Python
+#	myfile = open(&apos;P:\EMRE-AED\Test\Data Files\PID-high-var-1.csv&apos;)
+#	str = myfile.readline()
+#	print str
+
+# This didn&apos;t work to well.  The &apos;fromCSV&apos; API requires that the CSV file conform to a certain format,
+# which our simulation files do NOT conform to.
+#	string = system.file.readFileAsString(filename)
+#	dataset = system.dataset.fromCSV(string)
+#	event.source.getComponent(&quot;Table&quot;).data = dataset
+
+
+	i = 0
+	data = []
+	for line in open(filename):
+		
+		if (i == 0):
+			tags = app.dataPump.tagTokens.tagTokens(line)
+			cols = len(tags)
+			print &quot;Tags: &quot;, tags
+			print &quot;*** There are %i columns ***&quot; % (cols)
+		else:
+			data = app.dataPump.dataTokens.dataTokens(line, data, cols)			
+
+		i = i + 1
+
+#	print &quot;At the end&quot;
+#	print &quot;Data: &quot;, data
+	
+	dataset = system.dataset.toDataSet(tags, data)
+	rootContainer.getComponent(&quot;Table&quot;).data = dataset</str>
+				</o-c>
+				<o-c m="put" s="2;O;O">
+					<str>ils.dataPump.tagTokens</str>
+					<str># This takes a comma delimited text string, does some formatting and adds it to tha tag list
+
+def tagTokens(txt):
+	import system, string
+	
+	tokens = txt.split(&apos;,&apos;)
+	print &quot;raw tokens: &quot;, tokens
+	
+	# The first token should be blamk because the first column is always the datetime
+	tags = [&apos;datetime&apos;]
+	
+	for token in tokens:
+		if (token != &quot;&quot; and token != &quot;\n&quot;):
+			token = string.replace(token, &apos;.&apos;, &apos;/&apos;)
+			tags.append(token)
+	
+	return tags
+	
+		
+	# Determine if the tag exists.  Try to read a value, if we can&apos;t read a value
+	# then the tag probably does not exist so skip the tag by leaving a hole in the 
+	# sequence
+#	try:
+#		val = system.tag.getTagValue(tagName)
+#		tags.append(token)
+#	except:
+#		print &quot;Tag &lt;&quot; + tagName + &quot;&gt; does not exist or is not healthy&quot;
+#		tags.append(&quot;&quot;)</str>
+				</o-c>
+				<o-c m="put" s="2;O;O">
+					<str>ils.component</str>
+					<str># Copyright 2013 ILS Automation
+#
+# Collection of useful methods for debugging and exploration
+#
+# Given a component, traverse the hierarchy of its parents
+# until we find a JFrame. Return it.
+def getFrame(window):
+	parent = window
+	frame = None
+	while parent!=None:
+		clazz = parent.getClass()
+		name = clazz.getSimpleName()
+		if name == &apos;JFrame&apos;:
+			frame = parent
+			break
+		parent = parent.getParent()
+	return frame
+	
+#
+# Given a component, traverse the hierarchy of its parents
+# until we find a JFrame. Return its menubar.
+def getMenuBar(component):
+	import app
+	frame = app.ils.component.getFrame(component)
+	bar = None
+	if frame!=None:
+		bar = frame.getJMenuBar()
+	return bar</str>
+				</o-c>
+				<o-c m="put" s="2;O;O">
+					<str>ils.dataPump.abort</str>
+					<str>def abort():
+	import system
+	system.tag.writeToTag(&quot;[]/Data Pump/command&quot;, &quot;Abort&quot;)</str>
+				</o-c>
+			</o>
+		</o-c>
+	</o>
+</objects>

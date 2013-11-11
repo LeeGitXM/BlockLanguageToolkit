@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/Users/chuckc/Development/ils/repo/ignition-sdk/ignition-common.jar"/>
+	<classpathentry kind="lib" path="/Users/chuckc/Development/ils/repo/ignition-sdk/client-api.jar"/>
+	<classpathentry kind="lib" path="/Users/chuckc/Development/ils/repo/ignition-sdk/designer-api.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

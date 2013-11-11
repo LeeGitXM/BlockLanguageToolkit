@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/DT_Client"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/DT_Common"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ILS_Common"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/JGX"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/JGraphX"/>
+	<classpathentry kind="lib" path="/Ignition/lib/client-api.jar"/>
+	<classpathentry kind="lib" path="/Ignition/lib/designer-api.jar"/>
+	<classpathentry kind="lib" path="/Ignition/lib/ignition-common.jar"/>
+	<classpathentry kind="lib" path="/Ignition/lib/vision-client-api.jar"/>
+	<classpathentry kind="lib" path="/Ignition/lib/vision-common.jar"/>
+	<classpathentry kind="lib" path="/Ignition/lib/vision-designer-api.jar"/>
+	<classpathentry kind="lib" path="/External/lib/gson-2.2.2.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

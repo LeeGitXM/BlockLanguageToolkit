@@ -1,0 +1,26 @@
+#!/bin/sh
+#
+# To be run after modifications to the SCT gateway. Save elements of the 
+# installation for later restoration.
+#
+# This saves a common project for Windows users.
+# Run from the setup area.
+PROJECT=sct
+SYS=windows
+dir=`pwd`
+base=`basename $dir`
+if [ "$base" != "setup" ]
+then
+    echo "ERROR: $0: must be executed from the 'setup' directory."
+	exit 2
+fi
+GATEWAY_DIR=/usr/local/ignition
+DIST=$dir/../dist
+mkdir -p $DIST
+$GATEWAY_DIR/stop-ignition.bat
+rm -rf /cygdrive/c/Users/$USER/.ignition
+pushd $GATEWAY_DIR
+DIST_PATH=`cygpath -w $DIST/$PROJECT.project.$SYS.jar`
+jar -cf $DIST_PATH data user-lib
+popd
+$GATEWAY_DIR/start-ignition.bat

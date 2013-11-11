@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modules>
+	<module>
+		<id>diagnostics</id>
+		<name>@NAME@</name>
+		<description>@DESCRIPTION@</description>
+		<version>@VERSION@</version>
+		<requiredignitionversion>7.6.0</requiredignitionversion>
+		<requiredframeworkversion>5</requiredframeworkversion>
+		<freemodule>true</freemodule>
+
+		<!-- Add the module dependencies for each scope -->
+		<!-- NOTE: Build fails here if we specify a Gateway dependency -->
+		<depends scope="D">fpmi</depends>
+		
+		<!-- Load in our jars for each scope -->
+		<jar scope="CD">diagnostics-client.jar.pack.gz</jar>
+		<jar scope="D">diagnostics-designer.jar.pack.gz</jar>
+		<jar scope="D">diagnostics-common.jar.pack.gz</jar>
+		<jar scope="G">diagnostics-gateway.jar</jar>
+		<jar scope="G">diagnostics-common.jar</jar>
+		<jar scope="GD">gson-2.2.2.jar</jar>
+		<jar scope="GCD">ils-common.jar</jar>
+		<jar scope="GCD">jgraphx-2.1.0.jar</jar>
+		<jar scope="CD">jgx.jar</jar>
+		<!-- Tell the Gateway and/or Designer where to find the hooks -->
+		<hook scope="G">com.ils.diagnostics.gateway.DTGatewayHook</hook>
+		<hook scope="D">com.ils.diagnostics.designer.DTDesignerHook</hook>
+		<hook scope="C">com.ils.diagnostics.client.DTClientHook</hook>
+	</module>
+</modules>
