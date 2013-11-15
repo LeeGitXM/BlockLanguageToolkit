@@ -96,7 +96,6 @@ public class DiagnosticsFolderNode extends FolderNode {
 			node = new DiagnosticsNode(context,res,res.getName());
 			node.install(this);
 			log.debug(TAG+"createChildPanel:"+this.pathToRoot()+"->"+node.pathToRoot());
-			((DiagnosticsNode)node).findOrCreateFrame();
 			return node;
 		} 
 		else {
