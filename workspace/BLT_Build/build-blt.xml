@@ -1,0 +1,218 @@
+<project name="BLTModuleBuilder" basedir="../" default="BuildAndInstallModule">
+
+	<import file="${basedir}/BLT_Build/build.xml"/>
+
+	<property name="version.build" value="2" />	
+	<!-- Change version.beta value to "" for release builds -->
+	<property name="version.beta" value="-development" />		
+	<property name="BLTModule.version" value="1.0.2.${version.build}" />
+	<property name="BLTModule.name" value="BLT" />
+	<property name="BLTModule.description" value="Block Language Toolkit" />
+	<property name="root.dir" value="${basedir}/../.." />
+	<property name="jar.dir" value="${root.dir}/external/lib" />
+	<property name="sdk.dir" value="${root.dir}/ignition/lib" />
+	<property name="common.jar.name" value="ils-common.jar" />
+	<property name="common.bin.dir" value="${root.dir}/common/workspace/ILS_Common/bin" />
+	<property name="common.src.dir" value="${root.dir}/common/workspace/ILS_Common/src" />
+	<property name="jgx.jar.name" value="jgx.jar" />
+	<property name="jgx.bin.dir" value="${root.dir}/jgx/workspace/JGX/bin" />
+	<property name="jgx.src.dir" value="${root.dir}/jgx/workspace/JGX/src" />
+		
+	<!-- External jar classpath -->
+	<path id="ils-classpath">
+	   <fileset dir="${jar.dir}">
+	      <include name="*.jar"/>
+	   </fileset>
+		<fileset dir="${sdk.dir}">
+			 <include name="*.jar"/>
+		</fileset>
+	   <pathelement path="${build.dir}"/>
+	</path>
+	
+	<!-- Common jar classpath -->
+	<!-- The gateway, designer and clients depend on the Common -->
+	<path id="BLT_Common.classpath">
+		<path refid="Ignition_SDK.classpath" />
+	</path>
+		
+	<!-- Gateway jar classpath -->
+	<path id="BLT_Gateway.classpath">
+		<path refid="BLT_Common.classpath" />
+		<path refid="ExternalJar.classpath" />
+		<fileset dir="${basedir}/BLT_Build/bin/BLT_Common/dist/" includes="*.jar" />
+	</path>	
+	<!-- Client jar classpath -->
+	<path id="BLT_Client.classpath">
+		<path refid="BLT_Common.classpath" />
+		<path refid="ExternalJar.classpath" />
+		<fileset dir="${basedir}/BLT_Build/bin/BLT_Common/dist/" includes="*.jar" />
+	</path>
+	
+	<!-- Designer jar classpath -->
+	<path id="BLT_Designer.classpath">
+		<path refid="BLT_Common.classpath" />
+		<path refid="ExternalJar.classpath" />
+		<fileset dir="${basedir}/BLT_Build/bin/BLT_Common/dist/" includes="*.jar" />
+		<fileset dir="${basedir}/BLT_Build/bin/${BLTModule.name}_Client/dist/" includes="*.jar" />
+	</path>
+
+	<!-- This target will build the toolkit module and deploy it to the local Ignition gateway -->
+		<target name="BuildAndInstallModule" depends="clean, build, deploy" />
+
+	<!-- Clean ILS common -->
+	<target name="clean.common" >
+		<mkdir dir="${common.bin.dir}"/>
+		<delete file="${jar.dir}/${common.jar.name}" />
+		<delete>
+		    <fileset dir="${common.bin.dir}">
+		        <include name="**/*.class"/>
+		    </fileset>
+		</delete>
+	</target>
+	<!-- Clean JGX Customizations -->
+	<target name="clean.jgx" >
+		<mkdir dir="${jgx.bin.dir}"/>
+		<delete file="${jar.dir}/${jgx.jar.name}" />
+		<delete>
+		    <fileset dir="${jgx.bin.dir}">
+		    	<include name="com/ils/**"/>
+		    </fileset>
+		</delete>
+	</target>
+	<!-- Cleans all previously built files -->
+	<target name="clean" depends="clean.common,clean.jgx" description="Remove existing build products" >
+		<delete dir="${basedir}/BLT_Build/bin" />
+		<delete dir="${basedir}/BLT_Build/modules" />
+		<delete dir="${basedir}/BLT_Build/release" />
+	</target>	
+	
+	
+	<!-- Compile the Common library -->
+	<target name="common.build" description="Compile the source">
+		<mkdir dir="${common.bin.dir}"/>
+		<javac destdir="${common.bin.dir}" source="1.6" target="1.6" debug="true" includeantruntime="false">
+			<src path="${common.src.dir}"/>
+			<classpath refid="ils-classpath"/>
+		</javac>
+	</target>
+	<target name ="common.jar" description="Create a jar for the ILS Common library">
+	    <jar destfile="${jar.dir}/${common.jar.name}" includes="**/*.class" basedir="${common.bin.dir}"/>
+	</target>
+	
+	<!-- Compile the JGX Customizations library -->
+	<target name="jgx.build" description="Compile the source">
+		<mkdir dir="${jgx.bin.dir}"/>
+		<javac destdir="${jgx.bin.dir}" source="1.6" target="1.6" debug="true" debuglevel="lines,vars,source" includeantruntime="false">
+			<src path="${jgx.src.dir}"/>
+			<classpath refid="ils-classpath"/>
+		</javac>
+		<copy todir="${jgx.bin.dir}">
+		    <fileset dir="${jgx.src.dir}"
+		    	includes="**/*.gif,**/*.png,**/*.properties,**/*.xml,**/*.ico" />
+		</copy>
+	</target>
+	<target name ="jgx.jar" description="Create a jar for the JGraphx Diagnostics library">
+    	<jar jarfile="${jar.dir}/${jgx.jar.name}">
+    		<fileset dir="${jgx.bin.dir}">
+    			<include name="com/ils/**"/>
+    		</fileset>
+    	</jar>
+	</target>
+	
+	<!-- Builds the toolkit module jars and the final .modl file -->
+	<target name="build" depends="common.build,common.jar,jgx.build,jgx.jar" description="Compile the source">
+		<echo message="${BLTModule.name} ${BLTModule.version}" />	
+		<delete dir="${basedir}/BLT_Build/temp_modl" />	
+		
+		<!-- build.date and version.build are both defined in build.xml -->
+		<echo message="Build date: ${build.date}" />
+		<echo message="Build version: ${version.build}" />	
+				
+		<!-- BLT Common jar -->
+		<antcall target="MakeProject">
+			<param name="modName" value="${BLTModule.name}_Common" />
+			<param name="sourceDirFolder" value="${BLTModule.name}_Common" />
+			<param name="jarName" value="diagnostics-common" />
+			<param name="javacSource" value="1.6" />
+			<param name="module.build.classpath" value="${BLTModule.name}_Common.classpath"/>
+		</antcall>
+		
+		<!-- BLT Gateway jar -->
+		<antcall target="MakeProject">
+			<param name="modName" value="${BLTModule.name}_Gateway" />
+			<param name="sourceDirFolder" value="${BLTModule.name}_Gateway" />
+			<param name="jarName" value="diagnostics-gateway" />
+			<param name="javacSource" value="1.6" />
+			<param name="[replace]BLTGateway.properties:Meta.Version" value="${version.build}" />
+			<param name="[replace]BLTGateway.properties:Meta.ReleaseDate" value="${build.date}" />
+			<param name="module.build.classpath" value="${BLTModule.name}_Gateway.classpath"/>
+		</antcall>
+
+		<!-- BLT Client jar -->
+		<antcall target="MakeProject">
+			<param name="modName" value="${BLTModule.name}_Client" />
+			<param name="sourceDirFolder" value="${BLTModule.name}_Client" />
+			<param name="jarName" value="diagnostics-client" />
+			<param name="javacSource" value="1.6" />
+			<param name="module.build.classpath" value="${BLTModule.name}_Client.classpath"/>
+		</antcall>
+		
+		<!-- BLT Designer jar -->
+		<antcall target="MakeProject">
+			<param name="modName" value="${BLTModule.name}_Designer" />
+			<param name="sourceDirFolder" value="${BLTModule.name}_Designer" />
+			<param name="jarName" value="diagnostics-designer" />
+			<param name="javacSource" value="1.6" />
+			<param name="module.build.classpath" value="${BLTModule.name}_Designer.classpath"/>
+		</antcall>
+		
+		<!-- Create .modl file -->
+		<echo message="Making ${BLTModule.name} modl" />
+
+		<mkdir dir="${basedir}/BLT_Build/temp_modl" />
+		<mkdir dir="${basedir}/BLT_Build/modules" />
+		
+
+		<copy file="${basedir}/BLT_Build/module-diag.xml" tofile="${basedir}/BLT_Build/temp_modl/module.xml" overwrite="true" />
+
+		<replace file="${basedir}/BLT_Build/temp_modl/module.xml" token="@NAME@" value="${BLTModule.name}" />
+		<replace file="${basedir}/BLT_Build/temp_modl/module.xml" token="@DESCRIPTION@" value="${BLTModule.description}" />
+		<replace file="${basedir}/BLT_Build/temp_modl/module.xml" token="@VERSION@" value="${BLTModule.version}" />
+
+		<!-- Pack200 and then copy the designer, client jars -->
+		<pack200 src="${basedir}/BLT_Build/bin/${BLTModule.name}_Client/dist/diagnostics-client.jar" destfile="${basedir}/BLT_Build/temp_modl/diagnostics-client.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
+		<pack200 src="${basedir}/BLT_Build/bin/${BLTModule.name}_Designer/dist/diagnostics-designer.jar" destfile="${basedir}/BLT_Build/temp_modl/diagnostics-designer.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
+		<pack200 src="${basedir}/BLT_Build/bin/${BLTModule.name}_Common/dist/diagnostics-common.jar" destfile="${basedir}/BLT_Build/temp_modl/diagnostics-common.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
+		<pack200 src="${basedir}/../../external/lib/ils-common.jar" destfile="${basedir}/BLT_Build/temp_modl/ils-common.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
+		<pack200 src="${basedir}/../../external/lib/jgraphx-2.1.0.jar" destfile="${basedir}/BLT_Build/temp_modl/jgraphx-2.1.0.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
+		<pack200 src="${basedir}/../../external/lib/gson-2.2.2.jar" destfile="${basedir}/BLT_Build/temp_modl/gson-2.2.2.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
+		<pack200 src="${basedir}/../../external/lib/jgx.jar" destfile="${basedir}/BLT_Build/temp_modl/jgx.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
+		
+		<!-- Copy gateway jar -->
+		<copy file="${basedir}/BLT_Build/bin/${BLTModule.name}_Gateway/dist/diagnostics-gateway.jar" todir="${basedir}/BLT_Build/temp_modl/" />
+		<copy file="${basedir}/BLT_Build/bin/${BLTModule.name}_Common/dist/diagnostics-common.jar" todir="${basedir}/BLT_Build/temp_modl/" />
+		
+		<!-- Copy dependent jars -->
+		<copy file="${basedir}/../../external/lib/ils-common.jar" todir="${basedir}/BLT_Build/temp_modl/" />
+		<copy file="${basedir}/../../external/lib/jgraphx-2.1.0.jar" todir="${basedir}/BLT_Build/temp_modl/" />
+		<copy file="${basedir}/../../external/lib/jgx.jar" todir="${basedir}/BLT_Build/temp_modl/" />
+		<copy file="${basedir}/../../external/lib/gson-2.2.2.jar" todir="${basedir}/BLT_Build/temp_modl/" />
+
+		<!-- Copy license file and javadoc into the bundle -->
+		<mkdir dir="${basedir}/BLT_Build/doc" />
+		<copy file="${basedir}/BLT_Build/license.html" todir="${basedir}/BLT_Build/temp_modl/" />
+		<copy todir="${basedir}/BLT_Build/temp_modl/doc">
+		    <fileset dir="${basedir}/BLT_Build/doc"/>
+		</copy>
+		
+		<!-- Zip it all up -->
+		<zip zipfile="${basedir}/BLT_Build/modules/${BLTModule.name}-module-unsigned.modl" basedir="${basedir}/BLT_Build/temp_modl" />
+	</target>
+
+	<!-- Installs BLT module in local Ignition gateway. Note that the gateway must be running in developer mode for this to succeed. -->
+	<target name="deploy">
+		<echo message="Installing ${BLTModule.name} on Ignition Gateway." />
+		<postmodule posturl="${local.gateway.url}" modulefile="${basedir}/BLT_Build/modules/${BLTModule.name}-module-unsigned.modl" />
+	</target>	
+
+</project>
