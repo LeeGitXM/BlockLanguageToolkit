@@ -2,28 +2,28 @@
 <project default="javadoc">
     <target name="javadoc">
         <javadoc access="protected" author="true" 
-        	classpath="/Users/chuckc/Development/ils/repo/ignition-sdk/designer-api.jar:
-        			   /Users/chuckc/Development/ils/repo/ignition-sdk/client-api.jar:
-        			   /Users/chuckc/Development/ils/repo/ignition-sdk/vision-client-api.jar:
-        	           /Users/chuckc/Development/ils/repo/ignition-sdk/ignition-common.jar:
+        	classpath="/Users/chuckc/Development/ils/repo/ignition/lib/designer-api.jar:
+        			   /Users/chuckc/Development/ils/repo/ignition/lib/client-api.jar:
+        			   /Users/chuckc/Development/ils/repo/ignition/lib/vision-client-api.jar:
+        	           /Users/chuckc/Development/ils/repo/ignition/lib/ignition-common.jar:
         	           /Users/chuckc/Development/ils/repo/core/workspace/Core_Common/bin:
-        	           /Users/chuckc/Development/ils/repo/ignition-sdk/client-api.jar:
-        	           /Users/chuckc/Development/ils/repo/external-jars/ils-common.jar:
-        	           /Users/chuckc/Development/ils/repo/external-jars/log4j-1.2.16.jar:
-        	           /Users/chuckc/Development/ils/repo/external-jars/jgraphx-2.1.0.jar:
-        			   /Users/chuckc/Development/ils/repo/external-jars/jgraphx-examples.jar:
-        	           /Users/chuckc/Development/ils/repo/external-jars/gson-2.2.2.jar:
-        	           /Users/chuckc/Development/ils/repo/ignition-sdk/gateway-api.jar:
-        	           /Users/chuckc/Development/ils/repo/diagnostics/workspace/DT_Common/bin" 
+        	           /Users/chuckc/Development/ils/repo/ignition/lib/client-api.jar:
+        	           /Users/chuckc/Development/ils/repo/external/lib/ils-common.jar:
+        	           /Users/chuckc/Development/ils/repo/external/lib/log4j-1.2.16.jar:
+        	           /Users/chuckc/Development/ils/repo/external/lib/jgraphx-2.1.0.jar:
+        			   /Users/chuckc/Development/ils/repo/external/lib/jgraphx-examples.jar:
+        	           /Users/chuckc/Development/ils/repo/external/lib/gson-2.2.2.jar:
+        	           /Users/chuckc/Development/ils/repo/ignition/lib/gateway-api.jar:
+        	           /Users/chuckc/Development/ils/repo/blt/workspace/BLT_Common/bin" 
         	destdir="doc" nodeprecated="false" nodeprecatedlist="true" noindex="false" nonavbar="false" notree="false" 
-        	packagenames="com.ils.diagnostics,com.ils.com.ils.diagnostics.gateway,com.ils.diagnostics.client,
-        	              com.ils.diagnostics.designer" 
+        	packagenames="com.ils.blt,com.ils.com.ils.blt.gateway,com.ils.blt.client,
+        	              com.ils.blt.designer" 
         	source="1.7" 
-        	sourcepath="/Users/chuckc/Development/ils/repo/jgx-diag/workspace/JGX_Diagnostics/src:
-        				/Users/chuckc/Development/ils/repo/diagnostics/workspace/DT_Common/src:
-        	            /Users/chuckc/Development/ils/repo/diagnostics/workspace/DT_Gateway/src:
-        	            /Users/chuckc/Development/ils/repo/diagnostics/workspace/DT_Client/src:
-        	            /Users/chuckc/Development/ils/repo/diagnostics/workspace/DT_Designer/src" 
+        	sourcepath="/Users/chuckc/Development/ils/repo/jgx/workspace/JGX_blt/src:
+        				/Users/chuckc/Development/ils/repo/blt/workspace/BLT_Common/src:
+        	            /Users/chuckc/Development/ils/repo/blt/workspace/BLT_Gateway/src:
+        	            /Users/chuckc/Development/ils/repo/blt/workspace/BLT_Client/src:
+        	            /Users/chuckc/Development/ils/repo/blt/workspace/BLT_Designer/src" 
         	splitindex="false" use="true" version="true"/>
     </target>
 </project>

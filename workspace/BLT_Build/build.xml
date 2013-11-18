@@ -1,26 +1,26 @@
-<project name="DTBuild" basedir="../">
+<project name="BLTBuild" basedir="../">
 
 	<!-- Allows external ant tasks like <if> to be used -->
 	<taskdef resource="net/sf/antcontrib/antcontrib.properties">
 		<classpath>
-			<pathelement location="${basedir}/DT_Build/AntLib/ant-contrib.jar" />
+			<pathelement location="${basedir}/BLT_Build/AntLib/ant-contrib.jar" />
 		</classpath>
 	</taskdef>
 
 	<!-- Create our packer task -->
-	<taskdef name="pack200" classname="com.sun.tools.apache.ant.pack200.Pack200Task" classpath="${basedir}/DT_Build/AntLib/Pack200Task.jar" />
+	<taskdef name="pack200" classname="com.sun.tools.apache.ant.pack200.Pack200Task" classpath="${basedir}/BLT_Build/AntLib/Pack200Task.jar" />
 
 	<!-- Create our unpacker task -->
-	<taskdef name="unpack200" classname="com.sun.tools.apache.ant.pack200.Unpack200Task" classpath="${basedir}/DT_Build/AntLib/Pack200Task.jar" />
+	<taskdef name="unpack200" classname="com.sun.tools.apache.ant.pack200.Unpack200Task" classpath="${basedir}/BLT_Build/AntLib/Pack200Task.jar" />
 
 	<!-- Add the postmodule task. This task can deploy a module to a local Ignition gateway. -->
 	<taskdef name="postmodule" classname="com.inductiveautomation.ant.PostModule">
-		<classpath location="${basedir}/DT_Build/AntLib/ant-post-module.jar" />
+		<classpath location="${basedir}/BLT_Build/AntLib/ant-post-module.jar" />
 	</taskdef>
 
 	<property name="local.gateway.url" value="http://localhost:8088/main/system/DeveloperModuleLoadingServlet" />
 
-	<property name="p200props" value="${basedir}/DT_Build/pack200.properties" />
+	<property name="p200props" value="${basedir}/BLT_Build/pack200.properties" />
 
 	<tstamp>
 		<format property="build.date" pattern="MM/dd/yyyy hh:mm aa" />
@@ -34,6 +34,7 @@
 	<path id="ExternalJar.classpath">
 		 <fileset dir="${basedir}/../../external/lib" includes="ils*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="gson-*.jar" />
+		<fileset dir="${basedir}/../../external/lib" includes="guava-*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="jgraphx-*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="jgx*.jar" />
 	</path>
@@ -41,9 +42,9 @@
 	<!-- Generic Buildfile: Reference Via Antcalls -->
 	<target name="MakeProject">
 		<echo message="Compiling ${modName}" />
-		<mkdir dir="${basedir}/DT_Build/bin/${modName}/bin" />
+		<mkdir dir="${basedir}/BLT_Build/bin/${modName}/bin" />
 		<echo message="Compiling ${sourceDirFolder}" />
-		<javac srcdir="${sourceDirFolder}/src" destdir="${basedir}/DT_Build/bin/${modName}/bin"
+		<javac srcdir="${sourceDirFolder}/src" destdir="${basedir}/BLT_Build/bin/${modName}/bin"
 				source="${javacSource}" target="${javacSource}" debug="true" fork="true"
 				memoryinitialsize="128m" memorymaximumsize="512m" debuglevel="lines,vars,source"
 				includeantruntime="false">
@@ -51,7 +52,7 @@
 			<exclude name="**/test/*" />
 		</javac>
 		<echo message="Copying ${modName}" />
-		<copy todir="${basedir}/DT_Build/bin/${modName}/bin">
+		<copy todir="${basedir}/BLT_Build/bin/${modName}/bin">
 			<fileset dir="${basedir}/${sourceDirFolder}/src">
 				<exclude name="**/*.java" />
 			</fileset>
@@ -60,7 +61,7 @@
 		<if>
 			<equals arg1="${explodeLib}" arg2="true" />
 			<then>
-				<unzip dest="${basedir}/DT_Build/bin/${modName}/bin">
+				<unzip dest="${basedir}/BLT_Build/bin/${modName}/bin">
 					<fileset dir="${sourceDirFolder}/lib">
 						<include name="*.jar" />
 					</fileset>
@@ -78,11 +79,11 @@
 		</if>
 
 		<echo message="Making distribution directory ..." />
-		<delete dir="${basedir}/DT_Build/bin/${modName}/dist" />
-		<mkdir dir="${basedir}/DT_Build/bin/${modName}/dist" />
+		<delete dir="${basedir}/BLT_Build/bin/${modName}/dist" />
+		<mkdir dir="${basedir}/BLT_Build/bin/${modName}/dist" />
 
-		<jar destfile="${basedir}/DT_Build/bin/${modName}/dist/${jarName}.jar">
-			<fileset dir="${basedir}/DT_Build/bin/${modName}/bin" />
+		<jar destfile="${basedir}/BLT_Build/bin/${modName}/dist/${jarName}.jar">
+			<fileset dir="${basedir}/BLT_Build/bin/${modName}/bin" />
 		</jar>
 	</target>
 
@@ -105,7 +106,7 @@
 		<echo message="${filename}:${key}=${replace.value}" />
 
 		<!-- Updates the property file named "myfile.properties" so that the key "mykey" now equals "waahoo!"
-		<propertyfile file="${basedir}/DT_Build/bin/${modName}/bin/${filename}">
+		<propertyfile file="${basedir}/BLT_Build/bin/${modName}/bin/${filename}">
 			<entry key="${key}" value="${replace.value}" />
 		</propertyfile>
 		-->

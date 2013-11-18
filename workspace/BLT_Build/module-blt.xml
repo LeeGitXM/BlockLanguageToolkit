@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <modules>
 	<module>
-		<id>diagnostics</id>
+		<id>block</id>
 		<name>@NAME@</name>
 		<description>@DESCRIPTION@</description>
 		<version>@VERSION@</version>
@@ -14,18 +14,19 @@
 		<depends scope="D">fpmi</depends>
 		
 		<!-- Load in our jars for each scope -->
-		<jar scope="CD">diagnostics-client.jar.pack.gz</jar>
-		<jar scope="D">diagnostics-designer.jar.pack.gz</jar>
-		<jar scope="D">diagnostics-common.jar.pack.gz</jar>
-		<jar scope="G">diagnostics-gateway.jar</jar>
-		<jar scope="G">diagnostics-common.jar</jar>
+		<jar scope="CD">blt-client.jar.pack.gz</jar>
+		<jar scope="D">blt-designer.jar.pack.gz</jar>
+		<jar scope="D">blt-common.jar.pack.gz</jar>
+		<jar scope="G">blt-gateway.jar</jar>
+		<jar scope="G">blt-common.jar</jar>
 		<jar scope="GD">gson-2.2.2.jar</jar>
+		<jar scope="GD">guava-15.0.jar</jar>
 		<jar scope="GCD">ils-common.jar</jar>
 		<jar scope="GCD">jgraphx-2.1.0.jar</jar>
 		<jar scope="CD">jgx.jar</jar>
 		<!-- Tell the Gateway and/or Designer where to find the hooks -->
-		<hook scope="G">com.ils.diagnostics.gateway.DTGatewayHook</hook>
-		<hook scope="D">com.ils.diagnostics.designer.DTDesignerHook</hook>
-		<hook scope="C">com.ils.diagnostics.client.DTClientHook</hook>
+		<hook scope="G">com.ils.blt.gateway.BLTGatewayHook</hook>
+		<hook scope="D">com.ils.blt.designer.BLTDesignerHook</hook>
+		<hook scope="C">com.ils.blt.client.BLTClientHook</hook>
 	</module>
 </modules>
