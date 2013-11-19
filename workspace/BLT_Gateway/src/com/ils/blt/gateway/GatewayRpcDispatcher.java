@@ -5,13 +5,12 @@ package com.ils.blt.gateway;
 
 import java.util.Hashtable;
 
-import org.python.core.PyDictionary;
 import org.python.core.PyList;
 
+import com.ils.blt.common.PropertiesRequestInterface;
+import com.ils.blt.common.StatusReportingInterface;
 import com.ils.common.JavaToJson;
 import com.ils.common.JsonToJava;
-import com.ils.diagnostics.common.PropertiesRequestInterface;
-import com.ils.diagnostics.common.StatusReportingInterface;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;

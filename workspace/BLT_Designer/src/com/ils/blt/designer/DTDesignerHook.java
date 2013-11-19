@@ -16,10 +16,10 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JFrame;
 
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.designer.graphics.PaletteBlocks;
 import com.ils.blt.designer.navtree.DiagnosticsFolderNode;
 import com.ils.blt.designer.workspace.DiagnosticsWorkspace;
-import com.ils.diagnostics.common.DTProperties;
 import com.ils.jgx.editor.JgxPalette;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.common.expressions.ExpressionFunctionManager;
@@ -62,7 +62,7 @@ public class DTDesignerHook extends AbstractDesignerModuleHook implements Design
 	
 	@Override
 	public MenuBarMerge getModuleMenu() {
-		MenuBarMerge merge = new MenuBarMerge(DTProperties.MODULE_ID);  // s suggested in javadocs
+		MenuBarMerge merge = new MenuBarMerge(BLTProperties.MODULE_ID);  // s suggested in javadocs
 		merge.addSeparator();
 
 		Action panelResetAction = new AbstractAction("Reset Panels for Toolkit") {
@@ -94,8 +94,8 @@ public class DTDesignerHook extends AbstractDesignerModuleHook implements Design
 	@Override
 	public void initializeScriptManager(ScriptManager mgr) {
 		super.initializeScriptManager(mgr);
-		mgr.addScriptModule(DTProperties.REPORTING_SCRIPT_PACKAGE, StatusReportingScriptFunctions.class);
-		mgr.addScriptModule(DTProperties.PROPERTIES_SCRIPT_PACKAGE, PropertiesRequestScriptFunctions.class);
+		mgr.addScriptModule(BLTProperties.REPORTING_SCRIPT_PACKAGE, StatusReportingScriptFunctions.class);
+		mgr.addScriptModule(BLTProperties.PROPERTIES_SCRIPT_PACKAGE, PropertiesRequestScriptFunctions.class);
 	}
 	
 	@Override

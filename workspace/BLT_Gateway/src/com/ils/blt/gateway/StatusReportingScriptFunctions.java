@@ -4,8 +4,6 @@
  */
 package com.ils.blt.gateway;
 
-import org.python.core.PyDictionary;
-
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 
@@ -28,16 +26,7 @@ public class StatusReportingScriptFunctions  {
 	public static void enableDiagram(String path,boolean flag)  {
 		log.debug(TAG+String.format("enableDiagram - %s = %s",path,(flag?"true":"false")));
 	}
-	
-	/**
-	 * Obtain the common dictionary used for storing python block instances. 
-	 * NOTE: This method is ONLY available in Designer scope.
-	 * 
-	 * @return repository a PyDictionary containing object instances keyed by project:treepath:blockId
-	 */
-	public static PyDictionary getRepository() {
-		return ClassRepository.getInstance().getRepository();
-	}
+
 	
 	/**
 	 * Report the results of a block evaluation.

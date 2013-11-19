@@ -14,7 +14,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
-import com.ils.diagnostics.common.DTProperties;
+import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
@@ -64,7 +64,7 @@ public class ModelResourceManager implements ProjectListener  {
 		}
 		List<ProjectResource> resources = project.getResources();
 		for (ProjectResource res : resources) {
-			if( res.getResourceType().equals(DTProperties.MODEL_RESOURCE_TYPE)) {
+			if( res.getResourceType().equals(BLTProperties.MODEL_RESOURCE_TYPE)) {
 				log.debug(TAG+"projectUpdated: "+this+" found model resource "+res.getName()+" ("+res.getResourceId()+")");
 				//deserializeWorkspaceResource(res);
 			}
@@ -109,7 +109,7 @@ public class ModelResourceManager implements ProjectListener  {
 			long projectId = staging.getId();
 			List<ProjectResource> resources = staging.getResources();
 			for( ProjectResource res:resources ) {
-				if( res.getResourceType().equalsIgnoreCase(DTProperties.MODEL_RESOURCE_TYPE)) {
+				if( res.getResourceType().equalsIgnoreCase(BLTProperties.MODEL_RESOURCE_TYPE)) {
 					log.info(String.format("%s projectAdded - staging %s %d = %s", TAG,res.getName(),
 						res.getResourceId(),res.getResourceType()));
 				}

@@ -3,7 +3,6 @@
  */
 package com.ils.blt.common;
 
-import org.python.core.PyDictionary;
 import org.python.core.PyList;
 
 
@@ -22,14 +21,6 @@ public interface StatusReportingInterface  {
 	 * @param flag true to enable the diagram
 	 */
 	public void enableDiagram(String path,boolean flag);
-	
-	/**
-	 * Obtain the common dictionary used for storing python block instances. 
-	 * NOTE: This method is ONLY available in Designer scope.
-	 * 
-	 * @return repository a PyDictionary containing object instances keyed by project:treepath:blockId
-	 */
-	public PyDictionary getRepository();
 	
 	
 

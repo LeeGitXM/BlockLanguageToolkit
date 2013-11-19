@@ -5,9 +5,9 @@ package com.ils.blt.gateway;
 
 import java.util.Hashtable;
 
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ModelResourceManager;
-import com.ils.diagnostics.common.DTProperties;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectVersion;
@@ -27,7 +27,7 @@ import com.inductiveautomation.ignition.gateway.project.ProjectListener;
  * 
  * At present this code does nothing.
  */
-public class DTGatewayHook extends AbstractGatewayModuleHook implements ProjectListener {
+public class BLTGatewayHook extends AbstractGatewayModuleHook implements ProjectListener {
 	public static String TAG = "DTGatewayHook";
 	public static String BUNDLE_NAME = "diagnostics";// Properties file is sct.properties
 	private final Hashtable<Long,GatewayRpcDispatcher> dispatchers;
@@ -36,7 +36,7 @@ public class DTGatewayHook extends AbstractGatewayModuleHook implements ProjectL
 	private GatewayContext context = null;
 	private final LoggerEx log;
 	
-	public DTGatewayHook() {
+	public BLTGatewayHook() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		log.info(TAG+"Initializing DT Gateway hook");
 		dispatchers = new Hashtable<Long,GatewayRpcDispatcher>();
@@ -82,7 +82,7 @@ public class DTGatewayHook extends AbstractGatewayModuleHook implements ProjectL
 	@Override
 	public void initializeScriptManager(ScriptManager mgr) {
 		super.initializeScriptManager(mgr);
-		mgr.addScriptModule(DTProperties.REPORTING_SCRIPT_PACKAGE,StatusReportingScriptFunctions.class);
+		mgr.addScriptModule(BLTProperties.REPORTING_SCRIPT_PACKAGE,StatusReportingScriptFunctions.class);
 		PropertiesUpdateHandler.getInstance().setScriptManager(mgr);
 	}
 	
@@ -96,7 +96,7 @@ public class DTGatewayHook extends AbstractGatewayModuleHook implements ProjectL
 	public void projectAdded(Project staging, Project published) {
 		ScriptManager mgr = context.getProjectManager().getProjectScriptManager(published.getId());
 		if(mgr!=null) {
-			mgr.addScriptModule(DTProperties.REPORTING_SCRIPT_PACKAGE, StatusReportingScriptFunctions.class);
+			mgr.addScriptModule(BLTProperties.REPORTING_SCRIPT_PACKAGE, StatusReportingScriptFunctions.class);
 			log.info(TAG+"projectAdded ... script manager ");
 		}
 		else {

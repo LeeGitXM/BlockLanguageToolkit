@@ -13,9 +13,9 @@ import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 import javax.swing.tree.TreePath;
 
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.designer.workspace.DiagnosticsFrame;
 import com.ils.blt.designer.workspace.DiagnosticsWorkspace;
-import com.ils.diagnostics.common.DTProperties;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;
@@ -128,7 +128,7 @@ public class DiagnosticsNode extends AbstractResourceNavTreeNode
 				XMLSerializer s = context.createSerializer();
 				byte[] bytes = s.serializeBinary(model, true);
 				ProjectResource resource = new ProjectResource(resid,
-						DTProperties.MODULE_ID, DTProperties.MODEL_RESOURCE_TYPE,
+						BLTProperties.MODULE_ID, BLTProperties.MODEL_RESOURCE_TYPE,
 						name, ApplicationScope.GATEWAY, bytes);
 				resource.setParentUuid(uuid);
 				context.updateResource(resource);

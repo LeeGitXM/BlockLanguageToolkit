@@ -7,8 +7,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.JFrame;
 
-import org.apache.log4j.Level;
-
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 

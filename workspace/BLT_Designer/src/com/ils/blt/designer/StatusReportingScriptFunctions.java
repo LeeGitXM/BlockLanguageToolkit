@@ -9,8 +9,8 @@ import org.python.core.PyDictionary;
 import org.python.core.PyList;
 
 import com.google.gson.Gson;
+import com.ils.blt.common.BLTProperties;
 import com.ils.common.PythonToJava;
-import com.ils.diagnostics.common.DTProperties;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -34,7 +34,7 @@ public class StatusReportingScriptFunctions  {
 	public static void enableDiagram(String path,boolean flag)  {
 		log.debug(TAG+String.format("enableDiagram - %s = %s",path,(flag?"true":"false")));
 		try {;
-			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(DTProperties.MODULE_ID, "enableDiagram",new Boolean(flag));
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(BLTProperties.MODULE_ID, "enableDiagram",new Boolean(flag));
 		}
 		catch(Exception ge) {
 			log.info(TAG+"enableDiagram: GatewayException ("+ge.getMessage()+")");
@@ -51,7 +51,7 @@ public class StatusReportingScriptFunctions  {
 		PyDictionary dict = null;
 		try {
 			log.debug(TAG+"getRepository ...");
-			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(DTProperties.MODULE_ID, "getRepository");
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(BLTProperties.MODULE_ID, "getRepository");
 		}
 		catch(Exception ge) {
 			log.info(TAG+"getRepository: GatewayException ("+ge.getMessage()+")");
@@ -73,7 +73,7 @@ public class StatusReportingScriptFunctions  {
 			log.debug(TAG+"defineModels: PYTHON=\n"+pyAttributes);
 			String json = gson.toJson(attributes);
 			log.debug(TAG+"defineModels: JSON=\n"+json);
-			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(DTProperties.MODULE_ID, "reportStatus", key, json);
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(BLTProperties.MODULE_ID, "reportStatus", key, json);
 		}
 		catch(Exception ge) {
 			log.info(TAG+"reportStatus: GatewayException ("+ge.getMessage()+")");

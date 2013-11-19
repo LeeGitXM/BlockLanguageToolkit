@@ -33,5 +33,11 @@ public interface PropertiesRequestInterface  {
 	 * @return a string representing a JSON document containing an array of attributes corresponding
 	 *         to the connection.
 	 */
-	public String getConnectionAttributes(String key,String json); 
+	public String getConnectionAttributes(String key,String json);
+	/**
+	 * Set the level of logging in the designer.
+	 * @param logger name, e.g. "com.ils.diagnostics.designer". This is a package name.
+	 * @param level a string, e.g. INFO, DEBUG, TRACE
+	 */
+	public void setLoggingLevel(String logger,String level);
 }

@@ -12,8 +12,8 @@ import java.util.UUID;
 import javax.swing.JPopupMenu;
 import javax.swing.tree.TreePath;
 
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.designer.workspace.DiagnosticsWorkspace;
-import com.ils.diagnostics.common.DTProperties;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;
@@ -51,7 +51,7 @@ public class DiagnosticsFolderNode extends FolderNode {
 	 * @param context the designer context
 	 */
 	public DiagnosticsFolderNode(DesignerContext ctx) {
-		super(ctx, DTProperties.MODULE_ID, ApplicationScope.GATEWAY,DTProperties.ROOT_FOLDER_UUID);
+		super(ctx, BLTProperties.MODULE_ID, ApplicationScope.GATEWAY,BLTProperties.ROOT_FOLDER_UUID);
 		BundleUtil.get().addBundle(NAV_PREFIX,getClass(),BUNDLE_NAME);
 		setText(BundleUtil.get().getString(NAV_PREFIX+".RootFolderName"));
 		setIcon(IconUtil.getIcon("folder_closed"));
@@ -74,7 +74,7 @@ public class DiagnosticsFolderNode extends FolderNode {
 	}
 
 	private boolean isRootFolder() {
-		return getFolderId().equals(DTProperties.ROOT_FOLDER_UUID);
+		return getFolderId().equals(BLTProperties.ROOT_FOLDER_UUID);
 	}
 
 
@@ -92,7 +92,7 @@ public class DiagnosticsFolderNode extends FolderNode {
 			log.debug(TAG+"createChildFolder:"+this.pathToRoot()+"->"+node.pathToRoot());
 			return node;
 		}
-		else if (DTProperties.PANEL_RESOURCE_TYPE.equals(res.getResourceType())) {
+		else if (BLTProperties.PANEL_RESOURCE_TYPE.equals(res.getResourceType())) {
 			node = new DiagnosticsNode(context,res,res.getName());
 			node.install(this);
 			log.debug(TAG+"createChildPanel:"+this.pathToRoot()+"->"+node.pathToRoot());
@@ -206,7 +206,7 @@ public class DiagnosticsFolderNode extends FolderNode {
 		public void actionPerformed(ActionEvent e) {
 			List <ProjectResource> resources = context.getProject().getResources();
 			for( ProjectResource panel : resources ) {
-				if( panel.getResourceType().equalsIgnoreCase(DTProperties.PANEL_RESOURCE_TYPE) &&
+				if( panel.getResourceType().equalsIgnoreCase(BLTProperties.PANEL_RESOURCE_TYPE) &&
 					panel.getData().length!=16) {
 					log.info("   --- deleting panel "+panel.getResourceId()+" "+panel.getName()+" illegal contents----"); 
 					context.getProject().deleteResource(panel.getResourceId());
@@ -214,12 +214,12 @@ public class DiagnosticsFolderNode extends FolderNode {
 			}
 			resources = context.getProject().getResources();
 			for( ProjectResource res : resources ) {
-				if( res.getResourceType().equalsIgnoreCase(DTProperties.MODEL_RESOURCE_TYPE)) {
+				if( res.getResourceType().equalsIgnoreCase(BLTProperties.MODEL_RESOURCE_TYPE)) {
 					log.info("Found model resource "+res.getResourceId()+" "+res.getName()+"(parent="+res.getParentUuid()+")");
 					boolean hasParent = false;
 					List <ProjectResource> panels = context.getProject().getResources();
 					for( ProjectResource panel : panels ) {
-						if( panel.getResourceType().equalsIgnoreCase(DTProperties.PANEL_RESOURCE_TYPE) &&
+						if( panel.getResourceType().equalsIgnoreCase(BLTProperties.PANEL_RESOURCE_TYPE) &&
 							panel.getDataAsUUID().equals(res.getParentUuid())) {
 							hasParent = true;
 							break;
@@ -305,7 +305,7 @@ public class DiagnosticsFolderNode extends FolderNode {
 				byte[] bytes = uuid.toString().getBytes();
 				
 				ProjectResource resource = new ProjectResource(newId,
-						DTProperties.MODULE_ID, DTProperties.PANEL_RESOURCE_TYPE,
+						BLTProperties.MODULE_ID, BLTProperties.PANEL_RESOURCE_TYPE,
 						newName, ApplicationScope.GATEWAY, bytes);
 				resource.setParentUuid(getFolderId());
 				context.updateResource(resource);

@@ -3,7 +3,7 @@
  */
 package com.ils.blt.client;
 
-import com.ils.diagnostics.common.DTProperties;
+import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.client.model.ClientContext;
 import com.inductiveautomation.ignition.common.expressions.ExpressionFunctionManager;
@@ -18,7 +18,7 @@ public class BLTClientHook implements ClientModuleHook {
 	 */
 	@Override
 	public void initializeScriptManager(ScriptManager mgr) {
-		mgr.addScriptModule(DTProperties.GRAPHICS_SCRIPT_PACKAGE,GraphicsScriptFunctions.class);
+		mgr.addScriptModule(BLTProperties.GRAPHICS_SCRIPT_PACKAGE,GraphicsScriptFunctions.class);
 	}
 
 	@Override

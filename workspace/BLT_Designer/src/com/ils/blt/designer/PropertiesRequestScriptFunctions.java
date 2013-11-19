@@ -3,7 +3,7 @@
  */
 package com.ils.blt.designer;
 
-import com.ils.diagnostics.common.DTProperties;
+import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -33,7 +33,7 @@ public class PropertiesRequestScriptFunctions  {
 		String result = "";
 		try {
 			result = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					DTProperties.MODULE_ID, "getBlockAttributes",key,json );
+					BLTProperties.MODULE_ID, "getBlockAttributes",key,json );
 		}
 		catch(Exception ge) {
 			log.warn(TAG+"getAttributes: GatewayException ("+ge.getMessage()+")");
@@ -58,7 +58,7 @@ public class PropertiesRequestScriptFunctions  {
 		String result = "";
 		try {
 			result = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					DTProperties.MODULE_ID, "getConnectionAttributes",key,json );
+					BLTProperties.MODULE_ID, "getConnectionAttributes",key,json );
 		}
 		catch(Exception ge) {
 			log.info(TAG+"getConnectionAttributes: GatewayException ("+ge.getMessage()+")");
@@ -84,7 +84,7 @@ public class PropertiesRequestScriptFunctions  {
 		String result = "";
 		try {
 			result = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					DTProperties.MODULE_ID, "getConnections",key,json );
+					BLTProperties.MODULE_ID, "getConnections",key,json );
 		}
 		catch(Exception ge) {
 			log.info(TAG+"getConnections: GatewayException ("+ge.getMessage()+")");

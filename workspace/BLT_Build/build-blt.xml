@@ -111,7 +111,7 @@
 		    	includes="**/*.gif,**/*.png,**/*.properties,**/*.xml,**/*.ico" />
 		</copy>
 	</target>
-	<target name ="jgx.jar" description="Create a jar for the JGraphx Diagnostics library">
+	<target name ="jgx.jar" description="Create a jar for the JGraphx extension library">
     	<jar jarfile="${jar.dir}/${jgx.jar.name}">
     		<fileset dir="${jgx.bin.dir}">
     			<include name="com/ils/**"/>
@@ -132,7 +132,7 @@
 		<antcall target="MakeProject">
 			<param name="modName" value="${BLTModule.name}_Common" />
 			<param name="sourceDirFolder" value="${BLTModule.name}_Common" />
-			<param name="jarName" value="diagnostics-common" />
+			<param name="jarName" value="blt-common" />
 			<param name="javacSource" value="1.6" />
 			<param name="module.build.classpath" value="${BLTModule.name}_Common.classpath"/>
 		</antcall>
@@ -141,7 +141,7 @@
 		<antcall target="MakeProject">
 			<param name="modName" value="${BLTModule.name}_Gateway" />
 			<param name="sourceDirFolder" value="${BLTModule.name}_Gateway" />
-			<param name="jarName" value="diagnostics-gateway" />
+			<param name="jarName" value="blt-gateway" />
 			<param name="javacSource" value="1.6" />
 			<param name="[replace]BLTGateway.properties:Meta.Version" value="${version.build}" />
 			<param name="[replace]BLTGateway.properties:Meta.ReleaseDate" value="${build.date}" />
@@ -152,7 +152,7 @@
 		<antcall target="MakeProject">
 			<param name="modName" value="${BLTModule.name}_Client" />
 			<param name="sourceDirFolder" value="${BLTModule.name}_Client" />
-			<param name="jarName" value="diagnostics-client" />
+			<param name="jarName" value="blt-client" />
 			<param name="javacSource" value="1.6" />
 			<param name="module.build.classpath" value="${BLTModule.name}_Client.classpath"/>
 		</antcall>
@@ -161,7 +161,7 @@
 		<antcall target="MakeProject">
 			<param name="modName" value="${BLTModule.name}_Designer" />
 			<param name="sourceDirFolder" value="${BLTModule.name}_Designer" />
-			<param name="jarName" value="diagnostics-designer" />
+			<param name="jarName" value="blt-designer" />
 			<param name="javacSource" value="1.6" />
 			<param name="module.build.classpath" value="${BLTModule.name}_Designer.classpath"/>
 		</antcall>
@@ -173,24 +173,24 @@
 		<mkdir dir="${basedir}/BLT_Build/modules" />
 		
 
-		<copy file="${basedir}/BLT_Build/module-diag.xml" tofile="${basedir}/BLT_Build/temp_modl/module.xml" overwrite="true" />
+		<copy file="${basedir}/BLT_Build/module-blt.xml" tofile="${basedir}/BLT_Build/temp_modl/module.xml" overwrite="true" />
 
 		<replace file="${basedir}/BLT_Build/temp_modl/module.xml" token="@NAME@" value="${BLTModule.name}" />
 		<replace file="${basedir}/BLT_Build/temp_modl/module.xml" token="@DESCRIPTION@" value="${BLTModule.description}" />
 		<replace file="${basedir}/BLT_Build/temp_modl/module.xml" token="@VERSION@" value="${BLTModule.version}" />
 
 		<!-- Pack200 and then copy the designer, client jars -->
-		<pack200 src="${basedir}/BLT_Build/bin/${BLTModule.name}_Client/dist/diagnostics-client.jar" destfile="${basedir}/BLT_Build/temp_modl/diagnostics-client.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
-		<pack200 src="${basedir}/BLT_Build/bin/${BLTModule.name}_Designer/dist/diagnostics-designer.jar" destfile="${basedir}/BLT_Build/temp_modl/diagnostics-designer.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
-		<pack200 src="${basedir}/BLT_Build/bin/${BLTModule.name}_Common/dist/diagnostics-common.jar" destfile="${basedir}/BLT_Build/temp_modl/diagnostics-common.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
+		<pack200 src="${basedir}/BLT_Build/bin/${BLTModule.name}_Client/dist/blt-client.jar" destfile="${basedir}/BLT_Build/temp_modl/blt-client.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
+		<pack200 src="${basedir}/BLT_Build/bin/${BLTModule.name}_Designer/dist/blt-designer.jar" destfile="${basedir}/BLT_Build/temp_modl/blt-designer.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
+		<pack200 src="${basedir}/BLT_Build/bin/${BLTModule.name}_Common/dist/blt-common.jar" destfile="${basedir}/BLT_Build/temp_modl/blt-common.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		<pack200 src="${basedir}/../../external/lib/ils-common.jar" destfile="${basedir}/BLT_Build/temp_modl/ils-common.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		<pack200 src="${basedir}/../../external/lib/jgraphx-2.1.0.jar" destfile="${basedir}/BLT_Build/temp_modl/jgraphx-2.1.0.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		<pack200 src="${basedir}/../../external/lib/gson-2.2.2.jar" destfile="${basedir}/BLT_Build/temp_modl/gson-2.2.2.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		<pack200 src="${basedir}/../../external/lib/jgx.jar" destfile="${basedir}/BLT_Build/temp_modl/jgx.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		
 		<!-- Copy gateway jar -->
-		<copy file="${basedir}/BLT_Build/bin/${BLTModule.name}_Gateway/dist/diagnostics-gateway.jar" todir="${basedir}/BLT_Build/temp_modl/" />
-		<copy file="${basedir}/BLT_Build/bin/${BLTModule.name}_Common/dist/diagnostics-common.jar" todir="${basedir}/BLT_Build/temp_modl/" />
+		<copy file="${basedir}/BLT_Build/bin/${BLTModule.name}_Gateway/dist/blt-gateway.jar" todir="${basedir}/BLT_Build/temp_modl/" />
+		<copy file="${basedir}/BLT_Build/bin/${BLTModule.name}_Common/dist/blt-common.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		
 		<!-- Copy dependent jars -->
 		<copy file="${basedir}/../../external/lib/ils-common.jar" todir="${basedir}/BLT_Build/temp_modl/" />
