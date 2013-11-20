@@ -2,7 +2,7 @@
 
 	<import file="${basedir}/BLT_Build/build.xml"/>
 
-	<property name="version.build" value="2" />	
+	<property name="version.build" value="4" />	
 	<!-- Change version.beta value to "" for release builds -->
 	<property name="version.beta" value="-development" />		
 	<property name="BLTModule.version" value="1.0.2.${version.build}" />
@@ -14,6 +14,9 @@
 	<property name="common.jar.name" value="ils-common.jar" />
 	<property name="common.bin.dir" value="${root.dir}/common/workspace/ILS_Common/bin" />
 	<property name="common.src.dir" value="${root.dir}/common/workspace/ILS_Common/src" />
+	<property name="block.jar.name" value="block-definition.jar" />
+	<property name="block.bin.dir" value="${root.dir}/block/workspace/Block/bin" />
+	<property name="block.src.dir" value="${root.dir}/block/workspace/Block/src" />
 	<property name="jgx.jar.name" value="jgx.jar" />
 	<property name="jgx.bin.dir" value="${root.dir}/jgx/workspace/JGX/bin" />
 	<property name="jgx.src.dir" value="${root.dir}/jgx/workspace/JGX/src" />
@@ -27,6 +30,13 @@
 			 <include name="*.jar"/>
 		</fileset>
 	   <pathelement path="${build.dir}"/>
+	</path>
+	
+	<!-- Block Definition jar classpath -->
+	<!-- The gateway, designer and clients depend on the Common -->
+	<path id="BlockDefinition.classpath">
+		<path refid="ExternalJar.classpath" />
+		<path refid="Ignition_SDK.classpath" />
 	</path>
 	
 	<!-- Common jar classpath -->
@@ -54,11 +64,22 @@
 		<path refid="ExternalJar.classpath" />
 		<fileset dir="${basedir}/BLT_Build/bin/BLT_Common/dist/" includes="*.jar" />
 		<fileset dir="${basedir}/BLT_Build/bin/${BLTModule.name}_Client/dist/" includes="*.jar" />
+		<fileset dir="${jar.dir}" includes="${block.jar.name}" />
 	</path>
 
 	<!-- This target will build the toolkit module and deploy it to the local Ignition gateway -->
 		<target name="BuildAndInstallModule" depends="clean, build, deploy" />
-
+	
+	<!-- Clean Block Definition -->
+	<target name="clean.block" >
+		<mkdir dir="${block.bin.dir}"/>
+		<delete file="${jar.dir}/${block.jar.name}" />
+		<delete>
+		    <fileset dir="${block.bin.dir}">
+		        <include name="**/*.class"/>
+		    </fileset>
+		</delete>
+	</target>
 	<!-- Clean ILS common -->
 	<target name="clean.common" >
 		<mkdir dir="${common.bin.dir}"/>
@@ -80,12 +101,23 @@
 		</delete>
 	</target>
 	<!-- Cleans all previously built files -->
-	<target name="clean" depends="clean.common,clean.jgx" description="Remove existing build products" >
+	<target name="clean" depends="clean.common,clean.block,clean.jgx" description="Remove existing build products" >
 		<delete dir="${basedir}/BLT_Build/bin" />
 		<delete dir="${basedir}/BLT_Build/modules" />
 		<delete dir="${basedir}/BLT_Build/release" />
 	</target>	
 	
+	<!-- Compile the Block Definition library -->
+	<target name="block.build" description="Compile the source">
+		<mkdir dir="${block.bin.dir}"/>
+		<javac destdir="${block.bin.dir}" source="1.6" target="1.6" debug="true" includeantruntime="false">
+			<src path="${block.src.dir}"/>
+			<classpath refid="BlockDefinition.classpath"/>
+		</javac>
+	</target>
+	<target name ="block.jar" description="Create a jar for the Block Definition library">
+		<jar destfile="${jar.dir}/${block.jar.name}" includes="**/*.class" basedir="${block.bin.dir}"/>
+	</target>
 	
 	<!-- Compile the Common library -->
 	<target name="common.build" description="Compile the source">
@@ -120,7 +152,7 @@
 	</target>
 	
 	<!-- Builds the toolkit module jars and the final .modl file -->
-	<target name="build" depends="common.build,common.jar,jgx.build,jgx.jar" description="Compile the source">
+	<target name="build" depends="common.build,block.build,block.jar,common.jar,jgx.build,jgx.jar" description="Compile the source">
 		<echo message="${BLTModule.name} ${BLTModule.version}" />	
 		<delete dir="${basedir}/BLT_Build/temp_modl" />	
 		
@@ -187,6 +219,8 @@
 		<pack200 src="${basedir}/../../external/lib/jgraphx-2.1.0.jar" destfile="${basedir}/BLT_Build/temp_modl/jgraphx-2.1.0.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		<pack200 src="${basedir}/../../external/lib/gson-2.2.2.jar" destfile="${basedir}/BLT_Build/temp_modl/gson-2.2.2.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		<pack200 src="${basedir}/../../external/lib/jgx.jar" destfile="${basedir}/BLT_Build/temp_modl/jgx.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
+		<pack200 src="${basedir}/../../external/lib/block-definition.jar" destfile="${basedir}/BLT_Build/temp_modl/block-definition.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
+		<pack200 src="${basedir}/../../external/lib/guava-15.0.jar" destfile="${basedir}/BLT_Build/temp_modl/guava-15.0.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		
 		<!-- Copy gateway jar -->
 		<copy file="${basedir}/BLT_Build/bin/${BLTModule.name}_Gateway/dist/blt-gateway.jar" todir="${basedir}/BLT_Build/temp_modl/" />
@@ -197,6 +231,8 @@
 		<copy file="${basedir}/../../external/lib/jgraphx-2.1.0.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy file="${basedir}/../../external/lib/jgx.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy file="${basedir}/../../external/lib/gson-2.2.2.jar" todir="${basedir}/BLT_Build/temp_modl/" />
+		<copy file="${basedir}/../../external/lib/block-definition.jar" todir="${basedir}/BLT_Build/temp_modl/" />
+		<copy file="${basedir}/../../external/lib/guava-15.0.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 
 		<!-- Copy license file and javadoc into the bundle -->
 		<mkdir dir="${basedir}/BLT_Build/doc" />

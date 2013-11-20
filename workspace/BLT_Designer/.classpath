@@ -14,5 +14,7 @@
 	<classpathentry kind="lib" path="/External/lib/gson-2.2.2.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/BLT_Client"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/BLT_Common"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/BlockDef"/>
+	<classpathentry kind="lib" path="/External/lib/guava-15.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

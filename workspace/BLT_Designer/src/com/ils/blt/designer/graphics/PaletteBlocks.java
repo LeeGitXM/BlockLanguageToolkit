@@ -4,19 +4,50 @@
 package com.ils.blt.designer.graphics;
 
 import javax.swing.ImageIcon;
+
+import com.ils.block.BasicBlock;
+import com.ils.block.classes.ClassList;
 import com.ils.jgx.editor.EditorPalette;
 import com.ils.jgx.editor.JgxPalette;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
+
 
 /**
  *  Define the blocks that will appear in the Diagnostics palette.
  */
 public class PaletteBlocks  {
+	public final static String TAG = "PaletteBlocks";
+	public static LoggerEx log = LogUtil.getLogger(PaletteBlocks.class.getPackage().getName());
 
 	/**
 	 * Add templates to the supplied palette. 
 	 * @param palete the EditorPalette that we are populating
 	 */
 	public static void populatePalette(EditorPalette palette) {
+		log.infof("%s: populatePalette ...",TAG);
+		ClassList lister = new ClassList(BasicBlock.class);
+		try {
+			lister.getClasses("com.ils.block.classes");
+		}
+		catch(Exception ex) {
+			log.infof("%s: populatePalette getClasses exception(%s)",TAG,ex.getMessage());
+		}
+		/*
+		ClassList lister = new ClassList(BasicBlock.class);
+		List<Class<?>> list = lister.getAllAnnotatedClasses(ExecutableBlock.class);
+		log.info(TAG+"populatePalette ... list count  = "+list.size());
+		for( Class<?> clss:list ) {
+			log.info(TAG+"populatePalette annotated "+clss.getCanonicalName());
+		}
+		*/
+		/*
+		List<ClassInfo> infolist = lister.getAllClasses();
+		log.info(TAG+"populatePalette ... info count  = "+infolist.size());
+		for( ClassInfo clssinfo:infolist ) {
+			log.info(TAG+"populatePalette all "+clssinfo.getName());
+		}
+		*/
 		// Adds some template cells for dropping into the graph
 		// NOTE:  First string is the label in the palette
 		//        Next string is style properties

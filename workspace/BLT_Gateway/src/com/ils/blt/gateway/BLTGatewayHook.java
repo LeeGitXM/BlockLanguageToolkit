@@ -28,7 +28,7 @@ import com.inductiveautomation.ignition.gateway.project.ProjectListener;
  * At present this code does nothing.
  */
 public class BLTGatewayHook extends AbstractGatewayModuleHook implements ProjectListener {
-	public static String TAG = "DTGatewayHook";
+	public static String TAG = "BLTGatewayHook";
 	public static String BUNDLE_NAME = "diagnostics";// Properties file is sct.properties
 	private final Hashtable<Long,GatewayRpcDispatcher> dispatchers;
 	private ModelResourceManager mrm = null;

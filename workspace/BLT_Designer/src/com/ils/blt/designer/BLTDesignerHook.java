@@ -48,14 +48,14 @@ import com.jidesoft.docking.Workspace;
 import com.mxgraph.swing.util.mxSwingConstants;
 import com.mxgraph.util.mxConstants;
 
-public class DTDesignerHook extends AbstractDesignerModuleHook implements DesignerModuleHook {
-	private static final String TAG = "DTDesignerHook:";
+public class BLTDesignerHook extends AbstractDesignerModuleHook implements DesignerModuleHook {
+	private static final String TAG = "BLTDesignerHook:";
 	private DiagnosticsFolderNode rootNode;
 	private DesignerContext context = null;
 	private JFrame paletteFrame = null;
 	private final LoggerEx log;
 	
-	public DTDesignerHook() {
+	public BLTDesignerHook() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 	}
 	
@@ -65,7 +65,7 @@ public class DTDesignerHook extends AbstractDesignerModuleHook implements Design
 		MenuBarMerge merge = new MenuBarMerge(BLTProperties.MODULE_ID);  // s suggested in javadocs
 		merge.addSeparator();
 
-		Action panelResetAction = new AbstractAction("Reset Panels for Toolkit") {
+		Action panelResetAction = new AbstractAction("Reset Layout for Diagrams") {
 			private static final long serialVersionUID = 5374557387733312464L;
 			public void actionPerformed(ActionEvent ae) {
 				resetPanelsForDiagnostics();
@@ -76,7 +76,7 @@ public class DTDesignerHook extends AbstractDesignerModuleHook implements Design
 		resetPanels.add(panelResetAction);
 		merge.add(WellKnownMenuConstants.VIEW_MENU_LOCATION, resetPanels);
 		
-		Action paletteAction = new AbstractAction("Diagnostics Toolkit Palette") {
+		Action paletteAction = new AbstractAction("Block Diagram Palette") {
 			private static final long serialVersionUID = 5374557387733312463L;
 			public void actionPerformed(ActionEvent ae) {
 				displayPalette();
