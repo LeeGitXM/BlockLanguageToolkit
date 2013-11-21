@@ -21,7 +21,6 @@
 		<jar scope="G">blt-common.jar</jar>
 		<jar scope="GD">block-definition.jar</jar>
 		<jar scope="GD">gson-2.2.2.jar</jar>
-		<jar scope="GD">guava-15.0.jar</jar>
 		<jar scope="GCD">ils-common.jar</jar>
 		<jar scope="GCD">jgraphx-2.1.0.jar</jar>
 		<jar scope="CD">jgx.jar</jar>

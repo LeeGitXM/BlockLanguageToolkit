@@ -3,6 +3,8 @@
  */
 package com.ils.blt.designer;
 
+import org.apache.log4j.Level;
+
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -91,5 +93,16 @@ public class PropertiesRequestScriptFunctions  {
 		}
 		log.debug(TAG+"getConnections: returned .. \n"+result);
 		return result;
+	}
+	/**
+	 * Set the level of logging in the designer.
+	 * @param name logger name, e.g. "com.ils.diagnostics.designer". This is a package name.
+	 * @param lvl logging level a string, e.g. INFO, DEBUG, TRACE
+	 */
+	public static void setLoggingLevel(String name,String lvl) {
+		LoggerEx logger = LogUtil.getLogger(name);
+		Level level = Level.toLevel(lvl);
+		logger.getLogger().setLevel(level);
+		log.infof("%s: logger %s level set to %s",TAG,name,lvl);
 	}
 }

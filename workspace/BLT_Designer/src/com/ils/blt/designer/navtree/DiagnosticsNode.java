@@ -7,7 +7,6 @@ import java.awt.event.ActionEvent;
 import java.util.List;
 import java.util.UUID;
 
-import javax.swing.JInternalFrame;
 import javax.swing.JPopupMenu;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
@@ -26,7 +25,6 @@ import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.common.xmlserialization.SerializationException;
-import com.inductiveautomation.ignition.common.xmlserialization.serialization.XMLSerializer;
 import com.inductiveautomation.ignition.designer.UndoManager;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
@@ -51,25 +49,27 @@ public class DiagnosticsNode extends AbstractResourceNavTreeNode
 	private final SaveAction saveAction;
 	private DesignerContext context;
 	private DiagnosticsFrame frame = null;
-	private final String name;
-	private final UUID uuid;
+	private ProjectResource modelResource = null;
+	
+	private String name;
+	private final UUID parentUUID;   // Parent resource, a navtree folder
 	private long resourceId;
 	private boolean isFrameOpen = false;
 
 	/**
-	 * Constructor. A DiagnosticsNode always has a child DiagnosticsWorkspace.
-	 *      This is either re-constituted at this time based on resource Id, 
-	 *      or is created.
+	 * Constructor. A DiagnosticsNode is created initially without child resources.
+	 *      The model resource either pre-exists or is created when a new frame is
+	 *      instantiated.
 	 * @param context designer context
-	 * @param resource project resource that 
+	 * @param resource panel resource 
 	 * @param nodeName node name
 	 */
-	public DiagnosticsNode(DesignerContext context,ProjectResource resource,String nodeName) {
+	public DiagnosticsNode(DesignerContext context,ProjectResource resource) {
 		BundleUtil.get().addBundle(NAV_PREFIX,getClass(),BUNDLE_NAME);
 		this.context = context;
 		this.resourceId = resource.getResourceId();
-		this.uuid = UUID.randomUUID();
-		this.name = nodeName;	
+		this.parentUUID = resource.getParentUuid();
+		this.name = resource.getName();	
 
 		setName(name);
 		setText(name);
@@ -84,67 +84,62 @@ public class DiagnosticsNode extends AbstractResourceNavTreeNode
 	}
 	
 	/**
-	 * Search existing frames for the workspace, else create a new one.
+	 * We have been asked to open a visible frame. If our frame exists,
+	 * then open it, otherwise create one. Once open, search model
+	 * resources and define the model. If not model resource exists, then
+	 * create a new one.
 	 */
-	public void findOrCreateFrame() {
+	public void openFrame() {
 		DiagnosticsWorkspace workspace = DiagnosticsWorkspace.getInstance();
-		JInternalFrame[] frames = workspace.getAllFrames();
-		frame = null;
-		for(JInternalFrame frm:frames) {
-			if( name.equals(frm.getName()) ) {
-				if( frm instanceof DiagnosticsFrame ) frame = (DiagnosticsFrame)frm;
-				break;
-			}
-		}
-		// If we haven't found one, create one
+		// First the frame ... if we don't know about it, then it shouldn't exist.
 		if( frame==null ) {
+			// Create it
 			TreePath treePath = pathToRoot();
 			String tpath = treePathToString(treePath);
-			log.debug(TAG+"findOrCreateFrame from:"+tpath);
+			log.debugf("%s: openFrame from: %s",TAG,tpath);
 			frame = new DiagnosticsFrame(context,name,tpath);
-		}
-		frame.addInternalFrameListener(this);
+			frame.addInternalFrameListener(this);
+		}			
+		workspace.open(frame);
 		
-		// Next search existing resources to see if we have a match.
-		// If we find one, then set the model in the frame
-		List <ProjectResource> resources = context.getProject().getResources();
-		long resid = -1;
-		boolean resourceExists = false;
-		for( ProjectResource res : resources ) {
-			if( uuid.equals(res.getParentUuid()) ) {    // parentUUID can be null
-				// Deserialize the model
-				// TODO
-				resid = res.getResourceId();
-				resourceExists = true;
-				break;
+		// Next the model resource. If we don't have one, then search.
+		// (In case we were notified before we existed).
+		// Once we have one, then set the model in the frame
+		if( modelResource ==null ) {
+			List <ProjectResource> resources = context.getProject().getResources();
+			long resid = -1;
+			for( ProjectResource res : resources ) {
+				if( res.getResourceType().equalsIgnoreCase(BLTProperties.MODEL_RESOURCE_TYPE ) &&
+						res.getParentUuid().equals(parentUUID)   )       {   
+					modelResource = res;
+					break;
+				}
 			}
-		}
-		// If there is no existing resource, create one with the supplied name
-		if( !resourceExists ) {
-			try {
-				resid = context.newResourceId();
-				String model = frame.getModel();
-				log.debug(TAG+"NEW MODEL = \n"+model);
-				XMLSerializer s = context.createSerializer();
-				byte[] bytes = s.serializeBinary(model, true);
-				ProjectResource resource = new ProjectResource(resid,
-						BLTProperties.MODULE_ID, BLTProperties.MODEL_RESOURCE_TYPE,
-						name, ApplicationScope.GATEWAY, bytes);
-				resource.setParentUuid(uuid);
-				context.updateResource(resource);
-				log.info(String.format("%s: create frame %d",TAG,resid));
-			}
-			catch(SerializationException se) {
-				log.warn(String.format("%s.findOrCreateFrame: Unable to serialize model (%s)",TAG,se.getMessage()));
-			}
-			catch(Exception ex) {
-				log.warn(String.format("%s.findOrCreateFrame: Exception (%s)",TAG,ex.getMessage()));
+			// If there is no existing resource, create one with the supplied name
+			if( modelResource == null ) {
+				try {
+					resid = context.newResourceId();
+					String model = frame.getModel();
+					log.debugf("%s: openFrame - new empty model = %s",TAG,model);
+					ProjectResource resource = new ProjectResource(resid,
+							BLTProperties.MODULE_ID, BLTProperties.MODEL_RESOURCE_TYPE,
+							name, ApplicationScope.GATEWAY, model.getBytes());
+					resource.setParentUuid(parentUUID);
+					context.updateResource(resource);  // This will cause an update.
+					log.infof("%s: openFrame: created frame %d",TAG,resid);
+				}
+				catch(SerializationException se) {
+					log.warnf("%s: openFrame Unable to serialize model (%s)",TAG,se.getMessage());
+				}
+				catch(Exception ex) {
+					log.warnf("%s: openFrame:  Exception (%s)",TAG,ex.getMessage());
+				}
 			}
 		}
 		else {
-			log.info(String.format("%s: find frame %d",TAG,resid));
+			log.info(String.format("%s: find frame %d",TAG,modelResource.getResourceId()));
+			frame.setResourceId(modelResource.getResourceId());
 		}
-		frame.setResourceId(resid);
 	}
 	
 	
@@ -171,10 +166,13 @@ public class DiagnosticsNode extends AbstractResourceNavTreeNode
 		}
 	}
 	
+	/**
+	 * Before deleting ourself, delete the frame and model, if they exist.
+	 * The children aren't AbstractNavTreeNodes ... (??)
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public void doDelete(List<? extends AbstractNavTreeNode> children,DeleteReason reason) {
-		// We have no children -- just place on the undo queue.
 		ResourceDeleteAction delete = new ResourceDeleteAction(context,
 				(List<AbstractResourceNavTreeNode>) children,
 				reason.getActionWordKey(), NAV_PREFIX+".DiagramNoun");
@@ -187,7 +185,6 @@ public class DiagnosticsNode extends AbstractResourceNavTreeNode
 	public ProjectResource getProjectResource() {
 		return context.getProject().getResource(resourceId);
 	}
-	public UUID getUUID() { return this.uuid; }
 
 	@Override
 	public String getWorkspaceName() {
@@ -206,8 +203,7 @@ public class DiagnosticsNode extends AbstractResourceNavTreeNode
 	
 	@Override
 	public void onDoubleClick() {
-		DiagnosticsWorkspace workspace = DiagnosticsWorkspace.getInstance();
-		workspace.open(frame);
+		openFrame();
 	}
 	@Override
 	public void onEdit(String newTextValue) {
@@ -238,15 +234,29 @@ public class DiagnosticsNode extends AbstractResourceNavTreeNode
 		context.removeProjectChangeListener(this);
 	}
 	
+	/**
+	 * We have received notice of an updated or new model resource.
+	 * If the frame is open, then we need to update the visible model.
+	 * @param res
+	 */
+	private void updateModel(ProjectResource res) {
+		this.modelResource = res;
+		if( frame!=null ) {
+
+			log.debugf("%s: updateModel: Deserializing ..",TAG);
+			String xml = new String(res.getData());
+			log.debugf("%s: updateModel: res = %s",TAG,xml);
+			frame.setModel(xml);
+			frame.setResourceId(res.getResourceId());
+		}
+	}
+	
 	private void closeFrame() {
 		DiagnosticsWorkspace workspace = DiagnosticsWorkspace.getInstance();
 		workspace.close(frame);
 	}
 	
-	private void openFrame() {
-		DiagnosticsWorkspace workspace = DiagnosticsWorkspace.getInstance();
-		workspace.open(frame);
-	}
+
 	
 	// Set the internal flag that markw wheter the frame is open or not.
 	// Set the icon acccordingly.
@@ -260,7 +270,8 @@ public class DiagnosticsNode extends AbstractResourceNavTreeNode
 	/**
 	 * The updates that we are interested in are:
 	 *    1) Name changes to this resource
-	 *    2) Addition of a DTProperties.MODEL_RESOURCE_TYPE with this as a parent.
+	 * We can ignore deletions because we delete the model resource
+	 * by deleting the panel resource.
 	 */
 	@Override
 	public void projectUpdated(Project diff) {
@@ -272,10 +283,13 @@ public class DiagnosticsNode extends AbstractResourceNavTreeNode
 		}
 		setItalic(context.getProject().isResourceDirty(resourceId));
 	}
-
+	/**
+	 * The updates that we are interested in are:
+	 *    1) Addition of a DTProperties.MODEL_RESOURCE_TYPE with same parent as this.
+	 *    2) Resource name change, we change ours to keep in sync.
+	 */
 	@Override
-	public void projectResourceModified(ProjectResource res,
-			ResourceModification changeType) {
+	public void projectResourceModified(ProjectResource res,ResourceModification changeType) {
 		log.debug(TAG+"projectModified: "+res.getResourceId()+" "+res.getResourceType()+" "+res.getModuleId()+" ("+res.getName()+
 				":"+res.getParentUuid()+")");
 		if (res.getResourceId() == resourceId
@@ -284,6 +298,10 @@ public class DiagnosticsNode extends AbstractResourceNavTreeNode
 			setName(res.getName());
 			setItalic(true);
 			refresh();
+		}
+		// Watch for a model resource that is our "child"
+		else if( res.getResourceType().equalsIgnoreCase(BLTProperties.MODEL_RESOURCE_TYPE) && res.getParentUuid().equals(parentUUID) ) {
+			updateModel(res);
 		}
 	}
 	/**

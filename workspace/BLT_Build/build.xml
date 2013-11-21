@@ -34,7 +34,6 @@
 	<path id="ExternalJar.classpath">
 		 <fileset dir="${basedir}/../../external/lib" includes="ils*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="gson-*.jar" />
-		 <fileset dir="${basedir}/../../external/lib" includes="guava-*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="jgraphx-*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="jgx*.jar" />
 	</path>

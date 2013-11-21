@@ -3,10 +3,13 @@
  */
 package com.ils.blt.designer.graphics;
 
+import java.util.List;
+
 import javax.swing.ImageIcon;
 
-import com.ils.block.BasicBlock;
+import com.ils.block.annotation.ExecutableBlock;
 import com.ils.block.classes.ClassList;
+import com.ils.blt.common.BLTProperties;
 import com.ils.jgx.editor.EditorPalette;
 import com.ils.jgx.editor.JgxPalette;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -26,28 +29,14 @@ public class PaletteBlocks  {
 	 */
 	public static void populatePalette(EditorPalette palette) {
 		log.infof("%s: populatePalette ...",TAG);
-		ClassList lister = new ClassList(BasicBlock.class);
+		ClassList lister = new ClassList();
 		try {
-			lister.getClasses("com.ils.block.classes");
+			List<Class<?>> list = lister.getAnnotatedClasses(BLTProperties.BLOCK_JAR_NAME_PATTERN,ExecutableBlock.class);
 		}
 		catch(Exception ex) {
 			log.infof("%s: populatePalette getClasses exception(%s)",TAG,ex.getMessage());
 		}
-		/*
-		ClassList lister = new ClassList(BasicBlock.class);
-		List<Class<?>> list = lister.getAllAnnotatedClasses(ExecutableBlock.class);
-		log.info(TAG+"populatePalette ... list count  = "+list.size());
-		for( Class<?> clss:list ) {
-			log.info(TAG+"populatePalette annotated "+clss.getCanonicalName());
-		}
-		*/
-		/*
-		List<ClassInfo> infolist = lister.getAllClasses();
-		log.info(TAG+"populatePalette ... info count  = "+infolist.size());
-		for( ClassInfo clssinfo:infolist ) {
-			log.info(TAG+"populatePalette all "+clssinfo.getName());
-		}
-		*/
+
 		// Adds some template cells for dropping into the graph
 		// NOTE:  First string is the label in the palette
 		//        Next string is style properties

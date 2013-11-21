@@ -14,6 +14,9 @@ public interface BLTProperties   {
 	public final static String MODULE_ID = "block";     // See module-blt.xml
 	public final static String MODULE_NAME = "BLT";     // See build-blt.xml
 	
+	/** This is the name of the jar file containing block class definitions */
+	public final static String BLOCK_JAR_NAME_PATTERN = "block-definition";
+	
 	public final static String FOLDER_RESOURCE_TYPE    = "__folder";
 	public final static String MODEL_RESOURCE_TYPE    = "blt.model";
 	public final static String PANEL_RESOURCE_TYPE    = "blt.panel";
@@ -24,5 +27,5 @@ public interface BLTProperties   {
 	
 	/** This unique ID represents the root node in the project tree */
 	public static final UUID ROOT_FOLDER_UUID = UUID
-			.fromString("7aaad6b9-3140-4328-a844-51817eb47574");
+			.fromString("7bbbd6b9-3140-4328-a844-51817eb47574");
 }

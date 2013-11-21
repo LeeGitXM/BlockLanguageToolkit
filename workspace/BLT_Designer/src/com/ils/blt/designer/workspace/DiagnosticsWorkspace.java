@@ -35,8 +35,8 @@ import com.jidesoft.docking.DockingManager;
  * easy access from disparate parts of the application.
  */
 public class DiagnosticsWorkspace extends JDesktopPane implements ResourceWorkspace {
-	private static final long serialVersionUID = 4617016159409031941L;
-	private static final String TAG = "DiagnosticsWorkspace:";
+	private static final long serialVersionUID = 4627016159409031941L;
+	private static final String TAG = "DiagnosticsWorkspace";
 	private static final String KEY = "DiagnosticsWorkspace";
 	private static DiagnosticsWorkspace instance = null;
 	private static final int DEFAULT_WIDTH = 870;
@@ -146,7 +146,7 @@ public class DiagnosticsWorkspace extends JDesktopPane implements ResourceWorksp
 	 */
 	@Override
 	public void resetFrames(DockingManager dockingManager, DockableBarManager barManager) {
-		log.info(TAG+"resetFrames ...");
+		log.infof("%s: resetFrames ...",TAG);
 		DockableFrame props = dockingManager.getFrame("PropertyTablePanel");
 		props.setInitIndex(2);
 		props.setInitMode(DockContext.STATE_FRAMEDOCKED);

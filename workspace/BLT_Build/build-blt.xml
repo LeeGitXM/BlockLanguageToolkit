@@ -2,7 +2,7 @@
 
 	<import file="${basedir}/BLT_Build/build.xml"/>
 
-	<property name="version.build" value="4" />	
+	<property name="version.build" value="6" />	
 	<!-- Change version.beta value to "" for release builds -->
 	<property name="version.beta" value="-development" />		
 	<property name="BLTModule.version" value="1.0.2.${version.build}" />
@@ -220,7 +220,6 @@
 		<pack200 src="${basedir}/../../external/lib/gson-2.2.2.jar" destfile="${basedir}/BLT_Build/temp_modl/gson-2.2.2.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		<pack200 src="${basedir}/../../external/lib/jgx.jar" destfile="${basedir}/BLT_Build/temp_modl/jgx.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		<pack200 src="${basedir}/../../external/lib/block-definition.jar" destfile="${basedir}/BLT_Build/temp_modl/block-definition.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
-		<pack200 src="${basedir}/../../external/lib/guava-15.0.jar" destfile="${basedir}/BLT_Build/temp_modl/guava-15.0.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		
 		<!-- Copy gateway jar -->
 		<copy file="${basedir}/BLT_Build/bin/${BLTModule.name}_Gateway/dist/blt-gateway.jar" todir="${basedir}/BLT_Build/temp_modl/" />
@@ -232,7 +231,6 @@
 		<copy file="${basedir}/../../external/lib/jgx.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy file="${basedir}/../../external/lib/gson-2.2.2.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy file="${basedir}/../../external/lib/block-definition.jar" todir="${basedir}/BLT_Build/temp_modl/" />
-		<copy file="${basedir}/../../external/lib/guava-15.0.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 
 		<!-- Copy license file and javadoc into the bundle -->
 		<mkdir dir="${basedir}/BLT_Build/doc" />

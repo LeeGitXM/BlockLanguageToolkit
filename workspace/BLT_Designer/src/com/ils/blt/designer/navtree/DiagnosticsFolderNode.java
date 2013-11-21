@@ -93,10 +93,15 @@ public class DiagnosticsFolderNode extends FolderNode {
 			return node;
 		}
 		else if (BLTProperties.PANEL_RESOURCE_TYPE.equals(res.getResourceType())) {
-			node = new DiagnosticsNode(context,res,res.getName());
+			node = new DiagnosticsNode(context,res);
 			node.install(this);
 			log.debug(TAG+"createChildPanel:"+this.pathToRoot()+"->"+node.pathToRoot());
 			return node;
+		} 
+		// The Panel and the model have the same navtree parent. The model is not shown in the
+		// tree, nor is it instantiated here. Instead it is created as a child of the panel.
+		else if (BLTProperties.MODEL_RESOURCE_TYPE.equals(res.getResourceType())) {
+			return null;
 		} 
 		else {
 			throw new IllegalArgumentException();
@@ -215,14 +220,19 @@ public class DiagnosticsFolderNode extends FolderNode {
 			resources = context.getProject().getResources();
 			for( ProjectResource res : resources ) {
 				if( res.getResourceType().equalsIgnoreCase(BLTProperties.MODEL_RESOURCE_TYPE)) {
-					log.info("Found model resource "+res.getResourceId()+" "+res.getName()+"(parent="+res.getParentUuid()+")");
+					UUID modelUUID = res.getParentUuid();
+					log.info("Found model resource "+res.getResourceId()+" "+res.getName()+"(parent="+modelUUID+")");
+					// A model resource must have a corresponding panel with the same parents
 					boolean hasParent = false;
 					List <ProjectResource> panels = context.getProject().getResources();
 					for( ProjectResource panel : panels ) {
-						if( panel.getResourceType().equalsIgnoreCase(BLTProperties.PANEL_RESOURCE_TYPE) &&
-							panel.getDataAsUUID().equals(res.getParentUuid())) {
-							hasParent = true;
-							break;
+						if( panel.getResourceType().equalsIgnoreCase(BLTProperties.PANEL_RESOURCE_TYPE) ) {
+							UUID uuid = panel.getParentUuid();
+							log.info("Panel "+panel.getResourceId()+" "+panel.getName()+"("+uuid.toString()+")");
+							if( modelUUID.equals(uuid)) {
+								hasParent = true;
+								break;
+							}
 						}
 					}
 					if( !hasParent ) {
@@ -302,8 +312,11 @@ public class DiagnosticsFolderNode extends FolderNode {
 				String newName = BundleUtil.get().getString(NAV_PREFIX+".DefaultNewDiagramName");
 				if( newName==null) newName = "New Diag";  // Missing string resource
 				UUID uuid = UUID.randomUUID();
-				byte[] bytes = uuid.toString().getBytes();
-				
+				long most = uuid.getMostSignificantBits();
+		        long least = uuid.getLeastSignificantBits();
+		        byte[] bytes = longsToByteArray(most, least);
+				log.debugf("%s: DiagramAction. create new %s resource %d, %s (%d bytes)",TAG,BLTProperties.PANEL_RESOURCE_TYPE,
+						newId,uuid.toString(),bytes.length);
 				ProjectResource resource = new ProjectResource(newId,
 						BLTProperties.MODULE_ID, BLTProperties.PANEL_RESOURCE_TYPE,
 						newName, ApplicationScope.GATEWAY, bytes);
@@ -326,5 +339,27 @@ public class DiagnosticsFolderNode extends FolderNode {
 			log.info("Res: "+res.getResourceId()+" "+res.getResourceType()+" "+res.getModuleId()+" ("+res.getName()+
 					":"+res.getParentUuid()+")");
 		}
+	}
+	
+	private byte[] longsToByteArray(long most,long least) {
+		byte[] byteArray = new byte[16];
+	    int i = 0;
+	    while (i < 16)
+	    {
+	      int j;
+	      if (i == 0)
+	        j = (int)most >>> 32;
+	      else if (i == 4)
+	        j = (int)most;
+	      else if (i == 8)
+	        j = (int)least >>> 32;
+	      else
+	        j = (int)least;
+	      byteArray[(i++)] = ((byte)(j >>> 24));
+	      byteArray[(i++)] = ((byte)(j >>> 16));
+	      byteArray[(i++)] = ((byte)(j >>> 8));
+	      byteArray[(i++)] = ((byte)j);
+	    }
+	    return byteArray;
 	}
 }

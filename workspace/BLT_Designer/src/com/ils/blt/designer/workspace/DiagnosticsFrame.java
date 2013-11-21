@@ -120,12 +120,13 @@ public class DiagnosticsFrame extends JInternalFrame implements ResourceWorkspac
 	}
 	
 	public void setResourceId(long resid) { 
-		log.info(String.format("%s: setResourceId,%d", TAG,resid));
+		log.infof("%s: setResourceId,%d", TAG,resid);
 		this.resourceId = resid; 
 	}
 	
 	public void saveResource() {
 		byte[] data = getModel().getBytes();
+		log.infof("%s: saveResource %d (%s)", TAG,resourceId,getModel().getBytes());
 		context.updateResource(resourceId,data);
 	}
 
