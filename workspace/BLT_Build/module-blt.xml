@@ -19,7 +19,7 @@
 		<jar scope="D">blt-common.jar.pack.gz</jar>
 		<jar scope="G">blt-gateway.jar</jar>
 		<jar scope="G">blt-common.jar</jar>
-		<jar scope="GD">block-definition.jar</jar>
+		<jar scope="G">block-definition.jar</jar>
 		<jar scope="GD">gson-2.2.2.jar</jar>
 		<jar scope="GCD">ils-common.jar</jar>
 		<jar scope="GCD">jgraphx-2.1.0.jar</jar>

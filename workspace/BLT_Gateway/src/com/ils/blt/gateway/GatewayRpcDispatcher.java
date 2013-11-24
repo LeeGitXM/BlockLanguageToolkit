@@ -60,8 +60,9 @@ public class GatewayRpcDispatcher implements PropertiesRequestInterface,StatusRe
 		key = augmentKey(key);
 		log.debug(TAG+"getBlockAttributes: key=\""+key+"\"\n"+json);
 		
-		Hashtable<String,?> attributeTable = jsonToJava.jsonToTable(json);
-		Hashtable<String,?> results = PropertiesUpdateHandler.getInstance().getBlockAttributes(key,attributeTable);
+		@SuppressWarnings("unchecked")
+		Hashtable<String,Hashtable<String,String>> attributeTable = (Hashtable<String,Hashtable<String,String>>)jsonToJava.jsonToTable(json);
+		Hashtable<String,Hashtable<String,String>> results = PropertiesUpdateHandler.getInstance().getBlockAttributes(key,attributeTable);
 		log.debug(TAG+"created table\n"+results);
 		String gson =  javaToJson.tableToJson(results);
 		log.trace(TAG+"JSON="+gson);
@@ -73,8 +74,9 @@ public class GatewayRpcDispatcher implements PropertiesRequestInterface,StatusRe
 		key = augmentKey(key);
 		log.debug(TAG+"getConnectionAttributes: key=\""+key+"\"\n"+json);
 		
-		Hashtable<String,?> attributeTable = jsonToJava.jsonToTable(json);
-		Hashtable<String,?> results = PropertiesUpdateHandler.getInstance().getConnectionAttributes(key,attributeTable);
+		@SuppressWarnings("unchecked")
+		Hashtable<String,Hashtable<String,String>> attributeTable = (Hashtable<String,Hashtable<String,String>>)jsonToJava.jsonToTable(json);
+		Hashtable<String,Hashtable<String,String>> results = PropertiesUpdateHandler.getInstance().getConnectionAttributes(key,attributeTable);
 		log.debug(TAG+"created table\n"+results);
 		String gson =  javaToJson.tableToJson(results);
 		log.trace(TAG+"JSON="+gson);
@@ -90,11 +92,16 @@ public class GatewayRpcDispatcher implements PropertiesRequestInterface,StatusRe
 		return String.format("%s:%s", projectId.toString(),key);
 	}
 
-	/**
-	 * Do nothing ... the Gateway logging level is set via the Gateway browser interface.
-	 */
 	@Override
-	public void setLoggingLevel(String logger, String level) {
+	public String getPaletteBlockAttributes() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getPaletteConnectionAttributes() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	

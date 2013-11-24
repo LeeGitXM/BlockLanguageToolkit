@@ -33,10 +33,11 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
 import com.inductiveautomation.ignition.designer.navtree.model.ResourceDeleteAction;
 /**
  * A DiagnosticsNode appears as leaf node in the Diagnostics NavTree hierarchy.
- * It doesn't have any NavTree-type children, but it does have a nested object, 
- * a DiagnosticsFrame. The frame is responsible for rendering the diagram
- * based on the ModelResource. This class is responsible for maintaining the
- * corresponding project resource.
+ * It doesn't have any NavTree-type children, but it does have two nested objects, 
+ * a DiagnosticsFrame and a diag-model resource. 
+ * 
+ * The frame is responsible for rendering the diagram based on the model resource.
+ * The model can exist without the frame, but not vice-versa.
  */
 public class DiagnosticsNode extends AbstractResourceNavTreeNode 
 							implements ProjectChangeListener, InternalFrameListener  {

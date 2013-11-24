@@ -36,6 +36,7 @@
 		 <fileset dir="${basedir}/../../external/lib" includes="gson-*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="jgraphx-*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="jgx*.jar" />
+		 <fileset dir="${basedir}/../../external/lib" includes="block-def*.jar" />
 	</path>
 	
 	<!-- Generic Buildfile: Reference Via Antcalls -->

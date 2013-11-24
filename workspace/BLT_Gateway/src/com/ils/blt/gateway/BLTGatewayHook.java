@@ -83,7 +83,6 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook implements Project
 	public void initializeScriptManager(ScriptManager mgr) {
 		super.initializeScriptManager(mgr);
 		mgr.addScriptModule(BLTProperties.REPORTING_SCRIPT_PACKAGE,StatusReportingScriptFunctions.class);
-		PropertiesUpdateHandler.getInstance().setScriptManager(mgr);
 	}
 	
 	// ====================== Project Listener Interface ===================

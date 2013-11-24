@@ -4,15 +4,19 @@
 package com.ils.blt.common;
 
 /**
- *  This is the scripting interface describes the methods supplied by a handler
- *  that brings external class information to the JGraphX model.
+ *  This scripting interface describes methods that bring block attribute 
+ *  information to entities outside the Gateway scope.
+ *  
+ *  In every case the returned information is constructed in JSON as
+ *  a dictionary of dictionaries keyed by a string. The embedded dictionaries
+ *  themselves have a string key and a string value.
  */
 public interface PropertiesRequestInterface  {
 
 	/**
-	 * Obtain a list of attribute-value pairs for the class represented by this block.
-	 * On the Python side, a class instance is created if it does not already exist.
-	 * In the case where a class instance is created, the attribute values will be filled 
+	 * Obtain a keyed-list of attribute-value pairs for the block identified by the specified.
+	 * key. On the Gateway side, a block instance is created if it does not already exist.
+	 * In the case where a block instance is created, the attribute values will be filled 
 	 * with appropriate defaults.
 	 * 
 	 * @param key a string representing the id of the cell within the project.
@@ -23,9 +27,9 @@ public interface PropertiesRequestInterface  {
 	public String getBlockAttributes(String key,String json);
 
 	/**
-	 * Obtain a list of attribute-value pairs for the class represented by this connection.
-	 * On the Python side, a class instance is created if it does not already exist.
-	 * In the case where a class instance is created, the attribute values will be filled 
+	 * Obtain a keyed list of attribute-value pairs for the connection represented by the supplied.
+	 * key. On the Gateway side, a connection instance is created if it does not already exist.
+	 * In the case where a connection is created, the attribute values will be filled 
 	 * with appropriate defaults.
 	 * 
 	 * @param key a string representing the id of the cell within the project.
@@ -35,9 +39,20 @@ public interface PropertiesRequestInterface  {
 	 */
 	public String getConnectionAttributes(String key,String json);
 	/**
-	 * Set the level of logging in the designer.
-	 * @param logger name, e.g. "com.ils.diagnostics.designer". This is a package name.
-	 * @param level a string, e.g. INFO, DEBUG, TRACE
+	 * Obtain a list of keyed attribute-value pairs (that is a list of dictionaries) containing
+	 * default values of attributes for every executable block class. These attributes may include
+	 * static elements as well.
+	 * 
+	 * @return a string representing a JSON document containing a list of keyed attribute dictionaries
+	 * 								 corresponding to all executable block classes.
 	 */
-	public void setLoggingLevel(String logger,String level);
+	public String getPaletteBlockAttributes();
+	/**
+	 * Obtain a list of keyed attribute-value pairs (that is a list of dictionaries) containing
+	 * default values of attributes for every connection type.
+	 * 
+	 * @return a string representing a JSON document containing a list of keyed attribute dictionaries
+	 * 								 corresponding to all connection classes.
+	 */
+	public String getPaletteConnectionAttributes();
 }

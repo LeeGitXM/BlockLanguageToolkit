@@ -34,7 +34,7 @@ import com.mxgraph.util.mxXmlUtils;
  * A Diagnostics frame is a internal frame  designed to hold a model diagram. 
  */
 public class DiagnosticsFrame extends JInternalFrame implements ResourceWorkspaceFrame {
-	private static final long serialVersionUID = 4617016159408932941L;
+	private static final long serialVersionUID = 4617016159408932942L;
 	private static final String TAG = "DiagnosticsFrame:";
 	private static final int DEFAULT_WIDTH = 700;
 	private static final int DEFAULT_HEIGHT = 200;

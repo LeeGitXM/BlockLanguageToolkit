@@ -7,9 +7,8 @@ import java.util.List;
 
 import javax.swing.ImageIcon;
 
-import com.ils.block.annotation.ExecutableBlock;
-import com.ils.block.classes.ClassList;
-import com.ils.blt.common.BLTProperties;
+import com.ils.blt.designer.PropertiesRequestScriptFunctions;
+import com.ils.common.JsonToJava;
 import com.ils.jgx.editor.EditorPalette;
 import com.ils.jgx.editor.JgxPalette;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -29,20 +28,20 @@ public class PaletteBlocks  {
 	 */
 	public static void populatePalette(EditorPalette palette) {
 		log.infof("%s: populatePalette ...",TAG);
-		ClassList lister = new ClassList();
-		try {
-			List<Class<?>> list = lister.getAnnotatedClasses(BLTProperties.BLOCK_JAR_NAME_PATTERN,ExecutableBlock.class);
-		}
-		catch(Exception ex) {
-			log.infof("%s: populatePalette getClasses exception(%s)",TAG,ex.getMessage());
-		}
+
+		String json = PropertiesRequestScriptFunctions.getPaletteBlockAttributes();
+		JsonToJava converter = new JsonToJava();
+		List<?> list = converter.jsonToList(json);
+		
+		//
+		//   Analyze list to get block attributes
+		//
 
 		// Adds some template cells for dropping into the graph
 		// NOTE:  First string is the label in the palette
 		//        Next string is style properties
 		//        Final string is an initial JSON string. The JSON 
 		//        represents a dictionary of attribute dictionaries.
-		String json = null;
 		json = "{\"class\":{\"value\":\"app.diagnostics.classes.Entry\"," +
 				"\"editable\":\"False\"}," +
 				"\"label\":{\"value\":\"Entry\"}}";		
@@ -95,6 +94,13 @@ public class PaletteBlocks  {
 										.getResource("/com/ils/jgx/images/rhombus.png")),
 						"rhombus", 180, 120, json);
 		
+		json = PropertiesRequestScriptFunctions.getPaletteConnectionAttributes();
+		list = converter.jsonToList(json);
+		
+		//
+		//   Analyze list to get connection attributes
+		//
+
 		json = "{\"type\":\"numeric\"}";		
 		palette.addEdgeTemplate(
 						"Numeric Cxn",

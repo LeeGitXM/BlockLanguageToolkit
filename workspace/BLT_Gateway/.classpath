@@ -9,5 +9,6 @@
 	<classpathentry kind="lib" path="/Ignition/lib/ignition-common.jar"/>
 	<classpathentry kind="lib" path="/Ignition/lib/gateway-api.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/BLT_Common"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/BlockDef"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

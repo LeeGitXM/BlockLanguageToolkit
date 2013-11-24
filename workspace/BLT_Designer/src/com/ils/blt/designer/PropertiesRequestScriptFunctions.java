@@ -20,12 +20,12 @@ public class PropertiesRequestScriptFunctions  {
 	private static LoggerEx log = LogUtil.getLogger(PropertiesRequestScriptFunctions.class.getPackage().getName());
 	
 	/**
-	 * Obtain a list of attribute-value pairs for the class represented by this block.
-	 * On the Python side, a class instance is created if it does not already exist.
-	 * In the case where a class instance is created, the attribute values will be filled 
+	 * Obtain a keyed-list of attribute-value pairs for the block identified by the specified.
+	 * key. On the Gateway side, a block instance is created if it does not already exist.
+	 * In the case where a block instance is created, the attribute values will be filled 
 	 * with appropriate defaults.
 	 * 
-	 * @param key a string uniquely representing the cell within the project.
+	 * @param key a string representing the id of the cell within the project.
 	 * @param json string representing an array of attributes
 	 * @return a string representing a JSON document containing an array of attributes corresponding
 	 *         to the block object.
@@ -45,12 +45,12 @@ public class PropertiesRequestScriptFunctions  {
 	}
 	
 	/**
-	 * Obtain a list of attribute-value pairs for the class represented by this connection.
-	 * On the Python side, a class instance is created if it does not already exist.
-	 * In the case where a class instance is created, the attribute values will be filled 
+	 * Obtain a keyed list of attribute-value pairs for the connection represented by the supplied.
+	 * key. On the Gateway side, a connection instance is created if it does not already exist.
+	 * In the case where a connection is created, the attribute values will be filled 
 	 * with appropriate defaults.
 	 * 
-	 * @param key a string uniquely representing the cell within the project.
+	 * @param key a string representing the id of the cell within the project.
 	 * @param json string representing an array of attributes
 	 * @return a string representing a JSON document containing an array of attributes corresponding
 	 *         to the connection.
@@ -68,41 +68,28 @@ public class PropertiesRequestScriptFunctions  {
 		log.debug(TAG+"getConnectionAttributes: returned .. \n"+result);
 		return result;
 	}
-	
-	
+
 	/**
-	 * Obtain a list of attribute-value pairs for the class represented by this connection.
-	 * On the Python side, a class instance is created if it does not already exist.
-	 * In the case where a class instance is created, the attribute values will be filled 
-	 * with appropriate defaults.
+	 * Obtain a list of keyed attribute-value pairs (that is a list of dictionaries) containing
+	 * default values of attributes for every executable block class. These attributes may include
+	 * static elements as well.
 	 * 
-	 * @param key a string uniquely representing the cell within the project.
-	 * @param json string representing an array of attributes
-	 * @return a string representing a JSON document containing an array of attributes corresponding
-	 *         to the block object.
+	 * @return a string representing a JSON document containing a list of keyed attribute dictionaries
+	 * 								 corresponding to all executable block classes.
 	 */
-	public static String getConnections(String key,String json) throws Exception {
-		log.debug(TAG+"getConnections:"+key+"="+json);
-		String result = "";
-		try {
-			result = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "getConnections",key,json );
-		}
-		catch(Exception ge) {
-			log.info(TAG+"getConnections: GatewayException ("+ge.getMessage()+")");
-		}
-		log.debug(TAG+"getConnections: returned .. \n"+result);
-		return result;
+	public static String getPaletteBlockAttributes() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	/**
-	 * Set the level of logging in the designer.
-	 * @param name logger name, e.g. "com.ils.diagnostics.designer". This is a package name.
-	 * @param lvl logging level a string, e.g. INFO, DEBUG, TRACE
+	 * Obtain a list of keyed attribute-value pairs (that is a list of dictionaries) containing
+	 * default values of attributes for every connection type.
+	 * 
+	 * @return a string representing a JSON document containing a list of keyed attribute dictionaries
+	 * 								 corresponding to all connection classes.
 	 */
-	public static void setLoggingLevel(String name,String lvl) {
-		LoggerEx logger = LogUtil.getLogger(name);
-		Level level = Level.toLevel(lvl);
-		logger.getLogger().setLevel(level);
-		log.infof("%s: logger %s level set to %s",TAG,name,lvl);
+	public static String getPaletteConnectionAttributes() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
