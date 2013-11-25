@@ -97,8 +97,9 @@ public class DiagnosticsNode extends AbstractResourceNavTreeNode
 			// Create it
 			TreePath treePath = pathToRoot();
 			String tpath = treePathToString(treePath);
+			String frameName = name+"-model";  // Make frame name different
 			log.debugf("%s: openFrame from: %s",TAG,tpath);
-			frame = new DiagnosticsFrame(context,name,tpath);
+			frame = new DiagnosticsFrame(context,frameName,tpath);
 			frame.addInternalFrameListener(this);
 		}			
 		workspace.open(frame);
@@ -393,7 +394,8 @@ public class DiagnosticsNode extends AbstractResourceNavTreeNode
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			frame.saveResource();
+			if( frame!=null ) frame.saveResource();
+			else log.warnf("%s: Save.actionPerformed - null frame");
 		}
 	}
 }
