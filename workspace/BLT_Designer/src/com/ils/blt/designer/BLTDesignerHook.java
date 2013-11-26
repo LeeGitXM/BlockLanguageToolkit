@@ -94,7 +94,6 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook implements Desig
 	@Override
 	public void initializeScriptManager(ScriptManager mgr) {
 		super.initializeScriptManager(mgr);
-		mgr.addScriptModule(BLTProperties.REPORTING_SCRIPT_PACKAGE, StatusReportingScriptFunctions.class);
 		mgr.addScriptModule(BLTProperties.PROPERTIES_SCRIPT_PACKAGE, BlockPropertiesScriptFunctions.class);
 	}
 	

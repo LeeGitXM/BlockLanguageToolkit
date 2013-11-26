@@ -26,7 +26,7 @@ public class BlockCompletionScriptFunctions  {
 	 * @param port the output port on which to insert the result
 	 */
 	public static void reportBlockCompletion(String key,Object value,String port)  {
-		log.debug(TAG+String.format("reportBlockCompletion - %s = %s on %s",path,index,
+		log.debug(TAG+String.format("reportBlockCompletion - %s = %s on %s",key,
 												value.toString(),port));	
 	}
 }
