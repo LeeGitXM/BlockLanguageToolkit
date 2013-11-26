@@ -7,7 +7,7 @@ import java.util.List;
 
 import javax.swing.ImageIcon;
 
-import com.ils.blt.designer.PropertiesRequestScriptFunctions;
+import com.ils.blt.designer.BlockPropertiesScriptFunctions;
 import com.ils.common.JsonToJava;
 import com.ils.jgx.editor.EditorPalette;
 import com.ils.jgx.editor.JgxPalette;
@@ -29,7 +29,7 @@ public class PaletteBlocks  {
 	public static void populatePalette(EditorPalette palette) {
 		log.infof("%s: populatePalette ...",TAG);
 
-		String json = PropertiesRequestScriptFunctions.getPaletteBlockAttributes();
+		String json = BlockPropertiesScriptFunctions.getPaletteBlockAttributes();
 		JsonToJava converter = new JsonToJava();
 		List<?> list = converter.jsonToList(json);
 		
@@ -42,7 +42,7 @@ public class PaletteBlocks  {
 		//        Next string is style properties
 		//        Final string is an initial JSON string. The JSON 
 		//        represents a dictionary of attribute dictionaries.
-		json = "{\"class\":{\"value\":\"app.diagnostics.classes.Entry\"," +
+		json = "{\"class\":{\"value\":\"com.ils.block.Entry\"," +
 				"\"editable\":\"False\"}," +
 				"\"label\":{\"value\":\"Entry\"}}";		
 		palette.addTemplate(
@@ -53,7 +53,7 @@ public class PaletteBlocks  {
 						"roundImage;image=/com/ils/jgx/images/link.png",
 						80, 80, json);
 		
-		json = "{\"class\":{\"value\":\"app.diagnostics.classes.Diagnosis\"," +
+		json = "{\"class\":{\"value\":\"com.ils.block.Diagnosis\"," +
 				"\"editable\":\"False\"}," +
 				"\"label\":{\"value\":\"Diagnosis\"}}";	
 
@@ -64,7 +64,7 @@ public class PaletteBlocks  {
 									.getResource("/com/ils/jgx/images/rectangle.png")),
 					null, 180, 120, json);
 		
-		json = "{\"class\":{\"value\":\"app.diagnostics.classes.Recommendation\"," +
+		json = "{\"class\":{\"value\":\"com.ils.block.Recommendation\"," +
 				"\"editable\":\"False\"}," +
 				"\"label\":{\"value\":\"Recommendation\"}}";	
 		palette.addTemplate(
@@ -84,7 +84,7 @@ public class PaletteBlocks  {
 										.getResource("/com/ils/jgx/images/rounded.png")),
 						"rounded=1", 180, 120, json);
 		
-		json = "{\"class\":{\"value\":\"app.diagnostics.classes.And\"," +
+		json = "{\"class\":{\"value\":\"com.ils.block.And\"," +
 				"\"editable\":\"False\"}," +
 				"\"label\":{\"value\":\"+\"}}";		
 		palette.addTemplate(
@@ -94,7 +94,7 @@ public class PaletteBlocks  {
 										.getResource("/com/ils/jgx/images/rhombus.png")),
 						"rhombus", 180, 120, json);
 		
-		json = PropertiesRequestScriptFunctions.getPaletteConnectionAttributes();
+		json = BlockPropertiesScriptFunctions.getPaletteConnectionAttributes();
 		list = converter.jsonToList(json);
 		
 		//

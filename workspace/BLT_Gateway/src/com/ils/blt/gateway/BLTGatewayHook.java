@@ -56,16 +56,17 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook implements Project
 		PropertiesUpdateHandler.getInstance().setContext(context);
 	}
 
-	// See PassThroughGatewayHook example
 	@Override
 	public void startup(LicenseState licenseState) {
 	    log.info(TAG+"Startup complete.");
+	    BlockExecutionController.getInstance().start();
 	}
 
 	@Override
 	public void shutdown() {
 		context.getProjectManager().removeProjectListener(this);
 		context.getProjectManager().removeProjectListener(mrm);
+		BlockExecutionController.getInstance().stop();
 	}
 
 	@Override
@@ -82,7 +83,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook implements Project
 	@Override
 	public void initializeScriptManager(ScriptManager mgr) {
 		super.initializeScriptManager(mgr);
-		mgr.addScriptModule(BLTProperties.REPORTING_SCRIPT_PACKAGE,StatusReportingScriptFunctions.class);
+		mgr.addScriptModule(BLTProperties.REPORTING_SCRIPT_PACKAGE,BlockCompletionScriptFunctions.class);
 	}
 	
 	// ====================== Project Listener Interface ===================
@@ -95,7 +96,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook implements Project
 	public void projectAdded(Project staging, Project published) {
 		ScriptManager mgr = context.getProjectManager().getProjectScriptManager(published.getId());
 		if(mgr!=null) {
-			mgr.addScriptModule(BLTProperties.REPORTING_SCRIPT_PACKAGE, StatusReportingScriptFunctions.class);
+			mgr.addScriptModule(BLTProperties.REPORTING_SCRIPT_PACKAGE, BlockCompletionScriptFunctions.class);
 			log.info(TAG+"projectAdded ... script manager ");
 		}
 		else {

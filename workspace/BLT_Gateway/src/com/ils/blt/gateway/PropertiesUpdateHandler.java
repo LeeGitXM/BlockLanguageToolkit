@@ -70,8 +70,7 @@ public class PropertiesUpdateHandler   {
 		log.debugf("%s: createInstance of %s, keyed by %s",TAG,className,key);   // Should be updated
 		BasicBlock block = null;
 		try {
-			ClassLoader loader = Thread.currentThread().getContextClassLoader();
-			Class<?> clss = loader.loadClass(className);
+			Class<?> clss = Class.forName(className);
 			Object obj = clss.newInstance();
 			if( obj instanceof BasicBlock ) {
 				block = (BasicBlock)obj;
@@ -88,7 +87,7 @@ public class PropertiesUpdateHandler   {
 			}
 		}
 		catch( ClassNotFoundException cnf ) {
-			log.warnf("%s: createInstance: Error creating %s (%s)",TAG,className,cnf.getLocalizedMessage()); 
+			log.warnf("%s: createInstance: Error creating %s (%s)",TAG,className,cnf.getMessage()); 
 		}
 		catch( InstantiationException ie ) {
 			log.warnf("%s: createInstance: Error instantiating %s (%s)",TAG,className,ie.getLocalizedMessage()); 

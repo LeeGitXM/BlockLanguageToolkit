@@ -38,12 +38,13 @@ public class DiagnosticsFrame extends JInternalFrame implements ResourceWorkspac
 	private static final String TAG = "DiagnosticsFrame:";
 	private static final int DEFAULT_WIDTH = 700;
 	private static final int DEFAULT_HEIGHT = 200;
+	private static final int UNSET_RESOURCE = -1;
 	private final JgxWorkspaceEditor editor;
 	private final JComponent contentPane;
 	private final mxIGraphModel model;
 	private final DesignerContext context;
 	private final String treePath;    // Tree path in nav tree
-	private long resourceId = -1;
+	private long resourceId = UNSET_RESOURCE;
 	private LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	/**
 	 * 
@@ -125,9 +126,14 @@ public class DiagnosticsFrame extends JInternalFrame implements ResourceWorkspac
 	}
 	
 	public void saveResource() {
-		byte[] data = getModel().getBytes();
-		log.infof("%s: saveResource %d (%s)", TAG,resourceId,getModel().getBytes());
-		context.updateResource(resourceId,data);
+		if( resourceId!=UNSET_RESOURCE ) {
+			byte[] data = getModel().getBytes();
+			log.infof("%s: saveResource %d (%s)", TAG,resourceId,getModel().getBytes());
+			context.updateResource(resourceId,data);
+		}
+		else {
+			log.warnf("%s: saveResource: resource ID has not been set", TAG);
+		}
 	}
 
 }

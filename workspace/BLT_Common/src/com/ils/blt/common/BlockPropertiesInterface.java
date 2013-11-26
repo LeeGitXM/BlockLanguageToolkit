@@ -4,15 +4,22 @@
 package com.ils.blt.common;
 
 /**
- *  This scripting interface describes methods that bring block attribute 
- *  information to entities outside the Gateway scope.
+ *  This scripting interface describes methods available in the Designer scope 
+ *  for discovering and editing properties of diagrams, blocks, and connections.
  *  
- *  In every case the returned information is constructed in JSON as
+ *  Typically, the returned information is constructed in JSON as
  *  a dictionary of dictionaries keyed by a string. The embedded dictionaries
  *  themselves have a string key and a string value.
  */
-public interface PropertiesRequestInterface  {
-
+public interface BlockPropertiesInterface  {
+	/**
+	 * Enable or disable a diagram.
+	 * 
+	 * @param path tree-path to the diagram
+	 * @param flag true to enable the diagram
+	 */
+	public void enableDiagram(String path,boolean flag);
+	
 	/**
 	 * Obtain a keyed-list of attribute-value pairs for the block identified by the specified.
 	 * key. On the Gateway side, a block instance is created if it does not already exist.

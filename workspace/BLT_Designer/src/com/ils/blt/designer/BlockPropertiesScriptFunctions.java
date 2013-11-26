@@ -13,12 +13,27 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 /**
  *  This class exposes scripting functions that obtain attribute information
  *  about blocks from the Gateway.
- *  @see com.ils.diagnostics.common.PropertiesRequestInterface
+ *  @see com.ils.BlockPropertiesInterface.common.PropertiesRequestInterface
  */
-public class PropertiesRequestScriptFunctions  {
+public class BlockPropertiesScriptFunctions  {
 	private static final String TAG = "PropertiesRequestScriptFunctions: ";
-	private static LoggerEx log = LogUtil.getLogger(PropertiesRequestScriptFunctions.class.getPackage().getName());
+	private static LoggerEx log = LogUtil.getLogger(BlockPropertiesScriptFunctions.class.getPackage().getName());
 	
+	/**
+	 * Enable or disable a diagram.
+	 * 
+	 * @param path tree-path to the diagram
+	 * @param flag true to enable the diagram
+	 */
+	public static void enableDiagram(String path,boolean flag)  {
+		log.debug(TAG+String.format("enableDiagram - %s = %s",path,(flag?"true":"false")));
+		try {;
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(BLTProperties.MODULE_ID, "enableDiagram",new Boolean(flag));
+		}
+		catch(Exception ge) {
+			log.info(TAG+"enableDiagram: GatewayException ("+ge.getMessage()+")");
+		}
+	}
 	/**
 	 * Obtain a keyed-list of attribute-value pairs for the block identified by the specified.
 	 * key. On the Gateway side, a block instance is created if it does not already exist.

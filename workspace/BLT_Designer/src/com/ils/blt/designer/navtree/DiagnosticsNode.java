@@ -44,6 +44,7 @@ public class DiagnosticsNode extends AbstractResourceNavTreeNode
 	private static final String TAG = "DiagnosticsNode:";
 	private static final String NAV_PREFIX = "NavTree";       // Required for some defaults
 	private static final String BUNDLE_NAME = "navtree";      // Name of properties file
+	private static final String MODEL_SUFFIX = "-model";      // Suffix for model child resource
 	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	private final CloseAction closeAction;
 	private final OpenAction openAction;
@@ -87,17 +88,17 @@ public class DiagnosticsNode extends AbstractResourceNavTreeNode
 	/**
 	 * We have been asked to open a visible frame. If our frame exists,
 	 * then open it, otherwise create one. Once open, search model
-	 * resources and define the model. If not model resource exists, then
-	 * create a new one.
+	 * resources and define the model. If the model resource does not
+	 * exist, then create a new one.
 	 */
 	public void openFrame() {
 		DiagnosticsWorkspace workspace = DiagnosticsWorkspace.getInstance();
 		// First the frame ... if we don't know about it, then it shouldn't exist.
+		String frameName = name+MODEL_SUFFIX;  // Make frame name different
 		if( frame==null ) {
 			// Create it
 			TreePath treePath = pathToRoot();
 			String tpath = treePathToString(treePath);
-			String frameName = name+"-model";  // Make frame name different
 			log.debugf("%s: openFrame from: %s",TAG,tpath);
 			frame = new DiagnosticsFrame(context,frameName,tpath);
 			frame.addInternalFrameListener(this);
@@ -122,13 +123,13 @@ public class DiagnosticsNode extends AbstractResourceNavTreeNode
 				try {
 					resid = context.newResourceId();
 					String model = frame.getModel();
-					log.debugf("%s: openFrame - new empty model = %s",TAG,model);
-					ProjectResource resource = new ProjectResource(resid,
+					log.infof("%s: openFrame - new empty model = %s",TAG,model);
+					modelResource = new ProjectResource(resid,
 							BLTProperties.MODULE_ID, BLTProperties.MODEL_RESOURCE_TYPE,
-							name, ApplicationScope.GATEWAY, model.getBytes());
-					resource.setParentUuid(parentUUID);
-					context.updateResource(resource);  // This will cause an update.
-					log.infof("%s: openFrame: created frame %d",TAG,resid);
+							frameName, ApplicationScope.GATEWAY, model.getBytes());
+					modelResource.setParentUuid(parentUUID);
+					context.updateResource(modelResource);  // This will cause an update.
+					log.infof("%s: openFrame: created model resource %s (%d)",TAG,resid);
 				}
 				catch(SerializationException se) {
 					log.warnf("%s: openFrame Unable to serialize model (%s)",TAG,se.getMessage());
@@ -139,9 +140,9 @@ public class DiagnosticsNode extends AbstractResourceNavTreeNode
 			}
 		}
 		else {
-			log.info(String.format("%s: find frame %d",TAG,modelResource.getResourceId()));
-			frame.setResourceId(modelResource.getResourceId());
+			log.info(String.format("%s: openFrame: existing model resource %d",TAG,modelResource.getResourceId()));
 		}
+		frame.setResourceId(modelResource.getResourceId());
 	}
 	
 	
@@ -228,6 +229,8 @@ public class DiagnosticsNode extends AbstractResourceNavTreeNode
 				context.releaseLock(resourceId);
 			}
 		}
+		// Rename the child resources as well ...
+		// TODO:
 	}
 
 	@Override
@@ -260,8 +263,8 @@ public class DiagnosticsNode extends AbstractResourceNavTreeNode
 	
 
 	
-	// Set the internal flag that markw wheter the frame is open or not.
-	// Set the icon acccordingly.
+	// Set the internal flag that marks whether the frame is open or not.
+	// Set the icon accordingly.
 	private void setFrameOpen(boolean isOpen) {
 		isFrameOpen = isOpen;
 		if( isOpen )  setIcon(IconUtil.getIcon("table_sql"));
@@ -372,6 +375,7 @@ public class DiagnosticsNode extends AbstractResourceNavTreeNode
 		}
 
 		public void actionPerformed(ActionEvent e) {
+			log.infof("%s: Close.actionPerformed",TAG);
 			closeFrame();
 		}
 	}
@@ -379,10 +383,11 @@ public class DiagnosticsNode extends AbstractResourceNavTreeNode
 		private static final long serialVersionUID = 1L;
 
 		public OpenAction()  {
-			super(NAV_PREFIX+".Open",IconUtil.getIcon("window_new"));
+			super(NAV_PREFIX+".Open",IconUtil.getIcon("window_new"));	
 		}
 
 		public void actionPerformed(ActionEvent e) {
+			log.infof("%s: Open.actionPerformed",TAG);
 			openFrame();
 		}
 	}
@@ -394,8 +399,9 @@ public class DiagnosticsNode extends AbstractResourceNavTreeNode
 		}
 
 		public void actionPerformed(ActionEvent e) {
+			log.infof("%s: Save.actionPerformed",TAG);
 			if( frame!=null ) frame.saveResource();
-			else log.warnf("%s: Save.actionPerformed - null frame");
+			else log.warnf("%s: Save.actionPerformed - null frame",TAG);
 		}
 	}
 }

@@ -92,7 +92,7 @@ public class DiagnosticsWorkspace extends JDesktopPane implements ResourceWorksp
 		
 		boolean frameFound = false;
 		String frameName = frame.getName();
-		log.info(TAG+"open "+frameName);
+		log.infof("%s: open %s",TAG,frameName);
 		if( frameName==null) return;              // Problem
 		for(JInternalFrame frm:getAllFrames()) {
 			if( frameName.equals(frm.getName()) ) {

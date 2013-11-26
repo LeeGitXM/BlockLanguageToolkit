@@ -7,7 +7,7 @@ import java.util.Hashtable;
 
 import org.python.core.PyList;
 
-import com.ils.blt.common.PropertiesRequestInterface;
+import com.ils.blt.common.BlockPropertiesInterface;
 import com.ils.blt.common.StatusReportingInterface;
 import com.ils.common.JavaToJson;
 import com.ils.common.JsonToJava;
@@ -21,7 +21,7 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
  *  Its purpose is simply to parse out a request and send it to the
  *  right handler. This class supports the aggregate of RPC interfaces.
  */
-public class GatewayRpcDispatcher implements PropertiesRequestInterface,StatusReportingInterface  {
+public class GatewayRpcDispatcher implements BlockPropertiesInterface,StatusReportingInterface  {
 	private static String TAG = "GatewayRpcDispatcher: ";
 	private final LoggerEx log;
 	private final GatewayContext context;
@@ -52,7 +52,6 @@ public class GatewayRpcDispatcher implements PropertiesRequestInterface,StatusRe
 		// TODO Auto-generated method stub
 		
 	}
-
 
 
 	@Override

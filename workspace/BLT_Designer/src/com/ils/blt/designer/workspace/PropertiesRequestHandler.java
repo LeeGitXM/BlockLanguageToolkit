@@ -4,7 +4,7 @@
  */
 package com.ils.blt.designer.workspace;
 
-import com.ils.blt.designer.PropertiesRequestScriptFunctions;
+import com.ils.blt.designer.BlockPropertiesScriptFunctions;
 import com.ils.jgx.common.PropertiesHandlerInterface;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -54,7 +54,7 @@ public class PropertiesRequestHandler implements PropertiesHandlerInterface  {
 		log.info(TAG+"getBlockAttributes:"+cellId+"="+json);
 		String result = "";
 		try {
-			result = PropertiesRequestScriptFunctions.getBlockAttributes(key, json);
+			result = BlockPropertiesScriptFunctions.getBlockAttributes(key, json);
 		}
 		catch(Exception ex) {
 			log.info(TAG+"getBlockAttributes: Exception ("+ex.getMessage()+")");
@@ -81,7 +81,7 @@ public class PropertiesRequestHandler implements PropertiesHandlerInterface  {
 		String key = keyFromCellId(cellId);
 		String result = "";
 		try {
-			result = PropertiesRequestScriptFunctions.getConnectionAttributes(key, json);
+			result = BlockPropertiesScriptFunctions.getConnectionAttributes(key, json);
 		}
 		catch(Exception ex) {
 			log.info(TAG+"getConnectionAttributes: Exception ("+ex.getMessage()+")");
