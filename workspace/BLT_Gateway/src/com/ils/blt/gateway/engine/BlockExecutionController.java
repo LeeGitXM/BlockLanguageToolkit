@@ -31,8 +31,10 @@ public class BlockExecutionController implements Runnable {
 	private final LoggerEx log;
 	private GatewayContext context = null;    // Must be initialized before anything works
 	private static BlockExecutionController instance = null;
-	private final Hashtable<Long,Hashtable<String,Object>> resourceMap;
+	/** The diagrams are keyed by projectId, then resourceID */
+	private final Hashtable<Long,Hashtable<Long,DiagramModel>> models;
 	private final BoundedBuffer buffer;
+	private DataCollector dataCollector = null;    // Tag subscriber
 	private Thread completionThread = null;
 	private boolean stopped = true;
 	private ExecutorService executors = Executors.newCachedThreadPool();
@@ -42,7 +44,7 @@ public class BlockExecutionController implements Runnable {
 	 */
 	private BlockExecutionController() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
-		resourceMap = new Hashtable<Long,Hashtable<String,Object>>();
+		models = new Hashtable<Long,Hashtable<Long,DiagramModel>>();
 		buffer = new BoundedBuffer(BUFFER_SIZE);
 	}
 
@@ -65,11 +67,13 @@ public class BlockExecutionController implements Runnable {
 		catch( InterruptedException ie ) {}
 	}
 	/**
-	 * Set the gateway context. The context is required for this block tansmit
-	 * notifications.
+	 * Set the gateway context. Once the context is known, we can create a dataCollector.
 	 * @param ctxt the context
 	 */
-	public void setContext(GatewayContext ctxt) { this.context=ctxt; }
+	public void setContext(GatewayContext ctxt) { 
+		this.context=ctxt; 
+		this.dataCollector = new DataCollector(context);
+	}
 
 	public synchronized void start() {
 		stopped = false;
@@ -94,17 +98,33 @@ public class BlockExecutionController implements Runnable {
 	 * @param projectId the identity of a project.
 	 */
 	public void deleteResources(Long projectId) {
-		resourceMap.remove(projectId);
+		models.remove(projectId);
 	}
 
 	/**
-	 * Remove a particular block resource associated with a project.
-	 * Presumably the resource has been deleted.
+	 * Remove a diagram within a project.
+	 * Presumably the diagram has been deleted.
 	 * @param projectId the identity of a project.
-	 * @param resid the resource
 	 */
-	public void deleteResource(long projectId,long resid) {
-		//resourceMap.remove(projectId);
+	public void deleteResource(Long projectId,Long resourceId) {
+		Hashtable<Long,DiagramModel> projectModel = models.get(projectId);
+		if( projectModel!=null ) projectModel.remove(resourceId);
+	}
+	
+	/**
+	 * Set a model for a diagram. There is a one-one correspondence 
+	 * between a model-project and diagram.
+	 * @param projectId the identity of a project
+	 * @param resourceId the identity of the model resource
+	 * @param model the diagram logic
+	 */
+	public void addResource(Long projectId,Long resourceId,DiagramModel model) {
+		Hashtable<Long,DiagramModel> projectModels = models.get(projectId);
+		if( projectModels==null ) {
+			projectModels = new Hashtable<Long,DiagramModel>();
+			models.put(projectId,projectModels);
+		}
+		projectModels.put(resourceId, model);
 	}
 
 

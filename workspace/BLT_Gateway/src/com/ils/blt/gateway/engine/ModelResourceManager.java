@@ -37,10 +37,10 @@ import com.inductiveautomation.ignition.gateway.project.ProjectListener;
  */
 public class ModelResourceManager implements ProjectListener  {
 	
-	private static String TAG = "ModelResourceManager: ";
-	private GatewayContext context=null;
-	private LoggerEx log;
-	private BlockExecutionController controller = BlockExecutionController.getInstance();
+	private static String TAG = "ModelResourceManager";
+	private final GatewayContext context;
+	private final LoggerEx log;
+	private final BlockExecutionController controller = BlockExecutionController.getInstance();
 	
 	
 	/**
@@ -59,13 +59,13 @@ public class ModelResourceManager implements ProjectListener  {
 	public void updateModel(BlockExecutionController controller,long projectId) {
 		Project project = context.getProjectManager().getProject(projectId, ApplicationScope.DESIGNER, ProjectVersion.Staging);
 		if( project==null) {
-			log.error(TAG+"updateModel: No project found with Id "+projectId);
+			log.errorf("%s: updateModel: No project found with Id %d",TAG,projectId);
 			return;
 		}
 		List<ProjectResource> resources = project.getResources();
 		for (ProjectResource res : resources) {
 			if( res.getResourceType().equals(BLTProperties.MODEL_RESOURCE_TYPE)) {
-				log.debug(TAG+"projectUpdated: "+this+" found model resource "+res.getName()+" ("+res.getResourceId()+")");
+				log.infof("%s: projectUpdated: found model resource %s (%d)",TAG,res.getName(),res.getResourceId());
 				//deserializeWorkspaceResource(res);
 			}
 		}
@@ -92,7 +92,7 @@ public class ModelResourceManager implements ProjectListener  {
 		    doc = db.parse(is);
 		}
 		catch( Exception ex) {
-			log.warn(TAG+"deserializeModelResource: exception ("+ ex.getLocalizedMessage()+")");
+			log.warnf("%s: deserializeModelResource: exception (%s)",TAG,ex.getLocalizedMessage());
 		}
 		return doc;
 
@@ -110,8 +110,16 @@ public class ModelResourceManager implements ProjectListener  {
 			List<ProjectResource> resources = staging.getResources();
 			for( ProjectResource res:resources ) {
 				if( res.getResourceType().equalsIgnoreCase(BLTProperties.MODEL_RESOURCE_TYPE)) {
-					log.info(String.format("%s projectAdded - staging %s %d = %s", TAG,res.getName(),
-						res.getResourceId(),res.getResourceType()));
+					log.infof("%s: projectAdded - staging %s %d = %s", TAG,res.getName(),
+						res.getResourceId(),res.getResourceType());
+					Document dom = deserializeModelResource(res);
+					if( dom!=null) {
+						DiagramModel dm = new DiagramModel(dom);
+						controller.addResource(new Long(projectId), new Long(res.getResourceId()), dm);
+					}
+					else {
+						log.warnf("%s: Failed to create DOM from resource",TAG);
+					}
 				}
 			}
 		}
@@ -121,8 +129,16 @@ public class ModelResourceManager implements ProjectListener  {
 			List<ProjectResource> resources = published.getResources();
 			for( ProjectResource res:resources ) {
 				if( res.getResourceType().equalsIgnoreCase(BLTProperties.MODEL_RESOURCE_TYPE)) {
-					log.info(String.format("%s projectAdded - published %s %d = %s", TAG,res.getName(),
-						res.getResourceId(),res.getResourceType()));
+					log.infof("%s: projectAdded - published %s %d = %s", TAG,res.getName(),
+						res.getResourceId(),res.getResourceType());
+					Document dom = deserializeModelResource(res);
+					if( dom!=null) {
+						DiagramModel dm = new DiagramModel(dom);
+						controller.addResource(new Long(projectId), new Long(res.getResourceId()), dm);
+					}
+					else {
+						log.warnf("%s: Failed to create DOM from resource",TAG);
+					}
 				}
 			}
 		}
@@ -137,7 +153,7 @@ public class ModelResourceManager implements ProjectListener  {
 		
 	}
 	/**
-	 * Handle project resource updates of type diag.model.
+	 * Handle project resource updates of type model.
 	 * @param diff represents differences to the updated project. That is any updated, dirty or deleted resources.
 	 * @param vers a value of "Staging" means is a result of a "Save". A value of "Published" occurs when a 
 	 *        project is published. For our purposes both actions are equivalent.
@@ -156,24 +172,25 @@ public class ModelResourceManager implements ProjectListener  {
 		// The "dirty" ones are the new ones ??
 		List<ProjectResource> resources = diff.getDirtyResources();
 		for( ProjectResource dres:resources ) {
-			log.info(String.format("%s projectUpdated - dirty %s %d = %s", TAG,dres.getName(),
-					dres.getResourceId(),dres.getResourceType()));
+			log.infof("%s: projectUpdated - dirty %s %d = %s", TAG,dres.getName(),
+					dres.getResourceId(),dres.getResourceType());
 			if( dres.getResourceType().equalsIgnoreCase(BLTProperties.MODEL_RESOURCE_TYPE)) {
-			log.info(String.format("%s projectUpdated - dirty %s %d = %s", TAG,dres.getName(),
-					dres.getResourceId(),dres.getResourceType()));
+			log.infof("%s: projectUpdated - dirty %s %d = %s", TAG,dres.getName(),
+					dres.getResourceId(),dres.getResourceType());
 			}
 		}
 		resources = diff.getResources();   // Do these include the dirty?
 		for( ProjectResource res:resources ) {
 			if( res.getResourceType().equalsIgnoreCase(BLTProperties.MODEL_RESOURCE_TYPE)) {
-				log.info(String.format("%s projectUpdated - updated %s %d = %s", TAG,res.getName(),
-					res.getResourceId(),res.getResourceType()));
+				log.infof("%s: projectUpdated - updated %s %d = %s", TAG,res.getName(),
+					res.getResourceId(),res.getResourceType());
 				Document dom = deserializeModelResource(res);
 				if( dom!=null) {
 					DiagramModel dm = new DiagramModel(dom);
+					controller.addResource(new Long(projectId), new Long(res.getResourceId()), dm);
 				}
 				else {
-					log.warn(TAG+"Failed to create DOM from resource");
+					log.warnf("%s: Failed to create DOM from resource",TAG);
 				}
 			}
 			
