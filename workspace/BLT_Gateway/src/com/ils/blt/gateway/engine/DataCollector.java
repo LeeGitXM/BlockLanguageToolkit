@@ -7,6 +7,8 @@ package com.ils.blt.gateway.engine;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Hashtable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import com.ils.block.BasicBlock;
 import com.ils.block.BlockProperties;
@@ -34,6 +36,7 @@ public class DataCollector implements TagChangeListener   {
 	private final GatewayContext context;
 	private final Hashtable<String,BasicBlock> blockMap;  // Executable block keyed by tag path
 	private final SimpleDateFormat dateFormatter;
+	private ExecutorService executors = Executors.newCachedThreadPool();
 	/**
 	 * Constructor: 
 	 * @param ctxt
@@ -46,15 +49,10 @@ public class DataCollector implements TagChangeListener   {
 	}
 
 	/**
-	 * Start a subscription for this data point from its provider.
-	 * Ignore data points with no path, as these are assumed to
-	 * be derived (or calculated). 
+	 * Start a subscription for this block and named tag property.
 	 * 
-	 * Populate the data point with the current tag value. This 
-	 * handles the issue of the point never updating, because 
-	 * it never changed.
-	 * 
-	 * If the quality is BAD initially, then its state is BAD immediately.
+	 * @param block the executable block cotaining the tag attribute
+	 * @param propertyName the name of the tag property
 	 */
 	public void startSubscription(BasicBlock block,String propertyName) {
 		Hashtable<String,String> property = block.getProperty(propertyName);
@@ -91,7 +89,11 @@ public class DataCollector implements TagChangeListener   {
 		}
 		
 	}
-	
+	/**
+	 * Stop the subscription.
+	 * 
+	 * @param tagPath
+	 */
 	public void stopSubscription(String tagPath) {
 		if( tagPath==null) return;    // There was no subscription
 		SQLTagsManager tmgr = context.getTagManager();
