@@ -18,14 +18,15 @@ import com.ils.block.BasicBlock;
  * In the second instance, a value has been received as an output from a block
  * connected to the target block.
  */
-public class BlockEvaluationTask implements Runnable{
+public class NewInputEvaluationTask extends PropertyChangeEvaluationTask implements Runnable{
 	private final BasicBlock block;
 	/**
 	 * Constructor.
 	 * 
 	 * @param bblock the block instance to evaluate
 	 */
-	public BlockEvaluationTask(BasicBlock bblock)  {	
+	public NewInputEvaluationTask(BasicBlock bblock)  {
+		super(bblock);
 		this.block = bblock;
 	}
 	
