@@ -56,10 +56,12 @@ public interface BlockPropertiesInterface  {
 	public String getPaletteBlockAttributes();
 	/**
 	 * Obtain a list of keyed attribute-value pairs (that is a list of dictionaries) containing
-	 * default values of attributes for every connection type.
+	 * default values of attributes for every connection type. The dictionary elements are defined
+	 * in BlockProperties as: class, icon (a resource path), palette-name (name as seen on palette),
+	 * shape (needed to paint object in diagram)
 	 * 
 	 * @return a string representing a JSON document containing a list of keyed attribute dictionaries
-	 * 								 corresponding to all connection classes.
+	 * 								 one for each connection class.
 	 */
 	public String getPaletteConnectionAttributes();
 }

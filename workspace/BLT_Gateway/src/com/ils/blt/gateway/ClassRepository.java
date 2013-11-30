@@ -5,7 +5,7 @@ package com.ils.blt.gateway;
 
 import java.util.Hashtable;
 
-import com.ils.block.BasicBlock;
+import com.ils.block.ProcessBlock;
 
 /**
  * The class repository is a Singleton instance designed as a persistent common
@@ -14,7 +14,7 @@ import com.ils.block.BasicBlock;
  * The repository is unique to each Designer instance. It's lifetime coincides with the
  * life of the Designer.
  */
-public class ClassRepository extends Hashtable<String,BasicBlock> {
+public class ClassRepository extends Hashtable<String,ProcessBlock> {
 	private static final long serialVersionUID = 6666912014384473559L;
 	private static ClassRepository instance = null;
 	

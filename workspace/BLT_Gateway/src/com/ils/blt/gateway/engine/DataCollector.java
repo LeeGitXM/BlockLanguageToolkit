@@ -7,9 +7,13 @@ package com.ils.blt.gateway.engine;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Hashtable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-import com.ils.block.BasicBlock;
 import com.ils.block.BlockProperties;
+import com.ils.block.NewValueNotification;
+import com.ils.block.ProcessBlock;
+import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.sqltags.model.Tag;
 import com.inductiveautomation.ignition.common.sqltags.model.TagPath;
 import com.inductiveautomation.ignition.common.sqltags.model.TagProp;
@@ -21,7 +25,6 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 import com.inductiveautomation.ignition.gateway.sqltags.SQLTagsManager;
 
-
 /**
  *  The data collector waits for inputs on a collection of tags and,
  *  whenever a tag value changes, the collector posts a change notice
@@ -32,8 +35,10 @@ public class DataCollector implements TagChangeListener   {
 
 	private final LoggerEx log;
 	private final GatewayContext context;
-	private final Hashtable<String,BasicBlock> blockMap;  // Executable block keyed by tag path
+	private final Hashtable<String,ProcessBlock> blockMap;  // Executable block keyed by tag path
 	private final SimpleDateFormat dateFormatter;
+	private ExecutorService executor = Executors.newCachedThreadPool();
+	
 	/**
 	 * Constructor: 
 	 * @param ctxt
@@ -41,22 +46,15 @@ public class DataCollector implements TagChangeListener   {
 	public DataCollector(GatewayContext ctxt) {
 		this.context = ctxt;
 		log = LogUtil.getLogger(getClass().getPackage().getName());
-		this.blockMap = new Hashtable<String,BasicBlock>();
+		this.blockMap = new Hashtable<String,ProcessBlock>();
 		this.dateFormatter = new SimpleDateFormat(BlockProperties.TIMESTAMP_FORMAT);
 	}
 
 	/**
-	 * Start a subscription for this data point from its provider.
-	 * Ignore data points with no path, as these are assumed to
-	 * be derived (or calculated). 
-	 * 
-	 * Populate the data point with the current tag value. This 
-	 * handles the issue of the point never updating, because 
-	 * it never changed.
-	 * 
-	 * If the quality is BAD initially, then its state is BAD immediately.
+	 * Start a subscription for a block attribute. The subject attribute must be
+	 * one associated with a tag.
 	 */
-	public void startSubscription(BasicBlock block,String propertyName) {
+	public void startSubscription(ProcessBlock block,String propertyName) {
 		Hashtable<String,String> property = block.getProperty(propertyName);
 		if( property!=null ) {
 			String tagPath = property.get(BlockProperties.BLOCK_ATTRIBUTE_TAGPATH);
@@ -65,14 +63,20 @@ public class DataCollector implements TagChangeListener   {
 				try {
 					TagPath tp = TagPathParser.parse(tagPath);
 					log.debugf("%s: startSubscription: for tag path %s",TAG,tp.toStringFull());
+					// Make sure the attribute is in canonical form
+					property.put(BlockProperties.BLOCK_ATTRIBUTE_TAGPATH, tp.toStringFull());
 					// Initialize the value in this data point
 					Tag tag = tmgr.getTag(tp);
 					if( tag!=null ) {
-						Object value = tag.getValue().getValue();
-						//isGood= tag.getValue().getQuality().isGood();
-						//point.timestamp = tag.getValue().getTimestamp();
-						//log.trace(TAG+"startSubscription: initial value="+point.value+" at "+point.timestamp.toString());
+						QualifiedValue value = tag.getValue();
+						log.debugf("%s: startSubscription: got a %s value for %s (%s at %s)",TAG,
+								(tag.getValue().getQuality().isGood()?"GOOD":"BAD"),
+								tag.getName(),tag.getValue().getValue(),
+								dateFormatter.format(tag.getValue().getTimestamp()));
+						NewValueNotification notification = new NewValueNotification(block,propertyName,value);
+						executor.execute(new PropertyChangeEvaluationTask(notification));
 					}
+					blockMap.put(tp.toStringFull(), block);
 					tmgr.subscribe(tp, this);
 				}
 				catch(IOException ioe) {
@@ -91,7 +95,9 @@ public class DataCollector implements TagChangeListener   {
 		}
 		
 	}
-	
+	/**
+	 * Shut down a subscription based on a tag path.
+	 */
 	public void stopSubscription(String tagPath) {
 		if( tagPath==null) return;    // There was no subscription
 		SQLTagsManager tmgr = context.getTagManager();
@@ -103,6 +109,17 @@ public class DataCollector implements TagChangeListener   {
 		catch(IOException ioe) {
 			log.error(TAG+"stopSubscription ("+ioe.getMessage()+")");
 		}
+	}
+	
+	/**
+	 * Shutdown completely.
+	 */
+	public void stop() {
+		executor.shutdown();
+		for( String tp:blockMap.keySet()) {
+			stopSubscription(tp);
+		}
+		blockMap.clear();
 	}
 	
 	/** 
@@ -132,8 +149,17 @@ public class DataCollector implements TagChangeListener   {
 					(tag.getValue().getQuality().isGood()?"GOOD":"BAD"),
 					tag.getName(),tag.getValue().getValue(),
 					dateFormatter.format(tag.getValue().getTimestamp()));
-				//reportValueChanged(tp.toStringFull(),tag.getValue().getTimestamp(),tag.getValue().getValue(),
-				//	tag.getValue().getQuality().isGood());
+				
+				ProcessBlock block = blockMap.get(tp.toStringFull());
+				if( block!=null ) {
+					String propertyName = getPropertyForTagpath(block,tp.toStringFull());
+					if( propertyName != null ) {
+						NewValueNotification notification = new NewValueNotification(block,propertyName,tag.getValue());
+						executor.execute(new PropertyChangeEvaluationTask(notification));
+					}
+					
+				}
+				
 			}
 			catch(Exception ex) {
 				log.error(TAG+"tag changed exception ("+ex.getMessage()+")",ex);
@@ -145,4 +171,20 @@ public class DataCollector implements TagChangeListener   {
 		}
 	}
 	
+	/**
+	 * Search properties of a block looking for one of datatype "tag"
+	 * and a particular tag path.
+	 */
+	private String getPropertyForTagpath(ProcessBlock block,String tp) {
+		String result = null;
+		for( String name: block.getPropertyNames()) {
+			Hashtable<String,String> property = block.getProperty(name);
+			String path = property.get(BlockProperties.BLOCK_ATTRIBUTE_TAGPATH);
+			if( path.equals(tp)) {
+				result = name;
+				break;
+			}
+		}
+		return result;	
+	}
 }

@@ -28,4 +28,9 @@ public interface BLTProperties   {
 	/** This unique ID represents the root node in the project tree */
 	public static final UUID ROOT_FOLDER_UUID = UUID
 			.fromString("7bbbd6b9-3140-4328-a844-51817eb47574");
+	
+	// These are the property names in the message payload, gateway to client
+	public static final String MSG_BLOCK_NAME      = "BlockName";
+	public static final String MSG_BLOCK_STATE     = "BlockState";
+	public static final String MSG_WORKSPACE_ID    = "WorkspaceID";    // UUID of the component's workspace
 }

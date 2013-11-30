@@ -10,6 +10,9 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.ils.block.NewValueNotification;
+import com.ils.block.ProcessBlock;
+import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 
@@ -22,7 +25,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  */
 public class DiagramModel {
 	
-	private static String TAG = "DiagramModel: ";
+	private static String TAG = "DiagramModel";
 	private final LoggerEx log;
 	private final Document doc;
 	private boolean valid = false;
@@ -81,6 +84,20 @@ public class DiagramModel {
 		else {
 			log.warn(TAG+"analyze: Unexpected root element ("+(root==null?"null":root.getNodeName())+")");
 		}
+	}
+	
+	/**
+	 * The subject block has just placed a new result on an output port. Determine which input block
+	 * and port, if any, is connected to the output. There is, at most one. A null return indicates no downstream connection.
+	 * @param new value notification of an incoming change
+	 * @return a new value notification for the downstream block
+	 */
+	public NewValueNotification getValueUpdate(NewValueNotification incoming) {
+		ProcessBlock block = incoming.getBlock();
+		String port = incoming.getPort();
+		QualifiedValue value = incoming.getValue();
+		
+		return null;
 	}
 	
 	/**

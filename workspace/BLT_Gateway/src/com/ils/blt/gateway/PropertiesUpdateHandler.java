@@ -6,7 +6,7 @@ package com.ils.blt.gateway;
 
 import java.util.Hashtable;
 
-import com.ils.block.BasicBlock;
+import com.ils.block.ProcessBlock;
 import com.ils.jgx.common.JGXProperties;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -66,14 +66,14 @@ public class PropertiesUpdateHandler   {
 	 * @param className
 	 * @return the instance created, else null
 	 */
-	public BasicBlock createInstance(String key,String className) {
+	public ProcessBlock createInstance(String key,String className) {
 		log.debugf("%s: createInstance of %s, keyed by %s",TAG,className,key);   // Should be updated
-		BasicBlock block = null;
+		ProcessBlock block = null;
 		try {
 			Class<?> clss = Class.forName(className);
 			Object obj = clss.newInstance();
-			if( obj instanceof BasicBlock ) {
-				block = (BasicBlock)obj;
+			if( obj instanceof ProcessBlock ) {
+				block = (ProcessBlock)obj;
 				// The block already has the class ... add the key.
 				Hashtable<String,String> att = new Hashtable<String,String>();
 				att.put(JGXProperties.ATTRIBUTE_VALUE, key);
@@ -103,7 +103,7 @@ public class PropertiesUpdateHandler   {
 	 * @param attributes
 	 * @return
 	 */
-	public Hashtable<String,Hashtable<String,String>> getAttributes(BasicBlock block,Hashtable<String,Hashtable<String,String>> attributes) {
+	public Hashtable<String,Hashtable<String,String>> getAttributes(ProcessBlock block,Hashtable<String,Hashtable<String,String>> attributes) {
 		if( block==null) return attributes;
 
 		Hashtable<String,Hashtable<String,String>> properties = block.getProperties();
@@ -131,7 +131,7 @@ public class PropertiesUpdateHandler   {
 	 */
 	public Hashtable<String,Hashtable<String,String>> getBlockAttributes(String key,Hashtable<String,Hashtable<String,String>> attributes) {
 		// If the instance doesn't exist, create one
-		BasicBlock block = ClassRepository.getInstance().get(key);
+		ProcessBlock block = ClassRepository.getInstance().get(key);
 		Hashtable<String,Hashtable<String,String>> results = null;
 		if(block==null) {
 			Hashtable<String,String> classAttribute = (Hashtable<String,String>)attributes.get(JGXProperties.NAME_CLASS);
