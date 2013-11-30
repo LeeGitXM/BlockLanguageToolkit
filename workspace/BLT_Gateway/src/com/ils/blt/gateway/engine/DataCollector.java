@@ -96,7 +96,9 @@ public class DataCollector implements TagChangeListener   {
 		
 	}
 	/**
-	 * Shut down a subscription based on a tag path.
+	 * Stop a subscription based on a tag path.
+	 * 
+	 * @param tagPath
 	 */
 	public void stopSubscription(String tagPath) {
 		if( tagPath==null) return;    // There was no subscription
