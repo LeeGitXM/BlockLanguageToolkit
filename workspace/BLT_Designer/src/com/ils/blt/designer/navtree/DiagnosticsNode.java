@@ -55,6 +55,7 @@ public class DiagnosticsNode extends AbstractResourceNavTreeNode
 	
 	private String name;
 	private final UUID parentUUID;   // Parent resource, a navtree folder
+	private final long projectId;
 	private long resourceId;
 	private boolean isFrameOpen = false;
 
@@ -69,6 +70,7 @@ public class DiagnosticsNode extends AbstractResourceNavTreeNode
 	public DiagnosticsNode(DesignerContext context,ProjectResource resource) {
 		BundleUtil.get().addBundle(NAV_PREFIX,getClass(),BUNDLE_NAME);
 		this.context = context;
+		this.projectId = context.getProject().getId();
 		this.resourceId = resource.getResourceId();
 		this.parentUUID = resource.getParentUuid();
 		this.name = resource.getName();	
@@ -93,7 +95,7 @@ public class DiagnosticsNode extends AbstractResourceNavTreeNode
 	 */
 	public void openFrame() {
 		DiagnosticsWorkspace workspace = DiagnosticsWorkspace.getInstance();
-
+		String frameName = name+MODEL_SUFFIX;  // Make frame name different
 		
 		// Next the model resource. If we don't have one, then search.
 		// (In case we were notified before we existed).
@@ -134,13 +136,13 @@ public class DiagnosticsNode extends AbstractResourceNavTreeNode
 		}
 		
 		// First the frame ... if we don't know about it, then it shouldn't exist.
-		String frameName = name+MODEL_SUFFIX;  // Make frame name different
+		
 		if( frame==null ) {
 			// Create it
 			TreePath treePath = pathToRoot();
 			String tpath = treePathToString(treePath);
 			log.debugf("%s: openFrame from: %s",TAG,tpath);
-			frame = new DiagnosticsFrame(context,frameName,tpath);
+			frame = new DiagnosticsFrame(context,frameName,projectId,resourceId);
 			frame.addInternalFrameListener(this);
 		}			
 		workspace.open(frame);
@@ -243,7 +245,8 @@ public class DiagnosticsNode extends AbstractResourceNavTreeNode
 	
 	/**
 	 * We have received notice of an updated or new model resource.
-	 * If the frame is open, then we need to update the visible model.
+	 * If the frame is open then we need to delete it and open a new one.
+	 * This updates the visible model.
 	 * @param res
 	 */
 	private void updateModel(ProjectResource res) {
@@ -254,7 +257,6 @@ public class DiagnosticsNode extends AbstractResourceNavTreeNode
 			String xml = new String(res.getData());
 			log.debugf("%s: updateModel: res = %s",TAG,xml);
 			frame.setModel(xml);
-			frame.setResourceId(res.getResourceId());
 		}
 	}
 	

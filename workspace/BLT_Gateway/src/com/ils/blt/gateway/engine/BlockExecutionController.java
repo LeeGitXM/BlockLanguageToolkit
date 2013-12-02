@@ -15,6 +15,7 @@ import com.ils.block.ExecutionController;
 import com.ils.block.NewValueNotification;
 import com.ils.block.ProcessBlock;
 import com.ils.common.BoundedBuffer;
+import com.ils.connection.Connection;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
@@ -131,16 +132,42 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		projectModels.put(resourceId, model);
 	}
 	
-	public boolean blockExists(long projectId,long resourceId,long blockId) {
-		boolean result = false;
+	/**
+	 * Get a block from the existing diagrams. 
+	 * @param projectId
+	 * @param resourceId
+	 * @param blockId
+	 * @return the specified ProcessBlock. If not found, return null. 
+	 */
+	public ProcessBlock getBlock(long projectId,long resourceId,String blockId) {
+		ProcessBlock block = null;
 		Hashtable<Long,DiagramModel> projectModels = models.get(new Long(projectId));
 		if( projectModels!=null ) {
 			DiagramModel dm = projectModels.get(new Long(resourceId));
 			if( dm!=null ) {
-				
+				block = dm.getBlock(blockId);
 			}
 		}
-		return result;
+		return block;
+	}
+	
+	/**
+	 * Get a connection from the existing diagrams. 
+	 * @param projectId
+	 * @param resourceId
+	 * @param connectionId
+	 * @return the specified Connection. If not found, return null. 
+	 */
+	public Connection getConnection(long projectId,long resourceId,String connectionId) {
+		Connection cxn = null;
+		Hashtable<Long,DiagramModel> projectModels = models.get(new Long(projectId));
+		if( projectModels!=null ) {
+			DiagramModel dm = projectModels.get(new Long(resourceId));
+			if( dm!=null ) {
+				cxn = dm.getConnection(connectionId);
+			}
+		}
+		return cxn;
 	}
 	
 	// ======================= Delegated to DataCollector ======================

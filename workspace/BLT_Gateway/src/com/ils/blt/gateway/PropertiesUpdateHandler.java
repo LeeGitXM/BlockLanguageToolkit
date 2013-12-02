@@ -8,25 +8,22 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Hashtable;
 
-import sun.reflect.generics.repository.ClassRepository;
-
+import com.ils.block.BlockProperties;
 import com.ils.block.ProcessBlock;
 import com.ils.blt.gateway.engine.BlockExecutionController;
-import com.ils.jgx.common.JGXProperties;
+import com.ils.connection.Connection;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
-
-
 /**
  *  This handler provides for a specific collection of calls to  block
  *  layer from the Gateway. In general, the calls are made to update properties 
- *  in the Python objects that represent a block and to trigger their evaluation.
+ *  in the block objects and to trigger their evaluation.
  *  
- *  In addition to the direct updates to Python classes via script execution,
- *  this class posts update notifications regarding those same attribute
- *  changes, expecting that that will be picked up by listeners associated with the UI.
+ *  This class also posts update notifications to client and designer scopes regarding
+ *  those same attribute changes, expecting that they will be picked up by listeners 
+ *  associated with the UI.
  *  
  *  This class is a singleton for easy access throughout the application.
  */
@@ -70,12 +67,12 @@ public class PropertiesUpdateHandler   {
 	 * @param className
 	 * @return the instance created, else null
 	 */
-	public ProcessBlock createInstance(long projectId,long resourceId,long blockId,String className) {
+	public ProcessBlock createInstance(long projectId,long resourceId,String blockId,String className) {
 		log.debugf("%s: createInstance of %s (%d,%d,%d)",TAG,className,projectId,resourceId,blockId);   // Should be updated
 		ProcessBlock block = null;
 		try {
 			Class<?> clss = Class.forName(className);
-			Constructor ctor = clss.getDeclaredConstructor(new Class[] {long.class,long.class,long.class});
+			Constructor ctor = clss.getDeclaredConstructor(new Class[] {long.class,long.class,String.class});
 			block = (ProcessBlock)ctor.newInstance(projectId,resourceId,blockId);
 		}
 		catch(InvocationTargetException ite ) {
@@ -112,30 +109,25 @@ public class PropertiesUpdateHandler   {
 		}
 		return properties;
 	}
-	
-	public boolean instanceExists(long projectId,long resourceId,long blockId) {
-		BlockExecutionController controller = BlockExecutionController.getInstance();
-		return controller.blockExists(projectId,resourceId,blockId);
-	}
-	
+
 	/**
-	 * Query the block repository for a block specified by the key. If the block
+	 * Query the model for a block specified by the key. If the block
 	 * does not exist, create it.  If the block is already instantiated, then 
 	 * return the actual attribute values (as opposed to defaults for a newly created block).
 	 * 
-	 * @param key
 	 * @param attributes already known
 	 * @return the attribute table appropriately enhanced.
 	 */
-	public Hashtable<String,Hashtable<String,String>> getBlockAttributes(String key,Hashtable<String,Hashtable<String,String>> attributes) {
+	public Hashtable<String,Hashtable<String,String>> getBlockAttributes(long projectId,long resourceId,String blockId,Hashtable<String,Hashtable<String,String>> attributes) {
 		// If the instance doesn't exist, create one
-		ProcessBlock block = ClassRepository.getInstance().get(key);
+		BlockExecutionController controller = BlockExecutionController.getInstance();
+		ProcessBlock block = controller.getBlock(projectId, resourceId, blockId);
 		Hashtable<String,Hashtable<String,String>> results = null;
 		if(block==null) {
-			Hashtable<String,String> classAttribute = (Hashtable<String,String>)attributes.get(JGXProperties.NAME_CLASS);
-			String className = classAttribute.get(JGXProperties.ATTRIBUTE_VALUE);
+			Hashtable<String,String> classAttribute = (Hashtable<String,String>)attributes.get(BlockProperties.BLOCK_PROPERTY_CLASS);
+			String className = classAttribute.get(BlockProperties.BLOCK_ATTRIBUTE_VALUE);
 			if( className!=null ) {
-				block = createInstance(key,className);
+				block = createInstance(projectId,resourceId,blockId,className);
 			}
 			else {
 				log.warnf(TAG+"getBlockAttributes: No class in supplied attributes ("+attributes+")");
@@ -150,11 +142,13 @@ public class PropertiesUpdateHandler   {
 	 * of permissible port names. If the connection instance already exists in the Gateway model,
 	 * then return the actual port connections.
 	 * 
-	 * @param key
 	 * @param attributes
 	 * @return
 	 */
-	public Hashtable<String,Hashtable<String,String>> getConnectionAttributes(String key,Hashtable<String,Hashtable<String,String>> attributes) {
+	public Hashtable<String,Hashtable<String,String>> getConnectionAttributes(long projectId,long resourceId,String connectionId,Hashtable<String,Hashtable<String,String>> attributes) {
+		// Find the connection object
+		BlockExecutionController controller = BlockExecutionController.getInstance();
+		Connection cxn  = controller.getConnection(projectId, resourceId, connectionId);
 		return attributes;
 	}
 }

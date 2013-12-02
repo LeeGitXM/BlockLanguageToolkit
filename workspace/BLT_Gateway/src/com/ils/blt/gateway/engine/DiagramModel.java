@@ -32,8 +32,9 @@ public class DiagramModel {
 	private boolean valid = false;
 	private final long projectId;
 	private final long resourceId;
-	private final Hashtable<Long,ProcessBlock> blocks;      // Key by block number
-	private final Hashtable<String,Connection> connections;   // Key by source:port
+	private final Hashtable<String,ProcessBlock> blocks;      // Key by block number
+	private final Hashtable<String,Connection> connections;   // Key by connection number
+	private final Hashtable<String,Connection> connectionsBySource;   // Key by source:port
 	
 	
 	/**
@@ -45,8 +46,9 @@ public class DiagramModel {
 		this.projectId = proj;
 		this.resourceId = res;
 		log = LogUtil.getLogger(getClass().getPackage().getName());
-		blocks = new Hashtable<Long,ProcessBlock>();
+		blocks = new Hashtable<String,ProcessBlock>();
 		connections = new Hashtable<String,Connection>();
+		connectionsBySource = new Hashtable<String,Connection>();
 		analyze();
 	}
 	
@@ -73,14 +75,7 @@ public class DiagramModel {
 								log.debugf("%s: analyze adding block %s",TAG,id);
 								ProcessBlock block = blockFromElement(cell);
 								if( block!=null ) {
-									try {
-										Long lid = Long.decode(id);
-										blocks.put(lid, block);
-										log.debugf("%s: analyze added  block %s",TAG,id);
-									}
-									catch(NumberFormatException nfe) {
-										log.warnf("%s: analyze ....%d:%d:%s format exception(%s)",TAG,projectId,resourceId,id);
-									}
+									blocks.put(id, block);
 								}
 							}
 						}
@@ -91,7 +86,11 @@ public class DiagramModel {
 								Connection cxn = connectionFromElement(cell);
 								if( cxn!=null) {
 									String key = String.format("%s:%s",source,cxn.getUpstreamPortName());
-									connections.put(key, cxn);
+									connectionsBySource.put(key, cxn);
+									String id = cell.getAttribute("id");
+									if( !id.isEmpty() ) {
+										connections.put(id, cxn);
+									}
 								}
 							}
 						}
@@ -104,6 +103,14 @@ public class DiagramModel {
 			log.warn(TAG+"analyze: Unexpected root element ("+(root==null?"null":root.getNodeName())+")");
 		}
 	}
+	/**
+	 * @return a ProcessBlock from the diagram given its id.
+	 */
+	public ProcessBlock getBlock(String id) { return blocks.get(id); }
+	/**
+	 * @return a Connection from the diagram given its id.
+	 */
+	public Connection getConnection(String id) { return connections.get(id); }
 	
 	/**
 	 * The subject block has just placed a new result on an output port. Determine which input block

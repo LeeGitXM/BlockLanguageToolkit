@@ -45,12 +45,12 @@ public class GatewayRpcDispatcher implements BlockPropertiesInterface  {
 	}
 
 	@Override
-	public String getBlockAttributes(long projectId, long resourceId,String json) {
-		log.debugf("%s: getConnectionAttributes: %d:%d =\n%s",TAG,projectId,resourceId,json);
+	public String getBlockAttributes(long projectId, long resourceId,String blockId,String json) {
+		log.debugf("%s: getBlockAttributes: %d:%d:%s =\n%s",TAG,projectId,resourceId,blockId,json);
 		
 		@SuppressWarnings("unchecked")
 		Hashtable<String,Hashtable<String,String>> attributeTable = (Hashtable<String,Hashtable<String,String>>)jsonToJava.jsonToTable(json);
-		Hashtable<String,Hashtable<String,String>> results = PropertiesUpdateHandler.getInstance().getBlockAttributes(projectId,resourceId,attributeTable);
+		Hashtable<String,Hashtable<String,String>> results = PropertiesUpdateHandler.getInstance().getBlockAttributes(projectId,resourceId,blockId,attributeTable);
 		log.debug(TAG+"created table\n"+results);
 		String gson =  javaToJson.tableToJson(results);
 		log.trace(TAG+"JSON="+gson);
@@ -58,12 +58,12 @@ public class GatewayRpcDispatcher implements BlockPropertiesInterface  {
 	}
 	
 	@Override
-	public String getConnectionAttributes(long projectId, long resourceId,String json) {
-		log.debugf("%s: getConnectionAttributes: %d:%d =\n%s",TAG,projectId,resourceId,json);
+	public String getConnectionAttributes(long projectId, long resourceId,String connectionId,String json) {
+		log.debugf("%s: getConnectionAttributes: %d:%d:%s =\n%s",TAG,projectId,resourceId,connectionId,json);
 		
 		@SuppressWarnings("unchecked")
 		Hashtable<String,Hashtable<String,String>> attributeTable = (Hashtable<String,Hashtable<String,String>>)jsonToJava.jsonToTable(json);
-		Hashtable<String,Hashtable<String,String>> results = PropertiesUpdateHandler.getInstance().getConnectionAttributes(projectId,resourceId,attributeTable);
+		Hashtable<String,Hashtable<String,String>> results = PropertiesUpdateHandler.getInstance().getConnectionAttributes(projectId,resourceId,connectionId,attributeTable);
 		log.debug(TAG+"created table\n"+results);
 		String gson =  javaToJson.tableToJson(results);
 		log.trace(TAG+": JSON="+gson);

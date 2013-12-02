@@ -120,11 +120,7 @@ public class DiagnosticsFrame extends JInternalFrame implements ResourceWorkspac
 	public boolean isInitiallyVisible() {
 		return true;
 	}
-	
-	public void setResourceId(long resid) { 
-		log.infof("%s: setResourceId,%d", TAG,resid);
-		this.resourceId = resid; 
-	}
+
 	
 	public void saveResource() {
 		if( resourceId!=UNSET_RESOURCE ) {

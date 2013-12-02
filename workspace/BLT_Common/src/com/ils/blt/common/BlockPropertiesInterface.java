@@ -29,11 +29,12 @@ public interface BlockPropertiesInterface  {
 	 * 
 	 * @param projectId of the project to which the diagram belongs
 	 * @param resourceId of the model resource for this diagram
+	 * @param blockId the identifier of a block within the diagram
 	 * @param json string representing an array of attributes
 	 * @return a string representing a JSON document containing an array of attributes corresponding
 	 *         to the block object.
 	 */
-	public String getBlockAttributes(long projectId,long resourceId,String json);
+	public String getBlockAttributes(long projectId,long resourceId,String blockId,String json);
 
 	/**
 	 * Obtain a keyed list of attribute-value pairs for the connection represented by the supplied.
@@ -43,11 +44,12 @@ public interface BlockPropertiesInterface  {
 	 * 
 	 * @param projectId of the project to which the diagram belongs
 	 * @param resourceId of the model resource for this diagram.
+	 * @param connectionId the identifier of the connection within the diagram
 	 * @param json string representing an array of attributes
 	 * @return a string representing a JSON document containing an array of attributes corresponding
 	 *         to the connection.
 	 */
-	public String getConnectionAttributes(long projectId,long resourceId,String json);
+	public String getConnectionAttributes(long projectId,long resourceId,String connectionId,String json);
 	/**
 	 * Obtain a list of keyed attribute-value pairs (that is a list of dictionaries) containing
 	 * default values of attributes for every executable block class. These attributes may include

@@ -43,17 +43,18 @@ public class BlockPropertiesScriptFunctions  {
 	 * with appropriate defaults.
 	 * 
 	 * @param projectId of the project to which the diagram belongs
-	 * @param resourceId of the model resource for this diagra
+	 * @param resourceId of the model resource for this diagram
+	 * @param blockId the identifier of the block within the diagram
 	 * @param json string representing an array of attributes
 	 * @return a string representing a JSON document containing an array of attributes corresponding
 	 *         to the block object.
 	 */
-	public static String getBlockAttributes(long projectId,long resourceId,String json) throws Exception {
+	public static String getBlockAttributes(long projectId,long resourceId,String blockId,String json) throws Exception {
 		log.infof("%s: getBlockAttributes: %d:%d=%s",TAG,projectId,resourceId,json);
 		String result = "";
 		try {
 			result = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "getBlockAttributes",new Long(projectId),new Long(resourceId),json );
+					BLTProperties.MODULE_ID, "getBlockAttributes",new Long(projectId),new Long(resourceId),blockId,json );
 		}
 		catch(Exception ge) {
 			log.warn(TAG+"getAttributes: GatewayException ("+ge.getMessage()+")");
@@ -69,17 +70,18 @@ public class BlockPropertiesScriptFunctions  {
 	 * with appropriate defaults.
 	 * 
 	 * @param projectId of the project to which the diagram belongs
-	 * @param resourceId of the model resource for this diagra
+	 * @param resourceId of the model resource for this diagram
+	 * @param connectionId the identifier of the block within the diagram
 	 * @param json string representing an array of attributes
 	 * @return a string representing a JSON document containing an array of attributes corresponding
 	 *         to the connection.
 	 */
-	public static String getConnectionAttributes(long projectId,long resourceId,String json) throws Exception {
+	public static String getConnectionAttributes(long projectId,long resourceId,String connectionId,String json) throws Exception {
 		log.infof("%s: getConnectionAttributes: %d:%d=%s",TAG,projectId,resourceId,json);
 		String result = "";
 		try {
 			result = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "getConnectionAttributes",new Long(projectId),new Long(resourceId),json );
+					BLTProperties.MODULE_ID, "getConnectionAttributes",new Long(projectId),new Long(resourceId),connectionId,json );
 		}
 		catch(Exception ge) {
 			log.info(TAG+"getConnectionAttributes: GatewayException ("+ge.getMessage()+")");
