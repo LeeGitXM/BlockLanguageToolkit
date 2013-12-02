@@ -66,13 +66,20 @@ public class ModelResourceManager implements ProjectListener  {
 		for (ProjectResource res : resources) {
 			if( res.getResourceType().equals(BLTProperties.MODEL_RESOURCE_TYPE)) {
 				log.infof("%s: projectUpdated: found model resource %s (%d)",TAG,res.getName(),res.getResourceId());
-				//deserializeWorkspaceResource(res);
+				Document dom = deserializeModelResource(res);
+				if( dom!=null) {
+					DiagramModel dm = new DiagramModel(dom,projectId,res.getResourceId());
+					controller.addResource(new Long(projectId), new Long(res.getResourceId()), dm);
+				}
+				else {
+					log.warnf("%s: Failed to create DOM from resource",TAG);
+				}
 			}
 		}
 	}
 
 	/**
-	 *  We've discovered a changed diag-model resource. Deserialize and convert into an XML document.
+	 *  We've discovered a changed model resource. Deserialize and convert into an XML document.
 	 * @param res
 	 */ 
 	private Document deserializeModelResource(ProjectResource res) {
@@ -114,7 +121,7 @@ public class ModelResourceManager implements ProjectListener  {
 						res.getResourceId(),res.getResourceType());
 					Document dom = deserializeModelResource(res);
 					if( dom!=null) {
-						DiagramModel dm = new DiagramModel(dom);
+						DiagramModel dm = new DiagramModel(dom,projectId,res.getResourceId());
 						controller.addResource(new Long(projectId), new Long(res.getResourceId()), dm);
 					}
 					else {
@@ -133,7 +140,7 @@ public class ModelResourceManager implements ProjectListener  {
 						res.getResourceId(),res.getResourceType());
 					Document dom = deserializeModelResource(res);
 					if( dom!=null) {
-						DiagramModel dm = new DiagramModel(dom);
+						DiagramModel dm = new DiagramModel(dom,projectId,res.getResourceId());
 						controller.addResource(new Long(projectId), new Long(res.getResourceId()), dm);
 					}
 					else {
@@ -186,7 +193,7 @@ public class ModelResourceManager implements ProjectListener  {
 					res.getResourceId(),res.getResourceType());
 				Document dom = deserializeModelResource(res);
 				if( dom!=null) {
-					DiagramModel dm = new DiagramModel(dom);
+					DiagramModel dm = new DiagramModel(dom,projectId,res.getResourceId());
 					controller.addResource(new Long(projectId), new Long(res.getResourceId()), dm);
 				}
 				else {

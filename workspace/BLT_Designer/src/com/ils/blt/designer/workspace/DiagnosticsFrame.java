@@ -1,5 +1,5 @@
 /**
- *   (c) 2013  ILS Automation. All rights reserved.
+g *   (c) 2013  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.workspace;
 

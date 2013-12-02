@@ -7,7 +7,6 @@
 package com.ils.blt.gateway.engine;
 
 import java.util.Hashtable;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -129,7 +128,6 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 			projectModels = new Hashtable<Long,DiagramModel>();
 			models.put(projectId,projectModels);
 		}
-		
 		projectModels.put(resourceId, model);
 	}
 	

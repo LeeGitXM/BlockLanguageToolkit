@@ -19,7 +19,7 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
  *  right handler. This class supports the aggregate of RPC interfaces.
  */
 public class GatewayRpcDispatcher implements BlockPropertiesInterface  {
-	private static String TAG = "GatewayRpcDispatcher: ";
+	private static String TAG = "GatewayRpcDispatcher";
 	private final LoggerEx log;
 	private final GatewayContext context;
 	private final Long projectId;
