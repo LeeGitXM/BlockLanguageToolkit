@@ -26,7 +26,6 @@ public class GatewayRpcDispatcher implements BlockPropertiesInterface  {
 	private final JsonToJava jsonToJava;
 	private final JavaToJson javaToJson;
 
-
 	/**
 	 * Constructor. There is a separate dispatcher for each project.
 	 */
@@ -40,20 +39,18 @@ public class GatewayRpcDispatcher implements BlockPropertiesInterface  {
 
 
 	@Override
-	public void enableDiagram(String path, boolean flag) {
+	public void enableDiagram(long projectId, long resourceId, boolean flag) {
 		// TODO Auto-generated method stub
 		
 	}
 
-
 	@Override
-	public String getBlockAttributes(String key,String json) {
-		key = augmentKey(key);
-		log.debug(TAG+"getBlockAttributes: key=\""+key+"\"\n"+json);
+	public String getBlockAttributes(long projectId, long resourceId,String json) {
+		log.debugf("%s: getConnectionAttributes: %d:%d =\n%s",TAG,projectId,resourceId,json);
 		
 		@SuppressWarnings("unchecked")
 		Hashtable<String,Hashtable<String,String>> attributeTable = (Hashtable<String,Hashtable<String,String>>)jsonToJava.jsonToTable(json);
-		Hashtable<String,Hashtable<String,String>> results = PropertiesUpdateHandler.getInstance().getBlockAttributes(key,attributeTable);
+		Hashtable<String,Hashtable<String,String>> results = PropertiesUpdateHandler.getInstance().getBlockAttributes(projectId,resourceId,attributeTable);
 		log.debug(TAG+"created table\n"+results);
 		String gson =  javaToJson.tableToJson(results);
 		log.trace(TAG+"JSON="+gson);
@@ -61,31 +58,21 @@ public class GatewayRpcDispatcher implements BlockPropertiesInterface  {
 	}
 	
 	@Override
-	public String getConnectionAttributes(String key,String json) {
-		key = augmentKey(key);
-		log.debug(TAG+"getConnectionAttributes: key=\""+key+"\"\n"+json);
+	public String getConnectionAttributes(long projectId, long resourceId,String json) {
+		log.debugf("%s: getConnectionAttributes: %d:%d =\n%s",TAG,projectId,resourceId,json);
 		
 		@SuppressWarnings("unchecked")
 		Hashtable<String,Hashtable<String,String>> attributeTable = (Hashtable<String,Hashtable<String,String>>)jsonToJava.jsonToTable(json);
-		Hashtable<String,Hashtable<String,String>> results = PropertiesUpdateHandler.getInstance().getConnectionAttributes(key,attributeTable);
+		Hashtable<String,Hashtable<String,String>> results = PropertiesUpdateHandler.getInstance().getConnectionAttributes(projectId,resourceId,attributeTable);
 		log.debug(TAG+"created table\n"+results);
 		String gson =  javaToJson.tableToJson(results);
-		log.trace(TAG+"JSON="+gson);
+		log.trace(TAG+": JSON="+gson);
 		return gson;
 	}
 	
-	/**
-	 * Make the key universally unique by 
-	 * @param key
-	 * @return
-	 */
-	private String augmentKey(String key) {
-		return String.format("%s:%s", projectId.toString(),key);
-	}
 
 	@Override
 	public String getPaletteBlockAttributes() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -94,9 +81,5 @@ public class GatewayRpcDispatcher implements BlockPropertiesInterface  {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
-	
-
-
 	
 }

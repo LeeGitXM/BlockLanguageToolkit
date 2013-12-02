@@ -131,6 +131,18 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		projectModels.put(resourceId, model);
 	}
 	
+	public boolean blockExists(long projectId,long resourceId,long blockId) {
+		boolean result = false;
+		Hashtable<Long,DiagramModel> projectModels = models.get(new Long(projectId));
+		if( projectModels!=null ) {
+			DiagramModel dm = projectModels.get(new Long(resourceId));
+			if( dm!=null ) {
+				
+			}
+		}
+		return result;
+	}
+	
 	// ======================= Delegated to DataCollector ======================
 	/**
 	 * Start a subscription for a block attribute associated with a tag.

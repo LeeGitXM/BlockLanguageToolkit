@@ -17,24 +17,23 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
  *  The request is relayed to the Gateway scope via an RPC call.
  */
 public class PropertiesRequestHandler implements PropertiesHandlerInterface  {
-	private final static String TAG = "PropertiesRequestHandler: ";
+	private final static String TAG = "PropertiesRequestHandler";
 	private final LoggerEx log;
 	private final DesignerContext context;
-	private final String path;
+	private final long projectId;
+	private final long resourceId;
 
 	/**
 	 * Constructor adds common attributes that are needed to generate unique keys to identify
 	 * blocks and connectors.
 	 * 
 	 * @param ctxt Designer context
-	 * @param treepath path to the relevant diagram
 	 */
-	public PropertiesRequestHandler(DesignerContext ctxt,String treepath)  {
+	public PropertiesRequestHandler(DesignerContext ctxt,long proj,long res)  {
 		this.context = ctxt;
-		this.path = treepath;
+		this.projectId = proj;
+		this.resourceId= res;
 		log = LogUtil.getLogger(getClass().getPackage().getName());
-		log.info(TAG+"initial treepath = "+treepath);
-
 	}
 	
 	
@@ -50,11 +49,10 @@ public class PropertiesRequestHandler implements PropertiesHandlerInterface  {
 	 */
 	@Override
 	public String getBlockAttributes(String cellId,String json) {
-		String key = keyFromCellId(cellId);
 		log.info(TAG+"getBlockAttributes:"+cellId+"="+json);
 		String result = "";
 		try {
-			result = BlockPropertiesScriptFunctions.getBlockAttributes(key, json);
+			result = BlockPropertiesScriptFunctions.getBlockAttributes(projectId,resourceId,cellId, json);
 		}
 		catch(Exception ex) {
 			log.info(TAG+"getBlockAttributes: Exception ("+ex.getMessage()+")");
@@ -78,19 +76,14 @@ public class PropertiesRequestHandler implements PropertiesHandlerInterface  {
 	 */
 	@Override
 	public String getConnectionAttributes(String cellId,String json) {
-		String key = keyFromCellId(cellId);
 		String result = "";
 		try {
-			result = BlockPropertiesScriptFunctions.getConnectionAttributes(key, json);
+			result = BlockPropertiesScriptFunctions.getConnectionAttributes(projectId,resourceId,cellId,json);
 		}
 		catch(Exception ex) {
 			log.info(TAG+"getConnectionAttributes: Exception ("+ex.getMessage()+")");
 		}
 		return result;
-	}
-
-	private String keyFromCellId(String cellId) {
-		return String.format("%s:%s", (path==null?"":path),cellId);
 	}
 
 }

@@ -15,10 +15,11 @@ public interface BlockPropertiesInterface  {
 	/**
 	 * Enable or disable a diagram.
 	 * 
-	 * @param path tree-path to the diagram
+	 * @param projectId of the project to which the diagram belongs
+	 * @param resourceId of the model resource for this diagram
 	 * @param flag true to enable the diagram
 	 */
-	public void enableDiagram(String path,boolean flag);
+	public void enableDiagram(long projectId,long resourceId,boolean flag);
 	
 	/**
 	 * Obtain a keyed-list of attribute-value pairs for the block identified by the specified.
@@ -26,12 +27,13 @@ public interface BlockPropertiesInterface  {
 	 * In the case where a block instance is created, the attribute values will be filled 
 	 * with appropriate defaults.
 	 * 
-	 * @param key a string representing the id of the cell within the project.
+	 * @param projectId of the project to which the diagram belongs
+	 * @param resourceId of the model resource for this diagram
 	 * @param json string representing an array of attributes
 	 * @return a string representing a JSON document containing an array of attributes corresponding
 	 *         to the block object.
 	 */
-	public String getBlockAttributes(String key,String json);
+	public String getBlockAttributes(long projectId,long resourceId,String json);
 
 	/**
 	 * Obtain a keyed list of attribute-value pairs for the connection represented by the supplied.
@@ -39,12 +41,13 @@ public interface BlockPropertiesInterface  {
 	 * In the case where a connection is created, the attribute values will be filled 
 	 * with appropriate defaults.
 	 * 
-	 * @param key a string representing the id of the cell within the project.
+	 * @param projectId of the project to which the diagram belongs
+	 * @param resourceId of the model resource for this diagram.
 	 * @param json string representing an array of attributes
 	 * @return a string representing a JSON document containing an array of attributes corresponding
 	 *         to the connection.
 	 */
-	public String getConnectionAttributes(String key,String json);
+	public String getConnectionAttributes(long projectId,long resourceId,String json);
 	/**
 	 * Obtain a list of keyed attribute-value pairs (that is a list of dictionaries) containing
 	 * default values of attributes for every executable block class. These attributes may include

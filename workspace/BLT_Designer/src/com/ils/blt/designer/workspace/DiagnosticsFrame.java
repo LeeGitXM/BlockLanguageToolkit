@@ -43,18 +43,19 @@ public class DiagnosticsFrame extends JInternalFrame implements ResourceWorkspac
 	private final JComponent contentPane;
 	private final mxIGraphModel model;
 	private final DesignerContext context;
-	private final String treePath;    // Tree path in nav tree
-	private long resourceId = UNSET_RESOURCE;
+	private final long projectId;
+	private final long resourceId;
 	private LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	/**
 	 * 
 	 * @param mdl model resource that describes the edge/vertex layout
 	 * @param name title/key of the diagram
 	 */
-	public DiagnosticsFrame(DesignerContext ctx,String name,String path) {
+	public DiagnosticsFrame(DesignerContext ctx,String name,long proj,long res) {
 		super(name,true,true,false,false);  // resizable,closable,maximizable,iconifiable
 		this.context = ctx;
-		this.treePath = path;
+		this.projectId = proj;
+		this.resourceId = res;
 		setName(name);
 		this.contentPane = (JComponent)getContentPane();
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
@@ -71,7 +72,7 @@ public class DiagnosticsFrame extends JInternalFrame implements ResourceWorkspac
         mxSwingConstants.SHADOW_COLOR = Color.LIGHT_GRAY;
         mxConstants.W3C_SHADOWCOLOR = "#D3D3D3";
 
-        PropertiesRequestHandler handler = new PropertiesRequestHandler(context,treePath);
+        PropertiesRequestHandler handler = new PropertiesRequestHandler(context,projectId,resourceId);
         editor = new JgxWorkspaceEditor(handler);
         editor.setPreferredSize(new Dimension(DEFAULT_WIDTH,DEFAULT_HEIGHT));
         contentPane.add(editor,BorderLayout.CENTER);

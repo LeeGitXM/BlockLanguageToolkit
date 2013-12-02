@@ -32,7 +32,7 @@ public class DiagramModel {
 	private boolean valid = false;
 	private final long projectId;
 	private final long resourceId;
-	private final Hashtable<String,ProcessBlock> blocks;        // Key by block number
+	private final Hashtable<Long,ProcessBlock> blocks;      // Key by block number
 	private final Hashtable<String,Connection> connections;   // Key by source:port
 	
 	
@@ -45,7 +45,7 @@ public class DiagramModel {
 		this.projectId = proj;
 		this.resourceId = res;
 		log = LogUtil.getLogger(getClass().getPackage().getName());
-		blocks = new Hashtable<String,ProcessBlock>();
+		blocks = new Hashtable<Long,ProcessBlock>();
 		connections = new Hashtable<String,Connection>();
 		analyze();
 	}
@@ -73,8 +73,14 @@ public class DiagramModel {
 								log.debugf("%s: analyze adding block %s",TAG,id);
 								ProcessBlock block = blockFromElement(cell);
 								if( block!=null ) {
-									blocks.put(id, block);
-									log.debugf("%s: analyze added  block %s",TAG,id);
+									try {
+										Long lid = Long.decode(id);
+										blocks.put(lid, block);
+										log.debugf("%s: analyze added  block %s",TAG,id);
+									}
+									catch(NumberFormatException nfe) {
+										log.warnf("%s: analyze ....%d:%d:%s format exception(%s)",TAG,projectId,resourceId,id);
+									}
 								}
 							}
 						}

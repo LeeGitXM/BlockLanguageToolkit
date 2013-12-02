@@ -4,9 +4,14 @@
  */
 package com.ils.blt.gateway;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Hashtable;
 
+import sun.reflect.generics.repository.ClassRepository;
+
 import com.ils.block.ProcessBlock;
+import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.jgx.common.JGXProperties;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -15,7 +20,7 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
 
 /**
- *  This handler provides for a specific collection of calls to the Python
+ *  This handler provides for a specific collection of calls to  block
  *  layer from the Gateway. In general, the calls are made to update properties 
  *  in the Python objects that represent a block and to trigger their evaluation.
  *  
@@ -60,31 +65,24 @@ public class PropertiesUpdateHandler   {
 	
 	
 	/**
-	 * Create an instance of a named class. Place it into the instance repository
-	 * keyed by the specified value. 
+	 * Create an instance of a named class. 
 	 * @param key
 	 * @param className
 	 * @return the instance created, else null
 	 */
-	public ProcessBlock createInstance(String key,String className) {
-		log.debugf("%s: createInstance of %s, keyed by %s",TAG,className,key);   // Should be updated
+	public ProcessBlock createInstance(long projectId,long resourceId,long blockId,String className) {
+		log.debugf("%s: createInstance of %s (%d,%d,%d)",TAG,className,projectId,resourceId,blockId);   // Should be updated
 		ProcessBlock block = null;
 		try {
 			Class<?> clss = Class.forName(className);
-			Object obj = clss.newInstance();
-			if( obj instanceof ProcessBlock ) {
-				block = (ProcessBlock)obj;
-				// The block already has the class ... add the key.
-				Hashtable<String,String> att = new Hashtable<String,String>();
-				att.put(JGXProperties.ATTRIBUTE_VALUE, key);
-				att.put(JGXProperties.ATTRIBUTE_EDITABLE, "False");
-				block.getProperties().put(JGXProperties.NAME_KEY, att);
-				ClassRepository repo = ClassRepository.getInstance();
-				repo.put(key, block);
-			}
-			else {
-				log.warnf("%s: createInstance: Class %s not a BasicBlock",TAG,className);
-			}
+			Constructor ctor = clss.getDeclaredConstructor(new Class[] {long.class,long.class,long.class});
+			block = (ProcessBlock)ctor.newInstance(projectId,resourceId,blockId);
+		}
+		catch(InvocationTargetException ite ) {
+			log.warnf("%s: createInstance %s: Invoction failed (%s)",TAG,className,ite.getMessage()); 
+		}
+		catch(NoSuchMethodException nsme ) {
+			log.warnf("%s: createInstance %s: Three argument constructor not found (%s)",TAG,className,nsme.getMessage()); 
 		}
 		catch( ClassNotFoundException cnf ) {
 			log.warnf("%s: createInstance: Error creating %s (%s)",TAG,className,cnf.getMessage()); 
@@ -115,9 +113,9 @@ public class PropertiesUpdateHandler   {
 		return properties;
 	}
 	
-	public boolean instanceExists(String key) {
-		ClassRepository repo = ClassRepository.getInstance();
-		return repo.containsKey(key);
+	public boolean instanceExists(long projectId,long resourceId,long blockId) {
+		BlockExecutionController controller = BlockExecutionController.getInstance();
+		return controller.blockExists(projectId,resourceId,blockId);
 	}
 	
 	/**

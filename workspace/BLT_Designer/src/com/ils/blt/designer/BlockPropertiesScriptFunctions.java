@@ -16,19 +16,21 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  *  @see com.ils.BlockPropertiesInterface.common.PropertiesRequestInterface
  */
 public class BlockPropertiesScriptFunctions  {
-	private static final String TAG = "PropertiesRequestScriptFunctions: ";
+	private static final String TAG = "BlockPropertiesScriptFunctions";
 	private static LoggerEx log = LogUtil.getLogger(BlockPropertiesScriptFunctions.class.getPackage().getName());
 	
 	/**
 	 * Enable or disable a diagram.
 	 * 
-	 * @param path tree-path to the diagram
+	 * @param projectId of the project to which the diagram belongs
+	 * @param resourceId of the model resource for this diagra
 	 * @param flag true to enable the diagram
 	 */
-	public static void enableDiagram(String path,boolean flag)  {
-		log.debug(TAG+String.format("enableDiagram - %s = %s",path,(flag?"true":"false")));
+	public static void enableDiagram(long projectId,long resourceId,boolean flag)  {
+		log.debugf("%s: enableDiagram - %d:%d = %s",TAG,projectId,resourceId,(flag?"true":"false"));
 		try {;
-			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(BLTProperties.MODULE_ID, "enableDiagram",new Boolean(flag));
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(BLTProperties.MODULE_ID, "enableDiagram",
+					new Long(projectId),new Long(resourceId),new Boolean(flag));
 		}
 		catch(Exception ge) {
 			log.info(TAG+"enableDiagram: GatewayException ("+ge.getMessage()+")");
@@ -40,17 +42,18 @@ public class BlockPropertiesScriptFunctions  {
 	 * In the case where a block instance is created, the attribute values will be filled 
 	 * with appropriate defaults.
 	 * 
-	 * @param key a string representing the id of the cell within the project.
+	 * @param projectId of the project to which the diagram belongs
+	 * @param resourceId of the model resource for this diagra
 	 * @param json string representing an array of attributes
 	 * @return a string representing a JSON document containing an array of attributes corresponding
 	 *         to the block object.
 	 */
-	public static String getBlockAttributes(String key,String json) throws Exception {
-		log.info(TAG+"getBlockAttributes:"+key+"="+json);
+	public static String getBlockAttributes(long projectId,long resourceId,String json) throws Exception {
+		log.infof("%s: getBlockAttributes: %d:%d=%s",TAG,projectId,resourceId,json);
 		String result = "";
 		try {
 			result = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "getBlockAttributes",key,json );
+					BLTProperties.MODULE_ID, "getBlockAttributes",new Long(projectId),new Long(resourceId),json );
 		}
 		catch(Exception ge) {
 			log.warn(TAG+"getAttributes: GatewayException ("+ge.getMessage()+")");
@@ -65,17 +68,18 @@ public class BlockPropertiesScriptFunctions  {
 	 * In the case where a connection is created, the attribute values will be filled 
 	 * with appropriate defaults.
 	 * 
-	 * @param key a string representing the id of the cell within the project.
+	 * @param projectId of the project to which the diagram belongs
+	 * @param resourceId of the model resource for this diagra
 	 * @param json string representing an array of attributes
 	 * @return a string representing a JSON document containing an array of attributes corresponding
 	 *         to the connection.
 	 */
-	public static String getConnectionAttributes(String key,String json) throws Exception {
-		log.debug(TAG+"getConnectionAttributes:"+key+"="+json);
+	public static String getConnectionAttributes(long projectId,long resourceId,String json) throws Exception {
+		log.infof("%s: getConnectionAttributes: %d:%d=%s",TAG,projectId,resourceId,json);
 		String result = "";
 		try {
 			result = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "getConnectionAttributes",key,json );
+					BLTProperties.MODULE_ID, "getConnectionAttributes",new Long(projectId),new Long(resourceId),json );
 		}
 		catch(Exception ge) {
 			log.info(TAG+"getConnectionAttributes: GatewayException ("+ge.getMessage()+")");

@@ -93,17 +93,7 @@ public class DiagnosticsNode extends AbstractResourceNavTreeNode
 	 */
 	public void openFrame() {
 		DiagnosticsWorkspace workspace = DiagnosticsWorkspace.getInstance();
-		// First the frame ... if we don't know about it, then it shouldn't exist.
-		String frameName = name+MODEL_SUFFIX;  // Make frame name different
-		if( frame==null ) {
-			// Create it
-			TreePath treePath = pathToRoot();
-			String tpath = treePathToString(treePath);
-			log.debugf("%s: openFrame from: %s",TAG,tpath);
-			frame = new DiagnosticsFrame(context,frameName,tpath);
-			frame.addInternalFrameListener(this);
-		}			
-		workspace.open(frame);
+
 		
 		// Next the model resource. If we don't have one, then search.
 		// (In case we were notified before we existed).
@@ -142,7 +132,19 @@ public class DiagnosticsNode extends AbstractResourceNavTreeNode
 		else {
 			log.info(String.format("%s: openFrame: existing model resource %d",TAG,modelResource.getResourceId()));
 		}
-		frame.setResourceId(modelResource.getResourceId());
+		
+		// First the frame ... if we don't know about it, then it shouldn't exist.
+		String frameName = name+MODEL_SUFFIX;  // Make frame name different
+		if( frame==null ) {
+			// Create it
+			TreePath treePath = pathToRoot();
+			String tpath = treePathToString(treePath);
+			log.debugf("%s: openFrame from: %s",TAG,tpath);
+			frame = new DiagnosticsFrame(context,frameName,tpath);
+			frame.addInternalFrameListener(this);
+		}			
+		workspace.open(frame);
+	
 	}
 	
 	

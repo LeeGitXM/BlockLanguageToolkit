@@ -5,7 +5,7 @@
 	<property name="version.build" value="1" />	
 	<!-- Change version.beta value to "" for release builds -->
 	<property name="version.beta" value="-development" />		
-	<property name="BLTModule.version" value="1.0.3.${version.build}" />
+	<property name="BLTModule.version" value="1.0.4.${version.build}" />
 	<property name="BLTModule.name" value="BLT" />
 	<property name="BLTModule.description" value="Block Language Toolkit" />
 	<property name="root.dir" value="${basedir}/../.." />
@@ -152,7 +152,7 @@
 	</target>
 	
 	<!-- Builds the toolkit module jars and the final .modl file -->
-	<target name="build" depends="common.build,block.build,block.jar,common.jar,jgx.build,jgx.jar" description="Compile the source">
+	<target name="build" depends="common.build,common.jar,block.build,block.jar,jgx.build,jgx.jar" description="Compile the source">
 		<echo message="${BLTModule.name} ${BLTModule.version}" />	
 		<delete dir="${basedir}/BLT_Build/temp_modl" />	
 		
