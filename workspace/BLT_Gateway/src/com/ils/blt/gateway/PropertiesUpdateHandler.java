@@ -9,6 +9,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Hashtable;
 
 import com.ils.block.BlockProperties;
+import com.ils.block.ExecutionController;
 import com.ils.block.ProcessBlock;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.connection.Connection;
@@ -72,8 +73,8 @@ public class PropertiesUpdateHandler   {
 		ProcessBlock block = null;
 		try {
 			Class<?> clss = Class.forName(className);
-			Constructor ctor = clss.getDeclaredConstructor(new Class[] {long.class,long.class,String.class});
-			block = (ProcessBlock)ctor.newInstance(projectId,resourceId,blockId);
+			Constructor<?> ctor = clss.getDeclaredConstructor(new Class[] {ExecutionController.class,long.class,long.class,String.class});
+			block = (ProcessBlock)ctor.newInstance(BlockExecutionController.getInstance(),projectId,resourceId,blockId);
 		}
 		catch(InvocationTargetException ite ) {
 			log.warnf("%s: createInstance %s: Invoction failed (%s)",TAG,className,ite.getMessage()); 

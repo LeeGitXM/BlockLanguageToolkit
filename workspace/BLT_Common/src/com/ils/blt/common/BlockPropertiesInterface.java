@@ -19,7 +19,7 @@ public interface BlockPropertiesInterface  {
 	 * @param resourceId of the model resource for this diagram
 	 * @param flag true to enable the diagram
 	 */
-	public void enableDiagram(long projectId,long resourceId,boolean flag);
+	public void enableDiagram(Long projectId,Long resourceId,Boolean flag);
 	
 	/**
 	 * Obtain a keyed-list of attribute-value pairs for the block identified by the specified.
@@ -34,7 +34,7 @@ public interface BlockPropertiesInterface  {
 	 * @return a string representing a JSON document containing an array of attributes corresponding
 	 *         to the block object.
 	 */
-	public String getBlockAttributes(long projectId,long resourceId,String blockId,String json);
+	public String getBlockAttributes(Long projectId,Long resourceId,String blockId,String json);
 
 	/**
 	 * Obtain a keyed list of attribute-value pairs for the connection represented by the supplied.
@@ -49,7 +49,7 @@ public interface BlockPropertiesInterface  {
 	 * @return a string representing a JSON document containing an array of attributes corresponding
 	 *         to the connection.
 	 */
-	public String getConnectionAttributes(long projectId,long resourceId,String connectionId,String json);
+	public String getConnectionAttributes(Long projectId,Long resourceId,String connectionId,String json);
 	/**
 	 * Obtain a list of keyed attribute-value pairs (that is a list of dictionaries) containing
 	 * default values of attributes for every executable block class. These attributes may include

@@ -39,13 +39,15 @@ public class GatewayRpcDispatcher implements BlockPropertiesInterface  {
 
 
 	@Override
-	public void enableDiagram(long projectId, long resourceId, boolean flag) {
+	public void enableDiagram(Long projectId, Long resourceId, Boolean flag) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public String getBlockAttributes(long projectId, long resourceId,String blockId,String json) {
+	public String getBlockAttributes(Long proj, Long res,String blockId,String json) {
+		long projectId = proj.longValue();
+		long resourceId = res.longValue();
 		log.debugf("%s: getBlockAttributes: %d:%d:%s =\n%s",TAG,projectId,resourceId,blockId,json);
 		
 		@SuppressWarnings("unchecked")
@@ -58,7 +60,9 @@ public class GatewayRpcDispatcher implements BlockPropertiesInterface  {
 	}
 	
 	@Override
-	public String getConnectionAttributes(long projectId, long resourceId,String connectionId,String json) {
+	public String getConnectionAttributes(Long proj, Long res,String connectionId,String json) {
+		long projectId = proj.longValue();
+		long resourceId = res.longValue();
 		log.debugf("%s: getConnectionAttributes: %d:%d:%s =\n%s",TAG,projectId,resourceId,connectionId,json);
 		
 		@SuppressWarnings("unchecked")

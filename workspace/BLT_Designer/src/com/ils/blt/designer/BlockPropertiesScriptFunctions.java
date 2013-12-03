@@ -51,15 +51,15 @@ public class BlockPropertiesScriptFunctions  {
 	 */
 	public static String getBlockAttributes(long projectId,long resourceId,String blockId,String json) throws Exception {
 		log.infof("%s: getBlockAttributes: %d:%d=%s",TAG,projectId,resourceId,json);
-		String result = "";
+		String result = json;
 		try {
 			result = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "getBlockAttributes",new Long(projectId),new Long(resourceId),blockId,json );
 		}
 		catch(Exception ge) {
-			log.warn(TAG+"getAttributes: GatewayException ("+ge.getMessage()+")");
+			log.warnf("%s: getAttributes: GatewayException (%s)",TAG,ge.getMessage());
 		}
-		log.info(TAG+"getBlockAttributes: returned .. \n"+result);
+		log.infof("%s: getBlockAttributes: returned .. \n",TAG,result);
 		return result;
 	}
 	
