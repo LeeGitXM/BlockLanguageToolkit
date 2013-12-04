@@ -1,0 +1,24 @@
+Uses of MouseAdapter …
+
+mxMouseAdapter - empty 
+
+JGX - BasicGraphEditor - graphOutline - inner
+                             mouse pressed maps to mouse released for Mac
+                             mouse released - show OutlinePopupMenu
+                         graphComponent.graphControl - generic adapter
+                             mouse pressed maps to mouse released for Mac
+                             mouse released - show GraphPopupMenu
+                         graphComponent.graphControl - mouse motion listener
+			     mouse dragged - call mouseLocationChanged()
+                             mouse moved - call mouseDragged()
+
+mxGraphComponent - can overwrite createHandlers(), called in constructor
+                   can overwrite createTransferHandler()
+
+examples ClickHandler - inserts two vertices and an edge
+
+connectionHandler - on mouse released can create a vertex
+graphHandler - on mouse released can create a vertex
+insertHandler - on mouse released can create a vertex
+panningHandler - does not create vertices
+rotationHandler - does not create vertices
