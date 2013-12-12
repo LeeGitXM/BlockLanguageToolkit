@@ -5,16 +5,10 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/ILS_Common"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/JGX"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/JGraphX"/>
-	<classpathentry kind="lib" path="/Ignition/lib/client-api.jar"/>
-	<classpathentry kind="lib" path="/Ignition/lib/designer-api.jar"/>
-	<classpathentry kind="lib" path="/Ignition/lib/ignition-common.jar"/>
-	<classpathentry kind="lib" path="/Ignition/lib/vision-client-api.jar"/>
-	<classpathentry kind="lib" path="/Ignition/lib/vision-common.jar"/>
-	<classpathentry kind="lib" path="/Ignition/lib/vision-designer-api.jar"/>
-	<classpathentry kind="lib" path="/External/lib/gson-2.2.2.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/BLT_Client"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/BLT_Common"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/BlockDef"/>
-	<classpathentry kind="lib" path="/External/lib/guava-15.0.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/Ignition-77"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/External"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -10,7 +10,7 @@ import java.util.Hashtable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.ils.block.BlockProperties;
+import com.ils.block.BlockConstants;
 import com.ils.block.ExecutionController;
 import com.ils.block.NewValueNotification;
 import com.ils.block.ProcessBlock;
@@ -183,7 +183,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public void stopSubscription(ProcessBlock block,String propertyName) {
 		Hashtable<String,String> property = block.getProperty(propertyName);
 		if( property!=null ) {
-			String tagPath = property.get(BlockProperties.BLOCK_ATTRIBUTE_TAGPATH);
+			String tagPath = property.get(BlockConstants.BLOCK_ATTRIBUTE_TAGPATH);
 			if( tagPath!=null) {
 				dataCollector.stopSubscription(tagPath);
 			}

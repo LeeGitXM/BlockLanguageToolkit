@@ -5,8 +5,8 @@
 		<name>@NAME@</name>
 		<description>@DESCRIPTION@</description>
 		<version>@VERSION@</version>
-		<requiredignitionversion>7.6.0</requiredignitionversion>
-		<requiredframeworkversion>5</requiredframeworkversion>
+		<requiredignitionversion>7.7.0</requiredignitionversion>
+		<requiredframeworkversion>6</requiredframeworkversion>
 		<freemodule>true</freemodule>
 
 		<!-- Add the module dependencies for each scope -->

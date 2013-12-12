@@ -68,7 +68,7 @@ public class GatewayRpcDispatcher implements BlockPropertiesInterface  {
 		@SuppressWarnings("unchecked")
 		Hashtable<String,Hashtable<String,String>> attributeTable = (Hashtable<String,Hashtable<String,String>>)jsonToJava.jsonToTable(json);
 		Hashtable<String,Hashtable<String,String>> results = PropertiesUpdateHandler.getInstance().getConnectionAttributes(projectId,resourceId,connectionId,attributeTable);
-		log.debug(TAG+"created table\n"+results);
+		log.debugf("%s: created table = %s",TAG,results);
 		String gson =  javaToJson.tableToJson(results);
 		log.trace(TAG+": JSON="+gson);
 		return gson;

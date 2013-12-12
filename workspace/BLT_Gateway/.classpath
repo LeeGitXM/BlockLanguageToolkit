@@ -5,10 +5,9 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/JGX"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ILS_Common"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/JGraphX"/>
-	<classpathentry kind="lib" path="/External/lib/gson-2.2.2.jar"/>
-	<classpathentry kind="lib" path="/Ignition/lib/ignition-common.jar"/>
-	<classpathentry kind="lib" path="/Ignition/lib/gateway-api.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/BLT_Common"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/BlockDef"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/External"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/Ignition-77"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -5,6 +5,7 @@
  */
 package com.ils.blt.designer.navtree;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.util.List;
 import java.util.UUID;
@@ -13,7 +14,9 @@ import javax.swing.JPopupMenu;
 import javax.swing.tree.TreePath;
 
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.designer.workspace.DiagnosticsWorkspace;
+import com.ils.blt.common.serializable.SerializableDiagram;
+import com.ils.blt.designer.BLTDesignerHook;
+import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;
@@ -21,6 +24,7 @@ import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.inductiveautomation.ignition.common.xmlserialization.serialization.XMLSerializer;
 import com.inductiveautomation.ignition.designer.UndoManager;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
@@ -33,26 +37,30 @@ import com.inductiveautomation.ignition.designer.navtree.model.ResourceDeleteAct
  * layout. The folder depth is two or three. Menu options vary depending on whether
  * this is the root node, or not. Labels depend on the depth.
  */
-public class DiagnosticsFolderNode extends FolderNode {
-	private static final String TAG = "DiagnosticsFolderNode:";
+public class DiagramTreeNode extends FolderNode {
+	private static final String TAG = "DiagnosticsFolderNode";
 	private static final String NAV_PREFIX = "NavTree";       // Required for some defaults
 	private static final String BUNDLE_NAME = "navtree";      // Name of properties file
 	private static final int DIAGRAM_DEPTH = 2;                   // For a two-tier menu
 	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	// These are the various actions beyond defaults
-	private ClearAction clearAction = null;
 	private DebugAction debugAction = null;
 	private ApplicationAction applicationAction = null;
 	private FamilyAction familyAction = null;
 	protected DiagramAction diagramAction = null;
+	private final DiagramWorkspace workspace;
+	
+	static {
+		BundleUtil.get().addBundle(NAV_PREFIX,DiagramTreeNode.class,BUNDLE_NAME);
+	}
 
 	/** 
 	 * Create a new folder node representing the root folder
 	 * @param context the designer context
 	 */
-	public DiagnosticsFolderNode(DesignerContext ctx) {
+	public DiagramTreeNode(DesignerContext ctx) {
 		super(ctx, BLTProperties.MODULE_ID, ApplicationScope.GATEWAY,BLTProperties.ROOT_FOLDER_UUID);
-		BundleUtil.get().addBundle(NAV_PREFIX,getClass(),BUNDLE_NAME);
+		workspace = ((BLTDesignerHook)ctx.getModule(BLTProperties.MODULE_ID)).getWorkspace();
 		setText(BundleUtil.get().getString(NAV_PREFIX+".RootFolderName"));
 		setIcon(IconUtil.getIcon("folder_closed"));
 		log.info(TAG+"root:"+this.pathToRoot());	
@@ -68,8 +76,9 @@ public class DiagnosticsFolderNode extends FolderNode {
 	 * @param context the designer context
 	 * @param resource the project resource
 	 */
-	public DiagnosticsFolderNode(DesignerContext context,ProjectResource resource) {
+	public DiagramTreeNode(DesignerContext context,ProjectResource resource) {
 		super(context, resource);
+		workspace = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getWorkspace();
 		setIcon(IconUtil.getIcon("folder_closed"));
 	}
 
@@ -87,21 +96,14 @@ public class DiagnosticsFolderNode extends FolderNode {
 		log.debug(String.format("%s.createChildNode type:%s, level=%d", TAG,res.getResourceType(),getDepth()));
 		AbstractNavTreeNode node = null;
 		if (ProjectResource.FOLDER_RESOURCE_TYPE.equals(res.getResourceType())) {
-			node = new DiagnosticsFolderNode(context, res);
-			node.install(this);
+			node = new DiagramTreeNode(context, res);
 			log.debug(TAG+"createChildFolder:"+this.pathToRoot()+"->"+node.pathToRoot());
 			return node;
 		}
-		else if (BLTProperties.PANEL_RESOURCE_TYPE.equals(res.getResourceType())) {
-			node = new DiagnosticsNode(context,res);
-			node.install(this);
+		else if (BLTProperties.MODEL_RESOURCE_TYPE.equals(res.getResourceType())) {
+			node = new DiagramNode(context,res,workspace);
 			log.debug(TAG+"createChildPanel:"+this.pathToRoot()+"->"+node.pathToRoot());
 			return node;
-		} 
-		// The Panel and the model have the same navtree parent. The model is not shown in the
-		// tree, nor is it instantiated here. Instead it is created as a child of the panel.
-		else if (BLTProperties.MODEL_RESOURCE_TYPE.equals(res.getResourceType())) {
-			return null;
 		} 
 		else {
 			throw new IllegalArgumentException();
@@ -110,12 +112,12 @@ public class DiagnosticsFolderNode extends FolderNode {
 	
 	@Override
 	public String getWorkspaceName() {
-		return DiagnosticsWorkspace.getInstance().getKey();
+		return DiagramWorkspace.key;
 	}
 	
 	@Override
 	public boolean isEditActionHandler() {
-		return true;
+		return isRootFolder();
 	}
 	/**
 	 * Define the menu used for popups. This appears to be called only once for each node.
@@ -126,11 +128,9 @@ public class DiagnosticsFolderNode extends FolderNode {
 		
 		if (isRootFolder()) { 
 			applicationAction = new ApplicationAction(this.folderId);
-			clearAction = new ClearAction();
 			debugAction = new DebugAction();
 			menu.add(applicationAction);
 			menu.addSeparator();
-			menu.add(clearAction);
 			menu.add(debugAction);
 		}
 		else if( getDepth()==DIAGRAM_DEPTH) {
@@ -180,8 +180,8 @@ public class DiagnosticsFolderNode extends FolderNode {
 	public void doDelete(List<? extends AbstractNavTreeNode> children,
 			DeleteReason reason) {
 		for (AbstractNavTreeNode node : children) {
-			if (node instanceof DiagnosticsNode) {
-				((DiagnosticsNode) node).closeAndCommit();
+			if (node instanceof DiagramNode) {
+				((DiagramNode) node).closeAndCommit();
 			}
 		}
 
@@ -189,60 +189,17 @@ public class DiagnosticsFolderNode extends FolderNode {
 				(List<AbstractResourceNavTreeNode>) children,
 				reason.getActionWordKey(), (getDepth()==1? (NAV_PREFIX+".ApplicationNoun"):(NAV_PREFIX+".FamilyNoun")));
 		if (delete.execute()) {
-			UndoManager.getInstance().add(delete, DiagnosticsFolderNode.class);
+			UndoManager.getInstance().add(delete, DiagramTreeNode.class);
 		}
 	}
 
 	@Override
 	public void onSelected() {
 		UndoManager.getInstance()
-				.setSelectedContext(DiagnosticsFolderNode.class);
+				.setSelectedContext(DiagramTreeNode.class);
 	}
 	
-	// ==================================== Action Classes ==================================
-	// From the root node, delete all garbage workspace resources
-	private class ClearAction extends BaseAction {
-		private static final long serialVersionUID = 1L;
-		public ClearAction()  {
-			super(NAV_PREFIX+".Clean",IconUtil.getIcon("trafficlight_yellow"));
-		}
-
-		
-		public void actionPerformed(ActionEvent e) {
-			List <ProjectResource> resources = context.getProject().getResources();
-			for( ProjectResource panel : resources ) {
-				if( panel.getResourceType().equalsIgnoreCase(BLTProperties.PANEL_RESOURCE_TYPE) &&
-					panel.getData().length!=16) {
-					log.info("   --- deleting panel "+panel.getResourceId()+" "+panel.getName()+" illegal contents----"); 
-					context.getProject().deleteResource(panel.getResourceId());
-				}
-			}
-			resources = context.getProject().getResources();
-			for( ProjectResource res : resources ) {
-				if( res.getResourceType().equalsIgnoreCase(BLTProperties.MODEL_RESOURCE_TYPE)) {
-					UUID modelUUID = res.getParentUuid();
-					log.info("Found model resource "+res.getResourceId()+" "+res.getName()+"(parent="+modelUUID+")");
-					// A model resource must have a corresponding panel with the same parents
-					boolean hasParent = false;
-					List <ProjectResource> panels = context.getProject().getResources();
-					for( ProjectResource panel : panels ) {
-						if( panel.getResourceType().equalsIgnoreCase(BLTProperties.PANEL_RESOURCE_TYPE) ) {
-							UUID uuid = panel.getParentUuid();
-							log.info("Panel "+panel.getResourceId()+" "+panel.getName()+"("+uuid.toString()+")");
-							if( modelUUID.equals(uuid)) {
-								hasParent = true;
-								break;
-							}
-						}
-					}
-					if( !hasParent ) {
-						log.info("Model resource "+res.getResourceId()+" is an orphan, deleting ...");
-						context.getProject().deleteResource(res.getResourceId());
-					}
-				}
-			}
-		}
-	}
+	
 	// From the root node, recursively log the contents of the tree
 	private class DebugAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
@@ -311,18 +268,24 @@ public class DiagnosticsFolderNode extends FolderNode {
 				final long newId = context.newResourceId();
 				String newName = BundleUtil.get().getString(NAV_PREFIX+".DefaultNewDiagramName");
 				if( newName==null) newName = "New Diag";  // Missing string resource
-				UUID uuid = UUID.randomUUID();
-				long most = uuid.getMostSignificantBits();
-		        long least = uuid.getLeastSignificantBits();
-		        byte[] bytes = longsToByteArray(most, least);
-				log.debugf("%s: DiagramAction. create new %s resource %d, %s (%d bytes)",TAG,BLTProperties.PANEL_RESOURCE_TYPE,
-						newId,uuid.toString(),bytes.length);
+				SerializableDiagram diagram = new SerializableDiagram();
+				diagram.setName(newName);
+				XMLSerializer serializer = context.createSerializer();
+				serializer.addObject(diagram);
+				byte[] bytes = serializer.serializeBinary(false);
+				log.debugf("%s: DiagramAction. create new %s resource %d (%d bytes)",TAG,BLTProperties.MODEL_RESOURCE_TYPE,
+						newId,bytes.length);
 				ProjectResource resource = new ProjectResource(newId,
-						BLTProperties.MODULE_ID, BLTProperties.PANEL_RESOURCE_TYPE,
+						BLTProperties.MODULE_ID, BLTProperties.MODEL_RESOURCE_TYPE,
 						newName, ApplicationScope.GATEWAY, bytes);
 				resource.setParentUuid(getFolderId());
 				context.updateResource(resource);
 				selectChild(newId);
+				EventQueue.invokeLater(new Runnable() {
+					public void run() {
+						workspace.open(newId);
+					}
+				});
 			} 
 			catch (Exception err) {
 				ErrorUtil.showError(err);

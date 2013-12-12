@@ -8,10 +8,11 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Hashtable;
 
-import com.ils.block.BlockProperties;
+import com.ils.block.BlockConstants;
 import com.ils.block.ExecutionController;
 import com.ils.block.ProcessBlock;
 import com.ils.blt.gateway.engine.BlockExecutionController;
+import com.ils.blt.gateway.proxy.ProxyBlock;
 import com.ils.connection.Connection;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -77,7 +78,7 @@ public class PropertiesUpdateHandler   {
 			block = (ProcessBlock)ctor.newInstance(BlockExecutionController.getInstance(),projectId,resourceId,blockId);
 		}
 		catch(InvocationTargetException ite ) {
-			log.warnf("%s: createInstance %s: Invoction failed (%s)",TAG,className,ite.getMessage()); 
+			log.warnf("%s: createInstance %s: Invocation failed (%s)",TAG,className,ite.getMessage()); 
 		}
 		catch(NoSuchMethodException nsme ) {
 			log.warnf("%s: createInstance %s: Three argument constructor not found (%s)",TAG,className,nsme.getMessage()); 
@@ -112,7 +113,7 @@ public class PropertiesUpdateHandler   {
 	}
 
 	/**
-	 * Query the model for a block specified by the key. If the block
+	 * Query the model for a block specified by the project, resource and block ids. If the block
 	 * does not exist, create it.  If the block is already instantiated, then 
 	 * return the actual attribute values (as opposed to defaults for a newly created block).
 	 * 
@@ -125,10 +126,19 @@ public class PropertiesUpdateHandler   {
 		ProcessBlock block = controller.getBlock(projectId, resourceId, blockId);
 		Hashtable<String,Hashtable<String,String>> results = null;
 		if(block==null) {
-			Hashtable<String,String> classAttribute = (Hashtable<String,String>)attributes.get(BlockProperties.BLOCK_PROPERTY_CLASS);
-			String className = classAttribute.get(BlockProperties.BLOCK_ATTRIBUTE_VALUE);
+			Hashtable<String,String> classAttribute = (Hashtable<String,String>)attributes.get(BlockConstants.BLOCK_PROPERTY_CLASS);
+			String className = classAttribute.get(BlockConstants.BLOCK_ATTRIBUTE_VALUE);
 			if( className!=null ) {
-				block = createInstance(projectId,resourceId,blockId,className);
+				// Delegate to Python
+				if( className.startsWith("app.block")) {
+					block = new ProxyBlock(className,projectId,resourceId,blockId);
+					if(((ProxyBlock)block).getObject() == null ) {
+						block = null;
+					}
+				}
+				else {
+				    block = createInstance(projectId,resourceId,blockId,className);
+				}
 			}
 			else {
 				log.warnf(TAG+"getBlockAttributes: No class in supplied attributes ("+attributes+")");

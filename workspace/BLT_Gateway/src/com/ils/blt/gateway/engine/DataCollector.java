@@ -10,7 +10,7 @@ import java.util.Hashtable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.ils.block.BlockProperties;
+import com.ils.block.BlockConstants;
 import com.ils.block.NewValueNotification;
 import com.ils.block.ProcessBlock;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -47,7 +47,7 @@ public class DataCollector implements TagChangeListener   {
 		this.context = ctxt;
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.blockMap = new Hashtable<String,ProcessBlock>();
-		this.dateFormatter = new SimpleDateFormat(BlockProperties.TIMESTAMP_FORMAT);
+		this.dateFormatter = new SimpleDateFormat(BlockConstants.TIMESTAMP_FORMAT);
 	}
 
 	/**
@@ -57,14 +57,14 @@ public class DataCollector implements TagChangeListener   {
 	public void startSubscription(ProcessBlock block,String propertyName) {
 		Hashtable<String,String> property = block.getProperty(propertyName);
 		if( property!=null ) {
-			String tagPath = property.get(BlockProperties.BLOCK_ATTRIBUTE_TAGPATH);
+			String tagPath = property.get(BlockConstants.BLOCK_ATTRIBUTE_TAGPATH);
 			if( tagPath!=null) {
 				SQLTagsManager tmgr = context.getTagManager();
 				try {
 					TagPath tp = TagPathParser.parse(tagPath);
 					log.debugf("%s: startSubscription: for tag path %s",TAG,tp.toStringFull());
 					// Make sure the attribute is in canonical form
-					property.put(BlockProperties.BLOCK_ATTRIBUTE_TAGPATH, tp.toStringFull());
+					property.put(BlockConstants.BLOCK_ATTRIBUTE_TAGPATH, tp.toStringFull());
 					// Initialize the value in this data point
 					Tag tag = tmgr.getTag(tp);
 					if( tag!=null ) {
@@ -181,7 +181,7 @@ public class DataCollector implements TagChangeListener   {
 		String result = null;
 		for( String name: block.getPropertyNames()) {
 			Hashtable<String,String> property = block.getProperty(name);
-			String path = property.get(BlockProperties.BLOCK_ATTRIBUTE_TAGPATH);
+			String path = property.get(BlockConstants.BLOCK_ATTRIBUTE_TAGPATH);
 			if( path.equals(tp)) {
 				result = name;
 				break;

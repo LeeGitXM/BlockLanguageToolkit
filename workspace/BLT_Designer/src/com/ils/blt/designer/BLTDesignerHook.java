@@ -8,88 +8,59 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.util.List;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.Icon;
 import javax.swing.JFrame;
 
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.designer.component.DiagramAnalyzerComponent;
+import com.ils.blt.designer.component.DiagramPreviewComponent;
 import com.ils.blt.designer.graphics.PaletteBlocks;
-import com.ils.blt.designer.navtree.DiagnosticsFolderNode;
-import com.ils.blt.designer.workspace.DiagnosticsWorkspace;
+import com.ils.blt.designer.navtree.DiagramTreeNode;
+import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.jgx.editor.JgxPalette;
+import com.inductiveautomation.factorypmi.designer.palette.model.DefaultPaletteItemGroup;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
-import com.inductiveautomation.ignition.common.expressions.ExpressionFunctionManager;
+import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
-import com.inductiveautomation.ignition.common.xmlserialization.deserialization.XMLDeserializer;
-import com.inductiveautomation.ignition.common.xmlserialization.serialization.XMLSerializer;
 import com.inductiveautomation.ignition.designer.WorkspaceManager;
 import com.inductiveautomation.ignition.designer.designable.AbstractDesignableWorkspace;
+import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.AbstractDesignerModuleHook;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
-import com.inductiveautomation.ignition.designer.model.DesignerModuleHook;
 import com.inductiveautomation.ignition.designer.model.ResourceWorkspace;
 import com.inductiveautomation.ignition.designer.model.SaveContext;
-import com.inductiveautomation.ignition.designer.model.menu.JMenuMerge;
-import com.inductiveautomation.ignition.designer.model.menu.MenuBarMerge;
-import com.inductiveautomation.ignition.designer.model.menu.WellKnownMenuConstants;
-import com.jidesoft.action.CommandBar;
-import com.jidesoft.docking.DockableFrame;
+import com.inductiveautomation.vision.api.designer.VisionDesignerInterface;
+import com.inductiveautomation.vision.api.designer.palette.JavaBeanPaletteItem;
+import com.inductiveautomation.vision.api.designer.palette.Palette;
+import com.inductiveautomation.vision.api.designer.palette.PaletteItemGroup;
 import com.jidesoft.docking.DockingManager;
 import com.jidesoft.docking.Workspace;
 import com.mxgraph.swing.util.mxSwingConstants;
 import com.mxgraph.util.mxConstants;
 
-public class BLTDesignerHook extends AbstractDesignerModuleHook implements DesignerModuleHook {
-	private static final String TAG = "BLTDesignerHook:";
-	private DiagnosticsFolderNode rootNode;
+public class BLTDesignerHook extends AbstractDesignerModuleHook  {
+	private static final String TAG = "BLTDesignerHook";
+	public static String HOOK_BUNDLE_NAME   = "designer";// Properties file is designer.properties
+
+	private DiagramTreeNode rootNode;
 	private DesignerContext context = null;
 	private JFrame paletteFrame = null;
 	private final LoggerEx log;
+	private DiagramWorkspace workspace = null;
+	
+	static {
+		BundleUtil.get().addBundle(BLTProperties.BUNDLE_PREFIX,BLTDesignerHook.class,HOOK_BUNDLE_NAME);
+	}
 	
 	public BLTDesignerHook() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 	}
 	
-	
-	@Override
-	public MenuBarMerge getModuleMenu() {
-		MenuBarMerge merge = new MenuBarMerge(BLTProperties.MODULE_ID);  // s suggested in javadocs
-		merge.addSeparator();
-
-		Action panelResetAction = new AbstractAction("Reset Layout for Diagrams") {
-			private static final long serialVersionUID = 5374557387733312464L;
-			public void actionPerformed(ActionEvent ae) {
-				resetPanelsForDiagnostics();
-			}
-		};
-
-		JMenuMerge resetPanels = new JMenuMerge(WellKnownMenuConstants.VIEW_MENU_NAME);
-		resetPanels.add(panelResetAction);
-		merge.add(WellKnownMenuConstants.VIEW_MENU_LOCATION, resetPanels);
-		
-		Action paletteAction = new AbstractAction("Block Diagram Palette") {
-			private static final long serialVersionUID = 5374557387733312463L;
-			public void actionPerformed(ActionEvent ae) {
-				displayPalette();
-			}
-		};
-
-		JMenuMerge palette = new JMenuMerge(WellKnownMenuConstants.VIEW_MENU_NAME);
-		palette.add(paletteAction);
-		merge.add(WellKnownMenuConstants.VIEW_MENU_LOCATION, palette);
-		
-
-		return merge;
-	}
 	
 	@Override
 	public void initializeScriptManager(ScriptManager mgr) {
@@ -100,16 +71,41 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook implements Desig
 	@Override
 	public void startup(DesignerContext ctx, LicenseState activationState) throws Exception {
 		this.context = ctx;
-		rootNode = new DiagnosticsFolderNode(context);
+		
+		workspace = new DiagramWorkspace(context);
+		rootNode = new DiagramTreeNode(context);
 		context.getProjectBrowserRoot().addChild(rootNode);
-		context.registerResourceWorkspace(DiagnosticsWorkspace.getInstance());
+		context.registerResourceWorkspace(workspace);
+		
+		// Place icons for our custom widgets on the Vision palette
+		VisionDesignerInterface vdi = 
+					(VisionDesignerInterface) context.getModule(VisionDesignerInterface.VISION_MODULE_ID);
+
+		if (vdi != null) {
+				final Palette palette = vdi.getPalette();
+
+				// Populate the palette
+				PaletteItemGroup group = palette.addGroup(BundleUtil.get().getString(".Palette.Name"));
+				if( group instanceof DefaultPaletteItemGroup ) {
+					// The icon is located in vis-designer/images/incors
+					((DefaultPaletteItemGroup) group).setIcon(IconUtil.getIcon("add_child"));
+				}
+				else {
+					log.infof("%s: Group not a DefaultPaletteItemGroup, is %s",TAG,group.getClass().getName());
+				}
+					
+				group.addPaletteItem(new JavaBeanPaletteItem(DiagramAnalyzerComponent.class));
+				group.addPaletteItem(new JavaBeanPaletteItem(DiagramPreviewComponent.class));
+		}
 		// Register the listener for notifications
-		GatewayConnectionManager.getInstance().addPushNotificationListener(new GatewayDesignerDelegate());
+		GatewayConnectionManager.getInstance().addPushNotificationListener(new NotificationListener());
 	}
+	
+	public DiagramWorkspace getWorkspace() { return workspace; }
 
 	@Override
 	public void notifyProjectSaveStart(SaveContext save) {
-		//workspace.saveResource();
+		workspace.saveOpenDiagrams();
 	}
  
 	/**
@@ -146,13 +142,13 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook implements Desig
 				name.equalsIgnoreCase("Palette - Collapsible")  ||
 				name.equalsIgnoreCase("Palette - Tabbed")          ) {
 				dockManager.hideFrame(name);
-				log.info(TAG+"Hiding frame="+name);
+				log.infof("%s: Hiding frame=%s",TAG,name);
 			}
 			else {
-				log.info(TAG+"Leaving frame="+name);
+				log.infof("%s: Leaving frame=%s",TAG,name);
 			}
 		}
-		log.info(TAG+"Workspace="+dockManager.getWorkspace());
+		log.infof("%s: Workspace=%s",TAG,dockManager.getWorkspace().getName());
 		Workspace wksp = dockManager.getWorkspace();
 		// There is only 1 child - the workspace mananger
 		Component[]children = wksp.getComponents();
@@ -174,52 +170,11 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook implements Desig
 	}
 
 	@Override
-	public void configureDeserializer(XMLDeserializer arg0) {
-		// TODO Auto-generated method stub
-		
+	public String getResourceCategoryKey(Project project,ProjectResource resource) {
+		// TODO Auto-generated method stub - return bundle key corresponding to category in export
+		return super.getResourceCategoryKey(project, resource);
 	}
-
-	@Override
-	public void configureFunctionFactory(ExpressionFunctionManager arg0) {
-	}
-
-	@Override
-	public void configureSerializer(XMLSerializer arg0) {	
-	}
-
-	@Override
-	public List<DockableFrame> getFrames() {
-		return null;
-	}
-
-	@Override
-	public List<CommandBar> getModuleToolbars() {
-		return null;
-	}
-
-	@Override
-	public String getResourceCategoryKey(Project arg0, ProjectResource arg1) {
-		return null;
-	}
-
-	@Override
-	public String getResourceDisplayName(Project arg0, ProjectResource arg1) {
-		return null;
-	}
-
-	@Override
-	public Icon getResourceIcon(Project arg0, ProjectResource arg1) {
-		return null;
-	}
-
-	@Override
-	public void notifyActivationStateChanged(LicenseState arg0) {
-	}
-
-	@Override
-	public void notifyProjectSaveDone() {
-	}
-
+	
 	@Override
 	public void shutdown() {	
 	}

@@ -19,15 +19,26 @@ public interface BLTProperties   {
 	
 	public final static String FOLDER_RESOURCE_TYPE    = "__folder";
 	public final static String MODEL_RESOURCE_TYPE    = "blt.model";
-	public final static String PANEL_RESOURCE_TYPE    = "blt.panel";
 	
-	public final static String REPORTING_SCRIPT_PACKAGE  = "system.ils.blt.report";
-	public final static String PROPERTIES_SCRIPT_PACKAGE = "system.ils.blt.properties";
 	public final static String GRAPHICS_SCRIPT_PACKAGE = "system.ils.ui";
+	public final static String PROPERTIES_SCRIPT_PACKAGE = "system.ils.blt.properties";
+	public final static String REGISTRATION_SCRIPT_PACKAGE  = "system.ils.blt.registrar";
+	public final static String REPORTING_SCRIPT_PACKAGE  = "system.ils.blt.report";
+	
+	/** These are recognized values of external callbacks for registration */
+	public final static String CREATE_INSTANCE_CALLBACK     = "CreateInstance";
+	public final static String EVALUATE_CALLBACK            = "Evaluate";
+	public final static String GET_PROPERTIES_CALLBACK      = "GetProperties";
+	public final static String GET_PROPERTY_CALLBACK        = "GetProperty";
+	public final static String SET_VALUE_CALLBACK           = "SetValue";
+
 	
 	/** This unique ID represents the root node in the project tree */
 	public static final UUID ROOT_FOLDER_UUID = UUID
 			.fromString("7bbbd6b9-3140-4328-a844-51817eb47574");
+	
+	// This is the common prefix under which bundle files are identified/registered
+	public static final String BUNDLE_PREFIX = "blt";
 	
 	// These are the property names in the message payload, gateway to client
 	public static final String MSG_BLOCK_NAME      = "BlockName";

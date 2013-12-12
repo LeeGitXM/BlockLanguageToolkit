@@ -3,21 +3,27 @@
  */
 package com.ils.blt.gateway;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
+
+import org.apache.wicket.markup.html.WebMarkupContainer;
 
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ModelResourceManager;
+import com.ils.blt.gateway.proxy.CallbackRegistrationScriptFunctions;
+import com.ils.blt.gateway.proxy.ProxyHandler;
+import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
-import com.inductiveautomation.ignition.common.project.Project;
-import com.inductiveautomation.ignition.common.project.ProjectVersion;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.clientcomm.ClientReqSession;
 import com.inductiveautomation.ignition.gateway.model.AbstractGatewayModuleHook;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
-import com.inductiveautomation.ignition.gateway.project.ProjectListener;
+import com.inductiveautomation.ignition.gateway.web.components.AbstractNamedTab;
+import com.inductiveautomation.ignition.gateway.web.models.INamedTab;
 
 
 /**
@@ -27,19 +33,21 @@ import com.inductiveautomation.ignition.gateway.project.ProjectListener;
  * 
  * At present this code does nothing.
  */
-public class BLTGatewayHook extends AbstractGatewayModuleHook implements ProjectListener {
+public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	public static String TAG = "BLTGatewayHook";
-	public static String BUNDLE_NAME = "diagnostics";// Properties file is sct.properties
+	public static String BUNDLE_NAME = "block";// Properties file is block.properties
 	private final Hashtable<Long,GatewayRpcDispatcher> dispatchers;
 	private ModelResourceManager mrm = null;
+	String prefix = "BLT";
 
 	private GatewayContext context = null;
 	private final LoggerEx log;
 	
 	public BLTGatewayHook() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
-		log.info(TAG+"Initializing DT Gateway hook");
+		log.info(TAG+"Initializing BLT Gateway hook");
 		dispatchers = new Hashtable<Long,GatewayRpcDispatcher>();
+		BundleUtil.get().addBundle(prefix, getClass(), BUNDLE_NAME);
 	}
 		
 	// NOTE: During this period, the module status is LOADED, not RUNNING
@@ -51,9 +59,10 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook implements Project
 		BlockExecutionController.getInstance().setContext(ctxt);
 		mrm = new ModelResourceManager(context);
 		context.getProjectManager().addProjectListener(mrm);
-		context.getProjectManager().addProjectListener(this);
+
 		log.info(TAG+"Setup - enabled project listeners.");
 		PropertiesUpdateHandler.getInstance().setContext(context);
+		ProxyHandler.getInstance().setContext(context);
 	}
 
 	@Override
@@ -64,7 +73,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook implements Project
 
 	@Override
 	public void shutdown() {
-		context.getProjectManager().removeProjectListener(this);
+
 		context.getProjectManager().removeProjectListener(mrm);
 		BlockExecutionController.getInstance().stop();
 	}
@@ -83,34 +92,30 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook implements Project
 	@Override
 	public void initializeScriptManager(ScriptManager mgr) {
 		super.initializeScriptManager(mgr);
+		mgr.addScriptModule(BLTProperties.REGISTRATION_SCRIPT_PACKAGE,CallbackRegistrationScriptFunctions.class);
 		mgr.addScriptModule(BLTProperties.REPORTING_SCRIPT_PACKAGE,BlockCompletionScriptFunctions.class);
 	}
+	@Override
+	public List<? extends INamedTab> getStatusPanels() {
+		ExecutionStatus panel = new ExecutionStatus();
+		List<INamedTab>panels = new ArrayList<INamedTab>();
+		panels.add(new ExecutionStatus());
+		return panels;
+	}
 	
-	// ====================== Project Listener Interface ===================
-	/**
-	 * Enable scripting for any new project that might be added.
-	 * @param staging
-	 * @param published
-	 */
-	@Override
-	public void projectAdded(Project staging, Project published) {
-		ScriptManager mgr = context.getProjectManager().getProjectScriptManager(published.getId());
-		if(mgr!=null) {
-			mgr.addScriptModule(BLTProperties.REPORTING_SCRIPT_PACKAGE, BlockCompletionScriptFunctions.class);
-			log.info(TAG+"projectAdded ... script manager ");
+	private class ExecutionStatus extends AbstractNamedTab {
+		
+		
+
+		public ExecutionStatus() {
+			super("ExecutionStatus", "BLT.title");
 		}
-		else {
-			log.warn(TAG+"projectAdded ... unable to register script manager ");
+		
+		@Override
+		public WebMarkupContainer getPanel(String id) {
+			return new StatusPanel(id);
 		}
+		
 	}
 
-	@Override
-	public void projectDeleted(long projectId) {
-		dispatchers.remove(new Long(projectId));
-	}
-
-	@Override
-	public void projectUpdated(Project staging, ProjectVersion published) {
-		log.info(TAG+"projectUpdated ...");
-	}	
 }

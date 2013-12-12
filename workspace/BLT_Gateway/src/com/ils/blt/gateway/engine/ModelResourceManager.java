@@ -3,24 +3,21 @@
  */
 package com.ils.blt.gateway.engine;
 
-import java.io.StringReader;
-import java.net.URLDecoder;
 import java.util.List;
 import java.util.Set;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
 import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
 
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.serializable.SerializableDiagram;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.project.ProjectVersion;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.inductiveautomation.ignition.common.xmlserialization.deserialization.DeserializationContext;
+import com.inductiveautomation.ignition.common.xmlserialization.deserialization.XMLDeserializer;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 import com.inductiveautomation.ignition.gateway.project.ProjectListener;
 
@@ -66,9 +63,9 @@ public class ModelResourceManager implements ProjectListener  {
 		for (ProjectResource res : resources) {
 			if( res.getResourceType().equals(BLTProperties.MODEL_RESOURCE_TYPE)) {
 				log.infof("%s: projectUpdated: found model resource %s (%d)",TAG,res.getName(),res.getResourceId());
-				Document dom = deserializeModelResource(res);
-				if( dom!=null) {
-					DiagramModel dm = new DiagramModel(dom,projectId,res.getResourceId());
+				SerializableDiagram diagram = deserializeModelResource(res);
+				if( diagram!=null) {
+					DiagramModel dm = new DiagramModel(diagram,projectId,res.getResourceId());
 					controller.addResource(new Long(projectId), new Long(res.getResourceId()), dm);
 				}
 				else {
@@ -79,29 +76,23 @@ public class ModelResourceManager implements ProjectListener  {
 	}
 
 	/**
-	 *  We've discovered a changed model resource. Deserialize and convert into an XML document.
+	 *  We've discovered a changed model resource. Deserialize and convert into a CommonDiagram.
 	 * @param res
 	 */ 
-	private Document deserializeModelResource(ProjectResource res) {
+	private SerializableDiagram deserializeModelResource(ProjectResource res) {
 		byte[] serializedObj = res.getData();
-		String data = new String(serializedObj);
-		Document doc = null;
+		SerializableDiagram diagram = null;
 		try{
-			String xml = "<?xml version=\"1.0\" ?>"+URLDecoder.decode(data,"UTF-8");
-			log.debug(TAG+"Resource is "+ xml);
-			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-
-		    dbf.setNamespaceAware(false);
-		    dbf.setValidating(false);
-		    StringReader reader = new StringReader(xml);
-		    InputSource is = new  InputSource(reader);
-		    DocumentBuilder db = dbf.newDocumentBuilder();
-		    doc = db.parse(is);
+			XMLDeserializer deserializer = context.createDeserializer();
+			DeserializationContext decon = deserializer.deserializeBinary(serializedObj);
+			Object obj = decon.getRootObjects().get(0);
+			if( obj instanceof SerializableDiagram) diagram = (SerializableDiagram)obj;
+	
 		}
 		catch( Exception ex) {
 			log.warnf("%s: deserializeModelResource: exception (%s)",TAG,ex.getLocalizedMessage());
 		}
-		return doc;
+		return diagram;
 
 	}
 	
@@ -119,28 +110,9 @@ public class ModelResourceManager implements ProjectListener  {
 				if( res.getResourceType().equalsIgnoreCase(BLTProperties.MODEL_RESOURCE_TYPE)) {
 					log.infof("%s: projectAdded - staging %s %d = %s", TAG,res.getName(),
 						res.getResourceId(),res.getResourceType());
-					Document dom = deserializeModelResource(res);
-					if( dom!=null) {
-						DiagramModel dm = new DiagramModel(dom,projectId,res.getResourceId());
-						controller.addResource(new Long(projectId), new Long(res.getResourceId()), dm);
-					}
-					else {
-						log.warnf("%s: Failed to create DOM from resource",TAG);
-					}
-				}
-			}
-		}
-		
-		if( published!=null ) {
-			long projectId = published.getId();
-			List<ProjectResource> resources = published.getResources();
-			for( ProjectResource res:resources ) {
-				if( res.getResourceType().equalsIgnoreCase(BLTProperties.MODEL_RESOURCE_TYPE)) {
-					log.infof("%s: projectAdded - published %s %d = %s", TAG,res.getName(),
-						res.getResourceId(),res.getResourceType());
-					Document dom = deserializeModelResource(res);
-					if( dom!=null) {
-						DiagramModel dm = new DiagramModel(dom,projectId,res.getResourceId());
+					SerializableDiagram diagram = deserializeModelResource(res);
+					if( diagram!=null) {
+						DiagramModel dm = new DiagramModel(diagram,projectId,res.getResourceId());
 						controller.addResource(new Long(projectId), new Long(res.getResourceId()), dm);
 					}
 					else {
@@ -191,9 +163,9 @@ public class ModelResourceManager implements ProjectListener  {
 			if( res.getResourceType().equalsIgnoreCase(BLTProperties.MODEL_RESOURCE_TYPE)) {
 				log.infof("%s: projectUpdated - updated %s %d = %s", TAG,res.getName(),
 					res.getResourceId(),res.getResourceType());
-				Document dom = deserializeModelResource(res);
-				if( dom!=null) {
-					DiagramModel dm = new DiagramModel(dom,projectId,res.getResourceId());
+				SerializableDiagram diagram = deserializeModelResource(res);
+				if( diagram!=null) {
+					DiagramModel dm = new DiagramModel(diagram,projectId,res.getResourceId());
 					controller.addResource(new Long(projectId), new Long(res.getResourceId()), dm);
 				}
 				else {

@@ -19,15 +19,15 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  *  The moduleId used within the calls refers to the module that has the handler for the 
  *  method that is invoked.
  */
-public class GatewayDesignerDelegate implements PushNotificationListener {
-	private static String TAG = "GatewayDelegate: ";
+public class NotificationListener implements PushNotificationListener {
+	private static String TAG = "NotificationListener";
 	private final LoggerEx log;
 
 	
 	/**
 	 * The delegate ...
 	 */
-	public GatewayDesignerDelegate() {
+	public NotificationListener() {
 		super();
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 	}

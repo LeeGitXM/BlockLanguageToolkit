@@ -5,13 +5,13 @@ package com.ils.blt.gateway.engine;
 
 import java.util.Hashtable;
 
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.ils.block.NewValueNotification;
 import com.ils.block.ProcessBlock;
+import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.connection.Connection;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -28,7 +28,7 @@ public class DiagramModel {
 	
 	private static String TAG = "DiagramModel";
 	private final LoggerEx log;
-	private final Document doc;
+	private final SerializableDiagram diagram;
 	private boolean valid = false;
 	private final long projectId;
 	private final long resourceId;
@@ -41,22 +41,23 @@ public class DiagramModel {
 	 * Create a model that encapsulates an XML document describing a diagram.
 	 * @param doc an XML DOM document. 
 	 */
-	public DiagramModel(Document dom,long proj,long res) { 
-		this.doc = dom;
+	public DiagramModel(SerializableDiagram dom,long proj,long res) { 
+		this.diagram = dom;
 		this.projectId = proj;
 		this.resourceId = res;
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		blocks = new Hashtable<String,ProcessBlock>();
 		connections = new Hashtable<String,Connection>();
 		connectionsBySource = new Hashtable<String,Connection>();
-		analyze();
+		analyze(diagram);
 	}
 	
 	/**
-	 * Analyze the DOM for nodes.
+	 * Analyze the diagram for nodes.
 	 */
-	private void analyze() {
+	private void analyze(SerializableDiagram diagram) {
 		log.debugf("%s: analyze ....%d:%d",TAG,projectId,resourceId);
+		/*
 		Node root = doc.getDocumentElement();
 		if( root!=null && root.getNodeName().equalsIgnoreCase("mxGraphModel")) {
 			// The next node is a gratuitous root
@@ -97,11 +98,9 @@ public class DiagramModel {
 					}
 				}
 			}
- 			
+ 		
 		}
-		else {
-			log.warn(TAG+"analyze: Unexpected root element ("+(root==null?"null":root.getNodeName())+")");
-		}
+			*/
 	}
 	/**
 	 * @return a ProcessBlock from the diagram given its id.
