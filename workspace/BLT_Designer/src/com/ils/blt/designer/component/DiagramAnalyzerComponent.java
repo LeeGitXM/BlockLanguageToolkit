@@ -13,9 +13,7 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
-import java.util.ResourceBundle;
 
-import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
 import com.ils.blt.common.BLTProperties;
@@ -24,15 +22,15 @@ import com.inductiveautomation.ignition.common.BundleUtil;
 /**
  *  This is the JComponent that renders a CallbackBlock.
  */
-public class DiagramAnalyzerComponent extends AbstractDiagnosticsComponent {
+public class DiagramAnalyzerComponent extends AbstractDiagramSummaryComponent {
 	private static final long serialVersionUID = 4408313516136446100L;
 	private static String PREFIX = BLTProperties.BUNDLE_PREFIX;              // For bundle identification
 	
 
 	public DiagramAnalyzerComponent() {
 		
-		setName(BundleUtil.get().getString(PREFIX+"Callback.Name"));
-		setHeading(BundleUtil.get().getString(PREFIX+"Callback.Name"));
+		setName(BundleUtil.get().getString(PREFIX+".Component.Analyzer.Name"));
+		setHeading(BundleUtil.get().getString(PREFIX+".Component.Analyzer.Name"));
 		this.setOpaque(true);
 		this.setBorder(border);
 	}
@@ -110,7 +108,5 @@ public class DiagramAnalyzerComponent extends AbstractDiagnosticsComponent {
 		// Reverse any transforms we made
 		g.setTransform(originalTx);
 	}
-
-	
 
 }

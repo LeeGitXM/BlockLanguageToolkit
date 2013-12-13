@@ -23,7 +23,7 @@ import com.inductiveautomation.ignition.common.BundleUtil;
 /**
  *  This is the JComponent that renders a DelayBlock.
  */
-public class DiagramPreviewComponent extends AbstractDiagnosticsComponent {
+public class DiagramPreviewComponent extends AbstractDiagramSummaryComponent {
 	private static String TAG = "DiagramPreviewComponent";
 	private static final long serialVersionUID = 4352815227615915719L;
 	private static String PREFIX = BLTProperties.BUNDLE_PREFIX;              // For bundle identification
@@ -31,8 +31,8 @@ public class DiagramPreviewComponent extends AbstractDiagnosticsComponent {
 	
 
 	public DiagramPreviewComponent() {
-		setName(BundleUtil.get().getString(PREFIX+"Delay.Name"));
-		setHeading(BundleUtil.get().getString(PREFIX+"Delay.Name"));
+		setName(BundleUtil.get().getString(PREFIX+".Component.Preview.Name"));
+		setHeading(BundleUtil.get().getString(PREFIX+"Component.Preview.Name"));
 		this.setOpaque(true);
 		this.setBorder(border);
 	}

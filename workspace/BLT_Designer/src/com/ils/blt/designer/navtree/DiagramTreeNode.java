@@ -106,6 +106,7 @@ public class DiagramTreeNode extends FolderNode {
 			return node;
 		} 
 		else {
+			log.warnf("%s: Attempted to create a child of type %s (ignored)",TAG,res.getResourceType());
 			throw new IllegalArgumentException();
 		}
 	}

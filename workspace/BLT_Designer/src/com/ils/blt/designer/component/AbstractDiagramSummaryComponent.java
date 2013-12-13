@@ -23,7 +23,7 @@ import com.inductiveautomation.vision.api.client.components.model.AbstractVision
  * Any components expecting to participate in an ILS model (executable diagram)
  * must inherit from AbstractCoreComponent. These are the graphical versions.
  */
-public abstract class AbstractDiagnosticsComponent extends AbstractVisionComponent {
+public abstract class AbstractDiagramSummaryComponent extends AbstractVisionComponent {
 
 	private static final long serialVersionUID = 6091339174784663157L;
 	
@@ -66,7 +66,7 @@ public abstract class AbstractDiagnosticsComponent extends AbstractVisionCompone
 	/**
 	 * Normal form of the constructor.
 	 */
-	public AbstractDiagnosticsComponent() {
+	public AbstractDiagramSummaryComponent() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		setOpaque(false);
 

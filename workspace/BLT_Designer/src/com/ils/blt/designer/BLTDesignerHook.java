@@ -45,7 +45,8 @@ import com.mxgraph.util.mxConstants;
 
 public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	private static final String TAG = "BLTDesignerHook";
-	public static String HOOK_BUNDLE_NAME   = "designer";// Properties file is designer.properties
+	public static String HOOK_BUNDLE_NAME   = "designer";      // Properties file is designer.properties
+	public static String PREFIX = BLTProperties.BUNDLE_PREFIX; // Properties is accessed by this prefix
 
 	private DiagramTreeNode rootNode;
 	private DesignerContext context = null;
@@ -71,6 +72,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	@Override
 	public void startup(DesignerContext ctx, LicenseState activationState) throws Exception {
 		this.context = ctx;
+		context.addBeanInfoSearchPath("com.ils.blt.designer.component.beaninfos");
 		
 		workspace = new DiagramWorkspace(context);
 		rootNode = new DiagramTreeNode(context);
@@ -85,7 +87,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 				final Palette palette = vdi.getPalette();
 
 				// Populate the palette
-				PaletteItemGroup group = palette.addGroup(BundleUtil.get().getString(".Palette.Name"));
+				PaletteItemGroup group = palette.addGroup(BundleUtil.get().getString(PREFIX+".Palette.Name"));
 				if( group instanceof DefaultPaletteItemGroup ) {
 					// The icon is located in vis-designer/images/incors
 					((DefaultPaletteItemGroup) group).setIcon(IconUtil.getIcon("add_child"));
@@ -165,14 +167,12 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 				}
 			}
 		}
-		
-		//Introspector.tree((Component)wksp,3);   // Logs component tree to a depth of three
 	}
 
 	@Override
 	public String getResourceCategoryKey(Project project,ProjectResource resource) {
-		// TODO Auto-generated method stub - return bundle key corresponding to category in export
-		return super.getResourceCategoryKey(project, resource);
+		// There is only one resource category that we are exporting
+		return PREFIX+".Export.Name";
 	}
 	
 	@Override
