@@ -1,0 +1,49 @@
+#!/bin/sh
+#
+# Save the source tree for blt, block and common into a zip repository.
+# Do not intentionally include build products. Make clean before 
+# running this script.
+#
+#set -x
+REPO_ROOT=~/Development/ils/repo
+SVN=~/Development/ils/svn/EMRE
+VERS=`cat $REPO_ROOT/blt/workspace/BLT_Build/.version`
+if [ -z "$VERS" ]
+then
+    VERS="blt-src"
+fi
+TMP=$REPO_ROOT/$VERS
+# Cleanup
+rm -rf $TMP
+cd $REPO_ROOT
+rm -rf external/cachedir
+rm -rf block/workspace/Block*/bin/*
+rm -rf blt/workspace/BLT_*/bin/*
+rm -rf blt/workspace/BLT_Build/temp_modl
+rm -rf common/workspace/ILS_Common/bin/*
+rm -rf common/workspace/ILS_Common/doc/*
+rm -rf common/workspace/doc/*
+mkdir $TMP
+mkdir -p $TMP/block/workspace
+mkdir -p $TMP/common/workspace
+mkdir -p $TMP/blt
+cp -a setup external ignition $TMP
+cp -a block/workspace/Block $TMP/block/workspace
+cp -a common/workspace/ILS_Common $TMP/common/workspace
+cp -a blt $TMP/blt
+# Scrub the temp area before zipping
+cd $TMP
+rm -f external/lib/antlr* 
+rm -f external/lib/guava* 
+rm -f external/lib/user-ex* 
+rm -f external/lib/g2-ex* 
+rm -f external/lib/jama* 
+rm -f external/lib/jython* 
+rm -f external/lib/sqlite* 
+rm -f external/lib/cachedir
+
+# Now zip and copy to subversion
+cd $REPO_ROOT
+zip -r blt-src.zip $VERS
+#cp blt-src.zip $SVN/Release/src
+#rm -rf $TMP
