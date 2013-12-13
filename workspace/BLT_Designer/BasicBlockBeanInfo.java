@@ -1,0 +1,119 @@
+/**
+ *   (c) 2012  ILS Automation. All rights reserved.
+ *  
+ */
+package com.ils.sct.component.beaninfos;
+
+import java.beans.IntrospectionException;
+import java.beans.PropertyChangeListener;
+import java.lang.reflect.Method;
+
+import javax.swing.JComponent;
+import javax.swing.JTextField;
+
+import org.apache.log4j.Logger;
+
+import com.ils.sct.common.BlockProperties;
+import com.ils.sct.common.SCTProperties;
+import com.ils.sct.component.AbstractCoreComponent;
+import com.ils.sct.designer.ExecutionStatusEvent;
+import com.ils.sct.designer.ExecutionStatusListener;
+import com.inductiveautomation.factorypmi.designer.property.customizers.DynamicPropertyProviderCustomizer;
+import com.inductiveautomation.vision.api.designer.beans.CommonBeanInfo;
+import com.inductiveautomation.vision.api.designer.beans.CustomizerDescriptor;
+import com.inductiveautomation.vision.api.designer.beans.InPlaceEditHandler;
+import com.inductiveautomation.vision.api.designer.beans.OpenEventScriptingHandler;
+/**
+ * Define the properties that are common to all BasicBlockComponents.
+ * We expect this class to be extended for each different block type.
+ * It may be necessary for some blocks to remove properties defined
+ * here that are common to most, but not all block types.
+ */
+public class BasicBlockBeanInfo extends CommonBeanInfo {
+	private final static String TAG="BasicBlockBeanInfo: ";
+	public final static String PREFIX = BlockProperties.SCT_BUNDLE_KEY+".Workspace.Menu.";
+	private Logger log = null;
+   /**
+    * Constructor: The superclass constructor takes an array of relevant custom
+    *               descriptors. The DynamicPropertyProviderCustomizer.VALUE_DESCRIPTOR
+    *               is added here.
+    * @param c, class of the execution block
+    */
+	public BasicBlockBeanInfo(Class<?> c) {
+		super(c, new CustomizerDescriptor[] { DynamicPropertyProviderCustomizer.VALUE_DESCRIPTOR });
+		log = Logger.getLogger(SCTProperties.MODULE_LOG_PACKAGE);
+	}
+	/**
+	 * Constructor with customizers. Arguments are passed directly to the superclass.
+	 */
+	public BasicBlockBeanInfo(Class<?> c, CustomizerDescriptor ... descs) {
+		super(c,descs);
+	}
+	
+	/**
+	 * Add property descriptors for all the BasicBlockComponent properties.
+	 * Sub-classes should extend this method to add more properties as appropriate.
+	 */
+	@Override
+	protected void initProperties() throws IntrospectionException {
+		super.initProperties();
+		
+		removeProp("opaque");
+		removeProp("border");
+		
+		addProp("blockType","Block Type","Role that this block performs in the execution model", CAT_COMMON, PREFERRED_MASK|BOUND_MASK);
+		addProp("heading","Heading","Title text on the component", CAT_COMMON, PREFERRED_MASK|BOUND_MASK);
+		addProp("subHeading","SubHeading","Explanatory text on the component", CAT_COMMON, PREFERRED_MASK|BOUND_MASK);
+		addProp("connections","Next Blocks","Comma-separated list of objects immediately downstream", CAT_COMMON, PREFERRED_MASK);
+		addEnumProp("encapsulationEnabled","Allow Subworkspace","True if encapsulation is allowed for this block",CAT_COMMON,
+				new int[] {0,1}, new String[] {"FALSE","TRUE"}, PREFERRED_MASK);
+		addEnumProp("startBlock","Starts Model","True if this block serves as an entry point into the model",CAT_COMMON,
+				new int[] {0,1}, new String[] {"FALSE","TRUE"}, PREFERRED_MASK);
+	}
+	
+	/**
+	 * Define which events are listed in the left panel of the script editor. We want only the 
+	 * property change and our new gateway block execution events.
+	 */
+	@Override
+	protected void initEventSets() throws IntrospectionException {
+		// NOTE: The names refer to event and listener class names, respectively
+		addEventSet(JComponent.class, "propertyChange", PropertyChangeListener.class, "propertyChange");
+		addEventSet(AbstractCoreComponent.class, "executionStatus", ExecutionStatusListener.class, "executionComplete");
+	}
+	
+	/**
+	 * Initialize the bean descriptors.
+	 */
+	@Override
+	protected void initDesc() {
+	    
+	    // When an execution status change arrives, run the following method. 
+	    // See PMIButtonBeanInfo as an example.
+	    try {
+	        Method executionComplete = ExecutionStatusListener.class.getMethod("executionComplete", new Class[] { ExecutionStatusEvent.class });
+	        getBeanDescriptor().setValue(CommonBeanInfo.DOUBLE_CLICK_HANDLER, new OpenEventScriptingHandler(executionComplete));
+	    }
+	    catch (Exception e) {
+	      e.printStackTrace();
+	    }
+	    
+	    // Display a custom popup menu with a right-click.
+		getBeanDescriptor().setValue(CommonBeanInfo.RIGHT_CLICK_HANDLER, new BlockComponentInitializer() );	
+	 
+		// Allow editing of the block name  in-place with a double-click. 
+		// Note: Edit-click and dounle-click seem to be the same gesture.
+		getBeanDescriptor().setValue(CommonBeanInfo.EDIT_CLICK_HANDLER, new InPlaceEditHandler() {
+	      protected int getHorizontalAlignment(JComponent component) {
+	         return JTextField.RIGHT;
+	      }
+	      protected void setText(JComponent component, String text)  {
+	    	  ((AbstractCoreComponent)component).setName(text);
+	      }
+	      protected String getText(JComponent component) {
+	        return ((AbstractCoreComponent)component).getName();
+	      }
+	    });
+	
+	}
+}
