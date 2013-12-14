@@ -39,6 +39,7 @@ public interface BLTProperties   {
 	
 	// This is the common prefix under which bundle files are identified/registered
 	public static final String BUNDLE_PREFIX = "blt";
+	public static final String BLOCK_PREFIX = "block";
 	// This is where we find the string resources for blocks
 	public static final String BLOCK_RESOURCE_PATH = "com.ils.blt.designer.block";
 	

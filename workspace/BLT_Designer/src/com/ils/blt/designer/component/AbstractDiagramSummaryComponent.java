@@ -20,8 +20,7 @@ import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.vision.api.client.components.model.AbstractVisionComponent;
 /**
- * Any components expecting to participate in an ILS model (executable diagram)
- * must inherit from AbstractCoreComponent. These are the graphical versions.
+ * This is a superclass for our custom Vision components.
  */
 public abstract class AbstractDiagramSummaryComponent extends AbstractVisionComponent {
 
@@ -83,10 +82,6 @@ public abstract class AbstractDiagramSummaryComponent extends AbstractVisionComp
 	}
 
 	
-	/** This method is supplied only for beaninfo and serialization. 
-	 * It has no effect.
-	 */
-	public void setBlockType(String type){ ;}   // Do nothing. Makes this essentially read-only
 	public String getHeading() { return heading; }
 	public Color getHeadingColor() { return Color.BLACK; }
 	public String getSubHeading() { return subheading; }

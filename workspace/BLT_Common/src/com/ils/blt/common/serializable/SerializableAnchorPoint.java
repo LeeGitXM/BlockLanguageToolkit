@@ -1,6 +1,8 @@
 package com.ils.blt.common.serializable;
 
 
+import java.awt.Point;
+import java.awt.Shape;
 import java.util.UUID;
 
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -12,42 +14,32 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorT
  * Implement a plain-old-java-object representing an anchor point
  * that is serializable via the Ignition XML serializer.
  */
-public class SerializableAnchor {
-	private final static String TAG = "SerializableAnchor";
+public class SerializableAnchorPoint {
+	private final static String TAG = "SerializableAnchorPoint";
 	private AnchorType type;   // 0=>Origin, 1=>Terminus
 	private Object id = null;
-	private String display = null;
 	private UUID parentId = null;
-	private LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
+	private Point anchor;
+	private Point pathLeader;
+	private Shape hotSpot;
 	
-	public SerializableAnchor() {
+	public SerializableAnchorPoint() {
 	}
 	
 	public Object getId() { return id; }
 	public AnchorType getType()   { return type; }
-	public String getDisplay(){ return display; }
 	public UUID getParentId() { return parentId; }
+	public Point getAnchor() { return anchor; }
+	public Point getPathLeader() { return pathLeader; }
+	public Shape getHotSpot() { return hotSpot; }
 	
 	public void setId(Object identifier) { id=identifier; }
 	public void setType(AnchorType t)   { type=t; }
-	public void setDisplay(String text){display=text; }
 	public void setParentId(UUID id) { parentId = id; };
+	public void setAnchor(Point p) { anchor = p; }
+	public void setPathLeader(Point p) { pathLeader = p; }
+	public void setHotSpot(Shape hs) { hotSpot = hs; }
 
-	// So that class may be used as a map key
-	// Same name and parent is sufficient to prove equality
-	@Override
-	public boolean equals(Object arg) {
-		boolean result = false;
-		if( arg instanceof SerializableAnchor) {
-			SerializableAnchor that = (SerializableAnchor)arg;
-			if( this.id.equals(that.id) &&
-				this.parentId.equals(that.getParentId())   ) {
-				result = true;
-			}
-		}
-		log.info(toString()+" equals "+arg.toString()+" "+result);
-		return result;
-	}
 	
 	@Override
 	public String toString() {

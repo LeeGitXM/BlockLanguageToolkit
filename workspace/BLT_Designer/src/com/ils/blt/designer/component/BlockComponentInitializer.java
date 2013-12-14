@@ -2,7 +2,7 @@
  *   (c) 2012  ILS Automation. All rights reserved.
  *  
  */
-package com.ils.sct.component.beaninfos;
+package com.ils.blt.designer.component;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -16,15 +16,11 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
-import org.apache.log4j.Logger;
-
-import com.ils.sct.common.BlockProperties;
-import com.ils.sct.common.SCTProperties;
-import com.ils.sct.component.AbstractCoreComponent;
-import com.ils.sct.designer.WorkspacePanel;
-import com.ils.sct.designer.navtree.WorkspaceContainerNode;
+import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.factorypmi.designer.workspace.WindowWorkspace;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.DesignerContextImpl;
 import com.inductiveautomation.ignition.designer.IgnitionDesigner;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
@@ -35,23 +31,18 @@ import com.inductiveautomation.vision.api.designer.beans.ComponentPopupInitializ
  * 
  * At this point it does not seem possible to alter any of the standard menu items.
  */
-public class BlockComponentInitializer implements ComponentPopupInitializer<AbstractCoreComponent> {
-	private final static String TAG="BlockComponentInitializer: ";
-	public final static String PREFIX = BlockProperties.SCT_BUNDLE_KEY+".Workspace.Menu.";
-	private Logger log = null;
+public class BlockComponentInitializer implements ComponentPopupInitializer<AbstractDiagramSummaryComponent> {
+	private final static String TAG="BlockComponentInitializer";
+	public final static String PREFIX = BLTProperties.BUNDLE_PREFIX+".Workspace.Menu.";
+	protected final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	/**
 	 * Constructor: The superclass constructor takes an array of relevant custom
 	 *               descriptors. The DynamicPropertyProviderCustomizer.VALUE_DESCRIPTOR
 	 *               is added here.
-	 * @param c, class of the execution block
 	 */
 	public BlockComponentInitializer() {
-		log = Logger.getLogger(SCTProperties.MODULE_LOG_PACKAGE);
+		
 	}
-
-
-
-
 
 	private void positionPopup(JComponent component , JFrame frame, JDialog dlg) {
 		Rectangle screen = new Rectangle(frame.getLocationOnScreen(), frame.getSize());
@@ -80,13 +71,13 @@ public class BlockComponentInitializer implements ComponentPopupInitializer<Abst
 	 */
 	@Override
 	@SuppressWarnings("serial")
-	public List<Action> getActions(final List<AbstractCoreComponent> components, final WindowWorkspace workspace) {
+	public List<Action> getActions(final List<AbstractDiagramSummaryComponent> components, final WindowWorkspace workspace) {
 		List<Action> actions = new ArrayList<Action>();
 
 		if(components.size()==0) return actions;
 
 		// Assume that we are operating on only a single object
-		final AbstractCoreComponent block = (AbstractCoreComponent)components.get(0);
+		final AbstractDiagramSummaryComponent block = (AbstractDiagramSummaryComponent)components.get(0);
 		final JFrame frame = (JFrame)SwingUtilities.getAncestorOfClass( JFrame.class,block);
 		// They make it really hard to track down the "IgnitionDesigner" object .. but here's how
 		IgnitionDesigner dsnr = null;
@@ -99,36 +90,7 @@ public class BlockComponentInitializer implements ComponentPopupInitializer<Abst
 		}
 		final IgnitionDesigner designer = dsnr;
 
-		if(block.isEncapsulationEnabled() ) {
-			BaseAction show = new BaseAction(PREFIX+"ShowSubworkspace", IconUtil.getIcon("window_new")) {
-				public void actionPerformed(ActionEvent e) {
-					WorkspacePanel wksp = block.findParentWorkspace();
-					WorkspaceContainerNode wcn = wksp.findParentNode(workspace.getDesignerContext());
-					wcn.open();
-				}  
-			};
-			show.setEnabled(block.getSubworkspace()!=null);
-			actions.add(show);
-			BaseAction create = new BaseAction(PREFIX+"CreateSubworkspace", IconUtil.getIcon("copy")) {
-				public void actionPerformed(ActionEvent e) {
-					WorkspacePanel wksp = block.findParentWorkspace();
-					WorkspaceContainerNode wcn = wksp.findParentNode(workspace.getDesignerContext());
-					WorkspaceContainerNode node = wcn.createSubworkspaceFolder(block.getName());
-					block.setSubworkspace(node.getWorkspacePanel());
-				}  
-			};
-			create.setEnabled(block.getSubworkspace()==null);
-			actions.add(create);
-		}
-
-		if(block.isStartBlock() ) {
-			BaseAction start = new BaseAction(PREFIX+"Start", IconUtil.getIcon("arrow_right_green")) {
-				public void actionPerformed(ActionEvent e) {
-					block.findParentWorkspace().getGatewayDelegate().start();
-				}  
-			};
-			actions.add(start);
-		}
+		
 		
 		// ========================= These are the standard entries. Don't duplicate. ======================
 		/*

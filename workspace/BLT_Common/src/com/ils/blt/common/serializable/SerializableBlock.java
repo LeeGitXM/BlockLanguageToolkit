@@ -25,6 +25,11 @@ public class SerializableBlock {
 	public void setLocation(Point p) { location=p; }
 	
 	public List<SerializableAnchor> getAnchors() { return anchors; }
-	public void setAnchors(List<SerializableAnchor> list) { anchors=list; }
+	public void setAnchors(List<SerializableAnchor> list) {
+		anchors=list;
+		for(SerializableAnchor sa:anchors) {
+			sa.setParentId(uuid);
+		}
+	}
 
 }

@@ -39,9 +39,8 @@ import com.inductiveautomation.ignition.designer.navtree.model.ResourceDeleteAct
  */
 public class DiagramTreeNode extends FolderNode {
 	private static final String TAG = "DiagnosticsFolderNode";
-	private static final String NAV_PREFIX = "NavTree";       // Required for some defaults
-	private static final String BUNDLE_NAME = "navtree";      // Name of properties file
-	private static final int DIAGRAM_DEPTH = 2;                   // For a two-tier menu
+	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
+	private static final int DIAGRAM_DEPTH = 2;                        // For a two-tier menu
 	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	// These are the various actions beyond defaults
 	private DebugAction debugAction = null;
@@ -50,9 +49,6 @@ public class DiagramTreeNode extends FolderNode {
 	protected DiagramAction diagramAction = null;
 	private final DiagramWorkspace workspace;
 	
-	static {
-		BundleUtil.get().addBundle(NAV_PREFIX,DiagramTreeNode.class,BUNDLE_NAME);
-	}
 
 	/** 
 	 * Create a new folder node representing the root folder
@@ -61,7 +57,7 @@ public class DiagramTreeNode extends FolderNode {
 	public DiagramTreeNode(DesignerContext ctx) {
 		super(ctx, BLTProperties.MODULE_ID, ApplicationScope.GATEWAY,BLTProperties.ROOT_FOLDER_UUID);
 		workspace = ((BLTDesignerHook)ctx.getModule(BLTProperties.MODULE_ID)).getWorkspace();
-		setText(BundleUtil.get().getString(NAV_PREFIX+".RootFolderName"));
+		setText(BundleUtil.get().getString(PREFIX+".RootFolderName"));
 		setIcon(IconUtil.getIcon("folder_closed"));
 		log.info(TAG+"root:"+this.pathToRoot());	
 	}
@@ -188,7 +184,7 @@ public class DiagramTreeNode extends FolderNode {
 
 		ResourceDeleteAction delete = new ResourceDeleteAction(context,
 				(List<AbstractResourceNavTreeNode>) children,
-				reason.getActionWordKey(), (getDepth()==1? (NAV_PREFIX+".ApplicationNoun"):(NAV_PREFIX+".FamilyNoun")));
+				reason.getActionWordKey(), (getDepth()==1? (PREFIX+".ApplicationNoun"):(PREFIX+".FamilyNoun")));
 		if (delete.execute()) {
 			UndoManager.getInstance().add(delete, DiagramTreeNode.class);
 		}
@@ -205,7 +201,7 @@ public class DiagramTreeNode extends FolderNode {
 	private class DebugAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
 		public DebugAction()  {
-			super(NAV_PREFIX+".Debug",IconUtil.getIcon("bug_yellow"));
+			super(PREFIX+".Debug",IconUtil.getIcon("bug_yellow"));
 		}
 
 		public void actionPerformed(ActionEvent e) {
@@ -219,14 +215,14 @@ public class DiagramTreeNode extends FolderNode {
 		private static final long serialVersionUID = 1L;
 		private UUID parent;
 	    public ApplicationAction(UUID parentUUID)  {
-	    	super(NAV_PREFIX+".NewApplication",IconUtil.getIcon("folder_new"));
+	    	super(PREFIX+".NewApplication",IconUtil.getIcon("folder_new"));
 	    	this.parent = parentUUID;
 	    }
 	    
 		public void actionPerformed(ActionEvent e) {
 			try {
 				final long newId = context.newResourceId();
-				String newName = BundleUtil.get().getString(NAV_PREFIX+".DefaultNewApplicationName");
+				String newName = BundleUtil.get().getString(PREFIX+".DefaultNewApplicationName");
 				if( newName==null) newName = "New Apps";  // Missing Resource
 				context.addFolder(newId,moduleId,ApplicationScope.GATEWAY,newName,parent);
 				selectChild(newId);
@@ -241,14 +237,14 @@ public class DiagramTreeNode extends FolderNode {
 		private static final long serialVersionUID = 1L;
 		private UUID parent;
 	    public FamilyAction(UUID parentUUID)  {
-	    	super(NAV_PREFIX+".NewFamily",IconUtil.getIcon("folder_new"));
+	    	super(PREFIX+".NewFamily",IconUtil.getIcon("folder_new"));
 	    	this.parent = parentUUID;
 	    }
 	    
 		public void actionPerformed(ActionEvent e) {
 			try {
 				final long newId = context.newResourceId();
-				String newName = BundleUtil.get().getString(NAV_PREFIX+".DefaultNewFamilyName");
+				String newName = BundleUtil.get().getString(PREFIX+".DefaultNewFamilyName");
 				if( newName==null) newName = "New Folks";  // Missing Resource
 				context.addFolder(newId,moduleId,ApplicationScope.GATEWAY,newName,parent);
 				selectChild(newId);
@@ -261,13 +257,13 @@ public class DiagramTreeNode extends FolderNode {
     private class DiagramAction extends BaseAction {
     	private static final long serialVersionUID = 1L;
 	    public DiagramAction()  {
-	    	super(NAV_PREFIX+".NewDiagram",IconUtil.getIcon("folder_new"));  // preferences
+	    	super(PREFIX+".NewDiagram",IconUtil.getIcon("folder_new"));  // preferences
 	    }
 	    
 		public void actionPerformed(ActionEvent e) {
 			try {
 				final long newId = context.newResourceId();
-				String newName = BundleUtil.get().getString(NAV_PREFIX+".DefaultNewDiagramName");
+				String newName = BundleUtil.get().getString(PREFIX+".DefaultNewDiagramName");
 				if( newName==null) newName = "New Diag";  // Missing string resource
 				SerializableDiagram diagram = new SerializableDiagram();
 				diagram.setName(newName);

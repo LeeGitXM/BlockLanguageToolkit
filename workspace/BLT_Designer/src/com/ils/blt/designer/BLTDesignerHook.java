@@ -45,6 +45,7 @@ import com.mxgraph.util.mxConstants;
 
 public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	private static final String TAG = "BLTDesignerHook";
+	public static String BLOCK_BUNDLE_NAME   = "block";        // Properties file is block.properties
 	public static String HOOK_BUNDLE_NAME   = "designer";      // Properties file is designer.properties
 	public static String PREFIX = BLTProperties.BUNDLE_PREFIX; // Properties is accessed by this prefix
 
@@ -54,8 +55,10 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	private final LoggerEx log;
 	private DiagramWorkspace workspace = null;
 	
+	// Register separate properties files for designer things and block things
 	static {
 		BundleUtil.get().addBundle(BLTProperties.BUNDLE_PREFIX,BLTDesignerHook.class,HOOK_BUNDLE_NAME);
+		BundleUtil.get().addBundle(BLTProperties.BLOCK_PREFIX,BLTDesignerHook.class,BLOCK_BUNDLE_NAME);
 	}
 	
 	public BLTDesignerHook() {

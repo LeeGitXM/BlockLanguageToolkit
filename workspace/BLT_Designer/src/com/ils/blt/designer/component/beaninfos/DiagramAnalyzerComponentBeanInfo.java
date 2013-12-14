@@ -13,6 +13,7 @@ import javax.swing.ImageIcon;
 
 import com.ils.blt.common.BLTProperties;
 
+
 /**
  * Define properties accessible in the designer properties editor for the CallbackBlock.
  * Also set the icon.
@@ -57,21 +58,21 @@ public class DiagramAnalyzerComponentBeanInfo extends BasicBlockBeanInfo {
 	 */
 	private String getString(String string) {
 		if( bundle==null) log.error(TAG+" Error null bundle");
-		return bundle.getString("Callback."+string);
+		return bundle.getString("DiagramAnalyzer."+string);
 	}
 	@Override
 	public Image getIcon(int kind) {
 		String imagePath="";
-		//logger.info(TAG+"getIcon of type "+kind);
+		log.info(TAG+"getIcon of type "+kind);
 		switch (kind) {
 		case BeanInfo.ICON_COLOR_16x16:
 		case BeanInfo.ICON_MONO_16x16:
-			imagePath = "/images/callback_block_16.png";
+			imagePath = "/images/diagram_analyzer_16.png";
 		case SimpleBeanInfo.ICON_COLOR_32x32:
 		case SimpleBeanInfo.ICON_MONO_32x32:
-			imagePath = "/images/callback_block_32.png";
+			imagePath = "images/diagram_analyzer_32.png";
 		}
-		Image img = new ImageIcon(getClass().getResource(imagePath)).getImage();
+		Image img = new ImageIcon(getClass().getClassLoader().getResource(imagePath)).getImage();
 		return img;
 	}
 }

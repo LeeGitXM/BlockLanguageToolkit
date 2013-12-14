@@ -15,6 +15,7 @@ import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.inductiveautomation.ignition.client.designable.DesignableContainer;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
@@ -50,20 +51,15 @@ import com.jidesoft.docking.DockingManager;
  * 
  */
 public class DiagramWorkspace extends AbstractBlockWorkspace implements ResourceWorkspace{
-	private static final long serialVersionUID = 4627016159409031941L;
-	public static final String key = "DiagnosticsWorkspace";
 	private static final String TAG = "DiagnosticsWorkspace";
+	private static final long serialVersionUID = 4627016159409031941L;
+	public static final String key = "BlockDiagramWorkspace";
+	public static final String PREFIX = BLTProperties.BLOCK_PREFIX;
 	private final DesignerContext context;
 	private Collection<ResourceWorkspaceFrame> frames;
 
 	private LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
-	private static final String NAV_PREFIX = "Palette";       // Required for some defaults
-	private static final String BUNDLE_NAME = "workspace"; 
-	
-	static {
-		BundleUtil.get().addBundle(NAV_PREFIX,ProcessBlockPalette.class,BUNDLE_NAME);
-	}
-	
+
 	/**
 	 * Constructor 
 	 */
@@ -80,10 +76,10 @@ public class DiagramWorkspace extends AbstractBlockWorkspace implements Resource
 		tabbedPalette.setInitMode(DockContext.STATE_FRAMEDOCKED);
 		tabbedPalette.setInitSide(DockContext.DOCK_SIDE_NORTH);
 		tabbedPalette.setInitIndex(0);
-		tabbedPalette.setTitle("Title");
-		tabbedPalette.setTabTitle("Title");
-		tabbedPalette.setSideTitle("Title");
-		tabbedPalette.putClientProperty("menu.text", "Process Block Palette");
+		tabbedPalette.setTitle(BundleUtil.get().getString(PREFIX+".Palette.Title"));
+		tabbedPalette.setTabTitle(PREFIX+".Palette.Tab.Title");
+		tabbedPalette.setSideTitle("SideTitle");
+		tabbedPalette.putClientProperty("menu.text", PREFIX+".Palette.Title");
 		
 		frames = new ArrayList<ResourceWorkspaceFrame>();
 		frames.add(tabbedPalette);
@@ -171,22 +167,21 @@ public class DiagramWorkspace extends AbstractBlockWorkspace implements Resource
 
 
 	@Override
-	public void resetFrames(DockingManager arg0, DockableBarManager arg1) {
+	public void resetFrames(DockingManager dockManager, DockableBarManager barManager) {
 		// TODO Auto-generated method stub
 		
 	}
 
 
 	@Override
-	public String copyBlocks(Collection<Block> arg0)
-			throws SerializationException {
+	public String copyBlocks(Collection<Block> blocks) throws SerializationException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 
 	@Override
-	public Collection<Block> pasteBlocks(String arg0) {
+	public Collection<Block> pasteBlocks(String blocks) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -200,7 +195,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace implements Resource
 
 
 	@Override
-	protected void setStatusMessage(String arg0) {
+	protected void setStatusMessage(String msg) {
 		// TODO Auto-generated method stub
 		
 	}

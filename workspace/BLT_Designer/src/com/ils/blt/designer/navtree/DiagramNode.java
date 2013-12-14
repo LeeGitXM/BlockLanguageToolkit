@@ -34,7 +34,7 @@ import com.inductiveautomation.ignition.designer.navtree.model.ResourceDeleteAct
  */
 public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectChangeListener  {
 	private static final String TAG = "DiagnosticsNode";
-	private static final String NAV_PREFIX = "NavTree";       // Required for some defaults
+	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
 
 	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	private DesignerContext context;
@@ -87,7 +87,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 	public void doDelete(List<? extends AbstractNavTreeNode> children,DeleteReason reason) {
 		ResourceDeleteAction delete = new ResourceDeleteAction(context,
 				(List<AbstractResourceNavTreeNode>) children,
-				reason.getActionWordKey(), NAV_PREFIX+".DiagramNoun");
+				reason.getActionWordKey(), PREFIX+".DiagramNoun");
 		if (delete.execute()) {
 			UndoManager.getInstance().add(delete, DiagramNode.class); 
 		}
@@ -121,8 +121,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 	public void onEdit(String newTextValue) {
 		// Sanitize name
 		if (!NAME_PATTERN.matcher(newTextValue).matches()) {
-			ErrorUtil.showError(BundleUtil.get().getString(
-					NAV_PREFIX+".InvalidName", newTextValue));
+			ErrorUtil.showError(BundleUtil.get().getString(PREFIX+".InvalidName", newTextValue));
 		}
 
 		boolean hadLock = context.isLockOpen(resourceId);

@@ -9,6 +9,7 @@ import java.util.UUID;
 import javax.swing.Icon;
 import javax.swing.JPanel;
 
+import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
 import com.inductiveautomation.ignition.designer.blockandconnector.blockui.AnchorDescriptor;
@@ -36,8 +37,10 @@ public class ProcessBlockView extends AbstractBlock {
 	
 	public ProcessBlockView(SerializableBlock sb) {
 		this.uuid = sb.getId();
-		// TODO
 		this.anchors = new ArrayList<AnchorDescriptor>();
+		for( SerializableAnchor sa:sb.getAnchors() ) {
+			anchors.add( new AnchorDescriptor(sa.getType(),sa.getId(),sa.getDisplay()) );
+		}
 		this.location = sb.getLocation();
 		ui = new UI();
 	}

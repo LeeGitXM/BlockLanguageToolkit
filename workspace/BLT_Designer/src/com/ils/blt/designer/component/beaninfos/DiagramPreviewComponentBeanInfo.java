@@ -18,7 +18,7 @@ import com.inductiveautomation.factorypmi.designer.beaninfo.BasicContainerBeanIn
  * Define properties accessible in the designer properties editor for the CallbackBlock.
  * Also set the icon.
  */
-public class DiagramPreviewComponentBeanInfo extends BasicContainerBeanInfo {
+public class DiagramPreviewComponentBeanInfo extends BasicBlockBeanInfo {
 	private static final String TAG = "DiagramPreviewComponentBeanInfo";
 	private ResourceBundle bundle = null;
 
@@ -58,19 +58,19 @@ public class DiagramPreviewComponentBeanInfo extends BasicContainerBeanInfo {
 	 */
 	private String getString(String string) {
 		if( bundle==null) log.error(TAG+" Error null bundle");
-		return bundle.getString("Preview."+string);
+		return bundle.getString("DiagramPreview."+string);
 	}
 	@Override
 	public Image getIcon(int kind) {
 		String imagePath="";
-		//logger.info(TAG+"getIcon of type "+kind);
+		log.info(TAG+"getIcon of type "+kind);
 		switch (kind) {
 		case BeanInfo.ICON_COLOR_16x16:
 		case BeanInfo.ICON_MONO_16x16:
-			imagePath = "/images/callback_block_16.png";
+			imagePath = "images/diagram_previw_16.png";
 		case SimpleBeanInfo.ICON_COLOR_32x32:
 		case SimpleBeanInfo.ICON_MONO_32x32:
-			imagePath = "/images/callback_block_32.png";
+			imagePath = "/images/diagram_preview_32.png";
 		}
 		Image img = new ImageIcon(getClass().getResource(imagePath)).getImage();
 		return img;
