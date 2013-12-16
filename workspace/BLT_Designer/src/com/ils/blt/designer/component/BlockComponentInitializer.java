@@ -204,13 +204,15 @@ public class BlockComponentInitializer implements ComponentPopupInitializer<Abst
 			}
 		};
 		actions.add(events);
-*/
+
 		BaseAction scriptModule = new BaseAction(PREFIX+"ModelScript", IconUtil.getIcon("scroll")) {
 			public void actionPerformed(ActionEvent e) {
 				designer.showScriptPlayground();
 			}
 		};
 		actions.add(scriptModule);
+		
+		*/
 		return actions;
 
 

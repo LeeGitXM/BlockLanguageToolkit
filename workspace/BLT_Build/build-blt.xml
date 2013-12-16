@@ -2,7 +2,7 @@
 
 	<import file="${basedir}/BLT_Build/build.xml"/>
 
-	<property name="version.build" value="1" />	
+	<property name="version.build" value="3" />	
 	<!-- Change version.beta value to "" for release builds -->
 	<property name="version.beta" value="-development" />		
 	<property name="BLTModule.version" value="1.1.1.${version.build}" />
@@ -43,6 +43,7 @@
 	<!-- The gateway, designer and clients depend on the Common -->
 	<path id="BLT_Common.classpath">
 		<path refid="Ignition_SDK.classpath" />
+		<path refid="ExternalJar.classpath" />
 	</path>
 		
 	<!-- Gateway jar classpath -->

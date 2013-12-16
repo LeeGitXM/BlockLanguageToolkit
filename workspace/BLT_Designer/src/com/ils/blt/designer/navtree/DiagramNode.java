@@ -33,7 +33,7 @@ import com.inductiveautomation.ignition.designer.navtree.model.ResourceDeleteAct
  * The model can exist without the frame, but not vice-versa.
  */
 public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectChangeListener  {
-	private static final String TAG = "DiagnosticsNode";
+	private static final String TAG = "DiagramNode";
 	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
 
 	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());

@@ -12,6 +12,8 @@ import java.util.ResourceBundle;
 import javax.swing.ImageIcon;
 
 import com.ils.blt.common.BLTProperties;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 
 /**
@@ -21,7 +23,7 @@ import com.ils.blt.common.BLTProperties;
 public class DiagramAnalyzerComponentBeanInfo extends BasicBlockBeanInfo {
 	private static final String TAG = "DiagramAnalyzerComponentBeanInfo";
 	private ResourceBundle bundle = null;
-
+	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	
 	/**
 	 * Constructor: Create a beaninfo object for the CallbackBlock. The
@@ -29,7 +31,7 @@ public class DiagramAnalyzerComponentBeanInfo extends BasicBlockBeanInfo {
 	 */
 	public DiagramAnalyzerComponentBeanInfo() {
 		super(DiagramAnalyzerComponentBeanInfo.class);
-		
+		log.info(TAG+"CONSTRUCTOR");
 	}
 
 	@Override
@@ -60,19 +62,20 @@ public class DiagramAnalyzerComponentBeanInfo extends BasicBlockBeanInfo {
 		if( bundle==null) log.error(TAG+" Error null bundle");
 		return bundle.getString("DiagramAnalyzer."+string);
 	}
+	
 	@Override
 	public Image getIcon(int kind) {
 		String imagePath="";
-		log.info(TAG+"getIcon of type "+kind);
+		//log.info(TAG+"getIcon of type "+kind);
 		switch (kind) {
 		case BeanInfo.ICON_COLOR_16x16:
 		case BeanInfo.ICON_MONO_16x16:
 			imagePath = "/images/diagram_analyzer_16.png";
 		case SimpleBeanInfo.ICON_COLOR_32x32:
 		case SimpleBeanInfo.ICON_MONO_32x32:
-			imagePath = "images/diagram_analyzer_32.png";
+			imagePath = "/images/diagram_analyzer_32.png";
 		}
-		Image img = new ImageIcon(getClass().getClassLoader().getResource(imagePath)).getImage();
+		Image img = new ImageIcon(getClass().getResource(imagePath)).getImage();
 		return img;
 	}
 }

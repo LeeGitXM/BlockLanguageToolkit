@@ -3,8 +3,8 @@
  */
 package com.ils.blt.gateway.engine;
 
-import com.ils.block.NewValueNotification;
 import com.ils.block.ProcessBlock;
+import com.ils.block.control.NewValueNotification;
 
 /**
  * A value has been received as an output from a block

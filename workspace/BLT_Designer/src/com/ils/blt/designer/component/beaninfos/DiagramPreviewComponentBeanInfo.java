@@ -13,6 +13,8 @@ import javax.swing.ImageIcon;
 
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.factorypmi.designer.beaninfo.BasicContainerBeanInfo;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 /**
  * Define properties accessible in the designer properties editor for the CallbackBlock.
@@ -21,7 +23,7 @@ import com.inductiveautomation.factorypmi.designer.beaninfo.BasicContainerBeanIn
 public class DiagramPreviewComponentBeanInfo extends BasicBlockBeanInfo {
 	private static final String TAG = "DiagramPreviewComponentBeanInfo";
 	private ResourceBundle bundle = null;
-
+	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	
 	/**
 	 * Constructor: Create a beaninfo object for the CallbackBlock. The
@@ -67,7 +69,7 @@ public class DiagramPreviewComponentBeanInfo extends BasicBlockBeanInfo {
 		switch (kind) {
 		case BeanInfo.ICON_COLOR_16x16:
 		case BeanInfo.ICON_MONO_16x16:
-			imagePath = "images/diagram_previw_16.png";
+			imagePath = "/images/diagram_previw_16.png";
 		case SimpleBeanInfo.ICON_COLOR_32x32:
 		case SimpleBeanInfo.ICON_MONO_32x32:
 			imagePath = "/images/diagram_preview_32.png";

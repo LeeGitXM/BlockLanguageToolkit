@@ -5,9 +5,9 @@ package com.ils.blt.gateway.engine;
 
 import java.util.Hashtable;
 
-import com.ils.block.BlockConstants;
-import com.ils.block.NewValueNotification;
 import com.ils.block.ProcessBlock;
+import com.ils.block.common.BlockConstants;
+import com.ils.block.control.NewValueNotification;
 
 /**
  * Evaluate the specified block. The thread should end with the block placing a

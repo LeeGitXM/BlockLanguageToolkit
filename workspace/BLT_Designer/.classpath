@@ -3,8 +3,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ILS_Common"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/JGX"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/JGraphX"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/BLT_Client"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/BLT_Common"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/BlockDef"/>

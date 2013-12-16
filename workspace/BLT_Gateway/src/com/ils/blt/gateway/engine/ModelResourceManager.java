@@ -6,8 +6,6 @@ package com.ils.blt.gateway.engine;
 import java.util.List;
 import java.util.Set;
 
-import org.w3c.dom.Document;
-
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
@@ -22,10 +20,12 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 import com.inductiveautomation.ignition.gateway.project.ProjectListener;
 
 /**
- * The workspace manager keeps track of model (ils-model) resources. On startup
+ * The workspace manager keeps track of model (blt-model) resources. On startup
  * and whenever a resource change takes place, the manager analyzes the resources
  * and extracts workspace and block information. This information is relayed to the
  * block manager via a passed-in controller instance.
+ * 
+ * We make this a Singleton since access from the Gateway hook was problematic.
  * 
  * NOTE: The project listener interface only triggers when the user selects 
  *       "Save and Publish".  We provide separate entry points for application
@@ -35,10 +35,10 @@ import com.inductiveautomation.ignition.gateway.project.ProjectListener;
 public class ModelResourceManager implements ProjectListener  {
 	
 	private static String TAG = "ModelResourceManager";
-	private final GatewayContext context;
+	private GatewayContext context = null;
 	private final LoggerEx log;
 	private final BlockExecutionController controller = BlockExecutionController.getInstance();
-	
+	private static ModelResourceManager instance = null;
 	
 	/**
 	 * Initially we query the gateway context to discover what resources exists. After that
@@ -47,11 +47,25 @@ public class ModelResourceManager implements ProjectListener  {
 	 * 
 	 * @param cntx the gateway context. 
 	 */
-	public ModelResourceManager(GatewayContext cntx) { 
-		this.context = cntx;
+	private ModelResourceManager() { 
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 	}
 
+	/**
+	 * Static method to create and/or fetch the single instance.
+	 */
+	public static ModelResourceManager getInstance() {
+		if( instance==null) {
+			synchronized(ModelResourceManager.class) {
+				instance = new ModelResourceManager();
+			}
+		}
+		return instance;
+	}
+	
+	public void setContext(GatewayContext cntx) {
+		this.context = cntx;
+	}
 	
 	public void updateModel(BlockExecutionController controller,long projectId) {
 		Project project = context.getProjectManager().getProject(projectId, ApplicationScope.DESIGNER, ProjectVersion.Staging);

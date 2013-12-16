@@ -7,11 +7,16 @@ import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
+import com.ils.block.common.BlockPrototype;
+import com.ils.blt.common.BLTProperties;
+import com.ils.blt.designer.BLTDesignerHook;
+import com.ils.blt.designer.PropertiesRequestHandler;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
@@ -52,6 +57,10 @@ public class ProcessBlockPalette extends DockableFrame implements ResourceWorksp
 		setDockedWidth(120);
 		
 		this.workspace = workspace;
+		
+		// Query the Gateway for a list of blocks to display
+		PropertiesRequestHandler handler = ((BLTDesignerHook)ctx.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+		List<BlockPrototype> prototypes = handler.getBlockPrototypes();
 
 		JPanel panel = new JPanel();
 		panel.add(new JButton(new PaletteEntry("block")));
@@ -72,6 +81,7 @@ public class ProcessBlockPalette extends DockableFrame implements ResourceWorksp
 	}
 	
 	private class PaletteEntry extends AbstractAction {
+		private static final long serialVersionUID = 6689395234849746852L;
 		private String text;
 		public PaletteEntry(String label) {
 			super(label);

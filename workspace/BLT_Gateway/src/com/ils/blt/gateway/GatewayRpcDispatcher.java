@@ -3,9 +3,14 @@
  */
 package com.ils.blt.gateway;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 
-import com.ils.blt.common.BlockPropertiesInterface;
+import com.ils.block.ProcessBlock;
+import com.ils.block.annotation.ExecutableBlock;
+import com.ils.block.common.BlockPrototype;
+import com.ils.common.ClassList;
 import com.ils.common.JavaToJson;
 import com.ils.common.JsonToJava;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -18,33 +23,31 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
  *  Its purpose is simply to parse out a request and send it to the
  *  right handler. This class supports the aggregate of RPC interfaces.
  */
-public class GatewayRpcDispatcher implements BlockPropertiesInterface  {
+public class GatewayRpcDispatcher   {
 	private static String TAG = "GatewayRpcDispatcher";
 	private final LoggerEx log;
 	private final GatewayContext context;
-	private final Long projectId;
 	private final JsonToJava jsonToJava;
 	private final JavaToJson javaToJson;
 
 	/**
 	 * Constructor. There is a separate dispatcher for each project.
 	 */
-	public GatewayRpcDispatcher(GatewayContext cntx,Long pid) {
+	public GatewayRpcDispatcher(GatewayContext cntx) {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.context = cntx;
-		this.projectId = pid;
 		this.jsonToJava = new JsonToJava();
 		this.javaToJson = new JavaToJson();
 	}
 
 
-	@Override
+
 	public void enableDiagram(Long projectId, Long resourceId, Boolean flag) {
 		// TODO Auto-generated method stub
 		
 	}
 
-	@Override
+
 	public String getBlockAttributes(Long proj, Long res,String blockId,String json) {
 		long projectId = proj.longValue();
 		long resourceId = res.longValue();
@@ -59,7 +62,7 @@ public class GatewayRpcDispatcher implements BlockPropertiesInterface  {
 		return gson;
 	}
 	
-	@Override
+
 	public String getConnectionAttributes(Long proj, Long res,String connectionId,String json) {
 		long projectId = proj.longValue();
 		long resourceId = res.longValue();
@@ -73,17 +76,41 @@ public class GatewayRpcDispatcher implements BlockPropertiesInterface  {
 		log.trace(TAG+": JSON="+gson);
 		return gson;
 	}
+
+
+	// The blocks are expected to reside in a jar named "block-definition.jar"
+	public List<String> getBlockPrototypes() {
+		log.infof("%s: getBlockPrototypes ...",TAG);
+		List<String> results = new ArrayList<String>();
+		ClassList cl = new ClassList();
+		List<Class<?>> classes = cl.getAnnotatedClasses("block-definition", ExecutableBlock.class);
+		for( Class<?> cls:classes) {
+			log.info("   found block class: "+cls.getName());
+			try {
+				Object obj = cls.newInstance();
+				if( obj instanceof ProcessBlock ) {
+					BlockPrototype bp = ((ProcessBlock)obj).getBlockPrototype();
+					log.infof("    serializing ... %s",(bp==null?"null":"not null"));
+					log.infof("    %s ...",bp.getPaletteIconPath());
+					String json = bp.toJson();
+					log.info("   json: "+json);
+					results.add(json);
+				}
+			} 
+			catch (InstantiationException ie) {
+				log.warnf("%s:getBlockPrototypes: Exception instantiating block (%s)",TAG,ie.getLocalizedMessage());
+			} 
+			catch (IllegalAccessException iae) {
+				log.warnf("%s:getBlockPrototypes: Access exception (%s)",TAG,iae.getMessage());
+			}
+			catch (Exception ex) {
+				log.warnf("%s: getBlockPrototypes: Runtime exception (%s)",TAG,ex.getMessage());
+			}
+		}
+		return results;
+	}
 	
 
-	@Override
-	public String getPaletteBlockAttributes() {
-		return null;
-	}
 
-	@Override
-	public String getPaletteConnectionAttributes() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 	
 }

@@ -6,11 +6,9 @@ package com.ils.blt.gateway.engine;
 import java.util.Hashtable;
 
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
-import com.ils.block.NewValueNotification;
 import com.ils.block.ProcessBlock;
+import com.ils.block.control.NewValueNotification;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.connection.Connection;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;

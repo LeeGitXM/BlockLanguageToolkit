@@ -4,7 +4,6 @@
 package com.ils.blt.gateway;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.List;
 
 import org.apache.wicket.markup.html.WebMarkupContainer;
@@ -36,8 +35,7 @@ import com.inductiveautomation.ignition.gateway.web.models.INamedTab;
 public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	public static String TAG = "BLTGatewayHook";
 	public static String BUNDLE_NAME = "block";// Properties file is block.properties
-	private final Hashtable<Long,GatewayRpcDispatcher> dispatchers;
-	private ModelResourceManager mrm = null;
+	private GatewayRpcDispatcher dispatcher = null;
 	String prefix = "BLT";
 
 	private GatewayContext context = null;
@@ -46,7 +44,6 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	public BLTGatewayHook() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		log.info(TAG+"Initializing BLT Gateway hook");
-		dispatchers = new Hashtable<Long,GatewayRpcDispatcher>();
 		BundleUtil.get().addBundle(prefix, getClass(), BUNDLE_NAME);
 	}
 		
@@ -57,35 +54,34 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		this.context = ctxt;
 		// Initialize the controller.
 		BlockExecutionController.getInstance().setContext(ctxt);
-		mrm = new ModelResourceManager(context);
-		context.getProjectManager().addProjectListener(mrm);
+		// NOTE: Get serialization exception if this saved as a class member
+		//       Exception is thrown when we try to incorporate a StatusPanel
+		ModelResourceManager mrm = ModelResourceManager.getInstance();
+		//mrm = new ModelResourceManager(context);
+		//context.getProjectManager().addProjectListener(mrm);
 
 		log.info(TAG+"Setup - enabled project listeners.");
 		PropertiesUpdateHandler.getInstance().setContext(context);
 		ProxyHandler.getInstance().setContext(context);
+		dispatcher = new GatewayRpcDispatcher(context);
 	}
 
 	@Override
 	public void startup(LicenseState licenseState) {
-	    log.info(TAG+"Startup complete.");
+	    log.infof("%s: Startup complete.",TAG);
 	    BlockExecutionController.getInstance().start();
 	}
 
 	@Override
 	public void shutdown() {
 
-		context.getProjectManager().removeProjectListener(mrm);
+		//context.getProjectManager().removeProjectListener(mrm);
 		BlockExecutionController.getInstance().stop();
 	}
 
 	@Override
 	public Object getRPCHandler(ClientReqSession session, Long projectId) {
-		log.info(TAG+"getRPCHandler - request for project "+projectId);
-		GatewayRpcDispatcher dispatcher = dispatchers.get(projectId);
-		if( dispatcher==null ) {
-			dispatcher = new GatewayRpcDispatcher(context,projectId);
-			dispatchers.put(projectId, dispatcher);
-		}
+		log.infof("%s: getRPCHandler - request for project %s",TAG,projectId.toString());
 		return dispatcher;
 	}
 	
@@ -95,6 +91,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		mgr.addScriptModule(BLTProperties.REGISTRATION_SCRIPT_PACKAGE,CallbackRegistrationScriptFunctions.class);
 		mgr.addScriptModule(BLTProperties.REPORTING_SCRIPT_PACKAGE,BlockCompletionScriptFunctions.class);
 	}
+	
 	@Override
 	public List<? extends INamedTab> getStatusPanels() {
 		ExecutionStatus panel = new ExecutionStatus();

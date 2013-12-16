@@ -10,10 +10,10 @@ import java.util.Hashtable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.ils.block.BlockConstants;
-import com.ils.block.ExecutionController;
-import com.ils.block.NewValueNotification;
 import com.ils.block.ProcessBlock;
+import com.ils.block.common.BlockConstants;
+import com.ils.block.control.ExecutionController;
+import com.ils.block.control.NewValueNotification;
 import com.ils.common.BoundedBuffer;
 import com.ils.connection.Connection;
 import com.inductiveautomation.ignition.common.util.LogUtil;

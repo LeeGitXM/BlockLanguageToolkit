@@ -8,9 +8,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Hashtable;
 
-import com.ils.block.BlockConstants;
-import com.ils.block.ExecutionController;
 import com.ils.block.ProcessBlock;
+import com.ils.block.common.BlockConstants;
+import com.ils.block.control.ExecutionController;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.proxy.ProxyBlock;
 import com.ils.connection.Connection;

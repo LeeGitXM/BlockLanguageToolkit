@@ -12,12 +12,9 @@ import org.python.core.Py;
 import org.python.core.PyCode;
 import org.python.core.PyDictionary;
 import org.python.core.PyObject;
-import org.python.core.PyString;
 
-import com.ils.block.BlockConstants;
+import com.ils.block.common.BlockConstants;
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.gateway.engine.BlockExecutionController;
-import com.ils.common.JavaToPython;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.script.JythonExecException;
 import com.inductiveautomation.ignition.common.script.ScriptManager;

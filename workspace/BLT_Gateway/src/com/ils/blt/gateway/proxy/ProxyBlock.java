@@ -9,6 +9,7 @@ import java.util.Set;
 import org.python.core.PyObject;
 
 import com.ils.block.ProcessBlock;
+import com.ils.block.common.BlockPrototype;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -105,6 +106,12 @@ public class ProxyBlock implements ProcessBlock {
 	@Override
 	public  void setValue(String name,QualifiedValue value) {
 		delegate.setValue(projectId,diagramId,blockId,name,value);
+	}
+
+	@Override
+	public BlockPrototype getBlockPrototype() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 

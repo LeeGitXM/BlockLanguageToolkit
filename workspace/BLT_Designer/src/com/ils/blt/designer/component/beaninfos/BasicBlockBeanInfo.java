@@ -15,8 +15,6 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.designer.component.AbstractDiagramSummaryComponent;
 import com.ils.blt.designer.component.BlockComponentInitializer;
 import com.inductiveautomation.factorypmi.designer.property.customizers.DynamicPropertyProviderCustomizer;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.vision.api.designer.beans.CommonBeanInfo;
 import com.inductiveautomation.vision.api.designer.beans.CustomizerDescriptor;
 import com.inductiveautomation.vision.api.designer.beans.InPlaceEditHandler;
@@ -27,9 +25,9 @@ import com.inductiveautomation.vision.api.designer.beans.InPlaceEditHandler;
  * here that are common to most, but not all block types.
  */
 public class BasicBlockBeanInfo extends CommonBeanInfo {
-	private final static String TAG="BasicBlockBeanInfo";
 	public final static String PREFIX = BLTProperties.BUNDLE_PREFIX+".Workspace.Menu.";
-	protected final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
+	private Dimension preferredSize = null;
+	
    /**
     * Constructor: The superclass constructor takes an array of relevant custom
     *               descriptors. The DynamicPropertyProviderCustomizer.VALUE_DESCRIPTOR
@@ -54,8 +52,8 @@ public class BasicBlockBeanInfo extends CommonBeanInfo {
 	protected void initProperties() throws IntrospectionException {
 		//super.initProperties();  // Throws exception
 		
-		removeProp("opaque");
-		removeProp("border");
+		//removeProp("opaque");
+		//removeProp("border");
 		
 		//addProp("blockType","Block Type","Role that this block performs in the execution model", CAT_COMMON, PREFERRED_MASK|BOUND_MASK);
 		//addProp("heading","Heading","Title text on the component", CAT_COMMON, PREFERRED_MASK|BOUND_MASK);
@@ -112,4 +110,8 @@ public class BasicBlockBeanInfo extends CommonBeanInfo {
 	    });
 	
 	}
+	
+	// Needed to satisfy introspection ...
+	public boolean isPreferredSize() { return false; }  // Works
+	public void setPreferredSize(Dimension dim) { this.preferredSize = dim; }
 }

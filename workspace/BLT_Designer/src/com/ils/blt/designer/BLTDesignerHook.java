@@ -4,20 +4,13 @@
 package com.ils.blt.designer;
 
 
-import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
-
-import javax.swing.JFrame;
 
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.designer.component.DiagramAnalyzerComponent;
 import com.ils.blt.designer.component.DiagramPreviewComponent;
-import com.ils.blt.designer.graphics.PaletteBlocks;
 import com.ils.blt.designer.navtree.DiagramTreeNode;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
-import com.ils.jgx.editor.JgxPalette;
 import com.inductiveautomation.factorypmi.designer.palette.model.DefaultPaletteItemGroup;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.common.BundleUtil;
@@ -40,8 +33,6 @@ import com.inductiveautomation.vision.api.designer.palette.Palette;
 import com.inductiveautomation.vision.api.designer.palette.PaletteItemGroup;
 import com.jidesoft.docking.DockingManager;
 import com.jidesoft.docking.Workspace;
-import com.mxgraph.swing.util.mxSwingConstants;
-import com.mxgraph.util.mxConstants;
 
 public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	private static final String TAG = "BLTDesignerHook";
@@ -51,9 +42,9 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 
 	private DiagramTreeNode rootNode;
 	private DesignerContext context = null;
-	private JFrame paletteFrame = null;
 	private final LoggerEx log;
 	private DiagramWorkspace workspace = null;
+	private PropertiesRequestHandler propertiesRequestHandler = null;
 	
 	// Register separate properties files for designer things and block things
 	static {
@@ -69,39 +60,46 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	@Override
 	public void initializeScriptManager(ScriptManager mgr) {
 		super.initializeScriptManager(mgr);
-		mgr.addScriptModule(BLTProperties.PROPERTIES_SCRIPT_PACKAGE, BlockPropertiesScriptFunctions.class);
 	}
 	
 	@Override
 	public void startup(DesignerContext ctx, LicenseState activationState) throws Exception {
 		this.context = ctx;
+		propertiesRequestHandler = new PropertiesRequestHandler(context);
 		context.addBeanInfoSearchPath("com.ils.blt.designer.component.beaninfos");
-		
-		workspace = new DiagramWorkspace(context);
-		rootNode = new DiagramTreeNode(context);
-		context.getProjectBrowserRoot().addChild(rootNode);
-		context.registerResourceWorkspace(workspace);
 		
 		// Place icons for our custom widgets on the Vision palette
 		VisionDesignerInterface vdi = 
 					(VisionDesignerInterface) context.getModule(VisionDesignerInterface.VISION_MODULE_ID);
 
 		if (vdi != null) {
-				final Palette palette = vdi.getPalette();
+			final Palette palette = vdi.getPalette();
 
-				// Populate the palette
-				PaletteItemGroup group = palette.addGroup(BundleUtil.get().getString(PREFIX+".Palette.Name"));
-				if( group instanceof DefaultPaletteItemGroup ) {
-					// The icon is located in vis-designer/images/incors
-					((DefaultPaletteItemGroup) group).setIcon(IconUtil.getIcon("add_child"));
-				}
-				else {
-					log.infof("%s: Group not a DefaultPaletteItemGroup, is %s",TAG,group.getClass().getName());
-				}
-					
+			// Populate the palette
+			PaletteItemGroup group = palette.addGroup(BundleUtil.get().getString(PREFIX+".Palette.Name"));
+			if( group instanceof DefaultPaletteItemGroup ) {
+				// The icon is located in vis-designer/images/incors
+				((DefaultPaletteItemGroup) group).setIcon(IconUtil.getIcon("add_child"));
+
+			}
+			else {
+				log.infof("%s: Group not a DefaultPaletteItemGroup, is %s",TAG,group.getClass().getName());
+			}
+			try {
 				group.addPaletteItem(new JavaBeanPaletteItem(DiagramAnalyzerComponent.class));
 				group.addPaletteItem(new JavaBeanPaletteItem(DiagramPreviewComponent.class));
+			}
+			catch(Exception ie ) {
+				log.warnf("%s: Error creating palette entries (%s)",TAG,ie.getMessage());
+			}
 		}
+		
+		// Setup the diagram workspace
+		workspace = new DiagramWorkspace(context);
+		rootNode = new DiagramTreeNode(context);
+		context.getProjectBrowserRoot().addChild(rootNode);
+		context.registerResourceWorkspace(workspace);
+		
 		// Register the listener for notifications
 		GatewayConnectionManager.getInstance().addPushNotificationListener(new NotificationListener());
 	}
@@ -111,27 +109,6 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	@Override
 	public void notifyProjectSaveStart(SaveContext save) {
 		workspace.saveOpenDiagrams();
-	}
- 
-	/**
-	 * Display the Diagnostics Tools Menu
-	 */
-	public void displayPalette()  {
-		log.info(String.format("%s.displayPalette ...", TAG));
-
-		mxSwingConstants.SHADOW_COLOR = Color.LIGHT_GRAY;
-		mxConstants.W3C_SHADOWCOLOR = "#D3D3D3";
-		if( paletteFrame ==null ) {
-			JgxPalette palette = new JgxPalette();
-			PaletteBlocks.populatePalette(palette.getPalette());
-			paletteFrame = new JFrame("Block and Connector Palette");
-			paletteFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-			palette.setPreferredSize(new Dimension(500,150));
-			paletteFrame.getContentPane().add(palette,BorderLayout.CENTER);
-			paletteFrame.pack();
-			paletteFrame.setAlwaysOnTop(true);
-		}
-		paletteFrame.setVisible(true);
 	}
 	
 	/**
@@ -172,6 +149,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		}
 	}
 
+	public PropertiesRequestHandler getPropertiesRequestHandler() { return propertiesRequestHandler; }
 	@Override
 	public String getResourceCategoryKey(Project project,ProjectResource resource) {
 		// There is only one resource category that we are exporting
