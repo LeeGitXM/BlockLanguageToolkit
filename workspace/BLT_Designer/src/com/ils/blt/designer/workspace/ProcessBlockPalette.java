@@ -3,20 +3,28 @@
  */
 package com.ils.blt.designer.workspace;
 
+import java.awt.BorderLayout;
 import java.awt.Cursor;
+import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.util.List;
 
 import javax.swing.AbstractAction;
-import javax.swing.JButton;
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JToggleButton;
+import javax.swing.SwingConstants;
 
-import com.ils.block.common.BlockPrototype;
+import com.ils.block.common.PalettePrototype;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.PropertiesRequestHandler;
+import com.ils.blt.designer.workspace.ui.RoundUIView;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
@@ -35,12 +43,10 @@ import com.jidesoft.docking.DockableFrame;
  */
 public class ProcessBlockPalette extends DockableFrame implements ResourceWorkspaceFrame{
 	private static final long serialVersionUID = 4627016359409031941L;
-	private static final String TAG = "DiagnosticsPalette";
-	public static final String DOCKING_KEY = "DiagnosticBlocks";
+	private static final String TAG = "ProcessBlockPalette";
+	public static final String DOCKING_KEY = "ProcessBlockPalette";
 	private final DesignerContext context;
 	private final DiagramWorkspace workspace;
-	
-
 	private LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	
 	
@@ -59,12 +65,14 @@ public class ProcessBlockPalette extends DockableFrame implements ResourceWorksp
 		this.workspace = workspace;
 		
 		// Query the Gateway for a list of blocks to display
-		PropertiesRequestHandler handler = ((BLTDesignerHook)ctx.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
-		List<BlockPrototype> prototypes = handler.getBlockPrototypes();
-
 		JPanel panel = new JPanel();
-		panel.add(new JButton(new PaletteEntry("block")));
-		panel.add(new JButton(new PaletteEntry("circle")));
+		PropertiesRequestHandler handler = ((BLTDesignerHook)ctx.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+		List<PalettePrototype> prototypes = handler.getBlockPrototypes();
+		for( PalettePrototype proto:prototypes) {
+			JComponent component = new PaletteEntry(proto).getComponent();
+			if( component!=null)panel.add(component);
+		}
+
 		setContentPane(panel);
 	}
 
@@ -80,30 +88,46 @@ public class ProcessBlockPalette extends DockableFrame implements ResourceWorksp
 		return true;
 	}
 	
+
 	private class PaletteEntry extends AbstractAction {
 		private static final long serialVersionUID = 6689395234849746852L;
-		private String text;
-		public PaletteEntry(String label) {
-			super(label);
-			text = label;
-			
+		private final PalettePrototype prototype;
+		private JPanel panel = null;
+
+		private String type = "block";
+		public PaletteEntry(PalettePrototype proto) {
+			super(TAG);
+			prototype = proto;
+			log.infof("%s: PalleteEntry %s",TAG,proto.getPaletteIconPath());
+			Icon icon = IconUtil.getRootIcon(PalettePrototype.class, proto.getPaletteIconPath());
+			if( icon!=null ) {
+				JToggleButton button = new JToggleButton(icon);
+				button.setToolTipText(prototype.getTooltipText());
+				button.setBorderPainted(false);
+				button.setContentAreaFilled(false);
+				button.addActionListener(this);
+				
+				JLabel label = new JLabel(prototype.getPaletteLabel());
+				label.setHorizontalAlignment(SwingConstants.CENTER);
+				Font font = new Font(label.getFont().getFontName(),Font.PLAIN,label.getFont().getSize()-2);
+				label.setFont(font);
+				panel = new JPanel(new BorderLayout());
+				panel.add(button,BorderLayout.CENTER);
+				panel.add(label,BorderLayout.SOUTH);
+			}
 		}
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			
+			log.infof("%s: PalleteEntry action performed",TAG);
 			if( workspace.getSelectedContainer()!=null ) {
-				ProcessBlockView blk = null;
-				if( text.equals("circle")) {
-					 blk = new CircleProcessBlockView();  
-				}
-				else {
-					blk = new ProcessBlockView();  
-				}
-				 // Add other kinds of blocks ...
+				log.infof("%s: PalleteEntry creating process view block",TAG);
+				ProcessBlockView blk = new ProcessBlockView(prototype.getViewBlockDescription());  
 				workspace.setCurrentTool(new InsertBlockTool(blk));
 			}
+			log.infof("%s: PalleteEntry action performed complete",TAG);
 		}
+		public JComponent getComponent() { return panel; }
 	}
 	
 	private class InsertBlockTool extends AbstractDesignTool {

@@ -7,7 +7,7 @@ package com.ils.blt.designer;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.ils.block.common.BlockPrototype;
+import com.ils.block.common.PalettePrototype;
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -96,9 +96,9 @@ public class PropertiesRequestHandler  {
 
 
 	@SuppressWarnings("unchecked")
-	public List<BlockPrototype> getBlockPrototypes() {
+	public List<PalettePrototype> getBlockPrototypes() {
 		log.infof("%s: getBlockPrototypes:",TAG);
-		List<BlockPrototype> result = new ArrayList<BlockPrototype>();
+		List<PalettePrototype> result = new ArrayList<PalettePrototype>();
 		List<String> jsonList = new ArrayList<String>();
 		try {
 			jsonList = (List<String> )GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
@@ -112,7 +112,7 @@ public class PropertiesRequestHandler  {
 			
 			for( String json:jsonList ) {
 				log.tracef("%s getBlockPrototypes: %s",TAG,json);
-				BlockPrototype bp = BlockPrototype.createPrototype(json);
+				PalettePrototype bp = PalettePrototype.createPrototype(json);
 				result.add(bp);
 			}
 		}

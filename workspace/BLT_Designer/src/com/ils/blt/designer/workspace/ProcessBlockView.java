@@ -6,33 +6,44 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.swing.Icon;
-import javax.swing.JPanel;
-
+import com.ils.block.common.BlockStyle;
+import com.ils.block.common.ViewBlockDescription;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
+import com.ils.blt.designer.workspace.ui.BlockViewUI;
+import com.ils.blt.designer.workspace.ui.UIFactory;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
 import com.inductiveautomation.ignition.designer.blockandconnector.blockui.AnchorDescriptor;
-import com.inductiveautomation.ignition.designer.blockandconnector.blockui.BasicBlockUI;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorPoint;
-import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.AbstractBlock;
 
-
+/**
+ * This is the class that describes all blocks that appear in a
+ * diagram in the Designer. Different block shapes and characteristics
+ * are provided by swapping out different UI rendering classes.
+ */
 
 public class ProcessBlockView extends AbstractBlock {
+	private static final String TAG = "ProcessBlockView";
 	private final UUID uuid;
 	private Collection<AnchorDescriptor> anchors;
 	private Point location = new Point(0,0);
-	private final UI ui ;
+	private final UIFactory factory = new UIFactory() ;
+	private BlockViewUI ui = null;
+	private BlockStyle style = BlockStyle.BASIC;
+	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	
-	public ProcessBlockView() {
+	/**
+	 * Constructor: Used when a new block is created from the palette.
+	 */
+	public ProcessBlockView(ViewBlockDescription descriptor) {
 		uuid = UUID.randomUUID();
-		anchors = new ArrayList<AnchorDescriptor>();
-		anchors.add( new AnchorDescriptor(AnchorType.Terminus,"in","IN") );
-		anchors.add( new AnchorDescriptor(AnchorType.Origin,"out","OUT") );
-		ui = new UI();
+		this.style = descriptor.getStyle();
+		this.anchors = new ArrayList<AnchorDescriptor>();
+		log.infof("%s: Created view by descriptor", TAG);
 	}
 	
 	public ProcessBlockView(SerializableBlock sb) {
@@ -42,7 +53,7 @@ public class ProcessBlockView extends AbstractBlock {
 			anchors.add( new AnchorDescriptor(sa.getType(),sa.getId(),sa.getDisplay()) );
 		}
 		this.location = sb.getLocation();
-		ui = new UI();
+		log.infof("%s: Created view by serializable block", TAG);
 	}
 	
 	@Override
@@ -60,7 +71,7 @@ public class ProcessBlockView extends AbstractBlock {
 
 	@Override
 	public AnchorPoint getDefaultDropAnchor() {
-		return ui.getAnchorPoints().get(0);
+		return ui.getAnchorPoints().iterator().next();
 	}
 
 	@Override
@@ -75,8 +86,11 @@ public class ProcessBlockView extends AbstractBlock {
 	}
 
 	@Override
-	public void initUI(BlockComponent arg) {
-		ui.install(arg);
+	public void initUI(BlockComponent blk) {
+		log.infof("%s: initUI", TAG);
+		ui = factory.getUI(style, this);
+		log.infof("%s: installUI", TAG);
+		ui.install(blk);
 	}
 
 	@Override
@@ -84,39 +98,5 @@ public class ProcessBlockView extends AbstractBlock {
 		location = loc;
 		fireBlockMoved();
 		
-	}
-
-	private class UI extends BasicBlockUI {
-		
-		public UI() {
-			super(ProcessBlockView.this);
-		}
-
-		@Override
-		protected Collection<AnchorDescriptor> getAnchors() {
-			return anchors;
-		}
-
-		@Override
-		protected Icon getIcon() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		protected String getTitle() {
-			return "BLOCK";
-		}
-
-		@Override
-		protected boolean isDetailsPanelRequired() {
-			// TODO Auto-generated method stub
-			return true;
-		}
-		@Override
-		protected void initDetailsPanel(JPanel details) {
-			// TODO Auto-generated method stub
-			super.initDetailsPanel(details);
-		}
 	}
 }

@@ -14,6 +14,7 @@ import javax.swing.ImageIcon;
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.inductiveautomation.ignition.designer.gui.IconUtil;
 
 
 /**
@@ -66,7 +67,7 @@ public class DiagramAnalyzerComponentBeanInfo extends BasicBlockBeanInfo {
 	@Override
 	public Image getIcon(int kind) {
 		String imagePath="";
-		//log.info(TAG+"getIcon of type "+kind);
+		log.infof("%s: getIcon of type %d",TAG,kind);
 		switch (kind) {
 		case BeanInfo.ICON_COLOR_16x16:
 		case BeanInfo.ICON_MONO_16x16:

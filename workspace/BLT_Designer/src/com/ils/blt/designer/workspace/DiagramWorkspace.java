@@ -51,7 +51,7 @@ import com.jidesoft.docking.DockingManager;
  * 
  */
 public class DiagramWorkspace extends AbstractBlockWorkspace implements ResourceWorkspace{
-	private static final String TAG = "DiagnosticsWorkspace";
+	private static final String TAG = "DiagramWorkspace";
 	private static final long serialVersionUID = 4627016159409031941L;
 	public static final String key = "BlockDiagramWorkspace";
 	public static final String PREFIX = BLTProperties.BLOCK_PREFIX;

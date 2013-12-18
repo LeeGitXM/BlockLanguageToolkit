@@ -9,7 +9,7 @@ import java.util.List;
 
 import com.ils.block.ProcessBlock;
 import com.ils.block.annotation.ExecutableBlock;
-import com.ils.block.common.BlockPrototype;
+import com.ils.block.common.PalettePrototype;
 import com.ils.common.ClassList;
 import com.ils.common.JavaToJson;
 import com.ils.common.JsonToJava;
@@ -89,11 +89,9 @@ public class GatewayRpcDispatcher   {
 			try {
 				Object obj = cls.newInstance();
 				if( obj instanceof ProcessBlock ) {
-					BlockPrototype bp = ((ProcessBlock)obj).getBlockPrototype();
-					log.infof("    serializing ... %s",(bp==null?"null":"not null"));
-					log.infof("    %s ...",bp.getPaletteIconPath());
+					PalettePrototype bp = ((ProcessBlock)obj).getBlockPrototype();
 					String json = bp.toJson();
-					log.info("   json: "+json);
+					log.debug("   json: "+json);
 					results.add(json);
 				}
 			} 
