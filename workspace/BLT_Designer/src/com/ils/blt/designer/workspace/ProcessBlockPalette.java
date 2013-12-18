@@ -5,8 +5,8 @@ package com.ils.blt.designer.workspace;
 
 import java.awt.BorderLayout;
 import java.awt.Cursor;
-import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -24,7 +24,6 @@ import com.ils.block.common.PalettePrototype;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.PropertiesRequestHandler;
-import com.ils.blt.designer.workspace.ui.RoundUIView;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
@@ -105,11 +104,12 @@ public class ProcessBlockPalette extends DockableFrame implements ResourceWorksp
 				button.setToolTipText(prototype.getTooltipText());
 				button.setBorderPainted(false);
 				button.setContentAreaFilled(false);
+				button.setMargin(new Insets(3,3,3,3));
 				button.addActionListener(this);
 				
 				JLabel label = new JLabel(prototype.getPaletteLabel());
 				label.setHorizontalAlignment(SwingConstants.CENTER);
-				Font font = new Font(label.getFont().getFontName(),Font.PLAIN,label.getFont().getSize()-2);
+				Font font = new Font(label.getFont().getFontName(),Font.PLAIN,label.getFont().getSize()-4);
 				label.setFont(font);
 				panel = new JPanel(new BorderLayout());
 				panel.add(button,BorderLayout.CENTER);

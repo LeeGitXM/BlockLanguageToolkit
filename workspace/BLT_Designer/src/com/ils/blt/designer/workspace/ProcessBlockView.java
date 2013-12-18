@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.common.BlockStyle;
-import com.ils.block.common.ViewBlockDescription;
+import com.ils.block.common.BlockDescription;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.designer.workspace.ui.BlockViewUI;
@@ -39,7 +39,7 @@ public class ProcessBlockView extends AbstractBlock {
 	/**
 	 * Constructor: Used when a new block is created from the palette.
 	 */
-	public ProcessBlockView(ViewBlockDescription descriptor) {
+	public ProcessBlockView(BlockDescription descriptor) {
 		uuid = UUID.randomUUID();
 		this.style = descriptor.getStyle();
 		this.anchors = new ArrayList<AnchorDescriptor>();
