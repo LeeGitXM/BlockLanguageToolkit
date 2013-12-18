@@ -3,10 +3,9 @@
  */
 package com.ils.blt.gateway.engine;
 
-import java.util.Hashtable;
-
 import com.ils.block.ProcessBlock;
 import com.ils.block.common.BlockConstants;
+import com.ils.block.common.BlockProperty;
 import com.ils.block.control.NewValueNotification;
 
 /**
@@ -23,10 +22,10 @@ public class PropertyChangeEvaluationTask implements Runnable{
 	 */
 	public PropertyChangeEvaluationTask(NewValueNotification nvn)  {	
 		this.block = nvn.getBlock();
-		Hashtable<String,String> attribute = block.getProperty(nvn.getPropertyName());
-		attribute.put(BlockConstants.BLOCK_ATTRIBUTE_VALUE, nvn.getValue().getValue().toString());
-		attribute.put(BlockConstants.BLOCK_ATTRIBUTE_QUALITY, nvn.getValue().getQuality().getName());
-		attribute.put(BlockConstants.BLOCK_ATTRIBUTE_TIMESTAMP, String.valueOf(nvn.getValue().getTimestamp().getTime()));	
+		BlockProperty property = block.getProperty(nvn.getPropertyName());
+		//attribute.put(BlockConstants.BLOCK_ATTRIBUTE_VALUE, nvn.getValue().getValue().toString());
+		//attribute.put(BlockConstants.BLOCK_ATTRIBUTE_QUALITY, nvn.getValue().getQuality().getName());
+		//attribute.put(BlockConstants.BLOCK_ATTRIBUTE_TIMESTAMP, String.valueOf(nvn.getValue().getTimestamp().getTime()));	
 	}
 	
 	public void run()   { 

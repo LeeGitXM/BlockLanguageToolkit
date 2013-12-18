@@ -9,6 +9,7 @@ import java.util.List;
 
 import com.ils.block.ProcessBlock;
 import com.ils.block.annotation.ExecutableBlock;
+import com.ils.block.common.BlockProperty;
 import com.ils.block.common.PalettePrototype;
 import com.ils.common.ClassList;
 import com.ils.common.JavaToJson;
@@ -54,8 +55,8 @@ public class GatewayRpcDispatcher   {
 		log.debugf("%s: getBlockAttributes: %d:%d:%s =\n%s",TAG,projectId,resourceId,blockId,json);
 		
 		@SuppressWarnings("unchecked")
-		Hashtable<String,Hashtable<String,String>> attributeTable = (Hashtable<String,Hashtable<String,String>>)jsonToJava.jsonToTable(json);
-		Hashtable<String,Hashtable<String,String>> results = PropertiesUpdateHandler.getInstance().getBlockAttributes(projectId,resourceId,blockId,attributeTable);
+		Hashtable<String,BlockProperty> attributeTable = (Hashtable<String,BlockProperty>)jsonToJava.jsonToTable(json);
+		Hashtable<String,BlockProperty> results = PropertiesUpdateHandler.getInstance().getBlockAttributes(projectId,resourceId,blockId,attributeTable);
 		log.debug(TAG+"created table\n"+results);
 		String gson =  javaToJson.tableToJson(results);
 		log.trace(TAG+"JSON="+gson);

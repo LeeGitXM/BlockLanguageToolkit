@@ -12,6 +12,7 @@ import java.util.concurrent.Executors;
 
 import com.ils.block.ProcessBlock;
 import com.ils.block.common.BlockConstants;
+import com.ils.block.common.BlockProperty;
 import com.ils.block.control.ExecutionController;
 import com.ils.block.control.NewValueNotification;
 import com.ils.common.BoundedBuffer;
@@ -181,9 +182,9 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 * Stop the subscription for a block attribute associated with a tag.
 	 */
 	public void stopSubscription(ProcessBlock block,String propertyName) {
-		Hashtable<String,String> property = block.getProperty(propertyName);
+		BlockProperty property = block.getProperty(propertyName);
 		if( property!=null ) {
-			String tagPath = property.get(BlockConstants.BLOCK_ATTRIBUTE_TAGPATH);
+			String tagPath = property.getValue();
 			if( tagPath!=null) {
 				dataCollector.stopSubscription(tagPath);
 			}

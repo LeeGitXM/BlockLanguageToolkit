@@ -12,6 +12,7 @@ import java.util.concurrent.Executors;
 
 import com.ils.block.ProcessBlock;
 import com.ils.block.common.BlockConstants;
+import com.ils.block.common.BlockProperty;
 import com.ils.block.control.NewValueNotification;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.sqltags.model.Tag;
@@ -55,16 +56,16 @@ public class DataCollector implements TagChangeListener   {
 	 * one associated with a tag.
 	 */
 	public void startSubscription(ProcessBlock block,String propertyName) {
-		Hashtable<String,String> property = block.getProperty(propertyName);
+		BlockProperty property = block.getProperty(propertyName);
 		if( property!=null ) {
-			String tagPath = property.get(BlockConstants.BLOCK_ATTRIBUTE_TAGPATH);
+			String tagPath = property.getValue();
 			if( tagPath!=null) {
 				SQLTagsManager tmgr = context.getTagManager();
 				try {
 					TagPath tp = TagPathParser.parse(tagPath);
 					log.debugf("%s: startSubscription: for tag path %s",TAG,tp.toStringFull());
 					// Make sure the attribute is in canonical form
-					property.put(BlockConstants.BLOCK_ATTRIBUTE_TAGPATH, tp.toStringFull());
+					property.setValue( tp.toStringFull());
 					// Initialize the value in this data point
 					Tag tag = tmgr.getTag(tp);
 					if( tag!=null ) {
@@ -180,8 +181,8 @@ public class DataCollector implements TagChangeListener   {
 	private String getPropertyForTagpath(ProcessBlock block,String tp) {
 		String result = null;
 		for( String name: block.getPropertyNames()) {
-			Hashtable<String,String> property = block.getProperty(name);
-			String path = property.get(BlockConstants.BLOCK_ATTRIBUTE_TAGPATH);
+			BlockProperty property = block.getProperty(name);
+			String path = property.getValue();
 			if( path.equals(tp)) {
 				result = name;
 				break;

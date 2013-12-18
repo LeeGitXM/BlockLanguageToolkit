@@ -9,6 +9,7 @@ import java.util.Set;
 import org.python.core.PyObject;
 
 import com.ils.block.ProcessBlock;
+import com.ils.block.common.BlockProperty;
 import com.ils.block.common.PalettePrototype;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -69,7 +70,7 @@ public class ProxyBlock implements ProcessBlock {
 	 * @return a particular property given its name.
 	 */
 	@Override
-	public Hashtable<String,String> getProperty(String name) {
+	public BlockProperty getProperty(String name) {
 		//return delegate.getProperty(projectId,diagramId,blockId,name);
 		return null;
 	}
@@ -85,7 +86,7 @@ public class ProxyBlock implements ProcessBlock {
 	 *         property/attribute is a hashtable of Strings keyed by Strings.
 	 */
 	@Override
-	public Hashtable<String,Hashtable<String,String>> getProperties() {
+	public Hashtable<String,BlockProperty> getProperties() {
 		return delegate.getProperties(getObject());
 	}
 	
@@ -94,7 +95,7 @@ public class ProxyBlock implements ProcessBlock {
 	 */
 	@Override
 	public Set<String> getPropertyNames() {
-		Hashtable<String,Hashtable<String,String>> properties = getProperties();
+		Hashtable<String,BlockProperty> properties = getProperties();
 		return properties.keySet();
 	}
 	

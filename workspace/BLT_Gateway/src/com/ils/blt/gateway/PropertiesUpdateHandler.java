@@ -10,6 +10,7 @@ import java.util.Hashtable;
 
 import com.ils.block.ProcessBlock;
 import com.ils.block.common.BlockConstants;
+import com.ils.block.common.BlockProperty;
 import com.ils.block.control.ExecutionController;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.proxy.ProxyBlock;
@@ -100,10 +101,10 @@ public class PropertiesUpdateHandler   {
 	 * @param attributes
 	 * @return
 	 */
-	public Hashtable<String,Hashtable<String,String>> getAttributes(ProcessBlock block,Hashtable<String,Hashtable<String,String>> attributes) {
+	public Hashtable<String,BlockProperty> getAttributes(ProcessBlock block,Hashtable<String,BlockProperty> attributes) {
 		if( block==null) return attributes;
 
-		Hashtable<String,Hashtable<String,String>> properties = block.getProperties();
+		Hashtable<String,BlockProperty> properties = block.getProperties();
 		for( String key:attributes.keySet()) {
 			if( !properties.containsKey(key) ) {
 				properties.put(key, attributes.get(key));
@@ -120,14 +121,14 @@ public class PropertiesUpdateHandler   {
 	 * @param attributes already known
 	 * @return the attribute table appropriately enhanced.
 	 */
-	public Hashtable<String,Hashtable<String,String>> getBlockAttributes(long projectId,long resourceId,String blockId,Hashtable<String,Hashtable<String,String>> attributes) {
+	public Hashtable<String,BlockProperty> getBlockAttributes(long projectId,long resourceId,String blockId,Hashtable<String,BlockProperty> attributes) {
 		// If the instance doesn't exist, create one
 		BlockExecutionController controller = BlockExecutionController.getInstance();
 		ProcessBlock block = controller.getBlock(projectId, resourceId, blockId);
-		Hashtable<String,Hashtable<String,String>> results = null;
+		Hashtable<String,BlockProperty> results = null;
 		if(block==null) {
-			Hashtable<String,String> classAttribute = (Hashtable<String,String>)attributes.get(BlockConstants.BLOCK_PROPERTY_CLASS);
-			String className = classAttribute.get(BlockConstants.BLOCK_ATTRIBUTE_VALUE);
+			BlockProperty classAttribute = attributes.get(BlockConstants.BLOCK_PROPERTY_CLASS);
+			String className = classAttribute.getValue();
 			if( className!=null ) {
 				// Delegate to Python
 				if( className.startsWith("app.block")) {

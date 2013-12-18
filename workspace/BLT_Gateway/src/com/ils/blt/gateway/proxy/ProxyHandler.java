@@ -14,6 +14,7 @@ import org.python.core.PyDictionary;
 import org.python.core.PyObject;
 
 import com.ils.block.common.BlockConstants;
+import com.ils.block.common.BlockProperty;
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.script.JythonExecException;
@@ -163,7 +164,7 @@ public class ProxyHandler   {
 	 */
 
 	@SuppressWarnings("unchecked")
-	public Hashtable<String,Hashtable<String,String>> getProperties(PyObject block) {
+	public Hashtable<String,BlockProperty> getProperties(PyObject block) {
 		 
 		// Place the instance in th shared dictionary
 		PyDictionary pyDict = new PyDictionary();
