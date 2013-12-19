@@ -128,7 +128,7 @@ public class PropertiesUpdateHandler   {
 		Hashtable<String,BlockProperty> results = null;
 		if(block==null) {
 			BlockProperty classAttribute = attributes.get(BlockConstants.BLOCK_PROPERTY_CLASS);
-			String className = classAttribute.getValue();
+			String className = classAttribute.getValue().toString();
 			if( className!=null ) {
 				// Delegate to Python
 				if( className.startsWith("app.block")) {

@@ -52,13 +52,6 @@ public class ProxyBlock implements ProcessBlock {
 	}
 
 	/**
-	 * Do it.
-	 */
-	@Override
-	public void evaluate() {
-		delegate.evaluate(projectId,diagramId,blockId);
-	}
-	/**
 	 * @return the Python object for which this class is a proxy
 	 */
 	public PyObject getObject() {
@@ -99,21 +92,38 @@ public class ProxyBlock implements ProcessBlock {
 		return properties.keySet();
 	}
 	
-	/**
-	 * Accept notification that a value has arrived on an input
-	 * @param port name of the input port
-	 * @param value to accept
-	 */
-	@Override
-	public  void setValue(String name,QualifiedValue value) {
-		delegate.setValue(projectId,diagramId,blockId,name,value);
-	}
+
 
 	@Override
 	public PalettePrototype getBlockPrototype() {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	/**
+	 * Accept a new value for a block property. It is up to the block to
+	 * determine whether or not this triggers block evaluation.
+	 * @param property the new value of one of the block's properties.
+	 */
+	public void setProperty(BlockProperty property) {
+		
+	}
+	/**
+	 * Notify the block that a new value has appeared on one of its input anchors.
+	 * @param port name of the incoming anchor point
+	 * @param value to accept. A qualified value has a timestamp, quality,
+	 *        and simple value.
+	 */
+	public void setValue(String port,QualifiedValue value) {
+		delegate.setValue(projectId, diagramId, blockId, port, value);
+	}
+	
+	/**
+	 * In the case where the block has specified a coalescing time, this method
+	 * will be called by the engine after receipt of input once the coalescing 
+	 * "quiet" time has passed without further input.
+	 */
+	public void evaluate() { delegate.evaluate(projectId, diagramId, blockId); }
 	
 
 }

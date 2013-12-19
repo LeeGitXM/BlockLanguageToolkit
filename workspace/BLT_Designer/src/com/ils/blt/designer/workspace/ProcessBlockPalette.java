@@ -104,12 +104,12 @@ public class ProcessBlockPalette extends DockableFrame implements ResourceWorksp
 				button.setToolTipText(prototype.getTooltipText());
 				button.setBorderPainted(false);
 				button.setContentAreaFilled(false);
-				button.setMargin(new Insets(3,3,3,3));
+				button.setMargin(new Insets(1,1,1,1));
 				button.addActionListener(this);
 				
 				JLabel label = new JLabel(prototype.getPaletteLabel());
 				label.setHorizontalAlignment(SwingConstants.CENTER);
-				Font font = new Font(label.getFont().getFontName(),Font.PLAIN,label.getFont().getSize()-4);
+				Font font = new Font(label.getFont().getFontName(),Font.PLAIN,label.getFont().getSize()-2);
 				label.setFont(font);
 				panel = new JPanel(new BorderLayout());
 				panel.add(button,BorderLayout.CENTER);
@@ -122,7 +122,7 @@ public class ProcessBlockPalette extends DockableFrame implements ResourceWorksp
 			log.infof("%s: PalleteEntry action performed",TAG);
 			if( workspace.getSelectedContainer()!=null ) {
 				log.infof("%s: PalleteEntry creating process view block",TAG);
-				ProcessBlockView blk = new ProcessBlockView(prototype.getViewBlockDescription());  
+				ProcessBlockView blk = new ProcessBlockView(prototype.getBlockDescription());  
 				workspace.setCurrentTool(new InsertBlockTool(blk));
 			}
 			log.infof("%s: PalleteEntry action performed complete",TAG);

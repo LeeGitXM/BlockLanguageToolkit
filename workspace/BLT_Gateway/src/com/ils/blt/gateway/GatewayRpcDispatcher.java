@@ -92,8 +92,11 @@ public class GatewayRpcDispatcher   {
 				if( obj instanceof ProcessBlock ) {
 					PalettePrototype bp = ((ProcessBlock)obj).getBlockPrototype();
 					String json = bp.toJson();
-					log.debug("   json: "+json);
+					log.info("   json: "+json);
 					results.add(json);
+				}
+				else {
+					log.warnf("%s: Class %s not a ProcessBlock",TAG,cls.getName());
 				}
 			} 
 			catch (InstantiationException ie) {
@@ -103,7 +106,7 @@ public class GatewayRpcDispatcher   {
 				log.warnf("%s:getBlockPrototypes: Access exception (%s)",TAG,iae.getMessage());
 			}
 			catch (Exception ex) {
-				log.warnf("%s: getBlockPrototypes: Runtime exception (%s)",TAG,ex.getMessage());
+				log.warnf("%s: getBlockPrototypes: Runtime exception (%s)",TAG,ex.getMessage(),ex);
 			}
 		}
 		return results;

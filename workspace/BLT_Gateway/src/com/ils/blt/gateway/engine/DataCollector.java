@@ -58,7 +58,7 @@ public class DataCollector implements TagChangeListener   {
 	public void startSubscription(ProcessBlock block,String propertyName) {
 		BlockProperty property = block.getProperty(propertyName);
 		if( property!=null ) {
-			String tagPath = property.getValue();
+			String tagPath = property.getValue().toString();
 			if( tagPath!=null) {
 				SQLTagsManager tmgr = context.getTagManager();
 				try {
@@ -182,7 +182,7 @@ public class DataCollector implements TagChangeListener   {
 		String result = null;
 		for( String name: block.getPropertyNames()) {
 			BlockProperty property = block.getProperty(name);
-			String path = property.getValue();
+			String path = property.getValue().toString();
 			if( path.equals(tp)) {
 				result = name;
 				break;

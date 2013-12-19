@@ -6,8 +6,10 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 
-import com.ils.block.common.BlockStyle;
+import com.ils.block.common.AnchorDescription;
+import com.ils.block.common.AnchorDirection;
 import com.ils.block.common.BlockDescription;
+import com.ils.block.common.BlockStyle;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.designer.workspace.ui.BlockViewUI;
@@ -17,6 +19,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
 import com.inductiveautomation.ignition.designer.blockandconnector.blockui.AnchorDescriptor;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorPoint;
+import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.AbstractBlock;
 
@@ -43,13 +46,19 @@ public class ProcessBlockView extends AbstractBlock {
 		uuid = UUID.randomUUID();
 		this.style = descriptor.getStyle();
 		this.anchors = new ArrayList<AnchorDescriptor>();
-		log.infof("%s: Created view by descriptor", TAG);
+		for( AnchorDescription ad:descriptor.getAnchors() ) {
+			log.infof("%s: Creating anchor descriptor %s", TAG,ad.getName());
+			anchors.add( new AnchorDescriptor((ad.getAnchorDirection()==AnchorDirection.INCOMING?AnchorType.Terminus:AnchorType.Origin),
+					UUID.randomUUID(),ad.getName()) );
+		}
+		log.infof("%s: Created view by descriptor (%d anchors)", TAG, anchors.size());
 	}
 	
 	public ProcessBlockView(SerializableBlock sb) {
 		this.uuid = sb.getId();
 		this.anchors = new ArrayList<AnchorDescriptor>();
 		for( SerializableAnchor sa:sb.getAnchors() ) {
+			log.infof("%s: Creating anchor view %s", TAG,sa.getDisplay());
 			anchors.add( new AnchorDescriptor(sa.getType(),sa.getId(),sa.getDisplay()) );
 		}
 		this.location = sb.getLocation();
@@ -87,9 +96,8 @@ public class ProcessBlockView extends AbstractBlock {
 
 	@Override
 	public void initUI(BlockComponent blk) {
-		log.infof("%s: initUI", TAG);
+		log.debugf("%s: initUI", TAG);
 		ui = factory.getUI(style, this);
-		log.infof("%s: installUI", TAG);
 		ui.install(blk);
 	}
 

@@ -97,7 +97,7 @@ public class PropertiesRequestHandler  {
 
 	@SuppressWarnings("unchecked")
 	public List<PalettePrototype> getBlockPrototypes() {
-		log.infof("%s: getBlockPrototypes:",TAG);
+		log.infof("%s: getBlockPrototypes ...",TAG);
 		List<PalettePrototype> result = new ArrayList<PalettePrototype>();
 		List<String> jsonList = new ArrayList<String>();
 		try {
@@ -108,7 +108,7 @@ public class PropertiesRequestHandler  {
 			log.infof("%s: getBlockPrototypes: GatewayException (%s)",TAG,ge.getMessage());
 		}
 		
-		if( result!=null) {
+		if( jsonList!=null) {
 			
 			for( String json:jsonList ) {
 				log.tracef("%s getBlockPrototypes: %s",TAG,json);
