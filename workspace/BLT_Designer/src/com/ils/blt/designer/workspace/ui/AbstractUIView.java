@@ -45,7 +45,7 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 	/**
 	 *  Create anchor points from the anchor descriptions. This default implementation
 	 *  places at most one input on the left and one output on the right. It assumes the main UI has
-	 *  insets of INSET on all 4 sides.
+	 *  insets of INSET on all 4 sides. The anchor "leader" should be at least 10 pixels outside the component.
 	 *  
 	 *  Note: This is NOT called from the constructor of the base class.
 	 *        Call from the constructor of each sub-class.

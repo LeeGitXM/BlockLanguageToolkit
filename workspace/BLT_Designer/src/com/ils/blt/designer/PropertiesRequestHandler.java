@@ -49,22 +49,23 @@ public class PropertiesRequestHandler  {
 
 
 	/**
-	 * Obtain a list of attribute-value pairs for the class represented by this block.
-	 * Before we pass on the request we beef up the key by pre-pending the tree-path
-	 * to the diagram.
+	 * Obtain a list of BlockProperty objects for the specified block. If the block is not known to the gateway
+	 * it will be created.
 	 * 
-	 * @param json string representing an array of attributes
-	 * @param cellId a string representing the id of the cell within the diagram.
-	 * @return a string representing a JSON document containing an array of attributes corresponding
-	 *         to the block object.
+	 * @param projectId
+	 * @param resourceId
+	 * @param blockId
+	 * @param className
+	 * @return
 	 */
-	public List<BlockProperty> getBlockProperties(long projectId,long resourceId,UUID blockId) {
+	@SuppressWarnings("unchecked")
+	public List<BlockProperty> getBlockProperties(long projectId,long resourceId,UUID blockId,String className) {
 		log.infof(TAG+"%s: getBlockProperties: for block %s",TAG,blockId.toString());
 		List<BlockProperty> result = new ArrayList<BlockProperty>();
 		List<String> jsonList = new ArrayList<String>();
 		try {
 			jsonList = (List<String> )GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "getBlockProperties",new Long(projectId),new Long(resourceId),blockId.toString());
+					BLTProperties.MODULE_ID, "getBlockProperties",new Long(projectId),new Long(resourceId),blockId.toString(),className);
 		}
 		catch(Exception ge) {
 			log.infof("%s: getBlockProperties: GatewayException (%s)",TAG,ge.getMessage());

@@ -50,18 +50,32 @@ public class GatewayRpcDispatcher   {
 	}
 
 
-	public List<String> getBlockProperties(Long projectId,Long resourceId,String blockId) {
+	/**
+	 * Query the specified block for its properties. If the block does not exist, create it, given the
+	 * specified class name. In the case of a new block, its diagram may also need to be created. 
+	 * 
+	 * @param projectId
+	 * @param resourceId
+	 * @param blockId
+	 * @param className
+	 * @return properties for the block
+	 */
+	public List<String> getBlockProperties(Long projectId,Long resourceId,String blockId,String className) {
 		log.infof("%s: getBlockProperties: %d:%d %s",TAG,projectId.longValue(),resourceId.longValue(),blockId);
 		
 		@SuppressWarnings("unchecked")
 		Hashtable<String,BlockProperty> propertyTable = PropertiesUpdateHandler.getInstance().getBlockProperties(projectId,resourceId,UUID.fromString(blockId));
-		List<String> result = new ArrayList<String>();
+		List<String> result = null;
 		if( propertyTable!=null ) {
+			result = new ArrayList<String>();
 			for( BlockProperty prop:propertyTable.values()) {
 				result.add(prop.toJson());
 			}
+			log.infof("%s: getBlockProperties: returns %s",TAG,result.toString());
 		}
-		log.infof("%s: getBlockProperties: returns %s",TAG,result.toString());
+		else {
+			log.infof("%s: getBlockProperties: creating new block %d:%d %s",TAG,projectId.longValue(),resourceId.longValue(),className);
+		}
 		return result;
 	}
 	

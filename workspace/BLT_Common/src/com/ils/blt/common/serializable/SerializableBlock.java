@@ -14,6 +14,7 @@ import com.ils.block.common.BlockStyle;
 public class SerializableBlock {
 	private Point location = null;
 	private UUID uuid = null;
+	private String className = null;
 	private BlockStyle style = BlockStyle.BASIC;
 
 	private List<SerializableAnchor> anchors = null;
@@ -23,6 +24,8 @@ public class SerializableBlock {
 		this.anchors = new ArrayList<SerializableAnchor>();
 	}
 	
+	public String getClassName() {return className;}
+	public void setClassName(String className) {this.className = className;}
 	public UUID getId() { return uuid; }
 	public void setId(UUID id) { uuid = id; }
 	public Point getLocation() { return location; }

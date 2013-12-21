@@ -185,6 +185,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	private SerializableBlock convertBlockViewToSerializable(ProcessBlockView block) {
 		SerializableBlock result = new SerializableBlock();
 		result.setId(block.getId());
+		result.setClassName(block.getClassName());
 		result.setLocation(block.getLocation());
 		
 		List<SerializableAnchor> anchors = new ArrayList<SerializableAnchor>();

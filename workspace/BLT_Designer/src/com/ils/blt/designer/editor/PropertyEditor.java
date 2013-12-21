@@ -1,9 +1,13 @@
 package com.ils.blt.designer.editor;
 
 import java.awt.BorderLayout;
+import java.util.List;
 
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+
+import net.miginfocom.swing.MigLayout;
 
 import com.ils.block.common.BlockProperty;
 import com.ils.blt.common.BLTProperties;
@@ -54,13 +58,19 @@ public class PropertyEditor extends JPanel {
 		// Get the block attributes from the gateway. If this is a newly
 		// created block, the gateway will create it.
 		PropertiesRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
-		handler.getBlockProperties(projectId,resourceId,block.getId());
-		JPanel panel = new JPanel();    // Container of a panel for each property
+		List<BlockProperty> properties = handler.getBlockProperties(projectId,resourceId,block.getId(),block.getClassName());
+		JPanel container = new JPanel(new MigLayout("flowy"));    // Container of a panel for each property
+		if( properties!=null ) {
+			for(BlockProperty property:properties) {
+				PropertyPanel panel = new PropertyPanel(property);
+				container.add(panel,"grow,push");
+			}
+		}
 		
         
 
         //Create the scroll pane and add the table to it.
-        JScrollPane scrollPane = new JScrollPane(panel);
+        JScrollPane scrollPane = new JScrollPane(container);
         //Add the scroll pane to this panel.
         add(scrollPane,BorderLayout.CENTER);
     }
@@ -68,14 +78,13 @@ public class PropertyEditor extends JPanel {
 	/**
 	 * A property panel is an editor for a single property.
 	 */
+	@SuppressWarnings("serial")
 	private class PropertyPanel extends JPanel {
-		private final static String TAG = "AttributeModel";
-		private static final long serialVersionUID = 3853127246234590508L;
-		private static final int COLUMN_COUNT = 3;
-	               // The keys don't change
 		
 		public PropertyPanel(BlockProperty prop) {
-			
+			setLayout(new MigLayout("fillx"));
+			JLabel name = new JLabel(prop.getName());
+			add(name,"wrap");
 		}
 		
 	}

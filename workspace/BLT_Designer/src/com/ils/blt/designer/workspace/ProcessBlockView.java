@@ -32,6 +32,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.Ab
 public class ProcessBlockView extends AbstractBlock {
 	private static final String TAG = "ProcessBlockView";
 	private final UUID uuid;
+	private final String className;
 	private Collection<AnchorDescriptor> anchors;
 	private Point location = new Point(0,0);
 	private final UIFactory factory = new UIFactory() ;
@@ -44,6 +45,7 @@ public class ProcessBlockView extends AbstractBlock {
 	 */
 	public ProcessBlockView(BlockDescription descriptor) {
 		uuid = UUID.randomUUID();
+		this.className = descriptor.getBlockClass();
 		this.style = descriptor.getStyle();
 		this.anchors = new ArrayList<AnchorDescriptor>();
 		for( AnchorPrototype ad:descriptor.getAnchors() ) {
@@ -56,6 +58,7 @@ public class ProcessBlockView extends AbstractBlock {
 	
 	public ProcessBlockView(SerializableBlock sb) {
 		this.uuid = sb.getId();
+		this.className = sb.getClassName();
 		this.anchors = new ArrayList<AnchorDescriptor>();
 		for( SerializableAnchor sa:sb.getAnchors() ) {
 			log.infof("%s: Creating anchor view %s", TAG,sa.getDisplay());
@@ -72,6 +75,7 @@ public class ProcessBlockView extends AbstractBlock {
 	}
 	
 	public Collection<AnchorDescriptor> getAnchors() { return anchors; }
+	public String getClassName() { return className; }
 
 	@Override
 	public Collection<AnchorPoint> getAnchorPoints() {
