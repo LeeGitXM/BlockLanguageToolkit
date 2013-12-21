@@ -3,11 +3,15 @@
  */
 package com.ils.blt.gateway.engine;
 
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
+import com.ils.block.ProcessBlock;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.SerializableDiagram;
+import com.ils.connection.Connection;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
@@ -22,7 +26,7 @@ import com.inductiveautomation.ignition.gateway.project.ProjectListener;
 /**
  * The workspace manager keeps track of model (blt-model) resources. On startup
  * and whenever a resource change takes place, the manager analyzes the resources
- * and extracts workspace and block information. This information is relayed to the
+ * and extracts diagram and block information. This information is relayed to the
  * block manager via a passed-in controller instance.
  * 
  * We make this a Singleton since access from the Gateway hook was problematic.
@@ -37,8 +41,9 @@ public class ModelResourceManager implements ProjectListener  {
 	private static String TAG = "ModelResourceManager";
 	private GatewayContext context = null;
 	private final LoggerEx log;
-	private final BlockExecutionController controller = BlockExecutionController.getInstance();
-	private static ModelResourceManager instance = null;
+	private final BlockExecutionController controller;
+	/** The diagrams are keyed by projectId, then resourceID */
+	private final Hashtable<Long,Hashtable<Long,ProcessDiagram>> models;
 	
 	/**
 	 * Initially we query the gateway context to discover what resources exists. After that
@@ -47,27 +52,119 @@ public class ModelResourceManager implements ProjectListener  {
 	 * 
 	 * @param cntx the gateway context. 
 	 */
-	private ModelResourceManager() { 
+	public ModelResourceManager(BlockExecutionController c) { 
+		this.controller = c;
 		log = LogUtil.getLogger(getClass().getPackage().getName());
+		models = new Hashtable<Long,Hashtable<Long,ProcessDiagram>>();
 	}
 
-	/**
-	 * Static method to create and/or fetch the single instance.
-	 */
-	public static ModelResourceManager getInstance() {
-		if( instance==null) {
-			synchronized(ModelResourceManager.class) {
-				instance = new ModelResourceManager();
-			}
-		}
-		return instance;
-	}
 	
 	public void setContext(GatewayContext cntx) {
 		this.context = cntx;
+		cntx.getProjectManager().addProjectListener(this);
 	}
 	
-	public void updateModel(BlockExecutionController controller,long projectId) {
+	/**
+	 * Set a ProcessDiagram for a resource. There is a one-one correspondence 
+	 * between a model-project and diagram.
+	 * @param projectId the identity of a project
+	 * @param resourceId the identity of the model resource
+	 * @param model the diagram logic
+	 */
+	public void addResource(Long projectId,Long resourceId,ProcessDiagram model) {
+		Hashtable<Long,ProcessDiagram> projectModels = models.get(projectId);
+		if( projectModels==null ) {
+			projectModels = new Hashtable<Long,ProcessDiagram>();
+			models.put(projectId,projectModels);
+		}
+		projectModels.put(resourceId, model);
+	}
+	
+	public void deleteResources(Long projectId) {
+		models.remove(projectId);
+	}
+	
+	/**
+	 * Remove a diagram within a project.
+	 * Presumably the diagram has been deleted.
+	 * @param projectId the identity of a project.
+	 */
+	public void deleteResource(Long projectId,Long resourceId) {
+		Hashtable<Long,ProcessDiagram> projectModel = models.get(projectId);
+		if( projectModel!=null ) projectModel.remove(resourceId);
+	}
+	
+
+	/**
+	 * Create a new block, and possibly a new diagram. The situation occurs when a 
+	 * user places a block on a new diagram in the designer and attempts to edit 
+	 * properties. We simply save the properties for the time when the diagram is saved.
+	 * @param projectId
+	 * @param resourceId
+	 * @param className the class of block to create.
+	 * @return the specified ProcessBlock. If not found, return null. 
+	 */
+	public ProcessBlock createBlock(Long projectId,Long resourceId,String className) {
+		ProcessBlock block = null;
+
+		return block;
+	}
+	
+	/**
+	 * Get a block from an existing diagrams. 
+	 * @param projectId
+	 * @param resourceId
+	 * @param blockId
+	 * @return the specified ProcessBlock. If not found, return null. 
+	 */
+	public ProcessBlock getBlock(Long projectId,Long resourceId,UUID blockId) {
+		ProcessBlock block = null;
+		Hashtable<Long,ProcessDiagram> projectModels = models.get(projectId);
+		if( projectModels!=null ) {
+			ProcessDiagram dm = projectModels.get(resourceId);
+			if( dm!=null ) {
+				block = dm.getBlock(blockId);
+			}
+		}
+		return block;
+	}
+	
+	/**
+	 * Get a connection from the existing diagrams. 
+	 * @param projectId
+	 * @param resourceId
+	 * @param connectionId
+	 * @return the specified Connection. If not found, return null. 
+	 */
+	public Connection getConnection(long projectId,long resourceId,String connectionId) {
+		Connection cxn = null;
+		Hashtable<Long,ProcessDiagram> projectModels = models.get(new Long(projectId));
+		if( projectModels!=null ) {
+			ProcessDiagram dm = projectModels.get(new Long(resourceId));
+			if( dm!=null ) {
+				cxn = dm.getConnection(connectionId);
+			}
+		}
+		return cxn;
+	}
+	
+	/**
+	 * Get a connection from the existing diagrams. 
+	 * @param projectId
+	 * @param resourceId
+	 * @param connectionId
+	 * @return the specified Connection. If not found, return null. 
+	 */
+	public ProcessDiagram getDiagram(Long projectId,Long resourceId) {
+		ProcessDiagram diagram = null;
+		Hashtable<Long,ProcessDiagram> processDiagrams = models.get(projectId);
+		if( processDiagrams!=null ) {
+			ProcessDiagram dm = processDiagrams.get(resourceId);
+		}
+		return diagram;
+	}
+	
+	public void updateModel(long projectId) {
 		Project project = context.getProjectManager().getProject(projectId, ApplicationScope.DESIGNER, ProjectVersion.Staging);
 		if( project==null) {
 			log.errorf("%s: updateModel: No project found with Id %d",TAG,projectId);
@@ -79,8 +176,8 @@ public class ModelResourceManager implements ProjectListener  {
 				log.infof("%s: projectUpdated: found model resource %s (%d)",TAG,res.getName(),res.getResourceId());
 				SerializableDiagram diagram = deserializeModelResource(res);
 				if( diagram!=null) {
-					DiagramModel dm = new DiagramModel(diagram,projectId,res.getResourceId());
-					controller.addResource(new Long(projectId), new Long(res.getResourceId()), dm);
+					ProcessDiagram dm = new ProcessDiagram(diagram,projectId,res.getResourceId());
+					addResource(new Long(projectId), new Long(res.getResourceId()), dm);
 				}
 				else {
 					log.warnf("%s: Failed to create DOM from resource",TAG);
@@ -126,8 +223,8 @@ public class ModelResourceManager implements ProjectListener  {
 						res.getResourceId(),res.getResourceType());
 					SerializableDiagram diagram = deserializeModelResource(res);
 					if( diagram!=null) {
-						DiagramModel dm = new DiagramModel(diagram,projectId,res.getResourceId());
-						controller.addResource(new Long(projectId), new Long(res.getResourceId()), dm);
+						ProcessDiagram dm = new ProcessDiagram(diagram,projectId,res.getResourceId());
+						addResource(new Long(projectId), new Long(res.getResourceId()), dm);
 					}
 					else {
 						log.warnf("%s: Failed to create DOM from resource",TAG);
@@ -142,7 +239,7 @@ public class ModelResourceManager implements ProjectListener  {
 	 */
 	@Override
 	public void projectDeleted(long projectId) {
-		controller.deleteResources(new Long(projectId));
+		deleteResources(new Long(projectId));
 		
 	}
 	/**
@@ -159,7 +256,7 @@ public class ModelResourceManager implements ProjectListener  {
 		long projectId = diff.getId();
 		Set<Long> deleted = diff.getDeletedResources();
 		for (Long  resid : deleted) {
-			controller.deleteResource(projectId,resid);
+			deleteResource(projectId,resid);
 		}
 		
 		// The "dirty" ones are the new ones ??
@@ -179,8 +276,8 @@ public class ModelResourceManager implements ProjectListener  {
 					res.getResourceId(),res.getResourceType());
 				SerializableDiagram diagram = deserializeModelResource(res);
 				if( diagram!=null) {
-					DiagramModel dm = new DiagramModel(diagram,projectId,res.getResourceId());
-					controller.addResource(new Long(projectId), new Long(res.getResourceId()), dm);
+					ProcessDiagram dm = new ProcessDiagram(diagram,projectId,res.getResourceId());
+					addResource(new Long(projectId), new Long(res.getResourceId()), dm);
 				}
 				else {
 					log.warnf("%s: Failed to create DOM from resource",TAG);

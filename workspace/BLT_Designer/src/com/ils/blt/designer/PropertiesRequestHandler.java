@@ -6,7 +6,9 @@ package com.ils.blt.designer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
+import com.ils.block.common.BlockProperty;
 import com.ils.block.common.PalettePrototype;
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
@@ -56,16 +58,26 @@ public class PropertiesRequestHandler  {
 	 * @return a string representing a JSON document containing an array of attributes corresponding
 	 *         to the block object.
 	 */
-	public String getBlockAttributes(Long projectId, Long resourceId,String blockId, String json) {
-		log.info(TAG+"getBlockAttributes:"+blockId+"="+json);
-		String result = "";
+	public List<BlockProperty> getBlockProperties(long projectId,long resourceId,UUID blockId) {
+		log.infof(TAG+"%s: getBlockProperties: for block %s",TAG,blockId.toString());
+		List<BlockProperty> result = new ArrayList<BlockProperty>();
+		List<String> jsonList = new ArrayList<String>();
 		try {
-			//result = BlockPropertiesScriptFunctions.getBlockAttributes(projectId,resourceId,blockId, json);
+			jsonList = (List<String> )GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "getBlockProperties",new Long(projectId),new Long(resourceId),blockId.toString());
 		}
-		catch(Exception ex) {
-			log.info(TAG+"getBlockAttributes: Exception ("+ex.getMessage()+")");
+		catch(Exception ge) {
+			log.infof("%s: getBlockProperties: GatewayException (%s)",TAG,ge.getMessage());
 		}
-		log.info(TAG+"getBlockAttributes:returned ="+result);
+		
+		if( jsonList!=null) {
+			
+			for( String json:jsonList ) {
+				log.tracef("%s getBlockProperties: %s",TAG,json);
+				BlockProperty bp = BlockProperty.createProperty(json);
+				result.add(bp);
+			}
+		}
 		return result;
 	}
 

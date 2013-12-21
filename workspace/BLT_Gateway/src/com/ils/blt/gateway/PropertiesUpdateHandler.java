@@ -7,6 +7,7 @@ package com.ils.blt.gateway;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Hashtable;
+import java.util.UUID;
 
 import com.ils.block.ProcessBlock;
 import com.ils.block.common.BlockConstants;
@@ -114,38 +115,21 @@ public class PropertiesUpdateHandler   {
 	}
 
 	/**
-	 * Query the model for a block specified by the project, resource and block ids. If the block
-	 * does not exist, create it.  If the block is already instantiated, then 
-	 * return the actual attribute values (as opposed to defaults for a newly created block).
+	 * Query the model resource manager for a block specified by the project, resource and block id. If the block
+	 * does not exist, return null;
 	 * 
 	 * @param attributes already known
 	 * @return the attribute table appropriately enhanced.
 	 */
-	public Hashtable<String,BlockProperty> getBlockAttributes(long projectId,long resourceId,String blockId,Hashtable<String,BlockProperty> attributes) {
+	public Hashtable<String,BlockProperty> getBlockProperties(Long projectId,Long resourceId,UUID blockId) {
 		// If the instance doesn't exist, create one
 		BlockExecutionController controller = BlockExecutionController.getInstance();
-		ProcessBlock block = controller.getBlock(projectId, resourceId, blockId);
+		ProcessBlock block = controller.getDelegate().getBlock(projectId, resourceId, blockId);
 		Hashtable<String,BlockProperty> results = null;
-		if(block==null) {
-			BlockProperty classAttribute = attributes.get(BlockConstants.BLOCK_PROPERTY_CLASS);
-			String className = classAttribute.getValue().toString();
-			if( className!=null ) {
-				// Delegate to Python
-				if( className.startsWith("app.block")) {
-					block = new ProxyBlock(className,projectId,resourceId,blockId);
-					if(((ProxyBlock)block).getObject() == null ) {
-						block = null;
-					}
-				}
-				else {
-				    block = createInstance(projectId,resourceId,blockId,className);
-				}
-			}
-			else {
-				log.warnf(TAG+"getBlockAttributes: No class in supplied attributes ("+attributes+")");
-			}
+		if(block!=null) {
+			results = block.getProperties();
 		}
-		results = getAttributes(block,attributes);
+		
 		return results;
 	}
 	
@@ -160,7 +144,7 @@ public class PropertiesUpdateHandler   {
 	public Hashtable<String,Hashtable<String,String>> getConnectionAttributes(long projectId,long resourceId,String connectionId,Hashtable<String,Hashtable<String,String>> attributes) {
 		// Find the connection object
 		BlockExecutionController controller = BlockExecutionController.getInstance();
-		Connection cxn  = controller.getConnection(projectId, resourceId, connectionId);
+		Connection cxn  = controller.getDelegate().getConnection(projectId, resourceId, connectionId);
 		return attributes;
 	}
 }

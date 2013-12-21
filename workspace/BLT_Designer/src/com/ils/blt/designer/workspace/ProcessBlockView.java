@@ -6,7 +6,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 
-import com.ils.block.common.AnchorDescription;
+import com.ils.block.common.AnchorPrototype;
 import com.ils.block.common.AnchorDirection;
 import com.ils.block.common.BlockDescription;
 import com.ils.block.common.BlockStyle;
@@ -46,7 +46,7 @@ public class ProcessBlockView extends AbstractBlock {
 		uuid = UUID.randomUUID();
 		this.style = descriptor.getStyle();
 		this.anchors = new ArrayList<AnchorDescriptor>();
-		for( AnchorDescription ad:descriptor.getAnchors() ) {
+		for( AnchorPrototype ad:descriptor.getAnchors() ) {
 			log.infof("%s: Creating anchor descriptor %s", TAG,ad.getName());
 			anchors.add( new AnchorDescriptor((ad.getAnchorDirection()==AnchorDirection.INCOMING?AnchorType.Terminus:AnchorType.Origin),
 					UUID.randomUUID(),ad.getName()) );

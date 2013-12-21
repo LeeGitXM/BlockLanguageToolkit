@@ -4,6 +4,7 @@
 package com.ils.blt.gateway.engine;
 
 import java.util.Hashtable;
+import java.util.UUID;
 
 import org.w3c.dom.Element;
 
@@ -16,39 +17,43 @@ import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 /**
- * The diagram model analyzes the XML document that is the "model" extracted from a
- * a JGraphX diagram. It converts the XML into block and connection objects. 
- * This provides answers to questions that the model control may ask about "what's next?".  
+ * The diagram model is the "model" that encapsulates the structure of the blocks and connections
+ * of a ProcessDiagramView as viewed in the Designer.
+ *  
+ * This class provides answers to questions that the model control may ask about "what's next?".  
  * 
  *  The document is constant for the life of this instance.
  */
-public class DiagramModel {
+public class ProcessDiagram {
 	
-	private static String TAG = "DiagramModel";
+	private static String TAG = "ProcessDiagram";
 	private final LoggerEx log;
 	private final SerializableDiagram diagram;
 	private boolean valid = false;
 	private final long projectId;
 	private final long resourceId;
-	private final Hashtable<String,ProcessBlock> blocks;      // Key by block number
+	private final Hashtable<UUID,ProcessBlock> blocks;
 	private final Hashtable<String,Connection> connections;   // Key by connection number
 	private final Hashtable<String,Connection> connectionsBySource;   // Key by source:port
 	
 	
 	/**
-	 * Create a model that encapsulates an XML document describing a diagram.
-	 * @param doc an XML DOM document. 
+	 * Constructor: Create a model that encapsulates the structure of the blocks and connections
+	 *              of a diagram.
+	 * @param dom the unserialized object that represents the diagram. 
 	 */
-	public DiagramModel(SerializableDiagram dom,long proj,long res) { 
+	public ProcessDiagram(SerializableDiagram dom,long proj,long res) { 
 		this.diagram = dom;
 		this.projectId = proj;
 		this.resourceId = res;
 		log = LogUtil.getLogger(getClass().getPackage().getName());
-		blocks = new Hashtable<String,ProcessBlock>();
+		blocks = new Hashtable<UUID,ProcessBlock>();
 		connections = new Hashtable<String,Connection>();
 		connectionsBySource = new Hashtable<String,Connection>();
 		analyze(diagram);
 	}
+	
+	public ProcessBlock getBlock(UUID uuid) { return blocks.get(uuid); }
 	
 	/**
 	 * Analyze the diagram for nodes.
@@ -100,10 +105,7 @@ public class DiagramModel {
 		}
 			*/
 	}
-	/**
-	 * @return a ProcessBlock from the diagram given its id.
-	 */
-	public ProcessBlock getBlock(String id) { return blocks.get(id); }
+
 	/**
 	 * @return a Connection from the diagram given its id.
 	 */
@@ -124,10 +126,10 @@ public class DiagramModel {
 		String key = String.format("%s:%s",String.valueOf(block.getBlockId()),port);
 		Connection cxn = connections.get(key);
 		if( cxn!=null ) {
-			ProcessBlock blk = blocks.get(cxn.getSource());
-			if( blk!=null) {
-				nvn = new NewValueNotification(blk,cxn.getUpstreamPortName(),value);
-			}	
+			//ProcessBlock blk = BlockExecutionController.getInstance().getBlock(cxn.getSource());
+			//if( blk!=null) {
+			//	nvn = new NewValueNotification(blk,cxn.getUpstreamPortName(),value);
+			//}	
 		}
 		
 		return nvn;
@@ -137,17 +139,4 @@ public class DiagramModel {
 	 * Report on whether or not the DOM contained more than one connected node.
 	 */
 	public boolean isValid() { return valid; }
-	
-	/**
-	 * Convert a "vertx" element into a block
-	 */
-	private ProcessBlock blockFromElement(Element element) {
-		return null;
-	}
-	/**
-	 * Convert a "edge" element into a connection
-	 */
-	private Connection connectionFromElement(Element element) {
-		return null;
-	}
 }

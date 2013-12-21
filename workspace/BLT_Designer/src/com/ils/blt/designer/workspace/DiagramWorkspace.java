@@ -17,6 +17,7 @@ import javax.swing.JPopupMenu;
 
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.SerializableDiagram;
+import com.ils.blt.designer.editor.PropertyEditorFrame;
 import com.inductiveautomation.ignition.client.designable.DesignableContainer;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;

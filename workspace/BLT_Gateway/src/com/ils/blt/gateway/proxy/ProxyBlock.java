@@ -105,7 +105,8 @@ public class ProxyBlock implements ProcessBlock {
 	 * determine whether or not this triggers block evaluation.
 	 * @param property the new value of one of the block's properties.
 	 */
-	public void setProperty(BlockProperty property) {
+	@Override
+	public void setProperty(String name,QualifiedValue qv) {
 		
 	}
 	/**

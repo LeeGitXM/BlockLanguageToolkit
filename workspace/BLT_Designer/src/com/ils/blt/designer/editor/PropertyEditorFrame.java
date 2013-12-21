@@ -1,21 +1,21 @@
 /**
  *   (c) 2013  ILS Automation. All rights reserved.
  */
-package com.ils.blt.designer.workspace;
+package com.ils.blt.designer.editor;
 
 import java.util.List;
 
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import net.miginfocom.swing.MigLayout;
 
+import com.ils.blt.designer.workspace.DiagramWorkspace;
+import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
 import com.inductiveautomation.ignition.designer.designable.DesignableWorkspaceAdapter;
-import com.inductiveautomation.ignition.designer.designable.DesignableWorkspaceListener;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.model.ResourceWorkspaceFrame;
@@ -29,12 +29,15 @@ import com.jidesoft.editor.CodeEditor;
  * to hold a model diagram. 
  * 
  */
+@SuppressWarnings("serial")
 public class PropertyEditorFrame extends DockableFrame implements ResourceWorkspaceFrame{
 	private static final String TAG = "PropertyEditorFrame";
 	public static final String DOCKING_KEY = "ProcessDiagramEditorFrame";
+	public static final String TITLE = "Block Properties Editor";
+	public static final String SHORT_TITLE = "Properties";
 	private final DesignerContext context;
 	private final DiagramWorkspace workspace;
-	private JLabel label;
+	private final JPanel contentPanel;
 	
 
 	private LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
@@ -45,18 +48,16 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 	 */
 	public PropertyEditorFrame(DesignerContext ctx,DiagramWorkspace workspace) {
 		super(DOCKING_KEY, IconUtil.getRootIcon("delay_block_16.png"));  // Pinned icon
-		this.label = new JLabel("Hi Carl");
 		this.context = ctx;
-
 		this.workspace = workspace;
+		setTitle(TITLE);
+		setTabTitle(SHORT_TITLE);
 		workspace.addDesignableWorkspaceListener(new DiagramWorkspaceListener());
 
-		JPanel panel = new JPanel(new MigLayout("fill"));
-		panel.add(label,"wrap");
+		contentPanel = new JPanel(new MigLayout("fill"));
 		CodeEditor editor = CodeEditorFactory.newPythonEditor();
-		panel.add(editor,"grow,push");
-		
-		setContentPane(panel);
+		contentPanel.add(editor,"grow,push");
+		setContentPane(contentPanel);
 	}
 
 
@@ -79,11 +80,14 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 				if( selection instanceof BlockComponent ) {
 					BlockComponent bc = ( BlockComponent)selection;
 					ProcessBlockView blk = (ProcessBlockView)bc.getBlock();
-					label.setText(bc.getLocation().toString());
+					PropertyEditor editor = new PropertyEditor(context,workspace.getActiveDiagram().getResourceId(),blk);
+					contentPanel.add(editor,"grow,push");
 					return;
 				}
+				else {
+					log.infof("%s: DiagramWorkspaceListener: selected a %s",TAG,selection.getClass().getName());
+				}
 			}
-			label.setText("");
 		}
 	}
 	

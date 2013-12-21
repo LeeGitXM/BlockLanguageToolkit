@@ -7,11 +7,11 @@
 package com.ils.blt.gateway.engine;
 
 import java.util.Hashtable;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.ils.block.ProcessBlock;
-import com.ils.block.common.BlockConstants;
 import com.ils.block.common.BlockProperty;
 import com.ils.block.control.ExecutionController;
 import com.ils.block.control.NewValueNotification;
@@ -24,8 +24,9 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
 
 /**
- *  The block execution controller receives status updates from the RPC controller
- *  and from the resource manager regarding model changes. The changes are analyzed to
+ *  The block execution controller is responsible for the dynamic activity for the collection
+ *  of diagrams. It receives status updates from the RPC controller and from the resource manager
+ *  which is its delegate regarding model changes. The changes are analyzed to
  *  determine if one or more downstream blocks are to be informed of the change.
  *  
  *  This class is a singleton for easy access throughout the application.
@@ -35,9 +36,10 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	private static int BUFFER_SIZE = 100;   // Buffer Capacity
 	private final LoggerEx log;
 	private GatewayContext context = null;    // Must be initialized before anything works
+	private final ModelResourceManager delegate;
 	private static BlockExecutionController instance = null;
-	/** The diagrams are keyed by projectId, then resourceID */
-	private final Hashtable<Long,Hashtable<Long,DiagramModel>> models;
+
+
 	private final BoundedBuffer buffer;
 	private DataCollector dataCollector = null;    // Tag subscriber
 	private Thread completionThread = null;
@@ -49,7 +51,8 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 */
 	private BlockExecutionController() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
-		models = new Hashtable<Long,Hashtable<Long,DiagramModel>>();
+		delegate = new ModelResourceManager(this);
+		
 		buffer = new BoundedBuffer(BUFFER_SIZE);
 	}
 
@@ -78,6 +81,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public void setContext(GatewayContext ctxt) { 
 		this.context=ctxt; 
 		this.dataCollector = new DataCollector(context);
+		this.delegate.setContext(context);
 	}
 
 	public synchronized void start() {
@@ -98,78 +102,11 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		dataCollector.stop();
 	}
 	
-	/**
-	 * Remove all block resources associated with a project.
-	 * Presumably the project has been deleted.
-	 * @param projectId the identity of a project.
-	 */
-	public void deleteResources(Long projectId) {
-		models.remove(projectId);
-	}
+	public ModelResourceManager getDelegate() { return delegate; }
 
-	/**
-	 * Remove a diagram within a project.
-	 * Presumably the diagram has been deleted.
-	 * @param projectId the identity of a project.
-	 */
-	public void deleteResource(Long projectId,Long resourceId) {
-		Hashtable<Long,DiagramModel> projectModel = models.get(projectId);
-		if( projectModel!=null ) projectModel.remove(resourceId);
-	}
+
 	
-	/**
-	 * Set a model for a diagram. There is a one-one correspondence 
-	 * between a model-project and diagram.
-	 * @param projectId the identity of a project
-	 * @param resourceId the identity of the model resource
-	 * @param model the diagram logic
-	 */
-	public void addResource(Long projectId,Long resourceId,DiagramModel model) {
-		Hashtable<Long,DiagramModel> projectModels = models.get(projectId);
-		if( projectModels==null ) {
-			projectModels = new Hashtable<Long,DiagramModel>();
-			models.put(projectId,projectModels);
-		}
-		projectModels.put(resourceId, model);
-	}
-	
-	/**
-	 * Get a block from the existing diagrams. 
-	 * @param projectId
-	 * @param resourceId
-	 * @param blockId
-	 * @return the specified ProcessBlock. If not found, return null. 
-	 */
-	public ProcessBlock getBlock(long projectId,long resourceId,String blockId) {
-		ProcessBlock block = null;
-		Hashtable<Long,DiagramModel> projectModels = models.get(new Long(projectId));
-		if( projectModels!=null ) {
-			DiagramModel dm = projectModels.get(new Long(resourceId));
-			if( dm!=null ) {
-				block = dm.getBlock(blockId);
-			}
-		}
-		return block;
-	}
-	
-	/**
-	 * Get a connection from the existing diagrams. 
-	 * @param projectId
-	 * @param resourceId
-	 * @param connectionId
-	 * @return the specified Connection. If not found, return null. 
-	 */
-	public Connection getConnection(long projectId,long resourceId,String connectionId) {
-		Connection cxn = null;
-		Hashtable<Long,DiagramModel> projectModels = models.get(new Long(projectId));
-		if( projectModels!=null ) {
-			DiagramModel dm = projectModels.get(new Long(resourceId));
-			if( dm!=null ) {
-				cxn = dm.getConnection(connectionId);
-			}
-		}
-		return cxn;
-	}
+
 	
 	// ======================= Delegated to DataCollector ======================
 	/**
@@ -203,24 +140,21 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 					NewValueNotification incoming = (NewValueNotification)work;
 					// Query the diagram to find out what's next
 					ProcessBlock pb = incoming.getBlock();
-					Hashtable<Long,DiagramModel> projectModels = models.get(new Long(pb.getProjectId()));
-					if( projectModels!=null) {
-						DiagramModel dm = projectModels.get(new Long(pb.getDiagramId()));
-						if( dm!=null) {
-							NewValueNotification outgoing = dm.getValueUpdate(incoming);
-							if( outgoing!=null ) {
-								executor.execute(new PortReceivesValueTask(outgoing));
-							}
+					ProcessDiagram dm = delegate.getDiagram(new Long(pb.getProjectId()),new Long(pb.getDiagramId()));
+					if( dm!=null) {
+						NewValueNotification outgoing = dm.getValueUpdate(incoming);
+						if( outgoing!=null ) {
+							executor.execute(new PortReceivesValueTask(outgoing));
 						}
+
 						else {
 							log.warnf("%s: run: diagram %d in project %d in execution complete notification not found",TAG,
-											pb.getDiagramId(),pb.getProjectId());
+									pb.getDiagramId(),pb.getProjectId());
 						}
 					}
 					else {
 						log.warnf("%s: run: project %d in execution complete notification not found",TAG,pb.getProjectId());
 					}
-					
 				}
 			}
 			catch( InterruptedException ie) {}

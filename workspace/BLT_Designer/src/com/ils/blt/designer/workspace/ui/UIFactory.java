@@ -16,8 +16,17 @@ public class UIFactory {
 		
 		BlockViewUI ui = null;
 		switch(style) {
+			case DATABASE:
+				ui= new DatabaseUIView(block);
+				break;
+			case DIAMOND:
+				ui= new DiamondUIView(block);
+				break;
 			case ROUND:
 				ui= new RoundUIView(block);
+				break;
+			case TAGWRITER:
+				ui= new TagwriterUIView(block);
 				break;
 			case BASIC:
 			default:

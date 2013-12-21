@@ -54,11 +54,8 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		this.context = ctxt;
 		// Initialize the controller.
 		BlockExecutionController.getInstance().setContext(ctxt);
-		// NOTE: Get serialization exception if this saved as a class member
+		// NOTE: Get serialization exception if ModelResourceManager is saved as a class member
 		//       Exception is thrown when we try to incorporate a StatusPanel
-		ModelResourceManager mrm = ModelResourceManager.getInstance();
-		//mrm = new ModelResourceManager(context);
-		//context.getProjectManager().addProjectListener(mrm);
 
 		log.info(TAG+"Setup - enabled project listeners.");
 		PropertiesUpdateHandler.getInstance().setContext(context);

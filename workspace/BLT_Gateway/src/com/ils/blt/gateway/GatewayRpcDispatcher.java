@@ -6,6 +6,7 @@ package com.ils.blt.gateway;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.UUID;
 
 import com.ils.block.ProcessBlock;
 import com.ils.block.annotation.ExecutableBlock;
@@ -49,18 +50,19 @@ public class GatewayRpcDispatcher   {
 	}
 
 
-	public String getBlockAttributes(Long proj, Long res,String blockId,String json) {
-		long projectId = proj.longValue();
-		long resourceId = res.longValue();
-		log.debugf("%s: getBlockAttributes: %d:%d:%s =\n%s",TAG,projectId,resourceId,blockId,json);
+	public List<String> getBlockProperties(Long projectId,Long resourceId,String blockId) {
+		log.infof("%s: getBlockProperties: %d:%d %s",TAG,projectId.longValue(),resourceId.longValue(),blockId);
 		
 		@SuppressWarnings("unchecked")
-		Hashtable<String,BlockProperty> attributeTable = (Hashtable<String,BlockProperty>)jsonToJava.jsonToTable(json);
-		Hashtable<String,BlockProperty> results = PropertiesUpdateHandler.getInstance().getBlockAttributes(projectId,resourceId,blockId,attributeTable);
-		log.debug(TAG+"created table\n"+results);
-		String gson =  javaToJson.tableToJson(results);
-		log.trace(TAG+"JSON="+gson);
-		return gson;
+		Hashtable<String,BlockProperty> propertyTable = PropertiesUpdateHandler.getInstance().getBlockProperties(projectId,resourceId,UUID.fromString(blockId));
+		List<String> result = new ArrayList<String>();
+		if( propertyTable!=null ) {
+			for( BlockProperty prop:propertyTable.values()) {
+				result.add(prop.toJson());
+			}
+		}
+		log.infof("%s: getBlockProperties: returns %s",TAG,result.toString());
+		return result;
 	}
 	
 

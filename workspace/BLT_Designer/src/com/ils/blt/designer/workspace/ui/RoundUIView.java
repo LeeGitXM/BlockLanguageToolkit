@@ -1,65 +1,40 @@
 package com.ils.blt.designer.workspace.ui;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
-import javax.swing.JComponent;
+import javax.swing.Icon;
 
-import com.ils.blt.designer.workspace.BasicAnchorPoint;
 import com.ils.blt.designer.workspace.ProcessBlockView;
-import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
-import com.inductiveautomation.ignition.designer.blockandconnector.blockui.AnchorDescriptor;
-import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorPoint;
-import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
+import com.inductiveautomation.ignition.designer.gui.IconUtil;
 
 
-
-public class RoundUIView extends JComponent implements BlockViewUI {
-
-	private final List<BasicAnchorPoint> anchorPoints;
+/**
+ * Create a circular "button" with a predefined 48x48 graphic. The first input anchor
+ * creates an anchor point on the left. The first output anchor point creates an 
+ * anchor point on the top.
+ */
+public class RoundUIView extends AbstractUIView implements BlockViewUI {
+	private static final long serialVersionUID = 2130868310475735865L;
+	private Icon icon = null;
 	
 	public RoundUIView(ProcessBlockView view) {
+		super(view);
 		setOpaque(false);
-		setPreferredSize(new Dimension(100,100));
-		anchorPoints = new ArrayList<BasicAnchorPoint>();
-		BasicAnchorPoint ap = new BasicAnchorPoint("out",view,AnchorType.Origin,new Point(95,50),new Point(110,50),new Rectangle(90,45,10,10));
-		anchorPoints.add(ap);
-		
+		setPreferredSize(new Dimension(68,68));   // 48 plus 10 for stubs
+		icon = IconUtil.getRootIcon(RoundUIView.class, "entry_48.png");
+		initAnchorPoints();
 	}
-
-	@Override
-	public void install(BlockComponent panel) {
-		panel.setLayout(new BorderLayout());
-		panel.add(this,BorderLayout.CENTER);
-	}
+	
 
 	@Override
 	protected void paintComponent(Graphics _g) {
 		Graphics2D g = (Graphics2D)_g;
-		g.setColor(Color.green);
-		g.fillOval(0, 0, 100, 100);
-		g.setColor(Color.black);
-		g.fillRect(90, 45, 10,10);
-	}
-
-	@Override
-	public Collection<AnchorDescriptor> getAnchors() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Collection<AnchorPoint> getAnchorPoints() {
-		// TODO Auto-generated method stub
-		return null;
+		if( icon!=null ) {
+			icon.paintIcon(getBlockComponent(), g, INSET, INSET);
+		}
+		drawAnchors(g);
 	}
 
 }
