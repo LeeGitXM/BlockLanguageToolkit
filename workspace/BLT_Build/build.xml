@@ -33,6 +33,7 @@
 	<!-- External jar classpath. This classpath includes all the jars needed to build a module against the SDK. -->
 	<path id="ExternalJar.classpath">
 		 <fileset dir="${basedir}/../../external/lib" includes="ils*.jar" />
+		 <fileset dir="${basedir}/../../external/lib" includes="commons-math3*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="gson-*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="jgraphx-*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="jgx*.jar" />

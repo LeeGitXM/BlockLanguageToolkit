@@ -5,6 +5,7 @@
 package com.ils.blt.gateway.proxy;
 
 import java.util.Hashtable;
+import java.util.UUID;
 
 import org.python.core.CompileMode;
 import org.python.core.CompilerFlags;
@@ -193,7 +194,7 @@ public class ProxyHandler   {
 	 * @param diagramId
 	 * @param blockId
 	 */
-	public void evaluate(long projectId,long diagramId,String blockId) {
+	public void evaluate(long projectId,long diagramId,UUID blockId) {
 		
 	}
 	
@@ -206,7 +207,7 @@ public class ProxyHandler   {
 	 * @param stub
 	 * @param value
 	 */
-	public void setValue(long projectId,long diagramId,String blockId,String stub,QualifiedValue value) {
+	public void setValue(long projectId,long diagramId,UUID blockId,String stub,QualifiedValue value) {
 		
 	}
 	

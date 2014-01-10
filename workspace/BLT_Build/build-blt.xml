@@ -231,6 +231,7 @@
 		<copy file="${basedir}/../../external/lib/jgraphx-2.1.0.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy file="${basedir}/../../external/lib/jgx.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy file="${basedir}/../../external/lib/gson-2.2.2.jar" todir="${basedir}/BLT_Build/temp_modl/" />
+		<copy file="${basedir}/../../external/lib/commons-math3-3.1.1.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy file="${basedir}/../../external/lib/block-definition.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 
 		<!-- Copy license file and javadoc into the bundle -->

@@ -9,6 +9,7 @@ import java.util.UUID;
 import com.ils.block.common.AnchorPrototype;
 import com.ils.block.common.AnchorDirection;
 import com.ils.block.common.BlockDescription;
+import com.ils.block.common.BlockState;
 import com.ils.block.common.BlockStyle;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
@@ -33,6 +34,9 @@ public class ProcessBlockView extends AbstractBlock {
 	private static final String TAG = "ProcessBlockView";
 	private final UUID uuid;
 	private final String className;
+	private String label;                          // Text to display on the block
+	private BlockState state = BlockState.IDLE;   // Block execution state
+	private String statusText;                    // Auxiliary text to display
 	private Collection<AnchorDescriptor> anchors;
 	private Point location = new Point(0,0);
 	private final UIFactory factory = new UIFactory() ;
@@ -46,6 +50,7 @@ public class ProcessBlockView extends AbstractBlock {
 	public ProcessBlockView(BlockDescription descriptor) {
 		uuid = UUID.randomUUID();
 		this.className = descriptor.getBlockClass();
+		this.label = descriptor.getLabel();
 		this.style = descriptor.getStyle();
 		this.anchors = new ArrayList<AnchorDescriptor>();
 		for( AnchorPrototype ad:descriptor.getAnchors() ) {
@@ -97,6 +102,11 @@ public class ProcessBlockView extends AbstractBlock {
 	public Point getLocation() {
 		return location;
 	}
+
+	public String getLabel() {return label;}
+	public void setLabel(String label) {this.label = label;}
+	public String getStatusText() { return statusText; }
+	public void setStatusText(String statusText) { this.statusText = statusText; }
 
 	@Override
 	public void initUI(BlockComponent blk) {

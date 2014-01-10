@@ -5,11 +5,13 @@ package com.ils.blt.gateway.proxy;
 
 import java.util.Hashtable;
 import java.util.Set;
+import java.util.UUID;
 
 import org.python.core.PyObject;
 
 import com.ils.block.ProcessBlock;
 import com.ils.block.common.BlockProperty;
+import com.ils.block.common.BlockState;
 import com.ils.block.common.PalettePrototype;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -30,7 +32,10 @@ public class ProxyBlock implements ProcessBlock {
 	private final String className;
 	private final long projectId;
 	private final long diagramId;
-	private final String blockId;
+	private final UUID blockId;
+	private String label;
+	private String statusText;
+	private BlockState state;
 	private PyObject code = null;
 	private final ProxyHandler delegate = ProxyHandler.getInstance();
 	
@@ -42,9 +47,9 @@ public class ProxyBlock implements ProcessBlock {
 	 * @param clss the Python module to instantiate
 	 * @param proj ID of the project to which the diagram belongs
 	 * @param diag ID of the diagram of which the block is a part
-	 * @param block number of the block (vertex) within the diagram
+	 * @param block identifier
 	 */
-	public ProxyBlock(String clss,long proj,long diag,String block) {
+	public ProxyBlock(String clss,long proj,long diag,UUID block) {
 		this.className = clss;
 		this.projectId = proj;
 		this.diagramId = diag;
@@ -73,7 +78,7 @@ public class ProxyBlock implements ProcessBlock {
 	@Override
 	public long getDiagramId() { return diagramId; }
 	@Override
-	public String getBlockId() { return blockId; }
+	public UUID getBlockId() { return blockId; }
 	/**
 	 * @return all properties. These properties are modifiable. Each
 	 *         property/attribute is a hashtable of Strings keyed by Strings.
@@ -125,6 +130,21 @@ public class ProxyBlock implements ProcessBlock {
 	 * "quiet" time has passed without further input.
 	 */
 	public void evaluate() { delegate.evaluate(projectId, diagramId, blockId); }
-	
+
+	@Override
+	public String getLabel() { return this.label; }
+	@Override
+	public void setLabel(String label) { this.label = label; }
+
+	@Override
+	public BlockState getState() { return this.state; }
+	@Override
+	public void setState(BlockState state) { this.state = state; }
+
+	@Override
+	public String getStatusText() { return this.statusText; }
+
+	@Override
+	public void setStatusText(String text) { this.statusText = text; }
 
 }

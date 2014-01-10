@@ -64,7 +64,8 @@ public class GatewayRpcDispatcher   {
 		log.infof("%s: getBlockProperties: %d:%d %s",TAG,projectId.longValue(),resourceId.longValue(),blockId);
 		
 		@SuppressWarnings("unchecked")
-		Hashtable<String,BlockProperty> propertyTable = PropertiesUpdateHandler.getInstance().getBlockProperties(projectId,resourceId,UUID.fromString(blockId));
+		Hashtable<String,BlockProperty> propertyTable = PropertiesUpdateHandler.getInstance().
+					getBlockProperties(projectId,resourceId,UUID.fromString(blockId),className);
 		List<String> result = null;
 		if( propertyTable!=null ) {
 			result = new ArrayList<String>();

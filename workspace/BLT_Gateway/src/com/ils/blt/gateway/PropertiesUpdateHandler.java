@@ -71,12 +71,12 @@ public class PropertiesUpdateHandler   {
 	 * @param className
 	 * @return the instance created, else null
 	 */
-	public ProcessBlock createInstance(long projectId,long resourceId,String blockId,String className) {
+	private ProcessBlock createInstance(long projectId,long resourceId,String blockId,String className) {
 		log.debugf("%s: createInstance of %s (%d,%d,%d)",TAG,className,projectId,resourceId,blockId);   // Should be updated
 		ProcessBlock block = null;
 		try {
 			Class<?> clss = Class.forName(className);
-			Constructor<?> ctor = clss.getDeclaredConstructor(new Class[] {ExecutionController.class,long.class,long.class,String.class});
+			Constructor<?> ctor = clss.getDeclaredConstructor(new Class[] {ExecutionController.class,long.class,long.class,UUID.class});
 			block = (ProcessBlock)ctor.newInstance(BlockExecutionController.getInstance(),projectId,resourceId,blockId);
 		}
 		catch(InvocationTargetException ite ) {
@@ -96,32 +96,18 @@ public class PropertiesUpdateHandler   {
 		}
 		return block;
 	}
-	/**
-	 * Extract 
-	 * @param key
-	 * @param attributes
-	 * @return
-	 */
-	public Hashtable<String,BlockProperty> getAttributes(ProcessBlock block,Hashtable<String,BlockProperty> attributes) {
-		if( block==null) return attributes;
-
-		Hashtable<String,BlockProperty> properties = block.getProperties();
-		for( String key:attributes.keySet()) {
-			if( !properties.containsKey(key) ) {
-				properties.put(key, attributes.get(key));
-			}
-		}
-		return properties;
-	}
 
 	/**
 	 * Query the model resource manager for a block specified by the project, resource and block id. If the block
-	 * does not exist, return null;
+	 * does not exist, create it, then return the default properties.
 	 * 
-	 * @param attributes already known
-	 * @return the attribute table appropriately enhanced.
+	  * @param projectId
+	  * @param resourceId
+	  * @param blockId
+	  * @param className
+	  * @return
 	 */
-	public Hashtable<String,BlockProperty> getBlockProperties(Long projectId,Long resourceId,UUID blockId) {
+	public Hashtable<String,BlockProperty> getBlockProperties(Long projectId,Long resourceId,UUID blockId,String className) {
 		// If the instance doesn't exist, create one
 		BlockExecutionController controller = BlockExecutionController.getInstance();
 		ProcessBlock block = controller.getDelegate().getBlock(projectId, resourceId, blockId);
@@ -129,7 +115,13 @@ public class PropertiesUpdateHandler   {
 		if(block!=null) {
 			results = block.getProperties();
 		}
-		
+		else {
+			//TODO create from python if appropriate
+			block = createInstance(projectId.longValue(),resourceId.longValue(),blockId.toString(),className);
+			if(block!=null) {
+				results = block.getProperties();
+			}
+		}
 		return results;
 	}
 	

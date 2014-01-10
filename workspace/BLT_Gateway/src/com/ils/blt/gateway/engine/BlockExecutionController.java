@@ -6,8 +6,6 @@
  */
 package com.ils.blt.gateway.engine;
 
-import java.util.Hashtable;
-import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -16,7 +14,7 @@ import com.ils.block.common.BlockProperty;
 import com.ils.block.control.ExecutionController;
 import com.ils.block.control.NewValueNotification;
 import com.ils.common.BoundedBuffer;
-import com.ils.connection.Connection;
+import com.ils.common.watchdog.WatchdogTimer;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
@@ -37,6 +35,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	private final LoggerEx log;
 	private GatewayContext context = null;    // Must be initialized before anything works
 	private final ModelResourceManager delegate;
+	private final WatchdogTimer watchdogTimer;
 	private static BlockExecutionController instance = null;
 
 
@@ -54,6 +53,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		delegate = new ModelResourceManager(this);
 		
 		buffer = new BoundedBuffer(BUFFER_SIZE);
+		watchdogTimer = new WatchdogTimer();
 	}
 
 	/**

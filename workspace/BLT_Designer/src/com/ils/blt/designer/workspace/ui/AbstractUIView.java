@@ -3,10 +3,15 @@ package com.ils.blt.designer.workspace.ui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Shape;
+import java.awt.font.FontRenderContext;
+import java.awt.font.GlyphVector;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -91,6 +96,27 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 
 	@Override
 	protected abstract void paintComponent(Graphics _g);
+	
+	/**
+	 * Utility method to paint a text string
+	 * @param g
+	 * @param text
+	 * @param xpos
+	 * @param ypos
+	 * @param fill
+	 */
+	protected void paintTextAt(Graphics2D g, String text, float xpos, float ypos, Color fill) {
+		Font font = g.getFont();
+		FontRenderContext frc = g.getFontRenderContext();
+		GlyphVector vector = font.createGlyphVector(frc, text);
+		Rectangle2D bounds = vector.getVisualBounds();
+		// ypos is the center of the font. Adjust up by 1/2
+		ypos+= bounds.getHeight()/2f;
+
+		Shape textShape = vector.getOutline(xpos, ypos);
+		g.setColor(fill);
+		g.fill(textShape);
+	}
 
 	@Override
 	public Collection<AnchorDescriptor> getAnchors() {

@@ -70,9 +70,8 @@ public class PropertiesRequestHandler  {
 		catch(Exception ge) {
 			log.infof("%s: getBlockProperties: GatewayException (%s)",TAG,ge.getMessage());
 		}
-		
-		if( jsonList!=null) {
-			
+				
+		if( jsonList!=null) {			
 			for( String json:jsonList ) {
 				log.tracef("%s getBlockProperties: %s",TAG,json);
 				BlockProperty bp = BlockProperty.createProperty(json);
