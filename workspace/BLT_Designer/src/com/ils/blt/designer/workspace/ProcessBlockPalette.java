@@ -35,9 +35,7 @@ import com.inductiveautomation.ignition.designer.model.ResourceWorkspaceFrame;
 import com.jidesoft.docking.DockableFrame;
 
 /**
- * A Diagnostics workspace is a container that occupies the DockManager workspace
- * area. It, in turn, holds DiagnosticsFrames. These are internal frames designed
- * to hold a model diagram. 
+ * A block palette is a dockable frame that holds icons that represent executable blocks. 
  * 
  */
 public class ProcessBlockPalette extends DockableFrame implements ResourceWorkspaceFrame{
@@ -93,7 +91,6 @@ public class ProcessBlockPalette extends DockableFrame implements ResourceWorksp
 		private final PalettePrototype prototype;
 		private JPanel panel = null;
 
-		private String type = "block";
 		public PaletteEntry(PalettePrototype proto) {
 			super(TAG);
 			prototype = proto;

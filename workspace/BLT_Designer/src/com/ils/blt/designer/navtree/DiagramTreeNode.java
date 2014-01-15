@@ -47,6 +47,8 @@ public class DiagramTreeNode extends FolderNode {
 	private ApplicationAction applicationAction = null;
 	private FamilyAction familyAction = null;
 	protected DiagramAction diagramAction = null;
+	protected ExportAction exportAction = null;
+	protected ImportAction importAction = null;
 	private final DiagramWorkspace workspace;
 	
 
@@ -132,14 +134,18 @@ public class DiagramTreeNode extends FolderNode {
 		}
 		else if( getDepth()==DIAGRAM_DEPTH) {
 			diagramAction = new DiagramAction();
+			importAction = new ImportAction();
 			menu.add(diagramAction);
+			menu.add(importAction);
 			menu.addSeparator();
 			addEditActions(menu);
 			
 		}
 		else {   // Depth == 2 and DIAGRAM_DEPTH==3
 			familyAction = new FamilyAction(this.folderId);
+			exportAction = new ExportAction();
 			menu.add(familyAction);
+			menu.add(exportAction);
 			menu.addSeparator();
 			addEditActions(menu);
 		}
@@ -289,7 +295,78 @@ public class DiagramTreeNode extends FolderNode {
 			}
 		}
 	}
-    
+    //  TODO: Need file chooser and export
+    private class ExportAction extends BaseAction {
+    	private static final long serialVersionUID = 1L;
+	    public ExportAction()  {
+	    	super(PREFIX+".ExportDiagram",IconUtil.getIcon("export1"));  // preferences
+	    }
+	    
+		public void actionPerformed(ActionEvent e) {
+			try {
+				final long newId = context.newResourceId();
+				String newName = BundleUtil.get().getString(PREFIX+".DefaultExportDiagramName");
+				if( newName==null) newName = "Exported Diag";  // Missing string resource
+				SerializableDiagram diagram = new SerializableDiagram();
+				diagram.setName(newName);
+				XMLSerializer serializer = context.createSerializer();
+				serializer.addObject(diagram);
+				byte[] bytes = serializer.serializeBinary(false);
+				log.debugf("%s: DiagramAction. export %s resource %d (%d bytes)",TAG,BLTProperties.MODEL_RESOURCE_TYPE,
+						newId,bytes.length);
+				ProjectResource resource = new ProjectResource(newId,
+						BLTProperties.MODULE_ID, BLTProperties.MODEL_RESOURCE_TYPE,
+						newName, ApplicationScope.GATEWAY, bytes);
+				resource.setParentUuid(getFolderId());
+				context.updateResource(resource);
+				selectChild(newId);
+				EventQueue.invokeLater(new Runnable() {
+					public void run() {
+						workspace.open(newId);
+					}
+				});
+			} 
+			catch (Exception err) {
+				ErrorUtil.showError(err);
+			}
+		}
+	}
+    //  TODO: Need file chooser and import
+    private class ImportAction extends BaseAction {
+    	private static final long serialVersionUID = 1L;
+	    public ImportAction()  {
+	    	super(PREFIX+".ImportDiagram",IconUtil.getIcon("import1"));  // preferences
+	    }
+	    
+		public void actionPerformed(ActionEvent e) {
+			try {
+				final long newId = context.newResourceId();
+				String newName = BundleUtil.get().getString(PREFIX+".DefaultImportDiagramName");
+				if( newName==null) newName = "Imported Diag";  // Missing string resource
+				SerializableDiagram diagram = new SerializableDiagram();
+				diagram.setName(newName);
+				XMLSerializer serializer = context.createSerializer();
+				serializer.addObject(diagram);
+				byte[] bytes = serializer.serializeBinary(false);
+				log.debugf("%s: DiagramAction. import %s resource %d (%d bytes)",TAG,BLTProperties.MODEL_RESOURCE_TYPE,
+						newId,bytes.length);
+				ProjectResource resource = new ProjectResource(newId,
+						BLTProperties.MODULE_ID, BLTProperties.MODEL_RESOURCE_TYPE,
+						newName, ApplicationScope.GATEWAY, bytes);
+				resource.setParentUuid(getFolderId());
+				context.updateResource(resource);
+				selectChild(newId);
+				EventQueue.invokeLater(new Runnable() {
+					public void run() {
+						workspace.open(newId);
+					}
+				});
+			} 
+			catch (Exception err) {
+				ErrorUtil.showError(err);
+			}
+		}
+	}
     /**
 	 * Search the project for all resources. This is for debugging.
 	 */

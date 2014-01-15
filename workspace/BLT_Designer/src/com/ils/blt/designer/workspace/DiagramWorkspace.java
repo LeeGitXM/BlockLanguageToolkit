@@ -46,7 +46,7 @@ import com.jidesoft.docking.DockContext;
 import com.jidesoft.docking.DockingManager;
 
 /**
- * A Diagnostics workspace is a container that occupies the DockManager workspace
+ * A Diagram workspace is a container that occupies the DockManager workspace
  * area. It, in turn, holds DiagnosticsFrames. These are internal frames designed
  * to hold a model diagram. 
  * 
