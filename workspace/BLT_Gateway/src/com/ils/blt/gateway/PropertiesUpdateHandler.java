@@ -71,8 +71,8 @@ public class PropertiesUpdateHandler   {
 	 * @param className
 	 * @return the instance created, else null
 	 */
-	private ProcessBlock createInstance(long projectId,long resourceId,String blockId,String className) {
-		log.debugf("%s: createInstance of %s (%d,%d,%d)",TAG,className,projectId,resourceId,blockId);   // Should be updated
+	private ProcessBlock createInstance(long projectId,long resourceId,UUID blockId,String className) {
+		log.debugf("%s: createInstance of %s (%d,%d,%s)",TAG,className,projectId,resourceId,blockId.toString());   // Should be updated
 		ProcessBlock block = null;
 		try {
 			Class<?> clss = Class.forName(className);
@@ -115,9 +115,11 @@ public class PropertiesUpdateHandler   {
 		if(block!=null) {
 			results = block.getProperties();
 		}
-		else {
-			//TODO create from python if appropriate
-			block = createInstance(projectId.longValue(),resourceId.longValue(),blockId.toString(),className);
+		else if(className.startsWith("app")) {
+			//TODO create from python 
+		}
+		else {		
+			block = createInstance(projectId.longValue(),resourceId.longValue(),blockId,className);
 			if(block!=null) {
 				results = block.getProperties();
 			}

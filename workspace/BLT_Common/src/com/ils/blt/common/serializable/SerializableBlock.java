@@ -48,5 +48,4 @@ public class SerializableBlock {
 			sa.setParentId(uuid);
 		}
 	}
-
 }

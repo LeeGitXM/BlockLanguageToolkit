@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import com.ils.block.common.AnchorDirection;
+import com.ils.block.common.BlockStyle;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableAnchorPoint;
 import com.ils.blt.common.serializable.SerializableBlock;
@@ -165,7 +167,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	// ====================== Serialization Helper Methods ===================
 	private SerializableAnchor convertAnchorToSerializable(AnchorDescriptor anchor,ProcessBlockView block) {
 		SerializableAnchor result = new SerializableAnchor();
-		result.setType(anchor.getType());
+		result.setDirection(anchor.getType()==AnchorType.Origin?AnchorDirection.OUTGOING:AnchorDirection.INCOMING);
 		result.setDisplay(anchor.getDisplay());
 		result.setId(anchor.getId());
 		result.setParentId(block.getId());
@@ -173,8 +175,8 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	}
 	private SerializableAnchorPoint convertAnchorPointToSerializable(AnchorPoint anchor) {
 		SerializableAnchorPoint result = new SerializableAnchorPoint();
-		if(anchor.isConnectorOrigin()) result.setType(AnchorType.Origin);
-		else result.setType(AnchorType.Terminus);
+		if(anchor.isConnectorOrigin()) result.setDirection(AnchorDirection.OUTGOING);
+		else result.setDirection(AnchorDirection.INCOMING);
 		result.setId(anchor.getId());
 		result.setParentId(anchor.getBlock().getId());
 		result.setAnchor(anchor.getAnchor());
@@ -186,6 +188,8 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		SerializableBlock result = new SerializableBlock();
 		result.setId(block.getId());
 		result.setClassName(block.getClassName());
+		result.setLabel(block.getLabel());
+		result.setStyle(block.getStyle());
 		result.setLocation(block.getLocation());
 		
 		List<SerializableAnchor> anchors = new ArrayList<SerializableAnchor>();
@@ -195,12 +199,18 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		result.setAnchors(anchors);
 		return result;
 	}
+	
 	private SerializableConnection convertConnectionToSerializable(Connection cxn) {
 		SerializableConnection result = new SerializableConnection();
-		result.setBeginBlock(cxn.getOrigin().getBlock().getId()); 
-		result.setEndBlock(cxn.getTerminus().getBlock().getId());
-		result.setBeginAnchor(convertAnchorPointToSerializable(cxn.getOrigin()));
-		result.setEndAnchor(convertAnchorPointToSerializable(cxn.getTerminus()));
+		if( cxn.getOrigin()!=null && cxn.getTerminus()!=null ) {	
+			result.setBeginBlock(cxn.getOrigin().getBlock().getId()); 
+			result.setEndBlock(cxn.getTerminus().getBlock().getId());
+			result.setBeginAnchor(convertAnchorPointToSerializable(cxn.getOrigin()));
+			result.setEndAnchor(convertAnchorPointToSerializable(cxn.getTerminus()));
+		}
+		else {
+			log.warnf("%s: convertConnectionToSerializable: connection missing terminus or origin (%s)",TAG,cxn.getClass().getName());
+		}
 		return result;
 	}
 	

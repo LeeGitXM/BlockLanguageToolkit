@@ -3,6 +3,7 @@ package com.ils.blt.common.serializable;
 
 import java.util.UUID;
 
+import com.ils.block.common.AnchorDirection;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
@@ -14,7 +15,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorT
  */
 public class SerializableAnchor {
 	private final static String TAG = "SerializableAnchor";
-	private AnchorType type;   // 0=>Origin, 1=>Terminus
+	private AnchorDirection direction;   // 0=>Origin, 1=>Terminus
 	private Object id = null;
 	private String display = null;
 	private UUID parentId = null;
@@ -24,12 +25,12 @@ public class SerializableAnchor {
 	}
 	
 	public Object getId() { return id; }
-	public AnchorType getType()   { return type; }
+	public AnchorDirection getDirection()   { return direction; }
 	public String getDisplay(){ return display; }
 	public UUID getParentId() { return parentId; }
 	
 	public void setId(Object identifier) { id=identifier; }
-	public void setType(AnchorType t)   { type=t; }
+	public void setDirection(AnchorDirection t)   { direction=t; }
 	public void setDisplay(String text){display=text; }
 	public void setParentId(UUID id) { parentId = id; };
 
@@ -51,7 +52,7 @@ public class SerializableAnchor {
 	
 	@Override
 	public String toString() {
-		return String.format("%s: %s (%s)",TAG,id.toString(),(type==AnchorType.Origin?"Origin":"Terminus"));
+		return String.format("%s: %s (%s)",TAG,id.toString(),(direction==AnchorDirection.INCOMING?"Incoming":"Outgoing"));
 	}
 
 }

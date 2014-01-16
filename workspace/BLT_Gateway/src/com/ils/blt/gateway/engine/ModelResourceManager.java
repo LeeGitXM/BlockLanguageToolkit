@@ -3,6 +3,7 @@
  */
 package com.ils.blt.gateway.engine;
 
+import java.io.Serializable;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
@@ -11,6 +12,7 @@ import java.util.UUID;
 import com.ils.block.ProcessBlock;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.SerializableDiagram;
+import com.ils.common.Introspector;
 import com.ils.connection.Connection;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.Project;
@@ -159,7 +161,7 @@ public class ModelResourceManager implements ProjectListener  {
 		ProcessDiagram diagram = null;
 		Hashtable<Long,ProcessDiagram> processDiagrams = models.get(projectId);
 		if( processDiagrams!=null ) {
-			ProcessDiagram dm = processDiagrams.get(resourceId);
+			diagram = processDiagrams.get(resourceId);
 		}
 		return diagram;
 	}
@@ -173,11 +175,10 @@ public class ModelResourceManager implements ProjectListener  {
 		List<ProjectResource> resources = project.getResources();
 		for (ProjectResource res : resources) {
 			if( res.getResourceType().equals(BLTProperties.MODEL_RESOURCE_TYPE)) {
-				log.infof("%s: projectUpdated: found model resource %s (%d)",TAG,res.getName(),res.getResourceId());
-				SerializableDiagram diagram = deserializeModelResource(res);
+				log.tracef("%s: projectUpdated: found model resource %s (%d)",TAG,res.getName(),res.getResourceId());
+				ProcessDiagram diagram = deserializeModelResource(projectId,res);
 				if( diagram!=null) {
-					ProcessDiagram dm = new ProcessDiagram(diagram,projectId,res.getResourceId());
-					addResource(new Long(projectId), new Long(res.getResourceId()), dm);
+					addResource(new Long(projectId), new Long(res.getResourceId()), diagram);
 				}
 				else {
 					log.warnf("%s: Failed to create DOM from resource",TAG);
@@ -187,17 +188,27 @@ public class ModelResourceManager implements ProjectListener  {
 	}
 
 	/**
-	 *  We've discovered a changed model resource. Deserialize and convert into a CommonDiagram.
+	 *  We've discovered a changed model resource. Deserialize and convert into a ProcessDiagram.
 	 * @param res
 	 */ 
-	private SerializableDiagram deserializeModelResource(ProjectResource res) {
+	private ProcessDiagram deserializeModelResource(long projId,ProjectResource res) {
 		byte[] serializedObj = res.getData();
-		SerializableDiagram diagram = null;
+		ProcessDiagram diagram = null;
 		try{
 			XMLDeserializer deserializer = context.createDeserializer();
 			DeserializationContext decon = deserializer.deserializeBinary(serializedObj);
 			Object obj = decon.getRootObjects().get(0);
-			if( obj instanceof SerializableDiagram) diagram = (SerializableDiagram)obj;
+			// Why doesn't instanceof work??
+			if( obj instanceof SerializableDiagram || obj.getClass().getName().equalsIgnoreCase("com.ils.blt.common.serializable.SerializableDiagram")) {
+				log.tracef("%s: deserializeModelResource: found serializable diagram",TAG);
+				Introspector ins = new Introspector(obj);
+				ins.log();
+				diagram = new ProcessDiagram((com.ils.blt.common.serializable.SerializableDiagram)obj,projId,res.getResourceId());
+			}
+			else {
+				log.warnf("%s: deserializeModelResource: unexpected root object (%s is not %s)",TAG,obj.getClass().getName(),
+						"com.ils.blt.common.serializable.SerializableDiagram");
+			}
 	
 		}
 		catch( Exception ex) {
@@ -219,15 +230,14 @@ public class ModelResourceManager implements ProjectListener  {
 			List<ProjectResource> resources = staging.getResources();
 			for( ProjectResource res:resources ) {
 				if( res.getResourceType().equalsIgnoreCase(BLTProperties.MODEL_RESOURCE_TYPE)) {
-					log.infof("%s: projectAdded - staging %s %d = %s", TAG,res.getName(),
+					log.debugf("%s: projectAdded - staging %s %d = %s", TAG,res.getName(),
 						res.getResourceId(),res.getResourceType());
-					SerializableDiagram diagram = deserializeModelResource(res);
+					ProcessDiagram diagram = deserializeModelResource(projectId,res);
 					if( diagram!=null) {
-						ProcessDiagram dm = new ProcessDiagram(diagram,projectId,res.getResourceId());
-						addResource(new Long(projectId), new Long(res.getResourceId()), dm);
+						addResource(new Long(projectId), new Long(res.getResourceId()), diagram);
 					}
 					else {
-						log.warnf("%s: Failed to create DOM from resource",TAG);
+						log.warnf("%s: projectAdded - Failed to create DOM from resource",TAG);
 					}
 				}
 			}
@@ -262,25 +272,24 @@ public class ModelResourceManager implements ProjectListener  {
 		// The "dirty" ones are the new ones ??
 		List<ProjectResource> resources = diff.getDirtyResources();
 		for( ProjectResource dres:resources ) {
-			log.infof("%s: projectUpdated - dirty %s %d = %s", TAG,dres.getName(),
+			log.debugf("%s: projectUpdated - dirty %s %d = %s", TAG,dres.getName(),
 					dres.getResourceId(),dres.getResourceType());
 			if( dres.getResourceType().equalsIgnoreCase(BLTProperties.MODEL_RESOURCE_TYPE)) {
-			log.infof("%s: projectUpdated - dirty %s %d = %s", TAG,dres.getName(),
+			log.debugf("%s: projectUpdated - dirty %s %d = %s", TAG,dres.getName(),
 					dres.getResourceId(),dres.getResourceType());
 			}
 		}
 		resources = diff.getResources();   // Do these include the dirty?
 		for( ProjectResource res:resources ) {
 			if( res.getResourceType().equalsIgnoreCase(BLTProperties.MODEL_RESOURCE_TYPE)) {
-				log.infof("%s: projectUpdated - updated %s %d = %s", TAG,res.getName(),
+				log.debugf("%s: projectUpdated - updated %s %d = %s", TAG,res.getName(),
 					res.getResourceId(),res.getResourceType());
-				SerializableDiagram diagram = deserializeModelResource(res);
+				ProcessDiagram diagram = deserializeModelResource(projectId,res);
 				if( diagram!=null) {
-					ProcessDiagram dm = new ProcessDiagram(diagram,projectId,res.getResourceId());
-					addResource(new Long(projectId), new Long(res.getResourceId()), dm);
+					addResource(new Long(projectId), new Long(res.getResourceId()), diagram);
 				}
 				else {
-					log.warnf("%s: Failed to create DOM from resource",TAG);
+					log.warnf("%s: projectUpdated - Failed to create DOM from resource",TAG);
 				}
 			}
 			

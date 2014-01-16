@@ -5,9 +5,7 @@ import java.awt.Point;
 import java.awt.Shape;
 import java.util.UUID;
 
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
-import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
+import com.ils.block.common.AnchorDirection;
 
 
 /**
@@ -16,7 +14,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorT
  */
 public class SerializableAnchorPoint {
 	private final static String TAG = "SerializableAnchorPoint";
-	private AnchorType type;   // 0=>Origin, 1=>Terminus
+	private AnchorDirection direction;   // 0=>Origin, 1=>Terminus
 	private Object id = null;
 	private UUID parentId = null;
 	private Point anchor;
@@ -27,14 +25,14 @@ public class SerializableAnchorPoint {
 	}
 	
 	public Object getId() { return id; }
-	public AnchorType getType()   { return type; }
+	public AnchorDirection getDirection()   { return direction; }
 	public UUID getParentId() { return parentId; }
 	public Point getAnchor() { return anchor; }
 	public Point getPathLeader() { return pathLeader; }
 	public Shape getHotSpot() { return hotSpot; }
 	
 	public void setId(Object identifier) { id=identifier; }
-	public void setType(AnchorType t)   { type=t; }
+	public void setDirection(AnchorDirection t)   { direction=t; }
 	public void setParentId(UUID id) { parentId = id; };
 	public void setAnchor(Point p) { anchor = p; }
 	public void setPathLeader(Point p) { pathLeader = p; }
@@ -43,7 +41,7 @@ public class SerializableAnchorPoint {
 	
 	@Override
 	public String toString() {
-		return String.format("%s: %s (%s)",TAG,id.toString(),(type==AnchorType.Origin?"Origin":"Terminus"));
+		return String.format("%s: %s (%s)",TAG,id.toString(),(direction==AnchorDirection.INCOMING?"Incoming":"Outgoing"));
 	}
 
 }

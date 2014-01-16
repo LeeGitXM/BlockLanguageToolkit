@@ -4,6 +4,7 @@ import java.awt.Point;
 import java.awt.Shape;
 import java.util.EnumSet;
 
+import com.ils.block.common.AnchorDirection;
 import com.ils.blt.common.serializable.SerializableAnchorPoint;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorPoint;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
@@ -20,7 +21,7 @@ public class ProcessAnchorView extends AnchorPoint {
 	}
 	
 	public ProcessAnchorView(ProcessBlockView block,SerializableAnchorPoint sap) {
-		super(sap.getId(),block,EnumSet.of(sap.getType()));
+		super(sap.getId(),block,EnumSet.of(sap.getDirection()==AnchorDirection.INCOMING?AnchorType.Terminus:AnchorType.Origin));
 		this.hotSpot = sap.getHotSpot();
 		this.anchor = sap.getAnchor();
 		this.pathLeader = sap.getPathLeader();		

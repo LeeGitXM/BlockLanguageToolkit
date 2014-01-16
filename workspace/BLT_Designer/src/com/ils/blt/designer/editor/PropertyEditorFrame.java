@@ -3,10 +3,13 @@
  */
 package com.ils.blt.designer.editor;
 
+import java.awt.BorderLayout;
 import java.util.List;
 
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -39,7 +42,6 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 	private final DiagramWorkspace workspace;
 	private final JPanel contentPanel;
 	
-
 	private LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	
 	
@@ -50,14 +52,9 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 		super(DOCKING_KEY, IconUtil.getRootIcon("delay_block_16.png"));  // Pinned icon
 		this.context = ctx;
 		this.workspace = workspace;
-		setTitle(TITLE);
-		setTabTitle(SHORT_TITLE);
 		workspace.addDesignableWorkspaceListener(new DiagramWorkspaceListener());
-
-		contentPanel = new JPanel(new MigLayout("fill"));
-		CodeEditor editor = CodeEditorFactory.newPythonEditor();
-		contentPanel.add(editor,"grow,push");
-		setContentPane(contentPanel);
+		contentPanel = new JPanel(new BorderLayout());
+		init();	
 	}
 
 
@@ -66,6 +63,19 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 		return DOCKING_KEY;
 	}
 
+	/** 
+	 * Initialize the UI components. The "master" version of the block's
+	 * properties resides in the gateway.
+	 */
+	private void init() {
+		setTitle(TITLE);
+		setTabTitle(SHORT_TITLE);
+		setSideTitle(SHORT_TITLE);
+		
+		setContentPane(contentPanel);
+		contentPanel.setBorder(BorderFactory.createEtchedBorder());
+	}
+	
 
 	@Override
 	public boolean isInitiallyVisible() {
@@ -77,15 +87,16 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 		public void itemSelectionChanged(List<JComponent> selections) {
 			if( selections!=null && selections.size()==1 ) {
 				JComponent selection = selections.get(0);
+				log.infof("%s: DiagramWorkspaceListener: selected a %s",TAG,selection.getClass().getName());
 				if( selection instanceof BlockComponent ) {
 					BlockComponent bc = ( BlockComponent)selection;
 					ProcessBlockView blk = (ProcessBlockView)bc.getBlock();
 					PropertyEditor editor = new PropertyEditor(context,workspace.getActiveDiagram().getResourceId(),blk);
-					contentPanel.add(editor,"grow,push");
+					contentPanel.removeAll();
+					//Create a scroll pane
+				    JScrollPane scrollPane = new JScrollPane(editor);
+					contentPanel.add(scrollPane,BorderLayout.CENTER);
 					return;
-				}
-				else {
-					log.infof("%s: DiagramWorkspaceListener: selected a %s",TAG,selection.getClass().getName());
 				}
 			}
 		}

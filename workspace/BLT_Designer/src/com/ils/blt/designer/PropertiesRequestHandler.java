@@ -60,11 +60,11 @@ public class PropertiesRequestHandler  {
 	 */
 	@SuppressWarnings("unchecked")
 	public List<BlockProperty> getBlockProperties(long projectId,long resourceId,UUID blockId,String className) {
-		log.infof(TAG+"%s: getBlockProperties: for block %s",TAG,blockId.toString());
+		log.infof("%s: getBlockProperties: for block %s (%s)",TAG,blockId.toString(),className);
 		List<BlockProperty> result = new ArrayList<BlockProperty>();
 		List<String> jsonList = new ArrayList<String>();
 		try {
-			jsonList = (List<String> )GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+			jsonList = (List<String>)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "getBlockProperties",new Long(projectId),new Long(resourceId),blockId.toString(),className);
 		}
 		catch(Exception ge) {
@@ -73,7 +73,7 @@ public class PropertiesRequestHandler  {
 				
 		if( jsonList!=null) {			
 			for( String json:jsonList ) {
-				log.tracef("%s getBlockProperties: %s",TAG,json);
+				log.tracef("%s: property: %s",TAG,json);
 				BlockProperty bp = BlockProperty.createProperty(json);
 				result.add(bp);
 			}

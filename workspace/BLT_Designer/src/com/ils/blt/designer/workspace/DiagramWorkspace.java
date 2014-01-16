@@ -7,6 +7,8 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.Transferable;
 import java.awt.geom.Path2D;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -51,7 +53,8 @@ import com.jidesoft.docking.DockingManager;
  * to hold a model diagram. 
  * 
  */
-public class DiagramWorkspace extends AbstractBlockWorkspace implements ResourceWorkspace{
+public class DiagramWorkspace extends AbstractBlockWorkspace 
+							  implements ResourceWorkspace, EditActionHandler {
 	private static final String TAG = "DiagramWorkspace";
 	private static final long serialVersionUID = 4627016159409031941L;
 	public static final String key = "BlockDiagramWorkspace";
@@ -89,9 +92,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace implements Resource
 		pef.setInitMode(DockContext.STATE_FRAMEDOCKED);
 		pef.setInitSide(DockContext.DOCK_SIDE_WEST);
 		pef.setInitIndex(10);
-		pef.setTitle("Title");
-		pef.setTabTitle("Title");
-		pef.setSideTitle("Title");
 		pef.putClientProperty("menu.text", "Diagram Property Editor");
 		frames.add(pef);
 	}
@@ -99,8 +99,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace implements Resource
 	
 	@Override
 	public EditActionHandler getEditActionHandler() {
-		// TODO Auto-generated method stub
-		return null;
+		return this;
 	}
 
 
@@ -259,10 +258,51 @@ public class DiagramWorkspace extends AbstractBlockWorkspace implements Resource
 			e.printStackTrace();
 		}
 	}
+	
+	// =========================================== Edit Action Handler ==============================================
+	@Override
+	public boolean canCopy() {
+		return false;
+	}
+
+
+	@Override
+	public boolean canDelete() {
+		return true;
+	}
+
+
+	@Override
+	public boolean canPaste(Clipboard arg0) {
+		return false;
+	}
+
+
+	@Override
+	public Transferable doCopy() {
+		return null;
+	}
+
+
+	@Override
+	public Transferable doCut() {
+		return null;
+	}
+
+
+	@Override
+	public void doDelete() {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	public void doPaste(Transferable arg0) {
+	}
+	
 	/**
-	 * 
-	 * @author chuckc
-	 *
+	 * Paint connections
 	 */
 	private class DiagramConnectionPainter extends ArrowConnectionPainter {
 		Stroke thin = new BasicStroke(2);
@@ -278,4 +318,5 @@ public class DiagramWorkspace extends AbstractBlockWorkspace implements Resource
 			super.paintConnection(g, cxn, route, selected, hover);
 		}
 	}
+	
 }

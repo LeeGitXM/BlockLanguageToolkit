@@ -1,11 +1,14 @@
 package com.ils.blt.designer.editor;
 
-import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -36,6 +39,13 @@ public class PropertyEditor extends JPanel {
 	private final LoggerEx log;
 	private final long projectId;
 	private final long resourceId;
+	private static final List<String> coreAttributeNames;
+	
+	// These are the attributes handled in the CorePropertyPanel
+	static {
+		coreAttributeNames = new ArrayList<String>();
+		coreAttributeNames.add("class");
+	}
 	
 	/**
 	 * @param view the designer version of the block to edit. We 
@@ -46,6 +56,7 @@ public class PropertyEditor extends JPanel {
 		this.resourceId = res;
 		this.block = view;
         this.log = LogUtil.getLogger(getClass().getPackage().getName());
+        
         init();    
 	}
 
@@ -55,25 +66,54 @@ public class PropertyEditor extends JPanel {
 	 * properties resides in the gateway.
 	 */
 	private void init() {
+		setLayout(new MigLayout("flowy,ins 2"));
+
+		
+		JPanel panel = new CorePropertyPanel(block);
+		add(panel,"grow,push");
+		
 		// Get the block attributes from the gateway. If this is a newly
 		// created block, the gateway will create it.
 		PropertiesRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
 		List<BlockProperty> properties = handler.getBlockProperties(projectId,resourceId,block.getId(),block.getClassName());
-		JPanel container = new JPanel(new MigLayout("flowy"));    // Container of a panel for each property
 		if( properties!=null ) {
 			for(BlockProperty property:properties) {
-				PropertyPanel panel = new PropertyPanel(property);
-				container.add(panel,"grow,push");
+				panel = new PropertyPanel(property);
+				if( !coreAttributeNames.contains(property.getName()) ) {
+					add(panel,"grow,push");
+				}
 			}
 		}
-		
-        
-
-        //Create the scroll pane and add the table to it.
-        JScrollPane scrollPane = new JScrollPane(container);
-        //Add the scroll pane to this panel.
-        add(scrollPane,BorderLayout.CENTER);
+		 
     }
+	
+	/**
+	 * Add a separator to a panel using Mig layout
+	 */
+	private void addSeparator(JPanel panel,String text) {
+		JSeparator separator = new JSeparator();
+        JLabel label = new JLabel(text);
+        label.setFont(new Font("Tahoma", Font.PLAIN, 11));
+        label.setForeground(Color.BLUE);
+        panel.add(label, "split 2,span");
+        panel.add(separator, "growx,wrap");
+	}
+	
+	/**
+	 * Create a new label
+	 */
+	private JLabel createLabel(String text) {
+		return new JLabel(text);
+	}
+	
+	/**
+	 * Create a new label
+	 */
+	private JTextField createTextField(String text,boolean editable) {
+		JTextField field = new JTextField(text);
+		field.setEditable(editable);
+		return field;
+	}
 	
 	/**
 	 * A property panel is an editor for a single property.
@@ -82,9 +122,30 @@ public class PropertyEditor extends JPanel {
 	private class PropertyPanel extends JPanel {
 		
 		public PropertyPanel(BlockProperty prop) {
-			setLayout(new MigLayout("fillx"));
-			JLabel name = new JLabel(prop.getName());
-			add(name,"wrap");
+			setLayout(new MigLayout("wrap 3"));     // 3 cells across
+			addSeparator(this,prop.getName());
+		}
+		
+	}
+	
+	/**
+	 * These properties are present in every block.
+	 * class, label, state, statusText
+	 */
+	@SuppressWarnings("serial")
+	private class CorePropertyPanel extends JPanel {
+		private static final String columnConstraints = "[para]0[][100lp,fill][60lp][95lp,fill]";
+		private static final String layoutConstraints = "ins 10";
+		private static final String rowConstraints = "";
+		
+		public CorePropertyPanel(ProcessBlockView blk) {
+			setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
+			addSeparator(this,"Core");
+			
+			add(createLabel("Class"),"skip");
+			add(createTextField(blk.getClassName(),false),"span,growx");
+			add(createLabel("UUID"),"skip");
+			add(createTextField(blk.getId().toString(),false),"span,growx");
 		}
 		
 	}

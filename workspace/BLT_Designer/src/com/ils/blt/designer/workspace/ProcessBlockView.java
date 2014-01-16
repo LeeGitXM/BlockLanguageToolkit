@@ -51,6 +51,8 @@ public class ProcessBlockView extends AbstractBlock {
 		uuid = UUID.randomUUID();
 		this.className = descriptor.getBlockClass();
 		this.label = descriptor.getLabel();
+		this.state = BlockState.STOPPED;
+		this.statusText = "";
 		this.style = descriptor.getStyle();
 		this.anchors = new ArrayList<AnchorDescriptor>();
 		for( AnchorPrototype ad:descriptor.getAnchors() ) {
@@ -58,19 +60,23 @@ public class ProcessBlockView extends AbstractBlock {
 			anchors.add( new AnchorDescriptor((ad.getAnchorDirection()==AnchorDirection.INCOMING?AnchorType.Terminus:AnchorType.Origin),
 					UUID.randomUUID(),ad.getName()) );
 		}
-		log.infof("%s: Created view by descriptor (%d anchors)", TAG, anchors.size());
+		log.infof("%s: Created %s (%s) view from descriptor (%d anchors)", TAG, className, style.toString(),anchors.size());
 	}
 	
 	public ProcessBlockView(SerializableBlock sb) {
 		this.uuid = sb.getId();
 		this.className = sb.getClassName();
+		this.style = sb.getStyle();
+		this.label = sb.getLabel();
+		this.state = BlockState.PAUSED;
+		this.statusText = sb.getStatusText();
 		this.anchors = new ArrayList<AnchorDescriptor>();
 		for( SerializableAnchor sa:sb.getAnchors() ) {
 			log.infof("%s: Creating anchor view %s", TAG,sa.getDisplay());
-			anchors.add( new AnchorDescriptor(sa.getType(),sa.getId(),sa.getDisplay()) );
+			anchors.add( new AnchorDescriptor((sa.getDirection()==AnchorDirection.INCOMING?AnchorType.Terminus:AnchorType.Origin),sa.getId(),sa.getDisplay()) );
 		}
 		this.location = sb.getLocation();
-		log.infof("%s: Created view by serializable block", TAG);
+		log.infof("%s: Created %s (%s) view from serializable block", TAG, className, style.toString());
 	}
 	
 	@Override
@@ -102,11 +108,18 @@ public class ProcessBlockView extends AbstractBlock {
 	public Point getLocation() {
 		return location;
 	}
+	@Override
+	public void setLocation(Point loc) {
+		location = loc;
+		fireBlockMoved();
+	}
 
 	public String getLabel() {return label;}
 	public void setLabel(String label) {this.label = label;}
 	public String getStatusText() { return statusText; }
 	public void setStatusText(String statusText) { this.statusText = statusText; }
+	public BlockStyle getStyle() { return style; }
+	public void setStyle(BlockStyle s) { this.style = s; }
 
 	@Override
 	public void initUI(BlockComponent blk) {
@@ -115,10 +128,5 @@ public class ProcessBlockView extends AbstractBlock {
 		ui.install(blk);
 	}
 
-	@Override
-	public void setLocation(Point loc) {
-		location = loc;
-		fireBlockMoved();
-		
-	}
+
 }
