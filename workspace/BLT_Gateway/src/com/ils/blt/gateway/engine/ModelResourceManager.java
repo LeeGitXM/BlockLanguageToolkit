@@ -8,11 +8,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.block.ProcessBlock;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.SerializableDiagram;
-import com.ils.common.Introspector;
-import com.ils.common.JsonToJava;
 import com.ils.connection.Connection;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.Project;
@@ -42,7 +41,6 @@ public class ModelResourceManager implements ProjectListener  {
 	private GatewayContext context = null;
 	private final LoggerEx log;
 	private final BlockExecutionController controller;
-	private final JsonToJava deserializer;
 	/** The diagrams are keyed by projectId, then resourceID */
 	private final Hashtable<Long,Hashtable<Long,ProcessDiagram>> models;
 	
@@ -57,7 +55,6 @@ public class ModelResourceManager implements ProjectListener  {
 		this.controller = c;
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		models = new Hashtable<Long,Hashtable<Long,ProcessDiagram>>();
-		deserializer = new JsonToJava();
 	}
 
 	
@@ -195,15 +192,19 @@ public class ModelResourceManager implements ProjectListener  {
 	 */ 
 	private ProcessDiagram deserializeModelResource(long projId,ProjectResource res) {
 		byte[] serializedObj = res.getData();
+		String json = new String(serializedObj);
+		log.infof("%s: deserializeModelResource: json = %s",TAG,json);
 		ProcessDiagram diagram = null;
 		try{
-			Object obj = deserializer.jsonToObject(new String(serializedObj),SerializableDiagram.class);
-			if( obj!=null && obj instanceof SerializableDiagram ) {
-				log.tracef("%s: deserializeModelResource: found serializable diagram",TAG);
-				diagram = new ProcessDiagram((com.ils.blt.common.serializable.SerializableDiagram)obj,projId,res.getResourceId());
+			ObjectMapper mapper = new ObjectMapper();
+	
+			SerializableDiagram sd = mapper.readValue(json, SerializableDiagram.class);
+			if( sd!=null ) {
+				log.infof("%s: deserializeModelResource: found serializable diagram",TAG);
+				diagram = new ProcessDiagram(sd,projId,res.getResourceId());
 			}
 			else {
-				log.warnf("%s: deserializeModelResource: unexpected root object (%s)",TAG,(obj==null?"null":obj.getClass().getName()));
+				log.warnf("%s: deserializeModelResource: deserialization failed",TAG);
 			}
 	
 		}
@@ -291,4 +292,5 @@ public class ModelResourceManager implements ProjectListener  {
 			
 		}
 	}
+	
 }

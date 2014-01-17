@@ -34,7 +34,7 @@
 	<path id="ExternalJar.classpath">
 		 <fileset dir="${basedir}/../../external/lib" includes="ils*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="commons-math3*.jar" />
-		 <fileset dir="${basedir}/../../external/lib" includes="gson-*.jar" />
+		 <fileset dir="${basedir}/../../external/lib" includes="jackson-*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="jgraphx-*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="jgx*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="block-def*.jar" />

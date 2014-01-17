@@ -10,6 +10,7 @@ import java.awt.Stroke;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.Transferable;
 import java.awt.geom.Path2D;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -17,13 +18,14 @@ import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.editor.PropertyEditorFrame;
-import com.ils.common.JavaToJson;
-import com.ils.common.JsonToJava;
 import com.inductiveautomation.ignition.client.designable.DesignableContainer;
-import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -58,9 +60,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	private static final long serialVersionUID = 4627016159409031941L;
 	public static final String key = "BlockDiagramWorkspace";
 	public static final String PREFIX = BLTProperties.BLOCK_PREFIX;
-	private final JsonToJava deserializer;
-	private final JavaToJson serializer;
+	 
 	private final DesignerContext context;
+	private final ObjectMapper mapper;
 	private Collection<ResourceWorkspaceFrame> frames;
 
 	private LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
@@ -70,8 +72,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 */
 	public DiagramWorkspace(DesignerContext ctx) {
 		this.context = ctx;
-		this.deserializer = new JsonToJava();
-		this.serializer = new JavaToJson();
+		this.mapper = new ObjectMapper();
 		initialize();
 	}
 
@@ -214,8 +215,21 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		else {
 			if( context.requestLock(resourceId) ) {
 				ProjectResource res = context.getProject().getResource(resourceId);
-
-				SerializableDiagram sd = (SerializableDiagram) deserializer.jsonToObject(new String(res.getData()),SerializableDiagram.class);
+				
+				String json = new String(res.getData());
+				SerializableDiagram sd = null;
+				try {
+					sd = mapper.readValue(json,SerializableDiagram.class);
+				} 
+				catch (JsonParseException jpe) {
+					log.warnf("%s: open parse exception (%s)",TAG,jpe.getLocalizedMessage());
+				} 
+				catch (JsonMappingException jme) {
+					log.warnf("%s: open mapping exception (%s)",TAG,jme.getLocalizedMessage());
+				} 
+				catch (IOException ioe) {
+					log.warnf("%s: open io exception (%s)",TAG,ioe.getLocalizedMessage());
+				}
 				ProcessDiagramView diagram = ProcessDiagramView.createDiagramView(res.getResourceId(),sd);
 				super.open(diagram);
 
@@ -242,11 +256,18 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	private void saveDiagram(BlockDesignableContainer c) {
 		ProcessDiagramView diagram = (ProcessDiagramView)c.getModel();
 		SerializableDiagram sd = diagram.createSerializableRepresentation();
-		byte[] bytes = serializer.objectToJson(sd).getBytes();
+		byte[] bytes = null;
 		long resid = c.getResourceId();
-		context.updateResource(resid, bytes);
+		try {
+			bytes = mapper.writeValueAsBytes(sd);
+			
+			context.updateResource(resid, bytes);
+		} 
+		catch (JsonProcessingException jpe) {
+			log.warnf("%s: saveDiagram processing exception (%s)",TAG,jpe.getLocalizedMessage());
+		}
+		
 		context.updateLock(resid);
-
 	}
 	
 	// =========================================== Edit Action Handler ==============================================

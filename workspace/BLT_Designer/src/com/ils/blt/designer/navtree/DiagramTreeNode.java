@@ -13,11 +13,12 @@ import java.util.UUID;
 import javax.swing.JPopupMenu;
 import javax.swing.tree.TreePath;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
-import com.ils.common.JavaToJson;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;
@@ -49,8 +50,7 @@ public class DiagramTreeNode extends FolderNode {
 	protected DiagramAction diagramAction = null;
 	protected ExportAction exportAction = null;
 	protected ImportAction importAction = null;
-	private final DiagramWorkspace workspace;
-	private final JavaToJson serializer;
+	private final DiagramWorkspace workspace; 
 	
 
 	/** 
@@ -59,7 +59,6 @@ public class DiagramTreeNode extends FolderNode {
 	 */
 	public DiagramTreeNode(DesignerContext ctx) {
 		super(ctx, BLTProperties.MODULE_ID, ApplicationScope.GATEWAY,BLTProperties.ROOT_FOLDER_UUID);
-		this.serializer = new JavaToJson();
 		workspace = ((BLTDesignerHook)ctx.getModule(BLTProperties.MODULE_ID)).getWorkspace();
 		setText(BundleUtil.get().getString(PREFIX+".RootFolderName"));
 		setIcon(IconUtil.getIcon("folder_closed"));
@@ -78,7 +77,7 @@ public class DiagramTreeNode extends FolderNode {
 	 */
 	public DiagramTreeNode(DesignerContext context,ProjectResource resource) {
 		super(context, resource);
-		serializer = new JavaToJson();
+
 		workspace = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getWorkspace();
 		setIcon(IconUtil.getIcon("folder_closed"));
 	}
@@ -205,6 +204,27 @@ public class DiagramTreeNode extends FolderNode {
 				.setSelectedContext(DiagramTreeNode.class);
 	}
 	
+	/**
+	 *  Serialize a diagram into JSON.
+	 * @param diagram to be serialized
+	 */ 
+	private String serializeDiagram(SerializableDiagram diagram) {
+		String json = "";
+		//final GsonBuilder gsonBuilder = new GsonBuilder();
+		
+		//gsonBuilder.registerTypeAdapter(SerializableDiag.class, new DiagramSerializer());
+		//gsonBuilder.setPrettyPrinting();
+		ObjectMapper mapper = new ObjectMapper();
+		log.infof("%s: serializeDiagram creating json ... %s",TAG,(mapper.canSerialize(SerializableDiagram.class)?"true":"false"));
+		try{ 
+		    json = mapper.writeValueAsString(diagram);
+		}
+		catch(JsonProcessingException jpe) {
+			log.warnf("%s: Unable to serialize diagram (%s)",TAG,jpe.getMessage());
+		}
+		log.infof("%s: serializeDiagram created json ... %s",TAG,json);
+		return json;
+	}
 	
 	// From the root node, recursively log the contents of the tree
 	private class DebugAction extends BaseAction {
@@ -276,9 +296,13 @@ public class DiagramTreeNode extends FolderNode {
 				if( newName==null) newName = "New Diag";  // Missing string resource
 				SerializableDiagram diagram = new SerializableDiagram();
 				diagram.setName(newName);
-		
 				log.infof("%s: new diagram action ...",TAG);
-				byte[] bytes = serializer.objectToJson(diagram).getBytes();
+
+				String json = serializeDiagram(diagram);
+			
+				
+				log.debugf("%s: DiagramAction. json=%s",TAG,json);
+				byte[] bytes = json.getBytes();
 				log.debugf("%s: DiagramAction. create new %s resource %d (%d bytes)",TAG,BLTProperties.MODEL_RESOURCE_TYPE,
 						newId,bytes.length);
 				ProjectResource resource = new ProjectResource(newId,
@@ -292,6 +316,7 @@ public class DiagramTreeNode extends FolderNode {
 						workspace.open(newId);
 					}
 				});
+				
 			} 
 			catch (Exception err) {
 				ErrorUtil.showError(err);
@@ -309,12 +334,15 @@ public class DiagramTreeNode extends FolderNode {
 			try {
 				final long newId = context.newResourceId();
 				String newName = BundleUtil.get().getString(PREFIX+".DefaultExportDiagramName");
+				log.infof("%s: export diagram action ...",TAG);
 				if( newName==null) newName = "Exported Diag";  // Missing string resource
 				SerializableDiagram diagram = new SerializableDiagram();
 				diagram.setName(newName);
 
-
-				byte[] bytes = serializer.objectToJson(diagram).getBytes();
+				String json = serializeDiagram(diagram);
+				
+				log.infof("%s: DiagramAction. json=%s",TAG,json);
+				byte[] bytes = json.getBytes();
 				log.debugf("%s: DiagramAction. export %s resource %d (%d bytes)",TAG,BLTProperties.MODEL_RESOURCE_TYPE,
 						newId,bytes.length);
 				ProjectResource resource = new ProjectResource(newId,
@@ -328,6 +356,7 @@ public class DiagramTreeNode extends FolderNode {
 						workspace.open(newId);
 					}
 				});
+		
 			} 
 			catch (Exception err) {
 				ErrorUtil.showError(err);
@@ -348,9 +377,10 @@ public class DiagramTreeNode extends FolderNode {
 				if( newName==null) newName = "Imported Diag";  // Missing string resource
 				SerializableDiagram diagram = new SerializableDiagram();
 				diagram.setName(newName);
-
-
-				byte[] bytes = serializer.objectToJson(diagram).getBytes();    
+				log.infof("%s: import diagram action ...",TAG);
+				String json = serializeDiagram(diagram);
+				log.debugf("%s: DiagramAction. json=%s",json);
+				byte[] bytes = json.getBytes();    
 				log.debugf("%s: DiagramAction. import %s resource %d (%d bytes)",TAG,BLTProperties.MODEL_RESOURCE_TYPE,
 						newId,bytes.length);
 				ProjectResource resource = new ProjectResource(newId,
