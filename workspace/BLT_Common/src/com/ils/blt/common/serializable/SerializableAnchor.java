@@ -6,7 +6,6 @@ import java.util.UUID;
 import com.ils.block.common.AnchorDirection;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
-import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
 
 
 /**

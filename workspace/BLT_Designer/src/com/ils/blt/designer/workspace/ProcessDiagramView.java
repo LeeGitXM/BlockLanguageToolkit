@@ -88,13 +88,13 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		for( ProcessBlockView blk:blockMap.values()) {
 			sblocks.add(convertBlockViewToSerializable(blk));
 		}
-		diagram.setBlocks(sblocks);
+		diagram.setBlocks(sblocks.toArray(new SerializableBlock[sblocks.size()]));
 		
 		List<SerializableConnection> scxns = new ArrayList<SerializableConnection>();
 		for( Connection cxn:connections) {
 			scxns.add(convertConnectionToSerializable(cxn));
 		}
-		diagram.setConnections(scxns);
+		diagram.setConnections(scxns.toArray(new SerializableConnection[scxns.size()]));
 		return diagram;
 	}
 
@@ -196,7 +196,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		for( AnchorDescriptor anchor:block.getAnchors()) {
 			anchors.add(convertAnchorToSerializable(anchor,block));
 		}
-		result.setAnchors(anchors);
+		result.setAnchors(anchors.toArray(new SerializableAnchor[anchors.size()]));
 		return result;
 	}
 	

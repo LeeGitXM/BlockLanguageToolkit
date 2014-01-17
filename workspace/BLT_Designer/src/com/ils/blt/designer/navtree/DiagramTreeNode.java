@@ -1,5 +1,5 @@
-/**
- *   (c) 2013  ILS Automation. All rights reserved.
+/**iagram
+ *   (c) 2013  ILS Automation. All rights reseiagramrved.
  *  
  *  Based on sample code provided by Inductive Automation.
  */
@@ -17,6 +17,7 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
+import com.ils.common.JavaToJson;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;
@@ -24,7 +25,6 @@ import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
-import com.inductiveautomation.ignition.common.xmlserialization.serialization.XMLSerializer;
 import com.inductiveautomation.ignition.designer.UndoManager;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
@@ -50,6 +50,7 @@ public class DiagramTreeNode extends FolderNode {
 	protected ExportAction exportAction = null;
 	protected ImportAction importAction = null;
 	private final DiagramWorkspace workspace;
+	private final JavaToJson serializer;
 	
 
 	/** 
@@ -58,6 +59,7 @@ public class DiagramTreeNode extends FolderNode {
 	 */
 	public DiagramTreeNode(DesignerContext ctx) {
 		super(ctx, BLTProperties.MODULE_ID, ApplicationScope.GATEWAY,BLTProperties.ROOT_FOLDER_UUID);
+		this.serializer = new JavaToJson();
 		workspace = ((BLTDesignerHook)ctx.getModule(BLTProperties.MODULE_ID)).getWorkspace();
 		setText(BundleUtil.get().getString(PREFIX+".RootFolderName"));
 		setIcon(IconUtil.getIcon("folder_closed"));
@@ -76,6 +78,7 @@ public class DiagramTreeNode extends FolderNode {
 	 */
 	public DiagramTreeNode(DesignerContext context,ProjectResource resource) {
 		super(context, resource);
+		serializer = new JavaToJson();
 		workspace = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getWorkspace();
 		setIcon(IconUtil.getIcon("folder_closed"));
 	}
@@ -273,9 +276,9 @@ public class DiagramTreeNode extends FolderNode {
 				if( newName==null) newName = "New Diag";  // Missing string resource
 				SerializableDiagram diagram = new SerializableDiagram();
 				diagram.setName(newName);
-				XMLSerializer serializer = context.createSerializer();
-				serializer.addObject(diagram);
-				byte[] bytes = serializer.serializeBinary(false);
+		
+				log.infof("%s: new diagram action ...",TAG);
+				byte[] bytes = serializer.objectToJson(diagram).getBytes();
 				log.debugf("%s: DiagramAction. create new %s resource %d (%d bytes)",TAG,BLTProperties.MODEL_RESOURCE_TYPE,
 						newId,bytes.length);
 				ProjectResource resource = new ProjectResource(newId,
@@ -309,9 +312,9 @@ public class DiagramTreeNode extends FolderNode {
 				if( newName==null) newName = "Exported Diag";  // Missing string resource
 				SerializableDiagram diagram = new SerializableDiagram();
 				diagram.setName(newName);
-				XMLSerializer serializer = context.createSerializer();
-				serializer.addObject(diagram);
-				byte[] bytes = serializer.serializeBinary(false);
+
+
+				byte[] bytes = serializer.objectToJson(diagram).getBytes();
 				log.debugf("%s: DiagramAction. export %s resource %d (%d bytes)",TAG,BLTProperties.MODEL_RESOURCE_TYPE,
 						newId,bytes.length);
 				ProjectResource resource = new ProjectResource(newId,
@@ -345,9 +348,9 @@ public class DiagramTreeNode extends FolderNode {
 				if( newName==null) newName = "Imported Diag";  // Missing string resource
 				SerializableDiagram diagram = new SerializableDiagram();
 				diagram.setName(newName);
-				XMLSerializer serializer = context.createSerializer();
-				serializer.addObject(diagram);
-				byte[] bytes = serializer.serializeBinary(false);
+
+
+				byte[] bytes = serializer.objectToJson(diagram).getBytes();    
 				log.debugf("%s: DiagramAction. import %s resource %d (%d bytes)",TAG,BLTProperties.MODEL_RESOURCE_TYPE,
 						newId,bytes.length);
 				ProjectResource resource = new ProjectResource(newId,

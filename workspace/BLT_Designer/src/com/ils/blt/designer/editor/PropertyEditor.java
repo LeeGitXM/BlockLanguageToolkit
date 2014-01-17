@@ -120,9 +120,11 @@ public class PropertyEditor extends JPanel {
 	 */
 	@SuppressWarnings("serial")
 	private class PropertyPanel extends JPanel {
-		
+		private static final String columnConstraints = "[para]0[][100lp,fill][60lp][95lp,fill]";
+		private static final String layoutConstraints = "ins 10";
+		private static final String rowConstraints = "";
 		public PropertyPanel(BlockProperty prop) {
-			setLayout(new MigLayout("wrap 3"));     // 3 cells across
+			setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));     // 3 cells across
 			addSeparator(this,prop.getName());
 		}
 		

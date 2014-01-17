@@ -3,7 +3,6 @@
  */
 package com.ils.blt.gateway.engine;
 
-import java.io.Serializable;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
@@ -13,6 +12,7 @@ import com.ils.block.ProcessBlock;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.common.Introspector;
+import com.ils.common.JsonToJava;
 import com.ils.connection.Connection;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.Project;
@@ -20,8 +20,6 @@ import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.project.ProjectVersion;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
-import com.inductiveautomation.ignition.common.xmlserialization.deserialization.DeserializationContext;
-import com.inductiveautomation.ignition.common.xmlserialization.deserialization.XMLDeserializer;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 import com.inductiveautomation.ignition.gateway.project.ProjectListener;
 
@@ -44,6 +42,7 @@ public class ModelResourceManager implements ProjectListener  {
 	private GatewayContext context = null;
 	private final LoggerEx log;
 	private final BlockExecutionController controller;
+	private final JsonToJava deserializer;
 	/** The diagrams are keyed by projectId, then resourceID */
 	private final Hashtable<Long,Hashtable<Long,ProcessDiagram>> models;
 	
@@ -58,6 +57,7 @@ public class ModelResourceManager implements ProjectListener  {
 		this.controller = c;
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		models = new Hashtable<Long,Hashtable<Long,ProcessDiagram>>();
+		deserializer = new JsonToJava();
 	}
 
 	
@@ -189,25 +189,21 @@ public class ModelResourceManager implements ProjectListener  {
 
 	/**
 	 *  We've discovered a changed model resource. Deserialize and convert into a ProcessDiagram.
+	 *  Note: We had difficulty with the Ignition XML serializer because it didn't handle Java generics;
+	 *        thus the use of GSON. The returned object was not an instanceof...
 	 * @param res
 	 */ 
 	private ProcessDiagram deserializeModelResource(long projId,ProjectResource res) {
 		byte[] serializedObj = res.getData();
 		ProcessDiagram diagram = null;
 		try{
-			XMLDeserializer deserializer = context.createDeserializer();
-			DeserializationContext decon = deserializer.deserializeBinary(serializedObj);
-			Object obj = decon.getRootObjects().get(0);
-			// Why doesn't instanceof work??
-			if( obj instanceof SerializableDiagram || obj.getClass().getName().equalsIgnoreCase("com.ils.blt.common.serializable.SerializableDiagram")) {
+			Object obj = deserializer.jsonToObject(new String(serializedObj),SerializableDiagram.class);
+			if( obj!=null && obj instanceof SerializableDiagram ) {
 				log.tracef("%s: deserializeModelResource: found serializable diagram",TAG);
-				Introspector ins = new Introspector(obj);
-				ins.log();
 				diagram = new ProcessDiagram((com.ils.blt.common.serializable.SerializableDiagram)obj,projId,res.getResourceId());
 			}
 			else {
-				log.warnf("%s: deserializeModelResource: unexpected root object (%s is not %s)",TAG,obj.getClass().getName(),
-						"com.ils.blt.common.serializable.SerializableDiagram");
+				log.warnf("%s: deserializeModelResource: unexpected root object (%s)",TAG,(obj==null?"null":obj.getClass().getName()));
 			}
 	
 		}

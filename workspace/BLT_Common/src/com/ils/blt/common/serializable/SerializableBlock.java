@@ -1,8 +1,6 @@
 package com.ils.blt.common.serializable;
 
 import java.awt.Point;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import com.ils.block.common.BlockState;
@@ -10,7 +8,8 @@ import com.ils.block.common.BlockStyle;
 
 /**
  * Implement a plain-old-java-object representing a process block
- * that is serializable via the Ignition XML serializer.
+ * that is serializable via the Ignition XML or GSON serializers.
+ * Use arrays instead of Java-generics lists to make this serializable.
  */
 public class SerializableBlock {
 	private Point location = null;
@@ -20,11 +19,11 @@ public class SerializableBlock {
 	private String label;
 	private String statusText;
 	private BlockState state;
-	private List<SerializableAnchor> anchors = null;
+	private SerializableAnchor[] anchors = null;
 	
 	public SerializableBlock() {
 		this.location = new Point(0,0);
-		this.anchors = new ArrayList<SerializableAnchor>();
+		this.anchors = new SerializableAnchor[0];
 	}
 	
 	public String getClassName() {return className;}
@@ -41,9 +40,9 @@ public class SerializableBlock {
 	public BlockState getState() { return state; }
 	public void setState(BlockState state) { this.state = state; }
 	public void setStyle(BlockStyle style) { this.style = style; }
-	public List<SerializableAnchor> getAnchors() { return anchors; }
-	public void setAnchors(List<SerializableAnchor> list) {
-		anchors=list;
+	public SerializableAnchor[] getAnchors() { return anchors; }
+	public void setAnchors(SerializableAnchor[] array) {
+		anchors = array;
 		for(SerializableAnchor sa:anchors) {
 			sa.setParentId(uuid);
 		}

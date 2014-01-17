@@ -20,6 +20,8 @@ import javax.swing.JPopupMenu;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.editor.PropertyEditorFrame;
+import com.ils.common.JavaToJson;
+import com.ils.common.JsonToJava;
 import com.inductiveautomation.ignition.client.designable.DesignableContainer;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;
@@ -27,9 +29,6 @@ import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.common.xmlserialization.SerializationException;
-import com.inductiveautomation.ignition.common.xmlserialization.deserialization.DeserializationContext;
-import com.inductiveautomation.ignition.common.xmlserialization.deserialization.XMLDeserializer;
-import com.inductiveautomation.ignition.common.xmlserialization.serialization.XMLSerializer;
 import com.inductiveautomation.ignition.designer.blockandconnector.AbstractBlockWorkspace;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
@@ -59,6 +58,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	private static final long serialVersionUID = 4627016159409031941L;
 	public static final String key = "BlockDiagramWorkspace";
 	public static final String PREFIX = BLTProperties.BLOCK_PREFIX;
+	private final JsonToJava deserializer;
+	private final JavaToJson serializer;
 	private final DesignerContext context;
 	private Collection<ResourceWorkspaceFrame> frames;
 
@@ -69,6 +70,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 */
 	public DiagramWorkspace(DesignerContext ctx) {
 		this.context = ctx;
+		this.deserializer = new JsonToJava();
+		this.serializer = new JavaToJson();
 		initialize();
 	}
 
@@ -211,16 +214,11 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		else {
 			if( context.requestLock(resourceId) ) {
 				ProjectResource res = context.getProject().getResource(resourceId);
-				XMLDeserializer des = context.createDeserializer();
-				try {
-					DeserializationContext desctx =  des.deserialize(res.getData());
-					SerializableDiagram sd = (SerializableDiagram)desctx.getRootObjects().get(0);
-					ProcessDiagramView diagram = ProcessDiagramView.createDiagramView(res.getResourceId(),sd);
-					super.open(diagram);
-				}
-				catch(SerializationException se) {
-					ErrorUtil.showError(se);
-				}
+
+				SerializableDiagram sd = (SerializableDiagram) deserializer.jsonToObject(new String(res.getData()),SerializableDiagram.class);
+				ProcessDiagramView diagram = ProcessDiagramView.createDiagramView(res.getResourceId(),sd);
+				super.open(diagram);
+
 			}
 		}
 	}
@@ -244,19 +242,11 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	private void saveDiagram(BlockDesignableContainer c) {
 		ProcessDiagramView diagram = (ProcessDiagramView)c.getModel();
 		SerializableDiagram sd = diagram.createSerializableRepresentation();
-		XMLSerializer ser = context.createSerializer();
-		ser.addObject(sd);
+		byte[] bytes = serializer.objectToJson(sd).getBytes();
+		long resid = c.getResourceId();
+		context.updateResource(resid, bytes);
+		context.updateLock(resid);
 
-		try {
-			byte[] bytes = ser.serializeBinary(false);
-			long resid = c.getResourceId();
-			context.updateResource(resid, bytes);
-			context.updateLock(resid);
-		} 
-		catch (SerializationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 	
 	// =========================================== Edit Action Handler ==============================================
