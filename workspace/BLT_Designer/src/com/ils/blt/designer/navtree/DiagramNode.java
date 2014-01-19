@@ -103,7 +103,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 		return DiagramWorkspace.key;
 	}
 	@Override
-	public boolean isEditActionHandler() {return false;}
+	public boolean isEditActionHandler() {return true;}
 	@Override
 	public boolean isEditable() {return true;}
 	
@@ -167,19 +167,19 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 	}
 	/**
 	 * The updates that we are interested in are:
-	 *    1) Addition of a DTProperties.MODEL_RESOURCE_TYPE with same parent as this.
+	 *    1) Addition of a BLTProperties.MODEL_RESOURCE_TYPE with same parent as this.
 	 *    2) Resource name change, we change ours to keep in sync.
 	 */
 	@Override
 	public void projectResourceModified(ProjectResource res,ResourceModification changeType) {
-		log.debug(TAG+"projectModified: "+res.getResourceId()+" "+res.getResourceType()+" "+res.getModuleId()+" ("+res.getName()+
+		log.debug(TAG+": projectModified: "+res.getResourceId()+" "+res.getResourceType()+" "+res.getModuleId()+" ("+res.getName()+
 				":"+res.getParentUuid()+")");
 		if (res.getResourceId() == resourceId
 				&& changeType != ResourceModification.Deleted) {
-			log.info(TAG+"projectResourceModified, setting name/italic + refreshing");
+			log.infof("%s: projectResourceModified, setting name/italic + refreshing",TAG);
 			setName(res.getName());
 			setItalic(true);
-			refresh();
+			refresh();    // Updates the tree model
 		}
 	}
 }

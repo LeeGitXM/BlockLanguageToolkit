@@ -2,9 +2,13 @@ package com.ils.blt.designer.editor;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
@@ -13,6 +17,8 @@ import javax.swing.JTextField;
 import net.miginfocom.swing.MigLayout;
 
 import com.ils.block.common.BlockProperty;
+import com.ils.block.common.BindingType;
+import com.ils.block.common.PropertyType;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.PropertiesRequestHandler;
@@ -63,7 +69,7 @@ public class PropertyEditor extends JPanel {
 	
 	/** 
 	 * Initialize the UI components. The "master" version of the block's
-	 * properties resides in the gateway.
+	 * properties resides in the gateway. 
 	 */
 	private void init() {
 		setLayout(new MigLayout("flowy,ins 2"));
@@ -72,20 +78,20 @@ public class PropertyEditor extends JPanel {
 		JPanel panel = new CorePropertyPanel(block);
 		add(panel,"grow,push");
 		
-		// Get the block attributes from the gateway. If this is a newly
-		// created block, the gateway will create it.
+		// The Gateway knows the current state of a block and all its attributes. 
+		// Always refresh the block attributes from the Gateway before display.
+		
 		PropertiesRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
-		List<BlockProperty> properties = handler.getBlockProperties(projectId,resourceId,block.getId(),block.getClassName());
-		if( properties!=null ) {
-			for(BlockProperty property:properties) {
-				panel = new PropertyPanel(property);
-				if( !coreAttributeNames.contains(property.getName()) ) {
-					add(panel,"grow,push");
-				}
-			}
+		BlockProperty[] properties = handler.getBlockProperties(projectId,resourceId,block.getId(),block.getClassName());
+		
+		Collection<BlockProperty> bpList = new ArrayList<BlockProperty>();
+		for(BlockProperty property:properties) {
+			bpList.add(property);
+			panel = new PropertyPanel(property);
+			add(panel,"grow,push");
 		}
-		 
-    }
+		block.setProperties(bpList);
+	}
 	
 	/**
 	 * Add a separator to a panel using Mig layout
@@ -107,13 +113,84 @@ public class PropertyEditor extends JPanel {
 	}
 	
 	/**
-	 * Create a new label
+	 * Create a text field for read-only values
 	 */
-	private JTextField createTextField(String text,boolean editable) {
-		JTextField field = new JTextField(text);
-		field.setEditable(editable);
+	private JTextField createTextField(String text) {	
+		final JTextField field = new JTextField(text);
+		field.setEditable(false);
 		return field;
 	}
+	
+	/**
+	 * Create a text box for the link field
+	 */
+	private JTextField createLinkTextField(final BlockProperty prop) {
+		String val = prop.getBinding();
+		if(val==null) val = "";
+		final JTextField field = new JTextField(val);
+		field.setEditable(prop.isEditible());
+		field.addActionListener(new ActionListener() {
+	        public void actionPerformed(ActionEvent e){
+	            prop.setBinding(field.getText());
+	        }
+		});
+		return field;
+	}
+	/**
+	 * Create a text box for the value field
+	 */
+	private JTextField createValueTextField(final BlockProperty prop) {	
+		Object val = prop.getValue();
+		if(val==null) val = "";
+		final JTextField field = new JTextField(val.toString());
+		field.setEditable(prop.isEditible());
+		field.addActionListener(new ActionListener() {
+	        public void actionPerformed(ActionEvent e){
+	            prop.setValue(field.getText());
+	        }
+		});
+		return field;
+	}
+	
+	/**
+	 * Create a combo box for data types
+	 */
+	private JComboBox createPropertyTypeCombo(final BlockProperty prop) {
+		String[] entries = new String[PropertyType.values().length];
+		int index=0;
+		for(PropertyType type : PropertyType.values()) {
+			entries[index]=type.name();
+			index++;
+		}
+		final JComboBox box = new JComboBox(entries);
+		box.addActionListener(new ActionListener() {
+	        public void actionPerformed(ActionEvent e){
+	            prop.setValue(box.getSelectedItem().toString());
+	        }
+		});
+		box.setSelectedItem(prop.getType());
+		return box;
+	}
+	/**
+	 * Create a combo box for link types
+	 */
+	private JComboBox createLinkTypeCombo(final BlockProperty prop) {
+		String[] entries = new String[BindingType.values().length];
+		int index=0;
+		for(BindingType type : BindingType.values()) {
+			entries[index]=type.name();
+			index++;
+		}
+		final JComboBox box = new JComboBox(entries);
+		box.addActionListener(new ActionListener() {
+	        public void actionPerformed(ActionEvent e){
+	            prop.setValue(box.getSelectedItem().toString());
+	        }
+		});
+		box.setSelectedItem(prop.getBinding());
+		return box;
+	}
+	
 	
 	/**
 	 * A property panel is an editor for a single property.
@@ -126,6 +203,13 @@ public class PropertyEditor extends JPanel {
 		public PropertyPanel(BlockProperty prop) {
 			setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));     // 3 cells across
 			addSeparator(this,prop.getName());
+			
+			add(createLabel("Value"),"skip");
+			add(createValueTextField(prop),"");
+			add(createPropertyTypeCombo(prop),"wrap");
+			add(createLabel("Binding"),"skip");
+			add(createLinkTextField(prop),"");
+			add(createLinkTypeCombo(prop),"wrap");
 		}
 		
 	}
@@ -145,9 +229,9 @@ public class PropertyEditor extends JPanel {
 			addSeparator(this,"Core");
 			
 			add(createLabel("Class"),"skip");
-			add(createTextField(blk.getClassName(),false),"span,growx");
+			add(createTextField(blk.getClassName()),"span,growx");
 			add(createLabel("UUID"),"skip");
-			add(createTextField(blk.getId().toString(),false),"span,growx");
+			add(createTextField(blk.getId().toString()),"span,growx");
 		}
 		
 	}

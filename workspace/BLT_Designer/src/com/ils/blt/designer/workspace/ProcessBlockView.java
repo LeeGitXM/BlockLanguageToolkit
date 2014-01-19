@@ -6,9 +6,10 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 
-import com.ils.block.common.AnchorPrototype;
 import com.ils.block.common.AnchorDirection;
+import com.ils.block.common.AnchorPrototype;
 import com.ils.block.common.BlockDescription;
+import com.ils.block.common.BlockProperty;
 import com.ils.block.common.BlockState;
 import com.ils.block.common.BlockStyle;
 import com.ils.blt.common.serializable.SerializableAnchor;
@@ -34,10 +35,11 @@ public class ProcessBlockView extends AbstractBlock {
 	private static final String TAG = "ProcessBlockView";
 	private final UUID uuid;
 	private final String className;
-	private String label;                          // Text to display on the block
+	private String label;                         // Text to display on the block
 	private BlockState state = BlockState.IDLE;   // Block execution state
 	private String statusText;                    // Auxiliary text to display
 	private Collection<AnchorDescriptor> anchors;
+	private Collection<BlockProperty> properties;
 	private Point location = new Point(0,0);
 	private final UIFactory factory = new UIFactory() ;
 	private BlockViewUI ui = null;
@@ -60,6 +62,7 @@ public class ProcessBlockView extends AbstractBlock {
 			anchors.add( new AnchorDescriptor((ad.getAnchorDirection()==AnchorDirection.INCOMING?AnchorType.Terminus:AnchorType.Origin),
 					UUID.randomUUID(),ad.getName()) );
 		}
+		this.properties = new ArrayList<BlockProperty>();
 		log.infof("%s: Created %s (%s) view from descriptor (%d anchors)", TAG, className, style.toString(),anchors.size());
 	}
 	
@@ -71,11 +74,18 @@ public class ProcessBlockView extends AbstractBlock {
 		this.state = BlockState.PAUSED;
 		this.statusText = sb.getStatusText();
 		this.anchors = new ArrayList<AnchorDescriptor>();
-		for( SerializableAnchor sa:sb.getAnchors() ) {
-			log.infof("%s: Creating anchor view %s", TAG,sa.getDisplay());
-			anchors.add( new AnchorDescriptor((sa.getDirection()==AnchorDirection.INCOMING?AnchorType.Terminus:AnchorType.Origin),sa.getId(),sa.getDisplay()) );
+		if(sb.getAnchors()!=null ) {
+			for( SerializableAnchor sa:sb.getAnchors() ) {
+				log.infof("%s: Creating anchor view %s", TAG,sa.getDisplay());
+				anchors.add( new AnchorDescriptor((sa.getDirection()==AnchorDirection.INCOMING?AnchorType.Terminus:AnchorType.Origin),sa.getId(),sa.getDisplay()) );
+			}
 		}
-		this.location = sb.getLocation();
+		if(sb.getProperties()!=null ) {
+			for(BlockProperty bp:sb.getProperties()) {
+				properties.add(bp);
+			} 
+		}
+		this.location = new Point(sb.getX(),sb.getY());
 		log.infof("%s: Created %s (%s) view from serializable block", TAG, className, style.toString());
 	}
 	
@@ -86,6 +96,8 @@ public class ProcessBlockView extends AbstractBlock {
 	}
 	
 	public Collection<AnchorDescriptor> getAnchors() { return anchors; }
+	public Collection<BlockProperty> getProperties() { return properties; }
+	public void setProperties(Collection<BlockProperty> props) { this.properties = props; }
 	public String getClassName() { return className; }
 
 	@Override
@@ -93,6 +105,7 @@ public class ProcessBlockView extends AbstractBlock {
 		return ui.getAnchorPoints();
 	}
 
+	/** Simply return the first in the list. */
 	@Override
 	public AnchorPoint getDefaultDropAnchor() {
 		return ui.getAnchorPoints().iterator().next();
@@ -127,6 +140,4 @@ public class ProcessBlockView extends AbstractBlock {
 		ui = factory.getUI(style, this);
 		ui.install(blk);
 	}
-
-
 }

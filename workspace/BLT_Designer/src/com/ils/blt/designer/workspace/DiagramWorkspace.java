@@ -73,6 +73,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	public DiagramWorkspace(DesignerContext ctx) {
 		this.context = ctx;
 		this.mapper = new ObjectMapper();
+		this.
 		initialize();
 	}
 
@@ -103,7 +104,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	
 	@Override
 	public EditActionHandler getEditActionHandler() {
-		return this;
+		return null;
 	}
 
 
@@ -158,14 +159,14 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
 	@Override
 	public void onActivation() {
-		// TODO Auto-generated method stub
+		log.infof("%s: onActivation",TAG);
 		
 	}
 
 
 	@Override
 	public void onDeactivation() {
-		// TODO Auto-generated method stub
+		log.infof("%s: onDeactivation",TAG);
 		
 	}
 
@@ -209,6 +210,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 	
 	public void open (long resourceId) {
+		log.infof("%s: open - already open (%s)",TAG,(isOpen(resourceId)?"true":"false"));
 		if(isOpen(resourceId) ) {
 			open(findDesignableContainer(resourceId));
 		}
@@ -217,6 +219,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				ProjectResource res = context.getProject().getResource(resourceId);
 				
 				String json = new String(res.getData());
+				log.debugf("%s: open - diagram = %s",TAG,json);
 				SerializableDiagram sd = null;
 				try {
 					sd = mapper.readValue(json,SerializableDiagram.class);
@@ -238,29 +241,33 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 	
 	public void close (long resourceId) {
+		log.infof("%s: close resource %d",TAG,resourceId);
 		super.close(findDesignableContainer(resourceId));
 	}
 	
 	@Override
 	protected void onClose(DesignableContainer container) {
+		log.infof("%s: onClose",TAG);
 		saveDiagram((BlockDesignableContainer)container);
 		context.releaseLock(container.getResourceId());
 	}
 	
 	public void saveOpenDiagrams() {
+		log.infof("%s: saveOpenDiagrams",TAG);
 		for(DesignableContainer dc:openContainers.keySet()) {
 			saveDiagram((BlockDesignableContainer)dc);
 		}
 	}
 	
 	private void saveDiagram(BlockDesignableContainer c) {
+		log.infof("%s: saveDiagram",TAG);
 		ProcessDiagramView diagram = (ProcessDiagramView)c.getModel();
 		SerializableDiagram sd = diagram.createSerializableRepresentation();
 		byte[] bytes = null;
 		long resid = c.getResourceId();
 		try {
 			bytes = mapper.writeValueAsBytes(sd);
-			
+			log.debugf("%s: save - diagram = %s",TAG,new String(bytes));
 			context.updateResource(resid, bytes);
 		} 
 		catch (JsonProcessingException jpe) {

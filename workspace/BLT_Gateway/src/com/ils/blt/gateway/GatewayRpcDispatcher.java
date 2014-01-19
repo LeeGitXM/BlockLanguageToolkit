@@ -3,18 +3,21 @@
  */
 package com.ils.blt.gateway;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.UUID;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.block.ProcessBlock;
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.block.common.BlockProperty;
 import com.ils.block.common.PalettePrototype;
 import com.ils.common.ClassList;
-import com.ils.common.JavaToJson;
-import com.ils.common.JsonToJava;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
@@ -29,8 +32,6 @@ public class GatewayRpcDispatcher   {
 	private static String TAG = "GatewayRpcDispatcher";
 	private final LoggerEx log;
 	private final GatewayContext context;
-	private final JsonToJava jsonToJava;
-	private final JavaToJson javaToJson;
 
 	/**
 	 * Constructor. There is a separate dispatcher for each project.
@@ -38,8 +39,7 @@ public class GatewayRpcDispatcher   {
 	public GatewayRpcDispatcher(GatewayContext cntx) {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.context = cntx;
-		this.jsonToJava = new JsonToJava();
-		this.javaToJson = new JavaToJson();
+
 	}
 
 
@@ -80,18 +80,39 @@ public class GatewayRpcDispatcher   {
 	}
 	
 
+	/**
+	 * Deserialize the incoming defaults, add/update from model, re-serialize.
+	 * @param proj
+	 * @param res
+	 * @param connectionId
+	 * @param json
+	 * @return
+	 */
 	public String getConnectionAttributes(Long proj, Long res,String connectionId,String json) {
 		long projectId = proj.longValue();
 		long resourceId = res.longValue();
 		log.debugf("%s: getConnectionAttributes: %d:%d:%s =\n%s",TAG,projectId,resourceId,connectionId,json);
 		
 		@SuppressWarnings("unchecked")
-		Hashtable<String,Hashtable<String,String>> attributeTable = (Hashtable<String,Hashtable<String,String>>)jsonToJava.jsonToTable(json);
-		Hashtable<String,Hashtable<String,String>> results = PropertiesUpdateHandler.getInstance().getConnectionAttributes(projectId,resourceId,connectionId,attributeTable);
-		log.debugf("%s: created table = %s",TAG,results);
-		String gson =  javaToJson.tableToJson(results);
-		log.trace(TAG+": JSON="+gson);
-		return gson;
+		ObjectMapper mapper = new ObjectMapper();
+		Hashtable<String, Hashtable<String, String>> attributeTable;
+		try {
+			attributeTable = mapper.readValue(json, new TypeReference<Hashtable<String,Hashtable<String,String>>>(){});
+			Hashtable<String,Hashtable<String,String>> results = PropertiesUpdateHandler.getInstance().getConnectionAttributes(projectId,resourceId,connectionId,attributeTable);
+			log.debugf("%s: created table = %s",TAG,results);
+			json =  mapper.writeValueAsString(results);
+			log.debugf("%s: JSON=%s",TAG,json);
+		} 
+		catch (JsonParseException jpe) {
+			log.warnf("%s: getConnectionAttributes: parsing exception (%s)",TAG,jpe.getLocalizedMessage());
+		} 
+		catch (JsonMappingException jme) {
+			log.warnf("%s: getConnectionAttributes: mapping exception(%s)",TAG,jme.getLocalizedMessage());
+		} 
+		catch (IOException ioe) {
+			log.warnf("%s: getConnectionAttributes: io exception(%s)",TAG,ioe.getLocalizedMessage());
+		}
+		return json;
 	}
 
 

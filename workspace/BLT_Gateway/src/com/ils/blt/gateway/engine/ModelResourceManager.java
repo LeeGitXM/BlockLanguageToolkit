@@ -187,7 +187,7 @@ public class ModelResourceManager implements ProjectListener  {
 	/**
 	 *  We've discovered a changed model resource. Deserialize and convert into a ProcessDiagram.
 	 *  Note: We had difficulty with the Ignition XML serializer because it didn't handle Java generics;
-	 *        thus the use of GSON. The returned object was not an instanceof...
+	 *        thus the use of JSON. The returned object was not an instanceof...
 	 * @param res
 	 */ 
 	private ProcessDiagram deserializeModelResource(long projId,ProjectResource res) {

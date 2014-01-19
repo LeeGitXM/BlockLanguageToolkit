@@ -59,9 +59,9 @@ public class PropertiesRequestHandler  {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public List<BlockProperty> getBlockProperties(long projectId,long resourceId,UUID blockId,String className) {
+	public BlockProperty[] getBlockProperties(long projectId,long resourceId,UUID blockId,String className) {
 		log.infof("%s: getBlockProperties: for block %s (%s)",TAG,blockId.toString(),className);
-		List<BlockProperty> result = new ArrayList<BlockProperty>();
+		BlockProperty[] result = null;
 		List<String> jsonList = new ArrayList<String>();
 		try {
 			jsonList = (List<String>)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
@@ -71,12 +71,19 @@ public class PropertiesRequestHandler  {
 			log.infof("%s: getBlockProperties: GatewayException (%s)",TAG,ge.getMessage());
 		}
 				
-		if( jsonList!=null) {			
+		if( jsonList!=null) {
+			result = new BlockProperty[jsonList.size()];
+			int index = 0;
 			for( String json:jsonList ) {
 				log.tracef("%s: property: %s",TAG,json);
 				BlockProperty bp = BlockProperty.createProperty(json);
-				result.add(bp);
+				result[index]=bp;
+				index++;
 			}
+		}
+		else 
+		{
+			result = new BlockProperty[0];
 		}
 		return result;
 	}

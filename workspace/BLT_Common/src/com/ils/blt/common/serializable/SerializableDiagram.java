@@ -4,9 +4,9 @@ package com.ils.blt.common.serializable;
 
 /**
  * Implement a plain-old-java-object representing a model diagram
- * that is serializable via the Ignition XML serializer.
+ * that is serializable via a XML or JSON serializer.
  * 
- * The POJO objects should have no behavior.
+ * This POJO objects should have no behavior.
  */
 public class SerializableDiagram {
 	private SerializableBlock[] blocks;
@@ -25,5 +25,5 @@ public class SerializableDiagram {
 
 	public void setBlocks(SerializableBlock[] list) { blocks=list; }
 	public void setConnections(SerializableConnection[] list) { connections=list; }
-	public void setName(String nam) { name=nam; }
+	public void setName(String nam) { if(nam!=null) name=nam; }
 }

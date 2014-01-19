@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.common.AnchorDirection;
-import com.ils.block.common.BlockStyle;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableAnchorPoint;
 import com.ils.blt.common.serializable.SerializableBlock;
@@ -46,24 +45,31 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	public static ProcessDiagramView createDiagramView(long resid,SerializableDiagram diagram) {
 		ProcessDiagramView diagramView = new ProcessDiagramView(resid,diagram.getName());
 		HashMap<UUID,ProcessBlockView> blockMap = new HashMap<UUID,ProcessBlockView>();
+
 		for( SerializableBlock sb:diagram.getBlocks()) {
 			ProcessBlockView pbv = new ProcessBlockView(sb);
 			blockMap.put(sb.getId(), pbv);
 			diagramView.addBlock(pbv);
 		}
-		
+
 		for( SerializableConnection scxn:diagram.getConnections() ) {
 			SerializableAnchorPoint a = scxn.getBeginAnchor();
 			SerializableAnchorPoint b = scxn.getEndAnchor();
-			ProcessBlockView blocka = blockMap.get(a.getParentId());
-			ProcessBlockView blockb = blockMap.get(b.getParentId());
-			if( blocka!=null && blockb!=null) {
-				AnchorPoint origin = new ProcessAnchorView(blocka,a);
-				AnchorPoint terminus = new ProcessAnchorView(blockb,b);
-				diagramView.addConnection(origin,terminus);   // AnchorPoints
+			if( a!=null && b!=null ) {
+				ProcessBlockView blocka = blockMap.get(a.getParentId());
+				ProcessBlockView blockb = blockMap.get(b.getParentId());
+				if( blocka!=null && blockb!=null) {
+					AnchorPoint origin = new ProcessAnchorView(blocka,a);
+					AnchorPoint terminus = new ProcessAnchorView(blockb,b);
+					diagramView.addConnection(origin,terminus);   // AnchorPoints
+				}
+
+				else {
+					log.warnf("%s: createDiagramView: Failed to find block for anchor point %s or %s",TAG,a,b);
+				}
 			}
 			else {
-				log.warnf("%s: createDiagramView: Failed to find block for anchor point %s or %s",TAG,a,b);
+				log.warnf("%s: createDiagramView: Connection %s has no anchor points",TAG,scxn.toString());
 			}
 		}	
 		return diagramView;
@@ -179,9 +185,11 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		else result.setDirection(AnchorDirection.INCOMING);
 		result.setId(anchor.getId());
 		result.setParentId(anchor.getBlock().getId());
-		result.setAnchor(anchor.getAnchor());
-		result.setHotSpot(anchor.getHotSpot());
-		result.setPathLeader(anchor.getPathLeader());
+		result.setAnchorX(anchor.getAnchor().x);
+		result.setAnchorY(anchor.getAnchor().y);
+		result.setHotSpot(anchor.getHotSpot().getBounds());
+		result.setPathLeaderX(anchor.getPathLeader().x);
+		result.setPathLeaderY(anchor.getPathLeader().y);
 		return result;
 	}
 	private SerializableBlock convertBlockViewToSerializable(ProcessBlockView block) {
@@ -190,7 +198,8 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		result.setClassName(block.getClassName());
 		result.setLabel(block.getLabel());
 		result.setStyle(block.getStyle());
-		result.setLocation(block.getLocation());
+		result.setX(block.getLocation().x);
+		result.setY(block.getLocation().y);
 		
 		List<SerializableAnchor> anchors = new ArrayList<SerializableAnchor>();
 		for( AnchorDescriptor anchor:block.getAnchors()) {

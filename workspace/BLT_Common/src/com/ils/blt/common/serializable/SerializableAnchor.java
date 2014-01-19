@@ -10,7 +10,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 /**
  * Implement a plain-old-java-object representing an anchor point
- * that is serializable via the Ignition XML serializer.
+ * that is serializable via a XML or JSON serializer.
  */
 public class SerializableAnchor {
 	private final static String TAG = "SerializableAnchor";

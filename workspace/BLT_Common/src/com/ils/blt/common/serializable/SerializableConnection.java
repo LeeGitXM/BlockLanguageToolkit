@@ -4,7 +4,7 @@ import java.util.UUID;
 
 /**
  * Implement a plain-old-java-object representing a connection
- * that is serializable via the Ignition XML serializer.
+ * that is serializable via a XML or JSON serializer.
  */
 public class SerializableConnection {
 	private UUID beginBlock = null;

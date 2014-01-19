@@ -210,10 +210,6 @@ public class DiagramTreeNode extends FolderNode {
 	 */ 
 	private String serializeDiagram(SerializableDiagram diagram) {
 		String json = "";
-		//final GsonBuilder gsonBuilder = new GsonBuilder();
-		
-		//gsonBuilder.registerTypeAdapter(SerializableDiag.class, new DiagramSerializer());
-		//gsonBuilder.setPrettyPrinting();
 		ObjectMapper mapper = new ObjectMapper();
 		log.infof("%s: serializeDiagram creating json ... %s",TAG,(mapper.canSerialize(SerializableDiagram.class)?"true":"false"));
 		try{ 

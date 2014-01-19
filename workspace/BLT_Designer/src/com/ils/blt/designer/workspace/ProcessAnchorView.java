@@ -1,6 +1,7 @@
 package com.ils.blt.designer.workspace;
 
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Shape;
 import java.util.EnumSet;
 
@@ -22,9 +23,9 @@ public class ProcessAnchorView extends AnchorPoint {
 	
 	public ProcessAnchorView(ProcessBlockView block,SerializableAnchorPoint sap) {
 		super(sap.getId(),block,EnumSet.of(sap.getDirection()==AnchorDirection.INCOMING?AnchorType.Terminus:AnchorType.Origin));
-		this.hotSpot = sap.getHotSpot();
-		this.anchor = sap.getAnchor();
-		this.pathLeader = sap.getPathLeader();		
+		this.hotSpot = new Rectangle(sap.getHotSpotX(),sap.getHotSpotY(),sap.getHotSpotWidth(),sap.getHotSpotHeight());
+		this.anchor = new Point(sap.getAnchorX(),sap.getAnchorY());
+		this.pathLeader = new Point(sap.getPathLeaderX(),sap.getPathLeaderY());		
 	}
 
 	@Override

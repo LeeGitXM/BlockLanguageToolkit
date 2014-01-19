@@ -67,12 +67,14 @@ public class GraphicsScriptFunctions  {
 
 		mxSwingConstants.SHADOW_COLOR = Color.LIGHT_GRAY;
 		mxConstants.W3C_SHADOWCOLOR = "#D3D3D3";
-
-		JgxPalette editor = new JgxPalette();
 		JFrame frame = new JFrame("Block Palette");
+/*
+		JgxPalette editor = new JgxPalette();
+		
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		editor.setPreferredSize(new Dimension(870,640));
 		frame.getContentPane().add(editor,BorderLayout.CENTER);
+		*/
 		frame.pack();
 		frame.setVisible(true);
 	}
