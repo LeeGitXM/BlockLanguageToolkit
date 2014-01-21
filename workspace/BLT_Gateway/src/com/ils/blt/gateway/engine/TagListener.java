@@ -11,9 +11,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.ils.block.ProcessBlock;
+import com.ils.block.common.BindingType;
 import com.ils.block.common.BlockConstants;
 import com.ils.block.common.BlockProperty;
-import com.ils.block.control.NewValueNotification;
+import com.ils.block.control.ValueChangeNotification;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.sqltags.model.Tag;
 import com.inductiveautomation.ignition.common.sqltags.model.TagPath;
@@ -31,7 +32,7 @@ import com.inductiveautomation.ignition.gateway.sqltags.SQLTagsManager;
  *  whenever a tag value changes, the collector posts a change notice
  *  task directly to the block for which it is a listening proxy.
  */
-public class DataCollector implements TagChangeListener   {
+public class TagListener implements TagChangeListener   {
 	private static final String TAG = "DataCollector";
 
 	private final LoggerEx log;
@@ -44,7 +45,7 @@ public class DataCollector implements TagChangeListener   {
 	 * Constructor: 
 	 * @param ctxt
 	 */
-	public DataCollector(GatewayContext ctxt) {
+	public TagListener(GatewayContext ctxt) {
 		this.context = ctxt;
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.blockMap = new Hashtable<String,ProcessBlock>();
@@ -55,47 +56,44 @@ public class DataCollector implements TagChangeListener   {
 	 * Start a subscription for a block attribute. The subject attribute must be
 	 * one associated with a tag.
 	 */
-	public void startSubscription(ProcessBlock block,String propertyName) {
-		BlockProperty property = block.getProperty(propertyName);
-		if( property!=null ) {
-			String tagPath = property.getValue().toString();
-			if( tagPath!=null) {
-				SQLTagsManager tmgr = context.getTagManager();
-				try {
-					TagPath tp = TagPathParser.parse(tagPath);
-					log.debugf("%s: startSubscription: for tag path %s",TAG,tp.toStringFull());
-					// Make sure the attribute is in canonical form
-					property.setValue( tp.toStringFull());
-					// Initialize the value in this data point
-					Tag tag = tmgr.getTag(tp);
-					if( tag!=null ) {
-						QualifiedValue value = tag.getValue();
-						log.debugf("%s: startSubscription: got a %s value for %s (%s at %s)",TAG,
-								(tag.getValue().getQuality().isGood()?"GOOD":"BAD"),
-								tag.getName(),tag.getValue().getValue(),
-								dateFormatter.format(tag.getValue().getTimestamp()));
-						NewValueNotification notification = new NewValueNotification(block,propertyName,value);
-						executor.execute(new PropertyChangeEvaluationTask(notification));
-					}
-					blockMap.put(tp.toStringFull(), block);
-					tmgr.subscribe(tp, this);
+	public void startSubscription(ProcessBlock block,BlockProperty property) {
+		if( block==null || property==null ) return;
+		
+		String tagPath = property.getBinding();
+		if( tagPath!=null &&  property.getBindingType()==BindingType.TAG) {
+			if( blockMap.get(tagPath) !=null ) return;    // We already have a subscription
+			SQLTagsManager tmgr = context.getTagManager();
+			try {
+				TagPath tp = TagPathParser.parse(tagPath);
+				log.debugf("%s: startSubscription: for tag path %s",TAG,tp.toStringFull());
+				// Make sure the attribute is in canonical form
+				property.setBinding( tp.toStringFull());
+				// Initialize the value in this data point
+				Tag tag = tmgr.getTag(tp);
+				if( tag!=null ) {
+					QualifiedValue value = tag.getValue();
+					log.debugf("%s: startSubscription: got a %s value for %s (%s at %s)",TAG,
+							(tag.getValue().getQuality().isGood()?"GOOD":"BAD"),
+							tag.getName(),tag.getValue().getValue(),
+							dateFormatter.format(tag.getValue().getTimestamp()));
+					ValueChangeNotification notification = new ValueChangeNotification(block,property.getName(),value);
+					executor.execute(new PropertyChangeEvaluationTask(notification));
 				}
-				catch(IOException ioe) {
-					log.error(TAG+"startSubscription ("+ioe.getMessage()+")");
-				}
-				catch(IllegalArgumentException iae) {
-					log.error(TAG+"startSubscription ("+iae.getMessage()+")");
-				}
+				blockMap.put(tp.toStringFull(), block);
+				tmgr.subscribe(tp, this);
 			}
-			else {
-				log.warnf("%s: startSubscription: tagPath %s for property %s not found",TAG,tagPath,propertyName);
+			catch(IOException ioe) {
+				log.error(TAG+"startSubscription ("+ioe.getMessage()+")");
+			}
+			catch(IllegalArgumentException iae) {
+				log.error(TAG+"startSubscription ("+iae.getMessage()+")");
 			}
 		}
 		else {
-			log.warnf("%s: startSubscription: property %s not found",TAG,propertyName);
+			log.warnf("%s: startSubscription: tagPath %s for property %s not found",TAG,tagPath,property.getName());
 		}
-		
 	}
+
 	/**
 	 * Stop a subscription based on a tag path.
 	 * 
@@ -157,7 +155,7 @@ public class DataCollector implements TagChangeListener   {
 				if( block!=null ) {
 					String propertyName = getPropertyForTagpath(block,tp.toStringFull());
 					if( propertyName != null ) {
-						NewValueNotification notification = new NewValueNotification(block,propertyName,tag.getValue());
+						ValueChangeNotification notification = new ValueChangeNotification(block,propertyName,tag.getValue());
 						executor.execute(new PropertyChangeEvaluationTask(notification));
 					}
 					

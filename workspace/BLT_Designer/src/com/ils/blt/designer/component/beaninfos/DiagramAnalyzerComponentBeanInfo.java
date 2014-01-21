@@ -14,7 +14,6 @@ import javax.swing.ImageIcon;
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
-import com.inductiveautomation.ignition.designer.gui.IconUtil;
 
 
 /**

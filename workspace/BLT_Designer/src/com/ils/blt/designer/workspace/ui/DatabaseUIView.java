@@ -1,6 +1,5 @@
 package com.ils.blt.designer.workspace.ui;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -9,7 +8,6 @@ import java.awt.Rectangle;
 
 import javax.swing.Icon;
 
-import com.ils.block.common.BlockConstants;
 import com.ils.blt.designer.workspace.BasicAnchorPoint;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.inductiveautomation.ignition.designer.blockandconnector.blockui.AnchorDescriptor;

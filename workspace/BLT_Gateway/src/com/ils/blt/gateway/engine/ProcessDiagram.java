@@ -3,21 +3,26 @@
  */
 package com.ils.blt.gateway.engine;
 
-import java.util.Hashtable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
-import org.w3c.dom.Element;
-
 import com.ils.block.ProcessBlock;
-import com.ils.block.control.NewValueNotification;
+import com.ils.block.control.ValueChangeNotification;
+import com.ils.blt.common.serializable.SerializableBlock;
+import com.ils.blt.common.serializable.SerializableConnection;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.connection.Connection;
+import com.ils.connection.ProcessConnection;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 /**
- * The diagram model is the "model" that encapsulates the structure of the blocks and connections
+ * This diagram is the "model" that encapsulates the structure of the blocks and connections
  * of a ProcessDiagramView as viewed in the Designer.
  *  
  * This class provides answers to questions that the model control may ask about "what's next?".  
@@ -32,9 +37,9 @@ public class ProcessDiagram {
 	private boolean valid = false;
 	private final long projectId;
 	private final long resourceId;
-	private final Hashtable<UUID,ProcessBlock> blocks;
-	private final Hashtable<String,Connection> connections;   // Key by connection number
-	private final Hashtable<String,Connection> connectionsBySource;   // Key by source:port
+	private final Map<UUID,ProcessBlock> blocks;
+	private final Map<ConnectionKey,ProcessConnection> connections;              // Key by connection number
+	private final Map<BlockPort,List<ProcessConnection>> outgoingConnections;    // Key by upstream block:port
 	
 	
 	/**
@@ -47,63 +52,66 @@ public class ProcessDiagram {
 		this.projectId = proj;
 		this.resourceId = res;
 		log = LogUtil.getLogger(getClass().getPackage().getName());
-		blocks = new Hashtable<UUID,ProcessBlock>();
-		connections = new Hashtable<String,Connection>();
-		connectionsBySource = new Hashtable<String,Connection>();
+		blocks = new HashMap<UUID,ProcessBlock>();
+		connections = new HashMap<ConnectionKey,ProcessConnection>();
+		outgoingConnections = new HashMap<BlockPort,List<ProcessConnection>>();
 		analyze(diagram);
 	}
 	
-	public ProcessBlock getBlock(UUID uuid) { return blocks.get(uuid); }
+	public ProcessBlock getBlock(String id) { return blocks.get(id); }
+	
+	public Collection<ProcessBlock> getProcessBlocks() { return blocks.values(); }
 	
 	/**
 	 * Analyze the diagram for nodes.
 	 */
 	private void analyze(SerializableDiagram diagram) {
-		log.debugf("%s: analyze ....%d:%d",TAG,projectId,resourceId);
-		/*
-		Node root = doc.getDocumentElement();
-		if( root!=null && root.getNodeName().equalsIgnoreCase("mxGraphModel")) {
-			// The next node is a gratuitous root
-			root = root.getFirstChild();
-			if( root!=null && root.getNodeType()==Node.ELEMENT_NODE) {
-				NodeList cells = ((Element)root).getElementsByTagName("mxCell");
-				Node node = null;
-				Element cell = null;
-				for( int index=0;index<cells.getLength();index++) {
-					node = cells.item(index);
-					if( node.getNodeType()==Node.ELEMENT_NODE) {
-						cell = (Element)node;
-						if( !cell.getAttribute("vertex").isEmpty()) {
-							String id = cell.getAttribute("id");
-							if( !id.isEmpty() ) {
-								log.debugf("%s: analyze adding block %s",TAG,id);
-								ProcessBlock block = blockFromElement(cell);
-								if( block!=null ) {
-									blocks.put(id, block);
-								}
-							}
-						}
-						else if( !cell.getAttribute("edge").isEmpty()) {
-							String source = cell.getAttribute("source");
-							if( !source.isEmpty() ) {
-								log.debugf("%s: analyze adding connection from %s",TAG,source);
-								Connection cxn = connectionFromElement(cell);
-								if( cxn!=null) {
-									String key = String.format("%s:%s",source,cxn.getUpstreamPortName());
-									connectionsBySource.put(key, cxn);
-									String id = cell.getAttribute("id");
-									if( !id.isEmpty() ) {
-										connections.put(id, cxn);
-									}
-								}
-							}
-						}
-					}
-				}
+		log.debugf("%s: analyze %s ....%d:%d",TAG,diagram.getName(),projectId,resourceId);
+		
+		BlockFactory blockFactory = BlockFactory.getInstance();
+		ConnectionFactory connectionFactory = ConnectionFactory.getInstance();
+		
+		// Update the blocks
+		SerializableBlock[] sblks = diagram.getBlocks();
+		for( SerializableBlock sb:sblks ) {
+			UUID id = sb.getId();
+			ProcessBlock pb = blocks.get(id);
+			if( pb==null ) {
+				pb = blockFactory.blockFromSerializable(projectId,resourceId,sb);
 			}
- 		
+			else {
+				blockFactory.updateBlockFromSerializable(pb,sb);
+			}
 		}
-			*/
+		// Update the connections
+		SerializableConnection[] scxns = diagram.getConnections();
+		for( SerializableConnection sc:scxns ) {
+
+			ConnectionKey cxnkey = new ConnectionKey(sc.getBeginBlock().toString(),sc.getBeginAnchor().getId().toString(),
+					                             sc.getEndBlock().toString(),sc.getEndAnchor().getId().toString());
+			ProcessConnection pc = connections.get(cxnkey);
+			if( pc==null ) {
+				pc = connectionFactory.connectionFromSerializable(sc);
+			}
+			else {
+				connectionFactory.updateConnectionFromSerializable(pc,sc);
+			}
+			// Add the connection to the map. The block-port is for the upstream block
+			ProcessBlock upstreamBlock = blocks.get(pc.getSource());
+			if( upstreamBlock!=null ) {
+				BlockPort key = new BlockPort(upstreamBlock,pc.getUpstreamPortName());
+				List<ProcessConnection> connections = outgoingConnections.get(key);
+				if( connections==null ) {
+					connections = new ArrayList<ProcessConnection>();
+					outgoingConnections.put(key, connections);
+				}
+				connections.add(pc);
+			}
+			else {
+				log.warnf("%s: analyze: Source block not found for connection",TAG);
+			}
+		}
+		
 	}
 
 	/**
@@ -112,31 +120,73 @@ public class ProcessDiagram {
 	public Connection getConnection(String id) { return connections.get(id); }
 	
 	/**
-	 * The subject block has just placed a new result on an output port. Determine which input block
-	 * and port, if any, is connected to the output. There is, at most one. A null return indicates no downstream connection.
+	 * We have just received a notification of a value change. Determine which blocks are connected downstream,
+	 * and create notifications for each.
+	 * An empty return indicates no downstream connection.
 	 * @param new value notification of an incoming change
-	 * @return a new value notification for the downstream block
+	 * @return a new value notification for the downstream block(s)
 	 */
-	public NewValueNotification getValueUpdate(NewValueNotification incoming) {
+	public Collection<ValueChangeNotification> getOutgoingNotifications(ValueChangeNotification incoming) {
 		ProcessBlock block = incoming.getBlock();
 		String port = incoming.getPort();
 		QualifiedValue value = incoming.getValue();
 		
-		NewValueNotification nvn = null;
-		String key = String.format("%s:%s",String.valueOf(block.getBlockId()),port);
-		Connection cxn = connections.get(key);
-		if( cxn!=null ) {
-			//ProcessBlock blk = BlockExecutionController.getInstance().getBlock(cxn.getSource());
-			//if( blk!=null) {
-			//	nvn = new NewValueNotification(blk,cxn.getUpstreamPortName(),value);
-			//}	
+		Collection<ValueChangeNotification>notifications = new ArrayList<ValueChangeNotification>();
+		BlockPort key = new BlockPort(block,port);
+		List<ProcessConnection> cxns = outgoingConnections.get(key);
+		if( cxns!=null ) {
+			for(ProcessConnection cxn:cxns) {
+				UUID blockId = cxn.getTarget();
+				ProcessBlock blk = blocks.get(blockId);
+				if( blk!=null ) {
+					ValueChangeNotification vcn = new ValueChangeNotification(blk,cxn.getDownstreamPortName(),value);
+					notifications.add(vcn);
+				}
+				else {
+					log.warnf("%s: ValueChangeNotification: Target block %s not found for connection",TAG,blockId.toString());
+				}
+
+			}
 		}
-		
-		return nvn;
+		return notifications;
 	}
 	
 	/**
 	 * Report on whether or not the DOM contained more than one connected node.
 	 */
 	public boolean isValid() { return valid; }
+	
+	/**
+	 * Class for keyed storage of downstream block,port for a connection.
+	 */
+	private class BlockPort {
+		private final String port;
+		private final ProcessBlock block;
+		public BlockPort(ProcessBlock block,String port) {
+			this.port = port;
+			this.block = block;
+		}
+		public String getPort() { return this.port; }
+		public ProcessBlock getBlock() { return this.block; }
+	}
+	/**
+	 * The key is the block Ids and port names for both source and target.
+	 */
+	private class ConnectionKey {
+		private final String sourceBlock;
+		private final String sourcePort;
+		private final String targetBlock;
+		private final String targetPort;
+		
+		public ConnectionKey(String sb,String sp,String tb,String tp) {
+			this.sourceBlock = sb;
+			this.sourcePort = sp;
+			this.targetBlock = tb;
+			this.targetPort = tp;
+		}
+		public String getSourcePort()  { return this.sourcePort; }
+		public String getSourceBlock() { return this.sourceBlock; }
+		public String getTargetPort()  { return this.targetPort; }
+		public String getTargetBlock() { return this.targetBlock; }
+	}
 }

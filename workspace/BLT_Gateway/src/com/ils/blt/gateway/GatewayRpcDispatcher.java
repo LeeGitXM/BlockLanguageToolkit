@@ -63,12 +63,12 @@ public class GatewayRpcDispatcher   {
 	public List<String> getBlockProperties(Long projectId,Long resourceId,String blockId,String className) {
 		log.infof("%s: getBlockProperties: %d:%d %s",TAG,projectId.longValue(),resourceId.longValue(),blockId);
 		
-		Hashtable<String,BlockProperty> propertyTable = PropertiesUpdateHandler.getInstance().
+		BlockProperty[] propertyArray = PropertiesUpdateHandler.getInstance().
 					getBlockProperties(projectId,resourceId,UUID.fromString(blockId),className);
 		List<String> result = null;
-		if( propertyTable!=null ) {
+		if( propertyArray!=null ) {
 			result = new ArrayList<String>();
-			for( BlockProperty prop:propertyTable.values()) {
+			for( BlockProperty prop:propertyArray ) {
 				result.add(prop.toJson());
 			}			
 		}
@@ -93,7 +93,6 @@ public class GatewayRpcDispatcher   {
 		long resourceId = res.longValue();
 		log.debugf("%s: getConnectionAttributes: %d:%d:%s =\n%s",TAG,projectId,resourceId,connectionId,json);
 		
-		@SuppressWarnings("unchecked")
 		ObjectMapper mapper = new ObjectMapper();
 		Hashtable<String, Hashtable<String, String>> attributeTable;
 		try {

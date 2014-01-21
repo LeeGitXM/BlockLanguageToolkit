@@ -12,7 +12,6 @@ import java.util.ResourceBundle;
 import javax.swing.ImageIcon;
 
 import com.ils.blt.common.BLTProperties;
-import com.inductiveautomation.factorypmi.designer.beaninfo.BasicContainerBeanInfo;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 

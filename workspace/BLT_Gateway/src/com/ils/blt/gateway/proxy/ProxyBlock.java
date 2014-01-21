@@ -3,7 +3,7 @@
  */
 package com.ils.blt.gateway.proxy;
 
-import java.util.Hashtable;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -84,7 +84,7 @@ public class ProxyBlock implements ProcessBlock {
 	 *         property/attribute is a hashtable of Strings keyed by Strings.
 	 */
 	@Override
-	public Hashtable<String,BlockProperty> getProperties() {
+	public BlockProperty[] getProperties() {
 		return delegate.getProperties(getObject());
 	}
 	
@@ -93,8 +93,12 @@ public class ProxyBlock implements ProcessBlock {
 	 */
 	@Override
 	public Set<String> getPropertyNames() {
-		Hashtable<String,BlockProperty> properties = getProperties();
-		return properties.keySet();
+		BlockProperty[] properties = getProperties();
+		Set<String>result = new HashSet<String>();
+		for(BlockProperty bp:properties) {
+			result.add(bp.getName());
+		}
+		return result;
 	}
 	
 

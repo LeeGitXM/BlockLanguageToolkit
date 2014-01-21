@@ -10,6 +10,8 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.block.ProcessBlock;
+import com.ils.block.common.BindingType;
+import com.ils.block.common.BlockProperty;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.connection.Connection;
@@ -23,7 +25,7 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 import com.inductiveautomation.ignition.gateway.project.ProjectListener;
 
 /**
- * The workspace manager keeps track of model (blt-model) resources. On startup
+ * The model resource manager keeps track of model (blt-model) resources. On startup
  * and whenever a resource change takes place, the manager analyzes the resources
  * and extracts diagram and block information. This information is relayed to the
  * block manager via a passed-in controller instance.
@@ -80,7 +82,16 @@ public class ModelResourceManager implements ProjectListener  {
 	}
 	
 	public void deleteResources(Long projectId) {
+		Hashtable<Long,ProcessDiagram> diagrams = models.get(projectId);
+		for(ProcessDiagram diagram:diagrams.values()) {
+			for(ProcessBlock block:diagram.getProcessBlocks() ) {
+				for(BlockProperty bp:block.getProperties()) {
+					controller.stopSubscription(block, bp.getName());
+				}	
+			}
+		}
 		models.remove(projectId);
+	
 	}
 	
 	/**
@@ -90,7 +101,17 @@ public class ModelResourceManager implements ProjectListener  {
 	 */
 	public void deleteResource(Long projectId,Long resourceId) {
 		Hashtable<Long,ProcessDiagram> projectModel = models.get(projectId);
-		if( projectModel!=null ) projectModel.remove(resourceId);
+		if( projectModel!= null ) {
+			ProcessDiagram diagram = projectModel.get(resourceId);
+			if( diagram!=null ) {
+				for(ProcessBlock block:diagram.getProcessBlocks() ) {
+					for(BlockProperty bp:block.getProperties()) {
+						controller.stopSubscription(block, bp.getName());
+					}
+				}
+			}
+			projectModel.remove(resourceId);
+		}
 	}
 	
 
@@ -122,7 +143,7 @@ public class ModelResourceManager implements ProjectListener  {
 		if( projectModels!=null ) {
 			ProcessDiagram dm = projectModels.get(resourceId);
 			if( dm!=null ) {
-				block = dm.getBlock(blockId);
+				block = dm.getBlock(blockId.toString());
 			}
 		}
 		return block;
@@ -200,7 +221,7 @@ public class ModelResourceManager implements ProjectListener  {
 	
 			SerializableDiagram sd = mapper.readValue(json, SerializableDiagram.class);
 			if( sd!=null ) {
-				log.infof("%s: deserializeModelResource: found serializable diagram",TAG);
+				log.infof("%s: deserializeModelResource: successfully deserialized diagram %s",TAG,sd.getName());
 				diagram = new ProcessDiagram(sd,projId,res.getResourceId());
 			}
 			else {
@@ -208,8 +229,9 @@ public class ModelResourceManager implements ProjectListener  {
 			}
 	
 		}
+		// Print stack trace
 		catch( Exception ex) {
-			log.warnf("%s: deserializeModelResource: exception (%s)",TAG,ex.getLocalizedMessage());
+			log.warnf("%s: deserializeModelResource: exception (%s)",TAG,ex.getLocalizedMessage(),ex);
 		}
 		return diagram;
 
@@ -232,6 +254,13 @@ public class ModelResourceManager implements ProjectListener  {
 					ProcessDiagram diagram = deserializeModelResource(projectId,res);
 					if( diagram!=null) {
 						addResource(new Long(projectId), new Long(res.getResourceId()), diagram);
+						for( ProcessBlock pb:diagram.getProcessBlocks()) {
+							for(BlockProperty bp:pb.getProperties()) {
+								if( bp.getBindingType()==BindingType.TAG && bp.getBinding()!=null ) {
+									controller.startSubscription(pb,bp);
+								}
+							}
+						}
 					}
 					else {
 						log.warnf("%s: projectAdded - Failed to create DOM from resource",TAG);

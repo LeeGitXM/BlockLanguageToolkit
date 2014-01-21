@@ -4,9 +4,8 @@
 package com.ils.blt.gateway.engine;
 
 import com.ils.block.ProcessBlock;
-import com.ils.block.common.BlockConstants;
 import com.ils.block.common.BlockProperty;
-import com.ils.block.control.NewValueNotification;
+import com.ils.block.control.ValueChangeNotification;
 
 /**
  * Evaluate the specified block. The thread should end with the block placing a
@@ -20,7 +19,7 @@ public class PropertyChangeEvaluationTask implements Runnable{
 	 * 
 	 * @param bblock the block instance to evaluate
 	 */
-	public PropertyChangeEvaluationTask(NewValueNotification nvn)  {	
+	public PropertyChangeEvaluationTask(ValueChangeNotification nvn)  {	
 		this.block = nvn.getBlock();
 		BlockProperty property = block.getProperty(nvn.getPropertyName());
 		//attribute.put(BlockConstants.BLOCK_ATTRIBUTE_VALUE, nvn.getValue().getValue().toString());

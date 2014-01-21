@@ -23,6 +23,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponen
 @SuppressWarnings("serial")
 public class DiamondUIView extends AbstractUIView implements BlockViewUI {
 	private final static int BORDER_WIDTH=10;
+	private final static int STUB_BUFFER=15;        // Save room all around for the stubs
 	private final static float HEIGHT_FACTOR=0.5f;
 	private final static Color BORDER_SHADOW_COLOR = Color.DARK_GRAY;
 	private final static Color BORDER_HIGHLIGHT_COLOR = Color.magenta;   // Want maroon
@@ -52,14 +53,33 @@ public class DiamondUIView extends AbstractUIView implements BlockViewUI {
 		// Turn on anti-aliasing
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 				RenderingHints.VALUE_ANTIALIAS_ON);
-		// Reserve room for the border.
-		Insets borderInsets = new Insets(BORDER_WIDTH,BORDER_WIDTH,BORDER_WIDTH,BORDER_WIDTH);
-		// Calculate the inner area, compensating for borders
+
+		// Calculate the inner area
 		Rectangle ifb = new Rectangle();   // Interior, frame and border
 		ifb = SwingUtilities.calculateInnerArea(this,ifb);
 		// Now translate so that 0,0 is is at the inner origin
 		g.translate(ifb.x, ifb.y);
+		// Now leave space for stubs
+		ifb.x += STUB_BUFFER;
+		ifb.y += STUB_BUFFER;
+		ifb.width  -= 2*STUB_BUFFER;
+		ifb.height -= 2*STUB_BUFFER;
 
+		// Create a diamond that is within the component boundaries
+		int[] xvertices = new int[] {ifb.x,ifb.x+(ifb.width/2),ifb.x+ifb.width,ifb.x+(ifb.width/2) };
+		int[] yvertices = new int[] {ifb.y+(ifb.height/2),ifb.y,ifb.y+(ifb.height/2),ifb.y+(ifb.height)};
+		Polygon fi = new Polygon(xvertices,yvertices,4);
+		g.setColor(getBackground());
+		g.fillPolygon(fi);
+		
+		// Outline the frame
+		float outlineWidth = 1.0f;
+		Stroke stroke = new BasicStroke(outlineWidth,BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND);
+		g.setStroke(stroke);
+		g.setPaint(Color.BLACK);
+		g.draw(fi);
+		
+		/*
 		// Create a rectangle that is component less border
 		Rectangle fi = new Rectangle();
 		fi.x = borderInsets.left;
@@ -118,11 +138,10 @@ public class DiamondUIView extends AbstractUIView implements BlockViewUI {
 		g.draw(fip);
 		g.draw(interior);
 
-		// Now create-our-own beveled borders
+*/
 
 		// Reverse any transforms we made
 		g.setTransform(originalTx);
-
 		drawAnchors(g);
 	}
 

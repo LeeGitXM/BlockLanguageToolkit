@@ -163,11 +163,9 @@ public class ProxyHandler   {
 	 * @param block the python object
 	 * @return the property table with current values
 	 */
-
-	@SuppressWarnings("unchecked")
-	public Hashtable<String,BlockProperty> getProperties(PyObject block) {
+	public BlockProperty[] getProperties(PyObject block) {
 		 
-		// Place the instance in th shared dictionary
+		// Place the instance in the shared dictionary
 		PyDictionary pyDict = new PyDictionary();
 		pyDict.put(BlockConstants.BLOCK_PROPERTY_INSTANCE, block);
 /*

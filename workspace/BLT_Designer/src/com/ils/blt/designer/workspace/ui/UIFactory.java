@@ -25,8 +25,8 @@ public class UIFactory {
 			case ROUND:
 				ui= new RoundUIView(block);
 				break;
-			case TAGWRITER:
-				ui= new TagwriterUIView(block);
+			case TAGREADER:
+				ui= new TagreaderUIView(block);
 				break;
 			case BASIC:
 			default:

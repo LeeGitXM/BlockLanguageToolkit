@@ -23,7 +23,7 @@ public class RoundUIView extends AbstractUIView implements BlockViewUI {
 		super(view);
 		setOpaque(false);
 		setPreferredSize(new Dimension(68,68));   // 48 plus 10 for stubs
-		icon = IconUtil.getRootIcon(RoundUIView.class, "entry_48.png");
+		icon = IconUtil.getRootIcon(RoundUIView.class, "round_48.png");
 		initAnchorPoints();
 	}
 	

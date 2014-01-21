@@ -10,7 +10,6 @@ import org.apache.wicket.markup.html.WebMarkupContainer;
 
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.gateway.engine.BlockExecutionController;
-import com.ils.blt.gateway.engine.ModelResourceManager;
 import com.ils.blt.gateway.proxy.CallbackRegistrationScriptFunctions;
 import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.inductiveautomation.ignition.common.BundleUtil;
@@ -98,8 +97,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	}
 	
 	private class ExecutionStatus extends AbstractNamedTab {
-		
-		
+		private static final long serialVersionUID = 64149723779427382L;
 
 		public ExecutionStatus() {
 			super("ExecutionStatus", "BLT.title");

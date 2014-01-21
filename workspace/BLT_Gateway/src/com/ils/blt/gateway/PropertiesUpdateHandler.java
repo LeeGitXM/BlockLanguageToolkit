@@ -10,11 +10,9 @@ import java.util.Hashtable;
 import java.util.UUID;
 
 import com.ils.block.ProcessBlock;
-import com.ils.block.common.BlockConstants;
 import com.ils.block.common.BlockProperty;
 import com.ils.block.control.ExecutionController;
 import com.ils.blt.gateway.engine.BlockExecutionController;
-import com.ils.blt.gateway.proxy.ProxyBlock;
 import com.ils.connection.Connection;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -107,11 +105,11 @@ public class PropertiesUpdateHandler   {
 	  * @param className
 	  * @return
 	 */
-	public Hashtable<String,BlockProperty> getBlockProperties(Long projectId,Long resourceId,UUID blockId,String className) {
+	public BlockProperty[] getBlockProperties(Long projectId,Long resourceId,UUID blockId,String className) {
 		// If the instance doesn't exist, create one
 		BlockExecutionController controller = BlockExecutionController.getInstance();
 		ProcessBlock block = controller.getDelegate().getBlock(projectId, resourceId, blockId);
-		Hashtable<String,BlockProperty> results = null;
+		BlockProperty[] results = null;
 		if(block!=null) {
 			results = block.getProperties();
 		}

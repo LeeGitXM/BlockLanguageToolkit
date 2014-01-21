@@ -73,7 +73,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	public DiagramWorkspace(DesignerContext ctx) {
 		this.context = ctx;
 		this.mapper = new ObjectMapper();
-		this.
 		initialize();
 	}
 
@@ -104,7 +103,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	
 	@Override
 	public EditActionHandler getEditActionHandler() {
-		return null;
+		// return null
+		return this;
 	}
 
 
@@ -310,13 +310,13 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
 	@Override
 	public void doDelete() {
-		// TODO Auto-generated method stub
-		
+		log.infof("%s: doDelete",TAG);
 	}
 
 
 	@Override
 	public void doPaste(Transferable arg0) {
+		log.infof("%s: doPaste",TAG);
 	}
 	
 	/**

@@ -6,13 +6,14 @@
  */
 package com.ils.blt.gateway.engine;
 
+import java.util.Collection;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.ils.block.ProcessBlock;
 import com.ils.block.common.BlockProperty;
 import com.ils.block.control.ExecutionController;
-import com.ils.block.control.NewValueNotification;
+import com.ils.block.control.ValueChangeNotification;
 import com.ils.common.BoundedBuffer;
 import com.ils.common.watchdog.WatchdogTimer;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -40,7 +41,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 
 
 	private final BoundedBuffer buffer;
-	private DataCollector dataCollector = null;    // Tag subscriber
+	private TagListener tagListener = null;    // Tag subscriber
 	private Thread completionThread = null;
 	private boolean stopped = true;
 	private ExecutorService executor = Executors.newCachedThreadPool();
@@ -67,8 +68,10 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		}
 		return instance;
 	}
-	
-	public void acceptCompletionNotification(NewValueNotification note) {
+	/**
+	 * A block has completed evaluation. A new value has been placed on its output.
+	 */
+	public void acceptCompletionNotification(ValueChangeNotification note) {
 		try {
 			buffer.put(note);
 		}
@@ -80,7 +83,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 */
 	public void setContext(GatewayContext ctxt) { 
 		this.context=ctxt; 
-		this.dataCollector = new DataCollector(context);
+		this.tagListener = new TagListener(context);
 		this.delegate.setContext(context);
 	}
 
@@ -99,7 +102,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		if(completionThread!=null) {
 			completionThread.interrupt();
 		}
-		dataCollector.stop();
+		tagListener.stop();
 	}
 	
 	public ModelResourceManager getDelegate() { return delegate; }
@@ -108,12 +111,12 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	
 
 	
-	// ======================= Delegated to DataCollector ======================
+	// ======================= Delegated to TagListener ======================
 	/**
 	 * Start a subscription for a block attribute associated with a tag.
 	 */
-	public void startSubscription(ProcessBlock block,String propertyName) {
-		dataCollector.startSubscription(block, propertyName);
+	public void startSubscription(ProcessBlock block,BlockProperty property) {
+		tagListener.startSubscription(block, property);
 	}
 	/**
 	 * Stop the subscription for a block attribute associated with a tag.
@@ -123,10 +126,11 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		if( property!=null ) {
 			String tagPath = property.getValue().toString();
 			if( tagPath!=null) {
-				dataCollector.stopSubscription(tagPath);
+				tagListener.stopSubscription(tagPath);
 			}
 		}
 	}
+	
 	// ============================ Completion Handler =========================
 	/**
 	 * Wait for work to arrive at the output of a bounded buffer. The contents of the bounded buffer
@@ -136,25 +140,24 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		while( !stopped  ) {
 			try {
 				Object work = buffer.get();
-				if( work instanceof NewValueNotification) {
-					NewValueNotification incoming = (NewValueNotification)work;
+				if( work instanceof ValueChangeNotification) {
+					ValueChangeNotification inNote = (ValueChangeNotification)work;
 					// Query the diagram to find out what's next
-					ProcessBlock pb = incoming.getBlock();
+					ProcessBlock pb = inNote.getBlock();
 					ProcessDiagram dm = delegate.getDiagram(new Long(pb.getProjectId()),new Long(pb.getDiagramId()));
 					if( dm!=null) {
-						NewValueNotification outgoing = dm.getValueUpdate(incoming);
-						if( outgoing!=null ) {
-							executor.execute(new PortReceivesValueTask(outgoing));
-						}
-
-						else {
-							log.warnf("%s: run: diagram %d in project %d in execution complete notification not found",TAG,
-									pb.getDiagramId(),pb.getProjectId());
+						Collection<ValueChangeNotification> outgoing = dm.getOutgoingNotifications(inNote);
+						for(ValueChangeNotification outNote:outgoing) {
+							executor.execute(new IncomingValueChangeTask(outNote));
 						}
 					}
 					else {
-						log.warnf("%s: run: project %d in execution complete notification not found",TAG,pb.getProjectId());
+						log.warnf("%s: run: diagram %d in project %d in value change notification not found",TAG,
+									pb.getDiagramId(),pb.getProjectId());
 					}
+				}
+				else {
+					log.warnf("%s: run: Unexpected object in buffer (%s)",TAG,work.getClass().getName());
 				}
 			}
 			catch( InterruptedException ie) {}

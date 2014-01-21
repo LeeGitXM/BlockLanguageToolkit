@@ -2,7 +2,6 @@ package com.ils.blt.common.serializable;
 
 
 import java.awt.Rectangle;
-import java.awt.geom.Rectangle2D;
 import java.util.UUID;
 
 import com.ils.block.common.AnchorDirection;

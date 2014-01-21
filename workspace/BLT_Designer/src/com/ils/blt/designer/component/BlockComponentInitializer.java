@@ -6,7 +6,6 @@ package com.ils.blt.designer.component;
 
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,12 +17,10 @@ import javax.swing.SwingUtilities;
 
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.factorypmi.designer.workspace.WindowWorkspace;
-import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.DesignerContextImpl;
 import com.inductiveautomation.ignition.designer.IgnitionDesigner;
-import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.vision.api.designer.beans.ComponentPopupInitializer;
 /**
  * This class controls the custom actions in the popup menu given to the WindowWorkspace. 
@@ -70,7 +67,6 @@ public class BlockComponentInitializer implements ComponentPopupInitializer<Abst
 	 * Provide a list of actions to be added to the top of the default set.
 	 */
 	@Override
-	@SuppressWarnings("serial")
 	public List<Action> getActions(final List<AbstractDiagramSummaryComponent> components, final WindowWorkspace workspace) {
 		List<Action> actions = new ArrayList<Action>();
 

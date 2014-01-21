@@ -6,14 +6,11 @@
  */
 package com.ils.blt.client;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 
-import com.ils.jgx.editor.JgxPalette;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.mxgraph.swing.util.mxSwingConstants;

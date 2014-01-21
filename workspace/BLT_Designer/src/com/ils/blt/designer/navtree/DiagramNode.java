@@ -9,7 +9,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.tree.TreePath;
 
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;

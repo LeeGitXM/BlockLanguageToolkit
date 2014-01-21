@@ -151,6 +151,47 @@ public class PropertyEditor extends JPanel {
 		});
 		return field;
 	}
+	/**
+	 * Create a text box for the maximum field
+	 */
+	private JTextField createMaxTextField(final BlockProperty prop) {
+		
+		double val = prop.getMaximum();
+		String text = "";
+		if(val!=Double.NaN && val<Double.MAX_VALUE ) {
+			text = String.valueOf(val);
+		}
+		final JTextField field = new JTextField(text);
+		field.setEditable(true);
+		field.addActionListener(new ActionListener() {
+	        public void actionPerformed(ActionEvent e){
+	        	double val = Double.parseDouble(field.getText());
+	            prop.setMaximum(val);
+	        }
+		});
+		return field;
+	}
+
+	/**
+	 * Create a text box for the maximum field
+	 */
+	private JTextField createMinTextField(final BlockProperty prop) {
+
+		double val = prop.getMinimum();
+		String text = "";
+		if(val!=Double.NaN && val>Double.MIN_VALUE ) {
+			text = String.valueOf(val);
+		}
+		final JTextField field = new JTextField(text);
+		field.setEditable(true);
+		field.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e){
+				double val = Double.parseDouble(field.getText());
+				prop.setMinimum(val);
+			}
+		});
+		return field;
+	}
 	
 	/**
 	 * Create a combo box for data types
@@ -169,6 +210,8 @@ public class PropertyEditor extends JPanel {
 	        }
 		});
 		box.setSelectedItem(prop.getType());
+		box.setEditable(false);
+		box.setEnabled(false);
 		return box;
 	}
 	/**
@@ -210,8 +253,15 @@ public class PropertyEditor extends JPanel {
 			add(createLabel("Binding"),"skip");
 			add(createLinkTextField(prop),"");
 			add(createLinkTypeCombo(prop),"wrap");
+			// For int or double, add min and max
+			PropertyType type = prop.getType();
+			if( type==PropertyType.DOUBLE || type==PropertyType.INTEGER) {
+				add(createLabel("Min"),"skip");
+				add(createMinTextField(prop),"");
+				add(createLabel("Max"),"");
+				add(createMaxTextField(prop),"wrap");
+			}
 		}
-		
 	}
 	
 	/**

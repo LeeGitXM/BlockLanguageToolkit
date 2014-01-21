@@ -7,25 +7,28 @@
   <build>2013120917</build>
   <beta>1</beta>
 </version>
-<timestamp>2014-01-16 08:09:47</timestamp>
-<id>8</id>
+<timestamp>2014-01-21 07:18:41</timestamp>
+<id>11</id>
 <name>BlockDiagrams</name>
 <title>Block Diagrams</title>
 <description>Sample project to illustrate executable block diagrams.</description>
 <enabled>true</enabled>
-<lastModified>0</lastModified>
-<lastModifiedBy></lastModifiedBy>
-<editCount>0</editCount>
-<uuid>1e21f842-0332-1a0f-b8d5-0441a983496a</uuid>
+<lastModified>1390276304808</lastModified>
+<lastModifiedBy>chuckc</lastModifiedBy>
+<editCount>3</editCount>
+<uuid>3633c607-50da-07d7-9914-53345bf1ca3b</uuid>
 <resources>
-	<resource id='100' name='' module='' modver='7.7.0.2013120917-beta1' type='sr.global.props' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='7'>
+	<resource id='126' name='New Application' module='block' modver='' type='__folder' ver='0' dirty='false' editcount='1' parent='7bbbd6b9-3140-4328-a844-51817eb47574' oemlocked='false' scope='1'>
+		<doc></doc>
+		<bytes><![CDATA[hVznsmsI9ZdSTnEqf4zZ8A==]]></bytes></resource>
+	<resource id='125' name='' module='' modver='7.7.0.2013120917-beta1' type='sr.global.props' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='7'>
 		<doc></doc>
 		<bytes><![CDATA[H4sIAAAAAAAAAJuh2b/K+buX/6beUzYe09afZGBgYGJgYHSePWN7MQN2wA3EbAwMQsWpJY6lJRkB
 RflpmTmpfom5qUAJTgYG9pTUtMTSnBKIUczJOSCDOICs4pIiIIsdaDxIhAVIJwNpRiDKB9JcDAyy
 QCNdIJqDA31CEtOLgYaXZaakFkFNZwWqzQXSzAwM1sn5uXqZeSmlySWZZamJpSX5uYklmfl5epnp
 eZlgBlBBLpAqKMrPSk0u0XPPyU9KzAEaWAD1GHt+EkiiWADqL0YJEMEIcjYnxA4GJimIAxlYmEC2
 c0B8zsDOxQjxEgOjCpTBAPERAyemDi5UHSAGAwDIv2hXdwEAAA==]]></bytes></resource>
-	<resource id='101' name='' module='fpmi' modver='' type='client_tags' ver='0' dirty='true' editcount='0' parent='' oemlocked='false' scope='4'>
+	<resource id='124' name='' module='fpmi' modver='' type='client_tags' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='4'>
 		<doc></doc>
 		<bytes><![CDATA[H4sIAAAAAAAAAG1QzUoDMRCeWGu3f1YvIuJhrx4Mm6pbW7wVihTUg32BNE3r6mazbtKKDyHeRPEN
 vAi+hb6QVydGxIOBMMPMfPN98z3u3L/0P4dnb3cfR8cPr+8AsARA+s9PvQr8/9bwBwAlkRrMlgE2
@@ -36,5 +39,5 @@ jresoseXUlizCR4FJPAHQCnwHkI58CYBcUMV4kyuesFAtrxDUHOQeuApoFkj/kYg4U/iNrW+AHaW
 wsPUAQAA]]></bytes></resource>
 </resources>
 <deletedResources>
-</deletedResources>
+<deleted id="129" scope="1"/><deleted id="127" scope="1"/></deletedResources>
 </project>

@@ -16,39 +16,34 @@ import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
-import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 
 import com.ils.blt.designer.workspace.BasicAnchorPoint;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
 import com.inductiveautomation.ignition.designer.blockandconnector.blockui.AnchorDescriptor;
-import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorPoint;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
 
 
 /**
- * Create a block that depicts a tag writer.
+ * Create a block that depicts a tag reader.
  */
-public class TagwriterUIView extends AbstractUIView implements BlockViewUI {
+public class TagreaderUIView extends AbstractUIView implements BlockViewUI {
 	private static final long serialVersionUID = 6644400470545202522L;
 	private final static int BORDER_WIDTH=10;
+	private final static int STUB_BUFFER=15;        // Save room all around for the stubs
 	private final static float HEIGHT_FACTOR=0.5f;
 	private final static Color BORDER_SHADOW_COLOR = Color.DARK_GRAY;
 	private final static Color BORDER_HIGHLIGHT_COLOR = Color.magenta;   // Want maroon
 	private final static Color HEADING_COLOR = Color.BLACK;
-	private final List<BasicAnchorPoint> anchorPoints;
 	
-	public TagwriterUIView(ProcessBlockView view) {
+	public TagreaderUIView(ProcessBlockView view) {
 		super(view);
 		setOpaque(false);
 		setPreferredSize(new Dimension(100,100));
-		anchorPoints = new ArrayList<BasicAnchorPoint>();
-		BasicAnchorPoint ap = new BasicAnchorPoint("out",view,AnchorType.Origin,new Point(95,50),new Point(110,50),new Rectangle(90,45,10,10));
-		anchorPoints.add(ap);
+		initAnchorPoints();
 		
 	}
 
@@ -57,7 +52,9 @@ public class TagwriterUIView extends AbstractUIView implements BlockViewUI {
 		panel.setLayout(new BorderLayout());
 		panel.add(this,BorderLayout.CENTER);
 	}
+	
 
+	// Draw a rectangle with pointed end
 	@Override
 	protected void paintComponent(Graphics _g) {
 		// Calling the super method effects an "erase".
@@ -69,21 +66,34 @@ public class TagwriterUIView extends AbstractUIView implements BlockViewUI {
 		// Turn on anti-aliasing
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 				RenderingHints.VALUE_ANTIALIAS_ON);
-		// Reserve room for the border.
-		Insets borderInsets = new Insets(BORDER_WIDTH,BORDER_WIDTH,BORDER_WIDTH,BORDER_WIDTH);
-		// Calculate the inner area, compensating for borders
+	
+		// Calculate the inner area
 		Rectangle ifb = new Rectangle();   // Interior, frame and border
 		ifb = SwingUtilities.calculateInnerArea(this,ifb);
+
 		// Now translate so that 0,0 is is at the inner origin
 		g.translate(ifb.x, ifb.y);
+		// Now leave space for stubs
+		ifb.x += STUB_BUFFER;
+		ifb.y += STUB_BUFFER;
+		ifb.width  -= 2*STUB_BUFFER;
+		ifb.height -= 2*STUB_BUFFER;
 
-		// Create a rectangle that is component less border
-		Rectangle fi = new Rectangle();
-		fi.x = borderInsets.left;
-		fi.y = borderInsets.top;
-		fi.width = ifb.width - borderInsets.left - borderInsets.right;
-		fi.height = ifb.height - borderInsets.top - borderInsets.bottom;
+		// Create a polygon that is within the component boundaries
+		int[] xvertices = new int[] {ifb.x,ifb.x+(3*ifb.width/4),ifb.x+ifb.width,ifb.x+(3*ifb.width/4),ifb.x };
+		int[] yvertices = new int[] {ifb.y+(3*ifb.height/4),ifb.y+(3*ifb.height/4),ifb.y+(ifb.height/2),ifb.y+(ifb.height/4),ifb.y+(ifb.height/4)};
+		Polygon fi = new Polygon(xvertices,yvertices,5);
+		g.setColor(getBackground());
+		g.fillPolygon(fi);
+		
+		// Outline the frame
+		float outlineWidth = 1.0f;
+		Stroke stroke = new BasicStroke(outlineWidth,BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND);
+		g.setStroke(stroke);
+		g.setPaint(Color.BLACK);
+		g.draw(fi);
 
+		/*
 		// Create a Triangle within the bounds of rectangle fi
 		int width = fi.width;
 		int height = fi.height;
@@ -134,12 +144,9 @@ public class TagwriterUIView extends AbstractUIView implements BlockViewUI {
 		g.setPaint(Color.BLACK);
 		g.draw(fip);
 		g.draw(interior);
-
-		// Now create-our-own beveled borders
-
+*/
 		// Reverse any transforms we made
 		g.setTransform(originalTx);
-
 		drawAnchors(g);
 	}
 

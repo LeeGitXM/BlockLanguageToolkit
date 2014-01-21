@@ -4,7 +4,7 @@
 package com.ils.blt.gateway.engine;
 
 import com.ils.block.ProcessBlock;
-import com.ils.block.control.NewValueNotification;
+import com.ils.block.control.ValueChangeNotification;
 
 /**
  * A value has been received as an output from a block
@@ -13,14 +13,14 @@ import com.ils.block.control.NewValueNotification;
  * value on its output. In this case, the block responds to a property change, 
  * usually for a tag that is an attribute of the block.
  */
-public class PortReceivesValueTask implements Runnable{
+public class IncomingValueChangeTask implements Runnable{
 	private final ProcessBlock block;
 	/**
 	 * Constructor.
 	 * 
 	 * @param nvn notification describing the new value
 	 */
-	public PortReceivesValueTask(NewValueNotification nvn)  {
+	public IncomingValueChangeTask(ValueChangeNotification nvn)  {
 		this.block = nvn.getBlock();
 		block.setValue(nvn.getPort(), nvn.getValue());
 	}

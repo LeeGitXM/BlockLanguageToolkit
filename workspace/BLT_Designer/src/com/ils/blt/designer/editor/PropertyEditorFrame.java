@@ -11,8 +11,6 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
-import net.miginfocom.swing.MigLayout;
-
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -22,9 +20,7 @@ import com.inductiveautomation.ignition.designer.designable.DesignableWorkspaceA
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.model.ResourceWorkspaceFrame;
-import com.inductiveautomation.ignition.designer.scripteditor.component.CodeEditorFactory;
 import com.jidesoft.docking.DockableFrame;
-import com.jidesoft.editor.CodeEditor;
 
 /**
  * A Diagnostics workspace is a container that occupies the DockManager workspace
