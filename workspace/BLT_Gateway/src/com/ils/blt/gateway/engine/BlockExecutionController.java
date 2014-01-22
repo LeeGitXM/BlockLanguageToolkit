@@ -15,7 +15,9 @@ import com.ils.block.common.BlockProperty;
 import com.ils.block.control.ExecutionController;
 import com.ils.block.control.ValueChangeNotification;
 import com.ils.common.BoundedBuffer;
+import com.ils.common.watchdog.Watchdog;
 import com.ils.common.watchdog.WatchdogTimer;
+import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
@@ -42,6 +44,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 
 	private final BoundedBuffer buffer;
 	private TagListener tagListener = null;    // Tag subscriber
+	private TagWriter tagWriter = null;
 	private Thread completionThread = null;
 	private boolean stopped = true;
 	private ExecutorService executor = Executors.newCachedThreadPool();
@@ -54,6 +57,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		delegate = new ModelResourceManager(this);
 		
 		buffer = new BoundedBuffer(BUFFER_SIZE);
+		
 		watchdogTimer = new WatchdogTimer();
 	}
 
@@ -84,6 +88,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public void setContext(GatewayContext ctxt) { 
 		this.context=ctxt; 
 		this.tagListener = new TagListener(context);
+		this.tagWriter = new TagWriter(context);
 		this.delegate.setContext(context);
 	}
 
@@ -93,6 +98,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		log.debugf("%s START %d",TAG,completionThread.hashCode());
 		completionThread.setDaemon(true);
 		completionThread.start();
+		watchdogTimer.start();
 	}
 	
 	public synchronized void stop() {
@@ -103,6 +109,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 			completionThread.interrupt();
 		}
 		tagListener.stop();
+		watchdogTimer.stop();
 	}
 	
 	public ModelResourceManager getDelegate() { return delegate; }
@@ -130,7 +137,22 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 			}
 		}
 	}
-	
+	// ======================= Delegated to TagWriter ======================
+	/**
+	 * Write a value to a tag.
+	 */
+	public void updateTag(String providerName,String path,QualifiedValue val) {
+		tagWriter.updateTag(providerName,path,val);
+	}
+	// ======================= Delegated to Watchdog ======================
+	/**
+	 * "pet" a watch dog. The watch dog must be updated to expire some time 
+	 * in the future. This method may also be used to insert a watch dog
+	 * into the timer list for the first time.
+	 */
+	public void pet(Watchdog dog) {
+		watchdogTimer.updateWatchdog(dog);
+	}
 	// ============================ Completion Handler =========================
 	/**
 	 * Wait for work to arrive at the output of a bounded buffer. The contents of the bounded buffer

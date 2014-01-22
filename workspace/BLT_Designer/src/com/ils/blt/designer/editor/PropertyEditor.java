@@ -256,9 +256,8 @@ public class PropertyEditor extends JPanel {
 			// For int or double, add min and max
 			PropertyType type = prop.getType();
 			if( type==PropertyType.DOUBLE || type==PropertyType.INTEGER) {
-				add(createLabel("Min"),"skip");
+				add(createLabel("Min-Max"),"skip");
 				add(createMinTextField(prop),"");
-				add(createLabel("Max"),"");
 				add(createMaxTextField(prop),"wrap");
 			}
 		}

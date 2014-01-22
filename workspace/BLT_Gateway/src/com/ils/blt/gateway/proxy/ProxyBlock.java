@@ -3,6 +3,7 @@
  */
 package com.ils.blt.gateway.proxy;
 
+import java.beans.PropertyChangeEvent;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -13,6 +14,7 @@ import com.ils.block.ProcessBlock;
 import com.ils.block.common.BlockProperty;
 import com.ils.block.common.BlockState;
 import com.ils.block.common.PalettePrototype;
+import com.ils.block.control.ValueChangeNotification;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -124,8 +126,8 @@ public class ProxyBlock implements ProcessBlock {
 	 * @param value to accept. A qualified value has a timestamp, quality,
 	 *        and simple value.
 	 */
-	public void setValue(String port,QualifiedValue value) {
-		delegate.setValue(projectId, diagramId, blockId, port, value);
+	public void setValue(ValueChangeNotification vcn) {
+		delegate.setValue(projectId, diagramId, blockId, vcn.getPort(), vcn.getValue());
 	}
 	
 	/**
@@ -150,5 +152,11 @@ public class ProxyBlock implements ProcessBlock {
 
 	@Override
 	public void setStatusText(String text) { this.statusText = text; }
+
+	@Override
+	public void propertyChange(PropertyChangeEvent evt) {
+		// TODO Auto-generated method stub
+		
+	}
 
 }

@@ -18,11 +18,11 @@ public class IncomingValueChangeTask implements Runnable{
 	/**
 	 * Constructor.
 	 * 
-	 * @param nvn notification describing the new value
+	 * @param vcn notification describing the new value
 	 */
-	public IncomingValueChangeTask(ValueChangeNotification nvn)  {
-		this.block = nvn.getBlock();
-		block.setValue(nvn.getPort(), nvn.getValue());
+	public IncomingValueChangeTask(ValueChangeNotification vcn)  {
+		this.block = vcn.getBlock();
+		block.setValue(vcn);
 	}
 	
 	public void run()   { 

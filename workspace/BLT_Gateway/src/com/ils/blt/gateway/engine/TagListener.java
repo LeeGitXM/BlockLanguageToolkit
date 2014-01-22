@@ -4,9 +4,13 @@
  */
 package com.ils.blt.gateway.engine;
 
+import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.Hashtable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -14,7 +18,6 @@ import com.ils.block.ProcessBlock;
 import com.ils.block.common.BindingType;
 import com.ils.block.common.BlockConstants;
 import com.ils.block.common.BlockProperty;
-import com.ils.block.control.ValueChangeNotification;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.sqltags.model.Tag;
 import com.inductiveautomation.ignition.common.sqltags.model.TagPath;
@@ -37,7 +40,7 @@ public class TagListener implements TagChangeListener   {
 
 	private final LoggerEx log;
 	private final GatewayContext context;
-	private final Hashtable<String,ProcessBlock> blockMap;  // Executable block keyed by tag path
+	private final Map<String,List<ProcessBlock>> blockMap;  // Executable block keyed by tag path
 	private final SimpleDateFormat dateFormatter;
 	private ExecutorService executor = Executors.newCachedThreadPool();
 	
@@ -48,7 +51,7 @@ public class TagListener implements TagChangeListener   {
 	public TagListener(GatewayContext ctxt) {
 		this.context = ctxt;
 		log = LogUtil.getLogger(getClass().getPackage().getName());
-		this.blockMap = new Hashtable<String,ProcessBlock>();
+		this.blockMap = new HashMap<String,List<ProcessBlock>>();
 		this.dateFormatter = new SimpleDateFormat(BlockConstants.TIMESTAMP_FORMAT);
 	}
 
@@ -61,7 +64,10 @@ public class TagListener implements TagChangeListener   {
 		
 		String tagPath = property.getBinding();
 		if( tagPath!=null &&  property.getBindingType()==BindingType.TAG) {
-			if( blockMap.get(tagPath) !=null ) return;    // We already have a subscription
+			if( blockMap.get(tagPath) !=null ) blockMap.put(tagPath, new ArrayList<ProcessBlock>());
+			List<ProcessBlock> blocks = blockMap.get(tagPath);
+			if( blocks.contains(block) ) return;    // We already have a subscription
+			blocks.add(block);
 			SQLTagsManager tmgr = context.getTagManager();
 			try {
 				TagPath tp = TagPathParser.parse(tagPath);
@@ -76,10 +82,9 @@ public class TagListener implements TagChangeListener   {
 							(tag.getValue().getQuality().isGood()?"GOOD":"BAD"),
 							tag.getName(),tag.getValue().getValue(),
 							dateFormatter.format(tag.getValue().getTimestamp()));
-					ValueChangeNotification notification = new ValueChangeNotification(block,property.getName(),value);
-					executor.execute(new PropertyChangeEvaluationTask(notification));
+					executor.execute(new PropertyChangeEvaluationTask(block,
+							new PropertyChangeEvent(block.getBlockId().toString(),property.getName(),property.getValue(),tag.getValue().getValue())));
 				}
-				blockMap.put(tp.toStringFull(), block);
 				tmgr.subscribe(tp, this);
 			}
 			catch(IOException ioe) {
@@ -97,6 +102,23 @@ public class TagListener implements TagChangeListener   {
 	/**
 	 * Stop a subscription based on a tag path.
 	 * 
+	 * @param tagPath
+	 */
+	public void stopSubscription(String tagPath,ProcessBlock block) {
+		if( tagPath==null) return;    // There was no subscription
+		SQLTagsManager tmgr = context.getTagManager();
+		try {
+			TagPath tp = TagPathParser.parse(tagPath);
+			log.debug(TAG+"stopSubscription: "+tagPath);
+			tmgr.unsubscribe(tp, this);
+		}
+		catch(IOException ioe) {
+			log.error(TAG+"stopSubscription ("+ioe.getMessage()+")");
+		}
+	}
+	
+	/**
+	 * Unsubscribes to a path. Does not modify the map.
 	 * @param tagPath
 	 */
 	public void stopSubscription(String tagPath) {
@@ -117,8 +139,8 @@ public class TagListener implements TagChangeListener   {
 	 */
 	public void stop() {
 		executor.shutdown();
-		for( String tp:blockMap.keySet()) {
-			stopSubscription(tp);
+		for( String tagPath:blockMap.keySet()) {
+			stopSubscription(tagPath);
 		}
 		blockMap.clear();
 	}
@@ -151,16 +173,31 @@ public class TagListener implements TagChangeListener   {
 					tag.getName(),tag.getValue().getValue(),
 					dateFormatter.format(tag.getValue().getTimestamp()));
 				
-				ProcessBlock block = blockMap.get(tp.toStringFull());
-				if( block!=null ) {
-					String propertyName = getPropertyForTagpath(block,tp.toStringFull());
-					if( propertyName != null ) {
-						ValueChangeNotification notification = new ValueChangeNotification(block,propertyName,tag.getValue());
-						executor.execute(new PropertyChangeEvaluationTask(notification));
-					}
+				List<ProcessBlock> blocks = blockMap.get(tp.toStringFull());
+				if( blocks!=null ) {
 					
+					for(ProcessBlock blk:blocks) {
+						// Search properties of the block looking for any bound to tag
+						for( String name: blk.getPropertyNames()) {
+							BlockProperty prop = blk .getProperty(name);
+							String path = prop.getBinding().toString();
+							if( path.equals(tp) && prop.getBindingType()==BindingType.TAG ) {
+								prop.setQuality(tag.getValue().getQuality().getName());
+								prop.setValue(tag.getValue().getValue());	
+							}
+						}
+					}
+					if( blocks.size()==0) {
+						log.warnf("%s: tagChanged: No blocks corresponding to tag %s -- unsubscribing",TAG,tag.getName());
+						stopSubscription(tp.toStringFull());
+						blockMap.remove(tp.toStringFull());
+					}
 				}
-				
+				else {
+					log.warnf("%s: tagChanged: Null list of blocks corresponding to tag %s -- unsubscribing",TAG,tag.getName());
+					stopSubscription(tp.toStringFull());
+					blockMap.remove(tp.toStringFull());
+				}			
 			}
 			catch(Exception ex) {
 				log.error(TAG+"tag changed exception ("+ex.getMessage()+")",ex);
@@ -172,20 +209,5 @@ public class TagListener implements TagChangeListener   {
 		}
 	}
 	
-	/**
-	 * Search properties of a block looking for one of datatype "tag"
-	 * and a particular tag path.
-	 */
-	private String getPropertyForTagpath(ProcessBlock block,String tp) {
-		String result = null;
-		for( String name: block.getPropertyNames()) {
-			BlockProperty property = block.getProperty(name);
-			String path = property.getValue().toString();
-			if( path.equals(tp)) {
-				result = name;
-				break;
-			}
-		}
-		return result;	
-	}
+	
 }
