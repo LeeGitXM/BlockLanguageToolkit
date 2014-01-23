@@ -62,7 +62,7 @@ public class ModelResourceManager implements ProjectListener  {
 	
 	public void setContext(GatewayContext cntx) {
 		this.context = cntx;
-		cntx.getProjectManager().addProjectListener(this);
+		context.getProjectManager().addProjectListener(this);
 	}
 	
 	/**
@@ -91,7 +91,6 @@ public class ModelResourceManager implements ProjectListener  {
 			}
 		}
 		models.remove(projectId);
-	
 	}
 	
 	/**
@@ -114,21 +113,6 @@ public class ModelResourceManager implements ProjectListener  {
 		}
 	}
 	
-
-	/**
-	 * Create a new block, and possibly a new diagram. The situation occurs when a 
-	 * user places a block on a new diagram in the designer and attempts to edit 
-	 * properties. We simply save the properties for the time when the diagram is saved.
-	 * @param projectId
-	 * @param resourceId
-	 * @param className the class of block to create.
-	 * @return the specified ProcessBlock. If not found, return null. 
-	 */
-	public ProcessBlock createBlock(Long projectId,Long resourceId,String className) {
-		ProcessBlock block = null;
-
-		return block;
-	}
 	
 	/**
 	 * Get a block from an existing diagrams. 
@@ -223,6 +207,12 @@ public class ModelResourceManager implements ProjectListener  {
 			if( sd!=null ) {
 				log.infof("%s: deserializeModelResource: successfully deserialized diagram %s",TAG,sd.getName());
 				diagram = new ProcessDiagram(sd,projId,res.getResourceId());
+				log.infof("%s: deserializeModelResource: starting tag subscriptions ...",TAG);
+				for( ProcessBlock block:diagram.getProcessBlocks()) {
+					for(BlockProperty property:block.getProperties()) {
+						controller.startSubscription(block, property);
+					}
+				}
 			}
 			else {
 				log.warnf("%s: deserializeModelResource: deserialization failed",TAG);
@@ -288,37 +278,30 @@ public class ModelResourceManager implements ProjectListener  {
 	 * @see com.inductiveautomation.ignition.gateway.project.ProjectListener#projectUpdated(com.inductiveautomation.ignition.common.project.Project, com.inductiveautomation.ignition.common.project.ProjectVersion)
 	 */
 	@Override
-	public void projectUpdated(Project diff, ProjectVersion vers) {
+	public void projectUpdated(Project diff, ProjectVersion vers) { 
+		log.debugf("%s: projectUpdated - version = %s", TAG,vers.toString());
+		if( vers==ProjectVersion.Published ) return;  // Consider only the "Staging" version
+		
 		long projectId = diff.getId();
 		Set<Long> deleted = diff.getDeletedResources();
 		for (Long  resid : deleted) {
 			deleteResource(projectId,resid);
 		}
 		
-		// The "dirty" ones are the new ones ??
-		List<ProjectResource> resources = diff.getDirtyResources();
-		for( ProjectResource dres:resources ) {
-			log.debugf("%s: projectUpdated - dirty %s %d = %s", TAG,dres.getName(),
-					dres.getResourceId(),dres.getResourceType());
-			if( dres.getResourceType().equalsIgnoreCase(BLTProperties.MODEL_RESOURCE_TYPE)) {
-			log.debugf("%s: projectUpdated - dirty %s %d = %s", TAG,dres.getName(),
-					dres.getResourceId(),dres.getResourceType());
-			}
-		}
-		resources = diff.getResources();   // Do these include the dirty?
+		log.debugf("%s: projectUpdated - res of type model = %d", TAG,diff.getResourcesOfType(BLTProperties.MODULE_ID, BLTProperties.MODEL_RESOURCE_TYPE).size());
+		List<ProjectResource> resources = diff.getResourcesOfType(BLTProperties.MODULE_ID, BLTProperties.MODEL_RESOURCE_TYPE);
 		for( ProjectResource res:resources ) {
-			if( res.getResourceType().equalsIgnoreCase(BLTProperties.MODEL_RESOURCE_TYPE)) {
-				log.debugf("%s: projectUpdated - updated %s %d = %s", TAG,res.getName(),
-					res.getResourceId(),res.getResourceType());
-				ProcessDiagram diagram = deserializeModelResource(projectId,res);
-				if( diagram!=null) {
-					addResource(new Long(projectId), new Long(res.getResourceId()), diagram);
-				}
-				else {
-					log.warnf("%s: projectUpdated - Failed to create DOM from resource",TAG);
-				}
+			log.debugf("%s: projectUpdated -  %s %d = %s (%s)", TAG,res.getName(),
+					res.getResourceId(),res.getResourceType(),(diff.isResourceDirty(res)?"dirty":"clean"));
+			ProcessDiagram diagram = deserializeModelResource(projectId,res);
+			if( diagram!=null) {
+				addResource(new Long(projectId), new Long(res.getResourceId()), diagram);
 			}
-			
+			else {
+				log.warnf("%s: projectUpdated - Failed to create DOM from resource",TAG);
+			}
+
+
 		}
 	}
 	

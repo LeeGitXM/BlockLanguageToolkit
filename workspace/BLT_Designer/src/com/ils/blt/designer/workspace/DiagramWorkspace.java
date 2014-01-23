@@ -32,6 +32,7 @@ import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.common.xmlserialization.SerializationException;
 import com.inductiveautomation.ignition.designer.blockandconnector.AbstractBlockWorkspace;
+import com.inductiveautomation.ignition.designer.blockandconnector.BlockActionHandler;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.BlockDiagramModel;
@@ -55,7 +56,7 @@ import com.jidesoft.docking.DockingManager;
  * 
  */
 public class DiagramWorkspace extends AbstractBlockWorkspace 
-							  implements ResourceWorkspace, EditActionHandler {
+							  implements ResourceWorkspace {
 	private static final String TAG = "DiagramWorkspace";
 	private static final long serialVersionUID = 4627016159409031941L;
 	public static final String key = "BlockDiagramWorkspace";
@@ -63,6 +64,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 
 	private final DesignerContext context;
 	private final ObjectMapper mapper;
+	private final EditActionHandler editActionHandler;
 	private Collection<ResourceWorkspaceFrame> frames;
 
 	private LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
@@ -73,6 +75,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	public DiagramWorkspace(DesignerContext ctx) {
 		this.context = ctx;
 		this.mapper = new ObjectMapper();
+		this.editActionHandler = new DiagramActionHandler(this,context);
 		initialize();
 	}
 
@@ -103,8 +106,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	
 	@Override
 	public EditActionHandler getEditActionHandler() {
-		// return null
-		return this;
+		return editActionHandler;
 	}
 
 
@@ -139,14 +141,12 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 	@Override
 	public MenuBarMerge getMenu() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-
+	// List of toolbars to add
 	@Override
 	public List<CommandBar> getToolbars() {
-		// TODO list of toolbars to add
 		return null;
 	}
 
@@ -260,14 +260,14 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 	
 	private void saveDiagram(BlockDesignableContainer c) {
-		log.infof("%s: saveDiagram",TAG);
+		log.infof("%s: saveDiagram - serializing ...",TAG);
 		ProcessDiagramView diagram = (ProcessDiagramView)c.getModel();
 		SerializableDiagram sd = diagram.createSerializableRepresentation();
 		byte[] bytes = null;
 		long resid = c.getResourceId();
 		try {
 			bytes = mapper.writeValueAsBytes(sd);
-			log.debugf("%s: save - diagram = %s",TAG,new String(bytes));
+			//log.tracef("%s: saveDiagram JSON = %s",TAG,new String(bytes));
 			context.updateResource(resid, bytes);
 		} 
 		catch (JsonProcessingException jpe) {
@@ -277,47 +277,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		context.updateLock(resid);
 	}
 	
-	// =========================================== Edit Action Handler ==============================================
-	@Override
-	public boolean canCopy() {
-		return false;
-	}
-
-
-	@Override
-	public boolean canDelete() {
-		return true;
-	}
-
-
-	@Override
-	public boolean canPaste(Clipboard arg0) {
-		return false;
-	}
-
-
-	@Override
-	public Transferable doCopy() {
-		return null;
-	}
-
-
-	@Override
-	public Transferable doCut() {
-		return null;
-	}
-
-
-	@Override
-	public void doDelete() {
-		log.infof("%s: doDelete",TAG);
-	}
-
-
-	@Override
-	public void doPaste(Transferable arg0) {
-		log.infof("%s: doPaste",TAG);
-	}
 	
 	/**
 	 * Paint connections
@@ -337,4 +296,55 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		}
 	}
 	
+	/**
+	 * Edit action handler
+	 */
+	private class DiagramActionHandler extends BlockActionHandler {
+		public DiagramActionHandler(DiagramWorkspace workspace,DesignerContext context) {
+			super(workspace,context);
+		}
+		@Override
+		public boolean canCopy() {
+			return true;
+		}
+
+
+		@Override
+		public boolean canDelete() {
+			return true;
+		}
+
+
+		@Override
+		public boolean canPaste(Clipboard arg0) {
+			return true;
+		}
+
+
+		@Override
+		public Transferable doCopy() {
+			log.infof("%s: doCopy",TAG);
+			return null;
+		}
+
+
+		@Override
+		public Transferable doCut() {
+			log.infof("%s: doCut",TAG);
+			return null;
+		}
+
+
+		@Override
+		public void doDelete() {
+			log.infof("%s: doDelete",TAG);
+		}
+
+
+		@Override
+		public void doPaste(Transferable arg0) {
+			log.infof("%s: doPaste",TAG);
+		}
+	}
+
 }

@@ -13,7 +13,8 @@ import java.util.concurrent.Executors;
 import com.ils.block.ProcessBlock;
 import com.ils.block.common.BlockProperty;
 import com.ils.block.control.ExecutionController;
-import com.ils.block.control.ValueChangeNotification;
+import com.ils.block.control.IncomingValueNotification;
+import com.ils.block.control.OutgoingValueNotification;
 import com.ils.common.BoundedBuffer;
 import com.ils.common.watchdog.Watchdog;
 import com.ils.common.watchdog.WatchdogTimer;
@@ -75,7 +76,8 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	/**
 	 * A block has completed evaluation. A new value has been placed on its output.
 	 */
-	public void acceptCompletionNotification(ValueChangeNotification note) {
+	public void acceptCompletionNotification(OutgoingValueNotification note) {
+		log.tracef("%s:acceptCompletionNotification: %s:%s", TAG,note.getBlock().getBlockId().toString(),note.getPort());
 		try {
 			buffer.put(note);
 		}
@@ -113,9 +115,6 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	}
 	
 	public ModelResourceManager getDelegate() { return delegate; }
-
-
-	
 
 	
 	// ======================= Delegated to TagListener ======================
@@ -156,21 +155,24 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	// ============================ Completion Handler =========================
 	/**
 	 * Wait for work to arrive at the output of a bounded buffer. The contents of the bounded buffer
-	 * are ExecutionCompletionNotification objects.
+	 * are ExecutionCompletionNotification objects. In/out are from the viewpoint of a block.
 	 */
 	public void run() {
 		while( !stopped  ) {
 			try {
 				Object work = buffer.get();
-				if( work instanceof ValueChangeNotification) {
-					ValueChangeNotification inNote = (ValueChangeNotification)work;
+				if( work instanceof OutgoingValueNotification) {
+					OutgoingValueNotification inNote = (OutgoingValueNotification)work;
+					log.tracef("%s: processing incoming note from buffer: %s:%s", TAG,inNote.getBlock().getBlockId().toString(),inNote.getPort());
 					// Query the diagram to find out what's next
 					ProcessBlock pb = inNote.getBlock();
 					ProcessDiagram dm = delegate.getDiagram(new Long(pb.getProjectId()),new Long(pb.getDiagramId()));
 					if( dm!=null) {
-						Collection<ValueChangeNotification> outgoing = dm.getOutgoingNotifications(inNote);
-						for(ValueChangeNotification outNote:outgoing) {
-							executor.execute(new IncomingValueChangeTask(outNote));
+						Collection<IncomingValueNotification> outgoing = dm.getOutgoingNotifications(inNote);
+						if( outgoing.isEmpty() ) log.warnf("%s: no downstream connections found ...",TAG);
+						for(IncomingValueNotification outNote:outgoing) {
+							log.tracef("%s: sending outgoing notification: to %s:%s", TAG,outNote.getConnection().getTarget().toString(),outNote.getConnection().getDownstreamPortName());
+							executor.execute(new IncomingValueChangeTask(inNote.getBlock(),outNote));
 						}
 					}
 					else {

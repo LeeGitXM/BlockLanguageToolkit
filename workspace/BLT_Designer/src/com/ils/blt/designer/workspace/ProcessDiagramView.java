@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.common.AnchorDirection;
+import com.ils.block.common.BlockProperty;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableAnchorPoint;
 import com.ils.blt.common.serializable.SerializableBlock;
@@ -206,6 +207,14 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			anchors.add(convertAnchorToSerializable(anchor,block));
 		}
 		result.setAnchors(anchors.toArray(new SerializableAnchor[anchors.size()]));
+		if( block.getProperties()!=null ) {
+			log.tracef("%s: convertBlockViewToSerializable: %s has %d properties",TAG,block.getClassName(),block.getProperties().size());
+			result.setProperties(block.getProperties().toArray(new BlockProperty[block.getProperties().size()]));
+		}
+		else {
+			log.warnf("%s: convertBlockViewToSerializable: %s has no properties",TAG,block.getClassName());
+		}
+		
 		return result;
 	}
 	

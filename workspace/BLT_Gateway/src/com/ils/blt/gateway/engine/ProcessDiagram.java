@@ -11,7 +11,9 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.ProcessBlock;
-import com.ils.block.control.ValueChangeNotification;
+import com.ils.block.control.IncomingValueNotification;
+import com.ils.block.control.OutgoingValueNotification;
+import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableConnection;
 import com.ils.blt.common.serializable.SerializableDiagram;
@@ -78,6 +80,7 @@ public class ProcessDiagram {
 			ProcessBlock pb = blocks.get(id);
 			if( pb==null ) {
 				pb = blockFactory.blockFromSerializable(projectId,resourceId,sb);
+				blocks.put(pb.getBlockId(), pb);
 			}
 			else {
 				blockFactory.updateBlockFromSerializable(pb,sb);
@@ -104,14 +107,15 @@ public class ProcessDiagram {
 				if( connections==null ) {
 					connections = new ArrayList<ProcessConnection>();
 					outgoingConnections.put(key, connections);
+					log.tracef("%s: analyze : mapping connection from %s:%s",TAG,upstreamBlock.getBlockId().toString(),pc.getUpstreamPortName());
 				}
 				connections.add(pc);
 			}
 			else {
-				log.warnf("%s: analyze: Source block not found for connection",TAG);
+				log.warnf("%s: analyze: Source block (%s) not found for connection",TAG,pc.getSource().toString());
 			}
 		}
-		
+		log.debugf("%s: analysis complete .... %d blocks and %d connections",TAG,diagram.getBlocks().length,diagram.getConnections().length);
 	}
 
 	/**
@@ -121,17 +125,17 @@ public class ProcessDiagram {
 	
 	/**
 	 * We have just received a notification of a value change. Determine which blocks are connected downstream,
-	 * and create notifications for each.
+	 * and create notifications for each. In/Out are from the point of view of a block, so are backwards here.
 	 * An empty return indicates no downstream connection.
 	 * @param new value notification of an incoming change
 	 * @return a new value notification for the downstream block(s)
 	 */
-	public Collection<ValueChangeNotification> getOutgoingNotifications(ValueChangeNotification incoming) {
+	public Collection<IncomingValueNotification> getOutgoingNotifications(OutgoingValueNotification incoming) {
 		ProcessBlock block = incoming.getBlock();
 		String port = incoming.getPort();
 		QualifiedValue value = incoming.getValue();
 		
-		Collection<ValueChangeNotification>notifications = new ArrayList<ValueChangeNotification>();
+		Collection<IncomingValueNotification>notifications = new ArrayList<IncomingValueNotification>();
 		BlockPort key = new BlockPort(block,port);
 		List<ProcessConnection> cxns = outgoingConnections.get(key);
 		if( cxns!=null ) {
@@ -139,14 +143,17 @@ public class ProcessDiagram {
 				UUID blockId = cxn.getTarget();
 				ProcessBlock blk = blocks.get(blockId);
 				if( blk!=null ) {
-					ValueChangeNotification vcn = new ValueChangeNotification(blk,cxn.getDownstreamPortName(),value);
+					IncomingValueNotification vcn = new IncomingValueNotification(cxn,value);
 					notifications.add(vcn);
 				}
 				else {
-					log.warnf("%s: ValueChangeNotification: Target block %s not found for connection",TAG,blockId.toString());
+					log.warnf("%s: getOutgoingNotifications: Target block %s not found for connection",TAG,blockId.toString());
 				}
 
 			}
+		}
+		else {
+			log.warnf("%s: getOutgoingNotifications: no connections found for %s:%s",TAG,block.getBlockId().toString(),port);
 		}
 		return notifications;
 	}
@@ -168,6 +175,25 @@ public class ProcessDiagram {
 		}
 		public String getPort() { return this.port; }
 		public ProcessBlock getBlock() { return this.block; }
+		
+		// So that class may be used as a map key
+		// Same blockId and port is sufficient to prove equality
+		@Override
+		public boolean equals(Object arg) {
+			boolean result = false;
+			if( arg instanceof BlockPort) {
+				BlockPort that = (BlockPort)arg;
+				if( this.block.getBlockId().equals(that.getBlock().getBlockId() ) &&
+					this.port.equals(that.getPort())   ) {
+					result = true;
+				}
+			}
+			return result;
+		}
+		@Override
+		public int hashCode() {
+			return this.block.getBlockId().hashCode()+port.hashCode();
+		}
 	}
 	/**
 	 * The key is the block Ids and port names for both source and target.
@@ -188,5 +214,26 @@ public class ProcessDiagram {
 		public String getSourceBlock() { return this.sourceBlock; }
 		public String getTargetPort()  { return this.targetPort; }
 		public String getTargetBlock() { return this.targetBlock; }
+		
+		// So that class may be used as a map key
+		// Same source and target ports are sufficient to prove equality
+		@Override
+		public boolean equals(Object arg) {
+			boolean result = false;
+			if( arg instanceof ConnectionKey) {
+				ConnectionKey that = (ConnectionKey)arg;
+				if( this.sourceBlock.equals(that.getSourceBlock()) &&
+					this.sourcePort.equals(that.getSourcePort())   &&
+					this.targetBlock.equals(that.getTargetBlock()) &&
+					this.targetPort.equals(that.getTargetPort())      ) {
+					result = true;
+				}
+			}
+			return result;
+		}
+		@Override
+		public int hashCode() {
+			return this.sourceBlock.hashCode()+this.sourcePort.hashCode()-this.targetBlock.hashCode()-this.targetPort.hashCode();
+		}
 	}
 }

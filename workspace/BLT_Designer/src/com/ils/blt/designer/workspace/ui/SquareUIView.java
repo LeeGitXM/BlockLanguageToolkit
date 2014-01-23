@@ -4,16 +4,13 @@ import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Insets;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Ellipse2D;
 
 import javax.swing.SwingUtilities;
 
@@ -65,9 +62,9 @@ public class SquareUIView extends AbstractUIView implements BlockViewUI {
 		ifb.width  -= 2*STUB_BUFFER;
 		ifb.height -= 2*STUB_BUFFER;
 
-		// Create a diamond that is within the component boundaries
-		int[] xvertices = new int[] {ifb.x,ifb.x+(ifb.width/2),ifb.x+ifb.width,ifb.x+(ifb.width/2) };
-		int[] yvertices = new int[] {ifb.y+(ifb.height/2),ifb.y,ifb.y+(ifb.height/2),ifb.y+(ifb.height)};
+		// Create a square that is within the component boundaries
+		int[] xvertices = new int[] {ifb.x,ifb.x+ifb.width,ifb.x+ifb.width,ifb.x };
+		int[] yvertices = new int[] {ifb.y,ifb.y,ifb.y+ifb.height,ifb.y+ifb.height};
 		Polygon fi = new Polygon(xvertices,yvertices,4);
 		g.setColor(getBackground());
 		g.fillPolygon(fi);

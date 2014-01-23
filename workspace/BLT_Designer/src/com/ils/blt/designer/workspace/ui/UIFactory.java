@@ -25,6 +25,9 @@ public class UIFactory {
 			case ROUND:
 				ui= new RoundUIView(block);
 				break;
+			case SQUARE:
+				ui= new SquareUIView(block);
+				break;
 			case TAGREADER:
 				ui= new TagreaderUIView(block);
 				break;

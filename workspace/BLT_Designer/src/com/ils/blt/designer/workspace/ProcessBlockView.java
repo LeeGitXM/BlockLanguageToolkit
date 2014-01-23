@@ -80,6 +80,7 @@ public class ProcessBlockView extends AbstractBlock {
 				anchors.add( new AnchorDescriptor((sa.getDirection()==AnchorDirection.INCOMING?AnchorType.Terminus:AnchorType.Origin),sa.getId(),sa.getDisplay()) );
 			}
 		}
+		this.properties = new ArrayList<BlockProperty>();
 		if(sb.getProperties()!=null ) {
 			for(BlockProperty bp:sb.getProperties()) {
 				properties.add(bp);
@@ -91,7 +92,7 @@ public class ProcessBlockView extends AbstractBlock {
 	
 	@Override
 	public Block copy(Map<UUID, UUID> arg0) {
-		// TODO Auto-generated method stub
+		log.infof("%s: copy ...", TAG);
 		return null;
 	}
 	

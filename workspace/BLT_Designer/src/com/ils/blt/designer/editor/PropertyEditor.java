@@ -78,19 +78,27 @@ public class PropertyEditor extends JPanel {
 		JPanel panel = new CorePropertyPanel(block);
 		add(panel,"grow,push");
 		
-		// The Gateway knows the current state of a block and all its attributes. 
+		// The Gateway knows the saved state of a block and its attributes. If the block has never been
+		// initialized (edited), then get defaults from the Gateway, else retain it current.
 		// Always refresh the block attributes from the Gateway before display.
+		log.debugf("%s: init - editing %s (%s)",TAG,block.getId().toString(),block.getClassName());
+		Collection<BlockProperty> propertyList = block.getProperties();
+		if( propertyList==null || propertyList.isEmpty()) {
+			propertyList = new ArrayList<BlockProperty>();
+			PropertiesRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+			BlockProperty[] properties = handler.getBlockProperties(projectId,resourceId,block.getId(),block.getClassName());
+			for(BlockProperty property:properties) {
+				propertyList.add(property);
+			}
+			log.debugf("%s: init - initialize property list for %s (%d properties)",TAG,block.getId().toString(),propertyList.size());
+			block.setProperties(propertyList);
+		}
 		
-		PropertiesRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
-		BlockProperty[] properties = handler.getBlockProperties(projectId,resourceId,block.getId(),block.getClassName());
-		
-		Collection<BlockProperty> bpList = new ArrayList<BlockProperty>();
-		for(BlockProperty property:properties) {
-			bpList.add(property);
+		// Now fill the editor 
+		for(BlockProperty property:propertyList) {
 			panel = new PropertyPanel(property);
 			add(panel,"grow,push");
 		}
-		block.setProperties(bpList);
 	}
 	
 	/**
@@ -122,9 +130,10 @@ public class PropertyEditor extends JPanel {
 	}
 	
 	/**
-	 * Create a text box for the link field
+	 * Create a text box for the binding field. 
+	 * NOTE: An ENTER terminates text entry.
 	 */
-	private JTextField createLinkTextField(final BlockProperty prop) {
+	private JTextField createBindingTextField(final BlockProperty prop) {
 		String val = prop.getBinding();
 		if(val==null) val = "";
 		final JTextField field = new JTextField(val);
@@ -132,6 +141,7 @@ public class PropertyEditor extends JPanel {
 		field.addActionListener(new ActionListener() {
 	        public void actionPerformed(ActionEvent e){
 	            prop.setBinding(field.getText());
+	            log.debugf("%s: set binding %s",TAG,field.getText());
 	        }
 		});
 		return field;
@@ -146,6 +156,7 @@ public class PropertyEditor extends JPanel {
 		field.setEditable(prop.isEditible());
 		field.addActionListener(new ActionListener() {
 	        public void actionPerformed(ActionEvent e){
+	        	log.debugf("%s: set value %s",TAG,field.getText());
 	            prop.setValue(field.getText());
 	        }
 		});
@@ -206,10 +217,12 @@ public class PropertyEditor extends JPanel {
 		final JComboBox box = new JComboBox(entries);
 		box.addActionListener(new ActionListener() {
 	        public void actionPerformed(ActionEvent e){
-	            prop.setValue(box.getSelectedItem().toString());
+	        	PropertyType pt = PropertyType.valueOf(PropertyType.class, box.getSelectedItem().toString());
+	        	log.debugf("%s: set property type %s",TAG,box.getSelectedItem().toString());
+	            prop.setType(pt);
 	        }
 		});
-		box.setSelectedItem(prop.getType());
+		box.setSelectedItem(prop.getType().toString());
 		box.setEditable(false);
 		box.setEnabled(false);
 		return box;
@@ -217,7 +230,7 @@ public class PropertyEditor extends JPanel {
 	/**
 	 * Create a combo box for link types
 	 */
-	private JComboBox createLinkTypeCombo(final BlockProperty prop) {
+	private JComboBox createBindingTypeCombo(final BlockProperty prop) {
 		String[] entries = new String[BindingType.values().length];
 		int index=0;
 		for(BindingType type : BindingType.values()) {
@@ -227,10 +240,12 @@ public class PropertyEditor extends JPanel {
 		final JComboBox box = new JComboBox(entries);
 		box.addActionListener(new ActionListener() {
 	        public void actionPerformed(ActionEvent e){
-	            prop.setValue(box.getSelectedItem().toString());
+	        	BindingType bt = BindingType.valueOf(BindingType.class, box.getSelectedItem().toString());
+	        	log.debugf("%s: set binding type %s",TAG,box.getSelectedItem().toString());
+	            prop.setBindingType(bt);
 	        }
 		});
-		box.setSelectedItem(prop.getBinding());
+		box.setSelectedItem(prop.getBindingType().toString());
 		return box;
 	}
 	
@@ -251,14 +266,14 @@ public class PropertyEditor extends JPanel {
 			add(createValueTextField(prop),"");
 			add(createPropertyTypeCombo(prop),"wrap");
 			add(createLabel("Binding"),"skip");
-			add(createLinkTextField(prop),"");
-			add(createLinkTypeCombo(prop),"wrap");
+			add(createBindingTextField(prop),"");
+			add(createBindingTypeCombo(prop),"wrap");
 			// For int or double, add min and max
 			PropertyType type = prop.getType();
 			if( type==PropertyType.DOUBLE || type==PropertyType.INTEGER) {
 				add(createLabel("Min-Max"),"skip");
 				add(createMinTextField(prop),"");
-				add(createMaxTextField(prop),"wrap");
+				add(createMaxTextField(prop),"growx,wrap");
 			}
 		}
 	}
@@ -277,6 +292,8 @@ public class PropertyEditor extends JPanel {
 			setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
 			addSeparator(this,"Core");
 			
+			add(createLabel("Label"),"skip");
+			add(createTextField(blk.getLabel()),"span,growx");
 			add(createLabel("Class"),"skip");
 			add(createTextField(blk.getClassName()),"span,growx");
 			add(createLabel("UUID"),"skip");
