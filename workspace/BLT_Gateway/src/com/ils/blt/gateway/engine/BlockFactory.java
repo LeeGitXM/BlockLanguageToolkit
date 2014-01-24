@@ -12,8 +12,12 @@ import java.util.UUID;
 
 import com.ils.block.ProcessBlock;
 import com.ils.block.common.BlockProperty;
+import com.ils.block.control.BlockPropertyChangeEvent;
 import com.ils.block.control.ExecutionController;
 import com.ils.blt.common.serializable.SerializableBlock;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
+import com.inductiveautomation.ignition.common.model.values.BasicQuality;
+import com.inductiveautomation.ignition.common.model.values.Quality;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 
@@ -94,12 +98,20 @@ public class BlockFactory  {
 				BlockProperty property = pb.getProperty(bp.getName());
 				if( property!=null ) {
 					property.setEditible(bp.isEditible());
-					property.setValue(bp.getValue());
-					property.setQuality(bp.getQuality());
 					property.setMaximum(bp.getMaximum());
 					property.setMinimum(bp.getMinimum());
 					property.setBinding(bp.getBinding());
 					property.setBindingType(bp.getBindingType());
+					// Use the property change interface so as to properly trigger.
+					// local handling within the blocknew BasicQualifiedValue(property.getValue(),
+					BlockPropertyChangeEvent event = 
+						new BlockPropertyChangeEvent(pb.getBlockId().toString(),property.getName(),
+							new BasicQualifiedValue(property.getValue(),
+								new BasicQuality(property.getQuality(),Quality.Level.Good)),
+							new BasicQualifiedValue(bp.getValue(),
+								new BasicQuality(bp.getQuality(),Quality.Level.Good)));
+					pb.propertyChange(event);
+
 				}
 				else {
 					log.warnf("%s: updateBlockFromSerializable: Property %s not found in concrete instance",TAG,bp.getName()); 
