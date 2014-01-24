@@ -13,7 +13,6 @@ import java.util.UUID;
 import com.ils.block.ProcessBlock;
 import com.ils.block.control.IncomingValueNotification;
 import com.ils.block.control.OutgoingValueNotification;
-import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableConnection;
 import com.ils.blt.common.serializable.SerializableDiagram;
@@ -60,7 +59,7 @@ public class ProcessDiagram {
 		analyze(diagram);
 	}
 	
-	public ProcessBlock getBlock(String id) { return blocks.get(id); }
+	public ProcessBlock getBlock(UUID id) { return blocks.get(id); }
 	
 	public Collection<ProcessBlock> getProcessBlocks() { return blocks.values(); }
 	

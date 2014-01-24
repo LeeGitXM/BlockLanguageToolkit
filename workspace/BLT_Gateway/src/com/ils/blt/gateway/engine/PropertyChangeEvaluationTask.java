@@ -3,9 +3,8 @@
  */
 package com.ils.blt.gateway.engine;
 
-import java.beans.PropertyChangeEvent;
-
 import com.ils.block.ProcessBlock;
+import com.ils.block.control.BlockPropertyChangeEvent;
 
 /**
  * Evaluate the specified block. The thread should end with the block placing a
@@ -14,13 +13,13 @@ import com.ils.block.ProcessBlock;
  */
 public class PropertyChangeEvaluationTask implements Runnable{
 	private final ProcessBlock block;
-	private final PropertyChangeEvent event;
+	private final BlockPropertyChangeEvent event;
 	/**
 	 * Constructor.
 	 * 
 	 * @param block the block instance to evaluate
 	 */
-	public PropertyChangeEvaluationTask(ProcessBlock block,PropertyChangeEvent event)  {	
+	public PropertyChangeEvaluationTask(ProcessBlock block,BlockPropertyChangeEvent event)  {	
 		this.block = block;
 		this.event = event;
 	}

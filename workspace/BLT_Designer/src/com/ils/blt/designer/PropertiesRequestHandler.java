@@ -14,7 +14,6 @@ import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
-import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 
 
@@ -25,7 +24,6 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 public class PropertiesRequestHandler  {
 	private final static String TAG = "PropertiesRequestHandler";
 	private final LoggerEx log;
-	private final DesignerContext context;
 
 	/**
 	 * Constructor adds common attributes that are needed to generate unique keys to identify
@@ -33,13 +31,58 @@ public class PropertiesRequestHandler  {
 	 * 
 	 * @param ctxt Designer context
 	 */
-	public PropertiesRequestHandler(DesignerContext ctxt)  {
-		this.context = ctxt;
+	public PropertiesRequestHandler()  {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 	}
 
-	
+	/**
+	 * Start the block execution engine in the gateway.
+	 */
+	public boolean isControllerRunning() {
 
+		boolean result = false;
+		try {
+			// Returns either "running" or "stopped"
+			String state = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "getControllerState");
+			if( state.equalsIgnoreCase("running")) result = true;
+			log.infof("%s: isControllerRunning ... %s",TAG,state);
+		}
+		catch(Exception ge) {
+			log.infof("%s: isControllerRunning: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		return result;
+	}
+	
+	/**
+	 * Start the block execution engine in the gateway.
+	 */
+	public void startController() {
+		log.infof("%s: startController ...",TAG);
+
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "startController");
+		}
+		catch(Exception ge) {
+			log.infof("%s: startController: GatewayException (%s)",TAG,ge.getMessage());
+		}
+	}
+
+	/**
+	 * Shutdown the block execution engine in the gateway.
+	 */
+	public void stopController() {
+		log.infof("%s: stopController ...",TAG);
+
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "stopController");
+		}
+		catch(Exception ge) {
+			log.infof("%s: stopController: GatewayException (%s)",TAG,ge.getMessage());
+		}
+	}
 
 
 	public void enableDiagram(Long projectId, Long resourceId, Boolean flag) {

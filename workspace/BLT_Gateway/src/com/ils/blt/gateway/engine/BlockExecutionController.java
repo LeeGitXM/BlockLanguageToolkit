@@ -7,6 +7,7 @@
 package com.ils.blt.gateway.engine;
 
 import java.util.Collection;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -35,30 +36,33 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
  */
 public class BlockExecutionController implements ExecutionController, Runnable {
 	private final static String TAG = "BlockExecutionController";
+	public final static String CONTROLLER_RUNNING_STATE = "running";
+	public final static String CONTROLLER_STOPPED_STATE = "stopped";
 	private static int BUFFER_SIZE = 100;   // Buffer Capacity
 	private final LoggerEx log;
-	private GatewayContext context = null;    // Must be initialized before anything works
+	//private GatewayContext context = null;    // Must be initialized before anything works
 	private final ModelResourceManager delegate;
 	private final WatchdogTimer watchdogTimer;
 	private static BlockExecutionController instance = null;
+	private final ExecutorService threadPool;
 
 
 	private final BoundedBuffer buffer;
 	private TagListener tagListener = null;    // Tag subscriber
 	private TagWriter tagWriter = null;
-	private Thread completionThread = null;
-	private boolean stopped = true;
-	private ExecutorService executor = Executors.newCachedThreadPool();
+	private Thread notificationThread = null;
+	// Make this static so we can test without creating an instance.
+	private static boolean stopped = true;
 	
 	/**
 	 * Initialize with instances of the classes to be controlled.
 	 */
 	private BlockExecutionController() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
-		delegate = new ModelResourceManager(this);
+		this.delegate = new ModelResourceManager(this);
+		this.threadPool = Executors.newFixedThreadPool(10);
 		
 		buffer = new BoundedBuffer(BUFFER_SIZE);
-		
 		watchdogTimer = new WatchdogTimer();
 	}
 
@@ -83,35 +87,53 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		}
 		catch( InterruptedException ie ) {}
 	}
+
 	/**
-	 * Set the gateway context. Once the context is known, we can create a dataCollector.
-	 * @param ctxt the context
+	 * Obtain the running state of the controller. This is a static method
+	 * so that we don't have to instantiate an instance if there is none currently.
+	 * @return the run state of the controller. ("running" or "stopped")
 	 */
-	public void setContext(GatewayContext ctxt) { 
-		this.context=ctxt; 
-		this.tagListener = new TagListener(context);
+	public static String getExecutionState() {
+		if( stopped ) return CONTROLLER_STOPPED_STATE;
+		else          return CONTROLLER_RUNNING_STATE;
+	}
+	
+	/**
+	 * Start the controller, watchdogTimer, tagListener and TagWriter.
+	 * @param ctxt the gateway context
+	 */
+	public synchronized void start(GatewayContext context) {
+		log.debugf("%s: STARTED",TAG);
+		if(!stopped) return;  
+		stopped = false;
+		if( tagListener==null ) this.tagListener = new TagListener(context);
+		tagListener.start();
 		this.tagWriter = new TagWriter(context);
 		this.delegate.setContext(context);
-	}
-
-	public synchronized void start() {
-		stopped = false;
-		completionThread = new Thread(this, "BlockCompletionHandler");
-		log.debugf("%s START %d",TAG,completionThread.hashCode());
-		completionThread.setDaemon(true);
-		completionThread.start();
+		this.notificationThread = new Thread(this, "BlockExecutionController");
+		log.debugf("%s START - notification thread %d ",TAG,notificationThread.hashCode());
+		notificationThread.setDaemon(true);
+		notificationThread.start();
 		watchdogTimer.start();
 	}
 	
+	/**
+	 * Stop the controller, watchdogTimer, tagListener and TagWriter. Set all
+	 * instance values to null to, hopefully, allow garbage collection.
+	 * WARNING: Do not hold on to a instance values as it will be incorrect
+	 * after a stop.
+	 * @param ctxt the gateway context
+	 */
 	public synchronized void stop() {
-		log.debug(TAG+"STOPPED");
+		log.debugf("%s: STOPPED",TAG);
+		if(stopped) return;
 		stopped = true;
-		executor.shutdown();
-		if(completionThread!=null) {
-			completionThread.interrupt();
+		if(notificationThread!=null) {
+			notificationThread.interrupt();
 		}
 		tagListener.stop();
 		watchdogTimer.stop();
+		instance = null;       // Allow to be re-claimeded.
 	}
 	
 	public ModelResourceManager getDelegate() { return delegate; }
@@ -155,7 +177,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	// ============================ Completion Handler =========================
 	/**
 	 * Wait for work to arrive at the output of a bounded buffer. The contents of the bounded buffer
-	 * are ExecutionCompletionNotification objects. In/out are from the viewpoint of a block.
+	 * are OutgoingValueNotification objects. In/out are from the viewpoint of a block.
 	 */
 	public void run() {
 		while( !stopped  ) {
@@ -171,12 +193,19 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 						Collection<IncomingValueNotification> outgoing = dm.getOutgoingNotifications(inNote);
 						if( outgoing.isEmpty() ) log.warnf("%s: no downstream connections found ...",TAG);
 						for(IncomingValueNotification outNote:outgoing) {
-							log.tracef("%s: sending outgoing notification: to %s:%s", TAG,outNote.getConnection().getTarget().toString(),outNote.getConnection().getDownstreamPortName());
-							executor.execute(new IncomingValueChangeTask(inNote.getBlock(),outNote));
+							UUID outBlockId = outNote.getConnection().getTarget();
+							ProcessBlock outBlock = dm.getBlock(outBlockId);
+							if( outBlock!=null ) {
+								log.tracef("%s: sending outgoing notification: to %s:%s", TAG,outNote.getConnection().getTarget().toString(),outNote.getConnection().getDownstreamPortName());
+								threadPool.execute(new IncomingValueChangeTask(outBlock,outNote));
+							}
+							else {
+								log.warnf("%s: run: target block %s not found in diagram map ",TAG,outBlockId.toString());
+							}
 						}
 					}
 					else {
-						log.warnf("%s: run: diagram %d in project %d in value change notification not found",TAG,
+						log.warnf("%s: run: diagram %d, project %d not found in value change notification",TAG,
 									pb.getDiagramId(),pb.getProjectId());
 					}
 				}

@@ -65,7 +65,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	@Override
 	public void startup(DesignerContext ctx, LicenseState activationState) throws Exception {
 		this.context = ctx;
-		propertiesRequestHandler = new PropertiesRequestHandler(context);
+		propertiesRequestHandler = new PropertiesRequestHandler();
 		context.addBeanInfoSearchPath("com.ils.blt.designer.component.beaninfos");
 		
 		// Place icons for our custom widgets on the Vision palette

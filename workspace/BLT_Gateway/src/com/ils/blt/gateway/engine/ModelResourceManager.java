@@ -127,7 +127,7 @@ public class ModelResourceManager implements ProjectListener  {
 		if( projectModels!=null ) {
 			ProcessDiagram dm = projectModels.get(resourceId);
 			if( dm!=null ) {
-				block = dm.getBlock(blockId.toString());
+				block = dm.getBlock(blockId);
 			}
 		}
 		return block;
@@ -235,11 +235,12 @@ public class ModelResourceManager implements ProjectListener  {
 	@Override
 	public void projectAdded(Project staging, Project published) {
 		if( staging!=null ) {
-			long projectId = staging.getId();
-			List<ProjectResource> resources = staging.getResources();
+			long projectId = published.getId();
+			log.debugf("%s: projectAdded - published project %d", TAG,projectId);
+			List<ProjectResource> resources = published.getResources();
 			for( ProjectResource res:resources ) {
 				if( res.getResourceType().equalsIgnoreCase(BLTProperties.MODEL_RESOURCE_TYPE)) {
-					log.debugf("%s: projectAdded - staging %s %d = %s", TAG,res.getName(),
+					log.debugf("%s: projectAdded - published %s %d = %s", TAG,res.getName(),
 						res.getResourceId(),res.getResourceType());
 					ProcessDiagram diagram = deserializeModelResource(projectId,res);
 					if( diagram!=null) {

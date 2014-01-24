@@ -25,7 +25,7 @@ public class DatabaseUIView extends AbstractUIView implements BlockViewUI {
 	public DatabaseUIView(ProcessBlockView view) {
 		super(view);
 		setOpaque(false);
-		setPreferredSize(new Dimension(58,58));   // 48 plus 10 for stubs
+		setPreferredSize(new Dimension(58,58));   // 48 plus 10 for stub
 		icon = IconUtil.getRootIcon(RoundUIView.class, "database_48.png");
 		initAnchorPoints();
 	}

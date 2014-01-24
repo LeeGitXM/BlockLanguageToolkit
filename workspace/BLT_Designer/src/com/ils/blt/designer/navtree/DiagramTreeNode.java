@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.BLTDesignerHook;
+import com.ils.blt.designer.PropertiesRequestHandler;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
@@ -50,6 +51,8 @@ public class DiagramTreeNode extends FolderNode {
 	protected DiagramAction diagramAction = null;
 	protected ExportAction exportAction = null;
 	protected ImportAction importAction = null;
+	protected StartAction startAction = null;
+	protected StopAction stopAction = null;
 	private final DiagramWorkspace workspace; 
 	
 
@@ -128,9 +131,21 @@ public class DiagramTreeNode extends FolderNode {
 		setupEditActions(paths, selection);
 		
 		if (isRootFolder()) { 
+			PropertiesRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+
 			applicationAction = new ApplicationAction(this.folderId);
+			startAction = new StartAction();
+			stopAction = new StopAction();
 			debugAction = new DebugAction();
+			if( handler.isControllerRunning() ) {
+				startAction.setEnabled(false);
+			}
+			else {
+				stopAction.setEnabled(false);
+			}
 			menu.add(applicationAction);
+			menu.add(startAction);
+			menu.add(stopAction);
 			menu.addSeparator();
 			menu.add(debugAction);
 		}
@@ -393,6 +408,45 @@ public class DiagramTreeNode extends FolderNode {
 			} 
 			catch (Exception err) {
 				ErrorUtil.showError(err);
+			}
+		}
+	}
+    
+    private class StartAction extends BaseAction {
+    	private static final long serialVersionUID = 1L;
+	    public StartAction()  {
+	    	super(PREFIX+".StartExecution",IconUtil.getIcon("disk_play"));  // preferences
+	    }
+	    
+		public void actionPerformed(ActionEvent e) {
+			try {
+				PropertiesRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+				handler.startController();
+				this.setEnabled(false);
+				stopAction.setEnabled(true);
+			} 
+			catch (Exception ex) {
+				log.warnf("%s: startAction: ERROR: %s",TAG,ex.getMessage(),ex);
+				ErrorUtil.showError(ex);
+			}
+		}
+	}
+    private class StopAction extends BaseAction {
+    	private static final long serialVersionUID = 1L;
+	    public StopAction()  {
+	    	super(PREFIX+".StopExecution",IconUtil.getIcon("disk_forbidden"));  // preferences
+	    }
+	    
+		public void actionPerformed(ActionEvent e) {
+			try {
+				PropertiesRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+				handler.stopController();
+				this.setEnabled(false);
+				startAction.setEnabled(true);
+			}
+			catch(Exception ex) {
+				log.warnf("%s: stopAction: ERROR: %s",TAG,ex.getMessage(),ex);
+				ErrorUtil.showError(ex);
 			}
 		}
 	}

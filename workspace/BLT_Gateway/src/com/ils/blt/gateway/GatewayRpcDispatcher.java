@@ -17,6 +17,7 @@ import com.ils.block.ProcessBlock;
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.block.common.BlockProperty;
 import com.ils.block.common.PalettePrototype;
+import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.common.ClassList;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -42,7 +43,17 @@ public class GatewayRpcDispatcher   {
 
 	}
 
-
+	public String getControllerState() {
+		return BlockExecutionController.getExecutionState();
+	}
+	
+	public void startController() {
+		BlockExecutionController.getInstance().start(context);
+	}
+	
+	public void stopController() {
+		BlockExecutionController.getInstance().stop();
+	}
 
 	public void enableDiagram(Long projectId, Long resourceId, Boolean flag) {
 		// TODO Auto-generated method stub

@@ -4,22 +4,22 @@
  */
 package com.ils.blt.gateway.engine;
 
-import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.RejectedExecutionException;
 
 import com.ils.block.ProcessBlock;
 import com.ils.block.common.BindingType;
 import com.ils.block.common.BlockConstants;
 import com.ils.block.common.BlockProperty;
+import com.ils.block.control.BlockPropertyChangeEvent;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
+import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.model.values.Quality;
 import com.inductiveautomation.ignition.common.sqltags.model.Tag;
 import com.inductiveautomation.ignition.common.sqltags.model.TagPath;
 import com.inductiveautomation.ignition.common.sqltags.model.TagProp;
@@ -43,6 +43,7 @@ public class TagListener implements TagChangeListener   {
 	private final GatewayContext context;
 	private final Map<String,List<ProcessBlock>> blockMap;  // Executable block keyed by tag path
 	private final SimpleDateFormat dateFormatter;
+	private boolean stopped = true;
 	
 	/**
 	 * Constructor: 
@@ -71,36 +72,7 @@ public class TagListener implements TagChangeListener   {
 				return;    // We already have a subscription
 			}
 			blocks.add(block);
-			SQLTagsManager tmgr = context.getTagManager();
-			try {
-				TagPath tp = TagPathParser.parse(tagPath);
-				log.debugf("%s: startSubscription: for %s on tag path %s",TAG,property.getName(),tp.toStringFull());
-				// Make sure the attribute is in canonical form
-				property.setBinding( tp.toStringFull());
-				// Initialize the value in this data point
-				Tag tag = tmgr.getTag(tp);
-				if( tag!=null ) {
-					QualifiedValue value = tag.getValue();
-					log.debugf("%s: startSubscription: got a %s value for %s (%s at %s)",TAG,
-							(value.getQuality().isGood()?"GOOD":"BAD"),
-							tag.getName(),value.getValue(),
-							dateFormatter.format(value.getTimestamp()));
-					try {
-						context.getExecutionManager().executeOnce(new PropertyChangeEvaluationTask(block,
-							new PropertyChangeEvent(block.getBlockId().toString(),property.getName(),property.getValue(),value.getValue())));
-					}
-					catch(Exception ex) {
-						log.warnf("%s: startSubscription: Failed to execute change event (%s)",TAG,ex.getMessage()); 
-					}
-				}
-				tmgr.subscribe(tp, this);
-			}
-			catch(IOException ioe) {
-				log.errorf("%s: startSubscription (%s)",TAG,ioe.getMessage());
-			}
-			catch(IllegalArgumentException iae) {
-				log.errorf("%s: startSubscription - illegal argument for %s (%s)",TAG,tagPath,iae.getMessage());
-			}
+			startSubscriptionForProperty(block,property,tagPath);
 		}
 	}
 
@@ -138,17 +110,69 @@ public class TagListener implements TagChangeListener   {
 			log.error(TAG+"stopSubscription ("+ioe.getMessage()+")");
 		}
 	}
+	/**
+	 * Re-start. Create subscriptions for everything in the tag map.
+	 */
+	public void start() {
+		log.infof("%s: start tagListener, shutdown executor",TAG);
+		for( String tagPath:blockMap.keySet()) {
+			List<ProcessBlock> blocks = blockMap.get(tagPath);
+			for(ProcessBlock block:blocks ) {
+				for( String name: block.getPropertyNames()) {
+					BlockProperty property = block.getProperty(name);
+					if( property.getBindingType()==BindingType.TAG && 
+					    property.getBinding().equals(tagPath )        ) {
+						startSubscriptionForProperty(block,property,tagPath);
+					}
+				}
+			}
+		}
+	}
 	
+	private void startSubscriptionForProperty(ProcessBlock block,BlockProperty property,String tagPath) {
+		SQLTagsManager tmgr = context.getTagManager();
+		try {
+			TagPath tp = TagPathParser.parse(tagPath);
+			log.debugf("%s: startSubscription: for %s on tag path %s",TAG,property.getName(),tp.toStringFull());
+			// Make sure the attribute is in canonical form
+			property.setBinding( tp.toStringFull());
+			Tag tag = tmgr.getTag(tp);
+			if( tag!=null ) {
+				QualifiedValue value = tag.getValue();
+				log.debugf("%s: startSubscription: got a %s value for %s (%s at %s)",TAG,
+						(value.getQuality().isGood()?"GOOD":"BAD"),
+						tag.getName(),value.getValue(),
+						dateFormatter.format(value.getTimestamp()));
+				try {
+					log.debugf("%s: startSubscription: property change for %s:%s",TAG,block.getLabel(),property.getName());
+					PropertyChangeEvaluationTask task = new PropertyChangeEvaluationTask(block,
+						new BlockPropertyChangeEvent(block.getBlockId().toString(),property.getName(),
+								new BasicQualifiedValue(property.getValue(),
+										new BasicQuality(property.getQuality(),Quality.Level.Good)),value));
+					Thread propertyChangeThread = new Thread(task, "PropertyChange");
+					propertyChangeThread.start();
+				}
+				catch(Exception ex) {
+					log.warnf("%s: startSubscription: Failed to execute subscription start (%s)",TAG,ex.getLocalizedMessage()); 
+				}
+			}
+			tmgr.subscribe(tp, this);
+		}
+		catch(IOException ioe) {
+			log.errorf("%s: startSubscription (%s)",TAG,ioe.getMessage());
+		}
+		catch(IllegalArgumentException iae) {
+			log.errorf("%s: startSubscription - illegal argument for %s (%s)",TAG,tagPath,iae.getMessage());
+		}
+	}
 	/**
 	 * Shutdown completely.
 	 */
 	public void stop() {
 		log.infof("%s: stop tagListener, shutdown executor",TAG);
-		context.getExecutionManager().shutdown();
 		for( String tagPath:blockMap.keySet()) {
 			stopSubscription(tagPath);
 		}
-		blockMap.clear();
 	}
 	
 	/** 
@@ -185,15 +209,24 @@ public class TagListener implements TagChangeListener   {
 					for(ProcessBlock blk:blocks) {
 						// Search properties of the block looking for any bound to tag
 						for( String name: blk.getPropertyNames()) {
-							BlockProperty prop = blk .getProperty(name);
+							BlockProperty prop = blk.getProperty(name);
 							String path = prop.getBinding().toString();
-							if( path.equals(tp) && prop.getBindingType()==BindingType.TAG ) {
-								try {
-									context.getExecutionManager().executeOnce(new PropertyChangeEvaluationTask(blk,
-										new PropertyChangeEvent(blk.getBlockId().toString(),prop.getName(),prop.getValue(),tag.getValue())));
-								}
-								catch(Exception ex) {
-									log.warnf("%s: tagChanged: Failed to execute change event (%s)",TAG,ex.getLocalizedMessage()); 
+							if(prop.getBindingType()==BindingType.TAG) {
+								if( path.equals(tp.toStringFull()) && prop.getBindingType()==BindingType.TAG ) {
+									log.tracef("%s: tagChanged: comparing block %s:%s %s:%s",TAG,blk.getLabel(),prop.getName(),path,tp.toStringFull());
+									try {
+										log.debugf("%s: tagChanged: property change for %s:%s",TAG,blk.getLabel(),prop.getName());
+				
+										PropertyChangeEvaluationTask task = new PropertyChangeEvaluationTask(blk,
+												new BlockPropertyChangeEvent(blk.getBlockId().toString(),prop.getName(),
+														new BasicQualifiedValue(prop.getValue(),
+																new BasicQuality(prop.getQuality(),Quality.Level.Good)),tag.getValue()));
+										Thread propertyChangeThread = new Thread(task, "PropertyChange");
+										propertyChangeThread.start();
+									}
+									catch(Exception ex) {
+										log.warnf("%s: tagChanged: Failed to execute change event (%s)",TAG,ex.getLocalizedMessage()); 
+									}
 								}
 							}
 						}

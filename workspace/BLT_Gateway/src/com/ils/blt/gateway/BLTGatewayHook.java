@@ -51,11 +51,9 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	@Override
 	public void setup(GatewayContext ctxt) {
 		this.context = ctxt;
-		// Initialize the controller.
-		BlockExecutionController.getInstance().setContext(ctxt);
+
 		// NOTE: Get serialization exception if ModelResourceManager is saved as a class member
 		//       Exception is thrown when we try to incorporate a StatusPanel
-
 		log.info(TAG+"Setup - enabled project listeners.");
 		PropertiesUpdateHandler.getInstance().setContext(context);
 		ProxyHandler.getInstance().setContext(context);
@@ -65,12 +63,10 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	@Override
 	public void startup(LicenseState licenseState) {
 	    log.infof("%s: Startup complete.",TAG);
-	    BlockExecutionController.getInstance().start();
 	}
 
 	@Override
 	public void shutdown() {
-
 		//context.getProjectManager().removeProjectListener(mrm);
 		BlockExecutionController.getInstance().stop();
 	}
@@ -95,6 +91,10 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		panels.add(new ExecutionStatus());
 		return panels;
 	}
+	
+	// So we're serializable ??
+	public void setDispatcher(GatewayRpcDispatcher rpc) { this.dispatcher = rpc; }
+	public GatewayRpcDispatcher getDispatcher() { return this.dispatcher; }
 	
 	private class ExecutionStatus extends AbstractNamedTab {
 		private static final long serialVersionUID = 64149723779427382L;
