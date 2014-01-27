@@ -3,10 +3,13 @@ package com.ils.blt.designer.workspace.ui;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 
 import com.ils.blt.designer.workspace.ProcessBlockView;
+import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
 
 
@@ -18,12 +21,14 @@ import com.inductiveautomation.ignition.designer.gui.IconUtil;
 public class RoundUIView extends AbstractUIView implements BlockViewUI {
 	private static final long serialVersionUID = 2130868310475735865L;
 	private Icon icon = null;
+	private static final Dimension IMAGE_SIZE = new Dimension(48,48);
 	
 	public RoundUIView(ProcessBlockView view) {
 		super(view);
 		setOpaque(false);
 		setPreferredSize(new Dimension(68,68));       // 48 plus 5 for stubs
-		icon = IconUtil.getRootIcon(RoundUIView.class, "round_48.png");
+		Image img = ImageLoader.getInstance().loadImage("Block/icons/48/round_48.png",IMAGE_SIZE);
+		if( img !=null) icon = new ImageIcon(img);
 		initAnchorPoints();
 	}
 	

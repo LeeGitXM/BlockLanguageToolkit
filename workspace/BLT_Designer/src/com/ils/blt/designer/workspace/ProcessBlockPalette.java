@@ -5,7 +5,9 @@ package com.ils.blt.designer.workspace;
 
 import java.awt.BorderLayout;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -13,7 +15,7 @@ import java.awt.event.ActionEvent;
 import java.util.List;
 
 import javax.swing.AbstractAction;
-import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -24,6 +26,7 @@ import com.ils.block.common.PalettePrototype;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.PropertiesRequestHandler;
+import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
@@ -42,6 +45,7 @@ public class ProcessBlockPalette extends DockableFrame implements ResourceWorksp
 	private static final long serialVersionUID = 4627016359409031941L;
 	private static final String TAG = "ProcessBlockPalette";
 	public static final String DOCKING_KEY = "ProcessBlockPalette";
+	private static final Dimension IMAGE_SIZE = new Dimension(32,32);
 	private final DesignerContext context;
 	private final DiagramWorkspace workspace;
 	private LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
@@ -63,7 +67,7 @@ public class ProcessBlockPalette extends DockableFrame implements ResourceWorksp
 		
 		// Query the Gateway for a list of blocks to display
 		JPanel panel = new JPanel();
-		PropertiesRequestHandler handler = ((BLTDesignerHook)ctx.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+		PropertiesRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
 		List<PalettePrototype> prototypes = handler.getBlockPrototypes();
 		for( PalettePrototype proto:prototypes) {
 			JComponent component = new PaletteEntry(proto).getComponent();
@@ -94,8 +98,10 @@ public class ProcessBlockPalette extends DockableFrame implements ResourceWorksp
 		public PaletteEntry(PalettePrototype proto) {
 			super(TAG);
 			prototype = proto;
-			log.infof("%s: PalleteEntry %s",TAG,proto.getPaletteIconPath());
-			Icon icon = IconUtil.getRootIcon(PalettePrototype.class, proto.getPaletteIconPath());
+			log.infof("%s: PaletteEntry %s",TAG,proto.getPaletteIconPath());
+			Image img = ImageLoader.getInstance().loadImage(proto.getPaletteIconPath(),IMAGE_SIZE);
+			ImageIcon icon = null;
+			if( img !=null) icon = new ImageIcon(img);
 			if( icon!=null ) {
 				JToggleButton button = new JToggleButton(icon);
 				button.setToolTipText(prototype.getTooltipText());
@@ -112,17 +118,20 @@ public class ProcessBlockPalette extends DockableFrame implements ResourceWorksp
 				panel.add(button,BorderLayout.CENTER);
 				panel.add(label,BorderLayout.SOUTH);
 			}
+			else {
+				log.warnf("%s: PaletteEntry icon %s not found. Palette entry %s ignored.",TAG,proto.getPaletteIconPath(),prototype.getPaletteLabel());
+			}
 		}
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			log.infof("%s: PalleteEntry action performed",TAG);
+			log.debugf("%s: PaletteEntry action performed",TAG);
 			if( workspace.getSelectedContainer()!=null ) {
-				log.infof("%s: PalleteEntry creating process view block",TAG);
+				log.infof("%s: PaletteEntry creating process view block",TAG);
 				ProcessBlockView blk = new ProcessBlockView(prototype.getBlockDescription());  
 				workspace.setCurrentTool(new InsertBlockTool(blk));
 			}
-			log.infof("%s: PalleteEntry action performed complete",TAG);
+			log.debugf("%s: PaletteEntry action performed complete",TAG);
 		}
 		public JComponent getComponent() { return panel; }
 	}
