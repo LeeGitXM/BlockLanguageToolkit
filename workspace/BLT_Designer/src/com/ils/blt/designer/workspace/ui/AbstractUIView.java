@@ -166,13 +166,11 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 				g.drawLine(x,y, x+ANCHOR_SIZE, y);
 				g.drawLine(x,y+ANCHOR_SIZE, x+ANCHOR_SIZE, y+ANCHOR_SIZE);
 			}
-  
 		}
 	}
 	
 	protected void drawEmbeddedIcon(Graphics2D g) {
 		String iconPath = block.getEmbeddedIcon();
-		log.infof("%s: drawEmbeddedIcon %s",TAG,iconPath);
 		if( iconPath == null || iconPath.length()==0 ) return;
 	
 		Image img = ImageLoader.getInstance().loadImage(iconPath,EMBEDDED_IMAGE_SIZE);
