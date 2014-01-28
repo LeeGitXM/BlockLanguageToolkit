@@ -29,7 +29,7 @@ public class DatabaseUIView extends AbstractUIView implements BlockViewUI {
 	public DatabaseUIView(ProcessBlockView view) {
 		super(view);
 		setOpaque(false);
-		setPreferredSize(new Dimension(58,58));   // 48 plus 10 for stub
+		setPreferredSize(new Dimension(48+INSET,48+INSET));   // 48 plus INSET
 		Image img = ImageLoader.getInstance().loadImage("Block/icons/48/database_48.png",IMAGE_SIZE);
 		if( img !=null) icon = new ImageIcon(img);
 		initAnchorPoints();
@@ -40,13 +40,13 @@ public class DatabaseUIView extends AbstractUIView implements BlockViewUI {
 	 */
 	protected void initAnchorPoints() {
 		Dimension sz = getPreferredSize();
-		int offset = ANCHOR_SIZE/2;
 		for(AnchorDescriptor desc:getBlock().getAnchors()) {
 			if( desc.getType()==AnchorType.Terminus) {
 				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),getBlock(),AnchorType.Terminus,
-						new Point(sz.width/2 - offset,INSET-offset),
-						new Point(sz.width/2 - offset,-10),
-						new Rectangle((sz.width-offset -INSET)/2,INSET/2-offset,INSET,INSET));
+						new Point(sz.width/2,INSET),
+						new Point(sz.width/2,-LEADER_LENGTH),
+						new Rectangle((sz.width-INSET)/2,INSET/2,2*INSET,2*INSET));
+				ap.setSide(AnchorSide.TOP);
 				getAnchorPoints().add(ap);
 				break;
 			}
@@ -56,7 +56,7 @@ public class DatabaseUIView extends AbstractUIView implements BlockViewUI {
 	protected void paintComponent(Graphics _g) {
 		Graphics2D g = (Graphics2D)_g;
 		if( icon!=null ) {
-			icon.paintIcon(getBlockComponent(), g, INSET/2, INSET);
+			icon.paintIcon(getBlockComponent(), g, INSET, INSET);
 		}
 		drawAnchors(g);
 	}

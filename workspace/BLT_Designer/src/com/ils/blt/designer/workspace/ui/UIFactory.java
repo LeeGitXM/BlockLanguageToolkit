@@ -22,14 +22,14 @@ public class UIFactory {
 			case DIAMOND:
 				ui= new DiamondUIView(block);
 				break;
+			case ENTRY:
+				ui= new EntryUIView(block);
+				break;
 			case ROUND:
 				ui= new RoundUIView(block);
 				break;
 			case SQUARE:
 				ui= new SquareUIView(block);
-				break;
-			case TAGREADER:
-				ui= new TagreaderUIView(block);
 				break;
 			case BASIC:
 			default:

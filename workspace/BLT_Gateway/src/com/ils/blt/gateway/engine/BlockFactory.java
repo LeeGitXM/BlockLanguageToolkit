@@ -96,14 +96,15 @@ public class BlockFactory  {
 		if( properties!=null ) {
 			for( BlockProperty bp:properties) {
 				BlockProperty property = pb.getProperty(bp.getName());
-				if( property!=null ) {
+				if( property!=null && property.getValue()!=null ) {
+					if( property.getQuality()==null) property.setQuality(Quality.Level.Good.toString());
 					property.setEditible(bp.isEditible());
 					property.setMaximum(bp.getMaximum());
 					property.setMinimum(bp.getMinimum());
 					property.setBinding(bp.getBinding());
 					property.setBindingType(bp.getBindingType());
-					// Use the property change interface so as to properly trigger.
-					// local handling within the blocknew BasicQualifiedValue(property.getValue(),
+					// Use the property change interface so as to properly trigger
+					// local handling within the block
 					BlockPropertyChangeEvent event = 
 						new BlockPropertyChangeEvent(pb.getBlockId().toString(),property.getName(),
 							new BasicQualifiedValue(property.getValue(),

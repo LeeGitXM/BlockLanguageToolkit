@@ -20,10 +20,10 @@ public class BasicAnchorPoint extends AnchorPoint {
 	private AnchorSide side;
 	
 	
-	public BasicAnchorPoint(Object id, Block block, AnchorType type,Point anch, Point path, Shape spot) {
+	public BasicAnchorPoint(Object id, Block block, AnchorType type,Point anch, Point leader, Shape spot) {
 		super(id, block, EnumSet.of(type));
 		anchor = anch;
-		pathLeader = path;
+		pathLeader = leader;
 		hotspot = spot;
 		// Default behavior for side. This can be updated.
 		if( type==AnchorType.Origin) side = AnchorSide.RIGHT;

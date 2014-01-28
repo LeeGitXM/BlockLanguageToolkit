@@ -19,6 +19,8 @@ public class SerializableBlock {
 	private int y = 0;
 	private UUID uuid = null;
 	private String className = null;
+	private String embeddedIcon="";       // 32x32 icon to place in block in designer
+	private String embeddedLabel="";      // Label place in block in designer
 	private BlockStyle style = BlockStyle.BASIC;
 	private String label;
 	private String statusText;
@@ -53,6 +55,10 @@ public class SerializableBlock {
 			sa.setParentId(uuid);
 		}
 	}
+	public String getEmbeddedIcon() {return embeddedIcon;}
+	public void setEmbeddedIcon(String embeddedIcon) {this.embeddedIcon = embeddedIcon;}
+	public String getEmbeddedLabel() {return embeddedLabel;}
+	public void setEmbeddedLabel(String embeddedLabel) {this.embeddedLabel = embeddedLabel;}
 	public BlockProperty[] getProperties() { return properties; }
 	public void setProperties(BlockProperty[] array) { this.properties = array; }
 

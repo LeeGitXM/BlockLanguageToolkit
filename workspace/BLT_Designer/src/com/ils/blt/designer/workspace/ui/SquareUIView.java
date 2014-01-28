@@ -19,12 +19,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponen
 
 @SuppressWarnings("serial")
 public class SquareUIView extends AbstractUIView implements BlockViewUI {
-	private final static int BORDER_WIDTH=10;
-	private final static int STUB_BUFFER=15;        // Save room all around for the stubs
-	private final static float HEIGHT_FACTOR=0.5f;
-	private final static Color BORDER_SHADOW_COLOR = Color.DARK_GRAY;
-	private final static Color BORDER_HIGHLIGHT_COLOR = Color.magenta;   // Want maroon
-	private final static Color HEADING_COLOR = Color.BLACK;
+	private static final int EXCESS_INSET = 3;
 	
 	public SquareUIView(ProcessBlockView view) {
 		super(view);
@@ -57,10 +52,10 @@ public class SquareUIView extends AbstractUIView implements BlockViewUI {
 		// Now translate so that 0,0 is is at the inner origin
 		g.translate(ifb.x, ifb.y);
 		// Now leave space for stubs
-		ifb.x += STUB_BUFFER;
-		ifb.y += STUB_BUFFER;
-		ifb.width  -= 2*STUB_BUFFER;
-		ifb.height -= 2*STUB_BUFFER;
+		ifb.x += INSET+EXCESS_INSET;
+		ifb.y += INSET+EXCESS_INSET;
+		ifb.width  -= 2*(INSET+EXCESS_INSET);
+		ifb.height -= 2*(INSET+EXCESS_INSET);
 
 		// Create a square that is within the component boundaries
 		int[] xvertices = new int[] {ifb.x,ifb.x+ifb.width,ifb.x+ifb.width,ifb.x };
@@ -140,6 +135,7 @@ public class SquareUIView extends AbstractUIView implements BlockViewUI {
 		// Reverse any transforms we made
 		g.setTransform(originalTx);
 		drawAnchors(g);
+		drawEmbeddedIcon(g);
 	}
 
 }

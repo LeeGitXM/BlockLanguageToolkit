@@ -72,7 +72,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			else {
 				log.warnf("%s: createDiagramView: Connection %s has no anchor points",TAG,scxn.toString());
 			}
-		}	
+		}
 		return diagramView;
 	}
 	
@@ -197,6 +197,8 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		SerializableBlock result = new SerializableBlock();
 		result.setId(block.getId());
 		result.setClassName(block.getClassName());
+		result.setEmbeddedIcon(block.getEmbeddedIcon());
+		result.setEmbeddedLabel(block.getEmbeddedLabel());
 		result.setLabel(block.getLabel());
 		result.setStyle(block.getStyle());
 		result.setX(block.getLocation().x);

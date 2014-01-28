@@ -26,7 +26,7 @@ public class RoundUIView extends AbstractUIView implements BlockViewUI {
 	public RoundUIView(ProcessBlockView view) {
 		super(view);
 		setOpaque(false);
-		setPreferredSize(new Dimension(68,68));       // 48 plus 5 for stubs
+		setPreferredSize(new Dimension(58,58));       // 48 plus 5 for stubs
 		Image img = ImageLoader.getInstance().loadImage("Block/icons/48/round_48.png",IMAGE_SIZE);
 		if( img !=null) icon = new ImageIcon(img);
 		initAnchorPoints();

@@ -8,7 +8,7 @@ import java.util.UUID;
 
 import com.ils.block.common.AnchorDirection;
 import com.ils.block.common.AnchorPrototype;
-import com.ils.block.common.BlockDescription;
+import com.ils.block.common.BlockDescriptor;
 import com.ils.block.common.BlockProperty;
 import com.ils.block.common.BlockState;
 import com.ils.block.common.BlockStyle;
@@ -35,6 +35,8 @@ public class ProcessBlockView extends AbstractBlock {
 	private static final String TAG = "ProcessBlockView";
 	private final UUID uuid;
 	private final String className;
+	private String embeddedIcon="";               // 32x32 icon to place in block in designer
+	private String embeddedLabel="";              // Label place in block in designer
 	private String label;                         // Text to display on the block
 	private BlockState state = BlockState.IDLE;   // Block execution state
 	private String statusText;                    // Auxiliary text to display
@@ -49,13 +51,16 @@ public class ProcessBlockView extends AbstractBlock {
 	/**
 	 * Constructor: Used when a new block is created from the palette.
 	 */
-	public ProcessBlockView(BlockDescription descriptor) {
+	public ProcessBlockView(BlockDescriptor descriptor) {
 		uuid = UUID.randomUUID();
 		this.className = descriptor.getBlockClass();
 		this.label = descriptor.getLabel();
+		this.embeddedIcon = descriptor.getEmbeddedIcon();
+		this.embeddedLabel= descriptor.getEmbeddedLabel();
 		this.state = BlockState.STOPPED;
 		this.statusText = "";
 		this.style = descriptor.getStyle();
+
 		this.anchors = new ArrayList<AnchorDescriptor>();
 		for( AnchorPrototype ad:descriptor.getAnchors() ) {
 			log.infof("%s: Creating anchor descriptor %s", TAG,ad.getName());
@@ -69,6 +74,8 @@ public class ProcessBlockView extends AbstractBlock {
 	public ProcessBlockView(SerializableBlock sb) {
 		this.uuid = sb.getId();
 		this.className = sb.getClassName();
+		this.embeddedIcon = sb.getEmbeddedIcon();
+		this.embeddedLabel= sb.getEmbeddedLabel();
 		this.style = sb.getStyle();
 		this.label = sb.getLabel();
 		this.state = BlockState.PAUSED;
@@ -134,6 +141,10 @@ public class ProcessBlockView extends AbstractBlock {
 	public void setStatusText(String statusText) { this.statusText = statusText; }
 	public BlockStyle getStyle() { return style; }
 	public void setStyle(BlockStyle s) { this.style = s; }
+	public String getEmbeddedIcon() {return embeddedIcon;}
+	public void setEmbeddedIcon(String embeddedIcon) {this.embeddedIcon = embeddedIcon;}
+	public String getEmbeddedLabel() {return embeddedLabel;}
+	public void setEmbeddedLabel(String embeddedLabel) {this.embeddedLabel = embeddedLabel;}
 
 	@Override
 	public void initUI(BlockComponent blk) {

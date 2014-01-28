@@ -128,7 +128,7 @@ public class ProcessBlockPalette extends DockableFrame implements ResourceWorksp
 			log.debugf("%s: PaletteEntry action performed",TAG);
 			if( workspace.getSelectedContainer()!=null ) {
 				log.infof("%s: PaletteEntry creating process view block",TAG);
-				ProcessBlockView blk = new ProcessBlockView(prototype.getBlockDescription());  
+				ProcessBlockView blk = new ProcessBlockView(prototype.getBlockDescriptor());  
 				workspace.setCurrentTool(new InsertBlockTool(blk));
 			}
 			log.debugf("%s: PaletteEntry action performed complete",TAG);

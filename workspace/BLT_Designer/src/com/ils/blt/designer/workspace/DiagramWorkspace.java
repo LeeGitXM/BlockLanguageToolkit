@@ -33,12 +33,14 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.common.xmlserialization.SerializationException;
 import com.inductiveautomation.ignition.designer.blockandconnector.AbstractBlockWorkspace;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockActionHandler;
+import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.BlockDiagramModel;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Connection;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.ConnectionPainter;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.ArrowConnectionPainter;
+import com.inductiveautomation.ignition.designer.designable.DesignableWorkspaceListener;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.model.EditActionHandler;
 import com.inductiveautomation.ignition.designer.model.ResourceWorkspace;
@@ -299,7 +301,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	/**
 	 * Edit action handler
 	 */
-	private class DiagramActionHandler extends BlockActionHandler {
+	private class DiagramActionHandler extends BlockActionHandler implements DesignableWorkspaceListener {
+		ProcessBlockView selectedBlock = null;
 		public DiagramActionHandler(DiagramWorkspace workspace,DesignerContext context) {
 			super(workspace,context);
 		}
@@ -330,6 +333,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
 		@Override
 		public Transferable doCut() {
+			if( selectedBlock!=null ) getActiveDiagram().deleteBlock(selectedBlock);
+			selectedBlock = null;
 			log.infof("%s: doCut",TAG);
 			return null;
 		}
@@ -345,6 +350,31 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		public void doPaste(Transferable arg0) {
 			log.infof("%s: doPaste",TAG);
 		}
-	}
 
+		// =========================== DesignableWorkspaceListener ===========================
+		@Override
+		public void containerClosed(DesignableContainer arg0) {
+		}
+		@Override
+		public void containerOpened(DesignableContainer arg0) {	
+		}
+		@Override
+		public void containerSelected(DesignableContainer arg0) {
+		}
+		@Override
+		public void itemSelectionChanged(List<JComponent> selections) {
+			if( selections!=null && selections.size()==1 ) {
+				JComponent selection = selections.get(0);
+				log.infof("%s: DiagramActionHandler: selected a %s",TAG,selection.getClass().getName());
+				if( selection instanceof BlockComponent ) {
+					BlockComponent bc = ( BlockComponent)selection;
+					selectedBlock = (ProcessBlockView)bc.getBlock();
+				}
+				else {
+					selectedBlock = null;
+				}
+			}
+		}
+
+	}
 }
