@@ -96,28 +96,34 @@ public class BlockFactory  {
 		if( properties!=null ) {
 			for( BlockProperty bp:properties) {
 				BlockProperty property = pb.getProperty(bp.getName());
-				if( property!=null && property.getValue()!=null ) {
-					if( property.getQuality()==null) property.setQuality(Quality.Level.Good.toString());
+				if( property!=null ) {
+					if( bp.getQuality()==null) property.setQuality(Quality.Level.Good.toString());
 					property.setEditible(bp.isEditible());
 					property.setMaximum(bp.getMaximum());
 					property.setMinimum(bp.getMinimum());
 					property.setBinding(bp.getBinding());
 					property.setBindingType(bp.getBindingType());
 					// Use the property change interface so as to properly trigger
-					// local handling within the block
-					BlockPropertyChangeEvent event = 
-						new BlockPropertyChangeEvent(pb.getBlockId().toString(),property.getName(),
-							new BasicQualifiedValue(property.getValue(),
-								new BasicQuality(property.getQuality(),Quality.Level.Good)),
-							new BasicQualifiedValue(bp.getValue(),
-								new BasicQuality(bp.getQuality(),Quality.Level.Good)));
-					pb.propertyChange(event);
-
+					// local handling within the block (if the new value is non-null)
+					property.setValue(bp.getValue());
+					if( property.getValue()!=null ) {
+						BlockPropertyChangeEvent event = 
+								new BlockPropertyChangeEvent(pb.getBlockId().toString(),property.getName(),
+									new BasicQualifiedValue(property.getValue(),
+										new BasicQuality(property.getQuality(),Quality.Level.Good)),
+									new BasicQualifiedValue(bp.getValue(),
+										new BasicQuality(bp.getQuality(),Quality.Level.Good)));
+							pb.propertyChange(event);
+					}
 				}
 				else {
-					log.warnf("%s: updateBlockFromSerializable: Property %s not found in concrete instance",TAG,bp.getName()); 
+					log.warnf("%s: updateBlockFromSerializable: Property %s not found in process block %s",TAG,bp.getName(),pb.getLabel());
+					log.warnf("     available names are: %s",pb.getPropertyNames().toString()); 
 				}
 			}
+		}
+		else {
+			log.errorf("%s: updateBlockFromSerializable: No properties found in process block",TAG);
 		}
 	}
 	
