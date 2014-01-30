@@ -1,5 +1,5 @@
-/**iagram
- *   (c) 2013  ILS Automation. All rights reseiagramrved.
+/**
+ *   (c) 2013  ILS Automation. All rights reserved.
  *  
  *  Based on sample code provided by Inductive Automation.
  */
@@ -7,6 +7,7 @@ package com.ils.blt.designer.navtree;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
@@ -49,7 +50,6 @@ public class DiagramTreeNode extends FolderNode {
 	private ApplicationAction applicationAction = null;
 	private FamilyAction familyAction = null;
 	protected DiagramAction diagramAction = null;
-	protected ExportAction exportAction = null;
 	protected ImportAction importAction = null;
 	protected StartAction startAction = null;
 	protected StopAction stopAction = null;
@@ -160,9 +160,7 @@ public class DiagramTreeNode extends FolderNode {
 		}
 		else {   // Depth == 2 and DIAGRAM_DEPTH==3
 			familyAction = new FamilyAction(this.folderId);
-			exportAction = new ExportAction();
 			menu.add(familyAction);
-			menu.add(exportAction);
 			menu.addSeparator();
 			addEditActions(menu);
 		}
@@ -294,6 +292,7 @@ public class DiagramTreeNode extends FolderNode {
 			}
 		}
 	}
+	// Create a new diagram
     private class DiagramAction extends BaseAction {
     	private static final long serialVersionUID = 1L;
 	    public DiagramAction()  {
@@ -334,46 +333,8 @@ public class DiagramTreeNode extends FolderNode {
 			}
 		}
 	}
-    //  TODO: Need file chooser and export
-    private class ExportAction extends BaseAction {
-    	private static final long serialVersionUID = 1L;
-	    public ExportAction()  {
-	    	super(PREFIX+".ExportDiagram",IconUtil.getIcon("export1"));  // preferences
-	    }
-	    
-		public void actionPerformed(ActionEvent e) {
-			try {
-				final long newId = context.newResourceId();
-				String newName = BundleUtil.get().getString(PREFIX+".DefaultExportDiagramName");
-				log.infof("%s: export diagram action ...",TAG);
-				if( newName==null) newName = "Exported Diag";  // Missing string resource
-				SerializableDiagram diagram = new SerializableDiagram();
-				diagram.setName(newName);
-
-				String json = serializeDiagram(diagram);
-				
-				log.infof("%s: DiagramAction. json=%s",TAG,json);
-				byte[] bytes = json.getBytes();
-				log.debugf("%s: DiagramAction. export %s resource %d (%d bytes)",TAG,BLTProperties.MODEL_RESOURCE_TYPE,
-						newId,bytes.length);
-				ProjectResource resource = new ProjectResource(newId,
-						BLTProperties.MODULE_ID, BLTProperties.MODEL_RESOURCE_TYPE,
-						newName, ApplicationScope.GATEWAY, bytes);
-				resource.setParentUuid(getFolderId());
-				context.updateResource(resource);
-				selectChild(newId);
-				EventQueue.invokeLater(new Runnable() {
-					public void run() {
-						workspace.open(newId);
-					}
-				});
-		
-			} 
-			catch (Exception err) {
-				ErrorUtil.showError(err);
-			}
-		}
-	}
+    
+    
     //  TODO: Need file chooser and import
     private class ImportAction extends BaseAction {
     	private static final long serialVersionUID = 1L;
@@ -411,7 +372,7 @@ public class DiagramTreeNode extends FolderNode {
 			}
 		}
 	}
-    
+    // Start refers to a global startup of the Execution controller in the Gateway
     private class StartAction extends BaseAction {
     	private static final long serialVersionUID = 1L;
 	    public StartAction()  {

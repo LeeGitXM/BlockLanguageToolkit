@@ -3,6 +3,9 @@
  */
 package com.ils.blt.designer.navtree;
 
+import java.awt.Component;
+import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
 import java.util.List;
 
 import javax.swing.JPopupMenu;
@@ -10,6 +13,8 @@ import javax.swing.tree.TreePath;
 
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
+import com.ils.blt.designer.workspace.ProcessDiagramView;
+import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.project.Project;
@@ -23,6 +28,7 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
 import com.inductiveautomation.ignition.designer.navtree.model.ResourceDeleteAction;
+
 /**
  * A DiagnosticsNode appears as leaf node in the Diagnostics NavTree hierarchy.
  * It doesn't have any NavTree-type children, but it does have two nested objects, 
@@ -39,6 +45,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 	private DesignerContext context;
 	private long resourceId;
 	private final DiagramWorkspace workspace;
+	protected ExportAction exportAction = null;
 
 
 	/**
@@ -47,7 +54,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 	 *      instantiated.
 	 * @param context designer context
 	 * @param resource panel resource 
-	 * @param nodeName node name
+	 * @param ws the tabbed workspace holding the diagrams
 	 */
 	public DiagramNode(DesignerContext context,ProjectResource resource,DiagramWorkspace ws) {
 		this.context = context;
@@ -66,7 +73,9 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 	@Override
 	protected void initPopupMenu(JPopupMenu menu, TreePath[] paths,List<AbstractNavTreeNode> selection, int modifiers) {
 		setupEditActions(paths, selection);
-
+		exportAction = new ExportAction(menu.getRootPane(),workspace.getActiveDiagram());
+		menu.add(exportAction);
+		menu.addSeparator();
 		menu.add(renameAction);
         menu.add(deleteAction);
 	}
@@ -126,8 +135,12 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 		boolean hadLock = context.isLockOpen(resourceId);
 		if (context.requestLock(resourceId)) {
 			try {
-				log.info(TAG+"onEdit: alterName "+newTextValue);
+				String oldName = getProjectResource().getName();
+				log.infof("%s: onEdit: alterName from %s to %s",TAG,oldName,newTextValue);
 				context.structuredRename(resourceId, newTextValue);
+				if( workspace.getSelectedContainer()!=null ) {
+					
+				}
 				context.updateLock(resourceId);
 			} catch (IllegalArgumentException ex) {
 				ErrorUtil.showError(ex.getMessage());
@@ -179,6 +192,34 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 			setName(res.getName());
 			setItalic(true);
 			refresh();    // Updates the tree model
+		}
+	}
+	
+	private class ExportAction extends BaseAction {
+    	private static final long serialVersionUID = 1L;
+    	private final ProcessDiagramView view;
+    	private final Component anchor;
+	    public ExportAction(Component c,ProcessDiagramView v)  {
+	    	super(PREFIX+".ExportDiagram",IconUtil.getIcon("export1")); 
+	    	anchor = c;
+	    	view=v;
+	    }
+	    
+		public void actionPerformed(ActionEvent e) {
+			try {
+				EventQueue.invokeLater(new Runnable() {
+					public void run() {
+						ExportDialog dialog = new ExportDialog(view);
+					    dialog.pack();
+					    dialog.setLocationRelativeTo(anchor);
+					    dialog.setVisible(true);   // Returns when dialog is closed
+					}
+				});
+		
+			} 
+			catch (Exception err) {
+				ErrorUtil.showError(err);
+			}
 		}
 	}
 }

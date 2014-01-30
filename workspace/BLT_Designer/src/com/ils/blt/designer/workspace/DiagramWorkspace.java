@@ -8,7 +8,10 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
 import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.ActionEvent;
 import java.awt.geom.Path2D;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,9 +26,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.editor.PropertyEditorFrame;
 import com.inductiveautomation.ignition.client.designable.DesignableContainer;
+import com.inductiveautomation.ignition.client.util.action.BaseAction;
+import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -41,6 +47,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.Connect
 import com.inductiveautomation.ignition.designer.blockandconnector.model.ConnectionPainter;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.ArrowConnectionPainter;
 import com.inductiveautomation.ignition.designer.designable.DesignableWorkspaceListener;
+import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.model.EditActionHandler;
 import com.inductiveautomation.ignition.designer.model.ResourceWorkspace;
@@ -52,13 +59,13 @@ import com.jidesoft.docking.DockContext;
 import com.jidesoft.docking.DockingManager;
 
 /**
- * A Diagram workspace is a container that occupies the DockManager workspace
+ * A Diagram workspace is a tabbed container that occupies the DockManager workspace
  * area. It, in turn, holds DiagnosticsFrames. These are internal frames designed
  * to hold a model diagram. 
  * 
  */
 public class DiagramWorkspace extends AbstractBlockWorkspace 
-							  implements ResourceWorkspace {
+							  implements ResourceWorkspace, DesignableWorkspaceListener {
 	private static final String TAG = "DiagramWorkspace";
 	private static final long serialVersionUID = 4627016159409031941L;
 	public static final String key = "BlockDiagramWorkspace";
@@ -68,7 +75,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	private final ObjectMapper mapper;
 	private final EditActionHandler editActionHandler;
 	private Collection<ResourceWorkspaceFrame> frames;
-
+	private ProcessBlockView selectedBlock = null;   // the selection
+	protected SaveAction saveAction = null;  // Save properties of a block
 	private LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 
 	/**
@@ -129,10 +137,15 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	@Override
 	public JPopupMenu getSelectionPopupMenu(List<JComponent> component) {
 		if( component.size()>0 ) {
+			saveAction = new SaveAction();
+		
 			JPopupMenu menu = new JPopupMenu();
+			menu.add(saveAction);
+			menu.addSeparator();
 			menu.add(context.getCutAction());
 			menu.add(context.getCopyAction());
 			menu.add(context.getPasteAction());
+			menu.add(context.getDeleteAction());
 			return menu;
 		}
 		return null;
@@ -279,6 +292,34 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		context.updateLock(resid);
 	}
 	
+	// =========================== DesignableWorkspaceListener ===========================
+	@Override
+	public void containerClosed(DesignableContainer container) {
+	}
+	@Override
+	public void containerOpened(DesignableContainer container) {	
+	}
+	@Override
+	public void containerSelected(DesignableContainer container) {
+	}
+	@Override
+	public void itemSelectionChanged(List<JComponent> selections) {
+		if( selections!=null && selections.size()==1 ) {
+			JComponent selection = selections.get(0);
+			log.infof("%s: DiagramActionHandler: selected a %s",TAG,selection.getClass().getName());
+			if( selection instanceof BlockComponent ) {
+				BlockComponent bc = ( BlockComponent)selection;
+				selectedBlock = (ProcessBlockView)bc.getBlock();
+			}
+			else {
+				selectedBlock = null;
+			}
+		}
+		else {
+			log.infof("%s: DiagramActionHandler: deselected",TAG);
+			selectedBlock = null;
+		}
+	}
 	
 	/**
 	 * Paint connections
@@ -301,26 +342,34 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	/**
 	 * Edit action handler
 	 */
-	private class DiagramActionHandler extends BlockActionHandler implements DesignableWorkspaceListener {
-		ProcessBlockView selectedBlock = null;
+	private class DiagramActionHandler extends BlockActionHandler {
 		public DiagramActionHandler(DiagramWorkspace workspace,DesignerContext context) {
 			super(workspace,context);
 		}
 		@Override
 		public boolean canCopy() {
-			return true;
+			return selectedBlock!=null;
 		}
 
 
 		@Override
 		public boolean canDelete() {
-			return true;
+			return selectedBlock!=null;
 		}
 
-
+		/**
+		 * The data that we've put on the clipboard is a serialized block (a String)
+		 */
 		@Override
-		public boolean canPaste(Clipboard arg0) {
-			return true;
+		public boolean canPaste(Clipboard clipboard) {
+			boolean result = false;
+			try{
+				result = clipboard.isDataFlavorAvailable(DataFlavor.stringFlavor);
+			}
+			catch (IllegalStateException ignored) {
+			}
+
+			return result;
 		}
 
 
@@ -333,8 +382,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
 		@Override
 		public Transferable doCut() {
-			if( selectedBlock!=null ) getActiveDiagram().deleteBlock(selectedBlock);
-			selectedBlock = null;
 			log.infof("%s: doCut",TAG);
 			return null;
 		}
@@ -343,38 +390,62 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		@Override
 		public void doDelete() {
 			log.infof("%s: doDelete",TAG);
+			if( selectedBlock!=null ) getActiveDiagram().deleteBlock(selectedBlock);
+			selectedBlock = null;
 		}
 
 
 		@Override
-		public void doPaste(Transferable arg0) {
+		public void doPaste(Transferable arg) {
 			log.infof("%s: doPaste",TAG);
-		}
-
-		// =========================== DesignableWorkspaceListener ===========================
-		@Override
-		public void containerClosed(DesignableContainer arg0) {
-		}
-		@Override
-		public void containerOpened(DesignableContainer arg0) {	
-		}
-		@Override
-		public void containerSelected(DesignableContainer arg0) {
-		}
-		@Override
-		public void itemSelectionChanged(List<JComponent> selections) {
-			if( selections!=null && selections.size()==1 ) {
-				JComponent selection = selections.get(0);
-				log.infof("%s: DiagramActionHandler: selected a %s",TAG,selection.getClass().getName());
-				if( selection instanceof BlockComponent ) {
-					BlockComponent bc = ( BlockComponent)selection;
-					selectedBlock = (ProcessBlockView)bc.getBlock();
-				}
-				else {
-					selectedBlock = null;
-				}
+			String json = null;
+			try {
+				json = (String)arg.getTransferData(DataFlavor.stringFlavor);
+				json = new String(json.getBytes("UTF-8"), "UTF-8");  // Convert to UTF-8
+				SerializableBlock sb = deserialize(json);
+				// Convert to ProcessBlockView
+				// Then what ? 
+			}
+			catch (UnsupportedFlavorException ufe) {
+			}
+			catch (IOException ioe) {
+				ErrorUtil.showError(BundleUtil.get().getStringLenient("DiagramWorkspace.handler.doPaste Error retrieving clipboard (%s)",ioe.getMessage()));
+				return;
 			}
 		}
+			
+		private SerializableBlock deserialize(String json) {
+			SerializableBlock block = null;
+			try{
+				ObjectMapper mapper = new ObjectMapper();
 
+				block = mapper.readValue(json, SerializableBlock.class);
+			}
+			// Print stack trace
+			catch( Exception ex) {
+				log.warnf("%s: deserialize: exception (%s)",TAG,ex.getLocalizedMessage(),ex);
+			}
+			return block;
+
+		}
+
+		
+
+	}
+	
+	/**
+	 * "Save" implies a push of the block attributes into the model running in the Gateway.
+	 */
+	private class SaveAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		public SaveAction()  {
+			super(PREFIX+".SaveBlock",IconUtil.getIcon("window_play"));  // preferences
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			if( selectedBlock!=null ) {
+				
+			}
+		}
 	}
 }

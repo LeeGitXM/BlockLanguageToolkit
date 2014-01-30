@@ -5,7 +5,7 @@
 	<property name="version.build" value="1" />	
 	<!-- Change version.beta value to "" for release builds -->
 	<property name="version.beta" value="-development" />		
-	<property name="BLTModule.version" value="1.1.3.${version.build}" />
+	<property name="BLTModule.version" value="1.2.3.${version.build}" />
 	<property name="BLTModule.name" value="BLT" />
 	<property name="BLTModule.description" value="Block Language Toolkit" />
 	<property name="root.dir" value="${basedir}/../.." />
@@ -17,9 +17,6 @@
 	<property name="block.jar.name" value="block-definition.jar" />
 	<property name="block.bin.dir" value="${root.dir}/block/workspace/Block/bin" />
 	<property name="block.src.dir" value="${root.dir}/block/workspace/Block/src" />
-	<property name="jgx.jar.name" value="jgx.jar" />
-	<property name="jgx.bin.dir" value="${root.dir}/jgx/workspace/JGX/bin" />
-	<property name="jgx.src.dir" value="${root.dir}/jgx/workspace/JGX/src" />
 		
 	<!-- External jar classpath -->
 	<path id="ils-classpath">
@@ -91,18 +88,9 @@
 		    </fileset>
 		</delete>
 	</target>
-	<!-- Clean JGX Customizations -->
-	<target name="clean.jgx" >
-		<mkdir dir="${jgx.bin.dir}"/>
-		<delete file="${jar.dir}/${jgx.jar.name}" />
-		<delete>
-		    <fileset dir="${jgx.bin.dir}">
-		    	<include name="com/ils/**"/>
-		    </fileset>
-		</delete>
-	</target>
+
 	<!-- Cleans all previously built files -->
-	<target name="clean" depends="clean.common,clean.block,clean.jgx" description="Remove existing build products" >
+	<target name="clean" depends="clean.common,clean.block" description="Remove existing build products" >
 		<delete dir="${basedir}/BLT_Build/bin" />
 		<delete dir="${basedir}/BLT_Build/modules" />
 		<delete dir="${basedir}/BLT_Build/release" />
@@ -132,28 +120,9 @@
 	    <jar destfile="${jar.dir}/${common.jar.name}" includes="**/*.class" basedir="${common.bin.dir}"/>
 	</target>
 	
-	<!-- Compile the JGX Customizations library -->
-	<target name="jgx.build" description="Compile the source">
-		<mkdir dir="${jgx.bin.dir}"/>
-		<javac destdir="${jgx.bin.dir}" source="1.6" target="1.6" debug="true" debuglevel="lines,vars,source" includeantruntime="false">
-			<src path="${jgx.src.dir}"/>
-			<classpath refid="ils-classpath"/>
-		</javac>
-		<copy todir="${jgx.bin.dir}">
-		    <fileset dir="${jgx.src.dir}"
-		    	includes="**/*.gif,**/*.png,**/*.properties,**/*.xml,**/*.ico" />
-		</copy>
-	</target>
-	<target name ="jgx.jar" description="Create a jar for the JGraphx extension library">
-    	<jar jarfile="${jar.dir}/${jgx.jar.name}">
-    		<fileset dir="${jgx.bin.dir}">
-    			<include name="com/ils/**"/>
-    		</fileset>
-    	</jar>
-	</target>
 	
 	<!-- Builds the toolkit module jars and the final .modl file -->
-	<target name="build" depends="common.build,common.jar,block.build,block.jar,jgx.build,jgx.jar" description="Compile the source">
+	<target name="build" depends="common.build,common.jar,block.build,block.jar" description="Compile the source">
 		<echo message="${BLTModule.name} ${BLTModule.version}" />	
 		<delete dir="${basedir}/BLT_Build/temp_modl" />	
 		
@@ -218,11 +187,9 @@
 		<pack200 src="${basedir}/BLT_Build/bin/${BLTModule.name}_Common/dist/blt-common.jar" destfile="${basedir}/BLT_Build/temp_modl/blt-common.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		<pack200 src="${basedir}/../../external/lib/ils-common.jar" destfile="${basedir}/BLT_Build/temp_modl/ils-common.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		<pack200 src="${basedir}/../../external/lib/block-definition.jar" destfile="${basedir}/BLT_Build/temp_modl/block-definition.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
-		<pack200 src="${basedir}/../../external/lib/jgraphx-2.1.0.jar" destfile="${basedir}/BLT_Build/temp_modl/jgraphx-2.1.0.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		<pack200 src="${basedir}/../../external/lib/jackson-core-2.2.3.jar" destfile="${basedir}/BLT_Build/temp_modl/jackson-core-2.2.3.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		<pack200 src="${basedir}/../../external/lib/jackson-databind-2.2.3.jar" destfile="${basedir}/BLT_Build/temp_modl/jackson-databind-2.2.3.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		<pack200 src="${basedir}/../../external/lib/jackson-annotations-2.2.3.jar" destfile="${basedir}/BLT_Build/temp_modl/jackson-annotations-2.2.3.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
-		<pack200 src="${basedir}/../../external/lib/jgx.jar" destfile="${basedir}/BLT_Build/temp_modl/jgx.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		
 		<!-- Copy gateway jar -->
 		<copy file="${basedir}/BLT_Build/bin/${BLTModule.name}_Gateway/dist/blt-gateway.jar" todir="${basedir}/BLT_Build/temp_modl/" />
@@ -230,8 +197,6 @@
 		
 		<!-- Copy dependent jars -->
 		<copy file="${basedir}/../../external/lib/ils-common.jar" todir="${basedir}/BLT_Build/temp_modl/" />
-		<copy file="${basedir}/../../external/lib/jgraphx-2.1.0.jar" todir="${basedir}/BLT_Build/temp_modl/" />
-		<copy file="${basedir}/../../external/lib/jgx.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy file="${basedir}/../../external/lib/jackson-core-2.2.3.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy file="${basedir}/../../external/lib/jackson-databind-2.2.3.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy file="${basedir}/../../external/lib/jackson-annotations-2.2.3.jar" todir="${basedir}/BLT_Build/temp_modl/" />

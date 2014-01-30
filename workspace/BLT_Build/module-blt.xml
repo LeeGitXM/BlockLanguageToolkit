@@ -25,8 +25,6 @@
 		<jar scope="GD">jackson-databind-2.2.3.jar</jar>
 		<jar scope="GD">jackson-annotations-2.2.3.jar</jar>
 		<jar scope="GCD">ils-common.jar</jar>
-		<jar scope="GC">jgraphx-2.1.0.jar</jar>
-		<jar scope="C">jgx.jar</jar>
 		<!-- Tell the Gateway and/or Designer where to find the hooks -->
 		<hook scope="G">com.ils.blt.gateway.BLTGatewayHook</hook>
 		<hook scope="D">com.ils.blt.designer.BLTDesignerHook</hook>

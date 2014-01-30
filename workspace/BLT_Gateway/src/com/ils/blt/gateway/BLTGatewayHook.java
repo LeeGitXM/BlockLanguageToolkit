@@ -34,10 +34,9 @@ import com.inductiveautomation.ignition.gateway.web.models.INamedTab;
 public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	public static String TAG = "BLTGatewayHook";
 	public static String BUNDLE_NAME = "block";// Properties file is block.properties
-	private GatewayRpcDispatcher dispatcher = null;
-	String prefix = "BLT";
-
-	private GatewayContext context = null;
+	private final String prefix = "BLT";
+	private transient GatewayRpcDispatcher dispatcher = null;
+	private transient GatewayContext context = null;
 	private final LoggerEx log;
 	
 	public BLTGatewayHook() {
