@@ -5,9 +5,11 @@
 		<name>@NAME@</name>
 		<description>@DESCRIPTION@</description>
 		<version>@VERSION@</version>
+		<license>license.html</license>
 		<requiredignitionversion>7.7.0</requiredignitionversion>
 		<requiredframeworkversion>5</requiredframeworkversion>
 		<freemodule>true</freemodule>
+		<documentation>index.html</documentation>
 
 		<!-- Add the module dependencies for each scope -->
 		<!-- NOTE: Build fails here if we specify a Gateway dependency -->

@@ -2,11 +2,12 @@
 
 	<import file="${basedir}/BLT_Build/build.xml"/>
 
-	<property name="version.build" value="1" />	
+	<property name="version.build" value="2" />	
 	<!-- Change version.beta value to "" for release builds -->
 	<property name="version.beta" value="-development" />		
 	<property name="BLTModule.version" value="1.2.3.${version.build}" />
 	<property name="BLTModule.name" value="BLT" />
+	<property name="BLTModule.release" value="0.4" />
 	<property name="BLTModule.description" value="Block Language Toolkit" />
 	<property name="root.dir" value="${basedir}/../.." />
 	<property name="jar.dir" value="${root.dir}/external/lib" />
@@ -99,7 +100,7 @@
 	<!-- Compile the Block Definition library -->
 	<target name="block.build" description="Compile the source">
 		<mkdir dir="${block.bin.dir}"/>
-		<javac destdir="${block.bin.dir}" source="1.6" target="1.6" debug="true" includeantruntime="false">
+		<javac destdir="${block.bin.dir}" source="1.7" target="1.7" debug="true" includeantruntime="false">
 			<src path="${block.src.dir}"/>
 			<classpath refid="BlockDefinition.classpath"/>
 		</javac>
@@ -111,7 +112,7 @@
 	<!-- Compile the Common library -->
 	<target name="common.build" description="Compile the source">
 		<mkdir dir="${common.bin.dir}"/>
-		<javac destdir="${common.bin.dir}" source="1.6" target="1.6" debug="true" includeantruntime="false">
+		<javac destdir="${common.bin.dir}" source="1.7" target="1.7" debug="true" includeantruntime="false">
 			<src path="${common.src.dir}"/>
 			<classpath refid="ils-classpath"/>
 		</javac>
@@ -135,7 +136,7 @@
 			<param name="modName" value="${BLTModule.name}_Common" />
 			<param name="sourceDirFolder" value="${BLTModule.name}_Common" />
 			<param name="jarName" value="blt-common" />
-			<param name="javacSource" value="1.6" />
+			<param name="javacSource" value="1.7" />
 			<param name="module.build.classpath" value="${BLTModule.name}_Common.classpath"/>
 		</antcall>
 		
@@ -144,7 +145,7 @@
 			<param name="modName" value="${BLTModule.name}_Gateway" />
 			<param name="sourceDirFolder" value="${BLTModule.name}_Gateway" />
 			<param name="jarName" value="blt-gateway" />
-			<param name="javacSource" value="1.6" />
+			<param name="javacSource" value="1.7" />
 			<param name="[replace]BLTGateway.properties:Meta.Version" value="${version.build}" />
 			<param name="[replace]BLTGateway.properties:Meta.ReleaseDate" value="${build.date}" />
 			<param name="module.build.classpath" value="${BLTModule.name}_Gateway.classpath"/>
@@ -155,7 +156,7 @@
 			<param name="modName" value="${BLTModule.name}_Client" />
 			<param name="sourceDirFolder" value="${BLTModule.name}_Client" />
 			<param name="jarName" value="blt-client" />
-			<param name="javacSource" value="1.6" />
+			<param name="javacSource" value="1.7" />
 			<param name="module.build.classpath" value="${BLTModule.name}_Client.classpath"/>
 		</antcall>
 		
@@ -164,7 +165,7 @@
 			<param name="modName" value="${BLTModule.name}_Designer" />
 			<param name="sourceDirFolder" value="${BLTModule.name}_Designer" />
 			<param name="jarName" value="blt-designer" />
-			<param name="javacSource" value="1.6" />
+			<param name="javacSource" value="1.7" />
 			<param name="module.build.classpath" value="${BLTModule.name}_Designer.classpath"/>
 		</antcall>
 		
@@ -209,6 +210,9 @@
 		<copy todir="${basedir}/BLT_Build/temp_modl/doc">
 		    <fileset dir="${basedir}/BLT_Build/doc"/>
 		</copy>
+		<!-- Echo the version into .version in the bundle and to be saved -->
+		<echo message="${BLTModule.name}-${BLTModule.version}:${BLTModule.release}" file="${basedir}/BLT_Build/temp_modl/.version" append="false"/>
+		<echo message="${BLTModule.name}-${BLTModule.name}:${BLTModule.release}" file="${basedir}/BLT_Build/.version" append="false"/>
 		
 		<!-- Zip it all up -->
 		<zip zipfile="${basedir}/BLT_Build/modules/${BLTModule.name}-module-unsigned.modl" basedir="${basedir}/BLT_Build/temp_modl" />

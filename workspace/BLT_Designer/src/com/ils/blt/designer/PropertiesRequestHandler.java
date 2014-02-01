@@ -28,8 +28,6 @@ public class PropertiesRequestHandler  {
 	/**
 	 * Constructor adds common attributes that are needed to generate unique keys to identify
 	 * blocks and connectors.
-	 * 
-	 * @param ctxt Designer context
 	 */
 	public PropertiesRequestHandler()  {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
@@ -99,7 +97,7 @@ public class PropertiesRequestHandler  {
 	 * @param resourceId
 	 * @param blockId
 	 * @param className
-	 * @return
+	 * @return an array of block properties for the subject block
 	 */
 	@SuppressWarnings("unchecked")
 	public BlockProperty[] getBlockProperties(long projectId,long resourceId,UUID blockId,String className) {
@@ -140,8 +138,10 @@ public class PropertiesRequestHandler  {
 	 * Before we pass on the request we beef up the key by pre-pending the tree-path
 	 * to the diagram.
 	 * 
+	 * @param projectId
+	 * @param resourceId
+	 * @param connectionId UUID of the subject connection
 	 * @param json string representing an array of attributes
-	 * @param cellId a string representing the id of the cell within the diagram.
 	 * @return a string representing a JSON document containing an array of attributes corresponding
 	 *         to the connection object.
 	 */

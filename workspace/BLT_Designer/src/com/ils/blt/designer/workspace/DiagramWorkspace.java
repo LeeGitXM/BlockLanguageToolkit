@@ -23,6 +23,8 @@ import javax.swing.JPopupMenu;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.BLTProperties;
@@ -70,7 +72,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	private static final long serialVersionUID = 4627016159409031941L;
 	public static final String key = "BlockDiagramWorkspace";
 	public static final String PREFIX = BLTProperties.BLOCK_PREFIX;
-	 
+	private final DataFlavor jsonFlavor;
 	private final DesignerContext context;
 	private final ObjectMapper mapper;
 	private final EditActionHandler editActionHandler;
@@ -86,6 +88,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		this.context = ctx;
 		this.mapper = new ObjectMapper();
 		this.editActionHandler = new DiagramActionHandler(this,context);
+		this.addDesignableWorkspaceListener(this);
+		this.jsonFlavor = new DataFlavor(java.lang.String.class,"BlockList");
 		initialize();
 	}
 
@@ -192,18 +196,59 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		
 	}
 
-
+	/**
+	 * Serialize the supplied blocks and place them on the clipboard. Create a custom MIME
+	 * type.
+	 * @param blocks the blocks to be saved.
+	 */
 	@Override
 	public String copyBlocks(Collection<Block> blocks) throws SerializationException {
-		// TODO Auto-generated method stub
-		return null;
+		log.infof("%s: copyBlocks",TAG);
+		ObjectMapper mapper = new ObjectMapper();
+		StringBuffer json = new StringBuffer("[");
+		int index=0;
+		for( Block blk:blocks) {
+			log.infof("%s: copyBlocks class=%s",TAG,blk.getClass().getName());
+			ProcessBlockView view = (ProcessBlockView)blk;
+			SerializableBlock sb = ProcessDiagramView.convertBlockViewToSerializable(view);
+			if(index>0) json.append(",");
+			try{ 
+			    json.append(mapper.writeValueAsString(sb));
+			}
+			catch(JsonProcessingException jpe) {
+				log.warnf("%s: Unable to serialize block (%s)",TAG,jpe.getMessage());
+			}
+			index++;
+		}
+		
+		json.append("]");
+		return json.toString();
 	}
 
-
+	/**
+	 * Deserialize blocks that were serialized during a "copy" action.
+	 * The serialized string was stored on the clipboard.
+	 * @return blocks that were recently serialized as a result of a copy.
+	 */
 	@Override
-	public Collection<Block> pasteBlocks(String blocks) {
-		// TODO Auto-generated method stub
-		return null;
+	public Collection<Block> pasteBlocks(String json) {
+		log.infof("%s: pasteBlocks: %s",TAG,json);
+		ObjectMapper mapper = new ObjectMapper();
+		Collection<Block>results = null;
+		JavaType type = mapper.getTypeFactory().constructCollectionType(ArrayList.class, SerializableBlock.class);
+		try {
+			results = mapper.readValue(json, type);
+		} 
+		catch (JsonParseException jpe) {
+			log.warnf("%s: pasteBlocks parse exception (%s)",TAG,jpe.getLocalizedMessage());
+		}
+		catch(JsonMappingException jme) {
+			log.warnf("%s: pasteBlocks mapping exception (%s)",TAG,jme.getLocalizedMessage());
+		}
+		catch(IOException ioe) {
+			log.warnf("%s: pasteBlocks IO exception (%s)",TAG,ioe.getLocalizedMessage());
+		}; 
+		return results;
 	}
 
 
@@ -220,14 +265,22 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		
 	}
 
+	/**
+	 * @return the currently active diagram, else null
+	 */
 	public ProcessDiagramView getActiveDiagram() {
-		return (ProcessDiagramView)(getSelectedContainer().getModel());
+		ProcessDiagramView view =null;
+		if(getSelectedContainer()!=null ) {
+			view = (ProcessDiagramView)(getSelectedContainer().getModel());
+		}
+		return view; 
 	}
 	
 	public void open (long resourceId) {
 		log.infof("%s: open - already open (%s)",TAG,(isOpen(resourceId)?"true":"false"));
 		if(isOpen(resourceId) ) {
-			open(findDesignableContainer(resourceId));
+			BlockDesignableContainer tab = (BlockDesignableContainer)findDesignableContainer(resourceId);
+			open(tab);  // Selects?
 		}
 		else {
 			if( context.requestLock(resourceId) ) {
@@ -238,6 +291,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				SerializableDiagram sd = null;
 				try {
 					sd = mapper.readValue(json,SerializableDiagram.class);
+					// Synchronize names as the resource may have been re-named since it was serialized
+					sd.setName(res.getName());
 				} 
 				catch (JsonParseException jpe) {
 					log.warnf("%s: open parse exception (%s)",TAG,jpe.getLocalizedMessage());
@@ -250,7 +305,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				}
 				ProcessDiagramView diagram = ProcessDiagramView.createDiagramView(res.getResourceId(),sd);
 				super.open(diagram);
-
 			}
 		}
 	}
@@ -319,6 +373,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			log.infof("%s: DiagramActionHandler: deselected",TAG);
 			selectedBlock = null;
 		}
+		log.infof("%s: DiagramActionHandler: selected block now %s",TAG,(selectedBlock==null?"NULL":"NOT NULL"));
 	}
 	
 	/**
@@ -358,13 +413,14 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		}
 
 		/**
-		 * The data that we've put on the clipboard is a serialized block (a String)
+		 * The data that we've put on the clipboard is a serialized list
+		 * of blocks (a JSON String)
 		 */
 		@Override
 		public boolean canPaste(Clipboard clipboard) {
 			boolean result = false;
 			try{
-				result = clipboard.isDataFlavorAvailable(DataFlavor.stringFlavor);
+				result = clipboard.isDataFlavorAvailable(jsonFlavor);
 			}
 			catch (IllegalStateException ignored) {
 			}

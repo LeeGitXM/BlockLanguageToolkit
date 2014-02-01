@@ -16,6 +16,8 @@ import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
+import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
+import com.inductiveautomation.ignition.designer.blockandconnector.model.Connection;
 import com.inductiveautomation.ignition.designer.designable.DesignableWorkspaceAdapter;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
@@ -87,12 +89,21 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 				if( selection instanceof BlockComponent ) {
 					BlockComponent bc = ( BlockComponent)selection;
 					ProcessBlockView blk = (ProcessBlockView)bc.getBlock();
-					PropertyEditor editor = new PropertyEditor(context,workspace.getActiveDiagram().getResourceId(),blk);
+					BlockPropertyEditor editor = new BlockPropertyEditor(context,workspace.getActiveDiagram().getResourceId(),blk);
 					contentPanel.removeAll();
 					//Create a scroll pane
 				    JScrollPane scrollPane = new JScrollPane(editor);
 					contentPanel.add(scrollPane,BorderLayout.CENTER);
 					return;
+				}
+				else if(selection instanceof BlockDesignableContainer ) {
+					BlockDesignableContainer container = ( BlockDesignableContainer)selection;
+					Connection cxn = container.getSelectedConnection();
+					if( cxn!=null && cxn.getOrigin()!=null && cxn.getTerminus()!= null ) {
+						log.infof("%s: DiagramWorkspaceListener: SELECTED A CONNECTION",TAG);
+						log.infof("%s: DiagramWorkspaceListener: Origin = %s",TAG,cxn.getOrigin().getBlock().getClass().getName());
+						// The block is a ProcessBlockView.
+					}
 				}
 			}
 		}

@@ -7,7 +7,10 @@ package com.ils.blt.designer.navtree;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
-import java.util.Iterator;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.UUID;
 
@@ -58,7 +61,7 @@ public class DiagramTreeNode extends FolderNode {
 
 	/** 
 	 * Create a new folder node representing the root folder
-	 * @param context the designer context
+	 * @param ctx the designer context
 	 */
 	public DiagramTreeNode(DesignerContext ctx) {
 		super(ctx, BLTProperties.MODULE_ID, ApplicationScope.GATEWAY,BLTProperties.ROOT_FOLDER_UUID);
@@ -344,26 +347,52 @@ public class DiagramTreeNode extends FolderNode {
 	    
 		public void actionPerformed(ActionEvent e) {
 			try {
-				final long newId = context.newResourceId();
-				String newName = BundleUtil.get().getString(PREFIX+".DefaultImportDiagramName");
-				if( newName==null) newName = "Imported Diag";  // Missing string resource
-				SerializableDiagram diagram = new SerializableDiagram();
-				diagram.setName(newName);
-				log.infof("%s: import diagram action ...",TAG);
-				String json = serializeDiagram(diagram);
-				log.debugf("%s: DiagramAction. json=%s",json);
-				byte[] bytes = json.getBytes();    
-				log.debugf("%s: DiagramAction. import %s resource %d (%d bytes)",TAG,BLTProperties.MODEL_RESOURCE_TYPE,
-						newId,bytes.length);
-				ProjectResource resource = new ProjectResource(newId,
-						BLTProperties.MODULE_ID, BLTProperties.MODEL_RESOURCE_TYPE,
-						newName, ApplicationScope.GATEWAY, bytes);
-				resource.setParentUuid(getFolderId());
-				context.updateResource(resource);
-				selectChild(newId);
 				EventQueue.invokeLater(new Runnable() {
 					public void run() {
-						workspace.open(newId);
+						long newId;
+
+						try {
+							
+							newId = context.newResourceId();
+
+							workspace.open(newId);
+							String newName = BundleUtil.get().getString(PREFIX+".DefaultImportDiagramName");
+							if( newName==null) newName = "Imported Diag";  // Missing string resource
+							ImportDialog dialog = new ImportDialog(newName);
+							dialog.pack();
+							dialog.setVisible(true);   // Returns when dialog is closed
+							File input = dialog.getFilePath();
+							if( input!=null ) {
+								if( input.exists() && input.canRead()) {
+									try {
+										// Note: Requires Java 1.7
+										byte[] bytes = Files.readAllBytes(input.toPath());
+										ProjectResource resource = new ProjectResource(newId,
+												BLTProperties.MODULE_ID, BLTProperties.MODEL_RESOURCE_TYPE,
+												newName, ApplicationScope.GATEWAY, bytes);
+										resource.setParentUuid(getFolderId());
+										context.updateResource(resource);
+										selectChild(newId);
+
+									}
+									catch( FileNotFoundException fnfe) {
+										// Should never happen, we just picked this off a chooser
+										log.warnf("%s: actionPerformed, File not found %s (%s)",TAG,input.getAbsolutePath(),fnfe.getLocalizedMessage()); 
+									}
+									catch( IOException ioe) {
+										// Should never happen, we just picked this off a chooser
+										log.warnf("%s: actionPerformed, IOException %s (%s)",TAG,input.getAbsolutePath(),ioe.getLocalizedMessage()); 
+									}
+
+								}
+								else {
+									log.warnf("%s: actionPerformed, selected file does not exist of is not readable: %s",TAG,input.getAbsolutePath());
+								}
+							}  // Cancel
+						} 
+						catch (Exception ex) {
+							log.errorf("%s: actionPerformed: Unhandled Exception (%s)",TAG,ex.getMessage());
+						}
 					}
 				});
 			} 

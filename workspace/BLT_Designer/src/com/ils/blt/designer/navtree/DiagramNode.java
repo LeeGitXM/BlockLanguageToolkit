@@ -6,12 +6,18 @@ package com.ils.blt.designer.navtree;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.List;
 
 import javax.swing.JPopupMenu;
 import javax.swing.tree.TreePath;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
@@ -23,6 +29,7 @@ import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.UndoManager;
+import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
@@ -138,8 +145,10 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 				String oldName = getProjectResource().getName();
 				log.infof("%s: onEdit: alterName from %s to %s",TAG,oldName,newTextValue);
 				context.structuredRename(resourceId, newTextValue);
-				if( workspace.getSelectedContainer()!=null ) {
-					
+				// If it's open, change its name. Otherwise we sync on opening.
+				if(workspace.isOpen(resourceId) ) {
+					BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId);
+					if(tab!=null) tab.setName(newTextValue);
 				}
 				context.updateLock(resourceId);
 			} catch (IllegalArgumentException ex) {
@@ -206,16 +215,51 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 	    }
 	    
 		public void actionPerformed(ActionEvent e) {
+			if( view==null ) return;   // Do nothing
 			try {
 				EventQueue.invokeLater(new Runnable() {
 					public void run() {
-						ExportDialog dialog = new ExportDialog(view);
+						ExportDialog dialog = new ExportDialog();
 					    dialog.pack();
-					    dialog.setLocationRelativeTo(anchor);
 					    dialog.setVisible(true);   // Returns when dialog is closed
+					    File output = dialog.getFilePath();
+					    if( output!=null ) {
+					    	log.debugf("%s: actionPerformed, dialog returned %s",TAG,output.getAbsolutePath());
+					    	if(!output.exists()) {
+					    		try {
+					    			output.createNewFile();
+					    			if( output.canWrite() ) {
+					    				ObjectMapper mapper = new ObjectMapper();
+					    				if(log.isDebugEnabled()) log.debugf("%s: serializeDiagram creating json ... %s",TAG,(mapper.canSerialize(SerializableDiagram.class)?"true":"false"));
+					    				try{ 
+					    					String json = mapper.writeValueAsString(view);
+					    					FileWriter fw = new FileWriter(output,false);  // Do not append
+					    					try {
+					    						fw.write(json);
+					    					}
+					    					catch(IOException ioe) {
+					    						log.warnf("%s: actionPerformed: Error writing file %s (%s)",TAG,output.getAbsolutePath(),ioe.getLocalizedMessage());
+					    					}
+					    					finally {
+					    						fw.close();
+					    					}
+					    				}
+					    				catch(JsonProcessingException jpe) {
+					    					log.warnf("%s: Unable to serialize diagram (%s)",TAG,jpe.getMessage());
+					    				}
+					    			}
+								    else {
+								    	log.warnf("%s: actionPerformed, selected file is not writable: %s",TAG,output.getAbsolutePath());
+								    }
+					    		}
+					    		catch (IOException ioe) {
+					    			log.warnf("%s: actionPerformed: Error creating or closing file %s (%s)",TAG,output.getAbsolutePath(),ioe.getLocalizedMessage());
+					    		}
+					    	}
+					    }
 					}
+
 				});
-		
 			} 
 			catch (Exception err) {
 				ErrorUtil.showError(err);

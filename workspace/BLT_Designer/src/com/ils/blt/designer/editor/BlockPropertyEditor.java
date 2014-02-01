@@ -29,16 +29,11 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 
 /**
- * Display a dialog to edit cell attributes.
- *    BlockAttributeDialog bad = new BlockAttributeDialog("Attribute Editor");
- *    bad.pack();
- *    bad.setVisible(true);   // Terminates when dialog closed.
- *    result = bad.getModel();
- *    
+ * Display a panel to edit block properties.    
  */
 
-public class PropertyEditor extends JPanel {
-	private final static String TAG = "PropertyEditor";
+public class BlockPropertyEditor extends JPanel {
+	private final static String TAG = "BlockPropertyEditor";
 	private static final long serialVersionUID = 8971626415423709616L;
 	private ProcessBlockView block;
 	private final DesignerContext context;
@@ -56,7 +51,7 @@ public class PropertyEditor extends JPanel {
 	/**
 	 * @param view the designer version of the block to edit. We 
 	 */
-	public PropertyEditor(DesignerContext ctx,long res,ProcessBlockView view) {
+	public BlockPropertyEditor(DesignerContext ctx,long res,ProcessBlockView view) {
 		this.context = ctx;
 		this.projectId = ctx.getProject().getId();
 		this.resourceId = res;

@@ -3,6 +3,7 @@
     <target name="javadoc">
         <javadoc access="protected" author="true" 
         	classpath="/Users/chuckc/Development/ils/repo/ignition-77/lib/designer-api.jar:
+        			   /Users/chuckc/Development/ils/repo/ignition-77/lib/vision-designer-api.jar:
         			   /Users/chuckc/Development/ils/repo/ignition-77/lib/client-api.jar:
         			   /Users/chuckc/Development/ils/repo/ignition-77/lib/vision-client-api.jar:
         	           /Users/chuckc/Development/ils/repo/ignition-77/lib/ignition-common.jar:
@@ -13,13 +14,19 @@
         	           /Users/chuckc/Development/ils/repo/external/lib/jackson-core-2.2.3.jar:
         			   /Users/chuckc/Development/ils/repo/external/lib/jackson-annotations-2.2.3.jar:
         	           /Users/chuckc/Development/ils/repo/external/lib/jackson-databind-2.2.3.jar:
+        	           /Users/chuckc/Development/ils/repo/external/lib/commons-math3-3.1.1.jar:
         	           /Users/chuckc/Development/ils/repo/ignition-77/lib/gateway-api.jar:
         	           /Users/chuckc/Development/ils/repo/blt/workspace/BLT_Common/bin" 
         	destdir="doc" nodeprecated="false" nodeprecatedlist="true" noindex="false" nonavbar="false" notree="false" 
-        	packagenames="com.ils.blt,com.ils.com.ils.blt.gateway,com.ils.blt.client,
-        	              com.ils.blt.designer" 
+        	packagenames="com.ils.block,com.ils.block.annotation,com.ils.block.common,com.ils.block.control,com.ils.block.connection,
+        				  com.ils.com.ils.blt.gateway,com.ils.com.ils.blt.gateway.engine,com.ils.com.ils.blt.gateway.proxy,
+        	              com.ils.blt.client,
+        	              com.ils.blt.common,com.ils.blt.common.serializable,
+        	              com.ils.blt.designer,com.ils.blt.designer.component,com.ils.blt.designer.component.beaninfo,
+        	              com.ils.blt.designer.editor,com.ils.blt.designer.navtree,com.ils.blt.designer.workspace,com.ils.blt.designer.workspace.ui,
+        	              com.ils.common,com.ils.common.watchdog" 
         	source="1.7" 
-        	sourcepath="/Users/chuckc/Development/ils/repo/jgx/workspace/JGX/src:
+        	sourcepath="/Users/chuckc/Development/ils/repo/block/workspace/Block/src:
         				/Users/chuckc/Development/ils/repo/blt/workspace/BLT_Common/src:
         	            /Users/chuckc/Development/ils/repo/blt/workspace/BLT_Gateway/src:
         	            /Users/chuckc/Development/ils/repo/blt/workspace/BLT_Client/src:
