@@ -21,6 +21,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.SerializableDiagram;
+import com.ils.blt.common.serializable.UUIDResetHandler;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.PropertiesRequestHandler;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
@@ -52,6 +53,7 @@ public class DiagramTreeNode extends FolderNode {
 	private DebugAction debugAction = null;
 	private ApplicationAction applicationAction = null;
 	private FamilyAction familyAction = null;
+	protected CloneAction cloneAction = null;
 	protected DiagramAction diagramAction = null;
 	protected ImportAction importAction = null;
 	protected StartAction startAction = null;
@@ -155,8 +157,10 @@ public class DiagramTreeNode extends FolderNode {
 		else if( getDepth()==DIAGRAM_DEPTH) {
 			diagramAction = new DiagramAction();
 			importAction = new ImportAction();
+			cloneAction = new CloneAction();
 			menu.add(diagramAction);
 			menu.add(importAction);
+			menu.add(cloneAction);
 			menu.addSeparator();
 			addEditActions(menu);
 			
@@ -338,11 +342,11 @@ public class DiagramTreeNode extends FolderNode {
 	}
     
     
-    //  TODO: Need file chooser and import
-    private class ImportAction extends BaseAction {
+    private class CloneAction extends BaseAction {
     	private static final long serialVersionUID = 1L;
-	    public ImportAction()  {
-	    	super(PREFIX+".ImportDiagram",IconUtil.getIcon("import1"));  // preferences
+    	private final static String POPUP_TITLE = "Clone Diagram";
+	    public CloneAction()  {
+	    	super(PREFIX+".CloneDiagram",IconUtil.getIcon("copy"));  // preferences
 	    }
 	    
 		public void actionPerformed(ActionEvent e) {
@@ -393,6 +397,82 @@ public class DiagramTreeNode extends FolderNode {
 						catch (Exception ex) {
 							log.errorf("%s: actionPerformed: Unhandled Exception (%s)",TAG,ex.getMessage());
 						}
+					}
+				});
+			} 
+			catch (Exception err) {
+				ErrorUtil.showError(err);
+			}
+		}
+	}
+    private class ImportAction extends BaseAction {
+    	private static final long serialVersionUID = 1L;
+    	private final static String POPUP_TITLE = "Import Diagram";
+	    public ImportAction()  {
+	    	super(PREFIX+".ImportDiagram",IconUtil.getIcon("import1"));  // preferences
+	    }
+	    
+		public void actionPerformed(ActionEvent e) {
+			try {
+				EventQueue.invokeLater(new Runnable() {
+					public void run() {
+						boolean success = false;
+						long newId;
+
+						try {
+							newId = context.newResourceId();
+							String newName = BundleUtil.get().getString(PREFIX+".DefaultImportDiagramName");
+							if( newName==null) newName = "Imported Diag";  // Missing string resource
+							ImportDialog dialog = new ImportDialog(newName);
+							dialog.pack();
+							dialog.setVisible(true);   // Returns when dialog is closed
+							File input = dialog.getFilePath();
+							newName = dialog.getDiagramName();
+							if( input!=null ) {
+								if( input.exists() && input.canRead()) {
+									try {
+										// Note: Requires Java 1.7
+										byte[] bytes = Files.readAllBytes(input.toPath());
+										// It would be nice to simply convert to a resource.
+										// Unfortunately we have to replace all UUIDs with new ones
+										ObjectMapper mapper = new ObjectMapper();
+										SerializableDiagram sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
+										if( sd!=null ) {
+											UUIDResetHandler handler = new UUIDResetHandler(sd);
+											handler.convertUUIDs();
+											String json = mapper.writeValueAsString(sd);
+											ProjectResource resource = new ProjectResource(newId,
+													BLTProperties.MODULE_ID, BLTProperties.MODEL_RESOURCE_TYPE,
+													newName, ApplicationScope.GATEWAY, json.getBytes());
+											resource.setParentUuid(getFolderId());
+											context.updateResource(resource);
+											selectChild(newId);
+										}
+										else {
+											ErrorUtil.showWarning(String.format("Failed to deserialize file (%s)",input.getAbsolutePath()),POPUP_TITLE);
+										}
+									}
+									catch( FileNotFoundException fnfe) {
+										// Should never happen, we just picked this off a chooser
+										ErrorUtil.showWarning(String.format("File %s not found",input.getAbsolutePath()),POPUP_TITLE); 
+									}
+									catch( IOException ioe) {
+										ErrorUtil.showWarning(String.format("IOException (%s)",ioe.getLocalizedMessage()),POPUP_TITLE); 
+									}
+									catch(Exception ex) {
+										ErrorUtil.showError(String.format("Deserialization exception (%s)",ex.getMessage()),POPUP_TITLE,ex,true);
+									}
+
+								}
+								else {
+									ErrorUtil.showWarning(String.format("Selected file does not exist or is not readable: %s",input.getAbsolutePath()),POPUP_TITLE);
+								}
+							}  // Cancel
+						} 
+						catch (Exception ex) {
+							ErrorUtil.showError(String.format("Unhandled Exception (%s)",ex.getMessage()),POPUP_TITLE,ex,true);
+						}
+						// No need to inform of success, we'll see the new diagram
 					}
 				});
 			} 

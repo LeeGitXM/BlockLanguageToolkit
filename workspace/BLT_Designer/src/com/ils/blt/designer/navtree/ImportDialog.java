@@ -60,6 +60,11 @@ public class ImportDialog extends JDialog implements ActionListener {
 	    fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 	    FileNameExtensionFilter filter = new FileNameExtensionFilter("JSON exports", "json", "txt");
 	    fc.setFileFilter(filter);
+	    String startDirectoryName = System.getProperty(BLTProperties.EXIM_PATH);
+	    if(startDirectoryName!=null ) {
+	    	File startDirectory = new File(startDirectoryName);
+		    fc.setCurrentDirectory(startDirectory);
+	    }
 	    
 	    fc.setDialogTitle(BundleUtil.get().getString(PREFIX+".Import.DialogTitle"));
 	    fc.setApproveButtonText(BundleUtil.get().getString(PREFIX+".Import.ApproveButton"));
@@ -100,11 +105,22 @@ public class ImportDialog extends JDialog implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		log.infof("%s: actionPerformed %s = %s", TAG,e.getActionCommand(),((JComponent)(e.getSource())).getName());
 		if( e.getActionCommand().equals(JFileChooser.APPROVE_SELECTION)) {
-			//filePath = fc.getSelectedFile();
+			filePath = fc.getSelectedFile();
+			if( filePath!=null ) {
+				String fileName = filePath.getName();
+				if(fileName.indexOf(".")<0) {
+					filePath = new File(filePath.getAbsolutePath()+".json");
+				}
+				System.setProperty(BLTProperties.EXIM_PATH, filePath.getParent());
+				this.dispose();
+			}
 		}
-		else {
-			//filePath =null;
-		};
-		//this.dispose();
+		else if(e.getActionCommand().equals(JFileChooser.CANCEL_SELECTION)){
+			filePath =null;
+			this.dispose();
+		}
+		else if(((JComponent)e.getSource()).getName().equals(TEXT_FIELD_NAME) ) {
+			diagramName = diagramNameField.getText();
+		}
 	}
 }

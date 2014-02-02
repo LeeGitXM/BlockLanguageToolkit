@@ -18,6 +18,7 @@ public class SerializableBlock {
 	private int x = 0;
 	private int y = 0;
 	private UUID uuid = null;
+	private UUID originalId = null;       // Id of block from which this was cloned
 	private String className = null;
 	private String embeddedIcon="";       // 32x32 icon to place in block in designer
 	private String embeddedLabel="";      // Label place in block in designer
@@ -36,6 +37,8 @@ public class SerializableBlock {
 	public void setClassName(String className) {this.className = className;}
 	public UUID getId() { return uuid; }
 	public void setId(UUID id) { uuid = id; }
+	public UUID getOriginalId() { return originalId; }
+	public void setOriginalId(UUID id) { originalId = id; }
 	public String getLabel() { return label; }
 	public void setLabel(String label) { this.label = label; }
 	public int getX() { return x; }

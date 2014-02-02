@@ -202,7 +202,6 @@ public class ModelResourceManager implements ProjectListener  {
 		ProcessDiagram diagram = null;
 		try{
 			ObjectMapper mapper = new ObjectMapper();
-	
 			SerializableDiagram sd = mapper.readValue(json, SerializableDiagram.class);
 			if( sd!=null ) {
 				log.infof("%s: deserializeModelResource: successfully deserialized diagram %s",TAG,sd.getName());

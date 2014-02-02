@@ -20,7 +20,6 @@ public interface BLTProperties   {
 	public final static String FOLDER_RESOURCE_TYPE    = "__folder";
 	public final static String MODEL_RESOURCE_TYPE    = "blt.model";
 	
-	public final static String GRAPHICS_SCRIPT_PACKAGE = "system.ils.ui";
 	public final static String PROPERTIES_SCRIPT_PACKAGE = "system.ils.blt.properties";
 	public final static String REGISTRATION_SCRIPT_PACKAGE  = "system.ils.blt.registrar";
 	public final static String REPORTING_SCRIPT_PACKAGE  = "system.ils.blt.report";
@@ -47,4 +46,7 @@ public interface BLTProperties   {
 	public static final String MSG_BLOCK_NAME      = "BlockName";
 	public static final String MSG_BLOCK_STATE     = "BlockState";
 	public static final String MSG_WORKSPACE_ID    = "WorkspaceID";    // UUID of the component's workspace
+	
+	// These are names of system properties
+	public static final String EXIM_PATH = "blt.exim.path";            // Default for file choose dialogs
 }

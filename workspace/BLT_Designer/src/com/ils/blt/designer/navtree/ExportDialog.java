@@ -9,6 +9,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.nio.file.Path;
 
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -66,6 +67,12 @@ public class ExportDialog extends JDialog implements ActionListener {
 	    fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 	    FileNameExtensionFilter filter = new FileNameExtensionFilter("JSON exports", "json", "txt");
 	    fc.setFileFilter(filter);
+	    String startDirectoryName = System.getProperty(BLTProperties.EXIM_PATH);
+	    if(startDirectoryName!=null ) {
+	    	File startDirectory = new File(startDirectoryName);
+		    fc.setCurrentDirectory(startDirectory);
+	    }
+	    
 	    
 	    fc.setDialogTitle(BundleUtil.get().getString(PREFIX+".Export.DialogTitle"));
 	    fc.setApproveButtonText(BundleUtil.get().getString(PREFIX+".Export.ApproveButton"));
@@ -87,7 +94,15 @@ public class ExportDialog extends JDialog implements ActionListener {
 		log.infof("%s: actionPerformed %s = %s", TAG,e.getActionCommand(),((JComponent)(e.getSource())).getName());
 		if( e.getActionCommand().equals(JFileChooser.APPROVE_SELECTION)) {
 			filePath = fc.getSelectedFile();
-			log.infof("%s: actionPerformed set file path to: %s",TAG,filePath.getAbsolutePath()); 
+			if( filePath!=null ) {
+				String fileName = filePath.getName();
+				if(fileName.indexOf(".")<0) {
+					filePath = new File(filePath.getAbsolutePath()+".json");
+				}
+				System.setProperty(BLTProperties.EXIM_PATH, filePath.getParent());
+			}
+			
+			log.infof("%s: actionPerformed set file path to: %s (%s)",TAG,filePath.getAbsolutePath(),filePath.getParent()); 
 		}
 		else {
 			filePath =null;

@@ -206,6 +206,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 	
 	private class ExportAction extends BaseAction {
     	private static final long serialVersionUID = 1L;
+    	private final static String POPUP_TITLE = "Export Diagram";
     	private final ProcessDiagramView view;
     	private final Component anchor;
 	    public ExportAction(Component c,ProcessDiagramView v)  {
@@ -223,6 +224,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 					    dialog.pack();
 					    dialog.setVisible(true);   // Returns when dialog is closed
 					    File output = dialog.getFilePath();
+					    boolean success = false;
 					    if( output!=null ) {
 					    	log.debugf("%s: actionPerformed, dialog returned %s",TAG,output.getAbsolutePath());
 					    	if(!output.exists()) {
@@ -232,33 +234,39 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 					    				ObjectMapper mapper = new ObjectMapper();
 					    				if(log.isDebugEnabled()) log.debugf("%s: serializeDiagram creating json ... %s",TAG,(mapper.canSerialize(SerializableDiagram.class)?"true":"false"));
 					    				try{ 
-					    					String json = mapper.writeValueAsString(view);
+					    					// Convert the view into a serializable object
+					    					SerializableDiagram sd = view.createSerializableRepresentation();
+					    					String json = mapper.writeValueAsString(sd);
 					    					FileWriter fw = new FileWriter(output,false);  // Do not append
 					    					try {
 					    						fw.write(json);
+					    						success = true;
 					    					}
 					    					catch(IOException ioe) {
-					    						log.warnf("%s: actionPerformed: Error writing file %s (%s)",TAG,output.getAbsolutePath(),ioe.getLocalizedMessage());
+					    						ErrorUtil.showWarning(String.format("Error writing file %s (%s)",output.getAbsolutePath(),
+								    					ioe.getMessage()),POPUP_TITLE,false);
 					    					}
 					    					finally {
 					    						fw.close();
 					    					}
 					    				}
 					    				catch(JsonProcessingException jpe) {
-					    					log.warnf("%s: Unable to serialize diagram (%s)",TAG,jpe.getMessage());
+					    					ErrorUtil.showError("Unable to serialize diagram",POPUP_TITLE,jpe,true);
 					    				}
 					    			}
 								    else {
-								    	log.warnf("%s: actionPerformed, selected file is not writable: %s",TAG,output.getAbsolutePath());
+								    	ErrorUtil.showWarning(String.format("selected file (%s) is not writable.",output.getAbsolutePath()),POPUP_TITLE,false);
 								    }
 					    		}
 					    		catch (IOException ioe) {
-					    			log.warnf("%s: actionPerformed: Error creating or closing file %s (%s)",TAG,output.getAbsolutePath(),ioe.getLocalizedMessage());
+					    			ErrorUtil.showWarning(String.format("Error creating or closing file %s (%s)",output.getAbsolutePath(),
+					    					ioe.getMessage()),POPUP_TITLE,false);
 					    		}
 					    	}
 					    }
+					    // If there's an error, then the user will be informed
+					    if( success ) ErrorUtil.showInfo(anchor, "Export complete", POPUP_TITLE);
 					}
-
 				});
 			} 
 			catch (Exception err) {
