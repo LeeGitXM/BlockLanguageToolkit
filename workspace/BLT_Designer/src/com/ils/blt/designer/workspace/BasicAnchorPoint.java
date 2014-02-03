@@ -27,8 +27,7 @@ public class BasicAnchorPoint extends AnchorPoint {
 		hotspot = spot;
 		// Default behavior for side. This can be updated.
 		if( type==AnchorType.Origin) side = AnchorSide.RIGHT;
-		else side = AnchorSide.LEFT;
-		
+		else side = AnchorSide.LEFT;	
 	}
 
 	public Point getAnchor() { return anchor; }

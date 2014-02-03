@@ -25,6 +25,9 @@ public class UIFactory {
 			case ENTRY:
 				ui= new EntryUIView(block);
 				break;
+			case JUNCTION:
+				ui= new JunctionUIView(block);
+				break;
 			case ROUND:
 				ui= new RoundUIView(block);
 				break;
