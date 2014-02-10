@@ -4,7 +4,7 @@
 package com.ils.blt.gateway.engine;
 
 import com.ils.block.ProcessBlock;
-import com.ils.block.control.IncomingValueNotification;
+import com.ils.block.control.IncomingNotification;
 
 /**
  * A value has been received as an output from a block
@@ -15,14 +15,14 @@ import com.ils.block.control.IncomingValueNotification;
  */
 public class IncomingValueChangeTask implements Runnable{
 	private final ProcessBlock target;
-	private final IncomingValueNotification notification;
+	private final IncomingNotification notification;
 	/**
 	 * Constructor.
 	 * 
 	 * @param blk the block to be notified of the new value on its input
 	 * @param vcn notification describing the new value
 	 */
-	public IncomingValueChangeTask(ProcessBlock blk,IncomingValueNotification vcn)  {
+	public IncomingValueChangeTask(ProcessBlock blk,IncomingNotification vcn)  {
 		this.target = blk;
 		this.notification = vcn;
 	}

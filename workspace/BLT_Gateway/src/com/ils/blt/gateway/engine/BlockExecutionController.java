@@ -14,8 +14,8 @@ import java.util.concurrent.Executors;
 import com.ils.block.ProcessBlock;
 import com.ils.block.common.BlockProperty;
 import com.ils.block.control.ExecutionController;
-import com.ils.block.control.IncomingValueNotification;
-import com.ils.block.control.OutgoingValueNotification;
+import com.ils.block.control.IncomingNotification;
+import com.ils.block.control.OutgoingNotification;
 import com.ils.common.BoundedBuffer;
 import com.ils.common.watchdog.Watchdog;
 import com.ils.common.watchdog.WatchdogTimer;
@@ -80,7 +80,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	/**
 	 * A block has completed evaluation. A new value has been placed on its output.
 	 */
-	public void acceptCompletionNotification(OutgoingValueNotification note) {
+	public void acceptCompletionNotification(OutgoingNotification note) {
 		log.tracef("%s:acceptCompletionNotification: %s:%s", TAG,note.getBlock().getBlockId().toString(),note.getPort());
 		try {
 			buffer.put(note);
@@ -183,16 +183,16 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		while( !stopped  ) {
 			try {
 				Object work = buffer.get();
-				if( work instanceof OutgoingValueNotification) {
-					OutgoingValueNotification inNote = (OutgoingValueNotification)work;
+				if( work instanceof OutgoingNotification) {
+					OutgoingNotification inNote = (OutgoingNotification)work;
 					log.tracef("%s: processing incoming note from buffer: %s:%s", TAG,inNote.getBlock().getBlockId().toString(),inNote.getPort());
 					// Query the diagram to find out what's next
 					ProcessBlock pb = inNote.getBlock();
 					ProcessDiagram dm = delegate.getDiagram(new Long(pb.getProjectId()),new Long(pb.getDiagramId()));
 					if( dm!=null) {
-						Collection<IncomingValueNotification> outgoing = dm.getOutgoingNotifications(inNote);
+						Collection<IncomingNotification> outgoing = dm.getOutgoingNotifications(inNote);
 						if( outgoing.isEmpty() ) log.warnf("%s: no downstream connections found ...",TAG);
-						for(IncomingValueNotification outNote:outgoing) {
+						for(IncomingNotification outNote:outgoing) {
 							UUID outBlockId = outNote.getConnection().getTarget();
 							ProcessBlock outBlock = dm.getBlock(outBlockId);
 							if( outBlock!=null ) {

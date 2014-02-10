@@ -11,8 +11,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.ProcessBlock;
-import com.ils.block.control.IncomingValueNotification;
-import com.ils.block.control.OutgoingValueNotification;
+import com.ils.block.control.IncomingNotification;
+import com.ils.block.control.OutgoingNotification;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableConnection;
 import com.ils.blt.common.serializable.SerializableDiagram;
@@ -129,12 +129,12 @@ public class ProcessDiagram {
 	 * @param new value notification of an incoming change
 	 * @return a new value notification for the downstream block(s)
 	 */
-	public Collection<IncomingValueNotification> getOutgoingNotifications(OutgoingValueNotification incoming) {
+	public Collection<IncomingNotification> getOutgoingNotifications(OutgoingNotification incoming) {
 		ProcessBlock block = incoming.getBlock();
 		String port = incoming.getPort();
 		QualifiedValue value = incoming.getValue();
 		
-		Collection<IncomingValueNotification>notifications = new ArrayList<IncomingValueNotification>();
+		Collection<IncomingNotification>notifications = new ArrayList<IncomingNotification>();
 		BlockPort key = new BlockPort(block,port);
 		List<ProcessConnection> cxns = outgoingConnections.get(key);
 		if( cxns!=null ) {
@@ -142,7 +142,7 @@ public class ProcessDiagram {
 				UUID blockId = cxn.getTarget();
 				ProcessBlock blk = blocks.get(blockId);
 				if( blk!=null ) {
-					IncomingValueNotification vcn = new IncomingValueNotification(cxn,value);
+					IncomingNotification vcn = new IncomingNotification(cxn,value);
 					notifications.add(vcn);
 				}
 				else {
