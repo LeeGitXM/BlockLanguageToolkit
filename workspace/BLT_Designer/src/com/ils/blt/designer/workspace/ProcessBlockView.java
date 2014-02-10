@@ -37,17 +37,21 @@ public class ProcessBlockView extends AbstractBlock {
 	private final String className;
 	private String embeddedIcon="";               // 32x32 icon to place in block in designer
 	private String embeddedLabel="";              // Label place in block in designer
+	private String iconPath="";                   // Path to icon that is the entire block
 	private String label;                         // Text to display on the block
 	private BlockState state = BlockState.IDLE;   // Block execution state
 	private String statusText;                    // Auxiliary text to display
 	private Collection<AnchorDescriptor> anchors;
 	private Collection<BlockProperty> properties;
+	private int preferredHeight = 0;
+	private int preferredWidth  = 0;
 	private Point location = new Point(0,0);
 	private final UIFactory factory = new UIFactory() ;
 	private BlockViewUI ui = null;
 	private BlockStyle style = BlockStyle.BASIC;
 	
 	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
+	
 	
 	/**
 	 * Constructor: Used when a new block is created from the palette.
@@ -58,6 +62,9 @@ public class ProcessBlockView extends AbstractBlock {
 		this.label = descriptor.getLabel();
 		this.embeddedIcon = descriptor.getEmbeddedIcon();
 		this.embeddedLabel= descriptor.getEmbeddedLabel();
+		this.iconPath = descriptor.getIconPath();
+		this.preferredHeight = descriptor.getPreferredHeight();
+		this.preferredWidth = descriptor.getPreferredWidth();
 		this.state = BlockState.STOPPED;
 		this.statusText = "";
 		this.style = descriptor.getStyle();
@@ -77,6 +84,9 @@ public class ProcessBlockView extends AbstractBlock {
 		this.className = sb.getClassName();
 		this.embeddedIcon = sb.getEmbeddedIcon();
 		this.embeddedLabel= sb.getEmbeddedLabel();
+		this.iconPath = sb.getIconPath();
+		this.preferredHeight = sb.getPreferredHeight();
+		this.preferredWidth = sb.getPreferredWidth();
 		this.style = sb.getStyle();
 		this.label = sb.getLabel();
 		this.state = BlockState.PAUSED;
@@ -146,6 +156,12 @@ public class ProcessBlockView extends AbstractBlock {
 	public void setEmbeddedIcon(String embeddedIcon) {this.embeddedIcon = embeddedIcon;}
 	public String getEmbeddedLabel() {return embeddedLabel;}
 	public void setEmbeddedLabel(String embeddedLabel) {this.embeddedLabel = embeddedLabel;}
+	public String getIconPath() {return iconPath;}
+	public void setIconPath(String iconPath) {this.iconPath = iconPath;}
+	public int getPreferredHeight() {return preferredHeight;}
+	public void setPreferredHeight(int preferredHeight) {this.preferredHeight = preferredHeight;}
+	public int getPreferredWidth() {return preferredWidth;}
+	public void setPreferredWidth(int preferredWidth) {this.preferredWidth = preferredWidth;}
 
 	@Override
 	public void initUI(BlockComponent blk) {

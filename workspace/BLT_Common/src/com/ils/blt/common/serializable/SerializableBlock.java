@@ -22,6 +22,9 @@ public class SerializableBlock {
 	private String className = null;
 	private String embeddedIcon="";       // 32x32 icon to place in block in designer
 	private String embeddedLabel="";      // Label place in block in designer
+	private String iconPath="";           // Path to icon that is the entire block
+	private int preferredHeight = 0;
+	private int preferredWidth  = 0;
 	private BlockStyle style = BlockStyle.BASIC;
 	private String label;
 	private String statusText;
@@ -62,6 +65,12 @@ public class SerializableBlock {
 	public void setEmbeddedIcon(String embeddedIcon) {this.embeddedIcon = embeddedIcon;}
 	public String getEmbeddedLabel() {return embeddedLabel;}
 	public void setEmbeddedLabel(String embeddedLabel) {this.embeddedLabel = embeddedLabel;}
+	public String getIconPath() {return iconPath;}
+	public void setIconPath(String iconPath) {this.iconPath = iconPath;}
+	public int getPreferredHeight() {return preferredHeight;}
+	public void setPreferredHeight(int preferredHeight) {this.preferredHeight = preferredHeight;}
+	public int getPreferredWidth() {return preferredWidth;}
+	public void setPreferredWidth(int preferredWidth) {this.preferredWidth = preferredWidth;}
 	public BlockProperty[] getProperties() { return properties; }
 	public void setProperties(BlockProperty[] array) { this.properties = array; }
 

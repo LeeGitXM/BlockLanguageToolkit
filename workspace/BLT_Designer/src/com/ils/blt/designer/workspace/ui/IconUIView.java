@@ -22,14 +22,24 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorT
  */
 public class IconUIView extends AbstractUIView implements BlockViewUI {
 	private static final long serialVersionUID = 7095402409706582432L;
-	private static final Dimension IMAGE_SIZE = new Dimension(48,48);
+	private static final int DEFAULT_HEIGHT = 48;
+	private static final int DEFAULT_WIDTH  = 48;
+	private static final String DEFAULT_ICON_PATH  = "Block/icons/medium/database.png";
 	private Icon icon = null;
 	
 	public IconUIView(ProcessBlockView view) {
 		super(view);
 		setOpaque(false);
-		setPreferredSize(new Dimension(48+INSET,48+INSET));   // 48 plus INSET
-		Image img = ImageLoader.getInstance().loadImage("Block/icons/48/database_48.png",IMAGE_SIZE);
+		int preferredHeight = view.getPreferredHeight();
+		if( preferredHeight<=0 ) preferredHeight = DEFAULT_HEIGHT;
+		int preferredWidth = view.getPreferredWidth();
+		if( preferredWidth<=0 ) preferredWidth = DEFAULT_WIDTH;
+		Dimension imageSize = new Dimension(preferredWidth,preferredHeight);
+		setPreferredSize(new Dimension(preferredWidth+INSET,preferredHeight+INSET));   // 48 plus INSET
+		String iconPath = view.getIconPath();
+		if( iconPath==null || iconPath.length()==0 ) iconPath = DEFAULT_ICON_PATH;
+		
+		Image img = ImageLoader.getInstance().loadImage(iconPath ,imageSize);
 		if( img !=null) icon = new ImageIcon(img);
 		initAnchorPoints();
 	}
