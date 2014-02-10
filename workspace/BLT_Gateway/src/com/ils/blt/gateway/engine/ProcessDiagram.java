@@ -132,7 +132,7 @@ public class ProcessDiagram {
 	public Collection<IncomingNotification> getOutgoingNotifications(OutgoingNotification incoming) {
 		ProcessBlock block = incoming.getBlock();
 		String port = incoming.getPort();
-		QualifiedValue value = incoming.getValue();
+		Object value = incoming.getValue();
 		
 		Collection<IncomingNotification>notifications = new ArrayList<IncomingNotification>();
 		BlockPort key = new BlockPort(block,port);

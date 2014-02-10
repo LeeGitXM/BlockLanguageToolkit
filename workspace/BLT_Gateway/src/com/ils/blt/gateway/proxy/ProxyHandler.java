@@ -203,9 +203,9 @@ public class ProxyHandler   {
 	 * @param diagramId
 	 * @param blockId
 	 * @param stub
-	 * @param value
+	 * @param value one of a QualifiedValue, Signal, Truth-value or String
 	 */
-	public void setValue(long projectId,long diagramId,UUID blockId,String stub,QualifiedValue value) {
+	public void setValue(long projectId,long diagramId,UUID blockId,String stub,Object value) {
 		
 	}
 	
