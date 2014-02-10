@@ -47,7 +47,7 @@ import com.inductiveautomation.ignition.designer.navtree.model.ResourceDeleteAct
 public class DiagramTreeNode extends FolderNode {
 	private static final String TAG = "DiagramTreeNode";
 	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
-	private static final int DIAGRAM_DEPTH = 2;                        // For a two-tier menu
+	private static final int DIAGRAM_DEPTH = 3;                        // For a three-tier menu
 	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	// These are the various actions beyond defaults
 	private DebugAction debugAction = null;

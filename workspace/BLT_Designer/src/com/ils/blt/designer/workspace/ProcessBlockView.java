@@ -46,6 +46,7 @@ public class ProcessBlockView extends AbstractBlock {
 	private final UIFactory factory = new UIFactory() ;
 	private BlockViewUI ui = null;
 	private BlockStyle style = BlockStyle.BASIC;
+	
 	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	
 	/**

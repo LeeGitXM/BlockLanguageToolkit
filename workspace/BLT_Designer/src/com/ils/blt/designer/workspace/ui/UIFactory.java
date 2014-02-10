@@ -16,8 +16,8 @@ public class UIFactory {
 		
 		BlockViewUI ui = null;
 		switch(style) {
-			case DATABASE:
-				ui= new DatabaseUIView(block);
+			case ICON:
+				ui= new IconUIView(block);
 				break;
 			case DIAMOND:
 				ui= new DiamondUIView(block);

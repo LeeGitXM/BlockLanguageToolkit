@@ -15,18 +15,17 @@ import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.designer.blockandconnector.blockui.AnchorDescriptor;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
-import com.inductiveautomation.ignition.designer.gui.IconUtil;
 
 /**
  * Create a drum with a predefined 48x48 graphic. The first input anchor
  * creates an anchor point on the top. Any others are ignored.
  */
-public class DatabaseUIView extends AbstractUIView implements BlockViewUI {
+public class IconUIView extends AbstractUIView implements BlockViewUI {
 	private static final long serialVersionUID = 7095402409706582432L;
 	private static final Dimension IMAGE_SIZE = new Dimension(48,48);
 	private Icon icon = null;
 	
-	public DatabaseUIView(ProcessBlockView view) {
+	public IconUIView(ProcessBlockView view) {
 		super(view);
 		setOpaque(false);
 		setPreferredSize(new Dimension(48+INSET,48+INSET));   // 48 plus INSET

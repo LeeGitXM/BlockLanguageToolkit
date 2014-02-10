@@ -19,6 +19,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 
@@ -66,15 +67,25 @@ public class ProcessBlockPalette extends DockableFrame implements ResourceWorksp
 		this.workspace = workspace;
 		
 		// Query the Gateway for a list of blocks to display
-		JPanel panel = new JPanel();
+		JTabbedPane tabbedPane = new JTabbedPane();
 		PropertiesRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
 		List<PalettePrototype> prototypes = handler.getBlockPrototypes();
+		JPanel panel = null;
 		for( PalettePrototype proto:prototypes) {
 			JComponent component = new PaletteEntry(proto).getComponent();
+			String tabName = proto.getTabName();
+			int tabIndex = tabbedPane.indexOfTab(tabName);
+			if( tabIndex < 0 ) {    // Prototype references a new tab
+				panel = new JPanel();
+				tabbedPane.addTab(tabName, panel);
+			}
+			else {
+				panel = (JPanel)tabbedPane.getComponentAt(tabIndex);
+			}
 			if( component!=null)panel.add(component);
 		}
 
-		setContentPane(panel);
+		setContentPane(tabbedPane);
 	}
 
 
