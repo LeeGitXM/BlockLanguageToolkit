@@ -23,7 +23,10 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 
 import com.ils.blt.designer.workspace.BasicAnchorPoint;
+import com.ils.blt.designer.workspace.ProcessAnchorDescriptor;
 import com.ils.blt.designer.workspace.ProcessBlockView;
+import com.ils.blt.designer.workspace.WorkspaceConstants;
+import com.ils.connection.ConnectionType;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -44,9 +47,9 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 	private static final String TAG = "AbstractUIView";
 	private LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	private final ProcessBlockView block;
+	private final List<AnchorDescriptor> anchorDescriptors;  // Entries are BasicAnchorPoint
 	private final List<AnchorPoint> anchorPoints;  // Entries are BasicAnchorPoint
 	private BlockComponent blockComponent = null;
-	protected final static int ANCHOR_SIZE = 6;
 	protected final static int INSET = 6;
 	protected final static int LEADER_LENGTH = 10;
 	protected final static Color OUTLINE_COLOR = Color.BLACK;   // For stub
@@ -58,6 +61,7 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 		this.block = view;
 		setOpaque(false);
 		setPreferredSize(new Dimension(100,100));   // This can be overriden
+		anchorDescriptors = new ArrayList<AnchorDescriptor>();
 		anchorPoints = new ArrayList<AnchorPoint>();
 	}
 
@@ -74,22 +78,27 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 		Dimension sz = getPreferredSize();
 		boolean hasTerminus = false;
 		boolean hasOrigin  = false;
-		for(AnchorDescriptor desc:block.getAnchors()) {
+		
+		for(ProcessAnchorDescriptor desc:block.getAnchors()) {
+			// Create a local anchor array from the block
+			anchorDescriptors.add(desc);
 			// Left side terminus
 			if( desc.getType()==AnchorType.Terminus  && ! hasTerminus) {
 				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Terminus,
+						desc.getConnectionType(),
 						new Point(INSET,sz.height/2),
 						new Point(-LEADER_LENGTH,sz.height/2),
-						new Rectangle(0,sz.height/2,2*INSET,2*INSET));   // x,y,width,height. Hotspot shape.
+						new Rectangle(0,sz.height/2-INSET,2*INSET,2*INSET));   // x,y,width,height. Hotspot shape.
 				getAnchorPoints().add(ap);
 				hasTerminus = true;
 			}
 			// Right-side origin
 			else if(desc.getType()==AnchorType.Origin  && ! hasOrigin) {
 				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Origin,
+						desc.getConnectionType(),
 						new Point(sz.width-INSET,sz.height/2),
 						new Point(sz.width+LEADER_LENGTH,sz.height/2),
-						new Rectangle(sz.width-INSET,sz.height/2,2*INSET,2*INSET));
+						new Rectangle(sz.width-INSET,sz.height/2-INSET,2*INSET,2*INSET));
 				getAnchorPoints().add(ap);
 				hasOrigin = true;
 			}
@@ -135,9 +144,13 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 		g.fill(textShape);
 	}
 
+	/**
+	 * Make our own array as it seems like the generic arrays do
+	 * not follow inheritance patterns
+	 */
 	@Override
 	public Collection<AnchorDescriptor> getAnchors() {
-		return block.getAnchors();
+		return anchorDescriptors;
 	}
 	
 	protected void drawAnchors(Graphics2D g) {
@@ -145,26 +158,27 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 		for( AnchorPoint ap:anchorPoints) {
 			BasicAnchorPoint bap = (BasicAnchorPoint)ap;
 			AnchorSide side = bap.getSide();
+			int anchorSize = anchorSizeForConnectionType(bap.getConnectionType());
 			Point loc = bap.getAnchor();   // Center of the anchor point
-			int offset = ANCHOR_SIZE/2;
+			int offset = anchorSize/2;
 			int x = (loc.x>offset?loc.x-offset:0);
 			int y = (loc.y>offset?loc.y-offset:0);
 			// Paint the rectangle
-			g.setColor(getBackground());
-			g.fillRect(x, y, ANCHOR_SIZE,ANCHOR_SIZE);
-			
+			if( bap.getConnectionType()==ConnectionType.DATA) g.setColor(getBackground());
+			else g.setColor(fillColorForConnectionType(bap.getConnectionType()));
+			g.fillRect(x, y, anchorSize,anchorSize);
 			
 			Stroke stroke = new BasicStroke(OUTLINE_WIDTH,BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND);
 			g.setStroke(stroke);
 			g.setPaint(OUTLINE_COLOR);
 			// Now paint the border on 2 sides
 			if( side==AnchorSide.TOP || side==AnchorSide.BOTTOM ) {
-				g.drawLine(x+ANCHOR_SIZE,y, x+ANCHOR_SIZE, y+ANCHOR_SIZE);
-				g.drawLine(x,y, x, y+ANCHOR_SIZE);
+				g.drawLine(x+anchorSize,y, x+anchorSize, y+anchorSize);
+				g.drawLine(x,y, x, y+anchorSize);
 			}
 			else {
-				g.drawLine(x,y, x+ANCHOR_SIZE, y);
-				g.drawLine(x,y+ANCHOR_SIZE, x+ANCHOR_SIZE, y+ANCHOR_SIZE);
+				g.drawLine(x,y, x+anchorSize, y);
+				g.drawLine(x,y+anchorSize, x+anchorSize, y+anchorSize);
 			}
 		}
 	}
@@ -186,6 +200,24 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 		else {
 			log.warnf("%s: drawEmbeddedIcon Missing icon at %s for %s",TAG,iconPath,block.getLabel());
 		}
+	}
+	
+	private int anchorSizeForConnectionType(ConnectionType type) {
+		int size = WorkspaceConstants.CONNECTION_WIDTH_SIGNAL;   // Thinnest
+		if( type==ConnectionType.TRUTHVALUE ) size = WorkspaceConstants.CONNECTION_WIDTH_TRUTHVALUE;
+		else if( type==ConnectionType.DATA  ) size = WorkspaceConstants.CONNECTION_WIDTH_DATA;
+		else if( type==ConnectionType.INFORMATIONAL  ) size = WorkspaceConstants.CONNECTION_WIDTH_INFORMATION;
+		else if( type==ConnectionType.ANY  ) size = WorkspaceConstants.CONNECTION_WIDTH_INFORMATION;
+		return size;
+	}
+	
+	private Color fillColorForConnectionType(ConnectionType type) {
+		Color color = WorkspaceConstants.CONNECTION_BACKGROUND;   // Black
+		if( type==ConnectionType.TRUTHVALUE ) color = WorkspaceConstants.CONNECTION_FILL_TRUTHVALUE;
+		else if( type==ConnectionType.DATA  ) color = WorkspaceConstants.CONNECTION_FILL_DATA;
+		else if( type==ConnectionType.INFORMATIONAL  ) color = WorkspaceConstants.CONNECTION_FILL_INFORMATION;
+		else if( type==ConnectionType.ANY  ) color = WorkspaceConstants.CONNECTION_FILL_INFORMATION;
+		return color;
 	}
 
 }

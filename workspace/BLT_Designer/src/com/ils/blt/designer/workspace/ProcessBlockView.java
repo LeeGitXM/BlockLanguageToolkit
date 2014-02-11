@@ -19,7 +19,6 @@ import com.ils.blt.designer.workspace.ui.UIFactory;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
-import com.inductiveautomation.ignition.designer.blockandconnector.blockui.AnchorDescriptor;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorPoint;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
@@ -41,7 +40,7 @@ public class ProcessBlockView extends AbstractBlock {
 	private String label;                         // Text to display on the block
 	private BlockState state = BlockState.IDLE;   // Block execution state
 	private String statusText;                    // Auxiliary text to display
-	private Collection<AnchorDescriptor> anchors;
+	private Collection<ProcessAnchorDescriptor> anchors;
 	private Collection<BlockProperty> properties;
 	private int preferredHeight = 0;
 	private int preferredWidth  = 0;
@@ -69,11 +68,11 @@ public class ProcessBlockView extends AbstractBlock {
 		this.statusText = "";
 		this.style = descriptor.getStyle();
 
-		this.anchors = new ArrayList<AnchorDescriptor>();
-		for( AnchorPrototype ad:descriptor.getAnchors() ) {
-			log.infof("%s: Creating anchor descriptor %s", TAG,ad.getName());
-			anchors.add( new AnchorDescriptor((ad.getAnchorDirection()==AnchorDirection.INCOMING?AnchorType.Terminus:AnchorType.Origin),
-					UUID.randomUUID(),ad.getName()) );
+		this.anchors = new ArrayList<ProcessAnchorDescriptor>();
+		for( AnchorPrototype ap:descriptor.getAnchors() ) {
+			log.infof("%s: Creating anchor descriptor %s", TAG,ap.getName());
+			anchors.add( new ProcessAnchorDescriptor((ap.getAnchorDirection()==AnchorDirection.INCOMING?AnchorType.Terminus:AnchorType.Origin),
+					ap.getConnectionType(),UUID.randomUUID(),ap.getName()) );
 		}
 		this.properties = new ArrayList<BlockProperty>();
 		log.infof("%s: Created %s (%s) view from descriptor (%d anchors)", TAG, className, style.toString(),anchors.size());
@@ -91,11 +90,12 @@ public class ProcessBlockView extends AbstractBlock {
 		this.label = sb.getLabel();
 		this.state = BlockState.PAUSED;
 		this.statusText = sb.getStatusText();
-		this.anchors = new ArrayList<AnchorDescriptor>();
+		this.anchors = new ArrayList<ProcessAnchorDescriptor>();
 		if(sb.getAnchors()!=null ) {
 			for( SerializableAnchor sa:sb.getAnchors() ) {
 				log.infof("%s: Creating anchor view %s", TAG,sa.getDisplay());
-				anchors.add( new AnchorDescriptor((sa.getDirection()==AnchorDirection.INCOMING?AnchorType.Terminus:AnchorType.Origin),sa.getId(),sa.getDisplay()) );
+				anchors.add( new ProcessAnchorDescriptor((sa.getDirection()==AnchorDirection.INCOMING?AnchorType.Terminus:AnchorType.Origin),
+						sa.getConnectionType(),sa.getId(),sa.getDisplay()) );
 			}
 		}
 		this.properties = new ArrayList<BlockProperty>();
@@ -114,7 +114,7 @@ public class ProcessBlockView extends AbstractBlock {
 		return null;
 	}
 	
-	public Collection<AnchorDescriptor> getAnchors() { return anchors; }
+	public Collection<ProcessAnchorDescriptor> getAnchors() { return anchors; }
 	public Collection<BlockProperty> getProperties() { return properties; }
 	public void setProperties(Collection<BlockProperty> props) { this.properties = props; }
 	public String getClassName() { return className; }

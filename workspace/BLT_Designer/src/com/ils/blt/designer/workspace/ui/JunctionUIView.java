@@ -23,7 +23,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponen
  * It looks like a stubby entry block.
  */
 public class JunctionUIView extends AbstractUIView implements BlockViewUI {
-	private static final long serialVersionUID = 6644400470545202522L;
+	private static final long serialVersionUID = 6634400470545202522L;
 
 	
 	public JunctionUIView(ProcessBlockView view) {

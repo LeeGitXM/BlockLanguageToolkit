@@ -19,7 +19,7 @@ import com.inductiveautomation.ignition.designer.gui.IconUtil;
  * anchor point on the top.
  */
 public class HalfMoonUIView extends AbstractUIView implements BlockViewUI {
-	private static final long serialVersionUID = 2130868310475735865L;
+	private static final long serialVersionUID = 2180868310475735865L;
 	private Icon icon = null;
 	private static final Dimension IMAGE_SIZE = new Dimension(48,48);
 	

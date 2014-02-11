@@ -179,7 +179,7 @@ public class BlockPropertyEditor extends JPanel {
 	}
 
 	/**
-	 * Create a text box for the maximum field
+	 * Create a text box for the minimum field
 	 */
 	private JTextField createMinTextField(final BlockProperty prop) {
 
@@ -202,14 +202,14 @@ public class BlockPropertyEditor extends JPanel {
 	/**
 	 * Create a combo box for data types
 	 */
-	private JComboBox createPropertyTypeCombo(final BlockProperty prop) {
+	private JComboBox<String> createPropertyTypeCombo(final BlockProperty prop) {
 		String[] entries = new String[PropertyType.values().length];
 		int index=0;
 		for(PropertyType type : PropertyType.values()) {
 			entries[index]=type.name();
 			index++;
 		}
-		final JComboBox box = new JComboBox(entries);
+		final JComboBox<String> box = new JComboBox<String>(entries);
 		box.addActionListener(new ActionListener() {
 	        public void actionPerformed(ActionEvent e){
 	        	PropertyType pt = PropertyType.valueOf(PropertyType.class, box.getSelectedItem().toString());
@@ -225,14 +225,14 @@ public class BlockPropertyEditor extends JPanel {
 	/**
 	 * Create a combo box for link types
 	 */
-	private JComboBox createBindingTypeCombo(final BlockProperty prop) {
+	private JComboBox<String> createBindingTypeCombo(final BlockProperty prop) {
 		String[] entries = new String[BindingType.values().length];
 		int index=0;
 		for(BindingType type : BindingType.values()) {
 			entries[index]=type.name();
 			index++;
 		}
-		final JComboBox box = new JComboBox(entries);
+		final JComboBox<String> box = new JComboBox<String>(entries);
 		box.addActionListener(new ActionListener() {
 	        public void actionPerformed(ActionEvent e){
 	        	BindingType bt = BindingType.valueOf(BindingType.class, box.getSelectedItem().toString());
@@ -251,7 +251,7 @@ public class BlockPropertyEditor extends JPanel {
 	@SuppressWarnings("serial")
 	private class PropertyPanel extends JPanel {
 		private static final String columnConstraints = "[para]0[][100lp,fill][60lp][95lp,fill]";
-		private static final String layoutConstraints = "ins 10";
+		private static final String layoutConstraints = "ins 2";
 		private static final String rowConstraints = "";
 		public PropertyPanel(BlockProperty prop) {
 			setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));     // 3 cells across
@@ -280,12 +280,12 @@ public class BlockPropertyEditor extends JPanel {
 	@SuppressWarnings("serial")
 	private class CorePropertyPanel extends JPanel {
 		private static final String columnConstraints = "[para]0[][100lp,fill][60lp][95lp,fill]";
-		private static final String layoutConstraints = "ins 10";
+		private static final String layoutConstraints = "ins 2";
 		private static final String rowConstraints = "";
 		
 		public CorePropertyPanel(ProcessBlockView blk) {
 			setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
-			addSeparator(this,"Core");
+			addSeparator(this,"Block");
 			
 			add(createLabel("Label"),"skip");
 			add(createTextField(blk.getLabel()),"span,growx");

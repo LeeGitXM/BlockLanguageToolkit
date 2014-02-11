@@ -11,6 +11,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
 import com.ils.blt.designer.workspace.BasicAnchorPoint;
+import com.ils.blt.designer.workspace.ProcessAnchorDescriptor;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.designer.blockandconnector.blockui.AnchorDescriptor;
@@ -49,9 +50,10 @@ public class IconUIView extends AbstractUIView implements BlockViewUI {
 	 */
 	protected void initAnchorPoints() {
 		Dimension sz = getPreferredSize();
-		for(AnchorDescriptor desc:getBlock().getAnchors()) {
+		for(ProcessAnchorDescriptor desc:getBlock().getAnchors()) {
 			if( desc.getType()==AnchorType.Terminus) {
 				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),getBlock(),AnchorType.Terminus,
+						desc.getConnectionType(),
 						new Point(sz.width/2,INSET),
 						new Point(sz.width/2,-LEADER_LENGTH),
 						new Rectangle((sz.width-INSET)/2,INSET/2,2*INSET,2*INSET));

@@ -100,9 +100,17 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 					BlockDesignableContainer container = ( BlockDesignableContainer)selection;
 					Connection cxn = container.getSelectedConnection();
 					if( cxn!=null && cxn.getOrigin()!=null && cxn.getTerminus()!= null ) {
-						log.infof("%s: DiagramWorkspaceListener: SELECTED A CONNECTION",TAG);
-						log.infof("%s: DiagramWorkspaceListener: Origin = %s",TAG,cxn.getOrigin().getBlock().getClass().getName());
 						// The block is a ProcessBlockView.
+						// The origin is a BasicAnchorPoint (extends AnchorPoint).
+						log.debugf("%s: DiagramWorkspaceListener: connection origin is a %s",TAG,cxn.getOrigin().getClass().getName());
+						log.debugf("%s: DiagramWorkspaceListener: connection id is a %s",TAG,cxn.getOrigin().getId().getClass().getName());
+						log.debugf("%s: DiagramWorkspaceListener: connection block is a %s",TAG,cxn.getOrigin().getBlock().getClass().getName());
+						ConnectionPropertyEditor editor = new ConnectionPropertyEditor(context,cxn);
+						contentPanel.removeAll();
+						//Create a scroll pane
+					    JScrollPane scrollPane = new JScrollPane(editor);
+						contentPanel.add(scrollPane,BorderLayout.CENTER);
+						return;
 					}
 				}
 			}

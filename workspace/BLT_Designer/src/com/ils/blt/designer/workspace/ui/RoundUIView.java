@@ -19,7 +19,7 @@ import com.inductiveautomation.ignition.designer.gui.IconUtil;
  * anchor point on the top.
  */
 public class RoundUIView extends AbstractUIView implements BlockViewUI {
-	private static final long serialVersionUID = 2130868310475735865L;
+	private static final long serialVersionUID = 2190868310475735865L;
 	private Icon icon = null;
 	private static final Dimension IMAGE_SIZE = new Dimension(48,48);
 	
@@ -27,7 +27,7 @@ public class RoundUIView extends AbstractUIView implements BlockViewUI {
 		super(view);
 		setOpaque(false);
 		setPreferredSize(new Dimension(58,58));       // 48 plus 5 for stubs
-		Image img = ImageLoader.getInstance().loadImage("Block/icons/48/round_48.png",IMAGE_SIZE);
+		Image img = ImageLoader.getInstance().loadImage("Block/icons/medium/round.png",IMAGE_SIZE);
 		if( img !=null) icon = new ImageIcon(img);
 		initAnchorPoints();
 	}

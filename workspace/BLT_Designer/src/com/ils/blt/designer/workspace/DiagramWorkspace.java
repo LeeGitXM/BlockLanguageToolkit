@@ -23,7 +23,6 @@ import javax.swing.JPopupMenu;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,6 +30,7 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.editor.PropertyEditorFrame;
+import com.ils.connection.ConnectionType;
 import com.inductiveautomation.ignition.client.designable.DesignableContainer;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
@@ -376,20 +376,60 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 	
 	/**
-	 * Paint connections
+	 * Paint connections. The cross-section is dependent on the connection type.
 	 */
 	private class DiagramConnectionPainter extends ArrowConnectionPainter {
-		Stroke thin = new BasicStroke(2);
-		Stroke thick = new BasicStroke(4);
+		private final Stroke centerlineStroke = new BasicStroke(WorkspaceConstants.CONNECTION_WIDTH_CENTERLINE);
+		private final Stroke signalCoreStroke = new BasicStroke(WorkspaceConstants.CONNECTION_WIDTH_SIGNAL-2);
+		private final Stroke signalOutlineStroke = new BasicStroke(WorkspaceConstants.CONNECTION_WIDTH_SIGNAL);
+		private final Stroke truthvalueCoreStroke = new BasicStroke(WorkspaceConstants.CONNECTION_WIDTH_TRUTHVALUE-2);
+		private final Stroke truthvalueOutlineStroke = new BasicStroke(WorkspaceConstants.CONNECTION_WIDTH_TRUTHVALUE);
+		private final Stroke dataCoreStroke = new BasicStroke(WorkspaceConstants.CONNECTION_WIDTH_DATA-2);
+		private final Stroke dataOutlineStroke = new BasicStroke(WorkspaceConstants.CONNECTION_WIDTH_DATA);
+		private final Stroke informationCoreStroke = new BasicStroke(WorkspaceConstants.CONNECTION_WIDTH_INFORMATION-2);
+		private final Stroke informationOutlineStroke = new BasicStroke(WorkspaceConstants.CONNECTION_WIDTH_INFORMATION);
+
+		/**
+		 * Determine the connection class from the origin, then paint accordingly. 
+		 * The origin is a BasicAnchorPoint.
+		 */
 		@Override
-		public void paintConnection(Graphics2D g, Connection cxn,
-				Path2D route, boolean selected, boolean hover) {
-			super.stroke = thick;
-			super.standardColor=Color.black;
-			super.paintConnection(g, cxn, route, selected, hover);
-			super.stroke = thin;
-			super.standardColor=Color.cyan;
-			super.paintConnection(g, cxn, route, selected, hover);
+		public void paintConnection(Graphics2D g, Connection cxn,Path2D route, boolean selected, boolean hover) {
+			ConnectionType ctype = ((BasicAnchorPoint)cxn.getOrigin()).getConnectionType();
+			super.hoverColor = WorkspaceConstants.CONNECTION_HOVER;
+			super.selectedColor = WorkspaceConstants.CONNECTION_SELECTED;
+			if( ctype==ConnectionType.DATA ) {
+				super.stroke = dataOutlineStroke;
+				super.standardColor=WorkspaceConstants.CONNECTION_BACKGROUND;
+				super.paintConnection(g, cxn, route, selected, hover);
+				super.stroke = dataCoreStroke;
+				super.standardColor=WorkspaceConstants.CONNECTION_FILL_DATA;
+				super.paintConnection(g, cxn, route, selected, hover);
+			}
+			else if( ctype==ConnectionType.TRUTHVALUE ) {
+				super.stroke = truthvalueOutlineStroke;
+				super.standardColor=WorkspaceConstants.CONNECTION_BACKGROUND;
+				super.paintConnection(g, cxn, route, selected, hover);
+				super.stroke = truthvalueCoreStroke;
+				super.standardColor=WorkspaceConstants.CONNECTION_FILL_TRUTHVALUE;
+				super.paintConnection(g, cxn, route, selected, hover);
+			}
+			else if( ctype==ConnectionType.INFORMATIONAL ) {
+				super.stroke = informationOutlineStroke;
+				super.standardColor=WorkspaceConstants.CONNECTION_BACKGROUND;
+				super.paintConnection(g, cxn, route, selected, hover);
+				super.stroke = informationCoreStroke;
+				super.standardColor=WorkspaceConstants.CONNECTION_FILL_INFORMATION;
+				super.paintConnection(g, cxn, route, selected, hover);
+				super.stroke = centerlineStroke;
+				super.standardColor=WorkspaceConstants.CONNECTION_BACKGROUND;
+				super.paintConnection(g, cxn, route, selected, hover);
+			}
+			else {    // Signal or ANY
+				super.stroke = signalOutlineStroke;
+				super.standardColor=WorkspaceConstants.CONNECTION_BACKGROUND;
+				super.paintConnection(g, cxn, route, selected, hover);
+			}
 		}
 	}
 	

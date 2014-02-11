@@ -4,6 +4,7 @@ package com.ils.blt.common.serializable;
 import java.util.UUID;
 
 import com.ils.block.common.AnchorDirection;
+import com.ils.connection.ConnectionType;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 
@@ -19,16 +20,19 @@ public class SerializableAnchor {
 	private String display = null;
 	private UUID parentId = null;
 	private LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
-	
+	private ConnectionType connectionType;
+
 	public SerializableAnchor() {
 	}
 	
+	public ConnectionType getConnectionType() {return connectionType;}
 	public Object getId() { return id; }
 	public AnchorDirection getDirection()   { return direction; }
 	public String getDisplay(){ return display; }
 	public UUID getParentId() { return parentId; }
-	
+
 	public void setId(Object identifier) { id=identifier; }
+	public void setConnectionType(ConnectionType connectionType) {this.connectionType = connectionType;}
 	public void setDirection(AnchorDirection t)   { direction=t; }
 	public void setDisplay(String text){display=text; }
 	public void setParentId(UUID id) { parentId = id; };
