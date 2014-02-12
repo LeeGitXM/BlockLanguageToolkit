@@ -28,11 +28,6 @@ public class SquareUIView extends AbstractUIView implements BlockViewUI {
 		initAnchorPoints();	
 	}
 
-	@Override
-	public void install(BlockComponent panel) {
-		panel.setLayout(new BorderLayout());
-		panel.add(this,BorderLayout.CENTER);
-	}
 
 	@Override
 	protected void paintComponent(Graphics _g) {
@@ -136,6 +131,7 @@ public class SquareUIView extends AbstractUIView implements BlockViewUI {
 		g.setTransform(originalTx);
 		drawAnchors(g);
 		drawEmbeddedIcon(g);
+		drawEmbeddedText(g);
 	}
 
 }

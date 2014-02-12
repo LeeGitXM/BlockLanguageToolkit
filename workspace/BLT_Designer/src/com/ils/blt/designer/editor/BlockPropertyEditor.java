@@ -16,9 +16,11 @@ import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
 
-import com.ils.block.common.BlockProperty;
 import com.ils.block.common.BindingType;
+import com.ils.block.common.BlockConstants;
+import com.ils.block.common.BlockProperty;
 import com.ils.block.common.PropertyType;
+import com.ils.block.common.TransmissionScope;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.PropertiesRequestHandler;
@@ -91,7 +93,13 @@ public class BlockPropertyEditor extends JPanel {
 		
 		// Now fill the editor 
 		for(BlockProperty property:propertyList) {
-			panel = new PropertyPanel(property);
+			if( property.getName().equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_SCOPE)) {
+				panel = new ScopePanel(property);
+			}
+			else {
+				panel = new PropertyPanel(property);
+			}
+			
 			add(panel,"grow,push");
 		}
 	}
@@ -244,6 +252,29 @@ public class BlockPropertyEditor extends JPanel {
 		return box;
 	}
 	
+	/**
+	 * Create a combo box for transmission scope
+	 */
+	private JComboBox<String> createTransmissionScopeCombo(final BlockProperty prop) {
+		String[] entries = new String[TransmissionScope.values().length];
+		int index=0;
+		for(TransmissionScope scope : TransmissionScope.values()) {
+			entries[index]=scope.name();
+			index++;
+		}
+		final JComboBox<String> box = new JComboBox<String>(entries);
+		box.addActionListener(new ActionListener() {
+	        public void actionPerformed(ActionEvent e){
+	        	TransmissionScope scope = TransmissionScope.valueOf(TransmissionScope.class, box.getSelectedItem().toString());
+	        	log.debugf("%s: set transmission scope %s",TAG,box.getSelectedItem().toString());
+	            prop.setValue(scope.toString());
+	        }
+		});
+		box.setSelectedItem(prop.getType().toString());
+		box.setEditable(false);
+		box.setEnabled(false);
+		return box;
+	}
 	
 	/**
 	 * A property panel is an editor for a single property.
@@ -270,6 +301,21 @@ public class BlockPropertyEditor extends JPanel {
 				add(createMinTextField(prop),"");
 				add(createMaxTextField(prop),"growx,wrap");
 			}
+		}
+	}
+	// Special for a transmit block
+	private class ScopePanel extends JPanel {
+		private static final long serialVersionUID = 6501004559543409511L;
+		private static final String columnConstraints = "[para]0[][100lp,fill]";
+		private static final String layoutConstraints = "ins 2";
+		private static final String rowConstraints = "";
+		
+		public ScopePanel(BlockProperty prop) {
+			setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));     // 3 cells across
+			addSeparator(this,prop.getName());
+			
+			add(createLabel("Scope"),"skip");
+			add(createTransmissionScopeCombo(prop),"wrap");
 		}
 	}
 	

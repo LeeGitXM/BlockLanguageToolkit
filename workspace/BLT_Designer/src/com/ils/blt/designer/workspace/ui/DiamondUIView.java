@@ -27,12 +27,6 @@ public class DiamondUIView extends AbstractUIView implements BlockViewUI {
 	}
 
 	@Override
-	public void install(BlockComponent panel) {
-		panel.setLayout(new BorderLayout());
-		panel.add(this,BorderLayout.CENTER);
-	}
-
-	@Override
 	protected void paintComponent(Graphics _g) {
 		// Calling the super method effects an "erase".
 		Graphics2D g = (Graphics2D) _g;

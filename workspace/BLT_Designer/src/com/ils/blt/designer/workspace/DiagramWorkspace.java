@@ -372,7 +372,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			log.infof("%s: DiagramActionHandler: deselected",TAG);
 			selectedBlock = null;
 		}
-		log.infof("%s: DiagramActionHandler: selected block now %s",TAG,(selectedBlock==null?"NULL":"NOT NULL"));
 	}
 	
 	/**

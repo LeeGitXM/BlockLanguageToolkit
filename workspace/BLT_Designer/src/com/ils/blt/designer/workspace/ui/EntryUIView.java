@@ -33,13 +33,6 @@ public class EntryUIView extends AbstractUIView implements BlockViewUI {
 		
 	}
 
-	@Override
-	public void install(BlockComponent panel) {
-		panel.setLayout(new BorderLayout());
-		panel.add(this,BorderLayout.CENTER);
-	}
-	
-
 	// Draw a rectangle with pointed end
 	@Override
 	protected void paintComponent(Graphics _g) {

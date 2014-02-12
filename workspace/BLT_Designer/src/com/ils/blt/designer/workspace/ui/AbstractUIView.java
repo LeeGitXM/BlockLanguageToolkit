@@ -16,7 +16,6 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import javax.swing.ImageIcon;
@@ -31,7 +30,6 @@ import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
-import com.inductiveautomation.ignition.designer.blockandconnector.blockui.AnchorDescriptor;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorPoint;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
 
@@ -47,7 +45,6 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 	private static final String TAG = "AbstractUIView";
 	private LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	private final ProcessBlockView block;
-	private final List<AnchorDescriptor> anchorDescriptors;  // Entries are BasicAnchorPoint
 	private final List<AnchorPoint> anchorPoints;  // Entries are BasicAnchorPoint
 	private BlockComponent blockComponent = null;
 	protected final static int INSET = 6;
@@ -61,7 +58,6 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 		this.block = view;
 		setOpaque(false);
 		setPreferredSize(new Dimension(100,100));   // This can be overriden
-		anchorDescriptors = new ArrayList<AnchorDescriptor>();
 		anchorPoints = new ArrayList<AnchorPoint>();
 	}
 
@@ -69,40 +65,91 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 	 *  Create anchor points from the anchor descriptions. This default implementation
 	 *  places at most one input on the left and one output on the right. It assumes the main UI has
 	 *  insets of INSET on all 4 sides. The anchor "leader" should be at least 10 pixels outside the component.
-	 *  The anchor locations are center points of of a square. The hotspot is twice the size of the visible square. 
+	 *  The hotspot is twice the size of the visible square. 
 	 *  
+	 *  The anchor locations are:
+	 *  1) Signal connections at 1/4, 3/4 along the top - input to the left
+	 *  2) Other inputs centered along the left
+	 *  3) Information output 3/4 of way along the bottom
+	 *  4) Other outputs centered along the right. 
+	 *  
+	 *  A custom method is required for other patterns.
 	 *  Note: This is NOT called from the constructor of the base class.
 	 *        Call from the constructor of each sub-class.
 	 */
 	protected void initAnchorPoints() {
 		Dimension sz = getPreferredSize();
-		boolean hasTerminus = false;
-		boolean hasOrigin  = false;
+		int inputCount = 0;
+		int inputIndex = 0;
+		int outputCount= 0;
+		int outputIndex= 0;
+		
+		// Count inputs and outputs
+		for(ProcessAnchorDescriptor desc:block.getAnchors()) {
+			if(desc.getConnectionType()==ConnectionType.SIGNAL) continue;
+			if(desc.getConnectionType()==ConnectionType.INFORMATIONAL &&
+			   desc.getType()==	AnchorType.Terminus) continue;
+			
+			if(desc.getType()==	AnchorType.Origin ) inputCount++;
+			else if(desc.getType()==AnchorType.Terminus ) outputCount++;
+		}
+		outputCount++;   // Now equals the number of segments on a side
+		inputCount++;
 		
 		for(ProcessAnchorDescriptor desc:block.getAnchors()) {
-			// Create a local anchor array from the block
-			anchorDescriptors.add(desc);
-			// Left side terminus
-			if( desc.getType()==AnchorType.Terminus  && ! hasTerminus) {
+			// Top left signal
+			if(desc.getConnectionType()==ConnectionType.SIGNAL && desc.getType()==AnchorType.Terminus ) {
 				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Terminus,
 						desc.getConnectionType(),
-						new Point(INSET,sz.height/2),
-						new Point(-LEADER_LENGTH,sz.height/2),
-						new Rectangle(0,sz.height/2-INSET,2*INSET,2*INSET));   // x,y,width,height. Hotspot shape.
+						new Point(INSET+(sz.width-2*INSET)/4,INSET+1),
+						new Point(INSET+(sz.width-2*INSET)/4,-LEADER_LENGTH),
+						new Rectangle((sz.width-2*INSET)/4,0,2*INSET,2*INSET));   // x,y,width,height. Hotspot shape.
+				ap.setSide(AnchorSide.TOP);
 				getAnchorPoints().add(ap);
-				hasTerminus = true;
 			}
-			// Right-side origin
-			else if(desc.getType()==AnchorType.Origin  && ! hasOrigin) {
+			// Top right signal
+			else if(desc.getConnectionType()==ConnectionType.SIGNAL && desc.getType()==AnchorType.Origin ) {
 				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Origin,
 						desc.getConnectionType(),
-						new Point(sz.width-INSET,sz.height/2),
-						new Point(sz.width+LEADER_LENGTH,sz.height/2),
-						new Rectangle(sz.width-INSET,sz.height/2-INSET,2*INSET,2*INSET));
+						new Point(INSET+3*(sz.width-2*INSET)/4,INSET+1),
+						new Point(INSET+3*(sz.width-2*INSET)/4,-LEADER_LENGTH),
+						new Rectangle(3*(sz.width-2*INSET)/4,sz.height-INSET,2*INSET,2*INSET)); 
+				ap.setSide(AnchorSide.BOTTOM);
 				getAnchorPoints().add(ap);
-				hasOrigin = true;
 			}
-			
+			// Bottom right text
+			else if(desc.getConnectionType()==ConnectionType.INFORMATIONAL && desc.getType()==AnchorType.Origin ) {
+				inputIndex++;
+				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Origin,
+						desc.getConnectionType(),
+						new Point(INSET+3*(sz.width-2*INSET)/4,sz.height+INSET),
+						new Point(INSET+3*(sz.width-2*INSET)/4,sz.height+LEADER_LENGTH),
+						new Rectangle(3*(sz.width-2*INSET)/4,sz.height/2-INSET,2*INSET,2*INSET));   // Hotspot shape.
+				ap.setSide(AnchorSide.BOTTOM);
+				getAnchorPoints().add(ap);
+			}
+			// Left side terminus - here we use the default behavior for side.
+			else if( desc.getType()==AnchorType.Terminus  ) {
+				outputIndex++;
+				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Terminus,
+						desc.getConnectionType(),
+						new Point(INSET,outputIndex*sz.height/outputCount),
+						new Point(-LEADER_LENGTH,outputIndex*sz.height/outputCount),
+						new Rectangle(0,outputIndex*sz.height/outputCount-INSET,2*INSET,2*INSET));   // Hotspot shape.
+				getAnchorPoints().add(ap);
+				
+			}
+			// Right-side origin - also default behavior for side
+			else if(desc.getType()==AnchorType.Origin ) {
+				inputIndex++;
+				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Origin,
+						desc.getConnectionType(),
+						new Point(sz.width-INSET,inputIndex*sz.height/inputCount),
+						new Point(sz.width+LEADER_LENGTH,inputIndex*sz.height/inputCount),
+						new Rectangle(sz.width-INSET,inputIndex*sz.height/inputCount-INSET,2*INSET,2*INSET));
+				getAnchorPoints().add(ap);
+	
+			}
 		}
 	}
 	
@@ -113,7 +160,6 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 	
 	@Override
 	public void install(BlockComponent panel) {
-		
 		panel.setLayout(new BorderLayout());
 		panel.add(this,BorderLayout.CENTER);
 		blockComponent = panel;
@@ -124,61 +170,65 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 	protected abstract void paintComponent(Graphics _g);
 	
 	/**
-	 * Utility method to paint a text string
+	 * Utility method to paint a text string. Font size is hardcoded.
 	 * @param g
 	 * @param text
-	 * @param xpos
-	 * @param ypos
-	 * @param fill
+	 * @param xpos center of the text
+	 * @param ypos center of the text
+	 * @param fill color of the text
 	 */
 	protected void paintTextAt(Graphics2D g, String text, float xpos, float ypos, Color fill) {
 		Font font = g.getFont();
+		font = font.deriveFont(24f);
 		FontRenderContext frc = g.getFontRenderContext();
 		GlyphVector vector = font.createGlyphVector(frc, text);
 		Rectangle2D bounds = vector.getVisualBounds();
-		// ypos is the center of the font. Adjust up by 1/2
+		// xpos, ypos are centers. Adjust to upper left.
 		ypos+= bounds.getHeight()/2f;
+		xpos-= bounds.getWidth()/2f;
 
 		Shape textShape = vector.getOutline(xpos, ypos);
 		g.setColor(fill);
 		g.fill(textShape);
 	}
 
-	/**
-	 * Make our own array as it seems like the generic arrays do
-	 * not follow inheritance patterns
-	 */
-	@Override
-	public Collection<AnchorDescriptor> getAnchors() {
-		return anchorDescriptors;
-	}
-	
+
 	protected void drawAnchors(Graphics2D g) {
-		// Loop through the anchor points and draw 6x6 squares
+		// Loop through the anchor points and draw squares for ports
 		for( AnchorPoint ap:anchorPoints) {
 			BasicAnchorPoint bap = (BasicAnchorPoint)ap;
 			AnchorSide side = bap.getSide();
-			int anchorSize = anchorSizeForConnectionType(bap.getConnectionType());
+			int anchorWidth = anchorWidthForConnectionType(bap.getConnectionType());
+			int anchorLength= INSET;  // Draw to the boundary
 			Point loc = bap.getAnchor();   // Center of the anchor point
-			int offset = anchorSize/2;
-			int x = (loc.x>offset?loc.x-offset:0);
-			int y = (loc.y>offset?loc.y-offset:0);
 			// Paint the rectangle
 			if( bap.getConnectionType()==ConnectionType.DATA) g.setColor(getBackground());
 			else g.setColor(fillColorForConnectionType(bap.getConnectionType()));
-			g.fillRect(x, y, anchorSize,anchorSize);
-			
+			int x = 0;
+			int y = 0;
+			if( side==AnchorSide.TOP || side==AnchorSide.BOTTOM ) {
+				// Up and down
+				x = loc.x-anchorWidth/2;
+				y = loc.y-anchorLength/2;
+				g.fillRect(x, y, anchorWidth,anchorLength);
+			}
+			else {
+				x = loc.x-anchorLength/2;
+				y = loc.y-anchorWidth/2;
+				g.fillRect(x, y, anchorLength,anchorWidth);
+			}
+
 			Stroke stroke = new BasicStroke(OUTLINE_WIDTH,BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND);
 			g.setStroke(stroke);
 			g.setPaint(OUTLINE_COLOR);
-			// Now paint the border on 2 sides
+			// Now paint the border on 2 sides -- always
 			if( side==AnchorSide.TOP || side==AnchorSide.BOTTOM ) {
-				g.drawLine(x+anchorSize,y, x+anchorSize, y+anchorSize);
-				g.drawLine(x,y, x, y+anchorSize);
+				g.drawLine(x+anchorWidth,y, x+anchorWidth, y+anchorLength);
+				g.drawLine(x,y, x, y+anchorLength);
 			}
 			else {
-				g.drawLine(x,y, x+anchorSize, y);
-				g.drawLine(x,y+anchorSize, x+anchorSize, y+anchorSize);
+				g.drawLine(x,y, x+anchorLength, y);
+				g.drawLine(x,y+anchorWidth, x+anchorLength, y+anchorWidth);
 			}
 		}
 	}
@@ -202,7 +252,15 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 		}
 	}
 	
-	private int anchorSizeForConnectionType(ConnectionType type) {
+	protected void drawEmbeddedText(Graphics2D g) {
+		String text = block.getEmbeddedLabel();
+		if( text == null || text.length()==0 ) return;
+		Dimension sz = getPreferredSize();
+		paintTextAt(g,text,sz.width/2,sz.height/2,Color.BLACK);
+		
+	}
+	
+	private int anchorWidthForConnectionType(ConnectionType type) {
 		int size = WorkspaceConstants.CONNECTION_WIDTH_SIGNAL;   // Thinnest
 		if( type==ConnectionType.TRUTHVALUE ) size = WorkspaceConstants.CONNECTION_WIDTH_TRUTHVALUE;
 		else if( type==ConnectionType.DATA  ) size = WorkspaceConstants.CONNECTION_WIDTH_DATA;

@@ -3,7 +3,6 @@ package com.ils.blt.designer.workspace.ui;
 import java.util.Collection;
 
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
-import com.inductiveautomation.ignition.designer.blockandconnector.blockui.AnchorDescriptor;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorPoint;
 
 
@@ -13,6 +12,5 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorP
 public interface BlockViewUI {
 
 	public void install(BlockComponent block);
-	public Collection<AnchorDescriptor> getAnchors();
 	public Collection<AnchorPoint> getAnchorPoints();   // actually BasicAnchorPoints
 }

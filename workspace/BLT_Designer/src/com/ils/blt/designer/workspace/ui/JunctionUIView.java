@@ -33,12 +33,6 @@ public class JunctionUIView extends AbstractUIView implements BlockViewUI {
 		initAnchorPoints();
 		
 	}
-
-	@Override
-	public void install(BlockComponent panel) {
-		panel.setLayout(new BorderLayout());
-		panel.add(this,BorderLayout.CENTER);
-	}
 	
 
 	// Draw a rectangle with pointed end
