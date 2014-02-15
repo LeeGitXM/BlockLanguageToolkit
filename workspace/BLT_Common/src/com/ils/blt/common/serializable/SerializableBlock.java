@@ -22,6 +22,7 @@ public class SerializableBlock {
 	private String className = null;
 	private String embeddedIcon="";       // 32x32 icon to place in block in designer
 	private String embeddedLabel="";      // Label place in block in designer
+	private int    embeddedFontSize = 24; // Pointsin font for embedded label
 	private String iconPath="";           // Path to icon that is the entire block
 	private int preferredHeight = 0;
 	private int preferredWidth  = 0;
@@ -65,6 +66,8 @@ public class SerializableBlock {
 	public void setEmbeddedIcon(String embeddedIcon) {this.embeddedIcon = embeddedIcon;}
 	public String getEmbeddedLabel() {return embeddedLabel;}
 	public void setEmbeddedLabel(String embeddedLabel) {this.embeddedLabel = embeddedLabel;}
+	public int getEmbeddedFontSize() {return embeddedFontSize;}
+	public void setEmbeddedFontSize(int embeddedFontSize) {this.embeddedFontSize = embeddedFontSize;}
 	public String getIconPath() {return iconPath;}
 	public void setIconPath(String iconPath) {this.iconPath = iconPath;}
 	public int getPreferredHeight() {return preferredHeight;}

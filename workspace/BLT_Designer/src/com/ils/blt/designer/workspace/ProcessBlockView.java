@@ -36,6 +36,7 @@ public class ProcessBlockView extends AbstractBlock {
 	private final String className;
 	private String embeddedIcon="";               // 32x32 icon to place in block in designer
 	private String embeddedLabel="";              // Label place in block in designer
+	private int    embeddedFontSize = 24;         // Size of font for interior label
 	private String iconPath="";                   // Path to icon that is the entire block
 	private String label;                         // Text to display on the block
 	private BlockState state = BlockState.IDLE;   // Block execution state
@@ -61,6 +62,7 @@ public class ProcessBlockView extends AbstractBlock {
 		this.label = descriptor.getLabel();
 		this.embeddedIcon = descriptor.getEmbeddedIcon();
 		this.embeddedLabel= descriptor.getEmbeddedLabel();
+		this.embeddedFontSize= descriptor.getEmbeddedFontSize();
 		this.iconPath = descriptor.getIconPath();
 		this.preferredHeight = descriptor.getPreferredHeight();
 		this.preferredWidth = descriptor.getPreferredWidth();
@@ -83,6 +85,7 @@ public class ProcessBlockView extends AbstractBlock {
 		this.className = sb.getClassName();
 		this.embeddedIcon = sb.getEmbeddedIcon();
 		this.embeddedLabel= sb.getEmbeddedLabel();
+		this.embeddedFontSize = sb.getEmbeddedFontSize();
 		this.iconPath = sb.getIconPath();
 		this.preferredHeight = sb.getPreferredHeight();
 		this.preferredWidth = sb.getPreferredWidth();
@@ -124,10 +127,10 @@ public class ProcessBlockView extends AbstractBlock {
 		return ui.getAnchorPoints();
 	}
 
-	/** Simply return the first in the list. */
+	/** Do not define a default. Rely on drop targets. */
 	@Override
 	public AnchorPoint getDefaultDropAnchor() {
-		return ui.getAnchorPoints().iterator().next();
+		return null;
 	}
 
 	@Override
@@ -154,6 +157,8 @@ public class ProcessBlockView extends AbstractBlock {
 	public void setStyle(BlockStyle s) { this.style = s; }
 	public String getEmbeddedIcon() {return embeddedIcon;}
 	public void setEmbeddedIcon(String embeddedIcon) {this.embeddedIcon = embeddedIcon;}
+	public int getEmbeddedFontSize() {return embeddedFontSize;}
+	public void setEmbeddedFontSize(int size) {this.embeddedFontSize = size;}
 	public String getEmbeddedLabel() {return embeddedLabel;}
 	public void setEmbeddedLabel(String embeddedLabel) {this.embeddedLabel = embeddedLabel;}
 	public String getIconPath() {return iconPath;}

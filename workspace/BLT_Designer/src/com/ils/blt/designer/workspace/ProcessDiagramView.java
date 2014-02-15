@@ -199,6 +199,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		result.setClassName(block.getClassName());
 		result.setEmbeddedIcon(block.getEmbeddedIcon());
 		result.setEmbeddedLabel(block.getEmbeddedLabel());
+		result.setEmbeddedFontSize(block.getEmbeddedFontSize());
 		result.setLabel(block.getLabel());
 		result.setStyle(block.getStyle());
 		result.setX(block.getLocation().x);

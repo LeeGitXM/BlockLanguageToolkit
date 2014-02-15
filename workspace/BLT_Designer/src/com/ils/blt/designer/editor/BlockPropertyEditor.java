@@ -19,6 +19,7 @@ import net.miginfocom.swing.MigLayout;
 import com.ils.block.common.BindingType;
 import com.ils.block.common.BlockConstants;
 import com.ils.block.common.BlockProperty;
+import com.ils.block.common.LimitType;
 import com.ils.block.common.PropertyType;
 import com.ils.block.common.TransmissionScope;
 import com.ils.blt.common.BLTProperties;
@@ -93,7 +94,10 @@ public class BlockPropertyEditor extends JPanel {
 		
 		// Now fill the editor 
 		for(BlockProperty property:propertyList) {
-			if( property.getName().equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_SCOPE)) {
+			if( property.getName().equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_LIMIT_TYPE)) {
+				panel = new LimitTypePanel(property);
+			}
+			else if( property.getName().equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_SCOPE)) {
 				panel = new ScopePanel(property);
 			}
 			else {
@@ -208,6 +212,28 @@ public class BlockPropertyEditor extends JPanel {
 	}
 	
 	/**
+	 * Create a combo box for limit type
+	 */
+	private JComboBox<String> createLimitTypeCombo(final BlockProperty prop) {
+		String[] entries = new String[LimitType.values().length];
+		int index=0;
+		for(LimitType scope : LimitType.values()) {
+			entries[index]=scope.name();
+			index++;
+		}
+		final JComboBox<String> box = new JComboBox<String>(entries);
+		box.addActionListener(new ActionListener() {
+	        public void actionPerformed(ActionEvent e){
+	        	LimitType type = LimitType.valueOf(LimitType.class, box.getSelectedItem().toString());
+	        	log.debugf("%s: set limit type %s",TAG,box.getSelectedItem().toString());
+	            prop.setValue(type.toString());
+	        }
+		});
+		box.setSelectedItem(prop.getType().toString());
+		return box;
+	}
+	
+	/**
 	 * Create a combo box for data types
 	 */
 	private JComboBox<String> createPropertyTypeCombo(final BlockProperty prop) {
@@ -271,8 +297,6 @@ public class BlockPropertyEditor extends JPanel {
 	        }
 		});
 		box.setSelectedItem(prop.getType().toString());
-		box.setEditable(false);
-		box.setEnabled(false);
 		return box;
 	}
 	
@@ -288,7 +312,10 @@ public class BlockPropertyEditor extends JPanel {
 			setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));     // 3 cells across
 			addSeparator(this,prop.getName());
 			
-			add(createLabel("Value"),"skip");
+			if( prop.getName().matches("Interval"))
+				add(createLabel("Time ~msecs"),"skip");
+			else
+				add(createLabel("Value"),"skip");
 			add(createValueTextField(prop),"");
 			add(createPropertyTypeCombo(prop),"wrap");
 			add(createLabel("Binding"),"skip");
@@ -303,6 +330,23 @@ public class BlockPropertyEditor extends JPanel {
 			}
 		}
 	}
+	
+	// Special for a LimitType block property
+	private class LimitTypePanel extends JPanel {
+		private static final long serialVersionUID = 6501004559543409511L;
+		private static final String columnConstraints = "[para]0[][100lp,fill]";
+		private static final String layoutConstraints = "ins 2";
+		private static final String rowConstraints = "";
+
+		public LimitTypePanel(BlockProperty prop) {
+			setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));     // 3 cells across
+			addSeparator(this,prop.getName());
+
+			add(createLabel("Type"),"skip");
+			add(createLimitTypeCombo(prop),"wrap");
+		}
+	}
+
 	// Special for a transmit block
 	private class ScopePanel extends JPanel {
 		private static final long serialVersionUID = 6501004559543409511L;
@@ -340,7 +384,6 @@ public class BlockPropertyEditor extends JPanel {
 			add(createLabel("UUID"),"skip");
 			add(createTextField(blk.getId().toString()),"span,growx");
 		}
-		
 	}
 }
 

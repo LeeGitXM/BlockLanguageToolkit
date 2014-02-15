@@ -7,17 +7,20 @@
   <build>2013120917</build>
   <beta>1</beta>
 </version>
-<timestamp>2014-02-10 15:24:55</timestamp>
+<timestamp>2014-02-14 16:41:37</timestamp>
 <id>22</id>
 <name>BlockDiagrams3</name>
 <title>Block Diagrams 3</title>
 <description>Block Language Toolkit -  Project showing Use Cases 1-3</description>
 <enabled>true</enabled>
-<lastModified>1392071071813</lastModified>
+<lastModified>1392421269780</lastModified>
 <lastModifiedBy>chuckc</lastModifiedBy>
-<editCount>1</editCount>
+<editCount>7</editCount>
 <uuid>587218ca-4894-a5d1-1f62-324e83183e7e</uuid>
 <resources>
+	<resource id='411' name='New Diagram' module='block' modver='' type='blt.model' ver='0' dirty='true' editcount='0' parent='2f41a0e2-4d79-4b62-ad6c-0ce8c5df7148' oemlocked='false' scope='1'>
+		<doc></doc>
+		<bytes><![CDATA[eyJibG9ja3MiOltdLCJjb25uZWN0aW9ucyI6W10sIm5hbWUiOiJOZXcgRGlhZ3JhbSJ9]]></bytes></resource>
 	<resource id='393' name='TestExecutionWindow' module='fpmi' modver='' type='window' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='4'>
 		<doc></doc>
 		<bytes><![CDATA[H4sIAAAAAAAAAI16ZVBc3dLu4O7uCQR3d3eCBQ3uMsCgg0twEhyCBHeCu7u7BNfgTpDgzp2cnPPe
@@ -512,6 +515,9 @@ XySWRyGm294gJfEOYuAE0/Oks9x8NEc+5EU8f9Sw/9MvjWhTCVr95xZgqaXyE1FfuRVk5Wa5yc2n
 Q7zNrwS7+yIFk+lWfOBBVLplIUFy6ozT7FosrEyS7CEpFoxOYtxtN++diN5YYCyUa+IplY15vN9m
 uYQMorj2RpFGI94GTWNydDX7HqQQzlaXeo1waTzWUS1TgSL/H5PjL5MRIAAAGgAAAAcAAAAKAgAA
 AAsIAAAAIgAAAA0KAQAAACMAAAABIAAAACQAAAAF/wAAAAHrMT2VH0cAAA==]]></bytes></resource>
+	<resource id='406' name='New Application' module='block' modver='' type='__folder' ver='0' dirty='false' editcount='2' parent='7bbbd6b9-3140-4328-a844-51817eb47574' oemlocked='false' scope='1'>
+		<doc></doc>
+		<bytes><![CDATA[Q2Uxhk3yuqfCSnLJQ5ITAg==]]></bytes></resource>
 	<resource id='391' name='' module='' modver='7.7.0.2013120917-beta1' type='sr.global.props' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='7'>
 		<doc></doc>
 		<bytes><![CDATA[H4sIAAAAAAAAAG2PMRIBMRSGX9aybGVURqXV7AVojIJR4AoRWWKSjdlk9Q5gdMYZNGbcYEuO4CJa
@@ -1718,6 +1724,9 @@ cPGmTrQKFw91Yqdw8V2d2CtcPNKJ+4WL7+tEu3DxA53oFC4e68Rh4eKv60S3cPFEJ3qFi/d14kHh
 hYt/VSd+t3Dx39OJ3y9c/A904muFi/+hTny9cPE/0ok/Llz8GzrxJ4WLf1Mn/rRw8T/TiT8vXPwv
 dOIvCxf/lk78VeHi39aJvy5c/Ds68TeFi/+tTvxd4eLf1Ym/L1z8ezrxD4WL/6NO/FPh4v+sE/9S
 uPi/6sS/FS7+fZ3498LFf6AT//F/ksn9sDyEBAA=]]></bytes></resource>
+	<resource id='407' name='New Family' module='block' modver='' type='__folder' ver='0' dirty='false' editcount='2' parent='02139243-c972-4ac2-a7ba-f24d86316543' oemlocked='false' scope='1'>
+		<doc></doc>
+		<bytes><![CDATA[SHHfxegMbK1iS3lN4qBBLw==]]></bytes></resource>
 	<resource id='389' name='Data Pump' module='fpmi' modver='' type='__folder' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='4'>
 		<doc></doc>
 		<bytes><![CDATA[/KEUx1VlPY+cRxnBnr7tow==]]></bytes></resource>

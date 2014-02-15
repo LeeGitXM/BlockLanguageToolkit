@@ -31,7 +31,7 @@ public class UIFactory {
 				ui= new EntryUIView(block);
 				break;
 			case HALFMOON:
-				ui= new IconUIView(block);
+				ui= new HalfMoonUIView(block);
 				break;
 			case ICON:
 				ui= new IconUIView(block);

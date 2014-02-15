@@ -65,67 +65,6 @@ public class SquareUIView extends AbstractUIView implements BlockViewUI {
 		g.setStroke(stroke);
 		g.setPaint(Color.BLACK);
 		g.draw(fi);
-		
-		/*
-		// Create a rectangle that is component less border
-		Rectangle fi = new Rectangle();
-		fi.x = borderInsets.left;
-		fi.y = borderInsets.top;
-		fi.width = ifb.width - borderInsets.left - borderInsets.right;
-		fi.height = ifb.height - borderInsets.top - borderInsets.bottom;
-
-		// Create a Triangle within the bounds of rectangle fi
-		int width = fi.width;
-		int height = fi.height;
-		int[] xvertices = new int[] {fi.x,fi.x+width,fi.x+(width/2) };
-		int[] yvertices = new int[] {fi.y+height,fi.y+height,fi.y};
-
-		Polygon fip = new Polygon(xvertices,yvertices,3);  // Triangle
-		g.setColor(getForeground());
-		g.fillPolygon(fip);
-
-		// Create a circle that is the interior; surrounds the text.
-		float centerx = ifb.width / 2.0f;
-		float centery = (ifb.height / 2.0f); // Nominal
-		centery = centery + (centery*(1.0f-HEIGHT_FACTOR));  // Lower a bit
-		float radius =  (fi.height / 2.0f)/2.0f; 
-		Ellipse2D.Float interior = new Ellipse2D.Float(centerx-radius,centery-radius,2*radius,2*radius);
-
-		g.setColor(getBackground());
-		g.fillOval((int)interior.x, (int)interior.y, (int)interior.width,(int)interior.height);
-
-		// Set the font for drawing the Heading
-		g.setFont(getFont());
-		FontMetrics fm = g.getFontMetrics();
-		// Calculate the x,y for the String's baseline in order to center it
-		String text = getBlock().getLabel();
-		if( text!=null ) {
-			int stringWidth = fm.stringWidth(text);
-			int xpos = (ifb.width - stringWidth) / 2;
-			int ypos = (int)(ifb.getHeight() / 2f); // Nominal
-			ypos = ypos +(int)(ypos*(1.0f-HEIGHT_FACTOR));
-			paintTextAt(g, text, xpos, ypos, HEADING_COLOR);
-		}
-		
-		// Paint the borders
-		float borderWidth = BORDER_WIDTH;
-		Stroke stroke = new BasicStroke(borderWidth,BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND);
-		g.setStroke(stroke);
-		g.setPaint(BORDER_SHADOW_COLOR);
-		g.drawLine(ifb.x, ifb.y+ifb.height, ifb.x+ifb.width, ifb.y+ifb.height);
-		g.drawLine(ifb.x+((ifb.x+ifb.width)/2), ifb.y, ifb.x+ifb.width, ifb.y+ifb.height);
-		g.setPaint(BORDER_HIGHLIGHT_COLOR);
-		g.drawLine(ifb.x, ifb.y+ifb.height, ifb.x+(ifb.width/2), ifb.y);
-
-		// Outline the frame
-		float outlineWidth = 1.0f;
-		stroke = new BasicStroke(outlineWidth,BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND);
-		g.setStroke(stroke);
-		g.setPaint(Color.BLACK);
-		g.draw(fip);
-		g.draw(interior);
-
-*/
 
 		// Reverse any transforms we made
 		g.setTransform(originalTx);

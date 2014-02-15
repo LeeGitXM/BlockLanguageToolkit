@@ -113,8 +113,8 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 						desc.getConnectionType(),
 						new Point(INSET+3*(sz.width-2*INSET)/4,INSET+1),
 						new Point(INSET+3*(sz.width-2*INSET)/4,-LEADER_LENGTH),
-						new Rectangle(3*(sz.width-2*INSET)/4,sz.height-INSET,2*INSET,2*INSET)); 
-				ap.setSide(AnchorSide.BOTTOM);
+						new Rectangle(3*(sz.width-2*INSET)/4,0,2*INSET,2*INSET)); 
+				ap.setSide(AnchorSide.TOP);
 				getAnchorPoints().add(ap);
 			}
 			// Bottom right text
@@ -122,9 +122,9 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 				inputIndex++;
 				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Origin,
 						desc.getConnectionType(),
-						new Point(INSET+3*(sz.width-2*INSET)/4,sz.height+INSET),
+						new Point(INSET+3*(sz.width-2*INSET)/4,sz.height-INSET),
 						new Point(INSET+3*(sz.width-2*INSET)/4,sz.height+LEADER_LENGTH),
-						new Rectangle(3*(sz.width-2*INSET)/4,sz.height/2-INSET,2*INSET,2*INSET));   // Hotspot shape.
+						new Rectangle(3*(sz.width-2*INSET)/4,sz.height-2*INSET,2*INSET,2*INSET));   // Hotspot shape.
 				ap.setSide(AnchorSide.BOTTOM);
 				getAnchorPoints().add(ap);
 			}
@@ -146,7 +146,7 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 						desc.getConnectionType(),
 						new Point(sz.width-INSET,inputIndex*sz.height/inputCount),
 						new Point(sz.width+LEADER_LENGTH,inputIndex*sz.height/inputCount),
-						new Rectangle(sz.width-INSET,inputIndex*sz.height/inputCount-INSET,2*INSET,2*INSET));
+						new Rectangle(sz.width-2*INSET,inputIndex*sz.height/inputCount-INSET,2*INSET,2*INSET));
 				getAnchorPoints().add(ap);
 	
 			}
@@ -177,9 +177,9 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 	 * @param ypos center of the text
 	 * @param fill color of the text
 	 */
-	protected void paintTextAt(Graphics2D g, String text, float xpos, float ypos, Color fill) {
+	protected void paintTextAt(Graphics2D g, String text, float xpos, float ypos, Color fill,int fontSize) {
 		Font font = g.getFont();
-		font = font.deriveFont(24f);
+		font = font.deriveFont(fontSize);
 		FontRenderContext frc = g.getFontRenderContext();
 		GlyphVector vector = font.createGlyphVector(frc, text);
 		Rectangle2D bounds = vector.getVisualBounds();
@@ -201,6 +201,12 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 			int anchorWidth = anchorWidthForConnectionType(bap.getConnectionType());
 			int anchorLength= INSET;  // Draw to the boundary
 			Point loc = bap.getAnchor();   // Center of the anchor point
+			// As a debugging aid - highlight the hotspot
+			if( log.isDebugEnabled() ) {
+				g.setPaint(Color.MAGENTA);
+				Shape hotspot = bap.getHotSpot();
+				g.fill(hotspot);
+			}
 			// Paint the rectangle
 			if( bap.getConnectionType()==ConnectionType.DATA) g.setColor(getBackground());
 			else g.setColor(fillColorForConnectionType(bap.getConnectionType()));
@@ -218,17 +224,20 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 				g.fillRect(x, y, anchorLength,anchorWidth);
 			}
 
-			Stroke stroke = new BasicStroke(OUTLINE_WIDTH,BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND);
-			g.setStroke(stroke);
-			g.setPaint(OUTLINE_COLOR);
-			// Now paint the border on 2 sides -- always
-			if( side==AnchorSide.TOP || side==AnchorSide.BOTTOM ) {
-				g.drawLine(x+anchorWidth,y, x+anchorWidth, y+anchorLength);
-				g.drawLine(x,y, x, y+anchorLength);
-			}
-			else {
-				g.drawLine(x,y, x+anchorLength, y);
-				g.drawLine(x,y+anchorWidth, x+anchorLength, y+anchorWidth);
+			// A signal doesn't need an outline
+			if( bap.getConnectionType()!=ConnectionType.SIGNAL ) {
+				Stroke stroke = new BasicStroke(OUTLINE_WIDTH,BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND);
+				g.setStroke(stroke);
+				g.setPaint(OUTLINE_COLOR);
+				// Now paint the border on 2 sides -- always
+				if( side==AnchorSide.TOP || side==AnchorSide.BOTTOM ) {
+					g.drawLine(x+anchorWidth,y, x+anchorWidth, y+anchorLength);
+					g.drawLine(x,y, x, y+anchorLength+1);
+				}
+				else {
+					g.drawLine(x,y, x+anchorLength+1, y);
+					g.drawLine(x,y+anchorWidth, x+anchorLength, y+anchorWidth);
+				}
 			}
 		}
 	}
@@ -256,7 +265,7 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 		String text = block.getEmbeddedLabel();
 		if( text == null || text.length()==0 ) return;
 		Dimension sz = getPreferredSize();
-		paintTextAt(g,text,sz.width/2,sz.height/2,Color.BLACK);
+		paintTextAt(g,text,sz.width/2,sz.height/2,Color.BLACK,block.getEmbeddedFontSize());
 		
 	}
 	
@@ -274,6 +283,7 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 		if( type==ConnectionType.TRUTHVALUE ) color = WorkspaceConstants.CONNECTION_FILL_TRUTHVALUE;
 		else if( type==ConnectionType.DATA  ) color = WorkspaceConstants.CONNECTION_FILL_DATA;
 		else if( type==ConnectionType.INFORMATIONAL  ) color = WorkspaceConstants.CONNECTION_FILL_INFORMATION;
+		else if( type==ConnectionType.SIGNAL  )        color = WorkspaceConstants.CONNECTION_FILL_SIGNAL;
 		else if( type==ConnectionType.ANY  ) color = WorkspaceConstants.CONNECTION_FILL_INFORMATION;
 		return color;
 	}

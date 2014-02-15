@@ -186,7 +186,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	@Override
 	public void onDeactivation() {
 		log.infof("%s: onDeactivation",TAG);
-		
 	}
 
 
@@ -345,6 +344,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		context.updateLock(resid);
 	}
 	
+	
 	// =========================== DesignableWorkspaceListener ===========================
 	@Override
 	public void containerClosed(DesignableContainer container) {
@@ -359,7 +359,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	public void itemSelectionChanged(List<JComponent> selections) {
 		if( selections!=null && selections.size()==1 ) {
 			JComponent selection = selections.get(0);
-			log.infof("%s: DiagramActionHandler: selected a %s",TAG,selection.getClass().getName());
+			log.debugf("%s.DiagramActionHandler: selected a %s",TAG,selection.getClass().getName());
 			if( selection instanceof BlockComponent ) {
 				BlockComponent bc = ( BlockComponent)selection;
 				selectedBlock = (ProcessBlockView)bc.getBlock();
@@ -379,7 +379,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 */
 	private class DiagramConnectionPainter extends ArrowConnectionPainter {
 		private final Stroke centerlineStroke = new BasicStroke(WorkspaceConstants.CONNECTION_WIDTH_CENTERLINE);
-		private final Stroke signalCoreStroke = new BasicStroke(WorkspaceConstants.CONNECTION_WIDTH_SIGNAL-2);
 		private final Stroke signalOutlineStroke = new BasicStroke(WorkspaceConstants.CONNECTION_WIDTH_SIGNAL);
 		private final Stroke truthvalueCoreStroke = new BasicStroke(WorkspaceConstants.CONNECTION_WIDTH_TRUTHVALUE-2);
 		private final Stroke truthvalueOutlineStroke = new BasicStroke(WorkspaceConstants.CONNECTION_WIDTH_TRUTHVALUE);
@@ -426,7 +425,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			}
 			else {    // Signal or ANY
 				super.stroke = signalOutlineStroke;
-				super.standardColor=WorkspaceConstants.CONNECTION_BACKGROUND;
+				super.standardColor=WorkspaceConstants.CONNECTION_FILL_SIGNAL;
 				super.paintConnection(g, cxn, route, selected, hover);
 			}
 		}

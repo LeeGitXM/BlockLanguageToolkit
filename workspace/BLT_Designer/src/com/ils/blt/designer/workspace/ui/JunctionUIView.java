@@ -35,7 +35,7 @@ public class JunctionUIView extends AbstractUIView implements BlockViewUI {
 	}
 	
 
-	// Draw a rectangle with pointed end
+	// We punt on a crescent. Draw 
 	@Override
 	protected void paintComponent(Graphics _g) {
 		// Calling the super method effects an "erase".
@@ -49,20 +49,15 @@ public class JunctionUIView extends AbstractUIView implements BlockViewUI {
 				RenderingHints.VALUE_ANTIALIAS_ON);
 	
 		// Calculate the inner area
-		Rectangle ifb = new Rectangle();   // Interior, frame and border
-		ifb = SwingUtilities.calculateInnerArea(this,ifb);
+		Dimension sz = getPreferredSize();
+		Rectangle ifb = new Rectangle(INSET,INSET,sz.width-2*INSET,sz.height-2*INSET);   // x,y,width,height
 
 		// Now translate so that 0,0 is is at the inner origin
 		g.translate(ifb.x, ifb.y);
-		// Now leave space for stubs
-		ifb.x += INSET;
-		ifb.y += INSET;
-		ifb.width  -= 2*INSET;
-		ifb.height -= 2*INSET;
 
 		// Create a polygon that is within the component boundaries
-		int[] xvertices = new int[] {ifb.x,ifb.x+(3*ifb.width/4),ifb.x+ifb.width,ifb.x+(3*ifb.width/4),ifb.x };
-		int[] yvertices = new int[] {ifb.y+(3*ifb.height/4),ifb.y+(3*ifb.height/4),ifb.y+(ifb.height/2),ifb.y+(ifb.height/4),ifb.y+(ifb.height/4)};
+		int[] xvertices = new int[] {0,ifb.width/2,ifb.width,ifb.width,ifb.width/2,0,0};
+		int[] yvertices = new int[] {0,0,ifb.height/3,2*ifb.height/3,ifb.height,ifb.height,0};
 		Polygon fi = new Polygon(xvertices,yvertices,5);
 		g.setColor(getBackground());
 		g.fillPolygon(fi);
