@@ -174,6 +174,12 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public void pet(Watchdog dog) {
 		watchdogTimer.updateWatchdog(dog);
 	}
+	/**
+	 * Remove a watch dog. Delete it from the list.
+	 */
+	public void removeWatchdog(Watchdog dog) {
+		watchdogTimer.removeWatchdog(dog);
+	}
 	// ============================ Completion Handler =========================
 	/**
 	 * Wait for work to arrive at the output of a bounded buffer. The contents of the bounded buffer
