@@ -127,7 +127,10 @@ public class GatewayRpcDispatcher   {
 	}
 
 
-	// The blocks are expected to reside in a jar named "block-definition.jar"
+	/** The blocks implemented in Java are expected to reside in a jar named "block-definition.jar".
+	 *  We add the blocks implemented in Python to this list.
+	 *  @return
+	 */
 	public List<String> getBlockPrototypes() {
 		log.infof("%s: getBlockPrototypes ...",TAG);
 		List<String> results = new ArrayList<String>();
@@ -157,9 +160,15 @@ public class GatewayRpcDispatcher   {
 				log.warnf("%s: getBlockPrototypes: Runtime exception (%s)",TAG,ex.getMessage(),ex);
 			}
 		}
+<<<<<<< HEAD
 		// Now add prototypes from Python-defined blocks
 		ProxyHandler phandler = ProxyHandler.getInstance();
 		List<PalettePrototype> prototypes = phandler.getBlockPrototypes();
+=======
+		// Now add the Python blocks
+		ProxyHandler ph = ProxyHandler.getInstance();
+		ph.getClassNames();
+>>>>>>> 3acb5ec2fa504217a6f39a4a5c649f197d445e30
 		return results;
 	}
 	

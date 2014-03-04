@@ -27,6 +27,7 @@ public interface BLTProperties   {
 	/** These are recognized values of external callbacks for registration */
 	public final static String CREATE_INSTANCE_CALLBACK     = "CreateInstance";
 	public final static String EVALUATE_CALLBACK            = "Evaluate";
+	public final static String GET_BLOCK_CLASSES_CALLBACK   = "GetBlockClasses";
 	public final static String GET_PROPERTIES_CALLBACK      = "GetProperties";
 	public final static String GET_PROPERTY_CALLBACK        = "GetProperty";
 	public final static String GET_PROTOTYPES_CALLBACK      = "GetPrototypes";
