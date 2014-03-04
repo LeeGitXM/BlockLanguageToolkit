@@ -18,6 +18,7 @@ import com.ils.block.annotation.ExecutableBlock;
 import com.ils.block.common.BlockProperty;
 import com.ils.block.common.PalettePrototype;
 import com.ils.blt.gateway.engine.BlockExecutionController;
+import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.ils.common.ClassList;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -126,7 +127,10 @@ public class GatewayRpcDispatcher   {
 	}
 
 
-	// The blocks are expected to reside in a jar named "block-definition.jar"
+	/** The blocks implemented in Java are expected to reside in a jar named "block-definition.jar".
+	 *  We add the blocks implemented in Python to this list.
+	 *  @return
+	 */
 	public List<String> getBlockPrototypes() {
 		log.infof("%s: getBlockPrototypes ...",TAG);
 		List<String> results = new ArrayList<String>();
@@ -156,6 +160,9 @@ public class GatewayRpcDispatcher   {
 				log.warnf("%s: getBlockPrototypes: Runtime exception (%s)",TAG,ex.getMessage(),ex);
 			}
 		}
+		// Now add the Python blocks
+		ProxyHandler ph = ProxyHandler.getInstance();
+		ph.getClassNames();
 		return results;
 	}
 	

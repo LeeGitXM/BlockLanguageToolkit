@@ -4,7 +4,9 @@
  */
 package com.ils.blt.gateway.proxy;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.UUID;
 
 import org.python.core.CompileMode;
@@ -17,7 +19,6 @@ import org.python.core.PyObject;
 import com.ils.block.common.BlockConstants;
 import com.ils.block.common.BlockProperty;
 import com.ils.blt.common.BLTProperties;
-import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.script.JythonExecException;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -48,10 +49,11 @@ public class ProxyHandler   {
 	// These are the indices of specific callback functions within the array
 	private static int CREATE_INSTANCE = 0;
 	private static int EVALUATE = 1;
-	private static int GET_PROPERTIES = 2;
-	private static int GET_PROPERTY = 3;
-	private static int SET_VALUE = 4;
-	private static int CALLBACK_COUNT = 5;
+	private static int GET_CLASSES = 2;
+	private static int GET_PROPERTIES = 3;
+	private static int GET_PROPERTY = 4;
+	private static int SET_VALUE = 5;
+	private static int CALLBACK_COUNT = 6;
 	
 	/**
 	 * Initialize with instances of the classes to be controlled.
@@ -74,7 +76,8 @@ public class ProxyHandler   {
 	}
 	
 	/**
-	 * Set parameters for a callback.
+	 * Set parameters for a callback. We only support a single project as the server 
+	 * of each package of callbacks.
 	 * @param type a string denoting the callback kind. Valid values are found in BlockProperties.
 	 * @param pkg the package of classes which this project handles
 	 * @param project name of the project that is the block code repository
@@ -100,6 +103,9 @@ public class ProxyHandler   {
 		else if( type.equalsIgnoreCase(BLTProperties.EVALUATE_CALLBACK)) {
 			index = EVALUATE;
 		}
+		else if( type.equalsIgnoreCase(BLTProperties.GET_BLOCK_CLASSES_CALLBACK)) {
+			index = GET_CLASSES;
+		}
 		else if( type.equalsIgnoreCase(BLTProperties.GET_PROPERTIES_CALLBACK)) {
 			index = GET_PROPERTIES;
 		}
@@ -114,7 +120,6 @@ public class ProxyHandler   {
 			return;
 		}
 		// Now that we have the callback type, add to the array
-		
 		Callback callback = callbacks[index];
 		if( callback == null ) {
 			callback = new Callback(type);
@@ -135,11 +140,12 @@ public class ProxyHandler   {
 	}
 
 
-	/*
-	@SuppressWarnings("unchecked")
-	public Hashtable<String,?> getAttributes(String key,Hashtable<String,?> attributes) {
 
-		Hashtable<String,Object> temp = (Hashtable<String,Object>)attributes;
+	@SuppressWarnings("unchecked")
+	public List<String> getClassNames() {
+
+		List<String> temp = new ArrayList<String>();
+		/*
 		if( compileScript(getAttributesCallback) ) {
 			Hashtable<String,String> att = new Hashtable<String,String>();
 			att.put(BlockConstants.BLOCK_ATTRIBUTE_VALUE, key);
@@ -152,9 +158,10 @@ public class ProxyHandler   {
 			attributes = (Hashtable<String,?>)(new PythonToJava().pyDictionaryToTable(pyDict));
 			log.debug(TAG+"getAttributes result "+ attributes);  
 		}
-		return attributes;
+		*/
+		return temp;
 	}
-	*/
+
 
 	/**
 	 * Query a Python class to obtain a list of its properties. The block is expected
@@ -291,7 +298,8 @@ public class ProxyHandler   {
 	/**
 	 * Create a class with public members to hold attributes of a callback. 
 	 * Note that the callback class exposes public members instead of methods.
-	 *
+	 * The callbacks are held in an indexed list, so there is no need to make them
+	 * comparable..
 	 */
 	private class Callback {
 		public final String type;
@@ -300,6 +308,7 @@ public class ProxyHandler   {
 		public String module;
 		public String variable;
 		public ScriptManager scriptManager;
+		private int hashcode;
 		
 		public Callback(String type) {
 			this.type = type;
@@ -307,7 +316,8 @@ public class ProxyHandler   {
 			projectId = BlockConstants.UNKNOWN;
 			scriptManager = null;
 			variable = "";
-			code = null;	
+			code = null;
+			hashcode = (int)(System.nanoTime()%1000000000);
 		}
 	}
 }
