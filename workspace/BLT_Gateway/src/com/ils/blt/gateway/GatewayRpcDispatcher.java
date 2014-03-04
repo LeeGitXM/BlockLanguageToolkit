@@ -18,6 +18,7 @@ import com.ils.block.annotation.ExecutableBlock;
 import com.ils.block.common.BlockProperty;
 import com.ils.block.common.PalettePrototype;
 import com.ils.blt.gateway.engine.BlockExecutionController;
+import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.ils.common.ClassList;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -156,6 +157,9 @@ public class GatewayRpcDispatcher   {
 				log.warnf("%s: getBlockPrototypes: Runtime exception (%s)",TAG,ex.getMessage(),ex);
 			}
 		}
+		// Now add prototypes from Python-defined blocks
+		ProxyHandler phandler = ProxyHandler.getInstance();
+		List<PalettePrototype> prototypes = phandler.getBlockPrototypes();
 		return results;
 	}
 	

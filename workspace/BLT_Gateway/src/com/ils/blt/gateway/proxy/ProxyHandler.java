@@ -4,7 +4,11 @@
  */
 package com.ils.blt.gateway.proxy;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.python.core.CompileMode;
@@ -16,8 +20,10 @@ import org.python.core.PyObject;
 
 import com.ils.block.common.BlockConstants;
 import com.ils.block.common.BlockProperty;
+import com.ils.block.common.PalettePrototype;
 import com.ils.blt.common.BLTProperties;
-import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.ils.common.JavaToPython;
+import com.ils.common.PythonToJava;
 import com.inductiveautomation.ignition.common.script.JythonExecException;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -42,23 +48,22 @@ public class ProxyHandler   {
 	private final LoggerEx log;
 	private GatewayContext context = null;
 	private static ProxyHandler instance = null;
-	
-	// Maintain a map of callbacks keyed by class name
-	private final Hashtable<String,Callback[]> callbackMap;
 	// These are the indices of specific callback functions within the array
 	private static int CREATE_INSTANCE = 0;
 	private static int EVALUATE = 1;
 	private static int GET_PROPERTIES = 2;
 	private static int GET_PROPERTY = 3;
-	private static int SET_VALUE = 4;
-	private static int CALLBACK_COUNT = 5;
+	private static int GET_PROTOTYPES = 4;
+	private static int SET_VALUE = 5;
+	private static int CALLBACK_COUNT = 6;
 	
+	// This is the array of callbacks ...
+	Callback[] callbacks = new Callback[CALLBACK_COUNT];
 	/**
 	 * Initialize with instances of the classes to be controlled.
 	 */
 	private ProxyHandler() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
-		callbackMap = new Hashtable<String,Callback[]>();
 	}
 
 	/**
@@ -74,19 +79,15 @@ public class ProxyHandler   {
 	}
 	
 	/**
-	 * Set parameters for a callback.
-	 * @param type a string denoting the callback kind. Valid values are found in BlockProperties.
-	 * @param pkg the package of classes which this project handles
+	 * Set parameters for a callback. Practically speaking, there should be only one project that serves
+	 * as a "library" of custom blocks.
+	 * @param key a string denoting the callback kind. Valid values are found in BlockProperties.
 	 * @param project name of the project that is the block code repository
-	 * @param module the python code module. Must be in package app.block.
-	 * @param variable the name of the global variable that will hold both function arguments and results.e
+	 * @param module the python code module which handles the callback. Must be in package app.block (hardcoded import).
+	 * @param variable the name of the global variable that will hold both function arguments and results.E.g. "shared"
 	 */
-	public void register(String type, String pkg, String project, String module,String variable) {
-		Callback[] callbacks = callbackMap.get(pkg);
-		if( callbacks==null) {
-			callbacks = new Callback[CALLBACK_COUNT];
-			callbackMap.put(pkg, callbacks);
-		}
+	public void register(String key, String project, String module,String variable) {
+
 		long projectId = context.getProjectManager().getProjectId(project);
 		if( projectId<0) {
 			log.warnf("%s: register: Unknown project (%s)",TAG,project);
@@ -94,30 +95,33 @@ public class ProxyHandler   {
 		}
 		int index = 0;
 		
-		if( type.equalsIgnoreCase(BLTProperties.CREATE_INSTANCE_CALLBACK)) {
+		if( key.equalsIgnoreCase(BLTProperties.CREATE_INSTANCE_CALLBACK)) {
 			index = CREATE_INSTANCE;
 		}
-		else if( type.equalsIgnoreCase(BLTProperties.EVALUATE_CALLBACK)) {
+		else if( key.equalsIgnoreCase(BLTProperties.EVALUATE_CALLBACK)) {
 			index = EVALUATE;
 		}
-		else if( type.equalsIgnoreCase(BLTProperties.GET_PROPERTIES_CALLBACK)) {
+		else if( key.equalsIgnoreCase(BLTProperties.GET_PROPERTIES_CALLBACK)) {
 			index = GET_PROPERTIES;
 		}
-		else if( type.equalsIgnoreCase(BLTProperties.GET_PROPERTY_CALLBACK)) {
+		else if( key.equalsIgnoreCase(BLTProperties.GET_PROPERTY_CALLBACK)) {
 			index = GET_PROPERTY;
 		}
-		else if( type.equalsIgnoreCase(BLTProperties.SET_VALUE_CALLBACK)) {
+		else if( key.equalsIgnoreCase(BLTProperties.GET_PROTOTYPES_CALLBACK)) {
+			index = GET_PROTOTYPES;
+		}
+		else if( key.equalsIgnoreCase(BLTProperties.SET_VALUE_CALLBACK)) {
 			index = SET_VALUE;
 		}
 		else {
-			log.warnf("%s: register: unknown registration method (%s)",TAG,type);
+			log.warnf("%s: register: unknown registration method (%s)",TAG,key);
 			return;
 		}
 		// Now that we have the callback type, add to the array
 		
 		Callback callback = callbacks[index];
 		if( callback == null ) {
-			callback = new Callback(type);
+			callback = new Callback(key);
 			callbacks[index] = callback;	
 		}
 		callback.projectId = projectId;
@@ -134,6 +138,26 @@ public class ProxyHandler   {
 		this.context = cntx;
 	}
 
+	/**
+	 * Query the python layer for a list of palette prototypes, one for
+	 * each block definition. The prototypes are returned as a dictionary
+	 * and converted to PalettePrototype object here.
+	 * @return
+	 */
+	public List<PalettePrototype> getBlockPrototypes() {
+		List<PalettePrototype> prototypes = new ArrayList<PalettePrototype>();
+		if( compileScript(GET_PROTOTYPES) ) {
+			Callback cb = callbacks[GET_PROTOTYPES];
+			Hashtable<String,String> att = new Hashtable<String,String>();
+			PyDictionary pyDict = new JavaToPython().tableToPyDictionary(att);  // Empty
+			cb.scriptManager.addGlobalVariable(cb.variable,pyDict);
+			execute(cb);
+			log.info(TAG+": getBlockPrototypes returned "+ pyDict);   // Should now be updated
+			Hashtable<String,?> tbl = (Hashtable<String,?>)(new PythonToJava().pyDictionaryToTable(pyDict));
+			log.debug(TAG+"getBlockPrototypes result "+ tbl); 
+		}
+		return prototypes;
+	}
 
 	/*
 	@SuppressWarnings("unchecked")
@@ -236,26 +260,27 @@ public class ProxyHandler   {
 	 * Compile a simple script that does nothing but call the specified script. 
 	 * We assume that the script name includes a module, plus script name, plus method.
 	 * We want the module for our import statement.
-	 * @param scriptToCall the script we wish to execute.
+	 * @param callbackIndex index of the script we wish to execute.
 	 * @return true if the script compiled
 	 */
-	private boolean compileScript(Callback scriptToCall) {
-		if( scriptToCall.code !=null ) return true;   // Already compiled
+	private boolean compileScript(int callbackIndex) {
+		Callback callback = callbacks[callbackIndex];
+		if( callback.code !=null ) return true;   // Already compiled
 		String module = "app";
-		int index = scriptToCall.module.lastIndexOf(".");
-		if( index>0 ) module = scriptToCall.module.substring(0,index);
+		int index = callback.module.lastIndexOf(".");
+		if( index>0 ) module = callback.module.substring(0,index);
 		index = module.lastIndexOf(".");
 		if( index>0 ) module = module.substring(0,index);
-		String script = String.format("import %s;%s",module,scriptToCall.module);
-		log.debug(TAG+"Compiling callback script \n"+script);
+		String script = String.format("import %s;%s",module,callback.module);
+		log.infof("%s: Compiling callback script \n%s",TAG,script);
 		try {
-	         scriptToCall.code = Py.compile_flags(script,module,CompileMode.exec,CompilerFlags.getCompilerFlags());
+			callback.code = Py.compile_flags(script,module,CompileMode.exec,CompilerFlags.getCompilerFlags());
 	         
 	     }
 		catch(Exception ex) {
 			log.errorf("%s: Failed to compile script \n%s",TAG,script);
 		}
-		return scriptToCall.code!=null;
+		return callback.code!=null;
 	}
 	
 	/**
@@ -273,19 +298,6 @@ public class ProxyHandler   {
 			log.error(TAG+": Error executing python "+callback.module+ " ("+ex.getMessage()+")",ex);
 		}
 		log.tracef("%s: Completed callback script.",TAG);
-	}
-	
-	/**
-	 * Search the callback map for a suitable provider given a class name
-	 */
-	private Callback[] getCallbacks(String className) {
-		Callback[] callbacks = null;
-		for( String key:callbackMap.keySet() ) {
-			if(className.startsWith(key)) {
-				callbacks = callbackMap.get(key);
-			}
-		}
-		return callbacks;
 	}
 	
 	/**

@@ -20,15 +20,16 @@ public interface BLTProperties   {
 	public final static String FOLDER_RESOURCE_TYPE    = "__folder";
 	public final static String MODEL_RESOURCE_TYPE    = "blt.model";
 	
-	public final static String PROPERTIES_SCRIPT_PACKAGE = "system.ils.blt.properties";
+	public final static String BLOCK_SCRIPT_PACKAGE         = "system.ils.blt.block";
 	public final static String REGISTRATION_SCRIPT_PACKAGE  = "system.ils.blt.registrar";
-	public final static String REPORTING_SCRIPT_PACKAGE  = "system.ils.blt.report";
+	public final static String REPORTING_SCRIPT_PACKAGE     = "system.ils.blt.report";
 	
 	/** These are recognized values of external callbacks for registration */
 	public final static String CREATE_INSTANCE_CALLBACK     = "CreateInstance";
 	public final static String EVALUATE_CALLBACK            = "Evaluate";
 	public final static String GET_PROPERTIES_CALLBACK      = "GetProperties";
 	public final static String GET_PROPERTY_CALLBACK        = "GetProperty";
+	public final static String GET_PROTOTYPES_CALLBACK      = "GetPrototypes";
 	public final static String SET_VALUE_CALLBACK           = "SetValue";
 
 	

@@ -15,6 +15,9 @@
 	<property name="common.jar.name" value="ils-common.jar" />
 	<property name="common.bin.dir" value="${root.dir}/common/workspace/ILS_Common/bin" />
 	<property name="common.src.dir" value="${root.dir}/common/workspace/ILS_Common/src" />
+	<property name="migration.jar.name" value="blt-migration.jar" />
+	<property name="migration.bin.dir" value="${root.dir}/blt/workspace/BLT_Migration/bin" />
+	<property name="migration.src.dir" value="${root.dir}/blt/workspace/BLT_Migration/src" />
 	<property name="block.jar.name" value="block-definition.jar" />
 	<property name="block.bin.dir" value="${root.dir}/block/workspace/Block/bin" />
 	<property name="block.src.dir" value="${root.dir}/block/workspace/Block/src" />
@@ -124,9 +127,20 @@
 	    <jar destfile="${jar.dir}/${common.jar.name}" includes="**/*.class" basedir="${common.bin.dir}"/>
 	</target>
 	
+	<!-- Compile the Migration Tool -->
+	<target name="migration.build" description="Compile the migration tool">
+		<mkdir dir="${migration.bin.dir}"/>
+		<javac destdir="${migration.bin.dir}" debug="true" includeantruntime="false">
+			<src path="${migration.src.dir}"/>
+			<classpath refid="BlockDefinition.classpath"/>
+		</javac>
+	</target>
+	<target name ="migration.jar" description="Create a jar for the Migration tool">
+		<jar destfile="${jar.dir}/${migration.jar.name}" includes="**/*.class" basedir="${migration.bin.dir}"/>
+	</target>
 	
 	<!-- Builds the toolkit module jars and the final .modl file -->
-	<target name="build" depends="common.build,common.jar,block.build,block.jar" description="Compile the source">
+	<target name="build" depends="common.build,common.jar,block.build,block.jar,migration.build,migration.jar" description="Compile the source">
 		<echo message="${BLTModule.name} ${BLTModule.version}" />	
 		<delete dir="${basedir}/BLT_Build/temp_modl" />	
 		

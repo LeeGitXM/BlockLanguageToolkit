@@ -8,10 +8,12 @@ import org.python.core.PyObject;
 
 /**
  *  This class exposes python-callable functions used to register a project with the Gateway.
+ *  The registrations identify the project as a handler of a variety of features dealing
+ *  with blocks implemented in Python. 
  *  
  *  Since we are in Gateway, we can make local calls.
  */
-public class CallbackRegistrationScriptFunctions   {
+public class RegistrationScriptFunctions   {
 
 	/**
 	 * Register a python callback function. These allow the gateway module code to interact
@@ -22,13 +24,12 @@ public class CallbackRegistrationScriptFunctions   {
 	 * will be selected indeterminately. The module must start with app.block.
 	 * 
 	 * @param type a string denoting the callback kind. Valid values are found in BLTProperties.
-	 * @param pkg the package of classes handled by this registrar
 	 * @param project name of the project that is the block code repository
 	 * @param module the python code module. Must be in package app.block.
 	 * @param variable the name of the global variable that will hold both function arguments and results..
 	 */
-	public static void register(String type,String pkg,String project,String module,String variable) {
-		ProxyHandler.getInstance().register(type,pkg,project,module,variable);
+	public static void register(String type,String project,String module,String variable) {
+		ProxyHandler.getInstance().register(type,project,module,variable);
 	}
 
 	/**

@@ -10,7 +10,7 @@ import org.apache.wicket.markup.html.WebMarkupContainer;
 
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.gateway.engine.BlockExecutionController;
-import com.ils.blt.gateway.proxy.CallbackRegistrationScriptFunctions;
+import com.ils.blt.gateway.proxy.RegistrationScriptFunctions;
 import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
@@ -79,7 +79,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	@Override
 	public void initializeScriptManager(ScriptManager mgr) {
 		super.initializeScriptManager(mgr);
-		mgr.addScriptModule(BLTProperties.REGISTRATION_SCRIPT_PACKAGE,CallbackRegistrationScriptFunctions.class);
+		mgr.addScriptModule(BLTProperties.REGISTRATION_SCRIPT_PACKAGE,RegistrationScriptFunctions.class);
 		mgr.addScriptModule(BLTProperties.REPORTING_SCRIPT_PACKAGE,BlockCompletionScriptFunctions.class);
 	}
 	

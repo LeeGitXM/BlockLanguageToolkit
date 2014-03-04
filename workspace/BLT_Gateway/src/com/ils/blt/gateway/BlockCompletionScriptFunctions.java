@@ -14,7 +14,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  *  Since we are in Gateway, we can make local calls.
  */
 public class BlockCompletionScriptFunctions  {
-	private static final String TAG = "GatewayStatusReportingScriptFunctions: ";
+	private static final String TAG = "BlockCompletionScriptFunctions: ";
 	private static LoggerEx log = LogUtil.getLogger(BlockCompletionScriptFunctions.class.getPackage().getName());
 
 	

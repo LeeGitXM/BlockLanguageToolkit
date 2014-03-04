@@ -20,7 +20,7 @@ import com.ils.block.common.BlockProperty;
 import com.ils.block.common.PropertyType;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.designer.BLTDesignerHook;
-import com.ils.blt.designer.PropertiesRequestHandler;
+import com.ils.blt.designer.BlockPropertiesRequestHandler;
 import com.ils.blt.designer.workspace.BasicAnchorPoint;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.connection.ConnectionType;

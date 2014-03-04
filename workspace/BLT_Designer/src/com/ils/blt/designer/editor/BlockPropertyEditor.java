@@ -24,7 +24,7 @@ import com.ils.block.common.PropertyType;
 import com.ils.block.common.TransmissionScope;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.designer.BLTDesignerHook;
-import com.ils.blt.designer.PropertiesRequestHandler;
+import com.ils.blt.designer.BlockPropertiesRequestHandler;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -83,7 +83,7 @@ public class BlockPropertyEditor extends JPanel {
 		Collection<BlockProperty> propertyList = block.getProperties();
 		if( propertyList==null || propertyList.isEmpty()) {
 			propertyList = new ArrayList<BlockProperty>();
-			PropertiesRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+			BlockPropertiesRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
 			BlockProperty[] properties = handler.getBlockProperties(projectId,resourceId,block.getId(),block.getClassName());
 			for(BlockProperty property:properties) {
 				propertyList.add(property);
