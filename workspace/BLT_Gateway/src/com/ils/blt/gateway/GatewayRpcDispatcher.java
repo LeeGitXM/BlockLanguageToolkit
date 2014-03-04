@@ -160,15 +160,9 @@ public class GatewayRpcDispatcher   {
 				log.warnf("%s: getBlockPrototypes: Runtime exception (%s)",TAG,ex.getMessage(),ex);
 			}
 		}
-<<<<<<< HEAD
 		// Now add prototypes from Python-defined blocks
 		ProxyHandler phandler = ProxyHandler.getInstance();
 		List<PalettePrototype> prototypes = phandler.getBlockPrototypes();
-=======
-		// Now add the Python blocks
-		ProxyHandler ph = ProxyHandler.getInstance();
-		ph.getClassNames();
->>>>>>> 3acb5ec2fa504217a6f39a4a5c649f197d445e30
 		return results;
 	}
 	

@@ -5,15 +5,8 @@
 package com.ils.blt.gateway.proxy;
 
 import java.util.ArrayList;
-<<<<<<< HEAD
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Map;
-=======
-import java.util.Hashtable;
-import java.util.List;
->>>>>>> 3acb5ec2fa504217a6f39a4a5c649f197d445e30
 import java.util.UUID;
 
 import org.python.core.CompileMode;
@@ -27,11 +20,8 @@ import com.ils.block.common.BlockConstants;
 import com.ils.block.common.BlockProperty;
 import com.ils.block.common.PalettePrototype;
 import com.ils.blt.common.BLTProperties;
-<<<<<<< HEAD
 import com.ils.common.JavaToPython;
 import com.ils.common.PythonToJava;
-=======
->>>>>>> 3acb5ec2fa504217a6f39a4a5c649f197d445e30
 import com.inductiveautomation.ignition.common.script.JythonExecException;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -59,17 +49,12 @@ public class ProxyHandler   {
 	// These are the indices of specific callback functions within the array
 	private static int CREATE_INSTANCE = 0;
 	private static int EVALUATE = 1;
-<<<<<<< HEAD
-	private static int GET_PROPERTIES = 2;
-	private static int GET_PROPERTY = 3;
-	private static int GET_PROTOTYPES = 4;
-=======
 	private static int GET_CLASSES = 2;
 	private static int GET_PROPERTIES = 3;
 	private static int GET_PROPERTY = 4;
->>>>>>> 3acb5ec2fa504217a6f39a4a5c649f197d445e30
-	private static int SET_VALUE = 5;
-	private static int CALLBACK_COUNT = 6;
+	private static int GET_PROTOTYPES = 5;
+	private static int SET_VALUE = 6;
+	private static int CALLBACK_COUNT = 7;
 	
 	// This is the array of callbacks ...
 	Callback[] callbacks = new Callback[CALLBACK_COUNT];
@@ -93,16 +78,9 @@ public class ProxyHandler   {
 	}
 	
 	/**
-<<<<<<< HEAD
 	 * Set parameters for a callback. Practically speaking, there should be only one project that serves
 	 * as a "library" of custom blocks.
 	 * @param key a string denoting the callback kind. Valid values are found in BlockProperties.
-=======
-	 * Set parameters for a callback. We only support a single project as the server 
-	 * of each package of callbacks.
-	 * @param type a string denoting the callback kind. Valid values are found in BlockProperties.
-	 * @param pkg the package of classes which this project handles
->>>>>>> 3acb5ec2fa504217a6f39a4a5c649f197d445e30
 	 * @param project name of the project that is the block code repository
 	 * @param module the python code module which handles the callback. Must be in package app.block (hardcoded import).
 	 * @param variable the name of the global variable that will hold both function arguments and results.E.g. "shared"
@@ -122,14 +100,10 @@ public class ProxyHandler   {
 		else if( key.equalsIgnoreCase(BLTProperties.EVALUATE_CALLBACK)) {
 			index = EVALUATE;
 		}
-<<<<<<< HEAD
-		else if( key.equalsIgnoreCase(BLTProperties.GET_PROPERTIES_CALLBACK)) {
-=======
-		else if( type.equalsIgnoreCase(BLTProperties.GET_BLOCK_CLASSES_CALLBACK)) {
+		else if( key.equalsIgnoreCase(BLTProperties.GET_BLOCK_CLASSES_CALLBACK)) {
 			index = GET_CLASSES;
 		}
-		else if( type.equalsIgnoreCase(BLTProperties.GET_PROPERTIES_CALLBACK)) {
->>>>>>> 3acb5ec2fa504217a6f39a4a5c649f197d445e30
+		else if( key.equalsIgnoreCase(BLTProperties.GET_PROPERTIES_CALLBACK)) {
 			index = GET_PROPERTIES;
 		}
 		else if( key.equalsIgnoreCase(BLTProperties.GET_PROPERTY_CALLBACK)) {
