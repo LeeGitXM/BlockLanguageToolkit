@@ -51,4 +51,14 @@ public interface BLTProperties   {
 	
 	// These are names of system properties
 	public static final String EXIM_PATH = "blt.exim.path";            // Default for file choose dialogs
+	
+	// These are the key names used in the Python dictionary that defines a block prototype.
+	public static final String PALETTE_BLOCK_CLASS = "blockClass";
+	public static final String PALETTE_BLOCK_STYLE = "blockStyle";
+	public static final String PALETTE_ICON_PATH   = "iconPath";
+	public static final String PALETTE_LABEL       = "label";
+	public static final String PALETTE_TOOLTIP     = "tooltip";
+	public static final String PALETTE_TAB_NAME    = "tabName";
+	public static final String PALETTE_VIEW_ICON   = "viewIcon";
+	public static final String PALETTE_VIEW_LABEL  = "viewLabel";
 }

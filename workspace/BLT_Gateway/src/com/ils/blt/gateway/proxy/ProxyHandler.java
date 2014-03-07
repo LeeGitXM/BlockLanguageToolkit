@@ -14,10 +14,13 @@ import org.python.core.CompilerFlags;
 import org.python.core.Py;
 import org.python.core.PyCode;
 import org.python.core.PyDictionary;
+import org.python.core.PyList;
 import org.python.core.PyObject;
 
 import com.ils.block.common.BlockConstants;
+import com.ils.block.common.BlockDescriptor;
 import com.ils.block.common.BlockProperty;
+import com.ils.block.common.BlockStyle;
 import com.ils.block.common.PalettePrototype;
 import com.ils.blt.common.BLTProperties;
 import com.ils.common.JavaToPython;
@@ -45,6 +48,7 @@ public class ProxyHandler   {
 	private final static String TAG = "ProxyHandler";
 	private final LoggerEx log;
 	private GatewayContext context = null;
+	private final PythonToJava toJavaTranslator;
 	private static ProxyHandler instance = null;
 	// These are the indices of specific callback functions within the array
 	private static int CREATE_INSTANCE = 0;
@@ -63,6 +67,7 @@ public class ProxyHandler   {
 	 */
 	private ProxyHandler() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
+		toJavaTranslator = new PythonToJava();
 	}
 
 	/**
@@ -141,7 +146,7 @@ public class ProxyHandler   {
 
 	/**
 	 * Query the python layer for a list of palette prototypes, one for
-	 * each block definition. The prototypes are returned as a dictionary
+	 * each block definition. The prototypes are returned as a list of dictionaries
 	 * and converted to PalettePrototype object here.
 	 * @return
 	 */
@@ -149,13 +154,32 @@ public class ProxyHandler   {
 		List<PalettePrototype> prototypes = new ArrayList<PalettePrototype>();
 		if( compileScript(GET_PROTOTYPES) ) {
 			Callback cb = callbacks[GET_PROTOTYPES];
-			Hashtable<String,String> att = new Hashtable<String,String>();
-			PyDictionary pyDict = new JavaToPython().tableToPyDictionary(att);  // Empty
-			cb.scriptManager.addGlobalVariable(cb.variable,pyDict);
+			PyList pyList = new PyList();  // Empty
+			cb.scriptManager.addGlobalVariable(cb.variable,pyList);
 			execute(cb);
-			log.info(TAG+": getBlockPrototypes returned "+ pyDict);   // Should now be updated
-			Hashtable<String,?> tbl = (Hashtable<String,?>)(new PythonToJava().pyDictionaryToTable(pyDict));
-			log.debug(TAG+"getBlockPrototypes result "+ tbl); 
+			log.info(TAG+": getBlockPrototypes returned "+ pyList);   // Should now be updated
+			// Contents of list are Hashtable<String,?>
+			List<?> list = toJavaTranslator.pyListToArrayList(pyList);
+			for( Object obj:list ) {
+				if( obj instanceof Hashtable ) {
+					Hashtable<String,?> tbl = (Hashtable<String,?>)obj;
+					PalettePrototype proto = new PalettePrototype();
+					proto.setPaletteIconPath("Block/icons/medium/sql_writer.png");
+					proto.setPaletteLabel("SQL");
+					proto.setTooltipText(nullCheck(tbl.get(BLTProperties.PALETTE_TOOLTIP),""));
+					proto.setTabName(nullCheck(tbl.get(BLTProperties.PALETTE_TAB_NAME),BlockConstants.PALETTE_TAB_CONTROL));
+					
+					BlockDescriptor view = proto.getBlockDescriptor();
+					view.setLabel(nullCheck(tbl.get(BLTProperties.PALETTE_VIEW_LABEL),null));
+					view.setIconPath(nullCheck(tbl.get(BLTProperties.PALETTE_VIEW_ICON),null));
+					view.setPreferredHeight(60);   // Size of the block plus inset
+					view.setPreferredWidth(48);
+					view.setBlockClass(getClass().getCanonicalName());
+					view.setStyle(BlockStyle.ICON);
+					prototypes.add(proto);
+				}
+			}
+			
 		}
 		return prototypes;
 	}
@@ -301,6 +325,16 @@ public class ProxyHandler   {
 			log.error(TAG+": Error executing python "+callback.module+ " ("+ex.getMessage()+")",ex);
 		}
 		log.tracef("%s: Completed callback script.",TAG);
+	}
+	
+	/**
+	 * @param obj
+	 * @param def
+	 * @return either the object converted to a string, or, if null, the default
+	 */
+	private String nullCheck(Object obj,String def) {
+		if( obj!=null ) return obj.toString();
+		else return def;
 	}
 	
 	/**
