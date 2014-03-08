@@ -85,7 +85,7 @@ public class GatewayRpcDispatcher   {
 			}			
 		}
 		else {
-			log.infof("%s: getBlockProperties: creating new block %d:%d %s",TAG,projectId.longValue(),resourceId.longValue(),className);
+			log.infof("%s: getBlockProperties: created new block %d:%d %s",TAG,projectId.longValue(),resourceId.longValue(),className);
 		}
 		log.debugf("%s: getBlockProperties: returns %s",TAG,result.toString());
 		return result;
@@ -162,11 +162,12 @@ public class GatewayRpcDispatcher   {
 		}
 		// Now add prototypes from Python-defined blocks
 		ProxyHandler phandler = ProxyHandler.getInstance();
-		List<PalettePrototype> prototypes = phandler.getBlockPrototypes();
+		List<PalettePrototype> prototypes = phandler.getPalettePrototypes();
+		for( PalettePrototype pp:prototypes) {
+			results.add(pp.toJson());
+		}
+		log.debugf("%s: getBlockPrototypes: returning %d palette prototypes",TAG,results.size());
 		return results;
 	}
-	
 
-
-	
 }

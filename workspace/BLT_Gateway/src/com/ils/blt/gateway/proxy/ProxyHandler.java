@@ -17,14 +17,17 @@ import org.python.core.PyDictionary;
 import org.python.core.PyList;
 import org.python.core.PyObject;
 
+import com.ils.block.common.AnchorDirection;
+import com.ils.block.common.AnchorPrototype;
 import com.ils.block.common.BlockConstants;
 import com.ils.block.common.BlockDescriptor;
 import com.ils.block.common.BlockProperty;
 import com.ils.block.common.BlockStyle;
 import com.ils.block.common.PalettePrototype;
 import com.ils.blt.common.BLTProperties;
-import com.ils.common.JavaToPython;
+import com.ils.blt.common.UtilityFunctions;
 import com.ils.common.PythonToJava;
+import com.ils.connection.ConnectionType;
 import com.inductiveautomation.ignition.common.script.JythonExecException;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -150,8 +153,10 @@ public class ProxyHandler   {
 	 * and converted to PalettePrototype object here.
 	 * @return
 	 */
-	public List<PalettePrototype> getBlockPrototypes() {
+	public List<PalettePrototype> getPalettePrototypes() {
 		List<PalettePrototype> prototypes = new ArrayList<PalettePrototype>();
+		Object val = null;
+		UtilityFunctions fns = new UtilityFunctions();
 		if( compileScript(GET_PROTOTYPES) ) {
 			Callback cb = callbacks[GET_PROTOTYPES];
 			PyList pyList = new PyList();  // Empty
@@ -160,27 +165,54 @@ public class ProxyHandler   {
 			log.info(TAG+": getBlockPrototypes returned "+ pyList);   // Should now be updated
 			// Contents of list are Hashtable<String,?>
 			List<?> list = toJavaTranslator.pyListToArrayList(pyList);
-			for( Object obj:list ) {
-				if( obj instanceof Hashtable ) {
-					Hashtable<String,?> tbl = (Hashtable<String,?>)obj;
-					PalettePrototype proto = new PalettePrototype();
-					proto.setPaletteIconPath("Block/icons/medium/sql_writer.png");
-					proto.setPaletteLabel("SQL");
-					proto.setTooltipText(nullCheck(tbl.get(BLTProperties.PALETTE_TOOLTIP),""));
-					proto.setTabName(nullCheck(tbl.get(BLTProperties.PALETTE_TAB_NAME),BlockConstants.PALETTE_TAB_CONTROL));
-					
-					BlockDescriptor view = proto.getBlockDescriptor();
-					view.setLabel(nullCheck(tbl.get(BLTProperties.PALETTE_VIEW_LABEL),null));
-					view.setIconPath(nullCheck(tbl.get(BLTProperties.PALETTE_VIEW_ICON),null));
-					view.setPreferredHeight(60);   // Size of the block plus inset
-					view.setPreferredWidth(48);
-					view.setBlockClass(getClass().getCanonicalName());
-					view.setStyle(BlockStyle.ICON);
-					prototypes.add(proto);
+			for( Object obj:list ) { 
+				try {
+					if( obj instanceof Hashtable ) {
+						@SuppressWarnings("unchecked")
+						Hashtable<String,?> tbl = (Hashtable<String,?>)obj;
+						log.info(TAG+": getPalettePrototypes first table "+ tbl);  
+						PalettePrototype proto = new PalettePrototype();
+						proto.setPaletteIconPath(nullCheck(tbl.get(BLTProperties.PALETTE_ICON_PATH),"Block/icons/large/transmitter.png"));
+						proto.setPaletteLabel(nullCheck(tbl.get(BLTProperties.PALETTE_LABEL),"From Python"));
+						proto.setTooltipText(nullCheck(tbl.get(BLTProperties.PALETTE_TOOLTIP),""));
+						proto.setTabName(nullCheck(tbl.get(BLTProperties.PALETTE_TAB_NAME),BlockConstants.PALETTE_TAB_CONTROL));
+						
+						BlockDescriptor view = proto.getBlockDescriptor();
+						val = tbl.get(BLTProperties.PALETTE_VIEW_LABEL);
+						if( val!=null ) view.setLabel(val.toString());
+						val = tbl.get(BLTProperties.PALETTE_VIEW_ICON);
+						if( val!=null ) view.setIconPath(val.toString());
+						val = tbl.get(BLTProperties.PALETTE_VIEW_HEIGHT);
+						if( val!=null ) view.setPreferredHeight(fns.coerceToInteger(val));
+						val = tbl.get(BLTProperties.PALETTE_VIEW_WIDTH);
+						if( val!=null ) view.setPreferredWidth(fns.coerceToInteger(val));
+						view.setBlockClass(nullCheck(tbl.get(BLTProperties.PALETTE_BLOCK_CLASS),"app.block.BasicBlock.BasicBlock"));
+						val = tbl.get(BLTProperties.PALETTE_BLOCK_STYLE);
+						if( val!=null) {
+							try {
+								view.setStyle(BlockStyle.valueOf(val.toString().toUpperCase()));
+							}
+							catch(IllegalArgumentException iae ) {
+								log.warnf("%s: getPalettePrototypes: Illegal block style (%) (%s)" , TAG,val,iae.getMessage());
+							}
+							catch(Exception ex ) {
+								log.warnf("%s: getPalettePrototypes: Illegal block style (%) (%s)" , TAG,val,ex.getMessage());
+							}
+						}
+						// Now handle the anchors
+						val = tbl.get(BLTProperties.PALETTE_ANCHOR_IN);
+						if( val!=null ) addAnchorsToDescriptor(view,val,AnchorDirection.INCOMING);
+						val = tbl.get(BLTProperties.PALETTE_ANCHOR_OUT);
+						if( val!=null ) addAnchorsToDescriptor(view,val,AnchorDirection.OUTGOING);
+						prototypes.add(proto); 
+					}
+				}
+				catch( Exception ex ) {
+					log.warnf("%s: getPalettePrototypes: Exception processing prototype (%)" , TAG,ex.getMessage());
 				}
 			}
-			
 		}
+		log.infof("%s: getPalettePrototypes returning %d protos from Python",TAG,prototypes.size()); 
 		return prototypes;
 	}
 
@@ -326,13 +358,45 @@ public class ProxyHandler   {
 		}
 		log.tracef("%s: Completed callback script.",TAG);
 	}
-	
+	//========================================= Helper Methods ============================================
+	/**
+	 * Create a list of AnchorPrototypes and add to the PalettePrototype
+	 * @param bd
+	 * @param l a list, hopefully
+	 * @param direction
+	 */
+	private void addAnchorsToDescriptor(BlockDescriptor bd,Object l,AnchorDirection direction) {
+		log.info(TAG+": addAnchorsToPrototype "+l);
+		if( l instanceof List ) {
+			for( Object t: (List)l ) {
+				if( t instanceof Hashtable ) {
+					Hashtable tbl = (Hashtable<String,?>)t;
+					Object name = tbl.get("name");
+					Object type = tbl.get("type");
+					if( name!=null && type!=null ) {
+						try {
+							AnchorPrototype ap = new AnchorPrototype();
+							ap.setName(name.toString());
+							ap.setConnectionType(ConnectionType.valueOf(type.toString().toUpperCase()));
+							ap.setAnchorDirection(direction);
+							bd.addAnchor(ap);
+						}
+						catch(IllegalArgumentException iae) {
+							log.warnf("%s: addAnchorsToPrototype: Illegal connection type %s (%s)",TAG,type,iae.getMessage());
+						}
+					}
+							
+				}
+			}
+		}
+	}
 	/**
 	 * @param obj
 	 * @param def
 	 * @return either the object converted to a string, or, if null, the default
 	 */
 	private String nullCheck(Object obj,String def) {
+		log.trace(TAG+": nullCheck "+obj);
 		if( obj!=null ) return obj.toString();
 		else return def;
 	}

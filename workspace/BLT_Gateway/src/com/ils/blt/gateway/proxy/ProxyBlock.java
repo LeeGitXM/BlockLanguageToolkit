@@ -22,12 +22,9 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 /**
  * A proxy block is a stand-in for a block written in python. It's methods are all
- * delegated to the pythn layer, but callable from Java. It also holds the Python 
+ * delegated to the python layer, but callable from Java. It also holds the Python 
  * object to provide persistence. 
  *  
- * The subclasses depend on the "ExecutableBlock" class annotation
- * as the signal to group a particular subclass into the list of 
- * available executable block types.
  */
 public class ProxyBlock implements ProcessBlock {
 	

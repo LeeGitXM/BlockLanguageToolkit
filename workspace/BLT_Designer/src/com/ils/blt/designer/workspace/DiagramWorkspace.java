@@ -412,7 +412,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				super.standardColor=WorkspaceConstants.CONNECTION_FILL_TRUTHVALUE;
 				super.paintConnection(g, cxn, route, selected, hover);
 			}
-			else if( ctype==ConnectionType.INFORMATIONAL ) {
+			else if( ctype==ConnectionType.INFORMATION ) {
 				super.stroke = informationOutlineStroke;
 				super.standardColor=WorkspaceConstants.CONNECTION_BACKGROUND;
 				super.paintConnection(g, cxn, route, selected, hover);
