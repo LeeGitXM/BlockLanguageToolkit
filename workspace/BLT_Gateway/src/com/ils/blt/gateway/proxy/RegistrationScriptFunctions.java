@@ -26,10 +26,21 @@ public class RegistrationScriptFunctions   {
 	 * @param type a string denoting the callback kind. Valid values are found in BLTProperties.
 	 * @param project name of the project that is the block code repository
 	 * @param module the python code module. Must be in package app.block.
+	 * @param arg name of the local variable (or comma-separated list) of local variables submitted to the function
 	 * @param variable the name of the global variable that will hold both function arguments and results..
 	 */
-	public static void register(String type,String project,String module,String variable) {
-		ProxyHandler.getInstance().register(type,project,module,variable);
+	public static void register(String type,String project,String module,String arg,String variable) {
+		ProxyHandler.getInstance().register(type,project,module,arg,variable);
+	}
+	
+	/**
+	 * De-register a python callback function. De-registering implies that no project
+	 * handles the de-registered method. 
+	 *
+	 * @param key a string denoting the callback kind. Valid values are found in BLTProperties.
+	 */
+	public static void deregister(String key) {
+		ProxyHandler.getInstance().deregister(key);
 	}
 
 	/**

@@ -98,7 +98,7 @@ public class BlockFactory  {
 				BlockProperty property = pb.getProperty(bp.getName());
 				if( property!=null ) {
 					if( bp.getQuality()==null) property.setQuality(Quality.Level.Good.toString());
-					property.setEditible(bp.isEditible());
+					property.setEditable(bp.isEditable());
 					property.setMaximum(bp.getMaximum());
 					property.setMinimum(bp.getMinimum());
 					property.setBinding(bp.getBinding());

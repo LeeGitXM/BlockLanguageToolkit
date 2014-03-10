@@ -170,7 +170,7 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 	protected abstract void paintComponent(Graphics _g);
 	
 	/**
-	 * Utility method to paint a text string. Font size is hardcoded.
+	 * Utility method to paint a text string.
 	 * @param g
 	 * @param text
 	 * @param xpos center of the text

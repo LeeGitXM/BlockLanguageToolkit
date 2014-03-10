@@ -2,7 +2,7 @@
  *   (c) 2013  ILS Automation. All rights reserved.
  *  
  */
-package com.ils.blt.designer;
+package com.ils.blt.common;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +10,6 @@ import java.util.UUID;
 
 import com.ils.block.common.BlockProperty;
 import com.ils.block.common.PalettePrototype;
-import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -18,18 +17,18 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 
 /**
- *  This handler provides a way to request properties of blocks shown in the diagram.
+ *  This handler provides a way to request properties diagrams, blocks and connections.
  *  The request is relayed to the Gateway scope via an RPC call.
  */
-public class BlockPropertiesRequestHandler  {
-	private final static String TAG = "BlockPropertiesRequestHandler";
+public class DiagramRequestHandler  {
+	private final static String TAG = "DiagramRequestHandler";
 	private final LoggerEx log;
 
 	/**
 	 * Constructor adds common attributes that are needed to generate unique keys to identify
 	 * blocks and connectors.
 	 */
-	public BlockPropertiesRequestHandler()  {
+	public DiagramRequestHandler()  {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 	}
 

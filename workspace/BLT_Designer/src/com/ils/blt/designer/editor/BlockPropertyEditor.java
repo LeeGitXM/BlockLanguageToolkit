@@ -23,8 +23,8 @@ import com.ils.block.common.LimitType;
 import com.ils.block.common.PropertyType;
 import com.ils.block.common.TransmissionScope;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.DiagramRequestHandler;
 import com.ils.blt.designer.BLTDesignerHook;
-import com.ils.blt.designer.BlockPropertiesRequestHandler;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -83,7 +83,7 @@ public class BlockPropertyEditor extends JPanel {
 		Collection<BlockProperty> propertyList = block.getProperties();
 		if( propertyList==null || propertyList.isEmpty()) {
 			propertyList = new ArrayList<BlockProperty>();
-			BlockPropertiesRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+			DiagramRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
 			BlockProperty[] properties = handler.getBlockProperties(projectId,resourceId,block.getId(),block.getClassName());
 			for(BlockProperty property:properties) {
 				propertyList.add(property);
@@ -144,7 +144,7 @@ public class BlockPropertyEditor extends JPanel {
 		String val = prop.getBinding();
 		if(val==null) val = "";
 		final JTextField field = new JTextField(val);
-		field.setEditable(prop.isEditible());
+		field.setEditable(prop.isEditable());
 		field.addActionListener(new ActionListener() {
 	        public void actionPerformed(ActionEvent e){
 	            prop.setBinding(field.getText());
@@ -160,7 +160,7 @@ public class BlockPropertyEditor extends JPanel {
 		Object val = prop.getValue();
 		if(val==null) val = "";
 		final JTextField field = new JTextField(val.toString());
-		field.setEditable(prop.isEditible());
+		field.setEditable(prop.isEditable());
 		field.addActionListener(new ActionListener() {
 	        public void actionPerformed(ActionEvent e){
 	        	log.debugf("%s: set value %s",TAG,field.getText());

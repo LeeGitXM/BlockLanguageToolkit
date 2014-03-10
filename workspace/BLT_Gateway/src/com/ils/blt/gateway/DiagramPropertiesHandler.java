@@ -13,6 +13,8 @@ import com.ils.block.ProcessBlock;
 import com.ils.block.common.BlockProperty;
 import com.ils.block.control.ExecutionController;
 import com.ils.blt.gateway.engine.BlockExecutionController;
+import com.ils.blt.gateway.proxy.ProxyBlock;
+import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.ils.connection.Connection;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -29,27 +31,27 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
  *  
  *  This class is a singleton for easy access throughout the application.
  */
-public class PropertiesUpdateHandler   {
-	private final static String TAG = "PropertiesUpdateHandler";
+public class DiagramPropertiesHandler   {
+	private final static String TAG = "DiagramPropertiesHandler";
 	private final LoggerEx log;
 	private GatewayContext context = null;
-	private static PropertiesUpdateHandler instance = null;
+	private static DiagramPropertiesHandler instance = null;
 	protected long projectId = 0;
 	
 	/**
 	 * Initialize with instances of the classes to be controlled.
 	 */
-	private PropertiesUpdateHandler() {
+	private DiagramPropertiesHandler() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 	}
 
 	/**
 	 * Static method to create and/or fetch the single instance.
 	 */
-	public static PropertiesUpdateHandler getInstance() {
+	public static DiagramPropertiesHandler getInstance() {
 		if( instance==null) {
-			synchronized(PropertiesUpdateHandler.class) {
-				instance = new PropertiesUpdateHandler();
+			synchronized(DiagramPropertiesHandler.class) {
+				instance = new DiagramPropertiesHandler();
 			}
 		}
 		return instance;
@@ -112,14 +114,21 @@ public class PropertiesUpdateHandler   {
 		BlockProperty[] results = null;
 		if(block!=null) {
 			results = block.getProperties();  // Existing block
+			log.tracef("%s: getProperties existing %s = %s",TAG,block.getClass().getName(),results.toString());
 		}
 		else if(className.startsWith("app")) {
-			//TODO create from python 
+			ProxyHandler ph = ProxyHandler.getInstance();
+			block = ph.createInstance(projectId.longValue(),resourceId.longValue(),blockId,className);
+			if(block!=null) {
+				results = block.getProperties();
+				log.tracef("%s: getProperties new from python %s = %s",TAG,block.getClass().getName(),results.toString());
+			}
 		}
 		else {		
 			block = createInstance(projectId.longValue(),resourceId.longValue(),blockId,className);
 			if(block!=null) {
 				results = block.getProperties();
+				log.tracef("%s: getProperties new %s = %s",TAG,block.getClass().getName(),results.toString());
 			}
 		}
 		return results;

@@ -9,7 +9,8 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 /**
  *  This class exposes python-callable functions used to report block status
- *  changes to the Gateway.
+ *  changes to the Gateway. The functions are designed for access from 
+ *  python implementation of blocks..
  *  
  *  Since we are in Gateway, we can make local calls.
  */

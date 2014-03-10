@@ -20,10 +20,10 @@ import javax.swing.tree.TreePath;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.DiagramRequestHandler;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.UUIDResetHandler;
 import com.ils.blt.designer.BLTDesignerHook;
-import com.ils.blt.designer.BlockPropertiesRequestHandler;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
@@ -136,7 +136,7 @@ public class DiagramTreeNode extends FolderNode {
 		setupEditActions(paths, selection);
 		
 		if (isRootFolder()) { 
-			BlockPropertiesRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+			DiagramRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
 
 			applicationAction = new ApplicationAction(this.folderId);
 			startAction = new StartAction();
@@ -490,7 +490,7 @@ public class DiagramTreeNode extends FolderNode {
 	    
 		public void actionPerformed(ActionEvent e) {
 			try {
-				BlockPropertiesRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+				DiagramRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
 				handler.startController();
 				this.setEnabled(false);
 				stopAction.setEnabled(true);
@@ -509,7 +509,7 @@ public class DiagramTreeNode extends FolderNode {
 	    
 		public void actionPerformed(ActionEvent e) {
 			try {
-				BlockPropertiesRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+				DiagramRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
 				handler.stopController();
 				this.setEnabled(false);
 				startAction.setEnabled(true);

@@ -75,13 +75,16 @@ public class GatewayRpcDispatcher   {
 	public List<String> getBlockProperties(Long projectId,Long resourceId,String blockId,String className) {
 		log.infof("%s: getBlockProperties: %d:%d %s",TAG,projectId.longValue(),resourceId.longValue(),blockId);
 		
-		BlockProperty[] propertyArray = PropertiesUpdateHandler.getInstance().
+		BlockProperty[] propertyArray = DiagramPropertiesHandler.getInstance().
 					getBlockProperties(projectId,resourceId,UUID.fromString(blockId),className);
 		List<String> result = null;
 		if( propertyArray!=null ) {
 			result = new ArrayList<String>();
 			for( BlockProperty prop:propertyArray ) {
-				result.add(prop.toJson());
+				// Python can return some nulls in the array
+				if( prop!=null ) {
+					result.add(prop.toJson());
+				}
 			}			
 		}
 		else {
@@ -109,7 +112,7 @@ public class GatewayRpcDispatcher   {
 		Hashtable<String, Hashtable<String, String>> attributeTable;
 		try {
 			attributeTable = mapper.readValue(json, new TypeReference<Hashtable<String,Hashtable<String,String>>>(){});
-			Hashtable<String,Hashtable<String,String>> results = PropertiesUpdateHandler.getInstance().getConnectionAttributes(projectId,resourceId,connectionId,attributeTable);
+			Hashtable<String,Hashtable<String,String>> results = DiagramPropertiesHandler.getInstance().getConnectionAttributes(projectId,resourceId,connectionId,attributeTable);
 			log.debugf("%s: created table = %s",TAG,results);
 			json =  mapper.writeValueAsString(results);
 			log.debugf("%s: JSON=%s",TAG,json);

@@ -27,7 +27,8 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  *  
  */
 public class ProxyBlock implements ProcessBlock {
-	
+	private static final String TAG = "ProxyBlock";
+	protected final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	private final String className;
 	private final long projectId;
 	private final long diagramId;
@@ -35,10 +36,10 @@ public class ProxyBlock implements ProcessBlock {
 	private String label;
 	private String statusText;
 	private BlockState state;
-	private PyObject code = null;
+	private PyObject pythonBlock = null;
 	private final ProxyHandler delegate = ProxyHandler.getInstance();
 	
-	protected final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
+	
 
 	
 	/**
@@ -58,8 +59,19 @@ public class ProxyBlock implements ProcessBlock {
 	/**
 	 * @return the Python object for which this class is a proxy
 	 */
-	public PyObject getObject() {
-		return code;
+	public PyObject getPythonBlock() {
+		return pythonBlock;
+	}
+	public void setPythonBlock(Object obj) {
+		if( obj==null ) {
+			log.warnf("%s: setPythonBlock attempt to set null",TAG);
+		}
+		else if( obj instanceof PyObject ) {
+			this.pythonBlock = (PyObject)obj; 
+		}
+		else {
+			log.warnf("%s: setPythonBlock Unexpected object class %s, ignored",TAG,obj.getClass().getName());
+		}
 	}
 	
 	/**
@@ -84,7 +96,7 @@ public class ProxyBlock implements ProcessBlock {
 	 */
 	@Override
 	public BlockProperty[] getProperties() {
-		return delegate.getProperties(getObject());
+		return delegate.getProperties(getPythonBlock());
 	}
 	
 	/**

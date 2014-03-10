@@ -54,7 +54,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		// NOTE: Get serialization exception if ModelResourceManager is saved as a class member
 		//       Exception is thrown when we try to incorporate a StatusPanel
 		log.info(TAG+"Setup - enabled project listeners.");
-		PropertiesUpdateHandler.getInstance().setContext(context);
+		DiagramPropertiesHandler.getInstance().setContext(context);
 		ProxyHandler.getInstance().setContext(context);
 		dispatcher = new GatewayRpcDispatcher(context);
 	}

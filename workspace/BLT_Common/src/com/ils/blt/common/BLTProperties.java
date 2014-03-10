@@ -6,6 +6,9 @@ package com.ils.blt.common;
 
 import java.util.UUID;
 
+import com.ils.block.common.BindingType;
+import com.ils.block.common.PropertyType;
+
 
 /**
  *  Define an interface for accessing module properties .
@@ -51,8 +54,18 @@ public interface BLTProperties   {
 	
 	// These are names of system properties
 	public static final String EXIM_PATH = "blt.exim.path";            // Default for file choose dialogs
+	// These are the key names allowed in the Python dictionary that defines a block attribute.
+	public static final String BLOCK_ATTRIBUTE_BINDING    = "binding";
+	public static final String BLOCK_ATTRIBUTE_BINDING_TYPE = "bindingType";
+	public static final String BLOCK_ATTRIBUTE_EDITABLE   = "editible";
+	public static final String BLOCK_ATTRIBUTE_MAX        = "maximum";
+	public static final String BLOCK_ATTRIBUTE_MIN        = "minimum";	
+	public static final String BLOCK_ATTRIBUTE_NAME       = "name";
+	public static final String BLOCK_ATTRIBUTE_QUALITY    = "quality";
+	public static final String BLOCK_ATTRIBUTE_DATA_TYPE  = "type";
+	public static final String BLOCK_ATTRIBUTE_VALUE      = "value";
 	
-	// These are the key names used in the Python dictionary that defines a block prototype.
+	// These are the key names used a the Python dictionary that defines a block prototype.
 	public static final String PALETTE_ANCHOR_IN   = "inports";     // A list of dictionaries
 	public static final String PALETTE_ANCHOR_OUT  = "outports";    // A list of dictionaries
 	public static final String PALETTE_BLOCK_CLASS = "blockClass";
@@ -61,6 +74,7 @@ public interface BLTProperties   {
 	public static final String PALETTE_LABEL       = "label";
 	public static final String PALETTE_TOOLTIP     = "tooltip";
 	public static final String PALETTE_TAB_NAME    = "tabName";
+	public static final String PALETTE_VIEW_BLOCK_ICON  = "viewBlockIcon";
 	public static final String PALETTE_VIEW_FONT_SIZE  = "viewFontSize";
 	public static final String PALETTE_VIEW_HEIGHT  = "viewHeight";
 	public static final String PALETTE_VIEW_ICON   = "viewIcon";

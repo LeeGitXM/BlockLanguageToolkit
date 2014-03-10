@@ -16,14 +16,18 @@ import org.python.core.PyCode;
 import org.python.core.PyDictionary;
 import org.python.core.PyList;
 import org.python.core.PyObject;
+import org.python.core.PyString;
+import org.python.core.PyStringMap;
 
 import com.ils.block.common.AnchorDirection;
 import com.ils.block.common.AnchorPrototype;
+import com.ils.block.common.BindingType;
 import com.ils.block.common.BlockConstants;
 import com.ils.block.common.BlockDescriptor;
 import com.ils.block.common.BlockProperty;
 import com.ils.block.common.BlockStyle;
 import com.ils.block.common.PalettePrototype;
+import com.ils.block.common.PropertyType;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.common.PythonToJava;
@@ -91,9 +95,10 @@ public class ProxyHandler   {
 	 * @param key a string denoting the callback kind. Valid values are found in BlockProperties.
 	 * @param project name of the project that is the block code repository
 	 * @param module the python code module which handles the callback. Must be in package app.block (hardcoded import).
+	 * @param arg name of the local variable, if any, supplied when the module is called.
 	 * @param variable the name of the global variable that will hold both function arguments and results.E.g. "shared"
 	 */
-	public void register(String key, String project, String module,String variable) {
+	public void register(String key, String project, String module,String arg,String variable) {
 
 		long projectId = context.getProjectManager().getProjectId(project);
 		if( projectId<0) {
@@ -134,17 +139,161 @@ public class ProxyHandler   {
 			callbacks[index] = callback;	
 		}
 		callback.projectId = projectId;
-		callback.scriptManager = context.getProjectManager().getProjectScriptManager(projectId);
-		callback.module = module;
-		callback.variable = variable;
+		callback.setScriptManager(context.getProjectManager().getProjectScriptManager(projectId));
+		callback.setModule(module);
+		callback.localVariableName = (arg==null?"":arg);
+		callback.globalVariableName = (variable==null?"":variable);
 		
 	}
+	
+	/**
+	 * Remove callback capabilities.
+	 */
+	public void deregister(String key) {
+		int index = 0;
+		
+		if( key.equalsIgnoreCase(BLTProperties.CREATE_INSTANCE_CALLBACK)) {
+			index = CREATE_INSTANCE;
+		}
+		else if( key.equalsIgnoreCase(BLTProperties.EVALUATE_CALLBACK)) {
+			index = EVALUATE;
+		}
+		else if( key.equalsIgnoreCase(BLTProperties.GET_BLOCK_CLASSES_CALLBACK)) {
+			index = GET_CLASSES;
+		}
+		else if( key.equalsIgnoreCase(BLTProperties.GET_PROPERTIES_CALLBACK)) {
+			index = GET_PROPERTIES;
+		}
+		else if( key.equalsIgnoreCase(BLTProperties.GET_PROPERTY_CALLBACK)) {
+			index = GET_PROPERTY;
+		}
+		else if( key.equalsIgnoreCase(BLTProperties.GET_PROTOTYPES_CALLBACK)) {
+			index = GET_PROTOTYPES;
+		}
+		else if( key.equalsIgnoreCase(BLTProperties.SET_VALUE_CALLBACK)) {
+			index = SET_VALUE;
+		}
+		else {
+			log.warnf("%s: register: unknown registration method (%s)",TAG,key);
+			return;
+		}
+		// Now that we have the callback type, add to the array
+		callbacks[index] = null;
+	}
+	
+	
 	/**
 	 * The gateway context must be specified before the instance is useful.
 	 * @param cntx the GatewayContext
 	 */
 	public void setContext(GatewayContext cntx) {
 		this.context = cntx;
+	}
+	
+	public ProxyBlock createInstance(long project,long resource,UUID blockId,String className) {
+		ProxyBlock block = new ProxyBlock(className,project,resource,blockId);
+		log.infof("%s: createInstance --- calling",TAG); 
+		if( callbacks[CREATE_INSTANCE]!=null && compileScript(CREATE_INSTANCE) ) {
+			Callback cb = callbacks[CREATE_INSTANCE];
+			cb.setLocalVariable(new PyString(className));
+			PyDictionary pyDictionary = new PyDictionary();  // Empty
+			// Synchronize because of our global variable
+			synchronized(cb.scriptManager) {
+				cb.getScriptManager().addGlobalVariable(cb.globalVariableName,pyDictionary);
+				execute(cb);
+				log.info(TAG+": createInstance returned "+ pyDictionary);   // Should now be updated
+				// Contents of list are Hashtable<String,?>
+				block.setPythonBlock(pyDictionary.get("instance"));
+			}
+		}
+		return block;
+	}
+	/**
+	 * Query a Python block to obtain a list of its properties. The block is expected
+	 * to exist.
+	 * 
+	 * @param block the python block
+	 * @return an array of block properties.
+	 */
+	public BlockProperty[] getProperties(PyObject block) {
+		BlockProperty[] properties = null;
+		
+		if( callbacks[GET_PROPERTIES]!=null && compileScript(GET_PROPERTIES) ) {
+			Object val = null;
+			UtilityFunctions fns = new UtilityFunctions();
+			Callback cb = callbacks[GET_PROPERTIES];
+			cb.setLocalVariable(block);
+			PyList pyList = new PyList();  // Empty
+			List<?> list = null;
+			// Synchronize because of our global variable
+			synchronized(cb.scriptManager) {
+				cb.getScriptManager().addGlobalVariable(cb.globalVariableName,pyList);
+				execute(cb);
+				log.info(TAG+": getProperties returned "+ pyList);   // Should now be updated
+				// Contents of list are Hashtable<String,?>
+				list = toJavaTranslator.pyListToArrayList(pyList);
+			}
+			int index = 0;
+			properties = new BlockProperty[list.size()];
+			for( Object obj:list ) { 
+				try {
+					if( obj instanceof Hashtable ) {
+						@SuppressWarnings("unchecked")
+						Hashtable<String,?> tbl = (Hashtable<String,?>)obj;
+						log.info(TAG+": getProperties property = "+ tbl);  
+						BlockProperty prop = new BlockProperty();
+						prop.setName(nullCheck(tbl.get(BLTProperties.BLOCK_ATTRIBUTE_NAME),"unnamed"));
+						prop.setBinding(nullCheck(tbl.get(BLTProperties.BLOCK_ATTRIBUTE_BINDING),""));
+						val = tbl.get(BLTProperties.BLOCK_ATTRIBUTE_BINDING_TYPE);
+						if( val!=null) {
+							try {
+								prop.setBindingType(BindingType.valueOf(val.toString().toUpperCase()));
+							}
+							catch(IllegalArgumentException iae ) {
+								log.warnf("%s: getProperties: Illegal binding type (%) (%s)" , TAG,val,iae.getMessage());
+							}
+							catch(Exception ex ) {
+								log.warnf("%s: getProperties: Illegal binding type (%) (%s)" , TAG,val,ex.getMessage());
+							}
+						}
+						val = tbl.get(BLTProperties.BLOCK_ATTRIBUTE_EDITABLE);
+						if( val!=null) prop.setEditable(fns.coerceToBoolean(val));
+						val = tbl.get(BLTProperties.BLOCK_ATTRIBUTE_MAX);
+						if( val!=null) prop.setMaximum(fns.coerceToDouble(val));
+						val = tbl.get(BLTProperties.BLOCK_ATTRIBUTE_MIN	);
+						if( val!=null) prop.setMinimum(fns.coerceToDouble(val));
+						val = tbl.get(BLTProperties.BLOCK_ATTRIBUTE_QUALITY);
+						prop.setQuality(nullCheck(tbl.get(BLTProperties.BLOCK_ATTRIBUTE_NAME),"good"));
+						val = tbl.get(BLTProperties.BLOCK_ATTRIBUTE_DATA_TYPE);
+						if( val!=null) {
+							try {
+								prop.setType(PropertyType.valueOf(val.toString().toUpperCase()));
+							}
+							catch(IllegalArgumentException iae ) {
+								log.warnf("%s: getProperties: Illegal data type (%) (%s)" , TAG,val,iae.getMessage());
+							}
+							catch(Exception ex ) {
+								log.warnf("%s: getProperties: Illegal data type (%) (%s)" , TAG,val,ex.getMessage());
+							}
+						}
+						val = tbl.get(BLTProperties.BLOCK_ATTRIBUTE_VALUE);
+						if( val!=null ) prop.setValue(val);
+						properties[index] = prop;
+					}
+					
+				}
+				catch( Exception ex ) {
+					log.warnf("%s: getProperties: Exception processing prototype (%)" , TAG,ex.getMessage());
+				}
+				index++;
+			}
+		}
+		else {
+			// Callback does not compile ...
+			properties = new BlockProperty[0];
+		}
+
+		return properties;
 	}
 
 	/**
@@ -155,16 +304,21 @@ public class ProxyHandler   {
 	 */
 	public List<PalettePrototype> getPalettePrototypes() {
 		List<PalettePrototype> prototypes = new ArrayList<PalettePrototype>();
-		Object val = null;
-		UtilityFunctions fns = new UtilityFunctions();
-		if( compileScript(GET_PROTOTYPES) ) {
+	
+		if( callbacks[GET_PROTOTYPES]!=null && compileScript(GET_PROTOTYPES) ) {
+			Object val = null;
+			UtilityFunctions fns = new UtilityFunctions();
 			Callback cb = callbacks[GET_PROTOTYPES];
 			PyList pyList = new PyList();  // Empty
-			cb.scriptManager.addGlobalVariable(cb.variable,pyList);
-			execute(cb);
-			log.info(TAG+": getBlockPrototypes returned "+ pyList);   // Should now be updated
-			// Contents of list are Hashtable<String,?>
-			List<?> list = toJavaTranslator.pyListToArrayList(pyList);
+			List<?> list = null;
+			// Synchronize because of our global variable
+			synchronized(cb.scriptManager) {
+				cb.getScriptManager().addGlobalVariable(cb.globalVariableName,pyList);
+				execute(cb);
+				log.info(TAG+": getBlockPrototypes returned "+ pyList);   // Should now be updated
+				// Contents of list are Hashtable<String,?>
+				list = toJavaTranslator.pyListToArrayList(pyList);
+			}
 			for( Object obj:list ) { 
 				try {
 					if( obj instanceof Hashtable ) {
@@ -179,8 +333,10 @@ public class ProxyHandler   {
 						
 						BlockDescriptor view = proto.getBlockDescriptor();
 						val = tbl.get(BLTProperties.PALETTE_VIEW_LABEL);
-						if( val!=null ) view.setLabel(val.toString());
+						if( val!=null ) view.setEmbeddedLabel(val.toString());
 						val = tbl.get(BLTProperties.PALETTE_VIEW_ICON);
+						if( val!=null ) view.setEmbeddedIcon(val.toString());
+						val = tbl.get(BLTProperties.PALETTE_VIEW_BLOCK_ICON);
 						if( val!=null ) view.setIconPath(val.toString());
 						val = tbl.get(BLTProperties.PALETTE_VIEW_HEIGHT);
 						if( val!=null ) view.setPreferredHeight(fns.coerceToInteger(val));
@@ -239,35 +395,7 @@ public class ProxyHandler   {
 	}
 
 
-	/**
-	 * Query a Python class to obtain a list of its properties. The block is expected
-	 * to exist.
-	 * 
-	 * @param block the python object
-	 * @return the property table with current values
-	 */
-	public BlockProperty[] getProperties(PyObject block) {
-		 
-		// Place the instance in the shared dictionary
-		PyDictionary pyDict = new PyDictionary();
-		pyDict.put(BlockConstants.BLOCK_PROPERTY_INSTANCE, block);
-/*
-		if(!ClassRepository.getInstance().getRepository().containsKey(key)) {
-			Hashtable<String,String> classAttribute = (Hashtable<String,String>)attributes.get(BlockConstants.BLOCK_PROPERTY_CLASS);
-			String className = classAttribute.get(BlockConstants.BLOCK_ATTRIBUTE_VALUE);
-			if( className!=null ) {
-				createInstance(key,className);
-			}
-			else {
-				log.warn(TAG+"getBlockAttributes: No class in supplied attributes ("+attributes+")");
-			}
-		}
-		Hashtable<String,?> result = getAttributes(key,attributes);
-		return result;
-		*/
-		return null;
-	}
-
+	
 	/**
 	 * Tell the block to do whatever it is supposed to do.
 	 * 
@@ -294,28 +422,6 @@ public class ProxyHandler   {
 	
 
 	/**
-	 * Create an instance of the specified class
-	 * @param className
-	 * @param callback
-	 * @return the new instance, or null
-	 */
-	private PyObject createInstance(String className,Callback callback) {
-		PyObject result = null;
-		/*
-		if( compileScript(callback) ) {
-			Hashtable<String,String> arg = new Hashtable<String,String>();
-			arg.put(BlockConstants.BLOCK_PROPERTY_CLASS, className);
-			PyDictionary pyDict = new JavaToPython().tableToPyDictionary(arg);
-			callback.scriptManager.addGlobalVariable(callback.variable,pyDict);
-			execute(callback);
-			log.debug(TAG+"createInstance returned "+ pyDict);   // Should be updated
-			PyString key = new PyString(BlockConstants.BLOCK_PROPERTY_INSTANCE);
-			result = pyDict.get(key);
-		}
-		*/
-		return result;
-	}
-	/**
 	 * Compile a simple script that does nothing but call the specified script. 
 	 * We assume that the script name includes a module, plus script name, plus method.
 	 * We want the module for our import statement.
@@ -330,7 +436,7 @@ public class ProxyHandler   {
 		if( index>0 ) module = callback.module.substring(0,index);
 		index = module.lastIndexOf(".");
 		if( index>0 ) module = module.substring(0,index);
-		String script = String.format("import %s;%s",module,callback.module);
+		String script = String.format("import %s;%s(%s)",module,callback.module,callback.localVariableName);
 		log.infof("%s: Compiling callback script \n%s",TAG,script);
 		try {
 			callback.code = Py.compile_flags(script,module,CompileMode.exec,CompilerFlags.getCompilerFlags());
@@ -348,7 +454,7 @@ public class ProxyHandler   {
 	public void execute(Callback callback) {
 		log.tracef("%s Running callback script ...(%s)",TAG,callback.module);
 		try {
-			callback.scriptManager.runCode(callback.code,callback.scriptManager.createLocalsMap());
+			callback.getScriptManager().runCode(callback.code,callback.getLocalsMap());
 		}
 		catch( JythonExecException jee) {
 			log.error(TAG+": JythonException executing python "+callback.module+ " ("+jee.getMessage()+")",jee);
@@ -365,6 +471,7 @@ public class ProxyHandler   {
 	 * @param l a list, hopefully
 	 * @param direction
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void addAnchorsToDescriptor(BlockDescriptor bd,Object l,AnchorDirection direction) {
 		log.info(TAG+": addAnchorsToPrototype "+l);
 		if( l instanceof List ) {
@@ -412,8 +519,10 @@ public class ProxyHandler   {
 		public PyCode code;
 		public long projectId;
 		public String module;
-		public String variable;
-		public ScriptManager scriptManager;
+		public String localVariableName;
+		public String globalVariableName;
+		private ScriptManager scriptManager = null;
+		private PyStringMap localsMap = null;
 		private int hashcode;
 		
 		public Callback(String type) {
@@ -421,9 +530,36 @@ public class ProxyHandler   {
 			module = "";
 			projectId = BlockConstants.UNKNOWN;
 			scriptManager = null;
-			variable = "";
+			localVariableName = "";
+			globalVariableName = "";
 			code = null;
 			hashcode = (int)(System.nanoTime()%1000000000);
 		}
+		
+		public void setScriptManager(ScriptManager mgr) {
+			this.scriptManager = mgr;
+		}
+		public ScriptManager getScriptManager() { return this.scriptManager; }
+		
+		/**
+		 * Setting a variable value creates a locals map.
+		 * @param value the single local argument
+		 */
+		public void setLocalVariable(PyObject value) {
+			if( localsMap == null ) localsMap = scriptManager.createLocalsMap();
+			localsMap.__setitem__(localVariableName,value);
+			log.tracef("%s: Callback.setLocalVariable: %s to %s",TAG,localVariableName,value.toString());
+		}
+		/**
+		 * Strip off any parentheses that might be supplied.
+		 * @param value the single local argument
+		 */
+		public void setModule(String mod) {
+			if( mod==null) return;
+			module = mod;
+			int index = mod.lastIndexOf("(");
+			if( index>0 ) module = mod.substring(0,index);
+		}
+		public PyStringMap getLocalsMap() { return this.localsMap; }
 	}
 }

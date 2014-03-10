@@ -25,8 +25,8 @@ import javax.swing.SwingConstants;
 
 import com.ils.block.common.PalettePrototype;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.DiagramRequestHandler;
 import com.ils.blt.designer.BLTDesignerHook;
-import com.ils.blt.designer.BlockPropertiesRequestHandler;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -68,7 +68,7 @@ public class ProcessBlockPalette extends DockableFrame implements ResourceWorksp
 		
 		// Query the Gateway for a list of blocks to display
 		JTabbedPane tabbedPane = new JTabbedPane();
-		BlockPropertiesRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+		DiagramRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
 		List<PalettePrototype> prototypes = handler.getBlockPrototypes();
 		JPanel panel = null;
 		for( PalettePrototype proto:prototypes) {
