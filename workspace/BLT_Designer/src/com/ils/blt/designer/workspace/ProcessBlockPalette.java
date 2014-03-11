@@ -6,6 +6,7 @@ package com.ils.blt.designer.workspace;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Image;
 import java.awt.Insets;
@@ -77,6 +78,7 @@ public class ProcessBlockPalette extends DockableFrame implements ResourceWorksp
 			int tabIndex = tabbedPane.indexOfTab(tabName);
 			if( tabIndex < 0 ) {    // Prototype references a new tab
 				panel = new JPanel();
+				panel.setLayout(new FlowLayout());
 				tabbedPane.addTab(tabName, panel);
 			}
 			else {

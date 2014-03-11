@@ -11,9 +11,12 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.sqlite.JDBC;
+
 public class Migrator {
 	private static final String USAGE = "Usage: migrator <database>";
 	private final Map<String,String> classMap;   // Lookup by G2 classname
+	private final static JDBC driver = new JDBC(); // Force driver to be loaded
 	
 	public Migrator(Map<String,String>classLookup) {
 		this.classMap = classLookup;
@@ -32,7 +35,7 @@ public class Migrator {
 	public static void main(String[] args) {
 		
 		
-		// Look for databasen path as arg
+		// Look for database path as an argument
 		if( args.length == 0) {
 			System.out.println(USAGE);
 			System.exit(1);
@@ -41,7 +44,10 @@ public class Migrator {
 		// In case we've been fed a Windows path, convert
 		path = path.replace("\\", "/");
 		String connectPath = "jdbc:sqlite:"+path;
-
+		//try {
+		//	Class.forName("org.sqlite.JDBC");    // Force loading of the driver class
+		//}
+		//catch(ClassNotFoundException cnfe) {}
 
 		Connection connection = null;
 		try

@@ -36,6 +36,7 @@
 		 <fileset dir="${basedir}/../../external/lib" includes="commons-math3*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="jackson-*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="block-def*.jar" />
+		 <fileset dir="${basedir}/../../external/lib" includes="sqlite-jdbc*.jar" />
 	</path>
 	
 	<!-- Generic Buildfile: Reference Via Antcalls -->

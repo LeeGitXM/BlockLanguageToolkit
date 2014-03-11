@@ -2,7 +2,7 @@
 
 	<import file="${basedir}/BLT_Build/build.xml"/>
 
-	<property name="version.build" value="7" />	
+	<property name="version.build" value="8" />	
 	<!-- Change version.beta value to "" for release builds -->
 	<property name="version.beta" value="-development" />		
 	<property name="BLTModule.version" value="1.2.3.${version.build}" />
@@ -94,9 +94,19 @@
 		    </fileset>
 		</delete>
 	</target>
+	<!-- Clean Migration -->
+		<target name="clean.migration" >
+			<mkdir dir="${jar.dir}"/>
+			<delete file="${jar.dir}/${migration.jar.name}" />
+			<delete>
+			    <fileset dir="${migration.bin.dir}">
+			        <include name="**/*.class"/>
+			    </fileset>
+			</delete>
+		</target>
 
 	<!-- Cleans all previously built files -->
-	<target name="clean" depends="clean.common,clean.block" description="Remove existing build products" >
+	<target name="clean" depends="clean.common,clean.block,clean.migration" description="Remove existing build products" >
 		<delete dir="${basedir}/BLT_Build/bin" />
 		<delete dir="${basedir}/BLT_Build/modules" />
 		<delete dir="${basedir}/BLT_Build/release" />
@@ -135,8 +145,11 @@
 			<classpath refid="BlockDefinition.classpath"/>
 		</javac>
 	</target>
+	<!-- Build the migration jar with all necessary embedded jars -->
 	<target name ="migration.jar" description="Create a jar for the Migration tool">
-		<jar destfile="${jar.dir}/${migration.jar.name}" includes="**/*.class" basedir="${migration.bin.dir}"/>
+		<jar destfile="${jar.dir}/${migration.jar.name}" includes="**/*.class" basedir="${migration.bin.dir}">
+		    <zipgroupfileset dir="${basedir}/../../external/lib" includes="sqlite-jdbc*.jar"/>
+		</jar>
 	</target>
 	
 	<!-- Builds the toolkit module jars and the final .modl file -->

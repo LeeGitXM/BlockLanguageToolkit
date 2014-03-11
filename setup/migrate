@@ -1,0 +1,9 @@
+#!/bin/sh
+#  Data migration conversion script
+#
+BIN=`pwd`
+LIB=$BIN/../../external/lib
+JAR=${LIB}/blt-migration.jar
+MIGRATION=$BIN/../migration
+DB=${MIGRATION}/conversion.db
+cat ${MIGRATION}/input.json | java -cp ${JAR} com.ils.blt.migration.Migrator ${DB}
