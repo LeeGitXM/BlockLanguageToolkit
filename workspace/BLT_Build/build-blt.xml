@@ -97,6 +97,7 @@
 	<!-- Clean Migration -->
 		<target name="clean.migration" >
 			<mkdir dir="${jar.dir}"/>
+			<mkdir dir="${migration.bin.dir}"/>
 			<delete file="${jar.dir}/${migration.jar.name}" />
 			<delete>
 			    <fileset dir="${migration.bin.dir}">
