@@ -13,7 +13,6 @@ import com.ils.block.ProcessBlock;
 import com.ils.block.common.BlockProperty;
 import com.ils.block.control.ExecutionController;
 import com.ils.blt.gateway.engine.BlockExecutionController;
-import com.ils.blt.gateway.proxy.ProxyBlock;
 import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.ils.connection.Connection;
 import com.inductiveautomation.ignition.common.util.LogUtil;

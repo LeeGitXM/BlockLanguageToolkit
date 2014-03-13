@@ -1,7 +1,6 @@
 package com.ils.blt.designer.workspace.ui;
 
 import java.awt.BasicStroke;
-import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -14,7 +13,6 @@ import java.awt.geom.AffineTransform;
 import javax.swing.SwingUtilities;
 
 import com.ils.blt.designer.workspace.ProcessBlockView;
-import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
 
 @SuppressWarnings("serial")
 public class DiamondUIView extends AbstractUIView implements BlockViewUI {

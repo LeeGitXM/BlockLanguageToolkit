@@ -10,7 +10,6 @@ import javax.swing.ImageIcon;
 
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
-import com.inductiveautomation.ignition.designer.gui.IconUtil;
 
 
 /**

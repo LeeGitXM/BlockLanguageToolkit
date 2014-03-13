@@ -15,7 +15,6 @@ import com.ils.blt.designer.workspace.ProcessAnchorDescriptor;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.connection.ConnectionType;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
-import com.inductiveautomation.ignition.designer.blockandconnector.blockui.AnchorDescriptor;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
 
 /**

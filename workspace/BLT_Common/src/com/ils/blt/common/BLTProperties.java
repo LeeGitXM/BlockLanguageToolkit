@@ -6,9 +6,6 @@ package com.ils.blt.common;
 
 import java.util.UUID;
 
-import com.ils.block.common.BindingType;
-import com.ils.block.common.PropertyType;
-
 
 /**
  *  Define an interface for accessing module properties .

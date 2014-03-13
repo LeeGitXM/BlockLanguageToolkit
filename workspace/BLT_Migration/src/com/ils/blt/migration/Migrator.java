@@ -84,10 +84,24 @@ public class Migrator {
 		
 	}
 	
+	/**
+	 * Convert from G2 objects into BLTView objects
+	 */
+	public void migrate() {
+		
+	}
+	
+	/**
+	 * Write the BLT View Objects to std out
+	 */
+	public void createOutput() {
+		
+	}
 	
 	/**
 	 * Entry point for the application. 
 	 * Usage: Migrator <databasepath> 
+	 * 
 	 * NOTE: For Windows, specify path as: C:/home/work/migrate.db
 	 *       For Mac/Linux:    /home/work/migrate.db
 	 * We automatically adjust windows path, if specified with backslashes.

@@ -1,7 +1,6 @@
 package com.ils.blt.designer.workspace.ui;
 
 import java.awt.BasicStroke;
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -12,10 +11,7 @@ import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 
-import javax.swing.SwingUtilities;
-
 import com.ils.blt.designer.workspace.ProcessBlockView;
-import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
 
 
 /**

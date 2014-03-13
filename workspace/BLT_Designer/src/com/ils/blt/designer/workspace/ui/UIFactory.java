@@ -2,7 +2,6 @@ package com.ils.blt.designer.workspace.ui;
 
 import com.ils.block.common.BlockStyle;
 import com.ils.blt.designer.workspace.ProcessBlockView;
-import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 

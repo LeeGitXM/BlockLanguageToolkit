@@ -2,6 +2,11 @@ package com.ils.blt.migration;
 
 import java.util.UUID;
 
+import com.ils.block.common.BlockProperty;
+import com.ils.block.common.BlockState;
+import com.ils.block.common.BlockStyle;
+import com.ils.blt.common.serializable.SerializableAnchor;
+
 /**
  * Implement a plain-old-java-object representing a G2 process block.
  * This is designed for serialization via a JSON serializer.
