@@ -8,25 +8,29 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.sqlite.JDBC;
 
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ils.blt.common.serializable.SerializableBlock;
+import com.ils.blt.common.serializable.SerializableDiagram;
 
 public class Migrator {
 	private static final String USAGE = "Usage: migrator <database>";
-	private final Map<String,String> classMap;     // Lookup by G2 classname
+	@SuppressWarnings("unused")
 	private final static JDBC driver = new JDBC(); // Force driver to be loaded
 	private boolean ok = true;                     // Allows us to short circuit processing
-	
+	private G2Diagram g2diagram = null;                  // G2 Diagram read from JSON
+	private SerializableDiagram diagram = null;    // The result
+	private final ClassMapper classMapper;
+	 
 	public Migrator() {
-		classMap = new HashMap<String,String>();
+		classMapper = new ClassMapper();
 	}
 	
 	public void processDatabase(String path) {
@@ -36,16 +40,7 @@ public class Migrator {
 		Connection connection = null;
 		try {
 			connection = DriverManager.getConnection(connectPath);
-			Statement statement = connection.createStatement();
-			statement.setQueryTimeout(30);  // set timeout to 30 sec.
-			
-			ResultSet rs = statement.executeQuery("select * from ClassMap");
-			while(rs.next())
-			{
-				String g2 = rs.getString("G2Class");
-				String ignition = rs.getString("IgnitionClass");
-				classMap.put(g2, ignition);
-			}
+			classMapper.createMap(connection);
 		}
 		catch(SQLException e) {
 			// if the error message is "out of memory", 
@@ -89,8 +84,8 @@ public class Migrator {
 			ObjectMapper mapper = new ObjectMapper();
 			mapper.configure(JsonParser.Feature.ALLOW_COMMENTS, true);
 			mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
-			G2Diagram g2d = mapper.readValue(new String(bytes), G2Diagram.class);
-			if( g2d==null ) {
+			g2diagram = mapper.readValue(new String(bytes), G2Diagram.class);
+			if( g2diagram==null ) {
 				System.err.println("Failed to deserialize input");
 				ok = false;
 			}
@@ -103,22 +98,45 @@ public class Migrator {
 			System.err.println(String.format("Deserialization exception (%s)",ex.getMessage()));
 			ok = false;
 		}
-
-		
 	}
 	
 	/**
 	 * Convert from G2 objects into BLTView objects
 	 */
 	public void migrate() {
+		if( !ok ) return;
 		
+		diagram = new SerializableDiagram();
+		diagram.setName(g2diagram.getName());
+		List<SerializableBlock> blocks = new ArrayList<SerializableBlock>();
+		for( G2Block g2block:g2diagram.getBlocks()) {
+			SerializableBlock block = new SerializableBlock();
+			block.setId(g2block.getId());
+			block.setOriginalId(g2block.getId());
+			block.setLabel(g2block.getLabel());
+			block.setX(g2block.getX());
+			block.setY(g2block.getY());
+			classMapper.setClassName(g2block, block);
+			
+			blocks.add(block);
+			diagram.setBlocks(blocks.toArray(new SerializableBlock[blocks.size()]));
+		}
 	}
 	
 	/**
 	 * Write the BLT View Objects to std out
 	 */
 	public void createOutput() {
+		if( !ok ) return;
 		
+		ObjectMapper mapper = new ObjectMapper();
+		try{ 
+			String json = mapper.writeValueAsString(diagram);
+			System.out.println(json);
+		}
+		catch(JsonProcessingException jpe) {
+			System.err.println("Unable to serialize migrated diagram");
+		}
 	}
 	
 	/**
@@ -147,8 +165,6 @@ public class Migrator {
 		m.processInput();
 		m.migrate();
 		m.createOutput();
-		
-		
 	}
 
 }

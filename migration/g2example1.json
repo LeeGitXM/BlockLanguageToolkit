@@ -1,0 +1,6 @@
+{name:"Final Finishing",blocks:[
+  {label:"High Limit Tester",className:"DIAG-SQC-BLOCK",id:"7bbbd6b9-3140-4328-a844-51817eb47574",x:355,y:90,
+  properties:[{name:"HIGH-LIMIT",value:16.7},{name:"LOW-LIMIT",value:32},{name:"MEAN",value:3234}],
+  connections:[{port:"IN",block:"8ccca2d8-3333-2341-2343-22334455ae22",type:"DATA",direction:"INCOMING"},
+              {port:"OUT",block:"8ddda2d8-4444-2341-2343-22334455cb33",type:"TRUTHVALUE",direction:"OUTGOING"}]}
+  ]}
