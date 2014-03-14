@@ -87,7 +87,7 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 		// Count inputs and outputs
 		for(ProcessAnchorDescriptor desc:block.getAnchors()) {
 			if(desc.getConnectionType()==ConnectionType.SIGNAL) continue;
-			if(desc.getConnectionType()==ConnectionType.INFORMATION &&
+			if(desc.getConnectionType()==ConnectionType.TEXT &&
 			   desc.getType()==	AnchorType.Terminus) continue;
 			
 			if(desc.getType()==	AnchorType.Origin ) inputCount++;
@@ -118,7 +118,7 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 				getAnchorPoints().add(ap);
 			}
 			// Bottom right text
-			else if(desc.getConnectionType()==ConnectionType.INFORMATION && desc.getType()==AnchorType.Origin ) {
+			else if(desc.getConnectionType()==ConnectionType.TEXT && desc.getType()==AnchorType.Origin ) {
 				inputIndex++;
 				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Origin,
 						desc.getConnectionType(),
@@ -273,7 +273,7 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 		int size = WorkspaceConstants.CONNECTION_WIDTH_SIGNAL;   // Thinnest
 		if( type==ConnectionType.TRUTHVALUE ) size = WorkspaceConstants.CONNECTION_WIDTH_TRUTHVALUE;
 		else if( type==ConnectionType.DATA  ) size = WorkspaceConstants.CONNECTION_WIDTH_DATA;
-		else if( type==ConnectionType.INFORMATION  ) size = WorkspaceConstants.CONNECTION_WIDTH_INFORMATION;
+		else if( type==ConnectionType.TEXT  ) size = WorkspaceConstants.CONNECTION_WIDTH_INFORMATION;
 		else if( type==ConnectionType.ANY  ) size = WorkspaceConstants.CONNECTION_WIDTH_INFORMATION;
 		return size;
 	}
@@ -282,7 +282,7 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 		Color color = WorkspaceConstants.CONNECTION_BACKGROUND;   // Black
 		if( type==ConnectionType.TRUTHVALUE ) color = WorkspaceConstants.CONNECTION_FILL_TRUTHVALUE;
 		else if( type==ConnectionType.DATA  ) color = WorkspaceConstants.CONNECTION_FILL_DATA;
-		else if( type==ConnectionType.INFORMATION  ) color = WorkspaceConstants.CONNECTION_FILL_INFORMATION;
+		else if( type==ConnectionType.TEXT  ) color = WorkspaceConstants.CONNECTION_FILL_INFORMATION;
 		else if( type==ConnectionType.SIGNAL  )        color = WorkspaceConstants.CONNECTION_FILL_SIGNAL;
 		else if( type==ConnectionType.ANY  ) color = WorkspaceConstants.CONNECTION_FILL_INFORMATION;
 		return color;

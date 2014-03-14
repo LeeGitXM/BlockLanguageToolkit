@@ -16,6 +16,9 @@ import java.util.Map;
 
 import org.sqlite.JDBC;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class Migrator {
 	private static final String USAGE = "Usage: migrator <database>";
 	private final Map<String,String> classMap;     // Lookup by G2 classname
@@ -81,6 +84,26 @@ public class Migrator {
 		catch(IOException ignore) {}
 		
 		// Now convert into a G2 Diagram
+		try {
+			byte[] bytes = input.toString().getBytes();
+			ObjectMapper mapper = new ObjectMapper();
+			mapper.configure(JsonParser.Feature.ALLOW_COMMENTS, true);
+			mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
+			G2Diagram g2d = mapper.readValue(new String(bytes), G2Diagram.class);
+			if( g2d==null ) {
+				System.err.println("Failed to deserialize input");
+				ok = false;
+			}
+		}
+		catch( IOException ioe) {
+			System.err.println(String.format("IOException (%s)",ioe.getLocalizedMessage())); 
+			ok = false;
+		}
+		catch(Exception ex) {
+			System.err.println(String.format("Deserialization exception (%s)",ex.getMessage()));
+			ok = false;
+		}
+
 		
 	}
 	

@@ -151,6 +151,8 @@
 		<jar destfile="${jar.dir}/${migration.jar.name}" includes="**/*.class" basedir="${migration.bin.dir}">
 		    <zipgroupfileset dir="${jar.dir}" includes="sqlite-jdbc*.jar"/>
 			<zipgroupfileset dir="${jar.dir}" includes="${block.jar.name}"/>
+			<zipgroupfileset dir="${jar.dir}" includes="jackson-*.jar"/>
+			<zipgroupfileset dir="${sdk.dir}" includes="ignition-common.jar"/>
 			<zipgroupfileset dir="${basedir}/BLT_Build/bin/BLT_Common/dist/" includes="*.jar"/>
 		</jar>
 	</target>
