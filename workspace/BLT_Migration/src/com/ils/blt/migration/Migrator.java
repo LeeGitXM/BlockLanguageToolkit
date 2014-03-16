@@ -19,18 +19,23 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableDiagram;
+import com.ils.blt.migration.map.ClassNameMapper;
+import com.ils.blt.migration.map.ClassAttributeMapper;
 
 public class Migrator {
+	private final static String TAG = "Migrator";
 	private static final String USAGE = "Usage: migrator <database>";
 	@SuppressWarnings("unused")
 	private final static JDBC driver = new JDBC(); // Force driver to be loaded
 	private boolean ok = true;                     // Allows us to short circuit processing
 	private G2Diagram g2diagram = null;                  // G2 Diagram read from JSON
 	private SerializableDiagram diagram = null;    // The result
-	private final ClassMapper classMapper;
+	private final ClassNameMapper classMapper;
+	private final ClassAttributeMapper attributeMapper;
 	 
 	public Migrator() {
-		classMapper = new ClassMapper();
+		classMapper = new ClassNameMapper();
+		attributeMapper = new ClassAttributeMapper();
 	}
 	
 	public void processDatabase(String path) {
@@ -41,11 +46,12 @@ public class Migrator {
 		try {
 			connection = DriverManager.getConnection(connectPath);
 			classMapper.createMap(connection);
+			attributeMapper.createMap(connection);
 		}
 		catch(SQLException e) {
 			// if the error message is "out of memory", 
 			// it probably means no database file is found
-			System.err.println(e.getMessage());
+			System.err.println(TAG+e.getMessage());
 			ok = false;
 		}
 		finally {
@@ -55,7 +61,7 @@ public class Migrator {
 			} 
 			catch(SQLException e) {
 				// connection close failed.
-				System.err.println(e);
+				System.err.println(TAG+e.getMessage());
 			}
 		}
 	}
@@ -86,16 +92,16 @@ public class Migrator {
 			mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
 			g2diagram = mapper.readValue(new String(bytes), G2Diagram.class);
 			if( g2diagram==null ) {
-				System.err.println("Failed to deserialize input");
+				System.err.println(TAG+": Failed to deserialize input");
 				ok = false;
 			}
 		}
 		catch( IOException ioe) {
-			System.err.println(String.format("IOException (%s)",ioe.getLocalizedMessage())); 
+			System.err.println(String.format("%s: IOException (%s)",TAG,ioe.getLocalizedMessage())); 
 			ok = false;
 		}
 		catch(Exception ex) {
-			System.err.println(String.format("Deserialization exception (%s)",ex.getMessage()));
+			System.err.println(String.format("%s: Deserialization exception (%s)",TAG,ex.getMessage()));
 			ok = false;
 		}
 	}
@@ -117,6 +123,7 @@ public class Migrator {
 			block.setX(g2block.getX());
 			block.setY(g2block.getY());
 			classMapper.setClassName(g2block, block);
+			attributeMapper.setClassAttributes(block);
 			
 			blocks.add(block);
 			diagram.setBlocks(blocks.toArray(new SerializableBlock[blocks.size()]));
@@ -135,7 +142,7 @@ public class Migrator {
 			System.out.println(json);
 		}
 		catch(JsonProcessingException jpe) {
-			System.err.println("Unable to serialize migrated diagram");
+			System.err.println(TAG+": Unable to serialize migrated diagram");
 		}
 	}
 	

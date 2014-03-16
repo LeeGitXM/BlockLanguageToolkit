@@ -17,6 +17,7 @@ import com.ils.block.ProcessBlock;
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.block.common.BlockProperty;
 import com.ils.block.common.PalettePrototype;
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.ils.common.ClassList;
@@ -138,7 +139,7 @@ public class GatewayRpcDispatcher   {
 		log.infof("%s: getBlockPrototypes ...",TAG);
 		List<String> results = new ArrayList<String>();
 		ClassList cl = new ClassList();
-		List<Class<?>> classes = cl.getAnnotatedClasses("block-definition", ExecutableBlock.class);
+		List<Class<?>> classes = cl.getAnnotatedClasses(BLTProperties.BLOCK_JAR_NAME, ExecutableBlock.class);
 		for( Class<?> cls:classes) {
 			log.info("   found block class: "+cls.getName());
 			try {

@@ -15,7 +15,7 @@ public interface BLTProperties   {
 	public final static String MODULE_NAME = "BLT";     // See build-blt.xml
 	
 	/** This is the name of the jar file containing block class definitions */
-	public final static String BLOCK_JAR_NAME_PATTERN = "block-definition";
+	public final static String BLOCK_JAR_NAME = "block-definition";
 	
 	public final static String FOLDER_RESOURCE_TYPE    = "__folder";
 	public final static String MODEL_RESOURCE_TYPE    = "blt.model";

@@ -1,4 +1,4 @@
-package com.ils.blt.migration;
+package com.ils.blt.migration.map;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -8,39 +8,49 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.ils.blt.common.serializable.SerializableBlock;
+import com.ils.blt.migration.G2Block;
 
 /**
- * Convert a G2 classname into a BLT classname
+ * Copy property values from a G2 block to Ignition. Use the 
+ * database as a lookup to map names.
  */
-public class ClassMapper {
-	private static String UNDEFINED_NAME = "com.ils.block.UNDEFINED";
-	private final Map<String,String> classMap;     // Lookup by G2 classname
+public class PropertyMapper {
+	private final String TAG = "PropertyMapper";
+	private final Map<String,String> propertyMap;     // Lookup by G2 property name
 	/** 
 	 * Constructor: 
 	 */
-	public ClassMapper() {
-		classMap = new HashMap<String,String>();
+	public PropertyMapper() {
+		propertyMap = new HashMap<String,String>();
 	}
-	
+
+	/**
+	 * For all classes, perform a database lookup to map attribute names.
+	 * Key by Ignition name.
+	 * 
+	 * @param cxn open database connection
+	 */
 	public void createMap(Connection cxn) {
+		// Read the database to create the map.
 		ResultSet rs = null;
 		try {
 			Statement statement = cxn.createStatement();
 			statement.setQueryTimeout(30);  // set timeout to 30 sec.
-			
-			rs = statement.executeQuery("select * from ClassMap");
+
+			rs = statement.executeQuery("select * from PropertiesMap");
 			while(rs.next())
 			{
-				String g2 = rs.getString("G2Class");
-				String ignition = rs.getString("IgnitionClass");
-				classMap.put(g2, ignition);
+				String g2Property = rs.getString("G2Name");
+				String iProperty = rs.getString("IgnitionName");
+				
+				propertyMap.put(g2Property,iProperty);
 			}
 			rs.close();
 		}
 		catch(SQLException e) {
 			// if the error message is "out of memory", 
 			// it probably means no database file is found
-			System.err.println(e.getMessage());
+			System.err.println(TAG+": PropertiesMap "+e.getMessage());
 		}
 		finally {
 			if( rs!=null) {
@@ -48,7 +58,7 @@ public class ClassMapper {
 			}
 		}
 	}
-	
+
 	/**
 	 * Perform a database lookup of class name. Set the discovered
 	 * name in the ignition block object. On error print a warning
@@ -58,17 +68,12 @@ public class ClassMapper {
 	 * We also set other attributes that can be deduced from the name,
 	 * in particular:
 	 * 
-	 * @param g2block incoming G2 block
 	 * @param iblock outgoing Ignition equivalent
 	 */
-	public void setClassName(G2Block g2block,SerializableBlock iblock) {
-		String cname = classMap.get(g2block.getClassName());
-		if( cname==null) {
-			cname = UNDEFINED_NAME;
-			System.err.println("setClassName: "+g2block.getClassName()+" has no Ignition equivalent");
-		}
-		iblock.setClassName(cname);
+	public void setProperties(G2Block g2Block,SerializableBlock iblock) {
+		
 	}
-	
-	
+
 }
+	
+
