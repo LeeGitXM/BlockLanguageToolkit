@@ -16,7 +16,6 @@ import com.ils.block.common.BlockProperty;
 import com.ils.block.common.BlockStyle;
 import com.ils.block.common.PalettePrototype;
 import com.ils.block.common.PropertyType;
-import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.common.ClassList;
 
@@ -53,12 +52,14 @@ public class ClassAttributeMapper {
 	public void createMap(Connection cxn) {
 
 		// First iterate through all Java classes
-		// The blocks implemented in Java are expected to reside in a jar named "block-definition.jar".
+		// The blocks implemented in Java have been copied into the migration jar during its build
 		ClassList cl = new ClassList();
-		List<Class<?>> classes = cl.getAnnotatedClasses(BLTProperties.BLOCK_JAR_NAME, ExecutableBlock.class);
+		List<Class<?>> classes = cl.getAnnotatedClasses("blt-migration", ExecutableBlock.class,"com/ils/block/");
 		for( Class<?> cls:classes) {
 			try {
+				//System.err.println("found class: "+cls.getCanonicalName());
 				Object obj = cls.newInstance();
+				
 				if( obj instanceof ProcessBlock ) {
 					ProcessBlock block = (ProcessBlock)obj;
 					PalettePrototype bp = block.getBlockPrototype();
@@ -200,6 +201,7 @@ public class ClassAttributeMapper {
 				iblock.setIconPath(fas.getIconPath());
 				iblock.setPreferredHeight(fas.getPreferredHeight());
 				iblock.setPreferredWidth(fas.getPreferredWidth());
+				iblock.setStyle(fas.getStyle());
 			}
 			else {
 				System.err.println(TAG+": No map entry for "+cname);

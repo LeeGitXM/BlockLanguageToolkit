@@ -71,6 +71,14 @@
 		<fileset dir="${jar.dir}" includes="${block.jar.name}" />
 	</path>
 
+	<!-- Migration jar classpath -->
+	<path id="BLT_Migration.classpath">
+		<path refid="BLT_Common.classpath" />
+		<path refid="ExternalJar.classpath" />
+		<fileset dir="${basedir}/BLT_Build/bin/BLT_Common/dist/" includes="*.jar" />
+		<fileset dir="${basedir}/BLT_Build/bin/BLT_Designer/dist/" includes="*.jar" />
+	</path>
+	
 	<!-- This target will build the toolkit module and deploy it to the local Ignition gateway -->
 		<target name="BuildAndInstallModule" depends="clean, build, deploy" />
 	
@@ -143,7 +151,7 @@
 		<mkdir dir="${migration.bin.dir}"/>
 		<javac destdir="${migration.bin.dir}" debug="true" includeantruntime="false">
 			<src path="${migration.src.dir}"/>
-			<classpath refid="BLT_Gateway.classpath"/>
+			<classpath refid="BLT_Migration.classpath"/>
 		</javac>
 	</target>
 	<!-- Build the migration jar with all necessary embedded jars -->
@@ -153,8 +161,10 @@
 			<zipgroupfileset dir="${jar.dir}" includes="${block.jar.name}"/>
 			<zipgroupfileset dir="${jar.dir}" includes="jackson-*.jar"/>
 			<zipgroupfileset dir="${sdk.dir}" includes="ignition-common.jar"/>
-			<zipgroupfileset dir="${sdk.dir}" includes="ils-common.jar"/>
+			<zipgroupfileset dir="${sdk.dir}" includes="designer-api.jar"/>
+			<zipgroupfileset dir="${jar.dir}" includes="ils-common.jar"/>
 			<zipgroupfileset dir="${basedir}/BLT_Build/bin/BLT_Common/dist/" includes="*.jar"/>
+			<zipgroupfileset dir="${basedir}/BLT_Build/bin/BLT_Designer/dist/" includes="*.jar"/>
 		</jar>
 	</target>
 	

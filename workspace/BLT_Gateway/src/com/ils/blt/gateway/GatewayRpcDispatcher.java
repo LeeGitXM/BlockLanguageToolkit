@@ -132,14 +132,15 @@ public class GatewayRpcDispatcher   {
 
 
 	/** The blocks implemented in Java are expected to reside in a jar named "block-definition.jar".
-	 *  We add the blocks implemented in Python to this list.
+	 *  We add the blocks implemented in Python to this list. We consider only classes that are in
+	 *  a "com/ils/block" package.
 	 *  @return
 	 */
 	public List<String> getBlockPrototypes() {
 		log.infof("%s: getBlockPrototypes ...",TAG);
 		List<String> results = new ArrayList<String>();
 		ClassList cl = new ClassList();
-		List<Class<?>> classes = cl.getAnnotatedClasses(BLTProperties.BLOCK_JAR_NAME, ExecutableBlock.class);
+		List<Class<?>> classes = cl.getAnnotatedClasses(BLTProperties.BLOCK_JAR_NAME, ExecutableBlock.class,"com/ils/block/");
 		for( Class<?> cls:classes) {
 			log.info("   found block class: "+cls.getName());
 			try {

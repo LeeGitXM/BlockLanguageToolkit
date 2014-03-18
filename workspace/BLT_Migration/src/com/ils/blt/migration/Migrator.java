@@ -12,6 +12,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
 import org.sqlite.JDBC;
 
 import com.fasterxml.jackson.core.JsonParser;
@@ -19,8 +24,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableDiagram;
-import com.ils.blt.migration.map.ClassNameMapper;
 import com.ils.blt.migration.map.ClassAttributeMapper;
+import com.ils.blt.migration.map.ClassNameMapper;
+import com.ils.blt.migration.map.ConnectionMapper;
 
 public class Migrator {
 	private final static String TAG = "Migrator";
@@ -32,10 +38,13 @@ public class Migrator {
 	private SerializableDiagram diagram = null;    // The result
 	private final ClassNameMapper classMapper;
 	private final ClassAttributeMapper attributeMapper;
+	private final ConnectionMapper connectionMapper;
+
 	 
 	public Migrator() {
 		classMapper = new ClassNameMapper();
 		attributeMapper = new ClassAttributeMapper();
+		connectionMapper = new ConnectionMapper();
 	}
 	
 	public void processDatabase(String path) {
@@ -124,10 +133,13 @@ public class Migrator {
 			block.setY(g2block.getY());
 			classMapper.setClassName(g2block, block);
 			attributeMapper.setClassAttributes(block);
-			
+			connectionMapper.setAnchors(g2block,block);
 			blocks.add(block);
 			diagram.setBlocks(blocks.toArray(new SerializableBlock[blocks.size()]));
 		}
+		
+		// Finally we analyze the diagram as a whole to deduce connections
+		connectionMapper.createConnections(g2diagram, diagram);
 	}
 	
 	/**
@@ -163,7 +175,14 @@ public class Migrator {
 			System.out.println(USAGE);
 			System.exit(1);
 		}
-		
+		// Some of the embedded jars use log4j - redirect to std error. Log level is system property "log.level"
+		ConsoleAppender appender = new ConsoleAppender(new PatternLayout(PatternLayout.TTCC_CONVERSION_PATTERN),"System.err");
+		BasicConfigurator.configure(appender);
+		String levelString = System.getProperty("log.level");
+		Level level = Level.WARN;
+		if( levelString!=null) level = Level.toLevel(levelString);
+        Logger.getRootLogger().setLevel(level); //set log level
+      
 		Migrator m = new Migrator();
 		String path = args[0];
 		// In case we've been fed a Windows path, convert
