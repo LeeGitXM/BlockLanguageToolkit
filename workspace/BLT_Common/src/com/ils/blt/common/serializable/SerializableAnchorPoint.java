@@ -5,6 +5,7 @@ import java.awt.Rectangle;
 import java.util.UUID;
 
 import com.ils.block.common.AnchorDirection;
+import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorPoint;
 
 
 /**
@@ -30,6 +31,18 @@ public class SerializableAnchorPoint {
 	private int hotSpotWidth = 0;
 	
 	public SerializableAnchorPoint() {
+	}
+	
+	public SerializableAnchorPoint (AnchorPoint anchor) {
+		if(anchor.isConnectorOrigin()) this.setDirection(AnchorDirection.OUTGOING);
+		else this.setDirection(AnchorDirection.INCOMING);
+		this.setId(anchor.getId());
+		this.setParentId(anchor.getBlock().getId());
+		this.setAnchorX(anchor.getAnchor().x);
+		this.setAnchorY(anchor.getAnchor().y);
+		this.setHotSpot(anchor.getHotSpot().getBounds());
+		this.setPathLeaderX(anchor.getPathLeader().x);
+		this.setPathLeaderY(anchor.getPathLeader().y);
 	}
 	
 	public Object getId() { return id; }

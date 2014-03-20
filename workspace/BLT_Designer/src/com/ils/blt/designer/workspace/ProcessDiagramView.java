@@ -8,9 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import com.ils.block.common.AnchorDirection;
-import com.ils.block.common.BlockProperty;
-import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableAnchorPoint;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableConnection;
@@ -18,9 +15,7 @@ import com.ils.blt.common.serializable.SerializableDiagram;
 import com.inductiveautomation.ignition.common.util.AbstractChangeable;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
-import com.inductiveautomation.ignition.designer.blockandconnector.blockui.AnchorDescriptor;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorPoint;
-import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.BlockDiagramModel;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Connection;
@@ -30,9 +25,9 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.Lo
  * This class represents a diagram in the designer.
  */
 public class ProcessDiagramView extends AbstractChangeable implements BlockDiagramModel {
-	private static final String TAG = "DiagnosticsWorkspace";
+	private static final String TAG = "ProcessDiagramView";
 	private static LoggerEx log = LogUtil.getLogger(ProcessDiagramView.class.getPackage().getName());
-	private Map<UUID,ProcessBlockView> blockMap = new HashMap<UUID,ProcessBlockView>();
+	private final Map<UUID,ProcessBlockView> blockMap = new HashMap<UUID,ProcessBlockView>();
 	private List<Connection> connections = new ArrayList<Connection>();
 	private Dimension diagramSize = new Dimension(800,600);
 	private final long resourceId;
@@ -42,15 +37,19 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		this.resourceId = resId;
 		this.name = nam;
 	}
-	
-	public static ProcessDiagramView createDiagramView(long resid,SerializableDiagram diagram) {
-		ProcessDiagramView diagramView = new ProcessDiagramView(resid,diagram.getName());
-		HashMap<UUID,ProcessBlockView> blockMap = new HashMap<UUID,ProcessBlockView>();
+	/**
+	 * Constructor: Create an instance given a SerializableDiagram
+	 * @param resid
+	 * @param diagram
+	 */
+	public ProcessDiagramView (long resid,SerializableDiagram diagram) {
+		this(resid,diagram.getName());
 
 		for( SerializableBlock sb:diagram.getBlocks()) {
 			ProcessBlockView pbv = new ProcessBlockView(sb);
 			blockMap.put(sb.getId(), pbv);
-			diagramView.addBlock(pbv);
+			log.warnf("%s: createDiagramView: Added %s to map",TAG,sb.getId().toString());
+			this.addBlock(pbv);
 		}
 
 		for( SerializableConnection scxn:diagram.getConnections() ) {
@@ -62,18 +61,21 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 				if( blocka!=null && blockb!=null) {
 					AnchorPoint origin = new ProcessAnchorView(blocka,a);
 					AnchorPoint terminus = new ProcessAnchorView(blockb,b);
-					diagramView.addConnection(origin,terminus);   // AnchorPoints
+					this.addConnection(origin,terminus);   // AnchorPoints
 				}
-
 				else {
-					log.warnf("%s: createDiagramView: Failed to find block for anchor point %s or %s",TAG,a,b);
+					if( blocka==null ) {
+						log.warnf("%s: createDiagramView: Failed to find block %s for begin anchor point %s",TAG,a.getParentId(),a);
+					}
+					if( blockb==null ) {
+						log.warnf("%s: createDiagramView: Failed to find block %s for end anchor point %s",TAG,b.getParentId(),b);
+					}
 				}
 			}
 			else {
-				log.warnf("%s: createDiagramView: Connection %s has no anchor points",TAG,scxn.toString());
+				log.warnf("%s: createDiagramView: Connection %s missing one or more anchor points",TAG,scxn.toString());
 			}
 		}
-		return diagramView;
 	}
 	
 	
@@ -85,7 +87,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		}
 	}
 	/**
-	 * Create a POJO object from this model suitable for XML serialization.
+	 * Create a POJO object from this model suitable for JSON serialization.
 	 * @return an equivalent serializable diagram.
 	 */
 	public SerializableDiagram createSerializableRepresentation() {
@@ -93,15 +95,37 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		diagram.setName(name);
 		List<SerializableBlock> sblocks = new ArrayList<SerializableBlock>();
 		for( ProcessBlockView blk:blockMap.values()) {
-			sblocks.add(convertBlockViewToSerializable(blk));
+			SerializableBlock sb = blk.convertToSerializable();
+			sblocks.add(sb);
 		}
 		diagram.setBlocks(sblocks.toArray(new SerializableBlock[sblocks.size()]));
 		
+		
+		
+		// As we iterate the connections, update SerializableAnchors with connection types
 		List<SerializableConnection> scxns = new ArrayList<SerializableConnection>();
 		for( Connection cxn:connections) {
-			scxns.add(convertConnectionToSerializable(cxn));
+			SerializableConnection scxn = convertConnectionToSerializable(cxn);
+			// Set the connection type to the begin block type
+			ProcessBlockView beginBlock = blockMap.get(scxn.getBeginBlock());
+			if( beginBlock!=null ) {
+				String port = scxn.getBeginAnchor().getId().toString();
+				boolean found = false;
+				for(ProcessAnchorDescriptor desc:beginBlock.getAnchors()) {
+					if( desc.getDisplay().equalsIgnoreCase(port) ) {
+						found = true;
+						scxn.setType(desc.getConnectionType());
+					}
+				}
+				if( !found ) log.warnf("%s.createSerializableRepresentation: unable to find %s port in begin block",TAG,port);
+			}
+			else {
+				log.warnf("%s.createSerializableRepresentation: begin block lookup failed",TAG);
+			}
+			scxns.add(scxn);
 		}
 		diagram.setConnections(scxns.toArray(new SerializableConnection[scxns.size()]));
+		
 		return diagram;
 	}
 
@@ -170,67 +194,18 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		diagramSize = dim;
 		fireStateChanged();
 	}
-	
-	// ====================== Serialization Helper Methods ===================
-	public static SerializableAnchor convertAnchorToSerializable(AnchorDescriptor anchor,ProcessBlockView block) {
-		SerializableAnchor result = new SerializableAnchor();
-		result.setDirection(anchor.getType()==AnchorType.Origin?AnchorDirection.OUTGOING:AnchorDirection.INCOMING);
-		result.setDisplay(anchor.getDisplay());
-		result.setId(anchor.getId());
-		result.setParentId(block.getId());
-		return result;
-	}
-	public static SerializableAnchorPoint convertAnchorPointToSerializable(AnchorPoint anchor) {
-		SerializableAnchorPoint result = new SerializableAnchorPoint();
-		if(anchor.isConnectorOrigin()) result.setDirection(AnchorDirection.OUTGOING);
-		else result.setDirection(AnchorDirection.INCOMING);
-		result.setId(anchor.getId());
-		result.setParentId(anchor.getBlock().getId());
-		result.setAnchorX(anchor.getAnchor().x);
-		result.setAnchorY(anchor.getAnchor().y);
-		result.setHotSpot(anchor.getHotSpot().getBounds());
-		result.setPathLeaderX(anchor.getPathLeader().x);
-		result.setPathLeaderY(anchor.getPathLeader().y);
-		return result;
-	}
-	static public SerializableBlock convertBlockViewToSerializable(ProcessBlockView block) {
-		SerializableBlock result = new SerializableBlock();
-		result.setId(block.getId());
-		result.setClassName(block.getClassName());
-		result.setEmbeddedIcon(block.getEmbeddedIcon());
-		result.setEmbeddedLabel(block.getEmbeddedLabel());
-		result.setEmbeddedFontSize(block.getEmbeddedFontSize());
-		result.setLabel(block.getLabel());
-		result.setStyle(block.getStyle());
-		result.setX(block.getLocation().x);
-		result.setY(block.getLocation().y);
 		
-		List<SerializableAnchor> anchors = new ArrayList<SerializableAnchor>();
-		for( AnchorDescriptor anchor:block.getAnchors()) {
-			anchors.add(convertAnchorToSerializable(anchor,block));
-		}
-		result.setAnchors(anchors.toArray(new SerializableAnchor[anchors.size()]));
-		if( block.getProperties()!=null ) {
-			log.tracef("%s: convertBlockViewToSerializable: %s has %d properties",TAG,block.getClassName(),block.getProperties().size());
-			result.setProperties(block.getProperties().toArray(new BlockProperty[block.getProperties().size()]));
-		}
-		else {
-			log.warnf("%s: convertBlockViewToSerializable: %s has no properties",TAG,block.getClassName());
-		}
-		
-		return result;
-	}
-	
+	// NOTE: This does not set connection type
 	private SerializableConnection convertConnectionToSerializable(Connection cxn) {
 		SerializableConnection result = new SerializableConnection();
 		if( cxn.getOrigin()!=null && cxn.getTerminus()!=null ) {	
 			result.setBeginBlock(cxn.getOrigin().getBlock().getId()); 
 			result.setEndBlock(cxn.getTerminus().getBlock().getId());
-			result.setBeginAnchor(convertAnchorPointToSerializable(cxn.getOrigin()));
-			result.setEndAnchor(convertAnchorPointToSerializable(cxn.getTerminus()));
+			result.setBeginAnchor(new SerializableAnchorPoint(cxn.getOrigin()));
+			result.setEndAnchor(new SerializableAnchorPoint(cxn.getTerminus()));
 		}
 		else {
-			log.warnf("%s: convertConnectionToSerializable: connection missing terminus or origin (%s)",TAG,cxn.getClass().getName());
+			log.warnf("%s.convertConnectionToSerializable: connection missing terminus or origin (%s)",TAG,cxn.getClass().getName());
 		}
 		return result;
 	}

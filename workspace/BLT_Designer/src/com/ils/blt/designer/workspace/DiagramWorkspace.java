@@ -208,7 +208,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		for( Block blk:blocks) {
 			log.infof("%s: copyBlocks class=%s",TAG,blk.getClass().getName());
 			ProcessBlockView view = (ProcessBlockView)blk;
-			SerializableBlock sb = ProcessDiagramView.convertBlockViewToSerializable(view);
+			SerializableBlock sb = view.convertToSerializable();
 			if(index>0) json.append(",");
 			try{ 
 			    json.append(mapper.writeValueAsString(sb));
@@ -300,7 +300,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				catch (IOException ioe) {
 					log.warnf("%s: open io exception (%s)",TAG,ioe.getLocalizedMessage());
 				}
-				ProcessDiagramView diagram = ProcessDiagramView.createDiagramView(res.getResourceId(),sd);
+				ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd);
 				super.open(diagram);
 			}
 		}

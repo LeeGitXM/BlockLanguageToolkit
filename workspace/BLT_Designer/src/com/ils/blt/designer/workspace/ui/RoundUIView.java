@@ -26,8 +26,13 @@ public class RoundUIView extends AbstractUIView implements BlockViewUI {
 		super(view);
 		setOpaque(false);
 		setPreferredSize(new Dimension(58,58));       // 48 plus 5 for stubs
-		Image img = ImageLoader.getInstance().loadImage("Block/icons/medium/round.png",IMAGE_SIZE);
-		if( img !=null) icon = new ImageIcon(img);
+		try {
+			Image img = ImageLoader.getInstance().loadImage("Block/icons/medium/round.png",IMAGE_SIZE);
+			if( img !=null) icon = new ImageIcon(img);
+		}
+		catch(IllegalArgumentException iae) {     // Always get an error when in the migration tool
+			log.infof("RoundUIView: Exception loading image (%s)",iae.getLocalizedMessage());
+		}
 		initAnchorPoints();
 	}
 	

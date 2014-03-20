@@ -3,6 +3,7 @@ package com.ils.blt.designer.workspace;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -19,6 +20,7 @@ import com.ils.blt.designer.workspace.ui.UIFactory;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
+import com.inductiveautomation.ignition.designer.blockandconnector.blockui.AnchorDescriptor;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorPoint;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
@@ -57,7 +59,7 @@ public class ProcessBlockView extends AbstractBlock {
 	 * Constructor: Used when a new block is created from the palette.
 	 */
 	public ProcessBlockView(BlockDescriptor descriptor) {
-		uuid = UUID.randomUUID();
+		this.uuid = UUID.randomUUID();
 		this.className = descriptor.getBlockClass();
 		this.label = descriptor.getLabel();
 		this.embeddedIcon = descriptor.getEmbeddedIcon();
@@ -108,7 +110,7 @@ public class ProcessBlockView extends AbstractBlock {
 			} 
 		}
 		this.location = new Point(sb.getX(),sb.getY());
-		log.infof("%s: Created %s (%s) view from serializable block", TAG, className, style.toString());
+		log.infof("%s: Created %s %s (%s) view from serializable block", TAG, className, sb.getId().toString(),style.toString());
 	}
 	
 	@Override
@@ -117,6 +119,33 @@ public class ProcessBlockView extends AbstractBlock {
 		return null;
 	}
 	
+    public SerializableBlock convertToSerializable() {
+		SerializableBlock result = new SerializableBlock();
+		result.setId(getId());
+		result.setClassName(getClassName());
+		result.setEmbeddedIcon(getEmbeddedIcon());
+		result.setEmbeddedLabel(getEmbeddedLabel());
+		result.setEmbeddedFontSize(getEmbeddedFontSize());
+		result.setLabel(getLabel());
+		result.setStyle(getStyle());
+		result.setX(getLocation().x);
+		result.setY(getLocation().y);
+		
+		List<SerializableAnchor> anchors = new ArrayList<SerializableAnchor>();
+		for( AnchorDescriptor anchor:getAnchors()) {
+			anchors.add(convertAnchorToSerializable((ProcessAnchorDescriptor)anchor));
+		}
+		result.setAnchors(anchors.toArray(new SerializableAnchor[anchors.size()]));
+		if( getProperties()!=null ) {
+			log.tracef("%s: convertBlockViewToSerializable: %s has %d properties",TAG,getClassName(),getProperties().size());
+			result.setProperties(getProperties().toArray(new BlockProperty[getProperties().size()]));
+		}
+		else {
+			log.warnf("%s: convertBlockViewToSerializable: %s has no properties",TAG,getClassName());
+		}
+		
+		return result;
+	}
 	public Collection<ProcessAnchorDescriptor> getAnchors() { return anchors; }
 	public Collection<BlockProperty> getProperties() { return properties; }
 	public void setProperties(Collection<BlockProperty> props) { this.properties = props; }
@@ -173,5 +202,15 @@ public class ProcessBlockView extends AbstractBlock {
 		log.debugf("%s: initUI", TAG);
 		ui = factory.getUI(style, this);
 		ui.install(blk);
+	}
+	// Note: This does not set connection type
+	private SerializableAnchor convertAnchorToSerializable(ProcessAnchorDescriptor anchor) {
+		SerializableAnchor result = new SerializableAnchor();
+		result.setDirection(anchor.getType()==AnchorType.Origin?AnchorDirection.OUTGOING:AnchorDirection.INCOMING);
+		result.setDisplay(anchor.getDisplay());
+		result.setId(anchor.getId());
+		result.setParentId(getId());
+		result.setConnectionType(anchor.getConnectionType());
+		return result;
 	}
 }

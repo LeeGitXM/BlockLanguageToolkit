@@ -1,7 +1,9 @@
 package com.ils.blt.migration.map;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -52,9 +54,8 @@ public class ConnectionMapper {
 	 */
 	public void setAnchors(G2Block g2block,SerializableBlock iblock) {
 		G2Connection[] g2cxns = g2block.getConnections();
-		SerializableAnchor[] anchors = new SerializableAnchor[g2cxns.length];
-		int index = 0;
-		for( G2Connection g2cxn:g2block.getConnections() ) {
+		List<SerializableAnchor> anchorList = new ArrayList<SerializableAnchor>();
+		for( G2Connection g2cxn:g2cxns ) {
 			SerializableAnchor anchor = new SerializableAnchor();
 			anchor.setConnectionType(g2cxn.getType());
 			anchor.setDirection(g2cxn.getDirection());
@@ -62,11 +63,13 @@ public class ConnectionMapper {
 			anchor.setId(UUID.randomUUID());
 			anchor.setParentId(iblock.getId());
 			String key = iblock.getId().toString()+":"+anchor.getDisplay();
-			anchorMap.put(key, anchor);	
-			log.debugf("%s: anchorMap key = %s",TAG,key);
-			anchors[index] = anchor;
-			index++;
+			if( anchorMap.get(key)==null ) {   // Weed out duplicates
+				anchorMap.put(key, anchor);	
+				log.debugf("%s: anchorMap key = %s",TAG,key);
+				anchorList.add(anchor);
+			}
 		}
+		SerializableAnchor[] anchors = anchorList.toArray(new SerializableAnchor[anchorList.size()]);
 		iblock.setAnchors(anchors);
 		blockMap.put(iblock.getId().toString(), iblock);
 		log.debugf("%s: blockMap key = %s",TAG,iblock.getId().toString());
@@ -101,19 +104,19 @@ public class ConnectionMapper {
 					connectionMap.put(key, cxn);
 					log.debugf("%s: connectionMap ----- was new entry",TAG);
 					cxn.setType(g2cxn.getType());
-					// Set to - from blocks
-					// Then create AnchorPoint for the end where we know the port name
-					String port = g2cxn.getPort();
-					if( g2cxn.getDirection()==AnchorDirection.INCOMING) {
-						cxn.setBeginBlock(g2cxn.getBlock());
-						cxn.setEndBlock(g2block.getId());
-						setEndAnchorPoint(cxn,cxn.getEndBlock(),port);
-					}
-					else {
-						cxn.setBeginBlock(g2block.getId());
-						cxn.setEndBlock(g2cxn.getBlock());
-						setBeginAnchorPoint(cxn,cxn.getBeginBlock(),port);
-					}
+				}
+				// Set to or from blocks
+				// Then create AnchorPoint for the end where we know the port name
+				String port = g2cxn.getPort();
+				if( g2cxn.getDirection()==AnchorDirection.INCOMING) {
+					cxn.setBeginBlock(g2cxn.getBlock());
+					cxn.setEndBlock(g2block.getId());
+					setEndAnchorPoint(cxn,cxn.getEndBlock(),port);
+				}
+				else {
+					cxn.setBeginBlock(g2block.getId());
+					cxn.setEndBlock(g2cxn.getBlock());
+					setBeginAnchorPoint(cxn,cxn.getBeginBlock(),port);
 				}	
 			}
 		}
@@ -142,7 +145,7 @@ public class ConnectionMapper {
 					}
 				}
 				if( pt!=null ) {
-					SerializableAnchorPoint sap = ProcessDiagramView.convertAnchorPointToSerializable(pt);
+					SerializableAnchorPoint sap = new SerializableAnchorPoint(pt);
 					cxn.setBeginAnchor(sap);
 				}
 				else {
@@ -177,7 +180,7 @@ public class ConnectionMapper {
 					}
 				}
 				if( pt!=null ) {
-					SerializableAnchorPoint sap = ProcessDiagramView.convertAnchorPointToSerializable(pt);
+					SerializableAnchorPoint sap = new SerializableAnchorPoint(pt);
 					cxn.setEndAnchor(sap);
 				}
 				else {

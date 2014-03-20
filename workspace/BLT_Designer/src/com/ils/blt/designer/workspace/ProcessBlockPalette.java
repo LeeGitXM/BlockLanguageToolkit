@@ -78,7 +78,6 @@ public class ProcessBlockPalette extends DockableFrame implements ResourceWorksp
 			int tabIndex = tabbedPane.indexOfTab(tabName);
 			if( tabIndex < 0 ) {    // Prototype references a new tab
 				panel = new JPanel();
-				panel.setLayout(new FlowLayout());
 				tabbedPane.addTab(tabName, panel);
 			}
 			else {

@@ -428,6 +428,7 @@ public class DiagramTreeNode extends FolderNode {
 							dialog.setVisible(true);   // Returns when dialog is closed
 							File input = dialog.getFilePath();
 							newName = dialog.getDiagramName();
+							log.infof("%s:ImportAction new diagram name = %s", TAG,newName);
 							if( input!=null ) {
 								if( input.exists() && input.canRead()) {
 									try {
@@ -441,6 +442,7 @@ public class DiagramTreeNode extends FolderNode {
 											UUIDResetHandler handler = new UUIDResetHandler(sd);
 											handler.convertUUIDs();
 											String json = mapper.writeValueAsString(sd);
+											if(log.isInfoEnabled() ) log.info(json);
 											ProjectResource resource = new ProjectResource(newId,
 													BLTProperties.MODULE_ID, BLTProperties.MODEL_RESOURCE_TYPE,
 													newName, ApplicationScope.GATEWAY, json.getBytes());

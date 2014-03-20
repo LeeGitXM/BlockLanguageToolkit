@@ -111,7 +111,7 @@ public class ConnectionPropertyEditor extends JPanel {
 			index++;
 		}
 		final JComboBox<String> box = new JComboBox<String>(entries);
-		box.setSelectedItem(type.toString());
+		if( type!=null ) box.setSelectedItem(type.toString());
 		box.setEditable(false);
 		box.setEnabled(false);
 		return box;

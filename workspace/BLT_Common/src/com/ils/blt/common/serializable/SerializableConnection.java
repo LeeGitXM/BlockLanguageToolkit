@@ -13,7 +13,7 @@ public class SerializableConnection {
 	private UUID endBlock = null;
 	private SerializableAnchorPoint beginAnchor = null;
 	private SerializableAnchorPoint endAnchor = null;
-	private ConnectionType type = ConnectionType.DATA;
+	private ConnectionType type = ConnectionType.ANY;
 	
 	
 	public SerializableConnection  () {

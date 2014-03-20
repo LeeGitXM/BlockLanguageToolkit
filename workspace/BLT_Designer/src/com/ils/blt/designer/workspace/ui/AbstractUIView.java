@@ -43,7 +43,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorT
 @SuppressWarnings("serial")
 public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 	private static final String TAG = "AbstractUIView";
-	private LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
+	protected final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	private final ProcessBlockView block;
 	private final List<AnchorPoint> anchorPoints;  // Entries are BasicAnchorPoint
 	private BlockComponent blockComponent = null;

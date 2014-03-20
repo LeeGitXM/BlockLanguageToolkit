@@ -2,8 +2,9 @@
 #  Data migration conversion script
 #
 BIN=`pwd`
+FIL=M1
 LIB=$BIN/../../external/lib
 JAR=${LIB}/blt-migration.jar
 MIGRATION=$BIN/../migration
 DB=${MIGRATION}/conversion.db
-cat ${MIGRATION}/g2diagram.json | java -cp ${JAR} -Dlog.level=WARN com.ils.blt.migration.Migrator ${DB} > ${MIGRATION}/diagram.json
+cat ${MIGRATION}/$FIL-g2.json | java -cp ${JAR} -Dlog.level=WARN com.ils.blt.migration.Migrator ${DB} > ${MIGRATION}/$FIL.json
