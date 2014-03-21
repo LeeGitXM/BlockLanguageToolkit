@@ -145,7 +145,7 @@ public class ConnectionMapper {
 					}
 				}
 				if( pt!=null ) {
-					SerializableAnchorPoint sap = new SerializableAnchorPoint(pt);
+					SerializableAnchorPoint sap = createSerializableAnchorPoint(pt);
 					cxn.setBeginAnchor(sap);
 				}
 				else {
@@ -180,7 +180,7 @@ public class ConnectionMapper {
 					}
 				}
 				if( pt!=null ) {
-					SerializableAnchorPoint sap = new SerializableAnchorPoint(pt);
+					SerializableAnchorPoint sap = createSerializableAnchorPoint(pt);
 					cxn.setEndAnchor(sap);
 				}
 				else {
@@ -194,6 +194,27 @@ public class ConnectionMapper {
 		else {
 			System.err.println(TAG+".createConnections: Anchor lookup failed for "+blockId+" ("+port+")");
 		}
+	}
+	
+	/**
+	 * NOTE: This would normally be an alternative constructor for SerializableAnchorPoint.
+	 *        Problem is that we need to keep that class free of references to Designer-only
+	 *        classes (e.g. AnchorPoint).
+	 * @see ProcessDiagramView
+	 * @param anchor
+	 */
+	private SerializableAnchorPoint createSerializableAnchorPoint(AnchorPoint anchor) {
+		SerializableAnchorPoint sap = new SerializableAnchorPoint();
+		if(anchor.isConnectorOrigin()) sap.setDirection(AnchorDirection.OUTGOING);
+		else sap.setDirection(AnchorDirection.INCOMING);
+		sap.setId(anchor.getId());
+		sap.setParentId(anchor.getBlock().getId());
+		sap.setAnchorX(anchor.getAnchor().x);
+		sap.setAnchorY(anchor.getAnchor().y);
+		sap.setHotSpot(anchor.getHotSpot().getBounds());
+		sap.setPathLeaderX(anchor.getPathLeader().x);
+		sap.setPathLeaderY(anchor.getPathLeader().y);
+		return sap;
 	}
 }
 	

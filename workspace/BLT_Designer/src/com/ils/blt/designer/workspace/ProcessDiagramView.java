@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import com.ils.block.common.AnchorDirection;
 import com.ils.blt.common.serializable.SerializableAnchorPoint;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableConnection;
@@ -201,13 +202,33 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		if( cxn.getOrigin()!=null && cxn.getTerminus()!=null ) {	
 			result.setBeginBlock(cxn.getOrigin().getBlock().getId()); 
 			result.setEndBlock(cxn.getTerminus().getBlock().getId());
-			result.setBeginAnchor(new SerializableAnchorPoint(cxn.getOrigin()));
-			result.setEndAnchor(new SerializableAnchorPoint(cxn.getTerminus()));
+			result.setBeginAnchor(createSerializableAnchorPoint(cxn.getOrigin()));
+			result.setEndAnchor(createSerializableAnchorPoint(cxn.getTerminus()));
 		}
 		else {
 			log.warnf("%s.convertConnectionToSerializable: connection missing terminus or origin (%s)",TAG,cxn.getClass().getName());
 		}
 		return result;
+	}
+	
+	/**
+	 * NOTE: This would normally be an alternative constructor for SerializableAnchorPoint.
+	 *        Problem is that we need to keep that class free of references to Designer-only
+	 *        classes (e.g. AnchorPoint).
+	 * @param anchor
+	 */
+	private SerializableAnchorPoint createSerializableAnchorPoint(AnchorPoint anchor) {
+		SerializableAnchorPoint sap = new SerializableAnchorPoint();
+		if(anchor.isConnectorOrigin()) sap.setDirection(AnchorDirection.OUTGOING);
+		else sap.setDirection(AnchorDirection.INCOMING);
+		sap.setId(anchor.getId());
+		sap.setParentId(anchor.getBlock().getId());
+		sap.setAnchorX(anchor.getAnchor().x);
+		sap.setAnchorY(anchor.getAnchor().y);
+		sap.setHotSpot(anchor.getHotSpot().getBounds());
+		sap.setPathLeaderX(anchor.getPathLeader().x);
+		sap.setPathLeaderY(anchor.getPathLeader().y);
+		return sap;
 	}
 	
 }

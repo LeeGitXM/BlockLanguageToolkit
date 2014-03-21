@@ -114,7 +114,7 @@ public class TagListener implements TagChangeListener   {
 	 * Re-start. Create subscriptions for everything in the tag map.
 	 */
 	public void start() {
-		log.infof("%s: start tagListener, shutdown executor",TAG);
+		log.infof("%s: start tagListener ...",TAG);
 		for( String tagPath:blockMap.keySet()) {
 			List<ProcessBlock> blocks = blockMap.get(tagPath);
 			for(ProcessBlock block:blocks ) {
