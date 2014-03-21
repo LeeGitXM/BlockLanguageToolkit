@@ -100,7 +100,14 @@ public class ProxyHandler   {
 	 */
 	public void register(String key, String project, String module,String arg,String variable) {
 
-		long projectId = context.getProjectManager().getProjectId(project);
+		long projectId = -1;
+		try {
+			projectId = context.getProjectManager().getProjectId(project);
+		}
+		catch(Exception ex) {
+			// Presumably we get this exception when the block project is changed (?)
+			log.warnf("%s: register: Exception getting Id for project %s (%s)",TAG,project,ex.getMessage());
+		}
 		if( projectId<0) {
 			log.warnf("%s: register: Unknown project (%s)",TAG,project);
 			return;
