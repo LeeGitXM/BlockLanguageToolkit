@@ -18,11 +18,12 @@ import com.ils.blt.designer.workspace.ProcessBlockView;
 @SuppressWarnings("serial")
 public class SquareUIView extends AbstractUIView implements BlockViewUI {
 	private static final int EXCESS_INSET = 3;
+	private static final int DEFAULT_HEIGHT = 80;
+	private static final int DEFAULT_WIDTH  = 80;
 	
 	public SquareUIView(ProcessBlockView view) {
-		super(view);
+		super(view,DEFAULT_WIDTH,DEFAULT_HEIGHT);
 		setOpaque(false);
-		setPreferredSize(new Dimension(100,100));
 		initAnchorPoints();	
 	}
 

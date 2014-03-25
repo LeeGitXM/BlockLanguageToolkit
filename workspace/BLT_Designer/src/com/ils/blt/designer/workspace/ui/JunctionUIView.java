@@ -20,12 +20,12 @@ import com.ils.blt.designer.workspace.ProcessBlockView;
  */
 public class JunctionUIView extends AbstractUIView implements BlockViewUI {
 	private static final long serialVersionUID = 6634400470545202522L;
-
+	private static final int DEFAULT_HEIGHT = 50;
+	private static final int DEFAULT_WIDTH  = 40;
 	
 	public JunctionUIView(ProcessBlockView view) {
-		super(view);
+		super(view,DEFAULT_WIDTH,DEFAULT_HEIGHT);
 		setOpaque(false);
-		setPreferredSize(new Dimension(40,50));
 		initAnchorPoints();
 		
 	}

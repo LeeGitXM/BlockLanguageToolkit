@@ -226,13 +226,15 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 					    File output = dialog.getFilePath();
 					    boolean success = false;
 					    if( output!=null ) {
-					    	log.debugf("%s: actionPerformed, dialog returned %s",TAG,output.getAbsolutePath());
+					    	log.debugf("%s.actionPerformed: dialog returned %s",TAG,output.getAbsolutePath());
 					    	if(!output.exists()) {
 					    		try {
-					    			output.createNewFile();
+					    			output.delete();           // Remove existing file
+					    			output.createNewFile();    
+					    			output.setWritable(true);  // This doesn't seem to work (??)
 					    			if( output.canWrite() ) {
 					    				ObjectMapper mapper = new ObjectMapper();
-					    				if(log.isDebugEnabled()) log.debugf("%s: serializeDiagram creating json ... %s",TAG,(mapper.canSerialize(SerializableDiagram.class)?"true":"false"));
+					    				if(log.isDebugEnabled()) log.debugf("%s.serializeDiagram: creating json ... %s",TAG,(mapper.canSerialize(SerializableDiagram.class)?"true":"false"));
 					    				try{ 
 					    					// Convert the view into a serializable object
 					    					SerializableDiagram sd = view.createSerializableRepresentation();
@@ -262,6 +264,9 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 					    			ErrorUtil.showWarning(String.format("Error creating or closing file %s (%s)",output.getAbsolutePath(),
 					    					ioe.getMessage()),POPUP_TITLE,false);
 					    		}
+					    	}
+					    	else {
+					    		ErrorUtil.showInfo(anchor, "Output file exists, not writable, export aborted", POPUP_TITLE);
 					    	}
 					    }
 					    // If there's an error, then the user will be informed

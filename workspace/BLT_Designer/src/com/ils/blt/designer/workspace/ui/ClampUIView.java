@@ -26,13 +26,8 @@ public class ClampUIView extends AbstractUIView implements BlockViewUI {
 	private static final int DEFAULT_WIDTH  = 80;
 	
 	public ClampUIView(ProcessBlockView view) {
-		super(view);
+		super(view,DEFAULT_WIDTH,DEFAULT_HEIGHT);
 		setOpaque(false);
-		int preferredHeight = view.getPreferredHeight();
-		if( preferredHeight<=0 ) preferredHeight = DEFAULT_HEIGHT;
-		int preferredWidth = view.getPreferredWidth();
-		if( preferredWidth<=0 ) preferredWidth = DEFAULT_WIDTH;
-		setPreferredSize(new Dimension(preferredWidth,preferredHeight)); 
 		initAnchorPoints();
 	}
 	

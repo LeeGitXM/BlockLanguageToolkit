@@ -21,12 +21,13 @@ import com.ils.blt.designer.workspace.ProcessBlockView;
  */
 public class EntryUIView extends AbstractUIView implements BlockViewUI {
 	private static final long serialVersionUID = 6644400470545202522L;
+	private static final int DEFAULT_HEIGHT = 60;
+	private static final int DEFAULT_WIDTH  = 80;
 
 	
 	public EntryUIView(ProcessBlockView view) {
-		super(view);
+		super(view,DEFAULT_WIDTH,DEFAULT_HEIGHT);
 		setOpaque(false);
-		setPreferredSize(new Dimension(80,60));
 		initAnchorPoints();
 		
 	}

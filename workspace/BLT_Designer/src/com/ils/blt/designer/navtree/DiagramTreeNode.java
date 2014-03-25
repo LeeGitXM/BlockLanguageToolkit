@@ -416,7 +416,6 @@ public class DiagramTreeNode extends FolderNode {
 			try {
 				EventQueue.invokeLater(new Runnable() {
 					public void run() {
-						boolean success = false;
 						long newId;
 
 						try {

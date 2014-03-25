@@ -13,6 +13,7 @@ import com.ils.block.common.BlockDescriptor;
 import com.ils.block.common.BlockProperty;
 import com.ils.block.common.BlockState;
 import com.ils.block.common.BlockStyle;
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.designer.workspace.ui.BlockViewUI;
@@ -45,8 +46,8 @@ public class ProcessBlockView extends AbstractBlock {
 	private String statusText;                    // Auxiliary text to display
 	private Collection<ProcessAnchorDescriptor> anchors;
 	private Collection<BlockProperty> properties;
-	private int preferredHeight = 0;
-	private int preferredWidth  = 0;
+	private int preferredHeight = 0;              // Size the view to "natural" size
+	private int preferredWidth  = 0;              // Size the view to "natural" size
 	private Point location = new Point(0,0);
 	private final UIFactory factory = new UIFactory() ;
 	private BlockViewUI ui = null;
@@ -137,11 +138,12 @@ public class ProcessBlockView extends AbstractBlock {
 		}
 		result.setAnchors(anchors.toArray(new SerializableAnchor[anchors.size()]));
 		if( getProperties()!=null ) {
-			log.tracef("%s: convertBlockViewToSerializable: %s has %d properties",TAG,getClassName(),getProperties().size());
+			log.tracef("%s.convertToSerializable: %s has %d properties",TAG,getClassName(),getProperties().size());
+			log.info(getProperties().toString());
 			result.setProperties(getProperties().toArray(new BlockProperty[getProperties().size()]));
 		}
 		else {
-			log.warnf("%s: convertBlockViewToSerializable: %s has no properties",TAG,getClassName());
+			log.warnf("%s.convertToSerializable: %s has no properties",TAG,getClassName());
 		}
 		
 		return result;

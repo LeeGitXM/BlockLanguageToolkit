@@ -20,10 +20,12 @@ import com.inductiveautomation.ignition.client.images.ImageLoader;
 public class ReadoutUIView extends AbstractUIView implements BlockViewUI {
 	private static final long serialVersionUID = 2160868310475735865L;
 	private Icon icon = null;
+	private static final int DEFAULT_HEIGHT = 48;
+	private static final int DEFAULT_WIDTH  = 48;
 	private static final Dimension IMAGE_SIZE = new Dimension(48,48);
 	
 	public ReadoutUIView(ProcessBlockView view) {
-		super(view);
+		super(view,DEFAULT_WIDTH,DEFAULT_HEIGHT);
 		setOpaque(false);
 		setPreferredSize(new Dimension(58,58));       // 48 plus 5 for stubs
 		Image img = ImageLoader.getInstance().loadImage("Block/icons/48/round_48.png",IMAGE_SIZE);

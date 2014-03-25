@@ -20,13 +20,16 @@ import com.inductiveautomation.ignition.client.images.ImageLoader;
 public class RoundUIView extends AbstractUIView implements BlockViewUI {
 	private static final long serialVersionUID = 2190868310475735865L;
 	private Icon icon = null;
-	private static final Dimension IMAGE_SIZE = new Dimension(48,48);
+	private static final int DEFAULT_HEIGHT = 58;
+	private static final int DEFAULT_WIDTH  = 58;
+
 	
 	public RoundUIView(ProcessBlockView view) {
-		super(view);
+		super(view,DEFAULT_WIDTH,DEFAULT_HEIGHT);
 		setOpaque(false);
-		setPreferredSize(new Dimension(58,58));       // 48 plus 5 for stubs
 		try {
+			// Image is smaller to account for stubs
+			Dimension IMAGE_SIZE = new Dimension(DEFAULT_WIDTH-10,DEFAULT_HEIGHT-10);
 			Image img = ImageLoader.getInstance().loadImage("Block/icons/medium/round.png",IMAGE_SIZE);
 			if( img !=null) icon = new ImageIcon(img);
 		}

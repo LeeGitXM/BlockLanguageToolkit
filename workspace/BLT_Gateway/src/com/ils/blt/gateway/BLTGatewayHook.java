@@ -68,6 +68,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	public void shutdown() {
 		//context.getProjectManager().removeProjectListener(mrm);
 		BlockExecutionController.getInstance().stop();
+		
 	}
 
 	@Override

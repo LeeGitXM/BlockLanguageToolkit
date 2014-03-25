@@ -151,7 +151,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 */
 	public void stopSubscription(ProcessBlock block,String propertyName) {
 		BlockProperty property = block.getProperty(propertyName);
-		if( property!=null ) {
+		if( property!=null && property.getValue()!=null ) {
 			String tagPath = property.getValue().toString();
 			if( tagPath!=null) {
 				tagListener.stopSubscription(tagPath);

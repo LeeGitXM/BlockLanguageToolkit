@@ -49,15 +49,25 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 	private BlockComponent blockComponent = null;
 	protected final static int INSET = 6;
 	protected final static int LEADER_LENGTH = 10;
+	protected final static int SIGNAL_LEADER_LENGTH = 8;        // Shorter for signals
 	protected final static Color OUTLINE_COLOR = Color.BLACK;   // For stub
 	protected final static float OUTLINE_WIDTH = 1.0f;          // For stub
 	protected final static Color TEXT_COLOR = Color.BLACK;      // For embedded label
-	protected final static Dimension EMBEDDED_IMAGE_SIZE = new Dimension(64,64);
 	
-	public AbstractUIView(ProcessBlockView view) {
+	/**
+	 * Use default height and widths supplied by subclass when values not assigned by view.
+	 * @param view
+	 * @param defaultWidth
+	 * @param defaultHeight
+	 */
+	public AbstractUIView(ProcessBlockView view,int defaultWidth,int defaultHeight) {
 		this.block = view;
 		setOpaque(false);
-		setPreferredSize(new Dimension(100,100));   // This can be overriden
+		int preferredHeight = view.getPreferredHeight();
+		if( preferredHeight<=0 ) preferredHeight = defaultHeight;
+		int preferredWidth = view.getPreferredWidth();
+		if( preferredWidth<=0 ) preferredWidth = defaultWidth;
+		setPreferredSize(new Dimension(preferredWidth,preferredHeight)); 
 		anchorPoints = new ArrayList<AnchorPoint>();
 	}
 
@@ -102,7 +112,7 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Terminus,
 						desc.getConnectionType(),
 						new Point(INSET+(sz.width-2*INSET)/4,INSET+1),
-						new Point(INSET+(sz.width-2*INSET)/4,-LEADER_LENGTH),
+						new Point(INSET+(sz.width-2*INSET)/4,-SIGNAL_LEADER_LENGTH),
 						new Rectangle((sz.width-2*INSET)/4,0,2*INSET,2*INSET));   // x,y,width,height. Hotspot shape.
 				ap.setSide(AnchorSide.TOP);
 				getAnchorPoints().add(ap);
@@ -246,12 +256,13 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 		String iconPath = block.getEmbeddedIcon();
 		if( iconPath == null || iconPath.length()==0 ) return;
 	
-		Image img = ImageLoader.getInstance().loadImage(iconPath,EMBEDDED_IMAGE_SIZE);
+		Dimension imageSize = new Dimension(2*getPreferredSize().width/3,2*getPreferredSize().height/3);
+		Image img = ImageLoader.getInstance().loadImage(iconPath,imageSize);
 		ImageIcon icon = null;
 		if( img !=null) icon = new ImageIcon(img);
 		if( icon!=null ) {
-			int x = (getPreferredSize().width - EMBEDDED_IMAGE_SIZE.width)/2;
-			int y = (getPreferredSize().height - EMBEDDED_IMAGE_SIZE.height)/2;
+			int x = (getPreferredSize().width - imageSize.width)/2;
+			int y = (getPreferredSize().height - imageSize.height)/2;
 			if( x>0 && y>0 ) {
 				icon.paintIcon(getBlockComponent(), g, x, y);
 			}

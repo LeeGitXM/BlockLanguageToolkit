@@ -29,7 +29,7 @@ public class IconUIView extends AbstractUIView implements BlockViewUI {
 	private Icon icon = null;
 	
 	public IconUIView(ProcessBlockView view) {
-		super(view);
+		super(view,DEFAULT_WIDTH,DEFAULT_HEIGHT);
 		setOpaque(false);
 		int preferredHeight = view.getPreferredHeight();
 		if( preferredHeight<=0 ) preferredHeight = DEFAULT_HEIGHT;
@@ -68,7 +68,7 @@ public class IconUIView extends AbstractUIView implements BlockViewUI {
 				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),getBlock(),desc.getType(),
 						desc.getConnectionType(),
 						new Point(sz.width/2,sz.height-INSET),
-						new Point(sz.width/2,sz.height+LEADER_LENGTH),
+						new Point(sz.width/2,sz.height+SIGNAL_LEADER_LENGTH),
 						new Rectangle(sz.width/2-INSET,sz.height-2*INSET,2*INSET,2*INSET));
 				ap.setSide(AnchorSide.BOTTOM);
 				getAnchorPoints().add(ap);

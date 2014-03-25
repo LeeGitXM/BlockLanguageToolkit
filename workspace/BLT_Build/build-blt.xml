@@ -2,7 +2,7 @@
 
 	<import file="${basedir}/BLT_Build/build.xml"/>
 
-	<property name="version.build" value="12" />	
+	<property name="version.build" value="13" />	
 	<!-- Change version.beta value to "" for release builds -->
 	<property name="version.beta" value="-development" />		
 	<property name="BLTModule.version" value="1.2.3.${version.build}" />
@@ -15,9 +15,6 @@
 	<property name="common.jar.name" value="ils-common.jar" />
 	<property name="common.bin.dir" value="${root.dir}/common/workspace/ILS_Common/bin" />
 	<property name="common.src.dir" value="${root.dir}/common/workspace/ILS_Common/src" />
-	<property name="migration.jar.name" value="blt-migration.jar" />
-	<property name="migration.bin.dir" value="${root.dir}/blt/workspace/BLT_Migration/bin" />
-	<property name="migration.src.dir" value="${root.dir}/blt/workspace/BLT_Migration/src" />
 	<property name="block.jar.name" value="block-definition.jar" />
 	<property name="block.bin.dir" value="${root.dir}/block/workspace/Block/bin" />
 	<property name="block.src.dir" value="${root.dir}/block/workspace/Block/src" />
@@ -146,29 +143,6 @@
 	    <jar destfile="${jar.dir}/${common.jar.name}" includes="**/*.class" basedir="${common.bin.dir}"/>
 	</target>
 	
-	<!-- Compile the Migration Tool -->
-	<target name="migration.build" description="Compile the migration tool">
-		<mkdir dir="${migration.bin.dir}"/>
-		<javac destdir="${migration.bin.dir}" debug="true" includeantruntime="false">
-			<src path="${migration.src.dir}"/>
-			<classpath refid="BLT_Migration.classpath"/>
-		</javac>
-	</target>
-	<!-- Build the migration jar with all necessary embedded jars -->
-	<target name ="migration.jar" description="Create a jar for the Migration tool">
-		<jar destfile="${jar.dir}/${migration.jar.name}" includes="**/*.class" basedir="${migration.bin.dir}">
-		    <zipgroupfileset dir="${jar.dir}" includes="sqlite-jdbc*.jar"/>
-			<zipgroupfileset dir="${jar.dir}" includes="${block.jar.name}"/>
-			<zipgroupfileset dir="${jar.dir}" includes="jackson-*.jar"/>
-			<zipgroupfileset dir="${sdk.dir}" includes="ignition-common.jar"/>
-			<zipgroupfileset dir="${sdk.dir}" includes="designer-api.jar"/>
-			<zipgroupfileset dir="${sdk.dir}" includes="client-api.jar"/>
-			<zipgroupfileset dir="${jar.dir}" includes="ils-common.jar"/>
-			<zipgroupfileset dir="${basedir}/BLT_Build/bin/BLT_Common/dist/" includes="*.jar"/>
-			<zipgroupfileset dir="${basedir}/BLT_Build/bin/BLT_Designer/dist/" includes="*.jar"/>
-		</jar>
-	</target>
-	
 	<!-- Builds the toolkit module jars and the final .modl file -->
 	<target name="build" depends="common.build,common.jar,block.build,block.jar" description="Compile the source">
 		<echo message="${BLTModule.name} ${BLTModule.version}" />	
@@ -266,7 +240,7 @@
 	</target>
 
 	<!-- Installs BLT module in local Ignition gateway. Note that the gateway must be running in developer mode for this to succeed. -->
-	<target name="deploy" depends="migration.build,migration.jar" >
+	<target name="deploy" depends="build" >
 		<echo message="Installing ${BLTModule.name} on Ignition Gateway." />
 		<postmodule posturl="${local.gateway.url}" modulefile="${basedir}/BLT_Build/modules/${BLTModule.name}-module-unsigned.modl" />
 	</target>	

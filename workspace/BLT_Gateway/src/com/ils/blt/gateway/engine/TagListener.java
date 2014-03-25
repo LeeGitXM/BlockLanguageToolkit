@@ -62,13 +62,13 @@ public class TagListener implements TagChangeListener   {
 	 */
 	public void startSubscription(ProcessBlock block,BlockProperty property) {
 		if( block==null || property==null ) return;
-		
+		//log.tracef("%s.startSubscription: considering %s:%s",TAG,block.getLabel(),property.getName());
 		String tagPath = property.getBinding();
 		if( tagPath!=null && tagPath.length() >0 && property.getBindingType()==BindingType.TAG) {
 			if( blockMap.get(tagPath) == null ) blockMap.put(tagPath, new ArrayList<ProcessBlock>());
 			List<ProcessBlock> blocks = blockMap.get(tagPath);
 			if( blocks.contains(block) ) {
-				log.debugf("%s: shareSubscription: for %s on tag path %s",TAG,property.getName(),tagPath);
+				log.debugf("%s.startSubscription: share %s:%s on tag path %s",TAG,block.getLabel(),property.getName(),tagPath);
 				return;    // We already have a subscription
 			}
 			blocks.add(block);
@@ -90,7 +90,7 @@ public class TagListener implements TagChangeListener   {
 			tmgr.unsubscribe(tp, this);
 		}
 		catch(IOException ioe) {
-			log.error(TAG+"stopSubscription ("+ioe.getMessage()+")");
+			log.error(TAG+".stopSubscription ("+ioe.getMessage()+")");
 		}
 	}
 	
@@ -103,11 +103,11 @@ public class TagListener implements TagChangeListener   {
 		SQLTagsManager tmgr = context.getTagManager();
 		try {
 			TagPath tp = TagPathParser.parse(tagPath);
-			log.debug(TAG+"stopSubscription: "+tagPath);
+			log.debug(TAG+".stopSubscription: "+tagPath);
 			tmgr.unsubscribe(tp, this);
 		}
 		catch(IOException ioe) {
-			log.error(TAG+"stopSubscription ("+ioe.getMessage()+")");
+			log.error(TAG+".stopSubscription ("+ioe.getMessage()+")");
 		}
 	}
 	/**
@@ -133,18 +133,18 @@ public class TagListener implements TagChangeListener   {
 		SQLTagsManager tmgr = context.getTagManager();
 		try {
 			TagPath tp = TagPathParser.parse(tagPath);
-			log.debugf("%s: startSubscription: for %s on tag path %s",TAG,property.getName(),tp.toStringFull());
+			log.debugf("%s.startSubscriptionForProperty: for %s on tag path %s",TAG,property.getName(),tp.toStringFull());
 			// Make sure the attribute is in canonical form
 			property.setBinding( tp.toStringFull());
 			Tag tag = tmgr.getTag(tp);
 			if( tag!=null ) {
 				QualifiedValue value = tag.getValue();
-				log.debugf("%s: startSubscription: got a %s value for %s (%s at %s)",TAG,
+				log.debugf("%s.startSubscriptionForProperty: got a %s value for %s (%s at %s)",TAG,
 						(value.getQuality().isGood()?"GOOD":"BAD"),
 						tag.getName(),value.getValue(),
 						dateFormatter.format(value.getTimestamp()));
 				try {
-					log.debugf("%s: startSubscription: property change for %s:%s",TAG,block.getLabel(),property.getName());
+					log.debugf("%s.startSubscriptionForProperty: property change for %s:%s",TAG,block.getLabel(),property.getName());
 					PropertyChangeEvaluationTask task = new PropertyChangeEvaluationTask(block,
 						new BlockPropertyChangeEvent(block.getBlockId().toString(),property.getName(),
 								new BasicQualifiedValue(property.getValue(),
@@ -153,23 +153,23 @@ public class TagListener implements TagChangeListener   {
 					propertyChangeThread.start();
 				}
 				catch(Exception ex) {
-					log.warnf("%s: startSubscription: Failed to execute subscription start (%s)",TAG,ex.getLocalizedMessage()); 
+					log.warnf("%s.startSubscriptionForProperty: Failed to execute subscription start (%s)",TAG,ex.getLocalizedMessage()); 
 				}
 			}
 			tmgr.subscribe(tp, this);
 		}
 		catch(IOException ioe) {
-			log.errorf("%s: startSubscription (%s)",TAG,ioe.getMessage());
+			log.errorf("%s.startSubscriptionForProperty (%s)",TAG,ioe.getMessage());
 		}
 		catch(IllegalArgumentException iae) {
-			log.errorf("%s: startSubscription - illegal argument for %s (%s)",TAG,tagPath,iae.getMessage());
+			log.errorf("%s.startSubscriptionForProperty - illegal argument for %s (%s)",TAG,tagPath,iae.getMessage());
 		}
 	}
 	/**
 	 * Shutdown completely.
 	 */
 	public void stop() {
-		log.infof("%s: stop tagListener, shutdown executor",TAG);
+		log.infof("%s.stop tagListener, shutdown executor",TAG);
 		for( String tagPath:blockMap.keySet()) {
 			stopSubscription(tagPath);
 		}
@@ -213,9 +213,9 @@ public class TagListener implements TagChangeListener   {
 							String path = prop.getBinding().toString();
 							if(prop.getBindingType()==BindingType.TAG) {
 								if( path.equals(tp.toStringFull()) && prop.getBindingType()==BindingType.TAG ) {
-									log.tracef("%s: tagChanged: comparing block %s:%s %s:%s",TAG,blk.getLabel(),prop.getName(),path,tp.toStringFull());
+									log.tracef("%s.tagChanged: comparing block %s:%s %s:%s",TAG,blk.getLabel(),prop.getName(),path,tp.toStringFull());
 									try {
-										log.debugf("%s: tagChanged: property change for %s:%s",TAG,blk.getLabel(),prop.getName());
+										log.debugf("%s.tagChanged: property change for %s:%s",TAG,blk.getLabel(),prop.getName());
 				
 										PropertyChangeEvaluationTask task = new PropertyChangeEvaluationTask(blk,
 												new BlockPropertyChangeEvent(blk.getBlockId().toString(),prop.getName(),
@@ -225,31 +225,31 @@ public class TagListener implements TagChangeListener   {
 										propertyChangeThread.start();
 									}
 									catch(Exception ex) {
-										log.warnf("%s: tagChanged: Failed to execute change event (%s)",TAG,ex.getLocalizedMessage()); 
+										log.warnf("%s.tagChanged: Failed to execute change event (%s)",TAG,ex.getLocalizedMessage()); 
 									}
 								}
 							}
 						}
 					}
 					if( blocks.size()==0) {
-						log.warnf("%s: tagChanged: No blocks corresponding to tag %s -- unsubscribing",TAG,tag.getName());
+						log.warnf("%s.tagChanged: No blocks corresponding to tag %s -- unsubscribing",TAG,tag.getName());
 						stopSubscription(tp.toStringFull());
 						blockMap.remove(tp.toStringFull());
 					}
 				}
 				else {
-					log.warnf("%s: tagChanged: Null list of blocks corresponding to tag %s -- unsubscribing",TAG,tag.getName());
+					log.warnf("%s.tagChanged: Null list of blocks corresponding to tag %s -- unsubscribing",TAG,tag.getName());
 					stopSubscription(tp.toStringFull());
 					blockMap.remove(tp.toStringFull());
 				}			
 			}
 			catch(Exception ex) {
-				log.error(TAG+"tag changed exception ("+ex.getMessage()+")",ex);
+				log.error(TAG+".tagChanged exception ("+ex.getMessage()+")",ex);
 			}
 		}
 		else {
 			// For some reason every other update is a null property.
-			log.tracef("%s: tagChanged: %s got a %s property, ... ignored",TAG,(tp==null?"null":tp.toStringFull()),(property==null?"null":property.toString()) );
+			log.tracef("%s.tagChanged: %s got a %s property, ... ignored",TAG,(tp==null?"null":tp.toStringFull()),(property==null?"null":property.toString()) );
 		}
 	}
 }

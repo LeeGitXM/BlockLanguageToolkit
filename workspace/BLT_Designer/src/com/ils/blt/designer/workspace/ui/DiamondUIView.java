@@ -1,7 +1,6 @@
 package com.ils.blt.designer.workspace.ui;
 
 import java.awt.BasicStroke;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
@@ -16,11 +15,11 @@ import com.ils.blt.designer.workspace.ProcessBlockView;
 
 @SuppressWarnings("serial")
 public class DiamondUIView extends AbstractUIView implements BlockViewUI {
-	
+	private static final int DEFAULT_HEIGHT = 100;
+	private static final int DEFAULT_WIDTH  = 100;
 	public DiamondUIView(ProcessBlockView view) {
-		super(view);
+		super(view,DEFAULT_WIDTH,DEFAULT_HEIGHT);
 		setOpaque(false);
-		setPreferredSize(new Dimension(100,100));
 		initAnchorPoints();	
 	}
 
