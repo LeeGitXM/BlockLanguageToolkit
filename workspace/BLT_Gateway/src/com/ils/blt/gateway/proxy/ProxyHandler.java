@@ -58,12 +58,12 @@ public class ProxyHandler   {
 	private final PythonToJava toJavaTranslator;
 	private static ProxyHandler instance = null;
 	// These are the indices of specific callback functions within the array
-	private static int CREATE_INSTANCE = 0;
+	private static int CREATE_BLOCK_INSTANCE = 0;
 	private static int EVALUATE = 1;
 	private static int GET_CLASSES = 2;
-	private static int GET_PROPERTIES = 3;
-	private static int GET_PROPERTY = 4;
-	private static int GET_PROTOTYPES = 5;
+	private static int GET_BLOCK_PROPERTIES = 3;
+	private static int GET_BLOCK_PROPERTY = 4;
+	private static int GET_BLOCK_PROTOTYPES = 5;
 	private static int SET_VALUE = 6;
 	private static int CALLBACK_COUNT = 7;
 	
@@ -114,8 +114,8 @@ public class ProxyHandler   {
 		}
 		int index = 0;
 		
-		if( key.equalsIgnoreCase(BLTProperties.CREATE_INSTANCE_CALLBACK)) {
-			index = CREATE_INSTANCE;
+		if( key.equalsIgnoreCase(BLTProperties.CREATE_BLOCK_INSTANCE_CALLBACK)) {
+			index = CREATE_BLOCK_INSTANCE;
 		}
 		else if( key.equalsIgnoreCase(BLTProperties.EVALUATE_CALLBACK)) {
 			index = EVALUATE;
@@ -123,14 +123,14 @@ public class ProxyHandler   {
 		else if( key.equalsIgnoreCase(BLTProperties.GET_BLOCK_CLASSES_CALLBACK)) {
 			index = GET_CLASSES;
 		}
-		else if( key.equalsIgnoreCase(BLTProperties.GET_PROPERTIES_CALLBACK)) {
-			index = GET_PROPERTIES;
+		else if( key.equalsIgnoreCase(BLTProperties.GET_BLOCK_PROPERTIES_CALLBACK)) {
+			index = GET_BLOCK_PROPERTIES;
 		}
-		else if( key.equalsIgnoreCase(BLTProperties.GET_PROPERTY_CALLBACK)) {
-			index = GET_PROPERTY;
+		else if( key.equalsIgnoreCase(BLTProperties.GET_BLOCK_PROPERTY_CALLBACK)) {
+			index = GET_BLOCK_PROPERTY;
 		}
-		else if( key.equalsIgnoreCase(BLTProperties.GET_PROTOTYPES_CALLBACK)) {
-			index = GET_PROTOTYPES;
+		else if( key.equalsIgnoreCase(BLTProperties.GET_BLOCK_PROTOTYPES_CALLBACK)) {
+			index = GET_BLOCK_PROTOTYPES;
 		}
 		else if( key.equalsIgnoreCase(BLTProperties.SET_VALUE_CALLBACK)) {
 			index = SET_VALUE;
@@ -159,8 +159,8 @@ public class ProxyHandler   {
 	public void deregister(String key) {
 		int index = 0;
 		
-		if( key.equalsIgnoreCase(BLTProperties.CREATE_INSTANCE_CALLBACK)) {
-			index = CREATE_INSTANCE;
+		if( key.equalsIgnoreCase(BLTProperties.CREATE_BLOCK_INSTANCE_CALLBACK)) {
+			index = CREATE_BLOCK_INSTANCE;
 		}
 		else if( key.equalsIgnoreCase(BLTProperties.EVALUATE_CALLBACK)) {
 			index = EVALUATE;
@@ -168,14 +168,14 @@ public class ProxyHandler   {
 		else if( key.equalsIgnoreCase(BLTProperties.GET_BLOCK_CLASSES_CALLBACK)) {
 			index = GET_CLASSES;
 		}
-		else if( key.equalsIgnoreCase(BLTProperties.GET_PROPERTIES_CALLBACK)) {
-			index = GET_PROPERTIES;
+		else if( key.equalsIgnoreCase(BLTProperties.GET_BLOCK_PROPERTIES_CALLBACK)) {
+			index = GET_BLOCK_PROPERTIES;
 		}
-		else if( key.equalsIgnoreCase(BLTProperties.GET_PROPERTY_CALLBACK)) {
-			index = GET_PROPERTY;
+		else if( key.equalsIgnoreCase(BLTProperties.GET_BLOCK_PROPERTY_CALLBACK)) {
+			index = GET_BLOCK_PROPERTY;
 		}
-		else if( key.equalsIgnoreCase(BLTProperties.GET_PROTOTYPES_CALLBACK)) {
-			index = GET_PROTOTYPES;
+		else if( key.equalsIgnoreCase(BLTProperties.GET_BLOCK_PROTOTYPES_CALLBACK)) {
+			index = GET_BLOCK_PROTOTYPES;
 		}
 		else if( key.equalsIgnoreCase(BLTProperties.SET_VALUE_CALLBACK)) {
 			index = SET_VALUE;
@@ -199,9 +199,9 @@ public class ProxyHandler   {
 	
 	public ProxyBlock createInstance(long project,long resource,UUID blockId,String className) {
 		ProxyBlock block = new ProxyBlock(className,project,resource,blockId);
-		log.infof("%s: createInstance --- calling",TAG); 
-		if( callbacks[CREATE_INSTANCE]!=null && compileScript(CREATE_INSTANCE) ) {
-			Callback cb = callbacks[CREATE_INSTANCE];
+		log.infof("%s.createInstance --- calling",TAG); 
+		if( callbacks[CREATE_BLOCK_INSTANCE]!=null && compileScript(CREATE_BLOCK_INSTANCE) ) {
+			Callback cb = callbacks[CREATE_BLOCK_INSTANCE];
 			cb.setLocalVariable(new PyString(className));
 			PyDictionary pyDictionary = new PyDictionary();  // Empty
 			// Synchronize because of our global variable
@@ -210,7 +210,16 @@ public class ProxyHandler   {
 				execute(cb);
 				log.info(TAG+": createInstance returned "+ pyDictionary);   // Should now be updated
 				// Contents of list are Hashtable<String,?>
-				block.setPythonBlock(pyDictionary.get("instance"));
+				PyObject pyBlock = (PyObject)pyDictionary.get("instance");
+				if( pyBlock!=null ) {
+					block.setPythonBlock(pyBlock);
+					block.setProperties(getProperties(pyBlock));
+				}
+				else {
+					log.warnf("%s.createInstance: Failed to create instance of %s",TAG,className);
+					block = null;
+				}
+				
 			}
 		}
 		return block;
@@ -225,10 +234,10 @@ public class ProxyHandler   {
 	public BlockProperty[] getProperties(PyObject block) {
 		BlockProperty[] properties = null;
 		
-		if( callbacks[GET_PROPERTIES]!=null && compileScript(GET_PROPERTIES) ) {
+		if( callbacks[GET_BLOCK_PROPERTIES]!=null && compileScript(GET_BLOCK_PROPERTIES) ) {
 			Object val = null;
 			UtilityFunctions fns = new UtilityFunctions();
-			Callback cb = callbacks[GET_PROPERTIES];
+			Callback cb = callbacks[GET_BLOCK_PROPERTIES];
 			cb.setLocalVariable(block);
 			PyList pyList = new PyList();  // Empty
 			List<?> list = null;
@@ -312,10 +321,10 @@ public class ProxyHandler   {
 	public List<PalettePrototype> getPalettePrototypes() {
 		List<PalettePrototype> prototypes = new ArrayList<PalettePrototype>();
 	
-		if( callbacks[GET_PROTOTYPES]!=null && compileScript(GET_PROTOTYPES) ) {
+		if( callbacks[GET_BLOCK_PROTOTYPES]!=null && compileScript(GET_BLOCK_PROTOTYPES) ) {
 			Object val = null;
 			UtilityFunctions fns = new UtilityFunctions();
-			Callback cb = callbacks[GET_PROTOTYPES];
+			Callback cb = callbacks[GET_BLOCK_PROTOTYPES];
 			PyList pyList = new PyList();  // Empty
 			List<?> list = null;
 			// Synchronize because of our global variable

@@ -15,6 +15,7 @@ import com.ils.block.common.BlockProperty;
 import com.ils.block.control.BlockPropertyChangeEvent;
 import com.ils.block.control.ExecutionController;
 import com.ils.blt.common.serializable.SerializableBlock;
+import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.Quality;
@@ -30,11 +31,12 @@ public class BlockFactory  {
 	private final static String TAG = "BlockFactory";
 	private final LoggerEx log = LogUtil.getLogger(BlockFactory.class.getPackage().getName());
 	private static BlockFactory instance = null;
+	private final ProxyHandler proxyHandler;
 	/**
 	 * Private per the Singleton pattern.
 	 */
 	private BlockFactory() {
-		
+		proxyHandler = ProxyHandler.getInstance();
 	}
 
 	/**
@@ -51,34 +53,45 @@ public class BlockFactory  {
 	
 	/**
 	 * Create a concrete instance of a Process block represented by the serializable block.
-	 * @param sb
-	 * @return
+	 * @param projectId
+	 * @param resourceId
+	 * @param sb the block to be deserialized
+	 * @return the ProcessBlock created from the specified SerializableBlock
 	 */
 	public ProcessBlock blockFromSerializable(long projectId,long resourceId,SerializableBlock sb) {
 		String className = sb.getClassName();
 		UUID blockId = sb.getId();
-		log.debugf("%s: createInstance of %s (%d,%d,%s)",TAG,className,projectId,resourceId,blockId.toString());   // Should be updated
+		log.debugf("%s.blockFromSerializable: Create instance of %s (%d,%d,%s)",TAG,className,projectId,resourceId,blockId.toString());   // Should be updated
 		ProcessBlock block = null;
-		try {
-			Class<?> clss = Class.forName(className);
-			Constructor<?> ctor = clss.getDeclaredConstructor(new Class[] {ExecutionController.class,long.class,long.class,UUID.class});
-			block = (ProcessBlock)ctor.newInstance(BlockExecutionController.getInstance(),projectId,resourceId,blockId);
+		if( !className.startsWith("app") ) {
+			try {
+				Class<?> clss = Class.forName(className);
+				Constructor<?> ctor = clss.getDeclaredConstructor(new Class[] {ExecutionController.class,long.class,long.class,UUID.class});
+				block = (ProcessBlock)ctor.newInstance(BlockExecutionController.getInstance(),projectId,resourceId,blockId);
+			}
+			catch(InvocationTargetException ite ) {
+				log.warnf("%s: blockFromSerializable %s: Invocation failed (%s)",TAG,className,ite.getMessage()); 
+			}
+			catch(NoSuchMethodException nsme ) {
+				log.warnf("%s: blockFromSerializable %s: Three argument constructor not found (%s)",TAG,className,nsme.getMessage()); 
+			}
+			catch( ClassNotFoundException cnf ) {
+				log.warnf("%s: blockFromSerializable: Error creating %s (%s)",TAG,className,cnf.getMessage()); 
+			}
+			catch( InstantiationException ie ) {
+				log.warnf("%s: blockFromSerializable: Error instantiating %s (%s)",TAG,className,ie.getLocalizedMessage()); 
+			}
+			catch( IllegalAccessException iae ) {
+				log.warnf("%s: blockFromSerializable: Security exception creating %s (%s)",TAG,className,iae.getLocalizedMessage()); 
+			}
 		}
-		catch(InvocationTargetException ite ) {
-			log.warnf("%s: blockFromSerializable %s: Invocation failed (%s)",TAG,className,ite.getMessage()); 
+		else {
+			// Create a proxy from Python
+			block = proxyHandler.createInstance(projectId, resourceId, blockId, className);
+		
 		}
-		catch(NoSuchMethodException nsme ) {
-			log.warnf("%s: blockFromSerializable %s: Three argument constructor not found (%s)",TAG,className,nsme.getMessage()); 
-		}
-		catch( ClassNotFoundException cnf ) {
-			log.warnf("%s: blockFromSerializable: Error creating %s (%s)",TAG,className,cnf.getMessage()); 
-		}
-		catch( InstantiationException ie ) {
-			log.warnf("%s: blockFromSerializable: Error instantiating %s (%s)",TAG,className,ie.getLocalizedMessage()); 
-		}
-		catch( IllegalAccessException iae ) {
-			log.warnf("%s: blockFromSerializable: Security exception creating %s (%s)",TAG,className,iae.getLocalizedMessage()); 
-		}
+		
+		
 		if( block!=null ) updateBlockFromSerializable(block,sb);
 		return block;
 	}

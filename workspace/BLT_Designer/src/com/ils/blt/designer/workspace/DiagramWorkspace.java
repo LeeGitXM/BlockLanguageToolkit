@@ -326,14 +326,14 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 	
 	private void saveDiagram(BlockDesignableContainer c) {
-		log.infof("%s: saveDiagram - serializing ...",TAG);
 		ProcessDiagramView diagram = (ProcessDiagramView)c.getModel();
+		log.infof("%s: saveDiagram - serializing %s ...",TAG,diagram.getDiagramName());
 		SerializableDiagram sd = diagram.createSerializableRepresentation();
 		byte[] bytes = null;
 		long resid = c.getResourceId();
 		try {
 			bytes = mapper.writeValueAsBytes(sd);
-			//log.tracef("%s: saveDiagram JSON = %s",TAG,new String(bytes));
+			log.tracef("%s: saveDiagram JSON = %s",TAG,new String(bytes));
 			context.updateResource(resid, bytes);
 		} 
 		catch (JsonProcessingException jpe) {

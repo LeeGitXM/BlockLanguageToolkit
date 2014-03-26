@@ -3,8 +3,10 @@
  */
 package com.ils.blt.client;
 
+import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.client.model.ClientContext;
+import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.expressions.ExpressionFunctionManager;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
@@ -12,6 +14,11 @@ import com.inductiveautomation.ignition.common.xmlserialization.deserialization.
 import com.inductiveautomation.vision.api.client.ClientModuleHook;
 
 public class BLTClientHook implements ClientModuleHook {
+	public static String HOOK_BUNDLE_NAME   = "client";      // Properties file is client.properties
+	// Register separate properties files for designer things and block things
+	static {
+		BundleUtil.get().addBundle(BLTProperties.CUSTOM_PREFIX,ClientModuleHook.class,HOOK_BUNDLE_NAME);
+	}
 	/**
 	 * Make the tag-creation script functions available.
 	 */

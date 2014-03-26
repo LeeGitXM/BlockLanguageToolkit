@@ -12,6 +12,7 @@ import java.util.ResourceBundle;
 import javax.swing.ImageIcon;
 
 import com.ils.blt.common.BLTProperties;
+import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 
@@ -22,7 +23,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  */
 public class DiagramAnalyzerComponentBeanInfo extends BasicBlockBeanInfo {
 	private static final String TAG = "DiagramAnalyzerComponentBeanInfo";
-	private ResourceBundle bundle = null;
+	private static final String PREFIX = BLTProperties.BLOCK_PREFIX;  // Has block properties
 	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	
 	/**
@@ -31,7 +32,7 @@ public class DiagramAnalyzerComponentBeanInfo extends BasicBlockBeanInfo {
 	 */
 	public DiagramAnalyzerComponentBeanInfo() {
 		super(DiagramAnalyzerComponentBeanInfo.class);
-		log.info(TAG+"CONSTRUCTOR");
+		log.infof("%s:CONSTRUCTOR",TAG);
 	}
 
 	@Override
@@ -46,22 +47,12 @@ public class DiagramAnalyzerComponentBeanInfo extends BasicBlockBeanInfo {
 	 */
 	@Override
 	protected void initDesc() {
-		bundle = ResourceBundle.getBundle(BLTProperties.BLOCK_RESOURCE_PATH);
-		getBeanDescriptor().setName(getString("Name"));
-		getBeanDescriptor().setDisplayName(getString("Display"));       // Tooltip-title
-		getBeanDescriptor().setShortDescription(getString("Desc"));     // Tooltip-description
+		getBeanDescriptor().setName(BundleUtil.get().getString(PREFIX+".DiagramAnalyzer.Name"));
+		getBeanDescriptor().setDisplayName(BundleUtil.get().getString(PREFIX+".DiagramAnalyzer.Display"));       // Tooltip-title
+		getBeanDescriptor().setShortDescription(BundleUtil.get().getString(PREFIX+".DiagramAnalyzer.Desc"));     // Tooltip-description
 		super.initDesc();
 	}
 
-	/**
-	 * Use the bundle utility to lookup the subject string in designer.properties.
-	 * @param string bundle key
-	 * @return result from the properties file.
-	 */
-	private String getString(String string) {
-		if( bundle==null) log.error(TAG+" Error null bundle");
-		return bundle.getString("DiagramAnalyzer."+string);
-	}
 	
 	@Override
 	public Image getIcon(int kind) {
@@ -73,6 +64,7 @@ public class DiagramAnalyzerComponentBeanInfo extends BasicBlockBeanInfo {
 			imagePath = "/images/diagram_analyzer_16.png";
 		case SimpleBeanInfo.ICON_COLOR_32x32:
 		case SimpleBeanInfo.ICON_MONO_32x32:
+		default:
 			imagePath = "/images/diagram_analyzer_32.png";
 		}
 		Image img = new ImageIcon(getClass().getResource(imagePath)).getImage();

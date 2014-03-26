@@ -38,10 +38,9 @@ public class ProxyBlock implements ProcessBlock {
 	private BlockState state;
 	private PyObject pythonBlock = null;
 	private final ProxyHandler delegate = ProxyHandler.getInstance();
-	
+	private BlockProperty[] properties = null;
 	
 
-	
 	/**
 	 * Constructor
 	 * @param clss the Python module to instantiate
@@ -54,6 +53,7 @@ public class ProxyBlock implements ProcessBlock {
 		this.projectId = proj;
 		this.diagramId = diag;
 		this.blockId = block;
+		this.properties = new BlockProperty[0];
 	}
 
 	/**
@@ -91,12 +91,13 @@ public class ProxyBlock implements ProcessBlock {
 	@Override
 	public UUID getBlockId() { return blockId; }
 	/**
-	 * @return all properties. These properties are modifiable. Each
-	 *         property/attribute is a hashtable of Strings keyed by Strings.
+	 * @return all properties. In order to modify a property,
+	 *         it is imperative to call the setter as this
+	 *         handles passthru to Python.
 	 */
 	@Override
 	public BlockProperty[] getProperties() {
-		return delegate.getProperties(getPythonBlock());
+		return properties;
 	}
 	
 	/**
@@ -104,7 +105,6 @@ public class ProxyBlock implements ProcessBlock {
 	 */
 	@Override
 	public Set<String> getPropertyNames() {
-		BlockProperty[] properties = getProperties();
 		Set<String>result = new HashSet<String>();
 		for(BlockProperty bp:properties) {
 			result.add(bp.getName());
@@ -113,15 +113,19 @@ public class ProxyBlock implements ProcessBlock {
 	}
 	
 
-
+	/**
+	 * Unimplemented. We assume this is never called. Instead
+	 * the method to list all block prototypes calls this in
+	 * the Python world.
+	 */
 	@Override
 	public PalettePrototype getBlockPrototype() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 	
 	/**
-	 * Accept a new value for a block property. It is up to the block to
+	 * Accept a new value for a block property. Push through to the
+	 * Python layer. It is up to the block to
 	 * determine whether or not this triggers block evaluation.
 	 * @param property the new value of one of the block's properties.
 	 */
@@ -129,6 +133,15 @@ public class ProxyBlock implements ProcessBlock {
 	public void setProperty(String name,QualifiedValue qv) {
 		
 	}
+	/**
+	 * This method should only be called when initializing the block.
+	 * In general, the proxy holds the block properties as a cache.
+	 * Reads are handled locally. Writes are passed through into the
+	 * python version. 
+	 * @param props
+	 */
+	public void setProperties(BlockProperty[] props) { this.properties = props; }
+	
 	/**
 	 * Notify the block that a new value has appeared on one of its input anchors.
 	 * @param port name of the incoming anchor point

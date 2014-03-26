@@ -2,7 +2,7 @@
  *   (c) 2012  ILS Automation. All rights reserved.
  *  
  */
-package com.ils.blt.designer.component;
+package com.ils.blt.designer.component.beaninfos;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -15,6 +15,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
+import com.ils.blt.client.component.AbstractDiagramComponent;
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.factorypmi.designer.workspace.WindowWorkspace;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -28,9 +29,9 @@ import com.inductiveautomation.vision.api.designer.beans.ComponentPopupInitializ
  * 
  * At this point it does not seem possible to alter any of the standard menu items.
  */
-public class BlockComponentInitializer implements ComponentPopupInitializer<AbstractDiagramSummaryComponent> {
+public class BlockComponentInitializer implements ComponentPopupInitializer<AbstractDiagramComponent> {
 	private final static String TAG="BlockComponentInitializer";
-	public final static String PREFIX = BLTProperties.BUNDLE_PREFIX+".Workspace.Menu.";
+	private final static String PREFIX = BLTProperties.BUNDLE_PREFIX+".Workspace.Menu.";
 	protected final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	/**
 	 * Constructor: The superclass constructor takes an array of relevant custom
@@ -67,13 +68,13 @@ public class BlockComponentInitializer implements ComponentPopupInitializer<Abst
 	 * Provide a list of actions to be added to the top of the default set.
 	 */
 	@Override
-	public List<Action> getActions(final List<AbstractDiagramSummaryComponent> components, final WindowWorkspace workspace) {
+	public List<Action> getActions(final List<AbstractDiagramComponent> components, final WindowWorkspace workspace) {
 		List<Action> actions = new ArrayList<Action>();
 
 		if(components.size()==0) return actions;
 
 		// Assume that we are operating on only a single object
-		final AbstractDiagramSummaryComponent block = (AbstractDiagramSummaryComponent)components.get(0);
+		final AbstractDiagramComponent block = (AbstractDiagramComponent)components.get(0);
 		final JFrame frame = (JFrame)SwingUtilities.getAncestorOfClass( JFrame.class,block);
 		// They make it really hard to track down the "IgnitionDesigner" object .. but here's how
 		IgnitionDesigner dsnr = null;

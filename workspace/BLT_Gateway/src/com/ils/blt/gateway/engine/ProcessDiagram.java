@@ -66,7 +66,7 @@ public class ProcessDiagram {
 	 * Analyze the diagram for nodes.
 	 */
 	private void analyze(SerializableDiagram diagram) {
-		log.debugf("%s: analyze %s ....%d:%d",TAG,diagram.getName(),projectId,resourceId);
+		log.debugf("%s.analyze: %s ....%d:%d",TAG,diagram.getName(),projectId,resourceId);
 		
 		BlockFactory blockFactory = BlockFactory.getInstance();
 		ConnectionFactory connectionFactory = ConnectionFactory.getInstance();
@@ -78,7 +78,8 @@ public class ProcessDiagram {
 			ProcessBlock pb = blocks.get(id);
 			if( pb==null ) {
 				pb = blockFactory.blockFromSerializable(projectId,resourceId,sb);
-				blocks.put(pb.getBlockId(), pb);
+				if( pb!=null ) blocks.put(pb.getBlockId(), pb);
+				else log.errorf("%s.analyze: ERROR %s failed to instantiate %s",TAG,diagram.getName(),sb.getClassName());
 			}
 			else {
 				blockFactory.updateBlockFromSerializable(pb,sb);
@@ -105,15 +106,15 @@ public class ProcessDiagram {
 				if( connections==null ) {
 					connections = new ArrayList<ProcessConnection>();
 					outgoingConnections.put(key, connections);
-					log.tracef("%s: analyze : mapping connection from %s:%s",TAG,upstreamBlock.getBlockId().toString(),pc.getUpstreamPortName());
+					log.tracef("%s.analyze: mapping connection from %s:%s",TAG,upstreamBlock.getBlockId().toString(),pc.getUpstreamPortName());
 				}
 				connections.add(pc);
 			}
 			else {
-				log.warnf("%s: analyze: Source block (%s) not found for connection",TAG,pc.getSource().toString());
+				log.warnf("%s.analyze: Source block (%s) not found for connection",TAG,pc.getSource().toString());
 			}
 		}
-		log.debugf("%s: analysis complete .... %d blocks and %d connections",TAG,diagram.getBlocks().length,diagram.getConnections().length);
+		log.debugf("%s.analyze: Complete .... %d blocks and %d connections",TAG,diagram.getBlocks().length,diagram.getConnections().length);
 	}
 
 	/**
@@ -145,13 +146,13 @@ public class ProcessDiagram {
 					notifications.add(vcn);
 				}
 				else {
-					log.warnf("%s: getOutgoingNotifications: Target block %s not found for connection",TAG,blockId.toString());
+					log.warnf("%s.getOutgoingNotifications: Target block %s not found for connection",TAG,blockId.toString());
 				}
 
 			}
 		}
 		else {
-			log.warnf("%s: getOutgoingNotifications: no connections found for %s:%s",TAG,block.getBlockId().toString(),port);
+			log.warnf("%s.getOutgoingNotifications: no connections found for %s:%s",TAG,block.getBlockId().toString(),port);
 		}
 		return notifications;
 	}

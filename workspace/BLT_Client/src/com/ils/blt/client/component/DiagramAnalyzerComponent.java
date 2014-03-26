@@ -1,10 +1,11 @@
 /**
  *   (c) 2012-2013  ILS Automation. All rights reserved.
  */
-package com.ils.blt.designer.component;
+package com.ils.blt.client.component;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
@@ -12,36 +13,33 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
-import java.net.URL;
 
-import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.common.BundleUtil;
 
 /**
- *  This is the JComponent that renders a DelayBlock.
+ *  This is the JComponent that renders a CallbackBlock.
  */
-public class DiagramPreviewComponent extends AbstractDiagramSummaryComponent {
-	private static String TAG = "DiagramPreviewComponent";
-	private static final long serialVersionUID = 4352815227615915719L;
-	private static String PREFIX = BLTProperties.BUNDLE_PREFIX;              // For bundle identification
-	private int delayTime = 0;   // Block delay time in milliseconds
+public class DiagramAnalyzerComponent extends AbstractDiagramComponent {
+	private static final long serialVersionUID = 4408313516136446100L;
+	private static String PREFIX = BLTProperties.CUSTOM_PREFIX;              // For bundle identification
 	
 
-	public DiagramPreviewComponent() {
-		setName(BundleUtil.get().getString(PREFIX+".Component.Preview.Name"));
-		setHeading(BundleUtil.get().getString(PREFIX+"Component.Preview.Name"));
+	public DiagramAnalyzerComponent() {
+		
+		setName(BundleUtil.get().getString(PREFIX+".Component.Analyzer.Name"));
+		setHeading(BundleUtil.get().getString(PREFIX+".Component.Analyzer.Name"));
 		this.setOpaque(true);
 		this.setBorder(border);
 	}
-	
-	@Override
-	public boolean isSquare() {return true; }
 
-	public int getDelayTime() { return delayTime; }
-	public void setDelayTime(int time) { delayTime = time; }
+	@Override
+	public boolean isSquare() {return false; }
+	@Override
+	public void setHeading(String text) { heading = text; }
+
 	/**
 	 * Overriding paintComponent is how you make a component that has custom
 	 * graphics.
@@ -75,27 +73,25 @@ public class DiagramPreviewComponent extends AbstractDiagramSummaryComponent {
 		g.fillRoundRect(fi.x, fi.y,fi.width, fi.height, 
 				DEFAULT_ROUNDING_ARC_WIDTH, DEFAULT_ROUNDING_ARC_HEIGHT);
 
-		
 		// Now paint the inner rectangle
 		int fw = DEFAULT_FRAME_WIDTH;
 		int fh = DEFAULT_FRAME_HEIGHT;
 		Rectangle interior = new Rectangle(fi.x+fw,fi.y+fh,fi.width-(2*fw),fi.height-(2*fh));
 		g.setColor(getBackground());
 		g.fillRoundRect(interior.x, interior.y,interior.width, interior.height, 
-						DEFAULT_ROUNDING_ARC_WIDTH/2, DEFAULT_ROUNDING_ARC_HEIGHT/2);
+				DEFAULT_ROUNDING_ARC_WIDTH/2, DEFAULT_ROUNDING_ARC_HEIGHT/2);
+		
+		// Set the font for drawing the Heading
+		g.setFont(getFont());
+		FontMetrics fm = g.getFontMetrics();
 
-		// Instead of text use a clock icon. Draw full-size.
-		URL clockURL = getClass().getResource("images/alarmclock.png");
-		if( clockURL!=null ) {
-			ImageIcon clock = new ImageIcon(clockURL,"Delay block clock");
-			// Coordinates are for the upper left corner
-			g.drawImage(clock.getImage(),(ifb.width-clock.getIconWidth())/2,
-					                     (ifb.height-clock.getIconHeight())/2,getBackground(),this);
-		}
-		else {
-			log.info(TAG+"paintComponent: unable to find clock icon");
-		}
-				
+		// Calculate the x,y for the String's baseline in order to center it
+		String text = getHeading();
+		int stringWidth = fm.stringWidth(text);
+		int xpos = (ifb.width - stringWidth) / 2;
+		float ypos = (float) ifb.getHeight() / 2f; // Position of center of text
+		paintTextAt(g, text, xpos, ypos, getHeadingColor());
+	
 		// Finally outline both sides of the frame
 		float borderWidth = 1.0f;
 		Stroke stroke = new BasicStroke(borderWidth,BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND);
@@ -104,15 +100,13 @@ public class DiagramPreviewComponent extends AbstractDiagramSummaryComponent {
 		g.draw(interior);
 		fi.x = fi.x -1;
 		fi.y = fi.y -1;
-		fi.width = fi.width+1;
-		fi.height = fi.height+1;
+		fi.width = fi.width+2;
+		fi.height = fi.height+2;
 		g.draw(fi);
 	
 		// border.paintBorder(this, g, 0, 0,ifb.width, ifb.height);
 		// Reverse any transforms we made
 		g.setTransform(originalTx);
 	}
-
-	
 
 }

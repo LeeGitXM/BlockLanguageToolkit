@@ -20,15 +20,15 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  *  This handler provides a way to request properties diagrams, blocks and connections.
  *  The request is relayed to the Gateway scope via an RPC call.
  */
-public class DiagramRequestHandler  {
-	private final static String TAG = "DiagramRequestHandler";
+public class BlockRequestHandler  {
+	private final static String TAG = "BlockRequestHandler";
 	private final LoggerEx log;
 
 	/**
 	 * Constructor adds common attributes that are needed to generate unique keys to identify
 	 * blocks and connectors.
 	 */
-	public DiagramRequestHandler()  {
+	public BlockRequestHandler()  {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 	}
 

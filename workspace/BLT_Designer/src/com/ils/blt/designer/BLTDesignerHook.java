@@ -6,11 +6,10 @@ package com.ils.blt.designer;
 
 import java.awt.Component;
 
+import com.ils.blt.client.component.DiagramAnalyzerComponent;
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.common.DiagramRequestHandler;
-import com.ils.blt.common.DiagramScriptFunctions;
-import com.ils.blt.designer.component.DiagramAnalyzerComponent;
-import com.ils.blt.designer.component.DiagramPreviewComponent;
+import com.ils.blt.common.BlockRequestHandler;
+import com.ils.blt.common.BlockScriptFunctions;
 import com.ils.blt.designer.navtree.DiagramTreeNode;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.inductiveautomation.factorypmi.designer.palette.model.DefaultPaletteItemGroup;
@@ -46,7 +45,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	private DesignerContext context = null;
 	private final LoggerEx log;
 	private DiagramWorkspace workspace = null;
-	private DiagramRequestHandler propertiesRequestHandler = null;
+	private BlockRequestHandler propertiesRequestHandler = null;
 	
 	// Register separate properties files for designer things and block things
 	static {
@@ -62,13 +61,13 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	@Override
 	public void initializeScriptManager(ScriptManager mgr) {
 		super.initializeScriptManager(mgr);
-		mgr.addScriptModule(BLTProperties.BLOCK_SCRIPT_PACKAGE,DiagramScriptFunctions.class);
+		mgr.addScriptModule(BLTProperties.BLOCK_SCRIPT_PACKAGE,BlockScriptFunctions.class);
 	}
 	
 	@Override
 	public void startup(DesignerContext ctx, LicenseState activationState) throws Exception {
 		this.context = ctx;
-		propertiesRequestHandler = new DiagramRequestHandler();
+		propertiesRequestHandler = new BlockRequestHandler();
 		context.addBeanInfoSearchPath("com.ils.blt.designer.component.beaninfos");
 		
 		// Place icons for our custom widgets on the Vision palette
@@ -90,7 +89,6 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 			}
 			try {
 				group.addPaletteItem(new JavaBeanPaletteItem(DiagramAnalyzerComponent.class));
-				group.addPaletteItem(new JavaBeanPaletteItem(DiagramPreviewComponent.class));
 			}
 			catch(Exception ie ) {
 				log.warnf("%s: Error creating palette entries (%s)",TAG,ie.getMessage());
@@ -152,7 +150,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		}
 	}
 
-	public DiagramRequestHandler getPropertiesRequestHandler() { return propertiesRequestHandler; }
+	public BlockRequestHandler getPropertiesRequestHandler() { return propertiesRequestHandler; }
 	@Override
 	public String getResourceCategoryKey(Project project,ProjectResource resource) {
 		// There is only one resource category that we are exporting

@@ -2,7 +2,7 @@
  *   (c) 2012-2013  ILS Automation. All rights reserved.
  *  
  */
-package com.ils.blt.designer.component;
+package com.ils.blt.client.component;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -22,7 +22,7 @@ import com.inductiveautomation.vision.api.client.components.model.AbstractVision
 /**
  * This is a superclass for our custom Vision components.
  */
-public abstract class AbstractDiagramSummaryComponent extends AbstractVisionComponent {
+public abstract class AbstractDiagramComponent extends AbstractVisionComponent {
 
 	private static final long serialVersionUID = 6091339174784663157L;
 	
@@ -32,18 +32,14 @@ public abstract class AbstractDiagramSummaryComponent extends AbstractVisionComp
 	protected static final int DEFAULT_FRAME_WIDTH   = 7;            // Width of the cyan border
 	protected static final int DEFAULT_RECTANGLE_BLOCK_WIDTH = 140;  // Was 120
 	protected static final int DEFAULT_SQUARE_BLOCK_WIDTH = 80;
-	protected static final int DEFAULT_BAR_HEIGHT = 15;              // Solid area for parallel, join
+
 	
 	protected static final int DEFAULT_ROUNDING_ARC_HEIGHT = 5;
 	protected static final int DEFAULT_ROUNDING_ARC_WIDTH = 5;
 	
-	protected static final Color ENTRY_BAR_COLOR = new Color(30,85,225);   // For parallel
-	protected static final Color EXIT_BAR_COLOR  = new Color(220,0,0);   // For join
 	protected static final Color BORDER_HIGHLIGHT_COLOR = new Color(250,250,250);
 	protected static final Color BORDER_SHADOW_COLOR = new Color(10,10,10);
 	protected static final int   BORDER_WIDTH = 4;       // For components where we draw the border
-	protected static int         STUB_HEIGHT  = 8;       // Connection stub height
-	protected static int         STUB_WIDTH   = 4;       // Connection stub height
 	
 	 /** The background color is the filler color of the interior of most blocks. */
 	protected static final Color DEFAULT_BACKGROUND_COLOR = new Color(250,250,250);
@@ -54,8 +50,6 @@ public abstract class AbstractDiagramSummaryComponent extends AbstractVisionComp
 	protected static final Font DEFAULT_SUBHEADING_FONT = new Font("Dialog", Font.PLAIN, 18); 
 	
 	protected final LoggerEx log;
-
-	
 	
 	protected Color frameColor = DEFAULT_FRAME_COLOR;
 	protected String heading = "";
@@ -65,7 +59,7 @@ public abstract class AbstractDiagramSummaryComponent extends AbstractVisionComp
 	/**
 	 * Normal form of the constructor.
 	 */
-	public AbstractDiagramSummaryComponent() {
+	public AbstractDiagramComponent() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		setOpaque(false);
 

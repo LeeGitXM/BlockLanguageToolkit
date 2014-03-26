@@ -1,5 +1,5 @@
 /**
- *   (c) 2013 ILS Automation. All rights reserved.
+ *   (c) 2014 ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.common;
@@ -25,13 +25,13 @@ public interface BLTProperties   {
 	public final static String REPORTING_SCRIPT_PACKAGE     = "system.ils.blt.report";
 	
 	/** These are recognized values of external callbacks for registration */
-	public final static String CREATE_INSTANCE_CALLBACK     = "CreateInstance";
-	public final static String EVALUATE_CALLBACK            = "Evaluate";
-	public final static String GET_BLOCK_CLASSES_CALLBACK   = "GetBlockClasses";
-	public final static String GET_PROPERTIES_CALLBACK      = "GetProperties";
-	public final static String GET_PROPERTY_CALLBACK        = "GetProperty";
-	public final static String GET_PROTOTYPES_CALLBACK      = "GetPrototypes";
-	public final static String SET_VALUE_CALLBACK           = "SetValue";
+	public final static String CREATE_BLOCK_INSTANCE_CALLBACK     = "CreateBlockInstance";
+	public final static String EVALUATE_CALLBACK                  = "Evaluate";
+	public final static String GET_BLOCK_CLASSES_CALLBACK         = "GetBlockClasses";
+	public final static String GET_BLOCK_PROPERTIES_CALLBACK      = "GetBlockProperties";
+	public final static String GET_BLOCK_PROPERTY_CALLBACK        = "GetBlockProperty";
+	public final static String GET_BLOCK_PROTOTYPES_CALLBACK      = "GetBlockPrototypes";
+	public final static String SET_VALUE_CALLBACK                 = "SetValue";
 
 	
 	/** This unique ID represents the root node in the project tree */
@@ -41,8 +41,9 @@ public interface BLTProperties   {
 	// This is the common prefix under which bundle files are identified/registered
 	public static final String BUNDLE_PREFIX = "blt";
 	public static final String BLOCK_PREFIX = "block";
+	public static final String CUSTOM_PREFIX = "custom";
 	// This is where we find the string resources for blocks
-	public static final String BLOCK_RESOURCE_PATH = "com.ils.blt.designer.block";
+	public static final String BLOCK_RESOURCE_PATH = "com.ils.blt.designer";
 	
 	// These are the property names in the message payload, gateway to client
 	public static final String MSG_BLOCK_NAME      = "BlockName";

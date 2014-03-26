@@ -127,6 +127,7 @@ public class ProcessBlockView extends AbstractBlock {
 		result.setEmbeddedIcon(getEmbeddedIcon());
 		result.setEmbeddedLabel(getEmbeddedLabel());
 		result.setEmbeddedFontSize(getEmbeddedFontSize());
+		result.setIconPath(getIconPath());
 		result.setLabel(getLabel());
 		result.setStyle(getStyle());
 		result.setX(getLocation().x);
@@ -201,10 +202,10 @@ public class ProcessBlockView extends AbstractBlock {
 
 	@Override
 	public void initUI(BlockComponent blk) {
-		log.debugf("%s: initUI", TAG);
 		ui = factory.getUI(style, this);
 		ui.install(blk);
 	}
+	
 	// Note: This does not set connection type
 	private SerializableAnchor convertAnchorToSerializable(ProcessAnchorDescriptor anchor) {
 		SerializableAnchor result = new SerializableAnchor();

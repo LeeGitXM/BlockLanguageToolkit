@@ -23,7 +23,7 @@ import com.ils.block.common.LimitType;
 import com.ils.block.common.PropertyType;
 import com.ils.block.common.TransmissionScope;
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.common.DiagramRequestHandler;
+import com.ils.blt.common.BlockRequestHandler;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -83,7 +83,7 @@ public class BlockPropertyEditor extends JPanel {
 		Collection<BlockProperty> propertyList = block.getProperties();
 		if( propertyList==null || propertyList.isEmpty()) {
 			propertyList = new ArrayList<BlockProperty>();
-			DiagramRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+			BlockRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
 			BlockProperty[] properties = handler.getBlockProperties(projectId,resourceId,block.getId(),block.getClassName());
 			for(BlockProperty property:properties) {
 				propertyList.add(property);
@@ -229,7 +229,7 @@ public class BlockPropertyEditor extends JPanel {
 	            prop.setValue(type.toString());
 	        }
 		});
-		box.setSelectedItem(prop.getType().toString());
+		box.setSelectedItem(prop.getValue().toString());
 		return box;
 	}
 	
