@@ -7,15 +7,15 @@
   <build>2013120917</build>
   <beta>1</beta>
 </version>
-<timestamp>2014-03-26 18:32:06</timestamp>
+<timestamp>2014-03-27 19:13:43</timestamp>
 <id>26</id>
 <name>BlockToolkitCommon</name>
 <title>Block Toolkit Common</title>
 <description>Common facilities for Block Definition Toolkit. Block defimitions, common code.</description>
 <enabled>true</enabled>
-<lastModified>1395880310288</lastModified>
+<lastModified>1395886748134</lastModified>
 <lastModifiedBy>chuckc</lastModifiedBy>
-<editCount>10</editCount>
+<editCount>11</editCount>
 <uuid>e77f350e-c874-3757-0dfb-b441f71cbb98</uuid>
 <resources>
 	<resource id='508' name='' module='fpmi' modver='' type='ui.props' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='4'>
@@ -73,7 +73,7 @@ p3s0TnopCl3USq0t0hA7ccQGokZsISo/YSu7XERjXUVJEsXpYDcdxL3o9DyLkl6cYEodoD0tlKSV
 KI3Uc5QIQNNKJYxlqsB4FT0YWyLr4KfzsoIZ6Y+XtN/HuAkw4lpROZ8suJWVYAurFbPYj04Zt7q8
 cyNYUeSSe9nc5JbNDB3mUsxtxmYjnU+EG1IDWJ+WTIlbXV7/sdXG/YywY/zx92noiyvBrdkAXwUk
 8DtDLfAHg3rg3QJxSQ3iLtr0hoFs+otB6EpagR8BnZD4nYFEv8R16n4D/KZJPcEBAAA=]]></bytes></resource>
-	<resource id='512' name='' module='' modver='' type='event.scripts' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='1'>
+	<resource id='512' name='' module='' modver='' type='event.scripts' ver='0' dirty='false' editcount='10' parent='' oemlocked='false' scope='1'>
 		<doc></doc>
 		<bytes><![CDATA[H4sIAAAAAAAAALVV3U4TQRSeWpGyiIAXxhgvJulFaVI3FAQU5QILUYwosajX091pO7K7s5mZLelD
 GO+Mz+CNiW+hz+AbmHjrrd/utBuQpXKhTZv5Od9855yZ75x+rL//1Pr19MWXd98ePvnw+Ssh5BIh
@@ -362,7 +362,7 @@ M9graZbmYzJm7xTPShphQR8mWMqCECUK39SA2Zzwr5O3zHuzGWphTKpb2WzAemP7iMp96iYqhfOH
 iBz57J4F6X1flS8YF655aUHGW7wTt3I1zA6gn+dVMbped76PPEsPqwrXMkx339uuZArnHuaA1t/R
 fB/fgITFStaJFNyX07aEN3UEfh8+Yqj+kHpz+ux/e0Qg+c+zAOl/PwuQ/f2t8vhX+j9BlDMtXxsA
 AA==]]></bytes></resource>
-	<resource id='503' name='' module='' modver='7.7.0.2013120917-beta1' type='sr.script.library' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='7'>
+	<resource id='503' name='' module='' modver='7.7.0.2013120917-beta1' type='sr.script.library' ver='0' dirty='false' editcount='10' parent='' oemlocked='false' scope='7'>
 		<doc></doc>
 		<bytes><![CDATA[H4sIAAAAAAAAAO1ZzY7cxhHmSnGkoa3YiX8T5NAeBeAMzKW1/k0G3oO0Viw5sqREcnQQFosesmem
 LQ7JsJu7mgh6hCC3IM+QS4C8RfI6OeSar6r5N7OzXsvIMSsIQ3ZXVVdXV31V1fzr+M9/O/jPl/f+
