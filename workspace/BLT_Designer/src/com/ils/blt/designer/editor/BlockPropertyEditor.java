@@ -19,6 +19,7 @@ import net.miginfocom.swing.MigLayout;
 import com.ils.block.common.BindingType;
 import com.ils.block.common.BlockConstants;
 import com.ils.block.common.BlockProperty;
+import com.ils.block.common.DistributionType;
 import com.ils.block.common.LimitType;
 import com.ils.block.common.PropertyType;
 import com.ils.block.common.TransmissionScope;
@@ -99,6 +100,9 @@ public class BlockPropertyEditor extends JPanel {
 			}
 			else if( property.getName().equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_SCOPE)) {
 				panel = new ScopePanel(property);
+			}
+			else if( property.getName().equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_DISTRIBUTION)) {
+				panel = new DistributionTypePanel(property);
 			}
 			else {
 				panel = new PropertyPanel(property);
@@ -277,7 +281,27 @@ public class BlockPropertyEditor extends JPanel {
 		box.setSelectedItem(prop.getBindingType().toString());
 		return box;
 	}
-	
+	/**
+	 * Create a combo box for distribution type (i.e. statistical distribution)
+	 */
+	private JComboBox<String> createDistributionTypeCombo(final BlockProperty prop) {
+		String[] entries = new String[DistributionType.values().length];
+		int index=0;
+		for(DistributionType type : DistributionType.values()) {
+			entries[index]=type.name();
+			index++;
+		}
+		final JComboBox<String> box = new JComboBox<String>(entries);
+		box.addActionListener(new ActionListener() {
+	        public void actionPerformed(ActionEvent e){
+	        	DistributionType type = DistributionType.valueOf(DistributionType.class, box.getSelectedItem().toString());
+	        	log.debugf("%s: set distribution type %s",TAG,box.getSelectedItem().toString());
+	            prop.setValue(type.toString());
+	        }
+		});
+		box.setSelectedItem(prop.getValue().toString());
+		return box;
+	}
 	/**
 	 * Create a combo box for transmission scope
 	 */
@@ -296,7 +320,7 @@ public class BlockPropertyEditor extends JPanel {
 	            prop.setValue(scope.toString());
 	        }
 		});
-		box.setSelectedItem(prop.getType().toString());
+		box.setSelectedItem(prop.getValue().toString());
 		return box;
 	}
 	
