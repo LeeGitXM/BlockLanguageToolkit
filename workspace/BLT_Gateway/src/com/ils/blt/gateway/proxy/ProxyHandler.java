@@ -28,8 +28,10 @@ import com.ils.block.common.BlockProperty;
 import com.ils.block.common.BlockStyle;
 import com.ils.block.common.PalettePrototype;
 import com.ils.block.common.PropertyType;
+import com.ils.block.common.TruthState;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.UtilityFunctions;
+import com.ils.common.JavaToPython;
 import com.ils.common.PythonToJava;
 import com.ils.connection.ConnectionType;
 import com.inductiveautomation.ignition.common.script.JythonExecException;
@@ -56,14 +58,15 @@ public class ProxyHandler   {
 	private final LoggerEx log;
 	private GatewayContext context = null;
 	private final PythonToJava toJavaTranslator;
+	private final JavaToPython toPythonTranslator;
 	private static ProxyHandler instance = null;
 	// These are the indices of specific callback functions within the array
 	private static int CREATE_BLOCK_INSTANCE = 0;
 	private static int EVALUATE = 1;
 	private static int GET_CLASSES = 2;
 	private static int GET_BLOCK_PROPERTIES = 3;
-	private static int GET_BLOCK_PROPERTY = 4;
-	private static int GET_BLOCK_PROTOTYPES = 5;
+	private static int GET_BLOCK_PROTOTYPES = 4;
+	private static int SET_BLOCK_PROPERTY = 5;
 	private static int SET_VALUE = 6;
 	private static int CALLBACK_COUNT = 7;
 	
@@ -75,6 +78,7 @@ public class ProxyHandler   {
 	private ProxyHandler() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		toJavaTranslator = new PythonToJava();
+		toPythonTranslator = new JavaToPython();
 	}
 
 	/**
@@ -126,11 +130,11 @@ public class ProxyHandler   {
 		else if( key.equalsIgnoreCase(BLTProperties.GET_BLOCK_PROPERTIES_CALLBACK)) {
 			index = GET_BLOCK_PROPERTIES;
 		}
-		else if( key.equalsIgnoreCase(BLTProperties.GET_BLOCK_PROPERTY_CALLBACK)) {
-			index = GET_BLOCK_PROPERTY;
-		}
 		else if( key.equalsIgnoreCase(BLTProperties.GET_BLOCK_PROTOTYPES_CALLBACK)) {
 			index = GET_BLOCK_PROTOTYPES;
+		}
+		else if( key.equalsIgnoreCase(BLTProperties.SET_BLOCK_PROPERTY_CALLBACK)) {
+			index = SET_BLOCK_PROPERTY;
 		}
 		else if( key.equalsIgnoreCase(BLTProperties.SET_VALUE_CALLBACK)) {
 			index = SET_VALUE;
@@ -171,11 +175,11 @@ public class ProxyHandler   {
 		else if( key.equalsIgnoreCase(BLTProperties.GET_BLOCK_PROPERTIES_CALLBACK)) {
 			index = GET_BLOCK_PROPERTIES;
 		}
-		else if( key.equalsIgnoreCase(BLTProperties.GET_BLOCK_PROPERTY_CALLBACK)) {
-			index = GET_BLOCK_PROPERTY;
-		}
 		else if( key.equalsIgnoreCase(BLTProperties.GET_BLOCK_PROTOTYPES_CALLBACK)) {
 			index = GET_BLOCK_PROTOTYPES;
+		}
+		else if( key.equalsIgnoreCase(BLTProperties.SET_BLOCK_PROPERTY_CALLBACK)) {
+			index = SET_BLOCK_PROPERTY;
 		}
 		else if( key.equalsIgnoreCase(BLTProperties.SET_VALUE_CALLBACK)) {
 			index = SET_VALUE;
@@ -197,7 +201,7 @@ public class ProxyHandler   {
 		this.context = cntx;
 	}
 	
-	public ProxyBlock createInstance(long project,long resource,UUID blockId,String className) {
+	public ProxyBlock createBlockInstance(long project,long resource,UUID blockId,String className) {
 		ProxyBlock block = new ProxyBlock(className,project,resource,blockId);
 		log.infof("%s.createInstance --- calling",TAG); 
 		if( callbacks[CREATE_BLOCK_INSTANCE]!=null && compileScript(CREATE_BLOCK_INSTANCE) ) {
@@ -213,7 +217,10 @@ public class ProxyHandler   {
 				PyObject pyBlock = (PyObject)pyDictionary.get("instance");
 				if( pyBlock!=null ) {
 					block.setPythonBlock(pyBlock);
-					block.setProperties(getProperties(pyBlock));
+					BlockProperty[] props = getBlockProperties(pyBlock);
+					for(BlockProperty prop:props) {
+						block.addProperty(prop);
+					}
 				}
 				else {
 					log.warnf("%s.createInstance: Failed to create instance of %s",TAG,className);
@@ -231,7 +238,7 @@ public class ProxyHandler   {
 	 * @param block the python block
 	 * @return an array of block properties.
 	 */
-	public BlockProperty[] getProperties(PyObject block) {
+	public BlockProperty[] getBlockProperties(PyObject block) {
 		BlockProperty[] properties = null;
 		
 		if( callbacks[GET_BLOCK_PROPERTIES]!=null && compileScript(GET_BLOCK_PROPERTIES) ) {
@@ -387,29 +394,40 @@ public class ProxyHandler   {
 		log.infof("%s: getPalettePrototypes returning %d protos from Python",TAG,prototypes.size()); 
 		return prototypes;
 	}
-
-
-	@SuppressWarnings("unchecked")
-	public List<String> getClassNames() {
-
-		List<String> temp = new ArrayList<String>();
-		/*
-		if( compileScript(getAttributesCallback) ) {
-			Hashtable<String,String> att = new Hashtable<String,String>();
-			att.put(BlockConstants.BLOCK_ATTRIBUTE_VALUE, key);
-			att.put(BlockConstants.BLOCK_ATTRIBUTE_EDITABLE, "False");
-			//temp.put(BlockProperties.NAME_KEY, att);
-			PyDictionary pyDict = new JavaToPython().tableToPyDictionary(temp);
-			getAttributesCallback.scriptManager.addGlobalVariable(getAttributesCallback.variable,pyDict);
-			execute(getAttributesCallback);
-			log.debug(TAG+"getAttributes returned "+ pyDict);   // Should now be updated
-			attributes = (Hashtable<String,?>)(new PythonToJava().pyDictionaryToTable(pyDict));
-			log.debug(TAG+"getAttributes result "+ attributes);  
+	
+	public void setBlockProperty(ProxyBlock block,BlockProperty prop) {
+		if( block==null || prop==null ) return;
+		log.infof("%s.setProperty --- %s:%s",TAG,block.getClass(),prop.getName()); 
+		if( callbacks[SET_BLOCK_PROPERTY]!=null && compileScript(SET_BLOCK_PROPERTY) ) {
+			Callback cb = callbacks[SET_BLOCK_PROPERTY];
+			cb.setLocalVariable(block.getPythonBlock());
+			PyDictionary pyDictionary = new PyDictionary();  // Empty
+			// Convert the property object into a table to send to Python.
+			if( prop.getName()==null ) {
+				log.errorf("%s.setProperty: Property name cannot be null",TAG); 
+				return;
+			}
+			Hashtable<String,Object> tbl = new Hashtable<String,Object>();  
+			tbl.put(BLTProperties.BLOCK_ATTRIBUTE_NAME,prop.getName());
+			if(prop.getBinding()!=null) tbl.put(BLTProperties.BLOCK_ATTRIBUTE_BINDING,prop.getBinding());
+			if(prop.getBindingType()!=null) tbl.put(BLTProperties.BLOCK_ATTRIBUTE_BINDING_TYPE,prop.getBindingType().toString());
+			if(prop.isEditable())tbl.put(BLTProperties.BLOCK_ATTRIBUTE_EDITABLE,TruthState.TRUE.toString());
+			else tbl.put(BLTProperties.BLOCK_ATTRIBUTE_EDITABLE,TruthState.FALSE.toString());
+			tbl.put(BLTProperties.BLOCK_ATTRIBUTE_MAX, String.valueOf(prop.getMaximum()));
+			tbl.put(BLTProperties.BLOCK_ATTRIBUTE_MIN, String.valueOf(prop.getMinimum()));
+			if(prop.getQuality()!=null) tbl.put(BLTProperties.BLOCK_ATTRIBUTE_QUALITY,prop.getQuality());
+			if( prop.getType()!=null) tbl.put(BLTProperties.BLOCK_ATTRIBUTE_DATA_TYPE,prop.getType().toString());
+			if( prop.getValue()!=null) tbl.put(BLTProperties.BLOCK_ATTRIBUTE_VALUE,prop.getValue().toString());
+			PyDictionary dict = toPythonTranslator.tableToPyDictionary(tbl);
+			pyDictionary.__set__(new PyString("property"), dict);
+			// Synchronize because of our global variable
+			synchronized(cb.scriptManager) {
+				cb.getScriptManager().addGlobalVariable(cb.globalVariableName,pyDictionary);
+				execute(cb);
+			}
 		}
-		*/
-		return temp;
 	}
-
+	//================================ Unimplemented/Tested ==================================
 
 	
 	/**

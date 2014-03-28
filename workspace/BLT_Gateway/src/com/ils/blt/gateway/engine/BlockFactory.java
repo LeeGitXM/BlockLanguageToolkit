@@ -87,7 +87,7 @@ public class BlockFactory  {
 		}
 		else {
 			// Create a proxy from Python
-			block = proxyHandler.createInstance(projectId, resourceId, blockId, className);
+			block = proxyHandler.createBlockInstance(projectId, resourceId, blockId, className);
 		
 		}
 		

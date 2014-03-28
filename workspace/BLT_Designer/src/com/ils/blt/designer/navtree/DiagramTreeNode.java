@@ -70,7 +70,7 @@ public class DiagramTreeNode extends FolderNode {
 		workspace = ((BLTDesignerHook)ctx.getModule(BLTProperties.MODULE_ID)).getWorkspace();
 		setText(BundleUtil.get().getString(PREFIX+".RootFolderName"));
 		setIcon(IconUtil.getIcon("folder_closed"));
-		log.info(TAG+"root:"+this.pathToRoot());	
+		log.infof("%s: constructor tagPath=root:%s",TAG,this.pathToRoot());	
 	}
 
 	/**
@@ -102,21 +102,41 @@ public class DiagramTreeNode extends FolderNode {
 	@Override
 	protected AbstractNavTreeNode createChildNode(ProjectResource res) {
 		log.debug(String.format("%s.createChildNode type:%s, level=%d", TAG,res.getResourceType(),getDepth()));
-		AbstractNavTreeNode node = null;
 		if (ProjectResource.FOLDER_RESOURCE_TYPE.equals(res.getResourceType())) {
-			node = new DiagramTreeNode(context, res);
-			log.debug(TAG+"createChildFolder:"+this.pathToRoot()+"->"+node.pathToRoot());
+			DiagramTreeNode node = new DiagramTreeNode(context, res);
+			if( log.isDebugEnabled() ) log.debugf("%s.createChildFolder: %s->%s",TAG,this.getNavTreePath(),node.getNavTreePath());
 			return node;
 		}
 		else if (BLTProperties.MODEL_RESOURCE_TYPE.equals(res.getResourceType())) {
-			node = new DiagramNode(context,res,workspace);
-			log.debug(TAG+"createChildPanel:"+this.pathToRoot()+"->"+node.pathToRoot());
+			DiagramNode node = new DiagramNode(context,res,workspace);
+			if( log.isDebugEnabled() ) log.debugf("%s.createChildPanel: %s->%s",TAG,this.getNavTreePath(),node.getNavTreePath());
 			return node;
 		} 
 		else {
 			log.warnf("%s: Attempted to create a child of type %s (ignored)",TAG,res.getResourceType());
 			throw new IllegalArgumentException();
 		}
+	}
+	
+	/**
+	 * The super-class method pathToRoot returns null. Do it ourselves.
+	 * @return a colon-separated list of node names up to the root.
+	 */
+	public String getNavTreePath() {
+		StringBuffer sbuf = new StringBuffer(scrubStringForTreePath(getName()));
+		DiagramTreeNode node = this;
+		for(;;) {
+			node = (DiagramTreeNode)node.getParent();
+			if( node==null) break;           // Shouldn't happen
+			sbuf.insert(0, ":"+scrubStringForTreePath(node.getName()));
+			if(node.isRootFolder()) break;   // Got the top
+		}
+		return sbuf.toString();
+	}
+	
+	// Prepend colon and make sure there are no embedded colons
+	private String scrubStringForTreePath(String name) {
+		return ":"+name.replaceAll(":", "");
 	}
 	
 	@Override
@@ -225,11 +245,13 @@ public class DiagramTreeNode extends FolderNode {
 	}
 	
 	/**
-	 *  Serialize a diagram into JSON.
+	 *  Serialize a diagram into JSON. We set the tag path at the time of serialization. It is used as an
+	 *  identifier for saved diagrams. It is not used on import.
 	 * @param diagram to be serialized
 	 */ 
 	private String serializeDiagram(SerializableDiagram diagram) {
 		String json = "";
+		diagram.setTreePath(getNavTreePath());
 		ObjectMapper mapper = new ObjectMapper();
 		log.infof("%s: serializeDiagram creating json ... %s",TAG,(mapper.canSerialize(SerializableDiagram.class)?"true":"false"));
 		try{ 
@@ -317,7 +339,6 @@ public class DiagramTreeNode extends FolderNode {
 
 				String json = serializeDiagram(diagram);
 			
-				
 				log.debugf("%s: DiagramAction. json=%s",TAG,json);
 				byte[] bytes = json.getBytes();
 				log.debugf("%s: DiagramAction. create new %s resource %d (%d bytes)",TAG,BLTProperties.MODEL_RESOURCE_TYPE,

@@ -12,7 +12,8 @@ import com.ils.block.common.PalettePrototype;
 /**
  * This class exposes python-callable functions that deal with properties
  * of applications, families, diagrams, blocks and connections.
- * We make use of the BlockRequestHandler to perform the requests.
+ * 
+ * Where applicable, we make use of the BlockRequestHandler to perform the requests.
  */
 public class BlockScriptFunctions   {
 	private static BlockRequestHandler handler = new BlockRequestHandler();
@@ -24,5 +25,17 @@ public class BlockScriptFunctions   {
 	public static List getBlockPrototypes() {
 		List<PalettePrototype> result = handler.getBlockPrototypes();
 		return result;
+	}
+	/**
+	 * Send a signal to all blocks of a particular class on a specified diagram.
+	 * This is a "local" transmission.
+	 * 
+	 * @param projectName
+	 * @param diagramPath
+	 * @param className filter of the receiver blocks to be targeted.
+	 * @param command string of the signal.
+	 */
+	public void sendLocalSignal(String projectName, String diagramPath,String className, String command) {
+		handler.sendLocalSignal(projectName,diagramPath,className,command);
 	}
 }

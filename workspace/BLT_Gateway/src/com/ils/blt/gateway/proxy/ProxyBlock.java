@@ -3,21 +3,16 @@
  */
 package com.ils.blt.gateway.proxy;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 import org.python.core.PyObject;
 
-import com.ils.block.ProcessBlock;
+import com.ils.block.AbstractProcessBlock;
 import com.ils.block.common.BlockProperty;
-import com.ils.block.common.BlockState;
 import com.ils.block.common.PalettePrototype;
 import com.ils.block.control.BlockPropertyChangeEvent;
 import com.ils.block.control.IncomingNotification;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 
 /**
@@ -26,19 +21,11 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  * object to provide persistence. 
  *  
  */
-public class ProxyBlock implements ProcessBlock {
+public class ProxyBlock extends AbstractProcessBlock  {
 	private static final String TAG = "ProxyBlock";
-	protected final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	private final String className;
-	private final long projectId;
-	private final long diagramId;
-	private final UUID blockId;
-	private String label;
-	private String statusText;
-	private BlockState state;
 	private PyObject pythonBlock = null;
 	private final ProxyHandler delegate = ProxyHandler.getInstance();
-	private BlockProperty[] properties = null;
 	
 
 	/**
@@ -49,13 +36,18 @@ public class ProxyBlock implements ProcessBlock {
 	 * @param block identifier
 	 */
 	public ProxyBlock(String clss,long proj,long diag,UUID block) {
+		super(null,proj,diag,block);
 		this.className = clss;
-		this.projectId = proj;
-		this.diagramId = diag;
-		this.blockId = block;
-		this.properties = new BlockProperty[0];
 	}
 
+	/**
+	 * Add a new property. Do this as the block is first instantiated and
+	 * we query python.
+	 */
+	public void addProperty(BlockProperty prop) {
+		properties.put(prop.getName(),prop);
+	}
+	
 	/**
 	 * @return the Python object for which this class is a proxy
 	 */
@@ -75,44 +67,15 @@ public class ProxyBlock implements ProcessBlock {
 	}
 	
 	/**
+	 * On a get, we return the locally cached property.
 	 * @param name the property (attribute) name.
 	 * @return a particular property given its name.
 	 */
 	@Override
 	public BlockProperty getProperty(String name) {
-		//return delegate.getProperty(projectId,diagramId,blockId,name);
-		return null;
+		return super.getProperty(name);
 	}
 	
-	@Override
-	public long getProjectId() { return projectId; }
-	@Override
-	public long getDiagramId() { return diagramId; }
-	@Override
-	public UUID getBlockId() { return blockId; }
-	/**
-	 * @return all properties. In order to modify a property,
-	 *         it is imperative to call the setter as this
-	 *         handles passthru to Python.
-	 */
-	@Override
-	public BlockProperty[] getProperties() {
-		return properties;
-	}
-	
-	/**
-	 * @return a list of the property names required by this class.
-	 */
-	@Override
-	public Set<String> getPropertyNames() {
-		Set<String>result = new HashSet<String>();
-		for(BlockProperty bp:properties) {
-			result.add(bp.getName());
-		}
-		return result;
-	}
-	
-
 	/**
 	 * Unimplemented. We assume this is never called. Instead
 	 * the method to list all block prototypes calls this in
@@ -125,22 +88,20 @@ public class ProxyBlock implements ProcessBlock {
 	
 	/**
 	 * Accept a new value for a block property. Push through to the
-	 * Python layer. It is up to the block to
-	 * determine whether or not this triggers block evaluation.
+	 * Python layer. It is up to the block to determine whether or not
+	 * this triggers block evaluation.
 	 * @param property the new value of one of the block's properties.
 	 */
 	@Override
 	public void setProperty(String name,QualifiedValue qv) {
-		
+		BlockProperty prop = getProperty(name);
+		if( prop!=null ) {
+			prop.setValue(qv.getValue());
+			prop.setQuality(qv.getQuality().getName());
+			delegate.setBlockProperty(this,prop);
+		}
 	}
-	/**
-	 * This method should only be called when initializing the block.
-	 * In general, the proxy holds the block properties as a cache.
-	 * Reads are handled locally. Writes are passed through into the
-	 * python version. 
-	 * @param props
-	 */
-	public void setProperties(BlockProperty[] props) { this.properties = props; }
+
 	
 	/**
 	 * Notify the block that a new value has appeared on one of its input anchors.
@@ -149,7 +110,7 @@ public class ProxyBlock implements ProcessBlock {
 	 *        and simple value.
 	 */
 	public void setValue(IncomingNotification vcn) {
-		delegate.setValue(projectId, diagramId, blockId, vcn.getConnection().getUpstreamPortName(), vcn.getValue());
+		delegate.setValue(getProjectId(), getDiagramId(), getBlockId(), vcn.getConnection().getUpstreamPortName(), vcn.getValue());
 	}
 	
 	/**
@@ -157,27 +118,13 @@ public class ProxyBlock implements ProcessBlock {
 	 * will be called by the engine after receipt of input once the coalescing 
 	 * "quiet" time has passed without further input.
 	 */
-	public void evaluate() { delegate.evaluate(projectId, diagramId, blockId); }
+	public void evaluate() { delegate.evaluate(getProjectId(), getDiagramId(), getBlockId()); }
 
-	@Override
-	public String getLabel() { return this.label; }
-	@Override
-	public void setLabel(String label) { this.label = label; }
 
+	/** 
+	 * Do nothing
+	 */
 	@Override
-	public BlockState getState() { return this.state; }
-	@Override
-	public void setState(BlockState state) { this.state = state; }
-
-	@Override
-	public String getStatusText() { return this.statusText; }
-
-	@Override
-	public void setStatusText(String text) { this.statusText = text; }
-
-	@Override
-	public void propertyChange(BlockPropertyChangeEvent evt) {
-		
-	}
+	public void propertyChange(BlockPropertyChangeEvent evt) {}
 
 }

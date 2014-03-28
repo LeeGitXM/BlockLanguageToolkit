@@ -10,10 +10,14 @@ import org.apache.wicket.markup.html.WebMarkupContainer;
 
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.gateway.engine.BlockExecutionController;
-import com.ils.blt.gateway.proxy.RegistrationScriptFunctions;
+import com.ils.blt.gateway.engine.ModelResourceManager;
 import com.ils.blt.gateway.proxy.ProxyHandler;
+import com.ils.blt.gateway.proxy.RegistrationScriptFunctions;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
+import com.inductiveautomation.ignition.common.project.Project;
+import com.inductiveautomation.ignition.common.project.ProjectResource;
+import com.inductiveautomation.ignition.common.project.ProjectVersion;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -62,6 +66,22 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	@Override
 	public void startup(LicenseState licenseState) {
 	    log.infof("%s: Startup complete.",TAG);
+	    // Look for all block resources and inform the execution controller
+	    ModelResourceManager resmgr = BlockExecutionController.getInstance().getDelegate();
+	    resmgr.setContext(context);
+	    List<Project> projects = this.context.getProjectManager().getProjectsFull(ProjectVersion.Published);
+	    for( Project project:projects ) {
+	    	List<ProjectResource> resources = project.getResources();
+			for( ProjectResource res:resources ) {
+				if( res.getResourceType().equalsIgnoreCase(BLTProperties.MODEL_RESOURCE_TYPE)) {
+					log.infof("%s.startup - found %s resource, %d = %s", TAG,res.getResourceType(),
+						res.getResourceId(),res.getName());
+					resmgr.analyzeResource(project.getId(),res);
+				}
+			}
+	    }
+	    
+	    // Look for all "Controller Output" UDT instances
 	}
 
 	@Override

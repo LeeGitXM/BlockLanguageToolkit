@@ -13,9 +13,11 @@ import java.util.concurrent.Executors;
 
 import com.ils.block.ProcessBlock;
 import com.ils.block.common.BlockProperty;
+import com.ils.block.control.BroadcastNotification;
 import com.ils.block.control.ExecutionController;
 import com.ils.block.control.IncomingNotification;
 import com.ils.block.control.OutgoingNotification;
+import com.ils.block.control.SignalNotification;
 import com.ils.common.BoundedBuffer;
 import com.ils.common.watchdog.Watchdog;
 import com.ils.common.watchdog.WatchdogTimer;
@@ -48,8 +50,8 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 
 
 	private final BoundedBuffer buffer;
-	private TagListener tagListener = null;    // Tag subscriber
-	private TagWriter tagWriter = null;
+	private final TagListener tagListener;    // Tag subscriber
+	private final TagWriter tagWriter;
 	private Thread notificationThread = null;
 	// Make this static so we can test without creating an instance.
 	private static boolean stopped = true;
@@ -61,9 +63,10 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.delegate = new ModelResourceManager(this);
 		this.threadPool = Executors.newFixedThreadPool(10);
-		
-		buffer = new BoundedBuffer(BUFFER_SIZE);
-		watchdogTimer = new WatchdogTimer();
+		this.tagListener = new TagListener();
+		this.tagWriter = new TagWriter();
+		this.buffer = new BoundedBuffer(BUFFER_SIZE);
+		this.watchdogTimer = new WatchdogTimer();
 	}
 
 	/**
@@ -77,6 +80,19 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		}
 		return instance;
 	}
+	
+	/**
+	 * Someone has injected a message into the system via broadcast
+	 */
+	@Override
+	public void acceptBroadcastNotification(BroadcastNotification note) {
+		log.tracef("%acceptBroadcastNotification: %d:%d (%s)", TAG,note.getProjectId(),note.getDiagramId(),note.getSignal().getCommand());
+		try {
+			buffer.put(note);
+		}
+		catch( InterruptedException ie ) {}
+	}
+	
 	/**
 	 * A block has completed evaluation. A new value has been placed on its output.
 	 */
@@ -87,6 +103,11 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		}
 		catch( InterruptedException ie ) {}
 	}
+
+	
+	/**
+	 * 
+	 */
 
 	/**
 	 * Obtain the running state of the controller. This is a static method
@@ -106,9 +127,8 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		log.debugf("%s: STARTED",TAG);
 		if(!stopped) return;  
 		stopped = false;
-		if( tagListener==null ) this.tagListener = new TagListener(context);
-		tagListener.start();
-		this.tagWriter = new TagWriter(context);
+		tagListener.start(context);
+		tagWriter.start(context);
 		this.delegate.setContext(context);
 		this.notificationThread = new Thread(this, "BlockExecutionController");
 		log.debugf("%s START - notification thread %d ",TAG,notificationThread.hashCode());
@@ -120,9 +140,8 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	/**
 	 * Stop the controller, watchdogTimer, tagListener and TagWriter. Set all
 	 * instance values to null to, hopefully, allow garbage collection.
-	 * WARNING: Do not hold on to a instance values as it will be incorrect
+	 * WARNING: Do not hold on to a controller instance as it will be incorrect
 	 * after a stop.
-	 * @param ctxt the gateway context
 	 */
 	public synchronized void stop() {
 		log.debugf("%s: STOPPED",TAG);
@@ -133,6 +152,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		}
 		tagListener.stop();
 		watchdogTimer.stop();
+		delegate.stop();
 		instance = null;       // Allow to be re-claimeded.
 	}
 	
@@ -144,7 +164,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 * Start a subscription for a block attribute associated with a tag.
 	 */
 	public void startSubscription(ProcessBlock block,BlockProperty property) {
-		tagListener.startSubscription(block, property);
+		tagListener.defineSubscription(block, property);
 	}
 	/**
 	 * Stop the subscription for a block attribute associated with a tag.
@@ -215,6 +235,26 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 									pb.getDiagramId(),pb.getProjectId());
 					}
 				}
+				else if( work instanceof BroadcastNotification) {
+					BroadcastNotification inNote = (BroadcastNotification)work;
+					log.tracef("%s: processing broadcast request from buffer: %d:%d = %s", TAG,inNote.getProjectId(),inNote.getDiagramId(),inNote.getSignal().getCommand());
+					// Query the diagram to find out what's next
+					ProcessDiagram dm = delegate.getDiagram(new Long(inNote.getProjectId()),new Long(inNote.getDiagramId()));
+					if( dm!=null) {
+						Collection<SignalNotification> outgoing = dm.getBroadcastNotifications(inNote);
+						if( outgoing.isEmpty() ) log.warnf("%s: no broadcast recipients found ...",TAG);
+						for(SignalNotification outNote:outgoing) {
+							ProcessBlock outBlock = outNote.getBlock();
+							log.tracef("%s: sending outgoing broadcast: to %s", TAG,outBlock.toString());
+							threadPool.execute(new IncomingBroadcastTask(outBlock,outNote));
+							
+						}
+					}
+					else {
+						log.warnf("%s: run: diagram %d, project %d not found in value change notification",TAG,
+								inNote.getDiagramId(),inNote.getProjectId());
+					}
+				}
 				else {
 					log.warnf("%s: run: Unexpected object in buffer (%s)",TAG,work.getClass().getName());
 				}
@@ -222,4 +262,6 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 			catch( InterruptedException ie) {}
 		}
 	}
+
+
 }

@@ -117,7 +117,7 @@ public class DiagramPropertiesHandler   {
 		}
 		else if(className.startsWith("app")) {
 			ProxyHandler ph = ProxyHandler.getInstance();
-			block = ph.createInstance(projectId.longValue(),resourceId.longValue(),blockId,className);
+			block = ph.createBlockInstance(projectId.longValue(),resourceId.longValue(),blockId,className);
 			if(block!=null) {
 				results = block.getProperties();
 				log.tracef("%s: getProperties new from python %s = %s",TAG,block.getClass().getName(),results.toString());

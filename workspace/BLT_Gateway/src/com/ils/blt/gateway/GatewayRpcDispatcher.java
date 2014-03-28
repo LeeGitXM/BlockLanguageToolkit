@@ -17,8 +17,12 @@ import com.ils.block.ProcessBlock;
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.block.common.BlockProperty;
 import com.ils.block.common.PalettePrototype;
+import com.ils.block.common.TransmissionScope;
+import com.ils.block.control.BroadcastNotification;
+import com.ils.block.control.Signal;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.gateway.engine.BlockExecutionController;
+import com.ils.blt.gateway.engine.ProcessDiagram;
 import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.ils.common.ClassList;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -173,6 +177,20 @@ public class GatewayRpcDispatcher   {
 		}
 		log.debugf("%s: getBlockPrototypes: returning %d palette prototypes",TAG,results.size());
 		return results;
+	}
+	
+	void sendLocalSignal(String projectName, String diagramPath,String className, String command) {
+		ProcessDiagram diagram = BlockExecutionController.getInstance().getDelegate().getDiagram(projectName, diagramPath);
+		if( diagram!=null ) {
+			// Create a broadcast notification
+			Signal sig = new Signal(command,"","");
+			sig.setClassName(className);
+			BroadcastNotification broadcast = new BroadcastNotification(diagram.getProjectId(),diagram.getResourceId(),TransmissionScope.LOCAL,sig);
+			BlockExecutionController.getInstance().acceptBroadcastNotification(broadcast);
+		}
+		else {
+			log.warnf("%s.sendLocalSignal: Unable to find %s:%s for %s command to %s",TAG,projectName,diagramPath,command,className);
+		}
 	}
 
 }

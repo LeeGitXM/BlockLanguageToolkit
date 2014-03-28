@@ -29,8 +29,8 @@ public interface BLTProperties   {
 	public final static String EVALUATE_CALLBACK                  = "Evaluate";
 	public final static String GET_BLOCK_CLASSES_CALLBACK         = "GetBlockClasses";
 	public final static String GET_BLOCK_PROPERTIES_CALLBACK      = "GetBlockProperties";
-	public final static String GET_BLOCK_PROPERTY_CALLBACK        = "GetBlockProperty";
 	public final static String GET_BLOCK_PROTOTYPES_CALLBACK      = "GetBlockPrototypes";
+	public final static String SET_BLOCK_PROPERTY_CALLBACK        = "SetBlockProperty";
 	public final static String SET_VALUE_CALLBACK                 = "SetValue";
 
 	

@@ -112,6 +112,12 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 	public ProjectResource getProjectResource() {
 		return context.getProject().getResource(resourceId);
 	}
+	
+	public String getNavTreePath() {
+		String parentPath = ((DiagramTreeNode)getParent()).getNavTreePath();
+		String scubbedName = name.replaceAll(" ", "").replaceAll(":", "");
+		return parentPath+":"+scubbedName;
+	}
 
 	@Override
 	public String getWorkspaceName() {
@@ -216,6 +222,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 	    }
 	    
 		public void actionPerformed(ActionEvent e) {
+		
 			if( view==null ) return;   // Do nothing
 			try {
 				EventQueue.invokeLater(new Runnable() {
@@ -234,10 +241,13 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 					    			output.setWritable(true);  // This doesn't seem to work (??)
 					    			if( output.canWrite() ) {
 					    				ObjectMapper mapper = new ObjectMapper();
-					    				if(log.isDebugEnabled()) log.debugf("%s.serializeDiagram: creating json ... %s",TAG,(mapper.canSerialize(SerializableDiagram.class)?"true":"false"));
+					    				if(log.isDebugEnabled()) log.debugf("%s.actionPerformed: creating json ... %s",TAG,(mapper.canSerialize(SerializableDiagram.class)?"true":"false"));
 					    				try{ 
 					    					// Convert the view into a serializable object
 					    					SerializableDiagram sd = view.createSerializableRepresentation();
+					    					// Compute the tree path - use the diagram name for the last 
+					    					String path = getNavTreePath();
+					    					sd.setTreePath(path);
 					    					String json = mapper.writeValueAsString(sd);
 					    					FileWriter fw = new FileWriter(output,false);  // Do not append
 					    					try {

@@ -27,17 +27,23 @@ import com.inductiveautomation.ignition.gateway.sqltags.model.WriteRequest;
 public class TagWriter  {
 	private static final String TAG = "TagWriter";
 	private final LoggerEx log;
-	private final GatewayContext context;
+	private GatewayContext context=null;
 	
 	/**
 	 * Constructor.
-	 * @param ctx the Gateway context
+	 
 	 */
-	public TagWriter(GatewayContext ctx) {
-		this.context = ctx;
+	public TagWriter() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());	
 	}
-
+	
+	/**
+	 * The context is set sometime after the instance is created.
+	 * @param ctx the Gateway context
+	 */
+	public void start(GatewayContext ctx) {
+		this.context = ctx;
+	}
 	/**
 	 * Update tags with values from model results. The time assigned is the current
 	 * time. The list of tags to be updated varies with model type.
@@ -46,17 +52,17 @@ public class TagWriter  {
 	 * @param path fully qualified tag path
 	 */
 	public void updateTag(String providerName,String path,QualifiedValue qv) {
-	
+		if( context==null) return;   // Not initialized yet.
 		List<WriteRequest<TagPath>> list = createTagList(path,qv);
-		if(list.size()==0) log.debug(TAG+"updateTags - no results");
+		if(list.size()==0) log.debug(TAG+".updateTags: No results");
 		try {
 		    TagProvider provider = context.getTagManager().getTagProvider(providerName);
-		    log.tracef("%s: updateTags: provider = %s",TAG,providerName);
+		    log.tracef("%s.updateTags: provider = %s",TAG,providerName);
 		    // We assume the same provider
 		    if( provider!= null && list!=null ) provider.write(list, null, true);	
 		}
 		catch(Exception ex) {
-			log.warn(TAG+"updateTags - exception ("+ex.getLocalizedMessage()+")");
+			log.warn(TAG+".updateTags: Exception ("+ex.getLocalizedMessage()+")");
 		}
 	}
 
@@ -67,31 +73,30 @@ public class TagWriter  {
 	private List<WriteRequest<TagPath>> createTagList(String path,QualifiedValue qv) {
 		List<WriteRequest<TagPath>> list = new ArrayList<WriteRequest<TagPath>>();
 		LocalRequest req = null;
-		log.tracef("%s: createTagList: path = %s",TAG,path);
+		log.tracef("%s.createTagList: path = %s",TAG,path);
 		req = new LocalRequest(path,qv);
 		if(req.isValid)list.add(req);
 
 		return list;
 	}
 	/**
-	 * Create a tag write request. We make this public for the sake of the PCA model
-	 * which needs to do tag writing beyond just to the model UDT.
+	 * Create a tag write request. 
 	 */
-	public class LocalRequest extends BasicAsyncWriteRequest<TagPath> {
+	private class LocalRequest extends BasicAsyncWriteRequest<TagPath> {
 		public boolean isValid = false;
 		public LocalRequest( String path,QualifiedValue qv) {
 			super();
 			if( qv!=null ) {
 				try {
 				    TagPath tp = TagPathParser.parse(path);
-				    if( log.isTraceEnabled()) log.tracef("%s: localRequest; adding %s",TAG,tp.toStringFull());
+				    if( log.isTraceEnabled()) log.tracef("%s.localRequest: adding %s",TAG,tp.toStringFull());
 				    this.setTarget(tp);
 				    this.setValue(qv.getValue());
 				    this.setResult(qv.getQuality());
 				    this.isValid = true;
 				}
 				catch( IOException ioe) {
-					log.warn(TAG+"localRequest; parse exception ("+ioe.getMessage()+")");
+					log.warn(TAG+".localRequest: parse exception ("+ioe.getMessage()+")");
 				}
 			}
 		}

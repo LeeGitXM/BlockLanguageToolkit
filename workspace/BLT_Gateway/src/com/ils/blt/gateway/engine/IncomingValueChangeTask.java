@@ -8,10 +8,9 @@ import com.ils.block.control.IncomingNotification;
 
 /**
  * A value has been received as an output from a block
- * connected to the target block. Record the new input then
- * evaluate the specified block. The thread should end with the block placing a
- * value on its output. In this case, the block responds to a property change, 
- * usually for a tag that is an attribute of the block.
+ * connected to the target block. The target should record the new input.
+ * The thread should end with either the target doing nothing or with it placing a
+ * value on its output.
  */
 public class IncomingValueChangeTask implements Runnable{
 	private final ProcessBlock target;

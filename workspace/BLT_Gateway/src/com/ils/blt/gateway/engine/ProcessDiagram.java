@@ -11,8 +11,10 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.ProcessBlock;
+import com.ils.block.control.BroadcastNotification;
 import com.ils.block.control.IncomingNotification;
 import com.ils.block.control.OutgoingNotification;
+import com.ils.block.control.SignalNotification;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableConnection;
 import com.ils.blt.common.serializable.SerializableDiagram;
@@ -40,27 +42,32 @@ public class ProcessDiagram {
 	private final Map<UUID,ProcessBlock> blocks;
 	private final Map<ConnectionKey,ProcessConnection> connections;              // Key by connection number
 	private final Map<BlockPort,List<ProcessConnection>> outgoingConnections;    // Key by upstream block:port
-	
+	private final String name;
+	private final String treePath;
 	
 	/**
 	 * Constructor: Create a model that encapsulates the structure of the blocks and connections
 	 *              of a diagram.
-	 * @param dom the unserialized object that represents the diagram. 
+	 * @param diagm the unserialized object that represents the diagram. 
 	 */
-	public ProcessDiagram(SerializableDiagram dom,long proj,long res) { 
-		this.diagram = dom;
+	public ProcessDiagram(SerializableDiagram diagm,long proj,long res) { 
+		this.diagram = diagm;
 		this.projectId = proj;
 		this.resourceId = res;
+		this.name = diagm.getName();
+		this.treePath = diagm.getTreePath();
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		blocks = new HashMap<UUID,ProcessBlock>();
 		connections = new HashMap<ConnectionKey,ProcessConnection>();
 		outgoingConnections = new HashMap<BlockPort,List<ProcessConnection>>();
 		analyze(diagram);
 	}
-	
+
+
 	public ProcessBlock getBlock(UUID id) { return blocks.get(id); }
-	
+	public String getName() {return name;}
 	public Collection<ProcessBlock> getProcessBlocks() { return blocks.values(); }
+	public String getTreePath() {return treePath;}
 	
 	/**
 	 * Analyze the diagram for nodes.
@@ -121,7 +128,32 @@ public class ProcessDiagram {
 	 * @return a Connection from the diagram given its id.
 	 */
 	public Connection getConnection(String id) { return connections.get(id); }
+	/**
+	 * @return the projectId for this diagram
+	 */
+	public long getProjectId() { return this.projectId; }
+	/**
+	 * @return the resourceId for this diagram
+	 */
+	public long getResourceId() { return this.resourceId; }
 	
+	/**
+	 * We have just received a request to broadcast a signal. Determine which blocks are to be notified,
+	 * and create notifications for each. In/Out are from the point of view of a block, so are backwards here.
+	 * An empty return indicates no appropriate blocks were found.
+	 * @param new notification to broadcast
+	 * @return a new value notification for the receiving block(s)
+	 */
+	public Collection<SignalNotification> getBroadcastNotifications(BroadcastNotification incoming) {
+		
+		Collection<SignalNotification>notifications = new ArrayList<SignalNotification>();
+		for( ProcessBlock block:getProcessBlocks()) {
+			if( !block.isReceiver() ) continue;
+			SignalNotification sn = new SignalNotification(block,incoming.getSignal());
+			notifications.add(sn);
+		}
+		return notifications;
+	}
 	/**
 	 * We have just received a notification of a value change. Determine which blocks are connected downstream,
 	 * and create notifications for each. In/Out are from the point of view of a block, so are backwards here.

@@ -17,8 +17,11 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 
 /**
- *  This handler provides a way to request properties diagrams, blocks and connections.
- *  The request is relayed to the Gateway scope via an RPC call.
+ *  This handler is designed for use by Java code in the designer that needs 
+ *  facilities from the Gateway. It provides a way to request/set properties of 
+ *  diagrams, blocks and connections.
+ *  
+ *  Each request is relayed to the Gateway scope via an RPC call.
  */
 public class BlockRequestHandler  {
 	private final static String TAG = "BlockRequestHandler";
@@ -43,10 +46,10 @@ public class BlockRequestHandler  {
 			String state = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "getControllerState");
 			if( state.equalsIgnoreCase("running")) result = true;
-			log.infof("%s: isControllerRunning ... %s",TAG,state);
+			log.infof("%s.isControllerRunning ... %s",TAG,state);
 		}
 		catch(Exception ge) {
-			log.infof("%s: isControllerRunning: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.isControllerRunning: GatewayException (%s)",TAG,ge.getMessage());
 		}
 		return result;
 	}
@@ -55,14 +58,14 @@ public class BlockRequestHandler  {
 	 * Start the block execution engine in the gateway.
 	 */
 	public void startController() {
-		log.infof("%s: startController ...",TAG);
+		log.infof("%s.startController ...",TAG);
 
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "startController");
 		}
 		catch(Exception ge) {
-			log.infof("%s: startController: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.startController: GatewayException (%s)",TAG,ge.getMessage());
 		}
 	}
 
@@ -70,14 +73,14 @@ public class BlockRequestHandler  {
 	 * Shutdown the block execution engine in the gateway.
 	 */
 	public void stopController() {
-		log.infof("%s: stopController ...",TAG);
+		log.infof("%s.stopController ...",TAG);
 
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "stopController");
 		}
 		catch(Exception ge) {
-			log.infof("%s: stopController: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.stopController: GatewayException (%s)",TAG,ge.getMessage());
 		}
 	}
 
@@ -100,7 +103,7 @@ public class BlockRequestHandler  {
 	 */
 	@SuppressWarnings("unchecked")
 	public BlockProperty[] getBlockProperties(long projectId,long resourceId,UUID blockId,String className) {
-		log.infof("%s: getBlockProperties: for block %s (%s)",TAG,blockId.toString(),className);
+		log.infof("%s.getBlockProperties: for block %s (%s)",TAG,blockId.toString(),className);
 		BlockProperty[] result = null;
 		List<String> jsonList = new ArrayList<String>();
 		try {
@@ -108,7 +111,7 @@ public class BlockRequestHandler  {
 					BLTProperties.MODULE_ID, "getBlockProperties",new Long(projectId),new Long(resourceId),blockId.toString(),className);
 		}
 		catch(Exception ge) {
-			log.infof("%s: getBlockProperties: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.getBlockProperties: GatewayException (%s)",TAG,ge.getMessage());
 		}
 				
 		if( jsonList!=null) {
@@ -129,36 +132,9 @@ public class BlockRequestHandler  {
 	}
 
 
-	/**
-	 * Obtain a list of attribute-value pairs for the class represented by this connection.
-	 * In particular we need a list of possible connection ports supported by the input and
-	 * output blocks, as well as the ports currently used.
-	 * 
-	 * Before we pass on the request we beef up the key by pre-pending the tree-path
-	 * to the diagram.
-	 * 
-	 * @param projectId
-	 * @param resourceId
-	 * @param connectionId UUID of the subject connection
-	 * @param json string representing an array of attributes
-	 * @return a string representing a JSON document containing an array of attributes corresponding
-	 *         to the connection object.
-	 */
-	public String getConnectionAttributes(Long projectId, Long resourceId,String connectionId, String json) {
-		String result = "";
-		try {
-			//result = BlockPropertiesScriptFunctions.getConnectionAttributes(projectId,resourceId,connectionId,json);
-		}
-		catch(Exception ex) {
-			log.info(TAG+"getConnectionAttributes: Exception ("+ex.getMessage()+")");
-		}
-		return result;
-	}
-
-
 	@SuppressWarnings("unchecked")
 	public List<PalettePrototype> getBlockPrototypes() {
-		log.infof("%s: getBlockPrototypes ...",TAG);
+		log.infof("%s.getBlockPrototypes ...",TAG);
 		List<PalettePrototype> result = new ArrayList<PalettePrototype>();
 		List<String> jsonList = new ArrayList<String>();
 		try {
@@ -166,18 +142,37 @@ public class BlockRequestHandler  {
 					BLTProperties.MODULE_ID, "getBlockPrototypes");
 		}
 		catch(Exception ge) {
-			log.infof("%s: getBlockPrototypes: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.getBlockPrototypes: GatewayException (%s)",TAG,ge.getMessage());
 		}
 		
 		if( jsonList!=null) {
 			
 			for( String json:jsonList ) {
-				log.tracef("%s getBlockPrototypes: %s",TAG,json);
+				log.tracef("%s.getBlockPrototypes: %s",TAG,json);
 				PalettePrototype bp = PalettePrototype.createPrototype(json);
 				result.add(bp);
 			}
 		}
 		return result;
 	}
-
+	
+	/**
+	 * Send a signal to all blocks of a particular class on a specified diagram.
+	 * This is a "local" transmission. The diagram is specified by a treepath.
+	 * There may be no successful recipients.
+	 * 
+	 * @param projectName
+	 * @param diagramPath
+	 * @param className filter of the receiver blocks to be targeted.
+	 * @param command string of the signal.
+	 */
+	public void sendLocalSignal(String projectName, String diagramPath,String className, String command) {
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "sendLocalSignal",projectName,diagramPath,className,command);
+		}
+		catch(Exception ex) {
+			log.infof("%s.sendLocalSignal: Exception (%s)",TAG,ex.getMessage());
+		}
+	}
 }

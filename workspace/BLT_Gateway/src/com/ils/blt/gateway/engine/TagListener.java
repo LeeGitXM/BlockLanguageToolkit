@@ -40,17 +40,15 @@ public class TagListener implements TagChangeListener   {
 	private static final String TAG = "TagListener";
 
 	private final LoggerEx log;
-	private final GatewayContext context;
+	private GatewayContext context = null;
 	private final Map<String,List<ProcessBlock>> blockMap;  // Executable block keyed by tag path
 	private final SimpleDateFormat dateFormatter;
 	private boolean stopped = true;
 	
 	/**
 	 * Constructor: 
-	 * @param ctxt
 	 */
-	public TagListener(GatewayContext ctxt) {
-		this.context = ctxt;
+	public TagListener() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.blockMap = new HashMap<String,List<ProcessBlock>>();
 		this.dateFormatter = new SimpleDateFormat(BlockConstants.TIMESTAMP_FORMAT);
@@ -60,46 +58,57 @@ public class TagListener implements TagChangeListener   {
 	 * Start a subscription for a block attribute. The subject attribute must be
 	 * one associated with a tag.
 	 */
-	public void startSubscription(ProcessBlock block,BlockProperty property) {
+	public void defineSubscription(ProcessBlock block,BlockProperty property) {
 		if( block==null || property==null ) return;
-		//log.tracef("%s.startSubscription: considering %s:%s",TAG,block.getLabel(),property.getName());
+		log.tracef("%s.defineSubscription: considering %s:%s",TAG,block.getLabel(),property.getName());
 		String tagPath = property.getBinding();
 		if( tagPath!=null && tagPath.length() >0 && property.getBindingType()==BindingType.TAG) {
 			if( blockMap.get(tagPath) == null ) blockMap.put(tagPath, new ArrayList<ProcessBlock>());
 			List<ProcessBlock> blocks = blockMap.get(tagPath);
 			if( blocks.contains(block) ) {
-				log.debugf("%s.startSubscription: share %s:%s on tag path %s",TAG,block.getLabel(),property.getName(),tagPath);
+				log.debugf("%s.defineSubscription: share %s:%s on tag path %s",TAG,block.getLabel(),property.getName(),tagPath);
 				return;    // We already have a subscription
 			}
 			blocks.add(block);
-			startSubscriptionForProperty(block,property,tagPath);
+			if(!stopped) startSubscriptionForProperty(block,property,tagPath);
 		}
 	}
 
 	/**
-	 * Stop a subscription based on a tag path.
+	 * Remove a subscription based on a tag path. Unsubscribe if this
+	 * was the last reference to the path for any block.
 	 * 
 	 * @param tagPath
 	 */
-	public void stopSubscription(String tagPath,ProcessBlock block) {
+	public void removeSubscription(String tagPath,ProcessBlock block) {
 		if( tagPath==null) return;    // There was no subscription
-		SQLTagsManager tmgr = context.getTagManager();
-		try {
-			TagPath tp = TagPathParser.parse(tagPath);
-			log.debug(TAG+"stopSubscription: "+tagPath);
-			tmgr.unsubscribe(tp, this);
-		}
-		catch(IOException ioe) {
-			log.error(TAG+".stopSubscription ("+ioe.getMessage()+")");
+
+		List<ProcessBlock> blocks = blockMap.get(tagPath);
+		blocks.remove(block);
+		if(blocks.isEmpty()) {
+			log.debug(TAG+"removeSubscription: "+tagPath);
+			blockMap.remove(tagPath);
+			if(!stopped) {
+				// If we're running unsubscribe
+				SQLTagsManager tmgr = context.getTagManager();
+				try {
+					TagPath tp = TagPathParser.parse(tagPath);
+					tmgr.unsubscribe(tp, this);
+				}
+				catch(IOException ioe) {
+					log.error(TAG+".stopSubscription ("+ioe.getMessage()+")");
+				}
+			}
 		}
 	}
 	
 	/**
-	 * Unsubscribes to a path. Does not modify the map.
+	 * Unsubscribe to a path. Does not modify the map.
 	 * @param tagPath
 	 */
 	public void stopSubscription(String tagPath) {
 		if( tagPath==null) return;    // There was no subscription
+		if( stopped ) return;         // Everything is unsubscribed if we're stopped
 		SQLTagsManager tmgr = context.getTagManager();
 		try {
 			TagPath tp = TagPathParser.parse(tagPath);
@@ -112,8 +121,10 @@ public class TagListener implements TagChangeListener   {
 	}
 	/**
 	 * Re-start. Create subscriptions for everything in the tag map.
+	 * @param ctxt
 	 */
-	public void start() {
+	public void start(GatewayContext ctxt) {
+		this.context = ctxt;
 		log.infof("%s: start tagListener ...",TAG);
 		for( String tagPath:blockMap.keySet()) {
 			List<ProcessBlock> blocks = blockMap.get(tagPath);
@@ -127,13 +138,14 @@ public class TagListener implements TagChangeListener   {
 				}
 			}
 		}
+		stopped = false;
 	}
 	
 	private void startSubscriptionForProperty(ProcessBlock block,BlockProperty property,String tagPath) {
 		SQLTagsManager tmgr = context.getTagManager();
 		try {
 			TagPath tp = TagPathParser.parse(tagPath);
-			log.debugf("%s.startSubscriptionForProperty: for %s on tag path %s",TAG,property.getName(),tp.toStringFull());
+			log.infof("%s.startSubscriptionForProperty: for %s on tag path %s",TAG,property.getName(),tp.toStringFull());
 			// Make sure the attribute is in canonical form
 			property.setBinding( tp.toStringFull());
 			Tag tag = tmgr.getTag(tp);
@@ -173,6 +185,7 @@ public class TagListener implements TagChangeListener   {
 		for( String tagPath:blockMap.keySet()) {
 			stopSubscription(tagPath);
 		}
+		stopped = true;
 	}
 	
 	/** 
@@ -198,7 +211,7 @@ public class TagListener implements TagChangeListener   {
 		TagProp property = event.getTagProperty();
 		if( property == TagProp.Value) {
 			try {
-				log.debugf("%s: tagChanged: got a %s value for %s (%s at %s)",TAG,
+				log.infof("%s: tagChanged: got a %s value for %s (%s at %s)",TAG,
 					(tag.getValue().getQuality().isGood()?"GOOD":"BAD"),
 					tag.getName(),tag.getValue().getValue(),
 					dateFormatter.format(tag.getValue().getTimestamp()));

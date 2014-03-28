@@ -44,7 +44,9 @@ public class ModelResourceManager implements ProjectListener  {
 	private final LoggerEx log;
 	private final BlockExecutionController controller;
 	/** The diagrams are keyed by projectId, then resourceID */
-	private final Hashtable<Long,Hashtable<Long,ProcessDiagram>> models;
+	private final Hashtable<Long,Hashtable<Long,ProcessDiagram>> diagramsById;
+	/** The diagrams are keyed by project name and tree path */
+	private final Hashtable<String,Hashtable<String,ProcessDiagram>> diagramsByName;
 	
 	/**
 	 * Initially we query the gateway context to discover what resources exists. After that
@@ -56,15 +58,17 @@ public class ModelResourceManager implements ProjectListener  {
 	public ModelResourceManager(BlockExecutionController c) { 
 		this.controller = c;
 		log = LogUtil.getLogger(getClass().getPackage().getName());
-		models = new Hashtable<Long,Hashtable<Long,ProcessDiagram>>();
+		diagramsById = new Hashtable<Long,Hashtable<Long,ProcessDiagram>>();
+		diagramsByName = new Hashtable<String,Hashtable<String,ProcessDiagram>>();
 	}
 
 	
 	public void setContext(GatewayContext cntx) {
-		this.context = cntx;
-		context.getProjectManager().addProjectListener(this);
+		if( this.context==null) {
+			this.context = cntx;
+			context.getProjectManager().addProjectListener(this);
+		}
 	}
-	
 	/**
 	 * Set a ProcessDiagram for a resource. There is a one-one correspondence 
 	 * between a model-project and diagram.
@@ -72,17 +76,54 @@ public class ModelResourceManager implements ProjectListener  {
 	 * @param resourceId the identity of the model resource
 	 * @param model the diagram logic
 	 */
-	public void addResource(Long projectId,Long resourceId,ProcessDiagram model) {
-		Hashtable<Long,ProcessDiagram> projectModels = models.get(projectId);
-		if( projectModels==null ) {
-			projectModels = new Hashtable<Long,ProcessDiagram>();
-			models.put(projectId,projectModels);
+	public void addResource(Long projectId,Long resourceId,ProcessDiagram diagram) {
+		Hashtable<Long,ProcessDiagram> diagrams = diagramsById.get(projectId);
+		if( diagrams==null ) {
+			diagrams = new Hashtable<Long,ProcessDiagram>();
+			diagrams.put(resourceId, diagram);
+			diagramsById.put(projectId,diagrams);
 		}
-		projectModels.put(resourceId, model);
+		diagrams.put(resourceId, diagram);
+		// Same thing by name
+		String projectName = context.getProjectManager().getProjectName(projectId.longValue(), ProjectVersion.Published);
+		if( projectName!=null ) {
+			Hashtable<String,ProcessDiagram> namedDiagrams = diagramsByName.get(projectName);
+			if( namedDiagrams==null && diagram.getTreePath()!=null) {
+				namedDiagrams = new Hashtable<String,ProcessDiagram>();
+				namedDiagrams.put(diagram.getTreePath(), diagram);
+				diagramsByName.put(projectName,namedDiagrams);
+			}
+		}
+		else {
+			log.warnf("%s.addResource: No published project found with Id = %d", TAG,projectId.longValue());
+		}
+		
+	}
+	
+	/**
+	 * Analyze a MODEL_RESOURCE for its embedded diagram. Add this diagram to the engine.
+	 * @param projectId the identity of a project
+	 * @param res the model resource
+	 */
+	public void analyzeResource(Long projectId,ProjectResource res) {
+		ProcessDiagram diagram = deserializeModelResource(projectId,res);
+		if( diagram!=null) {
+			addResource(new Long(projectId), new Long(res.getResourceId()), diagram);
+			for( ProcessBlock pb:diagram.getProcessBlocks()) {
+				for(BlockProperty bp:pb.getProperties()) {
+					if( bp.getBindingType()==BindingType.TAG && bp.getBinding()!=null ) {
+						controller.startSubscription(pb,bp);
+					}
+				}
+			}
+		}
+		else {
+			log.warnf("%s.analyzeResource - Failed to create DOM from resource",TAG);
+		}
 	}
 	
 	public void deleteResources(Long projectId) {
-		Hashtable<Long,ProcessDiagram> diagrams = models.get(projectId);
+		Hashtable<Long,ProcessDiagram> diagrams = diagramsById.get(projectId);
 		for(ProcessDiagram diagram:diagrams.values()) {
 			for(ProcessBlock block:diagram.getProcessBlocks() ) {
 				for(BlockProperty bp:block.getProperties()) {
@@ -90,7 +131,7 @@ public class ModelResourceManager implements ProjectListener  {
 				}	
 			}
 		}
-		models.remove(projectId);
+		diagramsById.remove(projectId);
 	}
 	
 	/**
@@ -99,7 +140,7 @@ public class ModelResourceManager implements ProjectListener  {
 	 * @param projectId the identity of a project.
 	 */
 	public void deleteResource(Long projectId,Long resourceId) {
-		Hashtable<Long,ProcessDiagram> projectModel = models.get(projectId);
+		Hashtable<Long,ProcessDiagram> projectModel = diagramsById.get(projectId);
 		if( projectModel!= null ) {
 			ProcessDiagram diagram = projectModel.get(resourceId);
 			if( diagram!=null ) {
@@ -123,7 +164,7 @@ public class ModelResourceManager implements ProjectListener  {
 	 */
 	public ProcessBlock getBlock(Long projectId,Long resourceId,UUID blockId) {
 		ProcessBlock block = null;
-		Hashtable<Long,ProcessDiagram> projectModels = models.get(projectId);
+		Hashtable<Long,ProcessDiagram> projectModels = diagramsById.get(projectId);
 		if( projectModels!=null ) {
 			ProcessDiagram dm = projectModels.get(resourceId);
 			if( dm!=null ) {
@@ -142,7 +183,7 @@ public class ModelResourceManager implements ProjectListener  {
 	 */
 	public Connection getConnection(long projectId,long resourceId,String connectionId) {
 		Connection cxn = null;
-		Hashtable<Long,ProcessDiagram> projectModels = models.get(new Long(projectId));
+		Hashtable<Long,ProcessDiagram> projectModels = diagramsById.get(new Long(projectId));
 		if( projectModels!=null ) {
 			ProcessDiagram dm = projectModels.get(new Long(resourceId));
 			if( dm!=null ) {
@@ -153,20 +194,46 @@ public class ModelResourceManager implements ProjectListener  {
 	}
 	
 	/**
-	 * Get a connection from the existing diagrams. 
+	 * Get a specified diagram. 
 	 * @param projectId
 	 * @param resourceId
-	 * @param connectionId
-	 * @return the specified Connection. If not found, return null. 
+
+	 * @return the specified diagram. If not found, return null. 
 	 */
 	public ProcessDiagram getDiagram(Long projectId,Long resourceId) {
 		ProcessDiagram diagram = null;
-		Hashtable<Long,ProcessDiagram> processDiagrams = models.get(projectId);
+		Hashtable<Long,ProcessDiagram> processDiagrams = diagramsById.get(projectId);
 		if( processDiagrams!=null ) {
 			diagram = processDiagrams.get(resourceId);
 		}
 		return diagram;
 	}
+	
+	/**
+	 * Get a specified diagram by project name and tree path. Useful for a query from the UI. 
+	 * @param projectName
+	 * @param treePath path to the diagram from the navigation tree in the Designer
+	 * @return the specified diagram. If not found, return null. 
+	 */
+	public ProcessDiagram getDiagram(String projectName,String treePath) {
+		ProcessDiagram diagram = null;
+		Hashtable<String,ProcessDiagram> processDiagrams = diagramsByName.get(projectName);
+		if( processDiagrams!=null ) {
+			diagram = processDiagrams.get(treePath);
+		}
+		return diagram;
+	}
+	
+	/**
+	 * Called during a gateway shutdown.
+	 */
+	public void stop() {
+		if( context!=null ) {
+			context.getProjectManager().removeProjectListener(this);
+			context = null;
+		}
+	}
+	
 	
 	public void updateModel(long projectId) {
 		Project project = context.getProjectManager().getProject(projectId, ApplicationScope.DESIGNER, ProjectVersion.Staging);
@@ -241,24 +308,11 @@ public class ModelResourceManager implements ProjectListener  {
 				if( res.getResourceType().equalsIgnoreCase(BLTProperties.MODEL_RESOURCE_TYPE)) {
 					log.debugf("%s: projectAdded - published %s %d = %s", TAG,res.getName(),
 						res.getResourceId(),res.getResourceType());
-					ProcessDiagram diagram = deserializeModelResource(projectId,res);
-					if( diagram!=null) {
-						addResource(new Long(projectId), new Long(res.getResourceId()), diagram);
-						for( ProcessBlock pb:diagram.getProcessBlocks()) {
-							for(BlockProperty bp:pb.getProperties()) {
-								if( bp.getBindingType()==BindingType.TAG && bp.getBinding()!=null ) {
-									controller.startSubscription(pb,bp);
-								}
-							}
-						}
-					}
-					else {
-						log.warnf("%s: projectAdded - Failed to create DOM from resource",TAG);
-					}
+					analyzeResource(projectId,res);
+					
 				}
 			}
 		}
-		
 	}
 	/**
 	 * Assume that the project resources are already gone. This is a cleanup step.
@@ -279,19 +333,20 @@ public class ModelResourceManager implements ProjectListener  {
 	 */
 	@Override
 	public void projectUpdated(Project diff, ProjectVersion vers) { 
-		log.debugf("%s: projectUpdated - version = %s", TAG,vers.toString());
+		log.infof("%s: projectUpdated - version = %s", TAG,vers.toString());
 		if( vers==ProjectVersion.Published ) return;  // Consider only the "Staging" version
 		
 		long projectId = diff.getId();
 		Set<Long> deleted = diff.getDeletedResources();
 		for (Long  resid : deleted) {
+			log.infof("%s: projectUpdated -delete resource %d:%d", TAG,projectId,resid);
 			deleteResource(projectId,resid);
 		}
 		
 		log.debugf("%s: projectUpdated - res of type model = %d", TAG,diff.getResourcesOfType(BLTProperties.MODULE_ID, BLTProperties.MODEL_RESOURCE_TYPE).size());
 		List<ProjectResource> resources = diff.getResourcesOfType(BLTProperties.MODULE_ID, BLTProperties.MODEL_RESOURCE_TYPE);
 		for( ProjectResource res:resources ) {
-			log.debugf("%s: projectUpdated -  %s %d = %s (%s)", TAG,res.getName(),
+			log.infof("%s: projectUpdated -  %s %d = %s (%s)", TAG,res.getName(),
 					res.getResourceId(),res.getResourceType(),(diff.isResourceDirty(res)?"dirty":"clean"));
 			ProcessDiagram diagram = deserializeModelResource(projectId,res);
 			if( diagram!=null) {
