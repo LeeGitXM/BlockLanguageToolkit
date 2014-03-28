@@ -178,8 +178,14 @@ public class GatewayRpcDispatcher   {
 		log.debugf("%s: getBlockPrototypes: returning %d palette prototypes",TAG,results.size());
 		return results;
 	}
+	public List<String> getDiagramTreePaths(String projectName) {
+		List<String> result = new ArrayList<String>();
+		
+		return result;
+	}
 	
-	void sendLocalSignal(String projectName, String diagramPath,String className, String command) {
+	public void sendLocalSignal(String projectName, String diagramPath,String className, String command) {
+		log.infof("%s: sendLocalSignal: %s %s %s %s",TAG,projectName,diagramPath,className,command);
 		ProcessDiagram diagram = BlockExecutionController.getInstance().getDelegate().getDiagram(projectName, diagramPath);
 		if( diagram!=null ) {
 			// Create a broadcast notification

@@ -156,9 +156,23 @@ public class BlockRequestHandler  {
 		return result;
 	}
 	
+	@SuppressWarnings("unchecked")
+	public List<String> getDiagramTreePaths(String projectName) {
+		log.infof("%s.getDiagramTreePaths for %s ...",TAG,projectName);
+		List<String> result = new ArrayList<String>();
+		try {
+			result = (List<String> )GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "getDiagramTreeList",projectName);
+		}
+		catch(Exception ge) {
+			log.infof("%s.getDiagramTreePaths: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		return result;
+	}
+	
 	/**
 	 * Send a signal to all blocks of a particular class on a specified diagram.
-	 * This is a "local" transmission. The diagram is specified by a treepath.
+	 * This is a "local" transmission. The diagram is specified by a tree-path.
 	 * There may be no successful recipients.
 	 * 
 	 * @param projectName
@@ -167,6 +181,7 @@ public class BlockRequestHandler  {
 	 * @param command string of the signal.
 	 */
 	public void sendLocalSignal(String projectName, String diagramPath,String className, String command) {
+		log.infof("%s.sendLocalSignal for %s %s %s %s...",TAG,projectName,diagramPath,className,command);
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "sendLocalSignal",projectName,diagramPath,className,command);

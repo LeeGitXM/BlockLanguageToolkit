@@ -27,6 +27,15 @@ public class BlockScriptFunctions   {
 		return result;
 	}
 	/**
+	 * Query the gateway for list of diagrams 
+	 * 
+	 * @param projectName
+	 * @return a list of tree-paths to the diagrams saved (ie. known to the Gateway).
+	 */
+	public static List getDiagramTreePaths(String projectName) {
+		return handler.getDiagramTreePaths(projectName);
+	}
+	/**
 	 * Send a signal to all blocks of a particular class on a specified diagram.
 	 * This is a "local" transmission.
 	 * 
@@ -35,7 +44,7 @@ public class BlockScriptFunctions   {
 	 * @param className filter of the receiver blocks to be targeted.
 	 * @param command string of the signal.
 	 */
-	public void sendLocalSignal(String projectName, String diagramPath,String className, String command) {
+	public static void sendLocalSignal(String projectName, String diagramPath,String className, String command) {
 		handler.sendLocalSignal(projectName,diagramPath,className,command);
 	}
 }

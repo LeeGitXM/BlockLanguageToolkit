@@ -33,15 +33,17 @@ public class Migrator {
 	private static final String USAGE = "Usage: migrator <database>";
 	@SuppressWarnings("unused")
 	private final static JDBC driver = new JDBC(); // Force driver to be loaded
+	private final RootClass root;
 	private boolean ok = true;                     // Allows us to short circuit processing
-	private G2Diagram g2diagram = null;                  // G2 Diagram read from JSON
+	private G2Diagram g2diagram = null;            // G2 Diagram read from JSON
 	private SerializableDiagram diagram = null;    // The result
 	private final ClassNameMapper classMapper;
 	private final ClassAttributeMapper attributeMapper;
 	private final ConnectionMapper connectionMapper;
 
 	 
-	public Migrator() {
+	public Migrator(RootClass rc) {
+		this.root = rc;
 		classMapper = new ClassNameMapper();
 		attributeMapper = new ClassAttributeMapper();
 		connectionMapper = new ConnectionMapper();
@@ -60,7 +62,7 @@ public class Migrator {
 		catch(SQLException e) {
 			// if the error message is "out of memory", 
 			// it probably means no database file is found
-			System.err.println(TAG+e.getMessage());
+			System.err.println(TAG+": "+e.getMessage());
 			ok = false;
 		}
 		finally {
@@ -70,7 +72,7 @@ public class Migrator {
 			} 
 			catch(SQLException e) {
 				// connection close failed.
-				System.err.println(TAG+e.getMessage());
+				System.err.println(TAG+": "+e.getMessage());
 			}
 		}
 	}
@@ -93,16 +95,21 @@ public class Migrator {
 		}
 		catch(IOException ignore) {}
 		
-		// Now convert into a G2 Diagram
+		// Now convert into G2
 		try {
 			byte[] bytes = input.toString().getBytes();
 			ObjectMapper mapper = new ObjectMapper();
 			mapper.configure(JsonParser.Feature.ALLOW_COMMENTS, true);
 			mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
-			g2diagram = mapper.readValue(new String(bytes), G2Diagram.class);
-			if( g2diagram==null ) {
-				System.err.println(TAG+": Failed to deserialize input");
-				ok = false;
+			if( root==RootClass.APPLICATION) {
+				
+			}
+			else {
+				g2diagram = mapper.readValue(new String(bytes), G2Diagram.class);
+				if( g2diagram==null ) {
+					System.err.println(TAG+": Failed to deserialize input");
+					ok = false;
+				}
 			}
 		}
 		catch( IOException ioe) {
@@ -149,12 +156,21 @@ public class Migrator {
 		if( !ok ) return;
 		
 		ObjectMapper mapper = new ObjectMapper();
+		
 		try{ 
-			String json = mapper.writeValueAsString(diagram);
+			String json = "";
+			if( root==RootClass.APPLICATION) {
+				
+			}
+			// diagram
+			else {
+				json = mapper.writeValueAsString(diagram);
+			}
+			 
 			System.out.println(json);
 		}
 		catch(JsonProcessingException jpe) {
-			System.err.println(TAG+": Unable to serialize migrated diagram");
+			System.err.println(String.format("%s: Unable to serialize migrated %s",TAG,root.toString()));
 		}
 	}
 	
@@ -182,8 +198,19 @@ public class Migrator {
 		Level level = Level.WARN;
 		if( levelString!=null) level = Level.toLevel(levelString);
         Logger.getRootLogger().setLevel(level); //set log level
+        
+        RootClass root = RootClass.APPLICATION;
+        String rootClass = System.getProperty("root.class");   // Application, Problem
+		if( rootClass!=null) {
+			try {
+				root = RootClass.valueOf(rootClass);
+			}
+			catch(IllegalArgumentException iae) {
+				System.err.println(String.format("%s: Unknown root.class (%s)",TAG,iae.getMessage()));
+			}
+		}
       
-		Migrator m = new Migrator();
+		Migrator m = new Migrator(root);
 		String path = args[0];
 		// In case we've been fed a Windows path, convert
 		path = path.replace("\\", "/");
