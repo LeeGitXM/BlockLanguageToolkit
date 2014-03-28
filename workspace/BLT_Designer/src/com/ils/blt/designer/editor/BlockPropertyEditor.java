@@ -98,11 +98,9 @@ public class BlockPropertyEditor extends JPanel {
 			if( property.getName().equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_LIMIT_TYPE)) {
 				panel = new LimitTypePanel(property);
 			}
-			else if( property.getName().equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_SCOPE)) {
-				panel = new ScopePanel(property);
-			}
-			else if( property.getName().equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_DISTRIBUTION)) {
-				panel = new DistributionTypePanel(property);
+			else if( property.getName().equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_SCOPE) ||
+					 property.getName().equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_DISTRIBUTION) ) {
+				panel = new ComboOnlyPanel(property);
 			}
 			else {
 				panel = new PropertyPanel(property);
@@ -371,19 +369,25 @@ public class BlockPropertyEditor extends JPanel {
 		}
 	}
 
-	// Special for a transmit block
-	private class ScopePanel extends JPanel {
+
+	// Special for whenever there is just a combo box
+	private class ComboOnlyPanel extends JPanel {
 		private static final long serialVersionUID = 6501004559543409511L;
 		private static final String columnConstraints = "[para]0[][100lp,fill]";
 		private static final String layoutConstraints = "ins 2";
 		private static final String rowConstraints = "";
 		
-		public ScopePanel(BlockProperty prop) {
+		public ComboOnlyPanel(BlockProperty prop) {
 			setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));     // 3 cells across
 			addSeparator(this,prop.getName());
 			
-			add(createLabel("Scope"),"skip");
-			add(createTransmissionScopeCombo(prop),"wrap");
+			add(createLabel(prop.getName()),"skip");
+			if(prop.getName().contains("Distribution")) {
+				add(createDistributionTypeCombo(prop),"wrap");
+			}
+			else {
+				add(createTransmissionScopeCombo(prop),"wrap");
+			}	
 		}
 	}
 	
