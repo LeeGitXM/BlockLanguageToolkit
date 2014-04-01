@@ -10,7 +10,7 @@ import com.ils.blt.client.component.DiagramAnalyzerComponent;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.BlockRequestHandler;
 import com.ils.blt.common.BlockScriptFunctions;
-import com.ils.blt.designer.navtree.DiagramTreeNode;
+import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.inductiveautomation.factorypmi.designer.palette.model.DefaultPaletteItemGroup;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
@@ -41,7 +41,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	public static String HOOK_BUNDLE_NAME   = "designer";      // Properties file is designer.properties
 	public static String PREFIX = BLTProperties.BUNDLE_PREFIX; // Properties is accessed by this prefix
 
-	private DiagramTreeNode rootNode;
+	private GeneralPurposeTreeNode rootNode;
 	private DesignerContext context = null;
 	private final LoggerEx log;
 	private DiagramWorkspace workspace = null;
@@ -97,7 +97,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		
 		// Setup the diagram workspace
 		workspace = new DiagramWorkspace(context);
-		rootNode = new DiagramTreeNode(context);
+		rootNode = new GeneralPurposeTreeNode(context);
 		context.getProjectBrowserRoot().addChild(rootNode);
 		context.registerResourceWorkspace(workspace);
 		

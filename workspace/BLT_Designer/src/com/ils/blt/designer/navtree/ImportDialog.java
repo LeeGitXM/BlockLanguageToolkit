@@ -31,17 +31,21 @@ public class ImportDialog extends JDialog implements ActionListener {
 	private final int WIDTH = 400;
 	private File filePath = null;
 	private JFileChooser fc;
-	private JTextField diagramNameField;
-	private String diagramName = "";
+	private JTextField importNameField;
+	private String importName = "";
+	private final String nameLabel;
+	private final String title;
 	private final LoggerEx log;
 	
 	// Doing nothing works quite well.
-	public ImportDialog(String name) {
+	public ImportDialog(String name,String label,String title) {
 		super();
 		setModal(true);
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
         setSize(new Dimension(WIDTH,HEIGHT));
-        this.diagramName = name;
+        this.importName = name;
+        this.nameLabel = label;
+        this.title = title;
         this.log = LogUtil.getLogger(getClass().getPackage().getName());
         initialize();
 	}
@@ -66,7 +70,7 @@ public class ImportDialog extends JDialog implements ActionListener {
 		    fc.setCurrentDirectory(startDirectory);
 	    }
 	    
-	    fc.setDialogTitle(BundleUtil.get().getString(PREFIX+".Import.DialogTitle"));
+	    fc.setDialogTitle(title);
 	    fc.setApproveButtonText(BundleUtil.get().getString(PREFIX+".Import.ApproveButton"));
 	    fc.setEnabled(false);
 	    fc.setMultiSelectionEnabled(false);
@@ -77,13 +81,13 @@ public class ImportDialog extends JDialog implements ActionListener {
 		layoutConstraints = "fillx,ins 10";
 		rowConstraints = "";
 	    JPanel namePanel = new JPanel(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
-	    JLabel label = new JLabel(BundleUtil.get().getString(PREFIX+".Import.NameLabel"));
+	    JLabel label = new JLabel(nameLabel);
 	    namePanel.add(label, "skip");
-	    diagramNameField = new JTextField(diagramName);
-	    diagramNameField.setName(TEXT_FIELD_NAME);
-	    diagramNameField.setColumns(30);
-	    diagramNameField.addActionListener(this);
-	    namePanel.add(diagramNameField, "growx,wrap");
+	    importNameField = new JTextField(importName);
+	    importNameField.setName(TEXT_FIELD_NAME);
+	    importNameField.setColumns(30);
+	    importNameField.addActionListener(this);
+	    namePanel.add(importNameField, "growx,wrap");
 	    
 	    add(namePanel, "wrap");
 	    add(fc, "wrap");
@@ -92,7 +96,7 @@ public class ImportDialog extends JDialog implements ActionListener {
 	/**
 	 * @return the name that the user entered.
 	 */
-	public String getDiagramName() { return diagramName; }
+	public String getImportName() { return importName; }
 	/**
 	 * @return the file path that the user selected from the chooser.
 	 */
@@ -120,7 +124,7 @@ public class ImportDialog extends JDialog implements ActionListener {
 			this.dispose();
 		}
 		else if(((JComponent)e.getSource()).getName().equals(TEXT_FIELD_NAME) ) {
-			diagramName = diagramNameField.getText();
+			importName = importNameField.getText();
 		}
 	}
 }

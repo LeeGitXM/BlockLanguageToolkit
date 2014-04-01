@@ -5,15 +5,20 @@
  */
 package com.ils.blt.designer.navtree;
 
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.UUID;
 
+import javax.swing.ImageIcon;
 import javax.swing.JPopupMenu;
 import javax.swing.tree.TreePath;
 
@@ -21,10 +26,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.BlockRequestHandler;
+import com.ils.blt.common.serializable.SerializableApplicationTree;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.UUIDResetHandler;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
+import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;
@@ -44,21 +51,15 @@ import com.inductiveautomation.ignition.designer.navtree.model.ResourceDeleteAct
  * layout. In addition to standard folders, folders can be of type "Application" or
  * "Family". These hold properties special to the Diagnostics Toolkit.  Menu options 
  * vary depending on folder type. Labels are likewise dependent.
+ * 
+ * Leaf nodes are of type DiagramNode.
  */
-public class DiagramTreeNode extends FolderNode {
-	private static final String TAG = "DiagramTreeNode";
+public class GeneralPurposeTreeNode extends FolderNode {
+	private static final String TAG = "GeneralPurposeTreeNode";
 	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
 	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
-	// These are the various actions beyond defaults
-	private DebugAction debugAction = null;
-	private ApplicationAction applicationAction = null;
-	private FamilyAction familyAction = null;
-	protected CloneAction cloneAction = null;
-	protected DiagramAction diagramAction = null;
-	protected ImportAction importAction = null;
-	protected StartAction startAction = null;
-	protected StopAction stopAction = null;
-	
+	private StartAction startAction = new StartAction();
+	private StopAction stopAction = new StopAction();
 	private final DiagramWorkspace workspace; 
 	
 
@@ -66,7 +67,7 @@ public class DiagramTreeNode extends FolderNode {
 	 * Create a new folder node representing the root folder
 	 * @param ctx the designer context
 	 */
-	public DiagramTreeNode(DesignerContext ctx) {
+	public GeneralPurposeTreeNode(DesignerContext ctx) {
 		super(ctx, BLTProperties.MODULE_ID, ApplicationScope.GATEWAY,BLTProperties.ROOT_FOLDER_UUID);
 		workspace = ((BLTDesignerHook)ctx.getModule(BLTProperties.MODULE_ID)).getWorkspace();
 		setText(BundleUtil.get().getString(PREFIX+".RootFolderName"));
@@ -81,11 +82,24 @@ public class DiagramTreeNode extends FolderNode {
 	 * @param context the designer context
 	 * @param resource the project resource
 	 */
-	public DiagramTreeNode(DesignerContext context,ProjectResource resource) {
+	public GeneralPurposeTreeNode(DesignerContext context,ProjectResource resource) {
 		super(context, resource);
-
 		workspace = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getWorkspace();
-		setIcon(IconUtil.getIcon("folder_closed"));
+		String iconPath = null;
+		if(resource.getResourceType().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
+			iconPath = "Block/icons/small/application_closed_16.png";
+		} 
+		else if(resource.getResourceType().equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE)) {
+			iconPath = "Block/icons/small/family_closed_16.png";
+		}
+		else if(resource.getResourceType().equalsIgnoreCase(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
+			iconPath = "Block/icons/small/diagram.png";
+		}
+		if( iconPath!=null ) {
+			Dimension iconSize = new Dimension(16,16);
+			Image img = ImageLoader.getInstance().loadImage(iconPath,iconSize);
+			if( img !=null) setIcon(new ImageIcon(img));
+		}
 	}
 
 	private boolean isRootFolder() {
@@ -100,14 +114,16 @@ public class DiagramTreeNode extends FolderNode {
 	@Override
 	protected AbstractNavTreeNode createChildNode(ProjectResource res) {
 		log.debug(String.format("%s.createChildNode type:%s, level=%d", TAG,res.getResourceType(),getDepth()));
-		if (ProjectResource.FOLDER_RESOURCE_TYPE.equals(res.getResourceType())) {
-			DiagramTreeNode node = new DiagramTreeNode(context, res);
-			if( log.isDebugEnabled() ) log.debugf("%s.createChildFolder: %s->%s",TAG,this.getName(),node.getName());
+		if (    ProjectResource.FOLDER_RESOURCE_TYPE.equals(res.getResourceType())    ||
+				BLTProperties.APPLICATION_RESOURCE_TYPE.equals(res.getResourceType()) ||
+				BLTProperties.FAMILY_RESOURCE_TYPE.equals(res.getResourceType()) )       {
+			GeneralPurposeTreeNode node = new GeneralPurposeTreeNode(context, res);
+			if( log.isInfoEnabled() ) log.infof("%s.createChildFolder: (%s) %s->%s",TAG,res.getResourceType(),this.getName(),node.getName());
 			return node;
 		}
 		else if (BLTProperties.DIAGRAM_RESOURCE_TYPE.equals(res.getResourceType())) {
 			DiagramNode node = new DiagramNode(context,res,workspace);
-			if( log.isDebugEnabled() ) log.debugf("%s.createChildPanel: %s->%s",TAG,this.getName(),node.getName());
+			if( log.isInfoEnabled() ) log.infof("%s.createChildPanel: %s->%s",TAG,this.getName(),node.getName());
 			return node;
 		} 
 		else {
@@ -136,10 +152,9 @@ public class DiagramTreeNode extends FolderNode {
 		if (isRootFolder()) { 
 			BlockRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
 
-			applicationAction = new ApplicationAction(this.folderId);
-			startAction = new StartAction();
-			stopAction = new StopAction();
-			debugAction = new DebugAction();
+			ApplicationAction applicationAction = new ApplicationAction(this.folderId);
+			ApplicationImportAction applicationImportAction = new ApplicationImportAction();
+			DebugAction debugAction = new DebugAction();
 			if( handler.isControllerRunning() ) {
 				startAction.setEnabled(false);
 			}
@@ -147,29 +162,82 @@ public class DiagramTreeNode extends FolderNode {
 				stopAction.setEnabled(false);
 			}
 			menu.add(applicationAction);
+			menu.add(applicationImportAction);
 			menu.add(startAction);
 			menu.add(stopAction);
 			menu.addSeparator();
 			menu.add(debugAction);
 		}
-		else if( getDepth()==3) {
-			diagramAction = new DiagramAction();
-			importAction = new ImportAction();
-			cloneAction = new CloneAction();
-			menu.add(diagramAction);
-			menu.add(importAction);
-			menu.add(cloneAction);
+		else if(getProjectResource().getResourceType().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
+			ExportAction applicationExportAction = new ExportAction(menu.getRootPane(),this);
+			FamilyAction familyAction = new FamilyAction(this.folderId);
+			NewFolderAction newFolderAction = new NewFolderAction(context,BLTProperties.MODULE_ID,ApplicationScope.DESIGNER,getFolderId(),this);
+			ApplicationConfigureAction applicationConfigureAction = new ApplicationConfigureAction();
+			menu.add(familyAction);
+			menu.add(newFolderAction);
 			menu.addSeparator();
+			menu.add(applicationConfigureAction);
 			addEditActions(menu);
-			//newFolderAction
+		}
+		else if(getProjectResource().getResourceType().equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE)) {
+			DiagramAction diagramAction = new DiagramAction();
+			NewFolderAction newFolderAction = new NewFolderAction(context,BLTProperties.MODULE_ID,ApplicationScope.DESIGNER,getFolderId(),this);
+			FamilyConfigureAction familyConfigureAction = new FamilyConfigureAction();
+			menu.add(diagramAction);
+			menu.add(newFolderAction);
+			menu.addSeparator();
+			menu.add(familyConfigureAction);
+			addEditActions(menu);
 			
 		}
-		else {   // Depth == 2 and DIAGRAM_DEPTH==3
-			familyAction = new FamilyAction(this.folderId);
+		else if(getProjectResource().getResourceType().equalsIgnoreCase(BLTProperties.FOLDER_RESOURCE_TYPE)) {
+			
+			if( hasFamily() ) {
+				DiagramAction diagramAction = new DiagramAction();
+				menu.add(diagramAction);
+				ImportAction importAction = new ImportAction();
+				CloneAction cloneAction = new CloneAction();
+				menu.add(importAction);
+				menu.add(cloneAction);
+			}
+			else {
+				FamilyAction familyAction = new FamilyAction(this.folderId);
+				menu.add(familyAction);
+			}
+			NewFolderAction newFolderAction = new NewFolderAction(context,BLTProperties.MODULE_ID,ApplicationScope.DESIGNER,getFolderId(),this);
+			menu.add(newFolderAction);
+			menu.addSeparator();
+			addEditActions(menu);	
+		}
+		else {   
+			FamilyAction familyAction = new FamilyAction(this.folderId);
 			menu.add(familyAction);
 			menu.addSeparator();
 			addEditActions(menu);
 		}
+	}
+	
+	// Return true if there is a "family" in the ancestral hierarchy of this folder node
+	private boolean hasFamily() {
+		boolean answer = false;
+		AbstractNavTreeNode parent = getParent();
+		while( parent!=null ) {
+			if( parent instanceof GeneralPurposeTreeNode ) {
+				GeneralPurposeTreeNode node = (GeneralPurposeTreeNode)parent;
+				if( node.getProjectResource()==null ) {
+					;  // Folder node
+				}
+				else if( node.getProjectResource().getResourceType().equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE)) {
+					answer = true;
+					break;
+				}
+				else if( node.getProjectResource().getResourceType().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
+					break;  // false
+				}
+			}
+			parent = parent.getParent();
+		}
+		return answer;
 	}
 	/**
 	 * Exclude cut and paste which are currently not supported.
@@ -213,14 +281,14 @@ public class DiagramTreeNode extends FolderNode {
 				(List<AbstractResourceNavTreeNode>) children,
 				reason.getActionWordKey(), (getDepth()==1? (PREFIX+".ApplicationNoun"):(PREFIX+".FamilyNoun")));
 		if (delete.execute()) {
-			UndoManager.getInstance().add(delete, DiagramTreeNode.class);
+			UndoManager.getInstance().add(delete, GeneralPurposeTreeNode.class);
 		}
 	}
 
 	@Override
 	public void onSelected() {
 		UndoManager.getInstance()
-				.setSelectedContext(DiagramTreeNode.class);
+				.setSelectedContext(GeneralPurposeTreeNode.class);
 	}
 	
 	/**
@@ -277,28 +345,106 @@ public class DiagramTreeNode extends FolderNode {
 			}
 		}
 	}
-	// From the root node, create a folder for diagrams belonging to a family
-	private class FamilyAction extends BaseAction {
-		private static final long serialVersionUID = 1L;
-		private UUID parent;
-	    public FamilyAction(UUID parentUUID)  {
-	    	super(PREFIX+".NewFamily",IconUtil.getIcon("folder_new"));
-	    	this.parent = parentUUID;
+	// This really ought to launch a dialog that reads application attributes.
+    private class ApplicationConfigureAction extends BaseAction {
+    	private static final long serialVersionUID = 1L;
+	    public ApplicationConfigureAction()  {
+	    	super(PREFIX+".ConfigureApplication",IconUtil.getIcon("gear"));  // preferences
 	    }
 	    
 		public void actionPerformed(ActionEvent e) {
 			try {
-				final long newId = context.newResourceId();
-				String newName = BundleUtil.get().getString(PREFIX+".DefaultNewFamilyName");
-				if( newName==null) newName = "New Folks";  // Missing Resource
-				context.addFolder(newId,moduleId,ApplicationScope.GATEWAY,newName,parent);
-				selectChild(newId);
+				BlockRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+				handler.startController();
+				this.setEnabled(false);
+				stopAction.setEnabled(true);
+			} 
+			catch (Exception ex) {
+				log.warnf("%s: startAction: ERROR: %s",TAG,ex.getMessage(),ex);
+				ErrorUtil.showError(ex);
+			}
+		}
+	}
+	private class ApplicationImportAction extends BaseAction {
+    	private static final long serialVersionUID = 1L;
+    	private final static String POPUP_TITLE = "Import Application";
+	    public ApplicationImportAction()  {
+	    	super(PREFIX+".ImportApplication",IconUtil.getIcon("import1"));  // preferences
+	    }
+	    
+		public void actionPerformed(ActionEvent e) {
+			try {
+				EventQueue.invokeLater(new Runnable() {
+					public void run() {
+						long newId;
+
+						try {
+							newId = context.newResourceId();
+							String newName = BundleUtil.get().getString(PREFIX+".Import.Default.ApplicationName");
+							if( newName==null) newName = "Imported App";  // Missing string resource
+							String title = BundleUtil.get().getString(PREFIX+".Import.Application.DialogTitle");
+							String label = BundleUtil.get().getString(PREFIX+".Import.Application.NameLabel");
+							ImportDialog dialog = new ImportDialog(newName,label,title);
+							dialog.pack();
+							dialog.setVisible(true);   // Returns when dialog is closed
+							File input = dialog.getFilePath();
+							newName = dialog.getImportName();
+							log.infof("%s:ImportAction new diagram name = %s", TAG,newName);
+							if( input!=null ) {
+								if( input.exists() && input.canRead()) {
+									try {
+										// Note: Requires Java 1.7
+										byte[] bytes = Files.readAllBytes(input.toPath());
+										// It would be nice to simply convert to a resource.
+										// Unfortunately we have to replace all UUIDs with new ones
+										ObjectMapper mapper = new ObjectMapper();
+										SerializableDiagram sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
+										if( sd!=null ) {
+											UUIDResetHandler handler = new UUIDResetHandler(sd);
+											handler.convertUUIDs();
+											String json = mapper.writeValueAsString(sd);
+											if(log.isInfoEnabled() ) log.info(json);
+											ProjectResource resource = new ProjectResource(newId,
+													BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
+													newName, ApplicationScope.GATEWAY, json.getBytes());
+											resource.setParentUuid(getFolderId());
+											context.updateResource(resource);
+											selectChild(newId);
+										}
+										else {
+											ErrorUtil.showWarning(String.format("Failed to deserialize file (%s)",input.getAbsolutePath()),POPUP_TITLE);
+										}
+									}
+									catch( FileNotFoundException fnfe) {
+										// Should never happen, we just picked this off a chooser
+										ErrorUtil.showWarning(String.format("File %s not found",input.getAbsolutePath()),POPUP_TITLE); 
+									}
+									catch( IOException ioe) {
+										ErrorUtil.showWarning(String.format("IOException (%s)",ioe.getLocalizedMessage()),POPUP_TITLE); 
+									}
+									catch(Exception ex) {
+										ErrorUtil.showError(String.format("Deserialization exception (%s)",ex.getMessage()),POPUP_TITLE,ex,true);
+									}
+
+								}
+								else {
+									ErrorUtil.showWarning(String.format("Selected file does not exist or is not readable: %s",input.getAbsolutePath()),POPUP_TITLE);
+								}
+							}  // Cancel
+						} 
+						catch (Exception ex) {
+							ErrorUtil.showError(String.format("Unhandled Exception (%s)",ex.getMessage()),POPUP_TITLE,ex,true);
+						}
+						// No need to inform of success, we'll see the new diagram
+					}
+				});
 			} 
 			catch (Exception err) {
 				ErrorUtil.showError(err);
 			}
 		}
 	}
+
 	// Create a new diagram
     private class DiagramAction extends BaseAction {
     	private static final long serialVersionUID = 1L;
@@ -361,9 +507,11 @@ public class DiagramTreeNode extends FolderNode {
 							newId = context.newResourceId();
 
 							workspace.open(newId);
-							String newName = BundleUtil.get().getString(PREFIX+".DefaultImportDiagramName");
+							String newName = BundleUtil.get().getString(PREFIX+".Import.Default.DiagramName");
 							if( newName==null) newName = "Imported Diag";  // Missing string resource
-							ImportDialog dialog = new ImportDialog(newName);
+							String title = BundleUtil.get().getString(PREFIX+".Import.Diagram.DialogTitle");
+							String label = BundleUtil.get().getString(PREFIX+".Import.Diagram.NameLabel");
+							ImportDialog dialog = new ImportDialog(newName,label,title);
 							dialog.pack();
 							dialog.setVisible(true);   // Returns when dialog is closed
 							File input = dialog.getFilePath();
@@ -406,6 +554,125 @@ public class DiagramTreeNode extends FolderNode {
 			}
 		}
 	}
+	// From the root node, create a folder for diagrams belonging to a family
+	private class FamilyAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private UUID parent;
+	    public FamilyAction(UUID parentUUID)  {
+	    	super(PREFIX+".NewFamily",IconUtil.getIcon("folder_new"));
+	    	this.parent = parentUUID;
+	    }
+	    
+		public void actionPerformed(ActionEvent e) {
+			try {
+				final long newId = context.newResourceId();
+				String newName = BundleUtil.get().getString(PREFIX+".DefaultNewFamilyName");
+				if( newName==null) newName = "New Folks";  // Missing Resource
+				context.addFolder(newId,moduleId,ApplicationScope.GATEWAY,newName,parent);
+				selectChild(newId);
+			} 
+			catch (Exception err) {
+				ErrorUtil.showError(err);
+			}
+		}
+	}
+ // This really ought to launch a dialog that reads application attributes.
+    private class FamilyConfigureAction extends BaseAction {
+    	private static final long serialVersionUID = 1L;
+	    public FamilyConfigureAction()  {
+	    	super(PREFIX+".ConfigureFamily",IconUtil.getIcon("gear"));  // preferences
+	    }
+	    
+		public void actionPerformed(ActionEvent e) {
+			try {
+				BlockRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+				handler.startController();
+				this.setEnabled(false);
+				stopAction.setEnabled(true);
+			} 
+			catch (Exception ex) {
+				log.warnf("%s: startAction: ERROR: %s",TAG,ex.getMessage(),ex);
+				ErrorUtil.showError(ex);
+			}
+		}
+	}
+    private class ExportAction extends BaseAction {
+    	private static final long serialVersionUID = 1L;
+    	private final static String POPUP_TITLE = "Export Diagram";
+    	private final GeneralPurposeTreeNode view;
+    	private final Component anchor;
+	    public ExportAction(Component c,GeneralPurposeTreeNode gptn)  {
+	    	super(PREFIX+".ExportDiagram",IconUtil.getIcon("export1")); 
+	    	view=gptn;
+	    	anchor=c;
+	    }
+	    
+		public void actionPerformed(ActionEvent e) {
+		
+			if( view==null ) return;   // Do nothing
+			try {
+				EventQueue.invokeLater(new Runnable() {
+					public void run() {
+						ExportDialog dialog = new ExportDialog();
+					    dialog.pack();
+					    dialog.setVisible(true);   // Returns when dialog is closed
+					    File output = dialog.getFilePath();
+					    boolean success = false;
+					    if( output!=null ) {
+					    	log.debugf("%s.actionPerformed: dialog returned %s",TAG,output.getAbsolutePath());
+					    	try {
+					    		if(output.exists()) {
+					    			//output.delete();           // Remove existing file
+					    			//output.createNewFile();
+					    			output.setWritable(true);  // This doesn't seem to work (??)
+					    		}
+					    		else {
+					    			output.createNewFile();
+					    		}
+
+					    		if( output.canWrite() ) {
+					    			ObjectMapper mapper = new ObjectMapper();
+					    			if(log.isDebugEnabled()) log.debugf("%s.actionPerformed: creating json ... %s",TAG,(mapper.canSerialize(SerializableDiagram.class)?"true":"false"));
+					    			try{ 
+					    				// Convert the view into a serializable object
+					    				SerializableApplicationTree sat = null;  //view.createSerializableRepresentation();
+					    				String json = mapper.writeValueAsString(sat);
+					    				FileWriter fw = new FileWriter(output,false);  // Do not append
+					    				try {
+					    					fw.write(json);
+					    					success = true;
+					    				}
+					    				catch(IOException ioe) {
+					    					ErrorUtil.showWarning(String.format("Error writing file %s (%s)",output.getAbsolutePath(),
+					    							ioe.getMessage()),POPUP_TITLE,false);
+					    				}
+					    				finally {
+					    					fw.close();
+					    				}
+					    			}
+					    			catch(JsonProcessingException jpe) {
+					    				ErrorUtil.showError("Unable to serialize diagram",POPUP_TITLE,jpe,true);
+					    			}
+					    		}
+					    		else {
+					    			ErrorUtil.showWarning(String.format("selected file (%s) is not writable.",output.getAbsolutePath()),POPUP_TITLE,false);
+					    		}
+					    	}
+					    	catch (IOException ioe) {
+					    		ErrorUtil.showWarning(String.format("Error creating or closing file %s (%s)",output.getAbsolutePath(),
+					    				ioe.getMessage()),POPUP_TITLE,false);
+					    	}
+					    }
+					    // If there's an error, then the user will be informed
+					    if( success ) ErrorUtil.showInfo(anchor, "Export complete", POPUP_TITLE);
+					}
+				});
+			} 
+			catch (Exception err) {
+				ErrorUtil.showError(err);
+			}
+		}
+	}
     private class ImportAction extends BaseAction {
     	private static final long serialVersionUID = 1L;
     	private final static String POPUP_TITLE = "Import Diagram";
@@ -421,13 +688,15 @@ public class DiagramTreeNode extends FolderNode {
 
 						try {
 							newId = context.newResourceId();
-							String newName = BundleUtil.get().getString(PREFIX+".DefaultImportDiagramName");
+							String newName = BundleUtil.get().getString(PREFIX+".Import.Default.DiagramName");
 							if( newName==null) newName = "Imported Diag";  // Missing string resource
-							ImportDialog dialog = new ImportDialog(newName);
+							String title = BundleUtil.get().getString(PREFIX+".Import.Application.DialogTitle");
+							String label = BundleUtil.get().getString(PREFIX+".Import.Application.NameLabel");
+							ImportDialog dialog = new ImportDialog(newName,label,title);
 							dialog.pack();
 							dialog.setVisible(true);   // Returns when dialog is closed
 							File input = dialog.getFilePath();
-							newName = dialog.getDiagramName();
+							newName = dialog.getImportName();
 							log.infof("%s:ImportAction new diagram name = %s", TAG,newName);
 							if( input!=null ) {
 								if( input.exists() && input.canRead()) {
