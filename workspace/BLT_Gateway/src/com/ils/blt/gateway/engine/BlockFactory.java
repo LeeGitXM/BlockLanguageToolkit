@@ -58,16 +58,16 @@ public class BlockFactory  {
 	 * @param sb the block to be deserialized
 	 * @return the ProcessBlock created from the specified SerializableBlock
 	 */
-	public ProcessBlock blockFromSerializable(long projectId,long resourceId,SerializableBlock sb) {
+	public ProcessBlock blockFromSerializable(UUID parentId,SerializableBlock sb) {
 		String className = sb.getClassName();
 		UUID blockId = sb.getId();
-		log.debugf("%s.blockFromSerializable: Create instance of %s (%d,%d,%s)",TAG,className,projectId,resourceId,blockId.toString());   // Should be updated
+		log.debugf("%s.blockFromSerializable: Create instance of %s (%s)",TAG,className,blockId.toString());   // Should be updated
 		ProcessBlock block = null;
 		if( !className.startsWith("app") ) {
 			try {
 				Class<?> clss = Class.forName(className);
 				Constructor<?> ctor = clss.getDeclaredConstructor(new Class[] {ExecutionController.class,long.class,long.class,UUID.class});
-				block = (ProcessBlock)ctor.newInstance(BlockExecutionController.getInstance(),projectId,resourceId,blockId);
+				block = (ProcessBlock)ctor.newInstance(BlockExecutionController.getInstance(),parentId,sb.getId());
 			}
 			catch(InvocationTargetException ite ) {
 				log.warnf("%s: blockFromSerializable %s: Invocation failed (%s)",TAG,className,ite.getMessage()); 
@@ -87,7 +87,7 @@ public class BlockFactory  {
 		}
 		else {
 			// Create a proxy from Python
-			block = proxyHandler.createBlockInstance(projectId, resourceId, blockId, className);
+			block = proxyHandler.createBlockInstance( className, parentId,blockId );
 		
 		}
 		

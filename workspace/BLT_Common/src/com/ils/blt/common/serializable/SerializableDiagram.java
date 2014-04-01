@@ -1,5 +1,7 @@
 package com.ils.blt.common.serializable;
 
+import java.util.UUID;
+
 
 
 /**
@@ -12,9 +14,8 @@ public class SerializableDiagram {
 	private SerializableBlock[] blocks;
 	private SerializableConnection[] connections;
 	private String name;
-	private String treePath;  // A unique name from the Designer
-	
-
+	private UUID id;
+	private long resourceId = -1;
 
 	public SerializableDiagram() {	
 		blocks = new SerializableBlock[0];
@@ -25,10 +26,14 @@ public class SerializableDiagram {
 	public SerializableBlock[] getBlocks() { return blocks; }
 	public SerializableConnection[] getConnections() { return connections; }
 	public String getName() { return name; }
-	public String getTreePath() {return treePath;}
 
 	public void setBlocks(SerializableBlock[] list) { blocks=list; }
 	public void setConnections(SerializableConnection[] list) { connections=list; }
 	public void setName(String nam) { if(nam!=null) name=nam; }
-	public void setTreePath(String treePath) {this.treePath = treePath;}
+
+	public UUID getId() {return id;}
+	public void setId(UUID id) {this.id = id;}
+	
+	public long getResourceId() {return resourceId;}
+	public void setResourceId(long resourceId) {this.resourceId = resourceId;}
 }

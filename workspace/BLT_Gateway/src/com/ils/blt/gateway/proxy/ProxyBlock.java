@@ -35,8 +35,8 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 * @param diag ID of the diagram of which the block is a part
 	 * @param block identifier
 	 */
-	public ProxyBlock(String clss,long proj,long diag,UUID block) {
-		super(null,proj,diag,block);
+	public ProxyBlock(String clss,UUID block,UUID parent) {
+		super(null,block,parent);
 		this.className = clss;
 	}
 
@@ -110,7 +110,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 *        and simple value.
 	 */
 	public void setValue(IncomingNotification vcn) {
-		delegate.setValue(getProjectId(), getDiagramId(), getBlockId(), vcn.getConnection().getUpstreamPortName(), vcn.getValue());
+		delegate.setValue( getParentId(), getBlockId(), vcn.getConnection().getUpstreamPortName(), vcn.getValue());
 	}
 	
 	/**
@@ -118,7 +118,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 * will be called by the engine after receipt of input once the coalescing 
 	 * "quiet" time has passed without further input.
 	 */
-	public void evaluate() { delegate.evaluate(getProjectId(), getDiagramId(), getBlockId()); }
+	public void evaluate() { delegate.evaluate( getParentId(), getBlockId()); }
 
 
 	/** 

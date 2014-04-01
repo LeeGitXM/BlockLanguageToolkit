@@ -10,7 +10,7 @@ import org.apache.wicket.markup.html.WebMarkupContainer;
 
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.gateway.engine.BlockExecutionController;
-import com.ils.blt.gateway.engine.ModelResourceManager;
+import com.ils.blt.gateway.engine.ModelManager;
 import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.ils.blt.gateway.proxy.RegistrationScriptFunctions;
 import com.inductiveautomation.ignition.common.BundleUtil;
@@ -41,6 +41,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	private final String prefix = "BLT";
 	private transient GatewayRpcDispatcher dispatcher = null;
 	private transient GatewayContext context = null;
+	private transient ModelManager mmgr = null;
 	private final LoggerEx log;
 	
 	public BLTGatewayHook() {
@@ -58,7 +59,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		// NOTE: Get serialization exception if ModelResourceManager is saved as a class member
 		//       Exception is thrown when we try to incorporate a StatusPanel
 		log.info(TAG+"Setup - enabled project listeners.");
-		DiagramPropertiesHandler.getInstance().setContext(context);
+		BlockPropertiesHandler.getInstance().setContext(context);
 		ProxyHandler.getInstance().setContext(context);
 		dispatcher = new GatewayRpcDispatcher(context);
 	}
@@ -67,28 +68,27 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	public void startup(LicenseState licenseState) {
 	    log.infof("%s: Startup complete.",TAG);
 	    // Look for all block resources and inform the execution controller
-	    ModelResourceManager resmgr = BlockExecutionController.getInstance().getDelegate();
-	    resmgr.setContext(context);
+	    mmgr = new ModelManager(context);
+	    BlockExecutionController.getInstance().setDelegate(mmgr);
 	    List<Project> projects = this.context.getProjectManager().getProjectsFull(ProjectVersion.Published);
 	    for( Project project:projects ) {
 	    	List<ProjectResource> resources = project.getResources();
 			for( ProjectResource res:resources ) {
-				if( res.getResourceType().equalsIgnoreCase(BLTProperties.MODEL_RESOURCE_TYPE)) {
+				if( res.getResourceType().equalsIgnoreCase(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
 					log.infof("%s.startup - found %s resource, %d = %s", TAG,res.getResourceType(),
 						res.getResourceId(),res.getName());
-					resmgr.analyzeResource(project.getId(),res);
+					mmgr.analyzeResource(project.getId(),res);
 				}
 			}
 	    }
-	    
+	    context.getProjectManager().addProjectListener(mmgr);
 	    // Look for all "Controller Output" UDT instances
 	}
 
 	@Override
 	public void shutdown() {
-		//context.getProjectManager().removeProjectListener(mrm);
+		context.getProjectManager().removeProjectListener(mmgr);
 		BlockExecutionController.getInstance().stop();
-		
 	}
 
 	@Override

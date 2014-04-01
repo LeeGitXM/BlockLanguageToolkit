@@ -85,7 +85,7 @@ public class BlockPropertyEditor extends JPanel {
 		if( propertyList==null || propertyList.isEmpty()) {
 			propertyList = new ArrayList<BlockProperty>();
 			BlockRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
-			BlockProperty[] properties = handler.getBlockProperties(projectId,resourceId,block.getId(),block.getClassName());
+			BlockProperty[] properties = handler.getBlockProperties(block.getClassName(),projectId,resourceId,block.getId());
 			for(BlockProperty property:properties) {
 				propertyList.add(property);
 			}

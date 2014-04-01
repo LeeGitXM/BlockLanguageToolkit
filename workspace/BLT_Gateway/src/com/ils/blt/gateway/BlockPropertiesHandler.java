@@ -13,6 +13,7 @@ import com.ils.block.ProcessBlock;
 import com.ils.block.common.BlockProperty;
 import com.ils.block.control.ExecutionController;
 import com.ils.blt.gateway.engine.BlockExecutionController;
+import com.ils.blt.gateway.engine.ProcessDiagram;
 import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.ils.connection.Connection;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -30,27 +31,27 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
  *  
  *  This class is a singleton for easy access throughout the application.
  */
-public class DiagramPropertiesHandler   {
-	private final static String TAG = "DiagramPropertiesHandler";
+public class BlockPropertiesHandler   {
+	private final static String TAG = "BlockPropertiesHandler";
 	private final LoggerEx log;
 	private GatewayContext context = null;
-	private static DiagramPropertiesHandler instance = null;
+	private static BlockPropertiesHandler instance = null;
 	protected long projectId = 0;
 	
 	/**
 	 * Initialize with instances of the classes to be controlled.
 	 */
-	private DiagramPropertiesHandler() {
+	private BlockPropertiesHandler() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 	}
 
 	/**
 	 * Static method to create and/or fetch the single instance.
 	 */
-	public static DiagramPropertiesHandler getInstance() {
+	public static BlockPropertiesHandler getInstance() {
 		if( instance==null) {
-			synchronized(DiagramPropertiesHandler.class) {
-				instance = new DiagramPropertiesHandler();
+			synchronized(BlockPropertiesHandler.class) {
+				instance = new BlockPropertiesHandler();
 			}
 		}
 		return instance;
@@ -70,13 +71,13 @@ public class DiagramPropertiesHandler   {
 	 * @param className
 	 * @return the instance created, else null
 	 */
-	private ProcessBlock createInstance(long projectId,long resourceId,UUID blockId,String className) {
-		log.debugf("%s: createInstance of %s (%d,%d,%s)",TAG,className,projectId,resourceId,blockId.toString());   // Should be updated
+	private ProcessBlock createInstance(String className,UUID parentId,UUID blockId) {
+		log.debugf("%s: createInstance of %s (%s:%s)",TAG,className,parentId.toString(),blockId.toString());   // Should be updated
 		ProcessBlock block = null;
 		try {
 			Class<?> clss = Class.forName(className);
-			Constructor<?> ctor = clss.getDeclaredConstructor(new Class[] {ExecutionController.class,long.class,long.class,UUID.class});
-			block = (ProcessBlock)ctor.newInstance(BlockExecutionController.getInstance(),projectId,resourceId,blockId);
+			Constructor<?> ctor = clss.getDeclaredConstructor(new Class[] {ExecutionController.class,UUID.class,UUID.class});
+			block = (ProcessBlock)ctor.newInstance(BlockExecutionController.getInstance(),parentId,blockId);
 		}
 		catch(InvocationTargetException ite ) {
 			log.warnf("%s: createInstance %s: Invocation failed (%s)",TAG,className,ite.getMessage()); 
@@ -97,19 +98,21 @@ public class DiagramPropertiesHandler   {
 	}
 
 	/**
-	 * Query the model resource manager for a block specified by the project, resource and block id. If the block
-	 * does not exist, create it, then return the default properties.
+	 * Query the block controller for a block specified by the block id. If the block
+	 * does not exist, create it.
 	 * 
-	  * @param projectId
-	  * @param resourceId
-	  * @param blockId
-	  * @param className
-	  * @return
+	 * @param className
+	 * @param projectId
+	 * @param resourceId
+	 * @param blockId
+	 * @return the properties of an existing or new block.
 	 */
-	public BlockProperty[] getBlockProperties(Long projectId,Long resourceId,UUID blockId,String className) {
+	public BlockProperty[] getBlockProperties(String className,long projectId,long resourceId, UUID blockId) {
 		// If the instance doesn't exist, create one
 		BlockExecutionController controller = BlockExecutionController.getInstance();
-		ProcessBlock block = controller.getDelegate().getBlock(projectId, resourceId, blockId);
+		ProcessDiagram diagram = controller.getDiagram(projectId, resourceId);
+		ProcessBlock block = null;
+		if( diagram!=null ) block = diagram.getBlock(blockId);
 		BlockProperty[] results = null;
 		if(block!=null) {
 			results = block.getProperties();  // Existing block
@@ -117,14 +120,14 @@ public class DiagramPropertiesHandler   {
 		}
 		else if(className.startsWith("app")) {
 			ProxyHandler ph = ProxyHandler.getInstance();
-			block = ph.createBlockInstance(projectId.longValue(),resourceId.longValue(),blockId,className);
+			block = ph.createBlockInstance(className,diagram.getSelf(),blockId);
 			if(block!=null) {
 				results = block.getProperties();
 				log.tracef("%s: getProperties new from python %s = %s",TAG,block.getClass().getName(),results.toString());
 			}
 		}
 		else {		
-			block = createInstance(projectId.longValue(),resourceId.longValue(),blockId,className);
+			block = createInstance(className,diagram.getSelf(),blockId);
 			if(block!=null) {
 				results = block.getProperties();
 				log.tracef("%s: getProperties new %s = %s",TAG,block.getClass().getName(),results.toString());
@@ -138,13 +141,15 @@ public class DiagramPropertiesHandler   {
 	 * of permissible port names. If the connection instance already exists in the Gateway model,
 	 * then return the actual port connections.
 	 * 
+	 * @param projectId
+	 * @param resourceId
 	 * @param attributes
 	 * @return
 	 */
 	public Hashtable<String,Hashtable<String,String>> getConnectionAttributes(long projectId,long resourceId,String connectionId,Hashtable<String,Hashtable<String,String>> attributes) {
 		// Find the connection object
 		BlockExecutionController controller = BlockExecutionController.getInstance();
-		Connection cxn  = controller.getDelegate().getConnection(projectId, resourceId, connectionId);
+		Connection cxn  = controller.getConnection(projectId, resourceId, connectionId);
 		return attributes;
 	}
 }

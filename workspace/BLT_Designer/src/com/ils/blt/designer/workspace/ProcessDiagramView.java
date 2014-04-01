@@ -31,10 +31,12 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	private final Map<UUID,ProcessBlockView> blockMap = new HashMap<UUID,ProcessBlockView>();
 	private List<Connection> connections = new ArrayList<Connection>();
 	private Dimension diagramSize = new Dimension(800,600);
+	private final UUID id;
 	private final long resourceId;
 	private final String name;
 	
-	public ProcessDiagramView(long resId,String nam) {
+	public ProcessDiagramView(long resId,UUID uuid, String nam) {
+		this.id = uuid;
 		this.resourceId = resId;
 		this.name = nam;
 	}
@@ -44,7 +46,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	 * @param diagram
 	 */
 	public ProcessDiagramView (long resid,SerializableDiagram diagram) {
-		this(resid,diagram.getName());
+		this(resid,diagram.getId(), diagram.getName());
 
 		for( SerializableBlock sb:diagram.getBlocks()) {
 			ProcessBlockView pbv = new ProcessBlockView(sb);
@@ -94,6 +96,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	public SerializableDiagram createSerializableRepresentation() {
 		SerializableDiagram diagram = new SerializableDiagram();
 		diagram.setName(name);
+		diagram.setResourceId(resourceId);
 		List<SerializableBlock> sblocks = new ArrayList<SerializableBlock>();
 		for( ProcessBlockView blk:blockMap.values()) {
 			SerializableBlock sb = blk.convertToSerializable();
@@ -184,6 +187,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	public Dimension getDiagramSize() {
 		return diagramSize;
 	}
+	public UUID getId() {return id;}
 
 	@Override
 	public long getResourceId() {

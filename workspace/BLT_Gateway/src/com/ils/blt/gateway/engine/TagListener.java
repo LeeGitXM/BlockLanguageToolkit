@@ -55,14 +55,14 @@ public class TagListener implements TagChangeListener   {
 	}
 
 	/**
-	 * Start a subscription for a block attribute. The subject attribute must be
-	 * one associated with a tag.
+	 * Define a tag subscription based on a block attribute. The subject attribute must be
+	 * one associated with a tag. If we are running, start the subscription.
 	 */
 	public void defineSubscription(ProcessBlock block,BlockProperty property) {
-		if( block==null || property==null ) return;
-		log.tracef("%s.defineSubscription: considering %s:%s",TAG,block.getLabel(),property.getName());
+		if( block==null || property==null || property.getBindingType()!=BindingType.TAG ) return;
+		log.infof("%s.defineSubscription: considering %s:%s",TAG,block.getLabel(),property.getName());
 		String tagPath = property.getBinding();
-		if( tagPath!=null && tagPath.length() >0 && property.getBindingType()==BindingType.TAG) {
+		if( tagPath!=null && tagPath.length() >0 ) {
 			if( blockMap.get(tagPath) == null ) blockMap.put(tagPath, new ArrayList<ProcessBlock>());
 			List<ProcessBlock> blocks = blockMap.get(tagPath);
 			if( blocks.contains(block) ) {
@@ -86,7 +86,7 @@ public class TagListener implements TagChangeListener   {
 		List<ProcessBlock> blocks = blockMap.get(tagPath);
 		blocks.remove(block);
 		if(blocks.isEmpty()) {
-			log.debug(TAG+"removeSubscription: "+tagPath);
+			log.infof("%s.removeSubscription: %s",TAG,tagPath);
 			blockMap.remove(tagPath);
 			if(!stopped) {
 				// If we're running unsubscribe
@@ -96,7 +96,7 @@ public class TagListener implements TagChangeListener   {
 					tmgr.unsubscribe(tp, this);
 				}
 				catch(IOException ioe) {
-					log.error(TAG+".stopSubscription ("+ioe.getMessage()+")");
+					log.errorf("%s.stopSubscription (%s)",TAG,ioe.getMessage());
 				}
 			}
 		}
@@ -112,11 +112,11 @@ public class TagListener implements TagChangeListener   {
 		SQLTagsManager tmgr = context.getTagManager();
 		try {
 			TagPath tp = TagPathParser.parse(tagPath);
-			log.debug(TAG+".stopSubscription: "+tagPath);
+			log.infof("%s.stopSubscription: %s",TAG,tagPath);
 			tmgr.unsubscribe(tp, this);
 		}
 		catch(IOException ioe) {
-			log.error(TAG+".stopSubscription ("+ioe.getMessage()+")");
+			log.warnf("%s.stopSubscription: Error tag %s (%s)",TAG,tagPath,ioe.getMessage());
 		}
 	}
 	/**

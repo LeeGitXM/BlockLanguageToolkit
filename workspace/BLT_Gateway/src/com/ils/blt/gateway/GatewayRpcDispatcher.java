@@ -77,11 +77,11 @@ public class GatewayRpcDispatcher   {
 	 * @param className
 	 * @return properties for the block
 	 */
-	public List<String> getBlockProperties(Long projectId,Long resourceId,String blockId,String className) {
+	public List<String> getBlockProperties(String className,Long projectId,Long resourceId,String blockId) {
 		log.infof("%s: getBlockProperties: %d:%d %s",TAG,projectId.longValue(),resourceId.longValue(),blockId);
 		
-		BlockProperty[] propertyArray = DiagramPropertiesHandler.getInstance().
-					getBlockProperties(projectId,resourceId,UUID.fromString(blockId),className);
+		BlockProperty[] propertyArray = BlockPropertiesHandler.getInstance().
+					getBlockProperties(className,projectId.longValue(),resourceId.longValue(),UUID.fromString(blockId));
 		List<String> result = null;
 		if( propertyArray!=null ) {
 			result = new ArrayList<String>();
@@ -117,7 +117,7 @@ public class GatewayRpcDispatcher   {
 		Hashtable<String, Hashtable<String, String>> attributeTable;
 		try {
 			attributeTable = mapper.readValue(json, new TypeReference<Hashtable<String,Hashtable<String,String>>>(){});
-			Hashtable<String,Hashtable<String,String>> results = DiagramPropertiesHandler.getInstance().getConnectionAttributes(projectId,resourceId,connectionId,attributeTable);
+			Hashtable<String,Hashtable<String,String>> results = BlockPropertiesHandler.getInstance().getConnectionAttributes(projectId,resourceId,connectionId,attributeTable);
 			log.debugf("%s: created table = %s",TAG,results);
 			json =  mapper.writeValueAsString(results);
 			log.debugf("%s: JSON=%s",TAG,json);
@@ -179,24 +179,25 @@ public class GatewayRpcDispatcher   {
 		return results;
 	}
 	public List<String> getDiagramTreePaths(String projectName) {
-		List<String> result = new ArrayList<String>();
-		
-		return result;
+		return BlockExecutionController.getInstance().getDiagramTreePaths(projectName);
 	}
 	
-	public void sendLocalSignal(String projectName, String diagramPath,String className, String command) {
+	public Boolean sendLocalSignal(String projectName, String diagramPath,String className, String command) {
 		log.infof("%s: sendLocalSignal: %s %s %s %s",TAG,projectName,diagramPath,className,command);
-		ProcessDiagram diagram = BlockExecutionController.getInstance().getDelegate().getDiagram(projectName, diagramPath);
+		Boolean success = new Boolean(true);
+		ProcessDiagram diagram = BlockExecutionController.getInstance().getDiagram(projectName,diagramPath);
 		if( diagram!=null ) {
 			// Create a broadcast notification
 			Signal sig = new Signal(command,"","");
 			sig.setClassName(className);
-			BroadcastNotification broadcast = new BroadcastNotification(diagram.getProjectId(),diagram.getResourceId(),TransmissionScope.LOCAL,sig);
+			BroadcastNotification broadcast = new BroadcastNotification(diagram.getSelf(),TransmissionScope.LOCAL,sig);
 			BlockExecutionController.getInstance().acceptBroadcastNotification(broadcast);
 		}
 		else {
 			log.warnf("%s.sendLocalSignal: Unable to find %s:%s for %s command to %s",TAG,projectName,diagramPath,command,className);
+			success = new Boolean(false);
 		}
+		return success;
 	}
 
 }

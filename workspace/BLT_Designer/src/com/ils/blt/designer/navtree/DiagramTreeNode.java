@@ -41,13 +41,13 @@ import com.inductiveautomation.ignition.designer.navtree.model.FolderNode;
 import com.inductiveautomation.ignition.designer.navtree.model.ResourceDeleteAction;
 /**
  * A folder in the designer scope to support the diagnostics toolkit diagram
- * layout. The folder depth is two or three. Menu options vary depending on whether
- * this is the root node, or not. Labels depend on the depth.
+ * layout. In addition to standard folders, folders can be of type "Application" or
+ * "Family". These hold properties special to the Diagnostics Toolkit.  Menu options 
+ * vary depending on folder type. Labels are likewise dependent.
  */
 public class DiagramTreeNode extends FolderNode {
 	private static final String TAG = "DiagramTreeNode";
 	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
-	private static final int DIAGRAM_DEPTH = 3;                        // For a three-tier menu
 	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	// These are the various actions beyond defaults
 	private DebugAction debugAction = null;
@@ -58,6 +58,7 @@ public class DiagramTreeNode extends FolderNode {
 	protected ImportAction importAction = null;
 	protected StartAction startAction = null;
 	protected StopAction stopAction = null;
+	
 	private final DiagramWorkspace workspace; 
 	
 
@@ -70,15 +71,12 @@ public class DiagramTreeNode extends FolderNode {
 		workspace = ((BLTDesignerHook)ctx.getModule(BLTProperties.MODULE_ID)).getWorkspace();
 		setText(BundleUtil.get().getString(PREFIX+".RootFolderName"));
 		setIcon(IconUtil.getIcon("folder_closed"));
-		log.infof("%s: constructor tagPath=root:%s",TAG,this.pathToRoot());	
 	}
 
 	/**
 	 * This version of the constructor is used for all except the root. Create
-	 * either a family container or a diagram holder.
-	 * 
-	 * NOTE: At this point the depth is unknown. We wait until setting edit actions
-	 *       to actually define the depth-based actions.
+	 * either a simple folder, an application or family container or a diagram holder.
+	 * This all depends on the resource type.
 	 * 
 	 * @param context the designer context
 	 * @param resource the project resource
@@ -104,12 +102,12 @@ public class DiagramTreeNode extends FolderNode {
 		log.debug(String.format("%s.createChildNode type:%s, level=%d", TAG,res.getResourceType(),getDepth()));
 		if (ProjectResource.FOLDER_RESOURCE_TYPE.equals(res.getResourceType())) {
 			DiagramTreeNode node = new DiagramTreeNode(context, res);
-			if( log.isDebugEnabled() ) log.debugf("%s.createChildFolder: %s->%s",TAG,this.getNavTreePath(),node.getNavTreePath());
+			if( log.isDebugEnabled() ) log.debugf("%s.createChildFolder: %s->%s",TAG,this.getName(),node.getName());
 			return node;
 		}
-		else if (BLTProperties.MODEL_RESOURCE_TYPE.equals(res.getResourceType())) {
+		else if (BLTProperties.DIAGRAM_RESOURCE_TYPE.equals(res.getResourceType())) {
 			DiagramNode node = new DiagramNode(context,res,workspace);
-			if( log.isDebugEnabled() ) log.debugf("%s.createChildPanel: %s->%s",TAG,this.getNavTreePath(),node.getNavTreePath());
+			if( log.isDebugEnabled() ) log.debugf("%s.createChildPanel: %s->%s",TAG,this.getName(),node.getName());
 			return node;
 		} 
 		else {
@@ -117,27 +115,7 @@ public class DiagramTreeNode extends FolderNode {
 			throw new IllegalArgumentException();
 		}
 	}
-	
-	/**
-	 * The super-class method pathToRoot returns null. Do it ourselves.
-	 * @return a colon-separated list of node names up to the root.
-	 */
-	public String getNavTreePath() {
-		StringBuffer sbuf = new StringBuffer(scrubStringForTreePath(getName()));
-		DiagramTreeNode node = this;
-		for(;;) {
-			node = (DiagramTreeNode)node.getParent();
-			if( node==null) break;           // Shouldn't happen
-			sbuf.insert(0, ":"+scrubStringForTreePath(node.getName()));
-			if(node.isRootFolder()) break;   // Got the top
-		}
-		return sbuf.toString();
-	}
-	
-	// Prepend colon and make sure there are no embedded colons
-	private String scrubStringForTreePath(String name) {
-		return ":"+name.replaceAll(":", "");
-	}
+
 	
 	@Override
 	public String getWorkspaceName() {
@@ -174,7 +152,7 @@ public class DiagramTreeNode extends FolderNode {
 			menu.addSeparator();
 			menu.add(debugAction);
 		}
-		else if( getDepth()==DIAGRAM_DEPTH) {
+		else if( getDepth()==3) {
 			diagramAction = new DiagramAction();
 			importAction = new ImportAction();
 			cloneAction = new CloneAction();
@@ -183,6 +161,7 @@ public class DiagramTreeNode extends FolderNode {
 			menu.add(cloneAction);
 			menu.addSeparator();
 			addEditActions(menu);
+			//newFolderAction
 			
 		}
 		else {   // Depth == 2 and DIAGRAM_DEPTH==3
@@ -251,7 +230,6 @@ public class DiagramTreeNode extends FolderNode {
 	 */ 
 	private String serializeDiagram(SerializableDiagram diagram) {
 		String json = "";
-		diagram.setTreePath(getNavTreePath());
 		ObjectMapper mapper = new ObjectMapper();
 		log.infof("%s: serializeDiagram creating json ... %s",TAG,(mapper.canSerialize(SerializableDiagram.class)?"true":"false"));
 		try{ 
@@ -335,16 +313,18 @@ public class DiagramTreeNode extends FolderNode {
 				if( newName==null) newName = "New Diag";  // Missing string resource
 				SerializableDiagram diagram = new SerializableDiagram();
 				diagram.setName(newName);
+				diagram.setResourceId(newId);
+				
 				log.infof("%s: new diagram action ...",TAG);
 
 				String json = serializeDiagram(diagram);
 			
 				log.debugf("%s: DiagramAction. json=%s",TAG,json);
 				byte[] bytes = json.getBytes();
-				log.debugf("%s: DiagramAction. create new %s resource %d (%d bytes)",TAG,BLTProperties.MODEL_RESOURCE_TYPE,
+				log.debugf("%s: DiagramAction. create new %s resource %d (%d bytes)",TAG,BLTProperties.DIAGRAM_RESOURCE_TYPE,
 						newId,bytes.length);
 				ProjectResource resource = new ProjectResource(newId,
-						BLTProperties.MODULE_ID, BLTProperties.MODEL_RESOURCE_TYPE,
+						BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
 						newName, ApplicationScope.GATEWAY, bytes);
 				resource.setParentUuid(getFolderId());
 				context.updateResource(resource);
@@ -393,7 +373,7 @@ public class DiagramTreeNode extends FolderNode {
 										// Note: Requires Java 1.7
 										byte[] bytes = Files.readAllBytes(input.toPath());
 										ProjectResource resource = new ProjectResource(newId,
-												BLTProperties.MODULE_ID, BLTProperties.MODEL_RESOURCE_TYPE,
+												BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
 												newName, ApplicationScope.GATEWAY, bytes);
 										resource.setParentUuid(getFolderId());
 										context.updateResource(resource);
@@ -464,7 +444,7 @@ public class DiagramTreeNode extends FolderNode {
 											String json = mapper.writeValueAsString(sd);
 											if(log.isInfoEnabled() ) log.info(json);
 											ProjectResource resource = new ProjectResource(newId,
-													BLTProperties.MODULE_ID, BLTProperties.MODEL_RESOURCE_TYPE,
+													BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
 													newName, ApplicationScope.GATEWAY, json.getBytes());
 											resource.setParentUuid(getFolderId());
 											context.updateResource(resource);
@@ -551,27 +531,5 @@ public class DiagramTreeNode extends FolderNode {
 			log.info("Res: "+res.getResourceId()+" "+res.getResourceType()+" "+res.getModuleId()+" ("+res.getName()+
 					":"+res.getParentUuid()+")");
 		}
-	}
-	
-	private byte[] longsToByteArray(long most,long least) {
-		byte[] byteArray = new byte[16];
-	    int i = 0;
-	    while (i < 16)
-	    {
-	      int j;
-	      if (i == 0)
-	        j = (int)most >>> 32;
-	      else if (i == 4)
-	        j = (int)most;
-	      else if (i == 8)
-	        j = (int)least >>> 32;
-	      else
-	        j = (int)least;
-	      byteArray[(i++)] = ((byte)(j >>> 24));
-	      byteArray[(i++)] = ((byte)(j >>> 16));
-	      byteArray[(i++)] = ((byte)(j >>> 8));
-	      byteArray[(i++)] = ((byte)j);
-	    }
-	    return byteArray;
 	}
 }

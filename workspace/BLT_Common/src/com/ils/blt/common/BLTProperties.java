@@ -17,8 +17,10 @@ public interface BLTProperties   {
 	/** This is the name of the jar file containing block class definitions */
 	public final static String BLOCK_JAR_NAME = "block-definition";
 	
-	public final static String FOLDER_RESOURCE_TYPE    = "__folder";
-	public final static String MODEL_RESOURCE_TYPE    = "blt.model";
+	public final static String APPLICATION_RESOURCE_TYPE   = "blt.application";
+	public final static String DIAGRAM_RESOURCE_TYPE       = "blt.diagram";
+	public final static String FAMILY_RESOURCE_TYPE        = "blt.family";
+	public final static String FOLDER_RESOURCE_TYPE        = "__folder";
 	
 	public final static String BLOCK_SCRIPT_PACKAGE         = "system.ils.blt.block";
 	public final static String REGISTRATION_SCRIPT_PACKAGE  = "system.ils.blt.registrar";

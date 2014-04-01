@@ -201,8 +201,8 @@ public class ProxyHandler   {
 		this.context = cntx;
 	}
 	
-	public ProxyBlock createBlockInstance(long project,long resource,UUID blockId,String className) {
-		ProxyBlock block = new ProxyBlock(className,project,resource,blockId);
+	public ProxyBlock createBlockInstance(String className,UUID blockId,UUID parentId) {
+		ProxyBlock block = new ProxyBlock(className,blockId,parentId);
 		log.infof("%s.createInstance --- calling",TAG); 
 		if( callbacks[CREATE_BLOCK_INSTANCE]!=null && compileScript(CREATE_BLOCK_INSTANCE) ) {
 			Callback cb = callbacks[CREATE_BLOCK_INSTANCE];
@@ -433,11 +433,10 @@ public class ProxyHandler   {
 	/**
 	 * Tell the block to do whatever it is supposed to do.
 	 * 
-	 * @param projectId
 	 * @param diagramId
 	 * @param blockId
 	 */
-	public void evaluate(long projectId,long diagramId,UUID blockId) {
+	public void evaluate(UUID diagramId,UUID blockId) {
 		
 	}
 	
@@ -450,7 +449,7 @@ public class ProxyHandler   {
 	 * @param stub
 	 * @param value one of a QualifiedValue, Signal, Truth-value or String
 	 */
-	public void setValue(long projectId,long diagramId,UUID blockId,String stub,Object value) {
+	public void setValue(UUID diagramId,UUID blockId,String stub,Object value) {
 		
 	}
 	

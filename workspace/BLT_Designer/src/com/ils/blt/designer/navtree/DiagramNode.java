@@ -112,12 +112,6 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 	public ProjectResource getProjectResource() {
 		return context.getProject().getResource(resourceId);
 	}
-	
-	public String getNavTreePath() {
-		String parentPath = ((DiagramTreeNode)getParent()).getNavTreePath();
-		String scubbedName = name.replaceAll(" ", "").replaceAll(":", "");
-		return parentPath+":"+scubbedName;
-	}
 
 	@Override
 	public String getWorkspaceName() {
@@ -234,49 +228,47 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 					    boolean success = false;
 					    if( output!=null ) {
 					    	log.debugf("%s.actionPerformed: dialog returned %s",TAG,output.getAbsolutePath());
-					    	if(!output.exists()) {
-					    		try {
-					    			output.delete();           // Remove existing file
-					    			output.createNewFile();    
+					    	try {
+					    		if(output.exists()) {
+					    			//output.delete();           // Remove existing file
+					    			//output.createNewFile();
 					    			output.setWritable(true);  // This doesn't seem to work (??)
-					    			if( output.canWrite() ) {
-					    				ObjectMapper mapper = new ObjectMapper();
-					    				if(log.isDebugEnabled()) log.debugf("%s.actionPerformed: creating json ... %s",TAG,(mapper.canSerialize(SerializableDiagram.class)?"true":"false"));
-					    				try{ 
-					    					// Convert the view into a serializable object
-					    					SerializableDiagram sd = view.createSerializableRepresentation();
-					    					// Compute the tree path - use the diagram name for the last 
-					    					String path = getNavTreePath();
-					    					sd.setTreePath(path);
-					    					String json = mapper.writeValueAsString(sd);
-					    					FileWriter fw = new FileWriter(output,false);  // Do not append
-					    					try {
-					    						fw.write(json);
-					    						success = true;
-					    					}
-					    					catch(IOException ioe) {
-					    						ErrorUtil.showWarning(String.format("Error writing file %s (%s)",output.getAbsolutePath(),
-								    					ioe.getMessage()),POPUP_TITLE,false);
-					    					}
-					    					finally {
-					    						fw.close();
-					    					}
+					    		}
+					    		else {
+					    			output.createNewFile();
+					    		}
+
+					    		if( output.canWrite() ) {
+					    			ObjectMapper mapper = new ObjectMapper();
+					    			if(log.isDebugEnabled()) log.debugf("%s.actionPerformed: creating json ... %s",TAG,(mapper.canSerialize(SerializableDiagram.class)?"true":"false"));
+					    			try{ 
+					    				// Convert the view into a serializable object
+					    				SerializableDiagram sd = view.createSerializableRepresentation();
+					    				String json = mapper.writeValueAsString(sd);
+					    				FileWriter fw = new FileWriter(output,false);  // Do not append
+					    				try {
+					    					fw.write(json);
+					    					success = true;
 					    				}
-					    				catch(JsonProcessingException jpe) {
-					    					ErrorUtil.showError("Unable to serialize diagram",POPUP_TITLE,jpe,true);
+					    				catch(IOException ioe) {
+					    					ErrorUtil.showWarning(String.format("Error writing file %s (%s)",output.getAbsolutePath(),
+					    							ioe.getMessage()),POPUP_TITLE,false);
+					    				}
+					    				finally {
+					    					fw.close();
 					    				}
 					    			}
-								    else {
-								    	ErrorUtil.showWarning(String.format("selected file (%s) is not writable.",output.getAbsolutePath()),POPUP_TITLE,false);
-								    }
+					    			catch(JsonProcessingException jpe) {
+					    				ErrorUtil.showError("Unable to serialize diagram",POPUP_TITLE,jpe,true);
+					    			}
 					    		}
-					    		catch (IOException ioe) {
-					    			ErrorUtil.showWarning(String.format("Error creating or closing file %s (%s)",output.getAbsolutePath(),
-					    					ioe.getMessage()),POPUP_TITLE,false);
+					    		else {
+					    			ErrorUtil.showWarning(String.format("selected file (%s) is not writable.",output.getAbsolutePath()),POPUP_TITLE,false);
 					    		}
 					    	}
-					    	else {
-					    		ErrorUtil.showInfo(anchor, "Output file exists, not writable, export aborted", POPUP_TITLE);
+					    	catch (IOException ioe) {
+					    		ErrorUtil.showWarning(String.format("Error creating or closing file %s (%s)",output.getAbsolutePath(),
+					    				ioe.getMessage()),POPUP_TITLE,false);
 					    	}
 					    }
 					    // If there's an error, then the user will be informed

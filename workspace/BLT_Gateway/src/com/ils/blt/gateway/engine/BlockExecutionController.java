@@ -7,11 +7,13 @@
 package com.ils.blt.gateway.engine;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.ils.block.ProcessBlock;
+import com.ils.block.common.BindingType;
 import com.ils.block.common.BlockProperty;
 import com.ils.block.control.BroadcastNotification;
 import com.ils.block.control.ExecutionController;
@@ -21,6 +23,7 @@ import com.ils.block.control.SignalNotification;
 import com.ils.common.BoundedBuffer;
 import com.ils.common.watchdog.Watchdog;
 import com.ils.common.watchdog.WatchdogTimer;
+import com.ils.connection.Connection;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -42,8 +45,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public final static String CONTROLLER_STOPPED_STATE = "stopped";
 	private static int BUFFER_SIZE = 100;   // Buffer Capacity
 	private final LoggerEx log;
-	//private GatewayContext context = null;    // Must be initialized before anything works
-	private final ModelResourceManager delegate;
+	private ModelManager modelManager = null;
 	private final WatchdogTimer watchdogTimer;
 	private static BlockExecutionController instance = null;
 	private final ExecutorService threadPool;
@@ -61,7 +63,6 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 */
 	private BlockExecutionController() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
-		this.delegate = new ModelResourceManager(this);
 		this.threadPool = Executors.newFixedThreadPool(10);
 		this.tagListener = new TagListener();
 		this.tagWriter = new TagWriter();
@@ -86,7 +87,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 */
 	@Override
 	public void acceptBroadcastNotification(BroadcastNotification note) {
-		log.tracef("%acceptBroadcastNotification: %d:%d (%s)", TAG,note.getProjectId(),note.getDiagramId(),note.getSignal().getCommand());
+		log.tracef("%acceptBroadcastNotification: %s (%s)", TAG,note.getDiagramId(),note.getSignal().getCommand());
 		try {
 			buffer.put(note);
 		}
@@ -104,10 +105,6 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		catch( InterruptedException ie ) {}
 	}
 
-	
-	/**
-	 * 
-	 */
 
 	/**
 	 * Obtain the running state of the controller. This is a static method
@@ -129,7 +126,6 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		stopped = false;
 		tagListener.start(context);
 		tagWriter.start(context);
-		this.delegate.setContext(context);
 		this.notificationThread = new Thread(this, "BlockExecutionController");
 		log.debugf("%s START - notification thread %d ",TAG,notificationThread.hashCode());
 		notificationThread.setDaemon(true);
@@ -140,8 +136,6 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	/**
 	 * Stop the controller, watchdogTimer, tagListener and TagWriter. Set all
 	 * instance values to null to, hopefully, allow garbage collection.
-	 * WARNING: Do not hold on to a controller instance as it will be incorrect
-	 * after a stop.
 	 */
 	public synchronized void stop() {
 		log.debugf("%s: STOPPED",TAG);
@@ -152,12 +146,26 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		}
 		tagListener.stop();
 		watchdogTimer.stop();
-		delegate.stop();
-		instance = null;       // Allow to be re-claimeded.
 	}
 	
-	public ModelResourceManager getDelegate() { return delegate; }
-
+	public  void setDelegate(ModelManager resmgr) { this.modelManager = resmgr; }
+	
+	// ======================= Delegated to ModelManager ======================
+	public ProcessBlock getBlock(long projectId,long resourceId,UUID blockId) {
+		return modelManager.getBlock(projectId,resourceId,blockId);
+	}
+	public Connection getConnection(long projectId,long resourceId,String connectionId) {
+		return modelManager.getConnection(projectId,resourceId,connectionId);
+	}
+	public ProcessDiagram getDiagram(long projectId,long resourceId) {
+		return modelManager.getDiagram(projectId,resourceId);
+	}
+	public ProcessDiagram getDiagram(String projectName,String diagramPath) {
+		return modelManager.getDiagram(projectName,diagramPath);
+	}
+	public List<String> getDiagramTreePaths(String projectName) {
+		return modelManager.getDiagramTreePaths(projectName);
+	}
 	
 	// ======================= Delegated to TagListener ======================
 	/**
@@ -167,13 +175,12 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		tagListener.defineSubscription(block, property);
 	}
 	/**
-	 * Stop the subscription for a block attribute associated with a tag.
+	 * Stop the tag subscription associated with a particular property of a block.
 	 */
-	public void stopSubscription(ProcessBlock block,String propertyName) {
-		BlockProperty property = block.getProperty(propertyName);
-		if( property!=null && property.getValue()!=null ) {
+	public void stopSubscription(ProcessBlock block,BlockProperty property) {
+		if( property!=null && property.getValue()!=null && property.getBindingType()==BindingType.TAG ) {
 			String tagPath = property.getValue().toString();
-			if( tagPath!=null) {
+			if( tagPath!=null && tagPath.length()>0) {
 				tagListener.stopSubscription(tagPath);
 			}
 		}
@@ -214,7 +221,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 					log.tracef("%s: processing incoming note from buffer: %s:%s", TAG,inNote.getBlock().getBlockId().toString(),inNote.getPort());
 					// Query the diagram to find out what's next
 					ProcessBlock pb = inNote.getBlock();
-					ProcessDiagram dm = delegate.getDiagram(new Long(pb.getProjectId()),new Long(pb.getDiagramId()));
+					ProcessDiagram dm = modelManager.getDiagram(pb.getParentId());
 					if( dm!=null) {
 						Collection<IncomingNotification> outgoing = dm.getOutgoingNotifications(inNote);
 						if( outgoing.isEmpty() ) log.warnf("%s: no downstream connections found ...",TAG);
@@ -231,15 +238,15 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 						}
 					}
 					else {
-						log.warnf("%s: run: diagram %d, project %d not found in value change notification",TAG,
-									pb.getDiagramId(),pb.getProjectId());
+						log.warnf("%s: run: diagram %s not found for value change notification",TAG,
+									    pb.getParentId().toString());
 					}
 				}
 				else if( work instanceof BroadcastNotification) {
 					BroadcastNotification inNote = (BroadcastNotification)work;
-					log.tracef("%s: processing broadcast request from buffer: %d:%d = %s", TAG,inNote.getProjectId(),inNote.getDiagramId(),inNote.getSignal().getCommand());
-					// Query the diagram to find out what's next
-					ProcessDiagram dm = delegate.getDiagram(new Long(inNote.getProjectId()),new Long(inNote.getDiagramId()));
+					log.tracef("%s: processing broadcast request from buffer: %s = %s", TAG,inNote.getDiagramId().toString(),inNote.getSignal().getCommand());
+					// Query the diagram to find out what's next. The diagramId is the resourceId
+					ProcessDiagram dm = modelManager.getDiagram(inNote.getDiagramId());
 					if( dm!=null) {
 						Collection<SignalNotification> outgoing = dm.getBroadcastNotifications(inNote);
 						if( outgoing.isEmpty() ) log.warnf("%s: no broadcast recipients found ...",TAG);
@@ -251,8 +258,8 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 						}
 					}
 					else {
-						log.warnf("%s: run: diagram %d, project %d not found in value change notification",TAG,
-								inNote.getDiagramId(),inNote.getProjectId());
+						log.warnf("%s: run: diagram %s not found in value change notification",TAG,
+								inNote.getDiagramId().toString());
 					}
 				}
 				else {

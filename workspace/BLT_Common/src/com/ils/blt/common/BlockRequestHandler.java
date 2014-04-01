@@ -6,6 +6,7 @@ package com.ils.blt.common;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import com.ils.block.common.BlockProperty;
@@ -102,13 +103,13 @@ public class BlockRequestHandler  {
 	 * @return an array of block properties for the subject block
 	 */
 	@SuppressWarnings("unchecked")
-	public BlockProperty[] getBlockProperties(long projectId,long resourceId,UUID blockId,String className) {
+	public BlockProperty[] getBlockProperties(String className,long projectId,long resourceId,UUID blockId) {
 		log.infof("%s.getBlockProperties: for block %s (%s)",TAG,blockId.toString(),className);
 		BlockProperty[] result = null;
 		List<String> jsonList = new ArrayList<String>();
 		try {
 			jsonList = (List<String>)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "getBlockProperties",new Long(projectId),new Long(resourceId),blockId.toString(),className);
+					BLTProperties.MODULE_ID, "getBlockProperties",className,new Long(projectId),new Long(resourceId),blockId.toString());
 		}
 		catch(Exception ge) {
 			log.infof("%s.getBlockProperties: GatewayException (%s)",TAG,ge.getMessage());
@@ -157,11 +158,11 @@ public class BlockRequestHandler  {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public List<String> getDiagramTreePaths(String projectName) {
+	public Set<String> getDiagramTreePaths(String projectName) {
 		log.infof("%s.getDiagramTreePaths for %s ...",TAG,projectName);
-		List<String> result = new ArrayList<String>();
+		Set<String> result = null;
 		try {
-			result = (List<String> )GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+			result = (Set<String> )GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "getDiagramTreeList",projectName);
 		}
 		catch(Exception ge) {
@@ -180,14 +181,16 @@ public class BlockRequestHandler  {
 	 * @param className filter of the receiver blocks to be targeted.
 	 * @param command string of the signal.
 	 */
-	public void sendLocalSignal(String projectName, String diagramPath,String className, String command) {
+	public boolean sendLocalSignal(String projectName, String diagramPath,String className, String command) {
 		log.infof("%s.sendLocalSignal for %s %s %s %s...",TAG,projectName,diagramPath,className,command);
+		Boolean result = null;
 		try {
-			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+			result = GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "sendLocalSignal",projectName,diagramPath,className,command);
 		}
 		catch(Exception ex) {
 			log.infof("%s.sendLocalSignal: Exception (%s)",TAG,ex.getMessage());
 		}
+		return result.booleanValue();
 	}
 }

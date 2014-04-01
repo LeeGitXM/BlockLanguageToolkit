@@ -20,6 +20,7 @@ import com.ils.blt.common.serializable.SerializableConnection;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.connection.Connection;
 import com.ils.connection.ProcessConnection;
+import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 
@@ -31,31 +32,28 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  * 
  *  The document is constant for the life of this instance.
  */
-public class ProcessDiagram {
+public class ProcessDiagram extends ProcessNode {
 	
 	private static String TAG = "ProcessDiagram";
 	private final LoggerEx log;
 	private final SerializableDiagram diagram;
 	private boolean valid = false;
-	private final long projectId;
-	private final long resourceId;
 	private final Map<UUID,ProcessBlock> blocks;
 	private final Map<ConnectionKey,ProcessConnection> connections;              // Key by connection number
 	private final Map<BlockPort,List<ProcessConnection>> outgoingConnections;    // Key by upstream block:port
-	private final String name;
-	private final String treePath;
+	private final long resourceId;
+	
 	
 	/**
 	 * Constructor: Create a model that encapsulates the structure of the blocks and connections
 	 *              of a diagram.
-	 * @param diagm the unserialized object that represents the diagram. 
+	 * @param diagm the unserialized object that represents the diagram.
+	 * @param parent 
 	 */
-	public ProcessDiagram(SerializableDiagram diagm,long proj,long res) { 
+	public ProcessDiagram(SerializableDiagram diagm,UUID parent) { 
+		super(diagm.getName(),parent,diagm.getId());
 		this.diagram = diagm;
-		this.projectId = proj;
-		this.resourceId = res;
-		this.name = diagm.getName();
-		this.treePath = diagm.getTreePath();
+		this.resourceId = diagm.getResourceId();
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		blocks = new HashMap<UUID,ProcessBlock>();
 		connections = new HashMap<ConnectionKey,ProcessConnection>();
@@ -65,15 +63,15 @@ public class ProcessDiagram {
 
 
 	public ProcessBlock getBlock(UUID id) { return blocks.get(id); }
-	public String getName() {return name;}
 	public Collection<ProcessBlock> getProcessBlocks() { return blocks.values(); }
-	public String getTreePath() {return treePath;}
+	public long getResourceId() { return this.resourceId; }
+	
 	
 	/**
 	 * Analyze the diagram for nodes.
 	 */
 	private void analyze(SerializableDiagram diagram) {
-		log.debugf("%s.analyze: %s ....%d:%d",TAG,diagram.getName(),projectId,resourceId);
+		log.debugf("%s.analyze: %s ...",TAG,diagram.getName());
 		
 		BlockFactory blockFactory = BlockFactory.getInstance();
 		ConnectionFactory connectionFactory = ConnectionFactory.getInstance();
@@ -84,7 +82,7 @@ public class ProcessDiagram {
 			UUID id = sb.getId();
 			ProcessBlock pb = blocks.get(id);
 			if( pb==null ) {
-				pb = blockFactory.blockFromSerializable(projectId,resourceId,sb);
+				pb = blockFactory.blockFromSerializable(getParent(),sb);
 				if( pb!=null ) blocks.put(pb.getBlockId(), pb);
 				else log.errorf("%s.analyze: ERROR %s failed to instantiate %s",TAG,diagram.getName(),sb.getClassName());
 			}
@@ -128,14 +126,7 @@ public class ProcessDiagram {
 	 * @return a Connection from the diagram given its id.
 	 */
 	public Connection getConnection(String id) { return connections.get(id); }
-	/**
-	 * @return the projectId for this diagram
-	 */
-	public long getProjectId() { return this.projectId; }
-	/**
-	 * @return the resourceId for this diagram
-	 */
-	public long getResourceId() { return this.resourceId; }
+
 	
 	/**
 	 * We have just received a request to broadcast a signal. Determine which blocks are to be notified,

@@ -5,6 +5,7 @@
 package com.ils.blt.common;
 
 import java.util.List;
+import java.util.Set;
 
 import com.ils.block.common.PalettePrototype;
 
@@ -32,7 +33,8 @@ public class BlockScriptFunctions   {
 	 * @param projectName
 	 * @return a list of tree-paths to the diagrams saved (ie. known to the Gateway).
 	 */
-	public static List getDiagramTreePaths(String projectName) {
+	@SuppressWarnings("rawtypes")
+	public static Set getDiagramTreePaths(String projectName) {
 		return handler.getDiagramTreePaths(projectName);
 	}
 	/**
@@ -43,8 +45,9 @@ public class BlockScriptFunctions   {
 	 * @param diagramPath
 	 * @param className filter of the receiver blocks to be targeted.
 	 * @param command string of the signal.
+	 * @return true on success
 	 */
-	public static void sendLocalSignal(String projectName, String diagramPath,String className, String command) {
-		handler.sendLocalSignal(projectName,diagramPath,className,command);
+	public static boolean sendLocalSignal(String projectName, String diagramPath,String className, String command) {
+		return handler.sendLocalSignal(projectName,diagramPath,className,command);
 	}
 }

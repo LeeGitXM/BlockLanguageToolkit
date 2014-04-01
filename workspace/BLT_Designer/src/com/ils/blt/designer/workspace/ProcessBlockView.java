@@ -13,7 +13,6 @@ import com.ils.block.common.BlockDescriptor;
 import com.ils.block.common.BlockProperty;
 import com.ils.block.common.BlockState;
 import com.ils.block.common.BlockStyle;
-import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.designer.workspace.ui.BlockViewUI;
