@@ -39,6 +39,7 @@ public interface BLTProperties   {
 	/** This unique ID represents the root node in the project tree */
 	public static final UUID ROOT_FOLDER_UUID = UUID
 			.fromString("7bbbd6b9-3140-4328-a844-51817eb47574");
+	public static final String ROOT_FOLDER_NAME = "ROOT";   
 	
 	// This is the common prefix under which bundle files are identified/registered
 	public static final String BUNDLE_PREFIX = "blt";

@@ -56,7 +56,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 
 
 	/**
-	 * Constructor. A DiagnosticsNode is created initially without child resources.
+	 * Constructor. A DiagramNode is created initially without child resources.
 	 *      The model resource either pre-exists or is created when a new frame is
 	 *      instantiated.
 	 * @param context designer context
@@ -70,7 +70,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 
 		setName(resource.getName());
 		setText(resource.getName());
-		setIcon(IconUtil.getIcon("folder_document"));
+		setIcon(IconUtil.getIcon("tag_tree"));
 
 		setItalic(context.getProject().isResourceDirty(resourceId));
 		context.addProjectChangeListener(this);

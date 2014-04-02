@@ -18,6 +18,7 @@ public class SerializableFamily {
 	public SerializableFamily() {	
 		diagrams = new SerializableDiagram[0];
 		name="UNSET";
+		id = UUID.randomUUID();
 	}
 	
 	public SerializableDiagram[] getDiagrams() { return diagrams; }

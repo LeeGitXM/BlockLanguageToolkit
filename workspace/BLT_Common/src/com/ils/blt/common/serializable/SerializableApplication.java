@@ -20,6 +20,7 @@ public class SerializableApplication {
 	public SerializableApplication() {	
 		families = new SerializableFamily[0];
 		name="UNSET";
+		id = UUID.randomUUID();
 	}
 	
 	public SerializableFamily[] getFamilies() { return families; }

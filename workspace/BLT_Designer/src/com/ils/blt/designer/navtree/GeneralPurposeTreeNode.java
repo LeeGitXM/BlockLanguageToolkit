@@ -18,6 +18,7 @@ import java.nio.file.Files;
 import java.util.List;
 import java.util.UUID;
 
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JPopupMenu;
 import javax.swing.tree.TreePath;
@@ -26,8 +27,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.BlockRequestHandler;
+import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.common.serializable.SerializableApplicationTree;
 import com.ils.blt.common.serializable.SerializableDiagram;
+import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.common.serializable.UUIDResetHandler;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
@@ -61,14 +64,15 @@ public class GeneralPurposeTreeNode extends FolderNode {
 	private StartAction startAction = new StartAction();
 	private StopAction stopAction = new StopAction();
 	private final DiagramWorkspace workspace; 
+	private Icon expandedIcon = super.getExpandedIcon();
 	
-
 	/** 
 	 * Create a new folder node representing the root folder
 	 * @param ctx the designer context
 	 */
 	public GeneralPurposeTreeNode(DesignerContext ctx) {
 		super(ctx, BLTProperties.MODULE_ID, ApplicationScope.GATEWAY,BLTProperties.ROOT_FOLDER_UUID);
+		this.setName(BLTProperties.ROOT_FOLDER_NAME);
 		workspace = ((BLTDesignerHook)ctx.getModule(BLTProperties.MODULE_ID)).getWorkspace();
 		setText(BundleUtil.get().getString(PREFIX+".RootFolderName"));
 		setIcon(IconUtil.getIcon("folder_closed"));
@@ -81,31 +85,43 @@ public class GeneralPurposeTreeNode extends FolderNode {
 	 * 
 	 * @param context the designer context
 	 * @param resource the project resource
+	 * @param self UUID of the node itself
 	 */
-	public GeneralPurposeTreeNode(DesignerContext context,ProjectResource resource) {
-		super(context, resource);
+	public GeneralPurposeTreeNode(DesignerContext context,ProjectResource resource,UUID self) {
+		super(context,resource.getModuleId(),resource.getApplicationScope(),self);
+		this.resourceId = resource.getResourceId();
+		setName(resource.getName());      // Also sets text for tree
+		
 		workspace = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getWorkspace();
-		String iconPath = null;
+		
+		ImageIcon icon = IconUtil.getIcon("folder_closed");    // Base icon.
+		Dimension iconSize = new Dimension(20,20);
 		if(resource.getResourceType().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
-			iconPath = "Block/icons/small/application_closed_16.png";
+			Image img = ImageLoader.getInstance().loadImage("Block/icons/small/application_folder_closed.png",iconSize);
+			if( img !=null) icon = new ImageIcon(img);
+			img = ImageLoader.getInstance().loadImage("Block/icons/small/application_folder.png",iconSize);
+			if( img !=null) expandedIcon = new ImageIcon(img);
 		} 
 		else if(resource.getResourceType().equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE)) {
-			iconPath = "Block/icons/small/family_closed_16.png";
+			Image img = ImageLoader.getInstance().loadImage("Block/icons/small/family_folder_closed.png",iconSize);
+			if( img !=null) icon = new ImageIcon(img);
+			img = ImageLoader.getInstance().loadImage("Block/icons/small/family_folder.png",iconSize);
+			if( img !=null) expandedIcon = new ImageIcon(img);
 		}
 		else if(resource.getResourceType().equalsIgnoreCase(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
-			iconPath = "Block/icons/small/diagram.png";
+			icon = IconUtil.getIcon("tag_tree");
 		}
-		if( iconPath!=null ) {
-			Dimension iconSize = new Dimension(16,16);
-			Image img = ImageLoader.getInstance().loadImage(iconPath,iconSize);
-			if( img !=null) setIcon(new ImageIcon(img));
-		}
+		setIcon(icon);
 	}
 
 	private boolean isRootFolder() {
 		return getFolderId().equals(BLTProperties.ROOT_FOLDER_UUID);
 	}
-
+	
+	@Override
+	public Icon getExpandedIcon() {
+		return expandedIcon;
+	}
 
 	/**
 	 * Create a child node because we've discovered a resource that matches this instance as a parent
@@ -113,17 +129,27 @@ public class GeneralPurposeTreeNode extends FolderNode {
 	 */
 	@Override
 	protected AbstractNavTreeNode createChildNode(ProjectResource res) {
-		log.debug(String.format("%s.createChildNode type:%s, level=%d", TAG,res.getResourceType(),getDepth()));
-		if (    ProjectResource.FOLDER_RESOURCE_TYPE.equals(res.getResourceType())    ||
-				BLTProperties.APPLICATION_RESOURCE_TYPE.equals(res.getResourceType()) ||
-				BLTProperties.FAMILY_RESOURCE_TYPE.equals(res.getResourceType()) )       {
-			GeneralPurposeTreeNode node = new GeneralPurposeTreeNode(context, res);
-			if( log.isInfoEnabled() ) log.infof("%s.createChildFolder: (%s) %s->%s",TAG,res.getResourceType(),this.getName(),node.getName());
+		log.infof("%s.createChildNode type:%s, level=%d", TAG,res.getResourceType(),getDepth());
+		if (    ProjectResource.FOLDER_RESOURCE_TYPE.equals(res.getResourceType()))       {
+			GeneralPurposeTreeNode node = new GeneralPurposeTreeNode(context, res, res.getDataAsUUID());
+			log.infof("%s.createChildNode: (%s) %s->%s",TAG,res.getResourceType(),this.getName(),node.getName());
+			return node;
+		}
+		else if ( BLTProperties.APPLICATION_RESOURCE_TYPE.equals(res.getResourceType()) )       {
+			SerializableApplication sa = deserializeApplication(res);
+			GeneralPurposeTreeNode node = new GeneralPurposeTreeNode(context, res, sa.getId());
+			log.infof("%s.createChildNode: (%s) %s->%s",TAG,res.getResourceType(),this.getName(),node.getName());
+			return node;
+		}
+		else if ( BLTProperties.FAMILY_RESOURCE_TYPE.equals(res.getResourceType()) )       {
+			SerializableFamily fa = deserializeFamily(res); 
+			GeneralPurposeTreeNode node = new GeneralPurposeTreeNode(context, res, fa.getId());
+			log.infof("%s.createChildNode: (%s) %s->%s",TAG,res.getResourceType(),this.getName(),node.getName());
 			return node;
 		}
 		else if (BLTProperties.DIAGRAM_RESOURCE_TYPE.equals(res.getResourceType())) {
 			DiagramNode node = new DiagramNode(context,res,workspace);
-			if( log.isInfoEnabled() ) log.infof("%s.createChildPanel: %s->%s",TAG,this.getName(),node.getName());
+			log.infof("%s.createChildPanel: %s->%s",TAG,this.getName(),node.getName());
 			return node;
 		} 
 		else {
@@ -131,7 +157,6 @@ public class GeneralPurposeTreeNode extends FolderNode {
 			throw new IllegalArgumentException();
 		}
 	}
-
 	
 	@Override
 	public String getWorkspaceName() {
@@ -152,7 +177,7 @@ public class GeneralPurposeTreeNode extends FolderNode {
 		if (isRootFolder()) { 
 			BlockRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
 
-			ApplicationAction applicationAction = new ApplicationAction(this.folderId);
+			ApplicationAction applicationAction = new ApplicationAction();
 			ApplicationImportAction applicationImportAction = new ApplicationImportAction();
 			DebugAction debugAction = new DebugAction();
 			if( handler.isControllerRunning() ) {
@@ -170,7 +195,7 @@ public class GeneralPurposeTreeNode extends FolderNode {
 		}
 		else if(getProjectResource().getResourceType().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
 			ExportAction applicationExportAction = new ExportAction(menu.getRootPane(),this);
-			FamilyAction familyAction = new FamilyAction(this.folderId);
+			FamilyAction familyAction = new FamilyAction();
 			NewFolderAction newFolderAction = new NewFolderAction(context,BLTProperties.MODULE_ID,ApplicationScope.DESIGNER,getFolderId(),this);
 			ApplicationConfigureAction applicationConfigureAction = new ApplicationConfigureAction();
 			menu.add(familyAction);
@@ -201,7 +226,7 @@ public class GeneralPurposeTreeNode extends FolderNode {
 				menu.add(cloneAction);
 			}
 			else {
-				FamilyAction familyAction = new FamilyAction(this.folderId);
+				FamilyAction familyAction = new FamilyAction();
 				menu.add(familyAction);
 			}
 			NewFolderAction newFolderAction = new NewFolderAction(context,BLTProperties.MODULE_ID,ApplicationScope.DESIGNER,getFolderId(),this);
@@ -210,7 +235,7 @@ public class GeneralPurposeTreeNode extends FolderNode {
 			addEditActions(menu);	
 		}
 		else {   
-			FamilyAction familyAction = new FamilyAction(this.folderId);
+			FamilyAction familyAction = new FamilyAction();
 			menu.add(familyAction);
 			menu.addSeparator();
 			addEditActions(menu);
@@ -290,10 +315,59 @@ public class GeneralPurposeTreeNode extends FolderNode {
 		UndoManager.getInstance()
 				.setSelectedContext(GeneralPurposeTreeNode.class);
 	}
-	
 	/**
-	 *  Serialize a diagram into JSON. We set the tag path at the time of serialization. It is used as an
-	 *  identifier for saved diagrams. It is not used on import.
+	 *  Serialize an Application into JSON.
+	 * @param application to be serialized
+	 */ 
+	private String serializeApplication(SerializableApplication application) {
+		String json = "";
+		ObjectMapper mapper = new ObjectMapper();
+		log.infof("%s: serializeApplication creating json ... %s",TAG,(mapper.canSerialize(SerializableApplication.class)?"true":"false"));
+		try{ 
+		    json = mapper.writeValueAsString(application);
+		}
+		catch(JsonProcessingException jpe) {
+			log.warnf("%s: Unable to serialize application (%s)",TAG,jpe.getMessage());
+		}
+		log.infof("%s: serializeApplication created json ... %s",TAG,json);
+		return json;
+	}
+	/**
+	 * Convert the resource data into a SerializableApplication
+	 * @param res
+	 * @return
+	 */
+	private SerializableApplication deserializeApplication(ProjectResource res) {
+		SerializableApplication result = null;
+		try{
+			byte[] bytes = res.getData();
+			ObjectMapper mapper = new ObjectMapper();
+			result = mapper.readValue(new String(bytes), SerializableApplication.class);
+		}
+		catch(Exception ex) {
+			log.warnf("%s.deserializeApplication: Deserialization exception (%s)",ex.getMessage());
+		}
+		return result;
+	}
+	/**
+	 * Convert the resource data into a SerializableFamily
+	 * @param res
+	 * @return
+	 */
+	private SerializableFamily deserializeFamily(ProjectResource res) {
+		SerializableFamily result = null;
+		try{
+			byte[] bytes = res.getData();
+			ObjectMapper mapper = new ObjectMapper();
+			result = mapper.readValue(new String(bytes), SerializableFamily.class);
+		}
+		catch(Exception ex) {
+			log.warnf("%s.deserializeFamily: Deserialization exception (%s)",ex.getMessage());
+		}
+		return result;
+	}
+	/**
+	 *  Serialize a diagram into JSON. 
 	 * @param diagram to be serialized
 	 */ 
 	private String serializeDiagram(SerializableDiagram diagram) {
@@ -307,6 +381,23 @@ public class GeneralPurposeTreeNode extends FolderNode {
 			log.warnf("%s: Unable to serialize diagram (%s)",TAG,jpe.getMessage());
 		}
 		log.infof("%s: serializeDiagram created json ... %s",TAG,json);
+		return json;
+	}
+	/**
+	 *  Serialize a Family into JSON.
+	 * @param family to be serialized
+	 */ 
+	private String serializeFamily(SerializableFamily family) {
+		String json = "";
+		ObjectMapper mapper = new ObjectMapper();
+		log.infof("%s: serializeFamily creating json ... %s",TAG,(mapper.canSerialize(SerializableFamily.class)?"true":"false"));
+		try{ 
+		    json = mapper.writeValueAsString(family);
+		}
+		catch(JsonProcessingException jpe) {
+			log.warnf("%s: Unable to serialize family (%s)",TAG,jpe.getMessage());
+		}
+		log.infof("%s: serializeFamily created json ... %s",TAG,json);
 		return json;
 	}
 	
@@ -326,18 +417,31 @@ public class GeneralPurposeTreeNode extends FolderNode {
 	// From the root node, create a folder for diagrams belonging to a family
 	private class ApplicationAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
-		private UUID parent;
-	    public ApplicationAction(UUID parentUUID)  {
+	    public ApplicationAction()  {
 	    	super(PREFIX+".NewApplication",IconUtil.getIcon("folder_new"));
-	    	this.parent = parentUUID;
 	    }
 	    
 		public void actionPerformed(ActionEvent e) {
 			try {
 				final long newId = context.newResourceId();
 				String newName = BundleUtil.get().getString(PREFIX+".DefaultNewApplicationName");
-				if( newName==null) newName = "New Apps";  // Missing Resource
-				context.addFolder(newId,moduleId,ApplicationScope.GATEWAY,newName,parent);
+				if( newName==null) newName = "New App";  // Missing Resource
+				SerializableApplication app = new SerializableApplication();
+				app.setName(newName);
+	
+				log.infof("%s: new application action ...",TAG);
+
+				String json = serializeApplication(app);
+			
+				log.debugf("%s: ApplicationAction. json=%s",TAG,json);
+				byte[] bytes = json.getBytes();
+				log.debugf("%s: ApplicationAction. create new %s resource %d (%d bytes)",TAG,BLTProperties.APPLICATION_RESOURCE_TYPE,
+						newId,bytes.length);
+				ProjectResource resource = new ProjectResource(newId,
+						BLTProperties.MODULE_ID, BLTProperties.APPLICATION_RESOURCE_TYPE,
+						newName, ApplicationScope.GATEWAY, bytes);
+				resource.setParentUuid(getFolderId());
+				context.updateResource(resource);
 				selectChild(newId);
 			} 
 			catch (Exception err) {
@@ -557,10 +661,8 @@ public class GeneralPurposeTreeNode extends FolderNode {
 	// From the root node, create a folder for diagrams belonging to a family
 	private class FamilyAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
-		private UUID parent;
-	    public FamilyAction(UUID parentUUID)  {
+	    public FamilyAction()  {
 	    	super(PREFIX+".NewFamily",IconUtil.getIcon("folder_new"));
-	    	this.parent = parentUUID;
 	    }
 	    
 		public void actionPerformed(ActionEvent e) {
@@ -568,7 +670,22 @@ public class GeneralPurposeTreeNode extends FolderNode {
 				final long newId = context.newResourceId();
 				String newName = BundleUtil.get().getString(PREFIX+".DefaultNewFamilyName");
 				if( newName==null) newName = "New Folks";  // Missing Resource
-				context.addFolder(newId,moduleId,ApplicationScope.GATEWAY,newName,parent);
+				SerializableFamily fam = new SerializableFamily();
+				fam.setName(newName);
+	
+				log.infof("%s: new application action ...",TAG);
+
+				String json = serializeFamily(fam);
+			
+				log.debugf("%s: FamilyAction. json=%s",TAG,json);
+				byte[] bytes = json.getBytes();
+				log.debugf("%s: FamilyAction. create new %s resource %d (%d bytes)",TAG,BLTProperties.FAMILY_RESOURCE_TYPE,
+						newId,bytes.length);
+				ProjectResource resource = new ProjectResource(newId,
+						BLTProperties.MODULE_ID, BLTProperties.FAMILY_RESOURCE_TYPE,
+						newName, ApplicationScope.GATEWAY, bytes);
+				resource.setParentUuid(getFolderId());
+				context.updateResource(resource);;
 				selectChild(newId);
 			} 
 			catch (Exception err) {
