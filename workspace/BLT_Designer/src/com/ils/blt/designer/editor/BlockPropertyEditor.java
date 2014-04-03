@@ -185,8 +185,13 @@ public class BlockPropertyEditor extends JPanel {
 		field.setEditable(true);
 		field.addActionListener(new ActionListener() {
 	        public void actionPerformed(ActionEvent e){
-	        	double val = Double.parseDouble(field.getText());
-	            prop.setMaximum(val);
+	        	if(field.getText().length()>0) {
+	        		double val = Double.parseDouble(field.getText());
+		            prop.setMaximum(val);
+	        	}
+	        	else {
+	        		prop.setMaximum(Double.MAX_VALUE);
+	        	}
 	        }
 		});
 		return field;
@@ -206,8 +211,13 @@ public class BlockPropertyEditor extends JPanel {
 		field.setEditable(true);
 		field.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e){
-				double val = Double.parseDouble(field.getText());
-				prop.setMinimum(val);
+				if(field.getText().length()>0) {
+	        		double val = Double.parseDouble(field.getText());
+		            prop.setMinimum(val);
+	        	}
+	        	else {
+	        		prop.setMinimum(Double.MIN_VALUE);
+	        	}
 			}
 		});
 		return field;

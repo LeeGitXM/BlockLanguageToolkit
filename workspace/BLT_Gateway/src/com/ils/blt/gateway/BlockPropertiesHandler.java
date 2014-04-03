@@ -72,7 +72,8 @@ public class BlockPropertiesHandler   {
 	 * @return the instance created, else null
 	 */
 	private ProcessBlock createInstance(String className,UUID parentId,UUID blockId) {
-		log.debugf("%s: createInstance of %s (%s:%s)",TAG,className,parentId.toString(),blockId.toString());   // Should be updated
+		
+		log.debugf("%s.createInstance of %s (%s:%s)",TAG,className,(parentId==null?"null":parentId.toString()),blockId.toString());
 		ProcessBlock block = null;
 		try {
 			Class<?> clss = Class.forName(className);
@@ -126,8 +127,8 @@ public class BlockPropertiesHandler   {
 				log.tracef("%s: getProperties new from python %s = %s",TAG,block.getClass().getName(),results.toString());
 			}
 		}
-		else {		
-			block = createInstance(className,diagram.getSelf(),blockId);
+		else {
+			block = createInstance(className,null,blockId);  // Block is not attached to a diagram
 			if(block!=null) {
 				results = block.getProperties();
 				log.tracef("%s: getProperties new %s = %s",TAG,block.getClass().getName(),results.toString());

@@ -34,7 +34,7 @@ public class BlockScriptFunctions   {
 	 * @return a list of tree-paths to the diagrams saved (ie. known to the Gateway).
 	 */
 	@SuppressWarnings("rawtypes")
-	public static Set getDiagramTreePaths(String projectName) {
+	public static List getDiagramTreePaths(String projectName) {
 		return handler.getDiagramTreePaths(projectName);
 	}
 	/**

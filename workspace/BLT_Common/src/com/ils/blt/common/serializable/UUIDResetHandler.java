@@ -37,15 +37,19 @@ public class UUIDResetHandler   {
 	}
 
 	/**
-	 * Do it.
+	 * Do it.  (Note this will fix missing UUIDs).
 	 */
 	public boolean convertUUIDs() {
 		boolean success = false;
+		UUID original = diagram.getId();
+		diagram.setId(UUID.randomUUID());
+		if( original!=null ) blockLookup.put(original, diagram.getId());
+		
 		// As we traverse the blocks, save off the UUIDs
 		// so that we can look them up when we convert the 
 		// connections.
 		for( SerializableBlock sb:diagram.getBlocks()) {
-			UUID original = sb.getId();
+			original = sb.getId();
 			sb.setId(UUID.randomUUID());
 			sb.setOriginalId(original);
 			blockLookup.put(original, sb.getId());
@@ -96,7 +100,7 @@ public class UUIDResetHandler   {
 			}
 			
 		}
-		
+
 		return success;
 	}
 	

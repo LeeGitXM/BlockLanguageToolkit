@@ -17,6 +17,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  * to the proper destination.
  */
 public class ProcessNode {
+	private final String TAG = "ProcessNode";
 	protected final LoggerEx log;
 	private final UUID self;
 	private final UUID parent;
@@ -37,7 +38,10 @@ public class ProcessNode {
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 	}
 
-	public void addChild(ProcessNode child)    { children.put(child.getName(),child); }
+	public void addChild(ProcessNode child)    { 
+		children.put(child.getName(),child);
+		log.infof("%s.addChild: %s[%s]",TAG,getName(),child.getName());
+	}
 	public void removeChild(ProcessNode child) { children.remove(child.getName()); }
 	public Collection<ProcessNode> getChildren() { return children.values(); }
 	public ProcessNode getChildForName(String name) { return children.get(name); }

@@ -46,7 +46,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	 * @param diagram
 	 */
 	public ProcessDiagramView (long resid,SerializableDiagram diagram) {
-		this(resid,diagram.getId(), diagram.getName());
+		this(resid,diagram.getId(),diagram.getName());
 
 		for( SerializableBlock sb:diagram.getBlocks()) {
 			ProcessBlockView pbv = new ProcessBlockView(sb);
@@ -97,6 +97,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		SerializableDiagram diagram = new SerializableDiagram();
 		diagram.setName(name);
 		diagram.setResourceId(resourceId);
+		diagram.setId(getId());
 		List<SerializableBlock> sblocks = new ArrayList<SerializableBlock>();
 		for( ProcessBlockView blk:blockMap.values()) {
 			SerializableBlock sb = blk.convertToSerializable();

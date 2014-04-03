@@ -17,12 +17,14 @@ import javax.swing.tree.TreePath;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;
+import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectChangeListener;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
@@ -52,7 +54,6 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 	private DesignerContext context;
 	private long resourceId;
 	private final DiagramWorkspace workspace;
-	protected ExportAction exportAction = null;
 
 
 	/**
@@ -80,10 +81,12 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 	@Override
 	protected void initPopupMenu(JPopupMenu menu, TreePath[] paths,List<AbstractNavTreeNode> selection, int modifiers) {
 		setupEditActions(paths, selection);
-		exportAction = new ExportAction(menu.getRootPane(),workspace.getActiveDiagram());
+		ExportDiagramAction exportAction = new ExportDiagramAction(menu.getRootPane(),workspace.getActiveDiagram());
+		SaveDiagramAction saveAction = new SaveDiagramAction();
 		menu.add(exportAction);
 		menu.addSeparator();
 		menu.add(renameAction);
+		menu.add(saveAction);
         menu.add(deleteAction);
 	}
 
@@ -204,12 +207,12 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 		}
 	}
 	
-	private class ExportAction extends BaseAction {
+	private class ExportDiagramAction extends BaseAction {
     	private static final long serialVersionUID = 1L;
     	private final static String POPUP_TITLE = "Export Diagram";
     	private final ProcessDiagramView view;
     	private final Component anchor;
-	    public ExportAction(Component c,ProcessDiagramView v)  {
+	    public ExportDiagramAction(Component c,ProcessDiagramView v)  {
 	    	super(PREFIX+".ExportDiagram",IconUtil.getIcon("export1")); 
 	    	anchor = c;
 	    	view=v;
@@ -279,6 +282,26 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 			catch (Exception err) {
 				ErrorUtil.showError(err);
 			}
+		}
+	}
+	
+	private class SaveDiagramAction extends BaseAction {
+    	private static final long serialVersionUID = 1L;
+
+	    public SaveDiagramAction()  {
+	    	super(PREFIX+".SaveDiagram",IconUtil.getIcon("add2")); 
+	    }
+	    
+		public void actionPerformed(ActionEvent e) {
+			ProjectResource res = getProjectResource();
+			try {
+				res.setEditCount(res.getEditCount()+1);
+				context.updateResource(res);
+			} 
+			catch (Exception err) {
+				ErrorUtil.showError(err);
+			}
+			
 		}
 	}
 }

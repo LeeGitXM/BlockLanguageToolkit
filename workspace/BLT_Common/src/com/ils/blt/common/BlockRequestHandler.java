@@ -158,12 +158,12 @@ public class BlockRequestHandler  {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public Set<String> getDiagramTreePaths(String projectName) {
+	public List<String> getDiagramTreePaths(String projectName) {
 		log.infof("%s.getDiagramTreePaths for %s ...",TAG,projectName);
-		Set<String> result = null;
+		List<String> result = null;
 		try {
-			result = (Set<String> )GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "getDiagramTreeList",projectName);
+			result = (List<String> )GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "getDiagramTreePaths",projectName);
 		}
 		catch(Exception ge) {
 			log.infof("%s.getDiagramTreePaths: GatewayException (%s)",TAG,ge.getMessage());

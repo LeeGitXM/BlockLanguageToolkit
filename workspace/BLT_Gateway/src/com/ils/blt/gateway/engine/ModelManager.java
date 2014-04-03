@@ -42,7 +42,7 @@ import com.inductiveautomation.ignition.gateway.project.ProjectListener;
  */
 public class ModelManager implements ProjectListener  {
 	
-	private static String TAG = "ModelResourceManager";
+	private static String TAG = "ModelManager";
 	private final GatewayContext context;
 	private final LoggerEx log;
 	/** Access nodes by either UUID or tree path */
@@ -78,24 +78,26 @@ public class ModelManager implements ProjectListener  {
 	 * @param res the model resource
 	 */
 	public void analyzeResource(Long projectId,ProjectResource res) {
-		String type = res.getResourceType();
-		if( type.equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE) ) {
-			addApplicationResource(projectId,res);
+		if( res.getModuleId().equalsIgnoreCase(BLTProperties.MODULE_ID)) {
+			String type = res.getResourceType();
+			
+			if( type.equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE) ) {
+				addApplicationResource(projectId,res);
+			}
+			else if( type.equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE) ) {
+				addFamilyResource(projectId,res);
+			}
+			else if( type.equalsIgnoreCase(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
+				addDiagramResource(projectId,res);	
+			}
+			else if( type.equalsIgnoreCase(BLTProperties.FOLDER_RESOURCE_TYPE) ) {
+				addFolderResource(projectId,res);
+			}
+			else {
+				// Don't care
+				log.tracef("%s.analyze: Ignoring %s resource",TAG,type);
+			}
 		}
-		else if( type.equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE) ) {
-			addFamilyResource(projectId,res);
-		}
-		else if( type.equalsIgnoreCase(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
-			addDiagramResource(projectId,res);	
-		}
-		else if( type.equalsIgnoreCase(BLTProperties.FOLDER_RESOURCE_TYPE) ) {
-			addFolderResource(projectId,res);
-		}
-		else {
-			// Don't care
-			log.tracef("%s.analyze: Ignoring %s resource",TAG,type);
-		}
-		
 	}
 	/**
 	 * Get a block from an existing diagram. 
@@ -203,15 +205,12 @@ public class ModelManager implements ProjectListener  {
 	public void projectAdded(Project staging, Project published) {
 		if( staging!=null ) {
 			long projectId = published.getId();
-			log.debugf("%s: projectAdded - published project %d", TAG,projectId);
+			log.debugf("%s.projectAdded: %s (%d),published",TAG,published.getName(),projectId);
 			List<ProjectResource> resources = published.getResources();
 			for( ProjectResource res:resources ) {
-				if( res.getResourceType().equalsIgnoreCase(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
-					log.debugf("%s: projectAdded - published %s %d = %s", TAG,res.getName(),
+				log.infof("%s.projectAdded: resource %s (%d),type %s", TAG,res.getName(),
 						res.getResourceId(),res.getResourceType());
-					analyzeResource(projectId,res);
-					
-				}
+				analyzeResource(projectId,res);
 			}
 		}
 	}
@@ -234,20 +233,19 @@ public class ModelManager implements ProjectListener  {
 	 */
 	@Override
 	public void projectUpdated(Project diff, ProjectVersion vers) { 
-		log.infof("%s: projectUpdated - version = %s", TAG,vers.toString());
+		log.infof("%s.projectUpdated: %s (%d)  %s", TAG,diff.getName(),diff.getId(),vers.toString());
 		if( vers==ProjectVersion.Published ) return;  // Consider only the "Staging" version
 		
 		long projectId = diff.getId();
 		Set<Long> deleted = diff.getDeletedResources();
 		for (Long  resid : deleted) {
-			log.infof("%s: projectUpdated -delete resource %d:%d", TAG,projectId,resid);
+			log.infof("%s.projectUpdated: delete resource %d:%d", TAG,projectId,resid);
 			deleteResource(projectId,resid);
 		}
 		
-		log.debugf("%s: projectUpdated - res of type model = %d", TAG,diff.getResourcesOfType(BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE).size());
-		List<ProjectResource> resources = diff.getResourcesOfType(BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE);
+		List<ProjectResource> resources = diff.getResources();
 		for( ProjectResource res:resources ) {
-			log.infof("%s: projectUpdated -  %s %d = %s (%s)", TAG,res.getName(),
+			log.infof("%s.projectUpdated: resource %s (%d),type %s (%s)", TAG,res.getName(),
 					res.getResourceId(),res.getResourceType(),(diff.isResourceDirty(res)?"dirty":"clean"));
 			analyzeResource(projectId,res);
 		}
@@ -261,6 +259,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param res the project resource containing the diagram
 	 */
 	private void addApplicationResource(Long projectId,ProjectResource res) {
+		log.infof("%s.addApplicationResource: %d",TAG,res.getResourceId());
 		ProcessApplication application = deserializeApplicationResource(projectId,res);
 		if( application!=null ) {
 			UUID self = application.getSelf();
@@ -284,6 +283,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param res the project resource containing the diagram
 	 */
 	private void addDiagramResource(Long projectId,ProjectResource res) {
+		log.infof("%s.addDiagramResource: %d",TAG,res.getResourceId());
 		ProcessDiagram diagram = deserializeDiagramResource(projectId,res);
 		if( diagram!=null) {
 			BlockExecutionController controller = BlockExecutionController.getInstance();
@@ -302,7 +302,7 @@ public class ModelManager implements ProjectListener  {
 			ProjResKey key = new ProjResKey(projectId,res.getResourceId());
 			diagramsByKey.put(key,diagram);
 			nodesByUUID.put(diagram.getSelf(),diagram);
-			log.infof("%s: addDiagramResource: starting tag subscriptions ...%d:%s",TAG,projectId,res.getName());
+			log.infof("%s.addDiagramResource: starting tag subscriptions ...%d:%s",TAG,projectId,res.getName());
 			for( ProcessBlock pb:diagram.getProcessBlocks()) {
 				for(BlockProperty bp:pb.getProperties()) {
 					controller.startSubscription(pb,bp);
@@ -320,6 +320,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param res the project resource containing the diagram
 	 */
 	private void addFamilyResource(Long projectId,ProjectResource res) {
+		log.infof("%s.addFamilyResource: %d",TAG,res.getResourceId());
 		ProcessFamily family = deserializeFamilyResource(projectId,res);
 		if( family!=null ) {
 			UUID self = family.getSelf();
@@ -342,6 +343,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param model the diagram logic
 	 */
 	private void addFolderResource(long projectId,ProjectResource res) {
+		log.infof("%s.addFolderResource: %d",TAG,res.getResourceId());
 		UUID self = res.getDataAsUUID();
 		ProcessNode node = nodesByUUID.get(self);
 		if( node==null ) {
@@ -441,7 +443,7 @@ public class ModelManager implements ProjectListener  {
 			ObjectMapper mapper = new ObjectMapper();
 			SerializableApplication sa = mapper.readValue(json, SerializableApplication.class);
 			if( sa!=null ) {
-				log.infof("%s.deserializeApplicationResource: successfully deserialized diagram %s",TAG,sa.getName());
+				log.infof("%s.deserializeApplicationResource: successfully deserialized application %s",TAG,sa.getName());
 				application = new ProcessApplication(sa,res.getParentUuid());
 			}
 			else {
@@ -500,7 +502,7 @@ public class ModelManager implements ProjectListener  {
 			ObjectMapper mapper = new ObjectMapper();
 			SerializableFamily sf = mapper.readValue(json, SerializableFamily.class);
 			if( sf!=null ) {
-				log.infof("%s.deserializeModelResource: successfully deserialized diagram %s",TAG,sf.getName());
+				log.infof("%s.deserializeModelResource: successfully deserialized family %s",TAG,sf.getName());
 				family = new ProcessFamily(sf,res.getParentUuid());
 			}
 			else {

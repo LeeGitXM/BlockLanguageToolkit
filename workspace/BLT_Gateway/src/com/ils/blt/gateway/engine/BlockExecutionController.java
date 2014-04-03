@@ -238,8 +238,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 						}
 					}
 					else {
-						log.warnf("%s: run: diagram %s not found for value change notification",TAG,
-									    pb.getParentId().toString());
+						log.warnf("%s: run: diagram %s not found for value change notification",TAG,pb.getParentId().toString());
 					}
 				}
 				else if( work instanceof BroadcastNotification) {

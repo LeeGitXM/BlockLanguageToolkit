@@ -153,14 +153,19 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	public BlockRequestHandler getPropertiesRequestHandler() { return propertiesRequestHandler; }
 	@Override
 	public String getResourceCategoryKey(Project project,ProjectResource resource) {
-		if( resource.getResourceType() == BLTProperties.APPLICATION_RESOURCE_TYPE)
-			return PREFIX+".Export.Application.Name";
-		else if( resource.getResourceType() == BLTProperties.FAMILY_RESOURCE_TYPE)
-			return PREFIX+".Export.Family.Name";
-		else if( resource.getResourceType() == BLTProperties.DIAGRAM_RESOURCE_TYPE)
-			return PREFIX+".Export.Diagram.Name";
-		else 
-			return super.getResourceCategoryKey(project,resource);
+		// There is only one resource category that we are exporting
+		if( resource.getResourceType().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE) ) {
+			return PREFIX+".Export.Application.Category";
+		}
+		else if( resource.getResourceType().equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE) ) {
+			return PREFIX+".Export.Family.Category";
+		}
+		else if( resource.getResourceType().equalsIgnoreCase(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
+			return PREFIX+".Export.Diagram.Category";
+		}
+		else { 
+			return PREFIX+".Export.Generic.Category";   // Folders
+		}
 		
 	}
 	

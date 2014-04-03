@@ -78,10 +78,17 @@ public class GatewayRpcDispatcher   {
 	 * @return properties for the block
 	 */
 	public List<String> getBlockProperties(String className,Long projectId,Long resourceId,String blockId) {
-		log.infof("%s: getBlockProperties: %d:%d %s",TAG,projectId.longValue(),resourceId.longValue(),blockId);
-		
+		log.infof("%s.getBlockProperties: %s %d:%d %s",TAG,className,projectId.longValue(),resourceId.longValue(),blockId);
+		UUID blockUUID = null;
+		try {
+			blockUUID = UUID.fromString(blockId);
+		}
+		catch(IllegalArgumentException iae) {
+			log.warnf("%s: getBlockProperties: Block UUID string is illegal (%s), creating new",TAG,blockId);
+			blockUUID = UUID.nameUUIDFromBytes(blockId.getBytes());
+		}
 		BlockProperty[] propertyArray = BlockPropertiesHandler.getInstance().
-					getBlockProperties(className,projectId.longValue(),resourceId.longValue(),UUID.fromString(blockId));
+					getBlockProperties(className,projectId.longValue(),resourceId.longValue(),blockUUID);
 		List<String> result = null;
 		if( propertyArray!=null ) {
 			result = new ArrayList<String>();
@@ -93,9 +100,9 @@ public class GatewayRpcDispatcher   {
 			}			
 		}
 		else {
-			log.infof("%s: getBlockProperties: created new block %d:%d %s",TAG,projectId.longValue(),resourceId.longValue(),className);
+			log.warnf("%s: getBlockProperties: %s block %d:%d has no properties",TAG,className,projectId.longValue(),resourceId.longValue());
 		}
-		log.debugf("%s: getBlockProperties: returns %s",TAG,result.toString());
+		log.infof("%s: getBlockProperties: returns %s",TAG,result.toString());
 		return result;
 	}
 	
@@ -146,7 +153,7 @@ public class GatewayRpcDispatcher   {
 		ClassList cl = new ClassList();
 		List<Class<?>> classes = cl.getAnnotatedClasses(BLTProperties.BLOCK_JAR_NAME, ExecutableBlock.class,"com/ils/block/");
 		for( Class<?> cls:classes) {
-			log.info("   found block class: "+cls.getName());
+			log.infof("   found block class: %s",cls.getName());
 			try {
 				Object obj = cls.newInstance();
 				if( obj instanceof ProcessBlock ) {
@@ -179,7 +186,8 @@ public class GatewayRpcDispatcher   {
 		return results;
 	}
 	public List<String> getDiagramTreePaths(String projectName) {
-		return BlockExecutionController.getInstance().getDiagramTreePaths(projectName);
+		List<String> results = BlockExecutionController.getInstance().getDiagramTreePaths(projectName);
+		return results;
 	}
 	
 	public Boolean sendLocalSignal(String projectName, String diagramPath,String className, String command) {

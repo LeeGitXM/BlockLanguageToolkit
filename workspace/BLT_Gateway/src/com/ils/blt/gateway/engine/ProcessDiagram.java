@@ -82,7 +82,7 @@ public class ProcessDiagram extends ProcessNode {
 			UUID id = sb.getId();
 			ProcessBlock pb = blocks.get(id);
 			if( pb==null ) {
-				pb = blockFactory.blockFromSerializable(getParent(),sb);
+				pb = blockFactory.blockFromSerializable(getSelf(),sb);
 				if( pb!=null ) blocks.put(pb.getBlockId(), pb);
 				else log.errorf("%s.analyze: ERROR %s failed to instantiate %s",TAG,diagram.getName(),sb.getClassName());
 			}

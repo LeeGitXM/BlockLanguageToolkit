@@ -66,7 +66,7 @@ public class BlockFactory  {
 		if( !className.startsWith("app") ) {
 			try {
 				Class<?> clss = Class.forName(className);
-				Constructor<?> ctor = clss.getDeclaredConstructor(new Class[] {ExecutionController.class,long.class,long.class,UUID.class});
+				Constructor<?> ctor = clss.getDeclaredConstructor(new Class[] {ExecutionController.class,UUID.class,UUID.class});
 				block = (ProcessBlock)ctor.newInstance(BlockExecutionController.getInstance(),parentId,sb.getId());
 			}
 			catch(InvocationTargetException ite ) {

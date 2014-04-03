@@ -15,6 +15,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.UUID;
 
@@ -194,7 +195,8 @@ public class GeneralPurposeTreeNode extends FolderNode {
 			menu.add(debugAction);
 		}
 		else if(getProjectResource().getResourceType().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
-			ExportAction applicationExportAction = new ExportAction(menu.getRootPane(),this);
+			//ApplicationExportAction applicationExportAction = new ApplicationExportAction(menu.getRootPane(),this);
+			ApplicationSaveAction applicationSaveAction = new ApplicationSaveAction(this);
 			FamilyAction familyAction = new FamilyAction();
 			NewFolderAction newFolderAction = new NewFolderAction(context,BLTProperties.MODULE_ID,ApplicationScope.DESIGNER,getFolderId(),this);
 			ApplicationConfigureAction applicationConfigureAction = new ApplicationConfigureAction();
@@ -202,13 +204,16 @@ public class GeneralPurposeTreeNode extends FolderNode {
 			menu.add(newFolderAction);
 			menu.addSeparator();
 			menu.add(applicationConfigureAction);
+			menu.add(applicationSaveAction);
 			addEditActions(menu);
 		}
 		else if(getProjectResource().getResourceType().equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE)) {
 			DiagramAction diagramAction = new DiagramAction();
 			NewFolderAction newFolderAction = new NewFolderAction(context,BLTProperties.MODULE_ID,ApplicationScope.DESIGNER,getFolderId(),this);
 			FamilyConfigureAction familyConfigureAction = new FamilyConfigureAction();
+			ImportDiagramAction importAction = new ImportDiagramAction();
 			menu.add(diagramAction);
+			menu.add(importAction);
 			menu.add(newFolderAction);
 			menu.addSeparator();
 			menu.add(familyConfigureAction);
@@ -220,8 +225,8 @@ public class GeneralPurposeTreeNode extends FolderNode {
 			if( hasFamily() ) {
 				DiagramAction diagramAction = new DiagramAction();
 				menu.add(diagramAction);
-				ImportAction importAction = new ImportAction();
-				CloneAction cloneAction = new CloneAction();
+				ImportDiagramAction importAction = new ImportDiagramAction();
+				CloneDiagramAction cloneAction = new CloneDiagramAction();
 				menu.add(importAction);
 				menu.add(cloneAction);
 			}
@@ -424,7 +429,7 @@ public class GeneralPurposeTreeNode extends FolderNode {
 		public void actionPerformed(ActionEvent e) {
 			try {
 				final long newId = context.newResourceId();
-				String newName = BundleUtil.get().getString(PREFIX+".DefaultNewApplicationName");
+				String newName = BundleUtil.get().getString(PREFIX+".NewApplication.Default.Name");
 				if( newName==null) newName = "New App";  // Missing Resource
 				SerializableApplication app = new SerializableApplication();
 				app.setName(newName);
@@ -548,6 +553,37 @@ public class GeneralPurposeTreeNode extends FolderNode {
 			}
 		}
 	}
+	// Save the entire Application hierarchy.
+	private class ApplicationSaveAction extends BaseAction {
+    	private static final long serialVersionUID = 1L;
+    	private final AbstractResourceNavTreeNode root;
+
+	    public ApplicationSaveAction(AbstractResourceNavTreeNode node)  {
+	    	super(PREFIX+".SaveApplication",IconUtil.getIcon("add2")); 
+	    	root = node;
+	    }
+	    
+		public void actionPerformed(ActionEvent e) {
+			// Traverse the entire hierarchy, saving each step
+			saveNodeAndChildren(root);
+		}
+		private void saveNodeAndChildren(AbstractResourceNavTreeNode node) {
+			ProjectResource res = node.getProjectResource();
+			try {
+				res.setEditCount(res.getEditCount()+1);
+				context.updateResource(res);
+			} 
+			catch (Exception err) {
+				ErrorUtil.showError(err);
+			}
+			@SuppressWarnings("rawtypes")
+			Enumeration walker = node.children();
+			while(walker.hasMoreElements()) {
+				Object child = walker.nextElement();
+				saveNodeAndChildren((AbstractResourceNavTreeNode)child);
+			}
+		}
+	}
 
 	// Create a new diagram
     private class DiagramAction extends BaseAction {
@@ -559,11 +595,12 @@ public class GeneralPurposeTreeNode extends FolderNode {
 		public void actionPerformed(ActionEvent e) {
 			try {
 				final long newId = context.newResourceId();
-				String newName = BundleUtil.get().getString(PREFIX+".DefaultNewDiagramName");
+				String newName = BundleUtil.get().getString(PREFIX+".NewDiagram.Default.Name");
 				if( newName==null) newName = "New Diag";  // Missing string resource
 				SerializableDiagram diagram = new SerializableDiagram();
 				diagram.setName(newName);
 				diagram.setResourceId(newId);
+				diagram.setId(UUID.randomUUID());
 				
 				log.infof("%s: new diagram action ...",TAG);
 
@@ -593,10 +630,10 @@ public class GeneralPurposeTreeNode extends FolderNode {
 	}
     
     
-    private class CloneAction extends BaseAction {
+    private class CloneDiagramAction extends BaseAction {
     	private static final long serialVersionUID = 1L;
     	private final static String POPUP_TITLE = "Clone Diagram";
-	    public CloneAction()  {
+	    public CloneDiagramAction()  {
 	    	super(PREFIX+".CloneDiagram",IconUtil.getIcon("copy"));  // preferences
 	    }
 	    
@@ -668,7 +705,7 @@ public class GeneralPurposeTreeNode extends FolderNode {
 		public void actionPerformed(ActionEvent e) {
 			try {
 				final long newId = context.newResourceId();
-				String newName = BundleUtil.get().getString(PREFIX+".DefaultNewFamilyName");
+				String newName = BundleUtil.get().getString(PREFIX+".NewFamily.Default.Name");
 				if( newName==null) newName = "New Folks";  // Missing Resource
 				SerializableFamily fam = new SerializableFamily();
 				fam.setName(newName);
@@ -713,12 +750,12 @@ public class GeneralPurposeTreeNode extends FolderNode {
 			}
 		}
 	}
-    private class ExportAction extends BaseAction {
+    private class ExportDiagramAction extends BaseAction {
     	private static final long serialVersionUID = 1L;
     	private final static String POPUP_TITLE = "Export Diagram";
     	private final GeneralPurposeTreeNode view;
     	private final Component anchor;
-	    public ExportAction(Component c,GeneralPurposeTreeNode gptn)  {
+	    public ExportDiagramAction(Component c,GeneralPurposeTreeNode gptn)  {
 	    	super(PREFIX+".ExportDiagram",IconUtil.getIcon("export1")); 
 	    	view=gptn;
 	    	anchor=c;
@@ -790,10 +827,10 @@ public class GeneralPurposeTreeNode extends FolderNode {
 			}
 		}
 	}
-    private class ImportAction extends BaseAction {
+    private class ImportDiagramAction extends BaseAction {
     	private static final long serialVersionUID = 1L;
     	private final static String POPUP_TITLE = "Import Diagram";
-	    public ImportAction()  {
+	    public ImportDiagramAction()  {
 	    	super(PREFIX+".ImportDiagram",IconUtil.getIcon("import1"));  // preferences
 	    }
 	    

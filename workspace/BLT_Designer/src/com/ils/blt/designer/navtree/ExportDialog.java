@@ -94,7 +94,7 @@ public class ExportDialog extends JDialog implements ActionListener {
 			filePath = fc.getSelectedFile();
 			if( filePath!=null ) {
 				String fileName = filePath.getName();
-				if(fileName.indexOf(".")<0) {
+				if(!fileName.endsWith(".json") ) {
 					filePath = new File(filePath.getAbsolutePath()+".json");
 				}
 				System.setProperty(BLTProperties.EXIM_PATH, filePath.getParent());

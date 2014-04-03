@@ -73,13 +73,11 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	    List<Project> projects = this.context.getProjectManager().getProjectsFull(ProjectVersion.Published);
 	    for( Project project:projects ) {
 	    	List<ProjectResource> resources = project.getResources();
-			for( ProjectResource res:resources ) {
-				if( res.getResourceType().equalsIgnoreCase(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
-					log.infof("%s.startup - found %s resource, %d = %s", TAG,res.getResourceType(),
-						res.getResourceId(),res.getName());
-					mmgr.analyzeResource(project.getId(),res);
-				}
-			}
+	    	for( ProjectResource res:resources ) {
+	    		log.infof("%s.startup - found %s resource, %d = %s", TAG,res.getResourceType(),
+	    				res.getResourceId(),res.getName());
+	    		mmgr.analyzeResource(project.getId(),res);
+	    	}
 	    }
 	    context.getProjectManager().addProjectListener(mmgr);
 	    // Look for all "Controller Output" UDT instances
