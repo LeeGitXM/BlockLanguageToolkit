@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.JComboBox;
@@ -92,6 +93,24 @@ public class BlockPropertyEditor extends JPanel {
 			log.debugf("%s: init - initialize property list for %s (%d properties)",TAG,block.getId().toString(),propertyList.size());
 			block.setProperties(propertyList);
 		}
+		else {
+			// Existing block: Update the transient values from tag subscriptions.
+			BlockRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+			BlockProperty[] properties = handler.getBlockProperties(block.getClassName(),projectId,resourceId,block.getId());
+			for(BlockProperty property:properties) {
+				if( property.getBindingType().equals(BindingType.TAG) ) {
+					// Search the property list for the actual property
+					Iterator<BlockProperty> walker = propertyList.iterator();
+					while(walker.hasNext()) {
+						BlockProperty bp = walker.next();
+						if( bp.getName().equalsIgnoreCase(property.getName())) {
+							bp.setValue(property.getValue());
+							break;
+						}
+					}
+				}
+			}
+		}
 		
 		// Now fill the editor 
 		for(BlockProperty property:propertyList) {
@@ -162,7 +181,9 @@ public class BlockPropertyEditor extends JPanel {
 		Object val = prop.getValue();
 		if(val==null) val = "";
 		final JTextField field = new JTextField(val.toString());
-		field.setEditable(prop.isEditable());
+		boolean canEdit = (prop.isEditable() && prop.getBindingType().equals(BindingType.NONE));
+		field.setEditable(canEdit);
+		field.setEnabled(canEdit);
 		field.addActionListener(new ActionListener() {
 	        public void actionPerformed(ActionEvent e){
 	        	log.debugf("%s: set value %s",TAG,field.getText());

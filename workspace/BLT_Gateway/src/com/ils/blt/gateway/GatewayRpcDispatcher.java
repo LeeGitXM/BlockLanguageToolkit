@@ -159,7 +159,7 @@ public class GatewayRpcDispatcher   {
 				if( obj instanceof ProcessBlock ) {
 					PalettePrototype bp = ((ProcessBlock)obj).getBlockPrototype();
 					String json = bp.toJson();
-					log.info("   json: "+json);
+					log.debugf("   json: %s",json);
 					results.add(json);
 				}
 				else {
