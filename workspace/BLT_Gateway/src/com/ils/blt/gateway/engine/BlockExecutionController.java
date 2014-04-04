@@ -43,10 +43,11 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	private final static String TAG = "BlockExecutionController";
 	public final static String CONTROLLER_RUNNING_STATE = "running";
 	public final static String CONTROLLER_STOPPED_STATE = "stopped";
-	private static int BUFFER_SIZE = 100;   // Buffer Capacity
+	private static int BUFFER_SIZE = 100;       // Buffer Capacity
+	private static int THREAD_POOL_SIZE = 10;   // Notification threads
 	private final LoggerEx log;
 	private ModelManager modelManager = null;
-	private final WatchdogTimer watchdogTimer;
+	private WatchdogTimer watchdogTimer = null;
 	private static BlockExecutionController instance = null;
 	private final ExecutorService threadPool;
 
@@ -63,11 +64,10 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 */
 	private BlockExecutionController() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
-		this.threadPool = Executors.newFixedThreadPool(10);
+		this.threadPool = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
 		this.tagListener = new TagListener();
 		this.tagWriter = new TagWriter();
 		this.buffer = new BoundedBuffer(BUFFER_SIZE);
-		this.watchdogTimer = new WatchdogTimer();
 	}
 
 	/**
@@ -133,7 +133,9 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		log.debugf("%s START - notification thread %d ",TAG,notificationThread.hashCode());
 		notificationThread.setDaemon(true);
 		notificationThread.start();
-		watchdogTimer.start();
+		// Create a new watchdog timer each time we start the controller
+		// It is started on creation
+		watchdogTimer = new WatchdogTimer();
 	}
 	
 	/**
@@ -149,6 +151,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		}
 		tagListener.stop();
 		watchdogTimer.stop();
+		watchdogTimer = null;
 	}
 	
 	public  void setDelegate(ModelManager resmgr) { this.modelManager = resmgr; }
@@ -200,15 +203,17 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 * "pet" a watch dog. The watch dog must be updated to expire some time 
 	 * in the future. This method may also be used to insert a watch dog
 	 * into the timer list for the first time.
+	 * 
+	 * This method has no effect unless the controller is running.
 	 */
 	public void pet(Watchdog dog) {
-		watchdogTimer.updateWatchdog(dog);
+		if(watchdogTimer!=null) watchdogTimer.updateWatchdog(dog);
 	}
 	/**
 	 * Remove a watch dog. Delete it from the list.
 	 */
 	public void removeWatchdog(Watchdog dog) {
-		watchdogTimer.removeWatchdog(dog);
+		if(watchdogTimer!=null) watchdogTimer.removeWatchdog(dog);
 	}
 	// ============================ Completion Handler =========================
 	/**
