@@ -41,18 +41,18 @@ public class RootNode extends ProcessNode {
 	public void addChild(ProcessNode child,long projectId) {
 		log.infof("%s.addChild: %s[%s]",TAG,getName(),child.getName());
 		Long key = new Long(projectId);
-		String name = context.getProjectManager().getProjectName(projectId, ProjectVersion.Published);
-		if( name==null ) {
+		String projectName = context.getProjectManager().getProjectName(projectId, ProjectVersion.Published);
+		if( projectName==null ) {
 			log.warnf("%s.addChild: No name for projectId %d. No child added.",TAG,projectId);
 			return;
 		}
-		if( projectIdByName.get(name) == null ) {
-			projectIdByName.put(name,key);
+		if( projectIdByName.get(projectName) == null ) {
+			projectIdByName.put(projectName,key);
 			childrenByProjectId.put(key, new HashMap<String,ProcessNode>());
 		}
 		
 		Map<String,ProcessNode>map = childrenByProjectId.get(key);
-		map.put(name,child);
+		map.put(child.getName(),child);
 	}
 	
 	/**
@@ -78,37 +78,42 @@ public class RootNode extends ProcessNode {
 			// The root map is slightly different than the rest.
 			// We do the first segment, then recurse
 			Map<String,ProcessNode> map = childrenByProjectId.get(projectId);
-			ProcessNode child = null;
-			ProcessNode parent = null;
-			String path = null;
-			int index = treePath.indexOf(":");
-			if( index>0 ) {
-				path = treePath.substring(0,index);
-				if( treePath.length()>index+1 ) treePath = treePath.substring(index+1);  // Skip the ":"
-				else treePath = "";
-				child = map.get(path);
-			}
-			else {  // No colon signifies the last segment
-				path = treePath;
-				treePath = "";
-				child = map.get(path);
-			}
-			
-			while(child!=null && treePath.length()>0) {
-				index = treePath.indexOf(":");
+			if( map!=null)  {
+				ProcessNode child = null;
+				ProcessNode parent = null;
+				String path = null;
+				int index = treePath.indexOf(":");
 				if( index>0 ) {
 					path = treePath.substring(0,index);
 					if( treePath.length()>index+1 ) treePath = treePath.substring(index+1);  // Skip the ":"
 					else treePath = "";
-					child = child.getChildForName(path);
+					child = map.get(path);
 				}
 				else {  // No colon signifies the last segment
 					path = treePath;
 					treePath = "";
-					child = child.getChildForName(path);
+					child = map.get(path);
 				}
+
+				while(child!=null && treePath.length()>0) {
+					index = treePath.indexOf(":");
+					if( index>0 ) {
+						path = treePath.substring(0,index);
+						if( treePath.length()>index+1 ) treePath = treePath.substring(index+1);  // Skip the ":"
+						else treePath = "";
+						child = child.getChildForName(path);
+					}
+					else {  // No colon signifies the last segment
+						path = treePath;
+						treePath = "";
+						child = child.getChildForName(path);
+					}
+				}
+				result = child;
 			}
-			result = child;
+			else {
+				log.warnf("%s.findNode: No nodes have been saved for project %s", TAG,projectName);
+			}
 		}
 		else {
 			log.warnf("%s.findNode: No nodes found for project %s", TAG,projectName);
@@ -117,25 +122,30 @@ public class RootNode extends ProcessNode {
 		return result;
 	}
 	/**
-	 * Create a list of nodes of all sorts known to belong to the project.
+	 * Create a flat list of nodes of all sorts known to belong to the project.
 	 * @param projectId
-	 * @return
+	 * @return the list of application, family, folder and diagram nodes in the project
 	 */
-	public List<ProcessNode> nodesForProject(Long projectId) {
+	public List<ProcessNode> allNodesForProject(Long projectId) {
 		List<ProcessNode> nodes = new ArrayList<ProcessNode>();
 		Map<String,ProcessNode> map = childrenByProjectId.get(projectId);
-		Collection<ProcessNode> children = map.values();
-		if( children!=null) {
-			for(ProcessNode child:children) {
-				addTreeToList(child,nodes);
+		if( map!=null) {
+			Collection<ProcessNode> children = map.values();
+			if( children!=null) {
+				for(ProcessNode child:children) {
+					addNodeToList(child,nodes);
+				}
 			}
+		}
+		else {
+			log.warnf("%s.allNodesForProject: No nodes found for project %d", TAG,projectId.longValue());
 		}
 		return nodes;
 	}
 	
-	private void addTreeToList(ProcessNode root,List<ProcessNode>list) {
+	private void addNodeToList(ProcessNode root,List<ProcessNode>list) {
 		for( ProcessNode child:root.getChildren() ) {
-			addTreeToList(child,list);
+			addNodeToList(child,list);
 		}
 		list.add(root);
 	}

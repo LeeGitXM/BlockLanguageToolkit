@@ -191,7 +191,7 @@ public class GatewayRpcDispatcher   {
 	}
 	
 	public Boolean sendLocalSignal(String projectName, String diagramPath,String className, String command) {
-		log.infof("%s: sendLocalSignal: %s %s %s %s",TAG,projectName,diagramPath,className,command);
+		log.infof("%s.sendLocalSignal: %s %s %s %s",TAG,projectName,diagramPath,className,command);
 		Boolean success = new Boolean(true);
 		ProcessDiagram diagram = BlockExecutionController.getInstance().getDiagram(projectName,diagramPath);
 		if( diagram!=null ) {
@@ -202,7 +202,7 @@ public class GatewayRpcDispatcher   {
 			BlockExecutionController.getInstance().acceptBroadcastNotification(broadcast);
 		}
 		else {
-			log.warnf("%s.sendLocalSignal: Unable to find %s:%s for %s command to %s",TAG,projectName,diagramPath,command,className);
+			log.warnf("%s.sendLocalSignal: Unable to find %s%s for %s command to %s",TAG,projectName,diagramPath,command,className);
 			success = new Boolean(false);
 		}
 		return success;

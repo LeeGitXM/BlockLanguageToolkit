@@ -179,7 +179,7 @@ public class ModelManager implements ProjectListener  {
 		// First obtain a list of diagrams by recursively descending the tree
 		Long projectId = context.getProjectManager().getProjectId(projectName);
 		if( projectId!=null) {
-			List<ProcessNode> nodes = root.nodesForProject(projectId);
+			List<ProcessNode> nodes = root.allNodesForProject(projectId);
 			// For each diagram discovered, create a tree path.
 			for(ProcessNode node:nodes) {
 				if( node instanceof ProcessDiagram ) {
@@ -267,7 +267,6 @@ public class ModelManager implements ProjectListener  {
 			if( node==null ) {
 				node = new ProcessApplication(res.getName(),res.getParentUuid(),self);
 				addToHierarchy(projectId,node);
-				resolveOrphans(node);
 			}
 			else {
 				// The only attribute to update is the name
@@ -301,7 +300,7 @@ public class ModelManager implements ProjectListener  {
 			// Now add in the new Diagram
 			ProjResKey key = new ProjResKey(projectId,res.getResourceId());
 			diagramsByKey.put(key,diagram);
-			nodesByUUID.put(diagram.getSelf(),diagram);
+			addToHierarchy(projectId,diagram);
 			log.infof("%s.addDiagramResource: starting tag subscriptions ...%d:%s",TAG,projectId,res.getName());
 			for( ProcessBlock pb:diagram.getProcessBlocks()) {
 				for(BlockProperty bp:pb.getProperties()) {
@@ -328,7 +327,6 @@ public class ModelManager implements ProjectListener  {
 			if( node==null ) {
 				node = new ProcessFamily(res.getName(),res.getParentUuid(),self);
 				addToHierarchy(projectId,node);
-				resolveOrphans(node);
 			}
 			else {
 				// The only attribute to update is the name
@@ -349,7 +347,6 @@ public class ModelManager implements ProjectListener  {
 		if( node==null ) {
 			node = new ProcessNode(res.getName(),res.getParentUuid(),self);
 			addToHierarchy(projectId,node);
-			resolveOrphans(node);
 		}
 		else {
 			// The only attribute to update is the name
@@ -363,26 +360,34 @@ public class ModelManager implements ProjectListener  {
 	 * @param node the node to be added
 	 */
 	private void addToHierarchy(long projectId,ProcessNode node) {
+		log.infof("%s.addToHierarchy: %s",TAG,node.getName());
 		UUID self     = node.getSelf();
 		nodesByUUID.put(self, node);
 		
 		// If the parent is null, then we're the top of the chain for our project
 		// Add the node to the root.
 		if( node.getParent()==null )  {
-			
 			root.addChild(node,projectId);
+			log.infof("%s.addToHierarchy: %s is a ROOT",TAG,node.getName());
+		}
+		else if( node.getParent().equals(BLTProperties.ROOT_FOLDER_UUID) )  {
+			root.addChild(node,projectId);
+			log.infof("%s.addToHierarchy: %s is a ROOT",TAG,node.getName());
 		}
 		else {
 			// If the parent is already in the tree, simply add the node as a child
 			// Otherwise add to our list of orphans
 			ProcessNode parent = nodesByUUID.get(node.getParent());
 			if(parent==null ) {
+				log.infof("%s.addToHierarchy: %s is an ORPHAN",TAG,node.getName());
 				orphansByUUID.put(self, node);
 			}
 			else {
+				log.infof("%s.addToHierarchy: %s is a CHILD of %s",TAG,node.getName(),parent.getName());
 				parent.addChild(node);
 			}
 		}	
+		resolveOrphans();  // See if any orphans are children of new node.
 	}
 	/**
 	 * Remove a diagram within a project.
@@ -411,7 +416,7 @@ public class ModelManager implements ProjectListener  {
 	// Delete all process nodes for a given project.
 	private void deleteProjectResources(Long projectId) {
 		log.infof("%s.deleteProjectResources: proj = %d",TAG,projectId);
-		List<ProcessNode> nodes = root.nodesForProject(projectId);
+		List<ProcessNode> nodes = root.allNodesForProject(projectId);
 		BlockExecutionController controller = BlockExecutionController.getInstance();
 		for(ProcessNode node:nodes) {
 			if( node instanceof ProcessNode ) {
@@ -516,23 +521,26 @@ public class ModelManager implements ProjectListener  {
 		return family;
 	}
 	/**
-	 * Traverse the node tree from the given node looking for orphans
-	 * that have since been resolved. The parent is non-null, since
-	 * any nodes at the root are automatically added to hierarchy.
+	 * Call this method after each node is defined. It has already been 
+	 * added to the nodesByUUID and, if appropriate, the orphan list.
+	 * Traverse the orphans to see if any parents have been defined.
 	 * @param node
 	 */
-	private void resolveOrphans(ProcessNode node) {
-		if(orphansByUUID.get(node.getSelf())==null) return;   // Was not an orphan
-		ProcessNode parent = nodesByUUID.get(node.getParent());
-		// If is now resolved, remove node from orhpan list and
-		// add as child of parent. Recurse it's children.
-		if(parent!=null ) {
-			parent.addChild(node);
-			orphansByUUID.remove(node.getSelf());
-			// Now make sure children are also linked ...
-			for(ProcessNode child:node.getChildren()) {
-				resolveOrphans(child);
+	private void resolveOrphans() {
+		List<ProcessNode> reconciledOrphans = new ArrayList<ProcessNode>();
+		for( ProcessNode orphan:orphansByUUID.values()) {
+			ProcessNode parent = nodesByUUID.get(orphan.getParent());
+			// If is now resolved, remove node from orphan list and
+			// add as child of parent. Recurse it's children.
+			if(parent!=null ) {
+				log.infof("%s.resolveOrphans: %s RECONCILED with parent (%s)",TAG,orphan.getName(),parent.getName());
+				reconciledOrphans.add(orphan);
 			}
+		}
+		for( ProcessNode orphan:reconciledOrphans) {
+			ProcessNode parent = nodesByUUID.get(orphan.getParent());
+			parent.addChild(orphan);
+			orphansByUUID.remove(orphan.getSelf());
 		}
 	}
 	

@@ -87,20 +87,23 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 */
 	@Override
 	public void acceptBroadcastNotification(BroadcastNotification note) {
-		log.tracef("%acceptBroadcastNotification: %s (%s)", TAG,note.getDiagramId(),note.getSignal().getCommand());
+		log.infof("%s.acceptBroadcastNotification: %s (%s) %s", TAG,note.getDiagramId(),note.getSignal().getCommand(),
+				(stopped?"REJECTED, stopped":""));
 		try {
-			buffer.put(note);
+			if(!stopped) buffer.put(note);
 		}
 		catch( InterruptedException ie ) {}
 	}
 	
 	/**
 	 * A block has completed evaluation. A new value has been placed on its output.
+	 * If we're stopped, these all go into the bit bucket.
 	 */
 	public void acceptCompletionNotification(OutgoingNotification note) {
-		log.tracef("%s:acceptCompletionNotification: %s:%s", TAG,note.getBlock().getBlockId().toString(),note.getPort());
+		log.infof("%s:acceptCompletionNotification: %s:%s %s", TAG,note.getBlock().getBlockId().toString(),note.getPort(),
+				(stopped?"REJECTED, stopped":""));
 		try {
-			buffer.put(note);
+			if(!stopped) buffer.put(note);
 		}
 		catch( InterruptedException ie ) {}
 	}
@@ -218,7 +221,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 				Object work = buffer.get();
 				if( work instanceof OutgoingNotification) {
 					OutgoingNotification inNote = (OutgoingNotification)work;
-					log.tracef("%s: processing incoming note from buffer: %s:%s", TAG,inNote.getBlock().getBlockId().toString(),inNote.getPort());
+					log.infof("%s.run: processing incoming note from buffer: %s:%s", TAG,inNote.getBlock().getBlockId().toString(),inNote.getPort());
 					// Query the diagram to find out what's next
 					ProcessBlock pb = inNote.getBlock();
 					ProcessDiagram dm = modelManager.getDiagram(pb.getParentId());
@@ -229,7 +232,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 							UUID outBlockId = outNote.getConnection().getTarget();
 							ProcessBlock outBlock = dm.getBlock(outBlockId);
 							if( outBlock!=null ) {
-								log.tracef("%s: sending outgoing notification: to %s:%s", TAG,outNote.getConnection().getTarget().toString(),outNote.getConnection().getDownstreamPortName());
+								log.infof("%s.run: sending outgoing notification: to %s:%s", TAG,outNote.getConnection().getTarget().toString(),outNote.getConnection().getDownstreamPortName());
 								threadPool.execute(new IncomingValueChangeTask(outBlock,outNote));
 							}
 							else {
@@ -243,7 +246,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 				}
 				else if( work instanceof BroadcastNotification) {
 					BroadcastNotification inNote = (BroadcastNotification)work;
-					log.tracef("%s: processing broadcast request from buffer: %s = %s", TAG,inNote.getDiagramId().toString(),inNote.getSignal().getCommand());
+					log.infof("%s.run: processing broadcast request from buffer: %s = %s", TAG,inNote.getDiagramId().toString(),inNote.getSignal().getCommand());
 					// Query the diagram to find out what's next. The diagramId is the resourceId
 					ProcessDiagram dm = modelManager.getDiagram(inNote.getDiagramId());
 					if( dm!=null) {
@@ -251,18 +254,18 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 						if( outgoing.isEmpty() ) log.warnf("%s: no broadcast recipients found ...",TAG);
 						for(SignalNotification outNote:outgoing) {
 							ProcessBlock outBlock = outNote.getBlock();
-							log.tracef("%s: sending outgoing broadcast: to %s", TAG,outBlock.toString());
+							log.infof("%s.run: sending outgoing broadcast: to %s", TAG,outBlock.toString());
 							threadPool.execute(new IncomingBroadcastTask(outBlock,outNote));
 							
 						}
 					}
 					else {
-						log.warnf("%s: run: diagram %s not found in value change notification",TAG,
+						log.warnf("%s.run: diagram %s not found in value change notification",TAG,
 								inNote.getDiagramId().toString());
 					}
 				}
 				else {
-					log.warnf("%s: run: Unexpected object in buffer (%s)",TAG,work.getClass().getName());
+					log.warnf("%s.run: Unexpected object in buffer (%s)",TAG,work.getClass().getName());
 				}
 			}
 			catch( InterruptedException ie) {}
