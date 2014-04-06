@@ -22,9 +22,9 @@ public interface BLTProperties   {
 	public final static String FAMILY_RESOURCE_TYPE        = "blt.family";
 	public final static String FOLDER_RESOURCE_TYPE        = "__folder";
 	
-	public final static String BLOCK_SCRIPT_PACKAGE         = "system.ils.blt.block";
-	public final static String REGISTRATION_SCRIPT_PACKAGE  = "system.ils.blt.registrar";
-	public final static String REPORTING_SCRIPT_PACKAGE     = "system.ils.blt.report";
+	public final static String BLOCK_SCRIPT_PACKAGE            = "system.ils.blt.block";
+	public final static String REGISTRATION_SCRIPT_PACKAGE     = "system.ils.blt.registrar";
+	public final static String BLOCK_RESULTS_SCRIPT_PACKAGE    = "system.ils.blt.report";
 	
 	/** These are recognized values of external callbacks for registration */
 	public final static String CREATE_BLOCK_INSTANCE_CALLBACK     = "CreateBlockInstance";

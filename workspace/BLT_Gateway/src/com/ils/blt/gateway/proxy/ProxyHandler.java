@@ -34,6 +34,7 @@ import com.ils.blt.common.UtilityFunctions;
 import com.ils.common.JavaToPython;
 import com.ils.common.PythonToJava;
 import com.ils.connection.ConnectionType;
+import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.script.JythonExecException;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -149,10 +150,10 @@ public class ProxyHandler   {
 			callback = new Callback(key);
 			callbacks[index] = callback;	
 		}
-		callback.projectId = projectId;
+	
 		callback.setScriptManager(context.getProjectManager().getProjectScriptManager(projectId));
 		callback.setModule(module);
-		callback.localVariableName = (arg==null?"":arg);
+		callback.setLocalVariableList((arg==null?"":arg));
 		callback.globalVariableName = (variable==null?"":variable);
 		
 	}
@@ -201,12 +202,14 @@ public class ProxyHandler   {
 		this.context = cntx;
 	}
 	
-	public ProxyBlock createBlockInstance(String className,UUID blockId,UUID parentId) {
-		ProxyBlock block = new ProxyBlock(className,blockId,parentId);
+	public ProxyBlock createBlockInstance(String className,UUID parentId,UUID blockId) {
+		ProxyBlock block = new ProxyBlock(className,parentId,blockId);
 		log.infof("%s.createInstance --- calling",TAG); 
 		if( callbacks[CREATE_BLOCK_INSTANCE]!=null && compileScript(CREATE_BLOCK_INSTANCE) ) {
 			Callback cb = callbacks[CREATE_BLOCK_INSTANCE];
-			cb.setLocalVariable(new PyString(className));
+			cb.setLocalVariable(0,new PyString(className));
+			cb.setLocalVariable(1,new PyString(parentId.toString()));
+			cb.setLocalVariable(2,new PyString(blockId.toString()));
 			PyDictionary pyDictionary = new PyDictionary();  // Empty
 			// Synchronize because of our global variable
 			synchronized(cb.scriptManager) {
@@ -231,6 +234,25 @@ public class ProxyHandler   {
 		}
 		return block;
 	}
+	
+	/**
+	 * Tell the block to do whatever it is supposed to do. The block is the only
+	 * argument passed.
+	 *
+	 * @param block the saved Py block
+	 */
+	public void evaluate(PyObject block) {
+		log.infof("%s.evaluate --- %s",TAG,block.toString());
+		if( callbacks[EVALUATE]!=null && compileScript(EVALUATE) ) {
+			Callback cb = callbacks[EVALUATE];
+			cb.setLocalVariable(0,block);
+			// Synchronize because of our global variable
+			synchronized(cb.scriptManager) {
+				execute(cb);
+			}
+		}
+	}
+	
 	/**
 	 * Query a Python block to obtain a list of its properties. The block is expected
 	 * to exist.
@@ -245,7 +267,7 @@ public class ProxyHandler   {
 			Object val = null;
 			UtilityFunctions fns = new UtilityFunctions();
 			Callback cb = callbacks[GET_BLOCK_PROPERTIES];
-			cb.setLocalVariable(block);
+			cb.setLocalVariable(0,block);
 			PyList pyList = new PyList();  // Empty
 			List<?> list = null;
 			// Synchronize because of our global variable
@@ -400,7 +422,7 @@ public class ProxyHandler   {
 		log.infof("%s.setProperty --- %s:%s",TAG,block.getClass(),prop.getName()); 
 		if( callbacks[SET_BLOCK_PROPERTY]!=null && compileScript(SET_BLOCK_PROPERTY) ) {
 			Callback cb = callbacks[SET_BLOCK_PROPERTY];
-			cb.setLocalVariable(block.getPythonBlock());
+			cb.setLocalVariable(0,block.getPythonBlock());
 			PyDictionary pyDictionary = new PyDictionary();  // Empty
 			// Convert the property object into a table to send to Python.
 			if( prop.getName()==null ) {
@@ -427,32 +449,33 @@ public class ProxyHandler   {
 			}
 		}
 	}
-	//================================ Unimplemented/Tested ==================================
-
 	
 	/**
-	 * Tell the block to do whatever it is supposed to do.
+	 * Inform the block that it has a new value on one of its inputs. There is no shared dictionary.
 	 * 
-	 * @param diagramId
-	 * @param blockId
-	 */
-	public void evaluate(UUID diagramId,UUID blockId) {
-		
-	}
-	
-	/**
-	 * Inform the block that it has a new value on one of its inputs
-	 * 
-	 * @param projectId
-	 * @param diagramId
-	 * @param blockId
+	 * @param block
 	 * @param stub
 	 * @param value one of a QualifiedValue, Signal, Truth-value or String
 	 */
-	public void setValue(UUID diagramId,UUID blockId,String stub,Object value) {
+	public void setValue(PyObject block,String stub,QualifiedValue value) {
+		if(block==null || value==null || value.getValue()==null ) return;
+		log.infof("%s.setValue --- %s %s on %s",TAG,block.toString(),value.getValue().toString(),stub); 
+		if( callbacks[SET_VALUE]!=null && compileScript(SET_VALUE) ) {
+			Callback cb = callbacks[SET_VALUE];
+			// There are 4 values to be specified - block,port,value,quality.
+			cb.setLocalVariable(0,block);
+			cb.setLocalVariable(1,new PyString(stub));
+			cb.setLocalVariable(2,new PyString(value.getValue().toString()));
+			cb.setLocalVariable(3,new PyString(value.getQuality().toString()));
+			
+			// There is no global variable
+			execute(cb);
+			}
 		
 	}
 	
+	//================================ Unimplemented/Tested ==================================
+
 
 	/**
 	 * Compile a simple script that does nothing but call the specified script. 
@@ -469,7 +492,7 @@ public class ProxyHandler   {
 		if( index>0 ) module = callback.module.substring(0,index);
 		index = module.lastIndexOf(".");
 		if( index>0 ) module = module.substring(0,index);
-		String script = String.format("import %s;%s(%s)",module,callback.module,callback.localVariableName);
+		String script = String.format("import %s;%s(%s)",module,callback.module,callback.getLocalVariableList());
 		log.infof("%s: Compiling callback script \n%s",TAG,script);
 		try {
 			callback.code = Py.compile_flags(script,module,CompileMode.exec,CompilerFlags.getCompilerFlags());
@@ -550,38 +573,48 @@ public class ProxyHandler   {
 	private class Callback {
 		public final String type;
 		public PyCode code;
-		public long projectId;
 		public String module;
-		public String localVariableName;
+		private String[] localVariables;      // Derived from comma-separated
+		private String localVariableList;
 		public String globalVariableName;
 		private ScriptManager scriptManager = null;
 		private PyStringMap localsMap = null;
-		private int hashcode;
+
 		
 		public Callback(String type) {
 			this.type = type;
 			module = "";
-			projectId = BlockConstants.UNKNOWN;
 			scriptManager = null;
-			localVariableName = "";
+			localVariables = new String[0];
+			localVariableList="";
 			globalVariableName = "";
 			code = null;
-			hashcode = (int)(System.nanoTime()%1000000000);
 		}
 		
 		public void setScriptManager(ScriptManager mgr) {
 			this.scriptManager = mgr;
 		}
 		public ScriptManager getScriptManager() { return this.scriptManager; }
+		public String getLocalVariableList() { return localVariableList; }
+		/**
+		 * Convert the comma-separated variable string into an array of strings.
+		 */
+		public void setLocalVariableList(String varlist) {
+			localVariableList = varlist;
+			localVariables = varlist.split(",");
+		}
 		
 		/**
-		 * Setting a variable value creates a locals map.
+		 * Setting a variable value creates a locals map. We need to set the
+		 * variables in the order that their names appear in the list.
+		 * @param index is the variable position in the argument list.
 		 * @param value the single local argument
 		 */
-		public void setLocalVariable(PyObject value) {
+		public void setLocalVariable(int index,PyObject value) {
 			if( localsMap == null ) localsMap = scriptManager.createLocalsMap();
-			localsMap.__setitem__(localVariableName,value);
-			log.tracef("%s: Callback.setLocalVariable: %s to %s",TAG,localVariableName,value.toString());
+				
+			localsMap.__setitem__(localVariables[index],value);
+			log.infof("%s.Callback.setLocalVariable: %s to %s",TAG,localVariables[index],value.toString());
 		}
 		/**
 		 * Strip off any parentheses that might be supplied.

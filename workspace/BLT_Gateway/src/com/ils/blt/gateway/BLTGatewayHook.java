@@ -99,7 +99,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	public void initializeScriptManager(ScriptManager mgr) {
 		super.initializeScriptManager(mgr);
 		mgr.addScriptModule(BLTProperties.REGISTRATION_SCRIPT_PACKAGE,RegistrationScriptFunctions.class);
-		mgr.addScriptModule(BLTProperties.REPORTING_SCRIPT_PACKAGE,BlockCompletionScriptFunctions.class);
+		mgr.addScriptModule(BLTProperties.BLOCK_RESULTS_SCRIPT_PACKAGE,BlockReportingScriptFunctions.class);
 	}
 	
 	@Override

@@ -750,13 +750,13 @@ public class GeneralPurposeTreeNode extends FolderNode {
 			}
 		}
 	}
-    private class ExportDiagramAction extends BaseAction {
+    private class ExportApplicationTreeAction extends BaseAction {
     	private static final long serialVersionUID = 1L;
-    	private final static String POPUP_TITLE = "Export Diagram";
+    	private final static String POPUP_TITLE = "Export Application Tree";
     	private final GeneralPurposeTreeNode view;
     	private final Component anchor;
-	    public ExportDiagramAction(Component c,GeneralPurposeTreeNode gptn)  {
-	    	super(PREFIX+".ExportDiagram",IconUtil.getIcon("export1")); 
+	    public ExportApplicationTreeAction(Component c,GeneralPurposeTreeNode gptn)  {
+	    	super(PREFIX+".ExportApplicationTree",IconUtil.getIcon("export1")); 
 	    	view=gptn;
 	    	anchor=c;
 	    }

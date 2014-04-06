@@ -7,7 +7,6 @@ import java.awt.Image;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.SimpleBeanInfo;
-import java.util.ResourceBundle;
 
 import javax.swing.ImageIcon;
 

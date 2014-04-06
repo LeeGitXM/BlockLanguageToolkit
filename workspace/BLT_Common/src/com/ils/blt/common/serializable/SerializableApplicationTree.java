@@ -1,6 +1,5 @@
 package com.ils.blt.common.serializable;
 
-import java.util.UUID;
 
 
 

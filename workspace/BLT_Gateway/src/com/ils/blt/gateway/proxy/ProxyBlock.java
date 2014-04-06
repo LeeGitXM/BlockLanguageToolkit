@@ -35,8 +35,8 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 * @param diag ID of the diagram of which the block is a part
 	 * @param block identifier
 	 */
-	public ProxyBlock(String clss,UUID block,UUID parent) {
-		super(null,block,parent);
+	public ProxyBlock(String clss,UUID parent,UUID block) {
+		super(null,parent,block);
 		this.className = clss;
 	}
 
@@ -56,13 +56,13 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	}
 	public void setPythonBlock(Object obj) {
 		if( obj==null ) {
-			log.warnf("%s: setPythonBlock attempt to set null",TAG);
+			log.warnf("%s.setPythonBlock: attempt to set null",TAG);
 		}
 		else if( obj instanceof PyObject ) {
 			this.pythonBlock = (PyObject)obj; 
 		}
 		else {
-			log.warnf("%s: setPythonBlock Unexpected object class %s, ignored",TAG,obj.getClass().getName());
+			log.warnf("%s.setPythonBlock: Unexpected object class %s, ignored",TAG,obj.getClass().getName());
 		}
 	}
 	
@@ -110,7 +110,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 *        and simple value.
 	 */
 	public void setValue(IncomingNotification vcn) {
-		delegate.setValue( getParentId(), getBlockId(), vcn.getConnection().getUpstreamPortName(), vcn.getValue());
+		delegate.setValue( getPythonBlock(), vcn.getConnection().getUpstreamPortName(), vcn.getValueAsQualifiedValue());
 	}
 	
 	/**
@@ -118,7 +118,9 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 * will be called by the engine after receipt of input once the coalescing 
 	 * "quiet" time has passed without further input.
 	 */
-	public void evaluate() { delegate.evaluate( getParentId(), getBlockId()); }
+	public void evaluate() { 
+		delegate.evaluate(getPythonBlock()); 
+	}
 
 
 	/** 

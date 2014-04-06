@@ -114,6 +114,15 @@ public class ModelManager implements ProjectListener  {
 		}
 		return block;
 	}
+	/**
+	 * Get a specified block by its Id within a diagram. 
+	 * @param blockId
+	 * @return the specified block. If not found, return null. 
+	 */
+	public ProcessBlock getBlock(ProcessDiagram diagram,UUID blockId) {
+		ProcessBlock node = diagram.getBlock(blockId);
+		return node;
+	}
 	
 	/**
 	 * Get a connection from the existing diagrams. 
@@ -130,6 +139,7 @@ public class ModelManager implements ProjectListener  {
 		}
 		return cxn;
 	}
+	
 	/**
 	 * Get a specified diagram by its Id. 
 	 * @param diagramId

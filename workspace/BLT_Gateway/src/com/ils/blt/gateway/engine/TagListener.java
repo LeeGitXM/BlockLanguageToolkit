@@ -226,7 +226,6 @@ public class TagListener implements TagChangeListener   {
 							String path = prop.getBinding().toString();
 							if(prop.getBindingType()==BindingType.TAG) {
 								if( path.equals(tp.toStringFull()) && prop.getBindingType()==BindingType.TAG ) {
-									log.tracef("%s.tagChanged: comparing block %s:%s %s:%s",TAG,blk.getLabel(),prop.getName(),path,tp.toStringFull());
 									try {
 										log.debugf("%s.tagChanged: property change for %s:%s",TAG,blk.getLabel(),prop.getName());
 				

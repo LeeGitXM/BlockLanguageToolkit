@@ -166,6 +166,9 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public ProcessDiagram getDiagram(long projectId,long resourceId) {
 		return modelManager.getDiagram(projectId,resourceId);
 	}
+	public ProcessDiagram getDiagram(UUID id) {
+		return modelManager.getDiagram(id);
+	}
 	public ProcessDiagram getDiagram(String projectName,String diagramPath) {
 		return modelManager.getDiagram(projectName,diagramPath);
 	}
@@ -226,9 +229,9 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 				Object work = buffer.get();
 				if( work instanceof OutgoingNotification) {
 					OutgoingNotification inNote = (OutgoingNotification)work;
-					log.infof("%s.run: processing incoming note from buffer: %s:%s", TAG,inNote.getBlock().getBlockId().toString(),inNote.getPort());
 					// Query the diagram to find out what's next
 					ProcessBlock pb = inNote.getBlock();
+					log.infof("%s.run: processing incoming note from %s:%s", TAG,pb.toString(),inNote.getPort());
 					ProcessDiagram dm = modelManager.getDiagram(pb.getParentId());
 					if( dm!=null) {
 						Collection<IncomingNotification> outgoing = dm.getOutgoingNotifications(inNote);
@@ -237,7 +240,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 							UUID outBlockId = outNote.getConnection().getTarget();
 							ProcessBlock outBlock = dm.getBlock(outBlockId);
 							if( outBlock!=null ) {
-								log.infof("%s.run: sending outgoing notification: to %s:%s", TAG,outNote.getConnection().getTarget().toString(),outNote.getConnection().getDownstreamPortName());
+								log.infof("%s.run: sending outgoing notification: to %s:%s", TAG,outBlock.toString(),outNote.getConnection().getDownstreamPortName());
 								threadPool.execute(new IncomingValueChangeTask(outBlock,outNote));
 							}
 							else {
@@ -251,15 +254,16 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 				}
 				else if( work instanceof BroadcastNotification) {
 					BroadcastNotification inNote = (BroadcastNotification)work;
-					log.infof("%s.run: processing broadcast request from buffer: %s = %s", TAG,inNote.getDiagramId().toString(),inNote.getSignal().getCommand());
+					
 					// Query the diagram to find out what's next. The diagramId is the resourceId
 					ProcessDiagram dm = modelManager.getDiagram(inNote.getDiagramId());
 					if( dm!=null) {
+						log.infof("%s.run: processing broadcast to diagram %s (%s)", TAG,dm.getName(),inNote.getSignal().getCommand());
 						Collection<SignalNotification> outgoing = dm.getBroadcastNotifications(inNote);
 						if( outgoing.isEmpty() ) log.warnf("%s: no broadcast recipients found ...",TAG);
 						for(SignalNotification outNote:outgoing) {
 							ProcessBlock outBlock = outNote.getBlock();
-							log.infof("%s.run: sending outgoing broadcast: to %s", TAG,outBlock.toString());
+							log.infof("%s.run: sending signal to %s", TAG,outBlock.toString());
 							threadPool.execute(new IncomingBroadcastTask(outBlock,outNote));
 							
 						}
