@@ -11,15 +11,20 @@ package com.ils.blt.migration;
 public class G2Application {
 	private G2Family[] families;
 	private String name;
+	private String comments;
 	
+	
+
 	public G2Application() {	
 		families = new G2Family[0];
 		name="UNSET";
 	}
 	
+	public String getComments() {return comments;}
 	public G2Family[] getFamilies() { return families; }
-	public String getName() { return name; }
+	public String getName() { return name; }	
 
+	public void setComments(String comments) {this.comments = comments;}
 	public void setFamilies(G2Family[] list) { families=list; }
 	public void setName(String nam) { if(nam!=null) name=nam; }
 }

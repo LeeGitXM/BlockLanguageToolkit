@@ -1,10 +1,12 @@
 #!/bin/sh
 #  Data migration conversion script
+# -- options for root.class: APPLICATION, DIAGRAM
+# -- options for log.level:  INFO,DEBUG,TRACE
 #
 BIN=`pwd`
-FIL=M1
+FIL=dirtSimpleApplication
 LIB=$BIN/../../external/lib
 JAR=${LIB}/blt-migration.jar
-MIGRATION=$BIN/../migration
-DB=${MIGRATION}/conversion.db
-cat ${MIGRATION}/$FIL-g2.json | java -cp ${JAR} -Dlog.level=WARN com.ils.blt.migration.Migrator ${DB} > ${MIGRATION}/$FIL.json
+MIGRATION=$BIN/../migration/application
+DB=${BIN}/db/conversion.db
+cat ${MIGRATION}/$FIL-g2.json | java -cp ${JAR} -Dlog.level=DEBUG -Droot.class=APPLICATION com.ils.blt.migration.Migrator ${DB} > ${MIGRATION}/$FIL.json

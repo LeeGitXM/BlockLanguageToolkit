@@ -80,6 +80,7 @@
 		    <zipgroupfileset dir="${jar.dir}" includes="sqlite-jdbc*.jar"/>
 			<zipgroupfileset dir="${jar.dir}" includes="${block.jar.name}"/>
 			<zipgroupfileset dir="${jar.dir}" includes="jackson-*.jar"/>
+			<zipgroupfileset dir="${jar.dir}" includes="commons-math*.jar"/>
 			<zipgroupfileset dir="${sdk.dir}" includes="ignition-common.jar"/>
 			<zipgroupfileset dir="${sdk.dir}" includes="designer-api.jar"/>
 			<zipgroupfileset dir="${sdk.dir}" includes="client-api.jar"/>

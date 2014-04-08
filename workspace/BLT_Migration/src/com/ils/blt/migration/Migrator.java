@@ -22,6 +22,7 @@ import org.sqlite.JDBC;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.migration.map.ClassAttributeMapper;
@@ -35,8 +36,10 @@ public class Migrator {
 	private final static JDBC driver = new JDBC(); // Force driver to be loaded
 	private final RootClass root;
 	private boolean ok = true;                     // Allows us to short circuit processing
+	private G2Application g2application = null;    // G2 Application read from JSON
 	private G2Diagram g2diagram = null;            // G2 Diagram read from JSON
-	private SerializableDiagram diagram = null;    // The result
+	private SerializableApplication application = null;   // The result
+	private SerializableDiagram diagram = null;           // The result
 	private final ClassNameMapper classMapper;
 	private final ClassAttributeMapper attributeMapper;
 	private final ConnectionMapper connectionMapper;
@@ -102,12 +105,16 @@ public class Migrator {
 			mapper.configure(JsonParser.Feature.ALLOW_COMMENTS, true);
 			mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
 			if( root==RootClass.APPLICATION) {
-				
+				g2application = mapper.readValue(new String(bytes), G2Application.class);
+				if( g2application==null ) {
+					System.err.println(TAG+": Failed to deserialize input application");
+					ok = false;
+				}
 			}
 			else {
 				g2diagram = mapper.readValue(new String(bytes), G2Diagram.class);
 				if( g2diagram==null ) {
-					System.err.println(TAG+": Failed to deserialize input");
+					System.err.println(TAG+": Failed to deserialize input diagram");
 					ok = false;
 				}
 			}
@@ -123,15 +130,33 @@ public class Migrator {
 	}
 	
 	/**
-	 * Convert from G2 objects into BLTView objects
+	 * Convert from G2 objects into a BLTView diagram
 	 */
-	public void migrate() {
+	public void migrateApplication() {
 		if( !ok ) return;
 		
-		diagram = new SerializableDiagram();
-		diagram.setName(g2diagram.getName());
+		application = createSerializableApplication(g2application);
+	}
+	/**
+	 * Convert from G2 objects into a BLTView diagram
+	 */
+	public void migrateDiagram() {
+		if( !ok ) return;
+		
+		diagram = createSerializableDiagram(g2diagram);
+	}
+	
+	private SerializableApplication createSerializableApplication(G2Application g2a) {
+		SerializableApplication sa = new SerializableApplication();
+		sa.setName(g2a.getName());
+		return sa;
+	}
+	
+	private SerializableDiagram createSerializableDiagram(G2Diagram g2d) {
+		SerializableDiagram sd = new SerializableDiagram();
+		sd.setName(g2d.getName());
 		List<SerializableBlock> blocks = new ArrayList<SerializableBlock>();
-		for( G2Block g2block:g2diagram.getBlocks()) {
+		for( G2Block g2block:g2d.getBlocks()) {
 			SerializableBlock block = new SerializableBlock();
 			block.setId(g2block.getId());
 			block.setOriginalId(g2block.getId());
@@ -142,13 +167,13 @@ public class Migrator {
 			attributeMapper.setClassAttributes(block);
 			connectionMapper.setAnchors(g2block,block);
 			blocks.add(block);
-			diagram.setBlocks(blocks.toArray(new SerializableBlock[blocks.size()]));
+			sd.setBlocks(blocks.toArray(new SerializableBlock[blocks.size()]));
 		}
 		
 		// Finally we analyze the diagram as a whole to deduce connections
-		connectionMapper.createConnections(g2diagram, diagram);
+		connectionMapper.createConnections(g2d, sd);
+		return sd;
 	}
-	
 	/**
 	 * Write the BLT View Objects to std out
 	 */
@@ -216,7 +241,12 @@ public class Migrator {
 		path = path.replace("\\", "/");
 		m.processDatabase(path);
 		m.processInput();
-		m.migrate();
+		if(root.equals(RootClass.APPLICATION) ) {
+			m.migrateApplication();
+		}
+		else if(root.equals(RootClass.DIAGRAM)) {
+			m.migrateDiagram();
+		}
 		m.createOutput();
 	}
 
