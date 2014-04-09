@@ -12,8 +12,9 @@ import java.util.UUID;
  */
 public class SerializableApplication {
 	private SerializableFamily[] families;
-	private String name;
+	private double highestPriorityProblem = 0.0;
 	private UUID id;
+	private String name;
 	
 
 
@@ -22,12 +23,13 @@ public class SerializableApplication {
 		name="UNSET";
 		id = UUID.randomUUID();
 	}
-	
-	public SerializableFamily[] getFamilies() { return families; }
-	public String getName() { return name; }
 
-	public void setFamilies(SerializableFamily[] list) { families=list; }
-	public void setName(String nam) { if(nam!=null) name=nam; }
+	public SerializableFamily[] getFamilies() { return families; }
+	public double getHighestPriorityProblem() {return highestPriorityProblem;}
 	public UUID getId() {return id;}
+	public String getName() { return name; }
+	public void setFamilies(SerializableFamily[] list) { families=list; }
+	public void setHighestPriorityProblem(double highestPriorityProblem) {this.highestPriorityProblem = highestPriorityProblem;}
 	public void setId(UUID id) {this.id = id;}
+	public void setName(String nam) { if(nam!=null) name=nam; }
 }

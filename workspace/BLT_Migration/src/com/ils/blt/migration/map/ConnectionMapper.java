@@ -57,8 +57,8 @@ public class ConnectionMapper {
 		List<SerializableAnchor> anchorList = new ArrayList<SerializableAnchor>();
 		for( G2Connection g2cxn:g2cxns ) {
 			SerializableAnchor anchor = new SerializableAnchor();
-			anchor.setConnectionType(g2cxn.getType());
-			anchor.setDirection(g2cxn.getDirection());
+			anchor.setConnectionType(g2cxn.getConnectionType());
+			anchor.setDirection(g2cxn.getAnchorDirection());
 			anchor.setDisplay(g2cxn.getPort());
 			anchor.setId(UUID.randomUUID());
 			anchor.setParentId(iblock.getId());
@@ -89,7 +89,7 @@ public class ConnectionMapper {
 		for(G2Block g2block:g2diagram.getBlocks()) {
 			for(G2Connection g2cxn:g2block.getConnections()) {
 				String key = "";
-				if( g2cxn.getDirection()==AnchorDirection.INCOMING) {
+				if( g2cxn.getAnchorDirection().equals(AnchorDirection.INCOMING)) {
 					key = g2cxn.getBlock().toString()+":"+g2block.getId().toString();
 					log.debugf("%s: connectionMap INCOMING key = %s",TAG,key);
 				}
@@ -103,12 +103,12 @@ public class ConnectionMapper {
 					cxn = new SerializableConnection();
 					connectionMap.put(key, cxn);
 					log.debugf("%s: connectionMap ----- was new entry",TAG);
-					cxn.setType(g2cxn.getType());
+					cxn.setType(g2cxn.getConnectionType());
 				}
 				// Set to or from blocks
 				// Then create AnchorPoint for the end where we know the port name
 				String port = g2cxn.getPort();
-				if( g2cxn.getDirection()==AnchorDirection.INCOMING) {
+				if( g2cxn.getAnchorDirection().equals(AnchorDirection.INCOMING)) {
 					cxn.setBeginBlock(g2cxn.getBlock());
 					cxn.setEndBlock(g2block.getId());
 					setEndAnchorPoint(cxn,cxn.getEndBlock(),port);

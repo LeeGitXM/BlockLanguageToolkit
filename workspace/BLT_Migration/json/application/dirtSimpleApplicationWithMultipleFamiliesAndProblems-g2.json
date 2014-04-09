@@ -1,0 +1,294 @@
+{
+	"name": "CRX-TEST",
+	"comments": "",
+	"className": "EM-APPLICATION",
+	"x": -244,
+	"y": 165,
+	"uuid": "27a69c39b63711e380b7001e4f941add",
+	"properties": 
+	[
+		{
+			"name": "unit",
+			"value": "NOT-SPECIFIED"
+		},
+		{
+			"name": "post",
+			"value": "ABC-POST"
+		},
+		{
+			"name": "messageQueueName",
+			"value": "ABC-MESSAGE-QUEUE"
+		},
+		{
+			"name": "highestPriorityProblem",
+			"value": "0.0"
+		},
+		{
+			"name": "includeInMainMenu",
+			"value": "false"
+		},
+		{
+			"name": "groupRampMethod",
+			"value": "SHORTEST"
+		}
+	],
+	"families": 
+	[
+		{
+			"name": "EM-DIAGNOSIS-FAMILY-XXX-422",
+			"comments": "",
+			"className": "EM-DIAGNOSIS-FAMILY",
+			"x": -384,
+			"y": 121,
+			"uuid": "65bb97bab63711e380b7001e4f941add",
+			"properties": 
+			[
+				{
+					"name": "label",
+					"value": "My Second Family"
+				},
+				{
+					"name": "family",
+					"value": "EM-DIAGNOSIS-FAMILY-XXX-422"
+				},
+				{
+					"name": "priority",
+					"value": "23.5"
+				}
+			],
+			"problems": 
+			[
+				{
+					"name": "GDL-HIGH-VALUE-OBSERVATION-XXX-423",
+					"comments": "",
+					"className": "GDL-HIGH-VALUE-OBSERVATION",
+					"x": -166,
+					"y": 49,
+					"uuid": "6c074d63b63711e380b7001e4f941add",
+					"connections": 
+					[
+						{
+							"direction": "IN",
+							"type": "GDL-DATA-PATH",
+							"port": "DP-IN",
+							"uuid": "6c074d6bb63711e380b7001e4f941add",
+							"blockClass": "GDL-NUMERIC-ENTRY-POINT",
+							"blockName": "GDL-NUMERIC-ENTRY-POINT-XXX-424"
+						}
+					],
+					"properties": 
+					[
+						{
+							"name": "threshold",
+							"value": "0"
+						},
+						{
+							"name": "hysteresisWhen",
+							"value": "none"
+						},
+						{
+							"name": "thresholdUncertainty",
+							"value": "none"
+						},
+						{
+							"name": "outputUncertainty",
+							"value": "0.5"
+						},
+						{
+							"name": "statusOnInitialization",
+							"value": "none"
+						}
+					]
+				},
+				{
+					"name": "GDL-NUMERIC-ENTRY-POINT-XXX-424",
+					"comments": "",
+					"className": "GDL-NUMERIC-ENTRY-POINT",
+					"x": -231,
+					"y": 49,
+					"uuid": "6c074d6bb63711e380b7001e4f941add",
+					"connections": 
+					[
+						{
+							"direction": "OUT",
+							"type": "GDL-DATA-PATH",
+							"port": "DP-OUT",
+							"uuid": "6c074d63b63711e380b7001e4f941add",
+							"blockClass": "GDL-HIGH-VALUE-OBSERVATION",
+							"blockName": "GDL-HIGH-VALUE-OBSERVATION-XXX-423"
+						}
+					],
+					"properties": 
+					[
+						{
+							"name": "nameOfSensor",
+							"value": "C9-IN-CRUMB"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "EM-DIAGNOSIS-FAMILY-XXX-425",
+			"comments": "",
+			"className": "EM-DIAGNOSIS-FAMILY",
+			"x": -385,
+			"y": 210,
+			"uuid": "27a69c7bb63711e380b7001e4f941add",
+			"properties": 
+			[
+				{
+					"name": "label",
+					"value": "My First Family"
+				},
+				{
+					"name": "family",
+					"value": "EM-DIAGNOSIS-FAMILY-XXX-425"
+				},
+				{
+					"name": "priority",
+					"value": "35.0"
+				}
+			],
+			"problems": 
+			[
+				{
+					"name": "GDL-HIGH-VALUE-OBSERVATION-XXX-426",
+					"comments": "",
+					"className": "GDL-HIGH-VALUE-OBSERVATION",
+					"x": -166,
+					"y": 49,
+					"uuid": "27a69c7fb63711e380b7001e4f941add",
+					"connections": 
+					[
+						{
+							"direction": "IN",
+							"type": "GDL-DATA-PATH",
+							"port": "DP-IN",
+							"uuid": "27a69c86b63711e380b7001e4f941add",
+							"blockClass": "GDL-NUMERIC-ENTRY-POINT",
+							"blockName": "GDL-NUMERIC-ENTRY-POINT-XXX-427"
+						}
+					],
+					"properties": 
+					[
+						{
+							"name": "threshold",
+							"value": "0"
+						},
+						{
+							"name": "hysteresisWhen",
+							"value": "none"
+						},
+						{
+							"name": "thresholdUncertainty",
+							"value": "none"
+						},
+						{
+							"name": "outputUncertainty",
+							"value": "0.5"
+						},
+						{
+							"name": "statusOnInitialization",
+							"value": "none"
+						}
+					]
+				},
+				{
+					"name": "GDL-NUMERIC-ENTRY-POINT-XXX-427",
+					"comments": "",
+					"className": "GDL-NUMERIC-ENTRY-POINT",
+					"x": -228,
+					"y": 49,
+					"uuid": "27a69c86b63711e380b7001e4f941add",
+					"connections": 
+					[
+						{
+							"direction": "OUT",
+							"type": "GDL-DATA-PATH",
+							"port": "DP-OUT",
+							"uuid": "27a69c7fb63711e380b7001e4f941add",
+							"blockClass": "GDL-HIGH-VALUE-OBSERVATION",
+							"blockName": "GDL-HIGH-VALUE-OBSERVATION-XXX-426"
+						}
+					],
+					"properties": 
+					[
+						{
+							"name": "nameOfSensor",
+							"value": "C2-LAB-DATA"
+						}
+					]
+				},
+				{
+					"name": "GDL-HIGH-VALUE-OBSERVATION-XXX-428",
+					"comments": "",
+					"className": "GDL-HIGH-VALUE-OBSERVATION",
+					"x": -381,
+					"y": 194,
+					"uuid": "bbd09f45b63711e380b7001e4f941add",
+					"connections": 
+					[
+						{
+							"direction": "IN",
+							"type": "GDL-DATA-PATH",
+							"port": "DP-IN",
+							"uuid": "bbd09f38b63711e380b7001e4f941add",
+							"blockClass": "GDL-NUMERIC-ENTRY-POINT",
+							"blockName": "GDL-NUMERIC-ENTRY-POINT-XXX-429"
+						}
+					],
+					"properties": 
+					[
+						{
+							"name": "threshold",
+							"value": "123.0"
+						},
+						{
+							"name": "hysteresisWhen",
+							"value": "none"
+						},
+						{
+							"name": "thresholdUncertainty",
+							"value": "7.5"
+						},
+						{
+							"name": "outputUncertainty",
+							"value": "0.5"
+						},
+						{
+							"name": "statusOnInitialization",
+							"value": "none"
+						}
+					]
+				},
+				{
+					"name": "GDL-NUMERIC-ENTRY-POINT-XXX-429",
+					"comments": "",
+					"className": "GDL-NUMERIC-ENTRY-POINT",
+					"x": -445,
+					"y": 194,
+					"uuid": "bbd09f38b63711e380b7001e4f941add",
+					"connections": 
+					[
+						{
+							"direction": "OUT",
+							"type": "GDL-DATA-PATH",
+							"port": "DP-OUT",
+							"uuid": "bbd09f45b63711e380b7001e4f941add",
+							"blockClass": "GDL-HIGH-VALUE-OBSERVATION",
+							"blockName": "GDL-HIGH-VALUE-OBSERVATION-XXX-428"
+						}
+					],
+					"properties": 
+					[
+						{
+							"name": "nameOfSensor",
+							"value": "C101-ETHYLENE"
+						}
+					]
+				}
+			]
+		}
+	]
+}

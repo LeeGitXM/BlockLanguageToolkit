@@ -11,6 +11,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.ConsoleAppender;
@@ -22,9 +23,11 @@ import org.sqlite.JDBC;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableDiagram;
+import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.migration.map.ClassAttributeMapper;
 import com.ils.blt.migration.map.ClassNameMapper;
 import com.ils.blt.migration.map.ConnectionMapper;
@@ -43,6 +46,7 @@ public class Migrator {
 	private final ClassNameMapper classMapper;
 	private final ClassAttributeMapper attributeMapper;
 	private final ConnectionMapper connectionMapper;
+	private final UtilityFunctions func;
 
 	 
 	public Migrator(RootClass rc) {
@@ -50,6 +54,7 @@ public class Migrator {
 		classMapper = new ClassNameMapper();
 		attributeMapper = new ClassAttributeMapper();
 		connectionMapper = new ConnectionMapper();
+		func = new UtilityFunctions();
 	}
 	
 	public void processDatabase(String path) {
@@ -104,6 +109,7 @@ public class Migrator {
 			ObjectMapper mapper = new ObjectMapper();
 			mapper.configure(JsonParser.Feature.ALLOW_COMMENTS, true);
 			mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
+			mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_CONTROL_CHARS, true);
 			if( root==RootClass.APPLICATION) {
 				g2application = mapper.readValue(new String(bytes), G2Application.class);
 				if( g2application==null ) {
@@ -149,7 +155,44 @@ public class Migrator {
 	private SerializableApplication createSerializableApplication(G2Application g2a) {
 		SerializableApplication sa = new SerializableApplication();
 		sa.setName(g2a.getName());
+		sa.setId(UUID.nameUUIDFromBytes(g2a.getUuid().getBytes()));
+		for( G2Property prop:g2a.getProperties()) {
+			if(prop.getName().equalsIgnoreCase("highestPriorityProblem")) {
+				sa.setHighestPriorityProblem(func.coerceToDouble(prop.getValue()));
+			}
+		}
+		int familyCount = g2a.getFamilies().length;
+		System.err.println(String.format("%s: Family count = %d",TAG,familyCount));
+		int index = 0;
+		SerializableFamily[] families = new SerializableFamily[familyCount];
+		for(G2Family fam:g2a.getFamilies()) {
+			SerializableFamily sf = createSerializableFamily(fam);
+			families[index] = sf;
+			index++;
+		}
+		sa.setFamilies(families);
 		return sa;
+	}
+	
+	private SerializableFamily createSerializableFamily(G2Family g2f) {
+		SerializableFamily sf = new SerializableFamily();
+		sf.setName(g2f.getName());
+		sf.setId(UUID.nameUUIDFromBytes(g2f.getUuid().getBytes()));
+		for( G2Property prop:g2f.getProperties()) {
+			if(prop.getName().equalsIgnoreCase("priority")) {
+				sf.setPriority(func.coerceToDouble(prop.getValue()));
+			}
+		}
+		int diagramCount = g2f.getProblems().length;
+		int index = 0;
+		SerializableDiagram[] diagrams = new SerializableDiagram[diagramCount];
+		for(G2Diagram diag:g2f.getProblems()) {
+			SerializableDiagram sd = createSerializableDiagram(diag);
+			diagrams[index] = sd;
+			index++;
+		}
+		sf.setDiagrams(diagrams);
+		return sf;
 	}
 	
 	private SerializableDiagram createSerializableDiagram(G2Diagram g2d) {
@@ -185,7 +228,7 @@ public class Migrator {
 		try{ 
 			String json = "";
 			if( root==RootClass.APPLICATION) {
-				
+				json = mapper.writeValueAsString(application);
 			}
 			// diagram
 			else {

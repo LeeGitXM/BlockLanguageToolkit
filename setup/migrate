@@ -7,6 +7,6 @@ BIN=`pwd`
 FIL=dirtSimpleApplication
 LIB=$BIN/../../external/lib
 JAR=${LIB}/blt-migration.jar
-MIGRATION=$BIN/../migration/application
+MIGRATION=$BIN/../workspace/BLT_Migration/json/application
 DB=${BIN}/db/conversion.db
-cat ${MIGRATION}/$FIL-g2.json | java -cp ${JAR} -Dlog.level=DEBUG -Droot.class=APPLICATION com.ils.blt.migration.Migrator ${DB} > ${MIGRATION}/$FIL.json
+cat ${MIGRATION}/$FIL-g2.json | java -cp ${JAR} -Dlog.level=INFO -Droot.class=APPLICATION com.ils.blt.migration.Migrator ${DB} > ${MIGRATION}/$FIL.json

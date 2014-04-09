@@ -9,17 +9,34 @@ package com.ils.blt.migration;
  * This POJO objects should have no behavior.
  */
 public class G2Family {
-	private G2Diagram[] diagrams;
-	private String name;
-	
-	public G2Family() {	
-		diagrams = new G2Diagram[0];
-		name="UNSET";
-	}
-	
-	public G2Diagram[] getDiagrams() { return diagrams; }
-	public String getName() { return name; }
+	private String className; 
+	private String comments;
 
-	public void setDiagrams(G2Diagram[] list) { diagrams=list; }
+	private G2Diagram[] problems;
+	private String name;
+	private G2Property[] properties = null;
+	private String uuid;
+	private int x;
+	private int y;
+	public G2Family() {	
+		problems = new G2Diagram[0];
+		name="UNSET";
+		comments = "";
+	}
+	public String getClassName() {return className;}
+	public String getComments() {return comments;}
+	public G2Diagram[] getProblems() { return problems; }
+	public String getName() { return name; }
+	public G2Property[] getProperties() { return properties; }
+	public String getUuid() {return uuid;}
+	public int getX() {return x;}
+	public int getY() {return y;}
+	public void setClassName(String className) {this.className = className;}
+	public void setComments(String comments) {this.comments = comments;}
+	public void setProblems(G2Diagram[] list) { problems=list; }
 	public void setName(String nam) { if(nam!=null) name=nam; }
+	public void setProperties(G2Property[] array) { this.properties = array; }
+	public void setUuid(String uuid) {this.uuid = uuid;}
+	public void setX(int x) {this.x = x;}
+	public void setY(int y) {this.y = y;}
 }
