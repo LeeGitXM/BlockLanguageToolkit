@@ -1,0 +1,71 @@
+<Tags>
+   <Tag name="_types_" path="" type="Folder"/>
+   <Tag name="Controller" path="_types_" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+   </Tag>
+   <Tag name="DataPump" path="" type="Folder"/>
+   <Tag name="lineNumber" path="DataPump" type="DB">
+      <Property name="Value">23</Property>
+      <Property name="DataType">2</Property>
+   </Tag>
+   <Tag name="simulationState" path="DataPump" type="DB">
+      <Property name="Value">Idle</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="command" path="DataPump" type="DB">
+      <Property name="Value">Run</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="PID" path="" type="Folder"/>
+   <Tag name="ControlledValue" path="PID" type="DB">
+      <Property name="Value">-2035182.0661691756</Property>
+      <Property name="DataType">5</Property>
+      <Property name="HistoryEnabled">true</Property>
+      <Property name="PrimaryHistoryProvider">History</Property>
+   </Tag>
+   <Tag name="Ki" path="PID" type="DB">
+      <Property name="Value">0.03</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="Kd" path="PID" type="DB">
+      <Property name="Value">0.01</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="Kp" path="PID" type="DB">
+      <Property name="Value">0.33</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="Setpoint" path="PID" type="DB">
+      <Property name="Value">0.0</Property>
+      <Property name="DataType">5</Property>
+      <Property name="HistoryEnabled">true</Property>
+      <Property name="PrimaryHistoryProvider">History</Property>
+   </Tag>
+   <Tag name="InitialValue" path="PID" type="DB">
+      <Property name="Value">22.0</Property>
+      <Property name="DataType">5</Property>
+      <Property name="PrimaryHistoryProvider">History</Property>
+   </Tag>
+   <Tag name="Tags" path="" type="Folder"/>
+   <Tag name="ControlASetpoint" path="Tags" type="DB">
+      <Property name="Value">42</Property>
+      <Property name="DataType">2</Property>
+   </Tag>
+   <Tag name="InputB" path="Tags" type="DB">
+      <Property name="Value">0</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="InputA" path="Tags" type="DB">
+      <Property name="Value">12.23</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="OutputB" path="Tags" type="DB">
+      <Property name="Value">Fix it</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="OutputA" path="Tags" type="DB">
+      <Property name="Value">TRUE</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+</Tags>
