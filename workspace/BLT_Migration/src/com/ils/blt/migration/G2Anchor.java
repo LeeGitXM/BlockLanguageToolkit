@@ -9,10 +9,12 @@ import com.ils.connection.ConnectionType;
 
 /**
  * Implement a plain-old-java-object representing a connection.
+ * This represents a G2 stub. It is an end-piece of a connection.
+ * The block-name is unique within a G2 instance. 
+ * The UUID here doesn't help, as it differs on each end.
  */
-public class G2Connection {
-	private final static String TAG = "G2Connection";
-	private UUID block = null;
+public class G2Anchor {
+	private final static String TAG = "G2Anchor";
 	private String blockClass;
 	private String blockName;
 	private String direction;
@@ -20,7 +22,7 @@ public class G2Connection {
 	private String type;
 	private String uuid;
 
-	public G2Connection() {
+	public G2Anchor() {
 	}
 
 	public AnchorDirection getAnchorDirection()   { 
@@ -37,7 +39,6 @@ public class G2Connection {
 		return result; 
 	}
 
-	public UUID getBlock() { return block; }
 	public String getBlockClass() {return blockClass;}
 	public String getBlockName() {return blockName;}
 	public ConnectionType getConnectionType() {
@@ -54,7 +55,6 @@ public class G2Connection {
 	public String getPort() {return port;}
 	public String getType() {return type;}
 	public String getUuid() {return uuid;}
-	public void setBlock(UUID id) { block = id; }
 	public void setBlockClass(String blockClass) {this.blockClass = blockClass;}
 	public void setBlockName(String blockName) {this.blockName = blockName;}
 	public void setDirection(String d)   { direction=d; }

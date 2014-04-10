@@ -9,8 +9,6 @@ import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import org.apache.log4j.BasicConfigurator;
@@ -162,7 +160,6 @@ public class Migrator {
 			}
 		}
 		int familyCount = g2a.getFamilies().length;
-		System.err.println(String.format("%s: Family count = %d",TAG,familyCount));
 		int index = 0;
 		SerializableFamily[] families = new SerializableFamily[familyCount];
 		for(G2Family fam:g2a.getFamilies()) {
@@ -198,20 +195,26 @@ public class Migrator {
 	private SerializableDiagram createSerializableDiagram(G2Diagram g2d) {
 		SerializableDiagram sd = new SerializableDiagram();
 		sd.setName(g2d.getName());
-		List<SerializableBlock> blocks = new ArrayList<SerializableBlock>();
+		sd.setId(UUID.nameUUIDFromBytes(g2d.getName().getBytes()));  // Name is unique
+		// Create the blocks before worrying about connections
+		int blockCount = g2d.getBlocks().length;
+		System.err.println(String.format("%s: Block count = %d",TAG,blockCount));
+		SerializableBlock[] blocks = new SerializableBlock[blockCount];
+		int index=0;
 		for( G2Block g2block:g2d.getBlocks()) {
 			SerializableBlock block = new SerializableBlock();
-			block.setId(g2block.getId());
-			block.setOriginalId(g2block.getId());
-			block.setLabel(g2block.getLabel());
+			block.setId(UUID.nameUUIDFromBytes(g2block.getUuid().getBytes()));
+			block.setOriginalId(UUID.nameUUIDFromBytes(g2block.getUuid().getBytes()));
+			block.setLabel(g2block.getName());
 			block.setX(g2block.getX());
 			block.setY(g2block.getY());
 			classMapper.setClassName(g2block, block);
 			attributeMapper.setClassAttributes(block);
 			connectionMapper.setAnchors(g2block,block);
-			blocks.add(block);
-			sd.setBlocks(blocks.toArray(new SerializableBlock[blocks.size()]));
+			blocks[index]=block;
+			index++;
 		}
+		sd.setBlocks(blocks);
 		
 		// Finally we analyze the diagram as a whole to deduce connections
 		connectionMapper.createConnections(g2d, sd);

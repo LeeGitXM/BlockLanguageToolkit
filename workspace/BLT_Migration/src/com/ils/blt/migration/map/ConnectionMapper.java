@@ -18,7 +18,7 @@ import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.ils.blt.designer.workspace.ui.BlockViewUI;
 import com.ils.blt.designer.workspace.ui.UIFactory;
 import com.ils.blt.migration.G2Block;
-import com.ils.blt.migration.G2Connection;
+import com.ils.blt.migration.G2Anchor;
 import com.ils.blt.migration.G2Diagram;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -53,9 +53,9 @@ public class ConnectionMapper {
 	 * @param iblock outgoing Ignition equivalent
 	 */
 	public void setAnchors(G2Block g2block,SerializableBlock iblock) {
-		G2Connection[] g2cxns = g2block.getConnections();
+		G2Anchor[] g2cxns = g2block.getConnections();
 		List<SerializableAnchor> anchorList = new ArrayList<SerializableAnchor>();
-		for( G2Connection g2cxn:g2cxns ) {
+		for( G2Anchor g2cxn:g2cxns ) {
 			SerializableAnchor anchor = new SerializableAnchor();
 			anchor.setConnectionType(g2cxn.getConnectionType());
 			anchor.setDirection(g2cxn.getAnchorDirection());
@@ -87,14 +87,14 @@ public class ConnectionMapper {
 		Map<String,SerializableConnection> connectionMap = new HashMap<String,SerializableConnection>();
 		
 		for(G2Block g2block:g2diagram.getBlocks()) {
-			for(G2Connection g2cxn:g2block.getConnections()) {
+			for(G2Anchor g2anchor:g2block.getConnections()) {
 				String key = "";
-				if( g2cxn.getAnchorDirection().equals(AnchorDirection.INCOMING)) {
-					key = g2cxn.getBlock().toString()+":"+g2block.getId().toString();
+				if( g2anchor.getAnchorDirection().equals(AnchorDirection.INCOMING)) {
+					key = UUID.nameUUIDFromBytes(g2anchor.getBlockName().getBytes())+":"+UUID.nameUUIDFromBytes(g2block.getUuid().getBytes()).toString();
 					log.debugf("%s: connectionMap INCOMING key = %s",TAG,key);
 				}
 				else {
-					key = g2block.getId().toString()+":"+g2cxn.getBlock().toString();
+					key = UUID.nameUUIDFromBytes(g2block.getUuid().getBytes()).toString()+":"+UUID.nameUUIDFromBytes(g2anchor.getBlockName().getBytes());
 					log.debugf("%s: connectionMap OUTGOING key = %s",TAG,key);
 				}
 				SerializableConnection cxn = connectionMap.get(key);
@@ -103,19 +103,19 @@ public class ConnectionMapper {
 					cxn = new SerializableConnection();
 					connectionMap.put(key, cxn);
 					log.debugf("%s: connectionMap ----- was new entry",TAG);
-					cxn.setType(g2cxn.getConnectionType());
+					cxn.setType(g2anchor.getConnectionType());
 				}
 				// Set to or from blocks
 				// Then create AnchorPoint for the end where we know the port name
-				String port = g2cxn.getPort();
-				if( g2cxn.getAnchorDirection().equals(AnchorDirection.INCOMING)) {
-					cxn.setBeginBlock(g2cxn.getBlock());
-					cxn.setEndBlock(g2block.getId());
+				String port = g2anchor.getPort();
+				if( g2anchor.getAnchorDirection().equals(AnchorDirection.INCOMING)) {
+					cxn.setBeginBlock(UUID.nameUUIDFromBytes(g2anchor.getBlockName().getBytes()));
+					cxn.setEndBlock(UUID.nameUUIDFromBytes(g2block.getUuid().getBytes()));
 					setEndAnchorPoint(cxn,cxn.getEndBlock(),port);
 				}
 				else {
-					cxn.setBeginBlock(g2block.getId());
-					cxn.setEndBlock(g2cxn.getBlock());
+					cxn.setBeginBlock(UUID.nameUUIDFromBytes(g2block.getUuid().getBytes()));
+					cxn.setEndBlock(UUID.nameUUIDFromBytes(g2anchor.getBlockName().getBytes()));
 					setBeginAnchorPoint(cxn,cxn.getBeginBlock(),port);
 				}	
 			}

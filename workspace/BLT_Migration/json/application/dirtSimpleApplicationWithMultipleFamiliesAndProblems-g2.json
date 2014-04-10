@@ -59,70 +59,76 @@
 			"problems": 
 			[
 				{
-					"name": "GDL-HIGH-VALUE-OBSERVATION-XXX-423",
-					"comments": "",
-					"className": "GDL-HIGH-VALUE-OBSERVATION",
-					"x": -166,
-					"y": 49,
-					"uuid": "6c074d63b63711e380b7001e4f941add",
-					"connections": 
+					"name": "PROBLEM-XXX-002",
+					"blocks": 
 					[
 						{
-							"direction": "IN",
-							"type": "GDL-DATA-PATH",
-							"port": "DP-IN",
-							"uuid": "6c074d6bb63711e380b7001e4f941add",
-							"blockClass": "GDL-NUMERIC-ENTRY-POINT",
-							"blockName": "GDL-NUMERIC-ENTRY-POINT-XXX-424"
-						}
-					],
-					"properties": 
-					[
-						{
-							"name": "threshold",
-							"value": "0"
-						},
-						{
-							"name": "hysteresisWhen",
-							"value": "none"
-						},
-						{
-							"name": "thresholdUncertainty",
-							"value": "none"
-						},
-						{
-							"name": "outputUncertainty",
-							"value": "0.5"
-						},
-						{
-							"name": "statusOnInitialization",
-							"value": "none"
-						}
-					]
-				},
-				{
-					"name": "GDL-NUMERIC-ENTRY-POINT-XXX-424",
-					"comments": "",
-					"className": "GDL-NUMERIC-ENTRY-POINT",
-					"x": -231,
-					"y": 49,
-					"uuid": "6c074d6bb63711e380b7001e4f941add",
-					"connections": 
-					[
-						{
-							"direction": "OUT",
-							"type": "GDL-DATA-PATH",
-							"port": "DP-OUT",
+							"name": "GDL-HIGH-VALUE-OBSERVATION-XXX-423",
+							"comments": "",
+							"className": "GDL-HIGH-VALUE-OBSERVATION",
+							"x": -166,
+							"y": 49,
 							"uuid": "6c074d63b63711e380b7001e4f941add",
-							"blockClass": "GDL-HIGH-VALUE-OBSERVATION",
-							"blockName": "GDL-HIGH-VALUE-OBSERVATION-XXX-423"
-						}
-					],
-					"properties": 
-					[
+							"connections": 
+							[
+								{
+									"direction": "IN",
+									"type": "GDL-DATA-PATH",
+									"port": "DP-IN",
+									"uuid": "6c074d6bb63711e380b7001e4f941add",
+									"blockClass": "GDL-NUMERIC-ENTRY-POINT",
+									"blockName": "GDL-NUMERIC-ENTRY-POINT-XXX-424"
+								}
+							],
+							"properties": 
+							[
+								{
+									"name": "threshold",
+									"value": "0"
+								},
+								{
+									"name": "hysteresisWhen",
+									"value": "none"
+								},
+								{
+									"name": "thresholdUncertainty",
+									"value": "none"
+								},
+								{
+									"name": "outputUncertainty",
+									"value": "0.5"
+								},
+								{
+									"name": "statusOnInitialization",
+									"value": "none"
+								}
+							]
+						},
 						{
-							"name": "nameOfSensor",
-							"value": "C9-IN-CRUMB"
+							"name": "GDL-NUMERIC-ENTRY-POINT-XXX-424",
+							"comments": "",
+							"className": "GDL-NUMERIC-ENTRY-POINT",
+							"x": -231,
+							"y": 49,
+							"uuid": "6c074d6bb63711e380b7001e4f941add",
+							"connections": 
+							[
+								{
+									"direction": "OUT",
+									"type": "GDL-DATA-PATH",
+									"port": "DP-OUT",
+									"uuid": "6c074d63b63711e380b7001e4f941add",
+									"blockClass": "GDL-HIGH-VALUE-OBSERVATION",
+									"blockName": "GDL-HIGH-VALUE-OBSERVATION-XXX-423"
+								}
+							],
+							"properties": 
+							[
+								{
+									"name": "nameOfSensor",
+									"value": "C9-IN-CRUMB"
+								}
+							]
 						}
 					]
 				}
@@ -153,138 +159,144 @@
 			"problems": 
 			[
 				{
-					"name": "GDL-HIGH-VALUE-OBSERVATION-XXX-426",
-					"comments": "",
-					"className": "GDL-HIGH-VALUE-OBSERVATION",
-					"x": -166,
-					"y": 49,
-					"uuid": "27a69c7fb63711e380b7001e4f941add",
-					"connections": 
+					"name": "PROBLEM-XXX-03",
+					"blocks": 
 					[
 						{
-							"direction": "IN",
-							"type": "GDL-DATA-PATH",
-							"port": "DP-IN",
-							"uuid": "27a69c86b63711e380b7001e4f941add",
-							"blockClass": "GDL-NUMERIC-ENTRY-POINT",
-							"blockName": "GDL-NUMERIC-ENTRY-POINT-XXX-427"
-						}
-					],
-					"properties": 
-					[
-						{
-							"name": "threshold",
-							"value": "0"
-						},
-						{
-							"name": "hysteresisWhen",
-							"value": "none"
-						},
-						{
-							"name": "thresholdUncertainty",
-							"value": "none"
-						},
-						{
-							"name": "outputUncertainty",
-							"value": "0.5"
-						},
-						{
-							"name": "statusOnInitialization",
-							"value": "none"
-						}
-					]
-				},
-				{
-					"name": "GDL-NUMERIC-ENTRY-POINT-XXX-427",
-					"comments": "",
-					"className": "GDL-NUMERIC-ENTRY-POINT",
-					"x": -228,
-					"y": 49,
-					"uuid": "27a69c86b63711e380b7001e4f941add",
-					"connections": 
-					[
-						{
-							"direction": "OUT",
-							"type": "GDL-DATA-PATH",
-							"port": "DP-OUT",
+							"name": "GDL-HIGH-VALUE-OBSERVATION-XXX-426",
+							"comments": "",
+							"className": "GDL-HIGH-VALUE-OBSERVATION",
+							"x": -166,
+							"y": 49,
 							"uuid": "27a69c7fb63711e380b7001e4f941add",
-							"blockClass": "GDL-HIGH-VALUE-OBSERVATION",
-							"blockName": "GDL-HIGH-VALUE-OBSERVATION-XXX-426"
-						}
-					],
-					"properties": 
-					[
-						{
-							"name": "nameOfSensor",
-							"value": "C2-LAB-DATA"
-						}
-					]
-				},
-				{
-					"name": "GDL-HIGH-VALUE-OBSERVATION-XXX-428",
-					"comments": "",
-					"className": "GDL-HIGH-VALUE-OBSERVATION",
-					"x": -381,
-					"y": 194,
-					"uuid": "bbd09f45b63711e380b7001e4f941add",
-					"connections": 
-					[
-						{
-							"direction": "IN",
-							"type": "GDL-DATA-PATH",
-							"port": "DP-IN",
-							"uuid": "bbd09f38b63711e380b7001e4f941add",
-							"blockClass": "GDL-NUMERIC-ENTRY-POINT",
-							"blockName": "GDL-NUMERIC-ENTRY-POINT-XXX-429"
-						}
-					],
-					"properties": 
-					[
-						{
-							"name": "threshold",
-							"value": "123.0"
+							"connections": 
+							[
+								{
+									"direction": "IN",
+									"type": "GDL-DATA-PATH",
+									"port": "DP-IN",
+									"uuid": "27a69c86b63711e380b7001e4f941add",
+									"blockClass": "GDL-NUMERIC-ENTRY-POINT",
+									"blockName": "GDL-NUMERIC-ENTRY-POINT-XXX-427"
+								}
+							],
+							"properties": 
+							[
+								{
+									"name": "threshold",
+									"value": "0"
+								},
+								{
+									"name": "hysteresisWhen",
+									"value": "none"
+								},
+								{
+									"name": "thresholdUncertainty",
+									"value": "none"
+								},
+								{
+									"name": "outputUncertainty",
+									"value": "0.5"
+								},
+								{
+									"name": "statusOnInitialization",
+									"value": "none"
+								}
+							]
 						},
 						{
-							"name": "hysteresisWhen",
-							"value": "none"
+							"name": "GDL-NUMERIC-ENTRY-POINT-XXX-427",
+							"comments": "",
+							"className": "GDL-NUMERIC-ENTRY-POINT",
+							"x": -228,
+							"y": 49,
+							"uuid": "27a69c86b63711e380b7001e4f941add",
+							"connections": 
+							[
+								{
+									"direction": "OUT",
+									"type": "GDL-DATA-PATH",
+									"port": "DP-OUT",
+									"uuid": "27a69c7fb63711e380b7001e4f941add",
+									"blockClass": "GDL-HIGH-VALUE-OBSERVATION",
+									"blockName": "GDL-HIGH-VALUE-OBSERVATION-XXX-426"
+								}
+							],
+							"properties": 
+							[
+								{
+									"name": "nameOfSensor",
+									"value": "C2-LAB-DATA"
+								}
+							]
 						},
 						{
-							"name": "thresholdUncertainty",
-							"value": "7.5"
-						},
-						{
-							"name": "outputUncertainty",
-							"value": "0.5"
-						},
-						{
-							"name": "statusOnInitialization",
-							"value": "none"
-						}
-					]
-				},
-				{
-					"name": "GDL-NUMERIC-ENTRY-POINT-XXX-429",
-					"comments": "",
-					"className": "GDL-NUMERIC-ENTRY-POINT",
-					"x": -445,
-					"y": 194,
-					"uuid": "bbd09f38b63711e380b7001e4f941add",
-					"connections": 
-					[
-						{
-							"direction": "OUT",
-							"type": "GDL-DATA-PATH",
-							"port": "DP-OUT",
+							"name": "GDL-HIGH-VALUE-OBSERVATION-XXX-428",
+							"comments": "",
+							"className": "GDL-HIGH-VALUE-OBSERVATION",
+							"x": -381,
+							"y": 194,
 							"uuid": "bbd09f45b63711e380b7001e4f941add",
-							"blockClass": "GDL-HIGH-VALUE-OBSERVATION",
-							"blockName": "GDL-HIGH-VALUE-OBSERVATION-XXX-428"
-						}
-					],
-					"properties": 
-					[
+							"connections": 
+							[
+								{
+									"direction": "IN",
+									"type": "GDL-DATA-PATH",
+									"port": "DP-IN",
+									"uuid": "bbd09f38b63711e380b7001e4f941add",
+									"blockClass": "GDL-NUMERIC-ENTRY-POINT",
+									"blockName": "GDL-NUMERIC-ENTRY-POINT-XXX-429"
+								}
+							],
+							"properties": 
+							[
+								{
+									"name": "threshold",
+									"value": "123.0"
+								},
+								{
+									"name": "hysteresisWhen",
+									"value": "none"
+								},
+								{
+									"name": "thresholdUncertainty",
+									"value": "7.5"
+								},
+								{
+									"name": "outputUncertainty",
+									"value": "0.5"
+								},
+								{
+									"name": "statusOnInitialization",
+									"value": "none"
+								}
+							]
+						},
 						{
-							"name": "nameOfSensor",
-							"value": "C101-ETHYLENE"
+							"name": "GDL-NUMERIC-ENTRY-POINT-XXX-429",
+							"comments": "",
+							"className": "GDL-NUMERIC-ENTRY-POINT",
+							"x": -445,
+							"y": 194,
+							"uuid": "bbd09f38b63711e380b7001e4f941add",
+							"connections": 
+							[
+								{
+									"direction": "OUT",
+									"type": "GDL-DATA-PATH",
+									"port": "DP-OUT",
+									"uuid": "bbd09f45b63711e380b7001e4f941add",
+									"blockClass": "GDL-HIGH-VALUE-OBSERVATION",
+									"blockName": "GDL-HIGH-VALUE-OBSERVATION-XXX-428"
+								}
+							],
+							"properties": 
+							[
+								{
+									"name": "nameOfSensor",
+									"value": "C101-ETHYLENE"
+								}
+							]
 						}
 					]
 				}

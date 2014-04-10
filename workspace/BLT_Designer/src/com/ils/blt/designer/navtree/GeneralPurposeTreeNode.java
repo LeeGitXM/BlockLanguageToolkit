@@ -28,6 +28,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.BlockRequestHandler;
+import com.ils.blt.common.serializable.ApplicationUUIDResetHandler;
 import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.common.serializable.SerializableApplicationTree;
 import com.ils.blt.common.serializable.SerializableDiagram;
@@ -507,14 +508,14 @@ public class GeneralPurposeTreeNode extends FolderNode {
 										// It would be nice to simply convert to a resource.
 										// Unfortunately we have to replace all UUIDs with new ones
 										ObjectMapper mapper = new ObjectMapper();
-										SerializableDiagram sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
-										if( sd!=null ) {
-											UUIDResetHandler handler = new UUIDResetHandler(sd);
+										SerializableApplication sa = mapper.readValue(new String(bytes), SerializableApplication.class);
+										if( sa!=null ) {
+											ApplicationUUIDResetHandler handler = new ApplicationUUIDResetHandler(sa);
 											handler.convertUUIDs();
-											String json = mapper.writeValueAsString(sd);
+											String json = mapper.writeValueAsString(sa);
 											if(log.isInfoEnabled() ) log.info(json);
 											ProjectResource resource = new ProjectResource(newId,
-													BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
+													BLTProperties.MODULE_ID, BLTProperties.APPLICATION_RESOURCE_TYPE,
 													newName, ApplicationScope.GATEWAY, json.getBytes());
 											resource.setParentUuid(getFolderId());
 											context.updateResource(resource);

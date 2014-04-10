@@ -1,6 +1,5 @@
 package com.ils.blt.migration;
 
-import java.util.UUID;
 
 /**
  * Implement a plain-old-java-object representing a G2 process block.
@@ -9,34 +8,38 @@ import java.util.UUID;
  * Use arrays instead of Java-generics lists to make this serializable.
  */
 public class G2Block {
+	private String className = null;
+	private String comments;
+	private G2Anchor[] connections = null;
+	private String uuid = null;
+	private String name;
+	private G2Property[] properties = null;
 	private int x = 0;
 	private int y = 0;
-	private UUID id = null;
-	private String className = null;
-	private String label;
-	private G2Property[] properties = null;
-	private G2Connection[] connections = null;
 	
 	public G2Block() {
-		this.connections = new G2Connection[0];
+		this.connections = new G2Anchor[0];
 	}
-	
 	public String getClassName() {return className;}
-	public void setClassName(String className) {this.className = className;}
-	public UUID getId() { return id; }
-	public void setId(UUID uuid) { id = uuid; }
-	public String getLabel() { return label; }
-	public void setLabel(String label) { this.label = label; }
+	
+	public String getComments() {return comments;}
+	
+	public G2Anchor[] getConnections() { return connections; }
+	public String getUuid() { return uuid; }
+	public String getName() { return name; }
+	public G2Property[] getProperties() { return properties; }
 	public int getX() { return x; }
 	public int getY() { return y; }
-	public void setX(int xx) { this.x=xx; }
-	public void setY(int yy) { this.y=yy; }
-	public G2Connection[] getConnections() { return connections; }
-	public void setConnections(G2Connection[] array) {
+	public void setClassName(String className) {this.className = className;}
+	public void setComments(String comments) {this.comments = comments;}
+	public void setConnections(G2Anchor[] array) {
 		connections = array;
 	}
-
-	public G2Property[] getProperties() { return properties; }
+	public void setUuid(String id) { uuid = id; }
+	public void setName(String label) { this.name = label; }
 	public void setProperties(G2Property[] array) { this.properties = array; }
+
+	public void setX(int xx) { this.x=xx; }
+	public void setY(int yy) { this.y=yy; }
 
 }
