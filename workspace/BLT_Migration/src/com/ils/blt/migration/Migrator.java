@@ -35,6 +35,9 @@ public class Migrator {
 	private static final String USAGE = "Usage: migrator <database>";
 	@SuppressWarnings("unused")
 	private final static JDBC driver = new JDBC(); // Force driver to be loaded
+	private final static int MINX = 50;              // Allow whitespace around diagram.
+	private final static int MINY = 50;
+	private final static double SCALE_FACTOR = 2.0; // Scale G2 to Ignition positions
 	private final RootClass root;
 	private boolean ok = true;                     // Allows us to short circuit processing
 	private G2Application g2application = null;    // G2 Application read from JSON
@@ -200,14 +203,29 @@ public class Migrator {
 		int blockCount = g2d.getBlocks().length;
 		System.err.println(String.format("%s: Block count = %d",TAG,blockCount));
 		SerializableBlock[] blocks = new SerializableBlock[blockCount];
+		
+		// Compute positioning factors
+		// So far this is just translation
+		int minx = Integer.MAX_VALUE;
+		int miny = Integer.MAX_VALUE;
+		int maxx = Integer.MIN_VALUE;
+		int maxy = Integer.MIN_VALUE;
+		for( G2Block g2block:g2d.getBlocks()) {
+			if(g2block.getX()<minx) minx = g2block.getX();
+			if(g2block.getY()<miny) miny = g2block.getY();
+			if(g2block.getX()>maxx) maxx = g2block.getX();
+			if(g2block.getY()>maxy) maxy = g2block.getY();
+		}
+		double xoffset = MINX - minx*SCALE_FACTOR;
+		double yoffset = MINY- miny*SCALE_FACTOR;
 		int index=0;
 		for( G2Block g2block:g2d.getBlocks()) {
 			SerializableBlock block = new SerializableBlock();
 			block.setId(UUID.nameUUIDFromBytes(g2block.getUuid().getBytes()));
 			block.setOriginalId(UUID.nameUUIDFromBytes(g2block.getUuid().getBytes()));
 			block.setLabel(g2block.getName());
-			block.setX(g2block.getX());
-			block.setY(g2block.getY());
+			block.setX((int)(g2block.getX()*SCALE_FACTOR+xoffset));
+			block.setY((int)(g2block.getY()*SCALE_FACTOR+yoffset));
 			classMapper.setClassName(g2block, block);
 			attributeMapper.setClassAttributes(block);
 			connectionMapper.setAnchors(g2block,block);

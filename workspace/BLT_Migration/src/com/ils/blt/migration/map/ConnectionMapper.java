@@ -83,18 +83,18 @@ public class ConnectionMapper {
 	public void createConnections(G2Diagram g2diagram,SerializableDiagram diagram) {
 		// On the G2 side, connections are defined with each port on a block.
 		// We therefore get duplicates. Use a map to sort out the differences.
-		// Key is UUID(from):UUID(to)
+		// Key is name(from):name(to). The G2 names are unique within a knowledge base
 		Map<String,SerializableConnection> connectionMap = new HashMap<String,SerializableConnection>();
 		
 		for(G2Block g2block:g2diagram.getBlocks()) {
 			for(G2Anchor g2anchor:g2block.getConnections()) {
 				String key = "";
 				if( g2anchor.getAnchorDirection().equals(AnchorDirection.INCOMING)) {
-					key = UUID.nameUUIDFromBytes(g2anchor.getBlockName().getBytes())+":"+UUID.nameUUIDFromBytes(g2block.getUuid().getBytes()).toString();
+					key = g2anchor.getBlockName()+":"+g2block.getName();
 					log.debugf("%s: connectionMap INCOMING key = %s",TAG,key);
 				}
 				else {
-					key = UUID.nameUUIDFromBytes(g2block.getUuid().getBytes()).toString()+":"+UUID.nameUUIDFromBytes(g2anchor.getBlockName().getBytes());
+					key = g2block.getName()+":"+g2anchor.getBlockName();
 					log.debugf("%s: connectionMap OUTGOING key = %s",TAG,key);
 				}
 				SerializableConnection cxn = connectionMap.get(key);

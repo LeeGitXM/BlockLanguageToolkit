@@ -4,7 +4,8 @@
 # -- options for log.level:  INFO,DEBUG,TRACE
 #
 BIN=`pwd`
-FIL=dirtSimpleApplication
+#FIL=dirtSimpleApplication
+FIL=dirtSimpleApplicationWithMultipleFamiliesAndProblems
 LIB=$BIN/../../external/lib
 JAR=${LIB}/blt-migration.jar
 MIGRATION=$BIN/../workspace/BLT_Migration/json/application

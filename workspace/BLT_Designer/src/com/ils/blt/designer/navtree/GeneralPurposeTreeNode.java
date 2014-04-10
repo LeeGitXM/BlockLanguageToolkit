@@ -510,7 +510,7 @@ public class GeneralPurposeTreeNode extends FolderNode {
 											ApplicationUUIDResetHandler handler = new ApplicationUUIDResetHandler(sa);
 											handler.convertUUIDs();
 											String json = mapper.writeValueAsString(sa);
-											if(log.isInfoEnabled() ) log.info(json);
+											if(log.isTraceEnabled() ) log.trace(json);
 											ProjectResource resource = new ProjectResource(newId,
 													BLTProperties.MODULE_ID, BLTProperties.APPLICATION_RESOURCE_TYPE,
 													sa.getName(), ApplicationScope.GATEWAY, json.getBytes());
@@ -519,7 +519,7 @@ public class GeneralPurposeTreeNode extends FolderNode {
 											selectChild(newId);
 											// Now import families
 											for(SerializableFamily fam:sa.getFamilies()) {
-												importFamily(fam);
+												importFamily(sa.getId(),fam);
 											}
 										}
 										else {
@@ -554,25 +554,43 @@ public class GeneralPurposeTreeNode extends FolderNode {
 				ErrorUtil.showError(err);
 			}
 		}
-		private void importFamily(SerializableFamily sf) {
-			try{
-			long newId = context.newResourceId();
+		private void importFamily(UUID parent,SerializableFamily sf) {
 			ObjectMapper mapper = new ObjectMapper();
-			String json = mapper.writeValueAsString(sf);
-			if(log.isInfoEnabled() ) log.info(json);
-			ProjectResource resource = new ProjectResource(newId,
-					BLTProperties.MODULE_ID, BLTProperties.APPLICATION_RESOURCE_TYPE,
-					sf.getName(), ApplicationScope.GATEWAY, json.getBytes());
-			resource.setParentUuid(getFolderId());
-			context.updateResource(resource);
-			selectChild(newId);
+			try{
+				long newId = context.newResourceId();
+				String json = mapper.writeValueAsString(sf);
+				if(log.isTraceEnabled() ) log.trace(json);
+				ProjectResource resource = new ProjectResource(newId,
+						BLTProperties.MODULE_ID, BLTProperties.FAMILY_RESOURCE_TYPE,
+						sf.getName(), ApplicationScope.GATEWAY, json.getBytes());
+				resource.setParentUuid(parent);
+				context.updateResource(resource);
+				selectChild(newId);
+				// Now import the diagrams
+				for(SerializableDiagram diagram:sf.getDiagrams()) {
+					importDiagram(sf.getId(),diagram);
+				}
 			} 
 			catch (Exception ex) {
 				ErrorUtil.showError(String.format("ApplicationImportAction: Unhandled Exception (%s)",ex.getMessage()),POPUP_TITLE,ex,true);
 			}
 		}
-		private void importDiagram(SerializableDiagram sd) {
+		private void importDiagram(UUID parent,SerializableDiagram sd) {
 			ObjectMapper mapper = new ObjectMapper();
+			try{
+				long newId = context.newResourceId();
+				String json = mapper.writeValueAsString(sd);
+				if(log.isTraceEnabled() ) log.trace(json);
+				ProjectResource resource = new ProjectResource(newId,
+						BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
+						sd.getName(), ApplicationScope.GATEWAY, json.getBytes());
+				resource.setParentUuid(parent);
+				context.updateResource(resource);
+				selectChild(newId);
+			} 
+			catch (Exception ex) {
+				ErrorUtil.showError(String.format("ApplicationImportAction: Unhandled Exception (%s)",ex.getMessage()),POPUP_TITLE,ex,true);
+			}
 		}
 	}
 	// Save the entire Application hierarchy.
