@@ -470,7 +470,7 @@ public class GeneralPurposeTreeNode extends FolderNode {
 				stopAction.setEnabled(true);
 			} 
 			catch (Exception ex) {
-				log.warnf("%s: startAction: ERROR: %s",TAG,ex.getMessage(),ex);
+				log.warnf("%s. startAction: ERROR: %s",TAG,ex.getMessage(),ex);
 				ErrorUtil.showError(ex);
 			}
 		}
@@ -486,20 +486,16 @@ public class GeneralPurposeTreeNode extends FolderNode {
 			try {
 				EventQueue.invokeLater(new Runnable() {
 					public void run() {
-						long newId;
 
 						try {
-							newId = context.newResourceId();
-							String newName = BundleUtil.get().getString(PREFIX+".Import.Default.ApplicationName");
-							if( newName==null) newName = "Imported App";  // Missing string resource
+							long newId = context.newResourceId();
 							String title = BundleUtil.get().getString(PREFIX+".Import.Application.DialogTitle");
 							String label = BundleUtil.get().getString(PREFIX+".Import.Application.NameLabel");
-							ImportDialog dialog = new ImportDialog(newName,label,title);
+							ImportDialog dialog = new ImportDialog(label,title);
 							dialog.pack();
 							dialog.setVisible(true);   // Returns when dialog is closed
 							File input = dialog.getFilePath();
-							newName = dialog.getImportName();
-							log.infof("%s:ImportAction new diagram name = %s", TAG,newName);
+							
 							if( input!=null ) {
 								if( input.exists() && input.canRead()) {
 									try {
@@ -510,40 +506,45 @@ public class GeneralPurposeTreeNode extends FolderNode {
 										ObjectMapper mapper = new ObjectMapper();
 										SerializableApplication sa = mapper.readValue(new String(bytes), SerializableApplication.class);
 										if( sa!=null ) {
+											log.infof("%s:ApplicationImportAction imported application %s", TAG,sa.getName());
 											ApplicationUUIDResetHandler handler = new ApplicationUUIDResetHandler(sa);
 											handler.convertUUIDs();
 											String json = mapper.writeValueAsString(sa);
 											if(log.isInfoEnabled() ) log.info(json);
 											ProjectResource resource = new ProjectResource(newId,
 													BLTProperties.MODULE_ID, BLTProperties.APPLICATION_RESOURCE_TYPE,
-													newName, ApplicationScope.GATEWAY, json.getBytes());
+													sa.getName(), ApplicationScope.GATEWAY, json.getBytes());
 											resource.setParentUuid(getFolderId());
 											context.updateResource(resource);
 											selectChild(newId);
+											// Now import families
+											for(SerializableFamily fam:sa.getFamilies()) {
+												importFamily(fam);
+											}
 										}
 										else {
-											ErrorUtil.showWarning(String.format("Failed to deserialize file (%s)",input.getAbsolutePath()),POPUP_TITLE);
+											ErrorUtil.showWarning(String.format("ApplicationImportAction: Failed to deserialize file (%s)",input.getAbsolutePath()),POPUP_TITLE);
 										}
 									}
 									catch( FileNotFoundException fnfe) {
 										// Should never happen, we just picked this off a chooser
-										ErrorUtil.showWarning(String.format("File %s not found",input.getAbsolutePath()),POPUP_TITLE); 
+										ErrorUtil.showWarning(String.format("ApplicationImportAction: File %s not found",input.getAbsolutePath()),POPUP_TITLE); 
 									}
 									catch( IOException ioe) {
-										ErrorUtil.showWarning(String.format("IOException (%s)",ioe.getLocalizedMessage()),POPUP_TITLE); 
+										ErrorUtil.showWarning(String.format("ApplicationImportAction: IOException (%s)",ioe.getLocalizedMessage()),POPUP_TITLE); 
 									}
 									catch(Exception ex) {
-										ErrorUtil.showError(String.format("Deserialization exception (%s)",ex.getMessage()),POPUP_TITLE,ex,true);
+										ErrorUtil.showError(String.format("ApplicationImportAction: Deserialization exception (%s)",ex.getMessage()),POPUP_TITLE,ex,true);
 									}
 
 								}
 								else {
-									ErrorUtil.showWarning(String.format("Selected file does not exist or is not readable: %s",input.getAbsolutePath()),POPUP_TITLE);
+									ErrorUtil.showWarning(String.format("ApplicationImportAction: Selected file does not exist or is not readable: %s",input.getAbsolutePath()),POPUP_TITLE);
 								}
 							}  // Cancel
 						} 
 						catch (Exception ex) {
-							ErrorUtil.showError(String.format("Unhandled Exception (%s)",ex.getMessage()),POPUP_TITLE,ex,true);
+							ErrorUtil.showError(String.format("ApplicationImportAction: Unhandled Exception (%s)",ex.getMessage()),POPUP_TITLE,ex,true);
 						}
 						// No need to inform of success, we'll see the new diagram
 					}
@@ -552,6 +553,26 @@ public class GeneralPurposeTreeNode extends FolderNode {
 			catch (Exception err) {
 				ErrorUtil.showError(err);
 			}
+		}
+		private void importFamily(SerializableFamily sf) {
+			try{
+			long newId = context.newResourceId();
+			ObjectMapper mapper = new ObjectMapper();
+			String json = mapper.writeValueAsString(sf);
+			if(log.isInfoEnabled() ) log.info(json);
+			ProjectResource resource = new ProjectResource(newId,
+					BLTProperties.MODULE_ID, BLTProperties.APPLICATION_RESOURCE_TYPE,
+					sf.getName(), ApplicationScope.GATEWAY, json.getBytes());
+			resource.setParentUuid(getFolderId());
+			context.updateResource(resource);
+			selectChild(newId);
+			} 
+			catch (Exception ex) {
+				ErrorUtil.showError(String.format("ApplicationImportAction: Unhandled Exception (%s)",ex.getMessage()),POPUP_TITLE,ex,true);
+			}
+		}
+		private void importDiagram(SerializableDiagram sd) {
+			ObjectMapper mapper = new ObjectMapper();
 		}
 	}
 	// Save the entire Application hierarchy.
@@ -644,16 +665,13 @@ public class GeneralPurposeTreeNode extends FolderNode {
 					public void run() {
 						long newId;
 
-						try {
-							
+						try {	
 							newId = context.newResourceId();
 
 							workspace.open(newId);
-							String newName = BundleUtil.get().getString(PREFIX+".Import.Default.DiagramName");
-							if( newName==null) newName = "Imported Diag";  // Missing string resource
 							String title = BundleUtil.get().getString(PREFIX+".Import.Diagram.DialogTitle");
 							String label = BundleUtil.get().getString(PREFIX+".Import.Diagram.NameLabel");
-							ImportDialog dialog = new ImportDialog(newName,label,title);
+							ImportDialog dialog = new ImportDialog(label,title);
 							dialog.pack();
 							dialog.setVisible(true);   // Returns when dialog is closed
 							File input = dialog.getFilePath();
@@ -664,7 +682,7 @@ public class GeneralPurposeTreeNode extends FolderNode {
 										byte[] bytes = Files.readAllBytes(input.toPath());
 										ProjectResource resource = new ProjectResource(newId,
 												BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
-												newName, ApplicationScope.GATEWAY, bytes);
+												"CLONE", ApplicationScope.GATEWAY, bytes);
 										resource.setParentUuid(getFolderId());
 										context.updateResource(resource);
 										selectChild(newId);
@@ -843,16 +861,13 @@ public class GeneralPurposeTreeNode extends FolderNode {
 
 						try {
 							newId = context.newResourceId();
-							String newName = BundleUtil.get().getString(PREFIX+".Import.Default.DiagramName");
-							if( newName==null) newName = "Imported Diag";  // Missing string resource
 							String title = BundleUtil.get().getString(PREFIX+".Import.Application.DialogTitle");
 							String label = BundleUtil.get().getString(PREFIX+".Import.Application.NameLabel");
-							ImportDialog dialog = new ImportDialog(newName,label,title);
+							ImportDialog dialog = new ImportDialog(label,title);
 							dialog.pack();
 							dialog.setVisible(true);   // Returns when dialog is closed
 							File input = dialog.getFilePath();
-							newName = dialog.getImportName();
-							log.infof("%s:ImportAction new diagram name = %s", TAG,newName);
+							
 							if( input!=null ) {
 								if( input.exists() && input.canRead()) {
 									try {
@@ -863,13 +878,14 @@ public class GeneralPurposeTreeNode extends FolderNode {
 										ObjectMapper mapper = new ObjectMapper();
 										SerializableDiagram sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
 										if( sd!=null ) {
+											log.infof("%s:ImportDiagramAction imported diagram %s", TAG,sd.getName());
 											UUIDResetHandler handler = new UUIDResetHandler(sd);
 											handler.convertUUIDs();
 											String json = mapper.writeValueAsString(sd);
 											if(log.isInfoEnabled() ) log.info(json);
 											ProjectResource resource = new ProjectResource(newId,
 													BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
-													newName, ApplicationScope.GATEWAY, json.getBytes());
+													sd.getName(), ApplicationScope.GATEWAY, json.getBytes());
 											resource.setParentUuid(getFolderId());
 											context.updateResource(resource);
 											selectChild(newId);

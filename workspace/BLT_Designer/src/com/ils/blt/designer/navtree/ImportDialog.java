@@ -31,19 +31,16 @@ public class ImportDialog extends JDialog implements ActionListener {
 	private final int WIDTH = 400;
 	private File filePath = null;
 	private JFileChooser fc;
-	private JTextField importNameField;
-	private String importName = "";
 	private final String nameLabel;
 	private final String title;
 	private final LoggerEx log;
 	
 	// Doing nothing works quite well.
-	public ImportDialog(String name,String label,String title) {
+	public ImportDialog(String label,String title) {
 		super();
 		setModal(true);
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
         setSize(new Dimension(WIDTH,HEIGHT));
-        this.importName = name;
         this.nameLabel = label;
         this.title = title;
         this.log = LogUtil.getLogger(getClass().getPackage().getName());
@@ -82,21 +79,12 @@ public class ImportDialog extends JDialog implements ActionListener {
 		rowConstraints = "";
 	    JPanel namePanel = new JPanel(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
 	    JLabel label = new JLabel(nameLabel);
-	    namePanel.add(label, "skip");
-	    importNameField = new JTextField(importName);
-	    importNameField.setName(TEXT_FIELD_NAME);
-	    importNameField.setColumns(30);
-	    importNameField.addActionListener(this);
-	    namePanel.add(importNameField, "growx,wrap");
-	    
+	    namePanel.add(label, "skip");    
 	    add(namePanel, "wrap");
 	    add(fc, "wrap");
 	}
 	
-	/**
-	 * @return the name that the user entered.
-	 */
-	public String getImportName() { return importName; }
+	
 	/**
 	 * @return the file path that the user selected from the chooser.
 	 */
@@ -122,9 +110,6 @@ public class ImportDialog extends JDialog implements ActionListener {
 		else if(e.getActionCommand().equals(JFileChooser.CANCEL_SELECTION)){
 			filePath =null;
 			this.dispose();
-		}
-		else if(((JComponent)e.getSource()).getName().equals(TEXT_FIELD_NAME) ) {
-			importName = importNameField.getText();
 		}
 	}
 }
