@@ -26,9 +26,11 @@ import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
-import com.ils.blt.migration.map.ClassAttributeMapper;
+import com.ils.blt.migration.map.AnchorMapper;
+import com.ils.blt.migration.map.PropertyMapper;
 import com.ils.blt.migration.map.ClassNameMapper;
 import com.ils.blt.migration.map.ConnectionMapper;
+import com.ils.blt.migration.map.PropertyValueMapper;
 
 public class Migrator {
 	private final static String TAG = "Migrator";
@@ -44,17 +46,21 @@ public class Migrator {
 	private G2Diagram g2diagram = null;            // G2 Diagram read from JSON
 	private SerializableApplication application = null;   // The result
 	private SerializableDiagram diagram = null;           // The result
+	private final AnchorMapper anchorMapper;
 	private final ClassNameMapper classMapper;
-	private final ClassAttributeMapper attributeMapper;
+	private final PropertyMapper propertyMapper;
 	private final ConnectionMapper connectionMapper;
+	private final PropertyValueMapper propertyValueMapper;
 	private final UtilityFunctions func;
 
 	 
 	public Migrator(RootClass rc) {
 		this.root = rc;
+		anchorMapper = new AnchorMapper();
 		classMapper = new ClassNameMapper();
-		attributeMapper = new ClassAttributeMapper();
 		connectionMapper = new ConnectionMapper();
+		propertyValueMapper = new PropertyValueMapper();
+		propertyMapper = new PropertyMapper();
 		func = new UtilityFunctions();
 	}
 	
@@ -65,8 +71,10 @@ public class Migrator {
 		Connection connection = null;
 		try {
 			connection = DriverManager.getConnection(connectPath);
+			anchorMapper.createMap(connection);
 			classMapper.createMap(connection);
-			attributeMapper.createMap(connection);
+			propertyValueMapper.createMap(connection);
+			propertyMapper.createMap(connection);
 		}
 		catch(SQLException e) {
 			// if the error message is "out of memory", 
@@ -201,7 +209,7 @@ public class Migrator {
 		sd.setId(UUID.nameUUIDFromBytes(g2d.getName().getBytes()));  // Name is unique
 		// Create the blocks before worrying about connections
 		int blockCount = g2d.getBlocks().length;
-		System.err.println(String.format("%s: Block count = %d",TAG,blockCount));
+		//System.err.println(String.format("%s: Block count = %d",TAG,blockCount));
 		SerializableBlock[] blocks = new SerializableBlock[blockCount];
 		
 		// Compute positioning factors
@@ -227,8 +235,11 @@ public class Migrator {
 			block.setX((int)(g2block.getX()*SCALE_FACTOR+xoffset));
 			block.setY((int)(g2block.getY()*SCALE_FACTOR+yoffset));
 			classMapper.setClassName(g2block, block);
-			attributeMapper.setClassAttributes(block);
+			propertyMapper.setPrototypeAttributes(block);
+			propertyMapper.setProperties(block);
+			anchorMapper.updateAnchorNames(g2block);   // Must precede connectionMapper
 			connectionMapper.setAnchors(g2block,block);
+			
 			blocks[index]=block;
 			index++;
 		}

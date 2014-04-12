@@ -3,13 +3,17 @@
 # -- options for root.class: APPLICATION, DIAGRAM
 # -- options for log.level:  INFO,DEBUG,TRACE
 #
-BIN=`pwd`
-#FIL=dirtSimpleApplication
-FIL=dirtSimpleApplicationWithMultipleFamiliesAndProblems
-LIB=$BIN/../../external/lib
+if [ $# -lt 2 ]
+then
+    echo "USAGE: migrate <inpath> <outpath>"
+	exit 2
+fi
+REPO=~/Development/ils/repo
+cd $REPO/blt
+BLT=`pwd`
+LIB=$REPO//external/lib
 JAR=${LIB}/blt-migration.jar
-MIGRATION=$BIN/../workspace/BLT_Migration/json/application
-DB=${BIN}/db/conversion.db
+DB=${BLT}/setup/db/conversion.db
 # Use for debugging - ruins output file however.
 #cat ${MIGRATION}/$FIL-g2.json | java -cp ${JAR} -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000 -Dlog.level=INFO -Droot.class=APPLICATION com.ils.blt.migration.Migrator ${DB} > ${MIGRATION}/$FIL.json
-cat ${MIGRATION}/$FIL-g2.json | java -cp ${JAR} -Dlog.level=INFO -Droot.class=APPLICATION com.ils.blt.migration.Migrator ${DB} > ${MIGRATION}/$FIL.json
+cat $1 | java -cp ${JAR} -Dlog.level=INFO -Droot.class=APPLICATION com.ils.blt.migration.Migrator ${DB} > $2

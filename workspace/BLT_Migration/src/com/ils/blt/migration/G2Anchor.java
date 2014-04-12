@@ -27,14 +27,16 @@ public class G2Anchor {
 
 	public AnchorDirection getAnchorDirection()   { 
 		AnchorDirection result = AnchorDirection.INCOMING;
-		if( direction.equalsIgnoreCase("IN")) {
+		if( direction.equalsIgnoreCase("IN") ||
+			direction.equalsIgnoreCase("INPUT")	) {
 			result = AnchorDirection.INCOMING;
 		}
-		else if( direction.equalsIgnoreCase("OUT")) {
+		else if( direction.equalsIgnoreCase("OUT") ||
+				 direction.equalsIgnoreCase("OUTPUT")) {
 			result = AnchorDirection.OUTGOING;
 		}
 		else {
-			System.err.println(String.format("%s: Unrecognized connection type (%s)",TAG,type));
+			System.err.println(String.format("%s.getAnchorDirection: Unrecognized direction (%s)",TAG,direction));
 		}
 		return result; 
 	}
@@ -47,7 +49,7 @@ public class G2Anchor {
 			result = ConnectionType.DATA;
 		}
 		else {
-			System.err.println(String.format("%s: Unrecognized connection type (%s)",TAG,type));
+			System.err.println(String.format("%s.getConnectionType: Unrecognized connection type (%s)",TAG,type));
 		}
 		return result;
 	}
@@ -57,7 +59,7 @@ public class G2Anchor {
 	public String getUuid() {return uuid;}
 	public void setBlockClass(String blockClass) {this.blockClass = blockClass;}
 	public void setBlockName(String blockName) {this.blockName = blockName;}
-	public void setDirection(String d)   { direction=d; }
+	public void setDirection(String d)   { this.direction=d; }
 	public void setPort(String port) {this.port = port;}
 	public void setType(String connectionType) {this.type = connectionType;}
 	public void setUuid(String uuid) {this.uuid = uuid;};

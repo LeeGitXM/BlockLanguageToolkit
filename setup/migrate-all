@@ -1,0 +1,10 @@
+#!/bin/sh
+# Process all of the json files in the repository "g2" area.
+# Save the results in the json storate area for ignition.
+#
+BIN=`pwd`
+APP=$BIN/migrate
+INDIR=$BIN/../workspace/BLT_Migration/json/g2
+OUTDIR=$BIN/../workspace/BLT_Migration/json/ignition
+mkdir -r $INDIR
+mkdir -p $OUTDIR

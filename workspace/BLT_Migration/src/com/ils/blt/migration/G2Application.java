@@ -12,6 +12,7 @@ public class G2Application {
 	private String className;
 	private String comments;
 	private G2Family[] families;
+	private G2Folder[] folders;
 	private String name;
 	private G2Property[] properties = null;
 	private String uuid;
@@ -23,6 +24,7 @@ public class G2Application {
 
 	public G2Application() {	
 		families = new G2Family[0];
+		folders = new G2Folder[0];
 		name="UNSET";
 	}
 	
@@ -42,4 +44,6 @@ public class G2Application {
 	public void setUuid(String uuid) {this.uuid = uuid;}
 	public void setX(int x) {this.x = x;}
 	public void setY(int y) {this.y = y;}
+	public G2Folder[] getFolders() {return folders;}
+	public void setFolders(G2Folder[] folders) {this.folders = folders;}
 }

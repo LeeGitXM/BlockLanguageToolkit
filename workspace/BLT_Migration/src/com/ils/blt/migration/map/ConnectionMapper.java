@@ -62,17 +62,17 @@ public class ConnectionMapper {
 			anchor.setDisplay(g2cxn.getPort());
 			anchor.setId(UUID.randomUUID());
 			anchor.setParentId(iblock.getId());
-			String key = iblock.getId().toString()+":"+anchor.getDisplay();
+			String key = makeAnchorMapKey(iblock.getId(),anchor.getDisplay());
 			if( anchorMap.get(key)==null ) {   // Weed out duplicates
 				anchorMap.put(key, anchor);	
-				log.debugf("%s: anchorMap key = %s",TAG,key);
+				log.tracef("%s: anchorMap key = %s",TAG,key);
 				anchorList.add(anchor);
 			}
 		}
 		SerializableAnchor[] anchors = anchorList.toArray(new SerializableAnchor[anchorList.size()]);
 		iblock.setAnchors(anchors);
 		blockMap.put(iblock.getId().toString(), iblock);
-		log.debugf("%s: blockMap key = %s",TAG,iblock.getId().toString());
+		log.debugf("%s.setAnchors: blockMap key = %s",TAG,iblock.getId().toString());
 	}
 
 	/**
@@ -91,18 +91,18 @@ public class ConnectionMapper {
 				String key = "";
 				if( g2anchor.getAnchorDirection().equals(AnchorDirection.INCOMING)) {
 					key = g2anchor.getBlockName()+":"+g2block.getName();
-					log.debugf("%s: connectionMap INCOMING key = %s",TAG,key);
+					log.tracef("%s.createConnections: connectionMap INCOMING key = %s",TAG,key);
 				}
 				else {
 					key = g2block.getName()+":"+g2anchor.getBlockName();
-					log.debugf("%s: connectionMap OUTGOING key = %s",TAG,key);
+					log.tracef("%s: connectionMap OUTGOING key = %s",TAG,key);
 				}
 				SerializableConnection cxn = connectionMap.get(key);
 				if( cxn==null ) {
 					// We haven't seen this before ...
 					cxn = new SerializableConnection();
 					connectionMap.put(key, cxn);
-					log.debugf("%s: connectionMap ----- was new entry",TAG);
+					log.tracef("%s.createConnections: connectionMap ----- was new entry",TAG);
 					cxn.setType(g2anchor.getConnectionType());
 				}
 				// Set to or from blocks
@@ -128,7 +128,7 @@ public class ConnectionMapper {
 	
 	// Set anchor point at origin
 	private void setBeginAnchorPoint(SerializableConnection cxn,UUID blockId,String port) {
-		String key = blockId.toString()+":"+port;
+		String key = makeAnchorMapKey(blockId,port);
 		SerializableAnchor anchor = anchorMap.get(key);
 		if( anchor!=null ) {
 			SerializableBlock block = blockMap.get(blockId.toString());
@@ -149,21 +149,21 @@ public class ConnectionMapper {
 					cxn.setBeginAnchor(sap);
 				}
 				else {
-					System.err.println(TAG+".createConnections: Port lookup failed for "+blockId+" ("+port+")");
+					System.err.println(TAG+".setBeginAnchorPoint: Port lookup failed for "+blockId+" ("+port+")");
 				}
 			}
 			else {
-				System.err.println(TAG+".createConnections: Block lookup failed for "+blockId);
+				System.err.println(TAG+".setBeginAnchorPoint: Block lookup failed for "+blockId);
 			}
 		}
 		else {
-			System.err.println(TAG+".createConnections: Anchor lookup failed for "+blockId+" ("+port+")");
+			System.err.println(TAG+".setBeginAnchorPoint: Anchor lookup failed for "+key);
 		}
 	}
 
 	// Set anchor point at terminus
 	private void setEndAnchorPoint(SerializableConnection cxn,UUID blockId,String port) {
-		String key = blockId.toString()+":"+port;
+		String key = makeAnchorMapKey(blockId,port);
 		SerializableAnchor anchor = anchorMap.get(key);
 		if( anchor!=null ) {
 			SerializableBlock block = blockMap.get(blockId.toString());
@@ -184,15 +184,15 @@ public class ConnectionMapper {
 					cxn.setEndAnchor(sap);
 				}
 				else {
-					System.err.println(TAG+".createConnections: Port lookup failed for "+blockId+" ("+port+")");
+					System.err.println(TAG+".setEndAnchorPoint: Port lookup failed for "+blockId+" ("+port+")");
 				}
 			}
 			else {
-				System.err.println(TAG+".createConnections: Block lookup failed for "+blockId);
+				System.err.println(TAG+".setEndAnchorPoint: Block lookup failed for "+blockId);
 			}
 		}
 		else {
-			System.err.println(TAG+".createConnections: Anchor lookup failed for "+blockId+" ("+port+")");
+			System.err.println(TAG+".setEndAnchorPoint: Anchor lookup failed for "+key);
 		}
 	}
 	
@@ -215,6 +215,14 @@ public class ConnectionMapper {
 		sap.setPathLeaderX(anchor.getPathLeader().x);
 		sap.setPathLeaderY(anchor.getPathLeader().y);
 		return sap;
+	}
+	
+	/**
+	 * Create the key for lookup in the anchorMap
+	 */
+	private String makeAnchorMapKey(UUID id, String port) {
+		String key = id.toString()+":"+port;
+		return key;
 	}
 }
 	
