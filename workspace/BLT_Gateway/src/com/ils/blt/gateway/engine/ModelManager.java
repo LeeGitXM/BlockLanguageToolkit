@@ -236,7 +236,7 @@ public class ModelManager implements ProjectListener  {
 	 * Handle project resource updates of type model.
 	 * @param diff represents differences to the updated project. That is any updated, dirty or deleted resources.
 	 * @param vers a value of "Staging" means is a result of a "Save". A value of "Published" occurs when a 
-	 *        project is published. For our purposes both actions are equivalent.
+	 *        project is published. For our purposes both actions are equivalent(??).
 	 */
 	/* (non-Javadoc)
 	 * @see com.inductiveautomation.ignition.gateway.project.ProjectListener#projectUpdated(com.inductiveautomation.ignition.common.project.Project, com.inductiveautomation.ignition.common.project.ProjectVersion)
@@ -244,7 +244,7 @@ public class ModelManager implements ProjectListener  {
 	@Override
 	public void projectUpdated(Project diff, ProjectVersion vers) { 
 		log.infof("%s.projectUpdated: %s (%d)  %s", TAG,diff.getName(),diff.getId(),vers.toString());
-		if( vers==ProjectVersion.Published ) return;  // Consider only the "Staging" version
+		if( vers!=ProjectVersion.Published ) return;  // Consider only the "Published" version
 		
 		long projectId = diff.getId();
 		Set<Long> deleted = diff.getDeletedResources();
@@ -300,6 +300,8 @@ public class ModelManager implements ProjectListener  {
 			ProcessDiagram oldDiagram = (ProcessDiagram)nodesByUUID.get(diagram.getSelf());
 			if( oldDiagram!=null ) {
 				nodesByUUID.remove(diagram.getSelf());
+				ProcessNode oldParent = nodesByUUID.get(oldDiagram.getParent());
+				if( oldParent!=null) oldParent.removeChild(oldDiagram);
 				// Remove old subscriptions
 				for( ProcessBlock pb:diagram.getProcessBlocks()) {
 					for(BlockProperty bp:pb.getProperties()) {

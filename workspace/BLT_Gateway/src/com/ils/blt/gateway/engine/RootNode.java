@@ -48,10 +48,13 @@ public class RootNode extends ProcessNode {
 		}
 		if( projectIdByName.get(projectName) == null ) {
 			projectIdByName.put(projectName,key);
-			childrenByProjectId.put(key, new HashMap<String,ProcessNode>());
 		}
 		
 		Map<String,ProcessNode>map = childrenByProjectId.get(key);
+		if( map==null ) {
+			map = new HashMap<String,ProcessNode>();
+			childrenByProjectId.put(key, map);
+		}
 		map.put(child.getName(),child);
 	}
 	
