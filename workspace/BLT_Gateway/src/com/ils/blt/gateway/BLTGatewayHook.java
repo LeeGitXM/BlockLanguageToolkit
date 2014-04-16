@@ -104,17 +104,12 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	
 	@Override
 	public List<? extends INamedTab> getStatusPanels() {
-		ExecutionStatus panel = new ExecutionStatus();
 		List<INamedTab>panels = new ArrayList<INamedTab>();
 		panels.add(new ExecutionStatus());
 		return panels;
 	}
 	
-	// So we're serializable ??
-	public void setDispatcher(GatewayRpcDispatcher rpc) { this.dispatcher = rpc; }
-	public GatewayRpcDispatcher getDispatcher() { return this.dispatcher; }
-	
-	private class ExecutionStatus extends AbstractNamedTab {
+	private static class ExecutionStatus extends AbstractNamedTab {
 		private static final long serialVersionUID = 64149723779427382L;
 
 		public ExecutionStatus() {

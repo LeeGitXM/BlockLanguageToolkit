@@ -96,7 +96,8 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 					contentPanel.add(scrollPane,BorderLayout.CENTER);
 					return;
 				}
-				else if(selection instanceof BlockDesignableContainer ) {
+				// There may be a connection selected
+				else {
 					BlockDesignableContainer container = ( BlockDesignableContainer)selection;
 					Connection cxn = container.getSelectedConnection();
 					if( cxn!=null && cxn.getOrigin()!=null && cxn.getTerminus()!= null ) {

@@ -4,6 +4,7 @@
 package com.ils.blt.designer.workspace;
 
 import java.awt.BasicStroke;
+import java.awt.BorderLayout;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
 import java.awt.datatransfer.Clipboard;
@@ -19,6 +20,7 @@ import java.util.List;
 
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -28,6 +30,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableDiagram;
+import com.ils.blt.designer.editor.BlockPropertyEditor;
 import com.ils.blt.designer.editor.PropertyEditorFrame;
 import com.ils.connection.ConnectionType;
 import com.inductiveautomation.ignition.client.designable.DesignableContainer;
@@ -71,12 +74,10 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	private static final long serialVersionUID = 4627016159409031941L;
 	public static final String key = "BlockDiagramWorkspace";
 	public static final String PREFIX = BLTProperties.BLOCK_PREFIX;
-	private final DataFlavor jsonFlavor;
 	private final DesignerContext context;
 	private final ObjectMapper mapper;
 	private final EditActionHandler editActionHandler;
 	private Collection<ResourceWorkspaceFrame> frames;
-	private ProcessBlockView selectedBlock = null;   // the selection
 	protected SaveAction saveAction = null;  // Save properties of a block
 	private LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 
@@ -86,9 +87,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	public DiagramWorkspace(DesignerContext ctx) {
 		this.context = ctx;
 		this.mapper = new ObjectMapper();
-		this.editActionHandler = new DiagramActionHandler(this,context);
+		this.editActionHandler = new BlockActionHandler(this,context);
 		this.addDesignableWorkspaceListener(this);
-		this.jsonFlavor = new DataFlavor(java.lang.String.class,"BlockList");
 		initialize();
 	}
 
@@ -138,18 +138,26 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 * For popup menu
 	 */
 	@Override
-	public JPopupMenu getSelectionPopupMenu(List<JComponent> component) {
-		if( component.size()>0 ) {
-			saveAction = new SaveAction();
-		
-			JPopupMenu menu = new JPopupMenu();
-			menu.add(saveAction);
-			menu.addSeparator();
-			menu.add(context.getCutAction());
-			menu.add(context.getCopyAction());
-			menu.add(context.getPasteAction());
-			menu.add(context.getDeleteAction());
-			return menu;
+	public JPopupMenu getSelectionPopupMenu(List<JComponent> selections) {
+		if( selections.size()>0 ) {
+			JComponent selection = selections.get(0);
+			log.infof("%s.getSelectionPopupMenu: Component is: %s",TAG,selections.get(0).getClass().getName());
+			if( selection instanceof BlockComponent ) {
+				saveAction = new SaveAction();
+				JPopupMenu menu = new JPopupMenu();
+				menu.add(saveAction);
+				menu.addSeparator();
+				menu.add(context.getCutAction());
+				menu.add(context.getCopyAction());
+				menu.add(context.getPasteAction());
+				menu.add(context.getDeleteAction());
+				return menu;
+			}
+			else if( DiagramWorkspace.this.getSelectedContainer().getSelectedConnection()!=null ) {
+				JPopupMenu menu = new JPopupMenu();
+				menu.add(context.getDeleteAction());
+				return menu;
+			}
 		}
 		return null;
 	}
@@ -195,31 +203,27 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 
 	/**
-	 * Serialize the supplied blocks and place them on the clipboard. Create a custom MIME
-	 * type.
+	 * Serialize the supplied blocks and place them on the clipboard. 
 	 * @param blocks the blocks to be saved.
 	 */
 	@Override
 	public String copyBlocks(Collection<Block> blocks) throws SerializationException {
 		log.infof("%s: copyBlocks",TAG);
 		ObjectMapper mapper = new ObjectMapper();
-		StringBuffer json = new StringBuffer("[");
-		int index=0;
+		String json = null;
+		List<SerializableBlock> list = new ArrayList<SerializableBlock>();
 		for( Block blk:blocks) {
 			log.infof("%s: copyBlocks class=%s",TAG,blk.getClass().getName());
 			ProcessBlockView view = (ProcessBlockView)blk;
 			SerializableBlock sb = view.convertToSerializable();
-			if(index>0) json.append(",");
-			try{ 
-			    json.append(mapper.writeValueAsString(sb));
-			}
-			catch(JsonProcessingException jpe) {
-				log.warnf("%s: Unable to serialize block (%s)",TAG,jpe.getMessage());
-			}
-			index++;
+			list.add(sb);
 		}
-		
-		json.append("]");
+		try{ 
+			   json = mapper.writeValueAsString(list);
+		}
+		catch(JsonProcessingException jpe) {
+			log.warnf("%s: Unable to serialize block list (%s)",TAG,jpe.getMessage());
+		}
 		return json.toString();
 	}
 
@@ -232,10 +236,14 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	public Collection<Block> pasteBlocks(String json) {
 		log.infof("%s: pasteBlocks: %s",TAG,json);
 		ObjectMapper mapper = new ObjectMapper();
-		Collection<Block>results = null;
+		Collection<Block>results = new ArrayList<Block>();
 		JavaType type = mapper.getTypeFactory().constructCollectionType(ArrayList.class, SerializableBlock.class);
 		try {
-			results = mapper.readValue(json, type);
+			List<SerializableBlock>list = mapper.readValue(json, type);
+			for(SerializableBlock sb:list) {
+				ProcessBlockView pbv = new ProcessBlockView(sb);
+				results.add(pbv);
+			}
 		} 
 		catch (JsonParseException jpe) {
 			log.warnf("%s: pasteBlocks parse exception (%s)",TAG,jpe.getLocalizedMessage());
@@ -358,18 +366,14 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	public void itemSelectionChanged(List<JComponent> selections) {
 		if( selections!=null && selections.size()==1 ) {
 			JComponent selection = selections.get(0);
-			log.debugf("%s.DiagramActionHandler: selected a %s",TAG,selection.getClass().getName());
+			log.infof("%s.DiagramActionHandler: selected a %s",TAG,selection.getClass().getName());
 			if( selection instanceof BlockComponent ) {
-				BlockComponent bc = ( BlockComponent)selection;
-				selectedBlock = (ProcessBlockView)bc.getBlock();
-			}
-			else {
-				selectedBlock = null;
+				//BlockComponent bc = ( BlockComponent)selection;
+				//selectedBlock = (ProcessBlockView)bc.getBlock();
 			}
 		}
 		else {
 			log.infof("%s: DiagramActionHandler: deselected",TAG);
-			selectedBlock = null;
 		}
 	}
 	
@@ -431,101 +435,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 	
 	/**
-	 * Edit action handler
-	 */
-	private class DiagramActionHandler extends BlockActionHandler {
-		public DiagramActionHandler(DiagramWorkspace workspace,DesignerContext context) {
-			super(workspace,context);
-		}
-		@Override
-		public boolean canCopy() {
-			return selectedBlock!=null;
-		}
-
-
-		@Override
-		public boolean canDelete() {
-			return selectedBlock!=null;
-		}
-
-		/**
-		 * The data that we've put on the clipboard is a serialized list
-		 * of blocks (a JSON String)
-		 */
-		@Override
-		public boolean canPaste(Clipboard clipboard) {
-			boolean result = false;
-			try{
-				result = clipboard.isDataFlavorAvailable(jsonFlavor);
-			}
-			catch (IllegalStateException ignored) {
-			}
-
-			return result;
-		}
-
-
-		@Override
-		public Transferable doCopy() {
-			log.infof("%s: doCopy",TAG);
-			return null;
-		}
-
-
-		@Override
-		public Transferable doCut() {
-			log.infof("%s: doCut",TAG);
-			return null;
-		}
-
-
-		@Override
-		public void doDelete() {
-			log.infof("%s: doDelete",TAG);
-			if( selectedBlock!=null ) getActiveDiagram().deleteBlock(selectedBlock);
-			selectedBlock = null;
-		}
-
-
-		@Override
-		public void doPaste(Transferable arg) {
-			log.infof("%s: doPaste",TAG);
-			String json = null;
-			try {
-				json = (String)arg.getTransferData(DataFlavor.stringFlavor);
-				json = new String(json.getBytes("UTF-8"), "UTF-8");  // Convert to UTF-8
-				SerializableBlock sb = deserialize(json);
-				// Convert to ProcessBlockView
-				// Then what ? 
-			}
-			catch (UnsupportedFlavorException ufe) {
-			}
-			catch (IOException ioe) {
-				ErrorUtil.showError(BundleUtil.get().getStringLenient("DiagramWorkspace.handler.doPaste Error retrieving clipboard (%s)",ioe.getMessage()));
-				return;
-			}
-		}
-			
-		private SerializableBlock deserialize(String json) {
-			SerializableBlock block = null;
-			try{
-				ObjectMapper mapper = new ObjectMapper();
-
-				block = mapper.readValue(json, SerializableBlock.class);
-			}
-			// Print stack trace
-			catch( Exception ex) {
-				log.warnf("%s: deserialize: exception (%s)",TAG,ex.getLocalizedMessage(),ex);
-			}
-			return block;
-
-		}
-
-		
-
-	}
-	
-	/**
 	 * "Save" implies a push of the block attributes into the model running in the Gateway.
 	 */
 	private class SaveAction extends BaseAction {
@@ -535,9 +444,12 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			if( selectedBlock!=null ) {
-				
-			}
+			
 		}
 	}
+	//TODO: In next Ignition update, this is available for override of onMove() method.
+	//      We want to highlight the hotspot in an ugly way if a connection constraint
+	//      would be violated by a connect. 04/15/2014.
+	//public class ConnectionTool extends AbstractBlockWorkspace.ConnectionTool {
+	//}
 }
