@@ -70,7 +70,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	    // Look for all block resources and inform the execution controller
 	    mmgr = new ModelManager(context);
 	    BlockExecutionController.getInstance().setDelegate(mmgr);
-	    List<Project> projects = this.context.getProjectManager().getProjectsFull(ProjectVersion.Published);
+	    List<Project> projects = this.context.getProjectManager().getProjectsFull(ProjectVersion.Staging);
 	    for( Project project:projects ) {
 	    	List<ProjectResource> resources = project.getResources();
 	    	for( ProjectResource res:resources ) {

@@ -99,23 +99,13 @@
 		    </fileset>
 		</delete>
 	</target>
-	<!-- Clean Migration -->
-		<target name="clean.migration" >
-			<mkdir dir="${jar.dir}"/>
-			<mkdir dir="${migration.bin.dir}"/>
-			<delete file="${jar.dir}/${migration.jar.name}" />
-			<delete>
-			    <fileset dir="${migration.bin.dir}">
-			        <include name="**/*.class"/>
-			    </fileset>
-			</delete>
-		</target>
 
-	<!-- Cleans all previously built files -->
-	<target name="clean" depends="clean.common,clean.block,clean.migration" description="Remove existing build products" >
+	<!-- Cleans all previously built files (leaves doc) -->
+	<target name="clean" depends="clean.common,clean.block" description="Remove existing build products" >
 		<delete dir="${basedir}/BLT_Build/bin" />
 		<delete dir="${basedir}/BLT_Build/modules" />
 		<delete dir="${basedir}/BLT_Build/release" />
+		<delete dir="${basedir}/BLT_Build/temp_modl" />   
 	</target>	
 	
 	<!-- Compile the Block Definition library -->
