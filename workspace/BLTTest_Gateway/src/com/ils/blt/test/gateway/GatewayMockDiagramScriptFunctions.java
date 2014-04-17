@@ -1,10 +1,8 @@
 /**
  *   (c) 2013  ILS Automation. All rights reserved.
  *  
- *   Based on sample code in the IA-scripting-module
- *   by Travis Cox.
  */
-package com.ils.blt.test.client;
+package com.ils.blt.test.gateway;
 
 import java.util.UUID;
 
@@ -16,14 +14,16 @@ import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 /**
- *  This class exposes the methods available to a designer/client for the
- *  purposes of testing BLT blocks. 
+ *  This class exposes python-callable functions used to report test blocks.
+ *  These functions are designed for access from python scripts executing in the Gateway..
  *  
- *  These methods mimic MockDiagramScriptingInterface, but must be defined as static.
+ *  Since we are in Gateway, we can make local calls.
  */
-public class MockDiagramScriptFunctions   {
-	private static final String TAG = "MockDiagramScriptFunctions: ";
-	private static LoggerEx log = LogUtil.getLogger(MockDiagramScriptFunctions.class.getPackage().getName());
+public class GatewayMockDiagramScriptFunctions  {
+	private static final String TAG = "GatewayMockDiagramScriptFunctions: ";
+	private static LoggerEx log = LogUtil.getLogger(GatewayMockDiagramScriptFunctions.class.getPackage().getName());
+	public static BLTTGatewayRpcDispatcher dispatcher = null;
+	
 	/**
 	 * Create a new mock diagram and add it to the list of diagrams known to the BlockController.
 	 * This diagram has no valid resourceId and so is never saved permanently. It never shows
@@ -38,12 +38,8 @@ public class MockDiagramScriptFunctions   {
 	public static UUID createTestHarness(String projectName,String blockClass) {
 		log.infof("%s.createTestHarness: %s %s ",TAG,projectName,blockClass);
 		UUID result = null;
-		try {
-			result = (UUID)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTTestProperties.MODULE_ID, "createTestHarness", projectName,blockClass);
-		}
-		catch(Exception ge) {
-			log.infof("%s.createTestHarness: GatewayException ("+ge.getMessage()+")");
+		if( dispatcher!=null ) {
+			result = dispatcher.createTestHarness(projectName,blockClass);
 		}
 		return result;
 	}
@@ -56,12 +52,8 @@ public class MockDiagramScriptFunctions   {
 	 */
 	public static void addMockInput(UUID harness,PropertyType dt,String port ) {
 		log.infof("%s.addMockInput: %s %s",TAG,dt.toString(),port);
-		try {
-			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTTestProperties.MODULE_ID, "addMockInput", dt.toString(), port);
-		}
-		catch(Exception ge) {
-			log.infof("%s.addMockInput: GatewayException ("+ge.getMessage()+")");
+		if( dispatcher!=null ) {
+			dispatcher.addMockInput(harness,dt,port);
 		}
 	}
 	/**
@@ -73,12 +65,8 @@ public class MockDiagramScriptFunctions   {
 	 */
 	public static void addMockOutput(UUID harness,PropertyType dt,String port ) {
 		log.infof("%s.addMockOutput: %s ",TAG,dt.toString(),port);
-		try {
-			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTTestProperties.MODULE_ID, "addMockOutput", dt.toString(),port);
-		}
-		catch(Exception ge) {
-			log.infof("%s.addMockOutput: GatewayException ("+ge.getMessage()+")");
+		if( dispatcher!=null ) {
+			dispatcher.addMockOutput(harness,dt,port);
 		}
 	}
 	/**
@@ -89,31 +77,22 @@ public class MockDiagramScriptFunctions   {
 	 */
 	public static void deleteTestHarness(UUID harness) {
 		log.infof("%s.deleteTestHarness: %s ",TAG,harness.toString());
-		try {
-			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTTestProperties.MODULE_ID, "deleteTestHarness", harness);
-		}
-		catch(Exception ge) {
-			log.infof("%s.deleteTestHarness: GatewayException ("+ge.getMessage()+")");
+		if( dispatcher!=null ) {
+			dispatcher.deleteTestHarness(harness);
 		}
 	}
 	/**
 	 * Read the current value held by the mock output identified by the specified
 	 * port name.
 	 * @param harness
-	 * @param blockId
 	 * @param port
 	 * @return the current value held by the specified port.
 	 */
 	public static QualifiedValue readValue(UUID harness,String port){ 
 		log.infof("%s.readValue: %s %s",TAG,harness.toString(),port);
 		QualifiedValue val = null;
-		try {
-			val = (QualifiedValue) GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTTestProperties.MODULE_ID, "readValue", harness,port);
-		}
-		catch(Exception ge) {
-			log.infof("%s.readValue: GatewayException ("+ge.getMessage()+")");
+		if( dispatcher!=null ) {
+			val = dispatcher.readValue(harness,port);
 		}
 		return val;
 	}
@@ -127,13 +106,9 @@ public class MockDiagramScriptFunctions   {
 	 * @param value
 	 */
 	public static void setProperty(UUID harness,String propertyName,Object value){ 
-		log.infof("%s.setProperty: %s %s=%s",TAG,harness.toString(), propertyName,value.toString());
-		try {
-			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTTestProperties.MODULE_ID, "setProperty", harness,propertyName,value.toString());
-		}
-		catch(Exception ge) {
-			log.infof("%s.setProperty: GatewayException ("+ge.getMessage()+")");
+		log.infof("%s.setProperty: %s %s=%s",TAG,harness.toString(),propertyName,value.toString());
+		if( dispatcher!=null ) {
+			dispatcher.setProperty(harness,propertyName,value);
 		}
 	}
 	/**
@@ -142,14 +117,10 @@ public class MockDiagramScriptFunctions   {
 	 * @param value
 	 * @param port
 	 */
-	public static void setValue(UUID harness,String port,QualifiedValue value) {
+	public static void setValue(UUID harness,UUID blockId,String port,QualifiedValue value) {
 		log.infof("%s.setValue: %s %s=%s",TAG,harness.toString(),port,value);
-		try {
-			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTTestProperties.MODULE_ID, "setValue", harness,port,value);
-		}
-		catch(Exception ge) {
-			log.infof("%s.setValue: GatewayException ("+ge.getMessage()+")");
+		if( dispatcher!=null ) {
+			dispatcher.setValue(harness,port,value);
 		}
 	}
 	/**
@@ -159,12 +130,8 @@ public class MockDiagramScriptFunctions   {
 	 */
 	public static void startTestHarness(UUID harness){
 		log.infof("%s.startTestHarness: %s ",TAG,harness.toString());
-		try {
-			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTTestProperties.MODULE_ID, "startTestHarness", harness);
-		}
-		catch(Exception ge) {
-			log.infof("%s.startTestHarness: GatewayException ("+ge.getMessage()+")");
+		if( dispatcher!=null ) {
+			dispatcher.startTestHarness(harness);
 		}
 	}
 	/**
@@ -174,13 +141,8 @@ public class MockDiagramScriptFunctions   {
 	 */
 	public static void stopTestHarness(UUID harness) {
 		log.infof("%s.stopTestHarness: %s ",TAG,harness.toString());
-		try {
-			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTTestProperties.MODULE_ID, "stopTestHarness", harness);
-		}
-		catch(Exception ge) {
-			log.infof("%s.stopTestHarness: GatewayException ("+ge.getMessage()+")");
+		if( dispatcher!=null ) {
+			dispatcher.stopTestHarness(harness);
 		}
 	}
-	
 }

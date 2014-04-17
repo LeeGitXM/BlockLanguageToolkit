@@ -46,7 +46,6 @@ public class GatewayRpcDispatcher   {
 	public GatewayRpcDispatcher(GatewayContext cntx) {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.context = cntx;
-
 	}
 
 	public String getControllerState() {

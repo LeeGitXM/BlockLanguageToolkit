@@ -22,7 +22,7 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
  */
 public class BLTTestGatewayHook extends AbstractGatewayModuleHook  {
 	public static String TAG = "BLTGatewayHook";
-	private transient GatewayRpcDispatcher dispatcher = null;
+	private transient BLTTGatewayRpcDispatcher dispatcher = null;
 	private transient GatewayContext context = null;
 	private final LoggerEx log;
 	
@@ -36,14 +36,13 @@ public class BLTTestGatewayHook extends AbstractGatewayModuleHook  {
 	@Override
 	public void setup(GatewayContext ctxt) {
 		this.context = ctxt;
-
-		MockBlockPropertiesHandler.getInstance().setContext(context);
-		dispatcher = new GatewayRpcDispatcher(context);
 	}
 
 	@Override
 	public void startup(LicenseState licenseState) {
 	    log.infof("%s: Startup complete.",TAG);
+	    dispatcher = new BLTTGatewayRpcDispatcher(context);
+		GatewayMockDiagramScriptFunctions.dispatcher = dispatcher;
 	}
 
 	@Override
@@ -59,7 +58,7 @@ public class BLTTestGatewayHook extends AbstractGatewayModuleHook  {
 	@Override
 	public void initializeScriptManager(ScriptManager mgr) {
 		super.initializeScriptManager(mgr);
-		mgr.addScriptModule(BLTTestProperties.MOCK_SCRIPT_PACKAGE,MockDiagramScriptFunctions.class);
+		mgr.addScriptModule(BLTTestProperties.MOCK_SCRIPT_PACKAGE,GatewayMockDiagramScriptFunctions.class);
 	}
 
 }

@@ -175,6 +175,9 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public List<String> getDiagramTreePaths(String projectName) {
 		return modelManager.getDiagramTreePaths(projectName);
 	}
+	public void removeDiagram(String projectName,UUID id) {
+		modelManager.removeDiagram(id);
+	}
 	
 	// ======================= Delegated to TagListener ======================
 	/**

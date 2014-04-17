@@ -1,5 +1,5 @@
 /**
- *   (c) 2012-2013  ILS Automation. All rights reserved. 
+ *   (c) 2014  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.gateway.engine;
 
@@ -41,7 +41,6 @@ public class ProcessDiagram extends ProcessNode {
 	private final Map<ConnectionKey,ProcessConnection> connections;              // Key by connection number
 	private final Map<BlockPort,List<ProcessConnection>> outgoingConnections;    // Key by upstream block:port
 	private final long resourceId;
-	
 	
 	/**
 	 * Constructor: Create a model that encapsulates the structure of the blocks and connections

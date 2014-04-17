@@ -13,7 +13,6 @@ import com.ils.blt.gateway.engine.ProcessDiagram;
  * of blocks. 
  */
 public class MockDiagram extends ProcessDiagram {
-	
 	private static String TAG = "MockDiagram";
 	
 	
@@ -25,7 +24,6 @@ public class MockDiagram extends ProcessDiagram {
 	 */
 	public MockDiagram(SerializableDiagram diagm,UUID parent) { 
 		super(diagm,parent);
-		
 	}
 
 }

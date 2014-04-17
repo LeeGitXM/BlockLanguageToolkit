@@ -1,5 +1,5 @@
 /**
- *   (c) 2012-2013  ILS Automation. All rights reserved. 
+ *   (c) 2014  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.gateway.engine;
 
@@ -201,9 +201,20 @@ public class ModelManager implements ProjectListener  {
 		else {
 			log.warnf("%s.getDiagramTreePaths: Project %s not found", TAG,projectName);
 		}
-		
-		
 		return result;	
+	}
+	
+	/**
+	 * Remove a diagram specified by its Id. 
+	 * @param diagramId 
+	 */
+	public void removeDiagram(UUID diagramId) {
+		ProcessNode node = nodesByUUID.get(diagramId);
+		if( node!=null && node instanceof ProcessDiagram ) {
+			ProcessDiagram diagram = (ProcessDiagram)node;
+			long resourceId = diagram.getResourceId();
+		}
+		
 	}
 	
 	// ====================== Project Listener Interface ================================
