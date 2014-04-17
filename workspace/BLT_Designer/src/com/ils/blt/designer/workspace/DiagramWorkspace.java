@@ -8,6 +8,8 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Stroke;
 import java.awt.datatransfer.DataFlavor;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.geom.Path2D;
@@ -183,29 +185,40 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	public JComponent getWorkspace() {
 		return this;
 	}
-
+	
+	@Override
+	public int getAcceptableDropActions(DropTargetDragEvent event) {
+		return DnDConstants.ACTION_COPY;
+	}
+	@Override
+	public JComponent findDropTarget(List<JComponent> itemsUnderDrop,DropTargetDragEvent event) {
+		return this;
+	}
 	@Override
 	public boolean handleDrop(Object droppedOn,DropTargetDropEvent event) {
 		if (event.isDataFlavorSupported(BlockDataFlavor)) {
 			try {
-				log.info("DROPPED: "+ event.getTransferable().getTransferData(BlockDataFlavor).getClass().getName());
-				log.info("DROPPED: = "+ event.getTransferable().getTransferData(BlockDataFlavor));
-			/*
-				if (newBlock.contains(CommonBlockProperties.FACTORY_ID)) {
+				if( event.getTransferable().getTransferData(BlockDataFlavor) instanceof ProcessBlockView) {
+					ProcessBlockView block = (ProcessBlockView)event.getTransferable().getTransferData(BlockDataFlavor);
 					DesignPanel panel = getSelectedDesignPanel();
-					BlockDesignableContainer pdc = (BlockDesignableContainer) panel.getDesignable();
- 
+					BlockDesignableContainer bdc = (BlockDesignableContainer) panel.getDesignable();
 					Point dropPoint = SwingUtilities.convertPoint(
 							event.getDropTargetContext().getComponent(),
-							panel.unzoom(event.getLocation()), pdc);
+							panel.unzoom(event.getLocation()), bdc);
  
-					newBlock.set(PropertySetBlock.LOCATION, dropPoint);
- 
-					PipelineBlockModel model = (PipelineBlockModel) pdc.getModel();
-					model.addBlock(new PipelineBlock(newBlock, model.findPrototype(factoryId)));
+					block.setLocation(dropPoint);
+					this.getActiveDiagram().addBlock(block);
+					this.setCurrentTool(null);   // So the next select on workspace does not result in another block
+					log.infof("%s.handleDrop: dropped %s",TAG,event.getTransferable().getTransferData(BlockDataFlavor).getClass().getName());
 				}
-				*/
-			} catch (Exception e) {
+				else {
+					log.infof("%s.handlerDrop: Unexpected class (%s),  rejected",
+							event.getTransferable().getTransferData(BlockDataFlavor).getClass().getName());
+				}
+				
+
+			} 
+			catch (Exception e) {
 				ErrorUtil.showError(e);
 			}
 		}

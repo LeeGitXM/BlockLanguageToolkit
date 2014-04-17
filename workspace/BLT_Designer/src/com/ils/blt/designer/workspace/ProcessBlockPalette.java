@@ -123,7 +123,7 @@ public class ProcessBlockPalette extends DockableFrame implements ResourceWorksp
 				button.addActionListener(this);
 				
 				// Make a drag enabled
-				setTransferHandler(new BlockTransferHandler(proto));
+				button.setTransferHandler(new BlockTransferHandler(proto));
 				DragInitiatorListener.install(button);
 				
 				JLabel label = new JLabel(prototype.getPaletteLabel());
