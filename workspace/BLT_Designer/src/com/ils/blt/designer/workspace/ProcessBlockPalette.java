@@ -33,6 +33,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.BlockDiagramModel;
 import com.inductiveautomation.ignition.designer.designable.tools.AbstractDesignTool;
+import com.inductiveautomation.ignition.designer.gui.DragInitiatorListener;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.model.ResourceWorkspaceFrame;
@@ -120,6 +121,10 @@ public class ProcessBlockPalette extends DockableFrame implements ResourceWorksp
 				button.setContentAreaFilled(false);
 				button.setMargin(new Insets(1,1,1,1));
 				button.addActionListener(this);
+				
+				// Make a drag enabled
+				setTransferHandler(new BlockTransferHandler(proto));
+				DragInitiatorListener.install(button);
 				
 				JLabel label = new JLabel(prototype.getPaletteLabel());
 				label.setHorizontalAlignment(SwingConstants.CENTER);

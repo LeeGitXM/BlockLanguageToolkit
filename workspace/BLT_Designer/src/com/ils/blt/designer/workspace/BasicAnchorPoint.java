@@ -1,3 +1,6 @@
+/**
+ *   (c) 2014  ILS Automation. All rights reserved.
+ */
 package com.ils.blt.designer.workspace;
 
 import java.awt.Point;

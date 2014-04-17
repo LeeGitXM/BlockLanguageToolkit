@@ -1,16 +1,14 @@
 /**
- *   (c) 2013  ILS Automation. All rights reserved.
+ *   (c) 2014  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.workspace;
 
 import java.awt.BasicStroke;
-import java.awt.BorderLayout;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Stroke;
-import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.geom.Path2D;
 import java.io.IOException;
@@ -20,7 +18,7 @@ import java.util.List;
 
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -30,13 +28,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableDiagram;
-import com.ils.blt.designer.editor.BlockPropertyEditor;
 import com.ils.blt.designer.editor.PropertyEditorFrame;
 import com.ils.connection.ConnectionType;
 import com.inductiveautomation.ignition.client.designable.DesignableContainer;
+import com.inductiveautomation.ignition.client.util.LocalObjectTransferable;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;
+import com.inductiveautomation.ignition.common.config.ObservablePropertySet;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -50,6 +49,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.BlockDi
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Connection;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.ConnectionPainter;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.ArrowConnectionPainter;
+import com.inductiveautomation.ignition.designer.designable.DesignPanel;
 import com.inductiveautomation.ignition.designer.designable.DesignableWorkspaceListener;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
@@ -72,6 +72,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 							  implements ResourceWorkspace, DesignableWorkspaceListener {
 	private static final String TAG = "DiagramWorkspace";
 	private static final long serialVersionUID = 4627016159409031941L;
+	private static final DataFlavor BlockDataFlavor = LocalObjectTransferable.flavorForClass(ObservablePropertySet.class);
 	public static final String key = "BlockDiagramWorkspace";
 	public static final String PREFIX = BLTProperties.BLOCK_PREFIX;
 	private final DesignerContext context;
@@ -121,6 +122,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	public EditActionHandler getEditActionHandler() {
 		return editActionHandler;
 	}
+	
 
 
 	@Override
@@ -182,6 +184,33 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		return this;
 	}
 
+	@Override
+	public boolean handleDrop(Object droppedOn,DropTargetDropEvent event) {
+		if (event.isDataFlavorSupported(BlockDataFlavor)) {
+			try {
+				log.info("DROPPED: "+ event.getTransferable().getTransferData(BlockDataFlavor).getClass().getName());
+				log.info("DROPPED: = "+ event.getTransferable().getTransferData(BlockDataFlavor));
+			/*
+				if (newBlock.contains(CommonBlockProperties.FACTORY_ID)) {
+					DesignPanel panel = getSelectedDesignPanel();
+					BlockDesignableContainer pdc = (BlockDesignableContainer) panel.getDesignable();
+ 
+					Point dropPoint = SwingUtilities.convertPoint(
+							event.getDropTargetContext().getComponent(),
+							panel.unzoom(event.getLocation()), pdc);
+ 
+					newBlock.set(PropertySetBlock.LOCATION, dropPoint);
+ 
+					PipelineBlockModel model = (PipelineBlockModel) pdc.getModel();
+					model.addBlock(new PipelineBlock(newBlock, model.findPrototype(factoryId)));
+				}
+				*/
+			} catch (Exception e) {
+				ErrorUtil.showError(e);
+			}
+		}
+		return false;
+	}
 
 	@Override
 	public void onActivation() {

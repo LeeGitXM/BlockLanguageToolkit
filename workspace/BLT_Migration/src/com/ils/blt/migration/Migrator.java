@@ -27,10 +27,11 @@ import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.migration.map.AnchorMapper;
-import com.ils.blt.migration.map.PropertyMapper;
 import com.ils.blt.migration.map.ClassNameMapper;
 import com.ils.blt.migration.map.ConnectionMapper;
+import com.ils.blt.migration.map.PropertyMapper;
 import com.ils.blt.migration.map.PropertyValueMapper;
+import com.ils.blt.migration.map.TagMapper;
 
 public class Migrator {
 	private final static String TAG = "Migrator";
@@ -51,6 +52,7 @@ public class Migrator {
 	private final PropertyMapper propertyMapper;
 	private final ConnectionMapper connectionMapper;
 	private final PropertyValueMapper propertyValueMapper;
+	private final TagMapper tagMapper;
 	private final UtilityFunctions func;
 
 	 
@@ -61,6 +63,7 @@ public class Migrator {
 		connectionMapper = new ConnectionMapper();
 		propertyValueMapper = new PropertyValueMapper();
 		propertyMapper = new PropertyMapper();
+		tagMapper = new TagMapper();
 		func = new UtilityFunctions();
 	}
 	
@@ -75,6 +78,7 @@ public class Migrator {
 			classMapper.createMap(connection);
 			propertyValueMapper.createMap(connection);
 			propertyMapper.createMap(connection);
+			tagMapper.createMap(connection);
 		}
 		catch(SQLException e) {
 			// if the error message is "out of memory", 
@@ -239,6 +243,8 @@ public class Migrator {
 			propertyMapper.setProperties(block);
 			anchorMapper.updateAnchorNames(g2block);   // Must precede connectionMapper
 			connectionMapper.setAnchors(g2block,block);
+			// Need to set values here ...
+			tagMapper.setTagPaths(block);
 			
 			blocks[index]=block;
 			index++;
