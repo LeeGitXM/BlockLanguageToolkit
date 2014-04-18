@@ -3,6 +3,8 @@
  */
 package com.ils.blt.test.gateway.mock;
 
+import java.util.UUID;
+
 import com.ils.block.AbstractProcessBlock;
 import com.ils.block.ProcessBlock;
 
@@ -14,7 +16,8 @@ import com.ils.block.ProcessBlock;
 public class MockInputBlock extends AbstractProcessBlock implements ProcessBlock {
 	
 	
-	public MockInputBlock() {
+	public MockInputBlock(UUID parent,String tagPath,PropertyType pt,String port) {
+		super(BlockController.getInstance(),parent,UUID.randomUUID());
 	}
 	
 

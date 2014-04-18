@@ -50,14 +50,15 @@ public class MockDiagramScriptFunctions   {
 	 * Define an input connected to the named port. This input is held as part of the 
 	 * mock diagram. Once defined, the input cannot be deleted.
 	 * @param harness
+	 * @param tagPath
 	 * @param dt
 	 * @param port
 	 */
-	public static void addMockInput(UUID harness,PropertyType dt,String port ) {
-		log.infof("%s.addMockInput: %s %s",TAG,dt.toString(),port);
+	public static void addMockInput(UUID harness,String tagPath,PropertyType dt,String port ) {
+		log.infof("%s.addMockInput: %s %s %s",TAG,tagPath, dt.toString(),port);
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTTestProperties.MODULE_ID, "addMockInput", dt.toString(), port);
+					BLTTestProperties.MODULE_ID, "addMockInput", tagPath,dt.toString(), port);
 		}
 		catch(Exception ge) {
 			log.infof("%s.addMockInput: GatewayException ("+ge.getMessage()+")");
@@ -67,14 +68,15 @@ public class MockDiagramScriptFunctions   {
 	 * Define an output connected to the named port. This output is held as part of the 
 	 * mock diagram. Once defined, the output cannot be deleted.
 	 * @param harness
+	 * @param tagPath
 	 * @param dt
 	 * @param port
 	 */
-	public static void addMockOutput(UUID harness,PropertyType dt,String port ) {
-		log.infof("%s.addMockOutput: %s ",TAG,dt.toString(),port);
+	public static void addMockOutput(UUID harness,String tagPath,PropertyType dt,String port ) {
+		log.infof("%s.addMockOutput: %s %s %s %s",TAG,tagPath,dt.toString(),port);
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTTestProperties.MODULE_ID, "addMockOutput", dt.toString(),port);
+					BLTTestProperties.MODULE_ID, "addMockOutput", tagPath,dt.toString(),port);
 		}
 		catch(Exception ge) {
 			log.infof("%s.addMockOutput: GatewayException ("+ge.getMessage()+")");

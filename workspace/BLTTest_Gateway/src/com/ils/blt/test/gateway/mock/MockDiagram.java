@@ -5,6 +5,7 @@ package com.ils.blt.test.gateway.mock;
 
 import java.util.UUID;
 
+import com.ils.block.ProcessBlock;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.gateway.engine.ProcessDiagram;
 
@@ -14,6 +15,7 @@ import com.ils.blt.gateway.engine.ProcessDiagram;
  */
 public class MockDiagram extends ProcessDiagram {
 	private static String TAG = "MockDiagram";
+	ProcessBlock uut = null;    // Unit under test
 	
 	
 	/**
@@ -26,4 +28,10 @@ public class MockDiagram extends ProcessDiagram {
 		super(diagm,parent);
 	}
 
+	public void addBlock(ProcessBlock block) {
+		if( !(block instanceof MockInputBlock || block instanceof MockOutputBlock) ) uut = block;
+		this.getProcessBlocks().add(block);
+	}
+	
+	public ProcessBlock getBlockUnderTest() { return uut; }
 }

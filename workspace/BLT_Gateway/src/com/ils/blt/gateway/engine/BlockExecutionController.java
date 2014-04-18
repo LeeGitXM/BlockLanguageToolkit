@@ -1,5 +1,5 @@
 /**
- *   (c) 2012  ILS Automation. All rights reserved.
+ *   (c) 2014  ILS Automation. All rights reserved.
  *  
  *   The block controller is designed to be called from the client
  *   via RPC. All methods must be thread safe,

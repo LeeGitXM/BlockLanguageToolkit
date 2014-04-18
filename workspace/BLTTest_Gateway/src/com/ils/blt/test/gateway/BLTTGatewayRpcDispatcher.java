@@ -5,9 +5,12 @@ package com.ils.blt.test.gateway;
 
 import java.util.UUID;
 
+import com.ils.block.ProcessBlock;
 import com.ils.block.common.PropertyType;
 import com.ils.blt.common.serializable.SerializableDiagram;
+import com.ils.blt.gateway.BlockPropertiesHandler;
 import com.ils.blt.gateway.engine.BlockExecutionController;
+import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.ils.blt.test.common.MockDiagramScriptingInterface;
 import com.ils.blt.test.gateway.mock.MockDiagram;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -47,7 +50,18 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface  
 		origin.setId(UUID.randomUUID());
 		origin.setName("Mock:"+blockClass);
 		MockDiagram mock = new MockDiagram(origin,null);  // No parent
-		controller.addTemporaryDiagram(mock);
+		// Instantiate a block from the class
+		ProcessBlock uut = BlockPropertiesHandler.getInstance().createInstance(blockClass, mock.getSelf(), UUID.randomUUID());
+		if( uut==null) {
+			uut = ProxyHandler.getInstance().createBlockInstance(blockClass, mock.getSelf(), UUID.randomUUID());
+		}
+		if( uut!=null ) {
+			mock.addBlock(uut);
+			controller.addTemporaryDiagram(mock);
+		}
+		else {
+			log.warnf("%s.createTestHarness: Failed to create block of class %s",TAG,blockClass);
+		}	
 		return mock.getSelf();
 	}
 	/**
@@ -55,19 +69,19 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface  
 	 * input port of the specified name.
 	 */
 	@Override
-	public void addMockInput(UUID harness, PropertyType dt, String port) {
-		// TODO Auto-generated method stub
+	public void addMockInput(UUID harness, String tagPath, PropertyType dt, String port) {
+		MockInputBlock input = new MockInputBlock(harness,path,dt,port);
 		
 	}
 	@Override
-	public void addMockOutput(UUID harness, PropertyType dt, String port) {
+	public void addMockOutput(UUID harness, String tagPath, PropertyType dt, String port) {
 		// TODO Auto-generated method stub
 		
 	}
 	@Override
 	public void deleteTestHarness(UUID harness) {
 		stopTestHarness(harness);
-		controller.removeDiagram(id);
+		controller.removeDiagram(harness);
 		
 	}
 	@Override

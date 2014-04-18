@@ -45,26 +45,28 @@ public class GatewayMockDiagramScriptFunctions  {
 	 * Define an input connected to the named port. This input is held as part of the 
 	 * mock diagram. Once defined, the input cannot be deleted.
 	 * @param harness
+	 * @param tagPath
 	 * @param dt
 	 * @param port
 	 */
-	public static void addMockInput(UUID harness,PropertyType dt,String port ) {
-		log.infof("%s.addMockInput: %s %s",TAG,dt.toString(),port);
+	public static void addMockInput(UUID harness,String tagPath,PropertyType dt,String port ) {
+		log.infof("%s.addMockInput: %s %s %s",TAG,tagPath,dt.toString(),port);
 		if( dispatcher!=null ) {
-			dispatcher.addMockInput(harness,dt,port);
+			dispatcher.addMockInput(harness,tagPath,dt,port);
 		}
 	}
 	/**
 	 * Define an output connected to the named port. This output is held as part of the 
 	 * mock diagram. Once defined, the output cannot be deleted.
 	 * @param harness
+	 * @param tagPath
 	 * @param dt
 	 * @param port
 	 */
-	public static void addMockOutput(UUID harness,PropertyType dt,String port ) {
-		log.infof("%s.addMockOutput: %s ",TAG,dt.toString(),port);
+	public static void addMockOutput(UUID harness,String tagPath,PropertyType dt,String port ) {
+		log.infof("%s.addMockOutput: %s %s %s",TAG,tagPath,dt.toString(),port);
 		if( dispatcher!=null ) {
-			dispatcher.addMockOutput(harness,dt,port);
+			dispatcher.addMockOutput(harness,tagPath,dt,port);
 		}
 	}
 	/**

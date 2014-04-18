@@ -64,14 +64,13 @@ public class BlockPropertiesHandler   {
 		this.context = cntx;
 	}
 	
-	
 	/**
 	 * Create an instance of a named class. 
 	 * @param key
 	 * @param className
 	 * @return the instance created, else null
 	 */
-	private ProcessBlock createInstance(String className,UUID parentId,UUID blockId) {
+	public ProcessBlock createInstance(String className,UUID parentId,UUID blockId) {
 		
 		log.debugf("%s.createInstance of %s (%s:%s)",TAG,className,(parentId==null?"null":parentId.toString()),blockId.toString());
 		ProcessBlock block = null;
@@ -97,6 +96,7 @@ public class BlockPropertiesHandler   {
 		}
 		return block;
 	}
+
 
 	/**
 	 * Query the block controller for a block specified by the block id. If the block
