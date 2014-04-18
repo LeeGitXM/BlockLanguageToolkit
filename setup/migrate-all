@@ -2,9 +2,15 @@
 # Process all of the json files in the repository "g2" area.
 # Save the results in the json storate area for ignition.
 #
-BIN=`pwd`
-APP=$BIN/migrate
-INDIR=$BIN/../workspace/BLT_Migration/json/g2
-OUTDIR=$BIN/../workspace/BLT_Migration/json/ignition
-mkdir -r $INDIR
+BLT=~/Development/ils/repo/blt
+APP=$BLT/setup/migrate
+INDIR=$BLT/workspace/BLT_Migration/json/g2
+OUTDIR=$BLT/workspace/BLT_Migration/json/ignition
+mkdir -p $INDIR
 mkdir -p $OUTDIR
+cd $INDIR
+for fil in *.json
+do
+	echo "Processing $fil..."
+    $APP $INDIR/$fil $OUTDIR/$fil
+done
