@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import com.ils.block.common.PropertyType;
 import com.ils.blt.common.serializable.SerializableDiagram;
+import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.test.common.MockDiagramScriptingInterface;
 import com.ils.blt.test.gateway.mock.MockDiagram;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -24,6 +25,7 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface  
 	private static String TAG = "BLTTGatewayRpcDispatcher";
 	private final LoggerEx log;
 	private final GatewayContext context;
+	private final BlockExecutionController controller;
 	
 	/**
 	 * Constructor. On instantiation, the dispatcher creates instances
@@ -32,16 +34,26 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface  
 	public BLTTGatewayRpcDispatcher(GatewayContext cntx ) {
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.context = cntx;
+		this.controller = BlockExecutionController.getInstance();
 	}
 	
+	/**
+	 * Create, but do not activate, a mock diagram.
+	 * @return the Id of the diagram
+	 */
 	@Override
-	public UUID createTestHarness(String projectName, String blockClass) {
+	public UUID createTestHarness(String blockClass) {
 		SerializableDiagram origin = new SerializableDiagram();
 		origin.setId(UUID.randomUUID());
 		origin.setName("Mock:"+blockClass);
 		MockDiagram mock = new MockDiagram(origin,null);  // No parent
-		return null;
+		controller.addTemporaryDiagram(mock);
+		return mock.getSelf();
 	}
+	/**
+	 * Add an input block to the mock diagram. Connect it to the block-under-test's 
+	 * input port of the specified name.
+	 */
 	@Override
 	public void addMockInput(UUID harness, PropertyType dt, String port) {
 		// TODO Auto-generated method stub
@@ -54,7 +66,8 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface  
 	}
 	@Override
 	public void deleteTestHarness(UUID harness) {
-		// TODO Auto-generated method stub
+		stopTestHarness(harness);
+		controller.removeDiagram(id);
 		
 	}
 	@Override
@@ -72,11 +85,17 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface  
 		// TODO Auto-generated method stub
 		
 	}
+	/**
+	 * Analyze connections in the diagram, then activate subscriptions.
+	 */
 	@Override
 	public void startTestHarness(UUID harness) {
 		// TODO Auto-generated method stub
 		
 	}
+	/**
+	 * Deactivate all subscriptions within the mock diagram.
+	 */
 	@Override
 	public void stopTestHarness(UUID harness) {
 		// TODO Auto-generated method stub

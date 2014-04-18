@@ -7,8 +7,6 @@ package com.ils.blt.test.gateway;
 import java.util.UUID;
 
 import com.ils.block.common.PropertyType;
-import com.ils.blt.test.common.BLTTestProperties;
-import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -32,14 +30,14 @@ public class GatewayMockDiagramScriptFunctions  {
 	 * outputs are defined.
 	 * 
 	 * @param projectName name of the caller's project
-	 * @param blockClass
+	 * @param blockClass class of block-under-test
 	 * @return the new uniqueId of the test harness
 	 */
-	public static UUID createTestHarness(String projectName,String blockClass) {
-		log.infof("%s.createTestHarness: %s %s ",TAG,projectName,blockClass);
+	public static UUID createTestHarness(String blockClass) {
+		log.infof("%s.createTestHarness: for class %s ",TAG,blockClass);
 		UUID result = null;
 		if( dispatcher!=null ) {
-			result = dispatcher.createTestHarness(projectName,blockClass);
+			result = dispatcher.createTestHarness(blockClass);
 		}
 		return result;
 	}

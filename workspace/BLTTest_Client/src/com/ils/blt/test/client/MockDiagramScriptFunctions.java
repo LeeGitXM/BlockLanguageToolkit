@@ -31,16 +31,15 @@ public class MockDiagramScriptFunctions   {
 	 * triggered in response to a "start" call. This should be made after all to mock inputs and
 	 * outputs are defined.
 	 * 
-	 * @param projectName name of the caller's project
 	 * @param blockClass
 	 * @return the new uniqueId of the test harness
 	 */
-	public static UUID createTestHarness(String projectName,String blockClass) {
-		log.infof("%s.createTestHarness: %s %s ",TAG,projectName,blockClass);
+	public static UUID createTestHarness(String blockClass) {
+		log.infof("%s.createTestHarness: for class %s ",TAG,blockClass);
 		UUID result = null;
 		try {
 			result = (UUID)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTTestProperties.MODULE_ID, "createTestHarness", projectName,blockClass);
+					BLTTestProperties.MODULE_ID, "createTestHarness", blockClass);
 		}
 		catch(Exception ge) {
 			log.infof("%s.createTestHarness: GatewayException ("+ge.getMessage()+")");

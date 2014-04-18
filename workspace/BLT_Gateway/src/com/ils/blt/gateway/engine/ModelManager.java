@@ -69,7 +69,18 @@ public class ModelManager implements ProjectListener  {
 		root = new RootNode(context);
 	}
 	
-	
+	/**
+	 * Add a process diagram that is not associated with a project resource to 
+	 * our hierarchy. This diagram will not be saved nor will ever be displayed
+	 * in the UI. At this stage, no subscriptions are activated.
+	 * 
+	 * Currently its only use is for testing.
+	 * 
+	 * @param diagram the diagram to be added
+	 */
+	public void addTemporaryDiagram(ProcessDiagram diagram) {
+		nodesByUUID.put(diagram.getSelf(),diagram);
+	}
 	
 	/**
 	 * Analyze a project resource for its embedded object. If, appropriate, add
@@ -205,16 +216,23 @@ public class ModelManager implements ProjectListener  {
 	}
 	
 	/**
-	 * Remove a diagram specified by its Id. 
-	 * @param diagramId 
+	 * Remove a diagram that is not associated with a project resource,
+	 * nor with the folder hierarchy.
+	 * 
+	 * @param Id the UUID of the diagram to be removed
 	 */
-	public void removeDiagram(UUID diagramId) {
-		ProcessNode node = nodesByUUID.get(diagramId);
-		if( node!=null && node instanceof ProcessDiagram ) {
-			ProcessDiagram diagram = (ProcessDiagram)node;
-			long resourceId = diagram.getResourceId();
+	public void removeTemporaryDiagram(UUID Id) {
+		ProcessDiagram diagram = (ProcessDiagram)nodesByUUID.get(Id);
+		if( diagram!=null ) {
+			nodesByUUID.remove(diagram.getSelf());
+			BlockExecutionController controller = BlockExecutionController.getInstance();
+			// Remove any subscriptions
+			for( ProcessBlock pb:diagram.getProcessBlocks()) {
+				for(BlockProperty bp:pb.getProperties()) {
+					controller.stopSubscription(pb,bp);
+				}
+			}
 		}
-		
 	}
 	
 	// ====================== Project Listener Interface ================================
@@ -378,7 +396,7 @@ public class ModelManager implements ProjectListener  {
 	}
 	
 	/**
-	 * Add a process node to our hierarchy.
+	 * Add a process node to our hierarchy. 
 	 * @param projectId the identity of a project
 	 * @param node the node to be added
 	 */
@@ -412,6 +430,7 @@ public class ModelManager implements ProjectListener  {
 		}	
 		resolveOrphans();  // See if any orphans are children of new node.
 	}
+	
 	/**
 	 * Remove a diagram within a project.
 	 * Presumably the diagram has been deleted.

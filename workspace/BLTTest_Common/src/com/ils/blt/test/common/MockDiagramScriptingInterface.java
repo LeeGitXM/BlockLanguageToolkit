@@ -30,7 +30,7 @@ public interface MockDiagramScriptingInterface   {
 	 * @param blockClass
 	 * @return the new uniqueId of the test harness
 	 */
-	public UUID createTestHarness(String projectName,String blockClass);
+	public UUID createTestHarness(String blockClass);
 	/**
 	 * Define an input connected to the named port. This input is held as part of the 
 	 * mock diagram. Once defined, the input cannot be deleted.

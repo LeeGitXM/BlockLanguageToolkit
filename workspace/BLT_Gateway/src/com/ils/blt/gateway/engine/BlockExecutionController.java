@@ -157,6 +157,14 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public  void setDelegate(ModelManager resmgr) { this.modelManager = resmgr; }
 	
 	// ======================= Delegated to ModelManager ======================
+	/**
+	 * Add a temporary diagram that is not associated with a project resource. This
+	 * diagram will not be persisted. Subscriptions are not activated at this point.
+	 * @param diagram the diagram to be added to the engine.
+	 */
+	public void addTemporaryDiagram(ProcessDiagram diagram) {
+		modelManager.addTemporaryDiagram(diagram);
+	}
 	public ProcessBlock getBlock(long projectId,long resourceId,UUID blockId) {
 		return modelManager.getBlock(projectId,resourceId,blockId);
 	}
@@ -175,8 +183,13 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public List<String> getDiagramTreePaths(String projectName) {
 		return modelManager.getDiagramTreePaths(projectName);
 	}
-	public void removeDiagram(String projectName,UUID id) {
-		modelManager.removeDiagram(id);
+	/**
+	 * Delete a temporary diagram that is not associated with a project resource. 
+	 * Any subscriptions are de-activated before removal.
+	 * @param Id the UUID of the diagram to be deleted from the engine.
+	 */
+	public void removeTemporaryDiagram(UUID Id) {
+		modelManager.removeTemporaryDiagram(Id);
 	}
 	
 	// ======================= Delegated to TagListener ======================
