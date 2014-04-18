@@ -34,4 +34,32 @@ public class MockDiagram extends ProcessDiagram {
 	}
 	
 	public ProcessBlock getBlockUnderTest() { return uut; }
+	
+	public MockInputBlock getInputForPort(String port) {
+		MockInputBlock result = null;
+		for(ProcessBlock block:getProcessBlocks()) {
+			if(block instanceof MockInputBlock) {
+				MockInputBlock mib = (MockInputBlock)block;
+				if(mib.getPort().equalsIgnoreCase(port)) {
+					result = mib;
+					break;
+				}
+			}
+		}
+		return result;
+	}
+	
+	public MockOutputBlock getOutputForPort(String port) {
+		MockOutputBlock result = null;
+		for(ProcessBlock block:getProcessBlocks()) {
+			if(block instanceof MockOutputBlock) {
+				MockOutputBlock mob = (MockOutputBlock)block;
+				if(mob.getPort().equalsIgnoreCase(port)) {
+					result = mob;
+					break;
+				}
+			}
+		}
+		return result;
+	}
 }

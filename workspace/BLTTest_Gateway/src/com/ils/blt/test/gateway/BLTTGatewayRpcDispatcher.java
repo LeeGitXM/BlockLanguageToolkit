@@ -6,13 +6,17 @@ package com.ils.blt.test.gateway;
 import java.util.UUID;
 
 import com.ils.block.ProcessBlock;
+import com.ils.block.common.BlockProperty;
 import com.ils.block.common.PropertyType;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.gateway.BlockPropertiesHandler;
 import com.ils.blt.gateway.engine.BlockExecutionController;
+import com.ils.blt.gateway.engine.ProcessDiagram;
 import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.ils.blt.test.common.MockDiagramScriptingInterface;
 import com.ils.blt.test.gateway.mock.MockDiagram;
+import com.ils.blt.test.gateway.mock.MockInputBlock;
+import com.ils.blt.test.gateway.mock.MockOutputBlock;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -70,33 +74,60 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface  
 	 */
 	@Override
 	public void addMockInput(UUID harness, String tagPath, PropertyType dt, String port) {
-		MockInputBlock input = new MockInputBlock(harness,path,dt,port);
+		MockInputBlock input = new MockInputBlock(harness,tagPath,dt,port);
+		ProcessDiagram diagram = controller.getDiagram(harness);
+		if( diagram!=null) diagram.getProcessBlocks().add(input);
 		
 	}
 	@Override
 	public void addMockOutput(UUID harness, String tagPath, PropertyType dt, String port) {
-		// TODO Auto-generated method stub
+		MockOutputBlock output = new MockOutputBlock(harness,tagPath,dt,port);
+		ProcessDiagram diagram = controller.getDiagram(harness);
+		if( diagram!=null) diagram.getProcessBlocks().add(output);
 		
 	}
 	@Override
 	public void deleteTestHarness(UUID harness) {
 		stopTestHarness(harness);
-		controller.removeDiagram(harness);
+		controller.removeTemporaryDiagram(harness);
 		
 	}
+	
+	/**
+	 * Read the latest value from the output block with the named port.
+	 */
 	@Override
 	public QualifiedValue readValue(UUID harness, String port) {
-		// TODO Auto-generated method stub
-		return null;
+		QualifiedValue qv = null;
+		MockDiagram diagram = (MockDiagram)controller.getDiagram(harness);
+		if( diagram!=null) {
+			MockOutputBlock block = diagram.getOutputForPort(port);
+			if( block!=null ) qv = block.getValue();
+		}
+		return qv;
 	}
 	@Override
 	public void setProperty(UUID harness, String propertyName, Object value) {
-		// TODO Auto-generated method stub
-		
+		MockDiagram diagram = (MockDiagram)controller.getDiagram(harness);
+		if( diagram!=null) {
+			ProcessBlock uut = diagram.getBlockUnderTest();
+			BlockProperty property = uut.getProperty(propertyName);
+			if( property!=null) {
+				property.setValue(value);
+			}
+		}
 	}
+	
+	/**
+	 * Set a block input by bypassing the subscription process.
+	 */
 	@Override
 	public void setValue(UUID harness, String port, QualifiedValue value) {
-		// TODO Auto-generated method stub
+		MockDiagram diagram = (MockDiagram)controller.getDiagram(harness);
+		if( diagram!=null) {
+			MockInputBlock block = diagram.getInputForPort(port);
+			if( block!=null ) block.setValue(value);
+		}
 		
 	}
 	/**
@@ -104,18 +135,24 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface  
 	 */
 	@Override
 	public void startTestHarness(UUID harness) {
-		// TODO Auto-generated method stub
-		
+		MockDiagram diagram = (MockDiagram)controller.getDiagram(harness);
+		diagram.analyze();  // Analyze connections
+		for(ProcessBlock block:diagram.getProcessBlocks()) {
+			for(BlockProperty prop:block.getProperties()) {
+				controller.startSubscription(block, prop);
+			}
+		}
 	}
 	/**
 	 * Deactivate all subscriptions within the mock diagram.
 	 */
 	@Override
 	public void stopTestHarness(UUID harness) {
-		// TODO Auto-generated method stub
-		
+		MockDiagram diagram = (MockDiagram)controller.getDiagram(harness);
+		for(ProcessBlock block:diagram.getProcessBlocks()) {
+			for(BlockProperty prop:block.getProperties()) {
+				controller.stopSubscription(block, prop);
+			}
+		}
 	}
-
-	
-
 }

@@ -35,18 +35,20 @@ public interface MockDiagramScriptingInterface   {
 	 * Define an input connected to the named port. This input is held as part of the 
 	 * mock diagram. Once defined, the input cannot be deleted.
 	 * @param harness
+	 * @param tagPath path to tag on which we listen for input
 	 * @param dt
 	 * @param port
 	 */
-	public void addMockInput(UUID harness,PropertyType dt,String port );
+	public void addMockInput(UUID harness,String tagPath,PropertyType dt,String port );
 	/**
 	 * Define an output connected to the named port. This output is held as part of the 
 	 * mock diagram. Once defined, the output cannot be deleted.
 	 * @param harness
+	 * @param tagPath path to tag on which we write the output.
 	 * @param dt
 	 * @param port
 	 */
-	public void addMockOutput(UUID harness,PropertyType dt,String port );
+	public void addMockOutput(UUID harness,String tagPath,PropertyType dt,String port );
 	/**
 	 * Remove the test harness from the execution engine (block controller).
 	 * The harness is stopped before being deleted.
