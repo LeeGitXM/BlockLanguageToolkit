@@ -7,16 +7,16 @@
   <build>2014041113</build>
   <beta>1</beta>
 </version>
-<timestamp>2014-04-22 16:07:24</timestamp>
+<timestamp>2014-04-22 16:12:52</timestamp>
 <id>2</id>
 <name>blt_block_test</name>
 <title>Block Language Toolkit Test - 1</title>
 <description>Block Language Toolkit - Functional Tests of Individual Blocks.&#13;
 Version 1.</description>
 <enabled>true</enabled>
-<lastModified>1398204377336</lastModified>
+<lastModified>1398204744685</lastModified>
 <lastModifiedBy>chuckc</lastModifiedBy>
-<editCount>39</editCount>
+<editCount>40</editCount>
 <uuid>0acef065-7033-a9c8-871b-33d5e059f87a</uuid>
 <resources>
 	<resource id='34' name='' module='fpmi' modver='' type='login.props' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='4' protected='false'>
