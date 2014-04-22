@@ -7,11 +7,15 @@ package com.ils.blt.common;
 import java.util.List;
 
 import com.ils.block.common.PalettePrototype;
+import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 
 
 /**
  * This class exposes python-callable functions that deal with properties
- * of applications, families, diagrams, blocks and connections.
+ * of applications, families, diagrams, blocks and connections. It also handles
+ * functions of the engine itself. 
+ * 
+ * @see com.ils.blt.gateway.GatewayBlockScriptFunctions for the same routines available from Gateway scope.
  * 
  * Where applicable, we make use of the BlockRequestHandler to perform the requests.
  */
@@ -49,4 +53,20 @@ public class BlockScriptFunctions   {
 	public static boolean sendLocalSignal(String projectName, String diagramPath,String className, String command) {
 		return handler.sendLocalSignal(projectName,diagramPath,className,command);
 	}
+	
+	/**
+	 * Start the block execution engine in the gateway.
+	 */
+	public void startController() {
+		handler.startController();
+	}
+
+	/**
+	 * Shutdown the block execution engine in the gateway.
+	 */
+	public void stopController() {
+		handler.stopController();
+	}
+
+	
 }

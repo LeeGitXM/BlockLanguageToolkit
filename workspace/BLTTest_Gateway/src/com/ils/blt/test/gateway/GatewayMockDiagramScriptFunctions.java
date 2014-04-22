@@ -37,7 +37,7 @@ public class GatewayMockDiagramScriptFunctions  {
 		log.infof("%s.createTestHarness: for class %s ",TAG,blockClass);
 		UUID result = null;
 		if( dispatcher!=null ) {
-			result = dispatcher.createTestHarness(blockClass);
+			result = dispatcher.createMockDiagram(blockClass);
 		}
 		return result;
 	}
@@ -78,7 +78,7 @@ public class GatewayMockDiagramScriptFunctions  {
 	public static void deleteTestHarness(UUID harness) {
 		log.infof("%s.deleteTestHarness: %s ",TAG,harness.toString());
 		if( dispatcher!=null ) {
-			dispatcher.deleteTestHarness(harness);
+			dispatcher.deleteMockDiagram(harness);
 		}
 	}
 	/**
@@ -114,13 +114,14 @@ public class GatewayMockDiagramScriptFunctions  {
 	/**
 	 * Simulate data arriving on the named input port. 
 	 * @param harness
-	 * @param value
+	 * @param index of the connection into the named port. The index is zero-based.
 	 * @param port
+	 * @param value
 	 */
-	public static void setValue(UUID harness,UUID blockId,String port,QualifiedValue value) {
-		log.infof("%s.setValue: %s %s=%s",TAG,harness.toString(),port,value);
+	public static void setValue(UUID harness,UUID blockId,String port,int index,QualifiedValue value) {
+		log.infof("%s.setValue: %s %s.%d=%s",TAG,harness.toString(),port,index,value);
 		if( dispatcher!=null ) {
-			dispatcher.setValue(harness,port,value);
+			dispatcher.setValue(harness,port,new Integer(index),value);
 		}
 	}
 	/**
@@ -131,7 +132,7 @@ public class GatewayMockDiagramScriptFunctions  {
 	public static void startTestHarness(UUID harness){
 		log.infof("%s.startTestHarness: %s ",TAG,harness.toString());
 		if( dispatcher!=null ) {
-			dispatcher.startTestHarness(harness);
+			dispatcher.startMockDiagram(harness);
 		}
 	}
 	/**
@@ -142,7 +143,7 @@ public class GatewayMockDiagramScriptFunctions  {
 	public static void stopTestHarness(UUID harness) {
 		log.infof("%s.stopTestHarness: %s ",TAG,harness.toString());
 		if( dispatcher!=null ) {
-			dispatcher.stopTestHarness(harness);
+			dispatcher.stopMockDiagram(harness);
 		}
 	}
 }

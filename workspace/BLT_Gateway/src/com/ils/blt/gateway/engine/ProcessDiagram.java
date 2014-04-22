@@ -38,8 +38,8 @@ public class ProcessDiagram extends ProcessNode {
 	private final SerializableDiagram diagram;
 	private boolean valid = false;
 	private final Map<UUID,ProcessBlock> blocks;
-	private final Map<ConnectionKey,ProcessConnection> connections;              // Key by connection number
-	private final Map<BlockPort,List<ProcessConnection>> outgoingConnections;    // Key by upstream block:port
+	private final Map<ConnectionKey,ProcessConnection> connectionMap;            // Key by connection number
+	protected final Map<BlockPort,List<ProcessConnection>> outgoingConnections;    // Key by upstream block:port
 	private final long resourceId;
 	
 	/**
@@ -54,7 +54,7 @@ public class ProcessDiagram extends ProcessNode {
 		this.resourceId = diagm.getResourceId();
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		blocks = new HashMap<UUID,ProcessBlock>();
-		connections = new HashMap<ConnectionKey,ProcessConnection>();
+		connectionMap = new HashMap<ConnectionKey,ProcessConnection>();
 		outgoingConnections = new HashMap<BlockPort,List<ProcessConnection>>();
 		analyze(diagram);
 	}
@@ -94,7 +94,7 @@ public class ProcessDiagram extends ProcessNode {
 
 			ConnectionKey cxnkey = new ConnectionKey(sc.getBeginBlock().toString(),sc.getBeginAnchor().getId().toString(),
 					                             sc.getEndBlock().toString(),sc.getEndAnchor().getId().toString());
-			ProcessConnection pc = connections.get(cxnkey);
+			ProcessConnection pc = connectionMap.get(cxnkey);
 			if( pc==null ) {
 				pc = connectionFactory.connectionFromSerializable(sc);
 			}
@@ -111,7 +111,6 @@ public class ProcessDiagram extends ProcessNode {
 					outgoingConnections.put(key, connections);
 					log.tracef("%s.analyze: mapping connection from %s:%s",TAG,upstreamBlock.getBlockId().toString(),pc.getUpstreamPortName());
 				}
-				connections.add(pc);
 			}
 			else {
 				log.warnf("%s.analyze: Source block (%s) not found for connection",TAG,pc.getSource().toString());
@@ -121,9 +120,22 @@ public class ProcessDiagram extends ProcessNode {
 	}
 
 	/**
+	 * Define a new connection. We are guaranteed that there will be only one for a block.
+	 */
+	public void addOutgoingConnection(ProcessConnection pc) {
+		ProcessBlock pb = getBlock(pc.getSource());
+		if( pb!=null ) {
+			BlockPort key = new BlockPort(pb,pc.getUpstreamPortName());
+			List<ProcessConnection> list = new ArrayList<ProcessConnection>();
+			list.add(pc);
+			outgoingConnections.put(key,list);
+		}
+	}
+	
+	/**
 	 * @return a Connection from the diagram given its id.
 	 */
-	public Connection getConnection(String id) { return connections.get(id); }
+	public Connection getConnection(String id) { return connectionMap.get(id); }
 
 	
 	/**

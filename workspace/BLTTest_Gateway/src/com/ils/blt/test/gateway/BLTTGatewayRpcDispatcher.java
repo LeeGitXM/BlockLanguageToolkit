@@ -49,7 +49,7 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface  
 	 * @return the Id of the diagram
 	 */
 	@Override
-	public UUID createTestHarness(String blockClass) {
+	public UUID createMockDiagram(String blockClass) {
 		SerializableDiagram origin = new SerializableDiagram();
 		origin.setId(UUID.randomUUID());
 		origin.setName("Mock:"+blockClass);
@@ -87,8 +87,8 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface  
 		
 	}
 	@Override
-	public void deleteTestHarness(UUID harness) {
-		stopTestHarness(harness);
+	public void deleteMockDiagram(UUID harness) {
+		stopMockDiagram(harness);
 		controller.removeTemporaryDiagram(harness);
 		
 	}
@@ -122,10 +122,10 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface  
 	 * Set a block input by bypassing the subscription process.
 	 */
 	@Override
-	public void setValue(UUID harness, String port, QualifiedValue value) {
+	public void setValue(UUID harness, String port, Integer index, QualifiedValue value) {
 		MockDiagram diagram = (MockDiagram)controller.getDiagram(harness);
-		if( diagram!=null) {
-			MockInputBlock block = diagram.getInputForPort(port);
+		if( diagram!=null && index!=null) {
+			MockInputBlock block = diagram.getInputForPort(port,index.intValue());
 			if( block!=null ) block.setValue(value);
 		}
 		
@@ -134,7 +134,7 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface  
 	 * Analyze connections in the diagram, then activate subscriptions.
 	 */
 	@Override
-	public void startTestHarness(UUID harness) {
+	public void startMockDiagram(UUID harness) {
 		MockDiagram diagram = (MockDiagram)controller.getDiagram(harness);
 		diagram.analyze();  // Analyze connections
 		for(ProcessBlock block:diagram.getProcessBlocks()) {
@@ -147,7 +147,7 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface  
 	 * Deactivate all subscriptions within the mock diagram.
 	 */
 	@Override
-	public void stopTestHarness(UUID harness) {
+	public void stopMockDiagram(UUID harness) {
 		MockDiagram diagram = (MockDiagram)controller.getDiagram(harness);
 		for(ProcessBlock block:diagram.getProcessBlocks()) {
 			for(BlockProperty prop:block.getProperties()) {

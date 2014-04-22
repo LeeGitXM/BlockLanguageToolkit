@@ -36,7 +36,7 @@ public class BlockRequestHandler  {
 	}
 
 	/**
-	 * Start the block execution engine in the gateway.
+	 * Determine whether or not the engine is running.
 	 */
 	public boolean isControllerRunning() {
 

@@ -1,5 +1,5 @@
 /**
- *   (c) 2013  ILS Automation. All rights reserved. 
+ *   (c) 2014  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.gateway;
 
@@ -98,8 +98,10 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	@Override
 	public void initializeScriptManager(ScriptManager mgr) {
 		super.initializeScriptManager(mgr);
-		mgr.addScriptModule(BLTProperties.REGISTRATION_SCRIPT_PACKAGE,RegistrationScriptFunctions.class);
+		GatewayBlockScriptFunctions.context = context;
+		mgr.addScriptModule(BLTProperties.BLOCK_SCRIPT_PACKAGE,GatewayBlockScriptFunctions.class);	
 		mgr.addScriptModule(BLTProperties.BLOCK_RESULTS_SCRIPT_PACKAGE,BlockReportingScriptFunctions.class);
+		mgr.addScriptModule(BLTProperties.REGISTRATION_SCRIPT_PACKAGE,RegistrationScriptFunctions.class);
 	}
 	
 	@Override

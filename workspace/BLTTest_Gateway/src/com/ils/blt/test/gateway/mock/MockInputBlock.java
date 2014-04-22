@@ -38,6 +38,7 @@ public class MockInputBlock extends AbstractProcessBlock implements ProcessBlock
 		initialize();
 	}
 	
+	public PropertyType getPropertyType() { return propertyType; }
 	public String getPort() { return portName; }
 	
 	/**
@@ -72,11 +73,7 @@ public class MockInputBlock extends AbstractProcessBlock implements ProcessBlock
 		properties.put(BLOCK_PROPERTY_INPUT, value);
 		
 		// Define a single output
-		ConnectionType ctype = ConnectionType.ANY;
-		if( propertyType==PropertyType.DOUBLE ||
-		    propertyType==PropertyType.INTEGER  )    ctype = ConnectionType.DATA;
-		else if( propertyType==PropertyType.BOOLEAN )ctype = ConnectionType.TRUTHVALUE;
-		else if( propertyType==PropertyType.STRING ) ctype = ConnectionType.TEXT;
+		ConnectionType ctype = ConnectionType.connectionTypeForPropertyType(propertyType);
 		AnchorPrototype output = new AnchorPrototype(portName,AnchorDirection.OUTGOING,ctype);
 		anchors.add(output);
 	}

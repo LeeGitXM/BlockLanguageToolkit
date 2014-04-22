@@ -34,15 +34,15 @@ public class MockDiagramScriptFunctions   {
 	 * @param blockClass
 	 * @return the new uniqueId of the test harness
 	 */
-	public static UUID createTestHarness(String blockClass) {
-		log.infof("%s.createTestHarness: for class %s ",TAG,blockClass);
+	public static UUID createMockDiagram(String blockClass) {
+		log.infof("%s.createMockDiagram: for class %s ",TAG,blockClass);
 		UUID result = null;
 		try {
 			result = (UUID)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTTestProperties.MODULE_ID, "createTestHarness", blockClass);
+					BLTTestProperties.MODULE_ID, "createMockDiagram", blockClass);
 		}
 		catch(Exception ge) {
-			log.infof("%s.createTestHarness: GatewayException ("+ge.getMessage()+")");
+			log.infof("%s.createMockDiagram: GatewayException ("+ge.getMessage()+")");
 		}
 		return result;
 	}
@@ -88,14 +88,14 @@ public class MockDiagramScriptFunctions   {
 	 * 
 	 * @param harness
 	 */
-	public static void deleteTestHarness(UUID harness) {
-		log.infof("%s.deleteTestHarness: %s ",TAG,harness.toString());
+	public static void deleteMockDiagram(UUID harness) {
+		log.infof("%s.deleteMockDiagram: %s ",TAG,harness.toString());
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTTestProperties.MODULE_ID, "deleteTestHarness", harness);
+					BLTTestProperties.MODULE_ID, "deleteMockDiagram", harness);
 		}
 		catch(Exception ge) {
-			log.infof("%s.deleteTestHarness: GatewayException ("+ge.getMessage()+")");
+			log.infof("%s.deleteMockDiagram: GatewayException ("+ge.getMessage()+")");
 		}
 	}
 	/**
@@ -140,14 +140,15 @@ public class MockDiagramScriptFunctions   {
 	/**
 	 * Simulate data arriving on the named input port. 
 	 * @param harness
-	 * @param value
 	 * @param port
+	 * @param index of the connection into the named port. The index is zero-based.
+	 * @param value
 	 */
-	public static void setValue(UUID harness,String port,QualifiedValue value) {
-		log.infof("%s.setValue: %s %s=%s",TAG,harness.toString(),port,value);
+	public static void setValue(UUID harness,String port,int index,QualifiedValue value) {
+		log.infof("%s.setValue: %s %s%%d=%s",TAG,harness.toString(),port,index,value);
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTTestProperties.MODULE_ID, "setValue", harness,port,value);
+					BLTTestProperties.MODULE_ID, "setValue", harness,port,new Integer(index),value);
 		}
 		catch(Exception ge) {
 			log.infof("%s.setValue: GatewayException ("+ge.getMessage()+")");
@@ -158,14 +159,14 @@ public class MockDiagramScriptFunctions   {
 	 * mock inputs.
 	 * @param harness
 	 */
-	public static void startTestHarness(UUID harness){
-		log.infof("%s.startTestHarness: %s ",TAG,harness.toString());
+	public static void startMockDiagram(UUID harness){
+		log.infof("%s.startMockDiagram: %s ",TAG,harness.toString());
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTTestProperties.MODULE_ID, "startTestHarness", harness);
+					BLTTestProperties.MODULE_ID, "startMockDiagram", harness);
 		}
 		catch(Exception ge) {
-			log.infof("%s.startTestHarness: GatewayException ("+ge.getMessage()+")");
+			log.infof("%s.startMockDiagram: GatewayException ("+ge.getMessage()+")");
 		}
 	}
 	/**
@@ -173,14 +174,14 @@ public class MockDiagramScriptFunctions   {
 	 * subscriptions involving the harness.
 	 * @param harness unique Id
 	 */
-	public static void stopTestHarness(UUID harness) {
-		log.infof("%s.stopTestHarness: %s ",TAG,harness.toString());
+	public static void stopMockDiagram(UUID harness) {
+		log.infof("%s.stopMockDiagram: %s ",TAG,harness.toString());
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTTestProperties.MODULE_ID, "stopTestHarness", harness);
+					BLTTestProperties.MODULE_ID, "stopMockDiagram", harness);
 		}
 		catch(Exception ge) {
-			log.infof("%s.stopTestHarness: GatewayException ("+ge.getMessage()+")");
+			log.infof("%s.stopMockDiagram: GatewayException ("+ge.getMessage()+")");
 		}
 	}
 	

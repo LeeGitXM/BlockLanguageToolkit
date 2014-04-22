@@ -26,14 +26,14 @@ public interface MockDiagramScriptingInterface   {
 	 * 
 	 * The diagram holds exactly one block, the "Unit Under Test".
 	 * 
-	 * @param projectName name of the caller's project
 	 * @param blockClass
 	 * @return the new uniqueId of the test harness
 	 */
-	public UUID createTestHarness(String blockClass);
+	public UUID createMockDiagram(String blockClass);
 	/**
 	 * Define an input connected to the named port. This input is held as part of the 
-	 * mock diagram. Once defined, the input cannot be deleted.
+	 * mock diagram. Once defined, the input cannot be deleted.A separate (duplicate) 
+	 * input should be defined for every connection comming into the named port.
 	 * @param harness
 	 * @param tagPath path to tag on which we listen for input
 	 * @param dt
@@ -41,8 +41,9 @@ public interface MockDiagramScriptingInterface   {
 	 */
 	public void addMockInput(UUID harness,String tagPath,PropertyType dt,String port );
 	/**
-	 * Define an output connected to the named port. This output is held as part of the 
-	 * mock diagram. Once defined, the output cannot be deleted.
+	 * Define an output connection from the named port. This output is held as part of the 
+	 * mock diagram. Once defined, the output cannot be deleted. Only one output may be
+	 * defined as eminating from the same port.
 	 * @param harness
 	 * @param tagPath path to tag on which we write the output.
 	 * @param dt
@@ -55,7 +56,7 @@ public interface MockDiagramScriptingInterface   {
 	 * 
 	 * @param harness
 	 */
-	public void deleteTestHarness(UUID harness);
+	public void deleteMockDiagram(UUID harness);
 	/**
 	 * Read the current value held by the mock output identified by the specified
 	 * port name.
@@ -75,22 +76,23 @@ public interface MockDiagramScriptingInterface   {
 	 */
 	public void setProperty(UUID harness,String propertyName,Object value);
 	/**
-	 * Simulate data arriving on the named input port. 
+	 * Simulate data arriving on the nth connection into the named input port. 
 	 * @param harness
 	 * @param port
+	 * @param index of the connection into the named port. The index is zero-based.
 	 * @param value
 	 */
-	public void setValue(UUID harness,String port,QualifiedValue value);
+	public void setValue(UUID harness,String port,Integer index,QualifiedValue value);
 	/**
 	 * Start the test harness by activating subscriptions for bound properties and
 	 * mock inputs.
 	 * @param harness
 	 */
-	public void startTestHarness(UUID harness);
+	public void startMockDiagram(UUID harness);
 	/**
-	 * Stop all property updates and input receipt by cancelling all active
+	 * Stop all property updates and input receipt by canceling all active
 	 * subscriptions involving the harness.
 	 * @param harness unique Id
 	 */
-	public void stopTestHarness(UUID harness);
+	public void stopMockDiagram(UUID harness);
 }
