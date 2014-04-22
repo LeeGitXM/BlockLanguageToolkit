@@ -17,21 +17,22 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 
 /**
- *  This handler is designed for use by Java code in the designer that needs 
- *  facilities from the Gateway. It provides a way to request/set properties of 
+ *  This class is a common point for managing requests to the gateway dealing with the
+ *  execution engine and block status. It is designed for use by Java code in the designer 
+ *  as well as Python scripting. It provides a way to request/set properties of 
  *  diagrams, blocks and connections.
  *  
  *  Each request is relayed to the Gateway scope via an RPC call.
  */
-public class BlockRequestHandler  {
-	private final static String TAG = "BlockRequestHandler";
+public class BlockRequestManager  {
+	private final static String TAG = "BlockRequestManager";
 	private final LoggerEx log;
 
 	/**
 	 * Constructor adds common attributes that are needed to generate unique keys to identify
 	 * blocks and connectors.
 	 */
-	public BlockRequestHandler()  {
+	public BlockRequestManager()  {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 	}
 

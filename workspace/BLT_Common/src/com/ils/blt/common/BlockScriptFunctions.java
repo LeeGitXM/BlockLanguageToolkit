@@ -20,7 +20,7 @@ import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnecti
  * Where applicable, we make use of the BlockRequestHandler to perform the requests.
  */
 public class BlockScriptFunctions   {
-	private static BlockRequestHandler handler = new BlockRequestHandler();
+	private static BlockRequestManager handler = new BlockRequestManager();
 
 	/**
 	 * Query the gateway for a list of prototypes for the defined blocks. 

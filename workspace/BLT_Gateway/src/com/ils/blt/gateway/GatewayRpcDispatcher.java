@@ -27,37 +27,37 @@ import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.ils.common.ClassList;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
-import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
 
 /**
  *  The RPC Dispatcher is the point of entry for incoming RCP requests.
  *  Its purpose is simply to parse out a request and send it to the
  *  right handler. This class supports the aggregate of RPC interfaces.
+ *  
+ *  Make use of the BlockRequestHandler so as to provide
+ *  a common handler for both the RPC and scripting interfaces.
  */
 public class GatewayRpcDispatcher   {
 	private static String TAG = "GatewayRpcDispatcher";
 	private final LoggerEx log;
-	private final GatewayContext context;
 
 	/**
 	 * Constructor. There is a separate dispatcher for each project.
 	 */
-	public GatewayRpcDispatcher(GatewayContext cntx) {
+	public GatewayRpcDispatcher() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
-		this.context = cntx;
 	}
 
 	public String getControllerState() {
-		return BlockExecutionController.getExecutionState();
+		return BlockRequestHandler.getInstance().getExecutionState();
 	}
 	
 	public void startController() {
-		BlockExecutionController.getInstance().start(context);
+		BlockRequestHandler.getInstance().startController();
 	}
 	
 	public void stopController() {
-		BlockExecutionController.getInstance().stop();
+		BlockRequestHandler.getInstance().stopController();
 	}
 
 	public void enableDiagram(Long projectId, Long resourceId, Boolean flag) {
@@ -86,7 +86,7 @@ public class GatewayRpcDispatcher   {
 			log.warnf("%s: getBlockProperties: Block UUID string is illegal (%s), creating new",TAG,blockId);
 			blockUUID = UUID.nameUUIDFromBytes(blockId.getBytes());
 		}
-		BlockProperty[] propertyArray = BlockPropertiesHandler.getInstance().
+		BlockProperty[] propertyArray = BlockRequestHandler.getInstance().
 					getBlockProperties(className,projectId.longValue(),resourceId.longValue(),blockUUID);
 		List<String> result = null;
 		if( propertyArray!=null ) {
@@ -123,7 +123,7 @@ public class GatewayRpcDispatcher   {
 		Hashtable<String, Hashtable<String, String>> attributeTable;
 		try {
 			attributeTable = mapper.readValue(json, new TypeReference<Hashtable<String,Hashtable<String,String>>>(){});
-			Hashtable<String,Hashtable<String,String>> results = BlockPropertiesHandler.getInstance().getConnectionAttributes(projectId,resourceId,connectionId,attributeTable);
+			Hashtable<String,Hashtable<String,String>> results = BlockRequestHandler.getInstance().getConnectionAttributes(projectId,resourceId,connectionId,attributeTable);
 			log.debugf("%s: created table = %s",TAG,results);
 			json =  mapper.writeValueAsString(results);
 			log.debugf("%s: JSON=%s",TAG,json);

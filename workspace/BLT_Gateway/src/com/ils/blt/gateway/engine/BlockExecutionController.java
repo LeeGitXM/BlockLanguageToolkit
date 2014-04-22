@@ -183,6 +183,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public List<String> getDiagramTreePaths(String projectName) {
 		return modelManager.getDiagramTreePaths(projectName);
 	}
+
 	/**
 	 * Delete a temporary diagram that is not associated with a project resource. 
 	 * Any subscriptions are de-activated before removal.
