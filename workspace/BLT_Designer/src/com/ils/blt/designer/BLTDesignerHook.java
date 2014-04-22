@@ -8,7 +8,7 @@ import java.awt.Component;
 
 import com.ils.blt.client.component.DiagramAnalyzerComponent;
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.common.BlockRequestHandler;
+import com.ils.blt.common.BlockRequestManager;
 import com.ils.blt.common.BlockScriptFunctions;
 import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
@@ -45,7 +45,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	private DesignerContext context = null;
 	private final LoggerEx log;
 	private DiagramWorkspace workspace = null;
-	private BlockRequestHandler propertiesRequestHandler = null;
+	private BlockRequestManager propertiesRequestHandler = null;
 	
 	// Register separate properties files for designer things and block things
 	static {
@@ -67,7 +67,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	@Override
 	public void startup(DesignerContext ctx, LicenseState activationState) throws Exception {
 		this.context = ctx;
-		propertiesRequestHandler = new BlockRequestHandler();
+		propertiesRequestHandler = new BlockRequestManager();
 		context.addBeanInfoSearchPath("com.ils.blt.designer.component.beaninfos");
 		
 		// Place icons for our custom widgets on the Vision palette
@@ -150,7 +150,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		}
 	}
 
-	public BlockRequestHandler getPropertiesRequestHandler() { return propertiesRequestHandler; }
+	public BlockRequestManager getPropertiesRequestHandler() { return propertiesRequestHandler; }
 	@Override
 	public String getResourceCategoryKey(Project project,ProjectResource resource) {
 		// There is only one resource category that we are exporting

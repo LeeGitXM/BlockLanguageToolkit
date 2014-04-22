@@ -9,7 +9,7 @@ import com.ils.block.ProcessBlock;
 import com.ils.block.common.BlockProperty;
 import com.ils.block.common.PropertyType;
 import com.ils.blt.common.serializable.SerializableDiagram;
-import com.ils.blt.gateway.BlockPropertiesHandler;
+import com.ils.blt.gateway.BlockRequestHandler;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ProcessDiagram;
 import com.ils.blt.gateway.proxy.ProxyHandler;
@@ -55,7 +55,7 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface  
 		origin.setName("Mock:"+blockClass);
 		MockDiagram mock = new MockDiagram(origin,null);  // No parent
 		// Instantiate a block from the class
-		ProcessBlock uut = BlockPropertiesHandler.getInstance().createInstance(blockClass, mock.getSelf(), UUID.randomUUID());
+		ProcessBlock uut = BlockRequestHandler.getInstance().createInstance(blockClass, mock.getSelf(), UUID.randomUUID());
 		if( uut==null) {
 			uut = ProxyHandler.getInstance().createBlockInstance(blockClass, mock.getSelf(), UUID.randomUUID());
 		}

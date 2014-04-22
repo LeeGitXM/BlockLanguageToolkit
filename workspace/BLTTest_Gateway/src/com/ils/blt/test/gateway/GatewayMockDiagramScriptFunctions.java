@@ -15,7 +15,8 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  *  This class exposes python-callable functions used to report test blocks.
  *  These functions are designed for access from python scripts executing in the Gateway..
  *  
- *  Since we are in Gateway, we can make local calls.
+ *  Delegate most requests through the MockDiagramRequestHandler. This allows a single
+ *  handler for both Gateway scripting and RPC requests.
  */
 public class GatewayMockDiagramScriptFunctions  {
 	private static final String TAG = "GatewayMockDiagramScriptFunctions: ";

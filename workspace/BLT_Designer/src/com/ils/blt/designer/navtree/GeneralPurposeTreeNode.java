@@ -27,7 +27,7 @@ import javax.swing.tree.TreePath;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.common.BlockRequestHandler;
+import com.ils.blt.common.BlockRequestManager;
 import com.ils.blt.common.serializable.ApplicationUUIDResetHandler;
 import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.common.serializable.SerializableApplicationTree;
@@ -177,7 +177,7 @@ public class GeneralPurposeTreeNode extends FolderNode {
 		setupEditActions(paths, selection);
 		
 		if (isRootFolder()) { 
-			BlockRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+			BlockRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
 
 			ApplicationAction applicationAction = new ApplicationAction();
 			ApplicationImportAction applicationImportAction = new ApplicationImportAction();
@@ -464,7 +464,7 @@ public class GeneralPurposeTreeNode extends FolderNode {
 	    
 		public void actionPerformed(ActionEvent e) {
 			try {
-				BlockRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+				BlockRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
 				handler.startController();
 				this.setEnabled(false);
 				stopAction.setEnabled(true);
@@ -776,7 +776,7 @@ public class GeneralPurposeTreeNode extends FolderNode {
 	    
 		public void actionPerformed(ActionEvent e) {
 			try {
-				BlockRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+				BlockRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
 				handler.startController();
 				this.setEnabled(false);
 				stopAction.setEnabled(true);
@@ -950,7 +950,7 @@ public class GeneralPurposeTreeNode extends FolderNode {
 	    
 		public void actionPerformed(ActionEvent e) {
 			try {
-				BlockRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+				BlockRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
 				handler.startController();
 				this.setEnabled(false);
 				stopAction.setEnabled(true);
@@ -969,7 +969,7 @@ public class GeneralPurposeTreeNode extends FolderNode {
 	    
 		public void actionPerformed(ActionEvent e) {
 			try {
-				BlockRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+				BlockRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
 				handler.stopController();
 				this.setEnabled(false);
 				startAction.setEnabled(true);

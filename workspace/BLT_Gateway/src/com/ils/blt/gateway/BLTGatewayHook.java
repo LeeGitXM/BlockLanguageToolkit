@@ -59,9 +59,9 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		// NOTE: Get serialization exception if ModelResourceManager is saved as a class member
 		//       Exception is thrown when we try to incorporate a StatusPanel
 		log.info(TAG+"Setup - enabled project listeners.");
-		BlockPropertiesHandler.getInstance().setContext(context);
 		ProxyHandler.getInstance().setContext(context);
-		dispatcher = new GatewayRpcDispatcher(context);
+		BlockRequestHandler.getInstance().setContext(context);
+		dispatcher = new GatewayRpcDispatcher();
 	}
 
 	@Override
@@ -100,7 +100,6 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		super.initializeScriptManager(mgr);
 		GatewayBlockScriptFunctions.context = context;
 		mgr.addScriptModule(BLTProperties.BLOCK_SCRIPT_PACKAGE,GatewayBlockScriptFunctions.class);	
-		mgr.addScriptModule(BLTProperties.BLOCK_RESULTS_SCRIPT_PACKAGE,BlockReportingScriptFunctions.class);
 		mgr.addScriptModule(BLTProperties.REGISTRATION_SCRIPT_PACKAGE,RegistrationScriptFunctions.class);
 	}
 	
