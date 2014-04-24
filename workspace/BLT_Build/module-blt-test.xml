@@ -10,21 +10,20 @@
 		<requiredframeworkversion>5</requiredframeworkversion>
 		<freemodule>true</freemodule>
 		<documentation>index.html</documentation>
-
+		
 		<!-- Add the module dependencies for each scope -->
 		<!-- NOTE: Build fails here if we specify a Gateway dependency -->
-		<depends scope="D">fpmi</depends>
+		<depends scope="D">block</depends>
 		
 		<!-- Load in our jars for each scope -->
 		<jar scope="CD">blt-test-client.jar.pack.gz</jar>
 		<jar scope="D">blt-test-designer.jar.pack.gz</jar>
 		<jar scope="D">blt-test-common.jar.pack.gz</jar>
 		<jar scope="G">blt-test-gateway.jar</jar>
-		<jar scope="G">blt-gateway.jar</jar>
-		<jar scope="G">blt-common.jar</jar>
 		<jar scope="G">blt-test-common.jar</jar>
-		<jar scope="G">blt-common.jar</jar>
 		<jar scope="G">ils-common.jar</jar>
+		<jar scope="G">blt-common.jar</jar> 
+		<jar scope="G">blt-gateway.jar</jar>
 		<jar scope="G">block-definition.jar</jar>
 		<jar scope="GD">jackson-core-2.2.3.jar</jar>
 		<jar scope="GD">jackson-databind-2.2.3.jar</jar>

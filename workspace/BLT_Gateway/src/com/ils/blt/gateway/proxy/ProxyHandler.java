@@ -358,7 +358,8 @@ public class ProxyHandler   {
 			List<?> list = null;
 			// Synchronize because of our global variable
 			synchronized(cb.scriptManager) {
-				cb.getScriptManager().addGlobalVariable(cb.globalVariableName,pyList);
+				cb.setLocalVariableList("prototypes");
+				cb.setLocalVariable(0,pyList);
 				execute(cb);
 				log.info(TAG+": getBlockPrototypes returned "+ pyList);   // Should now be updated
 				// Contents of list are Hashtable<String,?>
@@ -487,7 +488,7 @@ public class ProxyHandler   {
 	private boolean compileScript(int callbackIndex) {
 		Callback callback = callbacks[callbackIndex];
 		if( callback.code !=null ) return true;   // Already compiled
-		String module = "project";
+		String module = "project";                
 		int index = callback.module.lastIndexOf(".");
 		if( index>0 ) module = callback.module.substring(0,index);
 		index = module.lastIndexOf(".");

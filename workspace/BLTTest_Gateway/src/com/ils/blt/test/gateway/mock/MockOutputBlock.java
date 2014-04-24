@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
+ *  Copyright (c) 2014  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.test.gateway.mock;
 import java.util.UUID;
@@ -14,6 +14,7 @@ import com.ils.block.common.PropertyType;
 import com.ils.block.control.IncomingNotification;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.connection.ConnectionType;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 
@@ -22,11 +23,12 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  * a spot to collect and store output values.
  */
 public class MockOutputBlock extends AbstractProcessBlock implements ProcessBlock {
+	private final static String TAG = "MockOutputBlock";
 	private static String BLOCK_PROPERTY_OUTPUT = "Output";
 	private final String portName;
 	private final PropertyType propertyType;
 	private final String tagPath;
-	private QualifiedValue value = null;
+	private QualifiedValue value = new BasicQualifiedValue("unset");
 	
 	public MockOutputBlock(UUID parent,String tag,PropertyType pt,String port) {
 		super(BlockExecutionController.getInstance(),parent,UUID.randomUUID());
@@ -67,10 +69,13 @@ public class MockOutputBlock extends AbstractProcessBlock implements ProcessBloc
 	@Override
 	public void setValue(IncomingNotification vcn) {
 		super.setValue(vcn);
-		QualifiedValue qv = null;
 		Object val = vcn.getValue();
-		if( val instanceof QualifiedValue ) {
+		if( val!=null ) {
+			log.infof("%s.setValue:incoming value .... %s=%s",TAG,val.getClass().getName(),val.toString());
 			this.value = vcn.getValueAsQualifiedValue();
+		}
+		else {
+			log.infof("%s.setValue:incoming value .... is NULL",TAG);
 		}
 	}
 }

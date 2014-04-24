@@ -6,7 +6,6 @@ package com.ils.blt.test.gateway;
 
 import java.util.UUID;
 
-import com.ils.block.common.PropertyType;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;

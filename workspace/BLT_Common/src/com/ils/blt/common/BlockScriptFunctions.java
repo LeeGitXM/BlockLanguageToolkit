@@ -19,14 +19,14 @@ import com.ils.block.common.PalettePrototype;
  * Where applicable, we make use of the BlockRequestHandler to perform the requests.
  */
 public class BlockScriptFunctions   {
-	private static BlockRequestManager handler = new BlockRequestManager();
+	private static BlockRequestManager manager = new BlockRequestManager();
 
 	/**
 	 * Query the gateway for a list of prototypes for the defined blocks. 
 	 */
 	@SuppressWarnings("rawtypes")
 	public static List getBlockPrototypes() {
-		List<PalettePrototype> result = handler.getBlockPrototypes();
+		List<PalettePrototype> result = manager.getBlockPrototypes();
 		return result;
 	}
 	/**
@@ -37,7 +37,14 @@ public class BlockScriptFunctions   {
 	 */
 	@SuppressWarnings("rawtypes")
 	public static List getDiagramTreePaths(String projectName) {
-		return handler.getDiagramTreePaths(projectName);
+		return manager.getDiagramTreePaths(projectName);
+	}
+	
+	/**
+	 * @return the current state of the controller.
+	 */
+	public static String getControllerState() {
+		return manager.getControllerState();
 	}
 	/**
 	 * Send a signal to all blocks of a particular class on a specified diagram.
@@ -50,21 +57,21 @@ public class BlockScriptFunctions   {
 	 * @return true on success
 	 */
 	public static boolean sendLocalSignal(String projectName, String diagramPath,String className, String command) {
-		return handler.sendLocalSignal(projectName,diagramPath,className,command);
+		return manager.sendLocalSignal(projectName,diagramPath,className,command);
 	}
 	
 	/**
 	 * Start the block execution engine in the gateway.
 	 */
-	public void startController() {
-		handler.startController();
+	public static void startController() {
+		manager.startController();
 	}
 
 	/**
 	 * Shutdown the block execution engine in the gateway.
 	 */
-	public void stopController() {
-		handler.stopController();
+	public static void stopController() {
+		manager.stopController();
 	}
 
 	

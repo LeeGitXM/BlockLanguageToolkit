@@ -10,6 +10,7 @@ import java.util.UUID;
 
 import com.ils.blt.test.common.BLTTestProperties;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -99,14 +100,14 @@ public class MockDiagramScriptFunctions   {
 	}
 	/**
 	 * Read the current value held by the mock output identified by the specified
-	 * port name.  NOTE: The result can legitimately be null.
+	 * port name.  NOTE: A legimate null value is returned as a Qualified value,
+	 * that has null for its value.
 	 * @param diagram
 	 * @param blockId
 	 * @param port
 	 * @return the current value held by the specified port.
 	 */
 	public static QualifiedValue readValue(UUID diagram,String port){ 
-		
 		QualifiedValue val = null;
 		try {
 			val = (QualifiedValue) GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
@@ -114,7 +115,7 @@ public class MockDiagramScriptFunctions   {
 			log.debugf("%s.readValue: %s %s=%s",TAG,diagram.toString(),port,val.toString());
 		}
 		catch(Exception ge) {
-			log.debugf("%s.readValue: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.readValue: GatewayException (%s)",TAG,ge.getMessage());
 		}
 		return val;
 	}

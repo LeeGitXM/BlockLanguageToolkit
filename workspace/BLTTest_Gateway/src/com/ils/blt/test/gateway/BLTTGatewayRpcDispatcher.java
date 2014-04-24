@@ -6,7 +6,6 @@ package com.ils.blt.test.gateway;
 import java.util.UUID;
 
 import com.ils.block.ProcessBlock;
-import com.ils.block.common.BlockProperty;
 import com.ils.block.common.PropertyType;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.gateway.BlockRequestHandler;
@@ -109,14 +108,21 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface  
 	
 	/**
 	 * Read the latest value from the output block with the named port.
+	 * No reading is signified by an empty string.
 	 */
 	@Override
 	public QualifiedValue readValue(UUID diagramId, String port) {
-		QualifiedValue qv = null;
+		log.infof("%s.readValue: %s on %s", TAG,diagramId.toString(),port);
+		QualifiedValue qv = new BasicQualifiedValue("none");
 		MockDiagram mock = (MockDiagram)controller.getDiagram(diagramId);
-		if( mock!=null) {
-			MockOutputBlock block = mock.getOutputForPort(port);
-			if( block!=null ) qv = block.getValue();
+		MockOutputBlock block = null;
+		if( mock!=null) block = mock.getOutputForPort(port);
+		if( block!=null ) {
+			qv = block.getValue();
+			log.infof("%s.readValue: block value %s", TAG,qv.toString());
+		}
+		else {
+			log.warnf("%s.readValue: Unknown output port %s", TAG,port);
 		}
 		return qv;
 	}

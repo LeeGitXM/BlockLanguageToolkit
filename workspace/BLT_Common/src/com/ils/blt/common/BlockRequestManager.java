@@ -40,26 +40,34 @@ public class BlockRequestManager  {
 	 * Determine whether or not the engine is running.
 	 */
 	public boolean isControllerRunning() {
-
-		boolean result = false;
+		boolean isRunning = false;
+		String state = getControllerState();
+		if( state.equalsIgnoreCase("running")) isRunning = true;
+		return isRunning;
+	}
+	
+	/**
+	 * Determine whether or not the engine is running.
+	 */
+	public String getControllerState() {
+		String state = "";
 		try {
 			// Returns either "running" or "stopped"
-			String state = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+			state = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "getControllerState");
-			if( state.equalsIgnoreCase("running")) result = true;
-			log.infof("%s.isControllerRunning ... %s",TAG,state);
+			log.debugf("%s.getControllerState ... %s",TAG,state);
 		}
 		catch(Exception ge) {
-			log.infof("%s.isControllerRunning: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.getControllerState: GatewayException (%s)",TAG,ge.getMessage());
 		}
-		return result;
+		return state;
 	}
 	
 	/**
 	 * Start the block execution engine in the gateway.
 	 */
 	public void startController() {
-		log.infof("%s.startController ...",TAG);
+		log.debugf("%s.startController ...",TAG);
 
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
@@ -74,7 +82,7 @@ public class BlockRequestManager  {
 	 * Shutdown the block execution engine in the gateway.
 	 */
 	public void stopController() {
-		log.infof("%s.stopController ...",TAG);
+		log.debugf("%s.stopController ...",TAG);
 
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
@@ -135,7 +143,7 @@ public class BlockRequestManager  {
 
 	@SuppressWarnings("unchecked")
 	public List<PalettePrototype> getBlockPrototypes() {
-		log.infof("%s.getBlockPrototypes ...",TAG);
+		log.tracef("%s.getBlockPrototypes ...",TAG);
 		List<PalettePrototype> result = new ArrayList<PalettePrototype>();
 		List<String> jsonList = new ArrayList<String>();
 		try {
