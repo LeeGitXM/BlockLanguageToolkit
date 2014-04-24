@@ -80,7 +80,7 @@ public class TagListener implements TagChangeListener   {
 	 * 
 	 * @param tagPath
 	 */
-	public void removeSubscription(String tagPath,ProcessBlock block) {
+	public void removeSubscription(ProcessBlock block,String tagPath) {
 		if( tagPath==null) return;    // There was no subscription
 
 		List<ProcessBlock> blocks = blockMap.get(tagPath);
@@ -155,17 +155,20 @@ public class TagListener implements TagChangeListener   {
 						(value.getQuality().isGood()?"GOOD":"BAD"),
 						tag.getName(),value.getValue(),
 						dateFormatter.format(value.getTimestamp()));
-				try {
-					log.debugf("%s.startSubscriptionForProperty: property change for %s:%s",TAG,block.getLabel(),property.getName());
-					PropertyChangeEvaluationTask task = new PropertyChangeEvaluationTask(block,
-						new BlockPropertyChangeEvent(block.getBlockId().toString(),property.getName(),
-								new BasicQualifiedValue(property.getValue(),
-										new BasicQuality(property.getQuality(),Quality.Level.Good)),value));
-					Thread propertyChangeThread = new Thread(task, "PropertyChange");
-					propertyChangeThread.start();
-				}
-				catch(Exception ex) {
-					log.warnf("%s.startSubscriptionForProperty: Failed to execute subscription start (%s)",TAG,ex.getLocalizedMessage()); 
+				// Do not pass along nulls -- tag was never set
+				if(value.getValue()!=null ) {
+					try {
+						log.debugf("%s.startSubscriptionForProperty: property change for %s:%s",TAG,block.getLabel(),property.getName());
+						PropertyChangeEvaluationTask task = new PropertyChangeEvaluationTask(block,
+							new BlockPropertyChangeEvent(block.getBlockId().toString(),property.getName(),
+									new BasicQualifiedValue(property.getValue(),
+											new BasicQuality(property.getQuality(),Quality.Level.Good)),value));
+						Thread propertyChangeThread = new Thread(task, "PropertyChange");
+						propertyChangeThread.start();
+					}
+					catch(Exception ex) {
+						log.warnf("%s.startSubscriptionForProperty: Failed to execute subscription start (%s)",TAG,ex.getLocalizedMessage()); 
+					}
 				}
 			}
 			tmgr.subscribe(tp, this);

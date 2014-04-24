@@ -3,6 +3,8 @@
  */
 package com.ils.blt.test.gateway;
 
+import com.ils.blt.gateway.engine.BlockExecutionController;
+import com.ils.blt.gateway.engine.ModelManager;
 import com.ils.blt.test.common.BLTTestProperties;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
@@ -24,6 +26,7 @@ public class BLTTestGatewayHook extends AbstractGatewayModuleHook  {
 	public static String TAG = "BLTGatewayHook";
 	private transient BLTTGatewayRpcDispatcher dispatcher = null;
 	private transient GatewayContext context = null;
+	private transient ModelManager mmgr = null;
 	private final LoggerEx log;
 	
 	public BLTTestGatewayHook() {
@@ -40,9 +43,15 @@ public class BLTTestGatewayHook extends AbstractGatewayModuleHook  {
 
 	@Override
 	public void startup(LicenseState licenseState) {
-	    log.infof("%s: Startup complete.",TAG);
-	    dispatcher = new BLTTGatewayRpcDispatcher(context);
+		// Look for all block resources and inform the execution controller
+	    mmgr = new ModelManager(context);
+	    BlockExecutionController.getInstance().setDelegate(mmgr);
+	    
+	    MockDiagramRequestHandler requestHandler = new MockDiagramRequestHandler(context);
+	    dispatcher = new BLTTGatewayRpcDispatcher(context,requestHandler);
 		GatewayMockDiagramScriptFunctions.dispatcher = dispatcher;
+		GatewayMockDiagramScriptFunctions.requestHandler = requestHandler;
+		log.infof("%s.startup: complete.",TAG);
 	}
 
 	@Override
@@ -51,7 +60,7 @@ public class BLTTestGatewayHook extends AbstractGatewayModuleHook  {
 
 	@Override
 	public Object getRPCHandler(ClientReqSession session, Long projectId) {
-		log.debugf("%s: getRPCHandler - request for project %s",TAG,projectId.toString());
+		log.debugf("%s.getRPCHandler - request for project %s",TAG,projectId.toString());
 		return dispatcher;
 	}
 	

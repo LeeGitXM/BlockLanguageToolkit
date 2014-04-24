@@ -14,7 +14,6 @@ import com.ils.block.common.PropertyType;
 import com.ils.block.control.IncomingNotification;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.connection.ConnectionType;
-import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 
@@ -37,6 +36,7 @@ public class MockOutputBlock extends AbstractProcessBlock implements ProcessBloc
 		initialize();
 	}
 	
+	public PropertyType getPropertyType() { return propertyType; }
 	public String getPort() { return portName; }
 	
 	/**

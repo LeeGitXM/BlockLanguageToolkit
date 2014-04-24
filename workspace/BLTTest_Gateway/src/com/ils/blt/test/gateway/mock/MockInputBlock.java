@@ -10,14 +10,14 @@ import com.ils.block.ProcessBlock;
 import com.ils.block.common.AnchorDirection;
 import com.ils.block.common.AnchorPrototype;
 import com.ils.block.common.BindingType;
-import com.ils.block.common.BlockConstants;
 import com.ils.block.common.BlockProperty;
 import com.ils.block.common.PropertyType;
+import com.ils.block.common.TruthValue;
 import com.ils.block.control.BlockPropertyChangeEvent;
 import com.ils.block.control.OutgoingNotification;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.connection.ConnectionType;
-import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 
 
 /**
@@ -25,7 +25,8 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  * inputs that can be subscribed to tags.
  */
 public class MockInputBlock extends AbstractProcessBlock implements ProcessBlock {
-	private static String BLOCK_PROPERTY_INPUT = "Input";
+	private final static String TAG = "MockInputBlock";
+	private final static String BLOCK_PROPERTY_INPUT = "Input";
 	private final String portName;
 	private final PropertyType propertyType;
 	private final String tagPath;
@@ -55,10 +56,25 @@ public class MockInputBlock extends AbstractProcessBlock implements ProcessBlock
 	}
 	
 	/**
-	 * Pass a value directly on the output. This callable directly.
+	 * Pass a value directly on the output. This callable directly. Convert 
+	 * arguments to proper type for the outgoing connection.
 	 */
-	public void setValue(QualifiedValue qv) {
-		OutgoingNotification nvn = new OutgoingNotification(this,portName,qv);
+	public void writeValue(String value,String quality) {
+		// Convert the string to a proper data type
+		Object obj = value;
+		if( propertyType.equals(PropertyType.BOOLEAN)) {
+			obj = TruthValue.UNKNOWN;
+			try {
+				obj = TruthValue.valueOf(value.toUpperCase());
+			}
+			catch(IllegalArgumentException iae) {
+				log.infof("%s.writeValue: Unknown truth value %s (%s)",TAG,value,iae.getLocalizedMessage());
+			}
+		}
+		else {
+			obj = new BasicQualifiedValue(value);
+		}
+		OutgoingNotification nvn = new OutgoingNotification(this,portName,obj);
 		controller.acceptCompletionNotification(nvn);
 	}
 	
@@ -68,8 +84,10 @@ public class MockInputBlock extends AbstractProcessBlock implements ProcessBlock
 	private void initialize() {
 		setLabel("MockInput");
 		BlockProperty value = new BlockProperty(BLOCK_PROPERTY_INPUT,null,propertyType,true);
-		value.setBinding(tagPath);
-		value.setBindingType(BindingType.TAG);
+		if( tagPath!=null && tagPath.length()>0 ) {
+			value.setBinding(tagPath);
+			value.setBindingType(BindingType.TAG);
+		}
 		properties.put(BLOCK_PROPERTY_INPUT, value);
 		
 		// Define a single output

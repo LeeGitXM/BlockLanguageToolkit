@@ -37,7 +37,7 @@ public class ProcessDiagram extends ProcessNode {
 	private final LoggerEx log;
 	private final SerializableDiagram diagram;
 	private boolean valid = false;
-	private final Map<UUID,ProcessBlock> blocks;
+	protected final Map<UUID,ProcessBlock> blocks;
 	private final Map<ConnectionKey,ProcessConnection> connectionMap;            // Key by connection number
 	protected final Map<BlockPort,List<ProcessConnection>> outgoingConnections;    // Key by upstream block:port
 	private final long resourceId;
@@ -58,7 +58,6 @@ public class ProcessDiagram extends ProcessNode {
 		outgoingConnections = new HashMap<BlockPort,List<ProcessConnection>>();
 		analyze(diagram);
 	}
-
 
 	public ProcessBlock getBlock(UUID id) { return blocks.get(id); }
 	public Collection<ProcessBlock> getProcessBlocks() { return blocks.values(); }

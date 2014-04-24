@@ -88,7 +88,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	@Override
 	public void acceptBroadcastNotification(BroadcastNotification note) {
 		log.infof("%s.acceptBroadcastNotification: %s (%s) %s", TAG,note.getDiagramId(),note.getSignal().getCommand(),
-				(stopped?"REJECTED, stopped":""));
+				(stopped?"REJECTED, controller stopped":""));
 		try {
 			if(!stopped) buffer.put(note);
 		}
@@ -101,7 +101,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 */
 	public void acceptCompletionNotification(OutgoingNotification note) {
 		log.infof("%s:acceptCompletionNotification: %s:%s %s", TAG,note.getBlock().getBlockId().toString(),note.getPort(),
-				(stopped?"REJECTED, stopped":""));
+				(stopped?"REJECTED, controller stopped":""));
 		try {
 			if(!stopped) buffer.put(note);
 		}
@@ -194,6 +194,17 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	}
 	
 	// ======================= Delegated to TagListener ======================
+	/**
+	 * Stop the tag subscription associated with a particular property of a block.
+	 */
+	public void removeSubscription(ProcessBlock block,BlockProperty property) {
+		if( property!=null && property.getValue()!=null && property.getBindingType()==BindingType.TAG ) {
+			String tagPath = property.getValue().toString();
+			if( tagPath!=null && tagPath.length()>0) {
+				tagListener.removeSubscription(block,tagPath);
+			}
+		}
+	}
 	/**
 	 * Start a subscription for a block attribute associated with a tag.
 	 */

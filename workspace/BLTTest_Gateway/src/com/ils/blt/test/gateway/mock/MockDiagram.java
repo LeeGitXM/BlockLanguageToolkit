@@ -37,7 +37,12 @@ public class MockDiagram extends ProcessDiagram {
 
 	public void addBlock(ProcessBlock block) {
 		if( !(block instanceof MockInputBlock || block instanceof MockOutputBlock) ) uut = block;
-		this.getProcessBlocks().add(block);
+		try {
+			this.blocks.put(block.getBlockId(), block);
+		}
+		catch(Exception ex) {
+			log.errorf("%s.addBlock: Failed for %s=%s (%s)",TAG,block.getClass().getName(),block.getBlockId(),ex.getMessage());
+		}
 	}
 	/**
 	 * Compute connections based on the collection of input/output blocks.
@@ -45,6 +50,7 @@ public class MockDiagram extends ProcessDiagram {
 	 *
 	 */
 	public void analyze() {
+		log.infof("%s.analyze: Block-under-test is %s",TAG,uut.getLabel());
 		if(uut!=null) {
 			for(ProcessBlock block:this.getProcessBlocks()) {
 				if( block instanceof MockInputBlock ) {
@@ -65,7 +71,20 @@ public class MockDiagram extends ProcessDiagram {
 					
 				}
 				else if( block instanceof MockOutputBlock ) {
-					
+					MockOutputBlock mob = (MockOutputBlock)block;
+					AnchorPrototype anchor = getAnchorForPort(mob.getPort());
+					if( anchor!=null ) {
+						ProcessConnection pc = 
+								new ProcessConnection(ConnectionType.connectionTypeForPropertyType(mob.getPropertyType()));
+						pc.setSource(uut.getBlockId());
+						pc.setTarget(mob.getBlockId());
+						pc.setDownstreamPortName(mob.getPort());
+						pc.setUpstreamPortName(mob.getPort());
+						this.addOutgoingConnection(pc);
+					}
+					else {
+						log.warnf("%s.analyze: Block-under-test does not have an output port %s",TAG,mob.getPort());
+					}
 				}
 			}
 		}
@@ -113,10 +132,9 @@ public class MockDiagram extends ProcessDiagram {
 	}
 	
 	/**
-	 * Return the nth MockInputBlock connected to the named port. The
-	 * connections are numbered in the order in which they were defined.
+	 * Return the anchor associated with the UUT's port of a specified name.
+	 * The anchor can be either incoming or outgoing.
 	 * @param port
-	 * @param index of the connection to the named port. Zero-based.
 	 * @return
 	 */
 	private AnchorPrototype getAnchorForPort(String port) {

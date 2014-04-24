@@ -7,7 +7,6 @@ package com.ils.blt.common;
 import java.util.List;
 
 import com.ils.block.common.PalettePrototype;
-import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 
 
 /**

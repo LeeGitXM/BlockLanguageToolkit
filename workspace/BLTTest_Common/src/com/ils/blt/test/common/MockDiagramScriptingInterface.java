@@ -27,72 +27,74 @@ public interface MockDiagramScriptingInterface   {
 	 * The diagram holds exactly one block, the "Unit Under Test".
 	 * 
 	 * @param blockClass
-	 * @return the new uniqueId of the test harness
+	 * @return the new uniqueId of the test diagram
 	 */
 	public UUID createMockDiagram(String blockClass);
 	/**
 	 * Define an input connected to the named port. This input is held as part of the 
 	 * mock diagram. Once defined, the input cannot be deleted.A separate (duplicate) 
 	 * input should be defined for every connection comming into the named port.
-	 * @param harness
+	 * @param diagram
 	 * @param tagPath path to tag on which we listen for input
-	 * @param dt
+	 * @param propertyType
 	 * @param port
 	 */
-	public void addMockInput(UUID harness,String tagPath,PropertyType dt,String port );
+	public void addMockInput(UUID diagram,String tagPath,String propertyType,String port );
 	/**
 	 * Define an output connection from the named port. This output is held as part of the 
 	 * mock diagram. Once defined, the output cannot be deleted. Only one output may be
 	 * defined as eminating from the same port.
-	 * @param harness
+	 * @param diagram
 	 * @param tagPath path to tag on which we write the output.
-	 * @param dt
+	 * @param propertyType
 	 * @param port
 	 */
-	public void addMockOutput(UUID harness,String tagPath,PropertyType dt,String port );
+	public void addMockOutput(UUID diagram,String tagPath,String propertyType,String port );
 	/**
-	 * Remove the test harness from the execution engine (block controller).
-	 * The harness is stopped before being deleted.
+	 * Remove the test diagram from the execution engine (block controller).
+	 * The diagram is stopped before being deleted.
 	 * 
-	 * @param harness
+	 * @param diagram
 	 */
-	public void deleteMockDiagram(UUID harness);
+	public void deleteMockDiagram(UUID diagram);
 	/**
 	 * Read the current value held by the mock output identified by the specified
 	 * port name.
-	 * @param harness
+	 * @param diagram
 	 * @param port
 	 * @return the current value held by the specified port.
 	 */
-	public QualifiedValue readValue(UUID harness,String port);
+	public QualifiedValue readValue(UUID diagram,String port);
 	/**
-	 * Set the value of the named property. This value ignores any type of binding.
-	 * If the property is bound to a tag, then the value should be set by writing
-	 * to that tag.
+	 * Set the value of the named property in the block-under-test. This value ignores
+	 * any type of binding. Normally, if the property is bound to a tag, then the value
+	 * should be set by writing to that tag.
 	 * 
-	 * @param harness
+	 * @param diagramId
 	 * @param propertyName
 	 * @param value
 	 */
-	public void setProperty(UUID harness,String propertyName,Object value);
+	public void setTestBlockProperty(UUID diagramId,String propertyName,String value);
+	
 	/**
-	 * Simulate data arriving on the nth connection into the named input port. 
-	 * @param harness
+	 * Start the test diagram by activating subscriptions for bound properties and
+	 * mock inputs.
+	 * @param diagram
+	 */
+	public void startMockDiagram(UUID diagram);
+	/**
+	 * Stop all property updates and input receipt by canceling all active
+	 * subscriptions involving the diagram.
+	 * @param diagram unique Id
+	 */
+	public void stopMockDiagram(UUID diagram);
+	/**
+	 * Simulate data arriving on the nth connection into the named input port of the 
+	 * block under test. 
+	 * @param diagram
 	 * @param port
 	 * @param index of the connection into the named port. The index is zero-based.
 	 * @param value
 	 */
-	public void setValue(UUID harness,String port,Integer index,QualifiedValue value);
-	/**
-	 * Start the test harness by activating subscriptions for bound properties and
-	 * mock inputs.
-	 * @param harness
-	 */
-	public void startMockDiagram(UUID harness);
-	/**
-	 * Stop all property updates and input receipt by canceling all active
-	 * subscriptions involving the harness.
-	 * @param harness unique Id
-	 */
-	public void stopMockDiagram(UUID harness);
+	public void writeValue(UUID diagram,String port,Integer index,String value,String quality);
 }

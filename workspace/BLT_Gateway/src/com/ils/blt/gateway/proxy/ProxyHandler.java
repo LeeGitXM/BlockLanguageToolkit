@@ -28,7 +28,7 @@ import com.ils.block.common.BlockProperty;
 import com.ils.block.common.BlockStyle;
 import com.ils.block.common.PalettePrototype;
 import com.ils.block.common.PropertyType;
-import com.ils.block.common.TruthState;
+import com.ils.block.common.TruthValue;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.common.JavaToPython;
@@ -433,8 +433,8 @@ public class ProxyHandler   {
 			tbl.put(BLTProperties.BLOCK_ATTRIBUTE_NAME,prop.getName());
 			if(prop.getBinding()!=null) tbl.put(BLTProperties.BLOCK_ATTRIBUTE_BINDING,prop.getBinding());
 			if(prop.getBindingType()!=null) tbl.put(BLTProperties.BLOCK_ATTRIBUTE_BINDING_TYPE,prop.getBindingType().toString());
-			if(prop.isEditable())tbl.put(BLTProperties.BLOCK_ATTRIBUTE_EDITABLE,TruthState.TRUE.toString());
-			else tbl.put(BLTProperties.BLOCK_ATTRIBUTE_EDITABLE,TruthState.FALSE.toString());
+			if(prop.isEditable())tbl.put(BLTProperties.BLOCK_ATTRIBUTE_EDITABLE,TruthValue.TRUE.toString());
+			else tbl.put(BLTProperties.BLOCK_ATTRIBUTE_EDITABLE,TruthValue.FALSE.toString());
 			tbl.put(BLTProperties.BLOCK_ATTRIBUTE_MAX, String.valueOf(prop.getMaximum()));
 			tbl.put(BLTProperties.BLOCK_ATTRIBUTE_MIN, String.valueOf(prop.getMinimum()));
 			if(prop.getQuality()!=null) tbl.put(BLTProperties.BLOCK_ATTRIBUTE_QUALITY,prop.getQuality());
@@ -487,7 +487,7 @@ public class ProxyHandler   {
 	private boolean compileScript(int callbackIndex) {
 		Callback callback = callbacks[callbackIndex];
 		if( callback.code !=null ) return true;   // Already compiled
-		String module = "app";
+		String module = "project";
 		int index = callback.module.lastIndexOf(".");
 		if( index>0 ) module = callback.module.substring(0,index);
 		index = module.lastIndexOf(".");

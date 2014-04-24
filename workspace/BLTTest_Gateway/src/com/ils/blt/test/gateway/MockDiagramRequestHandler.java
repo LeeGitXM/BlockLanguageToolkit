@@ -4,18 +4,19 @@
  */
 package com.ils.blt.test.gateway;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Hashtable;
 import java.util.UUID;
 
 import com.ils.block.ProcessBlock;
 import com.ils.block.common.BlockProperty;
-import com.ils.block.control.ExecutionController;
+import com.ils.block.control.BlockPropertyChangeEvent;
 import com.ils.blt.gateway.engine.BlockExecutionController;
-import com.ils.blt.gateway.engine.ProcessDiagram;
-import com.ils.blt.gateway.proxy.ProxyHandler;
-import com.ils.connection.Connection;
+import com.ils.blt.gateway.engine.PropertyChangeEvaluationTask;
+import com.ils.blt.test.gateway.mock.MockDiagram;
+import com.ils.blt.test.gateway.mock.MockInputBlock;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
+import com.inductiveautomation.ignition.common.model.values.BasicQuality;
+import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.model.values.Quality;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
@@ -23,7 +24,7 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 /**
  *  This handler provides is a common class for handling requests dealing with mock diagrams.
  *  The requests can be expected arrive both through the scripting interface
- *  and the RPC diispatcher.  Handle those requests which are more than simple passthrus 
+ *  and the RPC dispatcher.  Handle those requests which are more than simple passthrus 
  *  to the BlockExecutionController
  *  
  *  
@@ -33,32 +34,90 @@ public class MockDiagramRequestHandler   {
 	private final static String TAG = "MockDiagramRequestHandler";
 	private final LoggerEx log;
 	private GatewayContext context = null;
-	private static MockDiagramRequestHandler instance = null;
-	protected long projectId = 0;
+	private final BlockExecutionController controller;
 	
 	/**
-	 * Initialize with instances of the classes to be controlled.
+	 * Initialize with a Gateway context.
 	 */
-	private MockDiagramRequestHandler() {
+	public MockDiagramRequestHandler(GatewayContext cntx) {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
+		this.controller = BlockExecutionController.getInstance();
+		this.context = cntx;
 	}
-
+	
 	/**
-	 * Static method to create and/or fetch the single instance.
+	 * Set the property for a block through the change listener interface. 
+	 * Do this synchronously.
+	 * 
+	 * @param diagramId
+	 * @param propertyName
+	 * @param value
 	 */
-	public static MockDiagramRequestHandler getInstance() {
-		if( instance==null) {
-			synchronized(MockDiagramRequestHandler.class) {
-				instance = new MockDiagramRequestHandler();
+	public void setTestBlockProperty(UUID diagramId, String propertyName, String value) {
+		MockDiagram mock = (MockDiagram)controller.getDiagram(diagramId);
+		if( mock!=null) {
+			ProcessBlock uut = mock.getBlockUnderTest();
+			BlockProperty property = uut.getProperty(propertyName);
+			BlockPropertyChangeEvent event = new BlockPropertyChangeEvent(
+					uut.getBlockId().toString(),propertyName,
+					new BasicQualifiedValue(property.getValue()),
+					new BasicQualifiedValue(value));
+			uut.propertyChange(event);
+		}
+	}
+	
+	/**
+	 * Start the execution engine, then start the test diagram. 
+	 * @param diagramId
+	 */
+	public void startMockDiagram(UUID diagramId){
+		log.infof("%s.startMockDiagram: %s ",TAG,diagramId.toString());
+		MockDiagram mock = (MockDiagram)controller.getDiagram(diagramId);
+		if( mock!=null ) {
+			controller.start(context);
+			mock.analyze();  // Analyze connections
+			for(ProcessBlock block:mock.getProcessBlocks()) {
+				for(BlockProperty prop:block.getProperties()) {
+					controller.startSubscription(block, prop);
+				}
 			}
 		}
-		return instance;
 	}
+	
 	/**
-	 * The gateway context must be specified before the instance is useful.
-	 * @param cntx the GatewayContext
+	 * Stop all property updates and input receipt by canceling all active
+	 * subscriptions involving the diagramId. Stop the controller.
+	 * @param diagramId unique Id
 	 */
-	public void setContext(GatewayContext cntx) {
-		this.context = cntx;
+	public void stopMockDiagram(UUID diagramId) {
+		log.infof("%s.stopMockDiagram: %s ",TAG,diagramId.toString());
+		MockDiagram mock = (MockDiagram)controller.getDiagram(diagramId);
+		if( mock!=null ) {
+			for(ProcessBlock block:mock.getProcessBlocks()) {
+				for(BlockProperty prop:block.getProperties()) {
+					controller.removeSubscription(block, prop);
+				}
+			}
+			controller.stop();
+		}
+	}
+	
+	/**
+	 * Direct a MockInput block to transmit a value to the block-under-test. 
+	 *  
+	 * @param diagramId
+	 * @param index of the connection into the named port. The index is zero-based.
+	 * @param port
+	 * @param value
+	 * @param quality
+	 */
+	public void writeValue(UUID diagramId,String port,int index,String value,String quality) {
+		MockDiagram mock = (MockDiagram)controller.getDiagram(diagramId);
+		if( mock!=null ) {
+			MockInputBlock block = mock.getInputForPort(port,index);
+			if( block!=null ) {
+				block.writeValue(value,quality);
+			}
+		}
 	}
 }

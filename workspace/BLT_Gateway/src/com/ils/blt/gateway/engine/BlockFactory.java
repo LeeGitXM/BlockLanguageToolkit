@@ -63,7 +63,7 @@ public class BlockFactory  {
 		UUID blockId = sb.getId();
 		log.debugf("%s.blockFromSerializable: Create instance of %s (%s)",TAG,className,blockId.toString());   // Should be updated
 		ProcessBlock block = null;
-		if( !className.startsWith("app") ) {
+		if( !className.startsWith("project.") ) {
 			try {
 				Class<?> clss = Class.forName(className);
 				Constructor<?> ctor = clss.getDeclaredConstructor(new Class[] {ExecutionController.class,UUID.class,UUID.class});

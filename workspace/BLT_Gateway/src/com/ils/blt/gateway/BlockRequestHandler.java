@@ -11,7 +11,6 @@ import java.util.UUID;
 
 import com.ils.block.ProcessBlock;
 import com.ils.block.common.BlockProperty;
-import com.ils.block.common.PropertyType;
 import com.ils.block.control.ExecutionController;
 import com.ils.block.control.OutgoingNotification;
 import com.ils.blt.gateway.engine.BlockExecutionController;
@@ -99,21 +98,21 @@ public class BlockRequestHandler   {
 		BlockProperty[] results = null;
 		if(block!=null) {
 			results = block.getProperties();  // Existing block
-			log.tracef("%s: getProperties existing %s = %s",TAG,block.getClass().getName(),results.toString());
+			log.tracef("%s.getProperties existing %s = %s",TAG,block.getClass().getName(),results.toString());
 		}
 		else if(className.startsWith("app")) {
 			ProxyHandler ph = ProxyHandler.getInstance();
 			block = ph.createBlockInstance(className,diagram.getSelf(),blockId);
 			if(block!=null) {
 				results = block.getProperties();
-				log.tracef("%s: getProperties new from python %s = %s",TAG,block.getClass().getName(),results.toString());
+				log.tracef("%s.getProperties new from python %s = %s",TAG,block.getClass().getName(),results.toString());
 			}
 		}
 		else {
 			block = createInstance(className,null,blockId);  // Block is not attached to a diagram
 			if(block!=null) {
 				results = block.getProperties();
-				log.tracef("%s: getProperties new %s = %s",TAG,block.getClass().getName(),results.toString());
+				log.tracef("%s.getProperties new %s = %s",TAG,block.getClass().getName(),results.toString());
 			}
 		}
 		return results;

@@ -21,7 +21,8 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 public class GatewayMockDiagramScriptFunctions  {
 	private static final String TAG = "GatewayMockDiagramScriptFunctions: ";
 	private static LoggerEx log = LogUtil.getLogger(GatewayMockDiagramScriptFunctions.class.getPackage().getName());
-	public static BLTTGatewayRpcDispatcher dispatcher = null;
+	public static BLTTGatewayRpcDispatcher  dispatcher = null;       // Set by the hook
+	public static MockDiagramRequestHandler requestHandler = null;   // Set by the hook
 	
 	/**
 	 * Create a new mock diagram and add it to the list of diagrams known to the BlockController.
@@ -32,10 +33,10 @@ public class GatewayMockDiagramScriptFunctions  {
 	 * 
 	 * @param projectName name of the caller's project
 	 * @param blockClass class of block-under-test
-	 * @return the new uniqueId of the test harness
+	 * @return the new uniqueId of the test diagramId
 	 */
-	public static UUID createTestHarness(String blockClass) {
-		log.infof("%s.createTestHarness: for class %s ",TAG,blockClass);
+	public static UUID createMockDiagram(String blockClass) {
+		log.infof("%s.createMockDiagram: for class %s ",TAG,blockClass);
 		UUID result = null;
 		if( dispatcher!=null ) {
 			result = dispatcher.createMockDiagram(blockClass);
@@ -45,106 +46,109 @@ public class GatewayMockDiagramScriptFunctions  {
 	/**
 	 * Define an input connected to the named port. This input is held as part of the 
 	 * mock diagram. Once defined, the input cannot be deleted.
-	 * @param harness
+	 * @param diagramId
 	 * @param tagPath
-	 * @param dt
+	 * @param propertyType
 	 * @param port
 	 */
-	public static void addMockInput(UUID harness,String tagPath,PropertyType dt,String port ) {
-		log.infof("%s.addMockInput: %s %s %s",TAG,tagPath,dt.toString(),port);
+	public static void addMockInput(UUID diagramId,String tagPath,String propertyType,String port ) {
+		log.infof("%s.addMockInput: %s %s %s",TAG,tagPath,propertyType.toString(),port);
 		if( dispatcher!=null ) {
-			dispatcher.addMockInput(harness,tagPath,dt,port);
+			dispatcher.addMockInput(diagramId,tagPath,propertyType,port);
 		}
 	}
 	/**
 	 * Define an output connected to the named port. This output is held as part of the 
 	 * mock diagram. Once defined, the output cannot be deleted.
-	 * @param harness
+	 * @param diagramId
 	 * @param tagPath
-	 * @param dt
+	 * @param propertyType
 	 * @param port
 	 */
-	public static void addMockOutput(UUID harness,String tagPath,PropertyType dt,String port ) {
-		log.infof("%s.addMockOutput: %s %s %s",TAG,tagPath,dt.toString(),port);
+	public static void addMockOutput(UUID diagramId,String tagPath,String propertyType,String port ) {
+		log.infof("%s.addMockOutput: %s %s %s",TAG,tagPath,propertyType.toString(),port);
 		if( dispatcher!=null ) {
-			dispatcher.addMockOutput(harness,tagPath,dt,port);
+			dispatcher.addMockOutput(diagramId,tagPath,propertyType,port);
 		}
 	}
 	/**
-	 * Remove the test harness from the execution engine (block controller).
-	 * The harness is stopped before being deleted.
+	 * Remove the test diagramId from the execution engine (block controller).
+	 * The diagramId is stopped before being deleted.
 	 * 
-	 * @param harness
+	 * @param diagramId
 	 */
-	public static void deleteTestHarness(UUID harness) {
-		log.infof("%s.deleteTestHarness: %s ",TAG,harness.toString());
+	public static void deleteMockDiagram(UUID diagramId) {
+		log.infof("%s.deleteMockDiagram: %s ",TAG,diagramId.toString());
 		if( dispatcher!=null ) {
-			dispatcher.deleteMockDiagram(harness);
+			dispatcher.deleteMockDiagram(diagramId);
 		}
 	}
 	/**
 	 * Read the current value held by the mock output identified by the specified
 	 * port name.
-	 * @param harness
+	 * @param diagramId
 	 * @param port
 	 * @return the current value held by the specified port.
 	 */
-	public static QualifiedValue readValue(UUID harness,String port){ 
-		log.infof("%s.readValue: %s %s",TAG,harness.toString(),port);
+	public static QualifiedValue readValue(UUID diagramId,String port){ 
+		log.infof("%s.readValue: %s %s",TAG,diagramId.toString(),port);
 		QualifiedValue val = null;
 		if( dispatcher!=null ) {
-			val = dispatcher.readValue(harness,port);
+			val = dispatcher.readValue(diagramId,port);
 		}
 		return val;
 	}
 	/**
-	 * Set the value of the named property. This value ignores any type of binding.
-	 * If the property is bound to a tag, then the value should be set by writing
-	 * to that tag.
+	 * Set the value of the named property in the block-under-test. This value ignores
+	 * any type of binding. Normally, if the property is bound to a tag, then the value
+	 * should be set by writing to that tag.
 	 * 
-	 * @param harness
+	 * @param diagramId
 	 * @param propertyName
 	 * @param value
 	 */
-	public static void setProperty(UUID harness,String propertyName,Object value){ 
-		log.infof("%s.setProperty: %s %s=%s",TAG,harness.toString(),propertyName,value.toString());
-		if( dispatcher!=null ) {
-			dispatcher.setProperty(harness,propertyName,value);
+	public static void setTestBlockProperty(UUID diagramId,String propertyName,String value){ 
+		log.infof("%s.setTestBlockProperty: %s %s=%s",TAG,diagramId.toString(),propertyName,value);
+		if( requestHandler!=null ) {
+			requestHandler.setTestBlockProperty(diagramId,propertyName,value);
 		}
 	}
 	/**
+	 * Start the test diagramId by activating subscriptions for bound properties and
+	 * mock inputs. This also starts the controller if it wasn't running.
+	 * @param diagramId
+	 */
+	public static void startMockDiagram(UUID diagramId){
+		log.infof("%s.startMockDiagram: %s ",TAG,diagramId.toString());
+		if( requestHandler!=null ) {
+			requestHandler.startMockDiagram(diagramId);
+		}
+	}
+	
+	/**
+	 * Stop all property updates and input receipt by canceling all active
+	 * subscriptions involving the diagramId. Stop the controller.
+	 * @param diagramId unique Id
+	 */
+	public static void stopMockDiagram(UUID diagramId) {
+		log.infof("%s.stopMockDiagram: %s ",TAG,diagramId.toString());
+		if( requestHandler!=null ) {
+			requestHandler.stopMockDiagram(diagramId);
+		}
+	}
+	
+	/**
 	 * Simulate data arriving on the named input port. 
-	 * @param harness
+	 * @param diagramId
 	 * @param index of the connection into the named port. The index is zero-based.
 	 * @param port
 	 * @param value
+	 * @param quality
 	 */
-	public static void setValue(UUID harness,UUID blockId,String port,int index,QualifiedValue value) {
-		log.infof("%s.setValue: %s %s.%d=%s",TAG,harness.toString(),port,index,value);
-		if( dispatcher!=null ) {
-			dispatcher.setValue(harness,port,new Integer(index),value);
-		}
-	}
-	/**
-	 * Start the test harness by activating subscriptions for bound properties and
-	 * mock inputs.
-	 * @param harness
-	 */
-	public static void startTestHarness(UUID harness){
-		log.infof("%s.startTestHarness: %s ",TAG,harness.toString());
-		if( dispatcher!=null ) {
-			dispatcher.startMockDiagram(harness);
-		}
-	}
-	/**
-	 * Stop all property updates and input receipt by canceling all active
-	 * subscriptions involving the harness.
-	 * @param harness unique Id
-	 */
-	public static void stopTestHarness(UUID harness) {
-		log.infof("%s.stopTestHarness: %s ",TAG,harness.toString());
-		if( dispatcher!=null ) {
-			dispatcher.stopMockDiagram(harness);
+	public static void writeValue(UUID diagramId,UUID blockId,String port,int index,String value,String quality) {
+		log.infof("%s.writeValue: %s %s.%d=%s",TAG,diagramId.toString(),port,index,value);
+		if( requestHandler!=null ) {
+			requestHandler.writeValue(diagramId,port,index,value,quality);
 		}
 	}
 }

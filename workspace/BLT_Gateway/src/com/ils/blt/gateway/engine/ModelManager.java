@@ -243,8 +243,8 @@ public class ModelManager implements ProjectListener  {
 	@Override
 	public void projectAdded(Project staging, Project published) {
 		if( staging!=null ) {
-			long projectId = published.getId();
-			log.debugf("%s.projectAdded: %s (%d),published",TAG,published.getName(),projectId);
+			long projectId = staging.getId();
+			log.debugf("%s.projectAdded: %s (%d),staging",TAG,staging.getName(),projectId);
 			List<ProjectResource> resources = published.getResources();
 			for( ProjectResource res:resources ) {
 				log.infof("%s.projectAdded: resource %s (%d),type %s", TAG,res.getName(),
@@ -273,7 +273,7 @@ public class ModelManager implements ProjectListener  {
 	@Override
 	public void projectUpdated(Project diff, ProjectVersion vers) { 
 		log.infof("%s.projectUpdated: %s (%d)  %s", TAG,diff.getName(),diff.getId(),vers.toString());
-		if( vers!=ProjectVersion.Published ) return;  // Consider only the "Published" version
+		if( vers!=ProjectVersion.Staging ) return;  // Consider only the "Staging" version
 		
 		long projectId = diff.getId();
 		Set<Long> deleted = diff.getDeletedResources();

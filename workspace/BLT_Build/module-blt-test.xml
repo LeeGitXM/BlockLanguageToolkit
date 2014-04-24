@@ -20,7 +20,12 @@
 		<jar scope="D">blt-test-designer.jar.pack.gz</jar>
 		<jar scope="D">blt-test-common.jar.pack.gz</jar>
 		<jar scope="G">blt-test-gateway.jar</jar>
+		<jar scope="G">blt-gateway.jar</jar>
 		<jar scope="G">blt-common.jar</jar>
+		<jar scope="G">blt-test-common.jar</jar>
+		<jar scope="G">blt-common.jar</jar>
+		<jar scope="G">ils-common.jar</jar>
+		<jar scope="G">block-definition.jar</jar>
 		<jar scope="GD">jackson-core-2.2.3.jar</jar>
 		<jar scope="GD">jackson-databind-2.2.3.jar</jar>
 		<jar scope="GD">jackson-annotations-2.2.3.jar</jar>
