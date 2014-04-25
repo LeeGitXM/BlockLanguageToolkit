@@ -26,11 +26,10 @@ public class RegistrationScriptFunctions   {
 	 * @param type a string denoting the callback kind. Valid values are found in BLTProperties.
 	 * @param project name of the project that is the block code repository
 	 * @param module the python code module. Must be in package app.block.
-	 * @param arg name of the local variable (or comma-separated list) of local variables submitted to the function
-	 * @param variable the name of the global variable that will hold both function arguments and results..
+	 * @param arglist name of the local variable (or comma-separated list of local variables) submitted to the function
 	 */
-	public static void register(String type,String project,String module,String arg,String variable) {
-		ProxyHandler.getInstance().register(type,project,module,arg,variable);
+	public static void register(String type,String project,String module,String arglist) {
+		ProxyHandler.getInstance().register(type,project,module,arglist);
 	}
 	
 	/**

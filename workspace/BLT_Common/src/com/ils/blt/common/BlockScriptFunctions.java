@@ -7,6 +7,7 @@ package com.ils.blt.common;
 import java.util.List;
 
 import com.ils.block.common.PalettePrototype;
+import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 
 
 /**
@@ -29,6 +30,8 @@ public class BlockScriptFunctions   {
 		List<PalettePrototype> result = manager.getBlockPrototypes();
 		return result;
 	}
+	
+	
 	/**
 	 * Query the gateway for list of diagrams 
 	 * 
@@ -46,6 +49,19 @@ public class BlockScriptFunctions   {
 	public static String getControllerState() {
 		return manager.getControllerState();
 	}
+	
+	/**
+	 * Query the gateway for list of resources that it knows about. This is
+	 * a debugging aid. 
+	 * 
+	 * @return a list of resources known to the BlockController.
+	 */
+	@SuppressWarnings("rawtypes")
+	public static List queryControllerResources() {
+		List<SerializableResourceDescriptor> result = manager.queryControllerResources();
+		return result;
+	}
+	
 	/**
 	 * Send a signal to all blocks of a particular class on a specified diagram.
 	 * This is a "local" transmission.

@@ -47,6 +47,7 @@ public class RoundUIView extends AbstractUIView implements BlockViewUI {
 			icon.paintIcon(getBlockComponent(), g, INSET, INSET);
 		}
 		drawAnchors(g);
+		drawBadges(g);
 	}
 
 }

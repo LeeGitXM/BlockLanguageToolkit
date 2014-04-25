@@ -415,8 +415,9 @@ public class GeneralPurposeTreeNode extends FolderNode {
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			log.info("=============================== Project Resources =========================");
-			listAllResources();
+			log.info("============================ Resources (Designer) =========================");
+			listProjectResources();
+			log.info("============================ Resources (Gateway) ==========================");
 			log.info("===========================================================================");
 		}
 	}
@@ -982,10 +983,13 @@ public class GeneralPurposeTreeNode extends FolderNode {
 	}
     /**
 	 * Search the project for all resources. This is for debugging.
+	 * We filter out those that are global (have no module) as these
+	 * are system things that we don't care about for the moment.
 	 */
-	public void listAllResources() {
+	public void listProjectResources() {
 		List <ProjectResource> resources = context.getProject().getResources();
 		for( ProjectResource res : resources ) {
+			if( res.getModuleId()==null || res.getModuleId().length()==0) continue;
 			log.info("Res: "+res.getResourceId()+" "+res.getResourceType()+" "+res.getModuleId()+" ("+res.getName()+
 					":"+res.getParentUuid()+")");
 		}

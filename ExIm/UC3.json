@@ -1,1 +1,547 @@
-{"blocks":[{"x":127,"y":231,"originalId":null,"className":"com.ils.block.Entry","embeddedIcon":"","embeddedLabel":"","embeddedFontSize":24,"iconPath":null,"preferredHeight":0,"preferredWidth":0,"style":"ENTRY","label":"Entry","statusText":null,"state":null,"properties":[{"editable":true,"type":"OBJECT","binding":"[default]Tags/InputA","bindingType":"TAG","name":"Input","quality":null,"maximum":1.7976931348623157E308,"minimum":4.9E-324,"value":null}],"anchors":[{"direction":"OUTGOING","id":"4f7ef8ad-a3e3-427a-a591-f2d2596ddb97","display":"out","parentId":"73e55030-3f14-4029-a58e-5adc9fdd1516","connectionType":"DATA"}],"id":"73e55030-3f14-4029-a58e-5adc9fdd1516"},{"x":234,"y":228,"originalId":null,"className":"com.ils.block.Inhibitor","embeddedIcon":"","embeddedLabel":"","embeddedFontSize":24,"iconPath":null,"preferredHeight":0,"preferredWidth":0,"style":"CLAMP","label":"Inhibitor","statusText":null,"state":null,"properties":[{"editable":true,"type":"INTEGER","binding":"","bindingType":"NONE","name":"InhibitInterval","quality":null,"maximum":1.7976931348623157E308,"minimum":0.0,"value":"10000"}],"anchors":[{"direction":"INCOMING","id":"28654dfe-2884-44d8-9bc1-25142d9e8109","display":"in","parentId":"0e443d4d-f8a8-4681-8527-34fc0b0da70b","connectionType":"DATA"},{"direction":"INCOMING","id":"871d7171-35c8-4107-b1ea-11b2e00bf863","display":"recv","parentId":"0e443d4d-f8a8-4681-8527-34fc0b0da70b","connectionType":"SIGNAL"},{"direction":"OUTGOING","id":"7a17cec8-1e21-4d81-a6be-dc162b6a76e5","display":"out","parentId":"0e443d4d-f8a8-4681-8527-34fc0b0da70b","connectionType":"DATA"}],"id":"0e443d4d-f8a8-4681-8527-34fc0b0da70b"},{"x":524,"y":152,"originalId":null,"className":"com.ils.block.Transmitter","embeddedIcon":"","embeddedLabel":"","embeddedFontSize":24,"iconPath":"Block/icons/large/transmitter.png","preferredHeight":0,"preferredWidth":0,"style":"ICON","label":"Transmitter","statusText":null,"state":null,"properties":[{"editable":true,"type":"STRING","binding":"","bindingType":"NONE","name":"TargetClass","quality":null,"maximum":1.7976931348623157E308,"minimum":4.9E-324,"value":"com.ils.block.Inhibit"},{"editable":true,"type":"STRING","binding":"","bindingType":"NONE","name":"Scope","quality":null,"maximum":1.7976931348623157E308,"minimum":4.9E-324,"value":"LOCAL"}],"anchors":[{"direction":"INCOMING","id":"1890a43d-fdfa-40e2-85e5-ef9ba67ba089","display":"send","parentId":"4e812e0f-5084-47f7-96fb-a2d5a59695a2","connectionType":"SIGNAL"}],"id":"4e812e0f-5084-47f7-96fb-a2d5a59695a2"},{"x":479,"y":208,"originalId":null,"className":"app.block.Diagnosis.Diagnosis","embeddedIcon":"","embeddedLabel":"Diag","embeddedFontSize":24,"iconPath":null,"preferredHeight":0,"preferredWidth":0,"style":"SQUARE","label":"Diagnosis","statusText":null,"state":null,"properties":[{"editable":true,"type":"STRING","binding":"","bindingType":"NONE","name":"Diagnosis","quality":null,"maximum":1.7976931348623157E308,"minimum":4.9E-324,"value":""}],"anchors":[{"direction":"INCOMING","id":"aadf44db-8aff-4f8d-9de0-cc939f9ede05","display":"in","parentId":"03d00e4b-96a9-4bac-9dbd-05cadca5687a","connectionType":"TRUTHVALUE"},{"direction":"OUTGOING","id":"93261166-9cd8-47a1-9450-56cdbf518da8","display":"out","parentId":"03d00e4b-96a9-4bac-9dbd-05cadca5687a","connectionType":"TEXT"},{"direction":"OUTGOING","id":"362a2d89-7f50-4ee7-ac27-13268d28c164","display":"send","parentId":"03d00e4b-96a9-4bac-9dbd-05cadca5687a","connectionType":"SIGNAL"}],"id":"03d00e4b-96a9-4bac-9dbd-05cadca5687a"},{"x":514,"y":379,"originalId":null,"className":"com.ils.block.TagWriter","embeddedIcon":"","embeddedLabel":"","embeddedFontSize":24,"iconPath":null,"preferredHeight":0,"preferredWidth":0,"style":"ROUND","label":"Tag Writer","statusText":null,"state":null,"properties":[{"editable":true,"type":"STRING","binding":"","bindingType":"NONE","name":"TagPath","quality":null,"maximum":1.7976931348623157E308,"minimum":4.9E-324,"value":"Tags/OutputA"},{"editable":true,"type":"STRING","binding":"","bindingType":"NONE","name":"Provider","quality":null,"maximum":1.7976931348623157E308,"minimum":4.9E-324,"value":"default"}],"anchors":[{"direction":"INCOMING","id":"ad34cc74-5ef0-4d70-b571-72b30985812d","display":"in","parentId":"6bed5fc3-01e8-421d-bb72-57fc6ded24c7","connectionType":"ANY"}],"id":"6bed5fc3-01e8-421d-bb72-57fc6ded24c7"},{"x":560,"y":296,"originalId":null,"className":"com.ils.block.TagWriter","embeddedIcon":"","embeddedLabel":"","embeddedFontSize":24,"iconPath":null,"preferredHeight":0,"preferredWidth":0,"style":"ROUND","label":"Tag Writer","statusText":null,"state":null,"properties":[{"editable":true,"type":"STRING","binding":"","bindingType":"NONE","name":"TagPath","quality":null,"maximum":1.7976931348623157E308,"minimum":4.9E-324,"value":"Tags/OutputB"},{"editable":true,"type":"STRING","binding":"","bindingType":"NONE","name":"Provider","quality":null,"maximum":1.7976931348623157E308,"minimum":4.9E-324,"value":"default"}],"anchors":[{"direction":"INCOMING","id":"4dbd64ac-0218-43b0-9637-faf573d7a78a","display":"in","parentId":"a5237052-5bf7-4eb6-ab15-2a01d649bb61","connectionType":"ANY"}],"id":"a5237052-5bf7-4eb6-ab15-2a01d649bb61"},{"x":344,"y":154,"originalId":null,"className":"com.ils.block.Receiver","embeddedIcon":"","embeddedLabel":"","embeddedFontSize":24,"iconPath":"Block/icons/large/receiver.png","preferredHeight":0,"preferredWidth":0,"style":"ICON","label":"Receiver","statusText":null,"state":null,"properties":[{"editable":true,"type":"STRING","binding":"","bindingType":"NONE","name":"AcceptancePattern","quality":null,"maximum":1.7976931348623157E308,"minimum":4.9E-324,"value":"*"},{"editable":true,"type":"STRING","binding":"","bindingType":"NONE","name":"ReceivingClass","quality":null,"maximum":1.7976931348623157E308,"minimum":4.9E-324,"value":null}],"anchors":[{"direction":"OUTGOING","id":"ca643bcd-0f30-4326-9568-f85ba26924f7","display":"recv","parentId":"b9c7fb96-3fd1-476f-b548-f8ac6316f7b3","connectionType":"SIGNAL"}],"id":"b9c7fb96-3fd1-476f-b548-f8ac6316f7b3"},{"x":234,"y":173,"originalId":null,"className":"com.ils.block.Receiver","embeddedIcon":"","embeddedLabel":"","embeddedFontSize":24,"iconPath":"Block/icons/large/receiver.png","preferredHeight":0,"preferredWidth":0,"style":"ICON","label":"Receiver","statusText":null,"state":null,"properties":[{"editable":true,"type":"STRING","binding":"","bindingType":"NONE","name":"AcceptancePattern","quality":null,"maximum":1.7976931348623157E308,"minimum":4.9E-324,"value":"*"},{"editable":true,"type":"STRING","binding":"","bindingType":"NONE","name":"ReceivingClass","quality":null,"maximum":1.7976931348623157E308,"minimum":4.9E-324,"value":"com.ils.block.Inhibit"}],"anchors":[{"direction":"OUTGOING","id":"c2be20d4-ad5b-4476-a593-222ce77712f9","display":"recv","parentId":"7a128a4f-6217-451d-8989-e21b660be012","connectionType":"SIGNAL"}],"id":"7a128a4f-6217-451d-8989-e21b660be012"},{"x":345,"y":218,"originalId":null,"className":"com.ils.block.SQC","embeddedIcon":"","embeddedLabel":"SQC","embeddedFontSize":36,"iconPath":null,"preferredHeight":0,"preferredWidth":0,"style":"SQUARE","label":"SQC","statusText":null,"state":null,"properties":[{"editable":true,"type":"INTEGER","binding":"","bindingType":"NONE","name":"ScanInterval","quality":null,"maximum":1.7976931348623157E308,"minimum":4.9E-324,"value":"5000"},{"editable":true,"type":"DOUBLE","binding":"","bindingType":"NONE","name":"StandardDeviation","quality":null,"maximum":1.7976931348623157E308,"minimum":4.9E-324,"value":1.0},{"editable":true,"type":"DOUBLE","binding":"","bindingType":"NONE","name":"Mean","quality":null,"maximum":1.7976931348623157E308,"minimum":4.9E-324,"value":"10.0"},{"editable":true,"type":"STRING","binding":"","bindingType":"NONE","name":"LimitType","quality":null,"maximum":1.7976931348623157E308,"minimum":4.9E-324,"value":"HIGH"},{"editable":true,"type":"DOUBLE","binding":"","bindingType":"NONE","name":"Limit","quality":null,"maximum":1.7976931348623157E308,"minimum":4.9E-324,"value":"1"},{"editable":true,"type":"INTEGER","binding":"","bindingType":"NONE","name":"SampleSize","quality":null,"maximum":1.7976931348623157E308,"minimum":4.9E-324,"value":10},{"editable":true,"type":"INTEGER","binding":"","bindingType":"NONE","name":"MaximumOutOfRange","quality":null,"maximum":1.7976931348623157E308,"minimum":4.9E-324,"value":"3"}],"anchors":[{"direction":"INCOMING","id":"a408bb40-0a0b-4c2a-a1bc-6186c041d2a5","display":"in","parentId":"0e8fd08d-7e48-4059-a06b-daf1cdc665a1","connectionType":"DATA"},{"direction":"OUTGOING","id":"f75c955c-f010-4d18-a47c-0067de46acee","display":"out","parentId":"0e8fd08d-7e48-4059-a06b-daf1cdc665a1","connectionType":"TRUTHVALUE"},{"direction":"INCOMING","id":"fe1c02d3-0713-4f3b-a99b-6c96cecd3181","display":"recv","parentId":"0e8fd08d-7e48-4059-a06b-daf1cdc665a1","connectionType":"SIGNAL"}],"id":"0e8fd08d-7e48-4059-a06b-daf1cdc665a1"}],"connections":[{"beginBlock":"73e55030-3f14-4029-a58e-5adc9fdd1516","endBlock":"0e443d4d-f8a8-4681-8527-34fc0b0da70b","beginAnchor":{"direction":"OUTGOING","id":"out","parentId":"73e55030-3f14-4029-a58e-5adc9fdd1516","anchorX":74,"anchorY":30,"pathLeaderX":90,"pathLeaderY":30,"hotSpotX":68,"hotSpotY":24,"hotSpotHeight":12,"hotSpotWidth":12},"endAnchor":{"direction":"INCOMING","id":"in","parentId":"0e443d4d-f8a8-4681-8527-34fc0b0da70b","anchorX":6,"anchorY":30,"pathLeaderX":-10,"pathLeaderY":30,"hotSpotX":0,"hotSpotY":24,"hotSpotHeight":12,"hotSpotWidth":12},"type":"DATA"},{"beginBlock":"7a128a4f-6217-451d-8989-e21b660be012","endBlock":"0e443d4d-f8a8-4681-8527-34fc0b0da70b","beginAnchor":{"direction":"OUTGOING","id":"recv","parentId":"7a128a4f-6217-451d-8989-e21b660be012","anchorX":24,"anchorY":42,"pathLeaderX":24,"pathLeaderY":56,"hotSpotX":18,"hotSpotY":36,"hotSpotHeight":12,"hotSpotWidth":12},"endAnchor":{"direction":"INCOMING","id":"recv","parentId":"0e443d4d-f8a8-4681-8527-34fc0b0da70b","anchorX":23,"anchorY":7,"pathLeaderX":23,"pathLeaderY":-8,"hotSpotX":17,"hotSpotY":0,"hotSpotHeight":12,"hotSpotWidth":12},"type":"SIGNAL"},{"beginBlock":"b9c7fb96-3fd1-476f-b548-f8ac6316f7b3","endBlock":"0e8fd08d-7e48-4059-a06b-daf1cdc665a1","beginAnchor":{"direction":"OUTGOING","id":"recv","parentId":"b9c7fb96-3fd1-476f-b548-f8ac6316f7b3","anchorX":24,"anchorY":42,"pathLeaderX":24,"pathLeaderY":56,"hotSpotX":18,"hotSpotY":36,"hotSpotHeight":12,"hotSpotWidth":12},"endAnchor":{"direction":"INCOMING","id":"recv","parentId":"0e8fd08d-7e48-4059-a06b-daf1cdc665a1","anchorX":23,"anchorY":7,"pathLeaderX":23,"pathLeaderY":-8,"hotSpotX":17,"hotSpotY":0,"hotSpotHeight":12,"hotSpotWidth":12},"type":"SIGNAL"},{"beginBlock":"0e443d4d-f8a8-4681-8527-34fc0b0da70b","endBlock":"0e8fd08d-7e48-4059-a06b-daf1cdc665a1","beginAnchor":{"direction":"OUTGOING","id":"out","parentId":"0e443d4d-f8a8-4681-8527-34fc0b0da70b","anchorX":74,"anchorY":30,"pathLeaderX":90,"pathLeaderY":30,"hotSpotX":68,"hotSpotY":24,"hotSpotHeight":12,"hotSpotWidth":12},"endAnchor":{"direction":"INCOMING","id":"in","parentId":"0e8fd08d-7e48-4059-a06b-daf1cdc665a1","anchorX":6,"anchorY":40,"pathLeaderX":-10,"pathLeaderY":40,"hotSpotX":0,"hotSpotY":34,"hotSpotHeight":12,"hotSpotWidth":12},"type":"DATA"},{"beginBlock":"0e8fd08d-7e48-4059-a06b-daf1cdc665a1","endBlock":"6bed5fc3-01e8-421d-bb72-57fc6ded24c7","beginAnchor":{"direction":"OUTGOING","id":"out","parentId":"0e8fd08d-7e48-4059-a06b-daf1cdc665a1","anchorX":74,"anchorY":40,"pathLeaderX":90,"pathLeaderY":40,"hotSpotX":68,"hotSpotY":34,"hotSpotHeight":12,"hotSpotWidth":12},"endAnchor":{"direction":"INCOMING","id":"in","parentId":"6bed5fc3-01e8-421d-bb72-57fc6ded24c7","anchorX":6,"anchorY":29,"pathLeaderX":-10,"pathLeaderY":29,"hotSpotX":0,"hotSpotY":23,"hotSpotHeight":12,"hotSpotWidth":12},"type":"TRUTHVALUE"},{"beginBlock":"0e8fd08d-7e48-4059-a06b-daf1cdc665a1","endBlock":"03d00e4b-96a9-4bac-9dbd-05cadca5687a","beginAnchor":{"direction":"OUTGOING","id":"out","parentId":"0e8fd08d-7e48-4059-a06b-daf1cdc665a1","anchorX":74,"anchorY":40,"pathLeaderX":90,"pathLeaderY":40,"hotSpotX":68,"hotSpotY":34,"hotSpotHeight":12,"hotSpotWidth":12},"endAnchor":{"direction":"INCOMING","id":"in","parentId":"03d00e4b-96a9-4bac-9dbd-05cadca5687a","anchorX":6,"anchorY":40,"pathLeaderX":-10,"pathLeaderY":40,"hotSpotX":0,"hotSpotY":34,"hotSpotHeight":12,"hotSpotWidth":12},"type":"TRUTHVALUE"},{"beginBlock":"03d00e4b-96a9-4bac-9dbd-05cadca5687a","endBlock":"4e812e0f-5084-47f7-96fb-a2d5a59695a2","beginAnchor":{"direction":"OUTGOING","id":"send","parentId":"03d00e4b-96a9-4bac-9dbd-05cadca5687a","anchorX":57,"anchorY":7,"pathLeaderX":57,"pathLeaderY":-10,"hotSpotX":51,"hotSpotY":0,"hotSpotHeight":12,"hotSpotWidth":12},"endAnchor":{"direction":"INCOMING","id":"send","parentId":"4e812e0f-5084-47f7-96fb-a2d5a59695a2","anchorX":24,"anchorY":42,"pathLeaderX":24,"pathLeaderY":56,"hotSpotX":18,"hotSpotY":36,"hotSpotHeight":12,"hotSpotWidth":12},"type":"SIGNAL"},{"beginBlock":"03d00e4b-96a9-4bac-9dbd-05cadca5687a","endBlock":"a5237052-5bf7-4eb6-ab15-2a01d649bb61","beginAnchor":{"direction":"OUTGOING","id":"out","parentId":"03d00e4b-96a9-4bac-9dbd-05cadca5687a","anchorX":57,"anchorY":74,"pathLeaderX":57,"pathLeaderY":90,"hotSpotX":51,"hotSpotY":68,"hotSpotHeight":12,"hotSpotWidth":12},"endAnchor":{"direction":"INCOMING","id":"in","parentId":"a5237052-5bf7-4eb6-ab15-2a01d649bb61","anchorX":6,"anchorY":29,"pathLeaderX":-10,"pathLeaderY":29,"hotSpotX":0,"hotSpotY":23,"hotSpotHeight":12,"hotSpotWidth":12},"type":"TEXT"}],"name":"UC3","id":"6aba5b33-5688-46c3-9fe6-f101dfad6412","resourceId":632}
+{
+	"blocks": 
+	[
+		{
+			"x": 127,
+			"y": 231,
+			"originalId": null,
+			"className": "com.ils.block.Entry",
+			"embeddedIcon": "",
+			"embeddedLabel": "",
+			"embeddedFontSize": 24,
+			"iconPath": null,
+			"preferredHeight": 0,
+			"preferredWidth": 0,
+			"style": "ENTRY",
+			"label": "Entry",
+			"statusText": null,
+			"state": null,
+			"properties": 
+			[
+				{
+					"editable": true,
+					"type": "OBJECT",
+					"binding": "[default]Tags/InputA",
+					"bindingType": "TAG",
+					"name": "Input",
+					"quality": null,
+					"maximum": 1.7976931348623157E308,
+					"minimum": 4.9E-324,
+					"value": null
+				}
+			],
+			"anchors": 
+			[
+				{
+					"direction": "OUTGOING",
+					"id": "4f7ef8ad-a3e3-427a-a591-f2d2596ddb97",
+					"display": "out",
+					"parentId": "73e55030-3f14-4029-a58e-5adc9fdd1516",
+					"connectionType": "DATA"
+				}
+			],
+			"id": "73e55030-3f14-4029-a58e-5adc9fdd1516"
+		},
+		{
+			"x": 234,
+			"y": 228,
+			"originalId": null,
+			"className": "com.ils.block.Inhibitor",
+			"embeddedIcon": "",
+			"embeddedLabel": "",
+			"embeddedFontSize": 24,
+			"iconPath": null,
+			"preferredHeight": 0,
+			"preferredWidth": 0,
+			"style": "CLAMP",
+			"label": "Inhibitor",
+			"statusText": null,
+			"state": null,
+			"properties": 
+			[
+				{
+					"editable": true,
+					"type": "INTEGER",
+					"binding": "",
+					"bindingType": "NONE",
+					"name": "InhibitInterval",
+					"quality": null,
+					"maximum": 1.7976931348623157E308,
+					"minimum": 0.0,
+					"value": "10000"
+				}
+			],
+			"anchors": 
+			[
+				{
+					"direction": "INCOMING",
+					"id": "28654dfe-2884-44d8-9bc1-25142d9e8109",
+					"display": "in",
+					"parentId": "0e443d4d-f8a8-4681-8527-34fc0b0da70b",
+					"connectionType": "DATA"
+				},
+				{
+					"direction": "OUTGOING",
+					"id": "7a17cec8-1e21-4d81-a6be-dc162b6a76e5",
+					"display": "out",
+					"parentId": "0e443d4d-f8a8-4681-8527-34fc0b0da70b",
+					"connectionType": "DATA"
+				}
+			],
+			"id": "0e443d4d-f8a8-4681-8527-34fc0b0da70b"
+		},
+		{
+			"x": 479,
+			"y": 208,
+			"originalId": null,
+			"className": "app.block.Diagnosis.Diagnosis",
+			"embeddedIcon": "",
+			"embeddedLabel": "Diag",
+			"embeddedFontSize": 24,
+			"iconPath": null,
+			"preferredHeight": 0,
+			"preferredWidth": 0,
+			"style": "SQUARE",
+			"transmitEnabled": true,
+			"label": "Diagnosis",
+			"statusText": null,
+			"state": null,
+			"properties": 
+			[
+				{
+					"editable": true,
+					"type": "STRING",
+					"binding": "",
+					"bindingType": "NONE",
+					"name": "Diagnosis",
+					"quality": null,
+					"maximum": 1.7976931348623157E308,
+					"minimum": 4.9E-324,
+					"value": ""
+				}
+			],
+			"anchors": 
+			[
+				{
+					"direction": "INCOMING",
+					"id": "aadf44db-8aff-4f8d-9de0-cc939f9ede05",
+					"display": "in",
+					"parentId": "03d00e4b-96a9-4bac-9dbd-05cadca5687a",
+					"connectionType": "TRUTHVALUE"
+				},
+				{
+					"direction": "OUTGOING",
+					"id": "93261166-9cd8-47a1-9450-56cdbf518da8",
+					"display": "out",
+					"parentId": "03d00e4b-96a9-4bac-9dbd-05cadca5687a",
+					"connectionType": "TEXT"
+				},
+				{
+					"direction": "OUTGOING",
+					"id": "362a2d89-7f50-4ee7-ac27-13268d28c164",
+					"display": "send",
+					"parentId": "03d00e4b-96a9-4bac-9dbd-05cadca5687a",
+					"connectionType": "SIGNAL"
+				}
+			],
+			"id": "03d00e4b-96a9-4bac-9dbd-05cadca5687a"
+		},
+		{
+			"x": 514,
+			"y": 379,
+			"originalId": null,
+			"className": "com.ils.block.TagWriter",
+			"embeddedIcon": "",
+			"embeddedLabel": "",
+			"embeddedFontSize": 24,
+			"iconPath": null,
+			"preferredHeight": 0,
+			"preferredWidth": 0,
+			"style": "ROUND",
+			"label": "Tag Writer",
+			"statusText": null,
+			"state": null,
+			"properties": 
+			[
+				{
+					"editable": true,
+					"type": "STRING",
+					"binding": "",
+					"bindingType": "NONE",
+					"name": "TagPath",
+					"quality": null,
+					"maximum": 1.7976931348623157E308,
+					"minimum": 4.9E-324,
+					"value": "Tags/OutputA"
+				},
+				{
+					"editable": true,
+					"type": "STRING",
+					"binding": "",
+					"bindingType": "NONE",
+					"name": "Provider",
+					"quality": null,
+					"maximum": 1.7976931348623157E308,
+					"minimum": 4.9E-324,
+					"value": "default"
+				}
+			],
+			"anchors": 
+			[
+				{
+					"direction": "INCOMING",
+					"id": "ad34cc74-5ef0-4d70-b571-72b30985812d",
+					"display": "in",
+					"parentId": "6bed5fc3-01e8-421d-bb72-57fc6ded24c7",
+					"connectionType": "ANY"
+				}
+			],
+			"id": "6bed5fc3-01e8-421d-bb72-57fc6ded24c7"
+		},
+		{
+			"x": 560,
+			"y": 296,
+			"originalId": null,
+			"className": "com.ils.block.TagWriter",
+			"embeddedIcon": "",
+			"embeddedLabel": "",
+			"embeddedFontSize": 24,
+			"iconPath": null,
+			"preferredHeight": 0,
+			"preferredWidth": 0,
+			"style": "ROUND",
+			"label": "Tag Writer",
+			"statusText": null,
+			"state": null,
+			"properties": 
+			[
+				{
+					"editable": true,
+					"type": "STRING",
+					"binding": "",
+					"bindingType": "NONE",
+					"name": "TagPath",
+					"quality": null,
+					"maximum": 1.7976931348623157E308,
+					"minimum": 4.9E-324,
+					"value": "Tags/OutputB"
+				},
+				{
+					"editable": true,
+					"type": "STRING",
+					"binding": "",
+					"bindingType": "NONE",
+					"name": "Provider",
+					"quality": null,
+					"maximum": 1.7976931348623157E308,
+					"minimum": 4.9E-324,
+					"value": "default"
+				}
+			],
+			"anchors": 
+			[
+				{
+					"direction": "INCOMING",
+					"id": "4dbd64ac-0218-43b0-9637-faf573d7a78a",
+					"display": "in",
+					"parentId": "a5237052-5bf7-4eb6-ab15-2a01d649bb61",
+					"connectionType": "ANY"
+				}
+			],
+			"id": "a5237052-5bf7-4eb6-ab15-2a01d649bb61"
+		},
+		{
+			"x": 345,
+			"y": 218,
+			"originalId": null,
+			"className": "com.ils.block.SQC",
+			"embeddedIcon": "",
+			"embeddedLabel": "SQC",
+			"embeddedFontSize": 36,
+			"iconPath": null,
+			"preferredHeight": 0,
+			"preferredWidth": 0,
+			"receiveEnabled": true,
+			"style": "SQUARE",
+			"label": "SQC",
+			"statusText": null,
+			"state": null,
+			"properties": 
+			[
+				{
+					"editable": true,
+					"type": "INTEGER",
+					"binding": "",
+					"bindingType": "NONE",
+					"name": "ScanInterval",
+					"quality": null,
+					"maximum": 1.7976931348623157E308,
+					"minimum": 4.9E-324,
+					"value": "5000"
+				},
+				{
+					"editable": true,
+					"type": "DOUBLE",
+					"binding": "",
+					"bindingType": "NONE",
+					"name": "StandardDeviation",
+					"quality": null,
+					"maximum": 1.7976931348623157E308,
+					"minimum": 4.9E-324,
+					"value": 1.0
+				},
+				{
+					"editable": true,
+					"type": "DOUBLE",
+					"binding": "",
+					"bindingType": "NONE",
+					"name": "Mean",
+					"quality": null,
+					"maximum": 1.7976931348623157E308,
+					"minimum": 4.9E-324,
+					"value": "10.0"
+				},
+				{
+					"editable": true,
+					"type": "STRING",
+					"binding": "",
+					"bindingType": "NONE",
+					"name": "LimitType",
+					"quality": null,
+					"maximum": 1.7976931348623157E308,
+					"minimum": 4.9E-324,
+					"value": "HIGH"
+				},
+				{
+					"editable": true,
+					"type": "DOUBLE",
+					"binding": "",
+					"bindingType": "NONE",
+					"name": "Limit",
+					"quality": null,
+					"maximum": 1.7976931348623157E308,
+					"minimum": 4.9E-324,
+					"value": "1"
+				},
+				{
+					"editable": true,
+					"type": "INTEGER",
+					"binding": "",
+					"bindingType": "NONE",
+					"name": "SampleSize",
+					"quality": null,
+					"maximum": 1.7976931348623157E308,
+					"minimum": 4.9E-324,
+					"value": 10
+				},
+				{
+					"editable": true,
+					"type": "INTEGER",
+					"binding": "",
+					"bindingType": "NONE",
+					"name": "MaximumOutOfRange",
+					"quality": null,
+					"maximum": 1.7976931348623157E308,
+					"minimum": 4.9E-324,
+					"value": "3"
+				}
+			],
+			"anchors": 
+			[
+				{
+					"direction": "INCOMING",
+					"id": "a408bb40-0a0b-4c2a-a1bc-6186c041d2a5",
+					"display": "in",
+					"parentId": "0e8fd08d-7e48-4059-a06b-daf1cdc665a1",
+					"connectionType": "DATA"
+				},
+				{
+					"direction": "OUTGOING",
+					"id": "f75c955c-f010-4d18-a47c-0067de46acee",
+					"display": "out",
+					"parentId": "0e8fd08d-7e48-4059-a06b-daf1cdc665a1",
+					"connectionType": "TRUTHVALUE"
+				},
+				{
+					"direction": "INCOMING",
+					"id": "fe1c02d3-0713-4f3b-a99b-6c96cecd3181",
+					"display": "recv",
+					"parentId": "0e8fd08d-7e48-4059-a06b-daf1cdc665a1",
+					"connectionType": "SIGNAL"
+				}
+			],
+			"id": "0e8fd08d-7e48-4059-a06b-daf1cdc665a1"
+		}
+	],
+	"connections": 
+	[
+		{
+			"beginBlock": "73e55030-3f14-4029-a58e-5adc9fdd1516",
+			"endBlock": "0e443d4d-f8a8-4681-8527-34fc0b0da70b",
+			"beginAnchor": 
+			{
+				"direction": "OUTGOING",
+				"id": "out",
+				"parentId": "73e55030-3f14-4029-a58e-5adc9fdd1516",
+				"anchorX": 74,
+				"anchorY": 30,
+				"pathLeaderX": 90,
+				"pathLeaderY": 30,
+				"hotSpotX": 68,
+				"hotSpotY": 24,
+				"hotSpotHeight": 12,
+				"hotSpotWidth": 12
+			},
+			"endAnchor": 
+			{
+				"direction": "INCOMING",
+				"id": "in",
+				"parentId": "0e443d4d-f8a8-4681-8527-34fc0b0da70b",
+				"anchorX": 6,
+				"anchorY": 30,
+				"pathLeaderX": -10,
+				"pathLeaderY": 30,
+				"hotSpotX": 0,
+				"hotSpotY": 24,
+				"hotSpotHeight": 12,
+				"hotSpotWidth": 12
+			},
+			"type": "DATA"
+		},
+		{
+			"beginBlock": "0e443d4d-f8a8-4681-8527-34fc0b0da70b",
+			"endBlock": "0e8fd08d-7e48-4059-a06b-daf1cdc665a1",
+			"beginAnchor": 
+			{
+				"direction": "OUTGOING",
+				"id": "out",
+				"parentId": "0e443d4d-f8a8-4681-8527-34fc0b0da70b",
+				"anchorX": 74,
+				"anchorY": 30,
+				"pathLeaderX": 90,
+				"pathLeaderY": 30,
+				"hotSpotX": 68,
+				"hotSpotY": 24,
+				"hotSpotHeight": 12,
+				"hotSpotWidth": 12
+			},
+			"endAnchor": 
+			{
+				"direction": "INCOMING",
+				"id": "in",
+				"parentId": "0e8fd08d-7e48-4059-a06b-daf1cdc665a1",
+				"anchorX": 6,
+				"anchorY": 40,
+				"pathLeaderX": -10,
+				"pathLeaderY": 40,
+				"hotSpotX": 0,
+				"hotSpotY": 34,
+				"hotSpotHeight": 12,
+				"hotSpotWidth": 12
+			},
+			"type": "DATA"
+		},
+		{
+			"beginBlock": "0e8fd08d-7e48-4059-a06b-daf1cdc665a1",
+			"endBlock": "6bed5fc3-01e8-421d-bb72-57fc6ded24c7",
+			"beginAnchor": 
+			{
+				"direction": "OUTGOING",
+				"id": "out",
+				"parentId": "0e8fd08d-7e48-4059-a06b-daf1cdc665a1",
+				"anchorX": 74,
+				"anchorY": 40,
+				"pathLeaderX": 90,
+				"pathLeaderY": 40,
+				"hotSpotX": 68,
+				"hotSpotY": 34,
+				"hotSpotHeight": 12,
+				"hotSpotWidth": 12
+			},
+			"endAnchor": 
+			{
+				"direction": "INCOMING",
+				"id": "in",
+				"parentId": "6bed5fc3-01e8-421d-bb72-57fc6ded24c7",
+				"anchorX": 6,
+				"anchorY": 29,
+				"pathLeaderX": -10,
+				"pathLeaderY": 29,
+				"hotSpotX": 0,
+				"hotSpotY": 23,
+				"hotSpotHeight": 12,
+				"hotSpotWidth": 12
+			},
+			"type": "TRUTHVALUE"
+		},
+		{
+			"beginBlock": "0e8fd08d-7e48-4059-a06b-daf1cdc665a1",
+			"endBlock": "03d00e4b-96a9-4bac-9dbd-05cadca5687a",
+			"beginAnchor": 
+			{
+				"direction": "OUTGOING",
+				"id": "out",
+				"parentId": "0e8fd08d-7e48-4059-a06b-daf1cdc665a1",
+				"anchorX": 74,
+				"anchorY": 40,
+				"pathLeaderX": 90,
+				"pathLeaderY": 40,
+				"hotSpotX": 68,
+				"hotSpotY": 34,
+				"hotSpotHeight": 12,
+				"hotSpotWidth": 12
+			},
+			"endAnchor": 
+			{
+				"direction": "INCOMING",
+				"id": "in",
+				"parentId": "03d00e4b-96a9-4bac-9dbd-05cadca5687a",
+				"anchorX": 6,
+				"anchorY": 40,
+				"pathLeaderX": -10,
+				"pathLeaderY": 40,
+				"hotSpotX": 0,
+				"hotSpotY": 34,
+				"hotSpotHeight": 12,
+				"hotSpotWidth": 12
+			},
+			"type": "TRUTHVALUE"
+		},
+		{
+			"beginBlock": "03d00e4b-96a9-4bac-9dbd-05cadca5687a",
+			"endBlock": "a5237052-5bf7-4eb6-ab15-2a01d649bb61",
+			"beginAnchor": 
+			{
+				"direction": "OUTGOING",
+				"id": "out",
+				"parentId": "03d00e4b-96a9-4bac-9dbd-05cadca5687a",
+				"anchorX": 57,
+				"anchorY": 74,
+				"pathLeaderX": 57,
+				"pathLeaderY": 90,
+				"hotSpotX": 51,
+				"hotSpotY": 68,
+				"hotSpotHeight": 12,
+				"hotSpotWidth": 12
+			},
+			"endAnchor": 
+			{
+				"direction": "INCOMING",
+				"id": "in",
+				"parentId": "a5237052-5bf7-4eb6-ab15-2a01d649bb61",
+				"anchorX": 6,
+				"anchorY": 29,
+				"pathLeaderX": -10,
+				"pathLeaderY": 29,
+				"hotSpotX": 0,
+				"hotSpotY": 23,
+				"hotSpotHeight": 12,
+				"hotSpotWidth": 12
+			},
+			"type": "TEXT"
+		}
+	],
+	"name": "UC3",
+	"id": "6aba5b33-5688-46c3-9fe6-f101dfad6412",
+	"resourceId": 632
+}

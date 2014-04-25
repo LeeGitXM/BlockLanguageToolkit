@@ -15,66 +15,72 @@ import com.ils.block.common.BlockStyle;
  *          to itself.
  */
 public class SerializableBlock {
-	private int x = 0;
-	private int y = 0;
-	private UUID uuid = null;
-	private UUID originalId = null;       // Id of block from which this was cloned
+	private SerializableAnchor[] anchors = null;
 	private String className = null;
+	private int    embeddedFontSize = 24; // Pointsin font for embedded label
 	private String embeddedIcon="";       // 32x32 icon to place in block in designer
 	private String embeddedLabel="";      // Label place in block in designer
-	private int    embeddedFontSize = 24; // Pointsin font for embedded label
 	private String iconPath="";           // Path to icon that is the entire block
+	private String label;
+	private UUID originalId = null;       // Id of block from which this was cloned
 	private int preferredHeight = 0;
 	private int preferredWidth  = 0;
-	private BlockStyle style = BlockStyle.BASIC;
-	private String label;
-	private String statusText;
-	private BlockState state;
 	private BlockProperty[] properties = null;
-	private SerializableAnchor[] anchors = null;
+	private boolean receiveEnabled = false;
+	private BlockState state;
+	private String statusText;
+	private BlockStyle style = BlockStyle.BASIC;
+	private boolean transmitEnabled= false;
+	private UUID uuid = null;
+	private int x = 0;
+	private int y = 0;
 	
 	public SerializableBlock() {
 		this.anchors = new SerializableAnchor[0];
 	}
-	
+
+	public SerializableAnchor[] getAnchors() { return anchors; }
 	public String getClassName() {return className;}
-	public void setClassName(String className) {this.className = className;}
+	public int getEmbeddedFontSize() {return embeddedFontSize;}
+	public String getEmbeddedIcon() {return embeddedIcon;}
+	public String getEmbeddedLabel() {return embeddedLabel;}
+	public String getIconPath() {return iconPath;}
 	public UUID getId() { return uuid; }
-	public void setId(UUID id) { uuid = id; }
-	public UUID getOriginalId() { return originalId; }
-	public void setOriginalId(UUID id) { originalId = id; }
 	public String getLabel() { return label; }
-	public void setLabel(String label) { this.label = label; }
+	public UUID getOriginalId() { return originalId; }
+	public int getPreferredHeight() {return preferredHeight;}
+	public int getPreferredWidth() {return preferredWidth;}
+	public BlockProperty[] getProperties() { return properties; }
+	public BlockState getState() { return state; }
+	public String getStatusText() { return statusText; }
+	public BlockStyle getStyle() { return style; }
 	public int getX() { return x; }
 	public int getY() { return y; }
-	public void setX(int xx) { this.x=xx; }
-	public void setY(int yy) { this.y=yy; }
-	public BlockStyle getStyle() { return style; }
-	public String getStatusText() { return statusText; }
-	public void setStatusText(String statusText) { this.statusText = statusText; }
-	public BlockState getState() { return state; }
-	public void setState(BlockState state) { this.state = state; }
-	public void setStyle(BlockStyle style) { this.style = style; }
-	public SerializableAnchor[] getAnchors() { return anchors; }
+	public boolean isReceiveEnabled() {return receiveEnabled;}
+	public boolean isTransmitEnabled() {return transmitEnabled;}
 	public void setAnchors(SerializableAnchor[] array) {
 		anchors = array;
 		for(SerializableAnchor sa:anchors) {
 			sa.setParentId(uuid);
 		}
 	}
-	public String getEmbeddedIcon() {return embeddedIcon;}
-	public void setEmbeddedIcon(String embeddedIcon) {this.embeddedIcon = embeddedIcon;}
-	public String getEmbeddedLabel() {return embeddedLabel;}
-	public void setEmbeddedLabel(String embeddedLabel) {this.embeddedLabel = embeddedLabel;}
-	public int getEmbeddedFontSize() {return embeddedFontSize;}
+	public void setClassName(String className) {this.className = className;}
 	public void setEmbeddedFontSize(int embeddedFontSize) {this.embeddedFontSize = embeddedFontSize;}
-	public String getIconPath() {return iconPath;}
+	public void setEmbeddedIcon(String embeddedIcon) {this.embeddedIcon = embeddedIcon;}
+	public void setEmbeddedLabel(String embeddedLabel) {this.embeddedLabel = embeddedLabel;}
 	public void setIconPath(String iconPath) {this.iconPath = iconPath;}
-	public int getPreferredHeight() {return preferredHeight;}
+	public void setId(UUID id) { uuid = id; }
+	public void setLabel(String label) { this.label = label; }
+	public void setOriginalId(UUID id) { originalId = id; }
 	public void setPreferredHeight(int preferredHeight) {this.preferredHeight = preferredHeight;}
-	public int getPreferredWidth() {return preferredWidth;}
 	public void setPreferredWidth(int preferredWidth) {this.preferredWidth = preferredWidth;}
-	public BlockProperty[] getProperties() { return properties; }
 	public void setProperties(BlockProperty[] array) { this.properties = array; }
+	public void setReceiveEnabled(boolean receiveEnabled) {this.receiveEnabled = receiveEnabled;}
+	public void setState(BlockState state) { this.state = state; }
+	public void setStatusText(String statusText) { this.statusText = statusText; }
+	public void setStyle(BlockStyle style) { this.style = style; }
+	public void setTransmitEnabled(boolean transmitEnabled) {this.transmitEnabled = transmitEnabled;}
+	public void setX(int xx) { this.x=xx; }
+	public void setY(int yy) { this.y=yy; }
 
 }

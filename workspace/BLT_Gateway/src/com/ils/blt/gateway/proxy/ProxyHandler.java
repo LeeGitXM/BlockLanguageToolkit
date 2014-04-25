@@ -99,11 +99,10 @@ public class ProxyHandler   {
 	 * as a "library" of custom blocks.
 	 * @param key a string denoting the callback kind. Valid values are found in BlockProperties.
 	 * @param project name of the project that is the block code repository
-	 * @param module the python code module which handles the callback. Must be in package app.block (hardcoded import).
-	 * @param arg name of the local variable, if any, supplied when the module is called.
-	 * @param variable the name of the global variable that will hold both function arguments and results.E.g. "shared"
+	 * @param module the python code module which handles the callback. Must be in package "project" (hard-coded import).
+	 * @param arglist name of the local variable, if any, supplied when the module is called.
 	 */
-	public void register(String key, String project, String module,String arg,String variable) {
+	public void register(String key, String project, String module,String arg) {
 
 		long projectId = -1;
 		try {
@@ -154,8 +153,6 @@ public class ProxyHandler   {
 		callback.setScriptManager(context.getProjectManager().getProjectScriptManager(projectId));
 		callback.setModule(module);
 		callback.setLocalVariableList((arg==null?"":arg));
-		callback.globalVariableName = (variable==null?"":variable);
-		
 	}
 	
 	/**
@@ -207,29 +204,26 @@ public class ProxyHandler   {
 		log.infof("%s.createInstance --- calling",TAG); 
 		if( callbacks[CREATE_BLOCK_INSTANCE]!=null && compileScript(CREATE_BLOCK_INSTANCE) ) {
 			Callback cb = callbacks[CREATE_BLOCK_INSTANCE];
+			PyDictionary pyDictionary = new PyDictionary();  // Empty
 			cb.setLocalVariable(0,new PyString(className));
 			cb.setLocalVariable(1,new PyString(parentId.toString()));
 			cb.setLocalVariable(2,new PyString(blockId.toString()));
-			PyDictionary pyDictionary = new PyDictionary();  // Empty
-			// Synchronize because of our global variable
-			synchronized(cb.scriptManager) {
-				cb.getScriptManager().addGlobalVariable(cb.globalVariableName,pyDictionary);
-				execute(cb);
-				log.info(TAG+": createInstance returned "+ pyDictionary);   // Should now be updated
-				// Contents of list are Hashtable<String,?>
-				PyObject pyBlock = (PyObject)pyDictionary.get("instance");
-				if( pyBlock!=null ) {
-					block.setPythonBlock(pyBlock);
-					BlockProperty[] props = getBlockProperties(pyBlock);
-					for(BlockProperty prop:props) {
-						block.addProperty(prop);
-					}
+			cb.setLocalVariable(3,pyDictionary);
+			
+			execute(cb);
+			log.info(TAG+".createInstance: returned "+ pyDictionary);   // Should now be updated
+			// Contents of list are Hashtable<String,?>
+			PyObject pyBlock = (PyObject)pyDictionary.get("instance");
+			if( pyBlock!=null ) {
+				block.setPythonBlock(pyBlock);
+				BlockProperty[] props = getBlockProperties(pyBlock);
+				for(BlockProperty prop:props) {
+					block.addProperty(prop);
 				}
-				else {
-					log.warnf("%s.createInstance: Failed to create instance of %s",TAG,className);
-					block = null;
-				}
-				
+			}
+			else {
+				log.warnf("%s.createInstance: Failed to create instance of %s",TAG,className);
+				block = null;
 			}
 		}
 		return block;
@@ -246,10 +240,7 @@ public class ProxyHandler   {
 		if( callbacks[EVALUATE]!=null && compileScript(EVALUATE) ) {
 			Callback cb = callbacks[EVALUATE];
 			cb.setLocalVariable(0,block);
-			// Synchronize because of our global variable
-			synchronized(cb.scriptManager) {
-				execute(cb);
-			}
+			execute(cb);
 		}
 	}
 	
@@ -267,17 +258,14 @@ public class ProxyHandler   {
 			Object val = null;
 			UtilityFunctions fns = new UtilityFunctions();
 			Callback cb = callbacks[GET_BLOCK_PROPERTIES];
-			cb.setLocalVariable(0,block);
 			PyList pyList = new PyList();  // Empty
-			List<?> list = null;
-			// Synchronize because of our global variable
-			synchronized(cb.scriptManager) {
-				cb.getScriptManager().addGlobalVariable(cb.globalVariableName,pyList);
-				execute(cb);
-				log.info(TAG+": getProperties returned "+ pyList);   // Should now be updated
-				// Contents of list are Hashtable<String,?>
-				list = toJavaTranslator.pyListToArrayList(pyList);
-			}
+			cb.setLocalVariable(0,block);
+			cb.setLocalVariable(1,pyList);
+			execute(cb);
+			log.info(TAG+".getBlockProperties returned "+ pyList);   // Should now be updated
+			// Contents of list are Hashtable<String,?>
+			List<?> list = toJavaTranslator.pyListToArrayList(pyList);
+			
 			int index = 0;
 			properties = new BlockProperty[list.size()];
 			for( Object obj:list ) { 
@@ -356,15 +344,12 @@ public class ProxyHandler   {
 			Callback cb = callbacks[GET_BLOCK_PROTOTYPES];
 			PyList pyList = new PyList();  // Empty
 			List<?> list = null;
-			// Synchronize because of our global variable
-			synchronized(cb.scriptManager) {
-				cb.setLocalVariableList("prototypes");
-				cb.setLocalVariable(0,pyList);
-				execute(cb);
-				log.info(TAG+": getBlockPrototypes returned "+ pyList);   // Should now be updated
-				// Contents of list are Hashtable<String,?>
-				list = toJavaTranslator.pyListToArrayList(pyList);
-			}
+			cb.setLocalVariable(0,pyList);
+			execute(cb);
+			log.info(TAG+".getBlockPrototypes: returned "+ pyList);   // Should now be updated
+			// Contents of list are Hashtable<String,?>
+			list = toJavaTranslator.pyListToArrayList(pyList);
+
 			for( Object obj:list ) { 
 				try {
 					if( obj instanceof Hashtable ) {
@@ -378,6 +363,10 @@ public class ProxyHandler   {
 						proto.setTabName(nullCheck(tbl.get(BLTProperties.PALETTE_TAB_NAME),BlockConstants.PALETTE_TAB_CONTROL));
 						
 						BlockDescriptor view = proto.getBlockDescriptor();
+						val = tbl.get(BLTProperties.PALETTE_RECEIVE_ENABLED);
+						if( val!=null ) view.setReceiveEnabled(fns.coerceToBoolean(val.toString()));
+						val = tbl.get(BLTProperties.PALETTE_TRANSMIT_ENABLED);
+						if( val!=null ) view.setTransmitEnabled(fns.coerceToBoolean(val.toString()));
 						val = tbl.get(BLTProperties.PALETTE_VIEW_LABEL);
 						if( val!=null ) view.setEmbeddedLabel(val.toString());
 						val = tbl.get(BLTProperties.PALETTE_VIEW_ICON);
@@ -388,7 +377,7 @@ public class ProxyHandler   {
 						if( val!=null ) view.setPreferredHeight(fns.coerceToInteger(val));
 						val = tbl.get(BLTProperties.PALETTE_VIEW_WIDTH);
 						if( val!=null ) view.setPreferredWidth(fns.coerceToInteger(val));
-						view.setBlockClass(nullCheck(tbl.get(BLTProperties.PALETTE_BLOCK_CLASS),"app.block.BasicBlock.BasicBlock"));
+						view.setBlockClass(nullCheck(tbl.get(BLTProperties.PALETTE_BLOCK_CLASS),"project.block.BasicBlock.BasicBlock"));
 						val = tbl.get(BLTProperties.PALETTE_BLOCK_STYLE);
 						if( val!=null) {
 							try {
@@ -423,8 +412,9 @@ public class ProxyHandler   {
 		log.infof("%s.setProperty --- %s:%s",TAG,block.getClass(),prop.getName()); 
 		if( callbacks[SET_BLOCK_PROPERTY]!=null && compileScript(SET_BLOCK_PROPERTY) ) {
 			Callback cb = callbacks[SET_BLOCK_PROPERTY];
-			cb.setLocalVariable(0,block.getPythonBlock());
 			PyDictionary pyDictionary = new PyDictionary();  // Empty
+			cb.setLocalVariable(0,block.getPythonBlock());
+			cb.setLocalVariable(1,pyDictionary);
 			// Convert the property object into a table to send to Python.
 			if( prop.getName()==null ) {
 				log.errorf("%s.setProperty: Property name cannot be null",TAG); 
@@ -443,11 +433,7 @@ public class ProxyHandler   {
 			if( prop.getValue()!=null) tbl.put(BLTProperties.BLOCK_ATTRIBUTE_VALUE,prop.getValue().toString());
 			PyDictionary dict = toPythonTranslator.tableToPyDictionary(tbl);
 			pyDictionary.__set__(new PyString("property"), dict);
-			// Synchronize because of our global variable
-			synchronized(cb.scriptManager) {
-				cb.getScriptManager().addGlobalVariable(cb.globalVariableName,pyDictionary);
-				execute(cb);
-			}
+			execute(cb);
 		}
 	}
 	
@@ -468,11 +454,8 @@ public class ProxyHandler   {
 			cb.setLocalVariable(1,new PyString(stub));
 			cb.setLocalVariable(2,new PyString(value.getValue().toString()));
 			cb.setLocalVariable(3,new PyString(value.getQuality().toString()));
-			
-			// There is no global variable
 			execute(cb);
-			}
-		
+		}
 	}
 	
 	//================================ Unimplemented/Tested ==================================
@@ -572,23 +555,19 @@ public class ProxyHandler   {
 	 * comparable..
 	 */
 	private class Callback {
-		public final String type;
 		public PyCode code;
 		public String module;
 		private String[] localVariables;      // Derived from comma-separated
 		private String localVariableList;
-		public String globalVariableName;
 		private ScriptManager scriptManager = null;
 		private PyStringMap localsMap = null;
 
 		
 		public Callback(String type) {
-			this.type = type;
 			module = "";
 			scriptManager = null;
 			localVariables = new String[0];
 			localVariableList="";
-			globalVariableName = "";
 			code = null;
 		}
 		

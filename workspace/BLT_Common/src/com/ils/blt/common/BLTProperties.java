@@ -72,6 +72,8 @@ public interface BLTProperties   {
 	public static final String PALETTE_BLOCK_STYLE = "blockStyle";
 	public static final String PALETTE_ICON_PATH   = "iconPath";
 	public static final String PALETTE_LABEL       = "label";
+	public static final String PALETTE_RECEIVE_ENABLED   = "receiveEnabled";
+	public static final String PALETTE_TRANSMIT_ENABLED   = "transmitEnabled";
 	public static final String PALETTE_TOOLTIP     = "tooltip";
 	public static final String PALETTE_TAB_NAME    = "tabName";
 	public static final String PALETTE_VIEW_BLOCK_ICON  = "viewBlockIcon";

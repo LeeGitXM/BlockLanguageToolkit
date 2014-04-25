@@ -21,6 +21,7 @@ import com.ils.block.common.TransmissionScope;
 import com.ils.block.control.BroadcastNotification;
 import com.ils.block.control.Signal;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ProcessDiagram;
 import com.ils.blt.gateway.proxy.ProxyHandler;
@@ -30,7 +31,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 
 /**
- *  The RPC Dispatcher is the point of entry for incoming RCP requests.
+ *  The RPC Dispatcher is the point of entry for incoming RPC requests.
  *  Its purpose is simply to parse out a request and send it to the
  *  right handler. This class supports the aggregate of RPC interfaces.
  *  
@@ -188,6 +189,15 @@ public class GatewayRpcDispatcher   {
 		List<String> results = BlockExecutionController.getInstance().getDiagramTreePaths(projectName);
 		return results;
 	}
+	
+	/** 
+	 *  @return
+	 */
+	public List<SerializableResourceDescriptor> queryControllerResources() {
+		log.infof("%s: queryControllerResources ...",TAG);
+		return null;
+	}
+	
 	
 	public Boolean sendLocalSignal(String projectName, String diagramPath,String className, String command) {
 		log.infof("%s.sendLocalSignal: %s %s %s %s",TAG,projectName,diagramPath,className,command);

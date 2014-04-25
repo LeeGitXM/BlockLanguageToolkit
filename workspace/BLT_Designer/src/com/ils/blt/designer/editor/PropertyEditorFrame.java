@@ -25,10 +25,8 @@ import com.inductiveautomation.ignition.designer.model.ResourceWorkspaceFrame;
 import com.jidesoft.docking.DockableFrame;
 
 /**
- * A Diagnostics workspace is a container that occupies the DockManager workspace
- * area. It, in turn, holds DiagnosticsFrames. These are internal frames designed
- * to hold a model diagram. 
- * 
+ * A PropertyEditorFrame is a DockableFrame in the JIDE workspace (lower left) meant
+ * to hold an editor for properties of the selected block or connection. 
  */
 @SuppressWarnings("serial")
 public class PropertyEditorFrame extends DockableFrame implements ResourceWorkspaceFrame{
@@ -41,7 +39,6 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 	private final JPanel contentPanel;
 	
 	private LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
-	
 	
 	/**
 	 * Constructor 

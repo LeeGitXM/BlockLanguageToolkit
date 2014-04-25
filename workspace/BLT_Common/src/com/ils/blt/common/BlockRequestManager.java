@@ -10,6 +10,7 @@ import java.util.UUID;
 
 import com.ils.block.common.BlockProperty;
 import com.ils.block.common.PalettePrototype;
+import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -45,7 +46,7 @@ public class BlockRequestManager  {
 		if( state.equalsIgnoreCase("running")) isRunning = true;
 		return isRunning;
 	}
-	
+
 	/**
 	 * Determine whether or not the engine is running.
 	 */
@@ -63,36 +64,6 @@ public class BlockRequestManager  {
 		return state;
 	}
 	
-	/**
-	 * Start the block execution engine in the gateway.
-	 */
-	public void startController() {
-		log.debugf("%s.startController ...",TAG);
-
-		try {
-			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "startController");
-		}
-		catch(Exception ge) {
-			log.infof("%s.startController: GatewayException (%s)",TAG,ge.getMessage());
-		}
-	}
-
-	/**
-	 * Shutdown the block execution engine in the gateway.
-	 */
-	public void stopController() {
-		log.debugf("%s.stopController ...",TAG);
-
-		try {
-			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "stopController");
-		}
-		catch(Exception ge) {
-			log.infof("%s.stopController: GatewayException (%s)",TAG,ge.getMessage());
-		}
-	}
-
 
 	public void enableDiagram(Long projectId, Long resourceId, Boolean flag) {
 		// TODO Auto-generated method stub
@@ -180,6 +151,25 @@ public class BlockRequestManager  {
 	}
 	
 	/**
+	 * Query the gateway for list of resources that the block controller knows about. 
+	 * This is a debugging aid. 
+	 * 
+	 * @return a list of resources known to the BlockController.
+	 */
+	@SuppressWarnings("unchecked")
+	public List<SerializableResourceDescriptor> queryControllerResources() {
+		List<SerializableResourceDescriptor> result = null;
+		try {
+			result = (List<SerializableResourceDescriptor> )GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "queryControllerResources");
+		}
+		catch(Exception ge) {
+			log.infof("%s.queryControllerResources: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		return result;
+	}
+	
+	/**
 	 * Send a signal to all blocks of a particular class on a specified diagram.
 	 * This is a "local" transmission. The diagram is specified by a tree-path.
 	 * There may be no successful recipients.
@@ -201,4 +191,36 @@ public class BlockRequestManager  {
 		}
 		return result.booleanValue();
 	}
+	
+	
+	/**
+	 * Start the block execution engine in the gateway.
+	 */
+	public void startController() {
+		log.debugf("%s.startController ...",TAG);
+
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "startController");
+		}
+		catch(Exception ge) {
+			log.infof("%s.startController: GatewayException (%s)",TAG,ge.getMessage());
+		}
+	}
+
+	/**
+	 * Shutdown the block execution engine in the gateway.
+	 */
+	public void stopController() {
+		log.debugf("%s.stopController ...",TAG);
+
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "stopController");
+		}
+		catch(Exception ge) {
+			log.infof("%s.stopController: GatewayException (%s)",TAG,ge.getMessage());
+		}
+	}
+
 }

@@ -64,6 +64,7 @@ public class DiamondUIView extends AbstractUIView implements BlockViewUI {
 		// Reverse any transforms we made
 		g.setTransform(originalTx);
 		drawAnchors(g);
+		drawBadges(g);
 		drawEmbeddedIcon(g);
 	}
 

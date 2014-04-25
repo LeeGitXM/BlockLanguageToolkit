@@ -34,25 +34,27 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.Ab
 
 public class ProcessBlockView extends AbstractBlock {
 	private static final String TAG = "ProcessBlockView";
-	private final UUID uuid;
+	private Collection<ProcessAnchorDescriptor> anchors;
 	private final String className;
+	private int    embeddedFontSize = 24;         // Size of font for interior label
 	private String embeddedIcon="";               // 32x32 icon to place in block in designer
 	private String embeddedLabel="";              // Label place in block in designer
-	private int    embeddedFontSize = 24;         // Size of font for interior label
+	private final UIFactory factory = new UIFactory() ;
 	private String iconPath="";                   // Path to icon that is the entire block
 	private String label;                         // Text to display on the block
-	private BlockState state = BlockState.IDLE;   // Block execution state
-	private String statusText;                    // Auxiliary text to display
-	private Collection<ProcessAnchorDescriptor> anchors;
-	private Collection<BlockProperty> properties;
+	private Point location = new Point(0,0);
+	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	private int preferredHeight = 0;              // Size the view to "natural" size
 	private int preferredWidth  = 0;              // Size the view to "natural" size
-	private Point location = new Point(0,0);
-	private final UIFactory factory = new UIFactory() ;
-	private BlockViewUI ui = null;
+	private Collection<BlockProperty> properties;
+	private boolean receiveEnabled = false;
+	private BlockState state = BlockState.IDLE;   // Block execution state
+	private String statusText;                    // Auxiliary text to display
 	private BlockStyle style = BlockStyle.BASIC;
+	private boolean transmitEnabled = false;
+	private BlockViewUI ui = null;
 	
-	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
+	private final UUID uuid;
 	
 	
 	/**
@@ -71,6 +73,8 @@ public class ProcessBlockView extends AbstractBlock {
 		this.state = BlockState.STOPPED;
 		this.statusText = "";
 		this.style = descriptor.getStyle();
+		this.receiveEnabled = descriptor.isReceiveEnabled();
+		this.transmitEnabled= descriptor.isTransmitEnabled();
 
 		this.anchors = new ArrayList<ProcessAnchorDescriptor>();
 		for( AnchorPrototype ap:descriptor.getAnchors() ) {
@@ -95,6 +99,8 @@ public class ProcessBlockView extends AbstractBlock {
 		this.label = sb.getLabel();
 		this.state = BlockState.PAUSED;
 		this.statusText = sb.getStatusText();
+		this.receiveEnabled  = sb.isReceiveEnabled();
+		this.transmitEnabled = sb.isTransmitEnabled();
 		this.anchors = new ArrayList<ProcessAnchorDescriptor>();
 		if(sb.getAnchors()!=null ) {
 			for( SerializableAnchor sa:sb.getAnchors() ) {
@@ -113,10 +119,15 @@ public class ProcessBlockView extends AbstractBlock {
 		log.infof("%s: Created %s %s (%s) view from serializable block", TAG, className, sb.getId().toString(),style.toString());
 	}
 	
-	@Override
-	public Block copy(Map<UUID, UUID> arg0) {
-		log.infof("%s: copy ...", TAG);
-		return null;
+	// Note: This does not set connection type
+	private SerializableAnchor convertAnchorToSerializable(ProcessAnchorDescriptor anchor) {
+		SerializableAnchor result = new SerializableAnchor();
+		result.setDirection(anchor.getType()==AnchorType.Origin?AnchorDirection.OUTGOING:AnchorDirection.INCOMING);
+		result.setDisplay(anchor.getDisplay());
+		result.setId(anchor.getId());
+		result.setParentId(getId());
+		result.setConnectionType(anchor.getConnectionType());
+		return result;
 	}
 	
     public SerializableBlock convertToSerializable() {
@@ -129,6 +140,8 @@ public class ProcessBlockView extends AbstractBlock {
 		result.setIconPath(getIconPath());
 		result.setLabel(getLabel());
 		result.setStyle(getStyle());
+		result.setReceiveEnabled(isReceiveEnabled());
+		result.setTransmitEnabled(isTransmitEnabled());
 		result.setX(getLocation().x);
 		result.setY(getLocation().y);
 		
@@ -148,71 +161,64 @@ public class ProcessBlockView extends AbstractBlock {
 		
 		return result;
 	}
-	public Collection<ProcessAnchorDescriptor> getAnchors() { return anchors; }
-	public Collection<BlockProperty> getProperties() { return properties; }
-	public void setProperties(Collection<BlockProperty> props) { this.properties = props; }
-	public String getClassName() { return className; }
-
+	@Override
+	public Block copy(Map<UUID, UUID> arg0) {
+		log.infof("%s: copy ...", TAG);
+		return null;
+	}
 	@Override
 	public Collection<AnchorPoint> getAnchorPoints() {
-		return ui.getAnchorPoints();
+		if( ui==null ) ui = factory.getUI(style, this);
+		return ui.getAnchorPoints();	
 	}
+	public Collection<ProcessAnchorDescriptor> getAnchors() { return anchors; }
+	public String getClassName() { return className; }
 
 	/** Do not define a default. Rely on drop targets. */
 	@Override
-	public AnchorPoint getDefaultDropAnchor() {
-		return null;
-	}
-
+	public AnchorPoint getDefaultDropAnchor() {return null;}
+	public int getEmbeddedFontSize() {return embeddedFontSize;}
+	public String getEmbeddedIcon() {return embeddedIcon;}
+	public String getEmbeddedLabel() {return embeddedLabel;}
+	public String getIconPath() {return iconPath;}
 	@Override
-	public UUID getId() {
-		return uuid;
-	}
-
+	public UUID getId() { return uuid; }
+	public String getLabel() {return label;}
 	// Location is the upper left.
 	@Override
 	public Point getLocation() {
 		return location;
 	}
-	@Override
-	public void setLocation(Point loc) {
-		location = loc;
-		fireBlockMoved();
-	}
-
-	public String getLabel() {return label;}
-	public void setLabel(String label) {this.label = label;}
-	public String getStatusText() { return statusText; }
-	public void setStatusText(String statusText) { this.statusText = statusText; }
-	public BlockStyle getStyle() { return style; }
-	public void setStyle(BlockStyle s) { this.style = s; }
-	public String getEmbeddedIcon() {return embeddedIcon;}
-	public void setEmbeddedIcon(String embeddedIcon) {this.embeddedIcon = embeddedIcon;}
-	public int getEmbeddedFontSize() {return embeddedFontSize;}
-	public void setEmbeddedFontSize(int size) {this.embeddedFontSize = size;}
-	public String getEmbeddedLabel() {return embeddedLabel;}
-	public void setEmbeddedLabel(String embeddedLabel) {this.embeddedLabel = embeddedLabel;}
-	public String getIconPath() {return iconPath;}
-	public void setIconPath(String iconPath) {this.iconPath = iconPath;}
 	public int getPreferredHeight() {return preferredHeight;}
-	public void setPreferredHeight(int preferredHeight) {this.preferredHeight = preferredHeight;}
-	public int getPreferredWidth() {return preferredWidth;}
-	public void setPreferredWidth(int preferredWidth) {this.preferredWidth = preferredWidth;}
 
+	public int getPreferredWidth() {return preferredWidth;}
+	public Collection<BlockProperty> getProperties() { return properties; }
+	public String getStatusText() { return statusText; }
+	public BlockStyle getStyle() { return style; }
 	@Override
 	public void initUI(BlockComponent blk) {
 		ui = factory.getUI(style, this);
 		ui.install(blk);
 	}
-	
-	// Note: This does not set connection type
-	private SerializableAnchor convertAnchorToSerializable(ProcessAnchorDescriptor anchor) {
-		SerializableAnchor result = new SerializableAnchor();
-		result.setDirection(anchor.getType()==AnchorType.Origin?AnchorDirection.OUTGOING:AnchorDirection.INCOMING);
-		result.setDisplay(anchor.getDisplay());
-		result.setId(anchor.getId());
-		result.setParentId(getId());
-		result.setConnectionType(anchor.getConnectionType());
-		return result;
+	public boolean isReceiveEnabled() {return receiveEnabled;}
+	public boolean isTransmitEnabled() {return transmitEnabled;}
+	public void setEmbeddedFontSize(int size) {this.embeddedFontSize = size;}
+	public void setEmbeddedIcon(String embeddedIcon) {this.embeddedIcon = embeddedIcon;}
+	public void setEmbeddedLabel(String embeddedLabel) {this.embeddedLabel = embeddedLabel;}
+	public void setIconPath(String iconPath) {this.iconPath = iconPath;}
+	public void setLabel(String label) {this.label = label;}
+	@Override
+	public void setLocation(Point loc) {
+		location = loc;
+		fireBlockMoved();
 	}
+	public void setPreferredHeight(int preferredHeight) {this.preferredHeight = preferredHeight;}
+	public void setPreferredWidth(int preferredWidth) {this.preferredWidth = preferredWidth;}
+	public void setProperties(Collection<BlockProperty> props) { this.properties = props; }
+	public void setReceiveEnabled(boolean receiveEnabled) {this.receiveEnabled = receiveEnabled;}
+	public void setStatusText(String statusText) { this.statusText = statusText; }
+
+	public void setStyle(BlockStyle s) { this.style = s; }
+	
+	public void setTransmitEnabled(boolean transmitEnabled) {this.transmitEnabled = transmitEnabled;}
 }

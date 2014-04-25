@@ -208,7 +208,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
  
 					block.setLocation(dropPoint);
 					this.getActiveDiagram().addBlock(block);
-					this.setCurrentTool(null);   // So the next select on workspace does not result in another block
+					// Null doesn't work here ...
+					this.setCurrentTool(getSelectionTool());   // So the next select on workspace does not result in another block
 					log.infof("%s.handleDrop: dropped %s",TAG,event.getTransferable().getTransferData(BlockDataFlavor).getClass().getName());
 				}
 				else {

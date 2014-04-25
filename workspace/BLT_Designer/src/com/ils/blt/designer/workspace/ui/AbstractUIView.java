@@ -47,6 +47,8 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 	private final ProcessBlockView block;
 	private final List<AnchorPoint> anchorPoints;  // Entries are BasicAnchorPoint
 	private BlockComponent blockComponent = null;
+	protected final static int BADGE_HEIGHT = 30;
+	protected final static int BADGE_WIDTH = 25;
 	protected final static int INSET = 6;
 	protected final static int LEADER_LENGTH = 10;
 	protected final static int SIGNAL_LEADER_LENGTH = 8;        // Shorter for signals
@@ -86,6 +88,9 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 	 *  A custom method is required for other patterns.
 	 *  Note: This is NOT called from the constructor of the base class.
 	 *        Call from the constructor of each sub-class.
+	 *  Note: While we do support signal connections, the preferred method
+	 *        is to enable signal receipt or transmission, then draw "badge"
+	 *        markers to show so.
 	 */
 	protected void initAnchorPoints() {
 		Dimension sz = getPreferredSize();
@@ -179,30 +184,7 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 	@Override
 	protected abstract void paintComponent(Graphics _g);
 	
-	/**
-	 * Utility method to paint a text string.
-	 * @param g
-	 * @param text
-	 * @param xpos center of the text
-	 * @param ypos center of the text
-	 * @param fill color of the text
-	 */
-	protected void paintTextAt(Graphics2D g, String text, float xpos, float ypos, Color fill,int fontSize) {
-		Font font = g.getFont();
-		font = font.deriveFont(fontSize);
-		FontRenderContext frc = g.getFontRenderContext();
-		GlyphVector vector = font.createGlyphVector(frc, text);
-		Rectangle2D bounds = vector.getVisualBounds();
-		// xpos, ypos are centers. Adjust to upper left.
-		ypos+= bounds.getHeight()/2f;
-		xpos-= bounds.getWidth()/2f;
-
-		Shape textShape = vector.getOutline(xpos, ypos);
-		g.setColor(fill);
-		g.fill(textShape);
-	}
-
-
+	
 	protected void drawAnchors(Graphics2D g) {
 		// Loop through the anchor points and draw squares for ports
 		for( AnchorPoint ap:anchorPoints) {
@@ -252,6 +234,33 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 		}
 	}
 	
+	/**
+	 *  Draw "badge" icons on top of the main rendering to indicate various block properties.
+	 *  The embedded icons are not user-settable.
+	 *  
+	 *  The badge locations are:
+	 *  1) Transmit enabled 3/4 along the top
+	 *  2) Receive enabled 1/4 along the top. 
+	 *  
+	 */
+	protected void drawBadges(Graphics2D g) {
+		Dimension sz = getPreferredSize();
+
+		// Receive
+		if(block.isReceiveEnabled()) {
+			// x,y,width,height
+			Rectangle bounds = new Rectangle((sz.width-2*INSET)/4,0,BADGE_WIDTH,BADGE_HEIGHT);
+			String path = "Block/icons/large/transmitter.png";
+			paintBadge(g,path,bounds);
+		}
+		// Transmit
+		if(block.isTransmitEnabled()) {
+			Rectangle bounds = new Rectangle(3*(sz.width-2*INSET)/4,0,BADGE_WIDTH,BADGE_HEIGHT);
+			String path = "Block/icons/large/receiver.png";
+			paintBadge(g,path,bounds);
+		}
+	}
+	
 	protected void drawEmbeddedIcon(Graphics2D g) {
 		String iconPath = block.getEmbeddedIcon();
 		if( iconPath == null || iconPath.length()==0 ) return;
@@ -297,6 +306,44 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 		else if( type==ConnectionType.SIGNAL  )        color = WorkspaceConstants.CONNECTION_FILL_SIGNAL;
 		else if( type==ConnectionType.ANY  ) color = WorkspaceConstants.CONNECTION_FILL_INFORMATION;
 		return color;
+	}
+	
+	private void paintBadge(Graphics2D g,String iconPath,Rectangle bounds) {
+		if( iconPath == null || iconPath.length()==0 ) return;
+	
+		Dimension imageSize = new Dimension(bounds.width,bounds.height);
+		Image img = ImageLoader.getInstance().loadImage(iconPath,imageSize);
+		ImageIcon icon = null;
+		if( img !=null) icon = new ImageIcon(img);
+		if( icon!=null ) {
+			icon.paintIcon(getBlockComponent(), g, bounds.x, bounds.y);
+		}
+		else {
+			log.warnf("%s.paintBadge Missing icon at %s for %s",TAG,iconPath,block.getLabel());
+		}
+	}
+	
+	/**
+	 * Utility method to paint a text string.
+	 * @param g
+	 * @param text
+	 * @param xpos center of the text
+	 * @param ypos center of the text
+	 * @param fill color of the text
+	 */
+	private void paintTextAt(Graphics2D g, String text, float xpos, float ypos, Color fill,int fontSize) {
+		Font font = g.getFont();
+		font = font.deriveFont(fontSize);
+		FontRenderContext frc = g.getFontRenderContext();
+		GlyphVector vector = font.createGlyphVector(frc, text);
+		Rectangle2D bounds = vector.getVisualBounds();
+		// xpos, ypos are centers. Adjust to upper left.
+		ypos+= bounds.getHeight()/2f;
+		xpos-= bounds.getWidth()/2f;
+
+		Shape textShape = vector.getOutline(xpos, ypos);
+		g.setColor(fill);
+		g.fill(textShape);
 	}
 
 }

@@ -1,1 +1,439 @@
-{"blocks":[{"x":466,"y":153,"originalId":null,"className":"com.ils.block.NoiseGenerator","embeddedIcon":"Block/icons/medium/noise.png","embeddedLabel":"","embeddedFontSize":24,"iconPath":"","preferredHeight":0,"preferredWidth":0,"style":"SQUARE","label":"Noise Generator","statusText":null,"state":null,"properties":[{"editable":true,"type":"DOUBLE","binding":"","bindingType":"NONE","name":"Lower","quality":null,"maximum":1.0,"minimum":0.0,"value":"2."},{"editable":true,"type":"DOUBLE","binding":"","bindingType":"NONE","name":"Upper","quality":null,"maximum":1.0,"minimum":0.0,"value":0.0},{"editable":true,"type":"DOUBLE","binding":"","bindingType":"NONE","name":"Mean","quality":null,"maximum":1.0,"minimum":0.0,"value":"3."},{"editable":true,"type":"DOUBLE","binding":"","bindingType":"NONE","name":"StandardDeviation","quality":null,"maximum":1.0,"minimum":0.0,"value":"3."},{"editable":true,"type":"STRING","binding":"","bindingType":"NONE","name":"Distribution","quality":null,"maximum":1.7976931348623157E308,"minimum":4.9E-324,"value":"NORMAL"}],"anchors":[{"direction":"INCOMING","id":"c801f4fc-b29c-4d42-9e8b-8959b8155978","display":"in","parentId":"e39e6c72-e096-4cc9-80e9-adf998e08254","connectionType":"DATA"},{"direction":"OUTGOING","id":"fc1c9239-5be6-400f-99a5-0ca623a667f8","display":"out","parentId":"e39e6c72-e096-4cc9-80e9-adf998e08254","connectionType":"DATA"}],"id":"e39e6c72-e096-4cc9-80e9-adf998e08254"},{"x":204,"y":71,"originalId":null,"className":"com.ils.block.Receiver","embeddedIcon":"","embeddedLabel":"","embeddedFontSize":24,"iconPath":"Block/icons/large/receiver.png","preferredHeight":0,"preferredWidth":0,"style":"ICON","label":"Receiver","statusText":null,"state":null,"properties":[{"editable":true,"type":"STRING","binding":"","bindingType":"NONE","name":"AcceptancePattern","quality":null,"maximum":1.7976931348623157E308,"minimum":4.9E-324,"value":"*"},{"editable":true,"type":"STRING","binding":"","bindingType":"NONE","name":"ReceivingClass","quality":null,"maximum":1.7976931348623157E308,"minimum":4.9E-324,"value":"com.ils.block.PID"}],"anchors":[{"direction":"OUTGOING","id":"0025c043-f07d-4f74-871f-cf99026f2a30","display":"recv","parentId":"3c7f0473-6aba-4c02-8a3d-895dfb56a671","connectionType":"SIGNAL"}],"id":"3c7f0473-6aba-4c02-8a3d-895dfb56a671"},{"x":192,"y":153,"originalId":null,"className":"com.ils.block.PID","embeddedIcon":"","embeddedLabel":"PID","embeddedFontSize":52,"iconPath":"","preferredHeight":0,"preferredWidth":0,"style":"SQUARE","label":"PID","statusText":null,"state":null,"properties":[{"editable":true,"type":"DOUBLE","binding":"[default]PID/ControlledValue","bindingType":"TAG","name":"InitialValue","quality":null,"maximum":1.7976931348623157E308,"minimum":4.9E-324,"value":null},{"editable":true,"type":"INTEGER","binding":"","bindingType":"NONE","name":"ScanInterval","quality":null,"maximum":1.7976931348623157E308,"minimum":4.9E-324,"value":"2000"},{"editable":true,"type":"DOUBLE","binding":"[default]PID/Setpoint","bindingType":"TAG","name":"SetPoint","quality":null,"maximum":1.7976931348623157E308,"minimum":4.9E-324,"value":"NaN"},{"editable":true,"type":"DOUBLE","binding":"[default]PID/Ki","bindingType":"TAG","name":"Ki","quality":null,"maximum":1.7976931348623157E308,"minimum":4.9E-324,"value":"0.1"},{"editable":true,"type":"DOUBLE","binding":"[default]PID/Kd","bindingType":"TAG","name":"Kd","quality":null,"maximum":1.7976931348623157E308,"minimum":4.9E-324,"value":"0.1"},{"editable":true,"type":"DOUBLE","binding":"[default]PID/Kp","bindingType":"TAG","name":"Kp","quality":null,"maximum":1.7976931348623157E308,"minimum":4.9E-324,"value":"0.1"}],"anchors":[{"direction":"INCOMING","id":"fc84d923-5a0b-4406-809f-f3aea9766816","display":"in","parentId":"1f0a8f2f-f74b-4c5f-88a5-1249916b3849","connectionType":"DATA"},{"direction":"INCOMING","id":"c62f8068-39ce-46de-986a-f458eb28509d","display":"recv","parentId":"1f0a8f2f-f74b-4c5f-88a5-1249916b3849","connectionType":"SIGNAL"},{"direction":"OUTGOING","id":"d6ee88ed-94e5-4803-9f97-7850a4dacf66","display":"out","parentId":"1f0a8f2f-f74b-4c5f-88a5-1249916b3849","connectionType":"DATA"}],"id":"1f0a8f2f-f74b-4c5f-88a5-1249916b3849"},{"x":318,"y":338,"originalId":null,"className":"com.ils.block.TagWriter","embeddedIcon":"","embeddedLabel":"","embeddedFontSize":24,"iconPath":"","preferredHeight":0,"preferredWidth":0,"style":"ROUND","label":"Tag Writer","statusText":null,"state":null,"properties":[{"editable":true,"type":"STRING","binding":"","bindingType":"NONE","name":"TagPath","quality":null,"maximum":1.7976931348623157E308,"minimum":4.9E-324,"value":"PID/ControlledValue"},{"editable":true,"type":"STRING","binding":"","bindingType":"NONE","name":"Provider","quality":null,"maximum":1.7976931348623157E308,"minimum":4.9E-324,"value":"default"}],"anchors":[{"direction":"INCOMING","id":"114d4dca-ec52-49d0-bed7-f3e2f6c4a925","display":"in","parentId":"75e428b9-8845-44e6-8347-0092094ae654","connectionType":"ANY"}],"id":"75e428b9-8845-44e6-8347-0092094ae654"},{"x":359,"y":153,"originalId":null,"className":"com.ils.block.Delay","embeddedIcon":"Block/icons/medium/clock.png","embeddedLabel":"","embeddedFontSize":24,"iconPath":"","preferredHeight":0,"preferredWidth":0,"style":"SQUARE","label":"Delay","statusText":null,"state":null,"properties":[{"editable":true,"type":"INTEGER","binding":"","bindingType":"NONE","name":"DelayInterval","quality":null,"maximum":1.7976931348623157E308,"minimum":0.0,"value":"3000"}],"anchors":[{"direction":"INCOMING","id":"bbaf696a-76b7-4c9f-89f5-b5200c4c2880","display":"in","parentId":"d8152527-55aa-48c8-94cf-f6200b6dad29","connectionType":"DATA"},{"direction":"OUTGOING","id":"9a01e1b9-a82e-4c7d-8067-d22ac303f403","display":"out","parentId":"d8152527-55aa-48c8-94cf-f6200b6dad29","connectionType":"DATA"}],"id":"d8152527-55aa-48c8-94cf-f6200b6dad29"}],"connections":[{"beginBlock":"1f0a8f2f-f74b-4c5f-88a5-1249916b3849","endBlock":"75e428b9-8845-44e6-8347-0092094ae654","beginAnchor":{"direction":"OUTGOING","id":"out","parentId":"1f0a8f2f-f74b-4c5f-88a5-1249916b3849","anchorX":74,"anchorY":40,"pathLeaderX":90,"pathLeaderY":40,"hotSpotX":68,"hotSpotY":34,"hotSpotHeight":12,"hotSpotWidth":12},"endAnchor":{"direction":"INCOMING","id":"in","parentId":"75e428b9-8845-44e6-8347-0092094ae654","anchorX":6,"anchorY":29,"pathLeaderX":-10,"pathLeaderY":29,"hotSpotX":0,"hotSpotY":23,"hotSpotHeight":12,"hotSpotWidth":12},"type":"DATA"},{"beginBlock":"e39e6c72-e096-4cc9-80e9-adf998e08254","endBlock":"1f0a8f2f-f74b-4c5f-88a5-1249916b3849","beginAnchor":{"direction":"OUTGOING","id":"out","parentId":"e39e6c72-e096-4cc9-80e9-adf998e08254","anchorX":74,"anchorY":40,"pathLeaderX":90,"pathLeaderY":40,"hotSpotX":68,"hotSpotY":34,"hotSpotHeight":12,"hotSpotWidth":12},"endAnchor":{"direction":"INCOMING","id":"in","parentId":"1f0a8f2f-f74b-4c5f-88a5-1249916b3849","anchorX":6,"anchorY":40,"pathLeaderX":-10,"pathLeaderY":40,"hotSpotX":0,"hotSpotY":34,"hotSpotHeight":12,"hotSpotWidth":12},"type":"DATA"},{"beginBlock":"1f0a8f2f-f74b-4c5f-88a5-1249916b3849","endBlock":"d8152527-55aa-48c8-94cf-f6200b6dad29","beginAnchor":{"direction":"OUTGOING","id":"out","parentId":"1f0a8f2f-f74b-4c5f-88a5-1249916b3849","anchorX":74,"anchorY":40,"pathLeaderX":90,"pathLeaderY":40,"hotSpotX":68,"hotSpotY":34,"hotSpotHeight":12,"hotSpotWidth":12},"endAnchor":{"direction":"INCOMING","id":"in","parentId":"d8152527-55aa-48c8-94cf-f6200b6dad29","anchorX":6,"anchorY":40,"pathLeaderX":-10,"pathLeaderY":40,"hotSpotX":0,"hotSpotY":34,"hotSpotHeight":12,"hotSpotWidth":12},"type":"DATA"},{"beginBlock":"d8152527-55aa-48c8-94cf-f6200b6dad29","endBlock":"e39e6c72-e096-4cc9-80e9-adf998e08254","beginAnchor":{"direction":"OUTGOING","id":"out","parentId":"d8152527-55aa-48c8-94cf-f6200b6dad29","anchorX":74,"anchorY":40,"pathLeaderX":90,"pathLeaderY":40,"hotSpotX":68,"hotSpotY":34,"hotSpotHeight":12,"hotSpotWidth":12},"endAnchor":{"direction":"INCOMING","id":"in","parentId":"e39e6c72-e096-4cc9-80e9-adf998e08254","anchorX":6,"anchorY":40,"pathLeaderX":-10,"pathLeaderY":40,"hotSpotX":0,"hotSpotY":34,"hotSpotHeight":12,"hotSpotWidth":12},"type":"DATA"},{"beginBlock":"3c7f0473-6aba-4c02-8a3d-895dfb56a671","endBlock":"1f0a8f2f-f74b-4c5f-88a5-1249916b3849","beginAnchor":{"direction":"OUTGOING","id":"recv","parentId":"3c7f0473-6aba-4c02-8a3d-895dfb56a671","anchorX":24,"anchorY":42,"pathLeaderX":24,"pathLeaderY":56,"hotSpotX":18,"hotSpotY":36,"hotSpotHeight":12,"hotSpotWidth":12},"endAnchor":{"direction":"INCOMING","id":"recv","parentId":"1f0a8f2f-f74b-4c5f-88a5-1249916b3849","anchorX":23,"anchorY":7,"pathLeaderX":23,"pathLeaderY":-8,"hotSpotX":17,"hotSpotY":0,"hotSpotHeight":12,"hotSpotWidth":12},"type":"SIGNAL"}],"name":"PID","id":"13ba1050-c072-4349-b5d7-587ca9e8cad3","resourceId":445}
+{
+	"blocks": 
+	[
+		{
+			"x": 466,
+			"y": 153,
+			"originalId": null,
+			"className": "com.ils.block.NoiseGenerator",
+			"embeddedIcon": "Block/icons/medium/noise.png",
+			"embeddedLabel": "",
+			"embeddedFontSize": 24,
+			"iconPath": "",
+			"preferredHeight": 0,
+			"preferredWidth": 0,
+			"style": "SQUARE",
+			"label": "Noise Generator",
+			"statusText": null,
+			"state": null,
+			"properties": 
+			[
+				{
+					"editable": true,
+					"type": "DOUBLE",
+					"binding": "",
+					"bindingType": "NONE",
+					"name": "Lower",
+					"quality": null,
+					"maximum": 1.0,
+					"minimum": 0.0,
+					"value": "2."
+				},
+				{
+					"editable": true,
+					"type": "DOUBLE",
+					"binding": "",
+					"bindingType": "NONE",
+					"name": "Upper",
+					"quality": null,
+					"maximum": 1.0,
+					"minimum": 0.0,
+					"value": 0.0
+				},
+				{
+					"editable": true,
+					"type": "DOUBLE",
+					"binding": "",
+					"bindingType": "NONE",
+					"name": "Mean",
+					"quality": null,
+					"maximum": 1.0,
+					"minimum": 0.0,
+					"value": "3."
+				},
+				{
+					"editable": true,
+					"type": "DOUBLE",
+					"binding": "",
+					"bindingType": "NONE",
+					"name": "StandardDeviation",
+					"quality": null,
+					"maximum": 1.0,
+					"minimum": 0.0,
+					"value": "3."
+				},
+				{
+					"editable": true,
+					"type": "STRING",
+					"binding": "",
+					"bindingType": "NONE",
+					"name": "Distribution",
+					"quality": null,
+					"maximum": 1.7976931348623157E308,
+					"minimum": 4.9E-324,
+					"value": "NORMAL"
+				}
+			],
+			"anchors": 
+			[
+				{
+					"direction": "INCOMING",
+					"id": "c801f4fc-b29c-4d42-9e8b-8959b8155978",
+					"display": "in",
+					"parentId": "e39e6c72-e096-4cc9-80e9-adf998e08254",
+					"connectionType": "DATA"
+				},
+				{
+					"direction": "OUTGOING",
+					"id": "fc1c9239-5be6-400f-99a5-0ca623a667f8",
+					"display": "out",
+					"parentId": "e39e6c72-e096-4cc9-80e9-adf998e08254",
+					"connectionType": "DATA"
+				}
+			],
+			"id": "e39e6c72-e096-4cc9-80e9-adf998e08254"
+		},
+		{
+			"x": 192,
+			"y": 153,
+			"originalId": null,
+			"className": "com.ils.block.PID",
+			"embeddedIcon": "",
+			"embeddedLabel": "PID",
+			"embeddedFontSize": 52,
+			"iconPath": "",
+			"preferredHeight": 0,
+			"preferredWidth": 0,
+			"receiveEnabled": true,
+			"style": "SQUARE",
+			"label": "PID",
+			"statusText": null,
+			"state": null,
+			"properties": 
+			[
+				{
+					"editable": true,
+					"type": "DOUBLE",
+					"binding": "[default]PID/ControlledValue",
+					"bindingType": "TAG",
+					"name": "InitialValue",
+					"quality": null,
+					"maximum": 1.7976931348623157E308,
+					"minimum": 4.9E-324,
+					"value": null
+				},
+				{
+					"editable": true,
+					"type": "INTEGER",
+					"binding": "",
+					"bindingType": "NONE",
+					"name": "ScanInterval",
+					"quality": null,
+					"maximum": 1.7976931348623157E308,
+					"minimum": 4.9E-324,
+					"value": "2000"
+				},
+				{
+					"editable": true,
+					"type": "DOUBLE",
+					"binding": "[default]PID/Setpoint",
+					"bindingType": "TAG",
+					"name": "SetPoint",
+					"quality": null,
+					"maximum": 1.7976931348623157E308,
+					"minimum": 4.9E-324,
+					"value": "NaN"
+				},
+				{
+					"editable": true,
+					"type": "DOUBLE",
+					"binding": "[default]PID/Ki",
+					"bindingType": "TAG",
+					"name": "Ki",
+					"quality": null,
+					"maximum": 1.7976931348623157E308,
+					"minimum": 4.9E-324,
+					"value": "0.1"
+				},
+				{
+					"editable": true,
+					"type": "DOUBLE",
+					"binding": "[default]PID/Kd",
+					"bindingType": "TAG",
+					"name": "Kd",
+					"quality": null,
+					"maximum": 1.7976931348623157E308,
+					"minimum": 4.9E-324,
+					"value": "0.1"
+				},
+				{
+					"editable": true,
+					"type": "DOUBLE",
+					"binding": "[default]PID/Kp",
+					"bindingType": "TAG",
+					"name": "Kp",
+					"quality": null,
+					"maximum": 1.7976931348623157E308,
+					"minimum": 4.9E-324,
+					"value": "0.1"
+				}
+			],
+			"anchors": 
+			[
+				{
+					"direction": "INCOMING",
+					"id": "fc84d923-5a0b-4406-809f-f3aea9766816",
+					"display": "in",
+					"parentId": "1f0a8f2f-f74b-4c5f-88a5-1249916b3849",
+					"connectionType": "DATA"
+				},
+				{
+					"direction": "OUTGOING",
+					"id": "d6ee88ed-94e5-4803-9f97-7850a4dacf66",
+					"display": "out",
+					"parentId": "1f0a8f2f-f74b-4c5f-88a5-1249916b3849",
+					"connectionType": "DATA"
+				}
+			],
+			"id": "1f0a8f2f-f74b-4c5f-88a5-1249916b3849"
+		},
+		{
+			"x": 318,
+			"y": 338,
+			"originalId": null,
+			"className": "com.ils.block.TagWriter",
+			"embeddedIcon": "",
+			"embeddedLabel": "",
+			"embeddedFontSize": 24,
+			"iconPath": "",
+			"preferredHeight": 0,
+			"preferredWidth": 0,
+			"style": "ROUND",
+			"label": "Tag Writer",
+			"statusText": null,
+			"state": null,
+			"properties": 
+			[
+				{
+					"editable": true,
+					"type": "STRING",
+					"binding": "",
+					"bindingType": "NONE",
+					"name": "TagPath",
+					"quality": null,
+					"maximum": 1.7976931348623157E308,
+					"minimum": 4.9E-324,
+					"value": "PID/ControlledValue"
+				},
+				{
+					"editable": true,
+					"type": "STRING",
+					"binding": "",
+					"bindingType": "NONE",
+					"name": "Provider",
+					"quality": null,
+					"maximum": 1.7976931348623157E308,
+					"minimum": 4.9E-324,
+					"value": "default"
+				}
+			],
+			"anchors": 
+			[
+				{
+					"direction": "INCOMING",
+					"id": "114d4dca-ec52-49d0-bed7-f3e2f6c4a925",
+					"display": "in",
+					"parentId": "75e428b9-8845-44e6-8347-0092094ae654",
+					"connectionType": "ANY"
+				}
+			],
+			"id": "75e428b9-8845-44e6-8347-0092094ae654"
+		},
+		{
+			"x": 359,
+			"y": 153,
+			"originalId": null,
+			"className": "com.ils.block.Delay",
+			"embeddedIcon": "Block/icons/medium/clock.png",
+			"embeddedLabel": "",
+			"embeddedFontSize": 24,
+			"iconPath": "",
+			"preferredHeight": 0,
+			"preferredWidth": 0,
+			"style": "SQUARE",
+			"label": "Delay",
+			"statusText": null,
+			"state": null,
+			"properties": 
+			[
+				{
+					"editable": true,
+					"type": "INTEGER",
+					"binding": "",
+					"bindingType": "NONE",
+					"name": "DelayInterval",
+					"quality": null,
+					"maximum": 1.7976931348623157E308,
+					"minimum": 0.0,
+					"value": "3000"
+				}
+			],
+			"anchors": 
+			[
+				{
+					"direction": "INCOMING",
+					"id": "bbaf696a-76b7-4c9f-89f5-b5200c4c2880",
+					"display": "in",
+					"parentId": "d8152527-55aa-48c8-94cf-f6200b6dad29",
+					"connectionType": "DATA"
+				},
+				{
+					"direction": "OUTGOING",
+					"id": "9a01e1b9-a82e-4c7d-8067-d22ac303f403",
+					"display": "out",
+					"parentId": "d8152527-55aa-48c8-94cf-f6200b6dad29",
+					"connectionType": "DATA"
+				}
+			],
+			"id": "d8152527-55aa-48c8-94cf-f6200b6dad29"
+		}
+	],
+	"connections": 
+	[
+		{
+			"beginBlock": "1f0a8f2f-f74b-4c5f-88a5-1249916b3849",
+			"endBlock": "75e428b9-8845-44e6-8347-0092094ae654",
+			"beginAnchor": 
+			{
+				"direction": "OUTGOING",
+				"id": "out",
+				"parentId": "1f0a8f2f-f74b-4c5f-88a5-1249916b3849",
+				"anchorX": 74,
+				"anchorY": 40,
+				"pathLeaderX": 90,
+				"pathLeaderY": 40,
+				"hotSpotX": 68,
+				"hotSpotY": 34,
+				"hotSpotHeight": 12,
+				"hotSpotWidth": 12
+			},
+			"endAnchor": 
+			{
+				"direction": "INCOMING",
+				"id": "in",
+				"parentId": "75e428b9-8845-44e6-8347-0092094ae654",
+				"anchorX": 6,
+				"anchorY": 29,
+				"pathLeaderX": -10,
+				"pathLeaderY": 29,
+				"hotSpotX": 0,
+				"hotSpotY": 23,
+				"hotSpotHeight": 12,
+				"hotSpotWidth": 12
+			},
+			"type": "DATA"
+		},
+		{
+			"beginBlock": "e39e6c72-e096-4cc9-80e9-adf998e08254",
+			"endBlock": "1f0a8f2f-f74b-4c5f-88a5-1249916b3849",
+			"beginAnchor": 
+			{
+				"direction": "OUTGOING",
+				"id": "out",
+				"parentId": "e39e6c72-e096-4cc9-80e9-adf998e08254",
+				"anchorX": 74,
+				"anchorY": 40,
+				"pathLeaderX": 90,
+				"pathLeaderY": 40,
+				"hotSpotX": 68,
+				"hotSpotY": 34,
+				"hotSpotHeight": 12,
+				"hotSpotWidth": 12
+			},
+			"endAnchor": 
+			{
+				"direction": "INCOMING",
+				"id": "in",
+				"parentId": "1f0a8f2f-f74b-4c5f-88a5-1249916b3849",
+				"anchorX": 6,
+				"anchorY": 40,
+				"pathLeaderX": -10,
+				"pathLeaderY": 40,
+				"hotSpotX": 0,
+				"hotSpotY": 34,
+				"hotSpotHeight": 12,
+				"hotSpotWidth": 12
+			},
+			"type": "DATA"
+		},
+		{
+			"beginBlock": "1f0a8f2f-f74b-4c5f-88a5-1249916b3849",
+			"endBlock": "d8152527-55aa-48c8-94cf-f6200b6dad29",
+			"beginAnchor": 
+			{
+				"direction": "OUTGOING",
+				"id": "out",
+				"parentId": "1f0a8f2f-f74b-4c5f-88a5-1249916b3849",
+				"anchorX": 74,
+				"anchorY": 40,
+				"pathLeaderX": 90,
+				"pathLeaderY": 40,
+				"hotSpotX": 68,
+				"hotSpotY": 34,
+				"hotSpotHeight": 12,
+				"hotSpotWidth": 12
+			},
+			"endAnchor": 
+			{
+				"direction": "INCOMING",
+				"id": "in",
+				"parentId": "d8152527-55aa-48c8-94cf-f6200b6dad29",
+				"anchorX": 6,
+				"anchorY": 40,
+				"pathLeaderX": -10,
+				"pathLeaderY": 40,
+				"hotSpotX": 0,
+				"hotSpotY": 34,
+				"hotSpotHeight": 12,
+				"hotSpotWidth": 12
+			},
+			"type": "DATA"
+		},
+		{
+			"beginBlock": "d8152527-55aa-48c8-94cf-f6200b6dad29",
+			"endBlock": "e39e6c72-e096-4cc9-80e9-adf998e08254",
+			"beginAnchor": 
+			{
+				"direction": "OUTGOING",
+				"id": "out",
+				"parentId": "d8152527-55aa-48c8-94cf-f6200b6dad29",
+				"anchorX": 74,
+				"anchorY": 40,
+				"pathLeaderX": 90,
+				"pathLeaderY": 40,
+				"hotSpotX": 68,
+				"hotSpotY": 34,
+				"hotSpotHeight": 12,
+				"hotSpotWidth": 12
+			},
+			"endAnchor": 
+			{
+				"direction": "INCOMING",
+				"id": "in",
+				"parentId": "e39e6c72-e096-4cc9-80e9-adf998e08254",
+				"anchorX": 6,
+				"anchorY": 40,
+				"pathLeaderX": -10,
+				"pathLeaderY": 40,
+				"hotSpotX": 0,
+				"hotSpotY": 34,
+				"hotSpotHeight": 12,
+				"hotSpotWidth": 12
+			},
+			"type": "DATA"
+		}
+	],
+	"name": "PID",
+	"id": "13ba1050-c072-4349-b5d7-587ca9e8cad3",
+	"resourceId": 445
+}
