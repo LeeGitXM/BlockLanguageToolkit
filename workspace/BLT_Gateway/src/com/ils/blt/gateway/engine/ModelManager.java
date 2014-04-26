@@ -17,6 +17,7 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
+import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.connection.Connection;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
@@ -235,6 +236,29 @@ public class ModelManager implements ProjectListener  {
 		}
 	}
 	
+	/**
+	 * Walk the node tree and create a list of all resources currently being manned by
+	 * the model manager.
+	 * 
+	 * @return
+	 */
+	public List<SerializableResourceDescriptor> queryControllerResources() {
+		List<SerializableResourceDescriptor> result = new ArrayList<SerializableResourceDescriptor>();
+		for( Long projectId:root.allProjects() ) {
+			for(ProcessNode node: root.allNodesForProject(projectId)) {
+				SerializableResourceDescriptor sd = new SerializableResourceDescriptor();
+				sd.setName(node.getName());
+				sd.setProjectId(projectId.longValue());
+				sd.setResourceId(node.getResourceId());
+				if( node instanceof ProcessApplication ) sd.setType(BLTProperties.APPLICATION_RESOURCE_TYPE);
+				else if( node instanceof ProcessFamily ) sd.setType(BLTProperties.FAMILY_RESOURCE_TYPE);
+				else if( node instanceof ProcessDiagram )sd.setType(BLTProperties.DIAGRAM_RESOURCE_TYPE);
+				else sd.setType(BLTProperties.FOLDER_RESOURCE_TYPE);
+				result.add(sd);
+			}
+		}
+		return result;
+	}
 	// ====================== Project Listener Interface ================================
 	/**
 	 * We don't care if the new project is a staging or published version.
@@ -305,6 +329,7 @@ public class ModelManager implements ProjectListener  {
 			ProcessNode node = nodesByUUID.get(self);
 			if( node==null ) {
 				node = new ProcessApplication(res.getName(),res.getParentUuid(),self);
+				node.setResourceId(res.getResourceId());
 				addToHierarchy(projectId,node);
 			}
 			else {
@@ -367,6 +392,7 @@ public class ModelManager implements ProjectListener  {
 			ProcessNode node = nodesByUUID.get(self);
 			if( node==null ) {
 				node = new ProcessFamily(res.getName(),res.getParentUuid(),self);
+				node.setResourceId(res.getResourceId());
 				addToHierarchy(projectId,node);
 			}
 			else {
@@ -387,6 +413,7 @@ public class ModelManager implements ProjectListener  {
 		ProcessNode node = nodesByUUID.get(self);
 		if( node==null ) {
 			node = new ProcessNode(res.getName(),res.getParentUuid(),self);
+			node.setResourceId(res.getResourceId());
 			addToHierarchy(projectId,node);
 		}
 		else {
@@ -461,7 +488,7 @@ public class ModelManager implements ProjectListener  {
 		List<ProcessNode> nodes = root.allNodesForProject(projectId);
 		BlockExecutionController controller = BlockExecutionController.getInstance();
 		for(ProcessNode node:nodes) {
-			if( node instanceof ProcessNode ) {
+			if( node instanceof ProcessDiagram ) {
 				ProcessDiagram diagram = (ProcessDiagram)node;
 				for(ProcessBlock block:diagram.getProcessBlocks()) {
 					for(BlockProperty prop:block.getProperties()) {
@@ -492,6 +519,7 @@ public class ModelManager implements ProjectListener  {
 			if( sa!=null ) {
 				log.infof("%s.deserializeApplicationResource: successfully deserialized application %s",TAG,sa.getName());
 				application = new ProcessApplication(sa,res.getParentUuid());
+				application.setResourceId(res.getResourceId());
 			}
 			else {
 				log.warnf("%s.deserializeApplicationResource: deserialization failed",TAG);
@@ -522,6 +550,7 @@ public class ModelManager implements ProjectListener  {
 				sd.setResourceId(res.getResourceId());
 				log.infof("%s.deserializeDiagramResource: successfully deserialized diagram %s",TAG,sd.getName());
 				diagram = new ProcessDiagram(sd,res.getParentUuid());
+				diagram.setResourceId(res.getResourceId());
 			}
 			else {
 				log.warnf("%s.deserializeDiagramResource: deserialization failed",TAG);
@@ -551,6 +580,7 @@ public class ModelManager implements ProjectListener  {
 			if( sf!=null ) {
 				log.infof("%s.deserializeModelResource: successfully deserialized family %s",TAG,sf.getName());
 				family = new ProcessFamily(sf,res.getParentUuid());
+				family.setResourceId(res.getResourceId());
 			}
 			else {
 				log.warnf("%s: deserializeFamilyResource: deserialization failed",TAG);

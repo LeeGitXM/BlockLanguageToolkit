@@ -3,6 +3,8 @@
  */
 package com.ils.blt.test.gateway.mock;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import com.ils.block.ProcessBlock;
@@ -130,7 +132,19 @@ public class MockDiagram extends ProcessDiagram {
 		}
 		return result;
 	}
-	
+	/**
+	 * Define a new connection. We are guaranteed that there will be only one for a block.
+	 * This is a special interface for the testing MockDiagram.
+	 */
+	private void addOutgoingConnection(ProcessConnection pc) {
+		ProcessBlock pb = getBlock(pc.getSource());
+		if( pb!=null ) {
+			BlockPort key = new BlockPort(pb,pc.getUpstreamPortName());
+			List<ProcessConnection> list = new ArrayList<ProcessConnection>();
+			list.add(pc);
+			outgoingConnections.put(key,list);
+		}
+	}
 	/**
 	 * Return the anchor associated with the UUT's port of a specified name.
 	 * The anchor can be either incoming or outgoing.

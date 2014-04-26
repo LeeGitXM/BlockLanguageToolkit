@@ -110,25 +110,13 @@ public class ProcessDiagram extends ProcessNode {
 					outgoingConnections.put(key, connections);
 					log.tracef("%s.analyze: mapping connection from %s:%s",TAG,upstreamBlock.getBlockId().toString(),pc.getUpstreamPortName());
 				}
+				if( !connections.contains(pc) ) connections.add(pc);
 			}
 			else {
 				log.warnf("%s.analyze: Source block (%s) not found for connection",TAG,pc.getSource().toString());
 			}
 		}
 		log.debugf("%s.analyze: Complete .... %d blocks and %d connections",TAG,diagram.getBlocks().length,diagram.getConnections().length);
-	}
-
-	/**
-	 * Define a new connection. We are guaranteed that there will be only one for a block.
-	 */
-	public void addOutgoingConnection(ProcessConnection pc) {
-		ProcessBlock pb = getBlock(pc.getSource());
-		if( pb!=null ) {
-			BlockPort key = new BlockPort(pb,pc.getUpstreamPortName());
-			List<ProcessConnection> list = new ArrayList<ProcessConnection>();
-			list.add(pc);
-			outgoingConnections.put(key,list);
-		}
 	}
 	
 	/**
@@ -180,7 +168,6 @@ public class ProcessDiagram extends ProcessNode {
 				else {
 					log.warnf("%s.getOutgoingNotifications: Target block %s not found for connection",TAG,blockId.toString());
 				}
-
 			}
 		}
 		else {
@@ -197,7 +184,7 @@ public class ProcessDiagram extends ProcessNode {
 	/**
 	 * Class for keyed storage of downstream block,port for a connection.
 	 */
-	private class BlockPort {
+	protected class BlockPort {
 		private final String port;
 		private final ProcessBlock block;
 		public BlockPort(ProcessBlock block,String port) {
@@ -229,7 +216,7 @@ public class ProcessDiagram extends ProcessNode {
 	/**
 	 * The key is the block Ids and port names for both source and target.
 	 */
-	private class ConnectionKey {
+	protected class ConnectionKey {
 		private final String sourceBlock;
 		private final String sourcePort;
 		private final String targetBlock;

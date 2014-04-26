@@ -17,12 +17,13 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  * to the proper destination.
  */
 public class ProcessNode {
-	private final String TAG = "ProcessNode";
-	protected final LoggerEx log;
-	private final UUID self;
-	private final UUID parent;
 	private final Map<String,ProcessNode> children;
+	protected final LoggerEx log;
 	private String name;
+	private final UUID parent;
+	private long resourceId = -1;   // Resource set when serialized.
+	private final UUID self;
+	private final String TAG = "ProcessNode";
 	
 	/**
 	 * Constructor: 
@@ -42,22 +43,35 @@ public class ProcessNode {
 		children.put(child.getName(),child);
 		log.infof("%s.addChild: %s[%s]",TAG,getName(),child.getName());
 	}
-	public void removeChild(ProcessNode child) { children.remove(child.getName()); }
-	public Collection<ProcessNode> getChildren() { return children.values(); }
-	public ProcessNode getChildForName(String name) { return children.get(name); }
-	public String getName() {return name;}
-	public void setName(String nam) { this.name = nam; }
 
-	/**
-	 * @return the UUID of this node
-	 */
-	public UUID getSelf() { return this.self; }
+	// So that class is comparable
+	// Same self (UUID) is sufficient to prove equality
+	@Override
+	public boolean equals(Object arg) {
+		boolean result = false;
+		if( arg instanceof ProcessNode) {
+			ProcessNode that = (ProcessNode)arg;
+			if( this.getSelf().equals(that.getSelf()) ) {
+				result = true;
+			}
+		}
+		return result;
+	}
+
+	public ProcessNode getChildForName(String name) { return children.get(name); }
+	public Collection<ProcessNode> getChildren() { return children.values(); }
+	public String getName() {return name;}
 	/**
 	 * @return the UUID of the parent of this node.
 	 *         The parent of the root node is null.
 	 */
-	public UUID getParent() { return this.parent; }	
-	
+	public UUID getParent() { return this.parent; }
+	public long getResourceId() {return resourceId;}
+	/**
+	 * @return the UUID of this node
+	 */
+	public UUID getSelf() { return this.self; }
+
 	/**
 	 * Traverse the parentage prepending names to produce a tree path.
 	 * The full path does NOT include the project name.
@@ -76,23 +90,12 @@ public class ProcessNode {
 		buf.insert(0,":");  // Leading colon
 		return buf.toString();
 	}
-	
-	// So that class is comparable
-	// Same self (UUID) is sufficient to prove equality
-	@Override
-	public boolean equals(Object arg) {
-		boolean result = false;
-		if( arg instanceof ProcessNode) {
-			ProcessNode that = (ProcessNode)arg;
-			if( this.getSelf().equals(that.getSelf()) ) {
-				result = true;
-			}
-		}
-		return result;
-	}
 	@Override
 	public int hashCode() {
 		return this.getSelf().hashCode();
-	}
+	}	
+	public void removeChild(ProcessNode child) { children.remove(child.getName());} 
+	public void setName(String nam) { this.name = nam; }
+	public void setResourceId(long resourceId) {this.resourceId = resourceId;}
 	
 }

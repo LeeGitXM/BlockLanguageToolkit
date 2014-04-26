@@ -7,12 +7,14 @@ package com.ils.blt.gateway;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.UUID;
 
 import com.ils.block.ProcessBlock;
 import com.ils.block.common.BlockProperty;
 import com.ils.block.control.ExecutionController;
 import com.ils.block.control.OutgoingNotification;
+import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ProcessDiagram;
 import com.ils.blt.gateway.proxy.ProxyHandler;
@@ -184,6 +186,14 @@ public class BlockRequestHandler   {
 		return attributes;
 	}
 	
+	/**
+	 * Query the ModelManager for a list of the project resources that it is currently
+	 * managing. This is a debugging service.
+	 * @return
+	 */
+	public List<SerializableResourceDescriptor> queryControllerResources() {
+		return BlockExecutionController.getInstance().queryControllerResources();
+	}
 	/**
 	 * Handle the block placing a new value on its output.
 	 * 

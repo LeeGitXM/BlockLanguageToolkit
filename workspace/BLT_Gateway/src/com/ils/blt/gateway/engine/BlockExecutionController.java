@@ -20,6 +20,7 @@ import com.ils.block.control.ExecutionController;
 import com.ils.block.control.IncomingNotification;
 import com.ils.block.control.OutgoingNotification;
 import com.ils.block.control.SignalNotification;
+import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.common.BoundedBuffer;
 import com.ils.common.watchdog.Watchdog;
 import com.ils.common.watchdog.WatchdogTimer;
@@ -183,7 +184,9 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public List<String> getDiagramTreePaths(String projectName) {
 		return modelManager.getDiagramTreePaths(projectName);
 	}
-
+	public List<SerializableResourceDescriptor> queryControllerResources() {
+		return modelManager.queryControllerResources();
+	}
 	/**
 	 * Delete a temporary diagram that is not associated with a project resource. 
 	 * Any subscriptions are de-activated before removal.

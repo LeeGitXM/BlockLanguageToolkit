@@ -124,6 +124,10 @@ public class RootNode extends ProcessNode {
 		
 		return result;
 	}
+	
+	public Collection<Long> allProjects() {
+		return projectIdByName.values();
+	}
 	/**
 	 * Create a flat list of nodes of all sorts known to belong to the project.
 	 * @param projectId

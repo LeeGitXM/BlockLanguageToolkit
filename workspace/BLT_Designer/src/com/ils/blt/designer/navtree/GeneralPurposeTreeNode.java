@@ -33,6 +33,7 @@ import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.common.serializable.SerializableApplicationTree;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
+import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.common.serializable.UUIDResetHandler;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
@@ -418,6 +419,7 @@ public class GeneralPurposeTreeNode extends FolderNode {
 			log.info("============================ Resources (Designer) =========================");
 			listProjectResources();
 			log.info("============================ Resources (Gateway) ==========================");
+			listControllerResources();
 			log.info("===========================================================================");
 		}
 	}
@@ -993,5 +995,26 @@ public class GeneralPurposeTreeNode extends FolderNode {
 			log.info("Res: "+res.getResourceId()+" "+res.getResourceType()+" "+res.getModuleId()+" ("+res.getName()+
 					":"+res.getParentUuid()+")");
 		}
+	}
+	
+	/**
+	 * Query the block controller in the Gateway. The resources that it knows
+	 * about may, or may not, coincide with those in the Designer. 
+	 */
+	public void listControllerResources() {
+		try {
+			BlockRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+			List <SerializableResourceDescriptor> descriptors = handler.queryControllerResources();
+			for( SerializableResourceDescriptor descriptor : descriptors ) {
+				log.info("Res: "+descriptor.getProjectId()+":"+descriptor.getResourceId()+" "+
+						         descriptor.getType()+" ("+descriptor.getName()+")");
+			}
+		} 
+		catch (Exception ex) {
+			log.warnf("%s. startAction: ERROR: %s",TAG,ex.getMessage(),ex);
+			ErrorUtil.showError(ex);
+		}
+		
+		
 	}
 }

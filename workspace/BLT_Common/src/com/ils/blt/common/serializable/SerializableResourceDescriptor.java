@@ -1,6 +1,6 @@
 package com.ils.blt.common.serializable;
 
-
+import java.io.Serializable;
 
 
 /**
@@ -8,7 +8,8 @@ package com.ils.blt.common.serializable;
  * the Gateway block controller. This is a debugging aid to
  * display engine resource in the Designer.
  */
-public class SerializableResourceDescriptor {
+public class SerializableResourceDescriptor implements Serializable {
+	private static final long serialVersionUID = 5498197358912286066L;
 	private String name;
 	private long projectId;
 	private long resourceId;

@@ -47,8 +47,8 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 	private final ProcessBlockView block;
 	private final List<AnchorPoint> anchorPoints;  // Entries are BasicAnchorPoint
 	private BlockComponent blockComponent = null;
-	protected final static int BADGE_HEIGHT = 30;
-	protected final static int BADGE_WIDTH = 25;
+	protected final static int BADGE_HEIGHT = 20;
+	protected final static int BADGE_WIDTH = 20;
 	protected final static int INSET = 6;
 	protected final static int LEADER_LENGTH = 10;
 	protected final static int SIGNAL_LEADER_LENGTH = 8;        // Shorter for signals
@@ -249,14 +249,14 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 		// Receive
 		if(block.isReceiveEnabled()) {
 			// x,y,width,height
-			Rectangle bounds = new Rectangle((sz.width-2*INSET)/4,0,BADGE_WIDTH,BADGE_HEIGHT);
-			String path = "Block/icons/large/transmitter.png";
+			Rectangle bounds = new Rectangle((sz.width-2*INSET)/4-INSET,0,BADGE_WIDTH,BADGE_HEIGHT);
+			String path = "Block/icons/large/receiver.png";
 			paintBadge(g,path,bounds);
 		}
 		// Transmit
 		if(block.isTransmitEnabled()) {
 			Rectangle bounds = new Rectangle(3*(sz.width-2*INSET)/4,0,BADGE_WIDTH,BADGE_HEIGHT);
-			String path = "Block/icons/large/receiver.png";
+			String path = "Block/icons/large/transmitter.png";
 			paintBadge(g,path,bounds);
 		}
 	}

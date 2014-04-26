@@ -195,7 +195,7 @@ public class GatewayRpcDispatcher   {
 	 */
 	public List<SerializableResourceDescriptor> queryControllerResources() {
 		log.infof("%s: queryControllerResources ...",TAG);
-		return null;
+		return  BlockRequestHandler.getInstance().queryControllerResources();
 	}
 	
 	

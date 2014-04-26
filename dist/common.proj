@@ -7,15 +7,15 @@
   <build>2014041113</build>
   <beta>1</beta>
 </version>
-<timestamp>2014-04-24 19:49:52</timestamp>
+<timestamp>2014-04-25 14:24:20</timestamp>
 <id>2</id>
 <name>BlockToolkitCommon</name>
 <title>Block Toolkit Common</title>
 <description>Common facilities for Block Definition Toolkit. Block defimitions, common code.</description>
 <enabled>true</enabled>
-<lastModified>1398390572327</lastModified>
+<lastModified>1398457439566</lastModified>
 <lastModifiedBy>chuckc</lastModifiedBy>
-<editCount>39</editCount>
+<editCount>41</editCount>
 <uuid>ca124b8a-5c53-4209-5771-e42af184b01c</uuid>
 <resources>
 	<resource id='34' name='About' module='fpmi' modver='' type='__folder' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='4' protected='false'>
@@ -347,28 +347,28 @@ NJ7LJDPk9Zgr/WMmujGTvTFTBlBvzHQ35mr/PMPnyDP0ZvLMdGOumRjWWZhqzvZ6Xx/sPdfrPT/Y
 e6HX+8Zg78UL53ozFddbqbjeTsWVXTjXO6m43k3FdSkV1+UzcS93FtSJuJcK+/1U2Ffe0svtE3Oe
 PKuDmeTPrKtZUKrqPEjV2Yfn4Nhnov1v1I9SoV57R1BbqVAX3hHUxVSoS6kUXb4AvOt/Adkac0Y8
 DgAA]]></bytes></resource>
-	<resource id='125' name='Diagnosis' module='' modver='' type='sr.script.project' ver='0' dirty='false' editcount='13' parent='a8fa14b0-fe50-42df-a069-db2dcc1668ba' oemlocked='false' scope='7' protected='false'>
+	<resource id='125' name='Diagnosis' module='' modver='' type='sr.script.project' ver='0' dirty='false' editcount='39' parent='a8fa14b0-fe50-42df-a069-db2dcc1668ba' oemlocked='false' scope='7' protected='false'>
 		<doc></doc>
-		<bytes><![CDATA[H4sIAAAAAAAAAJVWQW8bRRSeEEriiANcEAcOI+ewjuRu4jRtVIscUreoQYEGEsEhiqLx7rM9dL2z
-nXkb141y5IiQOFRcuXJB4jdwgT/ElfdmvN5N1UOxFGXmzfe9efPeN2/n162ffx/8++WzP3/65/On
-r//4WwjxnhArT17/8tdv4u2/Fv2t0D/UU3CopgXNPxDiowfxfrwT9/Z3H9wdAqoemdeEWHVoabQq
-xMcjq6YwM/Z5fAXWaZOT/X0hPtn3xN2d3t7OXq/Xu7ekr4u1HzelHJhibvV4gpIx8uj4VB6WaKYK
-ycfG5samPJSPtRrnxmknh5lJnksLCegrcFJJtCVO7l6prAQ5smYqVS5PvxkQzVhpcAJ2wSkLihUU
-A1KZQlomxKd1cqacyeWI8DQlonauhJi21tPCWJSFNT9AgrH3Uxnd3CFMY505si/WpFoEuJFkyrk6
-7M4tF/Ej5XTy6I3hVn+jlcJIXl7qXOPlZcdBNmJj6x3I8W0Wkfh/zDatMv0KOmTbaG3KU0CpEK0e
-lkjnT0pHqZZo6OiUXR92CKNBXQbifXrM11RreSCj26Etz1uPoopGyAIsanDnUb16QU6uI1+9qB9F
-3QhSjWqY8ezMkvGmPgqn3RH+/DrKaXtC6JwYOC947HUQHN1cVCRTomc1SWRrsOAlBjwn51vA0uYk
-qlQnrD5l56QUl1C2dD6WEzPjTKVWzVhlOiF9EkvnXkaFygARvLwWyISkxRZ5pWEW1KkxDvkdA55Y
-g4YDuVVq4lFObqrJecT7nCicRBcHsu2rvc0mt50pO4btdJn0Ih+3a1qmhpBRgiW5ay8z3gCgMRnq
-wkP8j3ADkydZmYLPwfLOKQeppCtCNSix6UENWQhNDxF5QGuyqEbx4Y+XwQQUx9OAePkMWFgLzIH0
-9aMkDSq5sYJv4U9xnsESH7kXpbLwxr5PgTvLEtTb2WnkNSiqGX216REf9IRXm7tWaloyasIzWnoL
-Y9GnnuQs6ZR5FOhIZa4ZJ1qVu6nGGkUgZPETZrNxmO91yiqo9u7d58PYoFkPo6nX8UBl5EjOJsBi
-Dr1xQr1JWUvR+FKaHKQZSVPaUFXpT8bkI6QG6BdqZfm24UUebvGcJ7kEdk0KX0jaAX7He3k5d/22
-XSpKpnHeZfde4bWsFtmrGwMnstNoDt3rG84l31EGo+14n1txZmZgfZ71SIblKmW8RWvqxizmL/RL
-um+s11boTw7ytBM2JankWJY67fq5H7V5vd1t63xCFx5pNDYmbW/9bwcWKBVNOlDFm5Edg7oCbrn5
-mKqSUTHaoXZ1es4XXZHVQCwvF51j4yrHVb77st0NkHeLknTsCVWA9C2+I8SHo2KqG99ueih8djYp
-5WFh5e6e7D3s7z3s39uVXz0+81/q8FxYM0P+ALhPRXgGiJX1wBWr6+EBIO6shyeEWJHh0eCt6/8B
-1vef8pwIAAA=]]></bytes></resource>
+		<bytes><![CDATA[H4sIAAAAAAAAAJVWQW8bRRSeEErjiANICHHoYeQc1pHcTZymjbCaQ+q2alCggVRwiKJovPtsD13v
+LDNv45ooN66oN4T4CVyQuPET4A9x5b0Zr3dd9VAsWd55833vvXnvm7f+dfv174N/v3j+58//PHz2
+yx9/CyHeE2LtyW+vP/lLvP3Tou8a/aCegkM1LWj9gRAfPYgP4t24d7D34O4QUPXIfFuIdYeWnjbE
+7Z+2pByYYm71eIJyb7e3L49PzuRRiWaqUJt8c2tzSx7Jx1qNc+O0k8PMJC+lhQT0FTipJNoSJ3ev
+VFaCHFkzlSqXZ18PiGasNDgBu+CUBYUFxYBUppCWCfFpn5wpZ3I5IjwtiaidKyGm0HpaGIuysOZ7
+SDD2fiqjmzuEaawzR/bFnlSLBDeTTDlXp91ZcRE/Uk4nj9543O5vtlIYyctLnWu8vOw4yEZsbL0D
+OV5lEYl/Y7ZplekfoUO2zdaWPAOUCtHqYYl0/qR0VGqJho5O1fVphzQa1GUi3qfHfKWmIA9ltJra
+8rz1U1TRCFmARQ3uPKp3L8jJdeS7F/WjqBtBqlENM169sGS8qY/CZXeEP7+OcgpPCJ0TA+cFP3sd
+BEc3FxXJlOhZTRLZGix4hQHPxfkGsLQ5iSrVCatP2TkpxSVULZ2P5cTMuFKpVTNWmU5In8TSuZdR
+oTJABC+vBTIhabFFXmmYBXVqjEN9x4Cn1qDhRFZaTTyqyU21OI84zqnCSXRxKNu+2ztscjuZsmPY
+SZdFL/Jxu6ZlaggZFViSu/ay4g0AGpOhLjzEfwg3MHmSlSn4GizvnHKQSroi1IMSmx7UkIXQ9BCR
+B7Qmi2oUH/5kmUxAcT4NiJfPgIW1wBxK3z8q0qCSGyt4BX+G8wyW+Mj9UCoLb8R9BjxZlqDe7m6j
+rkFRzeyroMd80FPebUat1LRk1ITntPUWxmJOPclZ0inzKNGRylwzT7Qqd1ONNYpAyOJfPct3OmUR
+VKF7e3wWGyTrYbT0Mh6ojPzI2QRYy2E0Tmg0KWspGd9Jk4M0I2lKG5oq/cGYfIw0//xGLSw/NbzG
+wyWe8yKXwK5J4AtFO8BvOZZXc9eH7VJPMo3zLrv3Aq9VtShePRe4jp3GbOhe33Ap+YoyGG3H+9yO
+MzMD68usRzJsVxXjEK2pG7OWn+pXdN1Yrq0wnhzkaScEJaXkWJY67fq1f2rzfrvb1vmE7jvS09iY
+tL39vx1YoFI06UANb2Z2AuoKeOLmY+pKRs1oh97V5TlfDEUWA7G8EnSOjZscV/Xuy3Y3QN4tS5Kx
+J1QJhvf7nadWy6PCyr37srff37vXv/+5/PLxC/9WJsi6EB+PLN3DmbEv4yuwjgYk2d8X4tMD/5pn
+4O5+r9e7t3zZ3xLiw1Ex1Q08/wUwQ35puM9E8CvWNkIOYn0jeBS3NsI/CLEmw38Gb934D/NFsQSb
+CAAA]]></bytes></resource>
 	<resource id='26' name='' module='fpmi' modver='' type='ui.props' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='4' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[H4sIAAAAAAAAAG1RTU/CQBCdikgBEfBkjIdevWxaEBDiRTHxIyGaqOFc20VWut2mXTD+AW9GT8bf
