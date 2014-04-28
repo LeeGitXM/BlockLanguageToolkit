@@ -83,7 +83,7 @@ public class ProcessBlockView extends AbstractBlock {
 					ap.getConnectionType(),UUID.randomUUID(),ap.getName()) );
 		}
 		this.properties = new ArrayList<BlockProperty>();
-		log.infof("%s: Created %s (%s) view from descriptor (%d anchors)", TAG, className, style.toString(),anchors.size());
+		log.debugf("%s: Created %s (%s) view from descriptor (%d anchors)", TAG, className, style.toString(),anchors.size());
 	}
 	
 	public ProcessBlockView(SerializableBlock sb) {
@@ -116,7 +116,7 @@ public class ProcessBlockView extends AbstractBlock {
 			} 
 		}
 		this.location = new Point(sb.getX(),sb.getY());
-		log.infof("%s: Created %s %s (%s) view from serializable block", TAG, className, sb.getId().toString(),style.toString());
+		log.debugf("%s: Created %s %s (%s) view from serializable block", TAG, className, sb.getId().toString(),style.toString());
 	}
 	
 	// Note: This does not set connection type

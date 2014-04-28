@@ -43,11 +43,25 @@ public class G2Anchor {
 	public String getBlockName() {return blockName;}
 	public ConnectionType getConnectionType() {
 		ConnectionType result = ConnectionType.DATA;
-		if( type.equalsIgnoreCase("GDL-DATA-PATH")) {
-			result = ConnectionType.DATA;
+		if( type!=null ) {
+			if( type.equalsIgnoreCase("GDL-DATA-PATH")) {
+				result = ConnectionType.DATA;
+			}
+			else if( type.equalsIgnoreCase("GDL-ACTION-PATH") ) {
+				result = ConnectionType.TEXT;
+			}
+			else if( type.equalsIgnoreCase("GDL-CONTROL-PATH")   ) {
+				result = ConnectionType.SIGNAL;
+			}
+			else if( type.equalsIgnoreCase("GDL-INFERENCE-PATH")) {
+				result = ConnectionType.TRUTHVALUE;
+			}
+			else {
+				System.err.println(String.format("%s.getConnectionType: Unrecognized connection type (%s)",TAG,type));
+			}
 		}
 		else {
-			System.err.println(String.format("%s.getConnectionType: Unrecognized connection type (%s)",TAG,type));
+			System.err.println(String.format("%s.getConnectionType: NULL connection type",TAG));
 		}
 		return result;
 	}

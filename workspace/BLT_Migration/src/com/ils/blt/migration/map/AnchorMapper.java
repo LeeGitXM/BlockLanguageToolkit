@@ -77,7 +77,7 @@ public class AnchorMapper {
 			String port = portMap.get(key);
 			if(port!=null) anchor.setPort(port);
 			else {
-				System.err.println(TAG+".updateAnchorNames: Port name lookup failed for "+className+" ("+port+")");
+				System.err.println(TAG+".updateAnchorNames: Port name lookup failed for "+g2block.getName()+"("+className+") on port "+anchor.getPort());
 			}
 		}
 	}

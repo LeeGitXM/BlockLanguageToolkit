@@ -1,0 +1,7 @@
+#!/bin/sh
+# Remove all of the json files from the migration target area,
+# leaving only those checked into git.
+#
+BIN=`pwd`
+REPO=~/Development/ils/repo/blt/workspace/BLT_Migration/json
+rm -f ${REPO}/g2/*.json

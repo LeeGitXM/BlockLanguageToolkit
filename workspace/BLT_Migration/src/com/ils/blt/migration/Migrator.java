@@ -40,7 +40,7 @@ public class Migrator {
 	private final static JDBC driver = new JDBC(); // Force driver to be loaded
 	private final static int MINX = 50;              // Allow whitespace around diagram.
 	private final static int MINY = 50;
-	private final static double SCALE_FACTOR = 2.0; // Scale G2 to Ignition positions
+	private final static double SCALE_FACTOR = 1.5; // Scale G2 to Ignition positions
 	private final RootClass root;
 	private boolean ok = true;                     // Allows us to short circuit processing
 	private G2Application g2application = null;    // G2 Application read from JSON
@@ -105,12 +105,13 @@ public class Migrator {
 		if( !ok ) return;
 		
 		// Read of stdin is expected to be from a re-directed file. 
-		// We gobble the whole thing here.
+		// We gobble the whole thing here. Scrub out CR
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		StringBuffer input = new StringBuffer();
 		String s = null;
 		try{
 			while ((s = in.readLine()) != null && s.length() != 0) {
+				s = s.replaceAll("\r", "");
 				input.append(s);
 			}
 		}
