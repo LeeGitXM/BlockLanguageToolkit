@@ -94,7 +94,7 @@
 			"x": 479,
 			"y": 208,
 			"originalId": null,
-			"className": "app.block.Diagnosis.Diagnosis",
+			"className": "project.block.Diagnosis.Diagnosis",
 			"embeddedIcon": "",
 			"embeddedLabel": "Diag",
 			"embeddedFontSize": 24,

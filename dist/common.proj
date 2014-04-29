@@ -9,9 +9,9 @@
 </version>
 <timestamp>2014-04-25 14:24:20</timestamp>
 <id>2</id>
-<name>BlockToolkitCommon</name>
+<name>BlockToolkitCommon - vers 1</name>
 <title>Block Toolkit Common</title>
-<description>Common facilities for Block Definition Toolkit. Block defimitions, common code.</description>
+<description>Common facilities for Block Definition Toolkit. Block defimitions, common code. Version 1</description>
 <enabled>true</enabled>
 <lastModified>1398457439566</lastModified>
 <lastModifiedBy>chuckc</lastModifiedBy>
