@@ -15,12 +15,10 @@ import com.ils.blt.common.serializable.SerializableResourceDescriptor;
  * of applications, families, diagrams, blocks and connections. It also handles
  * functions of the engine itself. 
  * 
- * @see com.ils.blt.gateway.GatewayBlockScriptFunctions for the same routines available from Gateway scope.
- * 
- * Where applicable, we make use of the BlockRequestHandler to perform the requests.
+ * Where applicable, we make use of the ApplicationRequestHandler to perform the requests.
  */
-public class BlockScriptFunctions   {
-	private static BlockRequestManager manager = new BlockRequestManager();
+public class ApplicationScriptFunctions   {
+	private static ApplicationRequestManager manager = new ApplicationRequestManager();
 
 	/**
 	 * Query the gateway for a list of prototypes for the defined blocks. 

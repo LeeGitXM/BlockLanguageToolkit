@@ -72,7 +72,34 @@ public class BlockRequestHandler   {
 	public String getExecutionState() {
 		return BlockExecutionController.getExecutionState();
 	}
+	/**
+	 * Enable or disable the specified diagram
+	 * @param projectId
+	 * @param resourceId
+	 * @param flag
+	 */
+	public void enableDiagram(Long projectId,Long resourceId,Boolean flag) {
+		BlockExecutionController controller = BlockExecutionController.getInstance();
+		ProcessDiagram diagram = controller.getDiagram(projectId, resourceId);
+		if( diagram!=null ) {
+			diagram.setEnabled(flag.booleanValue());
+		}
+	}
 	
+	/**
+	 * @param projectId
+	 * @param resourceId
+	 * @return True if the specified diagram is currently enabled.
+	 */
+	public Boolean isDiagramEnabled(Long projectId,Long resourceId) {
+		Boolean result = Boolean.FALSE;
+		BlockExecutionController controller = BlockExecutionController.getInstance();
+		ProcessDiagram diagram = controller.getDiagram(projectId, resourceId);
+		if( diagram!=null && diagram.isEnabled() ) {
+			result = Boolean.TRUE;
+		}
+		return result;
+	}
 	public void startController() {
 		BlockExecutionController.getInstance().start(context);
 	}
@@ -102,7 +129,7 @@ public class BlockRequestHandler   {
 			results = block.getProperties();  // Existing block
 			log.tracef("%s.getProperties existing %s = %s",TAG,block.getClass().getName(),results.toString());
 		}
-		else if(className.startsWith("app")) {
+		else if(className.startsWith("project")) {
 			ProxyHandler ph = ProxyHandler.getInstance();
 			block = ph.createBlockInstance(className,diagram.getSelf(),blockId);
 			if(block!=null) {
@@ -136,7 +163,7 @@ public class BlockRequestHandler   {
 		BlockProperty property = null;
 		if(block!=null) {
 			property = block.getProperty(propertyName);  // Existing block
-			log.tracef("%s.getProperty %s.%s %s",TAG,diagram.getName(),block.getLabel(),property.toString());
+			log.tracef("%s.getProperty %s.%s %s",TAG,diagram.getName(),block.getName(),property.toString());
 		}
 		else {
 			log.warnf("%s.getProperty Block not found for %s.%s",TAG,parentId.toString(),blockId.toString());
@@ -162,7 +189,7 @@ public class BlockRequestHandler   {
 		if( diagram!=null ) block = diagram.getBlock(blockId);
 		if(block!=null) {
 			block.setProperty(propertyName, new BasicQualifiedValue(value));
-			log.tracef("%s.setProperty %s.%s %s=%s",TAG,diagram.getName(),block.getLabel(),propertyName,value.toString());
+			log.tracef("%s.setProperty %s.%s %s=%s",TAG,diagram.getName(),block.getName(),propertyName,value.toString());
 		}
 		else {
 			log.warnf("%s.setProperty Block not found for %s.%s",TAG,parentId.toString(),blockId.toString());
@@ -203,8 +230,8 @@ public class BlockRequestHandler   {
 	 * @param value the result of the block's computation
 	 * @param quality of the reported output
 	 */
-	public void send(UUID parentuuid,UUID blockId,String port,String value,String quality)  {
-		log.infof("%s.send - %s = %s on %s",TAG,blockId,value.toString(),port);
+	public void postValue(UUID parentuuid,UUID blockId,String port,String value,String quality)  {
+		log.infof("%s.postValue - %s = %s on %s",TAG,blockId,value.toString(),port);
 		BlockExecutionController controller = BlockExecutionController.getInstance();
 		try {
 			ProcessDiagram diagram = controller.getDiagram(parentuuid);
@@ -216,11 +243,11 @@ public class BlockRequestHandler   {
 				controller.acceptCompletionNotification(note);
 			}
 			else {
-				log.warnf("%s.send: no diagram found for %s",TAG,parentuuid);
+				log.warnf("%s.postValue: no diagram found for %s",TAG,parentuuid);
 			}
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.send: one of %s or %s illegal UUID (%s)",TAG,parentuuid,blockId,iae.getMessage());
+			log.warnf("%s.postValue: one of %s or %s illegal UUID (%s)",TAG,parentuuid,blockId,iae.getMessage());
 		}
 	}
 	

@@ -49,6 +49,14 @@ public class GatewayRpcDispatcher   {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 	}
 
+	public void enableDiagram(Long projectId,Long resourceId,Boolean flag) {
+		BlockRequestHandler.getInstance().enableDiagram(projectId,resourceId,flag);
+	}
+	
+	public Boolean isDiagramEnabled(Long projectId,Long resourceId) {
+		return BlockRequestHandler.getInstance().isDiagramEnabled(projectId,resourceId);
+	}
+	
 	public String getControllerState() {
 		return BlockRequestHandler.getInstance().getExecutionState();
 	}
@@ -59,11 +67,6 @@ public class GatewayRpcDispatcher   {
 	
 	public void stopController() {
 		BlockRequestHandler.getInstance().stopController();
-	}
-
-	public void enableDiagram(Long projectId, Long resourceId, Boolean flag) {
-		// TODO Auto-generated method stub
-		
 	}
 
 

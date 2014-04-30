@@ -41,6 +41,7 @@ public class ProcessDiagram extends ProcessNode {
 	private final Map<ConnectionKey,ProcessConnection> connectionMap;            // Key by connection number
 	protected final Map<BlockPort,List<ProcessConnection>> outgoingConnections;    // Key by upstream block:port
 	private final long resourceId;
+	private boolean enabled = false;
 	
 	/**
 	 * Constructor: Create a model that encapsulates the structure of the blocks and connections
@@ -51,6 +52,7 @@ public class ProcessDiagram extends ProcessNode {
 	public ProcessDiagram(SerializableDiagram diagm,UUID parent) { 
 		super(diagm.getName(),parent,diagm.getId());
 		this.diagram = diagm;
+		this.enabled = diagm.isEnabled();
 		this.resourceId = diagm.getResourceId();
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		blocks = new HashMap<UUID,ProcessBlock>();
@@ -176,6 +178,8 @@ public class ProcessDiagram extends ProcessNode {
 		return notifications;
 	}
 	
+	public boolean isEnabled() {return enabled;}
+	public void setEnabled(boolean enabled) {this.enabled = enabled;}
 	/**
 	 * Report on whether or not the DOM contained more than one connected node.
 	 */

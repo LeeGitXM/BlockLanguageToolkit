@@ -4,6 +4,7 @@
  */
 package com.ils.blt.common;
 
+import java.awt.Color;
 import java.util.UUID;
 
 
@@ -22,6 +23,7 @@ public interface BLTProperties   {
 	public final static String FAMILY_RESOURCE_TYPE        = "blt.family";
 	public final static String FOLDER_RESOURCE_TYPE        = "__folder";
 	
+	public final static String APPLICATION_SCRIPT_PACKAGE      = "system.ils.blt.application";
 	public final static String BLOCK_SCRIPT_PACKAGE            = "system.ils.blt.block";
 	public final static String REGISTRATION_SCRIPT_PACKAGE     = "system.ils.blt.registrar";
 	
@@ -64,6 +66,10 @@ public interface BLTProperties   {
 	public static final String BLOCK_ATTRIBUTE_QUALITY    = "quality";
 	public static final String BLOCK_ATTRIBUTE_DATA_TYPE  = "type";
 	public static final String BLOCK_ATTRIBUTE_VALUE      = "value";
+	
+	public static final Color DIAGRAM_ACTIVE_BACKGROUND   = Color.WHITE;
+	public static final Color DIAGRAM_DIRTY_BACKGROUND    = Color.yellow;
+	public static final Color DIAGRAM_DISABLED_BACKGROUND = Color.getHSBColor(0.63f, 0.26f, 0.87f);
 	
 	// These are the key names used a the Python dictionary that defines a block prototype.
 	public static final String PALETTE_ANCHOR_IN   = "inports";     // A list of dictionaries

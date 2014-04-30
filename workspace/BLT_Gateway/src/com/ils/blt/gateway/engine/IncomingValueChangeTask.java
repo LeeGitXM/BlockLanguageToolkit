@@ -27,6 +27,6 @@ public class IncomingValueChangeTask implements Runnable{
 	}
 	
 	public void run()   { 
-		target.setValue(notification);
+		target.acceptValue(notification);
 	}
 }

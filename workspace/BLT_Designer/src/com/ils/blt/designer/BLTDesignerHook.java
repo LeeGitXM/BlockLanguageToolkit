@@ -8,8 +8,8 @@ import java.awt.Component;
 
 import com.ils.blt.client.component.DiagramAnalyzerComponent;
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.common.BlockRequestManager;
-import com.ils.blt.common.BlockScriptFunctions;
+import com.ils.blt.common.ApplicationRequestManager;
+import com.ils.blt.common.ApplicationScriptFunctions;
 import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.inductiveautomation.factorypmi.designer.palette.model.DefaultPaletteItemGroup;
@@ -45,7 +45,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	private DesignerContext context = null;
 	private final LoggerEx log;
 	private DiagramWorkspace workspace = null;
-	private BlockRequestManager propertiesRequestHandler = null;
+	private ApplicationRequestManager propertiesRequestHandler = null;
 	
 	// Register separate properties files for designer things and block things
 	static {
@@ -61,13 +61,13 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	@Override
 	public void initializeScriptManager(ScriptManager mgr) {
 		super.initializeScriptManager(mgr);
-		mgr.addScriptModule(BLTProperties.BLOCK_SCRIPT_PACKAGE,BlockScriptFunctions.class);
+		mgr.addScriptModule(BLTProperties.APPLICATION_SCRIPT_PACKAGE,ApplicationScriptFunctions.class);
 	}
 	
 	@Override
 	public void startup(DesignerContext ctx, LicenseState activationState) throws Exception {
 		this.context = ctx;
-		propertiesRequestHandler = new BlockRequestManager();
+		propertiesRequestHandler = new ApplicationRequestManager();
 		context.addBeanInfoSearchPath("com.ils.blt.designer.component.beaninfos");
 		
 		// Place icons for our custom widgets on the Vision palette
@@ -150,7 +150,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		}
 	}
 
-	public BlockRequestManager getPropertiesRequestHandler() { return propertiesRequestHandler; }
+	public ApplicationRequestManager getPropertiesRequestHandler() { return propertiesRequestHandler; }
 	@Override
 	public String getResourceCategoryKey(Project project,ProjectResource resource) {
 		// There is only one resource category that we are exporting

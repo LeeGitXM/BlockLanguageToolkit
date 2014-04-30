@@ -60,13 +60,13 @@ public class TagListener implements TagChangeListener   {
 	 */
 	public void defineSubscription(ProcessBlock block,BlockProperty property) {
 		if( block==null || property==null || property.getBindingType()!=BindingType.TAG ) return;
-		log.infof("%s.defineSubscription: considering %s:%s",TAG,block.getLabel(),property.getName());
+		log.infof("%s.defineSubscription: considering %s:%s",TAG,block.getName(),property.getName());
 		String tagPath = property.getBinding();
 		if( tagPath!=null && tagPath.length() >0 ) {
 			if( blockMap.get(tagPath) == null ) blockMap.put(tagPath, new ArrayList<ProcessBlock>());
 			List<ProcessBlock> blocks = blockMap.get(tagPath);
 			if( blocks.contains(block) ) {
-				log.debugf("%s.defineSubscription: share %s:%s on tag path %s",TAG,block.getLabel(),property.getName(),tagPath);
+				log.debugf("%s.defineSubscription: share %s:%s on tag path %s",TAG,block.getName(),property.getName(),tagPath);
 				return;    // We already have a subscription
 			}
 			blocks.add(block);
@@ -158,7 +158,7 @@ public class TagListener implements TagChangeListener   {
 				// Do not pass along nulls -- tag was never set
 				if(value.getValue()!=null ) {
 					try {
-						log.debugf("%s.startSubscriptionForProperty: property change for %s:%s",TAG,block.getLabel(),property.getName());
+						log.debugf("%s.startSubscriptionForProperty: property change for %s:%s",TAG,block.getName(),property.getName());
 						PropertyChangeEvaluationTask task = new PropertyChangeEvaluationTask(block,
 							new BlockPropertyChangeEvent(block.getBlockId().toString(),property.getName(),
 									new BasicQualifiedValue(property.getValue(),
@@ -230,7 +230,7 @@ public class TagListener implements TagChangeListener   {
 							if(prop.getBindingType()==BindingType.TAG) {
 								if( path.equals(tp.toStringFull()) && prop.getBindingType()==BindingType.TAG ) {
 									try {
-										log.debugf("%s.tagChanged: property change for %s:%s",TAG,blk.getLabel(),prop.getName());
+										log.debugf("%s.tagChanged: property change for %s:%s",TAG,blk.getName(),prop.getName());
 				
 										PropertyChangeEvaluationTask task = new PropertyChangeEvaluationTask(blk,
 												new BlockPropertyChangeEvent(blk.getBlockId().toString(),prop.getName(),

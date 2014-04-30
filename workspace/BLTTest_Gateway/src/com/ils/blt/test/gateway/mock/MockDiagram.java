@@ -52,7 +52,7 @@ public class MockDiagram extends ProcessDiagram {
 	 *
 	 */
 	public void analyze() {
-		log.infof("%s.analyze: Block-under-test is %s",TAG,uut.getLabel());
+		log.infof("%s.analyze: Block-under-test is %s",TAG,uut.getName());
 		if(uut!=null) {
 			for(ProcessBlock block:this.getProcessBlocks()) {
 				if( block instanceof MockInputBlock ) {

@@ -25,15 +25,15 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  *  
  *  Each request is relayed to the Gateway scope via an RPC call.
  */
-public class BlockRequestManager  {
-	private final static String TAG = "BlockRequestManager";
+public class ApplicationRequestManager  {
+	private final static String TAG = "ApplicationRequestManager";
 	private final LoggerEx log;
 
 	/**
 	 * Constructor adds common attributes that are needed to generate unique keys to identify
 	 * blocks and connectors.
 	 */
-	public BlockRequestManager()  {
+	public ApplicationRequestManager()  {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 	}
 
@@ -64,10 +64,19 @@ public class BlockRequestManager  {
 		return state;
 	}
 	
+	
+	
 
 	public void enableDiagram(Long projectId, Long resourceId, Boolean flag) {
-		// TODO Auto-generated method stub
-		
+		log.debugf("%s.enableDiagram ... %d:%d %s",TAG,projectId.longValue(),resourceId.longValue(),flag.toString());
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "enableDiagram",projectId,resourceId,flag);
+
+		}
+		catch(Exception ge) {
+			log.infof("%s.enableDiagram: GatewayException (%s)",TAG,ge.getMessage());
+		}
 	}
 
 
@@ -149,7 +158,21 @@ public class BlockRequestManager  {
 		}
 		return result;
 	}
-	
+	/**
+	 * @return TRUE if the specified diagram is enabled.
+	 */
+	public boolean isDiagramEnabled(Long projectId, Long resourceId) {
+		Boolean result = false;
+		try {
+			result = (Boolean)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "isDiagramEnabled",projectId,resourceId);
+			log.debugf("%s.isDiagramEnabled ... %s",TAG,result.toString());
+		}
+		catch(Exception ge) {
+			log.infof("%s.isDiagramEnabled: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		return result.booleanValue();
+	}
 	/**
 	 * Query the gateway for list of resources that the block controller knows about. 
 	 * This is a debugging aid. 

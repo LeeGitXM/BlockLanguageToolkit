@@ -31,6 +31,8 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	private final Map<UUID,ProcessBlockView> blockMap = new HashMap<UUID,ProcessBlockView>();
 	private List<Connection> connections = new ArrayList<Connection>();
 	private Dimension diagramSize = new Dimension(800,600);
+	private boolean dirty = true;
+	private boolean enabled = true;
 	private final UUID id;
 	private final long resourceId;
 	private final String name;
@@ -47,6 +49,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	 */
 	public ProcessDiagramView (long resid,SerializableDiagram diagram) {
 		this(resid,diagram.getId(),diagram.getName());
+		this.enabled = diagram.isEnabled();
 
 		for( SerializableBlock sb:diagram.getBlocks()) {
 			ProcessBlockView pbv = new ProcessBlockView(sb);
@@ -81,6 +84,10 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		}
 	}
 	
+	public boolean isDirty() {return dirty;}
+	public void setDirty(boolean dirty) {this.dirty = dirty;}
+	public boolean isEnabled() {return enabled;}
+	public void setEnabled(boolean enabled) {this.enabled = enabled;}
 	
 	@Override
 	public void addBlock(Block blk) {
@@ -98,6 +105,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		diagram.setName(name);
 		diagram.setResourceId(resourceId);
 		diagram.setId(getId());
+		diagram.setEnabled(enabled);
 		List<SerializableBlock> sblocks = new ArrayList<SerializableBlock>();
 		for( ProcessBlockView blk:blockMap.values()) {
 			SerializableBlock sb = blk.convertToSerializable();
@@ -175,14 +183,10 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	}
 
 	@Override
-	public Collection<Connection> getConnections() {
-		return connections;
-	}
+	public Collection<Connection> getConnections() {return connections;}
 
 	@Override
-	public String getDiagramName() {
-		return name;
-	}
+	public String getDiagramName() {return name;}
 
 	@Override
 	public Dimension getDiagramSize() {
@@ -235,5 +239,6 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		sap.setPathLeaderY(anchor.getPathLeader().y);
 		return sap;
 	}
+
 	
 }

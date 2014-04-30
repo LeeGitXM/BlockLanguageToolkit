@@ -34,7 +34,7 @@ import com.ils.block.common.LimitType;
 import com.ils.block.common.PropertyType;
 import com.ils.block.common.TransmissionScope;
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.common.BlockRequestManager;
+import com.ils.blt.common.ApplicationRequestManager;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.inductiveautomation.ignition.client.sqltags.tree.TagTreeNode;
@@ -104,7 +104,7 @@ public class BlockPropertyEditor extends SlidingPane {
 		Collection<BlockProperty> propertyList = block.getProperties();
 		if( propertyList==null || propertyList.isEmpty()) {
 			propertyList = new ArrayList<BlockProperty>();
-			BlockRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+			ApplicationRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
 			BlockProperty[] properties = handler.getBlockProperties(block.getClassName(),projectId,resourceId,block.getId());
 			for(BlockProperty property:properties) {
 				propertyList.add(property);
@@ -114,7 +114,7 @@ public class BlockPropertyEditor extends SlidingPane {
 		}
 		else {
 			// Existing block: Update the transient values from tag subscriptions.
-			BlockRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+			ApplicationRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
 			BlockProperty[] properties = handler.getBlockProperties(block.getClassName(),projectId,resourceId,block.getId());
 			for(BlockProperty property:properties) {
 				if( property.getBindingType().equals(BindingType.TAG) ) {

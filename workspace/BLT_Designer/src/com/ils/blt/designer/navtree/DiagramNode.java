@@ -1,25 +1,32 @@
 /**
- *   (c) 2013  ILS Automation. All rights reserved.
+ *   (c) 2013-2014  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.navtree;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JPopupMenu;
 import javax.swing.tree.TreePath;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.ApplicationRequestManager;
 import com.ils.blt.common.serializable.SerializableDiagram;
+import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
+import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;
@@ -52,6 +59,11 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 	private DesignerContext context;
 	private long resourceId;
 	private final DiagramWorkspace workspace;
+	private ImageIcon enabledIcon = null;
+	private ImageIcon disabledIcon= null;
+	
+	private DisableAction disableAction = new DisableAction();
+	private EnableAction enableAction = new EnableAction();
 
 
 	/**
@@ -70,6 +82,14 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 		setName(resource.getName());
 		setText(resource.getName());
 		setIcon(IconUtil.getIcon("tag_tree"));
+		Dimension iconSize = new Dimension(20,20);
+		Image img = ImageLoader.getInstance().loadImage("Block/icons/small/diagram.png",iconSize);
+		if( img !=null) {
+			enabledIcon = new ImageIcon(img);
+			setIcon( enabledIcon);
+		}
+		img = ImageLoader.getInstance().loadImage("Block/icons/small/diagram_disabled.png",iconSize);
+		if( img !=null) disabledIcon = new ImageIcon(img);
 
 		setItalic(context.getProject().isResourceDirty(resourceId));
 		context.addProjectChangeListener(this);
@@ -82,6 +102,13 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 		ExportDiagramAction exportAction = new ExportDiagramAction(menu.getRootPane(),workspace.getActiveDiagram());
 		SaveDiagramAction saveAction = new SaveDiagramAction();
 		menu.add(exportAction);
+		ApplicationRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+		if( handler.isDiagramEnabled(new Long(context.getProject().getId()),new Long(resourceId)) ) {
+			enableAction.setEnabled(false);
+		}
+		else {
+			disableAction.setEnabled(false);
+		}
 		menu.addSeparator();
 		menu.add(renameAction);
 		menu.add(saveAction);
@@ -114,6 +141,14 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 		return context.getProject().getResource(resourceId);
 	}
 
+	@Override
+	public Icon getIcon() {
+		Icon icon = enabledIcon;
+		// Problem because diagram may not be active yet ...
+		//if(!workspace.getActiveDiagram().isEnabled()) icon = disabledIcon;
+		return icon;
+	}
+	
 	@Override
 	public String getWorkspaceName() {
 		return DiagramWorkspace.key;
@@ -204,7 +239,45 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 			refresh();    // Updates the tree model
 		}
 	}
-	
+    private class DisableAction extends BaseAction {
+    	private static final long serialVersionUID = 1L;
+	    public DisableAction()  {
+	    	super(PREFIX+".DisableDiagram",IconUtil.getIcon("disk_play")); 
+	    }
+	    
+		public void actionPerformed(ActionEvent e) {
+			try {
+				ApplicationRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+				handler.enableDiagram(new Long(context.getProject().getId()),new Long(resourceId),Boolean.FALSE);
+				this.setEnabled(false);
+				enableAction.setEnabled(true);
+			} 
+			catch (Exception ex) {
+				log.warnf("%s: DisableAction: ERROR: %s",TAG,ex.getMessage(),ex);
+				ErrorUtil.showError(ex);
+			}
+		}
+	}
+    
+    private class EnableAction extends BaseAction {
+    	private static final long serialVersionUID = 1L;
+	    public EnableAction()  {
+	    	super(PREFIX+".EnableDiagram",IconUtil.getIcon("disk_forbidden")); 
+	    }
+	    
+		public void actionPerformed(ActionEvent e) {
+			try {
+				ApplicationRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+				handler.startController();
+				this.setEnabled(false);
+				disableAction.setEnabled(true);
+			} 
+			catch (Exception ex) {
+				log.warnf("%s: startAction: ERROR: %s",TAG,ex.getMessage(),ex);
+				ErrorUtil.showError(ex);
+			}
+		}
+	}
 	private class ExportDiagramAction extends BaseAction {
     	private static final long serialVersionUID = 1L;
     	private final static String POPUP_TITLE = "Export Diagram";
@@ -231,9 +304,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 					    	log.debugf("%s.actionPerformed: dialog returned %s",TAG,output.getAbsolutePath());
 					    	try {
 					    		if(output.exists()) {
-					    			//output.delete();           // Remove existing file
-					    			//output.createNewFile();
-					    			output.setWritable(true);  // This doesn't seem to work (??)
+					    			output.setWritable(true); 
 					    		}
 					    		else {
 					    			output.createNewFile();
@@ -282,6 +353,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 			}
 		}
 	}
+	
 	
 	private class SaveDiagramAction extends BaseAction {
     	private static final long serialVersionUID = 1L;

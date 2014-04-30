@@ -1,5 +1,5 @@
 /**
- *   (c) 2013  ILS Automation. All rights reserved.
+e *   (c) 2013-2014  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.gateway;
@@ -17,8 +17,9 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
  * of applications, families, diagrams, blocks and connections. It also handles
  * functions of the engine itself. 
  * 
- * @see com.ils.blt.common.BlockScriptFunctions for the same routines available in Designer/Client scope.
- * These functions are available through the  BlockExecutionEngine.
+ * @see com.ils.blt.common.ApplicationScriptFunctions for the same routines available in Designer/Client scope.
+ * These functions use the BlockRequestHandler which serves as a common facility for handling
+ * similar requests that arrive from the the scripting interface (this) or RPC calls.
  */
 public class GatewayBlockScriptFunctions   {
 	private static final String TAG = "GatewayBlockScriptFunctions: ";
@@ -35,30 +36,17 @@ public class GatewayBlockScriptFunctions   {
 	 * @param value the result of the block's computation
 	 * @param quality of the reported output
 	 */
-	public static void send(String parent,String id,String port,String value,String quality)  {
-		log.infof("%s.send - %s = %s on %s",TAG,id,value.toString(),port);
+	public static void postValue(String parent,String id,String port,String value,String quality)  {
+		log.infof("%s.postValue - %s = %s on %s",TAG,id,value.toString(),port);
 		
 		try {
 			UUID uuid = UUID.fromString(id);
 			UUID parentuuid = UUID.fromString(parent);
-			BlockRequestHandler.getInstance().send(parentuuid,uuid,port,value,quality);
+			BlockRequestHandler.getInstance().postValue(parentuuid,uuid,port,value,quality);
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.send: one of %s or %s illegal UUID (%s)",TAG,parent,id,iae.getMessage());
+			log.warnf("%s.postValue: one of %s or %s illegal UUID (%s)",TAG,parent,id,iae.getMessage());
 		}
 	}
 	
-	/**
-	 * Start the block execution engine in the gateway.
-	 */
-	public static void startController() {
-		controller.start(context);
-	}
-
-	/**
-	 * Shutdown the block execution engine in the gateway.
-	 */
-	public static void stopController() {
-		controller.stop();
-	}
 }

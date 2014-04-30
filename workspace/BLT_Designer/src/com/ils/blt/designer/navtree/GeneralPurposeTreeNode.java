@@ -27,7 +27,7 @@ import javax.swing.tree.TreePath;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.common.BlockRequestManager;
+import com.ils.blt.common.ApplicationRequestManager;
 import com.ils.blt.common.serializable.ApplicationUUIDResetHandler;
 import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.common.serializable.SerializableApplicationTree;
@@ -178,7 +178,7 @@ public class GeneralPurposeTreeNode extends FolderNode {
 		setupEditActions(paths, selection);
 		
 		if (isRootFolder()) { 
-			BlockRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+			ApplicationRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
 
 			ApplicationAction applicationAction = new ApplicationAction();
 			ApplicationImportAction applicationImportAction = new ApplicationImportAction();
@@ -467,7 +467,7 @@ public class GeneralPurposeTreeNode extends FolderNode {
 	    
 		public void actionPerformed(ActionEvent e) {
 			try {
-				BlockRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+				ApplicationRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
 				handler.startController();
 				this.setEnabled(false);
 				stopAction.setEnabled(true);
@@ -779,7 +779,7 @@ public class GeneralPurposeTreeNode extends FolderNode {
 	    
 		public void actionPerformed(ActionEvent e) {
 			try {
-				BlockRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+				ApplicationRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
 				handler.startController();
 				this.setEnabled(false);
 				stopAction.setEnabled(true);
@@ -953,7 +953,7 @@ public class GeneralPurposeTreeNode extends FolderNode {
 	    
 		public void actionPerformed(ActionEvent e) {
 			try {
-				BlockRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+				ApplicationRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
 				handler.startController();
 				this.setEnabled(false);
 				stopAction.setEnabled(true);
@@ -972,7 +972,7 @@ public class GeneralPurposeTreeNode extends FolderNode {
 	    
 		public void actionPerformed(ActionEvent e) {
 			try {
-				BlockRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+				ApplicationRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
 				handler.stopController();
 				this.setEnabled(false);
 				startAction.setEnabled(true);
@@ -1003,7 +1003,7 @@ public class GeneralPurposeTreeNode extends FolderNode {
 	 */
 	public void listControllerResources() {
 		try {
-			BlockRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+			ApplicationRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
 			List <SerializableResourceDescriptor> descriptors = handler.queryControllerResources();
 			for( SerializableResourceDescriptor descriptor : descriptors ) {
 				log.info("Res: "+descriptor.getProjectId()+":"+descriptor.getResourceId()+" "+

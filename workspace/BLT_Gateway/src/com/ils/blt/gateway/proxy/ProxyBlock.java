@@ -109,7 +109,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 * @param value to accept. A qualified value has a timestamp, quality,
 	 *        and simple value.
 	 */
-	public void setValue(IncomingNotification vcn) {
+	public void acceptValue(IncomingNotification vcn) {
 		delegate.setValue( getPythonBlock(), vcn.getConnection().getUpstreamPortName(), vcn.getValueAsQualifiedValue());
 	}
 	

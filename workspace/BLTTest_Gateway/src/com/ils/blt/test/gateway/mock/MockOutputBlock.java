@@ -45,7 +45,7 @@ public class MockOutputBlock extends AbstractProcessBlock implements ProcessBloc
 	 * Add the tag property and link it to the value property.
 	 */
 	private void initialize() {
-		setLabel("MockOutput");
+		setName("MockOutput");
 		BlockProperty value = new BlockProperty(BLOCK_PROPERTY_OUTPUT,null,propertyType,true);
 		value.setBinding(tagPath);
 		value.setBindingType(BindingType.TAG);
@@ -67,8 +67,8 @@ public class MockOutputBlock extends AbstractProcessBlock implements ProcessBloc
 	 * @param vcn notification of the new value.
 	 */
 	@Override
-	public void setValue(IncomingNotification vcn) {
-		super.setValue(vcn);
+	public void acceptValue(IncomingNotification vcn) {
+		super.acceptValue(vcn);
 		Object val = vcn.getValue();
 		if( val!=null ) {
 			log.infof("%s.setValue:incoming value .... %s=%s",TAG,val.getClass().getName(),val.toString());

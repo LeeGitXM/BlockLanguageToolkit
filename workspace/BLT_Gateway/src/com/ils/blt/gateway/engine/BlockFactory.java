@@ -104,7 +104,7 @@ public class BlockFactory  {
 	 * @param sb
 	 */
 	public void updateBlockFromSerializable(ProcessBlock pb,SerializableBlock sb) {
-		pb.setLabel(sb.getLabel());
+		pb.setName(sb.getLabel());
 		BlockProperty[] properties = sb.getProperties();
 		if( properties!=null ) {
 			for( BlockProperty bp:properties) {
@@ -130,7 +130,7 @@ public class BlockFactory  {
 					}
 				}
 				else {
-					log.warnf("%s: updateBlockFromSerializable: Property %s not found in process block %s",TAG,bp.getName(),pb.getLabel());
+					log.warnf("%s: updateBlockFromSerializable: Property %s not found in process block %s",TAG,bp.getName(),pb.getName());
 					log.warnf("     available names are: %s",pb.getPropertyNames().toString()); 
 				}
 			}
