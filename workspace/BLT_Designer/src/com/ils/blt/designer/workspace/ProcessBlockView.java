@@ -11,7 +11,6 @@ import com.ils.block.common.AnchorDirection;
 import com.ils.block.common.AnchorPrototype;
 import com.ils.block.common.BlockDescriptor;
 import com.ils.block.common.BlockProperty;
-import com.ils.block.common.BlockState;
 import com.ils.block.common.BlockStyle;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
@@ -41,14 +40,13 @@ public class ProcessBlockView extends AbstractBlock {
 	private String embeddedLabel="";              // Label place in block in designer
 	private final UIFactory factory = new UIFactory() ;
 	private String iconPath="";                   // Path to icon that is the entire block
-	private String label;                         // Text to display on the block
+	private String name;                         // Text to display on the block
 	private Point location = new Point(0,0);
 	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	private int preferredHeight = 0;              // Size the view to "natural" size
 	private int preferredWidth  = 0;              // Size the view to "natural" size
 	private Collection<BlockProperty> properties;
 	private boolean receiveEnabled = false;
-	private BlockState state = BlockState.IDLE;   // Block execution state
 	private String statusText;                    // Auxiliary text to display
 	private BlockStyle style = BlockStyle.BASIC;
 	private boolean transmitEnabled = false;
@@ -63,14 +61,13 @@ public class ProcessBlockView extends AbstractBlock {
 	public ProcessBlockView(BlockDescriptor descriptor) {
 		this.uuid = UUID.randomUUID();
 		this.className = descriptor.getBlockClass();
-		this.label = descriptor.getLabel();
+		this.name = descriptor.getLabel();
 		this.embeddedIcon = descriptor.getEmbeddedIcon();
 		this.embeddedLabel= descriptor.getEmbeddedLabel();
 		this.embeddedFontSize= descriptor.getEmbeddedFontSize();
 		this.iconPath = descriptor.getIconPath();
 		this.preferredHeight = descriptor.getPreferredHeight();
 		this.preferredWidth = descriptor.getPreferredWidth();
-		this.state = BlockState.STOPPED;
 		this.statusText = "";
 		this.style = descriptor.getStyle();
 		this.receiveEnabled = descriptor.isReceiveEnabled();
@@ -96,8 +93,7 @@ public class ProcessBlockView extends AbstractBlock {
 		this.preferredHeight = sb.getPreferredHeight();
 		this.preferredWidth = sb.getPreferredWidth();
 		this.style = sb.getStyle();
-		this.label = sb.getLabel();
-		this.state = BlockState.PAUSED;
+		this.name = sb.getName();
 		this.statusText = sb.getStatusText();
 		this.receiveEnabled  = sb.isReceiveEnabled();
 		this.transmitEnabled = sb.isTransmitEnabled();
@@ -138,7 +134,7 @@ public class ProcessBlockView extends AbstractBlock {
 		result.setEmbeddedLabel(getEmbeddedLabel());
 		result.setEmbeddedFontSize(getEmbeddedFontSize());
 		result.setIconPath(getIconPath());
-		result.setLabel(getLabel());
+		result.setName(getNaame());
 		result.setStyle(getStyle());
 		result.setReceiveEnabled(isReceiveEnabled());
 		result.setTransmitEnabled(isTransmitEnabled());
@@ -183,7 +179,7 @@ public class ProcessBlockView extends AbstractBlock {
 	public String getIconPath() {return iconPath;}
 	@Override
 	public UUID getId() { return uuid; }
-	public String getLabel() {return label;}
+	public String getNaame() {return name;}
 	// Location is the upper left.
 	@Override
 	public Point getLocation() {
@@ -206,7 +202,7 @@ public class ProcessBlockView extends AbstractBlock {
 	public void setEmbeddedIcon(String embeddedIcon) {this.embeddedIcon = embeddedIcon;}
 	public void setEmbeddedLabel(String embeddedLabel) {this.embeddedLabel = embeddedLabel;}
 	public void setIconPath(String iconPath) {this.iconPath = iconPath;}
-	public void setLabel(String label) {this.label = label;}
+	public void setName(String label) {this.name = label;}
 	@Override
 	public void setLocation(Point loc) {
 		location = loc;

@@ -277,7 +277,7 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 			}
 		}
 		else {
-			log.warnf("%s: drawEmbeddedIcon Missing icon at %s for %s",TAG,iconPath,block.getLabel());
+			log.warnf("%s: drawEmbeddedIcon Missing icon at %s for %s",TAG,iconPath,block.getNaame());
 		}
 	}
 	
@@ -319,7 +319,7 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 			icon.paintIcon(getBlockComponent(), g, bounds.x, bounds.y);
 		}
 		else {
-			log.warnf("%s.paintBadge Missing icon at %s for %s",TAG,iconPath,block.getLabel());
+			log.warnf("%s.paintBadge Missing icon at %s for %s",TAG,iconPath,block.getNaame());
 		}
 	}
 	

@@ -3,7 +3,6 @@ package com.ils.blt.common.serializable;
 import java.util.UUID;
 
 import com.ils.block.common.BlockProperty;
-import com.ils.block.common.BlockState;
 import com.ils.block.common.BlockStyle;
 
 /**
@@ -21,13 +20,12 @@ public class SerializableBlock {
 	private String embeddedIcon="";       // 32x32 icon to place in block in designer
 	private String embeddedLabel="";      // Label place in block in designer
 	private String iconPath="";           // Path to icon that is the entire block
-	private String label;
+	private String name;
 	private UUID originalId = null;       // Id of block from which this was cloned
 	private int preferredHeight = 0;
 	private int preferredWidth  = 0;
 	private BlockProperty[] properties = null;
 	private boolean receiveEnabled = false;
-	private BlockState state;
 	private String statusText;
 	private BlockStyle style = BlockStyle.BASIC;
 	private boolean transmitEnabled= false;
@@ -46,12 +44,11 @@ public class SerializableBlock {
 	public String getEmbeddedLabel() {return embeddedLabel;}
 	public String getIconPath() {return iconPath;}
 	public UUID getId() { return uuid; }
-	public String getLabel() { return label; }
+	public String getName() { return name; }
 	public UUID getOriginalId() { return originalId; }
 	public int getPreferredHeight() {return preferredHeight;}
 	public int getPreferredWidth() {return preferredWidth;}
 	public BlockProperty[] getProperties() { return properties; }
-	public BlockState getState() { return state; }
 	public String getStatusText() { return statusText; }
 	public BlockStyle getStyle() { return style; }
 	public int getX() { return x; }
@@ -70,13 +67,12 @@ public class SerializableBlock {
 	public void setEmbeddedLabel(String embeddedLabel) {this.embeddedLabel = embeddedLabel;}
 	public void setIconPath(String iconPath) {this.iconPath = iconPath;}
 	public void setId(UUID id) { uuid = id; }
-	public void setLabel(String label) { this.label = label; }
+	public void setName(String label) { this.name = label; }
 	public void setOriginalId(UUID id) { originalId = id; }
 	public void setPreferredHeight(int preferredHeight) {this.preferredHeight = preferredHeight;}
 	public void setPreferredWidth(int preferredWidth) {this.preferredWidth = preferredWidth;}
 	public void setProperties(BlockProperty[] array) { this.properties = array; }
 	public void setReceiveEnabled(boolean receiveEnabled) {this.receiveEnabled = receiveEnabled;}
-	public void setState(BlockState state) { this.state = state; }
 	public void setStatusText(String statusText) { this.statusText = statusText; }
 	public void setStyle(BlockStyle style) { this.style = style; }
 	public void setTransmitEnabled(boolean transmitEnabled) {this.transmitEnabled = transmitEnabled;}

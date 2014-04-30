@@ -104,7 +104,7 @@ public class BlockFactory  {
 	 * @param sb
 	 */
 	public void updateBlockFromSerializable(ProcessBlock pb,SerializableBlock sb) {
-		pb.setName(sb.getLabel());
+		pb.setName(sb.getName());
 		BlockProperty[] properties = sb.getProperties();
 		if( properties!=null ) {
 			for( BlockProperty bp:properties) {

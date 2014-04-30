@@ -66,10 +66,11 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 
 	@Override
 	public void startup(LicenseState licenseState) {
-	    log.infof("%s: Startup complete.",TAG);
+	    
 	    // Look for all block resources and inform the execution controller
+		BlockExecutionController controller = BlockExecutionController.getInstance();
 	    mmgr = new ModelManager(context);
-	    BlockExecutionController.getInstance().setDelegate(mmgr);
+	    controller.setDelegate(mmgr);
 	    List<Project> projects = this.context.getProjectManager().getProjectsFull(ProjectVersion.Staging);
 	    for( Project project:projects ) {
 	    	List<ProjectResource> resources = project.getResources();
@@ -79,8 +80,11 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	    		mmgr.analyzeResource(project.getId(),res);
 	    	}
 	    }
+	    controller.start(context);
 	    context.getProjectManager().addProjectListener(mmgr);
 	    // Look for all "Controller Output" UDT instances
+	    
+	    log.infof("%s: Startup complete.",TAG);
 	}
 
 	@Override

@@ -236,7 +236,7 @@ public class Migrator {
 			SerializableBlock block = new SerializableBlock();
 			block.setId(UUID.nameUUIDFromBytes(g2block.getUuid().getBytes()));
 			block.setOriginalId(UUID.nameUUIDFromBytes(g2block.getUuid().getBytes()));
-			block.setLabel(g2block.getName());
+			block.setName(g2block.getName());
 			block.setX((int)(g2block.getX()*SCALE_FACTOR+xoffset));
 			block.setY((int)(g2block.getY()*SCALE_FACTOR+yoffset));
 			classMapper.setClassName(g2block, block);
