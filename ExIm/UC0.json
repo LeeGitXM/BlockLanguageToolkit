@@ -1,1 +1,135 @@
-{"blocks":[{"x":551,"y":138,"originalId":null,"className":"com.ils.block.TagWriter","embeddedIcon":"","embeddedLabel":"","embeddedFontSize":24,"iconPath":"","preferredHeight":0,"preferredWidth":0,"style":"ROUND","label":"Tag Writer","statusText":null,"state":null,"properties":[{"editable":true,"type":"STRING","binding":"","bindingType":"NONE","name":"TagPath","quality":null,"maximum":1.7976931348623157E308,"minimum":4.9E-324,"value":null},{"editable":true,"type":"STRING","binding":"","bindingType":"NONE","name":"Provider","quality":null,"maximum":1.7976931348623157E308,"minimum":4.9E-324,"value":null}],"anchors":[{"direction":"INCOMING","id":"ae09b7f5-551f-4726-95a8-d1cc86616790","display":"in","parentId":"ad2cafc1-7a9c-422a-9c4a-81e152f62fb4","connectionType":"ANY"}],"id":"ad2cafc1-7a9c-422a-9c4a-81e152f62fb4"},{"x":263,"y":124,"originalId":null,"className":"com.ils.block.Entry","embeddedIcon":"","embeddedLabel":"","embeddedFontSize":24,"iconPath":"","preferredHeight":0,"preferredWidth":0,"style":"ENTRY","label":"Entry","statusText":null,"state":null,"properties":[{"editable":true,"type":"OBJECT","binding":"","bindingType":"TAG","name":"Input","quality":null,"maximum":1.7976931348623157E308,"minimum":4.9E-324,"value":null}],"anchors":[{"direction":"OUTGOING","id":"bd0e34cd-712f-44a2-94ce-313db506d9db","display":"out","parentId":"ae9fc7fa-2e30-4003-9909-01be93bd3ebd","connectionType":"DATA"}],"id":"ae9fc7fa-2e30-4003-9909-01be93bd3ebd"}],"connections":[{"beginBlock":"ae9fc7fa-2e30-4003-9909-01be93bd3ebd","endBlock":"ad2cafc1-7a9c-422a-9c4a-81e152f62fb4","beginAnchor":{"direction":"OUTGOING","id":"out","parentId":"ae9fc7fa-2e30-4003-9909-01be93bd3ebd","anchorX":74,"anchorY":30,"pathLeaderX":90,"pathLeaderY":30,"hotSpotX":68,"hotSpotY":24,"hotSpotHeight":12,"hotSpotWidth":12},"endAnchor":{"direction":"INCOMING","id":"in","parentId":"ad2cafc1-7a9c-422a-9c4a-81e152f62fb4","anchorX":6,"anchorY":29,"pathLeaderX":-10,"pathLeaderY":29,"hotSpotX":0,"hotSpotY":23,"hotSpotHeight":12,"hotSpotWidth":12},"type":"DATA"}],"name":"New Import","id":null,"resourceId":588}
+{
+	"blocks": 
+	[
+		{
+			"x": 551,
+			"y": 138,
+			"originalId": null,
+			"className": "com.ils.block.TagWriter",
+			"embeddedIcon": "",
+			"embeddedLabel": "",
+			"embeddedFontSize": 24,
+			"iconPath": "",
+			"preferredHeight": 0,
+			"preferredWidth": 0,
+			"style": "ROUND",
+			"name": "Tag Writer",
+			"statusText": null,
+			"properties": 
+			[
+				{
+					"editable": true,
+					"type": "STRING",
+					"binding": "",
+					"bindingType": "NONE",
+					"name": "TagPath",
+					"quality": null,
+					"maximum": 1.7976931348623157E308,
+					"minimum": 4.9E-324,
+					"value": null
+				},
+				{
+					"editable": true,
+					"type": "STRING",
+					"binding": "",
+					"bindingType": "NONE",
+					"name": "Provider",
+					"quality": null,
+					"maximum": 1.7976931348623157E308,
+					"minimum": 4.9E-324,
+					"value": null
+				}
+			],
+			"anchors": 
+			[
+				{
+					"direction": "INCOMING",
+					"id": "ae09b7f5-551f-4726-95a8-d1cc86616790",
+					"display": "in",
+					"parentId": "ad2cafc1-7a9c-422a-9c4a-81e152f62fb4",
+					"connectionType": "ANY"
+				}
+			],
+			"id": "ad2cafc1-7a9c-422a-9c4a-81e152f62fb4"
+		},
+		{
+			"x": 263,
+			"y": 124,
+			"originalId": null,
+			"className": "com.ils.block.Entry",
+			"embeddedIcon": "",
+			"embeddedLabel": "",
+			"embeddedFontSize": 24,
+			"iconPath": "",
+			"preferredHeight": 0,
+			"preferredWidth": 0,
+			"style": "ENTRY",
+			"name": "Entry",
+			"statusText": null,
+			"properties": 
+			[
+				{
+					"editable": true,
+					"type": "OBJECT",
+					"binding": "",
+					"bindingType": "TAG",
+					"name": "Input",
+					"quality": null,
+					"maximum": 1.7976931348623157E308,
+					"minimum": 4.9E-324,
+					"value": null
+				}
+			],
+			"anchors": 
+			[
+				{
+					"direction": "OUTGOING",
+					"id": "bd0e34cd-712f-44a2-94ce-313db506d9db",
+					"display": "out",
+					"parentId": "ae9fc7fa-2e30-4003-9909-01be93bd3ebd",
+					"connectionType": "DATA"
+				}
+			],
+			"id": "ae9fc7fa-2e30-4003-9909-01be93bd3ebd"
+		}
+	],
+	"connections": 
+	[
+		{
+			"beginBlock": "ae9fc7fa-2e30-4003-9909-01be93bd3ebd",
+			"endBlock": "ad2cafc1-7a9c-422a-9c4a-81e152f62fb4",
+			"beginAnchor": 
+			{
+				"direction": "OUTGOING",
+				"id": "out",
+				"parentId": "ae9fc7fa-2e30-4003-9909-01be93bd3ebd",
+				"anchorX": 74,
+				"anchorY": 30,
+				"pathLeaderX": 90,
+				"pathLeaderY": 30,
+				"hotSpotX": 68,
+				"hotSpotY": 24,
+				"hotSpotHeight": 12,
+				"hotSpotWidth": 12
+			},
+			"endAnchor": 
+			{
+				"direction": "INCOMING",
+				"id": "in",
+				"parentId": "ad2cafc1-7a9c-422a-9c4a-81e152f62fb4",
+				"anchorX": 6,
+				"anchorY": 29,
+				"pathLeaderX": -10,
+				"pathLeaderY": 29,
+				"hotSpotX": 0,
+				"hotSpotY": 23,
+				"hotSpotHeight": 12,
+				"hotSpotWidth": 12
+			},
+			"type": "DATA"
+		}
+	],
+	"name": "New Import",
+	"id": null,
+	"resourceId": 588
+}

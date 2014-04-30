@@ -1,1 +1,223 @@
-{"blocks":[{"x":155,"y":80,"originalId":"7bbbd6b9-3140-4328-a844-51817eb47574","className":"com.ils.block.Entry","embeddedIcon":"","embeddedLabel":"","embeddedFontSize":24,"iconPath":null,"preferredHeight":0,"preferredWidth":0,"style":"ENTRY","label":"Input 1","statusText":null,"state":null,"properties":null,"anchors":[{"direction":"OUTGOING","id":"a5777877-c368-4a8d-9e9b-d62b6aa94a0e","display":"OUT","parentId":"7bbbd6b9-3140-4328-a844-51817eb47574","connectionType":"DATA"}],"id":"7bbbd6b9-3140-4328-a844-51817eb47574"},{"x":155,"y":120,"originalId":"7cccd6b9-3140-4328-a844-51817eb47574","className":"com.ils.block.Entry","embeddedIcon":"","embeddedLabel":"","embeddedFontSize":24,"iconPath":null,"preferredHeight":0,"preferredWidth":0,"style":"ENTRY","label":"Input 2","statusText":null,"state":null,"properties":null,"anchors":[{"direction":"OUTGOING","id":"b4666933-6529-4da2-ae22-3067ba886735","display":"OUT","parentId":"7cccd6b9-3140-4328-a844-51817eb47574","connectionType":"DATA"}],"id":"7cccd6b9-3140-4328-a844-51817eb47574"},{"x":280,"y":100,"originalId":"7fffd6b9-3140-4328-a844-51817eb47574","className":"com.ils.block.Or","embeddedIcon":"","embeddedLabel":"OR","embeddedFontSize":18,"iconPath":null,"preferredHeight":60,"preferredWidth":60,"style":"HALFMOON","label":"OR","statusText":null,"state":null,"properties":null,"anchors":[{"direction":"INCOMING","id":"aae0fa31-58e2-4693-93da-f2ea0e434e22","display":"IN","parentId":"7fffd6b9-3140-4328-a844-51817eb47574","connectionType":"DATA"},{"direction":"OUTGOING","id":"0a1ccf6f-e33c-4157-8d5e-7b3c56974940","display":"OUT","parentId":"7fffd6b9-3140-4328-a844-51817eb47574","connectionType":"DATA"}],"id":"7fffd6b9-3140-4328-a844-51817eb47574"},{"x":430,"y":100,"originalId":"5555d6b9-3140-4328-a844-51817eb47574","className":"com.ils.block.TagWriter","embeddedIcon":"","embeddedLabel":"","embeddedFontSize":24,"iconPath":null,"preferredHeight":0,"preferredWidth":0,"style":"ROUND","label":"END","statusText":null,"state":null,"properties":null,"anchors":[{"direction":"INCOMING","id":"d8daad9a-3ec4-4028-9d31-0306317bfbdf","display":"IN","parentId":"5555d6b9-3140-4328-a844-51817eb47574","connectionType":"DATA"}],"id":"5555d6b9-3140-4328-a844-51817eb47574"}],"connections":[{"beginBlock":"7cccd6b9-3140-4328-a844-51817eb47574","endBlock":"7fffd6b9-3140-4328-a844-51817eb47574","beginAnchor":{"direction":"OUTGOING","id":"OUT","parentId":"7cccd6b9-3140-4328-a844-51817eb47574","anchorX":74,"anchorY":30,"pathLeaderX":90,"pathLeaderY":30,"hotSpotX":68,"hotSpotY":24,"hotSpotHeight":12,"hotSpotWidth":12},"endAnchor":{"direction":"INCOMING","id":"IN","parentId":"7fffd6b9-3140-4328-a844-51817eb47574","anchorX":6,"anchorY":30,"pathLeaderX":-10,"pathLeaderY":30,"hotSpotX":0,"hotSpotY":24,"hotSpotHeight":12,"hotSpotWidth":12},"type":"DATA"},{"beginBlock":"7fffd6b9-3140-4328-a844-51817eb47574","endBlock":"5555d6b9-3140-4328-a844-51817eb47574","beginAnchor":{"direction":"OUTGOING","id":"OUT","parentId":"7fffd6b9-3140-4328-a844-51817eb47574","anchorX":54,"anchorY":30,"pathLeaderX":70,"pathLeaderY":30,"hotSpotX":48,"hotSpotY":24,"hotSpotHeight":12,"hotSpotWidth":12},"endAnchor":{"direction":"INCOMING","id":"IN","parentId":"5555d6b9-3140-4328-a844-51817eb47574","anchorX":6,"anchorY":29,"pathLeaderX":-10,"pathLeaderY":29,"hotSpotX":0,"hotSpotY":23,"hotSpotHeight":12,"hotSpotWidth":12},"type":"DATA"},{"beginBlock":"7bbbd6b9-3140-4328-a844-51817eb47574","endBlock":"7fffd6b9-3140-4328-a844-51817eb47574","beginAnchor":{"direction":"OUTGOING","id":"OUT","parentId":"7bbbd6b9-3140-4328-a844-51817eb47574","anchorX":74,"anchorY":30,"pathLeaderX":90,"pathLeaderY":30,"hotSpotX":68,"hotSpotY":24,"hotSpotHeight":12,"hotSpotWidth":12},"endAnchor":{"direction":"INCOMING","id":"IN","parentId":"7fffd6b9-3140-4328-a844-51817eb47574","anchorX":6,"anchorY":30,"pathLeaderX":-10,"pathLeaderY":30,"hotSpotX":0,"hotSpotY":24,"hotSpotHeight":12,"hotSpotWidth":12},"type":"DATA"}],"name":"Simple Or"}
+{
+	"blocks": 
+	[
+		{
+			"x": 155,
+			"y": 80,
+			"originalId": "7bbbd6b9-3140-4328-a844-51817eb47574",
+			"className": "com.ils.block.Entry",
+			"embeddedIcon": "",
+			"embeddedLabel": "",
+			"embeddedFontSize": 24,
+			"iconPath": null,
+			"preferredHeight": 0,
+			"preferredWidth": 0,
+			"style": "ENTRY",
+			"name": "Input 1",
+			"statusText": null,
+			"properties": null,
+			"anchors": 
+			[
+				{
+					"direction": "OUTGOING",
+					"id": "a5777877-c368-4a8d-9e9b-d62b6aa94a0e",
+					"display": "OUT",
+					"parentId": "7bbbd6b9-3140-4328-a844-51817eb47574",
+					"connectionType": "DATA"
+				}
+			],
+			"id": "7bbbd6b9-3140-4328-a844-51817eb47574"
+		},
+		{
+			"x": 155,
+			"y": 120,
+			"originalId": "7cccd6b9-3140-4328-a844-51817eb47574",
+			"className": "com.ils.block.Entry",
+			"embeddedIcon": "",
+			"embeddedLabel": "",
+			"embeddedFontSize": 24,
+			"iconPath": null,
+			"preferredHeight": 0,
+			"preferredWidth": 0,
+			"style": "ENTRY",
+			"name": "Input 2",
+			"statusText": null,
+			"properties": null,
+			"anchors": 
+			[
+				{
+					"direction": "OUTGOING",
+					"id": "b4666933-6529-4da2-ae22-3067ba886735",
+					"display": "OUT",
+					"parentId": "7cccd6b9-3140-4328-a844-51817eb47574",
+					"connectionType": "DATA"
+				}
+			],
+			"id": "7cccd6b9-3140-4328-a844-51817eb47574"
+		},
+		{
+			"x": 280,
+			"y": 100,
+			"originalId": "7fffd6b9-3140-4328-a844-51817eb47574",
+			"className": "com.ils.block.Or",
+			"embeddedIcon": "",
+			"embeddedLabel": "OR",
+			"embeddedFontSize": 18,
+			"iconPath": null,
+			"preferredHeight": 60,
+			"preferredWidth": 60,
+			"style": "HALFMOON",
+			"name": "OR",
+			"statusText": null,
+			"properties": null,
+			"anchors": 
+			[
+				{
+					"direction": "INCOMING",
+					"id": "aae0fa31-58e2-4693-93da-f2ea0e434e22",
+					"display": "IN",
+					"parentId": "7fffd6b9-3140-4328-a844-51817eb47574",
+					"connectionType": "DATA"
+				},
+				{
+					"direction": "OUTGOING",
+					"id": "0a1ccf6f-e33c-4157-8d5e-7b3c56974940",
+					"display": "OUT",
+					"parentId": "7fffd6b9-3140-4328-a844-51817eb47574",
+					"connectionType": "DATA"
+				}
+			],
+			"id": "7fffd6b9-3140-4328-a844-51817eb47574"
+		},
+		{
+			"x": 430,
+			"y": 100,
+			"originalId": "5555d6b9-3140-4328-a844-51817eb47574",
+			"className": "com.ils.block.TagWriter",
+			"embeddedIcon": "",
+			"embeddedLabel": "",
+			"embeddedFontSize": 24,
+			"iconPath": null,
+			"preferredHeight": 0,
+			"preferredWidth": 0,
+			"style": "ROUND",
+			"name": "END",
+			"statusText": null,
+			"properties": null,
+			"anchors": 
+			[
+				{
+					"direction": "INCOMING",
+					"id": "d8daad9a-3ec4-4028-9d31-0306317bfbdf",
+					"display": "IN",
+					"parentId": "5555d6b9-3140-4328-a844-51817eb47574",
+					"connectionType": "DATA"
+				}
+			],
+			"id": "5555d6b9-3140-4328-a844-51817eb47574"
+		}
+	],
+	"connections": 
+	[
+		{
+			"beginBlock": "7cccd6b9-3140-4328-a844-51817eb47574",
+			"endBlock": "7fffd6b9-3140-4328-a844-51817eb47574",
+			"beginAnchor": 
+			{
+				"direction": "OUTGOING",
+				"id": "OUT",
+				"parentId": "7cccd6b9-3140-4328-a844-51817eb47574",
+				"anchorX": 74,
+				"anchorY": 30,
+				"pathLeaderX": 90,
+				"pathLeaderY": 30,
+				"hotSpotX": 68,
+				"hotSpotY": 24,
+				"hotSpotHeight": 12,
+				"hotSpotWidth": 12
+			},
+			"endAnchor": 
+			{
+				"direction": "INCOMING",
+				"id": "IN",
+				"parentId": "7fffd6b9-3140-4328-a844-51817eb47574",
+				"anchorX": 6,
+				"anchorY": 30,
+				"pathLeaderX": -10,
+				"pathLeaderY": 30,
+				"hotSpotX": 0,
+				"hotSpotY": 24,
+				"hotSpotHeight": 12,
+				"hotSpotWidth": 12
+			},
+			"type": "DATA"
+		},
+		{
+			"beginBlock": "7fffd6b9-3140-4328-a844-51817eb47574",
+			"endBlock": "5555d6b9-3140-4328-a844-51817eb47574",
+			"beginAnchor": 
+			{
+				"direction": "OUTGOING",
+				"id": "OUT",
+				"parentId": "7fffd6b9-3140-4328-a844-51817eb47574",
+				"anchorX": 54,
+				"anchorY": 30,
+				"pathLeaderX": 70,
+				"pathLeaderY": 30,
+				"hotSpotX": 48,
+				"hotSpotY": 24,
+				"hotSpotHeight": 12,
+				"hotSpotWidth": 12
+			},
+			"endAnchor": 
+			{
+				"direction": "INCOMING",
+				"id": "IN",
+				"parentId": "5555d6b9-3140-4328-a844-51817eb47574",
+				"anchorX": 6,
+				"anchorY": 29,
+				"pathLeaderX": -10,
+				"pathLeaderY": 29,
+				"hotSpotX": 0,
+				"hotSpotY": 23,
+				"hotSpotHeight": 12,
+				"hotSpotWidth": 12
+			},
+			"type": "DATA"
+		},
+		{
+			"beginBlock": "7bbbd6b9-3140-4328-a844-51817eb47574",
+			"endBlock": "7fffd6b9-3140-4328-a844-51817eb47574",
+			"beginAnchor": 
+			{
+				"direction": "OUTGOING",
+				"id": "OUT",
+				"parentId": "7bbbd6b9-3140-4328-a844-51817eb47574",
+				"anchorX": 74,
+				"anchorY": 30,
+				"pathLeaderX": 90,
+				"pathLeaderY": 30,
+				"hotSpotX": 68,
+				"hotSpotY": 24,
+				"hotSpotHeight": 12,
+				"hotSpotWidth": 12
+			},
+			"endAnchor": 
+			{
+				"direction": "INCOMING",
+				"id": "IN",
+				"parentId": "7fffd6b9-3140-4328-a844-51817eb47574",
+				"anchorX": 6,
+				"anchorY": 30,
+				"pathLeaderX": -10,
+				"pathLeaderY": 30,
+				"hotSpotX": 0,
+				"hotSpotY": 24,
+				"hotSpotHeight": 12,
+				"hotSpotWidth": 12
+			},
+			"type": "DATA"
+		}
+	],
+	"name": "Simple Or"
+}
