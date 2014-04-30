@@ -1,6 +1,9 @@
 package com.ils.blt.designer.editor;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -9,11 +12,17 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
+import javax.swing.JTree;
+import javax.swing.JViewport;
+import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -28,16 +37,19 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.BlockRequestManager;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.workspace.ProcessBlockView;
+import com.inductiveautomation.ignition.client.sqltags.tree.TagTreeNode;
+import com.inductiveautomation.ignition.client.util.gui.SlidingPane;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
+import com.inductiveautomation.ignition.designer.sqltags.dialog.TagBrowserPanel;
 
 
 /**
  * Display a panel to edit block properties.    
  */
 
-public class BlockPropertyEditor extends JPanel {
+public class BlockPropertyEditor extends SlidingPane {
 	private final static String TAG = "BlockPropertyEditor";
 	private static final long serialVersionUID = 8971626415423709616L;
 	private ProcessBlockView block;
@@ -46,6 +58,11 @@ public class BlockPropertyEditor extends JPanel {
 	private final long projectId;
 	private final long resourceId;
 	private static final List<String> coreAttributeNames;
+	
+	private JPanel mainPanel = new JPanel();   // holds the property editor
+	private JPanel tagBrowserPanel;
+	private JTextField tagBindingTextField;  // text field corresponding to last tag combo selection
+	private TreeSelectionModel tagTreeSelectionModel;
 	
 	// These are the attributes handled in the CorePropertyPanel
 	static {
@@ -72,11 +89,13 @@ public class BlockPropertyEditor extends JPanel {
 	 * properties resides in the gateway. 
 	 */
 	private void init() {
-		setLayout(new MigLayout("flowy,ins 2"));
-
+		add(mainPanel);
+		add(createTagBrowserPanel());
+		setSelectedPane(0);
+		mainPanel.setLayout(new MigLayout("flowy,ins 2"));
 		
 		JPanel panel = new CorePropertyPanel(block);
-		add(panel,"grow,push");
+		mainPanel.add(panel,"grow,push");
 		
 		// The Gateway knows the saved state of a block and its attributes. If the block has never been
 		// initialized (edited), then get defaults from the Gateway, else retain it current.
@@ -125,10 +144,89 @@ public class BlockPropertyEditor extends JPanel {
 				panel = new PropertyPanel(property);
 			}
 			
-			add(panel,"grow,push");
+			mainPanel.add(panel,"grow,push");
 		}
 	}
 	
+	/** A utility method to drill down into the Swing component hierarchy and
+	 *  get the component of the given class (or a subclass of it). 
+	 *  Returns null if none found.
+	 */
+	private Component getComponent(Component c, Class<?> klass) {
+		if(klass.isAssignableFrom(c.getClass())) {
+			return c;
+		}
+		else if (c instanceof Container) {
+			for(Component cc: ((Container)c).getComponents()) {
+				Component child = getComponent(cc, klass);
+				if(child != null) {
+					return child;
+				}
+			}
+		}
+		else if(c instanceof JViewport) {
+			Component child = getComponent(((JViewport)c).getView(), klass);
+			if(child != null) {
+				return child;
+			}
+		}
+		return null;
+	}
+	
+	private Component createTagBrowserPanel() {
+		tagBrowserPanel = new JPanel();
+		tagBrowserPanel.setLayout(new BorderLayout());
+		TagBrowserPanel tagBrowser = context.getTagBrowser();
+		
+		// TODO: this is a total hack to get the tree's selection model.
+		// I don't see any obvious methods on TagBrowserPanel to get the
+		// selected tags. I've asked Carl what the right way is; until
+		// I hear from him this will do.
+		JTree tagTree = (JTree)getComponent(tagBrowser,JTree.class);
+		tagTreeSelectionModel = tagTree.getSelectionModel();
+		
+		tagBrowserPanel.add(tagBrowser, BorderLayout.CENTER);
+		JPanel buttonPanel = new JPanel();
+		tagBrowserPanel.add(buttonPanel, BorderLayout.SOUTH);
+		
+		JButton okButton = new JButton("OK");
+		buttonPanel.add(okButton);
+		okButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				TreePath[] selectedPaths = tagTreeSelectionModel.getSelectionPaths();
+				if(selectedPaths.length == 1) {
+					TagTreeNode node = (TagTreeNode)(selectedPaths[0].getLastPathComponent());					
+					tagBindingTextField.setText(node.getTagPath().toString());
+					// invoke the action, as if a user had typed return:
+					for(ActionListener listener: tagBindingTextField.getActionListeners()) {
+						listener.actionPerformed(new ActionEvent("", 0, ""));
+					}
+					tagTreeSelectionModel.clearSelection();
+					setSelectedPane(0);
+				}
+				else if(selectedPaths.length > 1) {
+					JOptionPane.showMessageDialog(mainPanel, "More than one tag is selected--please select only one.");
+				}
+				else {
+					JOptionPane.showMessageDialog(mainPanel, "No tag is selected.");					
+				}
+			}
+
+		});
+
+		JButton cancelButton = new JButton("Cancel");
+		buttonPanel.add(cancelButton);
+		cancelButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				tagTreeSelectionModel.clearSelection();
+				setSelectedPane(0);
+			}			
+		});
+
+		return tagBrowserPanel;
+	}
+
+
 	/**
 	 * Add a separator to a panel using Mig layout
 	 */
@@ -291,8 +389,9 @@ public class BlockPropertyEditor extends JPanel {
 	}
 	/**
 	 * Create a combo box for link types
+	 * @param bindingTextField 
 	 */
-	private JComboBox<String> createBindingTypeCombo(final BlockProperty prop) {
+	private JComboBox<String> createBindingTypeCombo(final BlockProperty prop, final JTextField textField) {
 		String[] entries = new String[BindingType.values().length];
 		int index=0;
 		for(BindingType type : BindingType.values()) {
@@ -300,14 +399,20 @@ public class BlockPropertyEditor extends JPanel {
 			index++;
 		}
 		final JComboBox<String> box = new JComboBox<String>(entries);
+		// note: we select the item BEFORE defining the action listener to avoid invoking it
+		// for initialization (as opposed to an actual user selection)
+		box.setSelectedItem(prop.getBindingType().toString());
 		box.addActionListener(new ActionListener() {
 	        public void actionPerformed(ActionEvent e){
 	        	BindingType bt = BindingType.valueOf(BindingType.class, box.getSelectedItem().toString());
 	        	log.debugf("%s: set binding type %s",TAG,box.getSelectedItem().toString());
 	            prop.setBindingType(bt);
+	            if (bt == BindingType.TAG) {
+	            	tagBindingTextField = textField;
+	            	setSelectedPane(1);
+	            }
 	        }
 		});
-		box.setSelectedItem(prop.getBindingType().toString());
 		return box;
 	}
 	/**
@@ -372,8 +477,9 @@ public class BlockPropertyEditor extends JPanel {
 			add(createValueTextField(prop),"");
 			add(createPropertyTypeCombo(prop),"wrap");
 			add(createLabel("Binding"),"skip");
-			add(createBindingTextField(prop),"");
-			add(createBindingTypeCombo(prop),"wrap");
+			JTextField bindingTextField = createBindingTextField(prop);
+			add(bindingTextField,"");
+			add(createBindingTypeCombo(prop,bindingTextField),"wrap");
 			// For int or double, add min and max
 			PropertyType type = prop.getType();
 			if( type==PropertyType.DOUBLE || type==PropertyType.INTEGER) {
