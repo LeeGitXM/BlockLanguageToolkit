@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.common.AnchorDirection;
+import com.ils.blt.common.serializable.DiagramState;
 import com.ils.blt.common.serializable.SerializableAnchorPoint;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableConnection;
@@ -26,22 +27,16 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.Lo
  * This class represents a diagram in the designer.
  */
 public class ProcessDiagramView extends AbstractChangeable implements BlockDiagramModel {
-	private static final String TAG = "ProcessDiagramView";
 	private static LoggerEx log = LogUtil.getLogger(ProcessDiagramView.class.getPackage().getName());
+	private static final String TAG = "ProcessDiagramView";
 	private final Map<UUID,ProcessBlockView> blockMap = new HashMap<UUID,ProcessBlockView>();
 	private List<Connection> connections = new ArrayList<Connection>();
 	private Dimension diagramSize = new Dimension(800,600);
-	private boolean dirty = true;
-	private boolean enabled = true;
 	private final UUID id;
-	private final long resourceId;
 	private final String name;
+	private final long resourceId;
+	private DiagramState state = DiagramState.ACTIVE;
 	
-	public ProcessDiagramView(long resId,UUID uuid, String nam) {
-		this.id = uuid;
-		this.resourceId = resId;
-		this.name = nam;
-	}
 	/**
 	 * Constructor: Create an instance given a SerializableDiagram
 	 * @param resid
@@ -49,7 +44,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	 */
 	public ProcessDiagramView (long resid,SerializableDiagram diagram) {
 		this(resid,diagram.getId(),diagram.getName());
-		this.enabled = diagram.isEnabled();
+		this.state = diagram.getState();
 
 		for( SerializableBlock sb:diagram.getBlocks()) {
 			ProcessBlockView pbv = new ProcessBlockView(sb);
@@ -83,18 +78,58 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			}
 		}
 	}
-	
-	public boolean isDirty() {return dirty;}
-	public void setDirty(boolean dirty) {this.dirty = dirty;}
-	public boolean isEnabled() {return enabled;}
-	public void setEnabled(boolean enabled) {this.enabled = enabled;}
-	
+	public ProcessDiagramView(long resId,UUID uuid, String nam) {
+		this.id = uuid;
+		this.resourceId = resId;
+		this.name = nam;
+	}
 	@Override
 	public void addBlock(Block blk) {
 		if( blk instanceof ProcessBlockView) {
 			blockMap.put(blk.getId(), (ProcessBlockView)blk);
 			fireStateChanged();
 		}
+	}
+	
+	@Override
+	public void addConnection(AnchorPoint begin, AnchorPoint end) {
+		connections.add(new LookupConnection(this,begin,end));
+		fireStateChanged();
+
+	}
+	// NOTE: This does not set connection type
+	private SerializableConnection convertConnectionToSerializable(Connection cxn) {
+		SerializableConnection result = new SerializableConnection();
+		if( cxn.getOrigin()!=null && cxn.getTerminus()!=null ) {	
+			result.setBeginBlock(cxn.getOrigin().getBlock().getId()); 
+			result.setEndBlock(cxn.getTerminus().getBlock().getId());
+			result.setBeginAnchor(createSerializableAnchorPoint(cxn.getOrigin()));
+			result.setEndAnchor(createSerializableAnchorPoint(cxn.getTerminus()));
+		}
+		else {
+			log.warnf("%s.convertConnectionToSerializable: connection missing terminus or origin (%s)",TAG,cxn.getClass().getName());
+		}
+		return result;
+	}
+	
+	/**
+	 * NOTE: This would normally be an alternative constructor for SerializableAnchorPoint.
+	 *        Problem is that we need to keep that class free of references to Designer-only
+	 *        classes (e.g. AnchorPoint).
+	 * @param anchor
+	 */
+	private SerializableAnchorPoint createSerializableAnchorPoint(AnchorPoint anchor) {
+		SerializableAnchorPoint sap = new SerializableAnchorPoint();
+		if(anchor.isConnectorOrigin()) sap.setDirection(AnchorDirection.OUTGOING);
+		else sap.setDirection(AnchorDirection.INCOMING);
+		sap.setId(anchor.getId());
+		sap.setParentId(anchor.getBlock().getId());
+		sap.setAnchorX(anchor.getAnchor().x);
+		sap.setAnchorY(anchor.getAnchor().y);
+		sap.setHotSpot(anchor.getHotSpot().getBounds());
+		sap.setPathLeaderX(anchor.getPathLeader().x);
+		sap.setPathLeaderY(anchor.getPathLeader().y);
+		return sap;
 	}
 	/**
 	 * Create a POJO object from this model suitable for JSON serialization.
@@ -105,7 +140,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		diagram.setName(name);
 		diagram.setResourceId(resourceId);
 		diagram.setId(getId());
-		diagram.setEnabled(enabled);
+		diagram.setState(state);
 		List<SerializableBlock> sblocks = new ArrayList<SerializableBlock>();
 		for( ProcessBlockView blk:blockMap.values()) {
 			SerializableBlock sb = blk.convertToSerializable();
@@ -141,20 +176,11 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		
 		return diagram;
 	}
-
-	@Override
-	public void addConnection(AnchorPoint begin, AnchorPoint end) {
-		connections.add(new LookupConnection(this,begin,end));
-		fireStateChanged();
-
-	}
-
 	@Override
 	public void deleteBlock(Block blk) {
 		blockMap.remove(blk.getId());
 		fireStateChanged();
 	}
-
 	@Override
 	public void deleteConnection(AnchorPoint begin, AnchorPoint end) {
 		for(Connection cxn:connections) {
@@ -165,12 +191,11 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			}
 		}
 	}
-
+	
 	@Override
 	public Block getBlock(UUID key) {
 		return blockMap.get(key);
 	}
-
 	@Override
 	public Iterable<? extends Block> getBlocks() {
 		return blockMap.values();
@@ -192,53 +217,23 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	public Dimension getDiagramSize() {
 		return diagramSize;
 	}
+
 	public UUID getId() {return id;}
+
+	public String getName() {return name;}
 
 	@Override
 	public long getResourceId() {
 		return resourceId;
 	}
 
+	public DiagramState getState() {return state;}
+
 	@Override
 	public void setDiagramSize(Dimension dim) {
 		diagramSize = dim;
 		fireStateChanged();
 	}
-		
-	// NOTE: This does not set connection type
-	private SerializableConnection convertConnectionToSerializable(Connection cxn) {
-		SerializableConnection result = new SerializableConnection();
-		if( cxn.getOrigin()!=null && cxn.getTerminus()!=null ) {	
-			result.setBeginBlock(cxn.getOrigin().getBlock().getId()); 
-			result.setEndBlock(cxn.getTerminus().getBlock().getId());
-			result.setBeginAnchor(createSerializableAnchorPoint(cxn.getOrigin()));
-			result.setEndAnchor(createSerializableAnchorPoint(cxn.getTerminus()));
-		}
-		else {
-			log.warnf("%s.convertConnectionToSerializable: connection missing terminus or origin (%s)",TAG,cxn.getClass().getName());
-		}
-		return result;
-	}
-	
-	/**
-	 * NOTE: This would normally be an alternative constructor for SerializableAnchorPoint.
-	 *        Problem is that we need to keep that class free of references to Designer-only
-	 *        classes (e.g. AnchorPoint).
-	 * @param anchor
-	 */
-	private SerializableAnchorPoint createSerializableAnchorPoint(AnchorPoint anchor) {
-		SerializableAnchorPoint sap = new SerializableAnchorPoint();
-		if(anchor.isConnectorOrigin()) sap.setDirection(AnchorDirection.OUTGOING);
-		else sap.setDirection(AnchorDirection.INCOMING);
-		sap.setId(anchor.getId());
-		sap.setParentId(anchor.getBlock().getId());
-		sap.setAnchorX(anchor.getAnchor().x);
-		sap.setAnchorY(anchor.getAnchor().y);
-		sap.setHotSpot(anchor.getHotSpot().getBounds());
-		sap.setPathLeaderX(anchor.getPathLeader().x);
-		sap.setPathLeaderY(anchor.getPathLeader().y);
-		return sap;
-	}
+	public void setState(DiagramState state) {this.state = state;}
 
-	
 }

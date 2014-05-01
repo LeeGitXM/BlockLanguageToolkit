@@ -14,6 +14,7 @@ import com.ils.block.ProcessBlock;
 import com.ils.block.common.BlockProperty;
 import com.ils.block.control.ExecutionController;
 import com.ils.block.control.OutgoingNotification;
+import com.ils.blt.common.serializable.DiagramState;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ProcessDiagram;
@@ -73,32 +74,38 @@ public class BlockRequestHandler   {
 		return BlockExecutionController.getExecutionState();
 	}
 	/**
-	 * Enable or disable the specified diagram
 	 * @param projectId
 	 * @param resourceId
-	 * @param flag
+	 * @return the current state of the specified diagram as a String.
 	 */
-	public void enableDiagram(Long projectId,Long resourceId,Boolean flag) {
+	public String getDiagramState(Long projectId,Long resourceId) {
+		DiagramState state = DiagramState.UNKNOWN;
 		BlockExecutionController controller = BlockExecutionController.getInstance();
 		ProcessDiagram diagram = controller.getDiagram(projectId, resourceId);
 		if( diagram!=null ) {
-			diagram.setEnabled(flag.booleanValue());
+			state = diagram.getState();
 		}
+		return state.name();
 	}
 	
 	/**
+	 * Enable or disable the specified diagram
 	 * @param projectId
 	 * @param resourceId
-	 * @return True if the specified diagram is currently enabled.
+	 * @param state
 	 */
-	public Boolean isDiagramEnabled(Long projectId,Long resourceId) {
-		Boolean result = Boolean.FALSE;
+	public void setDiagramState(Long projectId,Long resourceId,String state) {
 		BlockExecutionController controller = BlockExecutionController.getInstance();
 		ProcessDiagram diagram = controller.getDiagram(projectId, resourceId);
-		if( diagram!=null && diagram.isEnabled() ) {
-			result = Boolean.TRUE;
+		if( diagram!=null && state!=null ) {
+			try {
+				DiagramState ds = DiagramState.valueOf(state.toUpperCase());
+				diagram.setState(ds);
+			}
+			catch( IllegalArgumentException iae) {
+				log.warnf("%s.setDiagramState: Unrecognized state(%s) sent to %s (%s)",TAG,state,diagram.getName());
+			}
 		}
-		return result;
 	}
 	public void startController() {
 		BlockExecutionController.getInstance().start(context);

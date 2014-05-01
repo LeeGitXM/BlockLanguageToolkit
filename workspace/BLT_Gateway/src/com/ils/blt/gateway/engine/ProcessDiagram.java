@@ -15,6 +15,7 @@ import com.ils.block.control.BroadcastNotification;
 import com.ils.block.control.IncomingNotification;
 import com.ils.block.control.OutgoingNotification;
 import com.ils.block.control.SignalNotification;
+import com.ils.blt.common.serializable.DiagramState;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableConnection;
 import com.ils.blt.common.serializable.SerializableDiagram;
@@ -41,7 +42,7 @@ public class ProcessDiagram extends ProcessNode {
 	private final Map<ConnectionKey,ProcessConnection> connectionMap;            // Key by connection number
 	protected final Map<BlockPort,List<ProcessConnection>> outgoingConnections;    // Key by upstream block:port
 	private final long resourceId;
-	private boolean enabled = false;
+	private DiagramState state = DiagramState.UNKNOWN;
 	
 	/**
 	 * Constructor: Create a model that encapsulates the structure of the blocks and connections
@@ -52,7 +53,7 @@ public class ProcessDiagram extends ProcessNode {
 	public ProcessDiagram(SerializableDiagram diagm,UUID parent) { 
 		super(diagm.getName(),parent,diagm.getId());
 		this.diagram = diagm;
-		this.enabled = diagm.isEnabled();
+		this.state = diagm.getState();
 		this.resourceId = diagm.getResourceId();
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		blocks = new HashMap<UUID,ProcessBlock>();
@@ -178,8 +179,8 @@ public class ProcessDiagram extends ProcessNode {
 		return notifications;
 	}
 	
-	public boolean isEnabled() {return enabled;}
-	public void setEnabled(boolean enabled) {this.enabled = enabled;}
+	public DiagramState getState() {return state;}
+	public void setState(DiagramState s) {this.state = s;}
 	/**
 	 * Report on whether or not the DOM contained more than one connected node.
 	 */

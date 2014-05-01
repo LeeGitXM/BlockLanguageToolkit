@@ -23,7 +23,6 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
  */
 public class GatewayBlockScriptFunctions   {
 	private static final String TAG = "GatewayBlockScriptFunctions: ";
-	private static BlockExecutionController controller = BlockExecutionController.getInstance();
 	public static GatewayContext context = null;   // Set in the hook class
 	private static LoggerEx log = LogUtil.getLogger(GatewayBlockScriptFunctions.class.getPackage().getName());
 	

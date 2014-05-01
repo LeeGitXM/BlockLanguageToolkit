@@ -49,12 +49,11 @@ public class GatewayRpcDispatcher   {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 	}
 
-	public void enableDiagram(Long projectId,Long resourceId,Boolean flag) {
-		BlockRequestHandler.getInstance().enableDiagram(projectId,resourceId,flag);
+	public String getDiagramState(Long projectId,Long resourceId) {
+		return BlockRequestHandler.getInstance().getDiagramState(projectId,resourceId);
 	}
-	
-	public Boolean isDiagramEnabled(Long projectId,Long resourceId) {
-		return BlockRequestHandler.getInstance().isDiagramEnabled(projectId,resourceId);
+	public void setDiagramState(Long projectId,Long resourceId,String state) {
+		BlockRequestHandler.getInstance().setDiagramState(projectId,resourceId,state);
 	}
 	
 	public String getControllerState() {
