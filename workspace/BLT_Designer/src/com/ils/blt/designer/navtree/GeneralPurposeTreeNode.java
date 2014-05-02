@@ -100,15 +100,15 @@ public class GeneralPurposeTreeNode extends FolderNode {
 		ImageIcon icon = IconUtil.getIcon("folder_closed");    // Base icon.
 		Dimension iconSize = new Dimension(20,20);
 		if(resource.getResourceType().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
-			Image img = ImageLoader.getInstance().loadImage("Block/icons/small/application_folder_closed.png",iconSize);
+			Image img = ImageLoader.getInstance().loadImage("Block/icons/navtree/application_folder_closed.png",iconSize);
 			if( img !=null) icon = new ImageIcon(img);
-			img = ImageLoader.getInstance().loadImage("Block/icons/small/application_folder.png",iconSize);
+			img = ImageLoader.getInstance().loadImage("Block/icons/navtree/application_folder.png",iconSize);
 			if( img !=null) expandedIcon = new ImageIcon(img);
 		} 
 		else if(resource.getResourceType().equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE)) {
-			Image img = ImageLoader.getInstance().loadImage("Block/icons/small/family_folder_closed.png",iconSize);
+			Image img = ImageLoader.getInstance().loadImage("Block/icons/navtree/family_folder_closed.png",iconSize);
 			if( img !=null) icon = new ImageIcon(img);
-			img = ImageLoader.getInstance().loadImage("Block/icons/small/family_folder.png",iconSize);
+			img = ImageLoader.getInstance().loadImage("Block/icons/navtree/family_folder.png",iconSize);
 			if( img !=null) expandedIcon = new ImageIcon(img);
 		}
 		else if(resource.getResourceType().equalsIgnoreCase(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {

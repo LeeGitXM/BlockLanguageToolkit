@@ -45,12 +45,11 @@ public class UIFactory {
 				ui= new RoundUIView(block);
 				break;
 			case SQUARE:
-				ui= new SquareUIView(block);
+				ui= new SquareUIView(block);   // Default
 				break;
-			case BASIC:
 			default:
 				log.warnf("%s: getUI: Unrecognized style (%s)",TAG,style.toString());
-				ui= new StandardUIView(block);
+				ui= new SquareUIView(block);
 		}
 		log.tracef("%s: getUI: Created style (%s)",TAG,style.toString());
 		return ui;

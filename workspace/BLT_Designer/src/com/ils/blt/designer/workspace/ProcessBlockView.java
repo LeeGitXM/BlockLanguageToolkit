@@ -1,10 +1,12 @@
 package com.ils.blt.designer.workspace;
 
+import java.awt.Color;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 
 import com.ils.block.common.AnchorDirection;
@@ -33,14 +35,16 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.Ab
 
 public class ProcessBlockView extends AbstractBlock {
 	private static final String TAG = "ProcessBlockView";
+	private final static Random random = new Random();
 	private Collection<ProcessAnchorDescriptor> anchors;
+	private int background = Color.white.getRGB();
 	private final String className;
 	private int    embeddedFontSize = 24;         // Size of font for interior label
 	private String embeddedIcon="";               // 32x32 icon to place in block in designer
 	private String embeddedLabel="";              // Label place in block in designer
 	private final UIFactory factory = new UIFactory() ;
 	private String iconPath="";                   // Path to icon that is the entire block
-	private String name;                         // Text to display on the block
+	private String name = null;                         // Text to display on the block
 	private Point location = new Point(0,0);
 	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	private int preferredHeight = 0;              // Size the view to "natural" size
@@ -48,20 +52,20 @@ public class ProcessBlockView extends AbstractBlock {
 	private Collection<BlockProperty> properties;
 	private boolean receiveEnabled = false;
 	private String statusText;                    // Auxiliary text to display
-	private BlockStyle style = BlockStyle.BASIC;
+	private BlockStyle style = BlockStyle.SQUARE;
 	private boolean transmitEnabled = false;
 	private BlockViewUI ui = null;
-	
 	private final UUID uuid;
 	
 	
 	/**
-	 * Constructor: Used when a new block is created from the palette.
+	 * Constructor: Used when a new block is created from the palette. 
+	 *              Create a pseudo-random name.
 	 */
 	public ProcessBlockView(BlockDescriptor descriptor) {
 		this.uuid = UUID.randomUUID();
+		this.background = descriptor.getBackground();
 		this.className = descriptor.getBlockClass();
-		this.name = descriptor.getLabel();
 		this.embeddedIcon = descriptor.getEmbeddedIcon();
 		this.embeddedLabel= descriptor.getEmbeddedLabel();
 		this.embeddedFontSize= descriptor.getEmbeddedFontSize();
@@ -81,10 +85,12 @@ public class ProcessBlockView extends AbstractBlock {
 		}
 		this.properties = new ArrayList<BlockProperty>();
 		log.debugf("%s: Created %s (%s) view from descriptor (%d anchors)", TAG, className, style.toString(),anchors.size());
+		createPseudoRandomName();
 	}
 	
 	public ProcessBlockView(SerializableBlock sb) {
 		this.uuid = sb.getId();
+		this.background = sb.getBackground();
 		this.className = sb.getClassName();
 		this.embeddedIcon = sb.getEmbeddedIcon();
 		this.embeddedLabel= sb.getEmbeddedLabel();
@@ -134,7 +140,7 @@ public class ProcessBlockView extends AbstractBlock {
 		result.setEmbeddedLabel(getEmbeddedLabel());
 		result.setEmbeddedFontSize(getEmbeddedFontSize());
 		result.setIconPath(getIconPath());
-		result.setName(getNaame());
+		result.setName(getName());
 		result.setStyle(getStyle());
 		result.setReceiveEnabled(isReceiveEnabled());
 		result.setTransmitEnabled(isTransmitEnabled());
@@ -168,6 +174,7 @@ public class ProcessBlockView extends AbstractBlock {
 		return ui.getAnchorPoints();	
 	}
 	public Collection<ProcessAnchorDescriptor> getAnchors() { return anchors; }
+	public int getBackground() { return background;}
 	public String getClassName() { return className; }
 
 	/** Do not define a default. Rely on drop targets. */
@@ -179,14 +186,13 @@ public class ProcessBlockView extends AbstractBlock {
 	public String getIconPath() {return iconPath;}
 	@Override
 	public UUID getId() { return uuid; }
-	public String getNaame() {return name;}
+	public String getName() {return name;}
 	// Location is the upper left.
 	@Override
 	public Point getLocation() {
 		return location;
 	}
 	public int getPreferredHeight() {return preferredHeight;}
-
 	public int getPreferredWidth() {return preferredWidth;}
 	public Collection<BlockProperty> getProperties() { return properties; }
 	public String getStatusText() { return statusText; }
@@ -212,9 +218,20 @@ public class ProcessBlockView extends AbstractBlock {
 	public void setPreferredWidth(int preferredWidth) {this.preferredWidth = preferredWidth;}
 	public void setProperties(Collection<BlockProperty> props) { this.properties = props; }
 	public void setReceiveEnabled(boolean receiveEnabled) {this.receiveEnabled = receiveEnabled;}
+	public void setBackground(int b)  { this.background = b; }
 	public void setStatusText(String statusText) { this.statusText = statusText; }
-
 	public void setStyle(BlockStyle s) { this.style = s; }
-	
 	public void setTransmitEnabled(boolean transmitEnabled) {this.transmitEnabled = transmitEnabled;}
+	
+	/**
+	 * Create a name that is highly likely to be unique within the diagram.
+	 * The name can be user-modified at any time. If we really need a uniqueness,
+	 * use the block's UUID.
+	 */
+	private void createPseudoRandomName() {
+		String root = className;
+		int pos = className.lastIndexOf(".");
+		if( pos>=0 )  root = className.substring(pos+1);
+		name = String.format("%s-%d", root.toUpperCase(),random.nextInt(1000));
+	}
 }

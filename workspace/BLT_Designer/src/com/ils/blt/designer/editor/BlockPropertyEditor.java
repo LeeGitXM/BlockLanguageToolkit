@@ -542,8 +542,8 @@ public class BlockPropertyEditor extends SlidingPane {
 			setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
 			addSeparator(this,"Block");
 			
-			add(createLabel("Label"),"skip");
-			add(createTextField(blk.getNaame()),"span,growx");
+			add(createLabel("Name"),"skip");
+			add(createTextField(blk.getName()),"span,growx");
 			add(createLabel("Class"),"skip");
 			add(createTextField(blk.getClassName()),"span,growx");
 			add(createLabel("UUID"),"skip");

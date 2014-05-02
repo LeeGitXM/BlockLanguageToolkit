@@ -16,7 +16,9 @@ import com.ils.blt.designer.workspace.ProcessBlockView;
 
 
 /**
- * Create a block that depicts a tag reader.
+ * Create a block that depicts input or output from a tag. This is basically a 
+ * square block with an arrow. The arrow colors are preset and depend on whether
+ * this is a reader or a writer.
  */
 public class EntryUIView extends AbstractUIView implements BlockViewUI {
 	private static final long serialVersionUID = 6644400470545202522L;

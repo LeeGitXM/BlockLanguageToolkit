@@ -130,7 +130,7 @@ public class ConnectionPropertyEditor extends JPanel {
 			addSeparator(this,heading);
 			
 			add(createLabel("Label"),"skip");
-			add(createTextField(blk.getNaame()),"span,growx");
+			add(createTextField(blk.getName()),"span,growx");
 			add(createLabel("Class"),"skip");
 			add(createTextField(blk.getClassName()),"span,growx");
 			add(createLabel("UUID"),"skip");

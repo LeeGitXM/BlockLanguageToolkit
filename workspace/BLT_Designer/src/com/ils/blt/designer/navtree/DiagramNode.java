@@ -83,12 +83,12 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 		setText(resource.getName());
 		setIcon(IconUtil.getIcon("tag_tree"));
 		Dimension iconSize = new Dimension(20,20);
-		Image img = ImageLoader.getInstance().loadImage("Block/icons/small/diagram.png",iconSize);
+		Image img = ImageLoader.getInstance().loadImage("Block/icons/navtree/diagram.png",iconSize);
 		if( img !=null) {
 			enabledIcon = new ImageIcon(img);
 			setIcon( enabledIcon);
 		}
-		img = ImageLoader.getInstance().loadImage("Block/icons/small/diagram_disabled.png",iconSize);
+		img = ImageLoader.getInstance().loadImage("Block/icons/small/navtree.png",iconSize);
 		if( img !=null) disabledIcon = new ImageIcon(img);
 
 		setItalic(context.getProject().isResourceDirty(resourceId));

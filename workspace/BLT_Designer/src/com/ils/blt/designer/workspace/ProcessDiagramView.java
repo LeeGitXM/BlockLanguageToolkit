@@ -83,10 +83,15 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		this.resourceId = resId;
 		this.name = nam;
 	}
+	
+	/**
+	 * At the time that we add a new block, make sure that the block has a unique name.
+	 */
 	@Override
 	public void addBlock(Block blk) {
 		if( blk instanceof ProcessBlockView) {
-			blockMap.put(blk.getId(), (ProcessBlockView)blk);
+			ProcessBlockView block = (ProcessBlockView) blk;
+			blockMap.put(blk.getId(), block);
 			fireStateChanged();
 		}
 	}

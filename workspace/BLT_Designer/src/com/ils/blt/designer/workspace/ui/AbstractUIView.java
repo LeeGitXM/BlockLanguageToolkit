@@ -44,11 +44,14 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorT
 public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 	private static final String TAG = "AbstractUIView";
 	protected final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
-	private final ProcessBlockView block;
+	protected final ProcessBlockView block;
 	private final List<AnchorPoint> anchorPoints;  // Entries are BasicAnchorPoint
 	private BlockComponent blockComponent = null;
 	protected final static int BADGE_HEIGHT = 20;
 	protected final static int BADGE_WIDTH = 20;
+	protected final static int BORDER_WIDTH = 3;
+	protected final static Color BORDER_DARK_COLOR = Color.darkGray;
+	protected final static Color BORDER_LIGHT_COLOR = Color.getHSBColor(0f, 0f, 0.9f); // Light gray
 	protected final static int INSET = 6;
 	protected final static int LEADER_LENGTH = 10;
 	protected final static int SIGNAL_LEADER_LENGTH = 8;        // Shorter for signals
@@ -110,15 +113,16 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 		}
 		outputCount++;   // Now equals the number of segments on a side
 		inputCount++;
+		int inset = INSET-BORDER_WIDTH;
 		
 		for(ProcessAnchorDescriptor desc:block.getAnchors()) {
 			// Top left signal
 			if(desc.getConnectionType()==ConnectionType.SIGNAL && desc.getType()==AnchorType.Terminus ) {
 				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Terminus,
 						desc.getConnectionType(),
-						new Point(INSET+(sz.width-2*INSET)/4,INSET+1),
-						new Point(INSET+(sz.width-2*INSET)/4,-SIGNAL_LEADER_LENGTH),
-						new Rectangle((sz.width-2*INSET)/4,0,2*INSET,2*INSET));   // x,y,width,height. Hotspot shape.
+						new Point(inset+(sz.width-2*inset)/4,inset+1),
+						new Point(inset+(sz.width-2*inset)/4,-SIGNAL_LEADER_LENGTH),
+						new Rectangle((sz.width-2*inset)/4,0,2*inset,2*inset));   // x,y,width,height. Hotspot shape.
 				ap.setSide(AnchorSide.TOP);
 				getAnchorPoints().add(ap);
 			}
@@ -126,9 +130,9 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 			else if(desc.getConnectionType()==ConnectionType.SIGNAL && desc.getType()==AnchorType.Origin ) {
 				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Origin,
 						desc.getConnectionType(),
-						new Point(INSET+3*(sz.width-2*INSET)/4,INSET+1),
-						new Point(INSET+3*(sz.width-2*INSET)/4,-LEADER_LENGTH),
-						new Rectangle(3*(sz.width-2*INSET)/4,0,2*INSET,2*INSET)); 
+						new Point(inset+3*(sz.width-2*inset)/4,inset+1),
+						new Point(inset+3*(sz.width-2*inset)/4,-LEADER_LENGTH),
+						new Rectangle(3*(sz.width-2*inset)/4,0,2*inset,2*inset)); 
 				ap.setSide(AnchorSide.TOP);
 				getAnchorPoints().add(ap);
 			}
@@ -137,9 +141,9 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 				inputIndex++;
 				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Origin,
 						desc.getConnectionType(),
-						new Point(INSET+3*(sz.width-2*INSET)/4,sz.height-INSET),
-						new Point(INSET+3*(sz.width-2*INSET)/4,sz.height+LEADER_LENGTH),
-						new Rectangle(3*(sz.width-2*INSET)/4,sz.height-2*INSET,2*INSET,2*INSET));   // Hotspot shape.
+						new Point(inset+3*(sz.width-2*inset)/4,sz.height-inset),
+						new Point(inset+3*(sz.width-2*inset)/4,sz.height+LEADER_LENGTH),
+						new Rectangle(3*(sz.width-2*inset)/4,sz.height-2*inset,2*inset,2*inset));   // Hotspot shape.
 				ap.setSide(AnchorSide.BOTTOM);
 				getAnchorPoints().add(ap);
 			}
@@ -148,9 +152,9 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 				outputIndex++;
 				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Terminus,
 						desc.getConnectionType(),
-						new Point(INSET,outputIndex*sz.height/outputCount),
+						new Point(inset,outputIndex*sz.height/outputCount),
 						new Point(-LEADER_LENGTH,outputIndex*sz.height/outputCount),
-						new Rectangle(0,outputIndex*sz.height/outputCount-INSET,2*INSET,2*INSET));   // Hotspot shape.
+						new Rectangle(0,outputIndex*sz.height/outputCount-inset,2*inset,2*inset));   // Hotspot shape.
 				getAnchorPoints().add(ap);
 				
 			}
@@ -159,9 +163,9 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 				inputIndex++;
 				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Origin,
 						desc.getConnectionType(),
-						new Point(sz.width-INSET,inputIndex*sz.height/inputCount),
+						new Point(sz.width-inset,inputIndex*sz.height/inputCount),
 						new Point(sz.width+LEADER_LENGTH,inputIndex*sz.height/inputCount),
-						new Rectangle(sz.width-2*INSET,inputIndex*sz.height/inputCount-INSET,2*INSET,2*INSET));
+						new Rectangle(sz.width-2*inset,inputIndex*sz.height/inputCount-inset,2*inset,2*inset));
 				getAnchorPoints().add(ap);
 	
 			}
@@ -250,13 +254,13 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 		if(block.isReceiveEnabled()) {
 			// x,y,width,height
 			Rectangle bounds = new Rectangle((sz.width-2*INSET)/4-INSET,0,BADGE_WIDTH,BADGE_HEIGHT);
-			String path = "Block/icons/large/receiver.png";
+			String path = "Block/icons/embedded/receiver.png";
 			paintBadge(g,path,bounds);
 		}
 		// Transmit
 		if(block.isTransmitEnabled()) {
 			Rectangle bounds = new Rectangle(3*(sz.width-2*INSET)/4,0,BADGE_WIDTH,BADGE_HEIGHT);
-			String path = "Block/icons/large/transmitter.png";
+			String path = "Block/icons/embedded/transmitter.png";
 			paintBadge(g,path,bounds);
 		}
 	}
@@ -277,7 +281,7 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 			}
 		}
 		else {
-			log.warnf("%s: drawEmbeddedIcon Missing icon at %s for %s",TAG,iconPath,block.getNaame());
+			log.warnf("%s: drawEmbeddedIcon Missing icon at %s for %s",TAG,iconPath,block.getName());
 		}
 	}
 	
@@ -319,7 +323,7 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 			icon.paintIcon(getBlockComponent(), g, bounds.x, bounds.y);
 		}
 		else {
-			log.warnf("%s.paintBadge Missing icon at %s for %s",TAG,iconPath,block.getNaame());
+			log.warnf("%s.paintBadge Missing icon at %s for %s",TAG,iconPath,block.getName());
 		}
 	}
 	

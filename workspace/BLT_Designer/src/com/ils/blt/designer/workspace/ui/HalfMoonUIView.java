@@ -39,34 +39,60 @@ public class HalfMoonUIView extends AbstractUIView implements BlockViewUI {
 
 		// Preserve the original transform to roll back to at the end
 		AffineTransform originalTx = g.getTransform();
+		Color originalBackground = g.getBackground();
 
 		// Turn on anti-aliasing
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 				RenderingHints.VALUE_ANTIALIAS_ON);
 
-		// Calculate the inner area
-		Dimension sz = getPreferredSize();
-		Rectangle ifb = new Rectangle(2*INSET,INSET,sz.width-4*INSET,sz.height-2*INSET);   // x,y,width,height
-
-		// Now translate so that 0,0 is is at the inner origin
-		g.translate(ifb.x, ifb.y);
-
-		// Create a polygon that is within the component boundaries
-		int[] xvertices = new int[] {0,2*ifb.width/3,ifb.width,ifb.width,2*ifb.width/3,0,0};
-		int[] yvertices = new int[] {0,0,ifb.height/4,3*ifb.height/4,ifb.height,ifb.height,0};
-		Polygon fi = new Polygon(xvertices,yvertices,7);
-		g.setColor(getBackground());
-		g.fillPolygon(fi);
-
-		// Outline the frame
+		// For drawing outlines
 		float outlineWidth = 1.0f;
 		Stroke stroke = new BasicStroke(outlineWidth,BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND);
 		g.setStroke(stroke);
 		g.setPaint(Color.BLACK);
-		g.draw(fi);
+		
+		// Calculate the inner area - the inner area includes the border
+		Dimension sz = getPreferredSize();
+		int inset = INSET;
+		int width = sz.width-2*inset;
+		int height = sz.height-2*inset;
+		// Now translate so that 0,0 is is at the inner origin (inside insets in both directions)
+		g.translate(inset, inset);
 
+		// Create a polygon for the upper left  
+		int[] ulxvertices = new int[] {0,0,2*width/3,width,0};
+		int[] ulyvertices = new int[] {height,0,0,height/4,height};
+		Polygon fi = new Polygon(ulxvertices,ulyvertices,4);
+		g.setColor(BORDER_LIGHT_COLOR);
+		g.fillPolygon(fi);
+		g.draw(fi);   // Outline
+		
+		// Create polygons for the lower right. 
+		int[] lrxvertices = new int[] {0,width,width,2*width/3,0};
+		int[] lryvertices = new int[] {height, height/4,3*height/4,height,height};
+		fi = new Polygon(lrxvertices,lryvertices,5);
+		g.setColor(BORDER_DARK_COLOR);
+		g.fillPolygon(fi);
+		g.draw(fi);   // Outline
+
+		
+		// Draw the inner area.
+		inset = INSET+BORDER_WIDTH;
+		width = sz.width-2*inset;
+		height = sz.height-2*inset;
+		// Now translate so that 0,0 is is at the inner origin (inside the inset and border)
+		g.translate(BORDER_WIDTH, BORDER_WIDTH);
+		// Create a polygon that is inside the border
+		int[]xvertices = new int[] {0,2*width/3,width,width,2*width/3,0,0};
+		int[]yvertices = new int[] {0,0,height/4,3*height/4,height,height,0};
+		fi = new Polygon(xvertices,yvertices,7);
+		g.setColor(new Color(block.getBackground()));
+		g.fillPolygon(fi);
+		g.draw(fi);
+		
 		// Reverse any transforms we made
 		g.setTransform(originalTx);
+		g.setBackground(originalBackground);
 		drawAnchors(g);
 		drawBadges(g);
 		drawEmbeddedText(g);

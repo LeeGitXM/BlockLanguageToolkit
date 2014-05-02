@@ -1,5 +1,6 @@
 package com.ils.blt.common.serializable;
 
+import java.awt.Color;
 import java.util.UUID;
 
 import com.ils.block.common.BlockProperty;
@@ -15,6 +16,7 @@ import com.ils.block.common.BlockStyle;
  */
 public class SerializableBlock {
 	private SerializableAnchor[] anchors = null;
+	private int background = Color.white.getRGB();
 	private String className = null;
 	private int    embeddedFontSize = 24; // Pointsin font for embedded label
 	private String embeddedIcon="";       // 32x32 icon to place in block in designer
@@ -27,17 +29,18 @@ public class SerializableBlock {
 	private BlockProperty[] properties = null;
 	private boolean receiveEnabled = false;
 	private String statusText;
-	private BlockStyle style = BlockStyle.BASIC;
+	private BlockStyle style = BlockStyle.SQUARE;
 	private boolean transmitEnabled= false;
 	private UUID uuid = null;
 	private int x = 0;
 	private int y = 0;
-	
 	public SerializableBlock() {
 		this.anchors = new SerializableAnchor[0];
 	}
-
 	public SerializableAnchor[] getAnchors() { return anchors; }
+	
+	public int getBackground() {return background;}
+
 	public String getClassName() {return className;}
 	public int getEmbeddedFontSize() {return embeddedFontSize;}
 	public String getEmbeddedIcon() {return embeddedIcon;}
@@ -61,6 +64,7 @@ public class SerializableBlock {
 			sa.setParentId(uuid);
 		}
 	}
+	public void setBackground(int background) {this.background = background;}
 	public void setClassName(String className) {this.className = className;}
 	public void setEmbeddedFontSize(int embeddedFontSize) {this.embeddedFontSize = embeddedFontSize;}
 	public void setEmbeddedIcon(String embeddedIcon) {this.embeddedIcon = embeddedIcon;}
@@ -78,5 +82,4 @@ public class SerializableBlock {
 	public void setTransmitEnabled(boolean transmitEnabled) {this.transmitEnabled = transmitEnabled;}
 	public void setX(int xx) { this.x=xx; }
 	public void setY(int yy) { this.y=yy; }
-
 }
