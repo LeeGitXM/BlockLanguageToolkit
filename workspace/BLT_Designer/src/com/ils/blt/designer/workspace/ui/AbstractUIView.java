@@ -47,6 +47,7 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 	protected final ProcessBlockView block;
 	private final List<AnchorPoint> anchorPoints;  // Entries are BasicAnchorPoint
 	private BlockComponent blockComponent = null;
+	protected static int ANCHOR_ANNOTATION_TEXT_SIZE = 9;
 	protected final static int BADGE_HEIGHT = 20;
 	protected final static int BADGE_WIDTH = 20;
 	protected final static int BORDER_WIDTH = 3;
@@ -122,7 +123,8 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 						desc.getConnectionType(),
 						new Point(inset+(sz.width-2*inset)/4,inset+1),
 						new Point(inset+(sz.width-2*inset)/4,-SIGNAL_LEADER_LENGTH),
-						new Rectangle((sz.width-2*inset)/4,0,2*inset,2*inset));   // x,y,width,height. Hotspot shape.
+						new Rectangle((sz.width-2*inset)/4,0,2*inset,2*inset),
+						desc.getAnnotation());   // x,y,width,height. Hotspot shape.
 				ap.setSide(AnchorSide.TOP);
 				getAnchorPoints().add(ap);
 			}
@@ -132,7 +134,8 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 						desc.getConnectionType(),
 						new Point(inset+3*(sz.width-2*inset)/4,inset+1),
 						new Point(inset+3*(sz.width-2*inset)/4,-LEADER_LENGTH),
-						new Rectangle(3*(sz.width-2*inset)/4,0,2*inset,2*inset)); 
+						new Rectangle(3*(sz.width-2*inset)/4,0,2*inset,2*inset),
+						desc.getAnnotation()); 
 				ap.setSide(AnchorSide.TOP);
 				getAnchorPoints().add(ap);
 			}
@@ -143,7 +146,8 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 						desc.getConnectionType(),
 						new Point(inset+3*(sz.width-2*inset)/4,sz.height-inset),
 						new Point(inset+3*(sz.width-2*inset)/4,sz.height+LEADER_LENGTH),
-						new Rectangle(3*(sz.width-2*inset)/4,sz.height-2*inset,2*inset,2*inset));   // Hotspot shape.
+						new Rectangle(3*(sz.width-2*inset)/4,sz.height-2*inset,2*inset,2*inset),
+						desc.getAnnotation());   // Hotspot shape.
 				ap.setSide(AnchorSide.BOTTOM);
 				getAnchorPoints().add(ap);
 			}
@@ -154,7 +158,8 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 						desc.getConnectionType(),
 						new Point(inset,outputIndex*sz.height/outputCount),
 						new Point(-LEADER_LENGTH,outputIndex*sz.height/outputCount),
-						new Rectangle(0,outputIndex*sz.height/outputCount-inset,2*inset,2*inset));   // Hotspot shape.
+						new Rectangle(0,outputIndex*sz.height/outputCount-inset,2*inset,2*inset),
+						desc.getAnnotation());   // Hotspot shape.
 				getAnchorPoints().add(ap);
 				
 			}
@@ -165,7 +170,8 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 						desc.getConnectionType(),
 						new Point(sz.width-inset,inputIndex*sz.height/inputCount),
 						new Point(sz.width+LEADER_LENGTH,inputIndex*sz.height/inputCount),
-						new Rectangle(sz.width-2*inset,inputIndex*sz.height/inputCount-inset,2*inset,2*inset));
+						new Rectangle(sz.width-2*inset,inputIndex*sz.height/inputCount-inset,2*inset,2*inset),
+						desc.getAnnotation());
 				getAnchorPoints().add(ap);
 	
 			}
@@ -235,6 +241,28 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 					g.drawLine(x,y+anchorWidth, x+anchorLength, y+anchorWidth);
 				}
 			}
+			
+			// Finally draw the annotation, if defined
+			String annotation = bap.getAnnotation();
+			if( annotation!=null && annotation.length()>0 ) {
+				if( side==AnchorSide.TOP  ) {
+					x = loc.x;
+					y = loc.y+3*anchorLength/2;
+				}
+				else if( side==AnchorSide.BOTTOM ) {
+					x = loc.x;
+					y = loc.y-3*anchorLength;
+				}
+				else if( side==AnchorSide.LEFT  ) {
+					x = loc.x+3*anchorWidth/2;
+					y = loc.y;
+				}
+				else if( side==AnchorSide.RIGHT ) {
+					x = loc.x-3*anchorWidth/2;
+					y = loc.y;
+				}
+				paintTextAt(g,annotation,x,y,Color.BLACK,ANCHOR_ANNOTATION_TEXT_SIZE);
+			}
 		}
 	}
 	
@@ -254,13 +282,13 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 		if(block.isReceiveEnabled()) {
 			// x,y,width,height
 			Rectangle bounds = new Rectangle((sz.width-2*INSET)/4-INSET,0,BADGE_WIDTH,BADGE_HEIGHT);
-			String path = "Block/icons/embedded/receiver.png";
+			String path = "Block/icons/badges/receiver.png";
 			paintBadge(g,path,bounds);
 		}
 		// Transmit
 		if(block.isTransmitEnabled()) {
 			Rectangle bounds = new Rectangle(3*(sz.width-2*INSET)/4,0,BADGE_WIDTH,BADGE_HEIGHT);
-			String path = "Block/icons/embedded/transmitter.png";
+			String path = "Block/icons/badges/transmitter.png";
 			paintBadge(g,path,bounds);
 		}
 	}
@@ -269,7 +297,7 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 		String iconPath = block.getEmbeddedIcon();
 		if( iconPath == null || iconPath.length()==0 ) return;
 	
-		Dimension imageSize = new Dimension(2*getPreferredSize().width/3,2*getPreferredSize().height/3);
+		Dimension imageSize = new Dimension(2*getPreferredSize().width/3-2*INSET,2*getPreferredSize().height/3-2*INSET);
 		Image img = ImageLoader.getInstance().loadImage(iconPath,imageSize);
 		ImageIcon icon = null;
 		if( img !=null) icon = new ImageIcon(img);

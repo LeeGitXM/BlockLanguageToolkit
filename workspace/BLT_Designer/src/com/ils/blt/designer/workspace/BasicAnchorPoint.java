@@ -23,6 +23,7 @@ public class BasicAnchorPoint extends AnchorPoint {
 	private final Shape hotspot;
 	private final ConnectionType cxnType;
 	private AnchorSide side;
+	private final String annotation;
 	
 	/**
 	 * 
@@ -33,13 +34,15 @@ public class BasicAnchorPoint extends AnchorPoint {
 	 * @param anch
 	 * @param leader the leader is a point about 10 pixels from the anchor, used for drawing the connection.
 	 * @param spot
+	 * @param note a String annotation to be drawn next to the connection
 	 */
 	
-	public BasicAnchorPoint(Object id, Block block, AnchorType ttype, ConnectionType ctype, Point anch, Point leader, Shape spot) {
+	public BasicAnchorPoint(Object id, Block block, AnchorType ttype, ConnectionType ctype, Point anch, Point leader, Shape spot,String note) {
 		super(id, block, EnumSet.of(ttype));
-		anchor = anch;
-		pathLeader = leader;
-		hotspot = spot;
+		this.anchor = anch;
+		this.pathLeader = leader;
+		this.hotspot = spot;
+		this.annotation = note;
 		// Default behavior for side. This can be updated.
 		if( ttype==AnchorType.Origin) side = AnchorSide.RIGHT;
 		else side = AnchorSide.LEFT;
@@ -47,6 +50,7 @@ public class BasicAnchorPoint extends AnchorPoint {
 	}
 
 	public Point getAnchor() { return anchor; }
+	public String getAnnotation() { return annotation; }
 	public ConnectionType getConnectionType() { return cxnType; }
 	public Point getPathLeader() { return pathLeader; }
 	public Shape getHotSpot() { return hotspot; }

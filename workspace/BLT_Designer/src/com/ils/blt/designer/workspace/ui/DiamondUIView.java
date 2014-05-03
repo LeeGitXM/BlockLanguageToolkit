@@ -16,8 +16,8 @@ import com.ils.blt.designer.workspace.ProcessBlockView;
 
 @SuppressWarnings("serial")
 public class DiamondUIView extends AbstractUIView implements BlockViewUI {
-	private static final int DEFAULT_HEIGHT = 100;
-	private static final int DEFAULT_WIDTH  = 100;
+	private static final int DEFAULT_HEIGHT = 60;
+	private static final int DEFAULT_WIDTH  = 60;
 	public DiamondUIView(ProcessBlockView view) {
 		super(view,DEFAULT_WIDTH,DEFAULT_HEIGHT);
 		setOpaque(false);
@@ -49,7 +49,7 @@ public class DiamondUIView extends AbstractUIView implements BlockViewUI {
 		// Now translate so that 0,0 is is at the inner origin
 		g.translate(ifb.x, ifb.y);
 		// Now leave space for stubs
-		int inset = INSET+BORDER_WIDTH;
+		int inset = INSET;
 		ifb.x += inset;
 		ifb.y += inset;
 		ifb.width  -= 2*inset;
@@ -64,7 +64,7 @@ public class DiamondUIView extends AbstractUIView implements BlockViewUI {
 		g.draw(fi);
 		
 		int[] xrvertices = new int[] {ifb.x+(ifb.width/2),ifb.x+ifb.width,ifb.x+(ifb.width/2),ifb.x+(ifb.width/2) };
-		int[] yrvertices = new int[] {ifb.y,ifb.y+(ifb.height/2),         ifb.y+(ifb.height),};
+		int[] yrvertices = new int[] {ifb.y,ifb.y+(ifb.height/2),         ifb.y+(ifb.height),ifb.y};
 		fi = new Polygon(xrvertices,yrvertices,4);
 		g.setColor(BORDER_DARK_COLOR);
 		g.fillPolygon(fi);
@@ -80,17 +80,15 @@ public class DiamondUIView extends AbstractUIView implements BlockViewUI {
 		fi = new Polygon(xvertices,yvertices,4);
 		g.setColor(new Color(block.getBackground()));
 		g.fillPolygon(fi);
-		
-		
 		g.draw(fi);
 		
-
 		// Reverse any transforms we made
 		g.setTransform(originalTx);
 		g.setBackground(originalBackground);
 		drawAnchors(g);
-		drawBadges(g);
 		drawEmbeddedIcon(g);
+		drawEmbeddedText(g);
+		drawBadges(g);
 	}
 
 }

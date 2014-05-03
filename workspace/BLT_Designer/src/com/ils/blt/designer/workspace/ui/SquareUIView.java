@@ -50,7 +50,7 @@ public class SquareUIView extends AbstractUIView implements BlockViewUI {
 		// Now translate so that 0,0 is is at the inner origin
 		g.translate(ifb.x, ifb.y);
 		// Now leave space for stubs and border
-		int inset = INSET + BORDER_WIDTH;
+		int inset = INSET;
 		ifb.x += inset;
 		ifb.y += inset;
 		ifb.width  -= 2*(inset);
@@ -88,8 +88,8 @@ public class SquareUIView extends AbstractUIView implements BlockViewUI {
 		g.setBackground(originalBackground);
 		drawAnchors(g);
 		drawEmbeddedIcon(g);
-		drawBadges(g);
 		drawEmbeddedText(g);
+		drawBadges(g);
 	}
 
 }

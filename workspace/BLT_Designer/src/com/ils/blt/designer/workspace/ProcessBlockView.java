@@ -81,7 +81,7 @@ public class ProcessBlockView extends AbstractBlock {
 		for( AnchorPrototype ap:descriptor.getAnchors() ) {
 			log.debugf("%s: Creating anchor descriptor %s", TAG,ap.getName());
 			anchors.add( new ProcessAnchorDescriptor((ap.getAnchorDirection()==AnchorDirection.INCOMING?AnchorType.Terminus:AnchorType.Origin),
-					ap.getConnectionType(),UUID.randomUUID(),ap.getName()) );
+					ap.getConnectionType(),UUID.randomUUID(),ap.getName(),ap.getAnnotation()) );
 		}
 		this.properties = new ArrayList<BlockProperty>();
 		log.debugf("%s: Created %s (%s) view from descriptor (%d anchors)", TAG, className, style.toString(),anchors.size());
@@ -108,7 +108,7 @@ public class ProcessBlockView extends AbstractBlock {
 			for( SerializableAnchor sa:sb.getAnchors() ) {
 				log.debugf("%s: Creating anchor view %s", TAG,sa.getDisplay());
 				anchors.add( new ProcessAnchorDescriptor((sa.getDirection()==AnchorDirection.INCOMING?AnchorType.Terminus:AnchorType.Origin),
-						sa.getConnectionType(),sa.getId(),sa.getDisplay()) );
+						sa.getConnectionType(),sa.getId(),sa.getDisplay(),sa.getAnnotation()) );
 			}
 		}
 		this.properties = new ArrayList<BlockProperty>();
@@ -129,6 +129,7 @@ public class ProcessBlockView extends AbstractBlock {
 		result.setId(anchor.getId());
 		result.setParentId(getId());
 		result.setConnectionType(anchor.getConnectionType());
+		result.setAnnotation(anchor.getAnnotation());
 		return result;
 	}
 	

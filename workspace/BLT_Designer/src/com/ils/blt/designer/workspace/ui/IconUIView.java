@@ -59,7 +59,8 @@ public class IconUIView extends AbstractUIView implements BlockViewUI {
 						desc.getConnectionType(),
 						new Point(sz.width/2,INSET),
 						new Point(sz.width/2,-LEADER_LENGTH),
-						new Rectangle(sz.width/2-INSET,0,2*INSET,2*INSET));
+						new Rectangle(sz.width/2-INSET,0,2*INSET,2*INSET),
+						desc.getAnnotation());
 				ap.setSide(AnchorSide.TOP);
 				getAnchorPoints().add(ap);
 				break;     // We  only allow one
@@ -69,7 +70,8 @@ public class IconUIView extends AbstractUIView implements BlockViewUI {
 						desc.getConnectionType(),
 						new Point(sz.width/2,sz.height-INSET),
 						new Point(sz.width/2,sz.height+SIGNAL_LEADER_LENGTH),
-						new Rectangle(sz.width/2-INSET,sz.height-2*INSET,2*INSET,2*INSET));
+						new Rectangle(sz.width/2-INSET,sz.height-2*INSET,2*INSET,2*INSET),
+						desc.getAnnotation());
 				ap.setSide(AnchorSide.BOTTOM);
 				getAnchorPoints().add(ap);
 				break;     // We only allow one
