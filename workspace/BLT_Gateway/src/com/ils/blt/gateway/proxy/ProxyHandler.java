@@ -355,9 +355,9 @@ public class ProxyHandler   {
 					if( obj instanceof Hashtable ) {
 						@SuppressWarnings("unchecked")
 						Hashtable<String,?> tbl = (Hashtable<String,?>)obj;
-						log.info(TAG+": getPalettePrototypes first table "+ tbl);  
+						log.info(TAG+".getPalettePrototypes first table "+ tbl);  
 						PalettePrototype proto = new PalettePrototype();
-						proto.setPaletteIconPath(nullCheck(tbl.get(BLTProperties.PALETTE_ICON_PATH),"Block/icons/large/transmitter.png"));
+						proto.setPaletteIconPath(nullCheck(tbl.get(BLTProperties.PALETTE_ICON_PATH),"Block/icons/embedded/transmitter.png"));
 						proto.setPaletteLabel(nullCheck(tbl.get(BLTProperties.PALETTE_LABEL),"From Python"));
 						proto.setTooltipText(nullCheck(tbl.get(BLTProperties.PALETTE_TOOLTIP),""));
 						proto.setTabName(nullCheck(tbl.get(BLTProperties.PALETTE_TAB_NAME),BlockConstants.PALETTE_TAB_CONTROL));
@@ -369,6 +369,17 @@ public class ProxyHandler   {
 						if( val!=null ) view.setTransmitEnabled(fns.coerceToBoolean(val.toString()));
 						val = tbl.get(BLTProperties.PALETTE_VIEW_LABEL);
 						if( val!=null ) view.setEmbeddedLabel(val.toString());
+						val = tbl.get(BLTProperties.PALETTE_VIEW_BACKGROUND);
+						if( val!=null ) {
+							int background = 0xffffff; // White
+							try {
+								background = Long.decode(val.toString()).intValue();
+							}
+							catch(NumberFormatException nfe) {
+								log.infof("%s.getPalettePrototypes: Illegal background specification: %s (%s) ",TAG,val.toString(),nfe.getLocalizedMessage());  
+							}
+							view.setBackground(background);
+						}
 						val = tbl.get(BLTProperties.PALETTE_VIEW_ICON);
 						if( val!=null ) view.setEmbeddedIcon(val.toString());
 						val = tbl.get(BLTProperties.PALETTE_VIEW_BLOCK_ICON);
@@ -384,10 +395,10 @@ public class ProxyHandler   {
 								view.setStyle(BlockStyle.valueOf(val.toString().toUpperCase()));
 							}
 							catch(IllegalArgumentException iae ) {
-								log.warnf("%s: getPalettePrototypes: Illegal block style (%) (%s)" , TAG,val,iae.getMessage());
+								log.warnf("%s.getPalettePrototypes: Illegal block style parameter (%) (%s)" , TAG,val,iae.getMessage());
 							}
 							catch(Exception ex ) {
-								log.warnf("%s: getPalettePrototypes: Illegal block style (%) (%s)" , TAG,val,ex.getMessage());
+								log.warnf("%s.getPalettePrototypes: Illegal block style (%) (%s)" , TAG,val,ex.getMessage());
 							}
 						}
 						// Now handle the anchors
@@ -598,7 +609,7 @@ public class ProxyHandler   {
 		}
 		/**
 		 * Strip off any parentheses that might be supplied.
-		 * @param value the single local argument
+		 * @param truthState the single local argument
 		 */
 		public void setModule(String mod) {
 			if( mod==null) return;

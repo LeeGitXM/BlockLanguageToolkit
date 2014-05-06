@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.util.UUID;
 
 import com.ils.block.common.BlockProperty;
+import com.ils.block.common.BlockState;
 import com.ils.block.common.BlockStyle;
 
 /**
@@ -28,6 +29,7 @@ public class SerializableBlock {
 	private int preferredWidth  = 0;
 	private BlockProperty[] properties = null;
 	private boolean receiveEnabled = false;
+	private BlockState state;
 	private String statusText;
 	private BlockStyle style = BlockStyle.SQUARE;
 	private boolean transmitEnabled= false;
@@ -38,11 +40,11 @@ public class SerializableBlock {
 		this.anchors = new SerializableAnchor[0];
 	}
 	public SerializableAnchor[] getAnchors() { return anchors; }
-	
 	public int getBackground() {return background;}
-
 	public String getClassName() {return className;}
+	
 	public int getEmbeddedFontSize() {return embeddedFontSize;}
+
 	public String getEmbeddedIcon() {return embeddedIcon;}
 	public String getEmbeddedLabel() {return embeddedLabel;}
 	public String getIconPath() {return iconPath;}
@@ -52,6 +54,7 @@ public class SerializableBlock {
 	public int getPreferredHeight() {return preferredHeight;}
 	public int getPreferredWidth() {return preferredWidth;}
 	public BlockProperty[] getProperties() { return properties; }
+	public BlockState getState() {return state;}
 	public String getStatusText() { return statusText; }
 	public BlockStyle getStyle() { return style; }
 	public int getX() { return x; }
@@ -77,6 +80,7 @@ public class SerializableBlock {
 	public void setPreferredWidth(int preferredWidth) {this.preferredWidth = preferredWidth;}
 	public void setProperties(BlockProperty[] array) { this.properties = array; }
 	public void setReceiveEnabled(boolean receiveEnabled) {this.receiveEnabled = receiveEnabled;}
+	public void setState(BlockState state) {this.state = state;}
 	public void setStatusText(String statusText) { this.statusText = statusText; }
 	public void setStyle(BlockStyle style) { this.style = style; }
 	public void setTransmitEnabled(boolean transmitEnabled) {this.transmitEnabled = transmitEnabled;}

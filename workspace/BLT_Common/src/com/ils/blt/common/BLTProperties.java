@@ -82,6 +82,7 @@ public interface BLTProperties   {
 	public static final String PALETTE_TRANSMIT_ENABLED   = "transmitEnabled";
 	public static final String PALETTE_TOOLTIP     = "tooltip";
 	public static final String PALETTE_TAB_NAME    = "tabName";
+	public static final String PALETTE_VIEW_BACKGROUND = "viewBackgroundColor";   // RGB as an int
 	public static final String PALETTE_VIEW_BLOCK_ICON  = "viewBlockIcon";
 	public static final String PALETTE_VIEW_FONT_SIZE  = "viewFontSize";
 	public static final String PALETTE_VIEW_HEIGHT  = "viewHeight";

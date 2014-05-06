@@ -20,17 +20,17 @@ public class UIFactory {
       
 		BlockViewUI ui = null;
 		switch(style) {
+			case ARROW:
+				ui= new ArrowUIView(block);
+				break;
 			case CLAMP:
 				ui= new ClampUIView(block);
 				break;
 			case DIAMOND:
 				ui= new DiamondUIView(block);
 				break;
-			case ENTRY:
-				ui= new EntryUIView(block);
-				break;
 			case HALFMOON:
-				ui= new HalfMoonUIView(block);
+				ui= new LogicUIView(block);
 				break;
 			case ICON:
 				ui= new IconUIView(block);

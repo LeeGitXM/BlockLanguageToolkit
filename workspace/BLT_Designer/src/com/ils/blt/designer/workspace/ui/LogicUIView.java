@@ -6,7 +6,6 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
-import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
@@ -15,16 +14,14 @@ import com.ils.blt.designer.workspace.ProcessBlockView;
 
 
 /**
- * Create a circular "button" with a predefined 48x48 graphic. The first input anchor
- * creates an anchor point on the left. The first output anchor point creates an 
- * anchor point on the top.
+ * Draw various styles of logic blocks according to (roughly) "google logic gate symbols". 
  */
-public class HalfMoonUIView extends AbstractUIView implements BlockViewUI {
+public class LogicUIView extends AbstractUIView implements BlockViewUI {
 	private static final long serialVersionUID = 2180868310475735865L;
 	private static final int DEFAULT_HEIGHT = 80;
 	private static final int DEFAULT_WIDTH  = 80;
 	
-	public HalfMoonUIView(ProcessBlockView view) {
+	public LogicUIView(ProcessBlockView view) {
 		super(view,DEFAULT_WIDTH,DEFAULT_HEIGHT);
 		setOpaque(false);
 		initAnchorPoints();
@@ -74,7 +71,6 @@ public class HalfMoonUIView extends AbstractUIView implements BlockViewUI {
 		g.setColor(BORDER_DARK_COLOR);
 		g.fillPolygon(fi);
 		g.draw(fi);   // Outline
-
 		
 		// Draw the inner area.
 		inset = INSET+BORDER_WIDTH;

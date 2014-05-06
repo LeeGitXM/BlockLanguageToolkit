@@ -13,6 +13,7 @@ import com.ils.block.common.AnchorDirection;
 import com.ils.block.common.AnchorPrototype;
 import com.ils.block.common.BlockDescriptor;
 import com.ils.block.common.BlockProperty;
+import com.ils.block.common.BlockState;
 import com.ils.block.common.BlockStyle;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
@@ -51,6 +52,7 @@ public class ProcessBlockView extends AbstractBlock {
 	private int preferredWidth  = 0;              // Size the view to "natural" size
 	private Collection<BlockProperty> properties;
 	private boolean receiveEnabled = false;
+	private BlockState state = BlockState.INITIALIZED;
 	private String statusText;                    // Auxiliary text to display
 	private BlockStyle style = BlockStyle.SQUARE;
 	private boolean transmitEnabled = false;
@@ -72,6 +74,7 @@ public class ProcessBlockView extends AbstractBlock {
 		this.iconPath = descriptor.getIconPath();
 		this.preferredHeight = descriptor.getPreferredHeight();
 		this.preferredWidth = descriptor.getPreferredWidth();
+		this.state = BlockState.INITIALIZED;
 		this.statusText = "";
 		this.style = descriptor.getStyle();
 		this.receiveEnabled = descriptor.isReceiveEnabled();
@@ -100,6 +103,7 @@ public class ProcessBlockView extends AbstractBlock {
 		this.preferredWidth = sb.getPreferredWidth();
 		this.style = sb.getStyle();
 		this.name = sb.getName();
+		this.state = sb.getState();
 		this.statusText = sb.getStatusText();
 		this.receiveEnabled  = sb.isReceiveEnabled();
 		this.transmitEnabled = sb.isTransmitEnabled();
@@ -142,6 +146,8 @@ public class ProcessBlockView extends AbstractBlock {
 		result.setEmbeddedFontSize(getEmbeddedFontSize());
 		result.setIconPath(getIconPath());
 		result.setName(getName());
+		result.setState(getState());
+		result.setStatusText(getStatusText());
 		result.setStyle(getStyle());
 		result.setReceiveEnabled(isReceiveEnabled());
 		result.setTransmitEnabled(isTransmitEnabled());
@@ -164,6 +170,7 @@ public class ProcessBlockView extends AbstractBlock {
 		
 		return result;
 	}
+
 	@Override
 	public Block copy(Map<UUID, UUID> arg0) {
 		log.infof("%s: copy ...", TAG);
@@ -196,6 +203,7 @@ public class ProcessBlockView extends AbstractBlock {
 	public int getPreferredHeight() {return preferredHeight;}
 	public int getPreferredWidth() {return preferredWidth;}
 	public Collection<BlockProperty> getProperties() { return properties; }
+	public BlockState getState() {return state;}
 	public String getStatusText() { return statusText; }
 	public BlockStyle getStyle() { return style; }
 	@Override
@@ -220,6 +228,7 @@ public class ProcessBlockView extends AbstractBlock {
 	public void setProperties(Collection<BlockProperty> props) { this.properties = props; }
 	public void setReceiveEnabled(boolean receiveEnabled) {this.receiveEnabled = receiveEnabled;}
 	public void setBackground(int b)  { this.background = b; }
+	public void setState(BlockState state) {this.state = state;}
 	public void setStatusText(String statusText) { this.statusText = statusText; }
 	public void setStyle(BlockStyle s) { this.style = s; }
 	public void setTransmitEnabled(boolean transmitEnabled) {this.transmitEnabled = transmitEnabled;}

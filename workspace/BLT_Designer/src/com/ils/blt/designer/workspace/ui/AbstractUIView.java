@@ -52,7 +52,8 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 	protected final static int BADGE_WIDTH = 20;
 	protected final static int BORDER_WIDTH = 3;
 	protected final static Color BORDER_DARK_COLOR = Color.darkGray;
-	protected final static Color BORDER_LIGHT_COLOR = Color.getHSBColor(0f, 0f, 0.9f); // Light gray
+	protected final static Color BORDER_LIGHT_COLOR = new Color(230,230,230); // Light gray
+	protected final static Color INSET_COLOR = new Color(210,210,210);        // A little darker gray
 	protected final static int INSET = 6;
 	protected final static int LEADER_LENGTH = 10;
 	protected final static int SIGNAL_LEADER_LENGTH = 8;        // Shorter for signals
@@ -254,11 +255,11 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 					y = loc.y-3*anchorLength;
 				}
 				else if( side==AnchorSide.LEFT  ) {
-					x = loc.x+3*anchorWidth/2;
+					x = loc.x+2*anchorWidth;
 					y = loc.y;
 				}
 				else if( side==AnchorSide.RIGHT ) {
-					x = loc.x-3*anchorWidth/2;
+					x = loc.x-2*anchorWidth;
 					y = loc.y;
 				}
 				paintTextAt(g,annotation,x,y,Color.BLACK,ANCHOR_ANNOTATION_TEXT_SIZE);

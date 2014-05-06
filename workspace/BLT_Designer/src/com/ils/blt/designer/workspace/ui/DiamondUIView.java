@@ -41,7 +41,6 @@ public class DiamondUIView extends AbstractUIView implements BlockViewUI {
 		float outlineWidth = OUTLINE_WIDTH;
 		Stroke stroke = new BasicStroke(outlineWidth,BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND);
 		g.setStroke(stroke);
-		g.setPaint(OUTLINE_COLOR);
 		
 		// Calculate the inner area
 		Rectangle ifb = new Rectangle();   // Interior, frame and border
@@ -80,6 +79,8 @@ public class DiamondUIView extends AbstractUIView implements BlockViewUI {
 		fi = new Polygon(xvertices,yvertices,4);
 		g.setColor(new Color(block.getBackground()));
 		g.fillPolygon(fi);
+		// Outline the inner area
+		g.setPaint(INSET_COLOR);
 		g.draw(fi);
 		
 		// Reverse any transforms we made

@@ -81,6 +81,8 @@ public class SquareUIView extends AbstractUIView implements BlockViewUI {
 		fi = new Polygon(xvertices,yvertices,4);
 		g.setColor(new Color(block.getBackground()));
 		g.fillPolygon(fi);
+		// Outline the inner square
+		g.setPaint(INSET_COLOR);
 		g.draw(fi);
 
 		// Reverse any transforms we made
