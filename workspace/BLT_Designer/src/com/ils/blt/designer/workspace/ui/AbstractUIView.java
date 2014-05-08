@@ -14,6 +14,7 @@ import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
@@ -169,9 +170,9 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 				inputIndex++;
 				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Origin,
 						desc.getConnectionType(),
-						new Point(sz.width-inset,inputIndex*sz.height/inputCount),
-						new Point(sz.width+LEADER_LENGTH,inputIndex*sz.height/inputCount),
-						new Rectangle(sz.width-2*inset,inputIndex*sz.height/inputCount-inset,2*inset,2*inset),
+						new Point(sz.width-inset,inputIndex*sz.height/inputCount-1),
+						new Point(sz.width+LEADER_LENGTH,inputIndex*sz.height/inputCount-1),
+						new Rectangle(sz.width-2*inset,inputIndex*sz.height/inputCount-inset,2*inset,2*inset-1),
 						desc.getAnnotation());
 				getAnchorPoints().add(ap);
 	
@@ -196,7 +197,11 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 	protected abstract void paintComponent(Graphics _g);
 	
 	
-	protected void drawAnchors(Graphics2D g) {
+	protected void drawAnchors(Graphics2D g,int xoffset,int yoffset) {
+		// Preserve the original transform to roll back to at the end
+		AffineTransform originalTx = g.getTransform();
+		// Handle any offset of the block within the outer boundary
+		g.translate(xoffset,yoffset);
 		// Loop through the anchor points and draw squares for ports
 		for( AnchorPoint ap:anchorPoints) {
 			BasicAnchorPoint bap = (BasicAnchorPoint)ap;
@@ -204,12 +209,6 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 			int anchorWidth = anchorWidthForConnectionType(bap.getConnectionType());
 			int anchorLength= INSET;  // Draw to the boundary
 			Point loc = bap.getAnchor();   // Center of the anchor point
-			// As a debugging aid - highlight the hotspot
-			if( log.isDebugEnabled() ) {
-				g.setPaint(Color.MAGENTA);
-				Shape hotspot = bap.getHotSpot();
-				g.fill(hotspot);
-			}
 			// Paint the rectangle
 			if( bap.getConnectionType()==ConnectionType.DATA) g.setColor(getBackground());
 			else g.setColor(fillColorForConnectionType(bap.getConnectionType()));
@@ -221,11 +220,13 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 				y = loc.y-anchorLength/2;
 				g.fillRect(x, y, anchorWidth,anchorLength);
 			}
-			else {
+			else  {
 				x = loc.x-anchorLength/2;
 				y = loc.y-anchorWidth/2;
+				if( bap.getConnectionType()==ConnectionType.TRUTHVALUE) y+=2;  // Account for skinny connection
 				g.fillRect(x, y, anchorLength,anchorWidth);
 			}
+			
 
 			// A signal doesn't need an outline
 			if( bap.getConnectionType()!=ConnectionType.SIGNAL ) {
@@ -264,7 +265,15 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 				}
 				paintTextAt(g,annotation,x,y,Color.BLACK,ANCHOR_ANNOTATION_TEXT_SIZE);
 			}
+			// As a debugging aid - highlight the hotspot
+			if( log.isDebugEnabled() ) {
+				g.setPaint(Color.MAGENTA);
+				Shape hotspot = bap.getHotSpot();
+				g.fill(hotspot);
+			}
 		}
+		// Reverse any transforms we made
+		g.setTransform(originalTx);
 	}
 	
 	/**
@@ -314,11 +323,11 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 		}
 	}
 	
-	protected void drawEmbeddedText(Graphics2D g) {
+	protected void drawEmbeddedText(Graphics2D g,int offsetx,int offsety) {
 		String text = block.getEmbeddedLabel();
 		if( text == null || text.length()==0 ) return;
 		Dimension sz = getPreferredSize();
-		paintTextAt(g,text,sz.width/2,sz.height/2,Color.BLACK,block.getEmbeddedFontSize());
+		paintTextAt(g,text,offsetx+sz.width/2,offsety+sz.height/2,Color.BLACK,block.getEmbeddedFontSize());
 		
 	}
 	

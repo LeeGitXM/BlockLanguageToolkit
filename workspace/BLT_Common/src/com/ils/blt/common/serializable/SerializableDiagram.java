@@ -23,7 +23,8 @@ public class SerializableDiagram {
 		blocks = new SerializableBlock[0];
 		connections= new SerializableConnection[0];
 		folders= new SerializableFolder[0];
-		name="UNSET";
+		name = "UNSET";
+		id = UUID.randomUUID();
 	}
 
 	public SerializableBlock[] getBlocks() { return blocks; }

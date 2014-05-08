@@ -77,9 +77,9 @@ public class ClampUIView extends AbstractUIView implements BlockViewUI {
 
 		// Reverse any transforms we made
 		g.setTransform(originalTx);
-		drawAnchors(g);
+		drawAnchors(g,0,0);
 		drawBadges(g);
-		drawEmbeddedText(g);
+		drawEmbeddedText(g,0,0);
 	}
 
 }

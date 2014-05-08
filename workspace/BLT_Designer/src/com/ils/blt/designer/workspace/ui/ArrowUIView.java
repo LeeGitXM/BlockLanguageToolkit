@@ -98,14 +98,14 @@ public class ArrowUIView extends AbstractUIView implements BlockViewUI {
 		path.lineTo(width,height/2);
 		g.draw(path);
 		
-		
+	
 
 		// Reverse any transforms we made
 		g.setTransform(originalTx);
 		g.setBackground(originalBackground);
-		drawAnchors(g);
+		drawAnchors(g,0,-BORDER_WIDTH/2);
 		drawEmbeddedIcon(g);
-		drawEmbeddedText(g);
+		drawEmbeddedText(g,0,0);
 		drawBadges(g);
 	}
 

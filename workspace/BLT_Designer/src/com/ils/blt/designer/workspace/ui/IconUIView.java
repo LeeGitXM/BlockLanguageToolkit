@@ -84,7 +84,7 @@ public class IconUIView extends AbstractUIView implements BlockViewUI {
 		if( icon!=null ) {
 			icon.paintIcon(getBlockComponent(), g, 0, INSET);
 		}
-		drawAnchors(g);
+		drawAnchors(g,0,0);
 		drawBadges(g);
 	}
 }

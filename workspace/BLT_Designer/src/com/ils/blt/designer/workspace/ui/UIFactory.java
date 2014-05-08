@@ -29,8 +29,14 @@ public class UIFactory {
 			case DIAMOND:
 				ui= new DiamondUIView(block);
 				break;
-			case HALFMOON:
-				ui= new LogicUIView(block);
+			case LOGIC_AND:
+				ui= new LogicUIView(block,LogicUIView.SUBSTYLE_AND);
+				break;
+			case LOGIC_NOT:
+				ui= new LogicUIView(block,LogicUIView.SUBSTYLE_NOT);
+				break;
+			case LOGIC_OR:
+				ui= new LogicUIView(block,LogicUIView.SUBSTYLE_OR);
 				break;
 			case ICON:
 				ui= new IconUIView(block);

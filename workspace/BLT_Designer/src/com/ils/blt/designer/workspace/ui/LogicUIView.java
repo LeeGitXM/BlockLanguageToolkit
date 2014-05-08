@@ -2,13 +2,18 @@ package com.ils.blt.designer.workspace.ui;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Polygon;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Area;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.GeneralPath;
+
+import javax.swing.SwingUtilities;
 
 import com.ils.blt.designer.workspace.ProcessBlockView;
 
@@ -18,17 +23,24 @@ import com.ils.blt.designer.workspace.ProcessBlockView;
  */
 public class LogicUIView extends AbstractUIView implements BlockViewUI {
 	private static final long serialVersionUID = 2180868310475735865L;
+	public static final String SUBSTYLE_AND = "AND";
+	public static final String SUBSTYLE_NOT = "NOT";
+	public static final String SUBSTYLE_OR = "OR";
 	private static final int DEFAULT_HEIGHT = 80;
 	private static final int DEFAULT_WIDTH  = 80;
+	private final String substyle;
 	
-	public LogicUIView(ProcessBlockView view) {
+	public LogicUIView(ProcessBlockView view,String ss) {
 		super(view,DEFAULT_WIDTH,DEFAULT_HEIGHT);
+		this.substyle = ss;
 		setOpaque(false);
 		initAnchorPoints();
 	}
 	
 
-	// Draw a rectangle with pointed end
+	// Create a shape according to the sub-style.
+	// Shift down and right - paint border dark color
+	// Shift up and left - fill, then outline with border light
 	@Override
 	protected void paintComponent(Graphics _g) {
 		// Calling the super method effects an "erase".
@@ -42,56 +54,115 @@ public class LogicUIView extends AbstractUIView implements BlockViewUI {
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 				RenderingHints.VALUE_ANTIALIAS_ON);
 
-		// For drawing outlines
-		float outlineWidth = 1.0f;
-		Stroke stroke = new BasicStroke(outlineWidth,BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND);
-		g.setStroke(stroke);
-		g.setPaint(Color.BLACK);
-		
-		// Calculate the inner area - the inner area includes the border
-		Dimension sz = getPreferredSize();
-		int inset = INSET;
-		int width = sz.width-2*inset;
-		int height = sz.height-2*inset;
-		// Now translate so that 0,0 is is at the inner origin (inside insets in both directions)
-		g.translate(inset, inset);
+		// Calculate the inner area
+		Rectangle ifb = new Rectangle();   // Interior, frame and border
+		ifb = SwingUtilities.calculateInnerArea(this,ifb);
+		// Now translate so that 0,0 is is at the inner origin
+		g.translate(ifb.x, ifb.y);
+		// Now translate so that 0,0 is inside the insets
+		g.translate(INSET, INSET);
 
-		// Create a polygon for the upper left  
-		int[] ulxvertices = new int[] {0,0,2*width/3,width,0};
-		int[] ulyvertices = new int[] {height,0,0,height/4,height};
-		Polygon fi = new Polygon(ulxvertices,ulyvertices,4);
+		int width  = ifb.width - 2*(INSET+BORDER_WIDTH);    // Actual width of shape
+		int height =ifb.height - 2*(INSET+BORDER_WIDTH);    // Actual height of shape
+		
+		Shape shape = null;
+		if( substyle.equalsIgnoreCase(SUBSTYLE_NOT)) {
+			shape = computeNotShape(width,height);
+		}
+		else if( substyle.equalsIgnoreCase(SUBSTYLE_OR)) {
+			shape = computeOrShape(width,height);
+		}
+		// Default is AND
+		else {
+			shape = computeAndShape(width,height);
+		}
+
+		// Fill dark shadow, one border-width down and to right.
+		g.translate(BORDER_WIDTH,BORDER_WIDTH);
+
 		g.setColor(BORDER_LIGHT_COLOR);
-		g.fillPolygon(fi);
-		g.draw(fi);   // Outline
-		
-		// Create polygons for the lower right. 
-		int[] lrxvertices = new int[] {0,width,width,2*width/3,0};
-		int[] lryvertices = new int[] {height, height/4,3*height/4,height,height};
-		fi = new Polygon(lrxvertices,lryvertices,5);
-		g.setColor(BORDER_DARK_COLOR);
-		g.fillPolygon(fi);
-		g.draw(fi);   // Outline
-		
-		// Draw the inner area.
-		inset = INSET+BORDER_WIDTH;
-		width = sz.width-2*inset;
-		height = sz.height-2*inset;
-		// Now translate so that 0,0 is is at the inner origin (inside the inset and border)
-		g.translate(BORDER_WIDTH, BORDER_WIDTH);
-		// Create a polygon that is inside the border
-		int[]xvertices = new int[] {0,2*width/3,width,width,2*width/3,0,0};
-		int[]yvertices = new int[] {0,0,height/4,3*height/4,height,height,0};
-		fi = new Polygon(xvertices,yvertices,7);
+		g.fill(shape);
+
+		// Re-adjust to the actual space
+		g.translate(-BORDER_WIDTH,-BORDER_WIDTH);
+
 		g.setColor(new Color(block.getBackground()));
-		g.fillPolygon(fi);
-		g.draw(fi);
+		g.fill(shape);
+		// Outline the block
+		Stroke stroke = new BasicStroke(OUTLINE_WIDTH,BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND);
+		g.setStroke(stroke);
+		g.setPaint(BORDER_DARK_COLOR);
+		g.draw(shape);
+
 		
 		// Reverse any transforms we made
 		g.setTransform(originalTx);
 		g.setBackground(originalBackground);
-		drawAnchors(g);
+		
+		drawAnchors(g,-BORDER_WIDTH,-BORDER_WIDTH);
+		drawEmbeddedIcon(g);
+		int xoffset = -BORDER_WIDTH;
+		if( substyle.equals(SUBSTYLE_NOT) ) xoffset -= width/5;
+		drawEmbeddedText(g,xoffset,-BORDER_WIDTH);
 		drawBadges(g);
-		drawEmbeddedText(g);
+	}
+
+	//  ===================================== Calculate the shapes ===================================
+	/**
+	 * The "and" shape is a square with the right side bulged out into a 1/2 circle.
+	 * @param width
+	 * @param height
+	 * @return
+	 */
+	private Shape computeAndShape(int width,int height) {
+		final double STRAIGHT_FRACTION = 0.6;
+		GeneralPath shape = new GeneralPath();
+		shape.moveTo(0, 0);
+		shape.lineTo(STRAIGHT_FRACTION*width,0);
+		shape.quadTo(1.6*width,height/2,STRAIGHT_FRACTION*width, height);
+		shape.lineTo(0, height);
+		shape.closePath();
+		return shape;
+	}
+	/**
+	 * The "not" shape is a triangle with a small circle at its point.
+	 * @param width
+	 * @param height
+	 * @return
+	 */
+	private Shape computeNotShape(int width,int height) {
+		final double TRIANGLE_FRACTION = 0.8;
+		GeneralPath triangle = new GeneralPath();
+		triangle.moveTo(0, 0);
+		triangle.lineTo(TRIANGLE_FRACTION*width,height/2.);
+		triangle.lineTo(0, height);
+		triangle.closePath();
+		
+		double diameter = width*(1-TRIANGLE_FRACTION);
+		Ellipse2D.Double circle = new Ellipse2D.Double(width*TRIANGLE_FRACTION,(height-diameter)/2,diameter,diameter);
+		
+		Area area = new Area(triangle);
+		area.add(new Area(circle));
+		return area;
+	}
+
+	/**
+	 * The "or" shape like the "and", except that the left side is indented.
+	 * @param width
+	 * @param height
+	 * @return
+	 */
+	private Shape computeOrShape(int width,int height) {
+		final double INDENT_FRACTION = 0.2;
+		final double STRAIGHT_FRACTION = 0.6;
+		GeneralPath shape = new GeneralPath();
+		shape.moveTo(0, 0);
+		shape.lineTo(STRAIGHT_FRACTION*width,0);
+		shape.quadTo(1.6*width,height/2,STRAIGHT_FRACTION*width, height);
+		shape.lineTo(0, height);
+		shape.quadTo(INDENT_FRACTION*width,height/2,0, 0);
+		shape.closePath();
+		return shape;
 	}
 
 }

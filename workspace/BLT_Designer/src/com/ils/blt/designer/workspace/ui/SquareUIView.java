@@ -88,9 +88,9 @@ public class SquareUIView extends AbstractUIView implements BlockViewUI {
 		// Reverse any transforms we made
 		g.setTransform(originalTx);
 		g.setBackground(originalBackground);
-		drawAnchors(g);
+		drawAnchors(g,0,0);
 		drawEmbeddedIcon(g);
-		drawEmbeddedText(g);
+		drawEmbeddedText(g,0,0);
 		drawBadges(g);
 	}
 
