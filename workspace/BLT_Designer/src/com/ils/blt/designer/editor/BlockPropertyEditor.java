@@ -136,7 +136,8 @@ public class BlockPropertyEditor extends SlidingPane {
 			if( property.getName().equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_LIMIT_TYPE)) {
 				panel = new LimitTypePanel(property);
 			}
-			else if( property.getName().equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_SCOPE) ||
+			else if( property.getName().endsWith("?") ||      // boolean
+					 property.getName().equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_SCOPE) ||
 					 property.getName().equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_DISTRIBUTION) ) {
 				panel = new ComboOnlyPanel(property);
 			}
@@ -437,6 +438,23 @@ public class BlockPropertyEditor extends SlidingPane {
 		return box;
 	}
 	/**
+	 * Create a combo box for true/false 
+	 */
+	private JComboBox<String> createBooleanCombo(final BlockProperty prop) {
+		String[] entries = new String[2];
+		entries[0]=Boolean.TRUE.toString();
+		entries[1]=Boolean.FALSE.toString();
+		
+		final JComboBox<String> box = new JComboBox<String>(entries);
+		box.addActionListener(new ActionListener() {
+	        public void actionPerformed(ActionEvent e){
+	            prop.setValue(box.getSelectedItem().toString());
+	        }
+		});
+		box.setSelectedItem(prop.getValue().toString());
+		return box;
+	}
+	/**
 	 * Create a combo box for transmission scope
 	 */
 	private JComboBox<String> createTransmissionScopeCombo(final BlockProperty prop) {
@@ -489,7 +507,6 @@ public class BlockPropertyEditor extends SlidingPane {
 			}
 		}
 	}
-	
 	// Special for a LimitType block property
 	private class LimitTypePanel extends JPanel {
 		private static final long serialVersionUID = 6501004559543409511L;
@@ -503,6 +520,22 @@ public class BlockPropertyEditor extends SlidingPane {
 
 			add(createLabel("Type"),"skip");
 			add(createLimitTypeCombo(prop),"wrap");
+		}
+	}
+		
+	// Special for a TruthValue block property
+	private class TruthStatePanel extends JPanel {
+		private static final long serialVersionUID = 6501004559543409511L;
+		private static final String columnConstraints = "[para]0[][100lp,fill]";
+		private static final String layoutConstraints = "ins 2";
+		private static final String rowConstraints = "";
+
+		public TruthStatePanel(BlockProperty prop) {
+			setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));     // 3 cells across
+			addSeparator(this,prop.getName());
+
+			add(createLabel("Type"),"skip");
+			add(createBooleanCombo(prop),"wrap");
 		}
 	}
 
@@ -519,7 +552,10 @@ public class BlockPropertyEditor extends SlidingPane {
 			addSeparator(this,prop.getName());
 			
 			add(createLabel(prop.getName()),"skip");
-			if(prop.getName().contains("Distribution")) {
+			if(prop.getName().endsWith("?")) {
+				add(createBooleanCombo(prop),"wrap");
+			}
+			else if(prop.getName().contains("Distribution")) {
 				add(createDistributionTypeCombo(prop),"wrap");
 			}
 			else {
