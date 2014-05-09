@@ -16,6 +16,7 @@ import com.ils.block.ProcessBlock;
 import com.ils.block.common.BindingType;
 import com.ils.block.common.BlockProperty;
 import com.ils.block.control.BroadcastNotification;
+import com.ils.block.control.ConnectionPostNotification;
 import com.ils.block.control.ExecutionController;
 import com.ils.block.control.IncomingNotification;
 import com.ils.block.control.OutgoingNotification;
@@ -98,8 +99,10 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	
 	/**
 	 * A block has completed evaluation. A new value has been placed on its output.
+	 * Place the notification into the queue for delivery to the appropriate downstream blocks.
 	 * If we're stopped, these all go into the bit bucket.
 	 */
+	@Override
 	public void acceptCompletionNotification(OutgoingNotification note) {
 		log.infof("%s:acceptCompletionNotification: %s:%s %s", TAG,note.getBlock().getBlockId().toString(),note.getPort(),
 				(stopped?"REJECTED, controller stopped":""));
@@ -108,7 +111,20 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		}
 		catch( InterruptedException ie ) {}
 	}
-
+	
+	/**
+	 * @param note the notification to be distributed to all connection posts
+	 *        interested in the sender
+	 */
+	@Override
+	public void acceptConnectionPostNotification(ConnectionPostNotification note) {
+		log.infof("%s:acceptConnectionPostNotification: %s %s", TAG,note.getOriginName(),
+				(stopped?"REJECTED, controller stopped":""));
+		try {
+			if(!stopped) buffer.put(note);
+		}
+		catch( InterruptedException ie ) {}
+	}
 
 	/**
 	 * Obtain the running state of the controller. This is a static method
@@ -311,6 +327,8 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 			catch( InterruptedException ie) {}
 		}
 	}
+
+
 
 
 }

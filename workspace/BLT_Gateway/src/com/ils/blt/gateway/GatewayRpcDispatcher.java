@@ -208,7 +208,6 @@ public class GatewayRpcDispatcher   {
 		if( diagram!=null ) {
 			// Create a broadcast notification
 			Signal sig = new Signal(command,"","");
-			sig.setClassName(className);
 			BroadcastNotification broadcast = new BroadcastNotification(diagram.getSelf(),TransmissionScope.LOCAL,sig);
 			BlockExecutionController.getInstance().acceptBroadcastNotification(broadcast);
 		}
