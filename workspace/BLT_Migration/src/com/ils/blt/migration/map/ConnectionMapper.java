@@ -174,10 +174,16 @@ public class ConnectionMapper {
 				// Look for the specific anchorPoint - in our usage, the id is the port name
 				AnchorPoint pt = null;
 				for( AnchorPoint ap:anchorPoints ) {
-					if( ap.getId().toString().equals(port)) {
-						pt = ap;
-						break;
+					if( ap.getId() !=null ) {
+						if( ap.getId().toString().equals(port)) {
+							pt = ap;
+							break;
+						}
 					}
+					else {
+						System.err.println(TAG+".setEndAnchorPoint: No port name  ("+ap.toString()+")");
+					}
+					
 				}
 				if( pt!=null ) {
 					SerializableAnchorPoint sap = createSerializableAnchorPoint(pt);
