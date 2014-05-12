@@ -245,8 +245,8 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	/**
 	 * Write a value to a tag.
 	 */
-	public void updateTag(String providerName,String path,QualifiedValue val) {
-		tagWriter.updateTag(providerName,path,val);
+	public void updateTag(String path,QualifiedValue val) {
+		tagWriter.updateTag(path,val);
 	}
 	// ======================= Delegated to Watchdog ======================
 	/**

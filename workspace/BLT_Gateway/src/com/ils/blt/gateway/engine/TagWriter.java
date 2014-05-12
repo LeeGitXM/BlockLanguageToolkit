@@ -51,13 +51,12 @@ public class TagWriter  {
 	 * @param provider tag provider. Use an empty string for the default provider
 	 * @param path fully qualified tag path
 	 */
-	public void updateTag(String providerName,String path,QualifiedValue qv) {
+	public void updateTag(String path,QualifiedValue qv) {
 		if( context==null) return;   // Not initialized yet.
 		List<WriteRequest<TagPath>> list = createTagList(path,qv);
 		if(list.size()==0) log.debug(TAG+".updateTags: No results");
 		try {
-		    TagProvider provider = context.getTagManager().getTagProvider(providerName);
-		    log.tracef("%s.updateTags: provider = %s",TAG,providerName);
+		    TagProvider provider = context.getTagManager().getTagProvider("");
 		    // We assume the same provider
 		    if( provider!= null && list!=null ) provider.write(list, null, true);	
 		}
