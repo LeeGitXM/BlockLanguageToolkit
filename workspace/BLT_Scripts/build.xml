@@ -1,0 +1,11 @@
+<project name="BLT Scripts" basedir=".">
+
+	<target name="default" >
+		<copy todir="${ignition.py.lib}">
+			<fileset dir="${basedir}/src">
+				<include name="**/*.py" />
+			</fileset>
+		</copy>
+	</target>
+	
+</project>
