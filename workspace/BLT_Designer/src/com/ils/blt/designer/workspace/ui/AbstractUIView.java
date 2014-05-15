@@ -47,7 +47,7 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 	protected final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	protected final ProcessBlockView block;
 	private final List<AnchorPoint> anchorPoints;  // Entries are BasicAnchorPoint
-	private BlockComponent blockComponent = null;
+	protected BlockComponent blockComponent = null;
 	protected static int ANCHOR_ANNOTATION_TEXT_SIZE = 9;
 	protected final static int BADGE_HEIGHT = 20;
 	protected final static int BADGE_WIDTH = 20;
@@ -181,7 +181,7 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 	}
 	
 	protected ProcessBlockView getBlock() { return this.block; }
-	protected BlockComponent getBlockComponent() { return this.blockComponent; }
+	public BlockComponent getBlockComponent() { return this.blockComponent; }
 	@Override
 	public List<AnchorPoint> getAnchorPoints() { return this.anchorPoints; }
 	

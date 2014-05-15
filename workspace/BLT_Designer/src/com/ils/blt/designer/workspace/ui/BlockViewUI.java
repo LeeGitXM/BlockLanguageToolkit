@@ -13,4 +13,5 @@ public interface BlockViewUI {
 
 	public void install(BlockComponent block);
 	public Collection<AnchorPoint> getAnchorPoints();   // actually BasicAnchorPoints
+	public BlockComponent getBlockComponent();
 }
