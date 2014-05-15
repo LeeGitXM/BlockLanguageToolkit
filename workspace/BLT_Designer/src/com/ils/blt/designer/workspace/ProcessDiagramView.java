@@ -9,11 +9,15 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.common.AnchorDirection;
+import com.ils.block.common.BlockProperty;
+import com.ils.blt.common.ApplicationRequestManager;
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.DiagramState;
 import com.ils.blt.common.serializable.SerializableAnchorPoint;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableConnection;
 import com.ils.blt.common.serializable.SerializableDiagram;
+import com.ils.blt.designer.BLTDesignerHook;
 import com.inductiveautomation.ignition.common.util.AbstractChangeable;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -22,6 +26,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.BlockDiagramModel;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Connection;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.LookupConnection;
+import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 /**
  * This class represents a diagram in the designer.
@@ -36,20 +41,22 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	private final String name;
 	private final long resourceId;
 	private DiagramState state = DiagramState.ACTIVE;
+	private DesignerContext context;
 	
 	/**
 	 * Constructor: Create an instance given a SerializableDiagram
 	 * @param resid
 	 * @param diagram
 	 */
-	public ProcessDiagramView (long resid,SerializableDiagram diagram) {
+	public ProcessDiagramView (long resid,SerializableDiagram diagram, DesignerContext context) {
 		this(resid,diagram.getId(),diagram.getName());
 		this.state = diagram.getState();
-
+		this.context = context;
 		for( SerializableBlock sb:diagram.getBlocks()) {
 			ProcessBlockView pbv = new ProcessBlockView(sb);
 			blockMap.put(sb.getId(), pbv);
 			log.warnf("%s: createDiagramView: Added %s to map",TAG,sb.getId().toString());
+			initBlockProperties(pbv);
 			this.addBlock(pbv);
 		}
 
@@ -84,13 +91,28 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		this.name = nam;
 	}
 	
+	/** Get the current block property values from the Gateway. */
+	private void initBlockProperties(ProcessBlockView block) {
+		Collection<BlockProperty> propertyList;
+		propertyList = new ArrayList<BlockProperty>();
+		ApplicationRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+		BlockProperty[] properties = handler.getBlockProperties(block.getClassName(),context.getProject().getId(),resourceId,block.getId());
+		for(BlockProperty property:properties) {
+			propertyList.add(property);
+		}
+		log.debugf("%s: init - initialize property list for %s (%d properties)",TAG,block.getId().toString(),propertyList.size());
+		block.setProperties(propertyList);
+	}
+
 	/**
 	 * At the time that we add a new block, make sure that the block has a unique name.
+	 * @param context 
 	 */
 	@Override
 	public void addBlock(Block blk) {
 		if( blk instanceof ProcessBlockView) {
 			ProcessBlockView block = (ProcessBlockView) blk;
+			initBlockProperties(block);
 			blockMap.put(blk.getId(), block);
 			fireStateChanged();
 		}

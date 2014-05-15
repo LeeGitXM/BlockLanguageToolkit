@@ -9,7 +9,6 @@ import javax.swing.JPanel;
 
 import com.ils.blt.designer.workspace.ProcessAnchorDescriptor;
 import com.ils.blt.designer.workspace.ProcessBlockView;
-import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
 import com.inductiveautomation.ignition.designer.blockandconnector.blockui.AnchorDescriptor;
 import com.inductiveautomation.ignition.designer.blockandconnector.blockui.BasicBlockUI;
 
@@ -65,11 +64,6 @@ public class StandardUIView extends BasicBlockUI implements BlockViewUI{
 			}
 		}
 		return anchorDescriptors;
-	}
-
-	@Override
-	public BlockComponent getBlockComponent() {
-		return null;
 	}
 
 }

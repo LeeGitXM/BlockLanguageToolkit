@@ -351,7 +351,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				catch (IOException ioe) {
 					log.warnf("%s: open io exception (%s)",TAG,ioe.getLocalizedMessage());
 				}
-				ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd);
+				ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd, context);
 				super.open(diagram);
 			}
 		}

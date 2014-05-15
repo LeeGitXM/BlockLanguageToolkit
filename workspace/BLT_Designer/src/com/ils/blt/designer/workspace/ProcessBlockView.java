@@ -125,9 +125,6 @@ public class ProcessBlockView extends AbstractBlock {
 		log.debugf("%s: Created %s %s (%s) view from serializable block", TAG, className, sb.getId().toString(),style.toString());
 	}
 	
-	public BlockViewUI getUI() {
-		return ui;
-	}
 	
 	// Note: This does not set connection type
 	private SerializableAnchor convertAnchorToSerializable(ProcessAnchorDescriptor anchor) {

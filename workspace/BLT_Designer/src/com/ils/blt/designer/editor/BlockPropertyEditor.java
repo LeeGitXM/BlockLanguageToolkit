@@ -102,34 +102,24 @@ public class BlockPropertyEditor extends SlidingPane {
 		// Always refresh the block attributes from the Gateway before display.
 		log.debugf("%s: init - editing %s (%s)",TAG,block.getId().toString(),block.getClassName());
 		Collection<BlockProperty> propertyList = block.getProperties();
-		if( propertyList==null || propertyList.isEmpty()) {
-			propertyList = new ArrayList<BlockProperty>();
-			ApplicationRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
-			BlockProperty[] properties = handler.getBlockProperties(block.getClassName(),projectId,resourceId,block.getId());
-			for(BlockProperty property:properties) {
-				propertyList.add(property);
-			}
-			log.debugf("%s: init - initialize property list for %s (%d properties)",TAG,block.getId().toString(),propertyList.size());
-			block.setProperties(propertyList);
-		}
-		else {
-			// Existing block: Update the transient values from tag subscriptions.
-			ApplicationRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
-			BlockProperty[] properties = handler.getBlockProperties(block.getClassName(),projectId,resourceId,block.getId());
-			for(BlockProperty property:properties) {
-				if( property.getBindingType().equals(BindingType.TAG) ) {
-					// Search the property list for the actual property
-					Iterator<BlockProperty> walker = propertyList.iterator();
-					while(walker.hasNext()) {
-						BlockProperty bp = walker.next();
-						if( bp.getName().equalsIgnoreCase(property.getName())) {
-							bp.setValue(property.getValue());
-							break;
-						}
+		
+		// Update the transient values from tag subscriptions.
+		ApplicationRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+		BlockProperty[] properties = handler.getBlockProperties(block.getClassName(),projectId,resourceId,block.getId());
+		for(BlockProperty property:properties) {
+			if( property.getBindingType().equals(BindingType.TAG) ) {
+				// Search the property list for the actual property
+				Iterator<BlockProperty> walker = propertyList.iterator();
+				while(walker.hasNext()) {
+					BlockProperty bp = walker.next();
+					if( bp.getName().equalsIgnoreCase(property.getName())) {
+						bp.setValue(property.getValue());
+						break;
 					}
 				}
 			}
 		}
+
 		
 		// Now fill the editor 
 		for(BlockProperty property:propertyList) {
