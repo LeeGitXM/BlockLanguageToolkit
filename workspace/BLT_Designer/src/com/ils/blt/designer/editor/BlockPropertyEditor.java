@@ -479,7 +479,7 @@ public class BlockPropertyEditor extends SlidingPane {
 			addSeparator(this,prop.getName());
 			
 			if( prop.getName().matches("Interval"))
-				add(createLabel("Time ~msecs"),"skip");
+				add(createLabel("Time ~secs"),"skip");
 			else
 				add(createLabel("Value"),"skip");
 			add(createValueTextField(prop),"");

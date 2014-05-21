@@ -28,13 +28,13 @@ import com.ils.common.ClassList;
  */
 public class PropertyMapper {
 	private final String TAG = "PropertyMapper";
-	private final Map<String,PrototypeSet> attributeMap;     // Lookup by className
+	private final Map<String,PrototypeSet> prototypeSetMap;       // Lookup by className
 	private final Map<String,BlockProperty[]> propertyArrayMap;    // Lookup by className
 	/** 
 	 * Constructor: 
 	 */
 	public PropertyMapper() {
-		attributeMap = new HashMap<String,PrototypeSet>();
+		prototypeSetMap = new HashMap<String,PrototypeSet>();
 		propertyArrayMap = new HashMap<String,BlockProperty[]>();
 	}
 
@@ -63,9 +63,9 @@ public class PropertyMapper {
 					ProcessBlock block = (ProcessBlock)obj;
 					PalettePrototype bp = block.getBlockPrototype();
 					BlockDescriptor bd = bp.getBlockDescriptor();
-					PrototypeSet as = new PrototypeSet(bd.getStyle(),bd.getEmbeddedIcon(),bd.getEmbeddedLabel(),bd.getIconPath(),
+					PrototypeSet ps = new PrototypeSet(bd.getStyle(),bd.getEmbeddedIcon(),bd.getEmbeddedLabel(),bd.getIconPath(),
 																bd.getEmbeddedFontSize(),bd.getPreferredWidth(),bd.getPreferredHeight());
-					attributeMap.put(bd.getBlockClass(),as);
+					prototypeSetMap.put(bd.getBlockClass(),ps);
 					BlockProperty[] properties = block.getProperties();
 					propertyArrayMap.put(bd.getBlockClass(),properties);
 				}
@@ -109,8 +109,8 @@ public class PropertyMapper {
 				int width = (int)rs.getLong("Width");
 				int height = (int)rs.getLong("Height");
 
-				PrototypeSet as = new PrototypeSet(style,eIcon,eLabel,iPath,fontSize,width,height);
-				attributeMap.put(blockClass,as);
+				PrototypeSet ps = new PrototypeSet(style,eIcon,eLabel,iPath,fontSize,width,height);
+				prototypeSetMap.put(blockClass,ps);
 			}
 			rs.close();
 		}
@@ -137,7 +137,10 @@ public class PropertyMapper {
 			{
 				String className = rs.getString("BlockClass");
 				List<BlockProperty> pl = propertyListMap.get(className);
-				if( pl==null ) pl = new ArrayList<BlockProperty>();
+				if( pl==null ) {
+					pl = new ArrayList<BlockProperty>();
+					propertyListMap.put(className, pl);
+				}
 				BlockProperty property = new BlockProperty();
 				property.setName(rs.getString("PropertyName"));
 				PropertyType pt = PropertyType.OBJECT;
@@ -162,7 +165,7 @@ public class PropertyMapper {
 			// Convert lists to properties
 			for( String className:propertyListMap.keySet() ) {
 				List<BlockProperty> bplist = propertyListMap.get(className);
-				BlockProperty[] bpa = (BlockProperty[])bplist.toArray();
+				BlockProperty[] bpa = (BlockProperty[])bplist.toArray(new BlockProperty[bplist.size()]);
 				propertyArrayMap.put(className, bpa);
 			}
 		}
@@ -192,7 +195,7 @@ public class PropertyMapper {
 	public void setPrototypeAttributes(SerializableBlock iblock) {
 		String cname = iblock.getClassName();
 		if( cname!=null) {
-			PrototypeSet protoset = attributeMap.get(cname);
+			PrototypeSet protoset = prototypeSetMap.get(cname);
 			if( protoset!=null ) {
 				iblock.setEmbeddedIcon(protoset.getEmbeddedIcon());
 				iblock.setEmbeddedLabel(protoset.getEmbeddedLabel());
@@ -225,6 +228,7 @@ public class PropertyMapper {
 		}
 		else {
 			System.err.println(TAG+".setProperties: No properties found for class "+cname);
+			System.err.println(TAG+".setProperties: ---- dump map ---\n "+properties);
 		}
 	}
 

@@ -21,7 +21,9 @@ import org.sqlite.JDBC;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ils.block.common.BlockConstants;
 import com.ils.blt.common.UtilityFunctions;
+import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableDiagram;
@@ -164,6 +166,7 @@ public class Migrator {
 		if( !ok ) return;
 		
 		diagram = createSerializableDiagram(g2diagram);
+		performSpecialHandlingOnDiagram(diagram);
 	}
 	
 	private SerializableApplication createSerializableApplication(G2Application g2a) {
@@ -255,6 +258,26 @@ public class Migrator {
 		// Finally we analyze the diagram as a whole to deduce connections
 		connectionMapper.createConnections(g2d, sd);
 		return sd;
+	}
+	
+	/**
+	 * Handle special cases that aren't as simple as a lookup
+	 */
+	private void performSpecialHandlingOnDiagram(SerializableDiagram diagram) {
+		for(SerializableBlock block:diagram.getBlocks()) {
+			// 1) In G2 Connection Posts are bi-directional. We translate all
+			//    of them to be outputs. They may actually be inputs.
+			if( block.getClassName().endsWith("SinkConnection") ) {
+				SerializableAnchor[] anchors = block.getAnchors();
+				for(SerializableAnchor anc:anchors) {
+					if( anc.getId().equals(BlockConstants.OUT_PORT_NAME)) {
+						block.setClassName("com.ils.block.SourceConnection");
+						break;
+					}
+				}
+			}
+				
+		}
 	}
 	/**
 	 * Write the BLT View Objects to std out

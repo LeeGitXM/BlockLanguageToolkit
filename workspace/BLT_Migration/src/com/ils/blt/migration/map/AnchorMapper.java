@@ -7,6 +7,8 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.ils.block.common.AnchorDirection;
+import com.ils.block.common.BlockConstants;
 import com.ils.blt.migration.G2Anchor;
 import com.ils.blt.migration.G2Block;
 
@@ -76,6 +78,13 @@ public class AnchorMapper {
 			String key = makeKey(className,anchor.getPort());
 			String port = portMap.get(key);
 			if(port!=null) anchor.setPort(port);
+			// If the name is null, then we'll just use a default name by direction
+			else if(anchor.getPort()==null && anchor.getAnchorDirection().equals(AnchorDirection.INCOMING)) {
+				anchor.setPort(BlockConstants.IN_PORT_NAME); 
+			}
+			else if(anchor.getPort()==null && anchor.getAnchorDirection().equals(AnchorDirection.OUTGOING)) {
+				anchor.setPort(BlockConstants.OUT_PORT_NAME); 
+			}
 			else {
 				System.err.println(TAG+".updateAnchorNames: Port name lookup failed for "+g2block.getName()+"("+className+") on port "+anchor.getPort());
 			}
