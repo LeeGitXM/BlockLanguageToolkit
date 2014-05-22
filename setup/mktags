@@ -1,0 +1,18 @@
+#!/bin/sh
+#  TAg migration conversion script. Output is directed to stdout
+# -- options for log.level:  INFO,DEBUG,TRACE
+#
+if [ $# -lt 0 ]
+then
+    echo "USAGE: mktags"
+	exit 2
+fi
+REPO=~/Development/ils/repo
+cd $REPO/blt
+BLT=`pwd`
+LIB=$REPO/external/lib
+JAR=${LIB}/blt-migration.jar
+DB=${BLT}/setup/db/conversion.db
+# Use for debugging - ruins output file however.
+#cat ${MIGRATION}/$FIL-g2.json | java -cp ${JAR} -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000 -Dlog.level=INFO -Droot.class=APPLICATION com.ils.blt.migration.Migrator ${DB} > ${MIGRATION}/$FIL.json
+java -cp ${JAR} -Dlog.level=INFO com.ils.blt.migration.TagMigrator ${DB} 

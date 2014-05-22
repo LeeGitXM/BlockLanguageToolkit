@@ -60,8 +60,6 @@ public interface BLTProperties   {
 	public static final String BLOCK_ATTRIBUTE_BINDING    = "binding";
 	public static final String BLOCK_ATTRIBUTE_BINDING_TYPE = "bindingType";
 	public static final String BLOCK_ATTRIBUTE_EDITABLE   = "editable";
-	public static final String BLOCK_ATTRIBUTE_MAX        = "maximum";
-	public static final String BLOCK_ATTRIBUTE_MIN        = "minimum";	
 	public static final String BLOCK_ATTRIBUTE_NAME       = "name";
 	public static final String BLOCK_ATTRIBUTE_QUALITY    = "quality";
 	public static final String BLOCK_ATTRIBUTE_DATA_TYPE  = "type";

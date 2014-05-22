@@ -291,10 +291,6 @@ public class ProxyHandler   {
 						}
 						val = tbl.get(BLTProperties.BLOCK_ATTRIBUTE_EDITABLE);
 						if( val!=null) prop.setEditable(fns.coerceToBoolean(val));
-						val = tbl.get(BLTProperties.BLOCK_ATTRIBUTE_MAX);
-						if( val!=null) prop.setMaximum(fns.coerceToDouble(val));
-						val = tbl.get(BLTProperties.BLOCK_ATTRIBUTE_MIN	);
-						if( val!=null) prop.setMinimum(fns.coerceToDouble(val));
 						val = tbl.get(BLTProperties.BLOCK_ATTRIBUTE_QUALITY);
 						prop.setQuality(nullCheck(tbl.get(BLTProperties.BLOCK_ATTRIBUTE_NAME),"good"));
 						val = tbl.get(BLTProperties.BLOCK_ATTRIBUTE_DATA_TYPE);
@@ -437,8 +433,6 @@ public class ProxyHandler   {
 			if(prop.getBindingType()!=null) tbl.put(BLTProperties.BLOCK_ATTRIBUTE_BINDING_TYPE,prop.getBindingType().toString());
 			if(prop.isEditable())tbl.put(BLTProperties.BLOCK_ATTRIBUTE_EDITABLE,TruthValue.TRUE.toString());
 			else tbl.put(BLTProperties.BLOCK_ATTRIBUTE_EDITABLE,TruthValue.FALSE.toString());
-			tbl.put(BLTProperties.BLOCK_ATTRIBUTE_MAX, String.valueOf(prop.getMaximum()));
-			tbl.put(BLTProperties.BLOCK_ATTRIBUTE_MIN, String.valueOf(prop.getMinimum()));
 			if(prop.getQuality()!=null) tbl.put(BLTProperties.BLOCK_ATTRIBUTE_QUALITY,prop.getQuality());
 			if( prop.getType()!=null) tbl.put(BLTProperties.BLOCK_ATTRIBUTE_DATA_TYPE,prop.getType().toString());
 			if( prop.getValue()!=null) tbl.put(BLTProperties.BLOCK_ATTRIBUTE_VALUE,prop.getValue().toString());

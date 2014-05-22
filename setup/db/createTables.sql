@@ -62,6 +62,7 @@ CREATE TABLE PythonPrototypes(
 -- Map G2 GSI names to Ignition tags
 -- Key is G2 class and port
 CREATE TABLE TagMap(
-	GSIName text NOT NULL,
-	TagPath text NOT NULL
+	GSIName  text NOT NULL,
+	TagPath  text NOT NULL,
+	DataType text NOT NULL
 );

@@ -112,8 +112,6 @@ public class BlockFactory  {
 				if( property!=null ) {
 					if( bp.getQuality()==null) property.setQuality(Quality.Level.Good.toString());
 					property.setEditable(bp.isEditable());
-					property.setMaximum(bp.getMaximum());
-					property.setMinimum(bp.getMinimum());
 					property.setBinding(bp.getBinding());
 					property.setBindingType(bp.getBindingType());
 					// Use the property change interface so as to properly trigger

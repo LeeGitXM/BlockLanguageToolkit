@@ -7,15 +7,15 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.ils.block.common.BindingType;
+import com.ils.block.common.BlockProperty;
 import com.ils.blt.common.serializable.SerializableBlock;
-import com.ils.blt.migration.G2Block;
 
 /**
  * Convert a GSI names into Ignition Tag Paths
  */
 public class TagMapper {
 	private static final String TAG = "TagMapper";
-	private static final String UNDEFINED_NAME = "com.ils.block.UNDEFINED";
 	private final Map<String,String> tagMap;     // Lookup by G2 classname
 	/** 
 	 * Constructor: 
@@ -64,8 +64,18 @@ public class TagMapper {
 	 * @param iblock Ignition block
 	 */
 	public void setTagPaths(SerializableBlock iblock) {
+		for(BlockProperty bp:iblock.getProperties()) {
+			if( bp.getBinding().equals(BindingType.TAG.name()) ) {
+				String unmapped = bp.getValue().toString();
+				String mapped = tagMap.get(unmapped);
+				if( mapped!=null) {
+					bp.setValue(mapped);
+				}
+				else {
+					System.err.println(TAG+".setTagPaths "+unmapped+" is not mapped to a tag path");
+				}
+			}
+		}
 
 	}
-	
-	
 }

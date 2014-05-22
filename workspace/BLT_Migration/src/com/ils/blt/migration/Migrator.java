@@ -31,8 +31,8 @@ import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.migration.map.AnchorMapper;
 import com.ils.blt.migration.map.ClassNameMapper;
 import com.ils.blt.migration.map.ConnectionMapper;
+import com.ils.blt.migration.map.PythonPropertyMapper;
 import com.ils.blt.migration.map.PropertyMapper;
-import com.ils.blt.migration.map.PropertyValueMapper;
 import com.ils.blt.migration.map.TagMapper;
 
 public class Migrator {
@@ -51,9 +51,9 @@ public class Migrator {
 	private SerializableDiagram diagram = null;           // The result
 	private final AnchorMapper anchorMapper;
 	private final ClassNameMapper classMapper;
-	private final PropertyMapper propertyMapper;
+	private final PythonPropertyMapper pythonPropertyMapper;
 	private final ConnectionMapper connectionMapper;
-	private final PropertyValueMapper propertyValueMapper;
+	private final PropertyMapper propertyMapper;
 	private final TagMapper tagMapper;
 	private final UtilityFunctions func;
 
@@ -63,8 +63,8 @@ public class Migrator {
 		anchorMapper = new AnchorMapper();
 		classMapper = new ClassNameMapper();
 		connectionMapper = new ConnectionMapper();
-		propertyValueMapper = new PropertyValueMapper();
 		propertyMapper = new PropertyMapper();
+		pythonPropertyMapper = new PythonPropertyMapper();
 		tagMapper = new TagMapper();
 		func = new UtilityFunctions();
 	}
@@ -78,8 +78,8 @@ public class Migrator {
 			connection = DriverManager.getConnection(connectPath);
 			anchorMapper.createMap(connection);
 			classMapper.createMap(connection);
-			propertyValueMapper.createMap(connection);
 			propertyMapper.createMap(connection);
+			pythonPropertyMapper.createMap(connection);
 			tagMapper.createMap(connection);
 		}
 		catch(SQLException e) {
@@ -222,6 +222,7 @@ public class Migrator {
 		
 		// Compute positioning factors
 		// So far this is just translation
+		// For y value - G2 measures from the bottom, Ignition from the top.
 		int minx = Integer.MAX_VALUE;
 		int miny = Integer.MAX_VALUE;
 		int maxx = Integer.MIN_VALUE;
@@ -232,19 +233,20 @@ public class Migrator {
 			if(g2block.getX()>maxx) maxx = g2block.getX();
 			if(g2block.getY()>maxy) maxy = g2block.getY();
 		}
-		double xoffset = MINX - minx*SCALE_FACTOR;
-		double yoffset = MINY- miny*SCALE_FACTOR;
+		double xoffset = MINX - minx*SCALE_FACTOR;  // Right margin
+		double yoffset = MINY + maxy*SCALE_FACTOR;  // Top margin
 		int index=0;
 		for( G2Block g2block:g2d.getBlocks()) {
 			SerializableBlock block = new SerializableBlock();
 			block.setId(UUID.nameUUIDFromBytes(g2block.getUuid().getBytes()));
 			block.setOriginalId(UUID.nameUUIDFromBytes(g2block.getUuid().getBytes()));
 			block.setName(g2block.getName());
-			block.setX((int)(g2block.getX()*SCALE_FACTOR+xoffset));
-			block.setY((int)(g2block.getY()*SCALE_FACTOR+yoffset));
+			block.setX((int)(xoffset + g2block.getX()*SCALE_FACTOR));
+			block.setY((int)(yoffset - g2block.getY()*SCALE_FACTOR));
 			classMapper.setClassName(g2block, block);
-			propertyMapper.setPrototypeAttributes(block);
-			propertyMapper.setProperties(block);
+			pythonPropertyMapper.setPrototypeAttributes(block);
+			pythonPropertyMapper.setProperties(block);
+			propertyMapper.setProperties(g2block,block);
 			anchorMapper.updateAnchorNames(g2block);   // Must precede connectionMapper
 			connectionMapper.setAnchors(g2block,block);
 			// Need to set values here ...
