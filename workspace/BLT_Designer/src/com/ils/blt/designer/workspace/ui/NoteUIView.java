@@ -15,7 +15,7 @@ import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import com.ils.block.Note;
+import com.ils.block.common.BlockConstants;
 import com.ils.block.common.BlockProperty;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
@@ -48,15 +48,15 @@ public class NoteUIView extends AbstractUIView implements BlockViewUI, ChangeLis
 		// the ones we are interested in. We listen for changes so
 		// we can promptly update the display
 		for(BlockProperty property: block.getProperties()) {
-			if(property.getName().equals(Note.BLOCK_PROPERTY_TEXT)) {
+			if(property.getName().equals(BlockConstants.BLOCK_PROPERTY_TEXT)) {
 				textProperty = property;
 				textProperty.addChangeListener(this);
 			}
-			else if(property.getName().equals(Note.BLOCK_PROPERTY_WIDTH)) {
+			else if(property.getName().equals(BlockConstants.BLOCK_PROPERTY_WIDTH)) {
 				widthProperty = property;
 				widthProperty.addChangeListener(this);
 			}
-			else if(property.getName().equals(Note.BLOCK_PROPERTY_HEIGHT)) {
+			else if(property.getName().equals(BlockConstants.BLOCK_PROPERTY_HEIGHT)) {
 				heightProperty = property;
 				heightProperty.addChangeListener(this);
 			}

@@ -281,57 +281,8 @@ public class BlockPropertyEditor extends SlidingPane {
 		});
 		return field;
 	}
-	/**
-	 * Create a text box for the maximum field
-	 */
-	private JTextField createMaxTextField(final BlockProperty prop) {
-		
-		double val = prop.getMaximum();
-		String text = "";
-		if(val!=Double.NaN && val<Double.MAX_VALUE ) {
-			text = String.valueOf(val);
-		}
-		final JTextField field = new JTextField(text);
-		field.setEditable(true);
-		field.addActionListener(new ActionListener() {
-	        public void actionPerformed(ActionEvent e){
-	        	if(field.getText().length()>0) {
-	        		double val = Double.parseDouble(field.getText());
-		            prop.setMaximum(val);
-	        	}
-	        	else {
-	        		prop.setMaximum(Double.MAX_VALUE);
-	        	}
-	        }
-		});
-		return field;
-	}
+	
 
-	/**
-	 * Create a text box for the minimum field
-	 */
-	private JTextField createMinTextField(final BlockProperty prop) {
-
-		double val = prop.getMinimum();
-		String text = "";
-		if(val!=Double.NaN && val>Double.MIN_VALUE ) {
-			text = String.valueOf(val);
-		}
-		final JTextField field = new JTextField(text);
-		field.setEditable(true);
-		field.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e){
-				if(field.getText().length()>0) {
-	        		double val = Double.parseDouble(field.getText());
-		            prop.setMinimum(val);
-	        	}
-	        	else {
-	        		prop.setMinimum(Double.MIN_VALUE);
-	        	}
-			}
-		});
-		return field;
-	}
 	
 	/**
 	 * Create a combo box for limit type
@@ -479,7 +430,7 @@ public class BlockPropertyEditor extends SlidingPane {
 			addSeparator(this,prop.getName());
 			
 			if( prop.getName().matches("Interval"))
-				add(createLabel("Time ~msecs"),"skip");
+				add(createLabel("Time ~secs"),"skip");
 			else
 				add(createLabel("Value"),"skip");
 			add(createValueTextField(prop),"");
@@ -488,13 +439,6 @@ public class BlockPropertyEditor extends SlidingPane {
 			JTextField bindingTextField = createBindingTextField(prop);
 			add(bindingTextField,"");
 			add(createBindingTypeCombo(prop,bindingTextField),"wrap");
-			// For int or double, add min and max
-			PropertyType type = prop.getType();
-			if( type==PropertyType.DOUBLE || type==PropertyType.INTEGER) {
-				add(createLabel("Min-Max"),"skip");
-				add(createMinTextField(prop),"");
-				add(createMaxTextField(prop),"growx,wrap");
-			}
 		}
 	}
 	// Special for a LimitType block property

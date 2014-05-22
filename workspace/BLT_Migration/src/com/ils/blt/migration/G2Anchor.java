@@ -61,7 +61,7 @@ public class G2Anchor {
 			}
 		}
 		else {
-			System.err.println(String.format("%s.getConnectionType: NULL connection type",TAG));
+			result = ConnectionType.ANY;      // Connection posts have null connector types.
 		}
 		return result;
 	}
