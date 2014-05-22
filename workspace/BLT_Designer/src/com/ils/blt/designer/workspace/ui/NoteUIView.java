@@ -1,3 +1,6 @@
+/**
+ *  Copyright (c) 2014  ILS Automation. All rights reserved. 
+ */
 package com.ils.blt.designer.workspace.ui;
 
 import java.awt.Color;
