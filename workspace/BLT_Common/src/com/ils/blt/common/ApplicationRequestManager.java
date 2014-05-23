@@ -192,6 +192,18 @@ public class ApplicationRequestManager  {
 		return result;
 	}
 	
+ 	/** Set a property */
+	public void setBlockProperty(String className, long projectId,long resourceId, String blockId, String propertyName,Object value ) {
+		log.debugf("%s.setBlockProperty: %s %s %s: %s", TAG, projectId,  resourceId, blockId.toString(), propertyName, value.toString());
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+				BLTProperties.MODULE_ID, "setBlockProperty", className, new Long(projectId), new Long(resourceId), blockId, propertyName, value.toString());
+		}
+		catch(Exception ge) {
+			log.infof("%s.enableDiagram: GatewayException (%s)",TAG,ge.getMessage());
+		}		
+	}
+
 	/**
 	 * Send a signal to all blocks of a particular class on a specified diagram.
 	 * This is a "local" transmission. The diagram is specified by a tree-path.

@@ -189,7 +189,7 @@ public class BlockRequestHandler   {
 	 * @param propertyName
 	 * @param value
 	 */
-	public void setBlockProperty(UUID parentId, UUID blockId, String propertyName,Object value) {
+	public void setBlockProperty(UUID parentId, UUID blockId, UUID blockUUID, String propertyName,Object value) {
 		BlockExecutionController controller = BlockExecutionController.getInstance();
 		ProcessDiagram diagram = controller.getDiagram(parentId);
 		ProcessBlock block = null;

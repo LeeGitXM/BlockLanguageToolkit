@@ -1,2 +1,3 @@
-def postValue(parent, id, port, value, quality):
-    pass
+def postValue(string0, string1, string2, string3, string4):
+	pass
+
