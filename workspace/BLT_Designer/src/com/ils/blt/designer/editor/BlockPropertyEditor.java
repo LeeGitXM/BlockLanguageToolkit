@@ -3,7 +3,6 @@ package com.ils.blt.designer.editor;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -20,7 +19,6 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.JTree;
-import javax.swing.JViewport;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
@@ -37,12 +35,12 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.ApplicationRequestManager;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.workspace.ProcessBlockView;
+import com.inductiveautomation.ignition.client.sqltags.tree.TagRenderer;
 import com.inductiveautomation.ignition.client.sqltags.tree.TagTreeNode;
 import com.inductiveautomation.ignition.client.util.gui.SlidingPane;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
-import com.inductiveautomation.ignition.designer.sqltags.dialog.TagBrowserPanel;
 
 
 /**
@@ -139,44 +137,14 @@ public class BlockPropertyEditor extends SlidingPane {
 		}
 	}
 	
-	/** A utility method to drill down into the Swing component hierarchy and
-	 *  get the component of the given class (or a subclass of it). 
-	 *  Returns null if none found.
-	 */
-	private Component getComponent(Component c, Class<?> klass) {
-		if(klass.isAssignableFrom(c.getClass())) {
-			return c;
-		}
-		else if (c instanceof Container) {
-			for(Component cc: ((Container)c).getComponents()) {
-				Component child = getComponent(cc, klass);
-				if(child != null) {
-					return child;
-				}
-			}
-		}
-		else if(c instanceof JViewport) {
-			Component child = getComponent(((JViewport)c).getView(), klass);
-			if(child != null) {
-				return child;
-			}
-		}
-		return null;
-	}
-	
 	private Component createTagBrowserPanel() {
 		tagBrowserPanel = new JPanel();
 		tagBrowserPanel.setLayout(new BorderLayout());
-		TagBrowserPanel tagBrowser = context.getTagBrowser();
-		
-		// TODO: this is a total hack to get the tree's selection model.
-		// I don't see any obvious methods on TagBrowserPanel to get the
-		// selected tags. I've asked Carl what the right way is; until
-		// I hear from him this will do.
-		JTree tagTree = (JTree)getComponent(tagBrowser,JTree.class);
-		tagTreeSelectionModel = tagTree.getSelectionModel();
-		
-		tagBrowserPanel.add(tagBrowser, BorderLayout.CENTER);
+		JTree tagTree = new JTree();
+		tagTree.setCellRenderer(new TagRenderer());
+		tagTree.setModel(context.getTagBrowser().getSqlTagTreeModel());
+		tagTreeSelectionModel = tagTree.getSelectionModel();		
+		tagBrowserPanel.add(tagTree, BorderLayout.CENTER);
 		JPanel buttonPanel = new JPanel();
 		tagBrowserPanel.add(buttonPanel, BorderLayout.SOUTH);
 		
