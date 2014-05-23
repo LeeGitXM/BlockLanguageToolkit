@@ -56,7 +56,6 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			ProcessBlockView pbv = new ProcessBlockView(sb);
 			blockMap.put(sb.getId(), pbv);
 			log.warnf("%s: createDiagramView: Added %s to map",TAG,sb.getId().toString());
-			initBlockProperties(pbv);
 			this.addBlock(pbv);
 		}
 

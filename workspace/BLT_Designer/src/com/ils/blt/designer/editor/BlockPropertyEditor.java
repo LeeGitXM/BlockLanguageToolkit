@@ -6,6 +6,8 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -95,9 +97,7 @@ public class BlockPropertyEditor extends SlidingPane {
 		JPanel panel = new CorePropertyPanel(block);
 		mainPanel.add(panel,"grow,push");
 		
-		// The Gateway knows the saved state of a block and its attributes. If the block has never been
-		// initialized (edited), then get defaults from the Gateway, else retain it current.
-		// Always refresh the block attributes from the Gateway before display.
+		// Note: block properties have been initialized in ProcessDiagramView.initBlockProperties()
 		log.debugf("%s: init - editing %s (%s)",TAG,block.getId().toString(),block.getClassName());
 		Collection<BlockProperty> propertyList = block.getProperties();
 		
@@ -245,12 +245,28 @@ public class BlockPropertyEditor extends SlidingPane {
 		field.addActionListener(new ActionListener() {
 	        public void actionPerformed(ActionEvent e){
 	        	log.debugf("%s: set value %s",TAG,field.getText());
-	            prop.setValue(field.getText());
+	            setBlockProperty(prop, field.getText());
 	        }
+
+		});
+		field.addFocusListener( new FocusListener() {
+			public void focusGained(FocusEvent e) {}
+
+			public void focusLost(FocusEvent e) {
+	            setBlockProperty(prop, field.getText());				
+			}
+			
 		});
 		return field;
 	}
 	
+	/** Set a block property, both in the local view and back on the Gateway. */
+	private void setBlockProperty(final BlockProperty prop, String value) {
+		prop.setValue(value);
+        // Propagate the change to the Gateway:
+        ApplicationRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+        handler.setBlockProperty(block.getClassName(), projectId, resourceId, block.getId().toString(), prop.getName(), value);
+	}
 
 	
 	/**
@@ -268,7 +284,7 @@ public class BlockPropertyEditor extends SlidingPane {
 	        public void actionPerformed(ActionEvent e){
 	        	LimitType type = LimitType.valueOf(LimitType.class, box.getSelectedItem().toString());
 	        	log.debugf("%s: set limit type %s",TAG,box.getSelectedItem().toString());
-	            prop.setValue(type.toString());
+	        	setBlockProperty(prop, type.toString());
 	        }
 		});
 		box.setSelectedItem(prop.getValue().toString());
@@ -341,7 +357,7 @@ public class BlockPropertyEditor extends SlidingPane {
 	        public void actionPerformed(ActionEvent e){
 	        	DistributionType type = DistributionType.valueOf(DistributionType.class, box.getSelectedItem().toString());
 	        	log.debugf("%s: set distribution type %s",TAG,box.getSelectedItem().toString());
-	            prop.setValue(type.toString());
+	        	setBlockProperty(prop, type.toString());
 	        }
 		});
 		box.setSelectedItem(prop.getValue().toString());
@@ -358,7 +374,7 @@ public class BlockPropertyEditor extends SlidingPane {
 		final JComboBox<String> box = new JComboBox<String>(entries);
 		box.addActionListener(new ActionListener() {
 	        public void actionPerformed(ActionEvent e){
-	            prop.setValue(box.getSelectedItem().toString());
+	        	setBlockProperty(prop, box.getSelectedItem().toString());
 	        }
 		});
 		box.setSelectedItem(prop.getValue().toString());
@@ -379,7 +395,7 @@ public class BlockPropertyEditor extends SlidingPane {
 	        public void actionPerformed(ActionEvent e){
 	        	TransmissionScope scope = TransmissionScope.valueOf(TransmissionScope.class, box.getSelectedItem().toString());
 	        	log.debugf("%s: set transmission scope %s",TAG,box.getSelectedItem().toString());
-	            prop.setValue(scope.toString());
+	        	setBlockProperty(prop, scope.toString());
 	        }
 		});
 		box.setSelectedItem(prop.getValue().toString());

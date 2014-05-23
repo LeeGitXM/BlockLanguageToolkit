@@ -200,7 +200,7 @@ public class ApplicationRequestManager  {
 				BLTProperties.MODULE_ID, "setBlockProperty", className, new Long(projectId), new Long(resourceId), blockId, propertyName, value.toString());
 		}
 		catch(Exception ge) {
-			log.infof("%s.enableDiagram: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.setBlockProperty: GatewayException (%s)",TAG,ge.getMessage());
 		}		
 	}
 
