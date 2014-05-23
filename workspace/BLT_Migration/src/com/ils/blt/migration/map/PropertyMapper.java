@@ -84,7 +84,8 @@ public class PropertyMapper {
 				BlockProperty[] props = iblock.getProperties();
 				for(BlockProperty bp: props ) {
 					if( bp.getName().equalsIgnoreCase(propName) ) {
-						if(bp.getValue()!=null && !bp.getValue().toString().equalsIgnoreCase("none")) {
+						//System.err.println(TAG+".setProperties match = "+key);
+						if(g2property.getValue()!=null && !g2property.getValue().toString().equalsIgnoreCase("none")) {
 							bp.setValue(g2property.getValue());
 						}
 						break;

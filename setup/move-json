@@ -8,5 +8,5 @@ REPO=~/Development/ils/repo/blt/workspace/BLT_Migration/json
 mkdir -p $REPO/g2
 mkdir -p $REPO/ignition
 cp ${SVN}/Samples/*.json $REPO/g2
-cp ${SVN}/Vistalon/*.json $REPO/g2
-cp ${REPO}/g2-gold/*.json ${REPO}/g2
+#cp ${SVN}/Vistalon/*.json $REPO/g2
+#cp ${REPO}/g2-gold/*.json ${REPO}/g2

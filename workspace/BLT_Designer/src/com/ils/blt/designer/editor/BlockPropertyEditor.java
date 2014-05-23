@@ -255,10 +255,11 @@ public class BlockPropertyEditor extends SlidingPane {
 		if(val==null) val = "";
 		final JTextField field = new JTextField(val);
 		field.setEditable(prop.isEditable());
+		log.debugf("%s.createBindingTextField binding = %s",TAG,val);
 		field.addActionListener(new ActionListener() {
 	        public void actionPerformed(ActionEvent e){
 	            prop.setBinding(field.getText());
-	            log.debugf("%s: set binding %s",TAG,field.getText());
+	            log.debugf("%s.createBindingTextField set binding %s",TAG,field.getText());
 	        }
 		});
 		return field;

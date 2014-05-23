@@ -64,18 +64,21 @@ public class TagMapper {
 	 * @param iblock Ignition block
 	 */
 	public void setTagPaths(SerializableBlock iblock) {
-		for(BlockProperty bp:iblock.getProperties()) {
-			if( bp.getBinding().equals(BindingType.TAG.name()) ) {
-				String unmapped = bp.getValue().toString();
-				String mapped = tagMap.get(unmapped);
-				if( mapped!=null) {
-					bp.setValue(mapped);
-				}
-				else {
-					System.err.println(TAG+".setTagPaths "+unmapped+" is not mapped to a tag path");
+		if( iblock.getProperties()!=null)  {   // No properties, nothing to do
+			for(BlockProperty bp:iblock.getProperties()) {
+				//System.out.println(TAG+".setTagPaths: "+bp.getName()+", binding = "+bp.getBinding());
+				if( bp.getBindingType().equals(BindingType.TAG) ) {
+					String unmapped = bp.getValue().toString();
+					String mapped = tagMap.get(unmapped);
+					if( mapped!=null) {
+						bp.setBinding(mapped);
+						bp.setValue("");  // Clear the value because we're bound to a tag
+					}
+					else {
+						System.err.println(TAG+".setTagPaths "+unmapped+" is not mapped to a tag path");
+					}
 				}
 			}
 		}
-
 	}
 }
