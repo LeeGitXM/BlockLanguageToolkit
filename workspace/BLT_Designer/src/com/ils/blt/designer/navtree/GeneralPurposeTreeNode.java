@@ -899,11 +899,11 @@ public class GeneralPurposeTreeNode extends FolderNode {
 										ObjectMapper mapper = new ObjectMapper();
 										SerializableDiagram sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
 										if( sd!=null ) {
-											log.infof("%s:ImportDiagramAction imported diagram %s", TAG,sd.getName());
+											log.infof("%s:ImportDiagramAction imported diagram:\n%s", TAG,sd.getName());
 											UUIDResetHandler handler = new UUIDResetHandler(sd);
 											handler.convertUUIDs();
 											String json = mapper.writeValueAsString(sd);
-											if(log.isInfoEnabled() ) log.info(json);
+											log.infof("%s:ImportDiagramAction saved resource as:\n%s", TAG,json);
 											ProjectResource resource = new ProjectResource(newId,
 													BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
 													sd.getName(), ApplicationScope.GATEWAY, json.getBytes());
@@ -964,6 +964,7 @@ public class GeneralPurposeTreeNode extends FolderNode {
 			}
 		}
 	}
+ 
     private class StopAction extends BaseAction {
     	private static final long serialVersionUID = 1L;
 	    public StopAction()  {

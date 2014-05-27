@@ -1,5 +1,5 @@
 /**
- *   (c) 2013  ILS Automation. All rights reserved.
+ *   (c) 2014  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.common;
@@ -10,6 +10,7 @@ import java.util.UUID;
 
 import com.ils.block.common.BlockProperty;
 import com.ils.block.common.PalettePrototype;
+import com.ils.blt.common.serializable.DiagramState;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -65,21 +66,6 @@ public class ApplicationRequestManager  {
 	}
 	
 	
-	
-
-	public void enableDiagram(Long projectId, Long resourceId, Boolean flag) {
-		log.debugf("%s.enableDiagram ... %d:%d %s",TAG,projectId.longValue(),resourceId.longValue(),flag.toString());
-		try {
-			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "enableDiagram",projectId,resourceId,flag);
-
-		}
-		catch(Exception ge) {
-			log.infof("%s.enableDiagram: GatewayException (%s)",TAG,ge.getMessage());
-		}
-	}
-
-
 	/**
 	 * Obtain a list of BlockProperty objects for the specified block. If the block is not known to the gateway
 	 * it will be created.
@@ -145,6 +131,23 @@ public class ApplicationRequestManager  {
 		return result;
 	}
 	
+	/**
+	 * @return the current state of the specified diagram.
+	 */
+	public DiagramState getDiagramState(Long projectId, Long resourceId) {
+		DiagramState result = DiagramState.ACTIVE;
+		try {
+			String state = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "getDiagramState",projectId,resourceId);
+			log.debugf("%s.getDiagramState ... %s",TAG,result.toString());
+			result = DiagramState.valueOf(state);
+		}
+		catch(Exception ge) {
+			log.infof("%s.getDiagramState: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		return result;
+	}
+	
 	@SuppressWarnings("unchecked")
 	public List<String> getDiagramTreePaths(String projectName) {
 		log.infof("%s.getDiagramTreePaths for %s ...",TAG,projectName);
@@ -158,21 +161,7 @@ public class ApplicationRequestManager  {
 		}
 		return result;
 	}
-	/**
-	 * @return TRUE if the specified diagram is enabled.
-	 */
-	public boolean isDiagramEnabled(Long projectId, Long resourceId) {
-		Boolean result = false;
-		try {
-			result = (Boolean)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "isDiagramEnabled",projectId,resourceId);
-			log.debugf("%s.isDiagramEnabled ... %s",TAG,result.toString());
-		}
-		catch(Exception ge) {
-			log.infof("%s.isDiagramEnabled: GatewayException (%s)",TAG,ge.getMessage());
-		}
-		return result.booleanValue();
-	}
+
 	/**
 	 * Query the gateway for list of resources that the block controller knows about. 
 	 * This is a debugging aid. 
@@ -203,6 +192,19 @@ public class ApplicationRequestManager  {
 			log.infof("%s.setBlockProperty: GatewayException (%s)",TAG,ge.getMessage());
 		}		
 	}
+
+	public void setDiagramState(Long projectId, Long resourceId, String state) {
+		log.debugf("%s.setDiagramState ... %d:%d %s",TAG,projectId.longValue(),resourceId.longValue(),state);
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "setDiagramState",projectId,resourceId,state);
+
+		}
+		catch(Exception ge) {
+			log.infof("%s.setDiagramState: GatewayException (%s)",TAG,ge.getMessage());
+		}
+	}
+
 
 	/**
 	 * Send a signal to all blocks of a particular class on a specified diagram.

@@ -18,7 +18,7 @@ public class SerializableDiagram {
 	private String name;
 	private long resourceId = -1;
 	private DiagramState state = DiagramState.ACTIVE;
-	
+
 	public SerializableDiagram() {	
 		blocks = new SerializableBlock[0];
 		connections= new SerializableConnection[0];
@@ -34,6 +34,7 @@ public class SerializableDiagram {
 	public String getName() { return name; }
 	public long getResourceId() {return resourceId;}
 	public DiagramState getState() {return state;}
+
 	public void setBlocks(SerializableBlock[] list) { blocks=list; }
 	public void setConnections(SerializableConnection[] list) { connections=list; }
 	public void setFolders(SerializableFolder[] folders) {this.folders = folders;}

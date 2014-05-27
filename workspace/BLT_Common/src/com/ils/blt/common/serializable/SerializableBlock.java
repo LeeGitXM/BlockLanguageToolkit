@@ -19,7 +19,7 @@ public class SerializableBlock {
 	private SerializableAnchor[] anchors = null;
 	private int background = Color.white.getRGB();
 	private String className = null;
-	private int    embeddedFontSize = 24; // Pointsin font for embedded label
+	private int    embeddedFontSize = 24; // Points in font for embedded label
 	private String embeddedIcon="";       // 32x32 icon to place in block in designer
 	private String embeddedLabel="";      // Label place in block in designer
 	private String iconPath="";           // Path to icon that is the entire block

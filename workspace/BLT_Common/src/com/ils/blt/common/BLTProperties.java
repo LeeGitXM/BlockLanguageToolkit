@@ -65,9 +65,11 @@ public interface BLTProperties   {
 	public static final String BLOCK_ATTRIBUTE_DATA_TYPE  = "type";
 	public static final String BLOCK_ATTRIBUTE_VALUE      = "value";
 	
-	public static final Color DIAGRAM_ACTIVE_BACKGROUND   = Color.WHITE;
-	public static final Color DIAGRAM_DIRTY_BACKGROUND    = Color.yellow;
-	public static final Color DIAGRAM_DISABLED_BACKGROUND = Color.getHSBColor(0.63f, 0.26f, 0.87f);
+	// Arguments for Color constructor are: R G B
+	public static final Color DIAGRAM_ACTIVE_BACKGROUND          = new Color(0.9f,0.9f,0.9f);    // Light gray
+	public static final Color DIAGRAM_CONSTRAINED_BACKGROUND     = new Color(0.46f,0.67f,0.9f);  // light blue
+	public static final Color DIAGRAM_DIRTY_BACKGROUND           = new Color(0.94f,0.92f,0.5f);  // mustard
+	public static final Color DIAGRAM_DISABLED_BACKGROUND        = new Color(0.6f,0.6f,0.6f);    // Dark gray
 	
 	// These are the key names used a the Python dictionary that defines a block prototype.
 	public static final String PALETTE_ANCHOR_IN   = "inports";     // A list of dictionaries

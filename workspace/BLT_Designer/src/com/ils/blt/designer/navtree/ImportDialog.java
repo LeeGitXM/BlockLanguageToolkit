@@ -10,7 +10,6 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -25,7 +24,6 @@ public class ImportDialog extends JDialog implements ActionListener {
 	private final static String TAG = "ImportDialog";
 	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
 	private final static String FILE_CHOOSER_NAME = "FileChoser";
-	private final static String TEXT_FIELD_NAME = "TextField";
 	private static final long serialVersionUID = 8813971334526492335L;
 	private final int HEIGHT = 80;
 	private final int WIDTH = 400;
