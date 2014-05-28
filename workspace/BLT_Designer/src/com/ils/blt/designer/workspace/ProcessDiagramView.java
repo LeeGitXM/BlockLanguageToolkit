@@ -22,7 +22,6 @@ import com.ils.blt.designer.BLTDesignerHook;
 import com.inductiveautomation.ignition.common.util.AbstractChangeable;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
-import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorPoint;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.BlockDiagramModel;
@@ -117,6 +116,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		if( blk instanceof ProcessBlockView) {
 			ProcessBlockView block = (ProcessBlockView) blk;
 			if(!isDirty()) initBlockProperties(block);
+			log.infof("%s.addBlock - %s",TAG,block.getClassName());
 			blockMap.put(blk.getId(), block);
 			fireStateChanged();
 		}

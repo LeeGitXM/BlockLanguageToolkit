@@ -9,7 +9,6 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Stroke;
 import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
@@ -23,6 +22,8 @@ import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -73,7 +74,8 @@ import com.jidesoft.docking.DockingManager;
  * BlockDesignableContainers. These contain the visual representations of the diagrams.
  */
 public class DiagramWorkspace extends AbstractBlockWorkspace 
-							  implements ResourceWorkspace, DesignableWorkspaceListener {
+							  implements ResourceWorkspace, DesignableWorkspaceListener,
+							  			ChangeListener                                   {
 	private static final String TAG = "DiagramWorkspace";
 	private static final long serialVersionUID = 4627016159409031941L;
 	private static final DataFlavor BlockDataFlavor = LocalObjectTransferable.flavorForClass(ObservablePropertySet.class);
@@ -90,7 +92,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 */
 	public DiagramWorkspace(DesignerContext ctx) {
 		this.context = ctx;
-		this.editActionHandler = new DiagramBlockActionHandler(this,context);
+		this.editActionHandler = new BlockActionHandler(this,context);
 		this.addDesignableWorkspaceListener(this);
 		initialize();
 		setBackground(Color.red);
@@ -207,7 +209,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
  
 					block.setLocation(dropPoint);
 					this.getActiveDiagram().addBlock(block);
-					updatBackgroundForDirty();
 					// Null doesn't work here ...
 					this.setCurrentTool(getSelectionTool());   // So the next select on workspace does not result in another block
 					log.infof("%s.handleDrop: dropped %s",TAG,event.getTransferable().getTransferData(BlockDataFlavor).getClass().getName());
@@ -417,8 +418,11 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	
 	// =========================== DesignableWorkspaceListener ===========================
 	@Override
-	public void containerClosed(DesignableContainer container) {
-		log.infof("%s.containerClosed: %s",TAG,container.getName());
+	public void containerClosed(DesignableContainer c) {
+		log.infof("%s.containerClosed: %s",TAG,c.getName());
+		BlockDesignableContainer container = (BlockDesignableContainer)c;
+		ProcessDiagramView view = (ProcessDiagramView)(container.getModel());
+		view.removeChangeListener(this);
 	}
 	/**
 	 * Container layout manager is:
@@ -429,6 +433,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		log.infof("%s.containerOpened: %s",TAG,c.getName());
 		BlockDesignableContainer container = (BlockDesignableContainer)c;
 		ProcessDiagramView view = (ProcessDiagramView)(container.getModel());
+		view.addChangeListener(this);
 		container.setBackground(view.getBackgroundColorForState());    // Set background appropriate to state
 	}
 	@Override
@@ -450,7 +455,16 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			log.infof("%s: DiagramActionHandler: deselected",TAG);
 		}
 	}
-	
+	// ============================== Change Listener ================================
+		/**
+		 * If the current diagram changes state, then paint the background accordingly.
+		 * 
+		 * @param event
+		 */
+		@Override
+		public void stateChanged(ChangeEvent event) {
+			updatBackgroundForDirty();
+		}
 	/**
 	 * Paint connections. The cross-section is dependent on the connection type.
 	 */
@@ -527,32 +541,5 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	//public class ConnectionTool extends AbstractBlockWorkspace.ConnectionTool {
 	//}
 	
-	/**
-	 * Extend the BlockActionHandler to set "dirty" when diagram structure 
-	 * is changed.
-	 */
-	private class DiagramBlockActionHandler extends BlockActionHandler {
-		
-		public DiagramBlockActionHandler(AbstractBlockWorkspace workspace,DesignerContext context) {
-			super(workspace,context);
-		}
-			
-		@Override
-		public void doDelete() {
-			super.doDelete();
-			updatBackgroundForDirty();
-		}
-		@Override
-		public Transferable doCut() {
-			Transferable t = super.doCut();
-			updatBackgroundForDirty();
-			return t;
-		}
-		@Override
-		public void doPaste(Transferable clipboardContents) {
-			super.doPaste(clipboardContents);
-			log.info("DiagramBlockActionHandler.doPaste");
-			updatBackgroundForDirty();
-		}
-	}
+	
 }

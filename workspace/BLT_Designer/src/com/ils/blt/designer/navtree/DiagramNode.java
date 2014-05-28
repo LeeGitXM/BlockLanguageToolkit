@@ -328,7 +328,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 	    
 		public void actionPerformed(ActionEvent e) {
 			BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId);
-			if( tab!=null ) {
+			if( tab!=null && context.requestLock(resourceId)) {
 				try {
 					ProcessDiagramView view = (ProcessDiagramView)(tab.getModel());
 					view.setDirty(false);
@@ -338,6 +338,8 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 					ProjectResource res = context.getProject().getResource(resourceId);
 					res.setEditCount(res.getEditCount()+1);
 					context.updateResource(resourceId, bytes);
+					context.updateLock(resourceId);
+					context.releaseLock(resourceId);
 					tab.setBackground(view.getBackgroundColorForState());
 
 				} 
