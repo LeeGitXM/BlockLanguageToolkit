@@ -12,7 +12,6 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ModelManager;
 import com.ils.blt.gateway.proxy.ProxyHandler;
-import com.ils.blt.gateway.proxy.RegistrationScriptFunctions;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.common.project.Project;
@@ -104,7 +103,6 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		super.initializeScriptManager(mgr);
 		GatewayBlockScriptFunctions.context = context;
 		mgr.addScriptModule(BLTProperties.BLOCK_SCRIPT_PACKAGE,GatewayBlockScriptFunctions.class);	
-		mgr.addScriptModule(BLTProperties.REGISTRATION_SCRIPT_PACKAGE,RegistrationScriptFunctions.class);
 	}
 	
 	@Override

@@ -6,7 +6,6 @@ package com.ils.blt.gateway;
 
 import java.util.UUID;
 
-import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
