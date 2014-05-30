@@ -124,14 +124,14 @@ public class ProxyHandler   {
 			createBlockCallback.setLocalVariable(0,new PyString(className));
 			createBlockCallback.setLocalVariable(1,new PyString(parentId.toString()));
 			createBlockCallback.setLocalVariable(2,new PyString(blockId.toString()));
-			createBlockCallback.setLocalVariable(3,prh);
-			createBlockCallback.setLocalVariable(4,pyDictionary);
+			createBlockCallback.setLocalVariable(3,pyDictionary);
 			
 			createBlockCallback.execute();
 			log.info(TAG+".createInstance: returned "+ pyDictionary);   // Should now be updated
 			// Contents of list are Hashtable<String,?>
 			PyObject pyBlock = (PyObject)pyDictionary.get("instance");
 			if( pyBlock!=null ) {
+				pyBlock.__setitem__("engineHandler", prh);
 				block.setPythonBlock(pyBlock);
 				BlockProperty[] props = getBlockProperties(pyBlock);
 				for(BlockProperty prop:props) {
