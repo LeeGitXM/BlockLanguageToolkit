@@ -369,7 +369,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	@Override
 	protected void onClose(DesignableContainer container) {
 		log.infof("%s: onClose",TAG);
-		saveDiagram((BlockDesignableContainer)container);
+		if( ErrorUtil.showConfirm(BundleUtil.get().getString("CloseDiagram.Question"),BundleUtil.get().getString("CloseDiagram.Title") )) {
+			saveDiagram((BlockDesignableContainer)container);
+		}
 		context.releaseLock(container.getResourceId());
 	}
 	

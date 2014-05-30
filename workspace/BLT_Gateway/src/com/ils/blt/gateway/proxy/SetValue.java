@@ -11,8 +11,7 @@ public class SetValue extends Callback {
 
 	public SetValue() {
 		module = "setValue";
-		localVariableList="block,port,value,quality";
+		setLocalVariableList("block,port,value,quality");
 	}
-
 }
 

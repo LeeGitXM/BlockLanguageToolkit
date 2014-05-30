@@ -4,10 +4,14 @@
  */
 package com.ils.blt.gateway.proxy;
 
+import org.python.core.CompileMode;
+import org.python.core.CompilerFlags;
+import org.python.core.Py;
 import org.python.core.PyCode;
 import org.python.core.PyObject;
 import org.python.core.PyStringMap;
 
+import com.inductiveautomation.ignition.common.script.JythonExecException;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -23,14 +27,14 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  */
 public class Callback {
 	private final static String TAG = "Callback";
-	private final LoggerEx log;
-	public PyCode code;
-	public String module;
-	public String pythonPackage;
-	protected String[] localVariables;      // Derived from comma-separated
-	protected String localVariableList;
-	protected ScriptManager scriptManager = null;
-	protected PyStringMap localsMap = null;
+	protected final LoggerEx log;
+	private PyCode code;
+	protected String module;
+	protected String pythonPackage;
+	private String[] localVariables;      // Derived from comma-separated
+	private String localVariableList;
+	private ScriptManager scriptManager = null;
+	private PyStringMap localsMap = null;
 
 
 	public Callback() {
@@ -42,16 +46,51 @@ public class Callback {
 		localVariableList="";
 		code = null;
 	}
-
+	
+	/**
+	 * Compile a simple script that does nothing but call the specified script. 
+	 * We assume that the script name includes a module, plus script name, plus method.
+	 * We want the module for our import statement.
+	 * @param callbackIndex index of the script we wish to execute.
+	 * @return true if the script compiled
+	 */
+	public boolean compileScript() {
+		if( code !=null ) return true;   // Already compiled               
+		String script = String.format("import %s;%s.%s(%s)",pythonPackage,pythonPackage,module,localVariableList);
+		log.infof("%scompileScript: Compiling ... %s",TAG,script);
+		try {
+			code = Py.compile_flags(script,pythonPackage,CompileMode.exec,CompilerFlags.getCompilerFlags());
+	     }
+		catch(Exception ex) {
+			log.errorf("%s.compileScript: Failed to compile script \n%s",TAG,script);
+		}
+		return code!=null;
+	}
+	/**
+	 *  Run the script in line. On completion return the contents of the shared variable.
+	 */
+	public void execute() {
+		String script = pythonPackage+"."+module;
+		log.infof("%s.execute: Running callback script ...(%s)",TAG,script);
+		try {
+			scriptManager.runCode(code,getLocalsMap());
+		}
+		catch( JythonExecException jee) {
+			log.error(String.format("%s.execute: JythonException executing python %s (%s) ",TAG,script,jee.getMessage()),jee);
+		}
+		catch(Exception ex) {
+			log.error(String.format("%s.execute: Error executing python %s (%s)",TAG,script,ex.getMessage()+")"),ex);
+		}
+		log.infof("%s: Completed callback script.",TAG);
+	}
+	
 	public void setScriptManager(ScriptManager mgr) {
 		this.scriptManager = mgr;
 	}
-	public ScriptManager getScriptManager() { return this.scriptManager; }
-	public String getLocalVariableList() { return localVariableList; }
 	/**
 	 * Convert the comma-separated variable string into an array of strings.
 	 */
-	public void setLocalVariableList(String varlist) {
+	protected void setLocalVariableList(String varlist) {
 		localVariableList = varlist;
 		localVariables = varlist.split(",");
 	}
@@ -66,18 +105,9 @@ public class Callback {
 		if( localsMap == null ) localsMap = scriptManager.createLocalsMap();
 
 		localsMap.__setitem__(localVariables[index],value);
-		log.infof("%s.Callback.setLocalVariable: %s to %s",TAG,localVariables[index],value.toString());
+		log.infof("%s.setLocalVariable: %s to %s",TAG,localVariables[index],value.toString());
 	}
-	/**
-	 * Strip off any parentheses that might be supplied.
-	 * @param truthState the single local argument
-	 */
-	public void setModule(String mod) {
-		if( mod==null) return;
-		module = mod;
-		int index = mod.lastIndexOf("(");
-		if( index>0 ) module = mod.substring(0,index);
-	}
+
 	public PyStringMap getLocalsMap() { return this.localsMap; }
 }
 

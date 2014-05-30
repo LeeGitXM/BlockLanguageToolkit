@@ -11,8 +11,7 @@ public class Evaluate extends Callback {
 
 	public Evaluate() {
 		module = "evaluate";
-		localVariableList="block";
+		setLocalVariableList("block");
 	}
-
 }
 

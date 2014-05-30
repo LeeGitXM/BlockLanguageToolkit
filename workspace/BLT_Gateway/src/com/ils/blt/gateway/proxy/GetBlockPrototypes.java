@@ -12,8 +12,7 @@ public class GetBlockPrototypes extends Callback {
 
 	public GetBlockPrototypes() {
 		module = "getBlockPrototypes";
-		localVariableList="prototypes";
+		setLocalVariableList("prototypes");
 	}
-
 }
 

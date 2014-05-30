@@ -19,8 +19,6 @@ import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 import javax.swing.tree.TreePath;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestManager;
 import com.ils.blt.common.BLTProperties;
@@ -38,8 +36,10 @@ import com.inductiveautomation.ignition.common.project.ProjectChangeListener;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.inductiveautomation.ignition.designer.IgnitionDesigner;
 import com.inductiveautomation.ignition.designer.UndoManager;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
+import com.inductiveautomation.ignition.designer.gateway.DTGatewayInterface;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
@@ -340,8 +340,8 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 					context.updateResource(resourceId, bytes);
 					context.updateLock(resourceId);
 					context.releaseLock(resourceId);
+					DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), context.getProject().getDiff(true), true, "Committing ...");
 					tab.setBackground(view.getBackgroundColorForState());
-
 				} 
 				catch (Exception err) {
 					ErrorUtil.showError(err);

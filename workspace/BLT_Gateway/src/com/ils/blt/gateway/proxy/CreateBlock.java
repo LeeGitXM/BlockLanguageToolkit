@@ -11,8 +11,7 @@ public class CreateBlock extends Callback {
 
 	public CreateBlock() {
 		module = "createBlockInstance";
-		localVariableList="className,parent,id,result";
+		setLocalVariableList("className,parent,id,result");
 	}
-
 }
 

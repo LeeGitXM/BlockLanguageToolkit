@@ -11,8 +11,7 @@ public class SetBlockProperty extends Callback {
 
 	public SetBlockProperty() {
 		module = "setBlockProperty";
-		localVariableList="block,property";
+		setLocalVariableList("block,property");
 	}
-
 }
 
