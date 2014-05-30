@@ -9,9 +9,6 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.UUID;
 
-import org.python.core.CompileMode;
-import org.python.core.CompilerFlags;
-import org.python.core.Py;
 import org.python.core.PyDictionary;
 import org.python.core.PyList;
 import org.python.core.PyObject;
@@ -29,11 +26,11 @@ import com.ils.block.common.PropertyType;
 import com.ils.block.common.TruthValue;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.UtilityFunctions;
+import com.ils.blt.gateway.PythonRequestHandler;
 import com.ils.common.JavaToPython;
 import com.ils.common.PythonToJava;
 import com.ils.connection.ConnectionType;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.script.JythonExecException;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
@@ -58,6 +55,7 @@ public class ProxyHandler   {
 	private final PythonToJava toJavaTranslator;
 	private final JavaToPython toPythonTranslator;
 	private static ProxyHandler instance = null;
+	private final PythonRequestHandler prh;
 	// These are the indices of specific callback functions within the array
 	private final Callback createBlockCallback;
 	private final Callback evaluateCallback;
@@ -74,6 +72,7 @@ public class ProxyHandler   {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		toJavaTranslator = new PythonToJava();
 		toPythonTranslator = new JavaToPython();
+		prh = new PythonRequestHandler();
 		// Create an instance of each callback method
 		createBlockCallback = new CreateBlock();
 		evaluateCallback = new Evaluate();
@@ -125,7 +124,8 @@ public class ProxyHandler   {
 			createBlockCallback.setLocalVariable(0,new PyString(className));
 			createBlockCallback.setLocalVariable(1,new PyString(parentId.toString()));
 			createBlockCallback.setLocalVariable(2,new PyString(blockId.toString()));
-			createBlockCallback.setLocalVariable(3,pyDictionary);
+			createBlockCallback.setLocalVariable(3,prh);
+			createBlockCallback.setLocalVariable(4,pyDictionary);
 			
 			createBlockCallback.execute();
 			log.info(TAG+".createInstance: returned "+ pyDictionary);   // Should now be updated

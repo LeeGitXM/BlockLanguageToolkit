@@ -99,13 +99,6 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	}
 	
 	@Override
-	public void initializeScriptManager(ScriptManager mgr) {
-		super.initializeScriptManager(mgr);
-		GatewayBlockScriptFunctions.context = context;
-		mgr.addScriptModule(BLTProperties.BLOCK_SCRIPT_PACKAGE,GatewayBlockScriptFunctions.class);	
-	}
-	
-	@Override
 	public List<? extends INamedTab> getStatusPanels() {
 		List<INamedTab>panels = new ArrayList<INamedTab>();
 		panels.add(new ExecutionStatus());
