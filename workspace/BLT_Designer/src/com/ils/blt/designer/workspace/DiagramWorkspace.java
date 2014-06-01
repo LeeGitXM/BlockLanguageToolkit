@@ -367,10 +367,19 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 	
 	@Override
-	protected void onClose(DesignableContainer container) {
+	protected void onClose(DesignableContainer c) {
 		log.infof("%s: onClose",TAG);
-		if( ErrorUtil.showConfirm(BundleUtil.get().getString("CloseDiagram.Question"),BundleUtil.get().getString("CloseDiagram.Title") )) {
-			saveDiagram((BlockDesignableContainer)container);
+		BlockDesignableContainer container = (BlockDesignableContainer)c;
+		ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
+		if( diagram.isDirty() ) {
+			String question = BundleUtil.get().getString(PREFIX+".CloseDiagram.Question");
+			if( question==null) question="??";
+			String format = BundleUtil.get().getString(PREFIX+".CloseDiagram.Title");
+			if( format==null) format="Close";
+			
+			if( ErrorUtil.showConfirm(question,String.format(format, diagram.getName()) )) {
+				saveDiagram((BlockDesignableContainer)container);
+			}
 		}
 		context.releaseLock(container.getResourceId());
 	}
@@ -389,6 +398,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	private void saveDiagram(BlockDesignableContainer c) {
 		ProcessDiagramView diagram = (ProcessDiagramView)c.getModel();
 		log.infof("%s: saveDiagram - serializing %s ...",TAG,diagram.getDiagramName());
+		diagram.setDirty(false);
 		SerializableDiagram sd = diagram.createSerializableRepresentation();
 		byte[] bytes = null;
 		long resid = c.getResourceId();
@@ -397,7 +407,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			bytes = mapper.writeValueAsBytes(sd);
 			log.tracef("%s: saveDiagram JSON = %s",TAG,new String(bytes));
 			context.updateResource(resid, bytes);
-			diagram.setDirty(false);
+			
 			c.setBackground(diagram.getBackgroundColorForState());
 		} 
 		catch (JsonProcessingException jpe) {

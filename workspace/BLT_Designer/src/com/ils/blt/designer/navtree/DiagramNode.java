@@ -27,6 +27,7 @@ import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
+import com.inductiveautomation.ignition.client.designable.DesignableContainer;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
@@ -120,14 +121,24 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 		menu.add(saveAction);
 		menu.addSeparator();
 		menu.add(renameAction);
-
         menu.add(deleteAction);
 	}
 
 
-	// Called when the parent folder is deleted
+	/**
+	 *  Called when the parent folder is deleted.
+	 *  If we're closing and committing, then it's fair to
+	 *  conclude that the workspace is not dirty.
+	 */
 	public void closeAndCommit() {
-		if( workspace.isOpen(resourceId) ) workspace.close(resourceId);
+		log.infof("%s.closeAndCommit: res %d",TAG,resourceId);
+		if( workspace.isOpen(resourceId) ) {
+			DesignableContainer c = workspace.findDesignableContainer(resourceId);
+			BlockDesignableContainer container = (BlockDesignableContainer)c;
+			ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
+			diagram.setDirty(false);
+			workspace.close(resourceId);
+		}
 	}
 	
 	/**
@@ -137,6 +148,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 	@SuppressWarnings("unchecked")
 	@Override
 	public void doDelete(List<? extends AbstractNavTreeNode> children,DeleteReason reason) {
+		log.infof("%s.doDelete: res %d",TAG,resourceId);
 		ResourceDeleteAction delete = new ResourceDeleteAction(context,
 				(List<AbstractResourceNavTreeNode>) children,
 				reason.getActionWordKey(), PREFIX+".DiagramNoun");
@@ -385,7 +397,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 				handler.setDiagramState(context.getProject().getId(), resourceId,state.name());
 			} 
 			catch (Exception ex) {
-				log.warnf("%s.setStateAction: ERROR: %s",TAG,ex.getMessage(),ex);
+				log.warn(String.format("%s.setStateAction: ERROR: %s",TAG,ex.getMessage()),ex);
 				ErrorUtil.showError(ex);
 			}
 		}

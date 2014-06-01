@@ -1,8 +1,9 @@
 /**
- *   (c) 2013  ILS Automation. All rights reserved.
+ *   (c) 2014  ILS Automation. All rights reserved.
  */
 package com.ils.blt.test.gateway;
 
+import java.util.Date;
 import java.util.UUID;
 
 import com.ils.block.ProcessBlock;
@@ -12,9 +13,12 @@ import com.ils.blt.gateway.BlockRequestHandler;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.ils.blt.test.common.MockDiagramScriptingInterface;
+import com.ils.blt.test.common.TagProviderScriptingInterface;
 import com.ils.blt.test.gateway.mock.MockDiagram;
 import com.ils.blt.test.gateway.mock.MockInputBlock;
 import com.ils.blt.test.gateway.mock.MockOutputBlock;
+import com.ils.blt.test.gateway.tag.ProviderRegistry;
+import com.ils.blt.test.gateway.tag.TagHandler;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -27,13 +31,15 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
  *  Its purpose is simply to parse out a request and send it to the
  *  right handler. This class supports the aggregate of RPC interfaces.
  */
-public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface  {
+public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface,
+                                                 TagProviderScriptingInterface {
 	private static String TAG = "BLTTGatewayRpcDispatcher";
 	private final LoggerEx log;
 	private final GatewayContext context;
 	private final BlockExecutionController controller;
 	private final MockDiagramRequestHandler requestHandler;
-	
+	private final TagHandler tagFactory;
+
 	/**
 	 * Constructor. On instantiation, the dispatcher creates instances
 	 * of all required handlers.
@@ -43,8 +49,10 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface  
 		this.context = cntx;
 		this.controller = BlockExecutionController.getInstance();
 		this.requestHandler = rh;
+		this.tagFactory = new TagHandler(context);
 	}
-	
+
+	//=============================== Methods in the MockDiagramScriptingInterface ===================================
 	/**
 	 * Create, but do not activate, a mock diagram.
 	 * @return the Id of the diagram
@@ -103,9 +111,9 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface  
 	public void deleteMockDiagram(UUID diagram) {
 		stopMockDiagram(diagram);
 		controller.removeTemporaryDiagram(diagram);
-		
+
 	}
-	
+
 	/**
 	 * Read the latest value from the output block with the named port.
 	 * No reading is signified by an empty string.
@@ -130,7 +138,7 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface  
 	public void setTestBlockProperty(UUID diagramId, String propertyName, String value) {
 		requestHandler.setTestBlockProperty(diagramId,propertyName,value);
 	}
-	
+
 	/**
 	 * Analyze connections in the diagram, then activate subscriptions.
 	 */
@@ -145,7 +153,7 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface  
 	public void stopMockDiagram(UUID diagramId) {
 		requestHandler.stopMockDiagram(diagramId);
 	}
-	
+
 	/**
 	 * Direct a MockInput block to transmit a value to the block-under-test.
 	 */
@@ -155,4 +163,41 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface  
 			requestHandler.writeValue(diagramId,port,index.intValue(),value,quality);
 		}
 	}
+	//=============================== Methods in the TagProviderScriptingInterface ===================================
+	@Override
+	public void createProvider(String name) {
+		log.debug(TAG+"createProvider: "+name);
+		ProviderRegistry.getInstance().createProvider(context, name);
+	}
+	@Override
+	public void createExpression(String provider, String tagPath, String dataType, String expr) {
+		log.debug(TAG+"createExpression: ["+provider+"]"+tagPath+" = "+expr);
+		tagFactory.createExpression(provider, tagPath, dataType, expr);
+	}
+	@Override
+	public void createTag(String provider, String tagPath, String dataType) {
+		log.debug(TAG+"createTag: ["+provider+"]"+tagPath);
+		tagFactory.createTag(provider, tagPath, dataType);
+	}
+
+	@Override
+	public void deleteTag(String provider, String tagPath) {
+		tagFactory.deleteTag(provider, tagPath);
+	}
+
+	@Override
+	public void removeProvider(String name) {
+		ProviderRegistry.getInstance().removeProvider(name);
+	}
+	@Override
+	public void updateExpression(String provider, String tagPath, String expr) {
+		log.debug(TAG+"updateExpression: ["+provider+"]"+tagPath+" = "+expr);
+		tagFactory.updateExpression(provider, tagPath, expr);
+	}
+	@Override
+	public void updateTag(String provider, String tagPath, String value, Date timestamp) {
+		tagFactory.updateTag(provider, tagPath, value, timestamp);
+	}
+
+
 }

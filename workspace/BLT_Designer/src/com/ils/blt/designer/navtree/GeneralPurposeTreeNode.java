@@ -644,6 +644,7 @@ public class GeneralPurposeTreeNode extends FolderNode {
 				diagram.setName(newName);
 				diagram.setResourceId(newId);
 				diagram.setId(UUID.randomUUID());
+				diagram.setDirty(true);
 				
 				log.infof("%s: new diagram action ...",TAG);
 
@@ -902,6 +903,7 @@ public class GeneralPurposeTreeNode extends FolderNode {
 											log.infof("%s:ImportDiagramAction imported diagram:\n%s", TAG,sd.getName());
 											UUIDResetHandler handler = new UUIDResetHandler(sd);
 											handler.convertUUIDs();
+											sd.setDirty(true);
 											String json = mapper.writeValueAsString(sd);
 											log.infof("%s:ImportDiagramAction saved resource as:\n%s", TAG,json);
 											ProjectResource resource = new ProjectResource(newId,

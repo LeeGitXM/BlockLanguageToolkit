@@ -53,6 +53,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	public ProcessDiagramView (long resid,SerializableDiagram diagram, DesignerContext context) {
 		this(resid,diagram.getId(),diagram.getName());
 		this.state = diagram.getState();
+		this.dirty = diagram.isDirty(); 
 		this.context = context;
 		for( SerializableBlock sb:diagram.getBlocks()) {
 			ProcessBlockView pbv = new ProcessBlockView(sb);
@@ -172,15 +173,14 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		diagram.setResourceId(resourceId);
 		diagram.setId(getId());
 		diagram.setState(state);
+		diagram.setDirty(dirty);
 		List<SerializableBlock> sblocks = new ArrayList<SerializableBlock>();
 		for( ProcessBlockView blk:blockMap.values()) {
 			SerializableBlock sb = blk.convertToSerializable();
 			sblocks.add(sb);
 		}
 		diagram.setBlocks(sblocks.toArray(new SerializableBlock[sblocks.size()]));
-		
-		
-		
+			
 		// As we iterate the connections, update SerializableAnchors with connection types
 		List<SerializableConnection> scxns = new ArrayList<SerializableConnection>();
 		for( Connection cxn:connections) {

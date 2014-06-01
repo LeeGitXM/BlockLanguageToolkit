@@ -1,10 +1,19 @@
 #!/bin/sh
-# Move selected JSON files from the raw G2 area
+# Remove files from the G2 and Ignition areas
 # in order to slim down the set that we're actively
 # working on ...
 #
 BIN=`pwd`
 REPO=~/Development/ils/repo/blt/workspace/BLT_Migration/json
-mkdir -p ${REPO}/g2
-cd ${REPO}/g2
-for fil in
+G2=${REPO}/g2
+IGNITION=${REPO}/ignition
+VETTED=${REPO}/ignition-vetted
+mkdir -p ${G2}
+mkdir -p ${IGNITION}
+mkdir -p ${VETTED}
+cd ${VETTED}
+for fil in *.json
+do
+	rm -f ${G2}/$fil
+	rm -f ${IGNITION}/$fil
+done

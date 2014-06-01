@@ -24,18 +24,6 @@ public interface BLTProperties   {
 	public final static String FOLDER_RESOURCE_TYPE        = "__folder";
 	
 	public final static String APPLICATION_SCRIPT_PACKAGE      = "system.ils.blt.application";
-	public final static String BLOCK_SCRIPT_PACKAGE            = "system.ils.blt.block";
-	public final static String REGISTRATION_SCRIPT_PACKAGE     = "system.ils.blt.registrar";
-	
-	/** These are recognized values of external callbacks for registration */
-	public final static String CREATE_BLOCK_INSTANCE_CALLBACK     = "CreateBlockInstance";
-	public final static String EVALUATE_CALLBACK                  = "Evaluate";
-	public final static String GET_BLOCK_CLASSES_CALLBACK         = "GetBlockClasses";
-	public final static String GET_BLOCK_PROPERTIES_CALLBACK      = "GetBlockProperties";
-	public final static String GET_BLOCK_PROTOTYPES_CALLBACK      = "GetBlockPrototypes";
-	public final static String SET_BLOCK_PROPERTY_CALLBACK        = "SetBlockProperty";
-	public final static String SET_VALUE_CALLBACK                 = "SetValue";
-
 	
 	/** This unique ID represents the root node in the project tree */
 	public static final UUID ROOT_FOLDER_UUID = UUID
