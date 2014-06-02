@@ -16,6 +16,7 @@ import com.ils.block.common.BindingType;
 import com.ils.block.common.BlockConstants;
 import com.ils.block.common.BlockProperty;
 import com.ils.block.control.BlockPropertyChangeEvent;
+import com.ils.blt.common.serializable.DiagramState;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -44,14 +45,16 @@ public class TagListener implements TagChangeListener   {
 	private final Map<String,List<ProcessBlock>> blockMap;  // Executable block keyed by tag path
 	private final SimpleDateFormat dateFormatter;
 	private boolean stopped = true;
+	private final BlockExecutionController controller;
 	
 	/**
 	 * Constructor: 
 	 */
-	public TagListener() {
+	public TagListener(BlockExecutionController ec) {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.blockMap = new HashMap<String,List<ProcessBlock>>();
 		this.dateFormatter = new SimpleDateFormat(BlockConstants.TIMESTAMP_FORMAT);
+		this.controller = ec;
 	}
 
 	/**
@@ -223,6 +226,10 @@ public class TagListener implements TagChangeListener   {
 				if( blocks!=null ) {
 					
 					for(ProcessBlock blk:blocks) {
+						// Reject blocks that are in a disabled diagram
+						ProcessDiagram parent = controller.getDiagram(blk.getParentId());
+						if( parent.getState().equals(DiagramState.DISABLED)) continue;
+						
 						// Search properties of the block looking for any bound to tag
 						for( String name: blk.getPropertyNames()) {
 							BlockProperty prop = blk.getProperty(name);

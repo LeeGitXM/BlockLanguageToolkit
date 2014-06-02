@@ -1,5 +1,6 @@
 package com.ils.blt.designer.workspace;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -42,6 +43,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	private final long resourceId;
 	private DiagramState state = DiagramState.ACTIVE;
 	private DesignerContext context;
+	private boolean dirty = true;      // A newly created diagram is "dirty" until it is saved
 	
 	/**
 	 * Constructor: Create an instance given a SerializableDiagram
@@ -51,6 +53,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	public ProcessDiagramView (long resid,SerializableDiagram diagram, DesignerContext context) {
 		this(resid,diagram.getId(),diagram.getName());
 		this.state = diagram.getState();
+		this.dirty = diagram.isDirty(); 
 		this.context = context;
 		for( SerializableBlock sb:diagram.getBlocks()) {
 			ProcessBlockView pbv = new ProcessBlockView(sb);
@@ -90,7 +93,9 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		this.name = nam;
 	}
 	
-	/** Get the current block property values from the Gateway. */
+	/** Get the current block property values from the Gateway. 
+	 *  This is appropriate only when the diagram is in a "clean" state.
+	 */
 	private void initBlockProperties(ProcessBlockView block) {
 		Collection<BlockProperty> propertyList;
 		propertyList = new ArrayList<BlockProperty>();
@@ -99,7 +104,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		for(BlockProperty property:properties) {
 			propertyList.add(property);
 		}
-		log.debugf("%s: init - initialize property list for %s (%d properties)",TAG,block.getId().toString(),propertyList.size());
+		log.infof("%s.initBlockProperties - initialize property list for %s (%d properties)",TAG,block.getId().toString(),propertyList.size());
 		block.setProperties(propertyList);
 	}
 
@@ -111,7 +116,8 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	public void addBlock(Block blk) {
 		if( blk instanceof ProcessBlockView) {
 			ProcessBlockView block = (ProcessBlockView) blk;
-			initBlockProperties(block);
+			if(!isDirty()) initBlockProperties(block);
+			log.infof("%s.addBlock - %s",TAG,block.getClassName());
 			blockMap.put(blk.getId(), block);
 			fireStateChanged();
 		}
@@ -167,15 +173,14 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		diagram.setResourceId(resourceId);
 		diagram.setId(getId());
 		diagram.setState(state);
+		diagram.setDirty(dirty);
 		List<SerializableBlock> sblocks = new ArrayList<SerializableBlock>();
 		for( ProcessBlockView blk:blockMap.values()) {
 			SerializableBlock sb = blk.convertToSerializable();
 			sblocks.add(sb);
 		}
 		diagram.setBlocks(sblocks.toArray(new SerializableBlock[sblocks.size()]));
-		
-		
-		
+			
 		// As we iterate the connections, update SerializableAnchors with connection types
 		List<SerializableConnection> scxns = new ArrayList<SerializableConnection>();
 		for( Connection cxn:connections) {
@@ -217,6 +222,17 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			}
 		}
 	}
+	/**
+	 * @return a background color appropriate for the current state
+	 *         of the diagram
+	 */
+	public Color getBackgroundColorForState() {
+		Color result = BLTProperties.DIAGRAM_ACTIVE_BACKGROUND;
+		if( getState().equals(DiagramState.CONSTRAINED)) result = BLTProperties.DIAGRAM_CONSTRAINED_BACKGROUND;
+		else if( getState().equals(DiagramState.DISABLED)) result = BLTProperties.DIAGRAM_DISABLED_BACKGROUND;
+		else if( isDirty() ) result = BLTProperties.DIAGRAM_DIRTY_BACKGROUND;
+		return result;
+	}
 	
 	@Override
 	public Block getBlock(UUID key) {
@@ -254,12 +270,19 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	}
 
 	public DiagramState getState() {return state;}
-
+	public boolean isDirty() {return dirty;}
+	public void setDirty(boolean dirty) {this.dirty = dirty;}
+	
 	@Override
 	public void setDiagramSize(Dimension dim) {
 		diagramSize = dim;
-		fireStateChanged();
+		super.fireStateChanged();  // Bypass setting block dirty
 	}
 	public void setState(DiagramState state) {this.state = state;}
-
+	
+	@Override
+	public void fireStateChanged() {
+		setDirty(true);
+		super.fireStateChanged();
+	}
 }

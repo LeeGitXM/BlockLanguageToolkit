@@ -79,7 +79,7 @@ public class BlockRequestHandler   {
 	 * @return the current state of the specified diagram as a String.
 	 */
 	public String getDiagramState(Long projectId,Long resourceId) {
-		DiagramState state = DiagramState.UNKNOWN;
+		DiagramState state = DiagramState.ACTIVE;
 		BlockExecutionController controller = BlockExecutionController.getInstance();
 		ProcessDiagram diagram = controller.getDiagram(projectId, resourceId);
 		if( diagram!=null ) {

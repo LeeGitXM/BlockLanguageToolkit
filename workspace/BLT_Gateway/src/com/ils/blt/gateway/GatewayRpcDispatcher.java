@@ -1,5 +1,5 @@
 /**
- *   (c) 2013  ILS Automation. All rights reserved.
+ *   (c) 2014  ILS Automation. All rights reserved.
  */
 package com.ils.blt.gateway;
 
@@ -172,7 +172,7 @@ public class GatewayRpcDispatcher   {
 	 *  @return
 	 */
 	public List<String> getBlockPrototypes() {
-		log.infof("%s: getBlockPrototypes ...",TAG);
+		log.infof("%s.getBlockPrototypes ...",TAG);
 		List<String> results = new ArrayList<String>();
 		ClassList cl = new ClassList();
 		List<Class<?>> classes = cl.getAnnotatedClasses(BLTProperties.BLOCK_JAR_NAME, ExecutableBlock.class,"com/ils/block/");
@@ -191,22 +191,27 @@ public class GatewayRpcDispatcher   {
 				}
 			} 
 			catch (InstantiationException ie) {
-				log.warnf("%s:getBlockPrototypes: Exception instantiating block (%s)",TAG,ie.getLocalizedMessage());
+				log.warnf("%s.getBlockPrototypes: Exception instantiating block (%s)",TAG,ie.getLocalizedMessage());
 			} 
 			catch (IllegalAccessException iae) {
-				log.warnf("%s:getBlockPrototypes: Access exception (%s)",TAG,iae.getMessage());
+				log.warnf("%s.getBlockPrototypes: Access exception (%s)",TAG,iae.getMessage());
 			}
 			catch (Exception ex) {
-				log.warnf("%s: getBlockPrototypes: Runtime exception (%s)",TAG,ex.getMessage(),ex);
+				log.warnf("%s.getBlockPrototypes: Runtime exception (%s)",TAG,ex.getMessage(),ex);
 			}
 		}
 		// Now add prototypes from Python-defined blocks
 		ProxyHandler phandler = ProxyHandler.getInstance();
-		List<PalettePrototype> prototypes = phandler.getPalettePrototypes();
-		for( PalettePrototype pp:prototypes) {
-			results.add(pp.toJson());
+		try {
+			List<PalettePrototype> prototypes = phandler.getPalettePrototypes();
+			for( PalettePrototype pp:prototypes) {
+				results.add(pp.toJson());
+			}
 		}
-		log.debugf("%s: getBlockPrototypes: returning %d palette prototypes",TAG,results.size());
+		catch (Exception ex) {
+			log.warnf("%s.getBlockPrototypes: Runtime exception (%s)",TAG,ex.getMessage(),ex);
+		}
+		log.debugf("%s.getBlockPrototypes: returning %d palette prototypes",TAG,results.size());
 		return results;
 	}
 	public List<String> getDiagramTreePaths(String projectName) {

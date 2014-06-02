@@ -60,6 +60,9 @@ public class MockDiagramRequestHandler   {
 					new BasicQualifiedValue(value));
 			uut.propertyChange(event);
 		}
+		else {
+			log.infof("%s.setTestBlockProperty: unable to find diagram %s ",TAG,diagramId.toString());
+		}
 	}
 	
 	/**

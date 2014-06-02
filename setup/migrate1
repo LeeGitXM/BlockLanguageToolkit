@@ -3,10 +3,6 @@
 #
 BLT=~/Development/ils/repo/blt
 FIL=dirtSimpleApplication
-#FIL=dirtSimpleApplicationWithMultipleProblems1
-#FIL=dsa1
-#FIL=vfuProductQuality
-#FIL=toughConnectionApplication
 INDIR=$BLT/workspace/BLT_Migration/json/g2
 OUTDIR=$BLT/workspace/BLT_Migration/json/ignition
 mkdir -p $OUTDIR

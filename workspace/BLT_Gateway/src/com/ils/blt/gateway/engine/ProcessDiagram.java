@@ -42,7 +42,7 @@ public class ProcessDiagram extends ProcessNode {
 	private final Map<ConnectionKey,ProcessConnection> connectionMap;            // Key by connection number
 	protected final Map<BlockPort,List<ProcessConnection>> outgoingConnections;    // Key by upstream block:port
 	private final long resourceId;
-	private DiagramState state = DiagramState.UNKNOWN;
+	private DiagramState state = DiagramState.ACTIVE;
 	
 	/**
 	 * Constructor: Create a model that encapsulates the structure of the blocks and connections

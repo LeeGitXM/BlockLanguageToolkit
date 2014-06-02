@@ -31,7 +31,6 @@ public class TagWriter  {
 	
 	/**
 	 * Constructor.
-	 
 	 */
 	public TagWriter() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());	

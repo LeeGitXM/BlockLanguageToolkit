@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -33,8 +34,8 @@ import com.ils.block.common.DistributionType;
 import com.ils.block.common.LimitType;
 import com.ils.block.common.PropertyType;
 import com.ils.block.common.TransmissionScope;
-import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.ApplicationRequestManager;
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.inductiveautomation.ignition.client.sqltags.tree.TagRenderer;
@@ -170,7 +171,6 @@ public class BlockPropertyEditor extends SlidingPane {
 					JOptionPane.showMessageDialog(mainPanel, "No tag is selected.");					
 				}
 			}
-
 		});
 
 		JButton cancelButton = new JButton("Cancel");
@@ -267,51 +267,18 @@ public class BlockPropertyEditor extends SlidingPane {
         ApplicationRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
         handler.setBlockProperty(block.getClassName(), projectId, resourceId, block.getId().toString(), prop.getName(), value);
 	}
-
-	
 	/**
-	 * Create a combo box for limit type
+	 * Create a check box to determine whether or not the attribute is externally annotated. 
 	 */
-	private JComboBox<String> createLimitTypeCombo(final BlockProperty prop) {
-		String[] entries = new String[LimitType.values().length];
-		int index=0;
-		for(LimitType scope : LimitType.values()) {
-			entries[index]=scope.name();
-			index++;
-		}
-		final JComboBox<String> box = new JComboBox<String>(entries);
+	private JCheckBox createAnnotationCheckbox(final BlockProperty prop) {
+		
+		final JCheckBox box = new JCheckBox();
+		box.setSelected(prop.isAnnotated());
 		box.addActionListener(new ActionListener() {
 	        public void actionPerformed(ActionEvent e){
-	        	LimitType type = LimitType.valueOf(LimitType.class, box.getSelectedItem().toString());
-	        	log.debugf("%s: set limit type %s",TAG,box.getSelectedItem().toString());
-	        	setBlockProperty(prop, type.toString());
+	        	prop.setAnnotated(box.isSelected());
 	        }
 		});
-		box.setSelectedItem(prop.getValue().toString());
-		return box;
-	}
-	
-	/**
-	 * Create a combo box for data types
-	 */
-	private JComboBox<String> createPropertyTypeCombo(final BlockProperty prop) {
-		String[] entries = new String[PropertyType.values().length];
-		int index=0;
-		for(PropertyType type : PropertyType.values()) {
-			entries[index]=type.name();
-			index++;
-		}
-		final JComboBox<String> box = new JComboBox<String>(entries);
-		box.addActionListener(new ActionListener() {
-	        public void actionPerformed(ActionEvent e){
-	        	PropertyType pt = PropertyType.valueOf(PropertyType.class, box.getSelectedItem().toString());
-	        	log.debugf("%s: set property type %s",TAG,box.getSelectedItem().toString());
-	            prop.setType(pt);
-	        }
-		});
-		box.setSelectedItem(prop.getType().toString());
-		box.setEditable(false);
-		box.setEnabled(false);
 		return box;
 	}
 	/**
@@ -343,6 +310,23 @@ public class BlockPropertyEditor extends SlidingPane {
 		return box;
 	}
 	/**
+	 * Create a combo box for true/false 
+	 */
+	private JComboBox<String> createBooleanCombo(final BlockProperty prop) {
+		String[] entries = new String[2];
+		entries[0]=Boolean.TRUE.toString();
+		entries[1]=Boolean.FALSE.toString();
+		
+		final JComboBox<String> box = new JComboBox<String>(entries);
+		box.addActionListener(new ActionListener() {
+	        public void actionPerformed(ActionEvent e){
+	        	setBlockProperty(prop, box.getSelectedItem().toString());
+	        }
+		});
+		box.setSelectedItem(prop.getValue().toString());
+		return box;
+	}
+	/**
 	 * Create a combo box for distribution type (i.e. statistical distribution)
 	 */
 	private JComboBox<String> createDistributionTypeCombo(final BlockProperty prop) {
@@ -364,20 +348,47 @@ public class BlockPropertyEditor extends SlidingPane {
 		return box;
 	}
 	/**
-	 * Create a combo box for true/false 
+	 * Create a combo box for limit type
 	 */
-	private JComboBox<String> createBooleanCombo(final BlockProperty prop) {
-		String[] entries = new String[2];
-		entries[0]=Boolean.TRUE.toString();
-		entries[1]=Boolean.FALSE.toString();
-		
+	private JComboBox<String> createLimitTypeCombo(final BlockProperty prop) {
+		String[] entries = new String[LimitType.values().length];
+		int index=0;
+		for(LimitType scope : LimitType.values()) {
+			entries[index]=scope.name();
+			index++;
+		}
 		final JComboBox<String> box = new JComboBox<String>(entries);
 		box.addActionListener(new ActionListener() {
 	        public void actionPerformed(ActionEvent e){
-	        	setBlockProperty(prop, box.getSelectedItem().toString());
+	        	LimitType type = LimitType.valueOf(LimitType.class, box.getSelectedItem().toString());
+	        	log.debugf("%s: set limit type %s",TAG,box.getSelectedItem().toString());
+	        	setBlockProperty(prop, type.toString());
 	        }
 		});
 		box.setSelectedItem(prop.getValue().toString());
+		return box;
+	}
+	/**
+	 * Create a combo box for data types
+	 */
+	private JComboBox<String> createPropertyTypeCombo(final BlockProperty prop) {
+		String[] entries = new String[PropertyType.values().length];
+		int index=0;
+		for(PropertyType type : PropertyType.values()) {
+			entries[index]=type.name();
+			index++;
+		}
+		final JComboBox<String> box = new JComboBox<String>(entries);
+		box.addActionListener(new ActionListener() {
+	        public void actionPerformed(ActionEvent e){
+	        	PropertyType pt = PropertyType.valueOf(PropertyType.class, box.getSelectedItem().toString());
+	        	log.debugf("%s: set property type %s",TAG,box.getSelectedItem().toString());
+	            prop.setType(pt);
+	        }
+		});
+		box.setSelectedItem(prop.getType().toString());
+		box.setEditable(false);
+		box.setEnabled(false);
 		return box;
 	}
 	/**
@@ -424,6 +435,8 @@ public class BlockPropertyEditor extends SlidingPane {
 			JTextField bindingTextField = createBindingTextField(prop);
 			add(bindingTextField,"");
 			add(createBindingTypeCombo(prop,bindingTextField),"wrap");
+			add(createLabel("Annotate?"),"skip");
+			add(createAnnotationCheckbox(prop),"wrap");
 		}
 	}
 	// Special for a LimitType block property

@@ -4,6 +4,7 @@
 package com.ils.blt.designer.workspace;
 
 import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Stroke;
@@ -21,6 +22,8 @@ import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -65,38 +68,38 @@ import com.jidesoft.docking.DockContext;
 import com.jidesoft.docking.DockingManager;
 
 /**
- * A Diagram workspace is a tabbed container that occupies the DockManager workspace
- * area. It, in turn, holds DiagnosticsFrames. These are internal frames designed
- * to hold a model diagram. 
- * 
+ * A Diagram workspace is a container that occupies the DockManager workspace
+ * area. It, in turn, holds DockableFrames. These are JIDE components. In addition
+ * to a palette and editor, the workspace holds a tabbed panel for holding
+ * BlockDesignableContainers. These contain the visual representations of the diagrams.
  */
 public class DiagramWorkspace extends AbstractBlockWorkspace 
-							  implements ResourceWorkspace, DesignableWorkspaceListener {
+							  implements ResourceWorkspace, DesignableWorkspaceListener,
+							  			ChangeListener                                   {
 	private static final String TAG = "DiagramWorkspace";
 	private static final long serialVersionUID = 4627016159409031941L;
 	private static final DataFlavor BlockDataFlavor = LocalObjectTransferable.flavorForClass(ObservablePropertySet.class);
 	public static final String key = "BlockDiagramWorkspace";
 	public static final String PREFIX = BLTProperties.BLOCK_PREFIX;
 	private final DesignerContext context;
-	private final ObjectMapper mapper;
 	private final EditActionHandler editActionHandler;
 	private Collection<ResourceWorkspaceFrame> frames;
 	protected SaveAction saveAction = null;  // Save properties of a block
 	private LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 
 	/**
-	 * Constructor 
+	 * Constructor:
 	 */
 	public DiagramWorkspace(DesignerContext ctx) {
 		this.context = ctx;
-		this.mapper = new ObjectMapper();
 		this.editActionHandler = new BlockActionHandler(this,context);
 		this.addDesignableWorkspaceListener(this);
 		initialize();
+		setBackground(Color.red);
 	}
 
 
-	// Initialize the UI
+	// Initialize the workspace frames.
 	private void initialize() {
 		// Create palette
 		ProcessBlockPalette tabbedPalette = new ProcessBlockPalette(context, this);
@@ -118,15 +121,13 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		pef.putClientProperty("menu.text", "Diagram Property Editor");
 		frames.add(pef);
 	}
-	
+
 	
 	@Override
 	public EditActionHandler getEditActionHandler() {
 		return editActionHandler;
 	}
 	
-
-
 	@Override
 	public Collection<ResourceWorkspaceFrame> getFrames() {
 		return frames;
@@ -277,7 +278,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 */
 	@Override
 	public Collection<Block> pasteBlocks(String json) {
-		log.infof("%s: pasteBlocks: %s",TAG,json);
+		log.infof("%s.pasteBlocks: %s",TAG,json);
 		ObjectMapper mapper = new ObjectMapper();
 		Collection<Block>results = new ArrayList<Block>();
 		JavaType type = mapper.getTypeFactory().constructCollectionType(ArrayList.class, SerializableBlock.class);
@@ -337,6 +338,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				String json = new String(res.getData());
 				log.debugf("%s: open - diagram = %s",TAG,json);
 				SerializableDiagram sd = null;
+				ObjectMapper mapper = new ObjectMapper();
 				try {
 					sd = mapper.readValue(json,SerializableDiagram.class);
 					// Synchronize names as the resource may have been re-named since it was serialized
@@ -353,6 +355,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				}
 				ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd, context);
 				super.open(diagram);
+				BlockDesignableContainer tab = (BlockDesignableContainer)findDesignableContainer(resourceId);
+				tab.setBackground(diagram.getBackgroundColorForState());
 			}
 		}
 	}
@@ -363,12 +367,27 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 	
 	@Override
-	protected void onClose(DesignableContainer container) {
+	protected void onClose(DesignableContainer c) {
 		log.infof("%s: onClose",TAG);
-		saveDiagram((BlockDesignableContainer)container);
+		BlockDesignableContainer container = (BlockDesignableContainer)c;
+		ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
+		if( diagram.isDirty() ) {
+			String question = BundleUtil.get().getString(PREFIX+".CloseDiagram.Question");
+			if( question==null) question="??";
+			String format = BundleUtil.get().getString(PREFIX+".CloseDiagram.Title");
+			if( format==null) format="Close";
+			
+			if( ErrorUtil.showConfirm(question,String.format(format, diagram.getName()) )) {
+				saveDiagram((BlockDesignableContainer)container);
+			}
+		}
 		context.releaseLock(container.getResourceId());
 	}
 	
+	/**
+	 * This is called as a result of a user "Save" selection on
+	 * the main menu.
+	 */
 	public void saveOpenDiagrams() {
 		log.infof("%s: saveOpenDiagrams",TAG);
 		for(DesignableContainer dc:openContainers.keySet()) {
@@ -379,37 +398,66 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	private void saveDiagram(BlockDesignableContainer c) {
 		ProcessDiagramView diagram = (ProcessDiagramView)c.getModel();
 		log.infof("%s: saveDiagram - serializing %s ...",TAG,diagram.getDiagramName());
+		diagram.setDirty(false);
 		SerializableDiagram sd = diagram.createSerializableRepresentation();
 		byte[] bytes = null;
 		long resid = c.getResourceId();
+		ObjectMapper mapper = new ObjectMapper();
 		try {
 			bytes = mapper.writeValueAsBytes(sd);
 			log.tracef("%s: saveDiagram JSON = %s",TAG,new String(bytes));
 			context.updateResource(resid, bytes);
+			
+			c.setBackground(diagram.getBackgroundColorForState());
 		} 
 		catch (JsonProcessingException jpe) {
 			log.warnf("%s: saveDiagram processing exception (%s)",TAG,jpe.getLocalizedMessage());
 		}
-		
 		context.updateLock(resid);
 	}
 	
+	/**
+	 * We've made a major change on the currently active diagram. Set its background accordingly.
+	 * The diagram should have set its own state.
+	 */
+	private void updatBackgroundForDirty() {
+		BlockDesignableContainer container = getSelectedContainer();
+		if( container!=null ) {
+			ProcessDiagramView view = (ProcessDiagramView)(container.getModel());
+			container.setBackground(view.getBackgroundColorForState());
+		}
+	}
 	
 	// =========================== DesignableWorkspaceListener ===========================
 	@Override
-	public void containerClosed(DesignableContainer container) {
+	public void containerClosed(DesignableContainer c) {
+		log.infof("%s.containerClosed: %s",TAG,c.getName());
+		BlockDesignableContainer container = (BlockDesignableContainer)c;
+		ProcessDiagramView view = (ProcessDiagramView)(container.getModel());
+		view.removeChangeListener(this);
 	}
+	/**
+	 * Container layout manager is:
+	 * com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer$BlockLayout
+	 */
 	@Override
-	public void containerOpened(DesignableContainer container) {	
+	public void containerOpened(DesignableContainer c) {
+		log.infof("%s.containerOpened: %s",TAG,c.getName());
+		BlockDesignableContainer container = (BlockDesignableContainer)c;
+		ProcessDiagramView view = (ProcessDiagramView)(container.getModel());
+		view.addChangeListener(this);
+		container.setBackground(view.getBackgroundColorForState());    // Set background appropriate to state
 	}
 	@Override
 	public void containerSelected(DesignableContainer container) {
+		if( container==null ) log.infof("%s.containerSelected is null",TAG);
+		else log.infof("%s.containerSelected: %s",TAG,container.getName());
 	}
 	@Override
 	public void itemSelectionChanged(List<JComponent> selections) {
 		if( selections!=null && selections.size()==1 ) {
 			JComponent selection = selections.get(0);
-			log.infof("%s.DiagramActionHandler: selected a %s",TAG,selection.getClass().getName());
+			log.infof("%s.itemSelectionChanged: selected a %s",TAG,selection.getClass().getName());
 			if( selection instanceof BlockComponent ) {
 				//BlockComponent bc = ( BlockComponent)selection;
 				//selectedBlock = (ProcessBlockView)bc.getBlock();
@@ -419,7 +467,16 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			log.infof("%s: DiagramActionHandler: deselected",TAG);
 		}
 	}
-	
+	// ============================== Change Listener ================================
+		/**
+		 * If the current diagram changes state, then paint the background accordingly.
+		 * 
+		 * @param event
+		 */
+		@Override
+		public void stateChanged(ChangeEvent event) {
+			updatBackgroundForDirty();
+		}
 	/**
 	 * Paint connections. The cross-section is dependent on the connection type.
 	 */
@@ -487,7 +544,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			
+			log.info("DiagramWorkspace: SAVE");
 		}
 	}
 	//TODO: In next Ignition update, this is available for override of onMove() method.
@@ -495,4 +552,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	//      would be violated by a connect. 04/15/2014.
 	//public class ConnectionTool extends AbstractBlockWorkspace.ConnectionTool {
 	//}
+	
+	
 }

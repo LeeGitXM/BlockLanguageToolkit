@@ -15,17 +15,19 @@ import java.util.List;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 import javax.swing.tree.TreePath;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.ApplicationRequestManager;
+import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.serializable.DiagramState;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
+import com.inductiveautomation.ignition.client.designable.DesignableContainer;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
@@ -35,8 +37,10 @@ import com.inductiveautomation.ignition.common.project.ProjectChangeListener;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.inductiveautomation.ignition.designer.IgnitionDesigner;
 import com.inductiveautomation.ignition.designer.UndoManager;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
+import com.inductiveautomation.ignition.designer.gateway.DTGatewayInterface;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
@@ -59,11 +63,6 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 	private DesignerContext context;
 	private long resourceId;
 	private final DiagramWorkspace workspace;
-	private ImageIcon enabledIcon = null;
-	private ImageIcon disabledIcon= null;
-	
-	private DisableAction disableAction = new DisableAction();
-	private EnableAction enableAction = new EnableAction();
 
 
 	/**
@@ -85,11 +84,8 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 		Dimension iconSize = new Dimension(20,20);
 		Image img = ImageLoader.getInstance().loadImage("Block/icons/navtree/diagram.png",iconSize);
 		if( img !=null) {
-			enabledIcon = new ImageIcon(img);
-			setIcon( enabledIcon);
+			setIcon( new ImageIcon(img));
 		}
-		img = ImageLoader.getInstance().loadImage("Block/icons/small/navtree.png",iconSize);
-		if( img !=null) disabledIcon = new ImageIcon(img);
 
 		setItalic(context.getProject().isResourceDirty(resourceId));
 		context.addProjectChangeListener(this);
@@ -99,26 +95,50 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 	@Override
 	protected void initPopupMenu(JPopupMenu menu, TreePath[] paths,List<AbstractNavTreeNode> selection, int modifiers) {
 		setupEditActions(paths, selection);
-		ExportDiagramAction exportAction = new ExportDiagramAction(menu.getRootPane(),workspace.getActiveDiagram());
-		SaveDiagramAction saveAction = new SaveDiagramAction();
+		ExportDiagramAction exportAction = new ExportDiagramAction(menu.getRootPane(),resourceId);
+		
 		menu.add(exportAction);
+		
+		// States are: ACTIVE, DISABLED, CONSTRAINED
 		ApplicationRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
-		if( handler.isDiagramEnabled(new Long(context.getProject().getId()),new Long(resourceId)) ) {
-			enableAction.setEnabled(false);
-		}
-		else {
-			disableAction.setEnabled(false);
-		}
+		DiagramState state = handler.getDiagramState(context.getProject().getId(), resourceId);
+		SetStateAction ssaActive = new SetStateAction(DiagramState.ACTIVE);
+		ssaActive.setEnabled(!state.equals(DiagramState.ACTIVE));
+		SetStateAction ssaDisable = new SetStateAction(DiagramState.DISABLED);
+		ssaDisable.setEnabled(!state.equals(DiagramState.DISABLED));
+		SetStateAction ssaConstrained = new SetStateAction(DiagramState.CONSTRAINED);
+		ssaConstrained.setEnabled(!state.equals(DiagramState.CONSTRAINED));
+		JMenu setStateMenu = new JMenu(BundleUtil.get().getString(PREFIX+".SetState"));
+		setStateMenu.add(ssaActive);
+		setStateMenu.add(ssaDisable);
+		setStateMenu.add(ssaConstrained);
+		menu.add(setStateMenu);
+	
+		// Only allow a Save when the workspace is open
+		SaveDiagramAction saveAction = new SaveDiagramAction();
+		BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId);
+		saveAction.setEnabled(tab!=null);
+		menu.add(saveAction);
 		menu.addSeparator();
 		menu.add(renameAction);
-		menu.add(saveAction);
         menu.add(deleteAction);
 	}
 
 
-	// Called when the parent folder is deleted
+	/**
+	 *  Called when the parent folder is deleted.
+	 *  If we're closing and committing, then it's fair to
+	 *  conclude that the workspace is not dirty.
+	 */
 	public void closeAndCommit() {
-		if( workspace.isOpen(resourceId) ) workspace.close(resourceId);
+		log.infof("%s.closeAndCommit: res %d",TAG,resourceId);
+		if( workspace.isOpen(resourceId) ) {
+			DesignableContainer c = workspace.findDesignableContainer(resourceId);
+			BlockDesignableContainer container = (BlockDesignableContainer)c;
+			ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
+			diagram.setDirty(false);
+			workspace.close(resourceId);
+		}
 	}
 	
 	/**
@@ -128,6 +148,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 	@SuppressWarnings("unchecked")
 	@Override
 	public void doDelete(List<? extends AbstractNavTreeNode> children,DeleteReason reason) {
+		log.infof("%s.doDelete: res %d",TAG,resourceId);
 		ResourceDeleteAction delete = new ResourceDeleteAction(context,
 				(List<AbstractResourceNavTreeNode>) children,
 				reason.getActionWordKey(), PREFIX+".DiagramNoun");
@@ -143,9 +164,6 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 
 	@Override
 	public Icon getIcon() {
-		Icon icon = enabledIcon;
-		// Problem because diagram may not be active yet ...
-		//if(!workspace.getActiveDiagram().isEnabled()) icon = disabledIcon;
 		return icon;
 	}
 	
@@ -202,8 +220,6 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 		super.uninstall();
 		context.removeProjectChangeListener(this);
 	}
-	
-	
 
 	// ----------------------- Project Change Listener -------------------------------
 	/**
@@ -239,139 +255,151 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 			refresh();    // Updates the tree model
 		}
 	}
-    private class DisableAction extends BaseAction {
-    	private static final long serialVersionUID = 1L;
-	    public DisableAction()  {
-	    	super(PREFIX+".DisableDiagram",IconUtil.getIcon("disk_play")); 
-	    }
-	    
-		public void actionPerformed(ActionEvent e) {
-			try {
-				ApplicationRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
-				handler.enableDiagram(new Long(context.getProject().getId()),new Long(resourceId),Boolean.FALSE);
-				this.setEnabled(false);
-				enableAction.setEnabled(true);
-			} 
-			catch (Exception ex) {
-				log.warnf("%s: DisableAction: ERROR: %s",TAG,ex.getMessage(),ex);
-				ErrorUtil.showError(ex);
-			}
-		}
-	}
     
-    private class EnableAction extends BaseAction {
-    	private static final long serialVersionUID = 1L;
-	    public EnableAction()  {
-	    	super(PREFIX+".EnableDiagram",IconUtil.getIcon("disk_forbidden")); 
-	    }
-	    
-		public void actionPerformed(ActionEvent e) {
-			try {
-				ApplicationRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
-				handler.startController();
-				this.setEnabled(false);
-				disableAction.setEnabled(true);
-			} 
-			catch (Exception ex) {
-				log.warnf("%s: startAction: ERROR: %s",TAG,ex.getMessage(),ex);
-				ErrorUtil.showError(ex);
-			}
-		}
-	}
-	private class ExportDiagramAction extends BaseAction {
+    private class ExportDiagramAction extends BaseAction {
     	private static final long serialVersionUID = 1L;
     	private final static String POPUP_TITLE = "Export Diagram";
-    	private final ProcessDiagramView view;
+    	private final long resourceId;
     	private final Component anchor;
-	    public ExportDiagramAction(Component c,ProcessDiagramView v)  {
-	    	super(PREFIX+".ExportDiagram",IconUtil.getIcon("export1")); 
-	    	anchor = c;
-	    	view=v;
-	    }
-	    
-		public void actionPerformed(ActionEvent e) {
-		
-			if( view==null ) return;   // Do nothing
-			try {
-				EventQueue.invokeLater(new Runnable() {
-					public void run() {
-						ExportDialog dialog = new ExportDialog();
-					    dialog.pack();
-					    dialog.setVisible(true);   // Returns when dialog is closed
-					    File output = dialog.getFilePath();
-					    boolean success = false;
-					    if( output!=null ) {
-					    	log.debugf("%s.actionPerformed: dialog returned %s",TAG,output.getAbsolutePath());
-					    	try {
-					    		if(output.exists()) {
-					    			output.setWritable(true); 
-					    		}
-					    		else {
-					    			output.createNewFile();
-					    		}
+    	public ExportDiagramAction(Component c,long resid)  {
+    		super(PREFIX+".ExportDiagram",IconUtil.getIcon("export1")); 
+    		anchor = c;
+    		resourceId=resid;
+    	}
 
-					    		if( output.canWrite() ) {
-					    			ObjectMapper mapper = new ObjectMapper();
-					    			if(log.isDebugEnabled()) log.debugf("%s.actionPerformed: creating json ... %s",TAG,(mapper.canSerialize(SerializableDiagram.class)?"true":"false"));
-					    			try{ 
-					    				// Convert the view into a serializable object
-					    				SerializableDiagram sd = view.createSerializableRepresentation();
-					    				String json = mapper.writeValueAsString(sd);
-					    				FileWriter fw = new FileWriter(output,false);  // Do not append
-					    				try {
-					    					fw.write(json);
-					    					success = true;
-					    				}
-					    				catch(IOException ioe) {
-					    					ErrorUtil.showWarning(String.format("Error writing file %s (%s)",output.getAbsolutePath(),
-					    							ioe.getMessage()),POPUP_TITLE,false);
-					    				}
-					    				finally {
-					    					fw.close();
-					    				}
-					    			}
-					    			catch(JsonProcessingException jpe) {
-					    				ErrorUtil.showError("Unable to serialize diagram",POPUP_TITLE,jpe,true);
-					    			}
-					    		}
-					    		else {
-					    			ErrorUtil.showWarning(String.format("selected file (%s) is not writable.",output.getAbsolutePath()),POPUP_TITLE,false);
-					    		}
-					    	}
-					    	catch (IOException ioe) {
-					    		ErrorUtil.showWarning(String.format("Error creating or closing file %s (%s)",output.getAbsolutePath(),
-					    				ioe.getMessage()),POPUP_TITLE,false);
-					    	}
-					    }
-					    // If there's an error, then the user will be informed
-					    if( success ) ErrorUtil.showInfo(anchor, "Export complete", POPUP_TITLE);
-					}
-				});
-			} 
-			catch (Exception err) {
-				ErrorUtil.showError(err);
-			}
-		}
-	}
+    	public void actionPerformed(ActionEvent e) {
+
+    		if( resourceId<0 ) return;   // Do nothing
+    		try {
+    			EventQueue.invokeLater(new Runnable() {
+    				public void run() {
+    					ExportDialog dialog = new ExportDialog();
+    					dialog.pack();
+    					dialog.setVisible(true);   // Returns when dialog is closed
+    					File output = dialog.getFilePath();
+    					boolean success = false;
+    					if( output!=null ) {
+    						log.debugf("%s.actionPerformed: dialog returned %s",TAG,output.getAbsolutePath());
+    						try {
+    							if(output.exists()) {
+    								output.setWritable(true); 
+    							}
+    							else {
+    								output.createNewFile();
+    							}
+
+    							if( output.canWrite() ) {
+    								ProjectResource res = context.getProject().getResource(resourceId);
+    								if( res!=null ) {
+
+    									byte[] bytes = res.getData();
+    									FileWriter fw = new FileWriter(output,false);  // Do not append
+    									try {
+    										fw.write(new String(bytes));
+    										success = true;
+    									}
+    									catch(IOException ioe) {
+    										ErrorUtil.showWarning(String.format("Error writing file %s (%s)",output.getAbsolutePath(),
+    												ioe.getMessage()),POPUP_TITLE,false);
+    									}
+    									finally {
+    										fw.close();
+
+    									}
+    								}
+    								else {
+    									ErrorUtil.showWarning(String.format("Resource %d does not exist",resourceId),POPUP_TITLE,false);
+    								}
+    							}
+    							else {
+    								ErrorUtil.showWarning(String.format("Cannot write to file (%s)",output.getAbsolutePath()),POPUP_TITLE,false);
+    							}
+    						}
+    						catch (IOException ioe) {
+    							ErrorUtil.showWarning(String.format("Error creating or closing file %s (%s)",output.getAbsolutePath(),
+    									ioe.getMessage()),POPUP_TITLE,false);
+    						}
+    					}
+    					// If there's an error, then the user will be informed
+    					if( success ) ErrorUtil.showInfo(anchor, "Export complete", POPUP_TITLE);
+    				}
+    			});
+    		} 
+    		catch (Exception err) {
+    			ErrorUtil.showError(err);
+    		}
+    	}
+    }
 	
 	
 	private class SaveDiagramAction extends BaseAction {
     	private static final long serialVersionUID = 1L;
-
 	    public SaveDiagramAction()  {
 	    	super(PREFIX+".SaveDiagram",IconUtil.getIcon("add2")); 
 	    }
 	    
 		public void actionPerformed(ActionEvent e) {
-			ProjectResource res = getProjectResource();
-			try {
-				res.setEditCount(res.getEditCount()+1);
-				context.updateResource(res);
-			} 
-			catch (Exception err) {
-				ErrorUtil.showError(err);
+			BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId);
+			if( tab!=null && context.requestLock(resourceId)) {
+				try {
+					ProcessDiagramView view = (ProcessDiagramView)(tab.getModel());
+					view.setDirty(false);
+					ObjectMapper mapper = new ObjectMapper();
+					SerializableDiagram sd = view.createSerializableRepresentation();
+					byte[] bytes = mapper.writeValueAsBytes(sd);
+					ProjectResource res = context.getProject().getResource(resourceId);
+					res.setEditCount(res.getEditCount()+1);
+					context.updateResource(resourceId, bytes);
+					context.updateLock(resourceId);
+					context.releaseLock(resourceId);
+					DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), context.getProject().getDiff(true), true, "Committing ...");
+					tab.setBackground(view.getBackgroundColorForState());
+				} 
+				catch (Exception err) {
+					ErrorUtil.showError(err);
+				}
 			}
-			
+		}
+	}
+	private class SetStateAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final DiagramState state;
+		public SetStateAction(DiagramState s)  {
+			super(PREFIX+".SetStateAction."+s.name());
+			state = s;
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			try {
+				// If the diagram is showing, then all we do is set the view
+				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId);
+				if( tab!=null ) {
+					ProcessDiagramView view = (ProcessDiagramView)(tab.getModel());
+					view.setState(state);
+					tab.setBackground(view.getBackgroundColorForState());
+				}
+				// Otherwise we need to de-serialize and re-serialize
+				else {
+					ProjectResource res = context.getProject().getResource(resourceId);
+					byte[]bytes = res.getData();
+					SerializableDiagram sd = null;
+					ObjectMapper mapper = new ObjectMapper();
+					sd = mapper.readValue(bytes,SerializableDiagram.class);
+					// Synchronize names as the resource may have been re-named since it was serialized
+					sd.setName(res.getName());
+					sd.setState(state);
+					bytes = mapper.writeValueAsBytes(sd);
+					res.setData(bytes); // We don't alert the gateway at this point. (We may be dirty)
+				}
+
+				// Inform the gateway of the state change
+				ApplicationRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+				handler.setDiagramState(context.getProject().getId(), resourceId,state.name());
+			} 
+			catch (Exception ex) {
+				log.warn(String.format("%s.setStateAction: ERROR: %s",TAG,ex.getMessage()),ex);
+				ErrorUtil.showError(ex);
+			}
 		}
 	}
 }

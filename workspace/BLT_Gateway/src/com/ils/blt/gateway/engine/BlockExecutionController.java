@@ -21,6 +21,7 @@ import com.ils.block.control.ExecutionController;
 import com.ils.block.control.IncomingNotification;
 import com.ils.block.control.OutgoingNotification;
 import com.ils.block.control.SignalNotification;
+import com.ils.blt.common.serializable.DiagramState;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.common.BoundedBuffer;
 import com.ils.common.watchdog.Watchdog;
@@ -67,7 +68,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	private BlockExecutionController() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.threadPool = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
-		this.tagListener = new TagListener();
+		this.tagListener = new TagListener(this);
 		this.tagWriter = new TagWriter();
 		this.buffer = new BoundedBuffer(BUFFER_SIZE);
 	}
@@ -91,25 +92,31 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public void acceptBroadcastNotification(BroadcastNotification note) {
 		log.infof("%s.acceptBroadcastNotification: %s (%s) %s", TAG,note.getDiagramId(),note.getSignal().getCommand(),
 				(stopped?"REJECTED, controller stopped":""));
-		try {
-			if(!stopped) buffer.put(note);
+		ProcessDiagram diagram = getDiagram(note.getDiagramId());
+		if( diagram!=null && diagram.getState().equals(DiagramState.ACTIVE)) {
+			try {
+				if(!stopped) buffer.put(note);
+			}
+			catch( InterruptedException ie ) {}
 		}
-		catch( InterruptedException ie ) {}
 	}
 	
 	/**
 	 * A block has completed evaluation. A new value has been placed on its output.
 	 * Place the notification into the queue for delivery to the appropriate downstream blocks.
-	 * If we're stopped, these all go into the bit bucket.
+	 * If we're stopped or the diagram is not active, these all go into the bit bucket.
 	 */
 	@Override
 	public void acceptCompletionNotification(OutgoingNotification note) {
 		log.infof("%s:acceptCompletionNotification: %s:%s %s", TAG,note.getBlock().getBlockId().toString(),note.getPort(),
 				(stopped?"REJECTED, controller stopped":""));
-		try {
-			if(!stopped) buffer.put(note);
+		ProcessDiagram diagram = getDiagram(note.getBlock().getParentId());
+		if( diagram!=null && diagram.getState().equals(DiagramState.ACTIVE)) {
+			try {
+				if(!stopped) buffer.put(note);
+			}
+			catch( InterruptedException ie ) {}
 		}
-		catch( InterruptedException ie ) {}
 	}
 	
 	/**
@@ -120,10 +127,13 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public void acceptConnectionPostNotification(ConnectionPostNotification note) {
 		log.infof("%s:acceptConnectionPostNotification: %s %s", TAG,note.getOriginName(),
 				(stopped?"REJECTED, controller stopped":""));
-		try {
-			if(!stopped) buffer.put(note);
+		ProcessDiagram diagram = getDiagram(note.getDiagramId());
+		if( diagram!=null && diagram.getState().equals(DiagramState.ACTIVE)) {
+			try {
+				if(!stopped) buffer.put(note);
+			}
+			catch( InterruptedException ie ) {}
 		}
-		catch( InterruptedException ie ) {}
 	}
 
 	/**
@@ -243,10 +253,17 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	}
 	// ======================= Delegated to TagWriter ======================
 	/**
-	 * Write a value to a tag.
+	 * Write a value to a tag. If the diagram referenced diagram is disabled
+	 * or "constrained", then this method has no effect.
+	 * @param diagramId UUID of the parent diagram
+	 * @param path
+	 * @param val
 	 */
-	public void updateTag(String path,QualifiedValue val) {
-		tagWriter.updateTag(path,val);
+	public void updateTag(UUID diagramId,String path,QualifiedValue val) {
+		ProcessDiagram diagram = modelManager.getDiagram(diagramId);
+		if( diagram!=null && diagram.getState().equals(DiagramState.ACTIVE)) {
+			tagWriter.updateTag(path,val);
+		}
 	}
 	// ======================= Delegated to Watchdog ======================
 	/**
@@ -255,6 +272,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 * into the timer list for the first time.
 	 * 
 	 * This method has no effect unless the controller is running.
+	 * @param pet the watchdog to stroke.
 	 */
 	public void pet(Watchdog dog) {
 		if(watchdogTimer!=null) watchdogTimer.updateWatchdog(dog);
