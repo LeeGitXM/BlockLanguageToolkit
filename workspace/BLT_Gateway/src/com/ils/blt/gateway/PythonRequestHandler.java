@@ -8,14 +8,13 @@ import java.util.UUID;
 
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
-import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
 /**
  * This class exposes python-callable methods that interface with the execution engine. 
+ * The class is accessed via direct import imto Python
  */
 public class PythonRequestHandler   {
-	private static final String TAG = "PythonRequestHandler: ";
-	public static GatewayContext context = null;   // Set in the hook class
+	private static final String TAG = "PythonRequestHandler";
 	private static LoggerEx log = LogUtil.getLogger(PythonRequestHandler.class.getPackage().getName());
 	
 	/**
@@ -39,5 +38,4 @@ public class PythonRequestHandler   {
 			log.warnf("%s.postValue: one of %s or %s illegal UUID (%s)",TAG,parent,id,iae.getMessage());
 		}
 	}
-	
 }

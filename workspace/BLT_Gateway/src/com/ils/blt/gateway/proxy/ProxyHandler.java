@@ -56,7 +56,6 @@ public class ProxyHandler   {
 	private final PythonToJava toJavaTranslator;
 	private final JavaToPython toPythonTranslator;
 	private static ProxyHandler instance = null;
-	private final PyObject pythonRequestHandler;
 	// These are the indices of specific callback functions within the array
 	private final Callback createBlockCallback;
 	private final Callback evaluateCallback;
@@ -73,7 +72,6 @@ public class ProxyHandler   {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		toJavaTranslator = new PythonToJava();
 		toPythonTranslator = new JavaToPython();
-		pythonRequestHandler = Py.java2py(new PythonRequestHandler());
 		// Create an instance of each callback method
 		createBlockCallback = new CreateBlock();
 		evaluateCallback = new Evaluate();
@@ -132,7 +130,6 @@ public class ProxyHandler   {
 			// Contents of list are Hashtable<String,?>
 			PyObject pyBlock = (PyObject)pyDictionary.get("instance");
 			if( pyBlock!=null ) {
-				pyBlock.__setitem__("engineHandler", pythonRequestHandler);
 				block.setPythonBlock(pyBlock);
 				BlockProperty[] props = getBlockProperties(pyBlock);
 				for(BlockProperty prop:props) {
