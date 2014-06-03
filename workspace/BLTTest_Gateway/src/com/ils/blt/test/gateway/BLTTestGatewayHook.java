@@ -49,7 +49,6 @@ public class BLTTestGatewayHook extends AbstractGatewayModuleHook  {
 	    
 	    MockDiagramRequestHandler requestHandler = new MockDiagramRequestHandler(context);
 	    dispatcher = new BLTTGatewayRpcDispatcher(context,requestHandler);
-		GatewayMockDiagramScriptFunctions.dispatcher = dispatcher;
 		GatewayMockDiagramScriptFunctions.requestHandler = requestHandler;
 		log.infof("%s.startup: complete.",TAG);
 	}

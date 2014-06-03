@@ -8,10 +8,7 @@ package com.ils.blt.test.common;
 
 import java.util.UUID;
 
-import com.ils.block.common.PropertyType;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-
-
 
 /**
  *  Define the methods available to a python test script in the designer.
@@ -58,6 +55,19 @@ public interface MockDiagramScriptingInterface   {
 	 */
 	public void deleteMockDiagram(UUID diagram);
 	/**
+	 * Force the block under test to present a specified value on the named output.
+	 * @param diagram
+	 * @param port
+	 * @param value to be presented on the output connection.
+	 */
+	public void forcePost(UUID diagram,String port,Object value);
+	/**
+	 * Return the locked state of the block under test.
+	 * @param diagram
+	 * @return true if the block under test is locked.
+	 */
+	public boolean isLocked(UUID diagram);
+	/**
 	 * Read the current value held by the mock output identified by the specified
 	 * port name.
 	 * @param diagram
@@ -65,6 +75,18 @@ public interface MockDiagramScriptingInterface   {
 	 * @return the current value held by the specified port.
 	 */
 	public QualifiedValue readValue(UUID diagram,String port);
+	/**
+	 * Execute the block under test's reset method.
+	 * @param diagram
+	 */
+	public void reset(UUID diagram);
+	/**
+	 * Set the locked state of the block nder test
+	 * 
+	 * @param diagramId
+	 * @param flag the new locked state of the block
+	 */
+	public void setLocked(UUID diagramId,Boolean flag);
 	/**
 	 * Set the value of the named property in the block-under-test. This value ignores
 	 * any type of binding. Normally, if the property is bound to a tag, then the value
@@ -95,6 +117,7 @@ public interface MockDiagramScriptingInterface   {
 	 * @param port
 	 * @param index of the connection into the named port. The index is zero-based.
 	 * @param value
+	 * @return timestamp, the system time at which the value was created
 	 */
-	public void writeValue(UUID diagram,String port,Integer index,String value,String quality);
+	public long writeValue(UUID diagram,String port,Integer index,String value,String quality);
 }

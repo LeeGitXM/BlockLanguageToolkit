@@ -1,5 +1,5 @@
 /**
- *   (c) 2013  ILS Automation. All rights reserved.
+ *   (c) 2014  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.test.gateway;
@@ -20,7 +20,6 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 public class GatewayMockDiagramScriptFunctions  {
 	private static final String TAG = "GatewayMockDiagramScriptFunctions: ";
 	private static LoggerEx log = LogUtil.getLogger(GatewayMockDiagramScriptFunctions.class.getPackage().getName());
-	public static BLTTGatewayRpcDispatcher  dispatcher = null;       // Set by the hook
 	public static MockDiagramRequestHandler requestHandler = null;   // Set by the hook
 	
 	/**
@@ -36,11 +35,7 @@ public class GatewayMockDiagramScriptFunctions  {
 	 */
 	public static UUID createMockDiagram(String blockClass) {
 		log.infof("%s.createMockDiagram: for class %s ",TAG,blockClass);
-		UUID result = null;
-		if( dispatcher!=null ) {
-			result = dispatcher.createMockDiagram(blockClass);
-		}
-		return result;
+		return requestHandler.createMockDiagram(blockClass);
 	}
 	/**
 	 * Define an input connected to the named port. This input is held as part of the 
@@ -52,9 +47,7 @@ public class GatewayMockDiagramScriptFunctions  {
 	 */
 	public static void addMockInput(UUID diagramId,String tagPath,String propertyType,String port ) {
 		log.infof("%s.addMockInput: %s %s %s",TAG,tagPath,propertyType.toString(),port);
-		if( dispatcher!=null ) {
-			dispatcher.addMockInput(diagramId,tagPath,propertyType,port);
-		}
+		requestHandler.addMockInput(diagramId,tagPath,propertyType,port);
 	}
 	/**
 	 * Define an output connected to the named port. This output is held as part of the 
@@ -66,9 +59,7 @@ public class GatewayMockDiagramScriptFunctions  {
 	 */
 	public static void addMockOutput(UUID diagramId,String tagPath,String propertyType,String port ) {
 		log.infof("%s.addMockOutput: %s %s %s",TAG,tagPath,propertyType.toString(),port);
-		if( dispatcher!=null ) {
-			dispatcher.addMockOutput(diagramId,tagPath,propertyType,port);
-		}
+		requestHandler.addMockOutput(diagramId,tagPath,propertyType,port);
 	}
 	/**
 	 * Remove the test diagramId from the execution engine (block controller).
@@ -78,8 +69,20 @@ public class GatewayMockDiagramScriptFunctions  {
 	 */
 	public static void deleteMockDiagram(UUID diagramId) {
 		log.infof("%s.deleteMockDiagram: %s ",TAG,diagramId.toString());
-		if( dispatcher!=null ) {
-			dispatcher.deleteMockDiagram(diagramId);
+		if( requestHandler!=null ) {
+			requestHandler.deleteMockDiagram(diagramId);
+		}
+	}
+	/**
+	 * Force the block under test to present a specified value on the named output.
+	 * @param diagram
+	 * @param port
+	 * @param value to be presented on the output connection.
+	 */
+	public void forcePost(UUID diagramId,String port,Object value) {
+		log.infof("%s.forcePost: %s %s = %s",TAG,diagramId.toString(),port,value.toString());
+		if( requestHandler!=null ) {
+			requestHandler.deleteMockDiagram(diagramId);
 		}
 	}
 	/**
@@ -92,8 +95,8 @@ public class GatewayMockDiagramScriptFunctions  {
 	public static QualifiedValue readValue(UUID diagramId,String port){ 
 		log.infof("%s.readValue: %s %s",TAG,diagramId.toString(),port);
 		QualifiedValue val = null;
-		if( dispatcher!=null ) {
-			val = dispatcher.readValue(diagramId,port);
+		if( requestHandler!=null ) {
+			val = requestHandler.readValue(diagramId,port);
 		}
 		return val;
 	}
@@ -143,11 +146,14 @@ public class GatewayMockDiagramScriptFunctions  {
 	 * @param port
 	 * @param value
 	 * @param quality
+	 * @return timestamp, the time at which the input was created
 	 */
-	public static void writeValue(UUID diagramId,UUID blockId,String port,int index,String value,String quality) {
+	public static long writeValue(UUID diagramId,UUID blockId,String port,int index,String value,String quality) {
 		log.infof("%s.writeValue: %s %s.%d=%s",TAG,diagramId.toString(),port,index,value);
+		long timestamp = 0;
 		if( requestHandler!=null ) {
-			requestHandler.writeValue(diagramId,port,index,value,quality);
+			timestamp = requestHandler.writeValue(diagramId,port,index,value,quality);
 		}
+		return timestamp;
 	}
 }

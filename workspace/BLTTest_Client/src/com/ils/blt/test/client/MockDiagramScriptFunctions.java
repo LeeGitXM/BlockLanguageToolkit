@@ -1,8 +1,6 @@
 /**
  *   (c) 2014  ILS Automation. All rights reserved.
  *  
- *   Based on sample code in the IA-scripting-module
- *   by Travis Cox.
  */
 package com.ils.blt.test.client;
 
@@ -98,6 +96,40 @@ public class MockDiagramScriptFunctions   {
 		}
 	}
 	/**
+	 * Force the block under test to present a specified value on the named output.
+	 * @param diagram
+	 * @param port
+	 * @param value to be presented on the output connection.
+	 */
+	public static void forcePost(UUID diagramId,String port,Object value) {
+		log.debugf("%s.forcePost: %s %s->%s",TAG,diagramId.toString(),port,value.toString());
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTTestProperties.MODULE_ID, "forcePost", diagramId,port,value.toString());
+		}
+		catch(Exception ge) {
+			log.infof("%s.forcePost: GatewayException (%s)",TAG,ge.getMessage());
+		}
+	}
+	/**
+	 * Return the locked state of the block under test.
+	 * @param diagram
+	 * @return true if the block under test is locked.
+	 */
+	public static boolean isLocked(UUID diagramId) {
+		log.debugf("%s.isLocked: %s",TAG,diagramId.toString());
+		boolean locked = false;
+		try {
+			Boolean result = (Boolean)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTTestProperties.MODULE_ID, "isLocked", diagramId);
+			locked = result.booleanValue();
+		}
+		catch(Exception ge) {
+			log.infof("%s.isLocked: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		return locked;
+	}
+	/**
 	 * Read the current value held by the mock output identified by the specified
 	 * port name.  NOTE: A legitimate null value is returned as a Qualified value,
 	 * that has null for its value.
@@ -117,6 +149,36 @@ public class MockDiagramScriptFunctions   {
 			log.infof("%s.readValue: GatewayException (%s)",TAG,ge.getMessage());
 		}
 		return val;
+	}
+	/**
+	 * Execute the block under test's reset method.
+	 * @param diagram
+	 */
+	public void reset(UUID diagramId) {
+		log.debugf("%s.reset: %s",TAG,diagramId.toString());
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTTestProperties.MODULE_ID, "reset", diagramId);
+		}
+		catch(Exception ge) {
+			log.infof("%s.reset: GatewayException (%s)",TAG,ge.getMessage());
+		}
+	}
+	/**
+	 * Set the locked state of the block under test
+	 * 
+	 * @param diagramId
+	 * @param flag the new locked state of the block
+	 */
+	public static void setLocked(UUID diagramId,boolean flag) {
+		log.debugf("%s.setLocked: %s %s",TAG,diagramId.toString(), (flag?"true":"false"));
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTTestProperties.MODULE_ID, "setLocked", diagramId,new Boolean(flag));
+		}
+		catch(Exception ge) {
+			log.infof("%s.setLocked: GatewayException (%s)",TAG,ge.getMessage());
+		}
 	}
 	/**
 	 * Set the value of the named property in the block-under-test. This value ignores
@@ -178,15 +240,18 @@ public class MockDiagramScriptFunctions   {
 	 * @param value
 	 * @param quality
 	 */
-	public static void writeValue(UUID diagram,String port,int index,String value, String quality) {
+	public static long writeValue(UUID diagram,String port,int index,String value, String quality) {
 		log.debugf("%s.writeValue: %s %s.%d=%s",TAG,diagram.toString(),port,index,value);
+		long timestamp = 0;
 		try {
-			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+			Long result = (Long)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTTestProperties.MODULE_ID, "writeValue", diagram,port,new Integer(index),value,quality);
+			if( result!=null ) timestamp = result.longValue();
 		}
 		catch(Exception ge) {
 			log.infof("%s.writeValue: GatewayException (%s)",TAG,ge.getMessage());
 		}
+		return timestamp;
 	}
 	
 }

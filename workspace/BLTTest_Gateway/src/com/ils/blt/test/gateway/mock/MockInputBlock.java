@@ -3,6 +3,7 @@
  */
 package com.ils.blt.test.gateway.mock;
 
+import java.util.Date;
 import java.util.UUID;
 
 import com.ils.block.AbstractProcessBlock;
@@ -18,6 +19,7 @@ import com.ils.block.control.OutgoingNotification;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.connection.ConnectionType;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
+import com.inductiveautomation.ignition.common.sqltags.model.types.DataQuality;
 
 
 /**
@@ -58,10 +60,14 @@ public class MockInputBlock extends AbstractProcessBlock implements ProcessBlock
 	/**
 	 * Pass a value directly on the output. This callable directly. Convert 
 	 * arguments to proper type for the outgoing connection.
+	 * @param value as a string. The block will convert to the correct datatype.
+	 * @param quality as a string. Good is 'good'.
+	 * @return the timestamp ~msec
 	 */
-	public void writeValue(String value,String quality) {
+	public long writeValue(String value,String quality) {
 		// Convert the string to a proper data type
 		Object obj = value;
+		Date now = new Date();
 		if( propertyType.equals(PropertyType.BOOLEAN)) {
 			obj = TruthValue.UNKNOWN;
 			try {
@@ -71,11 +77,10 @@ public class MockInputBlock extends AbstractProcessBlock implements ProcessBlock
 				log.infof("%s.writeValue: Unknown truth value %s (%s)",TAG,value,iae.getLocalizedMessage());
 			}
 		}
-		else {
-			obj = new BasicQualifiedValue(value);
-		}
+		obj = new BasicQualifiedValue(obj,DataQuality.GOOD_DATA,now);
 		OutgoingNotification nvn = new OutgoingNotification(this,portName,obj);
 		controller.acceptCompletionNotification(nvn);
+		return now.getTime();
 	}
 	
 	/**

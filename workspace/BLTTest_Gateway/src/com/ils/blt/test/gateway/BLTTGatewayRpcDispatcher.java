@@ -6,20 +6,11 @@ package com.ils.blt.test.gateway;
 import java.util.Date;
 import java.util.UUID;
 
-import com.ils.block.ProcessBlock;
-import com.ils.block.common.PropertyType;
-import com.ils.blt.common.serializable.SerializableDiagram;
-import com.ils.blt.gateway.BlockRequestHandler;
 import com.ils.blt.gateway.engine.BlockExecutionController;
-import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.ils.blt.test.common.MockDiagramScriptingInterface;
 import com.ils.blt.test.common.TagProviderScriptingInterface;
-import com.ils.blt.test.gateway.mock.MockDiagram;
-import com.ils.blt.test.gateway.mock.MockInputBlock;
-import com.ils.blt.test.gateway.mock.MockOutputBlock;
 import com.ils.blt.test.gateway.tag.ProviderRegistry;
 import com.ils.blt.test.gateway.tag.TagHandler;
-import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -59,23 +50,7 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface,
 	 */
 	@Override
 	public UUID createMockDiagram(String blockClass) {
-		SerializableDiagram origin = new SerializableDiagram();
-		origin.setId(UUID.randomUUID());
-		origin.setName("Mock:"+blockClass);
-		MockDiagram mock = new MockDiagram(origin,null);  // No parent
-		// Instantiate a block from the class
-		ProcessBlock uut = BlockRequestHandler.getInstance().createInstance(blockClass, mock.getSelf(), UUID.randomUUID());
-		if( uut==null) {
-			uut = ProxyHandler.getInstance().createBlockInstance(blockClass, mock.getSelf(), UUID.randomUUID());
-		}
-		if( uut!=null ) {
-			mock.addBlock(uut);
-			this.controller.addTemporaryDiagram(mock);
-		}
-		else {
-			log.warnf("%s.createMockDiagram: Failed to create block of class %s",TAG,blockClass);
-		}	
-		return mock.getSelf();
+		return requestHandler.createMockDiagram(blockClass);
 	}
 	/**
 	 * Add an input block to the mock diagram. Connect it to the block-under-test's 
@@ -83,37 +58,28 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface,
 	 */
 	@Override
 	public void addMockInput(UUID diagramId, String tagPath, String type, String port) {
-		PropertyType propertyType = PropertyType.OBJECT;   // Unknown
-		try {
-			propertyType = PropertyType.valueOf(type.toUpperCase());
-		}
-		catch(IllegalArgumentException iae) {
-			log.warnf("%s.addMockInput: Unrecognized property type %s (%s)", TAG,type,iae.getLocalizedMessage());
-		}
-		MockInputBlock input = new MockInputBlock(diagramId,tagPath,propertyType,port);
-		MockDiagram mock = (MockDiagram)controller.getDiagram(diagramId);
-		if( mock!=null) mock.addBlock(input);
+		requestHandler.addMockInput(diagramId, tagPath, type, port);
 	}
 	@Override
 	public void addMockOutput(UUID diagramId, String tagPath, String type, String port) {
-		PropertyType propertyType = PropertyType.OBJECT;   // Unknown
-		try {
-			propertyType = PropertyType.valueOf(type.toUpperCase());
-		}
-		catch(IllegalArgumentException iae) {
-			log.warnf("%s.addMockOutput: Unrecognized property type %s (%s)", TAG,type,iae.getLocalizedMessage());
-		}
-		MockOutputBlock output = new MockOutputBlock(diagramId,tagPath,propertyType,port);
-		MockDiagram mock = (MockDiagram)controller.getDiagram(diagramId);
-		if( mock!=null) mock.addBlock(output);
+		requestHandler.addMockOutput(diagramId, tagPath, type, port);
 	}
+	
 	@Override
 	public void deleteMockDiagram(UUID diagram) {
 		stopMockDiagram(diagram);
 		controller.removeTemporaryDiagram(diagram);
 
 	}
+	@Override
+	public void forcePost(UUID diagramId, String port, Object value) {
+		requestHandler.forcePost(diagramId,port,value);
+	}
 
+	@Override
+	public boolean isLocked(UUID diagram) {
+		return requestHandler.isLocked(diagram);
+	}
 	/**
 	 * Read the latest value from the output block with the named port.
 	 * No reading is signified by an empty string.
@@ -121,18 +87,17 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface,
 	@Override
 	public QualifiedValue readValue(UUID diagramId, String port) {
 		log.infof("%s.readValue: %s on %s", TAG,diagramId.toString(),port);
-		QualifiedValue qv = new BasicQualifiedValue("none");
-		MockDiagram mock = (MockDiagram)controller.getDiagram(diagramId);
-		MockOutputBlock block = null;
-		if( mock!=null) block = mock.getOutputForPort(port);
-		if( block!=null ) {
-			qv = block.getValue();
-			log.infof("%s.readValue: block value %s", TAG,qv.toString());
-		}
-		else {
-			log.warnf("%s.readValue: Unknown output port %s", TAG,port);
-		}
-		return qv;
+		return requestHandler.readValue(diagramId, port);
+	}
+	@Override
+	public void reset(UUID diagram) {
+		requestHandler.reset(diagram);
+	}
+
+	@Override
+	public void setLocked(UUID diagramId, Boolean flag) {
+		requestHandler.setLocked(diagramId,flag.booleanValue());
+		
 	}
 	@Override
 	public void setTestBlockProperty(UUID diagramId, String propertyName, String value) {
@@ -158,10 +123,12 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface,
 	 * Direct a MockInput block to transmit a value to the block-under-test.
 	 */
 	@Override
-	public void writeValue(UUID diagramId, String port, Integer index, String value,String quality) {
+	public long writeValue(UUID diagramId, String port, Integer index, String value,String quality) {
+		long timestamp = 0;
 		if( index!=null ) {
-			requestHandler.writeValue(diagramId,port,index.intValue(),value,quality);
+			timestamp = requestHandler.writeValue(diagramId,port,index.intValue(),value,quality);
 		}
+		return timestamp;
 	}
 	//=============================== Methods in the TagProviderScriptingInterface ===================================
 	@Override
@@ -198,6 +165,4 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface,
 	public void updateTag(String provider, String tagPath, String value, Date timestamp) {
 		tagFactory.updateTag(provider, tagPath, value, timestamp);
 	}
-
-
 }
