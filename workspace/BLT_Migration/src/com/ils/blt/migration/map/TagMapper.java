@@ -67,16 +67,23 @@ public class TagMapper {
 		if( iblock.getProperties()!=null)  {   // No properties, nothing to do
 			for(BlockProperty bp:iblock.getProperties()) {
 				//System.out.println(TAG+".setTagPaths: "+bp.getName()+", binding = "+bp.getBinding());
-				if( bp.getBindingType().equals(BindingType.TAG) ) {
-					String unmapped = bp.getValue().toString();
-					String mapped = tagMap.get(unmapped);
-					if( mapped!=null) {
-						bp.setBinding(mapped);
-						bp.setValue("");  // Clear the value because we're bound to a tag
+				if( bp.getBindingType().equals(BindingType.TAG)  ) {
+					if( bp.getValue()!=null ) {
+						String unmapped = bp.getValue().toString();
+						String mapped = tagMap.get(unmapped);
+						if( mapped!=null) {
+							bp.setBinding(mapped);
+							bp.setValue("");  // Clear the value because we're bound to a tag
+						}
+						else {
+							System.err.println(TAG+".setTagPaths "+unmapped+" is not mapped to a tag path");
+						}
 					}
 					else {
-						System.err.println(TAG+".setTagPaths "+unmapped+" is not mapped to a tag path");
+						System.err.println(TAG+".setTagPaths value is not set for use as a tag path");
 					}
+					
+					
 				}
 			}
 		}

@@ -99,7 +99,7 @@ public class MockDiagramScriptFunctions   {
 	}
 	/**
 	 * Read the current value held by the mock output identified by the specified
-	 * port name.  NOTE: A legimate null value is returned as a Qualified value,
+	 * port name.  NOTE: A legitimate null value is returned as a Qualified value,
 	 * that has null for its value.
 	 * @param diagram
 	 * @param blockId

@@ -6,7 +6,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 import com.ils.block.common.BlockProperty;
 import com.ils.blt.common.serializable.SerializableBlock;
@@ -18,7 +17,7 @@ import com.ils.blt.migration.G2Property;
  * database as a lookup to map property names between the two systems.
  */
 public class PropertyMapper {
-	private final String TAG = "PropertyValueMapper";
+	private final String TAG = "PropertyMapper";
 	private final Map<String,String> propertyMap;     // Lookup by G2 property name
 	/** 
 	 * Constructor: 

@@ -5,3 +5,4 @@
 BIN=`pwd`
 REPO=~/Development/ils/repo/blt/workspace/BLT_Migration/json
 rm -f ${REPO}/g2/*.json
+rm -f ${REPO}/ignition/*.json

@@ -27,7 +27,7 @@ import com.ils.common.ClassList;
  * get the information from the database.
  */
 public class PythonPropertyMapper {
-	private final String TAG = "PropertyMapper";
+	private final String TAG = "PythonPropertyMapper";
 	private final Map<String,PrototypeSet> prototypeSetMap;       // Lookup by className
 	private final Map<String,BlockProperty[]> propertyArrayMap;    // Lookup by className
 	/** 
@@ -224,7 +224,7 @@ public class PythonPropertyMapper {
 		}
 		else {
 			System.err.println(TAG+".setProperties: No properties found for class "+cname);
-			System.err.println(TAG+".setProperties: ---- dump map ---\n "+properties);
+			//System.err.println(TAG+".setProperties: ---- dump map ---\n "+properties);
 		}
 	}
 
