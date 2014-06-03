@@ -40,9 +40,7 @@ CREATE TABLE PythonBlockProperties(
     BlockClass text NOT NULL,
     PropertyName text NOT NULL,
 	PropertyType text NOT NULL,
-	Editable integer,
-	Maximum float,
-    Minimum float
+	Editable integer
 );
 -- This table is used to define attributes that
 -- are fixed for a given class of block. Only

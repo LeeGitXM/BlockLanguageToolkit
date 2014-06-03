@@ -6,9 +6,12 @@ insert into ClassMap values ('EM-GDA-TEST-POINT','com.ils.block.TestPoint');
 insert into ClassMap values ('GDL-AND-GATE','com.ils.block.And');
 insert into ClassMap values ('GDL-BLOCK-RESET','com.ils.block.Reset');
 insert into ClassMap values ('GDL-CONCLUSION','com.ils.block.Junction');
+insert into ClassMap values ('GDL-D.D-DISPLAY','com.ils.block.Readout');
 insert into ClassMap values ('GDL-DATA-PATH-DISPLAY','com.ils.block.Readout');
 insert into ClassMap values ('GDL-DATA-TIME-STAMP','com.ils.block.Junction');
+insert into ClassMap values ('GDL-DIFFERENCE','com.ils.block.Difference');
 insert into ClassMap values ('GDL-ENCAPSULATION','com.ils.block.Encapsulation');
+insert into ClassMap values ('GDL-ENCAPSULATION-BLOCK','com.ils.block.Encapsulation');
 insert into ClassMap values ('GDL-EQUALITY-OBSERVATION','com.ils.block.EqualityObservation');
 insert into ClassMap values ('GDL-INFERENCE-EVENT','com.ils.block.EdgeTrigger');
 insert into ClassMap values ('GDL-HIGH-VALUE-OBSERVATION','com.ils.block.HighLimitObservation');
@@ -20,3 +23,4 @@ insert into ClassMap values ('GDL-SYMBOLIC-ENTRY-POINT','com.ils.block.Input');
 -- NOTE: We convert all connnection posts to "sinks"
 --       later on we analyze and determine which are "sources"
 insert into ClassMap values ('GDL-INFERENCE-PATH-CONNECTION-POST','com.ils.block.SinkConnection');
+insert into ClassMap values ('GDL-DATA-PATH-CONNECTION-POST','com.ils.block.SinkConnection');

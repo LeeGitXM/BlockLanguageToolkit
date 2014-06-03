@@ -116,7 +116,7 @@ public class TagMigrator {
 				tagPath = tagPath.substring(pos+1);
 				pos = tagPath.indexOf("/");
 			}
-			System.out.println("<Tag name=\""+tagPath+"\" path=\""+path+"\" type=\"DB\"/>");
+			System.out.println("<Tag name=\""+tagPath+"\" path=\""+path+"\" type=\"DB\">");
 			System.out.println("<Property name=\"DataType\">"+td.getTypeCode()+"</Property>");
 			System.out.println("</Tag>");
 		}

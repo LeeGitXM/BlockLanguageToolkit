@@ -31,8 +31,8 @@ import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.migration.map.AnchorMapper;
 import com.ils.blt.migration.map.ClassNameMapper;
 import com.ils.blt.migration.map.ConnectionMapper;
-import com.ils.blt.migration.map.PythonPropertyMapper;
 import com.ils.blt.migration.map.PropertyMapper;
+import com.ils.blt.migration.map.PythonPropertyMapper;
 import com.ils.blt.migration.map.TagMapper;
 
 public class Migrator {
@@ -346,15 +346,21 @@ public class Migrator {
 		String path = args[0];
 		// In case we've been fed a Windows path, convert
 		path = path.replace("\\", "/");
-		m.processDatabase(path);
-		m.processInput();
-		if(root.equals(RootClass.APPLICATION) ) {
-			m.migrateApplication();
+		try {
+			m.processDatabase(path);
+			m.processInput();
+			if(root.equals(RootClass.APPLICATION) ) {
+				m.migrateApplication();
+			}
+			else if(root.equals(RootClass.DIAGRAM)) {
+				m.migrateDiagram();
+			}
+			m.createOutput();
 		}
-		else if(root.equals(RootClass.DIAGRAM)) {
-			m.migrateDiagram();
+		catch(Exception ex) {
+			System.err.println(String.format("%s.main: UncaughtException (%s)",TAG,ex.getMessage()));
+			ex.printStackTrace(System.err);
 		}
-		m.createOutput();
 	}
 
 }

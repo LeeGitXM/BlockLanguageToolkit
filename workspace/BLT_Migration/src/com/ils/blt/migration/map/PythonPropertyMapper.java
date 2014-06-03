@@ -49,7 +49,6 @@ public class PythonPropertyMapper {
 	 * @param cxn open database connection
 	 */
 	public void createMap(Connection cxn) {
-
 		// First iterate through all Java classes
 		// The blocks implemented in Java have been copied into the migration jar during its build
 		ClassList cl = new ClassList();
@@ -70,17 +69,18 @@ public class PythonPropertyMapper {
 					propertyArrayMap.put(bd.getBlockClass(),properties);
 				}
 				else {
-					System.err.println(String.format("%s: Class %s not a ProcessBlock",TAG,cls.getName()));
+					System.err.println(String.format("%s.create: Class %s not a ProcessBlock",TAG,cls.getName()));
 				}
 			} 
 			catch (InstantiationException ie) {
-				System.err.println(String.format("%s: Exception instantiating block (%s)",TAG,ie.getLocalizedMessage()));
+				System.err.println(String.format("%s.createMap: Exception instantiating block (%s)",TAG,ie.getLocalizedMessage()));
 			} 
 			catch (IllegalAccessException iae) {
-				System.err.println(String.format("%s: Access exception (%s)",TAG,iae.getMessage()));
+				System.err.println(String.format("%s.createMap: Access exception (%s)",TAG,iae.getMessage()));
 			}
 			catch (Exception ex) {
-				System.err.println(String.format("%s: Runtime exception (%s)",TAG,ex.getMessage()));
+				System.err.println(String.format("%s.createMap: Runtime exception (%s)",TAG,ex.getMessage()));
+				ex.printStackTrace(System.err);
 			}
 		}
 		// Now fill-in view attributes with any classes known to

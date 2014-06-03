@@ -1,5 +1,6 @@
 -- Map G2 GSI names to Ignition Tags
 -- Columns are GSI name, tag path
+insert into TagMap values ('AB-BALER-VOL-LAB-DATA','[]LabData/AB_BALER_VOL','DOUBLE');
 insert into TagMap values ('CA-LAB-DATA','[]LabData/CA','DOUBLE');
 insert into TagMap values ('C2-LAB-DATA','[]LabData/C2','DOUBLE');
 insert into TagMap values ('C2-LAB-DATA-FOR-R1-NLC','[]LabData/C2_R1_NLC','DOUBLE');
