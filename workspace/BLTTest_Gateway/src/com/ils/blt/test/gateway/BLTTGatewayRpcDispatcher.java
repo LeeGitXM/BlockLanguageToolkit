@@ -120,7 +120,7 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface,
 	}
 	@Override
 	public void setTestBlockProperty(UUID diagramId, String propertyName, String value) {
-		log.infof("%s.setTestBlockProperty: %s on %s", TAG,diagramId.toString(),propertyName,value.toString());
+		log.infof("%s.setTestBlockProperty: %s %s is %s", TAG,diagramId.toString(),propertyName,value.toString());
 		try {
 			requestHandler.setTestBlockProperty(diagramId,propertyName,value);
 		}

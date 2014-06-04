@@ -153,7 +153,7 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 		if( mock!=null) block = mock.getOutputForPort(port);
 		if( block!=null ) {
 			qv = block.getValue();
-			log.infof("%s.readValue: block value %s", TAG,qv.toString());
+			log.infof("%s.readValue: output block value %s", TAG,qv.toString());
 		}
 		else {
 			log.warnf("%s.readValue: Unknown output port %s", TAG,port);

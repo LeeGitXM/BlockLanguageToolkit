@@ -103,7 +103,7 @@ public class MockDiagramScriptFunctions   {
 	 *              correct data type for the connection.
 	 */
 	public static void forcePost(UUID diagramId,String port,String value) {
-		log.infof("%s.forcePost: %s %s->%s",TAG,diagramId.toString(),port,value.toString());
+		log.debugf("%s.forcePost: %s %s->%s",TAG,diagramId.toString(),port,value.toString());
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTTestProperties.MODULE_ID, "forcePost", diagramId,port,value.toString());
