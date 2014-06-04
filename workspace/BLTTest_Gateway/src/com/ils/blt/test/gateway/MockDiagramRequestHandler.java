@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import com.ils.block.ProcessBlock;
 import com.ils.block.common.BlockProperty;
+import com.ils.block.common.BlockState;
 import com.ils.block.common.PropertyType;
 import com.ils.block.control.BlockPropertyChangeEvent;
 import com.ils.blt.common.serializable.SerializableDiagram;
@@ -110,12 +111,27 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 	}
 
 	@Override
-	public void forcePost(UUID diagramId, String port, Object value) {
+	public void forcePost(UUID diagramId, String port, String value) {
 		MockDiagram mock = (MockDiagram)controller.getDiagram(diagramId);
 		if( mock!=null ) {
 			ProcessBlock uut = mock.getBlockUnderTest();
 			uut.forcePost(port, value);
 		}
+	}
+	/**
+	 * Return the execution state of the block under test.
+	 * @param diagram
+	 * @return the state of the block under test.
+	 */
+	@Override
+	public String getState(UUID diagramId) {
+		BlockState state = BlockState.INITIALIZED;
+		MockDiagram mock = (MockDiagram)controller.getDiagram(diagramId);
+		if( mock!=null ) {
+			ProcessBlock uut = mock.getBlockUnderTest();
+			state = uut.getState();
+		}
+		return state.name();
 	}
 
 	@Override
@@ -177,11 +193,16 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 		if( mock!=null) {
 			ProcessBlock uut = mock.getBlockUnderTest();
 			BlockProperty property = uut.getProperty(propertyName);
-			BlockPropertyChangeEvent event = new BlockPropertyChangeEvent(
-					uut.getBlockId().toString(),propertyName,
-					new BasicQualifiedValue(property.getValue()),
-					new BasicQualifiedValue(value));
-			uut.propertyChange(event);
+			if( property!=null ) {
+				BlockPropertyChangeEvent event = new BlockPropertyChangeEvent(
+						uut.getBlockId().toString(),propertyName,
+						new BasicQualifiedValue(property.getValue()),
+						new BasicQualifiedValue(value));
+				uut.propertyChange(event);
+			}
+			else {
+				log.infof("%s.setTestBlockProperty: diagram %s, unable to find property %s ",TAG,diagramId.toString(),propertyName);
+			}
 		}
 		else {
 			log.infof("%s.setTestBlockProperty: unable to find diagram %s ",TAG,diagramId.toString());

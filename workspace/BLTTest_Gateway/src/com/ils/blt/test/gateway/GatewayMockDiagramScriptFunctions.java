@@ -79,11 +79,37 @@ public class GatewayMockDiagramScriptFunctions  {
 	 * @param port
 	 * @param value to be presented on the output connection.
 	 */
-	public void forcePost(UUID diagramId,String port,Object value) {
-		log.infof("%s.forcePost: %s %s = %s",TAG,diagramId.toString(),port,value.toString());
+	public static void forcePost(UUID diagramId,String port,String value) {
+		log.infof("%s.forcePost: %s %s = %s",TAG,diagramId.toString(),port,value);
 		if( requestHandler!=null ) {
-			requestHandler.deleteMockDiagram(diagramId);
+			requestHandler.forcePost(diagramId,port,value);
 		}
+	}
+	/**
+	 * Return the execution state of the block under test.
+	 * @param diagram
+	 * @return the state of the block under test.
+	 */
+	public static String getState(UUID diagramId) {
+		log.infof("%s.getState: %s",TAG,diagramId.toString());
+		String state = "";
+		if( requestHandler!=null ) {
+			state = requestHandler.getState(diagramId);
+		}
+		return state;
+	}
+	/**
+	 * Return the locked state of the block under test.
+	 * @param diagram
+	 * @return true if the block under test is locked.
+	 */
+	public static boolean isLocked(UUID diagramId) {
+		log.debugf("%s.isLocked: %s",TAG,diagramId.toString());
+		boolean locked = false;
+		if( requestHandler!=null ) {
+			locked = requestHandler.isLocked(diagramId);
+		}
+		return locked;
 	}
 	/**
 	 * Read the current value held by the mock output identified by the specified
@@ -99,6 +125,28 @@ public class GatewayMockDiagramScriptFunctions  {
 			val = requestHandler.readValue(diagramId,port);
 		}
 		return val;
+	}
+	/**
+	 * Execute the block under test's reset method.
+	 * @param diagram
+	 */
+	public static void reset(UUID diagramId) {
+		log.infof("%s.reset: %s",TAG,diagramId.toString());
+		if( requestHandler!=null ) {
+			requestHandler.reset(diagramId);
+		}
+	}
+	/**
+	 * Set the locked state of the block under test
+	 * 
+	 * @param diagramId
+	 * @param flag the new locked state of the block
+	 */
+	public static void setLocked(UUID diagramId,boolean flag) {
+		log.infof("%s.setLocked: %s %s",TAG,diagramId.toString(), (flag?"true":"false"));
+		if( requestHandler!=null ) {
+			requestHandler.setLocked(diagramId,new Boolean(flag));
+		}
 	}
 	/**
 	 * Set the value of the named property in the block-under-test. This value ignores

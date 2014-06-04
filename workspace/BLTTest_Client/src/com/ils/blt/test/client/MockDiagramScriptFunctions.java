@@ -99,17 +99,36 @@ public class MockDiagramScriptFunctions   {
 	 * Force the block under test to present a specified value on the named output.
 	 * @param diagram
 	 * @param port
-	 * @param value to be presented on the output connection.
+	 * @param value to be presented on the output connection. It will be coerced into the
+	 *              correct data type for the connection.
 	 */
-	public static void forcePost(UUID diagramId,String port,Object value) {
-		log.debugf("%s.forcePost: %s %s->%s",TAG,diagramId.toString(),port,value.toString());
+	public static void forcePost(UUID diagramId,String port,String value) {
+		log.infof("%s.forcePost: %s %s->%s",TAG,diagramId.toString(),port,value.toString());
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTTestProperties.MODULE_ID, "forcePost", diagramId,port,value.toString());
 		}
 		catch(Exception ge) {
-			log.infof("%s.forcePost: GatewayException (%s)",TAG,ge.getMessage());
+			log.info(String.format("%s.forcePost: GatewayException (%s)",TAG,ge.getMessage()),ge);
 		}
+	}
+	/**
+	 * Return the execution state of the block under test.
+	 * @param diagram
+	 * @return the state of the block under test.
+	 */
+	public static String getState(UUID diagramId) {
+		log.debugf("%s.getState: %s",TAG,diagramId.toString());
+		String state = "";
+		try {
+			String result = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTTestProperties.MODULE_ID, "getState", diagramId);
+			state = result;
+		}
+		catch(Exception ge) {
+			log.infof("%s.getState: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		return state;
 	}
 	/**
 	 * Return the locked state of the block under test.
@@ -154,7 +173,7 @@ public class MockDiagramScriptFunctions   {
 	 * Execute the block under test's reset method.
 	 * @param diagram
 	 */
-	public void reset(UUID diagramId) {
+	public static void reset(UUID diagramId) {
 		log.debugf("%s.reset: %s",TAG,diagramId.toString());
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(

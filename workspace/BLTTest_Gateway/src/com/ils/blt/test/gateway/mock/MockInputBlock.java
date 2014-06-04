@@ -19,6 +19,7 @@ import com.ils.block.control.OutgoingNotification;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.connection.ConnectionType;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
+import com.inductiveautomation.ignition.common.model.values.Quality;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataQuality;
 
 
@@ -77,7 +78,9 @@ public class MockInputBlock extends AbstractProcessBlock implements ProcessBlock
 				log.infof("%s.writeValue: Unknown truth value %s (%s)",TAG,value,iae.getLocalizedMessage());
 			}
 		}
-		obj = new BasicQualifiedValue(obj,DataQuality.GOOD_DATA,now);
+		Quality q = DataQuality.OPC_BAD_DATA;
+		if(  "good".equalsIgnoreCase(quality)) q = DataQuality.GOOD_DATA;
+		obj = new BasicQualifiedValue(obj,q,now);
 		OutgoingNotification nvn = new OutgoingNotification(this,portName,obj);
 		controller.acceptCompletionNotification(nvn);
 		return now.getTime();

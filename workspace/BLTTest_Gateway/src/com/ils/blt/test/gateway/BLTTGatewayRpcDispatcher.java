@@ -72,10 +72,28 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface,
 
 	}
 	@Override
-	public void forcePost(UUID diagramId, String port, Object value) {
-		requestHandler.forcePost(diagramId,port,value);
+	public void forcePost(UUID diagramId, String port, String value) {
+		log.infof("%s.forcePost: %s %s->%s",TAG,diagramId.toString(),port,value);
+		try {
+			requestHandler.forcePost(diagramId,port,value);
+		}
+		catch(Exception ex) {
+			log.info(TAG+".forcePost: Exception ("+ex.getMessage()+")",ex);
+		}
 	}
-
+	/**
+	 * Return the execution state of the block under test.
+	 * @param diagram
+	 * @return the state of the block under test.
+	 */
+	public String getState(UUID diagramId) {
+		log.infof("%s.getState: %s",TAG,diagramId.toString());
+		String state = "";
+		if( requestHandler!=null ) {
+			state = requestHandler.getState(diagramId);
+		}
+		return state;
+	}
 	@Override
 	public boolean isLocked(UUID diagram) {
 		return requestHandler.isLocked(diagram);
@@ -91,6 +109,7 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface,
 	}
 	@Override
 	public void reset(UUID diagram) {
+		log.infof("%s.reset", TAG);
 		requestHandler.reset(diagram);
 	}
 
@@ -101,7 +120,14 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface,
 	}
 	@Override
 	public void setTestBlockProperty(UUID diagramId, String propertyName, String value) {
-		requestHandler.setTestBlockProperty(diagramId,propertyName,value);
+		log.infof("%s.setTestBlockProperty: %s on %s", TAG,diagramId.toString(),propertyName,value.toString());
+		try {
+			requestHandler.setTestBlockProperty(diagramId,propertyName,value);
+		}
+		catch(Exception ex) {
+			log.info(TAG+".setTestBlockProperty: Exception ("+ex.getMessage()+")",ex);
+		}
+		
 	}
 
 	/**

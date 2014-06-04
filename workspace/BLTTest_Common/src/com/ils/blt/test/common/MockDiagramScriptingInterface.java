@@ -60,7 +60,13 @@ public interface MockDiagramScriptingInterface   {
 	 * @param port
 	 * @param value to be presented on the output connection.
 	 */
-	public void forcePost(UUID diagram,String port,Object value);
+	public void forcePost(UUID diagram,String port,String value);
+	/**
+	 * Return the execution state of the block under test.
+	 * @param diagram
+	 * @return the state of the block under test.
+	 */
+	public String getState(UUID diagramId);
 	/**
 	 * Return the locked state of the block under test.
 	 * @param diagram
