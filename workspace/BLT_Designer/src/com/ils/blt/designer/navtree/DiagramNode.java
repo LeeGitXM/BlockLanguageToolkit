@@ -43,6 +43,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignab
 import com.inductiveautomation.ignition.designer.gateway.DTGatewayInterface;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
+import com.inductiveautomation.ignition.designer.model.DesignerProjectContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
 import com.inductiveautomation.ignition.designer.navtree.model.ResourceDeleteAction;
@@ -401,5 +402,9 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 				ErrorUtil.showError(ex);
 			}
 		}
+	}
+	@Override
+	protected DesignerProjectContext projectCtx() {
+		return context;
 	}
 }
