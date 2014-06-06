@@ -81,15 +81,21 @@ public class PropertyMapper {
 			String propName = propertyMap.get(key);
 			if( propName!=null ) {
 				BlockProperty[] props = iblock.getProperties();
-				for(BlockProperty bp: props ) {
-					if( bp.getName().equalsIgnoreCase(propName) ) {
-						//System.err.println(TAG+".setProperties match = "+key);
-						if(g2property.getValue()!=null && !g2property.getValue().toString().equalsIgnoreCase("none")) {
-							bp.setValue(g2property.getValue());
+				if( props!=null) {
+					for(BlockProperty bp: props ) {
+						if( bp.getName().equalsIgnoreCase(propName) ) {
+							//System.err.println(TAG+".setProperties match = "+key);
+							if(g2property.getValue()!=null && !g2property.getValue().toString().equalsIgnoreCase("none")) {
+								bp.setValue(g2property.getValue());
+							}
+							break;
 						}
-						break;
 					}
 				}
+				else {
+					iblock.setProperties(new BlockProperty[0]);
+				}
+				
 			}
 			else {
 				System.err.println(TAG+".setProperties "+key+" is undefined");

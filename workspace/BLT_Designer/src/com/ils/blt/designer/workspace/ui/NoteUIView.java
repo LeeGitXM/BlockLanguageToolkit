@@ -7,6 +7,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.util.Collection;
 
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
@@ -17,6 +18,7 @@ import javax.swing.event.ChangeListener;
 
 import com.ils.block.common.BlockConstants;
 import com.ils.block.common.BlockProperty;
+import com.ils.block.common.PropertyType;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
 
@@ -44,10 +46,23 @@ public class NoteUIView extends AbstractUIView implements BlockViewUI, ChangeLis
 	}
 	
 	private void initProperties() {
-		// To save repeatedly picking through the property list, pull out
-		// the ones we are interested in. We listen for changes so
-		// we can promptly update the display
-		for(BlockProperty property: block.getProperties()) {
+		// Guarantee that the block has the required properties
+		Collection<BlockProperty> properties = block.getProperties(); 
+		boolean hasText  = false;
+		boolean hasWidth = false;
+		boolean hasHeight= false;
+		for(BlockProperty property: properties ) {
+			if(property.getName().equals(BlockConstants.BLOCK_PROPERTY_TEXT))        hasText = true;
+			else if(property.getName().equals(BlockConstants.BLOCK_PROPERTY_WIDTH))  hasWidth= true;
+			else if(property.getName().equals(BlockConstants.BLOCK_PROPERTY_HEIGHT)) hasHeight=true;
+		}
+		if(!hasText) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_TEXT,"",PropertyType.STRING,true));
+		if(!hasWidth) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_WIDTH,new Integer(block.getPreferredWidth()),PropertyType.INTEGER,true));
+		if(!hasHeight) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_HEIGHT,new Integer(block.getPreferredHeight()),PropertyType.INTEGER,true));
+	
+		// To save repeatedly picking through the property list (we already did it once), pull out
+		// the ones we are interested in. We listen for changes so we can promptly update the display
+		for(BlockProperty property: properties ) {
 			if(property.getName().equals(BlockConstants.BLOCK_PROPERTY_TEXT)) {
 				textProperty = property;
 				textProperty.addChangeListener(this);

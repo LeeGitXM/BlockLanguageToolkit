@@ -236,7 +236,7 @@ public class PythonPropertyMapper {
 		private final BlockStyle style;
 		private final String embeddedIcon;       // 32x32 icon to place in block in designer
 		private final String embeddedLabel;      // Label place in block in designer
-		private final int    embeddedFontSize;; // Pointsin font for embedded label
+		private final int    embeddedFontSize;   // Points in font for embedded label
 		private final String iconPath;           // Path to icon that is the entire block
 		private final int preferredHeight;
 		private final int preferredWidth; 

@@ -2,7 +2,7 @@
 #  Use this version when debugging a single file.
 #
 BLT=~/Development/ils/repo/blt
-FIL=polyFlyingSwitch
+FIL=crxProductQuality
 INDIR=$BLT/workspace/BLT_Migration/json/g2
 OUTDIR=$BLT/workspace/BLT_Migration/json/ignition
 mkdir -p $OUTDIR

@@ -22,6 +22,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.block.common.BlockConstants;
+import com.ils.block.common.BlockProperty;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableApplication;
@@ -199,13 +200,22 @@ public class Migrator {
 				sf.setPriority(func.coerceToDouble(prop.getValue()));
 			}
 		}
-		int diagramCount = g2f.getProblems().length;
+		int diagramCount = 0;
+		// We have run into some empty diagrams in the G2 exports
+		// Cull these out.
+		for(G2Diagram diag:g2f.getProblems()) {
+			if( diag.getName()!=null && diag.getName().length()>0 ) {
+				diagramCount++;;
+			}
+		}
 		int index = 0;
 		SerializableDiagram[] diagrams = new SerializableDiagram[diagramCount];
 		for(G2Diagram diag:g2f.getProblems()) {
-			SerializableDiagram sd = createSerializableDiagram(diag);
-			diagrams[index] = sd;
-			index++;
+			if( diag.getName()!=null && diag.getName().length()>0 ) {
+				SerializableDiagram sd = createSerializableDiagram(diag);
+				diagrams[index] = sd;
+				index++;
+			}
 		}
 		sf.setDiagrams(diagrams);
 		return sf;
@@ -277,6 +287,24 @@ public class Migrator {
 						break;
 					}
 				}
+			}
+			// G2 Moving Average handles both time and sample count.
+			// We have special classes for these.
+			else if( block.getClassName().startsWith("com.ils.block.MovingAverage")) {
+				// Search for the special property "SampleType". Make it not editable.
+				for(BlockProperty bp:block.getProperties()) {
+					if( bp.getName().equalsIgnoreCase("SampleType" )) {
+						bp.setEditable(false);
+						String val = bp.getValue().toString();
+						if( val.equalsIgnoreCase("fixed" )) block.setClassName("com.ils.block.MovingAverage");
+						else if( val.equalsIgnoreCase("point" )) block.setClassName("com.ils.block.MovingAverageSample");
+						else if( val.equalsIgnoreCase("time" )) block.setClassName("com.ils.block.MovingAverageTime");
+						else {
+							System.err.println(String.format("%s: Perform specialhandling. MovingAverage sample type %s not recognized",TAG,val));
+						}
+					}
+				}
+				
 			}
 				
 		}

@@ -4,6 +4,7 @@ package com.ils.blt.common.serializable;
 import java.util.UUID;
 
 import com.ils.block.common.AnchorDirection;
+import com.ils.block.common.PlacementHint;
 import com.ils.connection.ConnectionType;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -22,6 +23,7 @@ public class SerializableAnchor {
 	private LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	private String annotation;
 	private ConnectionType connectionType;
+	private PlacementHint hint;
 
 	public SerializableAnchor() {
 	}
@@ -31,6 +33,7 @@ public class SerializableAnchor {
 	public Object getId() { return id; }
 	public AnchorDirection getDirection()   { return direction; }
 	public String getDisplay(){ return display; }
+	public PlacementHint getHint() {return hint;}
 	public UUID getParentId() { return parentId; }
 
 	public void setId(Object identifier) { id=identifier; }
@@ -38,6 +41,7 @@ public class SerializableAnchor {
 	public void setConnectionType(ConnectionType connectionType) {this.connectionType = connectionType;}
 	public void setDirection(AnchorDirection t)   { direction=t; }
 	public void setDisplay(String text){display=text; }
+	public void setHint(PlacementHint hint) {this.hint = hint;}
 	public void setParentId(UUID id) { parentId = id; };
 
 	// So that class may be used as a map key

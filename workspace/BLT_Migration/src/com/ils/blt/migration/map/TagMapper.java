@@ -41,7 +41,7 @@ public class TagMapper {
 			{
 				String gsi = rs.getString("GSIName");
 				String tagPath = rs.getString("TagPath");
-				tagMap.put(gsi, tagPath);
+				tagMap.put(gsi, tagPath.trim());
 			}
 			rs.close();
 		}
@@ -70,7 +70,7 @@ public class TagMapper {
 				if( bp.getBindingType().equals(BindingType.TAG)  ) {
 					if( bp.getValue()!=null ) {
 						String unmapped = bp.getValue().toString();
-						String mapped = tagMap.get(unmapped);
+						String mapped = tagMap.get(unmapped.trim());
 						if( mapped!=null) {
 							bp.setBinding(mapped);
 							bp.setValue("");  // Clear the value because we're bound to a tag
