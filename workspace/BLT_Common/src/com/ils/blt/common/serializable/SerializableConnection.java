@@ -30,5 +30,4 @@ public class SerializableConnection {
 	public void setEndBlock(UUID uuid)   { endBlock=uuid; }
 	public void setBeginAnchor(SerializableAnchorPoint anchor){beginAnchor=anchor; }
 	public void setEndAnchor(SerializableAnchorPoint anchor){endAnchor=anchor; }
-
 }

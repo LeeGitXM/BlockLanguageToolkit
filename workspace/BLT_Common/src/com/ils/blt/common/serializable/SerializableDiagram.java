@@ -41,4 +41,29 @@ public class SerializableDiagram {
 	public void setName(String nam) { if(nam!=null) name=nam; }
 	public void setResourceId(long resourceId) {this.resourceId = resourceId;}
 	public void setState(DiagramState state) {this.state = state;}
+	
+	/**
+	 * This is a linear search. We are assured (not guaranteed) that the
+	 * blocks will have unique names.
+	 * @return the block in the diagram with the specified name, else null
+	 */
+	public SerializableBlock getNamedBlock(String name) {
+		for(SerializableBlock blk:getBlocks()) {
+			if(blk.getName().equalsIgnoreCase(name) ) return blk;
+		}
+		return null;
+	}
+	/**
+	 * Add a connection to this diagram. Woe to any entity holding on to the old array.
+	 */
+	public void addConnection(SerializableConnection newConnection) {
+		SerializableConnection[] newConnections = new SerializableConnection[connections.length+1];
+		int index = 0;
+		for(SerializableConnection cxn:connections) {
+			newConnections[index] = cxn;
+			index++;
+		}
+		newConnections[index] = newConnection;
+		connections = newConnections;
+	}
 }

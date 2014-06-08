@@ -2,8 +2,10 @@ package com.ils.blt.designer.workspace.ui;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -13,7 +15,11 @@ import java.awt.geom.GeneralPath;
 
 import javax.swing.SwingUtilities;
 
+import com.ils.blt.designer.workspace.BasicAnchorPoint;
+import com.ils.blt.designer.workspace.ProcessAnchorDescriptor;
 import com.ils.blt.designer.workspace.ProcessBlockView;
+import com.ils.connection.ConnectionType;
+import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
 
 
 /**
@@ -34,6 +40,56 @@ public class ArrowUIView extends AbstractUIView implements BlockViewUI {
 		setOpaque(false);
 		initAnchorPoints();
 		
+	}
+	
+	/**
+	 *  The arrow allows only a single input and/or a single output. Place them
+	 *  on the left and right, respectively.
+	 */
+	@Override
+	protected void initAnchorPoints() {
+		Dimension sz = getPreferredSize();
+		int inSegmentCount = 0;
+		int inputIndex = 0;
+		int outSegmentCount= 0;
+		int outputIndex= 0;
+		
+		// Count inputs and outputs - just to be safe. There should be a max
+		// of one each.
+		for(ProcessAnchorDescriptor desc:block.getAnchors()) {
+			if(desc.getType()==	AnchorType.Origin ) inSegmentCount++;
+			else if(desc.getType()==AnchorType.Terminus ) outSegmentCount++;
+		}
+		outSegmentCount++;   // Now equals the number of segments on a side
+		inSegmentCount++;
+		int inset = INSET-BORDER_WIDTH;
+		
+		for(ProcessAnchorDescriptor desc:block.getAnchors()) {
+			
+			// Left side terminus
+			if( desc.getType()==AnchorType.Terminus  ) {
+				outputIndex++;
+				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Terminus,
+						desc.getConnectionType(),
+						new Point(inset,outputIndex*sz.height/outSegmentCount),
+						new Point(-LEADER_LENGTH,outputIndex*sz.height/outSegmentCount),
+						new Rectangle(0,outputIndex*sz.height/outSegmentCount-inset,2*inset,2*inset),
+						desc.getAnnotation());   // Hotspot shape.
+				getAnchorPoints().add(ap);
+				
+			}
+			// Right-side origin
+			else if(desc.getType()==AnchorType.Origin ) {
+				inputIndex++;
+				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Origin,
+						desc.getConnectionType(),
+						new Point(sz.width-inset,inputIndex*sz.height/inSegmentCount-1),
+						new Point(sz.width+LEADER_LENGTH,inputIndex*sz.height/inSegmentCount-1),
+						new Rectangle(sz.width-2*inset,inputIndex*sz.height/inSegmentCount-inset,2*inset,2*inset-1),
+						desc.getAnnotation());
+				getAnchorPoints().add(ap);
+			}
+		}
 	}
 
 	// Paint a right-pointing arrow. 

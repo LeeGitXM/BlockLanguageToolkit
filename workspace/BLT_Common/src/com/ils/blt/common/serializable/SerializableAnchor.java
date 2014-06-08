@@ -17,7 +17,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 public class SerializableAnchor {
 	private final static String TAG = "SerializableAnchor";
 	private AnchorDirection direction;   // 0=>Origin, 1=>Terminus
-	private Object id = null;
+	private Object id = null;            // The port name
 	private String display = null;
 	private UUID parentId = null;
 	private LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());

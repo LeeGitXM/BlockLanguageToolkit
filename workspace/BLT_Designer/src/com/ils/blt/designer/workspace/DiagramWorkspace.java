@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.List;
 
 import javax.swing.JComponent;
+import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -148,9 +149,38 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			JComponent selection = selections.get(0);
 			log.infof("%s.getSelectionPopupMenu: Component is: %s",TAG,selections.get(0).getClass().getName());
 			if( selection instanceof BlockComponent ) {
-				saveAction = new SaveAction();
+				
 				JPopupMenu menu = new JPopupMenu();
+				saveAction = new SaveAction();
 				menu.add(saveAction);
+				if( selection instanceof BlockComponent &&
+					((ProcessBlockView)((BlockComponent)selection).getBlock()).isCtypeEditable() ) {
+					
+					// Types are: ANY, DATA, TEXT, TRUTH-VALUE
+					ProcessBlockView pbv = (ProcessBlockView)((BlockComponent)selection).getBlock();
+					// Assume the type from the first anchor
+					ProcessAnchorDescriptor anch = pbv.getAnchors().iterator().next();
+					if( anch!=null ) {
+						ConnectionType ct = anch.getConnectionType();
+					
+					
+						ChangeConnectionAction ccaAny = new ChangeConnectionAction(pbv,ConnectionType.ANY);
+						ccaAny.setEnabled(!ct.equals(ConnectionType.ANY));
+						ChangeConnectionAction ccaData = new ChangeConnectionAction(pbv,ConnectionType.DATA);
+						ccaAny.setEnabled(!ct.equals(ConnectionType.DATA));
+						ChangeConnectionAction ccaText = new ChangeConnectionAction(pbv,ConnectionType.TEXT);
+						ccaAny.setEnabled(!ct.equals(ConnectionType.TEXT));
+						ChangeConnectionAction ccaTruthvalue = new ChangeConnectionAction(pbv,ConnectionType.TRUTHVALUE);
+						ccaAny.setEnabled(!ct.equals(ConnectionType.TRUTHVALUE));
+					
+						JMenu changeTypeMenu = new JMenu(BundleUtil.get().getString(PREFIX+".ChangeConnection"));
+						changeTypeMenu.add(ccaAny);
+						changeTypeMenu.add(ccaData);
+						changeTypeMenu.add(ccaText);
+						changeTypeMenu.add(ccaTruthvalue);
+						menu.add(changeTypeMenu);
+					}
+				}
 				menu.addSeparator();
 				menu.add(context.getCutAction());
 				menu.add(context.getCopyAction());
@@ -534,6 +564,30 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		}
 	}
 	
+	
+	/**
+	 * Change the connection type of all anchors on this block.
+	 * This action is only applicable to a small number of blocks. 
+	 */
+	private class ChangeConnectionAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final ConnectionType connectionType;
+		private final ProcessBlockView block;
+		public ChangeConnectionAction(ProcessBlockView blk,ConnectionType ct)  {
+			super(PREFIX+".ChangeConnectionAction."+ct.name());
+			connectionType = ct;
+			block = blk;
+		}
+		
+		// Change all stubs to the selected type
+		public void actionPerformed(ActionEvent e) {
+			for( ProcessAnchorDescriptor anchor:block.getAnchors()) {
+				anchor.setConnectionType(connectionType);
+			}
+			// Finally - prevent further changes.
+			block.setCtypeEditable(false);
+		}
+	}
 	/**
 	 * "Save" implies a push of the block attributes into the model running in the Gateway.
 	 */
@@ -550,8 +604,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	//TODO: In next Ignition update, this is available for override of onMove() method.
 	//      We want to highlight the hotspot in an ugly way if a connection constraint
 	//      would be violated by a connect. 04/15/2014.
-	//public class ConnectionTool extends AbstractBlockWorkspace.ConnectionTool {
+	//private class ConnectionTool extends AbstractBlockWorkspace.ConnectionTool {
 	//}
-	
-	
 }

@@ -45,7 +45,8 @@ public class ProcessBlockView extends AbstractBlock {
 	private String embeddedLabel="";              // Label place in block in designer
 	private final UIFactory factory = new UIFactory() ;
 	private String iconPath="";                   // Path to icon that is the entire block
-	private String name = null;                         // Text to display on the block
+	private boolean ctypeEditable=false;          // Can we globally change our connection types
+	private String name = null;                   // Text to display on the block
 	private Point location = new Point(0,0);
 	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	private int preferredHeight = 0;              // Size the view to "natural" size
@@ -68,6 +69,7 @@ public class ProcessBlockView extends AbstractBlock {
 		this.uuid = UUID.randomUUID();
 		this.background = descriptor.getBackground();
 		this.className = descriptor.getBlockClass();
+		this.ctypeEditable = descriptor.isCtypeEditable();
 		this.embeddedIcon = descriptor.getEmbeddedIcon();
 		this.embeddedLabel= descriptor.getEmbeddedLabel();
 		this.embeddedFontSize= descriptor.getEmbeddedFontSize();
@@ -95,6 +97,7 @@ public class ProcessBlockView extends AbstractBlock {
 		this.uuid = sb.getId();
 		this.background = sb.getBackground();
 		this.className = sb.getClassName();
+		this.ctypeEditable  = false;
 		this.embeddedIcon = sb.getEmbeddedIcon();
 		this.embeddedLabel= sb.getEmbeddedLabel();
 		this.embeddedFontSize = sb.getEmbeddedFontSize();
@@ -213,8 +216,10 @@ public class ProcessBlockView extends AbstractBlock {
 		ui = factory.getUI(style, this);
 		ui.install(blk);
 	}
+	public boolean isCtypeEditable() {return ctypeEditable;}
 	public boolean isReceiveEnabled() {return receiveEnabled;}
 	public boolean isTransmitEnabled() {return transmitEnabled;}
+	public void setCtypeEditable(boolean ctypeEditable) {this.ctypeEditable = ctypeEditable;}
 	public void setEmbeddedFontSize(int size) {this.embeddedFontSize = size;}
 	public void setEmbeddedIcon(String embeddedIcon) {this.embeddedIcon = embeddedIcon;}
 	public void setEmbeddedLabel(String embeddedLabel) {this.embeddedLabel = embeddedLabel;}

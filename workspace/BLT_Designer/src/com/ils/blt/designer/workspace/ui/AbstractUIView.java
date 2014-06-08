@@ -323,12 +323,22 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 		}
 	}
 	
-	protected void drawEmbeddedText(Graphics2D g,int offsetx,int offsety) {
+	// Draw the text that is part of the rendered box. Recognize \n or \\n as newlines.
+	// Pad with spaces so that we center
+	// The yborder is all we care about for the moment. As for x, the lines are always centered.
+	protected void drawEmbeddedText(Graphics2D g,int borderx,int bordery) {
 		String text = block.getEmbeddedLabel();
 		if( text == null || text.length()==0 ) return;
 		Dimension sz = getPreferredSize();
-		paintTextAt(g,text,offsetx+sz.width/2,offsety+sz.height/2,Color.BLACK,block.getEmbeddedFontSize());
-		
+		String[] lines = text.split("\n");
+		if( lines.length==1 ) lines = text.split("\\n");
+		int lineCount = lines.length;
+		int dy = block.getEmbeddedFontSize()*2;
+		int y = sz.height/2 - (lineCount*dy/2);
+		for( String line: lines) {
+			paintTextAt(g,line,sz.width/2,y,Color.BLACK,block.getEmbeddedFontSize());
+			y+=dy;
+		}
 	}
 	
 	private int anchorWidthForConnectionType(ConnectionType type) {
@@ -345,7 +355,7 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 		if( type==ConnectionType.TRUTHVALUE ) color = WorkspaceConstants.CONNECTION_FILL_TRUTHVALUE;
 		else if( type==ConnectionType.DATA  ) color = WorkspaceConstants.CONNECTION_FILL_DATA;
 		else if( type==ConnectionType.TEXT  ) color = WorkspaceConstants.CONNECTION_FILL_INFORMATION;
-		else if( type==ConnectionType.SIGNAL  )        color = WorkspaceConstants.CONNECTION_FILL_SIGNAL;
+		else if( type==ConnectionType.SIGNAL) color = WorkspaceConstants.CONNECTION_FILL_SIGNAL;
 		else if( type==ConnectionType.ANY  ) color = WorkspaceConstants.CONNECTION_FILL_INFORMATION;
 		return color;
 	}

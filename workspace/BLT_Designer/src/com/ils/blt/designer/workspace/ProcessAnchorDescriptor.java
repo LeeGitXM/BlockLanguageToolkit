@@ -11,7 +11,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorT
  * port annotation and placement hints.
  */
 public class ProcessAnchorDescriptor extends AnchorDescriptor {
-	private final ConnectionType connectionType;
+	private ConnectionType connectionType;
 	private final String annotation;
 	private final PlacementHint hint;
 
@@ -27,5 +27,11 @@ public class ProcessAnchorDescriptor extends AnchorDescriptor {
 	public ConnectionType getConnectionType() {return connectionType;}
 	public String getAnnotation() { return annotation; }
 	public PlacementHint getHint() { return hint; }
+	/**
+	 * Allow changes to the connection type for the rare instances where the
+	 * user wishes to customize a block before it has ever been saved.
+	 * @param ct
+	 */
+	public void setConnectionType(ConnectionType ct) { this.connectionType=ct; }
 
 }

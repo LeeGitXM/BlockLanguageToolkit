@@ -29,7 +29,10 @@ public class RoundUIView extends AbstractUIView implements BlockViewUI {
 		setOpaque(false);
 		try {
 			// Image is smaller to account for stubs
-			Dimension IMAGE_SIZE = new Dimension(DEFAULT_WIDTH-10,DEFAULT_HEIGHT-10);
+			Dimension size = getPreferredSize();
+			int height = size.height - 2*INSET;
+			int width  = size.width  - 2*INSET;
+			Dimension IMAGE_SIZE = new Dimension(width,height);
 			Image img = ImageLoader.getInstance().loadImage("Block/icons/embedded/round.png",IMAGE_SIZE);
 			if( img !=null) icon = new ImageIcon(img);
 		}

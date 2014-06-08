@@ -9,6 +9,8 @@ import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import org.apache.log4j.BasicConfigurator;
@@ -21,12 +23,13 @@ import org.sqlite.JDBC;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ils.block.common.AnchorDirection;
 import com.ils.block.common.BlockConstants;
-import com.ils.block.common.BlockProperty;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.common.serializable.SerializableBlock;
+import com.ils.blt.common.serializable.SerializableConnection;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.migration.map.AnchorMapper;
@@ -35,6 +38,7 @@ import com.ils.blt.migration.map.ConnectionMapper;
 import com.ils.blt.migration.map.PropertyMapper;
 import com.ils.blt.migration.map.PythonPropertyMapper;
 import com.ils.blt.migration.map.TagMapper;
+import com.ils.connection.ConnectionType;
 
 public class Migrator {
 	private final static String TAG = "Migrator";
@@ -43,7 +47,7 @@ public class Migrator {
 	private final static JDBC driver = new JDBC(); // Force driver to be loaded
 	private final static int MINX = 50;              // Allow whitespace around diagram.
 	private final static int MINY = 50;
-	private final static double SCALE_FACTOR = 1.5; // Scale G2 to Ignition positions
+	private final static double SCALE_FACTOR = 1.25; // Scale G2 to Ignition positions
 	private final RootClass root;
 	private boolean ok = true;                     // Allows us to short circuit processing
 	private G2Application g2application = null;    // G2 Application read from JSON
@@ -57,6 +61,11 @@ public class Migrator {
 	private final PropertyMapper propertyMapper;
 	private final TagMapper tagMapper;
 	private final UtilityFunctions func;
+	// These are used for connection post resolution
+	private final Map<String,ConnectionPostEntry> sinkPosts;
+	private final Map<String,ConnectionPostEntry> sourcePosts;
+	private final Map<String,G2Anchor> inAnchorsByBlockName;    // Keyed by the block they connect to
+	private final Map<String,G2Anchor> outAnchorsByBlockName;
 
 	 
 	public Migrator(RootClass rc) {
@@ -68,6 +77,10 @@ public class Migrator {
 		pythonPropertyMapper = new PythonPropertyMapper();
 		tagMapper = new TagMapper();
 		func = new UtilityFunctions();
+		sinkPosts = new HashMap<String,ConnectionPostEntry>();
+		sourcePosts = new HashMap<String,ConnectionPostEntry>();
+		inAnchorsByBlockName = new HashMap<String,G2Anchor>();
+		outAnchorsByBlockName = new HashMap<String,G2Anchor>();
 	}
 	
 	public void processDatabase(String path) {
@@ -159,6 +172,7 @@ public class Migrator {
 		if( !ok ) return;
 		
 		application = createSerializableApplication(g2application);
+		performSpecialHandlingOnApplication(application);
 	}
 	/**
 	 * Convert from G2 objects into a BLTView diagram
@@ -167,7 +181,7 @@ public class Migrator {
 		if( !ok ) return;
 		
 		diagram = createSerializableDiagram(g2diagram);
-		performSpecialHandlingOnDiagram(diagram);
+		performSpecialHandlingOnDiagram(g2diagram,diagram);
 	}
 	
 	private SerializableApplication createSerializableApplication(G2Application g2a) {
@@ -259,6 +273,7 @@ public class Migrator {
 			propertyMapper.setProperties(g2block,block);
 			anchorMapper.updateAnchorNames(g2block);   // Must precede connectionMapper
 			connectionMapper.setAnchors(g2block,block);
+			performSpecialHandlingOnBlock(g2block,block);
 			// Need to set values here ...
 			tagMapper.setTagPaths(block);
 			
@@ -271,42 +286,157 @@ public class Migrator {
 		connectionMapper.createConnections(g2d, sd);
 		return sd;
 	}
-	
 	/**
-	 * Handle special cases that aren't as simple as a lookup
+	 * Reconcile links through connection posts that (probably) span diagrams. Create
+	 * connections between the posts and the block connected to it on the same diagram.
 	 */
-	private void performSpecialHandlingOnDiagram(SerializableDiagram diagram) {
-		for(SerializableBlock block:diagram.getBlocks()) {
-			// 1) In G2 Connection Posts are bi-directional. We translate all
-			//    of them to be outputs. They may actually be inputs.
-			if( block.getClassName().endsWith("SinkConnection") ) {
-				SerializableAnchor[] anchors = block.getAnchors();
-				for(SerializableAnchor anc:anchors) {
-					if( anc.getId().equals(BlockConstants.OUT_PORT_NAME)) {
-						block.setClassName("com.ils.block.SourceConnection");
-						break;
-					}
+	private void performSpecialHandlingOnApplication(SerializableApplication application) {
+		// Loop over all the sink posts
+		for( ConnectionPostEntry sink:sinkPosts.values()) {
+			// Find the matching pair
+			ConnectionPostEntry source = sourcePosts.get(sink.getName());
+			if( source!=null ) {
+				// Create source to block connection
+				G2Anchor sourceAnchor = inAnchorsByBlockName.get(source.getTarget().getName());
+				if( sourceAnchor!=null ) {
+					SerializableConnection sourceConnection = new SerializableConnection();
+					sourceConnection.setType(sourceAnchor.getConnectionType());
+					sourceConnection.setBeginBlock(source.getPost().getId());
+					connectionMapper.setBeginAnchorPoint(sourceConnection,source.getPost().getId(),"out");
+					sourceConnection.setEndBlock(source.getTarget().getId());
+					connectionMapper.setEndAnchorPoint(sourceConnection,source.getTarget().getId(),sourceAnchor.getPort());
+					//source.getParent().addConnection(sourceConnection);
+				}
+				else {
+					System.err.println(String.format("%s: performSpecialHandlingOnApplication failed to find target anchor for source %s",TAG,source.getName()));
+				}
+				
+				// Create block to sink connection
+				G2Anchor sinkAnchor = outAnchorsByBlockName.get(sink.getTarget().getName());
+				if( sinkAnchor!=null ) {
+					SerializableConnection sinkConnection = new SerializableConnection();
+					sinkConnection.setType(sinkAnchor.getConnectionType());
+					sinkConnection.setBeginBlock(sink.getTarget().getId());
+					connectionMapper.setBeginAnchorPoint(sinkConnection,sink.getTarget().getId(),sinkAnchor.getPort());
+					sinkConnection.setEndBlock(sink.getPost().getId());
+					connectionMapper.setEndAnchorPoint(sinkConnection,sink.getPost().getId(),"in");
+					//sink.getParent().addConnection(sinkConnection);
+				}
+				else {
+					System.err.println(String.format("%s: performSpecialHandlingOnApplication failed to find target anchor for sink %s",TAG,sink.getName()));
 				}
 			}
-			// G2 Moving Average handles both time and sample count.
-			// We have special classes for these.
-			else if( block.getClassName().startsWith("com.ils.block.MovingAverage")) {
-				// Search for the special property "SampleType". Make it not editable.
-				for(BlockProperty bp:block.getProperties()) {
-					if( bp.getName().equalsIgnoreCase("SampleType" )) {
-						bp.setEditable(false);
-						String val = bp.getValue().toString();
-						if( val.equalsIgnoreCase("fixed" )) block.setClassName("com.ils.block.MovingAverage");
-						else if( val.equalsIgnoreCase("point" )) block.setClassName("com.ils.block.MovingAverageSample");
-						else if( val.equalsIgnoreCase("time" )) block.setClassName("com.ils.block.MovingAverageTime");
+			else {
+				System.err.println(String.format("%s: performSpecialHandlingOnApplication no matching source for sink post name %s",TAG,sink.getName()));
+			}
+		}
+	}
+	/**
+	 * The G2 export does not link connection posts. In stead the block has connection
+	 * data "through" to the connected block, even if on a different diagram.
+	 * Create a map of connection post usage on this diagram for later global resolution.
+	 */
+	private void performSpecialHandlingOnDiagram(G2Diagram g2Diagram,SerializableDiagram diagram) {
+		for(G2Block block:g2Diagram.getBlocks()) {
+			if( block.getClassName().endsWith("CONNECTION-POST")) {
+				for(G2Anchor g2a:block.getConnections() ) {
+					String targetName = g2a.getBlockName();
+					AnchorDirection direction =g2a.getAnchorDirection();
+					String postName = block.getName();
+					SerializableBlock localPost = diagram.getNamedBlock(postName);
+					if( localPost!=null) {
+						SerializableBlock target = diagram.getNamedBlock(targetName);
+						if( target!=null ) {
+							
+							if( direction.equals(AnchorDirection.INCOMING)) {
+								if(sinkPosts.get(postName)==null) {
+									sinkPosts.put(postName, new ConnectionPostEntry(postName,localPost,diagram,target));
+								}
+								else {
+									System.err.println(String.format("%s: performSpecialHandlingOnDiagram duplicate sink post name %s",TAG,postName));
+								}
+							}
+							else {
+								if(sourcePosts.get(postName)==null) {
+									sourcePosts.put(postName, new ConnectionPostEntry(postName,localPost,diagram,target));
+								}
+								else {
+									System.err.println(String.format("%s: performSpecialHandlingOnDiagram duplicate source post name %s",TAG,postName));
+								}
+							}
+						}
 						else {
-							System.err.println(String.format("%s: Perform specialhandling. MovingAverage sample type %s not recognized",TAG,val));
+							System.err.println(String.format("%s: performSpecialHandlingOnDiagram no block in ignition diagram named %s",TAG,targetName));
 						}
 					}
+					else {
+						System.err.println(String.format("%s: performSpecialHandlingOnDiagram no ignition post for G2 post %s",TAG,postName));
+					}
 				}
-				
 			}
-				
+			// For non-connections posts, accumulate a list of G2Anchors by the names of the blocks they connect to
+			else {
+				for(G2Anchor g2a:block.getConnections() ) {
+					AnchorDirection direction =g2a.getAnchorDirection();
+					if( direction.equals(AnchorDirection.INCOMING)) {
+						inAnchorsByBlockName.put(g2a.getBlockName(), g2a);
+					}
+					else {
+						outAnchorsByBlockName.put(g2a.getBlockName(), g2a);
+					}
+				}
+			}
+		}
+	}
+	
+	
+	/**
+	 * Handle special cases that aren't as simple as a lookup. It helps to have the G2Block for reference.
+	 */
+	private void performSpecialHandlingOnBlock(G2Block g2Block,SerializableBlock block) {
+		// 1) In G2 Connection Posts are bi-directional. We translate all
+		//    of them to be outputs. They may actually be inputs.
+		if( block.getClassName().endsWith("SinkConnection") ) {
+			SerializableAnchor[] anchors = block.getAnchors();
+			for(SerializableAnchor anc:anchors) {
+				if( anc.getId().equals(BlockConstants.OUT_PORT_NAME)) {
+					block.setClassName("com.ils.block.SourceConnection");
+					break;
+				}
+			}
+		}	
+		// 2) G2 Moving Average handles both time and sample count.
+		// We have special classes for these.
+		else if( block.getClassName().startsWith("com.ils.block.MovingAverage")) {
+			// Check the G2 Property "sampleType". 
+			for(G2Property g2prop:g2Block.getProperties()) {
+				if( g2prop.getName().equalsIgnoreCase("sampleType" )) {
+					String val = g2prop.getValue().toString();
+					if( val.equalsIgnoreCase("fixed" )) block.setClassName("com.ils.block.MovingAverage");
+					else if( val.equalsIgnoreCase("point" )) block.setClassName("com.ils.block.MovingAverageSample");
+					else if( val.equalsIgnoreCase("time" )) block.setClassName("com.ils.block.MovingAverageTime");
+					else {
+						System.err.println(String.format("%s: Perform specialhandling. MovingAverage sample type %s not recognized",TAG,val));
+					}
+				}
+			}
+		}
+		// 3)  Input and output blocks are typed in G2
+		else if( g2Block.getClassName().equalsIgnoreCase("GDL-NUMERIC-ENTRY-POINT") ||
+				g2Block.getClassName().equalsIgnoreCase("GDL-DATA-PATH-CONNECTION-POST") ) {
+			for( SerializableAnchor anchor:block.getAnchors()) {
+				anchor.setConnectionType(ConnectionType.DATA);
+			}
+		}
+		else if( g2Block.getClassName().equalsIgnoreCase("GDL-SYMBOLIC-ENTRY-POINT") ) {
+			for( SerializableAnchor anchor:block.getAnchors()) {
+				anchor.setConnectionType(ConnectionType.TEXT);
+			}
+		}
+		else if( g2Block.getClassName().equalsIgnoreCase("GDL-INFERENCE-PATH-CONNECTION-POST") ) {
+			for( SerializableAnchor anchor:block.getAnchors()) {
+				anchor.setConnectionType(ConnectionType.TRUTHVALUE);
+			}
 		}
 	}
 	/**
@@ -389,6 +519,28 @@ public class Migrator {
 			System.err.println(String.format("%s.main: UncaughtException (%s)",TAG,ex.getMessage()));
 			ex.printStackTrace(System.err);
 		}
+	}
+	
+	/**
+	 * This class is used in connection post resolution.
+	 */
+	private class ConnectionPostEntry {
+		private final String name;   // Name of the post
+		private final SerializableBlock post;
+		private final SerializableBlock target;       
+		private final SerializableDiagram parent;    
+ 
+		public ConnectionPostEntry( String name,SerializableBlock post,SerializableDiagram parent,SerializableBlock target) {
+			this.name = name;
+			this.post = post;
+			this.parent = parent;
+			this.target = target;
+		}
+		public String getName() { return this.name; }
+		public SerializableBlock getPost() {return post;}
+		public SerializableBlock getTarget() {return target;}
+		public SerializableDiagram getParent() {return parent;}
+		
 	}
 
 }

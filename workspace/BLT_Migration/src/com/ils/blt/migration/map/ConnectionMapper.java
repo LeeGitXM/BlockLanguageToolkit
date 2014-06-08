@@ -60,7 +60,7 @@ public class ConnectionMapper {
 			anchor.setConnectionType(g2cxn.getConnectionType());
 			anchor.setDirection(g2cxn.getAnchorDirection());
 			anchor.setDisplay(g2cxn.getPort());
-			anchor.setId(UUID.randomUUID());
+			anchor.setId(UUID.randomUUID()); 
 			anchor.setParentId(iblock.getId());
 			String key = makeAnchorMapKey(iblock.getId(),anchor.getDisplay());
 			if( anchorMap.get(key)==null ) {   // Weed out duplicates
@@ -127,7 +127,7 @@ public class ConnectionMapper {
 	}
 	
 	// Set anchor point at origin
-	private void setBeginAnchorPoint(SerializableConnection cxn,UUID blockId,String port) {
+	public void setBeginAnchorPoint(SerializableConnection cxn,UUID blockId,String port) {
 		String key = makeAnchorMapKey(blockId,port);
 		SerializableAnchor anchor = anchorMap.get(key);
 		if( anchor!=null ) {
@@ -162,7 +162,7 @@ public class ConnectionMapper {
 	}
 
 	// Set anchor point at terminus
-	private void setEndAnchorPoint(SerializableConnection cxn,UUID blockId,String port) {
+	public void setEndAnchorPoint(SerializableConnection cxn,UUID blockId,String port) {
 		String key = makeAnchorMapKey(blockId,port);
 		SerializableAnchor anchor = anchorMap.get(key);
 		if( anchor!=null ) {
