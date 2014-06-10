@@ -42,6 +42,8 @@ insert into AnchorMap values ('GDL-CONCLUSION','IP-OUT','out');
 insert into AnchorMap values ('GDL-CONCLUSION','CP-OUT','');
 insert into AnchorMap values ('GDL-BLOCK-EVALUATION','CP-IN','');
 insert into AnchorMap values ('GDL-BLOCK-EVALUATION','AL-OUT','out');
+insert into AnchorMap values ('GDL-BLOCK-RESET','CP-IN','in');
+insert into AnchorMap values ('GDL-BLOCK-RESET','AL-OUT','out');
 insert into AnchorMap values ('GDL-DATA-SHIFT','DP-IN','in');
 insert into AnchorMap values ('GDL-DATA-SHIFT','DP-OUT','out');
 insert into AnchorMap values ('GDL-DATA-TIME-STAMP','DP-IN','in');

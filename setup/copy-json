@@ -4,7 +4,7 @@
 #
 BIN=`pwd`
 SVN=~/Development/ils/svn/EMChemicals/G2Artifacts/DiagnosticDiagramExports
-REPO=~/Development/ils/repo/blt/workspace/BLT_Migration/json
+REPO=~/Development/ils/repo/blt/json
 mkdir -p $REPO/g2
 mkdir -p $REPO/ignition
 cp ${SVN}/Samples/*.json $REPO/g2

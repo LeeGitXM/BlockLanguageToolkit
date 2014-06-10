@@ -3,6 +3,6 @@
 # leaving only those checked into git.
 #
 BIN=`pwd`
-REPO=~/Development/ils/repo/blt/workspace/BLT_Migration/json
+REPO=~/Development/ils/repo/blt/json
 rm -f ${REPO}/g2/*.json
 rm -f ${REPO}/ignition/*.json

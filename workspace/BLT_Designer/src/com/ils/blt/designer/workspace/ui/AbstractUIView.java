@@ -333,8 +333,8 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 		String[] lines = text.split("\n");
 		if( lines.length==1 ) lines = text.split("\\n");
 		int lineCount = lines.length;
-		int dy = block.getEmbeddedFontSize()*2;
-		int y = sz.height/2 - (lineCount*dy/2);
+		int dy = 3*block.getEmbeddedFontSize()/4;
+		int y = sz.height/2 - (lineCount-1)*dy/2;
 		for( String line: lines) {
 			paintTextAt(g,line,sz.width/2,y,Color.BLACK,block.getEmbeddedFontSize());
 			y+=dy;

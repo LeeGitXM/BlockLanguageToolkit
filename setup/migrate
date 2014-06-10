@@ -11,7 +11,7 @@ fi
 REPO=~/Development/ils/repo
 cd $REPO/blt
 BLT=`pwd`
-LIB=$REPO//external/lib
+LIB=$REPO/external/lib
 JAR=${LIB}/blt-migration.jar
 DB=${BLT}/setup/db/conversion.db
 # Use for debugging - ruins output file however.

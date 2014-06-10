@@ -30,4 +30,16 @@ public class SerializableConnection {
 	public void setEndBlock(UUID uuid)   { endBlock=uuid; }
 	public void setBeginAnchor(SerializableAnchorPoint anchor){beginAnchor=anchor; }
 	public void setEndAnchor(SerializableAnchorPoint anchor){endAnchor=anchor; }
+	
+	/**
+	 * @return a string representation of the connection. Useful for debugging.
+	 */
+	@Override
+	public String toString() {
+		return String.format("%s begin=%s %s, end=%s %s",(type==null?"null":type.name()),
+				(beginBlock==null?"null":beginBlock.toString()),
+				(beginAnchor==null?"null":beginAnchor.getId().toString()),
+				(endBlock==null?"null":endBlock.toString()),
+				(endAnchor==null?"null":endAnchor.getId().toString()));
+	}
 }

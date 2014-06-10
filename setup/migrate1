@@ -2,8 +2,9 @@
 #  Use this version when debugging a single file.
 #
 BLT=~/Development/ils/repo/blt
-FIL=crxProductQuality
-INDIR=$BLT/workspace/BLT_Migration/json/g2
-OUTDIR=$BLT/workspace/BLT_Migration/json/ignition
+FIL=dirtSimpleApplicationWithConnections
+#FIL=crxProductQuality
+INDIR=$BLT/json/g2
+OUTDIR=$BLT/json/ignition
 mkdir -p $OUTDIR
 $BLT/setup/migrate $INDIR/$FIL.json $OUTDIR/$FIL.json

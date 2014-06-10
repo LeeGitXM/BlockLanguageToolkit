@@ -4,8 +4,8 @@
 #
 BLT=~/Development/ils/repo/blt
 APP=$BLT/setup/migrate
-INDIR=$BLT/workspace/BLT_Migration/json/g2
-OUTDIR=$BLT/workspace/BLT_Migration/json/ignition
+INDIR=$BLT/json/g2
+OUTDIR=$BLT/json/ignition
 mkdir -p $INDIR
 mkdir -p $OUTDIR
 cd $INDIR

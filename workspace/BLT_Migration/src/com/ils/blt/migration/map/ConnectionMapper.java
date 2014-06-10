@@ -17,8 +17,8 @@ import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.ils.blt.designer.workspace.ui.BlockViewUI;
 import com.ils.blt.designer.workspace.ui.UIFactory;
-import com.ils.blt.migration.G2Block;
 import com.ils.blt.migration.G2Anchor;
+import com.ils.blt.migration.G2Block;
 import com.ils.blt.migration.G2Diagram;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -33,8 +33,13 @@ public class ConnectionMapper {
 	private final LoggerEx log;
 	private final Map<String,SerializableAnchor> anchorMap;   // Key is UUID:port
 	private final Map<String,SerializableBlock> blockMap;     // Key is UUID
+	private final Map<String,SerializableBlock> blockFromG2Map;     // Key is G2 block UUID
 	private final UIFactory factory;
-
+	// These are used for connection post resolution
+	private final Map<String,ConnectionPostEntry> sinkPosts;
+	private final Map<String,ConnectionPostEntry> sourcePosts;
+	private final Map<String,SerializableConnection> inCxnByBlockName;    // Keyed by the block they connect to
+	private final Map<String,SerializableConnection> outCxnByBlockName;
 	/** 
 	 * Constructor: 
 	 */
@@ -42,7 +47,12 @@ public class ConnectionMapper {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		anchorMap = new HashMap<String,SerializableAnchor>();
 		blockMap = new HashMap<String,SerializableBlock>();
+		blockFromG2Map = new HashMap<String,SerializableBlock>();
 		factory = new UIFactory();
+		sinkPosts = new HashMap<String,ConnectionPostEntry>();
+		sourcePosts = new HashMap<String,ConnectionPostEntry>();
+		inCxnByBlockName = new HashMap<String,SerializableConnection>();
+		outCxnByBlockName = new HashMap<String,SerializableConnection>();
 	}
 
 	/**
@@ -65,13 +75,14 @@ public class ConnectionMapper {
 			String key = makeAnchorMapKey(iblock.getId(),anchor.getDisplay());
 			if( anchorMap.get(key)==null ) {   // Weed out duplicates
 				anchorMap.put(key, anchor);	
-				log.tracef("%s: anchorMap key = %s",TAG,key);
+				log.tracef("%s.setAnchors: anchorMap key = %s",TAG,key);
 				anchorList.add(anchor);
 			}
 		}
 		SerializableAnchor[] anchors = anchorList.toArray(new SerializableAnchor[anchorList.size()]);
 		iblock.setAnchors(anchors);
 		blockMap.put(iblock.getId().toString(), iblock);
+		blockFromG2Map.put(g2block.getUuid(), iblock);
 		log.debugf("%s.setAnchors: blockMap key = %s",TAG,iblock.getId().toString());
 	}
 
@@ -83,7 +94,7 @@ public class ConnectionMapper {
 	public void createConnections(G2Diagram g2diagram,SerializableDiagram diagram) {
 		// On the G2 side, connections are defined with each port on a block.
 		// We therefore get duplicates. Use a map to sort out the differences.
-		// Key is name(from):name(to). The G2 names are unique within a knowledge base
+		// Key is name(from):name(to). The G2 names are unique within a knowledge base.
 		Map<String,SerializableConnection> connectionMap = new HashMap<String,SerializableConnection>();
 		
 		for(G2Block g2block:g2diagram.getBlocks()) {
@@ -91,11 +102,11 @@ public class ConnectionMapper {
 				String key = "";
 				if( g2anchor.getAnchorDirection().equals(AnchorDirection.INCOMING)) {
 					key = g2anchor.getBlockName()+":"+g2block.getName();
-					log.tracef("%s.createConnections: connectionMap INCOMING key = %s",TAG,key);
+					log.infof("%s.createConnections: connectionMap INCOMING key = %s",TAG,key);
 				}
 				else {
 					key = g2block.getName()+":"+g2anchor.getBlockName();
-					log.tracef("%s: connectionMap OUTGOING key = %s",TAG,key);
+					log.infof("%s: connectionMap OUTGOING key = %s",TAG,key);
 				}
 				SerializableConnection cxn = connectionMap.get(key);
 				if( cxn==null ) {
@@ -109,25 +120,77 @@ public class ConnectionMapper {
 				// Then create AnchorPoint for the end where we know the port name
 				String port = g2anchor.getPort();
 				if( g2anchor.getAnchorDirection().equals(AnchorDirection.INCOMING)) {
+					/*
 					cxn.setBeginBlock(UUID.nameUUIDFromBytes(g2anchor.getBlockName().getBytes()));
 					cxn.setEndBlock(UUID.nameUUIDFromBytes(g2block.getUuid().getBytes()));
+					*/
+					//G2Block g2BeginBlock = blockByName(g2anchor.getBlockName())
+					SerializableBlock beginBlock = blockFromG2Map.get(g2block.getUuid());
+					cxn.setEndBlock(beginBlock.getId());
+					SerializableBlock endBlock = blockFromG2Map.get(g2block.getUuid());
+					cxn.setEndBlock(endBlock.getId());
 					setEndAnchorPoint(cxn,cxn.getEndBlock(),port);
 				}
 				else {
+					/*
 					cxn.setBeginBlock(UUID.nameUUIDFromBytes(g2block.getUuid().getBytes()));
+					cxn.setEndBlock(UUID.nameUUIDFromBytes(g2anchor.getBlockName().getBytes()));
+					*/
+					SerializableBlock beginBlock = blockFromG2Map.get(g2block.getUuid());
+					cxn.setBeginBlock(beginBlock.getId());
 					cxn.setEndBlock(UUID.nameUUIDFromBytes(g2anchor.getBlockName().getBytes()));
 					setBeginAnchorPoint(cxn,cxn.getBeginBlock(),port);
 				}	
+				log.infof("%s.createConnections: connection %s",TAG,cxn.toString());
 			}
 		}
-		// Finally walk the map and add connections to the diagram.
+		// Finally walk the map and add connections to the diagram. Before doing this cull out any that
+		// are incomplete. They will be incomplete because the anchor points are incomplete.
+		// NOTE: G2 connection posts don't have stubs.
 		Collection<SerializableConnection> collection = connectionMap.values();
+		Collection<SerializableConnection> toDelete = new ArrayList<SerializableConnection>();
+		// TODO
+		for(SerializableConnection cxn:collection) {
+			System.err.println(cxn.toString());
+		
+			if( cxn.getBeginAnchor()==null) {
+				SerializableBlock sb = blockMap.get(cxn.getEndBlock().toString());
+				if( sb!=null ) {
+					if( sb.getClassName().endsWith("Connection")) {
+						
+					}
+					else {
+						
+					}
+				}
+				else {
+					log.warnf("%s.createConnections: Null end block found in connection");
+				}
+			}
+			else if(cxn.getEndAnchor()==null) {
+				SerializableBlock sb = blockMap.get(cxn.getBeginBlock().toString());
+				if( sb!=null ) {
+					if( sb.getClassName().endsWith("Connection")) {
+						
+					}
+					else {
+						
+					}
+				}
+				else {
+					log.warnf("%s.createConnections: Null begin block found in connection");
+				}
+			}
+		}
+		for(SerializableConnection sc:toDelete) {
+			collection.remove(sc);
+		}
 		SerializableConnection[] connections = collection.toArray(new SerializableConnection[collection.size()]);
 		diagram.setConnections(connections);
 	}
 	
 	// Set anchor point at origin
-	public void setBeginAnchorPoint(SerializableConnection cxn,UUID blockId,String port) {
+	private void setBeginAnchorPoint(SerializableConnection cxn,UUID blockId,String port) {
 		String key = makeAnchorMapKey(blockId,port);
 		SerializableAnchor anchor = anchorMap.get(key);
 		if( anchor!=null ) {
@@ -162,7 +225,7 @@ public class ConnectionMapper {
 	}
 
 	// Set anchor point at terminus
-	public void setEndAnchorPoint(SerializableConnection cxn,UUID blockId,String port) {
+	private void setEndAnchorPoint(SerializableConnection cxn,UUID blockId,String port) {
 		String key = makeAnchorMapKey(blockId,port);
 		SerializableAnchor anchor = anchorMap.get(key);
 		if( anchor!=null ) {
@@ -229,6 +292,78 @@ public class ConnectionMapper {
 	private String makeAnchorMapKey(UUID id, String port) {
 		String key = id.toString()+":"+port;
 		return key;
+	}
+	
+	/**
+	 * Reconcile links through connection posts that (probably) span diagrams. Create
+	 * connections between the posts and the block connected to it on the same diagram.
+	 */
+	public void reconcileUnresolvedConnections() {
+		// Loop over all the sink posts
+		// TODO
+		for( ConnectionPostEntry sink:sinkPosts.values()) {
+			// Find the matching pair
+			ConnectionPostEntry source = sourcePosts.get(sink.getName());
+			if( source!=null ) {
+				// Create source to block connection
+				/*
+				G2Anchor sourceAnchor = inAnchorsByBlockName.get(source.getTarget().getName());
+				if( sourceAnchor!=null ) {
+					SerializableConnection sourceConnection = new SerializableConnection();
+					sourceConnection.setType(sourceAnchor.getConnectionType());
+					sourceConnection.setBeginBlock(source.getPost().getId());
+					setBeginAnchorPoint(sourceConnection,source.getPost().getId(),"out");
+					sourceConnection.setEndBlock(source.getTarget().getId());
+					setEndAnchorPoint(sourceConnection,source.getTarget().getId(),sourceAnchor.getPort());
+					//source.getParent().addConnection(sourceConnection);
+				}
+				else {
+					System.err.println(String.format("%s: performSpecialHandlingOnApplication failed to find target anchor for source %s",TAG,source.getName()));
+				}
+				*/
+				// Create block to sink connection
+				/*
+				G2Anchor sinkAnchor = outAnchorsByBlockName.get(sink.getTarget().getName());
+				if( sinkAnchor!=null ) {
+					SerializableConnection sinkConnection = new SerializableConnection();
+					sinkConnection.setType(sinkAnchor.getConnectionType());
+					sinkConnection.setBeginBlock(sink.getTarget().getId());
+					setBeginAnchorPoint(sinkConnection,sink.getTarget().getId(),sinkAnchor.getPort());
+					sinkConnection.setEndBlock(sink.getPost().getId());
+					setEndAnchorPoint(sinkConnection,sink.getPost().getId(),"in");
+					//sink.getParent().addConnection(sinkConnection);
+				}
+				else {
+					System.err.println(String.format("%s: performSpecialHandlingOnApplication failed to find target anchor for sink %s",TAG,sink.getName()));
+				}
+				*/
+			}
+			else {
+				System.err.println(String.format("%s: performSpecialHandlingOnApplication no matching source for sink post name %s",TAG,sink.getName()));
+			}
+		}
+	}
+	
+	/**
+	 * This class is used in connection post resolution.
+	 */
+	private class ConnectionPostEntry {
+		private final String name;   // Name of the post
+		private final SerializableBlock post;
+		private final SerializableBlock target;       
+		private final SerializableDiagram parent;    
+ 
+		public ConnectionPostEntry( String name,SerializableBlock post,SerializableDiagram parent,SerializableBlock target) {
+			this.name = name;
+			this.post = post;
+			this.parent = parent;
+			this.target = target;
+		}
+		public String getName() { return this.name; }
+		public SerializableBlock getPost() {return post;}
+		public SerializableBlock getTarget() {return target;}
+		public SerializableDiagram getParent() {return parent;}
+		
 	}
 }
 	
