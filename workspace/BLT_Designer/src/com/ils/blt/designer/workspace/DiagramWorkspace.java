@@ -581,8 +581,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		
 		// Change all stubs to the selected type
 		public void actionPerformed(ActionEvent e) {
-			block.se
-			
+			block.changeConnectorType(connectionType);
 		}
 	}
 	/**
