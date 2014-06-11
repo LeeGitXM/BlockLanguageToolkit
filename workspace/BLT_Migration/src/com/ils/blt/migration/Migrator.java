@@ -164,6 +164,7 @@ public class Migrator {
 		if( !ok ) return;
 		
 		application = createSerializableApplication(g2application);
+		connectionMapper.createConnections();
 		connectionMapper.reconcileUnresolvedConnections();
 	}
 	/**
@@ -272,8 +273,8 @@ public class Migrator {
 		}
 		sd.setBlocks(blocks);
 		
-		// Finally we analyze the diagram as a whole to deduce connections
-		connectionMapper.createConnections(g2d, sd);
+		// Finally we analyze the diagram as a whole to deduce connections and partial connections
+		connectionMapper.createConnectionSegments(g2d, sd);
 		return sd;
 	}
 	

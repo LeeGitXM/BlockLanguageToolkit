@@ -255,6 +255,7 @@ public class ProcessBlockView extends AbstractBlock {
 		location = loc;
 		fireBlockMoved();
 	}
+	
 	public void setPreferredHeight(int preferredHeight) {this.preferredHeight = preferredHeight;}
 	public void setPreferredWidth(int preferredWidth) {this.preferredWidth = preferredWidth;}
 	public void setProperties(Collection<BlockProperty> props) { this.properties = props; }
