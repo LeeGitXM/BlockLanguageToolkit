@@ -9,6 +9,10 @@ import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.EventListenerList;
+
 import com.ils.block.common.AnchorDirection;
 import com.ils.block.common.AnchorPrototype;
 import com.ils.block.common.BlockDescriptor;
@@ -19,6 +23,7 @@ import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.designer.workspace.ui.BlockViewUI;
 import com.ils.blt.designer.workspace.ui.UIFactory;
+import com.ils.connection.ConnectionType;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
@@ -33,11 +38,12 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.Ab
  * diagram in the Designer. Different block shapes and characteristics
  * are provided by swapping out different UI rendering classes.
  */
-
 public class ProcessBlockView extends AbstractBlock {
 	private static final String TAG = "ProcessBlockView";
 	private final static Random random = new Random();
 	private Collection<ProcessAnchorDescriptor> anchors;
+	private final EventListenerList listenerList;
+	private final ChangeEvent changeEvent;
 	private int background = Color.white.getRGB();
 	private final String className;
 	private int    embeddedFontSize = 24;         // Size of font for interior label
@@ -66,6 +72,8 @@ public class ProcessBlockView extends AbstractBlock {
 	 *              Create a pseudo-random name.
 	 */
 	public ProcessBlockView(BlockDescriptor descriptor) {
+		this.listenerList = new EventListenerList();
+		this.changeEvent  = new ChangeEvent(this);
 		this.uuid = UUID.randomUUID();
 		this.background = descriptor.getBackground();
 		this.className = descriptor.getBlockClass();
@@ -94,6 +102,8 @@ public class ProcessBlockView extends AbstractBlock {
 	}
 	
 	public ProcessBlockView(SerializableBlock sb) {
+		this.listenerList = new EventListenerList();
+		this.changeEvent  = new ChangeEvent(this);
 		this.uuid = sb.getId();
 		this.background = sb.getBackground();
 		this.className = sb.getClassName();
@@ -175,6 +185,21 @@ public class ProcessBlockView extends AbstractBlock {
 		
 		return result;
 	}
+    
+    /**
+     * Change the connection type of all anchors to a new specified
+     * type. This has an effect only if ctypeEditable is true. This
+     * flag is always negative on restore from serialization.
+     * @param newType
+     */
+    public void changeConnectorType(ConnectionType newType) {
+    	if(ctypeEditable) {
+    		for( ProcessAnchorDescriptor anchor:getAnchors()) {
+    			anchor.setConnectionType(newType);
+    		}
+    		fireStateChanged();
+    	}
+    }
 
 	@Override
 	public Block copy(Map<UUID, UUID> arg0) {
@@ -251,4 +276,31 @@ public class ProcessBlockView extends AbstractBlock {
 		if( pos>=0 )  root = className.substring(pos+1);
 		name = String.format("%s-%d", root.toUpperCase(),random.nextInt(1000));
 	}
+	
+	// =================== Handle Event Listeners ===================
+	public void addChangeListener(ChangeListener l) {
+	     listenerList.add(ChangeListener.class, l);
+	 }
+
+	 public void removeChangeListener(ChangeListener l) {
+	     listenerList.remove(ChangeListener.class, l);
+	 }
+
+
+	 // Notify all listeners that have registered interest for
+	 // notification on this event type.  The event instance
+	 // is lazily created using the parameters passed into
+	 // the fire method.
+
+	 protected void fireStateChanged() {
+	     // Guaranteed to return a non-null array
+	     Object[] listeners = listenerList.getListenerList();
+	     // Process the listeners last to first, notifying
+	     // those that are interested in this event
+	     for (int i = listeners.length-2; i>=0; i-=2) {
+	         if (listeners[i]==ChangeListener.class) {
+	             ((ChangeListener)listeners[i+1]).stateChanged(changeEvent);
+	         }
+	     }
+	 }
 }

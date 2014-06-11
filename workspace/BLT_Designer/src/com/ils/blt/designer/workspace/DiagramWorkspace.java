@@ -581,11 +581,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		
 		// Change all stubs to the selected type
 		public void actionPerformed(ActionEvent e) {
-			for( ProcessAnchorDescriptor anchor:block.getAnchors()) {
-				anchor.setConnectionType(connectionType);
-			}
-			// Finally - prevent further changes.
-			block.setCtypeEditable(false);
+			block.se
+			
 		}
 	}
 	/**

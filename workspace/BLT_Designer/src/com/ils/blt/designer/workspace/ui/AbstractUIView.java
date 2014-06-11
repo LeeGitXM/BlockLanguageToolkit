@@ -21,6 +21,8 @@ import java.util.List;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import com.ils.blt.designer.workspace.BasicAnchorPoint;
 import com.ils.blt.designer.workspace.ProcessAnchorDescriptor;
@@ -42,7 +44,8 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorT
  * 
  */
 @SuppressWarnings("serial")
-public abstract class AbstractUIView extends JComponent implements BlockViewUI {
+public abstract class AbstractUIView extends JComponent 
+									 implements BlockViewUI,ChangeListener {
 	private static final String TAG = "AbstractUIView";
 	protected final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	protected final ProcessBlockView block;
@@ -70,6 +73,7 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 	 */
 	public AbstractUIView(ProcessBlockView view,int defaultWidth,int defaultHeight) {
 		this.block = view;
+		this.block.addChangeListener(this);
 		setOpaque(false);
 		int preferredHeight = view.getPreferredHeight();
 		if( preferredHeight<=0 ) preferredHeight = defaultHeight;
@@ -196,6 +200,11 @@ public abstract class AbstractUIView extends JComponent implements BlockViewUI {
 	@Override
 	protected abstract void paintComponent(Graphics _g);
 	
+	@Override
+	public void stateChanged(ChangeEvent event) {
+		// Re-layout the anchor points
+		initAnchorPoints();
+	}
 	
 	protected void drawAnchors(Graphics2D g,int xoffset,int yoffset) {
 		// Preserve the original transform to roll back to at the end
