@@ -62,10 +62,9 @@ public class ArrowUIView extends AbstractUIView implements BlockViewUI {
 		}
 		outSegmentCount++;   // Now equals the number of segments on a side
 		inSegmentCount++;
-		int inset = INSET-BORDER_WIDTH;
+		int inset = INSET;   // Align with arrow without border
 		
 		for(ProcessAnchorDescriptor desc:block.getAnchors()) {
-			
 			// Left side terminus
 			if( desc.getType()==AnchorType.Terminus  ) {
 				outputIndex++;

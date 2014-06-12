@@ -136,7 +136,7 @@ public class BlockRequestHandler   {
 			results = block.getProperties();  // Existing block
 			log.tracef("%s.getProperties existing %s = %s",TAG,block.getClass().getName(),results.toString());
 		}
-		else if(className.startsWith("project")) {
+		else if(!className.startsWith("com")) {
 			ProxyHandler ph = ProxyHandler.getInstance();
 			block = ph.createBlockInstance(className,diagram.getSelf(),blockId);
 			if(block!=null) {

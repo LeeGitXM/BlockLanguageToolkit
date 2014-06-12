@@ -118,9 +118,9 @@ public abstract class AbstractUIView extends JComponent
 			if(desc.getType()==	AnchorType.Origin ) inputCount++;
 			else if(desc.getType()==AnchorType.Terminus ) outputCount++;
 		}
-		outputCount++;   // Now equals the number of segments on a side
+		outputCount++;       // Now equals the number of segments on a side
 		inputCount++;
-		int inset = INSET-BORDER_WIDTH;
+		int inset = INSET;   // Align the connections with the un-bordered block
 		
 		for(ProcessAnchorDescriptor desc:block.getAnchors()) {
 			// Top left signal
@@ -202,7 +202,8 @@ public abstract class AbstractUIView extends JComponent
 	
 	@Override
 	public void stateChanged(ChangeEvent event) {
-		// Re-layout the anchor points
+		// Clear, then re-layout the anchor points
+		getAnchorPoints().clear();
 		initAnchorPoints();
 	}
 	
@@ -216,7 +217,7 @@ public abstract class AbstractUIView extends JComponent
 			BasicAnchorPoint bap = (BasicAnchorPoint)ap;
 			AnchorSide side = bap.getSide();
 			int anchorWidth = anchorWidthForConnectionType(bap.getConnectionType());
-			int anchorLength= INSET;  // Draw to the boundary
+			int anchorLength= INSET;       // Draw edge to the boundary
 			Point loc = bap.getAnchor();   // Center of the anchor point
 			// Paint the rectangle
 			if( bap.getConnectionType()==ConnectionType.DATA) g.setColor(getBackground());
@@ -232,7 +233,6 @@ public abstract class AbstractUIView extends JComponent
 			else  {
 				x = loc.x-anchorLength/2;
 				y = loc.y-anchorWidth/2;
-				if( bap.getConnectionType()==ConnectionType.TRUTHVALUE) y+=2;  // Account for skinny connection
 				g.fillRect(x, y, anchorLength,anchorWidth);
 			}
 			
@@ -350,7 +350,7 @@ public abstract class AbstractUIView extends JComponent
 		}
 	}
 	
-	private int anchorWidthForConnectionType(ConnectionType type) {
+	protected int anchorWidthForConnectionType(ConnectionType type) {
 		int size = WorkspaceConstants.CONNECTION_WIDTH_SIGNAL;   // Thinnest
 		if( type==ConnectionType.TRUTHVALUE ) size = WorkspaceConstants.CONNECTION_WIDTH_TRUTHVALUE;
 		else if( type==ConnectionType.DATA  ) size = WorkspaceConstants.CONNECTION_WIDTH_DATA;
@@ -359,7 +359,7 @@ public abstract class AbstractUIView extends JComponent
 		return size;
 	}
 	
-	private Color fillColorForConnectionType(ConnectionType type) {
+	protected Color fillColorForConnectionType(ConnectionType type) {
 		Color color = WorkspaceConstants.CONNECTION_BACKGROUND;   // Black
 		if( type==ConnectionType.TRUTHVALUE ) color = WorkspaceConstants.CONNECTION_FILL_TRUTHVALUE;
 		else if( type==ConnectionType.DATA  ) color = WorkspaceConstants.CONNECTION_FILL_DATA;

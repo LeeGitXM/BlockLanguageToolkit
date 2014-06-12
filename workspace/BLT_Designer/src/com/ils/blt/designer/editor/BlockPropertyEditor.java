@@ -106,6 +106,7 @@ public class BlockPropertyEditor extends SlidingPane {
 		ApplicationRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
 		BlockProperty[] properties = handler.getBlockProperties(block.getClassName(),projectId,resourceId,block.getId());
 		for(BlockProperty property:properties) {
+			log.debugf("%s.init: - updating property %s",TAG,property.getName());
 			if( property.getBindingType().equals(BindingType.TAG) ) {
 				// Search the property list for the actual property
 				Iterator<BlockProperty> walker = propertyList.iterator();
@@ -122,6 +123,7 @@ public class BlockPropertyEditor extends SlidingPane {
 		
 		// Now fill the editor 
 		for(BlockProperty property:propertyList) {
+			log.debugf("%s.init: - editing property %s",TAG,property.getName());
 			if( property.getName().equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_LIMIT_TYPE)) {
 				panel = new LimitTypePanel(property);
 			}
