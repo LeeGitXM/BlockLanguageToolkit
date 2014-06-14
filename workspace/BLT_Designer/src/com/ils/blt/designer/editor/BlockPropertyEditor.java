@@ -157,6 +157,9 @@ public class BlockPropertyEditor extends SlidingPane   {
 	// show the data type (read-only) and allow for attribute display.
 	private class ConfigurationPanel extends JPanel {
 		private static final long serialVersionUID = 1L;
+		private static final String columnConstraints = "[para]0[]0[]";
+		private static final String layoutConstraints = "ins 2";
+		private static final String rowConstraints = "[para]0[]0[]";
 		private BlockProperty property = null;
 		private final JLabel headingLabel;
 		private final JComboBox<String> bindingTypeCombo;
@@ -166,7 +169,7 @@ public class BlockPropertyEditor extends SlidingPane   {
 		private final JTextField yfield;
 		
 		public ConfigurationPanel() {
-			setLayout(new MigLayout("flowy,ins 2"));
+			setLayout(new MigLayout("top,flowy,ins 2","",""));
 			headingLabel = addHeading(this);
 			//Create three panels - binding type, data type, display option.
 			JPanel bindingPanel = new JPanel();
@@ -177,7 +180,7 @@ public class BlockPropertyEditor extends SlidingPane   {
 			add(bindingPanel);
 
 			JPanel typePanel = new JPanel();
-			typePanel.setLayout(new MigLayout("flowy,ins 2"));
+			typePanel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
 			addSeparator(bindingPanel,"Property Type");
 			propertyTypeCombo = createPropertyTypeCombo();
 			propertyTypeCombo.setEditable(false);
@@ -185,24 +188,24 @@ public class BlockPropertyEditor extends SlidingPane   {
 			add(typePanel);
 			
 			JPanel displayPanel = new JPanel();
-			displayPanel.setLayout(new MigLayout("flowy,ins 2"));
+			displayPanel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
 			addSeparator(displayPanel,"Attribute Display");
 			annotationCheckBox = new JCheckBox("Display attribute?");
-			displayPanel.add(annotationCheckBox);
+			displayPanel.add(annotationCheckBox,"wrap");
 			displayPanel.add(createLabel("X offset"),"skip");
 			xfield = createTextField("");
-			displayPanel.add(xfield,"growx");
+			displayPanel.add(xfield,"span,growx,wrap");
 			displayPanel.add(createLabel("Y offset"),"skip");
 			yfield = createTextField("");
-			displayPanel.add(yfield,"growx");
+			displayPanel.add(yfield,"span,growx,wrap");
 			add(displayPanel);
 			
 			// The OK button copies data from the components and sets the property properties.
 			// It then returns to the main tab
-			JPanel buttonPanel = new JPanel();
-			add(buttonPanel, BorderLayout.SOUTH);
+			JPanel buttonPanel = new JPanel(new MigLayout("", "[center, grow]"));
+			add(buttonPanel, "dock south");
 			JButton okButton = new JButton("OK");
-			buttonPanel.add(okButton);
+			buttonPanel.add(okButton,"");
 			okButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					if(property!=null) {
@@ -212,7 +215,7 @@ public class BlockPropertyEditor extends SlidingPane   {
 				}
 			});
 			JButton cancelButton = new JButton("Cancel");
-			buttonPanel.add(cancelButton);
+			buttonPanel.add(cancelButton,"");
 			cancelButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					setSelectedPane(HOME_PANEL);
@@ -282,9 +285,9 @@ public class BlockPropertyEditor extends SlidingPane   {
 	// We do allow for attribute display.
 	private class NameEditPanel extends JPanel {
 			private static final long serialVersionUID = 1L;
-			private static final String columnConstraints = "[para]0[]0[]";
+			private static final String columnConstraints = "[para]0[]0[]0[]";
 			private static final String layoutConstraints = "flowy,ins 2";
-			private static final String rowConstraints = "[para]0[]0[]";
+			private static final String rowConstraints = "[para]0[]0[]0[]";
 			private ProcessBlockView block = null;
 			private final JLabel headingLabel;
 			private final JTextField nameField;
@@ -297,32 +300,32 @@ public class BlockPropertyEditor extends SlidingPane   {
 				headingLabel = addHeading(this);
 				//Create three panels - binding type, data type, display option.
 				JPanel namePanel = new JPanel();
-				setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
+				namePanel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
 				addSeparator(namePanel,"Block Name");
 				namePanel.add(createLabel("Name"),"skip");
 				nameField = createTextField("");
-				namePanel.add(nameField,"span,growx");
+				namePanel.add(nameField,"span,growx,wrap");
 				add(namePanel);
 				
 				JPanel displayPanel = new JPanel();
-				setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
+				displayPanel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
 				addSeparator(displayPanel,"Attribute Display");
 				annotationCheckBox = new JCheckBox("Display attribute?");
-				displayPanel.add(annotationCheckBox);
+				displayPanel.add(annotationCheckBox,"wrap");
 				displayPanel.add(createLabel("X offset"),"skip");
 				xfield = createTextField("");
-				displayPanel.add(xfield,"span,growx");
+				displayPanel.add(xfield,"span,growx,wrap");
 				displayPanel.add(createLabel("Y offset"),"skip");
 				yfield = createTextField("");
-				displayPanel.add(yfield,"span,growx");
+				displayPanel.add(yfield,"span,growx,wrap");
 				add(displayPanel);
 				
 				// The OK button copies data from the components and sets the property properties.
 				// It then returns to the main tab
-				JPanel buttonPanel = new JPanel();
-				add(buttonPanel, BorderLayout.SOUTH);
+				JPanel buttonPanel = new JPanel(new MigLayout("", "[center, grow]"));
+				add(buttonPanel, "dock south");
 				JButton okButton = new JButton("OK");
-				buttonPanel.add(okButton);
+				buttonPanel.add(okButton,"");
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						if( !nameField.getText().isEmpty()) block.setName(nameField.getText());
@@ -338,7 +341,7 @@ public class BlockPropertyEditor extends SlidingPane   {
 					}
 				});
 				JButton cancelButton = new JButton("Cancel");
-				buttonPanel.add(cancelButton);
+				buttonPanel.add(cancelButton,"");
 				cancelButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						setSelectedPane(HOME_PANEL);
