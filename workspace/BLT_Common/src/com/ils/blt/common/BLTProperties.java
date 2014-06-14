@@ -66,6 +66,9 @@ public interface BLTProperties   {
 	public static final String PALETTE_BLOCK_STYLE = "blockStyle";
 	public static final String PALETTE_ICON_PATH   = "iconPath";
 	public static final String PALETTE_LABEL       = "label";
+	public static final String PALETTE_NAME_DISPLAYED    = "nameDisplayed";
+	public static final String PALETTE_NAME_OFFSET_X     = "nameOffsetX";
+	public static final String PALETTE_NAME_OFFSET_Y     = "nameOffsetY";
 	public static final String PALETTE_RECEIVE_ENABLED   = "receiveEnabled";
 	public static final String PALETTE_TRANSMIT_ENABLED   = "transmitEnabled";
 	public static final String PALETTE_TOOLTIP     = "tooltip";

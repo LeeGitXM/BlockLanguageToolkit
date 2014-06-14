@@ -24,6 +24,9 @@ public class SerializableBlock {
 	private String embeddedLabel="";      // Label place in block in designer
 	private String iconPath="";           // Path to icon that is the entire block
 	private String name;
+	private boolean nameDisplayed = false;
+	private int nameOffsetX = 0;     // When displayed as an attribute
+	private int nameOffsetY = 0;     // When displayed as an attribute
 	private UUID originalId = null;       // Id of block from which this was cloned
 	private int preferredHeight = 0;
 	private int preferredWidth  = 0;
@@ -42,14 +45,14 @@ public class SerializableBlock {
 	public SerializableAnchor[] getAnchors() { return anchors; }
 	public int getBackground() {return background;}
 	public String getClassName() {return className;}
-	
 	public int getEmbeddedFontSize() {return embeddedFontSize;}
-
 	public String getEmbeddedIcon() {return embeddedIcon;}
 	public String getEmbeddedLabel() {return embeddedLabel;}
 	public String getIconPath() {return iconPath;}
 	public UUID getId() { return uuid; }
 	public String getName() { return name; }
+	public int getNameOffsetX() {return nameOffsetX;}
+	public int getNameOffsetY() {return nameOffsetY;}
 	public UUID getOriginalId() { return originalId; }
 	public int getPreferredHeight() {return preferredHeight;}
 	public int getPreferredWidth() {return preferredWidth;}
@@ -59,6 +62,7 @@ public class SerializableBlock {
 	public BlockStyle getStyle() { return style; }
 	public int getX() { return x; }
 	public int getY() { return y; }
+	public boolean isNameDisplayed() {return nameDisplayed;}
 	public boolean isReceiveEnabled() {return receiveEnabled;}
 	public boolean isTransmitEnabled() {return transmitEnabled;}
 	public void setAnchors(SerializableAnchor[] array) {
@@ -75,6 +79,9 @@ public class SerializableBlock {
 	public void setIconPath(String iconPath) {this.iconPath = iconPath;}
 	public void setId(UUID id) { uuid = id; }
 	public void setName(String label) { this.name = label; }
+	public void setNameDisplayed(boolean showName) {this.nameDisplayed = showName;}
+	public void setNameOffsetX(int nameOffsetX) {this.nameOffsetX = nameOffsetX;}
+	public void setNameOffsetY(int nameOffsetY) {this.nameOffsetY = nameOffsetY;}
 	public void setOriginalId(UUID id) { originalId = id; }
 	public void setPreferredHeight(int preferredHeight) {this.preferredHeight = preferredHeight;}
 	public void setPreferredWidth(int preferredWidth) {this.preferredWidth = preferredWidth;}

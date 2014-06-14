@@ -30,4 +30,5 @@ public interface WorkspaceConstants   {
 	public static final Color CONNECTION_FILL_DATA            = Color.LIGHT_GRAY;
 	public static final Color CONNECTION_FILL_INFORMATION     = new Color(230,200,55);   // Mustard
 	
+	public static final int DEFAULT_EMBEDDED_FONT_SIZE    = 24;
 }

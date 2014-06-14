@@ -200,6 +200,12 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	protected ConnectionPainter newConnectionPainter(BlockDiagramModel model) {
 		return new DiagramConnectionPainter();
 	}
+	
+	@Override
+	protected BlockDesignableContainer newDesignableContainer(BlockDiagramModel model) {
+		return new DiagramContainer(this,model,this.newEdgeRouter(model),this.newConnectionPainter(model));
+	}
+	
 	@Override
 	public MenuBarMerge getMenu() {
 		return null;
@@ -556,7 +562,16 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				super.standardColor=WorkspaceConstants.CONNECTION_BACKGROUND;
 				super.paintConnection(g, cxn, route, selected, hover);
 			}
-			else {    // Signal or ANY
+			// ANY is like text, except there is no line down the middle
+			else if( ctype==ConnectionType.ANY ) {
+				super.stroke = informationOutlineStroke;
+				super.standardColor=WorkspaceConstants.CONNECTION_BACKGROUND;
+				super.paintConnection(g, cxn, route, selected, hover);
+				super.stroke = informationCoreStroke;
+				super.standardColor=WorkspaceConstants.CONNECTION_FILL_INFORMATION;
+				super.paintConnection(g, cxn, route, selected, hover);
+			}
+			else {    // Signal 
 				super.stroke = signalOutlineStroke;
 				super.standardColor=WorkspaceConstants.CONNECTION_FILL_SIGNAL;
 				super.paintConnection(g, cxn, route, selected, hover);

@@ -114,7 +114,7 @@ public class BlockFactory  {
 					property.setEditable(bp.isEditable());
 					property.setBinding(bp.getBinding());
 					property.setBindingType(bp.getBindingType());
-					property.setAnnotated(bp.isAnnotated());
+					property.setDisplayed(bp.isDisplayed());
 					property.setDisplayOffsetX(bp.getDisplayOffsetX());
 					property.setDisplayOffsetY(bp.getDisplayOffsetY());
 					// Use the property change interface so as to properly trigger

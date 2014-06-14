@@ -95,6 +95,7 @@ public class ApplicationRequestManager  {
 			for( String json:jsonList ) {
 				log.tracef("%s: property: %s",TAG,json);
 				BlockProperty bp = BlockProperty.createProperty(json);
+				log.infof("%s.getBlockProperties: %s",TAG, bp.toString());
 				result[index]=bp;
 				index++;
 			}

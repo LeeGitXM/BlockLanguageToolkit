@@ -31,7 +31,7 @@ public class BasicAnchorPoint extends AnchorPoint {
 	 * @param block
 	 * @param ttype termination type
 	 * @param ctype connection type
-	 * @param anch
+	 * @param anch the spot at which the connection stops
 	 * @param leader the leader is a point about 10 pixels from the anchor, used for drawing the connection.
 	 * @param spot
 	 * @param note a String annotation to be drawn next to the connection
