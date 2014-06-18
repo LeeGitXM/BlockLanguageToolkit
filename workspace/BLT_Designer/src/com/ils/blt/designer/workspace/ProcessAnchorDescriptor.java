@@ -13,7 +13,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorT
 public class ProcessAnchorDescriptor extends AnchorDescriptor {
 	private ConnectionType connectionType;
 	private final String annotation;
-	private final PlacementHint hint;
+	private PlacementHint hint;
 
 	
 	public ProcessAnchorDescriptor(AnchorType type,ConnectionType ctype, Object id,String display,String note,PlacementHint placementHint) {
@@ -33,5 +33,8 @@ public class ProcessAnchorDescriptor extends AnchorDescriptor {
 	 * @param ct
 	 */
 	public void setConnectionType(ConnectionType ct) { this.connectionType=ct; }
-
+	/**
+	 * We use this internally in the AbstractUIView to mark out placement definitively.
+	 */
+	public void setHint(PlacementHint h) { this.hint = h; }
 }

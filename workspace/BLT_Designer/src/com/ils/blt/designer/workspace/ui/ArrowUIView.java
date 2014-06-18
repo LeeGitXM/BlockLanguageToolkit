@@ -18,7 +18,6 @@ import javax.swing.SwingUtilities;
 import com.ils.blt.designer.workspace.BasicAnchorPoint;
 import com.ils.blt.designer.workspace.ProcessAnchorDescriptor;
 import com.ils.blt.designer.workspace.ProcessBlockView;
-import com.ils.connection.ConnectionType;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
 
 
@@ -31,7 +30,7 @@ public class ArrowUIView extends AbstractUIView implements BlockViewUI {
 	private static final long serialVersionUID = 6644400470545202522L;
 	private static final int DEFAULT_HEIGHT = 60;
 	private static final int DEFAULT_WIDTH  = 80;
-	private final static double STEM_WIDTH = 0.6;   // Fraction of width
+	private final static double STEM_WIDTH = 0.6;   // Fraction of width for stem of arrow
 	private final static double STEM_HEIGHT = 0.5;  // Fraction of height
 
 	
@@ -63,6 +62,7 @@ public class ArrowUIView extends AbstractUIView implements BlockViewUI {
 		outSegmentCount++;   // Now equals the number of segments on a side
 		inSegmentCount++;
 		int inset = INSET;   // Align with arrow without border
+		int ht = sz.height - BORDER_WIDTH;   // Effective height without border
 		
 		for(ProcessAnchorDescriptor desc:block.getAnchors()) {
 			// Left side terminus
@@ -70,9 +70,9 @@ public class ArrowUIView extends AbstractUIView implements BlockViewUI {
 				outputIndex++;
 				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Terminus,
 						desc.getConnectionType(),
-						new Point(inset,outputIndex*sz.height/outSegmentCount),
-						new Point(-LEADER_LENGTH,outputIndex*sz.height/outSegmentCount),
-						new Rectangle(0,outputIndex*sz.height/outSegmentCount-inset,2*inset,2*inset),
+						new Point(inset,outputIndex*ht/outSegmentCount),
+						new Point(-LEADER_LENGTH,outputIndex*ht/outSegmentCount),
+						new Rectangle(0,outputIndex*ht/outSegmentCount-inset,2*inset,2*inset),
 						desc.getAnnotation());   // Hotspot shape.
 				getAnchorPoints().add(ap);
 				
@@ -82,9 +82,9 @@ public class ArrowUIView extends AbstractUIView implements BlockViewUI {
 				inputIndex++;
 				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Origin,
 						desc.getConnectionType(),
-						new Point(sz.width-inset,inputIndex*sz.height/inSegmentCount-1),
-						new Point(sz.width+LEADER_LENGTH,inputIndex*sz.height/inSegmentCount-1),
-						new Rectangle(sz.width-2*inset,inputIndex*sz.height/inSegmentCount-inset,2*inset,2*inset-1),
+						new Point(sz.width-inset,inputIndex*ht/inSegmentCount),
+						new Point(sz.width+LEADER_LENGTH,inputIndex*ht/inSegmentCount),
+						new Rectangle(sz.width-2*inset,inputIndex*ht/inSegmentCount-inset,2*inset,2*inset-1),
 						desc.getAnnotation());
 				getAnchorPoints().add(ap);
 			}
@@ -153,12 +153,10 @@ public class ArrowUIView extends AbstractUIView implements BlockViewUI {
 		path.lineTo(width,height/2);
 		g.draw(path);
 		
-	
-
 		// Reverse any transforms we made
 		g.setTransform(originalTx);
 		g.setBackground(originalBackground);
-		drawAnchors(g,0,-BORDER_WIDTH/2);
+		drawAnchors(g,-BORDER_WIDTH/2,-BORDER_WIDTH/2);
 		drawEmbeddedIcon(g);
 		drawEmbeddedText(g,0,0);
 		drawBadges(g);

@@ -25,7 +25,7 @@ public class IconUIView extends AbstractUIView implements BlockViewUI {
 	private static final long serialVersionUID = 7095402409706582432L;
 	private static final int DEFAULT_HEIGHT = 48;
 	private static final int DEFAULT_WIDTH  = 48;
-	private static final String DEFAULT_ICON_PATH  = "Block/icons/medium/database.png";
+	private static final String DEFAULT_ICON_PATH  = "Block/icons/embedded/database.png";
 	private Icon icon = null;
 	
 	public IconUIView(ProcessBlockView view) {

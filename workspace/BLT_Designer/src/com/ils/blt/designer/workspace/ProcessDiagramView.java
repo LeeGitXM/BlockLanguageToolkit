@@ -94,7 +94,8 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	}
 	
 	/** Get the current block property values from the Gateway. 
-	 *  This is appropriate only when the diagram is in a "clean" state.
+	 * If the block does not have a Gateway counterpart (e.g. diagram is dirty), we'll get the 
+	 * default property list for the block class.
 	 */
 	private void initBlockProperties(ProcessBlockView block) {
 		Collection<BlockProperty> propertyList;
@@ -110,13 +111,14 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 
 	/**
 	 * At the time that we add a new block, make sure that the block has a unique name.
+	 *
 	 * @param context 
 	 */
 	@Override
 	public void addBlock(Block blk) {
 		if( blk instanceof ProcessBlockView) {
 			ProcessBlockView block = (ProcessBlockView) blk;
-			if(!isDirty()) initBlockProperties(block);
+			initBlockProperties(block);
 			log.infof("%s.addBlock - %s",TAG,block.getClassName());
 			blockMap.put(blk.getId(), block);
 			fireStateChanged();

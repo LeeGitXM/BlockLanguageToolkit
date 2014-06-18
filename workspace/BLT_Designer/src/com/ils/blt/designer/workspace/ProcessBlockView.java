@@ -46,13 +46,16 @@ public class ProcessBlockView extends AbstractBlock {
 	private final ChangeEvent changeEvent;
 	private int background = Color.white.getRGB();
 	private final String className;
-	private int    embeddedFontSize = 24;         // Size of font for interior label
+	private int    embeddedFontSize = WorkspaceConstants.DEFAULT_EMBEDDED_FONT_SIZE; // Size of font for interior label
 	private String embeddedIcon="";               // 32x32 icon to place in block in designer
 	private String embeddedLabel="";              // Label place in block in designer
 	private final UIFactory factory = new UIFactory() ;
 	private String iconPath="";                   // Path to icon that is the entire block
 	private boolean ctypeEditable=false;          // Can we globally change our connection types
 	private String name = null;                   // Text to display on the block
+	private boolean nameDisplayed = false;
+	private int nameOffsetX = 0;     // When displayed as an attribute
+	private int nameOffsetY = 0;     // When displayed as an attribute
 	private Point location = new Point(0,0);
 	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	private int preferredHeight = 0;              // Size the view to "natural" size
@@ -87,6 +90,9 @@ public class ProcessBlockView extends AbstractBlock {
 		this.state = BlockState.INITIALIZED;
 		this.statusText = "";
 		this.style = descriptor.getStyle();
+		this.nameDisplayed  = descriptor.isNameDisplayed();
+		this.nameOffsetX    = descriptor.getNameOffsetX();
+		this.nameOffsetY    = descriptor.getNameOffsetY();
 		this.receiveEnabled = descriptor.isReceiveEnabled();
 		this.transmitEnabled= descriptor.isTransmitEnabled();
 
@@ -116,6 +122,9 @@ public class ProcessBlockView extends AbstractBlock {
 		this.preferredWidth = sb.getPreferredWidth();
 		this.style = sb.getStyle();
 		this.name = sb.getName();
+		this.nameDisplayed = sb.isNameDisplayed();
+		this.nameOffsetX   = sb.getNameOffsetX();
+		this.nameOffsetY   = sb.getNameOffsetY();
 		this.state = sb.getState();
 		this.statusText = sb.getStatusText();
 		this.receiveEnabled  = sb.isReceiveEnabled();
@@ -155,12 +164,18 @@ public class ProcessBlockView extends AbstractBlock {
     public SerializableBlock convertToSerializable() {
 		SerializableBlock result = new SerializableBlock();
 		result.setId(getId());
+		result.setBackground(getBackground());
 		result.setClassName(getClassName());
 		result.setEmbeddedIcon(getEmbeddedIcon());
 		result.setEmbeddedLabel(getEmbeddedLabel());
 		result.setEmbeddedFontSize(getEmbeddedFontSize());
 		result.setIconPath(getIconPath());
 		result.setName(getName());
+		result.setNameDisplayed(isNameDisplayed());
+		result.setNameOffsetX(getNameOffsetX());
+		result.setNameOffsetY(getNameOffsetY());
+		result.setPreferredHeight(getPreferredHeight());
+		result.setPreferredWidth(getPreferredWidth());
 		result.setState(getState());
 		result.setStatusText(getStatusText());
 		result.setStyle(getStyle());
@@ -224,12 +239,14 @@ public class ProcessBlockView extends AbstractBlock {
 	public String getIconPath() {return iconPath;}
 	@Override
 	public UUID getId() { return uuid; }
-	public String getName() {return name;}
 	// Location is the upper left.
 	@Override
 	public Point getLocation() {
 		return location;
 	}
+	public String getName() {return name;}
+	public int getNameOffsetX() { return nameOffsetX; }
+	public int getNameOffsetY() { return nameOffsetY; }
 	public int getPreferredHeight() {return preferredHeight;}
 	public int getPreferredWidth() {return preferredWidth;}
 	public Collection<BlockProperty> getProperties() { return properties; }
@@ -242,6 +259,7 @@ public class ProcessBlockView extends AbstractBlock {
 		ui.install(blk);
 	}
 	public boolean isCtypeEditable() {return ctypeEditable;}
+	public boolean isNameDisplayed() { return nameDisplayed; }
 	public boolean isReceiveEnabled() {return receiveEnabled;}
 	public boolean isTransmitEnabled() {return transmitEnabled;}
 	public void setCtypeEditable(boolean ctypeEditable) {this.ctypeEditable = ctypeEditable;}
@@ -250,6 +268,9 @@ public class ProcessBlockView extends AbstractBlock {
 	public void setEmbeddedLabel(String embeddedLabel) {this.embeddedLabel = embeddedLabel;}
 	public void setIconPath(String iconPath) {this.iconPath = iconPath;}
 	public void setName(String label) {this.name = label;}
+	public void setNameDisplayed(boolean showName) {this.nameDisplayed = showName;}
+	public void setNameOffsetX(int nameOffsetX) {this.nameOffsetX = nameOffsetX;}
+	public void setNameOffsetY(int nameOffsetY) {this.nameOffsetY = nameOffsetY;}
 	@Override
 	public void setLocation(Point loc) {
 		location = loc;

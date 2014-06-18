@@ -24,6 +24,7 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import com.ils.block.common.PlacementHint;
 import com.ils.blt.designer.workspace.BasicAnchorPoint;
 import com.ils.blt.designer.workspace.ProcessAnchorDescriptor;
 import com.ils.blt.designer.workspace.ProcessBlockView;
@@ -85,8 +86,11 @@ public abstract class AbstractUIView extends JComponent
 
 	/**
 	 *  Create anchor points from the anchor descriptions. This default implementation
-	 *  places at most one input on the left and one output on the right. It assumes the main UI has
-	 *  insets of INSET on all 4 sides. The anchor "leader" should be at least 10 pixels outside the component.
+	 *  makes assumptions about preferred locations depending on connection type (signals
+	 *  on top and text output on the bottom). These can be overridden using placement "hints".
+	 *  For multiple connections on a side, ordering is in the order in which the connections 
+	 *  have been defined.  It assumes the main UI has insets of INSET on all 4 sides. 
+	 *  The anchor "leader" should be at least 10 pixels outside the component.
 	 *  The hotspot is twice the size of the visible square. 
 	 *  
 	 *  The anchor locations are:
@@ -104,79 +108,117 @@ public abstract class AbstractUIView extends JComponent
 	 */
 	protected void initAnchorPoints() {
 		Dimension sz = getPreferredSize();
-		int inputCount = 0;
-		int inputIndex = 0;
-		int outputCount= 0;
-		int outputIndex= 0;
+		// These actually end up the number of connections on a side
+		int rightSideCount = 0;
+		int rightSideIndex = 0;
+		int leftSideCount= 0;
+		int leftSideIndex= 0;
+		int topCount = 0;
+		int topIndex = 0;
+		int bottomCount= 0;
+		int bottomIndex= 0;
 		
-		// Count inputs and outputs
+		// Create counts for each side. There are both defaults and placement hints.
 		for(ProcessAnchorDescriptor desc:block.getAnchors()) {
-			if(desc.getConnectionType()==ConnectionType.SIGNAL) continue;
-			if(desc.getConnectionType()==ConnectionType.TEXT &&
-			   desc.getType()==	AnchorType.Terminus) continue;
+			PlacementHint hint = desc.getHint();
+			if(hint==null) hint = PlacementHint.UNSPECIFIED;
+			if( hint.equals(PlacementHint.L)) leftSideCount++;
+			else if(hint.equals(PlacementHint.R)) rightSideCount++;
+			else if(hint.equals(PlacementHint.B)) bottomCount++;
+			else if(hint.equals(PlacementHint.T)) topCount++;
+			// Now consider the defaults by type and direction
+			else if(desc.getConnectionType()==ConnectionType.SIGNAL) {
+				desc.setHint(PlacementHint.T);
+				topCount++;
+			}
+			else if(desc.getConnectionType()==ConnectionType.TEXT &&
+			        desc.getType().equals(AnchorType.Origin) ) {
+				desc.setHint(PlacementHint.B);
+				bottomCount++;
+			}
 			
-			if(desc.getType()==	AnchorType.Origin ) inputCount++;
-			else if(desc.getType()==AnchorType.Terminus ) outputCount++;
+			else if(desc.getType().equals(AnchorType.Origin)  ) {
+				desc.setHint(PlacementHint.R);
+				rightSideCount++;
+			}
+			else if(desc.getType().equals(AnchorType.Terminus))  {
+				desc.setHint(PlacementHint.L);
+				leftSideCount++;
+			}
 		}
-		outputCount++;       // Now equals the number of segments on a side
-		inputCount++;
-		int inset = INSET;   // Align the connections with the un-bordered block
 		
+		// Calculate side segments for the interior block (sans borders)
+		int inset = INSET+BORDER_WIDTH;   // Align the connections with the un-bordered block
+		int interiorWidth = sz.width-2*inset;
+		int interiorHeight= sz.height-2*inset;
+		
+		// The segments are the number of divisions on a side (usually one more than the connection count).
+		// With exactly two, it looks better if we divide into quarters with the middle empty.
+		// With exactly one on top or bottom, push to the rightmost quarter.
+		int topSegments = topCount+1;
+		if( topCount == 1 || topCount==2) topSegments = 4;
+		int bottomSegments = bottomCount+1;
+		if( bottomCount == 1 || bottomCount==2) bottomSegments = 4;
+		int leftSegments = leftSideCount+1;
+		if( leftSideCount == 2) leftSegments = 4;
+		int rightSegments = rightSideCount+1;
+		if( rightSideCount == 2) rightSegments = 4;
+		
+		
+		// Re-iterate using the same criteria as above
+		// NOTE: The anchor point should be on the component boundary. Stubs are drawn inward.
 		for(ProcessAnchorDescriptor desc:block.getAnchors()) {
-			// Top left signal
-			if(desc.getConnectionType()==ConnectionType.SIGNAL && desc.getType()==AnchorType.Terminus ) {
+			
+			// Top
+			if(desc.getHint().equals(PlacementHint.T) ) {
+				topIndex++;
+				if(topCount==1) topIndex=3;
+				else if(topCount==2 && topIndex==2) topIndex++;
 				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Terminus,
 						desc.getConnectionType(),
-						new Point(inset+(sz.width-2*inset)/4,inset+1),
-						new Point(inset+(sz.width-2*inset)/4,-SIGNAL_LEADER_LENGTH),
-						new Rectangle((sz.width-2*inset)/4,0,2*inset,2*inset),
-						desc.getAnnotation());   // x,y,width,height. Hotspot shape.
-				ap.setSide(AnchorSide.TOP);
-				getAnchorPoints().add(ap);
-			}
-			// Top right signal
-			else if(desc.getConnectionType()==ConnectionType.SIGNAL && desc.getType()==AnchorType.Origin ) {
-				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Origin,
-						desc.getConnectionType(),
-						new Point(inset+3*(sz.width-2*inset)/4,inset+1),
-						new Point(inset+3*(sz.width-2*inset)/4,-LEADER_LENGTH),
-						new Rectangle(3*(sz.width-2*inset)/4,0,2*inset,2*inset),
+						new Point(inset+(topIndex*interiorWidth)/topSegments,0),
+						new Point(inset+(topIndex*interiorWidth)/topSegments,-SIGNAL_LEADER_LENGTH),
+						new Rectangle((topIndex*interiorWidth)/topSegments,0,2*inset,2*inset),
 						desc.getAnnotation()); 
 				ap.setSide(AnchorSide.TOP);
 				getAnchorPoints().add(ap);
 			}
-			// Bottom right text
-			else if(desc.getConnectionType()==ConnectionType.TEXT && desc.getType()==AnchorType.Origin ) {
-				inputIndex++;
+			// Bottom
+			else if(desc.getHint().equals(PlacementHint.B) ) {
+				bottomIndex++;
+				if(bottomCount==1) bottomIndex=3;
+				else if(bottomCount==2 && bottomIndex==2) bottomIndex++;
 				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Origin,
 						desc.getConnectionType(),
-						new Point(inset+3*(sz.width-2*inset)/4,sz.height-inset),
-						new Point(inset+3*(sz.width-2*inset)/4,sz.height+LEADER_LENGTH),
-						new Rectangle(3*(sz.width-2*inset)/4,sz.height-2*inset,2*inset,2*inset),
+						new Point(inset+bottomIndex*(interiorWidth)/bottomSegments,sz.height),
+						new Point(inset+bottomIndex*(interiorWidth)/bottomSegments,sz.height+LEADER_LENGTH),
+						new Rectangle(bottomIndex*(interiorWidth)/bottomSegments,sz.height-2*inset,2*inset,2*inset),
 						desc.getAnnotation());   // Hotspot shape.
 				ap.setSide(AnchorSide.BOTTOM);
 				getAnchorPoints().add(ap);
 			}
-			// Left side terminus - here we use the default behavior for side.
-			else if( desc.getType()==AnchorType.Terminus  ) {
-				outputIndex++;
+			// Left side
+			else if( desc.getHint().equals(PlacementHint.L)  ) {
+				leftSideIndex++;
+				if(leftSideCount==2 && leftSideIndex==2) leftSideIndex++;
 				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Terminus,
 						desc.getConnectionType(),
-						new Point(inset,outputIndex*sz.height/outputCount),
-						new Point(-LEADER_LENGTH,outputIndex*sz.height/outputCount),
-						new Rectangle(0,outputIndex*sz.height/outputCount-inset,2*inset,2*inset),
+						new Point(0,inset+leftSideIndex*interiorHeight/leftSegments),
+						new Point(-LEADER_LENGTH,inset+leftSideIndex*interiorHeight/leftSegments),
+						new Rectangle(0,leftSideIndex*interiorHeight/leftSegments,2*inset,2*inset),
 						desc.getAnnotation());   // Hotspot shape.
 				getAnchorPoints().add(ap);
 				
 			}
-			// Right-side origin - also default behavior for side
-			else if(desc.getType()==AnchorType.Origin ) {
-				inputIndex++;
+			// Right-side
+			else {
+				rightSideIndex++;
+				if(rightSideCount==2 && rightSideIndex==2) rightSideIndex++;
 				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Origin,
 						desc.getConnectionType(),
-						new Point(sz.width-inset,inputIndex*sz.height/inputCount-1),
-						new Point(sz.width+LEADER_LENGTH,inputIndex*sz.height/inputCount-1),
-						new Rectangle(sz.width-2*inset,inputIndex*sz.height/inputCount-inset,2*inset,2*inset-1),
+						new Point(sz.width,inset+rightSideIndex*interiorHeight/rightSegments-1),
+						new Point(sz.width+LEADER_LENGTH,inset+rightSideIndex*interiorHeight/rightSegments-1),
+						new Rectangle(sz.width-2*inset,rightSideIndex*interiorHeight/rightSegments,2*inset,2*inset-1),
 						desc.getAnnotation());
 				getAnchorPoints().add(ap);
 	
@@ -217,8 +259,8 @@ public abstract class AbstractUIView extends JComponent
 			BasicAnchorPoint bap = (BasicAnchorPoint)ap;
 			AnchorSide side = bap.getSide();
 			int anchorWidth = anchorWidthForConnectionType(bap.getConnectionType());
-			int anchorLength= INSET;       // Draw edge to the boundary
-			Point loc = bap.getAnchor();   // Center of the anchor point
+			int anchorLength= INSET+BORDER_WIDTH;       // Draw edge to the boundary
+			Point loc = bap.getAnchor();                // Center of the anchor point
 			// Paint the rectangle
 			if( bap.getConnectionType()==ConnectionType.DATA) g.setColor(getBackground());
 			else g.setColor(fillColorForConnectionType(bap.getConnectionType()));
@@ -248,7 +290,8 @@ public abstract class AbstractUIView extends JComponent
 					g.drawLine(x,y, x, y+anchorLength+1);
 				}
 				else {
-					g.drawLine(x,y, x+anchorLength+1, y);
+					// NOTE: validated with ARROW style
+					g.drawLine(x,y+1, x+anchorLength+1, y+1);     
 					g.drawLine(x,y+anchorWidth, x+anchorLength, y+anchorWidth);
 				}
 			}

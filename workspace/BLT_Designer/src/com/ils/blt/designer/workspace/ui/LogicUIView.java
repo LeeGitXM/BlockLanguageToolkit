@@ -99,7 +99,7 @@ public class LogicUIView extends AbstractUIView implements BlockViewUI {
 		g.setTransform(originalTx);
 		g.setBackground(originalBackground);
 		
-		drawAnchors(g,-BORDER_WIDTH,-BORDER_WIDTH);
+		drawAnchors(g,-BORDER_WIDTH/2,-BORDER_WIDTH/2);
 		drawEmbeddedIcon(g);
 		int xoffset = -BORDER_WIDTH;
 		if( substyle.equals(SUBSTYLE_NOT) ) xoffset -= width/5;
