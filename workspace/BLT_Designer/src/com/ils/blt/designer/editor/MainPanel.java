@@ -1,0 +1,212 @@
+/**
+ *   (c) 2014  ILS Automation. All rights reserved.
+ */
+package com.ils.blt.designer.editor;
+
+import java.awt.Image;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JSeparator;
+import javax.swing.JTextField;
+
+import net.miginfocom.swing.MigLayout;
+
+import com.ils.block.common.BindingType;
+import com.ils.block.common.BlockProperty;
+import com.ils.blt.designer.workspace.ProcessBlockView;
+import com.inductiveautomation.ignition.client.images.ImageLoader;
+
+/**
+ * This is the panel that first appears when editing a block. It contains
+ * a static core attribute display, and then a list of properties.
+ * 
+ * Note: block properties have been initialized in ProcessDiagramView.initBlockProperties()
+ */
+@SuppressWarnings("serial")
+public class MainPanel extends BasicEditPanel {
+	private final static String TAG = "MainPanel";
+	private final ProcessBlockView block;
+	public MainPanel(BlockPropertyEditor editor,ProcessBlockView blk) {
+		super(editor);
+		this.block = blk;
+		setLayout(new MigLayout("top,flowy,ins 2","","[top]0[]"));
+		JPanel panel = new CorePropertyPanel(block);
+		add(panel,"grow,push");
+
+		log.infof("%s.mainPanel: - editing %s (%s)",TAG,block.getId().toString(),block.getClassName());
+		JPanel propertyPanel = null;
+		// Now fill the editor. We use the same edit panel class for all properties
+		for(BlockProperty property:block.getProperties()) {
+			// We have gotten null from serialization problems ...
+			if( property==null || property.getName()==null) continue;
+			log.infof("%s.init: - creating editor for property %s",TAG,property.getName());
+			propertyPanel = new PropertyPanel(property);
+			add(propertyPanel,"skip,growx,push,gaptop 0,gapbottom 0");
+		
+		}
+		// "Sacrificial" row - else we had trouble scrolling to the bottom
+		JSeparator separator = new JSeparator();
+		add(separator,"span,growy");
+	}
+
+	/**
+	 * These properties are present in every block.
+	 * class, label, state, statusText
+	 */
+	private class CorePropertyPanel extends JPanel {
+		private static final String columnConstraints = "[para]0[]0[]";
+		private static final String layoutConstraints = "ins 2";
+		private static final String rowConstraints = "[para]0[]0[]";
+
+		public CorePropertyPanel(ProcessBlockView blk) {
+			setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
+			addSeparator(this,"Core");
+			add(createLabel("Name"),"skip");
+			add(createTextField(blk.getName()),"growx,pushx");
+			add(createNameEditButton(blk),"w :25:");
+			add(createLabel("Class"),"newline,skip");
+			add(createTextField(blk.getClassName()),"span,growx");
+			add(createLabel("UUID"),"skip");
+			add(createTextField(blk.getId().toString()),"span,growx");
+		}
+	}
+	/**
+	 * A property panel is an editor for a single property. By default it contains:
+	 *    First line --
+	 *    	  title label
+	 *    Next line --
+	 *        valueBox     - text box with the current value
+	 *        edit button  - go to editor screen to change value
+	 *        binding btn  - go to separate screen to determine binding    
+	 */
+	private class PropertyPanel extends JPanel {
+		private static final String columnConstraints = "";
+		private static final String layoutConstraints = "ins 2";
+		private static final String rowConstraints = "";
+		
+		public PropertyPanel(BlockProperty prop) {
+			setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));     // 3 cells across
+			if( prop.getName().matches(".*Interval.*")) {
+				addSeparator(this,prop.getName()+" ~ secs");
+			}
+			else {
+				addSeparator(this,prop.getName());
+			}
+			// Now the second line.
+			add(createValueDisplayField(prop),"skip,growx,push");
+			add(createEditButton(prop),"w :25:");
+			add(createConfigurationButton(prop),"w :25:");
+		}
+	}
+	
+	// =============================== Component Creation Methods ================================
+	/**
+	 * Create a button that slides to a panel allowing choices of binding and
+	 * other property options.
+	 * The button has only an image.
+	 * @param prop 
+	 */
+	private JButton createConfigurationButton(final BlockProperty prop) {
+		JButton btn = null;
+		final String ICON_PATH  = "Block/icons/editor/data_link.png";
+		Image img = ImageLoader.getInstance().loadImage(ICON_PATH ,BUTTON_SIZE);
+		if( img !=null) {
+			Icon icon = new ImageIcon(img);
+			btn = new JButton(icon);
+			btn.setMargin(new Insets(0,0,0,0));
+			btn.setOpaque(false);
+			btn.setBorderPainted(false);
+			btn.setBackground(getBackground());
+			btn.setBorder(null);
+			btn.setPreferredSize(BUTTON_SIZE);
+			btn.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e){
+					updatePanelForProperty(BlockEditConstants.CONFIGURATION_PANEL,prop);
+					setSelectedPane(BlockEditConstants.CONFIGURATION_PANEL);
+				}
+			});
+		}
+		return btn;
+	}
+	/**
+	 * Create a button that navigates to the proper editor.
+	 */
+	private JButton createEditButton(final BlockProperty prop) {
+		JButton btn = null;
+		final String ICON_PATH  = "Block/icons/editor/pencil.png";
+		Image img = ImageLoader.getInstance().loadImage(ICON_PATH ,BUTTON_SIZE);
+		if( img !=null) {
+			Icon icon = new ImageIcon(img);
+			btn = new JButton(icon);
+			btn.setMargin(new Insets(0,0,0,0));
+			btn.setOpaque(false);
+			btn.setBorderPainted(false);
+			btn.setBackground(getBackground());
+			btn.setBorder(null);
+			btn.setPreferredSize(BUTTON_SIZE);
+			btn.addActionListener(new ActionListener() {
+				// Determine the correct panel, depending on the property type
+				public void actionPerformed(ActionEvent e){
+					if( prop.getBindingType().equals(BindingType.TAG)) {
+						updatePanelForProperty(BlockEditConstants.TAG_BROWSER_PANEL,prop);
+						setSelectedPane(BlockEditConstants.TAG_BROWSER_PANEL);
+					}
+					else if( prop.getBindingType().equals(BindingType.ENGINE)) {
+						;// Do nothing
+					}
+					else {
+						log.infof("%s.editButton actionPerformed for property %s (%s)",TAG,prop.getName(),prop.getType());
+						updatePanelForProperty(BlockEditConstants.VALUE_EDIT_PANEL,prop);
+						setSelectedPane(BlockEditConstants.VALUE_EDIT_PANEL);
+					}
+				}
+			});
+		}
+		return btn;
+	}
+	
+	/**
+	 * Create a button that navigates to the proper editor for
+	 * a block's name.
+	 */
+	private JButton createNameEditButton(final ProcessBlockView blk) {
+		JButton btn = null;
+		final String ICON_PATH  = "Block/icons/editor/pencil.png";
+		Image img = ImageLoader.getInstance().loadImage(ICON_PATH ,BUTTON_SIZE);
+		if( img !=null) {
+			Icon icon = new ImageIcon(img);
+			btn = new JButton(icon);
+			btn.setMargin(new Insets(0,0,0,0));
+			btn.setOpaque(false);
+			btn.setBorderPainted(false);
+			btn.setBackground(getBackground());
+			btn.setBorder(null);
+			btn.setPreferredSize(BUTTON_SIZE);
+			btn.addActionListener(new ActionListener() {
+				// Determine the correct panel, depending on the property type
+				public void actionPerformed(ActionEvent e){
+					updatePanelForBlock(BlockEditConstants.NAME_EDIT_PANEL,blk);
+					setSelectedPane(BlockEditConstants.NAME_EDIT_PANEL);
+				}
+			});
+		}
+		return btn;
+	}
+	/**
+	 * Create a text box for the value field. This is read-only.
+	 */
+	private JTextField createValueDisplayField(final BlockProperty prop) {	
+		Object val = prop.getValue();
+		if(val==null) val = "";
+		final JTextField field = new JTextField(val.toString());
+		field.setEditable(false);
+		field.setEnabled(false);
+		return field;
+	}
+}

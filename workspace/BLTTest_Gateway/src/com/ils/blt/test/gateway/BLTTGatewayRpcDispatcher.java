@@ -127,7 +127,17 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface,
 		catch(Exception ex) {
 			log.info(TAG+".setTestBlockProperty: Exception ("+ex.getMessage()+")",ex);
 		}
-		
+	}
+	
+	@Override
+	public void setTestBlockPropertyBinding(UUID diagramId,String propertyName, String type, String binding) {
+		log.infof("%s.setTestBlockPropertyBinding: %s.%s is %s:%s", TAG,diagramId.toString(),propertyName,type,binding);
+		try {
+			requestHandler.setTestBlockPropertyBinding(diagramId,propertyName,type,binding);
+		}
+		catch(Exception ex) {
+			log.info(TAG+".setTestBlockPropertyBinding: Exception ("+ex.getMessage()+")",ex);
+		}
 	}
 
 	/**

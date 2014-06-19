@@ -218,6 +218,26 @@ public class MockDiagramScriptFunctions   {
 			log.infof("%s.setTestBlockProperty: GatewayException (%s)",TAG,ge.getMessage());
 		}
 	}
+	/**
+	 * Set the value of the named property in the block-under-test. This value ignores
+	 * any type of binding. Normally, if the property is bound to a tag, then the value
+	 * should be set by writing to that tag.
+	 * 
+	 * @param diagramId
+	 * @param propertyName
+	 * @param value
+	 */
+	public static void setTestBlockPropertyBinding(UUID diagramId,String propertyName,String type,String binding){ 
+		log.debugf("%s.setTestBlockPropertyBinding: %s.%s %s=%s",TAG,diagramId.toString(), propertyName,type,binding);
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTTestProperties.MODULE_ID, "setTestBlockPropertyBinding", diagramId,propertyName,type,binding);
+		}
+		catch(Exception ge) {
+			log.infof("%s.setTestBlockPropertyBinding: GatewayException (%s)",TAG,ge.getMessage());
+		}
+	}
+
 
 	/**
 	 * Start the test diagram by activating subscriptions for bound properties and

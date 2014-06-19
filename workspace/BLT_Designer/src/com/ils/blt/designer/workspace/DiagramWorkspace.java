@@ -36,6 +36,7 @@ import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.editor.PropertyEditorFrame;
 import com.ils.connection.ConnectionType;
+import com.ils.connection.ProcessConnection;
 import com.inductiveautomation.ignition.client.designable.DesignableContainer;
 import com.inductiveautomation.ignition.client.util.LocalObjectTransferable;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
@@ -162,7 +163,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					ProcessAnchorDescriptor anch = pbv.getAnchors().iterator().next();
 					if( anch!=null ) {
 						ConnectionType ct = anch.getConnectionType();
-					
+						log.infof("%s.getSelectionPopupMenu: Connection type is: %s",TAG,ct.name());
 					
 						ChangeConnectionAction ccaAny = new ChangeConnectionAction(pbv,ConnectionType.ANY);
 						ccaAny.setEnabled(!ct.equals(ConnectionType.ANY));

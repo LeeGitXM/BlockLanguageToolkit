@@ -1,3 +1,6 @@
+/**
+ *   (c) 2013-2014  ILS Automation. All rights reserved.
+ */
 package com.ils.blt.designer.editor;
 
 import java.awt.Color;

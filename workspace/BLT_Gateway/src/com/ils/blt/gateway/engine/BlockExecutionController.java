@@ -21,15 +21,19 @@ import com.ils.block.control.ExecutionController;
 import com.ils.block.control.IncomingNotification;
 import com.ils.block.control.OutgoingNotification;
 import com.ils.block.control.SignalNotification;
+import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.common.serializable.DiagramState;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.common.BoundedBuffer;
 import com.ils.common.watchdog.Watchdog;
 import com.ils.common.watchdog.WatchdogTimer;
 import com.ils.connection.Connection;
+import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.inductiveautomation.ignition.gateway.clientcomm.GatewaySessionManager;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
 
@@ -49,6 +53,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	private static int BUFFER_SIZE = 100;       // Buffer Capacity
 	private static int THREAD_POOL_SIZE = 10;   // Notification threads
 	private final LoggerEx log;
+	private GatewaySessionManager sessionManager = null;
 	private ModelManager modelManager = null;
 	private WatchdogTimer watchdogTimer = null;
 	private static BlockExecutionController instance = null;
@@ -164,6 +169,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		// Create a new watchdog timer each time we start the controller
 		// It is started on creation
 		watchdogTimer = new WatchdogTimer();
+		sessionManager = context.getGatewaySessionManager();
 	}
 	
 	/**
@@ -348,7 +354,30 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		}
 	}
 
-
-
+	@Override
+	public void sendPropertyNotification(String blkid, String propertyName,QualifiedValue val) {
+		String key = NotificationKey.keyForProperty(blkid,propertyName);
+		try {
+			sessionManager.sendNotification(ApplicationScope.DESIGNER, BLTProperties.MODULE_ID, key, val);
+		}
+		catch(Exception ex) {
+			log.warnf("%s.sendPropertyNotification: Error transmitting %s (%s)",TAG,key,ex.getMessage());
+		}
+		
+	}
+	/**
+	 * Notify any listeners in the Client or Designer scopes of the a change in the value carried by a connection.
+	 * @param id unique Id of the connection
+	 * @param val
+	 */
+	public void sendConnectionNotification(String cxnid, QualifiedValue val) {
+		String key = NotificationKey.keyForConnection(cxnid);
+		try {
+			sessionManager.sendNotification(ApplicationScope.DESIGNER, BLTProperties.MODULE_ID, key, val);
+		}
+		catch(Exception ex) {
+			log.warnf("%s.sendConnectionNotification: Error transmitting %s (%s)",TAG,key,ex.getMessage());
+		}
+	}
 
 }

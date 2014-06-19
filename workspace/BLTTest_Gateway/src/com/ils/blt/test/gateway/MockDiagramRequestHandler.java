@@ -6,6 +6,7 @@ package com.ils.blt.test.gateway;
 import java.util.UUID;
 
 import com.ils.block.ProcessBlock;
+import com.ils.block.common.BindingType;
 import com.ils.block.common.BlockProperty;
 import com.ils.block.common.BlockState;
 import com.ils.block.common.PropertyType;
@@ -207,6 +208,39 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 		else {
 			log.infof("%s.setTestBlockProperty: unable to find diagram %s ",TAG,diagramId.toString());
 		}
+	}
+
+	/**
+	 * Change binding parameters on a property. Note that this does NOT fire a change event.
+	 * @param diagramId
+	 * @param propertyName
+	 * @param type BindingType, NONE or TAG
+	 * @param binding
+	 */
+	@Override
+	public void setTestBlockPropertyBinding(UUID diagramId,String propertyName, String type, String binding) {
+		MockDiagram mock = (MockDiagram)controller.getDiagram(diagramId);
+		if( mock!=null) {
+			ProcessBlock uut = mock.getBlockUnderTest();
+			BlockProperty property = uut.getProperty(propertyName);
+			if( property!=null ) {
+				try {
+					BindingType bt = BindingType.valueOf(type.toUpperCase());
+					property.setBindingType(bt);
+					property.setBinding(binding);
+				}
+				catch( IllegalArgumentException iae ) {
+					log.infof("%s.setTestBlockPropertyBinding: diagram %s:%s, bad binding type (%s)",TAG,diagramId.toString(),propertyName,iae.getLocalizedMessage());
+				}
+			}
+			else {
+				log.infof("%s.setTestBlockPropertyBinding: diagram %s, unable to find property %s ",TAG,diagramId.toString(),propertyName);
+			}
+		}
+		else {
+			log.infof("%s.setTestBlockPropertyBinding: unable to find diagram %s ",TAG,diagramId.toString());
+		}
+		
 	}
 	
 	/**

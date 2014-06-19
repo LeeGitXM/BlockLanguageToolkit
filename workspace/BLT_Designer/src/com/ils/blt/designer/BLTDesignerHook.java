@@ -4,12 +4,14 @@
 package com.ils.blt.designer;
 
 
-import java.awt.Component;
+import java.util.HashMap;
+import java.util.Map;
 
+import com.ils.block.control.BlockPropertyChangeListener;
 import com.ils.blt.client.component.DiagramAnalyzerComponent;
-import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.ApplicationRequestManager;
 import com.ils.blt.common.ApplicationScriptFunctions;
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.inductiveautomation.factorypmi.designer.palette.model.DefaultPaletteItemGroup;
@@ -21,12 +23,9 @@ import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
-import com.inductiveautomation.ignition.designer.WorkspaceManager;
-import com.inductiveautomation.ignition.designer.designable.AbstractDesignableWorkspace;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.AbstractDesignerModuleHook;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
-import com.inductiveautomation.ignition.designer.model.ResourceWorkspace;
 import com.inductiveautomation.ignition.designer.model.SaveContext;
 import com.inductiveautomation.vision.api.designer.VisionDesignerInterface;
 import com.inductiveautomation.vision.api.designer.palette.JavaBeanPaletteItem;
@@ -46,6 +45,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	private final LoggerEx log;
 	private DiagramWorkspace workspace = null;
 	private ApplicationRequestManager propertiesRequestHandler = null;
+	private final NotificationHandler notificationListener;
 	
 	// Register separate properties files for designer things and block things
 	static {
@@ -55,6 +55,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	
 	public BLTDesignerHook() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
+		notificationListener = new NotificationHandler();
 	}
 	
 	
@@ -102,8 +103,9 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		context.registerResourceWorkspace(workspace);
 		
 		// Register the listener for notifications
-		GatewayConnectionManager.getInstance().addPushNotificationListener(new NotificationListener());
+		GatewayConnectionManager.getInstance().addPushNotificationListener(new NotificationHandler());
 	}
+	
 	
 	public DiagramWorkspace getWorkspace() { return workspace; }
 
@@ -111,6 +113,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	public void notifyProjectSaveStart(SaveContext save) {
 		workspace.saveOpenDiagrams();
 	}
+	
 	
 	/**
 	 * Iterate over all the dockable frames. Close any that are not useful.
@@ -133,23 +136,10 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		}
 		log.infof("%s: Workspace=%s",TAG,dockManager.getWorkspace().getName());
 		Workspace wksp = dockManager.getWorkspace();
-		// There is only 1 child - the workspace mananger
-		Component[]children = wksp.getComponents();
-		for( Component child:children ) {
-			if( child instanceof com.inductiveautomation.ignition.designer.WorkspaceManager) {
-				WorkspaceManager workspaceManager = (WorkspaceManager)child;
-				int count = workspaceManager.getWorkspaceCount();
-				for(int index=0;index<count;index++) {
-					ResourceWorkspace rw = workspaceManager.getWorkspace(index);
-					log.info(TAG+"ResourceWorkspace="+rw.getClass().getSimpleName());
-					if( rw instanceof com.inductiveautomation.ignition.designer.designable.AbstractDesignableWorkspace) {
-						AbstractDesignableWorkspace adw = (AbstractDesignableWorkspace)rw;
-					}
-				}
-			}
-		}
+		// There is only 1 child of the workspace - the workspace mananger
 	}
 
+	
 	public ApplicationRequestManager getPropertiesRequestHandler() { return propertiesRequestHandler; }
 	@Override
 	public String getResourceCategoryKey(Project project,ProjectResource resource) {
@@ -169,6 +159,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		
 	}
 	
+	public NotificationHandler getNotificationListener() { return notificationListener; }
 	@Override
 	public void shutdown() {	
 	}

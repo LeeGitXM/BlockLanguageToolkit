@@ -103,6 +103,16 @@ public interface MockDiagramScriptingInterface   {
 	 * @param value
 	 */
 	public void setTestBlockProperty(UUID diagramId,String propertyName,String value);
+
+	/**
+	 * Set the binding type and binding string of the named property in the block-under-test. 
+	 * 
+	 * @param diagramId
+	 * @param propertyName
+	 * @param type binding type: NONE or TAG
+	 * @param binding for a TAG type this is a fully qualified tag path
+	 */
+	public void setTestBlockPropertyBinding(UUID diagramId,String propertyName,String type,String binding);
 	
 	/**
 	 * Start the test diagram by activating subscriptions for bound properties and

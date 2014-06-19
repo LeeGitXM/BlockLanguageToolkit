@@ -596,7 +596,7 @@ public class GeneralPurposeTreeNode extends FolderNode {
 			}
 		}
 	}
-	// Save the entire Application hierarchy.
+	// Savehronize the entire Application hierarchy.
 	private class ApplicationSaveAction extends BaseAction {
     	private static final long serialVersionUID = 1L;
     	private final AbstractResourceNavTreeNode root;
