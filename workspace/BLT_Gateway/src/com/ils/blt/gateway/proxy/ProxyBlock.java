@@ -8,10 +8,10 @@ import java.util.UUID;
 import org.python.core.PyObject;
 
 import com.ils.block.AbstractProcessBlock;
-import com.ils.block.common.BlockProperty;
-import com.ils.block.common.PalettePrototype;
-import com.ils.block.control.BlockPropertyChangeEvent;
-import com.ils.block.control.IncomingNotification;
+import com.ils.blt.common.block.BlockProperty;
+import com.ils.blt.common.block.PalettePrototype;
+import com.ils.blt.common.control.BlockPropertyChangeEvent;
+import com.ils.blt.common.control.IncomingNotification;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 

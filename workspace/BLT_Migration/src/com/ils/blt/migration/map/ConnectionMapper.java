@@ -7,7 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import com.ils.block.common.AnchorDirection;
+import com.ils.blt.common.block.AnchorDirection;
+import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableAnchorPoint;
 import com.ils.blt.common.serializable.SerializableBlock;
@@ -20,7 +21,6 @@ import com.ils.blt.designer.workspace.ui.UIFactory;
 import com.ils.blt.migration.G2Anchor;
 import com.ils.blt.migration.G2Block;
 import com.ils.blt.migration.G2Diagram;
-import com.ils.connection.ConnectionType;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorPoint;

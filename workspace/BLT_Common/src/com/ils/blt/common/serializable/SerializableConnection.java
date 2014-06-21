@@ -2,7 +2,7 @@ package com.ils.blt.common.serializable;
 
 import java.util.UUID;
 
-import com.ils.connection.ConnectionType;
+import com.ils.blt.common.connection.ConnectionType;
 
 /**
  * Implement a plain-old-java-object representing a connection

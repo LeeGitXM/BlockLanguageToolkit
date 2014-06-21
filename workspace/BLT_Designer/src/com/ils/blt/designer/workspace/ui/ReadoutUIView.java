@@ -12,8 +12,8 @@ import java.awt.geom.AffineTransform;
 
 import javax.swing.SwingUtilities;
 
-import com.ils.block.common.BlockConstants;
-import com.ils.block.common.BlockProperty;
+import com.ils.blt.common.block.BlockConstants;
+import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 
 

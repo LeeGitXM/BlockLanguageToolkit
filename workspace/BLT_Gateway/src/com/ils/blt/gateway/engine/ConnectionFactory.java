@@ -6,8 +6,8 @@
  */
 package com.ils.blt.gateway.engine;
 
+import com.ils.blt.common.connection.ProcessConnection;
 import com.ils.blt.common.serializable.SerializableConnection;
-import com.ils.connection.ProcessConnection;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 

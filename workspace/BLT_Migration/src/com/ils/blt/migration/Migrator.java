@@ -9,8 +9,6 @@ import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 import org.apache.log4j.BasicConfigurator;
@@ -23,13 +21,12 @@ import org.sqlite.JDBC;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ils.block.common.AnchorDirection;
-import com.ils.block.common.BlockConstants;
 import com.ils.blt.common.UtilityFunctions;
+import com.ils.blt.common.block.AnchorDirection;
+import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.common.serializable.SerializableBlock;
-import com.ils.blt.common.serializable.SerializableConnection;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.migration.map.AnchorMapper;
@@ -38,7 +35,6 @@ import com.ils.blt.migration.map.ConnectionMapper;
 import com.ils.blt.migration.map.PropertyMapper;
 import com.ils.blt.migration.map.PythonPropertyMapper;
 import com.ils.blt.migration.map.TagMapper;
-import com.ils.connection.ConnectionType;
 
 public class Migrator {
 	private final static String TAG = "Migrator";

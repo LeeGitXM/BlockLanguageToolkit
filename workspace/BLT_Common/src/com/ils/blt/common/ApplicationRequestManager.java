@@ -8,8 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import com.ils.block.common.BlockProperty;
-import com.ils.block.common.PalettePrototype;
+import com.ils.blt.common.block.BlockProperty;
+import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.serializable.DiagramState;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;

@@ -3,9 +3,9 @@ package com.ils.blt.common.serializable;
 import java.awt.Color;
 import java.util.UUID;
 
-import com.ils.block.common.BlockProperty;
-import com.ils.block.common.BlockState;
-import com.ils.block.common.BlockStyle;
+import com.ils.blt.common.block.BlockProperty;
+import com.ils.blt.common.block.BlockState;
+import com.ils.blt.common.block.BlockStyle;
 
 /**
  * Implement a plain-old-java-object representing a process block

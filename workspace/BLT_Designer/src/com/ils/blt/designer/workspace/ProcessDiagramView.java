@@ -9,11 +9,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import com.ils.block.common.AnchorDirection;
-import com.ils.block.common.BindingType;
-import com.ils.block.common.BlockProperty;
 import com.ils.blt.common.ApplicationRequestManager;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.block.AnchorDirection;
+import com.ils.blt.common.block.BindingType;
+import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.common.serializable.DiagramState;
 import com.ils.blt.common.serializable.SerializableAnchorPoint;

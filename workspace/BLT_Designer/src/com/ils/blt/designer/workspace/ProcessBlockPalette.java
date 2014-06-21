@@ -23,9 +23,9 @@ import javax.swing.JTabbedPane;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 
-import com.ils.block.common.PalettePrototype;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.ApplicationRequestManager;
+import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.common.util.LogUtil;

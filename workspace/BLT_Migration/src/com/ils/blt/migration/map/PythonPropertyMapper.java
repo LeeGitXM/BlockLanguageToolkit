@@ -9,13 +9,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.ils.block.ProcessBlock;
 import com.ils.block.annotation.ExecutableBlock;
-import com.ils.block.common.BlockDescriptor;
-import com.ils.block.common.BlockProperty;
-import com.ils.block.common.BlockStyle;
-import com.ils.block.common.PalettePrototype;
-import com.ils.block.common.PropertyType;
+import com.ils.blt.common.block.BlockDescriptor;
+import com.ils.blt.common.block.BlockProperty;
+import com.ils.blt.common.block.BlockStyle;
+import com.ils.blt.common.block.PalettePrototype;
+import com.ils.blt.common.block.ProcessBlock;
+import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.common.ClassList;
 

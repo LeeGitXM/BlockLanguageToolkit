@@ -7,8 +7,8 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.ils.block.common.AnchorDirection;
-import com.ils.block.common.BlockConstants;
+import com.ils.blt.common.block.AnchorDirection;
+import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.migration.G2Anchor;
 import com.ils.blt.migration.G2Block;
 

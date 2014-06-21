@@ -11,14 +11,14 @@ import java.util.Set;
 import java.util.UUID;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ils.block.ProcessBlock;
-import com.ils.block.common.BlockProperty;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.block.BlockProperty;
+import com.ils.blt.common.block.ProcessBlock;
+import com.ils.blt.common.connection.Connection;
 import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
-import com.ils.connection.Connection;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.project.ProjectVersion;

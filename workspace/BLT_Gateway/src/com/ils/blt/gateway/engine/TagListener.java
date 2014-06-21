@@ -11,11 +11,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.ils.block.ProcessBlock;
-import com.ils.block.common.BindingType;
-import com.ils.block.common.BlockConstants;
-import com.ils.block.common.BlockProperty;
-import com.ils.block.control.BlockPropertyChangeEvent;
+import com.ils.blt.common.block.BindingType;
+import com.ils.blt.common.block.BlockConstants;
+import com.ils.blt.common.block.BlockProperty;
+import com.ils.blt.common.block.ProcessBlock;
+import com.ils.blt.common.control.BlockPropertyChangeEvent;
 import com.ils.blt.common.serializable.DiagramState;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;

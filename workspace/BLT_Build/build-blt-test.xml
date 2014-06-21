@@ -53,12 +53,14 @@
 		<fileset dir="${basedir}/BLT_Build/bin/BLT_Common/dist/" includes="*.jar" />
 		<fileset dir="${basedir}/BLT_Build/bin/BLT_Gateway/dist/" includes="*.jar" />
 		<fileset dir="${basedir}/BLT_Build/bin/BLTTest_Common/dist/" includes="*.jar" />
+		<fileset dir="${jar.dir}" includes="${block.jar.name}" />
 	</path>	
 	<!-- Client jar classpath -->
 	<path id="BLTTest_Client.classpath">
 		<path refid="BLTTest_Common.classpath" />
 		<path refid="ExternalJar.classpath" />
 		<fileset dir="${basedir}/BLT_Build/bin/BLTTest_Common/dist/" includes="*.jar" />
+		<fileset dir="${jar.dir}" includes="${block.jar.name}" />
 	</path>
 	
 	<!-- Designer jar classpath -->

@@ -10,11 +10,11 @@ import java.util.List;
 
 import javax.swing.JComboBox;
 
-import com.ils.block.common.BlockProperty;
-import com.ils.block.common.LimitType;
-import com.ils.block.common.TransmissionScope;
 import com.ils.blt.common.ApplicationRequestManager;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.block.BlockProperty;
+import com.ils.blt.common.block.LimitType;
+import com.ils.blt.common.block.TransmissionScope;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.inductiveautomation.ignition.client.util.gui.SlidingPane;

@@ -12,14 +12,12 @@ import java.util.EnumSet;
 
 import javax.swing.SwingUtilities;
 
-import com.ils.block.common.TruthValue;
-import com.ils.block.control.NotificationChangeListener;
 import com.ils.blt.common.UtilityFunctions;
+import com.ils.blt.common.block.TruthValue;
+import com.ils.blt.common.connection.ConnectionType;
+import com.ils.blt.common.control.NotificationChangeListener;
 import com.ils.blt.designer.workspace.ui.AnchorSide;
-import com.ils.connection.ConnectionType;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorPoint;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;

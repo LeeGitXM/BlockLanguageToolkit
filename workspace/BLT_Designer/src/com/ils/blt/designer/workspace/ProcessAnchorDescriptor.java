@@ -1,7 +1,7 @@
 package com.ils.blt.designer.workspace;
 
-import com.ils.block.common.PlacementHint;
-import com.ils.connection.ConnectionType;
+import com.ils.blt.common.block.PlacementHint;
+import com.ils.blt.common.connection.ConnectionType;
 import com.inductiveautomation.ignition.designer.blockandconnector.blockui.AnchorDescriptor;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
 

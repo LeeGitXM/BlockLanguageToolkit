@@ -25,9 +25,9 @@ import javax.swing.plaf.basic.BasicComboBoxRenderer;
 
 import net.miginfocom.swing.MigLayout;
 
-import com.ils.block.common.BindingType;
-import com.ils.block.common.BlockProperty;
-import com.ils.block.common.PropertyType;
+import com.ils.blt.common.block.BindingType;
+import com.ils.blt.common.block.BlockProperty;
+import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.designer.workspace.WorkspaceRepainter;
 
 /**

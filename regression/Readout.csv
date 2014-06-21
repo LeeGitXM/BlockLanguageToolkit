@@ -1,0 +1,5 @@
+InputBoolean,InputFloat,InputString
+TRUE,1.0,"Hi Mom"
+FALSE,2.0,"Hi Dad"
+TRUE,3.0,"Hello world"
+FALSE,4.0,"Good-bye"

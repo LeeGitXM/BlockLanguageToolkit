@@ -3,8 +3,8 @@
  */
 package com.ils.blt.gateway.engine;
 
-import com.ils.block.ProcessBlock;
-import com.ils.block.control.SignalNotification;
+import com.ils.blt.common.block.ProcessBlock;
+import com.ils.blt.common.control.SignalNotification;
 
 /**
  * A broadcast signal has been received that is appropriate to the target

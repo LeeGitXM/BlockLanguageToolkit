@@ -14,7 +14,7 @@ import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
 
-import com.ils.block.common.BlockProperty;
+import com.ils.blt.common.block.BlockProperty;
 
 /**
  * Display a panel to edit the name of a block and its 

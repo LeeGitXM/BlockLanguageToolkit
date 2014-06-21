@@ -7,8 +7,8 @@ package com.ils.blt.designer;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.ils.block.control.NotificationChangeListener;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.control.NotificationChangeListener;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.client.gateway_interface.PushNotificationListener;
 import com.inductiveautomation.ignition.common.gateway.messages.PushNotification;

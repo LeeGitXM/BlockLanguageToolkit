@@ -16,9 +16,9 @@ import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import com.ils.block.common.BlockConstants;
-import com.ils.block.common.BlockProperty;
-import com.ils.block.common.PropertyType;
+import com.ils.blt.common.block.BlockConstants;
+import com.ils.blt.common.block.BlockProperty;
+import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
 

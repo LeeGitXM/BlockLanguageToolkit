@@ -41,6 +41,7 @@
 		<path refid="ExternalJar.classpath" />
 		<fileset dir="${basedir}/BLT_Build/bin/BLT_Common/dist/" includes="*.jar" />
 		<fileset dir="${basedir}/BLT_Build/bin/BLT_Designer/dist/" includes="*.jar" />
+		<fileset dir="${jar.dir}" includes="${block.jar.name}" />
 	</path>
 	
 	<!-- This target will build the toolkit module and deploy it to the local Ignition gateway -->

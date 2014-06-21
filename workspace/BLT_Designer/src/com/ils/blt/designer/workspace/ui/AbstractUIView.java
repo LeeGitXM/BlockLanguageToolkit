@@ -24,13 +24,13 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import com.ils.block.common.BlockState;
-import com.ils.block.common.PlacementHint;
+import com.ils.blt.common.block.BlockState;
+import com.ils.blt.common.block.PlacementHint;
+import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.designer.workspace.BasicAnchorPoint;
 import com.ils.blt.designer.workspace.ProcessAnchorDescriptor;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.WorkspaceConstants;
-import com.ils.connection.ConnectionType;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;

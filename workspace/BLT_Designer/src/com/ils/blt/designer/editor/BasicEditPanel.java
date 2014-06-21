@@ -13,8 +13,8 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
 
-import com.ils.block.common.BindingType;
-import com.ils.block.common.BlockProperty;
+import com.ils.blt.common.block.BindingType;
+import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;

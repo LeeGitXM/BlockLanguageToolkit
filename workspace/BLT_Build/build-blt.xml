@@ -2,10 +2,10 @@
 
 	<import file="${basedir}/BLT_Build/build.xml"/>
 
-	<property name="version.build" value="10" />	
+	<property name="version.build" value="1" />	
 	<!-- Change version.beta value to "" for release builds -->
 	<property name="version.beta" value="-development" />		
-	<property name="BLTModule.version" value="1.3.3.${version.build}" />
+	<property name="BLTModule.version" value="1.3.4.${version.build}" />
 	<property name="BLTModule.name" value="BLT" />
 	<property name="BLTModule.release" value="0.4" />
 	<property name="BLTModule.description" value="Block Language Toolkit" />
@@ -33,18 +33,18 @@
 	   <pathelement path="${build.dir}"/>
 	</path>
 	
-	<!-- Block Definition jar classpath -->
-	<!-- The gateway, designer and clients depend on the Common -->
-	<path id="BlockDefinition.classpath">
-		<path refid="ExternalJar.classpath" />
-		<path refid="Ignition_SDK.classpath" />
-	</path>
-	
 	<!-- Common jar classpath -->
-	<!-- The gateway, designer and clients depend on the Common -->
-	<path id="BLT_Common.classpath">
-		<path refid="Ignition_SDK.classpath" />
-		<path refid="ExternalJar.classpath" />
+		<!-- The gateway, designer and clients depend on the Common -->
+		<path id="BLT_Common.classpath">
+			<path refid="Ignition_SDK.classpath" />
+			<path refid="ExternalJar.classpath" />
+		</path>
+	
+	<!-- Block Definition jar classpath -->
+	<!-- The block jar depends on BLT Common -->
+	<path id="BlockDefinition.classpath">
+		<path refid="BLT_Common.classpath" />
+		<fileset dir="${basedir}/BLT_Build/bin/BLT_Common/dist/" includes="*.jar" />
 	</path>
 		
 	<!-- Gateway jar classpath -->
@@ -52,12 +52,14 @@
 		<path refid="BLT_Common.classpath" />
 		<path refid="ExternalJar.classpath" />
 		<fileset dir="${basedir}/BLT_Build/bin/BLT_Common/dist/" includes="*.jar" />
+		<fileset dir="${jar.dir}" includes="${block.jar.name}" />
 	</path>	
 	<!-- Client jar classpath -->
 	<path id="BLT_Client.classpath">
 		<path refid="BLT_Common.classpath" />
 		<path refid="ExternalJar.classpath" />
 		<fileset dir="${basedir}/BLT_Build/bin/BLT_Common/dist/" includes="*.jar" />
+		<fileset dir="${jar.dir}" includes="${block.jar.name}" />
 	</path>
 	
 	<!-- Designer jar classpath -->
@@ -109,17 +111,6 @@
 		<delete dir="${basedir}/BLT_Build/temp_modl" />   
 	</target>	
 	
-	<!-- Compile the Block Definition library -->
-	<target name="block.build" description="Compile the source">
-		<mkdir dir="${block.bin.dir}"/>
-		<javac destdir="${block.bin.dir}" debug="true" includeantruntime="false">
-			<src path="${block.src.dir}"/>
-			<classpath refid="BlockDefinition.classpath"/>
-		</javac>
-	</target>
-	<target name ="block.jar" description="Create a jar for the Block Definition library">
-		<jar destfile="${jar.dir}/${block.jar.name}" includes="**/*.class" basedir="${block.bin.dir}"/>
-	</target>
 	
 	<!-- Compile the Common library -->
 	<target name="common.build" description="Compile the source">
@@ -134,8 +125,20 @@
 	    <jar destfile="${jar.dir}/${common.jar.name}" includes="**/*.class" basedir="${common.bin.dir}"/>
 	</target>
 	
+	<!-- Compile the Block Definition library -->
+			<target name="block.build" description="Compile the source">
+				<mkdir dir="${block.bin.dir}"/>
+				<javac destdir="${block.bin.dir}" debug="true" includeantruntime="false">
+					<src path="${block.src.dir}"/>
+					<classpath refid="BlockDefinition.classpath"/>
+				</javac>
+			</target>
+			<target name ="block.jar" description="Create a jar for the Block Definition library">
+				<jar destfile="${jar.dir}/${block.jar.name}" includes="**/*.class" basedir="${block.bin.dir}"/>
+			</target>
+
 	<!-- Builds the toolkit module jars and the final .modl file -->
-	<target name="build" depends="common.build,common.jar,block.build,block.jar" description="Compile the source">
+	<target name="build" depends="common.build,common.jar" description="Compile the source">
 		<echo message="${BLTModule.name} ${BLTModule.version}" />	
 		<delete dir="${basedir}/BLT_Build/temp_modl" />	
 		
@@ -150,6 +153,13 @@
 			<param name="jarName" value="blt-common" />
 			<param name="javacSource" value="1.7" />
 			<param name="module.build.classpath" value="${BLTModule.name}_Common.classpath"/>
+		</antcall>
+		
+		
+		<antcall target="block.build">
+		</antcall>
+		
+		<antcall target="block.jar">
 		</antcall>
 		
 		<!-- BLT Gateway jar -->

@@ -3,9 +3,9 @@ package com.ils.blt.common.serializable;
 
 import java.util.UUID;
 
-import com.ils.block.common.AnchorDirection;
-import com.ils.block.common.PlacementHint;
-import com.ils.connection.ConnectionType;
+import com.ils.blt.common.block.AnchorDirection;
+import com.ils.blt.common.block.PlacementHint;
+import com.ils.blt.common.connection.ConnectionType;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 

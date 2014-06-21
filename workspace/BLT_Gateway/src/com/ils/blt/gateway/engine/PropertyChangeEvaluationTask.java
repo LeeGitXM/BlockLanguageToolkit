@@ -3,8 +3,8 @@
  */
 package com.ils.blt.gateway.engine;
 
-import com.ils.block.ProcessBlock;
-import com.ils.block.control.BlockPropertyChangeEvent;
+import com.ils.blt.common.block.ProcessBlock;
+import com.ils.blt.common.control.BlockPropertyChangeEvent;
 
 /**
  * Evaluate the specified block. The thread should end with the block placing a

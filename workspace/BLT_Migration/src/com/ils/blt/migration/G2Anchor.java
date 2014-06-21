@@ -1,8 +1,8 @@
 package com.ils.blt.migration;
 
 
-import com.ils.block.common.AnchorDirection;
-import com.ils.connection.ConnectionType;
+import com.ils.blt.common.block.AnchorDirection;
+import com.ils.blt.common.connection.ConnectionType;
 
 
 /**

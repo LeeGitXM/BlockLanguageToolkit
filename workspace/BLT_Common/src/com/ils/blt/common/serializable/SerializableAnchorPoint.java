@@ -4,7 +4,7 @@ package com.ils.blt.common.serializable;
 import java.awt.Rectangle;
 import java.util.UUID;
 
-import com.ils.block.common.AnchorDirection;
+import com.ils.blt.common.block.AnchorDirection;
 
 
 /**

@@ -5,12 +5,12 @@ package com.ils.blt.test.gateway;
 
 import java.util.UUID;
 
-import com.ils.block.ProcessBlock;
-import com.ils.block.common.BindingType;
-import com.ils.block.common.BlockProperty;
-import com.ils.block.common.BlockState;
-import com.ils.block.common.PropertyType;
-import com.ils.block.control.BlockPropertyChangeEvent;
+import com.ils.blt.common.block.BindingType;
+import com.ils.blt.common.block.BlockProperty;
+import com.ils.blt.common.block.BlockState;
+import com.ils.blt.common.block.ProcessBlock;
+import com.ils.blt.common.block.PropertyType;
+import com.ils.blt.common.control.BlockPropertyChangeEvent;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.gateway.BlockRequestHandler;
 import com.ils.blt.gateway.engine.BlockExecutionController;

@@ -12,7 +12,7 @@ import javax.swing.AbstractButton;
 import javax.swing.JComponent;
 import javax.swing.TransferHandler;
 
-import com.ils.block.common.PalettePrototype;
+import com.ils.blt.common.block.PalettePrototype;
 import com.inductiveautomation.ignition.client.util.LocalObjectTransferable;
 import com.inductiveautomation.ignition.common.config.ObservablePropertySet;
 

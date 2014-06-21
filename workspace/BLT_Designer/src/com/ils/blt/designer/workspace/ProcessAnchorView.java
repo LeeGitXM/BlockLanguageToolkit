@@ -5,7 +5,7 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 import java.util.EnumSet;
 
-import com.ils.block.common.AnchorDirection;
+import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.serializable.SerializableAnchorPoint;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorPoint;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;

@@ -3,7 +3,7 @@
  */
 package com.ils.blt.common;
 
-import com.ils.block.common.TruthValue;
+import com.ils.blt.common.block.TruthValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;

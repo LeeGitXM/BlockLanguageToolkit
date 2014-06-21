@@ -5,15 +5,15 @@ package com.ils.blt.test.gateway.mock;
 import java.util.UUID;
 
 import com.ils.block.AbstractProcessBlock;
-import com.ils.block.ProcessBlock;
-import com.ils.block.common.AnchorDirection;
-import com.ils.block.common.AnchorPrototype;
-import com.ils.block.common.BindingType;
-import com.ils.block.common.BlockProperty;
-import com.ils.block.common.PropertyType;
-import com.ils.block.control.IncomingNotification;
+import com.ils.blt.common.block.AnchorDirection;
+import com.ils.blt.common.block.AnchorPrototype;
+import com.ils.blt.common.block.BindingType;
+import com.ils.blt.common.block.BlockProperty;
+import com.ils.blt.common.block.ProcessBlock;
+import com.ils.blt.common.block.PropertyType;
+import com.ils.blt.common.connection.ConnectionType;
+import com.ils.blt.common.control.IncomingNotification;
 import com.ils.blt.gateway.engine.BlockExecutionController;
-import com.ils.connection.ConnectionType;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 

@@ -10,17 +10,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import com.ils.block.ProcessBlock;
-import com.ils.block.control.BroadcastNotification;
-import com.ils.block.control.IncomingNotification;
-import com.ils.block.control.OutgoingNotification;
-import com.ils.block.control.SignalNotification;
+import com.ils.blt.common.block.ProcessBlock;
+import com.ils.blt.common.connection.Connection;
+import com.ils.blt.common.connection.ProcessConnection;
+import com.ils.blt.common.control.BroadcastNotification;
+import com.ils.blt.common.control.IncomingNotification;
+import com.ils.blt.common.control.OutgoingNotification;
+import com.ils.blt.common.control.SignalNotification;
 import com.ils.blt.common.serializable.DiagramState;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableConnection;
 import com.ils.blt.common.serializable.SerializableDiagram;
-import com.ils.connection.Connection;
-import com.ils.connection.ProcessConnection;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 

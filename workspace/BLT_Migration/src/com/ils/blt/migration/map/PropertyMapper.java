@@ -7,7 +7,7 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.ils.block.common.BlockProperty;
+import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.migration.G2Block;
 import com.ils.blt.migration.G2Property;
