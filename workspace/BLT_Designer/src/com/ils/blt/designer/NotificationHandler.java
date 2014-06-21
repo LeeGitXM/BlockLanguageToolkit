@@ -7,8 +7,9 @@ package com.ils.blt.designer;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.ils.block.control.NotificationChangeListener;
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.common.notification.NotificationChangeListener;
+import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.client.gateway_interface.PushNotificationListener;
 import com.inductiveautomation.ignition.common.gateway.messages.PushNotification;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -29,22 +30,34 @@ public class NotificationHandler implements PushNotificationListener {
 	private static String TAG = "NotificationHandler";
 	private final LoggerEx log;
 	private final Map<String,NotificationChangeListener> changeListenerMap;
-
+	private static NotificationHandler instance = null;
 	
 	/**
-	 * The handler, a delegate of the hook class ...
+	 * The handler, make this private per Singleton pattern ...
 	 */
-	public NotificationHandler() {
-		super();
+	private NotificationHandler() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
+		// Register as listener for notifications
+		GatewayConnectionManager.getInstance().addPushNotificationListener(this);
 		changeListenerMap = new HashMap<String,NotificationChangeListener>();
 	}
 	
-	
+	/**
+	 * Static method to create and/or fetch the single instance.
+	 */
+	public static NotificationHandler getInstance() {
+		if( instance==null) {
+			synchronized(NotificationHandler.class) {
+				instance = new NotificationHandler();
+			}
+		}
+		return instance;
+	}
 	
 	/**
 	 * Receive notification from the gateway. The messages contain a key which must match an entry
-	 * in our map of listeners. In addition, we must match the moduleId.
+	 * in our map of listeners. In addition, we must match the moduleId. For now, there is only
+	 * one listener per key.
 	 *   1) The module ID
 	 *   2) The key (contains a UUID)
 	 *   3) Lookup object with UUID
@@ -56,14 +69,14 @@ public class NotificationHandler implements PushNotificationListener {
 		if( moduleId.equals(BLTProperties.MODULE_ID)) {
 			String key = notice.getMessageType();
 			Object payload = notice.getMessage();
-			log.debugf("%s.receiveNotification: key:%s,value:%s",TAG,key,payload.toString());
+			log.infof("%s.receiveNotification: key=%s,value=%s",TAG,key,payload.toString());
 			if( payload instanceof QualifiedValue ) {
 				NotificationChangeListener listener = changeListenerMap.get(key);
 				if( listener != null ) {
 					listener.valueChange((QualifiedValue)payload);
 				}
 				else {
-					log.debugf("%s.receiveNotification: no receiver for key:%s,value:%s",TAG,key,payload.toString());
+					log.debugf("%s.receiveNotification: no receiver for key=%s,value=%s",TAG,key,payload.toString());
 				}
 			}
 			else {
@@ -71,28 +84,6 @@ public class NotificationHandler implements PushNotificationListener {
 			}
 			
 		}
-		
-		/*
-		if(!type.equalsIgnoreCase(DTProperties.GATEWAY_BLOCK_STATE_MESSAGE)) return;
-		try {
-			Properties props = (Properties) payload;
-			String model = props.getProperty(ILSProperties.MSG_WORKSPACE_ID);
-			String name  = props.getProperty(ILSProperties.MSG_BLOCK_NAME);
-			String state = props.getProperty(ILSProperties.MSG_BLOCK_STATE);
-			// The workspace ID must match the model
-			if( model.equals(wksp.getParentFolderUUID())) {
-				List<AbstractCoreComponent> components = new ArrayList<AbstractCoreComponent>();
-				wksp.findModelComponents(wksp.getRootContainer(),components);
-				for( AbstractCoreComponent blk:components ) {
-					if( blk.getName().equals(name) ) {
-						blk.setPropertyValue(ILSProperties.MSG_BLOCK_STATE, state);
-						break;
-					}
-				}
-			}
-		}
-		catch(ClassCastException cce ) {}  // Ignore
-		*/
 	}
 
 	/**
@@ -103,6 +94,7 @@ public class NotificationHandler implements PushNotificationListener {
 	 * @param listener
 	 */
 	public void addNotificationChangeListener(String key,NotificationChangeListener listener) {
+		log.tracef("%s.addNotificationChangeListener: key=%s (%s)",TAG,key,listener.getClass().getName());
 		changeListenerMap.put(key, listener);
 	}
 	
@@ -111,6 +103,7 @@ public class NotificationHandler implements PushNotificationListener {
 	 * @param key
 	 */
 	public void removeNotificationChangeListener(String key) {
+		log.tracef("%s.removeNotificationChangeListener: key=%s",TAG,key);
 		changeListenerMap.remove(key);
 	}
 }

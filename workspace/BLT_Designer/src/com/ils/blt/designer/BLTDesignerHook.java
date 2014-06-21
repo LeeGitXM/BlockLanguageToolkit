@@ -4,16 +4,13 @@
 package com.ils.blt.designer;
 
 
-import java.util.HashMap;
-import java.util.Map;
-
-import com.ils.block.control.BlockPropertyChangeListener;
 import com.ils.blt.client.component.DiagramAnalyzerComponent;
 import com.ils.blt.common.ApplicationRequestManager;
 import com.ils.blt.common.ApplicationScriptFunctions;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
+import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.inductiveautomation.factorypmi.designer.palette.model.DefaultPaletteItemGroup;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.common.BundleUtil;
@@ -45,7 +42,6 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	private final LoggerEx log;
 	private DiagramWorkspace workspace = null;
 	private ApplicationRequestManager propertiesRequestHandler = null;
-	private final NotificationHandler notificationListener;
 	
 	// Register separate properties files for designer things and block things
 	static {
@@ -55,7 +51,6 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	
 	public BLTDesignerHook() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
-		notificationListener = new NotificationHandler();
 	}
 	
 	
@@ -68,6 +63,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	@Override
 	public void startup(DesignerContext ctx, LicenseState activationState) throws Exception {
 		this.context = ctx;
+		WorkspaceRepainter.setContext(ctx);
 		propertiesRequestHandler = new ApplicationRequestManager();
 		context.addBeanInfoSearchPath("com.ils.blt.designer.component.beaninfos");
 		
@@ -101,9 +97,6 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		rootNode = new GeneralPurposeTreeNode(context);
 		context.getProjectBrowserRoot().addChild(rootNode);
 		context.registerResourceWorkspace(workspace);
-		
-		// Register the listener for notifications
-		GatewayConnectionManager.getInstance().addPushNotificationListener(new NotificationHandler());
 	}
 	
 	
@@ -159,8 +152,8 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		
 	}
 	
-	public NotificationHandler getNotificationListener() { return notificationListener; }
 	@Override
-	public void shutdown() {	
+	public void shutdown() {
+		super.shutdown();
 	}
 }

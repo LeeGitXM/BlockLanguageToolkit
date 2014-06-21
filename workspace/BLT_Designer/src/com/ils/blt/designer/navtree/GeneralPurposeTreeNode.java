@@ -644,8 +644,7 @@ public class GeneralPurposeTreeNode extends FolderNode {
 				diagram.setName(newName);
 				diagram.setResourceId(newId);
 				diagram.setId(UUID.randomUUID());
-				diagram.setDirty(true);
-				
+				diagram.setDirty(false);    // Will become dirty as soon as we add a block
 				log.infof("%s: new diagram action ...",TAG);
 
 				String json = serializeDiagram(diagram);
@@ -903,7 +902,7 @@ public class GeneralPurposeTreeNode extends FolderNode {
 											log.infof("%s:ImportDiagramAction imported diagram:\n%s", TAG,sd.getName());
 											UUIDResetHandler handler = new UUIDResetHandler(sd);
 											handler.convertUUIDs();
-											sd.setDirty(true);
+											sd.setDirty(true);    // Dirty because gateway doesn't know about it yet
 											String json = mapper.writeValueAsString(sd);
 											log.infof("%s:ImportDiagramAction saved resource as:\n%s", TAG,json);
 											ProjectResource resource = new ProjectResource(newId,

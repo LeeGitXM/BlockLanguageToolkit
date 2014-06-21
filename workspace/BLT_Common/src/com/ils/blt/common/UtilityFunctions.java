@@ -3,6 +3,11 @@
  */
 package com.ils.blt.common;
 
+import com.ils.block.common.TruthValue;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
+import com.inductiveautomation.ignition.common.model.values.BasicQuality;
+import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.model.values.Quality;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 
@@ -97,11 +102,88 @@ public class UtilityFunctions  {
 	}
 	/**
 	 * Force a Double, Integer or String to a String. 
+	 * If the object is a QualifiedValue, then coerce its value.
 	 * Guarantee the return is not null. 
 	 */
 	public String coerceToString(Object val) {
 		String result = "";
-		if( val!=null ) result = val.toString();
+		if(val!=null && val instanceof QualifiedValue ) {
+			val = ((QualifiedValue)val).getValue();
+		}
+		if( val!=null ) {
+			result = val.toString();
+		}
 		return result;
+	}
+	
+	/**
+	 * Determine the object type of the incoming value. If a qualified value,
+	 * the extract the value portion.
+	 * 
+	 * TODO: Apply proper format per data type.
+	 * 
+	 * @return the value formatted as a String
+	 */
+	public String formatResult(String format,Object value) {
+		String result = "";
+		if(value!=null && value instanceof QualifiedValue ) {
+			value = ((QualifiedValue)value).getValue();
+		}
+		if( value!=null ) {
+			result = String.format(format, value.toString());
+		}
+		return result; 
+	}
+	
+	
+	/**
+	 * Convert the value to a qualified value. If null, generate
+	 * a qualified value of BAD quality.
+	 * @return the value cast to a QualifiedValue
+	 */
+	public QualifiedValue objectToQualifiedValue(Object value) {
+		QualifiedValue result = null;
+		if( value!=null ) {
+			if( value instanceof QualifiedValue ) result = (QualifiedValue)value;
+			else if( value instanceof TruthValue ) {
+				result = new BasicQualifiedValue( ((TruthValue)value).name());
+			}
+			else if( value instanceof Double ||
+					 value instanceof Integer||
+					 value instanceof String ||
+					 value instanceof Boolean) {
+				result = new BasicQualifiedValue( value);
+			}
+			else{
+				result = new BasicQualifiedValue(value,new BasicQuality("unrecognized data type",Quality.Level.Bad));
+			}
+		}
+		else {
+			result = new BasicQualifiedValue("",new BasicQuality("null value",Quality.Level.Bad));
+		}
+		return result; 
+	}
+	/**
+	 * Convert a qualified value to a truth value. If null, return
+	 * a UNKNOWN state.
+	 * @return the value cast to a TruthValue
+	 */
+	public TruthValue qualifiedValueAsTruthValue(QualifiedValue qv) {
+		TruthValue result = TruthValue.UNKNOWN;
+		if( qv!=null) {
+			if( qv.getValue()!=null ) {
+				if( qv.getValue() instanceof TruthValue ) {
+					result = (TruthValue)(qv.getValue());
+				}
+				else {
+					String val = qv.getValue().toString().toUpperCase();
+					try {
+						result = TruthValue.valueOf(val);
+					}
+					catch(IllegalArgumentException iae) {}
+				}
+			}
+		}
+		return result; 
 	}
 }

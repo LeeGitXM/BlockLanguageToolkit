@@ -51,9 +51,10 @@ public class TagWriter  {
 	 * @param path fully qualified tag path
 	 */
 	public void updateTag(String path,QualifiedValue qv) {
-		if( context==null) return;   // Not initialized yet.
+		if( context==null) return;                   // Not initialized yet.
+		if(path==null || path.isEmpty() ) return;    // Path not set
 		List<WriteRequest<TagPath>> list = createTagList(path,qv);
-		if(list.size()==0) log.debug(TAG+".updateTags: No results");
+		if(list.size()==0) log.info(TAG+".updateTags: No results");
 		try {
 		    TagProvider provider = context.getTagManager().getTagProvider("");
 		    // We assume the same provider
@@ -71,7 +72,7 @@ public class TagWriter  {
 	private List<WriteRequest<TagPath>> createTagList(String path,QualifiedValue qv) {
 		List<WriteRequest<TagPath>> list = new ArrayList<WriteRequest<TagPath>>();
 		LocalRequest req = null;
-		log.tracef("%s.createTagList: path = %s",TAG,path);
+		log.infof("%s.createTagList: path = %s",TAG,path);
 		req = new LocalRequest(path,qv);
 		if(req.isValid)list.add(req);
 
@@ -94,7 +95,7 @@ public class TagWriter  {
 				    this.isValid = true;
 				}
 				catch( IOException ioe) {
-					log.warn(TAG+".localRequest: parse exception ("+ioe.getMessage()+")");
+					log.warnf(TAG+"%s.localRequest: parse exception for path %s (%s)",TAG,path,ioe.getMessage());
 				}
 			}
 		}

@@ -22,6 +22,7 @@ import com.ils.block.control.IncomingNotification;
 import com.ils.block.control.OutgoingNotification;
 import com.ils.block.control.SignalNotification;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.common.serializable.DiagramState;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
@@ -58,6 +59,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	private WatchdogTimer watchdogTimer = null;
 	private static BlockExecutionController instance = null;
 	private final ExecutorService threadPool;
+	private final UtilityFunctions fncs;
 
 
 	private final BoundedBuffer buffer;
@@ -76,6 +78,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		this.tagListener = new TagListener(this);
 		this.tagWriter = new TagWriter();
 		this.buffer = new BoundedBuffer(BUFFER_SIZE);
+		this.fncs = new UtilityFunctions();
 	}
 
 	/**
@@ -234,7 +237,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 * Stop the tag subscription associated with a particular property of a block.
 	 */
 	public void removeSubscription(ProcessBlock block,BlockProperty property) {
-		if( property!=null && property.getValue()!=null && property.getBindingType()==BindingType.TAG ) {
+		if( property!=null && property.getValue()!=null && property.getBindingType()==BindingType.TAG_READ ) {
 			String tagPath = property.getValue().toString();
 			if( tagPath!=null && tagPath.length()>0) {
 				tagListener.removeSubscription(block,tagPath);
@@ -251,7 +254,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 * Stop the tag subscription associated with a particular property of a block.
 	 */
 	public void stopSubscription(ProcessBlock block,BlockProperty property) {
-		if( property!=null && property.getValue()!=null && property.getBindingType()==BindingType.TAG ) {
+		if( property!=null && property.getValue()!=null && property.getBindingType()==BindingType.TAG_READ ) {
 			String tagPath = property.getValue().toString();
 			if( tagPath!=null && tagPath.length()>0) {
 				tagListener.stopSubscription(tagPath);
@@ -261,7 +264,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	// ======================= Delegated to TagWriter ======================
 	/**
 	 * Write a value to a tag. If the diagram referenced diagram is disabled
-	 * or "constrained", then this method has no effect.
+	 * or "restricted", then this method has no effect.
 	 * @param diagramId UUID of the parent diagram
 	 * @param path
 	 * @param val
@@ -304,6 +307,8 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 					// Query the diagram to find out what's next
 					ProcessBlock pb = inNote.getBlock();
 					log.infof("%s.run: processing incoming note from %s:%s = %s", TAG,pb.toString(),inNote.getPort(),inNote.getValue().toString());
+					// Send the push notification
+					sendConnectionNotification(pb.getBlockId().toString(),inNote.getPort(),fncs.objectToQualifiedValue(inNote.getValue()));
 					ProcessDiagram dm = modelManager.getDiagram(pb.getParentId());
 					if( dm!=null) {
 						Collection<IncomingNotification> outgoing = dm.getOutgoingNotifications(inNote);
@@ -354,6 +359,10 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		}
 	}
 
+	/**
+	 * Notify any notification listeners of changes to a block property. This is usually triggered by the 
+	 * block itself. The ultimate receiver is typically a block property in the UI in a ProcessBlockView.
+	 */
 	@Override
 	public void sendPropertyNotification(String blkid, String propertyName,QualifiedValue val) {
 		String key = NotificationKey.keyForProperty(blkid,propertyName);
@@ -363,15 +372,17 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		catch(Exception ex) {
 			log.warnf("%s.sendPropertyNotification: Error transmitting %s (%s)",TAG,key,ex.getMessage());
 		}
-		
 	}
 	/**
 	 * Notify any listeners in the Client or Designer scopes of the a change in the value carried by a connection.
-	 * @param id unique Id of the connection
+	 * A connection is uniquely identified by a block and output port. The sender of this notification is the
+	 * controller (this). The typical receiver is a BasicAnchorPoint embedded in a connection in the UI.
+	 * @param blockid unique Id of the block
+	 * @param port
 	 * @param val
 	 */
-	public void sendConnectionNotification(String cxnid, QualifiedValue val) {
-		String key = NotificationKey.keyForConnection(cxnid);
+	private void sendConnectionNotification(String blockid, String port, QualifiedValue val) {
+		String key = NotificationKey.keyForConnection(blockid,port);
 		try {
 			sessionManager.sendNotification(ApplicationScope.DESIGNER, BLTProperties.MODULE_ID, key, val);
 		}

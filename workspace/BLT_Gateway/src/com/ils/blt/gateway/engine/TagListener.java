@@ -62,14 +62,14 @@ public class TagListener implements TagChangeListener   {
 	 * one associated with a tag. If we are running, start the subscription.
 	 */
 	public void defineSubscription(ProcessBlock block,BlockProperty property) {
-		if( block==null || property==null || property.getBindingType()!=BindingType.TAG ) return;
+		if( block==null || property==null || property.getBindingType()!=BindingType.TAG_READ ) return;
 		log.infof("%s.defineSubscription: considering %s:%s",TAG,block.getName(),property.getName());
 		String tagPath = property.getBinding();
-		if( tagPath!=null && tagPath.length() >0 ) {
+		if( tagPath!=null && tagPath.length() >0 && property.isEditable() ) {
 			if( blockMap.get(tagPath) == null ) blockMap.put(tagPath, new ArrayList<ProcessBlock>());
 			List<ProcessBlock> blocks = blockMap.get(tagPath);
 			if( blocks.contains(block) ) {
-				log.debugf("%s.defineSubscription: share %s:%s on tag path %s",TAG,block.getName(),property.getName(),tagPath);
+				log.infof("%s.defineSubscription: share %s:%s on tag path %s",TAG,block.getName(),property.getName(),tagPath);
 				return;    // We already have a subscription
 			}
 			blocks.add(block);
@@ -134,7 +134,7 @@ public class TagListener implements TagChangeListener   {
 			for(ProcessBlock block:blocks ) {
 				for( String name: block.getPropertyNames()) {
 					BlockProperty property = block.getProperty(name);
-					if( property.getBindingType()==BindingType.TAG && 
+					if( property.getBindingType()==BindingType.TAG_READ && 
 					    property.getBinding().equals(tagPath )        ) {
 						startSubscriptionForProperty(block,property,tagPath);
 					}
@@ -234,8 +234,8 @@ public class TagListener implements TagChangeListener   {
 						for( String name: blk.getPropertyNames()) {
 							BlockProperty prop = blk.getProperty(name);
 							String path = prop.getBinding().toString();
-							if(prop.getBindingType()==BindingType.TAG) {
-								if( path.equals(tp.toStringFull()) && prop.getBindingType()==BindingType.TAG ) {
+							if(prop.getBindingType()==BindingType.TAG_READ) {
+								if( path.equals(tp.toStringFull()) && prop.getBindingType()==BindingType.TAG_READ ) {
 									try {
 										log.debugf("%s.tagChanged: property change for %s:%s",TAG,blk.getName(),prop.getName());
 				

@@ -55,7 +55,7 @@ public interface BLTProperties   {
 	
 	// Arguments for Color constructor are: R G B
 	public static final Color DIAGRAM_ACTIVE_BACKGROUND          = new Color(0.9f,0.9f,0.9f);    // Light gray
-	public static final Color DIAGRAM_CONSTRAINED_BACKGROUND     = new Color(0.46f,0.67f,0.9f);  // light blue
+	public static final Color DIAGRAM_RESTRICTED_BACKGROUND     = new Color(0.46f,0.67f,0.9f);  // light blue
 	public static final Color DIAGRAM_DIRTY_BACKGROUND           = new Color(0.94f,0.92f,0.5f);  // mustard
 	public static final Color DIAGRAM_DISABLED_BACKGROUND        = new Color(0.6f,0.6f,0.6f);    // Dark gray
 	

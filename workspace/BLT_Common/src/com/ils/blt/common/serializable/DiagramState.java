@@ -1,5 +1,5 @@
 /**
- *   (c) 2013  ILS Automation. All rights reserved. 
+ *   (c) 2014  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.common.serializable;
 
@@ -11,7 +11,7 @@ public enum DiagramState
 {
             ACTIVE,
             DISABLED,
-            CONSTRAINED
+            RESTRICTED
             ;
           
  /**

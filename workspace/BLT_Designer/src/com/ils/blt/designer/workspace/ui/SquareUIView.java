@@ -55,7 +55,7 @@ public class SquareUIView extends AbstractUIView implements BlockViewUI {
 		ifb.y += inset;
 		ifb.width  -= 2*(inset);
 		ifb.height -= 2*(inset);
-		// Create a square for the border that is within the insets. 
+		// Create a rectangle for the border that is within the insets. 
 		// Use the upper left for light shading, the lower right for dark
 		int[] xulvertices = new int[] {ifb.x,            ifb.x,ifb.x+ifb.width,ifb.x };
 		int[] yulvertices = new int[] {ifb.y+ifb.height, ifb.y,ifb.y,ifb.y+ifb.height};
@@ -64,9 +64,10 @@ public class SquareUIView extends AbstractUIView implements BlockViewUI {
 		g.fillPolygon(fi);
 		g.draw(fi);
 		
-		int[] xlrvertices = new int[] {ifb.x,ifb.x+ifb.width,  ifb.x+ifb.width,ifb.x };
-		int[] ylrvertices = new int[] {ifb.y+ifb.height, ifb.y,ifb.y+ifb.height,ifb.y+ifb.height};
-		fi = new Polygon(xlrvertices,ylrvertices,4);
+		// This is a triangle (sort-of), the lower-right half.
+		int[] xlrvertices = new int[] {ifb.x,ifb.x+BORDER_WIDTH,ifb.x+ifb.width-BORDER_WIDTH,ifb.x+ifb.width,  ifb.x+ifb.width,ifb.x };
+		int[] ylrvertices = new int[] {ifb.y+ifb.height,ifb.y+ifb.height-BORDER_WIDTH,ifb.y+BORDER_WIDTH,  ifb.y,ifb.y+ifb.height,ifb.y+ifb.height};
+		fi = new Polygon(xlrvertices,ylrvertices,6);
 		g.setColor(BORDER_DARK_COLOR);
 		g.fillPolygon(fi);
 		g.draw(fi);
@@ -75,7 +76,7 @@ public class SquareUIView extends AbstractUIView implements BlockViewUI {
 		ifb.y += BORDER_WIDTH;
 		ifb.width  -= 2*(BORDER_WIDTH);
 		ifb.height -= 2*(BORDER_WIDTH);
-		// Create a square that is within the border boundaries
+		// Create a rectangle that is within the border boundaries
 		int[] xvertices = new int[] {ifb.x,ifb.x+ifb.width,ifb.x+ifb.width,ifb.x };
 		int[] yvertices = new int[] {ifb.y,ifb.y,ifb.y+ifb.height,ifb.y+ifb.height};
 		fi = new Polygon(xvertices,yvertices,4);

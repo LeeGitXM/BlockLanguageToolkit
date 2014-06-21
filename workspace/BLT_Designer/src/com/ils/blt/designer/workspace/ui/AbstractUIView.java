@@ -24,6 +24,7 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import com.ils.block.common.BlockState;
 import com.ils.block.common.PlacementHint;
 import com.ils.blt.designer.workspace.BasicAnchorPoint;
 import com.ils.blt.designer.workspace.ProcessAnchorDescriptor;
@@ -57,7 +58,7 @@ public abstract class AbstractUIView extends JComponent
 	protected final static int BADGE_WIDTH = 20;
 	protected final static int BORDER_WIDTH = 3;
 	protected final static Color BORDER_DARK_COLOR = Color.darkGray;
-	protected final static Color BORDER_LIGHT_COLOR = new Color(230,230,230); // Light gray
+	protected final static Color BORDER_LIGHT_COLOR = new Color(250,250,250); // Light gray
 	protected final static Color INSET_COLOR = new Color(210,210,210);        // A little darker gray
 	protected final static int INSET = 6;
 	protected final static int LEADER_LENGTH = 10;
@@ -397,18 +398,19 @@ public abstract class AbstractUIView extends JComponent
 		int size = WorkspaceConstants.CONNECTION_WIDTH_SIGNAL;   // Thinnest
 		if( type==ConnectionType.TRUTHVALUE ) size = WorkspaceConstants.CONNECTION_WIDTH_TRUTHVALUE;
 		else if( type==ConnectionType.DATA  ) size = WorkspaceConstants.CONNECTION_WIDTH_DATA;
-		else if( type==ConnectionType.TEXT  ) size = WorkspaceConstants.CONNECTION_WIDTH_INFORMATION;
-		else if( type==ConnectionType.ANY  ) size = WorkspaceConstants.CONNECTION_WIDTH_INFORMATION;
+		else if( type==ConnectionType.TEXT  ) size = WorkspaceConstants.CONNECTION_WIDTH_TEXT;
+		else if( type==ConnectionType.ANY  ) size = WorkspaceConstants.CONNECTION_WIDTH_TEXT;
 		return size;
 	}
 	
 	protected Color fillColorForConnectionType(ConnectionType type) {
 		Color color = WorkspaceConstants.CONNECTION_BACKGROUND;   // Black
-		if( type==ConnectionType.TRUTHVALUE ) color = WorkspaceConstants.CONNECTION_FILL_TRUTHVALUE;
+		if( block.getState().equals(BlockState.INITIALIZED)) color = WorkspaceConstants.CONNECTION_FILL_EMPTY;
+		else if( type==ConnectionType.TRUTHVALUE ) color = WorkspaceConstants.CONNECTION_FILL_UNKNOWN;
 		else if( type==ConnectionType.DATA  ) color = WorkspaceConstants.CONNECTION_FILL_DATA;
-		else if( type==ConnectionType.TEXT  ) color = WorkspaceConstants.CONNECTION_FILL_INFORMATION;
+		else if( type==ConnectionType.TEXT  ) color = WorkspaceConstants.CONNECTION_FILL_TEXT;
 		else if( type==ConnectionType.SIGNAL) color = WorkspaceConstants.CONNECTION_FILL_SIGNAL;
-		else if( type==ConnectionType.ANY  ) color = WorkspaceConstants.CONNECTION_FILL_INFORMATION;
+		else if( type==ConnectionType.ANY  ) color = WorkspaceConstants.CONNECTION_FILL_TEXT;
 		return color;
 	}
 	

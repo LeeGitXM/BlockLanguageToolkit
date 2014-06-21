@@ -30,11 +30,8 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
  */
 
 public class ConnectionPropertyEditor extends JPanel {
-	private final static String TAG = "ConnectionPropertyEditor";
 	private static final long serialVersionUID = 8971626415423709616L;
 	private Connection cxn;
-	private final DesignerContext context;
-	private final LoggerEx log;
 	private static final List<String> coreAttributeNames;
 	
 	// These are the attributes handled in the CorePropertyPanel
@@ -47,10 +44,7 @@ public class ConnectionPropertyEditor extends JPanel {
 	 * @param cxn the connection that we are editing 
 	 */
 	public ConnectionPropertyEditor(DesignerContext ctx,Connection connection) {
-		this.context = ctx;
 		this.cxn = connection;
-        this.log = LogUtil.getLogger(getClass().getPackage().getName());
-        
         init();    
 	}
 

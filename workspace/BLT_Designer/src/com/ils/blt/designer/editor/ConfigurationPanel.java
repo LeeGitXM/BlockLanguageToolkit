@@ -15,9 +15,11 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.plaf.basic.BasicComboBoxRenderer;
 
@@ -26,6 +28,7 @@ import net.miginfocom.swing.MigLayout;
 import com.ils.block.common.BindingType;
 import com.ils.block.common.BlockProperty;
 import com.ils.block.common.PropertyType;
+import com.ils.blt.designer.workspace.WorkspaceRepainter;
 
 /**
  * Display a panel to edit the name of a block and its 
@@ -41,7 +44,7 @@ public class ConfigurationPanel extends BasicEditPanel {
 	private static final long serialVersionUID = 1L;
 	private static final String columnConstraints = "[para]0[]0[]0[]0[]";
 	private static final String layoutConstraints = "ins 2";
-	private static final String rowConstraints = "[para]0[]0[]0[]0[]0[]40[]0[]";
+	private static final String rowConstraints = "";
 	private BlockProperty property = null;
 	private final JLabel headingLabel;
 	private final JComboBox<String> bindingTypeCombo;
@@ -86,7 +89,7 @@ public class ConfigurationPanel extends BasicEditPanel {
 
 		// The OK button copies data from the components and sets the property properties.
 		// It then returns to the main tab
-		JPanel buttonPanel = new JPanel(new MigLayout("", "40[center]5[center]",""));
+		JPanel buttonPanel = new JPanel(new MigLayout("", "60[center]5[center]",""));
 		add(buttonPanel, "dock south");
 		JButton okButton = new JButton("OK");
 		buttonPanel.add(okButton,"");
@@ -94,7 +97,17 @@ public class ConfigurationPanel extends BasicEditPanel {
 			public void actionPerformed(ActionEvent e) {
 				if(property!=null) {
 					property.setBindingType(BindingType.valueOf(bindingTypeCombo.getSelectedItem().toString()));
+					property.setDisplayed(annotationCheckBox.isSelected());
+					try {
+						property.setDisplayOffsetX(Integer.parseInt(xfield.getText()));
+						property.setDisplayOffsetY(Integer.parseInt(yfield.getText()));
+					}
+					catch(NumberFormatException nfe) {
+						JOptionPane.showMessageDialog(ConfigurationPanel.this, String.format("ConfigurationPanel: Bad entry for display offset (%s)",nfe.getLocalizedMessage()));
+						property.setDisplayed(false);
+					}
 				}
+				SwingUtilities.invokeLater(new WorkspaceRepainter());
 				setSelectedPane(BlockEditConstants.HOME_PANEL);
 			}
 		});
@@ -111,10 +124,11 @@ public class ConfigurationPanel extends BasicEditPanel {
 		this.property = prop;
 		headingLabel.setText(prop.getName());
 		bindingTypeCombo.setSelectedItem(prop.getBindingType().toString());
+		bindingTypeCombo.setEnabled(!prop.getBindingType().equals(BindingType.ENGINE));
 		propertyTypeCombo.setSelectedItem(prop.getType().toString());
 		annotationCheckBox.setSelected(prop.isDisplayed());
 		xfield.setText(String.valueOf(prop.getDisplayOffsetX()));
-		yfield.setText(String.valueOf(prop.getDisplayOffsetX()));
+		yfield.setText(String.valueOf(prop.getDisplayOffsetY()));
 	}
 
 	/**
@@ -222,7 +236,7 @@ public class ConfigurationPanel extends BasicEditPanel {
 		public Component getListCellRendererComponent( JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 		    Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 
-		    boolean enabled = value.toString().equals(BindingType.ENGINE.name());
+		    boolean enabled = (value!=null && !value.toString().equals(BindingType.ENGINE.name()));
 		    if (!enabled) {
 		        if (isSelected) {
 		            c.setBackground(UIManager.getColor("ComboBox.background"));

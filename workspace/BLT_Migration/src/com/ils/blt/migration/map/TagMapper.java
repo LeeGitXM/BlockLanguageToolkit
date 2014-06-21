@@ -67,7 +67,8 @@ public class TagMapper {
 		if( iblock.getProperties()!=null)  {   // No properties, nothing to do
 			for(BlockProperty bp:iblock.getProperties()) {
 				//System.out.println(TAG+".setTagPaths: "+bp.getName()+", binding = "+bp.getBinding());
-				if( bp.getBindingType().equals(BindingType.TAG)  ) {
+				if( bp.getBindingType().equals(BindingType.TAG_READ) ||
+					bp.getBindingType().equals(BindingType.TAG_WRITE)) {
 					if( bp.getValue()!=null ) {
 						String unmapped = bp.getValue().toString();
 						String mapped = tagMap.get(unmapped.trim());

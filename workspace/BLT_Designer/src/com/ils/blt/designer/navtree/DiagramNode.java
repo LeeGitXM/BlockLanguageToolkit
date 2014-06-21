@@ -100,19 +100,19 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 		
 		menu.add(exportAction);
 		
-		// States are: ACTIVE, DISABLED, CONSTRAINED
+		// States are: ACTIVE, DISABLED, RESTRICTED
 		ApplicationRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
 		DiagramState state = handler.getDiagramState(context.getProject().getId(), resourceId);
 		SetStateAction ssaActive = new SetStateAction(DiagramState.ACTIVE);
 		ssaActive.setEnabled(!state.equals(DiagramState.ACTIVE));
 		SetStateAction ssaDisable = new SetStateAction(DiagramState.DISABLED);
 		ssaDisable.setEnabled(!state.equals(DiagramState.DISABLED));
-		SetStateAction ssaConstrained = new SetStateAction(DiagramState.CONSTRAINED);
-		ssaConstrained.setEnabled(!state.equals(DiagramState.CONSTRAINED));
+		SetStateAction ssaRestricted = new SetStateAction(DiagramState.RESTRICTED);
+		ssaRestricted.setEnabled(!state.equals(DiagramState.RESTRICTED));
 		JMenu setStateMenu = new JMenu(BundleUtil.get().getString(PREFIX+".SetState"));
 		setStateMenu.add(ssaActive);
 		setStateMenu.add(ssaDisable);
-		setStateMenu.add(ssaConstrained);
+		setStateMenu.add(ssaRestricted);
 		menu.add(setStateMenu);
 	
 		// Only allow a Save when the workspace is open
@@ -355,6 +355,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 					context.releaseLock(resourceId);
 					DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), context.getProject().getDiff(true), true, "Committing ...");
 					tab.setBackground(view.getBackgroundColorForState());
+					view.registerChangeListeners();
 				} 
 				catch (Exception err) {
 					ErrorUtil.showError(err);

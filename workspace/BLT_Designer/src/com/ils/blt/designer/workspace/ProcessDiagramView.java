@@ -10,15 +10,18 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.common.AnchorDirection;
+import com.ils.block.common.BindingType;
 import com.ils.block.common.BlockProperty;
 import com.ils.blt.common.ApplicationRequestManager;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.common.serializable.DiagramState;
 import com.ils.blt.common.serializable.SerializableAnchorPoint;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableConnection;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.BLTDesignerHook;
+import com.ils.blt.designer.NotificationHandler;
 import com.inductiveautomation.ignition.common.util.AbstractChangeable;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -43,7 +46,8 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	private final long resourceId;
 	private DiagramState state = DiagramState.ACTIVE;
 	private DesignerContext context;
-	private boolean dirty = true;      // A newly created diagram is "dirty" until it is saved
+	private boolean dirty = false;   // A newly created diagram is "dirty" until it is saved
+	                                 // but this looks better. It'll be dirty again with the first block
 	
 	/**
 	 * Constructor: Create an instance given a SerializableDiagram
@@ -53,7 +57,6 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	public ProcessDiagramView (long resid,SerializableDiagram diagram, DesignerContext context) {
 		this(resid,diagram.getId(),diagram.getName());
 		this.state = diagram.getState();
-		this.dirty = diagram.isDirty(); 
 		this.context = context;
 		for( SerializableBlock sb:diagram.getBlocks()) {
 			ProcessBlockView pbv = new ProcessBlockView(sb);
@@ -85,6 +88,8 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			else {
 				log.warnf("%s: createDiagramView: Connection %s missing one or more anchor points",TAG,scxn.toString());
 			}
+			// Do this at the end to override state change on adding blocks.
+			this.dirty = diagram.isDirty(); 
 		}
 	}
 	public ProcessDiagramView(long resId,UUID uuid, String nam) {
@@ -206,7 +211,6 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			scxns.add(scxn);
 		}
 		diagram.setConnections(scxns.toArray(new SerializableConnection[scxns.size()]));
-		
 		return diagram;
 	}
 	@Override
@@ -230,7 +234,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	 */
 	public Color getBackgroundColorForState() {
 		Color result = BLTProperties.DIAGRAM_ACTIVE_BACKGROUND;
-		if( getState().equals(DiagramState.CONSTRAINED)) result = BLTProperties.DIAGRAM_CONSTRAINED_BACKGROUND;
+		if( getState().equals(DiagramState.RESTRICTED)) result = BLTProperties.DIAGRAM_RESTRICTED_BACKGROUND;
 		else if( getState().equals(DiagramState.DISABLED)) result = BLTProperties.DIAGRAM_DISABLED_BACKGROUND;
 		else if( isDirty() ) result = BLTProperties.DIAGRAM_DIRTY_BACKGROUND;
 		return result;
@@ -286,5 +290,62 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	public void fireStateChanged() {
 		setDirty(true);
 		super.fireStateChanged();
+	}
+	
+	/**
+	 * Create keyed listeners to process notifications from the Gateway.
+	 * The listeners are very specific UI components that essentially
+	 * update themselves.
+	 */
+	public void registerChangeListeners() {
+		log.infof("%s.registerChangeListeners: ...",TAG);
+		NotificationHandler handler = NotificationHandler.getInstance();
+		// Connections. Register the upstream anchors (merely a convention).
+		for( Connection cxn:connections) {
+			BasicAnchorPoint bap = (BasicAnchorPoint)cxn.getOrigin();
+			ProcessBlockView blk = (ProcessBlockView)bap.getBlock();
+			String key = NotificationKey.keyForConnection(blk.getId().toString(), bap.getId().toString());
+			log.infof("%s.registerChangeListeners: adding %s",TAG,key);
+			handler.addNotificationChangeListener(key, bap);
+		}
+		
+		// Register any properties "bound" to the engine
+		// It is the responsibility of the block to trigger
+		// this as it evaluates.
+		for(ProcessBlockView block:blockMap.values() ) {
+			for(BlockProperty prop:block.getProperties()) {
+				if( prop.getBindingType().equals(BindingType.ENGINE)) {
+					String key = NotificationKey.keyForProperty(block.getId().toString(), prop.getName());
+					log.infof("%s.registerChangeListeners: adding %s",TAG,key);
+					handler.addNotificationChangeListener(key, prop);
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Presumably the diagram is closing. Remove the keyed listeners that were waiting 
+	 * on notifications from the Gateway.
+	 */
+	public void unregisterChangeListeners() {
+		log.infof("%s.unregisterChangeListeners: ...",TAG);
+		NotificationHandler handler = NotificationHandler.getInstance();
+		// Connections. Register the upstream anchors (merely a convention).
+		for( Connection cxn:connections) {
+			BasicAnchorPoint bap = (BasicAnchorPoint)cxn.getOrigin();
+			ProcessBlockView blk = (ProcessBlockView)bap.getBlock();
+			handler.removeNotificationChangeListener(NotificationKey.keyForConnection(blk.getId().toString(), bap.getId().toString()));
+		}
+		
+		// Register any properties "bound" to the engine
+		// It is the responsibility of the block to trigger
+		// this as it evaluates.
+		for(ProcessBlockView block:blockMap.values() ) {
+			for(BlockProperty prop:block.getProperties()) {
+				if( prop.getBindingType().equals(BindingType.ENGINE)) {
+					handler.removeNotificationChangeListener(NotificationKey.keyForProperty(block.getId().toString(), prop.getName()));
+				}
+			}
+		}
 	}
 }

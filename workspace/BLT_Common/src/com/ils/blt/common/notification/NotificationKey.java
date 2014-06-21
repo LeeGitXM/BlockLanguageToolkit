@@ -17,12 +17,12 @@ public class NotificationKey
 	  return String.format("B:%s",blkid);
   }
   /**
-   * @return  a push-notification key for a connection. The Id is
-   *         the connection Id, even though the listener is probably
-   *         an anchor point.
+   * @return  a push-notification key for a connection. The block and port
+   *          uniquely identify the connection. The listener is (usually)
+   *          a BasicAnchorPoint.
    */
-   public static String keyForConnection(String cxnid) {
- 	  return String.format("C:%s",cxnid);
+   public static String keyForConnection(String blockid,String port) {
+ 	  return String.format("C:%s:%s",blockid,port);
    }
    /**
     * @return  a push-notification key for a block property. The Id is
@@ -31,5 +31,4 @@ public class NotificationKey
     public static String keyForProperty(String blkid,String pname) {
   	  return String.format("P:%s:%s",blkid,pname);
     }
- 
 }

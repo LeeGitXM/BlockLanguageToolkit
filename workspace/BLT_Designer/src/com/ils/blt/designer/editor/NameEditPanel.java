@@ -13,10 +13,12 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
 import net.miginfocom.swing.MigLayout;
 
 import com.ils.blt.designer.workspace.ProcessBlockView;
+import com.ils.blt.designer.workspace.WorkspaceRepainter;
 
 /**
  * Display a panel to edit the name of a block and its 
@@ -66,8 +68,7 @@ public class NameEditPanel extends BasicEditPanel {
 
 		// The OK button copies data from the components and sets the property properties.
 		// It then returns to the main tab
-		//JPanel buttonPanel = new JPanel(new MigLayout("", "[center, grow]"));
-		JPanel buttonPanel = new JPanel(new MigLayout("", "[center][center]",""));
+		JPanel buttonPanel = new JPanel(new MigLayout("", "60[center]5[center]",""));
 		add(buttonPanel, "dock south");
 		JButton okButton = new JButton("OK");
 		buttonPanel.add(okButton,"");
@@ -79,6 +80,7 @@ public class NameEditPanel extends BasicEditPanel {
 					block.setNameOffsetX(Integer.parseInt(xfield.getText()));
 					block.setNameOffsetY(Integer.parseInt(yfield.getText()));
 					setSelectedPane(BlockEditConstants.HOME_PANEL);
+					SwingUtilities.invokeLater(new WorkspaceRepainter());
 				}
 				catch(NumberFormatException nfe) {
 					JOptionPane.showMessageDialog(NameEditPanel.this, String.format("Illegal value for offset--please re-enter (%s)",nfe.getLocalizedMessage()),
@@ -117,5 +119,7 @@ public class NameEditPanel extends BasicEditPanel {
 		annotationCheckBox.setSelected(blk.isNameDisplayed());
 		xfield.setText(String.valueOf(blk.getNameOffsetX()));
 		yfield.setText(String.valueOf(blk.getNameOffsetY()));
+		// Repaint to update the name display
+		SwingUtilities.invokeLater(new WorkspaceRepainter());
 	}
 }
