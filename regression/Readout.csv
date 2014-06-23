@@ -1,5 +1,7 @@
 InputBoolean,InputFloat,InputString
 TRUE,1.0,"Hi Mom"
 FALSE,2.0,"Hi Dad"
-TRUE,3.0,"Hello world"
-FALSE,4.0,"Good-bye"
+TRUE,3.0,"Hi Sis"
+FALSE,4.0,"Yo Bro"
+TRUE,3.1415927,"Hello world"
+FALSE,6.0,"Auf Wiedersehen"

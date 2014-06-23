@@ -7,8 +7,11 @@ package com.ils.blt.designer;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.swing.SwingUtilities;
+
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.control.NotificationChangeListener;
+import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.client.gateway_interface.PushNotificationListener;
 import com.inductiveautomation.ignition.common.gateway.messages.PushNotification;
@@ -74,6 +77,8 @@ public class NotificationHandler implements PushNotificationListener {
 				NotificationChangeListener listener = changeListenerMap.get(key);
 				if( listener != null ) {
 					listener.valueChange((QualifiedValue)payload);
+					// Repaint the workspace
+					SwingUtilities.invokeLater(new WorkspaceRepainter());
 				}
 				else {
 					log.debugf("%s.receiveNotification: no receiver for key=%s,value=%s",TAG,key,payload.toString());

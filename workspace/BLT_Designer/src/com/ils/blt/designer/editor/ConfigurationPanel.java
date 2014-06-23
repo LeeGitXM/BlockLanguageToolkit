@@ -63,7 +63,7 @@ public class ConfigurationPanel extends BasicEditPanel {
 		addSeparator(bindingPanel,"Binding");
 		bindingTypeCombo = createBindingTypeCombo();
 		bindingPanel.add(bindingTypeCombo,"skip");
-		add(bindingPanel);
+		add(bindingPanel,"");
 
 		JPanel typePanel = new JPanel();
 		typePanel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
@@ -71,7 +71,7 @@ public class ConfigurationPanel extends BasicEditPanel {
 		propertyTypeCombo = createPropertyTypeCombo();
 		propertyTypeCombo.setEditable(false);
 		typePanel.add(propertyTypeCombo,"skip");
-		add(typePanel);
+		add(typePanel,"");
 
 		JPanel displayPanel = new JPanel();
 		displayPanel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
@@ -85,7 +85,7 @@ public class ConfigurationPanel extends BasicEditPanel {
 		displayPanel.add(createLabel("Y offset"),"skip");
 		yfield = createOffsetTextField("0");
 		displayPanel.add(yfield,"span,growx,wrap");
-		add(displayPanel);
+		add(displayPanel,"");
 
 		// The OK button copies data from the components and sets the property properties.
 		// It then returns to the main tab

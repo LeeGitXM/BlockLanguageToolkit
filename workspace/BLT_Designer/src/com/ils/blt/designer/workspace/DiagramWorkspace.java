@@ -17,6 +17,7 @@ import java.awt.geom.Path2D;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.JComponent;
@@ -50,6 +51,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.AbstractBlock
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockActionHandler;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
+import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.BlockDiagramModel;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Connection;
@@ -158,8 +160,12 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					
 					// Types are: ANY, DATA, TEXT, TRUTH-VALUE
 					ProcessBlockView pbv = (ProcessBlockView)((BlockComponent)selection).getBlock();
-					// Assume the type from the first anchor
-					ProcessAnchorDescriptor anch = pbv.getAnchors().iterator().next();
+					// Assume the type from the terminus anchor
+					Iterator<ProcessAnchorDescriptor> iterator = pbv.getAnchors().iterator();
+					ProcessAnchorDescriptor anch = iterator.next();  // Assumes at least one anchor
+					while( anch.getType().equals(AnchorType.Origin) && iterator.hasNext()  ) {
+						anch = iterator.next();
+					}
 					if( anch!=null ) {
 						ConnectionType ct = anch.getConnectionType();
 						log.infof("%s.getSelectionPopupMenu: Connection type is: %s",TAG,ct.name());
@@ -167,11 +173,11 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						ChangeConnectionAction ccaAny = new ChangeConnectionAction(pbv,ConnectionType.ANY);
 						ccaAny.setEnabled(!ct.equals(ConnectionType.ANY));
 						ChangeConnectionAction ccaData = new ChangeConnectionAction(pbv,ConnectionType.DATA);
-						ccaAny.setEnabled(!ct.equals(ConnectionType.DATA));
+						ccaData.setEnabled(!ct.equals(ConnectionType.DATA));
 						ChangeConnectionAction ccaText = new ChangeConnectionAction(pbv,ConnectionType.TEXT);
-						ccaAny.setEnabled(!ct.equals(ConnectionType.TEXT));
+						ccaText.setEnabled(!ct.equals(ConnectionType.TEXT));
 						ChangeConnectionAction ccaTruthvalue = new ChangeConnectionAction(pbv,ConnectionType.TRUTHVALUE);
-						ccaAny.setEnabled(!ct.equals(ConnectionType.TRUTHVALUE));
+						ccaTruthvalue.setEnabled(!ct.equals(ConnectionType.TRUTHVALUE));
 					
 						JMenu changeTypeMenu = new JMenu(BundleUtil.get().getString(PREFIX+".ChangeConnection"));
 						changeTypeMenu.add(ccaAny);

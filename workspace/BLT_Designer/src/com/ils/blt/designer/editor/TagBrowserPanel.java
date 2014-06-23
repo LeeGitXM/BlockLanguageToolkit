@@ -7,6 +7,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
@@ -16,8 +17,11 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import com.ils.blt.common.block.BlockProperty;
+import com.inductiveautomation.ignition.client.sqltags.tree.SQLTagTreeModel;
 import com.inductiveautomation.ignition.client.sqltags.tree.TagRenderer;
 import com.inductiveautomation.ignition.client.sqltags.tree.TagTreeNode;
+import com.inductiveautomation.ignition.common.sqltags.model.TagPath;
+import com.inductiveautomation.ignition.common.sqltags.parser.TagPathParser;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 /**
@@ -29,6 +33,7 @@ public class TagBrowserPanel extends BasicEditPanel {
 	private final DesignerContext context;
 	private String selectedPath = "";
 	private BlockProperty property = null;
+	private final JTree tagTree;
 	private final TagRenderer cellRenderer;
 	private final TreeSelectionModel tagTreeSelectionModel;
 	
@@ -37,13 +42,15 @@ public class TagBrowserPanel extends BasicEditPanel {
 		this.context = ctx;
 		this.cellRenderer = new TagRenderer();
 		setLayout(new BorderLayout());
-		JTree tagTree = new JTree();
+		tagTree = new JTree();
+		tagTree.setOpaque(true);
 		tagTree.setCellRenderer(cellRenderer);
 		tagTree.setModel(context.getTagBrowser().getSqlTagTreeModel());
 		tagTreeSelectionModel = tagTree.getSelectionModel();
 		tagTreeSelectionModel.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		tagTree.setBackground(getBackground());
-		cellRenderer.setBackground(Color.GREEN);
+		cellRenderer.setBackgroundSelectionColor(Color.cyan);
+		cellRenderer.setBackgroundNonSelectionColor(getBackground());
 		add(tagTree, BorderLayout.CENTER);
 		JPanel buttonPanel = new JPanel();
 		add(buttonPanel, BorderLayout.SOUTH);
@@ -53,18 +60,14 @@ public class TagBrowserPanel extends BasicEditPanel {
 			public void actionPerformed(ActionEvent e) {
 				TreePath[] selectedPaths = tagTreeSelectionModel.getSelectionPaths();
 				if(selectedPaths.length == 1) {
-					log.infof("TagBrowserPanel 1");
 					TagTreeNode node = (TagTreeNode)(selectedPaths[0].getLastPathComponent());
-					log.infof("TagBrowserPanel 2");
 					selectedPath = node.getTagPath().toString();
-					log.infof("TagBrowserPanel %s",selectedPath);
 					if(property!=null) {
-						log.infof("TagBrowserPanel set property");
+						log.infof("TagBrowserPanel set property %s, binding now %s",property.getName(),selectedPath);
 						property.setBinding(selectedPath);
 					}
 					updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
 					setSelectedPane(BlockEditConstants.HOME_PANEL);
-					log.infof("TagBrowserPanel set panel HOME");
 				}
 				else {
 					JOptionPane.showMessageDialog(TagBrowserPanel.this, "No tag is selected.");					
@@ -83,9 +86,25 @@ public class TagBrowserPanel extends BasicEditPanel {
 	}
 	public void updateForProperty(BlockProperty prop) {
 		this.property = prop;
-		if(property.getBinding()!=null ) {
-			TreePath treePath = new TreePath(property.getBinding().toString());
-			tagTreeSelectionModel.setSelectionPath(treePath);
+		if(property.getBinding()!=null && (property.getBinding().length()>0) ) {
+			log.infof("TagBrowserPanel.updateForProperty binding = %s",property.getBinding());
+			TagPath tp = TagPathParser.parseSafe(property.getBinding());
+			if( tp!=null ) {
+				log.infof("TagBrowserPanel.updateForProperty binding parsed as %s",tp.toString());
+				SQLTagTreeModel sttm = (SQLTagTreeModel)tagTree.getModel();
+				TreePath treePath = sttm.getPathForTag(tp);
+				if( treePath!=null ) {
+					tagTreeSelectionModel.setSelectionPath(treePath);
+					tagTree.expandPath(treePath); 
+					log.infof("TagBrowserPanel.updateForProperty %s",treePath.toString());
+				}
+				else {
+					log.infof("TagBrowserPanel.updateForProperty: No tree path found for: %s:%s",property.getName(),property.getBinding());
+				}
+			}
+			else {
+				log.warnf("TagBrowserPanel.updateForProperty: Current binding,%s, is not a tag path",property.getBinding());
+			}
 		}
 	}
 }

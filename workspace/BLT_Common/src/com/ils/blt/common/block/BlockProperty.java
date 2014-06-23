@@ -145,6 +145,5 @@ public class BlockProperty implements NotificationChangeListener {
 	@Override
 	public void valueChange(QualifiedValue value) {
 		setValue(value);
-		
 	}
 }

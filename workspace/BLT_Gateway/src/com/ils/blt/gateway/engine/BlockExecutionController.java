@@ -366,6 +366,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	@Override
 	public void sendPropertyNotification(String blkid, String propertyName,QualifiedValue val) {
 		String key = NotificationKey.keyForProperty(blkid,propertyName);
+		log.infof("%s.sendPropertyNotification: %s (%s)",TAG,key,val.toString());
 		try {
 			sessionManager.sendNotification(ApplicationScope.DESIGNER, BLTProperties.MODULE_ID, key, val);
 		}

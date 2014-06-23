@@ -9,9 +9,8 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.Rectangle2D;
 
+import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.BlockProperty;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.AbstractBlockWorkspace;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
@@ -21,10 +20,11 @@ import com.inductiveautomation.ignition.designer.blockandconnector.routing.EdgeR
 
 public class DiagramContainer extends BlockDesignableContainer {
 	private static final long serialVersionUID = 7484274138362308991L;
-	private LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
+	private final UtilityFunctions fncs;
 
 	public DiagramContainer(AbstractBlockWorkspace workspace,BlockDiagramModel model,EdgeRouter router,ConnectionPainter painter) {
 		super(workspace, model, router, painter);
+		fncs = new UtilityFunctions();
 	}
 	
 	@Override
@@ -43,7 +43,8 @@ public class DiagramContainer extends BlockDesignableContainer {
 			
 			for(BlockProperty bp:pbv.getProperties()) {
 				if(bp.isDisplayed() && bp.getValue()!=null) {
-					paintTextAt(g,bp.getValue().toString(),xpos+bp.getDisplayOffsetX(),ypos+bp.getDisplayOffsetY(),Color.DARK_GRAY,18);
+					String val = fncs.coerceToString(bp.getValue());
+					paintTextAt(g,val,xpos+bp.getDisplayOffsetX(),ypos+bp.getDisplayOffsetY(),Color.DARK_GRAY,24);
 				}
 			}
 		}

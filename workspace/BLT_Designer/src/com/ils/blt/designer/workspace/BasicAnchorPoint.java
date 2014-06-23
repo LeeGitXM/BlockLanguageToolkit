@@ -10,8 +10,6 @@ import java.awt.Shape;
 import java.awt.Stroke;
 import java.util.EnumSet;
 
-import javax.swing.SwingUtilities;
-
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
@@ -180,7 +178,5 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 		if( cxnType.equals(ConnectionType.TRUTHVALUE)) {
 			theTruth = fncs.qualifiedValueAsTruthValue(value);
 		}
-		// Repaint the workspace
-		SwingUtilities.invokeLater(new WorkspaceRepainter());
 	}
 }

@@ -128,6 +128,7 @@ public class MainPanel extends BasicEditPanel {
 		}
 		// Update the panel for new property data
 		public void updateForProperty(BlockProperty property) {
+			log.infof("%s.updateForProperty: property %s, raw value=",TAG,property.getName(),property.getValue().toString());
 			valueDisplayField.setText(fncs.coerceToString(property.getValue()));
 			if( property.getBindingType().equals(BindingType.TAG_READ) ||
 				property.getBindingType().equals(BindingType.TAG_WRITE)	) {
@@ -246,7 +247,7 @@ public class MainPanel extends BasicEditPanel {
 	 * Create a text box for the value field. This is read-only.
 	 */
 	private JTextField createValueDisplayField(final BlockProperty prop) {	
-		Object val = prop.getValue();
+		Object val = fncs.coerceToString(prop.getValue());
 		if(val==null) val = "";
 		final JTextField field = new JTextField(val.toString());
 		field.setEditable(false);

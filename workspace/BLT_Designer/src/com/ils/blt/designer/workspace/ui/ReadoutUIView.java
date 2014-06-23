@@ -12,6 +12,7 @@ import java.awt.geom.AffineTransform;
 
 import javax.swing.SwingUtilities;
 
+import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.designer.workspace.ProcessBlockView;
@@ -30,10 +31,11 @@ public class ReadoutUIView extends AbstractUIView implements BlockViewUI {
 	private static final long serialVersionUID = 2160868310475735865L;
 	private static final int DEFAULT_HEIGHT = 40;
 	private static final int DEFAULT_WIDTH  = 80;
-	private static final String DEFAULT_FORMAT = "%s";
+	private final UtilityFunctions fncs;
 	
 	public ReadoutUIView(ProcessBlockView view) {
 		super(view,DEFAULT_WIDTH,DEFAULT_HEIGHT);
+		this.fncs = new UtilityFunctions();
 		setOpaque(false);
 		initAnchorPoints();
 	}
@@ -103,14 +105,23 @@ public class ReadoutUIView extends AbstractUIView implements BlockViewUI {
 		g.setTransform(originalTx);
 		g.setBackground(originalBackground);
 		drawAnchors(g,0,-BORDER_WIDTH/2);
-		// Update embedded text
-		String format = DEFAULT_FORMAT;
+		// Update embedded text - the block formats the output
+		// We are guaranteed that the propert value is a qualified value.
 		String value  = "";
 		for( BlockProperty bp:block.getProperties()) {
-			if(bp.getName().equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_FORMAT)) format = bp.getValue().toString();
-			else if(bp.getName().equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_VALUE)) value = bp.getValue().toString();
+			if(bp.getName().equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_VALUE)) {
+				value = fncs.coerceToString(bp.getValue());   // Just to be safe
+				break;
+			}
 		}
-		block.setEmbeddedLabel(String.format(format,value));
+		// Set the font size based on the string length.
+		// Assumes 100px block width
+		int fontSize = 18;  // Small
+		if( value.length()<7 ) fontSize = 28;
+		else if( value.length()<11 ) fontSize = 24;
+		
+		block.setEmbeddedFontSize(fontSize);
+		block.setEmbeddedLabel(value);
 		drawEmbeddedText(g,0,0);
 	}
 
