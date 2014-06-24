@@ -9,7 +9,6 @@ import java.util.Map;
 
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.serializable.SerializableBlock;
-import com.ils.blt.common.serializable.SerializableQualifiedValue;
 import com.ils.blt.migration.G2Block;
 import com.ils.blt.migration.G2Property;
 
@@ -87,7 +86,7 @@ public class PropertyMapper {
 						if( bp.getName().equalsIgnoreCase(propName) ) {
 							System.err.println(TAG+".setProperties match = "+key+", value = "+g2property.getValue());
 							if(g2property.getValue()!=null && !g2property.getValue().toString().equalsIgnoreCase("none")) {
-								bp.setValue(new SerializableQualifiedValue(g2property.getValue()));
+								bp.setValue(g2property.getValue());
 							}
 							break;
 						}

@@ -19,7 +19,6 @@ import net.miginfocom.swing.MigLayout;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PropertyType;
-import com.ils.blt.common.serializable.SerializableQualifiedValue;
 import com.ils.blt.designer.workspace.WorkspaceRepainter;
 
 /**
@@ -84,7 +83,7 @@ public class ValueEditPanel extends BasicEditPanel {
 					if( property.getType().equals(PropertyType.BOOLEAN ))     value = fncs.coerceToBoolean(value);
 					else if( property.getType().equals(PropertyType.DOUBLE )) value = fncs.coerceToDouble(value);
 					else if( property.getType().equals(PropertyType.INTEGER ))value = fncs.coerceToInteger(value);
-					property.setValue(new SerializableQualifiedValue(value));
+					property.setValue(value);
 					property.setDisplayed(annotationCheckBox.isSelected());
 					try {
 						property.setDisplayOffsetX(Integer.parseInt(xfield.getText()));

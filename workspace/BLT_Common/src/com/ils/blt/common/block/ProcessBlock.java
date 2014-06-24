@@ -10,7 +10,6 @@ import com.ils.blt.common.control.BlockPropertyChangeEvent;
 import com.ils.blt.common.control.BlockPropertyChangeListener;
 import com.ils.blt.common.control.IncomingNotification;
 import com.ils.blt.common.control.SignalNotification;
-import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 
 /**
@@ -123,7 +122,7 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 * @param name of the property to update
 	 * @param value new value of the property
 	 */
-	public void setProperty(String name,QualifiedValue value);
+	public void setProperty(String name,Object value);
 	/**
 	 * Set the current state of the block.
 	 * @param state

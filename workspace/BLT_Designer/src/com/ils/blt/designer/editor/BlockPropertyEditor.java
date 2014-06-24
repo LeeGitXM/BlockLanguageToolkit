@@ -15,7 +15,6 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.LimitType;
 import com.ils.blt.common.block.TransmissionScope;
-import com.ils.blt.common.serializable.SerializableQualifiedValue;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.inductiveautomation.ignition.client.util.gui.SlidingPane;
@@ -154,7 +153,7 @@ public class BlockPropertyEditor extends SlidingPane   {
 		final JComboBox<String> box = new JComboBox<String>(entries);
 		box.addActionListener(new ActionListener() {
 	        public void actionPerformed(ActionEvent e){
-	        	prop.setValue(new SerializableQualifiedValue(box.getSelectedItem().toString()));
+	        	prop.setValue(box.getSelectedItem().toString());
 	        	updateBlockProperty(prop);
 	        }
 		});
@@ -176,7 +175,7 @@ public class BlockPropertyEditor extends SlidingPane   {
 	        public void actionPerformed(ActionEvent e){
 	        	LimitType type = LimitType.valueOf(LimitType.class, box.getSelectedItem().toString());
 	        	log.debugf("%s: set limit type %s",TAG,box.getSelectedItem().toString());
-	        	prop.setValue(new SerializableQualifiedValue(box.getSelectedItem().toString()));
+	        	prop.setValue(box.getSelectedItem().toString());
 	        	updateBlockProperty(prop);
 	        }
 		});
@@ -199,7 +198,7 @@ public class BlockPropertyEditor extends SlidingPane   {
 	        public void actionPerformed(ActionEvent e){
 	        	TransmissionScope scope = TransmissionScope.valueOf(TransmissionScope.class, box.getSelectedItem().toString());
 	        	log.debugf("%s: set transmission scope %s",TAG,box.getSelectedItem().toString());
-	        	prop.setValue(new SerializableQualifiedValue(scope.toString()));
+	        	prop.setValue(scope.toString());
 	        	updateBlockProperty(prop);
 	        }
 		});

@@ -16,25 +16,15 @@ public class BlockPropertyChangeEvent extends PropertyChangeEvent {
 	private static final long serialVersionUID = 6886769663284199568L;
 
 	/**
-	 * Constructor. Value is expressed as a QualifiedValue
+	 * Constructor. Value is a simple object (not null,not a QualifiedValue)
 	 * @param source the block Id of the change originator
 	 * @param propertyName
 	 * @param oldValue
 	 * @param newValue
 	 */
-	public BlockPropertyChangeEvent(String source, String propertyName, QualifiedValue oldValue, QualifiedValue newValue)  {	
+	public BlockPropertyChangeEvent(String source, String propertyName, Object oldValue, Object newValue)  {	
 		super(source,propertyName,oldValue,newValue);
+		if(newValue==null) throw new IllegalArgumentException("null property not allowed");
+		if(newValue instanceof QualifiedValue) throw new IllegalArgumentException(String.format("Complex object %s not allowed",newValue.getClass().getName()));
 	}
-	
-	/**
-	 * Constructor. This constructor is a shortcut for push notification listeners in the Designer/client
-	 * @param newValue
-	 */
-	public BlockPropertyChangeEvent(QualifiedValue newValue)  {	
-		super("engine","",null,newValue);
-	}
-	
-	public QualifiedValue getOldValue() { return (QualifiedValue)super.getOldValue(); }
-	public QualifiedValue getNewValue() { return (QualifiedValue)super.getNewValue(); }
-	
 }

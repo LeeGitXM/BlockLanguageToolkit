@@ -7,14 +7,12 @@ import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.control.NotificationChangeListener;
-import com.ils.blt.common.serializable.SerializableQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -29,7 +27,6 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 public class BlockProperty implements NotificationChangeListener {
 	private static final String TAG = "BlockProperty";
 	private static LoggerEx log = LogUtil.getLogger(PalettePrototype.class.getPackage().getName());
-	private static UtilityFunctions fncs = new UtilityFunctions();
 	private boolean editable;
 	private PropertyType type = PropertyType.STRING;
 	private String binding = "";
@@ -40,15 +37,17 @@ public class BlockProperty implements NotificationChangeListener {
 
 	private String name;
 
-	private SerializableQualifiedValue value = null;
+	private Object value = null;
 	private List<ChangeListener> changeListeners = new ArrayList<ChangeListener>();
 
 	/** 
 	 * Constructor: Sets all attributes.
 	 */
-	public BlockProperty(String name,QualifiedValue qv,PropertyType type,boolean canEdit) {
+	public BlockProperty(String name,Object val,PropertyType type,boolean canEdit) {
+		if(val==null) throw new IllegalArgumentException("null property not allowed");
+		if(val instanceof QualifiedValue) throw new IllegalArgumentException(String.format("Complex object %s not allowed",val.getClass().getName()));
 		this.name = name;
-		this.value = new SerializableQualifiedValue(qv);
+		this.value = val;
 		this.type = type;
 		this.editable = canEdit;
 	}
@@ -112,9 +111,11 @@ public class BlockProperty implements NotificationChangeListener {
 	public void setBindingType(BindingType type) { this.bindingType = type; }
 	public PropertyType getType() {return type;}
 	public void setType(PropertyType type) {this.type = type;}
-	public SerializableQualifiedValue getValue() {return value;}
-	public void setValue(SerializableQualifiedValue qv) {
-		this.value = qv;
+	public Object getValue() {return value;}
+	public void setValue(Object obj) {
+		if(obj==null) throw new IllegalArgumentException("null property not allowed");
+		if(obj instanceof QualifiedValue) throw new IllegalArgumentException(String.format("Complex object %s not allowed",obj.getClass().getName()));
+		this.value = obj;
 		notifyChangeListeners();
 	}
 	
@@ -148,7 +149,9 @@ public class BlockProperty implements NotificationChangeListener {
 	 * notifications are currently NOT on the UI thread.
 	 */
 	@Override
-	public void valueChange(QualifiedValue qv) {
-		setValue(fncs.objectToQualifiedValue(qv));
+	public void valueChange(QualifiedValue val) {
+		if( val!=null && val.getValue()!=null) {
+			setValue(val.getValue());
+		}
 	}
 }

@@ -4,7 +4,7 @@
 package com.ils.blt.common;
 
 import com.ils.blt.common.block.TruthValue;
-import com.ils.blt.common.serializable.SerializableQualifiedValue;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
@@ -142,26 +142,25 @@ public class UtilityFunctions  {
 	 * a qualified value of BAD quality.
 	 * @return the value cast to a QualifiedValue
 	 */
-	public SerializableQualifiedValue objectToQualifiedValue(Object value) {
-		SerializableQualifiedValue result = null;
+	public QualifiedValue objectToQualifiedValue(Object value) {
+		QualifiedValue result = null;
 		if( value!=null ) {
-			if( value instanceof SerializableQualifiedValue ) result = (SerializableQualifiedValue)value;
-			else if( value instanceof QualifiedValue )        result = new SerializableQualifiedValue(value);
+			if( value instanceof QualifiedValue )        result = new BasicQualifiedValue(value);
 			else if( value instanceof TruthValue ) {
-				result = new SerializableQualifiedValue( ((TruthValue)value).name());
+				result = new BasicQualifiedValue( ((TruthValue)value).name());
 			}
 			else if( value instanceof Double ||
 					 value instanceof Integer||
 					 value instanceof String ||
 					 value instanceof Boolean) {
-				result = new SerializableQualifiedValue( value);
+				result = new BasicQualifiedValue( value);
 			}
 			else{
-				result = new SerializableQualifiedValue(value,new BasicQuality("unrecognized data type",Quality.Level.Bad));
+				result = new BasicQualifiedValue(value,new BasicQuality("unrecognized data type",Quality.Level.Bad));
 			}
 		}
 		else {
-			result = new SerializableQualifiedValue("",new BasicQuality("null value",Quality.Level.Bad));
+			result = new BasicQualifiedValue("",new BasicQuality("null value",Quality.Level.Bad));
 		}
 		return result; 
 	}
