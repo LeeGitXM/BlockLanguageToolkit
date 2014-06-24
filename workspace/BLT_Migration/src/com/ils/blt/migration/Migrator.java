@@ -3,6 +3,7 @@
  */
 package com.ils.blt.migration;
 
+import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -284,6 +285,10 @@ public class Migrator {
 		// 1) In G2 Connection Posts are bi-directional. We translate all
 		//    of them to be outputs. They may actually be inputs.
 		if( block.getClassName().endsWith("SinkConnection") ) {
+			block.setBackground(new Color(127,127,127).getRGB()); // Dark gray
+			block.setNameDisplayed(true);
+			block.setNameOffsetX(25);
+			block.setNameOffsetY(45);
 			SerializableAnchor[] anchors = block.getAnchors();
 			for(SerializableAnchor anc:anchors) {
 				if( anc.getDirection().equals(AnchorDirection.OUTGOING)) {

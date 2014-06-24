@@ -32,7 +32,7 @@ public class SerializableBlock {
 	private int preferredWidth  = 0;
 	private BlockProperty[] properties = null;
 	private boolean receiveEnabled = false;
-	private BlockState state;
+	private BlockState state = BlockState.INITIALIZED;
 	private String statusText;
 	private BlockStyle style = BlockStyle.SQUARE;
 	private boolean transmitEnabled= false;
@@ -87,7 +87,7 @@ public class SerializableBlock {
 	public void setPreferredWidth(int preferredWidth) {this.preferredWidth = preferredWidth;}
 	public void setProperties(BlockProperty[] array) { this.properties = array; }
 	public void setReceiveEnabled(boolean receiveEnabled) {this.receiveEnabled = receiveEnabled;}
-	public void setState(BlockState state) {this.state = state;}
+	public void setState(BlockState state) {if(state!=null) this.state = state;}
 	public void setStatusText(String statusText) { this.statusText = statusText; }
 	public void setStyle(BlockStyle style) { this.style = style; }
 	public void setTransmitEnabled(boolean transmitEnabled) {this.transmitEnabled = transmitEnabled;}

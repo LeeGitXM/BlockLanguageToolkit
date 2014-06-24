@@ -69,11 +69,9 @@ public class MockOutputBlock extends AbstractProcessBlock implements ProcessBloc
 	@Override
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
-		Object val = vcn.getValue();
+		QualifiedValue val = vcn.getValue();
 		if( val!=null ) {
-			log.infof("%s.acceptValue value .... %s=%s",TAG,val.getClass().getName(),val.toString());
-			this.value = vcn.getValueAsQualifiedValue();
-			log.infof("%s.acceptValue value .... %s",TAG,value.toString());
+			log.infof("%s.acceptValue value .... %s=%s",TAG,val.getClass().getName(),val.getValue().toString());
 		}
 		else {
 			log.infof("%s.acceptValue:incoming value .... is NULL",TAG);

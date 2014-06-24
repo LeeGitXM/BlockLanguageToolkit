@@ -308,7 +308,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 					ProcessBlock pb = inNote.getBlock();
 					log.infof("%s.run: processing incoming note from %s:%s = %s", TAG,pb.toString(),inNote.getPort(),inNote.getValue().toString());
 					// Send the push notification
-					sendConnectionNotification(pb.getBlockId().toString(),inNote.getPort(),fncs.objectToQualifiedValue(inNote.getValue()));
+					sendConnectionNotification(pb.getBlockId().toString(),inNote.getPort(),inNote.getValue());
 					ProcessDiagram dm = modelManager.getDiagram(pb.getParentId());
 					if( dm!=null) {
 						Collection<IncomingNotification> outgoing = dm.getOutgoingNotifications(inNote);

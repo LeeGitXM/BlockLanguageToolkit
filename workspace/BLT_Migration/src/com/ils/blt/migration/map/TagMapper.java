@@ -42,6 +42,7 @@ public class TagMapper {
 				String gsi = rs.getString("GSIName");
 				String tagPath = rs.getString("TagPath");
 				tagMap.put(gsi, tagPath.trim());
+				//System.err.println(TAG+".setTagPaths: MAP "+gsi+":"+tagPath);
 			}
 			rs.close();
 		}
@@ -66,12 +67,13 @@ public class TagMapper {
 	public void setTagPaths(SerializableBlock iblock) {
 		if( iblock.getProperties()!=null)  {   // No properties, nothing to do
 			for(BlockProperty bp:iblock.getProperties()) {
-				//System.out.println(TAG+".setTagPaths: "+bp.getName()+", binding = "+bp.getBinding()+", val="+bp.getValue());
 				if( bp.getBindingType().equals(BindingType.TAG_READ) ||
 					bp.getBindingType().equals(BindingType.TAG_WRITE)) {
 					if( bp.getValue()!=null ) {
+						//System.out.println(TAG+".setTagPaths: LOOKUP:"+bp.getValue());
 						String unmapped = bp.getValue().toString();
 						String mapped = tagMap.get(unmapped.trim());
+						System.out.println(TAG+".setTagPaths: FOUND:"+mapped);
 						if( mapped!=null) {
 							bp.setBinding(mapped);
 							bp.setValue("");  // Clear the value because we're bound to a tag

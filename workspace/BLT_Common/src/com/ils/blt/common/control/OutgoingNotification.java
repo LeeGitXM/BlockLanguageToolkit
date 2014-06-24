@@ -4,6 +4,7 @@
 package com.ils.blt.common.control;
 
 import com.ils.blt.common.block.ProcessBlock;
+import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
  * This class is used to hold change information representing 
@@ -20,7 +21,7 @@ import com.ils.blt.common.block.ProcessBlock;
 public class OutgoingNotification {
 	private final ProcessBlock block;
 	private final String port;
-	private final Object value;
+	private final QualifiedValue value;
 	
 	/**
 	 * Constructor. Value is expressed as a QualifiedValue
@@ -29,7 +30,7 @@ public class OutgoingNotification {
 	 * @param prt the output port on which the value was placed.
 	 * @param val the new value
 	 */
-	public OutgoingNotification(ProcessBlock blk,String prt, Object val)  {	
+	public OutgoingNotification(ProcessBlock blk,String prt, QualifiedValue val)  {	
 		this.block = blk;
 		this.port = prt;
 		this.value = val;
@@ -37,5 +38,5 @@ public class OutgoingNotification {
 	
 	public ProcessBlock getBlock()      { return block; }
 	public String getPort()             { return port; }
-	public Object getValue()            { return value; }
+	public QualifiedValue getValue()    { return value; }
 }

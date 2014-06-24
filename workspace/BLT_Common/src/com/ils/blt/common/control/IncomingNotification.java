@@ -16,14 +16,15 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
  * value object is one of the following:
  *    - Signal
  *    - TruthValue
- *    - QualifiedValue
+ *    - Double
  *    - String
+ * These are always bound into a QualifiedValue in order to propagate quality information.
  * 
  * This is a property container with no behavior.
  */
 public class IncomingNotification {
 	private final Connection connection;
-	private final Object value;
+	private final QualifiedValue value;
 	
 	/**
 	 * Constructor. Value is expressed as an object.
@@ -32,39 +33,24 @@ public class IncomingNotification {
 	 *              Usage depends on the direction of the information exchange.
 	 * @param val the new value
 	 */
-	public IncomingNotification(Connection cxn, Object val)  {	
+	public IncomingNotification(Connection cxn, QualifiedValue val)  {	
 		this.connection = cxn;
 		this.value = val;
 	}
 	
 	public Connection getConnection()    { return connection; }
-	public Object getValue()             { return value; }
 	/**
 	 * Convert the value to a qualified value. If null, generate
 	 * a qualified value of BAD quality.
 	 * @return the value cast to a QualifiedValue
 	 */
-	public QualifiedValue getValueAsQualifiedValue() {
-		QualifiedValue result = null;
+	public QualifiedValue getValue() { 
 		if( value!=null ) {
-			if( value instanceof QualifiedValue ) result = (QualifiedValue)value;
-			else if( value instanceof TruthValue ) {
-				result = new BasicQualifiedValue( ((TruthValue)value).name());
-			}
-			else if( value instanceof Double ||
-					 value instanceof Integer||
-					 value instanceof String ||
-					 value instanceof Boolean) {
-				result = new BasicQualifiedValue( value);
-			}
-			else{
-				result = new BasicQualifiedValue(value,new BasicQuality("unrecognized data type",Quality.Level.Bad));
-			}
+			return value;
 		}
 		else {
-			result = new BasicQualifiedValue("",new BasicQuality("null value",Quality.Level.Bad));
+			return  new BasicQualifiedValue("",new BasicQuality("null value",Quality.Level.Bad));
 		}
-		return result; 
 	}
 	/**
 	 * Convert the value to a signal. If null, return
@@ -84,21 +70,13 @@ public class IncomingNotification {
 	 */
 	public TruthValue getValueAsTruthValue() {
 		TruthValue result = TruthValue.UNKNOWN;
-		if( value!=null) {
-			if( value instanceof TruthValue ) result = (TruthValue)value;
-			else if( value instanceof QualifiedValue ) {
-				if( ((QualifiedValue)value).getValue()!=null ) {
-					String val = ((QualifiedValue)value).getValue().toString().toUpperCase();
-					try {
-						result = TruthValue.valueOf(val);
-					}
-					catch(IllegalArgumentException iae) {}
-				}
-			}
+		Object obj = value.getValue();
+		if( obj!=null) {
+			if( obj instanceof TruthValue ) result = (TruthValue)obj;
 			else {
-				String val = value.toString().toUpperCase();
+				String tv = obj.toString().toUpperCase();
 				try {
-					result = TruthValue.valueOf(val);
+					result = TruthValue.valueOf(tv);
 				}
 				catch(IllegalArgumentException iae) {}
 			}

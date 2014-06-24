@@ -2,8 +2,9 @@
 #  Use this version when debugging a single file.
 #
 BLT=~/Development/ils/repo/blt
-FIL=dirtSimpleApplicationWithConnections
-#FIL=crxProductQuality
+#FIL=dirtSimpleApplication
+#FIL=dirtSimpleApplicationWithConnections
+FIL=crxProductQuality
 INDIR=$BLT/json/g2
 OUTDIR=$BLT/json/ignition
 mkdir -p $OUTDIR

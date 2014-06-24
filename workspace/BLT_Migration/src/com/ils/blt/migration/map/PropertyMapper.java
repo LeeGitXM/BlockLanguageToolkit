@@ -84,7 +84,7 @@ public class PropertyMapper {
 				if( props!=null) {
 					for(BlockProperty bp: props ) {
 						if( bp.getName().equalsIgnoreCase(propName) ) {
-							System.err.println(TAG+".setProperties match = "+key+", value = "+g2property.getValue());
+							//System.err.println(TAG+".setProperties match = "+key+", value = "+g2property.getValue());
 							if(g2property.getValue()!=null && !g2property.getValue().toString().equalsIgnoreCase("none")) {
 								bp.setValue(g2property.getValue());
 							}

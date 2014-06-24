@@ -80,7 +80,7 @@ insert into PropertyMap values ('GDL-MOVING-AVERAGE','updateSize','','STRING',1,
 insert into PropertyMap values ('GDL-MOVING-AVERAGE','eraseHistoryWhenReset','SampleType','BOOLEAN',1,'NONE');
 insert into PropertyMap values ('GDL-MOVING-AVERAGE','requireFullHistory','','BOOLEAN',1,'NONE');
 insert into PropertyMap values ('GDL-MOVING-AVERAGE','valueOnInitialization','','STRING',1,'NONE');
-insert into PropertyMap values ('GDL-NUMERIC-ENTRY-POINT','nameOfSensor','Input','STRING',1,'TAG_READ');
+insert into PropertyMap values ('GDL-NUMERIC-ENTRY-POINT','nameOfSensor','TagPath','STRING',1,'TAG_READ');
 insert into PropertyMap values ('GDL-NOT-GATE','logic','','STRING',1,'NONE');
 insert into PropertyMap values ('GDL-NOT-GATE','outputUncertainty','','DOUBLE',1,'NONE');
 insert into PropertyMap values ('GDL-PERSISTENCE-GATE','countBy','','INTEGER',1,'NONE');

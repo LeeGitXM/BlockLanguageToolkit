@@ -29,7 +29,7 @@ public class BasicEditPanel extends JPanel {
 	protected final LoggerEx log;
 	public static final Dimension BUTTON_SIZE = new Dimension(16,16);
 	public static final Dimension COMBO_BOX_SIZE  = new Dimension(120,24);
-	public static final Dimension ENTRY_BOX_SIZE  = new Dimension(140,24);
+	public static final Dimension ENTRY_BOX_SIZE  = new Dimension(160,24);
 	public static final Dimension OFFSET_BOX_SIZE  = new Dimension(80,24);
 
 	

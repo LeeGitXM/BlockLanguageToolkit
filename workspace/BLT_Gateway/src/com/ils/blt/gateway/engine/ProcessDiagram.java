@@ -21,6 +21,7 @@ import com.ils.blt.common.serializable.DiagramState;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableConnection;
 import com.ils.blt.common.serializable.SerializableDiagram;
+import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 
@@ -155,7 +156,7 @@ public class ProcessDiagram extends ProcessNode {
 	public Collection<IncomingNotification> getOutgoingNotifications(OutgoingNotification incoming) {
 		ProcessBlock block = incoming.getBlock();
 		String port = incoming.getPort();
-		Object value = incoming.getValue();
+		QualifiedValue value = incoming.getValue();
 		
 		Collection<IncomingNotification>notifications = new ArrayList<IncomingNotification>();
 		BlockPort key = new BlockPort(block,port);

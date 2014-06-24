@@ -19,6 +19,7 @@ import com.ils.blt.common.control.BlockPropertyChangeEvent;
 import com.ils.blt.common.control.OutgoingNotification;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
+import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataQuality;
 
@@ -53,7 +54,7 @@ public class MockInputBlock extends AbstractProcessBlock implements ProcessBlock
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
 		if( event.getPropertyName().equals(BLOCK_PROPERTY_INPUT)) {
-			OutgoingNotification nvn = new OutgoingNotification(this,portName,event.getNewValue());
+			OutgoingNotification nvn = new OutgoingNotification(this,portName,new BasicQualifiedValue(event.getNewValue()));
 			controller.acceptCompletionNotification(nvn);
 		}
 	}
@@ -80,8 +81,8 @@ public class MockInputBlock extends AbstractProcessBlock implements ProcessBlock
 		}
 		Quality q = DataQuality.OPC_BAD_DATA;
 		if(  "good".equalsIgnoreCase(quality)) q = DataQuality.GOOD_DATA;
-		obj = new BasicQualifiedValue(obj,q,now);
-		OutgoingNotification nvn = new OutgoingNotification(this,portName,obj);
+		QualifiedValue qv  = new BasicQualifiedValue(obj,q,now);
+		OutgoingNotification nvn = new OutgoingNotification(this,portName,qv);
 		controller.acceptCompletionNotification(nvn);
 		return now.getTime();
 	}

@@ -282,7 +282,7 @@ public class ProcessBlockView extends AbstractBlock {
 	public void setProperties(Collection<BlockProperty> props) { this.properties = props; }
 	public void setReceiveEnabled(boolean receiveEnabled) {this.receiveEnabled = receiveEnabled;}
 	public void setBackground(int b)  { this.background = b; }
-	public void setState(BlockState state) {this.state = state;}
+	public void setState(BlockState state) {if(state!=null) this.state = state;}
 	public void setStatusText(String statusText) { this.statusText = statusText; }
 	public void setStyle(BlockStyle s) { this.style = s; }
 	public void setTransmitEnabled(boolean transmitEnabled) {this.transmitEnabled = transmitEnabled;}

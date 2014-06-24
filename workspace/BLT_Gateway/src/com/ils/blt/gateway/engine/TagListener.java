@@ -235,7 +235,7 @@ public class TagListener implements TagChangeListener   {
 										log.debugf("%s.tagChanged: property change for %s:%s",TAG,blk.getName(),prop.getName());
 				
 										PropertyChangeEvaluationTask task = new PropertyChangeEvaluationTask(blk,
-												new BlockPropertyChangeEvent(blk.getBlockId().toString(),prop.getName(),prop.getValue(),tag.getValue()));
+												new BlockPropertyChangeEvent(blk.getBlockId().toString(),prop.getName(),prop.getValue(),tag.getValue().getValue()));
 										Thread propertyChangeThread = new Thread(task, "PropertyChange");
 										propertyChangeThread.start();
 									}
