@@ -8,9 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
-
 
 
 /**
@@ -19,15 +16,13 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  *  cloned or imported.
  */
 public class ApplicationUUIDResetHandler   {
-	private final static String TAG = "ApplicationUUIDResetHandler";
-	private final LoggerEx log;
+
 	private final SerializableApplication application;
 	private final Map<UUID,UUID> idLookup;      // Get new UUID from original
 	/**
 	 * Initialize with instances of the classes to be controlled.
 	 */
 	public ApplicationUUIDResetHandler(SerializableApplication sa) {
-		log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.application = sa;
 		this.idLookup = new HashMap<UUID,UUID>();
 	}

@@ -371,6 +371,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 			sessionManager.sendNotification(ApplicationScope.DESIGNER, BLTProperties.MODULE_ID, key, val);
 		}
 		catch(Exception ex) {
+			// Possibly no receiver registered
 			log.warnf("%s.sendPropertyNotification: Error transmitting %s (%s)",TAG,key,ex.getMessage());
 		}
 	}

@@ -405,7 +405,8 @@ public abstract class AbstractUIView extends JComponent
 	
 	protected Color fillColorForConnectionType(ConnectionType type) {
 		Color color = WorkspaceConstants.CONNECTION_BACKGROUND;   // Black
-		if( block.getState().equals(BlockState.INITIALIZED)) color = WorkspaceConstants.CONNECTION_FILL_EMPTY;
+		if( block==null ) color = WorkspaceConstants.CONNECTION_BACKGROUND;  // An error
+		else if( block.getState().equals(BlockState.INITIALIZED)) color = WorkspaceConstants.CONNECTION_FILL_EMPTY;
 		else if( type==ConnectionType.TRUTHVALUE ) color = WorkspaceConstants.CONNECTION_FILL_UNKNOWN;
 		else if( type==ConnectionType.DATA  ) color = WorkspaceConstants.CONNECTION_FILL_DATA;
 		else if( type==ConnectionType.TEXT  ) color = WorkspaceConstants.CONNECTION_FILL_TEXT;

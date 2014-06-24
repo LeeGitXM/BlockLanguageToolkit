@@ -7,10 +7,14 @@ import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.control.NotificationChangeListener;
+import com.ils.blt.common.serializable.SerializableQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -19,11 +23,13 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 /**
  * Hold an attribute of a block. This class is designed to be serializable via
- * any XML or JSON serializer.
+ * the Jackson JSON serializer. This is the reason that the get/set methods 
+ * use the concrete SerializedQualifiedValue class rather than the interface.
  */
 public class BlockProperty implements NotificationChangeListener {
 	private static final String TAG = "BlockProperty";
 	private static LoggerEx log = LogUtil.getLogger(PalettePrototype.class.getPackage().getName());
+	private static UtilityFunctions fncs = new UtilityFunctions();
 	private boolean editable;
 	private PropertyType type = PropertyType.STRING;
 	private String binding = "";
@@ -33,16 +39,16 @@ public class BlockProperty implements NotificationChangeListener {
 	private int displayOffsetY = 50;
 
 	private String name;
-	private String quality;
-	private Object value;
+
+	private SerializableQualifiedValue value = null;
 	private List<ChangeListener> changeListeners = new ArrayList<ChangeListener>();
 
 	/** 
 	 * Constructor: Sets all attributes.
 	 */
-	public BlockProperty(String name,Object value,PropertyType type,boolean canEdit) {
+	public BlockProperty(String name,QualifiedValue qv,PropertyType type,boolean canEdit) {
 		this.name = name;
-		this.value = value;
+		this.value = new SerializableQualifiedValue(qv);
 		this.type = type;
 		this.editable = canEdit;
 	}
@@ -78,13 +84,13 @@ public class BlockProperty implements NotificationChangeListener {
 				property = mapper.readValue(json, BlockProperty.class);
 			} 
 			catch (JsonParseException jpe) {
-				log.warnf("%s: createProperty parse exception (%s)",TAG,jpe.getLocalizedMessage());
+				log.warnf("%s: createProperty parse exception from %s (%s)",TAG,json,jpe.getLocalizedMessage());
 			}
 			catch(JsonMappingException jme) {
-				log.warn(String.format("%s: createProperty mapping exception (%s)",TAG,jme.getLocalizedMessage()),jme);
+				log.warn(String.format("%s: createProperty from %s mapping exception (%s)",TAG,json,jme.getLocalizedMessage()),jme);
 			}
 			catch(IOException ioe) {
-				log.warnf("%s: createProperty IO exception (%s)",TAG,ioe.getLocalizedMessage());
+				log.warnf("%s: createProperty from %s IO exception (%s)",TAG,json,ioe.getLocalizedMessage());
 			} 
 		}
 		return property;
@@ -96,8 +102,6 @@ public class BlockProperty implements NotificationChangeListener {
 	public void setBinding(String lnk) {this.binding = lnk;}
 	public String getName() {return name;}
 	public void setName(String name) {this.name = name;}
-	public String getQuality() {return quality;}
-	public void setQuality(String quality) {this.quality = quality;}
 	public boolean isDisplayed() {return displayed;}
 	public void setDisplayed(boolean shown) {this.displayed = shown;}
 	public int getDisplayOffsetX() {return displayOffsetX;}
@@ -108,9 +112,9 @@ public class BlockProperty implements NotificationChangeListener {
 	public void setBindingType(BindingType type) { this.bindingType = type; }
 	public PropertyType getType() {return type;}
 	public void setType(PropertyType type) {this.type = type;}
-	public Object getValue() {return value;}
-	public void setValue(Object value) {
-		this.value = value;
+	public SerializableQualifiedValue getValue() {return value;}
+	public void setValue(SerializableQualifiedValue qv) {
+		this.value = qv;
 		notifyChangeListeners();
 	}
 	
@@ -119,6 +123,7 @@ public class BlockProperty implements NotificationChangeListener {
 	 */
 	public String toJson() {
 		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		String json="";
 		try {
 			json = mapper.writeValueAsString(this);
@@ -143,7 +148,7 @@ public class BlockProperty implements NotificationChangeListener {
 	 * notifications are currently NOT on the UI thread.
 	 */
 	@Override
-	public void valueChange(QualifiedValue value) {
-		setValue(value);
+	public void valueChange(QualifiedValue qv) {
+		setValue(fncs.objectToQualifiedValue(qv));
 	}
 }

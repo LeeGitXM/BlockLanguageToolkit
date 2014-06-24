@@ -17,10 +17,7 @@ import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.control.BlockPropertyChangeEvent;
 import com.ils.blt.common.serializable.DiagramState;
-import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.Quality;
 import com.inductiveautomation.ignition.common.sqltags.model.Tag;
 import com.inductiveautomation.ignition.common.sqltags.model.TagPath;
 import com.inductiveautomation.ignition.common.sqltags.model.TagProp;
@@ -163,9 +160,7 @@ public class TagListener implements TagChangeListener   {
 					try {
 						log.debugf("%s.startSubscriptionForProperty: property change for %s:%s",TAG,block.getName(),property.getName());
 						PropertyChangeEvaluationTask task = new PropertyChangeEvaluationTask(block,
-							new BlockPropertyChangeEvent(block.getBlockId().toString(),property.getName(),
-									new BasicQualifiedValue(property.getValue(),
-											new BasicQuality(property.getQuality(),Quality.Level.Good)),value));
+							new BlockPropertyChangeEvent(block.getBlockId().toString(),property.getName(),property.getValue(),value));
 						Thread propertyChangeThread = new Thread(task, "PropertyChange");
 						propertyChangeThread.start();
 					}
@@ -240,9 +235,7 @@ public class TagListener implements TagChangeListener   {
 										log.debugf("%s.tagChanged: property change for %s:%s",TAG,blk.getName(),prop.getName());
 				
 										PropertyChangeEvaluationTask task = new PropertyChangeEvaluationTask(blk,
-												new BlockPropertyChangeEvent(blk.getBlockId().toString(),prop.getName(),
-														new BasicQualifiedValue(prop.getValue(),
-																new BasicQuality(prop.getQuality(),Quality.Level.Good)),tag.getValue()));
+												new BlockPropertyChangeEvent(blk.getBlockId().toString(),prop.getName(),prop.getValue(),tag.getValue()));
 										Thread propertyChangeThread = new Thread(task, "PropertyChange");
 										propertyChangeThread.start();
 									}

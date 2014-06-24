@@ -27,6 +27,7 @@ import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
+import com.ils.blt.common.serializable.SerializableQualifiedValue;
 import com.ils.common.JavaToPython;
 import com.ils.common.PythonToJava;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -202,8 +203,6 @@ public class ProxyHandler   {
 						}
 						val = tbl.get(BLTProperties.BLOCK_ATTRIBUTE_EDITABLE);
 						if( val!=null) prop.setEditable(fns.coerceToBoolean(val));
-						val = tbl.get(BLTProperties.BLOCK_ATTRIBUTE_QUALITY);
-						prop.setQuality(nullCheck(tbl.get(BLTProperties.BLOCK_ATTRIBUTE_NAME),"good"));
 						val = tbl.get(BLTProperties.BLOCK_ATTRIBUTE_DATA_TYPE);
 						if( val!=null) {
 							try {
@@ -217,7 +216,10 @@ public class ProxyHandler   {
 							}
 						}
 						val = tbl.get(BLTProperties.BLOCK_ATTRIBUTE_VALUE);
-						if( val!=null ) prop.setValue(val);
+						if( val!=null ) {
+							String q = nullCheck(tbl.get(BLTProperties.BLOCK_ATTRIBUTE_QUALITY),"good");
+							prop.setValue(new SerializableQualifiedValue(val));
+						}
 						properties[index] = prop;
 					}
 					
@@ -342,9 +344,11 @@ public class ProxyHandler   {
 			if(prop.getBindingType()!=null) tbl.put(BLTProperties.BLOCK_ATTRIBUTE_BINDING_TYPE,prop.getBindingType().toString());
 			if(prop.isEditable())tbl.put(BLTProperties.BLOCK_ATTRIBUTE_EDITABLE,TruthValue.TRUE.toString());
 			else tbl.put(BLTProperties.BLOCK_ATTRIBUTE_EDITABLE,TruthValue.FALSE.toString());
-			if(prop.getQuality()!=null) tbl.put(BLTProperties.BLOCK_ATTRIBUTE_QUALITY,prop.getQuality());
 			if( prop.getType()!=null) tbl.put(BLTProperties.BLOCK_ATTRIBUTE_DATA_TYPE,prop.getType().toString());
-			if( prop.getValue()!=null) tbl.put(BLTProperties.BLOCK_ATTRIBUTE_VALUE,prop.getValue().toString());
+			if( prop.getValue()!=null) {
+				tbl.put(BLTProperties.BLOCK_ATTRIBUTE_VALUE,prop.getValue().getValue().toString());
+				tbl.put(BLTProperties.BLOCK_ATTRIBUTE_QUALITY,prop.getValue().getQuality().getName());
+			}
 			PyDictionary dict = toPythonTranslator.tableToPyDictionary(tbl);
 			pyDictionary.__set__(new PyString("property"), dict);
 			setBlockPropertyCallback.execute();

@@ -12,6 +12,7 @@ import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.control.BlockPropertyChangeEvent;
 import com.ils.blt.common.control.IncomingNotification;
+import com.ils.blt.common.serializable.SerializableQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 
@@ -96,8 +97,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	public void setProperty(String name,QualifiedValue qv) {
 		BlockProperty prop = getProperty(name);
 		if( prop!=null ) {
-			prop.setValue(qv.getValue());
-			prop.setQuality(qv.getQuality().getName());
+			prop.setValue(new SerializableQualifiedValue(qv));
 			delegate.setBlockProperty(this,prop);
 		}
 	}

@@ -107,11 +107,13 @@ public class ReadoutUIView extends AbstractUIView implements BlockViewUI {
 		drawAnchors(g,0,-BORDER_WIDTH/2);
 		// Update embedded text - the block formats the output
 		// We are guaranteed that the propert value is a qualified value.
-		String value  = "";
+		String value  = "no value property";
 		for( BlockProperty bp:block.getProperties()) {
-			if(bp.getName().equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_VALUE)) {
-				value = fncs.coerceToString(bp.getValue());   // Just to be safe
-				break;
+			if( bp.getName()!=null ) {
+				if(bp.getName().equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_VALUE)) {
+					value = fncs.coerceToString(bp.getValue());   // Just to be safe
+					break;
+				}
 			}
 		}
 		// Set the font size based on the string length.

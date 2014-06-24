@@ -10,6 +10,7 @@ import java.util.Map;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.serializable.SerializableBlock;
+import com.ils.blt.common.serializable.SerializableQualifiedValue;
 
 /**
  * Convert a GSI names into Ignition Tag Paths
@@ -66,15 +67,15 @@ public class TagMapper {
 	public void setTagPaths(SerializableBlock iblock) {
 		if( iblock.getProperties()!=null)  {   // No properties, nothing to do
 			for(BlockProperty bp:iblock.getProperties()) {
-				//System.out.println(TAG+".setTagPaths: "+bp.getName()+", binding = "+bp.getBinding());
+				//System.out.println(TAG+".setTagPaths: "+bp.getName()+", binding = "+bp.getBinding()+", val="+bp.getValue());
 				if( bp.getBindingType().equals(BindingType.TAG_READ) ||
 					bp.getBindingType().equals(BindingType.TAG_WRITE)) {
 					if( bp.getValue()!=null ) {
-						String unmapped = bp.getValue().toString();
+						String unmapped = bp.getValue().getValue().toString();
 						String mapped = tagMap.get(unmapped.trim());
 						if( mapped!=null) {
 							bp.setBinding(mapped);
-							bp.setValue("");  // Clear the value because we're bound to a tag
+							bp.setValue(new SerializableQualifiedValue(""));  // Clear the value because we're bound to a tag
 						}
 						else {
 							System.err.println(TAG+".setTagPaths "+unmapped+" is not mapped to a tag path");

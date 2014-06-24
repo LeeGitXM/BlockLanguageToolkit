@@ -38,7 +38,7 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 	private final Stroke dataOutlineStroke = new BasicStroke(WorkspaceConstants.CONNECTION_WIDTH_DATA);
 	private final Stroke textOutlineStroke = new BasicStroke(WorkspaceConstants.CONNECTION_WIDTH_TEXT);
 	
-	private static final float[] DASH_PATTERN = {20f,10f};
+	private static final float[] DASH_PATTERN = {10f,10f};
 	private static final float PHASE = 20f;
 	private static final float LIMIT = 10f;   // Mitre limit
 	

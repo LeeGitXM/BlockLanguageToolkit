@@ -170,7 +170,7 @@ public class BlockRequestHandler   {
 		BlockProperty property = null;
 		if(block!=null) {
 			property = block.getProperty(propertyName);  // Existing block
-			log.tracef("%s.getProperty %s.%s %s",TAG,diagram.getName(),block.getName(),property.toString());
+			log.infof("%s.getProperty %s.%s %s",TAG,diagram.getName(),block.getName(),property.toString());
 		}
 		else {
 			log.warnf("%s.getProperty Block not found for %s.%s",TAG,parentId.toString(),blockId.toString());

@@ -20,6 +20,7 @@ import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.designer.workspace.ProcessBlockView;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
 
 /** Draw a free-form text (or html) note in a box. */
@@ -56,9 +57,9 @@ public class NoteUIView extends AbstractUIView implements BlockViewUI, ChangeLis
 			else if(property.getName().equals(BlockConstants.BLOCK_PROPERTY_WIDTH))  hasWidth= true;
 			else if(property.getName().equals(BlockConstants.BLOCK_PROPERTY_HEIGHT)) hasHeight=true;
 		}
-		if(!hasText) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_TEXT,"",PropertyType.STRING,true));
-		if(!hasWidth) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_WIDTH,new Integer(block.getPreferredWidth()),PropertyType.INTEGER,true));
-		if(!hasHeight) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_HEIGHT,new Integer(block.getPreferredHeight()),PropertyType.INTEGER,true));
+		if(!hasText) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_TEXT,new BasicQualifiedValue(""),PropertyType.STRING,true));
+		if(!hasWidth) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_WIDTH,new BasicQualifiedValue(new Integer(block.getPreferredWidth())),PropertyType.INTEGER,true));
+		if(!hasHeight) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_HEIGHT,new BasicQualifiedValue(new Integer(block.getPreferredHeight())),PropertyType.INTEGER,true));
 	
 		// To save repeatedly picking through the property list (we already did it once), pull out
 		// the ones we are interested in. We listen for changes so we can promptly update the display
@@ -105,6 +106,7 @@ public class NoteUIView extends AbstractUIView implements BlockViewUI, ChangeLis
 		return Integer.valueOf(widthProperty.getValue().toString());
 	}
 
+	// NOTE: We rely on the editor to disallow invalid values.
 	private Integer getHeightPropertyValue() {
 		return Integer.valueOf(heightProperty.getValue().toString());
 	}

@@ -4,7 +4,7 @@
 package com.ils.blt.common;
 
 import com.ils.blt.common.block.TruthValue;
-import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
+import com.ils.blt.common.serializable.SerializableQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
@@ -102,13 +102,14 @@ public class UtilityFunctions  {
 	}
 	/**
 	 * Force a Double, Integer or String to a String. 
-	 * If the object is a QualifiedValue, then coerce its value.
+	 * If the object is a QualifiedValue, then coerce its value's value.
 	 * Guarantee the return is not null. 
 	 */
 	public String coerceToString(Object val) {
 		String result = "";
 		if(val!=null && val instanceof QualifiedValue ) {
-			val = ((QualifiedValue)val).getValue();
+			QualifiedValue qv = (QualifiedValue)val;
+			val = qv.getValue();
 		}
 		if( val!=null ) {
 			result = val.toString();
@@ -141,25 +142,26 @@ public class UtilityFunctions  {
 	 * a qualified value of BAD quality.
 	 * @return the value cast to a QualifiedValue
 	 */
-	public QualifiedValue objectToQualifiedValue(Object value) {
-		QualifiedValue result = null;
+	public SerializableQualifiedValue objectToQualifiedValue(Object value) {
+		SerializableQualifiedValue result = null;
 		if( value!=null ) {
-			if( value instanceof QualifiedValue ) result = (QualifiedValue)value;
+			if( value instanceof SerializableQualifiedValue ) result = (SerializableQualifiedValue)value;
+			else if( value instanceof QualifiedValue )        result = new SerializableQualifiedValue(value);
 			else if( value instanceof TruthValue ) {
-				result = new BasicQualifiedValue( ((TruthValue)value).name());
+				result = new SerializableQualifiedValue( ((TruthValue)value).name());
 			}
 			else if( value instanceof Double ||
 					 value instanceof Integer||
 					 value instanceof String ||
 					 value instanceof Boolean) {
-				result = new BasicQualifiedValue( value);
+				result = new SerializableQualifiedValue( value);
 			}
 			else{
-				result = new BasicQualifiedValue(value,new BasicQuality("unrecognized data type",Quality.Level.Bad));
+				result = new SerializableQualifiedValue(value,new BasicQuality("unrecognized data type",Quality.Level.Bad));
 			}
 		}
 		else {
-			result = new BasicQualifiedValue("",new BasicQuality("null value",Quality.Level.Bad));
+			result = new SerializableQualifiedValue("",new BasicQuality("null value",Quality.Level.Bad));
 		}
 		return result; 
 	}

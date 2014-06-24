@@ -16,9 +16,6 @@ import com.ils.blt.common.control.BlockPropertyChangeEvent;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.gateway.proxy.ProxyHandler;
-import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.BasicQuality;
-import com.inductiveautomation.ignition.common.model.values.Quality;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 
@@ -110,7 +107,6 @@ public class BlockFactory  {
 			for( BlockProperty bp:properties) {
 				BlockProperty property = pb.getProperty(bp.getName());
 				if( property!=null ) {
-					if( bp.getQuality()==null) property.setQuality(Quality.Level.Good.toString());
 					property.setEditable(bp.isEditable());
 					property.setBinding(bp.getBinding());
 					property.setBindingType(bp.getBindingType());
@@ -123,10 +119,7 @@ public class BlockFactory  {
 					if( property.getValue()!=null ) {
 						BlockPropertyChangeEvent event = 
 								new BlockPropertyChangeEvent(pb.getBlockId().toString(),property.getName(),
-									new BasicQualifiedValue(property.getValue(),
-										new BasicQuality(property.getQuality(),Quality.Level.Good)),
-									new BasicQualifiedValue(bp.getValue(),
-										new BasicQuality(bp.getQuality(),Quality.Level.Good)));
+										property.getValue(),bp.getValue());
 							pb.propertyChange(event);
 					}
 				}
