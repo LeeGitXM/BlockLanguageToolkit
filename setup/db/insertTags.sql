@@ -28,6 +28,7 @@ insert into TagMap values ('CNTR_AVG_TPR_TIP_HT_TARGET','[]Tags/CNTR_AVG_TPR_TIP
 insert into TagMap values ('CRX-BLOCK-POLYMER-FLAG','[]Tags/CRX_BLOCK_POLYMER_FLAG/value','DOUBLE');
 insert into TagMap values ('CRX_HB-3','[]Tags/CRX_HB_3','DOUBLE');
 insert into TagMap values ('E-BALER-VOL-LAB-DATA','[]LabData/E_BALER_VOL/value','DOUBLE');
+insert into TagMap values ('E-BALER-VOL-FTNIR-DATA','[]LabData/E_BALER_VOL_FTNIR/value','DOUBLE');
 insert into TagMap values ('FRNT_AVG_C2','[]Tags/AVG_C2/value','DOUBLE');
 insert into TagMap values ('FRNT_AVG_C2_HIGH_LIMIT','[]Tags/AVG_C2/highLimit','DOUBLE');
 insert into TagMap values ('FRNT_FEED_DIFF','[]Tags/FRNT_FEED_DIFF/value','DOUBLE');
@@ -51,7 +52,7 @@ insert into TagMap values ('SDSTRM_C3-TO-C2_RATIO_HIGH_LIMIT','[]Tags/SDSTRM_C3-
 insert into TagMap values ('SDSTRM_C3-TO-C2_RATIO_LOW_LIMIT','[]Tags/SDSTRM_C3-TO-C2_RATIO/lowLimit','DOUBLE');
 insert into TagMap values ('SS1_TAPER_TIP_HEIGHT','[]Tags/SS1_TAPER_TIP_HEIGHT/value','DOUBLE');
 insert into TagMap values ('SS2_TAPER_TIP_HEIGHT','[]Tags/SS2_TAPER_TIP_HEIGHT/value','DOUBLE');
-insert into TagMap values (‘VFU-FTNIR-GRADE’,’[]Tags/VFU_FTNIR_GRADE/value','DOUBLE');
+insert into TagMap values ('VFU-FTNIR-GRADE','[]Tags/VFU_FTNIR_GRADE/value','DOUBLE');
 -- UDT paths
 insert into TagMap values ('[the target of A-BALER-TEMP-LAB-DATA]','[]LabData/A_BALER_TEMP/target','DOUBLE');
 insert into TagMap values ('[the target of AB-BALER-TEMP-LAB-DATA]','[]LabData/AB_BALER_TEMP/target','DOUBLE');
@@ -61,14 +62,15 @@ insert into TagMap values ('[the target of C2-LAB-DATA]','[]LabData/C2/target','
 insert into TagMap values ('[the bad-value of C3_CONVERSION]','[]Tags/C3_CONVERSION/badValue','DOUBLE');
 insert into TagMap values ('[the bad-value of CAT_EFFICIENCY]','[]Tags/CAT_EFFICIENCY/badValue','DOUBLE');
 insert into TagMap values ('[the bad-value of CAT_PREMIX_TEMP]','[]Tags/CAT_PREMIX_TEMP/badValue','DOUBLE');
-insert into TagMap values ('[the standard-deviation of CD-BALER-VOL—ftnir-DATA]’,’[]Tags/CD_BALER_VOL_ftnir_DATA/standardDeviation','DOUBLE');
+insert into TagMap values ('[the standard-deviation of CD-BALER-VOL—ftnir-DATA]','[]Tags/CD_BALER_VOL_ftnir_DATA/standardDeviation','DOUBLE');
 insert into TagMap values ('[the bad-value of CNTR_AVG_TPR_TIP_HT]','[]Tags/CNTR_AVG_TPR_TIP_HT/badValue','DOUBLE');
 insert into TagMap values ('[the bad-value of CRX-BLOCK-POLYMER-FLAG]','[]Tags/CRX_BLOCK_POLYMER_FLAG/badValue','DOUBLE');
+insert into TagMap values ('[the standard-deviation of E-BALER-VOL-lab-DATA]','[]LabData/E_BALER_VOL_lab_DATA/standardDeviation','DOUBLE');
+insert into TagMap values ('[the standard-deviation of E-BALER-VOL-ftnir-DATA]','[]LabData/E_BALER_VOL_ftnir_DATA/standardDeviation','DOUBLE');
 insert into TagMap values ('[the target of E-BALER-VOL-lab-DATA]','[]LabData/E_BALER_VOL/target','DOUBLE');
 insert into TagMap values ('[the target of E-BALER-VOL-ftnir-DATA]','[]Tags/E_BALER_VOL_FTNIR_DATA/target','DOUBLE');
 insert into TagMap values ('[the bad-value of FRNT_AVG_C2]','[]Tags/FRNT_AVG_C2/badValue','DOUBLE');
 insert into TagMap values ('[the bad-value of FRNT_FEED_DIFF]','[]Tags/FRNT_FEED_DIFF/badValue','DOUBLE');
-insert into TagMap values ('[the bad-value of FRNT_LNGTH]','[]Tags/FRNT_LNGTH/badValue','DOUBLE');
 insert into TagMap values ('[the time-of-most-recent-recommendation-implementation of frnt_short_use_temp-gda]','[]Tags/FRNT_SHORT_USE_TEMP_GDA/implementationTime','INTEGER');
 insert into TagMap values ('[the bad-value of FRNT_TPR_TIP_HT_DIFF]','[]Tags/FRNT_TPR_TIP_HT_DIFF/badValue','DOUBLE');
 insert into TagMap values ('[the bad-value of MAX_CNTR_TPR_TIP_DELTA_FM_AVG]','[]Tags/MAX_CNTR_TPR_TIP_DELTA_FM_AVG/badValue','DOUBLE');
