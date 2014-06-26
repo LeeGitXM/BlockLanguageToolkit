@@ -46,7 +46,7 @@ public class MockOutputBlock extends AbstractProcessBlock implements ProcessBloc
 	 */
 	private void initialize() {
 		setName("MockOutput");
-		BlockProperty value = new BlockProperty(BLOCK_PROPERTY_OUTPUT,null,propertyType,true);
+		BlockProperty value = new BlockProperty(BLOCK_PROPERTY_OUTPUT,"",propertyType,true);
 		value.setBinding(tagPath);
 		value.setBindingType(BindingType.TAG_WRITE);
 		properties.put(BLOCK_PROPERTY_OUTPUT, value);

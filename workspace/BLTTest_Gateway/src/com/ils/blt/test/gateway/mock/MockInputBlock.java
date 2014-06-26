@@ -92,7 +92,7 @@ public class MockInputBlock extends AbstractProcessBlock implements ProcessBlock
 	 */
 	private void initialize() {
 		setName("MockInput");
-		BlockProperty value = new BlockProperty(BLOCK_PROPERTY_INPUT,null,propertyType,true);
+		BlockProperty value = new BlockProperty(BLOCK_PROPERTY_INPUT,"",propertyType,true);
 		if( tagPath!=null && tagPath.length()>0 ) {
 			value.setBinding(tagPath);
 			value.setBindingType(BindingType.TAG_READ);

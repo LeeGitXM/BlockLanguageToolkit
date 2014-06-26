@@ -196,9 +196,7 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 			BlockProperty property = uut.getProperty(propertyName);
 			if( property!=null ) {
 				BlockPropertyChangeEvent event = new BlockPropertyChangeEvent(
-						uut.getBlockId().toString(),propertyName,
-						new BasicQualifiedValue(property.getValue()),
-						new BasicQualifiedValue(value));
+						uut.getBlockId().toString(),propertyName,property.getValue(),value);
 				uut.propertyChange(event);
 			}
 			else {

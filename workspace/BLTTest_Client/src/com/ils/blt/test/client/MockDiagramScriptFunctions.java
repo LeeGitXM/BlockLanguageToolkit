@@ -58,7 +58,7 @@ public class MockDiagramScriptFunctions   {
 					BLTTestProperties.MODULE_ID, "addMockInput", diagramId,tagPath,propertyType, port);
 		}
 		catch(Exception ge) {
-			log.infof("%s.addMockInput: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.addMockInput %s: GatewayException (%s)",TAG,tagPath,ge.getMessage());
 		}
 	}
 	/**
@@ -76,7 +76,7 @@ public class MockDiagramScriptFunctions   {
 					BLTTestProperties.MODULE_ID, "addMockOutput", diagramId, tagPath, propertyType.toString(),port);
 		}
 		catch(Exception ge) {
-			log.infof("%s.addMockOutput: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.addMockOutput %s: GatewayException (%s)",TAG,tagPath,ge.getMessage());
 		}
 	}
 	/**
