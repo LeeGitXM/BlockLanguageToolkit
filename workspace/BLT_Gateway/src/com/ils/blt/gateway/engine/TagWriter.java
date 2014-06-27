@@ -51,6 +51,7 @@ public class TagWriter  {
 	 * @param path fully qualified tag path
 	 */
 	public void updateTag(String path,QualifiedValue qv) {
+		log.infof("%s..updateTag: %s",TAG,path);
 		if( context==null) return;                   // Not initialized yet.
 		if(path==null || path.isEmpty() ) return;    // Path not set
 		List<WriteRequest<TagPath>> list = createTagList(path,qv);
@@ -58,6 +59,7 @@ public class TagWriter  {
 		try {
 		    TagProvider provider = context.getTagManager().getTagProvider("");
 		    // We assume the same provider
+		    log.infof("%s..updateTag: writing ....",TAG);;
 		    if( provider!= null && list!=null ) provider.write(list, null, true);	
 		}
 		catch(Exception ex) {

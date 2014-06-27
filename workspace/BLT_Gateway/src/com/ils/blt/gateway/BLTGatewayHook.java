@@ -92,7 +92,6 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 
 	@Override
 	public Object getRPCHandler(ClientReqSession session, Long projectId) {
-		log.debugf("%s: getRPCHandler - request for project %s",TAG,projectId.toString());
 		return dispatcher;
 	}
 	

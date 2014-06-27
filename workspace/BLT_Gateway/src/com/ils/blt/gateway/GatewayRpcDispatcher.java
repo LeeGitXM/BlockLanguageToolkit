@@ -120,7 +120,7 @@ public class GatewayRpcDispatcher   {
 	public String getConnectionAttributes(Long proj, Long res,String connectionId,String json) {
 		long projectId = proj.longValue();
 		long resourceId = res.longValue();
-		log.debugf("%s: getConnectionAttributes: %d:%d:%s =\n%s",TAG,projectId,resourceId,connectionId,json);
+		log.debugf("%s.getConnectionAttributes: %d:%d:%s =\n%s",TAG,projectId,resourceId,connectionId,json);
 		
 		ObjectMapper mapper = new ObjectMapper();
 		Hashtable<String, Hashtable<String, String>> attributeTable;

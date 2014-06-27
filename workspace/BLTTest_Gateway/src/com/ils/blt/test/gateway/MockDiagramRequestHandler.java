@@ -212,7 +212,7 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 	 * Change binding parameters on a property. Note that this does NOT fire a change event.
 	 * @param diagramId
 	 * @param propertyName
-	 * @param type BindingType, NONE or TAG
+	 * @param type BindingType, NONE, TAG_MONITOR or TAG_WRITE
 	 * @param binding
 	 */
 	@Override
@@ -226,6 +226,7 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 					BindingType bt = BindingType.valueOf(type.toUpperCase());
 					property.setBindingType(bt);
 					property.setBinding(binding);
+					property.setValue("");    // Notifies the change listeners (namely the block itself)
 				}
 				catch( IllegalArgumentException iae ) {
 					log.infof("%s.setTestBlockPropertyBinding: diagram %s:%s, bad binding type (%s)",TAG,diagramId.toString(),propertyName,iae.getLocalizedMessage());

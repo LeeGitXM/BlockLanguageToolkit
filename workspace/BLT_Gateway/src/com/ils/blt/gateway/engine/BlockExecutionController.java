@@ -270,9 +270,13 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 * @param val
 	 */
 	public void updateTag(UUID diagramId,String path,QualifiedValue val) {
+		log.infof("%s.updateTag %s = %s ",TAG,path,val.toString());
 		ProcessDiagram diagram = modelManager.getDiagram(diagramId);
 		if( diagram!=null && diagram.getState().equals(DiagramState.ACTIVE)) {
 			tagWriter.updateTag(path,val);
+		}
+		else {
+			log.infof("%s.updateTag REJECTED, diagram not active",TAG);
 		}
 	}
 	// ======================= Delegated to Watchdog ======================

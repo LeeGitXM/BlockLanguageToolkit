@@ -39,7 +39,7 @@ public class TagListener implements TagChangeListener   {
 
 	private final LoggerEx log;
 	private GatewayContext context = null;
-	private final Map<String,List<ProcessBlock>> blockMap;  // Executable block keyed by tag path
+	private final Map<String,List<ProcessBlock>> blockMap;  // Executable blocks keyed by tag path
 	private final SimpleDateFormat dateFormatter;
 	private boolean stopped = true;
 	private final BlockExecutionController controller;

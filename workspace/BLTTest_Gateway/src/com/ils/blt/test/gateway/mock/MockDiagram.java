@@ -11,6 +11,7 @@ import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.connection.ProcessConnection;
+import com.ils.blt.common.serializable.DiagramState;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.gateway.engine.ProcessDiagram;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -93,6 +94,12 @@ public class MockDiagram extends ProcessDiagram {
 	}
 
 	public ProcessBlock getBlockUnderTest() { return uut; }
+	
+	/**
+	 * For our purposes, the diagram is always active.
+	 */
+	@Override
+	public DiagramState getState() { return DiagramState.ACTIVE; }
 	
 	/**
 	 * Return the nth MockInputBlock connected to the named port. The
