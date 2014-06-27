@@ -59,7 +59,7 @@ public class TagWriter  {
 		try {
 		    TagProvider provider = context.getTagManager().getTagProvider("");
 		    // We assume the same provider
-		    log.infof("%s..updateTag: writing ....",TAG);;
+		    log.infof("%s..updateTag: writing .... %s",TAG,qv.toString());
 		    if( provider!= null && list!=null ) provider.write(list, null, true);	
 		}
 		catch(Exception ex) {

@@ -23,9 +23,20 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
  * This is a property container with no behavior.
  */
 public class IncomingNotification {
-	private final Connection connection;
+	private Connection connection = null;
 	private final QualifiedValue value;
 	
+	/**
+	 * Constructor. This version is used by the tag listener to notify
+	 *        listeners with TAG_READ binding.
+	 *        Value is expressed as an object.
+	 * 
+	 * @param val the new value
+	 */
+	public IncomingNotification(QualifiedValue val)  {	
+		this.connection = null;
+		this.value = val;
+	}
 	/**
 	 * Constructor. Value is expressed as an object.
 	 * 

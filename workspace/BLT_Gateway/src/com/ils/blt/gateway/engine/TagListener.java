@@ -10,12 +10,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.control.BlockPropertyChangeEvent;
+import com.ils.blt.common.control.IncomingNotification;
 import com.ils.blt.common.serializable.DiagramState;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.sqltags.model.Tag;
@@ -36,13 +39,14 @@ import com.inductiveautomation.ignition.gateway.sqltags.SQLTagsManager;
  */
 public class TagListener implements TagChangeListener   {
 	private static final String TAG = "TagListener";
-
+	private static int THREAD_POOL_SIZE = 10;   // Notification threads
 	private final LoggerEx log;
 	private GatewayContext context = null;
 	private final Map<String,List<ProcessBlock>> blockMap;  // Executable blocks keyed by tag path
 	private final SimpleDateFormat dateFormatter;
 	private boolean stopped = true;
 	private final BlockExecutionController controller;
+	private final ExecutorService threadPool;
 	
 	/**
 	 * Constructor: 
@@ -52,6 +56,7 @@ public class TagListener implements TagChangeListener   {
 		this.blockMap = new HashMap<String,List<ProcessBlock>>();
 		this.dateFormatter = new SimpleDateFormat(BlockConstants.TIMESTAMP_FORMAT);
 		this.controller = ec;
+		this.threadPool = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
 	}
 
 	/**
@@ -151,18 +156,30 @@ public class TagListener implements TagChangeListener   {
 			Tag tag = tmgr.getTag(tp);
 			if( tag!=null ) {
 				QualifiedValue value = tag.getValue();
-				log.debugf("%s.startSubscriptionForProperty: got a %s value for %s (%s at %s)",TAG,
+				log.infof("%s.startSubscriptionForProperty: got a %s value for %s (%s at %s)",TAG,
 						(value.getQuality().isGood()?"GOOD":"BAD"),
 						tag.getName(),value.getValue(),
 						dateFormatter.format(value.getTimestamp()));
 				// Do not pass along nulls -- tag was never set
 				if(value.getValue()!=null ) {
 					try {
-						log.debugf("%s.startSubscriptionForProperty: property change for %s:%s",TAG,block.getName(),property.getName());
-						PropertyChangeEvaluationTask task = new PropertyChangeEvaluationTask(block,
-							new BlockPropertyChangeEvent(block.getBlockId().toString(),property.getName(),property.getValue(),value));
-						Thread propertyChangeThread = new Thread(task, "PropertyChange");
-						propertyChangeThread.start();
+						log.debugf("%s.startSubscriptionForProperty: %s for %s:%s",TAG,block.getName(),property.getBindingType().name(),property.getName());
+						// There are two types of bindings here
+						if( property.getBindingType().equals(BindingType.TAG_MONITOR)) {
+							// The tag change updates the property value
+							PropertyChangeEvaluationTask task = new PropertyChangeEvaluationTask(block,
+									new BlockPropertyChangeEvent(block.getBlockId().toString(),property.getName(),property.getValue(),value.getValue()));
+								Thread propertyChangeThread = new Thread(task, "PropertyChange");
+								propertyChangeThread.start();
+						}
+						else if( property.getBindingType().equals(BindingType.TAG_READ)) {
+							// The tag subscription acts as a pseudo input
+							IncomingNotification notice = new IncomingNotification(value);
+							threadPool.execute(new IncomingValueChangeTask(block,notice));		
+						}
+						else {
+							log.warnf("%s.startSubscriptionForProperty: %s property no longer bound (%s)",TAG,property.getName(),property.getBindingType());
+						}
 					}
 					catch(Exception ex) {
 						log.warnf("%s.startSubscriptionForProperty: Failed to execute subscription start (%s)",TAG,ex.getLocalizedMessage()); 
@@ -232,12 +249,22 @@ public class TagListener implements TagChangeListener   {
 							if(prop.getBindingType()==BindingType.TAG_READ) {
 								if( path.equals(tp.toStringFull()) && prop.getBindingType()==BindingType.TAG_READ ) {
 									try {
-										log.debugf("%s.tagChanged: property change for %s:%s",TAG,blk.getName(),prop.getName());
-				
-										PropertyChangeEvaluationTask task = new PropertyChangeEvaluationTask(blk,
-												new BlockPropertyChangeEvent(blk.getBlockId().toString(),prop.getName(),prop.getValue(),tag.getValue().getValue()));
-										Thread propertyChangeThread = new Thread(task, "PropertyChange");
-										propertyChangeThread.start();
+										// Treat the notification differently depending on the binding
+										if( prop.getBindingType().equals(BindingType.TAG_MONITOR)) {
+											log.debugf("%s.tagChanged: property change for %s:%s",TAG,blk.getName(),prop.getName());
+											PropertyChangeEvaluationTask task = new PropertyChangeEvaluationTask(blk,
+													new BlockPropertyChangeEvent(blk.getBlockId().toString(),prop.getName(),prop.getValue(),tag.getValue().getValue()));
+											Thread propertyChangeThread = new Thread(task, "PropertyChange");
+											propertyChangeThread.start();
+										}
+										else if( prop.getBindingType().equals(BindingType.TAG_READ)) {
+											// The tag subscription acts as a pseudo input
+											IncomingNotification notice = new IncomingNotification(tag.getValue());
+											threadPool.execute(new IncomingValueChangeTask(blk,notice));	
+										}
+										else {
+											log.warnf("%s.tagChanged: %s property no longer bound (%s)",TAG,property.getName(),prop.getBindingType());
+										}
 									}
 									catch(Exception ex) {
 										log.warnf("%s.tagChanged: Failed to execute change event (%s)",TAG,ex.getLocalizedMessage()); 

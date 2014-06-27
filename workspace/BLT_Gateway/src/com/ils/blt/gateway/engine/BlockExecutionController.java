@@ -59,7 +59,6 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	private WatchdogTimer watchdogTimer = null;
 	private static BlockExecutionController instance = null;
 	private final ExecutorService threadPool;
-	private final UtilityFunctions fncs;
 
 
 	private final BoundedBuffer buffer;
@@ -78,7 +77,6 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		this.tagListener = new TagListener(this);
 		this.tagWriter = new TagWriter();
 		this.buffer = new BoundedBuffer(BUFFER_SIZE);
-		this.fncs = new UtilityFunctions();
 	}
 
 	/**
