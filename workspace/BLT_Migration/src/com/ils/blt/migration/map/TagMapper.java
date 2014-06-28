@@ -67,7 +67,8 @@ public class TagMapper {
 	public void setTagPaths(SerializableBlock iblock) {
 		if( iblock.getProperties()!=null)  {   // No properties, nothing to do
 			for(BlockProperty bp:iblock.getProperties()) {
-				if( bp.getBindingType().equals(BindingType.TAG_READ) ||
+				if( bp.getBindingType().equals(BindingType.TAG_MONITOR) ||
+					bp.getBindingType().equals(BindingType.TAG_READ) ||
 					bp.getBindingType().equals(BindingType.TAG_WRITE)) {
 					if( bp.getValue()!=null ) {
 						//System.out.println(TAG+".setTagPaths: LOOKUP:"+bp.getValue());

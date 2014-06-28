@@ -164,6 +164,7 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 
 	@Override
 	public void reset(UUID diagramId) {
+		log.warnf("%s.reset: diagram %s", TAG,diagramId.toString());
 		MockDiagram mock = (MockDiagram)controller.getDiagram(diagramId);
 		if( mock!=null ) {
 			ProcessBlock uut = mock.getBlockUnderTest();
@@ -275,6 +276,7 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 				}
 			}
 			controller.stop();
+			controller.clearSubscriptions();
 		}
 	}
 	

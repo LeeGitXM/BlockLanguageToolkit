@@ -28,7 +28,7 @@ public class IncomingNotification {
 	
 	/**
 	 * Constructor. This version is used by the tag listener to notify
-	 *        listeners with TAG_READ binding.
+	 *        listeners with TAG_READ binding that have no connection.
 	 *        Value is expressed as an object.
 	 * 
 	 * @param val the new value

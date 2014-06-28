@@ -121,7 +121,8 @@ public class MainPanel extends BasicEditPanel {
 			add(createConfigurationButton(prop),"w :25:,wrap");
 			// If the BindingType is TAG, display the binding
 			bindingDisplayField = createBindingDisplayField(prop);
-			if( prop.getBindingType().equals(BindingType.TAG_READ) ||
+			if( prop.getBindingType().equals(BindingType.TAG_MONITOR) ||
+				prop.getBindingType().equals(BindingType.TAG_READ) ||
 				prop.getBindingType().equals(BindingType.TAG_WRITE)	) {
 				add(bindingDisplayField,"skip,growx,push");
 			}
@@ -130,7 +131,8 @@ public class MainPanel extends BasicEditPanel {
 		public void updateForProperty(BlockProperty property) {
 			log.infof("%s.updateForProperty: property %s, raw value=",TAG,property.getName(),property.getValue().toString());
 			valueDisplayField.setText(fncs.coerceToString(property.getValue()));
-			if( property.getBindingType().equals(BindingType.TAG_READ) ||
+			if( property.getBindingType().equals(BindingType.TAG_MONITOR) ||
+				property.getBindingType().equals(BindingType.TAG_READ) ||
 				property.getBindingType().equals(BindingType.TAG_WRITE)	) {
 				bindingDisplayField.setText(fncs.coerceToString(property.getBinding()));
 			}
@@ -186,7 +188,8 @@ public class MainPanel extends BasicEditPanel {
 			btn.addActionListener(new ActionListener() {
 				// Determine the correct panel, depending on the property type
 				public void actionPerformed(ActionEvent e){
-					if( prop.getBindingType().equals(BindingType.TAG_READ)   ||
+					if( prop.getBindingType().equals(BindingType.TAG_MONITOR)   ||
+						prop.getBindingType().equals(BindingType.TAG_READ)   ||
 						prop.getBindingType().equals(BindingType.TAG_WRITE)	 )  {
 						updatePanelForProperty(BlockEditConstants.TAG_BROWSER_PANEL,prop);
 						setSelectedPane(BlockEditConstants.TAG_BROWSER_PANEL);

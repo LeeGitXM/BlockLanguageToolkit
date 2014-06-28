@@ -30,34 +30,19 @@ import com.inductiveautomation.ignition.common.sqltags.model.types.DataQuality;
  */
 public class MockInputBlock extends AbstractProcessBlock implements ProcessBlock {
 	private final static String TAG = "MockInputBlock";
-	private final static String BLOCK_PROPERTY_INPUT = "Input";
 	private final String portName;
 	private final PropertyType propertyType;
-	private final String tagPath;
 	
 	public MockInputBlock(UUID parent,String tag,PropertyType pt,String port) {
 		super(BlockExecutionController.getInstance(),parent,UUID.randomUUID());
 		this.portName = port;
 		this.propertyType = pt;
-		this.tagPath = tag;
 		initialize();
 	}
 	
 	public PropertyType getPropertyType() { return propertyType; }
 	public String getPort() { return portName; }
 	
-	/**
-	 * If the input property changes, then place the new value on the output.
-	 * This is the normal path when a subscribed tag changes value.
-	 */
-	@Override
-	public void propertyChange(BlockPropertyChangeEvent event) {
-		super.propertyChange(event);
-		if( event.getPropertyName().equals(BLOCK_PROPERTY_INPUT)) {
-			OutgoingNotification nvn = new OutgoingNotification(this,portName,new BasicQualifiedValue(event.getNewValue()));
-			controller.acceptCompletionNotification(nvn);
-		}
-	}
 	
 	/**
 	 * Pass a value directly on the output. This callable directly. Convert 
@@ -92,13 +77,7 @@ public class MockInputBlock extends AbstractProcessBlock implements ProcessBlock
 	 */
 	private void initialize() {
 		setName("MockInput");
-		BlockProperty value = new BlockProperty(BLOCK_PROPERTY_INPUT,"",propertyType,true);
-		if( tagPath!=null && tagPath.length()>0 ) {
-			value.setBinding(tagPath);
-			value.setBindingType(BindingType.TAG_READ);
-		}
-		properties.put(BLOCK_PROPERTY_INPUT, value);
-		
+	
 		// Define a single output
 		ConnectionType ctype = ConnectionType.connectionTypeForPropertyType(propertyType);
 		AnchorPrototype output = new AnchorPrototype(portName,AnchorDirection.OUTGOING,ctype);

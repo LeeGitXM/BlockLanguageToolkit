@@ -57,10 +57,15 @@ public class TagWriter  {
 		List<WriteRequest<TagPath>> list = createTagList(path,qv);
 		if(list.size()==0) log.info(TAG+".updateTags: No results");
 		try {
-		    TagProvider provider = context.getTagManager().getTagProvider("");
+		    TagProvider provider = context.getTagManager().getTagProvider("default");
 		    // We assume the same provider
-		    log.infof("%s..updateTag: writing .... %s",TAG,qv.toString());
-		    if( provider!= null && list!=null ) provider.write(list, null, true);	
+		    if( provider!= null && list!=null ) {
+		    	log.infof("%s..updateTag: writing .... %s",TAG,qv.toString());
+		    	provider.write(list, null, true);	
+		    }
+		    else {
+		    	log.warnf("%s..updateTag: write to %s failed, no provider and list",TAG,path);
+		    }
 		}
 		catch(Exception ex) {
 			log.warn(TAG+".updateTags: Exception ("+ex.getLocalizedMessage()+")");

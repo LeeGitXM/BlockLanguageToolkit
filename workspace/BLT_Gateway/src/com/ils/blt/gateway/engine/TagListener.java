@@ -43,6 +43,7 @@ public class TagListener implements TagChangeListener   {
 	private final LoggerEx log;
 	private GatewayContext context = null;
 	private final Map<String,List<ProcessBlock>> blockMap;  // Executable blocks keyed by tag path
+	private final Map<String,String> tagMap;                // Tag paths keyed by blockId:propertyName
 	private final SimpleDateFormat dateFormatter;
 	private boolean stopped = true;
 	private final BlockExecutionController controller;
@@ -54,9 +55,25 @@ public class TagListener implements TagChangeListener   {
 	public TagListener(BlockExecutionController ec) {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.blockMap = new HashMap<String,List<ProcessBlock>>();
+		this.tagMap   = new HashMap<String,String>();
 		this.dateFormatter = new SimpleDateFormat(BlockConstants.TIMESTAMP_FORMAT);
 		this.controller = ec;
 		this.threadPool = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
+	}
+	
+	/**
+	 * Clear the subscription maps so that subscriptions will not be re-established
+	 * when the listener is re-started. This method is only valid when the listener
+	 * is stopped.
+	 */
+	public void clearSubscriptions() {
+		if( stopped ) {
+			blockMap.clear();
+			tagMap.clear();
+		}
+		else {
+			throw new IllegalStateException("Attempt to clear subscriptions while TagListener is running");
+		}
 	}
 
 	/**
@@ -64,9 +81,11 @@ public class TagListener implements TagChangeListener   {
 	 * one associated with a tag. If we are running, start the subscription.
 	 */
 	public void defineSubscription(ProcessBlock block,BlockProperty property) {
-		if( block==null || property==null || property.getBindingType()!=BindingType.TAG_READ ) return;
+		if( block==null || property==null || 
+				!(property.getBindingType()==BindingType.TAG_READ || property.getBindingType()==BindingType.TAG_MONITOR) ) return;
 		log.infof("%s.defineSubscription: considering %s:%s",TAG,block.getName(),property.getName());
 		String tagPath = property.getBinding();
+		tagMap.put(makeKey(block,property), tagPath);
 		if( tagPath!=null && tagPath.length() >0 && property.isEditable() ) {
 			if( blockMap.get(tagPath) == null ) blockMap.put(tagPath, new ArrayList<ProcessBlock>());
 			List<ProcessBlock> blocks = blockMap.get(tagPath);
@@ -78,7 +97,22 @@ public class TagListener implements TagChangeListener   {
 			if(!stopped) startSubscriptionForProperty(block,property,tagPath);
 		}
 	}
-
+	/**
+	 * Remove a subscription based on a property. We assume that the tag path in
+	 * the property has been updated. Attempt to find the old path based on a
+	 * key formed from the block id and property name.
+	 * 
+	 * @param block
+	 * @param property
+	 */
+	public void removeSubscription(ProcessBlock block,BlockProperty property) {
+		String key = makeKey(block,property);
+		String oldPath = tagMap.get(key);
+		if( oldPath!=null ) {
+			removeSubscription(block,oldPath);
+			tagMap.remove(key);
+		}
+	}
 	/**
 	 * Remove a subscription based on a tag path. Unsubscribe if this
 	 * was the last reference to the path for any block.
@@ -111,7 +145,7 @@ public class TagListener implements TagChangeListener   {
 	 * Unsubscribe to a path. Does not modify the map.
 	 * @param tagPath
 	 */
-	public void stopSubscription(String tagPath) {
+	private void stopSubscription(String tagPath) {
 		if( tagPath==null) return;    // There was no subscription
 		if( stopped ) return;         // Everything is unsubscribed if we're stopped
 		SQLTagsManager tmgr = context.getTagManager();
@@ -136,7 +170,7 @@ public class TagListener implements TagChangeListener   {
 			for(ProcessBlock block:blocks ) {
 				for( String name: block.getPropertyNames()) {
 					BlockProperty property = block.getProperty(name);
-					if( property.getBindingType()==BindingType.TAG_READ && 
+					if( (property.getBindingType()==BindingType.TAG_READ ||(property.getBindingType()==BindingType.TAG_MONITOR))  && 
 					    property.getBinding().equals(tagPath )        ) {
 						startSubscriptionForProperty(block,property,tagPath);
 					}
@@ -215,6 +249,10 @@ public class TagListener implements TagChangeListener   {
 	public TagProp getTagProperty() {
 		return TagProp.Value;
 	}
+	
+	private String makeKey(ProcessBlock block,BlockProperty property) { 
+		return String.format("%s:%s",block.getBlockId().toString(),property.getName()); 
+	}
 
 	/**
 	 * When a tag value changes, create a new property change task and
@@ -246,8 +284,8 @@ public class TagListener implements TagChangeListener   {
 						for( String name: blk.getPropertyNames()) {
 							BlockProperty prop = blk.getProperty(name);
 							String path = prop.getBinding().toString();
-							if(prop.getBindingType()==BindingType.TAG_READ) {
-								if( path.equals(tp.toStringFull()) && prop.getBindingType()==BindingType.TAG_READ ) {
+							if(prop.getBindingType()==BindingType.TAG_READ || prop.getBindingType()==BindingType.TAG_MONITOR) {
+								if( path.equals(tp.toStringFull())  ) {
 									try {
 										// Treat the notification differently depending on the binding
 										if( prop.getBindingType().equals(BindingType.TAG_MONITOR)) {

@@ -104,12 +104,10 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface,
 	 */
 	@Override
 	public QualifiedValue readValue(UUID diagramId, String port) {
-		log.infof("%s.readValue: %s on %s", TAG,diagramId.toString(),port);
 		return requestHandler.readValue(diagramId, port);
 	}
 	@Override
 	public void reset(UUID diagram) {
-		log.infof("%s.reset", TAG);
 		requestHandler.reset(diagram);
 	}
 

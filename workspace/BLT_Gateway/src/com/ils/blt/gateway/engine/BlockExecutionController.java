@@ -144,6 +144,24 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	}
 
 	/**
+	 * Change a tag subscription for a block's property. We assume that the property
+	 * has been updated and contains the new path.
+	 */
+	@Override
+	public void alterSubscription(UUID diagramId,UUID blockId,String propertyName) {
+		ProcessDiagram diagram = modelManager.getDiagram(diagramId);
+		if( diagram!=null) {
+			ProcessBlock block = diagram.getBlock(blockId);
+			if( block!=null ) {
+				BlockProperty bp = block.getProperty(propertyName);
+				if( bp!=null ) {
+					tagListener.removeSubscription(block,bp);
+					startSubscription(block,bp);
+				}
+			}
+		}
+	}
+	/**
 	 * Obtain the running state of the controller. This is a static method
 	 * so that we don't have to instantiate an instance if there is none currently.
 	 * @return the run state of the controller. ("running" or "stopped")
@@ -232,10 +250,20 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	
 	// ======================= Delegated to TagListener ======================
 	/**
+	 * Tell the tag listener to forget about any past subscriptions. By default,
+	 * the listener will re-establish all previous subscriptions when restarted.
+	 */
+	@Override
+	public void clearSubscriptions() {
+		tagListener.clearSubscriptions();
+	}
+	/**
 	 * Stop the tag subscription associated with a particular property of a block.
+	 * There may be other entities still subscribed to the same tag.
 	 */
 	public void removeSubscription(ProcessBlock block,BlockProperty property) {
-		if( property!=null && property.getValue()!=null && property.getBindingType()==BindingType.TAG_READ ) {
+		if( property!=null && property.getValue()!=null && 
+				property.getBindingType()==BindingType.TAG_READ || property.getBindingType()==BindingType.TAG_MONITOR ) {
 			String tagPath = property.getValue().toString();
 			if( tagPath!=null && tagPath.length()>0) {
 				tagListener.removeSubscription(block,tagPath);
@@ -248,17 +276,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public void startSubscription(ProcessBlock block,BlockProperty property) {
 		tagListener.defineSubscription(block, property);
 	}
-	/**
-	 * Stop the tag subscription associated with a particular property of a block.
-	 */
-	public void stopSubscription(ProcessBlock block,BlockProperty property) {
-		if( property!=null && property.getValue()!=null && property.getBindingType()==BindingType.TAG_READ ) {
-			String tagPath = property.getValue().toString();
-			if( tagPath!=null && tagPath.length()>0) {
-				tagListener.stopSubscription(tagPath);
-			}
-		}
-	}
+	
 	// ======================= Delegated to TagWriter ======================
 	/**
 	 * Write a value to a tag. If the diagram referenced diagram is disabled

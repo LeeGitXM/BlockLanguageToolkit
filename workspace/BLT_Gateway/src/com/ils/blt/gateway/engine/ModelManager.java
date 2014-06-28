@@ -230,7 +230,7 @@ public class ModelManager implements ProjectListener  {
 			// Remove any subscriptions
 			for( ProcessBlock pb:diagram.getProcessBlocks()) {
 				for(BlockProperty bp:pb.getProperties()) {
-					controller.stopSubscription(pb,bp);
+					controller.removeSubscription(pb,bp);
 				}
 			}
 		}
@@ -359,7 +359,7 @@ public class ModelManager implements ProjectListener  {
 				// Remove old subscriptions
 				for( ProcessBlock pb:diagram.getProcessBlocks()) {
 					for(BlockProperty bp:pb.getProperties()) {
-						controller.stopSubscription(pb,bp);
+						controller.removeSubscription(pb,bp);
 					}
 				}
 			}
@@ -472,7 +472,7 @@ public class ModelManager implements ProjectListener  {
 		BlockExecutionController controller = BlockExecutionController.getInstance();
 		for(ProcessBlock block:diagram.getProcessBlocks()) {
 			for(BlockProperty prop:block.getProperties()) {
-				controller.stopSubscription(block, prop);
+				controller.removeSubscription(block, prop);
 			}
 		}
 		
@@ -492,7 +492,7 @@ public class ModelManager implements ProjectListener  {
 				ProcessDiagram diagram = (ProcessDiagram)node;
 				for(ProcessBlock block:diagram.getProcessBlocks()) {
 					for(BlockProperty prop:block.getProperties()) {
-						controller.stopSubscription(block, prop);
+						controller.removeSubscription(block, prop);
 					}
 				}
 				ProjResKey key = new ProjResKey(projectId.longValue(),diagram.getResourceId());

@@ -22,6 +22,8 @@ public interface ExecutionController  {
 	public void acceptBroadcastNotification(BroadcastNotification note);
 	public void acceptCompletionNotification(OutgoingNotification note);
 	public void acceptConnectionPostNotification(ConnectionPostNotification note);
+	public void alterSubscription(UUID diagramId,UUID id,String propertyName);
+	public void clearSubscriptions();
 	public void sendPropertyNotification(String id, String propertyName, QualifiedValue val);
 	public void pet(Watchdog dog);
 	public void removeWatchdog(Watchdog dog);
