@@ -274,7 +274,9 @@ public class BlockRequestHandler   {
 			block = (ProcessBlock)ctor.newInstance(BlockExecutionController.getInstance(),parentId,blockId);
 		}
 		catch(InvocationTargetException ite ) {
-			log.warnf("%s.createInstance %s: Invocation failed (%s)",TAG,className,ite.getMessage()); 
+			Throwable cause = ite.getCause();
+			log.warn(String.format("%s.createInstance %s: Invocation of constructor failed (%s)",TAG,
+					className,(cause==null?"No cause available":cause.getLocalizedMessage())),cause); 
 		}
 		catch(NoSuchMethodException nsme ) {
 			log.warnf("%s.createInstance %s: Three argument constructor not found (%s)",TAG,className,nsme.getMessage()); 
