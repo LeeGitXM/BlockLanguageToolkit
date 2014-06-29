@@ -81,6 +81,14 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface,
 			log.info(TAG+".forcePost: Exception ("+ex.getMessage()+")",ex);
 		}
 	}
+	@Override
+	public Object getTestBlockPropertyValue(UUID diagramId,String propertyName){ 
+		Object result = null;
+		if( requestHandler!=null ) {
+			result = requestHandler.getTestBlockPropertyValue(diagramId,propertyName);
+		}
+		return result;
+	}
 	/**
 	 * Return the execution state of the block under test.
 	 * @param diagram

@@ -120,6 +120,22 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 		}
 	}
 	/**
+	 * Get the current value of the named property in the block-under-test.
+	 * 
+	 * @param diagramId
+	 * @param propertyName
+	 */
+	public Object getTestBlockPropertyValue(UUID diagramId,String propertyName){
+		Object result = null;
+		MockDiagram mock = (MockDiagram)controller.getDiagram(diagramId);
+		if( mock!=null ) {
+			ProcessBlock uut = mock.getBlockUnderTest();
+			BlockProperty prop = uut.getProperty(propertyName);
+			if( prop!=null) result = prop.getValue();	
+		}
+		return result;
+	}
+	/**
 	 * Return the execution state of the block under test.
 	 * @param diagram
 	 * @return the state of the block under test.

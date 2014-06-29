@@ -62,6 +62,13 @@ public interface MockDiagramScriptingInterface   {
 	 */
 	public void forcePost(UUID diagram,String port,String value);
 	/**
+	 * Get the current value of the named property in the block-under-test.
+	 * 
+	 * @param diagramId
+	 * @param propertyName
+	 */
+	public Object getTestBlockPropertyValue(UUID diagramId,String propertyName);
+	/**
 	 * Return the execution state of the block under test.
 	 * @param diagram
 	 * @return the state of the block under test.

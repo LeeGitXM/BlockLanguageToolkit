@@ -6,6 +6,8 @@ package com.ils.blt.test.gateway;
 
 import java.util.UUID;
 
+import com.ils.blt.test.common.BLTTestProperties;
+import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -84,6 +86,20 @@ public class GatewayMockDiagramScriptFunctions  {
 		if( requestHandler!=null ) {
 			requestHandler.forcePost(diagramId,port,value);
 		}
+	}
+	/**
+	 * Get the current value of the named property in the block-under-test.
+	 * 
+	 * @param diagramId
+	 * @param propertyName
+	 */
+	public static Object getTestBlockPropertyValue(UUID diagramId,String propertyName){ 
+		log.debugf("%s.getTestBlockPropertyValue: %s %s",TAG,diagramId.toString(), propertyName);
+		Object result = null;
+		if( requestHandler!=null ) {
+			result = requestHandler.getTestBlockPropertyValue(diagramId,propertyName);
+		}
+		return result;
 	}
 	/**
 	 * Return the execution state of the block under test.

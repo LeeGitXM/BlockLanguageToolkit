@@ -131,6 +131,24 @@ public class MockDiagramScriptFunctions   {
 		return state;
 	}
 	/**
+	 * Get the current value of the named property in the block-under-test.
+	 * 
+	 * @param diagramId
+	 * @param propertyName
+	 */
+	public static Object getTestBlockPropertyValue(UUID diagramId,String propertyName){ 
+		log.debugf("%s.getTestBlockProperty: %s %s=%s",TAG,diagramId.toString(), propertyName);
+		Object result = null;
+		try {
+			result = GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTTestProperties.MODULE_ID, "getTestBlockProperty", diagramId,propertyName);
+		}
+		catch(Exception ge) {
+			log.infof("%s.getTestBlockProperty: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		return result;
+	}
+	/**
 	 * Return the locked state of the block under test.
 	 * @param diagram
 	 * @return true if the block under test is locked.
