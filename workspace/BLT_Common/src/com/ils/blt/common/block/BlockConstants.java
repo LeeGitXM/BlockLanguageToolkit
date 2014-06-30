@@ -22,7 +22,7 @@ public interface BlockConstants   {
 	public static final String BROADCAST_PORT_NAME = "send";   // Send
 		
 	// These are block property names that used in multiple block definitions
-	public static final String BLOCK_PROPERTY_CLEAR_ON_RESET = "ClearOnReset?";
+	public static final String BLOCK_PROPERTY_CLEAR_ON_RESET = "ClearOnReset";
 	public static final String BLOCK_PROPERTY_DEADBAND      = "Deadband";
 	public static final String BLOCK_PROPERTY_DISTRIBUTION  = "Distribution";
 	public static final String BLOCK_PROPERTY_FORMAT           = "Format";

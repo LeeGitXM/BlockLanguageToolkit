@@ -20,7 +20,8 @@ public class SignalNotification {
 	/**
 	 * Constructor. The signal is the only property.
 	 * 
-	  * @param sig the signal to be delivered to the block.
+	 * @param blk the addressee of the notification
+	 * @param sig the signal to be delivered to the block.
 	 */
 	public SignalNotification(ProcessBlock blk,Signal sig)  {
 		this.block = blk;

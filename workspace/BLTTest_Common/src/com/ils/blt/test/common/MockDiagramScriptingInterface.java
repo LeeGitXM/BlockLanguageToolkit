@@ -134,6 +134,13 @@ public interface MockDiagramScriptingInterface   {
 	 */
 	public void stopMockDiagram(UUID diagram);
 	/**
+	 * Transmit a signal with the specified command to the block-under-test.
+	 *   
+	 * @param diagram
+	 * @param command
+	 */
+	public void writeCommand(UUID diagram,String command,String arg,String msg);
+	/**
 	 * Simulate data arriving on the nth connection into the named input port of the 
 	 * block under test. 
 	 * @param diagram

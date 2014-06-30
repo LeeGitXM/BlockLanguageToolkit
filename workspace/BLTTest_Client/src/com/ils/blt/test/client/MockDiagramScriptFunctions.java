@@ -137,11 +137,11 @@ public class MockDiagramScriptFunctions   {
 	 * @param propertyName
 	 */
 	public static Object getTestBlockPropertyValue(UUID diagramId,String propertyName){ 
-		log.debugf("%s.getTestBlockProperty: %s %s=%s",TAG,diagramId.toString(), propertyName);
+		log.debugf("%s.getTestBlockProperty: %s %s",TAG,diagramId.toString(), propertyName);
 		Object result = null;
 		try {
 			result = GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTTestProperties.MODULE_ID, "getTestBlockProperty", diagramId,propertyName);
+					BLTTestProperties.MODULE_ID, "getTestBlockPropertyValue", diagramId,propertyName);
 		}
 		catch(Exception ge) {
 			log.infof("%s.getTestBlockProperty: GatewayException (%s)",TAG,ge.getMessage());
@@ -285,6 +285,23 @@ public class MockDiagramScriptFunctions   {
 		}
 		catch(Exception ge) {
 			log.infof("%s.stopMockDiagram: GatewayException (%s)",TAG,ge.getMessage());
+		}
+	}
+	
+	/**
+	 * Transmit a signal with the specified command to the block-under-test.
+	 *   
+	 * @param diagram
+	 * @param command
+	 */
+	public static void writeCommand(UUID diagram,String command,String arg,String msg) {
+		log.infof("%s.writeCommand: %s %s",TAG,diagram.toString(),command);
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTTestProperties.MODULE_ID, "writeCommand", diagram,command,arg,msg);
+		}
+		catch(Exception ge) {
+			log.infof("%s.writeCommand: GatewayException (%s)",TAG,ge.getMessage());
 		}
 	}
 	

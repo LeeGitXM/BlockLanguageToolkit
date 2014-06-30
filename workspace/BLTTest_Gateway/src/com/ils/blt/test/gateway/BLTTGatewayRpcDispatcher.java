@@ -7,10 +7,12 @@ import java.util.Date;
 import java.util.UUID;
 
 import com.ils.blt.gateway.engine.BlockExecutionController;
+import com.ils.blt.test.common.BLTTestProperties;
 import com.ils.blt.test.common.MockDiagramScriptingInterface;
 import com.ils.blt.test.common.TagProviderScriptingInterface;
 import com.ils.blt.test.gateway.tag.ProviderRegistry;
 import com.ils.blt.test.gateway.tag.TagHandler;
+import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -83,6 +85,7 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface,
 	}
 	@Override
 	public Object getTestBlockPropertyValue(UUID diagramId,String propertyName){ 
+		log.infof("%s.getTestBlockPropertyValue: %s %s",TAG,diagramId.toString(),propertyName);
 		Object result = null;
 		if( requestHandler!=null ) {
 			result = requestHandler.getTestBlockPropertyValue(diagramId,propertyName);
@@ -161,6 +164,16 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface,
 		requestHandler.stopMockDiagram(diagramId);
 	}
 
+	/**
+	 * Transmit a signal with the specified command to the block-under-test.
+	 *   
+	 * @param diagram
+	 * @param command
+	 */
+	@Override
+	public void writeCommand(UUID diagram,String command,String arg,String msg) {
+		requestHandler.writeCommand(diagram,command,arg,msg);
+	}
 	/**
 	 * Direct a MockInput block to transmit a value to the block-under-test.
 	 */

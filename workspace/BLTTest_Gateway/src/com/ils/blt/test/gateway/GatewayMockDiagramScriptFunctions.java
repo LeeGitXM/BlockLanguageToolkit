@@ -94,7 +94,6 @@ public class GatewayMockDiagramScriptFunctions  {
 	 * @param propertyName
 	 */
 	public static Object getTestBlockPropertyValue(UUID diagramId,String propertyName){ 
-		log.debugf("%s.getTestBlockPropertyValue: %s %s",TAG,diagramId.toString(), propertyName);
 		Object result = null;
 		if( requestHandler!=null ) {
 			result = requestHandler.getTestBlockPropertyValue(diagramId,propertyName);
@@ -201,6 +200,15 @@ public class GatewayMockDiagramScriptFunctions  {
 		if( requestHandler!=null ) {
 			requestHandler.stopMockDiagram(diagramId);
 		}
+	}
+	/**
+	 * Transmit a signal with the specified command to the block-under-test.
+	 *   
+	 * @param diagram
+	 * @param command
+	 */
+	public static void writeCommand(UUID diagram,String command,String arg,String msg) {
+		requestHandler.writeCommand(diagram,command,arg,msg);
 	}
 	
 	/**

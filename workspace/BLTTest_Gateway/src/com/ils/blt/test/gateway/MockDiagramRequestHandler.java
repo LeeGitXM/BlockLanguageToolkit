@@ -11,6 +11,8 @@ import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.control.BlockPropertyChangeEvent;
+import com.ils.blt.common.control.Signal;
+import com.ils.blt.common.control.SignalNotification;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.gateway.BlockRequestHandler;
 import com.ils.blt.gateway.engine.BlockExecutionController;
@@ -125,14 +127,26 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 	 * @param diagramId
 	 * @param propertyName
 	 */
+	@Override
 	public Object getTestBlockPropertyValue(UUID diagramId,String propertyName){
 		Object result = null;
+		log.infof("%s.getTestBlockPropertyValue: %s %s",TAG,diagramId.toString(), propertyName);
 		MockDiagram mock = (MockDiagram)controller.getDiagram(diagramId);
 		if( mock!=null ) {
 			ProcessBlock uut = mock.getBlockUnderTest();
-			BlockProperty prop = uut.getProperty(propertyName);
-			if( prop!=null) result = prop.getValue();	
+			if( uut!=null ) {
+				BlockProperty prop = uut.getProperty(propertyName);
+				if( prop!=null) result = prop.getValue();
+				else result = "ERROR: Property "+propertyName+" not found";
+			}
+			else{
+				result = "ERROR: No block under test";
+			}	
 		}
+		else{
+			result = "ERROR: diagram not found";
+		}
+		log.infof("%s.getTestBlockPropertyValue: %s = %s", TAG,propertyName,result);
 		return result;
 	}
 	/**
@@ -293,6 +307,23 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 			}
 			controller.stop();
 			controller.clearSubscriptions();
+		}
+	}
+	
+	/**
+	 * Transmit a signal with the specified command to the block-under-test.
+	 *   
+	 * @param diagramId
+	 * @param command
+	 */
+	@Override
+	public void writeCommand(UUID diagramId,String command,String arg,String msg) {
+		MockDiagram mock = (MockDiagram)controller.getDiagram(diagramId);
+		if( mock!=null ) {
+			ProcessBlock uut = mock.getBlockUnderTest();
+			Signal sig= new Signal(command,arg,msg);
+			SignalNotification snote = new SignalNotification(uut,sig);
+			uut.acceptValue(snote);
 		}
 	}
 	
