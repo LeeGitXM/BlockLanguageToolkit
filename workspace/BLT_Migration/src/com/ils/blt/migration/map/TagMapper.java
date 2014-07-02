@@ -69,6 +69,7 @@ public class TagMapper {
 			for(BlockProperty bp:iblock.getProperties()) {
 				if( bp.getBindingType().equals(BindingType.TAG_MONITOR) ||
 					bp.getBindingType().equals(BindingType.TAG_READ) ||
+					bp.getBindingType().equals(BindingType.TAG_READWRITE) ||
 					bp.getBindingType().equals(BindingType.TAG_WRITE)) {
 					if( bp.getValue()!=null ) {
 						//System.out.println(TAG+".setTagPaths: LOOKUP:"+bp.getValue());

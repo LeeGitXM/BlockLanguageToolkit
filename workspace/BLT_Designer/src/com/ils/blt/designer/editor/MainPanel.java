@@ -123,6 +123,7 @@ public class MainPanel extends BasicEditPanel {
 			bindingDisplayField = createBindingDisplayField(prop);
 			if( prop.getBindingType().equals(BindingType.TAG_MONITOR) ||
 				prop.getBindingType().equals(BindingType.TAG_READ) ||
+				prop.getBindingType().equals(BindingType.TAG_READWRITE) ||
 				prop.getBindingType().equals(BindingType.TAG_WRITE)	) {
 				add(bindingDisplayField,"skip,growx,push");
 			}
@@ -133,6 +134,7 @@ public class MainPanel extends BasicEditPanel {
 			valueDisplayField.setText(fncs.coerceToString(property.getValue()));
 			if( property.getBindingType().equals(BindingType.TAG_MONITOR) ||
 				property.getBindingType().equals(BindingType.TAG_READ) ||
+				prop.getBindingType().equals(BindingType.TAG_READWRITE) ||
 				property.getBindingType().equals(BindingType.TAG_WRITE)	) {
 				bindingDisplayField.setText(fncs.coerceToString(property.getBinding()));
 			}
@@ -190,6 +192,7 @@ public class MainPanel extends BasicEditPanel {
 				public void actionPerformed(ActionEvent e){
 					if( prop.getBindingType().equals(BindingType.TAG_MONITOR)   ||
 						prop.getBindingType().equals(BindingType.TAG_READ)   ||
+						prop.getBindingType().equals(BindingType.TAG_READWRITE) ||
 						prop.getBindingType().equals(BindingType.TAG_WRITE)	 )  {
 						updatePanelForProperty(BlockEditConstants.TAG_BROWSER_PANEL,prop);
 						setSelectedPane(BlockEditConstants.TAG_BROWSER_PANEL);

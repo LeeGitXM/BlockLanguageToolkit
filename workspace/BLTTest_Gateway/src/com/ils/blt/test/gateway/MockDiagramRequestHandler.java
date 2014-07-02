@@ -243,7 +243,7 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 	 * Change binding parameters on a property. Note that this does NOT fire a change event.
 	 * @param diagramId
 	 * @param propertyName
-	 * @param type BindingType, NONE, TAG_MONITOR or TAG_WRITE
+	 * @param type BindingType, NONE, TAG_READ, TAG_READWRITE, TAG_MONITOR or TAG_WRITE
 	 * @param binding
 	 */
 	@Override

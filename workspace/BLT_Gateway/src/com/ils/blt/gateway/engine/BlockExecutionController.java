@@ -263,7 +263,9 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 */
 	public void removeSubscription(ProcessBlock block,BlockProperty property) {
 		if( property!=null && property.getValue()!=null && 
-				property.getBindingType()==BindingType.TAG_READ || property.getBindingType()==BindingType.TAG_MONITOR ) {
+			(	property.getBindingType()==BindingType.TAG_READ || 
+				property.getBindingType()==BindingType.TAG_READ ||
+				property.getBindingType()==BindingType.TAG_MONITOR )  ) {
 			String tagPath = property.getValue().toString();
 			if( tagPath!=null && tagPath.length()>0) {
 				tagListener.removeSubscription(block,tagPath);

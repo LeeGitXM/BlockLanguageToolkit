@@ -12,6 +12,7 @@ public enum BindingType
             NONE,
             ENGINE,
             TAG_READ,
+            TAG_READWRITE,
             TAG_WRITE,
             TAG_MONITOR
             ;

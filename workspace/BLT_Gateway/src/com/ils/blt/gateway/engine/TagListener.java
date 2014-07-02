@@ -82,7 +82,9 @@ public class TagListener implements TagChangeListener   {
 	 */
 	public void defineSubscription(ProcessBlock block,BlockProperty property) {
 		if( block==null || property==null || 
-				!(property.getBindingType()==BindingType.TAG_READ || property.getBindingType()==BindingType.TAG_MONITOR) ) return;
+				!(property.getBindingType()==BindingType.TAG_READ || 
+				  property.getBindingType()==BindingType.TAG_READWRITE ||
+				  property.getBindingType()==BindingType.TAG_MONITOR )   ) return;
 		log.infof("%s.defineSubscription: considering %s:%s",TAG,block.getName(),property.getName());
 		String tagPath = property.getBinding();
 		tagMap.put(makeKey(block,property), tagPath);
@@ -170,7 +172,9 @@ public class TagListener implements TagChangeListener   {
 			for(ProcessBlock block:blocks ) {
 				for( String name: block.getPropertyNames()) {
 					BlockProperty property = block.getProperty(name);
-					if( (property.getBindingType()==BindingType.TAG_READ ||(property.getBindingType()==BindingType.TAG_MONITOR))  && 
+					if( (property.getBindingType()==BindingType.TAG_READ ||
+						 property.getBindingType()==BindingType.TAG_READWRITE ||
+						 property.getBindingType()==BindingType.TAG_MONITOR)  && 
 					    property.getBinding().equals(tagPath )        ) {
 						startSubscriptionForProperty(block,property,tagPath);
 					}
@@ -199,14 +203,15 @@ public class TagListener implements TagChangeListener   {
 					try {
 						log.debugf("%s.startSubscriptionForProperty: %s for %s:%s",TAG,block.getName(),property.getBindingType().name(),property.getName());
 						// There are two types of bindings here
-						if( property.getBindingType().equals(BindingType.TAG_MONITOR)) {
+						if( property.getBindingType().equals(BindingType.TAG_MONITOR) ) {
 							// The tag change updates the property value
 							PropertyChangeEvaluationTask task = new PropertyChangeEvaluationTask(block,
 									new BlockPropertyChangeEvent(block.getBlockId().toString(),property.getName(),property.getValue(),value.getValue()));
 								Thread propertyChangeThread = new Thread(task, "PropertyChange");
 								propertyChangeThread.start();
 						}
-						else if( property.getBindingType().equals(BindingType.TAG_READ)) {
+						else if( property.getBindingType().equals(BindingType.TAG_READ) || 
+								 property.getBindingType().equals(BindingType.TAG_READWRITE)) {
 							// The tag subscription acts as a pseudo input
 							IncomingNotification notice = new IncomingNotification(value);
 							threadPool.execute(new IncomingValueChangeTask(block,notice));		
@@ -284,7 +289,9 @@ public class TagListener implements TagChangeListener   {
 						for( String name: blk.getPropertyNames()) {
 							BlockProperty prop = blk.getProperty(name);
 							String path = prop.getBinding().toString();
-							if(prop.getBindingType()==BindingType.TAG_READ || prop.getBindingType()==BindingType.TAG_MONITOR) {
+							if( prop.getBindingType()==BindingType.TAG_READ || 
+								prop.getBindingType()==BindingType.TAG_READWRITE ||
+								prop.getBindingType()==BindingType.TAG_MONITOR) {
 								if( path.equals(tp.toStringFull())  ) {
 									try {
 										// Treat the notification differently depending on the binding
@@ -295,7 +302,8 @@ public class TagListener implements TagChangeListener   {
 											Thread propertyChangeThread = new Thread(task, "PropertyChange");
 											propertyChangeThread.start();
 										}
-										else if( prop.getBindingType().equals(BindingType.TAG_READ)) {
+										else if( prop.getBindingType().equals(BindingType.TAG_READ) ||
+												 prop.getBindingType().equals(BindingType.TAG_READWRITE)) {
 											// The tag subscription acts as a pseudo input
 											IncomingNotification notice = new IncomingNotification(tag.getValue());
 											threadPool.execute(new IncomingValueChangeTask(blk,notice));	
