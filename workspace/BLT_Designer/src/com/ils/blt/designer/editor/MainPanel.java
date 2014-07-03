@@ -134,7 +134,7 @@ public class MainPanel extends BasicEditPanel {
 			valueDisplayField.setText(fncs.coerceToString(property.getValue()));
 			if( property.getBindingType().equals(BindingType.TAG_MONITOR) ||
 				property.getBindingType().equals(BindingType.TAG_READ) ||
-				prop.getBindingType().equals(BindingType.TAG_READWRITE) ||
+				property.getBindingType().equals(BindingType.TAG_READWRITE) ||
 				property.getBindingType().equals(BindingType.TAG_WRITE)	) {
 				bindingDisplayField.setText(fncs.coerceToString(property.getBinding()));
 			}
