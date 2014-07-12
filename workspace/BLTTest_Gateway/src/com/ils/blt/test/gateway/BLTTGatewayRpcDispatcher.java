@@ -66,7 +66,11 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface,
 	public void addMockOutput(UUID diagramId, String tagPath, String type, String port) {
 		requestHandler.addMockOutput(diagramId, tagPath, type, port);
 	}
-	
+	@Override
+	public void clearOutput(UUID diagramId, String port) {
+		requestHandler.clearOutput(diagramId, port);
+		
+	}
 	@Override
 	public void deleteMockDiagram(UUID diagram) {
 		stopMockDiagram(diagram);

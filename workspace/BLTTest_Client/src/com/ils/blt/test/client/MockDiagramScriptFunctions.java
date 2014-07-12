@@ -295,7 +295,7 @@ public class MockDiagramScriptFunctions   {
 	 * @param command
 	 */
 	public static void writeCommand(UUID diagram,String command,String arg,String msg) {
-		log.infof("%s.writeCommand: %s %s",TAG,diagram.toString(),command);
+		log.debugf("%s.writeCommand: %s %s",TAG,diagram.toString(),command);
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTTestProperties.MODULE_ID, "writeCommand", diagram,command,arg,msg);

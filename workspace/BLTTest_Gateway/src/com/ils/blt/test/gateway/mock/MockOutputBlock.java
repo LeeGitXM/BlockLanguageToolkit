@@ -57,6 +57,12 @@ public class MockOutputBlock extends AbstractProcessBlock implements ProcessBloc
 		anchors.add(input);
 	}
 	/**
+	 * Clear the block's internal value so that we can detect the next arrival
+	 * (in case it is the same as the previous)..
+	 */
+	public void clearValue() { value = new BasicQualifiedValue("unset"); }
+	
+	/**
 	 * @return the latest value received by this block.
 	 */
 	public QualifiedValue getValue() { return value; }

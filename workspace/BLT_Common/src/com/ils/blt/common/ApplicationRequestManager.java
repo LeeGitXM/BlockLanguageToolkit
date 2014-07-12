@@ -182,17 +182,18 @@ public class ApplicationRequestManager  {
 		return result;
 	}
 	
- 	/** Set a property */
-	public void setBlockProperty(String className, long projectId,long resourceId, String blockId, String propertyName,Object value ) {
-		log.debugf("%s.setBlockProperty: %s %s %s: %s", TAG, projectId,  resourceId, blockId.toString(), propertyName, value.toString());
+	/** Define/update a property for a block */
+	public void setBlockProperty(String className, long projectId,long resourceId, String blockId, String propertyName,BlockProperty prop ) {
+		log.debugf("%s.setBlockProperty: %s %s %s: %s", TAG, projectId,  resourceId, blockId.toString(), propertyName, prop.toString());
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-				BLTProperties.MODULE_ID, "setBlockProperty", className, new Long(projectId), new Long(resourceId), blockId, propertyName, value.toString());
+				BLTProperties.MODULE_ID, "setBlockProperty", className, new Long(projectId), new Long(resourceId), blockId, propertyName, prop.toJson());
 		}
 		catch(Exception ge) {
 			log.infof("%s.setBlockProperty: GatewayException (%s)",TAG,ge.getMessage());
 		}		
 	}
+
 
 	public void setDiagramState(Long projectId, Long resourceId, String state) {
 		log.debugf("%s.setDiagramState ... %d:%d %s",TAG,projectId.longValue(),resourceId.longValue(),state);

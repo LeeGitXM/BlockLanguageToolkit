@@ -98,7 +98,9 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 	public void addMockOutput(UUID diagramId, String tagPath,String type, String port) {
 		PropertyType propertyType = PropertyType.OBJECT;   // Unknown
 		try {
-			propertyType = PropertyType.valueOf(type.toUpperCase());
+			if( !type.equalsIgnoreCase("SIGNAL") )  {
+				propertyType = PropertyType.valueOf(type.toUpperCase());
+			}
 		}
 		catch(IllegalArgumentException iae) {
 			log.warnf("%s.addMockOutput: Unrecognized property type %s (%s)", TAG,type,iae.getLocalizedMessage());
@@ -106,6 +108,19 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 		MockOutputBlock output = new MockOutputBlock(diagramId,tagPath,propertyType,port);
 		MockDiagram mock = (MockDiagram)controller.getDiagram(diagramId);
 		if( mock!=null) mock.addBlock(output);	
+	}
+	@Override
+	public void clearOutput(UUID diagram,String port) {
+		MockDiagram mock = (MockDiagram)controller.getDiagram(diagram);
+		if( mock!=null ) {
+			MockOutputBlock block = mock.getOutputForPort(port);
+			if( block!=null ) {
+				block.clearValue();
+			}
+			else {
+				log.warnf("%s.clearOutput: Unknown output port %s", TAG,port);
+			}
+		}
 	}
 
 	@Override

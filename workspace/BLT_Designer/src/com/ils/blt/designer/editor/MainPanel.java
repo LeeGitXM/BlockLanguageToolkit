@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -22,6 +23,8 @@ import net.miginfocom.swing.MigLayout;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
+import com.ils.blt.common.block.PropertyType;
+import com.ils.blt.common.block.TimeUtility;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 
@@ -91,7 +94,7 @@ public class MainPanel extends BasicEditPanel {
 		}
 	}
 	/**
-	 * A property panel is an editor for a single property. By default it contains:
+	 * A property panel is control panel for a single property. By default it contains:
 	 *    First line --
 	 *    	  title label
 	 *    Next line --
@@ -108,8 +111,9 @@ public class MainPanel extends BasicEditPanel {
 		
 		public PropertyPanel(BlockProperty prop) {
 			setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));     // 3 cells across
-			if( prop.getName().matches(".*Interval.*")) {
-				addSeparator(this,prop.getName()+" ~ secs");
+			if( prop.getType().equals(PropertyType.TIME) ) {
+				TimeUnit tu = TimeUtility.unitForValue(fncs.coerceToDouble(prop.getValue()));
+				addSeparator(this,prop.getName()+" ~ "+tu.name().toLowerCase());
 			}
 			else {
 				addSeparator(this,prop.getName());
@@ -199,6 +203,15 @@ public class MainPanel extends BasicEditPanel {
 					}
 					else if( prop.getBindingType().equals(BindingType.ENGINE)) {
 						;// Do nothing
+					}
+					// Use special editor for the enumerated types
+					else if( prop.getType().equals(PropertyType.BOOLEAN) ||
+							 prop.getType().equals(PropertyType.DISTRIBUTION) ||
+							 prop.getType().equals(PropertyType.SCOPE)	      ||
+							 prop.getType().equals(PropertyType.TRUTHVALUE)      ){
+						log.infof("%s.editButton actionPerformed for property %s (%s)",TAG,prop.getName(),prop.getType());
+						updatePanelForProperty(BlockEditConstants.ENUM_EDIT_PANEL,prop);
+						setSelectedPane(BlockEditConstants.ENUM_EDIT_PANEL);
 					}
 					else {
 						log.infof("%s.editButton actionPerformed for property %s (%s)",TAG,prop.getName(),prop.getType());

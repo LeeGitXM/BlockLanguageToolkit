@@ -11,10 +11,17 @@ package com.ils.blt.common.control;
  * This is a property container with no behavior.
  */
 public class Signal {
-	private final String command;
-	private final String arg;
-	private final String message;
+	private String command = "";
+	private String arg = "";
+	private String message = "";
 	private String pattern = null;
+	
+	/**
+	 * Constructor: No-arg variety required to be serializable
+	 */
+	public Signal() {
+		
+	}
 	
 	/**
 	 * Constructor. 
@@ -34,6 +41,9 @@ public class Signal {
 	public String getArg() {return arg;}
 	public String getMessage() {return message;}
 	public String getPattern() {return pattern;}
+	public void setCommand(String cmd) {this.command = cmd;}
+	public void setArg(String a) {this.arg = a;}
+	public void setMessage(String msg) {this.message = msg;}
 	public void setPattern(String pattern) {this.pattern = pattern;}
 
 	@Override

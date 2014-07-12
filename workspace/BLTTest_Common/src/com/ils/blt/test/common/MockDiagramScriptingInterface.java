@@ -48,6 +48,12 @@ public interface MockDiagramScriptingInterface   {
 	 */
 	public void addMockOutput(UUID diagram,String tagPath,String propertyType,String port );
 	/**
+	 * Clear any local data stored in the named output.
+	 * @param diagram
+	 * @param port
+	 */
+	public void clearOutput(UUID diagramId,String port);
+	/**
 	 * Remove the test diagram from the execution engine (block controller).
 	 * The diagram is stopped before being deleted.
 	 * 

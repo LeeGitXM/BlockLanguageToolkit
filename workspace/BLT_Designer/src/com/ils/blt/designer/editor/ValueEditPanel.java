@@ -82,6 +82,7 @@ public class ValueEditPanel extends BasicEditPanel {
 					Object value = valueField.getText();
 					if( property.getType().equals(PropertyType.BOOLEAN ))     value = fncs.coerceToBoolean(value);
 					else if( property.getType().equals(PropertyType.DOUBLE )) value = fncs.coerceToDouble(value);
+					else if( property.getType().equals(PropertyType.TIME ))   value = fncs.coerceToDouble(value);  // secs
 					else if( property.getType().equals(PropertyType.INTEGER ))value = fncs.coerceToInteger(value);
 					property.setValue(value);
 					property.setDisplayed(annotationCheckBox.isSelected());
@@ -95,6 +96,7 @@ public class ValueEditPanel extends BasicEditPanel {
 					}
 				}
 				SwingUtilities.invokeLater(new WorkspaceRepainter());
+				parent.updateBlockPropertyInEngine(property);
 				updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
 				setSelectedPane(BlockEditConstants.HOME_PANEL);
 			}

@@ -7,14 +7,15 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
 
-import com.ils.blt.common.block.BindingType;
+import com.ils.blt.common.ApplicationRequestManager;
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.BlockProperty;
+import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -31,9 +32,9 @@ public class BasicEditPanel extends JPanel {
 	public static final Dimension COMBO_BOX_SIZE  = new Dimension(120,24);
 	public static final Dimension ENTRY_BOX_SIZE  = new Dimension(160,24);
 	public static final Dimension OFFSET_BOX_SIZE  = new Dimension(80,24);
-
+	protected final BlockPropertyEditor parent;
 	
-	private final BlockPropertyEditor parent;
+	
 	
 	public BasicEditPanel(BlockPropertyEditor editor) {
 		this.parent = editor;
@@ -102,4 +103,5 @@ public class BasicEditPanel extends JPanel {
 		field.setEditable(false);
 		return field;
 	}
+
 }

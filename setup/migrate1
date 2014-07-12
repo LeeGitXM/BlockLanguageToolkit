@@ -4,7 +4,9 @@
 BLT=~/Development/ils/repo/blt
 #FIL=dirtSimpleApplication
 #FIL=dirtSimpleApplicationWithConnections
-FIL=crxProductQuality
+#FIL=crxProductQuality
+#FIL=polyFlyingSwitch
+FIL=oneBadFamily
 INDIR=$BLT/json/g2
 OUTDIR=$BLT/json/ignition
 mkdir -p $OUTDIR

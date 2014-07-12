@@ -157,13 +157,16 @@ public class GatewayRpcDispatcher   {
 		return blockUUID;
 	}
 
-	/** Set a single block property. */
-	public void setBlockProperty(String className, Long projectId, Long resourceId, String blockId, String propertyName, String value) {
-		log.infof("%s.setBlockProperty: %s %s %s %s: %s", TAG, className, projectId.toString(), resourceId.toString(), propertyName, value);
+	/** Set a single block property. 
+	 * @param json JSON representation of the property.
+	 */
+	public void setBlockProperty(String className, Long projectId, Long resourceId, String blockId, String propertyName, String json) {
+		log.infof("%s.setBlockProperty: %s %s %s %s: %s", TAG, className, projectId.toString(), resourceId.toString(), propertyName, json);
 		UUID blockUUID = getBlockUUID(blockId);
 		BlockExecutionController controller = BlockExecutionController.getInstance();
 		ProcessDiagram diagram = controller.getDiagram(projectId, resourceId);
-		BlockRequestHandler.getInstance().setBlockProperty(diagram.getSelf(), blockUUID, null, propertyName, value);
+		BlockProperty property = BlockProperty.createProperty(json);
+		BlockRequestHandler.getInstance().setBlockProperty(diagram.getSelf(), blockUUID, null, propertyName, property);
 	}
 
 	/** The blocks implemented in Java are expected to reside in a jar named "block-definition.jar".

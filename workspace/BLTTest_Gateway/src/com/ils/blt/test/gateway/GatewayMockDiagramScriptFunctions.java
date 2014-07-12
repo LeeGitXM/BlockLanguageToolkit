@@ -6,8 +6,6 @@ package com.ils.blt.test.gateway;
 
 import java.util.UUID;
 
-import com.ils.blt.test.common.BLTTestProperties;
-import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -62,6 +60,17 @@ public class GatewayMockDiagramScriptFunctions  {
 	public static void addMockOutput(UUID diagramId,String tagPath,String propertyType,String port ) {
 		log.infof("%s.addMockOutput: %s %s %s",TAG,tagPath,propertyType.toString(),port);
 		requestHandler.addMockOutput(diagramId,tagPath,propertyType,port);
+	}
+	/**
+	 * Clear the local data stored in the named output.
+	 * @param diagram
+	 * @param port
+	 */
+	public static void clearOutput(UUID diagramId,String port) {
+		log.infof("%s.forcePost: %s %s = %s",TAG,diagramId.toString(),port);
+		if( requestHandler!=null ) {
+			requestHandler.clearOutput(diagramId,port);
+		}
 	}
 	/**
 	 * Remove the test diagramId from the execution engine (block controller).

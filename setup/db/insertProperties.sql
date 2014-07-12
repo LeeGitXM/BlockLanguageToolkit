@@ -41,6 +41,7 @@ insert into PropertyMap values ('EM-GDA-SQC-LIMIT-OBSERVATION','numberOfStandard
 insert into PropertyMap values ('EM-GDA-SQC-LIMIT-OBSERVATION','optionalDesiredConfidence','','DOUBLE',1,'NONE');
 insert into PropertyMap values ('EM-GDA-SQC-LIMIT-OBSERVATION','sqcTestLabel','TestLabel','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-SubDIAGNOSIS','label','Label','STRING',1,'NONE');
+insert into PropertyMap values ('EM-GDA-SYMBOLIC-VARIABLE','LABEL','Label','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-TEST-POINT','label','Label','STRING',1,'NONE');
 insert into PropertyMap values ('GDL-AND-GATE','logic','','STRING',1,'NONE');
 insert into PropertyMap values ('GDL-AND-GATE','maximumUnknownInputs','','INTEGER',1,'NONE');
@@ -92,3 +93,4 @@ insert into PropertyMap values ('GDL-OR-GATE','maximumUnknownInputs','','INTEGER
 insert into PropertyMap values ('GDL-OR-GATE','outputUncertainty','','DOUBLE',1,'NONE');
 insert into PropertyMap values ('GDL-OR-GATE','useExpiredInputs','','STRING',1,'NONE');
 insert into PropertyMap values ('GDL-SYMBOLIC-ENTRY-POINT','nameOfSensor','Input','STRING',1,'TAG_READ');
+insert into PropertyMap values ('LOGICAL-VARIABLE','LABEL','label','STRING',1,'NONE');

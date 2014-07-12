@@ -13,9 +13,8 @@ import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 /**
  * This class exposes python-callable functions that deal with properties
  * of applications, families, diagrams, blocks and connections. It also handles
- * functions of the engine itself. 
- * 
- * Where applicable, we make use of the ApplicationRequestHandler to perform the requests.
+ * functions of the engine itself. All requests are delegated to the 
+ * ApplicationRequestManager.
  */
 public class ApplicationScriptFunctions   {
 	private static ApplicationRequestManager manager = new ApplicationRequestManager();

@@ -67,28 +67,39 @@ public class TagMapper {
 	public void setTagPaths(SerializableBlock iblock) {
 		if( iblock.getProperties()!=null)  {   // No properties, nothing to do
 			for(BlockProperty bp:iblock.getProperties()) {
+				if(bp.getName()==null || bp.getName().length()==0 ) {
+					System.err.println(TAG+".setTagPaths: No-name tag for block "+iblock.getName()+" ("+iblock.getClassName()+")");
+					continue;
+				}
 				if( bp.getBindingType().equals(BindingType.TAG_MONITOR) ||
 					bp.getBindingType().equals(BindingType.TAG_READ) ||
-					bp.getBindingType().equals(BindingType.TAG_READWRITE) ||
 					bp.getBindingType().equals(BindingType.TAG_WRITE)) {
 					if( bp.getValue()!=null ) {
-						//System.out.println(TAG+".setTagPaths: LOOKUP:"+bp.getValue());
 						String unmapped = bp.getValue().toString();
 						String mapped = tagMap.get(unmapped.trim());
-						System.out.println(TAG+".setTagPaths: FOUND:"+mapped);
 						if( mapped!=null) {
 							bp.setBinding(mapped);
 							bp.setValue("");  // Clear the value because we're bound to a tag
 						}
 						else {
-							System.err.println(TAG+".setTagPaths "+unmapped+" is not mapped to a tag path");
+							System.err.println(TAG+".setTagPaths "+iblock.getName()+" ("+iblock.getClassName()+"):"+bp.getName()+"="+unmapped+" is not mapped to a tag path");
 						}
 					}
 					else {
 						System.err.println(TAG+".setTagPaths value is not set for use as a tag path");
 					}
-					
-					
+				}
+				// Most likely a parameter ...lookup by the block name
+				else if(bp.getBindingType().equals(BindingType.TAG_READWRITE) ) {
+					String unmapped = iblock.getName();
+					String mapped = tagMap.get(unmapped.trim());
+					if( mapped!=null) {
+						bp.setBinding(mapped);
+						bp.setValue("");  // Clear the value because we're bound to a tag
+					}
+					else {
+						System.err.println(TAG+".setTagPaths Parameter "+iblock.getName()+" ("+iblock.getClassName()+"):"+bp.getName()+"="+unmapped+" is not mapped to a tag path");
+					}
 				}
 			}
 		}

@@ -77,16 +77,20 @@ public class AnchorMapper {
 		for(G2Anchor anchor:g2block.getConnections()) {
 			String key = makeKey(className,anchor.getPort());
 			String port = portMap.get(key);
-			if(port!=null) anchor.setPort(port);
-			// If the name is null, then we'll just use a default name by direction
-			else if(anchor.getPort()==null && anchor.getAnchorDirection().equals(AnchorDirection.INCOMING)) {
-				anchor.setPort(BlockConstants.IN_PORT_NAME); 
+			if( port!=null) {
+				anchor.setPort(port);
 			}
-			else if(anchor.getPort()==null && anchor.getAnchorDirection().equals(AnchorDirection.OUTGOING)) {
-				anchor.setPort(BlockConstants.OUT_PORT_NAME); 
+			// If the G2 name is null, then we'll just use a default name by direction
+			else if(anchor.getPort()==null || anchor.getPort().equalsIgnoreCase("NONE")) {
+				if( anchor.getAnchorDirection().equals(AnchorDirection.INCOMING)) {
+					anchor.setPort(BlockConstants.IN_PORT_NAME); 
+				}
+				else  {
+					anchor.setPort(BlockConstants.OUT_PORT_NAME); 
+				}
 			}
 			else {
-				System.err.println(TAG+".updateAnchorNames: Port name lookup failed for "+g2block.getName()+"("+className+") on port "+anchor.getPort());
+				System.err.println(TAG+".updateAnchorNames: Port name lookup failed for "+g2block.getName()+"("+className+") on port ("+anchor.getPort()+")");
 			}
 		}
 	}

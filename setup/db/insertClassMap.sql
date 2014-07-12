@@ -12,6 +12,7 @@ insert into ClassMap values ('EM-GDA-SET-VAR-FALSE','com.ils.block.Junction');
 insert into ClassMap values ('EM-GDA-SQC-DIAGNOSIS','emc.block.SQCDiagnosis.SQCDiagnosis');
 insert into ClassMap values ('EM-GDA-SQC-LIMIT-OBSERVATION','com.ils.block.SQC');
 insert into ClassMap values ('EM-GDA-SUBDIAGNOSIS','emc.block.SubDiagnosis.SubDiagnosis');
+insert into ClassMap values ('EM-GDA-SYMBOLIC-VARIABLE','com.ils.block.Parameter');
 insert into ClassMap values ('EM-GDA-TEST-POINT','com.ils.block.TestPoint');
 insert into ClassMap values ('GDL-AND-GATE','com.ils.block.And');
 insert into ClassMap values ('GDL-ARITHMETIC-FUNCTION','emc.block.Arithmetic.Arithmetic');
@@ -37,6 +38,7 @@ insert into ClassMap values ('GDL-NUMERIC-ENTRY-POINT','com.ils.block.Input');
 insert into ClassMap values ('GDL-OR-GATE','com.ils.block.Or');
 insert into ClassMap values ('GDL-PERSISTENCE-GATE','com.ils.block.PersistenceGate');
 insert into ClassMap values ('GDL-SYMBOLIC-ENTRY-POINT','com.ils.block.Input');
+insert into ClassMap values ('LOGICAL-VARIABLE','com.ils.block.Parameter');
 -- NOTE: We convert all connnection posts to "sinks"
 --       later on we analyze and determine which are "sources"
 insert into ClassMap values ('GDL-INFERENCE-PATH-CONNECTION-POST','com.ils.block.SinkConnection');

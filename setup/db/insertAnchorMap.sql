@@ -29,6 +29,8 @@ insert into AnchorMap values ('EM-GDA-SQC-LIMIT-OBSERVATION','IP-OUT','out');
 insert into AnchorMap values ('EM-GDA-SUBDIAGNOSIS','IP-IN','in');
 insert into AnchorMap values ('EM-GDA-SUBDIAGNOSIS','IP-OUT','out');
 insert into AnchorMap values ('EM-GDA-SUBDIAGNOSIS','CP-OUT','');
+insert into AnchorMap values ('EM-GDA-SYMBOLIC-VARIABLE','IP-IN','in');
+insert into AnchorMap values ('EM-GDA-SYMBOLIC-VARIABLE','IP-OUT','out');
 insert into AnchorMap values ('EM-GDA-TEST-POINT','IP-IN','in');
 insert into AnchorMap values ('EM-GDA-TEST-POINT','IP-OUT','out');
 insert into AnchorMap values ('GDL-ARITHMETIC-FUNCTION','DP-IN','in');

@@ -10,9 +10,11 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.UUID;
 
+import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.connection.Connection;
+import com.ils.blt.common.control.BlockPropertyChangeEvent;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.control.OutgoingNotification;
 import com.ils.blt.common.serializable.DiagramState;
@@ -189,14 +191,54 @@ public class BlockRequestHandler   {
 	 * @param propertyName
 	 * @param value
 	 */
-	public void setBlockProperty(UUID parentId, UUID blockId, UUID blockUUID, String propertyName,Object value) {
+	public void setBlockProperty(UUID parentId, UUID blockId, UUID blockUUID, String propertyName,BlockProperty prop) {
+		
 		BlockExecutionController controller = BlockExecutionController.getInstance();
 		ProcessDiagram diagram = controller.getDiagram(parentId);
 		ProcessBlock block = null;
 		if( diagram!=null ) block = diagram.getBlock(blockId);
 		if(block!=null) {
-			block.setProperty(propertyName, new BasicQualifiedValue(value));
-			log.tracef("%s.setProperty %s.%s %s=%s",TAG,diagram.getName(),block.getName(),propertyName,value.toString());
+			log.infof("%s.setProperty %s.%s %s=%s",TAG,diagram.getName(),block.getName(),propertyName,prop.getValue().toString());
+			BlockProperty[] existing = block.getProperties();
+			BlockProperty existingProperty = block.getProperty(propertyName);
+			if( existingProperty!=null ) {
+				// Swap out the property
+				int index = 0;
+				for(BlockProperty bp:existing) {
+					if( bp.getName().equalsIgnoreCase(existingProperty.getName() )) {
+						existing[index] = prop;
+						break;
+					}	
+					index++;
+				}
+			}
+			else {
+				// Need to add a new one.
+				BlockProperty[] props = new BlockProperty[existing.length+1];
+				int index = 0;
+				for(BlockProperty bp:existing) {
+					props[index] = bp;
+					index++;
+				}
+				props[index] = prop;
+			}	
+			// If the binding has changed - fix subscriptions.
+			if( existingProperty == null || !existingProperty.getBinding().equals(prop.getBinding())) {
+				controller.alterSubscription(parentId, blockId, propertyName);
+			}
+			log.infof("%s.setProperty old = %s, new = %s",TAG,existingProperty.getValue().toString(),prop.getValue().toString());
+			// If the value has changed, inform the block
+			if( existingProperty.getBindingType().equals(BindingType.NONE) && prop.getBindingType().equals(BindingType.NONE) &&
+				!existingProperty.getValue().toString().equals(prop.getValue().toString()) )    {
+				log.infof("%s.setProperty sending event ...",TAG);
+				BlockPropertyChangeEvent event = new BlockPropertyChangeEvent(block.getBlockId().toString(),propertyName,existingProperty.getValue(),prop.getValue());
+				block.propertyChange(event);
+			}
+			// If the binding is a tag write - do the write.
+			if( prop.getBindingType().equals(BindingType.TAG_READWRITE) ||
+				prop.getBindingType().equals(BindingType.TAG_READWRITE)	   ) {
+				controller.updateTag(parentId, prop.getBinding(), new BasicQualifiedValue(prop.getValue()));
+			}	
 		}
 		else {
 			log.warnf("%s.setProperty Block not found for %s.%s",TAG,parentId.toString(),blockId.toString());

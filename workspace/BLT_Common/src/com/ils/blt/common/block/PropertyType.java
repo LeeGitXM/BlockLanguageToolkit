@@ -18,6 +18,7 @@ public enum PropertyType
             DISTRIBUTION,
             LIMIT,               // Limit type (UPPER,LOWER,BOTH)
             SCOPE,               // Transmission scope
+            TIME,                // seconds, editor auto-scales display unit.
             TRUTHVALUE,
             LIST,                // List of strings, char used to delimit is first value
             SCRIPT,              // Gets a Python editor

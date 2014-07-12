@@ -102,7 +102,7 @@ public class LogicUIView extends AbstractUIView implements BlockViewUI {
 		drawAnchors(g,-BORDER_WIDTH/2,-BORDER_WIDTH/2);
 		drawEmbeddedIcon(g);
 		int xoffset = -BORDER_WIDTH;
-		if( substyle.equals(SUBSTYLE_NOT) ) xoffset -= width/5;
+		if( substyle.equalsIgnoreCase(SUBSTYLE_NOT) ) xoffset -= 2*BORDER_WIDTH;
 		drawEmbeddedText(g,xoffset,-BORDER_WIDTH);
 		drawBadges(g);
 	}

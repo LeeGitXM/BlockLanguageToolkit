@@ -47,7 +47,8 @@ public class G2Anchor {
 			if( type.equalsIgnoreCase("GDL-DATA-PATH")) {
 				result = ConnectionType.DATA;
 			}
-			else if( type.equalsIgnoreCase("GDL-ACTION-PATH") ) {
+			else if( type.equalsIgnoreCase("GDL-ACTION-LINK") ||
+					 type.equalsIgnoreCase("GDL-ACTION-PATH")) {
 				result = ConnectionType.TEXT;
 			}
 			else if( type.equalsIgnoreCase("GDL-CONTROL-PATH")   ) {

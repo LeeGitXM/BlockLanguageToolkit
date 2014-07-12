@@ -145,3 +145,6 @@ insert into TagMap values ('[the bad-value of SS1_TAPER_TIP_HEIGHT]','[]Tags/SS1
 insert into TagMap values ('[the standard-deviation of STAB-LAB-DATA]','[]LabData/STAB_LAB_DATA/standardDeviation','DOUBLE');
 insert into TagMap values ('[the target of STAB-LAB-DATA]','[]LabData/STAB_LAB_DATA/target','DOUBLE');
 insert into TagMap values ('[the bad-value of SS2_TAPER_TIP_HEIGHT]','[]Tags/SS2_TAPER_TIP_HEIGHT/badValue','DOUBLE');
+-- The following entries map the names of G2 parameters/value objects into Ignition Tags
+insert into TagMap values ('SPLIT_FLYING_SWITCH-GDA-INPUT','[]Parameters/SplitFlyingSwitchInput','STRING');
+
