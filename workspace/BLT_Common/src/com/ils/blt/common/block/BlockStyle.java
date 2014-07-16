@@ -15,6 +15,7 @@ public enum BlockStyle
             DIAMOND,
             LOGIC_AND,
             LOGIC_NOT,
+            LOGIC_NTRUE,
             LOGIC_OR,
             ICON,
             JUNCTION,
