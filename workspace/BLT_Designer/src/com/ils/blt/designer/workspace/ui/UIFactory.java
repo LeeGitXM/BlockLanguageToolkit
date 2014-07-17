@@ -35,6 +35,9 @@ public class UIFactory {
 			case LOGIC_NOT:
 				ui= new LogicUIView(block,LogicUIView.SUBSTYLE_NOT);
 				break;
+			case LOGIC_NTRUE:
+				ui= new LogicUIView(block,LogicUIView.SUBSTYLE_NTRUE);
+				break;
 			case LOGIC_OR:
 				ui= new LogicUIView(block,LogicUIView.SUBSTYLE_OR);
 				break;

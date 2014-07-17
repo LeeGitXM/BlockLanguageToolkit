@@ -25,6 +25,7 @@ public class LogicUIView extends AbstractUIView implements BlockViewUI {
 	private static final long serialVersionUID = 2180868310475735865L;
 	public static final String SUBSTYLE_AND = "AND";
 	public static final String SUBSTYLE_NOT = "NOT";
+	public static final String SUBSTYLE_NTRUE = "NTRUE";
 	public static final String SUBSTYLE_OR = "OR";
 	private static final int DEFAULT_HEIGHT = 80;
 	private static final int DEFAULT_WIDTH  = 80;
@@ -71,6 +72,9 @@ public class LogicUIView extends AbstractUIView implements BlockViewUI {
 		}
 		else if( substyle.equalsIgnoreCase(SUBSTYLE_OR)) {
 			shape = computeOrShape(width,height);
+		}
+		else if ( substyle.equalsIgnoreCase(SUBSTYLE_NTRUE)){
+			shape = computeAndShape(width, height);
 		}
 		// Default is AND
 		else {
@@ -124,6 +128,7 @@ public class LogicUIView extends AbstractUIView implements BlockViewUI {
 		shape.closePath();
 		return shape;
 	}
+	
 	/**
 	 * The "not" shape is a triangle with a small circle at its point.
 	 * @param width
