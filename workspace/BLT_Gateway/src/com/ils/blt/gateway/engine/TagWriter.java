@@ -1,8 +1,6 @@
 /**
- *   (c) 2013  ILS Automation. All rights reserved.
+ *   (c) 2013-2014  ILS Automation. All rights reserved.
  *  
- *   The tag factory is designed to be called from the client
- *   via RPC. The client presents the same interface to scripting functions.
  */
 package com.ils.blt.gateway.engine;
 
@@ -21,8 +19,7 @@ import com.inductiveautomation.ignition.gateway.sqltags.model.BasicAsyncWriteReq
 import com.inductiveautomation.ignition.gateway.sqltags.model.WriteRequest;
 
 /**
- *  A Tag writer updates tags with model outputs. The tag path structure
- *  is "well-known" as is the list of parameters to be written.
+ *  A Tag writer updates tags with diagram outputs.
  */
 public class TagWriter  {
 	private static final String TAG = "TagWriter";
@@ -40,7 +37,7 @@ public class TagWriter  {
 	 * The context is set sometime after the instance is created.
 	 * @param ctx the Gateway context
 	 */
-	public void start(GatewayContext ctx) {
+	public void initialize(GatewayContext ctx) {
 		this.context = ctx;
 	}
 	/**

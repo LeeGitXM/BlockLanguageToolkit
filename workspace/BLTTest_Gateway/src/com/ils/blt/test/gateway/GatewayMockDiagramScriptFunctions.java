@@ -135,6 +135,11 @@ public class GatewayMockDiagramScriptFunctions  {
 		}
 		return locked;
 	}
+	
+	public static QualifiedValue readTag(String tagPath) {
+		return requestHandler.readTag(tagPath);
+	}
+	
 	/**
 	 * Read the current value held by the mock output identified by the specified
 	 * port name.
@@ -210,6 +215,11 @@ public class GatewayMockDiagramScriptFunctions  {
 			requestHandler.stopMockDiagram(diagramId);
 		}
 	}
+	
+	public static void updateTag(String tagPath,QualifiedValue qv) {
+		requestHandler.updateTag(tagPath, qv);
+	}
+	
 	/**
 	 * Transmit a signal with the specified command to the block-under-test.
 	 *   

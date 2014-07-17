@@ -80,6 +80,20 @@ public class MockDiagramScriptFunctions   {
 		}
 	}
 	/**
+	 * Clear any local data stored in the named output.
+	 * @param diagram
+	 * @param port
+	 */
+	public static void clearOutput(UUID diagramId,String port) {
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTTestProperties.MODULE_ID, "clearOutput", diagramId, port);
+		}
+		catch(Exception ge) {
+			log.infof("%s.clearOutput %s: GatewayException (%s)",TAG,port,ge.getMessage());
+		}
+	}
+	/**
 	 * Remove the test diagram from the execution engine (block controller).
 	 * The diagram is stopped before being deleted.
 	 * 

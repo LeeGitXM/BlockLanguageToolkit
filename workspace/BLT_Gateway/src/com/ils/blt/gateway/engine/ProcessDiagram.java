@@ -181,6 +181,13 @@ public class ProcessDiagram extends ProcessNode {
 	}
 	
 	public DiagramState getState() {return state;}
+	/**
+	 * Set the state of the diagram. Note that the state does not affect the activity 
+	 * of blocks within the diagram. It only affects the way that block results are 
+	 * propagated (or not).
+	 * 
+	 * @param s the new state
+	 */
 	public void setState(DiagramState s) {this.state = s;}
 	/**
 	 * Report on whether or not the DOM contained more than one connected node.

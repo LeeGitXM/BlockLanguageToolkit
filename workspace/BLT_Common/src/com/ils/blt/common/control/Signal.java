@@ -3,6 +3,8 @@
  */
 package com.ils.blt.common.control;
 
+import java.io.Serializable;
+
 
 /**
  * A signal is a command and is transmitted along a Signal connection
@@ -10,7 +12,8 @@ package com.ils.blt.common.control;
  * 
  * This is a property container with no behavior.
  */
-public class Signal {
+public class Signal implements Serializable {
+	private static final long serialVersionUID = 3694163288904551177L;
 	private String command = "";
 	private String arg = "";
 	private String message = "";

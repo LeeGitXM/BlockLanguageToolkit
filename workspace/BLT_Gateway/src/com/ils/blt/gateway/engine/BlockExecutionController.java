@@ -180,7 +180,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		if(!stopped) return;  
 		stopped = false;
 		tagListener.start(context);
-		tagWriter.start(context);
+		tagWriter.initialize(context);
 		this.notificationThread = new Thread(this, "BlockExecutionController");
 		log.debugf("%s START - notification thread %d ",TAG,notificationThread.hashCode());
 		notificationThread.setDaemon(true);
@@ -189,6 +189,9 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		// It is started on creation
 		watchdogTimer = new WatchdogTimer();
 		sessionManager = context.getGatewaySessionManager();
+		
+		// Activate all of the blocks in the diagram.
+		modelManager.startBlocks();
 	}
 	
 	/**
@@ -196,7 +199,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 * instance values to null to, hopefully, allow garbage collection.
 	 */
 	public synchronized void stop() {
-		log.debugf("%s: STOPPED",TAG);
+		log.infof("%s: STOPPING ...",TAG);
 		if(stopped) return;
 		stopped = true;
 		if(notificationThread!=null) {
@@ -205,6 +208,9 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		tagListener.stop();
 		watchdogTimer.stop();
 		watchdogTimer = null;
+		// Shutdown all of the blocks in the diagram.
+		modelManager.stopBlocks();
+		log.infof("%s: STOPPED",TAG);
 	}
 	
 	public  void setDelegate(ModelManager resmgr) { this.modelManager = resmgr; }

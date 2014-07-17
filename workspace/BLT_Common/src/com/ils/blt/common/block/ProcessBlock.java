@@ -132,7 +132,14 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 * @param text the current status of the block
 	 */
 	public void setStatusText(String text);
-	
+	/**
+	 * Start any active monitoring or processing within the block.
+	 */
+	public void start();
+	/**
+	 * Terminate any active operations within the block.
+	 */
+	public void stop();
 	/**
 	 * In the case where the block has specified a coalescing time,
 	 * this method will be called by the engine after receipt of input

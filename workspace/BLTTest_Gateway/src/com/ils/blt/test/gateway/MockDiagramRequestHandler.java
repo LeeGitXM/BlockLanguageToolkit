@@ -16,6 +16,8 @@ import com.ils.blt.common.control.SignalNotification;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.gateway.BlockRequestHandler;
 import com.ils.blt.gateway.engine.BlockExecutionController;
+import com.ils.blt.gateway.engine.TagReader;
+import com.ils.blt.gateway.engine.TagWriter;
 import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.ils.blt.test.common.MockDiagramScriptingInterface;
 import com.ils.blt.test.gateway.mock.MockDiagram;
@@ -41,6 +43,8 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 	private final LoggerEx log;
 	private GatewayContext context = null;
 	private final BlockExecutionController controller;
+	private final TagReader tagReader;
+	private final TagWriter tagWriter;
 	
 	/**
 	 * Initialize with a Gateway context.
@@ -49,6 +53,10 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.controller = BlockExecutionController.getInstance();
 		this.context = cntx;
+		this.tagWriter = new TagWriter();
+		this.tagReader = new TagReader();
+		tagWriter.initialize(context);
+		tagReader.initialize(context);
 	}
 	/**
 	 * Create, but do not activate, a mock diagram.
@@ -192,6 +200,11 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 	}
 
 	@Override
+	public QualifiedValue readTag(String tagPath) {
+		return tagReader.readTag(tagPath);
+	}
+	
+	@Override
 	public QualifiedValue readValue(UUID diagramId, String port) {
 		QualifiedValue qv = new BasicQualifiedValue("none");
 		MockDiagram mock = (MockDiagram)controller.getDiagram(diagramId);
@@ -285,20 +298,21 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 		else {
 			log.infof("%s.setTestBlockPropertyBinding: unable to find diagram %s ",TAG,diagramId.toString());
 		}
-		
 	}
 	
 	/**
 	 * Start the execution engine, then start the test diagram. 
+	 * Note that we have not actually added the diagram to the controller.
 	 * @param diagramId
 	 */
 	public void startMockDiagram(UUID diagramId){
 		log.infof("%s.startMockDiagram: %s ",TAG,diagramId.toString());
-		MockDiagram mock = (MockDiagram)controller.getDiagram(diagramId);
+		MockDiagram mock = (MockDiagram)(controller.getDiagram(diagramId));
 		if( mock!=null ) {
 			controller.start(context);
 			mock.analyze();  // Analyze connections
 			for(ProcessBlock block:mock.getProcessBlocks()) {
+				block.start();
 				for(BlockProperty prop:block.getProperties()) {
 					controller.startSubscription(block, prop);
 				}
@@ -316,6 +330,7 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 		MockDiagram mock = (MockDiagram)controller.getDiagram(diagramId);
 		if( mock!=null ) {
 			for(ProcessBlock block:mock.getProcessBlocks()) {
+				block.stop();
 				for(BlockProperty prop:block.getProperties()) {
 					controller.removeSubscription(block, prop);
 				}
@@ -324,7 +339,10 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 			controller.clearSubscriptions();
 		}
 	}
-	
+	@Override
+	public void updateTag(String tagPath,QualifiedValue qv) {
+		tagWriter.updateTag(tagPath, qv);
+	}
 	/**
 	 * Transmit a signal with the specified command to the block-under-test.
 	 *   

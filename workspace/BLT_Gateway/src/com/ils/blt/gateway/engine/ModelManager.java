@@ -259,6 +259,30 @@ public class ModelManager implements ProjectListener  {
 		}
 		return result;
 	}
+	
+	/**
+	 * Start all blocks in diagrams known to this manager. Note that, even if a diagram is
+	 * DISABLED, its blocks are started. It's just that their results are not propagated.
+	 */
+	public void startBlocks() {
+		for( ProcessDiagram diagram:diagramsByKey.values() ) {
+			for( ProcessBlock pb:diagram.getProcessBlocks()) {
+				pb.start();
+			}
+		}
+	}
+	/**
+	 * Stop all blocks in diagrams known to this manager. Presumably the controller has 
+	 * been stopped.
+	 */
+	public void stopBlocks() {
+		for( ProcessDiagram diagram:diagramsByKey.values() ) {
+			for( ProcessBlock pb:diagram.getProcessBlocks()) {
+				pb.stop();
+			}
+		}
+	}
+	
 	// ====================== Project Listener Interface ================================
 	/**
 	 * We don't care if the new project is a staging or published version.
@@ -367,10 +391,16 @@ public class ModelManager implements ProjectListener  {
 			ProjResKey key = new ProjResKey(projectId,res.getResourceId());
 			diagramsByKey.put(key,diagram);
 			addToHierarchy(projectId,diagram);
-			log.infof("%s.addDiagramResource: starting tag subscriptions ...%d:%s",TAG,projectId,res.getName());
+			log.infof("%s.addDiagramResource: defining tag subscriptions ...%d:%s",TAG,projectId,res.getName());
 			for( ProcessBlock pb:diagram.getProcessBlocks()) {
 				for(BlockProperty bp:pb.getProperties()) {
 					controller.startSubscription(pb,bp);
+				}
+			}
+			if( BlockExecutionController.getExecutionState().equals(BlockExecutionController.CONTROLLER_RUNNING_STATE)) {
+				log.infof("%s.addDiagramResource: starting blocks ...%d:%s",TAG,projectId,res.getName());
+				for( ProcessBlock pb:diagram.getProcessBlocks()) {
+					pb.start();
 				}
 			}
 		}
@@ -471,6 +501,7 @@ public class ModelManager implements ProjectListener  {
 		nodesByUUID.remove(diagram.getSelf());
 		BlockExecutionController controller = BlockExecutionController.getInstance();
 		for(ProcessBlock block:diagram.getProcessBlocks()) {
+			block.stop();
 			for(BlockProperty prop:block.getProperties()) {
 				controller.removeSubscription(block, prop);
 			}
@@ -491,6 +522,7 @@ public class ModelManager implements ProjectListener  {
 			if( node instanceof ProcessDiagram ) {
 				ProcessDiagram diagram = (ProcessDiagram)node;
 				for(ProcessBlock block:diagram.getProcessBlocks()) {
+					block.stop();
 					for(BlockProperty prop:block.getProperties()) {
 						controller.removeSubscription(block, prop);
 					}

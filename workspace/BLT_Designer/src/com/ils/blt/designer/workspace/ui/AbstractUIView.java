@@ -110,10 +110,10 @@ public abstract class AbstractUIView extends JComponent
 	protected void initAnchorPoints() {
 		Dimension sz = getPreferredSize();
 		// These actually end up the number of connections on a side
-		int rightSideCount = 0;
-		int rightSideIndex = 0;
-		int leftSideCount= 0;
-		int leftSideIndex= 0;
+		int rightCount = 0;
+		int rightIndex = 0;
+		int leftCount= 0;
+		int leftIndex= 0;
 		int topCount = 0;
 		int topIndex = 0;
 		int bottomCount= 0;
@@ -123,8 +123,8 @@ public abstract class AbstractUIView extends JComponent
 		for(ProcessAnchorDescriptor desc:block.getAnchors()) {
 			PlacementHint hint = desc.getHint();
 			if(hint==null) hint = PlacementHint.UNSPECIFIED;
-			if( hint.equals(PlacementHint.L)) leftSideCount++;
-			else if(hint.equals(PlacementHint.R)) rightSideCount++;
+			if( hint.equals(PlacementHint.L)) leftCount++;
+			else if(hint.equals(PlacementHint.R)) rightCount++;
 			else if(hint.equals(PlacementHint.B)) bottomCount++;
 			else if(hint.equals(PlacementHint.T)) topCount++;
 			// Now consider the defaults by type and direction
@@ -140,11 +140,11 @@ public abstract class AbstractUIView extends JComponent
 			
 			else if(desc.getType().equals(AnchorType.Origin)  ) {
 				desc.setHint(PlacementHint.R);
-				rightSideCount++;
+				rightCount++;
 			}
 			else if(desc.getType().equals(AnchorType.Terminus))  {
 				desc.setHint(PlacementHint.L);
-				leftSideCount++;
+				leftCount++;
 			}
 		}
 		
@@ -160,10 +160,10 @@ public abstract class AbstractUIView extends JComponent
 		if( topCount == 1 || topCount==2) topSegments = 4;
 		int bottomSegments = bottomCount+1;
 		if( bottomCount == 1 || bottomCount==2) bottomSegments = 4;
-		int leftSegments = leftSideCount+1;
-		if( leftSideCount == 2) leftSegments = 4;
-		int rightSegments = rightSideCount+1;
-		if( rightSideCount == 2) rightSegments = 4;
+		int leftSegments = leftCount+1;
+		if( leftCount == 2) leftSegments = 4;
+		int rightSegments = rightCount+1;
+		if( rightCount == 2) rightSegments = 4;
 		
 		
 		// Re-iterate using the same criteria as above
@@ -200,26 +200,26 @@ public abstract class AbstractUIView extends JComponent
 			}
 			// Left side
 			else if( desc.getHint().equals(PlacementHint.L)  ) {
-				leftSideIndex++;
-				if(leftSideCount==2 && leftSideIndex==2) leftSideIndex++;
+				leftIndex++;
+				if(leftCount==2 && leftIndex==2) leftIndex++;
 				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Terminus,
 						desc.getConnectionType(),
-						new Point(0,inset+leftSideIndex*interiorHeight/leftSegments),
-						new Point(-LEADER_LENGTH,inset+leftSideIndex*interiorHeight/leftSegments),
-						new Rectangle(0,leftSideIndex*interiorHeight/leftSegments,2*inset,2*inset),
+						new Point(0,inset+leftIndex*interiorHeight/leftSegments),
+						new Point(-LEADER_LENGTH,inset+leftIndex*interiorHeight/leftSegments),
+						new Rectangle(0,leftIndex*interiorHeight/leftSegments,2*inset,2*inset),
 						desc.getAnnotation());   // Hotspot shape.
 				getAnchorPoints().add(ap);
 				
 			}
 			// Right-side
 			else {
-				rightSideIndex++;
-				if(rightSideCount==2 && rightSideIndex==2) rightSideIndex++;
+				rightIndex++;
+				if(rightCount==2 && rightIndex==2) rightIndex++;
 				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Origin,
 						desc.getConnectionType(),
-						new Point(sz.width,inset+rightSideIndex*interiorHeight/rightSegments-1),
-						new Point(sz.width+LEADER_LENGTH,inset+rightSideIndex*interiorHeight/rightSegments-1),
-						new Rectangle(sz.width-2*inset,rightSideIndex*interiorHeight/rightSegments,2*inset,2*inset-1),
+						new Point(sz.width,inset+rightIndex*interiorHeight/rightSegments-1),
+						new Point(sz.width+LEADER_LENGTH,inset+rightIndex*interiorHeight/rightSegments-1),
+						new Rectangle(sz.width-2*inset,rightIndex*interiorHeight/rightSegments,2*inset,2*inset-1),
 						desc.getAnnotation());
 				getAnchorPoints().add(ap);
 	

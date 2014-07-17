@@ -87,6 +87,13 @@ public interface MockDiagramScriptingInterface   {
 	 */
 	public boolean isLocked(UUID diagram);
 	/**
+	 * Read the value of a tag
+	 * 
+	 * @param path a fully qualified tag path
+	 * @retunr value the qualified value to be written to the tag.
+	 */
+	public QualifiedValue readTag(String path);
+	/**
 	 * Read the current value held by the mock output identified by the specified
 	 * port name.
 	 * @param diagram
@@ -139,6 +146,13 @@ public interface MockDiagramScriptingInterface   {
 	 * @param diagram unique Id
 	 */
 	public void stopMockDiagram(UUID diagram);
+	/**
+	 * Write to a tag
+	 * 
+	 * @param path a fully qualified tag path
+	 * @param value the qualified value to be written to the tag.
+	 */
+	public void updateTag(String path,QualifiedValue value);
 	/**
 	 * Transmit a signal with the specified command to the block-under-test.
 	 *   
