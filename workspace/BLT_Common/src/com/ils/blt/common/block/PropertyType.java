@@ -14,8 +14,9 @@ public enum PropertyType
             DOUBLE,
             INTEGER,
             BOOLEAN,
-            HTML,                // Gets an html editor
             DISTRIBUTION,
+            HTML,                // Gets an html editor
+            HYSTERESIS,          // Hysteresis (TRUE,FALSE,ALWAYS,NEVER)
             LIMIT,               // Limit type (UPPER,LOWER,BOTH)
             SCOPE,               // Transmission scope
             TIME,                // seconds, editor auto-scales display unit.

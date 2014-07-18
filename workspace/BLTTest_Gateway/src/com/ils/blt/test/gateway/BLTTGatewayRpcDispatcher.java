@@ -173,8 +173,8 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface{
 	 * @param command
 	 */
 	@Override
-	public void writeCommand(UUID diagram,String command,String arg,String msg) {
-		requestHandler.writeCommand(diagram,command,arg,msg);
+	public long writeCommand(UUID diagram,String command,String arg,String msg) {
+		return requestHandler.writeCommand(diagram,command,arg,msg);
 	}
 	/**
 	 * Direct a MockInput block to transmit a value to the block-under-test.

@@ -226,8 +226,8 @@ public class GatewayMockDiagramScriptFunctions  {
 	 * @param diagram
 	 * @param command
 	 */
-	public static void writeCommand(UUID diagram,String command,String arg,String msg) {
-		requestHandler.writeCommand(diagram,command,arg,msg);
+	public static long writeCommand(UUID diagram,String command,String arg,String msg) {
+		return requestHandler.writeCommand(diagram,command,arg,msg);
 	}
 	
 	/**

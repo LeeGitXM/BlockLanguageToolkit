@@ -158,8 +158,9 @@ public interface MockDiagramScriptingInterface   {
 	 *   
 	 * @param diagram
 	 * @param command
+	 * @return timestamp, the system time at which the value was created
 	 */
-	public void writeCommand(UUID diagram,String command,String arg,String msg);
+	public long writeCommand(UUID diagram,String command,String arg,String msg);
 	/**
 	 * Simulate data arriving on the nth connection into the named input port of the 
 	 * block under test. 

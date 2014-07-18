@@ -3,6 +3,7 @@
  */
 package com.ils.blt.test.gateway;
 
+import java.util.Date;
 import java.util.UUID;
 
 import com.ils.blt.common.block.BindingType;
@@ -350,7 +351,7 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 	 * @param command
 	 */
 	@Override
-	public void writeCommand(UUID diagramId,String command,String arg,String msg) {
+	public long writeCommand(UUID diagramId,String command,String arg,String msg) {
 		MockDiagram mock = (MockDiagram)controller.getDiagram(diagramId);
 		if( mock!=null ) {
 			ProcessBlock uut = mock.getBlockUnderTest();
@@ -358,6 +359,7 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 			SignalNotification snote = new SignalNotification(uut,sig);
 			uut.acceptValue(snote);
 		}
+		return (new Date()).getTime();
 	}
 	
 	/**

@@ -308,15 +308,18 @@ public class MockDiagramScriptFunctions   {
 	 * @param diagram
 	 * @param command
 	 */
-	public static void writeCommand(UUID diagram,String command,String arg,String msg) {
+	public static long writeCommand(UUID diagram,String command,String arg,String msg) {
 		log.debugf("%s.writeCommand: %s %s",TAG,diagram.toString(),command);
+		long timestamp = 0;
 		try {
-			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+			Long result = (Long)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTTestProperties.MODULE_ID, "writeCommand", diagram,command,arg,msg);
+			if( result!=null ) timestamp = result.longValue();
 		}
 		catch(Exception ge) {
 			log.infof("%s.writeCommand: GatewayException (%s)",TAG,ge.getMessage());
 		}
+		return timestamp;
 	}
 	
 	/**
