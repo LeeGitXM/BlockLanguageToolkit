@@ -12,7 +12,8 @@ public enum LimitType
             NONE,
             HIGH,
             LOW,
-            BOTH 
+            BOTH,
+            CONSECUTIVE
             ;
            
  /**
