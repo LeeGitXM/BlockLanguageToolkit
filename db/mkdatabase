@@ -1,0 +1,11 @@
+#!/bin/sh
+#  Create a recipe database from a "DbManager" export.
+#
+#  -- must be run in the same directory as the insert script.
+#
+#!/bin/sh
+#set -x
+DB=recipe.db
+DIR=`pwd`
+rm -f $DB
+sqlite3 $DB < ${DIR}/RecipeTarget.sql
