@@ -1,0 +1,29 @@
+<Tags>
+   <Tag name="_types_" path="" type="Folder"/>
+   <Tag name="DataPump" path="" type="Folder"/>
+   <Tag name="line" path="DataPump" type="DB">
+      <Property name="Value">6</Property>
+      <Property name="DataType">2</Property>
+   </Tag>
+   <Tag name="state" path="DataPump" type="DB">
+      <Property name="Value">Idle</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="command" path="DataPump" type="DB">
+      <Property name="Value">Run</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="Tags" path="" type="Folder"/>
+   <Tag name="InputBoolean" path="Tags" type="DB">
+      <Property name="Value">true</Property>
+      <Property name="DataType">6</Property>
+   </Tag>
+   <Tag name="InputFloat" path="Tags" type="DB">
+      <Property name="Value">6.0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="InputString" path="Tags" type="DB">
+      <Property name="Value">&quot;Auf Wiedersehen&quot;</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+</Tags>
