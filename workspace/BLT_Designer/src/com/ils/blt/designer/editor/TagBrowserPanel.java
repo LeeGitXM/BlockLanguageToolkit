@@ -7,7 +7,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
@@ -93,14 +92,20 @@ public class TagBrowserPanel extends BasicEditPanel {
 			if( tp!=null ) {
 				log.infof("TagBrowserPanel.updateForProperty binding parsed as %s",tp.toString());
 				SQLTagTreeModel sttm = (SQLTagTreeModel)tagTree.getModel();
-				TreePath treePath = sttm.getPathForTag(tp);
-				if( treePath!=null ) {
-					tagTreeSelectionModel.setSelectionPath(treePath);
-					tagTree.expandPath(treePath); 
-					log.infof("TagBrowserPanel.updateForProperty %s",treePath.toString());
+				try {
+					TreePath treePath = sttm.getPathForTag(tp);
+					if( treePath!=null ) {
+						tagTreeSelectionModel.setSelectionPath(treePath);
+						tagTree.expandPath(treePath); 
+						log.infof("TagBrowserPanel.updateForProperty %s",treePath.toString());
+					}
+					else {
+						log.infof("TagBrowserPanel.updateForProperty: No tree path found for: %s:%s",property.getName(),property.getBinding());
+					}
 				}
-				else {
-					log.infof("TagBrowserPanel.updateForProperty: No tree path found for: %s:%s",property.getName(),property.getBinding());
+				// getTagForPath() can throw a NPE
+				catch(Exception ex) {
+					log.infof("TagBrowserPanel.updateForProperty: Exception %s",ex.getLocalizedMessage());
 				}
 			}
 			else {

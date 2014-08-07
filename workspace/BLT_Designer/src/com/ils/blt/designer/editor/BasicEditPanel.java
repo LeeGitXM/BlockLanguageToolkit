@@ -12,10 +12,7 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
 
-import com.ils.blt.common.ApplicationRequestManager;
-import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
