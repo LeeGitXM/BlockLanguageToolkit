@@ -94,7 +94,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		// Setup the diagram workspace
 		workspace = new DiagramWorkspace(context);
 		rootNode = new GeneralPurposeTreeNode(context);
-		context.getProjectBrowserRoot().addChild(rootNode);
+		context.getProjectBrowserRoot().getProjectFolder().addChild(rootNode);
 		context.registerResourceWorkspace(workspace);
 	}
 	

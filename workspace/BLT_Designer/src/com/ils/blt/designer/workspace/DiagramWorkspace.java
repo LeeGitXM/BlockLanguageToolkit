@@ -59,6 +59,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.Connect
 import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.ArrowConnectionPainter;
 import com.inductiveautomation.ignition.designer.designable.DesignPanel;
 import com.inductiveautomation.ignition.designer.designable.DesignableWorkspaceListener;
+import com.inductiveautomation.ignition.designer.designable.IDesignTool;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.model.EditActionHandler;
@@ -125,7 +126,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		frames.add(pef);
 	}
 
-	
 	@Override
 	public EditActionHandler getEditActionHandler() {
 		return editActionHandler;
