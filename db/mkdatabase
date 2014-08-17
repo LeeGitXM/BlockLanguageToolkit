@@ -8,4 +8,4 @@
 DB=recipe.db
 DIR=`pwd`
 rm -f $DB
-sqlite3 $DB < ${DIR}/RecipeTarget.sql
+sqlite3 $DB < ${DIR}/GLineClean.sql
