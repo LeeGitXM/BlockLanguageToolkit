@@ -26,15 +26,16 @@ public interface BlockConstants   {
 	public static final String BLOCK_PROPERTY_COMMAND       = "Command";
 	public static final String BLOCK_PROPERTY_DEADBAND      = "Deadband";
 	public static final String BLOCK_PROPERTY_DISTRIBUTION  = "Distribution";
-	public static final String BLOCK_PROPERTY_FORMAT           = "Format";
-	public static final String BLOCK_PROPERTY_HEIGHT           = "Height";
+	public static final String BLOCK_PROPERTY_FILL_REQUIRED = "FillRequired";
+	public static final String BLOCK_PROPERTY_FORMAT        = "Format";
+	public static final String BLOCK_PROPERTY_HEIGHT        = "Height";
 	public static final String BLOCK_PROPERTY_INHIBIT_INTERVAL = "InhibitInterval";  // Inhibit period ~ sec
 	public static final String BLOCK_PROPERTY_INSTANCE      = "Instance"; 
 	public static final String BLOCK_PROPERTY_INTERVAL      = "Interval";
 	public static final String BLOCK_PROPERTY_LABEL         = "Label";
 	public static final String BLOCK_PROPERTY_LIMIT         = "Limit";
 	public static final String BLOCK_PROPERTY_LIMIT_TYPE    = "LimitType";
-	public static final String BLOCK_PROPERTY_MEAN = "Mean";
+	public static final String BLOCK_PROPERTY_MEAN          = "Mean";
 	public static final String BLOCK_PROPERTY_OFFSET        = "Offset";
 	public static final String BLOCK_PROPERTY_SAMPLE_SIZE   = "SampleSize";
 	public static final String BLOCK_PROPERTY_SCOPE         = "Scope";	
@@ -69,6 +70,7 @@ public interface BlockConstants   {
 	public static final String PALETTE_TAB_CONNECTIVITY       = "Connectivity";
 	public static final String PALETTE_TAB_CONTROL            = "Control";
 	public static final String PALETTE_TAB_LOGIC              = "Logic";
+	public static final String PALETTE_TAB_OBSERVATION        = "Observation";
 	public static final String PALETTE_TAB_STATISTICS         = "Statistics";
 	public static final String PALETTE_TAB_MISC         = "Misc";
 	// Block filler colors
