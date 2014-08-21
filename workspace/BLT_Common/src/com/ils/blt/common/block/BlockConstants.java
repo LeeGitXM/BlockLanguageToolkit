@@ -74,7 +74,8 @@ public interface BlockConstants   {
 	public static final String PALETTE_TAB_STATISTICS         = "Statistics";
 	public static final String PALETTE_TAB_MISC         = "Misc";
 	// Block filler colors
-	public static final int BLOCK_BACKGROUND_LIGHT_BLUE     = (new Color(195,225,240)).getRGB();
+	public static final int BLOCK_BACKGROUND_LIGHT_BLUE     = (new Color(208,215,220)).getRGB();
+	public static final int BLOCK_BACKGROUND_LIGHT_ROSE     = (new Color(220,208,200)).getRGB();
 	public static final int BLOCK_BACKGROUND_LIGHT_GRAY     = (new Color(240,240,240)).getRGB();
 	
 	// These are well-known commands

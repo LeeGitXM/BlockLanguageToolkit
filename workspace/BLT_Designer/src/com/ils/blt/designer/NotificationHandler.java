@@ -72,7 +72,7 @@ public class NotificationHandler implements PushNotificationListener {
 		if( moduleId.equals(BLTProperties.MODULE_ID)) {
 			String key = notice.getMessageType();
 			Object payload = notice.getMessage();
-			log.infof("%s.receiveNotification: key=%s,value=%s",TAG,key,payload.toString());
+			log.debugf("%s.receiveNotification: key=%s,value=%s",TAG,key,payload.toString());
 			if( payload instanceof QualifiedValue ) {
 				NotificationChangeListener listener = changeListenerMap.get(key);
 				if( listener != null ) {
