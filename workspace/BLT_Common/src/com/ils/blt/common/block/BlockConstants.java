@@ -29,6 +29,7 @@ public interface BlockConstants   {
 	public static final String BLOCK_PROPERTY_FILL_REQUIRED = "FillRequired";
 	public static final String BLOCK_PROPERTY_FORMAT        = "Format";
 	public static final String BLOCK_PROPERTY_HEIGHT        = "Height";
+	public static final String BLOCK_PROPERTY_HYSTERESIS    = "Hysteresis";
 	public static final String BLOCK_PROPERTY_INHIBIT_INTERVAL = "InhibitInterval";  // Inhibit period ~ sec
 	public static final String BLOCK_PROPERTY_INSTANCE      = "Instance"; 
 	public static final String BLOCK_PROPERTY_INTERVAL      = "Interval";
@@ -43,8 +44,9 @@ public interface BlockConstants   {
 	public static final String BLOCK_PROPERTY_STANDARD_DEVIATION = "StandardDeviation";
 	public static final String BLOCK_PROPERTY_SYNC_INTERVAL    = "SyncInterval";     // Time to coalesce inputs ~ sec
 	public static final String BLOCK_PROPERTY_TAG_PATH = "TagPath";
-	public static final String BLOCK_PROPERTY_TEXT = "Text";
-	public static final String BLOCK_PROPERTY_TIME_WINDOW = "TimeWindow";
+	public static final String BLOCK_PROPERTY_TEXT             = "Text";
+	public static final String BLOCK_PROPERTY_TIME_WINDOW      = "TimeWindow";
+	public static final String BLOCK_PROPERTY_TRIGGER_COUNT    = "TriggerCount";
 	public static final String BLOCK_PROPERTY_VALUE = "Value";                       // Current value
 	public static final String BLOCK_PROPERTY_WIDTH = "Width";
 	
@@ -74,7 +76,7 @@ public interface BlockConstants   {
 	public static final String PALETTE_TAB_STATISTICS         = "Statistics";
 	public static final String PALETTE_TAB_MISC         = "Misc";
 	// Block filler colors
-	public static final int BLOCK_BACKGROUND_LIGHT_BLUE     = (new Color(208,215,220)).getRGB();
+	public static final int BLOCK_BACKGROUND_GRAYISH        = (new Color(208,215,220)).getRGB();
 	public static final int BLOCK_BACKGROUND_LIGHT_ROSE     = (new Color(220,208,200)).getRGB();
 	public static final int BLOCK_BACKGROUND_LIGHT_GRAY     = (new Color(240,240,240)).getRGB();
 	

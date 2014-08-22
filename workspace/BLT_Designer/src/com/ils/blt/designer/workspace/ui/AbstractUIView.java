@@ -128,7 +128,8 @@ public abstract class AbstractUIView extends JComponent
 			else if(hint.equals(PlacementHint.B)) bottomCount++;
 			else if(hint.equals(PlacementHint.T)) topCount++;
 			// Now consider the defaults by type and direction
-			else if(desc.getConnectionType()==ConnectionType.SIGNAL) {
+			else if(desc.getConnectionType()==ConnectionType.SIGNAL &&
+					desc.getType().equals(AnchorType.Terminus) ) {
 				desc.setHint(PlacementHint.T);
 				topCount++;
 			}
