@@ -8,8 +8,8 @@
 #set -x
 DB=conversion.db
 REPO_ROOT=~/Development/ils/repo
-BIN=$REPO_ROOT/blt/setup/db
-TARGETDIR=$REPO_ROOT/blt/setup/db
+BIN=$REPO_ROOT/blt/migration/db
+TARGETDIR=$REPO_ROOT/blt/migration/db
 mkdir -p ${TARGETDIR}
 
 
