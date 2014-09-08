@@ -31,6 +31,7 @@ insert into PropertyMap values ('EM-GDA-LOGIC-FILTER','filterTimInMinutes','Time
 insert into PropertyMap values ('EM-GDA-LOGIC-FILTER','fractionTrueRequired','Limit','DOUBLE',1,'NONE');
 insert into PropertyMap values ('EM-GDA-LOGIC-FILTER','hysteresis','Hysteresis','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-LOGIC-FILTER','recalculationIntervalInSeconds','scanInterval','DOUBLE',1,'NONE');
+insert into PropertyMap values ('EM-GDA-LOGICAL-VARIABLE','label','','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-SQC-DIAGNOSIS','label','Label','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-SQC-LIMIT-OBSERVATION','dataSource','','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-SQC-LIMIT-OBSERVATION','label','','STRING',1,'NONE');
@@ -93,4 +94,6 @@ insert into PropertyMap values ('GDL-OR-GATE','maximumUnknownInputs','','INTEGER
 insert into PropertyMap values ('GDL-OR-GATE','outputUncertainty','','DOUBLE',1,'NONE');
 insert into PropertyMap values ('GDL-OR-GATE','useExpiredInputs','','STRING',1,'NONE');
 insert into PropertyMap values ('GDL-SYMBOLIC-ENTRY-POINT','nameOfSensor','Input','STRING',1,'TAG_READ');
+insert into PropertyMap values ('INTEGER-PARAMETER','LABEL','label','STRING',1,'NONE');
+insert into PropertyMap values ('LOGICAL-PARAMETER','LABEL','label','STRING',1,'NONE');
 insert into PropertyMap values ('LOGICAL-VARIABLE','LABEL','label','STRING',1,'NONE');

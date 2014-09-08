@@ -1,14 +1,20 @@
+insert into ClassMap values ('EM-GDA-ABSOLUTE-COMPARE','com.ils.block.CompareAbsolute');
 insert into ClassMap values ('EM-GDA-BAD-DATA-HANDLER','com.ils.block.DataConditioner');
 insert into ClassMap values ('EM-GDA-CLOCK-TIMER','com.ils.block.Clock');
 insert into ClassMap values ('EM-GDA-COMPARE','com.ils.block.Compare');
 insert into ClassMap values ('EM-GDA-DEADBAND-COMPARE','com.ils.block.CompareDeadband');
 insert into ClassMap values ('EM-GDA-ELAPSED-TIME-VARIABLE','com.ils.block.Junction');
+insert into ClassMap values ('EM-GDA-EXPIRATION-FILTER','com.ils.block.Junction');
 insert into ClassMap values ('EM-GDA-FINAL-DIAGNOSIS','emc.block.FinalDiagnosis.FinalDiagnosis');
 insert into ClassMap values ('EM-GDA-HIGH-LIMIT','com.ils.block.HighLimitObservation');
+insert into ClassMap values ('EM-GDA-HIGH-LIMIT-WITH-DEADBAND','com.ils.block.HighLimitObservation');
 insert into ClassMap values ('EM-GDA-LATCH','com.ils.block.EdgeTrigger');
 insert into ClassMap values ('EM-GDA-LOGIC-FILTER','com.ils.block.LogicFilter');
+insert into ClassMap values ('EM-GDA-LOGICAL-VARIABLE','com.ils.block.Parameter');
 insert into ClassMap values ('EM-GDA-LOW-LIMIT','com.ils.block.LowLimitObservation');
+insert into ClassMap values ('EM-GDA-LOW-LIMIT-WITH-DEADBAND','com.ils.block.LowLimitObservation');
 insert into ClassMap values ('EM-GDA-SET-VAR-FALSE','com.ils.block.Junction');
+insert into ClassMap values ('EM-GDA-SIMPLE-TREND-OBSERVATION','com.ils.block.TrendObservation');
 insert into ClassMap values ('EM-GDA-SQC-DIAGNOSIS','emc.block.SQCDiagnosis.SQCDiagnosis');
 insert into ClassMap values ('EM-GDA-SQC-LIMIT-OBSERVATION','com.ils.block.SQC');
 insert into ClassMap values ('EM-GDA-SUBDIAGNOSIS','emc.block.SubDiagnosis.SubDiagnosis');
@@ -27,6 +33,7 @@ insert into ClassMap values ('GDL-DIFFERENCE','com.ils.block.Difference');
 insert into ClassMap values ('GDL-ENCAPSULATION','com.ils.block.Encapsulation');
 insert into ClassMap values ('GDL-ENCAPSULATION-BLOCK','com.ils.block.Encapsulation');
 insert into ClassMap values ('GDL-EQUALITY-OBSERVATION','com.ils.block.EqualityObservation');
+insert into ClassMap values ('GDL-INFERENCE-DELAY','com.ils.block.Delay');
 insert into ClassMap values ('GDL-INFERENCE-EVENT','com.ils.block.EdgeTrigger');
 insert into ClassMap values ('GDL-GENERIC-ACTION','emc.block.Action.Action');
 insert into ClassMap values ('GDL-HIGH-VALUE-OBSERVATION','com.ils.block.HighLimitObservation');
@@ -38,6 +45,9 @@ insert into ClassMap values ('GDL-NUMERIC-ENTRY-POINT','com.ils.block.Input');
 insert into ClassMap values ('GDL-OR-GATE','com.ils.block.Or');
 insert into ClassMap values ('GDL-PERSISTENCE-GATE','com.ils.block.PersistenceGate');
 insert into ClassMap values ('GDL-SYMBOLIC-ENTRY-POINT','com.ils.block.Input');
+insert into ClassMap values ('GDL-TIMER','com.ils.block.Clock');
+insert into ClassMap values ('INTEGER-PARAMETER','com.ils.block.Parameter');
+insert into ClassMap values ('LOGICAL-PARAMETER','com.ils.block.Parameter');
 insert into ClassMap values ('LOGICAL-VARIABLE','com.ils.block.Parameter');
 -- NOTE: We convert all connnection posts to "sinks"
 --       later on we analyze and determine which are "sources"
