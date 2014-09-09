@@ -7,6 +7,7 @@ insert into TagMap values ('AB-BALER-VOL-FTNIR-DATA','[]LabData/AB_BALER_VOL_FTN
 insert into TagMap values ('ALKYL_FLOW','[]LabData/ALKYL_FLOW/value','DOUBLE');
 insert into TagMap values ('B-BALER-TEMP-LAB-DATA','[]LabData/B_BALER_TEMP/value','DOUBLE');
 insert into TagMap values ('C-BALER-TEMP-LAB-DATA','[]LabData/C_BALER_TEMP/value','DOUBLE');
+insert into TagMap values ('C_FLYING_SWITCH-GDA-INPUT','[]Tags/C_FLYING_SWITCH/gdaInput','DOUBLE');
 insert into TagMap values ('CA-LAB-DATA','[]LabData/CA/value','DOUBLE');
 insert into TagMap values ('C2-LAB-DATA','[]LabData/C2/value','DOUBLE');
 insert into TagMap values ('C2-LAB-DATA-FOR-R1-NLC','[]LabData/C2_R1_NLC','DOUBLE');

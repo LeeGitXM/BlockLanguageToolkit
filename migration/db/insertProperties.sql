@@ -1,5 +1,7 @@
 -- Map G2 block properties into Ignition block properties
 -- Columns are: G2Class, G2Property, ignition propertyName, datatype, editable, binding type
+insert into PropertyMap values ('EM-GDA-ABSOLUTE-COMPARE','bandwidth','deadband','DOUBLE',1,'NONE');
+insert into PropertyMap values ('EM-GDA-ABSOLUTE-COMPARE','label','','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-BAD-DATA-HANDLER','label','','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-BAD-DATA-HANDLER','propagateExpirationData','','BOOLEAN',1,'NONE');
 insert into PropertyMap values ('EM-GDA-CLOCK-TIMER','label','','STRING',1,'NONE');
@@ -9,6 +11,7 @@ insert into PropertyMap values ('EM-GDA-DEADBAND-COMPARE','bandwidth','','DOUBLE
 insert into PropertyMap values ('EM-GDA-DEADBAND-COMPARE','label','','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-ELAPSED-TIME-VARIABLE','elapsedTimeMinutes','','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-ELAPSED-TIME-VARIABLE','label','','STRING',1,'NONE');
+insert into PropertyMap values ('EM-GDA-EXPIRATION','label','','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','explanation','Explanation','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','label','','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','logDiagnosisToDatabase','logToDatabase','BOOLEAN',1,'NONE');
@@ -24,6 +27,7 @@ insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','targets','Targets','LI
 insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','textRecommendation','Recommendation','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','textRecommendationCallback','Recommendation','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','trapInsignificantRecommendationConditions','TrapINsignificantConditions','BOOLEAN',1,'NONE');
+insert into PropertyMap values ('EM-GDA-HIGH-LIMIT-WITH-DEADBAND','label','','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-LATCH','label','','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-LOGIC-FILTER','bandwidth','','DOUBLE',1,'NONE');
 insert into PropertyMap values ('EM-GDA-LOGIC-FILTER','label','','STRING',1,'NONE');
@@ -32,6 +36,7 @@ insert into PropertyMap values ('EM-GDA-LOGIC-FILTER','fractionTrueRequired','Li
 insert into PropertyMap values ('EM-GDA-LOGIC-FILTER','hysteresis','Hysteresis','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-LOGIC-FILTER','recalculationIntervalInSeconds','scanInterval','DOUBLE',1,'NONE');
 insert into PropertyMap values ('EM-GDA-LOGICAL-VARIABLE','label','','STRING',1,'NONE');
+insert into PropertyMap values ('EM-GDA-LOW-LIMIT-WITH-DEADBAND','label','','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-SQC-DIAGNOSIS','label','Label','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-SQC-LIMIT-OBSERVATION','dataSource','','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-SQC-LIMIT-OBSERVATION','label','','STRING',1,'NONE');
@@ -94,6 +99,10 @@ insert into PropertyMap values ('GDL-OR-GATE','maximumUnknownInputs','','INTEGER
 insert into PropertyMap values ('GDL-OR-GATE','outputUncertainty','','DOUBLE',1,'NONE');
 insert into PropertyMap values ('GDL-OR-GATE','useExpiredInputs','','STRING',1,'NONE');
 insert into PropertyMap values ('GDL-SYMBOLIC-ENTRY-POINT','nameOfSensor','Input','STRING',1,'TAG_READ');
+insert into PropertyMap values ('GDL-TIMER','countBy','','STRING',1,'NONE');
+insert into PropertyMap values ('GDL-TIMER','displayUnits','','STRING',1,'NONE');
+insert into PropertyMap values ('GDL-TIMER','stopwhen','','STRING',1,'NONE');
+insert into PropertyMap values ('GDL-TIMER','triggeron','','STRING',1,'NONE');
 insert into PropertyMap values ('INTEGER-PARAMETER','LABEL','label','STRING',1,'NONE');
 insert into PropertyMap values ('LOGICAL-PARAMETER','LABEL','label','STRING',1,'NONE');
 insert into PropertyMap values ('LOGICAL-VARIABLE','LABEL','label','STRING',1,'NONE');
