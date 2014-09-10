@@ -151,5 +151,13 @@ insert into TagMap values ('[the standard-deviation of STAB-LAB-DATA]','[]LabDat
 insert into TagMap values ('[the target of STAB-LAB-DATA]','[]LabData/STAB_LAB_DATA/target','DOUBLE');
 insert into TagMap values ('[the bad-value of SS2_TAPER_TIP_HEIGHT]','[]Tags/SS2_TAPER_TIP_HEIGHT/badValue','DOUBLE');
 -- The following entries map the names of G2 parameters/value objects into Ignition Tags
+insert into TagMap values ('CATIN-GDA-COUNTER','[]Parameters/CatinCounter','STRING');
+insert into TagMap values ('CATIN-GDA-PROD-ML-ACTIVE','[]Parameters/CatinProdMlActive','STRING');
+insert into TagMap values ('EM-GDA-LOGICAL-VARIABLE-XXX-293','[]Parameters/LogicalVariable293','STRING');
+insert into TagMap values ('FREEZER-SAMPLE-SWITCH','[]Parameters/FreezerSampleSwitch','STRING');
+insert into TagMap values ('SERIES_FLYING_SWITCH-GDA-INPUT','[]Parameters/SeriesFlyingSwitchInput','STRING');
+insert into TagMap values ('SINGLE_FLYING_SWITCH-GDA-INPUT','[]Parameters/SingleFlyingSwitchInput','STRING');
+insert into TagMap values ('SERIES_RATE_CHANGE-GDA-INPUT','[]Parameters/SeriesRateChangeInput','STRING');
+insert into TagMap values ('SINGLE_RATE_CHANGE-GDA-INPUT','[]Parameters/SingleRateChangeInput','STRING');
 insert into TagMap values ('SPLIT_FLYING_SWITCH-GDA-INPUT','[]Parameters/SplitFlyingSwitchInput','STRING');
 
