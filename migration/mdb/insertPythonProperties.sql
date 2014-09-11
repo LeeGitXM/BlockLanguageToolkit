@@ -9,8 +9,8 @@ insert into PythonPrototypes values ('emc.block.SubDiagnosis.SubDiagnosis','SQUA
 
 -- Columns are:  className, propertyName, propertyType, editable
 insert into PythonBlockProperties values ('emc.block.Action.Action','Script','STRING',1);
-insert into PythonBlockProperties values ('emc.block.Arithmetic.Arithmetic','Finction','STRING',1);
-insert into PythonBlockProperties values ('emc.block.FinalDiagnosis.FinalDiagnosis','CalculationMethod','STRING',1);
+insert into PythonBlockProperties values ('emc.block.Arithmetic.Arithmetic','Function','STRING',1);
+insert into PythonBlockProperties values ('emc.block.FinalDiagnosis.FinalDiagnosis','CalculationMethod','SCRIPTREF',1);
 insert into PythonBlockProperties values ('emc.block.FinalDiagnosis.FinalDiagnosis','Explanation','STRING',1);
 insert into PythonBlockProperties values ('emc.block.FinalDiagnosis.FinalDiagnosis','Label','STRING',1);
 insert into PythonBlockProperties values ('emc.block.FinalDiagnosis.FinalDiagnosis','LogToDatabase','BOOLEAN',1);
@@ -21,7 +21,7 @@ insert into PythonBlockProperties values ('emc.block.FinalDiagnosis.FinalDiagnos
 insert into PythonBlockProperties values ('emc.block.FinalDiagnosis.FinalDiagnosis','PostRecommendation','BOOLEAN',1);
 insert into PythonBlockProperties values ('emc.block.FinalDiagnosis.FinalDiagnosis','Priority','DOUBLE',1);
 insert into PythonBlockProperties values ('emc.block.FinalDiagnosis.FinalDiagnosis','Recommendation','STRING',1);
-insert into PythonBlockProperties values ('emc.block.FinalDiagnosis.FinalDiagnosis','RecommendationCallback','STRING',1);
+insert into PythonBlockProperties values ('emc.block.FinalDiagnosis.FinalDiagnosis','RecommendationCallback','SCRIPTREF',1);
 insert into PythonBlockProperties values ('emc.block.FinalDiagnosis.FinalDiagnosis','RecommendationRefreshInterval','DOUBLE',1);
 insert into PythonBlockProperties values ('emc.block.FinalDiagnosis.FinalDiagnosis','Targets','LIST',1);
 insert into PythonBlockProperties values ('emc.block.FinalDiagnosis.FinalDiagnosis','TrapInsignificantConditions','BOOLEAN',1);

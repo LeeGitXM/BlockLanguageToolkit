@@ -1,0 +1,20 @@
+#!/bin/sh
+#  Procedure migration script
+# -- options for log.level:  INFO,DEBUG,TRACE
+#
+if [ $# -lt 1 ]
+then
+    echo "USAGE: translate <file>"
+	exit 2
+fi
+REPO=~/Development/ils/repo
+cd $REPO/blt
+BLT=`pwd`
+LIB=$REPO/external/lib
+JAR=${LIB}/g2-translation.jar
+DB=${BLT}/migration/tdb/lookup.db
+OUTDIR=${BLT}/migration/out
+mkdir -p ${OUTDIR}
+set -x
+#cat $1 | java -cp ${JAR} -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000 -Dlog.level=INFO -Droot.class=APPLICATION com.ils.blt.migration.Migrator ${DB}
+cat $1 | java -cp ${JAR} -Dprocedure.package=ils.blt.fd -Dlog.level=TRACE com.ils.python.translation.G2ProcedureTranslator ${OUTDIR} ${DB} 

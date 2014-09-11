@@ -23,6 +23,7 @@ public enum PropertyType
             TRUTHVALUE,
             LIST,                // List of strings, char used to delimit is first value
             SCRIPT,              // Gets a Python editor
+            SCRIPTREF,           // Name of a Python module to execute
             OBJECT               // Untyped primitive
             ;
            

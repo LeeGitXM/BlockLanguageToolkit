@@ -33,6 +33,7 @@ import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.migration.map.AnchorMapper;
 import com.ils.blt.migration.map.ClassNameMapper;
 import com.ils.blt.migration.map.ConnectionMapper;
+import com.ils.blt.migration.map.ProcedureMapper;
 import com.ils.blt.migration.map.PropertyMapper;
 import com.ils.blt.migration.map.PythonPropertyMapper;
 import com.ils.blt.migration.map.TagMapper;
@@ -53,6 +54,7 @@ public class Migrator {
 	private SerializableDiagram diagram = null;           // The result
 	private final AnchorMapper anchorMapper;
 	private final ClassNameMapper classMapper;
+	private final ProcedureMapper procedureMapper;
 	private final PythonPropertyMapper pythonPropertyMapper;
 	private final ConnectionMapper connectionMapper;
 	private final PropertyMapper propertyMapper;
@@ -66,6 +68,7 @@ public class Migrator {
 		anchorMapper = new AnchorMapper();
 		classMapper = new ClassNameMapper();
 		connectionMapper = new ConnectionMapper();
+		procedureMapper = new ProcedureMapper();
 		propertyMapper = new PropertyMapper();
 		pythonPropertyMapper = new PythonPropertyMapper();
 		tagMapper = new TagMapper();
@@ -81,6 +84,7 @@ public class Migrator {
 			connection = DriverManager.getConnection(connectPath);
 			anchorMapper.createMap(connection);
 			classMapper.createMap(connection);
+			procedureMapper.createMap(connection);
 			propertyMapper.createMap(connection);
 			pythonPropertyMapper.createMap(connection);
 			tagMapper.createMap(connection);
@@ -264,6 +268,7 @@ public class Migrator {
 			connectionMapper.setAnchors(g2block,block);
 			performSpecialHandlingOnBlock(g2block,block);
 			// Need to set values here ...
+			procedureMapper.setPythonModuleNames(block);
 			tagMapper.setTagPaths(block);
 			blocks[index]=block;
 			index++;

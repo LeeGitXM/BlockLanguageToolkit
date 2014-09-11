@@ -42,6 +42,11 @@ CREATE TABLE PythonBlockProperties(
 	PropertyType text NOT NULL,
 	Editable integer
 );
+-- Convert G2 procedute names into Python module names.
+CREATE TABLE ProcedureMap(
+    G2Procedure text NOT NULL,
+    IgnitonProcedure text NOT NULL
+);
 -- This table is used to define attributes that
 -- are fixed for a given class of block. Only
 -- blocks that are defined in Python should be

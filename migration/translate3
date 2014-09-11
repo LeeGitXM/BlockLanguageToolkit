@@ -1,0 +1,7 @@
+#!/bin/sh
+#  Use this version when debugging a single file.
+#
+SFC=~/Development/ils/repo/sfc
+FIL=EM-S88-C-RX-MAT-ENRGY-BALANCE-COLD-STICK.txt
+DIR=${SFC}/migration/samples
+${SFC}/migration/translate $DIR/$FIL
