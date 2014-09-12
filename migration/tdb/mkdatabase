@@ -17,5 +17,5 @@ cd ${TARGETDIR}
 rm -f $DB
 sqlite3 $DB < ${BIN}/createTables.sql
 sqlite3 $DB < ${BIN}/insertClassMap.sql
-sqlite3 $DB < ${BIN}/insertConstants.sql
+sqlite3 $DB < ${BIN}/insertEnumerations.sql
 sqlite3 $DB < ${BIN}/insertProcedures.sql

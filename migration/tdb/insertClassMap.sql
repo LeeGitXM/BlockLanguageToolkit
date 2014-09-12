@@ -1,2 +1,2 @@
-insert into ClassMap values ('EM-APPLICAION','com.ils.blt.gateway.engine.ProcessApplication');
-insert into ClassMap values ('EM-GDA-FINAL-DIAGNOSIS','emc.block.finaldiagnosis');
+insert into ClassMap values ('em-application','com.ils.blt.gateway.engine.ProcessApplication');
+insert into ClassMap values ('em-gda-final-diagnosis','ils.block.finaldiagnosis');

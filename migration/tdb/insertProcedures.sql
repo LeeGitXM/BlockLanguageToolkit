@@ -1,4 +1,4 @@
--- Map G2 procedure name into a python module.
+-- Map G2 FinalDiagnosis calc methods into a python module.
 insert into ProcedureMap values ('calc-cstr_ml_problem-output-gda','ils.fd.CstrMl.calculate');
 insert into ProcedureMap values ('calc-cstr_c2_problem-output-gda','ils.fd.CstrC2.calculate');
 insert into ProcedureMap values ('calc-cstr_ens_problem-output-gda','ils.fd.CstrEnb.calculate');
@@ -24,3 +24,5 @@ insert into ProcedureMap values ('calc-baler-temp-problem-output-gda','ils.fd.Ba
 insert into ProcedureMap values ('calc-reslurry-problem-output-gda','ils.fd.Reslurry.calculate');
 insert into ProcedureMap values ('calc-baler-vol-output-gda','ils.fd.BalerVolume.calculate');
 insert into ProcedureMap values ('prod-mooney-gda','ils.fd.ProductMooney.calculate');
+-- Map G2 utility methods into Python equivalents
+insert into ProcedureMap values ('g2-tw-popup','ils.utility.Window.displayClient');

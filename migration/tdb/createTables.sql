@@ -33,9 +33,10 @@ CREATE TABLE PropertyMap(
 	BindingType text NOT NULL
 );
 -- These are values of symbolic constants
-CREATE TABLE ConstantMap(
-   G2Name text NOT NULL,
-   Value  text NOT NULL
+CREATE TABLE EnumerationMap(
+   G2Name text      NOT NULL,
+   EnumerationName  text NOT NULL,
+   Value            text NOT NULL
 );
 -- These are values of globals
 -- by the procedures that need them.

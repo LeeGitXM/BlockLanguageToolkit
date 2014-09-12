@@ -2,9 +2,9 @@
 # Process all of the json files in the repository "g2" area.
 # Save the results in the json storate area for ignition.
 #
-SFC=~/Development/ils/repo/sfc
-APP=${SFC}/migration/translate
-cd ${SFC}/migration/samples
+BLT=~/Development/ils/repo/blt
+APP=${BLT}/migration/translate
+cd ${BLT}/migration/g2procs/fd
 for fil in *.txt
 do
 	echo "Processing $fil..."
