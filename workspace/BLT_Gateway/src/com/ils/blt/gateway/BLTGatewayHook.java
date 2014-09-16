@@ -57,7 +57,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		//       Exception is thrown when we try to incorporate a StatusPanel
 		log.info(TAG+"Setup - enabled project listeners.");
 		ProxyHandler.getInstance().setContext(context);
-		BlockRequestHandler.getInstance().setContext(context);
+		ControllerRequestHandler.getInstance().setContext(context);
 		dispatcher = new GatewayRpcDispatcher();
 	}
 

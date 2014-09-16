@@ -276,7 +276,7 @@ public abstract class AbstractUIView extends JComponent
 			}
 			else  {
 				x = loc.x-anchorLength/2;
-				y = loc.y-anchorWidth/2;
+				y = loc.y-anchorWidth/2;  
 				g.fillRect(x, y, anchorLength,anchorWidth);
 			}
 			

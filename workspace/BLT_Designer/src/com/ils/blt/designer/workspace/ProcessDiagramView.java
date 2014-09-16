@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import com.ils.blt.common.ApplicationRequestManager;
+import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.BindingType;
@@ -105,7 +105,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	private void initBlockProperties(ProcessBlockView block) {
 		Collection<BlockProperty> propertyList;
 		propertyList = new ArrayList<BlockProperty>();
-		ApplicationRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+		ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
 		BlockProperty[] properties = handler.getBlockProperties(block.getClassName(),context.getProject().getId(),resourceId,block.getId());
 		for(BlockProperty property:properties) {
 			propertyList.add(property);

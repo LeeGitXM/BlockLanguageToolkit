@@ -26,8 +26,8 @@ import javax.swing.tree.TreePath;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.common.ApplicationRequestManager;
 import com.ils.blt.common.serializable.ApplicationUUIDResetHandler;
 import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.common.serializable.SerializableApplicationTree;
@@ -178,11 +178,13 @@ public class GeneralPurposeTreeNode extends FolderNode {
 		setupEditActions(paths, selection);
 		
 		if (isRootFolder()) { 
-			ApplicationRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+			ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
 
 			ApplicationAction applicationAction = new ApplicationAction();
 			ApplicationImportAction applicationImportAction = new ApplicationImportAction();
+			ClearAction clearAction = new ClearAction();
 			DebugAction debugAction = new DebugAction();
+			SaveAllAction saveAllAction = new SaveAllAction(this);
 			if( handler.isControllerRunning() ) {
 				startAction.setEnabled(false);
 			}
@@ -191,21 +193,24 @@ public class GeneralPurposeTreeNode extends FolderNode {
 			}
 			menu.add(applicationAction);
 			menu.add(applicationImportAction);
+			menu.add(saveAllAction);
 			menu.add(startAction);
 			menu.add(stopAction);
 			menu.addSeparator();
+			menu.add(clearAction);
 			menu.add(debugAction);
 		}
 		else if(getProjectResource().getResourceType().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
-			//ApplicationExportAction applicationExportAction = new ApplicationExportAction(menu.getRootPane(),this);
-			ApplicationSaveAction applicationSaveAction = new ApplicationSaveAction(this);
+			ApplicationExportAction applicationExportAction = new ApplicationExportAction(menu.getRootPane(),this);
 			FamilyAction familyAction = new FamilyAction();
 			NewFolderAction newFolderAction = new NewFolderAction(context,BLTProperties.MODULE_ID,ApplicationScope.DESIGNER,getFolderId(),this);
 			ApplicationConfigureAction applicationConfigureAction = new ApplicationConfigureAction();
+			ApplicationSaveAction applicationSaveAction = new ApplicationSaveAction(this);
 			menu.add(familyAction);
 			menu.add(newFolderAction);
 			menu.addSeparator();
 			menu.add(applicationConfigureAction);
+			menu.add(applicationExportAction);
 			menu.add(applicationSaveAction);
 			addEditActions(menu);
 		}
@@ -407,7 +412,18 @@ public class GeneralPurposeTreeNode extends FolderNode {
 		log.infof("%s: serializeFamily created json ... %s",TAG,json);
 		return json;
 	}
-	
+	// From the root node, tell the gateway controller to clear all resources
+	private class ClearAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		public ClearAction()  {
+			super(PREFIX+".Clear",IconUtil.getIcon("delete_all"));
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
+			handler.clearController();
+		}
+	}
 	// From the root node, recursively log the contents of the tree
 	private class DebugAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
@@ -467,7 +483,7 @@ public class GeneralPurposeTreeNode extends FolderNode {
 	    
 		public void actionPerformed(ActionEvent e) {
 			try {
-				ApplicationRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+				ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
 				handler.startController();
 				this.setEnabled(false);
 				stopAction.setEnabled(true);
@@ -779,7 +795,7 @@ public class GeneralPurposeTreeNode extends FolderNode {
 	    
 		public void actionPerformed(ActionEvent e) {
 			try {
-				ApplicationRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+				ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
 				handler.startController();
 				this.setEnabled(false);
 				stopAction.setEnabled(true);
@@ -790,13 +806,13 @@ public class GeneralPurposeTreeNode extends FolderNode {
 			}
 		}
 	}
-    private class ExportApplicationTreeAction extends BaseAction {
+    private class ApplicationExportAction extends BaseAction {
     	private static final long serialVersionUID = 1L;
     	private final static String POPUP_TITLE = "Export Application Tree";
     	private final GeneralPurposeTreeNode view;
     	private final Component anchor;
-	    public ExportApplicationTreeAction(Component c,GeneralPurposeTreeNode gptn)  {
-	    	super(PREFIX+".ExportApplicationTree",IconUtil.getIcon("export1")); 
+	    public ApplicationExportAction(Component c,GeneralPurposeTreeNode gptn)  {
+	    	super(PREFIX+".ApplicationExport",IconUtil.getIcon("export1")); 
 	    	view=gptn;
 	    	anchor=c;
 	    }
@@ -945,6 +961,37 @@ public class GeneralPurposeTreeNode extends FolderNode {
 			}
 		}
 	}
+    // Save the entire Application hierarchy.
+    private class SaveAllAction extends BaseAction {
+    	private static final long serialVersionUID = 1L;
+    	private final AbstractResourceNavTreeNode root;
+
+    	public SaveAllAction(AbstractResourceNavTreeNode node)  {
+    		super(PREFIX+".SaveAll",IconUtil.getIcon("add2")); 
+    		root = node;
+    	}
+
+    	public void actionPerformed(ActionEvent e) {
+    		// Traverse the entire hierarchy, saving each step
+    		saveNodeAndChildren(root);
+    	}
+    	private void saveNodeAndChildren(AbstractResourceNavTreeNode node) {
+    		ProjectResource res = node.getProjectResource();
+    		try {
+    			res.setEditCount(res.getEditCount()+1);
+    			context.updateResource(res);
+    		} 
+    		catch (Exception err) {
+    			ErrorUtil.showError(err);
+    		}
+    		@SuppressWarnings("rawtypes")
+    		Enumeration walker = node.children();
+    		while(walker.hasMoreElements()) {
+    			Object child = walker.nextElement();
+    			saveNodeAndChildren((AbstractResourceNavTreeNode)child);
+    		}
+    	}
+    }
     // Start refers to a global startup of the Execution controller in the Gateway
     private class StartAction extends BaseAction {
     	private static final long serialVersionUID = 1L;
@@ -954,7 +1001,7 @@ public class GeneralPurposeTreeNode extends FolderNode {
 	    
 		public void actionPerformed(ActionEvent e) {
 			try {
-				ApplicationRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+				ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
 				handler.startController();
 				this.setEnabled(false);
 				stopAction.setEnabled(true);
@@ -974,7 +1021,7 @@ public class GeneralPurposeTreeNode extends FolderNode {
 	    
 		public void actionPerformed(ActionEvent e) {
 			try {
-				ApplicationRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+				ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
 				handler.stopController();
 				this.setEnabled(false);
 				startAction.setEnabled(true);
@@ -1005,7 +1052,7 @@ public class GeneralPurposeTreeNode extends FolderNode {
 	 */
 	public void listControllerResources() {
 		try {
-			ApplicationRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+			ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
 			List <SerializableResourceDescriptor> descriptors = handler.queryControllerResources();
 			for( SerializableResourceDescriptor descriptor : descriptors ) {
 				log.info("Res: "+descriptor.getProjectId()+":"+descriptor.getResourceId()+" "+

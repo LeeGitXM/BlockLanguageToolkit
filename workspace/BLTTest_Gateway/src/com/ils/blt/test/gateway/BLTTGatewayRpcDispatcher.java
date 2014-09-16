@@ -3,12 +3,9 @@
  */
 package com.ils.blt.test.gateway;
 
-import java.util.Date;
 import java.util.UUID;
 
 import com.ils.blt.gateway.engine.BlockExecutionController;
-import com.ils.blt.gateway.engine.TagReader;
-import com.ils.blt.gateway.engine.TagWriter;
 import com.ils.blt.test.common.MockDiagramScriptingInterface;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;

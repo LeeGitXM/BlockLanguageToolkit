@@ -32,6 +32,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.serializable.SerializableBlock;
@@ -59,7 +60,6 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.Connect
 import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.ArrowConnectionPainter;
 import com.inductiveautomation.ignition.designer.designable.DesignPanel;
 import com.inductiveautomation.ignition.designer.designable.DesignableWorkspaceListener;
-import com.inductiveautomation.ignition.designer.designable.IDesignTool;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.model.EditActionHandler;
@@ -153,13 +153,17 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			if( selection instanceof BlockComponent ) {
 				
 				JPopupMenu menu = new JPopupMenu();
-				saveAction = new SaveAction();
+				
+				ProcessBlockView pbv = (ProcessBlockView)((BlockComponent)selection).getBlock();
+				saveAction = new SaveAction(pbv);
+				// Dirtiness of the diagram refers to structure changes on it.
+				boolean enabled = pbv.isDirty() && !this.getActiveDiagram().isDirty();
+				saveAction.setEnabled(enabled);
 				menu.add(saveAction);
-				if( selection instanceof BlockComponent &&
-					((ProcessBlockView)((BlockComponent)selection).getBlock()).isCtypeEditable() ) {
+				
+				if( selection instanceof BlockComponent && pbv.isCtypeEditable() ) {
 					
 					// Types are: ANY, DATA, TEXT, TRUTH-VALUE
-					ProcessBlockView pbv = (ProcessBlockView)((BlockComponent)selection).getBlock();
 					// Assume the type from the terminus anchor
 					Iterator<ProcessAnchorDescriptor> iterator = pbv.getAnchors().iterator();
 					ProcessAnchorDescriptor anch = iterator.next();  // Assumes at least one anchor
@@ -409,28 +413,20 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		super.close(findDesignableContainer(resourceId));
 	}
 	
+	// On close we save the container, no questions asked.
 	@Override
 	protected void onClose(DesignableContainer c) {
 		log.infof("%s: onClose",TAG);
 		BlockDesignableContainer container = (BlockDesignableContainer)c;
 		ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
-		if( diagram.isDirty() ) {
-			String question = BundleUtil.get().getString(PREFIX+".CloseDiagram.Question");
-			if( question==null) question="??";
-			String format = BundleUtil.get().getString(PREFIX+".CloseDiagram.Title");
-			if( format==null) format="Close";
-			
-			if( ErrorUtil.showConfirm(question,String.format(format, diagram.getName()) )) {
-				saveDiagram((BlockDesignableContainer)container);
-			}
-		}
+		saveDiagram((BlockDesignableContainer)container);
 		diagram.unregisterChangeListeners();
 		context.releaseLock(container.getResourceId());
 	}
 	
 	/**
 	 * This is called as a result of a user "Save" selection on
-	 * the main menu.
+	 * the main menu. We actually save al the diagrams.
 	 */
 	public void saveOpenDiagrams() {
 		log.infof("%s: saveOpenDiagrams",TAG);
@@ -439,7 +435,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		}
 	}
 	
-	private void saveDiagram(BlockDesignableContainer c) {
+	public void saveDiagram(BlockDesignableContainer c) {
 		ProcessDiagramView diagram = (ProcessDiagramView)c.getModel();
 		log.infof("%s: saveDiagram - serializing %s ...",TAG,diagram.getDiagramName());
 		diagram.setDirty(false);
@@ -576,8 +572,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		private final ProcessBlockView block;
 		public ChangeConnectionAction(ProcessBlockView blk,ConnectionType ct)  {
 			super(PREFIX+".ChangeConnectionAction."+ct.name());
-			connectionType = ct;
-			block = blk;
+			this.connectionType = ct;
+			this.block = blk;
 		}
 		
 		// Change all stubs to the selected type
@@ -590,12 +586,17 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 */
 	private class SaveAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
-		public SaveAction()  {
+		private final ProcessBlockView block;
+		public SaveAction(ProcessBlockView blk)  {
 			super(PREFIX+".SaveBlock",IconUtil.getIcon("window_play"));  // preferences
+			this.block = blk;
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			log.info("DiagramWorkspace: SAVE");
+			log.info("DiagramWorkspace: SAVE BLOCK");
+			ApplicationRequestHandler handler = new ApplicationRequestHandler();
+			ProcessDiagramView pdv = getActiveDiagram();
+			handler.setBlockProperties(pdv.getId(),block.getId(), block.getProperties());
 		}
 	}
 	//TODO: In next Ignition update, this is available for override of onMove() method.

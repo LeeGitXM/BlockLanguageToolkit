@@ -25,12 +25,14 @@ import com.ils.blt.common.block.TransmissionScope;
 import com.ils.blt.designer.workspace.WorkspaceRepainter;
 
 /**
- * Display a panel to edit enumerated types using  combo box.
- * This is one of the sliding panels in the block editor.   
+ * Display a panel to edit lists of strings using a list box.
+ * This is one of the sliding panels in the block editor.
+ * The first character in the string is the delimiter. We use
+ * it to separate the other items in the list.  
  */
 
-public class EnumEditPanel extends BasicEditPanel {
-	// A ValueEdit panel is designed to edit the value of a single property.
+public class ListEditPanel extends BasicEditPanel {
+	// A panel is designed to edit properties that are lists of strings.
 	private final static String TAG = "EnumEditPanel";
 	private static final long serialVersionUID = 1L;
 	private static final String columnConstraints = "[para]0[]0[]0[]0[]";
@@ -45,7 +47,7 @@ public class EnumEditPanel extends BasicEditPanel {
 	private final JTextField yfield;
 	private final JTextField valueField;
 
-	public EnumEditPanel(BlockPropertyEditor editor) {
+	public ListEditPanel(BlockPropertyEditor editor) {
 		super(editor);
 		setLayout(new MigLayout("top,flowy,ins 2","",""));
 		this.fncs = new UtilityFunctions();
@@ -92,7 +94,7 @@ public class EnumEditPanel extends BasicEditPanel {
 						property.setDisplayOffsetY(Integer.parseInt(yfield.getText()));
 					}
 					catch(NumberFormatException nfe) {
-						JOptionPane.showMessageDialog(EnumEditPanel.this, String.format("ValueEditPanel: Bad entry for display offset (%s)",nfe.getLocalizedMessage()));
+						JOptionPane.showMessageDialog(ListEditPanel.this, String.format("ValueEditPanel: Bad entry for display offset (%s)",nfe.getLocalizedMessage()));
 						property.setDisplayed(false);
 					}
 				}

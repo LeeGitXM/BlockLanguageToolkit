@@ -6,7 +6,7 @@ package com.ils.blt.designer.editor;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.ils.blt.common.ApplicationRequestManager;
+import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
@@ -33,6 +33,7 @@ public class BlockPropertyEditor extends SlidingPane   {
 	private final MainPanel          mainPanel;       // display the properties for a block
 	private final ConfigurationPanel configPanel;     // configure a single block property
 	private final EnumEditPanel      enumEditPanel;  // configure a single enumerated block property
+	private final ListEditPanel      listEditPanel;   // configure a property that is a list of strings
 	private final NameEditPanel      nameEditPanel;   // configure a block's name
 	private final TagBrowserPanel    tagPanel;        // configure tag for a bound value
 	private final ValueEditPanel     valueEditPanel;  // configure a single value block property
@@ -56,6 +57,7 @@ public class BlockPropertyEditor extends SlidingPane   {
         this.mainPanel = new MainPanel(this,block);
         this.configPanel = new ConfigurationPanel(this);
         this.enumEditPanel = new EnumEditPanel(this);
+        this.listEditPanel = new ListEditPanel(this);
         this.nameEditPanel = new NameEditPanel(this);
         this.tagPanel = new TagBrowserPanel(this,context);
         this.valueEditPanel = new ValueEditPanel(this);
@@ -70,12 +72,13 @@ public class BlockPropertyEditor extends SlidingPane   {
 		add(mainPanel);                       // HOME_PANEL
 		add(configPanel);                     // CONFIGURATION_PANEL
 		add(enumEditPanel);                   // ENUM_EDIT_PANEL
+		add(listEditPanel);                   // LIST_EDIT_PANEL
 		add(nameEditPanel);                   // NAME_EDIT_PANEL
 		add(tagPanel);                        // TAG_BROWSER_PANEL
 		add(valueEditPanel);                  // VALUE_EDIT_PANEL
 		setSelectedPane(BlockEditConstants.HOME_PANEL);   
 	}
-	
+	public ProcessBlockView getBlock() { return this.block; }
 	public void updatePanelForBlock(int panelIndex,ProcessBlockView block) {
 		switch(panelIndex) {
 		case BlockEditConstants.NAME_EDIT_PANEL:
@@ -95,6 +98,9 @@ public class BlockPropertyEditor extends SlidingPane   {
 		case BlockEditConstants.ENUM_EDIT_PANEL:
 			enumEditPanel.updateForProperty(prop);
 			break;
+		case BlockEditConstants.LIST_EDIT_PANEL:
+			listEditPanel.updateForProperty(prop);
+			break;
 		case BlockEditConstants.HOME_PANEL: 
 			mainPanel.updatePanelForProperty(prop);
 			break;
@@ -108,19 +114,6 @@ public class BlockPropertyEditor extends SlidingPane   {
 		default:
 			break;
 		}
-	}
-	
-	/** 
-	 * Update a block property on the Gateway version of the block. If the property is read-only or
-	 * has a binding of ENGINE, the value will not change in the engine.
-	 */
-	public void updateBlockPropertyInEngine(final BlockProperty prop) {
-		if( !prop.isEditable()  ||
-			prop.getBindingType().equals(BindingType.ENGINE) )  return;
-			
-        // Propagate the change to the Gateway:
-        ApplicationRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
-        handler.setBlockProperty(block.getClassName(), projectId, resourceId, block.getId().toString(), prop.getName(), prop);
 	}
 }
 

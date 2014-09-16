@@ -60,35 +60,29 @@ public class BlockFactory  {
 		UUID blockId = sb.getId();
 		log.debugf("%s.blockFromSerializable: Create instance of %s (%s)",TAG,className,blockId.toString());   // Should be updated
 		ProcessBlock block = null;
-		if( !className.startsWith("project.") ) {
-			try {
-				Class<?> clss = Class.forName(className);
-				Constructor<?> ctor = clss.getDeclaredConstructor(new Class[] {ExecutionController.class,UUID.class,UUID.class});
-				block = (ProcessBlock)ctor.newInstance(BlockExecutionController.getInstance(),parentId,sb.getId());
-			}
-			catch(InvocationTargetException ite ) {
-				log.warnf("%s: blockFromSerializable %s: Invocation failed (%s)",TAG,className,ite.getMessage()); 
-			}
-			catch(NoSuchMethodException nsme ) {
-				log.warnf("%s: blockFromSerializable %s: Three argument constructor not found (%s)",TAG,className,nsme.getMessage()); 
-			}
-			catch( ClassNotFoundException cnf ) {
-				log.warnf("%s: blockFromSerializable: Error creating %s (%s)",TAG,className,cnf.getMessage()); 
-			}
-			catch( InstantiationException ie ) {
-				log.warnf("%s: blockFromSerializable: Error instantiating %s (%s)",TAG,className,ie.getLocalizedMessage()); 
-			}
-			catch( IllegalAccessException iae ) {
-				log.warnf("%s: blockFromSerializable: Security exception creating %s (%s)",TAG,className,iae.getLocalizedMessage()); 
-			}
+		// If we can't create a Java class, try python ...
+		try {
+			Class<?> clss = Class.forName(className);
+			Constructor<?> ctor = clss.getDeclaredConstructor(new Class[] {ExecutionController.class,UUID.class,UUID.class});
+			block = (ProcessBlock)ctor.newInstance(BlockExecutionController.getInstance(),parentId,sb.getId());
 		}
-		else {
-			// Create a proxy from Python
+		catch(InvocationTargetException ite ) {
+			log.warnf("%s: blockFromSerializable %s: Invocation failed (%s)",TAG,className,ite.getMessage()); 
+		}
+		catch(NoSuchMethodException nsme ) {
+			log.warnf("%s: blockFromSerializable %s: Three argument constructor not found (%s)",TAG,className,nsme.getMessage()); 
+		}
+		catch( ClassNotFoundException cnf ) {
+			log.infof("%s: blockFromSerializable: Class not found creating %s ... trying Python",TAG,className); 
 			block = proxyHandler.createBlockInstance( className, parentId,blockId );
-		
 		}
-		
-		
+		catch( InstantiationException ie ) {
+			log.warnf("%s: blockFromSerializable: Error instantiating %s (%s)",TAG,className,ie.getLocalizedMessage()); 
+		}
+		catch( IllegalAccessException iae ) {
+			log.warnf("%s: blockFromSerializable: Security exception creating %s (%s)",TAG,className,iae.getLocalizedMessage()); 
+		}
+
 		if( block!=null ) updateBlockFromSerializable(block,sb);
 		return block;
 	}

@@ -17,8 +17,15 @@ import com.ils.blt.common.serializable.SerializableResourceDescriptor;
  * ApplicationRequestManager.
  */
 public class ApplicationScriptFunctions   {
-	private static ApplicationRequestManager manager = new ApplicationRequestManager();
+	private static ApplicationRequestHandler manager = new ApplicationRequestHandler();
 
+	/**
+	 * Remove all running diagrams from the controller. Cancel all tag subscriptions. 
+	 */
+	public static void clearController() {
+		manager.clearController();
+	}
+	
 	/**
 	 * Query the gateway for a list of prototypes for the defined blocks. 
 	 */

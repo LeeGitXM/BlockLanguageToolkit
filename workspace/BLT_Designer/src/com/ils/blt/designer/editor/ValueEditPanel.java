@@ -95,8 +95,8 @@ public class ValueEditPanel extends BasicEditPanel {
 						property.setDisplayed(false);
 					}
 				}
+				editor.getBlock().setDirty(true);
 				SwingUtilities.invokeLater(new WorkspaceRepainter());
-				parent.updateBlockPropertyInEngine(property);
 				updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
 				setSelectedPane(BlockEditConstants.HOME_PANEL);
 			}

@@ -4,6 +4,7 @@
 package com.ils.blt.gateway.engine;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -259,7 +260,20 @@ public class ModelManager implements ProjectListener  {
 		}
 		return result;
 	}
-	
+	/**
+	 * Traverse the application trees, removing all resources. 
+	 * This call does NOT do a SAVE. Therefore all resources will be restored
+	 * on a restart. We simply clear all the node lists.
+	 */
+	public void removeAllDiagrams() {
+		Collection<ProcessNode>children = root.getChildren();
+		for(ProcessNode child:children) {
+			root.removeChild(child);
+		}
+		diagramsByKey.clear();
+		orphansByUUID.clear();
+		nodesByUUID.clear();
+	}
 	/**
 	 * Start all blocks in diagrams known to this manager. Note that, even if a diagram is
 	 * DISABLED, its blocks are started. It's just that their results are not propagated.
@@ -292,7 +306,7 @@ public class ModelManager implements ProjectListener  {
 	public void projectAdded(Project staging, Project published) {
 		if( staging!=null ) {
 			long projectId = staging.getId();
-			log.debugf("%s.projectAdded: %s (%d),staging",TAG,staging.getName(),projectId);
+			log.infof("%s.projectAdded: %s (%d),staging",TAG,staging.getName(),projectId);
 			List<ProjectResource> resources = published.getResources();
 			for( ProjectResource res:resources ) {
 				log.infof("%s.projectAdded: resource %s (%d),type %s", TAG,res.getName(),
@@ -306,6 +320,7 @@ public class ModelManager implements ProjectListener  {
 	 */
 	@Override
 	public void projectDeleted(long projectId) {
+		log.infof("%s.projectDeleted: (id=%d)",TAG,projectId);
 		deleteProjectResources(new Long(projectId));
 		
 	}
@@ -320,9 +335,9 @@ public class ModelManager implements ProjectListener  {
 	 */
 	@Override
 	public void projectUpdated(Project diff, ProjectVersion vers) { 
-		log.infof("%s.projectUpdated: %s (%d)  %s", TAG,diff.getName(),diff.getId(),vers.toString());
-		if( vers!=ProjectVersion.Staging ) return;  // Consider only the "Staging" version
 		
+		if( vers!=ProjectVersion.Staging ) return;  // Consider only the "Staging" version
+		log.infof("%s.projectUpdated: %s (%d)  %s", TAG,diff.getName(),diff.getId(),vers.toString());
 		long projectId = diff.getId();
 		Set<Long> deleted = diff.getDeletedResources();
 		for (Long  resid : deleted) {
@@ -332,6 +347,7 @@ public class ModelManager implements ProjectListener  {
 		
 		List<ProjectResource> resources = diff.getResources();
 		for( ProjectResource res:resources ) {
+			//if( res.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)) continue;
 			log.infof("%s.projectUpdated: resource %s (%d),type %s (%s)", TAG,res.getName(),
 					res.getResourceId(),res.getResourceType(),(diff.isResourceDirty(res)?"dirty":"clean"));
 			analyzeResource(projectId,res);
@@ -494,6 +510,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param projectId the identity of a project.
 	 */
 	private void deleteResource(Long projectId,Long resourceId) {
+		log.infof("%s.deleteResource: %d:%d",TAG,projectId,resourceId);
 		ProjResKey key = new ProjResKey(projectId.longValue(),resourceId.longValue());
 		ProcessDiagram diagram = diagramsByKey.get(key);
 		if( diagram==null ) return;    // Nothing to do

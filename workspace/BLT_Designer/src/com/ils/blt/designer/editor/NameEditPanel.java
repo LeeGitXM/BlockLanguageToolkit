@@ -80,6 +80,7 @@ public class NameEditPanel extends BasicEditPanel {
 					block.setNameOffsetX(Integer.parseInt(xfield.getText()));
 					block.setNameOffsetY(Integer.parseInt(yfield.getText()));
 					setSelectedPane(BlockEditConstants.HOME_PANEL);
+					block.setDirty(true);
 					SwingUtilities.invokeLater(new WorkspaceRepainter());
 				}
 				catch(NumberFormatException nfe) {

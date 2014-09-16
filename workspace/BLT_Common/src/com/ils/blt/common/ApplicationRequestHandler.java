@@ -5,9 +5,12 @@
 package com.ils.blt.common;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.serializable.DiagramState;
@@ -26,28 +29,46 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  *  
  *  Each request is relayed to the Gateway scope via an RPC call.
  */
-public class ApplicationRequestManager  {
-	private final static String TAG = "ApplicationRequestManager";
+public class ApplicationRequestHandler  {
+	private final static String TAG = "ApplicationRequestHandler";
 	private final LoggerEx log;
 
 	/**
 	 * Constructor adds common attributes that are needed to generate unique keys to identify
 	 * blocks and connectors.
 	 */
-	public ApplicationRequestManager()  {
+	public ApplicationRequestHandler()  {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 	}
 
 	/**
-	 * Determine whether or not the engine is running.
+	 * Remove all current diagrams from the controller.
 	 */
-	public boolean isControllerRunning() {
-		boolean isRunning = false;
-		String state = getControllerState();
-		if( state.equalsIgnoreCase("running")) isRunning = true;
-		return isRunning;
+	public void clearController() {
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "clearController");
+			log.debugf("%s.clearController ...",TAG);
+		}
+		catch(Exception ge) {
+			log.infof("%s.clearController: GatewayException (%s)",TAG,ge.getMessage());
+		}
 	}
-
+	/**
+	 * Determine whether or not the indicated diagram is known to the controller.
+	 */
+	public boolean diagramExists(String uuidString) {
+		Boolean result = null;
+		try {
+			result = (Boolean)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "diagramExists",uuidString);
+			log.debugf("%s.diagramExists  ...%s = %s",TAG,uuidString,result);
+		}
+		catch(Exception ge) {
+			log.infof("%s.diagramExists: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		return result.booleanValue();
+	}
 	/**
 	 * Determine whether or not the engine is running.
 	 */
@@ -162,7 +183,16 @@ public class ApplicationRequestManager  {
 		}
 		return result;
 	}
-
+	/**
+	 * Determine whether or not the engine is running.
+	 */
+	public boolean isControllerRunning() {
+		boolean isRunning = false;
+		String state = getControllerState();
+		if( state.equalsIgnoreCase("running")) isRunning = true;
+		return isRunning;
+	}
+	
 	/**
 	 * Query the gateway for list of resources that the block controller knows about. 
 	 * This is a debugging aid. 
@@ -182,18 +212,47 @@ public class ApplicationRequestManager  {
 		return result;
 	}
 	
-	/** Define/update a property for a block */
-	public void setBlockProperty(String className, long projectId,long resourceId, String blockId, String propertyName,BlockProperty prop ) {
-		log.debugf("%s.setBlockProperty: %s %s %s: %s", TAG, projectId,  resourceId, blockId.toString(), propertyName, prop.toString());
+	/**
+	 * Determine whether or not the indicated resource is known to the controller.
+	 */
+	public boolean resourceExists(long projectId,long resid) {
+		Boolean result = null;
 		try {
-			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-				BLTProperties.MODULE_ID, "setBlockProperty", className, new Long(projectId), new Long(resourceId), blockId, propertyName, prop.toJson());
+			result = (Boolean)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "resourceExists",new Long(projectId),new Long(resid));
+			log.debugf("%s.resourceExists  ...%d:%d = %s",TAG,projectId,resid,result);
 		}
 		catch(Exception ge) {
-			log.infof("%s.setBlockProperty: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.resourceExists: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		return result.booleanValue();
+	}
+	/** Update all changed properties for a block 
+	 * @param duuid diagram unique Id
+	 * @param buuid block unique Id
+	 */
+	public void setBlockProperties(UUID duuid,UUID buuid, Collection<BlockProperty> props ) {
+		String diagId  = duuid.toString();
+		String blockId = buuid.toString();
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		String json="";
+		try {
+			json = mapper.writeValueAsString(props);
+		}
+		catch(Exception ge) {
+			log.warnf("%s: toJson (%s)",TAG,ge.getMessage());
+		}
+		log.tracef("%s: json properties = %s",TAG,json);
+		log.debugf("%s.setBlockProperties: %s %s %s %s: %s", TAG, diagId,blockId, json);
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+				BLTProperties.MODULE_ID, "setBlockProperties", diagId,blockId, json);
+		}
+		catch(Exception ge) {
+			log.infof("%s.setBlockProperties: GatewayException (%s)",TAG,ge.getMessage());
 		}		
 	}
-
 
 	public void setDiagramState(Long projectId, Long resourceId, String state) {
 		log.debugf("%s.setDiagramState ... %d:%d %s",TAG,projectId.longValue(),resourceId.longValue(),state);

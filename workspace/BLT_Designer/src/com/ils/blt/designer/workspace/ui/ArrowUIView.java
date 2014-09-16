@@ -72,8 +72,8 @@ public class ArrowUIView extends AbstractUIView implements BlockViewUI {
 						desc.getConnectionType(),
 						new Point(inset,outputIndex*ht/outSegmentCount),
 						new Point(-LEADER_LENGTH,outputIndex*ht/outSegmentCount),
-						new Rectangle(0,outputIndex*ht/outSegmentCount-inset,2*inset,2*inset),
-						desc.getAnnotation());   // Hotspot shape.
+						new Rectangle(0,outputIndex*ht/outSegmentCount-inset,2*inset,2*inset+3), // Hotspot
+						desc.getAnnotation());   
 				getAnchorPoints().add(ap);
 				
 			}
@@ -84,7 +84,7 @@ public class ArrowUIView extends AbstractUIView implements BlockViewUI {
 						desc.getConnectionType(),
 						new Point(sz.width-inset,inputIndex*ht/inSegmentCount),
 						new Point(sz.width+LEADER_LENGTH,inputIndex*ht/inSegmentCount),
-						new Rectangle(sz.width-2*inset,inputIndex*ht/inSegmentCount-inset,2*inset,2*inset-1),
+						new Rectangle(sz.width-2*inset,inputIndex*ht/inSegmentCount-inset,2*inset,2*inset+3),
 						desc.getAnnotation());
 				getAnchorPoints().add(ap);
 			}

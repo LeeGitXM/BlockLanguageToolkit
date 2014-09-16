@@ -245,6 +245,14 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		return modelManager.queryControllerResources();
 	}
 	/**
+	 * Remove all diagrams and applications from the controller. 
+	 * Before doing so, stop all subscriptions.
+	 */
+	public void removeAllDiagrams() {
+		clearSubscriptions();
+		modelManager.removeAllDiagrams();
+	}
+	/**
 	 * Delete a temporary diagram that is not associated with a project resource. 
 	 * Any subscriptions are de-activated before removal.
 	 * @param Id the UUID of the diagram to be deleted from the engine.

@@ -205,6 +205,11 @@ public class MainPanel extends BasicEditPanel {
 						;// Do nothing
 					}
 					// Use special editor for the enumerated types
+					else if( prop.getType().equals(PropertyType.LIST) ) {
+						updatePanelForProperty(BlockEditConstants.LIST_EDIT_PANEL,prop);
+						setSelectedPane(BlockEditConstants.LIST_EDIT_PANEL);
+					}
+					// Use special editor for the enumerated types
 					else if( prop.getType().equals(PropertyType.BOOLEAN) ||
 							 prop.getType().equals(PropertyType.DISTRIBUTION) ||
 							 prop.getType().equals(PropertyType.SCOPE)	      ||

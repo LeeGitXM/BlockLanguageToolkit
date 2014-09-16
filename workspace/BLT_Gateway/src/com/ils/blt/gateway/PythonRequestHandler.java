@@ -32,7 +32,7 @@ public class PythonRequestHandler   {
 		try {
 			UUID uuid = UUID.fromString(id);
 			UUID parentuuid = UUID.fromString(parent);
-			BlockRequestHandler.getInstance().postValue(parentuuid,uuid,port,value,quality);
+			ControllerRequestHandler.getInstance().postValue(parentuuid,uuid,port,value,quality);
 		}
 		catch(IllegalArgumentException iae) {
 			log.warnf("%s.postValue: one of %s or %s illegal UUID (%s)",TAG,parent,id,iae.getMessage());

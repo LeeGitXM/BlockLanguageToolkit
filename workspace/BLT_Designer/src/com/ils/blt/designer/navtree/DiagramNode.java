@@ -20,14 +20,17 @@ import javax.swing.JPopupMenu;
 import javax.swing.tree.TreePath;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ils.blt.common.ApplicationRequestManager;
+import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.DiagramState;
+import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
+import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.client.designable.DesignableContainer;
+import com.inductiveautomation.ignition.client.gateway_interface.GatewayException;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
@@ -40,6 +43,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.IgnitionDesigner;
 import com.inductiveautomation.ignition.designer.UndoManager;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
+import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.gateway.DTGatewayInterface;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
@@ -101,7 +105,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 		menu.add(exportAction);
 		
 		// States are: ACTIVE, DISABLED, RESTRICTED
-		ApplicationRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+		ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
 		DiagramState state = handler.getDiagramState(context.getProject().getId(), resourceId);
 		SetStateAction ssaActive = new SetStateAction(DiagramState.ACTIVE);
 		ssaActive.setEnabled(!state.equals(DiagramState.ACTIVE));
@@ -115,10 +119,9 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 		setStateMenu.add(ssaRestricted);
 		menu.add(setStateMenu);
 	
-		// Only allow a Save when the workspace is open
+		// Only allow a Save when the diagram is dirty, exists in the controller
 		SaveDiagramAction saveAction = new SaveDiagramAction();
-		BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId);
-		saveAction.setEnabled(tab!=null);
+		saveAction.setEnabled(diagramIsSavable(handler,resourceId));
 		menu.add(saveAction);
 		menu.addSeparator();
 		menu.add(renameAction);
@@ -142,6 +145,42 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 		}
 	}
 	
+	
+	/**
+	 * @return true if the diagram is in a state to be saved. 
+	 */
+	private boolean diagramIsSavable(ApplicationRequestHandler handler,long resId) {
+		boolean existsInController = handler.resourceExists(context.getProject().getId(),resourceId);
+		if( !existsInController )  return false;    // Controller has no knowledge of this resource
+		
+		BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId);
+		if( tab!=null ) {
+			ProcessDiagramView view = (ProcessDiagramView)(tab.getModel());
+			if( view.isDirty() ) return true;
+			for(Block blk:view.getBlocks()) {
+				ProcessBlockView pbv = (ProcessBlockView)blk;
+				if(pbv.isDirty()) return true;
+			}
+		}
+		// Otherwise we need to de-serialize just to determine dirtiness
+		else {
+			ProjectResource res = context.getProject().getResource(resourceId);
+			byte[]bytes = res.getData();
+			SerializableDiagram sd = null;
+			ObjectMapper mapper = new ObjectMapper();
+			try {
+				sd = mapper.readValue(bytes,SerializableDiagram.class);
+				if( sd.isDirty() ) return true;
+				for(SerializableBlock sb:sd.getBlocks()) {
+					if( sb.isDirty() ) return true;
+				}
+			}
+			catch(Exception ex) {
+				log.warnf("%s.diagramIsSavable: Exception deserializing res %d (%s)",TAG,resourceId,ex.getMessage());
+			}
+		}
+		return false;
+	}
 	/**
 	 * Before deleting ourself, delete the frame and model, if they exist.
 	 * The children aren't AbstractNavTreeNodes ... (??)
@@ -216,6 +255,38 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 
 	}
 
+	/**
+	 * Save the current diagram resource, whether or not it is displayed.
+	 */
+	public void saveDiagram() {
+		log.infof("%s.saveDiagram: %d...",TAG,resourceId);
+		BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId);
+		if( tab!=null ) {
+			// If the diagram is open on a tab, just call the workspace method
+			workspace.saveDiagram(tab);
+			ProcessDiagramView view = (ProcessDiagramView)tab.getModel();
+			tab.setBackground(view.getBackgroundColorForState());
+			for( Block blk:view.getBlocks()) {
+				ProcessBlockView pbv = (ProcessBlockView)blk;
+				pbv.setDirty(false);
+			}
+			view.registerChangeListeners();
+		}
+		else {
+			// We simply save the resource, as is.
+			Project diff = context.getProject().getEmptyCopy();
+			ProjectResource res = getProjectResource();
+			diff.putResource(res, true);    // Mark as dirty
+			try {
+				DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ..."); // Do not publish
+			}
+			catch(GatewayException ge) {
+				log.warnf("%s.saveDiagram: Exception saving project resource %d (%s)",TAG,resourceId,ge.getMessage());
+			}
+		}
+		setItalic(false);
+	}
+	
 	@Override
 	protected void uninstall() {
 		super.uninstall();
@@ -340,27 +411,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 	    }
 	    
 		public void actionPerformed(ActionEvent e) {
-			BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId);
-			if( tab!=null && context.requestLock(resourceId)) {
-				try {
-					ProcessDiagramView view = (ProcessDiagramView)(tab.getModel());
-					view.setDirty(false);
-					ObjectMapper mapper = new ObjectMapper();
-					SerializableDiagram sd = view.createSerializableRepresentation();
-					byte[] bytes = mapper.writeValueAsBytes(sd);
-					ProjectResource res = context.getProject().getResource(resourceId);
-					res.setEditCount(res.getEditCount()+1);
-					context.updateResource(resourceId, bytes);
-					context.updateLock(resourceId);
-					context.releaseLock(resourceId);
-					DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), context.getProject().getDiff(true), true, "Committing ...");
-					tab.setBackground(view.getBackgroundColorForState());
-					view.registerChangeListeners();
-				} 
-				catch (Exception err) {
-					ErrorUtil.showError(err);
-				}
-			}
+			saveDiagram();
 		}
 	}
 	private class SetStateAction extends BaseAction {
@@ -395,7 +446,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 				}
 
 				// Inform the gateway of the state change
-				ApplicationRequestManager handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getPropertiesRequestHandler();
+				ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
 				handler.setDiagramState(context.getProject().getId(), resourceId,state.name());
 			} 
 			catch (Exception ex) {
@@ -408,4 +459,6 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 	protected DesignerProjectContext projectCtx() {
 		return context;
 	}
+	
+	
 }

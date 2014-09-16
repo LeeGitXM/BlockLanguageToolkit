@@ -19,6 +19,7 @@ public class SerializableBlock {
 	private SerializableAnchor[] anchors = null;
 	private int background = Color.white.getRGB();
 	private String className = null;
+	private boolean dirty = false;
 	private int    embeddedFontSize = 24; // Points in font for embedded label
 	private String embeddedIcon="";       // 32x32 icon to place in block in designer
 	private String embeddedLabel="";      // Label place in block in designer
@@ -62,6 +63,8 @@ public class SerializableBlock {
 	public BlockStyle getStyle() { return style; }
 	public int getX() { return x; }
 	public int getY() { return y; }
+	
+	public boolean isDirty() {return dirty;}
 	public boolean isNameDisplayed() {return nameDisplayed;}
 	public boolean isReceiveEnabled() {return receiveEnabled;}
 	public boolean isTransmitEnabled() {return transmitEnabled;}
@@ -73,6 +76,7 @@ public class SerializableBlock {
 	}
 	public void setBackground(int background) {this.background = background;}
 	public void setClassName(String className) {this.className = className;}
+	public void setDirty(boolean dirty) {this.dirty = dirty;}
 	public void setEmbeddedFontSize(int embeddedFontSize) {this.embeddedFontSize = embeddedFontSize;}
 	public void setEmbeddedIcon(String embeddedIcon) {this.embeddedIcon = embeddedIcon;}
 	public void setEmbeddedLabel(String embeddedLabel) {this.embeddedLabel = embeddedLabel;}

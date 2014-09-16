@@ -46,6 +46,7 @@ public class ProcessBlockView extends AbstractBlock {
 	private final ChangeEvent changeEvent;
 	private int background = Color.white.getRGB();
 	private final String className;
+	private boolean dirty = false;   // A newly created block is clean because we initially sync with the gateway
 	private int    embeddedFontSize = WorkspaceConstants.DEFAULT_EMBEDDED_FONT_SIZE; // Size of font for interior label
 	private String embeddedIcon="";               // 32x32 icon to place in block in designer
 	private String embeddedLabel="";              // Label place in block in designer
@@ -114,6 +115,7 @@ public class ProcessBlockView extends AbstractBlock {
 		this.background = sb.getBackground();
 		this.className = sb.getClassName();
 		this.ctypeEditable  = false;
+		this.dirty = sb.isDirty();
 		this.embeddedIcon = sb.getEmbeddedIcon();
 		this.embeddedLabel= sb.getEmbeddedLabel();
 		this.embeddedFontSize = sb.getEmbeddedFontSize();
@@ -259,10 +261,12 @@ public class ProcessBlockView extends AbstractBlock {
 		ui.install(blk);
 	}
 	public boolean isCtypeEditable() {return ctypeEditable;}
+	public boolean isDirty() {return dirty;}
 	public boolean isNameDisplayed() { return nameDisplayed; }
 	public boolean isReceiveEnabled() {return receiveEnabled;}
 	public boolean isTransmitEnabled() {return transmitEnabled;}
 	public void setCtypeEditable(boolean ctypeEditable) {this.ctypeEditable = ctypeEditable;}
+	public void setDirty(boolean dirty) {this.dirty = dirty;}
 	public void setEmbeddedFontSize(int size) {this.embeddedFontSize = size;}
 	public void setEmbeddedIcon(String embeddedIcon) {this.embeddedIcon = embeddedIcon;}
 	public void setEmbeddedLabel(String embeddedLabel) {this.embeddedLabel = embeddedLabel;}

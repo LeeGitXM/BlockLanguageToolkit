@@ -5,7 +5,7 @@ package com.ils.blt.designer;
 
 
 import com.ils.blt.client.component.DiagramAnalyzerComponent;
-import com.ils.blt.common.ApplicationRequestManager;
+import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.ApplicationScriptFunctions;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
@@ -28,7 +28,6 @@ import com.inductiveautomation.vision.api.designer.palette.JavaBeanPaletteItem;
 import com.inductiveautomation.vision.api.designer.palette.Palette;
 import com.inductiveautomation.vision.api.designer.palette.PaletteItemGroup;
 import com.jidesoft.docking.DockingManager;
-import com.jidesoft.docking.Workspace;
 
 public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	private static final String TAG = "BLTDesignerHook";
@@ -40,7 +39,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	private DesignerContext context = null;
 	private final LoggerEx log;
 	private DiagramWorkspace workspace = null;
-	private ApplicationRequestManager propertiesRequestHandler = null;
+	private ApplicationRequestHandler appRequestHandler = null;
 	
 	// Register separate properties files for designer things and block things
 	static {
@@ -63,7 +62,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	public void startup(DesignerContext ctx, LicenseState activationState) throws Exception {
 		this.context = ctx;
 		WorkspaceRepainter.setContext(ctx);
-		propertiesRequestHandler = new ApplicationRequestManager();
+		appRequestHandler = new ApplicationRequestHandler();
 		context.addBeanInfoSearchPath("com.ils.blt.designer.component.beaninfos");
 		
 		// Place icons for our custom widgets on the Vision palette
@@ -103,7 +102,8 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 
 	@Override
 	public void notifyProjectSaveStart(SaveContext save) {
-		workspace.saveOpenDiagrams();
+		log.infof("%s: NotifyProjectSave",TAG);
+		//workspace.saveOpenDiagrams();
 	}
 	
 	
@@ -127,12 +127,12 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 			}
 		}
 		log.infof("%s: Workspace=%s",TAG,dockManager.getWorkspace().getName());
-		Workspace wksp = dockManager.getWorkspace();
+		//Workspace wksp = dockManager.getWorkspace();
 		// There is only 1 child of the workspace - the workspace mananger
 	}
 
 	
-	public ApplicationRequestManager getPropertiesRequestHandler() { return propertiesRequestHandler; }
+	public ApplicationRequestHandler getApplicationRequestHandler() { return appRequestHandler; }
 	@Override
 	public String getResourceCategoryKey(Project project,ProjectResource resource) {
 		// There is only one resource category that we are exporting
