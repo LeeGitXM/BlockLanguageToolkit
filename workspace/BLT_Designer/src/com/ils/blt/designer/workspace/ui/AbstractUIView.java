@@ -55,6 +55,7 @@ public abstract class AbstractUIView extends JComponent
 	protected BlockComponent blockComponent = null;
 	protected static int ANCHOR_ANNOTATION_TEXT_SIZE = 9;
 	protected final static int BADGE_HEIGHT = 20;
+	public static final int   BLOCK_DIRTY_SHADING = 0x303030;    //Subtract from background color to darken
 	protected final static int BADGE_WIDTH = 20;
 	protected final static int BORDER_WIDTH = 3;
 	protected final static Color BORDER_DARK_COLOR = Color.darkGray;

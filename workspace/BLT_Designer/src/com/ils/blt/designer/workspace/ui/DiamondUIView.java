@@ -77,7 +77,9 @@ public class DiamondUIView extends AbstractUIView implements BlockViewUI {
 		int[] xvertices = new int[] {ifb.x,ifb.x+(ifb.width/2),ifb.x+ifb.width,ifb.x+(ifb.width/2) };
 		int[] yvertices = new int[] {ifb.y+(ifb.height/2),ifb.y,ifb.y+(ifb.height/2),ifb.y+(ifb.height)};
 		fi = new Polygon(xvertices,yvertices,4);
-		g.setColor(new Color(block.getBackground()));
+		int rgb = block.getBackground();
+		if( block.isDirty()  ) rgb -= BLOCK_DIRTY_SHADING;
+		g.setColor(new Color(rgb));
 		g.fillPolygon(fi);
 		// Outline the inner area
 		g.setPaint(INSET_COLOR);

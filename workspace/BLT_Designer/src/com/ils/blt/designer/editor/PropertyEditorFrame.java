@@ -86,7 +86,7 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 				if( selection instanceof BlockComponent ) {
 					BlockComponent bc = ( BlockComponent)selection;
 					ProcessBlockView blk = (ProcessBlockView)bc.getBlock();
-					BlockPropertyEditor editor = new BlockPropertyEditor(context,workspace.getActiveDiagram().getResourceId(),blk);
+					BlockPropertyEditor editor = new BlockPropertyEditor(context,workspace.getActiveDiagram(),blk);
 					contentPanel.removeAll();
 					//Create a scroll pane
 				    JScrollPane scrollPane = new JScrollPane(editor);

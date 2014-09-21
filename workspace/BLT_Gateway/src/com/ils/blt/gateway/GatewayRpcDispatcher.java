@@ -53,6 +53,27 @@ public class GatewayRpcDispatcher   {
 	public void clearController() {
 		ControllerRequestHandler.getInstance().clearController();
 	}
+	
+	/**
+	 * This should always succeed because we create a block in the gateway whenever we 
+	 * create one from the palette.
+	 * @param uuidString
+	 * @return True if we've discovered the specified block.
+	 */
+	public Boolean diagramExists(String uuidString) {
+		log.infof("%s.diagramExists ...",TAG);
+		BlockExecutionController controller = BlockExecutionController.getInstance();
+		UUID diagramUUID = null;
+		try {
+			diagramUUID = UUID.fromString(uuidString);
+		}
+		catch(IllegalArgumentException iae) {
+			log.warnf("%s.diagramExists: Diagram UUID string is illegal (%s), creating new",TAG,uuidString);
+			diagramUUID = UUID.nameUUIDFromBytes(uuidString.getBytes());
+		}
+		ProcessDiagram diagram = controller.getDiagram(diagramUUID);
+		return new Boolean(diagram!=null);
+	}
 	/**
 	 * Query the specified block for its properties. If the block does not exist, create it, given the
 	 * specified class name. In the case of a new block, its diagram may also need to be created. 
@@ -204,13 +225,15 @@ public class GatewayRpcDispatcher   {
 	 *  @return
 	 */
 	public List<SerializableResourceDescriptor> queryControllerResources() {
-		log.infof("%s: queryControllerResources ...",TAG);
+		log.infof("%s.queryControllerResources ...",TAG);
 		return  ControllerRequestHandler.getInstance().queryControllerResources();
 	}
 	
 	public Boolean resourceExists(Long projectId,Long resourceId) {
+		log.infof("%s.resourceExists ...",TAG);
 		BlockExecutionController controller = BlockExecutionController.getInstance();
 		ProcessDiagram diagram = controller.getDiagram(projectId.longValue(), resourceId.longValue());
+		log.infof("%s.resourceExists (2) ...",TAG);
 		return new Boolean(diagram!=null);
 	}
 	

@@ -12,12 +12,10 @@ import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTree;
-import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.inductiveautomation.ignition.client.sqltags.tree.SQLTagTreeModel;
 import com.inductiveautomation.ignition.client.sqltags.tree.TagRenderer;
 import com.inductiveautomation.ignition.client.sqltags.tree.TagTreeNode;
@@ -38,7 +36,7 @@ public class TagBrowserPanel extends BasicEditPanel {
 	private final TagRenderer cellRenderer;
 	private final TreeSelectionModel tagTreeSelectionModel;
 	
-	public TagBrowserPanel(BlockPropertyEditor editor,DesignerContext ctx) {
+	public TagBrowserPanel(final BlockPropertyEditor editor,DesignerContext ctx) {
 		super(editor);
 		this.context = ctx;
 		this.cellRenderer = new TagRenderer();
@@ -68,8 +66,7 @@ public class TagBrowserPanel extends BasicEditPanel {
 						property.setBinding(selectedPath);
 					}
 					updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
-					editor.getBlock().setDirty(true);
-					SwingUtilities.invokeLater(new WorkspaceRepainter());
+					editor.notifyOfChange();
 					setSelectedPane(BlockEditConstants.HOME_PANEL);
 				}
 				else {

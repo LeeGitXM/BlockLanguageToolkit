@@ -13,7 +13,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -22,13 +21,14 @@ import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.LimitType;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TransmissionScope;
-import com.ils.blt.designer.workspace.WorkspaceRepainter;
 
 /**
  * Display a panel to edit lists of strings using a list box.
  * This is one of the sliding panels in the block editor.
  * The first character in the string is the delimiter. We use
- * it to separate the other items in the list.  
+ * it to separate the other items in the list.
+ * 
+ *  There is no annotation for a list.
  */
 
 public class ListEditPanel extends BasicEditPanel {
@@ -47,7 +47,7 @@ public class ListEditPanel extends BasicEditPanel {
 	private final JTextField yfield;
 	private final JTextField valueField;
 
-	public ListEditPanel(BlockPropertyEditor editor) {
+	public ListEditPanel(final BlockPropertyEditor editor) {
 		super(editor);
 		setLayout(new MigLayout("top,flowy,ins 2","",""));
 		this.fncs = new UtilityFunctions();
@@ -98,8 +98,7 @@ public class ListEditPanel extends BasicEditPanel {
 						property.setDisplayed(false);
 					}
 				}
-				editor.getBlock().setDirty(true);
-				SwingUtilities.invokeLater(new WorkspaceRepainter());
+				editor.notifyOfChange();   // Handle "dirtiness" and repaint diagram
 				updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
 				setSelectedPane(BlockEditConstants.HOME_PANEL);
 			}
@@ -121,9 +120,6 @@ public class ListEditPanel extends BasicEditPanel {
 		if( prop.getValue()!=null ) {
 			valueField.setText(fncs.coerceToString(prop.getValue()));
 		}   
-		annotationCheckBox.setSelected(prop.isDisplayed());
-		xfield.setText(String.valueOf(prop.getDisplayOffsetX()));
-		yfield.setText(String.valueOf(prop.getDisplayOffsetX()));
 	}
 
 	/**

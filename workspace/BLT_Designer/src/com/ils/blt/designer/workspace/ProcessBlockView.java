@@ -37,6 +37,9 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.Ab
  * This is the class that describes all blocks that appear in a
  * diagram in the Designer. Different block shapes and characteristics
  * are provided by swapping out different UI rendering classes.
+ * 
+ * Note: The "dirtiness" of the block is used simply for darkening
+ *       the icon on the screen.
  */
 public class ProcessBlockView extends AbstractBlock {
 	private static final String TAG = "ProcessBlockView";
@@ -266,7 +269,7 @@ public class ProcessBlockView extends AbstractBlock {
 	public boolean isReceiveEnabled() {return receiveEnabled;}
 	public boolean isTransmitEnabled() {return transmitEnabled;}
 	public void setCtypeEditable(boolean ctypeEditable) {this.ctypeEditable = ctypeEditable;}
-	public void setDirty(boolean dirty) {this.dirty = dirty;}
+	public void setDirty(boolean dirty) {this.dirty = dirty;} 
 	public void setEmbeddedFontSize(int size) {this.embeddedFontSize = size;}
 	public void setEmbeddedIcon(String embeddedIcon) {this.embeddedIcon = embeddedIcon;}
 	public void setEmbeddedLabel(String embeddedLabel) {this.embeddedLabel = embeddedLabel;}

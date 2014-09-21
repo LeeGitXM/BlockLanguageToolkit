@@ -218,13 +218,15 @@ public class ApplicationRequestHandler  {
 	public boolean resourceExists(long projectId,long resid) {
 		Boolean result = null;
 		try {
+			log.infof("%s.resourceExists (1)  ...%d:%d",TAG,projectId,resid);
 			result = (Boolean)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "resourceExists",new Long(projectId),new Long(resid));
-			log.debugf("%s.resourceExists  ...%d:%d = %s",TAG,projectId,resid,result);
+			log.infof("%s.resourceExists (2)  ...%d:%d = %s",TAG,projectId,resid,result);
 		}
 		catch(Exception ge) {
 			log.infof("%s.resourceExists: GatewayException (%s)",TAG,ge.getMessage());
 		}
+		if( result==null ) return false;
 		return result.booleanValue();
 	}
 	/** Update all changed properties for a block 

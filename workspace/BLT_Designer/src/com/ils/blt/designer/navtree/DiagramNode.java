@@ -17,15 +17,17 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.tree.TreePath;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.DiagramState;
-import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.BLTDesignerHook;
+import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
@@ -60,7 +62,7 @@ import com.inductiveautomation.ignition.designer.navtree.model.ResourceDeleteAct
  * The frame is responsible for rendering the diagram based on the model resource.
  * The model can exist without the frame, but not vice-versa.
  */
-public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectChangeListener  {
+public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeListener, ProjectChangeListener  {
 	private static final String TAG = "DiagramNode";
 	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
 
@@ -68,6 +70,15 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 	private DesignerContext context;
 	private long resourceId;
 	private final DiagramWorkspace workspace;
+	private final NodeStatusManager statusManager;
+	private final SaveDiagramAction saveAction = new SaveDiagramAction();
+	private final ImageIcon defaultIcon;
+	private final ImageIcon openIcon;
+	private final ImageIcon closedIcon;
+	private final ImageIcon openDisabledIcon;
+	private final ImageIcon closedDisabledIcon;
+	private final ImageIcon openRestrictedIcon;
+	private final ImageIcon closedRestrictedIcon;
 
 
 	/**
@@ -82,16 +93,20 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 		this.context = context;
 		this.resourceId = resource.getResourceId();
 		this.workspace = ws;
-
+		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
+		statusManager.addChangeListener(this);
 		setName(resource.getName());
 		setText(resource.getName());
-		setIcon(IconUtil.getIcon("tag_tree"));
-		Dimension iconSize = new Dimension(20,20);
-		Image img = ImageLoader.getInstance().loadImage("Block/icons/navtree/diagram.png",iconSize);
-		if( img !=null) {
-			setIcon( new ImageIcon(img));
-		}
-
+		
+		defaultIcon = IconUtil.getIcon("unknown");
+		openIcon = iconFromPath("Block/icons/navtree/diagram.png");
+		// We have just defined the default (expanded) variant. Here are some more.
+		closedIcon = iconFromPath("Block/icons/navtree/diagram_closed.png");
+		openDisabledIcon = iconFromPath("Block/icons/navtree/diagram_disabled.png");
+		closedDisabledIcon = iconFromPath("Block/icons/navtree/diagram_closed_disabled.png");
+		openRestrictedIcon = iconFromPath("Block/icons/navtree/diagram_restricted.png");
+		closedRestrictedIcon = iconFromPath("Block/icons/navtree/diagram_closed_restricted.png");
+		setIcon( closedIcon);
 		setItalic(context.getProject().isResourceDirty(resourceId));
 		context.addProjectChangeListener(this);
 	}
@@ -120,7 +135,6 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 		menu.add(setStateMenu);
 	
 		// Only allow a Save when the diagram is dirty, exists in the controller
-		SaveDiagramAction saveAction = new SaveDiagramAction();
 		saveAction.setEnabled(diagramIsSavable(handler,resourceId));
 		menu.add(saveAction);
 		menu.addSeparator();
@@ -151,35 +165,10 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 	 */
 	private boolean diagramIsSavable(ApplicationRequestHandler handler,long resId) {
 		boolean existsInController = handler.resourceExists(context.getProject().getId(),resourceId);
-		if( !existsInController )  return false;    // Controller has no knowledge of this resource
+		if( !existsInController )  return false;    // Controller has no knowledge of this diagram
+		                                            // Must save application.
 		
-		BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId);
-		if( tab!=null ) {
-			ProcessDiagramView view = (ProcessDiagramView)(tab.getModel());
-			if( view.isDirty() ) return true;
-			for(Block blk:view.getBlocks()) {
-				ProcessBlockView pbv = (ProcessBlockView)blk;
-				if(pbv.isDirty()) return true;
-			}
-		}
-		// Otherwise we need to de-serialize just to determine dirtiness
-		else {
-			ProjectResource res = context.getProject().getResource(resourceId);
-			byte[]bytes = res.getData();
-			SerializableDiagram sd = null;
-			ObjectMapper mapper = new ObjectMapper();
-			try {
-				sd = mapper.readValue(bytes,SerializableDiagram.class);
-				if( sd.isDirty() ) return true;
-				for(SerializableBlock sb:sd.getBlocks()) {
-					if( sb.isDirty() ) return true;
-				}
-			}
-			catch(Exception ex) {
-				log.warnf("%s.diagramIsSavable: Exception deserializing res %d (%s)",TAG,resourceId,ex.getMessage());
-			}
-		}
-		return false;
+		return statusManager.isResourceDirty(resourceId);
 	}
 	/**
 	 * Before deleting ourself, delete the frame and model, if they exist.
@@ -202,8 +191,24 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 		return context.getProject().getResource(resourceId);
 	}
 
+	/**
+	 * Return an icon appropriate to the diagram state and whether or not it is displayed.
+	 * As far as we can tell getExpandedIcon is never called.
+	 */
 	@Override
-	public Icon getIcon() {
+	public Icon getIcon() {	
+		icon = closedIcon;
+		if( workspace.isOpen(resourceId) ) {
+			icon = openIcon;
+			DiagramState ds = statusManager.getResourceState(resourceId);
+			if( ds.equals(DiagramState.DISABLED))        icon = openDisabledIcon;
+			else if( ds.equals(DiagramState.RESTRICTED)) icon = openRestrictedIcon;
+		}
+		else {
+			DiagramState ds = statusManager.getResourceState(resourceId);
+			if( ds.equals(DiagramState.DISABLED))        icon = closedDisabledIcon;
+			else if( ds.equals(DiagramState.RESTRICTED)) icon = closedRestrictedIcon;
+		}
 		return icon;
 	}
 	
@@ -226,6 +231,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 	public void onDoubleClick() {
 		workspace.open(resourceId);
 	}
+	
 	@Override
 	public void onEdit(String newTextValue) {
 		// Sanitize name
@@ -262,29 +268,28 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 		log.infof("%s.saveDiagram: %d...",TAG,resourceId);
 		BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId);
 		if( tab!=null ) {
-			// If the diagram is open on a tab, just call the workspace method
-			workspace.saveDiagram(tab);
+			// If the diagram is open on a tab, call the workspace method to update the project resource
+			// from the diagram view. This method handles re-paint of the background.
 			ProcessDiagramView view = (ProcessDiagramView)tab.getModel();
-			tab.setBackground(view.getBackgroundColorForState());
 			for( Block blk:view.getBlocks()) {
 				ProcessBlockView pbv = (ProcessBlockView)blk;
 				pbv.setDirty(false);
 			}
+			workspace.saveDiagram(tab);
 			view.registerChangeListeners();
 		}
-		else {
-			// We simply save the resource, as is.
-			Project diff = context.getProject().getEmptyCopy();
-			ProjectResource res = getProjectResource();
-			diff.putResource(res, true);    // Mark as dirty
-			try {
-				DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ..."); // Do not publish
-			}
-			catch(GatewayException ge) {
-				log.warnf("%s.saveDiagram: Exception saving project resource %d (%s)",TAG,resourceId,ge.getMessage());
-			}
+		// Now save the resource, as it is.
+		Project diff = context.getProject().getEmptyCopy();
+		ProjectResource res = getProjectResource();
+		diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
+		try {
+			DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ..."); // Do not publish
 		}
-		setItalic(false);
+		catch(GatewayException ge) {
+			log.warnf("%s.saveDiagram: Exception saving project resource %d (%s)",TAG,resourceId,ge.getMessage());
+		}
+		statusManager.clearDirtyBlockCount(resourceId);
+		statusManager.setResourceDirty(resourceId,false);
 	}
 	
 	@Override
@@ -304,27 +309,23 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 	public void projectUpdated(Project diff) {
 		log.debug(TAG+"projectUpdated "+diff.getDescription());
 		if (diff.isResourceDirty(resourceId) && !diff.isResourceDeleted(resourceId)) {
-			log.infof("%s: projectUpdated, setting name/italic + refreshing",TAG);
+			log.infof("%s: projectUpdated, setting name ...",TAG);
 			setName(diff.getResource(resourceId).getName());
 			refresh();
 		}
-		setItalic(context.getProject().isResourceDirty(resourceId));
+		statusManager.setResourceDirty(resourceId,context.getProject().isResourceDirty(resourceId));
 	}
 	/**
-	 * The updates that we are interested in are:
-	 *    1) Addition of a BLTProperties.MODEL_RESOURCE_TYPE with same parent as this.
-	 *    2) Resource name change, we change ours to keep in sync.
+	 * We got here from either a Save() action or a name change
 	 */
 	@Override
 	public void projectResourceModified(ProjectResource res,ResourceModification changeType) {
-		log.debug(TAG+": projectModified: "+res.getResourceId()+" "+res.getResourceType()+" "+res.getModuleId()+" ("+res.getName()+
-				":"+res.getParentUuid()+")");
 		if (res.getResourceId() == resourceId
 				&& changeType != ResourceModification.Deleted) {
-			log.infof("%s: projectResourceModified, setting name/italic + refreshing",TAG);
+			log.infof("%s.projectResourceModified, setting name to: %s",TAG,res.getName());
+			boolean changed = !res.getName().equals(getName());
 			setName(res.getName());
-			setItalic(true);
-			refresh();    // Updates the tree model
+			statusManager.setResourceDirty(resourceId, changed);
 		}
 	}
     
@@ -448,6 +449,9 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 				// Inform the gateway of the state change
 				ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
 				handler.setDiagramState(context.getProject().getId(), resourceId,state.name());
+				statusManager.setResourceState(resourceId,state);
+				setIcon(getIcon());
+				refresh();
 			} 
 			catch (Exception ex) {
 				log.warn(String.format("%s.setStateAction: ERROR: %s",TAG,ex.getMessage()),ex);
@@ -459,6 +463,28 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ProjectC
 	protected DesignerProjectContext projectCtx() {
 		return context;
 	}
+	/**
+	 * Create an ImageIcon from the resource path. If it doesn't exist, return the default.
+	 * @param path
+	 * @return
+	 */
+	private ImageIcon iconFromPath(String path) {
+		Dimension iconSize = new Dimension(20,20);
+		ImageIcon result = defaultIcon;
+		Image img = ImageLoader.getInstance().loadImage(path,iconSize);
+		if( img!=null ) result = new ImageIcon(img);
+		return result;
+	}
 	
-	
+	// ================================ ChangeListener ======================================
+	// Either our state or the state of another node changed.
+	// No matter what we re-compute our state.
+	public void stateChanged(ChangeEvent event) {
+		// Set italics, enable Save
+		boolean dirty = statusManager.isResourceDirty(resourceId);
+		log.infof("%s.stateChanged: dirty = %s",TAG,(dirty?"true":"false"));
+		setItalic(dirty);
+		saveAction.setEnabled(dirty);
+		refresh();
+	}
 }

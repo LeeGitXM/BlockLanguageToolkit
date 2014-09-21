@@ -204,7 +204,7 @@ public class MainPanel extends BasicEditPanel {
 					else if( prop.getBindingType().equals(BindingType.ENGINE)) {
 						;// Do nothing
 					}
-					// Use special editor for the enumerated types
+					// Use special editor for list types
 					else if( prop.getType().equals(PropertyType.LIST) ) {
 						updatePanelForProperty(BlockEditConstants.LIST_EDIT_PANEL,prop);
 						setSelectedPane(BlockEditConstants.LIST_EDIT_PANEL);
@@ -212,6 +212,8 @@ public class MainPanel extends BasicEditPanel {
 					// Use special editor for the enumerated types
 					else if( prop.getType().equals(PropertyType.BOOLEAN) ||
 							 prop.getType().equals(PropertyType.DISTRIBUTION) ||
+							 prop.getType().equals(PropertyType.HYSTERESIS)   ||
+							 prop.getType().equals(PropertyType.LIMIT)        ||
 							 prop.getType().equals(PropertyType.SCOPE)	      ||
 							 prop.getType().equals(PropertyType.TRUTHVALUE)      ){
 						log.infof("%s.editButton actionPerformed for property %s (%s)",TAG,prop.getName(),prop.getType());

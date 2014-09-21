@@ -38,7 +38,7 @@ public class NameEditPanel extends BasicEditPanel {
 	private final JTextField xfield;
 	private final JTextField yfield;
 
-	public NameEditPanel(BlockPropertyEditor editor) {
+	public NameEditPanel(final BlockPropertyEditor editor) {
 		super(editor);
 		setLayout(new MigLayout("top,flowy,ins 2","",""));
 		headingLabel = addHeading(this);
@@ -80,8 +80,7 @@ public class NameEditPanel extends BasicEditPanel {
 					block.setNameOffsetX(Integer.parseInt(xfield.getText()));
 					block.setNameOffsetY(Integer.parseInt(yfield.getText()));
 					setSelectedPane(BlockEditConstants.HOME_PANEL);
-					block.setDirty(true);
-					SwingUtilities.invokeLater(new WorkspaceRepainter());
+					editor.notifyOfChange();
 				}
 				catch(NumberFormatException nfe) {
 					JOptionPane.showMessageDialog(NameEditPanel.this, String.format("Illegal value for offset--please re-enter (%s)",nfe.getLocalizedMessage()),

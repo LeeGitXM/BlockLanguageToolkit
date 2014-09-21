@@ -6,12 +6,15 @@ package com.ils.blt.designer.editor;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.ils.blt.common.ApplicationRequestHandler;
+import javax.swing.SwingUtilities;
+
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.designer.BLTDesignerHook;
+import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.workspace.ProcessBlockView;
+import com.ils.blt.designer.workspace.ProcessDiagramView;
+import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.inductiveautomation.ignition.client.util.gui.SlidingPane;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
@@ -24,11 +27,11 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 public class BlockPropertyEditor extends SlidingPane   {
 	private static final long serialVersionUID = 8971626415423709616L;
 
-	private final ProcessBlockView block;
 	private final DesignerContext context;
-	private final long projectId;
-	private final long resourceId;
+	private final ProcessDiagramView diagram;
+	private final ProcessBlockView block;
 	private static final List<String> coreAttributeNames;
+	private final NodeStatusManager statusManager;
 	
 	private final MainPanel          mainPanel;       // display the properties for a block
 	private final ConfigurationPanel configPanel;     // configure a single block property
@@ -49,10 +52,10 @@ public class BlockPropertyEditor extends SlidingPane   {
 	/**
 	 * @param view the designer version of the block to edit. We 
 	 */
-	public BlockPropertyEditor(DesignerContext ctx,long res,ProcessBlockView view) {
+	public BlockPropertyEditor(DesignerContext ctx,ProcessDiagramView diag,ProcessBlockView view) {
 		this.context = ctx;
-		this.projectId = ctx.getProject().getId();
-		this.resourceId = res;
+		this.diagram = diag;
+		this.statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
 		this.block = view;
         this.mainPanel = new MainPanel(this,block);
         this.configPanel = new ConfigurationPanel(this);
@@ -90,6 +93,18 @@ public class BlockPropertyEditor extends SlidingPane   {
 			break;
 		}
 	}
+	/**
+	 * One of the edit panels has modified a block property. Both mark the
+	 * block as "dirty" and its parent resource. Then repaint the diagram.
+	 */
+	public void notifyOfChange() {
+		if( !block.isDirty() ) {
+			block.setDirty(true);
+			statusManager.incrementDirtyBlockCount(diagram.getResourceId());
+			SwingUtilities.invokeLater(new WorkspaceRepainter());
+		}
+	}
+	
 	public void updatePanelForProperty(int panelIndex,BlockProperty prop) {
 		switch(panelIndex) {
 		case BlockEditConstants.CONFIGURATION_PANEL:

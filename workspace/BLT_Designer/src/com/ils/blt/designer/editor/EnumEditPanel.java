@@ -13,16 +13,17 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 
 import net.miginfocom.swing.MigLayout;
 
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.BlockProperty;
+import com.ils.blt.common.block.DistributionType;
+import com.ils.blt.common.block.HysteresisType;
 import com.ils.blt.common.block.LimitType;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TransmissionScope;
-import com.ils.blt.designer.workspace.WorkspaceRepainter;
+import com.ils.blt.common.block.TruthValue;
 
 /**
  * Display a panel to edit enumerated types using  combo box.
@@ -43,9 +44,9 @@ public class EnumEditPanel extends BasicEditPanel {
 	private final JCheckBox annotationCheckBox;
 	private final JTextField xfield;
 	private final JTextField yfield;
-	private final JTextField valueField;
+	private JComboBox<String> valueCombo;
 
-	public EnumEditPanel(BlockPropertyEditor editor) {
+	public EnumEditPanel(final BlockPropertyEditor editor) {
 		super(editor);
 		setLayout(new MigLayout("top,flowy,ins 2","",""));
 		this.fncs = new UtilityFunctions();
@@ -54,8 +55,8 @@ public class EnumEditPanel extends BasicEditPanel {
 		JPanel editPanel = new JPanel();
 		editPanel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
 		valueLabel = addSeparator(editPanel,"Value");
-		valueField = createTextField("");
-		editPanel.add(valueField,"skip");
+		valueCombo = createBooleanCombo();    // Placeholder
+		editPanel.add(valueCombo,"skip");
 		add(editPanel,"");
 
 		JPanel displayPanel = new JPanel();
@@ -81,10 +82,8 @@ public class EnumEditPanel extends BasicEditPanel {
 			public void actionPerformed(ActionEvent e) {
 				if(property!=null) {
 					// Coerce to the correct data type
-					Object value = valueField.getText();
-					if( property.getType().equals(PropertyType.BOOLEAN ))     value = fncs.coerceToBoolean(value);
-					else if( property.getType().equals(PropertyType.DOUBLE )) value = fncs.coerceToDouble(value);
-					else if( property.getType().equals(PropertyType.INTEGER ))value = fncs.coerceToInteger(value);
+					String value = valueCombo.getSelectedItem().toString();
+					log.infof("%s.actionPerformed: OK = %s",TAG,value);
 					property.setValue(value);
 					property.setDisplayed(annotationCheckBox.isSelected());
 					try {
@@ -96,8 +95,7 @@ public class EnumEditPanel extends BasicEditPanel {
 						property.setDisplayed(false);
 					}
 				}
-				editor.getBlock().setDirty(true);
-				SwingUtilities.invokeLater(new WorkspaceRepainter());
+				editor.notifyOfChange();  // Handle various dirty flags and repaint
 				updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
 				setSelectedPane(BlockEditConstants.HOME_PANEL);
 			}
@@ -116,140 +114,102 @@ public class EnumEditPanel extends BasicEditPanel {
 		this.property = prop;
 		headingLabel.setText(prop.getName());
 		valueLabel.setText("Value ("+prop.getType().name().toLowerCase()+")");
+		if( prop.getType().equals(PropertyType.BOOLEAN))          valueCombo = createBooleanCombo();
+		else if(prop.getType().equals(PropertyType.DISTRIBUTION)) valueCombo = createDistributionTypeCombo();
+		else if(prop.getType().equals(PropertyType.HYSTERESIS))   valueCombo = createHysteresisTypeCombo();
+		else if(prop.getType().equals(PropertyType.LIMIT))        valueCombo = createLimitTypeCombo();
+		else if(prop.getType().equals(PropertyType.SCOPE))	      valueCombo = createTransmissionScopeCombo();
+		else if(prop.getType().equals(PropertyType.TRUTHVALUE) )  valueCombo = createTruthValueCombo();
+			
 		if( prop.getValue()!=null ) {
-			valueField.setText(fncs.coerceToString(prop.getValue()));
+			log.infof("%s.updateForProperty: %s=%s",TAG,prop.getName(),prop.getValue().toString().toUpperCase());
+			valueCombo.setSelectedItem(prop.getValue().toString().toUpperCase());
 		}   
 		annotationCheckBox.setSelected(prop.isDisplayed());
 		xfield.setText(String.valueOf(prop.getDisplayOffsetX()));
-		yfield.setText(String.valueOf(prop.getDisplayOffsetX()));
+		yfield.setText(String.valueOf(prop.getDisplayOffsetY()));
+	}
+
+	// ================================ Combo boxes for different enumerations ===================================
+
+	/**
+	 * Create a combo box for true/false 
+	 */
+	private JComboBox<String> createBooleanCombo() {
+		String[] entries = new String[2];
+		entries[0]=Boolean.TRUE.toString().toUpperCase();
+		entries[1]=Boolean.FALSE.toString().toUpperCase();
+
+		final JComboBox<String> box = new JComboBox<String>(entries);
+		return box;
+	}
+	/**
+	 * Create a combo box for distribution type 
+	 */
+	private JComboBox<String> createDistributionTypeCombo() {
+		String[] entries = new String[DistributionType.values().length];
+		int index=0;
+		for(DistributionType dt : DistributionType.values()) {
+			entries[index]=dt.name();
+			index++;
+		}
+
+		final JComboBox<String> box = new JComboBox<String>(entries);
+		return box;
+	}
+	/**
+	 * Create a combo box for hysteresis type
+	 */
+	private JComboBox<String> createHysteresisTypeCombo() {
+		String[] entries = new String[HysteresisType.values().length];
+		int index=0;
+		for(HysteresisType type : HysteresisType.values()) {
+			entries[index]=type.name();
+			index++;
+		}
+		final JComboBox<String> box = new JComboBox<String>(entries);
+		return box;
+	}
+	/**
+	 * Create a combo box for limit type
+	 */
+	private JComboBox<String> createLimitTypeCombo() {
+		String[] entries = new String[LimitType.values().length];
+		int index=0;
+		for(LimitType scope : LimitType.values()) {
+			entries[index]=scope.name();
+			index++;
+		}
+		final JComboBox<String> box = new JComboBox<String>(entries);
+		return box;
 	}
 
 	/**
-	 * Create a text field for data entry
+	 * Create a combo box for transmission scope
 	 */
-	protected JTextField createTextField(String text) {	
-		final JTextField field = new JTextField(text);
-		field.setPreferredSize(ENTRY_BOX_SIZE);
-		field.setEditable(true);
-		return field;
+	private JComboBox<String> createTransmissionScopeCombo() {
+		String[] entries = new String[TransmissionScope.values().length];
+		int index=0;
+		for(TransmissionScope scope : TransmissionScope.values()) {
+			entries[index]=scope.name();
+			index++;
+		}
+		final JComboBox<String> box = new JComboBox<String>(entries);
+		return box;
 	}
-	// =================================== Unused ===================================
-
-		/**
-		 * Create a combo box for true/false 
-		 */
-		private JComboBox<String> createBooleanCombo(final BlockProperty prop) {
-			String[] entries = new String[2];
-			entries[0]=Boolean.TRUE.toString();
-			entries[1]=Boolean.FALSE.toString();
-			
-			final JComboBox<String> box = new JComboBox<String>(entries);
-			box.addActionListener(new ActionListener() {
-		        public void actionPerformed(ActionEvent e){
-		        	prop.setValue(box.getSelectedItem().toString());
-		        	//updateBlockProperty(prop);
-		        }
-			});
-			box.setSelectedItem(prop.getValue().toString());
-			return box;
+	/**
+	 * Create a combo box for limit type
+	 */
+	private JComboBox<String> createTruthValueCombo() {
+		String[] entries = new String[TruthValue.values().length];
+		int index=0;
+		for(TruthValue tv : TruthValue.values()) {
+			entries[index]=tv.name();
+			index++;
 		}
-		/**
-		 * Create a combo box for limit type
-		 */
-		private JComboBox<String> createLimitTypeCombo(final BlockProperty prop) {
-			String[] entries = new String[LimitType.values().length];
-			int index=0;
-			for(LimitType scope : LimitType.values()) {
-				entries[index]=scope.name();
-				index++;
-			}
-			final JComboBox<String> box = new JComboBox<String>(entries);
-			box.addActionListener(new ActionListener() {
-		        public void actionPerformed(ActionEvent e){
-		        	LimitType type = LimitType.valueOf(LimitType.class, box.getSelectedItem().toString());
-		        	log.debugf("%s: set limit type %s",TAG,box.getSelectedItem().toString());
-		        	prop.setValue(box.getSelectedItem().toString());
-		        	//updateBlockProperty(prop);
-		        }
-			});
-			box.setSelectedItem(prop.getValue().toString());
-			return box;
-		}
-		
-		/**
-		 * Create a combo box for transmission scope
-		 */
-		private JComboBox<String> createTransmissionScopeCombo(final BlockProperty prop) {
-			String[] entries = new String[TransmissionScope.values().length];
-			int index=0;
-			for(TransmissionScope scope : TransmissionScope.values()) {
-				entries[index]=scope.name();
-				index++;
-			}
-			final JComboBox<String> box = new JComboBox<String>(entries);
-			box.addActionListener(new ActionListener() {
-		        public void actionPerformed(ActionEvent e){
-		        	TransmissionScope scope = TransmissionScope.valueOf(TransmissionScope.class, box.getSelectedItem().toString());
-		        	log.debugf("%s: set transmission scope %s",TAG,box.getSelectedItem().toString());
-		        	prop.setValue(scope.toString());
-		        	//updateBlockProperty(prop);
-		        }
-			});
-			box.setSelectedItem(prop.getValue().toString());
-			return box;
-		}
-		/*
-		// Special for a LimitType block property
-		private class LimitTypePanel extends JPanel {
-			private static final long serialVersionUID = 6501004559543409511L;
-			private static final String columnConstraints = "[para]0[][100lp,fill]";
-			private static final String layoutConstraints = "ins 2";
-			private static final String rowConstraints = "";
-
-			public LimitTypePanel(BlockProperty prop) {
-				setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));     // 3 cells across
-				addSeparator(this,prop.getName());
-
-				add(createLabel("Type"),"skip");
-				add(createLimitTypeCombo(prop),"wrap");
-			}
-		}
-			
-		// Special for a TruthValue block property
-		private class TruthStatePanel extends JPanel {
-			private static final long serialVersionUID = 6501004559543409511L;
-			private static final String columnConstraints = "[para]0[][100lp,fill]";
-			private static final String layoutConstraints = "ins 2";
-			private static final String rowConstraints = "";
-
-			public TruthStatePanel(BlockProperty prop) {
-				setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));     // 3 cells across
-				addSeparator(this,prop.getName());
-
-				add(createLabel("Type"),"skip");
-				add(createBooleanCombo(prop),"wrap");
-			}
-		}
-
-
-		// Special for whenever there is just a combo box
-		private class ComboOnlyPanel extends JPanel {
-			private static final long serialVersionUID = 6501004559543409511L;
-			private static final String columnConstraints = "[para]0[][100lp,fill]";
-			private static final String layoutConstraints = "ins 2";
-			private static final String rowConstraints = "";
-			
-			public ComboOnlyPanel(BlockProperty prop) {
-				setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));     // 3 cells across
-				addSeparator(this,prop.getName());
-				
-				add(createLabel(prop.getName()),"skip");
-				if(prop.getName().endsWith("?")) {
-					add(createBooleanCombo(prop),"wrap");
-				}	
-			}
-		}
-		*/
+		final JComboBox<String> box = new JComboBox<String>(entries);
+		return box;
+	}
 		
 }
 	

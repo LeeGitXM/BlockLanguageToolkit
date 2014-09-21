@@ -22,6 +22,8 @@ import java.util.UUID;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JPopupMenu;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.tree.TreePath;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -36,16 +38,22 @@ import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.common.serializable.UUIDResetHandler;
 import com.ils.blt.designer.BLTDesignerHook;
+import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
+import com.inductiveautomation.ignition.client.gateway_interface.GatewayException;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
+import com.inductiveautomation.ignition.common.project.Project;
+import com.inductiveautomation.ignition.common.project.ProjectChangeListener;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.inductiveautomation.ignition.designer.IgnitionDesigner;
 import com.inductiveautomation.ignition.designer.UndoManager;
+import com.inductiveautomation.ignition.designer.gateway.DTGatewayInterface;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
@@ -60,25 +68,33 @@ import com.inductiveautomation.ignition.designer.navtree.model.ResourceDeleteAct
  * 
  * Leaf nodes are of type DiagramNode.
  */
-public class GeneralPurposeTreeNode extends FolderNode {
+public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener,ProjectChangeListener {
 	private static final String TAG = "GeneralPurposeTreeNode";
 	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
 	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	private StartAction startAction = new StartAction();
 	private StopAction stopAction = new StopAction();
 	private final DiagramWorkspace workspace; 
-	private Icon expandedIcon = super.getExpandedIcon();
+	private final NodeStatusManager statusManager;
+	private final ApplicationAction applicationAction = new ApplicationAction();
+	private final ImageIcon defaultIcon = IconUtil.getIcon("folder_closed");
+	private final ImageIcon openIcon;
+	private final ImageIcon closedIcon;
 	
 	/** 
-	 * Create a new folder node representing the root folder
+	 * Create a new folder node representing the root folder. The root folder does
+	 * not worry about cleanliness.
 	 * @param ctx the designer context
 	 */
 	public GeneralPurposeTreeNode(DesignerContext ctx) {
 		super(ctx, BLTProperties.MODULE_ID, ApplicationScope.GATEWAY,BLTProperties.ROOT_FOLDER_UUID);
 		this.setName(BLTProperties.ROOT_FOLDER_NAME);
 		workspace = ((BLTDesignerHook)ctx.getModule(BLTProperties.MODULE_ID)).getWorkspace();
+		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
 		setText(BundleUtil.get().getString(PREFIX+".RootFolderName"));
-		setIcon(IconUtil.getIcon("folder_closed"));
+		closedIcon = IconUtil.getIcon("folder_closed");
+		setIcon(closedIcon);
+		openIcon = IconUtil.getIcon("folder");
 	}
 
 	/**
@@ -96,25 +112,23 @@ public class GeneralPurposeTreeNode extends FolderNode {
 		setName(resource.getName());      // Also sets text for tree
 		
 		workspace = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getWorkspace();
+		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
+		statusManager.addChangeListener(this);
 		
-		ImageIcon icon = IconUtil.getIcon("folder_closed");    // Base icon.
-		Dimension iconSize = new Dimension(20,20);
 		if(resource.getResourceType().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
-			Image img = ImageLoader.getInstance().loadImage("Block/icons/navtree/application_folder_closed.png",iconSize);
-			if( img !=null) icon = new ImageIcon(img);
-			img = ImageLoader.getInstance().loadImage("Block/icons/navtree/application_folder.png",iconSize);
-			if( img !=null) expandedIcon = new ImageIcon(img);
+			closedIcon = iconFromPath("Block/icons/navtree/application_folder_closed.png");
+			openIcon = iconFromPath("Block/icons/navtree/application_folder.png");
 		} 
 		else if(resource.getResourceType().equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE)) {
-			Image img = ImageLoader.getInstance().loadImage("Block/icons/navtree/family_folder_closed.png",iconSize);
-			if( img !=null) icon = new ImageIcon(img);
-			img = ImageLoader.getInstance().loadImage("Block/icons/navtree/family_folder.png",iconSize);
-			if( img !=null) expandedIcon = new ImageIcon(img);
+			closedIcon = iconFromPath("Block/icons/navtree/family_folder_closed.png");
+			openIcon = iconFromPath("Block/icons/navtree/family_folder.png");
 		}
-		else if(resource.getResourceType().equalsIgnoreCase(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
-			icon = IconUtil.getIcon("tag_tree");
+		else {
+			// Simple folder
+			closedIcon = IconUtil.getIcon("folder_closed");
+			openIcon = IconUtil.getIcon("folder");
 		}
-		setIcon(icon);
+		setIcon(closedIcon);
 	}
 
 	private boolean isRootFolder() {
@@ -122,36 +136,45 @@ public class GeneralPurposeTreeNode extends FolderNode {
 	}
 	
 	@Override
-	public Icon getExpandedIcon() {
-		return expandedIcon;
+	public Icon getIcon() {
+		return closedIcon;
+	}
+	@Override
+	public Icon getExpandedIcon() { 
+		return openIcon;
 	}
 
 	/**
 	 * Create a child node because we've discovered a resource that matches this instance as a parent
-	 * based on its content matching the our UUID.
+	 * based on its content matching the our UUID. With each node creation we create a StatusManager
+	 * entry to keep track of "dirtiness" throughout the tree.
 	 */
 	@Override
 	protected AbstractNavTreeNode createChildNode(ProjectResource res) {
 		log.infof("%s.createChildNode type:%s, level=%d", TAG,res.getResourceType(),getDepth());
 		if (    ProjectResource.FOLDER_RESOURCE_TYPE.equals(res.getResourceType()))       {
 			GeneralPurposeTreeNode node = new GeneralPurposeTreeNode(context, res, res.getDataAsUUID());
+			statusManager.defineResource(resourceId, res.getResourceId());
 			log.infof("%s.createChildNode: (%s) %s->%s",TAG,res.getResourceType(),this.getName(),node.getName());
 			return node;
 		}
 		else if ( BLTProperties.APPLICATION_RESOURCE_TYPE.equals(res.getResourceType()) )       {
 			SerializableApplication sa = deserializeApplication(res);
 			GeneralPurposeTreeNode node = new GeneralPurposeTreeNode(context, res, sa.getId());
+			statusManager.defineResource(resourceId, res.getResourceId());
 			log.infof("%s.createChildNode: (%s) %s->%s",TAG,res.getResourceType(),this.getName(),node.getName());
 			return node;
 		}
 		else if ( BLTProperties.FAMILY_RESOURCE_TYPE.equals(res.getResourceType()) )       {
 			SerializableFamily fa = deserializeFamily(res); 
 			GeneralPurposeTreeNode node = new GeneralPurposeTreeNode(context, res, fa.getId());
+			statusManager.defineResource(resourceId, res.getResourceId());
 			log.infof("%s.createChildNode: (%s) %s->%s",TAG,res.getResourceType(),this.getName(),node.getName());
 			return node;
 		}
 		else if (BLTProperties.DIAGRAM_RESOURCE_TYPE.equals(res.getResourceType())) {
 			DiagramNode node = new DiagramNode(context,res,workspace);
+			statusManager.defineResource(resourceId, res.getResourceId());
 			log.infof("%s.createChildPanel: %s->%s",TAG,this.getName(),node.getName());
 			return node;
 		} 
@@ -180,11 +203,10 @@ public class GeneralPurposeTreeNode extends FolderNode {
 		if (isRootFolder()) { 
 			ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
 
-			ApplicationAction applicationAction = new ApplicationAction();
 			ApplicationImportAction applicationImportAction = new ApplicationImportAction();
 			ClearAction clearAction = new ClearAction();
 			DebugAction debugAction = new DebugAction();
-			SaveAllAction saveAllAction = new SaveAllAction(this);
+			SaveAllAction saveAllAction = new SaveAllAction();
 			if( handler.isControllerRunning() ) {
 				startAction.setEnabled(false);
 			}
@@ -201,11 +223,14 @@ public class GeneralPurposeTreeNode extends FolderNode {
 			menu.add(debugAction);
 		}
 		else if(getProjectResource().getResourceType().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
+			ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
 			ApplicationExportAction applicationExportAction = new ApplicationExportAction(menu.getRootPane(),this);
 			FamilyAction familyAction = new FamilyAction();
 			NewFolderAction newFolderAction = new NewFolderAction(context,BLTProperties.MODULE_ID,ApplicationScope.DESIGNER,getFolderId(),this);
 			ApplicationConfigureAction applicationConfigureAction = new ApplicationConfigureAction();
 			ApplicationSaveAction applicationSaveAction = new ApplicationSaveAction(this);
+			applicationSaveAction.setEnabled(!handler.resourceExists(context.getProject().getId(),resourceId) || 
+					                          statusManager.isResourceDirty(resourceId));
 			menu.add(familyAction);
 			menu.add(newFolderAction);
 			menu.addSeparator();
@@ -326,6 +351,22 @@ public class GeneralPurposeTreeNode extends FolderNode {
 	public void onSelected() {
 		UndoManager.getInstance()
 				.setSelectedContext(GeneralPurposeTreeNode.class);
+	}
+	
+	/**
+	 * Save all applications. This is only valid on the root node. During
+	 * the accumulation, we set the resources to "clean".
+	 */
+	public void saveAll() {
+		if( !isRootFolder() ) return;
+		Project diff = context.getProject().getEmptyCopy();
+		accumulateNodeResources(this,diff);
+		try {
+			DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ..."); // Do not publish
+		}
+		catch(GatewayException ge) {
+			log.warnf("%s.SaveAllAction: Exception saving project resource %d (%s)",TAG,resourceId,ge.getMessage());
+		}
 	}
 	/**
 	 *  Serialize an Application into JSON.
@@ -624,23 +665,15 @@ public class GeneralPurposeTreeNode extends FolderNode {
 	    
 		public void actionPerformed(ActionEvent e) {
 			// Traverse the entire hierarchy, saving each step
-			saveNodeAndChildren(root);
-		}
-		private void saveNodeAndChildren(AbstractResourceNavTreeNode node) {
-			ProjectResource res = node.getProjectResource();
-			try {
-				res.setEditCount(res.getEditCount()+1);
-				context.updateResource(res);
-			} 
-			catch (Exception err) {
-				ErrorUtil.showError(err);
-			}
-			@SuppressWarnings("rawtypes")
-			Enumeration walker = node.children();
-			while(walker.hasMoreElements()) {
-				Object child = walker.nextElement();
-				saveNodeAndChildren((AbstractResourceNavTreeNode)child);
-			}
+    		Project diff = context.getProject().getEmptyCopy();
+    		accumulateNodeResources(root,diff);
+    		try {
+    			DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ..."); // Do not publish
+    		}
+    		catch(GatewayException ge) {
+    			log.warnf("%s.ApplicationSaveAction: Exception saving project resource %d (%s)",TAG,resourceId,ge.getMessage());
+    		}
+    		setItalic(false);
 		}
 	}
 
@@ -964,33 +997,16 @@ public class GeneralPurposeTreeNode extends FolderNode {
     // Save the entire Application hierarchy.
     private class SaveAllAction extends BaseAction {
     	private static final long serialVersionUID = 1L;
-    	private final AbstractResourceNavTreeNode root;
 
-    	public SaveAllAction(AbstractResourceNavTreeNode node)  {
+    	public SaveAllAction()  {
     		super(PREFIX+".SaveAll",IconUtil.getIcon("add2")); 
-    		root = node;
     	}
 
     	public void actionPerformed(ActionEvent e) {
     		// Traverse the entire hierarchy, saving each step
-    		saveNodeAndChildren(root);
+    		saveAll();
     	}
-    	private void saveNodeAndChildren(AbstractResourceNavTreeNode node) {
-    		ProjectResource res = node.getProjectResource();
-    		try {
-    			res.setEditCount(res.getEditCount()+1);
-    			context.updateResource(res);
-    		} 
-    		catch (Exception err) {
-    			ErrorUtil.showError(err);
-    		}
-    		@SuppressWarnings("rawtypes")
-    		Enumeration walker = node.children();
-    		while(walker.hasMoreElements()) {
-    			Object child = walker.nextElement();
-    			saveNodeAndChildren((AbstractResourceNavTreeNode)child);
-    		}
-    	}
+    	
     }
     // Start refers to a global startup of the Execution controller in the Gateway
     private class StartAction extends BaseAction {
@@ -1032,6 +1048,31 @@ public class GeneralPurposeTreeNode extends FolderNode {
 			}
 		}
 	}
+    
+    // Recursively descend the node tree, gathering up associated resources.
+    // Since this is used during a save, set the resources clean.
+    public void accumulateNodeResources(AbstractResourceNavTreeNode node,Project diff) {
+    	ProjectResource res = node.getProjectResource();
+    	if( res!=null ) {
+    		diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
+    		if(res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
+    			// If the resource is open, we need to save it ..
+    			DiagramNode dnode = (DiagramNode)node;
+    			dnode.saveDiagram();  // Whether it's open or closed.
+    		}
+    		statusManager.setResourceDirty(res.getResourceId(), false);
+    		
+    	}
+    	else {
+    		log.warnf("%s.accumulateNodeResources: %s has no project resource",TAG,node.getName());
+    	}
+		@SuppressWarnings("rawtypes")
+		Enumeration walker = node.children();
+		while(walker.hasMoreElements()) {
+			Object child = walker.nextElement();
+			accumulateNodeResources((AbstractResourceNavTreeNode)child,diff);
+		}
+	}
     /**
 	 * Search the project for all resources. This is for debugging.
 	 * We filter out those that are global (have no module) as these
@@ -1063,7 +1104,44 @@ public class GeneralPurposeTreeNode extends FolderNode {
 			log.warnf("%s. startAction: ERROR: %s",TAG,ex.getMessage(),ex);
 			ErrorUtil.showError(ex);
 		}
-		
-		
+	}
+	/**
+	 * Create an ImageIcon from the resource path. If it doesn't exist, return the default.
+	 * @param path
+	 * @return
+	 */
+	private ImageIcon iconFromPath(String path) {
+		Dimension iconSize = new Dimension(20,20);
+		ImageIcon result = defaultIcon;
+		Image img = ImageLoader.getInstance().loadImage(path,iconSize);
+		if( img!=null ) result = new ImageIcon(img);
+		return result;
+	}
+	@Override
+	public void projectResourceModified(ProjectResource res, ProjectChangeListener.ResourceModification changeType) {
+		if (res.getResourceId() == this.resourceId) {
+			log.infof("%s.projectResourceModified, setting name to: %s",TAG,res.getName());
+			boolean changed = !res.getName().equals(getName());
+			setName(res.getName());
+			statusManager.setResourceDirty(resourceId, changed);
+		} 
+		else if ((changeType == ProjectChangeListener.ResourceModification.Deleted) ) {
+			statusManager.setResourceDirty(resourceId, true);  // A child has been deleted
+			recreate();
+		} 
+		else {
+			super.projectResourceModified(res, changeType);
+		}
+	}
+	// ================================ ChangeListener ======================================
+	// Either our state or the state of another node changed.
+	// No matter what we re-compute our state.
+	public void stateChanged(ChangeEvent event) {
+		// Set italics, enable Save
+		boolean dirty = statusManager.isResourceDirty(resourceId);
+		log.infof("%s.stateChanged: dirty = %s",TAG,(dirty?"true":"false"));
+		setItalic(dirty);
+		applicationAction.setEnabled(dirty);    // Only applies to an application node
+		refresh();
 	}
 }

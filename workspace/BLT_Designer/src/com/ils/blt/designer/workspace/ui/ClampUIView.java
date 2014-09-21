@@ -56,7 +56,9 @@ public class ClampUIView extends AbstractUIView implements BlockViewUI {
 		int[] xvertices = new int[] {0,ifb.width/4,3*ifb.width/4,ifb.width,ifb.width,3*ifb.width/4,ifb.width/4,0,0};
 		int[] yvertices = new int[] {ifb.height/4,0,0,ifb.height/4,3*ifb.height/4,ifb.height,ifb.height,3*ifb.height/4,ifb.height/4};
 		Polygon fi = new Polygon(xvertices,yvertices,9);
-		g.setColor(getBackground());
+		int rgb = block.getBackground();
+		if( block.isDirty() && rgb > BLOCK_DIRTY_SHADING ) rgb -= BLOCK_DIRTY_SHADING;
+		g.setColor(new Color(rgb));
 		g.fillPolygon(fi);
 
 		// Outline the frame

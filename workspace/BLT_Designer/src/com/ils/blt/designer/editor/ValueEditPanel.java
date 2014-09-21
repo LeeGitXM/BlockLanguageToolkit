@@ -12,14 +12,12 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 
 import net.miginfocom.swing.MigLayout;
 
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PropertyType;
-import com.ils.blt.designer.workspace.WorkspaceRepainter;
 
 /**
  * Display a panel to edit the name of a block and its 
@@ -43,7 +41,7 @@ public class ValueEditPanel extends BasicEditPanel {
 	private final JTextField yfield;
 	private final JTextField valueField;
 
-	public ValueEditPanel(BlockPropertyEditor editor) {
+	public ValueEditPanel(final BlockPropertyEditor editor) {
 		super(editor);
 		setLayout(new MigLayout("top,flowy,ins 2","",""));
 		this.fncs = new UtilityFunctions();
@@ -95,8 +93,7 @@ public class ValueEditPanel extends BasicEditPanel {
 						property.setDisplayed(false);
 					}
 				}
-				editor.getBlock().setDirty(true);
-				SwingUtilities.invokeLater(new WorkspaceRepainter());
+				editor.notifyOfChange();    // Mark elements as "dirty", repaint
 				updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
 				setSelectedPane(BlockEditConstants.HOME_PANEL);
 			}
@@ -120,7 +117,7 @@ public class ValueEditPanel extends BasicEditPanel {
 		}   
 		annotationCheckBox.setSelected(prop.isDisplayed());
 		xfield.setText(String.valueOf(prop.getDisplayOffsetX()));
-		yfield.setText(String.valueOf(prop.getDisplayOffsetX()));
+		yfield.setText(String.valueOf(prop.getDisplayOffsetY()));
 	}
 
 	/**

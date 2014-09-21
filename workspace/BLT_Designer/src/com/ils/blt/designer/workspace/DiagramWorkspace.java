@@ -37,6 +37,8 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableDiagram;
+import com.ils.blt.designer.BLTDesignerHook;
+import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.editor.PropertyEditorFrame;
 import com.inductiveautomation.ignition.client.designable.DesignableContainer;
 import com.inductiveautomation.ignition.client.util.LocalObjectTransferable;
@@ -155,10 +157,10 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				JPopupMenu menu = new JPopupMenu();
 				
 				ProcessBlockView pbv = (ProcessBlockView)((BlockComponent)selection).getBlock();
-				saveAction = new SaveAction(pbv);
-				// Dirtiness of the diagram refers to structure changes on it.
-				boolean enabled = pbv.isDirty() && !this.getActiveDiagram().isDirty();
-				saveAction.setEnabled(enabled);
+				saveAction = new SaveAction(pbv); 
+				// As long as the block is dirty, we can save it. 
+				// NOTE: There is always a corresponding block in the gateway. One is created when we drop block from the palette.
+				saveAction.setEnabled(pbv.isDirty());
 				menu.add(saveAction);
 				
 				if( selection instanceof BlockComponent && pbv.isCtypeEditable() ) {
@@ -200,7 +202,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			}
 			else if( DiagramWorkspace.this.getSelectedContainer().getSelectedConnection()!=null ) {
 				JPopupMenu menu = new JPopupMenu();
-				menu.add(context.getDeleteAction());
+				menu.add(context.getDeleteAction());    // A connection
 				return menu;
 			}
 		}
@@ -435,6 +437,10 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		}
 	}
 	
+	/**
+	 * This method updates the project resource, but does not actually save.
+	 * @param c
+	 */
 	public void saveDiagram(BlockDesignableContainer c) {
 		ProcessDiagramView diagram = (ProcessDiagramView)c.getModel();
 		log.infof("%s: saveDiagram - serializing %s ...",TAG,diagram.getDiagramName());
@@ -447,8 +453,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			bytes = mapper.writeValueAsBytes(sd);
 			log.tracef("%s: saveDiagram JSON = %s",TAG,new String(bytes));
 			context.updateResource(resid, bytes);
-			
 			c.setBackground(diagram.getBackgroundColorForState());
+			SwingUtilities.invokeLater(new WorkspaceRepainter());
 		} 
 		catch (JsonProcessingException jpe) {
 			log.warnf("%s: saveDiagram processing exception (%s)",TAG,jpe.getLocalizedMessage());
@@ -597,6 +603,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			ApplicationRequestHandler handler = new ApplicationRequestHandler();
 			ProcessDiagramView pdv = getActiveDiagram();
 			handler.setBlockProperties(pdv.getId(),block.getId(), block.getProperties());
+			block.setDirty(false);
+			NodeStatusManager statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
+			statusManager.decrementDirtyBlockCount(pdv.getResourceId());
 		}
 	}
 	//TODO: In next Ignition update, this is available for override of onMove() method.

@@ -90,7 +90,9 @@ public class LogicUIView extends AbstractUIView implements BlockViewUI {
 		// Re-adjust to the actual space
 		g.translate(-BORDER_WIDTH,-BORDER_WIDTH);
 
-		g.setColor(new Color(block.getBackground()));
+		int rgb = block.getBackground();
+		if( block.isDirty() ) rgb -= BLOCK_DIRTY_SHADING;
+		g.setColor(new Color(rgb));
 		g.fill(shape);
 		// Outline the block
 		Stroke stroke = new BasicStroke(OUTLINE_WIDTH,BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND);

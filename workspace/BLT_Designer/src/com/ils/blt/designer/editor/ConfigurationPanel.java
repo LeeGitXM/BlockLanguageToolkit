@@ -19,7 +19,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.plaf.basic.BasicComboBoxRenderer;
 
@@ -28,7 +27,6 @@ import net.miginfocom.swing.MigLayout;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PropertyType;
-import com.ils.blt.designer.workspace.WorkspaceRepainter;
 
 /**
  * Display a panel to edit the name of a block and its 
@@ -53,7 +51,7 @@ public class ConfigurationPanel extends BasicEditPanel {
 	private final JTextField xfield;
 	private final JTextField yfield;
 
-	public ConfigurationPanel(BlockPropertyEditor editor) {
+	public ConfigurationPanel(final BlockPropertyEditor editor) {
 		super(editor);
 		setLayout(new MigLayout("top,flowy,ins 2","",""));
 		headingLabel = addHeading(this);
@@ -107,7 +105,7 @@ public class ConfigurationPanel extends BasicEditPanel {
 						property.setDisplayed(false);
 					}
 				}
-				SwingUtilities.invokeLater(new WorkspaceRepainter());
+				editor.notifyOfChange();
 				setSelectedPane(BlockEditConstants.HOME_PANEL);
 			}
 		});

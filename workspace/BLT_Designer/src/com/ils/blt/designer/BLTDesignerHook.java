@@ -35,11 +35,12 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	public static String HOOK_BUNDLE_NAME   = "designer";      // Properties file is designer.properties
 	public static String PREFIX = BLTProperties.BUNDLE_PREFIX; // Properties is accessed by this prefix
 
-	private GeneralPurposeTreeNode rootNode;
+	private GeneralPurposeTreeNode rootNode = null;
 	private DesignerContext context = null;
 	private final LoggerEx log;
 	private DiagramWorkspace workspace = null;
 	private ApplicationRequestHandler appRequestHandler = null;
+	private final NodeStatusManager nodeStatusManager;
 	
 	// Register separate properties files for designer things and block things
 	static {
@@ -49,6 +50,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	
 	public BLTDesignerHook() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
+		nodeStatusManager = new NodeStatusManager();
 	}
 	
 	
@@ -97,13 +99,14 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		context.registerResourceWorkspace(workspace);
 	}
 	
+	public NodeStatusManager getNavTreeStatusManager() { return nodeStatusManager; }
 	
 	public DiagramWorkspace getWorkspace() { return workspace; }
 
 	@Override
 	public void notifyProjectSaveStart(SaveContext save) {
-		log.infof("%s: NotifyProjectSave",TAG);
-		//workspace.saveOpenDiagrams();
+		log.infof("%s: NotifyProjectSaveStart",TAG);
+		rootNode.saveAll();
 	}
 	
 	
