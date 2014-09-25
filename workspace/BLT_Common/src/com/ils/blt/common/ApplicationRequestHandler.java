@@ -58,16 +58,17 @@ public class ApplicationRequestHandler  {
 	 * Determine whether or not the indicated diagram is known to the controller.
 	 */
 	public boolean diagramExists(String uuidString) {
-		Boolean result = null;
+		boolean result = false;
 		try {
-			result = (Boolean)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+			Boolean value = (Boolean)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "diagramExists",uuidString);
 			log.debugf("%s.diagramExists  ...%s = %s",TAG,uuidString,result);
+			if( value!=null ) result = value.booleanValue();
 		}
 		catch(Exception ge) {
 			log.infof("%s.diagramExists: GatewayException (%s)",TAG,ge.getMessage());
 		}
-		return result.booleanValue();
+		return result;
 	}
 	/**
 	 * Determine whether or not the engine is running.
@@ -281,15 +282,16 @@ public class ApplicationRequestHandler  {
 	 */
 	public boolean sendLocalSignal(String projectName, String diagramPath,String className, String command) {
 		log.infof("%s.sendLocalSignal for %s %s %s %s...",TAG,projectName,diagramPath,className,command);
-		Boolean result = null;
+		boolean result = false;
 		try {
-			result = GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+			Boolean value = GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "sendLocalSignal",projectName,diagramPath,className,command);
+			if( value!=null ) result = value.booleanValue();
 		}
 		catch(Exception ex) {
 			log.infof("%s.sendLocalSignal: Exception (%s)",TAG,ex.getMessage());
 		}
-		return result.booleanValue();
+		return result;
 	}
 	
 	
