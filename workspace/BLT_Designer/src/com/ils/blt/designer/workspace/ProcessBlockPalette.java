@@ -71,19 +71,18 @@ public class ProcessBlockPalette extends DockableFrame implements ResourceWorksp
 		JTabbedPane tabbedPane = new JTabbedPane();
 		ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
 		List<PalettePrototype> prototypes = handler.getBlockPrototypes();
-		JPanel panel = null;
+		JPanel panel = new JPanel();
 		for( PalettePrototype proto:prototypes) {
 			JComponent component = new PaletteEntry(proto).getComponent();
 			String tabName = proto.getTabName();
 			int tabIndex = tabbedPane.indexOfTab(tabName);
 			if( tabIndex < 0 ) {    // Prototype references a new tab
-				panel = new JPanel();
 				tabbedPane.addTab(tabName, panel);
 			}
 			else {
 				panel = (JPanel)tabbedPane.getComponentAt(tabIndex);
 			}
-			if( component!=null)panel.add(component);
+			panel.add(component);
 		}
 
 		setContentPane(tabbedPane);

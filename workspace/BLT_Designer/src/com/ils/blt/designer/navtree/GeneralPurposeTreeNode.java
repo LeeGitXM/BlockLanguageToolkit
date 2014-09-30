@@ -71,7 +71,7 @@ import com.inductiveautomation.ignition.designer.navtree.model.ResourceDeleteAct
 public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener,ProjectChangeListener {
 	private static final String TAG = "GeneralPurposeTreeNode";
 	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
-	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
+	private final LoggerEx logger = LogUtil.getLogger(getClass().getPackage().getName());
 	private StartAction startAction = new StartAction();
 	private StopAction stopAction = new StopAction();
 	private final DiagramWorkspace workspace; 
@@ -151,35 +151,35 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 	 */
 	@Override
 	protected AbstractNavTreeNode createChildNode(ProjectResource res) {
-		log.infof("%s.createChildNode type:%s, level=%d", TAG,res.getResourceType(),getDepth());
+		logger.infof("%s.createChildNode type:%s, level=%d", TAG,res.getResourceType(),getDepth());
 		if (    ProjectResource.FOLDER_RESOURCE_TYPE.equals(res.getResourceType()))       {
 			GeneralPurposeTreeNode node = new GeneralPurposeTreeNode(context, res, res.getDataAsUUID());
 			statusManager.defineResource(resourceId, res.getResourceId());
-			log.infof("%s.createChildNode: (%s) %s->%s",TAG,res.getResourceType(),this.getName(),node.getName());
+			logger.infof("%s.createChildNode: (%s) %s->%s",TAG,res.getResourceType(),this.getName(),node.getName());
 			return node;
 		}
 		else if ( BLTProperties.APPLICATION_RESOURCE_TYPE.equals(res.getResourceType()) )       {
 			SerializableApplication sa = deserializeApplication(res);
 			GeneralPurposeTreeNode node = new GeneralPurposeTreeNode(context, res, sa.getId());
 			statusManager.defineResource(resourceId, res.getResourceId());
-			log.infof("%s.createChildNode: (%s) %s->%s",TAG,res.getResourceType(),this.getName(),node.getName());
+			logger.infof("%s.createChildNode: (%s) %s->%s",TAG,res.getResourceType(),this.getName(),node.getName());
 			return node;
 		}
 		else if ( BLTProperties.FAMILY_RESOURCE_TYPE.equals(res.getResourceType()) )       {
 			SerializableFamily fa = deserializeFamily(res); 
 			GeneralPurposeTreeNode node = new GeneralPurposeTreeNode(context, res, fa.getId());
 			statusManager.defineResource(resourceId, res.getResourceId());
-			log.infof("%s.createChildNode: (%s) %s->%s",TAG,res.getResourceType(),this.getName(),node.getName());
+			logger.infof("%s.createChildNode: (%s) %s->%s",TAG,res.getResourceType(),this.getName(),node.getName());
 			return node;
 		}
 		else if (BLTProperties.DIAGRAM_RESOURCE_TYPE.equals(res.getResourceType())) {
 			DiagramNode node = new DiagramNode(context,res,workspace);
 			statusManager.defineResource(resourceId, res.getResourceId());
-			log.infof("%s.createChildPanel: %s->%s",TAG,this.getName(),node.getName());
+			logger.infof("%s.createChildPanel: %s->%s",TAG,this.getName(),node.getName());
 			return node;
 		} 
 		else {
-			log.warnf("%s: Attempted to create a child of type %s (ignored)",TAG,res.getResourceType());
+			logger.warnf("%s: Attempted to create a child of type %s (ignored)",TAG,res.getResourceType());
 			throw new IllegalArgumentException();
 		}
 	}
@@ -365,7 +365,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 			DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ..."); // Do not publish
 		}
 		catch(GatewayException ge) {
-			log.warnf("%s.SaveAllAction: Exception saving project resource %d (%s)",TAG,resourceId,ge.getMessage());
+			logger.warnf("%s.SaveAllAction: Exception saving project resource %d (%s)",TAG,resourceId,ge.getMessage());
 		}
 	}
 	/**
@@ -375,14 +375,14 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 	private String serializeApplication(SerializableApplication application) {
 		String json = "";
 		ObjectMapper mapper = new ObjectMapper();
-		log.infof("%s: serializeApplication creating json ... %s",TAG,(mapper.canSerialize(SerializableApplication.class)?"true":"false"));
+		logger.infof("%s: serializeApplication creating json ... %s",TAG,(mapper.canSerialize(SerializableApplication.class)?"true":"false"));
 		try{ 
 		    json = mapper.writeValueAsString(application);
 		}
 		catch(JsonProcessingException jpe) {
-			log.warnf("%s: Unable to serialize application (%s)",TAG,jpe.getMessage());
+			logger.warnf("%s: Unable to serialize application (%s)",TAG,jpe.getMessage());
 		}
-		log.infof("%s: serializeApplication created json ... %s",TAG,json);
+		logger.infof("%s: serializeApplication created json ... %s",TAG,json);
 		return json;
 	}
 	/**
@@ -398,7 +398,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 			result = mapper.readValue(new String(bytes), SerializableApplication.class);
 		}
 		catch(Exception ex) {
-			log.warnf("%s.deserializeApplication: Deserialization exception (%s)",ex.getMessage());
+			logger.warnf("%s.deserializeApplication: Deserialization exception (%s)",ex.getMessage());
 		}
 		return result;
 	}
@@ -415,7 +415,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 			result = mapper.readValue(new String(bytes), SerializableFamily.class);
 		}
 		catch(Exception ex) {
-			log.warnf("%s.deserializeFamily: Deserialization exception (%s)",ex.getMessage());
+			logger.warnf("%s.deserializeFamily: Deserialization exception (%s)",ex.getMessage());
 		}
 		return result;
 	}
@@ -426,14 +426,14 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 	private String serializeDiagram(SerializableDiagram diagram) {
 		String json = "";
 		ObjectMapper mapper = new ObjectMapper();
-		log.infof("%s: serializeDiagram creating json ... %s",TAG,(mapper.canSerialize(SerializableDiagram.class)?"true":"false"));
+		logger.infof("%s: serializeDiagram creating json ... %s",TAG,(mapper.canSerialize(SerializableDiagram.class)?"true":"false"));
 		try{ 
 		    json = mapper.writeValueAsString(diagram);
 		}
 		catch(JsonProcessingException jpe) {
-			log.warnf("%s: Unable to serialize diagram (%s)",TAG,jpe.getMessage());
+			logger.warnf("%s: Unable to serialize diagram (%s)",TAG,jpe.getMessage());
 		}
-		log.infof("%s: serializeDiagram created json ... %s",TAG,json);
+		logger.infof("%s: serializeDiagram created json ... %s",TAG,json);
 		return json;
 	}
 	/**
@@ -443,14 +443,14 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 	private String serializeFamily(SerializableFamily family) {
 		String json = "";
 		ObjectMapper mapper = new ObjectMapper();
-		log.infof("%s: serializeFamily creating json ... %s",TAG,(mapper.canSerialize(SerializableFamily.class)?"true":"false"));
+		logger.infof("%s: serializeFamily creating json ... %s",TAG,(mapper.canSerialize(SerializableFamily.class)?"true":"false"));
 		try{ 
 		    json = mapper.writeValueAsString(family);
 		}
 		catch(JsonProcessingException jpe) {
-			log.warnf("%s: Unable to serialize family (%s)",TAG,jpe.getMessage());
+			logger.warnf("%s: Unable to serialize family (%s)",TAG,jpe.getMessage());
 		}
-		log.infof("%s: serializeFamily created json ... %s",TAG,json);
+		logger.infof("%s: serializeFamily created json ... %s",TAG,json);
 		return json;
 	}
 	// From the root node, tell the gateway controller to clear all resources
@@ -473,11 +473,11 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			log.info("============================ Resources (Designer) =========================");
+			logger.info("============================ Resources (Designer) =========================");
 			listProjectResources();
-			log.info("============================ Resources (Gateway) ==========================");
+			logger.info("============================ Resources (Gateway) ==========================");
 			listControllerResources();
-			log.info("===========================================================================");
+			logger.info("===========================================================================");
 		}
 	}
 	// From the root node, create a folder for diagrams belonging to a family
@@ -495,13 +495,13 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 				SerializableApplication app = new SerializableApplication();
 				app.setName(newName);
 	
-				log.infof("%s: new application action ...",TAG);
+				logger.infof("%s: new application action ...",TAG);
 
 				String json = serializeApplication(app);
 			
-				log.debugf("%s: ApplicationAction. json=%s",TAG,json);
+				logger.debugf("%s: ApplicationAction. json=%s",TAG,json);
 				byte[] bytes = json.getBytes();
-				log.debugf("%s: ApplicationAction. create new %s resource %d (%d bytes)",TAG,BLTProperties.APPLICATION_RESOURCE_TYPE,
+				logger.debugf("%s: ApplicationAction. create new %s resource %d (%d bytes)",TAG,BLTProperties.APPLICATION_RESOURCE_TYPE,
 						newId,bytes.length);
 				ProjectResource resource = new ProjectResource(newId,
 						BLTProperties.MODULE_ID, BLTProperties.APPLICATION_RESOURCE_TYPE,
@@ -530,7 +530,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 				stopAction.setEnabled(true);
 			} 
 			catch (Exception ex) {
-				log.warnf("%s. startAction: ERROR: %s",TAG,ex.getMessage(),ex);
+				logger.warnf("%s. startAction: ERROR: %s",TAG,ex.getMessage(),ex);
 				ErrorUtil.showError(ex);
 			}
 		}
@@ -566,11 +566,11 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 										ObjectMapper mapper = new ObjectMapper();
 										SerializableApplication sa = mapper.readValue(new String(bytes), SerializableApplication.class);
 										if( sa!=null ) {
-											log.infof("%s:ApplicationImportAction imported application %s", TAG,sa.getName());
+											logger.infof("%s:ApplicationImportAction imported application %s", TAG,sa.getName());
 											ApplicationUUIDResetHandler handler = new ApplicationUUIDResetHandler(sa);
 											handler.convertUUIDs();
 											String json = mapper.writeValueAsString(sa);
-											if(log.isTraceEnabled() ) log.trace(json);
+											if(logger.isTraceEnabled() ) logger.trace(json);
 											ProjectResource resource = new ProjectResource(newId,
 													BLTProperties.MODULE_ID, BLTProperties.APPLICATION_RESOURCE_TYPE,
 													sa.getName(), ApplicationScope.GATEWAY, json.getBytes());
@@ -619,7 +619,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 			try{
 				long newId = context.newResourceId();
 				String json = mapper.writeValueAsString(sf);
-				if(log.isTraceEnabled() ) log.trace(json);
+				if(logger.isTraceEnabled() ) logger.trace(json);
 				ProjectResource resource = new ProjectResource(newId,
 						BLTProperties.MODULE_ID, BLTProperties.FAMILY_RESOURCE_TYPE,
 						sf.getName(), ApplicationScope.GATEWAY, json.getBytes());
@@ -640,7 +640,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 			try{
 				long newId = context.newResourceId();
 				String json = mapper.writeValueAsString(sd);
-				if(log.isTraceEnabled() ) log.trace(json);
+				if(logger.isTraceEnabled() ) logger.trace(json);
 				ProjectResource resource = new ProjectResource(newId,
 						BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
 						sd.getName(), ApplicationScope.GATEWAY, json.getBytes());
@@ -671,7 +671,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
     			DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ..."); // Do not publish
     		}
     		catch(GatewayException ge) {
-    			log.warnf("%s.ApplicationSaveAction: Exception saving project resource %d (%s)",TAG,resourceId,ge.getMessage());
+    			logger.warnf("%s.ApplicationSaveAction: Exception saving project resource %d (%s)",TAG,resourceId,ge.getMessage());
     		}
     		setItalic(false);
 		}
@@ -694,13 +694,13 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 				diagram.setResourceId(newId);
 				diagram.setId(UUID.randomUUID());
 				diagram.setDirty(false);    // Will become dirty as soon as we add a block
-				log.infof("%s: new diagram action ...",TAG);
+				logger.infof("%s: new diagram action ...",TAG);
 
 				String json = serializeDiagram(diagram);
 			
-				log.debugf("%s: DiagramAction. json=%s",TAG,json);
+				logger.debugf("%s: DiagramAction. json=%s",TAG,json);
 				byte[] bytes = json.getBytes();
-				log.debugf("%s: DiagramAction. create new %s resource %d (%d bytes)",TAG,BLTProperties.DIAGRAM_RESOURCE_TYPE,
+				logger.debugf("%s: DiagramAction. create new %s resource %d (%d bytes)",TAG,BLTProperties.DIAGRAM_RESOURCE_TYPE,
 						newId,bytes.length);
 				ProjectResource resource = new ProjectResource(newId,
 						BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
@@ -760,21 +760,21 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 									}
 									catch( FileNotFoundException fnfe) {
 										// Should never happen, we just picked this off a chooser
-										log.warnf("%s: actionPerformed, File not found %s (%s)",TAG,input.getAbsolutePath(),fnfe.getLocalizedMessage()); 
+										logger.warnf("%s: actionPerformed, File not found %s (%s)",TAG,input.getAbsolutePath(),fnfe.getLocalizedMessage()); 
 									}
 									catch( IOException ioe) {
 										// Should never happen, we just picked this off a chooser
-										log.warnf("%s: actionPerformed, IOException %s (%s)",TAG,input.getAbsolutePath(),ioe.getLocalizedMessage()); 
+										logger.warnf("%s: actionPerformed, IOException %s (%s)",TAG,input.getAbsolutePath(),ioe.getLocalizedMessage()); 
 									}
 
 								}
 								else {
-									log.warnf("%s: actionPerformed, selected file does not exist of is not readable: %s",TAG,input.getAbsolutePath());
+									logger.warnf("%s: actionPerformed, selected file does not exist of is not readable: %s",TAG,input.getAbsolutePath());
 								}
 							}  // Cancel
 						} 
 						catch (Exception ex) {
-							log.errorf("%s: actionPerformed: Unhandled Exception (%s)",TAG,ex.getMessage());
+							logger.errorf("%s: actionPerformed: Unhandled Exception (%s)",TAG,ex.getMessage());
 						}
 					}
 				});
@@ -799,13 +799,13 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 				SerializableFamily fam = new SerializableFamily();
 				fam.setName(newName);
 	
-				log.infof("%s: new application action ...",TAG);
+				logger.infof("%s: new application action ...",TAG);
 
 				String json = serializeFamily(fam);
 			
-				log.debugf("%s: FamilyAction. json=%s",TAG,json);
+				logger.debugf("%s: FamilyAction. json=%s",TAG,json);
 				byte[] bytes = json.getBytes();
-				log.debugf("%s: FamilyAction. create new %s resource %d (%d bytes)",TAG,BLTProperties.FAMILY_RESOURCE_TYPE,
+				logger.debugf("%s: FamilyAction. create new %s resource %d (%d bytes)",TAG,BLTProperties.FAMILY_RESOURCE_TYPE,
 						newId,bytes.length);
 				ProjectResource resource = new ProjectResource(newId,
 						BLTProperties.MODULE_ID, BLTProperties.FAMILY_RESOURCE_TYPE,
@@ -834,7 +834,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 				stopAction.setEnabled(true);
 			} 
 			catch (Exception ex) {
-				log.warnf("%s: startAction: ERROR: %s",TAG,ex.getMessage(),ex);
+				logger.warnf("%s: startAction: ERROR: %s",TAG,ex.getMessage(),ex);
 				ErrorUtil.showError(ex);
 			}
 		}
@@ -862,7 +862,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 					    File output = dialog.getFilePath();
 					    boolean success = false;
 					    if( output!=null ) {
-					    	log.debugf("%s.actionPerformed: dialog returned %s",TAG,output.getAbsolutePath());
+					    	logger.debugf("%s.actionPerformed: dialog returned %s",TAG,output.getAbsolutePath());
 					    	try {
 					    		if(output.exists()) {
 					    			//output.delete();           // Remove existing file
@@ -875,7 +875,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 
 					    		if( output.canWrite() ) {
 					    			ObjectMapper mapper = new ObjectMapper();
-					    			if(log.isDebugEnabled()) log.debugf("%s.actionPerformed: creating json ... %s",TAG,(mapper.canSerialize(SerializableDiagram.class)?"true":"false"));
+					    			if(logger.isDebugEnabled()) logger.debugf("%s.actionPerformed: creating json ... %s",TAG,(mapper.canSerialize(SerializableDiagram.class)?"true":"false"));
 					    			try{ 
 					    				// Convert the view into a serializable object
 					    				SerializableApplicationTree sat = null;  //view.createSerializableRepresentation();
@@ -948,12 +948,12 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 										ObjectMapper mapper = new ObjectMapper();
 										SerializableDiagram sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
 										if( sd!=null ) {
-											log.infof("%s:ImportDiagramAction imported diagram:\n%s", TAG,sd.getName());
+											logger.infof("%s:ImportDiagramAction imported diagram:\n%s", TAG,sd.getName());
 											UUIDResetHandler handler = new UUIDResetHandler(sd);
 											handler.convertUUIDs();
 											sd.setDirty(true);    // Dirty because gateway doesn't know about it yet
 											String json = mapper.writeValueAsString(sd);
-											log.infof("%s:ImportDiagramAction saved resource as:\n%s", TAG,json);
+											logger.infof("%s:ImportDiagramAction saved resource as:\n%s", TAG,json);
 											ProjectResource resource = new ProjectResource(newId,
 													BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
 													sd.getName(), ApplicationScope.GATEWAY, json.getBytes());
@@ -1023,7 +1023,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 				stopAction.setEnabled(true);
 			} 
 			catch (Exception ex) {
-				log.warnf("%s: startAction: ERROR: %s",TAG,ex.getMessage(),ex);
+				logger.warnf("%s: startAction: ERROR: %s",TAG,ex.getMessage(),ex);
 				ErrorUtil.showError(ex);
 			}
 		}
@@ -1043,7 +1043,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 				startAction.setEnabled(true);
 			}
 			catch(Exception ex) {
-				log.warnf("%s: stopAction: ERROR: %s",TAG,ex.getMessage(),ex);
+				logger.warnf("%s: stopAction: ERROR: %s",TAG,ex.getMessage(),ex);
 				ErrorUtil.showError(ex);
 			}
 		}
@@ -1064,7 +1064,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
     		
     	}
     	else {
-    		log.warnf("%s.accumulateNodeResources: %s has no project resource",TAG,node.getName());
+    		logger.warnf("%s.accumulateNodeResources: %s has no project resource",TAG,node.getName());
     	}
 		@SuppressWarnings("rawtypes")
 		Enumeration walker = node.children();
@@ -1082,7 +1082,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 		List <ProjectResource> resources = context.getProject().getResources();
 		for( ProjectResource res : resources ) {
 			if( res.getModuleId()==null || res.getModuleId().length()==0) continue;
-			log.info("Res: "+res.getResourceId()+" "+res.getResourceType()+" "+res.getModuleId()+" ("+res.getName()+
+			logger.info("Res: "+res.getResourceId()+" "+res.getResourceType()+" "+res.getModuleId()+" ("+res.getName()+
 					":"+res.getParentUuid()+")");
 		}
 	}
@@ -1096,12 +1096,12 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 			ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
 			List <SerializableResourceDescriptor> descriptors = handler.queryControllerResources();
 			for( SerializableResourceDescriptor descriptor : descriptors ) {
-				log.info("Res: "+descriptor.getProjectId()+":"+descriptor.getResourceId()+" "+
+				logger.info("Res: "+descriptor.getProjectId()+":"+descriptor.getResourceId()+" "+
 						         descriptor.getType()+" ("+descriptor.getName()+")");
 			}
 		} 
 		catch (Exception ex) {
-			log.warnf("%s. startAction: ERROR: %s",TAG,ex.getMessage(),ex);
+			logger.warnf("%s. startAction: ERROR: %s",TAG,ex.getMessage(),ex);
 			ErrorUtil.showError(ex);
 		}
 	}
@@ -1120,7 +1120,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 	@Override
 	public void projectResourceModified(ProjectResource res, ProjectChangeListener.ResourceModification changeType) {
 		if (res.getResourceId() == this.resourceId) {
-			log.infof("%s.projectResourceModified, setting name to: %s",TAG,res.getName());
+			logger.infof("%s.projectResourceModified, setting name to: %s",TAG,res.getName());
 			boolean changed = !res.getName().equals(getName());
 			setName(res.getName());
 			statusManager.setResourceDirty(resourceId, changed);
@@ -1139,7 +1139,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 	public void stateChanged(ChangeEvent event) {
 		// Set italics, enable Save
 		boolean dirty = statusManager.isResourceDirty(resourceId);
-		log.infof("%s.stateChanged: dirty = %s",TAG,(dirty?"true":"false"));
+		logger.infof("%s.stateChanged: dirty = %s",TAG,(dirty?"true":"false"));
 		setItalic(dirty);
 		applicationAction.setEnabled(dirty);    // Only applies to an application node
 		refresh();

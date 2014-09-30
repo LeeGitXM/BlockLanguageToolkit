@@ -4,7 +4,6 @@
  */
 package com.ils.blt.gateway;
 
-import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
@@ -12,10 +11,6 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.UUID;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.ProcessBlock;
@@ -161,7 +156,9 @@ public class ControllerRequestHandler   {
 		BlockProperty property = null;
 		if(block!=null) {
 			property = block.getProperty(propertyName);  // Existing block
-			log.infof("%s.getProperty %s.%s %s",TAG,diagram.getName(),block.getName(),property.toString());
+			String name = "null";
+			if(diagram!=null) name=diagram.getName();
+			log.infof("%s.getProperty %s.%s %s",TAG,name,block.getName(),property.toString());
 		}
 		else {
 			log.warnf("%s.getProperty Block not found for %s.%s",TAG,parentId.toString(),blockId.toString());

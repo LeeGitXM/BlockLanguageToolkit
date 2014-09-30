@@ -7,8 +7,6 @@
 package com.ils.blt.gateway.engine;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.sqltags.model.Tag;
@@ -18,8 +16,6 @@ import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 import com.inductiveautomation.ignition.gateway.sqltags.TagProvider;
-import com.inductiveautomation.ignition.gateway.sqltags.model.BasicAsyncWriteRequest;
-import com.inductiveautomation.ignition.gateway.sqltags.model.WriteRequest;
 
 /**
  *  A Tag reader obtains the current value of a tag without

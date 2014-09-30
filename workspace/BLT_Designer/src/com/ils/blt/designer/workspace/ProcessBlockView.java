@@ -235,9 +235,33 @@ public class ProcessBlockView extends AbstractBlock {
 	public int getBackground() { return background;}
 	public String getClassName() { return className; }
 
-	/** Do not define a default. Rely on drop targets. */
+	/** 
+	 * Define a default drop target based on the connector's anchor point 
+	 * hovering above us. For simplicity we just return the first anchor point
+	 * of the right sex.
+	 * @param opposite
+	 */
 	@Override
-	public AnchorPoint getDefaultDropAnchor() {return null;}
+	public AnchorPoint getDefaultDropAnchor(AnchorPoint opposite ) {
+		AnchorPoint result = null;
+		if( opposite.isConnectorOrigin() ) {
+			for(AnchorPoint ap:getAnchorPoints()) {
+				if(ap.isConnectorTerminus()) {
+					result = ap;
+					break;
+				}
+			}
+		}
+		else {
+			for(AnchorPoint ap:getAnchorPoints()) {
+				if(ap.isConnectorOrigin()) {
+					result = ap;
+					break;
+				}
+			}
+		}
+		return result;
+	}
 	public int getEmbeddedFontSize() {return embeddedFontSize;}
 	public String getEmbeddedIcon() {return embeddedIcon;}
 	public String getEmbeddedLabel() {return embeddedLabel;}

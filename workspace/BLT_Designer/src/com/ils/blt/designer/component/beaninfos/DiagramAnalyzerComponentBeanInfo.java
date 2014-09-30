@@ -28,7 +28,7 @@ import com.inductiveautomation.vision.api.designer.beans.CustomizerDescriptor;
 public class DiagramAnalyzerComponentBeanInfo extends CommonBeanInfo {
 	private static final String TAG = "DiagramAnalyzerComponentBeanInfo";
 	private static final String PREFIX = BLTProperties.BLOCK_PREFIX;  // Has block properties
-	private static final LoggerEx log = LogUtil.getLogger(DiagramAnalyzerComponentBeanInfo.class.getPackage().getName());
+	private static final LoggerEx logger = LogUtil.getLogger(DiagramAnalyzerComponentBeanInfo.class.getPackage().getName());
 	
 	/**
 	 * Constructor: Create a beaninfo object for the CallbackBlock. The
@@ -38,13 +38,13 @@ public class DiagramAnalyzerComponentBeanInfo extends CommonBeanInfo {
 		super(DiagramAnalyzerComponent.class, new CustomizerDescriptor[] {
 				DynamicPropertyProviderCustomizer.VALUE_DESCRIPTOR,
 				StyleCustomizer.VALUE_DESCRIPTOR});
-		log.infof("%s:CONSTRUCTOR",TAG);
+		logger.infof("%s:CONSTRUCTOR",TAG);
 	}
 
 	@Override
 	protected void initProperties() throws IntrospectionException {
 		// Adds common properties
-		log.infof("%s:INITPROPRTIES",TAG);
+		logger.infof("%s:INITPROPRTIES",TAG);
 		super.initProperties();
 	}
 	
@@ -54,7 +54,7 @@ public class DiagramAnalyzerComponentBeanInfo extends CommonBeanInfo {
 	 */
 	@Override
 	protected void initDesc() {
-		log.infof("%s.initDesc",TAG);
+		logger.infof("%s.initDesc",TAG);
 		getBeanDescriptor().setName(BundleUtil.get().getString(PREFIX+".DiagramAnalyzer.Name"));
 		getBeanDescriptor().setDisplayName(BundleUtil.get().getString(PREFIX+".DiagramAnalyzer.Display"));       // Tooltip-title
 		getBeanDescriptor().setShortDescription(BundleUtil.get().getString(PREFIX+".DiagramAnalyzer.Desc"));     // Tooltip-description
@@ -65,7 +65,7 @@ public class DiagramAnalyzerComponentBeanInfo extends CommonBeanInfo {
 	@Override
 	public Image getIcon(int kind) {
 		String imagePath="";
-		log.infof("%s: getIcon of type %d",TAG,kind);
+		logger.infof("%s: getIcon of type %d",TAG,kind);
 		switch (kind) {
 		case BeanInfo.ICON_COLOR_16x16:
 		case BeanInfo.ICON_MONO_16x16:

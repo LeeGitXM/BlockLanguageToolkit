@@ -109,7 +109,7 @@ public class GatewayRpcDispatcher   {
 		else {
 			log.warnf("%s: getBlockProperties: %s block %d:%d has no properties",TAG,className,projectId.longValue(),resourceId.longValue());
 		}
-		log.infof("%s: getBlockProperties: returns %s",TAG,result.toString());
+		if( result!=null) log.infof("%s: getBlockProperties: returns %s",TAG,result.toString());
 		return result;
 	}
 	/** The blocks implemented in Java are expected to reside in a jar named "block-definition.jar".

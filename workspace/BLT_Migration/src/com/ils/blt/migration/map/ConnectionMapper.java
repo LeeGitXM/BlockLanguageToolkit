@@ -160,7 +160,7 @@ public class ConnectionMapper {
 						(beginAnchor!=null || endAnchor!=null) ) {
 					// There are 4 special cases relating to connection posts
 					if(beginAnchor==null || endAnchor==null)  {
-						if(beginAnchor==null) {
+						if(endAnchor!=null) {
 							if(endBlock.getClassName().endsWith("Connection")) {
 								sinkPosts.add(new ConnectionPostEntry(
 										endBlock,
@@ -174,7 +174,7 @@ public class ConnectionMapper {
 										new AnchorPointEntry(endAnchor,cxn.getType()));
 							}
 						}
-						else {
+						else if(beginAnchor!=null){
 							if(beginBlock.getClassName().endsWith("Connection")) {
 								sourcePosts.add(new ConnectionPostEntry(
 										beginBlock,

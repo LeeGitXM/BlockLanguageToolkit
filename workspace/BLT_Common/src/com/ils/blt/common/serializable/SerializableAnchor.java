@@ -1,14 +1,14 @@
+/**
+ *   (c) 2014  ILS Automation. All rights reserved. 
+ */
 package com.ils.blt.common.serializable;
-
 
 import java.util.UUID;
 
-import com.ils.blt.common.block.AnchorDirection;
-import com.ils.blt.common.block.PlacementHint;
-import com.ils.blt.common.connection.ConnectionType;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
-
+import com.ils.blt.common.block.*;
+import com.ils.blt.common.connection.ConnectionType;
 
 /**
  * Implement a plain-old-java-object representing an anchor point
@@ -58,6 +58,13 @@ public class SerializableAnchor {
 		}
 		log.info(toString()+" equals "+arg.toString()+" "+result);
 		return result;
+	}
+	@Override
+	public int hashCode() {
+		int code = 42;
+		if( parentId!=null) code += parentId.hashCode();
+		if( display!=null ) code += display.hashCode();
+		return code;
 	}
 	
 	@Override

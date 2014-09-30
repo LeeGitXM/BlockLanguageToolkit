@@ -2,10 +2,10 @@
 
 	<import file="${basedir}/BLT_Build/build.xml"/>
 
-	<property name="version.build" value="8" />	
+	<property name="version.build" value="0" />	
 	<!-- Change version.beta value to "" for release builds -->
 	<property name="version.beta" value="-development" />		
-	<property name="BLTModule.version" value="1.3.5.${version.build}" />
+	<property name="BLTModule.version" value="1.4.0.${version.build}" />
 	<property name="BLTModule.name" value="BLT" />
 	<property name="BLTModule.release" value="0.4" />
 	<property name="BLTModule.description" value="Block Language Toolkit" />
@@ -116,7 +116,7 @@
 	<target name="common.build" description="Compile the source">
 		<echo  message="Using Java version ${ant.java.version}."/>
 		<mkdir dir="${common.bin.dir}"/>
-		<javac destdir="${common.bin.dir}" debug="true" includeantruntime="false">
+		<javac destdir="${common.bin.dir}" debug="true" target="1.7" includeantruntime="false">
 			<src path="${common.src.dir}"/>
 			<classpath refid="ils-classpath"/>
 		</javac>
@@ -128,7 +128,7 @@
 	<!-- Compile the Block Definition library -->
 			<target name="block.build" description="Compile the source">
 				<mkdir dir="${block.bin.dir}"/>
-				<javac destdir="${block.bin.dir}" debug="true" includeantruntime="false">
+				<javac destdir="${block.bin.dir}" debug="true" target="1.7" includeantruntime="false">
 					<src path="${block.src.dir}"/>
 					<classpath refid="BlockDefinition.classpath"/>
 				</javac>

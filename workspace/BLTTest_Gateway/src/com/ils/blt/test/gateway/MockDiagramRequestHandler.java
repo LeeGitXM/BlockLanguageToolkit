@@ -15,7 +15,7 @@ import com.ils.blt.common.control.BlockPropertyChangeEvent;
 import com.ils.blt.common.control.Signal;
 import com.ils.blt.common.control.SignalNotification;
 import com.ils.blt.common.serializable.SerializableDiagram;
-import com.ils.blt.gateway.BlockRequestHandler;
+import com.ils.blt.gateway.ControllerRequestHandler;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.TagReader;
 import com.ils.blt.gateway.engine.TagWriter;
@@ -43,6 +43,7 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 	private final static String TAG = "MockDiagramRequestHandler";
 	private final LoggerEx log;
 	private GatewayContext context = null;
+	private final ControllerRequestHandler requestHandler;
 	private final BlockExecutionController controller;
 	private final TagReader tagReader;
 	private final TagWriter tagWriter;
@@ -54,6 +55,7 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.controller = BlockExecutionController.getInstance();
 		this.context = cntx;
+		this.requestHandler = ControllerRequestHandler.getInstance();
 		this.tagWriter = new TagWriter();
 		this.tagReader = new TagReader();
 		tagWriter.initialize(context);
@@ -71,7 +73,7 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 		origin.setName("Mock:"+blockClass);
 		MockDiagram mock = new MockDiagram(origin,null);  // No parent
 		// Instantiate a block from the class
-		ProcessBlock uut = BlockRequestHandler.getInstance().createInstance(blockClass, mock.getSelf(), UUID.randomUUID());
+		ProcessBlock uut = requestHandler.createInstance(blockClass, mock.getSelf(), UUID.randomUUID());
 		if( uut==null) {
 			uut = ProxyHandler.getInstance().createBlockInstance(blockClass, mock.getSelf(), UUID.randomUUID());
 		}

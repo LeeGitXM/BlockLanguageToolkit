@@ -275,6 +275,12 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		return resourceId;
 	}
 
+	// Specify whether or not a drop point is valid.
+	@Override
+	public boolean isConnectionValid(AnchorPoint startingAnchor, AnchorPoint endAnchor) {
+		return true;
+	}
+	
 	public DiagramState getState() {return state;}
 	public boolean isDirty() {return dirty;}
 	public void setDirty(boolean dirty) {this.dirty = dirty;}

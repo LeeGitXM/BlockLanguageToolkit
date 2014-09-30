@@ -66,7 +66,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 	private static final String TAG = "DiagramNode";
 	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
 
-	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
+	private final LoggerEx logger = LogUtil.getLogger(getClass().getPackage().getName());
 	private DesignerContext context;
 	private long resourceId;
 	private final DiagramWorkspace workspace;
@@ -149,7 +149,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 	 *  conclude that the workspace is not dirty.
 	 */
 	public void closeAndCommit() {
-		log.infof("%s.closeAndCommit: res %d",TAG,resourceId);
+		logger.infof("%s.closeAndCommit: res %d",TAG,resourceId);
 		if( workspace.isOpen(resourceId) ) {
 			DesignableContainer c = workspace.findDesignableContainer(resourceId);
 			BlockDesignableContainer container = (BlockDesignableContainer)c;
@@ -177,7 +177,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 	@SuppressWarnings("unchecked")
 	@Override
 	public void doDelete(List<? extends AbstractNavTreeNode> children,DeleteReason reason) {
-		log.infof("%s.doDelete: res %d",TAG,resourceId);
+		logger.infof("%s.doDelete: res %d",TAG,resourceId);
 		ResourceDeleteAction delete = new ResourceDeleteAction(context,
 				(List<AbstractResourceNavTreeNode>) children,
 				reason.getActionWordKey(), PREFIX+".DiagramNoun");
@@ -243,7 +243,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 		if (context.requestLock(resourceId)) {
 			try {
 				String oldName = getProjectResource().getName();
-				log.infof("%s: onEdit: alterName from %s to %s",TAG,oldName,newTextValue);
+				logger.infof("%s: onEdit: alterName from %s to %s",TAG,oldName,newTextValue);
 				context.structuredRename(resourceId, newTextValue);
 				// If it's open, change its name. Otherwise we sync on opening.
 				if(workspace.isOpen(resourceId) ) {
@@ -265,7 +265,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 	 * Save the current diagram resource, whether or not it is displayed.
 	 */
 	public void saveDiagram() {
-		log.infof("%s.saveDiagram: %d...",TAG,resourceId);
+		logger.infof("%s.saveDiagram: %d...",TAG,resourceId);
 		BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId);
 		if( tab!=null ) {
 			// If the diagram is open on a tab, call the workspace method to update the project resource
@@ -286,7 +286,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 			DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ..."); // Do not publish
 		}
 		catch(GatewayException ge) {
-			log.warnf("%s.saveDiagram: Exception saving project resource %d (%s)",TAG,resourceId,ge.getMessage());
+			logger.warnf("%s.saveDiagram: Exception saving project resource %d (%s)",TAG,resourceId,ge.getMessage());
 		}
 		statusManager.clearDirtyBlockCount(resourceId);
 		statusManager.setResourceDirty(resourceId,false);
@@ -307,9 +307,9 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 	 */
 	@Override
 	public void projectUpdated(Project diff) {
-		log.debug(TAG+"projectUpdated "+diff.getDescription());
+		logger.debug(TAG+"projectUpdated "+diff.getDescription());
 		if (diff.isResourceDirty(resourceId) && !diff.isResourceDeleted(resourceId)) {
-			log.infof("%s: projectUpdated, setting name ...",TAG);
+			logger.infof("%s: projectUpdated, setting name ...",TAG);
 			setName(diff.getResource(resourceId).getName());
 			refresh();
 		}
@@ -322,7 +322,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 	public void projectResourceModified(ProjectResource res,ResourceModification changeType) {
 		if (res.getResourceId() == resourceId
 				&& changeType != ResourceModification.Deleted) {
-			log.infof("%s.projectResourceModified, setting name to: %s",TAG,res.getName());
+			logger.infof("%s.projectResourceModified, setting name to: %s",TAG,res.getName());
 			boolean changed = !res.getName().equals(getName());
 			setName(res.getName());
 			statusManager.setResourceDirty(resourceId, changed);
@@ -332,12 +332,10 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
     private class ExportDiagramAction extends BaseAction {
     	private static final long serialVersionUID = 1L;
     	private final static String POPUP_TITLE = "Export Diagram";
-    	private final long resourceId;
     	private final Component anchor;
     	public ExportDiagramAction(Component c,long resid)  {
     		super(PREFIX+".ExportDiagram",IconUtil.getIcon("export1")); 
     		anchor = c;
-    		resourceId=resid;
     	}
 
     	public void actionPerformed(ActionEvent e) {
@@ -352,7 +350,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
     					File output = dialog.getFilePath();
     					boolean success = false;
     					if( output!=null ) {
-    						log.debugf("%s.actionPerformed: dialog returned %s",TAG,output.getAbsolutePath());
+    						logger.debugf("%s.actionPerformed: dialog returned %s",TAG,output.getAbsolutePath());
     						try {
     							if(output.exists()) {
     								output.setWritable(true); 
@@ -454,7 +452,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 				refresh();
 			} 
 			catch (Exception ex) {
-				log.warn(String.format("%s.setStateAction: ERROR: %s",TAG,ex.getMessage()),ex);
+				logger.warn(String.format("%s.setStateAction: ERROR: %s",TAG,ex.getMessage()),ex);
 				ErrorUtil.showError(ex);
 			}
 		}
@@ -482,7 +480,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 	public void stateChanged(ChangeEvent event) {
 		// Set italics, enable Save
 		boolean dirty = statusManager.isResourceDirty(resourceId);
-		log.infof("%s.stateChanged: dirty = %s",TAG,(dirty?"true":"false"));
+		logger.infof("%s.stateChanged: dirty = %s",TAG,(dirty?"true":"false"));
 		setItalic(dirty);
 		saveAction.setEnabled(dirty);
 		refresh();
