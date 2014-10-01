@@ -227,7 +227,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 			ApplicationExportAction applicationExportAction = new ApplicationExportAction(menu.getRootPane(),this);
 			FamilyAction familyAction = new FamilyAction();
 			NewFolderAction newFolderAction = new NewFolderAction(context,BLTProperties.MODULE_ID,ApplicationScope.DESIGNER,getFolderId(),this);
-			ApplicationConfigureAction applicationConfigureAction = new ApplicationConfigureAction();
+			ApplicationConfigureAction applicationConfigureAction = new ApplicationConfigureAction(getProjectResource());
 			ApplicationSaveAction applicationSaveAction = new ApplicationSaveAction(this);
 			applicationSaveAction.setEnabled(!handler.resourceExists(context.getProject().getId(),resourceId) || 
 					                          statusManager.isResourceDirty(resourceId));
@@ -242,7 +242,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 		else if(getProjectResource().getResourceType().equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE)) {
 			DiagramAction diagramAction = new DiagramAction();
 			NewFolderAction newFolderAction = new NewFolderAction(context,BLTProperties.MODULE_ID,ApplicationScope.DESIGNER,getFolderId(),this);
-			FamilyConfigureAction familyConfigureAction = new FamilyConfigureAction();
+			FamilyConfigureAction familyConfigureAction = new FamilyConfigureAction(getProjectResource());
 			ImportDiagramAction importAction = new ImportDiagramAction();
 			menu.add(diagramAction);
 			menu.add(importAction);
@@ -515,25 +515,40 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 			}
 		}
 	}
-	// This really ought to launch a dialog that reads application attributes.
+	// Launch a dialog that configures application attributes.
     private class ApplicationConfigureAction extends BaseAction {
     	private static final long serialVersionUID = 1L;
-	    public ApplicationConfigureAction()  {
+    	private final static String POPUP_TITLE = "Configure Application";
+    	private final ProjectResource res;
+	    public ApplicationConfigureAction(ProjectResource resource)  {
 	    	super(PREFIX+".ConfigureApplication",IconUtil.getIcon("gear"));  // preferences
+	    	res = resource;
 	    }
 	    
-		public void actionPerformed(ActionEvent e) {
-			try {
-				ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
-				handler.startController();
-				this.setEnabled(false);
-				stopAction.setEnabled(true);
-			} 
-			catch (Exception ex) {
-				logger.warnf("%s. startAction: ERROR: %s",TAG,ex.getMessage(),ex);
-				ErrorUtil.showError(ex);
-			}
-		}
+	    public void actionPerformed(ActionEvent e) {
+
+    		if( resourceId<0 ) return;   // Do nothing
+    		try {
+    			EventQueue.invokeLater(new Runnable() {
+    				public void run() {
+    					// Unmarshall the resource
+    					SerializableApplication sa = deserializeApplication(res);
+    					if( sa!=null ) {
+    					ApplicationConfigurationDialog dialog = new ApplicationConfigurationDialog(sa);
+    					dialog.pack();
+    					dialog.setVisible(true);   // Returns when dialog is closed
+    					sa = dialog.getApplication();
+    					}
+    					else {
+							ErrorUtil.showWarning(String.format("ApplicationConfigurationAction: Failed to deserialize resource"),POPUP_TITLE);
+						}
+    				}
+    			});
+    		} 
+    		catch (Exception err) {
+    			ErrorUtil.showError(err);
+    		}
+    	}
 	}
 	private class ApplicationImportAction extends BaseAction {
     	private static final long serialVersionUID = 1L;
@@ -819,25 +834,40 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 			}
 		}
 	}
- // This really ought to launch a dialog that reads application attributes.
+    // This really ought to launch a dialog that configures family attributes.
     private class FamilyConfigureAction extends BaseAction {
     	private static final long serialVersionUID = 1L;
-	    public FamilyConfigureAction()  {
+    	private final static String POPUP_TITLE = "Configure Family";
+    	private ProjectResource res;
+	    public FamilyConfigureAction(ProjectResource resource)  {
 	    	super(PREFIX+".ConfigureFamily",IconUtil.getIcon("gear"));  // preferences
+	    	res = resource;
 	    }
 	    
-		public void actionPerformed(ActionEvent e) {
-			try {
-				ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
-				handler.startController();
-				this.setEnabled(false);
-				stopAction.setEnabled(true);
-			} 
-			catch (Exception ex) {
-				logger.warnf("%s: startAction: ERROR: %s",TAG,ex.getMessage(),ex);
-				ErrorUtil.showError(ex);
-			}
-		}
+	    public void actionPerformed(ActionEvent e) {
+
+    		if( resourceId<0 ) return;   // Do nothing
+    		try {
+    			EventQueue.invokeLater(new Runnable() {
+    				public void run() {
+    					// Unmarshall the resource
+    					SerializableFamily sf = deserializeFamily(res);
+    					if( sf!=null ) {
+    						FamilyConfigurationDialog dialog = new FamilyConfigurationDialog(sf);
+    						dialog.pack();
+    						dialog.setVisible(true);   // Returns when dialog is closed
+    						sf = dialog.getFamily();
+    					}
+    					else {
+    						ErrorUtil.showWarning(String.format("FamilyConfigurationAction: Failed to deserialize resource"),POPUP_TITLE);
+    					}
+    				}
+    			});
+    		} 
+    		catch (Exception err) {
+    			ErrorUtil.showError(err);
+    		}
+    	}
 	}
     private class ApplicationExportAction extends BaseAction {
     	private static final long serialVersionUID = 1L;

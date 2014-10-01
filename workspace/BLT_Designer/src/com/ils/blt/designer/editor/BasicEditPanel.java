@@ -28,7 +28,7 @@ public class BasicEditPanel extends JPanel {
 	public static final Dimension BUTTON_SIZE = new Dimension(16,16);
 	public static final Dimension COMBO_BOX_SIZE  = new Dimension(120,24);
 	public static final Dimension ENTRY_BOX_SIZE  = new Dimension(160,24);
-	public static final Dimension OFFSET_BOX_SIZE  = new Dimension(80,24);
+	public static final Dimension OFFSET_BOX_SIZE  = new Dimension(40,24);
 	protected final BlockPropertyEditor parent;
 	
 	
@@ -96,7 +96,6 @@ public class BasicEditPanel extends JPanel {
 	 */
 	protected JTextField createTextField(String text) {	
 		final JTextField field = new JTextField(text);
-		//field.setPreferredSize(ENTRY_BOX_SIZE);
 		field.setEditable(false);
 		return field;
 	}

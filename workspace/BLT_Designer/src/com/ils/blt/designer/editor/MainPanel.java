@@ -134,8 +134,9 @@ public class MainPanel extends BasicEditPanel {
 		}
 		// Update the panel for new property data
 		public void updateForProperty(BlockProperty property) {
-			log.infof("%s.updateForProperty: property %s, raw value=",TAG,property.getName(),property.getValue().toString());
-			valueDisplayField.setText(fncs.coerceToString(property.getValue()));
+			String text = fncs.coerceToString(property.getValue());
+			log.infof("%s.updateForProperty: property %s, raw value= %s",TAG,property.getName(),text);
+			valueDisplayField.setText(text);
 			if( property.getBindingType().equals(BindingType.TAG_MONITOR) ||
 				property.getBindingType().equals(BindingType.TAG_READ) ||
 				property.getBindingType().equals(BindingType.TAG_READWRITE) ||
@@ -236,12 +237,12 @@ public class MainPanel extends BasicEditPanel {
 	 * a block's name.
 	 */
 	private JButton createNameEditButton(final ProcessBlockView blk) {
-		JButton btn = null;
+		JButton btn = new JButton();
 		final String ICON_PATH  = "Block/icons/editor/pencil.png";
 		Image img = ImageLoader.getInstance().loadImage(ICON_PATH ,BUTTON_SIZE);
 		if( img !=null) {
 			Icon icon = new ImageIcon(img);
-			btn = new JButton(icon);
+			btn.setIcon(icon);
 			btn.setMargin(new Insets(0,0,0,0));
 			btn.setOpaque(false);
 			btn.setBorderPainted(false);
@@ -255,6 +256,9 @@ public class MainPanel extends BasicEditPanel {
 					setSelectedPane(BlockEditConstants.NAME_EDIT_PANEL);
 				}
 			});
+		}
+		else {
+			log.warnf("%s.createNameEditButton icon not found(%s)",TAG,ICON_PATH);
 		}
 		return btn;
 	}

@@ -191,9 +191,8 @@ public class ConfigurationPanel extends BasicEditPanel {
 	            if (!obj.toString().equals(BindingType.ENGINE.name())) {
 	                super.setSelectedItem(obj);
 	            }
-
-	        } else {
-
+	        } 
+	        else {
 	            super.setSelectedItem(obj);
 	        }
 	    }
@@ -230,7 +229,6 @@ public class ConfigurationPanel extends BasicEditPanel {
 		 * Custom implementation to color items as enabled or disabled.
 		 */
 		@Override
-		@SuppressWarnings("rawtypes")
 		public Component getListCellRendererComponent( JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 		    Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 

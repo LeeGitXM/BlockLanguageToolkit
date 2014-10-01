@@ -2,6 +2,7 @@ package com.ils.blt.common.block;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.event.ChangeEvent;
@@ -93,7 +94,6 @@ public class BlockProperty implements NotificationChangeListener {
 		}
 		return property;
 	}
-	
 	public boolean isEditable() {return editable;}
 	public void setEditable(boolean editable) {this.editable = editable;}
 	public String getBinding() {return binding;}
@@ -116,6 +116,32 @@ public class BlockProperty implements NotificationChangeListener {
 		if(obj instanceof QualifiedValue) throw new IllegalArgumentException(String.format("Complex object %s not allowed",obj.getClass().getName()));
 		this.value = obj;
 		notifyChangeListeners();
+	}
+	
+	/**
+	 * Helper methods for dealing with list data types. The list is stored as a single
+	 * delimited string - the delimiter is the first character. Clearly the delimiter 
+	 * must be a character not present in the strings.
+	 */
+	public static String assembleList(List<String> list,String delimiter) {
+		StringBuffer s = new StringBuffer();
+		if( list!=null ) {
+			for(String text:list) {
+				s.append(delimiter);
+				s.append(text);
+			}
+		}
+		return s.toString();
+	}
+	public static List<String> disassembleList(String raw) {
+		List<String> list = new ArrayList<>(); 
+		if( raw!=null && raw.length()>0 ) {
+			String delimiter = raw.substring(0, 1);
+			raw = raw.substring(1);
+			String[] subs = raw.split(delimiter);
+			list = new ArrayList<String>(Arrays.asList(subs));
+		}
+		return list;
 	}
 	
 	/**

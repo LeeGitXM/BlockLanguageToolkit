@@ -55,21 +55,21 @@ public class ValueEditPanel extends BasicEditPanel {
 		add(editPanel,"");
 
 		JPanel displayPanel = new JPanel();
-		displayPanel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
+		displayPanel.setLayout(new MigLayout(layoutConstraints,columnConstraints,"[]10[]20"));
 		addSeparator(displayPanel,"Attribute Display");
-		annotationCheckBox = new JCheckBox("Display attribute?");
-		displayPanel.add(annotationCheckBox,"wrap");
-		displayPanel.add(createLabel("X offset"),"skip");
+		annotationCheckBox = new JCheckBox("Display ?");
+		displayPanel.add(annotationCheckBox,"gapafter 15");
+		displayPanel.add(createLabel("X offset"),"");
 		xfield = createOffsetTextField("0");
-		displayPanel.add(xfield,"span,growx,wrap");
-		displayPanel.add(createLabel("Y offset"),"skip");
+		displayPanel.add(xfield,"");
+		displayPanel.add(createLabel("Y offset"),"gapbefore 15");
 		yfield = createOffsetTextField("0");
-		displayPanel.add(yfield,"span,growx,wrap");
+		displayPanel.add(yfield,"wrap");
 		add(displayPanel,"");
 
 		// The OK button copies data from the components and sets the property properties.
 		// It then returns to the main tab
-		JPanel buttonPanel = new JPanel(new MigLayout("", "60[center]5[center]",""));
+		JPanel buttonPanel = new JPanel();
 		add(buttonPanel, "dock south");
 		JButton okButton = new JButton("OK");
 		buttonPanel.add(okButton,"");

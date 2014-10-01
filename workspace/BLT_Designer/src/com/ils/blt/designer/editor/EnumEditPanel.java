@@ -13,10 +13,10 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 
 import net.miginfocom.swing.MigLayout;
 
-import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.DistributionType;
 import com.ils.blt.common.block.HysteresisType;
@@ -37,7 +37,6 @@ public class EnumEditPanel extends BasicEditPanel {
 	private static final String columnConstraints = "[para]0[]0[]0[]0[]";
 	private static final String layoutConstraints = "ins 2";
 	private static final String rowConstraints = "";
-	private final UtilityFunctions fncs;
 	private BlockProperty property = null;
 	private final JLabel headingLabel;
 	private final JLabel valueLabel;
@@ -49,32 +48,31 @@ public class EnumEditPanel extends BasicEditPanel {
 	public EnumEditPanel(final BlockPropertyEditor editor) {
 		super(editor);
 		setLayout(new MigLayout("top,flowy,ins 2","",""));
-		this.fncs = new UtilityFunctions();
 		headingLabel = addHeading(this);
 		//Create two panels - value edit display option.
 		JPanel editPanel = new JPanel();
 		editPanel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
 		valueLabel = addSeparator(editPanel,"Value");
-		valueCombo = createBooleanCombo();    // Placeholder
+		valueCombo = new JComboBox<String>();    // Placeholder
 		editPanel.add(valueCombo,"skip");
 		add(editPanel,"");
 
 		JPanel displayPanel = new JPanel();
-		displayPanel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
+		displayPanel.setLayout(new MigLayout(layoutConstraints,columnConstraints,"[]10[]20"));
 		addSeparator(displayPanel,"Attribute Display");
-		annotationCheckBox = new JCheckBox("Display attribute?");
-		displayPanel.add(annotationCheckBox,"wrap");
-		displayPanel.add(createLabel("X offset"),"skip");
+		annotationCheckBox = new JCheckBox("Display ?");
+		displayPanel.add(annotationCheckBox,"gapafter 15");
+		displayPanel.add(createLabel("X offset"),"");
 		xfield = createOffsetTextField("0");
-		displayPanel.add(xfield,"span,growx,wrap");
-		displayPanel.add(createLabel("Y offset"),"skip");
+		displayPanel.add(xfield,"");
+		displayPanel.add(createLabel("Y offset"),"gapbefore 15");
 		yfield = createOffsetTextField("0");
 		displayPanel.add(yfield,"span,growx,wrap");
 		add(displayPanel,"");
 
 		// The OK button copies data from the components and sets the property properties.
 		// It then returns to the main tab
-		JPanel buttonPanel = new JPanel(new MigLayout("", "60[center]5[center]",""));
+		JPanel buttonPanel = new JPanel();
 		add(buttonPanel, "dock south");
 		JButton okButton = new JButton("OK");
 		buttonPanel.add(okButton,"");
@@ -114,101 +112,87 @@ public class EnumEditPanel extends BasicEditPanel {
 		this.property = prop;
 		headingLabel.setText(prop.getName());
 		valueLabel.setText("Value ("+prop.getType().name().toLowerCase()+")");
-		if( prop.getType().equals(PropertyType.BOOLEAN))          valueCombo = createBooleanCombo();
-		else if(prop.getType().equals(PropertyType.DISTRIBUTION)) valueCombo = createDistributionTypeCombo();
-		else if(prop.getType().equals(PropertyType.HYSTERESIS))   valueCombo = createHysteresisTypeCombo();
-		else if(prop.getType().equals(PropertyType.LIMIT))        valueCombo = createLimitTypeCombo();
-		else if(prop.getType().equals(PropertyType.SCOPE))	      valueCombo = createTransmissionScopeCombo();
-		else if(prop.getType().equals(PropertyType.TRUTHVALUE) )  valueCombo = createTruthValueCombo();
+		if( prop.getType().equals(PropertyType.BOOLEAN))          setBooleanCombo(valueCombo);
+		else if(prop.getType().equals(PropertyType.DISTRIBUTION)) setDistributionTypeCombo(valueCombo);
+		else if(prop.getType().equals(PropertyType.HYSTERESIS))   setHysteresisTypeCombo(valueCombo);
+		else if(prop.getType().equals(PropertyType.LIMIT))        setLimitTypeCombo(valueCombo);
+		else if(prop.getType().equals(PropertyType.SCOPE))	      setTransmissionScopeCombo(valueCombo);
+		else if(prop.getType().equals(PropertyType.TRUTHVALUE) )  setTruthValueCombo(valueCombo); 
+		valueCombo.setEditable(true);
+		valueCombo.repaint();
+		this.invalidate();
 			
 		if( prop.getValue()!=null ) {
-			log.infof("%s.updateForProperty: %s=%s",TAG,prop.getName(),prop.getValue().toString().toUpperCase());
-			valueCombo.setSelectedItem(prop.getValue().toString().toUpperCase());
+			final String selection = prop.getValue().toString().toUpperCase();
+			log.infof("%s.updateForProperty: %s=%s",TAG,prop.getName(),selection);
+			SwingUtilities.invokeLater( new Runnable() {
+				public void run() {
+					valueCombo.setSelectedItem(selection);
+				}
+			});
+			valueCombo.getModel().setSelectedItem(selection);
+			log.infof("%s.updateForProperty: selection now=%s",TAG,valueCombo.getModel().getSelectedItem().toString());
 		}   
 		annotationCheckBox.setSelected(prop.isDisplayed());
 		xfield.setText(String.valueOf(prop.getDisplayOffsetX()));
 		yfield.setText(String.valueOf(prop.getDisplayOffsetY()));
 	}
-
 	// ================================ Combo boxes for different enumerations ===================================
 
 	/**
 	 * Create a combo box for true/false 
 	 */
-	private JComboBox<String> createBooleanCombo() {
-		String[] entries = new String[2];
-		entries[0]=Boolean.TRUE.toString().toUpperCase();
-		entries[1]=Boolean.FALSE.toString().toUpperCase();
-
-		final JComboBox<String> box = new JComboBox<String>(entries);
-		return box;
+	private void setBooleanCombo(JComboBox<String> box) {
+		box.removeAllItems();
+		box.addItem(Boolean.TRUE.toString().toUpperCase());
+		box.addItem(Boolean.FALSE.toString().toUpperCase());
 	}
+	
 	/**
 	 * Create a combo box for distribution type 
 	 */
-	private JComboBox<String> createDistributionTypeCombo() {
-		String[] entries = new String[DistributionType.values().length];
-		int index=0;
+	private void setDistributionTypeCombo(JComboBox<String> box) {
+		box.removeAllItems();
 		for(DistributionType dt : DistributionType.values()) {
-			entries[index]=dt.name();
-			index++;
+			box.addItem(dt.name());
 		}
-
-		final JComboBox<String> box = new JComboBox<String>(entries);
-		return box;
 	}
 	/**
 	 * Create a combo box for hysteresis type
 	 */
-	private JComboBox<String> createHysteresisTypeCombo() {
-		String[] entries = new String[HysteresisType.values().length];
-		int index=0;
+	private void setHysteresisTypeCombo(JComboBox<String> box) {
+		box.removeAllItems();
 		for(HysteresisType type : HysteresisType.values()) {
-			entries[index]=type.name();
-			index++;
+			box.addItem(type.name());
 		}
-		final JComboBox<String> box = new JComboBox<String>(entries);
-		return box;
 	}
 	/**
 	 * Create a combo box for limit type
 	 */
-	private JComboBox<String> createLimitTypeCombo() {
-		String[] entries = new String[LimitType.values().length];
-		int index=0;
+	private void setLimitTypeCombo(JComboBox<String> box) {
+		box.removeAllItems();
 		for(LimitType scope : LimitType.values()) {
-			entries[index]=scope.name();
-			index++;
+			box.addItem(scope.name());
 		}
-		final JComboBox<String> box = new JComboBox<String>(entries);
-		return box;
 	}
 
 	/**
 	 * Create a combo box for transmission scope
 	 */
-	private JComboBox<String> createTransmissionScopeCombo() {
-		String[] entries = new String[TransmissionScope.values().length];
-		int index=0;
+	private void setTransmissionScopeCombo(JComboBox<String> box) {
+		box.removeAllItems();
 		for(TransmissionScope scope : TransmissionScope.values()) {
-			entries[index]=scope.name();
-			index++;
+			box.addItem(scope.name());
 		}
-		final JComboBox<String> box = new JComboBox<String>(entries);
-		return box;
 	}
 	/**
 	 * Create a combo box for limit type
 	 */
-	private JComboBox<String> createTruthValueCombo() {
-		String[] entries = new String[TruthValue.values().length];
-		int index=0;
+	private void setTruthValueCombo(JComboBox<String> box) {
+		box.removeAllItems();
 		for(TruthValue tv : TruthValue.values()) {
-			entries[index]=tv.name();
-			index++;
+			box.addItem(tv.name());
 		}
-		final JComboBox<String> box = new JComboBox<String>(entries);
-		return box;
 	}
 		
 }

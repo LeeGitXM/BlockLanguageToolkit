@@ -1,26 +1,37 @@
 /**
  *   (c) 2014  ILS Automation. All rights reserved.
+ *   http://docs.oracle.com/javase/tutorial/displayCode.html?code=http://docs.oracle.com/javase/tutorial/uiswing/examples/components/SharedModelDemoProject/src/components/SharedModelDemo.java
  */
 package com.ils.blt.designer.editor;
 
+import java.awt.Image;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 
+import javax.swing.DefaultListModel;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 
 import net.miginfocom.swing.MigLayout;
 
-import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.LimitType;
-import com.ils.blt.common.block.PropertyType;
-import com.ils.blt.common.block.TransmissionScope;
+import com.inductiveautomation.ignition.client.images.ImageLoader;
 
 /**
  * Display a panel to edit lists of strings using a list box.
@@ -35,47 +46,32 @@ public class ListEditPanel extends BasicEditPanel {
 	// A panel is designed to edit properties that are lists of strings.
 	private final static String TAG = "EnumEditPanel";
 	private static final long serialVersionUID = 1L;
-	private static final String columnConstraints = "[para]0[]0[]0[]0[]";
+	private static final String columnConstraints = "[para]0[]0[]0[]";
 	private static final String layoutConstraints = "ins 2";
 	private static final String rowConstraints = "";
-	private final UtilityFunctions fncs;
 	private BlockProperty property = null;
 	private final JLabel headingLabel;
-	private final JLabel valueLabel;
-	private final JCheckBox annotationCheckBox;
-	private final JTextField xfield;
-	private final JTextField yfield;
-	private final JTextField valueField;
+
+	private String delimiter = ",";
+	private List<String> model;
 
 	public ListEditPanel(final BlockPropertyEditor editor) {
 		super(editor);
+		model = new ArrayList<>();
+		model.add("");   // Put at least one line in the model
 		setLayout(new MigLayout("top,flowy,ins 2","",""));
-		this.fncs = new UtilityFunctions();
 		headingLabel = addHeading(this);
 		//Create two panels - value edit display option.
 		JPanel editPanel = new JPanel();
 		editPanel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
-		valueLabel = addSeparator(editPanel,"Value");
-		valueField = createTextField("");
-		editPanel.add(valueField,"skip");
+		addSeparator(editPanel,"List");
+		editPanel.add(createDelimiterPanel(delimiter),"skip,wrap");
+		editPanel.add(createListTablePanel(model),"skip");
 		add(editPanel,"");
-
-		JPanel displayPanel = new JPanel();
-		displayPanel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
-		addSeparator(displayPanel,"Attribute Display");
-		annotationCheckBox = new JCheckBox("Display attribute?");
-		displayPanel.add(annotationCheckBox,"wrap");
-		displayPanel.add(createLabel("X offset"),"skip");
-		xfield = createOffsetTextField("0");
-		displayPanel.add(xfield,"span,growx,wrap");
-		displayPanel.add(createLabel("Y offset"),"skip");
-		yfield = createOffsetTextField("0");
-		displayPanel.add(yfield,"span,growx,wrap");
-		add(displayPanel,"");
 
 		// The OK button copies data from the components and sets the property properties.
 		// It then returns to the main tab
-		JPanel buttonPanel = new JPanel(new MigLayout("", "60[center]5[center]",""));
+		JPanel buttonPanel = new JPanel();
 		add(buttonPanel, "dock south");
 		JButton okButton = new JButton("OK");
 		buttonPanel.add(okButton,"");
@@ -83,20 +79,8 @@ public class ListEditPanel extends BasicEditPanel {
 			public void actionPerformed(ActionEvent e) {
 				if(property!=null) {
 					// Coerce to the correct data type
-					Object value = valueField.getText();
-					if( property.getType().equals(PropertyType.BOOLEAN ))     value = fncs.coerceToBoolean(value);
-					else if( property.getType().equals(PropertyType.DOUBLE )) value = fncs.coerceToDouble(value);
-					else if( property.getType().equals(PropertyType.INTEGER ))value = fncs.coerceToInteger(value);
-					property.setValue(value);
-					property.setDisplayed(annotationCheckBox.isSelected());
-					try {
-						property.setDisplayOffsetX(Integer.parseInt(xfield.getText()));
-						property.setDisplayOffsetY(Integer.parseInt(yfield.getText()));
-					}
-					catch(NumberFormatException nfe) {
-						JOptionPane.showMessageDialog(ListEditPanel.this, String.format("ValueEditPanel: Bad entry for display offset (%s)",nfe.getLocalizedMessage()));
-						property.setDisplayed(false);
-					}
+					String list = BlockProperty.assembleList(model,delimiter);
+					property.setValue(list);
 				}
 				editor.notifyOfChange();   // Handle "dirtiness" and repaint diagram
 				updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
@@ -113,13 +97,11 @@ public class ListEditPanel extends BasicEditPanel {
 	}
 
 	public void updateForProperty(BlockProperty prop) {
-		log.infof("%s.updateForProperty: %s",TAG,prop.getName());
+		model = BlockProperty.disassembleList(prop.getValue().toString());
+		log.infof("%s.updateForProperty: %s (%s)",TAG,prop.getName(),prop.getValue().toString());
 		this.property = prop;
 		headingLabel.setText(prop.getName());
-		valueLabel.setText("Value ("+prop.getType().name().toLowerCase()+")");
-		if( prop.getValue()!=null ) {
-			valueField.setText(fncs.coerceToString(prop.getValue()));
-		}   
+		 
 	}
 
 	/**
@@ -131,123 +113,121 @@ public class ListEditPanel extends BasicEditPanel {
 		field.setEditable(true);
 		return field;
 	}
-	// =================================== Unused ===================================
-
-		/**
-		 * Create a combo box for true/false 
-		 */
-		private JComboBox<String> createBooleanCombo(final BlockProperty prop) {
-			String[] entries = new String[2];
-			entries[0]=Boolean.TRUE.toString();
-			entries[1]=Boolean.FALSE.toString();
-			
-			final JComboBox<String> box = new JComboBox<String>(entries);
-			box.addActionListener(new ActionListener() {
-		        public void actionPerformed(ActionEvent e){
-		        	prop.setValue(box.getSelectedItem().toString());
-		        	//updateBlockProperty(prop);
-		        }
-			});
-			box.setSelectedItem(prop.getValue().toString());
-			return box;
-		}
-		/**
-		 * Create a combo box for limit type
-		 */
-		private JComboBox<String> createLimitTypeCombo(final BlockProperty prop) {
-			String[] entries = new String[LimitType.values().length];
-			int index=0;
-			for(LimitType scope : LimitType.values()) {
-				entries[index]=scope.name();
-				index++;
-			}
-			final JComboBox<String> box = new JComboBox<String>(entries);
-			box.addActionListener(new ActionListener() {
-		        public void actionPerformed(ActionEvent e){
-		        	LimitType type = LimitType.valueOf(LimitType.class, box.getSelectedItem().toString());
-		        	log.debugf("%s: set limit type %s",TAG,box.getSelectedItem().toString());
-		        	prop.setValue(box.getSelectedItem().toString());
-		        	//updateBlockProperty(prop);
-		        }
-			});
-			box.setSelectedItem(prop.getValue().toString());
-			return box;
-		}
+	
+	/**
+	 * Create a panel for entry/display of the delimiter
+	 */
+	protected JPanel createDelimiterPanel(String delim) {
+		String columnConstraints = "[para]0[][20]";
+		String layoutConstraints = "ins 2";
+		String rowConstraints = "";
+		final JPanel panel = new JPanel();
+		panel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));     // 2 cells across
+		panel.add(createLabel("Delimiter"),"skip");
+		panel.add(createTextField(delim),"wrap");
+		return panel;
+	}
+	
+	/**
+	 * A list add panel is a panel appending a string element in the list. It contains:-
+	 *        valueBox       - text box with the current value (editable)
+	 *        add button     - to append this entry 
+	 */
+	private JPanel createListTablePanel(List<String> model)  {
+		String columnConstraints = "para[200]2[25]2[25]";
+		String layoutConstraints = "ins 2";
+		String rowConstraints = "";
+		JPanel tablePanel = new JPanel();
+		JTable table = new JTable();
+		tablePanel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
+		tablePanel.add(table,"pushx");
+		tablePanel.add(createAddButton(),"w :25:,align top");
+		tablePanel.add(createDeleteButton(),"w :25:,align top,wrap");
 		
-		/**
-		 * Create a combo box for transmission scope
-		 */
-		private JComboBox<String> createTransmissionScopeCombo(final BlockProperty prop) {
-			String[] entries = new String[TransmissionScope.values().length];
-			int index=0;
-			for(TransmissionScope scope : TransmissionScope.values()) {
-				entries[index]=scope.name();
-				index++;
-			}
-			final JComboBox<String> box = new JComboBox<String>(entries);
-			box.addActionListener(new ActionListener() {
-		        public void actionPerformed(ActionEvent e){
-		        	TransmissionScope scope = TransmissionScope.valueOf(TransmissionScope.class, box.getSelectedItem().toString());
-		        	log.debugf("%s: set transmission scope %s",TAG,box.getSelectedItem().toString());
-		        	prop.setValue(scope.toString());
-		        	//updateBlockProperty(prop);
-		        }
+		String[] columnNames = { "Value" };
+		DefaultTableModel dataModel = new DefaultTableModel(columnNames,1);  // One row
+		for( String val:model) {
+			String[] row = new String[1];
+			row[0] = val;
+			dataModel.addRow(row) ;
+		}
+        table = new JTable(dataModel);
+        ListSelectionModel lsm = table.getSelectionModel();
+        lsm.addListSelectionListener(new SharedListSelectionHandler());
+        JScrollPane tablePane = new JScrollPane(table);
+        tablePanel.add(tablePane, "");
+		return tablePanel;
+	}
+	
+	/**
+	 * Create a button that deletes the nth entry
+	 */
+	private JButton createAddButton() {
+		JButton btn = new JButton();
+		final String ICON_PATH  = "Block/icons/editor/add.png";
+		Image img = ImageLoader.getInstance().loadImage(ICON_PATH ,BUTTON_SIZE);
+		if( img !=null) {
+			Icon icon = new ImageIcon(img);
+			btn.setIcon(icon);
+			btn.setMargin(new Insets(0,0,0,0));
+			btn.setOpaque(false);
+			btn.setBorderPainted(false);
+			btn.setBackground(getBackground());
+			btn.setBorder(null);
+			btn.setPreferredSize(BUTTON_SIZE);
+			btn.addActionListener(new ActionListener() {
+				// Determine the correct panel, depending on the property type
+				public void actionPerformed(ActionEvent e){
+				}
 			});
-			box.setSelectedItem(prop.getValue().toString());
-			return box;
 		}
-		/*
-		// Special for a LimitType block property
-		private class LimitTypePanel extends JPanel {
-			private static final long serialVersionUID = 6501004559543409511L;
-			private static final String columnConstraints = "[para]0[][100lp,fill]";
-			private static final String layoutConstraints = "ins 2";
-			private static final String rowConstraints = "";
-
-			public LimitTypePanel(BlockProperty prop) {
-				setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));     // 3 cells across
-				addSeparator(this,prop.getName());
-
-				add(createLabel("Type"),"skip");
-				add(createLimitTypeCombo(prop),"wrap");
-			}
+		else {
+			log.warnf("%s.createAddButton icon not found(%s)",TAG,ICON_PATH);
 		}
-			
-		// Special for a TruthValue block property
-		private class TruthStatePanel extends JPanel {
-			private static final long serialVersionUID = 6501004559543409511L;
-			private static final String columnConstraints = "[para]0[][100lp,fill]";
-			private static final String layoutConstraints = "ins 2";
-			private static final String rowConstraints = "";
-
-			public TruthStatePanel(BlockProperty prop) {
-				setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));     // 3 cells across
-				addSeparator(this,prop.getName());
-
-				add(createLabel("Type"),"skip");
-				add(createBooleanCombo(prop),"wrap");
-			}
+		return btn;
+	}
+	
+	/**
+	 * Create a button that deletes the nth entry
+	 */
+	private JButton createDeleteButton() {
+		JButton btn = new JButton();
+		final String ICON_PATH  = "Block/icons/editor/delete.png";
+		Image img = ImageLoader.getInstance().loadImage(ICON_PATH ,BUTTON_SIZE);
+		if( img !=null) {
+			Icon icon = new ImageIcon(img);
+			btn.setIcon(icon);
+			btn.setMargin(new Insets(0,0,0,0));
+			btn.setOpaque(false);
+			btn.setBorderPainted(false);
+			btn.setBackground(getBackground());
+			btn.setBorder(null);
+			btn.setPreferredSize(BUTTON_SIZE);
+			btn.addActionListener(new ActionListener() {
+				// Determine the correct panel, depending on the property type
+				public void actionPerformed(ActionEvent e){
+				}
+			});
 		}
-
-
-		// Special for whenever there is just a combo box
-		private class ComboOnlyPanel extends JPanel {
-			private static final long serialVersionUID = 6501004559543409511L;
-			private static final String columnConstraints = "[para]0[][100lp,fill]";
-			private static final String layoutConstraints = "ins 2";
-			private static final String rowConstraints = "";
-			
-			public ComboOnlyPanel(BlockProperty prop) {
-				setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));     // 3 cells across
-				addSeparator(this,prop.getName());
-				
-				add(createLabel(prop.getName()),"skip");
-				if(prop.getName().endsWith("?")) {
-					add(createBooleanCombo(prop),"wrap");
-				}	
-			}
+		else {
+			log.warnf("%s.createDeleteButton icon not found(%s)",TAG,ICON_PATH);
 		}
-		*/
-		
+		return btn;
+	}
+	
+	/**
+	 * Create a selection listener for both the list and the table.
+	 * We allow only one row to be selected at a time. Enable/disable
+	 * the add/delete buttons.
+	 */
+	private class SharedListSelectionHandler implements ListSelectionListener {
+        public void valueChanged(ListSelectionEvent e) {
+            ListSelectionModel lsm = (ListSelectionModel)e.getSource();
+ 
+            int firstIndex = e.getFirstIndex();
+            int lastIndex = e.getLastIndex();
+            boolean isAdjusting = e.getValueIsAdjusting();
+        }
+    }
 }
 	
