@@ -154,12 +154,12 @@ public class MainPanel extends BasicEditPanel {
 	 * @param prop 
 	 */
 	private JButton createConfigurationButton(final BlockProperty prop) {
-		JButton btn = null;
+		JButton btn = new JButton();
 		final String ICON_PATH  = "Block/icons/editor/data_link.png";
 		Image img = ImageLoader.getInstance().loadImage(ICON_PATH ,BUTTON_SIZE);
 		if( img !=null) {
 			Icon icon = new ImageIcon(img);
-			btn = new JButton(icon);
+			btn.setIcon(icon);
 			btn.setMargin(new Insets(0,0,0,0));
 			btn.setOpaque(false);
 			btn.setBorderPainted(false);
@@ -172,6 +172,7 @@ public class MainPanel extends BasicEditPanel {
 					setSelectedPane(BlockEditConstants.CONFIGURATION_PANEL);
 				}
 			});
+			if( prop.getType().equals(PropertyType.LIST) ) btn.setEnabled(false);
 		}
 		return btn;
 	}
@@ -179,12 +180,12 @@ public class MainPanel extends BasicEditPanel {
 	 * Create a button that navigates to the proper editor.
 	 */
 	private JButton createEditButton(final BlockProperty prop) {
-		JButton btn = null;
+		JButton btn = new JButton();
 		final String ICON_PATH  = "Block/icons/editor/pencil.png";
 		Image img = ImageLoader.getInstance().loadImage(ICON_PATH ,BUTTON_SIZE);
 		if( img !=null) {
 			Icon icon = new ImageIcon(img);
-			btn = new JButton(icon);
+			btn.setIcon(icon);
 			btn.setMargin(new Insets(0,0,0,0));
 			btn.setOpaque(false);
 			btn.setBorderPainted(false);

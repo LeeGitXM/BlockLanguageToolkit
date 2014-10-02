@@ -8,10 +8,10 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -23,10 +23,7 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -46,7 +43,7 @@ public class ListEditPanel extends BasicEditPanel {
 	// A panel is designed to edit properties that are lists of strings.
 	private final static String TAG = "EnumEditPanel";
 	private static final long serialVersionUID = 1L;
-	private static final String columnConstraints = "[para]0[]0[]0[]";
+	private static final String columnConstraints = "[para]0[]";
 	private static final String layoutConstraints = "ins 2";
 	private static final String rowConstraints = "";
 	private BlockProperty property = null;
@@ -59,14 +56,14 @@ public class ListEditPanel extends BasicEditPanel {
 		super(editor);
 		model = new ArrayList<>();
 		model.add("");   // Put at least one line in the model
-		setLayout(new MigLayout("top,flowy,ins 2","",""));
+		setLayout(new MigLayout("top,flowy,ins 2","para[]",""));
 		headingLabel = addHeading(this);
 		//Create two panels - value edit display option.
 		JPanel editPanel = new JPanel();
 		editPanel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
 		addSeparator(editPanel,"List");
-		editPanel.add(createDelimiterPanel(delimiter),"skip,wrap");
-		editPanel.add(createListTablePanel(model),"skip");
+		editPanel.add(createDelimiterPanel(delimiter),"wrap");
+		editPanel.add(createListTablePanel(model),"wrap");
 		add(editPanel,"");
 
 		// The OK button copies data from the components and sets the property properties.
@@ -135,14 +132,14 @@ public class ListEditPanel extends BasicEditPanel {
 	 */
 	private JPanel createListTablePanel(List<String> model)  {
 		String columnConstraints = "para[200]2[25]2[25]";
-		String layoutConstraints = "ins 2";
-		String rowConstraints = "";
+		String layoutConstraints = "fillx,ins 2";
+		String rowConstraints = "[]";
 		JPanel tablePanel = new JPanel();
 		JTable table = new JTable();
 		tablePanel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
-		tablePanel.add(table,"pushx");
-		tablePanel.add(createAddButton(),"w :25:,align top");
-		tablePanel.add(createDeleteButton(),"w :25:,align top,wrap");
+		tablePanel.add(table,"");
+		tablePanel.add(createAddButton(),"w :25:,aligny top");
+		tablePanel.add(createDeleteButton(),"w :25:,aligny top,wrap");
 		
 		String[] columnNames = { "Value" };
 		DefaultTableModel dataModel = new DefaultTableModel(columnNames,1);  // One row
@@ -152,6 +149,7 @@ public class ListEditPanel extends BasicEditPanel {
 			dataModel.addRow(row) ;
 		}
         table = new JTable(dataModel);
+        table.setPreferredSize(TABLE_SIZE);
         ListSelectionModel lsm = table.getSelectionModel();
         lsm.addListSelectionListener(new SharedListSelectionHandler());
         JScrollPane tablePane = new JScrollPane(table);
@@ -165,24 +163,29 @@ public class ListEditPanel extends BasicEditPanel {
 	private JButton createAddButton() {
 		JButton btn = new JButton();
 		final String ICON_PATH  = "Block/icons/editor/add.png";
-		Image img = ImageLoader.getInstance().loadImage(ICON_PATH ,BUTTON_SIZE);
-		if( img !=null) {
-			Icon icon = new ImageIcon(img);
-			btn.setIcon(icon);
-			btn.setMargin(new Insets(0,0,0,0));
-			btn.setOpaque(false);
-			btn.setBorderPainted(false);
-			btn.setBackground(getBackground());
-			btn.setBorder(null);
-			btn.setPreferredSize(BUTTON_SIZE);
-			btn.addActionListener(new ActionListener() {
-				// Determine the correct panel, depending on the property type
-				public void actionPerformed(ActionEvent e){
-				}
-			});
+		try {
+			Image img = ImageLoader.getInstance().loadImage(ICON_PATH ,BUTTON_SIZE);
+			if( img !=null) {
+				Icon icon = new ImageIcon(img);
+				btn.setIcon(icon);
+				btn.setMargin(new Insets(0,0,0,0));
+				btn.setOpaque(false);
+				btn.setBorderPainted(false);
+				btn.setBackground(getBackground());
+				btn.setBorder(null);
+				btn.setPreferredSize(BUTTON_SIZE);
+				btn.addActionListener(new ActionListener() {
+					// Determine the correct panel, depending on the property type
+					public void actionPerformed(ActionEvent e){
+					}
+				});
+			}
+			else {
+				log.warnf("%s.createAddButton icon not found(%s)",TAG,ICON_PATH);
+			}
 		}
-		else {
-			log.warnf("%s.createAddButton icon not found(%s)",TAG,ICON_PATH);
+		catch(Exception ex) {
+			log.warnf("%s.createDeleteButton icon not found(%s) (%s)",TAG,ICON_PATH, ex.getMessage());
 		}
 		return btn;
 	}
@@ -193,24 +196,29 @@ public class ListEditPanel extends BasicEditPanel {
 	private JButton createDeleteButton() {
 		JButton btn = new JButton();
 		final String ICON_PATH  = "Block/icons/editor/delete.png";
-		Image img = ImageLoader.getInstance().loadImage(ICON_PATH ,BUTTON_SIZE);
-		if( img !=null) {
-			Icon icon = new ImageIcon(img);
-			btn.setIcon(icon);
-			btn.setMargin(new Insets(0,0,0,0));
-			btn.setOpaque(false);
-			btn.setBorderPainted(false);
-			btn.setBackground(getBackground());
-			btn.setBorder(null);
-			btn.setPreferredSize(BUTTON_SIZE);
-			btn.addActionListener(new ActionListener() {
-				// Determine the correct panel, depending on the property type
-				public void actionPerformed(ActionEvent e){
-				}
-			});
+		try {
+			Image img = ImageLoader.getInstance().loadImage(ICON_PATH ,BUTTON_SIZE);
+			if( img !=null) {
+				Icon icon = new ImageIcon(img);
+				btn.setIcon(icon);
+				btn.setMargin(new Insets(0,0,0,0));
+				btn.setOpaque(false);
+				btn.setBorderPainted(false);
+				btn.setBackground(getBackground());
+				btn.setBorder(null);
+				btn.setPreferredSize(BUTTON_SIZE);
+				btn.addActionListener(new ActionListener() {
+					// Determine the correct panel, depending on the property type
+					public void actionPerformed(ActionEvent e){
+					}
+				});
+			}
+			else {
+				log.warnf("%s.createDeleteButton icon not found(%s)",TAG,ICON_PATH);
+			}
 		}
-		else {
-			log.warnf("%s.createDeleteButton icon not found(%s)",TAG,ICON_PATH);
+		catch(Exception ex) {
+			log.warnf("%s.createDeleteButton icon not found(%s) (%s)",TAG,ICON_PATH, ex.getMessage());
 		}
 		return btn;
 	}

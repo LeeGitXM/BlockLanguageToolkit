@@ -35,25 +35,15 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  *    result = bad.getModel();
  */
 
-public class ApplicationConfigurationDialog extends JDialog { 
+public class ApplicationConfigurationDialog extends ConfigurationDialog { 
 	private final static String TAG = "ApplicationConfigurationDialog";
-	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
 	private static final long serialVersionUID = 2882399376824334427L;
-	private final int DIALOG_HEIGHT = 300;
-	private final int DIALOG_WIDTH = 400;
-	public static final Dimension ENTRY_BOX_SIZE  = new Dimension(160,24);
-	private final LoggerEx log;
 	private final SerializableApplication application;
-	private JTextField nameField;
 	
 	
 	public ApplicationConfigurationDialog(SerializableApplication app) {
 		super();
 		this.application = app;
-		setModal(true);
-		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
-        setSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));
-        this.log = LogUtil.getLogger(getClass().getPackage().getName());
         initialize();
 	}
 	
@@ -64,14 +54,10 @@ public class ApplicationConfigurationDialog extends JDialog {
 	 * Create the content pane and initialize layout.
 	 */
 	private void initialize() {
-		final String columnConstraints = "[para]0[]0[]0[]0[]";
-		final String layoutConstraints = "filly,ins 10";
-		final String rowConstraints = "";
-		setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
 		
-		JPanel namePanel = new JPanel();
-		namePanel.add(createLabel("Name"),"skip");
-		nameField = createTextField("");
+		JPanel namePanel = new JPanel(new MigLayout("fillx","[para]0[]0[]",""));
+		namePanel.add(createLabel(PREFIX+".Application.Name"),"skip");
+		nameField = createTextField(PREFIX+".Application.Name","");
 		namePanel.add(nameField,"span 2,growx,wrap");
 		add(namePanel,"");
 
@@ -102,19 +88,4 @@ public class ApplicationConfigurationDialog extends JDialog {
 	 */
 	public SerializableApplication getApplication() { return application; }
 	
-	/**
-	 * Create a new label. The text is the bundle key.
-	 */
-	private JLabel createLabel(String text) {
-		return new JLabel(text);
-	}
-	/**
-	 * Create a text field for editing the name
-	 */
-	private JTextField createTextField(String text) {	
-		final JTextField field = new JTextField(text);
-		field.setPreferredSize(ENTRY_BOX_SIZE);
-		field.setEditable(true);
-		return field;
-	}
 }
