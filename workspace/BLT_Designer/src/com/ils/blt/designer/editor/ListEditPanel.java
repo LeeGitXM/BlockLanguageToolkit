@@ -8,7 +8,6 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,9 +42,6 @@ public class ListEditPanel extends BasicEditPanel {
 	// A panel is designed to edit properties that are lists of strings.
 	private final static String TAG = "EnumEditPanel";
 	private static final long serialVersionUID = 1L;
-	private static final String columnConstraints = "[para]0[]";
-	private static final String layoutConstraints = "ins 2";
-	private static final String rowConstraints = "";
 	private BlockProperty property = null;
 	private final JLabel headingLabel;
 
@@ -56,11 +52,11 @@ public class ListEditPanel extends BasicEditPanel {
 		super(editor);
 		model = new ArrayList<>();
 		model.add("");   // Put at least one line in the model
-		setLayout(new MigLayout("top,flowy,ins 2","para[]",""));
+		setLayout(new MigLayout("top,flowy,ins 2","",""));
 		headingLabel = addHeading(this);
-		//Create two panels - value edit display option.
+		//Create the edit panel - it has two panes
 		JPanel editPanel = new JPanel();
-		editPanel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
+		editPanel.setLayout(new MigLayout("ins 2","",""));
 		addSeparator(editPanel,"List");
 		editPanel.add(createDelimiterPanel(delimiter),"wrap");
 		editPanel.add(createListTablePanel(model),"wrap");
@@ -115,33 +111,23 @@ public class ListEditPanel extends BasicEditPanel {
 	 * Create a panel for entry/display of the delimiter
 	 */
 	protected JPanel createDelimiterPanel(String delim) {
-		String columnConstraints = "[para]0[][20]";
-		String layoutConstraints = "ins 2";
-		String rowConstraints = "";
 		final JPanel panel = new JPanel();
-		panel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));     // 2 cells across
-		panel.add(createLabel("Delimiter"),"skip");
+		panel.setLayout(new MigLayout("ins 2, fillx","[]10[20]",""));     // 2 cells across
+		panel.add(createLabel("Delimiter"),"");
 		panel.add(createTextField(delim),"wrap");
 		return panel;
 	}
 	
 	/**
 	 * A list add panel is a panel appending a string element in the list. It contains:-
-	 *        valueBox       - text box with the current value (editable)
-	 *        add button     - to append this entry 
+	 *        Scroll pane with the table, two buttons at the bottom.
 	 */
 	private JPanel createListTablePanel(List<String> model)  {
-		String columnConstraints = "para[200]2[25]2[25]";
-		String layoutConstraints = "fillx,ins 2";
-		String rowConstraints = "[]";
-		JPanel tablePanel = new JPanel();
+		JPanel outerPanel = new JPanel();
 		JTable table = new JTable();
-		tablePanel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
-		tablePanel.add(table,"");
-		tablePanel.add(createAddButton(),"w :25:,aligny top");
-		tablePanel.add(createDeleteButton(),"w :25:,aligny top,wrap");
-		
-		String[] columnNames = { "Value" };
+		//outerPanel.setLayout(new MigLayout("ins 2,filly","para[:240:]","[80]10[40]"));		
+		outerPanel.setLayout(new MigLayout("ins 2,filly","para[:240:]",""));
+		String[] columnNames = { "Values" };
 		DefaultTableModel dataModel = new DefaultTableModel(columnNames,1);  // One row
 		for( String val:model) {
 			String[] row = new String[1];
@@ -153,8 +139,13 @@ public class ListEditPanel extends BasicEditPanel {
         ListSelectionModel lsm = table.getSelectionModel();
         lsm.addListSelectionListener(new SharedListSelectionHandler());
         JScrollPane tablePane = new JScrollPane(table);
-        tablePanel.add(tablePane, "");
-		return tablePanel;
+        table.setFillsViewportHeight(true);
+        outerPanel.add(tablePane, "wrap");
+        JPanel buttonPanel = new JPanel(new MigLayout("ins 2,fillx","20[:25:]10[:25:]","[:50:]"));
+        buttonPanel.add(createAddButton(),"");
+        buttonPanel.add(createDeleteButton(),"");
+        outerPanel.add(buttonPanel,"wrap");
+		return outerPanel;
 	}
 	
 	/**

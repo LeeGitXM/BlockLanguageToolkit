@@ -8,25 +8,13 @@ package com.ils.blt.designer.navtree;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 
 import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.WindowConstants;
-import javax.swing.filechooser.FileNameExtensionFilter;
 
 import net.miginfocom.swing.MigLayout;
 
-import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.SerializableApplication;
-import com.inductiveautomation.ignition.common.BundleUtil;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 /**
  * Display a dialog to export a diagram.
  *    ExportDialog ed = new ExportDialog("Attribute Editor");
@@ -38,12 +26,16 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 public class ApplicationConfigurationDialog extends ConfigurationDialog { 
 	private final static String TAG = "ApplicationConfigurationDialog";
 	private static final long serialVersionUID = 2882399376824334427L;
+	private final int DIALOG_HEIGHT = 400;
+	private final int DIALOG_WIDTH = 800;
 	private final SerializableApplication application;
 	
 	
 	public ApplicationConfigurationDialog(SerializableApplication app) {
 		super();
 		this.application = app;
+		this.setTitle(PREFIX+".Application.Title");
+		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));
         initialize();
 	}
 	
@@ -55,15 +47,21 @@ public class ApplicationConfigurationDialog extends ConfigurationDialog {
 	 */
 	private void initialize() {
 		
-		JPanel namePanel = new JPanel(new MigLayout("fillx","[para]0[]0[]",""));
-		namePanel.add(createLabel(PREFIX+".Application.Name"),"skip");
+		JPanel namePanel = new JPanel(new MigLayout("fillx","para[:80:]0[]",""));
+		namePanel.add(createLabel(PREFIX+".Application.Name"),"");
 		nameField = createTextField(PREFIX+".Application.Name","");
-		namePanel.add(nameField,"span 2,growx,wrap");
-		add(namePanel,"");
+		namePanel.add(nameField,"");
+		add(namePanel,"wrap");
+		
+		JPanel descriptionPanel = new JPanel(new MigLayout("fillx","para[:80:]0[]","[:100:]"));
+		descriptionPanel.add(createLabel(PREFIX+".Application.Description"),"gaptop 2,aligny top");
+		descriptionArea = createTextArea(PREFIX+".Application.Description","gaptop 2,aligny top");
+		descriptionPanel.add(descriptionArea,"");
+		add(descriptionPanel,"wrap");
 
 		// The OK button copies data from the components and sets the property properties.
 		// It then returns to the main tab
-		JPanel buttonPanel = new JPanel(new MigLayout("", "60[center]5[center]",""));
+		JPanel buttonPanel = new JPanel();
 		add(buttonPanel, "dock south");
 		JButton okButton = new JButton("OK");
 		buttonPanel.add(okButton,"");

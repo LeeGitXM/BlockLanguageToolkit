@@ -29,9 +29,6 @@ public class ValueEditPanel extends BasicEditPanel {
 	// A ValueEdit panel is designed to edit the value of a single property.
 	private final static String TAG = "ValueEditPanel";
 	private static final long serialVersionUID = 1L;
-	private static final String columnConstraints = "[para]0[]0[]0[]0[]";
-	private static final String layoutConstraints = "ins 2";
-	private static final String rowConstraints = "";
 	private final UtilityFunctions fncs;
 	private BlockProperty property = null;
 	private final JLabel headingLabel;
@@ -48,14 +45,14 @@ public class ValueEditPanel extends BasicEditPanel {
 		headingLabel = addHeading(this);
 		//Create two panels - value edit display option.
 		JPanel editPanel = new JPanel();
-		editPanel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
+		editPanel.setLayout(new MigLayout("ins 2","[para]0[]0[]0[]0[]",""));
 		valueLabel = addSeparator(editPanel,"Value");
 		valueField = createTextField("");
 		editPanel.add(valueField,"skip");
 		add(editPanel,"");
 
 		JPanel displayPanel = new JPanel();
-		displayPanel.setLayout(new MigLayout(layoutConstraints,columnConstraints,"[]10[]20"));
+		displayPanel.setLayout(new MigLayout("ins 2","[para]0[]0[]0[]0[]","[]10[]20"));
 		addSeparator(displayPanel,"Attribute Display");
 		annotationCheckBox = new JCheckBox("Display ?");
 		displayPanel.add(annotationCheckBox,"gapafter 15");
@@ -78,10 +75,10 @@ public class ValueEditPanel extends BasicEditPanel {
 				if(property!=null) {
 					// Coerce to the correct data type
 					Object value = valueField.getText();
-					if( property.getType().equals(PropertyType.BOOLEAN ))     value = fncs.coerceToBoolean(value);
-					else if( property.getType().equals(PropertyType.DOUBLE )) value = fncs.coerceToDouble(value);
-					else if( property.getType().equals(PropertyType.TIME ))   value = fncs.coerceToDouble(value);  // secs
-					else if( property.getType().equals(PropertyType.INTEGER ))value = fncs.coerceToInteger(value);
+					if( property.getType().equals(PropertyType.BOOLEAN ))     value = new Boolean(fncs.coerceToBoolean(value));
+					else if( property.getType().equals(PropertyType.DOUBLE )) value = new Double(fncs.coerceToDouble(value));
+					else if( property.getType().equals(PropertyType.TIME ))   value = new Double(fncs.coerceToDouble(value));  // secs
+					else if( property.getType().equals(PropertyType.INTEGER ))value = new Integer(fncs.coerceToInteger(value));
 					property.setValue(value);
 					property.setDisplayed(annotationCheckBox.isSelected());
 					try {
