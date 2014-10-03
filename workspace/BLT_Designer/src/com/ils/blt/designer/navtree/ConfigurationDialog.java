@@ -5,8 +5,10 @@
 package com.ils.blt.designer.navtree;
 
 
+import java.awt.Color;
 import java.awt.Dimension;
 
+import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -33,8 +35,9 @@ public class ConfigurationDialog extends JDialog {
 	protected static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
 	private static final long serialVersionUID = 2882399376824334427L;
 
-	protected static final Dimension DESCRIPTION_BOX_SIZE  = new Dimension(160,80);
-	protected static final Dimension ENTRY_BOX_SIZE  = new Dimension(160,24);
+	protected static final Dimension DESCRIPTION_BOX_SIZE  = new Dimension(240,80);
+	protected static final Dimension NAME_BOX_SIZE  = new Dimension(240,24);
+	protected static final Dimension NUMBER_BOX_SIZE  = new Dimension(80,24);
 	protected final LoggerEx log;
 	protected JTextArea descriptionArea;
 	protected JTextField nameField;
@@ -82,6 +85,7 @@ public class ConfigurationDialog extends JDialog {
 	 */
 	protected JTextArea createTextArea(String bundle,String text) {	
 		final JTextArea area = new JTextArea(text);
+		area.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));     // Thickness
 		area.setPreferredSize(DESCRIPTION_BOX_SIZE);
 		area.setEditable(true);
 		area.setToolTipText(BundleUtil.get().getString(bundle+".Desc"));
@@ -93,7 +97,7 @@ public class ConfigurationDialog extends JDialog {
 	 */
 	protected JTextField createTextField(String bundle,String text) {	
 		final JTextField field = new JTextField(text);
-		field.setPreferredSize(ENTRY_BOX_SIZE);
+		field.setPreferredSize(NAME_BOX_SIZE);
 		field.setEditable(true);
 		field.setToolTipText(BundleUtil.get().getString(bundle+".Desc"));
 		return field;

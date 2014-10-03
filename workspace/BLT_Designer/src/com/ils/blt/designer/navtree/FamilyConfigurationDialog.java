@@ -59,9 +59,10 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 		descriptionPanel.add(descriptionArea,"gaptop 2,aligny top");
 		add(descriptionPanel,"wrap");
 		
-		JPanel priorityStatePanel = new JPanel(new MigLayout("fillx","para[:80:]0[]20[:80:]0[]",""));
+		JPanel priorityStatePanel = new JPanel(new MigLayout("fillx","para[:80:]0[]20[:80:]0[]0[]",""));
 		priorityStatePanel.add(createLabel(PREFIX+".Family.Priority"),"");
 		priorityField = createTextField(PREFIX+".Family.Priority","");
+		priorityField.setPreferredSize(NUMBER_BOX_SIZE);
 		priorityStatePanel.add(priorityField,"");
 		priorityStatePanel.add(createLabel(PREFIX+".Family.State"),"");
 		stateBox = createActiveStateCombo(PREFIX+".Family.State");
@@ -70,7 +71,7 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 
 		// The OK button copies data from the components and sets the property properties.
 		// It then returns to the main tab
-		JPanel buttonPanel = new JPanel(new MigLayout("", "60[center]5[center]",""));
+		JPanel buttonPanel = new JPanel();
 		add(buttonPanel, "dock south");
 		JButton okButton = new JButton("OK");
 		buttonPanel.add(okButton,"");
