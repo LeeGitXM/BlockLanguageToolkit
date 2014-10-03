@@ -10,7 +10,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -26,10 +29,14 @@ import com.ils.blt.common.serializable.SerializableApplication;
 public class ApplicationConfigurationDialog extends ConfigurationDialog { 
 	private final static String TAG = "ApplicationConfigurationDialog";
 	private static final long serialVersionUID = 2882399376824334427L;
-	private final int DIALOG_HEIGHT = 400;
-	private final int DIALOG_WIDTH = 400;
+	private final int DIALOG_HEIGHT = 380;
+	private final int DIALOG_WIDTH = 440;
 	private final SerializableApplication application;
-	
+	private JTextField consoleField;
+	private JCheckBox menuCheckBox;
+	private JComboBox<String> methodBox;
+	private JTextField queueField;
+	private JTextField unitField;
 	
 	public ApplicationConfigurationDialog(SerializableApplication app) {
 		super();
@@ -38,38 +45,58 @@ public class ApplicationConfigurationDialog extends ConfigurationDialog {
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));
         initialize();
 	}
-	
-	/**
-	 * Create the content pane and initialize layout.
-	 */
+
 	/**
 	 * Create the content pane and initialize layout.
 	 */
 	private void initialize() {
 		
-		JPanel namePanel = new JPanel(new MigLayout("fillx","para[:80:]0[]",""));
-		namePanel.add(createLabel(PREFIX+".Application.Name"),"");
-		nameField = createTextField(PREFIX+".Application.Name","");
-		namePanel.add(nameField,"");
-		add(namePanel,"wrap");
+		add(createLabel(PREFIX+".Application.Name"),"");
+		nameField = createTextField(PREFIX+".Application.Name",application.getName());
+		add(nameField,"span,wrap");
 		
-		JPanel descriptionPanel = new JPanel(new MigLayout("fillx","para[:80:]0[]","[:100:]"));
-		descriptionPanel.add(createLabel(PREFIX+".Application.Description"),"gaptop 2,aligny top");
-		descriptionArea = createTextArea(PREFIX+".Application.Description","");
-		descriptionPanel.add(descriptionArea,"gaptop 2,aligny top,span");
-		add(descriptionPanel,"wrap");
+		add(createLabel(PREFIX+".Application.Description"),"gaptop 2,aligny top");
+		descriptionArea = createTextArea(PREFIX+".Application.Description",application.getDescription());
+		add(descriptionArea,"gaptop 2,aligny top,span,wrap");
+		
+		add(createLabel(PREFIX+".Application.Console"),"");
+		consoleField = createTextField(PREFIX+".Application.Console",application.getConsole());
+		add(consoleField,"span,wrap");
+		
+		add(createLabel(PREFIX+".Application.Queue"),"");
+		queueField = createTextField(PREFIX+".Application.Queue",application.getMessageQueue());
+		add(queueField,"span,wrap");
+		
+		add(createLabel(PREFIX+".Application.Unit"),"");
+		unitField = createTextField(PREFIX+".Application.Unit",application.getUnit());
+		add(unitField,"span,wrap");
+		
+		add(createLabel(PREFIX+".Application.Menu"),"");
+		menuCheckBox = createCheckBox(PREFIX+".Application.Menu",application.isIncludeInMenu());
+		add(menuCheckBox,"");
+		add(createLabel(PREFIX+".Application.Ramp"),"gapleft 10");
+		methodBox = createRampMethodCombo(PREFIX+".Application.Ramp",application.getRampMethod());
+		add(methodBox,"wrap");
+		
+		add(createLabel(PREFIX+".Application.Priority"),"");
+		// Highest priority is read-only
+		JTextField priorityField = createTextField(PREFIX+".Application.Priority",String.valueOf(application.getHighestPriorityProblem()));
+		priorityField.setPreferredSize(NUMBER_BOX_SIZE);
+		priorityField.setEnabled(false);
+		add(priorityField,"");
+		add(createLabel(PREFIX+".Application.State"),"gapleft 10");
+		stateBox = createActiveStateCombo(PREFIX+".Application.State",application.getState());
+		add(stateBox,"wrap");
 
 		// The OK button copies data from the components and sets the property properties.
 		// It then returns to the main tab
 		JPanel buttonPanel = new JPanel();
-		add(buttonPanel, "dock south");
+		add(buttonPanel, "dock south,gaptop 15");
 		JButton okButton = new JButton("OK");
 		buttonPanel.add(okButton,"");
 		okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if(application!=null) {
-					// Set attributes from fields
-				}
+				// Set attributes from fields
 				dispose();
 			}
 		});
@@ -77,6 +104,7 @@ public class ApplicationConfigurationDialog extends ConfigurationDialog {
 		buttonPanel.add(cancelButton,"");
 		cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				cancelled = true;
 				dispose();
 			}			
 		});

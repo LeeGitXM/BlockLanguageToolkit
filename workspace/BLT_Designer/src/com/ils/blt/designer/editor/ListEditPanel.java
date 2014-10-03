@@ -44,6 +44,8 @@ public class ListEditPanel extends BasicEditPanel {
 	private static final long serialVersionUID = 1L;
 	private BlockProperty property = null;
 	private final JLabel headingLabel;
+	private JButton addButton;      // Click to add a row
+	private JButton deleteButton;   // Click to delete a row
 
 	private String delimiter = ",";
 	private List<String> model;
@@ -93,8 +95,7 @@ public class ListEditPanel extends BasicEditPanel {
 		model = BlockProperty.disassembleList(prop.getValue().toString());
 		log.infof("%s.updateForProperty: %s (%s)",TAG,prop.getName(),prop.getValue().toString());
 		this.property = prop;
-		headingLabel.setText(prop.getName());
-		 
+		headingLabel.setText(prop.getName());	 
 	}
 
 	/**
@@ -135,22 +136,24 @@ public class ListEditPanel extends BasicEditPanel {
 		}
         table = new JTable(dataModel);
         table.setPreferredSize(TABLE_SIZE);
-        ListSelectionModel lsm = table.getSelectionModel();
-        lsm.addListSelectionListener(new SharedListSelectionHandler());
         JScrollPane tablePane = new JScrollPane(table);
         table.setFillsViewportHeight(true);
         outerPanel.add(tablePane, "wrap");
         JPanel buttonPanel = new JPanel(new MigLayout("ins 2,fillx","[:25:]2[:25:]","[:30:]"));
-        buttonPanel.add(createAddButton(),"");
-        buttonPanel.add(createDeleteButton(),"");
+        addButton = createAddButton(table);
+        buttonPanel.add(addButton,"");
+        deleteButton = createDeleteButton(table);
+        buttonPanel.add(deleteButton,"");
         outerPanel.add(buttonPanel,"wrap");
+        ListSelectionModel lsm = table.getSelectionModel();
+        lsm.addListSelectionListener(new SelectionHandler(table,addButton,deleteButton));
 		return outerPanel;
 	}
 	
 	/**
 	 * Create a button that deletes the nth entry
 	 */
-	private JButton createAddButton() {
+	private JButton createAddButton(JTable table) {
 		JButton btn = new JButton();
 		final String ICON_PATH  = "Block/icons/editor/add.png";
 		try {
@@ -165,7 +168,6 @@ public class ListEditPanel extends BasicEditPanel {
 				btn.setBorder(null);
 				btn.setPreferredSize(BUTTON_SIZE);
 				btn.addActionListener(new ActionListener() {
-					// Determine the correct panel, depending on the property type
 					public void actionPerformed(ActionEvent e){
 					}
 				});
@@ -183,7 +185,7 @@ public class ListEditPanel extends BasicEditPanel {
 	/**
 	 * Create a button that deletes the nth entry
 	 */
-	private JButton createDeleteButton() {
+	private JButton createDeleteButton(JTable table) {
 		JButton btn = new JButton();
 		final String ICON_PATH  = "Block/icons/editor/delete.png";
 		try {
@@ -198,7 +200,6 @@ public class ListEditPanel extends BasicEditPanel {
 				btn.setBorder(null);
 				btn.setPreferredSize(BUTTON_SIZE);
 				btn.addActionListener(new ActionListener() {
-					// Determine the correct panel, depending on the property type
 					public void actionPerformed(ActionEvent e){
 					}
 				});
@@ -218,14 +219,26 @@ public class ListEditPanel extends BasicEditPanel {
 	 * We allow only one row to be selected at a time. Enable/disable
 	 * the add/delete buttons.
 	 */
-	private class SharedListSelectionHandler implements ListSelectionListener {
-        public void valueChanged(ListSelectionEvent e) {
-            ListSelectionModel lsm = (ListSelectionModel)e.getSource();
- 
-            int firstIndex = e.getFirstIndex();
-            int lastIndex = e.getLastIndex();
-            boolean isAdjusting = e.getValueIsAdjusting();
-        }
-    }
+	private class SelectionHandler implements ListSelectionListener {
+		private final JTable table;
+		private final JButton addBtn;
+		private final JButton delBtn;
+
+		SelectionHandler(JTable tbl,JButton rowAdder,JButton rowDeleter ) {
+			this.table = tbl;
+			this.addBtn = rowAdder;
+			this.delBtn = rowDeleter;
+		}
+		
+		public void valueChanged(ListSelectionEvent e) {
+			if (e.getSource() == table.getSelectionModel()) {
+				int first = e.getFirstIndex();
+				int last = e.getLastIndex();
+			} 
+			if (e.getValueIsAdjusting()) {
+				System.out.println("The mouse button has not yet been released");
+			}
+		}
+	}
 }
 	

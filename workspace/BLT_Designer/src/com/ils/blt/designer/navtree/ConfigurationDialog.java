@@ -9,6 +9,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 
 import javax.swing.BorderFactory;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -20,6 +21,7 @@ import net.miginfocom.swing.MigLayout;
 
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.ActiveState;
+import com.ils.blt.common.block.RampMethod;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -35,13 +37,15 @@ public class ConfigurationDialog extends JDialog {
 	protected static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
 	private static final long serialVersionUID = 2882399376824334427L;
 
-	protected static final Dimension DESCRIPTION_BOX_SIZE  = new Dimension(240,80);
-	protected static final Dimension NAME_BOX_SIZE  = new Dimension(240,24);
-	protected static final Dimension NUMBER_BOX_SIZE  = new Dimension(80,24);
+	protected static final Dimension COMBO_SIZE  = new Dimension(120,24);
+	protected static final Dimension DESCRIPTION_BOX_SIZE  = new Dimension(280,80);
+	protected static final Dimension NAME_BOX_SIZE  = new Dimension(280,24);
+	protected static final Dimension NUMBER_BOX_SIZE  = new Dimension(50,24);
 	protected final LoggerEx log;
 	protected JTextArea descriptionArea;
 	protected JTextField nameField;
-	
+	protected boolean cancelled = false;
+	protected JComboBox<String> stateBox;
 	
 	public ConfigurationDialog() {
 		super();
@@ -51,26 +55,39 @@ public class ConfigurationDialog extends JDialog {
         initialize();
 	}
 	
+
 	/**
-	 * Create the content pane and initialize layout that is common to both.
-	 * This is a single wide column
+	 * Create the content pane as a grid 4 columns wide:
+	 *     label | value | label | value
+	 *     label | value -- span 3
 	 */
 	private void initialize() {
-		final String columnConstraints = "para[350]";
-		final String layoutConstraints = "filly,ins 2";
-		final String rowConstraints = "[24]0[]0[]0[]0";
+		final String columnConstraints = "para[][][][]";
+		final String layoutConstraints = "ins 10,gapy 5,gapx 5,fillx";
+		final String rowConstraints = "para[][][][][][][][][]";
 		setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
-
 	}
 	/**
 	 * Create a combo box for "active" state
 	 */
-	protected JComboBox<String> createActiveStateCombo(String bundle) {
+	protected JComboBox<String> createActiveStateCombo(String bundle,ActiveState state) {
 		JComboBox<String> box = new JComboBox<String>();
-		for(ActiveState state : ActiveState.values()) {
-			box.addItem(state.name());
+		for(ActiveState as : ActiveState.values()) {
+			box.addItem(as.name());
 		}
 		box.setToolTipText(BundleUtil.get().getString(bundle+".Desc"));
+		box.setSelectedItem(state.name());
+		box.setPreferredSize(COMBO_SIZE);
+		return box;
+	}
+	/**
+	 * Create a new checkbox. The text is the bundle key for the tooltip.
+	 */
+	protected JCheckBox createCheckBox(String bundle,boolean initialValue) {
+		JCheckBox box = new JCheckBox();
+		box.setToolTipText(BundleUtil.get().getString(bundle+".Desc")+": ");
+		box.setSelected(initialValue);
+		box.setText("");     // Don't use the standard label, it's on the wrong side.
 		return box;
 	}
 	/**
@@ -79,6 +96,19 @@ public class ConfigurationDialog extends JDialog {
 	protected JLabel createLabel(String bundle) {
 		JLabel label = new JLabel(BundleUtil.get().getString(bundle+".Name")+": ");
 		return label;
+	}
+	/**
+	 * Create a combo box for ramp method
+	 */
+	protected JComboBox<String> createRampMethodCombo(String bundle,RampMethod method) {
+		JComboBox<String> box = new JComboBox<String>();
+		for(RampMethod as : RampMethod.values()) {
+			box.addItem(as.name());
+		}
+		box.setToolTipText(BundleUtil.get().getString(bundle+".Desc"));
+		box.setSelectedItem(method.name());
+		box.setPreferredSize(COMBO_SIZE);
+		return box;
 	}
 	/*
 	 * Create a text area for editing the description
@@ -91,7 +121,6 @@ public class ConfigurationDialog extends JDialog {
 		area.setToolTipText(BundleUtil.get().getString(bundle+".Desc"));
 		return area;
 	}
-	 /*
 	/**
 	 * Create a text field for editing the name
 	 */
@@ -102,4 +131,9 @@ public class ConfigurationDialog extends JDialog {
 		field.setToolTipText(BundleUtil.get().getString(bundle+".Desc"));
 		return field;
 	}
+	
+	/*
+	 * @return true if the user has selected the "Cancel" button.
+	 */
+	public boolean isCancelled() { return cancelled; }
 }

@@ -391,16 +391,17 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 	 * @return
 	 */
 	private SerializableApplication deserializeApplication(ProjectResource res) {
-		SerializableApplication result = null;
+		SerializableApplication sa = null;
 		try{
 			byte[] bytes = res.getData();
 			ObjectMapper mapper = new ObjectMapper();
-			result = mapper.readValue(new String(bytes), SerializableApplication.class);
+			sa = mapper.readValue(new String(bytes), SerializableApplication.class);
+			sa.setName(res.getName());   // Sync the SerializableApplication name w/ res
 		}
 		catch(Exception ex) {
 			logger.warnf("%s.deserializeApplication: Deserialization exception (%s)",ex.getMessage());
 		}
-		return result;
+		return sa;
 	}
 	/**
 	 * Convert the resource data into a SerializableFamily
@@ -408,16 +409,17 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 	 * @return
 	 */
 	private SerializableFamily deserializeFamily(ProjectResource res) {
-		SerializableFamily result = null;
+		SerializableFamily sf = null;
 		try{
 			byte[] bytes = res.getData();
 			ObjectMapper mapper = new ObjectMapper();
-			result = mapper.readValue(new String(bytes), SerializableFamily.class);
+			sf = mapper.readValue(new String(bytes), SerializableFamily.class);
+			sf.setName(res.getName());  // ???
 		}
 		catch(Exception ex) {
 			logger.warnf("%s.deserializeFamily: Deserialization exception (%s)",ex.getMessage());
 		}
-		return result;
+		return sf;
 	}
 	/**
 	 *  Serialize a diagram into JSON. 
@@ -534,14 +536,23 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
     					// Unmarshall the resource
     					SerializableApplication sa = deserializeApplication(res);
     					if( sa!=null ) {
-    					ApplicationConfigurationDialog dialog = new ApplicationConfigurationDialog(sa);
-    					dialog.pack();
-    					dialog.setVisible(true);   // Returns when dialog is closed
-    					sa = dialog.getApplication();
+    						ApplicationConfigurationDialog dialog = new ApplicationConfigurationDialog(sa);
+    						dialog.pack();
+    						dialog.setVisible(true);   // Returns when dialog is closed
+    						if( !dialog.isCancelled() ) {
+    							sa = dialog.getApplication();
+    							String json = serializeApplication(sa);
+    							res.setName(sa.getName());
+    							res.setData(json.getBytes());
+    							context.updateResource(res);
+    							statusManager.setResourceDirty(resourceId, true);		
+    						}
     					}
     					else {
-							ErrorUtil.showWarning(String.format("ApplicationConfigurationAction: Failed to deserialize resource"),POPUP_TITLE);
-						}
+    						ErrorUtil.showWarning(String.format("ApplicationConfigurationAction: Failed to deserialize resource"),POPUP_TITLE);
+    					}
+
+
     				}
     			});
     		} 
@@ -851,12 +862,20 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
     			EventQueue.invokeLater(new Runnable() {
     				public void run() {
     					// Unmarshall the resource
+    					logger.infof("%s.actionPerformed: deserializing ...%d",TAG,resourceId);
     					SerializableFamily sf = deserializeFamily(res);
     					if( sf!=null ) {
     						FamilyConfigurationDialog dialog = new FamilyConfigurationDialog(sf);
     						dialog.pack();
     						dialog.setVisible(true);   // Returns when dialog is closed
-    						sf = dialog.getFamily();
+    						if( !dialog.isCancelled()) {
+    							sf = dialog.getFamily();
+    							String json = serializeFamily(sf);
+    							res.setName(sf.getName());
+    							res.setData(json.getBytes());
+    							context.updateResource(res);
+    							statusManager.setResourceDirty(resourceId, true);
+    						}
     					}
     					else {
     						ErrorUtil.showWarning(String.format("FamilyConfigurationAction: Failed to deserialize resource"),POPUP_TITLE);

@@ -16,6 +16,7 @@ import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
 
+import com.ils.blt.common.block.ActiveState;
 import com.ils.blt.common.serializable.SerializableFamily;
 /**
  * Display a dialog to export a diagram.
@@ -28,11 +29,11 @@ import com.ils.blt.common.serializable.SerializableFamily;
 public class FamilyConfigurationDialog extends ConfigurationDialog  { 
 	private final static String TAG = "FamilyConfigurationDialog";
 	private static final long serialVersionUID = 2882399376824334427L;
-	private final int DIALOG_HEIGHT = 300;
+	private final int DIALOG_HEIGHT = 240;
 	private final int DIALOG_WIDTH = 400;
 	private final SerializableFamily family;
 	protected JTextField priorityField;
-	protected JComboBox<String> stateBox;
+
 	
 	
 	public FamilyConfigurationDialog(SerializableFamily fam) {
@@ -47,27 +48,22 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 	 * Create the content pane and initialize layout.
 	 */
 	private void initialize() {
-		JPanel namePanel = new JPanel(new MigLayout("fillx","para[:80:]0[]0[]",""));
-		namePanel.add(createLabel(PREFIX+".Family.Name"),"");
-		nameField = createTextField(PREFIX+".Family.Name","");
-		namePanel.add(nameField,"");
-		add(namePanel,"wrap");
+		add(createLabel(PREFIX+".Family.Name"),"");
+		nameField = createTextField(PREFIX+".Family.Name",family.getName());
+		add(nameField,"span,wrap");
+	
+		add(createLabel(PREFIX+".Family.Description"),"gaptop 2,aligny top");
+		descriptionArea = createTextArea(PREFIX+".Family.Description",family.getDescription());
+		add(descriptionArea,"gaptop 2,aligny top,span,wrap");
 		
-		JPanel descriptionPanel = new JPanel(new MigLayout("fillx","para[:80:]0[]0[]0[]","[:100:]"));
-		descriptionPanel.add(createLabel(PREFIX+".Family.Description"),"gaptop 2,aligny top");
-		descriptionArea = createTextArea(PREFIX+".Family.Description","");
-		descriptionPanel.add(descriptionArea,"gaptop 2,aligny top");
-		add(descriptionPanel,"wrap");
-		
-		JPanel priorityStatePanel = new JPanel(new MigLayout("fillx","para[:80:]0[]20[:80:]0[]0[]",""));
-		priorityStatePanel.add(createLabel(PREFIX+".Family.Priority"),"");
-		priorityField = createTextField(PREFIX+".Family.Priority","");
+		add(createLabel(PREFIX+".Family.Priority"),"");
+		priorityField = createTextField(PREFIX+".Family.Priority",String.valueOf(family.getPriority()));
 		priorityField.setPreferredSize(NUMBER_BOX_SIZE);
-		priorityStatePanel.add(priorityField,"");
-		priorityStatePanel.add(createLabel(PREFIX+".Family.State"),"");
-		stateBox = createActiveStateCombo(PREFIX+".Family.State");
-		priorityStatePanel.add(stateBox,"");
-		add(priorityStatePanel,"wrap");
+		add(priorityField,"");
+		add(createLabel(PREFIX+".Family.State"),"gapleft 20");
+		stateBox = createActiveStateCombo(PREFIX+".Family.State",family.getState());
+		add(stateBox,"wrap");
+
 
 		// The OK button copies data from the components and sets the property properties.
 		// It then returns to the main tab
@@ -76,10 +72,19 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 		JButton okButton = new JButton("OK");
 		buttonPanel.add(okButton,"");
 		okButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if(family!=null) {
-					// Set attributes from fields
+			public void actionPerformed(ActionEvent e) {			
+				// Set attributes from fields
+				family.setName(nameField.getText());
+				family.setDescription(descriptionArea.getText());
+				try {
+					int pri = Integer.parseInt(priorityField.getText());
+					family.setPriority(pri);
 				}
+				catch (NumberFormatException nfe) {
+					log.warnf("%s.initialize: Priority (%s) must be an integer (%s)",TAG,priorityField.getText(),nfe.getMessage()); 
+				}
+				String activeState = (String)stateBox.getSelectedItem();
+				family.setState(ActiveState.valueOf(activeState));
 				dispose();
 			}
 		});
@@ -87,12 +92,14 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 		buttonPanel.add(cancelButton,"");
 		cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				cancelled = true;
 				dispose();
 			}			
 		});
 	}
 	/**
-	 * @return the family that we are editing
+	 * @return the family that we are editing. If the operation was
+	 *         a "cancel", return null.
 	 */
 	public SerializableFamily getFamily() { return family; }
 
