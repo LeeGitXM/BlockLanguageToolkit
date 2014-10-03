@@ -55,7 +55,7 @@ public class ValueEditPanel extends BasicEditPanel {
 		displayPanel.setLayout(new MigLayout("ins 2","[para]0[]0[]0[]0[]","[]10[]20"));
 		addSeparator(displayPanel,"Attribute Display");
 		annotationCheckBox = new JCheckBox("Display ?");
-		displayPanel.add(annotationCheckBox,"gapafter 15");
+		displayPanel.add(annotationCheckBox,"skip,gapafter 15");
 		displayPanel.add(createLabel("X offset"),"");
 		xfield = createOffsetTextField("0");
 		displayPanel.add(xfield,"");

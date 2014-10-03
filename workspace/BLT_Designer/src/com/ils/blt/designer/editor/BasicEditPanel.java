@@ -29,7 +29,7 @@ public class BasicEditPanel extends JPanel {
 	public static final Dimension COMBO_BOX_SIZE  = new Dimension(120,24);
 	public static final Dimension ENTRY_BOX_SIZE  = new Dimension(160,24);
 	public static final Dimension OFFSET_BOX_SIZE  = new Dimension(40,24);
-	public static final Dimension TABLE_SIZE       = new Dimension(150,120);
+	public static final Dimension TABLE_SIZE       = new Dimension(300,120);
 	protected final BlockPropertyEditor parent;
 	
 	

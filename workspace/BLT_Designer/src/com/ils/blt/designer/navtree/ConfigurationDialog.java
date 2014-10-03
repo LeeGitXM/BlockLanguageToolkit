@@ -53,7 +53,7 @@ public class ConfigurationDialog extends JDialog {
 	 * This is a single wide column
 	 */
 	private void initialize() {
-		final String columnConstraints = "para[:240:]";
+		final String columnConstraints = "para[350]";
 		final String layoutConstraints = "filly,ins 2";
 		final String rowConstraints = "[24]0[]0[]0[]0";
 		setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));

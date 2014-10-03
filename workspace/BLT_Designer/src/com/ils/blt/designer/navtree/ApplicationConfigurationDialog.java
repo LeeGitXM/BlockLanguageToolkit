@@ -27,7 +27,7 @@ public class ApplicationConfigurationDialog extends ConfigurationDialog {
 	private final static String TAG = "ApplicationConfigurationDialog";
 	private static final long serialVersionUID = 2882399376824334427L;
 	private final int DIALOG_HEIGHT = 400;
-	private final int DIALOG_WIDTH = 800;
+	private final int DIALOG_WIDTH = 400;
 	private final SerializableApplication application;
 	
 	
@@ -55,8 +55,8 @@ public class ApplicationConfigurationDialog extends ConfigurationDialog {
 		
 		JPanel descriptionPanel = new JPanel(new MigLayout("fillx","para[:80:]0[]","[:100:]"));
 		descriptionPanel.add(createLabel(PREFIX+".Application.Description"),"gaptop 2,aligny top");
-		descriptionArea = createTextArea(PREFIX+".Application.Description","gaptop 2,aligny top");
-		descriptionPanel.add(descriptionArea,"");
+		descriptionArea = createTextArea(PREFIX+".Application.Description","");
+		descriptionPanel.add(descriptionArea,"gaptop 2,aligny top,span");
 		add(descriptionPanel,"wrap");
 
 		// The OK button copies data from the components and sets the property properties.

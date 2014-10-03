@@ -29,7 +29,7 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 	private final static String TAG = "FamilyConfigurationDialog";
 	private static final long serialVersionUID = 2882399376824334427L;
 	private final int DIALOG_HEIGHT = 300;
-	private final int DIALOG_WIDTH = 600;
+	private final int DIALOG_WIDTH = 400;
 	private final SerializableFamily family;
 	protected JTextField priorityField;
 	protected JComboBox<String> stateBox;
@@ -47,13 +47,13 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 	 * Create the content pane and initialize layout.
 	 */
 	private void initialize() {
-		JPanel namePanel = new JPanel(new MigLayout("fillx","para[:80:]0[]",""));
+		JPanel namePanel = new JPanel(new MigLayout("fillx","para[:80:]0[]0[]",""));
 		namePanel.add(createLabel(PREFIX+".Family.Name"),"");
 		nameField = createTextField(PREFIX+".Family.Name","");
 		namePanel.add(nameField,"");
 		add(namePanel,"wrap");
 		
-		JPanel descriptionPanel = new JPanel(new MigLayout("fillx","para[:80:]0[]","[:100:]"));
+		JPanel descriptionPanel = new JPanel(new MigLayout("fillx","para[:80:]0[]0[]0[]","[:100:]"));
 		descriptionPanel.add(createLabel(PREFIX+".Family.Description"),"gaptop 2,aligny top");
 		descriptionArea = createTextArea(PREFIX+".Family.Description","");
 		descriptionPanel.add(descriptionArea,"gaptop 2,aligny top");

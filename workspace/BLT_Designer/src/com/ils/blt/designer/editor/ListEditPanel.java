@@ -124,9 +124,8 @@ public class ListEditPanel extends BasicEditPanel {
 	 */
 	private JPanel createListTablePanel(List<String> model)  {
 		JPanel outerPanel = new JPanel();
-		JTable table = new JTable();
-		//outerPanel.setLayout(new MigLayout("ins 2,filly","para[:240:]","[80]10[40]"));		
-		outerPanel.setLayout(new MigLayout("ins 2,filly","para[:240:]",""));
+		JTable table = new JTable();		
+		outerPanel.setLayout(new MigLayout("ins 2,filly","para[:300:]","[120]5[]"));
 		String[] columnNames = { "Values" };
 		DefaultTableModel dataModel = new DefaultTableModel(columnNames,1);  // One row
 		for( String val:model) {
@@ -141,7 +140,7 @@ public class ListEditPanel extends BasicEditPanel {
         JScrollPane tablePane = new JScrollPane(table);
         table.setFillsViewportHeight(true);
         outerPanel.add(tablePane, "wrap");
-        JPanel buttonPanel = new JPanel(new MigLayout("ins 2,fillx","20[:25:]10[:25:]","[:50:]"));
+        JPanel buttonPanel = new JPanel(new MigLayout("ins 2,fillx","[:25:]2[:25:]","[:30:]"));
         buttonPanel.add(createAddButton(),"");
         buttonPanel.add(createDeleteButton(),"");
         outerPanel.add(buttonPanel,"wrap");
