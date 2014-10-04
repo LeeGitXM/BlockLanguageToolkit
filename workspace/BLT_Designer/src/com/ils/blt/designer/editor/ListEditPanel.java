@@ -40,28 +40,27 @@ import com.inductiveautomation.ignition.client.images.ImageLoader;
 
 public class ListEditPanel extends BasicEditPanel {
 	// A panel is designed to edit properties that are lists of strings.
-	private final static String TAG = "EnumEditPanel";
+	private final static String TAG = "ListEditPanel";
 	private static final long serialVersionUID = 1L;
+	private static final String DEFAULT_DELIMITER = ",";
 	private BlockProperty property = null;
 	private final JLabel headingLabel;
 	private JButton addButton;      // Click to add a row
 	private JButton deleteButton;   // Click to delete a row
 
-	private String delimiter = ",";
-	private List<String> model;
+	private JTextField delimiterField;
+	private JTable table;
 
 	public ListEditPanel(final BlockPropertyEditor editor) {
 		super(editor);
-		model = new ArrayList<>();
-		model.add("");   // Put at least one line in the model
 		setLayout(new MigLayout("top,flowy,ins 2","",""));
 		headingLabel = addHeading(this);
 		//Create the edit panel - it has two panes
 		JPanel editPanel = new JPanel();
 		editPanel.setLayout(new MigLayout("ins 2","",""));
 		addSeparator(editPanel,"List");
-		editPanel.add(createDelimiterPanel(delimiter),"wrap");
-		editPanel.add(createListTablePanel(model),"wrap");
+		editPanel.add(createDelimiterPanel(DEFAULT_DELIMITER),"wrap");
+		editPanel.add(createTablePanel(),"wrap");
 		add(editPanel,"");
 
 		// The OK button copies data from the components and sets the property properties.
@@ -74,6 +73,17 @@ public class ListEditPanel extends BasicEditPanel {
 			public void actionPerformed(ActionEvent e) {
 				if(property!=null) {
 					// Coerce to the correct data type
+					String delimiter = delimiterField.getText();
+					if( delimiter.length()<1 ) delimiter = DEFAULT_DELIMITER;
+					if( delimiter.length()>1 ) delimiter = delimiter.substring(0, 1);
+					DefaultTableModel dtm = (DefaultTableModel)table.getModel();
+					List<String> model = new ArrayList<>();
+					int rows = dtm.getRowCount();
+					int row = 0;
+					while( row<rows ) {
+						model.add((String) dtm.getValueAt(row, 0));
+						row++;
+					}
 					String list = BlockProperty.assembleList(model,delimiter);
 					property.setValue(list);
 				}
@@ -92,8 +102,20 @@ public class ListEditPanel extends BasicEditPanel {
 	}
 
 	public void updateForProperty(BlockProperty prop) {
-		model = BlockProperty.disassembleList(prop.getValue().toString());
-		log.infof("%s.updateForProperty: %s (%s)",TAG,prop.getName(),prop.getValue().toString());
+		String val = prop.getValue().toString();
+		if( val.length()<2) return;
+		log.infof("%s.updateForProperty: %s (%s)",TAG,prop.getName(),val);
+		// Delimiter is the first character 
+		String delimiter = val.substring(0, 1);
+		delimiterField.setText(delimiter);
+		List<String> model = BlockProperty.disassembleList(val);
+		DefaultTableModel dtm = (DefaultTableModel)table.getModel();
+		dtm.setRowCount(0);
+		for( String entry:model) {
+			String[] row = new String[1];
+			row[0] = entry;
+			dtm.addRow(row) ;
+		}
 		this.property = prop;
 		headingLabel.setText(prop.getName());	 
 	}
@@ -115,7 +137,8 @@ public class ListEditPanel extends BasicEditPanel {
 		final JPanel panel = new JPanel();
 		panel.setLayout(new MigLayout("ins 2, fillx","[]10[20]",""));     // 2 cells across
 		panel.add(createLabel("Delimiter"),"");
-		panel.add(createTextField(delim),"wrap");
+		delimiterField = createTextField(delim);
+		panel.add(delimiterField,"wrap");
 		return panel;
 	}
 	
@@ -123,19 +146,16 @@ public class ListEditPanel extends BasicEditPanel {
 	 * A list add panel is a panel appending a string element in the list. It contains:-
 	 *        Scroll pane with the table, two buttons at the bottom.
 	 */
-	private JPanel createListTablePanel(List<String> model)  {
+	private JPanel createTablePanel()  {
 		JPanel outerPanel = new JPanel();
-		JTable table = new JTable();		
+		table = new JTable();		
 		outerPanel.setLayout(new MigLayout("ins 2,filly","para[:300:]","[120]5[]"));
 		String[] columnNames = { "Values" };
-		DefaultTableModel dataModel = new DefaultTableModel(columnNames,1);  // One row
-		for( String val:model) {
-			String[] row = new String[1];
-			row[0] = val;
-			dataModel.addRow(row) ;
-		}
+		DefaultTableModel dataModel = new DefaultTableModel(columnNames,0);  // No null rows
         table = new JTable(dataModel);
         table.setPreferredSize(TABLE_SIZE);
+        table.setRowSelectionAllowed(true);
+        table.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
         JScrollPane tablePane = new JScrollPane(table);
         table.setFillsViewportHeight(true);
         outerPanel.add(tablePane, "wrap");
@@ -146,14 +166,14 @@ public class ListEditPanel extends BasicEditPanel {
         buttonPanel.add(deleteButton,"");
         outerPanel.add(buttonPanel,"wrap");
         ListSelectionModel lsm = table.getSelectionModel();
-        lsm.addListSelectionListener(new SelectionHandler(table,addButton,deleteButton));
+        lsm.addListSelectionListener(new SelectionHandler(table,deleteButton));
 		return outerPanel;
 	}
 	
 	/**
 	 * Create a button that deletes the nth entry
 	 */
-	private JButton createAddButton(JTable table) {
+	private JButton createAddButton(final JTable tbl) {
 		JButton btn = new JButton();
 		final String ICON_PATH  = "Block/icons/editor/add.png";
 		try {
@@ -169,6 +189,10 @@ public class ListEditPanel extends BasicEditPanel {
 				btn.setPreferredSize(BUTTON_SIZE);
 				btn.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e){
+						DefaultTableModel dtm = (DefaultTableModel)tbl.getModel();
+						String[] row = new String[1];
+						row[0] = "";   // Add an empty row
+						dtm.addRow(row);
 					}
 				});
 			}
@@ -185,7 +209,7 @@ public class ListEditPanel extends BasicEditPanel {
 	/**
 	 * Create a button that deletes the nth entry
 	 */
-	private JButton createDeleteButton(JTable table) {
+	private JButton createDeleteButton(final JTable tbl) {
 		JButton btn = new JButton();
 		final String ICON_PATH  = "Block/icons/editor/delete.png";
 		try {
@@ -200,7 +224,23 @@ public class ListEditPanel extends BasicEditPanel {
 				btn.setBorder(null);
 				btn.setPreferredSize(BUTTON_SIZE);
 				btn.addActionListener(new ActionListener() {
+					// We are guaranteed that the selection interval is contiguous
 					public void actionPerformed(ActionEvent e){
+						int[] selected = tbl.getSelectedRows();
+						if( selected.length < 1 ) return;
+						int minIndex = tbl.getRowCount()+1;
+						int maxIndex = -1;
+						for( int i:selected ) {
+							selected[i] = tbl.convertRowIndexToModel(i);
+							if( selected[i] > maxIndex ) maxIndex = selected[i];
+							if( selected[i] < minIndex ) minIndex = selected[i];
+						}
+						int row = maxIndex;
+						DefaultTableModel dtm = (DefaultTableModel)tbl.getModel();
+						while(row>=minIndex ) {
+							dtm.removeRow(row);
+							row--;
+						}
 					}
 				});
 			}
@@ -221,22 +261,19 @@ public class ListEditPanel extends BasicEditPanel {
 	 */
 	private class SelectionHandler implements ListSelectionListener {
 		private final JTable table;
-		private final JButton addBtn;
 		private final JButton delBtn;
 
-		SelectionHandler(JTable tbl,JButton rowAdder,JButton rowDeleter ) {
+		SelectionHandler(JTable tbl,JButton rowDeleter ) {
 			this.table = tbl;
-			this.addBtn = rowAdder;
 			this.delBtn = rowDeleter;
 		}
 		
 		public void valueChanged(ListSelectionEvent e) {
-			if (e.getSource() == table.getSelectionModel()) {
-				int first = e.getFirstIndex();
-				int last = e.getLastIndex();
-			} 
-			if (e.getValueIsAdjusting()) {
-				System.out.println("The mouse button has not yet been released");
+			if (!e.getValueIsAdjusting()) {
+				if (e.getSource() == table.getSelectionModel()) {
+					ListSelectionModel lsm = table.getSelectionModel();
+					delBtn.setEnabled(!lsm.isSelectionEmpty());
+				} 
 			}
 		}
 	}
