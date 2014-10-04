@@ -51,13 +51,13 @@ public class MainPanel extends BasicEditPanel {
 		JPanel panel = new CorePropertyPanel(block);
 		add(panel,"grow,push");
 
-		log.infof("%s.mainPanel: - editing %s (%s)",TAG,block.getId().toString(),block.getClassName());
+		log.debugf("%s.mainPanel: - editing %s (%s)",TAG,block.getId().toString(),block.getClassName());
 		PropertyPanel propertyPanel = null;
 		// Now fill the editor. We use the same edit panel class for all properties
 		for(BlockProperty property:block.getProperties()) {
 			// We have gotten null from serialization problems ...
 			if( property==null || property.getName()==null) continue;
-			log.infof("%s.init: - creating editor for property %s",TAG,property.getName());
+			log.debugf("%s.init: - creating editor for property %s",TAG,property.getName());
 			propertyPanel = new PropertyPanel(property);
 			add(propertyPanel,"skip,growx,push,gaptop 0,gapbottom 0");
 			panelMap.put(property.getName(), propertyPanel);
@@ -68,7 +68,12 @@ public class MainPanel extends BasicEditPanel {
 		add(separator,"span,growy");
 	}
 
+	/**
+	 * This is the property summary on the main panel.
+	 * @param prop
+	 */
 	public void updatePanelForProperty(BlockProperty prop ) {
+		log.tracef("%s.updatePanelForProperty: %s", TAG,prop.getName());
 		PropertyPanel pp = panelMap.get(prop.getName());
 		if( pp!=null ) pp.updateForProperty(prop);
 	}
@@ -136,6 +141,8 @@ public class MainPanel extends BasicEditPanel {
 		public void updateForProperty(BlockProperty property) {
 			String text = fncs.coerceToString(property.getValue());
 			log.infof("%s.updateForProperty: property %s, raw value= %s",TAG,property.getName(),text);
+			// For list we lop off the delimiter.
+			if( property.getType().equals(PropertyType.LIST) && text.length()>1 ) text = text.substring(1);
 			valueDisplayField.setText(text);
 			if( property.getBindingType().equals(BindingType.TAG_MONITOR) ||
 				property.getBindingType().equals(BindingType.TAG_READ) ||
@@ -208,6 +215,7 @@ public class MainPanel extends BasicEditPanel {
 					}
 					// Use special editor for list types
 					else if( prop.getType().equals(PropertyType.LIST) ) {
+						log.infof("%s.editButton actionPerformed for property %s (%s)",TAG,prop.getName(),prop.getType());
 						updatePanelForProperty(BlockEditConstants.LIST_EDIT_PANEL,prop);
 						setSelectedPane(BlockEditConstants.LIST_EDIT_PANEL);
 					}

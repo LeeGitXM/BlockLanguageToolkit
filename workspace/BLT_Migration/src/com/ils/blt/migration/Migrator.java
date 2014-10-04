@@ -183,7 +183,7 @@ public class Migrator {
 		sa.setId(UUID.nameUUIDFromBytes(g2a.getUuid().getBytes()));
 		for( G2Property prop:g2a.getProperties()) {
 			if(prop.getName().equalsIgnoreCase("highestPriorityProblem")) {
-				sa.setHighestPriorityProblem(func.coerceToDouble(prop.getValue()));
+				sa.setHighestPriorityProblem(func.coerceToInteger(prop.getValue()));
 			}
 		}
 		int familyCount = g2a.getFamilies().length;
@@ -204,7 +204,7 @@ public class Migrator {
 		sf.setId(UUID.nameUUIDFromBytes(g2f.getUuid().getBytes()));
 		for( G2Property prop:g2f.getProperties()) {
 			if(prop.getName().equalsIgnoreCase("priority")) {
-				sf.setPriority(func.coerceToDouble(prop.getValue()));
+				sf.setPriority(func.coerceToInteger(prop.getValue()));
 			}
 		}
 		int diagramCount = 0;

@@ -15,8 +15,8 @@ import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import net.miginfocom.swing.MigLayout;
-
+import com.ils.blt.common.block.ActiveState;
+import com.ils.blt.common.block.RampMethod;
 import com.ils.blt.common.serializable.SerializableApplication;
 /**
  * Display a dialog to export a diagram.
@@ -72,7 +72,7 @@ public class ApplicationConfigurationDialog extends ConfigurationDialog {
 		add(unitField,"span,wrap");
 		
 		add(createLabel(PREFIX+".Application.Menu"),"");
-		menuCheckBox = createCheckBox(PREFIX+".Application.Menu",application.isIncludeInMenu());
+		menuCheckBox = createCheckBox(PREFIX+".Application.Menu",application.isIncludeInMenus());
 		add(menuCheckBox,"");
 		add(createLabel(PREFIX+".Application.Ramp"),"gapleft 10");
 		methodBox = createRampMethodCombo(PREFIX+".Application.Ramp",application.getRampMethod());
@@ -97,6 +97,16 @@ public class ApplicationConfigurationDialog extends ConfigurationDialog {
 		okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				// Set attributes from fields
+				application.setName(nameField.getText());
+				application.setDescription(descriptionArea.getText());
+				application.setConsole(consoleField.getText());
+				application.setMessageQueue(queueField.getText());
+				application.setUnit(unitField.getText());
+				application.setIncludeInMenus(menuCheckBox.isSelected());
+				String method = (String)methodBox.getSelectedItem();
+				application.setRampMethod(RampMethod.valueOf(method));
+				String activeState = (String)stateBox.getSelectedItem();
+				application.setState(ActiveState.valueOf(activeState));
 				dispose();
 			}
 		});

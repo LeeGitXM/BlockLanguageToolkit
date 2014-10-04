@@ -22,7 +22,7 @@ public class SerializableApplication {
 	private String console;
 	private String description = "";
 	private int highestPriorityProblem = 0;
-	private boolean includeInMenu = false;
+	private boolean includeInMenus = false;
 	private String messageQueue = "";
 	private RampMethod rampMethod = RampMethod.NONE;
 	private String unit = "";
@@ -45,7 +45,7 @@ public class SerializableApplication {
 	public RampMethod getRampMethod() {return rampMethod;}
 	public ActiveState getState() {return state;}
 	public String getUnit() {return unit;}
-	public boolean isIncludeInMenu() {return includeInMenu;}
+	public boolean isIncludeInMenus() {return includeInMenus;}
 	
 	public void setConsole(String console) {this.console = console;}
 	public void setDescription(String description) {this.description = description;}
@@ -53,7 +53,7 @@ public class SerializableApplication {
 	public void setFolders(SerializableFolder[] folders) {this.folders = folders;}
 	public void setHighestPriorityProblem(int highestPriorityProblem) {this.highestPriorityProblem = highestPriorityProblem;}
 	public void setId(UUID id) {this.id = id;}
-	public void setIncludeInMenu(boolean includeInMenu) {this.includeInMenu = includeInMenu;}
+	public void setIncludeInMenus(boolean includeInMenu) {this.includeInMenus = includeInMenu;}
 	public void setMessageQueue(String messageQueue) {this.messageQueue = messageQueue;}
 	public void setName(String nam) { if(nam!=null) name=nam; }
 	public void setRampMethod(RampMethod rampMethod) {this.rampMethod = rampMethod;}

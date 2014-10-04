@@ -78,17 +78,26 @@ public class ListEditPanel extends BasicEditPanel {
 					if( delimiter.length()>1 ) delimiter = delimiter.substring(0, 1);
 					DefaultTableModel dtm = (DefaultTableModel)table.getModel();
 					List<String> model = new ArrayList<>();
-					int rows = dtm.getRowCount();
+					int rowCount = dtm.getRowCount();
+					log.infof("%s.OK action: row count = %d",TAG,rowCount);
 					int row = 0;
-					while( row<rows ) {
-						model.add((String) dtm.getValueAt(row, 0));
+					while( row<rowCount ) {
+						String rowValue = (String) dtm.getValueAt(row, 0);
+						log.infof("%s.OK action: added %s",TAG,rowValue);
+						if( rowValue.length()>0) {
+							model.add(rowValue);
+						}
 						row++;
 					}
 					String list = BlockProperty.assembleList(model,delimiter);
+					log.infof("%s.OK action: assembled list, %s = %s",TAG,property.getName(),list);
 					property.setValue(list);
+					editor.notifyOfChange();   // Handle "dirtiness" and repaint diagram
+					updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
 				}
-				editor.notifyOfChange();   // Handle "dirtiness" and repaint diagram
-				updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
+				else {
+					log.warnf("%s.OK action: property is NULL, no action taken",TAG);
+				}
 				setSelectedPane(BlockEditConstants.HOME_PANEL);
 			}
 		});
@@ -102,22 +111,23 @@ public class ListEditPanel extends BasicEditPanel {
 	}
 
 	public void updateForProperty(BlockProperty prop) {
-		String val = prop.getValue().toString();
-		if( val.length()<2) return;
-		log.infof("%s.updateForProperty: %s (%s)",TAG,prop.getName(),val);
-		// Delimiter is the first character 
-		String delimiter = val.substring(0, 1);
-		delimiterField.setText(delimiter);
-		List<String> model = BlockProperty.disassembleList(val);
-		DefaultTableModel dtm = (DefaultTableModel)table.getModel();
-		dtm.setRowCount(0);
-		for( String entry:model) {
-			String[] row = new String[1];
-			row[0] = entry;
-			dtm.addRow(row) ;
-		}
 		this.property = prop;
-		headingLabel.setText(prop.getName());	 
+		headingLabel.setText(prop.getName());
+		String val = prop.getValue().toString();
+		log.infof("%s.updateForProperty: %s (%s)",TAG,prop.getName(),val);
+		if( val.length()>1) {
+			// Delimiter is the first character 
+			String delimiter = val.substring(0, 1);
+			delimiterField.setText(delimiter);
+			List<String> model = BlockProperty.disassembleList(val);
+			DefaultTableModel dtm = (DefaultTableModel)table.getModel();
+			dtm.setRowCount(0);
+			for( String entry:model) {
+				String[] row = new String[1];
+				row[0] = entry;
+				dtm.addRow(row) ;
+			}
+		}
 	}
 
 	/**
@@ -230,10 +240,13 @@ public class ListEditPanel extends BasicEditPanel {
 						if( selected.length < 1 ) return;
 						int minIndex = tbl.getRowCount()+1;
 						int maxIndex = -1;
+						int index = 0;
 						for( int i:selected ) {
-							selected[i] = tbl.convertRowIndexToModel(i);
-							if( selected[i] > maxIndex ) maxIndex = selected[i];
-							if( selected[i] < minIndex ) minIndex = selected[i];
+							selected[index] = tbl.convertRowIndexToModel(i);
+							log.infof("%s.createDeleteButton: Selected row %d converted to %d",TAG,i,selected[index]);
+							if( selected[index] > maxIndex ) maxIndex = selected[index];
+							if( selected[index] < minIndex ) minIndex = selected[index];
+							index++;
 						}
 						int row = maxIndex;
 						DefaultTableModel dtm = (DefaultTableModel)tbl.getModel();
@@ -272,6 +285,7 @@ public class ListEditPanel extends BasicEditPanel {
 			if (!e.getValueIsAdjusting()) {
 				if (e.getSource() == table.getSelectionModel()) {
 					ListSelectionModel lsm = table.getSelectionModel();
+					log.infof("%s.SelectionHandler.valueChanged: Delete %s", TAG,(lsm.isSelectionEmpty()?"DISABLE":"ENABLE"));
 					delBtn.setEnabled(!lsm.isSelectionEmpty());
 				} 
 			}
