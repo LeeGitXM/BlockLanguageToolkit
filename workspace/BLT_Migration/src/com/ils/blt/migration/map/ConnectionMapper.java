@@ -147,55 +147,53 @@ public class ConnectionMapper {
 				UUID beginBlockId = cxn.getBeginBlock();
 				if(beginBlockId!=null ) {
 					beginBlock = blockMap.get(beginBlockId.toString());
+					if(beginBlock==null) log.warnf("%s.createConnections: beginBlock (%s) lookup failed",TAG,beginBlockId);
 				}
 				
 				SerializableBlock endBlock = null;
 				UUID endBlockId = cxn.getEndBlock();
 				if(endBlockId!=null ) {
 					endBlock = blockMap.get(endBlockId.toString());
+					if(endBlock==null) log.warnf("%s.createConnections: endBlock (%s) lookup failed",TAG,endBlockId);
 				}
 
-				// Check for error - shouldn't happen
-				if(beginBlock!=null && endBlock!=null &&
-						(beginAnchor!=null || endAnchor!=null) ) {
-					// There are 4 special cases relating to connection posts
-					if(beginAnchor==null || endAnchor==null)  {
-						if(endAnchor!=null) {
-							if(endBlock.getClassName().endsWith("Connection")) {
-								sinkPosts.add(new ConnectionPostEntry(
+				// Handle the case of a normal connection
+				if(beginBlock!=null && endBlock!=null && beginAnchor!=null && endAnchor!=null)  {
+					// Normal complete connection - both blocks on same diagram
+					diagramForBlockId.get(beginBlock.getId()).addConnection(cxn);
+					log.debugf("%s.createConnections: NORMAL::%s",TAG,cxn.toString());
+				}
+				// There are 4 special cases relating to connection posts.
+				// NOTE: The block lookup on the "through" end (null anchor) will have failed
+				//       because the connecting block is off-diagram.
+				if(endAnchor!=null && endBlock!=null) {
+					if(endBlock.getClassName().endsWith("Connection")) {
+							sinkPosts.add(new ConnectionPostEntry(
 										endBlock,
 										diagramForBlockId.get(endBlock.getId()),
 										beginBlock,
 										endAnchor.getDirection()));
-							}
-							else {
-								log.debugf("%s.createConnections: anchorPointForSource: %s (%s)",TAG,endBlock.getId().toString(),endBlock.getName());
-								anchorPointForSourceBlock.put(endBlock.getId(),
-										new AnchorPointEntry(endAnchor,cxn.getType()));
-							}
-						}
-						else if(beginAnchor!=null){
-							if(beginBlock.getClassName().endsWith("Connection")) {
+					}
+					else {
+						log.debugf("%s.createConnections: anchorPointForSource: %s (%s)",TAG,endBlock.getId().toString(),endBlock.getName());
+							anchorPointForSourceBlock.put(endBlock.getId(),new AnchorPointEntry(endAnchor,cxn.getType()));
+					}
+				}
+				else if(beginAnchor!=null && beginBlock!=null ){
+					if(beginBlock.getClassName().endsWith("Connection")) {
 								sourcePosts.add(new ConnectionPostEntry(
 										beginBlock,
 										diagramForBlockId.get(beginBlock.getId()),
 										endBlock,
 										beginAnchor.getDirection()));
-							}
-							else {
-								log.debugf("%s.createConnections: anchorPointForSink: %s (%s)",TAG,beginBlock.getId().toString(),beginBlock.getName());
-								anchorPointForSinkBlock.put(beginBlock.getId(),
-										new AnchorPointEntry(beginAnchor,cxn.getType()));
-							}
-						}
 					}
 					else {
-						// Normal complete connection - both blocks on same diagram
-						diagramForBlockId.get(beginBlock.getId()).addConnection(cxn);
-						log.debugf("%s.createConnections: NORMAL::%s",TAG,cxn.toString());;
+						log.debugf("%s.createConnections: anchorPointForSink: %s (%s)",TAG,beginBlock.getId().toString(),beginBlock.getName());
+						anchorPointForSinkBlock.put(beginBlock.getId(),new AnchorPointEntry(beginAnchor,cxn.getType()));
 					}
 				}
 				else {
+					
 					log.warnf("%s.createConnections: Incomplete connection=%s (ignored)",TAG,cxn.toString());
 				}
 			}

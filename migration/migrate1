@@ -6,8 +6,9 @@ BLT=~/Development/ils/repo/blt
 #FIL=dirtSimpleApplicationWithConnections
 #FIL=crxProductQuality
 #FIL=polyFlyingSwitch
-FIL=oneBadFamily
+#FIL=oneBadFamily
+FIL=vfuProductQuality
 INDIR=$BLT/json/g2
 OUTDIR=$BLT/json/ignition
 mkdir -p $OUTDIR
-$BLT/setup/migrate $INDIR/$FIL.json $OUTDIR/$FIL.json
+$BLT/migration/migrate $INDIR/$FIL.json $OUTDIR/$FIL.json

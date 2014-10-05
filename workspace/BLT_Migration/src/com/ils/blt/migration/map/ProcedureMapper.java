@@ -43,7 +43,7 @@ public class ProcedureMapper {
 				String g2Procedure = rs.getString("G2Procedure");
 				String pythonModule = rs.getString("IgnitonProcedure");
 				
-				procedureMap.put(g2Procedure,pythonModule);
+				procedureMap.put(g2Procedure.toLowerCase(),pythonModule);
 			}
 			rs.close();
 		}
@@ -74,7 +74,7 @@ public class ProcedureMapper {
 				}
 				if( bp.getType().equals(PropertyType.SCRIPTREF)) {
 					if( bp.getValue()!=null ) {
-						String unmapped = bp.getValue().toString();
+						String unmapped = bp.getValue().toString().toLowerCase();
 						String converted = procedureMap.get(unmapped.trim());
 						if( converted!=null) {
 							bp.setValue(converted);  
