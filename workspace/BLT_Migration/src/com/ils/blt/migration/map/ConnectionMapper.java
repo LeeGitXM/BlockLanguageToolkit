@@ -147,14 +147,14 @@ public class ConnectionMapper {
 				UUID beginBlockId = cxn.getBeginBlock();
 				if(beginBlockId!=null ) {
 					beginBlock = blockMap.get(beginBlockId.toString());
-					if(beginBlock==null) log.warnf("%s.createConnections: beginBlock (%s) lookup failed",TAG,beginBlockId);
+					if(beginBlock==null) log.debugf("%s.createConnections: beginBlock (%s) lookup failed",TAG,beginBlockId);
 				}
 				
 				SerializableBlock endBlock = null;
 				UUID endBlockId = cxn.getEndBlock();
 				if(endBlockId!=null ) {
 					endBlock = blockMap.get(endBlockId.toString());
-					if(endBlock==null) log.warnf("%s.createConnections: endBlock (%s) lookup failed",TAG,endBlockId);
+					if(endBlock==null) log.debugf("%s.createConnections: endBlock (%s) lookup failed",TAG,endBlockId);
 				}
 
 				// Handle the case of a normal connection
