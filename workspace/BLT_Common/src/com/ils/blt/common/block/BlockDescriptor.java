@@ -27,6 +27,7 @@ public class BlockDescriptor {
 	private int    embeddedFontSize = 24;
 	private String embeddedIcon="";       // 32x32 icon to place in block in designer
 	private String embeddedLabel="";      // Label place in block in designer
+	private String editorClass = null;    // Class of custom property editor
 	private boolean ctypeEditable=false;  // Can we globally change our connection types
 	private String iconPath = null;       // Icon to use for an icon-only block
 	private boolean nameDisplayed = false;
@@ -73,6 +74,11 @@ public class BlockDescriptor {
 	public List<AnchorPrototype> getAnchors() { return anchors; }
 	public int getBackground() {return background;}
 	public String getBlockClass() { return blockClass; }
+	/**
+	 * This class must be a JDialog, that takes a block view object in its constructor.
+	 * @return a fully-qualified class name for a custom editor for the block's properties.
+	 */
+	public String getEditorClass() {return editorClass;}
 	public int getEmbeddedFontSize() {return embeddedFontSize;}
 	public String getEmbeddedIcon() {return embeddedIcon;}
 	public String getEmbeddedLabel() {return embeddedLabel;}
@@ -91,6 +97,7 @@ public class BlockDescriptor {
 	public void setBackground(int background) {this.background = background;}
 	public void setBlockClass(String blockClass) { this.blockClass = blockClass; }
 	public void setCtypeEditable(boolean ctypeEditable) {this.ctypeEditable = ctypeEditable;}
+	public void setEditorClass(String editorClass) {this.editorClass = editorClass;}
 	public void setEmbeddedFontSize(int embeddedFontSize) {this.embeddedFontSize = embeddedFontSize;}
 	public void setEmbeddedIcon(String embeddedIcon) {this.embeddedIcon = embeddedIcon;}
 	public void setEmbeddedLabel(String embeddedLabel) {this.embeddedLabel = embeddedLabel;}

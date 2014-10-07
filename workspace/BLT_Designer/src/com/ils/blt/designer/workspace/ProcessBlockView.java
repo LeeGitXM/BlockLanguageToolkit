@@ -50,6 +50,7 @@ public class ProcessBlockView extends AbstractBlock {
 	private int background = Color.white.getRGB();
 	private final String className;
 	private boolean dirty = false;   // A newly created block is clean because we initially sync with the gateway
+	private String editorClass = null; // Class name of custom editor for this block
 	private int    embeddedFontSize = WorkspaceConstants.DEFAULT_EMBEDDED_FONT_SIZE; // Size of font for interior label
 	private String embeddedIcon="";               // 32x32 icon to place in block in designer
 	private String embeddedLabel="";              // Label place in block in designer
@@ -73,7 +74,6 @@ public class ProcessBlockView extends AbstractBlock {
 	private BlockViewUI ui = null;
 	private final UUID uuid;
 	
-	
 	/**
 	 * Constructor: Used when a new block is created from the palette. 
 	 *              Create a pseudo-random name.
@@ -85,9 +85,11 @@ public class ProcessBlockView extends AbstractBlock {
 		this.background = descriptor.getBackground();
 		this.className = descriptor.getBlockClass();
 		this.ctypeEditable = descriptor.isCtypeEditable();
+		this.editorClass = descriptor.getEditorClass();
 		this.embeddedIcon = descriptor.getEmbeddedIcon();
 		this.embeddedLabel= descriptor.getEmbeddedLabel();
 		this.embeddedFontSize= descriptor.getEmbeddedFontSize();
+		this.editorClass = descriptor.getEditorClass();
 		this.iconPath = descriptor.getIconPath();
 		this.preferredHeight = descriptor.getPreferredHeight();
 		this.preferredWidth = descriptor.getPreferredWidth();
@@ -119,6 +121,7 @@ public class ProcessBlockView extends AbstractBlock {
 		this.className = sb.getClassName();
 		this.ctypeEditable  = false;
 		this.dirty = sb.isDirty();
+		this.editorClass = sb.getEditorClass();
 		this.embeddedIcon = sb.getEmbeddedIcon();
 		this.embeddedLabel= sb.getEmbeddedLabel();
 		this.embeddedFontSize = sb.getEmbeddedFontSize();
@@ -171,6 +174,7 @@ public class ProcessBlockView extends AbstractBlock {
 		result.setId(getId());
 		result.setBackground(getBackground());
 		result.setClassName(getClassName());
+		result.setEditorClass(getEditorClass());
 		result.setEmbeddedIcon(getEmbeddedIcon());
 		result.setEmbeddedLabel(getEmbeddedLabel());
 		result.setEmbeddedFontSize(getEmbeddedFontSize());
@@ -262,6 +266,7 @@ public class ProcessBlockView extends AbstractBlock {
 		}
 		return result;
 	}
+	public String getEditorClass() {return editorClass;}
 	public int getEmbeddedFontSize() {return embeddedFontSize;}
 	public String getEmbeddedIcon() {return embeddedIcon;}
 	public String getEmbeddedLabel() {return embeddedLabel;}
@@ -294,6 +299,7 @@ public class ProcessBlockView extends AbstractBlock {
 	public boolean isTransmitEnabled() {return transmitEnabled;}
 	public void setCtypeEditable(boolean ctypeEditable) {this.ctypeEditable = ctypeEditable;}
 	public void setDirty(boolean dirty) {this.dirty = dirty;} 
+	public void setEditorClass(String editorClass) {this.editorClass = editorClass;}
 	public void setEmbeddedFontSize(int size) {this.embeddedFontSize = size;}
 	public void setEmbeddedIcon(String embeddedIcon) {this.embeddedIcon = embeddedIcon;}
 	public void setEmbeddedLabel(String embeddedLabel) {this.embeddedLabel = embeddedLabel;}
@@ -346,14 +352,14 @@ public class ProcessBlockView extends AbstractBlock {
 	 // the fire method.
 
 	 protected void fireStateChanged() {
-	     // Guaranteed to return a non-null array
-	     Object[] listeners = listenerList.getListenerList();
-	     // Process the listeners last to first, notifying
-	     // those that are interested in this event
-	     for (int i = listeners.length-2; i>=0; i-=2) {
-	         if (listeners[i]==ChangeListener.class) {
-	             ((ChangeListener)listeners[i+1]).stateChanged(changeEvent);
-	         }
-	     }
+		 // Guaranteed to return a non-null array
+		 Object[] listeners = listenerList.getListenerList();
+		 // Process the listeners last to first, notifying
+		 // those that are interested in this event
+		 for (int i = listeners.length-2; i>=0; i-=2) {
+			 if (listeners[i]==ChangeListener.class) {
+				 ((ChangeListener)listeners[i+1]).stateChanged(changeEvent);
+			 }
+		 }
 	 }
 }

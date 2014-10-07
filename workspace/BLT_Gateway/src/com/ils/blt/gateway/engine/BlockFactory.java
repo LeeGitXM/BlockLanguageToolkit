@@ -67,20 +67,20 @@ public class BlockFactory  {
 			block = (ProcessBlock)ctor.newInstance(BlockExecutionController.getInstance(),parentId,sb.getId());
 		}
 		catch(InvocationTargetException ite ) {
-			log.warnf("%s: blockFromSerializable %s: Invocation failed (%s)",TAG,className,ite.getMessage()); 
+			log.warnf("%s.blockFromSerializable %s: Invocation failed (%s)",TAG,className,ite.getMessage()); 
 		}
 		catch(NoSuchMethodException nsme ) {
-			log.warnf("%s: blockFromSerializable %s: Three argument constructor not found (%s)",TAG,className,nsme.getMessage()); 
+			log.warnf("%s.blockFromSerializable %s: Three argument constructor not found (%s)",TAG,className,nsme.getMessage()); 
 		}
 		catch( ClassNotFoundException cnf ) {
-			log.infof("%s: blockFromSerializable: Class not found creating %s ... trying Python",TAG,className); 
+			log.infof("%s.blockFromSerializable: Class not found creating %s ... trying Python",TAG,className); 
 			block = proxyHandler.createBlockInstance( className, parentId,blockId );
 		}
 		catch( InstantiationException ie ) {
-			log.warnf("%s: blockFromSerializable: Error instantiating %s (%s)",TAG,className,ie.getLocalizedMessage()); 
+			log.warnf("%s.blockFromSerializable: Error instantiating %s (%s)",TAG,className,ie.getLocalizedMessage()); 
 		}
 		catch( IllegalAccessException iae ) {
-			log.warnf("%s: blockFromSerializable: Security exception creating %s (%s)",TAG,className,iae.getLocalizedMessage()); 
+			log.warnf("%s.blockFromSerializable: Security exception creating %s (%s)",TAG,className,iae.getLocalizedMessage()); 
 		}
 
 		if( block!=null ) updateBlockFromSerializable(block,sb);

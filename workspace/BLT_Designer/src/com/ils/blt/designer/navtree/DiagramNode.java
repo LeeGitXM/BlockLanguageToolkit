@@ -51,7 +51,9 @@ import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.model.DesignerProjectContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
+import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode.DeleteReason;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
+import com.inductiveautomation.ignition.designer.navtree.model.FolderNode;
 import com.inductiveautomation.ignition.designer.navtree.model.ResourceDeleteAction;
 
 /**
@@ -79,7 +81,6 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 	private final ImageIcon closedDisabledIcon;
 	private final ImageIcon openRestrictedIcon;
 	private final ImageIcon closedRestrictedIcon;
-
 
 	/**
 	 * Constructor. A DiagramNode is created initially without child resources.
@@ -339,7 +340,6 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
     	}
 
     	public void actionPerformed(ActionEvent e) {
-
     		if( resourceId<0 ) return;   // Do nothing
     		try {
     			EventQueue.invokeLater(new Runnable() {
@@ -484,5 +484,15 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 		setItalic(dirty);
 		saveAction.setEnabled(dirty);
 		refresh();
+	}
+
+	/**
+	 * This method allows us to have children. Children are always EncapsulatedDiagramNodes.
+	 * @param arg0
+	 * @return
+	 */
+	protected AbstractNavTreeNode createChildNode(ProjectResource arg0) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

@@ -15,12 +15,15 @@ import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.geom.Path2D;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
@@ -192,6 +195,33 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						changeTypeMenu.add(ccaTruthvalue);
 						menu.add(changeTypeMenu);
 					}
+				}
+				if( selection instanceof BlockComponent && pbv.getEditorClass() !=null && pbv.getEditorClass().length()>0 ) {
+					try{
+						Class<?> clss = Class.forName(pbv.getEditorClass());
+						Constructor<?> ctor = clss.getDeclaredConstructor(new Class[] {ProcessBlockView.class});
+						JDialog editor = (JDialog)ctor.newInstance(pbv);
+						CustomEditAction cea = new CustomEditAction(pbv);
+						JMenu customEdit = new JMenu(BundleUtil.get().getString(PREFIX+".ConfigureProperties"));
+						menu.add(cea);
+					}
+					catch(InvocationTargetException ite ) {
+						logger.infof("%s.getSelectionPopupMenu %s: Invocation failed (%s)",TAG,pbv.getEditorClass(),ite.getMessage()); 
+					}
+					catch(NoSuchMethodException nsme ) {
+						logger.infof("%s.getSelectionPopupMenu %s: Constructor taking block not found (%s)",TAG,pbv.getEditorClass(),nsme.getMessage()); 
+					}
+					catch(ClassNotFoundException cnfe) {
+						logger.infof("%s.getSelectionPopupMenu: Custom editor class (%s) not found (%s)",TAG,
+								pbv.getEditorClass(),cnfe.getLocalizedMessage());
+					}
+					catch( InstantiationException ie ) {
+						logger.infof("%s.getSelectionPopupMenu: Error instantiating %s (%s)",TAG,pbv.getEditorClass(),ie.getLocalizedMessage()); 
+					}
+					catch( IllegalAccessException iae ) {
+						logger.infof("%s.getSelectionPopupMenu: Security exception creating %s (%s)",TAG,pbv.getEditorClass(),iae.getLocalizedMessage()); 
+					}
+					
 				}
 				menu.addSeparator();
 				menu.add(context.getCutAction());
@@ -585,6 +615,50 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		// Change all stubs to the selected type
 		public void actionPerformed(ActionEvent e) {
 			block.changeConnectorType(connectionType);
+		}
+	}
+	/**
+	 * Post a custom editor for the block. This action is expected to
+	 * apply to only a few block types. The action should be invoked only
+	 * if an editor class has been specified. 
+	 */
+	private class CustomEditAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final ProcessBlockView block;
+		public CustomEditAction(ProcessBlockView blk)  {
+			super(PREFIX+".ConfigureProperties");
+			this.block = blk;
+		}
+		
+		// Display the custom editor
+		public void actionPerformed(ActionEvent e) {
+			try{
+				Class<?> clss = Class.forName(block.getEditorClass());
+				Constructor<?> ctor = clss.getDeclaredConstructor(new Class[] {ProcessBlockView.class});
+				final JDialog editor = (JDialog)ctor.newInstance(block);
+				editor.pack();
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						editor.setVisible(true);
+					}
+				}); 
+			}
+			catch(InvocationTargetException ite ) {
+				logger.infof("%s.getSelectionPopupMenu %s: Invocation failed (%s)",TAG,block.getEditorClass(),ite.getMessage()); 
+			}
+			catch(NoSuchMethodException nsme ) {
+				logger.infof("%s.getSelectionPopupMenu %s: Constructor taking block not found (%s)",TAG,block.getEditorClass(),nsme.getMessage()); 
+			}
+			catch(ClassNotFoundException cnfe) {
+				logger.infof("%s.getSelectionPopupMenu: Custom editor class (%s) not found (%s)",TAG,
+						block.getEditorClass(),cnfe.getLocalizedMessage());
+			}
+			catch( InstantiationException ie ) {
+				logger.infof("%s.getSelectionPopupMenu: Error instantiating %s (%s)",TAG,block.getEditorClass(),ie.getLocalizedMessage()); 
+			}
+			catch( IllegalAccessException iae ) {
+				logger.infof("%s.getSelectionPopupMenu: Security exception creating %s (%s)",TAG,block.getEditorClass(),iae.getLocalizedMessage()); 
+			}
 		}
 	}
 	/**

@@ -6,7 +6,7 @@
 #
 #set -x
 REPO_ROOT=~/Development/ils/repo
-SVN=~/Development/ils/svn/EMRE
+SVN=~/Development/ils/svn/EMChemicals
 VERS=`cat $REPO_ROOT/blt/workspace/BLT_Build/.version`
 if [ -z "$VERS" ]
 then
@@ -27,10 +27,11 @@ mkdir $TMP
 mkdir -p $TMP/block/workspace
 mkdir -p $TMP/common/workspace
 mkdir -p $TMP/blt
-cp -a setup external ignition $TMP
+cp -a setup external ignition-77 $TMP
 cp -a block/workspace/Block $TMP/block/workspace
 cp -a common/workspace/ILS_Common $TMP/common/workspace
-cp -a blt $TMP/blt
+cp -a blt $TMP
+cp -a sfc $TMP
 # Scrub the temp area before zipping
 cd $TMP
 rm -f external/lib/antlr* 
@@ -41,9 +42,11 @@ rm -f external/lib/jama*
 rm -f external/lib/jython* 
 rm -f external/lib/sqlite* 
 rm -f external/lib/cachedir
+rm -rf blt/.metadata
+rm -rf blt/.recommenders
 
 # Now zip and copy to subversion
 cd $REPO_ROOT
 zip -r blt-src.zip $VERS
-#cp blt-src.zip $SVN/Release/src
-#rm -rf $TMP
+cp blt-src.zip $SVN/Release/src
+rm -rf $TMP
