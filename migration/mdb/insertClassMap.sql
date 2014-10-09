@@ -49,6 +49,7 @@ insert into ClassMap values ('GDL-TIMER','com.ils.block.Clock');
 insert into ClassMap values ('INTEGER-PARAMETER','com.ils.block.Parameter');
 insert into ClassMap values ('LOGICAL-PARAMETER','com.ils.block.Parameter');
 insert into ClassMap values ('LOGICAL-VARIABLE','com.ils.block.Parameter');
+insert into ClassMap values ('SYMBOLIC-PARAMETER','com.ils.block.Parameter');
 -- NOTE: We convert all connnection posts to "sinks"
 --       later on we analyze and determine which are "sources"
 insert into ClassMap values ('GDL-INFERENCE-PATH-CONNECTION-POST','com.ils.block.SinkConnection');

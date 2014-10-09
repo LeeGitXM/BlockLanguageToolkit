@@ -279,9 +279,7 @@ public class Migrator {
 		connectionMapper.createConnectionSegments(g2d, sd);
 		return sd;
 	}
-	
-	
-	
+
 	
 	/**
 	 * Handle special cases that aren't as simple as a lookup. It helps to have the G2Block for reference.

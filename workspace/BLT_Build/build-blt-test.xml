@@ -186,7 +186,7 @@
 		    <fileset dir="${basedir}/BLT_Build/doc"/>
 		</copy>
 		<!-- Echo the version into .version in the bundle and to be saved -->
-		<echo message="${BLTTestModule.name}-${BLTTestModule.version}:${BLTTestModule.release}" file="${basedir}/BLT_Build/temp_modl/.version" append="false"/>
+		<echo message="${BLTTestModule.name}-${BLTTestModule.version}" file="${basedir}/BLT_Build/temp_modl/.version" append="false"/>
 		<echo message="${BLTTestModule.name}-${BLTTestModule.name}:${BLTTestModule.release}" file="${basedir}/BLT_Build/.version" append="false"/>
 		
 		<!-- Zip it all up -->

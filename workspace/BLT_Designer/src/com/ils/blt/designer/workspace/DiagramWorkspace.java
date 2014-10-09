@@ -196,32 +196,11 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						menu.add(changeTypeMenu);
 					}
 				}
+				
+				logger.infof("%s.getSelectionPopupMenu: Selection editor class = %s",TAG,pbv.getEditorClass());
 				if( selection instanceof BlockComponent && pbv.getEditorClass() !=null && pbv.getEditorClass().length()>0 ) {
-					try{
-						Class<?> clss = Class.forName(pbv.getEditorClass());
-						Constructor<?> ctor = clss.getDeclaredConstructor(new Class[] {ProcessBlockView.class});
-						JDialog editor = (JDialog)ctor.newInstance(pbv);
-						CustomEditAction cea = new CustomEditAction(pbv);
-						JMenu customEdit = new JMenu(BundleUtil.get().getString(PREFIX+".ConfigureProperties"));
-						menu.add(cea);
-					}
-					catch(InvocationTargetException ite ) {
-						logger.infof("%s.getSelectionPopupMenu %s: Invocation failed (%s)",TAG,pbv.getEditorClass(),ite.getMessage()); 
-					}
-					catch(NoSuchMethodException nsme ) {
-						logger.infof("%s.getSelectionPopupMenu %s: Constructor taking block not found (%s)",TAG,pbv.getEditorClass(),nsme.getMessage()); 
-					}
-					catch(ClassNotFoundException cnfe) {
-						logger.infof("%s.getSelectionPopupMenu: Custom editor class (%s) not found (%s)",TAG,
-								pbv.getEditorClass(),cnfe.getLocalizedMessage());
-					}
-					catch( InstantiationException ie ) {
-						logger.infof("%s.getSelectionPopupMenu: Error instantiating %s (%s)",TAG,pbv.getEditorClass(),ie.getLocalizedMessage()); 
-					}
-					catch( IllegalAccessException iae ) {
-						logger.infof("%s.getSelectionPopupMenu: Security exception creating %s (%s)",TAG,pbv.getEditorClass(),iae.getLocalizedMessage()); 
-					}
-					
+					CustomEditAction cea = new CustomEditAction(pbv);
+					menu.add(cea);
 				}
 				menu.addSeparator();
 				menu.add(context.getCutAction());

@@ -66,14 +66,16 @@ public class ProcedureMapper {
 	 * @param iblock Ignition block
 	 */
 	public void setPythonModuleNames(SerializableBlock iblock) {
-		if( iblock.getProperties()!=null)  {   // No properties, nothing to do
-			for(BlockProperty bp:iblock.getProperties()) {
+		BlockProperty[] properties = iblock.getProperties();
+		if( properties!=null)  {   // No properties, nothing to do
+			for(BlockProperty bp:properties) {
 				if(bp.getName()==null || bp.getName().length()==0 ) {
-					System.err.println(TAG+".setTagPaths: No-name tag for block "+iblock.getName()+" ("+iblock.getClassName()+")");
+					System.err.println(TAG+".setPythonModuleNames: No name on a block property in "+iblock.getName()+" ("+iblock.getClassName()+") - ignored");
 					continue;
 				}
 				if( bp.getType().equals(PropertyType.SCRIPTREF)) {
 					if( bp.getValue()!=null ) {
+						//ZZSystem.err.println(TAG+".setPythonModuleNames: Convert "+iblock.getName()+"."+bp.getName()+" ("+bp.getValue()+")");
 						String unmapped = bp.getValue().toString().toLowerCase();
 						String converted = procedureMap.get(unmapped.trim());
 						if( converted!=null) {

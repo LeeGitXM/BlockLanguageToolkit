@@ -51,15 +51,14 @@ import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.model.DesignerProjectContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
-import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode.DeleteReason;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
-import com.inductiveautomation.ignition.designer.navtree.model.FolderNode;
 import com.inductiveautomation.ignition.designer.navtree.model.ResourceDeleteAction;
 
 /**
- * A DiagnosticsNode appears as leaf node in the Diagnostics NavTree hierarchy.
- * It doesn't have any NavTree-type children, but it does have two nested objects, 
- * a DiagnosticsFrame and a diag-model resource. 
+ * A DiagramNode appears as leaf node in the Diagnostics NavTree hierarchy.
+ * It serves as a Nav-tree standin for a DiagramWorkspace. A DiagramNode
+ * may have children - EncapsulatedDiagramNodes - which are standins for
+ * sub-workspaces of EncapsulationBlocks. 
  * 
  * The frame is responsible for rendering the diagram based on the model resource.
  * The model can exist without the frame, but not vice-versa.
@@ -68,19 +67,19 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 	private static final String TAG = "DiagramNode";
 	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
 
-	private final LoggerEx logger = LogUtil.getLogger(getClass().getPackage().getName());
-	private DesignerContext context;
-	private long resourceId;
-	private final DiagramWorkspace workspace;
-	private final NodeStatusManager statusManager;
-	private final SaveDiagramAction saveAction = new SaveDiagramAction();
-	private final ImageIcon defaultIcon;
-	private final ImageIcon openIcon;
-	private final ImageIcon closedIcon;
-	private final ImageIcon openDisabledIcon;
-	private final ImageIcon closedDisabledIcon;
-	private final ImageIcon openRestrictedIcon;
-	private final ImageIcon closedRestrictedIcon;
+	protected final LoggerEx logger = LogUtil.getLogger(getClass().getPackage().getName());
+	protected DesignerContext context;
+	protected long resourceId;
+	protected final DiagramWorkspace workspace;
+	protected final NodeStatusManager statusManager;
+	protected final SaveDiagramAction saveAction = new SaveDiagramAction();
+	protected final ImageIcon defaultIcon;
+	protected final ImageIcon openIcon;
+	protected final ImageIcon closedIcon;
+	protected final ImageIcon openDisabledIcon;
+	protected final ImageIcon closedDisabledIcon;
+	protected final ImageIcon openRestrictedIcon;
+	protected final ImageIcon closedRestrictedIcon;
 
 	/**
 	 * Constructor. A DiagramNode is created initially without child resources.

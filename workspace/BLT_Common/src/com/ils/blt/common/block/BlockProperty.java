@@ -35,9 +35,8 @@ public class BlockProperty implements NotificationChangeListener {
 	private int displayOffsetX = 30;
 	private int displayOffsetY = 50;
 
-	private String name;
-
-	private Object value = null;
+	private String name = "UNSET-NAME";
+	private Object value = "UNSET-VALUE";
 	private List<ChangeListener> changeListeners = new ArrayList<ChangeListener>();
 
 	/** 
@@ -81,6 +80,7 @@ public class BlockProperty implements NotificationChangeListener {
 
 			try {
 				property = mapper.readValue(json, BlockProperty.class);
+				if( property.value==null) property.setValue("");    // May be wrong for property type
 			} 
 			catch (JsonParseException jpe) {
 				log.warnf("%s: createProperty parse exception from %s (%s)",TAG,json,jpe.getLocalizedMessage());

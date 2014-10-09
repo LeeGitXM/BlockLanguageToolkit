@@ -161,7 +161,7 @@ public class ProxyHandler   {
 	 * to exist.
 	 * 
 	 * @param block the python block
-	 * @return an array of block properties.
+	 * @return a new array of block properties.
 	 */
 	public BlockProperty[] getBlockProperties(PyObject block) {
 		BlockProperty[] properties = null;
@@ -216,7 +216,6 @@ public class ProxyHandler   {
 						}
 						val = tbl.get(BLTProperties.BLOCK_ATTRIBUTE_VALUE);
 						if( val!=null ) {
-							String q = nullCheck(tbl.get(BLTProperties.BLOCK_ATTRIBUTE_QUALITY),"good");
 							prop.setValue(val);
 						}
 						properties[index] = prop;

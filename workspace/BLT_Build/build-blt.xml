@@ -2,7 +2,7 @@
 
 	<import file="${basedir}/BLT_Build/build.xml"/>
 
-	<property name="version.build" value="11" />	
+	<property name="version.build" value="12" />	
 	<!-- Change version.beta value to "" for release builds -->
 	<property name="version.beta" value="-development" />		
 	<property name="BLTModule.version" value="1.4.0.${version.build}" />
@@ -233,7 +233,7 @@
 		    <fileset dir="${basedir}/BLT_Build/doc"/>
 		</copy>
 		<!-- Echo the version into .version in the bundle and to be saved -->
-		<echo message="${BLTModule.name}-${BLTModule.version}:${BLTModule.release}" file="${basedir}/BLT_Build/temp_modl/.version" append="false"/>
+		<echo message="${BLTModule.name}-${BLTModule.version}" file="${basedir}/BLT_Build/temp_modl/.version" append="false"/>
 		<echo message="${BLTModule.name}-${BLTModule.name}:${BLTModule.release}" file="${basedir}/BLT_Build/.version" append="false"/>
 		
 		<!-- Zip it all up -->
