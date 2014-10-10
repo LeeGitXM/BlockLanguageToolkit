@@ -154,7 +154,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	public JPopupMenu getSelectionPopupMenu(List<JComponent> selections) {
 		if( selections.size()>0 ) {
 			JComponent selection = selections.get(0);
-			logger.infof("%s.getSelectionPopupMenu: Component is: %s",TAG,selections.get(0).getClass().getName());
+			logger.debugf("%s.getSelectionPopupMenu: Component is: %s",TAG,selections.get(0).getClass().getName());
 			if( selection instanceof BlockComponent ) {
 				
 				JPopupMenu menu = new JPopupMenu();
@@ -177,7 +177,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					}
 					if( anch!=null ) {
 						ConnectionType ct = anch.getConnectionType();
-						logger.infof("%s.getSelectionPopupMenu: Connection type is: %s",TAG,ct.name());
+						logger.debugf("%s.getSelectionPopupMenu: Connection type is: %s",TAG,ct.name());
 					
 						ChangeConnectionAction ccaAny = new ChangeConnectionAction(pbv,ConnectionType.ANY);
 						ccaAny.setEnabled(!ct.equals(ConnectionType.ANY));
@@ -611,19 +611,21 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		
 		// Display the custom editor
 		public void actionPerformed(ActionEvent e) {
+			// Apparently this only works if the class is in the same package (??)
 			try{
 				Class<?> clss = Class.forName(block.getEditorClass());
 				Constructor<?> ctor = clss.getDeclaredConstructor(new Class[] {ProcessBlockView.class});
-				final JDialog editor = (JDialog)ctor.newInstance(block);
-				editor.pack();
+				final JDialog edtr = (JDialog)ctor.newInstance(block);
+				edtr.pack();
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
-						editor.setVisible(true);
+						edtr.setLocationByPlatform(true);
+						edtr.setVisible(true);
 					}
 				}); 
 			}
 			catch(InvocationTargetException ite ) {
-				logger.infof("%s.getSelectionPopupMenu %s: Invocation failed (%s)",TAG,block.getEditorClass(),ite.getMessage()); 
+				logger.infof("%s.getSelectionPopupMenu: Invocation failed for %s",TAG,block.getEditorClass()); 
 			}
 			catch(NoSuchMethodException nsme ) {
 				logger.infof("%s.getSelectionPopupMenu %s: Constructor taking block not found (%s)",TAG,block.getEditorClass(),nsme.getMessage()); 

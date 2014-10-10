@@ -54,13 +54,14 @@ public class ProxyHandler   {
 	private final PythonToJava toJavaTranslator;
 	private final JavaToPython toPythonTranslator;
 	private static ProxyHandler instance = null;
-	// These are the indices of specific callback functions within the array
+	// These are the instances of specific callback functions
+	private final Callback acceptValueCallback;
 	private final Callback createBlockCallback;
 	private final Callback evaluateCallback;
 	private final Callback getBlockPropertiesCallback;
 	private final Callback getBlockPrototypesCallback;
 	private final Callback setBlockPropertyCallback;
-	private final Callback setValueCallback;
+	
 
 
 	/**
@@ -71,12 +72,13 @@ public class ProxyHandler   {
 		toJavaTranslator = new PythonToJava();
 		toPythonTranslator = new JavaToPython();
 		// Create an instance of each callback method
+		acceptValueCallback = new AcceptValue();
 		createBlockCallback = new CreateBlock();
 		evaluateCallback = new Evaluate();
 		getBlockPropertiesCallback = new GetBlockProperties();
 		getBlockPrototypesCallback = new GetBlockPrototypes();
 		setBlockPropertyCallback = new SetBlockProperty();
-		setValueCallback = new SetValue();
+		
 	}
 
 	/**
@@ -109,9 +111,28 @@ public class ProxyHandler   {
 		getBlockPropertiesCallback.setScriptManager(context.getScriptManager());
 		getBlockPrototypesCallback.setScriptManager(context.getScriptManager());
 		setBlockPropertyCallback.setScriptManager(context.getScriptManager());
-		setValueCallback.setScriptManager(context.getScriptManager());
+		acceptValueCallback.setScriptManager(context.getScriptManager());
 	}
 	
+	/**
+	 * Inform the block that it has a new value on one of its inputs. There is no shared dictionary.
+	 * 
+	 * @param block
+	 * @param stub
+	 * @param value one of a QualifiedValue, Signal, Truth-value or String
+	 */
+	public void acceptValue(PyObject block,String stub,QualifiedValue value) {
+		if(block==null || value==null || value.getValue()==null ) return;
+		log.infof("%s.setValue --- %s %s on %s",TAG,block.toString(),value.getValue().toString(),stub); 
+		if( acceptValueCallback.compileScript() ) {
+			// There are 4 values to be specified - block,port,value,quality.
+			acceptValueCallback.setLocalVariable(0,block);
+			acceptValueCallback.setLocalVariable(1,new PyString(stub));
+			acceptValueCallback.setLocalVariable(2,new PyString(value.getValue().toString()));
+			acceptValueCallback.setLocalVariable(3,new PyString(value.getQuality().toString()));
+			acceptValueCallback.execute();
+		}
+	}
 
 	public ProxyBlock createBlockInstance(String className,UUID parentId,UUID blockId) {
 		ProxyBlock block = new ProxyBlock(className,parentId,blockId);
@@ -352,25 +373,7 @@ public class ProxyHandler   {
 		}
 	}
 	
-	/**
-	 * Inform the block that it has a new value on one of its inputs. There is no shared dictionary.
-	 * 
-	 * @param block
-	 * @param stub
-	 * @param value one of a QualifiedValue, Signal, Truth-value or String
-	 */
-	public void setValue(PyObject block,String stub,QualifiedValue value) {
-		if(block==null || value==null || value.getValue()==null ) return;
-		log.infof("%s.setValue --- %s %s on %s",TAG,block.toString(),value.getValue().toString(),stub); 
-		if( setValueCallback.compileScript() ) {
-			// There are 4 values to be specified - block,port,value,quality.
-			setValueCallback.setLocalVariable(0,block);
-			setValueCallback.setLocalVariable(1,new PyString(stub));
-			setValueCallback.setLocalVariable(2,new PyString(value.getValue().toString()));
-			setValueCallback.setLocalVariable(3,new PyString(value.getQuality().toString()));
-			setValueCallback.execute();
-		}
-	}
+	
 	
 	//========================================= Helper Methods ============================================
 	/**

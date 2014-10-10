@@ -479,7 +479,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 	public void stateChanged(ChangeEvent event) {
 		// Set italics, enable Save
 		boolean dirty = statusManager.isResourceDirty(resourceId);
-		logger.infof("%s.stateChanged: dirty = %s",TAG,(dirty?"true":"false"));
+		logger.tracef("%s.stateChanged: dirty = %s",TAG,(dirty?"true":"false"));
 		setItalic(dirty);
 		saveAction.setEnabled(dirty);
 		refresh();

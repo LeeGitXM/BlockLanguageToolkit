@@ -7,10 +7,10 @@ package com.ils.blt.gateway.proxy;
 /**
  * Define the module that sets a value for a python block. 
  */
-public class SetValue extends Callback {
+public class AcceptValue extends Callback {
 
-	public SetValue() {
-		module = "setValue";
+	public AcceptValue() {
+		module = "acceptValue";
 		setLocalVariableList("block,port,value,quality");
 	}
 }

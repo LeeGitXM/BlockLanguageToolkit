@@ -2,8 +2,9 @@
  *   (c) 2014  ILS Automation. All rights reserved.
  *   http://docs.oracle.com/javase/tutorial/displayCode.html?code=http://docs.oracle.com/javase/tutorial/uiswing/examples/components/SharedModelDemoProject/src/components/SharedModelDemo.java
  */
-package com.ils.blt.designer.editor;
+package com.ils.blt.designer.workspace;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Insets;
@@ -12,9 +13,11 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.DefaultCellEditor;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -23,13 +26,17 @@ import javax.swing.ListSelectionModel;
 import javax.swing.WindowConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 
 import net.miginfocom.swing.MigLayout;
 
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.designer.workspace.ProcessBlockView;
+import com.ils.blt.common.block.AnchorDirection;
+import com.ils.blt.common.connection.ConnectionType;
+import com.ils.blt.designer.workspace.ui.AnchorSide;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -43,12 +50,12 @@ public class EncapsulationAnchorPointEditor extends JDialog {
 	private static String TAG = "EncapsulationAnchorPointEditor";
 	private final LoggerEx log;
 	// A panel is designed to edit properties that are lists of strings.
-	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for text strings
+	private static final String PREFIX = BLTProperties.BLOCK_PREFIX;  // Required for text strings
 	private static final long serialVersionUID = 2772399376824434427L;
 	private static final Dimension BUTTON_SIZE = new Dimension(16,16);
-	private final int DIALOG_HEIGHT = 380;
-	private final int DIALOG_WIDTH = 440;
-	private static final Dimension TABLE_SIZE  = new Dimension(300,120);
+	private final int DIALOG_HEIGHT = 320;
+	private final int DIALOG_WIDTH = 420;
+	private static final Dimension TABLE_SIZE  = new Dimension(380,120);
 	private final ProcessBlockView block;
 	private JButton addButton;      // Click to add a row
 	private JButton deleteButton;   // Click to delete a row
@@ -72,9 +79,8 @@ public class EncapsulationAnchorPointEditor extends JDialog {
 		// The main panel has two panes - the editor and the buttons
 		JPanel editPanel = new JPanel();
 		editPanel.setLayout(new MigLayout("ins 2","",""));
-		//addSeparator(editPanel,"List");
 		editPanel.add(createTablePanel(),"wrap");
-		add(editPanel,"");
+		add(editPanel,"gaptop 20");
 
 		// The OK button copies data from the components and sets the property properties.
 		// It then returns to the main tab
@@ -120,12 +126,23 @@ public class EncapsulationAnchorPointEditor extends JDialog {
 		JPanel outerPanel = new JPanel();
 		table = new JTable();		
 		outerPanel.setLayout(new MigLayout("ins 2,filly","para[:300:]","[120]5[]"));
-		String[] columnNames = { "PortName,Direction,Side,Datatype" };
-		DefaultTableModel dataModel = new DefaultTableModel(columnNames,0);  // No null rows
+		String PRE = PREFIX+".Encapsulation.Col.";
+		String[] columnNames = { BundleUtil.get().getString(PRE+"PortName"),
+				                 BundleUtil.get().getString(PRE+"Direction"),
+				                 BundleUtil.get().getString(PRE+"Side"),
+				                 BundleUtil.get().getString(PRE+"CxnType") };
+		DefaultTableModel dataModel = new EncapsulationEditTableModel(columnNames,0);  // No null rows
         table = new JTable(dataModel);
         table.setPreferredSize(TABLE_SIZE);
         table.setRowSelectionAllowed(true);
         table.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+        initColumnSizes(table);    // Setup column sizes
+        // Set combo boxes for all except the name field.
+        setUpNameColumn(table, table.getColumnModel().getColumn(0));
+        setUpDirectionColumn(table, table.getColumnModel().getColumn(1));
+        setUpSideColumn(table, table.getColumnModel().getColumn(2));
+        setUpConnectionTypeColumn(table, table.getColumnModel().getColumn(3));
+        
         JScrollPane tablePane = new JScrollPane(table);
         table.setFillsViewportHeight(true);
         outerPanel.add(tablePane, "wrap");
@@ -160,8 +177,7 @@ public class EncapsulationAnchorPointEditor extends JDialog {
 				btn.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e){
 						DefaultTableModel dtm = (DefaultTableModel)tbl.getModel();
-						String[] row = new String[1];
-						row[0] = "";   // Add an empty row
+						Object[] row = { "in",AnchorDirection.INCOMING,AnchorSide.LEFT,ConnectionType.DATA};
 						dtm.addRow(row);
 					}
 				});
@@ -226,6 +242,66 @@ public class EncapsulationAnchorPointEditor extends JDialog {
 		}
 		return btn;
 	}
+	//============================= Column Renderers ====================================
+    /*
+     * This method uses column widths from the model.
+     */
+    private void initColumnSizes(JTable table) {
+    	EncapsulationEditTableModel model = (EncapsulationEditTableModel)table.getModel();
+        TableColumn column = null;
+        int cellWidth = 0;
+        int[] widths = model.cellWidths;
+ 
+        for (int i = 0; i < model.getColumnCount(); i++) {
+            cellWidth = widths[i];
+            column.setPreferredWidth(cellWidth);
+        }
+    }
+    private void setUpNameColumn(JTable table,TableColumn nameColumn) {
+    	DefaultTableCellRenderer renderer = new DefaultTableCellRenderer();
+		renderer.setToolTipText(BundleUtil.get().getString(PREFIX+".Encapsulation.Col.PortName.Desc"));
+		nameColumn.setCellRenderer(renderer);
+	}
+	private void setUpDirectionColumn(JTable table,TableColumn directionColumn) {
+		//Set up the editor for the direction cells.
+		JComboBox<String> box = new JComboBox<String>();
+		for(AnchorDirection dir : AnchorDirection.values()) {
+			box.addItem(dir.name());
+		}
+		directionColumn.setCellEditor(new DefaultCellEditor(box));
+
+		DefaultTableCellRenderer renderer =
+				new DefaultTableCellRenderer();
+		renderer.setToolTipText(BundleUtil.get().getString(PREFIX+".Encapsulation.Col.Direction.Desc"));
+		directionColumn.setCellRenderer(renderer);
+	}
+	private void setUpSideColumn(JTable table,TableColumn directionColumn) {
+		//Set up the editor for the side cells.
+		JComboBox<String> box = new JComboBox<String>();
+		for(AnchorSide side : AnchorSide.values()) {
+			box.addItem(side.name());
+		}
+		directionColumn.setCellEditor(new DefaultCellEditor(box));
+
+		DefaultTableCellRenderer renderer =
+				new DefaultTableCellRenderer();
+		renderer.setToolTipText(BundleUtil.get().getString(PREFIX+".Encapsulation.Col.Side.Desc"));
+		directionColumn.setCellRenderer(renderer);
+	}
+	private void setUpConnectionTypeColumn(JTable table,TableColumn typeColumn) {
+		//Set up the editor for the datatype cells.
+		JComboBox<String> box = new JComboBox<String>();
+		for(ConnectionType type : ConnectionType.values()) {
+			box.addItem(type.name());
+		}
+		typeColumn.setCellEditor(new DefaultCellEditor(box));
+
+		//Set up tool tips for the sport cells.
+		DefaultTableCellRenderer renderer =
+				new DefaultTableCellRenderer();
+		renderer.setToolTipText(BundleUtil.get().getString(PREFIX+".Encapsulation.Col.CxnType.Desc"));
+		typeColumn.setCellRenderer(renderer);
+	}
 	
 	/**
 	 * Create a selection listener for both the list and the table.
@@ -252,89 +328,53 @@ public class EncapsulationAnchorPointEditor extends JDialog {
 		}
 	}
 	
-	private class EncapsulationEditTableModel extends AbstractTableModel {
-        private String[] columnNames = {"First Name",
-                                        "Last Name",
-                                        "Sport",
-                                        "# of Years",
-                                        "Vegetarian"};
-        private Object[][] data = {
-        {"Kathy", "Smith",
-         "Snowboarding", new Integer(5), new Boolean(false)},
-        {"John", "Doe",
-         "Rowing", new Integer(3), new Boolean(true)},
-        {"Sue", "Black",
-         "Knitting", new Integer(2), new Boolean(false)},
-        {"Jane", "White",
-         "Speed reading", new Integer(20), new Boolean(true)},
-        {"Joe", "Brown",
-         "Pool", new Integer(10), new Boolean(false)}
-        };
- 
-        public int getColumnCount() {
-            return columnNames.length;
-        }
- 
-        public int getRowCount() {
-            return data.length;
-        }
- 
-        public String getColumnName(int col) {
-            return columnNames[col];
-        }
- 
-        public Object getValueAt(int row, int col) {
-            return data[row][col];
-        }
- 
-        /*
+	private class EncapsulationEditTableModel extends DefaultTableModel {
+		private static final long serialVersionUID = 4731223117636121300L;
+		public EncapsulationEditTableModel(String[] columnNames,int rowCount) {
+			super(columnNames,rowCount);
+		}
+        
+        /**
          * JTable uses this method to determine the default renderer/
-         * editor for each cell.  If we didn't implement this method,
-         * then the last column would contain text ("true"/"false"),
-         * rather than a check box.
+         * editor for each cell.
+         * @see javax.swing.table.DefaultTableModel#getColumnClass(int)
          */
-        public Class getColumnClass(int c) {
-            return getValueAt(0, c).getClass();
+		@Override
+        public Class<?> getColumnClass(int c) {
+			switch(c) {
+				case 1: return AnchorDirection.class;
+				case 2: return AnchorSide.class;
+				case 3: return ConnectionType.class;
+				default: return String.class;
+			}
+            
         }
- 
-        /*
-         * Don't need to implement this method unless your table's
-         * editable.
-         */
-        public boolean isCellEditable(int row, int col) {
-            //Note that the data/cell address is constant,
-            //no matter where the cell appears onscreen.
-            if (col < 2) {
-                return false;
-            } else {
-                return true;
-            }
+		/**
+		 * All cells are editable.
+		 */
+		@Override
+		public boolean isCellEditable(int row, int col) {
+            return true;
         }
- 
-        /*
-         * Don't need to implement this method unless your table's
-         * data can change.
-         */
-        public void setValueAt(Object value, int row, int col) {
- 
-            data[row][col] = value;
+		/**
+		 * @return an array of column widths. Sum should be close to 400
+		 *         
+		 */
+		public final int[] cellWidths = {100,100,80,100};
+		/**
+		 * When setting the value, cast into the correct class depending on the column.
+		 * @see javax.swing.table.DefaultTableModel#setValueAt(java.lang.Object, int, int)
+		 * @pqrqm col 1-based column number
+		 */
+		public void setValueAt(Object value, int row, int col) {
+			if( value==null ) return;    // Do nothing
+			switch(col) {
+			    case 2:  super.setValueAt(AnchorDirection.valueOf(value.toString().toUpperCase()), row, col);
+			    case 3:  super.setValueAt(AnchorSide.valueOf(value.toString().toUpperCase()), row, col);
+			    case 4:  super.setValueAt(ConnectionType.valueOf(value.toString().toUpperCase()), row, col);
+				default: super.setValueAt(value.toString(), row, col);
+			}
             fireTableCellUpdated(row, col);
- 
-
-        }
- 
-        private void printDebugData() {
-            int numRows = getRowCount();
-            int numCols = getColumnCount();
- 
-            for (int i=0; i < numRows; i++) {
-                System.out.print("    row " + i + ":");
-                for (int j=0; j < numCols; j++) {
-                    System.out.print("  " + data[i][j]);
-                }
-                System.out.println();
-            }
-            System.out.println("--------------------------");
         }
     }
 }

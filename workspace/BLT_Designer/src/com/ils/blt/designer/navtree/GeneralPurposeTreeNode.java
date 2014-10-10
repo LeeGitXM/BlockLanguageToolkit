@@ -1188,7 +1188,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 	public void stateChanged(ChangeEvent event) {
 		// Set italics, enable Save
 		boolean dirty = statusManager.isResourceDirty(resourceId);
-		logger.infof("%s.stateChanged: dirty = %s",TAG,(dirty?"true":"false"));
+		logger.tracef("%s.stateChanged: dirty = %s",TAG,(dirty?"true":"false"));
 		setItalic(dirty);
 		applicationAction.setEnabled(dirty);    // Only applies to an application node
 		refresh();
