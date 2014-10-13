@@ -46,6 +46,8 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	protected ExecutionController controller = null;
 	private UUID blockId;
 	private UUID parentId;
+	private long projectId = -1;    // This is the global project
+	
 	private String name = ".";
 	protected String statusText;
 	protected PalettePrototype prototype = null;
@@ -140,6 +142,10 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	public PalettePrototype getBlockPrototype() {return prototype; }
 	@Override
 	public String getName() {return name;}
+	@Override
+	public long getProjectId() {return projectId;}
+	@Override
+	public void setProjectId(long projectId) {this.projectId = projectId;}
 	@Override
 	public BlockState getState() {return state;}
 	@Override

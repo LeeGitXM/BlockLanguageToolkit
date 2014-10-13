@@ -29,6 +29,9 @@ public class BlockDescriptor {
 	private String embeddedLabel="";      // Label place in block in designer
 	private String editorClass = null;    // Class of custom property editor
 	private boolean ctypeEditable=false;  // Can we globally change our connection types
+	private boolean encapsulation=false;  // Is this block is an encapsulation
+	
+
 	private String iconPath = null;       // Icon to use for an icon-only block
 	private boolean nameDisplayed = false;
 	private int nameOffsetX = 0;     // When displayed as an attribute
@@ -89,6 +92,7 @@ public class BlockDescriptor {
 	public int getPreferredWidth() {return preferredWidth;}
 	public BlockStyle getStyle() { return style; }
 	public boolean isCtypeEditable() {return ctypeEditable;}
+	public boolean isEncapsulation() {return encapsulation;}
 	public boolean isNameDisplayed() {return nameDisplayed;}
 	public boolean isReceiveEnabled() {return receiveEnabled;}
 	public boolean isTransmitEnabled() {return transmitEnabled;}
@@ -101,6 +105,7 @@ public class BlockDescriptor {
 	public void setEmbeddedFontSize(int embeddedFontSize) {this.embeddedFontSize = embeddedFontSize;}
 	public void setEmbeddedIcon(String embeddedIcon) {this.embeddedIcon = embeddedIcon;}
 	public void setEmbeddedLabel(String embeddedLabel) {this.embeddedLabel = embeddedLabel;}
+	public void setEncapsulation(boolean encapsulation) {this.encapsulation = encapsulation;}
 	public void setIconPath(String iconPath) {this.iconPath = iconPath;}
 	public void setNameDisplayed(boolean showName) {this.nameDisplayed = showName;}
 	public void setNameOffsetX(int nameOffsetX) {this.nameOffsetX = nameOffsetX;}

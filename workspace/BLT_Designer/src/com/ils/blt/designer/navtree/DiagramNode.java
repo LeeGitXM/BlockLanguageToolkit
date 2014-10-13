@@ -221,11 +221,6 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 	@Override
 	public boolean isEditable() {return true;}
 	
-	/**
-	 * As far as the tree knows, we're a leaf.
-	 */
-	@Override
-	public boolean isLeaf() { return true; }
 	
 	@Override
 	public void onDoubleClick() {

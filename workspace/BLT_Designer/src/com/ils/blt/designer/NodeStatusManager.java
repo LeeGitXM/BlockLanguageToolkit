@@ -11,11 +11,9 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 
-import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.serializable.DiagramState;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
-import com.inductiveautomation.ignition.designer.sqltags.search.ITagSearchFilter.SearchResult;
 
 
 /**
@@ -44,9 +42,17 @@ public class NodeStatusManager  {
 	 * Define a new resource. The default should work for newly discovered resources
 	 * @param resourceId
 	 */
-	public void defineResource(long parentResource,long resourceId ) {
+	public void defineResource(long parentResource,long resourceId) {
 		log.infof("%s.defineResource(%d:%d)",TAG,parentResource,resourceId);
 		statusMap.put(resourceId,new StatusEntry(parentResource));
+	}
+	/**
+	 * Delete a resource.
+	 * @param resourceId
+	 */
+	public void removeResource(long resourceId ) {
+		log.infof("%s.removeResource(%d)",TAG,resourceId);
+		statusMap.remove(resourceId);
 	}
 	public DiagramState getResourceState(long resourceId) {
 		DiagramState result = DiagramState.ACTIVE;  

@@ -34,7 +34,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.AbstractBlock;
 
 /**
- * This is the class that describes all blocks that appear in a
+ * This is the class that describes each block as it appears in a
  * diagram in the Designer. Different block shapes and characteristics
  * are provided by swapping out different UI rendering classes.
  * 
@@ -51,6 +51,7 @@ public class ProcessBlockView extends AbstractBlock {
 	private final String className;
 	private boolean dirty = false;   // A newly created block is clean because we initially sync with the gateway
 	private String editorClass = null; // Class name of custom editor for this block
+	private boolean encapsulation = false; // Is this an encapsulation block
 	private int    embeddedFontSize = WorkspaceConstants.DEFAULT_EMBEDDED_FONT_SIZE; // Size of font for interior label
 	private String embeddedIcon="";               // 32x32 icon to place in block in designer
 	private String embeddedLabel="";              // Label place in block in designer
@@ -69,6 +70,7 @@ public class ProcessBlockView extends AbstractBlock {
 	private boolean receiveEnabled = false;
 	private BlockState state = BlockState.INITIALIZED;
 	private String statusText;                    // Auxiliary text to display
+	private UUID subworkspaceId = null;           // Encapsulated diagram if encapsulation block
 	private BlockStyle style = BlockStyle.SQUARE;
 	private boolean transmitEnabled = false;
 	private BlockViewUI ui = null;
@@ -86,6 +88,7 @@ public class ProcessBlockView extends AbstractBlock {
 		this.className = descriptor.getBlockClass();
 		this.ctypeEditable = descriptor.isCtypeEditable();
 		this.editorClass = descriptor.getEditorClass();
+		this.encapsulation = descriptor.isEncapsulation();
 		this.embeddedIcon = descriptor.getEmbeddedIcon();
 		this.embeddedLabel= descriptor.getEmbeddedLabel();
 		this.embeddedFontSize= descriptor.getEmbeddedFontSize();
@@ -125,6 +128,7 @@ public class ProcessBlockView extends AbstractBlock {
 		this.embeddedIcon = sb.getEmbeddedIcon();
 		this.embeddedLabel= sb.getEmbeddedLabel();
 		this.embeddedFontSize = sb.getEmbeddedFontSize();
+		this.encapsulation = (sb.getSubworkspaceId()!=null);
 		this.iconPath = sb.getIconPath();
 		this.preferredHeight = sb.getPreferredHeight();
 		this.preferredWidth = sb.getPreferredWidth();
@@ -137,6 +141,7 @@ public class ProcessBlockView extends AbstractBlock {
 		this.statusText = sb.getStatusText();
 		this.receiveEnabled  = sb.isReceiveEnabled();
 		this.transmitEnabled = sb.isTransmitEnabled();
+		this.subworkspaceId = sb.getSubworkspaceId();
 		this.anchors = new ArrayList<ProcessAnchorDescriptor>();
 		if(sb.getAnchors()!=null ) {
 			for( SerializableAnchor sa:sb.getAnchors() ) {
@@ -188,6 +193,7 @@ public class ProcessBlockView extends AbstractBlock {
 		result.setState(getState());
 		result.setStatusText(getStatusText());
 		result.setStyle(getStyle());
+		result.setSubworkspaceId(subworkspaceId);
 		result.setReceiveEnabled(isReceiveEnabled());
 		result.setTransmitEnabled(isTransmitEnabled());
 		result.setX(getLocation().x);
@@ -287,6 +293,8 @@ public class ProcessBlockView extends AbstractBlock {
 	public BlockState getState() {return state;}
 	public String getStatusText() { return statusText; }
 	public BlockStyle getStyle() { return style; }
+	public UUID getSubworkspaceId() {return subworkspaceId;}
+	
 	@Override
 	public void initUI(BlockComponent blk) {
 		ui = factory.getUI(style, this);
@@ -294,12 +302,14 @@ public class ProcessBlockView extends AbstractBlock {
 	}
 	public boolean isCtypeEditable() {return ctypeEditable;}
 	public boolean isDirty() {return dirty;}
+	public boolean isEncapsulation() {return encapsulation;}
 	public boolean isNameDisplayed() { return nameDisplayed; }
 	public boolean isReceiveEnabled() {return receiveEnabled;}
 	public boolean isTransmitEnabled() {return transmitEnabled;}
 	public void setCtypeEditable(boolean ctypeEditable) {this.ctypeEditable = ctypeEditable;}
 	public void setDirty(boolean dirty) {this.dirty = dirty;} 
 	public void setEditorClass(String editorClass) {this.editorClass = editorClass;}
+	public void setEncapsulation(boolean encapsulation) {this.encapsulation = encapsulation;}
 	public void setEmbeddedFontSize(int size) {this.embeddedFontSize = size;}
 	public void setEmbeddedIcon(String embeddedIcon) {this.embeddedIcon = embeddedIcon;}
 	public void setEmbeddedLabel(String embeddedLabel) {this.embeddedLabel = embeddedLabel;}
@@ -322,6 +332,7 @@ public class ProcessBlockView extends AbstractBlock {
 	public void setState(BlockState state) {if(state!=null) this.state = state;}
 	public void setStatusText(String statusText) { this.statusText = statusText; }
 	public void setStyle(BlockStyle s) { this.style = s; }
+	public void setSubworkspaceId(UUID subworkspaceId) {this.subworkspaceId = subworkspaceId;}
 	public void setTransmitEnabled(boolean transmitEnabled) {this.transmitEnabled = transmitEnabled;}
 	
 	/**

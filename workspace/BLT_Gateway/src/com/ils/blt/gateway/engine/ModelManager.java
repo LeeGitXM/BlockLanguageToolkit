@@ -412,6 +412,7 @@ public class ModelManager implements ProjectListener  {
 				for(BlockProperty bp:pb.getProperties()) {
 					controller.startSubscription(pb,bp);
 				}
+				pb.setProjectId(projectId);
 			}
 			if( BlockExecutionController.getExecutionState().equals(BlockExecutionController.CONTROLLER_RUNNING_STATE)) {
 				log.infof("%s.addDiagramResource: starting blocks ...%d:%s",TAG,projectId,res.getName());

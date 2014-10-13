@@ -94,5 +94,6 @@ public class Encapsulation extends AbstractProcessBlock implements ProcessBlock 
 		desc.setPreferredHeight(100);
 		desc.setPreferredWidth(100);
 		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_LIGHT_GRAY);
+		desc.setEncapsulation(true);
 	}
 }
