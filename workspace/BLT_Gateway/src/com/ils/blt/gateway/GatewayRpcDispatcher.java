@@ -49,9 +49,12 @@ public class GatewayRpcDispatcher   {
 	public GatewayRpcDispatcher() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 	}
-
 	public void clearController() {
 		ControllerRequestHandler.getInstance().clearController();
+	}
+	
+	public String databaseForProject(Long projectId) {
+		return ControllerRequestHandler.getInstance().databaseForProject(projectId.longValue());
 	}
 	
 	/**

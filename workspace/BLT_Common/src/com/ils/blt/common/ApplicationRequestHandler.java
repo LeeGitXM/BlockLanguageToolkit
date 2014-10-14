@@ -55,6 +55,22 @@ public class ApplicationRequestHandler  {
 		}
 	}
 	/**
+	 * @return the default database for the project defined by the supplied Id  
+	 */
+	public String databaseForProject(long projectId) {
+		String result = "null";
+		try {
+			Object value = GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "databaseForProject",new Long(projectId));
+			log.debugf("%s.databaseForProject  ...%d = %s",TAG,projectId,result);
+			if( value!=null ) result = value.toString();
+		}
+		catch(Exception ge) {
+			log.infof("%s.databaseForProject: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		return result;
+	}
+	/**
 	 * Determine whether or not the indicated diagram is known to the controller.
 	 */
 	public boolean diagramExists(String uuidString) {

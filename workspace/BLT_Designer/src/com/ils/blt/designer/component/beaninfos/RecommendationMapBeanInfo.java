@@ -10,7 +10,7 @@ import java.beans.SimpleBeanInfo;
 
 import javax.swing.ImageIcon;
 
-import com.ils.blt.client.component.DiagramAnalyzerComponent;
+import com.ils.blt.client.component.RecommendationMapComponent;
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.factorypmi.designer.property.customizers.DynamicPropertyProviderCustomizer;
 import com.inductiveautomation.factorypmi.designer.property.customizers.StyleCustomizer;
@@ -22,20 +22,20 @@ import com.inductiveautomation.vision.api.designer.beans.CustomizerDescriptor;
 
 
 /**
- * Define properties accessible in the designer properties editor for the CallbackBlock.
+ * Define properties accessible in the designer properties editor for the RecommendationMap.
  * Also set the icon.
  */
-public class DiagramAnalyzerComponentBeanInfo extends CommonBeanInfo {
-	private static final String TAG = "DiagramAnalyzerComponentBeanInfo";
+public class RecommendationMapBeanInfo extends CommonBeanInfo {
+	private static final String TAG = "RecommendationMapBeanInfo";
 	private static final String PREFIX = BLTProperties.BLOCK_PREFIX;  // Has block properties
-	private static final LoggerEx logger = LogUtil.getLogger(DiagramAnalyzerComponentBeanInfo.class.getPackage().getName());
+	private static final LoggerEx logger = LogUtil.getLogger(RecommendationMapBeanInfo.class.getPackage().getName());
 	
 	/**
 	 * Constructor: Create a beaninfo object for the CallbackBlock. The
 	 *              superclass fills in common properties and customizers.
 	 */
-	public DiagramAnalyzerComponentBeanInfo() {
-		super(DiagramAnalyzerComponent.class, new CustomizerDescriptor[] {
+	public RecommendationMapBeanInfo() {
+		super(RecommendationMapComponent.class, new CustomizerDescriptor[] {
 				DynamicPropertyProviderCustomizer.VALUE_DESCRIPTOR,
 				StyleCustomizer.VALUE_DESCRIPTOR});
 		logger.infof("%s:CONSTRUCTOR",TAG);
@@ -55,9 +55,9 @@ public class DiagramAnalyzerComponentBeanInfo extends CommonBeanInfo {
 	@Override
 	protected void initDesc() {
 		logger.infof("%s.initDesc",TAG);
-		getBeanDescriptor().setName(BundleUtil.get().getString(PREFIX+".DiagramAnalyzer.Name"));
-		getBeanDescriptor().setDisplayName(BundleUtil.get().getString(PREFIX+".DiagramAnalyzer.Display"));       // Tooltip-title
-		getBeanDescriptor().setShortDescription(BundleUtil.get().getString(PREFIX+".DiagramAnalyzer.Desc"));     // Tooltip-description
+		getBeanDescriptor().setName(BundleUtil.get().getString(PREFIX+".RecommendationMap.Name"));
+		getBeanDescriptor().setDisplayName(BundleUtil.get().getString(PREFIX+".RecommendationMap.Display"));       // Tooltip-title
+		getBeanDescriptor().setShortDescription(BundleUtil.get().getString(PREFIX+".RecommendationMap.Desc"));     // Tooltip-description
 		super.initDesc();
 	}
 

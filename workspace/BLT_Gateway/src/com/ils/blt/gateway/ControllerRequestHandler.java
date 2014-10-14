@@ -27,6 +27,7 @@ import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
+import com.inductiveautomation.ignition.common.project.ProjectVersion;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
@@ -57,7 +58,6 @@ public class ControllerRequestHandler   {
 	private GatewayContext context = null;
 	private static ControllerRequestHandler instance = null;
 	
-	protected long projectId = 0;
 
 	/**
 	 * Initialize with instances of the classes to be controlled.
@@ -108,6 +108,14 @@ public class ControllerRequestHandler   {
 			log.warnf("%s.createInstance: Security exception creating %s (%s)",TAG,className,iae.getLocalizedMessage()); 
 		}
 		return block;
+	}
+	/**
+	 * @return the name of the database connection associated with the specified project
+	 */
+	public String databaseForProject(long projectId) {
+		String database = "DatabaseLookupFailed";
+		database = context.getProjectManager().getProps(projectId, ProjectVersion.Published).getDefaultDatasourceName();
+		return database;
 	}
 	/**
 	 * Query the block controller for a block specified by the block id. If the block

@@ -20,14 +20,15 @@ import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.common.BundleUtil;
 
 /**
- *  This is the JComponent that renders a CallbackBlock.
+ *  Use Prefuse to display a map of Recommendations to Outputs. The map
+ *  allows interaction to update the recommendation priorities.
  */
-public class DiagramAnalyzerComponent extends AbstractDiagramComponent {
+public class RecommendationMapComponent extends AbstractDiagramComponent {
 	private static final long serialVersionUID = 4408313516136446100L;
 	private static String PREFIX = BLTProperties.CUSTOM_PREFIX;              // For bundle identification
 	
 
-	public DiagramAnalyzerComponent() {
+	public RecommendationMapComponent() {
 		
 		setName(BundleUtil.get().getString(PREFIX+".Component.Analyzer.Name"));
 		setHeading(BundleUtil.get().getString(PREFIX+".Component.Analyzer.Name"));

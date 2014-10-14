@@ -27,6 +27,13 @@ public class ApplicationScriptFunctions   {
 	}
 	
 	/**
+	 * @return the default database for the project defined by the supplied Id  
+	 */
+	public static String databaseForProject(long projectId) {
+		return manager.databaseForProject(projectId);
+	}
+	
+	/**
 	 * Query the gateway for a list of prototypes for the defined blocks. 
 	 */
 	@SuppressWarnings("rawtypes")

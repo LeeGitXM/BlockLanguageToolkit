@@ -4,7 +4,7 @@
 package com.ils.blt.designer;
 
 
-import com.ils.blt.client.component.DiagramAnalyzerComponent;
+import com.ils.blt.client.component.RecommendationMapComponent;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.ApplicationScriptFunctions;
 import com.ils.blt.common.BLTProperties;
@@ -85,7 +85,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 				log.infof("%s: Group not a DefaultPaletteItemGroup, is %s",TAG,group.getClass().getName());
 			}
 			try {
-				group.addPaletteItem(new JavaBeanPaletteItem(DiagramAnalyzerComponent.class));
+				group.addPaletteItem(new JavaBeanPaletteItem(RecommendationMapComponent.class));
 			}
 			catch(Exception ie ) {
 				log.warnf("%s: Error creating palette entries (%s)",TAG,ie.getMessage());

@@ -2,4 +2,5 @@
 bin/
 modules/
 temp_modl/
+.recommenders/
 .version
