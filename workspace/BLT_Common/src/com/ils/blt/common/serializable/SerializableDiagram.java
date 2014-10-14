@@ -13,8 +13,9 @@ import java.util.UUID;
 public class SerializableDiagram {
 	private SerializableBlock[] blocks;
 	private SerializableConnection[] connections;
-	private UUID id;
-	private String name;
+	private UUID id = null;
+	private String name = "UNSET";
+	private UUID encapsulationBlockID = null;   // Applies only to diagrams that are sub-workspaces of an encapsulation
 	private long resourceId = -1;
 	private DiagramState state = DiagramState.ACTIVE;
 	private boolean dirty = false;
@@ -28,6 +29,7 @@ public class SerializableDiagram {
 
 	public SerializableBlock[] getBlocks() { return blocks; }
 	public SerializableConnection[] getConnections() { return connections; }
+	public UUID getEncapsulationBlockId() {return encapsulationBlockID;}
 	public UUID getId() {return id;}
 	public String getName() { return name; }
 	public long getResourceId() {return resourceId;}
@@ -37,6 +39,7 @@ public class SerializableDiagram {
 	public void setBlocks(SerializableBlock[] list) { blocks=list; }
 	public void setConnections(SerializableConnection[] list) { connections=list; }
 	public void setDirty(boolean dirty) {this.dirty = dirty;}
+	public void setEncapsulationBlockId(UUID parentId) {this.encapsulationBlockID = parentId;}
 	public void setId(UUID id) {this.id = id;}
 	public void setName(String nam) { if(nam!=null) name=nam; }
 	public void setResourceId(long resourceId) {this.resourceId = resourceId;}

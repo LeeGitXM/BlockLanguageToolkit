@@ -43,6 +43,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	private Dimension diagramSize = new Dimension(800,600);
 	private final UUID id;
 	private final String name;
+	private UUID encapsulationBlockID = null;  // Used only if this diagram represents a sub-workspace
 	private final long resourceId;
 	private DiagramState state = DiagramState.ACTIVE;
 	private DesignerContext context;
@@ -265,7 +266,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	public Dimension getDiagramSize() {
 		return diagramSize;
 	}
-
+	public UUID getEncapsulationBlockID() {return encapsulationBlockID;}
 	public UUID getId() {return id;}
 
 	public String getName() {return name;}
@@ -290,6 +291,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		diagramSize = dim;
 		super.fireStateChanged();  // Bypass setting block dirty
 	}
+	public void setEncapsulationBlockID(UUID encapsulationBlockID) {this.encapsulationBlockID = encapsulationBlockID;}
 	public void setState(DiagramState state) {this.state = state;}
 	
 	@Override

@@ -77,7 +77,10 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 * @return a particular property by name.
 	 */
 	public BlockProperty getProperty(String name);
-
+	/**
+	 * @return the id of the project under which this block was created.
+	 */
+	public long getProjectId() ;
 	/**
 	 * @return a list of names of properties known to this class.
 	 */
@@ -115,6 +118,10 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 *        diagram.
 	 */
 	public void setName(String name);
+	/**
+	 * @param id is the project to which this block belongs.
+	 */
+	public void setProjectId(long id);
 	/**
 	 * Accept a new value for a block property. It is up to the
 	 * block to determine whether or not this triggers block 

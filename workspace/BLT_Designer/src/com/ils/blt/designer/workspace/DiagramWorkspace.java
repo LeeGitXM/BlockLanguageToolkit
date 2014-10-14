@@ -5,6 +5,7 @@ package com.ils.blt.designer.workspace;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.EventQueue;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Stroke;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -49,6 +51,7 @@ import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.config.ObservablePropertySet;
+import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -344,6 +347,38 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			for(SerializableBlock sb:list) {
 				ProcessBlockView pbv = new ProcessBlockView(sb);
 				results.add(pbv);
+				// Special handling for an encapsulation block - create its sub-workspace
+				if(pbv.isEncapsulation()) {
+					try {
+						final long newId = context.newResourceId();
+						SerializableDiagram diagram = new SerializableDiagram();
+						diagram.setName(pbv.getName());
+						diagram.setResourceId(newId);
+						diagram.setId(UUID.randomUUID());
+						diagram.setEncapsulationBlockId(pbv.getId());
+						diagram.setDirty(false);    // Will become dirty as soon as we add a block
+						logger.infof("%s: new diagram for encapsulation block ...",TAG);
+						try{ 
+						    json = mapper.writeValueAsString(diagram);
+						}
+						catch(JsonProcessingException jpe) {
+							logger.warnf("%s: Unable to serialize diagram (%s)",TAG,jpe.getMessage());
+						}
+						logger.infof("%s: serializeDiagram created json ... %s",TAG,json);
+
+						byte[] bytes = json.getBytes();
+						logger.debugf("%s: DiagramAction. create new %s resource %d (%d bytes)",TAG,BLTProperties.DIAGRAM_RESOURCE_TYPE,
+								newId,bytes.length);
+						ProjectResource resource = new ProjectResource(newId,
+								BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
+								pbv.getName(), ApplicationScope.GATEWAY, bytes);
+						resource.setParentUuid(getActiveDiagram().getId());
+						context.updateResource(resource);					
+					} 
+					catch (Exception err) {
+						ErrorUtil.showError(err);
+					}
+				}
 			}
 		} 
 		catch (JsonParseException jpe) {
@@ -625,20 +660,20 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				}); 
 			}
 			catch(InvocationTargetException ite ) {
-				logger.infof("%s.getSelectionPopupMenu: Invocation failed for %s",TAG,block.getEditorClass()); 
+				logger.infof("%s.customEditAction: Invocation failed for %s",TAG,block.getEditorClass()); 
 			}
 			catch(NoSuchMethodException nsme ) {
-				logger.infof("%s.getSelectionPopupMenu %s: Constructor taking block not found (%s)",TAG,block.getEditorClass(),nsme.getMessage()); 
+				logger.infof("%s.customEditAction %s: Constructor taking block not found (%s)",TAG,block.getEditorClass(),nsme.getMessage()); 
 			}
 			catch(ClassNotFoundException cnfe) {
-				logger.infof("%s.getSelectionPopupMenu: Custom editor class (%s) not found (%s)",TAG,
+				logger.infof("%s.customEditAction: Custom editor class (%s) not found (%s)",TAG,
 						block.getEditorClass(),cnfe.getLocalizedMessage());
 			}
 			catch( InstantiationException ie ) {
-				logger.infof("%s.getSelectionPopupMenu: Error instantiating %s (%s)",TAG,block.getEditorClass(),ie.getLocalizedMessage()); 
+				logger.infof("%s.customEditAction: Error instantiating %s (%s)",TAG,block.getEditorClass(),ie.getLocalizedMessage()); 
 			}
 			catch( IllegalAccessException iae ) {
-				logger.infof("%s.getSelectionPopupMenu: Security exception creating %s (%s)",TAG,block.getEditorClass(),iae.getLocalizedMessage()); 
+				logger.infof("%s.customEditAction: Security exception creating %s (%s)",TAG,block.getEditorClass(),iae.getLocalizedMessage()); 
 			}
 		}
 	}

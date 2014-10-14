@@ -4,7 +4,6 @@
  */
 package com.ils.blt.designer.workspace;
 
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Insets;
@@ -28,7 +27,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
 import net.miginfocom.swing.MigLayout;
@@ -61,7 +59,6 @@ public class EncapsulationAnchorPointEditor extends JDialog {
 	private JButton deleteButton;   // Click to delete a row
 
 	private JTable table;
-
 	public EncapsulationAnchorPointEditor(ProcessBlockView view) {
 		super();
 		this.block = view;

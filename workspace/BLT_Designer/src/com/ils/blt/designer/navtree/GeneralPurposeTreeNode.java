@@ -679,7 +679,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 			}
 		}
 	}
-	// Savehronize the entire Application hierarchy.
+	// Save the entire Application hierarchy.
 	private class ApplicationSaveAction extends BaseAction {
     	private static final long serialVersionUID = 1L;
     	private final AbstractResourceNavTreeNode root;
