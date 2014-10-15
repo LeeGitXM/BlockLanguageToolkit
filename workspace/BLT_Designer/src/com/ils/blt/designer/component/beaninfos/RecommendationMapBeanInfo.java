@@ -46,6 +46,12 @@ public class RecommendationMapBeanInfo extends CommonBeanInfo {
 		// Adds common properties
 		logger.infof("%s:INITPROPRTIES",TAG);
 		super.initProperties();
+		/*
+		addProp(RangeSliderPanel.DECIMAL_PLACES_PROPERTY, "Number of Decimal Places",
+				"How many significant digits to display after the decimal point.",
+				CAT_APPEARANCE,
+				PREFERRED_MASK | BOUND_MASK | EXPERT_MASK );
+		*/
 	}
 	
 	/**

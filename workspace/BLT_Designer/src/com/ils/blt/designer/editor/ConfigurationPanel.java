@@ -35,6 +35,7 @@ import com.ils.blt.common.block.PropertyType;
  */
 
 public class ConfigurationPanel extends BasicEditPanel {
+	private final static String TAG = "ConfigurationPanel";
 	// A Configuration panel is designed to configuration of a single property.
 	// Allow modification of the binding (subject to certain restrictions),
 	// show the data type (read-only) and allow for attribute display.
@@ -66,7 +67,7 @@ public class ConfigurationPanel extends BasicEditPanel {
 		JPanel typePanel = new JPanel();
 		typePanel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
 		addSeparator(typePanel,"Property Type");
-		propertyTypeCombo = createPropertyTypeCombo();
+		propertyTypeCombo = createPropertyTypeCombo();   
 		propertyTypeCombo.setEditable(false);
 		typePanel.add(propertyTypeCombo,"skip");
 		add(typePanel,"");
@@ -139,7 +140,7 @@ public class ConfigurationPanel extends BasicEditPanel {
 			entries[index]=type.name();
 			index++;
 		}
-		final JComboBox<String> box = new JComboBox<String>(entries);
+		final JComboBox<String> box = new BindingCombo<String>(entries);
 		box.setPreferredSize(COMBO_BOX_SIZE);
 		return box;
 	}
@@ -153,7 +154,7 @@ public class ConfigurationPanel extends BasicEditPanel {
 			entries[index]=type.name();
 			index++;
 		}
-		final JComboBox<String> box = new BindingCombo<String>(entries);
+		final JComboBox<String> box = new JComboBox<String>(entries);
 		box.setPreferredSize(COMBO_BOX_SIZE);
 		return box;
 	}
@@ -167,10 +168,10 @@ public class ConfigurationPanel extends BasicEditPanel {
 		@SuppressWarnings("unchecked")
 		public BindingCombo(E[] strings) {
 			super(strings);
-			setRenderer(new BindingTypeRenderer<E>());
+			//setRenderer(new BindingTypeRenderer<E>());
 		}
-		@Override
-		public ComboBoxModel<E> getModel() { return new BindingComboModel<E>(); }
+		//@Override
+		//public ComboBoxModel<E> getModel() { return new BindingComboModel<E>(); }
 	
 	}
 	/** 
@@ -203,7 +204,7 @@ public class ConfigurationPanel extends BasicEditPanel {
 	 * @see  http://stackoverflow.com/questions/14852539/disable-jcombobox-items-at-runtime
 	 */
 	public class BindingTypeRenderer<E> extends BasicComboBoxRenderer {
-		private static final long serialVersionUID = 1L;
+		private static final long serialVersionUID = 8337653971902491842L;
 		private Color disabledColor = Color.lightGray;
 
 		/**
@@ -227,20 +228,26 @@ public class ConfigurationPanel extends BasicEditPanel {
 
 		/**
 		 * Custom implementation to color items as enabled or disabled.
+		 * @param value the currently selected value
 		 */
 		@Override
-		public Component getListCellRendererComponent( JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+		public Component getListCellRendererComponent( @SuppressWarnings("rawtypes") JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 		    Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-
-		    boolean enabled = (value!=null && !value.toString().equals(BindingType.ENGINE.name()));
+		    String display = "";
+		    if( index>=0 && index < list.getModel().getSize() ) display = (String)list.getModel().getElementAt(index);
+		    boolean enabled = (index<0  || !display.equals(BindingType.ENGINE.name()));
+		    log.infof("%s.getCelListRenderer: %d %s is %s (%s)",TAG,index,display,
+		    		                                                 (enabled?"ENABLED":"DISABLED"),c.getClass().getName());
 		    if (!enabled) {
 		        if (isSelected) {
 		            c.setBackground(UIManager.getColor("ComboBox.background"));
-		        } else {
+		        } 
+		        else {
 		            c.setBackground(super.getBackground());
 		        }
 		        c.setForeground(disabledColor);
-		    } else {
+		    } 
+		    else {
 		        c.setBackground(super.getBackground());
 		        c.setForeground(super.getForeground());
 		    }

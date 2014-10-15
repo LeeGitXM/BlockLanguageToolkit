@@ -75,7 +75,12 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 			final Palette palette = vdi.getPalette();
 
 			// Populate the palette
-			PaletteItemGroup group = palette.addGroup(BundleUtil.get().getString(PREFIX+".Palette.Name"));
+			PaletteItemGroup group = null;
+			String paletteName = BundleUtil.get().getString(PREFIX+".Palette.Name");
+			if ((group = palette.getGroup(paletteName)) == null) {
+				group = palette.addGroup(paletteName);
+			}
+	
 			if( group instanceof DefaultPaletteItemGroup ) {
 				// The icon is located in vis-designer/images/incors
 				((DefaultPaletteItemGroup) group).setIcon(IconUtil.getIcon("add_child"));
@@ -90,6 +95,19 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 			catch(Exception ie ) {
 				log.warnf("%s: Error creating palette entries (%s)",TAG,ie.getMessage());
 			}
+			/*
+		
+
+			PaletteItemGroup group = null;
+			if ((group = palette.getGroup(ILS_PALETTE_NAME)) == null) {
+				group = palette.addGroup(ILS_PALETTE_NAME);
+			}
+			JavaBeanPaletteItem paletteItem = new JavaBeanPaletteItem(RangeSliderPanel.class) {
+				public String getShortDescription() { return "A slider to select a range of numeric values"; }
+				public String getDisplayName() { return "ILS Range Slider"; }
+			};
+			group.addPaletteItem(paletteItem);
+			*/
 		}
 		
 		// Setup the diagram workspace
