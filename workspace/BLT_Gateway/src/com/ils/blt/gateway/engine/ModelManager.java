@@ -601,6 +601,7 @@ public class ModelManager implements ProjectListener  {
 				log.infof("%s.deserializeDiagramResource: successfully deserialized diagram %s",TAG,sd.getName());
 				diagram = new ProcessDiagram(sd,res.getParentUuid());
 				diagram.setResourceId(res.getResourceId());
+				diagram.setProjectId(projId);
 			}
 			else {
 				log.warnf("%s.deserializeDiagramResource: deserialization failed",TAG);

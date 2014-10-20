@@ -2,7 +2,7 @@
 # Process all of the json files in the repository "g2" area.
 # Save the results in the json storate area for ignition.
 #
-BLT=~/Development/ils/repo/blt
+BLT=~/Development/ils/src/blt
 APP=$BLT/migration/migrate
 INDIR=$BLT/json/g2
 OUTDIR=$BLT/json/ignition

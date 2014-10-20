@@ -4,7 +4,7 @@
 # working on ...
 #
 BIN=`pwd`
-REPO=~/Development/ils/repo/blt/workspace/BLT_Migration/json
+REPO=~/Development/ils/src/blt/workspace/BLT_Migration/json
 G2=${REPO}/g2
 IGNITION=${REPO}/ignition
 VETTED=${REPO}/ignition-vetted

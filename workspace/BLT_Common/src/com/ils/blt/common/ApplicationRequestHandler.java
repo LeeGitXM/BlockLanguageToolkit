@@ -228,7 +228,48 @@ public class ApplicationRequestHandler  {
 		}
 		return result;
 	}
-	
+	/**
+	 * Execute reset() on a specified block
+	 */
+	public void resetBlock(String diagramId,String blockId) {
+		log.debugf("%s.resetBlock ...",TAG);
+
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "resetBlock",diagramId,blockId);
+		}
+		catch(Exception ge) {
+			log.infof("%s.resetBlock: GatewayException (%s)",TAG,ge.getMessage());
+		}
+	}
+	/**
+	 * Execute reset() on every block on the diagram
+	 */
+	public void resetDiagram(String diagramId) {
+		log.debugf("%s.resetDiagram ...",TAG);
+
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "resetDiagram",diagramId);
+		}
+		catch(Exception ge) {
+			log.infof("%s.resetDiagram: GatewayException (%s)",TAG,ge.getMessage());
+		}
+	}
+	/**
+	 * Execute reset() on every block on the diagram
+	 */
+	public void resetDiagram(String projectName,String diagramPath) {
+		log.debugf("%s.resetDiagram ...",TAG);
+
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "resetDiagram",projectName,diagramPath);
+		}
+		catch(Exception ge) {
+			log.infof("%s.resetDiagram: GatewayException (%s)",TAG,ge.getMessage());
+		}
+	}
 	/**
 	 * Determine whether or not the indicated resource is known to the controller.
 	 */

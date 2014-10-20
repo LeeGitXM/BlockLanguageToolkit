@@ -15,6 +15,7 @@ import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.BlockStyle;
+import com.ils.blt.common.block.PlacementHint;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.connection.ConnectionType;
@@ -39,13 +40,17 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 	protected static String BLOCK_PROPERTY_KP = "Kp";
 	protected static String BLOCK_PROPERTY_INITIAL_VALUE  = "InitialValue";
 	protected static String BLOCK_PROPERTY_SET_POINT      = "SetPoint";
+	protected static String SETPOINT_PORT      = "setpoint";
+	protected static String PROPORTIONAL_PORT      = "p";
+	protected static String INTEGRAL_PORT          = "i";
+	protected static String DERIVATIVE_PORT        = "d";
 	private double kd = Double.NaN;
 	private double ki = Double.NaN;
 	private double kp = Double.NaN;
 	private double error = 0.0;
 	private double initialValue = Double.NaN;
 	private double integral = 0.0;
-	private int interval = 60;  // ~secs
+	private double interval = 1.0;  // msecs
 	private double pv = Double.NaN;
 	private double setPoint = Double.NaN;
 	private final Watchdog dog;
@@ -70,6 +75,13 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 		dog = new Watchdog(TAG,this);
 		initialize();
 	}
+	@Override
+	public void reset() {
+		super.reset();
+		error = 0.0;
+		integral = 0.0;
+		pv = initialValue;
+	}
 	
 	/**
 	 * Add properties that are new for this class.
@@ -80,9 +92,7 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 		this.isReceiver = true;
 		BlockProperty pvProperty = new BlockProperty(BLOCK_PROPERTY_INITIAL_VALUE,new Double(pv),PropertyType.DOUBLE,true);
 		properties.put(BLOCK_PROPERTY_INITIAL_VALUE, pvProperty);
-		BlockProperty spProperty = new BlockProperty(BLOCK_PROPERTY_SET_POINT,new Double(setPoint),PropertyType.DOUBLE,true);
-		properties.put(BLOCK_PROPERTY_SET_POINT, spProperty);
-		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL,new Integer(interval),PropertyType.INTEGER,true);
+		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL,new Double(interval),PropertyType.INTEGER,true);
 		properties.put(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL, intervalProperty);
 		BlockProperty kdProperty = new BlockProperty(BLOCK_PROPERTY_KD,new Double(kd),PropertyType.DOUBLE,true);
 		properties.put(BLOCK_PROPERTY_KD, kdProperty);
@@ -92,12 +102,27 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 		properties.put(BLOCK_PROPERTY_KP, kpProperty);
 		
 		
-		// Define a single input -- but allow multiple connections
+		// Define a two inputs -- feedback and setpoint
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
+		input.setAnnotation("V");
 		anchors.add(input);
+		
+		AnchorPrototype setpoint = new AnchorPrototype(SETPOINT_PORT,AnchorDirection.INCOMING,ConnectionType.DATA);
+		setpoint.setAnnotation("S");
+		anchors.add(setpoint);
 
-		// Define a single output
+		// Define outputs for the result, plus components of the error
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
+		output.setHint(PlacementHint.B);
+		anchors.add(output);
+		output = new AnchorPrototype(PROPORTIONAL_PORT,AnchorDirection.OUTGOING,ConnectionType.DATA);
+		output.setAnnotation("P");
+		anchors.add(output);
+		output = new AnchorPrototype(INTEGRAL_PORT,AnchorDirection.OUTGOING,ConnectionType.DATA);
+		output.setAnnotation("I");
+		anchors.add(output);
+		output = new AnchorPrototype(DERIVATIVE_PORT,AnchorDirection.OUTGOING,ConnectionType.DATA);
+		output.setAnnotation("D");
 		anchors.add(output);
 	}
 
@@ -144,19 +169,11 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 		else if(propertyName.equals(BLOCK_PROPERTY_INITIAL_VALUE)) {
 			try {
 				initialValue = Double.parseDouble(event.getNewValue().toString());
+				pv = initialValue;
 				log.infof("%s.propertyChange: initial value now %f (%s)",TAG,initialValue,getBlockId().toString());
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.propertyChange: Unable to convert initial value to an float (%s)",TAG,nfe.getLocalizedMessage());
-			}
-		}
-		else if(propertyName.equals(BLOCK_PROPERTY_SET_POINT)) {
-			try {
-				setPoint = Double.parseDouble(event.getNewValue().toString());
-				log.infof("%s.propertyChange: setPoint now %f (%s)",TAG,setPoint,getBlockId().toString());
-			}
-			catch(NumberFormatException nfe) {
-				log.warnf("%s.propertyChange: Unable to convert set point value to an float (%s)",TAG,nfe.getLocalizedMessage());
 			}
 		}
 		else {
@@ -186,6 +203,19 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 				log.warnf("%s.acceptValue: Unable to convert incoming data to double (%s)",TAG,nfe.getLocalizedMessage());
 			}
 		}
+		else if( port.equals(SETPOINT_PORT)  ) {
+			QualifiedValue qv = vcn.getValue();
+			try {
+				setPoint = Double.parseDouble(qv.getValue().toString());
+				if( !dog.isActive() ) {
+					dog.setSecondsDelay(interval);
+					controller.pet(dog);
+				}
+			}
+			catch(NumberFormatException nfe) {
+				log.warnf("%s.acceptValue: Unable to convert incoming data to double (%s)",TAG,nfe.getLocalizedMessage());
+			}
+		}
 	}
 	
 	/**
@@ -201,9 +231,7 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 		Signal signal = sn.getSignal();
 		log.infof("%s.acceptValue: signal = %s (%s)",TAG,signal.getCommand(),getBlockId().toString());
 		if( signal.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_RESET)) {
-			error = 0.0;
-			integral = 0.0;
-			controller.removeWatchdog(dog);
+			reset();
 		}
 		else if( signal.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_START)) {
 			if(!dog.isActive()) {
@@ -220,21 +248,36 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public synchronized void evaluate() {
-		log.infof("%s.evaluate ... %d secs",TAG,interval);
 		dog.setSecondsDelay(interval);
 		controller.pet(dog);
 		if( !isValid() ) return;
 		// Compute PID
 		double previousError = error;
-		double dt = interval/1000;   // In seconds
+		double dt = interval;        // In seconds
 		error = setPoint - pv;
 		integral += error*dt;
 		double derivative = (error - previousError)/dt;
-		double result = kp*error + ki*integral + kd*derivative;
+		double proportionalContribution = kp*error;
+		double integralContribution = ki*integral;
+		double derivativeContribution = kd*derivative;
+		double result = proportionalContribution + integralContribution + derivativeContribution;
+		if( log.isTraceEnabled() ) {
+			log.infof("%s.evaluate Kp = %f",TAG,proportionalContribution);
+			log.infof("%s.evaluate Ki = %f",TAG,integralContribution);
+			log.infof("%s.evaluate Kd = %f",TAG,derivativeContribution);
+		}
+		
 		
 		log.infof("%s: evaluate - pid out is %f",TAG,result);
 		OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,new BasicQualifiedValue(result));
 		controller.acceptCompletionNotification(nvn);
+		nvn = new OutgoingNotification(this,PROPORTIONAL_PORT,new BasicQualifiedValue(proportionalContribution));
+		controller.acceptCompletionNotification(nvn);
+		nvn = new OutgoingNotification(this,INTEGRAL_PORT,new BasicQualifiedValue(integralContribution));
+		controller.acceptCompletionNotification(nvn);
+		nvn = new OutgoingNotification(this,DERIVATIVE_PORT,new BasicQualifiedValue(derivativeContribution));
+		controller.acceptCompletionNotification(nvn);
+		
 	}
 	
 	/**

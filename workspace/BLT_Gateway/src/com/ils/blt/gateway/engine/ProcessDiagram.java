@@ -42,6 +42,7 @@ public class ProcessDiagram extends ProcessNode {
 	protected final Map<UUID,ProcessBlock> blocks;
 	private final Map<ConnectionKey,ProcessConnection> connectionMap;            // Key by connection number
 	protected final Map<BlockPort,List<ProcessConnection>> outgoingConnections;    // Key by upstream block:port
+	private long projectId = -1;
 	private final long resourceId;
 	private DiagramState state = DiagramState.ACTIVE;
 	
@@ -66,7 +67,8 @@ public class ProcessDiagram extends ProcessNode {
 	public ProcessBlock getBlock(UUID id) { return blocks.get(id); }
 	public Collection<ProcessBlock> getProcessBlocks() { return blocks.values(); }
 	public long getResourceId() { return this.resourceId; }
-	
+	public long getProjectId() {return projectId;}
+	public void setProjectId(long projectId) {this.projectId = projectId;}
 	
 	/**
 	 * Analyze the diagram for nodes.

@@ -1,7 +1,7 @@
 #!/bin/sh
 #  Use this version when debugging a single file.
 #
-BLT=~/Development/ils/repo/blt
+BLT=~/Development/ils/src/blt
 #FIL=dirtSimpleApplication
 #FIL=dirtSimpleApplicationWithConnections
 #FIL=crxProductQuality

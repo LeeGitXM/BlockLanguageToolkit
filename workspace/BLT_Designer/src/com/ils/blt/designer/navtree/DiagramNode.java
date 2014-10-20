@@ -116,8 +116,8 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 	protected void initPopupMenu(JPopupMenu menu, TreePath[] paths,List<AbstractNavTreeNode> selection, int modifiers) {
 		setupEditActions(paths, selection);
 		ExportDiagramAction exportAction = new ExportDiagramAction(menu.getRootPane(),resourceId);
-		
 		menu.add(exportAction);
+		ResetDiagramAction resetAction = new ResetDiagramAction();
 		
 		// States are: ACTIVE, DISABLED, RESTRICTED
 		ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
@@ -140,6 +140,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 		menu.addSeparator();
 		menu.add(renameAction);
         menu.add(deleteAction);
+        menu.add(resetAction);
 	}
 
 
@@ -397,6 +398,17 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
     }
 	
 	
+	private class ResetDiagramAction extends BaseAction {
+    	private static final long serialVersionUID = 1L;
+	    public ResetDiagramAction()  {
+	    	super(PREFIX+".ResetDiagram",IconUtil.getIcon("check2")); 
+	    }
+	    
+		public void actionPerformed(ActionEvent e) {
+			ApplicationRequestHandler handler = new ApplicationRequestHandler();
+			handler.resetDiagram(workspace.getActiveDiagram().getId().toString());
+		}
+	}
 	private class SaveDiagramAction extends BaseAction {
     	private static final long serialVersionUID = 1L;
 	    public SaveDiagramAction()  {

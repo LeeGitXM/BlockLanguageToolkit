@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.project.ProjectVersion;
 import com.inductiveautomation.ignition.common.sqltags.model.TagPath;
 import com.inductiveautomation.ignition.common.sqltags.parser.TagPathParser;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -41,27 +42,29 @@ public class TagWriter  {
 		this.context = ctx;
 	}
 	/**
-	 * Update tags with values from model results. The time assigned is the current
+	 * Update a tag - if the provider name is not supplied, then use the default
+	 * assigned to the project. The time assigned is the current
 	 * time. The list of tags to be updated varies with model type.
 	 * 
-	 * @param provider tag provider. Use an empty string for the default provider
 	 * @param path fully qualified tag path
 	 */
-	public void updateTag(String path,QualifiedValue qv) {
-		log.infof("%s..updateTag: %s",TAG,path);
+	public void updateTag(long projectId,String path,QualifiedValue qv) {
+		log.debugf("%s..updateTag: %s",TAG,path);
 		if( context==null) return;                   // Not initialized yet.
 		if(path==null || path.isEmpty() ) return;    // Path not set
 		List<WriteRequest<TagPath>> list = createTagList(path,qv);
 		if(list.size()==0) log.info(TAG+".updateTags: No results");
 		try {
-		    TagProvider provider = context.getTagManager().getTagProvider("default");
+			String providerName = providerNameFromPath(path);
+			if( providerName.length()==0) providerName = context.getProjectManager().getProps(projectId, ProjectVersion.Published).getDefaultSQLTagsProviderName();
+		    TagProvider provider = context.getTagManager().getTagProvider(providerName);
 		    // We assume the same provider
 		    if( provider!= null && list!=null ) {
 		    	log.infof("%s..updateTag: writing .... %s",TAG,qv.toString());
 		    	provider.write(list, null, true);	
 		    }
 		    else {
-		    	log.warnf("%s..updateTag: write to %s failed, no provider and list",TAG,path);
+		    	log.warnf("%s..updateTag: write to %s failed for provider",TAG,path,providerName);
 		    }
 		}
 		catch(Exception ex) {
@@ -76,7 +79,7 @@ public class TagWriter  {
 	private List<WriteRequest<TagPath>> createTagList(String path,QualifiedValue qv) {
 		List<WriteRequest<TagPath>> list = new ArrayList<WriteRequest<TagPath>>();
 		LocalRequest req = null;
-		log.infof("%s.createTagList: path = %s",TAG,path);
+		log.debugf("%s.createTagList: path = %s",TAG,path);
 		req = new LocalRequest(path,qv);
 		if(req.isValid)list.add(req);
 
@@ -103,5 +106,15 @@ public class TagWriter  {
 				}
 			}
 		}
+	}
+	private String providerNameFromPath(String tagPath) {
+		String provider = "";
+		if( tagPath.startsWith("[") ) {
+			int index = tagPath.indexOf(']');
+			if( index>0 ) {
+				provider = tagPath.substring(1,index);
+			}
+		}
+		return provider;
 	}
 }

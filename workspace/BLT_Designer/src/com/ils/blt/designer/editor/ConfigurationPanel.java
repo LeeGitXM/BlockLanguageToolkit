@@ -8,7 +8,6 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -131,16 +130,18 @@ public class ConfigurationPanel extends BasicEditPanel {
 	}
 
 	/**
-	 * Create a combo box for binding type
+	 * Create a combo box for binding type. Leave out ENGINE as an option.
 	 */
 	private JComboBox<String> createBindingTypeCombo() {
-		String[] entries = new String[BindingType.values().length];
+		String[] entries = new String[BindingType.values().length-1];
 		int index=0;
 		for(BindingType type : BindingType.values()) {
+			if(type.name().equals(BindingType.ENGINE.name()) ) continue;
+			log.tracef("%s.createBindingTypeCombo: %d %s",TAG,index,type.name());
 			entries[index]=type.name();
 			index++;
 		}
-		final JComboBox<String> box = new BindingCombo<String>(entries);
+		final JComboBox<String> box = new JComboBox<String>(entries);
 		box.setPreferredSize(COMBO_BOX_SIZE);
 		return box;
 	}
@@ -157,103 +158,6 @@ public class ConfigurationPanel extends BasicEditPanel {
 		final JComboBox<String> box = new JComboBox<String>(entries);
 		box.setPreferredSize(COMBO_BOX_SIZE);
 		return box;
-	}
-	/** 
-	 * Create a special combo box class that does not allow selection of "ENGINE".
-	 * It includes a model that will not allow the selection as well as a list
-	 * renderer that grays it out.
-	 */
-	private class BindingCombo<E> extends JComboBox<E> {
-		private static final long serialVersionUID = 1L;
-		@SuppressWarnings("unchecked")
-		public BindingCombo(E[] strings) {
-			super(strings);
-			//setRenderer(new BindingTypeRenderer<E>());
-		}
-		//@Override
-		//public ComboBoxModel<E> getModel() { return new BindingComboModel<E>(); }
-	
-	}
-	/** 
-	 * Create a special combo box model that does not allow selection of "ENGINE"
-	 * @see http://stackoverflow.com/questions/11895822/disabling-individual-jcombobox-items
-	 *
-	 */
-	private class BindingComboModel<T>  extends DefaultComboBoxModel<T> {
-		private static final long serialVersionUID = 1L;
-
-		public BindingComboModel() {
-	    }
-
-	    @Override
-	    public void setSelectedItem(Object obj) {
-
-	        if (obj != null) {
-	            if (!obj.toString().equals(BindingType.ENGINE.name())) {
-	                super.setSelectedItem(obj);
-	            }
-	        } 
-	        else {
-	            super.setSelectedItem(obj);
-	        }
-	    }
-	}
-	
-	/**
-	 * Show the "ENGINE" selection as disabled.
-	 * @see  http://stackoverflow.com/questions/14852539/disable-jcombobox-items-at-runtime
-	 */
-	public class BindingTypeRenderer<E> extends BasicComboBoxRenderer {
-		private static final long serialVersionUID = 8337653971902491842L;
-		private Color disabledColor = Color.lightGray;
-
-		/**
-		 * Constructs a new renderer for a JComboBox which enables/disables items
-		 * based upon the parameter model.
-		 * 
-		 * @param enabled
-		 */
-		public BindingTypeRenderer(){
-		    super();        
-		}
-
-		/**
-		 * Sets the color to render disabled items.
-		 *  
-		 * @param disabledColor
-		 */
-		public void setDisabledColor(Color disabledColor){
-		    this.disabledColor = disabledColor;
-		}
-
-		/**
-		 * Custom implementation to color items as enabled or disabled.
-		 * @param value the currently selected value
-		 */
-		@Override
-		public Component getListCellRendererComponent( @SuppressWarnings("rawtypes") JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-		    Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-		    String display = "";
-		    if( index>=0 && index < list.getModel().getSize() ) display = (String)list.getModel().getElementAt(index);
-		    boolean enabled = (index<0  || !display.equals(BindingType.ENGINE.name()));
-		    log.infof("%s.getCelListRenderer: %d %s is %s (%s)",TAG,index,display,
-		    		                                                 (enabled?"ENABLED":"DISABLED"),c.getClass().getName());
-		    if (!enabled) {
-		        if (isSelected) {
-		            c.setBackground(UIManager.getColor("ComboBox.background"));
-		        } 
-		        else {
-		            c.setBackground(super.getBackground());
-		        }
-		        c.setForeground(disabledColor);
-		    } 
-		    else {
-		        c.setBackground(super.getBackground());
-		        c.setForeground(super.getForeground());
-		    }
-
-		    return c;
-		}
 	}
 }
 	

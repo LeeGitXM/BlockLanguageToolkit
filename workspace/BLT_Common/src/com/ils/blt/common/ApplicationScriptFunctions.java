@@ -72,7 +72,24 @@ public class ApplicationScriptFunctions   {
 		List<SerializableResourceDescriptor> result = manager.queryControllerResources();
 		return result;
 	}
-	
+	/**
+	 * Execute reset() on a specifiedblock
+	 */
+	public static void resetBlock(String diagramId,String blockId) {
+		manager.resetBlock(diagramId,blockId);
+	}
+	/**
+	 * Execute reset() on every block inside the controller
+	 */
+	public static void resetDiagram(String diagramId) {
+		manager.resetDiagram(diagramId);
+	}
+	/**
+	 * Execute reset() on every block inside the controller
+	 */
+	public static void resetDiagram(String projectName,String diagramPath) {
+		manager.resetDiagram(projectName,diagramPath);
+	}
 	/**
 	 * Send a signal to all blocks of a particular class on a specified diagram.
 	 * This is a "local" transmission.

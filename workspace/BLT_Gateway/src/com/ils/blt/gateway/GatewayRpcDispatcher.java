@@ -231,7 +231,49 @@ public class GatewayRpcDispatcher   {
 		log.infof("%s.queryControllerResources ...",TAG);
 		return  ControllerRequestHandler.getInstance().queryControllerResources();
 	}
-	
+	/**
+	 * Reset a block or diagram given its UUID
+	 * @param uuidString
+	 */
+	public void resetBlock(String diagramIdString,String blockIdString) {
+		log.infof("%s.diagramExists ...",TAG);
+		BlockExecutionController controller = BlockExecutionController.getInstance();
+		UUID diagramUUID = null;
+		UUID blockUUID = null;
+		try {
+			diagramUUID = UUID.fromString(diagramIdString);
+			blockUUID = UUID.fromString(blockIdString);
+		}
+		catch(IllegalArgumentException iae) {
+			log.warnf("%s.diagramExists: Diagram or block UUID string is illegal (%s, %s), creating new",TAG,diagramIdString,blockIdString);
+			diagramUUID = UUID.nameUUIDFromBytes(diagramIdString.getBytes());
+			blockUUID = UUID.nameUUIDFromBytes(blockIdString.getBytes());
+		}
+		controller.resetBlock(diagramUUID, blockUUID);
+	}
+	/** 
+	 *  Reset every block in a diagram specified by id.
+	 */
+	public void resetDiagram(String uuidString) {
+		log.infof("%s: resetDiagram ...",TAG);
+		
+		UUID diagramUUID = null;
+		try {
+			diagramUUID = UUID.fromString(uuidString);
+		}
+		catch(IllegalArgumentException iae) {
+			log.warnf("%s.diagramExists: Diagram UUID string is illegal (%s), creating new",TAG,uuidString);
+			diagramUUID = UUID.nameUUIDFromBytes(uuidString.getBytes());
+		}
+		BlockExecutionController.getInstance().resetDiagram(diagramUUID);
+	}
+	/** 
+	 *  Reset every block in a specified diagram
+	 */
+	public void resetDiagram(String project,String path) {
+		log.infof("%s: resetDiagram ...",TAG);
+	    BlockExecutionController.getInstance().resetDiagram(project,path);
+	}
 	public Boolean resourceExists(Long projectId,Long resourceId) {
 		log.infof("%s.resourceExists ...",TAG);
 		BlockExecutionController controller = BlockExecutionController.getInstance();

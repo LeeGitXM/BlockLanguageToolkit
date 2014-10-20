@@ -7,7 +7,7 @@
 #!/bin/sh
 #set -x
 DB=lookup.db
-REPO_ROOT=~/Development/ils/repo
+REPO_ROOT=~/Development/ils/src
 BIN=$REPO_ROOT/blt/migration/tdb
 TARGETDIR=$REPO_ROOT/blt/migration/tdb
 mkdir -p ${TARGETDIR}

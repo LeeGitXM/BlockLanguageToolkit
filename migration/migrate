@@ -8,7 +8,7 @@ then
     echo "USAGE: migrate <inpath> <outpath>"
 	exit 2
 fi
-REPO=~/Development/ils/repo
+REPO=~/Development/ils/src
 cd $REPO/blt
 BLT=`pwd`
 LIB=$REPO/external/lib

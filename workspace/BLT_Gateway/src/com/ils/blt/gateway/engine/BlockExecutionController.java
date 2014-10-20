@@ -95,7 +95,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 */
 	@Override
 	public void acceptBroadcastNotification(BroadcastNotification note) {
-		log.infof("%s.acceptBroadcastNotification: %s (%s) %s", TAG,note.getDiagramId(),note.getSignal().getCommand(),
+		log.debugf("%s.acceptBroadcastNotification: %s (%s) %s", TAG,note.getDiagramId(),note.getSignal().getCommand(),
 				(stopped?"REJECTED, controller stopped":""));
 		ProcessDiagram diagram = getDiagram(note.getDiagramId());
 		if( diagram!=null && diagram.getState().equals(DiagramState.ACTIVE)) {
@@ -113,7 +113,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 */
 	@Override
 	public void acceptCompletionNotification(OutgoingNotification note) {
-		log.infof("%s:acceptCompletionNotification: %s:%s = %s %s", TAG,note.getBlock().getBlockId().toString(),note.getPort(),
+		log.debugf("%s:acceptCompletionNotification: %s:%s = %s %s", TAG,note.getBlock().getBlockId().toString(),note.getPort(),
 				note.getValue().toString(),
 				(stopped?"REJECTED, controller stopped":""));
 		ProcessDiagram diagram = getDiagram(note.getBlock().getParentId());
@@ -131,7 +131,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 */
 	@Override
 	public void acceptConnectionPostNotification(ConnectionPostNotification note) {
-		log.infof("%s:acceptConnectionPostNotification: %s %s", TAG,note.getOriginName(),
+		log.debugf("%s:acceptConnectionPostNotification: %s %s", TAG,note.getOriginName(),
 				(stopped?"REJECTED, controller stopped":""));
 		ProcessDiagram diagram = getDiagram(note.getDiagramId());
 		if( diagram!=null && diagram.getState().equals(DiagramState.ACTIVE)) {
@@ -241,6 +241,37 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public List<String> getDiagramTreePaths(String projectName) {
 		return modelManager.getDiagramTreePaths(projectName);
 	}
+	/**
+	 * Reset a block.
+	 * @param diagramId the block or diagram identifier.
+	 * @param blockId the block or diagram identifier.
+	 */
+	public void resetBlock(UUID diagramId,UUID blockId) {
+		ProcessDiagram diagram = modelManager.getDiagram(diagramId);
+		if( diagram!=null) {
+			ProcessBlock block = modelManager.getBlock(diagram, blockId);
+			if( block!=null) block.reset();
+			
+		}
+	}
+	/**
+	 * Reset all blocks on a diagram.
+	 * @param diagramId the diagram identifier.
+	 */
+	public void resetDiagram(UUID diagramId) {
+		ProcessDiagram diagram = modelManager.getDiagram(diagramId);
+		if( diagram!=null) {
+			for(ProcessBlock block:diagram.getProcessBlocks() ) {
+				block.reset();
+			}
+		}
+	}
+	public void resetDiagram(String projectName,String diagramPath) {
+		ProcessDiagram diagram = modelManager.getDiagram(projectName,diagramPath);
+		for(ProcessBlock block:diagram.getProcessBlocks() ) {
+			block.reset();
+		}
+	}
 	public List<SerializableResourceDescriptor> queryControllerResources() {
 		return modelManager.queryControllerResources();
 	}
@@ -301,10 +332,10 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 * @param val
 	 */
 	public void updateTag(UUID diagramId,String path,QualifiedValue val) {
-		log.infof("%s.updateTag %s = %s ",TAG,path,val.toString());
+		log.debugf("%s.updateTag %s = %s ",TAG,path,val.toString());
 		ProcessDiagram diagram = modelManager.getDiagram(diagramId);
 		if( diagram!=null && diagram.getState().equals(DiagramState.ACTIVE)) {
-			tagWriter.updateTag(path,val);
+			tagWriter.updateTag(diagram.getProjectId(),path,val);
 		}
 		else {
 			log.infof("%s.updateTag REJECTED, diagram not active",TAG);
@@ -341,7 +372,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 					OutgoingNotification inNote = (OutgoingNotification)work;
 					// Query the diagram to find out what's next
 					ProcessBlock pb = inNote.getBlock();
-					log.infof("%s.run: processing incoming note from %s:%s = %s", TAG,pb.toString(),inNote.getPort(),inNote.getValue().toString());
+					log.debugf("%s.run: processing incoming note from %s:%s = %s", TAG,pb.toString(),inNote.getPort(),inNote.getValue().toString());
 					// Send the push notification
 					sendConnectionNotification(pb.getBlockId().toString(),inNote.getPort(),inNote.getValue());
 					ProcessDiagram dm = modelManager.getDiagram(pb.getParentId());
@@ -352,7 +383,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 							UUID outBlockId = outNote.getConnection().getTarget();
 							ProcessBlock outBlock = dm.getBlock(outBlockId);
 							if( outBlock!=null ) {
-								log.infof("%s.run: sending outgoing notification: to %s:%s = %s", TAG,outBlock.toString(),
+								log.debugf("%s.run: sending outgoing notification: to %s:%s = %s", TAG,outBlock.toString(),
 										  outNote.getConnection().getDownstreamPortName(),outNote.getValue().toString());
 								threadPool.execute(new IncomingValueChangeTask(outBlock,outNote));
 							}
@@ -371,12 +402,12 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 					// Query the diagram to find out what's next. The diagramId is the resourceId
 					ProcessDiagram dm = modelManager.getDiagram(inNote.getDiagramId());
 					if( dm!=null) {
-						log.infof("%s.run: processing broadcast to diagram %s (%s)", TAG,dm.getName(),inNote.getSignal().getCommand());
+						log.debugf("%s.run: processing broadcast to diagram %s (%s)", TAG,dm.getName(),inNote.getSignal().getCommand());
 						Collection<SignalNotification> outgoing = dm.getBroadcastNotifications(inNote);
 						if( outgoing.isEmpty() ) log.warnf("%s: no broadcast recipients found ...",TAG);
 						for(SignalNotification outNote:outgoing) {
 							ProcessBlock outBlock = outNote.getBlock();
-							log.infof("%s.run: sending signal to %s", TAG,outBlock.toString());
+							log.debugf("%s.run: sending signal to %s", TAG,outBlock.toString());
 							threadPool.execute(new IncomingBroadcastTask(outBlock,outNote));
 							
 						}
@@ -401,7 +432,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	@Override
 	public void sendPropertyNotification(String blkid, String propertyName,QualifiedValue val) {
 		String key = NotificationKey.keyForProperty(blkid,propertyName);
-		log.infof("%s.sendPropertyNotification: %s (%s)",TAG,key,val.toString());
+		log.debugf("%s.sendPropertyNotification: %s (%s)",TAG,key,val.toString());
 		try {
 			sessionManager.sendNotification(ApplicationScope.DESIGNER, BLTProperties.MODULE_ID, key, val);
 		}
