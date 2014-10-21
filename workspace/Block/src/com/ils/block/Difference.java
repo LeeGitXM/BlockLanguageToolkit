@@ -36,7 +36,7 @@ public class Difference extends AbstractProcessBlock implements ProcessBlock {
 	protected static String A_PORT_NAME = "a";
 	protected static String B_PORT_NAME = "b";
 	private final Watchdog dog;
-	private double synchInterval = 0.0; // default
+	private double synchInterval = 0.5; // 1/2 sec synchronization by default
 	private QualifiedValue a = null;
 	private QualifiedValue b = null;
 	

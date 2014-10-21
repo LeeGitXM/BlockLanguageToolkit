@@ -12,9 +12,16 @@ public class FixedSizeQueue<E> extends LinkedList<E>  {
 	public FixedSizeQueue(int length) {
 		this.bufferSize = length;
 	}
+	
 	public void setBufferSize(int size) {
+		// Whittle down the list, if necessary
+		if( size<1 ) size = 1;
+		while( this.size()>size ) {
+			super.remove();
+		}
 		bufferSize = size;
 	}
+	
 	@Override
     public boolean add(E o) {
         super.add(o);

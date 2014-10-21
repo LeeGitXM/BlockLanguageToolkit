@@ -50,7 +50,7 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 	private double error = 0.0;
 	private double initialValue = Double.NaN;
 	private double integral = 0.0;
-	private double interval = 1.0;  // msecs
+	private double interval = 10.0;  // secs
 	private double pv = Double.NaN;
 	private double setPoint = Double.NaN;
 	private final Watchdog dog;
@@ -81,6 +81,7 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 		error = 0.0;
 		integral = 0.0;
 		pv = initialValue;
+		log.infof("%s.reset",TAG);
 	}
 	
 	/**
@@ -92,7 +93,7 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 		this.isReceiver = true;
 		BlockProperty pvProperty = new BlockProperty(BLOCK_PROPERTY_INITIAL_VALUE,new Double(pv),PropertyType.DOUBLE,true);
 		properties.put(BLOCK_PROPERTY_INITIAL_VALUE, pvProperty);
-		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL,new Double(interval),PropertyType.INTEGER,true);
+		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL,new Double(interval),PropertyType.TIME,true);
 		properties.put(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL, intervalProperty);
 		BlockProperty kdProperty = new BlockProperty(BLOCK_PROPERTY_KD,new Double(kd),PropertyType.DOUBLE,true);
 		properties.put(BLOCK_PROPERTY_KD, kdProperty);
@@ -192,10 +193,9 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 		super.acceptValue(vcn);
 		this.state = BlockState.ACTIVE;
 		String port = vcn.getConnection().getDownstreamPortName();
-		log.infof("%s.acceptValue: Received value on %s",TAG,port);
 		if( port.equals(BlockConstants.IN_PORT_NAME)  ) {
 			QualifiedValue qv = vcn.getValue();
-			log.infof("%s.acceptValue: value = %s ",TAG,qv.getValue().toString());
+			log.infof("%s.acceptValue: port %s value = %s ",TAG,port,qv.getValue().toString());
 			try {
 				pv = Double.parseDouble(qv.getValue().toString());
 			}
@@ -261,7 +261,8 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 		double integralContribution = ki*integral;
 		double derivativeContribution = kd*derivative;
 		double result = proportionalContribution + integralContribution + derivativeContribution;
-		if( log.isTraceEnabled() ) {
+		if( log.isInfoEnabled() ) {
+			log.infof("%s.evaluate setpoint= %f, pv = %f, error = %f, previous error = %f",TAG,setPoint,pv,error,previousError);
 			log.infof("%s.evaluate Kp = %f",TAG,proportionalContribution);
 			log.infof("%s.evaluate Ki = %f",TAG,integralContribution);
 			log.infof("%s.evaluate Kd = %f",TAG,derivativeContribution);

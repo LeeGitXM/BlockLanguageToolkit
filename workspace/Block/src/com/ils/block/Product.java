@@ -39,7 +39,7 @@ public class Product extends AbstractProcessBlock implements ProcessBlock {
 	// Keep map of values by originating block id
 	protected final Map<String,QualifiedValue> valueMap;
 	private final Watchdog dog;
-	private double synchInterval = 0.0; // ~ seconds
+	private double synchInterval = 0.5; // 1/2 sec synchronization by default
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -111,27 +111,28 @@ public class Product extends AbstractProcessBlock implements ProcessBlock {
 	 * For now we simply record the change in the map and start the watchdog.
 	 * 
 	 * Note: there can be several connections attached to a given port.
-	 * @param vcn incoming new value.
+	 * @param incoming new value.
 	 */
 	@Override
 	public void acceptValue(IncomingNotification incoming) {
 		super.acceptValue(incoming);
 		this.state = BlockState.ACTIVE;
-		String blockId = incoming.getConnection().getSource().toString();
 		QualifiedValue qv = incoming.getValue();
 		if( qv!=null && qv.getValue()!=null ) {
+			String key = String.format("%s:%s",incoming.getConnection().getSource().toString(),
+					   incoming.getConnection().getUpstreamPortName());
 			try {
 				Double dbl = Double.parseDouble(qv.getValue().toString());
 				qv = new BasicQualifiedValue(dbl,qv.getQuality(),qv.getTimestamp());
 				dog.setSecondsDelay(synchInterval);
-				log.tracef("%s.acceptValue got %s for %s", TAG,dbl.toString(),blockId);
+				log.tracef("%s.acceptValue got %s for %s", TAG,dbl.toString(),key);
 				controller.pet(dog);
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.acceptValue: Unable to convert incoming value to a double (%s)",TAG,nfe.getLocalizedMessage());
 				qv = new BasicQualifiedValue(Double.NaN,new BasicQuality(nfe.getLocalizedMessage(),Quality.Level.Bad),qv.getTimestamp());
 			}
-			valueMap.put(blockId, qv);
+			valueMap.put(key, qv);
 		}
 		else {
 			log.warnf("%s.acceptValue: received null value",TAG);

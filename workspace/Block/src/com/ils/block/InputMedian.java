@@ -40,7 +40,7 @@ public class InputMedian extends AbstractProcessBlock implements ProcessBlock {
 	// Keep map of values by originating block id
 	protected final Map<String,QualifiedValue> valueMap;
 	private final Watchdog dog;
-	private double synchInterval = 0.0; // ~ sec
+	private double synchInterval = 0.5; // 1/2 sec synchronization by default
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.

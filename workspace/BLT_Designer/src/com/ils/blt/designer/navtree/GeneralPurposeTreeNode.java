@@ -209,9 +209,11 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 			SaveAllAction saveAllAction = new SaveAllAction();
 			if( handler.isControllerRunning() ) {
 				startAction.setEnabled(false);
+				clearAction.setEnabled(false);
 			}
 			else {
 				stopAction.setEnabled(false);
+				clearAction.setEnabled(true);
 			}
 			menu.add(applicationAction);
 			menu.add(applicationImportAction);
@@ -1103,14 +1105,15 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
     public void accumulateNodeResources(AbstractResourceNavTreeNode node,Project diff) {
     	ProjectResource res = node.getProjectResource();
     	if( res!=null ) {
+    		logger.infof("%s.accumulateNodeResources: %s (%d)",TAG,res.getName(),res.getResourceId());
     		diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
     		if(res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
     			// If the resource is open, we need to save it ..
     			DiagramNode dnode = (DiagramNode)node;
     			dnode.saveDiagram();  // Whether it's open or closed.
     		}
+    		statusManager.clearDirtyChildCount(resourceId);
     		statusManager.setResourceDirty(res.getResourceId(), false);
-    		
     	}
     	else {
     		logger.warnf("%s.accumulateNodeResources: %s has no project resource",TAG,node.getName());

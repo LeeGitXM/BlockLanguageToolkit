@@ -8,7 +8,6 @@ import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.block.common.FixedSizeQueue;
-import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
@@ -195,7 +194,6 @@ public class InRangeSampleCount extends AbstractProcessBlock implements ProcessB
 				int val = Integer.parseInt(event.getNewValue().toString());
 				if( val>0 ) {
 					sampleSize = val;
-					queue.clear();
 					queue.setBufferSize(sampleSize);
 				}
 			}

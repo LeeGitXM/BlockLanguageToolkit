@@ -149,7 +149,6 @@ public class MovingAverageSample extends AbstractProcessBlock implements Process
 				int val = Integer.parseInt(event.getNewValue().toString());
 				if( val>0 ) {
 					sampleSize = val;
-					queue.clear();
 					queue.setBufferSize(sampleSize);
 					// Even if locked, we update the current state
 					valueProperty.setValue(0.0);

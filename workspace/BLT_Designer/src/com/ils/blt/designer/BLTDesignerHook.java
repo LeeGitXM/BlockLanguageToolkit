@@ -4,6 +4,7 @@
 package com.ils.blt.designer;
 
 
+import com.ils.blt.client.component.DiagramViewerComponent;
 import com.ils.blt.client.component.RecommendationMapComponent;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.ApplicationScriptFunctions;
@@ -89,25 +90,23 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 			else {
 				log.infof("%s: Group not a DefaultPaletteItemGroup, is %s",TAG,group.getClass().getName());
 			}
+			JavaBeanPaletteItem jbpi = null;
 			try {
-				group.addPaletteItem(new JavaBeanPaletteItem(RecommendationMapComponent.class));
+				jbpi = new JavaBeanPaletteItem(DiagramViewerComponent.class) {
+					public String getShortDescription() { return BundleUtil.get().getString(BLTProperties.BLOCK_PREFIX+".DiagramViewer.Desc"); }
+					public String getDisplayName() { return BundleUtil.get().getString(BLTProperties.BLOCK_PREFIX+".DiagramViewer.Display"); }
+				};
+				group.addPaletteItem(jbpi);
+				jbpi =new JavaBeanPaletteItem(RecommendationMapComponent.class){
+					public String getShortDescription() { return BundleUtil.get().getString(BLTProperties.BLOCK_PREFIX+".RecommendationMap.Desc"); }
+					public String getDisplayName() { return BundleUtil.get().getString(BLTProperties.BLOCK_PREFIX+".RecommendationMap.Display"); }
+				};
+				group.addPaletteItem(jbpi);
 			}
 			catch(Exception ie ) {
-				log.warnf("%s: Error creating palette entries (%s)",TAG,ie.getMessage());
+				log.warnf("%s: Error creating vision palette entries (%s)",TAG,ie.getMessage());
 			}
-			/*
-		
 
-			PaletteItemGroup group = null;
-			if ((group = palette.getGroup(ILS_PALETTE_NAME)) == null) {
-				group = palette.addGroup(ILS_PALETTE_NAME);
-			}
-			JavaBeanPaletteItem paletteItem = new JavaBeanPaletteItem(RangeSliderPanel.class) {
-				public String getShortDescription() { return "A slider to select a range of numeric values"; }
-				public String getDisplayName() { return "ILS Range Slider"; }
-			};
-			group.addPaletteItem(paletteItem);
-			*/
 		}
 		
 		// Setup the diagram workspace

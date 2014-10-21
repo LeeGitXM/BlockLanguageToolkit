@@ -88,7 +88,7 @@ public class GatewayRpcDispatcher   {
 	 * @return properties for the block
 	 */
 	public List<String> getBlockProperties(String className,Long projectId,Long resourceId,String blockId) {
-		log.infof("%s.getBlockProperties: %s %d:%d %s",TAG,className,projectId.longValue(),resourceId.longValue(),blockId);
+		log.debugf("%s.getBlockProperties: %s %d:%d %s",TAG,className,projectId.longValue(),resourceId.longValue(),blockId);
 		UUID blockUUID = null;
 		try {
 			blockUUID = UUID.fromString(blockId);
@@ -112,7 +112,7 @@ public class GatewayRpcDispatcher   {
 		else {
 			log.warnf("%s: getBlockProperties: %s block %d:%d has no properties",TAG,className,projectId.longValue(),resourceId.longValue());
 		}
-		if( result!=null) log.infof("%s: getBlockProperties: returns %s",TAG,result.toString());
+		if( result!=null) log.infof("%s: getBlockProperties: %s = %s",TAG,className,result.toString());
 		return result;
 	}
 	/** The blocks implemented in Java are expected to reside in a jar named "block-definition.jar".
@@ -126,7 +126,7 @@ public class GatewayRpcDispatcher   {
 		ClassList cl = new ClassList();
 		List<Class<?>> classes = cl.getAnnotatedClasses(BLTProperties.BLOCK_JAR_NAME, ExecutableBlock.class,"com/ils/block/");
 		for( Class<?> cls:classes) {
-			log.infof("   found block class: %s",cls.getName());
+			log.debugf("   found block class: %s",cls.getName());
 			try {
 				Object obj = cls.newInstance();
 				if( obj instanceof ProcessBlock ) {
@@ -160,7 +160,7 @@ public class GatewayRpcDispatcher   {
 		catch (Exception ex) {
 			log.warnf("%s.getBlockPrototypes: Runtime exception (%s)",TAG,ex.getMessage(),ex);
 		}
-		log.debugf("%s.getBlockPrototypes: returning %d palette prototypes",TAG,results.size());
+		log.infof("%s.getBlockPrototypes: returning %d palette prototypes",TAG,results.size());
 		return results;
 	}
 	/** Convert a string to a UUID. */

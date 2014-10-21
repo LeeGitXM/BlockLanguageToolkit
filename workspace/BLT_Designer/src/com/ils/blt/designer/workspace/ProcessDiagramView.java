@@ -21,6 +21,7 @@ import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableConnection;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.BLTDesignerHook;
+import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.NotificationHandler;
 import com.inductiveautomation.ignition.common.util.AbstractChangeable;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -297,6 +298,8 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	@Override
 	public void fireStateChanged() {
 		setDirty(true);
+		NodeStatusManager statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
+		statusManager.setResourceDirty(getResourceId(), true);
 		super.fireStateChanged();
 	}
 	
@@ -313,7 +316,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			BasicAnchorPoint bap = (BasicAnchorPoint)cxn.getOrigin();
 			ProcessBlockView blk = (ProcessBlockView)bap.getBlock();
 			String key = NotificationKey.keyForConnection(blk.getId().toString(), bap.getId().toString());
-			log.infof("%s.registerChangeListeners: adding %s",TAG,key);
+			log.tracef("%s.registerChangeListeners: adding %s",TAG,key);
 			handler.addNotificationChangeListener(key, bap);
 		}
 		
@@ -324,7 +327,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			for(BlockProperty prop:block.getProperties()) {
 				if( prop.getBindingType().equals(BindingType.ENGINE)) {
 					String key = NotificationKey.keyForProperty(block.getId().toString(), prop.getName());
-					log.infof("%s.registerChangeListeners: adding %s",TAG,key);
+					log.tracef("%s.registerChangeListeners: adding %s",TAG,key);
 					handler.addNotificationChangeListener(key, prop);
 				}
 			}

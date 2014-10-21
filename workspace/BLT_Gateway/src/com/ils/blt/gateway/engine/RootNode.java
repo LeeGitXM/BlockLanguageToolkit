@@ -83,7 +83,6 @@ public class RootNode extends ProcessNode {
 			Map<String,ProcessNode> map = childrenByProjectId.get(projectId);
 			if( map!=null)  {
 				ProcessNode child = null;
-				ProcessNode parent = null;
 				String path = null;
 				int index = treePath.indexOf(":");
 				if( index>0 ) {
@@ -157,8 +156,12 @@ public class RootNode extends ProcessNode {
 		list.add(root);
 	}
 	
+	/**
+	 * Remove the children of a project. 
+	 * NOTE: The project name to Id mapping remains.
+	 */
 	public void removeProject(Long projectId) {
-		childrenByProjectId.remove(projectId);
+		childrenByProjectId.remove(projectId);	
 	}
 
 }

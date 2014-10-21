@@ -139,10 +139,18 @@ public class MainPanel extends BasicEditPanel {
 		}
 		// Update the panel for new property data
 		public void updateForProperty(BlockProperty property) {
-			String text = fncs.coerceToString(property.getValue());
-			log.infof("%s.updateForProperty: property %s, raw value= %s",TAG,property.getName(),text);
-			// For list we lop off the delimiter.
-			if( property.getType().equals(PropertyType.LIST) && text.length()>1 ) text = text.substring(1);
+			String text = "";
+			// For TIME we scale the value
+			if( property.getType().equals(PropertyType.TIME) ) {
+				TimeUnit tu = TimeUtility.unitForValue(fncs.coerceToDouble(property.getValue()));
+				text = fncs.coerceToString(TimeUtility.cannonicalValueForValue(fncs.coerceToDouble(property.getValue()),tu));
+			}
+			else {
+				text = fncs.coerceToString(property.getValue());
+				// For list we lop off the delimiter.
+				if( property.getType().equals(PropertyType.LIST) && text.length()>1 ) text = text.substring(1);
+			}
+			log.tracef("%s.updateForProperty: property %s, raw value= %s",TAG,property.getName(),text);
 			valueDisplayField.setText(text);
 			if( property.getBindingType().equals(BindingType.TAG_MONITOR) ||
 				property.getBindingType().equals(BindingType.TAG_READ) ||

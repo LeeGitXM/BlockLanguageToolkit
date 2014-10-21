@@ -284,8 +284,8 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 		catch(GatewayException ge) {
 			logger.warnf("%s.saveDiagram: Exception saving project resource %d (%s)",TAG,resourceId,ge.getMessage());
 		}
-		statusManager.clearDirtyBlockCount(resourceId);
-		statusManager.setResourceDirty(resourceId,false);
+		statusManager.clearDirtyBlockCount(resourceId);     // Does not of itself make block clean
+		statusManager.setResourceDirty(resourceId, false);
 	}
 	
 	@Override

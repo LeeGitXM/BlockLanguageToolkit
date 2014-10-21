@@ -65,7 +65,17 @@ public class NodeStatusManager  {
 	 * @param resourceId
 	 */
 	public void clearDirtyBlockCount(long resourceId) {
-		log.infof("%s.clearDirtyBlockCount(%d)",TAG,resourceId);
+		log.debugf("%s.clearDirtyBlockCount(%d)",TAG,resourceId);
+		StatusEntry se = statusMap.get(resourceId);
+		if( se!=null ) se.clearDirtyChildCount();
+	}
+	/**
+	 * If we're saving recursively downward, then we ignore
+	 * dirty children. Use of the chid count is overloaded.
+	 * @param resourceId
+	 */
+	public void clearDirtyChildCount(long resourceId) {
+		log.debugf("%s.clearDirtyChildCount(%d)",TAG,resourceId);
 		StatusEntry se = statusMap.get(resourceId);
 		if( se!=null ) se.clearDirtyChildCount();
 	}
@@ -74,7 +84,7 @@ public class NodeStatusManager  {
 	 * @param resourceId
 	 */
 	public void decrementDirtyBlockCount(long resourceId) {
-		log.infof("%s.decrementDirtyBlockCount(%d)",TAG,resourceId);
+		log.debugf("%s.decrementDirtyBlockCount(%d)",TAG,resourceId);
 		StatusEntry se = statusMap.get(resourceId);
 		if( se!=null ) {
 			int prior = se.getDirtyChildCount();
@@ -92,7 +102,7 @@ public class NodeStatusManager  {
 	 * @param resourceId
 	 */
 	public void incrementDirtyBlockCount(long resourceId) {
-		log.infof("%s.incrementDirtyBlockCount(%d)",TAG,resourceId);
+		log.debugf("%s.incrementDirtyBlockCount(%d)",TAG,resourceId);
 		StatusEntry se = statusMap.get(resourceId);
 		if( se!=null ) {
 			int prior = se.getDirtyChildCount();
@@ -124,6 +134,7 @@ public class NodeStatusManager  {
 	public void setResourceDirty(long resourceId,boolean dirtFlag) {
 		log.infof("%s.setResourceDirty(%d) %s",TAG,resourceId,(dirtFlag?"DIRTY":"CLEAN"));
 		StatusEntry se = statusMap.get(resourceId);
+		log.debugf("%s.setResourceDirty: %s",TAG,se);
 		if( se!=null && se.isDirty()!= dirtFlag && se.getDirtyChildCount()==0) {
 			se.setDirty(dirtFlag);
 			// Propagate the change up the tree - if this represents a change
@@ -140,7 +151,7 @@ public class NodeStatusManager  {
 		}
 	}
 	private void recursivelyDecrementDirtyCount(long resId) {
-		log.infof("%s.recursivelyDecrementDirtyCount(%d)",TAG,resId);
+		log.debugf("%s.recursivelyDecrementDirtyCount(%d)",TAG,resId);
 		StatusEntry se = statusMap.get(resId);
 		if( se!=null ) {
 			se.decrementDirtyChildCount();
@@ -148,7 +159,7 @@ public class NodeStatusManager  {
 		}
 	}
 	private void recursivelyIncrementDirtyCount(long resId) {
-		log.infof("%s.recursivelyIncrementDirtyCount(%d)",TAG,resId);
+		log.debugf("%s.recursivelyIncrementDirtyCount(%d)",TAG,resId);
 		StatusEntry se = statusMap.get(resId);
 		if( se!=null ) {
 			se.incrementDirtyChildCount();
@@ -181,6 +192,11 @@ public class NodeStatusManager  {
 		public boolean isDirty() {return dirty;}
 		public void setDirty(boolean dirty) {this.dirty = dirty;}
 		public void setState(DiagramState state) {this.state = state;}
+		@Override
+		public String toString() {
+			String dump = String.format("StatusEntry: %s, parent: %d, dirtyChildren: %d",(dirty?"DIRTY":"CLEAN"),parentId,dirtyChildren);
+			return dump;
+		}
 	}
 	
 	// =================== Handle Event Listeners ===================

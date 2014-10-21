@@ -136,7 +136,7 @@ public class ProxyHandler   {
 
 	public ProxyBlock createBlockInstance(String className,UUID parentId,UUID blockId) {
 		ProxyBlock block = new ProxyBlock(className,parentId,blockId);
-		log.infof("%s.createInstance --- calling",TAG); 
+		log.debugf("%s.createInstance --- calling",TAG); 
 		if( createBlockCallback.compileScript() ) {
 			PyDictionary pyDictionary = new PyDictionary();  // Empty
 			createBlockCallback.setLocalVariable(0,new PyString(className));
@@ -170,7 +170,7 @@ public class ProxyHandler   {
 	 * @param block the saved Py block
 	 */
 	public void evaluate(PyObject block) {
-		log.infof("%s.evaluate --- %s",TAG,block.toString());
+		log.debugf("%s.evaluate --- %s",TAG,block.toString());
 		if( evaluateCallback.compileScript() ) {
 			evaluateCallback.setLocalVariable(0,block);
 			evaluateCallback.execute();
@@ -205,7 +205,7 @@ public class ProxyHandler   {
 					if( obj instanceof Hashtable ) {
 						@SuppressWarnings("unchecked")
 						Hashtable<String,?> tbl = (Hashtable<String,?>)obj;
-						log.info(TAG+": getProperties property = "+ tbl);  
+						log.debug(TAG+": getProperties property = "+ tbl);  
 						BlockProperty prop = new BlockProperty();
 						prop.setName(nullCheck(tbl.get(BLTProperties.BLOCK_ATTRIBUTE_NAME),"unnamed"));
 						prop.setBinding(nullCheck(tbl.get(BLTProperties.BLOCK_ATTRIBUTE_BINDING),""));
@@ -282,7 +282,7 @@ public class ProxyHandler   {
 					if( obj instanceof Hashtable ) {
 						@SuppressWarnings("unchecked")
 						Hashtable<String,?> tbl = (Hashtable<String,?>)obj;
-						log.info(TAG+".getPalettePrototypes first table "+ tbl);  
+						log.debug(TAG+".getPalettePrototypes first table "+ tbl);  
 						PalettePrototype proto = new PalettePrototype();
 						proto.setPaletteIconPath(nullCheck(tbl.get(BLTProperties.PALETTE_ICON_PATH),"Block/icons/embedded/transmitter.png"));
 						proto.setPaletteLabel(nullCheck(tbl.get(BLTProperties.PALETTE_LABEL),"From Python"));
@@ -384,7 +384,7 @@ public class ProxyHandler   {
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void addAnchorsToDescriptor(BlockDescriptor bd,Object l,AnchorDirection direction) {
-		log.info(TAG+": addAnchorsToPrototype "+l);
+		log.debugf(TAG+": addAnchorsToPrototype "+l);
 		if( l instanceof List ) {
 			for( Object t: (List)l ) {
 				if( t instanceof Hashtable ) {

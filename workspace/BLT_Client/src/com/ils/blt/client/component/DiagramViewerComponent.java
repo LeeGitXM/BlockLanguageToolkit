@@ -10,15 +10,15 @@ import com.inductiveautomation.ignition.common.BundleUtil;
  *  Use Prefuse to display a map of Recommendations to Outputs. The map
  *  allows interaction to update the recommendation priorities.
  */
-public class RecommendationMapComponent extends AbstractDiagramComponent {
+public class DiagramViewerComponent extends AbstractDiagramComponent {
 	private static final long serialVersionUID = 4408313516136446100L;
 	private static String PREFIX = BLTProperties.CUSTOM_PREFIX;              // For bundle identification
 	
 
-	public RecommendationMapComponent() {
+	public DiagramViewerComponent() {
 		
-		setName(BundleUtil.get().getString(PREFIX+".RecommendationMap.Name"));
-		setHeading(BundleUtil.get().getString(PREFIX+".RecommendationMap.Display"));
+		setName(BundleUtil.get().getString(PREFIX+".DiagramViewer.Name"));
+		setHeading(BundleUtil.get().getString(PREFIX+".DiagramViewer.Display"));
 		this.setOpaque(true);
 		this.setBorder(border);
 	}

@@ -42,7 +42,7 @@ public class Or extends AbstractProcessBlock implements ProcessBlock {
 	protected final Map<String,QualifiedValue> qualifiedValueMap;
 	protected TruthValue truthValue;
 	private final Watchdog dog;
-	private double synchInterval = 0.0; // No synchronization by default
+	private double synchInterval = 0.5; // 1/2 sec synchronization by default
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -100,15 +100,16 @@ public class Or extends AbstractProcessBlock implements ProcessBlock {
 	 * For now we simply record the change in the map and start the watchdog.
 	 * 
 	 * Note: there can be several connections attached to a given port.
-	 * @param vcn incoming new value.
+	 * @param incoming new value.
 	 */
 	@Override
-	public void acceptValue(IncomingNotification vcn) {
-		super.acceptValue(vcn);
+	public void acceptValue(IncomingNotification incoming) {
+		super.acceptValue(incoming);
 		this.state = BlockState.ACTIVE;
-		String blockId = vcn.getConnection().getSource().toString();
-		QualifiedValue qv = vcn.getValue();
-		qualifiedValueMap.put(blockId, qv);
+		String key = String.format("%s:%s",incoming.getConnection().getSource().toString(),
+				                           incoming.getConnection().getUpstreamPortName());
+		QualifiedValue qv = incoming.getValue();
+		qualifiedValueMap.put(key, qv);
 		dog.setSecondsDelay(synchInterval);
 		controller.pet(dog);
 	}

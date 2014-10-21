@@ -288,7 +288,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 			try {
 				sampleSize = Integer.parseInt(event.getNewValue().toString());
 				if( sampleSize < 1 ) sampleSize = 1; 
-				queue = new FixedSizeQueue<Double>(sampleSize);
+				queue.setBufferSize(sampleSize);
 				reset();
 			}
 			catch(NumberFormatException nfe) {

@@ -27,16 +27,16 @@ import com.inductiveautomation.vision.api.designer.beans.CustomizerDescriptor;
  * Define properties accessible in the designer properties editor for the RecommendationMap.
  * Also set the icon.
  */
-public class RecommendationMapBeanInfo extends CommonBeanInfo {
-	private static final String TAG = "RecommendationMapBeanInfo";
+public class DiagramViewerBeanInfo extends CommonBeanInfo {
+	private static final String TAG = "DiagramViewerBeanInfo";
 	private static final String PREFIX = BLTProperties.BLOCK_PREFIX;  // Has block properties
-	private static final LoggerEx logger = LogUtil.getLogger(RecommendationMapBeanInfo.class.getPackage().getName());
+	private static final LoggerEx logger = LogUtil.getLogger(DiagramViewerBeanInfo.class.getPackage().getName());
 	
 	/**
 	 * Constructor: Create a beaninfo object for the CallbackBlock. The
 	 *              superclass fills in common properties and customizers.
 	 */
-	public RecommendationMapBeanInfo() {
+	public DiagramViewerBeanInfo() {
 		super(RecommendationMapComponent.class, new CustomizerDescriptor[] {
 				DynamicPropertyProviderCustomizer.VALUE_DESCRIPTOR,
 				StyleCustomizer.VALUE_DESCRIPTOR});
@@ -63,9 +63,9 @@ public class RecommendationMapBeanInfo extends CommonBeanInfo {
 	@Override
 	protected void initDesc() {
 		logger.infof("%s.initDesc",TAG);
-		getBeanDescriptor().setName(BundleUtil.get().getString(PREFIX+".RecommendationMap.Name"));
-		getBeanDescriptor().setDisplayName(BundleUtil.get().getString(PREFIX+".RecommendationMap.Display"));       // Tooltip-title
-		getBeanDescriptor().setShortDescription(BundleUtil.get().getString(PREFIX+".RecommendationMap.Desc"));     // Tooltip-description
+		getBeanDescriptor().setName(BundleUtil.get().getString(PREFIX+".DiagramViewer.Name"));
+		getBeanDescriptor().setDisplayName(BundleUtil.get().getString(PREFIX+".DiagramViewer.Display"));       // Tooltip-title
+		getBeanDescriptor().setShortDescription(BundleUtil.get().getString(PREFIX+".DiagramViewer.Desc"));     // Tooltip-description
 		super.initDesc();
 	}
 
@@ -78,13 +78,13 @@ public class RecommendationMapBeanInfo extends CommonBeanInfo {
 		switch (kind) {
 		case BeanInfo.ICON_COLOR_16x16:
 		case BeanInfo.ICON_MONO_16x16:
-			imagePath = "Block/icons/palette/recommendation_map_16.png";
+			imagePath = "Block/icons/palette/diagram_viewwer_16.png";
 			iconSize = new Dimension(16,16);
 			break;
 		case SimpleBeanInfo.ICON_COLOR_32x32:
 		case SimpleBeanInfo.ICON_MONO_32x32:
 		default:
-			imagePath = "Block/icons/palette/recommendation_map_32.png";
+			imagePath = "Block/icons/palette/diagram_viewwer_16.png";
 		}
 		Image img = ImageLoader.getInstance().loadImage(imagePath,iconSize);
 		return img;

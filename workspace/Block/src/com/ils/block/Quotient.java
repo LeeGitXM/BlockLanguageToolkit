@@ -36,7 +36,7 @@ public class Quotient extends AbstractProcessBlock implements ProcessBlock {
 	protected static String DIVIDEND_PORT_NAME = "a";
 	protected static String DIVISOR_PORT_NAME = "b";
 	private final Watchdog dog;
-	private double synchInterval = 0.0; // No sync default
+	private double synchInterval = 0.5; // 1/2 sec synchronization by default
 	private QualifiedValue a = null;
 	private QualifiedValue b = null;
 	

@@ -177,7 +177,7 @@ public class ProcessDiagram extends ProcessNode {
 			}
 		}
 		else {
-			log.warnf("%s.getOutgoingNotifications: no connections found for %s:%s",TAG,block.getBlockId().toString(),port);
+			log.debugf("%s.getOutgoingNotifications: no connections found for %s:%s",TAG,block.getBlockId().toString(),port);
 		}
 		return notifications;
 	}

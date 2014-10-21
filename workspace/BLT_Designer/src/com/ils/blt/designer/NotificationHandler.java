@@ -21,10 +21,12 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 
 /**
- *  The controller is a singleton used to manage interactions between sequential control blocks
+ *  The handler is a singleton used to manage interactions between sequential control blocks
  *  in the Designer scope with the model of these blocks in the Gateway. The handler maintains a map of 
- *  blocks, by name, and uses this to apply property value changes as indicated
- *  by the Gateway.
+ *  blocks, by name, and uses this to apply property value changes as indicated by the Gateway.
+ *  
+ *  We maintain a payload table so that we can inform diagrams with the latest values when they are
+ *  displayed for the first time, or re-displayed.
  *  
  *  The moduleId used within the calls refers to the module that has the handler for the 
  *  method that is invoked.
@@ -33,6 +35,7 @@ public class NotificationHandler implements PushNotificationListener {
 	private static String TAG = "NotificationHandler";
 	private final LoggerEx log;
 	private final Map<String,NotificationChangeListener> changeListenerMap;
+	private final Map<String,Object> payloadMap;        // Keyed by the message type.
 	private static NotificationHandler instance = null;
 	
 	/**
@@ -43,6 +46,7 @@ public class NotificationHandler implements PushNotificationListener {
 		// Register as listener for notifications
 		GatewayConnectionManager.getInstance().addPushNotificationListener(this);
 		changeListenerMap = new HashMap<String,NotificationChangeListener>();
+		payloadMap = new HashMap<String,Object>();
 	}
 	
 	/**
@@ -74,6 +78,7 @@ public class NotificationHandler implements PushNotificationListener {
 			Object payload = notice.getMessage();
 			log.debugf("%s.receiveNotification: key=%s,value=%s",TAG,key,payload.toString());
 			if( payload instanceof QualifiedValue ) {
+				payloadMap.put(key, payload);
 				NotificationChangeListener listener = changeListenerMap.get(key);
 				if( listener != null ) {
 					listener.valueChange((QualifiedValue)payload);
@@ -94,13 +99,19 @@ public class NotificationHandler implements PushNotificationListener {
 	/**
 	 * The key used for PushNotification is unique for each receiver. Consequently we make a map
 	 * containing each interested recipient, by key. When an update arrives we notify, at most,
-	 * one listener.
+	 * one listener. On registration, we update with the latest status.
 	 * @param key
 	 * @param listener
 	 */
 	public void addNotificationChangeListener(String key,NotificationChangeListener listener) {
 		log.tracef("%s.addNotificationChangeListener: key=%s (%s)",TAG,key,listener.getClass().getName());
 		changeListenerMap.put(key, listener);
+		Object payload = payloadMap.get(key);
+		if( payload!=null ) {
+			listener.valueChange((QualifiedValue)payload);
+			// Repaint the workspace
+			SwingUtilities.invokeLater(new WorkspaceRepainter());
+		}
 	}
 	
 	/**

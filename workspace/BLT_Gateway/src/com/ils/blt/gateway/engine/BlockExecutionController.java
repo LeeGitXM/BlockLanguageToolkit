@@ -312,7 +312,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 				property.getBindingType()==BindingType.TAG_MONITOR )  ) {
 			String tagPath = property.getValue().toString();
 			if( tagPath!=null && tagPath.length()>0) {
-				tagListener.removeSubscription(block,tagPath);
+				tagListener.removeSubscription(block,property,tagPath);
 			}
 		}
 	}
@@ -378,7 +378,9 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 					ProcessDiagram dm = modelManager.getDiagram(pb.getParentId());
 					if( dm!=null) {
 						Collection<IncomingNotification> outgoing = dm.getOutgoingNotifications(inNote);
-						if( outgoing.isEmpty() ) log.warnf("%s: no downstream connections found ...",TAG);
+						// It is common for display blocks, for example, to be left unconnected.
+						// Don't get too worried about this.
+						if( outgoing.isEmpty() ) log.debugf("%s: no downstream connections found ...",TAG);
 						for(IncomingNotification outNote:outgoing) {
 							UUID outBlockId = outNote.getConnection().getTarget();
 							ProcessBlock outBlock = dm.getBlock(outBlockId);

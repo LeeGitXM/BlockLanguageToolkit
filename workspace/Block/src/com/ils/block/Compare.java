@@ -37,11 +37,12 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 	protected static String X_PORT_NAME = "x";
 	protected static String Y_PORT_NAME = "y";
 	protected static String OUT_PORT_NAME = "out";
+	private double synchInterval = 0.5; // 1/2 sec synchronization by default
 	// Keep map of values by originating block id
 	protected QualifiedValue x = null;
 	protected QualifiedValue y = null;
 	protected final Watchdog dog;
-	protected double synchInterval = 1.0; // ~secs
+	
 	protected double offset = 0;
 	
 	/**

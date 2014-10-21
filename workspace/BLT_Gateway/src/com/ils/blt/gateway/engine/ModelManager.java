@@ -48,7 +48,7 @@ public class ModelManager implements ProjectListener  {
 	private final GatewayContext context;
 	private final LoggerEx log;
 	/** Access nodes by either UUID or tree path */
-	private final RootNode root;
+	private RootNode root;
 	private final Map<ProjResKey,ProcessDiagram> diagramsByKey;  // Diagrams only
 	private final Map<UUID,ProcessNode> orphansByUUID;
 	private final Map<UUID,ProcessNode> nodesByUUID;
@@ -273,6 +273,8 @@ public class ModelManager implements ProjectListener  {
 		diagramsByKey.clear();
 		orphansByUUID.clear();
 		nodesByUUID.clear();
+		root = new RootNode(context);
+		log.infof("%s.removeAllDiagrams ... complete",TAG);
 	}
 	/**
 	 * Start all blocks in diagrams known to this manager. Note that, even if a diagram is
@@ -337,7 +339,7 @@ public class ModelManager implements ProjectListener  {
 	public void projectUpdated(Project diff, ProjectVersion vers) { 
 		
 		if( vers!=ProjectVersion.Staging ) return;  // Consider only the "Staging" version
-		log.infof("%s.projectUpdated: %s (%d)  %s", TAG,diff.getName(),diff.getId(),vers.toString());
+		log.debugf("%s.projectUpdated: %s (%d)  %s", TAG,diff.getName(),diff.getId(),vers.toString());
 		long projectId = diff.getId();
 		Set<Long> deleted = diff.getDeletedResources();
 		for (Long  resid : deleted) {
@@ -348,7 +350,7 @@ public class ModelManager implements ProjectListener  {
 		List<ProjectResource> resources = diff.getResources();
 		for( ProjectResource res:resources ) {
 			//if( res.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)) continue;
-			log.infof("%s.projectUpdated: resource %s (%d),type %s (%s)", TAG,res.getName(),
+			log.infof("%s.projectUpdated: add resource %s (%d),type %s (%s)", TAG,res.getName(),
 					res.getResourceId(),res.getResourceType(),(diff.isResourceDirty(res)?"dirty":"clean"));
 			analyzeResource(projectId,res);
 		}
@@ -362,7 +364,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param res the project resource containing the diagram
 	 */
 	private void addApplicationResource(Long projectId,ProjectResource res) {
-		log.infof("%s.addApplicationResource: %d",TAG,res.getResourceId());
+		log.debugf("%s.addApplicationResource: %d",TAG,res.getResourceId());
 		ProcessApplication application = deserializeApplicationResource(projectId,res);
 		if( application!=null ) {
 			UUID self = application.getSelf();
@@ -407,7 +409,7 @@ public class ModelManager implements ProjectListener  {
 			ProjResKey key = new ProjResKey(projectId,res.getResourceId());
 			diagramsByKey.put(key,diagram);
 			addToHierarchy(projectId,diagram);
-			log.infof("%s.addDiagramResource: defining tag subscriptions ...%d:%s",TAG,projectId,res.getName());
+			log.debugf("%s.addDiagramResource: defining tag subscriptions ...%d:%s",TAG,projectId,res.getName());
 			for( ProcessBlock pb:diagram.getProcessBlocks()) {
 				for(BlockProperty bp:pb.getProperties()) {
 					controller.startSubscription(pb,bp);
@@ -432,7 +434,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param res the project resource containing the diagram
 	 */
 	private void addFamilyResource(Long projectId,ProjectResource res) {
-		log.infof("%s.addFamilyResource: %d",TAG,res.getResourceId());
+		log.debugf("%s.addFamilyResource: %d",TAG,res.getResourceId());
 		ProcessFamily family = deserializeFamilyResource(projectId,res);
 		if( family!=null ) {
 			UUID self = family.getSelf();
@@ -455,7 +457,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param model the diagram logic
 	 */
 	private void addFolderResource(long projectId,ProjectResource res) {
-		log.infof("%s.addFolderResource: %d",TAG,res.getResourceId());
+		log.debugf("%s.addFolderResource: %d",TAG,res.getResourceId());
 		UUID self = res.getDataAsUUID();
 		ProcessNode node = nodesByUUID.get(self);
 		if( node==null ) {
@@ -475,7 +477,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param node the node to be added
 	 */
 	private void addToHierarchy(long projectId,ProcessNode node) {
-		log.infof("%s.addToHierarchy: %s",TAG,node.getName());
+		log.debugf("%s.addToHierarchy: %s",TAG,node.getName());
 		UUID self     = node.getSelf();
 		nodesByUUID.put(self, node);
 		
@@ -483,22 +485,22 @@ public class ModelManager implements ProjectListener  {
 		// Add the node to the root.
 		if( node.getParent()==null )  {
 			root.addChild(node,projectId);
-			log.infof("%s.addToHierarchy: %s is a ROOT",TAG,node.getName());
+			log.debugf("%s.addToHierarchy: %s is a ROOT",TAG,node.getName());
 		}
 		else if( node.getParent().equals(BLTProperties.ROOT_FOLDER_UUID) )  {
 			root.addChild(node,projectId);
-			log.infof("%s.addToHierarchy: %s is a ROOT",TAG,node.getName());
+			log.debugf("%s.addToHierarchy: %s is a ROOT",TAG,node.getName());
 		}
 		else {
 			// If the parent is already in the tree, simply add the node as a child
 			// Otherwise add to our list of orphans
 			ProcessNode parent = nodesByUUID.get(node.getParent());
 			if(parent==null ) {
-				log.infof("%s.addToHierarchy: %s is an ORPHAN",TAG,node.getName());
+				log.debugf("%s.addToHierarchy: %s is an ORPHAN",TAG,node.getName());
 				orphansByUUID.put(self, node);
 			}
 			else {
-				log.infof("%s.addToHierarchy: %s is a CHILD of %s",TAG,node.getName(),parent.getName());
+				log.debugf("%s.addToHierarchy: %s is a CHILD of %s",TAG,node.getName(),parent.getName());
 				parent.addChild(node);
 			}
 		}	
@@ -561,13 +563,13 @@ public class ModelManager implements ProjectListener  {
 	private ProcessApplication deserializeApplicationResource(long projId,ProjectResource res) {
 		byte[] serializedObj = res.getData();
 		String json = new String(serializedObj);
-		log.infof("%s.deserializeApplicationResource: json = %s",TAG,json);
+		log.debugf("%s.deserializeApplicationResource: json = %s",TAG,json);
 		ProcessApplication application = null;
 		try{
 			ObjectMapper mapper = new ObjectMapper();
 			SerializableApplication sa = mapper.readValue(json, SerializableApplication.class);
 			if( sa!=null ) {
-				log.infof("%s.deserializeApplicationResource: successfully deserialized application %s",TAG,sa.getName());
+				log.infof("%s.deserializeApplicationResource: Successfully deserialized application %s",TAG,sa.getName());
 				application = new ProcessApplication(sa,res.getParentUuid());
 				application.setResourceId(res.getResourceId());
 			}
@@ -591,14 +593,14 @@ public class ModelManager implements ProjectListener  {
 	private ProcessDiagram deserializeDiagramResource(long projId,ProjectResource res) {
 		byte[] serializedObj = res.getData();
 		String json = new String(serializedObj);
-		log.infof("%s.deserializeDiagramResource: json = %s",TAG,json);
+		log.debugf("%s.deserializeDiagramResource: json = %s",TAG,json);
 		ProcessDiagram diagram = null;
 		try{
 			ObjectMapper mapper = new ObjectMapper();
 			SerializableDiagram sd = mapper.readValue(json, SerializableDiagram.class);
 			if( sd!=null ) {
 				sd.setResourceId(res.getResourceId());
-				log.infof("%s.deserializeDiagramResource: successfully deserialized diagram %s",TAG,sd.getName());
+				log.infof("%s.deserializeDiagramResource: Successfully deserialized diagram %s",TAG,sd.getName());
 				diagram = new ProcessDiagram(sd,res.getParentUuid());
 				diagram.setResourceId(res.getResourceId());
 				diagram.setProjectId(projId);
@@ -623,13 +625,13 @@ public class ModelManager implements ProjectListener  {
 	private ProcessFamily deserializeFamilyResource(long projId,ProjectResource res) {
 		byte[] serializedObj = res.getData();
 		String json = new String(serializedObj);
-		log.infof("%s.deserializeFamilyResource: json = %s",TAG,json);
+		log.debugf("%s.deserializeFamilyResource: json = %s",TAG,json);
 		ProcessFamily family = null;
 		try{
 			ObjectMapper mapper = new ObjectMapper();
 			SerializableFamily sf = mapper.readValue(json, SerializableFamily.class);
 			if( sf!=null ) {
-				log.infof("%s.deserializeModelResource: successfully deserialized family %s",TAG,sf.getName());
+				log.infof("%s.deserializeModelResource: Successfully deserialized family %s",TAG,sf.getName());
 				family = new ProcessFamily(sf,res.getParentUuid());
 				family.setResourceId(res.getResourceId());
 			}
@@ -656,7 +658,7 @@ public class ModelManager implements ProjectListener  {
 			// If is now resolved, remove node from orphan list and
 			// add as child of parent. Recurse it's children.
 			if(parent!=null ) {
-				log.infof("%s.resolveOrphans: %s RECONCILED with parent (%s)",TAG,orphan.getName(),parent.getName());
+				log.debugf("%s.resolveOrphans: %s RECONCILED with parent (%s)",TAG,orphan.getName(),parent.getName());
 				reconciledOrphans.add(orphan);
 			}
 		}

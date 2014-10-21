@@ -38,7 +38,7 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 	protected static String OUT_PORT_NAME = "out";
 	protected static String STATUS_PORT_NAME = "status";
 	private final Watchdog dog;
-	private double synchInterval = 0.0; // default
+	private double synchInterval = 0.5; // 1/2 sec synchronization by default
 	protected String quality = "good";
 	private QualifiedValue value = null;
 	

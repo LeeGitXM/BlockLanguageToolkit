@@ -20,7 +20,9 @@ import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.control.BlockPropertyChangeEvent;
 import com.ils.blt.common.control.IncomingNotification;
 import com.ils.blt.common.serializable.DiagramState;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.project.ProjectVersion;
 import com.inductiveautomation.ignition.common.sqltags.model.Tag;
 import com.inductiveautomation.ignition.common.sqltags.model.TagPath;
 import com.inductiveautomation.ignition.common.sqltags.model.TagProp;
@@ -33,17 +35,17 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 import com.inductiveautomation.ignition.gateway.sqltags.SQLTagsManager;
 
 /**
- *  The data collector waits for inputs on a collection of tags and,
+ *  The tag listener waits for inputs on a collection of tags and,
  *  whenever a tag value changes, the collector posts a change notice
- *  task directly to the block for which it is a listening proxy.
+ *  task directly to the block properties for which it is a listening proxy.
  */
 public class TagListener implements TagChangeListener   {
 	private static final String TAG = "TagListener";
 	private static int THREAD_POOL_SIZE = 10;   // Notification threads
 	private final LoggerEx log;
 	private GatewayContext context = null;
-	private final Map<String,List<ProcessBlock>> blockMap;  // Executable blocks keyed by tag path
-	private final Map<String,String> tagMap;                // Tag paths keyed by blockId:propertyName
+	private final Map<String,List<BlockPropertyPair>> blockMap;  // Blocks-Properties keyed by tag path
+	private final Map<BlockPropertyPair,String>       tagMap;    // Tag paths keyed by Block-Property
 	private final SimpleDateFormat dateFormatter;
 	private boolean stopped = true;
 	private final BlockExecutionController controller;
@@ -54,8 +56,8 @@ public class TagListener implements TagChangeListener   {
 	 */
 	public TagListener(BlockExecutionController ec) {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
-		this.blockMap = new HashMap<String,List<ProcessBlock>>();
-		this.tagMap   = new HashMap<String,String>();
+		this.blockMap = new HashMap<String,List<BlockPropertyPair>>();
+		this.tagMap   = new HashMap<BlockPropertyPair,String>();
 		this.dateFormatter = new SimpleDateFormat(BlockConstants.TIMESTAMP_FORMAT);
 		this.controller = ec;
 		this.threadPool = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
@@ -78,7 +80,10 @@ public class TagListener implements TagChangeListener   {
 
 	/**
 	 * Define a tag subscription based on a block attribute. The subject attribute must be
-	 * one associated with a tag. If we are running, start the subscription.
+	 * one associated with a tag. If we are running and
+	 *     a) This is a new tag, then update the property from the subscription
+	 *     b) We are sharing the tag, then update the property from the current value
+	 *                                of a shared property.
 	 */
 	public void defineSubscription(ProcessBlock block,BlockProperty property) {
 		if( block==null || property==null || 
@@ -87,16 +92,30 @@ public class TagListener implements TagChangeListener   {
 				  property.getBindingType()==BindingType.TAG_MONITOR )   ) return;
 		log.infof("%s.defineSubscription: considering %s:%s",TAG,block.getName(),property.getName());
 		String tagPath = property.getBinding();
-		tagMap.put(makeKey(block,property), tagPath);
-		if( tagPath!=null && tagPath.length() >0 && property.isEditable() ) {
-			if( blockMap.get(tagPath) == null ) blockMap.put(tagPath, new ArrayList<ProcessBlock>());
-			List<ProcessBlock> blocks = blockMap.get(tagPath);
-			if( blocks.contains(block) ) {
-				log.infof("%s.defineSubscription: share %s:%s on tag path %s",TAG,block.getName(),property.getName(),tagPath);
-				return;    // We already have a subscription
+		if( tagPath!=null && tagPath.length() >0  ) {
+			boolean needToStartSubscription = false;
+			BlockPropertyPair key = new BlockPropertyPair(block,property);
+			// If we've seen this before, then ignore
+			List<BlockPropertyPair> list = blockMap.get(tagPath); 
+			if( list==null ) {
+				// First time we've seen this tag, start subscription
+				list = new ArrayList<BlockPropertyPair>();
+				blockMap.put(tagPath,list );
+				needToStartSubscription = true;
 			}
-			blocks.add(block);
-			if(!stopped) startSubscriptionForProperty(block,property,tagPath);
+			if( list.contains(key))  {   
+				// Duplicate request, nothing to do
+				log.infof("%s.defineSubscription: %s:%s already subscribes to: %s",TAG,block.getName(),property.getName(),tagPath);
+				return;
+			}
+			
+			list.add(key);
+			tagMap.put(key,tagPath);
+			log.infof("%s.defineSubscription: %s:%s now subscribes to: %s",TAG,block.getName(),property.getName(),tagPath);
+			if(!stopped ) {
+				if(needToStartSubscription) startSubscriptionForTag(tagPath);
+				else updatePropertyValueFromLinkedProperty(key,list);   // Get the value from another block's property
+			}
 		}
 	}
 	/**
@@ -108,11 +127,10 @@ public class TagListener implements TagChangeListener   {
 	 * @param property
 	 */
 	public void removeSubscription(ProcessBlock block,BlockProperty property) {
-		String key = makeKey(block,property);
-		String oldPath = tagMap.get(key);
-		if( oldPath!=null ) {
-			removeSubscription(block,oldPath);
-			tagMap.remove(key);
+		BlockPropertyPair key = new BlockPropertyPair(block,property);
+		String path = tagMap.get(key);
+		if( path!=null ) {
+			removeSubscription(block,property,path);
 		}
 	}
 	/**
@@ -121,12 +139,14 @@ public class TagListener implements TagChangeListener   {
 	 * 
 	 * @param tagPath
 	 */
-	public void removeSubscription(ProcessBlock block,String tagPath) {
+	public void removeSubscription(ProcessBlock block,BlockProperty property,String tagPath) {
 		if( tagPath==null) return;    // There was no subscription
 
-		List<ProcessBlock> blocks = blockMap.get(tagPath);
-		blocks.remove(block);
-		if(blocks.isEmpty()) {
+		List<BlockPropertyPair> list = blockMap.get(tagPath);
+		BlockPropertyPair key = new BlockPropertyPair(block,property);
+		list.remove(key);
+		// Once the list is empty, we cancel the subscription
+		if(list.isEmpty()) {
 			log.infof("%s.removeSubscription: %s",TAG,tagPath);
 			blockMap.remove(tagPath);
 			if(!stopped) {
@@ -144,7 +164,8 @@ public class TagListener implements TagChangeListener   {
 	}
 	
 	/**
-	 * Unsubscribe to a path. Does not modify the map.
+	 * Un-subscribe to a path. Does not modify the map. We assume that this occurs
+	 * because the listener is being shutdown.
 	 * @param tagPath
 	 */
 	private void stopSubscription(String tagPath) {
@@ -168,60 +189,51 @@ public class TagListener implements TagChangeListener   {
 		this.context = ctxt;
 		log.infof("%s: start tagListener ...",TAG);
 		for( String tagPath:blockMap.keySet()) {
-			List<ProcessBlock> blocks = blockMap.get(tagPath);
-			for(ProcessBlock block:blocks ) {
-				for( String name: block.getPropertyNames()) {
-					BlockProperty property = block.getProperty(name);
-					if( (property.getBindingType()==BindingType.TAG_READ ||
-						 property.getBindingType()==BindingType.TAG_READWRITE ||
-						 property.getBindingType()==BindingType.TAG_MONITOR)  && 
-					    property.getBinding().equals(tagPath )        ) {
-						startSubscriptionForProperty(block,property,tagPath);
-					}
-				}
-			}
+			startSubscriptionForTag(tagPath);
 		}
 		stopped = false;
 	}
 	
-	private void startSubscriptionForProperty(ProcessBlock block,BlockProperty property,String tagPath) {
+	/**
+	 * Call this method only once per tag path. We are either subscribing to a novel path,
+	 * or are re-starting the listener. In either case we iterate through all the block-properties
+	 * and update values.
+	 * @param tagPath
+	 */
+	private void startSubscriptionForTag(String tagPath) {
 		SQLTagsManager tmgr = context.getTagManager();
+		List<BlockPropertyPair> list = blockMap.get(tagPath);    // Should never be null
+		if( list==null || list.size()==0 ) {
+			log.warnf("%s.startSubscriptionForTag: %s - found no block/properties",TAG,tagPath);
+			return;
+		}
+		ProcessBlock typicalBlock = list.get(0).getBlock();
 		try {
+			// If tag path isn't in canonical form, make it that way by prepending provider
+			// We assume that all tags in the list have the same default provider
+			String providerName = providerNameFromPath(tagPath);
+			if( providerName.length()==0) {
+				providerName = context.getProjectManager().getProps(typicalBlock.getProjectId(), ProjectVersion.Published).getDefaultSQLTagsProviderName();
+				tagPath = String.format("[%s]%s",providerName,tagPath);
+			}
+
 			TagPath tp = TagPathParser.parse(tagPath);
-			log.infof("%s.startSubscriptionForProperty: for %s on tag path %s",TAG,property.getName(),tp.toStringFull());
-			// Make sure the attribute is in canonical form
-			property.setBinding( tp.toStringFull());
+			log.infof("%s.startSubscriptionForTag: on tag path %s",TAG,tp.toStringFull());
+
 			Tag tag = tmgr.getTag(tp);
 			if( tag!=null ) {
 				QualifiedValue value = tag.getValue();
-				log.infof("%s.startSubscriptionForProperty: got a %s value for %s (%s at %s)",TAG,
+				log.infof("%s.startSubscriptionForTag: got a %s value for %s (%s at %s)",TAG,
 						(value.getQuality().isGood()?"GOOD":"BAD"),
 						tag.getName(),value.getValue(),
 						dateFormatter.format(value.getTimestamp()));
 				// Do not pass along nulls -- tag was never set
 				if(value.getValue()!=null ) {
-					try {
-						log.debugf("%s.startSubscriptionForProperty: %s for %s:%s",TAG,block.getName(),property.getBindingType().name(),property.getName());
-						// There are two types of bindings here
-						if( property.getBindingType().equals(BindingType.TAG_MONITOR) ) {
-							// The tag change updates the property value
-							PropertyChangeEvaluationTask task = new PropertyChangeEvaluationTask(block,
-									new BlockPropertyChangeEvent(block.getBlockId().toString(),property.getName(),property.getValue(),value.getValue()));
-								Thread propertyChangeThread = new Thread(task, "PropertyChange");
-								propertyChangeThread.start();
-						}
-						else if( property.getBindingType().equals(BindingType.TAG_READ) || 
-								 property.getBindingType().equals(BindingType.TAG_READWRITE)) {
-							// The tag subscription acts as a pseudo input
-							IncomingNotification notice = new IncomingNotification(value);
-							threadPool.execute(new IncomingValueChangeTask(block,notice));		
-						}
-						else {
-							log.warnf("%s.startSubscriptionForProperty: %s property no longer bound (%s)",TAG,property.getName(),property.getBindingType());
-						}
-					}
-					catch(Exception ex) {
-						log.warnf("%s.startSubscriptionForProperty: Failed to execute subscription start (%s)",TAG,ex.getLocalizedMessage()); 
+					// Update all properties with new value
+					for(BlockPropertyPair key:list ) {
+						ProcessBlock block = key.getBlock();
+						BlockProperty property = key.getProperty();
+						updateProperty(block,property,value);
 					}
 				}
 			}
@@ -254,10 +266,6 @@ public class TagListener implements TagChangeListener   {
 	public TagProp getTagProperty() {
 		return TagProp.Value;
 	}
-	
-	private String makeKey(ProcessBlock block,BlockProperty property) { 
-		return String.format("%s:%s",block.getBlockId().toString(),property.getName()); 
-	}
 
 	/**
 	 * When a tag value changes, create a new property change task and
@@ -269,66 +277,35 @@ public class TagListener implements TagChangeListener   {
 	public void tagChanged(TagChangeEvent event) {
 		TagPath tp = event.getTagPath();
 		Tag tag = event.getTag();
-		TagProp property = event.getTagProperty();
-		if( property == TagProp.Value) {
+		TagProp prop = event.getTagProperty();
+		if( prop == TagProp.Value) {
 			try {
 				log.infof("%s: tagChanged: got a %s value for %s (%s at %s)",TAG,
 					(tag.getValue().getQuality().isGood()?"GOOD":"BAD"),
 					tag.getName(),tag.getValue().getValue(),
 					dateFormatter.format(tag.getValue().getTimestamp()));
-				
-				List<ProcessBlock> blocks = blockMap.get(tp.toStringFull());
-				if( blocks!=null ) {
-					
-					for(ProcessBlock blk:blocks) {
-						// Reject blocks that are in a disabled diagram
-						ProcessDiagram parent = controller.getDiagram(blk.getParentId());
-						if( parent.getState().equals(DiagramState.DISABLED)) continue;
-						
-						// Search properties of the block looking for any bound to tag
-						for( String name: blk.getPropertyNames()) {
-							BlockProperty prop = blk.getProperty(name);
-							String path = prop.getBinding().toString();
-							if( prop.getBindingType()==BindingType.TAG_READ || 
-								prop.getBindingType()==BindingType.TAG_READWRITE ||
-								prop.getBindingType()==BindingType.TAG_MONITOR) {
-								if( path.equals(tp.toStringFull())  ) {
-									try {
-										// Treat the notification differently depending on the binding
-										if( prop.getBindingType().equals(BindingType.TAG_MONITOR)) {
-											log.debugf("%s.tagChanged: property change for %s:%s",TAG,blk.getName(),prop.getName());
-											PropertyChangeEvaluationTask task = new PropertyChangeEvaluationTask(blk,
-													new BlockPropertyChangeEvent(blk.getBlockId().toString(),prop.getName(),prop.getValue(),tag.getValue().getValue()));
-											Thread propertyChangeThread = new Thread(task, "PropertyChange");
-											propertyChangeThread.start();
-										}
-										else if( prop.getBindingType().equals(BindingType.TAG_READ) ||
-												 prop.getBindingType().equals(BindingType.TAG_READWRITE)) {
-											// The tag subscription acts as a pseudo input
-											IncomingNotification notice = new IncomingNotification(tag.getValue());
-											threadPool.execute(new IncomingValueChangeTask(blk,notice));	
-										}
-										else {
-											log.warnf("%s.tagChanged: %s property no longer bound (%s)",TAG,property.getName(),prop.getBindingType());
-										}
-									}
-									catch(Exception ex) {
-										log.warnf("%s.tagChanged: Failed to execute change event (%s)",TAG,ex.getLocalizedMessage()); 
-									}
-								}
-							}
-						}
-					}
-					if( blocks.size()==0) {
-						log.warnf("%s.tagChanged: No blocks corresponding to tag %s -- unsubscribing",TAG,tag.getName());
-						stopSubscription(tp.toStringFull());
-						blockMap.remove(tp.toStringFull());
-					}
-				}
-				else {
-					log.warnf("%s.tagChanged: Null list of blocks corresponding to tag %s -- unsubscribing",TAG,tag.getName());
+				// The subscription may be to the fully qualified tag path
+				// and/or the path assuming the default provider
+				List<BlockPropertyPair> list1 = blockMap.get(tp.toStringFull());
+				List<BlockPropertyPair> list2 = blockMap.get(tp.toStringPartial());
+				List<BlockPropertyPair> list = new ArrayList<>();
+				if( list1!=null ) list.addAll(list1);
+				if( list2!=null ) list.addAll(list2);
+				if( list.size()==0 ) {
+					log.warnf("%s.tagChanged: %s - found no targets for %s or %s -- unsubscribing",TAG,tp.toStringPartial(),tp.toStringFull());
 					stopSubscription(tp.toStringFull());
 					blockMap.remove(tp.toStringFull());
+					blockMap.remove(tp.toStringPartial());
+					return;
+				}
+				for(BlockPropertyPair key:list) {
+					ProcessBlock block = key.getBlock();
+					BlockProperty property = key.getProperty();
+					// Reject blocks that are in a disabled diagram
+					ProcessDiagram parent = controller.getDiagram(block.getParentId());
+					if( !parent.getState().equals(DiagramState.DISABLED)) {
+						updateProperty(block,property,tag.getValue());
+					}
 				}			
 			}
 			catch(Exception ex) {
@@ -337,7 +314,87 @@ public class TagListener implements TagChangeListener   {
 		}
 		else {
 			// For some reason every other update is a null property.
-			log.tracef("%s.tagChanged: %s got a %s property, ... ignored",TAG,(tp==null?"null":tp.toStringFull()),(property==null?"null":property.toString()) );
+			log.tracef("%s.tagChanged: %s got a null ... ignored",TAG,(tp==null?"null":tp.toStringFull()));
 		}
 	}
+	
+	private String providerNameFromPath(String tagPath) {
+		String provider = "";
+		if( tagPath.startsWith("[") ) {
+			int index = tagPath.indexOf(']');
+			if( index>0 ) {
+				provider = tagPath.substring(1,index);
+			}
+		}
+		return provider;
+	}
+	
+	private void updateProperty(ProcessBlock block,BlockProperty property,QualifiedValue value) {
+		try {
+			// Treat the notification differently depending on the binding
+			if( property.getBindingType().equals(BindingType.TAG_MONITOR)) {
+				log.infof("%s.tagChanged: property change for %s:%s",TAG,block.getName(),property.getName());
+				PropertyChangeEvaluationTask task = new PropertyChangeEvaluationTask(block,
+								new BlockPropertyChangeEvent(block.getBlockId().toString(),property.getName(),property.getValue(),value.getValue()));
+				Thread propertyChangeThread = new Thread(task, "PropertyChange");
+				propertyChangeThread.start();
+			}
+			else if( property.getBindingType().equals(BindingType.TAG_READ) ||
+					 property.getBindingType().equals(BindingType.TAG_READWRITE)) {
+					// The tag subscription acts as a pseudo input
+					IncomingNotification notice = new IncomingNotification(value);
+					threadPool.execute(new IncomingValueChangeTask(block,notice));	
+			}
+			else {
+				log.warnf("%s.tagChanged: %s property no longer bound (%s)",TAG,property.getName(),property.getBindingType());
+			}
+		}
+		catch(Exception ex) {
+			log.warnf("%s.tagChanged: Failed to execute change event (%s)",TAG,ex.getLocalizedMessage()); 
+		}
+	}
+	
+	private void updatePropertyValueFromLinkedProperty(BlockPropertyPair key,List<BlockPropertyPair>list) {
+		if( list.size()>1 ) {
+			// Set the value of the new property from an old one.
+			// We've just appended the key to the end of the list, so the first value ought to be a good one.
+			BlockProperty property = key.getProperty();
+			BlockProperty typicalProperty = list.get(0).getProperty();
+			QualifiedValue value = new BasicQualifiedValue(typicalProperty.getValue());
+			updateProperty(key.getBlock(),property,value);
+		}
+	}
+	// ====================================== ProjectResourceKey =================================
+		/**
+		 * Class for keyed storage by ProcessBlock and Property
+		 */
+		private class BlockPropertyPair {
+			private final ProcessBlock block;
+			private final BlockProperty property;
+			public BlockPropertyPair(ProcessBlock blk,BlockProperty prop) {
+				this.block = blk;
+				this.property = prop;
+			}
+			public ProcessBlock  getBlock()    { return block; }
+			public BlockProperty getProperty() { return property; }
+			
+			// So that class may be used as a map key
+			// Same blockId and propertyName is sufficient to prove equality
+			@Override
+			public boolean equals(Object arg) {
+				boolean result = false;
+				if( arg instanceof BlockPropertyPair) {
+					BlockPropertyPair that = (BlockPropertyPair)arg;
+					if( (this.getBlock().getBlockId().toString().equalsIgnoreCase(that.getBlock().getBlockId().toString()) ) &&
+						(this.getProperty().getName().equalsIgnoreCase(that.getProperty().getName()) )   ) {
+						result = true;
+					}
+				}
+				return result;
+			}
+			@Override
+			public int hashCode() {
+				return (int)(this.block.hashCode()+this.property.getName().hashCode());
+			}
+		}
 }

@@ -41,7 +41,7 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 	// Keep map of values by originating block id
 	protected final Map<String,QualifiedValue> qualifiedValueMap;
 	private final Watchdog dog;
-	private double synchInterval = 0.0; // No synchronization by default
+	private double synchInterval = 0.5; // 1/2 sec synchronization by default
 	protected TruthValue truthValue;
 	
 	/**
@@ -103,15 +103,16 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 	 * For now we simply record the change in the map and start the watchdog. 
 	 * 
 	 * Note: there can be several connections attached to a given port.
-	 * @param vcn incoming new value.
+	 * @param incoming new value.
 	 */
 	@Override
-	public void acceptValue(IncomingNotification vcn) {
-		super.acceptValue(vcn);
+	public void acceptValue(IncomingNotification incoming) {
+		super.acceptValue(incoming);
 		this.state = BlockState.ACTIVE;
-		String blockId = vcn.getConnection().getSource().toString();
-		QualifiedValue qv = vcn.getValue();
-		qualifiedValueMap.put(blockId, qv);
+		String key = String.format("%s:%s",incoming.getConnection().getSource().toString(),
+                                           incoming.getConnection().getUpstreamPortName());
+		QualifiedValue qv = incoming.getValue();
+		qualifiedValueMap.put(key, qv);
 		dog.setSecondsDelay(synchInterval);
 		controller.pet(dog);
 	}

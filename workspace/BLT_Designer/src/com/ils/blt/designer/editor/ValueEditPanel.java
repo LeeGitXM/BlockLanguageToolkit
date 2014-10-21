@@ -108,7 +108,10 @@ public class ValueEditPanel extends BasicEditPanel {
 		log.infof("%s.updateForProperty: %s",TAG,prop.getName());
 		this.property = prop;
 		headingLabel.setText(prop.getName());
-		valueLabel.setText("Value ("+prop.getType().name().toLowerCase()+")");
+		String text = "Value ("+prop.getType().name().toLowerCase();
+		if( property.getType().equals(PropertyType.TIME) ) text = text + " ~secs";
+		text = text + ")";
+		valueLabel.setText(text);
 		if( prop.getValue()!=null ) {
 			valueField.setText(fncs.coerceToString(prop.getValue()));
 		}   

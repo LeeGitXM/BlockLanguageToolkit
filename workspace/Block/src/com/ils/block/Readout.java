@@ -139,7 +139,7 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 					log.warn(TAG+".acceptValue: error formatting "+qv.getValue()+" with "+format+" as "+type.name(),ex);  // Print stack trace
 				}
 				qv = new BasicQualifiedValue(value,qv.getQuality(),qv.getTimestamp()); 
-				log.infof("%s.acceptValue: formatted value =  %s.",TAG,qv.toString());
+				log.infof("%s.acceptValue: port %s formatted value =  %s.",TAG,incoming.getConnection().getUpstreamPortName(),value);
 				controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE, qv);
 			}	
 		}
@@ -154,7 +154,7 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 	private void initializePrototype() {
 		prototype.setPaletteIconPath("Block/icons/palette/readout.png");
 		prototype.setPaletteLabel("Readout");
-		prototype.setTooltipText("Show current value as it passes through");
+		prototype.setTooltipText("Show current connection value. Sample formats: %s (string), %3.2f (float), %d (integer)");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_CONNECTIVITY);
 		
 		BlockDescriptor view = prototype.getBlockDescriptor();
