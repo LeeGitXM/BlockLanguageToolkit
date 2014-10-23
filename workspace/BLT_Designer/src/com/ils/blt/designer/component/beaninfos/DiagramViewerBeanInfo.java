@@ -3,7 +3,6 @@
  */
 package com.ils.blt.designer.component.beaninfos;
 
-import java.awt.Dimension;
 import java.awt.Image;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -11,11 +10,10 @@ import java.beans.SimpleBeanInfo;
 
 import javax.swing.ImageIcon;
 
-import com.ils.blt.client.component.RecommendationMapComponent;
+import com.ils.blt.client.component.DiagramViewer;
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.factorypmi.designer.property.customizers.DynamicPropertyProviderCustomizer;
 import com.inductiveautomation.factorypmi.designer.property.customizers.StyleCustomizer;
-import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -37,7 +35,7 @@ public class DiagramViewerBeanInfo extends CommonBeanInfo {
 	 *              superclass fills in common properties and customizers.
 	 */
 	public DiagramViewerBeanInfo() {
-		super(RecommendationMapComponent.class, new CustomizerDescriptor[] {
+		super(DiagramViewer.class, new CustomizerDescriptor[] {
 				DynamicPropertyProviderCustomizer.VALUE_DESCRIPTOR,
 				StyleCustomizer.VALUE_DESCRIPTOR});
 		logger.infof("%s:CONSTRUCTOR",TAG);
@@ -48,6 +46,9 @@ public class DiagramViewerBeanInfo extends CommonBeanInfo {
 		// Adds common properties
 		logger.infof("%s:INITPROPRTIES",TAG);
 		super.initProperties();
+		
+		// Remove properties which aren't used in our component
+		removeProp("opaque");
 		/*
 		addProp(RangeSliderPanel.DECIMAL_PLACES_PROPERTY, "Number of Decimal Places",
 				"How many significant digits to display after the decimal point.",
@@ -72,21 +73,20 @@ public class DiagramViewerBeanInfo extends CommonBeanInfo {
 	
 	@Override
 	public Image getIcon(int kind) {
-		String imagePath="";
-		Dimension iconSize = new Dimension(32,32);
 		logger.infof("%s: getIcon of type %d",TAG,kind);
 		switch (kind) {
 		case BeanInfo.ICON_COLOR_16x16:
 		case BeanInfo.ICON_MONO_16x16:
-			imagePath = "Block/icons/palette/diagram_viewwer_16.png";
-			iconSize = new Dimension(16,16);
-			break;
+			return new ImageIcon(getClass().getResource("/images/diagram_view_16.png")).getImage();
 		case SimpleBeanInfo.ICON_COLOR_32x32:
 		case SimpleBeanInfo.ICON_MONO_32x32:
 		default:
-			imagePath = "Block/icons/palette/diagram_viewwer_16.png";
+			return new ImageIcon(getClass().getResource("/images/diagram_view_32.png")).getImage();
 		}
-		Image img = ImageLoader.getInstance().loadImage(imagePath,iconSize);
-		return img;
+	}
+	
+	@Override
+	protected void initEventSets() throws IntrospectionException {
+		super.initEventSets();
 	}
 }

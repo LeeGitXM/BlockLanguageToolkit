@@ -11,7 +11,7 @@ import java.beans.SimpleBeanInfo;
 
 import javax.swing.ImageIcon;
 
-import com.ils.blt.client.component.RecommendationMapComponent;
+import com.ils.blt.client.component.RecommendationMap;
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.factorypmi.designer.property.customizers.DynamicPropertyProviderCustomizer;
 import com.inductiveautomation.factorypmi.designer.property.customizers.StyleCustomizer;
@@ -37,7 +37,7 @@ public class RecommendationMapBeanInfo extends CommonBeanInfo {
 	 *              superclass fills in common properties and customizers.
 	 */
 	public RecommendationMapBeanInfo() {
-		super(RecommendationMapComponent.class, new CustomizerDescriptor[] {
+		super(RecommendationMap.class, new CustomizerDescriptor[] {
 				DynamicPropertyProviderCustomizer.VALUE_DESCRIPTOR,
 				StyleCustomizer.VALUE_DESCRIPTOR});
 		logger.infof("%s:CONSTRUCTOR",TAG);
@@ -72,21 +72,15 @@ public class RecommendationMapBeanInfo extends CommonBeanInfo {
 	
 	@Override
 	public Image getIcon(int kind) {
-		String imagePath="";
-		Dimension iconSize = new Dimension(32,32);
 		logger.infof("%s: getIcon of type %d",TAG,kind);
 		switch (kind) {
 		case BeanInfo.ICON_COLOR_16x16:
 		case BeanInfo.ICON_MONO_16x16:
-			imagePath = "Block/icons/palette/recommendation_map_16.png";
-			iconSize = new Dimension(16,16);
-			break;
+			return new ImageIcon(getClass().getResource("/images/recommendation_map_16.png")).getImage();
 		case SimpleBeanInfo.ICON_COLOR_32x32:
 		case SimpleBeanInfo.ICON_MONO_32x32:
 		default:
-			imagePath = "Block/icons/palette/recommendation_map_32.png";
+			return new ImageIcon(getClass().getResource("/images/recommendation_map_32.png")).getImage();
 		}
-		Image img = ImageLoader.getInstance().loadImage(imagePath,iconSize);
-		return img;
 	}
 }

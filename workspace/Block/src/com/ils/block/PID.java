@@ -161,10 +161,10 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 		}
 		else if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL)) {
 			try {
-				interval = Integer.parseInt(event.getNewValue().toString());
+				interval = Double.parseDouble(event.getNewValue().toString());
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s.propertyChange: Unable to convert scan interval to an integer (%s)",TAG,nfe.getLocalizedMessage());
+				log.warnf("%s.propertyChange: Unable to convert scan interval to a double (%s)",TAG,nfe.getLocalizedMessage());
 			}
 		}
 		else if(propertyName.equals(BLOCK_PROPERTY_INITIAL_VALUE)) {

@@ -1,11 +1,11 @@
 /**
- *   (c) 2013  ILS Automation. All rights reserved.
+ *   (c) 2013-2014  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer;
 
 
-import com.ils.blt.client.component.DiagramViewerComponent;
-import com.ils.blt.client.component.RecommendationMapComponent;
+import com.ils.blt.client.component.DiagramViewer;
+import com.ils.blt.client.component.RecommendationMap;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.ApplicationScriptFunctions;
 import com.ils.blt.common.BLTProperties;
@@ -92,12 +92,12 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 			}
 			JavaBeanPaletteItem jbpi = null;
 			try {
-				jbpi = new JavaBeanPaletteItem(DiagramViewerComponent.class) {
+				jbpi = new JavaBeanPaletteItem(DiagramViewer.class) {
 					public String getShortDescription() { return BundleUtil.get().getString(BLTProperties.BLOCK_PREFIX+".DiagramViewer.Desc"); }
 					public String getDisplayName() { return BundleUtil.get().getString(BLTProperties.BLOCK_PREFIX+".DiagramViewer.Display"); }
 				};
 				group.addPaletteItem(jbpi);
-				jbpi =new JavaBeanPaletteItem(RecommendationMapComponent.class){
+				jbpi =new JavaBeanPaletteItem(RecommendationMap.class){
 					public String getShortDescription() { return BundleUtil.get().getString(BLTProperties.BLOCK_PREFIX+".RecommendationMap.Desc"); }
 					public String getDisplayName() { return BundleUtil.get().getString(BLTProperties.BLOCK_PREFIX+".RecommendationMap.Display"); }
 				};

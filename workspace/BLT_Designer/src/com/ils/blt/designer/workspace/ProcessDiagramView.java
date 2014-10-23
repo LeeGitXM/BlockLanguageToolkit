@@ -50,6 +50,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	private DesignerContext context;
 	private boolean dirty = false;   // A newly created diagram is "dirty" until it is saved
 	                                 // but this looks better. It'll be dirty again with the first block
+	private boolean suppressStateChangeNotification = false;
 	
 	/**
 	 * Constructor: Create an instance given a SerializableDiagram
@@ -60,40 +61,46 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		this(resid,diagram.getId(),diagram.getName());
 		this.state = diagram.getState();
 		this.context = context;
-		for( SerializableBlock sb:diagram.getBlocks()) {
-			ProcessBlockView pbv = new ProcessBlockView(sb);
-			blockMap.put(sb.getId(), pbv);
-			log.warnf("%s: createDiagramView: Added %s to map",TAG,sb.getId().toString());
-			this.addBlock(pbv);
-		}
+		suppressStateChangeNotification = true;
+		synchronized(this) {
+			for( SerializableBlock sb:diagram.getBlocks()) {
+				ProcessBlockView pbv = new ProcessBlockView(sb);
+				blockMap.put(sb.getId(), pbv);
+				log.warnf("%s: createDiagramView: Added %s to map",TAG,sb.getId().toString());
+				this.addBlock(pbv);
+			}
 
-		for( SerializableConnection scxn:diagram.getConnections() ) {
-			SerializableAnchorPoint a = scxn.getBeginAnchor();
-			SerializableAnchorPoint b = scxn.getEndAnchor();
-			if( a!=null && b!=null ) {
-				ProcessBlockView blocka = blockMap.get(a.getParentId());
-				ProcessBlockView blockb = blockMap.get(b.getParentId());
-				if( blocka!=null && blockb!=null) {
-					AnchorPoint origin = new ProcessAnchorView(blocka,a);
-					AnchorPoint terminus = new ProcessAnchorView(blockb,b);
-					this.addConnection(origin,terminus);   // AnchorPoints
+			for( SerializableConnection scxn:diagram.getConnections() ) {
+				SerializableAnchorPoint a = scxn.getBeginAnchor();
+				SerializableAnchorPoint b = scxn.getEndAnchor();
+				if( a!=null && b!=null ) {
+					ProcessBlockView blocka = blockMap.get(a.getParentId());
+					ProcessBlockView blockb = blockMap.get(b.getParentId());
+					if( blocka!=null && blockb!=null) {
+						AnchorPoint origin = new ProcessAnchorView(blocka,a);
+						AnchorPoint terminus = new ProcessAnchorView(blockb,b);
+						this.addConnection(origin,terminus);   // AnchorPoints
+					}
+					else {
+						if( blocka==null ) {
+							log.warnf("%s: createDiagramView: Failed to find block %s for begin anchor point %s",TAG,a.getParentId(),a);
+						}
+						if( blockb==null ) {
+							log.warnf("%s: createDiagramView: Failed to find block %s for end anchor point %s",TAG,b.getParentId(),b);
+						}
+					}
 				}
 				else {
-					if( blocka==null ) {
-						log.warnf("%s: createDiagramView: Failed to find block %s for begin anchor point %s",TAG,a.getParentId(),a);
-					}
-					if( blockb==null ) {
-						log.warnf("%s: createDiagramView: Failed to find block %s for end anchor point %s",TAG,b.getParentId(),b);
-					}
+					log.warnf("%s: createDiagramView: Connection %s missing one or more anchor points",TAG,scxn.toString());
 				}
 			}
-			else {
-				log.warnf("%s: createDiagramView: Connection %s missing one or more anchor points",TAG,scxn.toString());
-			}
-			// Do this at the end to override state change on adding blocks.
-			this.dirty = diagram.isDirty(); 
 		}
+		suppressStateChangeNotification = false;
+		// Do this at the end to override state change on adding blocks/connectors.
+		// Note this shouldn't represent a change for parents
+		this.dirty = diagram.isDirty();
 	}
+	
 	public ProcessDiagramView(long resId,UUID uuid, String nam) {
 		this.id = uuid;
 		this.resourceId = resId;
@@ -295,12 +302,17 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	public void setEncapsulationBlockID(UUID encapsulationBlockID) {this.encapsulationBlockID = encapsulationBlockID;}
 	public void setState(DiagramState state) {this.state = state;}
 	
+	/**
+	 * There are a few situations (like deserialization) where we want to suppress the dirty propagation
+	 */
 	@Override
 	public void fireStateChanged() {
-		setDirty(true);
-		NodeStatusManager statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
-		statusManager.setResourceDirty(getResourceId(), true);
-		super.fireStateChanged();
+		if( !suppressStateChangeNotification ) {
+			setDirty(true);
+			NodeStatusManager statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
+			statusManager.setResourceDirty(getResourceId(), true);
+			super.fireStateChanged();
+		}
 	}
 	
 	/**
