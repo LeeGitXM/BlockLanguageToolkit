@@ -5,27 +5,28 @@ package com.ils.blt.client.component;
 
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.common.BundleUtil;
+import com.inductiveautomation.vision.api.client.components.model.AbstractVisionComponent;
 
 /**
  *  Use Prefuse to display a map of Recommendations to Outputs. The map
  *  allows interaction to update the recommendation priorities.
  */
-public class DiagramViewerComponent extends AbstractDiagramComponent {
-	private static final long serialVersionUID = 4408313516136446100L;
+public class RecommendationMap extends AbstractVisionComponent {
+	private static final long serialVersionUID = 5508313516136446100L;
 	private static String PREFIX = BLTProperties.CUSTOM_PREFIX;              // For bundle identification
 	
 
-	public DiagramViewerComponent() {
+	public RecommendationMap() {
 		
-		setName(BundleUtil.get().getString(PREFIX+".DiagramViewer.Name"));
-		setHeading(BundleUtil.get().getString(PREFIX+".DiagramViewer.Display"));
+		setName(BundleUtil.get().getString(PREFIX+".RecommendationMap.Name"));
+		//setHeading(BundleUtil.get().getString(PREFIX+".RecommendationMap.Display"));
 		this.setOpaque(true);
-		this.setBorder(border);
+		//this.setBorder(border);
 	}
 
-	@Override
+	//@Override
 	public boolean isSquare() {return true; }
-	@Override
-	public void setHeading(String text) { heading = text; }
+	//@Override
+	//public void setHeading(String text) { heading = text; }
 
 }
