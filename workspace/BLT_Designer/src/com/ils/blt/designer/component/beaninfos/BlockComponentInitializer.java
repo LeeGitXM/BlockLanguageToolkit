@@ -15,7 +15,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
-import com.ils.blt.client.component.AbstractDiagramComponent;
+import com.ils.blt.client.component.PrefuseViewerComponent;
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.factorypmi.designer.workspace.WindowWorkspace;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -29,7 +29,7 @@ import com.inductiveautomation.vision.api.designer.beans.ComponentPopupInitializ
  * 
  * At this point it does not seem possible to alter any of the standard menu items.
  */
-public class BlockComponentInitializer implements ComponentPopupInitializer<AbstractDiagramComponent> {
+public class BlockComponentInitializer implements ComponentPopupInitializer<PrefuseViewerComponent> {
 	private final static String TAG="BlockComponentInitializer";
 	private final static String PREFIX = BLTProperties.BUNDLE_PREFIX+".Workspace.Menu.";
 	protected final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
@@ -68,13 +68,13 @@ public class BlockComponentInitializer implements ComponentPopupInitializer<Abst
 	 * Provide a list of actions to be added to the top of the default set.
 	 */
 	@Override
-	public List<Action> getActions(final List<AbstractDiagramComponent> components, final WindowWorkspace workspace) {
+	public List<Action> getActions(final List<PrefuseViewerComponent> components, final WindowWorkspace workspace) {
 		List<Action> actions = new ArrayList<Action>();
 
 		if(components.size()==0) return actions;
 
 		// Assume that we are operating on only a single object
-		final AbstractDiagramComponent block = (AbstractDiagramComponent)components.get(0);
+		final PrefuseViewerComponent block = (PrefuseViewerComponent)components.get(0);
 		final JFrame frame = (JFrame)SwingUtilities.getAncestorOfClass( JFrame.class,block);
 		// They make it really hard to track down the "IgnitionDesigner" object .. but here's how
 		IgnitionDesigner dsnr = null;

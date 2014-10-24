@@ -11,7 +11,7 @@ import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
 import javax.swing.JTextField;
 
-import com.ils.blt.client.component.AbstractDiagramComponent;
+import com.ils.blt.client.component.PrefuseViewerComponent;
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.factorypmi.designer.property.customizers.DynamicPropertyProviderCustomizer;
 import com.inductiveautomation.vision.api.designer.beans.CommonBeanInfo;
@@ -101,10 +101,10 @@ public class BasicBlockBeanInfo extends CommonBeanInfo {
 	         return JTextField.RIGHT;
 	      }
 	      protected void setText(JComponent component, String text)  {
-	    	  ((AbstractDiagramComponent)component).setName(text);
+	    	  ((PrefuseViewerComponent)component).setName(text);
 	      }
 	      protected String getText(JComponent component) {
-	        return ((AbstractDiagramComponent)component).getName();
+	        return ((PrefuseViewerComponent)component).getName();
 	      }
 	    });
 	

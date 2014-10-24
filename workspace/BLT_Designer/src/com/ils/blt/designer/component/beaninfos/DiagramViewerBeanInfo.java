@@ -6,11 +6,16 @@ package com.ils.blt.designer.component.beaninfos;
 import java.awt.Image;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
+import java.beans.PropertyChangeListener;
 import java.beans.SimpleBeanInfo;
 
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
+import javax.swing.JTextField;
 
+import com.ils.blt.client.component.PrefuseViewerComponent;
 import com.ils.blt.client.component.DiagramViewer;
+import com.ils.blt.client.component.RecommendationMap;
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.factorypmi.designer.property.customizers.DynamicPropertyProviderCustomizer;
 import com.inductiveautomation.factorypmi.designer.property.customizers.StyleCustomizer;
@@ -19,11 +24,15 @@ import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.vision.api.designer.beans.CommonBeanInfo;
 import com.inductiveautomation.vision.api.designer.beans.CustomizerDescriptor;
+import com.inductiveautomation.vision.api.designer.beans.InPlaceEditHandler;
 
 
 /**
  * Define properties accessible in the designer properties editor for the RecommendationMap.
  * Also set the icon.
+ * 
+ * Caution: Empirical evidence shows that when inheriting from an extended class of CommonBeanInfo,
+ *          the ability to find a palette icon is broken. 
  */
 public class DiagramViewerBeanInfo extends CommonBeanInfo {
 	private static final String TAG = "DiagramViewerBeanInfo";
@@ -38,23 +47,21 @@ public class DiagramViewerBeanInfo extends CommonBeanInfo {
 		super(DiagramViewer.class, new CustomizerDescriptor[] {
 				DynamicPropertyProviderCustomizer.VALUE_DESCRIPTOR,
 				StyleCustomizer.VALUE_DESCRIPTOR});
-		logger.infof("%s:CONSTRUCTOR",TAG);
 	}
 
 	@Override
 	protected void initProperties() throws IntrospectionException {
 		// Adds common properties
-		logger.infof("%s:INITPROPRTIES",TAG);
 		super.initProperties();
 		
 		// Remove properties which aren't used in our component
 		removeProp("opaque");
-		/*
-		addProp(RangeSliderPanel.DECIMAL_PLACES_PROPERTY, "Number of Decimal Places",
-				"How many significant digits to display after the decimal point.",
-				CAT_APPEARANCE,
-				PREFERRED_MASK | BOUND_MASK | EXPERT_MASK );
-		*/
+		
+		addBoundProp(DiagramViewer.BLOCKS_PROPERTY, "Blocks", "A list of blocks and their positions", 
+                					CAT_DATA,PREFERRED_MASK | BOUND_MASK | EXPERT_MASK);
+		addBoundProp(DiagramViewer.CONNECTIONS_PROPERTY, "Connections", "A list of connections and end points", 
+                					CAT_DATA,PREFERRED_MASK | BOUND_MASK | EXPERT_MASK);
+
 	}
 	
 	/**
@@ -68,6 +75,22 @@ public class DiagramViewerBeanInfo extends CommonBeanInfo {
 		getBeanDescriptor().setDisplayName(BundleUtil.get().getString(PREFIX+".DiagramViewer.Display"));       // Tooltip-title
 		getBeanDescriptor().setShortDescription(BundleUtil.get().getString(PREFIX+".DiagramViewer.Desc"));     // Tooltip-description
 		super.initDesc();
+		// Display a custom popup menu with a right-click.
+		getBeanDescriptor().setValue(CommonBeanInfo.RIGHT_CLICK_HANDLER, new BlockComponentInitializer() );	
+
+		// Allow editing of the block name  in-place with a double-click. 
+		// Note: Edit-click and double-click seem to be the same gesture.
+		getBeanDescriptor().setValue(CommonBeanInfo.EDIT_CLICK_HANDLER, new InPlaceEditHandler() {
+			protected int getHorizontalAlignment(JComponent component) {
+				return JTextField.RIGHT;
+			}
+			protected void setText(JComponent component, String text)  {
+				((PrefuseViewerComponent)component).setName(text);
+			}
+			protected String getText(JComponent component) {
+				return ((PrefuseViewerComponent)component).getName();
+			}
+		});
 	}
 
 	
@@ -85,8 +108,16 @@ public class DiagramViewerBeanInfo extends CommonBeanInfo {
 		}
 	}
 	
+	/**
+	 * Define which events are listed in the left panel of the script editor. We want only the 
+	 * property change and our new gateway block execution events.
+	 */
 	@Override
 	protected void initEventSets() throws IntrospectionException {
+		// NOTE: The names refer to event and listener class names, respectively
+		//       By default we get propertyChange plus all the mouse and mouse motion events - mapped to scripts
 		super.initEventSets();
+		//addEventSet(JComponent.class, "propertyChange", PropertyChangeListener.class, "propertyChange");
 	}
+	
 }

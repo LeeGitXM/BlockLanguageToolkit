@@ -3,7 +3,6 @@
  */
 package com.ils.blt.designer.component.beaninfos;
 
-import java.awt.Dimension;
 import java.awt.Image;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -15,7 +14,6 @@ import com.ils.blt.client.component.RecommendationMap;
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.factorypmi.designer.property.customizers.DynamicPropertyProviderCustomizer;
 import com.inductiveautomation.factorypmi.designer.property.customizers.StyleCustomizer;
-import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -48,12 +46,14 @@ public class RecommendationMapBeanInfo extends CommonBeanInfo {
 		// Adds common properties
 		logger.infof("%s:INITPROPRTIES",TAG);
 		super.initProperties();
-		/*
-		addProp(RangeSliderPanel.DECIMAL_PLACES_PROPERTY, "Number of Decimal Places",
-				"How many significant digits to display after the decimal point.",
-				CAT_APPEARANCE,
-				PREFERRED_MASK | BOUND_MASK | EXPERT_MASK );
-		*/
+		
+		addBoundProp(RecommendationMap.DIAGNOSES_PROPERTY, "Diagnoses", "A list of final diagnosis values", 
+					                                       CAT_DATA,PREFERRED_MASK | BOUND_MASK | EXPERT_MASK);
+		addBoundProp(RecommendationMap.OUTPUTS_PROPERTY, "Outputs", "A list of outputs for which recommendations apply", 
+                                                           CAT_DATA,PREFERRED_MASK | BOUND_MASK | EXPERT_MASK);
+		addBoundProp(RecommendationMap.RECOMMENDATIONS_PROPERTY, "Recommendations", "An editable list of recommendations", 
+                                                           CAT_DATA,PREFERRED_MASK | BOUND_MASK | EXPERT_MASK);
+		
 	}
 	
 	/**

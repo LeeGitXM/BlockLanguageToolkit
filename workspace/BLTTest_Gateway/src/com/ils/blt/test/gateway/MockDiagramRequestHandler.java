@@ -343,8 +343,8 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 		}
 	}
 	@Override
-	public void updateTag(String tagPath,QualifiedValue qv) {
-		tagWriter.updateTag(tagPath, qv);
+	public void updateTag(Long projectId,String tagPath,QualifiedValue qv) {
+		tagWriter.updateTag(projectId.longValue(),tagPath, qv);
 	}
 	/**
 	 * Transmit a signal with the specified command to the block-under-test.
