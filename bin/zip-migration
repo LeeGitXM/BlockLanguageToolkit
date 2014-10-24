@@ -1,0 +1,35 @@
+#!/bin/sh
+#
+# Save the migration files into a zip for distribution.
+#
+#set -x
+REPO_ROOT=~/Development/ils/src
+SVN=~/Development/ils/svn/EMChemicals/Release/src
+VERS=MIGRATION
+TMP=$REPO_ROOT/$VERS
+# Cleanup
+rm -rf $TMP
+cd $REPO_ROOT
+mkdir $TMP
+cd $REPO_ROOT/blt/migration
+rm -f mdb/*.db
+rm -f tdb/*.db
+rm -rf tags
+cp -a * $TMP
+cd mdb
+./mkdatabase
+cd ../tdb
+./mkdatabase
+cd ..
+./clear-json
+./copy-json
+./migrate-all
+cd ..
+mkdir $TMP
+cp -a json $TMP
+
+# Now zip and copy to subversion
+cd $REPO_ROOT
+zip -r migration.zip $VERS
+cp migration.zip $SVN
+rm -rf $TMP

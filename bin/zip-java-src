@@ -5,41 +5,47 @@
 # running this script.
 #
 #set -x
-REPO_ROOT=~/Development/ils/repo
+REPO_ROOT=~/Development/ils/src
 SVN=~/Development/ils/svn/EMChemicals
-VERS=ils-java-src
+VERS=`cat $SVN/Release/VERS`
 TMP=$REPO_ROOT/$VERS
 # Cleanup
 rm -rf $TMP
 cd $REPO_ROOT
 rm -rf external/cachedir
-rm -rf block/workspace/Block*/bin/*
-rm -rf blt/workspace/BLT_*/bin/*
-rm -rf blt/workspace/BLT_Build/temp_modl
-rm -rf common/workspace/ILS_Common/bin/*
-rm -rf common/workspace/ILS_Common/doc/*
-rm -rf common/workspace/doc/*
-rm -rf sfc/workspace/sfc-*/bin/*
-rm -rf sfc/workspace/sfc-build/temp_modl
+rm -rf ils-common/bin/*
+rm -rf ils-common/workspace/doc/*
+rm -rf blt/workspace/*/doc/*
+rm -rf blt/workspace/*/bin/*
+rm -rf sfc/workspace/*/temp_modl
 mkdir $TMP
-mkdir -p $TMP/block/workspace
-mkdir -p $TMP/common/workspace
-mkdir -p $TMP/blt
-cp -a setup external ignition-77 $TMP
-cp -a block/workspace/Block $TMP/block/workspace
-cp -a common/workspace/ILS_Common $TMP/common/workspace
-cp -a blt $TMP
-cp -a sfc $TMP
+
+mkdir $TMP/external
+cd $REPO_ROOT/external; cp -a .project .classpath lib $TMP/external
+
+mkdir $TMP/ignition-77
+cd $REPO_ROOT/ignition-77; cp -a .project .classpath lib $TMP/ignition-77
+
+mkdir $TMP/ils-common
+cd $REPO_ROOT/ils-common; cp -a .project .classpath *.xml src $TMP/ils-common
+
+mkdir $REPO_ROOT/blt
+cd $REPO_ROOT/blt; cp -a workspace $TMP/blt
+
 # Scrub the temp area before zipping
 cd $TMP
 rm -f external/lib/user-ex* 
 rm -f external/lib/g2-ex* 
 rm -f external/lib/cachedir
+rm -rf external/.metadata
+rm -rf ignition-77/.metadata
 rm -rf blt/.metadata
 rm -rf blt/.recommenders
+rm -rf ils-common/.metadata
+rm -rf ils-common/.recommenders
 
 # Now zip and copy to subversion
 cd $REPO_ROOT/$VERS
-zip -r ils-java-src.zip *
-cp ils-java-src.zip $SVN/Release/src
+zip -r $VERS.zip *
+cp $VERS.zip $SVN/Release/src
 rm -rf $TMP
