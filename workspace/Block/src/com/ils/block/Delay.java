@@ -29,7 +29,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 @ExecutableBlock
 public class Delay extends AbstractProcessBlock implements ProcessBlock {
 	private static final String TAG = "Delay";
-	protected static String BLOCK_PROPERTY_DELAY = "DelayInterval";
+	protected static String BLOCK_PROPERTY_DELAY = "SampleDelay";
 
 	private double delayInterval = 1;    // ~ secs
 	private final LinkedList<TimestampedData> buffer;

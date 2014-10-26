@@ -95,7 +95,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 */
 	@Override
 	public void acceptBroadcastNotification(BroadcastNotification note) {
-		log.debugf("%s.acceptBroadcastNotification: %s (%s) %s", TAG,note.getDiagramId(),note.getSignal().getCommand(),
+		log.tracef("%s.acceptBroadcastNotification: %s (%s) %s", TAG,note.getDiagramId(),note.getSignal().getCommand(),
 				(stopped?"REJECTED, controller stopped":""));
 		ProcessDiagram diagram = getDiagram(note.getDiagramId());
 		if( diagram!=null && diagram.getState().equals(DiagramState.ACTIVE)) {
@@ -113,7 +113,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 */
 	@Override
 	public void acceptCompletionNotification(OutgoingNotification note) {
-		log.debugf("%s:acceptCompletionNotification: %s:%s = %s %s", TAG,note.getBlock().getBlockId().toString(),note.getPort(),
+		log.tracef("%s:acceptCompletionNotification: %s:%s = %s %s", TAG,note.getBlock().getBlockId().toString(),note.getPort(),
 				note.getValue().toString(),
 				(stopped?"REJECTED, controller stopped":""));
 		ProcessDiagram diagram = getDiagram(note.getBlock().getParentId());
@@ -131,7 +131,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 */
 	@Override
 	public void acceptConnectionPostNotification(ConnectionPostNotification note) {
-		log.debugf("%s:acceptConnectionPostNotification: %s %s", TAG,note.getOriginName(),
+		log.tracef("%s:acceptConnectionPostNotification: %s %s", TAG,note.getOriginName(),
 				(stopped?"REJECTED, controller stopped":""));
 		ProcessDiagram diagram = getDiagram(note.getDiagramId());
 		if( diagram!=null && diagram.getState().equals(DiagramState.ACTIVE)) {
@@ -175,7 +175,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 * @param ctxt the gateway context
 	 */
 	public synchronized void start(GatewayContext context) {
-		log.debugf("%s: STARTED",TAG);
+		log.infof("%s: STARTED",TAG);
 		if(!stopped) return;  
 		stopped = false;
 		tagListener.start(context);
@@ -372,7 +372,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 					OutgoingNotification inNote = (OutgoingNotification)work;
 					// Query the diagram to find out what's next
 					ProcessBlock pb = inNote.getBlock();
-					log.debugf("%s.run: processing incoming note from %s:%s = %s", TAG,pb.toString(),inNote.getPort(),inNote.getValue().toString());
+					log.tracef("%s.run: processing incoming note from %s:%s = %s", TAG,pb.toString(),inNote.getPort(),inNote.getValue().toString());
 					// Send the push notification
 					sendConnectionNotification(pb.getBlockId().toString(),inNote.getPort(),inNote.getValue());
 					ProcessDiagram dm = modelManager.getDiagram(pb.getParentId());
@@ -385,7 +385,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 							UUID outBlockId = outNote.getConnection().getTarget();
 							ProcessBlock outBlock = dm.getBlock(outBlockId);
 							if( outBlock!=null ) {
-								log.debugf("%s.run: sending outgoing notification: to %s:%s = %s", TAG,outBlock.toString(),
+								log.tracef("%s.run: sending outgoing notification: to %s:%s = %s", TAG,outBlock.toString(),
 										  outNote.getConnection().getDownstreamPortName(),outNote.getValue().toString());
 								threadPool.execute(new IncomingValueChangeTask(outBlock,outNote));
 							}
@@ -434,7 +434,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	@Override
 	public void sendPropertyNotification(String blkid, String propertyName,QualifiedValue val) {
 		String key = NotificationKey.keyForProperty(blkid,propertyName);
-		log.debugf("%s.sendPropertyNotification: %s (%s)",TAG,key,val.toString());
+		log.tracef("%s.sendPropertyNotification: %s (%s)",TAG,key,val.toString());
 		try {
 			sessionManager.sendNotification(ApplicationScope.DESIGNER, BLTProperties.MODULE_ID, key, val);
 		}

@@ -65,7 +65,7 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 		anchors.add(input);
 		
 		// Define a single output
-		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.TRUTHVALUE);
+		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
 		anchors.add(output);
 	}
 	
@@ -125,7 +125,7 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 		prototype.setTabName(BlockConstants.PALETTE_TAB_ARITHMETIC);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
-		desc.setEmbeddedIcon("Block/icons/embedded/greater_than.png");
+		desc.setEmbeddedIcon("Block/icons/embedded/max.png");
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setStyle(BlockStyle.DIAMOND);
 		desc.setPreferredHeight(70);
