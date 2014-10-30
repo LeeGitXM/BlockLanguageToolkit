@@ -280,7 +280,7 @@ public class TagListener implements TagChangeListener   {
 		Tag tag = event.getTag();
 		if( tag!=null && tag.getValue()!=null && tp!=null ) {
 			try {
-				log.infof("%s: tagChanged: got a %s value for %s (%s at %s)",TAG,
+				log.debugf("%s: tagChanged: got a %s value for %s (%s at %s)",TAG,
 					(tag.getValue().getQuality().isGood()?"GOOD":"BAD"),
 					tag.getName(),tag.getValue().getValue(),
 					dateFormatter.format(tag.getValue().getTimestamp()));
@@ -333,7 +333,7 @@ public class TagListener implements TagChangeListener   {
 		try {
 			// Treat the notification differently depending on the binding
 			if( property.getBindingType().equals(BindingType.TAG_MONITOR)) {
-				log.infof("%s.tagChanged: property change for %s:%s",TAG,block.getName(),property.getName());
+				log.debugf("%s.tagChanged: property change for %s:%s",TAG,block.getName(),property.getName());
 				PropertyChangeEvaluationTask task = new PropertyChangeEvaluationTask(block,
 								new BlockPropertyChangeEvent(block.getBlockId().toString(),property.getName(),property.getValue(),value.getValue()));
 				Thread propertyChangeThread = new Thread(task, "PropertyChange");
