@@ -123,7 +123,7 @@ public class ProxyHandler   {
 	 */
 	public void acceptValue(PyObject block,String stub,QualifiedValue value) {
 		if(block==null || value==null || value.getValue()==null ) return;
-		log.infof("%s.setValue --- %s %s on %s",TAG,block.toString(),value.getValue().toString(),stub); 
+		log.infof("%s.acceptValue --- %s %s on %s",TAG,block.toString(),value.getValue().toString(),stub); 
 		if( acceptValueCallback.compileScript() ) {
 			// There are 4 values to be specified - block,port,value,quality.
 			acceptValueCallback.setLocalVariable(0,block);
@@ -136,14 +136,14 @@ public class ProxyHandler   {
 
 	public ProxyBlock createBlockInstance(String className,UUID parentId,UUID blockId) {
 		ProxyBlock block = new ProxyBlock(className,parentId,blockId);
-		log.debugf("%s.createInstance --- calling",TAG); 
+		log.debugf("%s.createInstance --- created proxy for %s",TAG,className); 
 		if( createBlockCallback.compileScript() ) {
 			PyDictionary pyDictionary = new PyDictionary();  // Empty
 			createBlockCallback.setLocalVariable(0,new PyString(className));
 			createBlockCallback.setLocalVariable(1,new PyString(parentId.toString()));
 			createBlockCallback.setLocalVariable(2,new PyString(blockId.toString()));
 			createBlockCallback.setLocalVariable(3,pyDictionary);
-			
+			log.debugf("%s.createInstance --- executing create script for %s",TAG,className); 
 			createBlockCallback.execute();
 			log.info(TAG+".createInstance: returned "+ pyDictionary);   // Should now be updated
 			// Contents of list are Hashtable<String,?>
@@ -159,6 +159,9 @@ public class ProxyHandler   {
 				log.warnf("%s.createInstance: Failed to create instance of %s",TAG,className);
 				block = null;
 			}
+		}
+		else {
+			log.warnf("%s.createInstance --- failed to compile create script %s",TAG,className);
 		}
 		return block;
 	}
@@ -186,7 +189,7 @@ public class ProxyHandler   {
 	 */
 	public BlockProperty[] getBlockProperties(PyObject block) {
 		BlockProperty[] properties = null;
-		
+		log.infof("%s.getBlockProperties ... ",TAG);
 		if( getBlockPropertiesCallback.compileScript() ) {
 			Object val = null;
 			UtilityFunctions fns = new UtilityFunctions();
@@ -251,6 +254,7 @@ public class ProxyHandler   {
 		}
 		else {
 			// Callback does not compile ...
+			log.warnf("%s.getBlockProperties ... Error compiling script",TAG);
 			properties = new BlockProperty[0];
 		}
 

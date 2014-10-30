@@ -12,8 +12,8 @@ import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
-import com.ils.blt.common.control.BlockPropertyChangeEvent;
 import com.ils.blt.common.control.ExecutionController;
+import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 
 /**
  * Holds any free-form text notes the user wants to enter. Can be html, since

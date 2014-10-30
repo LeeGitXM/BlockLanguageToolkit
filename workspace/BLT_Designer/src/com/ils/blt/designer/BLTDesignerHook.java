@@ -134,6 +134,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		DockingManager dockManager = context.getDockingManager();
 		for(String name:dockManager.getAllFrameNames()) {
 			if( name.equalsIgnoreCase("OPC Browser")            ||
+				name.equalsIgnoreCase("Charts")                 ||
 				name.equalsIgnoreCase("DocEditor")              ||
 				name.equalsIgnoreCase("QueryBrowser")           ||
 				name.equalsIgnoreCase("Fill-and-Stroke")        ||

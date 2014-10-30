@@ -4,16 +4,20 @@
  */
 package com.ils.blt.common;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.serializable.DiagramState;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -197,6 +201,40 @@ public class ApplicationRequestHandler  {
 		}
 		catch(Exception ge) {
 			log.infof("%s.getDiagramTreePaths: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		return result;
+	}
+	/**
+	 * Determine whether or not the engine is running.
+	 */
+	public SerializableBlockStateDescriptor getInternalState(String diagramId,String blockId) {
+		//log.infof("%s.getInternalState ... %s,%s",TAG,diagramId,blockId);
+		SerializableBlockStateDescriptor result = new SerializableBlockStateDescriptor();
+		String json = null;
+		try {
+			// Returns either "running" or "stopped"
+			json = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "getInternalState",diagramId,blockId);
+			log.debugf("%s.getInternalState ... %s",TAG,json);
+		}
+		catch(Exception ge) {
+			log.infof("%s.getInternalState: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		if( json!=null) {
+			ObjectMapper mapper = new ObjectMapper();
+
+			try {
+				result = mapper.readValue(json, SerializableBlockStateDescriptor.class);
+			} 
+			catch (JsonParseException jpe) {
+				log.warnf("%s: getInternalState parse exception (%s)",TAG,jpe.getLocalizedMessage());
+			}
+			catch(JsonMappingException jme) {
+				log.warnf("%s: getInternalState mapping exception (%s)",TAG,jme.getLocalizedMessage());
+			}
+			catch(IOException ioe) {
+				log.warnf("%s: getInternalState IO exception (%s)",TAG,ioe.getLocalizedMessage());
+			}
 		}
 		return result;
 	}

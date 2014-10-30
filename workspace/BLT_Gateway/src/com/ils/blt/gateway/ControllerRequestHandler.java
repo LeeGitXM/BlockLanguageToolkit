@@ -15,10 +15,11 @@ import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.connection.Connection;
-import com.ils.blt.common.control.BlockPropertyChangeEvent;
 import com.ils.blt.common.control.ExecutionController;
-import com.ils.blt.common.control.OutgoingNotification;
+import com.ils.blt.common.notification.BlockPropertyChangeEvent;
+import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.serializable.DiagramState;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ProcessDiagram;
@@ -81,7 +82,7 @@ public class ControllerRequestHandler   {
 	 */
 	public ProcessBlock createInstance(String className,UUID parentId,UUID blockId) {
 		
-		log.debugf("%s.createInstance of %s (%s:%s)",TAG,className,(parentId==null?"null":parentId.toString()),blockId.toString());
+		log.infof("%s.createInstance of %s (%s:%s)",TAG,className,(parentId==null?"null":parentId.toString()),blockId.toString());
 		ProcessBlock block = null;
 		try {
 			Class<?> clss = Class.forName(className);
@@ -97,7 +98,7 @@ public class ControllerRequestHandler   {
 			log.warnf("%s.createInstance %s: Three argument constructor not found (%s)",TAG,className,nsme.getMessage()); 
 		}
 		catch( ClassNotFoundException cnf ) {
-			log.infof("%s.createInstance: Class not found creating %s - trying Python",TAG,className);
+			log.infof("%s.createInstance: Java class %s not found - trying Python",TAG,className);
 			ProxyHandler ph = ProxyHandler.getInstance();
 			block = ph.createBlockInstance(className,parentId,blockId);
 		}
@@ -129,22 +130,26 @@ public class ControllerRequestHandler   {
 	 */
 	public BlockProperty[] getBlockProperties(String className,long projectId,long resourceId, UUID blockId) {
 		// If the instance doesn't exist, create one
+		log.infof("%s.getBlockProperties of %s (%s)",TAG,className,blockId.toString());
+		BlockProperty[] results = null;
 		BlockExecutionController controller = BlockExecutionController.getInstance();
 		ProcessDiagram diagram = controller.getDiagram(projectId, resourceId);
 		ProcessBlock block = null;
-		if( diagram!=null ) block = diagram.getBlock(blockId);
-		BlockProperty[] results = null;
-		if(block!=null) {
-			results = block.getProperties();  // Existing block
-			log.tracef("%s.getProperties existing %s = %s",TAG,block.getClass().getName(),results.toString());
-		}
-		else {
-			block = createInstance(className,null,blockId);  // Block is not attached to a diagram
+		if( diagram!=null ) {
+			block = diagram.getBlock(blockId);
 			if(block!=null) {
-				results = block.getProperties();
-				log.tracef("%s.getProperties new %s = %s",TAG,block.getClass().getName(),results.toString());
+				results = block.getProperties();  // Existing block
+				log.tracef("%s.getProperties existing %s = %s",TAG,block.getClass().getName(),results.toString());
+			}
+			else {
+				block = createInstance(className,diagram.getSelf(),blockId);  // Block is not (yet) attached to a diagram
+				if(block!=null) {
+					results = block.getProperties();
+					log.tracef("%s.getProperties new %s = %s",TAG,block.getClass().getName(),results.toString());
+				}
 			}
 		}
+		
 		return results;
 	}
 	
@@ -206,6 +211,24 @@ public class ControllerRequestHandler   {
 	
 	public String getExecutionState() {
 		return BlockExecutionController.getExecutionState();
+	}
+	/**
+	 * Query a block for its internal state. This allows a read-only display in the
+	 * designer to be useful for block debugging.
+	 * 
+	 * @param diagramId
+	 * @param blockId
+	 * @return a SerializableBlockStateDescriptor
+	 */
+	public SerializableBlockStateDescriptor getInternalState(String diagramId,String blockId) {
+		SerializableBlockStateDescriptor descriptor = null;
+		BlockExecutionController controller = BlockExecutionController.getInstance();
+		ProcessDiagram diagram = controller.getDiagram(UUID.fromString(diagramId));
+		if(diagram!=null) {
+			ProcessBlock block = controller.getBlock(diagram, UUID.fromString(blockId));
+			if( block!=null ) descriptor = block.getInternalStatus();
+		}
+		return descriptor;
 	}
 	/**
 	 * Handle the block placing a new value on its output.

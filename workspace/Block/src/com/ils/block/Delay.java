@@ -16,10 +16,10 @@ import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.connection.ConnectionType;
-import com.ils.blt.common.control.BlockPropertyChangeEvent;
 import com.ils.blt.common.control.ExecutionController;
-import com.ils.blt.common.control.IncomingNotification;
-import com.ils.blt.common.control.OutgoingNotification;
+import com.ils.blt.common.notification.BlockPropertyChangeEvent;
+import com.ils.blt.common.notification.IncomingNotification;
+import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
@@ -29,7 +29,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 @ExecutableBlock
 public class Delay extends AbstractProcessBlock implements ProcessBlock {
 	private static final String TAG = "Delay";
-	protected static String BLOCK_PROPERTY_DELAY = "DelayInterval";
+	protected static String BLOCK_PROPERTY_DELAY = "SampleDelay";
 
 	private double delayInterval = 1;    // ~ secs
 	private final LinkedList<TimestampedData> buffer;

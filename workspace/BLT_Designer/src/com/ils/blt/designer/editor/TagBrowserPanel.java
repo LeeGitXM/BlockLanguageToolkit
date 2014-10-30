@@ -11,6 +11,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
@@ -36,7 +37,7 @@ public class TagBrowserPanel extends BasicEditPanel {
 	private final TagRenderer cellRenderer;
 	private final TreeSelectionModel tagTreeSelectionModel;
 	
-	public TagBrowserPanel(final BlockPropertyEditor editor,DesignerContext ctx) {
+	public TagBrowserPanel(DesignerContext ctx,final BlockPropertyEditor editor) {
 		super(editor);
 		this.context = ctx;
 		this.cellRenderer = new TagRenderer();
@@ -50,24 +51,29 @@ public class TagBrowserPanel extends BasicEditPanel {
 		tagTree.setBackground(getBackground());
 		cellRenderer.setBackgroundSelectionColor(Color.cyan);
 		cellRenderer.setBackgroundNonSelectionColor(getBackground());
-		add(tagTree, BorderLayout.CENTER);
+		JScrollPane treePane = new JScrollPane(tagTree);
+		treePane.setPreferredSize(BlockEditConstants.TREE_SIZE);
+		add(treePane,BorderLayout.CENTER);
 		JPanel buttonPanel = new JPanel();
-		add(buttonPanel, BorderLayout.SOUTH);
+		
 		JButton okButton = new JButton("OK");
 		buttonPanel.add(okButton);
 		okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				TreePath[] selectedPaths = tagTreeSelectionModel.getSelectionPaths();
 				if(selectedPaths.length == 1) {
-					TagTreeNode node = (TagTreeNode)(selectedPaths[0].getLastPathComponent());
-					selectedPath = node.getTagPath().toString();
-					if(property!=null) {
-						log.infof("TagBrowserPanel set property %s, binding now %s",property.getName(),selectedPath);
-						property.setBinding(selectedPath);
+					// It's possible to select something that's not a node.
+					if(selectedPaths[0].getLastPathComponent() instanceof TagTreeNode ) {
+						TagTreeNode node = (TagTreeNode)(selectedPaths[0].getLastPathComponent());
+						selectedPath = node.getTagPath().toString();
+						if(property!=null) {
+							log.infof("TagBrowserPanel set property %s, binding now %s",property.getName(),selectedPath);
+							property.setBinding(selectedPath);
+						}
+						updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
+						editor.notifyOfChange();
+						setSelectedPane(BlockEditConstants.HOME_PANEL);
 					}
-					updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
-					editor.notifyOfChange();
-					setSelectedPane(BlockEditConstants.HOME_PANEL);
 				}
 				else {
 					JOptionPane.showMessageDialog(TagBrowserPanel.this, "No tag is selected.");					
@@ -83,6 +89,7 @@ public class TagBrowserPanel extends BasicEditPanel {
 				setSelectedPane(BlockEditConstants.HOME_PANEL);
 			}			
 		});
+		add(buttonPanel,BorderLayout.SOUTH);
 	}
 	public void updateForProperty(BlockProperty prop) {
 		this.property = prop;

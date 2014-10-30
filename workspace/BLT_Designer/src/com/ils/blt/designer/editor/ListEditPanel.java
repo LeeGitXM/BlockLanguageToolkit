@@ -4,6 +4,7 @@
  */
 package com.ils.blt.designer.editor;
 
+import java.awt.BorderLayout;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -53,20 +54,19 @@ public class ListEditPanel extends BasicEditPanel {
 
 	public ListEditPanel(final BlockPropertyEditor editor) {
 		super(editor);
-		setLayout(new MigLayout("top,flowy,ins 2","",""));
-		headingLabel = addHeading(this);
+		setLayout(new BorderLayout());
 		//Create the edit panel - it has two panes
 		JPanel editPanel = new JPanel();
 		editPanel.setLayout(new MigLayout("ins 2","",""));
+		headingLabel = addHeading(editPanel);
 		addSeparator(editPanel,"List");
 		editPanel.add(createDelimiterPanel(DEFAULT_DELIMITER),"wrap");
 		editPanel.add(createTablePanel(),"wrap");
-		add(editPanel,"");
+		add(editPanel,BorderLayout.CENTER);
 
 		// The OK button copies data from the components and sets the property properties.
 		// It then returns to the main tab
 		JPanel buttonPanel = new JPanel();
-		add(buttonPanel, "dock south");
 		JButton okButton = new JButton("OK");
 		buttonPanel.add(okButton,"");
 		okButton.addActionListener(new ActionListener() {
@@ -108,6 +108,7 @@ public class ListEditPanel extends BasicEditPanel {
 				setSelectedPane(BlockEditConstants.HOME_PANEL);
 			}			
 		});
+		add(buttonPanel,BorderLayout.SOUTH);
 	}
 
 	public void updateForProperty(BlockProperty prop) {
@@ -135,7 +136,7 @@ public class ListEditPanel extends BasicEditPanel {
 	 */
 	protected JTextField createTextField(String text) {	
 		final JTextField field = new JTextField(text);
-		field.setPreferredSize(ENTRY_BOX_SIZE);
+		field.setPreferredSize(BlockEditConstants.ENTRY_BOX_SIZE);
 		field.setEditable(true);
 		return field;
 	}
@@ -145,7 +146,7 @@ public class ListEditPanel extends BasicEditPanel {
 	 */
 	protected JPanel createDelimiterPanel(String delim) {
 		final JPanel panel = new JPanel();
-		panel.setLayout(new MigLayout("ins 2, fillx","[]10[20]",""));     // 2 cells across
+		panel.setLayout(new MigLayout("ins 2, fillx","para[]10[20]",""));     // 2 cells across
 		panel.add(createLabel("Delimiter"),"");
 		delimiterField = createTextField(delim);
 		panel.add(delimiterField,"wrap");
@@ -159,22 +160,22 @@ public class ListEditPanel extends BasicEditPanel {
 	private JPanel createTablePanel()  {
 		JPanel outerPanel = new JPanel();
 		table = new JTable();		
-		outerPanel.setLayout(new MigLayout("ins 2,filly","para[:300:]","[120]5[]"));
+		outerPanel.setLayout(new MigLayout("ins 2,fillx,filly","para[:240:]","[:80:]5[:30:]"));
 		String[] columnNames = { "Values" };
 		DefaultTableModel dataModel = new DefaultTableModel(columnNames,0);  // No null rows
         table = new JTable(dataModel);
-        table.setPreferredSize(TABLE_SIZE);
+        table.setPreferredSize(BlockEditConstants.TABLE_SIZE);
         table.setRowSelectionAllowed(true);
         table.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
         JScrollPane tablePane = new JScrollPane(table);
         table.setFillsViewportHeight(true);
-        outerPanel.add(tablePane, "wrap");
+        outerPanel.add(tablePane, "push,wrap");
         JPanel buttonPanel = new JPanel(new MigLayout("ins 2,fillx","[:25:]2[:25:]","[:30:]"));
         addButton = createAddButton(table);
         buttonPanel.add(addButton,"");
         deleteButton = createDeleteButton(table);
         buttonPanel.add(deleteButton,"");
-        outerPanel.add(buttonPanel,"wrap");
+        outerPanel.add(buttonPanel,"");
         ListSelectionModel lsm = table.getSelectionModel();
         lsm.addListSelectionListener(new SelectionHandler(table,deleteButton));
 		return outerPanel;
@@ -187,7 +188,7 @@ public class ListEditPanel extends BasicEditPanel {
 		JButton btn = new JButton();
 		final String ICON_PATH  = "Block/icons/editor/add.png";
 		try {
-			Image img = ImageLoader.getInstance().loadImage(ICON_PATH ,BUTTON_SIZE);
+			Image img = ImageLoader.getInstance().loadImage(ICON_PATH ,BlockEditConstants.BUTTON_SIZE);
 			if( img !=null) {
 				Icon icon = new ImageIcon(img);
 				btn.setIcon(icon);
@@ -196,7 +197,7 @@ public class ListEditPanel extends BasicEditPanel {
 				btn.setBorderPainted(false);
 				btn.setBackground(getBackground());
 				btn.setBorder(null);
-				btn.setPreferredSize(BUTTON_SIZE);
+				btn.setPreferredSize(BlockEditConstants.BUTTON_SIZE);
 				btn.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e){
 						DefaultTableModel dtm = (DefaultTableModel)tbl.getModel();
@@ -223,7 +224,7 @@ public class ListEditPanel extends BasicEditPanel {
 		JButton btn = new JButton();
 		final String ICON_PATH  = "Block/icons/editor/delete.png";
 		try {
-			Image img = ImageLoader.getInstance().loadImage(ICON_PATH ,BUTTON_SIZE);
+			Image img = ImageLoader.getInstance().loadImage(ICON_PATH ,BlockEditConstants.BUTTON_SIZE);
 			if( img !=null) {
 				Icon icon = new ImageIcon(img);
 				btn.setIcon(icon);
@@ -232,7 +233,7 @@ public class ListEditPanel extends BasicEditPanel {
 				btn.setBorderPainted(false);
 				btn.setBackground(getBackground());
 				btn.setBorder(null);
-				btn.setPreferredSize(BUTTON_SIZE);
+				btn.setPreferredSize(BlockEditConstants.BUTTON_SIZE);
 				btn.addActionListener(new ActionListener() {
 					// We are guaranteed that the selection interval is contiguous
 					public void actionPerformed(ActionEvent e){

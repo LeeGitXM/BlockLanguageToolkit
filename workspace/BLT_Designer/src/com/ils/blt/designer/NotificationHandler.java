@@ -10,7 +10,7 @@ import java.util.Map;
 import javax.swing.SwingUtilities;
 
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.common.control.NotificationChangeListener;
+import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.client.gateway_interface.PushNotificationListener;

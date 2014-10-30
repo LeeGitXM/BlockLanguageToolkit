@@ -14,9 +14,9 @@ import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.connection.ConnectionType;
-import com.ils.blt.common.control.ConnectionPostNotification;
 import com.ils.blt.common.control.ExecutionController;
-import com.ils.blt.common.control.IncomingNotification;
+import com.ils.blt.common.notification.ConnectionPostNotification;
+import com.ils.blt.common.notification.IncomingNotification;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**

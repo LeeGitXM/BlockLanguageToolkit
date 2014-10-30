@@ -96,7 +96,7 @@ public class DiagramViewerBeanInfo extends CommonBeanInfo {
 	
 	@Override
 	public Image getIcon(int kind) {
-		logger.infof("%s: getIcon of type %d",TAG,kind);
+		logger.tracef("%s: getIcon of type %d",TAG,kind);
 		switch (kind) {
 		case BeanInfo.ICON_COLOR_16x16:
 		case BeanInfo.ICON_MONO_16x16:

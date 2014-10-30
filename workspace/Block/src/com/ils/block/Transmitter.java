@@ -16,10 +16,10 @@ import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TransmissionScope;
 import com.ils.blt.common.connection.ConnectionType;
-import com.ils.blt.common.control.BroadcastNotification;
 import com.ils.blt.common.control.ExecutionController;
-import com.ils.blt.common.control.IncomingNotification;
-import com.ils.blt.common.control.Signal;
+import com.ils.blt.common.notification.BroadcastNotification;
+import com.ils.blt.common.notification.IncomingNotification;
+import com.ils.blt.common.notification.Signal;
 
 /**
  * A transmitter is a special class that propagates broadcast messages directly

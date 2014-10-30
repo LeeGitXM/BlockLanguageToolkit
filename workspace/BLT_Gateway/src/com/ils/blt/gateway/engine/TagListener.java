@@ -17,8 +17,8 @@ import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.ProcessBlock;
-import com.ils.blt.common.control.BlockPropertyChangeEvent;
-import com.ils.blt.common.control.IncomingNotification;
+import com.ils.blt.common.notification.BlockPropertyChangeEvent;
+import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.serializable.DiagramState;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -258,18 +258,19 @@ public class TagListener implements TagChangeListener   {
 	}
 	
 	/** 
-	 * NOTE: We tried returning null without observing any difference.
-	 * @return the tag property that we care about,
-	 *         that is the current value of the tag.
+	 * NOTE: Previously we only listened on the property TagProp.VALUE.
+	 * @return the tag property that we care about.
+	 *         The null means all attributes.
 	 */
 	@Override
 	public TagProp getTagProperty() {
-		return TagProp.Value;
+		return null;
 	}
 
 	/**
-	 * When a tag value changes, create a new property change task and
-	 * execute it in its own thread.
+	 * When a tag value/quality or timestamp changes, create a new property change task and
+	 * execute it in its own thread. The change property is always a null 'cause that's what
+	 * we're listening for.
 	 * 
 	 * @param event
 	 */
@@ -277,10 +278,9 @@ public class TagListener implements TagChangeListener   {
 	public void tagChanged(TagChangeEvent event) {
 		TagPath tp = event.getTagPath();
 		Tag tag = event.getTag();
-		TagProp prop = event.getTagProperty();
-		if( prop == TagProp.Value) {
+		if( tag!=null && tag.getValue()!=null && tp!=null ) {
 			try {
-				log.infof("%s: tagChanged: got a %s value for %s (%s at %s)",TAG,
+				log.debugf("%s: tagChanged: got a %s value for %s (%s at %s)",TAG,
 					(tag.getValue().getQuality().isGood()?"GOOD":"BAD"),
 					tag.getName(),tag.getValue().getValue(),
 					dateFormatter.format(tag.getValue().getTimestamp()));
@@ -313,8 +313,8 @@ public class TagListener implements TagChangeListener   {
 			}
 		}
 		else {
-			// For some reason every other update is a null property.
-			log.tracef("%s.tagChanged: %s got a null ... ignored",TAG,(tp==null?"null":tp.toStringFull()));
+			// Tag or path is null
+			log.warnf("%s.tagChanged: Unknown tag %s (%s)",TAG,(tag==null?"null":tag.getName()),(tp==null?"null":tp.toStringFull()));
 		}
 	}
 	
@@ -333,7 +333,7 @@ public class TagListener implements TagChangeListener   {
 		try {
 			// Treat the notification differently depending on the binding
 			if( property.getBindingType().equals(BindingType.TAG_MONITOR)) {
-				log.infof("%s.tagChanged: property change for %s:%s",TAG,block.getName(),property.getName());
+				log.debugf("%s.tagChanged: property change for %s:%s",TAG,block.getName(),property.getName());
 				PropertyChangeEvaluationTask task = new PropertyChangeEvaluationTask(block,
 								new BlockPropertyChangeEvent(block.getBlockId().toString(),property.getName(),property.getValue(),value.getValue()));
 				Thread propertyChangeThread = new Thread(task, "PropertyChange");

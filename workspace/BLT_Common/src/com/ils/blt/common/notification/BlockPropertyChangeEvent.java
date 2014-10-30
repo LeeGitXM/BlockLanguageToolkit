@@ -1,7 +1,7 @@
 /**
  *   (c) 2013  ILS Automation. All rights reserved. 
  */
-package com.ils.blt.common.control;
+package com.ils.blt.common.notification;
 
 import java.beans.PropertyChangeEvent;
 

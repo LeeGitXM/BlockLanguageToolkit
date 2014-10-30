@@ -6,10 +6,11 @@ package com.ils.blt.common.block;
 import java.util.Set;
 import java.util.UUID;
 
-import com.ils.blt.common.control.BlockPropertyChangeEvent;
-import com.ils.blt.common.control.BlockPropertyChangeListener;
-import com.ils.blt.common.control.IncomingNotification;
-import com.ils.blt.common.control.SignalNotification;
+import com.ils.blt.common.notification.BlockPropertyChangeEvent;
+import com.ils.blt.common.notification.BlockPropertyChangeListener;
+import com.ils.blt.common.notification.IncomingNotification;
+import com.ils.blt.common.notification.SignalNotification;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 
 
 /**
@@ -72,7 +73,13 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 *          dropped on the workspace.
 	 */
 	public PalettePrototype getBlockPrototype();
-	
+	/**
+	 * @return information related to the workings of the block.
+	 *        The information returned varies depending on the 
+	 *        block. At the very least the data contains the 
+	 *        block UUID and class. The data is read-only.
+	 */
+	public SerializableBlockStateDescriptor getInternalStatus();
 	/**
 	 * @return a particular property by name.
 	 */

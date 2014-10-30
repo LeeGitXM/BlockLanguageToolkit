@@ -4,7 +4,7 @@
 package com.ils.blt.gateway.engine;
 
 import com.ils.blt.common.block.ProcessBlock;
-import com.ils.blt.common.control.IncomingNotification;
+import com.ils.blt.common.notification.IncomingNotification;
 
 /**
  * A value has been received as an output from a block

@@ -6,6 +6,7 @@ package com.ils.block;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -19,13 +20,14 @@ import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
-import com.ils.blt.common.control.BlockPropertyChangeEvent;
-import com.ils.blt.common.control.BlockPropertyChangeListener;
 import com.ils.blt.common.control.ExecutionController;
-import com.ils.blt.common.control.IncomingNotification;
-import com.ils.blt.common.control.OutgoingNotification;
-import com.ils.blt.common.control.Signal;
-import com.ils.blt.common.control.SignalNotification;
+import com.ils.blt.common.notification.BlockPropertyChangeEvent;
+import com.ils.blt.common.notification.BlockPropertyChangeListener;
+import com.ils.blt.common.notification.IncomingNotification;
+import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.blt.common.notification.Signal;
+import com.ils.blt.common.notification.SignalNotification;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.WatchdogObserver;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -170,7 +172,19 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	public UUID getParentId() { return parentId; }
 	@Override
 	public UUID getBlockId() { return blockId; }
-
+	
+	/**
+	 * @return a block-specific description of internal statue
+	 */
+	@Override
+	public SerializableBlockStateDescriptor getInternalStatus() {
+		SerializableBlockStateDescriptor descriptor = new SerializableBlockStateDescriptor();
+		Map<String,String> attributes = descriptor.getAttributes();
+		attributes.put("Name", getName());
+		attributes.put("UUID", getBlockId().toString());
+		attributes.put("BlockState", getState().toString());
+		return descriptor;
+	}
 	/**
 	 * @return all properties. The returned array is a copy of the internal.
 	 * Thus although the attributes of an individual property can be modified,

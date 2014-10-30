@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,8 +21,9 @@ import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.TransmissionScope;
-import com.ils.blt.common.control.BroadcastNotification;
-import com.ils.blt.common.control.Signal;
+import com.ils.blt.common.notification.BroadcastNotification;
+import com.ils.blt.common.notification.Signal;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ProcessDiagram;
@@ -76,6 +78,28 @@ public class GatewayRpcDispatcher   {
 		}
 		ProcessDiagram diagram = controller.getDiagram(diagramUUID);
 		return new Boolean(diagram!=null);
+	}
+	/**
+	 * Query a block for its internal state. This allows a read-only display in the
+	 * designer to be useful for block debugging.
+	 * 
+	 * @param diagramId
+	 * @param blockId
+	 * @return a JSON-serialized SerializableBlockStateDescriptor
+	 */
+	public String getInternalState(String diagramId,String blockId) {
+		log.infof("%s.getInternalState: (%s:%s)",TAG,diagramId,blockId);
+		SerializableBlockStateDescriptor desc = ControllerRequestHandler.getInstance().
+									getInternalState(diagramId,blockId);
+		ObjectMapper mapper = new ObjectMapper();
+		String json = "";
+		try {
+			json = mapper.writeValueAsString(desc);
+		}
+		catch (JsonProcessingException jpe) {
+			log.warnf("%s.getInternalState: Exception (%s)",TAG,jpe.getLocalizedMessage());
+		}
+		return json;
 	}
 	/**
 	 * Query the specified block for its properties. If the block does not exist, create it, given the

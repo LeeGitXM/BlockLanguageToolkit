@@ -199,11 +199,13 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					}
 				}
 				
-				logger.infof("%s.getSelectionPopupMenu: Selection editor class = %s",TAG,pbv.getEditorClass());
+				logger.debugf("%s.getSelectionPopupMenu: Selection editor class = %s",TAG,pbv.getEditorClass());
 				if( selection instanceof BlockComponent && pbv.getEditorClass() !=null && pbv.getEditorClass().length()>0 ) {
 					CustomEditAction cea = new CustomEditAction(pbv);
 					menu.add(cea);
 				}
+				ViewInternalsAction via = new ViewInternalsAction(getActiveDiagram(),pbv);
+				menu.add(via);
 				menu.addSeparator();
 				menu.add(context.getCutAction());
 				menu.add(context.getCopyAction());
@@ -695,6 +697,35 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			block.setDirty(false);
 			NodeStatusManager statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
 			statusManager.decrementDirtyBlockCount(pdv.getResourceId());
+		}
+	}
+	
+	/**
+	 * Post a custom editor for the block. This action is expected to
+	 * apply to only a few block types. The action should be invoked only
+	 * if an editor class has been specified. 
+	 */
+	private class ViewInternalsAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final ProcessDiagramView diagram;
+		private final ProcessBlockView block;
+		public ViewInternalsAction(ProcessDiagramView dia,ProcessBlockView blk)  {
+			super(PREFIX+".ViewInternals");
+			this.diagram = dia;
+			this.block = blk;
+		}
+		
+		// Display the internals viewer
+		public void actionPerformed(ActionEvent e) {
+			final JDialog viewer = (JDialog)new BlockInternalsViewer(diagram,block);
+			viewer.pack();
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					viewer.setLocationByPlatform(true);
+					viewer.setVisible(true);
+				}
+			}); 
+
 		}
 	}
 	//TODO: In next Ignition update, this is available for override of onMove() method.

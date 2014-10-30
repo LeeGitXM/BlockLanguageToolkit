@@ -4,7 +4,6 @@
 package com.ils.blt.common.notification;
 
 import com.ils.blt.common.block.ProcessBlock;
-import com.ils.blt.common.control.Signal;
 
 /**
  * A SignalNotification is an in-bound message to a block that contains

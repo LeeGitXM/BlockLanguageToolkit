@@ -19,11 +19,7 @@ import com.ils.blt.common.block.ActiveState;
 import com.ils.blt.common.block.RampMethod;
 import com.ils.blt.common.serializable.SerializableApplication;
 /**
- * Display a dialog to export a diagram.
- *    ExportDialog ed = new ExportDialog("Attribute Editor");
- *    bad.pack();
- *    bad.setVisible(true);   // Terminates when dialog closed.
- *    result = bad.getModel();
+ * Display a dialog to configure an Application node
  */
 
 public class ApplicationConfigurationDialog extends ConfigurationDialog { 

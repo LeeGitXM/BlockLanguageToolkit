@@ -3,6 +3,7 @@
  */
 package com.ils.block;
 
+import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
@@ -14,8 +15,9 @@ import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
-import com.ils.blt.common.control.IncomingNotification;
-import com.ils.blt.common.control.OutgoingNotification;
+import com.ils.blt.common.notification.IncomingNotification;
+import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
@@ -65,7 +67,7 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 		anchors.add(input);
 		
 		// Define a single output
-		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.TRUTHVALUE);
+		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
 		anchors.add(output);
 	}
 	
@@ -105,6 +107,16 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 		}
 	}
 	
+	/**
+	 * @return a block-specific description of internal statue
+	 */
+	@Override
+	public SerializableBlockStateDescriptor getInternalStatus() {
+		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
+		Map<String,String> attributes = descriptor.getAttributes();
+		attributes.put("CurrentMaximum", String.valueOf(max));
+		return descriptor;
+	}
 	
 	/**
 	 *  When unlocking, set the remembered state as "UNSET". This will allow
@@ -125,7 +137,7 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 		prototype.setTabName(BlockConstants.PALETTE_TAB_ARITHMETIC);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
-		desc.setEmbeddedIcon("Block/icons/embedded/greater_than.png");
+		desc.setEmbeddedIcon("Block/icons/embedded/max.png");
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setStyle(BlockStyle.DIAMOND);
 		desc.setPreferredHeight(70);
