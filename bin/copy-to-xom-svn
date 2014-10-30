@@ -1,0 +1,26 @@
+#!/bin/sh
+#
+# Save build products to the Subversion area for packaging.
+# Make sure that the release area has been cleaned and
+# VERS, DATE files updated
+#
+#set -x
+REPO_ROOT=~/Development/ils/src
+SVN=~/Development/ils/svn/EMChemicals/Release/src
+# Prepare directories
+mkdir -p $SVN/icons
+mkdir -p $SVN/bin
+mkdir -p $SVN/project
+mkdir -p $SVN/modules
+mkdir -p $SVN/data
+cd $REPO_ROOT/blt/images
+cp -a Block $SVN/icons
+cd $REPO_ROOT/blt/projects
+cp blt_block_test.proj $SVN/project
+cp diagrams-readout.proj $SVN/project
+cd $REPO_ROOT/blt
+cp -a data $SVN
+cd $REPO_ROOT
+IGN=~/Development/ils/svn/EMChemicals/Ignition
+cp blt/workspace/BLT_Build/modules/BLT*.modl $IGN
+

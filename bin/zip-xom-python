@@ -1,0 +1,24 @@
+#!/bin/sh
+#
+# Save the external python and accompanying jar files.
+# Split into many categories ... this includes both
+# source and "external" python,
+#
+#set -x
+REPO_ROOT=~/Development/ils/src
+SVN=~/Development/ils/svn/EMChemicals/Release/src
+# ILS python  ("source" and build)
+cd $REPO_ROOT/ils-python/ILS_Python/src
+zip -r $SVN/ils-python.zip ils 
+cd $REPO_ROOT/ils-python
+zip -r $SVN/ils-python-src.zip ILS_Python
+# XOM python  ("source" and build)
+cd $REPO_ROOT/xom-python/XOM_Python/src
+zip -r $SVN/xom-python.zip * 
+cd $REPO_ROOT/xom-python
+zip -r $SVN/xom-python-src.zip XOM_Python
+
+# Copy the jar files ...
+cd $REPO_ROOT/blt
+mkdir -p $SVN/python-lib
+cp -a lib $SVN/python-lib

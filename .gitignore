@@ -1,7 +1,9 @@
 .metadata
 bin/
+lib/
 modules/
 temp_modl/
+*.db
 .DS_Store
 .recommenders/
 .version

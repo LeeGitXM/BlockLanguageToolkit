@@ -7,7 +7,7 @@
 #set -x
 REPO_ROOT=~/Development/ils/src
 SVN=~/Development/ils/svn/EMChemicals
-VERS=`cat $SVN/Release/VERS`
+VERS=blt-`cat $SVN/Release/VERS`
 TMP=$REPO_ROOT/$VERS
 # Cleanup
 rm -rf $TMP
@@ -17,7 +17,7 @@ rm -rf ils-common/bin/*
 rm -rf ils-common/workspace/doc/*
 rm -rf blt/workspace/*/doc/*
 rm -rf blt/workspace/*/bin/*
-rm -rf sfc/workspace/*/temp_modl
+rm -rf blt/workspace/*/temp_modl
 mkdir $TMP
 
 mkdir $TMP/external
@@ -29,7 +29,7 @@ cd $REPO_ROOT/ignition-77; cp -a .project .classpath lib $TMP/ignition-77
 mkdir $TMP/ils-common
 cd $REPO_ROOT/ils-common; cp -a .project .classpath *.xml src $TMP/ils-common
 
-mkdir $REPO_ROOT/blt
+mkdir $TMP/blt
 cd $REPO_ROOT/blt; cp -a workspace $TMP/blt
 
 # Scrub the temp area before zipping

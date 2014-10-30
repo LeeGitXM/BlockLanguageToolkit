@@ -6,7 +6,7 @@
 #
 #set -x
 REPO_ROOT=~/Development/ils/src
-SVN=~/Development/ils/svn/EMChemicals/Release/tmp
+SVN=~/Development/ils/svn/Lafarge/Release/src
 # Prepare directories
 mkdir -p $SVN/icons
 mkdir -p $SVN/bin
@@ -14,12 +14,13 @@ mkdir -p $SVN/project
 mkdir -p $SVN/modules
 mkdir -p $SVN/data
 cd $REPO_ROOT/blt/images
-cp -a Block $SVN/icons
+zip -r $SVN/icons.zip icons
 cd $REPO_ROOT/blt/projects
 cp blt_block_test.proj $SVN/project
 cp diagrams-readout.proj $SVN/project
 cd $REPO_ROOT/blt
 cp -a data $SVN
 cd $REPO_ROOT
-cp blt/workspace/BLT_Build/modules/BLT*.modl $SVN/modules
+IGN=~/Development/ils/svn/Lafarge/Ignition
+cp blt/workspace/BLT_Build/modules/BLT-*.modl $IGN
 

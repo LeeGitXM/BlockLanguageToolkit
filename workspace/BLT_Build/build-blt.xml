@@ -107,7 +107,7 @@
 	<!-- Cleans all previously built files (leaves doc) -->
 	<target name="clean" depends="clean.common,clean.block" description="Remove existing build products" >
 		<delete dir="${basedir}/BLT_Build/bin" />
-		<delete dir="${basedir}/BLT_Build/modules" />
+		<delete file="${basedir}/BLT_Build/modules/${BLTModule.name}-module-unsigned.modl" />
 		<delete dir="${basedir}/BLT_Build/release" />
 		<delete dir="${basedir}/BLT_Build/temp_modl" />   
 	</target>	
