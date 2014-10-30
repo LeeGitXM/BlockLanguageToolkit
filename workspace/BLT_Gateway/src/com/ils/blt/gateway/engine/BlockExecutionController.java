@@ -17,13 +17,13 @@ import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.connection.Connection;
-import com.ils.blt.common.control.BroadcastNotification;
-import com.ils.blt.common.control.ConnectionPostNotification;
 import com.ils.blt.common.control.ExecutionController;
-import com.ils.blt.common.control.IncomingNotification;
-import com.ils.blt.common.control.OutgoingNotification;
-import com.ils.blt.common.control.SignalNotification;
+import com.ils.blt.common.notification.BroadcastNotification;
+import com.ils.blt.common.notification.ConnectionPostNotification;
+import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.NotificationKey;
+import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.blt.common.notification.SignalNotification;
 import com.ils.blt.common.serializable.DiagramState;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.common.BoundedBuffer;
@@ -222,6 +222,9 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 */
 	public void addTemporaryDiagram(ProcessDiagram diagram) {
 		modelManager.addTemporaryDiagram(diagram);
+	}
+	public ProcessBlock getBlock(ProcessDiagram diagram,UUID blockId) {
+		return modelManager.getBlock(diagram,blockId);
 	}
 	public ProcessBlock getBlock(long projectId,long resourceId,UUID blockId) {
 		return modelManager.getBlock(projectId,resourceId,blockId);

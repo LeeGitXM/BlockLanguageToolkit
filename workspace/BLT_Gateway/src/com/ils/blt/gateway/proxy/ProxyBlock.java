@@ -10,8 +10,8 @@ import org.python.core.PyObject;
 import com.ils.block.AbstractProcessBlock;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PalettePrototype;
-import com.ils.blt.common.control.BlockPropertyChangeEvent;
-import com.ils.blt.common.control.IncomingNotification;
+import com.ils.blt.common.notification.BlockPropertyChangeEvent;
+import com.ils.blt.common.notification.IncomingNotification;
 
 
 /**

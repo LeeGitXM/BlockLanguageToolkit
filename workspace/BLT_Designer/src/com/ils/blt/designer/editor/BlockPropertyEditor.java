@@ -35,11 +35,9 @@ public class BlockPropertyEditor extends SlidingPane   {
 	
 	private final MainPanel          mainPanel;       // display the properties for a block
 	private final ConfigurationPanel configPanel;     // configure a single block property
-	private final EnumEditPanel      enumEditPanel;  // configure a single enumerated block property
 	private final ListEditPanel      listEditPanel;   // configure a property that is a list of strings
 	private final NameEditPanel      nameEditPanel;   // configure a block's name
 	private final TagBrowserPanel    tagPanel;        // configure tag for a bound value
-	private final ValueEditPanel     valueEditPanel;  // configure a single value block property
 	
 	
 	
@@ -57,13 +55,11 @@ public class BlockPropertyEditor extends SlidingPane   {
 		this.diagram = diag;
 		this.statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
 		this.block = view;
-        this.mainPanel = new MainPanel(this,block);
+        this.mainPanel = new MainPanel(context,this,block);
         this.configPanel = new ConfigurationPanel(this);
-        this.enumEditPanel = new EnumEditPanel(this);
         this.listEditPanel = new ListEditPanel(this);
         this.nameEditPanel = new NameEditPanel(this);
-        this.tagPanel = new TagBrowserPanel(this,context);
-        this.valueEditPanel = new ValueEditPanel(this);
+        this.tagPanel = new TagBrowserPanel(context,this);
         init();    
 	}
 
@@ -74,11 +70,9 @@ public class BlockPropertyEditor extends SlidingPane   {
 	private void init() {
 		add(mainPanel);                       // HOME_PANEL
 		add(configPanel);                     // CONFIGURATION_PANEL
-		add(enumEditPanel);                   // ENUM_EDIT_PANEL
 		add(listEditPanel);                   // LIST_EDIT_PANEL
 		add(nameEditPanel);                   // NAME_EDIT_PANEL
 		add(tagPanel);                        // TAG_BROWSER_PANEL
-		add(valueEditPanel);                  // VALUE_EDIT_PANEL
 		setSelectedPane(BlockEditConstants.HOME_PANEL);   
 	}
 	public ProcessBlockView getBlock() { return this.block; }
@@ -104,14 +98,18 @@ public class BlockPropertyEditor extends SlidingPane   {
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
 		}
 	}
+	/**
+	 * Un-subscribe to notifications to allow cleanup. These are all 
+	 * done on the main panel.
+	 */
+	public void shutdown() {
+		mainPanel.shutdown();
+	}
 	
 	public void updatePanelForProperty(int panelIndex,BlockProperty prop) {
 		switch(panelIndex) {
 		case BlockEditConstants.CONFIGURATION_PANEL:
 			configPanel.updateForProperty(prop);
-			break;
-		case BlockEditConstants.ENUM_EDIT_PANEL:
-			enumEditPanel.updateForProperty(prop);
 			break;
 		case BlockEditConstants.LIST_EDIT_PANEL:
 			listEditPanel.updateForProperty(prop);
@@ -121,9 +119,6 @@ public class BlockPropertyEditor extends SlidingPane   {
 			break;
 		case BlockEditConstants.TAG_BROWSER_PANEL:
 			tagPanel.updateForProperty(prop);
-			break;
-		case BlockEditConstants.VALUE_EDIT_PANEL:
-			valueEditPanel.updateForProperty(prop);
 			break;
 		case BlockEditConstants.NAME_EDIT_PANEL:
 		default:

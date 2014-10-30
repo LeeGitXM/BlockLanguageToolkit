@@ -1,6 +1,8 @@
 package com.ils.blt.common.serializable;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +22,8 @@ public class SerializableBlockStateDescriptor implements Serializable {
 	
 	public SerializableBlockStateDescriptor() {	
 		name="UNSET";
+		attributes = new HashMap<>();
+		buffer = new ArrayList<>();
 	}
 
 	public String getName() {return name;}

@@ -4,7 +4,7 @@
 package com.ils.blt.gateway.engine;
 
 import com.ils.blt.common.block.ProcessBlock;
-import com.ils.blt.common.control.SignalNotification;
+import com.ils.blt.common.notification.SignalNotification;
 
 /**
  * A broadcast signal has been received that is appropriate to the target

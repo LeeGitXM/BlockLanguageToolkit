@@ -92,7 +92,7 @@ insert into PropertyMap values ('GDL-IN-RANGE-OBSERVATION','upperThresholdUncert
 insert into PropertyMap values ('GDL-IN-RANGE-OBSERVATION','hysteresisWhen','','DOUBLE',1,'NONE');
 insert into PropertyMap values ('GDL-IN-RANGE-OBSERVATION','statusOnInitialization','','DOUBLE',1,'NONE');
 insert into PropertyMap values ('GDL-INFERENCE-DELAY','countBy','','INTEGER',1,'NONE');
-insert into PropertyMap values ('GDL-INFERENCE-DELAY','delay','DelayInterval','INTEGER',1,'NONE');
+insert into PropertyMap values ('GDL-INFERENCE-DELAY','delay','sampleDelay','INTEGER',1,'NONE');
 insert into PropertyMap values ('GDL-INFERENCE-DELAY','displayUnits','','STRING',1,'NONE');
 insert into PropertyMap values ('GDL-INFERENCE-EVENT','holdFor','HoldInterval','INTEGER',1,'NONE');
 insert into PropertyMap values ('GDL-INFERENCE-EVENT','hysteresisWhen','','STRING',1,'NONE');

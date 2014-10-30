@@ -3,6 +3,7 @@
  */
 package com.ils.blt.designer.editor;
 
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -26,7 +27,6 @@ import com.ils.blt.common.block.PropertyType;
  * attribute display.  This is one of the sliding panels
  * in the block editor.   
  */
-
 public class ConfigurationPanel extends BasicEditPanel {
 	private final static String TAG = "ConfigurationPanel";
 	// A Configuration panel is designed to configuration of a single property.
@@ -47,42 +47,43 @@ public class ConfigurationPanel extends BasicEditPanel {
 
 	public ConfigurationPanel(final BlockPropertyEditor editor) {
 		super(editor);
-		setLayout(new MigLayout("top,flowy,ins 2","",""));
-		headingLabel = addHeading(this);
+		setLayout(new BorderLayout());
+		JPanel interiorPanel = new JPanel();
+		interiorPanel.setLayout(new MigLayout("top,flowy,ins 2","",""));
+		headingLabel = addHeading(interiorPanel);
 		//Create three panels - binding type, data type, display option.
 		JPanel bindingPanel = new JPanel();
 		bindingPanel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
 		addSeparator(bindingPanel,"Binding");
-		bindingTypeCombo = createBindingTypeCombo();
+		bindingTypeCombo = createBindingTypeCombo(null);
 		bindingPanel.add(bindingTypeCombo,"skip");
-		add(bindingPanel,"");
+		interiorPanel.add(bindingPanel,"");
 
 		JPanel typePanel = new JPanel();
 		typePanel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
 		addSeparator(typePanel,"Property Type");
 		propertyTypeCombo = createPropertyTypeCombo();   
 		propertyTypeCombo.setEditable(false);
+		propertyTypeCombo.setEnabled(false);
 		typePanel.add(propertyTypeCombo,"skip");
-		add(typePanel,"");
+		interiorPanel.add(typePanel,"");
 
 		JPanel displayPanel = new JPanel();
-		displayPanel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
+		displayPanel.setLayout(new MigLayout("ins 2","[para]0[]0[]0[]0[]","[]10[]2"));
 		addSeparator(displayPanel,"Attribute Display");
-		annotationCheckBox = new JCheckBox("Display attribute?");
-		annotationCheckBox.setHorizontalTextPosition(SwingConstants.LEFT);
-		displayPanel.add(annotationCheckBox,"wrap");
-		displayPanel.add(createLabel("X offset"),"skip");
+		annotationCheckBox = new JCheckBox("Display ?");
+		displayPanel.add(annotationCheckBox,"skip,gapafter 15");
+		displayPanel.add(createLabel("X offset"),"");
 		xfield = createOffsetTextField("0");
-		displayPanel.add(xfield,"span,growx,wrap");
-		displayPanel.add(createLabel("Y offset"),"skip");
+		displayPanel.add(xfield,"");
+		displayPanel.add(createLabel("Y offset"),"gapbefore 15");
 		yfield = createOffsetTextField("0");
-		displayPanel.add(yfield,"span,growx,wrap");
-		add(displayPanel,"");
+		displayPanel.add(yfield,"wrap");
+		interiorPanel.add(displayPanel,"");
 
 		// The OK button copies data from the components and sets the property properties.
 		// It then returns to the main tab
-		JPanel buttonPanel = new JPanel(new MigLayout("", "60[center]5[center]",""));
-		add(buttonPanel, "dock south");
+		JPanel buttonPanel = new JPanel();
 		JButton okButton = new JButton("OK");
 		buttonPanel.add(okButton,"");
 		okButton.addActionListener(new ActionListener() {
@@ -100,6 +101,7 @@ public class ConfigurationPanel extends BasicEditPanel {
 					}
 				}
 				editor.notifyOfChange();
+				updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
 				setSelectedPane(BlockEditConstants.HOME_PANEL);
 			}
 		});
@@ -110,13 +112,19 @@ public class ConfigurationPanel extends BasicEditPanel {
 				setSelectedPane(BlockEditConstants.HOME_PANEL);
 			}			
 		});
+		
+		add(interiorPanel,BorderLayout.CENTER);
+		add(buttonPanel, BorderLayout.SOUTH);
 	}
 
 	public void updateForProperty(BlockProperty prop) {
 		this.property = prop;
 		headingLabel.setText(prop.getName());
+		populateBindingTypeCombo(bindingTypeCombo,prop);
 		bindingTypeCombo.setSelectedItem(prop.getBindingType().toString());
-		bindingTypeCombo.setEnabled(!prop.getBindingType().equals(BindingType.ENGINE));
+		// The only changeable bindings are NONE and TAG_MONITOR
+		bindingTypeCombo.setEnabled(prop.getBindingType().equals(BindingType.NONE)||
+				                    prop.getBindingType().equals(BindingType.TAG_MONITOR));
 		propertyTypeCombo.setSelectedItem(prop.getType().toString());
 		annotationCheckBox.setSelected(prop.isDisplayed());
 		xfield.setText(String.valueOf(prop.getDisplayOffsetX()));
@@ -124,21 +132,42 @@ public class ConfigurationPanel extends BasicEditPanel {
 	}
 
 	/**
-	 * Create a combo box for binding type. Leave out ENGINE as an option.
+	 * Create a combo box for binding type. Leave out bindings that are core
+	 * to the workings of the block as options. An original placeholder is
+	 * created with a null property. It is later replaced.
 	 */
-	private JComboBox<String> createBindingTypeCombo() {
-		String[] entries = new String[BindingType.values().length-1];
-		int index=0;
-		for(BindingType type : BindingType.values()) {
-			if(type.name().equals(BindingType.ENGINE.name()) ) continue;
-			log.tracef("%s.createBindingTypeCombo: %d %s",TAG,index,type.name());
-			entries[index]=type.name();
-			index++;
-		}
-		final JComboBox<String> box = new JComboBox<String>(entries);
-		box.setPreferredSize(COMBO_BOX_SIZE);
+	private JComboBox<String> createBindingTypeCombo(BlockProperty prop) {
+		final JComboBox<String> box = new JComboBox<String>();
+		populateBindingTypeCombo(box,null);
+		box.setPreferredSize(BlockEditConstants.COMBO_BOX_SIZE);
 		return box;
 	}
+	/**
+	 * Populate a combo box with binding types. If the property is null,
+	 * skip property-related restrictions. 
+	 */
+	private void populateBindingTypeCombo(JComboBox<String> box,BlockProperty prop) {
+		box.removeAllItems();
+		for(BindingType type : BindingType.values()) {
+			if(type.name().equals(BindingType.ENGINE.name()) ) continue;
+			if(type.name().equals(BindingType.TAG_READ.name()) ) continue;
+			if(type.name().equals(BindingType.TAG_WRITE.name()) ) continue;
+			if(type.name().equals(BindingType.TAG_READWRITE.name()) ) continue;
+			// We also disallow tag bindings to complex datatypes
+			if(type.name().equals(BindingType.TAG_MONITOR.name()) ) {
+				if( prop==null ) continue;
+				PropertyType pt = prop.getType();
+				if( !pt.equals(PropertyType.BOOLEAN) &&
+					!pt.equals(PropertyType.DOUBLE) &&
+					!pt.equals(PropertyType.INTEGER)  &&
+					!pt.equals(PropertyType.STRING) &&
+					!pt.equals(PropertyType.TIME) 		)     continue;
+			}
+			log.tracef("%s.createBindingTypeCombo: %s",TAG,type.name());
+			box.addItem(type.name());
+		}
+	}
+	
 	/**
 	 * Create a combo box for property type
 	 */
@@ -150,7 +179,7 @@ public class ConfigurationPanel extends BasicEditPanel {
 			index++;
 		}
 		final JComboBox<String> box = new JComboBox<String>(entries);
-		box.setPreferredSize(COMBO_BOX_SIZE);
+		box.setPreferredSize(BlockEditConstants.COMBO_BOX_SIZE);
 		return box;
 	}
 }

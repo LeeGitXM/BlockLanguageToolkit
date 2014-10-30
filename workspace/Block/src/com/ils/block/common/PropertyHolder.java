@@ -8,8 +8,8 @@ import java.util.HashMap;
 import javax.swing.event.EventListenerList;
 
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.control.BlockPropertyChangeEvent;
-import com.ils.blt.common.control.BlockPropertyChangeListener;
+import com.ils.blt.common.notification.BlockPropertyChangeEvent;
+import com.ils.blt.common.notification.BlockPropertyChangeListener;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;

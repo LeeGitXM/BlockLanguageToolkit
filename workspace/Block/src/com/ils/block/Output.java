@@ -20,7 +20,7 @@ import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
-import com.ils.blt.common.control.IncomingNotification;
+import com.ils.blt.common.notification.IncomingNotification;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
@@ -62,9 +62,9 @@ public class Output extends AbstractProcessBlock implements ProcessBlock {
 		this.state = BlockState.ACTIVE;
 		QualifiedValue qv = vcn.getValue();
 		if( !isLocked() ) {
-			log.infof("%s.acceptValue: received %s",getName(),qv.toString());
+			log.tracef("%s.acceptValue: received %s",getName(),qv.toString());
 			if( pathProperty.getBindingType().equals(BindingType.TAG_WRITE)) {
-				log.infof("%s.acceptValue: writing to path %s",getName(),pathProperty.getBinding().toString());
+				log.debugf("%s.acceptValue: writing to path %s",getName(),pathProperty.getBinding().toString());
 				controller.updateTag(getParentId(),pathProperty.getBinding().toString(), qv);
 			}
 			
@@ -85,7 +85,7 @@ public class Output extends AbstractProcessBlock implements ProcessBlock {
 		pathProperty.setBindingType(BindingType.TAG_WRITE);
 		pathProperty.setBinding("");
 		properties.put(BlockConstants.BLOCK_PROPERTY_TAG_PATH, pathProperty);
-		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,TruthValue.UNKNOWN,PropertyType.TRUTHVALUE,false);
+		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.OBJECT,false);
 		valueProperty.setBindingType(BindingType.ENGINE);
 		properties.put(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 		

@@ -37,7 +37,7 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 	private final DesignerContext context;
 	private final DiagramWorkspace workspace;
 	private final JPanel contentPanel;
-	
+	private BlockPropertyEditor editor = null;
 	private LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	
 	/**
@@ -86,7 +86,8 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 				if( selection instanceof BlockComponent ) {
 					BlockComponent bc = ( BlockComponent)selection;
 					ProcessBlockView blk = (ProcessBlockView)bc.getBlock();
-					BlockPropertyEditor editor = new BlockPropertyEditor(context,workspace.getActiveDiagram(),blk);
+					if( editor!=null ) editor.shutdown();
+					editor = new BlockPropertyEditor(context,workspace.getActiveDiagram(),blk);
 					contentPanel.removeAll();
 					//Create a scroll pane
 				    JScrollPane scrollPane = new JScrollPane(editor);

@@ -3,6 +3,7 @@
  */
 package com.ils.blt.designer.editor;
 
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -30,7 +31,7 @@ public class NameEditPanel extends BasicEditPanel {
 	private static final long serialVersionUID = 1L;
 	private static final String columnConstraints = "[para]0[]0[]0[]0[]";
 	private static final String layoutConstraints = "ins 2";
-	private static final String rowConstraints = "0[]0[]0[]0[]40[]";
+	private static final String rowConstraints = "0[]0[]0[]0[]20[]";
 	private ProcessBlockView block = null;
 	private final JLabel headingLabel;
 	private final JTextField nameField;
@@ -40,8 +41,10 @@ public class NameEditPanel extends BasicEditPanel {
 
 	public NameEditPanel(final BlockPropertyEditor editor) {
 		super(editor);
-		setLayout(new MigLayout("top,flowy,ins 2","",""));
-		headingLabel = addHeading(this);
+		setLayout(new BorderLayout());
+		JPanel interiorPanel = new JPanel();
+		interiorPanel.setLayout(new MigLayout("top,flowy,ins 2","",""));
+		headingLabel = addHeading(interiorPanel);
 		//Create three panels - binding type, data type, display option.
 		JPanel namePanel = new JPanel();
 		namePanel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
@@ -49,10 +52,10 @@ public class NameEditPanel extends BasicEditPanel {
 		namePanel.add(createLabel("Name"),"skip");
 		nameField = createNameTextField("");
 		namePanel.add(nameField,"span 2,growx,wrap");
-		add(namePanel,"");
+		interiorPanel.add(namePanel,"");
 		
 		JPanel displayPanel = new JPanel();
-		displayPanel.setLayout(new MigLayout(layoutConstraints,columnConstraints,"[]10[]20"));
+		displayPanel.setLayout(new MigLayout(layoutConstraints,columnConstraints,"[]10[]"));
 		addSeparator(displayPanel,"Attribute Display");
 		annotationCheckBox = new JCheckBox("Display ?");
 		annotationCheckBox.setHorizontalTextPosition(SwingConstants.LEFT);
@@ -63,13 +66,12 @@ public class NameEditPanel extends BasicEditPanel {
 		displayPanel.add(createLabel("Y offset"),"gapbefore 15");
 		yfield = createOffsetTextField("0");
 		displayPanel.add(yfield,"wrap");
-		add(displayPanel,"");
+		interiorPanel.add(displayPanel,"");
 		//add(new JSeparator(),"");
 
 		// The OK button copies data from the components and sets the property properties.
 		// It then returns to the main tab
 		JPanel buttonPanel = new JPanel();
-		add(buttonPanel, "dock south");
 		JButton okButton = new JButton("OK");
 		buttonPanel.add(okButton,"");
 		okButton.addActionListener(new ActionListener() {
@@ -96,6 +98,9 @@ public class NameEditPanel extends BasicEditPanel {
 				setSelectedPane(BlockEditConstants.HOME_PANEL);
 			}			
 		});
+		
+		add(interiorPanel,BorderLayout.CENTER);
+		add(buttonPanel, BorderLayout.SOUTH);
 	}
 	
 	/**
@@ -103,7 +108,7 @@ public class NameEditPanel extends BasicEditPanel {
 	 */
 	protected JTextField createNameTextField(String text) {	
 		final JTextField field = new JTextField(text);
-		field.setPreferredSize(ENTRY_BOX_SIZE);
+		field.setPreferredSize(BlockEditConstants.ENTRY_BOX_SIZE);
 		field.setEditable(true);
 		return field;
 	}

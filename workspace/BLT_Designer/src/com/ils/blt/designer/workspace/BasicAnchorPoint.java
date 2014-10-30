@@ -13,7 +13,7 @@ import java.util.EnumSet;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
-import com.ils.blt.common.control.NotificationChangeListener;
+import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.designer.workspace.ui.AnchorSide;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorPoint;

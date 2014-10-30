@@ -12,8 +12,8 @@ import java.util.UUID;
 
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.ProcessBlock;
-import com.ils.blt.common.control.BlockPropertyChangeEvent;
 import com.ils.blt.common.control.ExecutionController;
+import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.inductiveautomation.ignition.common.util.LogUtil;

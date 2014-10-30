@@ -7,6 +7,7 @@ package com.ils.blt.common;
 import java.util.List;
 
 import com.ils.blt.common.block.PalettePrototype;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 
 
@@ -42,6 +43,12 @@ public class ApplicationScriptFunctions   {
 		return result;
 	}
 	
+	/**
+	 * @return the current state of the controller.
+	 */
+	public static String getControllerState() {
+		return manager.getControllerState();
+	}
 	
 	/**
 	 * Query the gateway for list of diagrams 
@@ -55,10 +62,10 @@ public class ApplicationScriptFunctions   {
 	}
 	
 	/**
-	 * @return the current state of the controller.
+	 * @return the the internal state of a block.
 	 */
-	public static String getControllerState() {
-		return manager.getControllerState();
+	public static SerializableBlockStateDescriptor getInternalState(String diagramId,String blockId) {
+		return manager.getInternalState(diagramId,blockId);
 	}
 	
 	/**

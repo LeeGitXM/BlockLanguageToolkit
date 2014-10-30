@@ -5,9 +5,7 @@ package com.ils.blt.common.notification;
 
 import java.util.UUID;
 
-
 import com.ils.blt.common.block.TransmissionScope;
-import com.ils.blt.common.control.Signal;
 /**
  * This class is used to hold a signal to be broadcast to a collection of blocks.
  * The broadcast notification is sent to the execution controller. It figures out

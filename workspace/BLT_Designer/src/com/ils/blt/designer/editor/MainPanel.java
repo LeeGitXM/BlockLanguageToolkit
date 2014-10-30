@@ -9,7 +9,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -20,16 +19,15 @@ import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
 
-import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PropertyType;
-import com.ils.blt.common.block.TimeUtility;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
+import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 /**
- * This is the panel that first appears when editing a block. It contains
+ * This is the "home" panel that first appears when editing a block. It contains
  * a static core attribute display, and then a list of properties.
  * 
  * Note: block properties have been initialized in ProcessDiagramView.initBlockProperties()
@@ -39,35 +37,45 @@ public class MainPanel extends BasicEditPanel {
 	private final static String TAG = "MainPanel";
 	private final ProcessBlockView block;
 	private final Map<String,PropertyPanel> panelMap;
-	private final UtilityFunctions fncs;
-	
-	public MainPanel(BlockPropertyEditor editor,ProcessBlockView blk) {
+
+	public MainPanel(DesignerContext context,BlockPropertyEditor editor,ProcessBlockView blk) {
 		super(editor);
 		this.block = blk;
 		this.panelMap = new HashMap<String,PropertyPanel>();
-		this.fncs = new UtilityFunctions();
-		
+
 		setLayout(new MigLayout("top,flowy,ins 2,gapy 0:10:15","","[top]0[]"));
 		JPanel panel = new CorePropertyPanel(block);
 		add(panel,"grow,push");
 
-		log.debugf("%s.mainPanel: - editing %s (%s)",TAG,block.getId().toString(),block.getClassName());
+		log.infof("%s.mainPanel: - editing %s (%s)",TAG,block.getId().toString(),block.getClassName());
 		PropertyPanel propertyPanel = null;
-		// Now fill the editor. We use the same edit panel class for all properties
+		// Now fill the editor. We use the same panel class for each property.
 		for(BlockProperty property:block.getProperties()) {
 			// We have gotten null from serialization problems ...
 			if( property==null || property.getName()==null) continue;
-			log.debugf("%s.init: - creating editor for property %s",TAG,property.getName());
-			propertyPanel = new PropertyPanel(property);
+			log.debugf("%s.init: - creating panel for property %s",TAG,property.getName());
+			propertyPanel = new PropertyPanel(context,this,blk,property);
 			add(propertyPanel,"skip,growx,push,gaptop 0,gapbottom 0");
 			panelMap.put(property.getName(), propertyPanel);
-		
+
 		}
 		// "Sacrificial" row - else we had trouble scrolling to the bottom
 		JSeparator separator = new JSeparator();
 		add(separator,"span,growy");
 	}
+	
+	public void notifyOfChange() {
+		parent.notifyOfChange();
+	}
 
+	/**
+	 * Iterate over panels and close any subscriptions
+	 */
+	public void shutdown() {
+		for( PropertyPanel p:panelMap.values()) {
+			p.unsubscribe();
+		}
+	}
 	/**
 	 * This is the property summary on the main panel.
 	 * @param prop
@@ -75,7 +83,7 @@ public class MainPanel extends BasicEditPanel {
 	public void updatePanelForProperty(BlockProperty prop ) {
 		log.tracef("%s.updatePanelForProperty: %s", TAG,prop.getName());
 		PropertyPanel pp = panelMap.get(prop.getName());
-		if( pp!=null ) pp.updateForProperty(prop);
+		if( pp!=null ) pp.update();
 	}
 	/**
 	 * These properties are present in every block.
@@ -98,68 +106,6 @@ public class MainPanel extends BasicEditPanel {
 			add(createTextField(blk.getId().toString()),"span,growx");
 		}
 	}
-	/**
-	 * A property panel is control panel for a single property. By default it contains:
-	 *    First line --
-	 *    	  title label
-	 *    Next line --
-	 *        valueBox     - text box with the current value
-	 *        edit button  - go to editor screen to change value
-	 *        binding btn  - go to separate screen to determine binding    
-	 */
-	private class PropertyPanel extends JPanel {
-		private static final String columnConstraints = "";
-		private static final String layoutConstraints = "ins 2";
-		private static final String rowConstraints = "";
-		private final JTextField bindingDisplayField;
-		private final JTextField valueDisplayField;
-		
-		public PropertyPanel(BlockProperty prop) {
-			setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));     // 3 cells across
-			if( prop.getType().equals(PropertyType.TIME) ) {
-				TimeUnit tu = TimeUtility.unitForValue(fncs.coerceToDouble(prop.getValue()));
-				addSeparator(this,prop.getName()+" ~ "+tu.name().toLowerCase());
-			}
-			else {
-				addSeparator(this,prop.getName());
-			}
-			// Now the second line.
-			valueDisplayField = createValueDisplayField(prop);
-			add(valueDisplayField,"skip,growx,push");
-			add(createEditButton(prop),"w :25:");
-			add(createConfigurationButton(prop),"w :25:,wrap");
-			// If the BindingType is TAG, display the binding
-			bindingDisplayField = createBindingDisplayField(prop);
-			if( prop.getBindingType().equals(BindingType.TAG_MONITOR) ||
-				prop.getBindingType().equals(BindingType.TAG_READ) ||
-				prop.getBindingType().equals(BindingType.TAG_READWRITE) ||
-				prop.getBindingType().equals(BindingType.TAG_WRITE)	) {
-				add(bindingDisplayField,"skip,growx,push");
-			}
-		}
-		// Update the panel for new property data
-		public void updateForProperty(BlockProperty property) {
-			String text = "";
-			// For TIME we scale the value
-			if( property.getType().equals(PropertyType.TIME) ) {
-				TimeUnit tu = TimeUtility.unitForValue(fncs.coerceToDouble(property.getValue()));
-				text = fncs.coerceToString(TimeUtility.cannonicalValueForValue(fncs.coerceToDouble(property.getValue()),tu));
-			}
-			else {
-				text = fncs.coerceToString(property.getValue());
-				// For list we lop off the delimiter.
-				if( property.getType().equals(PropertyType.LIST) && text.length()>1 ) text = text.substring(1);
-			}
-			log.tracef("%s.updateForProperty: property %s, raw value= %s",TAG,property.getName(),text);
-			valueDisplayField.setText(text);
-			if( property.getBindingType().equals(BindingType.TAG_MONITOR) ||
-				property.getBindingType().equals(BindingType.TAG_READ) ||
-				property.getBindingType().equals(BindingType.TAG_READWRITE) ||
-				property.getBindingType().equals(BindingType.TAG_WRITE)	) {
-				bindingDisplayField.setText(fncs.coerceToString(property.getBinding()));
-			}
-		}
-	}
 	
 	// =============================== Component Creation Methods ================================
 	/**
@@ -168,10 +114,10 @@ public class MainPanel extends BasicEditPanel {
 	 * The button has only an image.
 	 * @param prop 
 	 */
-	private JButton createConfigurationButton(final BlockProperty prop) {
+	public JButton createConfigurationButton(final BlockProperty prop) {
 		JButton btn = new JButton();
 		final String ICON_PATH  = "Block/icons/editor/data_link.png";
-		Image img = ImageLoader.getInstance().loadImage(ICON_PATH ,BUTTON_SIZE);
+		Image img = ImageLoader.getInstance().loadImage(ICON_PATH ,BlockEditConstants.BUTTON_SIZE);
 		if( img !=null) {
 			Icon icon = new ImageIcon(img);
 			btn.setIcon(icon);
@@ -180,7 +126,7 @@ public class MainPanel extends BasicEditPanel {
 			btn.setBorderPainted(false);
 			btn.setBackground(getBackground());
 			btn.setBorder(null);
-			btn.setPreferredSize(BUTTON_SIZE);
+			btn.setPreferredSize(BlockEditConstants.BUTTON_SIZE);
 			btn.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e){
 					updatePanelForProperty(BlockEditConstants.CONFIGURATION_PANEL,prop);
@@ -192,12 +138,13 @@ public class MainPanel extends BasicEditPanel {
 		return btn;
 	}
 	/**
-	 * Create a button that navigates to the proper editor.
+	 * Create a button that navigates to the proper editor. This is required only
+	 * for LIST datatype and for values that are bound to a tag.
 	 */
-	private JButton createEditButton(final BlockProperty prop) {
+	public JButton createEditButton(final BlockProperty prop) {
 		JButton btn = new JButton();
 		final String ICON_PATH  = "Block/icons/editor/pencil.png";
-		Image img = ImageLoader.getInstance().loadImage(ICON_PATH ,BUTTON_SIZE);
+		Image img = ImageLoader.getInstance().loadImage(ICON_PATH ,BlockEditConstants.BUTTON_SIZE);
 		if( img !=null) {
 			Icon icon = new ImageIcon(img);
 			btn.setIcon(icon);
@@ -206,7 +153,7 @@ public class MainPanel extends BasicEditPanel {
 			btn.setBorderPainted(false);
 			btn.setBackground(getBackground());
 			btn.setBorder(null);
-			btn.setPreferredSize(BUTTON_SIZE);
+			btn.setPreferredSize(BlockEditConstants.BUTTON_SIZE);
 			btn.setEnabled(prop.isEditable());
 			btn.addActionListener(new ActionListener() {
 				// Determine the correct panel, depending on the property type
@@ -218,33 +165,20 @@ public class MainPanel extends BasicEditPanel {
 						updatePanelForProperty(BlockEditConstants.TAG_BROWSER_PANEL,prop);
 						setSelectedPane(BlockEditConstants.TAG_BROWSER_PANEL);
 					}
-					else if( prop.getBindingType().equals(BindingType.ENGINE)) {
-						;// Do nothing
-					}
 					// Use special editor for list types
 					else if( prop.getType().equals(PropertyType.LIST) ) {
 						log.infof("%s.editButton actionPerformed for property %s (%s)",TAG,prop.getName(),prop.getType());
 						updatePanelForProperty(BlockEditConstants.LIST_EDIT_PANEL,prop);
 						setSelectedPane(BlockEditConstants.LIST_EDIT_PANEL);
 					}
-					// Use special editor for the enumerated types
-					else if( prop.getType().equals(PropertyType.BOOLEAN) ||
-							 prop.getType().equals(PropertyType.DISTRIBUTION) ||
-							 prop.getType().equals(PropertyType.HYSTERESIS)   ||
-							 prop.getType().equals(PropertyType.LIMIT)        ||
-							 prop.getType().equals(PropertyType.SCOPE)	      ||
-							 prop.getType().equals(PropertyType.TRUTHVALUE)      ){
-						log.infof("%s.editButton actionPerformed for property %s (%s)",TAG,prop.getName(),prop.getType());
-						updatePanelForProperty(BlockEditConstants.ENUM_EDIT_PANEL,prop);
-						setSelectedPane(BlockEditConstants.ENUM_EDIT_PANEL);
-					}
 					else {
-						log.infof("%s.editButton actionPerformed for property %s (%s)",TAG,prop.getName(),prop.getType());
-						updatePanelForProperty(BlockEditConstants.VALUE_EDIT_PANEL,prop);
-						setSelectedPane(BlockEditConstants.VALUE_EDIT_PANEL);
+						// Do nothing - shouldn't happen
 					}
 				}
 			});
+		}
+		else {
+			log.warnf("%s.editButton Unable to load image for %s (%s)",TAG,prop.getName(),ICON_PATH);
 		}
 		return btn;
 	}
@@ -256,7 +190,7 @@ public class MainPanel extends BasicEditPanel {
 	private JButton createNameEditButton(final ProcessBlockView blk) {
 		JButton btn = new JButton();
 		final String ICON_PATH  = "Block/icons/editor/pencil.png";
-		Image img = ImageLoader.getInstance().loadImage(ICON_PATH ,BUTTON_SIZE);
+		Image img = ImageLoader.getInstance().loadImage(ICON_PATH ,BlockEditConstants.BUTTON_SIZE);
 		if( img !=null) {
 			Icon icon = new ImageIcon(img);
 			btn.setIcon(icon);
@@ -265,7 +199,7 @@ public class MainPanel extends BasicEditPanel {
 			btn.setBorderPainted(false);
 			btn.setBackground(getBackground());
 			btn.setBorder(null);
-			btn.setPreferredSize(BUTTON_SIZE);
+			btn.setPreferredSize(BlockEditConstants.BUTTON_SIZE);
 			btn.addActionListener(new ActionListener() {
 				// Determine the correct panel, depending on the property type
 				public void actionPerformed(ActionEvent e){
@@ -279,26 +213,29 @@ public class MainPanel extends BasicEditPanel {
 		}
 		return btn;
 	}
+	
 	/**
-	 * Create a text box for the binding field. This is read-only.
+	 * A component field that remembers the associated block property and
+	 * allows us to access the current text value of the field.
 	 */
-	private JTextField createBindingDisplayField(final BlockProperty prop) {	
-		Object val = prop.getBinding();
-		if(val==null) val = "";
-		final JTextField field = new JTextField(val.toString());
-		field.setEditable(false);
-		field.setEnabled(false);
-		return field;
+	public interface EditableField {
+		public BlockProperty getProperty();
+		public String getText();
 	}
+	
 	/**
-	 * Create a text box for the value field. This is read-only.
+	 * A text field that remembers the associated block property.
 	 */
-	private JTextField createValueDisplayField(final BlockProperty prop) {	
-		Object val = fncs.coerceToString(prop.getValue());
-		if(val==null) val = "";
-		final JTextField field = new JTextField(val.toString());
-		field.setEditable(false);
-		field.setEnabled(false);
-		return field;
+	private class EditableTextField extends JTextField implements EditableField{
+		private final BlockProperty property;
+		public EditableTextField(BlockProperty prop,String val) {
+			super(val);
+			property = prop;
+			setEditable(true);
+			setEnabled(true);
+		}
+		public BlockProperty getProperty() { return property; }
 	}
+
+	
 }

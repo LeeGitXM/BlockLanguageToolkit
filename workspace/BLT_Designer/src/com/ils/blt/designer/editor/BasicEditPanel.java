@@ -25,11 +25,6 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 public class BasicEditPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	protected final LoggerEx log;
-	public static final Dimension BUTTON_SIZE = new Dimension(16,16);
-	public static final Dimension COMBO_BOX_SIZE  = new Dimension(120,24);
-	public static final Dimension ENTRY_BOX_SIZE  = new Dimension(160,24);
-	public static final Dimension OFFSET_BOX_SIZE  = new Dimension(40,24);
-	public static final Dimension TABLE_SIZE       = new Dimension(300,120);
 	protected final BlockPropertyEditor parent;
 	
 	
@@ -88,7 +83,7 @@ public class BasicEditPanel extends JPanel {
 	 */
 	protected JTextField createOffsetTextField(String text) {	
 		final JTextField field = new JTextField(text);
-		field.setPreferredSize(OFFSET_BOX_SIZE);
+		field.setPreferredSize(BlockEditConstants.OFFSET_BOX_SIZE);
 		field.setEditable(true);
 		return field;
 	}

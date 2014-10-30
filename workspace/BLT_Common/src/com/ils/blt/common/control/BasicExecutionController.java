@@ -53,22 +53,4 @@ public class BasicExecutionController implements ExecutionController  {
 	public void updateTag(UUID diagramId,String path,QualifiedValue val) {
 		log.warnf("%s.updateTag: WARNING: Executed from stub class",TAG);
 	}
-	@Override
-	public void acceptBroadcastNotification(
-			com.ils.blt.common.control.BroadcastNotification note) {
-		// TODO Auto-generated method stub
-		
-	}
-	@Override
-	public void acceptCompletionNotification(
-			com.ils.blt.common.control.OutgoingNotification note) {
-		// TODO Auto-generated method stub
-		
-	}
-	@Override
-	public void acceptConnectionPostNotification(
-			com.ils.blt.common.control.ConnectionPostNotification note) {
-		// TODO Auto-generated method stub
-		
-	}
 }

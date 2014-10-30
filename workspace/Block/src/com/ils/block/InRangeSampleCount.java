@@ -3,7 +3,10 @@
  */
 package com.ils.block;
 
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
@@ -19,10 +22,11 @@ import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
-import com.ils.blt.common.control.BlockPropertyChangeEvent;
 import com.ils.blt.common.control.ExecutionController;
-import com.ils.blt.common.control.IncomingNotification;
-import com.ils.blt.common.control.OutgoingNotification;
+import com.ils.blt.common.notification.BlockPropertyChangeEvent;
+import com.ils.blt.common.notification.IncomingNotification;
+import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
@@ -144,7 +148,23 @@ public class InRangeSampleCount extends AbstractProcessBlock implements ProcessB
 			}
 		}
 	}
-	
+	/**
+	 * @return a block-specific description of internal statue
+	 */
+	@Override
+	public SerializableBlockStateDescriptor getInternalStatus() {
+		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
+		List<Map<String,String>> buffer = descriptor.getBuffer();
+		for( QualifiedValue qv:queue) {
+			Map<String,String> qvMap = new HashMap<>();
+			qvMap.put("Value", qv.getValue().toString());
+			qvMap.put("Quality", qv.getQuality().toString());
+			qvMap.put("Timestamp", qv.getTimestamp().toString());
+			buffer.add(qvMap);
+		}
+
+		return descriptor;
+	}
 	/**
 	 * Handle a limit or sample size change.
 	 */

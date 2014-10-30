@@ -7,7 +7,6 @@ package com.ils.blt.common.notification;
 
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.Connection;
-import com.ils.blt.common.control.Signal;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 /**
  * This class is used to hold value change information coming from the "engine" representing 

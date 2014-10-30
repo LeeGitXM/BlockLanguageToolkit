@@ -18,10 +18,10 @@ import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.connection.ConnectionType;
-import com.ils.blt.common.control.BlockPropertyChangeEvent;
 import com.ils.blt.common.control.ExecutionController;
-import com.ils.blt.common.control.IncomingNotification;
-import com.ils.blt.common.control.OutgoingNotification;
+import com.ils.blt.common.notification.BlockPropertyChangeEvent;
+import com.ils.blt.common.notification.IncomingNotification;
+import com.ils.blt.common.notification.OutgoingNotification;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
@@ -83,8 +83,8 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
 		this.state = BlockState.ACTIVE;
+		QualifiedValue qv = vcn.getValue();
 		if( !isLocked() ) {
-			QualifiedValue qv = vcn.getValue();
 			log.infof("%s.acceptValue: received %s",getName(),qv.toString());
 			if( qv.getValue() != null ) {
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
@@ -94,6 +94,9 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 				log.warnf("%s.acceptValue: received a null value, ignoring",getName());
 			}
 		}
+		// Even if locked, we update the current state
+		valueProperty.setValue(qv.getValue());
+		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
 	}
 
 	/**

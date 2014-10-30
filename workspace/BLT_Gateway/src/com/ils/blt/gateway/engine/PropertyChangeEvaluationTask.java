@@ -4,7 +4,7 @@
 package com.ils.blt.gateway.engine;
 
 import com.ils.blt.common.block.ProcessBlock;
-import com.ils.blt.common.control.BlockPropertyChangeEvent;
+import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 
 /**
  * Evaluate the specified block. The thread should end with the block placing a
