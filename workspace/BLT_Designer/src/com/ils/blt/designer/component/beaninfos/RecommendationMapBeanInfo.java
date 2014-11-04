@@ -38,13 +38,11 @@ public class RecommendationMapBeanInfo extends CommonBeanInfo {
 		super(RecommendationMap.class, new CustomizerDescriptor[] {
 				DynamicPropertyProviderCustomizer.VALUE_DESCRIPTOR,
 				StyleCustomizer.VALUE_DESCRIPTOR});
-		logger.infof("%s:CONSTRUCTOR",TAG);
 	}
 
 	@Override
 	protected void initProperties() throws IntrospectionException {
 		// Adds common properties
-		logger.infof("%s:INITPROPRTIES",TAG);
 		super.initProperties();
 		
 		addBoundProp(RecommendationMap.DIAGNOSES_PROPERTY, "Diagnoses", "A list of final diagnosis values", 
@@ -62,7 +60,7 @@ public class RecommendationMapBeanInfo extends CommonBeanInfo {
 	 */
 	@Override
 	protected void initDesc() {
-		logger.infof("%s.initDesc",TAG);
+		logger.tracef("%s.initDesc",TAG);
 		getBeanDescriptor().setName(BundleUtil.get().getString(PREFIX+".RecommendationMap.Name"));
 		getBeanDescriptor().setDisplayName(BundleUtil.get().getString(PREFIX+".RecommendationMap.Display"));       // Tooltip-title
 		getBeanDescriptor().setShortDescription(BundleUtil.get().getString(PREFIX+".RecommendationMap.Desc"));     // Tooltip-description

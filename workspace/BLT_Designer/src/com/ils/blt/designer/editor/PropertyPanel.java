@@ -21,6 +21,7 @@ import javax.swing.SwingUtilities;
 
 import net.miginfocom.swing.MigLayout;
 
+import com.ils.blt.common.TimeUtility;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
@@ -29,7 +30,6 @@ import com.ils.blt.common.block.DistributionType;
 import com.ils.blt.common.block.HysteresisType;
 import com.ils.blt.common.block.LimitType;
 import com.ils.blt.common.block.PropertyType;
-import com.ils.blt.common.block.TimeUtility;
 import com.ils.blt.common.block.TransmissionScope;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.notification.NotificationChangeListener;
@@ -62,6 +62,7 @@ public class PropertyPanel extends JPanel implements NotificationChangeListener,
 	private static final long serialVersionUID = 2264535784255009984L;
 	private static SimpleDateFormat dateFormatter = new SimpleDateFormat(BlockConstants.TIMESTAMP_FORMAT);
 	private static UtilityFunctions fncs = new UtilityFunctions();
+	// Use TAG as the "source" attribute when registering for Notifications from Gateway
 	private final static String TAG = "PropertyPanel";
 	private static final String columnConstraints = "";
 	private static final String layoutConstraints = "ins 2,hidemode 2";
@@ -71,22 +72,25 @@ public class PropertyPanel extends JPanel implements NotificationChangeListener,
 	private final JButton editButton;
 	private final JButton configurationButton;
 	private final JTextField bindingDisplayField;
+	private JComboBox<String> valueComboBox;
 	private final JTextField valueDisplayField;
 	private final MainPanel parent;
 	private final ProcessBlockView block;
 	private final BlockProperty property;
+	private TimeUnit currentTimeUnit;
 	
 	public PropertyPanel(DesignerContext ctx, MainPanel main,ProcessBlockView blk,BlockProperty prop) {
-		log.infof("%s.PropertyPanel: - property %s (%s:%s)",TAG,prop.getName(),prop.getType().toString(),prop.getBindingType().toString());
+		log.infof("%s.PropertyPanel: - property %s (%s:%s) = %s",TAG,prop.getName(),prop.getType().toString(),prop.getBindingType().toString(),prop.getValue().toString());
 		this.context = ctx;
 		this.parent = main;
 		this.block = blk;
 		this.property = prop;
+		this.currentTimeUnit = TimeUnit.SECONDS;   // The "canonical" unit
 	
 		setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));     // 3 cells across
 		if( property.getType().equals(PropertyType.TIME) ) {
-			TimeUnit tu = TimeUtility.unitForValue(fncs.coerceToDouble(prop.getValue()));
-			main.addSeparator(this,property.getName()+" ~ "+tu.name().toLowerCase());
+			currentTimeUnit = TimeUtility.unitForValue(fncs.coerceToDouble(prop.getValue()));
+			main.addSeparator(this,property.getName()+" ~ "+currentTimeUnit.name().toLowerCase());
 		}
 		else {
 			main.addSeparator(this,property.getName());
@@ -104,7 +108,8 @@ public class PropertyPanel extends JPanel implements NotificationChangeListener,
 			property.getType().equals(PropertyType.TRUTHVALUE)          ) {
 
 			isEnumerated = true;
-			add(createValueCombo(property),"skip,growx,push");
+			valueComboBox = createValueCombo(property);
+			add(valueComboBox,"skip,growx,push");
 		}
 		else  {
 			add(valueDisplayField,"skip,growx,push");
@@ -118,6 +123,11 @@ public class PropertyPanel extends JPanel implements NotificationChangeListener,
 		if( property.getType().equals(PropertyType.LIST) )   {
 			add(editButton,"w :25:,wrap");
 			editButton.setVisible(true);
+		}
+		else if( isEnumerated && property.getBindingType().equals(BindingType.ENGINE)     )  {
+			add(configurationButton,"w :25:,wrap");
+			valueComboBox.setEditable(false);
+			valueComboBox.setEnabled(false);
 		}
 		else if( isEnumerated ) ;                // Enumerated types are neither editable nor bindable
 		else if( property.getBindingType().equals(BindingType.NONE) ||
@@ -156,7 +166,7 @@ public class PropertyPanel extends JPanel implements NotificationChangeListener,
 			NotificationHandler handler = NotificationHandler.getInstance();
 			String key = NotificationKey.keyForProperty(block.getId().toString(), property.getName());
 			log.tracef("%s.registerChangeListeners: adding %s",TAG,key);
-			handler.addNotificationChangeListener(key,this);
+			handler.addNotificationChangeListener(key,TAG,this);
 		}
 		else if( property.getBindingType().equals(BindingType.TAG_MONITOR) ||
 				property.getBindingType().equals(BindingType.TAG_READ) ||
@@ -170,7 +180,7 @@ public class PropertyPanel extends JPanel implements NotificationChangeListener,
 		if( property.getBindingType().equals(BindingType.ENGINE) ) {
 			NotificationHandler handler = NotificationHandler.getInstance();
 			String key = NotificationKey.keyForProperty(block.getId().toString(), property.getName());
-			handler.removeNotificationChangeListener(key);
+			handler.removeNotificationChangeListener(key,TAG);
 		}
 		else if( property.getBindingType().equals(BindingType.TAG_MONITOR) ||
 				property.getBindingType().equals(BindingType.TAG_READ) ||
@@ -225,20 +235,22 @@ public class PropertyPanel extends JPanel implements NotificationChangeListener,
 		return provider;
 	}
 	
-	// Update the panel UI for new property data
+	// Update the panel UI for new property data. Called from Config panel via main panel.
 	public void update() {
 		String text = "";
 		// For TIME we scale the value
 		if( property.getType().equals(PropertyType.TIME) ) {
-			TimeUnit tu = TimeUtility.unitForValue(fncs.coerceToDouble(property.getValue()));
-			text = fncs.coerceToString(TimeUtility.cannonicalValueForValue(fncs.coerceToDouble(property.getValue()),tu));
+			text = fncs.coerceToString(TimeUtility.valueForCanonicalValue(fncs.coerceToDouble(property.getValue()),currentTimeUnit));
+			log.infof("%s.update: property %s,value= %s, display= %s (%s)",TAG,property.getName(),property.getValue().toString(),
+													text,currentTimeUnit.name());
 		}
 		else {
 			text = fncs.coerceToString(property.getValue());
 			// For list we lop off the delimiter.
 			if( property.getType().equals(PropertyType.LIST) && text.length()>1 ) text = text.substring(1);
+			log.infof("%s.updateForProperty: property %s, raw value= %s",TAG,property.getName(),text);
 		}
-		log.infof("%s.updateForProperty: property %s, raw value= %s",TAG,property.getName(),text);
+		
 		valueDisplayField.setText(text);
 		if( property.getBindingType().equals(BindingType.TAG_MONITOR) ||
 				property.getBindingType().equals(BindingType.TAG_READ) ||
@@ -295,14 +307,14 @@ public class PropertyPanel extends JPanel implements NotificationChangeListener,
 		this.invalidate();
 		if( prop.getValue()!=null ) {
 			final String selection = prop.getValue().toString().toUpperCase();
-			log.infof("%s.updateForProperty: %s=%s",TAG,prop.getName(),selection);
+			log.tracef("%s.createValueCombo: %s=%s",TAG,prop.getName(),selection);
 			SwingUtilities.invokeLater( new Runnable() {
 				public void run() {
 					valueCombo.setSelectedItem(selection);
 				}
 			});
 			valueCombo.getModel().setSelectedItem(selection);
-			log.infof("%s.updateForProperty: selection now=%s",TAG,valueCombo.getModel().getSelectedItem().toString());
+			//log.tracef("%s.createValueCombo: selection now=%s",TAG,valueCombo.getModel().getSelectedItem().toString());
 		} 
 		valueCombo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
@@ -378,6 +390,12 @@ public class PropertyPanel extends JPanel implements NotificationChangeListener,
 		Object val = fncs.coerceToString(prop.getValue());
 		if(val==null) val = "";
 		JTextField field = null;
+		if(prop.getType().equals(PropertyType.TIME)) {
+			// Scale value for time unit.
+			val = fncs.coerceToString(TimeUtility.valueForCanonicalValue(fncs.coerceToDouble(property.getValue()),currentTimeUnit));
+			log.infof("%s.createValueDisplayField: property %s,value= %s, display= %s (%s)",TAG,property.getName(),property.getValue().toString(),
+					val,currentTimeUnit.name());
+		}
 		if( prop.isEditable() && !prop.getType().equals(PropertyType.LIST)) {
 			field = new EditableTextField(prop,val.toString());
 			field.addFocusListener(this);
@@ -425,7 +443,7 @@ public class PropertyPanel extends JPanel implements NotificationChangeListener,
 	@Override
 	public void focusLost(FocusEvent e) {
 		if( e.getSource() instanceof EditableTextField ) {
-			log.infof("%s.focusLost: %s", TAG,e.getSource().getClass().getName());
+			log.debugf("%s.focusLost: %s", TAG,e.getSource().getClass().getName());
 			EditableField field = (EditableField)e.getSource();
 			updatePropertyForField(field);
 		}
@@ -454,18 +472,26 @@ public class PropertyPanel extends JPanel implements NotificationChangeListener,
 	
 	private void updatePropertyForField(EditableField field) {
 		BlockProperty property = field.getProperty();
-		//log.infof("%s.focusLost: %s", TAG,property.getName());
+		log.debugf("%s.updatePropertyForField: %s (%s:%s)", TAG,property.getName(),property.getType().name(),property.getBindingType().name());
 		// If there is a value change, then update the property (or binding)
 		if( property.getBindingType().equals(BindingType.NONE)) {
-			if( !field.getText().equals(property.getValue().toString())) {
+			Object fieldValue = field.getText();
+			if( !fieldValue.equals(property.getValue().toString())) {
 				// Coerce to the correct data type
-				Object value = field.getText();
-				if( property.getType().equals(PropertyType.BOOLEAN ))     value = new Boolean(fncs.coerceToBoolean(value));
-				else if( property.getType().equals(PropertyType.DOUBLE )) value = new Double(fncs.coerceToDouble(value));
-				else if( property.getType().equals(PropertyType.TIME ))   value = new Double(fncs.coerceToDouble(value));  // secs
-				else if( property.getType().equals(PropertyType.INTEGER ))value = new Integer(fncs.coerceToInteger(value));
-				property.setValue(value);
+				if( property.getType().equals(PropertyType.BOOLEAN ))     fieldValue = new Boolean(fncs.coerceToBoolean(fieldValue));
+				else if( property.getType().equals(PropertyType.DOUBLE )) fieldValue = new Double(fncs.coerceToDouble(fieldValue));
+				else if( property.getType().equals(PropertyType.INTEGER ))fieldValue = new Integer(fncs.coerceToInteger(fieldValue));
+				else if(property.getType().equals(PropertyType.TIME)) {
+					// Scale field value for time unit. Get back to seconds.
+					fieldValue = new Double(TimeUtility.canonicalValueForValue(fncs.coerceToDouble(fieldValue),currentTimeUnit));
+					log.infof("%s.updatePropertyForField: property %s,old= %s, new= %s, displayed= %s (%s)",TAG,property.getName(),property.getValue().toString(),
+							fieldValue.toString(),field.getText(),currentTimeUnit.name());
+				}
+				property.setValue(fieldValue);
 				parent.notifyOfChange();    // Mark elements as "dirty", repaint
+			}
+			else {
+				log.tracef("%s.updatePropertyForField: No Change was %s, is %s", TAG,property.getValue().toString(),fieldValue);
 			}
 		}
 		else {
@@ -485,7 +511,12 @@ public class PropertyPanel extends JPanel implements NotificationChangeListener,
 		property.setValue(value.getValue());
 		SwingUtilities.invokeLater( new Runnable() {
 			public void run() {
-				valueDisplayField.setText(value.getValue().toString());
+				String text = value.getValue().toString();
+				if(property.getType().equals(PropertyType.TIME)) {
+					// Scale value for time unit.
+					text = fncs.coerceToString(TimeUtility.valueForCanonicalValue(fncs.coerceToDouble(text),currentTimeUnit));
+				}
+				valueDisplayField.setText(text);
 			}
 		});
 		
@@ -496,15 +527,17 @@ public class PropertyPanel extends JPanel implements NotificationChangeListener,
 	public TagProp getTagProperty() {
 		return null;
 	}
+	// The display contains tag value, quality and timestamp
 	@Override
 	public void tagChanged(TagChangeEvent event) {
 		final Tag tag = event.getTag();
-		log.infof("%s.tagChanged: - %s new value from %s (%s)",TAG,property.getName(),tag.getName(),tag.getValue().toString());
 		if( tag!=null && tag.getValue()!=null ) {
+			log.infof("%s.tagChanged: - %s new value from %s (%s)",TAG,property.getName(),tag.getName(),tag.getValue().toString());
 			SwingUtilities.invokeLater( new Runnable() {
 				public void run() {
-					String text = String.format("%s  %s  %s", tag.getValue().getValue().toString(),
-							                   tag.getValue().getQuality().toString(),
+					String text = String.format("%s  %s  %s", 
+							(tag.getValue().getValue()==null?"null":tag.getValue().getValue().toString()),
+							(tag.getValue().getQuality() ==null?"null":tag.getValue().getQuality().toString()),
 							                   dateFormatter.format(tag.getValue().getTimestamp()));
 					valueDisplayField.setText(text);
 				}

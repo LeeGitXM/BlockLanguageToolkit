@@ -1,7 +1,7 @@
 /**
  *   (c) 2014  ILS Automation. All rights reserved. 
  */
-package com.ils.blt.common.block;
+package com.ils.blt.common;
 
 import java.util.concurrent.TimeUnit;
 
@@ -36,9 +36,9 @@ public class TimeUtility
 		return result;
 	}
 	/**
-	 * @return the value for a time value in seconds and specified time unit
+	 * @return a value ~ secs for a time value in the specified time unit
 	 */
-	public static double cannonicalValueForValue(double val,TimeUnit unit) {
+	public static double canonicalValueForValue(double val,TimeUnit unit) {
 		double result = val;
 		switch(unit) {
 			case MILLISECONDS:
@@ -61,9 +61,9 @@ public class TimeUtility
 
 	}
 	/**
-	 * @return the cannonical value for a time value and unit
+	 * @return the a time value in the specified units for an original value ~seconds
 	 */
-	public static double valueForCannonicalValue(double val,TimeUnit unit) {
+	public static double valueForCanonicalValue(double val,TimeUnit unit) {
 		double result = val;
 		switch(unit) {
 			case MILLISECONDS:

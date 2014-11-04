@@ -120,7 +120,7 @@ public class ApplicationRequestHandler  {
 	 */
 	@SuppressWarnings("unchecked")
 	public BlockProperty[] getBlockProperties(String className,long projectId,long resourceId,UUID blockId) {
-		log.infof("%s.getBlockProperties: for block %s (%s)",TAG,blockId.toString(),className);
+		log.debugf("%s.getBlockProperties: for block %s (%s)",TAG,blockId.toString(),className);
 		BlockProperty[] result = null;
 		List<String> jsonList = new ArrayList<String>();
 		try {
@@ -137,7 +137,7 @@ public class ApplicationRequestHandler  {
 			for( String json:jsonList ) {
 				log.tracef("%s: property: %s",TAG,json);
 				BlockProperty bp = BlockProperty.createProperty(json);
-				log.infof("%s.getBlockProperties: %s",TAG, bp.toString());
+				log.debugf("%s.getBlockProperties: %s",TAG, bp.toString());
 				result[index]=bp;
 				index++;
 			}

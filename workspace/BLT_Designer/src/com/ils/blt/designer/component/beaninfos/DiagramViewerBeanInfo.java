@@ -70,7 +70,7 @@ public class DiagramViewerBeanInfo extends CommonBeanInfo {
 	 */
 	@Override
 	protected void initDesc() {
-		logger.infof("%s.initDesc",TAG);
+		logger.tracef("%s.initDesc",TAG);
 		getBeanDescriptor().setName(BundleUtil.get().getString(PREFIX+".DiagramViewer.Name"));
 		getBeanDescriptor().setDisplayName(BundleUtil.get().getString(PREFIX+".DiagramViewer.Display"));       // Tooltip-title
 		getBeanDescriptor().setShortDescription(BundleUtil.get().getString(PREFIX+".DiagramViewer.Desc"));     // Tooltip-description

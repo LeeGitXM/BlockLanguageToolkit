@@ -46,6 +46,7 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 	public PropertyEditorFrame(DesignerContext ctx,DiagramWorkspace workspace) {
 		super(DOCKING_KEY, IconUtil.getRootIcon("delay_block_16.png"));  // Pinned icon
 		this.context = ctx;
+		log.debugf("%s.PropertyEditorFrame: CONSTRUCTOR ...",TAG);
 		this.workspace = workspace;
 		workspace.addDesignableWorkspaceListener(new DiagramWorkspaceListener());
 		contentPanel = new JPanel(new BorderLayout());
@@ -82,7 +83,7 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 		public void itemSelectionChanged(List<JComponent> selections) {
 			if( selections!=null && selections.size()==1 ) {
 				JComponent selection = selections.get(0);
-				log.infof("%s: DiagramWorkspaceListener: selected a %s",TAG,selection.getClass().getName());
+				log.debugf("%s: DiagramWorkspaceListener: selected a %s",TAG,selection.getClass().getName());
 				if( selection instanceof BlockComponent ) {
 					BlockComponent bc = ( BlockComponent)selection;
 					ProcessBlockView blk = (ProcessBlockView)bc.getBlock();
@@ -92,6 +93,7 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 					//Create a scroll pane
 				    JScrollPane scrollPane = new JScrollPane(editor);
 					contentPanel.add(scrollPane,BorderLayout.CENTER);
+					validate();
 					return;
 				}
 				// There may be a connection selected

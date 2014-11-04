@@ -38,6 +38,7 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
  */
 public class ProcessDiagramView extends AbstractChangeable implements BlockDiagramModel {
 	private static LoggerEx log = LogUtil.getLogger(ProcessDiagramView.class.getPackage().getName());
+	// Use TAG as the "source" identifier when registering for notifications from Gateway
 	private static final String TAG = "ProcessDiagramView";
 	private final Map<UUID,ProcessBlockView> blockMap = new HashMap<UUID,ProcessBlockView>();
 	private List<Connection> connections = new ArrayList<Connection>();
@@ -119,7 +120,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		for(BlockProperty property:properties) {
 			propertyList.add(property);
 		}
-		log.infof("%s.initBlockProperties - initialize property list for %s (%d properties)",TAG,block.getId().toString(),propertyList.size());
+		log.tracef("%s.initBlockProperties - initialize property list for %s (%d properties)",TAG,block.getId().toString(),propertyList.size());
 		block.setProperties(propertyList);
 	}
 
@@ -133,7 +134,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		if( blk instanceof ProcessBlockView) {
 			ProcessBlockView block = (ProcessBlockView) blk;
 			initBlockProperties(block);
-			log.infof("%s.addBlock - %s",TAG,block.getClassName());
+			log.tracef("%s.addBlock - %s",TAG,block.getClassName());
 			blockMap.put(blk.getId(), block);
 			fireStateChanged();
 		}
@@ -328,8 +329,8 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			BasicAnchorPoint bap = (BasicAnchorPoint)cxn.getOrigin();
 			ProcessBlockView blk = (ProcessBlockView)bap.getBlock();
 			String key = NotificationKey.keyForConnection(blk.getId().toString(), bap.getId().toString());
-			log.tracef("%s.registerChangeListeners: adding %s",TAG,key);
-			handler.addNotificationChangeListener(key, bap);
+			log.tracef("%s.registerChangeListeners: adding %s:%s",TAG,key,TAG);
+			handler.addNotificationChangeListener(key,TAG, bap);
 		}
 		
 		// Register any properties "bound" to the engine
@@ -339,8 +340,8 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			for(BlockProperty prop:block.getProperties()) {
 				if( prop.getBindingType().equals(BindingType.ENGINE)) {
 					String key = NotificationKey.keyForProperty(block.getId().toString(), prop.getName());
-					log.tracef("%s.registerChangeListeners: adding %s",TAG,key);
-					handler.addNotificationChangeListener(key, prop);
+					log.tracef("%s.registerChangeListeners: adding %s:%s",TAG,key,TAG);
+					handler.addNotificationChangeListener(key,TAG, prop);
 				}
 			}
 		}
@@ -357,7 +358,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		for( Connection cxn:connections) {
 			BasicAnchorPoint bap = (BasicAnchorPoint)cxn.getOrigin();
 			ProcessBlockView blk = (ProcessBlockView)bap.getBlock();
-			handler.removeNotificationChangeListener(NotificationKey.keyForConnection(blk.getId().toString(), bap.getId().toString()));
+			handler.removeNotificationChangeListener(NotificationKey.keyForConnection(blk.getId().toString(),bap.getId().toString()),TAG);
 		}
 		
 		// Register any properties "bound" to the engine
@@ -366,7 +367,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		for(ProcessBlockView block:blockMap.values() ) {
 			for(BlockProperty prop:block.getProperties()) {
 				if( prop.getBindingType().equals(BindingType.ENGINE)) {
-					handler.removeNotificationChangeListener(NotificationKey.keyForProperty(block.getId().toString(), prop.getName()));
+					handler.removeNotificationChangeListener(NotificationKey.keyForProperty(block.getId().toString(), prop.getName()),TAG);
 				}
 			}
 		}

@@ -14,7 +14,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.SwingConstants;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -148,20 +147,26 @@ public class ConfigurationPanel extends BasicEditPanel {
 	 */
 	private void populateBindingTypeCombo(JComboBox<String> box,BlockProperty prop) {
 		box.removeAllItems();
+		if( prop==null ) return;   // How does this happen?
 		for(BindingType type : BindingType.values()) {
-			if(type.name().equals(BindingType.ENGINE.name()) ) continue;
-			if(type.name().equals(BindingType.TAG_READ.name()) ) continue;
-			if(type.name().equals(BindingType.TAG_WRITE.name()) ) continue;
-			if(type.name().equals(BindingType.TAG_READWRITE.name()) ) continue;
+			if(type.name().equals(BindingType.ENGINE.name()) ) {
+				if( !BindingType.ENGINE.equals(prop.getBindingType()) ) continue;
+			}
+			else if(type.name().equals(BindingType.TAG_READ.name()) ) continue;
+			else if(type.name().equals(BindingType.TAG_WRITE.name()) ) continue;
+			else if(type.name().equals(BindingType.TAG_READWRITE.name()) ) continue;
 			// We also disallow tag bindings to complex datatypes
-			if(type.name().equals(BindingType.TAG_MONITOR.name()) ) {
-				if( prop==null ) continue;
+			else if(type.name().equals(BindingType.TAG_MONITOR.name()) ) {
+				if( BindingType.ENGINE.equals(prop.getBindingType()) ) continue;
 				PropertyType pt = prop.getType();
 				if( !pt.equals(PropertyType.BOOLEAN) &&
 					!pt.equals(PropertyType.DOUBLE) &&
 					!pt.equals(PropertyType.INTEGER)  &&
 					!pt.equals(PropertyType.STRING) &&
 					!pt.equals(PropertyType.TIME) 		)     continue;
+			}
+			else {                   // NONE
+				if( BindingType.ENGINE.equals(prop.getBindingType()) ) continue;
 			}
 			log.tracef("%s.createBindingTypeCombo: %s",TAG,type.name());
 			box.addItem(type.name());

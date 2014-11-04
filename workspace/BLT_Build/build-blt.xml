@@ -2,7 +2,7 @@
 
 	<import file="${basedir}/BLT_Build/build.xml"/>
 
-	<property name="version.build" value="2" />	
+	<property name="version.build" value="5" />	
 	<!-- Change version.beta value to "" for release builds -->
 	<property name="version.beta" value="-development" />		
 	<property name="BLTModule.version" value="1.5.1.${version.build}" />
@@ -214,7 +214,8 @@
 		<pack200 src="${basedir}/../../external/lib/jackson-core-2.2.3.jar" destfile="${basedir}/BLT_Build/temp_modl/jackson-core-2.2.3.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		<pack200 src="${basedir}/../../external/lib/jackson-databind-2.2.3.jar" destfile="${basedir}/BLT_Build/temp_modl/jackson-databind-2.2.3.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		<pack200 src="${basedir}/../../external/lib/jackson-annotations-2.2.3.jar" destfile="${basedir}/BLT_Build/temp_modl/jackson-annotations-2.2.3.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
-		<pack200 src="${basedir}/../../external/lib/prefuse.jar" destfile="${basedir}/BLT_Build/temp_modl/prefuse.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
+		<pack200 src="${basedir}/../../external/lib/lucene-1.4.3.jar" destfile="${basedir}/BLT_Build/temp_modl/lucene-1.4.3.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
+		<pack200 src="${basedir}/../../external/lib/prefuse-1.0.1.jar" destfile="${basedir}/BLT_Build/temp_modl/prefuse-1.0.1.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		
 		<!-- Copy gateway jar -->
 		<copy file="${basedir}/BLT_Build/bin/${BLTModule.name}_Gateway/dist/blt-gateway.jar" todir="${basedir}/BLT_Build/temp_modl/" />

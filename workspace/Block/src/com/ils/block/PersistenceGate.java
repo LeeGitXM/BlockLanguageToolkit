@@ -9,6 +9,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import com.ils.block.annotation.ExecutableBlock;
+import com.ils.blt.common.TimeUtility;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
@@ -18,7 +19,6 @@ import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
-import com.ils.blt.common.block.TimeUtility;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
@@ -148,7 +148,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 			
 			double timeRemaining = cycle*scanInterval;
 			TimeUnit tu = TimeUtility.unitForValue(timeRemaining);
-			String formattedTime = String.format("%.2f %s", TimeUtility.valueForCannonicalValue(timeRemaining, tu),TimeUtility.abbreviationForUnit(tu));
+			String formattedTime = String.format("%.2f %s", TimeUtility.valueForCanonicalValue(timeRemaining, tu),TimeUtility.abbreviationForUnit(tu));
 			QualifiedValue qv = new BasicQualifiedValue(formattedTime); 
 			log.infof("%s.evaluate: cycle %d property value =  %s.",TAG,cycle,formattedTime);
 			valueProperty.setValue(formattedTime);

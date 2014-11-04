@@ -1,7 +1,9 @@
 /**
- *   (c) 2012-2013  ILS Automation. All rights reserved.
+ *   (c) 2014  ILS Automation. All rights reserved.
  */
 package com.ils.blt.client.component;
+
+import java.awt.BorderLayout;
 
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.common.BundleUtil;
@@ -18,9 +20,10 @@ import com.inductiveautomation.ignition.common.Dataset;
  */
 public class RecommendationMap extends PrefuseViewerComponent {
 	private static final long serialVersionUID = 5508313516136446100L;
+	private static final String TAG = "RecommendationMap";
 	private static String PREFIX = BLTProperties.CUSTOM_PREFIX;              // For bundle identification
 	
-	// These are the property names for the bean info
+	// These are the property names for the bean info es";
 	public static final String DIAGNOSES_PROPERTY          = "diagnoses";
 	public static final String OUTPUTS_PROPERTY            = "outputs";
 	public static final String RECOMMENDATIONS_PROPERTY    = "recommendations";
@@ -34,9 +37,23 @@ public class RecommendationMap extends PrefuseViewerComponent {
 		setName(BundleUtil.get().getString(PREFIX+".RecommendationMap.Name"));
 		this.setOpaque(true);
 		this.setBorder(border);
+		updateChartView();
 	}
 
+	private void updateChartView() {
+		removeAll();
+		invalidate();
+		RecommendationMapView view = createMapView();
+		add(view,BorderLayout.CENTER);
+		validate();
+		setVisible(true);
+	}
 	
+	private RecommendationMapView createMapView() {
+		log.infof("%s.createMapView: New view ....",TAG);
+		RecommendationMapDataModel model = new RecommendationMapDataModel(context);
+		return new RecommendationMapView(model,RecommendationMapDataModel.NAME);
+	}
 	
 	// We need getters/setters for all the bound properties
 	public Dataset getDiagnoses() {return diagnoses;}

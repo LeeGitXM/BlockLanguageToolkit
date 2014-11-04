@@ -212,30 +212,5 @@ public class MainPanel extends BasicEditPanel {
 			log.warnf("%s.createNameEditButton icon not found(%s)",TAG,ICON_PATH);
 		}
 		return btn;
-	}
-	
-	/**
-	 * A component field that remembers the associated block property and
-	 * allows us to access the current text value of the field.
-	 */
-	public interface EditableField {
-		public BlockProperty getProperty();
-		public String getText();
-	}
-	
-	/**
-	 * A text field that remembers the associated block property.
-	 */
-	private class EditableTextField extends JTextField implements EditableField{
-		private final BlockProperty property;
-		public EditableTextField(BlockProperty prop,String val) {
-			super(val);
-			property = prop;
-			setEditable(true);
-			setEnabled(true);
-		}
-		public BlockProperty getProperty() { return property; }
-	}
-
-	
+	}	
 }

@@ -34,7 +34,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 public class NotificationHandler implements PushNotificationListener {
 	private static String TAG = "NotificationHandler";
 	private final LoggerEx log;
-	private final Map<String,NotificationChangeListener> changeListenerMap;
+	private final Map<String,Map<String,NotificationChangeListener>> changeListenerMap;
 	private final Map<String,Object> payloadMap;        // Keyed by the message type.
 	private static NotificationHandler instance = null;
 	
@@ -45,7 +45,9 @@ public class NotificationHandler implements PushNotificationListener {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		// Register as listener for notifications
 		GatewayConnectionManager.getInstance().addPushNotificationListener(this);
-		changeListenerMap = new HashMap<String,NotificationChangeListener>();
+		// The first string is the key that we're listening on. Then we get a map
+		// keyed by "source", a string unique to the component getting the notification.
+		changeListenerMap = new HashMap<String,Map<String,NotificationChangeListener>>();
 		payloadMap = new HashMap<String,Object>();
 	}
 	
@@ -63,8 +65,12 @@ public class NotificationHandler implements PushNotificationListener {
 	
 	/**
 	 * Receive notification from the gateway. The messages contain a key which must match an entry
-	 * in our map of listeners. In addition, we must match the moduleId. For now, there is only
-	 * one listener per key.
+	 * in our map of listeners. In addition, we must match the moduleId. There is only one listener 
+	 * per key. Multiple entities registering for the same notification must differentiate themselves
+	 * by the key's "source" attribute.
+	 * 
+	 * Our notification is filtered on ModuleId. Otherwise each listener registers for a specific
+	 * NotificationKey - a string. In general, it contains a type, blockUUID and name.
 	 *   1) The module ID
 	 *   2) The key (contains a UUID)
 	 *   3) Lookup object with UUID
@@ -79,9 +85,11 @@ public class NotificationHandler implements PushNotificationListener {
 			log.debugf("%s.receiveNotification: key=%s,value=%s",TAG,key,payload.toString());
 			if( payload instanceof QualifiedValue ) {
 				payloadMap.put(key, payload);
-				NotificationChangeListener listener = changeListenerMap.get(key);
-				if( listener != null ) {
-					listener.valueChange((QualifiedValue)payload);
+				Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
+				if( listeners != null ) {
+					for(NotificationChangeListener listener:listeners.values()) {
+						listener.valueChange((QualifiedValue)payload);
+					}
 					// Repaint the workspace
 					SwingUtilities.invokeLater(new WorkspaceRepainter());
 				}
@@ -98,14 +106,21 @@ public class NotificationHandler implements PushNotificationListener {
 
 	/**
 	 * The key used for PushNotification is unique for each receiver. Consequently we make a map
-	 * containing each interested recipient, by key. When an update arrives we notify, at most,
-	 * one listener. On registration, we update with the latest status.
+	 * containing each interested recipient, by key. When an update arrives we notify each listener
+	 * registered for the event. On registration, we update with the latest status.
 	 * @param key
 	 * @param listener
 	 */
-	public void addNotificationChangeListener(String key,NotificationChangeListener listener) {
-		log.tracef("%s.addNotificationChangeListener: key=%s (%s)",TAG,key,listener.getClass().getName());
-		changeListenerMap.put(key, listener);
+	public void addNotificationChangeListener(String key,String source,NotificationChangeListener listener) {
+		log.tracef("%s.addNotificationChangeListener: source=%s key=%s (%s)",TAG,source,key,listener.getClass().getName());
+		Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
+		if( listeners==null) {
+			listeners = new HashMap<>();
+			changeListenerMap.put(key, listeners);
+		}
+		listeners.put(source,listener); 
+		
+		// Make an immediate update 
 		Object payload = payloadMap.get(key);
 		if( payload!=null ) {
 			listener.valueChange((QualifiedValue)payload);
@@ -118,8 +133,12 @@ public class NotificationHandler implements PushNotificationListener {
 	 * Remove the specified object from the listener map.
 	 * @param key
 	 */
-	public void removeNotificationChangeListener(String key) {
+	public void removeNotificationChangeListener(String key, String source) {
 		log.tracef("%s.removeNotificationChangeListener: key=%s",TAG,key);
-		changeListenerMap.remove(key);
+		Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
+		if( listeners!=null ) {
+			listeners.remove(source);
+			if( listeners.isEmpty()) changeListenerMap.remove(key);
+		}	
 	}
 }
