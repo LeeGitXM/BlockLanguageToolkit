@@ -93,11 +93,12 @@ public class Note extends AbstractProcessBlock implements ProcessBlock {
 		prototype.setPaletteLabel("Note");
 		prototype.setTooltipText("Any notes you would care to enter.");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_MISC);
-		BlockDescriptor view = prototype.getBlockDescriptor();
-		view.setBlockClass(getClass().getCanonicalName());
-		view.setStyle(BlockStyle.NOTE);
-		view.setPreferredHeight(DEFAULT_HEIGHT);
-		view.setPreferredWidth(DEFAULT_WIDTH);
+		BlockDescriptor desc = prototype.getBlockDescriptor();
+		desc.setBlockClass(getClass().getCanonicalName());
+		desc.setStyle(BlockStyle.NOTE);
+		desc.setEditorClass("com.ils.blt.designer.workspace.NoteTextEditor");
+		desc.setPreferredHeight(DEFAULT_HEIGHT);
+		desc.setPreferredWidth(DEFAULT_WIDTH);
 	}
 	
 }

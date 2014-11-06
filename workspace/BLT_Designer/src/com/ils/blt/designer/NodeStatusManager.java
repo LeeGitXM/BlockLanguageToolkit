@@ -122,7 +122,7 @@ public class NodeStatusManager  {
 		boolean result = true;        // If we haven't seen it yet, it's dirty
 		StatusEntry se = statusMap.get(resourceId);
 		if( se!=null ) result = se.isDirty()||(se.getDirtyChildCount()>0);
-		else log.infof("%s.isResourceDirty(%d) - resource UNDEFINED",TAG,resourceId);
+		else log.debugf("%s.isResourceDirty(%d) - resource UNDEFINED",TAG,resourceId);
 		return result;
 	}
 	
@@ -132,7 +132,7 @@ public class NodeStatusManager  {
 	 * @param dirtFlag
 	 */
 	public void setResourceDirty(long resourceId,boolean dirtFlag) {
-		log.infof("%s.setResourceDirty(%d) %s",TAG,resourceId,(dirtFlag?"DIRTY":"CLEAN"));
+		log.debugf("%s.setResourceDirty(%d) %s",TAG,resourceId,(dirtFlag?"DIRTY":"CLEAN"));
 		StatusEntry se = statusMap.get(resourceId);
 		log.debugf("%s.setResourceDirty: %s",TAG,se);
 		if( se!=null && se.isDirty()!= dirtFlag && se.getDirtyChildCount()==0) {

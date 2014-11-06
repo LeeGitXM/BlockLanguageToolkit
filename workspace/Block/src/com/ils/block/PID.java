@@ -134,7 +134,7 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
-		log.infof("%s.propertyChange: Received %s = %s",TAG,propertyName,event.getNewValue().toString());
+		log.debugf("%s.propertyChange: Received %s = %s",TAG,propertyName,event.getNewValue().toString());
 		if( propertyName.equals(BLOCK_PROPERTY_KD)) {
 			try {
 				kd = Double.parseDouble(event.getNewValue().toString());
@@ -195,7 +195,7 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 		String port = vcn.getConnection().getDownstreamPortName();
 		if( port.equals(BlockConstants.IN_PORT_NAME)  ) {
 			QualifiedValue qv = vcn.getValue();
-			log.infof("%s.acceptValue: port %s value = %s ",TAG,port,qv.getValue().toString());
+			log.tracef("%s.acceptValue: port %s value = %s ",TAG,port,qv.getValue().toString());
 			try {
 				pv = Double.parseDouble(qv.getValue().toString());
 			}
@@ -229,7 +229,7 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void acceptValue(SignalNotification sn) {
 		Signal signal = sn.getSignal();
-		log.infof("%s.acceptValue: signal = %s (%s)",TAG,signal.getCommand(),getBlockId().toString());
+		log.tracef("%s.acceptValue: signal = %s (%s)",TAG,signal.getCommand(),getBlockId().toString());
 		if( signal.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_RESET)) {
 			reset();
 		}
@@ -261,7 +261,7 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 		double integralContribution = ki*integral;
 		double derivativeContribution = kd*derivative;
 		double result = proportionalContribution + integralContribution + derivativeContribution;
-		if( log.isInfoEnabled() ) {
+		if( log.isTraceEnabled() ) {
 			log.infof("%s.evaluate setpoint= %f, pv = %f, error = %f, previous error = %f",TAG,setPoint,pv,error,previousError);
 			log.infof("%s.evaluate Kp = %f",TAG,proportionalContribution);
 			log.infof("%s.evaluate Ki = %f",TAG,integralContribution);
@@ -269,7 +269,7 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 		}
 		
 		
-		log.infof("%s: evaluate - pid out is %f",TAG,result);
+		log.tracef("%s: evaluate - pid out is %f",TAG,result);
 		OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,new BasicQualifiedValue(result));
 		controller.acceptCompletionNotification(nvn);
 		nvn = new OutgoingNotification(this,PROPORTIONAL_PORT,new BasicQualifiedValue(proportionalContribution));

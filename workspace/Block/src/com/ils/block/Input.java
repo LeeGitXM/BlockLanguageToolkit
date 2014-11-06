@@ -95,8 +95,10 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 			}
 		}
 		// Even if locked, we update the current state
-		valueProperty.setValue(qv.getValue());
-		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
+		if( qv.getValue()!=null) {
+			valueProperty.setValue(qv.getValue());
+			controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
+		}
 	}
 
 	/**

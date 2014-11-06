@@ -178,6 +178,7 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface{
 	 */
 	@Override
 	public long writeValue(UUID diagramId, String port, Integer index, String value,String quality) {
+		log.infof("%s.writeValue: %s %s is %s", TAG,diagramId.toString(),port,value);
 		long timestamp = 0;
 		if( index!=null ) {
 			timestamp = requestHandler.writeValue(diagramId,port,index.intValue(),value,quality);

@@ -8,6 +8,7 @@ import java.util.List;
 
 import javax.swing.SwingUtilities;
 
+import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.designer.BLTDesignerHook;
@@ -88,16 +89,30 @@ public class BlockPropertyEditor extends SlidingPane   {
 		}
 	}
 	/**
-	 * One of the edit panels has modified a block property. Both mark the
-	 * block as "dirty" and its parent resource. Then repaint the diagram.
+	 * One of the edit panels has modified a block in such a way that
+	 * the block needs to be marked as "dirty". It may be that there are
+	 * no situations where this is absolutely necessary. For now, we're
+	 * being conservative and saying that a tag subscription constitutes
+	 * a "major" change.
+	 * 
+	 * Mark both the block and its parent resource as "dirty". Then repaint the diagram.
 	 */
-	public void notifyOfChange() {
+	public void notifyOfMajorChange() {
 		if( !block.isDirty() ) {
 			block.setDirty(true);
 			statusManager.incrementDirtyBlockCount(diagram.getResourceId());
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
 		}
 	}
+	/**
+	 * One of the edit panels has modified a block property. Update the
+	 * running diagram directly. Do not mark the block as "dirty".
+	 */
+	public void notifyOfPropertyChange(BlockProperty property) {
+		ApplicationRequestHandler handler = new ApplicationRequestHandler();
+		handler.setBlockProperty(diagram.getId(), block.getId(), property);
+	}
+	
 	/**
 	 * Un-subscribe to notifications to allow cleanup. These are all 
 	 * done on the main panel.

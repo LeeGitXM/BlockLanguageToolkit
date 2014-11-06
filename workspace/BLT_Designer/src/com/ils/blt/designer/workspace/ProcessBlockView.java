@@ -109,7 +109,7 @@ public class ProcessBlockView extends AbstractBlock {
 		for( AnchorPrototype ap:descriptor.getAnchors() ) {
 			log.debugf("%s: Creating anchor descriptor %s", TAG,ap.getName());
 			anchors.add( new ProcessAnchorDescriptor((ap.getAnchorDirection()==AnchorDirection.INCOMING?AnchorType.Terminus:AnchorType.Origin),
-					ap.getConnectionType(),UUID.randomUUID(),ap.getName(),ap.getAnnotation(),ap.getHint()) );
+					ap.getConnectionType(),UUID.randomUUID(),ap.getName(),ap.getAnnotation(),ap.getHint(),ap.isMultiple()) );
 		}
 		this.properties = new ArrayList<BlockProperty>();
 		log.debugf("%s: Created %s (%s) view from descriptor (%d anchors)", TAG, className, style.toString(),anchors.size());
@@ -147,7 +147,7 @@ public class ProcessBlockView extends AbstractBlock {
 			for( SerializableAnchor sa:sb.getAnchors() ) {
 				log.debugf("%s: Creating anchor view %s", TAG,sa.getDisplay());
 				anchors.add( new ProcessAnchorDescriptor((sa.getDirection()==AnchorDirection.INCOMING?AnchorType.Terminus:AnchorType.Origin),
-						sa.getConnectionType(),sa.getId(),sa.getDisplay(),sa.getAnnotation(),sa.getHint()) );
+						sa.getConnectionType(),sa.getId(),sa.getDisplay(),sa.getAnnotation(),sa.getHint(),sa.isMultiple()) );
 			}
 		}
 		this.properties = new ArrayList<BlockProperty>();
@@ -161,8 +161,7 @@ public class ProcessBlockView extends AbstractBlock {
 	}
 	
 	
-	// Note: This does not set connection type
-	private SerializableAnchor convertAnchorToSerializable(ProcessAnchorDescriptor anchor) {
+	public SerializableAnchor convertAnchorToSerializable(ProcessAnchorDescriptor anchor) {
 		SerializableAnchor result = new SerializableAnchor();
 		result.setDirection(anchor.getType()==AnchorType.Origin?AnchorDirection.OUTGOING:AnchorDirection.INCOMING);
 		result.setDisplay(anchor.getDisplay());
@@ -248,30 +247,22 @@ public class ProcessBlockView extends AbstractBlock {
 	/** 
 	 * Define a default drop target based on the connector's anchor point 
 	 * hovering above us. For simplicity we just return the first anchor point
-	 * of the right sex.
+	 * of the right sex that is legal. If none are legal, we use the last
+	 * anchor found.
 	 * @param opposite
 	 */
 	@Override
 	public AnchorPoint getDefaultDropAnchor(AnchorPoint opposite ) {
 		AnchorPoint result = null;
-		if( opposite.isConnectorOrigin() ) {
-			for(AnchorPoint ap:getAnchorPoints()) {
-				if(ap.isConnectorTerminus()) {
-					result = ap;
-					break;
-				}
-			}
-		}
-		else {
-			for(AnchorPoint ap:getAnchorPoints()) {
-				if(ap.isConnectorOrigin()) {
-					result = ap;
-					break;
-				}
+		for(AnchorPoint ap:getAnchorPoints()) {
+			if( isConnectionValid(ap,opposite)) {
+				result = ap;
+				break;
 			}
 		}
 		return result;
 	}
+	
 	public String getEditorClass() {return editorClass;}
 	public int getEmbeddedFontSize() {return embeddedFontSize;}
 	public String getEmbeddedIcon() {return embeddedIcon;}
@@ -372,5 +363,28 @@ public class ProcessBlockView extends AbstractBlock {
 				 ((ChangeListener)listeners[i+1]).stateChanged(changeEvent);
 			 }
 		 }
+	 }
+	 
+	 // Specify whether or not a drop point is valid.
+	 // Reasons for invalid:
+	 // 1) end anchor is already connected and max connections = 1
+	 // 2) direction mismatch
+	 // 3) data type mismatch
+	 public static boolean isConnectionValid(AnchorPoint startingAnchor, AnchorPoint endAnchor) {
+		 boolean result = true;
+		 BasicAnchorPoint start = (BasicAnchorPoint)startingAnchor;
+		 BasicAnchorPoint end   = (BasicAnchorPoint)endAnchor;
+		 if( end.getBlock()!=null && !end.allowMultipleConnections() ) result = false;
+		 else if( start.isConnectorOrigin()==end.isConnectorOrigin())  result = false;
+		 else {
+			 result = false;
+			 if(start.getConnectionType().equals(end.getConnectionType()) ||
+					 start.getConnectionType().equals(ConnectionType.ANY)      ||
+					 end.getConnectionType().equals(ConnectionType.ANY)   ) {
+
+				 result = true;
+			 }
+		 }
+		 return result;
 	 }
 }

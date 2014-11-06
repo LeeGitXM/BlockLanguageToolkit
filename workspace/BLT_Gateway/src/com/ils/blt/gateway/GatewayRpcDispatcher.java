@@ -23,6 +23,7 @@ import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.TransmissionScope;
 import com.ils.blt.common.notification.BroadcastNotification;
 import com.ils.blt.common.notification.Signal;
+import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.gateway.engine.BlockExecutionController;
@@ -348,6 +349,30 @@ public class GatewayRpcDispatcher   {
 			log.warnf("%s.setBlockProperties: IO exception (%s)",TAG,ioe.getLocalizedMessage());
 		}; 
 	}
+	
+	/** Set a new value for the specified block property. 
+	 * @param diagramId the uniqueId of the parent diagram
+	 * @param blockId the uniqueId of the block
+	 * @param json JSON representation of the property
+	 */
+	public void setBlockProperty(String diagramId,String blockId, String json) {
+		log.infof("%s.setBlockProperty: %s %s: %s", TAG, diagramId, blockId, json);
+		// Deserialize the JSON
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			BlockProperty property = mapper.readValue(json, BlockProperty.class);
+			ControllerRequestHandler.getInstance().setBlockProperty(getBlockUUID(diagramId),getBlockUUID(blockId),property);
+		} 
+		catch (JsonParseException jpe) {
+			log.warnf("%s.setBlockProperty: parse exception (%s)",TAG,jpe.getLocalizedMessage());
+		}
+		catch(JsonMappingException jme) {
+			log.warnf("%s.setBlockProperty: mapping exception (%s)",TAG,jme.getLocalizedMessage());
+		}
+		catch(IOException ioe) {
+			log.warnf("%s.setBlockProperty: IO exception (%s)",TAG,ioe.getLocalizedMessage());
+		}; 
+	}
 	public void setDiagramState(Long projectId,Long resourceId,String state) {
 		ControllerRequestHandler.getInstance().setDiagramState(projectId,resourceId,state);
 	}
@@ -360,5 +385,29 @@ public class GatewayRpcDispatcher   {
 	public void stopController() {
 		ControllerRequestHandler.getInstance().stopController();
 	}
-
+	
+	/** Change the properties of anchors for a block. 
+	 * @param diagramId the uniqueId of the parent diagram
+	 * @param blockId the uniqueId of the block
+	 * @param json JSON representation of the complete anchor list for the block.
+	 */
+	public void updateBlockAnchors(String diagramId,String blockId, String json) {
+		log.infof("%s.updateBlockAnchors: %s %s: %s", TAG, diagramId, blockId, json);
+		// Deserialize the JSON
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			Collection<SerializableAnchor> anchors = mapper.readValue(json, 
+					new TypeReference<Collection<SerializableAnchor>>(){});
+			ControllerRequestHandler.getInstance().updateBlockAnchors(diagramId,blockId,anchors);
+		} 
+		catch (JsonParseException jpe) {
+			log.warnf("%s.updateBlockAnchors: parse exception (%s)",TAG,jpe.getLocalizedMessage());
+		}
+		catch(JsonMappingException jme) {
+			log.warnf("%s.updateBlockAnchors: mapping exception (%s)",TAG,jme.getLocalizedMessage());
+		}
+		catch(IOException ioe) {
+			log.warnf("%s.updateBlockAnchors: IO exception (%s)",TAG,ioe.getLocalizedMessage());
+		}; 
+	}
 }

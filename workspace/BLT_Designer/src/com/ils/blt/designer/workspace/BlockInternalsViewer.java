@@ -10,8 +10,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -125,7 +123,8 @@ public class BlockInternalsViewer extends JDialog {
 		String [] row = new String[2];
 		for( String key:attributes.keySet()) {
 			row[0] = key;
-			row[1] = attributes.get(key);
+			String attribute = attributes.get(key);
+			row[1] = (attribute==null?" ":attribute);
 			dataModel.addRow(row);
 		}
         table = new JTable(dataModel);

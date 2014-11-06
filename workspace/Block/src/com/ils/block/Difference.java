@@ -73,9 +73,11 @@ public class Difference extends AbstractProcessBlock implements ProcessBlock {
 		
 		// Define a two inputs -- one for the divisor, one for the dividend
 		AnchorPrototype input = new AnchorPrototype(A_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
+		input.setIsMultiple(false);
 		input.setAnnotation("a");
 		anchors.add(input);
 		input = new AnchorPrototype(B_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
+		input.setIsMultiple(false);
 		input.setAnnotation("b");
 		anchors.add(input);
 

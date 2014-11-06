@@ -4,23 +4,23 @@
 package com.ils.block;
 
 import java.awt.Color;
+import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
-import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
-import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 
@@ -31,8 +31,8 @@ import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 	private final String TAG = "DataPump";
 	private final Watchdog dog;
-	private Double interval = 60.;
-	private Double value = Double.NaN;
+	private Double interval = Double.NaN;      // No interval by Default
+	private Object value = "";
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -58,7 +58,11 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void reset() {
 		super.reset();
-		controller.removeWatchdog(dog);
+		controller.removeWatchdog(dog);    // Stop current cycle.
+		if( !Double.isNaN(interval) && interval>0.0 ) {
+			dog.setSecondsDelay(interval);
+			controller.pet(dog);
+		}
 	}
 	/**
 	 * Handle a changes to the various attributes.
@@ -69,20 +73,27 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 		String propertyName = event.getPropertyName();
 		log.infof("%s.propertyChange: Received %s = %s",TAG,propertyName,event.getNewValue().toString());
 		if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_VALUE)) {
-			try {
-				value = Double.parseDouble(event.getNewValue().toString());
-				if( !dog.isActive() && !Double.isNaN(interval) ) {
-					dog.setSecondsDelay(interval);
-					controller.pet(dog);
-				}
+			
+			value = event.getNewValue();
+			if( !dog.isActive() && !Double.isNaN(interval) && interval>0.0) {
+				dog.setSecondsDelay(interval);
+				controller.pet(dog);
 			}
-			catch(NumberFormatException nfe) {
-				log.warnf("%s.propertyChange: Unable to convert kd value to a float (%s)",TAG,nfe.getLocalizedMessage());
+			// If the interval is zero, we propagate the value immediately. Coerce to match output connection type
+			else {
+				value = coerceToMatchOutput(value);
+				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,new BasicQualifiedValue(value));
+				controller.acceptCompletionNotification(nvn);
 			}
 		}
 		else if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_INTERVAL)) {
 			try {
 				interval = Double.parseDouble(event.getNewValue().toString());
+				// Start the pump
+				if( interval > 0.0 ) {
+					dog.setSecondsDelay(interval);
+					controller.pet(dog);
+				}
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.propertyChange: Unable to convert interval to a double (%s)",TAG,nfe.getLocalizedMessage());
@@ -98,14 +109,34 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public synchronized void evaluate() {
-		if( Double.isNaN(value) || Double.isNaN(interval)) return;   // Stops watchdog
+		if( Double.isNaN(interval) || interval<=0.0 ) return;   // Stops watchdog
 		dog.setSecondsDelay(interval);
 		controller.pet(dog);
+		
+		// Coerce the value to match the output
+		if( !anchors.isEmpty()) {   // There should be exactly one, get its type.
+			AnchorPrototype ap = anchors.get(0);
+			log.infof("%s.evaluate: proto type = %s",TAG,ap.getConnectionType());
+		}
+		value = coerceToMatchOutput(value);
 		
 		OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,new BasicQualifiedValue(value));
 		controller.acceptCompletionNotification(nvn);
 	}
 	
+	/**
+	 * @return a block-specific description of internal statue
+	 */
+	@Override
+	public SerializableBlockStateDescriptor getInternalStatus() {
+		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
+		Map<String,String> attributes = descriptor.getAttributes();
+		if( !anchors.isEmpty()) {   // There should be exactly one, get its type.
+			AnchorPrototype ap = anchors.get(0);
+			attributes.put("ConnectionType", ap.getConnectionType().name());
+		}
+		return descriptor;
+	}
 	/**
 	 * Add properties that are new for this class.
 	 * Populate them with default values.
@@ -114,7 +145,7 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 		setName("DataPump");
 		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL,new Double(interval),PropertyType.TIME,true);
 		properties.put(BlockConstants.BLOCK_PROPERTY_INTERVAL, intervalProperty);
-		BlockProperty valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,new Double(value),PropertyType.DOUBLE,true);
+		BlockProperty valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,value,PropertyType.OBJECT,true);
 		properties.put(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 		
 		// Define a single output
@@ -122,11 +153,10 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 		anchors.add(output);
 		
 		// Start the pump
-		if( !Double.isNaN(value) && !Double.isNaN(interval)) {
+		if( !Double.isNaN(interval) && interval > 0.0) {
 			dog.setSecondsDelay(interval);
 			controller.pet(dog);
 		}
-		
 	}
 	
 	/**
@@ -146,5 +176,17 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 		desc.setPreferredWidth(60);
 		desc.setBackground(new Color(125,240,230).getRGB());   // Dark Green
 		desc.setCtypeEditable(true);
+	}
+	
+	private Object coerceToMatchOutput(Object val) {
+		// Coerce the value to match the output
+		if( !anchors.isEmpty()) {   // There should be exactly one, get its type.
+			AnchorPrototype ap = anchors.get(0);
+			log.debugf("%s.evaluate: proto type = %s",TAG,ap.getConnectionType());
+			if( ConnectionType.DATA.equals(ap.getConnectionType())) val = fcns.coerceToDouble(val);
+			else if( ConnectionType.TRUTHVALUE.equals(ap.getConnectionType())) val = fcns.coerceToBoolean(val);
+			else val = val.toString();
+		}
+		return val;
 	}
 }

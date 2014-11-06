@@ -141,6 +141,8 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		}
 	}
 	@Override
+	public List<AnchorPrototype>getAnchors() { return anchors; }
+	@Override
 	public PalettePrototype getBlockPrototype() {return prototype; }
 	@Override
 	public String getName() {return name;}

@@ -24,6 +24,7 @@ public class SerializableAnchor {
 	private String annotation;
 	private ConnectionType connectionType;
 	private PlacementHint hint;
+	private boolean multiple;
 
 	public SerializableAnchor() {
 	}
@@ -35,6 +36,7 @@ public class SerializableAnchor {
 	public String getDisplay(){ return display; }
 	public PlacementHint getHint() {return hint;}
 	public UUID getParentId() { return parentId; }
+	public boolean isMultiple() {return multiple;}
 
 	public void setId(Object identifier) { id=identifier; }
 	public void setAnnotation(String note) { this.annotation = note; }
@@ -42,6 +44,7 @@ public class SerializableAnchor {
 	public void setDirection(AnchorDirection t)   { direction=t; }
 	public void setDisplay(String text){display=text; }
 	public void setHint(PlacementHint hint) {this.hint = hint;}
+	public void setMultiple(boolean multiple) {this.multiple = multiple;}
 	public void setParentId(UUID id) { parentId = id; };
 
 	// So that class may be used as a map key
@@ -72,4 +75,5 @@ public class SerializableAnchor {
 		return String.format("%s: %s (%s)",TAG,id.toString(),(direction==AnchorDirection.INCOMING?"Incoming":"Outgoing"));
 	}
 
+	
 }

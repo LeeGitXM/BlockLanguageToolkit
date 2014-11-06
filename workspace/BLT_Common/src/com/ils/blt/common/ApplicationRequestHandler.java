@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.serializable.DiagramState;
+import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
@@ -351,6 +352,34 @@ public class ApplicationRequestHandler  {
 			log.infof("%s.setBlockProperties: GatewayException (%s)",TAG,ge.getMessage());
 		}		
 	}
+	
+	/** Update a single changed property for a block 
+	 * @param duuid diagram unique Id
+	 * @param buuid block unique Id
+	 * @param property the changed property
+	 */
+	public void setBlockProperty(UUID duuid,UUID buuid,BlockProperty property ) {
+		String diagId  = duuid.toString();
+		String blockId = buuid.toString();
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		String json="";
+		try {
+			json = mapper.writeValueAsString(property);
+		}
+		catch(Exception ge) {
+			log.warnf("%s: toJson (%s)",TAG,ge.getMessage());
+		}
+		log.tracef("%s: json property = %s",TAG,json);
+		log.debugf("%s.setBlockProperty: %s %s %s %s: %s", TAG, diagId,blockId, json);
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+				BLTProperties.MODULE_ID, "setBlockProperty", diagId,blockId, json);
+		}
+		catch(Exception ge) {
+			log.infof("%s.setBlockProperty: GatewayException (%s)",TAG,ge.getMessage());
+		}		
+	}
 
 	public void setDiagramState(Long projectId, Long resourceId, String state) {
 		log.debugf("%s.setDiagramState ... %d:%d %s",TAG,projectId.longValue(),resourceId.longValue(),state);
@@ -418,6 +447,34 @@ public class ApplicationRequestHandler  {
 		catch(Exception ge) {
 			log.infof("%s.stopController: GatewayException (%s)",TAG,ge.getMessage());
 		}
+	}
+	
+	/** Update connections for a block. New connections will be added, old connections
+	 * may undergo a type conversion.  
+	 * @param duuid diagram unique Id
+	 * @param buuid block unique Id
+	 */
+	public void updateBlockAnchors(UUID duuid,UUID buuid, Collection<SerializableAnchor> anchors ) {
+		String diagId  = duuid.toString();
+		String blockId = buuid.toString();
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		String json="";
+		try {
+			json = mapper.writeValueAsString(anchors);
+		}
+		catch(Exception ge) {
+			log.warnf("%s: toJson (%s)",TAG,ge.getMessage());
+		}
+		log.tracef("%s: json properties = %s",TAG,json);
+		log.debugf("%s.setBlockProperties: %s %s %s %s: %s", TAG, diagId,blockId, json);
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+				BLTProperties.MODULE_ID, "updateBlockAnchors", diagId,blockId, json);
+		}
+		catch(Exception ge) {
+			log.infof("%s.setBlockProperties: GatewayException (%s)",TAG,ge.getMessage());
+		}		
 	}
 
 }

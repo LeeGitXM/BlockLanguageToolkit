@@ -5,7 +5,10 @@
  */
 package com.ils.block;
 
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
@@ -26,6 +29,7 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -252,6 +256,21 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		else {
 			log.warnf("%s.propertyChange:Unrecognized property (%s)",TAG,propertyName);
 		}
+	}
+	/**
+	 * @return a block-specific description of internal statue
+	 */
+	@Override
+	public SerializableBlockStateDescriptor getInternalStatus() {
+		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
+		List<Map<String,String>> descBuffer = descriptor.getBuffer();
+		for( TruthValue tv:buffer) {
+			Map<String,String> qvMap = new HashMap<>();
+			qvMap.put("Value", tv.name());
+			descBuffer.add(qvMap);
+		}
+
+		return descriptor;
 	}
 	/**
 	 * Augment the palette prototype for this block class.

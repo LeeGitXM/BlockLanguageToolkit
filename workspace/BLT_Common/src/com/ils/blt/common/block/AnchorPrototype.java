@@ -24,6 +24,7 @@ public class AnchorPrototype {
 	private String annotation = "";              // Single character used to label the anchor
 	private String name;
 	private PlacementHint hint = PlacementHint.UNSPECIFIED;
+	private boolean multiple = true;  // Allow multiple by default
 	
 	/**
 	 * Deserialize from a Json 
@@ -71,12 +72,14 @@ public class AnchorPrototype {
 	public ConnectionType getConnectionType() {return connectionType;}
 	public String getAnnotation() {return annotation;}
 	public PlacementHint getHint() {return hint;}
+	public boolean isMultiple() { return multiple; }
 	
 	public String getName() {return name;	}
 	public void setAnchorDirection(AnchorDirection anchorDirection) {this.anchorDirection = anchorDirection;}
 	public void setAnnotation(String marker) {this.annotation = marker;}
 	public void setConnectionType(ConnectionType connectionType) {this.connectionType = connectionType;}
 	public void setHint(PlacementHint hint) {this.hint = hint;}
+	public void setIsMultiple(boolean multi){this.multiple = multi; }
 	public void setName(String name) {this.name = name;}
 	
 	/**

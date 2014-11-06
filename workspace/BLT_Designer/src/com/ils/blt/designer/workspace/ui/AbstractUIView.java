@@ -182,6 +182,7 @@ public abstract class AbstractUIView extends JComponent
 						new Point(inset+(topIndex*interiorWidth)/topSegments,0),
 						new Point(inset+(topIndex*interiorWidth)/topSegments,-SIGNAL_LEADER_LENGTH),
 						new Rectangle((topIndex*interiorWidth)/topSegments,0,2*inset,2*inset),
+						desc.isMultiple(),
 						desc.getAnnotation()); 
 				ap.setSide(AnchorSide.TOP);
 				getAnchorPoints().add(ap);
@@ -196,6 +197,7 @@ public abstract class AbstractUIView extends JComponent
 						new Point(inset+bottomIndex*(interiorWidth)/bottomSegments,sz.height),
 						new Point(inset+bottomIndex*(interiorWidth)/bottomSegments,sz.height+LEADER_LENGTH),
 						new Rectangle(bottomIndex*(interiorWidth)/bottomSegments,sz.height-2*inset,2*inset,2*inset),
+						desc.isMultiple(),
 						desc.getAnnotation());   // Hotspot shape.
 				ap.setSide(AnchorSide.BOTTOM);
 				getAnchorPoints().add(ap);
@@ -209,6 +211,7 @@ public abstract class AbstractUIView extends JComponent
 						new Point(0,inset+leftIndex*interiorHeight/leftSegments),
 						new Point(-LEADER_LENGTH,inset+leftIndex*interiorHeight/leftSegments),
 						new Rectangle(0,leftIndex*interiorHeight/leftSegments,2*inset,2*inset),
+						desc.isMultiple(),
 						desc.getAnnotation());   // Hotspot shape.
 				getAnchorPoints().add(ap);
 				
@@ -222,6 +225,7 @@ public abstract class AbstractUIView extends JComponent
 						new Point(sz.width,inset+rightIndex*interiorHeight/rightSegments-1),
 						new Point(sz.width+LEADER_LENGTH,inset+rightIndex*interiorHeight/rightSegments-1),
 						new Rectangle(sz.width-2*inset,rightIndex*interiorHeight/rightSegments,2*inset,2*inset-1),
+						desc.isMultiple(),
 						desc.getAnnotation());
 				getAnchorPoints().add(ap);
 	

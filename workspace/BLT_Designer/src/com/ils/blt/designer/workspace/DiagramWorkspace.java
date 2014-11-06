@@ -39,6 +39,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.connection.ConnectionType;
+import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.BLTDesignerHook;
@@ -59,6 +60,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.AbstractBlock
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockActionHandler;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
+import com.inductiveautomation.ignition.designer.blockandconnector.blockui.AnchorDescriptor;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.BlockDiagramModel;
@@ -92,6 +94,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	private static final DataFlavor BlockDataFlavor = LocalObjectTransferable.flavorForClass(ObservablePropertySet.class);
 	public static final String key = "BlockDiagramWorkspace";
 	public static final String PREFIX = BLTProperties.BLOCK_PREFIX;
+	private final ApplicationRequestHandler handler = new ApplicationRequestHandler();
 	private final DesignerContext context;
 	private final EditActionHandler editActionHandler;
 	private Collection<ResourceWorkspaceFrame> frames;
@@ -180,14 +183,14 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					if( anch!=null ) {
 						ConnectionType ct = anch.getConnectionType();
 						logger.debugf("%s.getSelectionPopupMenu: Connection type is: %s",TAG,ct.name());
-					
-						ChangeConnectionAction ccaAny = new ChangeConnectionAction(pbv,ConnectionType.ANY);
+						ProcessDiagramView pdv = getActiveDiagram();
+						ChangeConnectionAction ccaAny = new ChangeConnectionAction(pdv,pbv,ConnectionType.ANY);
 						ccaAny.setEnabled(!ct.equals(ConnectionType.ANY));
-						ChangeConnectionAction ccaData = new ChangeConnectionAction(pbv,ConnectionType.DATA);
+						ChangeConnectionAction ccaData = new ChangeConnectionAction(pdv,pbv,ConnectionType.DATA);
 						ccaData.setEnabled(!ct.equals(ConnectionType.DATA));
-						ChangeConnectionAction ccaText = new ChangeConnectionAction(pbv,ConnectionType.TEXT);
+						ChangeConnectionAction ccaText = new ChangeConnectionAction(pdv,pbv,ConnectionType.TEXT);
 						ccaText.setEnabled(!ct.equals(ConnectionType.TEXT));
-						ChangeConnectionAction ccaTruthvalue = new ChangeConnectionAction(pbv,ConnectionType.TRUTHVALUE);
+						ChangeConnectionAction ccaTruthvalue = new ChangeConnectionAction(pdv,pbv,ConnectionType.TRUTHVALUE);
 						ccaTruthvalue.setEnabled(!ct.equals(ConnectionType.TRUTHVALUE));
 					
 						JMenu changeTypeMenu = new JMenu(BundleUtil.get().getString(PREFIX+".ChangeConnection"));
@@ -620,16 +623,25 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	private class ChangeConnectionAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
 		private final ConnectionType connectionType;
+		private final ProcessDiagramView diagram;
 		private final ProcessBlockView block;
-		public ChangeConnectionAction(ProcessBlockView blk,ConnectionType ct)  {
+		public ChangeConnectionAction(ProcessDiagramView dgm,ProcessBlockView blk,ConnectionType ct)  {
 			super(PREFIX+".ChangeConnectionAction."+ct.name());
 			this.connectionType = ct;
+			this.diagram = dgm;
 			this.block = blk;
 		}
 		
-		// Change all stubs to the selected type
+		// Change all stubs to the selected type.
+		// This does NOT make the block dirty, since the chages are automatically
+		// synched with the gateway.
 		public void actionPerformed(ActionEvent e) {
 			block.changeConnectorType(connectionType);
+			List<SerializableAnchor> anchors = new ArrayList<SerializableAnchor>();
+			for( AnchorDescriptor anchor:block.getAnchors()) {
+				anchors.add(block.convertAnchorToSerializable((ProcessAnchorDescriptor)anchor));
+			}
+			handler.updateBlockAnchors(diagram.getId(),block.getId(),anchors);
 		}
 	}
 	/**
@@ -691,7 +703,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
 		public void actionPerformed(ActionEvent e) {
 			logger.info("DiagramWorkspace: SAVE BLOCK");
-			ApplicationRequestHandler handler = new ApplicationRequestHandler();
 			ProcessDiagramView pdv = getActiveDiagram();
 			handler.setBlockProperties(pdv.getId(),block.getId(), block.getProperties());
 			block.setDirty(false);

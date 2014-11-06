@@ -375,6 +375,7 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 	 */
 	@Override
 	public long writeValue(UUID diagramId,String port,Integer index,String value,String quality) {
+		log.infof("%s.writeValue: %s:%s %s ",TAG,diagramId.toString(),port,value);
 		MockDiagram mock = (MockDiagram)controller.getDiagram(diagramId);
 		long timestamp = -1;
 		if( mock!=null ) {

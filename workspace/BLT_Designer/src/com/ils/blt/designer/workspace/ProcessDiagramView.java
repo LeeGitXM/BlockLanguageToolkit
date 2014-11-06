@@ -14,6 +14,7 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
+import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.common.serializable.DiagramState;
 import com.ils.blt.common.serializable.SerializableAnchorPoint;
@@ -285,10 +286,10 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		return resourceId;
 	}
 
-	// Specify whether or not a drop point is valid.
+
 	@Override
 	public boolean isConnectionValid(AnchorPoint startingAnchor, AnchorPoint endAnchor) {
-		return true;
+		return ProcessBlockView.isConnectionValid(startingAnchor, endAnchor);
 	}
 	
 	public DiagramState getState() {return state;}
@@ -327,10 +328,12 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		// Connections. Register the upstream anchors (merely a convention).
 		for( Connection cxn:connections) {
 			BasicAnchorPoint bap = (BasicAnchorPoint)cxn.getOrigin();
-			ProcessBlockView blk = (ProcessBlockView)bap.getBlock();
-			String key = NotificationKey.keyForConnection(blk.getId().toString(), bap.getId().toString());
-			log.tracef("%s.registerChangeListeners: adding %s:%s",TAG,key,TAG);
-			handler.addNotificationChangeListener(key,TAG, bap);
+			if( bap!=null ) {    // Is null when block-and-connector library is hosed.
+				ProcessBlockView blk = (ProcessBlockView)bap.getBlock();
+				String key = NotificationKey.keyForConnection(blk.getId().toString(), bap.getId().toString());
+				log.tracef("%s.registerChangeListeners: adding %s:%s",TAG,key,TAG);
+				handler.addNotificationChangeListener(key,TAG, bap);
+			}
 		}
 		
 		// Register any properties "bound" to the engine

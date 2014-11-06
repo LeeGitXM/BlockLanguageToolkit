@@ -15,7 +15,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
-import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -47,7 +46,7 @@ public class MainPanel extends BasicEditPanel {
 		JPanel panel = new CorePropertyPanel(block);
 		add(panel,"grow,push");
 
-		log.infof("%s.mainPanel: - editing %s (%s)",TAG,block.getId().toString(),block.getClassName());
+		log.debugf("%s.mainPanel: - editing %s (%s)",TAG,block.getId().toString(),block.getClassName());
 		PropertyPanel propertyPanel = null;
 		// Now fill the editor. We use the same panel class for each property.
 		for(BlockProperty property:block.getProperties()) {
@@ -64,9 +63,8 @@ public class MainPanel extends BasicEditPanel {
 		add(separator,"span,growy");
 	}
 	
-	public void notifyOfChange() {
-		parent.notifyOfChange();
-	}
+	public void notifyOfMajorChange() {parent.notifyOfMajorChange();}    // Dirties block
+	public void notifyOfPropertyChange(BlockProperty prop) {parent.notifyOfPropertyChange(prop);} 
 
 	/**
 	 * Iterate over panels and close any subscriptions
@@ -167,7 +165,7 @@ public class MainPanel extends BasicEditPanel {
 					}
 					// Use special editor for list types
 					else if( prop.getType().equals(PropertyType.LIST) ) {
-						log.infof("%s.editButton actionPerformed for property %s (%s)",TAG,prop.getName(),prop.getType());
+						log.debugf("%s.editButton actionPerformed for property %s (%s)",TAG,prop.getName(),prop.getType());
 						updatePanelForProperty(BlockEditConstants.LIST_EDIT_PANEL,prop);
 						setSelectedPane(BlockEditConstants.LIST_EDIT_PANEL);
 					}

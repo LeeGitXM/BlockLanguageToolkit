@@ -136,7 +136,7 @@ public class ProxyHandler   {
 
 	public ProxyBlock createBlockInstance(String className,UUID parentId,UUID blockId) {
 		ProxyBlock block = new ProxyBlock(className,parentId,blockId);
-		log.debugf("%s.createInstance --- created proxy for %s",TAG,className); 
+		log.infof("%s.createBlockInstance --- python proxy for %s",TAG,className); 
 		if( createBlockCallback.compileScript() ) {
 			PyDictionary pyDictionary = new PyDictionary();  // Empty
 			createBlockCallback.setLocalVariable(0,new PyString(className));
@@ -269,7 +269,7 @@ public class ProxyHandler   {
 	 */
 	public List<PalettePrototype> getPalettePrototypes() {
 		List<PalettePrototype> prototypes = new ArrayList<PalettePrototype>();
-	
+		log.infof("%s.getPalettePrototypes (python) ... ",TAG);
 		if( getBlockPrototypesCallback.compileScript())  {
 			Object val = null;
 			UtilityFunctions fns = new UtilityFunctions();
@@ -344,6 +344,9 @@ public class ProxyHandler   {
 					log.warnf("%s: getPalettePrototypes: Exception processing prototype (%)" , TAG,ex.getMessage());
 				}
 			}
+		}
+		else {
+			log.infof("%s: getPalettePrototypes: script compilation error (%s)",TAG,getBlockPropertiesCallback.module);
 		}
 		log.infof("%s: getPalettePrototypes returning %d protos from Python",TAG,prototypes.size()); 
 		return prototypes;

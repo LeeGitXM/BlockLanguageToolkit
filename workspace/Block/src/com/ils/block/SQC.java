@@ -3,6 +3,9 @@
  */
 package com.ils.block;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
@@ -27,6 +30,7 @@ import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.notification.Signal;
 import com.ils.blt.common.notification.SignalNotification;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
@@ -311,7 +315,20 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 			log.warnf("%s.propertyChange:Unrecognized property (%s)",TAG,propertyName);
 		}
 	}
-
+	/**
+	 * @return a block-specific description of internal statue
+	 */
+	@Override
+	public SerializableBlockStateDescriptor getInternalStatus() {
+		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
+		List<Map<String,String>> descBuffer = descriptor.getBuffer();
+		for( Double dbl:queue) {
+			Map<String,String> qvMap = new HashMap<>();
+			qvMap.put("Value", String.valueOf(dbl));
+			descBuffer.add(qvMap);
+		}
+		return descriptor;
+	}
 	/**
 	 * Augment the palette prototype for this block class.
 	 */

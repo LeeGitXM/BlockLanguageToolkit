@@ -11,6 +11,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.UUID;
 
+import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.ProcessBlock;
@@ -19,6 +20,7 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.serializable.DiagramState;
+import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.gateway.engine.BlockExecutionController;
@@ -272,14 +274,14 @@ public class ControllerRequestHandler   {
 	
 	
 	/**
-	 * Set the value of a named property in a block. This method ignores any binding that the
+	 * Set the values of named properties in a block. This method ignores any binding that the
 	 * property may have and sets the value directly. Theoretically the value should be of the right
 	 * type for the property, but if not, it can be expected to be coerced into the proper data type 
  	 * upon receipt by the block. The quality is assumed to be Good.
 	 * 
 	 * @param parentId
 	 * @param blockId
-	 * @param properties JSON encoded list of properties for the block
+	 * @param properties a collection of properties that may have changed
 	 */
 	public void setBlockProperties(UUID parentId, UUID blockId, Collection<BlockProperty> properties) {
 		
@@ -307,7 +309,41 @@ public class ControllerRequestHandler   {
 			}
 		}
 	}
-	
+	/**
+	 * Set the value of a named property in a block. This method ignores any binding that the
+	 * property may have and sets the value directly. Theoretically the value should be of the right
+	 * type for the property, but if not, it can be expected to be coerced into the proper data type 
+ 	 * upon receipt by the block. The quality is assumed to be Good.
+	 * 
+	 * @param parentId
+	 * @param blockId
+	 * @param property the newly changed or added block property
+	 */
+	public void setBlockProperty(UUID parentId, UUID blockId, BlockProperty property) {
+
+		BlockExecutionController controller = BlockExecutionController.getInstance();
+		ProcessDiagram diagram = controller.getDiagram(parentId);
+		ProcessBlock block = null;
+		if( diagram!=null ) block = diagram.getBlock(blockId);
+		if(block!=null) {
+			BlockProperty existingProperty = block.getProperty(property.getName());
+			if( existingProperty!=null ) {
+				// Update the property
+				updateProperty(block,existingProperty,property);
+			}
+			else {
+				// Need to add a new one.
+				BlockProperty[] props = new BlockProperty[block.getProperties().length+1];
+				int index = 0;
+				for(BlockProperty bp:block.getProperties()) {
+					props[index] = bp;
+					index++;
+				}
+				props[index] = property;
+			}
+		}
+
+	}
 	/**
 	 * The gateway context must be specified before the instance is useful.
 	 * @param cntx the GatewayContext
@@ -380,6 +416,40 @@ public class ControllerRequestHandler   {
 				BlockPropertyChangeEvent event = new BlockPropertyChangeEvent(block.getBlockId().toString(),newProperty.getName(),
 						existingProperty.getValue(),newProperty.getValue());
 				block.propertyChange(event);
+			}
+		}
+	}
+	/** Change the properties of anchors for a block. 
+	 * @param diagramId the uniqueId of the parent diagram
+	 * @param blockId the uniqueId of the block
+	 * @param json JSON representation of the complete anchor list for the block.
+	 */
+	public void updateBlockAnchors(String diagramId,String blockId, Collection<SerializableAnchor> anchorUpdates) {
+		BlockExecutionController controller = BlockExecutionController.getInstance();
+		UUID diagramUUID = UUID.fromString(diagramId);
+		ProcessDiagram diagram = controller.getDiagram(diagramUUID);
+		ProcessBlock block = null;
+		UUID blockUUID = UUID.fromString(blockId);
+		if( diagram!=null ) block = diagram.getBlock(blockUUID);
+		if(block!=null) {
+			List<AnchorPrototype> anchors = block.getAnchors();
+			for( SerializableAnchor anchorUpdate:anchorUpdates ) {
+				// These are undoubtedly very short lists ... do linear searches
+				boolean found = false;
+				for( AnchorPrototype anchor:anchors ) {
+					if( anchor.getName().equalsIgnoreCase(anchorUpdate.getDisplay())) {
+						anchor.setConnectionType(anchorUpdate.getConnectionType());
+						found = true;
+						break;
+					}
+				}
+				if( !found ) {
+					// Add previously unknown anchor
+					AnchorPrototype proto = new AnchorPrototype(anchorUpdate.getDisplay(),anchorUpdate.getDirection(),anchorUpdate.getConnectionType());
+					proto.setAnnotation(anchorUpdate.getAnnotation());
+					proto.setHint(anchorUpdate.getHint());
+					anchors.add(proto);
+				}
 			}
 		}
 	}

@@ -80,7 +80,7 @@ public class PropertyPanel extends JPanel implements NotificationChangeListener,
 	private TimeUnit currentTimeUnit;
 	
 	public PropertyPanel(DesignerContext ctx, MainPanel main,ProcessBlockView blk,BlockProperty prop) {
-		log.infof("%s.PropertyPanel: - property %s (%s:%s) = %s",TAG,prop.getName(),prop.getType().toString(),prop.getBindingType().toString(),prop.getValue().toString());
+		log.debugf("%s.PropertyPanel: - property %s (%s:%s) = %s",TAG,prop.getName(),prop.getType().toString(),prop.getBindingType().toString(),prop.getValue().toString());
 		this.context = ctx;
 		this.parent = main;
 		this.block = blk;
@@ -199,7 +199,7 @@ public class PropertyPanel extends JPanel implements NotificationChangeListener,
 			providerName = context.getDefaultSQLTagsProviderName();
 			path = String.format("[%s]%s",providerName,path);
 		}
-		log.infof("%s.subscribeToTagPath: - %s (%s)",TAG,property.getName(),path);
+		log.debugf("%s.subscribeToTagPath: - %s (%s)",TAG,property.getName(),path);
 		ClientTagManager tmgr = context.getTagManager();
 		try {
 			TagPath tp = TagPathParser.parse(path);
@@ -214,7 +214,7 @@ public class PropertyPanel extends JPanel implements NotificationChangeListener,
 	private void unsubscribeToTagPath(String path) {
 		if( path==null || path.length()==0 ) return;  // Fail silently for path not set
 		
-		log.infof("%s.unsubscribeToTagPath: - %s (%s)",TAG,property.getName(),path);
+		log.debugf("%s.unsubscribeToTagPath: - %s (%s)",TAG,property.getName(),path);
 		ClientTagManager tmgr = context.getTagManager();
 		try {
 			TagPath tp = TagPathParser.parse(path);
@@ -241,14 +241,14 @@ public class PropertyPanel extends JPanel implements NotificationChangeListener,
 		// For TIME we scale the value
 		if( property.getType().equals(PropertyType.TIME) ) {
 			text = fncs.coerceToString(TimeUtility.valueForCanonicalValue(fncs.coerceToDouble(property.getValue()),currentTimeUnit));
-			log.infof("%s.update: property %s,value= %s, display= %s (%s)",TAG,property.getName(),property.getValue().toString(),
+			log.debugf("%s.update: property %s,value= %s, display= %s (%s)",TAG,property.getName(),property.getValue().toString(),
 													text,currentTimeUnit.name());
 		}
 		else {
 			text = fncs.coerceToString(property.getValue());
 			// For list we lop off the delimiter.
 			if( property.getType().equals(PropertyType.LIST) && text.length()>1 ) text = text.substring(1);
-			log.infof("%s.updateForProperty: property %s, raw value= %s",TAG,property.getName(),text);
+			log.debugf("%s.updateForProperty: property %s, raw value= %s",TAG,property.getName(),text);
 		}
 		
 		valueDisplayField.setText(text);
@@ -321,7 +321,7 @@ public class PropertyPanel extends JPanel implements NotificationChangeListener,
                 String selection = valueCombo.getSelectedItem().toString();
                 if( !prop.getValue().toString().equalsIgnoreCase(selection)) {
 					prop.setValue(selection);
-                	parent.notifyOfChange();    // Mark elements as "dirty", repaint
+                	parent.notifyOfPropertyChange(prop);    // Update property immediately
                 }
             }
         });
@@ -393,7 +393,7 @@ public class PropertyPanel extends JPanel implements NotificationChangeListener,
 		if(prop.getType().equals(PropertyType.TIME)) {
 			// Scale value for time unit.
 			val = fncs.coerceToString(TimeUtility.valueForCanonicalValue(fncs.coerceToDouble(property.getValue()),currentTimeUnit));
-			log.infof("%s.createValueDisplayField: property %s,value= %s, display= %s (%s)",TAG,property.getName(),property.getValue().toString(),
+			log.tracef("%s.createValueDisplayField: property %s,value= %s, display= %s (%s)",TAG,property.getName(),property.getValue().toString(),
 					val,currentTimeUnit.name());
 		}
 		if( prop.isEditable() && !prop.getType().equals(PropertyType.LIST)) {
@@ -484,11 +484,11 @@ public class PropertyPanel extends JPanel implements NotificationChangeListener,
 				else if(property.getType().equals(PropertyType.TIME)) {
 					// Scale field value for time unit. Get back to seconds.
 					fieldValue = new Double(TimeUtility.canonicalValueForValue(fncs.coerceToDouble(fieldValue),currentTimeUnit));
-					log.infof("%s.updatePropertyForField: property %s,old= %s, new= %s, displayed= %s (%s)",TAG,property.getName(),property.getValue().toString(),
+					log.tracef("%s.updatePropertyForField: property %s,old= %s, new= %s, displayed= %s (%s)",TAG,property.getName(),property.getValue().toString(),
 							fieldValue.toString(),field.getText(),currentTimeUnit.name());
 				}
 				property.setValue(fieldValue);
-				parent.notifyOfChange();    // Mark elements as "dirty", repaint
+				parent.notifyOfPropertyChange(property);    // Update property directly, immediately
 			}
 			else {
 				log.tracef("%s.updatePropertyForField: No Change was %s, is %s", TAG,property.getValue().toString(),fieldValue);
@@ -499,15 +499,14 @@ public class PropertyPanel extends JPanel implements NotificationChangeListener,
 				unsubscribeToTagPath(property.getBinding());
 				property.setBinding(field.getText());
 				subscribeToTagPath(property.getBinding());
-				parent.notifyOfChange();    // Mark elements as "dirty", repaint
-				
+				parent.notifyOfMajorChange();    // Mark elements as "dirty", repaint		
 			}
 		}
 	}
 	// ======================================= Notification Change Listener ===================================
 	@Override
 	public void valueChange(final QualifiedValue value) {
-		log.infof("%s.valueChange: - %s new value (%s)",TAG,property.getName(),value.getValue().toString());
+		log.tracef("%s.valueChange: - %s new value (%s)",TAG,property.getName(),value.getValue().toString());
 		property.setValue(value.getValue());
 		SwingUtilities.invokeLater( new Runnable() {
 			public void run() {
@@ -532,7 +531,7 @@ public class PropertyPanel extends JPanel implements NotificationChangeListener,
 	public void tagChanged(TagChangeEvent event) {
 		final Tag tag = event.getTag();
 		if( tag!=null && tag.getValue()!=null ) {
-			log.infof("%s.tagChanged: - %s new value from %s (%s)",TAG,property.getName(),tag.getName(),tag.getValue().toString());
+			log.tracef("%s.tagChanged: - %s new value from %s (%s)",TAG,property.getName(),tag.getName(),tag.getValue().toString());
 			SwingUtilities.invokeLater( new Runnable() {
 				public void run() {
 					String text = String.format("%s  %s  %s", 

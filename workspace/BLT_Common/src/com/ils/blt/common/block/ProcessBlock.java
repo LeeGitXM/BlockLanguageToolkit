@@ -3,6 +3,7 @@
  */
 package com.ils.blt.common.block;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -33,6 +34,10 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 * @param sn 
 	 */
 	public void acceptValue(SignalNotification sn);
+	/**
+	 * @return a list of anchor prototypes for the block.
+	 */
+	public List<AnchorPrototype> getAnchors();
 	/**
 	 * Place a value on a named output port of a block. 
 	 * This action does not change the internal state of the block.
