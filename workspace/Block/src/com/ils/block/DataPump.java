@@ -16,6 +16,7 @@ import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
+import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
@@ -182,9 +183,15 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 		// Coerce the value to match the output
 		if( !anchors.isEmpty()) {   // There should be exactly one, get its type.
 			AnchorPrototype ap = anchors.get(0);
-			log.debugf("%s.evaluate: proto type = %s",TAG,ap.getConnectionType());
-			if( ConnectionType.DATA.equals(ap.getConnectionType())) val = fcns.coerceToDouble(val);
-			else if( ConnectionType.TRUTHVALUE.equals(ap.getConnectionType())) val = fcns.coerceToBoolean(val);
+			log.infof("%s.evaluate: %s type = %s",TAG,(val==null?"null":val.toString()),ap.getConnectionType());
+			if( ConnectionType.DATA.equals(ap.getConnectionType()))  {
+				val = new Double(fcns.coerceToDouble(val));
+			}
+			else if( ConnectionType.TRUTHVALUE.equals(ap.getConnectionType())) {
+				boolean flag = fcns.coerceToBoolean(val);
+				if( flag ) val = TruthValue.TRUE;
+				else val = TruthValue.FALSE;
+			}
 			else val = val.toString();
 		}
 		return val;

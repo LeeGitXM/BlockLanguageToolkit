@@ -8,12 +8,16 @@ package com.ils.blt.gateway.engine;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
+import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
+import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -73,7 +77,7 @@ public class BlockFactory  {
 			log.warnf("%s.blockFromSerializable %s: Three argument constructor not found (%s)",TAG,className,nsme.getMessage()); 
 		}
 		catch( ClassNotFoundException cnf ) {
-			log.infof("%s.blockFromSerializable: Class not found creating %s ... trying Python",TAG,className); 
+			log.debugf("%s.blockFromSerializable: No java class %s ... trying Python",TAG,className); 
 			block = proxyHandler.createBlockInstance( className, parentId,blockId );
 		}
 		catch( InstantiationException ie ) {
@@ -96,6 +100,24 @@ public class BlockFactory  {
 	 */
 	public void updateBlockFromSerializable(ProcessBlock pb,SerializableBlock sb) {
 		pb.setName(sb.getName());
+		// Update anchors first.  We do this because in some blocks property update behavior depends
+		// on the datatype of the anchors.
+		SerializableAnchor[] sanchors = sb.getAnchors();
+		if( sanchors!=null ) {
+			List<AnchorPrototype> descriptors = new ArrayList<>();
+			for(SerializableAnchor sa:sanchors) {
+				AnchorPrototype proto = new AnchorPrototype(sa.getDisplay(),sa.getDirection(),sa.getConnectionType());
+				proto.setAnnotation(sa.getAnnotation());
+				proto.setHint(sa.getHint());
+				proto.setIsMultiple(sa.isMultiple());
+				descriptors.add(proto);
+			}
+			pb.setAnchors(descriptors);
+		}
+		else {
+			// A "Note" has no anchors. Others initialize anchor points themselves.
+			log.infof("%s.updateBlockFromSerializable: No anchors found in process block",TAG);
+		}
 		BlockProperty[] properties = sb.getProperties();
 		if( properties!=null ) {
 			for( BlockProperty bp:properties) {
@@ -124,7 +146,7 @@ public class BlockFactory  {
 			}
 		}
 		else {
-			log.errorf("%s: updateBlockFromSerializable: No properties found in process block",TAG);
+			log.errorf("%s.updateBlockFromSerializable: No properties found in process block",TAG);
 		}
 	}
 	

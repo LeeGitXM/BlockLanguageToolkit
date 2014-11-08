@@ -11,6 +11,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.UUID;
 
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
@@ -137,21 +138,18 @@ public class ControllerRequestHandler   {
 		BlockExecutionController controller = BlockExecutionController.getInstance();
 		ProcessDiagram diagram = controller.getDiagram(projectId, resourceId);
 		ProcessBlock block = null;
-		if( diagram!=null ) {
-			block = diagram.getBlock(blockId);
+		if( diagram!=null ) block = diagram.getBlock(blockId);
+		if(block!=null) {
+			results = block.getProperties();  // Existing block
+			log.tracef("%s.getProperties existing %s = %s",TAG,block.getClass().getName(),results.toString());
+		}
+		else {
+			block = createInstance(className,(diagram!=null?diagram.getSelf():null),blockId);  // Block is not (yet) attached to a diagram
 			if(block!=null) {
-				results = block.getProperties();  // Existing block
-				log.tracef("%s.getProperties existing %s = %s",TAG,block.getClass().getName(),results.toString());
-			}
-			else {
-				block = createInstance(className,diagram.getSelf(),blockId);  // Block is not (yet) attached to a diagram
-				if(block!=null) {
-					results = block.getProperties();
-					log.tracef("%s.getProperties new %s = %s",TAG,block.getClass().getName(),results.toString());
-				}
+				results = block.getProperties();
+				log.tracef("%s.getProperties new %s = %s",TAG,block.getClass().getName(),results.toString());
 			}
 		}
-		
 		return results;
 	}
 	
@@ -242,14 +240,14 @@ public class ControllerRequestHandler   {
 	 * @param quality of the reported output
 	 */
 	public void postValue(UUID parentuuid,UUID blockId,String port,String value,String quality)  {
-		log.infof("%s.postValue - %s = %s on %s",TAG,blockId,value.toString(),port);
+		log.infof("%s.postValue - %s = %s (%s) on %s",TAG,blockId,value,quality,port);
 		BlockExecutionController controller = BlockExecutionController.getInstance();
 		try {
 			ProcessDiagram diagram = controller.getDiagram(parentuuid);
 			if( diagram!=null) {
 				ProcessBlock block = diagram.getBlock(blockId);
 				QualifiedValue qv = new BasicQualifiedValue(value,new BasicQuality(quality,
-						(quality.equalsIgnoreCase("good")?Quality.Level.Good:Quality.Level.Bad)));
+						(quality.equalsIgnoreCase(BLTProperties.QUALITY_GOOD)?Quality.Level.Good:Quality.Level.Bad)));
 				OutgoingNotification note = new OutgoingNotification(block,port,qv);
 				controller.acceptCompletionNotification(note);
 			}
@@ -408,10 +406,8 @@ public class ControllerRequestHandler   {
 			}	
 		}
 		else {
-			// Potential value change
-			if( existingProperty.getBindingType().equals(BindingType.NONE) && newProperty.getValue()!=null &&
-			    (existingProperty.getValue()==null || 
-			    !existingProperty.getValue().toString().equals(newProperty.getValue().toString()) )   )   {
+			// The event came explicitly from the designer/client. Send an even whether it changed or not.
+			if( existingProperty.getBindingType().equals(BindingType.NONE) && newProperty.getValue()!=null   )   {
 				log.infof("%s.setProperty sending event ...",TAG);
 				BlockPropertyChangeEvent event = new BlockPropertyChangeEvent(block.getBlockId().toString(),newProperty.getName(),
 						existingProperty.getValue(),newProperty.getValue());
@@ -422,7 +418,7 @@ public class ControllerRequestHandler   {
 	/** Change the properties of anchors for a block. 
 	 * @param diagramId the uniqueId of the parent diagram
 	 * @param blockId the uniqueId of the block
-	 * @param json JSON representation of the complete anchor list for the block.
+	 * @param anchorUpdates the complete anchor list for the block.
 	 */
 	public void updateBlockAnchors(String diagramId,String blockId, Collection<SerializableAnchor> anchorUpdates) {
 		BlockExecutionController controller = BlockExecutionController.getInstance();

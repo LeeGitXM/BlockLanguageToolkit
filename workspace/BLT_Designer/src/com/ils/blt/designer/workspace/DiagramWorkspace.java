@@ -499,7 +499,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		ObjectMapper mapper = new ObjectMapper();
 		try {
 			bytes = mapper.writeValueAsBytes(sd);
-			logger.tracef("%s: saveDiagram JSON = %s",TAG,new String(bytes));
+			logger.infof("%s: saveDiagram JSON = %s",TAG,new String(bytes));
 			context.updateResource(resid, bytes);
 			c.setBackground(diagram.getBackgroundColorForState());
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
@@ -633,7 +633,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		}
 		
 		// Change all stubs to the selected type.
-		// This does NOT make the block dirty, since the chages are automatically
+		// This does NOT make the block dirty, since the changes are automatically
 		// synched with the gateway.
 		public void actionPerformed(ActionEvent e) {
 			block.changeConnectorType(connectionType);

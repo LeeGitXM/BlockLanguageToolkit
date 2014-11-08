@@ -120,6 +120,11 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 */
 	public void reset();
 	/**
+	 * Set the anchor descriptors.
+	 * @param prototypes
+	 */
+	public void setAnchors(List<AnchorPrototype> prototypes);
+	/**
 	 * Set or clear the locked state of a block.
 	 * @param flag True to lock the block.
 	 */

@@ -127,14 +127,17 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 
 	/**
 	 * At the time that we add a new block, make sure that the block has a unique name.
-	 *
+	 * If it has no properties (e.g. was created from palette), then attempt to get 
+	 * properties from its gateway counterpart. A newly imported block should already
+	 * have properties.
+	 * 
 	 * @param context 
 	 */
 	@Override
 	public void addBlock(Block blk) {
 		if( blk instanceof ProcessBlockView) {
 			ProcessBlockView block = (ProcessBlockView) blk;
-			initBlockProperties(block);
+			if( ((ProcessBlockView) blk).getProperties().isEmpty() ) initBlockProperties(block);
 			log.tracef("%s.addBlock - %s",TAG,block.getClassName());
 			blockMap.put(blk.getId(), block);
 			fireStateChanged();

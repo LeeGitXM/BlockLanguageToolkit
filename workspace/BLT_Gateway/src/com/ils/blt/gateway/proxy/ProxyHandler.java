@@ -122,14 +122,17 @@ public class ProxyHandler   {
 	 * @param value one of a QualifiedValue, Signal, Truth-value or String
 	 */
 	public void acceptValue(PyObject block,String stub,QualifiedValue value) {
+		
 		if(block==null || value==null || value.getValue()==null ) return;
-		log.infof("%s.acceptValue --- %s %s on %s",TAG,block.toString(),value.getValue().toString(),stub); 
+		String qualityName = BLTProperties.QUALITY_GOOD;
+		if(!value.getQuality().isGood() ) qualityName = value.getQuality().getName();
+		log.infof("%s.acceptValue --- %s %s (%s) on %s",TAG,block.toString(),value.getValue().toString(),qualityName,stub); 
 		if( acceptValueCallback.compileScript() ) {
 			// There are 4 values to be specified - block,port,value,quality.
 			acceptValueCallback.setLocalVariable(0,block);
 			acceptValueCallback.setLocalVariable(1,new PyString(stub));
 			acceptValueCallback.setLocalVariable(2,new PyString(value.getValue().toString()));
-			acceptValueCallback.setLocalVariable(3,new PyString(value.getQuality().toString()));
+			acceptValueCallback.setLocalVariable(3,new PyString(qualityName));
 			acceptValueCallback.execute();
 		}
 	}

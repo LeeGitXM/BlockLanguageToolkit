@@ -105,7 +105,7 @@ public class Callback {
 		if( localsMap == null ) localsMap = scriptManager.createLocalsMap();
 
 		localsMap.__setitem__(localVariables[index],value);
-		log.infof("%s.setLocalVariable: %s to %s",TAG,localVariables[index],value.toString());
+		log.debugf("%s.setLocalVariable: %s to %s",TAG,localVariables[index],value.toString());
 	}
 
 	public PyStringMap getLocalsMap() { return this.localsMap; }

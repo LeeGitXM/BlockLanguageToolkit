@@ -80,7 +80,7 @@ public class PropertyPanel extends JPanel implements NotificationChangeListener,
 	private TimeUnit currentTimeUnit;
 	
 	public PropertyPanel(DesignerContext ctx, MainPanel main,ProcessBlockView blk,BlockProperty prop) {
-		log.debugf("%s.PropertyPanel: - property %s (%s:%s) = %s",TAG,prop.getName(),prop.getType().toString(),prop.getBindingType().toString(),prop.getValue().toString());
+		log.debugf("%s.PropertyPanel: property %s (%s:%s) = %s",TAG,prop.getName(),prop.getType().toString(),prop.getBindingType().toString(),prop.getValue().toString());
 		this.context = ctx;
 		this.parent = main;
 		this.block = blk;
@@ -89,7 +89,8 @@ public class PropertyPanel extends JPanel implements NotificationChangeListener,
 	
 		setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));     // 3 cells across
 		if( property.getType().equals(PropertyType.TIME) ) {
-			currentTimeUnit = TimeUtility.unitForValue(fncs.coerceToDouble(prop.getValue()));
+			double propValue = fncs.coerceToDouble(prop.getValue());
+			currentTimeUnit = TimeUtility.unitForValue(propValue);
 			main.addSeparator(this,property.getName()+" ~ "+currentTimeUnit.name().toLowerCase());
 		}
 		else {
@@ -240,7 +241,8 @@ public class PropertyPanel extends JPanel implements NotificationChangeListener,
 		String text = "";
 		// For TIME we scale the value
 		if( property.getType().equals(PropertyType.TIME) ) {
-			text = fncs.coerceToString(TimeUtility.valueForCanonicalValue(fncs.coerceToDouble(property.getValue()),currentTimeUnit));
+			double propValue = fncs.coerceToDouble(property.getValue());
+			text = fncs.coerceToString(TimeUtility.valueForCanonicalValue(propValue,currentTimeUnit));
 			log.debugf("%s.update: property %s,value= %s, display= %s (%s)",TAG,property.getName(),property.getValue().toString(),
 													text,currentTimeUnit.name());
 		}
@@ -392,7 +394,8 @@ public class PropertyPanel extends JPanel implements NotificationChangeListener,
 		JTextField field = null;
 		if(prop.getType().equals(PropertyType.TIME)) {
 			// Scale value for time unit.
-			val = fncs.coerceToString(TimeUtility.valueForCanonicalValue(fncs.coerceToDouble(property.getValue()),currentTimeUnit));
+			double interval = fncs.coerceToDouble(property.getValue());
+			val = fncs.coerceToString(TimeUtility.valueForCanonicalValue(interval,currentTimeUnit));
 			log.tracef("%s.createValueDisplayField: property %s,value= %s, display= %s (%s)",TAG,property.getName(),property.getValue().toString(),
 					val,currentTimeUnit.name());
 		}
@@ -445,7 +448,7 @@ public class PropertyPanel extends JPanel implements NotificationChangeListener,
 		if( e.getSource() instanceof EditableTextField ) {
 			log.debugf("%s.focusLost: %s", TAG,e.getSource().getClass().getName());
 			EditableField field = (EditableField)e.getSource();
-			updatePropertyForField(field);
+			updatePropertyForField(field,false);
 		}
 	}
 
@@ -463,27 +466,30 @@ public class PropertyPanel extends JPanel implements NotificationChangeListener,
 			//log.tracef("%s.keyPressed: %s = %d, %d", TAG,((EditableTextField)e.getSource()).getProperty().getName(),e.getKeyCode(),KeyEvent.VK_ENTER);
 			if( e.getKeyCode()==KeyEvent.VK_ENTER ) {
 				EditableField field = (EditableField)e.getSource();
-				updatePropertyForField(field);
+				updatePropertyForField(field,true);    // Force propagation of the change
 			}
 		}
 	}
 	@Override
 	public void keyReleased(KeyEvent e) {}
 	
-	private void updatePropertyForField(EditableField field) {
+	// If the force flag is on, propagate the event even if the value has not changed. Use "force" with a 
+	// carriage return in the field, but not with a loss of focus.
+	private void updatePropertyForField(EditableField field,boolean force) {
 		BlockProperty property = field.getProperty();
 		log.debugf("%s.updatePropertyForField: %s (%s:%s)", TAG,property.getName(),property.getType().name(),property.getBindingType().name());
 		// If there is a value change, then update the property (or binding)
 		if( property.getBindingType().equals(BindingType.NONE)) {
 			Object fieldValue = field.getText();
-			if( !fieldValue.equals(property.getValue().toString())) {
+			if( force || !fieldValue.equals(property.getValue().toString())) {
 				// Coerce to the correct data type
 				if( property.getType().equals(PropertyType.BOOLEAN ))     fieldValue = new Boolean(fncs.coerceToBoolean(fieldValue));
 				else if( property.getType().equals(PropertyType.DOUBLE )) fieldValue = new Double(fncs.coerceToDouble(fieldValue));
 				else if( property.getType().equals(PropertyType.INTEGER ))fieldValue = new Integer(fncs.coerceToInteger(fieldValue));
 				else if(property.getType().equals(PropertyType.TIME)) {
 					// Scale field value for time unit. Get back to seconds.
-					fieldValue = new Double(TimeUtility.canonicalValueForValue(fncs.coerceToDouble(fieldValue),currentTimeUnit));
+					double interval = fncs.coerceToDouble(fieldValue);
+					fieldValue = new Double(TimeUtility.canonicalValueForValue(interval,currentTimeUnit));
 					log.tracef("%s.updatePropertyForField: property %s,old= %s, new= %s, displayed= %s (%s)",TAG,property.getName(),property.getValue().toString(),
 							fieldValue.toString(),field.getText(),currentTimeUnit.name());
 				}
@@ -513,7 +519,8 @@ public class PropertyPanel extends JPanel implements NotificationChangeListener,
 				String text = value.getValue().toString();
 				if(property.getType().equals(PropertyType.TIME)) {
 					// Scale value for time unit.
-					text = fncs.coerceToString(TimeUtility.valueForCanonicalValue(fncs.coerceToDouble(text),currentTimeUnit));
+					double interval = fncs.coerceToDouble(text);
+					text = fncs.coerceToString(TimeUtility.valueForCanonicalValue(interval,currentTimeUnit));
 				}
 				valueDisplayField.setText(text);
 			}

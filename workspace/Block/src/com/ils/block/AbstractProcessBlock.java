@@ -62,7 +62,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	/** Properties are a dictionary of attributes keyed by property name */
 	protected final PropertyHolder properties;
 	/** Describe ports/stubs where connections join the block */
-	protected final List<AnchorPrototype> anchors;
+	protected List<AnchorPrototype> anchors;
 	protected final UtilityFunctions fcns = new UtilityFunctions();
 
 	
@@ -81,7 +81,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	/**
 	 * Constructor: Use this version to create a block that correlates to a block in the diagram.
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent universally unique Id identifying the parent of this block. The id may be null for blocks that are "unattached"
 	 * @param block universally unique Id for the block
 	 */
 	public AbstractProcessBlock(ExecutionController ec, UUID parent, UUID block) {
@@ -210,6 +210,15 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	@Override
 	public Set<String> getPropertyNames() {
 		return properties.keySet();
+	}
+	
+	@Override
+	public void setAnchors(List<AnchorPrototype> protos) {
+		if( protos.size()>0 ) {
+			this.anchors = protos; 
+			BlockDescriptor blockDescriptor = prototype.getBlockDescriptor();
+			blockDescriptor.setAnchors(anchors);
+		}
 	}
 	@Override
 	public boolean isLocked() {return locked;}

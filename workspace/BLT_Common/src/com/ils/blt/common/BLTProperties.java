@@ -80,4 +80,7 @@ public interface BLTProperties   {
 	public static final String PALETTE_VIEW_ICON   = "viewIcon";
 	public static final String PALETTE_VIEW_LABEL  = "viewLabel";
 	public static final String PALETTE_VIEW_WIDTH  = "viewWidth";
+	
+	// Name to use for "Good" Quality
+	public static final String QUALITY_GOOD        = "Good";
 }

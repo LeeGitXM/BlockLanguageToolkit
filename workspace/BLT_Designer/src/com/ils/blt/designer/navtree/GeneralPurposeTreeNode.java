@@ -481,7 +481,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 			listProjectResources();
 			logger.info("============================ Resources (Gateway) ==========================");
 			listControllerResources();
-			logger.info("===========================================================================");
+			logger.infof("================================ (proj = %d )==============================",context.getProject().getId());
 		}
 	}
 	// From the root node, create a folder for diagrams belonging to a family

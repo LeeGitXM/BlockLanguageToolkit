@@ -145,7 +145,7 @@ public class ProcessBlockView extends AbstractBlock {
 		this.anchors = new ArrayList<ProcessAnchorDescriptor>();
 		if(sb.getAnchors()!=null ) {
 			for( SerializableAnchor sa:sb.getAnchors() ) {
-				log.debugf("%s: Creating anchor view %s", TAG,sa.getDisplay());
+				log.infof("%s: Creating serializable anchor %s (%s)", TAG,sa.getDisplay(),sa.getConnectionType().name());
 				anchors.add( new ProcessAnchorDescriptor((sa.getDirection()==AnchorDirection.INCOMING?AnchorType.Terminus:AnchorType.Origin),
 						sa.getConnectionType(),sa.getId(),sa.getDisplay(),sa.getAnnotation(),sa.getHint(),sa.isMultiple()) );
 			}
@@ -153,6 +153,7 @@ public class ProcessBlockView extends AbstractBlock {
 		this.properties = new ArrayList<BlockProperty>();
 		if(sb.getProperties()!=null ) {
 			for(BlockProperty bp:sb.getProperties()) {
+				log.debugf("%s: Creating property %s", TAG,bp.getName());
 				properties.add(bp);
 			} 
 		}

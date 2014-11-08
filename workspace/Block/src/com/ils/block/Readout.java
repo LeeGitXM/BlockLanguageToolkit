@@ -81,7 +81,7 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 	}
 
 	/**
-	 * Handle a change to the format.
+	 * Handle a change to the format. We deduce data type from the format.
 	 */
 	@Override
 	public void propertyChange(BlockPropertyChangeEvent event) {
