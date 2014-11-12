@@ -94,7 +94,14 @@ public class Or extends AbstractProcessBlock implements ProcessBlock {
 		qualifiedValueMap.clear();
 		truthValue = TruthValue.UNSET;
 	}
-	
+	/**
+	 * Disconnect from the timer thread.
+	 */
+	@Override
+	public void stop() {
+		super.stop();
+		controller.removeWatchdog(dog);
+	}
 	/**
 	 * Notify the block that a new value has appeared on one of its input anchors.
 	 * For now we simply record the change in the map and start the watchdog.

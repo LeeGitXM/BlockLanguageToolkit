@@ -66,6 +66,14 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 		}
 	}
 	/**
+	 * Disconnect from the timer thread.
+	 */
+	@Override
+	public void stop() {
+		super.stop();
+		controller.removeWatchdog(dog);
+	}
+	/**
 	 * Handle a changes to the various attributes.
 	 */
 	@Override
@@ -181,8 +189,8 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 	
 	private Object coerceToMatchOutput(Object val) {
 		// Coerce the value to match the output
-		if( !anchors.isEmpty()) {   // There should be exactly one, get its type.
-			AnchorPrototype ap = anchors.get(0);
+		if( !anchors.isEmpty() && val!=null && val.toString().length()>0 ) { 
+			AnchorPrototype ap = anchors.get(0);  // There should be exactly one anchor, get its type.
 			log.infof("%s.evaluate: %s type = %s",TAG,(val==null?"null":val.toString()),ap.getConnectionType());
 			if( ConnectionType.DATA.equals(ap.getConnectionType()))  {
 				val = new Double(fcns.coerceToDouble(val));

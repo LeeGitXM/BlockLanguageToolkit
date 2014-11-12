@@ -6,6 +6,7 @@ package com.ils.blt.gateway;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.List;
@@ -267,6 +268,33 @@ public class ControllerRequestHandler   {
 	 */
 	public List<SerializableResourceDescriptor> queryControllerResources() {
 		return BlockExecutionController.getInstance().queryControllerResources();
+	}
+	
+	/**
+	 * Query the ModelManager for a list of the project resources that it is currently
+	 * managing. This is a debugging service.
+	 * @return
+	 */
+	public List<SerializableResourceDescriptor> queryDiagramForBlocks(String diagIdString) {
+		List<SerializableResourceDescriptor> descriptors = new ArrayList<>();
+		UUID diagId = UUID.fromString(diagIdString);
+		BlockExecutionController controller = BlockExecutionController.getInstance();
+
+		ProcessDiagram diagram = controller.getDiagram(diagId);
+		if( diagram!=null) {
+			Collection<ProcessBlock> blocks = diagram.getProcessBlocks();
+			for(ProcessBlock block:blocks) {
+				SerializableResourceDescriptor desc = new SerializableResourceDescriptor();
+				desc.setName(block.getName());
+				desc.setClassName(block.getClass().getName());
+				desc.setId(block.getBlockId().toString());
+				descriptors.add(desc);
+			}
+		}
+		else {
+			log.warnf("%s.queryDiagramForBlocks: no diagram found for %s",TAG,diagIdString);
+		}
+		return descriptors;
 	}
 
 	

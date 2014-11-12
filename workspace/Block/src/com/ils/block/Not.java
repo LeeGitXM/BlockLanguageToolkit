@@ -87,7 +87,6 @@ public class Not extends AbstractProcessBlock implements ProcessBlock {
 		TruthValue tv = vcn.getValueAsTruthValue();
 		if( tv.equals(TruthValue.FALSE)) tv = TruthValue.TRUE;
 		else if( tv.equals(TruthValue.TRUE)) tv = TruthValue.FALSE;
-		log.infof("NOT.acceptValue SENDING %s",tv.name());
 		QualifiedValue result = new BasicQualifiedValue(tv.name(),qv.getQuality(),qv.getTimestamp());
 		if( !isLocked()) {
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);

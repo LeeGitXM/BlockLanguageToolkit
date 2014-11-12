@@ -170,7 +170,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 			valueProperty.setValue(ratio);
 			controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,new BasicQualifiedValue(new Double(ratio)));
 			newState = computeState(currentState,ratio);
-			log.infof("%s.evaluate ... ratio %f (%s)",TAG,ratio,newState.name());
+			log.tracef("%s.evaluate ... ratio %f (%s)",TAG,ratio,newState.name());
 		}
 		
 		if( !isLocked() ) {

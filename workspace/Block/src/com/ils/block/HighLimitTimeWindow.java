@@ -83,7 +83,7 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 	private void initialize() {	
 		setName("HighLimitTime");
 		
-		BlockProperty windowProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW,new Double(timeWindow),PropertyType.DOUBLE,true);
+		BlockProperty windowProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW,new Double(timeWindow),PropertyType.TIME,true);
 		properties.put(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW, windowProperty);
 		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL,new Double(scanInterval),PropertyType.TIME,true);
 		properties.put(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL, intervalProperty);
@@ -125,7 +125,6 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 	public void stop() {
 		controller.removeWatchdog(dog);
 	}
-	
 	/**
 	 * A new value has arrived. Simply set the current value.
 	 * (We poll the current value on an interval).

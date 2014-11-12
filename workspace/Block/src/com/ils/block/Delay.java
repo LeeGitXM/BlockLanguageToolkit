@@ -64,7 +64,14 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 		controller.removeWatchdog(dog);
 		buffer.clear();
 	}
-	
+	/**
+	 * Disconnect from the timer thread.
+	 */
+	@Override
+	public void stop() {
+		super.stop();
+		controller.removeWatchdog(dog);
+	}
 	/**
 	 * Handle a change to the delay interval or buffer size
 	 */

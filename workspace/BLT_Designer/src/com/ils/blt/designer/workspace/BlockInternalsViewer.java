@@ -119,14 +119,18 @@ public class BlockInternalsViewer extends JDialog {
 		String PRE = PREFIX+".ViewInternals.Col.";
 		String[] columnNames = { BundleUtil.get().getString(PRE+"Name"),
 				                 BundleUtil.get().getString(PRE+"Value") };
-		DefaultTableModel dataModel = new DefaultTableModel(columnNames,0); 
-		String [] row = new String[2];
-		for( String key:attributes.keySet()) {
-			row[0] = key;
-			String attribute = attributes.get(key);
-			row[1] = (attribute==null?" ":attribute);
-			dataModel.addRow(row);
+		DefaultTableModel dataModel = new DefaultTableModel(columnNames,0);
+		// There should always be attributes
+		if( attributes!=null )  {
+			String [] row = new String[2];
+			for( String key:attributes.keySet()) {
+				row[0] = key;
+				String attribute = attributes.get(key);
+				row[1] = (attribute==null?" ":attribute);
+				dataModel.addRow(row);
+			}
 		}
+		
         table = new JTable(dataModel);
         table.setPreferredSize(TABLE_SIZE);
         table.setRowSelectionAllowed(true);

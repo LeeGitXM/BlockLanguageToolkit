@@ -256,6 +256,14 @@ public class GatewayRpcDispatcher   {
 		log.infof("%s.queryControllerResources ...",TAG);
 		return  ControllerRequestHandler.getInstance().queryControllerResources();
 	}
+	/** 
+	 * @param diagId the identifier of the diagram of interest
+	 *  @return
+	 */
+	public List<SerializableResourceDescriptor> queryDiagram(String diagId) {
+		log.infof("%s.queryDiagram ... %s",TAG,diagId);
+		return  ControllerRequestHandler.getInstance().queryDiagramForBlocks(diagId);
+	}
 	/**
 	 * Reset a block or diagram given its UUID
 	 * @param uuidString

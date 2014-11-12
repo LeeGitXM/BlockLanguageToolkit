@@ -97,6 +97,14 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 		truthValue = TruthValue.UNSET;
 	}
 	
+	/**
+	 * Disconnect from the timer thread.
+	 */
+	@Override
+	public void stop() {
+		super.stop();
+		controller.removeWatchdog(dog);
+	}
 	
 	/**
 	 * Notify the block that a new value has appeared on one of its input anchors.

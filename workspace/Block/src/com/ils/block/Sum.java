@@ -90,7 +90,14 @@ public class Sum extends AbstractProcessBlock implements ProcessBlock {
 		super.reset();
 		valueMap.clear();
 	}
-
+	/**
+	 * Disconnect from the timer thread.
+	 */
+	@Override
+	public void stop() {
+		super.stop();
+		controller.removeWatchdog(dog);
+	}
 	/**
 	 * Notify the block that a new value has appeared on one of its input anchors.
 	 * We record the value and start the watchdog timer.

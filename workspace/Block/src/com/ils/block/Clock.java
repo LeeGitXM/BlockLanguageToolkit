@@ -89,6 +89,14 @@ public class Clock extends AbstractProcessBlock implements ProcessBlock {
 		}
 	}
 	/**
+	 * Disconnect from the timer thread.
+	 */
+	@Override
+	public void stop() {
+		super.stop();
+		controller.removeWatchdog(dog);
+	}
+	/**
 	 * We've received a transmitted signal. If it is appropriate 
 	 * based on our configured filters, forward the signal on to our output.
 	 * @param sn 

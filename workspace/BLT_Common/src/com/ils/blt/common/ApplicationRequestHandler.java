@@ -268,6 +268,24 @@ public class ApplicationRequestHandler  {
 		return result;
 	}
 	/**
+	 * Query a diagram in the gateway for list of blocks that it knows about. 
+	 * This is a debugging aid. 
+	 * 
+	 * @return a list of blocks known to the diagram.
+	 */
+	@SuppressWarnings("unchecked")
+	public List<SerializableResourceDescriptor> queryDiagram(String diagramId) {
+		List<SerializableResourceDescriptor> result = null;
+		try {
+			result = (List<SerializableResourceDescriptor> )GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "queryDiagram",diagramId);
+		}
+		catch(Exception ge) {
+			log.infof("%s.queryDiagram: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		return result;
+	}
+	/**
 	 * Execute reset() on a specified block
 	 */
 	public void resetBlock(String diagramId,String blockId) {
@@ -315,10 +333,9 @@ public class ApplicationRequestHandler  {
 	public boolean resourceExists(long projectId,long resid) {
 		Boolean result = null;
 		try {
-			log.infof("%s.resourceExists (1)  ...%d:%d",TAG,projectId,resid);
 			result = (Boolean)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "resourceExists",new Long(projectId),new Long(resid));
-			log.infof("%s.resourceExists (2)  ...%d:%d = %s",TAG,projectId,resid,result);
+			log.debugf("%s.resourceExists ...%d:%d = %s",TAG,projectId,resid,result);
 		}
 		catch(Exception ge) {
 			log.infof("%s.resourceExists: GatewayException (%s)",TAG,ge.getMessage());

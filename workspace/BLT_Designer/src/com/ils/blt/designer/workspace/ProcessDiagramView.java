@@ -14,7 +14,6 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.common.serializable.DiagramState;
 import com.ils.blt.common.serializable.SerializableAnchorPoint;
@@ -31,6 +30,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorP
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.BlockDiagramModel;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Connection;
+import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.AnchorPointId;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.LookupConnection;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
@@ -146,8 +146,13 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	
 	@Override
 	public void addConnection(AnchorPoint begin, AnchorPoint end) {
-		connections.add(new LookupConnection(this,begin,end));
-		fireStateChanged();
+		if( begin!=null && end!=null ) {
+			connections.add(new LookupConnection(this,begin,end));
+			fireStateChanged();
+		}
+		else {
+			log.warnf("%s.addConnection - rejected attempt to add a connection with null anchor",TAG);
+		}
 
 	}
 	// NOTE: This does not set connection type
@@ -227,20 +232,41 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		diagram.setConnections(scxns.toArray(new SerializableConnection[scxns.size()]));
 		return diagram;
 	}
+	
 	@Override
 	public void deleteBlock(Block blk) {
+		// Delete every connection attached to the block
+		List<Connection> connectionsToBeDeleted = new ArrayList<Connection>();
+		UUID blockId = blk.getId();
+		for( AnchorPoint ap:blk.getAnchorPoints()) {
+			boolean isOrigin = ap.isConnectorOrigin();
+			for(Connection cxn:connections) {
+				if(isOrigin && blockId.equals(cxn.getOrigin().getBlock().getId()) )         connectionsToBeDeleted.add(cxn);
+				else if(!isOrigin && blockId.equals(cxn.getTerminus().getBlock().getId()) ) connectionsToBeDeleted.add(cxn);
+			}
+		}
+		
+		for(Connection cxn:connectionsToBeDeleted) {
+			connections.remove(cxn);
+		}
+		
+		// Delete the block by removing it from the map
 		blockMap.remove(blk.getId());
 		fireStateChanged();
 	}
+	
 	@Override
 	public void deleteConnection(AnchorPoint begin, AnchorPoint end) {
+		boolean success = false;
 		for(Connection cxn:connections) {
-			if( cxn.getOrigin()==begin && cxn.getTerminus()==end) {
+			if( cxn.getOrigin().equals(begin) && cxn.getTerminus().equals(end)) {
 				connections.remove(cxn);
+				success = true;
 				fireStateChanged();
 				break;
 			}
 		}
+		if(!success) log.warnf("%s.deleteConnection: failed to find match to existing",TAG);
 	}
 	/**
 	 * @return a background color appropriate for the current state
@@ -270,7 +296,9 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	}
 
 	@Override
-	public Collection<Connection> getConnections() {return connections;}
+	public Collection<Connection> getConnections() {
+		return connections;
+	}
 
 	@Override
 	public String getDiagramName() {return name;}

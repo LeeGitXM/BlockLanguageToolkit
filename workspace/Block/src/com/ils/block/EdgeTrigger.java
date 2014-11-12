@@ -64,7 +64,14 @@ public class EdgeTrigger extends AbstractProcessBlock implements ProcessBlock {
 	public void reset() {
 		controller.removeWatchdog(dog);
 	}
-	
+	/**
+	 * Disconnect from the timer thread.
+	 */
+	@Override
+	public void stop() {
+		super.stop();
+		controller.removeWatchdog(dog);
+	}
 	
 	/**
 	 * A new value has appeared on an input anchor. Send it on its way. Start timer to 

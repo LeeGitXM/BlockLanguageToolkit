@@ -26,6 +26,7 @@ import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.DiagramState;
 import com.ils.blt.common.serializable.SerializableDiagram;
+import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
@@ -117,6 +118,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 		setupEditActions(paths, selection);
 		ExportDiagramAction exportAction = new ExportDiagramAction(menu.getRootPane(),resourceId);
 		menu.add(exportAction);
+		DebugDiagramAction debugAction = new DebugDiagramAction();
 		ResetDiagramAction resetAction = new ResetDiagramAction();
 		
 		// States are: ACTIVE, DISABLED, RESTRICTED
@@ -140,6 +142,8 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 		menu.addSeparator();
 		menu.add(renameAction);
         menu.add(deleteAction);
+        menu.addSeparator();
+        menu.add(debugAction);
         menu.add(resetAction);
 	}
 
@@ -269,7 +273,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 			ProcessDiagramView view = (ProcessDiagramView)tab.getModel();
 			for( Block blk:view.getBlocks()) {
 				ProcessBlockView pbv = (ProcessBlockView)blk;
-				pbv.setDirty(false);
+				//pbv.setDirty(false);  // Suppresses the popup?
 			}
 			workspace.saveDiagram(tab);
 			view.registerChangeListeners();
@@ -324,7 +328,21 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 			statusManager.setResourceDirty(resourceId, changed);
 		}
 	}
-    
+	// From the root node, recursively log the contents of the tree
+	private class DebugDiagramAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		public DebugDiagramAction()  {
+			super(PREFIX+".DebugDiagram",IconUtil.getIcon("bug_yellow"));
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			logger.info("============================ Diagram (Designer) ========================");
+			listDiagramComponents();
+			logger.info("============================ Diagram(Gateway) ==========================");
+			listDiagramGatewayComponents();
+			logger.info("========================================================================");
+		}
+	}
     private class ExportDiagramAction extends BaseAction {
     	private static final long serialVersionUID = 1L;
     	private final static String POPUP_TITLE = "Export Diagram";
@@ -466,6 +484,52 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 	@Override
 	protected DesignerProjectContext projectCtx() {
 		return context;
+	}
+	
+	/**
+	 * Find the current process diagram and list its blocks.
+	 */
+	public void listDiagramComponents() {
+		BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId);
+		if( tab!=null ) {
+			// If the diagram is open on a tab, call the workspace method to update the project resource
+			// from the diagram view. This method handles re-paint of the background.
+			ProcessDiagramView view = (ProcessDiagramView)tab.getModel();
+			for( Block blk:view.getBlocks()) {
+				ProcessBlockView pbv = (ProcessBlockView)blk;
+				logger.info("Block: "+pbv.getName()+"\t"+pbv.getClassName()+"\t("+pbv.getId().toString()+")");
+			}
+		}
+		else {
+			logger.info("     Diagram must be open in tab ...");
+		}
+	}
+
+	/**
+	 * Query the referenced diagram in the Gateway. The blocks that it knows
+	 * about may, or may not, coincide with those in the Designer. 
+	 */
+	public void listDiagramGatewayComponents() {
+		BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId);
+		if( tab!=null ) {
+			// If the diagram is open on a tab, call the workspace method to update the project resource
+			// from the diagram view. This method handles re-paint of the background.
+			ProcessDiagramView view = (ProcessDiagramView)tab.getModel();
+			ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
+			try {
+				List <SerializableResourceDescriptor> descriptors = handler.queryDiagram(view.getId().toString());
+				for( SerializableResourceDescriptor descriptor : descriptors ) {
+					logger.info("Block: "+descriptor.getName()+"\t"+descriptor.getClassName()+"\t("+descriptor.getId()+")");
+				}
+			} 
+			catch (Exception ex) {
+				logger.warnf("%s. startAction: ERROR: %s",TAG,ex.getMessage(),ex);
+				ErrorUtil.showError(ex);
+			}
+		}
+		else {
+			logger.info("     Diagram must be open in tab ...");
+		}
 	}
 	/**
 	 * Create an ImageIcon from the resource path. If it doesn't exist, return the default.

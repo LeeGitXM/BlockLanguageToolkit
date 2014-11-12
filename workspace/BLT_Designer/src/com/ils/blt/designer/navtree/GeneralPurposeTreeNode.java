@@ -32,9 +32,9 @@ import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.ApplicationUUIDResetHandler;
 import com.ils.blt.common.serializable.SerializableApplication;
-import com.ils.blt.common.serializable.SerializableApplicationTree;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
+import com.ils.blt.common.serializable.SerializableFolder;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.common.serializable.UUIDResetHandler;
 import com.ils.blt.designer.BLTDesignerHook;
@@ -76,7 +76,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 	private StopAction stopAction = new StopAction();
 	private final DiagramWorkspace workspace; 
 	private final NodeStatusManager statusManager;
-	private final ApplicationAction applicationAction = new ApplicationAction();
+	private final ApplicationCreateAction applicationCreateAction = new ApplicationCreateAction();
 	private final ImageIcon defaultIcon = IconUtil.getIcon("folder_closed");
 	private final ImageIcon openIcon;
 	private final ImageIcon closedIcon;
@@ -215,7 +215,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 				stopAction.setEnabled(false);
 				clearAction.setEnabled(true);
 			}
-			menu.add(applicationAction);
+			menu.add(applicationCreateAction);
 			menu.add(applicationImportAction);
 			menu.add(saveAllAction);
 			menu.add(startAction);
@@ -364,7 +364,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 		Project diff = context.getProject().getEmptyCopy();
 		accumulateNodeResources(this,diff);
 		try {
-			DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ..."); // Do not publish
+			// false=> do not publish
+			DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ..."); 
 		}
 		catch(GatewayException ge) {
 			logger.warnf("%s.SaveAllAction: Exception saving project resource %d (%s)",TAG,resourceId,ge.getMessage());
@@ -404,6 +405,24 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 			logger.warnf("%s.deserializeApplication: Deserialization exception (%s)",ex.getMessage());
 		}
 		return sa;
+	}
+	/**
+	 * Convert the resource data into a SerializableApplication
+	 * @param res
+	 * @return
+	 */
+	private SerializableDiagram deserializeDiagram(ProjectResource res) {
+		SerializableDiagram sd = null;
+		try{
+			byte[] bytes = res.getData();
+			ObjectMapper mapper = new ObjectMapper();
+			sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
+			sd.setName(res.getName());   // Sync the SerializableApplication name w/ res
+		}
+		catch(Exception ex) {
+			logger.warnf("%s.SerializableDiagram: Deserialization exception (%s)",ex.getMessage());
+		}
+		return sd;
 	}
 	/**
 	 * Convert the resource data into a SerializableFamily
@@ -485,9 +504,9 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 		}
 	}
 	// From the root node, create a folder for diagrams belonging to a family
-	private class ApplicationAction extends BaseAction {
+	private class ApplicationCreateAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
-	    public ApplicationAction()  {
+	    public ApplicationCreateAction()  {
 	    	super(PREFIX+".NewApplication",IconUtil.getIcon("folder_new"));
 	    }
 	    
@@ -827,14 +846,14 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 				SerializableFamily fam = new SerializableFamily();
 				fam.setName(newName);
 	
-				logger.infof("%s: new application action ...",TAG);
+				logger.debugf("%s: new family action ... (%s)",TAG);
 
 				String json = serializeFamily(fam);
 			
 				logger.debugf("%s: FamilyAction. json=%s",TAG,json);
 				byte[] bytes = json.getBytes();
-				logger.debugf("%s: FamilyAction. create new %s resource %d (%d bytes)",TAG,BLTProperties.FAMILY_RESOURCE_TYPE,
-						newId,bytes.length);
+				logger.infof("%s: FamilyAction. create new %s, %s, resource %d (%d bytes)",TAG,BLTProperties.FAMILY_RESOURCE_TYPE,
+						newName,newId,bytes.length);
 				ProjectResource resource = new ProjectResource(newId,
 						BLTProperties.MODULE_ID, BLTProperties.FAMILY_RESOURCE_TYPE,
 						newName, ApplicationScope.GATEWAY, bytes);
@@ -893,17 +912,17 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
     private class ApplicationExportAction extends BaseAction {
     	private static final long serialVersionUID = 1L;
     	private final static String POPUP_TITLE = "Export Application Tree";
-    	private final GeneralPurposeTreeNode view;
+    	private final GeneralPurposeTreeNode node;
     	private final Component anchor;
 	    public ApplicationExportAction(Component c,GeneralPurposeTreeNode gptn)  {
 	    	super(PREFIX+".ApplicationExport",IconUtil.getIcon("export1")); 
-	    	view=gptn;
+	    	node=gptn;
 	    	anchor=c;
 	    }
 	    
 		public void actionPerformed(ActionEvent e) {
 		
-			if( view==null ) return;   // Do nothing
+			if( node==null ) return;   // Do nothing
 			try {
 				EventQueue.invokeLater(new Runnable() {
 					public void run() {
@@ -929,8 +948,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 					    			if(logger.isDebugEnabled()) logger.debugf("%s.actionPerformed: creating json ... %s",TAG,(mapper.canSerialize(SerializableDiagram.class)?"true":"false"));
 					    			try{ 
 					    				// Convert the view into a serializable object
-					    				SerializableApplicationTree sat = null;  //view.createSerializableRepresentation();
-					    				String json = mapper.writeValueAsString(sat);
+					    				SerializableApplication sap = node.recursivelyDeserializeApplication(node);
+					    				String json = mapper.writeValueAsString(sap);
 					    				FileWriter fw = new FileWriter(output,false);  // Do not append
 					    				try {
 					    					fw.write(json);
@@ -1125,6 +1144,120 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 			accumulateNodeResources((AbstractResourceNavTreeNode)child,diff);
 		}
 	}
+
+    // Recursively descend the node tree, gathering up associated resources.
+    // Deserialize them and add as proper children of the parent
+    // @param node a tree node corresponding to an application.
+    private SerializableApplication recursivelyDeserializeApplication(AbstractResourceNavTreeNode node) {
+    	ProjectResource res = node.getProjectResource();
+    	SerializableApplication sa = null;
+    	if( res!=null ) {
+    		logger.infof("%s.recursivelyDeserializeApplication: %s (%d)",TAG,res.getName(),res.getResourceId());
+    		sa = deserializeApplication(res);
+
+    		@SuppressWarnings("rawtypes")
+    		Enumeration walker = node.children();
+    		while(walker.hasMoreElements()) {
+    			Object child = walker.nextElement();
+    			ProjectResource cres = node.getProjectResource();
+    			if(cres==null) continue;
+    			if(cres.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE)){
+    				SerializableFamily sfam = recursivelyDeserializeFamily((AbstractResourceNavTreeNode) child);
+    				if( sfam!=null ) sa.addFamily(sfam);
+    			}
+    			else if(cres.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)) {
+    				SerializableFolder sf = recursivelyDeserializeFolder((AbstractResourceNavTreeNode) child);
+    				if( sf!=null ) sa.addFolder(sf);
+    			}
+    			else {
+    				logger.infof("%s.recursivelyDeserializeApplication: %s unexpected child resource type (%s)",TAG,res.getName(),cres.getName(),cres.getResourceType());
+    			}
+    		}
+    	}
+    	return sa;
+    }
+    // This nodes of the tree is associated with a diagram. It's only other possible children
+    // are other diagrams which are children of encapsulation blocks. At present these are not handled
+    // Deserialize them and add as proper children of the parent
+    // @param node a tree node corresponding to a diagram.
+    private SerializableDiagram recursivelyDeserializeDiagram(AbstractResourceNavTreeNode node) {
+    	ProjectResource res = node.getProjectResource();
+    	SerializableDiagram sdiag = null;
+    	if( res!=null ) {
+    		logger.infof("%s.recursivelyDeserializeDiagram: %s (%d)",TAG,res.getName(),res.getResourceId());
+    		sdiag = deserializeDiagram(res);
+    	}
+    	return sdiag;
+    }
+    // Recursively descend the node tree, gathering up associated resources.
+    // Deserialize them and add as proper children of the parent
+    // @param node a tree node corresponding to an application.
+    private SerializableFamily recursivelyDeserializeFamily(AbstractResourceNavTreeNode node) {
+    	ProjectResource res = node.getProjectResource();
+    	SerializableFamily sfam = null;
+    	if( res!=null ) {
+    		logger.infof("%s.recursivelyDeserializeFamily: %s (%d)",TAG,res.getName(),res.getResourceId());
+    		sfam = deserializeFamily(res);
+
+    		@SuppressWarnings("rawtypes")
+    		Enumeration walker = node.children();
+    		while(walker.hasMoreElements()) {
+    			Object child = walker.nextElement();
+    			ProjectResource cres = node.getProjectResource();
+    			if(cres==null) continue;
+    			if( cres.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
+    				SerializableDiagram sd = recursivelyDeserializeDiagram((AbstractResourceNavTreeNode) child);
+    				if( sd!=null ) sfam.addDiagram(sd);
+    			}
+    			else if(cres.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)) {
+    				SerializableFolder sf = recursivelyDeserializeFolder((AbstractResourceNavTreeNode) child);
+    				if( sf!=null ) sfam.addFolder(sf);
+    			}
+    			else {
+    				logger.infof("%s.recursivelyDeserializeFamily: %s unexpected child resource type (%s)",TAG,res.getName(),cres.getName(),cres.getResourceType());
+    			}
+    		}
+    	}
+    	return sfam;
+    }
+    // Recursively descend the node tree, gathering up associated resources.
+    // Deserialize them and add as proper children of the parent
+    // @param node a tree node corresponding to an application.
+    private SerializableFolder recursivelyDeserializeFolder(AbstractResourceNavTreeNode node) {
+    	ProjectResource res = node.getProjectResource();
+    	SerializableFolder sfold = null;
+    	if( res!=null ) {
+    		logger.infof("%s.recursivelyDeserializeFolder: %s (%d)",TAG,res.getName(),res.getResourceId());
+    		sfold = new SerializableFolder();
+    		sfold.setId(res.getDataAsUUID());
+    		sfold.setName(res.getName());
+    		sfold.setParentId(res.getParentUuid());
+
+    		@SuppressWarnings("rawtypes")
+    		Enumeration walker = node.children();
+    		while(walker.hasMoreElements()) {
+    			Object child = walker.nextElement();
+    			ProjectResource cres = node.getProjectResource();
+    			if(cres==null) continue;
+    			if( cres.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
+    				SerializableDiagram sd = recursivelyDeserializeDiagram((AbstractResourceNavTreeNode) child);
+    				if( sd!=null ) sfold.addDiagram(sd);
+    			}
+    			else if(cres.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE)){
+    				SerializableFamily sfam = recursivelyDeserializeFamily((AbstractResourceNavTreeNode) child);
+    				if( sfam!=null ) sfold.addFamily(sfam);
+    			}
+    			else if(cres.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)) {
+    				SerializableFolder sf = recursivelyDeserializeFolder((AbstractResourceNavTreeNode) child);
+    				if( sf!=null ) sfold.addFolder(sf);
+    			}
+    			else {
+    				logger.infof("%s.recursivelyDeserializeFolder: %s unexpected child resource type (%s)",TAG,res.getName(),cres.getName(),cres.getResourceType());
+    			}
+    		}
+    	}
+    	return sfold;
+    }
     /**
 	 * Search the project for all resources. This is for debugging.
 	 * We filter out those that are global (have no module) as these
@@ -1193,7 +1326,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 		boolean dirty = statusManager.isResourceDirty(resourceId);
 		logger.tracef("%s.stateChanged: dirty = %s",TAG,(dirty?"true":"false"));
 		setItalic(dirty);
-		applicationAction.setEnabled(dirty);    // Only applies to an application node
+		applicationCreateAction.setEnabled(dirty);    // Only applies to an application node
 		refresh();
 	}
 }

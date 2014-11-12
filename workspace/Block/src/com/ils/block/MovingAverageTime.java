@@ -4,6 +4,7 @@
 package com.ils.block;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +21,6 @@ import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
-import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
@@ -42,8 +42,8 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 	private final LinkedList<Double> buffer;
 	private boolean clearOnReset = false;
 	private double currentValue = Double.NaN;
-	private double scanInterval = 1.0;    // ~secs
-	private double timeWindow = 60;     // ~ secs
+	private double scanInterval = 15.0;    // ~secs
+	private double timeWindow = 60;        // ~ secs
 	private final Watchdog dog;
 	private BlockProperty valueProperty = null;
 	
@@ -80,11 +80,11 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 		
 		BlockProperty resetProperty =  new BlockProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET,Boolean.FALSE,PropertyType.BOOLEAN,true);
 		properties.put(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET, resetProperty);
-		BlockProperty windowProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW,new Double(timeWindow),PropertyType.DOUBLE,true);
+		BlockProperty windowProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW,new Double(timeWindow),PropertyType.TIME,true);
 		properties.put(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW, windowProperty);
 		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL,new Double(scanInterval),PropertyType.TIME,true);
 		properties.put(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL, intervalProperty);
-		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,TruthValue.UNKNOWN,PropertyType.TRUTHVALUE,false);
+		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,new Double(currentValue),PropertyType.DOUBLE,false);
 		valueProperty.setBindingType(BindingType.ENGINE);
 		properties.put(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 		
@@ -113,6 +113,7 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 	@Override
 	public void start() {
 		reset();
+		log.tracef("%s(%d).STARTED ...",TAG,hashCode());
 	}
 	@Override
 	public void stop() {
@@ -133,7 +134,7 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 			currentValue = Double.NaN;
 			try {
 				currentValue = Double.parseDouble(qv.getValue().toString());
-				log.infof("%s.acceptValue current value is %s",TAG,qv.getValue().toString());
+				log.debugf("%s(%d).acceptValue current value is %s",TAG,hashCode(),qv.getValue().toString());
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.acceptValue exception converting incoming %s to double (%s)",TAG,qv.getValue().toString(),nfe.getLocalizedMessage());
@@ -159,9 +160,8 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 	 */
 	@Override
 	public void evaluate() {
-		log.infof("%s.evaluate",TAG);
 		if( Double.isNaN(currentValue) ) return;
-
+		log.tracef("%s(%d).evaluate ...",TAG,hashCode());
 		// Evaluate the buffer and report
 		// Add the currentValue to the queue
 		Double val = new Double(currentValue);
@@ -170,10 +170,10 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 		while(buffer.size() > maxPoints ) {
 			buffer.removeFirst();
 		}
-		log.infof("%s.evaluate %d of %d points",TAG,buffer.size(),maxPoints);
+		log.tracef("%s(%d).evaluate %d of %d points",TAG,hashCode(),buffer.size(),maxPoints);
 		if( buffer.size() >= maxPoints) {
 			double result = computeAverage();
-			log.infof("%s.evaluate avg=%f",TAG,result);
+			log.tracef("%s(%d).evaluate avg=%f",TAG,hashCode(),result);
 			if( !isLocked() ) {
 				// Give it a new timestamp
 				QualifiedValue outval = new BasicQualifiedValue(result);
@@ -195,7 +195,7 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
-		log.infof("%s.propertyChange: %s = %s",TAG,propertyName,event.getNewValue().toString());
+		log.infof("%s(%d).propertyChange: %s = %s",TAG,hashCode(),propertyName,event.getNewValue().toString());
 		if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET)) {
 			try {
 				clearOnReset = Boolean.parseBoolean(event.getNewValue().toString());
@@ -226,9 +226,6 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.propertyChange: Unable to convert scan interval to a double (%s)",TAG,nfe.getLocalizedMessage());
 			}
-		}
-		else {
-			log.warnf("%s.propertyChange:Unrecognized property (%s)",TAG,propertyName);
 		}	
 	}
 	/**
@@ -236,9 +233,14 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 	 */
 	@Override
 	public SerializableBlockStateDescriptor getInternalStatus() {
+		log.infof("%s(%d).getInternalStatus: buffer size = %d",TAG,hashCode(),buffer.size());
 		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
+		Map<String,String> attributes = descriptor.getAttributes();
+		attributes.put("Average", String.valueOf(currentValue));
 		List<Map<String,String>> descBuffer = descriptor.getBuffer();
-		for( Double dbl:buffer) {
+		Iterator<Double> walker = buffer.iterator();
+		while( walker.hasNext() ) {
+			Double dbl = walker.next();
 			Map<String,String> qvMap = new HashMap<>();
 			qvMap.put("Value", String.valueOf(dbl));
 			descBuffer.add(qvMap);
@@ -246,6 +248,7 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 
 		return descriptor;
 	}
+	
 	/**
 	 * Augment the palette prototype for this block class.
 	 */

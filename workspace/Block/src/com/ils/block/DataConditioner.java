@@ -95,7 +95,14 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 		quality = "good";
 		value = null;
 	}
-	
+	/**
+	 * Disconnect from the timer thread.
+	 */
+	@Override
+	public void stop() {
+		super.stop();
+		controller.removeWatchdog(dog);
+	}
 	/**
 	 * Handle a change to the coalescing interval.
 	 */

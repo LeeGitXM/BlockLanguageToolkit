@@ -88,7 +88,7 @@ public class InRangeTimeWindow extends AbstractProcessBlock implements ProcessBl
 		properties.put(BLOCK_PROPERTY_LOWER_LIMIT, minprop);
 		BlockProperty maxprop = new BlockProperty(BLOCK_PROPERTY_UPPER_LIMIT, upperLimit,PropertyType.DOUBLE, true);
 		properties.put(BLOCK_PROPERTY_UPPER_LIMIT, maxprop);
-		BlockProperty windowProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW,new Double(timeWindow),PropertyType.DOUBLE,true);
+		BlockProperty windowProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW,new Double(timeWindow),PropertyType.TIME,true);
 		properties.put(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW, windowProperty);
 		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL,new Double(scanInterval),PropertyType.TIME,true);
 		properties.put(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL, intervalProperty);;

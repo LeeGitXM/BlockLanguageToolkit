@@ -92,7 +92,14 @@ public class Quotient extends AbstractProcessBlock implements ProcessBlock {
 		a = null;
 		b = null;
 	}
-	
+	/**
+	 * Disconnect from the timer thread.
+	 */
+	@Override
+	public void stop() {
+		super.stop();
+		controller.removeWatchdog(dog);
+	}
 	/**
 	 * Handle a change to the coalescing interval.
 	 */

@@ -83,7 +83,14 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 		pv = initialValue;
 		log.infof("%s.reset",TAG);
 	}
-	
+	/**
+	 * Disconnect from the timer thread.
+	 */
+	@Override
+	public void stop() {
+		super.stop();
+		controller.removeWatchdog(dog);
+	}
 	/**
 	 * Add properties that are new for this class.
 	 * Populate them with default values.

@@ -95,16 +95,16 @@ public class ModelManager implements ProjectListener  {
 			String type = res.getResourceType();
 			
 			if( type.equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE) ) {
-				addApplicationResource(projectId,res);
+				addModifyApplicationResource(projectId,res);
 			}
 			else if( type.equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE) ) {
-				addFamilyResource(projectId,res);
+				addModifyFamilyResource(projectId,res);
 			}
 			else if( type.equalsIgnoreCase(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
-				addDiagramResource(projectId,res);	
+				addModifyDiagramResource(projectId,res);	
 			}
 			else if( type.equalsIgnoreCase(BLTProperties.FOLDER_RESOURCE_TYPE) ) {
-				addFolderResource(projectId,res);
+				addModifyFolderResource(projectId,res);
 			}
 			else {
 				// Don't care
@@ -339,7 +339,7 @@ public class ModelManager implements ProjectListener  {
 	public void projectUpdated(Project diff, ProjectVersion vers) { 
 		
 		if( vers!=ProjectVersion.Staging ) return;  // Consider only the "Staging" version
-		log.debugf("%s.projectUpdated: %s (%d)  %s", TAG,diff.getName(),diff.getId(),vers.toString());
+		log.infof("%s.projectUpdated: %s (%d)  %s", TAG,diff.getName(),diff.getId(),vers.toString());
 		long projectId = diff.getId();
 		Set<Long> deleted = diff.getDeletedResources();
 		for (Long  resid : deleted) {
@@ -363,8 +363,8 @@ public class ModelManager implements ProjectListener  {
 	 * @param projectId the identity of a project
 	 * @param res the project resource containing the diagram
 	 */
-	private void addApplicationResource(Long projectId,ProjectResource res) {
-		log.debugf("%s.addApplicationResource: %d",TAG,res.getResourceId());
+	private void addModifyApplicationResource(Long projectId,ProjectResource res) {
+		log.debugf("%s.addModifyApplicationResource: %d",TAG,res.getResourceId());
 		ProcessApplication application = deserializeApplicationResource(projectId,res);
 		if( application!=null ) {
 			UUID self = application.getSelf();
@@ -375,8 +375,19 @@ public class ModelManager implements ProjectListener  {
 				addToHierarchy(projectId,node);
 			}
 			else {
-				// The only attribute to update is the name
+				// Update attributes
 				node.setName(res.getName());
+				if(node instanceof ProcessApplication )  {
+					ProcessApplication processApp = (ProcessApplication)node;
+					processApp.setId(application.getId());
+					processApp.setConsole(application.getConsole());
+					processApp.setDescription(application.getDescription());
+					processApp.setHighestPriorityProblem(application.getHighestPriorityProblem());
+					processApp.setMessageQueue(application.getMessageQueue());
+					processApp.setRampMethod(application.getRampMethod());
+					processApp.setState(application.getState());
+					processApp.setUnit(application.getUnit());
+				}
 			}
 		}
 	}
@@ -387,29 +398,32 @@ public class ModelManager implements ProjectListener  {
 	 * @param projectId the identity of a project
 	 * @param res the project resource containing the diagram
 	 */
-	private void addDiagramResource(Long projectId,ProjectResource res) {
-		log.infof("%s.addDiagramResource: %d",TAG,res.getResourceId());
-		ProcessDiagram diagram = deserializeDiagramResource(projectId,res);
-		if( diagram!=null) {
+	private void addModifyDiagramResource(Long projectId,ProjectResource res) {
+		log.infof("%s.addModifyDiagramResource: %d",TAG,res.getResourceId());
+		SerializableDiagram sd = deserializeDiagramResource(projectId,res);
+		if( sd!=null ) {
 			BlockExecutionController controller = BlockExecutionController.getInstance();
 			// If this is an existing diagram, we need to remove the old version
-			ProcessDiagram oldDiagram = (ProcessDiagram)nodesByUUID.get(diagram.getSelf());
-			if( oldDiagram!=null ) {
-				nodesByUUID.remove(diagram.getSelf());
-				ProcessNode oldParent = nodesByUUID.get(oldDiagram.getParent());
-				if( oldParent!=null) oldParent.removeChild(oldDiagram);
-				// Remove old subscriptions
-				for( ProcessBlock pb:diagram.getProcessBlocks()) {
-					for(BlockProperty bp:pb.getProperties()) {
-						controller.removeSubscription(pb,bp);
-					}
-				}
+			ProcessDiagram diagram = (ProcessDiagram)nodesByUUID.get(sd.getId());
+			if( diagram==null) {
+				diagram = new ProcessDiagram(sd,res.getParentUuid());
+				diagram.setResourceId(res.getResourceId());
+				diagram.setProjectId(projectId);
+				// Add in the new Diagram
+				ProjResKey key = new ProjResKey(projectId,res.getResourceId());
+				diagramsByKey.put(key,diagram);
+				addToHierarchy(projectId,diagram);
 			}
-			// Now add in the new Diagram
-			ProjResKey key = new ProjResKey(projectId,res.getResourceId());
-			diagramsByKey.put(key,diagram);
-			addToHierarchy(projectId,diagram);
-			log.debugf("%s.addDiagramResource: defining tag subscriptions ...%d:%s",TAG,projectId,res.getName());
+			// Update the diagram with new features - leave the old in place 
+			else {
+				// Delete all the old connections
+				diagram.clearConnections();
+				// Delete blocks in the old that are not present in the new
+				diagram.removeBlocksFromList(sd.getBlocks());
+				// Add/update blocks, create new connections. Stop blocks, remove old subscriptions
+				diagram.analyze(sd);
+			}
+			log.infof("%s.addModifyDiagramResource: starting tag subscriptions ...%d:%s",TAG,projectId,res.getName());
 			for( ProcessBlock pb:diagram.getProcessBlocks()) {
 				for(BlockProperty bp:pb.getProperties()) {
 					controller.startSubscription(pb,bp);
@@ -417,14 +431,15 @@ public class ModelManager implements ProjectListener  {
 				pb.setProjectId(projectId);
 			}
 			if( BlockExecutionController.getExecutionState().equals(BlockExecutionController.CONTROLLER_RUNNING_STATE)) {
-				log.infof("%s.addDiagramResource: starting blocks ...%d:%s",TAG,projectId,res.getName());
+				log.infof("%s.addModifyDiagramResource: starting blocks ...%d:%s",TAG,projectId,res.getName());
 				for( ProcessBlock pb:diagram.getProcessBlocks()) {
 					pb.start();
 				}
 			}
 		}
+
 		else {
-			log.warnf("%s.addDiagramResource - Failed to create diagram from resource (%s)",TAG,res.getName());
+			log.warnf("%s.addModifyDiagramResource - Failed to create diagram from resource (%s)",TAG,res.getName());
 		}
 	}
 	/**
@@ -433,8 +448,8 @@ public class ModelManager implements ProjectListener  {
 	 * @param projectId the identity of a project
 	 * @param res the project resource containing the diagram
 	 */
-	private void addFamilyResource(Long projectId,ProjectResource res) {
-		log.debugf("%s.addFamilyResource: %d",TAG,res.getResourceId());
+	private void addModifyFamilyResource(Long projectId,ProjectResource res) {
+		log.debugf("%s.addModifyFamilyResource: %d",TAG,res.getResourceId());
 		ProcessFamily family = deserializeFamilyResource(projectId,res);
 		if( family!=null ) {
 			UUID self = family.getSelf();
@@ -445,8 +460,15 @@ public class ModelManager implements ProjectListener  {
 				addToHierarchy(projectId,node);
 			}
 			else {
-				// The only attribute to update is the name
+				// Update attributes
 				node.setName(res.getName());
+				if( node instanceof ProcessFamily ) {
+					ProcessFamily processFam = (ProcessFamily)node;
+					processFam.setDescription(family.getDescription());
+					processFam.setId(family.getId());
+					processFam.setPriority(family.getPriority());
+					processFam.setState(family.getState());
+				}
 			}
 		}
 	}
@@ -456,7 +478,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param resourceId the identity of the model resource
 	 * @param model the diagram logic
 	 */
-	private void addFolderResource(long projectId,ProjectResource res) {
+	private void addModifyFolderResource(long projectId,ProjectResource res) {
 		log.debugf("%s.addFolderResource: %d",TAG,res.getResourceId());
 		UUID self = res.getDataAsUUID();
 		ProcessNode node = nodesByUUID.get(self);
@@ -584,26 +606,22 @@ public class ModelManager implements ProjectListener  {
 		return application;
 	}
 	/**
-	 *  We've discovered a changed model resource. Deserialize and convert into a ProcessDiagram.
+	 *  We've discovered a changed model resource. Deserialize and return.
 	 *  Note: We had difficulty with the Ignition XML serializer because it didn't handle Java generics;
 	 *        thus the use of JSON. The returned object was not an instanceof...
 	 * @param projId the identifier of the project
 	 * @param res
 	 */ 
-	private ProcessDiagram deserializeDiagramResource(long projId,ProjectResource res) {
+	private SerializableDiagram deserializeDiagramResource(long projId,ProjectResource res) {
 		byte[] serializedObj = res.getData();
 		String json = new String(serializedObj);
 		log.debugf("%s.deserializeDiagramResource: json = %s",TAG,json);
-		ProcessDiagram diagram = null;
+		SerializableDiagram sd = null;
 		try{
 			ObjectMapper mapper = new ObjectMapper();
-			SerializableDiagram sd = mapper.readValue(json, SerializableDiagram.class);
+			sd = mapper.readValue(json, SerializableDiagram.class);
 			if( sd!=null ) {
 				sd.setResourceId(res.getResourceId());
-				log.infof("%s.deserializeDiagramResource: Successfully deserialized diagram %s",TAG,sd.getName());
-				diagram = new ProcessDiagram(sd,res.getParentUuid());
-				diagram.setResourceId(res.getResourceId());
-				diagram.setProjectId(projId);
 			}
 			else {
 				log.warnf("%s.deserializeDiagramResource: deserialization failed",TAG);
@@ -613,7 +631,7 @@ public class ModelManager implements ProjectListener  {
 		catch( Exception ex) {
 			log.warnf("%s.deserializeDiagramResource: exception (%s)",TAG,ex.getLocalizedMessage(),ex);
 		}
-		return diagram;
+		return sd;
 
 	}
 	

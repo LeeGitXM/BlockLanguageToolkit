@@ -94,7 +94,14 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		super.reset();
 		if( dog.isActive() ) controller.removeWatchdog(dog);
 	}
-
+	/**
+	 * Disconnect from the timer thread.
+	 */
+	@Override
+	public void stop() {
+		super.stop();
+		controller.removeWatchdog(dog);
+	}
 	/**
 	 * A new value has appeared on an input anchor. If it matches the trigger, start the count-down.
 	 * Ignore any values that come in during the countdown.

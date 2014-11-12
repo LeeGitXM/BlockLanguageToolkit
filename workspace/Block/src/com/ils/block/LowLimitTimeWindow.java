@@ -87,7 +87,7 @@ public class LowLimitTimeWindow extends AbstractProcessBlock implements ProcessB
 		properties.put(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW, windowProperty);
 		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL,new Double(scanInterval),PropertyType.TIME,true);
 		properties.put(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL, intervalProperty);
-		BlockProperty bp = new BlockProperty(BlockConstants.BLOCK_PROPERTY_LIMIT,new Double(limit),PropertyType.DOUBLE,true);
+		BlockProperty bp = new BlockProperty(BlockConstants.BLOCK_PROPERTY_LIMIT,new Double(limit),PropertyType.TIME,true);
 		properties.put(BlockConstants.BLOCK_PROPERTY_LIMIT, bp);
 		BlockProperty fillProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_FILL_REQUIRED,new Boolean(fillRequired),PropertyType.BOOLEAN,true);
 		properties.put(BlockConstants.BLOCK_PROPERTY_FILL_REQUIRED, fillProperty);

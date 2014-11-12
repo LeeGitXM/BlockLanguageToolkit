@@ -88,7 +88,14 @@ public class Product extends AbstractProcessBlock implements ProcessBlock {
 		super.reset();
 		valueMap.clear();
 	}
-	
+	/**
+	 * Disconnect from the timer thread.
+	 */
+	@Override
+	public void stop() {
+		super.stop();
+		controller.removeWatchdog(dog);
+	}
 	/**
 	 * Handle a change to the coalescing interval.
 	 */

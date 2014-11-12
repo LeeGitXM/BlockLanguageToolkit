@@ -499,7 +499,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		ObjectMapper mapper = new ObjectMapper();
 		try {
 			bytes = mapper.writeValueAsBytes(sd);
-			logger.infof("%s: saveDiagram JSON = %s",TAG,new String(bytes));
+			logger.debugf("%s: saveDiagram JSON = %s",TAG,new String(bytes));
 			context.updateResource(resid, bytes);
 			c.setBackground(diagram.getBackgroundColorForState());
 			SwingUtilities.invokeLater(new WorkspaceRepainter());

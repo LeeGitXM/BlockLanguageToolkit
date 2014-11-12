@@ -92,7 +92,14 @@ public class Difference extends AbstractProcessBlock implements ProcessBlock {
 		a = null;
 		b = null;
 	}
-	
+	/**
+	 * Disconnect from the timer thread.
+	 */
+	@Override
+	public void stop() {
+		super.stop();
+		controller.removeWatchdog(dog);
+	}
 	
 	/**
 	 * We are notified that a new value has appeared on one of our input anchors.

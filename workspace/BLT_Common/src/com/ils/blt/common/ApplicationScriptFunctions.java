@@ -80,7 +80,18 @@ public class ApplicationScriptFunctions   {
 		return result;
 	}
 	/**
-	 * Execute reset() on a specifiedblock
+	 * Query a diagram in the gateway for list of blocks that it knows about. This is
+	 * a debugging aid. 
+	 * 
+	 * @return a list of blocks known to the diagram.
+	 */
+	@SuppressWarnings("rawtypes")
+	public static List queryDiagram(String diagId) {
+		List<SerializableResourceDescriptor> result = manager.queryDiagram(diagId);
+		return result;
+	}
+	/**
+	 * Execute reset() on the specified block
 	 */
 	public static void resetBlock(String diagramId,String blockId) {
 		manager.resetBlock(diagramId,blockId);
