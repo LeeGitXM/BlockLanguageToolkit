@@ -375,7 +375,7 @@ public class ProcessBlockView extends AbstractBlock {
 		 boolean result = true;
 		 BasicAnchorPoint start = (BasicAnchorPoint)startingAnchor;
 		 BasicAnchorPoint end   = (BasicAnchorPoint)endAnchor;
-		 if( end.getBlock()!=null && !end.allowMultipleConnections() ) result = false;
+		 if( end.getBlock()!=null && !end.allowMultipleConnections() ) {result = false;}
 		 else if( start.isConnectorOrigin()==end.isConnectorOrigin())  result = false;
 		 else {
 			 result = false;

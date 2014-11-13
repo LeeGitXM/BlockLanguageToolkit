@@ -63,7 +63,7 @@ insert into PropertyMap values ('EM-GDA-SQC-LIMIT-OBSERVATION','label','','STRIN
 insert into PropertyMap values ('EM-GDA-SQC-LIMIT-OBSERVATION','limitType','LimitType','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-SQC-LIMIT-OBSERVATION','numberOfFilterPoints','SampleSize','INTEGER',1,'NONE');
 insert into PropertyMap values ('EM-GDA-SQC-LIMIT-OBSERVATION','numberOfOutOfRangePointsRequired','MaximumOutOfRange','DOUBLE',1,'NONE');
-insert into PropertyMap values ('EM-GDA-SQC-LIMIT-OBSERVATION','numberOfStandardDeviationsToTest','StandardDeviations','DOUBLE',1,'NONE');
+insert into PropertyMap values ('EM-GDA-SQC-LIMIT-OBSERVATION','numberOfStandardDeviationsToTest','NumberOfStandardDeviations','DOUBLE',1,'NONE');
 insert into PropertyMap values ('EM-GDA-SQC-LIMIT-OBSERVATION','optionalDesiredConfidence','','DOUBLE',1,'NONE');
 insert into PropertyMap values ('EM-GDA-SQC-LIMIT-OBSERVATION','sqcTestLabel','TestLabel','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-SubDIAGNOSIS','label','Label','STRING',1,'NONE');

@@ -54,13 +54,15 @@ public class EncapsulationAnchorPointEditor extends JDialog {
 	private final int DIALOG_HEIGHT = 320;
 	private final int DIALOG_WIDTH = 420;
 	private static final Dimension TABLE_SIZE  = new Dimension(380,120);
+	private final ProcessDiagramView diagram;
 	private final ProcessBlockView block;
 	private JButton addButton;      // Click to add a row
 	private JButton deleteButton;   // Click to delete a row
 
 	private JTable table;
-	public EncapsulationAnchorPointEditor(ProcessBlockView view) {
+	public EncapsulationAnchorPointEditor(ProcessDiagramView diag,ProcessBlockView view) {
 		super();
+		this.diagram = diag;
 		this.block = view;
 		this.setTitle(BundleUtil.get().getString(PREFIX+".Encapsulation.Title"));
 		setModal(true);

@@ -42,6 +42,7 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
 @ExecutableBlock
 public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	private final String TAG = "LogicFilter";
+	private final static String BLOCK_PROPERTY_RATIO = "Ratio";
 	private TruthValue currentState = TruthValue.UNSET;
 	private TruthValue currentValue = TruthValue.UNSET;
 	private double deadband = 0.0;
@@ -50,7 +51,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	private double scanInterval = 1.0;    // ~secs
 	private double timeWindow = 60; // ~ secs
 	private HysteresisType hysteresis = HysteresisType.NEVER;
-	private BlockProperty valueProperty = null;
+	private BlockProperty ratioProperty = null;
 	private final Watchdog dog;
 	
 	/**
@@ -94,9 +95,9 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		properties.put(BlockConstants.BLOCK_PROPERTY_LIMIT, limitProperty);
 		BlockProperty windowProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW,new Double(timeWindow),PropertyType.TIME,true);
 		properties.put(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW, windowProperty);
-		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,TruthValue.UNKNOWN,PropertyType.TRUTHVALUE,false);
-		valueProperty.setBindingType(BindingType.ENGINE);
-		properties.put(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
+		ratioProperty = new BlockProperty(BLOCK_PROPERTY_RATIO,new Double(0.0),PropertyType.DOUBLE,false);
+		ratioProperty.setBindingType(BindingType.ENGINE);
+		properties.put(BlockConstants.BLOCK_PROPERTY_VALUE, ratioProperty);
 
 		// Define a single input and output
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
@@ -167,8 +168,8 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		if( buffer.size() >= maxPoints)  {
 			double ratio = computeRatio(buffer);
 			// Even if locked, we update the current state
-			valueProperty.setValue(ratio);
-			controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,new BasicQualifiedValue(new Double(ratio)));
+			ratioProperty.setValue(ratio);
+			controller.sendPropertyNotification(getBlockId().toString(),BLOCK_PROPERTY_RATIO,new BasicQualifiedValue(new Double(ratio)));
 			newState = computeState(currentState,ratio);
 			log.tracef("%s.evaluate ... ratio %f (%s)",TAG,ratio,newState.name());
 		}

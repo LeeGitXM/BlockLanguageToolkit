@@ -45,6 +45,7 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
 public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	private final String TAG = "SQC";
 	protected static final String BLOCK_PROPERTY_MAXIMUM_OUT_OF_RANGE = "MaximumOutOfRange";
+	protected static final String BLOCK_PROPERTY_SQC_LIMIT = "NumberOfStandardDeviations";
 	protected static final String BLOCK_PROPERTY_TEST_LABEL = "TestLabel";
 	protected static final String PORT_STANDARD_DEVIATION = "standardDeviation";
 	protected static final String PORT_TARGET = "target";
@@ -94,7 +95,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		this.isTransmitter = true;
 		BlockProperty clearProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET,new Boolean(clearOnReset),PropertyType.BOOLEAN,true);
 		properties.put(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET, clearProperty);
-		BlockProperty limitProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_LIMIT,new Double(limit),PropertyType.DOUBLE,true);
+		BlockProperty limitProperty = new BlockProperty(BLOCK_PROPERTY_SQC_LIMIT,new Double(limit),PropertyType.DOUBLE,true);
 		properties.put(BlockConstants.BLOCK_PROPERTY_LIMIT, limitProperty);
 		BlockProperty limitTypeProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_LIMIT_TYPE,new String(limitType.name()),PropertyType.STRING,true);
 		properties.put(BlockConstants.BLOCK_PROPERTY_LIMIT_TYPE, limitTypeProperty);
@@ -231,7 +232,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		if( Double.isNaN(standardDeviation) ) return;
 
 		// Evaluate the buffer and report
-		log.infof("%s.evaluate %d of %d",TAG,queue.size(),sampleSize);
+		log.debugf("%s.evaluate %d of %d",TAG,queue.size(),sampleSize);
 		if( queue.size() >= sampleSize) {
 			TruthValue newState = getRuleState();
 			if( !isLocked() && !newState.equals(truthState) ) {
@@ -278,7 +279,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
-		log.infof("%s.propertyChange: %s = %s",TAG,propertyName,event.getNewValue().toString());
+		log.debugf("%s.propertyChange: %s = %s",TAG,propertyName,event.getNewValue().toString());
 		if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_MAXIMUM_OUT_OF_RANGE)) {
 			try {
 				maxOut = Integer.parseInt(event.getNewValue().toString());
@@ -299,7 +300,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 				log.warnf("%s: propertyChange Unable to convert sample size to an integer (%s)",TAG,nfe.getLocalizedMessage());
 			}
 		}
-		else if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_LIMIT)) {
+		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_SQC_LIMIT)) {
 			try {
 				limit = Double.parseDouble(event.getNewValue().toString());
 			}
@@ -321,6 +322,9 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public SerializableBlockStateDescriptor getInternalStatus() {
 		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
+		Map<String,String> attributes = descriptor.getAttributes();
+		attributes.put("Mean (target)", String.valueOf(mean));
+		attributes.put("StandardDeviation", String.valueOf(standardDeviation));
 		List<Map<String,String>> descBuffer = descriptor.getBuffer();
 		for( Double dbl:queue) {
 			Map<String,String> qvMap = new HashMap<>();

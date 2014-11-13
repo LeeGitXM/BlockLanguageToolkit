@@ -578,7 +578,8 @@ public class ModelManager implements ProjectListener  {
 	}
 	
 	/**
-	 * We've discovered a changed model resource. Deserialize and convert into a ProcessFamily.
+	 * We've discovered a changed model resource. Deserialize and convert into a ProcessApplication.
+	 * Note that the name is wholly contained in the resource, not its contents.
 	 * @param projId the identifier of the project
 	 * @param res
 	 */ 
@@ -591,6 +592,7 @@ public class ModelManager implements ProjectListener  {
 			ObjectMapper mapper = new ObjectMapper();
 			SerializableApplication sa = mapper.readValue(json, SerializableApplication.class);
 			if( sa!=null ) {
+				sa.setName(res.getName());
 				log.infof("%s.deserializeApplicationResource: Successfully deserialized application %s",TAG,sa.getName());
 				application = new ProcessApplication(sa,res.getParentUuid());
 				application.setResourceId(res.getResourceId());
@@ -621,6 +623,8 @@ public class ModelManager implements ProjectListener  {
 			ObjectMapper mapper = new ObjectMapper();
 			sd = mapper.readValue(json, SerializableDiagram.class);
 			if( sd!=null ) {
+				sd.setName(res.getName());       // Name comes from the resource
+				log.infof("%s.deserializeDiagramResource: Successfully deserialized diagram %s",TAG,sd.getName());
 				sd.setResourceId(res.getResourceId());
 			}
 			else {
@@ -649,6 +653,7 @@ public class ModelManager implements ProjectListener  {
 			ObjectMapper mapper = new ObjectMapper();
 			SerializableFamily sf = mapper.readValue(json, SerializableFamily.class);
 			if( sf!=null ) {
+				sf.setName(res.getName());     // Resource is the source of the name.
 				log.infof("%s.deserializeModelResource: Successfully deserialized family %s",TAG,sf.getName());
 				family = new ProcessFamily(sf,res.getParentUuid());
 				family.setResourceId(res.getResourceId());

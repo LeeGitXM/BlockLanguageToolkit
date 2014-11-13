@@ -3,6 +3,7 @@
  */
 package com.ils.block;
 
+import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
@@ -16,11 +17,13 @@ import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.PlacementHint;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
+import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
@@ -39,7 +42,8 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 	protected static String STATUS_PORT_NAME = "status";
 	private final Watchdog dog;
 	private double synchInterval = 0.5; // 1/2 sec synchronization by default
-	protected String quality = "good";
+	private String qualityName = "good";
+	protected QualifiedValue quality = new BasicQualifiedValue("good");
 	private QualifiedValue value = null;
 	
 	/**
@@ -73,11 +77,11 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,new Double(synchInterval),PropertyType.TIME,true);
 		properties.put(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL, synch);
 		
-		// Define a two inputs -- one for the divisor, one for the dividend
+		// Define a two inputs -- one for the data, one for the quality
 		AnchorPrototype input = new AnchorPrototype(DATA_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setAnnotation("V");
 		anchors.add(input);
-		input = new AnchorPrototype(QUALITY_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TEXT);
+		input = new AnchorPrototype(QUALITY_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
 		input.setAnnotation("Q");
 		input.setHint(PlacementHint.L);
 		anchors.add(input);
@@ -92,7 +96,7 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 	@Override
 	public void reset() {
 		super.reset();
-		quality = "good";
+		quality = new BasicQualifiedValue("good");
 		value = null;
 	}
 	/**
@@ -138,14 +142,14 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 				value = qv;
 			}
 			else if (vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(QUALITY_PORT_NAME)) {
-				quality = qv.getValue().toString();
+				quality = qv;
 			}
 			else {
 				log.warnf("%s.acceptValue: Unexpected port designation (%s)",TAG,vcn.getConnection().getDownstreamPortName());
 			}
 			dog.setSecondsDelay(synchInterval);
 			controller.pet(dog);
-			log.infof("%s.acceptValue got %s for %s", TAG,qv.getValue().toString(),blockId);
+			log.debugf("%s.acceptValue got %s for %s", TAG,qv.getValue().toString(),blockId);
 		}
 	}
 	
@@ -157,22 +161,51 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 	@Override
 	public void evaluate() {
 		if( value != null ) {
-			OutgoingNotification nvn = null;
-			if( quality.equalsIgnoreCase("good") ||
-				!value.getQuality().isGood() ) {
-				nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,value);
+			QualifiedValue outValue = value;
+			qualityName = "bad";
+			boolean good = true;
+			if( quality.getValue() instanceof String ) {
+				good = quality.getValue().toString().equalsIgnoreCase("good");
+				if( !good ) qualityName = quality.getValue().toString();
+			}
+			else if( quality.getValue() instanceof TruthValue ) {
+				TruthValue tv = (TruthValue)quality.getValue();
+				good = tv.name().equals(TruthValue.TRUE.name());
+				if(good) qualityName = "good";
 			}
 			else {
-				BasicQuality q = new BasicQuality(quality,Quality.Level.Bad);
-				QualifiedValue qv = new BasicQualifiedValue(value.getValue(),q,value.getTimestamp());
-				nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+				good = false;
+				qualityName = "unexpected Quality data type";
 			}
+			if( !value.getQuality().isGood() ) {
+				good = false;
+				qualityName = value.getQuality().getName();
+			}
+			else if(!good) {
+				BasicQuality q = new BasicQuality(qualityName,Quality.Level.Bad);
+				outValue = new BasicQualifiedValue(value.getValue(),q,value.getTimestamp());
+			}
+			else {
+				qualityName = "good";
+			}
+				
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outValue);
+			controller.acceptCompletionNotification(nvn);
 			
-			
+			nvn = new OutgoingNotification(this,STATUS_PORT_NAME,new BasicQualifiedValue(good?TruthValue.TRUE:TruthValue.FALSE));
 			controller.acceptCompletionNotification(nvn);
 		}
 	}
-	
+	/**
+	 * @return a block-specific description of internal status. Add quality to the default list
+	 */
+	@Override
+	public SerializableBlockStateDescriptor getInternalStatus() {
+		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
+		Map<String,String> attributes = descriptor.getAttributes();
+		attributes.put("Quality", qualityName);
+		return descriptor;
+	}
 	/**
 	 * Augment the palette prototype for this block class.
 	 */

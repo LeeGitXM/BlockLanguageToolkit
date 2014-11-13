@@ -164,7 +164,6 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 		}
 	}
 	
-	
 	/**
 	 * @return true if the diagram is in a state to be saved. 
 	 */

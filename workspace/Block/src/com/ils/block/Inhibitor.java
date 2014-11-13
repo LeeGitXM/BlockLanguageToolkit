@@ -83,7 +83,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	}
 	
 	/**
-	 * We're received a transmitted signal. Deal with it, if appropriate.
+	 * We've received a transmitted signal. Deal with it, if appropriate.
 	 * At a later time, we may implement pattern filtering or some other
 	 * method to filter out unwanted messages. For now, if we recognize the command,
 	 * then execute it.
@@ -151,6 +151,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 		desc.setPreferredWidth(80);
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setStyle(BlockStyle.CLAMP);
+		desc.setReceiveEnabled(true);
 	}
 	
 	@Override

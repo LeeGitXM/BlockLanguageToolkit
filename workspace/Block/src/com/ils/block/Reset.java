@@ -15,6 +15,7 @@ import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.BlockStyle;
+import com.ils.blt.common.block.PlacementHint;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.connection.ConnectionType;
@@ -73,6 +74,7 @@ public class Reset extends AbstractProcessBlock implements ProcessBlock {
 
 		// Define a single output
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.SIGNAL);
+		output.setHint(PlacementHint.R);  // Got wierd behavior if Top
 		anchors.add(output);
 	}
 	
@@ -84,7 +86,7 @@ public class Reset extends AbstractProcessBlock implements ProcessBlock {
 	}
 	@Override
 	public void start() {
-		log.infof("%s.start %f",TAG,interval);
+		log.debugf("%s.start",TAG);
 		this.state = BlockState.ACTIVE;
 		dog.setSecondsDelay(interval);
 		if( interval>MIN_RESET_INTERVAL) controller.pet(dog);
@@ -93,7 +95,7 @@ public class Reset extends AbstractProcessBlock implements ProcessBlock {
 	public void stop() {
 		this.state = BlockState.INITIALIZED;
 		controller.removeWatchdog(dog);
-		log.infof("%s.stop",TAG);
+		log.debugf("%s.stop",TAG);
 	}
 
 	/**

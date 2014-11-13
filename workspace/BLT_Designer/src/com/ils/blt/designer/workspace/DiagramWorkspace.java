@@ -26,6 +26,7 @@ import java.util.UUID;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JMenu;
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -463,17 +464,40 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		super.close(findDesignableContainer(resourceId));
 	}
 	
-	// On close we save the container, no questions asked.
+	// On close we can save the container, no questions asked with a
+	// call to: saveDiagram((BlockDesignableContainer)container);
+	// As it is ... a dialog pops up.
 	@Override
 	protected void onClose(DesignableContainer c) {
 		logger.infof("%s: onClose",TAG);
 		BlockDesignableContainer container = (BlockDesignableContainer)c;
 		ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
-		saveDiagram((BlockDesignableContainer)container);
+		if( diagram.isDirty() ) {
+			Object[] options = {BundleUtil.get().getString(PREFIX+".CloseDiagram.Save"),BundleUtil.get().getString(PREFIX+".CloseDiagram.Revert")};
+			int n = JOptionPane.showOptionDialog(null,
+					BundleUtil.get().getString(PREFIX+".CloseDiagram.Question"),
+					String.format(BundleUtil.get().getString(PREFIX+".CloseDiagram.Title"), diagram.getName()),
+					JOptionPane.YES_NO_OPTION,
+					JOptionPane.QUESTION_MESSAGE,
+					null,         // icon
+					options,      // titles of buttons
+					options[0]);  //default button title
+			if( n==0 ) {
+				// Yes, save
+				saveDiagram((BlockDesignableContainer)container);
+				context.releaseLock(container.getResourceId());
+			}
+			else {
+				// Mark diagram as clean, since we reverted changes
+				diagram.setDirty(false);
+				NodeStatusManager statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
+				statusManager.clearDirtyBlockCount(diagram.getResourceId());
+				statusManager.setResourceDirty(diagram.getResourceId(), false);
+			}
+		}
 		diagram.unregisterChangeListeners();
-		context.releaseLock(container.getResourceId());
+		
 	}
-	
 	/**
 	 * This is called as a result of a user "Save" selection on
 	 * the main menu. We actually save al the diagrams.
@@ -501,6 +525,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			bytes = mapper.writeValueAsBytes(sd);
 			logger.debugf("%s: saveDiagram JSON = %s",TAG,new String(bytes));
 			context.updateResource(resid, bytes);
+			context.updateLock(resid);
 			c.setBackground(diagram.getBackgroundColorForState());
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
 		} 
@@ -551,14 +576,10 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	public void itemSelectionChanged(List<JComponent> selections) {
 		if( selections!=null && selections.size()==1 ) {
 			JComponent selection = selections.get(0);
-			logger.infof("%s.itemSelectionChanged: selected a %s",TAG,selection.getClass().getName());
-			if( selection instanceof BlockComponent ) {
-				//BlockComponent bc = ( BlockComponent)selection;
-				//selectedBlock = (ProcessBlockView)bc.getBlock();
-			}
+			logger.debugf("%s.itemSelectionChanged: selected a %s",TAG,selection.getClass().getName());
 		}
 		else {
-			logger.infof("%s: DiagramActionHandler: deselected",TAG);
+			logger.debugf("%s: DiagramActionHandler: deselected",TAG);
 		}
 	}
 	// ============================== Change Listener ================================
@@ -662,8 +683,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			// Apparently this only works if the class is in the same package (??)
 			try{
 				Class<?> clss = Class.forName(block.getEditorClass());
-				Constructor<?> ctor = clss.getDeclaredConstructor(new Class[] {ProcessBlockView.class});
-				final JDialog edtr = (JDialog)ctor.newInstance(block);
+				Constructor<?> ctor = clss.getDeclaredConstructor(new Class[] {ProcessDiagramView.class,ProcessBlockView.class});
+				ProcessDiagramView pdv = getActiveDiagram();
+				final JDialog edtr = (JDialog)ctor.newInstance(pdv,block); 
 				edtr.pack();
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
@@ -676,7 +698,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				logger.infof("%s.customEditAction: Invocation failed for %s",TAG,block.getEditorClass()); 
 			}
 			catch(NoSuchMethodException nsme ) {
-				logger.infof("%s.customEditAction %s: Constructor taking block not found (%s)",TAG,block.getEditorClass(),nsme.getMessage()); 
+				logger.infof("%s.customEditAction %s: Constructor taking diagram and block not found (%s)",TAG,block.getEditorClass(),nsme.getMessage()); 
 			}
 			catch(ClassNotFoundException cnfe) {
 				logger.infof("%s.customEditAction: Custom editor class (%s) not found (%s)",TAG,

@@ -165,7 +165,7 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 	 */
 	@Override
 	public void evaluate() {
-		log.infof("%s.evaluate",TAG);
+		log.debugf("%s.evaluate",TAG);
 		if( Double.isNaN(currentValue) ) return;
 
 		// Evaluate the buffer and report
@@ -176,7 +176,7 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 		while(buffer.size() > maxPoints ) {
 			buffer.removeFirst();
 		}
-		log.infof("%s.evaluate %d of %d points",TAG,buffer.size(),maxPoints);
+		log.debugf("%s.evaluate %d of %d points",TAG,buffer.size(),maxPoints);
 		if( buffer.size() >= maxPoints || !fillRequired) {
 			TruthValue result = checkPassConditions(truthValue);
 			if( !result.equals(truthValue) && !isLocked() ) {
@@ -221,7 +221,7 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
-		log.infof("%s.propertyChange: %s = %s",TAG,propertyName,event.getNewValue().toString());
+		log.debugf("%s.propertyChange: %s = %s",TAG,propertyName,event.getNewValue().toString());
 		if(propertyName.equals(BlockConstants.BLOCK_PROPERTY_LIMIT)) {
 			try {
 				limit = Double.parseDouble(event.getNewValue().toString());

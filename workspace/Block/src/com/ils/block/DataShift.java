@@ -76,7 +76,7 @@ public class DataShift extends AbstractProcessBlock implements ProcessBlock {
 			buffer.add(qv);
 			if( buffer.size() > sampleSize) {
 				lastValue = buffer.removeFirst();
-				log.infof("%s.acceptValue: Popped %s",TAG,lastValue.getValue().toString());
+				log.debugf("%s.acceptValue: Popped %s",TAG,lastValue.getValue().toString());
 				if( !isLocked() ) {
 					// Give it a new timestamp
 					QualifiedValue outval = new BasicQualifiedValue(lastValue.getValue());
