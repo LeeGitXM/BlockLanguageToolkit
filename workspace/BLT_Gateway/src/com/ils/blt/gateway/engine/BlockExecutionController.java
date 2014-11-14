@@ -442,8 +442,8 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 			sessionManager.sendNotification(ApplicationScope.DESIGNER, BLTProperties.MODULE_ID, key, val);
 		}
 		catch(Exception ex) {
-			// Possibly no receiver registered
-			log.warnf("%s.sendPropertyNotification: Error transmitting %s (%s)",TAG,key,ex.getMessage());
+			// Probably no receiver registered. This is to be expected if the designer is not running.
+			log.debugf("%s.sendPropertyNotification: Error transmitting %s (%s)",TAG,key,ex.getMessage());
 		}
 	}
 	/**
@@ -460,7 +460,8 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 			sessionManager.sendNotification(ApplicationScope.DESIGNER, BLTProperties.MODULE_ID, key, val);
 		}
 		catch(Exception ex) {
-			log.warnf("%s.sendConnectionNotification: Error transmitting %s (%s)",TAG,key,ex.getMessage());
+			// Probably no receiver registered. This is to be expected if the designer is not running.
+			log.debugf("%s.sendConnectionNotification: Error transmitting %s (%s)",TAG,key,ex.getMessage());
 		}
 	}
 

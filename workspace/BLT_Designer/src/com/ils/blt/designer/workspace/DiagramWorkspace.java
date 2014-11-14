@@ -683,9 +683,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			// Apparently this only works if the class is in the same package (??)
 			try{
 				Class<?> clss = Class.forName(block.getEditorClass());
-				Constructor<?> ctor = clss.getDeclaredConstructor(new Class[] {ProcessDiagramView.class,ProcessBlockView.class});
+				Constructor<?> ctor = clss.getDeclaredConstructor(new Class[] {DesignerContext.class,ProcessDiagramView.class,ProcessBlockView.class});
 				ProcessDiagramView pdv = getActiveDiagram();
-				final JDialog edtr = (JDialog)ctor.newInstance(pdv,block); 
+				final JDialog edtr = (JDialog)ctor.newInstance(context,pdv,block); 
 				edtr.pack();
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {

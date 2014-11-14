@@ -30,7 +30,6 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorP
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.BlockDiagramModel;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Connection;
-import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.AnchorPointId;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.LookupConnection;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 

@@ -39,6 +39,7 @@ import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 /**
  * This is an editor for encapsulation blocks. We allow the user to define anchor points. 
@@ -60,7 +61,7 @@ public class EncapsulationAnchorPointEditor extends JDialog {
 	private JButton deleteButton;   // Click to delete a row
 
 	private JTable table;
-	public EncapsulationAnchorPointEditor(ProcessDiagramView diag,ProcessBlockView view) {
+	public EncapsulationAnchorPointEditor(DesignerContext ctx,ProcessDiagramView diag,ProcessBlockView view) {
 		super();
 		this.diagram = diag;
 		this.block = view;

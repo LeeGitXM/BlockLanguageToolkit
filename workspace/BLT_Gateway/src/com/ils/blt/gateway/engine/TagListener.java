@@ -303,9 +303,15 @@ public class TagListener implements TagChangeListener   {
 					BlockProperty property = key.getProperty();
 					// Reject blocks that are in a disabled diagram
 					ProcessDiagram parent = controller.getDiagram(block.getParentId());
-					if( !parent.getState().equals(DiagramState.DISABLED)) {
-						updateProperty(block,property,tag.getValue());
+					if( parent!=null ) {
+						if( !parent.getState().equals(DiagramState.DISABLED)) {
+							updateProperty(block,property,tag.getValue());
+						}
 					}
+					else {
+						log.warnf("%s.tagChanged: %s, subscriber %s has no parent diagram",TAG,tp.toStringFull(),block.getName());
+					}
+					
 				}			
 			}
 			catch(Exception ex) {

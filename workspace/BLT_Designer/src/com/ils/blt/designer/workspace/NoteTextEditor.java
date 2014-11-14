@@ -10,8 +10,9 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.List;
-import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -19,19 +20,21 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
+import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
-import javax.swing.table.DefaultTableModel;
 
 import net.miginfocom.swing.MigLayout;
 
-import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
+import com.ils.blt.common.block.BlockConstants;
+import com.ils.blt.common.block.BlockProperty;
+import com.ils.blt.designer.BLTDesignerHook;
+import com.ils.blt.designer.NodeStatusManager;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 /**
  * This is a read-only viewer for blocks for blocks that return internal state
@@ -46,60 +49,160 @@ public class NoteTextEditor extends JDialog {
 	private static final long serialVersionUID = 2002388376824434427L;
 	private final int DIALOG_HEIGHT = 320;
 	private final int DIALOG_WIDTH = 500;
-	private static final Dimension TABLE_SIZE  = new Dimension(480,120);
+	private static final Dimension PANEL_SIZE  = new Dimension(480,120);
+	private final NodeStatusManager statusManager;
+	private final UpdateTask updateTask;
+	private final ScheduledExecutorService executor;
 	private final ProcessDiagramView diagram;
 	private final ProcessBlockView block;
+	private JLabel textLabel;    // Use a label to display the results
+	private JTextArea textArea;
 	
-	public NoteTextEditor(ProcessDiagramView dia,ProcessBlockView view) {
+	public NoteTextEditor(DesignerContext context,ProcessDiagramView diag,ProcessBlockView view) {
 		super();
-		this.diagram = dia;
+		this.diagram = diag;
 		this.block = view;
 		this.setTitle(BundleUtil.get().getString(PREFIX+".NoteTextEdit.Title"));
 		setModal(false);
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
         this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));
-		queryBlock();
         initialize();
+        this.statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
+        this.updateTask = new UpdateTask(textLabel,textArea);
+        this.executor = Executors.newSingleThreadScheduledExecutor();
+        executor.scheduleAtFixedRate(updateTask, 3, 10, TimeUnit.SECONDS);
 	}
 	
 	private void initialize() {
 		
-		// The internal panel has two panes - one for the table, the other for the list
+		// The internal panel has two panes - one for the JTextPane, the other for the JTextArea.
 		setLayout(new BorderLayout());
 		JPanel internalPanel = new JPanel();
-		
-		/*
-		//Create the internal panel - it has two panes
+	
 		internalPanel.setLayout(new MigLayout("ins 2","",""));
-		addSeparator(internalPanel,"Properties");
-		internalPanel.add(createPropertiesPanel(),"wrap");
-		
-		if( !buffer.isEmpty() ) {
-			addSeparator(internalPanel,"List");
-			internalPanel.add(createListPanel(),"wrap");
-		}
+		addSeparator(internalPanel,"Edit Text here (use HTML for formatting)");
+		textArea = createTextArea(internalPanel);
+		addSeparator(internalPanel,"View Formatted Results here");
+	
+		textLabel = createTextLabel(internalPanel);
 		add(internalPanel,BorderLayout.CENTER);
-		*/
+		
 
 		// The OK button simply closes the dialog
 		JPanel buttonPanel = new JPanel();
 		add(buttonPanel, BorderLayout.SOUTH);
-		JButton okButton = new JButton("Dismiss");
+		JButton okButton = new JButton("OK");
 		buttonPanel.add(okButton, "");
 		okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				executor.shutdown();
+				// Save the text and dimensions
+				for(BlockProperty property:block.getProperties() ) {
+					if( property.getName().equals(BlockConstants.BLOCK_PROPERTY_TEXT) ) {
+						property.setValue(textArea.getText());
+					}
+					else if( property.getName().equals(BlockConstants.BLOCK_PROPERTY_WIDTH) ) {
+						property.setValue(textLabel.getWidth());
+					}
+					else if( property.getName().equals(BlockConstants.BLOCK_PROPERTY_HEIGHT) ) {
+						property.setValue(textLabel.getHeight());
+					}
+				}
+				block.setDirty(true);
+				statusManager.incrementDirtyBlockCount(diagram.getResourceId());
+				SwingUtilities.invokeLater(new WorkspaceRepainter());
+				dispose();
+			}
+		});
+		JButton cancelButton = new JButton("Cancel");
+		buttonPanel.add(cancelButton, "");
+		cancelButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				executor.shutdown();
 				dispose();
 			}
 		});
 	}
-
+	
 	/**
-	 * Obtain the current text of the block
+	 * Create a fixed size text area in a scroll area. This is
+	 * where the user can change the text. Periodically we update
+	 * the text pane with the contents.
+	 * 
+	 * Initialize it with the block text property.
+	 * @return
 	 */
-	private void queryBlock() {
-		
+	private JTextArea createTextArea(JPanel outerPanel)  {
+		JTextArea area = new JTextArea();
+		area.setEditable(true);
+		area.setLineWrap(true);
+		area.setWrapStyleWord(true);
+		// Look for the text property
+		for(BlockProperty property:block.getProperties() ) {
+			if( property.getName().equals(BlockConstants.BLOCK_PROPERTY_TEXT) ) {
+				area.setText(property.getValue().toString());
+				break;
+			}
+		}
+		JScrollPane areaScrollPane = new JScrollPane(area);
+		areaScrollPane.setVerticalScrollBarPolicy(
+		                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		areaScrollPane.setPreferredSize(PANEL_SIZE);
+        outerPanel.add(areaScrollPane, "wrap");
+		return area;
 	}
 	
-}
+	/**
+	 * Create a stretchable text pane to display the contents of the
+	 * text area. Add it to the supplied panel.
+	 * @return
+	 */
+	private JLabel createTextLabel(JPanel outerPanel)  {
+		JLabel label = new JLabel();
+		label.setBackground(new Color(245,247,239));   // Light beige
+        outerPanel.add(label, "wrap");
+		return label;
+	}
 	
+	
+	/**
+	 * Add a separator to a panel using Mig layout
+	 */
+	private JLabel addSeparator(JPanel panel,String text) {
+		JSeparator separator = new JSeparator();
+		JLabel label = new JLabel(text);
+		label.setFont(new Font("Tahoma", Font.PLAIN, 11));
+		label.setForeground(Color.BLUE);
+		panel.add(label, "split 2,span");
+		panel.add(separator, "growx,wrap");
+		return label;
+	}
+
+
+
+
+	//================================= Execution Task ========================================
+	/** 
+	 * Run periodically to update the text area from the text pane.
+	 */
+	private class UpdateTask implements Runnable{
+		private final JLabel pane;
+		private final JTextArea area;
+		/**
+		 * Constructor for the text area update task
+		 * @param p properties that appear in the header of each results list
+		 */
+		public UpdateTask(JLabel tpane,JTextArea tarea) {
+			this.pane = tpane;
+			this.area = tarea;
+		}
+
+		/**
+		 * Execute a single update.
+		 */
+		public void run() {
+			pane.setText(area.getText());
+		}
+	}
+}

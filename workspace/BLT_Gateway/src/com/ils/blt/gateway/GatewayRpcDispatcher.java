@@ -308,10 +308,9 @@ public class GatewayRpcDispatcher   {
 	    BlockExecutionController.getInstance().resetDiagram(project,path);
 	}
 	public Boolean resourceExists(Long projectId,Long resourceId) {
-		log.infof("%s.resourceExists ...",TAG);
 		BlockExecutionController controller = BlockExecutionController.getInstance();
 		ProcessDiagram diagram = controller.getDiagram(projectId.longValue(), resourceId.longValue());
-		log.infof("%s.resourceExists (2) ...",TAG);
+		log.infof("%s.resourceExists diagram %d:%d ...%s",TAG,projectId,resourceId,(diagram!=null?"true":"false"));
 		return new Boolean(diagram!=null);
 	}
 	

@@ -120,6 +120,8 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	
 	public DiagramWorkspace getWorkspace() { return workspace; }
 
+	// Before the massive save, make sure that all dirty nodes have been
+	// serialized into project resources.
 	@Override
 	public void notifyProjectSaveStart(SaveContext save) {
 		log.infof("%s: NotifyProjectSaveStart",TAG);

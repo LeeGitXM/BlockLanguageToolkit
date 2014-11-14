@@ -272,7 +272,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 			ProcessDiagramView view = (ProcessDiagramView)tab.getModel();
 			for( Block blk:view.getBlocks()) {
 				ProcessBlockView pbv = (ProcessBlockView)blk;
-				//pbv.setDirty(false);  // Suppresses the popup?
+				pbv.setDirty(false);  // Suppresses the popup?
 			}
 			workspace.saveDiagram(tab);
 			view.registerChangeListeners();
@@ -282,7 +282,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 		ProjectResource res = getProjectResource();
 		diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
 		try {
-			DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ..."); // Do not publish
+			DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ...");  // Don't publish
 		}
 		catch(GatewayException ge) {
 			logger.warnf("%s.saveDiagram: Exception saving project resource %d (%s)",TAG,resourceId,ge.getMessage());
@@ -306,7 +306,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 	 */
 	@Override
 	public void projectUpdated(Project diff) {
-		logger.debug(TAG+"projectUpdated "+diff.getDescription());
+		logger.info(TAG+"projectUpdated "+diff.getDescription());
 		if (diff.isResourceDirty(resourceId) && !diff.isResourceDeleted(resourceId)) {
 			logger.infof("%s: projectUpdated, setting name ...",TAG);
 			setName(diff.getResource(resourceId).getName());
@@ -549,7 +549,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 	public void stateChanged(ChangeEvent event) {
 		// Set italics, enable Save
 		boolean dirty = statusManager.isResourceDirty(resourceId);
-		logger.tracef("%s.stateChanged: dirty = %s",TAG,(dirty?"true":"false"));
+		logger.infof("%s.stateChanged: dirty = %s",TAG,(dirty?"true":"false"));
 		setItalic(dirty);
 		saveAction.setEnabled(dirty);
 		refresh();

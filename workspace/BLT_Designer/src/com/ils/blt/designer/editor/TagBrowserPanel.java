@@ -71,7 +71,7 @@ public class TagBrowserPanel extends BasicEditPanel {
 							property.setBinding(selectedPath);
 						}
 						updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
-						editor.notifyOfMajorChange();      // Mark block as "dirty"
+						editor.notifyOfPropertyChange(property);      // Immediate update in gateway
 						setSelectedPane(BlockEditConstants.HOME_PANEL);
 					}
 				}

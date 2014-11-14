@@ -131,8 +131,12 @@ public class BlockFactory  {
 					property.setDisplayOffsetY(bp.getDisplayOffsetY());
 					// Use the property change interface so as to properly trigger
 					// local handling within the block (if the new value is non-null)
+					boolean valueChange = false;
+					if( property.getValue()!=null && bp.getValue()!=null && !property.getValue().equals(bp.getValue())) {
+						valueChange=true;
+					}
 					property.setValue(bp.getValue());
-					if( property.getValue()!=null ) {
+					if( valueChange   ) {
 						BlockPropertyChangeEvent event = 
 								new BlockPropertyChangeEvent(pb.getBlockId().toString(),property.getName(),
 										property.getValue(),bp.getValue());

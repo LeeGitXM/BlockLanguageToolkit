@@ -18,6 +18,8 @@ import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -58,7 +60,7 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
  *        edit button  - go to editor screen to change value
  *        binding btn  - go to separate screen to determine binding    
  */
-public class PropertyPanel extends JPanel implements NotificationChangeListener, FocusListener, KeyListener, TagChangeListener {
+public class PropertyPanel extends JPanel implements ChangeListener, FocusListener, KeyListener, NotificationChangeListener,TagChangeListener {
 	private static final long serialVersionUID = 2264535784255009984L;
 	private static SimpleDateFormat dateFormatter = new SimpleDateFormat(BlockConstants.TIMESTAMP_FORMAT);
 	private static UtilityFunctions fncs = new UtilityFunctions();
@@ -86,6 +88,7 @@ public class PropertyPanel extends JPanel implements NotificationChangeListener,
 		this.block = blk;
 		this.property = prop;
 		this.currentTimeUnit = TimeUnit.SECONDS;   // The "canonical" unit
+		property.addChangeListener(this);
 	
 		setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));     // 3 cells across
 		if( property.getType().equals(PropertyType.TIME) ) {
@@ -189,6 +192,7 @@ public class PropertyPanel extends JPanel implements NotificationChangeListener,
 				property.getBindingType().equals(BindingType.TAG_WRITE)	) {
 			unsubscribeToTagPath(property.getBinding());
 		}
+		property.removeChangeListener(this);
 	}
 	// Subscribe to a tag. This will fail if the tag path is unset of illegal.
 	private void subscribeToTagPath(String path) {
@@ -553,5 +557,12 @@ public class PropertyPanel extends JPanel implements NotificationChangeListener,
 			// Tag or path is null
 			log.warnf("%s.tagChanged: Unknown tag (%s)",TAG,(tag==null?"null":tag.getName()));
 		}
+	}
+	
+	// =========================================== Change Listener ===================================
+	// We get this when another entity changes a property. We just need to re-display.
+	@Override
+	public void stateChanged(ChangeEvent e) {
+		update();	
 	}
 }
