@@ -16,11 +16,13 @@ import java.util.List;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JMenu;
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.tree.TreePath;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
@@ -44,7 +46,6 @@ import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.IgnitionDesigner;
-import com.inductiveautomation.ignition.designer.UndoManager;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.gateway.DTGatewayInterface;
@@ -53,7 +54,6 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.model.DesignerProjectContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
-import com.inductiveautomation.ignition.designer.navtree.model.ResourceDeleteAction;
 
 /**
  * A DiagramNode appears as leaf node in the Diagnostics NavTree hierarchy.
@@ -118,6 +118,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 		setupEditActions(paths, selection);
 		ExportDiagramAction exportAction = new ExportDiagramAction(menu.getRootPane(),resourceId);
 		menu.add(exportAction);
+		DeleteDiagramAction diagramDeleteAction = new DeleteDiagramAction();
 		DebugDiagramAction debugAction = new DebugDiagramAction();
 		ResetDiagramAction resetAction = new ResetDiagramAction();
 		
@@ -141,7 +142,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 		menu.add(saveAction);
 		menu.addSeparator();
 		menu.add(renameAction);
-        menu.add(deleteAction);
+        menu.add(diagramDeleteAction);
         menu.addSeparator();
         menu.add(debugAction);
         menu.add(resetAction);
@@ -174,22 +175,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 		
 		return statusManager.isResourceDirty(resourceId);
 	}
-	/**
-	 * Before deleting ourself, delete the frame and model, if they exist.
-	 * The children aren't AbstractNavTreeNodes ... (??)
-	 */
-	@SuppressWarnings("unchecked")
-	@Override
-	public void doDelete(List<? extends AbstractNavTreeNode> children,DeleteReason reason) {
-		logger.infof("%s.doDelete: res %d",TAG,resourceId);
-		ResourceDeleteAction delete = new ResourceDeleteAction(context,
-				(List<AbstractResourceNavTreeNode>) children,
-				reason.getActionWordKey(), PREFIX+".DiagramNoun");
-		if (delete.execute()) {
-			UndoManager.getInstance().add(delete, DiagramNode.class); 
-		}
-	}
-	
+		
 	@Override
 	public ProjectResource getProjectResource() {
 		return context.getProject().getResource(resourceId);
@@ -291,6 +277,33 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 		statusManager.setResourceDirty(resourceId, false);
 	}
 	
+	/**
+	 * Update the resource associated with the current diagram -- if needed.
+	 * This only applies for diagrams that are open. This is called during a
+	 * scan for dirty diagrams.
+	 */
+	public void updateResource() {
+		BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId);
+		if( tab!=null ) {
+			// If the diagram is open on a tab, call the workspace method to update the project resource
+			// from the diagram view. This method handles re-paint of the background.
+			ProcessDiagramView view = (ProcessDiagramView)tab.getModel();
+			if( view.needsSaving() || view.isDirty() ) {
+				logger.infof("%s.updateResource: updating ... %d",TAG,resourceId);
+				SerializableDiagram sd = view.createSerializableRepresentation();
+				sd.setName(getName());
+				ObjectMapper mapper = new ObjectMapper();
+				try{
+				byte[] bytes = mapper.writeValueAsBytes(sd);
+				context.updateResource(resourceId,bytes);
+				}
+				catch(JsonProcessingException jpe) {
+					logger.warnf("%s.updateResource: Exception serializing diagram, resource %d (%s)",TAG,resourceId,jpe.getMessage());
+				}
+			}
+		} 
+	}
+	
 	@Override
 	protected void uninstall() {
 		super.uninstall();
@@ -306,7 +319,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 	 */
 	@Override
 	public void projectUpdated(Project diff) {
-		logger.info(TAG+"projectUpdated "+diff.getDescription());
+		logger.info(TAG+".projectUpdated "+diff.getDescription());
 		if (diff.isResourceDirty(resourceId) && !diff.isResourceDeleted(resourceId)) {
 			logger.infof("%s: projectUpdated, setting name ...",TAG);
 			setName(diff.getResource(resourceId).getName());
@@ -413,7 +426,34 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
     		}
     	}
     }
-	
+    private class DeleteDiagramAction extends BaseAction {
+    	private static final long serialVersionUID = 1L;
+	    public DeleteDiagramAction()  {
+	    	super(PREFIX+".DeleteDiagram",IconUtil.getIcon("delete")); 
+	    }
+	    
+		public void actionPerformed(ActionEvent e) {
+			// Note: At this time we do not obtain locks when the diagram is open.
+			//       (we should).
+			if( context.requestLock(resourceId)) {
+				// NOTE: This will set the parent dirty as well.
+				//       Do a little exercise to force propagation
+				//       independent of the current "dirtiness"
+				statusManager.clearDirtyChildCount(resourceId);
+				statusManager.setResourceDirty(resourceId, false);
+				workspace.close(resourceId);    // Close the tab
+				statusManager.setResourceDirty(resourceId, true);
+				context.deleteResource(resourceId);
+				context.updateLock(resourceId);
+				context.releaseLock(resourceId);
+				// Show parent dirty
+				
+			}
+			else {
+				JOptionPane.showMessageDialog(null, String.format("Diagram is locked. Close tab."));
+			}
+		}
+	}
 	
 	private class ResetDiagramAction extends BaseAction {
     	private static final long serialVersionUID = 1L;
@@ -549,7 +589,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 	public void stateChanged(ChangeEvent event) {
 		// Set italics, enable Save
 		boolean dirty = statusManager.isResourceDirty(resourceId);
-		logger.infof("%s.stateChanged: dirty = %s",TAG,(dirty?"true":"false"));
+		logger.debugf("%s.stateChanged: dirty = %s",TAG,(dirty?"true":"false"));
 		setItalic(dirty);
 		saveAction.setEnabled(dirty);
 		refresh();
@@ -557,6 +597,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 
 	/**
 	 * This method allows us to have children. Children are always EncapsulatedDiagramNodes.
+	 * TODO: 
 	 * @param arg0
 	 * @return
 	 */

@@ -111,6 +111,9 @@ public class BlockPropertyEditor extends SlidingPane   {
 	public void notifyOfPropertyChange(BlockProperty property) {
 		ApplicationRequestHandler handler = new ApplicationRequestHandler();
 		handler.setBlockProperty(diagram.getId(), block.getId(), property);
+		diagram.setNeedsSaving(true);
+		statusManager.setResourceDirty(diagram.getResourceId(),true);
+		SwingUtilities.invokeLater(new WorkspaceRepainter());
 	}
 	
 	/**

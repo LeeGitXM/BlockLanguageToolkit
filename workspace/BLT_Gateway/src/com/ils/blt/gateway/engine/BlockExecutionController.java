@@ -98,7 +98,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		log.tracef("%s.acceptBroadcastNotification: %s (%s) %s", TAG,note.getDiagramId(),note.getSignal().getCommand(),
 				(stopped?"REJECTED, controller stopped":""));
 		ProcessDiagram diagram = getDiagram(note.getDiagramId());
-		if( diagram!=null && diagram.getState().equals(DiagramState.ACTIVE)) {
+		if( diagram!=null && !diagram.getState().equals(DiagramState.DISABLED)) {
 			try {
 				if(!stopped) buffer.put(note);
 			}
@@ -117,7 +117,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 				note.getValue().toString(),
 				(stopped?"REJECTED, controller stopped":""));
 		ProcessDiagram diagram = getDiagram(note.getBlock().getParentId());
-		if( diagram!=null && diagram.getState().equals(DiagramState.ACTIVE)) {
+		if( diagram!=null && !diagram.getState().equals(DiagramState.DISABLED)) {
 			try {
 				if(!stopped) buffer.put(note);
 			}
@@ -127,7 +127,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	
 	/**
 	 * @param note the notification to be distributed to all connection posts
-	 *        interested in the sender
+	 *        interested in the sender. Sender must be ACTIVE.
 	 */
 	@Override
 	public void acceptConnectionPostNotification(ConnectionPostNotification note) {
@@ -309,11 +309,11 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 * There may be other entities still subscribed to the same tag.
 	 */
 	public void removeSubscription(ProcessBlock block,BlockProperty property) {
-		if( property!=null && property.getValue()!=null && 
+		if( property!=null && property.getBinding()!=null && 
 			(	property.getBindingType()==BindingType.TAG_READ || 
 				property.getBindingType()==BindingType.TAG_READ ||
 				property.getBindingType()==BindingType.TAG_MONITOR )  ) {
-			String tagPath = property.getValue().toString();
+			String tagPath = property.getBinding().toString();
 			if( tagPath!=null && tagPath.length()>0) {
 				tagListener.removeSubscription(block,property,tagPath);
 			}
@@ -335,7 +335,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 * @param val
 	 */
 	public void updateTag(UUID diagramId,String path,QualifiedValue val) {
-		log.debugf("%s.updateTag %s = %s ",TAG,path,val.toString());
+		log.infof("%s.updateTag %s = %s ",TAG,path,val.toString());
 		ProcessDiagram diagram = modelManager.getDiagram(diagramId);
 		if( diagram!=null && diagram.getState().equals(DiagramState.ACTIVE)) {
 			tagWriter.updateTag(diagram.getProjectId(),path,val);

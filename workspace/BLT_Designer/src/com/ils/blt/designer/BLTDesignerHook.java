@@ -125,7 +125,9 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	@Override
 	public void notifyProjectSaveStart(SaveContext save) {
 		log.infof("%s: NotifyProjectSaveStart",TAG);
-		rootNode.saveAll();
+		//rootNode.saveAll();
+		rootNode.serializeResourcesInNeedOfSave();
+		nodeStatusManager.clearAll();
 	}
 	
 	

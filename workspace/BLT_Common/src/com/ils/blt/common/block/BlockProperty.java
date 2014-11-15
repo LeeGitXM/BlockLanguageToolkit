@@ -165,7 +165,12 @@ public class BlockProperty implements NotificationChangeListener {
 	 * A readable string representation for debugging.
 	 */
 	public String toString() {
-		return String.format("%s=%s (%s)",getName(),value==null?"null":value.toString(),bindingType.name());
+		if(bindingType.equals(BindingType.NONE)) {
+			return String.format("%s=%s",getName(),value==null?"null":value.toString());
+		}
+		else {
+			return String.format("%s (%s)=%s",getName(),getBindingType().name(),(binding==null?"null":binding));
+		}
 	}
 
 	/**

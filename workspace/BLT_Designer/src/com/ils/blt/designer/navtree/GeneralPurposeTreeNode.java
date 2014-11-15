@@ -152,36 +152,33 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 	@Override
 	protected AbstractNavTreeNode createChildNode(ProjectResource res) {
 		logger.infof("%s.createChildNode type:%s, level=%d", TAG,res.getResourceType(),getDepth());
+		AbstractNavTreeNode node = null;
 		if (    ProjectResource.FOLDER_RESOURCE_TYPE.equals(res.getResourceType()))       {
-			GeneralPurposeTreeNode node = new GeneralPurposeTreeNode(context, res, res.getDataAsUUID());
-			statusManager.defineResource(resourceId, res.getResourceId());
+			node = new GeneralPurposeTreeNode(context, res, res.getDataAsUUID());
 			logger.infof("%s.createChildNode: (%s) %s->%s",TAG,res.getResourceType(),this.getName(),node.getName());
-			return node;
 		}
 		else if ( BLTProperties.APPLICATION_RESOURCE_TYPE.equals(res.getResourceType()) )       {
 			SerializableApplication sa = deserializeApplication(res);
-			GeneralPurposeTreeNode node = new GeneralPurposeTreeNode(context, res, sa.getId());
-			statusManager.defineResource(resourceId, res.getResourceId());
+			node = new GeneralPurposeTreeNode(context, res, sa.getId());
 			logger.infof("%s.createChildNode: (%s) %s->%s",TAG,res.getResourceType(),this.getName(),node.getName());
-			return node;
 		}
 		else if ( BLTProperties.FAMILY_RESOURCE_TYPE.equals(res.getResourceType()) )       {
 			SerializableFamily fa = deserializeFamily(res); 
-			GeneralPurposeTreeNode node = new GeneralPurposeTreeNode(context, res, fa.getId());
-			statusManager.defineResource(resourceId, res.getResourceId());
+			node = new GeneralPurposeTreeNode(context, res, fa.getId());
 			logger.infof("%s.createChildNode: (%s) %s->%s",TAG,res.getResourceType(),this.getName(),node.getName());
-			return node;
 		}
 		else if (BLTProperties.DIAGRAM_RESOURCE_TYPE.equals(res.getResourceType())) {
-			DiagramNode node = new DiagramNode(context,res,workspace);
-			statusManager.defineResource(resourceId, res.getResourceId());
-			logger.infof("%s.createChildPanel: %s->%s",TAG,this.getName(),node.getName());
-			return node;
+			node = new DiagramNode(context,res,workspace);
+			logger.infof("%s.createChildDiagram: %s->%s",TAG,this.getName(),node.getName());
 		} 
 		else {
 			logger.warnf("%s: Attempted to create a child of type %s (ignored)",TAG,res.getResourceType());
 			throw new IllegalArgumentException();
 		}
+		// Set proper dirtiness for re-constituted nodes
+		statusManager.defineResource(resourceId, res.getResourceId());
+		node.setItalic(statusManager.isResourceDirty(res.getResourceId()));
+		return node;
 	}
 	
 	@Override
@@ -335,6 +332,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 	@Override
 	public void doDelete(List<? extends AbstractNavTreeNode> children,
 			DeleteReason reason) {
+		logger.infof("%s.doDelete: children of resource %d..",TAG,resourceId);
 		for (AbstractNavTreeNode node : children) {
 			if (node instanceof DiagramNode) {
 				((DiagramNode) node).closeAndCommit();
@@ -368,8 +366,16 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 			DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ..."); 
 		}
 		catch(GatewayException ge) {
-			logger.warnf("%s.SaveAllAction: Exception saving project resource %d (%s)",TAG,resourceId,ge.getMessage());
+			logger.warnf("%s.SaveAll: Exception saving project resource %d (%s)",TAG,resourceId,ge.getMessage());
 		}
+	}
+	/**
+	 * Traverse the entire node hierarchy looking for diagrams that need saving.
+	 * When found, serialize into the project resource. This is in anticipation
+	 * of a top-level save.
+	 */
+	public void serializeResourcesInNeedOfSave() {
+		saveThoseInNeed(this);
 	}
 	/**
 	 *  Serialize an Application into JSON.
@@ -1258,6 +1264,29 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
     	}
     	return sfold;
     }
+    // Recursively descend the node tree, looking for diagram resources where
+    // the associated DiagramView is out-of-synch with the project resource.
+    // When found update the project resource.
+    private void saveThoseInNeed(AbstractResourceNavTreeNode node) {
+    	ProjectResource res = node.getProjectResource();
+    	if( res!=null ) {
+    		logger.infof("%s.saveThoseInNeed: %s (%d)",TAG,res.getName(),res.getResourceId());
+    		if(res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
+    			// If the resource is open, we need to save it ..
+    			DiagramNode dnode = (DiagramNode)node;
+    			dnode.updateResource();  // Only if necessary
+    		}
+    	}
+    	else {
+    		logger.warnf("%s.saveThoseInNeed: %s has no project resource",TAG,node.getName());
+    	}
+    	@SuppressWarnings("rawtypes")
+    	Enumeration walker = node.children();
+    	while(walker.hasMoreElements()) {
+    		Object child = walker.nextElement();
+    		saveThoseInNeed((AbstractResourceNavTreeNode)child);
+    	}
+    }
     /**
 	 * Search the project for all resources. This is for debugging.
 	 * We filter out those that are global (have no module) as these
@@ -1302,6 +1331,16 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 		if( img!=null ) result = new ImageIcon(img);
 		return result;
 	}
+	
+	
+	// ============================================== Project Change Listener =======================================
+	
+	@Override
+	public void projectUpdated(Project diff) {
+		logger.infof("%s.projectUpdated ...",TAG);
+		super.projectUpdated(diff);
+	}
+
 	@Override
 	public void projectResourceModified(ProjectResource res, ProjectChangeListener.ResourceModification changeType) {
 		if (res.getResourceId() == this.resourceId) {
@@ -1312,7 +1351,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 		} 
 		else if ((changeType == ProjectChangeListener.ResourceModification.Deleted) ) {
 			statusManager.setResourceDirty(resourceId, true);  // A child has been deleted
-			recreate();
+			recreate();  // Reconstruct the tree
 		} 
 		else {
 			super.projectResourceModified(res, changeType);
@@ -1324,9 +1363,9 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 	public void stateChanged(ChangeEvent event) {
 		// Set italics, enable Save
 		boolean dirty = statusManager.isResourceDirty(resourceId);
-		logger.tracef("%s.stateChanged: dirty = %s",TAG,(dirty?"true":"false"));
+		logger.infof("%s.stateChanged: %d dirty = %s",TAG,resourceId,(dirty?"true":"false"));
 		setItalic(dirty);
 		applicationCreateAction.setEnabled(dirty);    // Only applies to an application node
-		refresh();
+		refresh();  // Update the UI
 	}
 }

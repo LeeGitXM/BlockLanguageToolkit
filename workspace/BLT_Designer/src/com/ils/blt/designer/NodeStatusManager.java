@@ -39,12 +39,17 @@ public class NodeStatusManager  {
 	}
 	
 	/**
-	 * Define a new resource. The default should work for newly discovered resources
+	 * Define a new resource. The default should work for newly discovered resources.
+	 * If this is re-called with the same resource, retain old status,
+	 * retain old parent.
 	 * @param resourceId
 	 */
 	public void defineResource(long parentResource,long resourceId) {
 		log.infof("%s.defineResource(%d:%d)",TAG,parentResource,resourceId);
-		statusMap.put(resourceId,new StatusEntry(parentResource));
+		Long key = new Long(resourceId);
+		if( statusMap.get(key) == null ) {
+			statusMap.put(resourceId,new StatusEntry(parentResource));
+		}
 	}
 	/**
 	 * Delete a resource.
@@ -59,6 +64,20 @@ public class NodeStatusManager  {
 		StatusEntry se = statusMap.get(resourceId);
 		if( se!=null ) result = se.getState();
 		return result;
+	}
+	/**
+	 * We're being saved from the main menu. Everyone is clean
+	 */
+	public void clearAll() {
+		log.debugf("%s.clearAll()",TAG);
+		for(Long key:statusMap.keySet()) {
+			StatusEntry se = statusMap.get(key);
+			if( se!=null ) {
+				se.clearDirtyChildCount();
+				se.setDirty(false);
+			}
+		}
+		fireStateChanged();
 	}
 	/**
 	 * For a diagram, specify that all child blocks have been saved.

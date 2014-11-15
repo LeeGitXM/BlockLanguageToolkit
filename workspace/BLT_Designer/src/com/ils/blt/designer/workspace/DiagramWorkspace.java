@@ -472,7 +472,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		logger.infof("%s: onClose",TAG);
 		BlockDesignableContainer container = (BlockDesignableContainer)c;
 		ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
-		if( diagram.isDirty() ) {
+		if( diagram.isDirty() || diagram.needsSaving() ) {
 			Object[] options = {BundleUtil.get().getString(PREFIX+".CloseDiagram.Save"),BundleUtil.get().getString(PREFIX+".CloseDiagram.Revert")};
 			int n = JOptionPane.showOptionDialog(null,
 					BundleUtil.get().getString(PREFIX+".CloseDiagram.Question"),
@@ -485,14 +485,15 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			if( n==0 ) {
 				// Yes, save
 				saveDiagram((BlockDesignableContainer)container);
-				context.releaseLock(container.getResourceId());
 			}
 			else {
 				// Mark diagram as clean, since we reverted changes
 				diagram.setDirty(false);
+				diagram.setNeedsSaving(false);
 				NodeStatusManager statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
 				statusManager.clearDirtyBlockCount(diagram.getResourceId());
 				statusManager.setResourceDirty(diagram.getResourceId(), false);
+				context.releaseLock(container.getResourceId());
 			}
 		}
 		diagram.unregisterChangeListeners();
@@ -500,7 +501,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 	/**
 	 * This is called as a result of a user "Save" selection on
-	 * the main menu. We actually save al the diagrams.
+	 * the main menu. We actually save all the diagrams.
 	 */
 	public void saveOpenDiagrams() {
 		logger.infof("%s: saveOpenDiagrams",TAG);
@@ -525,14 +526,14 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			bytes = mapper.writeValueAsBytes(sd);
 			logger.debugf("%s: saveDiagram JSON = %s",TAG,new String(bytes));
 			context.updateResource(resid, bytes);
-			context.updateLock(resid);
+			context.updateLock(resid);    // Marks the resource as dirty
 			c.setBackground(diagram.getBackgroundColorForState());
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
 		} 
 		catch (JsonProcessingException jpe) {
 			logger.warnf("%s: saveDiagram processing exception (%s)",TAG,jpe.getLocalizedMessage());
 		}
-		context.updateLock(resid);
+		
 	}
 	
 	/**

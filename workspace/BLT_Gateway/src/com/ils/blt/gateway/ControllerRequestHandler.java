@@ -409,11 +409,13 @@ public class ControllerRequestHandler   {
 	private void updateProperty(ProcessBlock block,BlockProperty existingProperty,BlockProperty newProperty) {
 		if( !existingProperty.isEditable() )  return;
 		
-		log.infof("%s.updateProperty old = %s, new = %s",TAG,existingProperty.toString(),newProperty.toString());
+		log.infof("%s.updateProperty old: %s, new:%s",TAG,existingProperty.toString(),newProperty.toString());
 		BlockExecutionController controller = BlockExecutionController.getInstance();
 		if( !existingProperty.getBindingType().equals(newProperty.getBindingType()) ) {
 			// If the binding has changed - fix subscriptions.
 			controller.removeSubscription(block, existingProperty);
+			existingProperty.setBindingType(newProperty.getBindingType());
+			existingProperty.setBinding(newProperty.getBinding());
 			controller.startSubscription(block,newProperty);
 			// If the new binding is a tag write - do the write.
 			if( !block.isLocked() && 
@@ -425,6 +427,7 @@ public class ControllerRequestHandler   {
 		else if( !existingProperty.getBinding().equals(newProperty.getBinding()) ) {
 			// Same type, new binding target.
 			controller.removeSubscription(block, existingProperty);
+			existingProperty.setBinding(newProperty.getBinding());
 			controller.startSubscription(block,newProperty);
 			// If the new binding is a tag write - do the write.
 			if( !block.isLocked() && 
@@ -434,7 +437,7 @@ public class ControllerRequestHandler   {
 			}	
 		}
 		else {
-			// The event came explicitly from the designer/client. Send an even whether it changed or not.
+			// The event came explicitly from the designer/client. Send event whether it changed or not.
 			if( existingProperty.getBindingType().equals(BindingType.NONE) && newProperty.getValue()!=null   )   {
 				log.infof("%s.setProperty sending event ...",TAG);
 				BlockPropertyChangeEvent event = new BlockPropertyChangeEvent(block.getBlockId().toString(),newProperty.getName(),

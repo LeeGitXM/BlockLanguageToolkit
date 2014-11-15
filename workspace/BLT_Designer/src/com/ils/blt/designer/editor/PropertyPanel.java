@@ -509,7 +509,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 				unsubscribeToTagPath(property.getBinding());
 				property.setBinding(field.getText());
 				subscribeToTagPath(property.getBinding());
-				parent.notifyOfMajorChange();    // Mark elements as "dirty", repaint		
+				parent.notifyOfPropertyChange(property);		
 			}
 		}
 	}

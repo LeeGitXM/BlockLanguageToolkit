@@ -353,4 +353,5 @@ public class ProcessDiagram extends ProcessNode {
 			return this.sourceBlock.hashCode()+this.sourcePort.hashCode()-this.targetBlock.hashCode()-this.targetPort.hashCode();
 		}
 	}
+	
 }

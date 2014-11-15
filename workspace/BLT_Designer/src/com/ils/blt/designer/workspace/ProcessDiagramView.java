@@ -51,6 +51,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	private DesignerContext context;
 	private boolean dirty = false;   // A newly created diagram is "dirty" until it is saved
 	                                 // but this looks better. It'll be dirty again with the first block
+	private boolean needsSave = false;
 	private boolean suppressStateChangeNotification = false;
 	
 	/**
@@ -325,6 +326,9 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	public DiagramState getState() {return state;}
 	public boolean isDirty() {return dirty;}
 	public void setDirty(boolean dirty) {this.dirty = dirty;}
+	
+	public boolean needsSaving() {return needsSave;}
+	public void setNeedsSaving(boolean needsSave) {this.needsSave = needsSave;}
 	
 	@Override
 	public void setDiagramSize(Dimension dim) {
