@@ -52,6 +52,7 @@ public class ModelManager implements ProjectListener  {
 	private final Map<ProjResKey,ProcessNode> nodesByKey; 
 	private final Map<UUID,ProcessNode> orphansByUUID;
 	private final Map<UUID,ProcessNode> nodesByUUID;
+	private final BlockExecutionController controller = BlockExecutionController.getInstance();
 	
 	/**
 	 * Initially we query the gateway context to discover what resources exists. After that
@@ -68,6 +69,8 @@ public class ModelManager implements ProjectListener  {
 		orphansByUUID = new HashMap<UUID,ProcessNode>();
 		nodesByUUID = new HashMap<UUID,ProcessNode>();
 		root = new RootNode(context);
+		nodesByUUID.put(root.getSelf(), root);
+		
 	}
 	
 	/**
@@ -221,7 +224,6 @@ public class ModelManager implements ProjectListener  {
 		ProcessDiagram diagram = (ProcessDiagram)nodesByUUID.get(Id);
 		if( diagram!=null ) {
 			nodesByUUID.remove(diagram.getSelf());
-			BlockExecutionController controller = BlockExecutionController.getInstance();
 			// Remove any subscriptions
 			for( ProcessBlock pb:diagram.getProcessBlocks()) {
 				for(BlockProperty bp:pb.getProperties()) {
@@ -405,7 +407,6 @@ public class ModelManager implements ProjectListener  {
 		log.infof("%s.addModifyDiagramResource: %s(%d)",TAG,res.getName(),res.getResourceId());
 		SerializableDiagram sd = deserializeDiagramResource(projectId,res);
 		if( sd!=null ) {
-			BlockExecutionController controller = BlockExecutionController.getInstance();
 			// If this is an existing diagram, we need to remove the old version
 			ProcessDiagram diagram = (ProcessDiagram)nodesByUUID.get(sd.getId());
 			if( diagram==null) {
@@ -550,7 +551,6 @@ public class ModelManager implements ProjectListener  {
 		if( node!=null ) {
 			nodesByKey.remove(key);
 			nodesByUUID.remove(node.getSelf());
-			BlockExecutionController controller = BlockExecutionController.getInstance();
 			if( node instanceof ProcessDiagram ) {
 				ProcessDiagram diagram = (ProcessDiagram)node;
 
@@ -578,7 +578,6 @@ public class ModelManager implements ProjectListener  {
 	private void deleteProjectResources(Long projectId) {
 		log.infof("%s.deleteProjectResources: proj = %d",TAG,projectId);
 		List<ProcessNode> nodes = root.allNodesForProject(projectId);
-		BlockExecutionController controller = BlockExecutionController.getInstance();
 		for(ProcessNode node:nodes) {
 			if( node instanceof ProcessDiagram ) {
 				ProcessDiagram diagram = (ProcessDiagram)node;

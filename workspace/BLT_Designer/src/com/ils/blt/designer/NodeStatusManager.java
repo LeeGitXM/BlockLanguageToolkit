@@ -127,7 +127,7 @@ public class NodeStatusManager  {
 	 * @return
 	 */
 	public void getPendingDeletesUnderNode(long resourceId,List<Long> list ) {
-		log.debugf("%s.getPendingDeletesUnderNode(%d)",TAG,resourceId);
+		//log.tracef("%s.getPendingDeletesUnderNode(%d)",TAG,resourceId);
 		Long key = new Long(resourceId);
 		List<Long> children =  childrenByResourceId.get(key);
 		if( children!=null ) {
@@ -137,7 +137,7 @@ public class NodeStatusManager  {
 		}
 		StatusEntry se = statusByResourceId.get(key);
 		if( se!=null && se.pendingDelete() ) {
-			log.infof("%s.getPendingDeletesUnderNode(%d): found %d",TAG,resourceId,key.longValue());
+			log.debugf("%s.getPendingDeletesUnderNode(%d): found %d",TAG,resourceId,key.longValue());
 			list.add(key);
 		}
 	}

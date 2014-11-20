@@ -98,6 +98,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	private final ApplicationRequestHandler handler = new ApplicationRequestHandler();
 	private final DesignerContext context;
 	private final EditActionHandler editActionHandler;
+	private final NodeStatusManager statusManager;
 	private Collection<ResourceWorkspaceFrame> frames;
 	protected SaveAction saveAction = null;  // Save properties of a block
 	private LoggerEx logger = LogUtil.getLogger(getClass().getPackage().getName());
@@ -109,6 +110,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		this.context = ctx;
 		this.editActionHandler = new BlockActionHandler(this,context);
 		this.addDesignableWorkspaceListener(this);
+		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
 		initialize();
 		setBackground(Color.red);	
 	}
@@ -489,7 +491,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			else {
 				// Mark diagram as clean, since we reverted changes
 				diagram.setDirty(false);
-				NodeStatusManager statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
 				statusManager.setResourceDirty(diagram.getResourceId(), false);
 				context.releaseLock(container.getResourceId());
 			}
@@ -524,7 +525,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			bytes = mapper.writeValueAsBytes(sd);
 			logger.debugf("%s: saveDiagram JSON = %s",TAG,new String(bytes));
 			context.updateResource(resid, bytes);
-			context.updateLock(resid);    // Marks the resource as dirty
+			statusManager.setResourceDirty(resid,true);
 			c.setBackground(diagram.getBackgroundColorForState());
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
 		} 

@@ -57,7 +57,6 @@ import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
-import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceUndoAction;
 import com.inductiveautomation.ignition.designer.navtree.model.FolderNode;
 /**
  * A folder in the designer scope to support the diagnostics toolkit diagram
@@ -164,7 +163,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 				diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
 				if(res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
 					// If the resource is open, we need to save it ..
-					DiagramNode dnode = (DiagramNode)node;
+					DiagramTreeNode dnode = (DiagramTreeNode)node;
 					dnode.saveDiagram();  // Whether it's open or closed.
 				}
 				statusManager.setResourceDirty(resid, false);
@@ -253,8 +252,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 		// Take care of our special status before invoking the super-class method.
 		//logger.tracef("%s.projectResourceModified.%s: %s(%d), res %s(%d)",TAG,changeType.name(),getName(),this.resourceId,res.getName(),res.getResourceId());
 		if (res.getResourceId() == this.resourceId) {
-			logger.infof("%s.projectResourceModified(%d), setting name %s to %s",TAG,this.resourceId,getName(),res.getName());
 			if( res.getName()==null || !res.getName().equals(getName()) ) {
+				logger.infof("%s.projectResourceModified(%d), setting name %s to %s",TAG,this.resourceId,getName(),res.getName());
 				statusManager.setResourceDirty(resourceId, true);
 			}
 		}  
@@ -272,7 +271,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 	 * Save the current node and its descendants. During
 	 * the accumulation, we set the resources to "clean".
 	 */
-	public void saveNodeAndDescendants() {
+	private void saveNodeAndDescendants() {
 		Project diff = context.getProject().getEmptyCopy();
 
 		// First the deleted resources
@@ -295,11 +294,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 		// Mark these as "clean" in the current project so that we don't save again.
 		Project project = context.getProject();
 		project.applyDiff(diff,false);      // Apply diff, not dirty
-		/*
-		for(ProjectResource pr:diff.getResources()) {
-			project.putResource(pr,false);  // Make clean in the project
-		}
-		*/
 	}
 
 	/**
@@ -361,7 +355,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 				logger.infof("%s.createChildNode: (%s) %s->%s",TAG,res.getResourceType(),this.getName(),node.getName());
 			}
 			else if (BLTProperties.DIAGRAM_RESOURCE_TYPE.equals(res.getResourceType())) {
-				node = new DiagramNode(context,res,workspace);
+				node = new DiagramTreeNode(context,res,workspace);
 				logger.infof("%s.createChildDiagram: %s->%s",TAG,this.getName(),node.getName());
 			} 
 			else {
@@ -372,19 +366,12 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 			statusManager.newResource(node,resourceId, res.getResourceId());
 		}
 		else {
-			// Initialize the node - will need to reconstitute children (do we ??)
-			/*
-			if( node instanceof GeneralPurposeTreeNode ) {
-				GeneralPurposeTreeNode gptn = (GeneralPurposeTreeNode)node;
-				//gptn.recreate();   // Was uninstallChildren(); was checkChildren() <- uninstalls listeners
-				context.addProjectChangeListener(gptn);
-			}
-			else {
-				logger.infof("%s.createChildNode: REUSE %s unexpected class: %s",TAG,node.getName(),node.getClass().getName());
-			}*/
 			logger.infof("%s.createChildNode: REUSE %s->%s",TAG,this.getName(),node.getName());
 		}
 		node.install(this);
+		if( node.getParent()==null) {
+			logger.errorf("%s.createChildNode: ERROR parent is null %s(%d)",TAG,node.getName(),res.getResourceId());
+		}
 		node.setItalic(statusManager.isResourceDirty(res.getResourceId()));
 		return node;
 	}
@@ -700,7 +687,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 			logger.infof("%s.saveThoseInNeed: %s (%d)",TAG,res.getName(),res.getResourceId());
 			if(res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
 				// If the resource is open, we need to save it
-				DiagramNode dnode = (DiagramNode)node;
+				DiagramTreeNode dnode = (DiagramTreeNode)node;
 				dnode.updateResource();  // Only if necessary
 			}
 		}
@@ -722,14 +709,14 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 	private String serializeApplication(SerializableApplication application) {
 		String json = "";
 		ObjectMapper mapper = new ObjectMapper();
-		logger.infof("%s: serializeApplication creating json ... %s",TAG,(mapper.canSerialize(SerializableApplication.class)?"true":"false"));
+		logger.debugf("%s: serializeApplication creating json ... %s",TAG,(mapper.canSerialize(SerializableApplication.class)?"true":"false"));
 		try{ 
 			json = mapper.writeValueAsString(application);
 		}
 		catch(JsonProcessingException jpe) {
 			logger.warnf("%s: Unable to serialize application (%s)",TAG,jpe.getMessage());
 		}
-		logger.infof("%s: serializeApplication created json ... %s",TAG,json);
+		logger.debugf("%s: serializeApplication created json ... %s",TAG,json);
 		return json;
 	}
 
@@ -743,7 +730,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 	private String serializeDiagram(SerializableDiagram diagram) {
 		String json = "";
 		ObjectMapper mapper = new ObjectMapper();
-		logger.infof("%s: serializeDiagram creating json ... %s",TAG,(mapper.canSerialize(SerializableDiagram.class)?"true":"false"));
+		logger.debugf("%s: serializeDiagram creating json ... %s",TAG,(mapper.canSerialize(SerializableDiagram.class)?"true":"false"));
 		try{ 
 			json = mapper.writeValueAsString(diagram);
 		}
@@ -761,14 +748,14 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 	private String serializeFamily(SerializableFamily family) {
 		String json = "";
 		ObjectMapper mapper = new ObjectMapper();
-		logger.infof("%s: serializeFamily creating json ... %s",TAG,(mapper.canSerialize(SerializableFamily.class)?"true":"false"));
+		logger.debugf("%s: serializeFamily creating json ... %s",TAG,(mapper.canSerialize(SerializableFamily.class)?"true":"false"));
 		try{ 
 			json = mapper.writeValueAsString(family);
 		}
 		catch(JsonProcessingException jpe) {
 			logger.warnf("%s: Unable to serialize family (%s)",TAG,jpe.getMessage());
 		}
-		logger.infof("%s: serializeFamily created json ... %s",TAG,json);
+		logger.debugf("%s: serializeFamily created json ... %s",TAG,json);
 		return json;
 	}
 
@@ -1173,8 +1160,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 			}
 			else if( res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
 				bundleString = PREFIX+".DiagramNoun";
-				if( node instanceof DiagramNode) {
-					((DiagramNode)node).workspace.close(resid);
+				if( node instanceof DiagramTreeNode) {
+					((DiagramTreeNode)node).workspace.close(resid);
 				}
 			}
 
@@ -1185,6 +1172,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 			if( p instanceof GeneralPurposeTreeNode )  {
 				GeneralPurposeTreeNode parentNode = (GeneralPurposeTreeNode)p;
 				parentNode.recreate();
+				parentNode.expand();
 				statusManager.setResourceDirty(parentNode.resourceId, true);
 			}
 		}
@@ -1193,8 +1181,9 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 		public boolean execute() {
 			// First get all the locks
 			boolean success = true;
+			long rid = -1;
 			for(ProjectResource pr:resources) {
-				long rid = pr.getResourceId();
+				rid = pr.getResourceId();
 				if( !context.requestLock(rid) ) {
 					success = false;
 					break;
@@ -1202,15 +1191,23 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 			}
 			if( success ) {
 				for(ProjectResource pr:resources) {
-					long rid = pr.getResourceId();
+					rid = pr.getResourceId();
 					statusManager.markPendingDelete(rid);
 					context.deleteResource(rid);	
 				}
 			}
+			else {
+				logger.errorf("%s.DeleteNodeAction: Failed to obtain lock for resource %d",TAG,rid);
+			}
 			// Release the locks no matter what
 			for(ProjectResource pr:resources) {
-				long rid = pr.getResourceId();
-				context.releaseLock(rid);
+				rid = pr.getResourceId();
+				try {
+					context.releaseLock(rid);
+				}
+				catch(IllegalArgumentException ignore) {
+					break;      // Probably hit the resource where we couldn't get the lock
+				}
 			}
 			return success;
 		}
