@@ -165,7 +165,6 @@ public class ApplicationRequestHandler  {
 		}
 		
 		if( jsonList!=null) {
-			
 			for( String json:jsonList ) {
 				log.tracef("%s.getBlockPrototypes: %s",TAG,json);
 				PalettePrototype bp = PalettePrototype.createPrototype(json);
@@ -193,15 +192,35 @@ public class ApplicationRequestHandler  {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public List<String> getDiagramTreePaths(String projectName) {
+	public List<SerializableResourceDescriptor> getDiagramDescriptors(String projectName) {
 		log.infof("%s.getDiagramTreePaths for %s ...",TAG,projectName);
-		List<String> result = null;
+		List<SerializableResourceDescriptor> result = new ArrayList<>();
+		List<String> jsonList = new ArrayList<String>();
 		try {
-			result = (List<String> )GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "getDiagramTreePaths",projectName);
+			jsonList = (List<String>)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "getDiagramDescriptors",projectName);
 		}
 		catch(Exception ge) {
-			log.infof("%s.getDiagramTreePaths: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.getDiagramDescriptors: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		if( jsonList!=null) {
+
+			ObjectMapper mapper = new ObjectMapper();
+			for(String json:jsonList) {
+				try {
+					SerializableResourceDescriptor entry = mapper.readValue(json, SerializableResourceDescriptor.class);
+					result.add(entry);
+				} 
+				catch (JsonParseException jpe) {
+					log.warnf("%s: getDiagramDescriptors parse exception (%s)",TAG,jpe.getLocalizedMessage());
+				}
+				catch(JsonMappingException jme) {
+					log.warnf("%s: getDiagramDescriptors mapping exception (%s)",TAG,jme.getLocalizedMessage());
+				}
+				catch(IOException ioe) {
+					log.warnf("%s: getDiagramDescriptors IO exception (%s)",TAG,ioe.getLocalizedMessage());
+				}
+			}
 		}
 		return result;
 	}
@@ -313,20 +332,7 @@ public class ApplicationRequestHandler  {
 			log.infof("%s.resetDiagram: GatewayException (%s)",TAG,ge.getMessage());
 		}
 	}
-	/**
-	 * Execute reset() on every block on the diagram
-	 */
-	public void resetDiagram(String projectName,String diagramPath) {
-		log.debugf("%s.resetDiagram ...",TAG);
 
-		try {
-			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "resetDiagram",projectName,diagramPath);
-		}
-		catch(Exception ge) {
-			log.infof("%s.resetDiagram: GatewayException (%s)",TAG,ge.getMessage());
-		}
-	}
 	/**
 	 * Determine whether or not the indicated resource is known to the controller.
 	 */
@@ -416,17 +422,16 @@ public class ApplicationRequestHandler  {
 	 * This is a "local" transmission. The diagram is specified by a tree-path.
 	 * There may be no successful recipients.
 	 * 
-	 * @param projectName
-	 * @param diagramPath
+	 * @param diagramId
 	 * @param className filter of the receiver blocks to be targeted.
 	 * @param command string of the signal.
 	 */
-	public boolean sendLocalSignal(String projectName, String diagramPath,String className, String command) {
-		log.infof("%s.sendLocalSignal for %s %s %s %s...",TAG,projectName,diagramPath,className,command);
+	public boolean sendLocalSignal(String diagramId,String className, String command) {
+		log.infof("%s.sendLocalSignal for %s %s %s...",TAG,diagramId,className,command);
 		boolean result = false;
 		try {
 			Boolean value = GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "sendLocalSignal",projectName,diagramPath,className,command);
+					BLTProperties.MODULE_ID, "sendLocalSignal",diagramId,className,command);
 			if( value!=null ) result = value.booleanValue();
 		}
 		catch(Exception ex) {

@@ -37,7 +37,6 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 public class ProcessDiagram extends ProcessNode {
 	
 	private static String TAG = "ProcessDiagram";
-	private final LoggerEx log;
 	private final SerializableDiagram diagram;
 	private boolean valid = false;
 	protected final Map<UUID,ProcessBlock> blocks;
@@ -59,7 +58,6 @@ public class ProcessDiagram extends ProcessNode {
 		this.diagram = diagm;
 		this.state = diagm.getState();
 		this.resourceId = diagm.getResourceId();
-		log = LogUtil.getLogger(getClass().getPackage().getName());
 		blocks = new HashMap<UUID,ProcessBlock>();
 		connectionMap = new HashMap<ConnectionKey,ProcessConnection>();
 		outgoingConnections = new HashMap<BlockPort,List<ProcessConnection>>();
@@ -109,14 +107,14 @@ public class ProcessDiagram extends ProcessNode {
 	 * During this process we stop any existing blocks and remove tag subscriptions.
 	 * The ModelManager restarts the blocks once everything is in place.
 	 */
-	public void analyze(SerializableDiagram diagram) {
-		log.infof("%s.analyze: %s ...",TAG,diagram.getName());
+	public void analyze(SerializableDiagram diagrm) {
+		log.infof("%s.analyze: %s ...",TAG,diagrm.getName());
 		
 		BlockFactory blockFactory = BlockFactory.getInstance();
 		ConnectionFactory connectionFactory = ConnectionFactory.getInstance();
 		
 		// Update the blocks
-		SerializableBlock[] sblks = diagram.getBlocks();
+		SerializableBlock[] sblks = diagrm.getBlocks();
 		for( SerializableBlock sb:sblks ) {
 			UUID id = sb.getId();
 			ProcessBlock pb = blocks.get(id);
@@ -126,7 +124,7 @@ public class ProcessDiagram extends ProcessNode {
 					blocks.put(pb.getBlockId(), pb);
 					log.infof("%s.analyze: New block %s(%d)",TAG,pb.getName(),pb.hashCode());
 				}
-				else log.errorf("%s.analyze: ERROR %s failed to instantiate %s",TAG,diagram.getName(),sb.getClassName());
+				else log.errorf("%s.analyze: ERROR %s failed to instantiate %s",TAG,diagrm.getName(),sb.getClassName());
 			}
 			else {
 				log.infof("%s.analyze: Update block %s(%d)",TAG,pb.getName(),pb.hashCode());
@@ -139,7 +137,7 @@ public class ProcessDiagram extends ProcessNode {
 			}
 		}
 		// Update the connections
-		SerializableConnection[] scxns = diagram.getConnections();
+		SerializableConnection[] scxns = diagrm.getConnections();
 		for( SerializableConnection sc:scxns ) {
 			if( validConnection(sc) ) {
 				ConnectionKey cxnkey = new ConnectionKey(sc.getBeginBlock().toString(),sc.getBeginAnchor().getId().toString(),
@@ -168,11 +166,11 @@ public class ProcessDiagram extends ProcessNode {
 				}
 			}
 			else {
-				log.warnf("%s.analyze: %s has invalid serialized connection (%s)",TAG,diagram.getName(),invalidConnectionReason(sc));
+				log.warnf("%s.analyze: %s has invalid serialized connection (%s)",TAG,diagrm.getName(),invalidConnectionReason(sc));
 			}
 
 		}
-		log.infof("%s.analyze: Complete .... %d blocks and %d connections",TAG,diagram.getBlocks().length,diagram.getConnections().length);
+		log.infof("%s.analyze: Complete .... %d blocks and %d connections",TAG,diagrm.getBlocks().length,diagrm.getConnections().length);
 	}
 	
 	/**

@@ -57,8 +57,8 @@ public class ApplicationScriptFunctions   {
 	 * @return a list of tree-paths to the diagrams saved (ie. known to the Gateway).
 	 */
 	@SuppressWarnings("rawtypes")
-	public static List getDiagramTreePaths(String projectName) {
-		return manager.getDiagramTreePaths(projectName);
+	public static List getDiagramDescriptors(String projectName) {
+		return manager.getDiagramDescriptors(projectName);
 	}
 	
 	/**
@@ -102,24 +102,18 @@ public class ApplicationScriptFunctions   {
 	public static void resetDiagram(String diagramId) {
 		manager.resetDiagram(diagramId);
 	}
-	/**
-	 * Execute reset() on every block inside the controller
-	 */
-	public static void resetDiagram(String projectName,String diagramPath) {
-		manager.resetDiagram(projectName,diagramPath);
-	}
+
 	/**
 	 * Send a signal to all blocks of a particular class on a specified diagram.
 	 * This is a "local" transmission.
 	 * 
-	 * @param projectName
-	 * @param diagramPath
+	 * @param diagramId diagram identifier
 	 * @param className filter of the receiver blocks to be targeted.
 	 * @param command string of the signal.
 	 * @return true on success
 	 */
-	public static boolean sendLocalSignal(String projectName, String diagramPath,String className, String command) {
-		return manager.sendLocalSignal(projectName,diagramPath,className,command);
+	public static boolean sendLocalSignal(String diagramId,String className, String command) {
+		return manager.sendLocalSignal(diagramId,className,command);
 	}
 	
 	/**

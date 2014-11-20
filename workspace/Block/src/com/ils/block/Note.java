@@ -24,6 +24,7 @@ public class Note extends AbstractProcessBlock implements ProcessBlock {
 	private static final String TAG = "Note";
 	public static final int DEFAULT_WIDTH = 100;
 	public static final int DEFAULT_HEIGHT = 25;
+	public static String  initialString = "<html><h3>header</h3> body of message <br/second line </html>";
 
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -46,29 +47,11 @@ public class Note extends AbstractProcessBlock implements ProcessBlock {
 	}
 
 	/**
-	 * Handle a change to the text -- this all may be unnecessary ... clc
+	 * Handle a change to the text
 	 */
 	@Override
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
-		String propertyName = event.getPropertyName();
-		if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_WIDTH) ) {
-			try {
-				int width = Integer.parseInt(event.getNewValue().toString());
-			}
-			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert width value to a integer (%s)",TAG,nfe.getLocalizedMessage());
-			}			
-		}
-		else if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_HEIGHT) ) {
-			try {
-				int height = Integer.parseInt(event.getNewValue().toString());
-			}
-			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert height value to a integer (%s)",TAG,nfe.getLocalizedMessage());
-			}						
-		}
-
 	}
 	
 	/**

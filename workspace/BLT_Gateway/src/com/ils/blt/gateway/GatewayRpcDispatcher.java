@@ -244,8 +244,28 @@ public class GatewayRpcDispatcher   {
 	}
 	
 
-	public List<String> getDiagramTreePaths(String projectName) {
-		List<String> results = BlockExecutionController.getInstance().getDiagramTreePaths(projectName);
+	public List<String> getDiagramDescriptors(String projectName) {
+
+		log.infof("%s.getDiagramDescriptors ...",TAG);
+		List<String> results = new ArrayList<String>();
+		List<SerializableResourceDescriptor> descriptors = BlockExecutionController.getInstance().getDiagramDescriptors(projectName);
+		ObjectMapper mapper = new ObjectMapper();
+		for(SerializableResourceDescriptor descriptor:descriptors) {
+			try {
+				String json =  mapper.writeValueAsString(descriptor);
+				results.add(json);
+			} 
+			catch (JsonParseException jpe) {
+				log.warnf("%s: getDiagramDescriptors: parsing exception (%s)",TAG,jpe.getLocalizedMessage());
+			} 
+			catch (JsonMappingException jme) {
+				log.warnf("%s: getDiagramDescriptors: mapping exception(%s)",TAG,jme.getLocalizedMessage());
+			} 
+			catch (IOException ioe) {
+				log.warnf("%s: getDiagramDescriptors: io exception(%s)",TAG,ioe.getLocalizedMessage());
+			}
+
+		}
 		return results;
 	}
 
@@ -300,24 +320,32 @@ public class GatewayRpcDispatcher   {
 		}
 		BlockExecutionController.getInstance().resetDiagram(diagramUUID);
 	}
-	/** 
-	 *  Reset every block in a specified diagram
-	 */
-	public void resetDiagram(String project,String path) {
-		log.infof("%s: resetDiagram ...",TAG);
-	    BlockExecutionController.getInstance().resetDiagram(project,path);
-	}
+
 	public Boolean resourceExists(Long projectId,Long resourceId) {
 		BlockExecutionController controller = BlockExecutionController.getInstance();
 		ProcessDiagram diagram = controller.getDiagram(projectId.longValue(), resourceId.longValue());
 		log.infof("%s.resourceExists diagram %d:%d ...%s",TAG,projectId,resourceId,(diagram!=null?"true":"false"));
 		return new Boolean(diagram!=null);
 	}
-	
-	public Boolean sendLocalSignal(String projectName, String diagramPath,String className, String command) {
-		log.infof("%s.sendLocalSignal: %s %s %s %s",TAG,projectName,diagramPath,className,command);
+	/**
+	 * 
+	 * @param uuidString identifier of the diagram for which the signal is local
+	 * @param className
+	 * @param command
+	 * @return
+	 */
+	public Boolean sendLocalSignal(String diagramId, String className, String command) {
+		log.infof("%s.sendLocalSignal: %s %s %s",TAG,diagramId,className,command);
 		Boolean success = new Boolean(true);
-		ProcessDiagram diagram = BlockExecutionController.getInstance().getDiagram(projectName,diagramPath);
+		UUID diagramUUID = null;
+		try {
+			diagramUUID = UUID.fromString(diagramId);
+		}
+		catch(IllegalArgumentException iae) {
+			log.warnf("%s.diagramExists: Diagram UUID string is illegal (%s), creating new",TAG,diagramId);
+			diagramUUID = UUID.nameUUIDFromBytes(diagramId.getBytes());
+		}
+		ProcessDiagram diagram = BlockExecutionController.getInstance().getDiagram(diagramUUID);
 		if( diagram!=null ) {
 			// Create a broadcast notification
 			Signal sig = new Signal(command,"","");
@@ -325,7 +353,7 @@ public class GatewayRpcDispatcher   {
 			BlockExecutionController.getInstance().acceptBroadcastNotification(broadcast);
 		}
 		else {
-			log.warnf("%s.sendLocalSignal: Unable to find %s%s for %s command to %s",TAG,projectName,diagramPath,command,className);
+			log.warnf("%s.sendLocalSignal: Unable to find %s for %s command to %s",TAG,diagramId,command,className);
 			success = new Boolean(false);
 		}
 		return success;

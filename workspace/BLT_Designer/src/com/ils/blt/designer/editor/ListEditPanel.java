@@ -274,18 +274,18 @@ public class ListEditPanel extends BasicEditPanel {
 	 * the add/delete buttons.
 	 */
 	private class SelectionHandler implements ListSelectionListener {
-		private final JTable table;
+		private final JTable tbl;
 		private final JButton delBtn;
 
-		SelectionHandler(JTable tbl,JButton rowDeleter ) {
-			this.table = tbl;
+		SelectionHandler(JTable jtbl,JButton rowDeleter ) {
+			this.tbl = jtbl;
 			this.delBtn = rowDeleter;
 		}
 		
 		public void valueChanged(ListSelectionEvent e) {
 			if (!e.getValueIsAdjusting()) {
-				if (e.getSource() == table.getSelectionModel()) {
-					ListSelectionModel lsm = table.getSelectionModel();
+				if (e.getSource() == tbl.getSelectionModel()) {
+					ListSelectionModel lsm = tbl.getSelectionModel();
 					log.debugf("%s.SelectionHandler.valueChanged: Delete %s", TAG,(lsm.isSelectionEmpty()?"DISABLE":"ENABLE"));
 					delBtn.setEnabled(!lsm.isSelectionEmpty());
 				} 

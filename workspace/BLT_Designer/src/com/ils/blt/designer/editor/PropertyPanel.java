@@ -430,14 +430,14 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	 */
 	private class EditableTextField extends JTextField implements EditableField{
 		private static final long serialVersionUID = 1L;
-		private final BlockProperty property;
+		private final BlockProperty fieldProperty;
 		public EditableTextField(BlockProperty prop,String val) {
 			super(val);
-			property = prop;
+			fieldProperty = prop;
 			setEditable(true);
 			setEnabled(true);
 		}
-		public BlockProperty getProperty() { return property; }
+		public BlockProperty getProperty() { return fieldProperty; }
 	}
 
 	// =========================================== Focus Listener ====================================
@@ -480,36 +480,36 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	// If the force flag is on, propagate the event even if the value has not changed. Use "force" with a 
 	// carriage return in the field, but not with a loss of focus.
 	private void updatePropertyForField(EditableField field,boolean force) {
-		BlockProperty property = field.getProperty();
-		log.debugf("%s.updatePropertyForField: %s (%s:%s)", TAG,property.getName(),property.getType().name(),property.getBindingType().name());
+		BlockProperty prop = field.getProperty();
+		log.debugf("%s.updatePropertyForField: %s (%s:%s)", TAG,prop.getName(),prop.getType().name(),prop.getBindingType().name());
 		// If there is a value change, then update the property (or binding)
-		if( property.getBindingType().equals(BindingType.NONE)) {
+		if( prop.getBindingType().equals(BindingType.NONE)) {
 			Object fieldValue = field.getText();
-			if( force || !fieldValue.equals(property.getValue().toString())) {
+			if( force || !fieldValue.equals(prop.getValue().toString())) {
 				// Coerce to the correct data type
-				if( property.getType().equals(PropertyType.BOOLEAN ))     fieldValue = new Boolean(fncs.coerceToBoolean(fieldValue));
-				else if( property.getType().equals(PropertyType.DOUBLE )) fieldValue = new Double(fncs.coerceToDouble(fieldValue));
-				else if( property.getType().equals(PropertyType.INTEGER ))fieldValue = new Integer(fncs.coerceToInteger(fieldValue));
-				else if(property.getType().equals(PropertyType.TIME)) {
+				if( prop.getType().equals(PropertyType.BOOLEAN ))     fieldValue = new Boolean(fncs.coerceToBoolean(fieldValue));
+				else if( prop.getType().equals(PropertyType.DOUBLE )) fieldValue = new Double(fncs.coerceToDouble(fieldValue));
+				else if( prop.getType().equals(PropertyType.INTEGER ))fieldValue = new Integer(fncs.coerceToInteger(fieldValue));
+				else if(prop.getType().equals(PropertyType.TIME)) {
 					// Scale field value for time unit. Get back to seconds.
 					double interval = fncs.coerceToDouble(fieldValue);
 					fieldValue = new Double(TimeUtility.canonicalValueForValue(interval,currentTimeUnit));
-					log.tracef("%s.updatePropertyForField: property %s,old= %s, new= %s, displayed= %s (%s)",TAG,property.getName(),property.getValue().toString(),
+					log.tracef("%s.updatePropertyForField: property %s,old= %s, new= %s, displayed= %s (%s)",TAG,prop.getName(),prop.getValue().toString(),
 							fieldValue.toString(),field.getText(),currentTimeUnit.name());
 				}
-				property.setValue(fieldValue);
-				parent.notifyOfPropertyChange(property);    // Update property directly, immediately
+				prop.setValue(fieldValue);
+				parent.notifyOfPropertyChange(prop);    // Update property directly, immediately
 			}
 			else {
-				log.tracef("%s.updatePropertyForField: No Change was %s, is %s", TAG,property.getValue().toString(),fieldValue);
+				log.tracef("%s.updatePropertyForField: No Change was %s, is %s", TAG,prop.getValue().toString(),fieldValue);
 			}
 		}
 		else {
-			if( !field.getText().equals(property.getBinding()) ) {
-				unsubscribeToTagPath(property.getBinding());
-				property.setBinding(field.getText());
-				subscribeToTagPath(property.getBinding());
-				parent.notifyOfPropertyChange(property);		
+			if( !field.getText().equals(prop.getBinding()) ) {
+				unsubscribeToTagPath(prop.getBinding());
+				prop.setBinding(field.getText());
+				subscribeToTagPath(prop.getBinding());
+				parent.notifyOfPropertyChange(prop);		
 			}
 		}
 	}

@@ -246,14 +246,15 @@ public class EncapsulationAnchorPointEditor extends JDialog {
     /*
      * This method uses column widths from the model.
      */
-    private void initColumnSizes(JTable table) {
-    	EncapsulationEditTableModel model = (EncapsulationEditTableModel)table.getModel();
+    private void initColumnSizes(JTable tbl) {
+    	EncapsulationEditTableModel model = (EncapsulationEditTableModel)tbl.getModel();
         TableColumn column = null;
         int cellWidth = 0;
         int[] widths = model.cellWidths;
  
         for (int i = 0; i < model.getColumnCount(); i++) {
             cellWidth = widths[i];
+            column = tbl.getColumnModel().getColumn(i);
             column.setPreferredWidth(cellWidth);
         }
     }
@@ -309,18 +310,18 @@ public class EncapsulationAnchorPointEditor extends JDialog {
 	 * the add/delete buttons.
 	 */
 	private class SelectionHandler implements ListSelectionListener {
-		private final JTable table;
+		private final JTable selectionTable;
 		private final JButton delBtn;
 
 		SelectionHandler(JTable tbl,JButton rowDeleter ) {
-			this.table = tbl;
+			this.selectionTable = tbl;
 			this.delBtn = rowDeleter;
 		}
 		
 		public void valueChanged(ListSelectionEvent e) {
 			if (!e.getValueIsAdjusting()) {
-				if (e.getSource() == table.getSelectionModel()) {
-					ListSelectionModel lsm = table.getSelectionModel();
+				if (e.getSource() == selectionTable.getSelectionModel()) {
+					ListSelectionModel lsm = selectionTable.getSelectionModel();
 					log.infof("%s.SelectionHandler.valueChanged: Delete %s", TAG,(lsm.isSelectionEmpty()?"DISABLE":"ENABLE"));
 					delBtn.setEnabled(!lsm.isSelectionEmpty());
 				} 

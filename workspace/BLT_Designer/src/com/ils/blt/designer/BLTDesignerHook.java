@@ -114,6 +114,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		rootNode = new GeneralPurposeTreeNode(context);
 		context.getProjectBrowserRoot().getProjectFolder().addChild(rootNode);
 		context.registerResourceWorkspace(workspace);
+		nodeStatusManager.newRootResource(rootNode);
 	}
 	
 	public NodeStatusManager getNavTreeStatusManager() { return nodeStatusManager; }
@@ -127,7 +128,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		log.infof("%s: NotifyProjectSaveStart",TAG);
 		//rootNode.saveAll();
 		rootNode.serializeResourcesInNeedOfSave();
-		nodeStatusManager.clearAll();
+		nodeStatusManager.cleanAll();
 	}
 	
 	

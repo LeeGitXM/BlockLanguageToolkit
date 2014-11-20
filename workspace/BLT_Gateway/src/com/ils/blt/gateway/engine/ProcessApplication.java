@@ -8,8 +8,6 @@ import java.util.UUID;
 import com.ils.blt.common.block.ActiveState;
 import com.ils.blt.common.block.RampMethod;
 import com.ils.blt.common.serializable.SerializableApplication;
-import com.ils.blt.common.serializable.SerializableFamily;
-import com.ils.blt.common.serializable.SerializableFolder;
 
 /**
  * An application is a specialized process node.

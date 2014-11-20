@@ -226,13 +226,13 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		return null;
 	}
 	@Override
-	protected ConnectionPainter newConnectionPainter(BlockDiagramModel model) {
+	protected ConnectionPainter newConnectionPainter(BlockDiagramModel bdm) {
 		return new DiagramConnectionPainter();
 	}
 	
 	@Override
-	protected BlockDesignableContainer newDesignableContainer(BlockDiagramModel model) {
-		return new DiagramContainer(this,model,this.newEdgeRouter(model),this.newConnectionPainter(model));
+	protected BlockDesignableContainer newDesignableContainer(BlockDiagramModel bdm) {
+		return new DiagramContainer(this,bdm,this.newEdgeRouter(bdm),this.newConnectionPainter(bdm));
 	}
 	
 	@Override
@@ -472,7 +472,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		logger.infof("%s: onClose",TAG);
 		BlockDesignableContainer container = (BlockDesignableContainer)c;
 		ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
-		if( diagram.isDirty() || diagram.needsSaving() ) {
+		if( diagram.isDirty()  ) {
 			Object[] options = {BundleUtil.get().getString(PREFIX+".CloseDiagram.Save"),BundleUtil.get().getString(PREFIX+".CloseDiagram.Revert")};
 			int n = JOptionPane.showOptionDialog(null,
 					BundleUtil.get().getString(PREFIX+".CloseDiagram.Question"),
@@ -489,9 +489,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			else {
 				// Mark diagram as clean, since we reverted changes
 				diagram.setDirty(false);
-				diagram.setNeedsSaving(false);
 				NodeStatusManager statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
-				statusManager.clearDirtyBlockCount(diagram.getResourceId());
 				statusManager.setResourceDirty(diagram.getResourceId(), false);
 				context.releaseLock(container.getResourceId());
 			}
@@ -545,6 +543,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		if( container!=null ) {
 			ProcessDiagramView view = (ProcessDiagramView)(container.getModel());
 			container.setBackground(view.getBackgroundColorForState());
+			SwingUtilities.invokeLater(new WorkspaceRepainter());
 		}
 	}
 	
@@ -584,15 +583,16 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		}
 	}
 	// ============================== Change Listener ================================
-		/**
-		 * If the current diagram changes state, then paint the background accordingly.
-		 * 
-		 * @param event
-		 */
-		@Override
-		public void stateChanged(ChangeEvent event) {
-			updatBackgroundForDirty();
-		}
+	/**
+	 * If the current diagram changes state, then paint the background accordingly.
+	 * 
+	 * @param event
+	 */
+	@Override
+	public void stateChanged(ChangeEvent event) {
+		updatBackgroundForDirty();
+	}
+	
 	/**
 	 * Paint connections. The cross-section is dependent on the connection type.
 	 */
@@ -715,6 +715,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 	/**
 	 * "Save" implies a push of the block attributes into the model running in the Gateway.
+	 * This, in turn, makes the parent diagram resource dirty.
 	 */
 	private class SaveAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
@@ -730,7 +731,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			handler.setBlockProperties(pdv.getId(),block.getId(), block.getProperties());
 			block.setDirty(false);
 			NodeStatusManager statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
-			statusManager.decrementDirtyBlockCount(pdv.getResourceId());
+			statusManager.setResourceDirty(pdv.getResourceId(),true);
 		}
 	}
 	

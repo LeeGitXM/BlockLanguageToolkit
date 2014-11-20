@@ -88,10 +88,10 @@ public class NaturalLog extends AbstractProcessBlock implements ProcessBlock {
 			if( qv!=null && qv.getValue()!=null ) {
 				try {
 					Double dbl = Double.parseDouble(qv.getValue().toString());
-					double value = dbl.doubleValue();
-					if( value>0.0) {
-						value = ln.value(value);
-						qv = new BasicQualifiedValue(new Double(value),qv.getQuality(),qv.getTimestamp());
+					double valu = dbl.doubleValue();
+					if( valu>0.0) {
+						valu = ln.value(valu);
+						qv = new BasicQualifiedValue(new Double(valu),qv.getQuality(),qv.getTimestamp());
 					}
 					else {
 						state = BlockState.ERROR;

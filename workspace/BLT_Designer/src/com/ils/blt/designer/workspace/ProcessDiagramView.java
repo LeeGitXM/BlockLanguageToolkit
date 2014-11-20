@@ -51,7 +51,6 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	private DesignerContext context;
 	private boolean dirty = false;   // A newly created diagram is "dirty" until it is saved
 	                                 // but this looks better. It'll be dirty again with the first block
-	private boolean needsSave = false;
 	private boolean suppressStateChangeNotification = false;
 	
 	/**
@@ -324,11 +323,13 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	}
 	
 	public DiagramState getState() {return state;}
+	/**
+	 * A diagram that is dirty is structurally out-of-sync with what is running
+	 * in the gateway.
+	 * @return tue if the diagram does not represent what is actually running.
+	 */
 	public boolean isDirty() {return dirty;}
-	public void setDirty(boolean dirty) {this.dirty = dirty;}
-	
-	public boolean needsSaving() {return needsSave;}
-	public void setNeedsSaving(boolean needsSave) {this.needsSave = needsSave;}
+	public void setDirty(boolean dirty) {this.dirty = dirty;super.fireStateChanged();}
 	
 	@Override
 	public void setDiagramSize(Dimension dim) {
@@ -339,15 +340,15 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	public void setState(DiagramState state) {this.state = state;}
 	
 	/**
-	 * There are a few situations (like deserialization) where we want to suppress the dirty propagation
+	 * There are a few situations (like deserialization) where we want to suppress the dirty propagation.
+	 * This method is called because we've messed up the diagram with a structural change.
 	 */
 	@Override
 	public void fireStateChanged() {
 		if( !suppressStateChangeNotification ) {
-			setDirty(true);
 			NodeStatusManager statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
 			statusManager.setResourceDirty(getResourceId(), true);
-			super.fireStateChanged();
+			setDirty(true); // Fires super method which informs the listeners.
 		}
 	}
 	

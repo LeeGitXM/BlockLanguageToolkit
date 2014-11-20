@@ -55,8 +55,8 @@ public class SQL extends AbstractProcessBlock implements ProcessBlock {
 		setName("SQL Writer");
 		BlockProperty db = new BlockProperty(BLOCK_PROPERTY_DB,"",PropertyType.STRING,true);
 		properties.put(BLOCK_PROPERTY_DB, db);
-		BlockProperty sql = new BlockProperty(BLOCK_PROPERTY_SQL,"",PropertyType.STRING,true);
-		properties.put(BLOCK_PROPERTY_SQL, sql);
+		BlockProperty sqlprop = new BlockProperty(BLOCK_PROPERTY_SQL,"",PropertyType.STRING,true);
+		properties.put(BLOCK_PROPERTY_SQL, sqlprop);
 		
 		// Define a single input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);

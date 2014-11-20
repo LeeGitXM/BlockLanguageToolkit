@@ -238,11 +238,9 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public ProcessDiagram getDiagram(UUID id) {
 		return modelManager.getDiagram(id);
 	}
-	public ProcessDiagram getDiagram(String projectName,String diagramPath) {
-		return modelManager.getDiagram(projectName,diagramPath);
-	}
-	public List<String> getDiagramTreePaths(String projectName) {
-		return modelManager.getDiagramTreePaths(projectName);
+
+	public List<SerializableResourceDescriptor> getDiagramDescriptors(String projectName) {
+		return modelManager.getDiagramDescriptors(projectName);
 	}
 	/**
 	 * Reset a block.
@@ -269,12 +267,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 			}
 		}
 	}
-	public void resetDiagram(String projectName,String diagramPath) {
-		ProcessDiagram diagram = modelManager.getDiagram(projectName,diagramPath);
-		for(ProcessBlock block:diagram.getProcessBlocks() ) {
-			block.reset();
-		}
-	}
+
 	public List<SerializableResourceDescriptor> queryControllerResources() {
 		return modelManager.queryControllerResources();
 	}

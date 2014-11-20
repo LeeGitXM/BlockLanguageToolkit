@@ -166,7 +166,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		
 		TruthValue newState = TruthValue.UNKNOWN;
 		if( buffer.size() >= maxPoints)  {
-			double ratio = computeRatio(buffer);
+			double ratio = computeRatio();
 			// Even if locked, we update the current state
 			ratioProperty.setValue(ratio);
 			controller.sendPropertyNotification(getBlockId().toString(),BLOCK_PROPERTY_RATIO,new BasicQualifiedValue(new Double(ratio)));
@@ -294,7 +294,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	 * Compute the fraction of true. We are guaranteed 
 	 * that the buffer is not empty.
 	 */
-	private double computeRatio(LinkedList<TruthValue> buffer) {
+	private double computeRatio() {
 		int trueCount = 0;
 		int total = 0;
 		for(TruthValue tv:buffer) {

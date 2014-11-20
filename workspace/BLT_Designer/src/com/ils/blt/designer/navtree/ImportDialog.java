@@ -25,8 +25,8 @@ public class ImportDialog extends JDialog implements ActionListener {
 	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
 	private final static String FILE_CHOOSER_NAME = "FileChoser";
 	private static final long serialVersionUID = 8813971334526492335L;
-	private final int HEIGHT = 80;
-	private final int WIDTH = 400;
+	private static final int DLG_HEIGHT = 80;
+	private static final int DLG_WIDTH = 400;
 	private File filePath = null;
 	private JFileChooser fc;
 	private final String nameLabel;
@@ -38,7 +38,7 @@ public class ImportDialog extends JDialog implements ActionListener {
 		super();
 		setModal(true);
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
-        setSize(new Dimension(WIDTH,HEIGHT));
+        setSize(new Dimension(DLG_WIDTH,DLG_HEIGHT));
         this.nameLabel = label;
         this.title = title;
         this.log = LogUtil.getLogger(getClass().getPackage().getName());

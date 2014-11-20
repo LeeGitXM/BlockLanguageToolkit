@@ -110,7 +110,7 @@ public class NoteTextEditor extends JDialog {
 					}
 				}
 				block.setDirty(true);
-				statusManager.incrementDirtyBlockCount(diagram.getResourceId());
+				statusManager.setResourceDirty(diagram.getResourceId(),true);
 				SwingUtilities.invokeLater(new WorkspaceRepainter());
 				dispose();
 			}

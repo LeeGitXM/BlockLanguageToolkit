@@ -166,8 +166,8 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 * @return a particular property given its name.
 	 */
 	@Override
-	public BlockProperty getProperty(String name) {
-		return properties.get(name);
+	public BlockProperty getProperty(String nam) {
+		return properties.get(nam);
 	}
 	
 	@Override

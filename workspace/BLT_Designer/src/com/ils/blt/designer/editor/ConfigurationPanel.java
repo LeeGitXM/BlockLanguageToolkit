@@ -99,7 +99,7 @@ public class ConfigurationPanel extends BasicEditPanel {
 						property.setDisplayed(false);
 					}
 				}
-				editor.notifyOfMajorChange();   // Mark the block as dirty
+				editor.notifyOfPropertyChange(property);   // Mark the nav tree node as dirty
 				updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
 				setSelectedPane(BlockEditConstants.HOME_PANEL);
 			}

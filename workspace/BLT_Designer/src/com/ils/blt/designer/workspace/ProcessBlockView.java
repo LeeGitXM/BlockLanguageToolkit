@@ -199,11 +199,11 @@ public class ProcessBlockView extends AbstractBlock {
 		result.setX(getLocation().x);
 		result.setY(getLocation().y);
 		
-		List<SerializableAnchor> anchors = new ArrayList<SerializableAnchor>();
+		List<SerializableAnchor> ancs = new ArrayList<SerializableAnchor>();
 		for( AnchorDescriptor anchor:getAnchors()) {
-			anchors.add(convertAnchorToSerializable((ProcessAnchorDescriptor)anchor));
+			ancs.add(convertAnchorToSerializable((ProcessAnchorDescriptor)anchor));
 		}
-		result.setAnchors(anchors.toArray(new SerializableAnchor[anchors.size()]));
+		result.setAnchors(ancs.toArray(new SerializableAnchor[ancs.size()]));
 		if( getProperties()!=null ) {
 			log.tracef("%s.convertToSerializable: %s has %d properties",TAG,getClassName(),getProperties().size());
 			log.tracef(getProperties().toString());
@@ -356,12 +356,12 @@ public class ProcessBlockView extends AbstractBlock {
 
 	 protected void fireStateChanged() {
 		 // Guaranteed to return a non-null array
-		 Object[] listeners = listenerList.getListenerList();
+		 Object[] listnrs = listenerList.getListenerList();
 		 // Process the listeners last to first, notifying
 		 // those that are interested in this event
-		 for (int i = listeners.length-2; i>=0; i-=2) {
-			 if (listeners[i]==ChangeListener.class) {
-				 ((ChangeListener)listeners[i+1]).stateChanged(changeEvent);
+		 for (int i = listnrs.length-2; i>=0; i-=2) {
+			 if (listnrs[i]==ChangeListener.class) {
+				 ((ChangeListener)listnrs[i+1]).stateChanged(changeEvent);
 			 }
 		 }
 	 }

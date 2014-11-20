@@ -63,7 +63,6 @@ public class MainPanel extends BasicEditPanel {
 		add(separator,"span,growy");
 	}
 	
-	public void notifyOfMajorChange() {parent.notifyOfMajorChange();}    // Dirties block
 	public void notifyOfPropertyChange(BlockProperty prop) {parent.notifyOfPropertyChange(prop);} 
 
 	/**

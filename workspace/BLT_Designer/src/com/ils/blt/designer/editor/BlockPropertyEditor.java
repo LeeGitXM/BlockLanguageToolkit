@@ -6,8 +6,6 @@ package com.ils.blt.designer.editor;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.SwingUtilities;
-
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.BlockProperty;
@@ -15,7 +13,6 @@ import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
-import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.inductiveautomation.ignition.client.util.gui.SlidingPane;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
@@ -77,10 +74,10 @@ public class BlockPropertyEditor extends SlidingPane   {
 		setSelectedPane(BlockEditConstants.HOME_PANEL);   
 	}
 	public ProcessBlockView getBlock() { return this.block; }
-	public void updatePanelForBlock(int panelIndex,ProcessBlockView block) {
+	public void updatePanelForBlock(int panelIndex,ProcessBlockView blk) {
 		switch(panelIndex) {
 		case BlockEditConstants.NAME_EDIT_PANEL:
-			nameEditPanel.updateForBlock(block);
+			nameEditPanel.updateForBlock(blk);
 			break;
 		case BlockEditConstants.CONFIGURATION_PANEL:
 		case BlockEditConstants.HOME_PANEL: 
@@ -88,32 +85,24 @@ public class BlockPropertyEditor extends SlidingPane   {
 			break;
 		}
 	}
+
 	/**
-	 * One of the edit panels has modified a block in such a way that
-	 * the block needs to be marked as "dirty". It may be that there are
-	 * no situations where this is absolutely necessary. For now, we're
-	 * being conservative and saying that a tag subscription constitutes
-	 * a "major" change.
-	 * 
-	 * Mark both the block and its parent resource as "dirty". Then repaint the diagram.
+	 * Changing the name is basically immaterial to the executing block.
+	 * We just need to change the project resource eventually.
 	 */
-	public void notifyOfMajorChange() {
-		if( !block.isDirty() ) {
-			block.setDirty(true);
-			statusManager.incrementDirtyBlockCount(diagram.getResourceId());
-			SwingUtilities.invokeLater(new WorkspaceRepainter());
-		}
+	public void notifyOfGeneralChange() {
+		statusManager.setResourceDirty(diagram.getResourceId(),true);
 	}
+	
 	/**
 	 * One of the edit panels has modified a block property. Update the
-	 * running diagram directly. Do not mark the block as "dirty".
+	 * running diagram directly. Do not mark the diagram as "dirty" since
+	 * we've only changed a block property.
 	 */
 	public void notifyOfPropertyChange(BlockProperty property) {
 		ApplicationRequestHandler handler = new ApplicationRequestHandler();
 		handler.setBlockProperty(diagram.getId(), block.getId(), property);
-		diagram.setNeedsSaving(true);
 		statusManager.setResourceDirty(diagram.getResourceId(),true);
-		SwingUtilities.invokeLater(new WorkspaceRepainter());
 	}
 	
 	/**

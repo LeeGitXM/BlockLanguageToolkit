@@ -280,7 +280,7 @@ public class ProxyHandler   {
 			List<?> list = null;
 			getBlockPrototypesCallback.setLocalVariable(0,pyList);
 			getBlockPrototypesCallback.execute();
-			log.info(TAG+".getBlockPrototypes: returned "+ pyList);   // Should now be updated
+			log.debug(TAG+".getPalettePrototypes: returned "+ pyList);   // Should now be updated
 			// Contents of list are Hashtable<String,?>
 			list = toJavaTranslator.pyListToArrayList(pyList);
 

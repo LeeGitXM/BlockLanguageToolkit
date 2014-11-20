@@ -58,7 +58,7 @@ public class ProcessNode {
 		return result;
 	}
 
-	public ProcessNode getChildForName(String name) { return children.get(name); }
+	public ProcessNode getChildForName(String nam) { return children.get(nam); }
 	public Collection<ProcessNode> getChildren() { return children.values(); }
 	public String getName() {return name;}
 	/**

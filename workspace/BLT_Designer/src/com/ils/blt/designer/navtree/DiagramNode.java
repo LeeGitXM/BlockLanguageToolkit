@@ -18,8 +18,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JMenu;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.tree.TreePath;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -64,7 +62,7 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
  * The frame is responsible for rendering the diagram based on the model resource.
  * The model can exist without the frame, but not vice-versa.
  */
-public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeListener, ProjectChangeListener  {
+public class DiagramNode extends AbstractResourceNavTreeNode implements BLTNavTreeNode, ProjectChangeListener  {
 	private static final String TAG = "DiagramNode";
 	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
 
@@ -95,7 +93,6 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 		this.resourceId = resource.getResourceId();
 		this.workspace = ws;
 		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
-		statusManager.addChangeListener(this);
 		setName(resource.getName());
 		setText(resource.getName());
 		
@@ -138,7 +135,7 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 		menu.add(setStateMenu);
 	
 		// Only allow a Save when the diagram is dirty, exists in the controller
-		saveAction.setEnabled(diagramIsSavable(handler,resourceId));
+		saveAction.setEnabled(diagramIsSavable(resourceId));
 		menu.add(saveAction);
 		menu.addSeparator();
 		menu.add(renameAction);
@@ -168,12 +165,15 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 	/**
 	 * @return true if the diagram is in a state to be saved. 
 	 */
-	private boolean diagramIsSavable(ApplicationRequestHandler handler,long resId) {
-		boolean existsInController = handler.resourceExists(context.getProject().getId(),resourceId);
-		if( !existsInController )  return false;    // Controller has no knowledge of this diagram
-		                                            // Must save application.
-		
-		return statusManager.isResourceDirty(resourceId);
+	private boolean diagramIsSavable(long resId) {
+		boolean savable = false;
+		if( parent instanceof AbstractResourceNavTreeNode) {
+			long pid = BLTProperties.ROOT_RESOURCE_ID;
+			ProjectResource pr = ((AbstractResourceNavTreeNode)parent).getProjectResource();
+			if( pr!=null ) pid = pr.getResourceId();
+			savable = !statusManager.isResourceDirty(pid);
+		}
+		return savable;
 	}
 		
 	@Override
@@ -273,7 +273,6 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 		catch(GatewayException ge) {
 			logger.warnf("%s.saveDiagram: Exception saving project resource %d (%s)",TAG,resourceId,ge.getMessage());
 		}
-		statusManager.clearDirtyBlockCount(resourceId);     // Does not of itself make block clean
 		statusManager.setResourceDirty(resourceId, false);
 	}
 	
@@ -288,27 +287,25 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 			// If the diagram is open on a tab, call the workspace method to update the project resource
 			// from the diagram view. This method handles re-paint of the background.
 			ProcessDiagramView view = (ProcessDiagramView)tab.getModel();
-			if( view.needsSaving() || view.isDirty() ) {
-				logger.infof("%s.updateResource: updating ... %d",TAG,resourceId);
+			if( view.isDirty() ) {
+				logger.infof("%s.updateResource: updating ... %s(%d) ",TAG,getName(),resourceId);
 				SerializableDiagram sd = view.createSerializableRepresentation();
 				sd.setName(getName());
 				ObjectMapper mapper = new ObjectMapper();
 				try{
-				byte[] bytes = mapper.writeValueAsBytes(sd);
-				context.updateResource(resourceId,bytes);
+					byte[] bytes = mapper.writeValueAsBytes(sd);
+					context.updateResource(resourceId,bytes);
 				}
 				catch(JsonProcessingException jpe) {
 					logger.warnf("%s.updateResource: Exception serializing diagram, resource %d (%s)",TAG,resourceId,jpe.getMessage());
 				}
 			}
+			view.setDirty(false);
 		} 
 	}
 	
-	@Override
-	protected void uninstall() {
-		super.uninstall();
-		context.removeProjectChangeListener(this);
-	}
+	// We're not a listener on anything. Nothing to do.
+	public void prepareForDeletion() {}
 
 	// ----------------------- Project Change Listener -------------------------------
 	/**
@@ -437,17 +434,13 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 			//       (we should).
 			if( context.requestLock(resourceId)) {
 				// NOTE: This will set the parent dirty as well.
-				//       Do a little exercise to force propagation
-				//       independent of the current "dirtiness"
-				statusManager.clearDirtyChildCount(resourceId);
-				statusManager.setResourceDirty(resourceId, false);
 				workspace.close(resourceId);    // Close the tab
+				// Show parent dirty
 				statusManager.setResourceDirty(resourceId, true);
 				context.deleteResource(resourceId);
 				context.updateLock(resourceId);
 				context.releaseLock(resourceId);
-				// Show parent dirty
-				
+				statusManager.deleteResource(resourceId);		
 			}
 			else {
 				JOptionPane.showMessageDialog(null, String.format("Diagram is locked. Close tab."));
@@ -583,15 +576,15 @@ public class DiagramNode extends AbstractResourceNavTreeNode implements ChangeLi
 		return result;
 	}
 	
-	// ================================ ChangeListener ======================================
-	// Either our state or the state of another node changed.
-	// No matter what we re-compute our state.
-	public void stateChanged(ChangeEvent event) {
-		// Set italics, enable Save
-		boolean dirty = statusManager.isResourceDirty(resourceId);
-		logger.debugf("%s.stateChanged: dirty = %s",TAG,(dirty?"true":"false"));
+	/**
+	 * Update our state depending on whether the underlying diagram is dirty
+	 * Dirtiness for a nav tree node means that the project resource is out-of-date
+	 * with what is being shown in the designer UI.
+	 */
+	public void setDirty(boolean dirty) {
+		logger.debugf("%s.setDirty: dirty = %s",TAG,(dirty?"true":"false"));
 		setItalic(dirty);
-		saveAction.setEnabled(dirty);
+		saveAction.setEnabled(diagramIsSavable(resourceId));
 		refresh();
 	}
 

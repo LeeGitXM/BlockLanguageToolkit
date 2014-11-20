@@ -50,9 +50,9 @@ public class SerializableDiagram {
 	 * blocks will have unique names.
 	 * @return the block in the diagram with the specified name, else null
 	 */
-	public SerializableBlock getNamedBlock(String name) {
+	public SerializableBlock getNamedBlock(String nam) {
 		for(SerializableBlock blk:getBlocks()) {
-			if(blk.getName().equalsIgnoreCase(name) ) return blk;
+			if(blk.getName().equalsIgnoreCase(nam) ) return blk;
 		}
 		return null;
 	}

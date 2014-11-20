@@ -23,7 +23,8 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 public class RootNode extends ProcessNode {
 	private static String TAG = "RootNode";
 	private final GatewayContext context;   // Use to get project name
-	private final Map <Long,Map<String,ProcessNode>>childrenByProjectId;
+	// The child key is resourceId (which is immutable)
+	private final Map <Long,Map<Long,ProcessNode>>childrenByProjectId;
 	private final Map<String,Long> projectIdByName;
 
 	
@@ -35,7 +36,7 @@ public class RootNode extends ProcessNode {
 		super("root",null,BLTProperties.ROOT_FOLDER_UUID);
 		this.context = ctx;
 		this.projectIdByName = new HashMap<String,Long>();
-		this.childrenByProjectId = new HashMap<Long,Map<String,ProcessNode>>();
+		this.childrenByProjectId = new HashMap<Long,Map<Long,ProcessNode>>();
 	}
 	
 	public void addChild(ProcessNode child,long projectId) {
@@ -50,12 +51,12 @@ public class RootNode extends ProcessNode {
 			projectIdByName.put(projectName,key);
 		}
 		
-		Map<String,ProcessNode>map = childrenByProjectId.get(key);
+		Map<Long,ProcessNode>map = childrenByProjectId.get(key);
 		if( map==null ) {
-			map = new HashMap<String,ProcessNode>();
+			map = new HashMap<Long,ProcessNode>();
 			childrenByProjectId.put(key, map);
 		}
-		map.put(child.getName(),child);
+		map.put(new Long(child.getResourceId()),child);
 	}
 	
 	/**
@@ -66,63 +67,7 @@ public class RootNode extends ProcessNode {
 		log.errorf("%s.addChild: ERROR use addChild(child,projectId) for a RootNode",TAG);
 	}
 	
-	/**
-	 * The segment delimiters in a tree path are ":".
-	 * @param projectName
-	 * @param treePath
-	 * @return the node that corresponds to the specified tree path
-	 */
-	public ProcessNode findNode(String projectName,String treePath) {
-		ProcessNode result = null;
-		Long projectId = projectIdByName.get(projectName);
-		if( projectId!=null  ) {
-			// Ignore any leading colon
-			if( treePath.startsWith(":") ) treePath = treePath.substring(1);
-			// The root map is slightly different than the rest.
-			// We do the first segment, then recurse
-			Map<String,ProcessNode> map = childrenByProjectId.get(projectId);
-			if( map!=null)  {
-				ProcessNode child = null;
-				String path = null;
-				int index = treePath.indexOf(":");
-				if( index>0 ) {
-					path = treePath.substring(0,index);
-					if( treePath.length()>index+1 ) treePath = treePath.substring(index+1);  // Skip the ":"
-					else treePath = "";
-					child = map.get(path);
-				}
-				else {  // No colon signifies the last segment
-					path = treePath;
-					treePath = "";
-					child = map.get(path);
-				}
-
-				while(child!=null && treePath.length()>0) {
-					index = treePath.indexOf(":");
-					if( index>0 ) {
-						path = treePath.substring(0,index);
-						if( treePath.length()>index+1 ) treePath = treePath.substring(index+1);  // Skip the ":"
-						else treePath = "";
-						child = child.getChildForName(path);
-					}
-					else {  // No colon signifies the last segment
-						path = treePath;
-						treePath = "";
-						child = child.getChildForName(path);
-					}
-				}
-				result = child;
-			}
-			else {
-				log.warnf("%s.findNode: No nodes have been saved for project %s", TAG,projectName);
-			}
-		}
-		else {
-			log.warnf("%s.findNode: No nodes found for project %s", TAG,projectName);
-		}
-		
-		return result;
-	}
+	
 	
 	public Collection<Long> allProjects() {
 		return projectIdByName.values();
@@ -134,7 +79,7 @@ public class RootNode extends ProcessNode {
 	 */
 	public List<ProcessNode> allNodesForProject(Long projectId) {
 		List<ProcessNode> nodes = new ArrayList<ProcessNode>();
-		Map<String,ProcessNode> map = childrenByProjectId.get(projectId);
+		Map<Long,ProcessNode> map = childrenByProjectId.get(projectId);
 		if( map!=null) {
 			Collection<ProcessNode> children = map.values();
 			if( children!=null) {
@@ -156,12 +101,20 @@ public class RootNode extends ProcessNode {
 		list.add(root);
 	}
 	
+ 
 	/**
 	 * Remove the children of a project. 
+	 */
+	public void removeChildFromProjectRoot(Long projectId,ProcessNode node) {
+		Map<Long,ProcessNode> map = childrenByProjectId.get(projectId);
+		if( map!=null) map.remove(new Long(node.getResourceId()));	
+	}
+	
+	/**
+	 * Remove all traces of a project. 
 	 * NOTE: The project name to Id mapping remains.
 	 */
 	public void removeProject(Long projectId) {
 		childrenByProjectId.remove(projectId);	
 	}
-
 }
