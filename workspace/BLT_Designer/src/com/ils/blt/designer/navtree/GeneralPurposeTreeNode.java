@@ -38,21 +38,24 @@ import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.common.serializable.UUIDResetHandler;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
+import com.ils.blt.designer.ResourceDeleteManager;
+import com.ils.blt.designer.ResourceSaveManager;
+import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
-import com.inductiveautomation.ignition.client.gateway_interface.GatewayException;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;
+import com.inductiveautomation.ignition.common.execution.ExecutionManager;
+import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngine;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectChangeListener;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
-import com.inductiveautomation.ignition.designer.IgnitionDesigner;
 import com.inductiveautomation.ignition.designer.UndoManager;
-import com.inductiveautomation.ignition.designer.gateway.DTGatewayInterface;
+import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
@@ -66,10 +69,11 @@ import com.inductiveautomation.ignition.designer.navtree.model.FolderNode;
  * 
  * Leaf nodes are of type DiagramNode.
  */
-public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode, ProjectChangeListener {
+public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInterface, ProjectChangeListener {
 	private static final String TAG = "GeneralPurposeTreeNode";
 	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
 	private final LoggerEx logger = LogUtil.getLogger(getClass().getPackage().getName());
+	private boolean dirty = false;
 	private final DeleteNodeAction deleteNodeAction;
 	private final StartAction startAction = new StartAction();
 	private final StopAction stopAction = new StopAction();
@@ -78,7 +82,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 	private final FolderCreateAction folderCreateAction;
 	private TreeSaveAction treeSaveAction = null;
 	private final ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
-	
+	private final ExecutionManager executionEngine;
 
 	private final ImageIcon defaultIcon = IconUtil.getIcon("folder_closed");
 	private final ImageIcon openIcon;
@@ -93,6 +97,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 		super(ctx, BLTProperties.MODULE_ID, ApplicationScope.GATEWAY,BLTProperties.ROOT_FOLDER_UUID);
 		this.setName(BLTProperties.ROOT_FOLDER_NAME);
 		this.resourceId = BLTProperties.ROOT_RESOURCE_ID;
+		this.executionEngine = new BasicExecutionEngine(1,TAG);
 		deleteNodeAction = null;
 		folderCreateAction = new FolderCreateAction(this);
 		workspace = ((BLTDesignerHook)ctx.getModule(BLTProperties.MODULE_ID)).getWorkspace();
@@ -114,6 +119,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 	public GeneralPurposeTreeNode(DesignerContext context,ProjectResource resource,UUID self) {
 		super(context,resource.getModuleId(),resource.getApplicationScope(),self);
 		this.resourceId = resource.getResourceId();
+		this.executionEngine = new BasicExecutionEngine(1,TAG);
 		setName(resource.getName());      // Also sets text for tree
 		
 		deleteNodeAction = new DeleteNodeAction(this);
@@ -136,60 +142,16 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 		}
 		setIcon(closedIcon);
 	}
-	// Recursively descend the node tree, gathering up descendant resources.
-
-	public void accumulateDescendants(AbstractResourceNavTreeNode node,List<ProjectResource> resources) {
-		ProjectResource res = node.getProjectResource();
-		if( res!=null ) {
-			logger.infof("%s.accumulateDescendants: %s (%d)",TAG,res.getName(),res.getResourceId());
-			resources.add(res); 
-		}
-		@SuppressWarnings("rawtypes")
-		Enumeration walker = node.children();
-		while(walker.hasMoreElements()) {
-			Object child = walker.nextElement();
-			accumulateDescendants((AbstractResourceNavTreeNode)child,resources);
-		}
-	}
 	
-	// Recursively descend the node tree, gathering up associated resources.
-	// Since this is used during a save, set the resources clean.
-	public void accumulateDirtyNodeResources(AbstractResourceNavTreeNode node,Project diff) {
-		ProjectResource res = node.getProjectResource();
-		if( res!=null ) {
-			long resid = res.getResourceId();
-			if( statusManager.isResourceDirty(resid) && !statusManager.isPendingDelete(resid) ) { 
-				logger.infof("%s.accumulateDirtyNodeResources: %s (%d)",TAG,res.getName(),resid);
-				diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
-				if(res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
-					// If the resource is open, we need to save it ..
-					DiagramTreeNode dnode = (DiagramTreeNode)node;
-					dnode.saveDiagram();  // Whether it's open or closed.
-				}
-				statusManager.setResourceDirty(resid, false);
-			}
+	@Override
+	public boolean confirmDelete(List<? extends AbstractNavTreeNode> selections) {
+		// We only care about the first
+		boolean result = false;
+		if( selections.size()>0 ) {
+			AbstractNavTreeNode selected = selections.get(0);
+			result = ErrorUtil.showConfirm(String.format(BundleUtil.get().getString(PREFIX+".Delete.Confirmation.Question"), selected.getName()), BundleUtil.get().getString(PREFIX+".Delete.Confirmation.Title"));
 		}
-		else {
-			logger.warnf("%s.accumulateDirtyNodeResources: %s has no project resource",TAG,node.getName());
-		}
-		@SuppressWarnings("rawtypes")
-		Enumeration walker = node.children();
-		while(walker.hasMoreElements()) {
-			Object child = walker.nextElement();
-			accumulateDirtyNodeResources((AbstractResourceNavTreeNode)child,diff);
-		}
-	}
-	// If the parent is clean, then we can save for ourselves
-	// Note: If our parent is the root node, it has no project resource.
-	private void appropriatelyEnableSaveAction() {
-		if( treeSaveAction!=null ) {
-			if( parent instanceof AbstractResourceNavTreeNode) {
-				long pid = BLTProperties.ROOT_RESOURCE_ID;
-				ProjectResource pr = ((AbstractResourceNavTreeNode)parent).getProjectResource();
-				if( pr!=null ) pid = pr.getResourceId();
-				treeSaveAction.setEnabled(!statusManager.isResourceDirty(pid));
-			}
-		}
+		return result;
 	}
 	@Override
 	public Icon getExpandedIcon() { 
@@ -200,14 +162,15 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 		return closedIcon;
 	}
 	@Override
+	public long getResourceId() { return this.resourceId; }
+	
+	@Override
 	public String getWorkspaceName() {
 		return DiagramWorkspace.key;
 	}
-	//@Override
-	// Like for drop targets on the NavTree
-	//public boolean isEditActionHandler() {
-	//	return isRootFolder();
-	//}
+	// Dirtiness refers to internal state, independent of children.
+	public boolean isDirty() { return this.dirty; }
+	public void setDirty(boolean flag) { this.dirty = flag; }
 	/**
 	 * Query the block controller in the Gateway. The resources that it knows
 	 * about may, or may not, coincide with those in the Designer. 
@@ -222,7 +185,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 		} 
 		catch (Exception ex) {
 			logger.warnf("%s. startAction: ERROR: %s",TAG,ex.getMessage(),ex);
-			ErrorUtil.showError(ex);
+			ErrorUtil.showError(TAG+" Exception listing controller resources",ex);
 		}
 	}
 	/**
@@ -238,6 +201,27 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 					":"+res.getParentUuid()+")");
 		}
 	}
+	/**
+	 *  Note: We ignore locking.Previous attempts to use the superior version of this method
+	 *        fail to acquire locks (without first doing a project save from the main menu).
+	 */
+	@Override
+	public void onEdit(String newTextValue) {
+		// Sanitize name
+		if (!NAME_PATTERN.matcher(newTextValue).matches()) {
+			ErrorUtil.showError(BundleUtil.get().getString(PREFIX+".InvalidName", newTextValue));
+			return;
+		}
+		String oldName = getProjectResource().getName();
+		try {
+			logger.infof("%s.onEdit: alterName from %s to %s",TAG,oldName,newTextValue);
+			context.structuredRename(resourceId, newTextValue);
+		}
+		catch (IllegalArgumentException ex) {
+			ErrorUtil.showError(TAG+".onEdit: "+ex.getMessage());
+		}
+	}
+	
 	@Override
 	public void onSelected() {
 		UndoManager.getInstance().setSelectedContext(GeneralPurposeTreeNode.class);
@@ -254,7 +238,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 		if (res.getResourceId() == this.resourceId) {
 			if( res.getName()==null || !res.getName().equals(getName()) ) {
 				logger.infof("%s.projectResourceModified(%d), setting name %s to %s",TAG,this.resourceId,getName(),res.getName());
-				statusManager.setResourceDirty(resourceId, true);
+				statusManager.incrementDirtyNodeCount(resourceId);
+				setDirty(true);
 			}
 		}  
 		super.projectResourceModified(res, changeType);
@@ -266,60 +251,16 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 		super.projectUpdated(diff);
 	}
 
-
-	/**
-	 * Save the current node and its descendants. During
-	 * the accumulation, we set the resources to "clean".
-	 */
-	private void saveNodeAndDescendants() {
-		Project diff = context.getProject().getEmptyCopy();
-
-		// First the deleted resources
-		List<Long> nodesToRemove = new ArrayList<>();
-		statusManager.getPendingDeletesUnderNode(resourceId,nodesToRemove);
-		for( Long resid:nodesToRemove) {
-			diff.deleteResource(resid.longValue(), true);
-			statusManager.deleteResource(resid.longValue());
-		}
-
-		// Now scoop up the dirty nodes (that aren't deleted).
-		accumulateDirtyNodeResources(this,diff);
-		// Update the project with these nodes (informs the gateway also)
-		try {
-			DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ...");  // Do not publish
-		}
-		catch(GatewayException ge) {
-			logger.warnf("%s.saveNodeAndDescendants: Exception saving project resource %d (%s)",TAG,resourceId,ge.getMessage());
-		}
-		// Mark these as "clean" in the current project so that we don't save again.
-		Project project = context.getProject();
-		project.applyDiff(diff,false);      // Apply diff, not dirty
-	}
-
-	/**
-	 * Traverse the entire node hierarchy looking for diagrams that need saving.
-	 * When found, serialize into the project resource. This is in anticipation
-	 * of a top-level save.
-	 */
-	public void serializeResourcesInNeedOfSave() {
-		saveThoseInNeed(this);
-	}
 	/**
 	 * Either our state or the state of another node changed, annotate our state. 
 	 * Dirtiness for a nav tree node means that the project resource is out-of-date
 	 * with what is being shown in the designer UI.
 	 * Note: This method should ONLY be called from the node status manager.
 	 */
-	public void setDirty(boolean dirty) {
-		logger.infof("%s.stateChanged: %d dirty = %s",TAG,resourceId,(dirty?"true":"false"));
-		setItalic(dirty);
-		appropriatelyEnableSaveAction();
+	public void updateUI(boolean dty) {
+		logger.debugf("%s.updateUI: %d dirty = %s",TAG,resourceId,(dty?"true":"false"));
+		setItalic(dty);
 		refresh();  // Update the UI
-	}
-	
-
-	public void uninstallChildren() {
-		super.uninstallChildren();
 	}
 
 	/**
@@ -362,11 +303,12 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 				logger.warnf("%s: Attempted to create a child of type %s (ignored)",TAG,res.getResourceType());
 				throw new IllegalArgumentException();
 			}
-
-			statusManager.newResource(node,resourceId, res.getResourceId());
+			statusManager.createResourceStatus(node,resourceId, res.getResourceId());
+			executionEngine.executeOnce(new ResourceUpdateManager(node));   /// Creates, syncs resource
 		}
 		else {
 			logger.infof("%s.createChildNode: REUSE %s->%s",TAG,this.getName(),node.getName());
+			if( node instanceof DiagramTreeNode ) context.addProjectChangeListener((DiagramTreeNode)node);
 		}
 		node.install(this);
 		if( node.getParent()==null) {
@@ -375,19 +317,25 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 		node.setItalic(statusManager.isResourceDirty(res.getResourceId()));
 		return node;
 	}
+	// For DiagramNode.delete
+	public void recreate() { super.recreate(); }
+	
 	/**
 	 * Define the menu used for popups. This appears to be called each time a menu is called for ..
 	 */
 	@Override
 	protected void initPopupMenu(JPopupMenu menu, TreePath[] paths,List<AbstractNavTreeNode> selection, int modifiers) {
 		setupEditActions(paths, selection);
+		if( this.getParent()==null ) {
+			logger.errorf("%s.initPopupMenu: ERROR: Diagram (%d) has no parent",TAG,hashCode());
+		}
 		context.addProjectChangeListener(this);
 		if (isRootFolder()) { 
 			ApplicationCreateAction applicationCreateAction = new ApplicationCreateAction(this);
 			ApplicationImportAction applicationImportAction = new ApplicationImportAction(this);
 			ClearAction clearAction = new ClearAction();
 			DebugAction debugAction = new DebugAction();
-			SaveAllAction saveAllAction = new SaveAllAction();
+			SaveAllAction saveAllAction = new SaveAllAction(this);
 			if( handler.isControllerRunning() ) {
 				startAction.setEnabled(false);
 				clearAction.setEnabled(false);
@@ -414,7 +362,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 
 			ApplicationConfigureAction applicationConfigureAction = new ApplicationConfigureAction(getProjectResource());
 			treeSaveAction = new TreeSaveAction(this,PREFIX+".SaveApplication");
-			appropriatelyEnableSaveAction();
 
 			menu.add(familyAction);
 			menu.add(folderCreateAction);
@@ -428,7 +375,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 			DiagramCreateAction newDiagramAction = new DiagramCreateAction(this);
 			FamilyConfigureAction familyConfigureAction = new FamilyConfigureAction(getProjectResource());
 			treeSaveAction = new TreeSaveAction(this,PREFIX+".SaveFamily");
-			appropriatelyEnableSaveAction();
+
 
 			ImportDiagramAction importAction = new ImportDiagramAction(this);
 			menu.add(newDiagramAction);
@@ -456,7 +403,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 			}
 			menu.add(folderCreateAction);
 			treeSaveAction = new TreeSaveAction(this,PREFIX+".SaveFolder");
-			appropriatelyEnableSaveAction();
 			menu.add(treeSaveAction);
 			menu.addSeparator();
 			addEditActions(menu);	
@@ -678,29 +624,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 		return sfold;
 	}
 
-	// Recursively descend the node tree, looking for diagram resources where
-	// the associated DiagramView is out-of-synch with the project resource.
-	// When found update the project resource.
-	private void saveThoseInNeed(AbstractResourceNavTreeNode node) {
-		ProjectResource res = node.getProjectResource();
-		if( res!=null ) {
-			logger.infof("%s.saveThoseInNeed: %s (%d)",TAG,res.getName(),res.getResourceId());
-			if(res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
-				// If the resource is open, we need to save it
-				DiagramTreeNode dnode = (DiagramTreeNode)node;
-				dnode.updateResource();  // Only if necessary
-			}
-		}
-		else {
-			logger.warnf("%s.saveThoseInNeed: %s has no project resource",TAG,node.getName());
-		}
-		@SuppressWarnings("rawtypes")
-		Enumeration walker = node.children();
-		while(walker.hasMoreElements()) {
-			Object child = walker.nextElement();
-			saveThoseInNeed((AbstractResourceNavTreeNode)child);
-		}
-	}
+
 
 	/**
 	 *  Serialize an Application into JSON.
@@ -788,7 +712,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 								res.setName(sa.getName());
 								res.setData(json.getBytes());
 								context.updateResource(res);
-								statusManager.setResourceDirty(resourceId, true);		
+								setDirty(true);
+								statusManager.incrementDirtyNodeCount(resourceId);		
 							}
 						}
 						else {
@@ -800,7 +725,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 				});
 			} 
 			catch (Exception err) {
-				ErrorUtil.showError(err);
+				ErrorUtil.showError(TAG+" Exception configuring application",err);
 			}
 		}
 	}
@@ -832,11 +757,9 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 				logger.infof("%s: parent: %s",TAG,getFolderId().toString());
 				context.updateResource(resource);
 				currentNode.selectChild(new long[] {newResId} );
-				statusManager.setResourceDirty(resourceId, true);
-				
 			} 
 			catch (Exception err) {
-				ErrorUtil.showError(err);
+				ErrorUtil.showError(TAG+" Exception creating application",err);
 			}
 		}
 	}
@@ -913,7 +836,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 				});
 			} 
 			catch (Exception err) {
-				ErrorUtil.showError(err);
+				ErrorUtil.showError(TAG+" Exception exporting application",err);
 			}
 		}
 	}
@@ -995,7 +918,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 				});
 			} 
 			catch (Exception err) {
-				ErrorUtil.showError(err);
+				ErrorUtil.showError(TAG+" Exception importing application",err);
 			}
 		}
 
@@ -1107,7 +1030,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 				});
 			} 
 			catch (Exception err) {
-				ErrorUtil.showError(err);
+				ErrorUtil.showError(TAG+" Exception cloning diagram",err);
 			}
 		}
 	} 
@@ -1131,85 +1054,57 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 	private class DeleteNodeAction extends BaseAction implements UndoManager.UndoAction {
 		private static final long serialVersionUID = 1L;
 		private final AbstractResourceNavTreeNode node;
+		ResourceDeleteManager deleter;
 		private String bundleString;
 		private long resid = -1;    // for the root
-		private final List<ProjectResource> resources;
-		
+
 		public DeleteNodeAction(AbstractResourceNavTreeNode resourceNode)  {
 			super(PREFIX+".DeleteNode",IconUtil.getIcon("delete"));
 			this.node = resourceNode;
 			this.bundleString = PREFIX+".NodeNoun";
-			this.resources = new ArrayList<>();
+			this.deleter = new ResourceDeleteManager(node);
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			
+			AbstractNavTreeNode p = node.getParent();
 			ProjectResource res = node.getProjectResource();
 			resid = res.getResourceId();
+			boolean wasDirty = statusManager.isResourceDirty(resid);
 			logger.infof("%s.DeleteNodeAction: %s, resource %d.",TAG,node.getName(),resid);
-			
-			accumulateDescendants(node,resources);
-			if( res.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE) ) {
-				bundleString = PREFIX+".ApplicationNoun";
-			}
-			else if( res.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE) ) {
-				bundleString = PREFIX+".FamilyNoun";
-			}
-			else if( res.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE) ) {
-				bundleString = PREFIX+".FolderNoun";
-			}
-			else if( res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
-				bundleString = PREFIX+".DiagramNoun";
-				if( node instanceof DiagramTreeNode) {
-					((DiagramTreeNode)node).workspace.close(resid);
+			List<AbstractResourceNavTreeNode>selected = new ArrayList<>();
+			selected.add(node);
+			if(confirmDelete(selected)) {
+				if( res.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE) ) {
+					bundleString = PREFIX+".ApplicationNoun";
 				}
-			}
-
-			if( execute() ) {
-				UndoManager.getInstance().add(this, AbstractResourceNavTreeNode.class);
-			}
-			AbstractNavTreeNode p = node.getParent();
-			if( p instanceof GeneralPurposeTreeNode )  {
-				GeneralPurposeTreeNode parentNode = (GeneralPurposeTreeNode)p;
-				parentNode.recreate();
-				parentNode.expand();
-				statusManager.setResourceDirty(parentNode.resourceId, true);
+				else if( res.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE) ) {
+					bundleString = PREFIX+".FamilyNoun";
+				}
+				else if( res.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE) ) {
+					bundleString = PREFIX+".FolderNoun";
+				}
+				deleter.acquireResourcesToDelete();
+				if( execute() ) {
+					UndoManager.getInstance().add(this,GeneralPurposeTreeNode.class);
+					
+					if( p instanceof GeneralPurposeTreeNode )  {
+						GeneralPurposeTreeNode parentNode = (GeneralPurposeTreeNode)p;
+						parentNode.recreate();
+						parentNode.expand();
+						if( wasDirty ) statusManager.decrementDirtyNodeCount(parentNode.resourceId);
+					}
+					deleter.deleteInProject();
+				}
+				else {
+					ErrorUtil.showError("Node locked, delete failed");
+				}
 			}
 		}
 
+		// Marks the project resources for deletion.
 		@Override
 		public boolean execute() {
-			// First get all the locks
-			boolean success = true;
-			long rid = -1;
-			for(ProjectResource pr:resources) {
-				rid = pr.getResourceId();
-				if( !context.requestLock(rid) ) {
-					success = false;
-					break;
-				}
-			}
-			if( success ) {
-				for(ProjectResource pr:resources) {
-					rid = pr.getResourceId();
-					statusManager.markPendingDelete(rid);
-					context.deleteResource(rid);	
-				}
-			}
-			else {
-				logger.errorf("%s.DeleteNodeAction: Failed to obtain lock for resource %d",TAG,rid);
-			}
-			// Release the locks no matter what
-			for(ProjectResource pr:resources) {
-				rid = pr.getResourceId();
-				try {
-					context.releaseLock(rid);
-				}
-				catch(IllegalArgumentException ignore) {
-					break;      // Probably hit the resource where we couldn't get the lock
-				}
-			}
-			return success;
+			return deleter.deleteResources();
 		}
 
 		@Override
@@ -1217,26 +1112,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 
 		@Override
 		public boolean undo() {
-			// First get all the locks
-			boolean success = true;
-			for(ProjectResource pr:resources) {
-				long rid = pr.getResourceId();
-				if( !context.requestLock(rid) ) {
-					success = false;
-					break;
-				}
-			}
-			if( success ) {
-				for(ProjectResource pr:resources) {
-					context.updateResource(pr);	
-				}
-			}
-			// Release the locks no matter what
-			for(ProjectResource pr:resources) {
-				long rid = pr.getResourceId();
-				context.releaseLock(rid);
-			}
-			return success;
+			return deleter.undo();
 		}
 
 		@Override
@@ -1275,7 +1151,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 				logger.infof("%s: parent: %s",TAG,getFolderId().toString());
 				context.updateResource(resource);
 				currentNode.selectChild(new long[] {newId} );
-				statusManager.setResourceDirty(resourceId, true);
 				EventQueue.invokeLater(new Runnable() {
 					public void run() {
 						workspace.open(newId);
@@ -1284,7 +1159,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 
 			} 
 			catch (Exception err) {
-				ErrorUtil.showError(err);
+				ErrorUtil.showError(TAG+" Exception creating diagram",err);
 			}
 		}
 	}
@@ -1317,7 +1192,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 								res.setName(sf.getName());
 								res.setData(json.getBytes());
 								context.updateResource(res);
-								statusManager.setResourceDirty(resourceId, true);
+								statusManager.incrementDirtyNodeCount(resourceId);
 							}
 						}
 						else {
@@ -1327,7 +1202,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 				});
 			} 
 			catch (Exception err) {
-				ErrorUtil.showError(err);
+				ErrorUtil.showError(TAG+" Exception configuring family",err);
 			}
 		}
 	}
@@ -1357,15 +1232,13 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 				ProjectResource resource = new ProjectResource(newId,BLTProperties.MODULE_ID, BLTProperties.FAMILY_RESOURCE_TYPE,
 						newName, ApplicationScope.GATEWAY, bytes);
 				resource.setParentUuid(getFolderId());
-
 				logger.infof("%s.familyCreateAction: res(%d) %s, fam %s, parent: %s",TAG,newId,resource.getName(),fam.getName(),getFolderId().toString());
 				context.updateResource(resource);
-				recreate();
+				//recreate();
 				currentNode.selectChild(new long[] {newId} );
-				statusManager.setResourceDirty(resourceId, true);
 			} 
 			catch (Exception err) {
-				ErrorUtil.showError(err);
+				ErrorUtil.showError(TAG+" Exception creating family",err);
 			}
 		}
 	}
@@ -1386,12 +1259,12 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 				UUID newId = context.addFolder(newResId, BLTProperties.MODULE_ID, ApplicationScope.GATEWAY, newName, getFolderId());
 				logger.infof("%s.FolderCreateAction. create new %s(%d), %s (%s, parent %s)",TAG,BLTProperties.FOLDER_RESOURCE_TYPE,newResId,newName,
 						newId.toString(),getFolderId().toString());
-				recreate();
+				//recreate();
 				currentNode.selectChild(new long[] {newResId} );
-				statusManager.setResourceDirty(resourceId, true);
+				statusManager.incrementDirtyNodeCount(resourceId);
 			} 
 			catch (Exception err) {
-				ErrorUtil.showError(err);
+				ErrorUtil.showError(TAG+" Exception creating folder",err);
 			}
 
 		}
@@ -1472,22 +1345,24 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 				});
 			} 
 			catch (Exception err) {
-				ErrorUtil.showError(err);
+				ErrorUtil.showError(TAG+" Exception importing diagram",err);
 			}
 		}
 	}
 	// Save the entire Application hierarchy.
 	private class SaveAllAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
+		private final AbstractResourceNavTreeNode node;
 
-		public SaveAllAction()  {
+		public SaveAllAction(AbstractResourceNavTreeNode treeNode)  {
 			super(PREFIX+".SaveAll",IconUtil.getIcon("add2")); 
+			this.node = treeNode;
 		}
 
 		public void actionPerformed(ActionEvent e) {
 			// Traverse the entire hierarchy, saving each step
 			if( !isRootFolder() ) return;
-			GeneralPurposeTreeNode.this.saveNodeAndDescendants();
+			executionEngine.executeOnce(new ResourceSaveManager(node));
 			statusManager.cleanAll();
 		}
 	}
@@ -1507,7 +1382,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 			} 
 			catch (Exception ex) {
 				logger.warnf("%s: startAction: ERROR: %s",TAG,ex.getMessage(),ex);
-				ErrorUtil.showError(ex);
+				ErrorUtil.showError(TAG+" Exception starting the controller",ex);
 			}
 		}
 	}
@@ -1517,7 +1392,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 		public StopAction()  {
 			super(PREFIX+".StopExecution",IconUtil.getIcon("disk_forbidden"));  // preferences
 		}
-
 		public void actionPerformed(ActionEvent e) {
 			try {
 				handler.stopController();
@@ -1526,11 +1400,10 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 			}
 			catch(Exception ex) {
 				logger.warnf("%s: stopAction: ERROR: %s",TAG,ex.getMessage(),ex);
-				ErrorUtil.showError(ex);
+				ErrorUtil.showError(TAG+" Exception stopping the controller",ex);
 			}
 		}
 	}
-
 	// Save this node and all its descendants.
 	private class TreeSaveAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
@@ -1542,7 +1415,12 @@ public class GeneralPurposeTreeNode extends FolderNode implements BLTNavTreeNode
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			node.saveNodeAndDescendants();
+			executionEngine.executeOnce(new ResourceSaveManager(node));
+			ProjectResource pr = node.getProjectResource();
+			if( pr!=null )
+				statusManager.clearDirtyChildCount(pr.getResourceId());
+			else
+				statusManager.clearDirtyChildCount(BLTProperties.ROOT_RESOURCE_ID);
 		}
 	}
 }

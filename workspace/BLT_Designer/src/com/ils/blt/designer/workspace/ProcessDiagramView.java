@@ -106,6 +106,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		this.id = uuid;
 		this.resourceId = resId;
 		this.name = nam;
+		log.infof("%s.ProcessDiagramView: %s CONSTRUCTOR",TAG,name);
 	}
 	
 	/** Get the current block property values from the Gateway. 
@@ -347,7 +348,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	public void fireStateChanged() {
 		if( !suppressStateChangeNotification ) {
 			NodeStatusManager statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
-			statusManager.setResourceDirty(getResourceId(), true);
+			statusManager.incrementDirtyNodeCount(getResourceId());
 			setDirty(true); // Fires super method which informs the listeners.
 		}
 	}

@@ -91,7 +91,7 @@ public class BlockPropertyEditor extends SlidingPane   {
 	 * We just need to change the project resource eventually.
 	 */
 	public void notifyOfGeneralChange() {
-		statusManager.setResourceDirty(diagram.getResourceId(),true);
+		statusManager.incrementDirtyNodeCount(diagram.getResourceId());
 	}
 	
 	/**
@@ -102,7 +102,7 @@ public class BlockPropertyEditor extends SlidingPane   {
 	public void notifyOfPropertyChange(BlockProperty property) {
 		ApplicationRequestHandler handler = new ApplicationRequestHandler();
 		handler.setBlockProperty(diagram.getId(), block.getId(), property);
-		statusManager.setResourceDirty(diagram.getResourceId(),true);
+		statusManager.incrementDirtyNodeCount(diagram.getResourceId());
 	}
 	
 	/**

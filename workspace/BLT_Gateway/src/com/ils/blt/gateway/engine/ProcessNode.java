@@ -17,7 +17,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  * to the proper destination.
  */
 public class ProcessNode {
-	private final Map<String,ProcessNode> children;
+	private final Map<Long,ProcessNode> children;   // Key by resourceId
 	protected final LoggerEx log;
 	private String name;
 	private final UUID parent;
@@ -35,12 +35,12 @@ public class ProcessNode {
 		this.self = me;
 		this.parent = parent;
 		this.name = nam;
-		this.children = new HashMap<String,ProcessNode>();
+		this.children = new HashMap<Long,ProcessNode>();
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 	}
 
 	public void addChild(ProcessNode child)    { 
-		children.put(child.getName(),child);
+		children.put(new Long(child.getResourceId()),child);
 		log.infof("%s.addChild: %s[%s]",TAG,getName(),child.getName());
 	}
 
@@ -94,7 +94,7 @@ public class ProcessNode {
 	public int hashCode() {
 		return this.getSelf().hashCode();
 	}	
-	public void removeChild(ProcessNode child) { children.remove(child.getName());} 
+	public void removeChild(ProcessNode child) { children.remove(new Long(child.getResourceId()));} 
 	public void setName(String nam) { this.name = nam; }
 	public void setResourceId(long resourceId) {this.resourceId = resourceId;}
 	

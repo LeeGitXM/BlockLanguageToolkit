@@ -288,7 +288,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
 			} 
 			catch (Exception e) {
-				ErrorUtil.showError(e);
+				ErrorUtil.showError(TAG+" Exception handling drop",e);
 			}
 		}
 		return false;
@@ -383,7 +383,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						context.updateResource(resource);					
 					} 
 					catch (Exception err) {
-						ErrorUtil.showError(err);
+						ErrorUtil.showError(TAG+" Exception pasting blocks",err);
 					}
 				}
 			}
@@ -491,7 +491,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			else {
 				// Mark diagram as clean, since we reverted changes
 				diagram.setDirty(false);
-				statusManager.setResourceDirty(diagram.getResourceId(), false);
+				statusManager.clearDirtyChildCount(diagram.getResourceId());
 				context.releaseLock(container.getResourceId());
 			}
 		}
@@ -525,7 +525,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			bytes = mapper.writeValueAsBytes(sd);
 			logger.debugf("%s: saveDiagram JSON = %s",TAG,new String(bytes));
 			context.updateResource(resid, bytes);
-			statusManager.setResourceDirty(resid,true);
+			statusManager.incrementDirtyNodeCount(resid);
 			c.setBackground(diagram.getBackgroundColorForState());
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
 		} 
@@ -731,8 +731,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			ProcessDiagramView pdv = getActiveDiagram();
 			handler.setBlockProperties(pdv.getId(),block.getId(), block.getProperties());
 			block.setDirty(false);
-			NodeStatusManager statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
-			statusManager.setResourceDirty(pdv.getResourceId(),true);
+			statusManager.clearDirtyChildCount(pdv.getResourceId());
 		}
 	}
 	

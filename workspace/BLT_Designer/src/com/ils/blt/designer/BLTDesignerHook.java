@@ -64,6 +64,9 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	@Override
 	public void startup(DesignerContext ctx, LicenseState activationState) throws Exception {
 		this.context = ctx;
+		ResourceDeleteManager.setContext(ctx);
+		ResourceUpdateManager.setContext(ctx);
+		ResourceSaveManager.setContext(ctx);
 		WorkspaceRepainter.setContext(ctx);
 		appRequestHandler = new ApplicationRequestHandler();
 		context.addBeanInfoSearchPath("com.ils.blt.designer.component.beaninfos");
@@ -114,7 +117,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		rootNode = new GeneralPurposeTreeNode(context);
 		context.getProjectBrowserRoot().getProjectFolder().addChild(rootNode);
 		context.registerResourceWorkspace(workspace);
-		nodeStatusManager.newRootResource(rootNode);
+		nodeStatusManager.createRootResourceStatus(rootNode);
 	}
 	
 	public NodeStatusManager getNavTreeStatusManager() { return nodeStatusManager; }
@@ -126,8 +129,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	@Override
 	public void notifyProjectSaveStart(SaveContext save) {
 		log.infof("%s: NotifyProjectSaveStart",TAG);
-		//rootNode.saveAll();
-		rootNode.serializeResourcesInNeedOfSave();
+		ResourceSaveManager.saveSynchronously(rootNode);
 		nodeStatusManager.cleanAll();
 	}
 	

@@ -346,13 +346,13 @@ public class ModelManager implements ProjectListener  {
 		Set<Long> deleted = diff.getDeletedResources();
 		for (Long  resid : deleted) {
 			log.infof("%s.projectUpdated: delete resource %d:%d", TAG,projectId,resid);
-			deleteResource(projectId,resid);
+			deleteResource(new Long(projectId),resid);
 		}
 		
 		List<ProjectResource> resources = diff.getResources();
 		for( ProjectResource res:resources ) {
 			//if( res.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)) continue;
-			log.infof("%s.projectUpdated: add resource %s (%d),type %s (%s)", TAG,res.getName(),
+			log.infof("%s.projectUpdated: add/update resource %s (%d),type %s (%s)", TAG,res.getName(),
 					res.getResourceId(),res.getResourceType(),(diff.isResourceDirty(res)?"dirty":"clean"));
 			analyzeResource(projectId,res);
 		}
@@ -545,7 +545,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param projectId the identity of a project.
 	 */
 	private void deleteResource(Long projectId,Long resourceId) {
-		log.infof("%s.deleteResource: %d:%d",TAG,projectId,resourceId);
+		log.debugf("%s.deleteResource: %d:%d",TAG,projectId,resourceId);
 		ProjResKey key = new ProjResKey(projectId.longValue(),resourceId.longValue());
 		ProcessNode node = nodesByKey.get(key);
 		if( node!=null ) {
