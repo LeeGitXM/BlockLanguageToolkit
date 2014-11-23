@@ -147,7 +147,8 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		menu.add(setStateMenu);
 	
 		// Only allow a Save when the diagram is dirty, exists in the controller
-		saveAction.setEnabled(diagramIsSavable(resourceId));
+		ProcessDiagramView pdv = workspace.getActiveDiagram();
+		saveAction.setEnabled((pdv==null? false:pdv.isDirty()));
 		menu.add(saveAction);
 		menu.addSeparator();
 		menu.add(renameAction);
@@ -205,19 +206,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		}
 		return result;
 	}
-	/**
-	 * @return true if the diagram node is in a state to be saved. 
-	 */
-	private boolean diagramIsSavable(long resId) {
-		boolean savable = false;
-		if( parent!=null && parent instanceof AbstractResourceNavTreeNode) {
-			long pid = BLTProperties.ROOT_RESOURCE_ID;
-			ProjectResource pr = ((AbstractResourceNavTreeNode)parent).getProjectResource();
-			if( pr!=null ) pid = pr.getResourceId();
-			savable = !statusManager.isResourceDirty(pid);
-		}
-		return savable;
-	}
+
 	public boolean isDirty() { return dirty; }
 	public void setDirty(boolean flag) { this.dirty = flag; }
 	
@@ -284,7 +273,9 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			// If it's open, change its name. Otherwise we sync on opening.
 			if(workspace.isOpen(resourceId) ) {
 				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId);
-				if(tab!=null) tab.setName(newTextValue);
+				if(tab!=null) {
+					tab.setName(newTextValue);
+				}
 			}
 		}
 		catch (IllegalArgumentException ex) {
@@ -534,6 +525,13 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		public void actionPerformed(ActionEvent e) {
 			node.closeAndSave();
 			executionEngine.executeOnce(new ResourceUpdateManager(node));
+			ProjectResource pr = node.getProjectResource();
+			if( pr!=null ) {
+				statusManager.clearDirtyChildCount(pr.getResourceId());
+			}
+			else {
+				statusManager.clearDirtyChildCount(BLTProperties.ROOT_RESOURCE_ID);
+			}
 		}
 		
 	}

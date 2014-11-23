@@ -432,32 +432,30 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			open(tab);  // Selects?
 		}
 		else {
-			if( context.requestLock(resourceId) ) {
-				ProjectResource res = context.getProject().getResource(resourceId);	
-				String json = new String(res.getData());
-				logger.debugf("%s: open - diagram = %s",TAG,json);
-				SerializableDiagram sd = null;
-				ObjectMapper mapper = new ObjectMapper();
-				try {
-					sd = mapper.readValue(json,SerializableDiagram.class);
-					// Synchronize names as the resource may have been re-named since it was serialized
-					sd.setName(res.getName());
-				} 
-				catch (JsonParseException jpe) {
-					logger.warnf("%s: open parse exception (%s)",TAG,jpe.getLocalizedMessage());
-				} 
-				catch (JsonMappingException jme) {
-					logger.warnf("%s: open mapping exception (%s)",TAG,jme.getLocalizedMessage());
-				} 
-				catch (IOException ioe) {
-					logger.warnf("%s: open io exception (%s)",TAG,ioe.getLocalizedMessage());
-				}
-				ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd, context);
-				super.open(diagram);
-				BlockDesignableContainer tab = (BlockDesignableContainer)findDesignableContainer(resourceId);
-				tab.setBackground(diagram.getBackgroundColorForState());
-				diagram.registerChangeListeners();
+			ProjectResource res = context.getProject().getResource(resourceId);	
+			String json = new String(res.getData());
+			logger.debugf("%s: open - diagram = %s",TAG,json);
+			SerializableDiagram sd = null;
+			ObjectMapper mapper = new ObjectMapper();
+			try {
+				sd = mapper.readValue(json,SerializableDiagram.class);
+				// Synchronize names as the resource may have been re-named since it was serialized
+				sd.setName(res.getName());
+			} 
+			catch (JsonParseException jpe) {
+				logger.warnf("%s: open parse exception (%s)",TAG,jpe.getLocalizedMessage());
+			} 
+			catch (JsonMappingException jme) {
+				logger.warnf("%s: open mapping exception (%s)",TAG,jme.getLocalizedMessage());
+			} 
+			catch (IOException ioe) {
+				logger.warnf("%s: open io exception (%s)",TAG,ioe.getLocalizedMessage());
 			}
+			ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd, context);
+			super.open(diagram);
+			BlockDesignableContainer tab = (BlockDesignableContainer)findDesignableContainer(resourceId);
+			tab.setBackground(diagram.getBackgroundColorForState());
+			diagram.registerChangeListeners();
 		}
 	}
 	
@@ -492,7 +490,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				// Mark diagram as clean, since we reverted changes
 				diagram.setDirty(false);
 				statusManager.clearDirtyChildCount(diagram.getResourceId());
-				context.releaseLock(container.getResourceId());
+				//context.releaseLock(container.getResourceId());
 			}
 		}
 		diagram.unregisterChangeListeners();
@@ -736,9 +734,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 	
 	/**
-	 * Post a custom editor for the block. This action is expected to
-	 * apply to only a few block types. The action should be invoked only
-	 * if an editor class has been specified. 
+	 * Post an internals viewer for the block. The default shows
+	 * only name, class and UUID. Blocks may transmit additional
+	 * parameters as is useful. 
 	 */
 	private class ViewInternalsAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
@@ -763,9 +761,4 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
 		}
 	}
-	//TODO: In next Ignition update, this is available for override of onMove() method.
-	//      We want to highlight the hotspot in an ugly way if a connection constraint
-	//      would be violated by a connect. 04/15/2014.
-	//private class ConnectionTool extends AbstractBlockWorkspace.ConnectionTool {
-	//}
 }

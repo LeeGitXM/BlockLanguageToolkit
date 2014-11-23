@@ -1,6 +1,7 @@
 package com.ils.blt.designer;
 
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.designer.navtree.DiagramTreeNode;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayException;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
@@ -44,6 +45,14 @@ public class ResourceUpdateManager implements Runnable {
 		// Now save the resource, as it is.
 		Project diff = context.getProject().getEmptyCopy();
 		ProjectResource res = node.getProjectResource();
+		if( res==null ) return;
+		
+		if(res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
+			// If the resource is open, we need to save it
+			DiagramTreeNode dnode = (DiagramTreeNode)node;
+			dnode.updateOpenResource();  // Serializes open resource
+		}
+		
 		diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
 		try {
 			DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ...");  // Don't publish

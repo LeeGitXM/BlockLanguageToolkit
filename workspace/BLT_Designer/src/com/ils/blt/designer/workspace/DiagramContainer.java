@@ -27,6 +27,17 @@ public class DiagramContainer extends BlockDesignableContainer {
 		fncs = new UtilityFunctions();
 	}
 	
+	/**
+	 * In addition to immediately setting the tab name, we set in the model in case the
+	 * component gets re-painted.
+	 * @param newName
+	 */
+	@Override
+	public void setName (String newName) {
+		((ProcessDiagramView)getModel()).setDiagramName(newName);
+		super.setName(newName);	
+	}
+	
 	@Override
 	protected void paintComponent(Graphics _g) {
 		super.paintComponent(_g);

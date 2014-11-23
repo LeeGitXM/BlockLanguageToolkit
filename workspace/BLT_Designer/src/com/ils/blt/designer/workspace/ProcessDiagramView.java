@@ -44,7 +44,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	private List<Connection> connections = new ArrayList<Connection>();
 	private Dimension diagramSize = new Dimension(800,600);
 	private final UUID id;
-	private final String name;
+	private String name = "UNSET";
 	private UUID encapsulationBlockID = null;  // Used only if this diagram represents a sub-workspace
 	private final long resourceId;
 	private DiagramState state = DiagramState.ACTIVE;
@@ -302,6 +302,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 
 	@Override
 	public String getDiagramName() {return name;}
+	public void setDiagramName(String nam) { this.name = nam; }
 
 	@Override
 	public Dimension getDiagramSize() {
@@ -330,7 +331,10 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	 * @return tue if the diagram does not represent what is actually running.
 	 */
 	public boolean isDirty() {return dirty;}
-	public void setDirty(boolean dirty) {this.dirty = dirty;super.fireStateChanged();}
+	public void setDirty(boolean dirty) {
+		this.dirty = dirty;
+		super.fireStateChanged();
+	}
 	
 	@Override
 	public void setDiagramSize(Dimension dim) {
