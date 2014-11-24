@@ -120,7 +120,14 @@ public class OutOfRangeObservation extends AbstractProcessBlock implements Proce
 		}
 
 	}
-	
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {
+		QualifiedValue qv = new BasicQualifiedValue(truthValue);
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
 	/**
 	 * Handle a limit or limit type change.
 	 */

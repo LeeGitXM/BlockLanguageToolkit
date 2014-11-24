@@ -278,7 +278,15 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	@Override
 	public void acceptValue(SignalNotification sn) {
 	}
-	
+	/**
+	 * Send status update notifications for any properties
+	 * or output connections known to the designer. This
+	 * basic implementation does nothing.
+	 */
+	@Override
+	public void notifyOfStatus() {
+		
+	}
 	/**
 	 * Start any active monitoring or processing within the block.
 	 * This default method does nothing.

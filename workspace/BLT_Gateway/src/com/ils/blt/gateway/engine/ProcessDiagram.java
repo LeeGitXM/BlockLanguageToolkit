@@ -234,11 +234,20 @@ public class ProcessDiagram extends ProcessNode {
 	/**
 	 * Set the state of the diagram. Note that the state does not affect the activity 
 	 * of blocks within the diagram. It only affects the way that block results are 
-	 * propagated (or not).
+	 * propagated (or not) and whether or not subscriptions are in effect.
 	 * 
 	 * @param s the new state
 	 */
-	public void setState(DiagramState s) {this.state = s;}
+	public void setState(DiagramState s) {
+		boolean wasDisabled = DiagramState.DISABLED.equals(getState());
+		this.state = s;
+		if(wasDisabled && !DiagramState.DISABLED.equals(getState()) ) {
+			startSubscriptions();
+		}
+		else if(DiagramState.DISABLED.equals(getState()) ) {
+			stopSubscriptions();
+		}
+	}
 	/**
 	 * Report on whether or not the DOM contained more than one connected node.
 	 */
@@ -277,6 +286,32 @@ public class ProcessDiagram extends ProcessNode {
 		return reason;
 	}
 	
+	private void startSubscriptions() {
+		log.infof("%s.startSubscriptions: ...%d:%s",TAG,projectId,getName());
+		for( ProcessBlock pb:getProcessBlocks()) {
+			for(BlockProperty bp:pb.getProperties()) {
+				controller.startSubscription(pb,bp);
+			}
+			pb.setProjectId(projectId);
+		}
+
+		for( ProcessBlock pb:getProcessBlocks()) {
+			pb.start();
+		}
+	}
+	private void stopSubscriptions() {
+		log.infof("%s.stopSubscriptions: ...%d:%s",TAG,projectId,getName());
+		for( ProcessBlock pb:getProcessBlocks()) {
+			for(BlockProperty bp:pb.getProperties()) {
+				controller.removeSubscription(pb,bp);
+			}
+			pb.setProjectId(projectId);
+		}
+
+		for( ProcessBlock pb:getProcessBlocks()) {
+			pb.stop();
+		}
+	}
 	/**
 	 * Class for keyed storage of downstream block,port for a connection.
 	 */

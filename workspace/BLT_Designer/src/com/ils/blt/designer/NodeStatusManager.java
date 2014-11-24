@@ -4,10 +4,7 @@
  */
 package com.ils.blt.designer;
 
-import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.ils.blt.common.BLTProperties;
@@ -159,6 +156,8 @@ public class NodeStatusManager  {
 		return node;
 	}
 	
+	
+	
 	/**
 	 * For any node indicate that the number of dirty children has increased.
 	 * For a diagram, this means that either blocks are dirty, or a property
@@ -183,6 +182,7 @@ public class NodeStatusManager  {
 			log.warnf("%s.incrementDirtyBlockCount(%d) - status entry does not exist",TAG,resourceId);
 		}
 	}
+	
 	public boolean isResourceDirty(long resourceId) {
 		boolean result = true;        // If we haven't seen it yet, it's dirty
 		StatusEntry se = statusByResourceId.get(resourceId);
@@ -190,6 +190,15 @@ public class NodeStatusManager  {
 		else log.debugf("%s.isResourceDirty(%d) - resource UNDEFINED",TAG,resourceId);
 		return result;
 	}
+	
+	public boolean isResourceDirtyOrHasDirtyChidren(long resourceId) {
+		boolean result = true;        // If we haven't seen it yet, it's dirty
+		StatusEntry se = statusByResourceId.get(resourceId);
+		if( se!=null ) result = (se.isDirty() || se.getDirtyChildCount()>0);
+		else log.debugf("%s.isResourceDirty(%d) - resource UNDEFINED",TAG,resourceId);
+		return result;
+	}
+	
 	public void setResourceState(long resourceId,DiagramState bs) {
 		StatusEntry se = statusByResourceId.get(resourceId);
 		if( se!=null ) {

@@ -16,6 +16,7 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.connection.Connection;
+import com.ils.blt.common.serializable.DiagramState;
 import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
@@ -427,18 +428,23 @@ public class ModelManager implements ProjectListener  {
 				// Add/update blocks, create new connections. Stop blocks, remove old subscriptions
 				diagram.analyze(sd);
 			}
-			log.infof("%s.addModifyDiagramResource: starting tag subscriptions ...%d:%s",TAG,projectId,res.getName());
-			for( ProcessBlock pb:diagram.getProcessBlocks()) {
-				for(BlockProperty bp:pb.getProperties()) {
-					controller.startSubscription(pb,bp);
-				}
-				pb.setProjectId(projectId);
-			}
-			if( BlockExecutionController.getExecutionState().equals(BlockExecutionController.CONTROLLER_RUNNING_STATE)) {
-				log.infof("%s.addModifyDiagramResource: starting blocks ...%d:%s",TAG,projectId,res.getName());
+			if( !diagram.getState().equals(DiagramState.DISABLED) ) {
+				log.infof("%s.addModifyDiagramResource: starting tag subscriptions ...%d:%s",TAG,projectId,res.getName());
 				for( ProcessBlock pb:diagram.getProcessBlocks()) {
-					pb.start();
+					for(BlockProperty bp:pb.getProperties()) {
+						controller.startSubscription(pb,bp);
+					}
+					pb.setProjectId(projectId);
 				}
+				if( BlockExecutionController.getExecutionState().equals(BlockExecutionController.CONTROLLER_RUNNING_STATE)) {
+					log.infof("%s.addModifyDiagramResource: starting blocks ...%d:%s",TAG,projectId,res.getName());
+					for( ProcessBlock pb:diagram.getProcessBlocks()) {
+						pb.start();
+					}
+				}
+			}
+			else {
+				log.infof("%s.addModifyDiagramResource: diagram is DISABLED (did not start subscriptions)...%d:%s",TAG,projectId,res.getName());
 			}
 		}
 

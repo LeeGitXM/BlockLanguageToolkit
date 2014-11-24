@@ -471,6 +471,21 @@ public class ApplicationRequestHandler  {
 		}
 	}
 	
+	/**
+	 * Direct the blocks in a specified diagram to report their
+	 * status values. This is in order to update the UI. 
+	 */
+	public void triggerStatusNotifications(String diagramId) {
+		log.infof("%s.triggerStatusNotifications for %s...",TAG,diagramId);
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "triggerStatusNotifications",diagramId);
+		}
+		catch(Exception ex) {
+			log.infof("%s.triggerStatusNotifications: Exception (%s)",TAG,ex.getMessage());
+		}
+	}
+	
 	/** Update connections for a block. New connections will be added, old connections
 	 * may undergo a type conversion.  
 	 * @param duuid diagram unique Id

@@ -44,6 +44,9 @@ public class BasicExecutionController implements ExecutionController  {
 	public void sendPropertyNotification(String id, String propertyName, QualifiedValue val){
 		log.warnf("%s.sendPropertyNotification: WARNING: Executed from stub class",TAG);
 	}
+	public void sendConnectionNotification(String blockid, String port, QualifiedValue val) {
+		log.warnf("%s.sendConnectionNotification: WARNING: Executed from stub class",TAG);
+	}
 	public void pet(Watchdog dog){
 		log.warnf("%s.pet: WARNING: Executed from stub class",TAG);
 	}

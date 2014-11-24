@@ -157,6 +157,14 @@ public class CompareDeadband extends Compare implements ProcessBlock {
 			controller.acceptCompletionNotification(nvn);	
 		}
 	}
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {
+		QualifiedValue qv = new BasicQualifiedValue(truthValue);
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
 	
 	/**
 	 *  When unlocking, set the remembered state as "UNSET". This will allow

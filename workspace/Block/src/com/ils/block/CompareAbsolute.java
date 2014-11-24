@@ -18,7 +18,6 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
-import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
 
 /**
@@ -71,7 +70,13 @@ public class CompareAbsolute extends Compare implements ProcessBlock {
 	}
 	
 
-	
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, currentValue);
+	}
 	
 	/**
 	 * The coalescing time has expired. Place the current state on the output,
@@ -80,54 +85,54 @@ public class CompareAbsolute extends Compare implements ProcessBlock {
 	@Override
 	public void evaluate() {
 		if( !isLocked() ) {
+			currentValue = null;
 			TruthValue tv = TruthValue.UNKNOWN;
-			QualifiedValue result = null;
 			if( x==null ) {
-				result = new BasicQualifiedValue(tv,new BasicQuality("'x' is unset",Quality.Level.Bad));
+				currentValue = new BasicQualifiedValue(tv,new BasicQuality("'x' is unset",Quality.Level.Bad));
 			}
 			else if( y==null ) {
-				result = new BasicQualifiedValue(tv,new BasicQuality("'y' is unset",Quality.Level.Bad));
+				currentValue = new BasicQualifiedValue(tv,new BasicQuality("'y' is unset",Quality.Level.Bad));
 			}
 			else if( !x.getQuality().isGood()) {
-				result = new BasicQualifiedValue(tv,x.getQuality());
+				currentValue = new BasicQualifiedValue(tv,x.getQuality());
 			}
 			else if( !y.getQuality().isGood()) {
-				result = new BasicQualifiedValue(tv,y.getQuality());
+				currentValue = new BasicQualifiedValue(tv,y.getQuality());
 			}
 			double xx = Double.NaN;
 			double yy = Double.NaN;
-			if( result == null ) {
+			if( currentValue == null ) {
 				try {
 					xx = Double.parseDouble(x.getValue().toString());
 					try {
 						yy = Double.parseDouble(y.getValue().toString());
 					}
 					catch(NumberFormatException nfe) {
-						result = new BasicQualifiedValue(TruthValue.UNKNOWN,new BasicQuality("'y' is not a valid double",Quality.Level.Bad));
+						currentValue = new BasicQualifiedValue(TruthValue.UNKNOWN,new BasicQuality("'y' is not a valid double",Quality.Level.Bad));
 					}
 				}
 				catch(NumberFormatException nfe) {
-					result = new BasicQualifiedValue(TruthValue.UNKNOWN,new BasicQuality("'x' is not a valid double",Quality.Level.Bad));
+					currentValue = new BasicQualifiedValue(TruthValue.UNKNOWN,new BasicQuality("'x' is not a valid double",Quality.Level.Bad));
 				}
 			}
 			
-			if( result==null ) {     // Success!
+			if( currentValue==null ) {     // Success!
 				if( x.getQuality().isGood() && y.getQuality().isGood() ) {
 					tv = TruthValue.FALSE;
 					if( xx<0.0) xx = -xx;
 					if( yy<0.0) yy = -yy;
 					if( xx > yy+offset) tv = TruthValue.TRUE;
-					result = new BasicQualifiedValue(tv);
+					currentValue = new BasicQualifiedValue(tv);
 				}
 				else {
 					Quality q = x.getQuality();
 					if( q.isGood()) q = y.getQuality();
-					result = new BasicQualifiedValue(tv,q);
+					currentValue = new BasicQualifiedValue(tv,q);
 					log.infof("%s.evaluate: UNKNOWN x=%s, y=%s",getName(),x.toString(),y.toString());
 				}
 				
 			}
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,currentValue);
 			controller.acceptCompletionNotification(nvn);
 		}
 	}

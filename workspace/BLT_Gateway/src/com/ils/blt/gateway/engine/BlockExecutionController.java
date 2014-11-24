@@ -318,6 +318,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public void startSubscription(ProcessBlock block,BlockProperty property) {
 		tagListener.defineSubscription(block, property);
 	}
+
 	
 	// ======================= Delegated to TagWriter ======================
 	/**
@@ -447,7 +448,8 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 * @param port
 	 * @param val
 	 */
-	private void sendConnectionNotification(String blockid, String port, QualifiedValue val) {
+	@Override
+	public void sendConnectionNotification(String blockid, String port, QualifiedValue val) {
 		String key = NotificationKey.keyForConnection(blockid,port);
 		try {
 			sessionManager.sendNotification(ApplicationScope.DESIGNER, BLTProperties.MODULE_ID, key, val);

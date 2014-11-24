@@ -289,7 +289,7 @@ public class GatewayRpcDispatcher   {
 	 * @param uuidString
 	 */
 	public void resetBlock(String diagramIdString,String blockIdString) {
-		log.infof("%s.diagramExists ...",TAG);
+		log.infof("%s.resetBlock ...",TAG);
 		BlockExecutionController controller = BlockExecutionController.getInstance();
 		UUID diagramUUID = null;
 		UUID blockUUID = null;
@@ -298,7 +298,7 @@ public class GatewayRpcDispatcher   {
 			blockUUID = UUID.fromString(blockIdString);
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.diagramExists: Diagram or block UUID string is illegal (%s, %s), creating new",TAG,diagramIdString,blockIdString);
+			log.warnf("%s.resetBlock: Diagram or block UUID string is illegal (%s, %s), creating new",TAG,diagramIdString,blockIdString);
 			diagramUUID = UUID.nameUUIDFromBytes(diagramIdString.getBytes());
 			blockUUID = UUID.nameUUIDFromBytes(blockIdString.getBytes());
 		}
@@ -315,7 +315,7 @@ public class GatewayRpcDispatcher   {
 			diagramUUID = UUID.fromString(uuidString);
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.diagramExists: Diagram UUID string is illegal (%s), creating new",TAG,uuidString);
+			log.warnf("%s.resetDiagram: Diagram UUID string is illegal (%s), creating new",TAG,uuidString);
 			diagramUUID = UUID.nameUUIDFromBytes(uuidString.getBytes());
 		}
 		BlockExecutionController.getInstance().resetDiagram(diagramUUID);
@@ -334,16 +334,16 @@ public class GatewayRpcDispatcher   {
 	 * @param command
 	 * @return
 	 */
-	public Boolean sendLocalSignal(String diagramId, String className, String command) {
-		log.infof("%s.sendLocalSignal: %s %s %s",TAG,diagramId,className,command);
+	public Boolean sendLocalSignal(String uuidString, String className, String command) {
+		log.infof("%s.sendLocalSignal: %s %s %s",TAG,uuidString,className,command);
 		Boolean success = new Boolean(true);
 		UUID diagramUUID = null;
 		try {
-			diagramUUID = UUID.fromString(diagramId);
+			diagramUUID = UUID.fromString(uuidString);
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.diagramExists: Diagram UUID string is illegal (%s), creating new",TAG,diagramId);
-			diagramUUID = UUID.nameUUIDFromBytes(diagramId.getBytes());
+			log.warnf("%s.sendLocalSignal: Diagram UUID string is illegal (%s), creating new",TAG,uuidString);
+			diagramUUID = UUID.nameUUIDFromBytes(uuidString.getBytes());
 		}
 		ProcessDiagram diagram = BlockExecutionController.getInstance().getDiagram(diagramUUID);
 		if( diagram!=null ) {
@@ -353,7 +353,7 @@ public class GatewayRpcDispatcher   {
 			BlockExecutionController.getInstance().acceptBroadcastNotification(broadcast);
 		}
 		else {
-			log.warnf("%s.sendLocalSignal: Unable to find %s for %s command to %s",TAG,diagramId,command,className);
+			log.warnf("%s.sendLocalSignal: Unable to find %s for %s command to %s",TAG,uuidString,command,className);
 			success = new Boolean(false);
 		}
 		return success;
@@ -420,6 +420,30 @@ public class GatewayRpcDispatcher   {
 	public void stopController() {
 		ControllerRequestHandler.getInstance().stopController();
 	}
+	
+	/**
+	 * 
+	 * @param uuidString identifier of the diagram for which we want notifications
+	 */
+	public void triggerStatusNotifications(String uuidString) {
+		log.infof("%s.triggerStatusNotifications: %s",TAG,uuidString);
+		UUID diagramUUID = null;
+		try {
+			diagramUUID = UUID.fromString(uuidString);
+		}
+		catch(IllegalArgumentException iae) {
+			log.warnf("%s.triggerStatusNotifications: Diagram UUID string is illegal (%s), creating new",TAG,uuidString);
+			diagramUUID = UUID.nameUUIDFromBytes(uuidString.getBytes());
+		}
+		ProcessDiagram diagram = BlockExecutionController.getInstance().getDiagram(diagramUUID);
+		if( diagram!=null ) {
+			ControllerRequestHandler.getInstance().triggerStatusNotifications(diagram);
+		}
+		else {
+			log.warnf("%s.triggerStatusNotifications: Unable to find diagram %s",TAG,uuidString);
+		}
+	}
+	
 	
 	/** Change the properties of anchors for a block. 
 	 * @param diagramId the uniqueId of the parent diagram

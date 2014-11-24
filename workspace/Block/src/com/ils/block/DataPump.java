@@ -24,6 +24,7 @@ import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
+import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
  * Propagate a set (or bounded) value on a configured interval.
@@ -55,6 +56,14 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 		super(ec,parent,block);
 		dog = new Watchdog(TAG,this);
 		initialize();
+	}
+	/**
+	 * Send status update notification for our last output value.
+	 */
+	@Override
+	public void notifyOfStatus() {
+		QualifiedValue qv = new BasicQualifiedValue(value);
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 	@Override
 	public void reset() {

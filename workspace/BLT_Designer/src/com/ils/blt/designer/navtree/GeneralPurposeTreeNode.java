@@ -55,7 +55,6 @@ import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.UndoManager;
-import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
@@ -314,7 +313,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		if( node.getParent()==null) {
 			logger.errorf("%s.createChildNode: ERROR parent is null %s(%d)",TAG,node.getName(),res.getResourceId());
 		}
-		node.setItalic(statusManager.isResourceDirty(res.getResourceId()));
+		node.setItalic(statusManager.isResourceDirtyOrHasDirtyChidren(res.getResourceId()));
 		return node;
 	}
 	// For DiagramNode.delete
@@ -1308,13 +1307,14 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 											uuidHandler.convertUUIDs();
 											sd.setDirty(true);    // Dirty because gateway doesn't know about it yet
 											String json = mapper.writeValueAsString(sd);
-											logger.infof("%s:ImportDiagramAction saved resource as:\n%s", TAG,json);
+											logger.debugf("%s:ImportDiagramAction saved resource as:\n%s", TAG,json);
 											ProjectResource resource = new ProjectResource(newId,
 													BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
 													sd.getName(), ApplicationScope.GATEWAY, json.getBytes());
 											resource.setParentUuid(getFolderId());
 											context.updateResource(resource);
 											parentNode.selectChild(new long[] {newId} );
+											setDirty(true);
 										}
 										else {
 											ErrorUtil.showWarning(String.format("Failed to deserialize file (%s)",input.getAbsolutePath()),POPUP_TITLE);

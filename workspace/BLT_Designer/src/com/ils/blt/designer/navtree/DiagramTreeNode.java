@@ -110,7 +110,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		openRestrictedIcon = iconFromPath("Block/icons/navtree/diagram_restricted.png");
 		closedRestrictedIcon = iconFromPath("Block/icons/navtree/diagram_closed_restricted.png");
 		setIcon( closedIcon);
-		setItalic(context.getProject().isResourceDirty(resourceId));
+		setItalic(statusManager.isResourceDirtyOrHasDirtyChidren(resourceId));
 		context.addProjectChangeListener(this);
 	}
 	@Override
@@ -147,8 +147,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		menu.add(setStateMenu);
 	
 		// Only allow a Save when the diagram is dirty, exists in the controller
-		ProcessDiagramView pdv = workspace.getActiveDiagram();
-		saveAction.setEnabled((pdv==null? false:pdv.isDirty()));
+		saveAction.setEnabled(enableSaveAction());
 		menu.add(saveAction);
 		menu.addSeparator();
 		menu.add(renameAction);
@@ -207,6 +206,18 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		return result;
 	}
 
+	/*
+	 * @return true if the Save action should be enabled
+	 */
+	private boolean enableSaveAction() {
+		boolean result = false;
+		ProcessDiagramView pdv = workspace.getActiveDiagram();
+		if( pdv!=null ) {
+			if( pdv.isDirty() ) result = true;
+			else if(statusManager.isResourceDirtyOrHasDirtyChidren(resourceId)) result = true;
+		}
+		return result;
+	}
 	public boolean isDirty() { return dirty; }
 	public void setDirty(boolean flag) { this.dirty = flag; }
 	
@@ -447,7 +458,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
     	private static final long serialVersionUID = 1L;
     	private final ResourceDeleteManager deleter;
 		private String bundleString;
-		private long resid = -1;    // for the root
     	private final DiagramTreeNode node;
     	
 	    public DeleteDiagramAction(DiagramTreeNode treeNode)  {
@@ -563,7 +573,8 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 					sd.setName(res.getName());
 					sd.setState(state);
 					bytes = mapper.writeValueAsBytes(sd);
-					res.setData(bytes); // We don't alert the gateway at this point. (We may be dirty)
+					res.setData(bytes); 
+					setDirty(true);
 				}
 
 				// Inform the gateway of the state change

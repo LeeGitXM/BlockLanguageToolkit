@@ -1,12 +1,10 @@
 package com.ils.blt.designer;
 
-import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.List;
 
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.designer.navtree.NavTreeNodeInterface;
 import com.ils.blt.designer.navtree.DiagramTreeNode;
+import com.ils.blt.designer.navtree.NavTreeNodeInterface;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayException;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
@@ -89,14 +87,20 @@ public class ResourceSaveManager implements Runnable {
 		ProjectResource res = node.getProjectResource();
 		if( res!=null ) {
 			long resid = res.getResourceId();
-			if( node instanceof NavTreeNodeInterface && ((NavTreeNodeInterface)node).isDirty() ) {
-				logger.infof("%s.accumulateDirtyNodeResources: %s (%d)",TAG,res.getName(),resid);
+			// For a diagram include either dirty or "dirty children"
+			if( node instanceof DiagramTreeNode && 
+				( ((NavTreeNodeInterface)node).isDirty() ||
+				  statusManager.isResourceDirty(resid)      )  ) {
+				logger.infof("%s.accumulateDirtyNodeResources: diagram %s (%d)",TAG,res.getName(),resid);
 				diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
-				if(res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
-					// If the resource is open, we need to save it ..
-					DiagramTreeNode dnode = (DiagramTreeNode)node;
-					dnode.closeAndSave();  // Close if open
-				}
+				DiagramTreeNode dnode = (DiagramTreeNode)node;
+				dnode.closeAndSave();  // Close if open
+			}
+			// For other nodes include only "dirty"
+			else if( node instanceof NavTreeNodeInterface && 
+					( ((NavTreeNodeInterface)node).isDirty()  )  ) {
+					logger.infof("%s.accumulateDirtyNodeResources: %s (%d)",TAG,res.getName(),resid);
+					diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
 			}
 			statusManager.clearDirtyChildCount(resid);
 		}

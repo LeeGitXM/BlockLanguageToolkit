@@ -79,7 +79,14 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
 		anchors.add(output);
 	}
-
+	/**
+	 * Send status update notification for our last output value.
+	 */
+	@Override
+	public void notifyOfStatus() {
+		QualifiedValue qv = new BasicQualifiedValue(valueProperty.getValue());
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
 	/**
 	 * Handle a change to the format. We deduce data type from the format.
 	 */
@@ -89,7 +96,7 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 		String propertyName = event.getPropertyName();
 		if(propertyName.equals(BlockConstants.BLOCK_PROPERTY_FORMAT)) {
 			format = event.getNewValue().toString();
-			log.infof("%s.propertyChange: New display format is (%s).",TAG,format);
+			log.debugf("%s.propertyChange: New display format is (%s).",TAG,format);
 			// Validate the format for a data type
 			if( format.matches(".*%[0-9]*[.]?[0-9]*s.*") ) {
 				type=PropertyType.STRING;
@@ -106,6 +113,8 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 				format = "%s";
 			}
 		}
+		log.infof("READOUT: %s property change = %s",getName(),event.getNewValue().toString());
+	
 	}
 	
 	/**
@@ -139,7 +148,7 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 					log.warn(TAG+".acceptValue: error formatting "+qv.getValue()+" with "+format+" as "+type.name(),ex);  // Print stack trace
 				}
 				qv = new BasicQualifiedValue(value,qv.getQuality(),qv.getTimestamp()); 
-				log.debugf("%s.acceptValue: port %s formatted value =  %s.",TAG,incoming.getConnection().getUpstreamPortName(),value);
+				log.tracef("%s.acceptValue: port %s formatted value =  %s.",TAG,incoming.getConnection().getUpstreamPortName(),value);
 				controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE, qv);
 			}	
 		}

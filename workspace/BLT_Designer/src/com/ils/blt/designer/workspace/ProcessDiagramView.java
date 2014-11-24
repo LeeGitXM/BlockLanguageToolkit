@@ -67,7 +67,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			for( SerializableBlock sb:diagram.getBlocks()) {
 				ProcessBlockView pbv = new ProcessBlockView(sb);
 				blockMap.put(sb.getId(), pbv);
-				log.warnf("%s: createDiagramView: Added %s to map",TAG,sb.getId().toString());
+				log.debugf("%s.createDiagramView: Added %s to map",TAG,sb.getId().toString());
 				this.addBlock(pbv);
 			}
 
@@ -84,15 +84,15 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 					}
 					else {
 						if( blocka==null ) {
-							log.warnf("%s: createDiagramView: Failed to find block %s for begin anchor point %s",TAG,a.getParentId(),a);
+							log.warnf("%s.createDiagramView: Failed to find block %s for begin anchor point %s",TAG,a.getParentId(),a);
 						}
 						if( blockb==null ) {
-							log.warnf("%s: createDiagramView: Failed to find block %s for end anchor point %s",TAG,b.getParentId(),b);
+							log.warnf("%s.createDiagramView: Failed to find block %s for end anchor point %s",TAG,b.getParentId(),b);
 						}
 					}
 				}
 				else {
-					log.warnf("%s: createDiagramView: Connection %s missing one or more anchor points",TAG,scxn.toString());
+					log.warnf("%s.createDiagramView: Connection %s missing one or more anchor points",TAG,scxn.toString());
 				}
 			}
 		}
@@ -113,7 +113,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	 * If the block does not have a Gateway counterpart (e.g. diagram is dirty), we'll get the 
 	 * default property list for the block class.
 	 */
-	private void initBlockProperties(ProcessBlockView block) {
+	public void initBlockProperties(ProcessBlockView block) {
 		Collection<BlockProperty> propertyList;
 		propertyList = new ArrayList<BlockProperty>();
 		ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();

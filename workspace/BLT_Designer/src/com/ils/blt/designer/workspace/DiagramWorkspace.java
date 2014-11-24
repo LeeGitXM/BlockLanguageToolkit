@@ -39,6 +39,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
@@ -456,6 +457,15 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			BlockDesignableContainer tab = (BlockDesignableContainer)findDesignableContainer(resourceId);
 			tab.setBackground(diagram.getBackgroundColorForState());
 			diagram.registerChangeListeners();
+			// In the probable case that the designer is opened after the diagram has started
+			// running in the gateway, obtain any updates.
+			ProcessDiagramView view = (ProcessDiagramView)tab.getModel();
+			for( Block blk:view.getBlocks()) {
+				ProcessBlockView pbv = (ProcessBlockView)blk;
+				view.initBlockProperties(pbv);
+			}
+			handler.triggerStatusNotifications(view.getId().toString());
+			SwingUtilities.invokeLater(new WorkspaceRepainter());
 		}
 	}
 	

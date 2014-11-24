@@ -96,8 +96,14 @@ public class Not extends AbstractProcessBlock implements ProcessBlock {
 		valueProperty.setValue(tv);
 		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,result);
 	}
-	
-	
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {
+		QualifiedValue qv = new BasicQualifiedValue(valueProperty.getValue());
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
 	/**
 	 * Augment the palette prototype for this block class.
 	 */

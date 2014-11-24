@@ -404,6 +404,16 @@ public class ControllerRequestHandler   {
 	public void stopController() {
 		BlockExecutionController.getInstance().stop();
 	}
+	
+	/**
+	 * Direct blocks in the diagram to report their status for a UI update.
+	 * @param diagram
+	 */
+	public void triggerStatusNotifications(ProcessDiagram diagram) {
+		for(ProcessBlock block:diagram.getProcessBlocks()) {
+			block.notifyOfStatus();
+		}
+	}
 
 	// Handle all the intricasies of a property change
 	private void updateProperty(ProcessBlock block,BlockProperty existingProperty,BlockProperty newProperty) {

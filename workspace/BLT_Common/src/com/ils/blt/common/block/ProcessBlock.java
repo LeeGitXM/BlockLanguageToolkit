@@ -116,6 +116,15 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 */
 	public boolean isTransmitter();
 	/**
+	 * Send status update notifications for any properties
+	 * or output connections known to the designer. 
+	 * 
+	 * In practice, the block properties are all updated
+	 * when a diagram is opened. It's the connection
+	 * notification for animation that is most necessary.
+	 */
+	public void notifyOfStatus();
+	/**
 	 * Reset the internal state of the block.
 	 */
 	public void reset();

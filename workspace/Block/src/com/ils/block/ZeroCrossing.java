@@ -120,7 +120,14 @@ public class ZeroCrossing extends AbstractProcessBlock implements ProcessBlock {
 			}
 		}
 	}
-
+	/**
+	 * Send status update notification for our last output value.
+	 */
+	@Override
+	public void notifyOfStatus() {
+		QualifiedValue qv = new BasicQualifiedValue(truthValue);
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
 	/**
 	 *  When unlocking, set the remembered state as "UNSET". This will allow
 	 *  the next value to generate output, no matter what.

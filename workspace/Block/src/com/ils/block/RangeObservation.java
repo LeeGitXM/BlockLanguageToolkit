@@ -163,7 +163,14 @@ public class RangeObservation extends AbstractProcessBlock implements ProcessBlo
 		
 	}
 	
-	
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {
+		QualifiedValue qv = new BasicQualifiedValue(truthValue);
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
 	
 	/**
 	 * Augment the palette prototype for this block class.

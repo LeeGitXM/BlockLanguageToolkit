@@ -34,6 +34,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 public class Input extends AbstractProcessBlock implements ProcessBlock {
 	private BlockProperty tagPathProperty = null;
 	private BlockProperty valueProperty = null;
+	private QualifiedValue qv = null;    // Most recent output value
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -83,7 +84,7 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
 		this.state = BlockState.ACTIVE;
-		QualifiedValue qv = vcn.getValue();
+		qv = vcn.getValue();
 		if( !isLocked() ) {
 			log.infof("%s.acceptValue: received %s",getName(),qv.toString());
 			if( qv.getValue() != null ) {
@@ -111,6 +112,16 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 		String propertyName = event.getPropertyName();
 		if(propertyName.equals(BlockConstants.BLOCK_PROPERTY_TAG_PATH)) {
 			log.infof("%s.propertyChange path now %s",getName(),event.getNewValue().toString());
+		}
+	}
+	
+	/**
+	 * Send status update notification for our last output value.
+	 */
+	@Override
+	public void notifyOfStatus() {
+		if( qv.getValue()!=null) {
+			controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 		}
 	}
 

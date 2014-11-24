@@ -273,6 +273,15 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 
 		return descriptor;
 	}
+	
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {
+		QualifiedValue qv = new BasicQualifiedValue(currentState);
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
 	/**
 	 * Augment the palette prototype for this block class.
 	 */
