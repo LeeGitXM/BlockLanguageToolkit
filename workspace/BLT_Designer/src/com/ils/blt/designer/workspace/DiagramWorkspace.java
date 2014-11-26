@@ -459,12 +459,11 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			diagram.registerChangeListeners();
 			// In the probable case that the designer is opened after the diagram has started
 			// running in the gateway, obtain any updates.
-			ProcessDiagramView view = (ProcessDiagramView)tab.getModel();
-			for( Block blk:view.getBlocks()) {
+			for( Block blk:diagram.getBlocks()) {
 				ProcessBlockView pbv = (ProcessBlockView)blk;
-				view.initBlockProperties(pbv);
+				diagram.initBlockProperties(pbv);
 			}
-			handler.triggerStatusNotifications(view.getId().toString());
+			handler.triggerStatusNotifications(diagram.getId().toString());
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
 		}
 	}

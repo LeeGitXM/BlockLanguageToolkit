@@ -169,7 +169,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		if(property.getBindingType().equals(BindingType.ENGINE) ) {
 			NotificationHandler handler = NotificationHandler.getInstance();
 			String key = NotificationKey.keyForProperty(block.getId().toString(), property.getName());
-			log.tracef("%s.registerChangeListeners: adding %s",TAG,key);
+			log.infof("%s.registerChangeListeners: adding %s",TAG,key);
 			handler.addNotificationChangeListener(key,TAG,this);
 		}
 		else if( property.getBindingType().equals(BindingType.TAG_MONITOR) ||
@@ -516,8 +516,8 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	// ======================================= Notification Change Listener ===================================
 	@Override
 	public void valueChange(final QualifiedValue value) {
-		log.tracef("%s.valueChange: - %s new value (%s)",TAG,property.getName(),value.getValue().toString());
-		property.setValue(value.getValue());
+		log.debugf("%s.valueChange: - %s new value (%s)",TAG,property.getName(),value.getValue().toString());
+		//property.setValue(value.getValue());  // Block should have its own subscription to value changes.
 		SwingUtilities.invokeLater( new Runnable() {
 			public void run() {
 				String text = value.getValue().toString();
@@ -563,6 +563,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	// We get this when another entity changes a property. We just need to re-display.
 	@Override
 	public void stateChanged(ChangeEvent e) {
+		//log.infof("%s.stateChanged: - %s",TAG,property.getName());
 		update();	
 	}
 }

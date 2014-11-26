@@ -250,6 +250,13 @@ public abstract class AbstractUIView extends JComponent
 	@Override
 	protected abstract void paintComponent(Graphics _g);
 	
+	// Force a repaint.
+	@Override
+	public void update() {
+		revalidate();
+		repaint();
+	}
+	
 	@Override
 	public void stateChanged(ChangeEvent event) {
 		// Clear, then re-layout the anchor points

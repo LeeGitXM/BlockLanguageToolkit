@@ -10,7 +10,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorP
  * Define the methods required for a block UI renderer in the designer.
  */
 public interface BlockViewUI {
-
-	public void install(BlockComponent block);
 	public Collection<AnchorPoint> getAnchorPoints();   // actually BasicAnchorPoints
+	public void install(BlockComponent block);
+	public void update();                               // repaint
 }

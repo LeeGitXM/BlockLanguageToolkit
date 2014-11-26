@@ -44,8 +44,8 @@ public interface BLTProperties   {
 	public static final String MSG_BLOCK_STATE     = "BlockState";
 	public static final String MSG_WORKSPACE_ID    = "WorkspaceID";    // UUID of the component's workspace
 	
-	// These are names of system properties
-	public static final String EXIM_PATH = "blt.exim.path";            // Default for file choose dialogs
+	// These are names of system properties  
+	public static final String EXIM_PATH = "blt.exim.path";            // Initial default for file choose dialogs
 	// These are the key names allowed in the Python dictionary that defines a block attribute.
 	public static final String BLOCK_ATTRIBUTE_BINDING    = "binding";
 	public static final String BLOCK_ATTRIBUTE_BINDING_TYPE = "bindingType";
@@ -85,4 +85,7 @@ public interface BLTProperties   {
 	
 	// Name to use for "Good" Quality
 	public static final String QUALITY_GOOD        = "Good";
+	// Preferences keys
+	public static final String PREFERENCES_NAME     = "BLTPreferences";    // Preferences collection name
+	public static final String PREF_EXIM_DIRECTORY  = "ExImDirectory";     // Export/import directory
 }

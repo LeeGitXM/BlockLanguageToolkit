@@ -521,15 +521,15 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			@SuppressWarnings("rawtypes")
 			Enumeration walker = node.children();
 			while(walker.hasMoreElements()) {
-				Object child = walker.nextElement();
-				ProjectResource cres = node.getProjectResource();
+				AbstractResourceNavTreeNode child = (AbstractResourceNavTreeNode)walker.nextElement();
+				ProjectResource cres = child.getProjectResource();
 				if(cres==null) continue;
 				if(cres.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE)){
-					SerializableFamily sfam = recursivelyDeserializeFamily((AbstractResourceNavTreeNode) child);
+					SerializableFamily sfam = recursivelyDeserializeFamily(child);
 					if( sfam!=null ) sa.addFamily(sfam);
 				}
 				else if(cres.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)) {
-					SerializableFolder sf = recursivelyDeserializeFolder((AbstractResourceNavTreeNode) child);
+					SerializableFolder sf = recursivelyDeserializeFolder(child);
 					if( sf!=null ) sa.addFolder(sf);
 				}
 				else {
@@ -565,15 +565,15 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			@SuppressWarnings("rawtypes")
 			Enumeration walker = node.children();
 			while(walker.hasMoreElements()) {
-				Object child = walker.nextElement();
-				ProjectResource cres = node.getProjectResource();
+				AbstractResourceNavTreeNode child = (AbstractResourceNavTreeNode)walker.nextElement();
+				ProjectResource cres = child.getProjectResource();
 				if(cres==null) continue;
 				if( cres.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
-					SerializableDiagram sd = recursivelyDeserializeDiagram((AbstractResourceNavTreeNode) child);
+					SerializableDiagram sd = recursivelyDeserializeDiagram(child);
 					if( sd!=null ) sfam.addDiagram(sd);
 				}
 				else if(cres.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)) {
-					SerializableFolder sf = recursivelyDeserializeFolder((AbstractResourceNavTreeNode) child);
+					SerializableFolder sf = recursivelyDeserializeFolder(child);
 					if( sf!=null ) sfam.addFolder(sf);
 				}
 				else {
@@ -600,19 +600,19 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			@SuppressWarnings("rawtypes")
 			Enumeration walker = node.children();
 			while(walker.hasMoreElements()) {
-				Object child = walker.nextElement();
-				ProjectResource cres = node.getProjectResource();
+				AbstractResourceNavTreeNode child = (AbstractResourceNavTreeNode)walker.nextElement();
+				ProjectResource cres = child.getProjectResource();
 				if(cres==null) continue;
 				if( cres.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
-					SerializableDiagram sd = recursivelyDeserializeDiagram((AbstractResourceNavTreeNode) child);
+					SerializableDiagram sd = recursivelyDeserializeDiagram(child);
 					if( sd!=null ) sfold.addDiagram(sd);
 				}
 				else if(cres.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE)){
-					SerializableFamily sfam = recursivelyDeserializeFamily((AbstractResourceNavTreeNode) child);
+					SerializableFamily sfam = recursivelyDeserializeFamily(child);
 					if( sfam!=null ) sfold.addFamily(sfam);
 				}
 				else if(cres.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)) {
-					SerializableFolder sf = recursivelyDeserializeFolder((AbstractResourceNavTreeNode) child);
+					SerializableFolder sf = recursivelyDeserializeFolder(child);
 					if( sf!=null ) sfold.addFolder(sf);
 				}
 				else {
@@ -798,10 +798,10 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 
 								if( output.canWrite() ) {
 									ObjectMapper mapper = new ObjectMapper();
-									if(logger.isDebugEnabled()) logger.debugf("%s.actionPerformed: creating json ... %s",TAG,(mapper.canSerialize(SerializableDiagram.class)?"true":"false"));
+									if(logger.isDebugEnabled()) logger.debugf("%s.actionPerformed: creating json ... %s",TAG,(mapper.canSerialize(SerializableApplication.class)?"true":"false"));
 									try{ 
 										// Convert the view into a serializable object
-										SerializableApplication sap = node.recursivelyDeserializeApplication(node);
+										SerializableApplication sap = recursivelyDeserializeApplication(node);
 										String json = mapper.writeValueAsString(sap);
 										FileWriter fw = new FileWriter(output,false);  // Do not append
 										try {
@@ -872,9 +872,9 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 										ObjectMapper mapper = new ObjectMapper();
 										SerializableApplication sa = mapper.readValue(new String(bytes), SerializableApplication.class);
 										if( sa!=null ) {
-											logger.infof("%s:ApplicationImportAction imported application %s", TAG,sa.getName());
 											ApplicationUUIDResetHandler uuidHandler = new ApplicationUUIDResetHandler(sa);
 											uuidHandler.convertUUIDs();
+											logger.infof("%s:ApplicationImportAction importing application %s(%d) (%s)", TAG,sa.getName(),newId,sa.getId().toString());
 											String json = mapper.writeValueAsString(sa);
 											if(logger.isTraceEnabled() ) logger.trace(json);
 											ProjectResource resource = new ProjectResource(newId,
@@ -948,6 +948,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 						BLTProperties.MODULE_ID, BLTProperties.FAMILY_RESOURCE_TYPE,
 						sf.getName(), ApplicationScope.GATEWAY, json.getBytes());
 				resource.setParentUuid(parentId);
+				logger.infof("%s:ApplicationImportAction importing family %s(%s) (%s/%s)", TAG,sf.getName(),newId,parentId.toString(),sf.getId().toString());
 				context.updateResource(resource);
 				// Now import the diagrams
 				for(SerializableDiagram diagram:sf.getDiagrams()) {

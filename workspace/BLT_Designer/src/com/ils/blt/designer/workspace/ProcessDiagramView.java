@@ -371,7 +371,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			if( bap!=null ) {    // Is null when block-and-connector library is hosed.
 				ProcessBlockView blk = (ProcessBlockView)bap.getBlock();
 				String key = NotificationKey.keyForConnection(blk.getId().toString(), bap.getId().toString());
-				log.tracef("%s.registerChangeListeners: adding %s:%s",TAG,key,TAG);
+				log.tracef("%s.registerChangeListeners: adding %s",TAG,key);
 				handler.addNotificationChangeListener(key,TAG, bap);
 			}
 		}
@@ -383,8 +383,9 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			for(BlockProperty prop:block.getProperties()) {
 				if( prop.getBindingType().equals(BindingType.ENGINE)) {
 					String key = NotificationKey.keyForProperty(block.getId().toString(), prop.getName());
-					log.tracef("%s.registerChangeListeners: adding %s:%s",TAG,key,TAG);
+					log.tracef("%s.registerChangeListeners: adding %s(%d)",TAG,key,prop.hashCode());
 					handler.addNotificationChangeListener(key,TAG, prop);
+					prop.addChangeListener(block);
 				}
 			}
 		}
@@ -411,6 +412,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			for(BlockProperty prop:block.getProperties()) {
 				if( prop.getBindingType().equals(BindingType.ENGINE)) {
 					handler.removeNotificationChangeListener(NotificationKey.keyForProperty(block.getId().toString(), prop.getName()),TAG);
+					prop.removeChangeListener(block);
 				}
 			}
 		}

@@ -13,6 +13,8 @@ import java.util.UUID;
 import com.ils.block.common.PropertyHolder;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.AnchorPrototype;
+import com.ils.blt.common.block.BindingType;
+import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockState;
@@ -281,11 +283,16 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	/**
 	 * Send status update notifications for any properties
 	 * or output connections known to the designer. This
-	 * basic implementation does nothing.
+	 * basic implementation reports all values bound to ENGINE.
 	 */
 	@Override
 	public void notifyOfStatus() {
-		
+		for( BlockProperty bp:getProperties()) {
+			if( bp.getBindingType().equals(BindingType.ENGINE) ) {
+				QualifiedValue qv = new BasicQualifiedValue(bp.getValue());
+				controller.sendPropertyNotification(getBlockId().toString(),bp.getName(), qv);
+			}
+		}
 	}
 	/**
 	 * Start any active monitoring or processing within the block.

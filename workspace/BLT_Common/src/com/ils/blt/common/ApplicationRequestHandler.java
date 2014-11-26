@@ -394,7 +394,7 @@ public class ApplicationRequestHandler  {
 			log.warnf("%s: toJson (%s)",TAG,ge.getMessage());
 		}
 		log.tracef("%s: json property = %s",TAG,json);
-		log.debugf("%s.setBlockProperty: %s %s %s %s: %s", TAG, diagId,blockId, json);
+		log.debugf("%s.setBlockProperty: %s %s %s", TAG, diagId,blockId, json);
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 				BLTProperties.MODULE_ID, "setBlockProperty", diagId,blockId, json);

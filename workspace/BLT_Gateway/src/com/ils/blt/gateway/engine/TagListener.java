@@ -144,6 +144,7 @@ public class TagListener implements TagChangeListener   {
 		if( tagPath==null) return;    // There was no subscription
 		log.debugf("%s.removeSubscription: considering %s:%s=%s",TAG,block.getName(),property.getName(),tagPath);
 		List<BlockPropertyPair> list = blockMap.get(tagPath);
+		if(list==null) return;
 		BlockPropertyPair key = new BlockPropertyPair(block,property);
 		list.remove(key);
 		// Once the list is empty, we cancel the subscription

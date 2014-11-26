@@ -40,8 +40,11 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.Ab
  * 
  * Note: The "dirtiness" of the block is used simply for darkening
  *       the icon on the screen.
+ * Note: We are added as a property change listener by the ProcessDiagram 
+ *       whenever the diagram is displayed. On notification, we just repaint
+ *       the UI.
  */
-public class ProcessBlockView extends AbstractBlock {
+public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	private static final String TAG = "ProcessBlockView";
 	private final static Random random = new Random();
 	private Collection<ProcessAnchorDescriptor> anchors;
@@ -388,4 +391,11 @@ public class ProcessBlockView extends AbstractBlock {
 		 }
 		 return result;
 	 }
+
+	// ====================================== Change Listener =====================================
+	@Override
+	public void stateChanged(ChangeEvent e) {
+		if( ui != null ) ui.update();
+		
+	}
 }

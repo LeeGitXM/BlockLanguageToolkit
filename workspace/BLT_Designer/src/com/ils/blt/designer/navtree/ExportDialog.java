@@ -9,6 +9,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.prefs.Preferences;
 
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -40,6 +41,7 @@ public class ExportDialog extends JDialog implements ActionListener {
 	private File filePath = null;
 	private JFileChooser fc;
 	private final LoggerEx log;
+	private final Preferences prefs;
 	
 	
 	public ExportDialog() {
@@ -48,6 +50,7 @@ public class ExportDialog extends JDialog implements ActionListener {
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
         setSize(new Dimension(DLG_WIDTH,DLG_HEIGHT));
         this.log = LogUtil.getLogger(getClass().getPackage().getName());
+        this.prefs = Preferences.userRoot().node(BLTProperties.PREFERENCES_NAME);
         initialize();
 	}
 	
@@ -65,7 +68,7 @@ public class ExportDialog extends JDialog implements ActionListener {
 	    fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 	    FileNameExtensionFilter filter = new FileNameExtensionFilter("JSON exports", "json", "txt");
 	    fc.setFileFilter(filter);
-	    String startDirectoryName = System.getProperty(BLTProperties.EXIM_PATH);
+	    String startDirectoryName = prefs.get(BLTProperties.PREF_EXIM_DIRECTORY,System.getProperty(BLTProperties.EXIM_PATH));
 	    if(startDirectoryName!=null ) {
 	    	File startDirectory = new File(startDirectoryName);
 		    fc.setCurrentDirectory(startDirectory);
@@ -97,7 +100,7 @@ public class ExportDialog extends JDialog implements ActionListener {
 				if(!fileName.endsWith(".json") ) {
 					filePath = new File(filePath.getAbsolutePath()+".json");
 				}
-				System.setProperty(BLTProperties.EXIM_PATH, filePath.getParent());
+				prefs.put(BLTProperties.PREF_EXIM_DIRECTORY, filePath.getParent());
 			}
 			
 			log.infof("%s: actionPerformed set file path to: %s (%s)",TAG,filePath.getAbsolutePath(),filePath.getParent()); 
