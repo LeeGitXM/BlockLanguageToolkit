@@ -20,5 +20,20 @@ zip -r $SVN/xom-python-src.zip XOM_Python
 
 # Copy the jar files ...
 cd $REPO_ROOT/blt
+BLD=$REPO_ROOT/blt/workspace/BLT_Build/temp_modl
+EXT=$REPO_ROOT/external/lib
+rm -rf lib
+mkdir -p lib/core/gateway
+mkdir -p lib/core/common
+cd lib/core
+cp $BLD/block-definition.jar gateway
+cp $BLD/blt-gateway.jar gateway
+cp -a $EXT/commons-math*jar gateway
+cp $BLD/blt-common.jar common
+cp -a $EXT/ils-common.jar common
+cp -a $EXT/ils-common.jar common
+cp -a $EXT/jackson* common
+cp -a $EXT/jackson* common
 mkdir -p $SVN/python-lib
+cd ../..
 cp -a lib $SVN/python-lib
