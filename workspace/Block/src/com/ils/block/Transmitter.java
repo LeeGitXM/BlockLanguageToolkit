@@ -20,8 +20,6 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BroadcastNotification;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.Signal;
-import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
  * A transmitter is a special class that propagates broadcast messages directly

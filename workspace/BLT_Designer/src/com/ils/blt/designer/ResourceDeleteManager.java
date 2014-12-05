@@ -5,7 +5,6 @@ import java.util.Enumeration;
 import java.util.List;
 
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.designer.navtree.NavTreeNodeInterface;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayException;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
