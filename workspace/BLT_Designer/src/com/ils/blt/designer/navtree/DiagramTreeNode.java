@@ -206,8 +206,9 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		return result;
 	}
 
-	/*
-	 * @return true if the Save action should be enabled
+	/* Enable the save menu if the diagram is dirty or has dirty children.
+	 * BUT - disable if the parent node is dirty.
+	 * @return true if the Save action should be enabled. 
 	 */
 	private boolean enableSaveAction() {
 		boolean result = false;
@@ -215,6 +216,8 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		if( pdv!=null ) {
 			if( pdv.isDirty() ) result = true;
 			else if(statusManager.isResourceDirtyOrHasDirtyChidren(resourceId)) result = true;
+			
+			if( statusManager.isResourceDirty(statusManager.parentResourceId(resourceId)) ) result = false;
 		}
 		return result;
 	}

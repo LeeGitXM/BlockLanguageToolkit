@@ -41,6 +41,7 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 	// Keep map of values by originating block id
 	protected final Map<String,QualifiedValue> qualifiedValueMap;
 	private final Watchdog dog;
+	private BlockProperty valueProperty = null;
 	private double synchInterval = 0.5; // 1/2 sec synchronization by default
 	protected TruthValue truthValue;
 	
@@ -77,7 +78,7 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 		// Define the time for "coalescing" inputs ~ msec
 		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,new Double(synchInterval),PropertyType.TIME,true);
 		properties.put(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL, synch);
-		BlockProperty valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,TruthValue.UNKNOWN,PropertyType.TRUTHVALUE,false);
+		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,TruthValue.UNKNOWN,PropertyType.TRUTHVALUE,false);
 		valueProperty.setBindingType(BindingType.ENGINE);
 		properties.put(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 		
@@ -140,7 +141,8 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 						                                        (truthValue.equals(TruthValue.UNKNOWN)?getAggregateQuality():DataQuality.GOOD_DATA));
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
 				controller.acceptCompletionNotification(nvn);
-				controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,result);
+				valueProperty.setValue(truthValue);
+				notifyOfStatus(result);
 			}
 		}
 	}
@@ -167,8 +169,14 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void notifyOfStatus() {
 		QualifiedValue qv = new BasicQualifiedValue(truthValue);
+		notifyOfStatus(qv);
+		
+	}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
+	
 	/**
 	 * Augment the palette prototype for this block class.
 	 */

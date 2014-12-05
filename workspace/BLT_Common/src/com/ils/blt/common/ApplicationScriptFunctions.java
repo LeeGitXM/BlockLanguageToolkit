@@ -134,7 +134,7 @@ public class ApplicationScriptFunctions   {
 	 * Direct the blocks in a specified diagram to report their
 	 * status values. This is in order to update the UI. 
 	 */
-	public static void triggerStatusNotifications(String diagramId) {
-		manager.triggerStatusNotifications(diagramId);
+	public static void triggerStatusNotifications() {
+		manager.triggerStatusNotifications();
 	}
 }

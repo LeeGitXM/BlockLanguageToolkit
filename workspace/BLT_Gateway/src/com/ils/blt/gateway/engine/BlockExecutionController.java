@@ -211,8 +211,14 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		modelManager.stopBlocks();
 		log.infof("%s: STOPPED",TAG);
 	}
-	
 	public  void setDelegate(ModelManager resmgr) { this.modelManager = resmgr; }
+	public void triggerStatusNotifications() {
+		for( ProcessDiagram diagram:modelManager.getDiagrams()) {
+			for(ProcessBlock block:diagram.getProcessBlocks()) {
+				block.notifyOfStatus();
+			}
+		}
+	}
 	
 	// ======================= Delegated to ModelManager ======================
 	/**

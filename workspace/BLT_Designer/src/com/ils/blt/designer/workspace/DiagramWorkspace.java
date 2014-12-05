@@ -463,7 +463,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				ProcessBlockView pbv = (ProcessBlockView)blk;
 				diagram.initBlockProperties(pbv);
 			}
-			handler.triggerStatusNotifications(diagram.getId().toString());
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
 		}
 	}

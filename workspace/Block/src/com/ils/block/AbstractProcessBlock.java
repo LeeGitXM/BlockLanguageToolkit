@@ -284,6 +284,9 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 * Send status update notifications for any properties
 	 * or output connections known to the designer. This
 	 * basic implementation reports all values bound to ENGINE.
+	 * 
+	 * It is expected that most blocks will implement this in
+	 * a more efficient way.
 	 */
 	@Override
 	public void notifyOfStatus() {

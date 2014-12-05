@@ -22,6 +22,7 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
@@ -98,7 +99,7 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 		// Even if locked, we update the current state
 		if( qv.getValue()!=null) {
 			valueProperty.setValue(qv.getValue());
-			controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
+			notifyOfStatus(qv);
 		}
 	}
 
@@ -121,8 +122,12 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void notifyOfStatus() {
 		if( qv.getValue()!=null) {
-			controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
-		}
+			notifyOfStatus(qv);
+		}	
+	}
+	private void notifyOfStatus(QualifiedValue qval) {
+		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qval);
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qval);
 	}
 
 	/**

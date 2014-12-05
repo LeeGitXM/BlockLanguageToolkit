@@ -85,8 +85,14 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void notifyOfStatus() {
 		QualifiedValue qv = new BasicQualifiedValue(valueProperty.getValue());
+		notifyOfStatus(qv);
+		
+	}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
+	
 	/**
 	 * Handle a change to the format. We deduce data type from the format.
 	 */
@@ -149,7 +155,7 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 				}
 				qv = new BasicQualifiedValue(value,qv.getQuality(),qv.getTimestamp()); 
 				log.tracef("%s.acceptValue: port %s formatted value =  %s.",TAG,incoming.getConnection().getUpstreamPortName(),value);
-				controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE, qv);
+				notifyOfStatus(qv);
 			}	
 		}
 

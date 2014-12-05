@@ -184,6 +184,17 @@ public class ModelManager implements ProjectListener  {
 		return diagram;
 	}
 	
+	/**
+	 * @return a list of all known diagrams 
+	 */
+	public List<ProcessDiagram> getDiagrams() {
+		List<ProcessDiagram> diagrams = new ArrayList<>();
+		for(ProcessNode node:nodesByKey.values()) {
+			if( node instanceof ProcessDiagram ) diagrams.add((ProcessDiagram)node);
+		}
+		return diagrams;
+	}
+	
 
 	/**
 	 * Get a list of diagram tree paths known to the specified project. 

@@ -475,11 +475,11 @@ public class ApplicationRequestHandler  {
 	 * Direct the blocks in a specified diagram to report their
 	 * status values. This is in order to update the UI. 
 	 */
-	public void triggerStatusNotifications(String diagramId) {
-		log.infof("%s.triggerStatusNotifications for %s...",TAG,diagramId);
+	public void triggerStatusNotifications() {
+		log.infof("%s.triggerStatusNotifications...",TAG);
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "triggerStatusNotifications",diagramId);
+					BLTProperties.MODULE_ID, "triggerStatusNotifications");
 		}
 		catch(Exception ex) {
 			log.infof("%s.triggerStatusNotifications: Exception (%s)",TAG,ex.getMessage());

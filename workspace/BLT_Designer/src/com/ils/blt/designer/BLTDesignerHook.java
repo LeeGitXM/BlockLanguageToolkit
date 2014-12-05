@@ -118,6 +118,9 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		context.getProjectBrowserRoot().getProjectFolder().addChild(rootNode);
 		context.registerResourceWorkspace(workspace);
 		nodeStatusManager.createRootResourceStatus(rootNode);
+		
+		// Query the gateway for latest notifications from all blocks
+		appRequestHandler.triggerStatusNotifications();
 	}
 	
 	public NodeStatusManager getNavTreeStatusManager() { return nodeStatusManager; }

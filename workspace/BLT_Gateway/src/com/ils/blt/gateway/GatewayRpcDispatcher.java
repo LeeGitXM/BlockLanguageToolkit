@@ -422,26 +422,11 @@ public class GatewayRpcDispatcher   {
 	}
 	
 	/**
-	 * 
-	 * @param uuidString identifier of the diagram for which we want notifications
+	 * Trigger status notifications for all current diagrams and their blocks.
 	 */
-	public void triggerStatusNotifications(String uuidString) {
-		log.infof("%s.triggerStatusNotifications: %s",TAG,uuidString);
-		UUID diagramUUID = null;
-		try {
-			diagramUUID = UUID.fromString(uuidString);
-		}
-		catch(IllegalArgumentException iae) {
-			log.warnf("%s.triggerStatusNotifications: Diagram UUID string is illegal (%s), creating new",TAG,uuidString);
-			diagramUUID = UUID.nameUUIDFromBytes(uuidString.getBytes());
-		}
-		ProcessDiagram diagram = BlockExecutionController.getInstance().getDiagram(diagramUUID);
-		if( diagram!=null ) {
-			ControllerRequestHandler.getInstance().triggerStatusNotifications(diagram);
-		}
-		else {
-			log.warnf("%s.triggerStatusNotifications: Unable to find diagram %s",TAG,uuidString);
-		}
+	public void triggerStatusNotifications() {
+		log.infof("%s.triggerStatusNotifications ...",TAG);
+		ControllerRequestHandler.getInstance().triggerStatusNotifications();
 	}
 	
 	
