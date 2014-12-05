@@ -104,7 +104,16 @@ public class Bias extends AbstractProcessBlock implements ProcessBlock {
 					controller.acceptCompletionNotification(nvn);
 				}	
 			}
+			notifyOfStatus(qv);
 		}
+	}
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 	
 	/**

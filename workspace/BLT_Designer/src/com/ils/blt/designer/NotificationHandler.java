@@ -82,7 +82,7 @@ public class NotificationHandler implements PushNotificationListener {
 		if( moduleId.equals(BLTProperties.MODULE_ID)) {
 			String key = notice.getMessageType();
 			Object payload = notice.getMessage();
-			log.infof("%s.receiveNotification: key=%s,value=%s",TAG,key,payload.toString());
+			log.tracef("%s.receiveNotification: key=%s,value=%s",TAG,key,payload.toString());
 			if( payload instanceof QualifiedValue ) {
 				payloadMap.put(key, payload);
 				Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
@@ -95,7 +95,7 @@ public class NotificationHandler implements PushNotificationListener {
 					SwingUtilities.invokeLater(new WorkspaceRepainter());
 				}
 				else {
-					log.infof("%s.receiveNotification: no receiver for key=%s,value=%s",TAG,key,payload.toString());
+					log.debugf("%s.receiveNotification: no receiver for key=%s,value=%s",TAG,key,payload.toString());
 				}
 			}
 			else {
@@ -113,7 +113,7 @@ public class NotificationHandler implements PushNotificationListener {
 	 * @param listener
 	 */
 	public void addNotificationChangeListener(String key,String source,NotificationChangeListener listener) {
-		log.infof("%s.addNotificationChangeListener: source=%s key=%s (%s)",TAG,source,key,listener.getClass().getName());
+		log.tracef("%s.addNotificationChangeListener: source=%s key=%s (%s)",TAG,source,key,listener.getClass().getName());
 		Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
 		if( listeners==null) {
 			listeners = new HashMap<>();
@@ -135,7 +135,7 @@ public class NotificationHandler implements PushNotificationListener {
 	 * @param key
 	 */
 	public void removeNotificationChangeListener(String key, String source) {
-		log.infof("%s.removeNotificationChangeListener: key=%s",TAG,key);
+		log.tracef("%s.removeNotificationChangeListener: key=%s",TAG,key);
 		Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
 		if( listeners!=null ) {
 			listeners.remove(source);

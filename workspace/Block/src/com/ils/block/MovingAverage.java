@@ -117,6 +117,7 @@ public class MovingAverage extends AbstractProcessBlock implements ProcessBlock 
 		if( !isLocked() ) {
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 			controller.acceptCompletionNotification(nvn);
+			notifyOfStatus(qv);
 		}
 	}
 
@@ -136,7 +137,14 @@ public class MovingAverage extends AbstractProcessBlock implements ProcessBlock 
 			}
 		}	
 	}
-	
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
 	/**
 	 * @return a block-specific description of internal statue
 	 */

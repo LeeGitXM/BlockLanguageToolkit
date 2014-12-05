@@ -140,10 +140,12 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 				QualifiedValue result = new BasicQualifiedValue(truthValue.name(),q);
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
 				controller.acceptCompletionNotification(nvn);
-				controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,result);
+				notifyOfStatus(result);
 			}
 		}
 	}
+	
+
 	
 	/**
 	 * Handle a change to the coalescing interval.
@@ -176,6 +178,11 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void notifyOfStatus() {
 		QualifiedValue qv = new BasicQualifiedValue(truthValue);
+		notifyOfStatus(qv);
+		
+	}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 

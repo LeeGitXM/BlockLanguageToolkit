@@ -23,6 +23,7 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
@@ -101,6 +102,7 @@ public class Parameter extends AbstractProcessBlock implements ProcessBlock {
 			}
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 			controller.acceptCompletionNotification(nvn);
+			notifyOfStatus(qv);
 		}
 	}
 	
@@ -114,7 +116,14 @@ public class Parameter extends AbstractProcessBlock implements ProcessBlock {
 			tag.setValue(event.getNewValue().toString());
 		}
 	}
-	
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
 	/**
 	 * Augment the palette prototype for this block class.
 	 */

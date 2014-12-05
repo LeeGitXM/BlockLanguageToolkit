@@ -148,21 +148,31 @@ public class NoiseGenerator extends AbstractProcessBlock implements ProcessBlock
 				try {
 					value = Double.parseDouble(qv.getValue().toString());
 					if( distribution!=null) value += distribution.sample();
-					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,new BasicQualifiedValue(value));
+					qv = new BasicQualifiedValue(value);
+					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 					controller.acceptCompletionNotification(nvn);
+					notifyOfStatus(qv);
 				}
 				catch(NumberFormatException nfe) {
 					log.warnf("%s.acceptValue: Unable to convert incoming value to a double (%s)",TAG,nfe.getLocalizedMessage());
 				}
 			}
 			else {
-				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,new BasicQualifiedValue(new Double(Double.NaN),
-						qv.getQuality(),qv.getTimestamp()));
+				qv = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
+				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 				controller.acceptCompletionNotification(nvn);
+				notifyOfStatus(qv);
 			}
 		}
 	}
-	
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
 	/**
 	 * Add properties that are new for this class.
 	 * Populate them with default values.

@@ -21,6 +21,7 @@ import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.common.watchdog.Watchdog;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
@@ -126,6 +127,7 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 		if( !isLocked() ) {
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,data.qv);
 			controller.acceptCompletionNotification(nvn);
+			notifyOfStatus(data.qv);
 		}
 		// Even if we're locked, we process things as normal
 		if( !buffer.isEmpty() ) {
@@ -138,7 +140,14 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 			controller.pet(dog);
 		}
 	}
-	
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
 	/**
 	 * Add properties that are new for this class.
 	 * Populate them with default values.

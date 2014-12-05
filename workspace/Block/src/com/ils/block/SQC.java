@@ -267,11 +267,23 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 					QualifiedValue outval = new BasicQualifiedValue(truthState);
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 					controller.acceptCompletionNotification(nvn);
+					notifyOfStatus(outval);
 				}
 			}
 		}
 	}
-	
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {
+		QualifiedValue qv = new BasicQualifiedValue(truthState);
+		notifyOfStatus(qv);
+		
+	}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
 	/**
 	 * Handle a changes to the various attributes.
 	 */

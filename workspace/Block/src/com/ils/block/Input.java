@@ -91,6 +91,7 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 			if( qv.getValue() != null ) {
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 				controller.acceptCompletionNotification(nvn);
+				notifyOfStatus(qv);
 			}
 			else {
 				log.warnf("%s.acceptValue: received a null value, ignoring",getName());

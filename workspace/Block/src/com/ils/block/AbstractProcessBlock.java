@@ -14,7 +14,6 @@ import com.ils.block.common.PropertyHolder;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
-import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockState;

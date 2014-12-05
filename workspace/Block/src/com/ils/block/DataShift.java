@@ -82,6 +82,7 @@ public class DataShift extends AbstractProcessBlock implements ProcessBlock {
 					QualifiedValue outval = new BasicQualifiedValue(lastValue.getValue());
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 					controller.acceptCompletionNotification(nvn);
+					notifyOfStatus(outval);
 				}
 			}
 		}
@@ -91,6 +92,7 @@ public class DataShift extends AbstractProcessBlock implements ProcessBlock {
 				QualifiedValue outval = new BasicQualifiedValue(lastValue.getValue(),qv.getQuality());
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 				controller.acceptCompletionNotification(nvn);
+				notifyOfStatus(outval);
 			}
 		}
 	}
@@ -113,6 +115,7 @@ public class DataShift extends AbstractProcessBlock implements ProcessBlock {
 						QualifiedValue outval = new BasicQualifiedValue(qv.getValue());
 						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 						controller.acceptCompletionNotification(nvn);
+						notifyOfStatus(outval);
 					}
 				}
 			}
@@ -124,7 +127,17 @@ public class DataShift extends AbstractProcessBlock implements ProcessBlock {
 			log.warnf("%s.propertyChange:Unrecognized property (%s)",TAG,propertyName);
 		}
 	}
-	
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {
+		notifyOfStatus(lastValue);
+	}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
 	/**
 	 * Add properties that are new for this class.
 	 * Populate them with default values.

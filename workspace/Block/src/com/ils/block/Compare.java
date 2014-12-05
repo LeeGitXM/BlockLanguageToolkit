@@ -188,6 +188,7 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 			}
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,currentValue);
 			controller.acceptCompletionNotification(nvn);
+			notifyOfStatus(currentValue);
 		}
 	}
 	/**
@@ -195,7 +196,11 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void notifyOfStatus() {
-		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, currentValue);
+		notifyOfStatus(currentValue);
+	}
+
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 	/**
 	 * Handle a change to the coalescing interval.

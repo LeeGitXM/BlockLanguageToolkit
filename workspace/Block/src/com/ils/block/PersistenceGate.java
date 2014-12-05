@@ -166,6 +166,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 			QualifiedValue outval = new BasicQualifiedValue(trigger);
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 			controller.acceptCompletionNotification(nvn);
+			notifyOfStatus(outval);
 		}
 	}
 	
@@ -202,7 +203,19 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 			log.warnf("%s.propertyChange:Unrecognized property (%s)",TAG,propertyName);
 		}
 	}
-	
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {
+		QualifiedValue qv = new BasicQualifiedValue(valueProperty.getValue());
+		notifyOfStatus(qv);
+		
+	}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
 	/**
 	 * Augment the palette prototype for this block class.
 	 */

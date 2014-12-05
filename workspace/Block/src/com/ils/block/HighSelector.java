@@ -92,12 +92,14 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 							max = val;
 							OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 							controller.acceptCompletionNotification(nvn);
+							notifyOfStatus(qv);
 						}
 					}
 					else {
-						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,new BasicQualifiedValue(new Double(Double.NaN),
-								qv.getQuality(),qv.getTimestamp()));
+						qv = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
+						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 						controller.acceptCompletionNotification(nvn);
+						notifyOfStatus(qv);
 					}
 				}
 			}
@@ -106,7 +108,15 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 			}
 		}
 	}
-	
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {
+	}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
 	/**
 	 * @return a block-specific description of internal statue
 	 */

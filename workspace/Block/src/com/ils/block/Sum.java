@@ -140,10 +140,18 @@ public class Sum extends AbstractProcessBlock implements ProcessBlock {
 				QualifiedValue result = new BasicQualifiedValue(new Double(value),getAggregateQuality());
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
 				controller.acceptCompletionNotification(nvn);
+				notifyOfStatus(result);
 			}	
 		}
 	}
-	
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
 	/**
 	 * Handle a change to the coalescing interval.
 	 */

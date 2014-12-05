@@ -101,9 +101,10 @@ public class HighLimitObservation extends AbstractProcessBlock implements Proces
 				if( !newValue.equals(truthValue)) {
 					truthValue = newValue;
 					if( !isLocked() ) {
-						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,
-								new BasicQualifiedValue(truthValue,qv.getQuality(),qv.getTimestamp()));
+						QualifiedValue nqv = new BasicQualifiedValue(truthValue,qv.getQuality(),qv.getTimestamp());
+						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,nqv);
 						controller.acceptCompletionNotification(nvn);
+						notifyOfStatus(nqv);
 					}
 				}
 			}
@@ -118,6 +119,10 @@ public class HighLimitObservation extends AbstractProcessBlock implements Proces
 	@Override
 	public void notifyOfStatus() {
 		QualifiedValue qv = new BasicQualifiedValue(truthValue);
+		notifyOfStatus(qv);
+		
+	}
+	private void notifyOfStatus(QualifiedValue qv) {
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 	/**

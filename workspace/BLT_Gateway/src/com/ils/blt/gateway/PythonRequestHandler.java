@@ -6,6 +6,8 @@ package com.ils.blt.gateway;
 
 import java.util.UUID;
 
+import com.ils.blt.gateway.engine.BlockExecutionController;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 
@@ -33,6 +35,8 @@ public class PythonRequestHandler   {
 			UUID uuid = UUID.fromString(id);
 			UUID parentuuid = UUID.fromString(parent);
 			ControllerRequestHandler.getInstance().postValue(parentuuid,uuid,port,value,quality);
+			BlockExecutionController controller = BlockExecutionController.getInstance();
+			controller.sendConnectionNotification(id, port, new BasicQualifiedValue(value));
 		}
 		catch(IllegalArgumentException iae) {
 			log.warnf("%s.postValue: one of %s or %s illegal UUID (%s)",TAG,parent,id,iae.getMessage());

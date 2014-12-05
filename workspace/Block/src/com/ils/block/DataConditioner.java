@@ -45,6 +45,7 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 	private String qualityName = "good";
 	protected QualifiedValue quality = new BasicQualifiedValue("good");
 	private QualifiedValue value = null;
+	protected TruthValue truthValue;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -73,6 +74,7 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 	 */
 	private void initialize() {	
 		setName("DataConditioner");
+		truthValue = TruthValue.UNSET;
 		// Define the time for "coalescing" inputs ~ msec
 		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,new Double(synchInterval),PropertyType.TIME,true);
 		properties.put(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL, synch);
@@ -192,9 +194,26 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outValue);
 			controller.acceptCompletionNotification(nvn);
 			
-			nvn = new OutgoingNotification(this,STATUS_PORT_NAME,new BasicQualifiedValue(good?TruthValue.TRUE:TruthValue.FALSE));
+			truthValue = (good?TruthValue.TRUE:TruthValue.FALSE);
+			QualifiedValue result = new BasicQualifiedValue(truthValue);
+			nvn = new OutgoingNotification(this,STATUS_PORT_NAME,result);
 			controller.acceptCompletionNotification(nvn);
+			notifyOfStatus(outValue,result);
 		}
+	}
+	
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {
+		QualifiedValue qv = new BasicQualifiedValue(truthValue);
+		notifyOfStatus(value,qv);
+		
+	}
+	private void notifyOfStatus(QualifiedValue val,QualifiedValue tv) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, val);
+		controller.sendConnectionNotification(getBlockId().toString(), STATUS_PORT_NAME, tv);
 	}
 	/**
 	 * @return a block-specific description of internal status. Add quality to the default list

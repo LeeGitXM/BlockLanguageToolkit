@@ -277,15 +277,31 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 		
 		
 		log.tracef("%s: evaluate - pid out is %f",TAG,result);
-		OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,new BasicQualifiedValue(result));
+		QualifiedValue ans = new BasicQualifiedValue(result);
+		OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,ans);
 		controller.acceptCompletionNotification(nvn);
-		nvn = new OutgoingNotification(this,PROPORTIONAL_PORT,new BasicQualifiedValue(proportionalContribution));
+		QualifiedValue prop = new BasicQualifiedValue(proportionalContribution);
+		nvn = new OutgoingNotification(this,PROPORTIONAL_PORT,prop);
 		controller.acceptCompletionNotification(nvn);
-		nvn = new OutgoingNotification(this,INTEGRAL_PORT,new BasicQualifiedValue(integralContribution));
+		QualifiedValue integral = new BasicQualifiedValue(integralContribution);
+		nvn = new OutgoingNotification(this,INTEGRAL_PORT,integral);
 		controller.acceptCompletionNotification(nvn);
-		nvn = new OutgoingNotification(this,DERIVATIVE_PORT,new BasicQualifiedValue(derivativeContribution));
+		QualifiedValue deriv = new BasicQualifiedValue(derivativeContribution);
+		nvn = new OutgoingNotification(this,DERIVATIVE_PORT,deriv);
 		controller.acceptCompletionNotification(nvn);
-		
+		notifyOfStatus(ans,prop,integral,deriv);		
+	}
+	
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {}
+	private void notifyOfStatus(QualifiedValue qv,QualifiedValue prop,QualifiedValue integral,QualifiedValue derivative) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+		controller.sendConnectionNotification(getBlockId().toString(), PROPORTIONAL_PORT, prop);
+		controller.sendConnectionNotification(getBlockId().toString(), INTEGRAL_PORT, integral);
+		controller.sendConnectionNotification(getBlockId().toString(), DERIVATIVE_PORT, derivative);
 	}
 	
 	/**

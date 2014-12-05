@@ -152,6 +152,7 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 				QualifiedValue outval = new BasicQualifiedValue(TruthValue.UNKNOWN,qual,qv.getTimestamp());
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 				controller.acceptCompletionNotification(nvn);
+				notifyOfStatus(outval);
 			}
 			reset();     // Reset the evaluation interval
 		}
@@ -185,6 +186,7 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 				QualifiedValue outval = new BasicQualifiedValue(result);
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 				controller.acceptCompletionNotification(nvn);
+				notifyOfStatus(outval);
 			}
 		}
 		else {
@@ -193,11 +195,24 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 				QualifiedValue outval = new BasicQualifiedValue(TruthValue.UNKNOWN);
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 				controller.acceptCompletionNotification(nvn);
+				notifyOfStatus(outval);
 			}
 		}
 
 		dog.setSecondsDelay(scanInterval);
 		controller.pet(dog);
+	}
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {
+		QualifiedValue qv = new BasicQualifiedValue(truthValue);
+		notifyOfStatus(qv);
+		
+	}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 	/**
 	 * @return a block-specific description of internal statue

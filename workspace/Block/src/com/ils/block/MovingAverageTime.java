@@ -179,14 +179,30 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 				QualifiedValue outval = new BasicQualifiedValue(result);
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 				controller.acceptCompletionNotification(nvn);
+				notifyOfStatus(outval);
 			}
-			// Even if locked, we update the current state
-			valueProperty.setValue(result);
-			controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,new BasicQualifiedValue(result));
+			else {
+				// Even if locked, we update the current state
+				valueProperty.setValue(result);
+				controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,new BasicQualifiedValue(result));
+			}
 		}
 
 		dog.setSecondsDelay(scanInterval);
 		controller.pet(dog);
+	}
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {
+		QualifiedValue qv = new BasicQualifiedValue(valueProperty.getValue());
+		notifyOfStatus(qv);
+		
+	}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 	/**
 	 * Handle a changes to the various attributes.

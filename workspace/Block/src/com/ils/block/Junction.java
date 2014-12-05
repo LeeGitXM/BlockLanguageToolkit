@@ -78,9 +78,17 @@ public class Junction extends AbstractProcessBlock implements ProcessBlock {
 			QualifiedValue qv = vcn.getValue();
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 			controller.acceptCompletionNotification(nvn);
+			notifyOfStatus(qv);
 		}
 	}
-	
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
 	/**
 	 * Augment the palette prototype for this block class.
 	 */

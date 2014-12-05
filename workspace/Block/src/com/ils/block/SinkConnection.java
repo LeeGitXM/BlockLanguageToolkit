@@ -72,7 +72,10 @@ public class SinkConnection extends AbstractProcessBlock implements ProcessBlock
 			controller.acceptConnectionPostNotification(notification);
 		}
 	}
-	
+
+	@Override
+	public void notifyOfStatus() {}
+
 	/**
 	 * Augment the palette prototype for this block class.
 	 */

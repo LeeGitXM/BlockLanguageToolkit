@@ -20,6 +20,7 @@ import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.notification.Signal;
 import com.ils.blt.common.notification.SignalNotification;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
+import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
  * A receiver is a special class that receives broadcast signals directly
@@ -79,11 +80,20 @@ public class Receiver extends AbstractProcessBlock implements ProcessBlock {
 					patternProperty.getValue().toString().equalsIgnoreCase(signal.getPattern())) {
 			// Passed the filtering. Send to the output.
 			log.infof("%s.setValue: passing signal to output ",TAG);
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.CONTROL_PORT_NAME,new BasicQualifiedValue(signal));
+			QualifiedValue sig = new BasicQualifiedValue(signal);
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.CONTROL_PORT_NAME,sig);
 			controller.acceptCompletionNotification(nvn);
+			notifyOfStatus(sig);
 		}
 	}
-	
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.CONTROL_PORT_NAME, qv);
+	}
 	/**
 	 * Augment the palette prototype for this block class.
 	 */

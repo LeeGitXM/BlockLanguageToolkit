@@ -118,7 +118,9 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		context.getProjectBrowserRoot().getProjectFolder().addChild(rootNode);
 		context.registerResourceWorkspace(workspace);
 		nodeStatusManager.createRootResourceStatus(rootNode);
-		
+		// Instantiate the notification handler so that we have notifications
+		// ready when diagrams are displayed. The constructor is sufficient.
+		NotificationHandler.getInstance();
 		// Query the gateway for latest notifications from all blocks
 		appRequestHandler.triggerStatusNotifications();
 	}

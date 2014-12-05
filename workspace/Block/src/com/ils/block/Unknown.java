@@ -102,11 +102,16 @@ public class Unknown extends AbstractProcessBlock implements ProcessBlock {
 	}
 	
 	/**
-	 * Send status update notification for our last output value.
+	 * Send status update notification for our last latest state.
 	 */
 	@Override
 	public void notifyOfStatus() {
-		QualifiedValue qv = new BasicQualifiedValue(tv);
+		QualifiedValue qv = new BasicQualifiedValue(valueProperty.getValue());
+		notifyOfStatus(qv);
+		
+	}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 	/**

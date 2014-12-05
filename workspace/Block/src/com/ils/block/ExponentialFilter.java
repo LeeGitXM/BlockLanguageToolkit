@@ -120,7 +120,6 @@ public class ExponentialFilter extends AbstractProcessBlock implements ProcessBl
 				}
 				lastUpdateTime = System.currentTimeMillis();
 				qv = new BasicQualifiedValue(value,qv.getQuality(),qv.getTimestamp());
-				controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE, qv);
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.acceptValue: Unable to convert incoming value to a double (%s)",TAG,nfe.getLocalizedMessage());
@@ -136,6 +135,7 @@ public class ExponentialFilter extends AbstractProcessBlock implements ProcessBl
 		if( !isLocked() ) {
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 			controller.acceptCompletionNotification(nvn);
+			notifyOfStatus(qv);
 		}
 	}
 	
@@ -155,7 +155,19 @@ public class ExponentialFilter extends AbstractProcessBlock implements ProcessBl
 			}
 		}
 	}
-	
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {
+		QualifiedValue qv = new BasicQualifiedValue(value);
+		notifyOfStatus(qv);
+		
+	}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
 	/**
 	 * Augment the palette prototype for this block class.
 	 */

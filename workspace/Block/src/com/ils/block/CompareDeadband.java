@@ -155,6 +155,7 @@ public class CompareDeadband extends Compare implements ProcessBlock {
 			log.debugf("%s.evaluate: wrote %s",getName(),result.getValue().toString());
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
 			controller.acceptCompletionNotification(nvn);	
+			notifyOfStatus(result);
 		}
 	}
 	/**
@@ -163,6 +164,10 @@ public class CompareDeadband extends Compare implements ProcessBlock {
 	@Override
 	public void notifyOfStatus() {
 		QualifiedValue qv = new BasicQualifiedValue(truthValue);
+		notifyOfStatus(qv);
+	}
+
+	private void notifyOfStatus(QualifiedValue qv) {
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 	

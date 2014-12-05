@@ -14,6 +14,8 @@ import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
+import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
  * Holds any free-form text notes the user wants to enter. Can be html, since
@@ -53,7 +55,8 @@ public class Note extends AbstractProcessBlock implements ProcessBlock {
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
 	}
-	
+	@Override
+	public void notifyOfStatus() {}
 	/**
 	 * Add properties that are new for this class.
 	 * Populate them with default values.

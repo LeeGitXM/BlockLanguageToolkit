@@ -77,9 +77,17 @@ public class SourceConnection extends AbstractProcessBlock implements ProcessBlo
 		QualifiedValue value = incoming.getValue();
 		OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,new BasicQualifiedValue(value));
 		controller.acceptCompletionNotification(nvn);
+		notifyOfStatus(value);
 
 	}
-	
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
 	
 	/**
 	 * Augment the palette prototype for this block class.

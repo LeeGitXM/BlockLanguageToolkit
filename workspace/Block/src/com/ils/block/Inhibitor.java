@@ -21,6 +21,8 @@ import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.notification.Signal;
 import com.ils.blt.common.notification.SignalNotification;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
+import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
  * On receipt of a trigger, this class inhibits further input from propagating.
@@ -73,6 +75,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 				if( System.currentTimeMillis() > periodEndTime ) { 
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,vcn.getValue());
 					controller.acceptCompletionNotification(nvn);
+					notifyOfStatus(vcn.getValue());
 				}
 				else {
 					log.infof("%s.acceptValue: %s ignoring inhibited input ...",TAG,this.toString());
@@ -136,7 +139,14 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 			}
 		}
 	}
-	
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
 	/**
 	 * Augment the palette prototype for this block class.
 	 */

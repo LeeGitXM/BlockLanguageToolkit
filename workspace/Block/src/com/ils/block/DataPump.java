@@ -57,14 +57,8 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 		dog = new Watchdog(TAG,this);
 		initialize();
 	}
-	/**
-	 * Send status update notification for our last output value.
-	 */
-	@Override
-	public void notifyOfStatus() {
-		QualifiedValue qv = new BasicQualifiedValue(value);
-		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
-	}
+
+	
 	@Override
 	public void reset() {
 		super.reset();
@@ -137,9 +131,10 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 			log.infof("%s.evaluate: proto type = %s",TAG,ap.getConnectionType());
 		}
 		value = coerceToMatchOutput(value);
-		
-		OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,new BasicQualifiedValue(value));
+		QualifiedValue qv = new BasicQualifiedValue(value);
+		OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 		controller.acceptCompletionNotification(nvn);
+		notifyOfStatus(qv);
 	}
 	
 	/**
@@ -175,6 +170,19 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 			dog.setSecondsDelay(interval);
 			controller.pet(dog);
 		}
+	}
+	/**
+	 * Send status update notification for our last output value.
+	 */
+	@Override
+	public void notifyOfStatus() {
+		QualifiedValue qv = new BasicQualifiedValue(value);
+		notifyOfStatus(qv);
+		
+	}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 	
 	/**

@@ -18,6 +18,7 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
+import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
 
 /**
@@ -67,15 +68,6 @@ public class CompareAbsolute extends Compare implements ProcessBlock {
 		// Define a single output
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.TRUTHVALUE);
 		anchors.add(output);
-	}
-	
-
-	/**
-	 * Send status update notification for our last latest state.
-	 */
-	@Override
-	public void notifyOfStatus() {
-		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, currentValue);
 	}
 	
 	/**
@@ -134,7 +126,20 @@ public class CompareAbsolute extends Compare implements ProcessBlock {
 			}
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,currentValue);
 			controller.acceptCompletionNotification(nvn);
+			notifyOfStatus(currentValue);
 		}
+	}
+	
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {
+		notifyOfStatus(currentValue);
+	}
+
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 	
 	/**
