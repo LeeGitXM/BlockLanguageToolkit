@@ -354,6 +354,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			List<SerializableBlock>list = mapper.readValue(json, type);
 			for(SerializableBlock sb:list) {
 				ProcessBlockView pbv = new ProcessBlockView(sb);
+				pbv.createPseudoRandomName();
+				pbv.createRandomId();
 				results.add(pbv);
 				// Special handling for an encapsulation block - create its sub-workspace
 				if(pbv.isEncapsulation()) {

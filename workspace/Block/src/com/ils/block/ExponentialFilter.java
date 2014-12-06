@@ -68,10 +68,10 @@ public class ExponentialFilter extends AbstractProcessBlock implements ProcessBl
 	private void initialize() {
 		setName("Exponential Filter");
 		BlockProperty constant = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW,new Double(window),PropertyType.TIME,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW, constant);
+		setProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW, constant);
 		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.STRING,false);
 		valueProperty.setBindingType(BindingType.ENGINE);
-		properties.put(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 		
 		// Define a single input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);

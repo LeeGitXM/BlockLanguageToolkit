@@ -68,9 +68,9 @@ public class Reset extends AbstractProcessBlock implements ProcessBlock {
 		setName("Reset");
 
 		BlockProperty commandProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_COMMAND,signal.getCommand(),PropertyType.STRING,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_COMMAND, commandProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_COMMAND, commandProperty);
 		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL,new Double(interval),PropertyType.TIME,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_INTERVAL, intervalProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL, intervalProperty);
 
 		// Define a single output
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.SIGNAL);

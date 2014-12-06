@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.UUID;
 
 import com.ils.blt.common.block.AnchorPrototype;
+import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.control.ExecutionController;
@@ -123,24 +124,33 @@ public class BlockFactory  {
 			for( BlockProperty bp:properties) {
 				BlockProperty property = pb.getProperty(bp.getName());
 				if( property!=null ) {
+					// Use the property change interface so as to properly trigger
+					// local handling within the block (if the new value is non-null)
+					// For bound variables, a binding change does not equate to a value change
+					boolean valueChange = false;
+					if( !property.getBindingType().equals(bp.getBindingType()) ) {
+						if( BindingType.NONE.equals(bp.getBindingType()) ) {
+							valueChange=true;
+						}
+					}
+					else if( BindingType.NONE.equals(property.getBindingType()) ) {
+						if( property.getValue()!=null && bp.getValue()!=null && !property.getValue().equals(bp.getValue())) {
+							valueChange=true;
+						}
+					}
 					property.setEditable(bp.isEditable());
 					property.setBinding(bp.getBinding());
 					property.setBindingType(bp.getBindingType());
 					property.setDisplayed(bp.isDisplayed());
 					property.setDisplayOffsetX(bp.getDisplayOffsetX());
 					property.setDisplayOffsetY(bp.getDisplayOffsetY());
-					// Use the property change interface so as to properly trigger
-					// local handling within the block (if the new value is non-null)
-					boolean valueChange = false;
-					if( property.getValue()!=null && bp.getValue()!=null && !property.getValue().equals(bp.getValue())) {
-						valueChange=true;
-					}
-					property.setValue(bp.getValue());
+					
 					if( valueChange   ) {
+						property.setValue(bp.getValue());
 						BlockPropertyChangeEvent event = 
 								new BlockPropertyChangeEvent(pb.getBlockId().toString(),property.getName(),
 										property.getValue(),bp.getValue());
-							pb.propertyChange(event);
+						pb.propertyChange(event);
 					}
 				}
 				else {

@@ -106,7 +106,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		this.id = uuid;
 		this.resourceId = resId;
 		this.name = nam;
-		log.infof("%s.ProcessDiagramView: %s CONSTRUCTOR",TAG,name);
+		log.debugf("%s.ProcessDiagramView: %s CONSTRUCTOR",TAG,name);
 	}
 	
 	/** Get the current block property values from the Gateway. 

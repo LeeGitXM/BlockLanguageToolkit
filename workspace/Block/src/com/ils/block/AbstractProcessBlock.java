@@ -5,12 +5,12 @@ package com.ils.block;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import com.ils.block.common.PropertyHolder;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
@@ -57,11 +57,12 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	protected boolean locked = false;
 	protected boolean isReceiver = false;
 	protected boolean isTransmitter = false;
+	protected boolean running = false;
 	protected BlockState state = BlockState.INITIALIZED;
 
 	protected final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	/** Properties are a dictionary of attributes keyed by property name */
-	protected final PropertyHolder properties;
+	protected final Map<String,BlockProperty> propertyMap;
 	/** Describe ports/stubs where connections join the block */
 	protected List<AnchorPrototype> anchors;
 	protected final UtilityFunctions fcns = new UtilityFunctions();
@@ -72,8 +73,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 *              It does not correspond to a functioning block.
 	 */
 	public AbstractProcessBlock() {
-		properties = new PropertyHolder();
-		properties.addBlockPropertyChangeListener(this);
+		propertyMap = new HashMap<>();
 		anchors = new ArrayList<AnchorPrototype>();
 		initialize();
 		initializePrototype();
@@ -168,7 +168,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 */
 	@Override
 	public BlockProperty getProperty(String nam) {
-		return properties.get(nam);
+		return propertyMap.get(nam);
 	}
 	
 	@Override
@@ -195,14 +195,14 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 * @return properties an array of the properties of the block.
 	 */
 	public BlockProperty[] getProperties() {
-		Collection<BlockProperty> propertyList = properties.values();
-		BlockProperty[] results = new BlockProperty[propertyList.size()];
-		int index=0;
-		for(BlockProperty bp:propertyList ) {
-			results[index]=bp;
-			index++;
-		}
-		return results;
+		 Collection<BlockProperty> propertyList = propertyMap.values();
+		 BlockProperty[] results = new BlockProperty[propertyList.size()];
+		 int index=0;
+		 for(BlockProperty bp:propertyList ) {
+			 results[index]=bp;
+			 index++;
+		 }
+		 return results;
 	}
 	
 	/**
@@ -210,8 +210,10 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 */
 	@Override
 	public Set<String> getPropertyNames() {
-		return properties.keySet();
+		return propertyMap.keySet();
 	}
+	
+	protected void setProperty(String nam,BlockProperty prop) { propertyMap.put(nam, prop); }
 	
 	@Override
 	public void setAnchors(List<AnchorPrototype> protos) {
@@ -301,13 +303,13 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 * This default method does nothing.
 	 */
 	@Override
-	public void start() {}
+	public void start() { this.running = true;}
 	/**
 	 * Terminate any active operations within the block.
 	 * This default method does nothing.
 	 */
 	@Override
-	public void stop() {}
+	public void stop() {this.running = false;}
 	
 	/**
 	 * In the case where the block has specified a coalescing time, this method
@@ -355,7 +357,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 
 		if( log.isTraceEnabled() ) {
 			Object oldValue = event.getOldValue();
-			log.tracef("%s: propertyChange: %s from %s to %s",this.getName(),propertyName,
+			log.debugf("%s.propertyChange: %s from %s to %s",this.getName(),propertyName,
 					(oldValue==null?"null":oldValue.toString()),newValue.toString());
 		}
 	}

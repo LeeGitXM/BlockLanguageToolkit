@@ -78,17 +78,17 @@ public class HighLimitSampleCount extends AbstractProcessBlock implements Proces
 	private void initialize() {
 		setName("HighLimitSample");
 		BlockProperty bp = new BlockProperty(BlockConstants.BLOCK_PROPERTY_LIMIT,new Double(limit),PropertyType.DOUBLE,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_LIMIT, bp);
+		setProperty(BlockConstants.BLOCK_PROPERTY_LIMIT, bp);
 		BlockProperty fillProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_FILL_REQUIRED,new Boolean(fillRequired),PropertyType.BOOLEAN,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_FILL_REQUIRED, fillProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_FILL_REQUIRED, fillProperty);
 		BlockProperty sizeProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE,new Integer(sampleSize),PropertyType.INTEGER,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE, sizeProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE, sizeProperty);
 		BlockProperty triggerProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER_COUNT,new Integer(triggerCount),PropertyType.INTEGER,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_TRIGGER_COUNT, triggerProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER_COUNT, triggerProperty);
 		BlockProperty deadbandProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_DEADBAND,new Double(deadband),PropertyType.DOUBLE,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_DEADBAND, deadbandProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_DEADBAND, deadbandProperty);
 		BlockProperty hProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_HYSTERESIS,hysteresis,PropertyType.HYSTERESIS,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_HYSTERESIS, hProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_HYSTERESIS, hProperty);
 
 		// Define a single input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);

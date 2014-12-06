@@ -145,7 +145,7 @@ public class DataShift extends AbstractProcessBlock implements ProcessBlock {
 	private void initialize() {
 		setName("DataShift");
 		BlockProperty samples = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE,new Integer(sampleSize),PropertyType.INTEGER,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE, samples);
+		setProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE, samples);
 		
 		// Define a single input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);

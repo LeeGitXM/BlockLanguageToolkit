@@ -61,7 +61,7 @@ public class Not extends AbstractProcessBlock implements ProcessBlock {
 		
 		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,TruthValue.UNKNOWN,PropertyType.TRUTHVALUE,false);
 		valueProperty.setBindingType(BindingType.ENGINE);
-		properties.put(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 		
 		// Define a single input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);

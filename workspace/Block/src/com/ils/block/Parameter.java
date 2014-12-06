@@ -63,7 +63,7 @@ public class Parameter extends AbstractProcessBlock implements ProcessBlock {
 		setName("Parameter");
 		tag = new BlockProperty(BLOCK_PROPERTY_TAG_PATH,"",PropertyType.STRING,true);
 		tag.setBindingType(BindingType.TAG_READWRITE);
-		properties.put(BLOCK_PROPERTY_TAG_PATH, tag);
+		setProperty(BLOCK_PROPERTY_TAG_PATH, tag);
 		
 		// Define a single input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);

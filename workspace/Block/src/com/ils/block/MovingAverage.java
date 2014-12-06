@@ -66,7 +66,7 @@ public class MovingAverage extends AbstractProcessBlock implements ProcessBlock 
 	private void initialize() {	
 		setName("MovingAverage");
 		BlockProperty resetProperty =  new BlockProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET,Boolean.FALSE,PropertyType.BOOLEAN,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET, resetProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET, resetProperty);
 		
 		// Define a single input.
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);

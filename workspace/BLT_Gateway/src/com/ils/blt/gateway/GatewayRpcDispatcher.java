@@ -119,7 +119,7 @@ public class GatewayRpcDispatcher   {
 			blockUUID = UUID.fromString(blockId);
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s: getBlockProperties: Block UUID string is illegal (%s), creating new",TAG,blockId);
+			log.warnf("%s.getBlockProperties: Block UUID string is illegal (%s), creating new",TAG,blockId);
 			blockUUID = UUID.nameUUIDFromBytes(blockId.getBytes());
 		}
 		BlockProperty[] propertyArray = ControllerRequestHandler.getInstance().
@@ -137,7 +137,7 @@ public class GatewayRpcDispatcher   {
 		else {
 			log.warnf("%s: getBlockProperties: %s block %d:%d has no properties",TAG,className,projectId.longValue(),resourceId.longValue());
 		}
-		if( result!=null) log.infof("%s: getBlockProperties: %s = %s",TAG,className,result.toString());
+		if( result!=null) log.debugf("%s.getBlockProperties: %s = %s",TAG,className,result.toString());
 		return result;
 	}
 	/** The blocks implemented in Java are expected to reside in a jar named "block-definition.jar".

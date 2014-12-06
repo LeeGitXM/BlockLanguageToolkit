@@ -94,17 +94,17 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		this.isReceiver = true;
 		this.isTransmitter = true;
 		BlockProperty clearProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET,new Boolean(clearOnReset),PropertyType.BOOLEAN,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET, clearProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET, clearProperty);
 		BlockProperty limitProperty = new BlockProperty(BLOCK_PROPERTY_SQC_LIMIT,new Double(limit),PropertyType.DOUBLE,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_LIMIT, limitProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_LIMIT, limitProperty);
 		BlockProperty limitTypeProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_LIMIT_TYPE,new String(limitType.name()),PropertyType.STRING,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_LIMIT_TYPE, limitTypeProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_LIMIT_TYPE, limitTypeProperty);
 		BlockProperty maxOutProperty = new BlockProperty(BLOCK_PROPERTY_MAXIMUM_OUT_OF_RANGE,new Integer(maxOut),PropertyType.INTEGER,true);
-		properties.put(BLOCK_PROPERTY_MAXIMUM_OUT_OF_RANGE, maxOutProperty);
+		setProperty(BLOCK_PROPERTY_MAXIMUM_OUT_OF_RANGE, maxOutProperty);
 		BlockProperty sizeProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE,new Integer(DEFAULT_BUFFER_SIZE),PropertyType.INTEGER,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE, sizeProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE, sizeProperty);
 		BlockProperty labelProperty = new BlockProperty(BLOCK_PROPERTY_TEST_LABEL,"",PropertyType.STRING,true);
-		properties.put(BLOCK_PROPERTY_TEST_LABEL, labelProperty);
+		setProperty(BLOCK_PROPERTY_TEST_LABEL, labelProperty);
 		
 		// Define a 3 inputs.
 		AnchorPrototype input = new AnchorPrototype(PORT_STANDARD_DEVIATION,AnchorDirection.INCOMING,ConnectionType.DATA);

@@ -72,14 +72,14 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		setName("PersistenceGate");
 
 		BlockProperty windowProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW,new Double(timeWindow),PropertyType.TIME,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW, windowProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW, windowProperty);
 		BlockProperty scanIntervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL,new Double(scanInterval),PropertyType.TIME,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL, scanIntervalProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL, scanIntervalProperty);
 		BlockProperty triggerProperty = new BlockProperty(BLOCK_PROPERTY_TRIGGER,trigger,PropertyType.STRING,true);
-		properties.put(BLOCK_PROPERTY_TRIGGER, triggerProperty);
+		setProperty(BLOCK_PROPERTY_TRIGGER, triggerProperty);
 		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.STRING,false);
 		valueProperty.setBindingType(BindingType.ENGINE);
-		properties.put(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 
 		// Define a single output and a single input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);

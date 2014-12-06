@@ -66,10 +66,10 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 		setName("Readout");
 		// Define the display format
 		BlockProperty fmt = new BlockProperty(BlockConstants.BLOCK_PROPERTY_FORMAT,format,PropertyType.STRING,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_FORMAT, fmt);
+		setProperty(BlockConstants.BLOCK_PROPERTY_FORMAT, fmt);
 		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.STRING,false);
 		valueProperty.setBindingType(BindingType.ENGINE);
-		properties.put(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 		
 		// Define a single input -- but allow multiple connections
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
@@ -89,7 +89,7 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 		
 	}
 	private void notifyOfStatus(QualifiedValue qv) {
-		log.infof("%s.notifyOfStatus (%s)", TAG, qv.getValue().toString());
+		//log.infof("%s.notifyOfStatus (%s)", TAG, qv.getValue().toString());
 		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
@@ -155,7 +155,7 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 					log.warn(TAG+".acceptValue: error formatting "+qv.getValue()+" with "+format+" as "+type.name(),ex);  // Print stack trace
 				}
 				qv = new BasicQualifiedValue(value,qv.getQuality(),qv.getTimestamp()); 
-				log.infof("%s.acceptValue: port %s formatted value =  %s.",TAG,incoming.getConnection().getUpstreamPortName(),value);
+				log.tracef("%s.acceptValue: port %s formatted value =  %s.",TAG,incoming.getConnection().getUpstreamPortName(),value);
 				notifyOfStatus(qv);
 			}
 			else {

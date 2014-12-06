@@ -49,7 +49,7 @@ public class MockOutputBlock extends AbstractProcessBlock implements ProcessBloc
 		BlockProperty valu = new BlockProperty(BLOCK_PROPERTY_OUTPUT,"",propertyType,true);
 		valu.setBinding(tagPath);
 		valu.setBindingType(BindingType.TAG_WRITE);
-		properties.put(BLOCK_PROPERTY_OUTPUT, valu);
+		setProperty(BLOCK_PROPERTY_OUTPUT, valu);
 		
 		// Define a single input. Accept any data type.
 		ConnectionType ctype = ConnectionType.ANY;

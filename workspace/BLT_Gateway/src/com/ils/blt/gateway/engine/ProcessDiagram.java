@@ -23,8 +23,6 @@ import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableConnection;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 /**
  * This diagram is the "model" that encapsulates the structure of the blocks and connections
@@ -127,7 +125,7 @@ public class ProcessDiagram extends ProcessNode {
 				else log.errorf("%s.analyze: ERROR %s failed to instantiate %s",TAG,diagrm.getName(),sb.getClassName());
 			}
 			else {
-				log.infof("%s.analyze: Update block %s(%d)",TAG,pb.getName(),pb.hashCode());
+				log.debugf("%s.analyze: Update block %s(%d)",TAG,pb.getName(),pb.hashCode());
 				pb.stop();
 				// Stop old subscriptions
 				for(BlockProperty prop:pb.getProperties()) {

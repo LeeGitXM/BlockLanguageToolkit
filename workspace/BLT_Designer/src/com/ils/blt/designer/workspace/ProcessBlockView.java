@@ -77,7 +77,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	private BlockStyle style = BlockStyle.SQUARE;
 	private boolean transmitEnabled = false;
 	private BlockViewUI ui = null;
-	private final UUID uuid;
+	private UUID uuid = null;
 	
 	/**
 	 * Constructor: Used when a new block is created from the palette. 
@@ -335,11 +335,20 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	 * The name can be user-modified at any time. If we really need a uniqueness,
 	 * use the block's UUID.
 	 */
-	private void createPseudoRandomName() {
+	public void createPseudoRandomName() {
 		String root = className;
 		int pos = className.lastIndexOf(".");
 		if( pos>=0 )  root = className.substring(pos+1);
 		name = String.format("%s-%d", root.toUpperCase(),random.nextInt(1000));
+	}
+	
+	/**
+	 * Create a name that is highly likely to be unique within the diagram.
+	 * The name can be user-modified at any time. If we really need a uniqueness,
+	 * use the block's UUID.
+	 */
+	public void createRandomId() {
+		this.uuid = UUID.randomUUID();
 	}
 	
 	// =================== Handle Event Listeners ===================

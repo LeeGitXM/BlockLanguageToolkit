@@ -74,7 +74,7 @@ public class InputMedian extends AbstractProcessBlock implements ProcessBlock {
 		setName("InputMedian");
 		// Define the time for "coalescing" inputs ~ msec
 		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,new Double(synchInterval),PropertyType.TIME,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL, synch);
+		setProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL, synch);
 		
 		// Define a single input -- but allow multiple connections
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);

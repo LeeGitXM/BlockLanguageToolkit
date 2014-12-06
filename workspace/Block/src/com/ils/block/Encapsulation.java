@@ -52,7 +52,7 @@ public class Encapsulation extends AbstractProcessBlock implements ProcessBlock 
 	private void initialize() {	
 		setName("Encapsulation");
 		BlockProperty constant = new BlockProperty(BLOCK_PROPERTY_SUB_DIAGRAM_ID,"",PropertyType.STRING,false);
-		properties.put(BLOCK_PROPERTY_SUB_DIAGRAM_ID, constant);
+		setProperty(BLOCK_PROPERTY_SUB_DIAGRAM_ID, constant);
 	}
 	
 

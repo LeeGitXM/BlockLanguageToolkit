@@ -124,7 +124,7 @@ public class Gain extends AbstractProcessBlock implements ProcessBlock {
 	private void initialize() {
 		setName("Gain");
 		BlockProperty constant = new BlockProperty(BLOCK_PROPERTY_GAIN,new Double(gain),PropertyType.DOUBLE,true);
-		properties.put(BLOCK_PROPERTY_GAIN, constant);
+		setProperty(BLOCK_PROPERTY_GAIN, constant);
 		
 		// Define a single input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);

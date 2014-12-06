@@ -59,7 +59,7 @@ public class SourceConnection extends AbstractProcessBlock implements ProcessBlo
 	private void initialize() {
 		setName("SourceConnection");
 		BlockProperty sink = new BlockProperty(BLOCK_PROPERTY_SINK_NAME,"",PropertyType.STRING,true);
-		properties.put(BLOCK_PROPERTY_SINK_NAME, sink);
+		setProperty(BLOCK_PROPERTY_SINK_NAME, sink);
 		
 		// Define a single output. We receive a value from the "ether" and send it on our output connection
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.ANY);

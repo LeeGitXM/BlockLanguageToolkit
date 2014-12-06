@@ -59,7 +59,7 @@ public class Command extends AbstractProcessBlock implements ProcessBlock {
 		setName("Signal");
 		
 		BlockProperty commandProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_COMMAND,command.getCommand(),PropertyType.STRING,false);
-		properties.put(BlockConstants.BLOCK_PROPERTY_COMMAND, commandProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_COMMAND, commandProperty);
 		
 		// Define a single input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);

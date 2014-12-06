@@ -123,7 +123,7 @@ public class Bias extends AbstractProcessBlock implements ProcessBlock {
 	private void initialize() {
 		setName("Bias");
 		BlockProperty constant = new BlockProperty(BLOCK_PROPERTY_BIAS,new Double(bias),PropertyType.DOUBLE,true);
-		properties.put(BLOCK_PROPERTY_BIAS, constant);
+		setProperty(BLOCK_PROPERTY_BIAS, constant);
 		
 		// Define a single input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);

@@ -65,7 +65,7 @@ public class CompareDeadband extends Compare implements ProcessBlock {
 		setName("CompareDeadband");
 		// Define the deadband
 		BlockProperty oprop = new BlockProperty(BlockConstants.BLOCK_PROPERTY_DEADBAND,new Double(deadband),PropertyType.DOUBLE,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_DEADBAND, oprop);
+		setProperty(BlockConstants.BLOCK_PROPERTY_DEADBAND, oprop);
 	}
 	
 	/**

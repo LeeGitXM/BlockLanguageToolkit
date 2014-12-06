@@ -86,18 +86,18 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	private void initialize() {	
 		setName("LogicFilter");
 		BlockProperty deadbandProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_DEADBAND,new Double(deadband),PropertyType.DOUBLE,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_DEADBAND, deadbandProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_DEADBAND, deadbandProperty);
 		BlockProperty hProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_HYSTERESIS,hysteresis,PropertyType.HYSTERESIS,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_HYSTERESIS, hProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_HYSTERESIS, hProperty);
 		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL,new Double(scanInterval),PropertyType.TIME,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL, intervalProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL, intervalProperty);
 		BlockProperty limitProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_LIMIT,new Double(limit),PropertyType.DOUBLE,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_LIMIT, limitProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_LIMIT, limitProperty);
 		BlockProperty windowProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW,new Double(timeWindow),PropertyType.TIME,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW, windowProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW, windowProperty);
 		ratioProperty = new BlockProperty(BLOCK_PROPERTY_RATIO,new Double(0.0),PropertyType.DOUBLE,false);
 		ratioProperty.setBindingType(BindingType.ENGINE);
-		properties.put(BlockConstants.BLOCK_PROPERTY_VALUE, ratioProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, ratioProperty);
 
 		// Define a single input and output
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);

@@ -62,11 +62,11 @@ public class Note extends AbstractProcessBlock implements ProcessBlock {
 	private void initialize() {
 		setName(TAG);
 		BlockProperty text = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TEXT,"Your note here", PropertyType.STRING, true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_TEXT, text);		
+		setProperty(BlockConstants.BLOCK_PROPERTY_TEXT, text);		
 		BlockProperty width = new BlockProperty(BlockConstants.BLOCK_PROPERTY_WIDTH, Integer.valueOf(DEFAULT_WIDTH), PropertyType.INTEGER,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_WIDTH, width);		
+		setProperty(BlockConstants.BLOCK_PROPERTY_WIDTH, width);		
 		BlockProperty height = new BlockProperty(BlockConstants.BLOCK_PROPERTY_HEIGHT, Integer.valueOf(DEFAULT_HEIGHT), PropertyType.INTEGER,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_HEIGHT, height);		
+		setProperty(BlockConstants.BLOCK_PROPERTY_HEIGHT, height);		
 	}
 	
 	/**

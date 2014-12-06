@@ -73,13 +73,13 @@ public class RangeObservation extends AbstractProcessBlock implements ProcessBlo
 	private void initialize() {
 		setName("RangeObservation");
 		BlockProperty bp = new BlockProperty(BLOCK_PROPERTY_LOWER_LIMIT,new Double(lowerlimit),PropertyType.DOUBLE,true);
-		properties.put(BLOCK_PROPERTY_LOWER_LIMIT, bp);
+		setProperty(BLOCK_PROPERTY_LOWER_LIMIT, bp);
 		bp = new BlockProperty(BLOCK_PROPERTY_UPPER_LIMIT,new Double(upperlimit),PropertyType.DOUBLE,true);
-		properties.put(BLOCK_PROPERTY_UPPER_LIMIT, bp);
+		setProperty(BLOCK_PROPERTY_UPPER_LIMIT, bp);
 		bp = new BlockProperty(BLOCK_PROPERTY_LOWER_DEADBAND,new Double(lowerdeadband),PropertyType.DOUBLE,true);
-		properties.put(BLOCK_PROPERTY_LOWER_DEADBAND, bp);
+		setProperty(BLOCK_PROPERTY_LOWER_DEADBAND, bp);
 		bp = new BlockProperty(BLOCK_PROPERTY_UPPER_DEADBAND,new Double(upperdeadband),PropertyType.DOUBLE,true);
-		properties.put(BLOCK_PROPERTY_UPPER_DEADBAND, bp);
+		setProperty(BLOCK_PROPERTY_UPPER_DEADBAND, bp);
 
 		
 		// Define a single input

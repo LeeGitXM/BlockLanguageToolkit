@@ -96,10 +96,10 @@ public class Output extends AbstractProcessBlock implements ProcessBlock {
 		pathProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH,"",PropertyType.STRING,true);
 		pathProperty.setBindingType(BindingType.TAG_WRITE);
 		pathProperty.setBinding("");
-		properties.put(BlockConstants.BLOCK_PROPERTY_TAG_PATH, pathProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH, pathProperty);
 		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.OBJECT,false);
 		valueProperty.setBindingType(BindingType.ENGINE);
-		properties.put(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 		
 		// Define a single input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);

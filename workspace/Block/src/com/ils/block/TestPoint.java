@@ -59,10 +59,10 @@ public class TestPoint extends AbstractProcessBlock implements ProcessBlock {
 		
 		// Define a label for this block
 		BlockProperty label = new BlockProperty(BlockConstants.BLOCK_PROPERTY_LABEL,"",PropertyType.STRING,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_LABEL, label);
+		setProperty(BlockConstants.BLOCK_PROPERTY_LABEL, label);
 		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.STRING,false);
 		valueProperty.setBindingType(BindingType.ENGINE);
-		properties.put(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 				
 		// Define a single input -- but allow multiple connections
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);

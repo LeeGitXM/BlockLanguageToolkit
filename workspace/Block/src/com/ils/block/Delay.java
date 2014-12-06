@@ -154,7 +154,7 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 	private void initialize() {
 		setName("Delay");
 		BlockProperty constant = new BlockProperty(BLOCK_PROPERTY_DELAY,new Double(delayInterval),PropertyType.TIME,true);
-		properties.put(BLOCK_PROPERTY_DELAY, constant);
+		setProperty(BLOCK_PROPERTY_DELAY, constant);
 		
 		// Define a single input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);

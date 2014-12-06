@@ -99,15 +99,15 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 		setName("PID");
 		this.isReceiver = true;
 		BlockProperty pvProperty = new BlockProperty(BLOCK_PROPERTY_INITIAL_VALUE,new Double(pv),PropertyType.DOUBLE,true);
-		properties.put(BLOCK_PROPERTY_INITIAL_VALUE, pvProperty);
+		setProperty(BLOCK_PROPERTY_INITIAL_VALUE, pvProperty);
 		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL,new Double(interval),PropertyType.TIME,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL, intervalProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL, intervalProperty);
 		BlockProperty kdProperty = new BlockProperty(BLOCK_PROPERTY_KD,new Double(kd),PropertyType.DOUBLE,true);
-		properties.put(BLOCK_PROPERTY_KD, kdProperty);
+		setProperty(BLOCK_PROPERTY_KD, kdProperty);
 		BlockProperty kiProperty = new BlockProperty(BLOCK_PROPERTY_KI,new Double(ki),PropertyType.DOUBLE,true);
-		properties.put(BLOCK_PROPERTY_KI, kiProperty);
+		setProperty(BLOCK_PROPERTY_KI, kiProperty);
 		BlockProperty kpProperty = new BlockProperty(BLOCK_PROPERTY_KP,new Double(kp),PropertyType.DOUBLE,true);
-		properties.put(BLOCK_PROPERTY_KP, kpProperty);
+		setProperty(BLOCK_PROPERTY_KP, kpProperty);
 		
 		
 		// Define a two inputs -- feedback and setpoint
@@ -283,13 +283,13 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 		QualifiedValue prop = new BasicQualifiedValue(proportionalContribution);
 		nvn = new OutgoingNotification(this,PROPORTIONAL_PORT,prop);
 		controller.acceptCompletionNotification(nvn);
-		QualifiedValue integral = new BasicQualifiedValue(integralContribution);
-		nvn = new OutgoingNotification(this,INTEGRAL_PORT,integral);
+		QualifiedValue integ = new BasicQualifiedValue(integralContribution);
+		nvn = new OutgoingNotification(this,INTEGRAL_PORT,integ);
 		controller.acceptCompletionNotification(nvn);
 		QualifiedValue deriv = new BasicQualifiedValue(derivativeContribution);
 		nvn = new OutgoingNotification(this,DERIVATIVE_PORT,deriv);
 		controller.acceptCompletionNotification(nvn);
-		notifyOfStatus(ans,prop,integral,deriv);		
+		notifyOfStatus(ans,prop,integ,deriv);		
 	}
 	
 	/**
@@ -297,10 +297,10 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void notifyOfStatus() {}
-	private void notifyOfStatus(QualifiedValue qv,QualifiedValue prop,QualifiedValue integral,QualifiedValue derivative) {
+	private void notifyOfStatus(QualifiedValue qv,QualifiedValue prop,QualifiedValue integ,QualifiedValue derivative) {
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 		controller.sendConnectionNotification(getBlockId().toString(), PROPORTIONAL_PORT, prop);
-		controller.sendConnectionNotification(getBlockId().toString(), INTEGRAL_PORT, integral);
+		controller.sendConnectionNotification(getBlockId().toString(), INTEGRAL_PORT, integ);
 		controller.sendConnectionNotification(getBlockId().toString(), DERIVATIVE_PORT, derivative);
 	}
 	

@@ -66,9 +66,9 @@ public class LowLimitObservation extends AbstractProcessBlock implements Process
 	private void initialize() {
 		setName("LowLimitObservation");
 		BlockProperty bp = new BlockProperty(BlockConstants.BLOCK_PROPERTY_LIMIT,new Double(limit),PropertyType.DOUBLE,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_LIMIT, bp);
+		setProperty(BlockConstants.BLOCK_PROPERTY_LIMIT, bp);
 		bp = new BlockProperty(BlockConstants.BLOCK_PROPERTY_DEADBAND,new Double(deadband),PropertyType.DOUBLE,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_DEADBAND, bp);
+		setProperty(BlockConstants.BLOCK_PROPERTY_DEADBAND, bp);
 		
 		// Define a single input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);

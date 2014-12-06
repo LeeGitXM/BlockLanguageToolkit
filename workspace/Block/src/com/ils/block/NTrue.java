@@ -79,12 +79,12 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 		truthQuality = Quality.Level.Good;
 		// Define the time for "coalescing" inputs ~ msec
 		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,new Double(synchInterval),PropertyType.TIME,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL, synch);
+		setProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL, synch);
 		BlockProperty Nvalue = new BlockProperty(BLOCK_PROPERTY_N_VALUE, new Integer(nTrue),PropertyType.INTEGER, true);
-		properties.put(BLOCK_PROPERTY_N_VALUE, Nvalue);
+		setProperty(BLOCK_PROPERTY_N_VALUE, Nvalue);
 		BlockProperty valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,TruthValue.UNKNOWN,PropertyType.TRUTHVALUE,false);
 		valueProperty.setBindingType(BindingType.ENGINE);
-		properties.put(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 		
 		// Define a single input -- but allow multiple connections
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);

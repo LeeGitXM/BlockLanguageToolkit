@@ -157,9 +157,9 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 	private void initialize() {
 		setName("DataPump");
 		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL,new Double(interval),PropertyType.TIME,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_INTERVAL, intervalProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL, intervalProperty);
 		BlockProperty valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,value,PropertyType.OBJECT,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 		
 		// Define a single output
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);

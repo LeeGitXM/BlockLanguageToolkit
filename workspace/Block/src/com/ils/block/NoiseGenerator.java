@@ -181,17 +181,17 @@ public class NoiseGenerator extends AbstractProcessBlock implements ProcessBlock
 		setName("Noise generator");
 		distribution = new UniformRealDistribution();
 		BlockProperty type = new BlockProperty(BlockConstants.BLOCK_PROPERTY_DISTRIBUTION,distributionType.name(),PropertyType.STRING,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_DISTRIBUTION, type);
+		setProperty(BlockConstants.BLOCK_PROPERTY_DISTRIBUTION, type);
 		// Uniform Distribution
 		BlockProperty constant = new BlockProperty(BLOCK_PROPERTY_LOWER,new Double(lower),PropertyType.DOUBLE,true);
-		properties.put(BLOCK_PROPERTY_LOWER, constant);
+		setProperty(BLOCK_PROPERTY_LOWER, constant);
 		constant = new BlockProperty(BLOCK_PROPERTY_UPPER,new Double(upper),PropertyType.DOUBLE,true);
-		properties.put(BLOCK_PROPERTY_UPPER, constant);
+		setProperty(BLOCK_PROPERTY_UPPER, constant);
 		constant = new BlockProperty(BLOCK_PROPERTY_MEAN,new Double(upper),PropertyType.DOUBLE,true);
 		// Normal Distribution
-		properties.put(BLOCK_PROPERTY_MEAN, constant);
+		setProperty(BLOCK_PROPERTY_MEAN, constant);
 		constant = new BlockProperty(BLOCK_PROPERTY_STANDARD_DEVIATION,new Double(upper),PropertyType.DOUBLE,true);
-		properties.put(BLOCK_PROPERTY_STANDARD_DEVIATION, constant);
+		setProperty(BLOCK_PROPERTY_STANDARD_DEVIATION, constant);
 		
 		// Define a single input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);

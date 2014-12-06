@@ -109,7 +109,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 		setName("Inhibitor");
 		this.isReceiver = true;
 		BlockProperty constant = new BlockProperty(BlockConstants.BLOCK_PROPERTY_INHIBIT_INTERVAL,new Double(interval),PropertyType.TIME,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_INHIBIT_INTERVAL, constant);
+		setProperty(BlockConstants.BLOCK_PROPERTY_INHIBIT_INTERVAL, constant);
 		
 		// Define a data input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);

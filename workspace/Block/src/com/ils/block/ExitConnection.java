@@ -55,7 +55,7 @@ public class ExitConnection extends AbstractProcessBlock implements ProcessBlock
 	private void initialize() {
 		setName("SinkConnection");
 		BlockProperty constant = new BlockProperty(BLOCK_PROPERTY_PARENT_ENCAPSULATION,"",PropertyType.STRING,false);
-		properties.put(BLOCK_PROPERTY_PARENT_ENCAPSULATION, constant);
+		setProperty(BLOCK_PROPERTY_PARENT_ENCAPSULATION, constant);
 		// Define a single input - we get an input from the connection and broadcast it.
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
 		anchors.add(input);

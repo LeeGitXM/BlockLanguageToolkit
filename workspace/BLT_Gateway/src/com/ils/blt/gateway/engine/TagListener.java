@@ -92,7 +92,7 @@ public class TagListener implements TagChangeListener   {
 				  property.getBindingType()==BindingType.TAG_MONITOR )   ) return;
 		
 		String tagPath = property.getBinding();
-		log.debugf("%s.defineSubscription: considering %s:%s=%s",TAG,block.getName(),property.getName(),tagPath);
+		log.infof("%s.defineSubscription: considering %s:%s=%s",TAG,block.getName(),property.getName(),tagPath);
 		if( tagPath!=null && tagPath.length() >0  ) {
 			boolean needToStartSubscription = false;
 			BlockPropertyPair key = new BlockPropertyPair(block,property);
@@ -282,7 +282,7 @@ public class TagListener implements TagChangeListener   {
 		Tag tag = event.getTag();
 		if( tag!=null && tag.getValue()!=null && tp!=null ) {
 			try {
-				log.debugf("%s: tagChanged: got a %s value for %s (%s at %s)",TAG,
+				log.infof("%s: tagChanged: got a %s value for %s (%s at %s)",TAG,
 					(tag.getValue().getQuality().isGood()?"GOOD":"BAD"),
 					tag.getName(),tag.getValue().getValue(),
 					dateFormatter.format(tag.getValue().getTimestamp()));
@@ -349,6 +349,8 @@ public class TagListener implements TagChangeListener   {
 			}
 			else if( property.getBindingType().equals(BindingType.TAG_READ) ||
 					 property.getBindingType().equals(BindingType.TAG_READWRITE)) {
+					// Set property with no notifications
+					property.setValue(value.getValue());
 					// The tag subscription acts as a pseudo input
 					IncomingNotification notice = new IncomingNotification(value);
 					threadPool.execute(new IncomingValueChangeTask(block,notice));	

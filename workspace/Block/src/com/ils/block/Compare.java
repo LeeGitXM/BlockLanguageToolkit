@@ -77,9 +77,9 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 		setName("Compare");
 		// Define the time for "coalescing" inputs ~ msec
 		BlockProperty oprop = new BlockProperty(BlockConstants.BLOCK_PROPERTY_OFFSET,new Double(offset),PropertyType.INTEGER,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_OFFSET, oprop);
+		setProperty(BlockConstants.BLOCK_PROPERTY_OFFSET, oprop);
 		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,new Double(synchInterval),PropertyType.TIME,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL, synch);
+		setProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL, synch);
 		
 		// Define a two inputs -- one for the divisor, one for the dividend
 		AnchorPrototype input = new AnchorPrototype(X_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);

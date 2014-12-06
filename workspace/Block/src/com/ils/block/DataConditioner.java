@@ -77,7 +77,7 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 		truthValue = TruthValue.UNSET;
 		// Define the time for "coalescing" inputs ~ msec
 		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,new Double(synchInterval),PropertyType.TIME,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL, synch);
+		setProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL, synch);
 		
 		// Define a two inputs -- one for the data, one for the quality
 		AnchorPrototype input = new AnchorPrototype(DATA_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
