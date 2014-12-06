@@ -27,7 +27,8 @@ mkdir $TMP/ignition-77
 cd $REPO_ROOT/ignition-77; cp -a .project .classpath lib $TMP/ignition-77
 
 mkdir $TMP/ils-common
-cd $REPO_ROOT/ils-common/ILS_Common; cp -a .project .classpath *.xml src $TMP/ils-common
+cd $REPO_ROOT/ils-common/ILS_Common; cp -a .project .classpath src $TMP/ils-common
+cd $REPO_ROOT/ils-common/; cp -a *.xml $TMP/ils-common
 
 mkdir $TMP/blt
 cd $REPO_ROOT/blt; cp -a workspace $TMP/blt
