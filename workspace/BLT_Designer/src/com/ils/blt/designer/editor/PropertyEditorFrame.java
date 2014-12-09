@@ -88,7 +88,7 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 					BlockComponent bc = ( BlockComponent)selection;
 					ProcessBlockView blk = (ProcessBlockView)bc.getBlock();
 					if( editor!=null ) editor.shutdown();
-					editor = new BlockPropertyEditor(context,workspace.getActiveDiagram(),blk);
+					editor = new BlockPropertyEditor(context,workspace,blk);
 					contentPanel.removeAll();
 					//Create a scroll pane
 				    JScrollPane scrollPane = new JScrollPane(editor);
@@ -106,10 +106,10 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 						log.debugf("%s: DiagramWorkspaceListener: connection origin is a %s",TAG,cxn.getOrigin().getClass().getName());
 						log.debugf("%s: DiagramWorkspaceListener: connection id is a %s",TAG,cxn.getOrigin().getId().getClass().getName());
 						log.debugf("%s: DiagramWorkspaceListener: connection block is a %s",TAG,cxn.getOrigin().getBlock().getClass().getName());
-						ConnectionPropertyEditor editor = new ConnectionPropertyEditor(context,cxn);
+						ConnectionPropertyEditor editr = new ConnectionPropertyEditor(context,cxn);
 						contentPanel.removeAll();
 						//Create a scroll pane
-					    JScrollPane scrollPane = new JScrollPane(editor);
+					    JScrollPane scrollPane = new JScrollPane(editr);
 						contentPanel.add(scrollPane,BorderLayout.CENTER);
 						return;
 					}

@@ -66,9 +66,9 @@ public class LowLimitObservation extends AbstractProcessBlock implements Process
 	private void initialize() {
 		setName("LowLimitObservation");
 		BlockProperty bp = new BlockProperty(BlockConstants.BLOCK_PROPERTY_LIMIT,new Double(limit),PropertyType.DOUBLE,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_LIMIT, bp);
+		setProperty(BlockConstants.BLOCK_PROPERTY_LIMIT, bp);
 		bp = new BlockProperty(BlockConstants.BLOCK_PROPERTY_DEADBAND,new Double(deadband),PropertyType.DOUBLE,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_DEADBAND, bp);
+		setProperty(BlockConstants.BLOCK_PROPERTY_DEADBAND, bp);
 		
 		// Define a single input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
@@ -101,9 +101,10 @@ public class LowLimitObservation extends AbstractProcessBlock implements Process
 				if( !newValue.equals(truthValue)) {
 					truthValue = newValue;
 					if( !isLocked() ) {
-						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,
-								new BasicQualifiedValue(truthValue,qv.getQuality(),qv.getTimestamp()));
+						QualifiedValue nqv = new BasicQualifiedValue(truthValue,qv.getQuality(),qv.getTimestamp());
+						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,nqv);
 						controller.acceptCompletionNotification(nvn);
+						notifyOfStatus(nqv);
 					}
 				}
 			}
@@ -139,6 +140,17 @@ public class LowLimitObservation extends AbstractProcessBlock implements Process
 		}
 	}
 	
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {
+		QualifiedValue qv = new BasicQualifiedValue(truthValue);
+		notifyOfStatus(qv);	
+	}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
 	/**
 	 *  When unlocking, set the remembered state as "UNSET". This will allow
 	 *  the next value to generate output, no matter what.

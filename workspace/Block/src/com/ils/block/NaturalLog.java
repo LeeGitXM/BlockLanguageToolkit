@@ -63,6 +63,7 @@ public class NaturalLog extends AbstractProcessBlock implements ProcessBlock {
 
 		// Define an input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
+		input.setIsMultiple(false);
 		anchors.add(input);
 
 		// Define a single output
@@ -87,10 +88,10 @@ public class NaturalLog extends AbstractProcessBlock implements ProcessBlock {
 			if( qv!=null && qv.getValue()!=null ) {
 				try {
 					Double dbl = Double.parseDouble(qv.getValue().toString());
-					double value = dbl.doubleValue();
-					if( value>0.0) {
-						value = ln.value(value);
-						qv = new BasicQualifiedValue(new Double(value),qv.getQuality(),qv.getTimestamp());
+					double valu = dbl.doubleValue();
+					if( valu>0.0) {
+						valu = ln.value(valu);
+						qv = new BasicQualifiedValue(new Double(valu),qv.getQuality(),qv.getTimestamp());
 					}
 					else {
 						state = BlockState.ERROR;
@@ -108,9 +109,17 @@ public class NaturalLog extends AbstractProcessBlock implements ProcessBlock {
 			}
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 			controller.acceptCompletionNotification(nvn);
+			notifyOfStatus(qv);
 		}
 	}
-	
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
 	/**
 	 * Augment the palette prototype for this block class.
 	 */

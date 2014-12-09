@@ -4,6 +4,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.prefs.Preferences;
 
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -25,23 +26,25 @@ public class ImportDialog extends JDialog implements ActionListener {
 	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
 	private final static String FILE_CHOOSER_NAME = "FileChoser";
 	private static final long serialVersionUID = 8813971334526492335L;
-	private final int HEIGHT = 80;
-	private final int WIDTH = 400;
+	private static final int DLG_HEIGHT = 80;
+	private static final int DLG_WIDTH = 400;
 	private File filePath = null;
 	private JFileChooser fc;
 	private final String nameLabel;
 	private final String title;
 	private final LoggerEx log;
+	private final Preferences prefs;
 	
 	// Doing nothing works quite well.
 	public ImportDialog(String label,String title) {
 		super();
 		setModal(true);
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
-        setSize(new Dimension(WIDTH,HEIGHT));
+        setSize(new Dimension(DLG_WIDTH,DLG_HEIGHT));
         this.nameLabel = label;
         this.title = title;
         this.log = LogUtil.getLogger(getClass().getPackage().getName());
+        this.prefs = Preferences.userRoot().node(BLTProperties.PREFERENCES_NAME);
         initialize();
 	}
 
@@ -59,7 +62,7 @@ public class ImportDialog extends JDialog implements ActionListener {
 	    fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 	    FileNameExtensionFilter filter = new FileNameExtensionFilter("JSON exports", "json", "txt");
 	    fc.setFileFilter(filter);
-	    String startDirectoryName = System.getProperty(BLTProperties.EXIM_PATH);
+	    String startDirectoryName = prefs.get(BLTProperties.PREF_EXIM_DIRECTORY,System.getProperty(BLTProperties.EXIM_PATH));
 	    if(startDirectoryName!=null ) {
 	    	File startDirectory = new File(startDirectoryName);
 		    fc.setCurrentDirectory(startDirectory);
@@ -101,7 +104,7 @@ public class ImportDialog extends JDialog implements ActionListener {
 				if(fileName.indexOf(".")<0) {
 					filePath = new File(filePath.getAbsolutePath()+".json");
 				}
-				System.setProperty(BLTProperties.EXIM_PATH, filePath.getParent());
+				prefs.put(BLTProperties.PREF_EXIM_DIRECTORY, filePath.getParent());
 				this.dispose();
 			}
 		}

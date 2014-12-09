@@ -64,7 +64,14 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 		controller.removeWatchdog(dog);
 		buffer.clear();
 	}
-	
+	/**
+	 * Disconnect from the timer thread.
+	 */
+	@Override
+	public void stop() {
+		super.stop();
+		controller.removeWatchdog(dog);
+	}
 	/**
 	 * Handle a change to the delay interval or buffer size
 	 */
@@ -119,6 +126,7 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 		if( !isLocked() ) {
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,data.qv);
 			controller.acceptCompletionNotification(nvn);
+			notifyOfStatus(data.qv);
 		}
 		// Even if we're locked, we process things as normal
 		if( !buffer.isEmpty() ) {
@@ -131,7 +139,14 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 			controller.pet(dog);
 		}
 	}
-	
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
 	/**
 	 * Add properties that are new for this class.
 	 * Populate them with default values.
@@ -139,7 +154,7 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 	private void initialize() {
 		setName("Delay");
 		BlockProperty constant = new BlockProperty(BLOCK_PROPERTY_DELAY,new Double(delayInterval),PropertyType.TIME,true);
-		properties.put(BLOCK_PROPERTY_DELAY, constant);
+		setProperty(BLOCK_PROPERTY_DELAY, constant);
 		
 		// Define a single input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);

@@ -58,6 +58,7 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 	private final String annotation;
 	private boolean isEmpty = true;
 	private boolean isGood = true;
+	private boolean allowMultiple = true;
 	private TruthValue theTruth = TruthValue.UNSET;
 	
 	/**
@@ -69,15 +70,17 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 	 * @param anch the spot at which the connection stops
 	 * @param leader the leader is a point about 10 pixels from the anchor, used for drawing the connection.
 	 * @param spot
+	 * @param multiple
 	 * @param note a String annotation to be drawn next to the connection (inside the block)
 	 */
 	
-	public BasicAnchorPoint(Object id, Block block, AnchorType ttype, ConnectionType ctype, Point anch, Point leader, Shape spot,String note) {
+	public BasicAnchorPoint(Object id, Block block, AnchorType ttype, ConnectionType ctype, Point anch, Point leader, Shape spot,boolean multiple,String note) {
 		super(id, block, EnumSet.of(ttype));
 		this.anchor = anch;
 		this.pathLeader = leader;
 		this.hotspot = spot;
 		this.annotation = note;
+		this.allowMultiple = multiple;
 		// Default behavior for side. This can be updated.
 		if( ttype==AnchorType.Origin) side = AnchorSide.RIGHT;
 		else side = AnchorSide.LEFT;
@@ -91,6 +94,7 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 	public Shape getHotSpot() { return hotspot; }
 	public AnchorSide getSide() {return side;}
 	public void setSide(AnchorSide side) {this.side = side;}
+	public boolean allowMultipleConnections() { return allowMultiple; }
 	
 	// Methods for workspace connection rendering
 	/**

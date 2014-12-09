@@ -62,6 +62,7 @@ public class Exponential extends AbstractProcessBlock implements ProcessBlock {
 
 		// Define an input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
+		input.setIsMultiple(false);
 		anchors.add(input);
 
 		// Define a single output
@@ -89,9 +90,10 @@ public class Exponential extends AbstractProcessBlock implements ProcessBlock {
 					if( vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(BlockConstants.IN_PORT_NAME)) {
 						value = dbl.doubleValue();
 						value = exp.value(value);
-						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,new BasicQualifiedValue(new Double(value),
-									qv.getQuality(),qv.getTimestamp()));
+						qv = new BasicQualifiedValue(new Double(value),qv.getQuality(),qv.getTimestamp());
+						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 						controller.acceptCompletionNotification(nvn);
+						notifyOfStatus(qv);
 					}
 					else {
 						log.warnf("%s.acceptValue: Unexpected port designation (%s)",TAG,vcn.getConnection().getDownstreamPortName());
@@ -103,13 +105,22 @@ public class Exponential extends AbstractProcessBlock implements ProcessBlock {
 			}
 			else {
 				if( qv!=null ) {
-					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,new BasicQualifiedValue(new Double(Double.NaN),
-							qv.getQuality(),qv.getTimestamp()));
+					qv = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
+					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 					controller.acceptCompletionNotification(nvn);
+					notifyOfStatus(qv);
 				}
 			}
 		}
 		
+	}
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 	
 	/**

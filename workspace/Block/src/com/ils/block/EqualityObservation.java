@@ -68,9 +68,9 @@ public class EqualityObservation extends AbstractProcessBlock implements Process
 	private void initialize() {
 		setName("EqualityObservation");
 		BlockProperty db = new BlockProperty(BlockConstants.BLOCK_PROPERTY_DEADBAND,new Double(deadband),PropertyType.DOUBLE,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_DEADBAND, db);
+		setProperty(BlockConstants.BLOCK_PROPERTY_DEADBAND, db);
 		BlockProperty targ = new BlockProperty(BLOCK_PROPERTY_NOMINAL,new Double(nominal),PropertyType.DOUBLE,true);
-		properties.put(BLOCK_PROPERTY_NOMINAL, targ);
+		setProperty(BLOCK_PROPERTY_NOMINAL, targ);
 		
 		// Define a single input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
@@ -102,9 +102,10 @@ public class EqualityObservation extends AbstractProcessBlock implements Process
 			if( !newValue.equals(truthValue)) {
 				truthValue = newValue;
 				if( !isLocked() ) {
-					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,
-							new BasicQualifiedValue(truthValue,qv.getQuality(),qv.getTimestamp()));
+					QualifiedValue nqv = new BasicQualifiedValue(truthValue,qv.getQuality(),qv.getTimestamp());
+					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,nqv);
 					controller.acceptCompletionNotification(nvn);
+					notifyOfStatus(nqv);
 				}
 			}
 		}
@@ -112,6 +113,18 @@ public class EqualityObservation extends AbstractProcessBlock implements Process
 			log.warnf("%s: setValue Unable to convert incoming value (%s) to a double (%s)",TAG,val,nfe.getLocalizedMessage());
 		}
 		
+	}
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {
+		QualifiedValue qv = new BasicQualifiedValue(truthValue);
+		notifyOfStatus(qv);
+		
+	}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 	
 	/**

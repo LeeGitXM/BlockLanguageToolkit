@@ -5,14 +5,15 @@ package com.ils.block;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import com.ils.block.common.PropertyHolder;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.AnchorPrototype;
+import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockState;
@@ -56,13 +57,14 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	protected boolean locked = false;
 	protected boolean isReceiver = false;
 	protected boolean isTransmitter = false;
+	protected boolean running = false;
 	protected BlockState state = BlockState.INITIALIZED;
 
 	protected final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	/** Properties are a dictionary of attributes keyed by property name */
-	protected final PropertyHolder properties;
+	protected final Map<String,BlockProperty> propertyMap;
 	/** Describe ports/stubs where connections join the block */
-	protected final List<AnchorPrototype> anchors;
+	protected List<AnchorPrototype> anchors;
 	protected final UtilityFunctions fcns = new UtilityFunctions();
 
 	
@@ -71,8 +73,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 *              It does not correspond to a functioning block.
 	 */
 	public AbstractProcessBlock() {
-		properties = new PropertyHolder();
-		properties.addBlockPropertyChangeListener(this);
+		propertyMap = new HashMap<>();
 		anchors = new ArrayList<AnchorPrototype>();
 		initialize();
 		initializePrototype();
@@ -81,7 +82,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	/**
 	 * Constructor: Use this version to create a block that correlates to a block in the diagram.
 	 * @param ec execution controller for handling block output
-	 * @param parent universally unique Id identifying the parent of this block
+	 * @param parent universally unique Id identifying the parent of this block. The id may be null for blocks that are "unattached"
 	 * @param block universally unique Id for the block
 	 */
 	public AbstractProcessBlock(ExecutionController ec, UUID parent, UUID block) {
@@ -141,6 +142,8 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		}
 	}
 	@Override
+	public List<AnchorPrototype>getAnchors() { return anchors; }
+	@Override
 	public PalettePrototype getBlockPrototype() {return prototype; }
 	@Override
 	public String getName() {return name;}
@@ -164,8 +167,8 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 * @return a particular property given its name.
 	 */
 	@Override
-	public BlockProperty getProperty(String name) {
-		return properties.get(name);
+	public BlockProperty getProperty(String nam) {
+		return propertyMap.get(nam);
 	}
 	
 	@Override
@@ -192,14 +195,14 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 * @return properties an array of the properties of the block.
 	 */
 	public BlockProperty[] getProperties() {
-		Collection<BlockProperty> propertyList = properties.values();
-		BlockProperty[] results = new BlockProperty[propertyList.size()];
-		int index=0;
-		for(BlockProperty bp:propertyList ) {
-			results[index]=bp;
-			index++;
-		}
-		return results;
+		 Collection<BlockProperty> propertyList = propertyMap.values();
+		 BlockProperty[] results = new BlockProperty[propertyList.size()];
+		 int index=0;
+		 for(BlockProperty bp:propertyList ) {
+			 results[index]=bp;
+			 index++;
+		 }
+		 return results;
 	}
 	
 	/**
@@ -207,7 +210,18 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 */
 	@Override
 	public Set<String> getPropertyNames() {
-		return properties.keySet();
+		return propertyMap.keySet();
+	}
+	
+	protected void setProperty(String nam,BlockProperty prop) { propertyMap.put(nam, prop); }
+	
+	@Override
+	public void setAnchors(List<AnchorPrototype> protos) {
+		if( protos.size()>0 ) {
+			this.anchors = protos; 
+			BlockDescriptor blockDescriptor = prototype.getBlockDescriptor();
+			blockDescriptor.setAnchors(anchors);
+		}
 	}
 	@Override
 	public boolean isLocked() {return locked;}
@@ -267,19 +281,35 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	@Override
 	public void acceptValue(SignalNotification sn) {
 	}
-	
+	/**
+	 * Send status update notifications for any properties
+	 * or output connections known to the designer. This
+	 * basic implementation reports all values bound to ENGINE.
+	 * 
+	 * It is expected that most blocks will implement this in
+	 * a more efficient way.
+	 */
+	@Override
+	public void notifyOfStatus() {
+		for( BlockProperty bp:getProperties()) {
+			if( bp.getBindingType().equals(BindingType.ENGINE) ) {
+				QualifiedValue qv = new BasicQualifiedValue(bp.getValue());
+				controller.sendPropertyNotification(getBlockId().toString(),bp.getName(), qv);
+			}
+		}
+	}
 	/**
 	 * Start any active monitoring or processing within the block.
 	 * This default method does nothing.
 	 */
 	@Override
-	public void start() {}
+	public void start() { this.running = true;}
 	/**
 	 * Terminate any active operations within the block.
 	 * This default method does nothing.
 	 */
 	@Override
-	public void stop() {}
+	public void stop() {this.running = false;}
 	
 	/**
 	 * In the case where the block has specified a coalescing time, this method
@@ -327,7 +357,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 
 		if( log.isTraceEnabled() ) {
 			Object oldValue = event.getOldValue();
-			log.tracef("%s: propertyChange: %s from %s to %s",this.getName(),propertyName,
+			log.debugf("%s.propertyChange: %s from %s to %s",this.getName(),propertyName,
 					(oldValue==null?"null":oldValue.toString()),newValue.toString());
 		}
 	}

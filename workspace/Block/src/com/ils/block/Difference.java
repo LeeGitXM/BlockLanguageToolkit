@@ -39,6 +39,7 @@ public class Difference extends AbstractProcessBlock implements ProcessBlock {
 	private double synchInterval = 0.5; // 1/2 sec synchronization by default
 	private QualifiedValue a = null;
 	private QualifiedValue b = null;
+	QualifiedValue difference = null;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -69,13 +70,15 @@ public class Difference extends AbstractProcessBlock implements ProcessBlock {
 		setName("Difference");
 		// Define the time for "coalescing" inputs ~ msec
 		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,new Double(synchInterval),PropertyType.TIME,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL, synch);
+		setProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL, synch);
 		
 		// Define a two inputs -- one for the divisor, one for the dividend
 		AnchorPrototype input = new AnchorPrototype(A_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
+		input.setIsMultiple(false);
 		input.setAnnotation("a");
 		anchors.add(input);
 		input = new AnchorPrototype(B_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
+		input.setIsMultiple(false);
 		input.setAnnotation("b");
 		anchors.add(input);
 
@@ -90,7 +93,14 @@ public class Difference extends AbstractProcessBlock implements ProcessBlock {
 		a = null;
 		b = null;
 	}
-	
+	/**
+	 * Disconnect from the timer thread.
+	 */
+	@Override
+	public void stop() {
+		super.stop();
+		controller.removeWatchdog(dog);
+	}
 	
 	/**
 	 * We are notified that a new value has appeared on one of our input anchors.
@@ -132,42 +142,42 @@ public class Difference extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void evaluate() {
 		if( !isLocked() ) {
-			QualifiedValue result = null;
 			if( a==null ) {
-				result = new BasicQualifiedValue(new Double(Double.NaN),new BasicQuality("'a' is unset",Quality.Level.Bad));
+				difference = new BasicQualifiedValue(new Double(Double.NaN),new BasicQuality("'a' is unset",Quality.Level.Bad));
 			}
 			else if( b==null ) {
-				result = new BasicQualifiedValue(new Double(Double.NaN),new BasicQuality("'b' is unset",Quality.Level.Bad));
+				difference = new BasicQualifiedValue(new Double(Double.NaN),new BasicQuality("'b' is unset",Quality.Level.Bad));
 			}
 			else if( !a.getQuality().isGood()) {
-				result = new BasicQualifiedValue(new Double(Double.NaN),a.getQuality());
+				difference = new BasicQualifiedValue(new Double(Double.NaN),a.getQuality());
 			}
 			else if( !b.getQuality().isGood()) {
-				result = new BasicQualifiedValue(new Double(Double.NaN),b.getQuality());
+				difference = new BasicQualifiedValue(new Double(Double.NaN),b.getQuality());
 			}
 			double aa = Double.NaN;
 			double bb = Double.NaN;
-			if( result == null ) {
+			if( difference == null ) {
 				try {
 					aa = Double.parseDouble(a.getValue().toString());
 					try {
 						bb = Double.parseDouble(b.getValue().toString());
 					}
 					catch(NumberFormatException nfe) {
-						result = new BasicQualifiedValue(new Double(Double.NaN),new BasicQuality("'b' is not a valid double",Quality.Level.Bad));
+						difference = new BasicQualifiedValue(new Double(Double.NaN),new BasicQuality("'b' is not a valid double",Quality.Level.Bad));
 					}
 				}
 				catch(NumberFormatException nfe) {
-					result = new BasicQualifiedValue(new Double(Double.NaN),new BasicQuality("'a' is not a valid double",Quality.Level.Bad));
+					difference = new BasicQualifiedValue(new Double(Double.NaN),new BasicQuality("'a' is not a valid double",Quality.Level.Bad));
 				}
 			}
 			
-			if( result==null ) {     // Success!
+			if( difference==null ) {     // Success!
 				
-				result = new BasicQualifiedValue(new Double(aa-bb));
+				difference = new BasicQualifiedValue(new Double(aa-bb));
 			}
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,difference);
 			controller.acceptCompletionNotification(nvn);
+			notifyOfStatus(difference);
 		}
 	}
 	
@@ -188,6 +198,17 @@ public class Difference extends AbstractProcessBlock implements ProcessBlock {
 		}
 	}
 
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {
+		notifyOfStatus(difference);
+		
+	}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
 	
 	/**
 	 * Augment the palette prototype for this block class.

@@ -44,7 +44,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	private List<Connection> connections = new ArrayList<Connection>();
 	private Dimension diagramSize = new Dimension(800,600);
 	private final UUID id;
-	private final String name;
+	private String name = "UNSET";
 	private UUID encapsulationBlockID = null;  // Used only if this diagram represents a sub-workspace
 	private final long resourceId;
 	private DiagramState state = DiagramState.ACTIVE;
@@ -67,7 +67,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			for( SerializableBlock sb:diagram.getBlocks()) {
 				ProcessBlockView pbv = new ProcessBlockView(sb);
 				blockMap.put(sb.getId(), pbv);
-				log.warnf("%s: createDiagramView: Added %s to map",TAG,sb.getId().toString());
+				log.debugf("%s.createDiagramView: Added %s to map",TAG,sb.getId().toString());
 				this.addBlock(pbv);
 			}
 
@@ -84,15 +84,15 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 					}
 					else {
 						if( blocka==null ) {
-							log.warnf("%s: createDiagramView: Failed to find block %s for begin anchor point %s",TAG,a.getParentId(),a);
+							log.warnf("%s.createDiagramView: Failed to find block %s for begin anchor point %s",TAG,a.getParentId(),a);
 						}
 						if( blockb==null ) {
-							log.warnf("%s: createDiagramView: Failed to find block %s for end anchor point %s",TAG,b.getParentId(),b);
+							log.warnf("%s.createDiagramView: Failed to find block %s for end anchor point %s",TAG,b.getParentId(),b);
 						}
 					}
 				}
 				else {
-					log.warnf("%s: createDiagramView: Connection %s missing one or more anchor points",TAG,scxn.toString());
+					log.warnf("%s.createDiagramView: Connection %s missing one or more anchor points",TAG,scxn.toString());
 				}
 			}
 		}
@@ -106,13 +106,14 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		this.id = uuid;
 		this.resourceId = resId;
 		this.name = nam;
+		log.debugf("%s.ProcessDiagramView: %s CONSTRUCTOR",TAG,name);
 	}
 	
 	/** Get the current block property values from the Gateway. 
 	 * If the block does not have a Gateway counterpart (e.g. diagram is dirty), we'll get the 
 	 * default property list for the block class.
 	 */
-	private void initBlockProperties(ProcessBlockView block) {
+	public void initBlockProperties(ProcessBlockView block) {
 		Collection<BlockProperty> propertyList;
 		propertyList = new ArrayList<BlockProperty>();
 		ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
@@ -126,14 +127,17 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 
 	/**
 	 * At the time that we add a new block, make sure that the block has a unique name.
-	 *
+	 * If it has no properties (e.g. was created from palette), then attempt to get 
+	 * properties from its gateway counterpart. A newly imported block should already
+	 * have properties.
+	 * 
 	 * @param context 
 	 */
 	@Override
 	public void addBlock(Block blk) {
 		if( blk instanceof ProcessBlockView) {
 			ProcessBlockView block = (ProcessBlockView) blk;
-			initBlockProperties(block);
+			if( ((ProcessBlockView) blk).getProperties().isEmpty() ) initBlockProperties(block);
 			log.tracef("%s.addBlock - %s",TAG,block.getClassName());
 			blockMap.put(blk.getId(), block);
 			fireStateChanged();
@@ -142,8 +146,13 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	
 	@Override
 	public void addConnection(AnchorPoint begin, AnchorPoint end) {
-		connections.add(new LookupConnection(this,begin,end));
-		fireStateChanged();
+		if( begin!=null && end!=null ) {
+			connections.add(new LookupConnection(this,begin,end));
+			fireStateChanged();
+		}
+		else {
+			log.warnf("%s.addConnection - rejected attempt to add a connection with null anchor",TAG);
+		}
 
 	}
 	// NOTE: This does not set connection type
@@ -223,20 +232,41 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		diagram.setConnections(scxns.toArray(new SerializableConnection[scxns.size()]));
 		return diagram;
 	}
+	
 	@Override
 	public void deleteBlock(Block blk) {
+		// Delete every connection attached to the block
+		List<Connection> connectionsToBeDeleted = new ArrayList<Connection>();
+		UUID blockId = blk.getId();
+		for( AnchorPoint ap:blk.getAnchorPoints()) {
+			boolean isOrigin = ap.isConnectorOrigin();
+			for(Connection cxn:connections) {
+				if(isOrigin && blockId.equals(cxn.getOrigin().getBlock().getId()) )         connectionsToBeDeleted.add(cxn);
+				else if(!isOrigin && blockId.equals(cxn.getTerminus().getBlock().getId()) ) connectionsToBeDeleted.add(cxn);
+			}
+		}
+		
+		for(Connection cxn:connectionsToBeDeleted) {
+			connections.remove(cxn);
+		}
+		
+		// Delete the block by removing it from the map
 		blockMap.remove(blk.getId());
 		fireStateChanged();
 	}
+	
 	@Override
 	public void deleteConnection(AnchorPoint begin, AnchorPoint end) {
+		boolean success = false;
 		for(Connection cxn:connections) {
-			if( cxn.getOrigin()==begin && cxn.getTerminus()==end) {
+			if( cxn.getOrigin().equals(begin) && cxn.getTerminus().equals(end)) {
 				connections.remove(cxn);
+				success = true;
 				fireStateChanged();
 				break;
 			}
 		}
+		if(!success) log.warnf("%s.deleteConnection: failed to find match to existing",TAG);
 	}
 	/**
 	 * @return a background color appropriate for the current state
@@ -266,10 +296,13 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	}
 
 	@Override
-	public Collection<Connection> getConnections() {return connections;}
+	public Collection<Connection> getConnections() {
+		return connections;
+	}
 
 	@Override
 	public String getDiagramName() {return name;}
+	public void setDiagramName(String nam) { this.name = nam; }
 
 	@Override
 	public Dimension getDiagramSize() {
@@ -285,15 +318,23 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		return resourceId;
 	}
 
-	// Specify whether or not a drop point is valid.
+
 	@Override
 	public boolean isConnectionValid(AnchorPoint startingAnchor, AnchorPoint endAnchor) {
-		return true;
+		return ProcessBlockView.isConnectionValid(startingAnchor, endAnchor);
 	}
 	
 	public DiagramState getState() {return state;}
+	/**
+	 * A diagram that is dirty is structurally out-of-sync with what is running
+	 * in the gateway.
+	 * @return tue if the diagram does not represent what is actually running.
+	 */
 	public boolean isDirty() {return dirty;}
-	public void setDirty(boolean dirty) {this.dirty = dirty;}
+	public void setDirty(boolean dirty) {
+		this.dirty = dirty;
+		super.fireStateChanged();
+	}
 	
 	@Override
 	public void setDiagramSize(Dimension dim) {
@@ -304,15 +345,15 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	public void setState(DiagramState state) {this.state = state;}
 	
 	/**
-	 * There are a few situations (like deserialization) where we want to suppress the dirty propagation
+	 * There are a few situations (like deserialization) where we want to suppress the dirty propagation.
+	 * This method is called because we've messed up the diagram with a structural change.
 	 */
 	@Override
 	public void fireStateChanged() {
 		if( !suppressStateChangeNotification ) {
-			setDirty(true);
 			NodeStatusManager statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
-			statusManager.setResourceDirty(getResourceId(), true);
-			super.fireStateChanged();
+			statusManager.incrementDirtyNodeCount(getResourceId());
+			setDirty(true); // Fires super method which informs the listeners.
 		}
 	}
 	
@@ -327,10 +368,12 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		// Connections. Register the upstream anchors (merely a convention).
 		for( Connection cxn:connections) {
 			BasicAnchorPoint bap = (BasicAnchorPoint)cxn.getOrigin();
-			ProcessBlockView blk = (ProcessBlockView)bap.getBlock();
-			String key = NotificationKey.keyForConnection(blk.getId().toString(), bap.getId().toString());
-			log.tracef("%s.registerChangeListeners: adding %s:%s",TAG,key,TAG);
-			handler.addNotificationChangeListener(key,TAG, bap);
+			if( bap!=null ) {    // Is null when block-and-connector library is hosed.
+				ProcessBlockView blk = (ProcessBlockView)bap.getBlock();
+				String key = NotificationKey.keyForConnection(blk.getId().toString(), bap.getId().toString());
+				log.tracef("%s.registerChangeListeners: adding %s",TAG,key);
+				handler.addNotificationChangeListener(key,TAG, bap);
+			}
 		}
 		
 		// Register any properties "bound" to the engine
@@ -340,8 +383,9 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			for(BlockProperty prop:block.getProperties()) {
 				if( prop.getBindingType().equals(BindingType.ENGINE)) {
 					String key = NotificationKey.keyForProperty(block.getId().toString(), prop.getName());
-					log.tracef("%s.registerChangeListeners: adding %s:%s",TAG,key,TAG);
+					log.tracef("%s.registerChangeListeners: adding %s(%d)",TAG,key,prop.hashCode());
 					handler.addNotificationChangeListener(key,TAG, prop);
+					prop.addChangeListener(block);
 				}
 			}
 		}
@@ -354,20 +398,19 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	public void unregisterChangeListeners() {
 		log.infof("%s.unregisterChangeListeners: ...",TAG);
 		NotificationHandler handler = NotificationHandler.getInstance();
-		// Connections. Register the upstream anchors (merely a convention).
+		// Connections. Un-register the upstream anchors (these are what was originally registered).
 		for( Connection cxn:connections) {
 			BasicAnchorPoint bap = (BasicAnchorPoint)cxn.getOrigin();
 			ProcessBlockView blk = (ProcessBlockView)bap.getBlock();
 			handler.removeNotificationChangeListener(NotificationKey.keyForConnection(blk.getId().toString(),bap.getId().toString()),TAG);
 		}
 		
-		// Register any properties "bound" to the engine
-		// It is the responsibility of the block to trigger
-		// this as it evaluates.
+		// De-register any properties "bound" to the engine
 		for(ProcessBlockView block:blockMap.values() ) {
 			for(BlockProperty prop:block.getProperties()) {
 				if( prop.getBindingType().equals(BindingType.ENGINE)) {
 					handler.removeNotificationChangeListener(NotificationKey.keyForProperty(block.getId().toString(), prop.getName()),TAG);
+					prop.removeChangeListener(block);
 				}
 			}
 		}

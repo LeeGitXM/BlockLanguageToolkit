@@ -28,6 +28,18 @@ public class SerializableFamily {
 		id = UUID.randomUUID();
 	}
 
+	public void addDiagram(SerializableDiagram sdiag) {
+		SerializableDiagram[] extended = new SerializableDiagram[diagrams.length+1];
+	    extended[diagrams.length] = sdiag;
+	    System.arraycopy(diagrams, 0, extended, 0, diagrams.length);
+	    diagrams = extended;
+	}
+	public void addFolder(SerializableFolder sfold) {
+		SerializableFolder[] extended = new SerializableFolder[folders.length+1];
+	    extended[folders.length] = sfold;
+	    System.arraycopy(folders, 0, extended, 0, folders.length);
+	    folders = extended;
+	}
 	public String getDescription() {return description;}
 	public SerializableDiagram[] getDiagrams() { return diagrams; }
 	public SerializableFolder[] getFolders() {return folders;}

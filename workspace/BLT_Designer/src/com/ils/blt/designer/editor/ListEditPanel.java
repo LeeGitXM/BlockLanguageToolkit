@@ -79,20 +79,20 @@ public class ListEditPanel extends BasicEditPanel {
 					DefaultTableModel dtm = (DefaultTableModel)table.getModel();
 					List<String> model = new ArrayList<>();
 					int rowCount = dtm.getRowCount();
-					log.infof("%s.OK action: row count = %d",TAG,rowCount);
+					log.debugf("%s.OK action: row count = %d",TAG,rowCount);
 					int row = 0;
 					while( row<rowCount ) {
 						String rowValue = (String) dtm.getValueAt(row, 0);
-						log.infof("%s.OK action: added %s",TAG,rowValue);
+						log.debugf("%s.OK action: added %s",TAG,rowValue);
 						if( rowValue.length()>0) {
 							model.add(rowValue);
 						}
 						row++;
 					}
 					String list = BlockProperty.assembleList(model,delimiter);
-					log.infof("%s.OK action: assembled list, %s = %s",TAG,property.getName(),list);
+					log.debugf("%s.OK action: assembled list, %s = %s",TAG,property.getName(),list);
 					property.setValue(list);
-					editor.notifyOfChange();   // Handle "dirtiness" and repaint diagram
+					editor.handlePropertyChange(property);   // Immediately update the running diagram
 					updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
 				}
 				else {
@@ -115,7 +115,7 @@ public class ListEditPanel extends BasicEditPanel {
 		this.property = prop;
 		headingLabel.setText(prop.getName());
 		String val = prop.getValue().toString();
-		log.infof("%s.updateForProperty: %s (%s)",TAG,prop.getName(),val);
+		log.debugf("%s.updateForProperty: %s (%s)",TAG,prop.getName(),val);
 		if( val.length()>1) {
 			// Delimiter is the first character 
 			String delimiter = val.substring(0, 1);
@@ -244,7 +244,7 @@ public class ListEditPanel extends BasicEditPanel {
 						int index = 0;
 						for( int i:selected ) {
 							selected[index] = tbl.convertRowIndexToModel(i);
-							log.infof("%s.createDeleteButton: Selected row %d converted to %d",TAG,i,selected[index]);
+							log.debugf("%s.createDeleteButton: Selected row %d converted to %d",TAG,i,selected[index]);
 							if( selected[index] > maxIndex ) maxIndex = selected[index];
 							if( selected[index] < minIndex ) minIndex = selected[index];
 							index++;
@@ -274,19 +274,19 @@ public class ListEditPanel extends BasicEditPanel {
 	 * the add/delete buttons.
 	 */
 	private class SelectionHandler implements ListSelectionListener {
-		private final JTable table;
+		private final JTable tbl;
 		private final JButton delBtn;
 
-		SelectionHandler(JTable tbl,JButton rowDeleter ) {
-			this.table = tbl;
+		SelectionHandler(JTable jtbl,JButton rowDeleter ) {
+			this.tbl = jtbl;
 			this.delBtn = rowDeleter;
 		}
 		
 		public void valueChanged(ListSelectionEvent e) {
 			if (!e.getValueIsAdjusting()) {
-				if (e.getSource() == table.getSelectionModel()) {
-					ListSelectionModel lsm = table.getSelectionModel();
-					log.infof("%s.SelectionHandler.valueChanged: Delete %s", TAG,(lsm.isSelectionEmpty()?"DISABLE":"ENABLE"));
+				if (e.getSource() == tbl.getSelectionModel()) {
+					ListSelectionModel lsm = tbl.getSelectionModel();
+					log.debugf("%s.SelectionHandler.valueChanged: Delete %s", TAG,(lsm.isSelectionEmpty()?"DISABLE":"ENABLE"));
 					delBtn.setEnabled(!lsm.isSelectionEmpty());
 				} 
 			}

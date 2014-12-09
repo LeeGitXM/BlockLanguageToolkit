@@ -52,7 +52,7 @@ public class Encapsulation extends AbstractProcessBlock implements ProcessBlock 
 	private void initialize() {	
 		setName("Encapsulation");
 		BlockProperty constant = new BlockProperty(BLOCK_PROPERTY_SUB_DIAGRAM_ID,"",PropertyType.STRING,false);
-		properties.put(BLOCK_PROPERTY_SUB_DIAGRAM_ID, constant);
+		setProperty(BLOCK_PROPERTY_SUB_DIAGRAM_ID, constant);
 	}
 	
 
@@ -71,6 +71,12 @@ public class Encapsulation extends AbstractProcessBlock implements ProcessBlock 
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 				controller.acceptCompletionNotification(nvn);
 		}
+	}
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {
 	}
 	
 	/**

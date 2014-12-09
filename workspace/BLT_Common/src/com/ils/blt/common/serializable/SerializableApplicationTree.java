@@ -4,8 +4,8 @@ package com.ils.blt.common.serializable;
 
 
 /**
- * This class represents the entire folder hierarchy of an
- * Application. This is designed for export/import. The
+ * This class represents the entire hierarchy starting
+ * from the root node. This is designed for export/import. The
  * ProjectResource version of this creates individual resources
  * for each node of this tree.
  */

@@ -1,0 +1,1358 @@
+<Tags>
+   <Tag name="_types_" path="" type="Folder"/>
+   <Tag name="Recipe Data" path="_types_" type="Folder"/>
+   <Tag name="Recipe Details" path="_types_/Recipe Data" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Parameters>
+      </Parameters>
+      <Tag name="command" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">7</Property>
+         <EventScripts>
+            <Event id="valueChanged" enabled="true">
+	#-----------------------
+	def longProcess(tagPath = tagPath, val = currentValue.value):
+		shared.io.wrapper.writeRecipeDetail(tagPath, val)
+	#-----------------------
+	
+	if currentValue.value != "":
+		system.util.invokeAsynchronous(longProcess)	</Event>
+         </EventScripts>
+      </Tag>
+      <Tag name="highLimitTagName" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="lowLimitTagName" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="valueTagName" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+   </Tag>
+   <Tag name="Controllers" path="_types_" type="Folder"/>
+   <Tag name="PKS Controller" path="_types_/Controllers" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Property name="UDTParentType">Controllers/Basic Controller</Property>
+      <Parameters>
+      </Parameters>
+      <Tag name="Mode" path="" type="EXTENSION">
+         <Property name="Name">Mode</Property>
+      </Tag>
+      <Tag name="SP" path="" type="EXTENSION">
+         <Property name="Name">SP</Property>
+      </Tag>
+      <Tag name="Output Disposability" path="" type="EXTENSION">
+         <Property name="Name">Output Disposability</Property>
+      </Tag>
+      <Tag name="SP_RAMP" path="" type="Folder"/>
+      <Tag name="RAMP_STATE" path="SP_RAMP" type="OPC">
+         <Property name="Value"/>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="SP" path="SP_RAMP" type="OPC">
+         <Property name="Value"/>
+         <Property name="DataType">5</Property>
+         <Property name="OPCServer">{serverName}</Property>
+         <Property name="OPCItemPath">{itemId}.SP</Property>
+      </Tag>
+   </Tag>
+   <Tag name="Basic Controller" path="_types_/Controllers" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Parameters>
+         <Property name="itemId" type="String"/>
+         <Property name="pythonClass" type="String"/>
+         <Property name="serverName" type="String">Matrikon</Property>
+      </Parameters>
+      <Tag name="Mode" path="" type="OPC">
+         <Property name="Value"/>
+         <Property name="DataType">7</Property>
+         <Property name="OPCServer">{serverName}</Property>
+         <Property name="OPCItemPath">{itemId}.MODE</Property>
+      </Tag>
+      <Tag name="OP" path="" type="OPC">
+         <Property name="Value"/>
+         <Property name="DataType">5</Property>
+         <Property name="OPCServer">{serverName}</Property>
+         <Property name="OPCItemPath">{itemId}.OP</Property>
+      </Tag>
+      <Tag name="Output Disposability" path="" type="OPC">
+         <Property name="Value"/>
+         <Property name="DataType">2</Property>
+         <Property name="OPCServer">{serverName}</Property>
+         <Property name="OPCItemPath">{itemId}.OUTPUT_DISPOSABILITY</Property>
+      </Tag>
+      <Tag name="PV" path="" type="OPC">
+         <Property name="Value"/>
+         <Property name="DataType">5</Property>
+         <Property name="OPCServer">{serverName}</Property>
+         <Property name="OPCItemPath">{itemId}.PV</Property>
+      </Tag>
+      <Tag name="SP" path="" type="OPC">
+         <Property name="Value"/>
+         <Property name="DataType">5</Property>
+         <Property name="OPCServer">{serverName}</Property>
+         <Property name="OPCItemPath">{itemId}.SP</Property>
+      </Tag>
+   </Tag>
+   <Tag name="Basic IO" path="_types_" type="Folder"/>
+   <Tag name="OPC Conditional Output" path="_types_/Basic IO" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="pythonClass" type="String">OPCConditionalOutput</Property>
+         <Property name="permissiveItemId" type="String"/>
+      </Parameters>
+      <Tag name="tag" path="" type="EXTENSION">
+         <Property name="Name">tag</Property>
+      </Tag>
+      <Tag name="writeVal" path="" type="EXTENSION">
+         <Property name="Name">writeVal</Property>
+      </Tag>
+      <Tag name="permissive" path="" type="OPC">
+         <Property name="Value"/>
+         <Property name="DataType">3</Property>
+         <Property name="OPCServer">{serverName}</Property>
+         <Property name="OPCItemPath">{permissiveItemId}</Property>
+         <Property name="ScanClass">OPC Scan Class</Property>
+      </Tag>
+      <Tag name="writePermissive" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">2</Property>
+      </Tag>
+   </Tag>
+   <Tag name="OPC Tag" path="_types_/Basic IO" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Parameters>
+         <Property name="itemId" type="String"/>
+         <Property name="pythonClass" type="String"/>
+         <Property name="serverName" type="String"/>
+         <Property name="scanClassName" type="String"/>
+      </Parameters>
+      <Tag name="pythonClass" path="" type="DB">
+         <Property name="Value">{pythonClass}</Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="tag" path="" type="OPC">
+         <Property name="Value"/>
+         <Property name="DataType">5</Property>
+         <Property name="OPCServer">{serverName}</Property>
+         <Property name="OPCItemPath">{itemId}</Property>
+         <Property name="ScanClass">OPC Scan Class</Property>
+      </Tag>
+   </Tag>
+   <Tag name="OPC Output" path="_types_/Basic IO" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Property name="UDTParentType">Basic IO/OPC Tag</Property>
+      <Parameters>
+         <Property name="pythonClass" type="String">OPCOutput</Property>
+      </Parameters>
+      <Tag name="tag" path="" type="EXTENSION">
+         <Property name="Name">tag</Property>
+      </Tag>
+      <Tag name="command" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">7</Property>
+         <EventScripts>
+            <Event id="valueChanged" enabled="true">	#-----------------------
+	def longProcess(tagPath = tagPath, val = currentValue.value):
+		shared.io.wrapper.command(tagPath, val)
+	#-----------------------
+	
+	if currentValue.value != "":
+		system.util.invokeAsynchronous(longProcess)</Event>
+         </EventScripts>
+      </Tag>
+      <Tag name="writeErrorMessage" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="writeStatus" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="writeVal" path="" type="DB">
+         <Property name="Value">0.0</Property>
+         <Property name="DataType">5</Property>
+      </Tag>
+   </Tag>
+   <Tag name="Constants" path="" type="Folder"/>
+   <Tag name="localG2WriteAlias" path="Constants" type="DB">
+      <Property name="Value">LocalG2</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="recipeMinimumDifference" path="Constants" type="DB">
+      <Property name="Value">1.0E-5</Property>
+      <Property name="DataType">5</Property>
+      <Property name="FormatString">#,##0.######</Property>
+   </Tag>
+   <Tag name="screenBackgroundColorDownloading" path="Constants" type="DB">
+      <Property name="Value">white</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="screenBackgroundColorFail" path="Constants" type="DB">
+      <Property name="Value">red</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="backgroundColorMismatch" path="Constants" type="DB">
+      <Property name="Value">plum</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="recipeMinimumRelativeDifference" path="Constants" type="DB">
+      <Property name="Value">1.0E-5</Property>
+      <Property name="DataType">5</Property>
+      <Property name="FormatString">#,##0.######</Property>
+   </Tag>
+   <Tag name="backgroundColorError" path="Constants" type="DB">
+      <Property name="Value">pink</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="backgroundColorReadWrite" path="Constants" type="DB">
+      <Property name="Value">lightcyan</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="screenBackgroundColorSuccess" path="Constants" type="DB">
+      <Property name="Value">limegreen</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="backgroundColorNoChange" path="Constants" type="DB">
+      <Property name="Value">lightblue</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="screenBackgroundColorInitializing" path="Constants" type="DB">
+      <Property name="Value">lightGrey</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="Special Values" path="Constants" type="Folder"/>
+   <Tag name="NAN" path="Constants/Special Values" type="DB">
+      <Property name="Value">900000000</Property>
+      <Property name="DataType">3</Property>
+   </Tag>
+   <Tag name="backgroundColorReadOnly" path="Constants" type="DB">
+      <Property name="Value">lightblue</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="screenBackgroundColorUnknown" path="Constants" type="DB">
+      <Property name="Value">magenta</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="MemoryTags" path="" type="Folder"/>
+   <Tag name="MJKFeed3" path="MemoryTags" type="DB">
+      <Property name="Value">40.0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="MJKFeed2" path="MemoryTags" type="DB">
+      <Property name="Value">4.0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="MJKQuality" path="MemoryTags" type="DB">
+      <Property name="Value">good</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="DiagramFeed" path="MemoryTags" type="DB">
+      <Property name="Value">1</Property>
+      <Property name="DataType">2</Property>
+   </Tag>
+   <Tag name="MJKSQCTarget" path="MemoryTags" type="DB">
+      <Property name="Value">3.0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="MJKSQCStdDev" path="MemoryTags" type="DB">
+      <Property name="Value">0.5</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="Recipe" path="" type="Folder"/>
+   <Tag name="RLA3" path="Recipe" type="Folder"/>
+   <Tag name="VFT200X-PIDFFA-SPDETAILS" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Recipe Data/Recipe SP Details</Property>
+      <Parameters>
+      </Parameters>
+   </Tag>
+   <Tag name="VFA009Z-Fil_Bias-PVDETAILS" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Recipe Data/Recipe PV Details</Property>
+      <Parameters>
+      </Parameters>
+   </Tag>
+   <Tag name="VRG400Z-D_VRG400Z-H2_V_BIAS_R1" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRG400Z.D_VRG400Z.H2_V_BIAS_R1</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VFP036HS2-EHG_SPLOLM-PV" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VFP036HS2.EHG_SPLOLM.PV</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VCF221X-PIDA-SPDETAILS" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Recipe Data/Recipe SP Details</Property>
+      <Parameters>
+      </Parameters>
+   </Tag>
+   <Tag name="VRG400Z-D_VRG400Z-GRADE_CUR" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRG400Z.D_VRG400Z.GRADE_CUR</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VDF004-REG_07-SPDETAILS" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Recipe Data/Recipe SP Details</Property>
+      <Parameters>
+      </Parameters>
+   </Tag>
+   <Tag name="VCF109S-EXECSTATE" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VCF109S.EXECSTATE</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VRG400Z-D_VRG400Z-ENB_GRADE" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRG400Z.D_VRG400Z.ENB_GRADE</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VCF251S-BYPASS_SEL-PVFL" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VCF251S.BYPASS_SEL.PVFL</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VCF262R-EXECSTATE" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VCF262R.EXECSTATE</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VCF120R-EXECSTATE" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VCF120R.EXECSTATE</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VRG400Z-D_VRG400Z-NH3_GRADE" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRG400Z.D_VRG400Z.NH3_GRADE</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VRG400Z-D_VRG400Z-OIL_GRADE" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRG400Z.D_VRG400Z.OIL_GRADE</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VRF202S-P_VRF002S-RX_SEL_OVRD" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRF202S.P_VRF002S.RX_SEL_OVRD</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VRG400Z-D_VRG400Z-C2_BIAS_R1" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRG400Z.D_VRG400Z.C2_BIAS_R1</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VFG264Z-EHG_SPLOLM-PVDETAILS" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Recipe Data/Recipe PV Details</Property>
+      <Parameters>
+      </Parameters>
+   </Tag>
+   <Tag name="VRG400Z-D_VRG400Z-C2_SLP_R1R2" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRG400Z.D_VRG400Z.C2_SLP_R1R2</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VFA109Z-Fil_Bias-PVDETAILS" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Recipe Data/Recipe PV Details</Property>
+      <Parameters>
+      </Parameters>
+   </Tag>
+   <Tag name="VFP036HS2-EHG_SPLOLM-PVDETAILS" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Recipe Data/Recipe PV Details</Property>
+      <Parameters>
+      </Parameters>
+   </Tag>
+   <Tag name="VRG400Z-D_VRG400Z-ML_LL" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRG400Z.D_VRG400Z.ML_LL</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VCF251R-EXECSTATE" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VCF251R.EXECSTATE</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VRG400Z-D_VRG400Z-ENB_BI_R1R2" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRG400Z.D_VRG400Z.ENB_BI_R1R2</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VFA109Z-Fil_Bias-PV" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VFA109Z.Fil_Bias.PV</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VHT122RP-SPRAMPER-SP" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Conditional Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VHT122RP.SPRAMPER.SP</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VFG164Z-EHG_SPLOLM-PV" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VFG164Z.EHG_SPLOLM.PV</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VCF211R-EXECSTATE" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VCF211R.EXECSTATE</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VDT119-REG_07-SPDETAILS" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Recipe Data/Recipe SP Details</Property>
+      <Parameters>
+      </Parameters>
+   </Tag>
+   <Tag name="VFT100X-PIDFFA-SP" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Conditional Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VFT100X.PIDFFA.SP</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VDF014Z-ENHREGCALCA-SPDETAILS" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Recipe Data/Recipe SP Details</Property>
+      <Parameters>
+      </Parameters>
+   </Tag>
+   <Tag name="VFT200X-PIDFFA-SP" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Conditional Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VFT200X.PIDFFA.SP</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VRG400Z-D_VRG400Z-C2_SLP_R1" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRG400Z.D_VRG400Z.C2_SLP_R1</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VRG400Z-D_VRG400Z-H2_V_SLP_R1" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRG400Z.D_VRG400Z.H2_V_SLP_R1</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VRG400Z-D_VRG400Z-HT_RX" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRG400Z.D_VRG400Z.HT_RX</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VFA209Z-Fil_Bias-PVDETAILS" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Recipe Data/Recipe PV Details</Property>
+      <Parameters>
+      </Parameters>
+   </Tag>
+   <Tag name="VFT000X-PIDFFA-SP" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Conditional Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VFT000X.PIDFFA.SP</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VRG400Z-D_VRG400Z-CAT_SLP_R1" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRG400Z.D_VRG400Z.CAT_SLP_R1</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VFA009Z-Fil_Bias-PV" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VFA009Z.Fil_Bias.PV</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VRG400Z-D_VRG400Z-VANCAT_MW" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRG400Z.D_VRG400Z.VANCAT_MW</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VCF211-EXECSTATE" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VCF211.EXECSTATE</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VRG400Z-D_VRG400Z-C3_BIAS_R1R2" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRG400Z.D_VRG400Z.C3_BIAS_R1R2</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VRG400Z-D_VRG400Z-ETOH_GRADE" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRG400Z.D_VRG400Z.ETOH_GRADE</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VCF109R-EXECSTATE" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VCF109R.EXECSTATE</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VCF000S-EXECSTATE" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VCF000S.EXECSTATE</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VRG400Z-D_VRG400Z-ENB_SLP_R1R2" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRG400Z.D_VRG400Z.ENB_SLP_R1R2</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VHF101Z-PIDA-SPDETAILS" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Recipe Data/Recipe SP Details</Property>
+      <Parameters>
+      </Parameters>
+   </Tag>
+   <Tag name="VRG400Z-D_VRG400Z-POLY_BIAS" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRG400Z.D_VRG400Z.POLY_BIAS</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VRG400Z-D_VRG400Z-VNB_GRADE" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRG400Z.D_VRG400Z.VNB_GRADE</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VRG400Z-D_VRG400Z-R1_T_SP" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRG400Z.D_VRG400Z.R1_T_SP</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VRG400Z-D_VRG400Z-ML_HL" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRG400Z.D_VRG400Z.ML_HL</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VFG064Z-EHG_SPLOLM-PVDETAILS" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Recipe Data/Recipe PV Details</Property>
+      <Parameters>
+      </Parameters>
+   </Tag>
+   <Tag name="VRG400Z-D_VRG400Z-C3_SLP_R1R2" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRG400Z.D_VRG400Z.C3_SLP_R1R2</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VCF221X-PIDA-SP" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Conditional Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VCF221X.PIDA.SP</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VRG400Z-D_VRG400Z-CAT_BIAS_R1" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRG400Z.D_VRG400Z.CAT_BIAS_R1</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VCF003R-EXECSTATE" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VCF003R.EXECSTATE</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VCF221S-EXECSTATE" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VCF221S.EXECSTATE</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VCP251-REG_07-PVLOALM-TP" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VCP251.REG_07.PVLOALM.TP</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VCF251S-EXECSTATE" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VCF251S.EXECSTATE</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VRG400Z-D_VRG400Z-CAST_EFF" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRG400Z.D_VRG400Z.CAST_EFF</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VHT151PC-PIDA-SP" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Conditional Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VHT151PC.PIDA.SP</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VRG400Z-D_VRG400Z-ENB_SLP_R1" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRG400Z.D_VRG400Z.ENB_SLP_R1</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VFG164Z-EHG_SPLOLM-PVDETAILS" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Recipe Data/Recipe PV Details</Property>
+      <Parameters>
+      </Parameters>
+   </Tag>
+   <Tag name="VRG400Z-D_VRG400Z-ALUMCAT_MW" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRG400Z.D_VRG400Z.ALUMCAT_MW</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VRG400Z-D_VRG400Z-POLY_SLP" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRG400Z.D_VRG400Z.POLY_SLP</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VHT151PC-PIDA-SPDETAILS" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Recipe Data/Recipe SP Details</Property>
+      <Parameters>
+      </Parameters>
+   </Tag>
+   <Tag name="VRG400Z-D_VRG400Z-C2_BIAS_R1R2" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRG400Z.D_VRG400Z.C2_BIAS_R1R2</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VRF911R2-DACA-PVHIALM-TP" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRF911R2.DACA.PVHIALM.TP</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VFG264Z-EHG_SPLOLM-PV" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VFG264Z.EHG_SPLOLM.PV</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VRG400Z-D_VRG400Z-RX_CONFIG" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRG400Z.D_VRG400Z.RX_CONFIG</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VDT119-REG_07-SP" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Conditional Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VDT119.REG_07.SP</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VFA209Z-Fil_Bias-PV" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VFA209Z.Fil_Bias.PV</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VHT122RP-SPRAMPER-SPDETAILS" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Recipe Data/Recipe SP Details</Property>
+      <Parameters>
+      </Parameters>
+   </Tag>
+   <Tag name="VCT211-REG_06-SPDETAILS" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Recipe Data/Recipe SP Details</Property>
+      <Parameters>
+      </Parameters>
+   </Tag>
+   <Tag name="VRG400Z-D_VRG400Z-C3_BIAS_R1" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRG400Z.D_VRG400Z.C3_BIAS_R1</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VCF120X-EXECSTATE" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VCF120X.EXECSTATE</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VCF003S-EXECSTATE" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VCF003S.EXECSTATE</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VDF014Z-ENHREGCALCA-SP" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Conditional Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VDF014Z.ENHREGCALCA.SP</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VRG400Z-D_VRG400Z-RML_SLP" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRG400Z.D_VRG400Z.RML_SLP</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VFT000X-PIDFFA-SPDETAILS" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Recipe Data/Recipe SP Details</Property>
+      <Parameters>
+      </Parameters>
+   </Tag>
+   <Tag name="VRG400Z-D_VRG400Z-C3_SLP_R1" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRG400Z.D_VRG400Z.C3_SLP_R1</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VFT100X-PIDFFA-SPDETAILS" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Recipe Data/Recipe SP Details</Property>
+      <Parameters>
+      </Parameters>
+   </Tag>
+   <Tag name="VRF002S-P_VRF002S-RX_SEL_OVRD" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRF002S.P_VRF002S.RX_SEL_OVRD</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VHF101Z-PIDA-SPLOLM" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VHF101Z.PIDA.SPLOLM</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VRG400Z-D_VRG400Z-ENB_BIAS_R1" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRG400Z.D_VRG400Z.ENB_BIAS_R1</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VFG064Z-EHG_SPLOLM-PV" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VFG064Z.EHG_SPLOLM.PV</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VCF262S-EXECSTATE" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VCF262S.EXECSTATE</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VRG400Z-D_VRG400Z-H2_GRADE" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRG400Z.D_VRG400Z.H2_GRADE</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VRG400Z-EXECSTATE" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRG400Z.EXECSTATE</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VDF004-REG_07-SP" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Conditional Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VDF004.REG_07.SP</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VRG400Z-D_VRG400Z-HT_RX_R1R2" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRG400Z.D_VRG400Z.HT_RX_R1R2</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VRF911R2-DACA-PVLOALM-TP" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRF911R2.DACA.PVLOALM.TP</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="VCT211-REG_06-SP" path="Recipe/RLA3" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Basic IO/OPC Conditional Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VCT211.REG_06.SP</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="Constants" path="Recipe" type="Folder"/>
+   <Tag name="localG2WriteAlias" path="Recipe/Constants" type="DB">
+      <Property name="Value">LocalG2</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="recipeMinimumDifference" path="Recipe/Constants" type="DB">
+      <Property name="Value">1.0E-5</Property>
+      <Property name="DataType">5</Property>
+      <Property name="FormatString">#,##0.######</Property>
+   </Tag>
+   <Tag name="screenBackgroundColorDownloading" path="Recipe/Constants" type="DB">
+      <Property name="Value">white</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="screenBackgroundColorFail" path="Recipe/Constants" type="DB">
+      <Property name="Value">red</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="recipeMinimumRelativeDifference" path="Recipe/Constants" type="DB">
+      <Property name="Value">1.0E-5</Property>
+      <Property name="DataType">5</Property>
+      <Property name="FormatString">#,##0.######</Property>
+   </Tag>
+   <Tag name="backgroundColorError" path="Recipe/Constants" type="DB">
+      <Property name="Value">pink</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="backgroundColorMismatch" path="Recipe/Constants" type="DB">
+      <Property name="Value">plum</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="backgroundColorReadWrite" path="Recipe/Constants" type="DB">
+      <Property name="Value">lightcyan</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="screenBackgroundColorSuccess" path="Recipe/Constants" type="DB">
+      <Property name="Value">limegreen</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="backgroundColorNoChange" path="Recipe/Constants" type="DB">
+      <Property name="Value">lightblue</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="screenBackgroundColorInitializing" path="Recipe/Constants" type="DB">
+      <Property name="Value">lightGrey</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="Special Values" path="Recipe/Constants" type="Folder"/>
+   <Tag name="NAN" path="Recipe/Constants/Special Values" type="DB">
+      <Property name="Value">900000000</Property>
+      <Property name="DataType">3</Property>
+   </Tag>
+   <Tag name="backgroundColorReadOnly" path="Recipe/Constants" type="DB">
+      <Property name="Value">lightblue</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="screenBackgroundColorUnknown" path="Recipe/Constants" type="DB">
+      <Property name="Value">magenta</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="recipeWriteEnabled" path="Recipe/Constants" type="DB">
+      <Property name="Value">true</Property>
+      <Property name="DataType">6</Property>
+   </Tag>
+   <Tag name="SandBox" path="" type="Folder"/>
+   <Tag name="VRG400Z-D_VRG400Z-GRADE_CUR" path="SandBox" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">OPC Float Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRG400Z.D_VRG400Z.GRADE_CUR</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+         <Property name="scanClassName" type="String">OPC Scan Class</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="GRADE_CUR" path="SandBox" type="OPC">
+      <Property name="Value"/>
+      <Property name="DataType">5</Property>
+      <Property name="OPCServer">OPC-PKS-ASYNCH1</Property>
+      <Property name="OPCItemPath">VRG400Z.D_VRG400Z.GRADE_CUR</Property>
+   </Tag>
+   <Tag name="Test" path="SandBox" type="DB">
+      <Property name="Value">6</Property>
+      <Property name="DataType">2</Property>
+   </Tag>
+   <Tag name="Moose3" path="SandBox" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">Dog</Property>
+      <Parameters>
+         <Property name="Breed" type="String">Poodle</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="Current Grade" path="SandBox" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">7</Property>
+      <Property name="UDTParentType">OPC Text Output</Property>
+      <Parameters>
+         <Property name="itemId" type="String">VRG400Z.D_VRG400Z.GRADE_CUR</Property>
+         <Property name="serverName" type="String">OPC-PKS-ASYNCH1</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="FC102" path="SandBox" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Property name="UDTParentType">Controllers/Basic Controller</Property>
+      <Parameters>
+         <Property name="itemId" type="String">FC102</Property>
+         <Property name="pythonClass" type="String">foo</Property>
+         <Property name="serverName" type="String">Matrikon</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="FC101" path="SandBox" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Property name="UDTParentType">Controllers/Basic Controller</Property>
+      <Parameters>
+         <Property name="itemId" type="String">FC101</Property>
+         <Property name="pythonClass" type="String">foobar</Property>
+         <Property name="serverName" type="String">Matrikon</Property>
+      </Parameters>
+   </Tag>
+   <Tag name="Site" path="" type="Folder"/>
+   <Tag name="RX-RECIPE" path="Site" type="Folder"/>
+   <Tag name="E204-TEMP" path="Site/RX-RECIPE" type="DB">
+      <Property name="Value">0.0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="E202-BYPASS-DELTA-TIME" path="Site/RX-RECIPE" type="DB">
+      <Property name="Value">0.0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="E202-BYPASS-POSITION" path="Site/RX-RECIPE" type="DB">
+      <Property name="Value">10.0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="E204-LEVEL" path="Site/RX-RECIPE" type="DB">
+      <Property name="Value">-5.0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="GEL-DELAY" path="Site/RX-RECIPE" type="DB">
+      <Property name="Value">0.0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="CA-TARGET" path="Site/RX-RECIPE" type="DB">
+      <Property name="Value">230.0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="DML-ERROR-RATE-LIMIT" path="Site" type="DB">
+      <Property name="Value">4.0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="MLR-GRADE-FLAG" path="Site" type="DB">
+      <Property name="Value">0.0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="VFU-FTNIR-BIAS-UPDATE" path="Site" type="DB">
+      <Property name="Value">0.0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="VFU-FTNIR-GRADE" path="Site" type="DB">
+      <Property name="Value">0.0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="VFU-BALER-TEMP-CHK" path="Site" type="DB">
+      <Property name="Value">0.0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="POLYMER-LAB-DATA-SOURCE" path="Site" type="DB">
+      <Property name="Value">1.0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="SERIES-PERMISSIVES" path="Site" type="Folder"/>
+   <Tag name="NO-C9-MIN-RATE" path="Site/SERIES-PERMISSIVES" type="DB">
+      <Property name="Value">0.0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="C3-TO-R2-OK-FLAG" path="Site/SERIES-PERMISSIVES" type="DB">
+      <Property name="Value">1.0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="SERIES-MIN-C6-TO-R2" path="Site/SERIES-PERMISSIVES" type="DB">
+      <Property name="Value">0.0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="C9-TO-R2-OK-FLAG" path="Site/SERIES-PERMISSIVES" type="DB">
+      <Property name="Value">0.0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="NO-C3-MIN-RATE" path="Site/SERIES-PERMISSIVES" type="DB">
+      <Property name="Value">0.0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="DML-SQC-FLAG" path="Site" type="DB">
+      <Property name="Value">0.0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="PROD-CA-SQC-FLAG" path="Site" type="DB">
+      <Property name="Value">0.0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="CATOUT-RECIPE-STATUS" path="Site" type="Folder"/>
+   <Tag name="OIL-TIME-TO-CLOSED" path="Site/CATOUT-RECIPE-STATUS" type="DB">
+      <Property name="Value">100.0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="CAST-TIME-TO-CLOSED" path="Site/CATOUT-RECIPE-STATUS" type="DB">
+      <Property name="Value">100.0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="IRG-TIME-TO-CLOSED" path="Site/CATOUT-RECIPE-STATUS" type="DB">
+      <Property name="Value">15.0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="POLYSPLIT-SQC-FLAG" path="Site" type="DB">
+      <Property name="Value">0.0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+</Tags>

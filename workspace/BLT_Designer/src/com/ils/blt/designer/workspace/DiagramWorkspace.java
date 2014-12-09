@@ -26,6 +26,7 @@ import java.util.UUID;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JMenu;
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -39,10 +40,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.connection.ConnectionType;
+import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
+import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.blt.designer.editor.PropertyEditorFrame;
 import com.inductiveautomation.ignition.client.designable.DesignableContainer;
 import com.inductiveautomation.ignition.client.util.LocalObjectTransferable;
@@ -50,6 +53,8 @@ import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.config.ObservablePropertySet;
+import com.inductiveautomation.ignition.common.execution.ExecutionManager;
+import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngine;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -59,6 +64,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.AbstractBlock
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockActionHandler;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
+import com.inductiveautomation.ignition.designer.blockandconnector.blockui.AnchorDescriptor;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.BlockDiagramModel;
@@ -92,8 +98,11 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	private static final DataFlavor BlockDataFlavor = LocalObjectTransferable.flavorForClass(ObservablePropertySet.class);
 	public static final String key = "BlockDiagramWorkspace";
 	public static final String PREFIX = BLTProperties.BLOCK_PREFIX;
+	private final ApplicationRequestHandler handler = new ApplicationRequestHandler();
 	private final DesignerContext context;
 	private final EditActionHandler editActionHandler;
+	private final ExecutionManager executionEngine;
+	private final NodeStatusManager statusManager;
 	private Collection<ResourceWorkspaceFrame> frames;
 	protected SaveAction saveAction = null;  // Save properties of a block
 	private LoggerEx logger = LogUtil.getLogger(getClass().getPackage().getName());
@@ -104,7 +113,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	public DiagramWorkspace(DesignerContext ctx) {
 		this.context = ctx;
 		this.editActionHandler = new BlockActionHandler(this,context);
+		this.executionEngine = new BasicExecutionEngine(1,TAG);
 		this.addDesignableWorkspaceListener(this);
+		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
 		initialize();
 		setBackground(Color.red);	
 	}
@@ -180,14 +191,14 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					if( anch!=null ) {
 						ConnectionType ct = anch.getConnectionType();
 						logger.debugf("%s.getSelectionPopupMenu: Connection type is: %s",TAG,ct.name());
-					
-						ChangeConnectionAction ccaAny = new ChangeConnectionAction(pbv,ConnectionType.ANY);
+						ProcessDiagramView pdv = getActiveDiagram();
+						ChangeConnectionAction ccaAny = new ChangeConnectionAction(pdv,pbv,ConnectionType.ANY);
 						ccaAny.setEnabled(!ct.equals(ConnectionType.ANY));
-						ChangeConnectionAction ccaData = new ChangeConnectionAction(pbv,ConnectionType.DATA);
+						ChangeConnectionAction ccaData = new ChangeConnectionAction(pdv,pbv,ConnectionType.DATA);
 						ccaData.setEnabled(!ct.equals(ConnectionType.DATA));
-						ChangeConnectionAction ccaText = new ChangeConnectionAction(pbv,ConnectionType.TEXT);
+						ChangeConnectionAction ccaText = new ChangeConnectionAction(pdv,pbv,ConnectionType.TEXT);
 						ccaText.setEnabled(!ct.equals(ConnectionType.TEXT));
-						ChangeConnectionAction ccaTruthvalue = new ChangeConnectionAction(pbv,ConnectionType.TRUTHVALUE);
+						ChangeConnectionAction ccaTruthvalue = new ChangeConnectionAction(pdv,pbv,ConnectionType.TRUTHVALUE);
 						ccaTruthvalue.setEnabled(!ct.equals(ConnectionType.TRUTHVALUE));
 					
 						JMenu changeTypeMenu = new JMenu(BundleUtil.get().getString(PREFIX+".ChangeConnection"));
@@ -222,13 +233,13 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		return null;
 	}
 	@Override
-	protected ConnectionPainter newConnectionPainter(BlockDiagramModel model) {
+	protected ConnectionPainter newConnectionPainter(BlockDiagramModel bdm) {
 		return new DiagramConnectionPainter();
 	}
 	
 	@Override
-	protected BlockDesignableContainer newDesignableContainer(BlockDiagramModel model) {
-		return new DiagramContainer(this,model,this.newEdgeRouter(model),this.newConnectionPainter(model));
+	protected BlockDesignableContainer newDesignableContainer(BlockDiagramModel bdm) {
+		return new DiagramContainer(this,bdm,this.newEdgeRouter(bdm),this.newConnectionPainter(bdm));
 	}
 	
 	@Override
@@ -282,7 +293,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
 			} 
 			catch (Exception e) {
-				ErrorUtil.showError(e);
+				ErrorUtil.showError(TAG+" Exception handling drop",e);
 			}
 		}
 		return false;
@@ -347,6 +358,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			List<SerializableBlock>list = mapper.readValue(json, type);
 			for(SerializableBlock sb:list) {
 				ProcessBlockView pbv = new ProcessBlockView(sb);
+				pbv.createPseudoRandomName();
+				pbv.createRandomId();
 				results.add(pbv);
 				// Special handling for an encapsulation block - create its sub-workspace
 				if(pbv.isEncapsulation()) {
@@ -377,7 +390,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						context.updateResource(resource);					
 					} 
 					catch (Exception err) {
-						ErrorUtil.showError(err);
+						ErrorUtil.showError(TAG+" Exception pasting blocks",err);
 					}
 				}
 			}
@@ -426,32 +439,37 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			open(tab);  // Selects?
 		}
 		else {
-			if( context.requestLock(resourceId) ) {
-				ProjectResource res = context.getProject().getResource(resourceId);	
-				String json = new String(res.getData());
-				logger.debugf("%s: open - diagram = %s",TAG,json);
-				SerializableDiagram sd = null;
-				ObjectMapper mapper = new ObjectMapper();
-				try {
-					sd = mapper.readValue(json,SerializableDiagram.class);
-					// Synchronize names as the resource may have been re-named since it was serialized
-					sd.setName(res.getName());
-				} 
-				catch (JsonParseException jpe) {
-					logger.warnf("%s: open parse exception (%s)",TAG,jpe.getLocalizedMessage());
-				} 
-				catch (JsonMappingException jme) {
-					logger.warnf("%s: open mapping exception (%s)",TAG,jme.getLocalizedMessage());
-				} 
-				catch (IOException ioe) {
-					logger.warnf("%s: open io exception (%s)",TAG,ioe.getLocalizedMessage());
-				}
-				ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd, context);
-				super.open(diagram);
-				BlockDesignableContainer tab = (BlockDesignableContainer)findDesignableContainer(resourceId);
-				tab.setBackground(diagram.getBackgroundColorForState());
-				diagram.registerChangeListeners();
+			ProjectResource res = context.getProject().getResource(resourceId);	
+			String json = new String(res.getData());
+			logger.debugf("%s: open - diagram = %s",TAG,json);
+			SerializableDiagram sd = null;
+			ObjectMapper mapper = new ObjectMapper();
+			try {
+				sd = mapper.readValue(json,SerializableDiagram.class);
+				// Synchronize names as the resource may have been re-named since it was serialized
+				sd.setName(res.getName());
+			} 
+			catch (JsonParseException jpe) {
+				logger.warnf("%s: open parse exception (%s)",TAG,jpe.getLocalizedMessage());
+			} 
+			catch (JsonMappingException jme) {
+				logger.warnf("%s: open mapping exception (%s)",TAG,jme.getLocalizedMessage());
+			} 
+			catch (IOException ioe) {
+				logger.warnf("%s: open io exception (%s)",TAG,ioe.getLocalizedMessage());
 			}
+			ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd, context);
+			super.open(diagram);
+			BlockDesignableContainer tab = (BlockDesignableContainer)findDesignableContainer(resourceId);
+			tab.setBackground(diagram.getBackgroundColorForState());
+			diagram.registerChangeListeners();
+			// In the probable case that the designer is opened after the diagram has started
+			// running in the gateway, obtain any updates.
+			for( Block blk:diagram.getBlocks()) {
+				ProcessBlockView pbv = (ProcessBlockView)blk;
+				diagram.initBlockProperties(pbv);
+			}
+			SwingUtilities.invokeLater(new WorkspaceRepainter());
 		}
 	}
 	
@@ -460,51 +478,61 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		super.close(findDesignableContainer(resourceId));
 	}
 	
-	// On close we save the container, no questions asked.
+	// On close we can save the container, no questions asked with a
+	// call to: saveDiagram((BlockDesignableContainer)container);
+	// As it is ... a dialog pops up.
 	@Override
 	protected void onClose(DesignableContainer c) {
 		logger.infof("%s: onClose",TAG);
 		BlockDesignableContainer container = (BlockDesignableContainer)c;
 		ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
-		saveDiagram((BlockDesignableContainer)container);
+		if( diagram.isDirty()  ) {
+			Object[] options = {BundleUtil.get().getString(PREFIX+".CloseDiagram.Save"),BundleUtil.get().getString(PREFIX+".CloseDiagram.Revert")};
+			int n = JOptionPane.showOptionDialog(null,
+					BundleUtil.get().getString(PREFIX+".CloseDiagram.Question"),
+					String.format(BundleUtil.get().getString(PREFIX+".CloseDiagram.Title"), diagram.getName()),
+					JOptionPane.YES_NO_OPTION,
+					JOptionPane.QUESTION_MESSAGE,
+					null,         // icon
+					options,      // titles of buttons
+					options[0]);  //default button title
+			if( n==0 ) {
+				// Yes, save
+				saveDiagramResource((BlockDesignableContainer)container);
+			}
+			else {
+				// Mark diagram as clean, since we reverted changes
+				diagram.setDirty(false);
+				statusManager.clearDirtyChildCount(diagram.getResourceId());
+				//context.releaseLock(container.getResourceId());
+			}
+		}
 		diagram.unregisterChangeListeners();
-		context.releaseLock(container.getResourceId());
+		
 	}
-	
 	/**
 	 * This is called as a result of a user "Save" selection on
-	 * the main menu. We actually save al the diagrams.
+	 * the main menu. We actually save all the diagrams.
 	 */
 	public void saveOpenDiagrams() {
 		logger.infof("%s: saveOpenDiagrams",TAG);
 		for(DesignableContainer dc:openContainers.keySet()) {
-			saveDiagram((BlockDesignableContainer)dc);
+			saveDiagramResource((BlockDesignableContainer)dc);
 		}
 	}
 	
 	/**
-	 * This method updates the project resource, but does not actually save.
-	 * @param c
+	 * This method updates the project resource and then saves into the project.
+	 * @param c the tab
 	 */
-	public void saveDiagram(BlockDesignableContainer c) {
+	public void saveDiagramResource(BlockDesignableContainer c) {
 		ProcessDiagramView diagram = (ProcessDiagramView)c.getModel();
-		logger.infof("%s: saveDiagram - serializing %s ...",TAG,diagram.getDiagramName());
+		logger.infof("%s: saveDiagramResource - %s ...",TAG,diagram.getDiagramName());
 		diagram.setDirty(false);
-		SerializableDiagram sd = diagram.createSerializableRepresentation();
-		byte[] bytes = null;
 		long resid = c.getResourceId();
-		ObjectMapper mapper = new ObjectMapper();
-		try {
-			bytes = mapper.writeValueAsBytes(sd);
-			logger.tracef("%s: saveDiagram JSON = %s",TAG,new String(bytes));
-			context.updateResource(resid, bytes);
-			c.setBackground(diagram.getBackgroundColorForState());
-			SwingUtilities.invokeLater(new WorkspaceRepainter());
-		} 
-		catch (JsonProcessingException jpe) {
-			logger.warnf("%s: saveDiagram processing exception (%s)",TAG,jpe.getLocalizedMessage());
-		}
-		context.updateLock(resid);
+		executionEngine.executeOnce(new ResourceUpdateManager(this,context.getProject().getResource(resid)));
+		c.setBackground(diagram.getBackgroundColorForState());
+		SwingUtilities.invokeLater(new WorkspaceRepainter());
 	}
 	
 	/**
@@ -516,6 +544,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		if( container!=null ) {
 			ProcessDiagramView view = (ProcessDiagramView)(container.getModel());
 			container.setBackground(view.getBackgroundColorForState());
+			SwingUtilities.invokeLater(new WorkspaceRepainter());
 		}
 	}
 	
@@ -548,26 +577,23 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	public void itemSelectionChanged(List<JComponent> selections) {
 		if( selections!=null && selections.size()==1 ) {
 			JComponent selection = selections.get(0);
-			logger.infof("%s.itemSelectionChanged: selected a %s",TAG,selection.getClass().getName());
-			if( selection instanceof BlockComponent ) {
-				//BlockComponent bc = ( BlockComponent)selection;
-				//selectedBlock = (ProcessBlockView)bc.getBlock();
-			}
+			logger.debugf("%s.itemSelectionChanged: selected a %s",TAG,selection.getClass().getName());
 		}
 		else {
-			logger.infof("%s: DiagramActionHandler: deselected",TAG);
+			logger.debugf("%s: DiagramActionHandler: deselected",TAG);
 		}
 	}
 	// ============================== Change Listener ================================
-		/**
-		 * If the current diagram changes state, then paint the background accordingly.
-		 * 
-		 * @param event
-		 */
-		@Override
-		public void stateChanged(ChangeEvent event) {
-			updatBackgroundForDirty();
-		}
+	/**
+	 * If the current diagram changes state, then paint the background accordingly.
+	 * 
+	 * @param event
+	 */
+	@Override
+	public void stateChanged(ChangeEvent event) {
+		updatBackgroundForDirty();
+	}
+	
 	/**
 	 * Paint connections. The cross-section is dependent on the connection type.
 	 */
@@ -620,16 +646,25 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	private class ChangeConnectionAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
 		private final ConnectionType connectionType;
+		private final ProcessDiagramView diagram;
 		private final ProcessBlockView block;
-		public ChangeConnectionAction(ProcessBlockView blk,ConnectionType ct)  {
+		public ChangeConnectionAction(ProcessDiagramView dgm,ProcessBlockView blk,ConnectionType ct)  {
 			super(PREFIX+".ChangeConnectionAction."+ct.name());
 			this.connectionType = ct;
+			this.diagram = dgm;
 			this.block = blk;
 		}
 		
-		// Change all stubs to the selected type
+		// Change all stubs to the selected type.
+		// This does NOT make the block dirty, since the changes are automatically
+		// synched with the gateway.
 		public void actionPerformed(ActionEvent e) {
 			block.changeConnectorType(connectionType);
+			List<SerializableAnchor> anchors = new ArrayList<SerializableAnchor>();
+			for( AnchorDescriptor anchor:block.getAnchors()) {
+				anchors.add(block.convertAnchorToSerializable((ProcessAnchorDescriptor)anchor));
+			}
+			handler.updateBlockAnchors(diagram.getId(),block.getId(),anchors);
 		}
 	}
 	/**
@@ -650,8 +685,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			// Apparently this only works if the class is in the same package (??)
 			try{
 				Class<?> clss = Class.forName(block.getEditorClass());
-				Constructor<?> ctor = clss.getDeclaredConstructor(new Class[] {ProcessBlockView.class});
-				final JDialog edtr = (JDialog)ctor.newInstance(block);
+				Constructor<?> ctor = clss.getDeclaredConstructor(new Class[] {DesignerContext.class,ProcessDiagramView.class,ProcessBlockView.class});
+				ProcessDiagramView pdv = getActiveDiagram();
+				final JDialog edtr = (JDialog)ctor.newInstance(context,pdv,block); 
 				edtr.pack();
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
@@ -664,7 +700,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				logger.infof("%s.customEditAction: Invocation failed for %s",TAG,block.getEditorClass()); 
 			}
 			catch(NoSuchMethodException nsme ) {
-				logger.infof("%s.customEditAction %s: Constructor taking block not found (%s)",TAG,block.getEditorClass(),nsme.getMessage()); 
+				logger.infof("%s.customEditAction %s: Constructor taking diagram and block not found (%s)",TAG,block.getEditorClass(),nsme.getMessage()); 
 			}
 			catch(ClassNotFoundException cnfe) {
 				logger.infof("%s.customEditAction: Custom editor class (%s) not found (%s)",TAG,
@@ -680,6 +716,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 	/**
 	 * "Save" implies a push of the block attributes into the model running in the Gateway.
+	 * This, in turn, makes the parent diagram resource dirty.
 	 */
 	private class SaveAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
@@ -691,19 +728,17 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
 		public void actionPerformed(ActionEvent e) {
 			logger.info("DiagramWorkspace: SAVE BLOCK");
-			ApplicationRequestHandler handler = new ApplicationRequestHandler();
 			ProcessDiagramView pdv = getActiveDiagram();
 			handler.setBlockProperties(pdv.getId(),block.getId(), block.getProperties());
 			block.setDirty(false);
-			NodeStatusManager statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
-			statusManager.decrementDirtyBlockCount(pdv.getResourceId());
+			statusManager.clearDirtyChildCount(pdv.getResourceId());
 		}
 	}
 	
 	/**
-	 * Post a custom editor for the block. This action is expected to
-	 * apply to only a few block types. The action should be invoked only
-	 * if an editor class has been specified. 
+	 * Post an internals viewer for the block. The default shows
+	 * only name, class and UUID. Blocks may transmit additional
+	 * parameters as is useful. 
 	 */
 	private class ViewInternalsAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
@@ -728,9 +763,4 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
 		}
 	}
-	//TODO: In next Ignition update, this is available for override of onMove() method.
-	//      We want to highlight the hotspot in an ugly way if a connection constraint
-	//      would be violated by a connect. 04/15/2014.
-	//private class ConnectionTool extends AbstractBlockWorkspace.ConnectionTool {
-	//}
 }

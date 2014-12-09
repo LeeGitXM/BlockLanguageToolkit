@@ -14,19 +14,22 @@ public class ProcessAnchorDescriptor extends AnchorDescriptor {
 	private ConnectionType connectionType;
 	private final String annotation;
 	private PlacementHint hint;
+	private final boolean multiple;
 
 	
-	public ProcessAnchorDescriptor(AnchorType type,ConnectionType ctype, Object id,String display,String note,PlacementHint placementHint) {
+	public ProcessAnchorDescriptor(AnchorType type,ConnectionType ctype, Object id,String display,String note,PlacementHint placementHint,boolean supportsMultiple) {
 		super(type,id,display);
 		this.connectionType = ctype;
 		this.annotation = note;
 		this.hint = placementHint;
+		this.multiple = supportsMultiple;
 	}
 
 
 	public ConnectionType getConnectionType() {return connectionType;}
 	public String getAnnotation() { return annotation; }
 	public PlacementHint getHint() { return hint; }
+	public boolean isMultiple() { return multiple; }
 	/**
 	 * Allow changes to the connection type for the rare instances where the
 	 * user wishes to customize a block before it has ever been saved.

@@ -10,8 +10,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -45,7 +43,7 @@ public class BlockInternalsViewer extends JDialog {
 	private final LoggerEx log;
 	// A panel is designed to edit properties that are lists of strings.
 	private static final String PREFIX = BLTProperties.BLOCK_PREFIX;  // Required for text strings
-	private static final long serialVersionUID = 2002388376824434427L;
+	private static final long serialVersionUID = 4004388376825535527L;
 	private final int DIALOG_HEIGHT = 320;
 	private final int DIALOG_WIDTH = 500;
 	private static final Dimension TABLE_SIZE  = new Dimension(480,120);
@@ -121,13 +119,18 @@ public class BlockInternalsViewer extends JDialog {
 		String PRE = PREFIX+".ViewInternals.Col.";
 		String[] columnNames = { BundleUtil.get().getString(PRE+"Name"),
 				                 BundleUtil.get().getString(PRE+"Value") };
-		DefaultTableModel dataModel = new DefaultTableModel(columnNames,0); 
-		String [] row = new String[2];
-		for( String key:attributes.keySet()) {
-			row[0] = key;
-			row[1] = attributes.get(key);
-			dataModel.addRow(row);
+		DefaultTableModel dataModel = new DefaultTableModel(columnNames,0);
+		// There should always be attributes
+		if( attributes!=null )  {
+			String [] row = new String[2];
+			for( String key:attributes.keySet()) {
+				row[0] = key;
+				String attribute = attributes.get(key);
+				row[1] = (attribute==null?" ":attribute);
+				dataModel.addRow(row);
+			}
 		}
+		
         table = new JTable(dataModel);
         table.setPreferredSize(TABLE_SIZE);
         table.setRowSelectionAllowed(true);

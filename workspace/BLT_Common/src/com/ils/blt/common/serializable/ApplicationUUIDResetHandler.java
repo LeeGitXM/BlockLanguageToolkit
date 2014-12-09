@@ -31,7 +31,7 @@ public class ApplicationUUIDResetHandler   {
 	 * Do it.
 	 */
 	public boolean convertUUIDs() {
-		boolean success = false;
+		boolean success = true;
 		// First the root application
 		UUID original = application.getId();
 		application.setId(UUID.randomUUID());
@@ -46,9 +46,8 @@ public class ApplicationUUIDResetHandler   {
 			
 			// Now all the diagrams
 			for(SerializableDiagram diagram:fam.getDiagrams()) {
-				original = diagram.getId();
-				diagram.setId(UUID.randomUUID());
-				if( original!=null ) idLookup.put(original, fam.getId());
+				UUIDResetHandler rhandler = new UUIDResetHandler(diagram);
+				rhandler.convertUUIDs();
 			}
 		}
 		

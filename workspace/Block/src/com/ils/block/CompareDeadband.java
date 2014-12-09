@@ -65,7 +65,7 @@ public class CompareDeadband extends Compare implements ProcessBlock {
 		setName("CompareDeadband");
 		// Define the deadband
 		BlockProperty oprop = new BlockProperty(BlockConstants.BLOCK_PROPERTY_DEADBAND,new Double(deadband),PropertyType.DOUBLE,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_DEADBAND, oprop);
+		setProperty(BlockConstants.BLOCK_PROPERTY_DEADBAND, oprop);
 	}
 	
 	/**
@@ -155,7 +155,20 @@ public class CompareDeadband extends Compare implements ProcessBlock {
 			log.debugf("%s.evaluate: wrote %s",getName(),result.getValue().toString());
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
 			controller.acceptCompletionNotification(nvn);	
+			notifyOfStatus(result);
 		}
+	}
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {
+		QualifiedValue qv = new BasicQualifiedValue(truthValue);
+		notifyOfStatus(qv);
+	}
+
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 	
 	/**

@@ -85,9 +85,10 @@ public class Gain extends AbstractProcessBlock implements ProcessBlock {
 					if( vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(BlockConstants.IN_PORT_NAME)) {
 						double value = dbl.doubleValue();
 						value = value*gain;
-						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,new BasicQualifiedValue(new Double(value),
-									qv.getQuality(),qv.getTimestamp()));
+						qv = new BasicQualifiedValue(new Double(value),qv.getQuality(),qv.getTimestamp());
+						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 						controller.acceptCompletionNotification(nvn);
+						notifyOfStatus(qv);
 					}
 					else {
 						log.warnf("%s.acceptValue: Unexpected port designation (%s)",TAG,vcn.getConnection().getDownstreamPortName());
@@ -99,12 +100,21 @@ public class Gain extends AbstractProcessBlock implements ProcessBlock {
 			}
 			else {
 				if( qv!=null ) {
-					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,new BasicQualifiedValue(new Double(Double.NaN),
-							qv.getQuality(),qv.getTimestamp()));
+					qv = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
+					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 					controller.acceptCompletionNotification(nvn);
+					notifyOfStatus(qv);
 				}
 			}
 		}
+	}
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 	
 	/**
@@ -114,10 +124,11 @@ public class Gain extends AbstractProcessBlock implements ProcessBlock {
 	private void initialize() {
 		setName("Gain");
 		BlockProperty constant = new BlockProperty(BLOCK_PROPERTY_GAIN,new Double(gain),PropertyType.DOUBLE,true);
-		properties.put(BLOCK_PROPERTY_GAIN, constant);
+		setProperty(BLOCK_PROPERTY_GAIN, constant);
 		
 		// Define a single input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
+		input.setIsMultiple(false);
 		anchors.add(input);
 		
 		// Define a single output

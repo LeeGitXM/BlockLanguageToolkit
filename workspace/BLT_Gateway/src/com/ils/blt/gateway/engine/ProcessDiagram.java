@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.connection.Connection;
 import com.ils.blt.common.connection.ProcessConnection;
@@ -22,8 +23,6 @@ import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableConnection;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 /**
  * This diagram is the "model" that encapsulates the structure of the blocks and connections
@@ -36,15 +35,15 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 public class ProcessDiagram extends ProcessNode {
 	
 	private static String TAG = "ProcessDiagram";
-	private final LoggerEx log;
 	private final SerializableDiagram diagram;
 	private boolean valid = false;
 	protected final Map<UUID,ProcessBlock> blocks;
 	private final Map<ConnectionKey,ProcessConnection> connectionMap;            // Key by connection number
-	protected final Map<BlockPort,List<ProcessConnection>> outgoingConnections;    // Key by upstream block:port
+	protected final Map<BlockPort,List<ProcessConnection>> outgoingConnections;   // Key by upstream block:port
 	private long projectId = -1;
 	private final long resourceId;
 	private DiagramState state = DiagramState.ACTIVE;
+	private final BlockExecutionController controller = BlockExecutionController.getInstance();
 	
 	/**
 	 * Constructor: Create a model that encapsulates the structure of the blocks and connections
@@ -57,7 +56,6 @@ public class ProcessDiagram extends ProcessNode {
 		this.diagram = diagm;
 		this.state = diagm.getState();
 		this.resourceId = diagm.getResourceId();
-		log = LogUtil.getLogger(getClass().getPackage().getName());
 		blocks = new HashMap<UUID,ProcessBlock>();
 		connectionMap = new HashMap<ConnectionKey,ProcessConnection>();
 		outgoingConnections = new HashMap<BlockPort,List<ProcessConnection>>();
@@ -71,58 +69,106 @@ public class ProcessDiagram extends ProcessNode {
 	public void setProjectId(long projectId) {this.projectId = projectId;}
 	
 	/**
-	 * Analyze the diagram for nodes.
+	 * Prepare for an update from a newly deserialized node.
 	 */
-	private void analyze(SerializableDiagram diagram) {
-		log.debugf("%s.analyze: %s ...",TAG,diagram.getName());
+	public void clearConnections() {
+		connectionMap.clear();
+		outgoingConnections.clear();
+	}
+	/**
+	 * Remove blocks in this diagram that are NOT in the 
+	 * supplied list.
+	 */
+	public void removeBlocksFromList(SerializableBlock[] newBlocks) {
+		List<UUID> uuids = new ArrayList<>();
+		for(SerializableBlock sb:newBlocks) {
+			uuids.add(sb.getId());
+		}
+		List<ProcessBlock> blocksToRemove = new ArrayList<>();
+		for(ProcessBlock oldBlock:blocks.values()) {
+			if(!uuids.contains(oldBlock.getBlockId()) ) blocksToRemove.add(oldBlock);
+		}
+		for(ProcessBlock oldBlock:blocksToRemove) {
+			blocks.remove(oldBlock.getBlockId());
+			for(BlockProperty prop:oldBlock.getProperties()) {
+				controller.removeSubscription(oldBlock, prop);
+			}
+			oldBlock.stop();
+			log.infof("%s.removeBlocksFromList: decommissioned %s (%d)",TAG,oldBlock.getName(),oldBlock.hashCode());
+		}
+	}
+	
+	/**
+	 * Analyze the diagram for nodes. This is valid as long as the existing diagram
+	 * has no blocks that are NOT represented in the serializable version.
+	 * 
+	 * During this process we stop any existing blocks and remove tag subscriptions.
+	 * The ModelManager restarts the blocks once everything is in place.
+	 */
+	public void analyze(SerializableDiagram diagrm) {
+		log.infof("%s.analyze: %s ...",TAG,diagrm.getName());
 		
 		BlockFactory blockFactory = BlockFactory.getInstance();
 		ConnectionFactory connectionFactory = ConnectionFactory.getInstance();
 		
 		// Update the blocks
-		SerializableBlock[] sblks = diagram.getBlocks();
+		SerializableBlock[] sblks = diagrm.getBlocks();
 		for( SerializableBlock sb:sblks ) {
 			UUID id = sb.getId();
 			ProcessBlock pb = blocks.get(id);
 			if( pb==null ) {
 				pb = blockFactory.blockFromSerializable(getSelf(),sb);
-				if( pb!=null ) blocks.put(pb.getBlockId(), pb);
-				else log.errorf("%s.analyze: ERROR %s failed to instantiate %s",TAG,diagram.getName(),sb.getClassName());
+				if( pb!=null ) {
+					blocks.put(pb.getBlockId(), pb);
+					log.infof("%s.analyze: New block %s(%d)",TAG,pb.getName(),pb.hashCode());
+				}
+				else log.errorf("%s.analyze: ERROR %s failed to instantiate %s",TAG,diagrm.getName(),sb.getClassName());
 			}
 			else {
+				log.debugf("%s.analyze: Update block %s(%d)",TAG,pb.getName(),pb.hashCode());
+				pb.stop();
+				// Stop old subscriptions
+				for(BlockProperty prop:pb.getProperties()) {
+					controller.removeSubscription(pb, prop);
+				}
 				blockFactory.updateBlockFromSerializable(pb,sb);
 			}
 		}
 		// Update the connections
-		SerializableConnection[] scxns = diagram.getConnections();
+		SerializableConnection[] scxns = diagrm.getConnections();
 		for( SerializableConnection sc:scxns ) {
-
-			ConnectionKey cxnkey = new ConnectionKey(sc.getBeginBlock().toString(),sc.getBeginAnchor().getId().toString(),
-					                             sc.getEndBlock().toString(),sc.getEndAnchor().getId().toString());
-			ProcessConnection pc = connectionMap.get(cxnkey);
-			if( pc==null ) {
-				pc = connectionFactory.connectionFromSerializable(sc);
-			}
-			else {
-				connectionFactory.updateConnectionFromSerializable(pc,sc);
-			}
-			// Add the connection to the map. The block-port is for the upstream block
-			ProcessBlock upstreamBlock = blocks.get(pc.getSource());
-			if( upstreamBlock!=null ) {
-				BlockPort key = new BlockPort(upstreamBlock,pc.getUpstreamPortName());
-				List<ProcessConnection> connections = outgoingConnections.get(key);
-				if( connections==null ) {
-					connections = new ArrayList<ProcessConnection>();
-					outgoingConnections.put(key, connections);
-					log.tracef("%s.analyze: mapping connection from %s:%s",TAG,upstreamBlock.getBlockId().toString(),pc.getUpstreamPortName());
+			if( validConnection(sc) ) {
+				ConnectionKey cxnkey = new ConnectionKey(sc.getBeginBlock().toString(),sc.getBeginAnchor().getId().toString(),
+						sc.getEndBlock().toString(),sc.getEndAnchor().getId().toString());
+				ProcessConnection pc = connectionMap.get(cxnkey);
+				if( pc==null ) {
+					pc = connectionFactory.connectionFromSerializable(sc);
 				}
-				if( !connections.contains(pc) ) connections.add(pc);
+				else {
+					connectionFactory.updateConnectionFromSerializable(pc,sc);
+				}
+				// Add the connection to the map. The block-port is for the upstream block
+				ProcessBlock upstreamBlock = blocks.get(pc.getSource());
+				if( upstreamBlock!=null ) {
+					BlockPort key = new BlockPort(upstreamBlock,pc.getUpstreamPortName());
+					List<ProcessConnection> connections = outgoingConnections.get(key);
+					if( connections==null ) {
+						connections = new ArrayList<ProcessConnection>();
+						outgoingConnections.put(key, connections);
+						log.tracef("%s.analyze: mapping connection from %s:%s",TAG,upstreamBlock.getBlockId().toString(),pc.getUpstreamPortName());
+					}
+					if( !connections.contains(pc) ) connections.add(pc);
+				}
+				else {
+					log.warnf("%s.analyze: Source block (%s) not found for connection",TAG,pc.getSource().toString());
+				}
 			}
 			else {
-				log.warnf("%s.analyze: Source block (%s) not found for connection",TAG,pc.getSource().toString());
+				log.warnf("%s.analyze: %s has invalid serialized connection (%s)",TAG,diagrm.getName(),invalidConnectionReason(sc));
 			}
+
 		}
-		log.debugf("%s.analyze: Complete .... %d blocks and %d connections",TAG,diagram.getBlocks().length,diagram.getConnections().length);
+		log.infof("%s.analyze: Complete .... %d blocks and %d connections",TAG,diagrm.getBlocks().length,diagrm.getConnections().length);
 	}
 	
 	/**
@@ -186,16 +232,84 @@ public class ProcessDiagram extends ProcessNode {
 	/**
 	 * Set the state of the diagram. Note that the state does not affect the activity 
 	 * of blocks within the diagram. It only affects the way that block results are 
-	 * propagated (or not).
+	 * propagated (or not) and whether or not subscriptions are in effect.
 	 * 
 	 * @param s the new state
 	 */
-	public void setState(DiagramState s) {this.state = s;}
+	public void setState(DiagramState s) {
+		boolean wasDisabled = DiagramState.DISABLED.equals(getState());
+		this.state = s;
+		if(wasDisabled && !DiagramState.DISABLED.equals(getState()) ) {
+			startSubscriptions();
+		}
+		else if(DiagramState.DISABLED.equals(getState()) ) {
+			stopSubscriptions();
+		}
+	}
 	/**
 	 * Report on whether or not the DOM contained more than one connected node.
 	 */
 	public boolean isValid() { return valid; }
 	
+	/**
+	 * Make sure all components of a serializable connection are present. 
+	 * If not, the connection will be rejected.
+	 * @param sc
+	 * @return validity flag
+	 */
+	private boolean validConnection(SerializableConnection sc) {
+		boolean validCxn = false;
+		if( sc.getBeginBlock()    != null &&
+			sc.getBeginAnchor()   !=null  &&
+			sc.getBeginAnchor().getId()!=null &&
+			sc.getEndBlock()      !=null &&
+			sc.getEndAnchor()     !=null &&
+			sc.getEndAnchor().getId()!=null   ) {
+			validCxn = true;
+		}
+		return validCxn;
+	}
+	/**
+	 * @param sc
+	 * @return a description of why the proposed connection is invalid.
+	 */
+	private String invalidConnectionReason(SerializableConnection sc) {
+		String reason = "No reason";
+		if( sc.getBeginBlock()          == null )      reason = "No begin block";
+		else if(sc.getBeginAnchor()     == null )      reason = "No begin anchor";
+		else if(sc.getBeginAnchor().getId()==null)     reason = "Begin anchor has no Id";
+		else if(sc.getEndBlock()        == null )      reason = "No end block";
+		else if(sc.getEndAnchor()       == null )      reason = "No end anchor";
+		else if(sc.getEndAnchor().getId()==null )      reason = "End anchor has no Id";
+		return reason;
+	}
+	
+	private void startSubscriptions() {
+		log.infof("%s.startSubscriptions: ...%d:%s",TAG,projectId,getName());
+		for( ProcessBlock pb:getProcessBlocks()) {
+			for(BlockProperty bp:pb.getProperties()) {
+				controller.startSubscription(pb,bp);
+			}
+			pb.setProjectId(projectId);
+		}
+
+		for( ProcessBlock pb:getProcessBlocks()) {
+			pb.start();
+		}
+	}
+	private void stopSubscriptions() {
+		log.infof("%s.stopSubscriptions: ...%d:%s",TAG,projectId,getName());
+		for( ProcessBlock pb:getProcessBlocks()) {
+			for(BlockProperty bp:pb.getProperties()) {
+				controller.removeSubscription(pb,bp);
+			}
+			pb.setProjectId(projectId);
+		}
+
+		for( ProcessBlock pb:getProcessBlocks()) {
+			pb.stop();
+		}
+	}
 	/**
 	 * Class for keyed storage of downstream block,port for a connection.
 	 */
@@ -243,6 +357,7 @@ public class ProcessDiagram extends ProcessNode {
 			this.targetBlock = tb;
 			this.targetPort = tp;
 		}
+		
 		public String getSourcePort()  { return this.sourcePort; }
 		public String getSourceBlock() { return this.sourceBlock; }
 		public String getTargetPort()  { return this.targetPort; }
@@ -269,4 +384,5 @@ public class ProcessDiagram extends ProcessNode {
 			return this.sourceBlock.hashCode()+this.sourcePort.hashCode()-this.targetBlock.hashCode()-this.targetPort.hashCode();
 		}
 	}
+	
 }

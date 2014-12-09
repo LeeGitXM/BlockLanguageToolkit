@@ -8,8 +8,6 @@ package com.ils.blt.gateway.engine;
 
 import com.ils.blt.common.connection.ProcessConnection;
 import com.ils.blt.common.serializable.SerializableConnection;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 
 
@@ -19,8 +17,6 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  *  the separation keeps the serializable version behavior-free.
  */
 public class ConnectionFactory  {
-	private final static String TAG = "ConnectionFactory";
-	private final LoggerEx log = LogUtil.getLogger(BlockFactory.class.getPackage().getName());
 	private static ConnectionFactory instance = null;
 	/**
 	 * Private per the Singleton pattern.
@@ -42,7 +38,7 @@ public class ConnectionFactory  {
 	}
 	
 	/**
-	 * Create a concrete instance of a Process block represented by the serializable block.
+	 * Create a concrete instance of a Process connection represented by the serializable connection.
 	 * @param sb
 	 * @return
 	 */
@@ -54,7 +50,7 @@ public class ConnectionFactory  {
 	}
 	
 	/**
-	 * Update the concrete instance of a Process block from a serializable block.
+	 * Update the concrete instance of a ProcessConnection from a serializable connection.
 	 *
 	 * @param pc
 	 * @param sc

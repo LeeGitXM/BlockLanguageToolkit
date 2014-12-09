@@ -2,35 +2,37 @@
 <project default="javadoc">
     <target name="javadoc">
         <javadoc access="protected" author="true" 
-        	classpath="/Users/chuckc/Development/ils/repo/ignition-77/lib/designer-api.jar:
-        			   /Users/chuckc/Development/ils/repo/ignition-77/lib/vision-designer-api.jar:
-        			   /Users/chuckc/Development/ils/repo/ignition-77/lib/client-api.jar:
-        			   /Users/chuckc/Development/ils/repo/ignition-77/lib/vision-client-api.jar:
-        	           /Users/chuckc/Development/ils/repo/ignition-77/lib/ignition-common.jar:
-        	           /Users/chuckc/Development/ils/repo/common/workspace/ILS_Common/bin:
-        	           /Users/chuckc/Development/ils/repo/ignition-77/lib/client-api.jar:
-        	           /Users/chuckc/Development/ils/repo/external/lib/ils-common.jar:
-        	           /Users/chuckc/Development/ils/repo/external/lib/log4j-1.2.16.jar:
-        	           /Users/chuckc/Development/ils/repo/external/lib/jackson-core-2.2.3.jar:
-        			   /Users/chuckc/Development/ils/repo/external/lib/jackson-annotations-2.2.3.jar:
-        	           /Users/chuckc/Development/ils/repo/external/lib/jackson-databind-2.2.3.jar:
-        	           /Users/chuckc/Development/ils/repo/external/lib/commons-math3-3.1.1.jar:
-        	           /Users/chuckc/Development/ils/repo/ignition-77/lib/gateway-api.jar:
-        	           /Users/chuckc/Development/ils/repo/blt/workspace/BLT_Common/bin" 
+        	classpath="/Users/chuckc/Development/ils/src/ignition-77/lib/designer-api.jar:
+        			   /Users/chuckc/Development/ils/src/ignition-77/lib/vision-designer-api.jar:
+        			   /Users/chuckc/Development/ils/src/ignition-77/lib/client-api.jar:
+        			   /Users/chuckc/Development/ils/src/ignition-77/lib/vision-client-api.jar:
+        	           /Users/chuckc/Development/ils/src/ignition-77/lib/ignition-common.jar:
+        	           /Users/chuckc/Development/ils/src/common/workspace/ILS_Common/bin:
+        	           /Users/chuckc/Development/ils/src/ignition-77/lib/client-api.jar:
+        	           /Users/chuckc/Development/ils/src/external/lib/ils-common.jar:
+        	           /Users/chuckc/Development/ils/src/external/lib/log4j-1.2.16.jar:
+        	           /Users/chuckc/Development/ils/src/external/lib/jackson-core-2.2.3.jar:
+        			   /Users/chuckc/Development/ils/src/external/lib/jackson-annotations-2.2.3.jar:
+        	           /Users/chuckc/Development/ils/src/external/lib/jackson-databind-2.2.3.jar:
+        	           /Users/chuckc/Development/ils/src/external/lib/commons-math3-3.1.1.jar:
+        	           /Users/chuckc/Development/ils/src/ignition-77/lib/gateway-api.jar:
+        	           /Users/chuckc/Development/ils/src/blt/workspace/BLT_Common/bin" 
         	destdir="doc" nodeprecated="false" nodeprecatedlist="true" noindex="false" nonavbar="false" notree="false" 
-        	packagenames="com.ils.block,com.ils.block.annotation,com.ils.block.common,com.ils.block.control,com.ils.block.connection,
+        	packagenames="com.ils.block,com.ils.block.annotation,com.ils.block.common,
         				  com.ils.com.ils.blt.gateway,com.ils.com.ils.blt.gateway.engine,com.ils.com.ils.blt.gateway.proxy,
         	              com.ils.blt.client,
-        	              com.ils.blt.common,com.ils.blt.common.serializable,
-        	              com.ils.blt.designer,com.ils.blt.designer.component,com.ils.blt.designer.component.beaninfo,
-        	              com.ils.blt.designer.editor,com.ils.blt.designer.navtree,com.ils.blt.designer.workspace,com.ils.blt.designer.workspace.ui,
+        	              com.ils.blt.common,com.ils.blt.common.block,com.ils.blt.common.connection,
+        	              com.ils.blt.common.control,com.ils.blt.common.notification,com.ils.blt.common.serializable,
+        	              com.ils.blt.designer,com,com.ils.blt.designer.component.beaninfo,com.ils.blt.designer.editor,
+        	              com.ils.blt.designer.navtree,com.ils.blt.designer.workspace,com.ils.blt.designer.workspace.ui,
+        	              com.ils.blt.gateway,com.ils.blt.gateway.engine,com.ils.blt.gateway.proxy,
         	              com.ils.common,com.ils.common.watchdog" 
         	source="1.7" 
-        	sourcepath="/Users/chuckc/Development/ils/repo/block/workspace/Block/src:
-        				/Users/chuckc/Development/ils/repo/blt/workspace/BLT_Common/src:
-        	            /Users/chuckc/Development/ils/repo/blt/workspace/BLT_Gateway/src:
-        	            /Users/chuckc/Development/ils/repo/blt/workspace/BLT_Client/src:
-        	            /Users/chuckc/Development/ils/repo/blt/workspace/BLT_Designer/src" 
+        	sourcepath="/Users/chuckc/Development/ils/src/block/workspace/Block/src:
+        				/Users/chuckc/Development/ils/src/blt/workspace/BLT_Common/src:
+        	            /Users/chuckc/Development/ils/src/blt/workspace/BLT_Gateway/src:
+        	            /Users/chuckc/Development/ils/src/blt/workspace/BLT_Client/src:
+        	            /Users/chuckc/Development/ils/src/blt/workspace/BLT_Designer/src" 
         	splitindex="false" use="true" version="true"/>
     </target>
 </project>

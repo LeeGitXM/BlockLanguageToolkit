@@ -34,6 +34,19 @@ public class SerializableApplication {
 		id = UUID.randomUUID();
 	}
 	
+	public void addFamily(SerializableFamily sfam) {
+		SerializableFamily[] extended = new SerializableFamily[families.length+1];
+	    extended[families.length] = sfam;
+	    System.arraycopy(families, 0, extended, 0, families.length);
+	    families = extended;
+	}
+	public void addFolder(SerializableFolder sfold) {
+		SerializableFolder[] extended = new SerializableFolder[folders.length+1];
+	    extended[folders.length] = sfold;
+	    System.arraycopy(folders, 0, extended, 0, folders.length);
+	    folders = extended;
+	}
+	
 	public String getConsole() {return console;}
 	public String getDescription() {return description;}
 	public SerializableFamily[] getFamilies() { return families; }

@@ -30,7 +30,7 @@ import com.ils.blt.common.notification.Signal;
 @ExecutableBlock
 public class Transmitter extends AbstractProcessBlock implements ProcessBlock {
 	private final String TAG = "Transmitter";
-
+	private BlockProperty scopeProperty = null;
 	
 	protected String sql = "";
 	
@@ -60,8 +60,8 @@ public class Transmitter extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	private void initialize() {
 		setName("Transmitter");
-		BlockProperty scope = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SCOPE,TransmissionScope.LOCAL.toString(),PropertyType.STRING,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_SCOPE, scope);
+		scopeProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SCOPE,TransmissionScope.LOCAL.toString(),PropertyType.STRING,true);
+		setProperty(BlockConstants.BLOCK_PROPERTY_SCOPE, scopeProperty);
 		
 		// Define a single input - we get an input from the connection and broadcast it.
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.BROADCAST_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.SIGNAL);
@@ -78,7 +78,6 @@ public class Transmitter extends AbstractProcessBlock implements ProcessBlock {
 		Signal sig = incoming.getValueAsSignal();
 		if( sig!=null ) {
 			TransmissionScope scope = TransmissionScope.LOCAL;
-			BlockProperty scopeProperty = properties.get(BlockConstants.BLOCK_PROPERTY_SCOPE);
 			if(scopeProperty!=null && scopeProperty.getValue()!=null  )
 			try {
 				scope = TransmissionScope.valueOf(scopeProperty.getValue().toString());
@@ -90,7 +89,9 @@ public class Transmitter extends AbstractProcessBlock implements ProcessBlock {
 			controller.acceptBroadcastNotification(broadcast);
 		}
 	}
-	
+
+	@Override
+	public void notifyOfStatus() {}
 	/**
 	 * Augment the palette prototype for this block class.
 	 */

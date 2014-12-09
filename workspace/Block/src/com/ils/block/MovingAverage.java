@@ -66,7 +66,7 @@ public class MovingAverage extends AbstractProcessBlock implements ProcessBlock 
 	private void initialize() {	
 		setName("MovingAverage");
 		BlockProperty resetProperty =  new BlockProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET,Boolean.FALSE,PropertyType.BOOLEAN,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET, resetProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET, resetProperty);
 		
 		// Define a single input.
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
@@ -117,6 +117,7 @@ public class MovingAverage extends AbstractProcessBlock implements ProcessBlock 
 		if( !isLocked() ) {
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 			controller.acceptCompletionNotification(nvn);
+			notifyOfStatus(qv);
 		}
 	}
 
@@ -136,7 +137,14 @@ public class MovingAverage extends AbstractProcessBlock implements ProcessBlock 
 			}
 		}	
 	}
-	
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
 	/**
 	 * @return a block-specific description of internal statue
 	 */

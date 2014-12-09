@@ -74,10 +74,10 @@ public class UtilityFunctions  {
 	}
 	
 	/**
-	 * Force a Double, Integer or String to a double. Throws NumberFormatException
+	 * Force a Double, Integer or String to a double. Reports NumberFormatException
 	 * for bad input - and sets result to 0.0.
 	 */
-	public double coerceToDouble(Object val) {
+	public double coerceToDouble(Object val)  {
 		double result = 0.0;
 		if( val!=null ) {
 			if( val instanceof Double)       result = ((Double)val).doubleValue();
@@ -88,7 +88,7 @@ public class UtilityFunctions  {
 	}
 	
 	/**
-	 * Force a Double, Integer or String to an int. Throws NumberFormatException
+	 * Force a Double, Integer or String to an int. Reports NumberFormatException
 	 * for bad input - and sets result to 0.
 	 */
 	public int coerceToInteger(Object val) {

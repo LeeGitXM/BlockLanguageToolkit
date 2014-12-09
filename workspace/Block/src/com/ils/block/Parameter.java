@@ -63,7 +63,7 @@ public class Parameter extends AbstractProcessBlock implements ProcessBlock {
 		setName("Parameter");
 		tag = new BlockProperty(BLOCK_PROPERTY_TAG_PATH,"",PropertyType.STRING,true);
 		tag.setBindingType(BindingType.TAG_READWRITE);
-		properties.put(BLOCK_PROPERTY_TAG_PATH, tag);
+		setProperty(BLOCK_PROPERTY_TAG_PATH, tag);
 		
 		// Define a single input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
@@ -101,6 +101,7 @@ public class Parameter extends AbstractProcessBlock implements ProcessBlock {
 			}
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 			controller.acceptCompletionNotification(nvn);
+			notifyOfStatus(qv);
 		}
 	}
 	
@@ -114,7 +115,14 @@ public class Parameter extends AbstractProcessBlock implements ProcessBlock {
 			tag.setValue(event.getNewValue().toString());
 		}
 	}
-	
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
 	/**
 	 * Augment the palette prototype for this block class.
 	 */

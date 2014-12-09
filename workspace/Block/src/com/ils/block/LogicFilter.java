@@ -5,7 +5,10 @@
  */
 package com.ils.block;
 
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
@@ -26,6 +29,7 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -38,6 +42,7 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
 @ExecutableBlock
 public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	private final String TAG = "LogicFilter";
+	private final static String BLOCK_PROPERTY_RATIO = "Ratio";
 	private TruthValue currentState = TruthValue.UNSET;
 	private TruthValue currentValue = TruthValue.UNSET;
 	private double deadband = 0.0;
@@ -46,7 +51,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	private double scanInterval = 1.0;    // ~secs
 	private double timeWindow = 60; // ~ secs
 	private HysteresisType hysteresis = HysteresisType.NEVER;
-	private BlockProperty valueProperty = null;
+	private BlockProperty ratioProperty = null;
 	private final Watchdog dog;
 	
 	/**
@@ -81,18 +86,18 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	private void initialize() {	
 		setName("LogicFilter");
 		BlockProperty deadbandProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_DEADBAND,new Double(deadband),PropertyType.DOUBLE,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_DEADBAND, deadbandProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_DEADBAND, deadbandProperty);
 		BlockProperty hProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_HYSTERESIS,hysteresis,PropertyType.HYSTERESIS,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_HYSTERESIS, hProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_HYSTERESIS, hProperty);
 		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL,new Double(scanInterval),PropertyType.TIME,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL, intervalProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL, intervalProperty);
 		BlockProperty limitProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_LIMIT,new Double(limit),PropertyType.DOUBLE,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_LIMIT, limitProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_LIMIT, limitProperty);
 		BlockProperty windowProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW,new Double(timeWindow),PropertyType.TIME,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW, windowProperty);
-		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,TruthValue.UNKNOWN,PropertyType.TRUTHVALUE,false);
-		valueProperty.setBindingType(BindingType.ENGINE);
-		properties.put(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW, windowProperty);
+		ratioProperty = new BlockProperty(BLOCK_PROPERTY_RATIO,new Double(0.0),PropertyType.DOUBLE,false);
+		ratioProperty.setBindingType(BindingType.ENGINE);
+		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, ratioProperty);
 
 		// Define a single input and output
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
@@ -161,12 +166,12 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		
 		TruthValue newState = TruthValue.UNKNOWN;
 		if( buffer.size() >= maxPoints)  {
-			double ratio = computeRatio(buffer);
+			double ratio = computeRatio();
 			// Even if locked, we update the current state
-			valueProperty.setValue(ratio);
-			controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,new BasicQualifiedValue(new Double(ratio)));
+			ratioProperty.setValue(ratio);
+			controller.sendPropertyNotification(getBlockId().toString(),BLOCK_PROPERTY_RATIO,new BasicQualifiedValue(new Double(ratio)));
 			newState = computeState(currentState,ratio);
-			log.infof("%s.evaluate ... ratio %f (%s)",TAG,ratio,newState.name());
+			log.tracef("%s.evaluate ... ratio %f (%s)",TAG,ratio,newState.name());
 		}
 		
 		if( !isLocked() ) {
@@ -175,6 +180,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 				QualifiedValue result = new BasicQualifiedValue(currentState.name());
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
 				controller.acceptCompletionNotification(nvn);
+				notifyOfStatus(result);
 			}
 		}
 		
@@ -254,6 +260,36 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		}
 	}
 	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {
+		QualifiedValue qv = new BasicQualifiedValue(ratioProperty.getValue());
+		notifyOfStatus(qv);
+		
+	}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
+	/**
+	 * @return a block-specific description of internal statue
+	 */
+	@Override
+	public SerializableBlockStateDescriptor getInternalStatus() {
+		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
+		List<Map<String,String>> descBuffer = descriptor.getBuffer();
+		for( TruthValue tv:buffer) {
+			Map<String,String> qvMap = new HashMap<>();
+			qvMap.put("Value", tv.name());
+			descBuffer.add(qvMap);
+		}
+
+		return descriptor;
+	}
+	
+
+	/**
 	 * Augment the palette prototype for this block class.
 	 */
 	private void initializePrototype() {
@@ -274,7 +310,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	 * Compute the fraction of true. We are guaranteed 
 	 * that the buffer is not empty.
 	 */
-	private double computeRatio(LinkedList<TruthValue> buffer) {
+	private double computeRatio() {
 		int trueCount = 0;
 		int total = 0;
 		for(TruthValue tv:buffer) {

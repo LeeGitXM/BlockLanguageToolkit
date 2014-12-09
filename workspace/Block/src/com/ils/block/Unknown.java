@@ -31,6 +31,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 @ExecutableBlock
 public class Unknown extends AbstractProcessBlock implements ProcessBlock {
 	BlockProperty valueProperty = null;
+	TruthValue tv = TruthValue.UNSET;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -61,7 +62,7 @@ public class Unknown extends AbstractProcessBlock implements ProcessBlock {
 		
 		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,TruthValue.UNKNOWN,PropertyType.TRUTHVALUE,false);
 		valueProperty.setBindingType(BindingType.ENGINE);
-		properties.put(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 		
 		// Define a single input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
@@ -83,7 +84,7 @@ public class Unknown extends AbstractProcessBlock implements ProcessBlock {
 		super.acceptValue(vcn);
 		QualifiedValue qv = vcn.getValue();
 		this.state = BlockState.ACTIVE;
-		TruthValue tv = vcn.getValueAsTruthValue();
+		tv = vcn.getValueAsTruthValue();
 		if( tv.equals(TruthValue.UNKNOWN)) tv = TruthValue.TRUE;
 		else if( tv.equals(TruthValue.TRUE)) tv = TruthValue.FALSE;
 		else if( tv.equals(TruthValue.FALSE)) tv = TruthValue.FALSE;
@@ -100,7 +101,19 @@ public class Unknown extends AbstractProcessBlock implements ProcessBlock {
 		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,result);
 	}
 	
-	
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {
+		QualifiedValue qv = new BasicQualifiedValue(valueProperty.getValue());
+		notifyOfStatus(qv);
+		
+	}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
 	/**
 	 * Augment the palette prototype for this block class.
 	 */

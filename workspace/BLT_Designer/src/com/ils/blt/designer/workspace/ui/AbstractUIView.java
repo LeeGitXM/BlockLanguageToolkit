@@ -21,6 +21,7 @@ import java.util.List;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -63,7 +64,8 @@ public abstract class AbstractUIView extends JComponent
 	protected final static Color INSET_COLOR = new Color(210,210,210);        // A little darker gray
 	protected final static int INSET = 6;
 	protected final static int LEADER_LENGTH = 10;
-	protected final static int SIGNAL_LEADER_LENGTH = 8;        // Shorter for signals
+	// If leader is less than 10, we get straight lines
+	protected final static int SIGNAL_LEADER_LENGTH = 10;       // Would like shorter for signals
 	protected final static Color OUTLINE_COLOR = Color.BLACK;   // For stub
 	protected final static float OUTLINE_WIDTH = 1.0f;          // For stub
 	protected final static Color TEXT_COLOR = Color.BLACK;      // For embedded label
@@ -182,6 +184,7 @@ public abstract class AbstractUIView extends JComponent
 						new Point(inset+(topIndex*interiorWidth)/topSegments,0),
 						new Point(inset+(topIndex*interiorWidth)/topSegments,-SIGNAL_LEADER_LENGTH),
 						new Rectangle((topIndex*interiorWidth)/topSegments,0,2*inset,2*inset),
+						desc.isMultiple(),
 						desc.getAnnotation()); 
 				ap.setSide(AnchorSide.TOP);
 				getAnchorPoints().add(ap);
@@ -196,6 +199,7 @@ public abstract class AbstractUIView extends JComponent
 						new Point(inset+bottomIndex*(interiorWidth)/bottomSegments,sz.height),
 						new Point(inset+bottomIndex*(interiorWidth)/bottomSegments,sz.height+LEADER_LENGTH),
 						new Rectangle(bottomIndex*(interiorWidth)/bottomSegments,sz.height-2*inset,2*inset,2*inset),
+						desc.isMultiple(),
 						desc.getAnnotation());   // Hotspot shape.
 				ap.setSide(AnchorSide.BOTTOM);
 				getAnchorPoints().add(ap);
@@ -209,6 +213,7 @@ public abstract class AbstractUIView extends JComponent
 						new Point(0,inset+leftIndex*interiorHeight/leftSegments),
 						new Point(-LEADER_LENGTH,inset+leftIndex*interiorHeight/leftSegments),
 						new Rectangle(0,leftIndex*interiorHeight/leftSegments,2*inset,2*inset),
+						desc.isMultiple(),
 						desc.getAnnotation());   // Hotspot shape.
 				getAnchorPoints().add(ap);
 				
@@ -222,6 +227,7 @@ public abstract class AbstractUIView extends JComponent
 						new Point(sz.width,inset+rightIndex*interiorHeight/rightSegments-1),
 						new Point(sz.width+LEADER_LENGTH,inset+rightIndex*interiorHeight/rightSegments-1),
 						new Rectangle(sz.width-2*inset,rightIndex*interiorHeight/rightSegments,2*inset,2*inset-1),
+						desc.isMultiple(),
 						desc.getAnnotation());
 				getAnchorPoints().add(ap);
 	
@@ -244,6 +250,13 @@ public abstract class AbstractUIView extends JComponent
 
 	@Override
 	protected abstract void paintComponent(Graphics _g);
+	
+	// Force a repaint.
+	@Override
+	public void update() {
+		//log.infof("%s.update %s ...",TAG,getBlock().getName());
+		repaint();
+	}
 	
 	@Override
 	public void stateChanged(ChangeEvent event) {
@@ -408,11 +421,11 @@ public abstract class AbstractUIView extends JComponent
 	protected Color fillColorForConnectionType(ConnectionType type) {
 		Color color = WorkspaceConstants.CONNECTION_BACKGROUND;   // Black
 		if( block==null ) color = WorkspaceConstants.CONNECTION_BACKGROUND;  // An error
+		else if( type==ConnectionType.SIGNAL) color = WorkspaceConstants.CONNECTION_FILL_SIGNAL;
 		else if( block.getState().equals(BlockState.INITIALIZED)) color = WorkspaceConstants.CONNECTION_FILL_EMPTY;
 		else if( type==ConnectionType.TRUTHVALUE ) color = WorkspaceConstants.CONNECTION_FILL_UNKNOWN;
 		else if( type==ConnectionType.DATA  ) color = WorkspaceConstants.CONNECTION_FILL_DATA;
 		else if( type==ConnectionType.TEXT  ) color = WorkspaceConstants.CONNECTION_FILL_TEXT;
-		else if( type==ConnectionType.SIGNAL) color = WorkspaceConstants.CONNECTION_FILL_SIGNAL;
 		else if( type==ConnectionType.ANY  ) color = WorkspaceConstants.CONNECTION_FILL_TEXT;
 		return color;
 	}

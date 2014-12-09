@@ -14,8 +14,6 @@ import com.ils.blt.common.connection.ProcessConnection;
 import com.ils.blt.common.serializable.DiagramState;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.gateway.engine.ProcessDiagram;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 /**
  * A mock diagram is a process diagram, specially created for functional testing
@@ -23,7 +21,6 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  */
 public class MockDiagram extends ProcessDiagram {
 	private static String TAG = "MockDiagram";
-	private final LoggerEx log;
 	ProcessBlock uut = null;    // Unit under test
 	
 	
@@ -35,7 +32,6 @@ public class MockDiagram extends ProcessDiagram {
 	 */
 	public MockDiagram(SerializableDiagram diagm,UUID parent) { 
 		super(diagm,parent);
-		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 	}
 
 	public void addBlock(ProcessBlock block) {

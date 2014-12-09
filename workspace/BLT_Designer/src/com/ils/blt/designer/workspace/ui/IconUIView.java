@@ -60,6 +60,7 @@ public class IconUIView extends AbstractUIView implements BlockViewUI {
 						new Point(sz.width/2,INSET),
 						new Point(sz.width/2,-LEADER_LENGTH),
 						new Rectangle(sz.width/2-INSET,0,2*INSET,2*INSET),
+						desc.isMultiple(),
 						desc.getAnnotation());
 				ap.setSide(AnchorSide.TOP);
 				getAnchorPoints().add(ap);
@@ -71,6 +72,7 @@ public class IconUIView extends AbstractUIView implements BlockViewUI {
 						new Point(sz.width/2,sz.height-INSET),
 						new Point(sz.width/2,sz.height+SIGNAL_LEADER_LENGTH),
 						new Rectangle(sz.width/2-INSET,sz.height-2*INSET,2*INSET,2*INSET),
+						desc.isMultiple(),
 						desc.getAnnotation());
 				ap.setSide(AnchorSide.BOTTOM);
 				getAnchorPoints().add(ap);

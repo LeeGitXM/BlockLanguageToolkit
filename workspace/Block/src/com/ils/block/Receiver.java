@@ -20,6 +20,7 @@ import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.notification.Signal;
 import com.ils.blt.common.notification.SignalNotification;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
+import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
  * A receiver is a special class that receives broadcast signals directly
@@ -30,6 +31,7 @@ import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 public class Receiver extends AbstractProcessBlock implements ProcessBlock {
 	private final String TAG = "Receiver";
 	protected static String BLOCK_PROPERTY_PATTERN = "AcceptancePattern";
+	private BlockProperty patternProperty = null;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -57,8 +59,8 @@ public class Receiver extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	private void initialize() {
 		setName("Receiver");
-		BlockProperty pattern = new BlockProperty(BLOCK_PROPERTY_PATTERN,"*",PropertyType.STRING,true);
-		properties.put(BLOCK_PROPERTY_PATTERN, pattern);
+		patternProperty = new BlockProperty(BLOCK_PROPERTY_PATTERN,"*",PropertyType.STRING,true);
+		setProperty(BLOCK_PROPERTY_PATTERN, patternProperty);
 		
 		// Define a single output. We receive a value from the "ether" and send it on our output connection
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.CONTROL_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.SIGNAL);
@@ -73,17 +75,25 @@ public class Receiver extends AbstractProcessBlock implements ProcessBlock {
 	public void acceptValue(SignalNotification sn) {
 		Signal signal = sn.getSignal();
 		log.infof("%s.setValue: signal = %s",TAG,signal.getCommand());
-		BlockProperty patternProperty = properties.get(BLOCK_PROPERTY_PATTERN);
 		if( patternProperty==null || signal.getPattern()==null || patternProperty.getValue()==null ||
 					patternProperty.getValue().toString().equalsIgnoreCase("*")                        ||
 					patternProperty.getValue().toString().equalsIgnoreCase(signal.getPattern())) {
 			// Passed the filtering. Send to the output.
 			log.infof("%s.setValue: passing signal to output ",TAG);
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.CONTROL_PORT_NAME,new BasicQualifiedValue(signal));
+			QualifiedValue sig = new BasicQualifiedValue(signal);
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.CONTROL_PORT_NAME,sig);
 			controller.acceptCompletionNotification(nvn);
+			notifyOfStatus(sig);
 		}
 	}
-	
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.CONTROL_PORT_NAME, qv);
+	}
 	/**
 	 * Augment the palette prototype for this block class.
 	 */

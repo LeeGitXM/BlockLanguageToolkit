@@ -3,6 +3,7 @@
  */
 package com.ils.blt.common.block;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -33,6 +34,10 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 * @param sn 
 	 */
 	public void acceptValue(SignalNotification sn);
+	/**
+	 * @return a list of anchor prototypes for the block.
+	 */
+	public List<AnchorPrototype> getAnchors();
 	/**
 	 * Place a value on a named output port of a block. 
 	 * This action does not change the internal state of the block.
@@ -111,9 +116,23 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 */
 	public boolean isTransmitter();
 	/**
+	 * Send status update notifications for any properties
+	 * or output connections known to the designer. 
+	 * 
+	 * In practice, the block properties are all updated
+	 * when a diagram is opened. It's the connection
+	 * notification for animation that is most necessary.
+	 */
+	public void notifyOfStatus();
+	/**
 	 * Reset the internal state of the block.
 	 */
 	public void reset();
+	/**
+	 * Set the anchor descriptors.
+	 * @param prototypes
+	 */
+	public void setAnchors(List<AnchorPrototype> prototypes);
 	/**
 	 * Set or clear the locked state of a block.
 	 * @param flag True to lock the block.

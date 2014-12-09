@@ -6,11 +6,14 @@ package com.ils.blt.gateway;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.UUID;
 
+import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.ProcessBlock;
@@ -19,6 +22,7 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.serializable.DiagramState;
+import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.gateway.engine.BlockExecutionController;
@@ -58,6 +62,7 @@ public class ControllerRequestHandler   {
 	private final LoggerEx log;
 	private GatewayContext context = null;
 	private static ControllerRequestHandler instance = null;
+	private final BlockExecutionController controller = BlockExecutionController.getInstance();
 	
 
 	/**
@@ -70,7 +75,6 @@ public class ControllerRequestHandler   {
 	 * Remove all diagrams from the controller
 	 */
 	public void clearController() {
-		BlockExecutionController controller = BlockExecutionController.getInstance();
 		controller.removeAllDiagrams();
 	}
 	
@@ -132,24 +136,20 @@ public class ControllerRequestHandler   {
 		// If the instance doesn't exist, create one
 		log.infof("%s.getBlockProperties of %s (%s)",TAG,className,blockId.toString());
 		BlockProperty[] results = null;
-		BlockExecutionController controller = BlockExecutionController.getInstance();
 		ProcessDiagram diagram = controller.getDiagram(projectId, resourceId);
 		ProcessBlock block = null;
-		if( diagram!=null ) {
-			block = diagram.getBlock(blockId);
+		if( diagram!=null ) block = diagram.getBlock(blockId);
+		if(block!=null) {
+			results = block.getProperties();  // Existing block
+			log.tracef("%s.getProperties existing %s = %s",TAG,block.getClass().getName(),results.toString());
+		}
+		else {
+			block = createInstance(className,(diagram!=null?diagram.getSelf():null),blockId);  // Block is not (yet) attached to a diagram
 			if(block!=null) {
-				results = block.getProperties();  // Existing block
-				log.tracef("%s.getProperties existing %s = %s",TAG,block.getClass().getName(),results.toString());
-			}
-			else {
-				block = createInstance(className,diagram.getSelf(),blockId);  // Block is not (yet) attached to a diagram
-				if(block!=null) {
-					results = block.getProperties();
-					log.tracef("%s.getProperties new %s = %s",TAG,block.getClass().getName(),results.toString());
-				}
+				results = block.getProperties();
+				log.tracef("%s.getProperties new %s = %s",TAG,block.getClass().getName(),results.toString());
 			}
 		}
-		
 		return results;
 	}
 	
@@ -162,7 +162,6 @@ public class ControllerRequestHandler   {
 	 * @return the properties of an existing or new block.
 	 */
 	public BlockProperty getBlockProperty(UUID parentId,UUID blockId,String propertyName) {
-		BlockExecutionController controller = BlockExecutionController.getInstance();
 		ProcessDiagram diagram = controller.getDiagram(parentId);
 		ProcessBlock block = null;
 		if( diagram!=null ) block = diagram.getBlock(blockId);
@@ -190,7 +189,6 @@ public class ControllerRequestHandler   {
 	 */
 	public Hashtable<String,Hashtable<String,String>> getConnectionAttributes(long projectId,long resourceId,String connectionId,Hashtable<String,Hashtable<String,String>> attributes) {
 		// Find the connection object
-		BlockExecutionController controller = BlockExecutionController.getInstance();
 		Connection cxn  = controller.getConnection(projectId, resourceId, connectionId);
 		return attributes;
 	}
@@ -201,7 +199,6 @@ public class ControllerRequestHandler   {
 	 */
 	public String getDiagramState(Long projectId,Long resourceId) {
 		DiagramState state = DiagramState.ACTIVE;
-		BlockExecutionController controller = BlockExecutionController.getInstance();
 		ProcessDiagram diagram = controller.getDiagram(projectId, resourceId);
 		if( diagram!=null ) {
 			state = diagram.getState();
@@ -222,7 +219,6 @@ public class ControllerRequestHandler   {
 	 */
 	public SerializableBlockStateDescriptor getInternalState(String diagramId,String blockId) {
 		SerializableBlockStateDescriptor descriptor = null;
-		BlockExecutionController controller = BlockExecutionController.getInstance();
 		ProcessDiagram diagram = controller.getDiagram(UUID.fromString(diagramId));
 		if(diagram!=null) {
 			ProcessBlock block = controller.getBlock(diagram, UUID.fromString(blockId));
@@ -240,14 +236,13 @@ public class ControllerRequestHandler   {
 	 * @param quality of the reported output
 	 */
 	public void postValue(UUID parentuuid,UUID blockId,String port,String value,String quality)  {
-		log.infof("%s.postValue - %s = %s on %s",TAG,blockId,value.toString(),port);
-		BlockExecutionController controller = BlockExecutionController.getInstance();
+		log.infof("%s.postValue - %s = %s (%s) on %s",TAG,blockId,value,quality,port);
 		try {
 			ProcessDiagram diagram = controller.getDiagram(parentuuid);
 			if( diagram!=null) {
 				ProcessBlock block = diagram.getBlock(blockId);
 				QualifiedValue qv = new BasicQualifiedValue(value,new BasicQuality(quality,
-						(quality.equalsIgnoreCase("good")?Quality.Level.Good:Quality.Level.Bad)));
+						(quality.equalsIgnoreCase(BLTProperties.QUALITY_GOOD)?Quality.Level.Good:Quality.Level.Bad)));
 				OutgoingNotification note = new OutgoingNotification(block,port,qv);
 				controller.acceptCompletionNotification(note);
 			}
@@ -266,24 +261,48 @@ public class ControllerRequestHandler   {
 	 * @return
 	 */
 	public List<SerializableResourceDescriptor> queryControllerResources() {
-		return BlockExecutionController.getInstance().queryControllerResources();
+		return controller.queryControllerResources();
+	}
+	
+	/**
+	 * Query the ModelManager for a list of the project resources that it is currently
+	 * managing. This is a debugging service.
+	 * @return
+	 */
+	public List<SerializableResourceDescriptor> queryDiagramForBlocks(String diagIdString) {
+		List<SerializableResourceDescriptor> descriptors = new ArrayList<>();
+		UUID diagId = UUID.fromString(diagIdString);
+
+		ProcessDiagram diagram = controller.getDiagram(diagId);
+		if( diagram!=null) {
+			Collection<ProcessBlock> blocks = diagram.getProcessBlocks();
+			for(ProcessBlock block:blocks) {
+				SerializableResourceDescriptor desc = new SerializableResourceDescriptor();
+				desc.setName(block.getName());
+				desc.setClassName(block.getClass().getName());
+				desc.setId(block.getBlockId().toString());
+				descriptors.add(desc);
+			}
+		}
+		else {
+			log.warnf("%s.queryDiagramForBlocks: no diagram found for %s",TAG,diagIdString);
+		}
+		return descriptors;
 	}
 
 	
 	
 	/**
-	 * Set the value of a named property in a block. This method ignores any binding that the
+	 * Set the values of named properties in a block. This method ignores any binding that the
 	 * property may have and sets the value directly. Theoretically the value should be of the right
 	 * type for the property, but if not, it can be expected to be coerced into the proper data type 
  	 * upon receipt by the block. The quality is assumed to be Good.
 	 * 
 	 * @param parentId
 	 * @param blockId
-	 * @param properties JSON encoded list of properties for the block
+	 * @param properties a collection of properties that may have changed
 	 */
 	public void setBlockProperties(UUID parentId, UUID blockId, Collection<BlockProperty> properties) {
-		
-		BlockExecutionController controller = BlockExecutionController.getInstance();
 		ProcessDiagram diagram = controller.getDiagram(parentId);
 		ProcessBlock block = null;
 		if( diagram!=null ) block = diagram.getBlock(blockId);
@@ -307,7 +326,40 @@ public class ControllerRequestHandler   {
 			}
 		}
 	}
-	
+	/**
+	 * Set the value of a named property in a block. This method ignores any binding that the
+	 * property may have and sets the value directly. Theoretically the value should be of the right
+	 * type for the property, but if not, it can be expected to be coerced into the proper data type 
+ 	 * upon receipt by the block. The quality is assumed to be Good.
+	 * 
+	 * @param parentId
+	 * @param blockId
+	 * @param property the newly changed or added block property
+	 */
+	public void setBlockProperty(UUID parentId, UUID blockId, BlockProperty property) {
+
+		ProcessDiagram diagram = controller.getDiagram(parentId);
+		ProcessBlock block = null;
+		if( diagram!=null ) block = diagram.getBlock(blockId);
+		if(block!=null) {
+			BlockProperty existingProperty = block.getProperty(property.getName());
+			if( existingProperty!=null ) {
+				// Update the property
+				updateProperty(block,existingProperty,property);
+			}
+			else {
+				// Need to add a new one.
+				BlockProperty[] props = new BlockProperty[block.getProperties().length+1];
+				int index = 0;
+				for(BlockProperty bp:block.getProperties()) {
+					props[index] = bp;
+					index++;
+				}
+				props[index] = property;
+			}
+		}
+
+	}
 	/**
 	 * The gateway context must be specified before the instance is useful.
 	 * @param cntx the GatewayContext
@@ -323,7 +375,6 @@ public class ControllerRequestHandler   {
 	 * @param state
 	 */
 	public void setDiagramState(Long projectId,Long resourceId,String state) {
-		BlockExecutionController controller = BlockExecutionController.getInstance();
 		ProcessDiagram diagram = controller.getDiagram(projectId, resourceId);
 		if( diagram!=null && state!=null ) {
 			try {
@@ -342,16 +393,24 @@ public class ControllerRequestHandler   {
 	public void stopController() {
 		BlockExecutionController.getInstance().stop();
 	}
+	
+	/**
+	 * Direct blocks in all diagrams to report their status for a UI update.
+	 */
+	public void triggerStatusNotifications() {
+		BlockExecutionController.getInstance().triggerStatusNotifications();
+	}
 
 	// Handle all the intricasies of a property change
 	private void updateProperty(ProcessBlock block,BlockProperty existingProperty,BlockProperty newProperty) {
 		if( !existingProperty.isEditable() )  return;
 		
-		log.infof("%s.updateProperty old = %s, new = %s",TAG,existingProperty.toString(),newProperty.toString());
-		BlockExecutionController controller = BlockExecutionController.getInstance();
+		log.infof("%s.updateProperty old: %s, new:%s",TAG,existingProperty.toString(),newProperty.toString());
 		if( !existingProperty.getBindingType().equals(newProperty.getBindingType()) ) {
 			// If the binding has changed - fix subscriptions.
 			controller.removeSubscription(block, existingProperty);
+			existingProperty.setBindingType(newProperty.getBindingType());
+			existingProperty.setBinding(newProperty.getBinding());
 			controller.startSubscription(block,newProperty);
 			// If the new binding is a tag write - do the write.
 			if( !block.isLocked() && 
@@ -363,6 +422,7 @@ public class ControllerRequestHandler   {
 		else if( !existingProperty.getBinding().equals(newProperty.getBinding()) ) {
 			// Same type, new binding target.
 			controller.removeSubscription(block, existingProperty);
+			existingProperty.setBinding(newProperty.getBinding());
 			controller.startSubscription(block,newProperty);
 			// If the new binding is a tag write - do the write.
 			if( !block.isLocked() && 
@@ -372,14 +432,45 @@ public class ControllerRequestHandler   {
 			}	
 		}
 		else {
-			// Potential value change
-			if( existingProperty.getBindingType().equals(BindingType.NONE) && newProperty.getValue()!=null &&
-			    (existingProperty.getValue()==null || 
-			    !existingProperty.getValue().toString().equals(newProperty.getValue().toString()) )   )   {
+			// The event came explicitly from the designer/client. Send event whether it changed or not.
+			if( existingProperty.getBindingType().equals(BindingType.NONE) && newProperty.getValue()!=null   )   {
 				log.infof("%s.setProperty sending event ...",TAG);
 				BlockPropertyChangeEvent event = new BlockPropertyChangeEvent(block.getBlockId().toString(),newProperty.getName(),
 						existingProperty.getValue(),newProperty.getValue());
 				block.propertyChange(event);
+			}
+		}
+	}
+	/** Change the properties of anchors for a block. 
+	 * @param diagramId the uniqueId of the parent diagram
+	 * @param blockId the uniqueId of the block
+	 * @param anchorUpdates the complete anchor list for the block.
+	 */
+	public void updateBlockAnchors(String diagramId,String blockId, Collection<SerializableAnchor> anchorUpdates) {
+		UUID diagramUUID = UUID.fromString(diagramId);
+		ProcessDiagram diagram = controller.getDiagram(diagramUUID);
+		ProcessBlock block = null;
+		UUID blockUUID = UUID.fromString(blockId);
+		if( diagram!=null ) block = diagram.getBlock(blockUUID);
+		if(block!=null) {
+			List<AnchorPrototype> anchors = block.getAnchors();
+			for( SerializableAnchor anchorUpdate:anchorUpdates ) {
+				// These are undoubtedly very short lists ... do linear searches
+				boolean found = false;
+				for( AnchorPrototype anchor:anchors ) {
+					if( anchor.getName().equalsIgnoreCase(anchorUpdate.getDisplay())) {
+						anchor.setConnectionType(anchorUpdate.getConnectionType());
+						found = true;
+						break;
+					}
+				}
+				if( !found ) {
+					// Add previously unknown anchor
+					AnchorPrototype proto = new AnchorPrototype(anchorUpdate.getDisplay(),anchorUpdate.getDirection(),anchorUpdate.getConnectionType());
+					proto.setAnnotation(anchorUpdate.getAnnotation());
+					proto.setHint(anchorUpdate.getHint());
+					anchors.add(proto);
+				}
 			}
 		}
 	}

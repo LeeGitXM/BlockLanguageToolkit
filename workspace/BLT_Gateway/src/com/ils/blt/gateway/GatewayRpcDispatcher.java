@@ -23,6 +23,7 @@ import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.TransmissionScope;
 import com.ils.blt.common.notification.BroadcastNotification;
 import com.ils.blt.common.notification.Signal;
+import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.gateway.engine.BlockExecutionController;
@@ -118,7 +119,7 @@ public class GatewayRpcDispatcher   {
 			blockUUID = UUID.fromString(blockId);
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s: getBlockProperties: Block UUID string is illegal (%s), creating new",TAG,blockId);
+			log.warnf("%s.getBlockProperties: Block UUID string is illegal (%s), creating new",TAG,blockId);
 			blockUUID = UUID.nameUUIDFromBytes(blockId.getBytes());
 		}
 		BlockProperty[] propertyArray = ControllerRequestHandler.getInstance().
@@ -136,7 +137,7 @@ public class GatewayRpcDispatcher   {
 		else {
 			log.warnf("%s: getBlockProperties: %s block %d:%d has no properties",TAG,className,projectId.longValue(),resourceId.longValue());
 		}
-		if( result!=null) log.infof("%s: getBlockProperties: %s = %s",TAG,className,result.toString());
+		if( result!=null) log.debugf("%s.getBlockProperties: %s = %s",TAG,className,result.toString());
 		return result;
 	}
 	/** The blocks implemented in Java are expected to reside in a jar named "block-definition.jar".
@@ -243,8 +244,28 @@ public class GatewayRpcDispatcher   {
 	}
 	
 
-	public List<String> getDiagramTreePaths(String projectName) {
-		List<String> results = BlockExecutionController.getInstance().getDiagramTreePaths(projectName);
+	public List<String> getDiagramDescriptors(String projectName) {
+
+		log.infof("%s.getDiagramDescriptors ...",TAG);
+		List<String> results = new ArrayList<String>();
+		List<SerializableResourceDescriptor> descriptors = BlockExecutionController.getInstance().getDiagramDescriptors(projectName);
+		ObjectMapper mapper = new ObjectMapper();
+		for(SerializableResourceDescriptor descriptor:descriptors) {
+			try {
+				String json =  mapper.writeValueAsString(descriptor);
+				results.add(json);
+			} 
+			catch (JsonParseException jpe) {
+				log.warnf("%s: getDiagramDescriptors: parsing exception (%s)",TAG,jpe.getLocalizedMessage());
+			} 
+			catch (JsonMappingException jme) {
+				log.warnf("%s: getDiagramDescriptors: mapping exception(%s)",TAG,jme.getLocalizedMessage());
+			} 
+			catch (IOException ioe) {
+				log.warnf("%s: getDiagramDescriptors: io exception(%s)",TAG,ioe.getLocalizedMessage());
+			}
+
+		}
 		return results;
 	}
 
@@ -255,12 +276,20 @@ public class GatewayRpcDispatcher   {
 		log.infof("%s.queryControllerResources ...",TAG);
 		return  ControllerRequestHandler.getInstance().queryControllerResources();
 	}
+	/** 
+	 * @param diagId the identifier of the diagram of interest
+	 *  @return
+	 */
+	public List<SerializableResourceDescriptor> queryDiagram(String diagId) {
+		log.infof("%s.queryDiagram ... %s",TAG,diagId);
+		return  ControllerRequestHandler.getInstance().queryDiagramForBlocks(diagId);
+	}
 	/**
 	 * Reset a block or diagram given its UUID
 	 * @param uuidString
 	 */
 	public void resetBlock(String diagramIdString,String blockIdString) {
-		log.infof("%s.diagramExists ...",TAG);
+		log.infof("%s.resetBlock ...",TAG);
 		BlockExecutionController controller = BlockExecutionController.getInstance();
 		UUID diagramUUID = null;
 		UUID blockUUID = null;
@@ -269,7 +298,7 @@ public class GatewayRpcDispatcher   {
 			blockUUID = UUID.fromString(blockIdString);
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.diagramExists: Diagram or block UUID string is illegal (%s, %s), creating new",TAG,diagramIdString,blockIdString);
+			log.warnf("%s.resetBlock: Diagram or block UUID string is illegal (%s, %s), creating new",TAG,diagramIdString,blockIdString);
 			diagramUUID = UUID.nameUUIDFromBytes(diagramIdString.getBytes());
 			blockUUID = UUID.nameUUIDFromBytes(blockIdString.getBytes());
 		}
@@ -286,30 +315,37 @@ public class GatewayRpcDispatcher   {
 			diagramUUID = UUID.fromString(uuidString);
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.diagramExists: Diagram UUID string is illegal (%s), creating new",TAG,uuidString);
+			log.warnf("%s.resetDiagram: Diagram UUID string is illegal (%s), creating new",TAG,uuidString);
 			diagramUUID = UUID.nameUUIDFromBytes(uuidString.getBytes());
 		}
 		BlockExecutionController.getInstance().resetDiagram(diagramUUID);
 	}
-	/** 
-	 *  Reset every block in a specified diagram
-	 */
-	public void resetDiagram(String project,String path) {
-		log.infof("%s: resetDiagram ...",TAG);
-	    BlockExecutionController.getInstance().resetDiagram(project,path);
-	}
+
 	public Boolean resourceExists(Long projectId,Long resourceId) {
-		log.infof("%s.resourceExists ...",TAG);
 		BlockExecutionController controller = BlockExecutionController.getInstance();
 		ProcessDiagram diagram = controller.getDiagram(projectId.longValue(), resourceId.longValue());
-		log.infof("%s.resourceExists (2) ...",TAG);
+		log.infof("%s.resourceExists diagram %d:%d ...%s",TAG,projectId,resourceId,(diagram!=null?"true":"false"));
 		return new Boolean(diagram!=null);
 	}
-	
-	public Boolean sendLocalSignal(String projectName, String diagramPath,String className, String command) {
-		log.infof("%s.sendLocalSignal: %s %s %s %s",TAG,projectName,diagramPath,className,command);
+	/**
+	 * 
+	 * @param uuidString identifier of the diagram for which the signal is local
+	 * @param className
+	 * @param command
+	 * @return
+	 */
+	public Boolean sendLocalSignal(String uuidString, String className, String command) {
+		log.infof("%s.sendLocalSignal: %s %s %s",TAG,uuidString,className,command);
 		Boolean success = new Boolean(true);
-		ProcessDiagram diagram = BlockExecutionController.getInstance().getDiagram(projectName,diagramPath);
+		UUID diagramUUID = null;
+		try {
+			diagramUUID = UUID.fromString(uuidString);
+		}
+		catch(IllegalArgumentException iae) {
+			log.warnf("%s.sendLocalSignal: Diagram UUID string is illegal (%s), creating new",TAG,uuidString);
+			diagramUUID = UUID.nameUUIDFromBytes(uuidString.getBytes());
+		}
+		ProcessDiagram diagram = BlockExecutionController.getInstance().getDiagram(diagramUUID);
 		if( diagram!=null ) {
 			// Create a broadcast notification
 			Signal sig = new Signal(command,"","");
@@ -317,7 +353,7 @@ public class GatewayRpcDispatcher   {
 			BlockExecutionController.getInstance().acceptBroadcastNotification(broadcast);
 		}
 		else {
-			log.warnf("%s.sendLocalSignal: Unable to find %s%s for %s command to %s",TAG,projectName,diagramPath,command,className);
+			log.warnf("%s.sendLocalSignal: Unable to find %s for %s command to %s",TAG,uuidString,command,className);
 			success = new Boolean(false);
 		}
 		return success;
@@ -348,6 +384,30 @@ public class GatewayRpcDispatcher   {
 			log.warnf("%s.setBlockProperties: IO exception (%s)",TAG,ioe.getLocalizedMessage());
 		}; 
 	}
+	
+	/** Set a new value for the specified block property. 
+	 * @param diagramId the uniqueId of the parent diagram
+	 * @param blockId the uniqueId of the block
+	 * @param json JSON representation of the property
+	 */
+	public void setBlockProperty(String diagramId,String blockId, String json) {
+		log.infof("%s.setBlockProperty: %s %s: %s", TAG, diagramId, blockId, json);
+		// Deserialize the JSON
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			BlockProperty property = mapper.readValue(json, BlockProperty.class);
+			ControllerRequestHandler.getInstance().setBlockProperty(getBlockUUID(diagramId),getBlockUUID(blockId),property);
+		} 
+		catch (JsonParseException jpe) {
+			log.warnf("%s.setBlockProperty: parse exception (%s)",TAG,jpe.getLocalizedMessage());
+		}
+		catch(JsonMappingException jme) {
+			log.warnf("%s.setBlockProperty: mapping exception (%s)",TAG,jme.getLocalizedMessage());
+		}
+		catch(IOException ioe) {
+			log.warnf("%s.setBlockProperty: IO exception (%s)",TAG,ioe.getLocalizedMessage());
+		}; 
+	}
 	public void setDiagramState(Long projectId,Long resourceId,String state) {
 		ControllerRequestHandler.getInstance().setDiagramState(projectId,resourceId,state);
 	}
@@ -360,5 +420,38 @@ public class GatewayRpcDispatcher   {
 	public void stopController() {
 		ControllerRequestHandler.getInstance().stopController();
 	}
-
+	
+	/**
+	 * Trigger status notifications for all current diagrams and their blocks.
+	 */
+	public void triggerStatusNotifications() {
+		log.infof("%s.triggerStatusNotifications ...",TAG);
+		ControllerRequestHandler.getInstance().triggerStatusNotifications();
+	}
+	
+	
+	/** Change the properties of anchors for a block. 
+	 * @param diagramId the uniqueId of the parent diagram
+	 * @param blockId the uniqueId of the block
+	 * @param json JSON representation of the complete anchor list for the block.
+	 */
+	public void updateBlockAnchors(String diagramId,String blockId, String json) {
+		log.infof("%s.updateBlockAnchors: %s %s: %s", TAG, diagramId, blockId, json);
+		// Deserialize the JSON
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			Collection<SerializableAnchor> anchors = mapper.readValue(json, 
+					new TypeReference<Collection<SerializableAnchor>>(){});
+			ControllerRequestHandler.getInstance().updateBlockAnchors(diagramId,blockId,anchors);
+		} 
+		catch (JsonParseException jpe) {
+			log.warnf("%s.updateBlockAnchors: parse exception (%s)",TAG,jpe.getLocalizedMessage());
+		}
+		catch(JsonMappingException jme) {
+			log.warnf("%s.updateBlockAnchors: mapping exception (%s)",TAG,jme.getLocalizedMessage());
+		}
+		catch(IOException ioe) {
+			log.warnf("%s.updateBlockAnchors: IO exception (%s)",TAG,ioe.getLocalizedMessage());
+		}; 
+	}
 }

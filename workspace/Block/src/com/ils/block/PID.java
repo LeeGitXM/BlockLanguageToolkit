@@ -83,7 +83,14 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 		pv = initialValue;
 		log.infof("%s.reset",TAG);
 	}
-	
+	/**
+	 * Disconnect from the timer thread.
+	 */
+	@Override
+	public void stop() {
+		super.stop();
+		controller.removeWatchdog(dog);
+	}
 	/**
 	 * Add properties that are new for this class.
 	 * Populate them with default values.
@@ -92,15 +99,15 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 		setName("PID");
 		this.isReceiver = true;
 		BlockProperty pvProperty = new BlockProperty(BLOCK_PROPERTY_INITIAL_VALUE,new Double(pv),PropertyType.DOUBLE,true);
-		properties.put(BLOCK_PROPERTY_INITIAL_VALUE, pvProperty);
+		setProperty(BLOCK_PROPERTY_INITIAL_VALUE, pvProperty);
 		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL,new Double(interval),PropertyType.TIME,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL, intervalProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL, intervalProperty);
 		BlockProperty kdProperty = new BlockProperty(BLOCK_PROPERTY_KD,new Double(kd),PropertyType.DOUBLE,true);
-		properties.put(BLOCK_PROPERTY_KD, kdProperty);
+		setProperty(BLOCK_PROPERTY_KD, kdProperty);
 		BlockProperty kiProperty = new BlockProperty(BLOCK_PROPERTY_KI,new Double(ki),PropertyType.DOUBLE,true);
-		properties.put(BLOCK_PROPERTY_KI, kiProperty);
+		setProperty(BLOCK_PROPERTY_KI, kiProperty);
 		BlockProperty kpProperty = new BlockProperty(BLOCK_PROPERTY_KP,new Double(kp),PropertyType.DOUBLE,true);
-		properties.put(BLOCK_PROPERTY_KP, kpProperty);
+		setProperty(BLOCK_PROPERTY_KP, kpProperty);
 		
 		
 		// Define a two inputs -- feedback and setpoint
@@ -134,7 +141,7 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
-		log.infof("%s.propertyChange: Received %s = %s",TAG,propertyName,event.getNewValue().toString());
+		log.debugf("%s.propertyChange: Received %s = %s",TAG,propertyName,event.getNewValue().toString());
 		if( propertyName.equals(BLOCK_PROPERTY_KD)) {
 			try {
 				kd = Double.parseDouble(event.getNewValue().toString());
@@ -195,7 +202,7 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 		String port = vcn.getConnection().getDownstreamPortName();
 		if( port.equals(BlockConstants.IN_PORT_NAME)  ) {
 			QualifiedValue qv = vcn.getValue();
-			log.infof("%s.acceptValue: port %s value = %s ",TAG,port,qv.getValue().toString());
+			log.tracef("%s.acceptValue: port %s value = %s ",TAG,port,qv.getValue().toString());
 			try {
 				pv = Double.parseDouble(qv.getValue().toString());
 			}
@@ -229,7 +236,7 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void acceptValue(SignalNotification sn) {
 		Signal signal = sn.getSignal();
-		log.infof("%s.acceptValue: signal = %s (%s)",TAG,signal.getCommand(),getBlockId().toString());
+		log.tracef("%s.acceptValue: signal = %s (%s)",TAG,signal.getCommand(),getBlockId().toString());
 		if( signal.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_RESET)) {
 			reset();
 		}
@@ -261,7 +268,7 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 		double integralContribution = ki*integral;
 		double derivativeContribution = kd*derivative;
 		double result = proportionalContribution + integralContribution + derivativeContribution;
-		if( log.isInfoEnabled() ) {
+		if( log.isTraceEnabled() ) {
 			log.infof("%s.evaluate setpoint= %f, pv = %f, error = %f, previous error = %f",TAG,setPoint,pv,error,previousError);
 			log.infof("%s.evaluate Kp = %f",TAG,proportionalContribution);
 			log.infof("%s.evaluate Ki = %f",TAG,integralContribution);
@@ -269,16 +276,32 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 		}
 		
 		
-		log.infof("%s: evaluate - pid out is %f",TAG,result);
-		OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,new BasicQualifiedValue(result));
+		log.tracef("%s: evaluate - pid out is %f",TAG,result);
+		QualifiedValue ans = new BasicQualifiedValue(result);
+		OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,ans);
 		controller.acceptCompletionNotification(nvn);
-		nvn = new OutgoingNotification(this,PROPORTIONAL_PORT,new BasicQualifiedValue(proportionalContribution));
+		QualifiedValue prop = new BasicQualifiedValue(proportionalContribution);
+		nvn = new OutgoingNotification(this,PROPORTIONAL_PORT,prop);
 		controller.acceptCompletionNotification(nvn);
-		nvn = new OutgoingNotification(this,INTEGRAL_PORT,new BasicQualifiedValue(integralContribution));
+		QualifiedValue integ = new BasicQualifiedValue(integralContribution);
+		nvn = new OutgoingNotification(this,INTEGRAL_PORT,integ);
 		controller.acceptCompletionNotification(nvn);
-		nvn = new OutgoingNotification(this,DERIVATIVE_PORT,new BasicQualifiedValue(derivativeContribution));
+		QualifiedValue deriv = new BasicQualifiedValue(derivativeContribution);
+		nvn = new OutgoingNotification(this,DERIVATIVE_PORT,deriv);
 		controller.acceptCompletionNotification(nvn);
-		
+		notifyOfStatus(ans,prop,integ,deriv);		
+	}
+	
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {}
+	private void notifyOfStatus(QualifiedValue qv,QualifiedValue prop,QualifiedValue integ,QualifiedValue derivative) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+		controller.sendConnectionNotification(getBlockId().toString(), PROPORTIONAL_PORT, prop);
+		controller.sendConnectionNotification(getBlockId().toString(), INTEGRAL_PORT, integ);
+		controller.sendConnectionNotification(getBlockId().toString(), DERIVATIVE_PORT, derivative);
 	}
 	
 	/**

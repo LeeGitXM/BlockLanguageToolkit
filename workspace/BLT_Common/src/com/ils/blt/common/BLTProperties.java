@@ -28,7 +28,9 @@ public interface BLTProperties   {
 	/** This unique ID represents the root node in the project tree */
 	public static final UUID ROOT_FOLDER_UUID = UUID
 			.fromString("7bbbd6b9-3140-4328-a844-51817eb47574");
-	public static final String ROOT_FOLDER_NAME = "ROOT";   
+	public static final String ROOT_FOLDER_NAME = "ROOT";
+	public static final long ROOT_PARENT_ID = 0;    // For the status manager
+	public static final long ROOT_RESOURCE_ID = -1;
 	
 	// This is the common prefix under which bundle files are identified/registered
 	public static final String BUNDLE_PREFIX = "blt";
@@ -42,8 +44,8 @@ public interface BLTProperties   {
 	public static final String MSG_BLOCK_STATE     = "BlockState";
 	public static final String MSG_WORKSPACE_ID    = "WorkspaceID";    // UUID of the component's workspace
 	
-	// These are names of system properties
-	public static final String EXIM_PATH = "blt.exim.path";            // Default for file choose dialogs
+	// These are names of system properties  
+	public static final String EXIM_PATH = "blt.exim.path";            // Initial default for file choose dialogs
 	// These are the key names allowed in the Python dictionary that defines a block attribute.
 	public static final String BLOCK_ATTRIBUTE_BINDING    = "binding";
 	public static final String BLOCK_ATTRIBUTE_BINDING_TYPE = "bindingType";
@@ -80,4 +82,10 @@ public interface BLTProperties   {
 	public static final String PALETTE_VIEW_ICON   = "viewIcon";
 	public static final String PALETTE_VIEW_LABEL  = "viewLabel";
 	public static final String PALETTE_VIEW_WIDTH  = "viewWidth";
+	
+	// Name to use for "Good" Quality
+	public static final String QUALITY_GOOD        = "Good";
+	// Preferences keys
+	public static final String PREFERENCES_NAME     = "BLTPreferences";    // Preferences collection name
+	public static final String PREF_EXIM_DIRECTORY  = "ExImDirectory";     // Export/import directory
 }

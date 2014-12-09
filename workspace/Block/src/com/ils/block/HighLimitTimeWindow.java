@@ -83,20 +83,20 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 	private void initialize() {	
 		setName("HighLimitTime");
 		
-		BlockProperty windowProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW,new Double(timeWindow),PropertyType.DOUBLE,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW, windowProperty);
+		BlockProperty windowProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW,new Double(timeWindow),PropertyType.TIME,true);
+		setProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW, windowProperty);
 		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL,new Double(scanInterval),PropertyType.TIME,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL, intervalProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL, intervalProperty);
 		BlockProperty bp = new BlockProperty(BlockConstants.BLOCK_PROPERTY_LIMIT,new Double(limit),PropertyType.DOUBLE,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_LIMIT, bp);
+		setProperty(BlockConstants.BLOCK_PROPERTY_LIMIT, bp);
 		BlockProperty fillProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_FILL_REQUIRED,new Boolean(fillRequired),PropertyType.BOOLEAN,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_FILL_REQUIRED, fillProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_FILL_REQUIRED, fillProperty);
 		BlockProperty triggerProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER_COUNT,new Integer(triggerCount),PropertyType.INTEGER,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_TRIGGER_COUNT, triggerProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER_COUNT, triggerProperty);
 		BlockProperty deadbandProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_DEADBAND,new Double(deadband),PropertyType.DOUBLE,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_DEADBAND, deadbandProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_DEADBAND, deadbandProperty);
 		BlockProperty hProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_HYSTERESIS,hysteresis,PropertyType.HYSTERESIS,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_HYSTERESIS, hProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_HYSTERESIS, hProperty);
 		
 		// Define a single input.
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
@@ -125,7 +125,6 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 	public void stop() {
 		controller.removeWatchdog(dog);
 	}
-	
 	/**
 	 * A new value has arrived. Simply set the current value.
 	 * (We poll the current value on an interval).
@@ -153,6 +152,7 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 				QualifiedValue outval = new BasicQualifiedValue(TruthValue.UNKNOWN,qual,qv.getTimestamp());
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 				controller.acceptCompletionNotification(nvn);
+				notifyOfStatus(outval);
 			}
 			reset();     // Reset the evaluation interval
 		}
@@ -166,7 +166,7 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 	 */
 	@Override
 	public void evaluate() {
-		log.infof("%s.evaluate",TAG);
+		log.debugf("%s.evaluate",TAG);
 		if( Double.isNaN(currentValue) ) return;
 
 		// Evaluate the buffer and report
@@ -177,7 +177,7 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 		while(buffer.size() > maxPoints ) {
 			buffer.removeFirst();
 		}
-		log.infof("%s.evaluate %d of %d points",TAG,buffer.size(),maxPoints);
+		log.debugf("%s.evaluate %d of %d points",TAG,buffer.size(),maxPoints);
 		if( buffer.size() >= maxPoints || !fillRequired) {
 			TruthValue result = checkPassConditions(truthValue);
 			if( !result.equals(truthValue) && !isLocked() ) {
@@ -186,6 +186,7 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 				QualifiedValue outval = new BasicQualifiedValue(result);
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 				controller.acceptCompletionNotification(nvn);
+				notifyOfStatus(outval);
 			}
 		}
 		else {
@@ -194,11 +195,24 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 				QualifiedValue outval = new BasicQualifiedValue(TruthValue.UNKNOWN);
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 				controller.acceptCompletionNotification(nvn);
+				notifyOfStatus(outval);
 			}
 		}
 
 		dog.setSecondsDelay(scanInterval);
 		controller.pet(dog);
+	}
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {
+		QualifiedValue qv = new BasicQualifiedValue(truthValue);
+		notifyOfStatus(qv);
+		
+	}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 	/**
 	 * @return a block-specific description of internal statue
@@ -222,7 +236,7 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
-		log.infof("%s.propertyChange: %s = %s",TAG,propertyName,event.getNewValue().toString());
+		log.debugf("%s.propertyChange: %s = %s",TAG,propertyName,event.getNewValue().toString());
 		if(propertyName.equals(BlockConstants.BLOCK_PROPERTY_LIMIT)) {
 			try {
 				limit = Double.parseDouble(event.getNewValue().toString());

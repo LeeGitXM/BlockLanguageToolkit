@@ -106,9 +106,10 @@ public class ZeroCrossing extends AbstractProcessBlock implements ProcessBlock {
 				if( !result.equals(truthValue)) {
 					truthValue = result;
 					if( !isLocked() ) {
-						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,
-								new BasicQualifiedValue(truthValue,qv.getQuality(),qv.getTimestamp()));
+						qv = new BasicQualifiedValue(truthValue,qv.getQuality(),qv.getTimestamp());
+						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 						controller.acceptCompletionNotification(nvn);
+						notifyOfStatus(qv);
 					}
 				}
 				if (dbl != 0){
@@ -120,7 +121,18 @@ public class ZeroCrossing extends AbstractProcessBlock implements ProcessBlock {
 			}
 		}
 	}
-
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {
+		QualifiedValue qv = new BasicQualifiedValue(truthValue);
+		notifyOfStatus(qv);
+		
+	}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
 	/**
 	 *  When unlocking, set the remembered state as "UNSET". This will allow
 	 *  the next value to generate output, no matter what.

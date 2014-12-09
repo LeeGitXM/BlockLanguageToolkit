@@ -162,9 +162,12 @@ insert into TagMap values ('[the bad-value of SS2_TAPER_TIP_HEIGHT]','[]Tags/SS2
 -- The following entries map the names of G2 parameters/value objects into Ignition Tags
 insert into TagMap values ('CATIN-GDA-COUNTER','[]Parameters/CatinCounter','STRING');
 insert into TagMap values ('CATIN-GDA-PROD-ML-ACTIVE','[]Parameters/CatinProdMlActive','STRING');
+insert into TagMap values ('EM-GDA-LOGICAL-VARIABLE-XXX-2','[]Parameters/LogicalVariable2','STRING');
 insert into TagMap values ('EM-GDA-LOGICAL-VARIABLE-XXX-293','[]Parameters/LogicalVariable293','STRING');
 insert into TagMap values ('EM-GDA-SYMBOLIC-VARIABLE-XXX-291','[]Parameters/SymbolicVariable291','STRING');
 insert into TagMap values ('EM-GDA-SYMBOLIC-VARIABLE-XXX-292','[]Parameters/SymbolicVariable292','STRING');
+insert into TagMap values ('EM-GDA-SYMBOLIC-VARIABLE-XXX-429','[]Parameters/SymbolicVariable429','STRING');
+insert into TagMap values ('EM-GDA-SYMBOLIC-VARIABLE-XXX-4651','[]Parameters/SymbolicVariable4651','STRING');
 insert into TagMap values ('FREEZER-SAMPLE-SWITCH','[]Parameters/FreezerSampleSwitch','STRING');
 insert into TagMap values ('SERIES_FLYING_SWITCH-GDA-INPUT','[]Parameters/SeriesFlyingSwitchInput','STRING');
 insert into TagMap values ('SINGLE_FLYING_SWITCH-GDA-INPUT','[]Parameters/SingleFlyingSwitchInput','STRING');

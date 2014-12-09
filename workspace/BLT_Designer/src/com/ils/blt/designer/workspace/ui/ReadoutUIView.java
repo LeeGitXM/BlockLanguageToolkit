@@ -11,11 +11,13 @@ import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
 
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.designer.workspace.ProcessBlockView;
+import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
 
 
 /**
@@ -32,20 +34,29 @@ public class ReadoutUIView extends AbstractUIView implements BlockViewUI {
 	private static final int DEFAULT_HEIGHT = 40;
 	private static final int DEFAULT_WIDTH  = 80;
 	private final UtilityFunctions fncs;
+	private BlockProperty valueProperty = null;
 	
 	public ReadoutUIView(ProcessBlockView view) {
 		super(view,DEFAULT_WIDTH,DEFAULT_HEIGHT);
 		this.fncs = new UtilityFunctions();
 		setOpaque(false);
 		initAnchorPoints();
+		for( BlockProperty bp:block.getProperties()) {
+			if( bp.getName()!=null ) {
+				if(bp.getName().equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_VALUE)) {
+					valueProperty = bp;
+					//log.infof("ReadoutViewUI(%d): got value property",bp.hashCode());
+					break;
+				}
+			}
+		}
 	}
-	
 
 	@Override
 	protected void paintComponent(Graphics _g) {
 		// Calling the super method effects an "erase".
 		Graphics2D g = (Graphics2D) _g;
-
+		//log.infof("ReadoutUIView.paintComponent %s ...(%d:%s)",getBlock().getName(),valueProperty.hashCode(),fncs.coerceToString(valueProperty.getValue()) );
 		// Preserve the original transform to roll back to at the end
 		AffineTransform originalTx = g.getTransform();
 		Color originalBackground = g.getBackground();
@@ -108,16 +119,12 @@ public class ReadoutUIView extends AbstractUIView implements BlockViewUI {
 		g.setBackground(originalBackground);
 		drawAnchors(g,0,-BORDER_WIDTH/2);
 		// Update embedded text - the block formats the output
-		// We are guaranteed that the propert value is a qualified value.
+		// We are guaranteed that the property value is a qualified value.
 		String value  = "no value property";
-		for( BlockProperty bp:block.getProperties()) {
-			if( bp.getName()!=null ) {
-				if(bp.getName().equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_VALUE)) {
-					value = fncs.coerceToString(bp.getValue());   // Just to be safe
-					break;
-				}
-			}
+		if( valueProperty!=null ) {
+			value = fncs.coerceToString(valueProperty.getValue());   // Just to be safe
 		}
+		
 		// Set the font size based on the string length.
 		// Assumes 100px block width
 		int fontSize = 10;  // Small

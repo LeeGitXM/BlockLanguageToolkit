@@ -148,21 +148,31 @@ public class NoiseGenerator extends AbstractProcessBlock implements ProcessBlock
 				try {
 					value = Double.parseDouble(qv.getValue().toString());
 					if( distribution!=null) value += distribution.sample();
-					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,new BasicQualifiedValue(value));
+					qv = new BasicQualifiedValue(value);
+					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 					controller.acceptCompletionNotification(nvn);
+					notifyOfStatus(qv);
 				}
 				catch(NumberFormatException nfe) {
 					log.warnf("%s.acceptValue: Unable to convert incoming value to a double (%s)",TAG,nfe.getLocalizedMessage());
 				}
 			}
 			else {
-				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,new BasicQualifiedValue(new Double(Double.NaN),
-						qv.getQuality(),qv.getTimestamp()));
+				qv = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
+				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 				controller.acceptCompletionNotification(nvn);
+				notifyOfStatus(qv);
 			}
 		}
 	}
-	
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
 	/**
 	 * Add properties that are new for this class.
 	 * Populate them with default values.
@@ -171,17 +181,17 @@ public class NoiseGenerator extends AbstractProcessBlock implements ProcessBlock
 		setName("Noise generator");
 		distribution = new UniformRealDistribution();
 		BlockProperty type = new BlockProperty(BlockConstants.BLOCK_PROPERTY_DISTRIBUTION,distributionType.name(),PropertyType.STRING,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_DISTRIBUTION, type);
+		setProperty(BlockConstants.BLOCK_PROPERTY_DISTRIBUTION, type);
 		// Uniform Distribution
 		BlockProperty constant = new BlockProperty(BLOCK_PROPERTY_LOWER,new Double(lower),PropertyType.DOUBLE,true);
-		properties.put(BLOCK_PROPERTY_LOWER, constant);
+		setProperty(BLOCK_PROPERTY_LOWER, constant);
 		constant = new BlockProperty(BLOCK_PROPERTY_UPPER,new Double(upper),PropertyType.DOUBLE,true);
-		properties.put(BLOCK_PROPERTY_UPPER, constant);
+		setProperty(BLOCK_PROPERTY_UPPER, constant);
 		constant = new BlockProperty(BLOCK_PROPERTY_MEAN,new Double(upper),PropertyType.DOUBLE,true);
 		// Normal Distribution
-		properties.put(BLOCK_PROPERTY_MEAN, constant);
+		setProperty(BLOCK_PROPERTY_MEAN, constant);
 		constant = new BlockProperty(BLOCK_PROPERTY_STANDARD_DEVIATION,new Double(upper),PropertyType.DOUBLE,true);
-		properties.put(BLOCK_PROPERTY_STANDARD_DEVIATION, constant);
+		setProperty(BLOCK_PROPERTY_STANDARD_DEVIATION, constant);
 		
 		// Define a single input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);

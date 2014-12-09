@@ -61,10 +61,11 @@ public class Not extends AbstractProcessBlock implements ProcessBlock {
 		
 		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,TruthValue.UNKNOWN,PropertyType.TRUTHVALUE,false);
 		valueProperty.setBindingType(BindingType.ENGINE);
-		properties.put(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 		
 		// Define a single input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
+		input.setIsMultiple(false);
 		anchors.add(input);
 
 		// Define a single output
@@ -86,18 +87,31 @@ public class Not extends AbstractProcessBlock implements ProcessBlock {
 		TruthValue tv = vcn.getValueAsTruthValue();
 		if( tv.equals(TruthValue.FALSE)) tv = TruthValue.TRUE;
 		else if( tv.equals(TruthValue.TRUE)) tv = TruthValue.FALSE;
-		log.infof("NOT.acceptValue SENDING %s",tv.name());
 		QualifiedValue result = new BasicQualifiedValue(tv.name(),qv.getQuality(),qv.getTimestamp());
 		if( !isLocked()) {
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
 			controller.acceptCompletionNotification(nvn);
+			notifyOfStatus(result);
 		}
-		// Set the internal property locked or not
-		valueProperty.setValue(tv);
-		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,result);
+		else {
+			// Set the internal property locked or not
+			valueProperty.setValue(tv);
+			controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,result);
+		}
 	}
-	
-	
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {
+		QualifiedValue qv = new BasicQualifiedValue(valueProperty.getValue());
+		notifyOfStatus(qv);
+		
+	}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
 	/**
 	 * Augment the palette prototype for this block class.
 	 */

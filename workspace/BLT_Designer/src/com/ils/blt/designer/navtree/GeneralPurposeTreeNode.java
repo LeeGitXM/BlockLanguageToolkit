@@ -15,6 +15,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.UUID;
@@ -22,8 +23,6 @@ import java.util.UUID;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JPopupMenu;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.tree.TreePath;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -32,34 +31,35 @@ import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.ApplicationUUIDResetHandler;
 import com.ils.blt.common.serializable.SerializableApplication;
-import com.ils.blt.common.serializable.SerializableApplicationTree;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
+import com.ils.blt.common.serializable.SerializableFolder;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.common.serializable.UUIDResetHandler;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
+import com.ils.blt.designer.ResourceDeleteManager;
+import com.ils.blt.designer.ResourceSaveManager;
+import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
-import com.inductiveautomation.ignition.client.gateway_interface.GatewayException;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;
+import com.inductiveautomation.ignition.common.execution.ExecutionManager;
+import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngine;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectChangeListener;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
-import com.inductiveautomation.ignition.designer.IgnitionDesigner;
 import com.inductiveautomation.ignition.designer.UndoManager;
-import com.inductiveautomation.ignition.designer.gateway.DTGatewayInterface;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
 import com.inductiveautomation.ignition.designer.navtree.model.FolderNode;
-import com.inductiveautomation.ignition.designer.navtree.model.ResourceDeleteAction;
 /**
  * A folder in the designer scope to support the diagnostics toolkit diagram
  * layout. In addition to standard folders, folders can be of type "Application" or
@@ -68,19 +68,25 @@ import com.inductiveautomation.ignition.designer.navtree.model.ResourceDeleteAct
  * 
  * Leaf nodes are of type DiagramNode.
  */
-public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener,ProjectChangeListener {
+public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInterface, ProjectChangeListener {
 	private static final String TAG = "GeneralPurposeTreeNode";
 	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
 	private final LoggerEx logger = LogUtil.getLogger(getClass().getPackage().getName());
-	private StartAction startAction = new StartAction();
-	private StopAction stopAction = new StopAction();
-	private final DiagramWorkspace workspace; 
+	private boolean dirty = false;
+	private final DeleteNodeAction deleteNodeAction;
+	private final StartAction startAction = new StartAction();
+	private final StopAction stopAction = new StopAction();
+	private final DiagramWorkspace workspace;
 	private final NodeStatusManager statusManager;
-	private final ApplicationAction applicationAction = new ApplicationAction();
+	private final FolderCreateAction folderCreateAction;
+	private TreeSaveAction treeSaveAction = null;
+	private final ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
+	private final ExecutionManager executionEngine;
+
 	private final ImageIcon defaultIcon = IconUtil.getIcon("folder_closed");
 	private final ImageIcon openIcon;
 	private final ImageIcon closedIcon;
-	
+
 	/** 
 	 * Create a new folder node representing the root folder. The root folder does
 	 * not worry about cleanliness.
@@ -89,6 +95,10 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 	public GeneralPurposeTreeNode(DesignerContext ctx) {
 		super(ctx, BLTProperties.MODULE_ID, ApplicationScope.GATEWAY,BLTProperties.ROOT_FOLDER_UUID);
 		this.setName(BLTProperties.ROOT_FOLDER_NAME);
+		this.resourceId = BLTProperties.ROOT_RESOURCE_ID;
+		this.executionEngine = new BasicExecutionEngine(1,TAG);
+		deleteNodeAction = null;
+		folderCreateAction = new FolderCreateAction(this);
 		workspace = ((BLTDesignerHook)ctx.getModule(BLTProperties.MODULE_ID)).getWorkspace();
 		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
 		setText(BundleUtil.get().getString(PREFIX+".RootFolderName"));
@@ -96,7 +106,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 		setIcon(closedIcon);
 		openIcon = IconUtil.getIcon("folder");
 	}
-
 	/**
 	 * This version of the constructor is used for all except the root. Create
 	 * either a simple folder, an application or family container or a diagram holder.
@@ -109,12 +118,14 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 	public GeneralPurposeTreeNode(DesignerContext context,ProjectResource resource,UUID self) {
 		super(context,resource.getModuleId(),resource.getApplicationScope(),self);
 		this.resourceId = resource.getResourceId();
+		this.executionEngine = new BasicExecutionEngine(1,TAG);
 		setName(resource.getName());      // Also sets text for tree
 		
+		deleteNodeAction = new DeleteNodeAction(this);
+		folderCreateAction = new FolderCreateAction(this);
 		workspace = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getWorkspace();
 		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
-		statusManager.addChangeListener(this);
-		
+
 		if(resource.getResourceType().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
 			closedIcon = iconFromPath("Block/icons/navtree/application_folder_closed.png");
 			openIcon = iconFromPath("Block/icons/navtree/application_folder.png");
@@ -130,83 +141,200 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 		}
 		setIcon(closedIcon);
 	}
-
-	private boolean isRootFolder() {
-		return getFolderId().equals(BLTProperties.ROOT_FOLDER_UUID);
-	}
 	
 	@Override
-	public Icon getIcon() {
-		return closedIcon;
+	public boolean confirmDelete(List<? extends AbstractNavTreeNode> selections) {
+		// We only care about the first
+		boolean result = false;
+		if( selections.size()>0 ) {
+			AbstractNavTreeNode selected = selections.get(0);
+			result = ErrorUtil.showConfirm(String.format(BundleUtil.get().getString(PREFIX+".Delete.Confirmation.Question"), selected.getName()), BundleUtil.get().getString(PREFIX+".Delete.Confirmation.Title"));
+		}
+		return result;
 	}
 	@Override
 	public Icon getExpandedIcon() { 
 		return openIcon;
 	}
-
-	/**
-	 * Create a child node because we've discovered a resource that matches this instance as a parent
-	 * based on its content matching the our UUID. With each node creation we create a StatusManager
-	 * entry to keep track of "dirtiness" throughout the tree.
-	 */
 	@Override
-	protected AbstractNavTreeNode createChildNode(ProjectResource res) {
-		logger.infof("%s.createChildNode type:%s, level=%d", TAG,res.getResourceType(),getDepth());
-		if (    ProjectResource.FOLDER_RESOURCE_TYPE.equals(res.getResourceType()))       {
-			GeneralPurposeTreeNode node = new GeneralPurposeTreeNode(context, res, res.getDataAsUUID());
-			statusManager.defineResource(resourceId, res.getResourceId());
-			logger.infof("%s.createChildNode: (%s) %s->%s",TAG,res.getResourceType(),this.getName(),node.getName());
-			return node;
-		}
-		else if ( BLTProperties.APPLICATION_RESOURCE_TYPE.equals(res.getResourceType()) )       {
-			SerializableApplication sa = deserializeApplication(res);
-			GeneralPurposeTreeNode node = new GeneralPurposeTreeNode(context, res, sa.getId());
-			statusManager.defineResource(resourceId, res.getResourceId());
-			logger.infof("%s.createChildNode: (%s) %s->%s",TAG,res.getResourceType(),this.getName(),node.getName());
-			return node;
-		}
-		else if ( BLTProperties.FAMILY_RESOURCE_TYPE.equals(res.getResourceType()) )       {
-			SerializableFamily fa = deserializeFamily(res); 
-			GeneralPurposeTreeNode node = new GeneralPurposeTreeNode(context, res, fa.getId());
-			statusManager.defineResource(resourceId, res.getResourceId());
-			logger.infof("%s.createChildNode: (%s) %s->%s",TAG,res.getResourceType(),this.getName(),node.getName());
-			return node;
-		}
-		else if (BLTProperties.DIAGRAM_RESOURCE_TYPE.equals(res.getResourceType())) {
-			DiagramNode node = new DiagramNode(context,res,workspace);
-			statusManager.defineResource(resourceId, res.getResourceId());
-			logger.infof("%s.createChildPanel: %s->%s",TAG,this.getName(),node.getName());
-			return node;
-		} 
-		else {
-			logger.warnf("%s: Attempted to create a child of type %s (ignored)",TAG,res.getResourceType());
-			throw new IllegalArgumentException();
-		}
+	public Icon getIcon() {
+		return closedIcon;
 	}
+	@Override
+	public long getResourceId() { return this.resourceId; }
 	
 	@Override
 	public String getWorkspaceName() {
 		return DiagramWorkspace.key;
 	}
-	
-	@Override
-	public boolean isEditActionHandler() {
-		return isRootFolder();
+	// Dirtiness refers to internal state, independent of children.
+	public boolean isDirty() { return this.dirty; }
+	public void setDirty(boolean flag) { this.dirty = flag; }
+	/**
+	 * Query the block controller in the Gateway. The resources that it knows
+	 * about may, or may not, coincide with those in the Designer. 
+	 */
+	public void listControllerResources() {
+		try {
+			List <SerializableResourceDescriptor> descriptors = handler.queryControllerResources();
+			for( SerializableResourceDescriptor descriptor : descriptors ) {
+				logger.info("Res: "+descriptor.getProjectId()+":"+descriptor.getResourceId()+" "+
+						descriptor.getType()+" ("+descriptor.getName()+")");
+			}
+		} 
+		catch (Exception ex) {
+			logger.warnf("%s. startAction: ERROR: %s",TAG,ex.getMessage(),ex);
+			ErrorUtil.showError(TAG+" Exception listing controller resources",ex);
+		}
 	}
 	/**
-	 * Define the menu used for popups. This appears to be called only once for each node.
+	 * Search the project for all resources. This is for debugging.
+	 * We filter out those that are global (have no module) as these
+	 * are system things that we don't care about for the moment.
+	 */
+	public void listProjectResources() {
+		List <ProjectResource> resources = context.getProject().getResources();
+		for( ProjectResource res : resources ) {
+			if( res.getModuleId()==null || res.getModuleId().length()==0) continue;
+			logger.info("Res: "+res.getResourceId()+" "+res.getResourceType()+" "+res.getModuleId()+" ("+res.getName()+
+					":"+res.getParentUuid()+")");
+		}
+	}
+	/**
+	 *  Note: We ignore locking.Previous attempts to use the superior version of this method
+	 *        fail to acquire locks (without first doing a project save from the main menu).
+	 */
+	@Override
+	public void onEdit(String newTextValue) {
+		// Sanitize name
+		if (!NAME_PATTERN.matcher(newTextValue).matches()) {
+			ErrorUtil.showError(BundleUtil.get().getString(PREFIX+".InvalidName", newTextValue));
+			return;
+		}
+		String oldName = getProjectResource().getName();
+		try {
+			logger.infof("%s.onEdit: alterName from %s to %s",TAG,oldName,newTextValue);
+			context.structuredRename(resourceId, newTextValue);
+		}
+		catch (IllegalArgumentException ex) {
+			ErrorUtil.showError(TAG+".onEdit: "+ex.getMessage());
+		}
+	}
+	
+	@Override
+	public void onSelected() {
+		UndoManager.getInstance().setSelectedContext(GeneralPurposeTreeNode.class);
+	}
+
+	// Unsubscribe as a project change listener
+	public void prepareForDeletion() { uninstall(); }
+
+	// Note: dirtiness for deletes is taken care of in the delete action
+	@Override
+	public void projectResourceModified(ProjectResource res, ProjectChangeListener.ResourceModification changeType) {
+		// Take care of our special status before invoking the super-class method.
+		//logger.tracef("%s.projectResourceModified.%s: %s(%d), res %s(%d)",TAG,changeType.name(),getName(),this.resourceId,res.getName(),res.getResourceId());
+		if (res.getResourceId() == this.resourceId) {
+			if( res.getName()==null || !res.getName().equals(getName()) ) {
+				logger.infof("%s.projectResourceModified(%d), setting name %s to %s",TAG,this.resourceId,getName(),res.getName());
+				statusManager.incrementDirtyNodeCount(resourceId);
+				setDirty(true);
+			}
+		}  
+		super.projectResourceModified(res, changeType);
+	}
+
+	@Override
+	public void projectUpdated(Project diff) {
+		logger.infof("%s.projectUpdated ...",TAG);
+		super.projectUpdated(diff);
+	}
+
+	/**
+	 * Either our state or the state of another node changed, annotate our state. 
+	 * Dirtiness for a nav tree node means that the project resource is out-of-date
+	 * with what is being shown in the designer UI.
+	 * Note: This method should ONLY be called from the node status manager.
+	 */
+	public void updateUI(boolean dty) {
+		logger.debugf("%s.updateUI: %d dirty = %s",TAG,resourceId,(dty?"true":"false"));
+		setItalic(dty);
+		refresh();  // Update the UI
+	}
+
+	/**
+	 * Exclude cut and paste which are currently not supported.
+	 */
+	@Override
+	protected void addEditActions(JPopupMenu menu) {
+		menu.add(renameAction);
+		menu.add(deleteNodeAction);
+	}
+	/**
+	 * Create a child node because we've discovered a resource that matches this instance as a parent
+	 * based on its content matching the our UUID. If the node had been previously created, then 
+	 * reuse it.
+	 */
+	@Override
+	protected AbstractNavTreeNode createChildNode(ProjectResource res) {
+		logger.infof("%s.createChildNode: %s(%d) type:%s, depth=%d", TAG,getName(),resourceId,res.getResourceType(),getDepth());
+		AbstractResourceNavTreeNode node = statusManager.findNode(res.getResourceId());
+		if( node==null ) {
+			if (    ProjectResource.FOLDER_RESOURCE_TYPE.equals(res.getResourceType()))       {
+				node = new GeneralPurposeTreeNode(context, res, res.getDataAsUUID());
+				logger.infof("%s.createChildNode: (%s) %s->%s",TAG,res.getResourceType(),this.getName(),node.getName());
+			}
+			else if ( BLTProperties.APPLICATION_RESOURCE_TYPE.equals(res.getResourceType()) )       {
+				SerializableApplication sa = deserializeApplication(res);
+				node = new GeneralPurposeTreeNode(context, res, sa.getId());
+				logger.infof("%s.createChildNode: (%s) %s->%s",TAG,res.getResourceType(),this.getName(),node.getName());
+			}
+			else if ( BLTProperties.FAMILY_RESOURCE_TYPE.equals(res.getResourceType()) )       {
+				SerializableFamily fa = deserializeFamily(res); 
+				node = new GeneralPurposeTreeNode(context, res, fa.getId());
+				logger.infof("%s.createChildNode: (%s) %s->%s",TAG,res.getResourceType(),this.getName(),node.getName());
+			}
+			else if (BLTProperties.DIAGRAM_RESOURCE_TYPE.equals(res.getResourceType())) {
+				node = new DiagramTreeNode(context,res,workspace);
+				logger.infof("%s.createChildDiagram: %s->%s",TAG,this.getName(),node.getName());
+			} 
+			else {
+				logger.warnf("%s: Attempted to create a child of type %s (ignored)",TAG,res.getResourceType());
+				throw new IllegalArgumentException();
+			}
+			statusManager.createResourceStatus(node,resourceId, res.getResourceId());
+			executionEngine.executeOnce(new ResourceUpdateManager(workspace,res));   /// Creates, syncs resource
+		}
+		else {
+			logger.infof("%s.createChildNode: REUSE %s->%s",TAG,this.getName(),node.getName());
+			if( node instanceof DiagramTreeNode ) context.addProjectChangeListener((DiagramTreeNode)node);
+		}
+		node.install(this);
+		if( node.getParent()==null) {
+			logger.errorf("%s.createChildNode: ERROR parent is null %s(%d)",TAG,node.getName(),res.getResourceId());
+		}
+		node.setItalic(statusManager.isResourceDirtyOrHasDirtyChidren(res.getResourceId()));
+		return node;
+	}
+	// For DiagramNode.delete
+	public void recreate() { super.recreate(); }
+	
+	/**
+	 * Define the menu used for popups. This appears to be called each time a menu is called for ..
 	 */
 	@Override
 	protected void initPopupMenu(JPopupMenu menu, TreePath[] paths,List<AbstractNavTreeNode> selection, int modifiers) {
 		setupEditActions(paths, selection);
-		
+		if( this.getParent()==null ) {
+			logger.errorf("%s.initPopupMenu: ERROR: Diagram (%d) has no parent",TAG,hashCode());
+		}
+		context.addProjectChangeListener(this);
 		if (isRootFolder()) { 
-			ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
-
-			ApplicationImportAction applicationImportAction = new ApplicationImportAction();
+			ApplicationCreateAction applicationCreateAction = new ApplicationCreateAction(this);
+			ApplicationImportAction applicationImportAction = new ApplicationImportAction(this);
 			ClearAction clearAction = new ClearAction();
 			DebugAction debugAction = new DebugAction();
-			SaveAllAction saveAllAction = new SaveAllAction();
+			SaveAllAction saveAllAction = new SaveAllAction(this);
 			if( handler.isControllerRunning() ) {
 				startAction.setEnabled(false);
 				clearAction.setEnabled(false);
@@ -215,7 +343,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 				stopAction.setEnabled(false);
 				clearAction.setEnabled(true);
 			}
-			menu.add(applicationAction);
+			menu.add(applicationCreateAction);
 			menu.add(applicationImportAction);
 			menu.add(saveAllAction);
 			menu.add(startAction);
@@ -224,168 +352,66 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 			menu.add(clearAction);
 			menu.add(debugAction);
 		}
+		else if( getProjectResource()==null ) {
+			logger.warnf("%s.initPopupMenu: ERROR: node %s(%d) has no project resource",TAG,this.getName(),resourceId);
+		}
 		else if(getProjectResource().getResourceType().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
-			ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
 			ApplicationExportAction applicationExportAction = new ApplicationExportAction(menu.getRootPane(),this);
-			FamilyAction familyAction = new FamilyAction();
-			NewFolderAction newFolderAction = new NewFolderAction(context,BLTProperties.MODULE_ID,ApplicationScope.DESIGNER,getFolderId(),this);
+			FamilyCreateAction familyAction = new FamilyCreateAction(this);
+
 			ApplicationConfigureAction applicationConfigureAction = new ApplicationConfigureAction(getProjectResource());
-			ApplicationSaveAction applicationSaveAction = new ApplicationSaveAction(this);
-			applicationSaveAction.setEnabled(!handler.resourceExists(context.getProject().getId(),resourceId) || 
-					                          statusManager.isResourceDirty(resourceId));
+			treeSaveAction = new TreeSaveAction(this,PREFIX+".SaveApplication");
+
 			menu.add(familyAction);
-			menu.add(newFolderAction);
+			menu.add(folderCreateAction);
 			menu.addSeparator();
 			menu.add(applicationConfigureAction);
 			menu.add(applicationExportAction);
-			menu.add(applicationSaveAction);
+			menu.add(treeSaveAction);
 			addEditActions(menu);
 		}
 		else if(getProjectResource().getResourceType().equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE)) {
-			DiagramAction diagramAction = new DiagramAction();
-			NewFolderAction newFolderAction = new NewFolderAction(context,BLTProperties.MODULE_ID,ApplicationScope.DESIGNER,getFolderId(),this);
+			DiagramCreateAction newDiagramAction = new DiagramCreateAction(this);
 			FamilyConfigureAction familyConfigureAction = new FamilyConfigureAction(getProjectResource());
-			ImportDiagramAction importAction = new ImportDiagramAction();
-			menu.add(diagramAction);
+			treeSaveAction = new TreeSaveAction(this,PREFIX+".SaveFamily");
+
+
+			ImportDiagramAction importAction = new ImportDiagramAction(this);
+			menu.add(newDiagramAction);
 			menu.add(importAction);
-			menu.add(newFolderAction);
+			menu.add(folderCreateAction);
 			menu.addSeparator();
 			menu.add(familyConfigureAction);
+			menu.add(treeSaveAction);
 			addEditActions(menu);
-			
+
 		}
 		else if(getProjectResource().getResourceType().equalsIgnoreCase(BLTProperties.FOLDER_RESOURCE_TYPE)) {
-			
+
 			if( hasFamily() ) {
-				DiagramAction diagramAction = new DiagramAction();
+				DiagramCreateAction diagramAction = new DiagramCreateAction(this);
 				menu.add(diagramAction);
-				ImportDiagramAction importAction = new ImportDiagramAction();
-				CloneDiagramAction cloneAction = new CloneDiagramAction();
+				ImportDiagramAction importAction = new ImportDiagramAction(this);
+				CloneDiagramAction cloneAction = new CloneDiagramAction(this);
 				menu.add(importAction);
 				menu.add(cloneAction);
 			}
 			else {
-				FamilyAction familyAction = new FamilyAction();
+				FamilyCreateAction familyAction = new FamilyCreateAction(this);
 				menu.add(familyAction);
 			}
-			NewFolderAction newFolderAction = new NewFolderAction(context,BLTProperties.MODULE_ID,ApplicationScope.DESIGNER,getFolderId(),this);
-			menu.add(newFolderAction);
+			menu.add(folderCreateAction);
+			treeSaveAction = new TreeSaveAction(this,PREFIX+".SaveFolder");
+			menu.add(treeSaveAction);
 			menu.addSeparator();
 			addEditActions(menu);	
 		}
 		else {   
-			FamilyAction familyAction = new FamilyAction();
+			FamilyCreateAction familyAction = new FamilyCreateAction(this);
 			menu.add(familyAction);
 			menu.addSeparator();
 			addEditActions(menu);
 		}
-	}
-	
-	// Return true if there is a "family" in the ancestral hierarchy of this folder node
-	private boolean hasFamily() {
-		boolean answer = false;
-		AbstractNavTreeNode parent = getParent();
-		while( parent!=null ) {
-			if( parent instanceof GeneralPurposeTreeNode ) {
-				GeneralPurposeTreeNode node = (GeneralPurposeTreeNode)parent;
-				if( node.getProjectResource()==null ) {
-					;  // Folder node
-				}
-				else if( node.getProjectResource().getResourceType().equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE)) {
-					answer = true;
-					break;
-				}
-				else if( node.getProjectResource().getResourceType().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
-					break;  // false
-				}
-			}
-			parent = parent.getParent();
-		}
-		return answer;
-	}
-	/**
-	 * Exclude cut and paste which are currently not supported.
-	 */
-	@Override
-	protected void addEditActions(JPopupMenu menu)
-    {
-        menu.add(renameAction);
-        menu.add(deleteAction);
-    }
-	
-	private boolean siblings(List<AbstractNavTreeNode> nodes) {
-		if (nodes == null || nodes.size() < 1) {
-			return false;
-		}
-		int depth = nodes.get(0).getDepth();
-		for (AbstractNavTreeNode node : nodes) {
-			if (node.getDepth() != depth) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	@Override
-	public boolean canDelete(List<AbstractNavTreeNode> selectedChildren) {
-		return isEditActionHandler() && siblings(selectedChildren);
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public void doDelete(List<? extends AbstractNavTreeNode> children,
-			DeleteReason reason) {
-		for (AbstractNavTreeNode node : children) {
-			if (node instanceof DiagramNode) {
-				((DiagramNode) node).closeAndCommit();
-			}
-		}
-
-		ResourceDeleteAction delete = new ResourceDeleteAction(context,
-				(List<AbstractResourceNavTreeNode>) children,
-				reason.getActionWordKey(), (getDepth()==1? (PREFIX+".ApplicationNoun"):(PREFIX+".FamilyNoun")));
-		if (delete.execute()) {
-			UndoManager.getInstance().add(delete, GeneralPurposeTreeNode.class);
-		}
-	}
-
-	@Override
-	public void onSelected() {
-		UndoManager.getInstance()
-				.setSelectedContext(GeneralPurposeTreeNode.class);
-	}
-	
-	/**
-	 * Save all applications. This is only valid on the root node. During
-	 * the accumulation, we set the resources to "clean".
-	 */
-	public void saveAll() {
-		if( !isRootFolder() ) return;
-		Project diff = context.getProject().getEmptyCopy();
-		accumulateNodeResources(this,diff);
-		try {
-			DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ..."); // Do not publish
-		}
-		catch(GatewayException ge) {
-			logger.warnf("%s.SaveAllAction: Exception saving project resource %d (%s)",TAG,resourceId,ge.getMessage());
-		}
-	}
-	/**
-	 *  Serialize an Application into JSON.
-	 * @param application to be serialized
-	 */ 
-	private String serializeApplication(SerializableApplication application) {
-		String json = "";
-		ObjectMapper mapper = new ObjectMapper();
-		logger.infof("%s: serializeApplication creating json ... %s",TAG,(mapper.canSerialize(SerializableApplication.class)?"true":"false"));
-		try{ 
-		    json = mapper.writeValueAsString(application);
-		}
-		catch(JsonProcessingException jpe) {
-			logger.warnf("%s: Unable to serialize application (%s)",TAG,jpe.getMessage());
-		}
-		logger.infof("%s: serializeApplication created json ... %s",TAG,json);
-		return json;
 	}
 	/**
 	 * Convert the resource data into a SerializableApplication
@@ -405,6 +431,26 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 		}
 		return sa;
 	}
+
+	/**
+	 * Convert the resource data into a SerializableApplication
+	 * @param res
+	 * @return
+	 */
+	private SerializableDiagram deserializeDiagram(ProjectResource res) {
+		SerializableDiagram sd = null;
+		try{
+			byte[] bytes = res.getData();
+			ObjectMapper mapper = new ObjectMapper();
+			sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
+			sd.setName(res.getName());   // Sync the SerializableApplication name w/ res
+		}
+		catch(Exception ex) {
+			logger.warnf("%s.SerializableDiagram: Deserialization exception (%s)",ex.getMessage());
+		}
+		return sd;
+	}
+
 	/**
 	 * Convert the resource data into a SerializableFamily
 	 * @param res
@@ -423,6 +469,183 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 		}
 		return sf;
 	}
+
+	// Return true if there is a "family" in the ancestral hierarchy of this folder node
+	private boolean hasFamily() {
+		boolean answer = false;
+
+		AbstractNavTreeNode parentNode = getParent();
+		while( parentNode!=null ) {
+			if( parentNode instanceof GeneralPurposeTreeNode ) {
+				GeneralPurposeTreeNode node = (GeneralPurposeTreeNode)parentNode;
+				if( node.getProjectResource()==null ) {
+					;  // Folder node
+				}
+				else if( node.getProjectResource().getResourceType().equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE)) {
+					answer = true;
+					break;
+				}
+				else if( node.getProjectResource().getResourceType().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
+					break;  // false
+				}
+			}
+			parentNode = parentNode.getParent();
+		}
+		return answer;
+	}
+	/**
+	 * Create an ImageIcon from the resource path. If it doesn't exist, return the default.
+	 * @param path
+	 * @return
+	 */
+	private ImageIcon iconFromPath(String path) {
+		Dimension iconSize = new Dimension(20,20);
+		ImageIcon result = defaultIcon;
+		Image img = ImageLoader.getInstance().loadImage(path,iconSize);
+		if( img!=null ) result = new ImageIcon(img);
+		return result;
+	}
+	private boolean isRootFolder() {
+		return getFolderId().equals(BLTProperties.ROOT_FOLDER_UUID);
+	}
+	// Recursively descend the node tree, gathering up associated resources.
+	// Deserialize them and add as proper children of the parent
+	// @param node a tree node corresponding to an application.
+	private SerializableApplication recursivelyDeserializeApplication(AbstractResourceNavTreeNode node) {
+		ProjectResource res = node.getProjectResource();
+		SerializableApplication sa = null;
+		if( res!=null ) {
+			logger.infof("%s.recursivelyDeserializeApplication: %s (%d)",TAG,res.getName(),res.getResourceId());
+			sa = deserializeApplication(res);
+
+			@SuppressWarnings("rawtypes")
+			Enumeration walker = node.children();
+			while(walker.hasMoreElements()) {
+				AbstractResourceNavTreeNode child = (AbstractResourceNavTreeNode)walker.nextElement();
+				ProjectResource cres = child.getProjectResource();
+				if(cres==null) continue;
+				if(cres.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE)){
+					SerializableFamily sfam = recursivelyDeserializeFamily(child);
+					if( sfam!=null ) sa.addFamily(sfam);
+				}
+				else if(cres.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)) {
+					SerializableFolder sf = recursivelyDeserializeFolder(child);
+					if( sf!=null ) sa.addFolder(sf);
+				}
+				else {
+					logger.infof("%s.recursivelyDeserializeApplication: %s unexpected child resource type (%s)",TAG,res.getName(),cres.getName(),cres.getResourceType());
+				}
+			}
+		}
+		return sa;
+	}
+	// This nodes of the tree is associated with a diagram. It's only other possible children
+	// are other diagrams which are children of encapsulation blocks. At present these are not handled
+	// Deserialize them and add as proper children of the parent
+	// @param node a tree node corresponding to a diagram.
+	private SerializableDiagram recursivelyDeserializeDiagram(AbstractResourceNavTreeNode node) {
+		ProjectResource res = node.getProjectResource();
+		SerializableDiagram sdiag = null;
+		if( res!=null ) {
+			logger.infof("%s.recursivelyDeserializeDiagram: %s (%d)",TAG,res.getName(),res.getResourceId());
+			sdiag = deserializeDiagram(res);
+		}
+		return sdiag;
+	}
+	// Recursively descend the node tree, gathering up associated resources.
+	// Deserialize them and add as proper children of the parent
+	// @param node a tree node corresponding to an application.
+	private SerializableFamily recursivelyDeserializeFamily(AbstractResourceNavTreeNode node) {
+		ProjectResource res = node.getProjectResource();
+		SerializableFamily sfam = null;
+		if( res!=null ) {
+			logger.infof("%s.recursivelyDeserializeFamily: %s (%d)",TAG,res.getName(),res.getResourceId());
+			sfam = deserializeFamily(res);
+
+			@SuppressWarnings("rawtypes")
+			Enumeration walker = node.children();
+			while(walker.hasMoreElements()) {
+				AbstractResourceNavTreeNode child = (AbstractResourceNavTreeNode)walker.nextElement();
+				ProjectResource cres = child.getProjectResource();
+				if(cres==null) continue;
+				if( cres.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
+					SerializableDiagram sd = recursivelyDeserializeDiagram(child);
+					if( sd!=null ) sfam.addDiagram(sd);
+				}
+				else if(cres.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)) {
+					SerializableFolder sf = recursivelyDeserializeFolder(child);
+					if( sf!=null ) sfam.addFolder(sf);
+				}
+				else {
+					logger.infof("%s.recursivelyDeserializeFamily: %s unexpected child resource type (%s)",TAG,res.getName(),cres.getName(),cres.getResourceType());
+				}
+			}
+		}
+		return sfam;
+	}
+
+	// Recursively descend the node tree, gathering up associated resources.
+	// Deserialize them and add as proper children of the parent
+	// @param node a tree node corresponding to an application.
+	private SerializableFolder recursivelyDeserializeFolder(AbstractResourceNavTreeNode node) {
+		ProjectResource res = node.getProjectResource();
+		SerializableFolder sfold = null;
+		if( res!=null ) {
+			logger.infof("%s.recursivelyDeserializeFolder: %s (%d)",TAG,res.getName(),res.getResourceId());
+			sfold = new SerializableFolder();
+			sfold.setId(res.getDataAsUUID());
+			sfold.setName(res.getName());
+			sfold.setParentId(res.getParentUuid());
+
+			@SuppressWarnings("rawtypes")
+			Enumeration walker = node.children();
+			while(walker.hasMoreElements()) {
+				AbstractResourceNavTreeNode child = (AbstractResourceNavTreeNode)walker.nextElement();
+				ProjectResource cres = child.getProjectResource();
+				if(cres==null) continue;
+				if( cres.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
+					SerializableDiagram sd = recursivelyDeserializeDiagram(child);
+					if( sd!=null ) sfold.addDiagram(sd);
+				}
+				else if(cres.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE)){
+					SerializableFamily sfam = recursivelyDeserializeFamily(child);
+					if( sfam!=null ) sfold.addFamily(sfam);
+				}
+				else if(cres.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)) {
+					SerializableFolder sf = recursivelyDeserializeFolder(child);
+					if( sf!=null ) sfold.addFolder(sf);
+				}
+				else {
+					logger.infof("%s.recursivelyDeserializeFolder: %s unexpected child resource type (%s)",TAG,res.getName(),cres.getName(),cres.getResourceType());
+				}
+			}
+		}
+		return sfold;
+	}
+
+
+
+	/**
+	 *  Serialize an Application into JSON.
+	 * @param application to be serialized
+	 */ 
+	private String serializeApplication(SerializableApplication application) {
+		String json = "";
+		ObjectMapper mapper = new ObjectMapper();
+		logger.debugf("%s: serializeApplication creating json ... %s",TAG,(mapper.canSerialize(SerializableApplication.class)?"true":"false"));
+		try{ 
+			json = mapper.writeValueAsString(application);
+		}
+		catch(JsonProcessingException jpe) {
+			logger.warnf("%s: Unable to serialize application (%s)",TAG,jpe.getMessage());
+		}
+		logger.debugf("%s: serializeApplication created json ... %s",TAG,json);
+		return json;
+	}
+
+
+	// ============================================== Project Change Listener =======================================
+
 	/**
 	 *  Serialize a diagram into JSON. 
 	 * @param diagram to be serialized
@@ -430,9 +653,9 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 	private String serializeDiagram(SerializableDiagram diagram) {
 		String json = "";
 		ObjectMapper mapper = new ObjectMapper();
-		logger.infof("%s: serializeDiagram creating json ... %s",TAG,(mapper.canSerialize(SerializableDiagram.class)?"true":"false"));
+		logger.debugf("%s: serializeDiagram creating json ... %s",TAG,(mapper.canSerialize(SerializableDiagram.class)?"true":"false"));
 		try{ 
-		    json = mapper.writeValueAsString(diagram);
+			json = mapper.writeValueAsString(diagram);
 		}
 		catch(JsonProcessingException jpe) {
 			logger.warnf("%s: Unable to serialize diagram (%s)",TAG,jpe.getMessage());
@@ -440,6 +663,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 		logger.infof("%s: serializeDiagram created json ... %s",TAG,json);
 		return json;
 	}
+
 	/**
 	 *  Serialize a Family into JSON.
 	 * @param family to be serialized
@@ -447,129 +671,183 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 	private String serializeFamily(SerializableFamily family) {
 		String json = "";
 		ObjectMapper mapper = new ObjectMapper();
-		logger.infof("%s: serializeFamily creating json ... %s",TAG,(mapper.canSerialize(SerializableFamily.class)?"true":"false"));
+		logger.debugf("%s: serializeFamily creating json ... %s",TAG,(mapper.canSerialize(SerializableFamily.class)?"true":"false"));
 		try{ 
-		    json = mapper.writeValueAsString(family);
+			json = mapper.writeValueAsString(family);
 		}
 		catch(JsonProcessingException jpe) {
 			logger.warnf("%s: Unable to serialize family (%s)",TAG,jpe.getMessage());
 		}
-		logger.infof("%s: serializeFamily created json ... %s",TAG,json);
+		logger.debugf("%s: serializeFamily created json ... %s",TAG,json);
 		return json;
 	}
-	// From the root node, tell the gateway controller to clear all resources
-	private class ClearAction extends BaseAction {
+
+	// ============================================= private action classes ===========================================================
+	// Launch a dialog that configures application attributes.
+	private class ApplicationConfigureAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
-		public ClearAction()  {
-			super(PREFIX+".Clear",IconUtil.getIcon("delete_all"));
+		private final static String POPUP_TITLE = "Configure Application";
+		private final ProjectResource res;
+
+		public ApplicationConfigureAction(ProjectResource resource)  {
+			super(PREFIX+".ConfigureApplication",IconUtil.getIcon("gear"));  // preferences
+			res = resource;
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
-			handler.clearController();
+			if( resourceId<0 ) return;   // Do nothing
+			try {
+				EventQueue.invokeLater(new Runnable() {
+					public void run() {
+						// Unmarshall the resource
+						SerializableApplication sa = deserializeApplication(res);
+						if( sa!=null ) {
+							ApplicationConfigurationDialog dialog = new ApplicationConfigurationDialog(sa);
+							dialog.pack();
+							dialog.setVisible(true);   // Returns when dialog is closed
+							if( !dialog.isCancelled() ) {
+								sa = dialog.getApplication();
+								String json = serializeApplication(sa);
+								res.setName(sa.getName());
+								res.setData(json.getBytes());
+								context.updateResource(res);
+								setDirty(true);
+								statusManager.incrementDirtyNodeCount(resourceId);		
+							}
+						}
+						else {
+							ErrorUtil.showWarning(String.format("ApplicationConfigurationAction: Failed to deserialize resource"),POPUP_TITLE);
+						}
+
+
+					}
+				});
+			} 
+			catch (Exception err) {
+				ErrorUtil.showError(TAG+" Exception configuring application",err);
+			}
 		}
 	}
-	// From the root node, recursively log the contents of the tree
-	private class DebugAction extends BaseAction {
+	// From the root node, create a folder for diagrams belonging to a application
+	private class ApplicationCreateAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
-		public DebugAction()  {
-			super(PREFIX+".Debug",IconUtil.getIcon("bug_yellow"));
+		private final AbstractResourceNavTreeNode currentNode;
+		public ApplicationCreateAction(AbstractResourceNavTreeNode parent)  {
+			super(PREFIX+".NewApplication",IconUtil.getIcon("folder_new"));
+			this.currentNode = parent;
 		}
 
-		public void actionPerformed(ActionEvent e) {
-			logger.info("============================ Resources (Designer) =========================");
-			listProjectResources();
-			logger.info("============================ Resources (Gateway) ==========================");
-			listControllerResources();
-			logger.info("===========================================================================");
-		}
-	}
-	// From the root node, create a folder for diagrams belonging to a family
-	private class ApplicationAction extends BaseAction {
-		private static final long serialVersionUID = 1L;
-	    public ApplicationAction()  {
-	    	super(PREFIX+".NewApplication",IconUtil.getIcon("folder_new"));
-	    }
-	    
 		public void actionPerformed(ActionEvent e) {
 			try {
-				final long newId = context.newResourceId();
+				final long newResId = context.newResourceId();
 				String newName = BundleUtil.get().getString(PREFIX+".NewApplication.Default.Name");
 				if( newName==null) newName = "New App";  // Missing Resource
 				SerializableApplication app = new SerializableApplication();
 				app.setName(newName);
-	
-				logger.infof("%s: new application action ...",TAG);
-
 				String json = serializeApplication(app);
-			
-				logger.debugf("%s: ApplicationAction. json=%s",TAG,json);
+
+				logger.debugf("%s.ApplicationCreateAction. json=%s",TAG,json);
 				byte[] bytes = json.getBytes();
-				logger.debugf("%s: ApplicationAction. create new %s resource %d (%d bytes)",TAG,BLTProperties.APPLICATION_RESOURCE_TYPE,
-						newId,bytes.length);
-				ProjectResource resource = new ProjectResource(newId,
-						BLTProperties.MODULE_ID, BLTProperties.APPLICATION_RESOURCE_TYPE,
+				logger.infof("%s.ApplicationCreateAction. create new %s(%d), %s (%d bytes)",TAG,BLTProperties.APPLICATION_RESOURCE_TYPE,newResId,
+						newName,bytes.length);
+				ProjectResource resource = new ProjectResource(newResId,BLTProperties.MODULE_ID, BLTProperties.APPLICATION_RESOURCE_TYPE,
 						newName, ApplicationScope.GATEWAY, bytes);
 				resource.setParentUuid(getFolderId());
+				logger.infof("%s: parent: %s",TAG,getFolderId().toString());
 				context.updateResource(resource);
-				selectChild(newId);
+				currentNode.selectChild(new long[] {newResId} );
 			} 
 			catch (Exception err) {
-				ErrorUtil.showError(err);
+				ErrorUtil.showError(TAG+" Exception creating application",err);
 			}
 		}
 	}
-	// Launch a dialog that configures application attributes.
-    private class ApplicationConfigureAction extends BaseAction {
-    	private static final long serialVersionUID = 1L;
-    	private final static String POPUP_TITLE = "Configure Application";
-    	private final ProjectResource res;
-	    public ApplicationConfigureAction(ProjectResource resource)  {
-	    	super(PREFIX+".ConfigureApplication",IconUtil.getIcon("gear"));  // preferences
-	    	res = resource;
-	    }
-	    
-	    public void actionPerformed(ActionEvent e) {
+	private class ApplicationExportAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final static String POPUP_TITLE = "Export Application Tree";
+		private final GeneralPurposeTreeNode node;
+		private final Component anchor;
+		public ApplicationExportAction(Component c,GeneralPurposeTreeNode gptn)  {
+			super(PREFIX+".ApplicationExport",IconUtil.getIcon("export1")); 
+			node=gptn;
+			anchor=c;
+		}
 
-    		if( resourceId<0 ) return;   // Do nothing
-    		try {
-    			EventQueue.invokeLater(new Runnable() {
-    				public void run() {
-    					// Unmarshall the resource
-    					SerializableApplication sa = deserializeApplication(res);
-    					if( sa!=null ) {
-    						ApplicationConfigurationDialog dialog = new ApplicationConfigurationDialog(sa);
-    						dialog.pack();
-    						dialog.setVisible(true);   // Returns when dialog is closed
-    						if( !dialog.isCancelled() ) {
-    							sa = dialog.getApplication();
-    							String json = serializeApplication(sa);
-    							res.setName(sa.getName());
-    							res.setData(json.getBytes());
-    							context.updateResource(res);
-    							statusManager.setResourceDirty(resourceId, true);		
-    						}
-    					}
-    					else {
-    						ErrorUtil.showWarning(String.format("ApplicationConfigurationAction: Failed to deserialize resource"),POPUP_TITLE);
-    					}
+		public void actionPerformed(ActionEvent e) {
 
+			if( node==null ) return;   // Do nothing
+			try {
+				EventQueue.invokeLater(new Runnable() {
+					public void run() {
+						ExportDialog dialog = new ExportDialog();
+						dialog.pack();
+						dialog.setVisible(true);   // Returns when dialog is closed
+						File output = dialog.getFilePath();
+						boolean success = false;
+						if( output!=null ) {
+							logger.debugf("%s.actionPerformed: dialog returned %s",TAG,output.getAbsolutePath());
+							try {
+								if(output.exists()) {
+									//output.delete();           // Remove existing file
+									//output.createNewFile();
+									output.setWritable(true);  // This doesn't seem to work (??)
+								}
+								else {
+									output.createNewFile();
+								}
 
-    				}
-    			});
-    		} 
-    		catch (Exception err) {
-    			ErrorUtil.showError(err);
-    		}
-    	}
+								if( output.canWrite() ) {
+									ObjectMapper mapper = new ObjectMapper();
+									if(logger.isDebugEnabled()) logger.debugf("%s.actionPerformed: creating json ... %s",TAG,(mapper.canSerialize(SerializableApplication.class)?"true":"false"));
+									try{ 
+										// Convert the view into a serializable object
+										SerializableApplication sap = recursivelyDeserializeApplication(node);
+										String json = mapper.writeValueAsString(sap);
+										FileWriter fw = new FileWriter(output,false);  // Do not append
+										try {
+											fw.write(json);
+											success = true;
+										}
+										catch(IOException ioe) {
+											ErrorUtil.showWarning(String.format("Error writing file %s (%s)",output.getAbsolutePath(),
+													ioe.getMessage()),POPUP_TITLE,false);
+										}
+										finally {
+											fw.close();
+										}
+									}
+									catch(JsonProcessingException jpe) {
+										ErrorUtil.showError("Unable to serialize diagram",POPUP_TITLE,jpe,true);
+									}
+								}
+								else {
+									ErrorUtil.showWarning(String.format("selected file (%s) is not writable.",output.getAbsolutePath()),POPUP_TITLE,false);
+								}
+							}
+							catch (IOException ioe) {
+								ErrorUtil.showWarning(String.format("Error creating or closing file %s (%s)",output.getAbsolutePath(),
+										ioe.getMessage()),POPUP_TITLE,false);
+							}
+						}
+						// If there's an error, then the user will be informed
+						if( success ) ErrorUtil.showInfo(anchor, "Export complete", POPUP_TITLE);
+					}
+				});
+			} 
+			catch (Exception err) {
+				ErrorUtil.showError(TAG+" Exception exporting application",err);
+			}
+		}
 	}
 	private class ApplicationImportAction extends BaseAction {
-    	private static final long serialVersionUID = 1L;
-    	private final static String POPUP_TITLE = "Import Application";
-	    public ApplicationImportAction()  {
-	    	super(PREFIX+".ImportApplication",IconUtil.getIcon("import1"));  // preferences
-	    }
-	    
+		private static final long serialVersionUID = 1L;
+		private final static String POPUP_TITLE = "Import Application";
+		private final AbstractResourceNavTreeNode root;
+		public ApplicationImportAction(AbstractResourceNavTreeNode parent)  {
+			super(PREFIX+".ImportApplication",IconUtil.getIcon("import1"));  // preferences
+			this.root = parent;
+		}
+
 		public void actionPerformed(ActionEvent e) {
 			try {
 				EventQueue.invokeLater(new Runnable() {
@@ -583,7 +861,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 							dialog.pack();
 							dialog.setVisible(true);   // Returns when dialog is closed
 							File input = dialog.getFilePath();
-							
+
 							if( input!=null ) {
 								if( input.exists() && input.canRead()) {
 									try {
@@ -594,9 +872,9 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 										ObjectMapper mapper = new ObjectMapper();
 										SerializableApplication sa = mapper.readValue(new String(bytes), SerializableApplication.class);
 										if( sa!=null ) {
-											logger.infof("%s:ApplicationImportAction imported application %s", TAG,sa.getName());
-											ApplicationUUIDResetHandler handler = new ApplicationUUIDResetHandler(sa);
-											handler.convertUUIDs();
+											ApplicationUUIDResetHandler uuidHandler = new ApplicationUUIDResetHandler(sa);
+											uuidHandler.convertUUIDs();
+											logger.infof("%s:ApplicationImportAction importing application %s(%d) (%s)", TAG,sa.getName(),newId,sa.getId().toString());
 											String json = mapper.writeValueAsString(sa);
 											if(logger.isTraceEnabled() ) logger.trace(json);
 											ProjectResource resource = new ProjectResource(newId,
@@ -604,7 +882,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 													sa.getName(), ApplicationScope.GATEWAY, json.getBytes());
 											resource.setParentUuid(getFolderId());
 											context.updateResource(resource);
-											selectChild(newId);
+											root.selectChild(new long[] {newId} );
 											// Now import families
 											for(SerializableFamily fam:sa.getFamilies()) {
 												importFamily(sa.getId(),fam);
@@ -639,10 +917,28 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 				});
 			} 
 			catch (Exception err) {
-				ErrorUtil.showError(err);
+				ErrorUtil.showError(TAG+" Exception importing application",err);
 			}
 		}
-		private void importFamily(UUID parent,SerializableFamily sf) {
+
+
+		private void importDiagram(UUID parentId,SerializableDiagram sd) {
+			ObjectMapper mapper = new ObjectMapper();
+			try{
+				long newId = context.newResourceId();
+				String json = mapper.writeValueAsString(sd);
+				if(logger.isTraceEnabled() ) logger.trace(json);
+				ProjectResource resource = new ProjectResource(newId,
+						BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
+						sd.getName(), ApplicationScope.GATEWAY, json.getBytes());
+				resource.setParentUuid(parentId);
+				context.updateResource(resource);
+			} 
+			catch (Exception ex) {
+				ErrorUtil.showError(String.format("ApplicationImportAction: Unhandled Exception (%s)",ex.getMessage()),POPUP_TITLE,ex,true);
+			}
+		}
+		private void importFamily(UUID parentId,SerializableFamily sf) {
 			ObjectMapper mapper = new ObjectMapper();
 			try{
 				long newId = context.newResourceId();
@@ -651,9 +947,9 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 				ProjectResource resource = new ProjectResource(newId,
 						BLTProperties.MODULE_ID, BLTProperties.FAMILY_RESOURCE_TYPE,
 						sf.getName(), ApplicationScope.GATEWAY, json.getBytes());
-				resource.setParentUuid(parent);
+				resource.setParentUuid(parentId);
+				logger.infof("%s:ApplicationImportAction importing family %s(%s) (%s/%s)", TAG,sf.getName(),newId,parentId.toString(),sf.getId().toString());
 				context.updateResource(resource);
-				selectChild(newId);
 				// Now import the diagrams
 				for(SerializableDiagram diagram:sf.getDiagrams()) {
 					importDiagram(sf.getId(),diagram);
@@ -663,100 +959,26 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 				ErrorUtil.showError(String.format("ApplicationImportAction: Unhandled Exception (%s)",ex.getMessage()),POPUP_TITLE,ex,true);
 			}
 		}
-		private void importDiagram(UUID parent,SerializableDiagram sd) {
-			ObjectMapper mapper = new ObjectMapper();
-			try{
-				long newId = context.newResourceId();
-				String json = mapper.writeValueAsString(sd);
-				if(logger.isTraceEnabled() ) logger.trace(json);
-				ProjectResource resource = new ProjectResource(newId,
-						BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
-						sd.getName(), ApplicationScope.GATEWAY, json.getBytes());
-				resource.setParentUuid(parent);
-				context.updateResource(resource);
-				selectChild(newId);
-			} 
-			catch (Exception ex) {
-				ErrorUtil.showError(String.format("ApplicationImportAction: Unhandled Exception (%s)",ex.getMessage()),POPUP_TITLE,ex,true);
-			}
-		}
 	}
-	// Save the entire Application hierarchy.
-	private class ApplicationSaveAction extends BaseAction {
-    	private static final long serialVersionUID = 1L;
-    	private final AbstractResourceNavTreeNode root;
+	// From the root node, tell the gateway controller to clear all resources
+	private class ClearAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		public ClearAction()  {
+			super(PREFIX+".Clear",IconUtil.getIcon("delete_all"));
+		}
 
-	    public ApplicationSaveAction(AbstractResourceNavTreeNode node)  {
-	    	super(PREFIX+".SaveApplication",IconUtil.getIcon("add2")); 
-	    	root = node;
-	    }
-	    
 		public void actionPerformed(ActionEvent e) {
-			// Traverse the entire hierarchy, saving each step
-    		Project diff = context.getProject().getEmptyCopy();
-    		accumulateNodeResources(root,diff);
-    		try {
-    			DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ..."); // Do not publish
-    		}
-    		catch(GatewayException ge) {
-    			logger.warnf("%s.ApplicationSaveAction: Exception saving project resource %d (%s)",TAG,resourceId,ge.getMessage());
-    		}
-    		setItalic(false);
+			handler.clearController();
 		}
 	}
-
-	// Create a new diagram
-    private class DiagramAction extends BaseAction {
-    	private static final long serialVersionUID = 1L;
-	    public DiagramAction()  {
-	    	super(PREFIX+".NewDiagram",IconUtil.getIcon("folder_new"));  // preferences
-	    }
-	    
-		public void actionPerformed(ActionEvent e) {
-			try {
-				final long newId = context.newResourceId();
-				String newName = BundleUtil.get().getString(PREFIX+".NewDiagram.Default.Name");
-				if( newName==null) newName = "New Diag";  // Missing string resource
-				SerializableDiagram diagram = new SerializableDiagram();
-				diagram.setName(newName);
-				diagram.setResourceId(newId);
-				diagram.setId(UUID.randomUUID());
-				diagram.setDirty(false);    // Will become dirty as soon as we add a block
-				logger.infof("%s: new diagram action ...",TAG);
-
-				String json = serializeDiagram(diagram);
-			
-				logger.debugf("%s: DiagramAction. json=%s",TAG,json);
-				byte[] bytes = json.getBytes();
-				logger.debugf("%s: DiagramAction. create new %s resource %d (%d bytes)",TAG,BLTProperties.DIAGRAM_RESOURCE_TYPE,
-						newId,bytes.length);
-				ProjectResource resource = new ProjectResource(newId,
-						BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
-						newName, ApplicationScope.GATEWAY, bytes);
-				resource.setParentUuid(getFolderId());
-				context.updateResource(resource);
-				selectChild(newId);
-				EventQueue.invokeLater(new Runnable() {
-					public void run() {
-						workspace.open(newId);
-					}
-				});
-				
-			} 
-			catch (Exception err) {
-				ErrorUtil.showError(err);
-			}
+	private class CloneDiagramAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final AbstractResourceNavTreeNode parentNode;
+		public CloneDiagramAction(AbstractResourceNavTreeNode pNode)  {
+			super(PREFIX+".CloneDiagram",IconUtil.getIcon("copy"));  // preferences
+			this.parentNode = pNode;
 		}
-	}
-    
-    
-    private class CloneDiagramAction extends BaseAction {
-    	private static final long serialVersionUID = 1L;
-    	private final static String POPUP_TITLE = "Clone Diagram";
-	    public CloneDiagramAction()  {
-	    	super(PREFIX+".CloneDiagram",IconUtil.getIcon("copy"));  // preferences
-	    }
-	    
+
 		public void actionPerformed(ActionEvent e) {
 			try {
 				EventQueue.invokeLater(new Runnable() {
@@ -783,7 +1005,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 												"CLONE", ApplicationScope.GATEWAY, bytes);
 										resource.setParentUuid(getFolderId());
 										context.updateResource(resource);
-										selectChild(newId);
+										parentNode.selectChild(new long[] {newId} );
 
 									}
 									catch( FileNotFoundException fnfe) {
@@ -808,17 +1030,191 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 				});
 			} 
 			catch (Exception err) {
-				ErrorUtil.showError(err);
+				ErrorUtil.showError(TAG+" Exception cloning diagram",err);
+			}
+		}
+	} 
+	// From the root node, recursively log the contents of the tree
+	private class DebugAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		public DebugAction()  {
+			super(PREFIX+".Debug",IconUtil.getIcon("bug_yellow"));
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			logger.info("============================ Resources (Designer) =========================");
+			listProjectResources();
+			logger.info("============================ Resources (Gateway) ==========================");
+			listControllerResources();
+			logger.infof("================================ (proj = %d )==============================",context.getProject().getId());
+		}
+	}
+	// Delete the this node and all its descendants. 
+	// Note: On a "save" action, the descendants are removed also.
+	private class DeleteNodeAction extends BaseAction implements UndoManager.UndoAction {
+		private static final long serialVersionUID = 1L;
+		private final AbstractResourceNavTreeNode node;
+		ResourceDeleteManager deleter;
+		private String bundleString;
+		private long resid = -1;    // for the root
+
+		public DeleteNodeAction(AbstractResourceNavTreeNode resourceNode)  {
+			super(PREFIX+".DeleteNode",IconUtil.getIcon("delete"));
+			this.node = resourceNode;
+			this.bundleString = PREFIX+".NodeNoun";
+			this.deleter = new ResourceDeleteManager(node);
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			AbstractNavTreeNode p = node.getParent();
+			ProjectResource res = node.getProjectResource();
+			resid = res.getResourceId();
+			boolean wasDirty = statusManager.isResourceDirty(resid);
+			logger.infof("%s.DeleteNodeAction: %s, resource %d.",TAG,node.getName(),resid);
+			List<AbstractResourceNavTreeNode>selected = new ArrayList<>();
+			selected.add(node);
+			if(confirmDelete(selected)) {
+				if( res.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE) ) {
+					bundleString = PREFIX+".ApplicationNoun";
+				}
+				else if( res.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE) ) {
+					bundleString = PREFIX+".FamilyNoun";
+				}
+				else if( res.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE) ) {
+					bundleString = PREFIX+".FolderNoun";
+				}
+				deleter.acquireResourcesToDelete();
+				if( execute() ) {
+					UndoManager.getInstance().add(this,GeneralPurposeTreeNode.class);
+					
+					if( p instanceof GeneralPurposeTreeNode )  {
+						GeneralPurposeTreeNode parentNode = (GeneralPurposeTreeNode)p;
+						parentNode.recreate();
+						parentNode.expand();
+						if( wasDirty ) statusManager.decrementDirtyNodeCount(parentNode.resourceId);
+					}
+					deleter.deleteInProject();
+				}
+				else {
+					ErrorUtil.showError("Node locked, delete failed");
+				}
+			}
+		}
+
+		// Marks the project resources for deletion.
+		@Override
+		public boolean execute() {
+			return deleter.deleteResources();
+		}
+
+		@Override
+		public boolean isGroupSequenceIndependent() {return false;}
+
+		@Override
+		public boolean undo() {
+			return deleter.undo();
+		}
+
+		@Override
+		public String getDescription() { return BundleUtil.get().getStringLenient(bundleString); }
+
+	}
+
+	// Create a new diagram
+	private class DiagramCreateAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final AbstractResourceNavTreeNode currentNode;
+		public DiagramCreateAction(AbstractResourceNavTreeNode parentNode)  {
+			super(PREFIX+".NewDiagram",IconUtil.getIcon("folder_new"));  // preferences
+			this.currentNode = parentNode;
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			try {
+				final long newId = context.newResourceId();
+				String newName = BundleUtil.get().getString(PREFIX+".NewDiagram.Default.Name");
+				if( newName==null) newName = "New Diag";  // Missing string resource
+				SerializableDiagram diagram = new SerializableDiagram();
+				diagram.setName(newName);
+				diagram.setResourceId(newId);
+				diagram.setId(UUID.randomUUID());
+				diagram.setDirty(false);    // Will become dirty as soon as we add a block
+
+				String json = serializeDiagram(diagram);	
+				logger.debugf("%s.DiagramCreateAction. json=%s",TAG,json);
+				byte[] bytes = json.getBytes();
+				logger.infof("%s.DiagramCreateAction. create new %s(%d), %s (%d bytes)",TAG,BLTProperties.DIAGRAM_RESOURCE_TYPE,newId,
+						newName,bytes.length);
+				ProjectResource resource = new ProjectResource(newId,BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
+						newName, ApplicationScope.GATEWAY, bytes);
+				resource.setParentUuid(getFolderId());
+				logger.infof("%s: parent: %s",TAG,getFolderId().toString());
+				context.updateResource(resource);
+				currentNode.selectChild(new long[] {newId} );
+				EventQueue.invokeLater(new Runnable() {
+					public void run() {
+						workspace.open(newId);
+					}
+				});
+
+			} 
+			catch (Exception err) {
+				ErrorUtil.showError(TAG+" Exception creating diagram",err);
+			}
+		}
+	}
+	// This really ought to launch a dialog that configures family attributes.
+	private class FamilyConfigureAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final static String POPUP_TITLE = "Configure Family";
+		private ProjectResource res;
+		public FamilyConfigureAction(ProjectResource resource)  {
+			super(PREFIX+".ConfigureFamily",IconUtil.getIcon("gear"));  // preferences
+			res = resource;
+		}
+
+		public void actionPerformed(ActionEvent e) {
+
+			if( resourceId<0 ) return;   // Do nothing
+			try {
+				EventQueue.invokeLater(new Runnable() {
+					public void run() {
+						// Unmarshall the resource
+						logger.infof("%s.actionPerformed: deserializing ...%d",TAG,resourceId);
+						SerializableFamily sf = deserializeFamily(res);
+						if( sf!=null ) {
+							FamilyConfigurationDialog dialog = new FamilyConfigurationDialog(sf);
+							dialog.pack();
+							dialog.setVisible(true);   // Returns when dialog is closed
+							if( !dialog.isCancelled()) {
+								sf = dialog.getFamily();
+								String json = serializeFamily(sf);
+								res.setName(sf.getName());
+								res.setData(json.getBytes());
+								context.updateResource(res);
+								statusManager.incrementDirtyNodeCount(resourceId);
+							}
+						}
+						else {
+							ErrorUtil.showWarning(String.format("FamilyConfigurationAction: Failed to deserialize resource"),POPUP_TITLE);
+						}
+					}
+				});
+			} 
+			catch (Exception err) {
+				ErrorUtil.showError(TAG+" Exception configuring family",err);
 			}
 		}
 	}
 	// From the root node, create a folder for diagrams belonging to a family
-	private class FamilyAction extends BaseAction {
+	private class FamilyCreateAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
-	    public FamilyAction()  {
-	    	super(PREFIX+".NewFamily",IconUtil.getIcon("folder_new"));
-	    }
-	    
+		private final AbstractResourceNavTreeNode currentNode;
+		public FamilyCreateAction(AbstractResourceNavTreeNode parentNode)  {
+			super(PREFIX+".NewFamily",IconUtil.getIcon("folder_new"));
+			this.currentNode = parentNode;
+		}
+
 		public void actionPerformed(ActionEvent e) {
 			try {
 				final long newId = context.newResourceId();
@@ -826,154 +1222,62 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 				if( newName==null) newName = "New Folks";  // Missing Resource
 				SerializableFamily fam = new SerializableFamily();
 				fam.setName(newName);
-	
-				logger.infof("%s: new application action ...",TAG);
 
 				String json = serializeFamily(fam);
-			
-				logger.debugf("%s: FamilyAction. json=%s",TAG,json);
+
+				logger.debugf("%s.FamilyCreateAction. json=%s",TAG,json);
 				byte[] bytes = json.getBytes();
-				logger.debugf("%s: FamilyAction. create new %s resource %d (%d bytes)",TAG,BLTProperties.FAMILY_RESOURCE_TYPE,
-						newId,bytes.length);
-				ProjectResource resource = new ProjectResource(newId,
-						BLTProperties.MODULE_ID, BLTProperties.FAMILY_RESOURCE_TYPE,
+				logger.infof("%s.FamilyCreateAction. create new %s(%d), %s (%d bytes)",TAG,BLTProperties.FAMILY_RESOURCE_TYPE,newId,
+						newName,bytes.length);
+				ProjectResource resource = new ProjectResource(newId,BLTProperties.MODULE_ID, BLTProperties.FAMILY_RESOURCE_TYPE,
 						newName, ApplicationScope.GATEWAY, bytes);
 				resource.setParentUuid(getFolderId());
-				context.updateResource(resource);;
-				selectChild(newId);
+				logger.infof("%s.familyCreateAction: res(%d) %s, fam %s, parent: %s",TAG,newId,resource.getName(),fam.getName(),getFolderId().toString());
+				context.updateResource(resource);
+				//recreate();
+				currentNode.selectChild(new long[] {newId} );
 			} 
 			catch (Exception err) {
-				ErrorUtil.showError(err);
+				ErrorUtil.showError(TAG+" Exception creating family",err);
 			}
 		}
 	}
-    // This really ought to launch a dialog that configures family attributes.
-    private class FamilyConfigureAction extends BaseAction {
-    	private static final long serialVersionUID = 1L;
-    	private final static String POPUP_TITLE = "Configure Family";
-    	private ProjectResource res;
-	    public FamilyConfigureAction(ProjectResource resource)  {
-	    	super(PREFIX+".ConfigureFamily",IconUtil.getIcon("gear"));  // preferences
-	    	res = resource;
-	    }
-	    
-	    public void actionPerformed(ActionEvent e) {
+	// From the root node, create a folder for diagrams belonging to a family
+	private class FolderCreateAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final AbstractResourceNavTreeNode currentNode;
+		public FolderCreateAction(AbstractResourceNavTreeNode parentNode)  {
+			super(PREFIX+".NewFolder",IconUtil.getIcon("folder_new"));
+			currentNode = parentNode;
+		}
 
-    		if( resourceId<0 ) return;   // Do nothing
-    		try {
-    			EventQueue.invokeLater(new Runnable() {
-    				public void run() {
-    					// Unmarshall the resource
-    					logger.infof("%s.actionPerformed: deserializing ...%d",TAG,resourceId);
-    					SerializableFamily sf = deserializeFamily(res);
-    					if( sf!=null ) {
-    						FamilyConfigurationDialog dialog = new FamilyConfigurationDialog(sf);
-    						dialog.pack();
-    						dialog.setVisible(true);   // Returns when dialog is closed
-    						if( !dialog.isCancelled()) {
-    							sf = dialog.getFamily();
-    							String json = serializeFamily(sf);
-    							res.setName(sf.getName());
-    							res.setData(json.getBytes());
-    							context.updateResource(res);
-    							statusManager.setResourceDirty(resourceId, true);
-    						}
-    					}
-    					else {
-    						ErrorUtil.showWarning(String.format("FamilyConfigurationAction: Failed to deserialize resource"),POPUP_TITLE);
-    					}
-    				}
-    			});
-    		} 
-    		catch (Exception err) {
-    			ErrorUtil.showError(err);
-    		}
-    	}
-	}
-    private class ApplicationExportAction extends BaseAction {
-    	private static final long serialVersionUID = 1L;
-    	private final static String POPUP_TITLE = "Export Application Tree";
-    	private final GeneralPurposeTreeNode view;
-    	private final Component anchor;
-	    public ApplicationExportAction(Component c,GeneralPurposeTreeNode gptn)  {
-	    	super(PREFIX+".ApplicationExport",IconUtil.getIcon("export1")); 
-	    	view=gptn;
-	    	anchor=c;
-	    }
-	    
 		public void actionPerformed(ActionEvent e) {
-		
-			if( view==null ) return;   // Do nothing
 			try {
-				EventQueue.invokeLater(new Runnable() {
-					public void run() {
-						ExportDialog dialog = new ExportDialog();
-					    dialog.pack();
-					    dialog.setVisible(true);   // Returns when dialog is closed
-					    File output = dialog.getFilePath();
-					    boolean success = false;
-					    if( output!=null ) {
-					    	logger.debugf("%s.actionPerformed: dialog returned %s",TAG,output.getAbsolutePath());
-					    	try {
-					    		if(output.exists()) {
-					    			//output.delete();           // Remove existing file
-					    			//output.createNewFile();
-					    			output.setWritable(true);  // This doesn't seem to work (??)
-					    		}
-					    		else {
-					    			output.createNewFile();
-					    		}
-
-					    		if( output.canWrite() ) {
-					    			ObjectMapper mapper = new ObjectMapper();
-					    			if(logger.isDebugEnabled()) logger.debugf("%s.actionPerformed: creating json ... %s",TAG,(mapper.canSerialize(SerializableDiagram.class)?"true":"false"));
-					    			try{ 
-					    				// Convert the view into a serializable object
-					    				SerializableApplicationTree sat = null;  //view.createSerializableRepresentation();
-					    				String json = mapper.writeValueAsString(sat);
-					    				FileWriter fw = new FileWriter(output,false);  // Do not append
-					    				try {
-					    					fw.write(json);
-					    					success = true;
-					    				}
-					    				catch(IOException ioe) {
-					    					ErrorUtil.showWarning(String.format("Error writing file %s (%s)",output.getAbsolutePath(),
-					    							ioe.getMessage()),POPUP_TITLE,false);
-					    				}
-					    				finally {
-					    					fw.close();
-					    				}
-					    			}
-					    			catch(JsonProcessingException jpe) {
-					    				ErrorUtil.showError("Unable to serialize diagram",POPUP_TITLE,jpe,true);
-					    			}
-					    		}
-					    		else {
-					    			ErrorUtil.showWarning(String.format("selected file (%s) is not writable.",output.getAbsolutePath()),POPUP_TITLE,false);
-					    		}
-					    	}
-					    	catch (IOException ioe) {
-					    		ErrorUtil.showWarning(String.format("Error creating or closing file %s (%s)",output.getAbsolutePath(),
-					    				ioe.getMessage()),POPUP_TITLE,false);
-					    	}
-					    }
-					    // If there's an error, then the user will be informed
-					    if( success ) ErrorUtil.showInfo(anchor, "Export complete", POPUP_TITLE);
-					}
-				});
+				final long newResId = context.newResourceId();
+				String newName = BundleUtil.get().getString(PREFIX+".NewFolder.Default.Name");
+				if( newName==null) newName = "New Folks";  // Missing Resource
+				UUID newId = context.addFolder(newResId, BLTProperties.MODULE_ID, ApplicationScope.GATEWAY, newName, getFolderId());
+				logger.infof("%s.FolderCreateAction. create new %s(%d), %s (%s, parent %s)",TAG,BLTProperties.FOLDER_RESOURCE_TYPE,newResId,newName,
+						newId.toString(),getFolderId().toString());
+				//recreate();
+				currentNode.selectChild(new long[] {newResId} );
+				statusManager.incrementDirtyNodeCount(resourceId);
 			} 
 			catch (Exception err) {
-				ErrorUtil.showError(err);
+				ErrorUtil.showError(TAG+" Exception creating folder",err);
 			}
+
 		}
 	}
-    private class ImportDiagramAction extends BaseAction {
-    	private static final long serialVersionUID = 1L;
-    	private final static String POPUP_TITLE = "Import Diagram";
-	    public ImportDiagramAction()  {
-	    	super(PREFIX+".ImportDiagram",IconUtil.getIcon("import1"));  // preferences
-	    }
-	    
+	private class ImportDiagramAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final AbstractResourceNavTreeNode parentNode;
+		private final static String POPUP_TITLE = "Import Diagram";
+		public ImportDiagramAction(AbstractResourceNavTreeNode pNode)  {
+			super(PREFIX+".ImportDiagram",IconUtil.getIcon("import1"));  // preferences
+			this.parentNode = pNode;
+		}
+
 		public void actionPerformed(ActionEvent e) {
 			try {
 				EventQueue.invokeLater(new Runnable() {
@@ -988,7 +1292,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 							dialog.pack();
 							dialog.setVisible(true);   // Returns when dialog is closed
 							File input = dialog.getFilePath();
-							
+
 							if( input!=null ) {
 								if( input.exists() && input.canRead()) {
 									try {
@@ -1000,17 +1304,18 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 										SerializableDiagram sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
 										if( sd!=null ) {
 											logger.infof("%s:ImportDiagramAction imported diagram:\n%s", TAG,sd.getName());
-											UUIDResetHandler handler = new UUIDResetHandler(sd);
-											handler.convertUUIDs();
+											UUIDResetHandler uuidHandler = new UUIDResetHandler(sd);
+											uuidHandler.convertUUIDs();
 											sd.setDirty(true);    // Dirty because gateway doesn't know about it yet
 											String json = mapper.writeValueAsString(sd);
-											logger.infof("%s:ImportDiagramAction saved resource as:\n%s", TAG,json);
+											logger.debugf("%s:ImportDiagramAction saved resource as:\n%s", TAG,json);
 											ProjectResource resource = new ProjectResource(newId,
 													BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
 													sd.getName(), ApplicationScope.GATEWAY, json.getBytes());
 											resource.setParentUuid(getFolderId());
 											context.updateResource(resource);
-											selectChild(newId);
+											parentNode.selectChild(new long[] {newId} );
+											setDirty(true);
 										}
 										else {
 											ErrorUtil.showWarning(String.format("Failed to deserialize file (%s)",input.getAbsolutePath()),POPUP_TITLE);
@@ -1041,159 +1346,82 @@ public class GeneralPurposeTreeNode extends FolderNode implements ChangeListener
 				});
 			} 
 			catch (Exception err) {
-				ErrorUtil.showError(err);
+				ErrorUtil.showError(TAG+" Exception importing diagram",err);
 			}
 		}
 	}
-    // Save the entire Application hierarchy.
-    private class SaveAllAction extends BaseAction {
-    	private static final long serialVersionUID = 1L;
+	// Save the entire Application hierarchy.
+	private class SaveAllAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final AbstractResourceNavTreeNode node;
 
-    	public SaveAllAction()  {
-    		super(PREFIX+".SaveAll",IconUtil.getIcon("add2")); 
-    	}
+		public SaveAllAction(AbstractResourceNavTreeNode treeNode)  {
+			super(PREFIX+".SaveAll",IconUtil.getIcon("add2")); 
+			this.node = treeNode;
+		}
 
-    	public void actionPerformed(ActionEvent e) {
-    		// Traverse the entire hierarchy, saving each step
-    		saveAll();
-    	}
-    	
-    }
-    // Start refers to a global startup of the Execution controller in the Gateway
-    private class StartAction extends BaseAction {
-    	private static final long serialVersionUID = 1L;
-	    public StartAction()  {
-	    	super(PREFIX+".StartExecution",IconUtil.getIcon("disk_play"));  // preferences
-	    }
-	    
 		public void actionPerformed(ActionEvent e) {
-			try {
-				ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
+			// Traverse the entire hierarchy, saving each step
+			if( !isRootFolder() ) return;
+			executionEngine.executeOnce(new ResourceSaveManager(workspace,node));
+			statusManager.cleanAll();
+		}
+	}
+
+	// Start refers to a global startup of the Execution controller in the Gateway
+	private class StartAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		public StartAction()  {
+			super(PREFIX+".StartExecution",IconUtil.getIcon("disk_play"));  // preferences
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			try{
 				handler.startController();
 				this.setEnabled(false);
 				stopAction.setEnabled(true);
 			} 
 			catch (Exception ex) {
 				logger.warnf("%s: startAction: ERROR: %s",TAG,ex.getMessage(),ex);
-				ErrorUtil.showError(ex);
+				ErrorUtil.showError(TAG+" Exception starting the controller",ex);
 			}
 		}
 	}
- 
-    private class StopAction extends BaseAction {
-    	private static final long serialVersionUID = 1L;
-	    public StopAction()  {
-	    	super(PREFIX+".StopExecution",IconUtil.getIcon("disk_forbidden"));  // preferences
-	    }
-	    
+
+	private class StopAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		public StopAction()  {
+			super(PREFIX+".StopExecution",IconUtil.getIcon("disk_forbidden"));  // preferences
+		}
 		public void actionPerformed(ActionEvent e) {
 			try {
-				ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
 				handler.stopController();
 				this.setEnabled(false);
 				startAction.setEnabled(true);
 			}
 			catch(Exception ex) {
 				logger.warnf("%s: stopAction: ERROR: %s",TAG,ex.getMessage(),ex);
-				ErrorUtil.showError(ex);
+				ErrorUtil.showError(TAG+" Exception stopping the controller",ex);
 			}
 		}
 	}
-    
-    // Recursively descend the node tree, gathering up associated resources.
-    // Since this is used during a save, set the resources clean.
-    public void accumulateNodeResources(AbstractResourceNavTreeNode node,Project diff) {
-    	ProjectResource res = node.getProjectResource();
-    	if( res!=null ) {
-    		logger.infof("%s.accumulateNodeResources: %s (%d)",TAG,res.getName(),res.getResourceId());
-    		diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
-    		if(res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
-    			// If the resource is open, we need to save it ..
-    			DiagramNode dnode = (DiagramNode)node;
-    			dnode.saveDiagram();  // Whether it's open or closed.
-    		}
-    		statusManager.clearDirtyChildCount(resourceId);
-    		statusManager.setResourceDirty(res.getResourceId(), false);
-    	}
-    	else {
-    		logger.warnf("%s.accumulateNodeResources: %s has no project resource",TAG,node.getName());
-    	}
-		@SuppressWarnings("rawtypes")
-		Enumeration walker = node.children();
-		while(walker.hasMoreElements()) {
-			Object child = walker.nextElement();
-			accumulateNodeResources((AbstractResourceNavTreeNode)child,diff);
+	// Save this node and all its descendants.
+	private class TreeSaveAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final GeneralPurposeTreeNode node;
+
+		public TreeSaveAction(GeneralPurposeTreeNode treeNode, String bundleString)  {
+			super(bundleString,IconUtil.getIcon("add2")); 
+			node = treeNode;
 		}
-	}
-    /**
-	 * Search the project for all resources. This is for debugging.
-	 * We filter out those that are global (have no module) as these
-	 * are system things that we don't care about for the moment.
-	 */
-	public void listProjectResources() {
-		List <ProjectResource> resources = context.getProject().getResources();
-		for( ProjectResource res : resources ) {
-			if( res.getModuleId()==null || res.getModuleId().length()==0) continue;
-			logger.info("Res: "+res.getResourceId()+" "+res.getResourceType()+" "+res.getModuleId()+" ("+res.getName()+
-					":"+res.getParentUuid()+")");
+
+		public void actionPerformed(ActionEvent e) {
+			executionEngine.executeOnce(new ResourceSaveManager(workspace,node));
+			ProjectResource pr = node.getProjectResource();
+			if( pr!=null )
+				statusManager.clearDirtyChildCount(pr.getResourceId());
+			else
+				statusManager.clearDirtyChildCount(BLTProperties.ROOT_RESOURCE_ID);
 		}
-	}
-	
-	/**
-	 * Query the block controller in the Gateway. The resources that it knows
-	 * about may, or may not, coincide with those in the Designer. 
-	 */
-	public void listControllerResources() {
-		try {
-			ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
-			List <SerializableResourceDescriptor> descriptors = handler.queryControllerResources();
-			for( SerializableResourceDescriptor descriptor : descriptors ) {
-				logger.info("Res: "+descriptor.getProjectId()+":"+descriptor.getResourceId()+" "+
-						         descriptor.getType()+" ("+descriptor.getName()+")");
-			}
-		} 
-		catch (Exception ex) {
-			logger.warnf("%s. startAction: ERROR: %s",TAG,ex.getMessage(),ex);
-			ErrorUtil.showError(ex);
-		}
-	}
-	/**
-	 * Create an ImageIcon from the resource path. If it doesn't exist, return the default.
-	 * @param path
-	 * @return
-	 */
-	private ImageIcon iconFromPath(String path) {
-		Dimension iconSize = new Dimension(20,20);
-		ImageIcon result = defaultIcon;
-		Image img = ImageLoader.getInstance().loadImage(path,iconSize);
-		if( img!=null ) result = new ImageIcon(img);
-		return result;
-	}
-	@Override
-	public void projectResourceModified(ProjectResource res, ProjectChangeListener.ResourceModification changeType) {
-		if (res.getResourceId() == this.resourceId) {
-			logger.infof("%s.projectResourceModified, setting name to: %s",TAG,res.getName());
-			boolean changed = !res.getName().equals(getName());
-			setName(res.getName());
-			statusManager.setResourceDirty(resourceId, changed);
-		} 
-		else if ((changeType == ProjectChangeListener.ResourceModification.Deleted) ) {
-			statusManager.setResourceDirty(resourceId, true);  // A child has been deleted
-			recreate();
-		} 
-		else {
-			super.projectResourceModified(res, changeType);
-		}
-	}
-	// ================================ ChangeListener ======================================
-	// Either our state or the state of another node changed.
-	// No matter what we re-compute our state.
-	public void stateChanged(ChangeEvent event) {
-		// Set italics, enable Save
-		boolean dirty = statusManager.isResourceDirty(resourceId);
-		logger.tracef("%s.stateChanged: dirty = %s",TAG,(dirty?"true":"false"));
-		setItalic(dirty);
-		applicationAction.setEnabled(dirty);    // Only applies to an application node
-		refresh();
 	}
 }

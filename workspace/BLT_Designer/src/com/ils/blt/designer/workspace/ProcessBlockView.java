@@ -40,8 +40,11 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.Ab
  * 
  * Note: The "dirtiness" of the block is used simply for darkening
  *       the icon on the screen.
+ * Note: We are added as a property change listener by the ProcessDiagram 
+ *       whenever the diagram is displayed. On notification, we just repaint
+ *       the UI.
  */
-public class ProcessBlockView extends AbstractBlock {
+public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	private static final String TAG = "ProcessBlockView";
 	private final static Random random = new Random();
 	private Collection<ProcessAnchorDescriptor> anchors;
@@ -74,7 +77,7 @@ public class ProcessBlockView extends AbstractBlock {
 	private BlockStyle style = BlockStyle.SQUARE;
 	private boolean transmitEnabled = false;
 	private BlockViewUI ui = null;
-	private final UUID uuid;
+	private UUID uuid = null;
 	
 	/**
 	 * Constructor: Used when a new block is created from the palette. 
@@ -109,7 +112,7 @@ public class ProcessBlockView extends AbstractBlock {
 		for( AnchorPrototype ap:descriptor.getAnchors() ) {
 			log.debugf("%s: Creating anchor descriptor %s", TAG,ap.getName());
 			anchors.add( new ProcessAnchorDescriptor((ap.getAnchorDirection()==AnchorDirection.INCOMING?AnchorType.Terminus:AnchorType.Origin),
-					ap.getConnectionType(),UUID.randomUUID(),ap.getName(),ap.getAnnotation(),ap.getHint()) );
+					ap.getConnectionType(),UUID.randomUUID(),ap.getName(),ap.getAnnotation(),ap.getHint(),ap.isMultiple()) );
 		}
 		this.properties = new ArrayList<BlockProperty>();
 		log.debugf("%s: Created %s (%s) view from descriptor (%d anchors)", TAG, className, style.toString(),anchors.size());
@@ -145,14 +148,15 @@ public class ProcessBlockView extends AbstractBlock {
 		this.anchors = new ArrayList<ProcessAnchorDescriptor>();
 		if(sb.getAnchors()!=null ) {
 			for( SerializableAnchor sa:sb.getAnchors() ) {
-				log.debugf("%s: Creating anchor view %s", TAG,sa.getDisplay());
+				log.debugf("%s: Creating serializable anchor %s (%s)", TAG,sa.getDisplay(),sa.getConnectionType().name());
 				anchors.add( new ProcessAnchorDescriptor((sa.getDirection()==AnchorDirection.INCOMING?AnchorType.Terminus:AnchorType.Origin),
-						sa.getConnectionType(),sa.getId(),sa.getDisplay(),sa.getAnnotation(),sa.getHint()) );
+						sa.getConnectionType(),sa.getId(),sa.getDisplay(),sa.getAnnotation(),sa.getHint(),sa.isMultiple()) );
 			}
 		}
 		this.properties = new ArrayList<BlockProperty>();
 		if(sb.getProperties()!=null ) {
 			for(BlockProperty bp:sb.getProperties()) {
+				log.debugf("%s: Creating property %s", TAG,bp.getName());
 				properties.add(bp);
 			} 
 		}
@@ -161,8 +165,7 @@ public class ProcessBlockView extends AbstractBlock {
 	}
 	
 	
-	// Note: This does not set connection type
-	private SerializableAnchor convertAnchorToSerializable(ProcessAnchorDescriptor anchor) {
+	public SerializableAnchor convertAnchorToSerializable(ProcessAnchorDescriptor anchor) {
 		SerializableAnchor result = new SerializableAnchor();
 		result.setDirection(anchor.getType()==AnchorType.Origin?AnchorDirection.OUTGOING:AnchorDirection.INCOMING);
 		result.setDisplay(anchor.getDisplay());
@@ -199,14 +202,14 @@ public class ProcessBlockView extends AbstractBlock {
 		result.setX(getLocation().x);
 		result.setY(getLocation().y);
 		
-		List<SerializableAnchor> anchors = new ArrayList<SerializableAnchor>();
+		List<SerializableAnchor> ancs = new ArrayList<SerializableAnchor>();
 		for( AnchorDescriptor anchor:getAnchors()) {
-			anchors.add(convertAnchorToSerializable((ProcessAnchorDescriptor)anchor));
+			ancs.add(convertAnchorToSerializable((ProcessAnchorDescriptor)anchor));
 		}
-		result.setAnchors(anchors.toArray(new SerializableAnchor[anchors.size()]));
+		result.setAnchors(ancs.toArray(new SerializableAnchor[ancs.size()]));
 		if( getProperties()!=null ) {
 			log.tracef("%s.convertToSerializable: %s has %d properties",TAG,getClassName(),getProperties().size());
-			log.info(getProperties().toString());
+			log.tracef(getProperties().toString());
 			result.setProperties(getProperties().toArray(new BlockProperty[getProperties().size()]));
 		}
 		else {
@@ -248,30 +251,22 @@ public class ProcessBlockView extends AbstractBlock {
 	/** 
 	 * Define a default drop target based on the connector's anchor point 
 	 * hovering above us. For simplicity we just return the first anchor point
-	 * of the right sex.
+	 * of the right sex that is legal. If none are legal, we use the last
+	 * anchor found.
 	 * @param opposite
 	 */
 	@Override
 	public AnchorPoint getDefaultDropAnchor(AnchorPoint opposite ) {
 		AnchorPoint result = null;
-		if( opposite.isConnectorOrigin() ) {
-			for(AnchorPoint ap:getAnchorPoints()) {
-				if(ap.isConnectorTerminus()) {
-					result = ap;
-					break;
-				}
-			}
-		}
-		else {
-			for(AnchorPoint ap:getAnchorPoints()) {
-				if(ap.isConnectorOrigin()) {
-					result = ap;
-					break;
-				}
+		for(AnchorPoint ap:getAnchorPoints()) {
+			if( isConnectionValid(ap,opposite)) {
+				result = ap;
+				break;
 			}
 		}
 		return result;
 	}
+	
 	public String getEditorClass() {return editorClass;}
 	public int getEmbeddedFontSize() {return embeddedFontSize;}
 	public String getEmbeddedIcon() {return embeddedIcon;}
@@ -340,11 +335,20 @@ public class ProcessBlockView extends AbstractBlock {
 	 * The name can be user-modified at any time. If we really need a uniqueness,
 	 * use the block's UUID.
 	 */
-	private void createPseudoRandomName() {
+	public void createPseudoRandomName() {
 		String root = className;
 		int pos = className.lastIndexOf(".");
 		if( pos>=0 )  root = className.substring(pos+1);
 		name = String.format("%s-%d", root.toUpperCase(),random.nextInt(1000));
+	}
+	
+	/**
+	 * Create a name that is highly likely to be unique within the diagram.
+	 * The name can be user-modified at any time. If we really need a uniqueness,
+	 * use the block's UUID.
+	 */
+	public void createRandomId() {
+		this.uuid = UUID.randomUUID();
 	}
 	
 	// =================== Handle Event Listeners ===================
@@ -364,13 +368,43 @@ public class ProcessBlockView extends AbstractBlock {
 
 	 protected void fireStateChanged() {
 		 // Guaranteed to return a non-null array
-		 Object[] listeners = listenerList.getListenerList();
+		 Object[] listnrs = listenerList.getListenerList();
 		 // Process the listeners last to first, notifying
 		 // those that are interested in this event
-		 for (int i = listeners.length-2; i>=0; i-=2) {
-			 if (listeners[i]==ChangeListener.class) {
-				 ((ChangeListener)listeners[i+1]).stateChanged(changeEvent);
+		 for (int i = listnrs.length-2; i>=0; i-=2) {
+			 if (listnrs[i]==ChangeListener.class) {
+				 ((ChangeListener)listnrs[i+1]).stateChanged(changeEvent);
 			 }
 		 }
 	 }
+	 
+	 // Specify whether or not a drop point is valid.
+	 // Reasons for invalid:
+	 // 1) end anchor is already connected and max connections = 1
+	 // 2) direction mismatch
+	 // 3) data type mismatch
+	 public static boolean isConnectionValid(AnchorPoint startingAnchor, AnchorPoint endAnchor) {
+		 boolean result = true;
+		 BasicAnchorPoint start = (BasicAnchorPoint)startingAnchor;
+		 BasicAnchorPoint end   = (BasicAnchorPoint)endAnchor;
+		 if( end.getBlock()!=null && !end.allowMultipleConnections() ) {result = false;}
+		 else if( start.isConnectorOrigin()==end.isConnectorOrigin())  result = false;
+		 else {
+			 result = false;
+			 if(start.getConnectionType().equals(end.getConnectionType()) ||
+					 start.getConnectionType().equals(ConnectionType.ANY)      ||
+					 end.getConnectionType().equals(ConnectionType.ANY)   ) {
+
+				 result = true;
+			 }
+		 }
+		 return result;
+	 }
+
+	// ====================================== Change Listener =====================================
+	@Override
+	public void stateChanged(ChangeEvent e) {
+		if( ui != null ) ui.update();
+		
+	}
 }

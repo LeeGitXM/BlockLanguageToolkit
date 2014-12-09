@@ -40,7 +40,7 @@ public class UUIDResetHandler   {
 	 * Do it.  (Note this will fix missing UUIDs).
 	 */
 	public boolean convertUUIDs() {
-		boolean success = false;
+		boolean success = true;
 		UUID original = diagram.getId();
 		diagram.setId(UUID.randomUUID());
 		if( original!=null ) blockLookup.put(original, diagram.getId());
@@ -69,6 +69,7 @@ public class UUIDResetHandler   {
 			}
 			else {
 				log.warnf("%s: UUID lookup failed for begin block.", TAG);
+				success = false;
 			}
 			// End
 			id = sc.getEndBlock();
@@ -88,6 +89,7 @@ public class UUIDResetHandler   {
 			}
 			else {
 				log.warnf("%s: UUID lookup failed for begin anchor.", TAG);
+				success = false;
 			}
 			sap = sc.getEndAnchor();
 			id = sap.getParentId();
@@ -97,6 +99,7 @@ public class UUIDResetHandler   {
 			}
 			else {
 				log.warnf("%s: UUID lookup failed for end anchor.", TAG);
+				success = false;
 			}
 			
 		}

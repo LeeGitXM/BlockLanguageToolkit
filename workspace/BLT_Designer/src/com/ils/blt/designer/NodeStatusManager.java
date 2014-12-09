@@ -7,166 +7,321 @@ package com.ils.blt.designer;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.EventListenerList;
-
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.DiagramState;
+import com.ils.blt.designer.navtree.NavTreeNodeInterface;
+import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
 
 
 /**
- *  This class retains a map of nav tree node indexed by resource number.
+ *  This class retains a list of all nav tree nodes associated with the
+ *  toolkit. This allows us to re-use the nodes in the nav tree. We retain
+ *  a map of these nodes indexed by resource number.
  *  It is a central reporting point for the current status of each node.
+ *  
+ *  The nodes themselves have no dirty state. "dirtiness" refers to
+ *  the presence of unsaved diagrams among their descendants.
  *  
  *  The resourceId is known both the the view code and the nav tree.
  */
 public class NodeStatusManager  {
 	private static String TAG = "NodeStatusManager";
 	private final LoggerEx log;
-	private final Map<Long,StatusEntry> statusMap;
-	private final EventListenerList listenerList;
-	private final ChangeEvent changeEvent;
+	private final Map<Long,StatusEntry> statusByResourceId;
+	
+
 	/**
 	 * The handler, make this private per Singleton pattern ...
 	 */
 	public NodeStatusManager() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
-		this.listenerList = new EventListenerList();
-		this.changeEvent  = new ChangeEvent(this);
-		statusMap = new HashMap<>();
+		statusByResourceId = new HashMap<>();
+	}
+		
+	/**
+	 * We're being saved from the main menu. Everyone is clean.
+	 */
+	public void cleanAll() {
+		log.debugf("%s.cleanAll()",TAG);
+		for(Long key:statusByResourceId.keySet()) {
+			StatusEntry se = statusByResourceId.get(key);
+			if( se!=null ) {
+				se.clearDirtyChildCount();
+				se.reportDirtyState();
+			}
+		}
 	}
 	
 	/**
-	 * Define a new resource. The default should work for newly discovered resources
-	 * @param resourceId
-	 */
-	public void defineResource(long parentResource,long resourceId) {
-		log.infof("%s.defineResource(%d:%d)",TAG,parentResource,resourceId);
-		statusMap.put(resourceId,new StatusEntry(parentResource));
-	}
-	/**
-	 * Delete a resource.
-	 * @param resourceId
-	 */
-	public void removeResource(long resourceId ) {
-		log.infof("%s.removeResource(%d)",TAG,resourceId);
-		statusMap.remove(resourceId);
-	}
-	public DiagramState getResourceState(long resourceId) {
-		DiagramState result = DiagramState.ACTIVE;  
-		StatusEntry se = statusMap.get(resourceId);
-		if( se!=null ) result = se.getState();
-		return result;
-	}
-	/**
-	 * For a diagram, specify that all child blocks have been saved.
-	 * @param resourceId
-	 */
-	public void clearDirtyBlockCount(long resourceId) {
-		log.debugf("%s.clearDirtyBlockCount(%d)",TAG,resourceId);
-		StatusEntry se = statusMap.get(resourceId);
-		if( se!=null ) se.clearDirtyChildCount();
-	}
-	/**
 	 * If we're saving recursively downward, then we ignore
-	 * dirty children. Use of the chid count is overloaded.
+	 * dirty children. --- or perhaps we've saved a diagram.
 	 * @param resourceId
 	 */
 	public void clearDirtyChildCount(long resourceId) {
 		log.debugf("%s.clearDirtyChildCount(%d)",TAG,resourceId);
-		StatusEntry se = statusMap.get(resourceId);
-		if( se!=null ) se.clearDirtyChildCount();
-	}
-	/**
-	 * For a diagram, note that a child block has been saved.
-	 * @param resourceId
-	 */
-	public void decrementDirtyBlockCount(long resourceId) {
-		log.debugf("%s.decrementDirtyBlockCount(%d)",TAG,resourceId);
-		StatusEntry se = statusMap.get(resourceId);
+		Long key = new Long(resourceId);
+		StatusEntry se = statusByResourceId.get(key);
 		if( se!=null ) {
-			int prior = se.getDirtyChildCount();
-			se.decrementDirtyChildCount();
-			if( prior==1 && !se.isDirty()) {
-				// Is newly clean because of children
-				recursivelyDecrementDirtyCount(se.parentId);
-				fireStateChanged();
+			int oldCount = se.getDirtyChildCount();
+			se.clearDirtyChildCount();
+			se.reportDirtyState();
+			if( oldCount>0 ) {
+				//Newly clean
+				decrementDirtyNodeCount(se.parentId);
 			}
 		}
 	}
+	
 	/**
-	 * For a diagram, specify that all child blocks have been saved.
+	 * Define status for the root of the resource tree. 
+	 * WARNING: The root node has no associated project resources.
+	 * @param resourceId
+	 */
+	public void createRootResourceStatus(AbstractResourceNavTreeNode node) {
+		log.tracef("%s.newRootResource",TAG);
+		Long key = new Long(BLTProperties.ROOT_RESOURCE_ID);
+		if( statusByResourceId.get(key) == null ) {
+			Long parentKey = new Long(BLTProperties.ROOT_PARENT_ID);
+			statusByResourceId.put(key,new StatusEntry(node,parentKey));
+		}
+	}
+	
+	/**
+	 * Define status for a new resource. The default should work for newly discovered resources.
+	 * If this is re-called with the same resource, ignore.
+	 * @param resourceId
+	 */
+	public void createResourceStatus(AbstractResourceNavTreeNode node,long parentResourceId,long resourceId) {
+		log.infof("%s.newResource(%d:%d)",TAG,parentResourceId,resourceId);
+		if(node.getProjectResource()==null) throw new IllegalArgumentException("No project resource");
+		Long key = new Long(resourceId);
+		if( statusByResourceId.get(key) == null ) {
+			statusByResourceId.put(key,new StatusEntry(node,parentResourceId));
+		}
+	}
+	/**
+	 * For a parent, note that a dirty child has been saved 
+	 * (or deleted).
+	 * @param resourceId
+	 */
+	public void decrementDirtyNodeCount(long resourceId) {
+		log.debugf("%s.decrementDirtyNodeCount(%d)",TAG,resourceId);
+		Long key = new Long(resourceId);
+		StatusEntry se = statusByResourceId.get(key);
+		if( se!=null ) {
+			se.decrementDirtyChildCount();
+			if( se.getDirtyChildCount()==0) {
+				//Newly clean
+				se.reportDirtyState();
+				decrementDirtyNodeCount(se.parentId);
+			}
+		}
+		else if( resourceId!=0 ) {
+			log.warnf("%s.decrementDirtyNodeCount(%d) - status entry does not exist",TAG,resourceId);
+		}
+	}
+	
+	/**
+	 * Delete a resource. Prepare the real node for deletion as well.
+	 * @param resourceId
+	 */
+	public void deleteResource(long resourceId ) {
+		log.infof("%s.deleteResource(%d)",TAG,resourceId);
+		Long key = new Long(resourceId);
+		StatusEntry se = statusByResourceId.get(resourceId);
+		if( se!=null ) se.prepareToBeDeleted();
+		statusByResourceId.remove(key);
+	}
+	
+	public DiagramState getResourceState(long resourceId) {
+		DiagramState result = DiagramState.ACTIVE;  
+		StatusEntry se = statusByResourceId.get(resourceId);
+		if( se!=null ) result = se.getState();
+		return result;
+	}	
+	/**
+	 * Get the node. Null if not found.
+	 * @param resourceId
+	 * @return the AbstractResourceNavTreeNode associated with the specified resourceId.
+	 */
+	public AbstractResourceNavTreeNode findNode(long resourceId) {
+		log.debugf("%s.findNode(%d)",TAG,resourceId);
+		Long key = new Long(resourceId);
+		AbstractResourceNavTreeNode node = null;
+		StatusEntry se = statusByResourceId.get(key);
+		if( se!=null ) node=se.getNode();
+		return node;
+	}
+	
+	
+	
+	/**
+	 * For any node indicate that the number of dirty children has increased.
+	 * For a diagram, this means that either blocks are dirty, or a property
+	 * change has been made. 
+	 * 
 	 * If this changes the state of the diagram, propagate up the tree.
 	 * @param resourceId
 	 */
-	public void incrementDirtyBlockCount(long resourceId) {
+	public void incrementDirtyNodeCount(long resourceId) {
 		log.debugf("%s.incrementDirtyBlockCount(%d)",TAG,resourceId);
-		StatusEntry se = statusMap.get(resourceId);
+		Long key = new Long(resourceId);
+		StatusEntry se = statusByResourceId.get(key);
 		if( se!=null ) {
-			int prior = se.getDirtyChildCount();
 			se.incrementDirtyChildCount();
-			if( (prior==0) && (!se.isDirty()) ) {
-				// Newly dirty because of children
-				recursivelyIncrementDirtyCount(se.parentId);
-				fireStateChanged();
+			if( se.getDirtyChildCount()==1 )  {
+				// Newly dirty
+				se.reportDirtyState();
+				incrementDirtyNodeCount(se.parentId);
 			}
 		}
-		else {
+		else if( resourceId!=0 ) {
 			log.warnf("%s.incrementDirtyBlockCount(%d) - status entry does not exist",TAG,resourceId);
 		}
 	}
 	
 	public boolean isResourceDirty(long resourceId) {
 		boolean result = true;        // If we haven't seen it yet, it's dirty
-		StatusEntry se = statusMap.get(resourceId);
-		if( se!=null ) result = se.isDirty()||(se.getDirtyChildCount()>0);
-		else log.infof("%s.isResourceDirty(%d) - resource UNDEFINED",TAG,resourceId);
+		StatusEntry se = statusByResourceId.get(resourceId);
+		if( se!=null ) result = se.isDirty();
+		else log.debugf("%s.isResourceDirty(%d) - resource UNDEFINED",TAG,resourceId);
 		return result;
 	}
 	
-	/**
-	 * If the dirtyBlock count > 0, then setting the resource will have no effect.
-	 * @param resourceId
-	 * @param dirtFlag
-	 */
-	public void setResourceDirty(long resourceId,boolean dirtFlag) {
-		log.infof("%s.setResourceDirty(%d) %s",TAG,resourceId,(dirtFlag?"DIRTY":"CLEAN"));
-		StatusEntry se = statusMap.get(resourceId);
-		log.debugf("%s.setResourceDirty: %s",TAG,se);
-		if( se!=null && se.isDirty()!= dirtFlag && se.getDirtyChildCount()==0) {
-			se.setDirty(dirtFlag);
-			// Propagate the change up the tree - if this represents a change
-			if( dirtFlag  ) recursivelyIncrementDirtyCount(se.parentId);
-			else            recursivelyDecrementDirtyCount(se.parentId);
-		}
-		fireStateChanged();
+	public boolean isResourceDirtyOrHasDirtyChidren(long resourceId) {
+		boolean result = true;        // If we haven't seen it yet, it's dirty
+		StatusEntry se = statusByResourceId.get(resourceId);
+		if( se!=null ) result = (se.isDirty() || se.getDirtyChildCount()>0);
+		else log.debugf("%s.isResourceDirty(%d) - resource UNDEFINED",TAG,resourceId);
+		return result;
 	}
 	
 	public void setResourceState(long resourceId,DiagramState bs) {
-		StatusEntry se = statusMap.get(resourceId);
+		StatusEntry se = statusByResourceId.get(resourceId);
 		if( se!=null ) {
 			se.setState(bs);
 		}
 	}
-	private void recursivelyDecrementDirtyCount(long resId) {
-		log.debugf("%s.recursivelyDecrementDirtyCount(%d)",TAG,resId);
-		StatusEntry se = statusMap.get(resId);
-		if( se!=null ) {
-			se.decrementDirtyChildCount();
-			recursivelyDecrementDirtyCount(se.parentId);
-		}
+
+	/**
+	 * Get the parent's resourceId. Zero if not found.
+	 * @param resourceId
+	 * @return the resourceId associated with the parent of the one specified
+	 */
+	public long parentResourceId(long resourceId) {
+		log.debugf("%s.findNode(%d)",TAG,resourceId);
+		Long key = new Long(resourceId);
+		long result = 0;
+		StatusEntry se = statusByResourceId.get(key);
+		if( se!=null ) result = se.getParent();
+		return result;
 	}
-	private void recursivelyIncrementDirtyCount(long resId) {
-		log.debugf("%s.recursivelyIncrementDirtyCount(%d)",TAG,resId);
-		StatusEntry se = statusMap.get(resId);
-		if( se!=null ) {
-			se.incrementDirtyChildCount();
-			recursivelyIncrementDirtyCount(se.parentId);
-		}
-	}
-	
+
+//	
+//	/**
+//	 * Do a recursive search of the node's children looking for any that should
+//	 * be deleted. This is painful - we'restructured to search up, not down.
+//	 * 
+//	 * @param resourceId
+//	 * @return
+//	 */
+//	public void getPendingDeletesUnderNode(long resourceId,List<Long> list ) {
+//		//log.tracef("%s.getPendingDeletesUnderNode(%d)",TAG,resourceId);
+//		Long key = new Long(resourceId);
+//		List<Long> children =  childrenByResourceId.get(key);
+//		if( children!=null ) {
+//			for( Long child:children ) {
+//				getPendingDeletesUnderNode(child.longValue(),list ); 
+//			}
+//		}
+//		StatusEntry se = statusByResourceId.get(key);
+//		if( se!=null && se.pendingDelete() ) {
+//			log.debugf("%s.getPendingDeletesUnderNode(%d): found %d",TAG,resourceId,key.longValue());
+//			list.add(key);
+//		}
+//	}
+//	
+
+
+//	
+//	/**
+//	 * We're being saved from the level of the initial node.
+//	 * Set this node and all its descendants to clean. 
+//	 */
+//	public void clean(AbstractResourceNavTreeNode node) {
+//		long resid = node.getProjectResource().getResourceId();
+//		log.debugf("%s.clean: %d",TAG,resid);
+//		setResourceDirty(resid,false);
+//		@SuppressWarnings("unchecked")
+//		Enumeration<AbstractResourceNavTreeNode> walker = node.children();
+//		while( walker.hasMoreElements() ) {
+//			AbstractResourceNavTreeNode child = walker.nextElement();
+//			clean(child);
+//		}
+//	}
+//	
+//	
+
+//	public boolean isPendingDelete(long resourceId) {
+//		boolean result = true;        // If we haven't seen it yet, it's dirty
+//		StatusEntry se = statusByResourceId.get(resourceId);
+//		if( se!=null ) result = se.pendingDelete();
+//		else log.debugf("%s.isPendingDelete(%d) - resource UNDEFINED",TAG,resourceId);
+//		return result;
+//	}
+//	
+
+//	/**
+//	 * Mark the resource as deleted, but not saved as such.
+//	 * @param resourceId
+//	 */
+//	public void markPendingDelete(long resourceId) {
+//		log.infof("%s.markPendingDelete(%d)",TAG,resourceId);
+//		StatusEntry se = statusByResourceId.get(resourceId);
+//		if( se!=null ) {
+//			se.setPendingDelete(true);
+//		}
+//	}
+//	
+//
+//	
+//	/**
+//	 * Report a change in resource dirty state to the node.
+//	 * @param resourceId
+//	 * @param dirtFlag
+//	 */
+//	public void setResourceDirty(long resourceId,boolean dirtFlag) {
+//		StatusEntry se = statusByResourceId.get(resourceId);
+//		if( se!=null && se.isDirty()!= dirtFlag || (se.getDirtyChildCount()==0)==dirtFlag )) {
+//			log.infof("%s.setResourceDirty: %s (%s)",TAG,(dirtFlag?"DIRTY":"CLEAN"),se.toString());
+//			se.setDirty(dirtFlag);   // Also sets the node status directly
+//			// Propagate the change up the tree - if this represents a change
+//			if( dirtFlag  ) recursivelyIncrementDirtyCount(se.parentId);
+//			else            recursivelyDecrementDirtyCount(se.parentId);
+//		}
+//	}
+//	
+//	private void recursivelyDecrementDirtyCount(long resId) {
+//		log.debugf("%s.recursivelyDecrementDirtyCount(%d)",TAG,resId);
+//		StatusEntry se = statusByResourceId.get(resId);
+//		if( se!=null ) {
+//			se.decrementDirtyChildCount();
+//			recursivelyDecrementDirtyCount(se.parentId);
+//		}
+//	}
+//	private void recursivelyIncrementDirtyCount(long resId) {
+//		log.debugf("%s.recursivelyIncrementDirtyCount(%d)",TAG,resId);
+//		StatusEntry se = statusByResourceId.get(resId);
+//		if( se!=null ) {
+//			se.incrementDirtyChildCount();
+//			recursivelyIncrementDirtyCount(se.parentId);
+//		}
+//	}
+//	
+
 	/**
 	 * For a diagram, the dirty child count represents dirty blocks.
 	 * For folders, the children are other folders, including applications
@@ -175,53 +330,50 @@ public class NodeStatusManager  {
 	 * @author chuckc
 	 */
 	private class StatusEntry {
-		private int dirtyChildren = 0;
 		private boolean dirty = false;
-		private final long parentId; 
+		private int dirtyChildren = 0;
+		private final long parentId;           // A resourceId
+		private final long resourceId;
 		private DiagramState state = DiagramState.ACTIVE;
+		private final AbstractResourceNavTreeNode node;
 		
-		public StatusEntry(long parent)  {
+		public StatusEntry(AbstractResourceNavTreeNode antn, long parent)  {
+			ProjectResource pr = antn.getProjectResource();
+			long resid = BLTProperties.ROOT_RESOURCE_ID;
+			if(pr!=null) resid = pr.getResourceId();
+			this.resourceId = resid;
 			this.parentId = parent;
+			this.node = antn;
 		}
+		
 		public void clearDirtyChildCount() {dirtyChildren=0;}
 		public void decrementDirtyChildCount() {dirtyChildren-=1;}
 		public int getDirtyChildCount() {return dirtyChildren;}
+		public AbstractResourceNavTreeNode getNode() { return node; }
+		public long getParent() { return parentId; }
 		public DiagramState getState() {return state;}
 		public void incrementDirtyChildCount() {dirtyChildren+=1;}
 		// Note: isDirty refers to the node of interest alone, excluding children
-		public boolean isDirty() {return dirty;}
-		public void setDirty(boolean dirty) {this.dirty = dirty;}
+		public boolean isDirty() {return dirtyChildren>0;}
+
+		public void prepareToBeDeleted() {
+			if( node instanceof NavTreeNodeInterface && resourceId!=BLTProperties.ROOT_RESOURCE_ID) {
+				((NavTreeNodeInterface)this.node).prepareForDeletion();
+			}
+		}
+		public void reportDirtyState() {
+			if( node instanceof NavTreeNodeInterface) {
+				((NavTreeNodeInterface)this.node).updateUI(isDirty());
+			}
+		}
+
 		public void setState(DiagramState state) {this.state = state;}
 		@Override
 		public String toString() {
-			String dump = String.format("StatusEntry: %s, parent: %d, dirtyChildren: %d",(dirty?"DIRTY":"CLEAN"),parentId,dirtyChildren);
+			
+			String dump = String.format("%s(%d) was %s, parent: %d, dirty children %d",node.getName(),resourceId,(dirty?"dirty":"clean"),parentId,dirtyChildren);
 			return dump;
 		}
 	}
 	
-	// =================== Handle Event Listeners ===================
-		public void addChangeListener(ChangeListener l) {
-		     listenerList.add(ChangeListener.class, l);
-		 }
-
-		 public void removeChangeListener(ChangeListener l) {
-		     listenerList.remove(ChangeListener.class, l);
-		 }
-
-
-		 // Notify all listeners that have registered interest for
-		 // notification on this event type.  The event instance
-		 // is lazily created using the parameters passed into
-		 // the fire method.
-		 public void fireStateChanged() {
-		     // Guaranteed to return a non-null array
-		     Object[] listeners = listenerList.getListenerList();
-		     // Process the listeners last to first, notifying
-		     // those that are interested in this event
-		     for (int i = listeners.length-2; i>=0; i-=2) {
-		         if (listeners[i]==ChangeListener.class) {
-		             ((ChangeListener)listeners[i+1]).stateChanged(changeEvent);
-		         }
-		     }
-		 }
 }

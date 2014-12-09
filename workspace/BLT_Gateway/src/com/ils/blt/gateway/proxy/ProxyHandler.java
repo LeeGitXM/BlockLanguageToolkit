@@ -122,21 +122,24 @@ public class ProxyHandler   {
 	 * @param value one of a QualifiedValue, Signal, Truth-value or String
 	 */
 	public void acceptValue(PyObject block,String stub,QualifiedValue value) {
+		
 		if(block==null || value==null || value.getValue()==null ) return;
-		log.infof("%s.acceptValue --- %s %s on %s",TAG,block.toString(),value.getValue().toString(),stub); 
+		String qualityName = BLTProperties.QUALITY_GOOD;
+		if(!value.getQuality().isGood() ) qualityName = value.getQuality().getName();
+		log.infof("%s.acceptValue --- %s %s (%s) on %s",TAG,block.toString(),value.getValue().toString(),qualityName,stub); 
 		if( acceptValueCallback.compileScript() ) {
 			// There are 4 values to be specified - block,port,value,quality.
 			acceptValueCallback.setLocalVariable(0,block);
 			acceptValueCallback.setLocalVariable(1,new PyString(stub));
 			acceptValueCallback.setLocalVariable(2,new PyString(value.getValue().toString()));
-			acceptValueCallback.setLocalVariable(3,new PyString(value.getQuality().toString()));
+			acceptValueCallback.setLocalVariable(3,new PyString(qualityName));
 			acceptValueCallback.execute();
 		}
 	}
 
 	public ProxyBlock createBlockInstance(String className,UUID parentId,UUID blockId) {
 		ProxyBlock block = new ProxyBlock(className,parentId,blockId);
-		log.debugf("%s.createInstance --- created proxy for %s",TAG,className); 
+		log.infof("%s.createBlockInstance --- python proxy for %s",TAG,className); 
 		if( createBlockCallback.compileScript() ) {
 			PyDictionary pyDictionary = new PyDictionary();  // Empty
 			createBlockCallback.setLocalVariable(0,new PyString(className));
@@ -269,7 +272,7 @@ public class ProxyHandler   {
 	 */
 	public List<PalettePrototype> getPalettePrototypes() {
 		List<PalettePrototype> prototypes = new ArrayList<PalettePrototype>();
-	
+		log.infof("%s.getPalettePrototypes (python) ... ",TAG);
 		if( getBlockPrototypesCallback.compileScript())  {
 			Object val = null;
 			UtilityFunctions fns = new UtilityFunctions();
@@ -277,7 +280,7 @@ public class ProxyHandler   {
 			List<?> list = null;
 			getBlockPrototypesCallback.setLocalVariable(0,pyList);
 			getBlockPrototypesCallback.execute();
-			log.info(TAG+".getBlockPrototypes: returned "+ pyList);   // Should now be updated
+			log.debug(TAG+".getPalettePrototypes: returned "+ pyList);   // Should now be updated
 			// Contents of list are Hashtable<String,?>
 			list = toJavaTranslator.pyListToArrayList(pyList);
 
@@ -344,6 +347,9 @@ public class ProxyHandler   {
 					log.warnf("%s: getPalettePrototypes: Exception processing prototype (%)" , TAG,ex.getMessage());
 				}
 			}
+		}
+		else {
+			log.infof("%s: getPalettePrototypes: script compilation error (%s)",TAG,getBlockPropertiesCallback.module);
 		}
 		log.infof("%s: getPalettePrototypes returning %d protos from Python",TAG,prototypes.size()); 
 		return prototypes;

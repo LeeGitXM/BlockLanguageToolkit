@@ -98,7 +98,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		log.tracef("%s.acceptBroadcastNotification: %s (%s) %s", TAG,note.getDiagramId(),note.getSignal().getCommand(),
 				(stopped?"REJECTED, controller stopped":""));
 		ProcessDiagram diagram = getDiagram(note.getDiagramId());
-		if( diagram!=null && diagram.getState().equals(DiagramState.ACTIVE)) {
+		if( diagram!=null && !diagram.getState().equals(DiagramState.DISABLED)) {
 			try {
 				if(!stopped) buffer.put(note);
 			}
@@ -117,7 +117,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 				note.getValue().toString(),
 				(stopped?"REJECTED, controller stopped":""));
 		ProcessDiagram diagram = getDiagram(note.getBlock().getParentId());
-		if( diagram!=null && diagram.getState().equals(DiagramState.ACTIVE)) {
+		if( diagram!=null && !diagram.getState().equals(DiagramState.DISABLED)) {
 			try {
 				if(!stopped) buffer.put(note);
 			}
@@ -127,7 +127,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	
 	/**
 	 * @param note the notification to be distributed to all connection posts
-	 *        interested in the sender
+	 *        interested in the sender. Sender must be ACTIVE.
 	 */
 	@Override
 	public void acceptConnectionPostNotification(ConnectionPostNotification note) {
@@ -211,8 +211,14 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		modelManager.stopBlocks();
 		log.infof("%s: STOPPED",TAG);
 	}
-	
 	public  void setDelegate(ModelManager resmgr) { this.modelManager = resmgr; }
+	public void triggerStatusNotifications() {
+		for( ProcessDiagram diagram:modelManager.getDiagrams()) {
+			for(ProcessBlock block:diagram.getProcessBlocks()) {
+				block.notifyOfStatus();
+			}
+		}
+	}
 	
 	// ======================= Delegated to ModelManager ======================
 	/**
@@ -238,11 +244,9 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public ProcessDiagram getDiagram(UUID id) {
 		return modelManager.getDiagram(id);
 	}
-	public ProcessDiagram getDiagram(String projectName,String diagramPath) {
-		return modelManager.getDiagram(projectName,diagramPath);
-	}
-	public List<String> getDiagramTreePaths(String projectName) {
-		return modelManager.getDiagramTreePaths(projectName);
+
+	public List<SerializableResourceDescriptor> getDiagramDescriptors(String projectName) {
+		return modelManager.getDiagramDescriptors(projectName);
 	}
 	/**
 	 * Reset a block.
@@ -269,12 +273,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 			}
 		}
 	}
-	public void resetDiagram(String projectName,String diagramPath) {
-		ProcessDiagram diagram = modelManager.getDiagram(projectName,diagramPath);
-		for(ProcessBlock block:diagram.getProcessBlocks() ) {
-			block.reset();
-		}
-	}
+
 	public List<SerializableResourceDescriptor> queryControllerResources() {
 		return modelManager.queryControllerResources();
 	}
@@ -309,11 +308,11 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 * There may be other entities still subscribed to the same tag.
 	 */
 	public void removeSubscription(ProcessBlock block,BlockProperty property) {
-		if( property!=null && property.getValue()!=null && 
+		if( property!=null && property.getBinding()!=null && 
 			(	property.getBindingType()==BindingType.TAG_READ || 
 				property.getBindingType()==BindingType.TAG_READ ||
 				property.getBindingType()==BindingType.TAG_MONITOR )  ) {
-			String tagPath = property.getValue().toString();
+			String tagPath = property.getBinding().toString();
 			if( tagPath!=null && tagPath.length()>0) {
 				tagListener.removeSubscription(block,property,tagPath);
 			}
@@ -325,6 +324,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public void startSubscription(ProcessBlock block,BlockProperty property) {
 		tagListener.defineSubscription(block, property);
 	}
+
 	
 	// ======================= Delegated to TagWriter ======================
 	/**
@@ -335,7 +335,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 * @param val
 	 */
 	public void updateTag(UUID diagramId,String path,QualifiedValue val) {
-		log.debugf("%s.updateTag %s = %s ",TAG,path,val.toString());
+		log.infof("%s.updateTag %s = %s ",TAG,path,val.toString());
 		ProcessDiagram diagram = modelManager.getDiagram(diagramId);
 		if( diagram!=null && diagram.getState().equals(DiagramState.ACTIVE)) {
 			tagWriter.updateTag(diagram.getProjectId(),path,val);
@@ -442,8 +442,8 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 			sessionManager.sendNotification(ApplicationScope.DESIGNER, BLTProperties.MODULE_ID, key, val);
 		}
 		catch(Exception ex) {
-			// Possibly no receiver registered
-			log.warnf("%s.sendPropertyNotification: Error transmitting %s (%s)",TAG,key,ex.getMessage());
+			// Probably no receiver registered. This is to be expected if the designer is not running.
+			log.debugf("%s.sendPropertyNotification: Error transmitting %s (%s)",TAG,key,ex.getMessage());
 		}
 	}
 	/**
@@ -454,13 +454,15 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 * @param port
 	 * @param val
 	 */
-	private void sendConnectionNotification(String blockid, String port, QualifiedValue val) {
+	@Override
+	public void sendConnectionNotification(String blockid, String port, QualifiedValue val) {
 		String key = NotificationKey.keyForConnection(blockid,port);
 		try {
 			sessionManager.sendNotification(ApplicationScope.DESIGNER, BLTProperties.MODULE_ID, key, val);
 		}
 		catch(Exception ex) {
-			log.warnf("%s.sendConnectionNotification: Error transmitting %s (%s)",TAG,key,ex.getMessage());
+			// Probably no receiver registered. This is to be expected if the designer is not running.
+			log.debugf("%s.sendConnectionNotification: Error transmitting %s (%s)",TAG,key,ex.getMessage());
 		}
 	}
 

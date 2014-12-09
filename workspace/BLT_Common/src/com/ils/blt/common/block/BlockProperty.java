@@ -65,6 +65,7 @@ public class BlockProperty implements NotificationChangeListener {
 	private void notifyChangeListeners() {
 		ChangeEvent event = new ChangeEvent(this);
 		for(ChangeListener l: changeListeners) {
+			//log.infof("%s.notifying ... %s of %s",TAG,l.getClass().getName(),value.toString());
 			l.stateChanged(event);
 		}
 	}
@@ -165,7 +166,12 @@ public class BlockProperty implements NotificationChangeListener {
 	 * A readable string representation for debugging.
 	 */
 	public String toString() {
-		return String.format("%s=%s (%s)",getName(),value==null?"null":value.toString(),bindingType.name());
+		if(bindingType.equals(BindingType.NONE)) {
+			return String.format("%s=%s",getName(),value==null?"null":value.toString());
+		}
+		else {
+			return String.format("%s (%s)=%s",getName(),getBindingType().name(),(binding==null?"null":binding));
+		}
 	}
 
 	/**
@@ -175,6 +181,7 @@ public class BlockProperty implements NotificationChangeListener {
 	 */
 	@Override
 	public void valueChange(QualifiedValue val) {
+		log.infof("%s(%d).valueChange %s now %s",TAG,hashCode(),getName(),val.getValue().toString());
 		if( val!=null && val.getValue()!=null) {
 			setValue(val.getValue());
 		}

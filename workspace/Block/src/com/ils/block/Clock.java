@@ -25,6 +25,7 @@ import com.ils.blt.common.notification.Signal;
 import com.ils.blt.common.notification.SignalNotification;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
+import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
  * Emit a configured signal on a configured interval
@@ -65,7 +66,7 @@ public class Clock extends AbstractProcessBlock implements ProcessBlock {
 		setName("Clock");
 		this.isReceiver = true;
 		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL,new Double(interval),PropertyType.TIME,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_INTERVAL, intervalProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL, intervalProperty);
 
 		// Define a single output
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.TRUTHVALUE);
@@ -89,6 +90,14 @@ public class Clock extends AbstractProcessBlock implements ProcessBlock {
 		}
 	}
 	/**
+	 * Disconnect from the timer thread.
+	 */
+	@Override
+	public void stop() {
+		super.stop();
+		controller.removeWatchdog(dog);
+	}
+	/**
 	 * We've received a transmitted signal. If it is appropriate 
 	 * based on our configured filters, forward the signal on to our output.
 	 * @param sn 
@@ -110,10 +119,21 @@ public class Clock extends AbstractProcessBlock implements ProcessBlock {
 		log.infof("%s.evaluate ... %f secs",TAG,interval);
 		
 		if( !isLocked() ) {
-			OutgoingNotification sig = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,new BasicQualifiedValue(TruthValue.TRUE.name()));
+			QualifiedValue qv = new BasicQualifiedValue(TruthValue.TRUE.name());
+			OutgoingNotification sig = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 			controller.acceptCompletionNotification(sig);
+			notifyOfStatus(qv);
 		}
 		controller.removeWatchdog(dog);
+	}
+	
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 	/**
 	 * Note, an interval change resets the timeput period.

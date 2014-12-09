@@ -64,6 +64,9 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	@Override
 	public void startup(DesignerContext ctx, LicenseState activationState) throws Exception {
 		this.context = ctx;
+		ResourceDeleteManager.setContext(ctx);
+		ResourceUpdateManager.setContext(ctx);
+		ResourceSaveManager.setContext(ctx);
 		WorkspaceRepainter.setContext(ctx);
 		appRequestHandler = new ApplicationRequestHandler();
 		context.addBeanInfoSearchPath("com.ils.blt.designer.component.beaninfos");
@@ -114,16 +117,26 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		rootNode = new GeneralPurposeTreeNode(context);
 		context.getProjectBrowserRoot().getProjectFolder().addChild(rootNode);
 		context.registerResourceWorkspace(workspace);
+		nodeStatusManager.createRootResourceStatus(rootNode);
+		// Instantiate the notification handler so that we have notifications
+		// ready when diagrams are displayed. The constructor is sufficient.
+		NotificationHandler.getInstance();
+		// Query the gateway for latest notifications from all blocks
+		appRequestHandler.triggerStatusNotifications();
 	}
 	
 	public NodeStatusManager getNavTreeStatusManager() { return nodeStatusManager; }
 	
 	public DiagramWorkspace getWorkspace() { return workspace; }
 
+	// Before the massive save, make sure that all dirty nodes have been
+	// serialized into project resources.
 	@Override
 	public void notifyProjectSaveStart(SaveContext save) {
 		log.infof("%s: NotifyProjectSaveStart",TAG);
-		rootNode.saveAll();
+		ResourceSaveManager saver = new ResourceSaveManager(getWorkspace(),rootNode);
+		saver.saveSynchronously();
+		nodeStatusManager.cleanAll();
 	}
 	
 	

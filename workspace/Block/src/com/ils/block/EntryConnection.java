@@ -50,11 +50,11 @@ public class EntryConnection extends AbstractProcessBlock implements ProcessBloc
 	 * Populate them with default values.
 	 */
 	private void initialize() {
-		setName("SinkConnection");
+		setName("SourceConnection");
 		
 		// Define a single input - we get an input from the connection and broadcast it.
-		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
-		anchors.add(input);
+		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.ANY);
+		anchors.add(output);
 	}
 	
 	/**
@@ -68,7 +68,16 @@ public class EntryConnection extends AbstractProcessBlock implements ProcessBloc
 		if( qv!=null ) {
 			ConnectionPostNotification notification = new ConnectionPostNotification(getParentId(),getName(),qv);
 			controller.acceptConnectionPostNotification(notification);
+			notifyOfStatus(qv);
 		}
+	}
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 	
 	/**

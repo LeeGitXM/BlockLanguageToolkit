@@ -16,9 +16,9 @@ public interface WorkspaceConstants   {
 	
 	// Connection widths. In each case the border is a single pixel.
 	// The "informational" path has a black line down its center.
-	// These seem to look better with even pixel counts for the width
+	// These seem to look better with odd pixel counts for the width
 	public static final int CONNECTION_WIDTH_CENTERLINE     = 1;
-	public static final int CONNECTION_WIDTH_SIGNAL         = 3;  
+	public static final int CONNECTION_WIDTH_SIGNAL         = 2;  
 	public static final int CONNECTION_WIDTH_TRUTHVALUE     = 5;
 	public static final int CONNECTION_WIDTH_DATA           = 7;
 	public static final int CONNECTION_WIDTH_TEXT           = 9;
@@ -30,7 +30,7 @@ public interface WorkspaceConstants   {
 	public static final Color CONNECTION_FILL_DATA            = Color.LIGHT_GRAY;
 	public static final Color CONNECTION_FILL_EMPTY           = new Color(230,230,230);   // Mercury
 	public static final Color CONNECTION_FILL_FALSE           = new Color(175,0,0);       // Dark red
-	public static final Color CONNECTION_FILL_SIGNAL          = Color.DARK_GRAY;
+	public static final Color CONNECTION_FILL_SIGNAL          = Color.BLACK;
 	public static final Color CONNECTION_FILL_TRUE            = new Color(0,128,0);       // Clover
 	public static final Color CONNECTION_FILL_TEXT            = new Color(230,200,55);    // Mustard
 	public static final Color CONNECTION_FILL_UNKNOWN         = new Color(76,76,76);      // Iron

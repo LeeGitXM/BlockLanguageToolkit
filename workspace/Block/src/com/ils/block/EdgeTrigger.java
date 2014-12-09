@@ -36,6 +36,7 @@ public class EdgeTrigger extends AbstractProcessBlock implements ProcessBlock {
 
 	private double holdInterval = 0.0;    // ~ secs (pulse)
 	private TruthValue trigger = TruthValue.UNSET;
+	protected QualifiedValue status = new BasicQualifiedValue(TruthValue.UNSET.name());
 	private final Watchdog dog;
 	
 	/**
@@ -64,7 +65,14 @@ public class EdgeTrigger extends AbstractProcessBlock implements ProcessBlock {
 	public void reset() {
 		controller.removeWatchdog(dog);
 	}
-	
+	/**
+	 * Disconnect from the timer thread.
+	 */
+	@Override
+	public void stop() {
+		super.stop();
+		controller.removeWatchdog(dog);
+	}
 	
 	/**
 	 * A new value has appeared on an input anchor. Send it on its way. Start timer to 
@@ -106,12 +114,16 @@ public class EdgeTrigger extends AbstractProcessBlock implements ProcessBlock {
 		log.infof("%s.evaluate trigger is (%s)",TAG,trigger.name());
 		if( !isLocked() ) {
 			if( trigger.equals(TruthValue.FALSE)) {
-				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,new BasicQualifiedValue(TruthValue.TRUE.name()));
+				status = new BasicQualifiedValue(TruthValue.TRUE.name());
+				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,status);
 				controller.acceptCompletionNotification(nvn);
+				notifyOfStatus(status);
 			}
 			else if( trigger.equals(TruthValue.TRUE)) {
-				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,new BasicQualifiedValue(TruthValue.FALSE.name()));
+				status = new BasicQualifiedValue(TruthValue.FALSE.name());
+				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,status);
 				controller.acceptCompletionNotification(nvn);
+				notifyOfStatus(status);
 			}
 		}	
 	}
@@ -143,15 +155,26 @@ public class EdgeTrigger extends AbstractProcessBlock implements ProcessBlock {
 		}
 	}
 	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {
+		notifyOfStatus(status);	
+	}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
+	
+	/**
 	 * Add properties that are new for this class.
 	 * Populate them with default values.
 	 */
 	private void initialize() {
 		setName("EdgeTrigger");
 		BlockProperty constant = new BlockProperty(BLOCK_PROPERTY_INTERVAL,new Double(holdInterval),PropertyType.DOUBLE,true);
-		properties.put(BLOCK_PROPERTY_INTERVAL, constant);
+		setProperty(BLOCK_PROPERTY_INTERVAL, constant);
 		BlockProperty trigProp = new BlockProperty(BLOCK_PROPERTY_TRIGGER,trigger.name(),PropertyType.STRING,true);
-		properties.put(BLOCK_PROPERTY_TRIGGER, trigProp);
+		setProperty(BLOCK_PROPERTY_TRIGGER, trigProp);
 		
 		// Define a single input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);

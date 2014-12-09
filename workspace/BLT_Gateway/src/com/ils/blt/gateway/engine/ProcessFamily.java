@@ -5,13 +5,17 @@ package com.ils.blt.gateway.engine;
 
 import java.util.UUID;
 
+import com.ils.blt.common.block.ActiveState;
 import com.ils.blt.common.serializable.SerializableFamily;
 
 /**
 * A family is a specialized process node.
 */
 public class ProcessFamily extends ProcessNode {
-	
+	private UUID id;
+	private String description = "";
+	private int priority = 0;
+	private ActiveState state = ActiveState.ACTIVE;
 	/**
 	 * Constructor: Create a family node from the NavTree structure of an diagram.
 	 *
@@ -32,5 +36,14 @@ public class ProcessFamily extends ProcessNode {
 		super(fam.getName(),parent,fam.getId());
 	}
 	
+	public String getDescription() {return description;}
+	public UUID getId() {return id;}
+	public int getPriority() {return priority;}
+	public ActiveState getState() {return state;}
+	
+	public void setDescription(String description) {this.description = description;}
+	public void setId(UUID id) {this.id = id;}
+	public void setPriority(int priority) {this.priority = priority;}
+	public void setState(ActiveState state) {this.state = state;}
 }
 

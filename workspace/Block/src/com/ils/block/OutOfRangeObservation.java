@@ -73,13 +73,13 @@ public class OutOfRangeObservation extends AbstractProcessBlock implements Proce
 	private void initialize() {
 		setName("OutOfRangeObservation");
 		BlockProperty bp = new BlockProperty(BLOCK_PROPERTY_LOWER_LIMIT,new Double(lowerlimit),PropertyType.DOUBLE,true);
-		properties.put(BLOCK_PROPERTY_LOWER_LIMIT, bp);
+		setProperty(BLOCK_PROPERTY_LOWER_LIMIT, bp);
 		bp = new BlockProperty(BLOCK_PROPERTY_UPPER_LIMIT,new Double(upperlimit),PropertyType.DOUBLE,true);
-		properties.put(BLOCK_PROPERTY_UPPER_LIMIT, bp);
+		setProperty(BLOCK_PROPERTY_UPPER_LIMIT, bp);
 		bp = new BlockProperty(BLOCK_PROPERTY_LOWER_DEADBAND,new Double(lowerdeadband),PropertyType.DOUBLE,true);
-		properties.put(BLOCK_PROPERTY_LOWER_DEADBAND, bp);
+		setProperty(BLOCK_PROPERTY_LOWER_DEADBAND, bp);
 		bp = new BlockProperty(BLOCK_PROPERTY_UPPER_DEADBAND,new Double(upperdeadband),PropertyType.DOUBLE,true);
-		properties.put(BLOCK_PROPERTY_UPPER_DEADBAND, bp);
+		setProperty(BLOCK_PROPERTY_UPPER_DEADBAND, bp);
 
 		
 		// Define a single input
@@ -110,8 +110,10 @@ public class OutOfRangeObservation extends AbstractProcessBlock implements Proce
 			if( !newValue.equals(truthValue)) {
 				truthValue = newValue;
 				if( !isLocked() ) {
-					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,new BasicQualifiedValue(truthValue,qv.getQuality(),qv.getTimestamp()));
+					QualifiedValue nqv = new BasicQualifiedValue(truthValue,qv.getQuality(),qv.getTimestamp());
+					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,nqv);
 					controller.acceptCompletionNotification(nvn);
+					notifyOfStatus(nqv);
 				}
 			}
 		}
@@ -120,7 +122,18 @@ public class OutOfRangeObservation extends AbstractProcessBlock implements Proce
 		}
 
 	}
-	
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {
+		QualifiedValue qv = new BasicQualifiedValue(truthValue);
+		notifyOfStatus(qv);
+		
+	}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
 	/**
 	 * Handle a limit or limit type change.
 	 */

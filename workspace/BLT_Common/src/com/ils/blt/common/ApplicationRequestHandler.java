@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.serializable.DiagramState;
+import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
@@ -164,7 +165,6 @@ public class ApplicationRequestHandler  {
 		}
 		
 		if( jsonList!=null) {
-			
 			for( String json:jsonList ) {
 				log.tracef("%s.getBlockPrototypes: %s",TAG,json);
 				PalettePrototype bp = PalettePrototype.createPrototype(json);
@@ -192,15 +192,35 @@ public class ApplicationRequestHandler  {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public List<String> getDiagramTreePaths(String projectName) {
+	public List<SerializableResourceDescriptor> getDiagramDescriptors(String projectName) {
 		log.infof("%s.getDiagramTreePaths for %s ...",TAG,projectName);
-		List<String> result = null;
+		List<SerializableResourceDescriptor> result = new ArrayList<>();
+		List<String> jsonList = new ArrayList<String>();
 		try {
-			result = (List<String> )GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "getDiagramTreePaths",projectName);
+			jsonList = (List<String>)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "getDiagramDescriptors",projectName);
 		}
 		catch(Exception ge) {
-			log.infof("%s.getDiagramTreePaths: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.getDiagramDescriptors: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		if( jsonList!=null) {
+
+			ObjectMapper mapper = new ObjectMapper();
+			for(String json:jsonList) {
+				try {
+					SerializableResourceDescriptor entry = mapper.readValue(json, SerializableResourceDescriptor.class);
+					result.add(entry);
+				} 
+				catch (JsonParseException jpe) {
+					log.warnf("%s: getDiagramDescriptors parse exception (%s)",TAG,jpe.getLocalizedMessage());
+				}
+				catch(JsonMappingException jme) {
+					log.warnf("%s: getDiagramDescriptors mapping exception (%s)",TAG,jme.getLocalizedMessage());
+				}
+				catch(IOException ioe) {
+					log.warnf("%s: getDiagramDescriptors IO exception (%s)",TAG,ioe.getLocalizedMessage());
+				}
+			}
 		}
 		return result;
 	}
@@ -267,6 +287,24 @@ public class ApplicationRequestHandler  {
 		return result;
 	}
 	/**
+	 * Query a diagram in the gateway for list of blocks that it knows about. 
+	 * This is a debugging aid. 
+	 * 
+	 * @return a list of blocks known to the diagram.
+	 */
+	@SuppressWarnings("unchecked")
+	public List<SerializableResourceDescriptor> queryDiagram(String diagramId) {
+		List<SerializableResourceDescriptor> result = null;
+		try {
+			result = (List<SerializableResourceDescriptor> )GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "queryDiagram",diagramId);
+		}
+		catch(Exception ge) {
+			log.infof("%s.queryDiagram: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		return result;
+	}
+	/**
 	 * Execute reset() on a specified block
 	 */
 	public void resetBlock(String diagramId,String blockId) {
@@ -294,30 +332,16 @@ public class ApplicationRequestHandler  {
 			log.infof("%s.resetDiagram: GatewayException (%s)",TAG,ge.getMessage());
 		}
 	}
-	/**
-	 * Execute reset() on every block on the diagram
-	 */
-	public void resetDiagram(String projectName,String diagramPath) {
-		log.debugf("%s.resetDiagram ...",TAG);
 
-		try {
-			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "resetDiagram",projectName,diagramPath);
-		}
-		catch(Exception ge) {
-			log.infof("%s.resetDiagram: GatewayException (%s)",TAG,ge.getMessage());
-		}
-	}
 	/**
 	 * Determine whether or not the indicated resource is known to the controller.
 	 */
 	public boolean resourceExists(long projectId,long resid) {
 		Boolean result = null;
 		try {
-			log.infof("%s.resourceExists (1)  ...%d:%d",TAG,projectId,resid);
 			result = (Boolean)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "resourceExists",new Long(projectId),new Long(resid));
-			log.infof("%s.resourceExists (2)  ...%d:%d = %s",TAG,projectId,resid,result);
+			log.debugf("%s.resourceExists ...%d:%d = %s",TAG,projectId,resid,result);
 		}
 		catch(Exception ge) {
 			log.infof("%s.resourceExists: GatewayException (%s)",TAG,ge.getMessage());
@@ -351,6 +375,34 @@ public class ApplicationRequestHandler  {
 			log.infof("%s.setBlockProperties: GatewayException (%s)",TAG,ge.getMessage());
 		}		
 	}
+	
+	/** Update a single changed property for a block 
+	 * @param duuid diagram unique Id
+	 * @param buuid block unique Id
+	 * @param property the changed property
+	 */
+	public void setBlockProperty(UUID duuid,UUID buuid,BlockProperty property ) {
+		String diagId  = duuid.toString();
+		String blockId = buuid.toString();
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		String json="";
+		try {
+			json = mapper.writeValueAsString(property);
+		}
+		catch(Exception ge) {
+			log.warnf("%s: toJson (%s)",TAG,ge.getMessage());
+		}
+		log.tracef("%s: json property = %s",TAG,json);
+		log.debugf("%s.setBlockProperty: %s %s %s", TAG, diagId,blockId, json);
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+				BLTProperties.MODULE_ID, "setBlockProperty", diagId,blockId, json);
+		}
+		catch(Exception ge) {
+			log.infof("%s.setBlockProperty: GatewayException (%s)",TAG,ge.getMessage());
+		}		
+	}
 
 	public void setDiagramState(Long projectId, Long resourceId, String state) {
 		log.debugf("%s.setDiagramState ... %d:%d %s",TAG,projectId.longValue(),resourceId.longValue(),state);
@@ -370,17 +422,16 @@ public class ApplicationRequestHandler  {
 	 * This is a "local" transmission. The diagram is specified by a tree-path.
 	 * There may be no successful recipients.
 	 * 
-	 * @param projectName
-	 * @param diagramPath
+	 * @param diagramId
 	 * @param className filter of the receiver blocks to be targeted.
 	 * @param command string of the signal.
 	 */
-	public boolean sendLocalSignal(String projectName, String diagramPath,String className, String command) {
-		log.infof("%s.sendLocalSignal for %s %s %s %s...",TAG,projectName,diagramPath,className,command);
+	public boolean sendLocalSignal(String diagramId,String className, String command) {
+		log.infof("%s.sendLocalSignal for %s %s %s...",TAG,diagramId,className,command);
 		boolean result = false;
 		try {
 			Boolean value = GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "sendLocalSignal",projectName,diagramPath,className,command);
+					BLTProperties.MODULE_ID, "sendLocalSignal",diagramId,className,command);
 			if( value!=null ) result = value.booleanValue();
 		}
 		catch(Exception ex) {
@@ -418,6 +469,49 @@ public class ApplicationRequestHandler  {
 		catch(Exception ge) {
 			log.infof("%s.stopController: GatewayException (%s)",TAG,ge.getMessage());
 		}
+	}
+	
+	/**
+	 * Direct the blocks in a specified diagram to report their
+	 * status values. This is in order to update the UI. 
+	 */
+	public void triggerStatusNotifications() {
+		log.infof("%s.triggerStatusNotifications...",TAG);
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "triggerStatusNotifications");
+		}
+		catch(Exception ex) {
+			log.infof("%s.triggerStatusNotifications: Exception (%s)",TAG,ex.getMessage());
+		}
+	}
+	
+	/** Update connections for a block. New connections will be added, old connections
+	 * may undergo a type conversion.  
+	 * @param duuid diagram unique Id
+	 * @param buuid block unique Id
+	 */
+	public void updateBlockAnchors(UUID duuid,UUID buuid, Collection<SerializableAnchor> anchors ) {
+		String diagId  = duuid.toString();
+		String blockId = buuid.toString();
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		String json="";
+		try {
+			json = mapper.writeValueAsString(anchors);
+		}
+		catch(Exception ge) {
+			log.warnf("%s: toJson (%s)",TAG,ge.getMessage());
+		}
+		log.tracef("%s: json properties = %s",TAG,json);
+		log.debugf("%s.setBlockProperties: %s %s %s %s: %s", TAG, diagId,blockId, json);
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+				BLTProperties.MODULE_ID, "updateBlockAnchors", diagId,blockId, json);
+		}
+		catch(Exception ge) {
+			log.infof("%s.setBlockProperties: GatewayException (%s)",TAG,ge.getMessage());
+		}		
 	}
 
 }

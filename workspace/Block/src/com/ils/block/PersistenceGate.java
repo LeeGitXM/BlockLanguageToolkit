@@ -72,14 +72,14 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		setName("PersistenceGate");
 
 		BlockProperty windowProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW,new Double(timeWindow),PropertyType.TIME,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW, windowProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW, windowProperty);
 		BlockProperty scanIntervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL,new Double(scanInterval),PropertyType.TIME,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL, scanIntervalProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL, scanIntervalProperty);
 		BlockProperty triggerProperty = new BlockProperty(BLOCK_PROPERTY_TRIGGER,trigger,PropertyType.STRING,true);
-		properties.put(BLOCK_PROPERTY_TRIGGER, triggerProperty);
+		setProperty(BLOCK_PROPERTY_TRIGGER, triggerProperty);
 		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.STRING,false);
 		valueProperty.setBindingType(BindingType.ENGINE);
-		properties.put(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 
 		// Define a single output and a single input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
@@ -94,7 +94,14 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		super.reset();
 		if( dog.isActive() ) controller.removeWatchdog(dog);
 	}
-
+	/**
+	 * Disconnect from the timer thread.
+	 */
+	@Override
+	public void stop() {
+		super.stop();
+		controller.removeWatchdog(dog);
+	}
 	/**
 	 * A new value has appeared on an input anchor. If it matches the trigger, start the count-down.
 	 * Ignore any values that come in during the countdown.
@@ -159,6 +166,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 			QualifiedValue outval = new BasicQualifiedValue(trigger);
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 			controller.acceptCompletionNotification(nvn);
+			notifyOfStatus(outval);
 		}
 	}
 	
@@ -195,7 +203,19 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 			log.warnf("%s.propertyChange:Unrecognized property (%s)",TAG,propertyName);
 		}
 	}
-	
+	/**
+	 * Send status update notification for our last latest state.
+	 */
+	@Override
+	public void notifyOfStatus() {
+		QualifiedValue qv = new BasicQualifiedValue(valueProperty.getValue());
+		notifyOfStatus(qv);
+		
+	}
+	private void notifyOfStatus(QualifiedValue qv) {
+		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
 	/**
 	 * Augment the palette prototype for this block class.
 	 */

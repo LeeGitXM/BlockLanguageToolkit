@@ -34,6 +34,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 public class Input extends AbstractProcessBlock implements ProcessBlock {
 	private BlockProperty tagPathProperty = null;
 	private BlockProperty valueProperty = null;
+	private QualifiedValue qv = null;    // Most recent output value
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -64,10 +65,10 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 		tagPathProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH,"",PropertyType.OBJECT,true);
 		tagPathProperty.setBinding("");
 		tagPathProperty.setBindingType(BindingType.TAG_READ);
-		properties.put(BlockConstants.BLOCK_PROPERTY_TAG_PATH, tagPathProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH, tagPathProperty);
 		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.OBJECT,false);
 		valueProperty.setBindingType(BindingType.ENGINE);
-		properties.put(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 		
 		// Define a single output
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
@@ -83,20 +84,23 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
 		this.state = BlockState.ACTIVE;
-		QualifiedValue qv = vcn.getValue();
+		qv = vcn.getValue();
 		if( !isLocked() ) {
 			log.infof("%s.acceptValue: received %s",getName(),qv.toString());
 			if( qv.getValue() != null ) {
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 				controller.acceptCompletionNotification(nvn);
+				notifyOfStatus(qv);
 			}
 			else {
 				log.warnf("%s.acceptValue: received a null value, ignoring",getName());
 			}
 		}
 		// Even if locked, we update the current state
-		valueProperty.setValue(qv.getValue());
-		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
+		if( qv.getValue()!=null) {
+			valueProperty.setValue(qv.getValue());
+			notifyOfStatus(qv);
+		}
 	}
 
 	/**
@@ -110,6 +114,20 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 		if(propertyName.equals(BlockConstants.BLOCK_PROPERTY_TAG_PATH)) {
 			log.infof("%s.propertyChange path now %s",getName(),event.getNewValue().toString());
 		}
+	}
+	
+	/**
+	 * Send status update notification for our last output value.
+	 */
+	@Override
+	public void notifyOfStatus() {
+		if( qv.getValue()!=null) {
+			notifyOfStatus(qv);
+		}	
+	}
+	private void notifyOfStatus(QualifiedValue qval) {
+		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qval);
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qval);
 	}
 
 	/**

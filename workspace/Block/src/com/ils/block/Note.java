@@ -24,6 +24,7 @@ public class Note extends AbstractProcessBlock implements ProcessBlock {
 	private static final String TAG = "Note";
 	public static final int DEFAULT_WIDTH = 100;
 	public static final int DEFAULT_HEIGHT = 25;
+	public static String  initialString = "<html><h3>header</h3> body of message <br/second line </html>";
 
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -46,31 +47,14 @@ public class Note extends AbstractProcessBlock implements ProcessBlock {
 	}
 
 	/**
-	 * Handle a change to the text -- this all may be unnecessary ... clc
+	 * Handle a change to the text
 	 */
 	@Override
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
-		String propertyName = event.getPropertyName();
-		if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_WIDTH) ) {
-			try {
-				int width = Integer.parseInt(event.getNewValue().toString());
-			}
-			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert width value to a integer (%s)",TAG,nfe.getLocalizedMessage());
-			}			
-		}
-		else if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_HEIGHT) ) {
-			try {
-				int height = Integer.parseInt(event.getNewValue().toString());
-			}
-			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert height value to a integer (%s)",TAG,nfe.getLocalizedMessage());
-			}						
-		}
-
 	}
-	
+	@Override
+	public void notifyOfStatus() {}
 	/**
 	 * Add properties that are new for this class.
 	 * Populate them with default values.
@@ -78,11 +62,11 @@ public class Note extends AbstractProcessBlock implements ProcessBlock {
 	private void initialize() {
 		setName(TAG);
 		BlockProperty text = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TEXT,"Your note here", PropertyType.STRING, true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_TEXT, text);		
+		setProperty(BlockConstants.BLOCK_PROPERTY_TEXT, text);		
 		BlockProperty width = new BlockProperty(BlockConstants.BLOCK_PROPERTY_WIDTH, Integer.valueOf(DEFAULT_WIDTH), PropertyType.INTEGER,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_WIDTH, width);		
+		setProperty(BlockConstants.BLOCK_PROPERTY_WIDTH, width);		
 		BlockProperty height = new BlockProperty(BlockConstants.BLOCK_PROPERTY_HEIGHT, Integer.valueOf(DEFAULT_HEIGHT), PropertyType.INTEGER,true);
-		properties.put(BlockConstants.BLOCK_PROPERTY_HEIGHT, height);		
+		setProperty(BlockConstants.BLOCK_PROPERTY_HEIGHT, height);		
 	}
 	
 	/**
@@ -93,11 +77,12 @@ public class Note extends AbstractProcessBlock implements ProcessBlock {
 		prototype.setPaletteLabel("Note");
 		prototype.setTooltipText("Any notes you would care to enter.");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_MISC);
-		BlockDescriptor view = prototype.getBlockDescriptor();
-		view.setBlockClass(getClass().getCanonicalName());
-		view.setStyle(BlockStyle.NOTE);
-		view.setPreferredHeight(DEFAULT_HEIGHT);
-		view.setPreferredWidth(DEFAULT_WIDTH);
+		BlockDescriptor desc = prototype.getBlockDescriptor();
+		desc.setBlockClass(getClass().getCanonicalName());
+		desc.setStyle(BlockStyle.NOTE);
+		desc.setEditorClass("com.ils.blt.designer.workspace.NoteTextEditor");
+		desc.setPreferredHeight(DEFAULT_HEIGHT);
+		desc.setPreferredWidth(DEFAULT_WIDTH);
 	}
 	
 }

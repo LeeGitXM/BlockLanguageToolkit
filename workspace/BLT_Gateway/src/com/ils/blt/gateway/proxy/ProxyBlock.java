@@ -44,7 +44,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 * we query python.
 	 */
 	public void addProperty(BlockProperty prop) {
-		properties.put(prop.getName(),prop);
+		setProperty(prop.getName(),prop);
 	}
 	
 	/**
