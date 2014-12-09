@@ -39,13 +39,13 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
+import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.blt.designer.editor.PropertyEditorFrame;
 import com.inductiveautomation.ignition.client.designable.DesignableContainer;
 import com.inductiveautomation.ignition.client.util.LocalObjectTransferable;
@@ -53,6 +53,8 @@ import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.config.ObservablePropertySet;
+import com.inductiveautomation.ignition.common.execution.ExecutionManager;
+import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngine;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -99,6 +101,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	private final ApplicationRequestHandler handler = new ApplicationRequestHandler();
 	private final DesignerContext context;
 	private final EditActionHandler editActionHandler;
+	private final ExecutionManager executionEngine;
 	private final NodeStatusManager statusManager;
 	private Collection<ResourceWorkspaceFrame> frames;
 	protected SaveAction saveAction = null;  // Save properties of a block
@@ -110,6 +113,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	public DiagramWorkspace(DesignerContext ctx) {
 		this.context = ctx;
 		this.editActionHandler = new BlockActionHandler(this,context);
+		this.executionEngine = new BasicExecutionEngine(1,TAG);
 		this.addDesignableWorkspaceListener(this);
 		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
 		initialize();
@@ -494,7 +498,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					options[0]);  //default button title
 			if( n==0 ) {
 				// Yes, save
-				saveDiagram((BlockDesignableContainer)container);
+				saveDiagramResource((BlockDesignableContainer)container);
 			}
 			else {
 				// Mark diagram as clean, since we reverted changes
@@ -513,34 +517,22 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	public void saveOpenDiagrams() {
 		logger.infof("%s: saveOpenDiagrams",TAG);
 		for(DesignableContainer dc:openContainers.keySet()) {
-			saveDiagram((BlockDesignableContainer)dc);
+			saveDiagramResource((BlockDesignableContainer)dc);
 		}
 	}
 	
 	/**
-	 * This method updates the project resource, but does not actually save.
-	 * @param c
+	 * This method updates the project resource and then saves into the project.
+	 * @param c the tab
 	 */
-	public void saveDiagram(BlockDesignableContainer c) {
+	public void saveDiagramResource(BlockDesignableContainer c) {
 		ProcessDiagramView diagram = (ProcessDiagramView)c.getModel();
-		logger.infof("%s: saveDiagram - serializing %s ...",TAG,diagram.getDiagramName());
+		logger.infof("%s: saveDiagramResource - %s ...",TAG,diagram.getDiagramName());
 		diagram.setDirty(false);
-		SerializableDiagram sd = diagram.createSerializableRepresentation();
-		byte[] bytes = null;
 		long resid = c.getResourceId();
-		ObjectMapper mapper = new ObjectMapper();
-		try {
-			bytes = mapper.writeValueAsBytes(sd);
-			logger.debugf("%s: saveDiagram JSON = %s",TAG,new String(bytes));
-			context.updateResource(resid, bytes);
-			statusManager.incrementDirtyNodeCount(resid);
-			c.setBackground(diagram.getBackgroundColorForState());
-			SwingUtilities.invokeLater(new WorkspaceRepainter());
-		} 
-		catch (JsonProcessingException jpe) {
-			logger.warnf("%s: saveDiagram processing exception (%s)",TAG,jpe.getLocalizedMessage());
-		}
-		
+		executionEngine.executeOnce(new ResourceUpdateManager(this,context.getProject().getResource(resid)));
+		c.setBackground(diagram.getBackgroundColorForState());
+		SwingUtilities.invokeLater(new WorkspaceRepainter());
 	}
 	
 	/**

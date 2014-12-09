@@ -56,7 +56,7 @@ public class ReadoutUIView extends AbstractUIView implements BlockViewUI {
 	protected void paintComponent(Graphics _g) {
 		// Calling the super method effects an "erase".
 		Graphics2D g = (Graphics2D) _g;
-
+		//log.infof("ReadoutUIView.paintComponent %s ...(%d:%s)",getBlock().getName(),valueProperty.hashCode(),fncs.coerceToString(valueProperty.getValue()) );
 		// Preserve the original transform to roll back to at the end
 		AffineTransform originalTx = g.getTransform();
 		Color originalBackground = g.getBackground();

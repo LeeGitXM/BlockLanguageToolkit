@@ -5,6 +5,7 @@ import java.util.Enumeration;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.designer.navtree.DiagramTreeNode;
 import com.ils.blt.designer.navtree.NavTreeNodeInterface;
+import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayException;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
@@ -30,8 +31,11 @@ public class ResourceSaveManager implements Runnable {
 	private static DesignerContext context = null;
 	private static NodeStatusManager statusManager = null;
 	private final AbstractResourceNavTreeNode root;	      // Root of our save.
-	public ResourceSaveManager(AbstractResourceNavTreeNode node) {
+	private final DiagramWorkspace workspace;
+	
+	public ResourceSaveManager(DiagramWorkspace wksp,AbstractResourceNavTreeNode node) {
 		this.root = node;
+		this.workspace = wksp;
 	}
 	
 	/**
@@ -48,7 +52,7 @@ public class ResourceSaveManager implements Runnable {
 	 * When found, serialize into the project resource. This is in anticipation
 	 * of a top-level save.
 	 */
-	public static void saveSynchronously(AbstractResourceNavTreeNode root) {
+	public void saveSynchronously() {
 		saveDirtyDiagrams(root);
 	}
 	
@@ -60,14 +64,13 @@ public class ResourceSaveManager implements Runnable {
 	// Recursively descend the node tree, looking for diagram resources where
 	// the associated DiagramView is out-of-synch with the project resource.
 	// When found update the project resource.
-	private static void saveDirtyDiagrams(AbstractResourceNavTreeNode node) {
+	private void saveDirtyDiagrams(AbstractResourceNavTreeNode node) {
 		ProjectResource res = node.getProjectResource();
 		if( res!=null ) {
 			logger.infof("%s.saveDirtyDiagrams: %s (%d)",TAG,res.getName(),res.getResourceId());
 			if(res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
 				// If the resource is open, we need to save it
-				DiagramTreeNode dnode = (DiagramTreeNode)node;
-				dnode.updateOpenResource();  // Only if necessary
+				workspace.saveOpenDiagrams();
 			}
 		}
 		
@@ -93,8 +96,7 @@ public class ResourceSaveManager implements Runnable {
 				  statusManager.isResourceDirty(resid)      )  ) {
 				logger.infof("%s.accumulateDirtyNodeResources: diagram %s (%d)",TAG,res.getName(),resid);
 				diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
-				DiagramTreeNode dnode = (DiagramTreeNode)node;
-				dnode.closeAndSave();  // Close if open
+				workspace.saveOpenDiagrams();   // Close if open
 			}
 			// For other nodes include only "dirty"
 			else if( node instanceof NavTreeNodeInterface && 

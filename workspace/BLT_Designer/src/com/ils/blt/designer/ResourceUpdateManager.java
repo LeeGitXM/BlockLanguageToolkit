@@ -1,16 +1,20 @@
 package com.ils.blt.designer;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.designer.navtree.DiagramTreeNode;
+import com.ils.blt.common.serializable.SerializableDiagram;
+import com.ils.blt.designer.workspace.DiagramWorkspace;
+import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayException;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.IgnitionDesigner;
+import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.gateway.DTGatewayInterface;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
-import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
 
 
 /**
@@ -25,10 +29,12 @@ public class ResourceUpdateManager implements Runnable {
 	private static final LoggerEx logger = LogUtil.getLogger(ResourceUpdateManager.class.getPackage().getName());
 	private static DesignerContext context = null;
 	private static NodeStatusManager statusManager = null;
-	private final AbstractResourceNavTreeNode node;
+	private final ProjectResource res;
+	private final DiagramWorkspace workspace;
 	
-	public ResourceUpdateManager(AbstractResourceNavTreeNode treeNode) {
-		this.node = treeNode;
+	public ResourceUpdateManager(DiagramWorkspace wksp,ProjectResource pr) {
+		this.workspace = wksp;
+		this.res = pr;
 	}
 	
 	/**
@@ -42,15 +48,34 @@ public class ResourceUpdateManager implements Runnable {
 	
 	@Override
 	public void run() {
+		if( res==null ) return;
 		// Now save the resource, as it is.
 		Project diff = context.getProject().getEmptyCopy();
-		ProjectResource res = node.getProjectResource();
-		if( res==null ) return;
 		
 		if(res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
 			// If the resource is open, we need to save it
-			DiagramTreeNode dnode = (DiagramTreeNode)node;
-			dnode.updateOpenResource();  // Serializes open resource
+			long resourceId = res.getResourceId();
+			BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId);
+			if( tab!=null ) {
+				// If the diagram is open on a tab, call the workspace method to update the project resource
+				// from the diagram view. This method handles re-paint of the background.
+				ProcessDiagramView view = (ProcessDiagramView)tab.getModel();
+				if( view.isDirty() ) {
+					logger.infof("%s.run: updating ... %s(%d) ",TAG,tab.getName(),resourceId);
+					SerializableDiagram sd = view.createSerializableRepresentation();
+					sd.setName(tab.getName());
+					ObjectMapper mapper = new ObjectMapper();
+					try{
+						byte[] bytes = mapper.writeValueAsBytes(sd);
+						logger.tracef("%s.run JSON = %s",TAG,new String(bytes));
+						context.updateResource(resourceId,bytes);
+					}
+					catch(JsonProcessingException jpe) {
+						logger.warnf("%s.run: Exception serializing diagram, resource %d (%s)",TAG,resourceId,jpe.getMessage());
+					}
+				}
+				view.setDirty(false);
+			} 
 		}
 		
 		diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
@@ -58,7 +83,7 @@ public class ResourceUpdateManager implements Runnable {
 			DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ...");  // Don't publish
 		}
 		catch(GatewayException ge) {
-			logger.warnf("%s.saveDiagram: Exception saving project resource %d (%s)",TAG,res.getResourceId(),ge.getMessage());
+			logger.warnf("%s.run: Exception saving project resource %d (%s)",TAG,res.getResourceId(),ge.getMessage());
 		}
 		// Make every thing clean again.
 		statusManager.clearDirtyChildCount(res.getResourceId());

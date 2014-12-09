@@ -303,7 +303,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				throw new IllegalArgumentException();
 			}
 			statusManager.createResourceStatus(node,resourceId, res.getResourceId());
-			executionEngine.executeOnce(new ResourceUpdateManager(node));   /// Creates, syncs resource
+			executionEngine.executeOnce(new ResourceUpdateManager(workspace,res));   /// Creates, syncs resource
 		}
 		else {
 			logger.infof("%s.createChildNode: REUSE %s->%s",TAG,this.getName(),node.getName());
@@ -1363,7 +1363,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		public void actionPerformed(ActionEvent e) {
 			// Traverse the entire hierarchy, saving each step
 			if( !isRootFolder() ) return;
-			executionEngine.executeOnce(new ResourceSaveManager(node));
+			executionEngine.executeOnce(new ResourceSaveManager(workspace,node));
 			statusManager.cleanAll();
 		}
 	}
@@ -1416,7 +1416,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			executionEngine.executeOnce(new ResourceSaveManager(node));
+			executionEngine.executeOnce(new ResourceSaveManager(workspace,node));
 			ProjectResource pr = node.getProjectResource();
 			if( pr!=null )
 				statusManager.clearDirtyChildCount(pr.getResourceId());

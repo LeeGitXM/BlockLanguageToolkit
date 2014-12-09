@@ -88,7 +88,7 @@ public class NotificationHandler implements PushNotificationListener {
 				Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
 				if( listeners != null ) {
 					for(NotificationChangeListener listener:listeners.values()) {
-						//log.infof("%s.receiveNotification: key=%s - notifying %s",TAG,key,listener.getClass().getName());
+						log.tracef("%s.receiveNotification: key=%s - notifying %s",TAG,key,listener.getClass().getName());
 						listener.valueChange((QualifiedValue)payload);
 					}
 					// Repaint the workspace

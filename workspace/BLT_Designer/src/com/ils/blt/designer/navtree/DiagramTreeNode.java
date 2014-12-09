@@ -17,7 +17,6 @@ import java.util.List;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JMenu;
-import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.tree.TreePath;
 
@@ -176,9 +175,9 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	}
 	
 	/**
-	 *  Called when the parent folder is saved..
+	 *  If the diagram associated with this node is open, save its state.
 	 */
-	public void closeAndSave() {
+	public void saveOpenDiagram() {
 		logger.infof("%s.closeAndSave: res %d",TAG,resourceId);
 		// If the diagram is open on a tab, call the workspace method to update the project resource
 		// from the diagram view. This method handles re-paint of the background.
@@ -191,7 +190,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 				ProcessBlockView pbv = (ProcessBlockView)blk;
 				pbv.setDirty(false);  // Suppresses the popup?
 			}
-			workspace.saveDiagram(tab);
+			workspace.saveDiagramResource(tab);
 			view.registerChangeListeners();
 		}
 	}
@@ -295,34 +294,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		catch (IllegalArgumentException ex) {
 			ErrorUtil.showError(TAG+".onEdit: "+ex.getMessage());
 		}
-	}
-	
-	/**
-	 * Update the resource associated with the current diagram -- if needed.
-	 * This only applies for diagrams that are open. This is called during a
-	 * scan for dirty diagrams.
-	 */
-	public void updateOpenResource() {
-		BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId);
-		if( tab!=null ) {
-			// If the diagram is open on a tab, call the workspace method to update the project resource
-			// from the diagram view. This method handles re-paint of the background.
-			ProcessDiagramView view = (ProcessDiagramView)tab.getModel();
-			if( view.isDirty() ) {
-				logger.infof("%s.updateResource: updating ... %s(%d) ",TAG,getName(),resourceId);
-				SerializableDiagram sd = view.createSerializableRepresentation();
-				sd.setName(getName());
-				ObjectMapper mapper = new ObjectMapper();
-				try{
-					byte[] bytes = mapper.writeValueAsBytes(sd);
-					context.updateResource(resourceId,bytes);
-				}
-				catch(JsonProcessingException jpe) {
-					logger.warnf("%s.updateResource: Exception serializing diagram, resource %d (%s)",TAG,resourceId,jpe.getMessage());
-				}
-			}
-			view.setDirty(false);
-		} 
 	}
 	
 	// We're not a listener on anything. But we do need to
@@ -536,10 +507,9 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	    }
 	    
 		public void actionPerformed(ActionEvent e) {
-			node.closeAndSave();
-			executionEngine.executeOnce(new ResourceUpdateManager(node));
 			ProjectResource pr = node.getProjectResource();
 			if( pr!=null ) {
+				executionEngine.executeOnce(new ResourceUpdateManager(workspace,pr));
 				statusManager.clearDirtyChildCount(pr.getResourceId());
 			}
 			else {

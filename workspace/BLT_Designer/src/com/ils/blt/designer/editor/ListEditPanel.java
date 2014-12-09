@@ -92,7 +92,7 @@ public class ListEditPanel extends BasicEditPanel {
 					String list = BlockProperty.assembleList(model,delimiter);
 					log.debugf("%s.OK action: assembled list, %s = %s",TAG,property.getName(),list);
 					property.setValue(list);
-					editor.notifyOfPropertyChange(property);   // Immediately update the running diagram
+					editor.handlePropertyChange(property);   // Immediately update the running diagram
 					updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
 				}
 				else {

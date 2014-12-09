@@ -398,16 +398,14 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	public void unregisterChangeListeners() {
 		log.infof("%s.unregisterChangeListeners: ...",TAG);
 		NotificationHandler handler = NotificationHandler.getInstance();
-		// Connections. Register the upstream anchors (merely a convention).
+		// Connections. Un-register the upstream anchors (these are what was originally registered).
 		for( Connection cxn:connections) {
 			BasicAnchorPoint bap = (BasicAnchorPoint)cxn.getOrigin();
 			ProcessBlockView blk = (ProcessBlockView)bap.getBlock();
 			handler.removeNotificationChangeListener(NotificationKey.keyForConnection(blk.getId().toString(),bap.getId().toString()),TAG);
 		}
 		
-		// Register any properties "bound" to the engine
-		// It is the responsibility of the block to trigger
-		// this as it evaluates.
+		// De-register any properties "bound" to the engine
 		for(ProcessBlockView block:blockMap.values() ) {
 			for(BlockProperty prop:block.getProperties()) {
 				if( prop.getBindingType().equals(BindingType.ENGINE)) {

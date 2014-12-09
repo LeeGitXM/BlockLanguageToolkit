@@ -63,7 +63,7 @@ public class MainPanel extends BasicEditPanel {
 		add(separator,"span,growy");
 	}
 	
-	public void notifyOfPropertyChange(BlockProperty prop) {parent.notifyOfPropertyChange(prop);} 
+	public void handlePropertyChange(BlockProperty prop) {parent.handlePropertyChange(prop);} 
 
 	/**
 	 * Iterate over panels and close any subscriptions

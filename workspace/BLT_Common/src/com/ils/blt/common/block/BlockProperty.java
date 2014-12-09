@@ -181,7 +181,7 @@ public class BlockProperty implements NotificationChangeListener {
 	 */
 	@Override
 	public void valueChange(QualifiedValue val) {
-		//log.infof("%s(%d).valueChange %s now %s",TAG,hashCode(),getName(),val.getValue().toString());
+		log.infof("%s(%d).valueChange %s now %s",TAG,hashCode(),getName(),val.getValue().toString());
 		if( val!=null && val.getValue()!=null) {
 			setValue(val.getValue());
 		}
