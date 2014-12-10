@@ -8,6 +8,26 @@ insert into PythonPrototypes values ('xom.block.SQCDiagnosis.SQCDiagnosis','SQUA
 insert into PythonPrototypes values ('xom.block.SubDiagnosis.SubDiagnosis','SQUARE','','Sub\nDiagnosis','',24,100,80);
 
 -- Columns are:  className, propertyName, propertyType, editable
+insert into PythonBlockProperties values ('emc.block.Action.Action','Script','STRING',1);
+insert into PythonBlockProperties values ('emc.block.Arithmetic.Arithmetic','Function','STRING',1);
+insert into PythonBlockProperties values ('emc.block.FinalDiagnosis.FinalDiagnosis','CalculationMethod','SCRIPTREF',1);
+insert into PythonBlockProperties values ('emc.block.FinalDiagnosis.FinalDiagnosis','Explanation','STRING',1);
+insert into PythonBlockProperties values ('emc.block.FinalDiagnosis.FinalDiagnosis','Label','STRING',1);
+--insert into PythonBlockProperties values ('emc.block.FinalDiagnosis.FinalDiagnosis','LogToDatabase','BOOLEAN',1);
+--insert into PythonBlockProperties values ('emc.block.FinalDiagnosis.FinalDiagnosis','ManualMove','BOOLEAN',1);
+--insert into PythonBlockProperties values ('emc.block.FinalDiagnosis.FinalDiagnosis','ManualMoveValue','DOUBLE',1);
+--insert into PythonBlockProperties values ('emc.block.FinalDiagnosis.FinalDiagnosis','ManualTextRequired','BOOLEAN',1);
+--insert into PythonBlockProperties values ('emc.block.FinalDiagnosis.FinalDiagnosis','Multiplier','DOUBLE',1);
+insert into PythonBlockProperties values ('emc.block.FinalDiagnosis.FinalDiagnosis','PostTextRecommendation','BOOLEAN',1);
+insert into PythonBlockProperties values ('emc.block.FinalDiagnosis.FinalDiagnosis','Priority','DOUBLE',1);
+insert into PythonBlockProperties values ('emc.block.FinalDiagnosis.FinalDiagnosis','TextRecommendation','STRING',1);
+insert into PythonBlockProperties values ('emc.block.FinalDiagnosis.FinalDiagnosis','TextRecommendationCallback','SCRIPTREF',1);
+insert into PythonBlockProperties values ('emc.block.FinalDiagnosis.FinalDiagnosis','RecommendationRefreshInterval','DOUBLE',1);
+insert into PythonBlockProperties values ('emc.block.FinalDiagnosis.FinalDiagnosis','Targets','LIST',1);
+--insert into PythonBlockProperties values ('emc.block.FinalDiagnosis.FinalDiagnosis','TrapInsignificantConditions','BOOLEAN',1);
+insert into PythonBlockProperties values ('emc.block.SQCDiagnosis.SQCDiagnosis','Label','STRING',1);
+insert into PythonBlockProperties values ('emc.block.SubDiagnosis.SubDiagnosis','Label','STRING',1);
+
 insert into PythonBlockProperties values ('xom.block.Action.Action','Script','STRING',1);
 insert into PythonBlockProperties values ('xom.block.Arithmetic.Arithmetic','Function','STRING',1);
 insert into PythonBlockProperties values ('xom.block.FinalDiagnosis.FinalDiagnosis','CalculationMethod','SCRIPTREF',1);
