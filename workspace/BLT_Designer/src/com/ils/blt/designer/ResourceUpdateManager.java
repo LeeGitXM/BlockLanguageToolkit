@@ -75,7 +75,10 @@ public class ResourceUpdateManager implements Runnable {
 					}
 				}
 				view.setDirty(false);
-			} 
+			}
+			else {
+				context.updateResource(resourceId,res.getData());   // Force an update
+			}
 		}
 		
 		diff.putResource(res, true);    // Mark as dirty for our controller as resource listener

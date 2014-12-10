@@ -170,6 +170,17 @@ public class ModelManager implements ProjectListener  {
 	}
 	
 	/**
+	 * Get a specified diagram by its Id. 
+	 * @param id
+
+	 * @return the specified diagram. If not found, return null. 
+	 */
+	public ProcessNode getProcessNode(UUID nodeId) {
+		ProcessNode node = nodesByUUID.get(nodeId);
+		return node;
+	}
+	
+	/**
 	 * Get a specified diagram given projectId and resourceId. 
 	 * @param projectId
 	 * @param resourceId

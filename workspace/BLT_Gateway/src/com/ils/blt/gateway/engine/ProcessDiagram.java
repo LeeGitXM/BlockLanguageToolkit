@@ -108,6 +108,7 @@ public class ProcessDiagram extends ProcessNode {
 	public void analyze(SerializableDiagram diagrm) {
 		log.infof("%s.analyze: %s ...",TAG,diagrm.getName());
 		
+		setName(diagrm.getName());     // Get our name from the resource
 		BlockFactory blockFactory = BlockFactory.getInstance();
 		ConnectionFactory connectionFactory = ConnectionFactory.getInstance();
 		

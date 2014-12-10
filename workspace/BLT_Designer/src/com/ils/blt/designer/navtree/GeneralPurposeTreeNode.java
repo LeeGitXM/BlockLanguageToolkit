@@ -237,9 +237,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		if (res.getResourceId() == this.resourceId) {
 			if( res.getName()==null || !res.getName().equals(getName()) ) {
 				logger.infof("%s.projectResourceModified(%d), setting name %s to %s",TAG,this.resourceId,getName(),res.getName());
-				statusManager.incrementDirtyNodeCount(resourceId);
-				setDirty(true);
 			}
+			executionEngine.executeOnce(new ResourceUpdateManager(workspace,res));
 		}  
 		super.projectResourceModified(res, changeType);
 	}
@@ -252,13 +251,14 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 
 	/**
 	 * Either our state or the state of another node changed, annotate our state. 
-	 * Dirtiness for a nav tree node means that the project resource is out-of-date
-	 * with what is being shown in the designer UI.
+	 * Dirtiness for a nav tree node means that one or more of its descendent diagrams
+	 * is dirty.
 	 * Note: This method should ONLY be called from the node status manager.
 	 */
 	public void updateUI(boolean dty) {
 		logger.debugf("%s.updateUI: %d dirty = %s",TAG,resourceId,(dty?"true":"false"));
 		setItalic(dty);
+		if( treeSaveAction!=null ) treeSaveAction.setEnabled(dty);
 		refresh();  // Update the UI
 	}
 
@@ -710,9 +710,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 								String json = serializeApplication(sa);
 								res.setName(sa.getName());
 								res.setData(json.getBytes());
-								context.updateResource(res);
-								setDirty(true);
-								statusManager.incrementDirtyNodeCount(resourceId);		
+								context.updateResource(res); // Triggers "projectResourceModified" - we do the permanent save there	
 							}
 						}
 						else {
@@ -1191,8 +1189,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 								String json = serializeFamily(sf);
 								res.setName(sf.getName());
 								res.setData(json.getBytes());
-								context.updateResource(res);
-								statusManager.incrementDirtyNodeCount(resourceId);
+								context.updateResource(res); // Triggers "projectResourceModified" - we do the permanent save there	
 							}
 						}
 						else {

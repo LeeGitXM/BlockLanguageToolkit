@@ -10,11 +10,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-
-import net.miginfocom.swing.MigLayout;
 
 import com.ils.blt.common.block.ActiveState;
 import com.ils.blt.common.serializable.SerializableFamily;

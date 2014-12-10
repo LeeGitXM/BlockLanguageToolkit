@@ -20,7 +20,6 @@ import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 import javax.swing.tree.TreePath;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
@@ -74,6 +73,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	protected long resourceId;
 	private final ExecutionManager executionEngine;
 	protected final DiagramWorkspace workspace;
+	private SaveDiagramAction saveAction = null;
 	protected final NodeStatusManager statusManager;
 	protected final ImageIcon defaultIcon;
 	protected final ImageIcon openIcon;
@@ -132,7 +132,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		// States are: ACTIVE, DISABLED, RESTRICTED
 		ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
 		DiagramState state = handler.getDiagramState(context.getProject().getId(), resourceId);
-		SaveDiagramAction saveAction = new SaveDiagramAction(this);
+		saveAction = new SaveDiagramAction(this);
 		SetStateAction ssaActive = new SetStateAction(DiagramState.ACTIVE);
 		ssaActive.setEnabled(!state.equals(DiagramState.ACTIVE));
 		SetStateAction ssaDisable = new SetStateAction(DiagramState.DISABLED);
@@ -144,9 +144,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		setStateMenu.add(ssaDisable);
 		setStateMenu.add(ssaRestricted);
 		menu.add(setStateMenu);
-	
-		// Only allow a Save when the diagram is dirty, exists in the controller
-		saveAction.setEnabled(enableSaveAction());
 		menu.add(saveAction);
 		menu.addSeparator();
 		menu.add(renameAction);
@@ -205,21 +202,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		return result;
 	}
 
-	/* Enable the save menu if the diagram is dirty or has dirty children.
-	 * BUT - disable if the parent node is dirty.
-	 * @return true if the Save action should be enabled. 
-	 */
-	private boolean enableSaveAction() {
-		boolean result = false;
-		ProcessDiagramView pdv = workspace.getActiveDiagram();
-		if( pdv!=null ) {
-			if( pdv.isDirty() ) result = true;
-			else if(statusManager.isResourceDirtyOrHasDirtyChidren(resourceId)) result = true;
-			
-			if( statusManager.isResourceDirty(statusManager.parentResourceId(resourceId)) ) result = false;
-		}
-		return result;
-	}
 	public boolean isDirty() { return dirty; }
 	public void setDirty(boolean flag) { this.dirty = flag; }
 	
@@ -336,10 +318,8 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 				logger.infof("%s.projectResourceModified(%d), setting name %s to %s",TAG,this.resourceId,getName(),res.getName());
 				setName(res.getName());
 				setText(res.getName());
-				statusManager.incrementDirtyNodeCount(resourceId);
-				setDirty(true);
-				refresh();
 			}
+			executionEngine.executeOnce(new ResourceUpdateManager(workspace,res));
 		}
 	}
 	// From the root node, recursively log the contents of the tree
@@ -628,13 +608,13 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	}
 	
 	/**
-	 * Update our appearance depending on whether the underlying diagram is dirty
-	 * Dirtiness for a nav tree node means that the project resource is out-of-date
-	 * with what is being shown in the designer UI.
+	 * Update our appearance depending on whether the underlying diagram is dirty,
+	 * that is structurally different than what is being shown in the designer UI.
 	 */
 	public void updateUI(boolean drty) {
 		logger.debugf("%s.setDirty: dirty = %s",TAG,(drty?"true":"false"));
 		setItalic(drty);
+		if( saveAction!=null ) saveAction.setEnabled(drty);
 		refresh();
 	}
 
