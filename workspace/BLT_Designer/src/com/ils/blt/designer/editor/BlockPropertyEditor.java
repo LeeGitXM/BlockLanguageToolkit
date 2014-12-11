@@ -103,8 +103,8 @@ public class BlockPropertyEditor extends SlidingPane   {
 	 * we've only changed a block property. Save the project resource.
 	 */
 	public void handlePropertyChange(BlockProperty property) {
-		ApplicationRequestHandler handler = new ApplicationRequestHandler();
-		handler.setBlockProperty(diagram.getId(), block.getId(), property);
+		//ApplicationRequestHandler handler = new ApplicationRequestHandler();
+		//handler.setBlockProperty(diagram.getId(), block.getId(), property);
 		saveDiagram();
 	}
 	

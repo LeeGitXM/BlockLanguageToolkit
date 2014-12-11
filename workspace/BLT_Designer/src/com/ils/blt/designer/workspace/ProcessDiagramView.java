@@ -111,7 +111,9 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	
 	/** Get the current block property values from the Gateway. 
 	 * If the block does not have a Gateway counterpart (e.g. diagram is dirty), we'll get the 
-	 * default property list for the block class.
+	 * default property list for the block class. 
+	 * 
+	 * IMPORTANT: Always do this before block is displayed.
 	 */
 	public void initBlockProperties(ProcessBlockView block) {
 		Collection<BlockProperty> propertyList;

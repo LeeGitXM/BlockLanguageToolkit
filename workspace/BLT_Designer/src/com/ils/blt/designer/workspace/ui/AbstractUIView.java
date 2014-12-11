@@ -51,7 +51,7 @@ public abstract class AbstractUIView extends JComponent
 									 implements BlockViewUI,ChangeListener {
 	private static final String TAG = "AbstractUIView";
 	protected final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
-	protected final ProcessBlockView block;
+	protected ProcessBlockView block = null;;
 	private final List<AnchorPoint> anchorPoints;  // Entries are BasicAnchorPoint
 	protected BlockComponent blockComponent = null;
 	protected static int ANCHOR_ANNOTATION_TEXT_SIZE = 9;
@@ -257,6 +257,10 @@ public abstract class AbstractUIView extends JComponent
 		//log.infof("%s.update %s ...",TAG,getBlock().getName());
 		repaint();
 	}
+	
+	// The block has changed, re-configure.
+	// The base method just swaps out the target block.
+	public void reconfigure(ProcessBlockView pbv) { this.block = pbv;}
 	
 	@Override
 	public void stateChanged(ChangeEvent event) {

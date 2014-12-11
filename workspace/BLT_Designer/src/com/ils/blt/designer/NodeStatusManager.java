@@ -157,7 +157,6 @@ public class NodeStatusManager  {
 	}
 	
 	
-	
 	/**
 	 * For any node indicate that the number of dirty children has increased.
 	 * For a diagram, this means that either blocks are dirty, or a property

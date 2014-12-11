@@ -38,6 +38,7 @@ import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.common.serializable.UUIDResetHandler;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
+import com.ils.blt.designer.ResourceCreateManager;
 import com.ils.blt.designer.ResourceDeleteManager;
 import com.ils.blt.designer.ResourceSaveManager;
 import com.ils.blt.designer.ResourceUpdateManager;
@@ -215,6 +216,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		try {
 			logger.infof("%s.onEdit: alterName from %s to %s",TAG,oldName,newTextValue);
 			context.structuredRename(resourceId, newTextValue);
+			executionEngine.executeOnce(new ResourceUpdateManager(workspace,getProjectResource()));
 		}
 		catch (IllegalArgumentException ex) {
 			ErrorUtil.showError(TAG+".onEdit: "+ex.getMessage());
@@ -233,12 +235,11 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	@Override
 	public void projectResourceModified(ProjectResource res, ProjectChangeListener.ResourceModification changeType) {
 		// Take care of our special status before invoking the super-class method.
-		//logger.tracef("%s.projectResourceModified.%s: %s(%d), res %s(%d)",TAG,changeType.name(),getName(),this.resourceId,res.getName(),res.getResourceId());
+		//logger.infof("%s.projectResourceModified.%s: %s(%d), res %s(%d)",TAG,changeType.name(),getName(),this.resourceId,res.getName(),res.getResourceId());
 		if (res.getResourceId() == this.resourceId) {
 			if( res.getName()==null || !res.getName().equals(getName()) ) {
 				logger.infof("%s.projectResourceModified(%d), setting name %s to %s",TAG,this.resourceId,getName(),res.getName());
 			}
-			executionEngine.executeOnce(new ResourceUpdateManager(workspace,res));
 		}  
 		super.projectResourceModified(res, changeType);
 	}
@@ -710,7 +711,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 								String json = serializeApplication(sa);
 								res.setName(sa.getName());
 								res.setData(json.getBytes());
-								context.updateResource(res); // Triggers "projectResourceModified" - we do the permanent save there	
+								new ResourceUpdateManager(workspace,res).run();	
 							}
 						}
 						else {
@@ -752,7 +753,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 						newName, ApplicationScope.GATEWAY, bytes);
 				resource.setParentUuid(getFolderId());
 				logger.infof("%s: parent: %s",TAG,getFolderId().toString());
-				context.updateResource(resource);
+				new ResourceCreateManager(resource).run();	// Must be synchronous for child to show
 				currentNode.selectChild(new long[] {newResId} );
 			} 
 			catch (Exception err) {
@@ -879,7 +880,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 													BLTProperties.MODULE_ID, BLTProperties.APPLICATION_RESOURCE_TYPE,
 													sa.getName(), ApplicationScope.GATEWAY, json.getBytes());
 											resource.setParentUuid(getFolderId());
-											context.updateResource(resource);
+											new ResourceCreateManager(resource).run();
 											root.selectChild(new long[] {newId} );
 											// Now import families
 											for(SerializableFamily fam:sa.getFamilies()) {
@@ -930,10 +931,10 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 						BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
 						sd.getName(), ApplicationScope.GATEWAY, json.getBytes());
 				resource.setParentUuid(parentId);
-				context.updateResource(resource);
+				executionEngine.executeOnce(new ResourceCreateManager(resource));	
 			} 
 			catch (Exception ex) {
-				ErrorUtil.showError(String.format("ApplicationImportAction: Unhandled Exception (%s)",ex.getMessage()),POPUP_TITLE,ex,true);
+				ErrorUtil.showError(String.format("ApplicationImportAction: importing diagrm, unhandled Exception (%s)",ex.getMessage()),POPUP_TITLE,ex,true);
 			}
 		}
 		private void importFamily(UUID parentId,SerializableFamily sf) {
@@ -947,7 +948,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 						sf.getName(), ApplicationScope.GATEWAY, json.getBytes());
 				resource.setParentUuid(parentId);
 				logger.infof("%s:ApplicationImportAction importing family %s(%s) (%s/%s)", TAG,sf.getName(),newId,parentId.toString(),sf.getId().toString());
-				context.updateResource(resource);
+				executionEngine.executeOnce(new ResourceCreateManager(resource));	
 				// Now import the diagrams
 				for(SerializableDiagram diagram:sf.getDiagrams()) {
 					importDiagram(sf.getId(),diagram);
@@ -1002,7 +1003,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 												BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
 												"CLONE", ApplicationScope.GATEWAY, bytes);
 										resource.setParentUuid(getFolderId());
-										context.updateResource(resource);
+										new ResourceCreateManager(resource).run();	
 										parentNode.selectChild(new long[] {newId} );
 
 									}
@@ -1147,7 +1148,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 						newName, ApplicationScope.GATEWAY, bytes);
 				resource.setParentUuid(getFolderId());
 				logger.infof("%s: parent: %s",TAG,getFolderId().toString());
-				context.updateResource(resource);
+				new ResourceCreateManager(resource).run();	
 				currentNode.selectChild(new long[] {newId} );
 				EventQueue.invokeLater(new Runnable() {
 					public void run() {
@@ -1189,7 +1190,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 								String json = serializeFamily(sf);
 								res.setName(sf.getName());
 								res.setData(json.getBytes());
-								context.updateResource(res); // Triggers "projectResourceModified" - we do the permanent save there	
+								new ResourceUpdateManager(workspace,res).run();	
 							}
 						}
 						else {
@@ -1230,7 +1231,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 						newName, ApplicationScope.GATEWAY, bytes);
 				resource.setParentUuid(getFolderId());
 				logger.infof("%s.familyCreateAction: res(%d) %s, fam %s, parent: %s",TAG,newId,resource.getName(),fam.getName(),getFolderId().toString());
-				context.updateResource(resource);
+				new ResourceCreateManager(resource).run();	
 				//recreate();
 				currentNode.selectChild(new long[] {newId} );
 			} 
@@ -1310,7 +1311,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 													BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
 													sd.getName(), ApplicationScope.GATEWAY, json.getBytes());
 											resource.setParentUuid(getFolderId());
-											context.updateResource(resource);
+											new ResourceCreateManager(resource).run();	
 											parentNode.selectChild(new long[] {newId} );
 											setDirty(true);
 										}

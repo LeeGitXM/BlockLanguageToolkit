@@ -59,27 +59,25 @@ public class ResourceUpdateManager implements Runnable {
 			if( tab!=null ) {
 				// If the diagram is open on a tab, call the workspace method to update the project resource
 				// from the diagram view. This method handles re-paint of the background.
+				// The diagram may not have been dirty in a structural sense, but update the resource
+				// anyway as block properties may have changed.
 				ProcessDiagramView view = (ProcessDiagramView)tab.getModel();
-				if( view.isDirty() ) {
-					logger.infof("%s.run: updating ... %s(%d) ",TAG,tab.getName(),resourceId);
-					SerializableDiagram sd = view.createSerializableRepresentation();
-					sd.setName(tab.getName());
-					ObjectMapper mapper = new ObjectMapper();
-					try{
-						byte[] bytes = mapper.writeValueAsBytes(sd);
-						logger.tracef("%s.run JSON = %s",TAG,new String(bytes));
-						context.updateResource(resourceId,bytes);
-					}
-					catch(JsonProcessingException jpe) {
-						logger.warnf("%s.run: Exception serializing diagram, resource %d (%s)",TAG,resourceId,jpe.getMessage());
-					}
+				logger.infof("%s.run: updating ... %s(%d) ",TAG,tab.getName(),resourceId);
+				SerializableDiagram sd = view.createSerializableRepresentation();
+				sd.setName(tab.getName());
+				ObjectMapper mapper = new ObjectMapper();
+				try{
+					byte[] bytes = mapper.writeValueAsBytes(sd);
+					logger.tracef("%s.run JSON = %s",TAG,new String(bytes));
+					res.setData(bytes);
+				}
+				catch(JsonProcessingException jpe) {
+					logger.warnf("%s.run: Exception serializing diagram, resource %d (%s)",TAG,resourceId,jpe.getMessage());
 				}
 				view.setDirty(false);
 			}
-			else {
-				context.updateResource(resourceId,res.getData());   // Force an update
-			}
 		}
+		context.updateResource(res.getResourceId(),res.getData());   // Force an update
 		
 		diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
 		try {

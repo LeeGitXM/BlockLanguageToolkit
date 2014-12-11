@@ -387,7 +387,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 								BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
 								pbv.getName(), ApplicationScope.GATEWAY, bytes);
 						resource.setParentUuid(getActiveDiagram().getId());
-						context.updateResource(resource);					
+						executionEngine.executeOnce(new ResourceUpdateManager(this,resource));					
 					} 
 					catch (Exception err) {
 						ErrorUtil.showError(TAG+" Exception pasting blocks",err);
@@ -459,16 +459,19 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				logger.warnf("%s: open io exception (%s)",TAG,ioe.getLocalizedMessage());
 			}
 			ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd, context);
-			super.open(diagram);
-			BlockDesignableContainer tab = (BlockDesignableContainer)findDesignableContainer(resourceId);
-			tab.setBackground(diagram.getBackgroundColorForState());
-			diagram.registerChangeListeners();
-			// In the probable case that the designer is opened after the diagram has started
-			// running in the gateway, obtain any updates.
 			for( Block blk:diagram.getBlocks()) {
 				ProcessBlockView pbv = (ProcessBlockView)blk;
 				diagram.initBlockProperties(pbv);
 			}
+			super.open(diagram);
+			diagram.setDirty(false);  // Newly opened from a serialized resource, should be in-sync.
+
+			// In the probable case that the designer is opened after the diagram has started
+			// running in the gateway, obtain any updates
+			diagram.registerChangeListeners();
+			
+			BlockDesignableContainer tab = (BlockDesignableContainer)findDesignableContainer(resourceId);
+			tab.setBackground(diagram.getBackgroundColorForState());
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
 		}
 	}
@@ -566,7 +569,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		BlockDesignableContainer container = (BlockDesignableContainer)c;
 		ProcessDiagramView view = (ProcessDiagramView)(container.getModel());
 		view.addChangeListener(this);
-		container.setBackground(view.getBackgroundColorForState());    // Set background appropriate to state
 	}
 	@Override
 	public void containerSelected(DesignableContainer container) {

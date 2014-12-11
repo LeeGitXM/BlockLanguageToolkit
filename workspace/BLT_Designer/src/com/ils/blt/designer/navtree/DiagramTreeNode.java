@@ -265,6 +265,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		try {
 			logger.infof("%s.onEdit: alterName from %s to %s",TAG,oldName,newTextValue);
 			context.structuredRename(resourceId, newTextValue);
+			executionEngine.executeOnce(new ResourceUpdateManager(workspace,getProjectResource()));
 			// If it's open, change its name. Otherwise we sync on opening.
 			if(workspace.isOpen(resourceId) ) {
 				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId);
@@ -309,17 +310,17 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	
 	/**
 	 * We got here from either a Save() action or a name change. We don't have children, so no worry about
-	 * recreate() after delete.
+	 * recreate() after delete. Be careful not to update a project resource here, else we get a hard loop.
 	 */
 	@Override
 	public void projectResourceModified(ProjectResource res,ResourceModification changeType) {
 		if (res.getResourceId() == resourceId) {
+			logger.infof("%s.projectResourceModified.%s: %s(%d), res %s(%d)",TAG,changeType.name(),getName(),this.resourceId,res.getName(),res.getResourceId());
 			if( res.getName()==null || !res.getName().equals(getName()) ) {
 				logger.infof("%s.projectResourceModified(%d), setting name %s to %s",TAG,this.resourceId,getName(),res.getName());
 				setName(res.getName());
 				setText(res.getName());
 			}
-			executionEngine.executeOnce(new ResourceUpdateManager(workspace,res));
 		}
 	}
 	// From the root node, recursively log the contents of the tree
@@ -489,7 +490,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		public void actionPerformed(ActionEvent e) {
 			ProjectResource pr = node.getProjectResource();
 			if( pr!=null ) {
-				executionEngine.executeOnce(new ResourceUpdateManager(workspace,pr));
+				new ResourceUpdateManager(workspace,pr).run();
 				statusManager.clearDirtyChildCount(pr.getResourceId());
 			}
 			else {

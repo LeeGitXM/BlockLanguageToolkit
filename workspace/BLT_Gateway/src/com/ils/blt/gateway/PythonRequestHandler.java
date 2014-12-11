@@ -6,13 +6,17 @@ package com.ils.blt.gateway;
 
 import java.util.UUID;
 
+import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ProcessApplication;
+import com.ils.blt.gateway.engine.ProcessDiagram;
 import com.ils.blt.gateway.engine.ProcessFamily;
 import com.ils.blt.gateway.engine.ProcessNode;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
+import com.inductiveautomation.ignition.common.project.ProjectVersion;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
 /**
  * This class exposes python-callable requests directed at the execution engine. 
@@ -21,7 +25,12 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 public class PythonRequestHandler   {
 	private static final String TAG = "PythonRequestHandler";
 	private static LoggerEx log = LogUtil.getLogger(PythonRequestHandler.class.getPackage().getName());
+	private final BlockExecutionController controller = BlockExecutionController.getInstance();
+	private static GatewayContext context = null;
 	
+	public PythonRequestHandler() {
+		
+	}
 	/**
 	 * Traverse the parent nodes until we find an Application. If there is none in
 	 * our ancestry, return null.
@@ -34,7 +43,7 @@ public class PythonRequestHandler   {
 		ProcessApplication app = null;
 		try {
 			UUID parentuuid = UUID.fromString(parent);
-			BlockExecutionController controller = BlockExecutionController.getInstance();
+			
 			ProcessNode node = controller.getProcessNode(parentuuid);
 			while( node!=null ) {
 				if( node instanceof ProcessApplication ) {
@@ -49,9 +58,106 @@ public class PythonRequestHandler   {
 		}
 		return app;
 	}
-	
 	/**
-	 * Traverse the parent nodes until we find an Application. If there is none in
+	 * Find a block given the iD of the parent diagram and the iD of the block itself.
+	 * 
+	 * @param parent identifier for the diagram, a string version of a UUID
+	 * @param blockId identifier for the block, a string version of a UUID
+	 * @return the referenced block
+	 */
+	public ProcessBlock getBlock(String parent,String blockId)  {
+		log.infof("%s.getBlock, diagram.block = %s.%s ",TAG,parent,blockId);
+		ProcessBlock block = null;
+		try {
+			UUID parentuuid = UUID.fromString(parent);
+			ProcessNode node = controller.getProcessNode(parentuuid);
+			if( node instanceof ProcessDiagram ) {
+				UUID uuid = UUID.fromString(blockId);
+				ProcessDiagram diag = (ProcessDiagram)node;
+				block = diag.getBlock(uuid);
+			}
+		}
+		catch(IllegalArgumentException iae) {
+			log.warnf("%s.getBlock: on of %s or %s is an illegal UUID (%s)",TAG,parent,blockId,iae.getMessage());
+		}
+		return block;
+	}
+	/**
+	 * Given an identifier string, return the associated diagram. The parent of
+	 * a block should be a diagram.
+	 * 
+	 * @param parent identifier for the block, a string version of a UUID
+	 * @return the diagram
+	 */
+	public String getDefautDatabase(String parent)  {
+		log.infof("%s.getDiagram, diagram = %s ",TAG,parent);
+		String dbName = null;
+		try {
+			UUID parentuuid = UUID.fromString(parent);
+			ProcessNode node = controller.getProcessNode(parentuuid);
+			if( node instanceof ProcessDiagram ) {
+					ProcessDiagram diag = (ProcessDiagram)node;
+					if( diag!=null) {
+						long projectId = diag.getProjectId();
+						dbName = context.getProjectManager().getProps(projectId, ProjectVersion.Published).getDefaultDatasourceName();
+					}
+			}
+		}
+		catch(IllegalArgumentException iae) {
+			log.warnf("%s.getDiagram: %s is an illegal UUID (%s)",TAG,parent,iae.getMessage());
+		}
+		return dbName;
+	}
+	/**
+	 * Given an identifier string, return the associated diagram. The parent of
+	 * a block should be a diagram.
+	 * 
+	 * @param parent identifier for the block, a string version of a UUID
+	 * @return the diagram
+	 */
+	public String getDefautTagProvider(String parent)  {
+		log.infof("%s.getDefautTagProvider, diagram = %s ",TAG,parent);
+		String provider = null;
+		try {
+			UUID parentuuid = UUID.fromString(parent);
+			ProcessNode node = controller.getProcessNode(parentuuid);
+			if( node instanceof ProcessDiagram ) {
+				ProcessDiagram diag = (ProcessDiagram)node;
+				if( diag!=null) {
+					long projectId = diag.getProjectId();
+					provider = context.getProjectManager().getProps(projectId, ProjectVersion.Published).getDefaultSQLTagsProviderName();
+				}
+			}
+		}
+		catch(IllegalArgumentException iae) {
+			log.warnf("%s.getDefautTagProvider: %s is an illegal UUID (%s)",TAG,parent,iae.getMessage());
+		}
+		return provider;
+	}
+	/**
+	 * Given an identifier string, return the associated diagram. The parent of
+	 * a block should be a diagram.
+	 * 
+	 * @param parent identifier for the block, a string version of a UUID
+	 * @return the diagram
+	 */
+	public ProcessDiagram getDiagram(String parent)  {
+		log.infof("%s.getDiagram, diagram = %s ",TAG,parent);
+		ProcessDiagram diag = null;
+		try {
+			UUID parentuuid = UUID.fromString(parent);
+			ProcessNode node = controller.getProcessNode(parentuuid);
+			if( node instanceof ProcessDiagram ) {
+					diag = (ProcessDiagram)node;
+			}
+		}
+		catch(IllegalArgumentException iae) {
+			log.warnf("%s.getDiagram: %s is an illegal UUID (%s)",TAG,parent,iae.getMessage());
+		}
+		return diag;
+	}
+	/**
+	 * Traverse the parent nodes until we find a family. If there is none in
 	 * our ancestry, return null.
 	 * 
 	 * @param parent identifier for the diagram, a string version of a UUID
@@ -62,7 +168,6 @@ public class PythonRequestHandler   {
 		ProcessFamily fam = null;
 		try {
 			UUID parentuuid = UUID.fromString(parent);
-			BlockExecutionController controller = BlockExecutionController.getInstance();
 			ProcessNode node = controller.getProcessNode(parentuuid);
 			while( node!=null ) {
 				if( node instanceof ProcessFamily ) {
@@ -77,6 +182,7 @@ public class PythonRequestHandler   {
 		}
 		return fam;
 	}
+
 	/**
 	 * Handle the block placing a new value on its output. The input may be PyObjects.
 	 * 
@@ -93,11 +199,12 @@ public class PythonRequestHandler   {
 			UUID uuid = UUID.fromString(id);
 			UUID parentuuid = UUID.fromString(parent);
 			ControllerRequestHandler.getInstance().postValue(parentuuid,uuid,port,value,quality);
-			BlockExecutionController controller = BlockExecutionController.getInstance();
 			controller.sendConnectionNotification(id, port, new BasicQualifiedValue(value));
 		}
 		catch(IllegalArgumentException iae) {
 			log.warnf("%s.postValue: one of %s or %s illegal UUID (%s)",TAG,parent,id,iae.getMessage());
 		}
 	}
+	
+	public static void setContext(GatewayContext ctx) { context=ctx;}
 }

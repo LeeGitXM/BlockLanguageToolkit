@@ -134,7 +134,7 @@ public class ControllerRequestHandler   {
 	 */
 	public BlockProperty[] getBlockProperties(String className,long projectId,long resourceId, UUID blockId) {
 		// If the instance doesn't exist, create one
-		log.infof("%s.getBlockProperties of %s (%s)",TAG,className,blockId.toString());
+		log.debugf("%s.getBlockProperties of %s (%s)",TAG,className,blockId.toString());
 		BlockProperty[] results = null;
 		ProcessDiagram diagram = controller.getDiagram(projectId, resourceId);
 		ProcessBlock block = null;
@@ -170,7 +170,7 @@ public class ControllerRequestHandler   {
 			property = block.getProperty(propertyName);  // Existing block
 			String name = "null";
 			if(diagram!=null) name=diagram.getName();
-			log.infof("%s.getProperty %s.%s %s",TAG,name,block.getName(),property.toString());
+			log.debugf("%s.getProperty %s.%s %s",TAG,name,block.getName(),property.toString());
 		}
 		else {
 			log.warnf("%s.getProperty Block not found for %s.%s",TAG,parentId.toString(),blockId.toString());
@@ -405,7 +405,7 @@ public class ControllerRequestHandler   {
 	private void updateProperty(ProcessBlock block,BlockProperty existingProperty,BlockProperty newProperty) {
 		if( !existingProperty.isEditable() )  return;
 		
-		log.infof("%s.updateProperty old: %s, new:%s",TAG,existingProperty.toString(),newProperty.toString());
+		log.debugf("%s.updateProperty old: %s, new:%s",TAG,existingProperty.toString(),newProperty.toString());
 		if( !existingProperty.getBindingType().equals(newProperty.getBindingType()) ) {
 			// If the binding has changed - fix subscriptions.
 			controller.removeSubscription(block, existingProperty);
@@ -434,7 +434,7 @@ public class ControllerRequestHandler   {
 		else {
 			// The event came explicitly from the designer/client. Send event whether it changed or not.
 			if( existingProperty.getBindingType().equals(BindingType.NONE) && newProperty.getValue()!=null   )   {
-				log.infof("%s.setProperty sending event ...",TAG);
+				log.debugf("%s.setProperty sending event ...",TAG);
 				BlockPropertyChangeEvent event = new BlockPropertyChangeEvent(block.getBlockId().toString(),newProperty.getName(),
 						existingProperty.getValue(),newProperty.getValue());
 				block.propertyChange(event);

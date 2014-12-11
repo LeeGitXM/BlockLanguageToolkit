@@ -58,6 +58,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		log.info(TAG+"Setup - enabled project listeners.");
 		ProxyHandler.getInstance().setContext(context);
 		ControllerRequestHandler.getInstance().setContext(context);
+		PythonRequestHandler.setContext(context);
 		dispatcher = new GatewayRpcDispatcher();
 	}
 

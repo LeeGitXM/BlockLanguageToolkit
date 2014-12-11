@@ -16,9 +16,9 @@ public class UIFactory {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 	}
 	
-	public BlockViewUI getUI(BlockStyle style,ProcessBlockView block) {
+	public AbstractUIView getUI(BlockStyle style,ProcessBlockView block) {
       
-		BlockViewUI ui = null;
+		AbstractUIView ui = null;
 		switch(style) {
 			case ARROW:
 				ui= new ArrowUIView(block);

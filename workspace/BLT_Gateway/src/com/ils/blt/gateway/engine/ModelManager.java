@@ -375,7 +375,7 @@ public class ModelManager implements ProjectListener  {
 		List<ProjectResource> resources = diff.getResources();
 		for( ProjectResource res:resources ) {
 			//if( res.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)) continue;
-			log.infof("%s.projectUpdated: add/update resource %s (%d),type %s (%s)", TAG,res.getName(),
+			log.debugf("%s.projectUpdated: add/update resource %s (%d),type %s (%s)", TAG,res.getName(),
 					res.getResourceId(),res.getResourceType(),(diff.isResourceDirty(res)?"dirty":"clean"));
 			analyzeResource(projectId,res);
 		}

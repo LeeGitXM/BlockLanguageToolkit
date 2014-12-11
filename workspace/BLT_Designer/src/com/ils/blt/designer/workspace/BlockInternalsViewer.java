@@ -57,7 +57,9 @@ public class BlockInternalsViewer extends JDialog {
 		super();
 		this.diagram = dia;
 		this.block = view;
-		this.setTitle(BundleUtil.get().getString(PREFIX+".ViewInternals.Title"));
+		this.setTitle(String.format(BundleUtil.get().getString(PREFIX+".ViewInternals.Title",view.getName())));
+		setAlwaysOnTop(true);
+		setLocation(view.getLocation());
 		setModal(false);
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
         this.log = LogUtil.getLogger(getClass().getPackage().getName());

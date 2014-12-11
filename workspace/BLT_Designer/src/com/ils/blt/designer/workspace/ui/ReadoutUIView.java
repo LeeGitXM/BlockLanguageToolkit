@@ -11,13 +11,11 @@ import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 
 import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
 
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.designer.workspace.ProcessBlockView;
-import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
 
 
 /**
@@ -41,17 +39,27 @@ public class ReadoutUIView extends AbstractUIView implements BlockViewUI {
 		this.fncs = new UtilityFunctions();
 		setOpaque(false);
 		initAnchorPoints();
+		valueProperty = findValueProperty();
+	}
+	private BlockProperty findValueProperty() {
+		BlockProperty vp = null;
 		for( BlockProperty bp:block.getProperties()) {
-			if( bp.getName()!=null ) {
-				if(bp.getName().equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_VALUE)) {
-					valueProperty = bp;
-					//log.infof("ReadoutViewUI(%d): got value property",bp.hashCode());
-					break;
-				}
+			if( bp.getName()!=null && bp.getName().equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_VALUE)) {
+				vp = bp;
+				log.infof("ReadoutViewUI(%d): found value property",bp.hashCode());
 			}
 		}
+		return vp;
 	}
-
+	
+	// The block has changed, re-configure.
+	// Swaps out the target block and re-find the value property.
+	@Override
+	public void reconfigure(ProcessBlockView pbv) { 
+		this.block = pbv;
+		valueProperty = findValueProperty();
+	}
+		
 	@Override
 	protected void paintComponent(Graphics _g) {
 		// Calling the super method effects an "erase".

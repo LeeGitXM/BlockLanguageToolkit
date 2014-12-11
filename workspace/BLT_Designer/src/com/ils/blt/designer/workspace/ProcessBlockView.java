@@ -22,7 +22,7 @@ import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
-import com.ils.blt.designer.workspace.ui.BlockViewUI;
+import com.ils.blt.designer.workspace.ui.AbstractUIView;
 import com.ils.blt.designer.workspace.ui.UIFactory;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -43,6 +43,8 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.Ab
  * Note: We are added as a property change listener by the ProcessDiagram 
  *       whenever the diagram is displayed. On notification, we just repaint
  *       the UI.
+ * Note: initUI is called from the AbstractBlock constructor which is called
+ *       when the diagram is opened.
  */
 public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	private static final String TAG = "ProcessBlockView";
@@ -76,7 +78,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	private UUID subworkspaceId = null;           // Encapsulated diagram if encapsulation block
 	private BlockStyle style = BlockStyle.SQUARE;
 	private boolean transmitEnabled = false;
-	private BlockViewUI ui = null;
+	private AbstractUIView ui = null;
 	private UUID uuid = null;
 	
 	/**
