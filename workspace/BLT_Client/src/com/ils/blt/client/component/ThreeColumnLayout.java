@@ -28,8 +28,14 @@ public class ThreeColumnLayout extends Layout {
 	public static final int LINK_KIND        = 1;
 	public static final int TARGET_KIND      = 2;
 
-    protected int rows;
-    protected int cols;
+	protected  int nrows;
+    protected  int ncols = 3;
+    protected  int nrows1;
+    protected  int nrows2;
+    protected  int nrows3;
+    protected  String columnColumn;
+    protected  String sourceRefColumn;
+    protected  String targetRefColumn;
     protected boolean analyze = false;
     
     /**
@@ -39,24 +45,37 @@ public class ThreeColumnLayout extends Layout {
      * analysis configuration, the group <b>must</b> resolve to a set of
      * graph nodes.
      */
+    /*
     public ThreeColumnLayout(String group) {
         super(group);
         analyze = true;
     }
-    
+    */
     /**
-     * Create a new GridLayout using the specified grid dimensions. If the
-     * input data has more elements than the grid dimensions can hold, the
-     * left over elements will not be visible.
+     * Create a new ThreeColumnLayout using the specified grid dimensions.
      * @param group the data group to layout
-     * @param nrows the number of rows of the grid
-     * @param ncols the number of columns of the grid
+     * @param rows1 the number of rows in the source column
+     * @param rows2 the number of rows in the link column
+     * @param rows3 the number of rows in the target column
+     * @param col name of the item column that contains the column index
+     * @param sourceCol name of the item column that contains the sourceReference
+     * @param targetCol name of the item column that contains the targetReference
      */
-    public ThreeColumnLayout(String group, int nrows, int ncols) {
+    public ThreeColumnLayout(String group, int rows1, int rows2, int rows3, String col, String sourceCol, String targetCol) {
         super(group);
-        rows = nrows;
-        cols = ncols;
+        nrows1 = rows1;
+        nrows2 = rows2;
+        nrows3 = rows3;
+        int maxrows = 2;  // Absolute minimum
+        if( rows1>maxrows) maxrows = rows1;
+        if( rows2>maxrows) maxrows = rows2;
+        if( rows3>maxrows) maxrows = rows3;
+        nrows = maxrows;
+        columnColumn = col;
+        sourceRefColumn = sourceCol;
+        targetRefColumn = targetCol;
         analyze = false;
+        log.infof("%s.constructor group %s is %dx%d nodes (%s)",TAG,m_group,ncols,nrows,(isEnabled()?"ENABLED":"DISABLED"));
     }
     
     /**
@@ -69,7 +88,7 @@ public class ThreeColumnLayout extends Layout {
         
         TupleSet ts = m_vis.getGroup(m_group);
         log.infof("%s.run group %s has %d nodes",TAG,m_group,ts.getTupleCount());
-        int m = rows, n = cols;
+        int m = nrows, n = ncols;
         if ( analyze ) {
             int[] d = analyzeGraphGrid(ts);
             m = d[0]; n = d[1];
@@ -126,7 +145,7 @@ public class ThreeColumnLayout extends Layout {
      * @return the number of grid columns
      */
     public int getNumCols() {
-        return cols;
+        return ncols;
     }
     
     /**
@@ -134,7 +153,7 @@ public class ThreeColumnLayout extends Layout {
      * @param cols the number of grid columns to use
      */
     public void setNumCols(int cols) {
-        this.cols = cols;
+        this.ncols = cols;
     }
     
     /**
@@ -142,7 +161,7 @@ public class ThreeColumnLayout extends Layout {
      * @return the number of grid rows
      */
     public int getNumRows() {
-        return rows;
+        return nrows;
     }
     
     /**
@@ -150,7 +169,7 @@ public class ThreeColumnLayout extends Layout {
      * @param rows the number of grid rows to use
      */
     public void setNumRows(int rows) {
-        this.rows = rows;
+        this.nrows = rows;
     }
     
 } // end of class GridLayout

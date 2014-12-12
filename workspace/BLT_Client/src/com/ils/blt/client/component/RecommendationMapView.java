@@ -112,8 +112,8 @@ public class RecommendationMapView extends Display {
         m_vis.putAction("animatePaint", animatePaint);
 
         // create a grid layout action
-        //columnLayout = new ThreeColumnLayout(map,r1,r2,r3,colField,srcRefField,targRefField);
-        columnLayout = new ThreeColumnLayout(map);
+        columnLayout = new ThreeColumnLayout(map,r1,r2,r3,colField,srcRefField,targRefField);
+        //columnLayout = new ThreeColumnLayout(map);
         columnLayout.setLayoutAnchor(new Point2D.Double(50,50));
         m_vis.putAction("columnLayout", columnLayout);
         
