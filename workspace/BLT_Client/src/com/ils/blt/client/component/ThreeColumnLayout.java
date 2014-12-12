@@ -3,6 +3,9 @@ package com.ils.blt.client.component;
 import java.awt.geom.Rectangle2D;
 import java.util.Iterator;
 
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
+
 import prefuse.action.layout.Layout;
 import prefuse.data.Node;
 import prefuse.data.tuple.TupleSet;
@@ -10,13 +13,20 @@ import prefuse.visual.VisualItem;
 
 
 /**
- * Implements a uniform grid-based layout. This component can either use
- * preset grid dimensions or analyze a grid-shaped graph to determine them
- * automatically.
- * 
- * @author <a href="http://jheer.org">jeffrey heer</a>
+ * Based on GridLayout. This layout is specific to a grid containing:
+ *    1) Source column
+ *    2) Target column
+ *    3) Link column - middle column has edges to source and target. 
+ *  
  */
 public class ThreeColumnLayout extends Layout {
+	private static final String TAG = "ThreeColumnLayout";
+	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
+	
+	// Column types
+	public static final int SOURCE_KIND      = 0;
+	public static final int LINK_KIND        = 1;
+	public static final int TARGET_KIND      = 2;
 
     protected int rows;
     protected int cols;
@@ -58,21 +68,27 @@ public class ThreeColumnLayout extends Layout {
         double w = b.getWidth(), h = b.getHeight();
         
         TupleSet ts = m_vis.getGroup(m_group);
+        log.infof("%s.run group %s has %d nodes",TAG,m_group,ts.getTupleCount());
         int m = rows, n = cols;
         if ( analyze ) {
             int[] d = analyzeGraphGrid(ts);
             m = d[0]; n = d[1];
         }
         
-        Iterator iter = ts.tuples();
+        @SuppressWarnings("rawtypes")
+		Iterator iter = ts.tuples();
         // layout grid contents
         for ( int i=0; iter.hasNext() && i < m*n; ++i ) {
-            VisualItem item = (VisualItem)iter.next();
-            item.setVisible(true);
-            double x = bx + w*((i%n)/(double)(n-1));
-            double y = by + h*((i/n)/(double)(m-1));
-            setX(item,null,x);
-            setY(item,null,y);
+        	Object next = iter.next();
+        	if( next instanceof Node ) {
+        		VisualItem item = (VisualItem)next;
+                item.setVisible(true);
+                double x = bx + w*((i%n)/(double)(n-1));
+                double y = by + h*((i/n)/(double)(m-1));
+                setX(item,null,x);
+                setY(item,null,y);
+        	}
+            
         }
         // set left-overs invisible
         while ( iter.hasNext() ) {
@@ -94,9 +110,12 @@ public class ThreeColumnLayout extends Layout {
         int m, n;
         Iterator iter = ts.tuples(); iter.next();
         for ( n=2; iter.hasNext(); n++ ) {
-            Node nd = (Node)iter.next();
-            if ( nd.getDegree() == 2 )
-                break;
+        	Object next = iter.next();
+        	if( next instanceof Node ) {
+        		Node nd = (Node)next;
+                if ( nd.getDegree() == 2 )
+                    break;
+        	}
         }
         m = ts.getTupleCount() / n;
         return new int[] {m,n};
