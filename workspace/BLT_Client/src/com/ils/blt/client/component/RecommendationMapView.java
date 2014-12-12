@@ -59,24 +59,24 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  */
 public class RecommendationMapView extends Display {
 	private static final long serialVersionUID = 3253162293683958367L;
-	private static final String TAG = "ChartTreeView";
+	private static final String TAG = "RecommendationMapView";
 	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
     
-    private static final String tree = "tree";
-    private static final String treeNodes = "tree.nodes";
-    private static final String treeEdges = "tree.edges";
+    private static final String map = "map";
+    private static final String mapNodes = "map.nodes";
+    private static final String mapEdges = "map.edges";
     
     private LabelRenderer m_nodeRenderer;
     private EdgeRenderer m_edgeRenderer;
     
-    private int m_orientation = Constants.ORIENT_LEFT_RIGHT;
+    private final int m_orientation = Constants.ORIENT_LEFT_RIGHT;
     
     public RecommendationMapView(RecommendationMapDataModel model,String textField) {
         super(new Visualization());
         
-        // NOTE: Returns a VisualTree, node/edge tables are VisualTables
+        // NOTE: Returns a VisualGraph, node/edge tables are VisualTables
         //                             node items are TableNodeItems
-        m_vis.addTree(tree, model.getTree());
+        m_vis.addGraph(map, model.getGraph());
         
 
         // NOTE: No images to render.
@@ -88,16 +88,16 @@ public class RecommendationMapView extends Display {
         m_edgeRenderer = new EdgeRenderer(Constants.EDGE_TYPE_CURVE);
         
         DefaultRendererFactory rf = new DefaultRendererFactory(m_nodeRenderer);
-        rf.add(new InGroupPredicate(treeEdges), m_edgeRenderer);
+        rf.add(new InGroupPredicate(mapEdges), m_edgeRenderer);
         m_vis.setRendererFactory(rf);
                
         // colors
-        ItemAction nodeColor = new NodeColorAction(treeNodes);
-        ItemAction textColor = new ColorAction(treeNodes,
+        ItemAction nodeColor = new NodeColorAction(mapNodes);
+        ItemAction textColor = new ColorAction(mapNodes,
                 VisualItem.TEXTCOLOR, ColorLib.rgb(0,0,0));
         m_vis.putAction("textColor", textColor);
         
-        ItemAction edgeColor = new ColorAction(treeEdges,
+        ItemAction edgeColor = new ColorAction(mapEdges,
                 VisualItem.STROKECOLOR, ColorLib.rgb(200,200,200));
         
         // quick repaint
@@ -113,28 +113,28 @@ public class RecommendationMapView extends Display {
         
         // animate paint change
         ActionList animatePaint = new ActionList(400);
-        animatePaint.add(new ColorAnimator(treeNodes));
+        animatePaint.add(new ColorAnimator(mapNodes));
         animatePaint.add(new RepaintAction());
         m_vis.putAction("animatePaint", animatePaint);
-        
+        /*
         // create the tree layout action
-        NodeLinkTreeLayout treeLayout = new NodeLinkTreeLayout(tree,
+        NodeLinkTreeLayout treeLayout = new NodeLinkTreeLayout(map,
                 m_orientation, 50, 0, 8);
         treeLayout.setLayoutAnchor(new Point2D.Double(25,300));
         m_vis.putAction("treeLayout", treeLayout);
         
         CollapsedSubtreeLayout subLayout = 
-            new CollapsedSubtreeLayout(tree, m_orientation);
+            new CollapsedSubtreeLayout(map, m_orientation);
         m_vis.putAction("subLayout", subLayout);
-        
+        */
         AutoPanAction autoPan = new AutoPanAction();
         
         // create the filtering and layout
         ActionList filter = new ActionList();
-        filter.add(new FisheyeTreeFilter(tree, 2));
-        filter.add(new FontAction(treeNodes, FontLib.getFont("Tahoma", 16)));
-        filter.add(treeLayout);
-        filter.add(subLayout);
+        filter.add(new FisheyeTreeFilter(map, 2));
+        filter.add(new FontAction(mapNodes, FontLib.getFont("Tahoma", 16)));
+        //filter.add(treeLayout);
+        //filter.add(subLayout);
         filter.add(textColor);
         filter.add(nodeColor);
         filter.add(edgeColor);
@@ -145,9 +145,9 @@ public class RecommendationMapView extends Display {
         animate.setPacingFunction(new SlowInSlowOutPacer());
         animate.add(autoPan);
         animate.add(new QualityControlAnimator());
-        animate.add(new VisibilityAnimator(tree));
-        animate.add(new LocationAnimator(treeNodes));
-        animate.add(new ColorAnimator(treeNodes));
+        animate.add(new VisibilityAnimator(map));
+        animate.add(new LocationAnimator(mapNodes));
+        animate.add(new ColorAnimator(mapNodes));
         animate.add(new RepaintAction());
         m_vis.putAction("animate", animate);
         m_vis.alwaysRunAfter("filter", "animate");
@@ -157,14 +157,14 @@ public class RecommendationMapView extends Display {
         orient.setPacingFunction(new SlowInSlowOutPacer());
         orient.add(autoPan);
         orient.add(new QualityControlAnimator());
-        orient.add(new LocationAnimator(treeNodes));
+        orient.add(new LocationAnimator(mapNodes));
         orient.add(new RepaintAction());
         m_vis.putAction("orient", orient);
         
         // ------------------------------------------------
         
         // initialize the display
-        setSize(200,600);
+        //setSize(200,200);
         setItemSorter(new TreeDepthItemSorter());
         addControlListener(new ZoomToFitControl());
         addControlListener(new ZoomControl());
@@ -172,71 +172,23 @@ public class RecommendationMapView extends Display {
         addControlListener(new PanControl());
         addControlListener(new FocusControl(1, "filter"));
         
-        registerKeyboardAction(
-            new OrientAction(Constants.ORIENT_LEFT_RIGHT),
-            "left-to-right", KeyStroke.getKeyStroke("ctrl 1"), WHEN_FOCUSED);
-        registerKeyboardAction(
-            new OrientAction(Constants.ORIENT_TOP_BOTTOM),
-            "top-to-bottom", KeyStroke.getKeyStroke("ctrl 2"), WHEN_FOCUSED);
-        registerKeyboardAction(
-            new OrientAction(Constants.ORIENT_RIGHT_LEFT),
-            "right-to-left", KeyStroke.getKeyStroke("ctrl 3"), WHEN_FOCUSED);
-        registerKeyboardAction(
-            new OrientAction(Constants.ORIENT_BOTTOM_TOP),
-            "bottom-to-top", KeyStroke.getKeyStroke("ctrl 4"), WHEN_FOCUSED);
         
         // ------------------------------------------------
         
         // filter graph and perform layout
-        setOrientation(m_orientation);
+        orient();
         m_vis.run("filter");
-        
-        // Leave out any search capabilities
+
     }
     
     // ------------------------------------------------------------------------
-    
-    public void setOrientation(int orientation) {
-        NodeLinkTreeLayout rtl 
-            = (NodeLinkTreeLayout)m_vis.getAction("treeLayout");
-        CollapsedSubtreeLayout stl
-            = (CollapsedSubtreeLayout)m_vis.getAction("subLayout");
-        switch ( orientation ) {
-        case Constants.ORIENT_LEFT_RIGHT:
+   // Set orientation left-to-right.
+    public void orient() {
             m_nodeRenderer.setHorizontalAlignment(Constants.LEFT);
             m_edgeRenderer.setHorizontalAlignment1(Constants.RIGHT);
             m_edgeRenderer.setHorizontalAlignment2(Constants.LEFT);
             m_edgeRenderer.setVerticalAlignment1(Constants.CENTER);
             m_edgeRenderer.setVerticalAlignment2(Constants.CENTER);
-            break;
-        case Constants.ORIENT_RIGHT_LEFT:
-            m_nodeRenderer.setHorizontalAlignment(Constants.RIGHT);
-            m_edgeRenderer.setHorizontalAlignment1(Constants.LEFT);
-            m_edgeRenderer.setHorizontalAlignment2(Constants.RIGHT);
-            m_edgeRenderer.setVerticalAlignment1(Constants.CENTER);
-            m_edgeRenderer.setVerticalAlignment2(Constants.CENTER);
-            break;
-        case Constants.ORIENT_TOP_BOTTOM:
-            m_nodeRenderer.setHorizontalAlignment(Constants.CENTER);
-            m_edgeRenderer.setHorizontalAlignment1(Constants.CENTER);
-            m_edgeRenderer.setHorizontalAlignment2(Constants.CENTER);
-            m_edgeRenderer.setVerticalAlignment1(Constants.BOTTOM);
-            m_edgeRenderer.setVerticalAlignment2(Constants.TOP);
-            break;
-        case Constants.ORIENT_BOTTOM_TOP:
-            m_nodeRenderer.setHorizontalAlignment(Constants.CENTER);
-            m_edgeRenderer.setHorizontalAlignment1(Constants.CENTER);
-            m_edgeRenderer.setHorizontalAlignment2(Constants.CENTER);
-            m_edgeRenderer.setVerticalAlignment1(Constants.TOP);
-            m_edgeRenderer.setVerticalAlignment2(Constants.BOTTOM);
-            break;
-        default:
-            throw new IllegalArgumentException(
-                "Unrecognized orientation value: "+orientation);
-        }
-        m_orientation = orientation;
-        rtl.setOrientation(orientation);
-        stl.setOrientation(orientation);
     }
     
     public int getOrientation() {
@@ -247,19 +199,6 @@ public class RecommendationMapView extends Display {
    
     // ------------------------------------------------------------------------
    
-    public class OrientAction extends AbstractAction {
-        private int orientation;
-        
-        public OrientAction(int orientation) {
-            this.orientation = orientation;
-        }
-        public void actionPerformed(ActionEvent evt) {
-            setOrientation(orientation);
-            getVisualization().cancel("orient");
-            getVisualization().run("treeLayout");
-            getVisualization().run("orient");
-        }
-    }
     
     public class AutoPanAction extends Action {
         private Point2D m_start = new Point2D.Double();
@@ -271,23 +210,10 @@ public class RecommendationMapView extends Display {
             TupleSet ts = m_vis.getFocusGroup(Visualization.FOCUS_ITEMS);
             if ( ts.getTupleCount() == 0 )
                 return;
-            
+            // Left-to-right orientation
             if ( frac == 0.0 ) {
                 int xbias=0, ybias=0;
-                switch ( m_orientation ) {
-                case Constants.ORIENT_LEFT_RIGHT:
-                    xbias = m_bias;
-                    break;
-                case Constants.ORIENT_RIGHT_LEFT:
-                    xbias = -m_bias;
-                    break;
-                case Constants.ORIENT_TOP_BOTTOM:
-                    ybias = m_bias;
-                    break;
-                case Constants.ORIENT_BOTTOM_TOP:
-                    ybias = -m_bias;
-                    break;
-                }
+                xbias = m_bias;
 
                 VisualItem vi = (VisualItem)ts.tuples().next();
                 m_cur.setLocation(getWidth()/2, getHeight()/2);

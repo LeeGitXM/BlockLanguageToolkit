@@ -7,11 +7,6 @@ package com.ils.blt.client.component;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Graphics2D;
-import java.awt.Shape;
-import java.awt.font.FontRenderContext;
-import java.awt.font.GlyphVector;
-import java.awt.geom.Rectangle2D;
 
 import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
@@ -23,7 +18,7 @@ import com.inductiveautomation.vision.api.client.components.model.AbstractVision
  * This is a base class for our custom Vision components that use Prefuse to view stuff.
  */
 public abstract class PrefuseViewerComponent extends AbstractVisionComponent {
-	private static final long serialVersionUID = 6091339174784663157L;
+	private static final long serialVersionUID = 6091339174784553157L;
 	
 	// Specify default block dimensions
 	protected static final int DEFAULT_FRAME_HEIGHT  = 240;   
@@ -56,5 +51,6 @@ public abstract class PrefuseViewerComponent extends AbstractVisionComponent {
 		setBackground(DEFAULT_BACKGROUND_COLOR);
 		setForeground(DEFAULT_FRAME_COLOR);
 		setFont(DEFAULT_HEADING_FONT);
+		setBorder(border);
 	}
 }
