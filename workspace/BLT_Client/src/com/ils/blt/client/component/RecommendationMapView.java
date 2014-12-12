@@ -8,11 +8,7 @@
  */
 package com.ils.blt.client.component;
 
-import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
-
-import javax.swing.AbstractAction;
-import javax.swing.KeyStroke;
 
 import prefuse.Constants;
 import prefuse.Display;
@@ -27,9 +23,7 @@ import prefuse.action.animate.QualityControlAnimator;
 import prefuse.action.animate.VisibilityAnimator;
 import prefuse.action.assignment.ColorAction;
 import prefuse.action.assignment.FontAction;
-import prefuse.action.filter.FisheyeTreeFilter;
-import prefuse.action.layout.CollapsedSubtreeLayout;
-import prefuse.action.layout.graph.NodeLinkTreeLayout;
+import com.ils.blt.client.component.ThreeColumnLayout;
 import prefuse.activity.SlowInSlowOutPacer;
 import prefuse.controls.FocusControl;
 import prefuse.controls.PanControl;
@@ -68,10 +62,10 @@ public class RecommendationMapView extends Display {
     
     private LabelRenderer m_nodeRenderer;
     private EdgeRenderer m_edgeRenderer;
+    //private final ThreeColumnLayout columnLayout;
+    private final ThreeColumnLayout columnLayout;
     
-    private final int m_orientation = Constants.ORIENT_LEFT_RIGHT;
-    
-    public RecommendationMapView(RecommendationMapDataModel model,String textField) {
+    public RecommendationMapView(RecommendationMapDataModel model,String textField,int r1,int r2,int r3,String colField,String srcRefField,String targRefField) {
         super(new Visualization());
         
         // NOTE: Returns a VisualGraph, node/edge tables are VisualTables
@@ -85,7 +79,7 @@ public class RecommendationMapView extends Display {
         m_nodeRenderer.setHorizontalAlignment(Constants.LEFT);
         m_nodeRenderer.setRoundedCorner(8,8);
 
-        m_edgeRenderer = new EdgeRenderer(Constants.EDGE_TYPE_CURVE);
+        m_edgeRenderer = new EdgeRenderer(Constants.EDGE_TYPE_LINE);
         
         DefaultRendererFactory rf = new DefaultRendererFactory(m_nodeRenderer);
         rf.add(new InGroupPredicate(mapEdges), m_edgeRenderer);
@@ -116,25 +110,19 @@ public class RecommendationMapView extends Display {
         animatePaint.add(new ColorAnimator(mapNodes));
         animatePaint.add(new RepaintAction());
         m_vis.putAction("animatePaint", animatePaint);
-        /*
-        // create the tree layout action
-        NodeLinkTreeLayout treeLayout = new NodeLinkTreeLayout(map,
-                m_orientation, 50, 0, 8);
-        treeLayout.setLayoutAnchor(new Point2D.Double(25,300));
-        m_vis.putAction("treeLayout", treeLayout);
+
+        // create a grid layout action
+        //columnLayout = new ThreeColumnLayout(map,r1,r2,r3,colField,srcRefField,targRefField);
+        columnLayout = new ThreeColumnLayout(map);
+        columnLayout.setLayoutAnchor(new Point2D.Double(50,50));
+        m_vis.putAction("columnLayout", columnLayout);
         
-        CollapsedSubtreeLayout subLayout = 
-            new CollapsedSubtreeLayout(map, m_orientation);
-        m_vis.putAction("subLayout", subLayout);
-        */
         AutoPanAction autoPan = new AutoPanAction();
         
         // create the filtering and layout
         ActionList filter = new ActionList();
-        filter.add(new FisheyeTreeFilter(map, 2));
         filter.add(new FontAction(mapNodes, FontLib.getFont("Tahoma", 16)));
-        //filter.add(treeLayout);
-        //filter.add(subLayout);
+        filter.add(columnLayout);
         filter.add(textColor);
         filter.add(nodeColor);
         filter.add(edgeColor);
@@ -151,20 +139,12 @@ public class RecommendationMapView extends Display {
         animate.add(new RepaintAction());
         m_vis.putAction("animate", animate);
         m_vis.alwaysRunAfter("filter", "animate");
-        
-        // create animator for orientation changes
-        ActionList orient = new ActionList(2000);
-        orient.setPacingFunction(new SlowInSlowOutPacer());
-        orient.add(autoPan);
-        orient.add(new QualityControlAnimator());
-        orient.add(new LocationAnimator(mapNodes));
-        orient.add(new RepaintAction());
-        m_vis.putAction("orient", orient);
+
         
         // ------------------------------------------------
-        
+        setSize(200,200);
         // initialize the display
-        //setSize(200,200);
+        //
         setItemSorter(new TreeDepthItemSorter());
         addControlListener(new ZoomToFitControl());
         addControlListener(new ZoomControl());
@@ -181,6 +161,12 @@ public class RecommendationMapView extends Display {
 
     }
     
+    @Override
+    public void setSize(int w,int h) {
+    	super.setSize(w,h);
+    	if( columnLayout!=null ) columnLayout.setLayoutAnchor(new Point2D.Double(w/2,h/2));
+    }
+    
     // ------------------------------------------------------------------------
    // Set orientation left-to-right.
     public void orient() {
@@ -190,10 +176,7 @@ public class RecommendationMapView extends Display {
             m_edgeRenderer.setVerticalAlignment1(Constants.CENTER);
             m_edgeRenderer.setVerticalAlignment2(Constants.CENTER);
     }
-    
-    public int getOrientation() {
-        return m_orientation;
-    }
+
     
     // ------------------------------------------------------------------------
    
@@ -246,7 +229,5 @@ public class RecommendationMapView extends Display {
         }
         
     } // end of inner class TreeMapColorAction
- 
-    
 } // end of class TreeMap
 

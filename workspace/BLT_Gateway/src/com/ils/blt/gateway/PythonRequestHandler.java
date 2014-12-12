@@ -59,7 +59,7 @@ public class PythonRequestHandler   {
 		return app;
 	}
 	/**
-	 * Find a block given the iD of the parent diagram and the iD of the block itself.
+	 * Find a block given the Id of the parent diagram and the Id of the block itself.
 	 * 
 	 * @param parent identifier for the diagram, a string version of a UUID
 	 * @param blockId identifier for the block, a string version of a UUID
@@ -89,8 +89,8 @@ public class PythonRequestHandler   {
 	 * @param parent identifier for the block, a string version of a UUID
 	 * @return the diagram
 	 */
-	public String getDefautDatabase(String parent)  {
-		log.infof("%s.getDiagram, diagram = %s ",TAG,parent);
+	public String getDefaultDatabase(String parent)  {
+		log.infof("%s.getDefaultDatabase, diagram = %s ",TAG,parent);
 		String dbName = null;
 		try {
 			UUID parentuuid = UUID.fromString(parent);
@@ -104,7 +104,7 @@ public class PythonRequestHandler   {
 			}
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.getDiagram: %s is an illegal UUID (%s)",TAG,parent,iae.getMessage());
+			log.warnf("%s.getDefaultDatabase: %s is an illegal UUID (%s)",TAG,parent,iae.getMessage());
 		}
 		return dbName;
 	}
@@ -115,8 +115,8 @@ public class PythonRequestHandler   {
 	 * @param parent identifier for the block, a string version of a UUID
 	 * @return the diagram
 	 */
-	public String getDefautTagProvider(String parent)  {
-		log.infof("%s.getDefautTagProvider, diagram = %s ",TAG,parent);
+	public String getDefaultTagProvider(String parent)  {
+		log.infof("%s.getDefaultTagProvider, diagram = %s ",TAG,parent);
 		String provider = null;
 		try {
 			UUID parentuuid = UUID.fromString(parent);
@@ -130,7 +130,7 @@ public class PythonRequestHandler   {
 			}
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.getDefautTagProvider: %s is an illegal UUID (%s)",TAG,parent,iae.getMessage());
+			log.warnf("%s.getDefaultTagProvider: %s is an illegal UUID (%s)",TAG,parent,iae.getMessage());
 		}
 		return provider;
 	}

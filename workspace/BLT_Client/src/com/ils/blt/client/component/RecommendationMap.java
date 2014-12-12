@@ -50,7 +50,10 @@ public class RecommendationMap extends PrefuseViewerComponent {
 	private RecommendationMapView createMapView() {
 		log.infof("%s.createMapView: New view ....",TAG);
 		RecommendationMapDataModel model = new RecommendationMapDataModel(context,this);
-		return new RecommendationMapView(model,RecommendationMapDataModel.NAME);
+		return new RecommendationMapView(model,RecommendationConstants.NAME,model.getSourceRowCount(),
+										 model.getRecommendationCount(),model.getTargetRowCount(),
+										 RecommendationConstants.KIND,RecommendationConstants.SOURCEROW,
+										 RecommendationConstants.TARGETROW);
 	}
 	
 	// We need getters/setters for all the bound properties
