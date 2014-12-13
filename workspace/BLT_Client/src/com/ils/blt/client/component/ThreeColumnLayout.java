@@ -75,18 +75,65 @@ public class ThreeColumnLayout extends Layout {
         TupleSet ts = m_vis.getGroup(m_group);
         log.infof("%s.run group %s has %d nodes",TAG,m_group,ts.getTupleCount());
         int m = nrows, n = ncols;
-
+        
+        int sources = (nrows - nrows1)/2;
+        int targets = (nrows - nrows3)/2;
+        boolean linkSlots[] = new boolean[nrows];
+        int row=0;
+        while(row<nrows) {
+        	linkSlots[row] = false;
+        	row++;
+        }
         
         @SuppressWarnings("rawtypes")
 		Iterator iter = ts.tuples();
         // layout grid contents
-        for ( int i=0; iter.hasNext() && i < m*n; ++i ) {
+        while ( iter.hasNext() ) {
         	Object next = iter.next();
         	if( next instanceof Node ) {
+        		double x = 0.0;
+            	double y = 0.0;
         		VisualItem item = (VisualItem)next;
+        		int coltype = item.getInt(columnColumn);
+        		log.infof("%s.run column type = %d",TAG,coltype);
+        		if( coltype==SOURCE_KIND) {
+                	x = bx + w*((coltype)/2.0);
+                	y = by + h*((sources)/(double)(nrows-1));
+                	sources++;
+                }
+                else if( coltype==TARGET_KIND) {
+                	x = bx + w*((coltype)/2.0);
+                	y = by + h*((targets)/(double)(nrows-1));
+                	targets++;
+                }
+                else {
+                	// link - try to place midway between source and target
+                	x = bx + w*((coltype)/2.0);
+                	int src = item.getInt(sourceRefColumn);
+                	int tar = item.getInt(targetRefColumn);
+                	int preference = (src+tar)/2;
+                	int span = 0;
+                	row = preference;
+                	// Try above and below the preferred, until we get an opening
+                	while(span<nrows) {
+                		if( linkSlots[preference+span]==false ) {
+                			if( preference+span < nrows) {
+                				row = preference+span;
+                				break;
+                			}
+                		}
+                		else if( linkSlots[preference-span]==false ) {
+                			if( preference-span>=0) {
+                				row = preference-span;
+                				break;
+                			}
+                		}
+                		span++;
+                	}
+                	y = by + h*((row)/(double)(nrows-1));
+                }
                 item.setVisible(true);
-                double x = bx + w*((i%n)/(double)(n-1));
-                double y = by + h*((i/n)/(double)(m-1));
+                
                 setX(item,null,x);
                 setY(item,null,y);
         	}
@@ -107,15 +154,7 @@ public class ThreeColumnLayout extends Layout {
     public int getNumCols() {
         return ncols;
     }
-    
-    /**
-     * Set the number of grid columns.
-     * @param cols the number of grid columns to use
-     */
-    public void setNumCols(int cols) {
-        this.ncols = cols;
-    }
-    
+   
     /**
      * Get the number of grid rows.
      * @return the number of grid rows
@@ -124,12 +163,5 @@ public class ThreeColumnLayout extends Layout {
         return nrows;
     }
     
-    /**
-     * Set the number of grid rows.
-     * @param rows the number of grid rows to use
-     */
-    public void setNumRows(int rows) {
-        this.nrows = rows;
-    }
     
 } // end of class GridLayout
