@@ -36,21 +36,8 @@ public class ThreeColumnLayout extends Layout {
     protected  String columnColumn;
     protected  String sourceRefColumn;
     protected  String targetRefColumn;
-    protected boolean analyze = false;
     
-    /**
-     * Create a new GridLayout without preset dimensions. The layout will
-     * attempt to analyze an input graph to determine grid parameters.
-     * @param group the data group to layout. In this automatic grid
-     * analysis configuration, the group <b>must</b> resolve to a set of
-     * graph nodes.
-     */
-    /*
-    public ThreeColumnLayout(String group) {
-        super(group);
-        analyze = true;
-    }
-    */
+
     /**
      * Create a new ThreeColumnLayout using the specified grid dimensions.
      * @param group the data group to layout
@@ -74,7 +61,6 @@ public class ThreeColumnLayout extends Layout {
         columnColumn = col;
         sourceRefColumn = sourceCol;
         targetRefColumn = targetCol;
-        analyze = false;
         log.infof("%s.constructor group %s is %dx%d nodes (%s)",TAG,m_group,ncols,nrows,(isEnabled()?"ENABLED":"DISABLED"));
     }
     
@@ -89,10 +75,7 @@ public class ThreeColumnLayout extends Layout {
         TupleSet ts = m_vis.getGroup(m_group);
         log.infof("%s.run group %s has %d nodes",TAG,m_group,ts.getTupleCount());
         int m = nrows, n = ncols;
-        if ( analyze ) {
-            int[] d = analyzeGraphGrid(ts);
-            m = d[0]; n = d[1];
-        }
+
         
         @SuppressWarnings("rawtypes")
 		Iterator iter = ts.tuples();
@@ -116,29 +99,6 @@ public class ThreeColumnLayout extends Layout {
         }
     }
     
-    /**
-     * Analyzes a set of nodes to try and determine grid dimensions. Currently
-     * looks for the edge count on a node to drop to 2 to determine the end of
-     * a row.
-     * @param ts TupleSet ts a set of nodes to analyze. Contained tuples
-     * <b>must</b> implement be Node instances.
-     * @return a two-element int array with the row and column lengths
-     */
-    public static int[] analyzeGraphGrid(TupleSet ts) {
-        // TODO: more robust grid analysis?
-        int m, n;
-        Iterator iter = ts.tuples(); iter.next();
-        for ( n=2; iter.hasNext(); n++ ) {
-        	Object next = iter.next();
-        	if( next instanceof Node ) {
-        		Node nd = (Node)next;
-                if ( nd.getDegree() == 2 )
-                    break;
-        	}
-        }
-        m = ts.getTupleCount() / n;
-        return new int[] {m,n};
-    }
     
     /**
      * Get the number of grid columns.
