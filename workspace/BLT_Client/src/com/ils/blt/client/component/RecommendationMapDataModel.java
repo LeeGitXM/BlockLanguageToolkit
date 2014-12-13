@@ -26,8 +26,10 @@ public class RecommendationMapDataModel {
 	private final RecommendationMap recmap;
 	private final Table nodes;
 	private final Table edges;
-	private final Map<Integer,Integer> diagnosisRowByKey;        
-	private final Map<Integer,Integer> outputRowByKey;
+	private final Map<Integer,Integer> diagnosisGridRowByKey;   
+	private final Map<Integer,Integer> diagnosisTableRowByKey;        
+	private final Map<Integer,Integer> outputGridRowByKey;
+	private final Map<Integer,Integer> outputTableRowByKey;
 	private final Map<String,Integer> recommendationRowByKey; // Key is concatenation of diagnosis:output
 	private int sourceRowCount = 0;
 	private int targetRowCount = 0;
@@ -50,8 +52,10 @@ public class RecommendationMapDataModel {
 		// The node direction is from parent to child.
 		edges.addColumn(Graph.DEFAULT_SOURCE_KEY, int.class);
 		edges.addColumn(Graph.DEFAULT_TARGET_KEY, int.class);
-		diagnosisRowByKey = new HashMap<>();
-		outputRowByKey = new HashMap<>();
+		diagnosisGridRowByKey = new HashMap<>();
+		diagnosisTableRowByKey = new HashMap<>();
+		outputGridRowByKey = new HashMap<>();
+		outputTableRowByKey = new HashMap<>();
 		recommendationRowByKey = new HashMap<>();
 		initialize();
 	}
@@ -78,8 +82,9 @@ public class RecommendationMapDataModel {
 		while( row<diagnoses.getRowCount()) {
 			try {
 				int key = Integer.parseInt(diagnoses.getValueAt(row, RecommendationConstants.ID_COLUMN).toString());
-				int index = addNodeTableRow(ThreeColumnLayoutNonWorking.SOURCE_KIND,diagnoses.getValueAt(row, RecommendationConstants.NAME_COLUMN).toString(),key);
-				diagnosisRowByKey.put(new Integer(key), new Integer(index));
+				int index = addNodeTableRow(ThreeColumnLayout.SOURCE_KIND,diagnoses.getValueAt(row, RecommendationConstants.NAME_COLUMN).toString(),key);
+				diagnosisGridRowByKey.put(new Integer(key), new Integer(row));
+				diagnosisTableRowByKey.put(new Integer(key), new Integer(index));
 				//log.infof("%s.update: added %d for %s to diagnosis map",TAG,index,key);
 			}
 			catch(NumberFormatException nfe) {
@@ -95,8 +100,9 @@ public class RecommendationMapDataModel {
 		while( row<outputs.getRowCount()) {
 			try {
 				int key = Integer.parseInt(outputs.getValueAt(row, RecommendationConstants.ID_COLUMN).toString());
-				int index = addNodeTableRow(ThreeColumnLayoutNonWorking.TARGET_KIND,outputs.getValueAt(row, RecommendationConstants.NAME_COLUMN).toString(),key);
-				outputRowByKey.put(new Integer(key), new Integer(index));
+				int index = addNodeTableRow(ThreeColumnLayout.TARGET_KIND,outputs.getValueAt(row, RecommendationConstants.NAME_COLUMN).toString(),key);
+				outputGridRowByKey.put(new Integer(key), new Integer(row));
+				outputTableRowByKey.put(new Integer(key), new Integer(index));
 				//log.infof("%s.update: added %d for %s to output map",TAG,index,key);
 			}
 			catch(NumberFormatException nfe) {
@@ -111,9 +117,9 @@ public class RecommendationMapDataModel {
 		row = 0;
 		while( row<recommendations.getRowCount()) {
 			int key1 = Integer.parseInt(recommendations.getValueAt(row, RecommendationConstants.DIAGNOSIS_ID_COLUMN).toString());
-			Integer source = diagnosisRowByKey.get(new Integer(key1));
+			Integer source = diagnosisGridRowByKey.get(new Integer(key1));
 			int key2 = Integer.parseInt(recommendations.getValueAt(row, RecommendationConstants.OUTPUT_ID_COLUMN).toString());
-			Integer target = outputRowByKey.get(new Integer(key2));
+			Integer target = outputGridRowByKey.get(new Integer(key2));
 			if( source!=null && target!=null ) {
 				String key = String.format("%d:%d",key1,key2);
 				try {
@@ -143,8 +149,8 @@ public class RecommendationMapDataModel {
 			int key1 = Integer.parseInt(recommendations.getValueAt(row, RecommendationConstants.DIAGNOSIS_ID_COLUMN).toString());
 			int key2 = Integer.parseInt(recommendations.getValueAt(row, RecommendationConstants.OUTPUT_ID_COLUMN).toString());
 			String key = String.format("%d:%d",key1,key2);
-			Integer diagRow = diagnosisRowByKey.get(new Integer(key1));
-			Integer outRow  = outputRowByKey.get(new Integer(key2));
+			Integer diagRow = diagnosisTableRowByKey.get(new Integer(key1));
+			Integer outRow  = outputTableRowByKey.get(new Integer(key2));
 			Integer recRow = recommendationRowByKey.get(key);
 			if( recRow!=null) {
 				if( diagRow!=null ) addEdgeTableRow(diagRow.intValue(),recRow.intValue());
@@ -199,7 +205,7 @@ public class RecommendationMapDataModel {
 		int row = nodes.getRowCount();
 		log.infof("%s.addRecNodeTableRow: %d = %s (%d->%d)", TAG,row,name,source,target);
 		nodes.addRow();
-		nodes.setInt(row,RecommendationConstants.KIND,ThreeColumnLayoutNonWorking.LINK_KIND); 
+		nodes.setInt(row,RecommendationConstants.KIND,ThreeColumnLayout.LINK_KIND); 
 		nodes.setString(row,RecommendationConstants.NAME,name);
 		nodes.setInt(row,RecommendationConstants.ROW,row);
 		nodes.setInt(row,RecommendationConstants.SOURCEROW,source);

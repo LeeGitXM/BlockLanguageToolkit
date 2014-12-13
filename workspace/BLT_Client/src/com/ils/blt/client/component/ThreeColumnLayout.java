@@ -74,7 +74,6 @@ public class ThreeColumnLayout extends Layout {
         
         TupleSet ts = m_vis.getGroup(m_group);
         log.infof("%s.run group %s has %d nodes",TAG,m_group,ts.getTupleCount());
-        int m = nrows, n = ncols;
         
         int sources = (nrows - nrows1)/2;
         int targets = (nrows - nrows3)/2;
@@ -116,20 +115,22 @@ public class ThreeColumnLayout extends Layout {
                 	row = preference;
                 	// Try above and below the preferred, until we get an opening
                 	while(span<nrows) {
-                		if( linkSlots[preference+span]==false ) {
-                			if( preference+span < nrows) {
+                		if( preference+span < nrows) {
+                			if( linkSlots[preference+span]==false ) {
                 				row = preference+span;
                 				break;
                 			}
                 		}
-                		else if( linkSlots[preference-span]==false ) {
-                			if( preference-span>=0) {
+                		else if( preference-span>=0) {
+                			if( linkSlots[preference-span]==false ) {
                 				row = preference-span;
                 				break;
                 			}
                 		}
                 		span++;
                 	}
+                	linkSlots[row] = true;
+                	log.infof("%s.run recommendation = %d:%d->%d",TAG,src,tar,row);
                 	y = by + h*((row)/(double)(nrows-1));
                 }
                 item.setVisible(true);
@@ -137,13 +138,8 @@ public class ThreeColumnLayout extends Layout {
                 setX(item,null,x);
                 setY(item,null,y);
         	}
-            
         }
-        // set left-overs invisible
-        while ( iter.hasNext() ) {
-            VisualItem item = (VisualItem)iter.next();
-            item.setVisible(false);
-        }
+        log.infof("%s.run group %s complete ...",TAG,m_group);
     }
     
     

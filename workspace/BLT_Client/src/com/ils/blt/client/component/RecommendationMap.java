@@ -35,7 +35,7 @@ public class RecommendationMap extends PrefuseViewerComponent {
 		updateChartView();
 	}
 
-	private void updateChartView() {
+	private synchronized void updateChartView() {
 		removeAll();
 		invalidate();
 		log.infof("%s.update: Creating RecommendationMapView ...",TAG);
@@ -45,6 +45,7 @@ public class RecommendationMap extends PrefuseViewerComponent {
 		validate();
 		log.infof("%s.update: Created RecommendationMapView ...",TAG);
 		repaint();
+		log.infof("%s.update: repaint ...",TAG);
 	}
 	
 	private RecommendationMapView createMapView() {
