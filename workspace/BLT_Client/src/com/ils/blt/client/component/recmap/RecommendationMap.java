@@ -1,10 +1,11 @@
 /**
  *   (c) 2014  ILS Automation. All rights reserved.
  */
-package com.ils.blt.client.component;
+package com.ils.blt.client.component.recmap;
 
 import java.awt.BorderLayout;
 
+import com.ils.blt.client.component.PrefuseViewerComponent;
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.Dataset;
@@ -28,7 +29,6 @@ public class RecommendationMap extends PrefuseViewerComponent {
 	private Dataset diagnoses = null;
 
 	public RecommendationMap() {
-		
 		setName(BundleUtil.get().getString(PREFIX+".RecommendationMap.Name"));
 		this.setOpaque(true);
 		this.setBorder(border);
@@ -38,23 +38,22 @@ public class RecommendationMap extends PrefuseViewerComponent {
 	private synchronized void updateChartView() {
 		removeAll();
 		invalidate();
-		log.infof("%s.update: Creating RecommendationMapView ...",TAG);
-		RecommendationMapView view = createMapView();
+		log.infof("%s.update: Creating RecommendationMapView ..%d x %d.",TAG,getWidth(),getHeight());
+		RecMapView view = createMapView();
 		view.setSize(getWidth(), getHeight());
 		add(view,BorderLayout.CENTER);
 		validate();
-		log.infof("%s.update: Created RecommendationMapView ...",TAG);
 		repaint();
-		log.infof("%s.update: repaint ...",TAG);
+		log.infof("%s.update: Created RecommendationMapView ...",TAG);
 	}
 	
-	private RecommendationMapView createMapView() {
+	private RecMapView createMapView() {
 		log.infof("%s.createMapView: New view ....",TAG);
-		RecommendationMapDataModel model = new RecommendationMapDataModel(context,this);
-		return new RecommendationMapView(model,RecommendationConstants.NAME,model.getSourceRowCount(),
-										 model.getRecommendationCount(),model.getTargetRowCount(),
-										 RecommendationConstants.KIND,RecommendationConstants.SOURCEROW,
-										 RecommendationConstants.TARGETROW);
+		RecMapDataModel model = new RecMapDataModel(context,this);
+		return new RecMapView(model,this.getSize(),
+							  model.getSourceRowCount(),
+							  model.getRecommendationCount(),model.getTargetRowCount(),
+							  RecMapConstants.KIND,RecMapConstants.SOURCEROW,RecMapConstants.TARGETROW);
 	}
 	
 	// We need getters/setters for all the bound properties

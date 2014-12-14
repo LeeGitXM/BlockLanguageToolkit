@@ -1,4 +1,4 @@
-package com.ils.blt.client.component;
+package com.ils.blt.client.component.recmap;
 
 import java.awt.geom.Rectangle2D;
 import java.util.Iterator;
@@ -22,11 +22,6 @@ import prefuse.visual.VisualItem;
 public class ThreeColumnLayout extends Layout {
 	private static final String TAG = "ThreeColumnLayout";
 	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
-	
-	// Column types
-	public static final int SOURCE_KIND      = 0;
-	public static final int LINK_KIND        = 1;
-	public static final int TARGET_KIND      = 2;
 
 	protected  int nrows;
     protected  int ncols = 3;
@@ -94,13 +89,13 @@ public class ThreeColumnLayout extends Layout {
             	double y = 0.0;
         		VisualItem item = (VisualItem)next;
         		int coltype = item.getInt(columnColumn);
-        		log.infof("%s.run column type = %d",TAG,coltype);
-        		if( coltype==SOURCE_KIND) {
+        		//log.infof("%s.run column type = %d",TAG,coltype);
+        		if( coltype==RecMapConstants.SOURCE_KIND) {
                 	x = bx + w*((coltype)/2.0);
                 	y = by + h*((sources)/(double)(nrows-1));
                 	sources++;
                 }
-                else if( coltype==TARGET_KIND) {
+                else if( coltype==RecMapConstants.TARGET_KIND) {
                 	x = bx + w*((coltype)/2.0);
                 	y = by + h*((targets)/(double)(nrows-1));
                 	targets++;

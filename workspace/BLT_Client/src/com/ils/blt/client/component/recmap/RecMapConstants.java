@@ -2,14 +2,16 @@
  *   (c) 2014 ILS Automation. All rights reserved.
  *  
  */
-package com.ils.blt.client.component;
+package com.ils.blt.client.component.recmap;
 
 
 
 /**
  *  These are constants used for the RecommendationMap
  */
-public interface RecommendationConstants   {   
+public interface RecMapConstants   {   
+	// Default display size
+	public static final int ZOOM_DURATION = 2000;   // ~ msecs
 	// These are the property names for the bean infos";
 	public static final String DIAGNOSES_PROPERTY          = "diagnoses";
 	public static final String OUTPUTS_PROPERTY            = "outputs";
@@ -30,4 +32,9 @@ public interface RecommendationConstants   {
 	public static final String SOURCEROW  = "SourceRef";
 	public static final String TARGETROW  = "TargetRef";
 	public static final String VALUE    = "Value";      // For recommendations, the factor
+	
+	// "kinds" of nodes
+	public static final int SOURCE_KIND      = 0;
+	public static final int LINK_KIND        = 1;
+	public static final int TARGET_KIND      = 2;
 }

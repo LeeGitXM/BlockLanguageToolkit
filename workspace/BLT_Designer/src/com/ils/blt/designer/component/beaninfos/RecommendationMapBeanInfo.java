@@ -10,8 +10,8 @@ import java.beans.SimpleBeanInfo;
 
 import javax.swing.ImageIcon;
 
-import com.ils.blt.client.component.RecommendationConstants;
-import com.ils.blt.client.component.RecommendationMap;
+import com.ils.blt.client.component.RecMapConstants;
+import com.ils.blt.client.component.recmap.RecommendationMap;
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.factorypmi.designer.property.customizers.DynamicPropertyProviderCustomizer;
 import com.inductiveautomation.factorypmi.designer.property.customizers.StyleCustomizer;
@@ -46,11 +46,11 @@ public class RecommendationMapBeanInfo extends CommonBeanInfo {
 		// Adds common properties
 		super.initProperties();
 		
-		addBoundProp(RecommendationConstants.DIAGNOSES_PROPERTY, "Diagnoses", "A list of final diagnosis values", 
+		addBoundProp(RecMapConstants.DIAGNOSES_PROPERTY, "Diagnoses", "A list of final diagnosis values", 
 					                                       CAT_DATA,PREFERRED_MASK | BOUND_MASK | EXPERT_MASK);
-		addBoundProp(RecommendationConstants.OUTPUTS_PROPERTY, "Outputs", "A list of outputs for which recommendations apply", 
+		addBoundProp(RecMapConstants.OUTPUTS_PROPERTY, "Outputs", "A list of outputs for which recommendations apply", 
                                                            CAT_DATA,PREFERRED_MASK | BOUND_MASK | EXPERT_MASK);
-		addBoundProp(RecommendationConstants.RECOMMENDATIONS_PROPERTY, "Recommendations", "An editable list of recommendations", 
+		addBoundProp(RecMapConstants.RECOMMENDATIONS_PROPERTY, "Recommendations", "An editable list of recommendations", 
                                                            CAT_DATA,PREFERRED_MASK | BOUND_MASK | EXPERT_MASK);
 		
 	}

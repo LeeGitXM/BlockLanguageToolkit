@@ -6,9 +6,11 @@
  * 
  * @author <a href="http://jheer.org">jeffrey heer</a>
  */
-package com.ils.blt.client.component;
+package com.ils.blt.client.component.recmap;
 
+import java.awt.Dimension;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 
 import prefuse.Constants;
 import prefuse.Display;
@@ -23,7 +25,6 @@ import prefuse.action.animate.QualityControlAnimator;
 import prefuse.action.animate.VisibilityAnimator;
 import prefuse.action.assignment.ColorAction;
 import prefuse.action.assignment.FontAction;
-import com.ils.blt.client.component.ThreeColumnLayout;
 import prefuse.activity.SlowInSlowOutPacer;
 import prefuse.controls.FocusControl;
 import prefuse.controls.PanControl;
@@ -37,9 +38,9 @@ import prefuse.render.EdgeRenderer;
 import prefuse.render.LabelRenderer;
 import prefuse.util.ColorLib;
 import prefuse.util.FontLib;
+import prefuse.util.display.DisplayLib;
 import prefuse.visual.VisualItem;
 import prefuse.visual.expression.InGroupPredicate;
-import prefuse.visual.sort.TreeDepthItemSorter;
 
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -51,7 +52,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  * @version 1.0
  * @author <a href="http://jheer.org">jeffrey heer</a>
  */
-public class RecommendationMapView extends Display {
+public class RecMapView extends Display {
 	private static final long serialVersionUID = 3253162293683958367L;
 	private static final String TAG = "RecommendationMapView";
 	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
@@ -62,19 +63,19 @@ public class RecommendationMapView extends Display {
     
     private LabelRenderer m_nodeRenderer;
     private EdgeRenderer m_edgeRenderer;
-    //private final ThreeColumnLayout columnLayout;
     private final ThreeColumnLayout columnLayout;
+   
     
-    public RecommendationMapView(RecommendationMapDataModel model,String textField,int r1,int r2,int r3,String colField,String srcRefField,String targRefField) {
+    public RecMapView(RecMapDataModel model,Dimension sz,int r1,int r2,int r3,String colField,String srcRefField,String targRefField) {
         super(new Visualization());
         
         // NOTE: Returns a VisualGraph, node/edge tables are VisualTables
         //                             node items are TableNodeItems
         m_vis.addGraph(map, model.getGraph());
-        
+        setSize(sz);
 
         // NOTE: No images to render.
-        m_nodeRenderer = new LabelRenderer(textField,null);
+        m_nodeRenderer = new ThreeColumnLabelRenderer();
         m_nodeRenderer.setRenderType(AbstractShapeRenderer.RENDER_TYPE_FILL);
         m_nodeRenderer.setHorizontalAlignment(Constants.LEFT);
         m_nodeRenderer.setRoundedCorner(8,8);
@@ -113,8 +114,9 @@ public class RecommendationMapView extends Display {
 
         // create a grid layout action
         columnLayout = new ThreeColumnLayout(map,r1,r2,r3,colField,srcRefField,targRefField);
-        //columnLayout = new ThreeColumnLayout(map);
-        columnLayout.setLayoutAnchor(new Point2D.Double(50,50));
+        // Rectangle(x,y,width,height)
+        columnLayout.setLayoutBounds(new Rectangle2D.Double(0.,0.,sz.width,sz.height));
+        columnLayout.setLayoutAnchor(new Point2D.Double(sz.getWidth()/2.,sz.getHeight()/2.));
         m_vis.putAction("columnLayout", columnLayout);
         
         AutoPanAction autoPan = new AutoPanAction();
@@ -142,21 +144,28 @@ public class RecommendationMapView extends Display {
 
         
         // ------------------------------------------------
-        setSize(200,200);
+        log.infof("%s.constructor: loyout bounds %2.1f x %2.1f (%f,%f)",TAG,columnLayout.getLayoutBounds().getWidth(),
+        		                                          columnLayout.getLayoutBounds().getHeight(),
+        		                                          columnLayout.getLayoutBounds().getX(),
+        		                                          columnLayout.getLayoutBounds().getY()
+        		                                          );
+        //setSize(getWidth(),getHeight());
+        
         // initialize the display
         //
-        setItemSorter(new TreeDepthItemSorter());
-        addControlListener(new ZoomToFitControl());
+        addControlListener(new RecMapSelector());
+        //addControlListener(new ZoomToFitControl());
         addControlListener(new ZoomControl());
         addControlListener(new WheelZoomControl());
         addControlListener(new PanControl());
-        addControlListener(new FocusControl(1, "filter"));
+        //addControlListener(new FocusControl(1, "filter"));
         
         
         // ------------------------------------------------
         
         // filter graph and perform layout
         orient();
+        DisplayLib.fitViewToBounds(this, columnLayout.getLayoutBounds(), RecMapConstants.ZOOM_DURATION);
         m_vis.run("filter");
 
     }

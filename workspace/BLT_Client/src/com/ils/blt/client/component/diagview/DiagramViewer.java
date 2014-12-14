@@ -1,7 +1,7 @@
 /**
  *   (c) 2012-2013  ILS Automation. All rights reserved.
  */
-package com.ils.blt.client.component;
+package com.ils.blt.client.component.diagview;
 
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.common.BundleUtil;

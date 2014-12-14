@@ -21,8 +21,8 @@ public abstract class PrefuseViewerComponent extends AbstractVisionComponent {
 	private static final long serialVersionUID = 6091339174784553157L;
 	
 	// Specify default block dimensions
-	protected static final int DEFAULT_FRAME_HEIGHT  = 240;   
-	protected static final int DEFAULT_FRAME_WIDTH   = 360;       
+	protected static final int DEFAULT_FRAME_HEIGHT  = 200;   
+	protected static final int DEFAULT_FRAME_WIDTH   = 240;       
 	
 	protected static final Color BORDER_HIGHLIGHT_COLOR = new Color(250,250,250);
 	protected static final Color BORDER_SHADOW_COLOR = new Color(10,10,10);

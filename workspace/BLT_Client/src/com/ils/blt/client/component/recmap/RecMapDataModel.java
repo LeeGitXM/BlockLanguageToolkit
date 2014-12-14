@@ -1,7 +1,7 @@
 /**
  * Copyright 2014. ILS Automation. All rights reserved.
  */
-package com.ils.blt.client.component;
+package com.ils.blt.client.component.recmap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -19,7 +19,7 @@ import com.inductiveautomation.sfc.uimodel.ChartUIModel;
  * This class holds objects in a Tree structure. The tree is derived from
  * the input datasets. We recreate the tree whenever the datasets change.
  */
-public class RecommendationMapDataModel {
+public class RecMapDataModel {
 	private static final String TAG = "RecommendationMapDataModel";
 	
 	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
@@ -35,17 +35,17 @@ public class RecommendationMapDataModel {
 	private int targetRowCount = 0;
 	private int recommendationCount = 0;
 	
-	public RecommendationMapDataModel(VisionClientContext ctx,RecommendationMap map) {
+	public RecMapDataModel(VisionClientContext ctx,RecommendationMap map) {
 		recmap = map;
 
 		nodes = new Table();
-		nodes.addColumn(RecommendationConstants.KIND, int.class);   // Count of linked connections
-		nodes.addColumn(RecommendationConstants.NAME, String.class);
-		nodes.addColumn(RecommendationConstants.ID,  int.class);          
-		nodes.addColumn(RecommendationConstants.ROW, int.class);         
-		nodes.addColumn(RecommendationConstants.SOURCEROW, int.class); 
-		nodes.addColumn(RecommendationConstants.TARGETROW, int.class); 
-		nodes.addColumn(RecommendationConstants.VALUE, double.class);
+		nodes.addColumn(RecMapConstants.KIND, int.class);   // Count of linked connections
+		nodes.addColumn(RecMapConstants.NAME, String.class);
+		nodes.addColumn(RecMapConstants.ID,  int.class);          
+		nodes.addColumn(RecMapConstants.ROW, int.class);         
+		nodes.addColumn(RecMapConstants.SOURCEROW, int.class); 
+		nodes.addColumn(RecMapConstants.TARGETROW, int.class); 
+		nodes.addColumn(RecMapConstants.VALUE, double.class);
 
 		edges = new Table();
 		// The keys match the node key in the node table
@@ -81,16 +81,15 @@ public class RecommendationMapDataModel {
 		int row = 0;
 		while( row<diagnoses.getRowCount()) {
 			try {
-				int key = Integer.parseInt(diagnoses.getValueAt(row, RecommendationConstants.ID_COLUMN).toString());
-				int index = addNodeTableRow(ThreeColumnLayout.SOURCE_KIND,diagnoses.getValueAt(row, RecommendationConstants.NAME_COLUMN).toString(),key);
+				int key = Integer.parseInt(diagnoses.getValueAt(row, RecMapConstants.ID_COLUMN).toString());
+				int index = addNodeTableRow(RecMapConstants.SOURCE_KIND,diagnoses.getValueAt(row, RecMapConstants.NAME_COLUMN).toString(),key);
 				diagnosisGridRowByKey.put(new Integer(key), new Integer(row));
 				diagnosisTableRowByKey.put(new Integer(key), new Integer(index));
-				//log.infof("%s.update: added %d for %s to diagnosis map",TAG,index,key);
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.update: diagnosis ID %s for %s is not a number (%s)",TAG,
-						diagnoses.getValueAt(row, RecommendationConstants.ID_COLUMN).toString(),
-						diagnoses.getValueAt(row, RecommendationConstants.NAME_COLUMN).toString(), nfe.getMessage());
+						diagnoses.getValueAt(row, RecMapConstants.ID_COLUMN).toString(),
+						diagnoses.getValueAt(row, RecMapConstants.NAME_COLUMN).toString(), nfe.getMessage());
 			}
 			row++;
 		}
@@ -99,16 +98,15 @@ public class RecommendationMapDataModel {
 		row = 0;
 		while( row<outputs.getRowCount()) {
 			try {
-				int key = Integer.parseInt(outputs.getValueAt(row, RecommendationConstants.ID_COLUMN).toString());
-				int index = addNodeTableRow(ThreeColumnLayout.TARGET_KIND,outputs.getValueAt(row, RecommendationConstants.NAME_COLUMN).toString(),key);
+				int key = Integer.parseInt(outputs.getValueAt(row, RecMapConstants.ID_COLUMN).toString());
+				int index = addNodeTableRow(RecMapConstants.TARGET_KIND,outputs.getValueAt(row, RecMapConstants.NAME_COLUMN).toString(),key);
 				outputGridRowByKey.put(new Integer(key), new Integer(row));
 				outputTableRowByKey.put(new Integer(key), new Integer(index));
-				//log.infof("%s.update: added %d for %s to output map",TAG,index,key);
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.update: output ID %s for %s is not a number (%s)",TAG,
-						outputs.getValueAt(row, RecommendationConstants.ID_COLUMN).toString(),
-						outputs.getValueAt(row, RecommendationConstants.NAME_COLUMN).toString(), nfe.getMessage());
+						outputs.getValueAt(row, RecMapConstants.ID_COLUMN).toString(),
+						outputs.getValueAt(row, RecMapConstants.NAME_COLUMN).toString(), nfe.getMessage());
 			}
 			row++;
 		}
@@ -116,28 +114,28 @@ public class RecommendationMapDataModel {
 		recommendationCount = recommendations.getRowCount();
 		row = 0;
 		while( row<recommendations.getRowCount()) {
-			int key1 = Integer.parseInt(recommendations.getValueAt(row, RecommendationConstants.DIAGNOSIS_ID_COLUMN).toString());
+			int key1 = Integer.parseInt(recommendations.getValueAt(row, RecMapConstants.DIAGNOSIS_ID_COLUMN).toString());
 			Integer source = diagnosisGridRowByKey.get(new Integer(key1));
-			int key2 = Integer.parseInt(recommendations.getValueAt(row, RecommendationConstants.OUTPUT_ID_COLUMN).toString());
+			int key2 = Integer.parseInt(recommendations.getValueAt(row, RecMapConstants.OUTPUT_ID_COLUMN).toString());
 			Integer target = outputGridRowByKey.get(new Integer(key2));
 			if( source!=null && target!=null ) {
 				String key = String.format("%d:%d",key1,key2);
 				try {
-					Double dbl = Double.parseDouble(recommendations.getValueAt(row, RecommendationConstants.VALUE_COLUMN).toString());
-					int index = addRecNodeTableRow(recommendations.getValueAt(row, RecommendationConstants.NAME_COLUMN).toString(),
+					Double dbl = Double.parseDouble(recommendations.getValueAt(row, RecMapConstants.VALUE_COLUMN).toString());
+					int index = addRecNodeTableRow(recommendations.getValueAt(row, RecMapConstants.NAME_COLUMN).toString(),
 							                       source.intValue(),target.intValue(),dbl);
 					recommendationRowByKey.put(key, new Integer(index));
-					log.infof("%s.update: added %d for %s to rec map",TAG,index,key);
+					//log.infof("%s.update: added %d for %s to rec map",TAG,index,key);
 				}
 				catch(NumberFormatException nfe) {
 					log.warnf("%s.update: recommended value %s for %s is not a number (%s)",TAG,
-							recommendations.getValueAt(row, RecommendationConstants.VALUE_COLUMN).toString(),
-							recommendations.getValueAt(row, RecommendationConstants.NAME_COLUMN).toString(), nfe.getMessage());
+							recommendations.getValueAt(row, RecMapConstants.VALUE_COLUMN).toString(),
+							recommendations.getValueAt(row, RecMapConstants.NAME_COLUMN).toString(), nfe.getMessage());
 				}
 			}
 			else {
 				log.warnf("%s.update: Recommendations %s has incorrect source %d, or target %d reference",TAG,
-						recommendations.getValueAt(row, RecommendationConstants.NAME).toString(),key1,key2);
+						recommendations.getValueAt(row, RecMapConstants.NAME).toString(),key1,key2);
 			}
 			row++;
 		}
@@ -146,8 +144,8 @@ public class RecommendationMapDataModel {
 		// Create links
 		row = 0;
 		while( row<recommendations.getRowCount()) {
-			int key1 = Integer.parseInt(recommendations.getValueAt(row, RecommendationConstants.DIAGNOSIS_ID_COLUMN).toString());
-			int key2 = Integer.parseInt(recommendations.getValueAt(row, RecommendationConstants.OUTPUT_ID_COLUMN).toString());
+			int key1 = Integer.parseInt(recommendations.getValueAt(row, RecMapConstants.DIAGNOSIS_ID_COLUMN).toString());
+			int key2 = Integer.parseInt(recommendations.getValueAt(row, RecMapConstants.OUTPUT_ID_COLUMN).toString());
 			String key = String.format("%d:%d",key1,key2);
 			Integer diagRow = diagnosisTableRowByKey.get(new Integer(key1));
 			Integer outRow  = outputTableRowByKey.get(new Integer(key2));
@@ -167,7 +165,7 @@ public class RecommendationMapDataModel {
 	 * @return a graph constructed out of the nodes and edges. It is a directed graph.
 	 */
 	public Graph getGraph() {
-		Graph g = new Graph(nodes,edges,true,RecommendationConstants.ROW,Graph.DEFAULT_SOURCE_KEY,Graph.DEFAULT_TARGET_KEY);
+		Graph g = new Graph(nodes,edges,true,RecMapConstants.ROW,Graph.DEFAULT_SOURCE_KEY,Graph.DEFAULT_TARGET_KEY);
 		return g;
 	}
 	
@@ -192,11 +190,11 @@ public class RecommendationMapDataModel {
 		int row = nodes.getRowCount();
 		log.infof("%s.addNodeTableRow: %d = %s", TAG,row,name);
 		nodes.addRow();
-		nodes.setInt(row,RecommendationConstants.KIND,kind); 
-		nodes.setString(row,RecommendationConstants.NAME,name);
-		nodes.setInt(row,RecommendationConstants.ID,key);
-		nodes.setInt(row,RecommendationConstants.ROW,row);
-		nodes.setDouble(row,RecommendationConstants.VALUE,0.0);
+		nodes.setInt(row,RecMapConstants.KIND,kind); 
+		nodes.setString(row,RecMapConstants.NAME,name);
+		nodes.setInt(row,RecMapConstants.ID,key);
+		nodes.setInt(row,RecMapConstants.ROW,row);
+		nodes.setDouble(row,RecMapConstants.VALUE,0.0);
 		return row;
 	}
 	// Add a row to the nodes list
@@ -205,12 +203,12 @@ public class RecommendationMapDataModel {
 		int row = nodes.getRowCount();
 		log.infof("%s.addRecNodeTableRow: %d = %s (%d->%d)", TAG,row,name,source,target);
 		nodes.addRow();
-		nodes.setInt(row,RecommendationConstants.KIND,ThreeColumnLayout.LINK_KIND); 
-		nodes.setString(row,RecommendationConstants.NAME,name);
-		nodes.setInt(row,RecommendationConstants.ROW,row);
-		nodes.setInt(row,RecommendationConstants.SOURCEROW,source);
-		nodes.setInt(row,RecommendationConstants.TARGETROW,target);
-		nodes.setDouble(row,RecommendationConstants.VALUE,value);
+		nodes.setInt(row,RecMapConstants.KIND,RecMapConstants.LINK_KIND); 
+		nodes.setString(row,RecMapConstants.NAME,name);
+		nodes.setInt(row,RecMapConstants.ROW,row);
+		nodes.setInt(row,RecMapConstants.SOURCEROW,source);
+		nodes.setInt(row,RecMapConstants.TARGETROW,target);
+		nodes.setDouble(row,RecMapConstants.VALUE,value);
 		return row;
 	}
 	

@@ -15,7 +15,7 @@ import javax.swing.JTextField;
 
 import com.ils.blt.client.component.PrefuseViewerComponent;
 import com.ils.blt.client.component.DiagramViewer;
-import com.ils.blt.client.component.RecommendationMap;
+import com.ils.blt.client.component.recmap.RecommendationMap;
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.factorypmi.designer.property.customizers.DynamicPropertyProviderCustomizer;
 import com.inductiveautomation.factorypmi.designer.property.customizers.StyleCustomizer;
