@@ -41,8 +41,9 @@ public class RecMapDataModel {
 		nodes = new Table();
 		nodes.addColumn(RecMapConstants.KIND, int.class);   // Count of linked connections
 		nodes.addColumn(RecMapConstants.NAME, String.class);
-		nodes.addColumn(RecMapConstants.ID,  int.class);          
-		nodes.addColumn(RecMapConstants.ROW, int.class);         
+		nodes.addColumn(RecMapConstants.ID,  int.class);       
+		nodes.addColumn(RecMapConstants.INDEX, int.class);    // Row from original dataset 
+		nodes.addColumn(RecMapConstants.ROW, int.class);          
 		nodes.addColumn(RecMapConstants.SOURCEROW, int.class); 
 		nodes.addColumn(RecMapConstants.TARGETROW, int.class); 
 		nodes.addColumn(RecMapConstants.VALUE, double.class);
@@ -82,7 +83,7 @@ public class RecMapDataModel {
 		while( row<diagnoses.getRowCount()) {
 			try {
 				int key = Integer.parseInt(diagnoses.getValueAt(row, RecMapConstants.ID_COLUMN).toString());
-				int index = addNodeTableRow(RecMapConstants.SOURCE_KIND,diagnoses.getValueAt(row, RecMapConstants.NAME_COLUMN).toString(),key);
+				int index = addNodeTableRow(RecMapConstants.SOURCE_KIND,row,diagnoses.getValueAt(row, RecMapConstants.NAME_COLUMN).toString(),key);
 				diagnosisGridRowByKey.put(new Integer(key), new Integer(row));
 				diagnosisTableRowByKey.put(new Integer(key), new Integer(index));
 			}
@@ -99,7 +100,7 @@ public class RecMapDataModel {
 		while( row<outputs.getRowCount()) {
 			try {
 				int key = Integer.parseInt(outputs.getValueAt(row, RecMapConstants.ID_COLUMN).toString());
-				int index = addNodeTableRow(RecMapConstants.TARGET_KIND,outputs.getValueAt(row, RecMapConstants.NAME_COLUMN).toString(),key);
+				int index = addNodeTableRow(RecMapConstants.TARGET_KIND,row,outputs.getValueAt(row, RecMapConstants.NAME_COLUMN).toString(),key);
 				outputGridRowByKey.put(new Integer(key), new Integer(row));
 				outputTableRowByKey.put(new Integer(key), new Integer(index));
 			}
@@ -122,8 +123,7 @@ public class RecMapDataModel {
 				String key = String.format("%d:%d",key1,key2);
 				try {
 					Double dbl = Double.parseDouble(recommendations.getValueAt(row, RecMapConstants.VALUE_COLUMN).toString());
-					int index = addRecNodeTableRow(recommendations.getValueAt(row, RecMapConstants.NAME_COLUMN).toString(),
-							                       source.intValue(),target.intValue(),dbl);
+					int index = addRecNodeTableRow(row,source.intValue(),target.intValue(),dbl);
 					recommendationRowByKey.put(key, new Integer(index));
 					//log.infof("%s.update: added %d for %s to rec map",TAG,index,key);
 				}
@@ -178,7 +178,7 @@ public class RecMapDataModel {
 	// @return the row corresponding to the newly created connection.
 	private int addEdgeTableRow(int sourceRow,int destinationRow) {
 		int row = edges.getRowCount();
-		log.infof("%s.addEdgeTableRow: %d -> %d", TAG,sourceRow,destinationRow);
+		log.debugf("%s.addEdgeTableRow: %d -> %d", TAG,sourceRow,destinationRow);
 		edges.addRow();
 		edges.setInt(row,Graph.DEFAULT_SOURCE_KEY,sourceRow);
 		edges.setInt(row,Graph.DEFAULT_TARGET_KEY,destinationRow);
@@ -186,25 +186,26 @@ public class RecMapDataModel {
 	}
 	// Add a row to the nodes list
 	// @return the number of the newly added row
-	private int addNodeTableRow(int kind,String name,Integer key) {
+	private int addNodeTableRow(int kind,int datasetRow,String name,Integer key) {
 		int row = nodes.getRowCount();
-		log.infof("%s.addNodeTableRow: %d = %s", TAG,row,name);
+		log.debugf("%s.addNodeTableRow: %d = %s", TAG,row,name);
 		nodes.addRow();
 		nodes.setInt(row,RecMapConstants.KIND,kind); 
 		nodes.setString(row,RecMapConstants.NAME,name);
 		nodes.setInt(row,RecMapConstants.ID,key);
+		nodes.setInt(row,RecMapConstants.INDEX,datasetRow);
 		nodes.setInt(row,RecMapConstants.ROW,row);
 		nodes.setDouble(row,RecMapConstants.VALUE,0.0);
 		return row;
 	}
 	// Add a row to the nodes list
 	// @return the number of the newly added row
-	private int addRecNodeTableRow(String name,int source,int target,Double value) {
+	private int addRecNodeTableRow(int datasetRow,int source,int target,Double value) {
 		int row = nodes.getRowCount();
-		log.infof("%s.addRecNodeTableRow: %d = %s (%d->%d)", TAG,row,name,source,target);
+		log.debugf("%s.addRecNodeTableRow: %d = (%d->%d)", TAG,row,source,target);
 		nodes.addRow();
 		nodes.setInt(row,RecMapConstants.KIND,RecMapConstants.LINK_KIND); 
-		nodes.setString(row,RecMapConstants.NAME,name);
+		nodes.setInt(row,RecMapConstants.INDEX,datasetRow);
 		nodes.setInt(row,RecMapConstants.ROW,row);
 		nodes.setInt(row,RecMapConstants.SOURCEROW,source);
 		nodes.setInt(row,RecMapConstants.TARGETROW,target);

@@ -27,6 +27,7 @@ public interface RecMapConstants   {
 	// VisualItem column names
 	public static final String KIND    = "Kind";       // diagnosis, recommendation, output
 	public static final String ID       = "Id";
+	public static final String INDEX    = "Index";     // Row of the dataset
 	public static final String NAME     = "Name";
 	public static final String ROW      = "Row";
 	public static final String SOURCEROW  = "SourceRef";

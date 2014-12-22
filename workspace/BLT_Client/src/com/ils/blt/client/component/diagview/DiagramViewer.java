@@ -3,6 +3,7 @@
  */
 package com.ils.blt.client.component.diagview;
 
+import com.ils.blt.client.component.PrefuseViewerComponent;
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.Dataset;

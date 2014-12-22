@@ -4,7 +4,7 @@
 package com.ils.blt.designer;
 
 
-import com.ils.blt.client.component.DiagramViewer;
+import com.ils.blt.client.component.diagview.DiagramViewer;
 import com.ils.blt.client.component.recmap.RecommendationMap;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.ApplicationScriptFunctions;

@@ -116,5 +116,7 @@ public class LinkValueEditor extends JDialog {
 		panel.add(separator, "growx,wrap");
 		return label;
 	}
+	
+	public String getEditedValue() { return textField.getText(); }
 
 }

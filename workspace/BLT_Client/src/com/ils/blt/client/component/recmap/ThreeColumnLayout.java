@@ -56,6 +56,7 @@ public class ThreeColumnLayout extends Layout {
         columnColumn = col;
         sourceRefColumn = sourceCol;
         targetRefColumn = targetCol;
+        setMargin(10,10,10,10);   // top,left,bottom.right
         log.infof("%s.constructor group %s is %dx%d nodes (%s)",TAG,m_group,ncols,nrows,(isEnabled()?"ENABLED":"DISABLED"));
     }
     

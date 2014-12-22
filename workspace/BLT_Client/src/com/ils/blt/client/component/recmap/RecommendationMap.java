@@ -7,6 +7,7 @@ import java.awt.BorderLayout;
 
 import com.ils.blt.client.component.PrefuseViewerComponent;
 import com.ils.blt.common.BLTProperties;
+import com.inductiveautomation.ignition.common.BasicDataset;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.Dataset;
 
@@ -24,8 +25,9 @@ public class RecommendationMap extends PrefuseViewerComponent {
 	private static final String TAG = "RecommendationMap";
 	private static String PREFIX = BLTProperties.CUSTOM_PREFIX;              // For bundle identification
 	
+	private RecMapDataModel model = null;
 	private Dataset outputs = null;
-	private Dataset recommendations = null;
+	private BasicDataset recommendations = null;
 	private Dataset diagnoses = null;
 
 	public RecommendationMap() {
@@ -35,25 +37,24 @@ public class RecommendationMap extends PrefuseViewerComponent {
 		updateChartView();
 	}
 
-	private synchronized void updateChartView() {
-		removeAll();
-		invalidate();
-		log.infof("%s.update: Creating RecommendationMapView ..%d x %d.",TAG,getWidth(),getHeight());
-		RecMapView view = createMapView();
-		view.setSize(getWidth(), getHeight());
-		add(view,BorderLayout.CENTER);
-		validate();
-		repaint();
-		log.infof("%s.update: Created RecommendationMapView ...",TAG);
+	private void updateChartView() {
+		if( configured() ) {
+			removeAll();
+			invalidate();
+			log.infof("%s.update: Creating RecommendationMapView ..%d x %d.",TAG,getWidth(),getHeight());
+			RecMapView view = createMapView();
+			view.setSize(getWidth(), getHeight());
+			add(view,BorderLayout.CENTER);
+			validate();
+			repaint();
+			log.infof("%s.update: Created RecommendationMapView ...",TAG);
+		}
 	}
 	
 	private RecMapView createMapView() {
 		log.infof("%s.createMapView: New view ....",TAG);
-		RecMapDataModel model = new RecMapDataModel(context,this);
-		return new RecMapView(model,this.getSize(),
-							  model.getSourceRowCount(),
-							  model.getRecommendationCount(),model.getTargetRowCount(),
-							  RecMapConstants.KIND,RecMapConstants.SOURCEROW,RecMapConstants.TARGETROW);
+		model = new RecMapDataModel(context,this);
+		return new RecMapView(this);
 	}
 	
 	// We need getters/setters for all the bound properties
@@ -68,9 +69,27 @@ public class RecommendationMap extends PrefuseViewerComponent {
 		this.outputs = outputs;
 		updateChartView();
 	}
+	
+	public RecMapDataModel getModel() { return model; }
 	public Dataset getRecommendations() {return recommendations;}
-	public void setRecommendations(Dataset recommendations) {this.recommendations = recommendations;updateChartView();}
-
-
-
+	// TODO: Check dataset columns
+	private boolean configured() {
+		boolean valid = false;
+		if( diagnoses!=null && diagnoses.getRowCount()>0 &&
+			recommendations!=null && recommendations.getRowCount()>0 &&
+			outputs!=null && outputs.getRowCount()>0 	) {
+			valid = true;
+		}
+		return valid;
+	}
+	public void setRecommendations(Dataset recs) {
+		this.recommendations = new BasicDataset(recs);
+		updateChartView();
+	}
+	public void updateRecommendations(int row,String value) {
+		int col = recommendations.getColumnIndex(RecMapConstants.VALUE_COLUMN);
+		if( col>=0 ) {
+			recommendations.setValueAt(row, col, value);
+		}
+	}
 }

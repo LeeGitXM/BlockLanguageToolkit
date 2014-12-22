@@ -8,9 +8,13 @@
  */
 package com.ils.blt.client.component.recmap;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+
+import javax.swing.BorderFactory;
+import javax.swing.border.BevelBorder;
 
 import prefuse.Constants;
 import prefuse.Display;
@@ -26,10 +30,7 @@ import prefuse.action.animate.VisibilityAnimator;
 import prefuse.action.assignment.ColorAction;
 import prefuse.action.assignment.FontAction;
 import prefuse.activity.SlowInSlowOutPacer;
-import prefuse.controls.FocusControl;
 import prefuse.controls.PanControl;
-import prefuse.controls.WheelZoomControl;
-import prefuse.controls.ZoomControl;
 import prefuse.controls.ZoomToFitControl;
 import prefuse.data.tuple.TupleSet;
 import prefuse.render.AbstractShapeRenderer;
@@ -38,9 +39,9 @@ import prefuse.render.EdgeRenderer;
 import prefuse.render.LabelRenderer;
 import prefuse.util.ColorLib;
 import prefuse.util.FontLib;
-import prefuse.util.display.DisplayLib;
 import prefuse.visual.VisualItem;
 import prefuse.visual.expression.InGroupPredicate;
+import prefuse.visual.tuple.TableNodeItem;
 
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -54,7 +55,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  */
 public class RecMapView extends Display {
 	private static final long serialVersionUID = 3253162293683958367L;
-	private static final String TAG = "RecommendationMapView";
+	private static final String TAG = "RecMapView";
 	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
     
     private static final String map = "map";
@@ -65,22 +66,32 @@ public class RecMapView extends Display {
     private EdgeRenderer m_edgeRenderer;
     private final ThreeColumnLayout columnLayout;
    
-    
-    public RecMapView(RecMapDataModel model,Dimension sz,int r1,int r2,int r3,String colField,String srcRefField,String targRefField) {
+    public RecMapView(RecommendationMap recmap) {
         super(new Visualization());
+        
+        Dimension sz = recmap.getSize();
+        RecMapDataModel model = recmap.getModel();
         
         // NOTE: Returns a VisualGraph, node/edge tables are VisualTables
         //                             node items are TableNodeItems
         m_vis.addGraph(map, model.getGraph());
         setSize(sz);
-
+        setBackground(new Color(230,228,227));
+        setBorder(BorderFactory.createCompoundBorder(
+                                BorderFactory.createBevelBorder(BevelBorder.RAISED), 
+                                BorderFactory.createBevelBorder(BevelBorder.LOWERED)));
+        
         // NOTE: No images to render.
         m_nodeRenderer = new ThreeColumnLabelRenderer();
-        m_nodeRenderer.setRenderType(AbstractShapeRenderer.RENDER_TYPE_FILL);
+        //m_nodeRenderer.setRenderType(AbstractShapeRenderer.RENDER_TYPE_FILL);
+        m_nodeRenderer.setRenderType(AbstractShapeRenderer.RENDER_TYPE_DRAW_AND_FILL);
         m_nodeRenderer.setHorizontalAlignment(Constants.LEFT);
-        m_nodeRenderer.setRoundedCorner(8,8);
+        m_nodeRenderer.setRoundedCorner(2,2);
+        m_nodeRenderer.setVerticalPadding(3);
+        m_nodeRenderer.setHorizontalPadding(4);
 
         m_edgeRenderer = new EdgeRenderer(Constants.EDGE_TYPE_LINE);
+        m_edgeRenderer.setDefaultLineWidth(2.0);
         
         DefaultRendererFactory rf = new DefaultRendererFactory(m_nodeRenderer);
         rf.add(new InGroupPredicate(mapEdges), m_edgeRenderer);
@@ -90,10 +101,13 @@ public class RecMapView extends Display {
         ItemAction nodeColor = new NodeColorAction(mapNodes);
         ItemAction textColor = new ColorAction(mapNodes,
                 VisualItem.TEXTCOLOR, ColorLib.rgb(0,0,0));
+        ItemAction strokeColor = new ColorAction(mapNodes,
+                VisualItem.STROKECOLOR, ColorLib.rgb(0,0,0));
+        m_vis.putAction("strokeColor", strokeColor);
         m_vis.putAction("textColor", textColor);
         
         ItemAction edgeColor = new ColorAction(mapEdges,
-                VisualItem.STROKECOLOR, ColorLib.rgb(200,200,200));
+                VisualItem.STROKECOLOR, ColorLib.rgb(150,150,150));
         
         // quick repaint
         ActionList repaint = new ActionList();
@@ -113,7 +127,8 @@ public class RecMapView extends Display {
         m_vis.putAction("animatePaint", animatePaint);
 
         // create a grid layout action
-        columnLayout = new ThreeColumnLayout(map,r1,r2,r3,colField,srcRefField,targRefField);
+        columnLayout = new ThreeColumnLayout(map,model.getSourceRowCount(),model.getRecommendationCount(),model.getTargetRowCount(),
+        									RecMapConstants.KIND,RecMapConstants.SOURCEROW,RecMapConstants.TARGETROW);
         // Rectangle(x,y,width,height)
         columnLayout.setLayoutBounds(new Rectangle2D.Double(0.,0.,sz.width,sz.height));
         columnLayout.setLayoutAnchor(new Point2D.Double(sz.getWidth()/2.,sz.getHeight()/2.));
@@ -127,6 +142,7 @@ public class RecMapView extends Display {
         filter.add(columnLayout);
         filter.add(textColor);
         filter.add(nodeColor);
+        filter.add(strokeColor);
         filter.add(edgeColor);
         m_vis.putAction("filter", filter);
         
@@ -144,7 +160,7 @@ public class RecMapView extends Display {
 
         
         // ------------------------------------------------
-        log.infof("%s.constructor: loyout bounds %2.1f x %2.1f (%f,%f)",TAG,columnLayout.getLayoutBounds().getWidth(),
+        log.infof("%s.constructor: layout bounds %2.1f x %2.1f (%f,%f)",TAG,columnLayout.getLayoutBounds().getWidth(),
         		                                          columnLayout.getLayoutBounds().getHeight(),
         		                                          columnLayout.getLayoutBounds().getX(),
         		                                          columnLayout.getLayoutBounds().getY()
@@ -152,21 +168,21 @@ public class RecMapView extends Display {
         //setSize(getWidth(),getHeight());
         
         // initialize the display
-        //
-        addControlListener(new RecMapSelector());
-        //addControlListener(new ZoomToFitControl());
-        addControlListener(new ZoomControl());
-        addControlListener(new WheelZoomControl());
+        // WARNING: Use of Focus/ZoomToFit/Zoom Controls freeze the VisionUI
+        addControlListener(new RecMapSelector(recmap,1));
+        addControlListener(new ZoomToFitControl());
+        //addControlListener(new ZoomControl());
+        //addControlListener(new WheelZoomControl());
         addControlListener(new PanControl());
-        //addControlListener(new FocusControl(1, "filter"));
         
         
         // ------------------------------------------------
         
         // filter graph and perform layout
         orient();
-        DisplayLib.fitViewToBounds(this, columnLayout.getLayoutBounds(), RecMapConstants.ZOOM_DURATION);
+        //DisplayLib.fitViewToBounds(this, columnLayout.getLayoutBounds(), RecMapConstants.ZOOM_DURATION);
         m_vis.run("filter");
+        log.infof("%s.constructor: controls complete",TAG);
 
     }
     
@@ -221,22 +237,25 @@ public class RecMapView extends Display {
     }
     
     public static class NodeColorAction extends ColorAction {
-        
+    	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
         public NodeColorAction(String group) {
             super(group, VisualItem.FILLCOLOR);
         }
-        
+        @Override
         public int getColor(VisualItem item) {
-            if ( m_vis.isInGroup(item, Visualization.SEARCH_ITEMS) )
-                return ColorLib.rgb(255,190,190);
-            else if ( m_vis.isInGroup(item, Visualization.FOCUS_ITEMS) )
-                return ColorLib.rgb(198,229,229);
-            else if ( item.getDOI() > -1 )
-                return ColorLib.rgb(164,193,193);
-            else
-                return ColorLib.rgba(255,255,255,0);
+        	int color = ColorLib.rgba(220,220,220,100);  // Gray
+            if ( item instanceof TableNodeItem ) {
+            	int kind = item.getInt(RecMapConstants.KIND);
+            	if( kind==RecMapConstants.SOURCE_KIND )      color= ColorLib.rgb(204,215,235);
+            	else if( kind==RecMapConstants.TARGET_KIND ) color= ColorLib.rgb(195,207,235);
+            	else                                         color= ColorLib.rgb(172,185,190);
+            }
+            return color;
         }
-        
-    } // end of inner class TreeMapColorAction
-} // end of class TreeMap
+        @Override
+        public int getDefaultColor() {
+        	return  ColorLib.rgb(198,229,229);
+        }
+    } 
+} 
 

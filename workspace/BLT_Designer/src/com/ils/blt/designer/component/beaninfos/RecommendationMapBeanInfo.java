@@ -10,7 +10,7 @@ import java.beans.SimpleBeanInfo;
 
 import javax.swing.ImageIcon;
 
-import com.ils.blt.client.component.RecMapConstants;
+import com.ils.blt.client.component.recmap.RecMapConstants;
 import com.ils.blt.client.component.recmap.RecommendationMap;
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.factorypmi.designer.property.customizers.DynamicPropertyProviderCustomizer;
