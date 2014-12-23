@@ -46,7 +46,7 @@ public class ReadoutUIView extends AbstractUIView implements BlockViewUI {
 		for( BlockProperty bp:block.getProperties()) {
 			if( bp.getName()!=null && bp.getName().equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_VALUE)) {
 				vp = bp;
-				log.infof("ReadoutViewUI(%d): found value property",bp.hashCode());
+				//log.infof("ReadoutViewUI(%d): found value property",bp.hashCode());
 			}
 		}
 		return vp;

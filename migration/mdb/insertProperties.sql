@@ -14,19 +14,20 @@ insert into PropertyMap values ('EM-GDA-ELAPSED-TIME-VARIABLE','label','','STRIN
 insert into PropertyMap values ('EM-GDA-EXPIRATION-FILTER','label','','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','explanation','Explanation','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','label','','STRING',1,'NONE');
---insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','logDiagnosisToDatabase','LogToDatabase','BOOLEAN',1,'NONE');
---insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','manualMove','ManualMove','BOOLEAN',1,'NONE');
---insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','manualMoveValue','ManualMoveValue','DOUBLE',1,'NONE');
---insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','manualTextRequired','ManualTextRequired','BOOLEAN',1,'NONE');
+-- NOTE: properties that are not used in Ignition map to empty strings.
+insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','logDiagnosisToDatabase','','BOOLEAN',1,'NONE');
+insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','manualMove','','BOOLEAN',1,'NONE');
+insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','manualMoveValue','','DOUBLE',1,'NONE');
+insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','manualTextRequired','','BOOLEAN',1,'NONE');
 insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','postTextRecommendation','PostTextRecommendation','BOOLEAN',1,'NONE');
 insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','priority','Priority','DOUBLE',1,'NONE');
 insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','recommendationCalculationMethod','CalculationMethod','STRING',1,'NONE');
---insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','recommendationMultiplier','Multiplier','DOUBLE',1,'NONE');
+insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','recommendationMultiplier','Multiplier','DOUBLE',1,'NONE');
 insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','recommendationRefreshRateInMinutes','RecommendationRefreshInterval','DOUBLE',1,'NONE');
 insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','targets','Targets','LIST',1,'NONE');
 insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','textRecommendation','TextRecommendation','STRING',1,'NONE');
-insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','textRecommendationCallback','TextRecommendationCallback','STRING',1,'NONE');
---insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','trapInsignificantRecommendationConditions','TrapInsignificantConditions','BOOLEAN',1,'NONE');
+insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','textRecommendationCallback','RecommendationCallback','STRING',1,'NONE');
+insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','trapInsignificantRecommendationConditions','','BOOLEAN',1,'NONE');
 insert into PropertyMap values ('EM-GDA-HIGH-LIMIT','label','','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-HIGH-LIMIT','statusOnInitialization','','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-HIGH-LIMIT','target','limit','DOUBLE',1,'NONE');

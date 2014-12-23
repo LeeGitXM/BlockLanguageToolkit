@@ -17,6 +17,7 @@ import com.ils.blt.common.serializable.SerializableBlock;
 public class ProcedureMapper {
 	private final String TAG = "ProcedureMapper";
 	private final Map<String,String> procedureMap;     // Lookup by G2 property name
+	private ResultSet rs;
 	/** 
 	 * Constructor: 
 	 */
@@ -31,8 +32,7 @@ public class ProcedureMapper {
 	 * @param cxn open database connection
 	 */
 	public void createMap(Connection cxn) {
-		// Read the database to create the map.
-		ResultSet rs = null;
+		rs = null;
 		try {
 			Statement statement = cxn.createStatement();
 			statement.setQueryTimeout(30);  // set timeout to 30 sec.
@@ -75,7 +75,7 @@ public class ProcedureMapper {
 				}
 				if( bp.getType().equals(PropertyType.SCRIPTREF)) {
 					if( bp.getValue()!=null ) {
-						//ZZSystem.err.println(TAG+".setPythonModuleNames: Convert "+iblock.getName()+"."+bp.getName()+" ("+bp.getValue()+")");
+						//System.err.println(TAG+".setPythonModuleNames: Convert "+iblock.getName()+"."+bp.getName()+" ("+bp.getValue()+")");
 						String unmapped = bp.getValue().toString().toLowerCase();
 						String converted = procedureMap.get(unmapped.trim());
 						if( converted!=null) {
