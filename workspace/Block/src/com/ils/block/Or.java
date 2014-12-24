@@ -202,16 +202,19 @@ public class Or extends AbstractProcessBlock implements ProcessBlock {
 		TruthValue result = TruthValue.UNSET;
 
 		for(QualifiedValue qv:values) {
+			log.infof("%s.getAggregateState quality (%s) is good %s",TAG,qv.getQuality().getName(),(qv.getQuality().isGood()?"GOOD":"BAD"));
+			
+			if(!qv.getQuality().isGood() ) {
+				if(!result.equals(TruthValue.TRUE) ) result = TruthValue.UNKNOWN;
+				continue;
+			}
 			TruthValue tv = qualifiedValueAsTruthValue(qv);
 			if( tv.equals(TruthValue.TRUE) ) {
 				result = tv;
 				break;
 			}
-			else if(tv.equals(TruthValue.UNKNOWN) || !qv.getQuality().isGood() ) {
-				result = TruthValue.UNKNOWN;
-			}
 			else {
-				if(result!=TruthValue.UNKNOWN ) result = TruthValue.FALSE;
+				if(result==TruthValue.UNSET ) result = TruthValue.FALSE;
 			}
 		}
 		if(result.equals(TruthValue.UNSET)) result = TruthValue.UNKNOWN;

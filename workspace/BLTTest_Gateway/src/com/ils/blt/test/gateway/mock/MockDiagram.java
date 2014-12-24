@@ -46,7 +46,6 @@ public class MockDiagram extends ProcessDiagram {
 	/**
 	 * Compute connections based on the collection of input/output blocks.
 	 *  Create connections between these and the unit-under-test.
-	 *
 	 */
 	public void analyze() {
 		log.infof("%s.analyze: Block-under-test is %s",TAG,uut.getName());

@@ -121,6 +121,7 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 		String key = String.format("%s:%s",incoming.getConnection().getSource().toString(),
                                            incoming.getConnection().getUpstreamPortName());
 		QualifiedValue qv = incoming.getValue();
+		log.tracef("%s.acceptValue %s quality (%s) is good %s",TAG,qv.getValue().toString(),qv.getQuality().getName(),(qv.getQuality().isGood()?"GOOD":"BAD"));
 		qualifiedValueMap.put(key, qv);
 		dog.setSecondsDelay(synchInterval);
 		controller.pet(dog);
@@ -217,9 +218,8 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 		TruthValue result = TruthValue.UNSET;
 		
 		for(QualifiedValue qv:values) {
-			log.infof("%s.getAggregateState quality (%s) is good %s",TAG,qv.getQuality().getName(),(qv.getQuality().isGood()?"GOOD":"BAD"));
 			if(!qv.getQuality().isGood() ) {
-				if(result==TruthValue.UNSET) result = TruthValue.UNKNOWN;
+				if(!result.equals(TruthValue.FALSE) ) result = TruthValue.UNKNOWN;
 				continue;
 			}
 			TruthValue ts = qualifiedValueAsTruthValue(qv);

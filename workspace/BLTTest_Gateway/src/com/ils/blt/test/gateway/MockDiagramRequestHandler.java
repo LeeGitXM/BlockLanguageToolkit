@@ -343,6 +343,10 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 		}
 	}
 	@Override
+	public void updateBlockAnchor(UUID diagramId,String port) {
+		tagWriter.updateTag(projectId.longValue(),tagPath, qv);
+	}
+	@Override
 	public void updateTag(Long projectId,String tagPath,QualifiedValue qv) {
 		tagWriter.updateTag(projectId.longValue(),tagPath, qv);
 	}
