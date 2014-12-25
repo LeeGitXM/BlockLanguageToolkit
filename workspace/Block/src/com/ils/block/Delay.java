@@ -21,6 +21,7 @@ import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.common.watchdog.Watchdog;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
@@ -99,6 +100,7 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 		if( port.equals(BlockConstants.IN_PORT_NAME) ) {
 			long expirationTime = System.currentTimeMillis()+(int)(delayInterval*1000);
 			TimestampedData data = new TimestampedData(vcn.getValue(),expirationTime);
+			log.tracef("%s.acceptValue: %s",TAG,vcn.getValue().toString());
 			synchronized(this) {
 				if( buffer.isEmpty() ) {
 					dog.setSecondsDelay(delayInterval);
@@ -124,7 +126,9 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 	public void evaluate() {
 		TimestampedData data = buffer.removeFirst();
 		if( !isLocked() ) {
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,data.qv);
+			log.tracef("%s.evaluate: %s",TAG,data.qv.getValue().toString());
+			QualifiedValue qv = new BasicQualifiedValue(coerceToMatchOutput(BlockConstants.OUT_PORT_NAME,data.qv.getValue()),data.qv.getQuality(),data.qv.getTimestamp()); 
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus(data.qv);
 		}

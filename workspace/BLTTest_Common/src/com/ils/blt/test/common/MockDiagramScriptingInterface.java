@@ -147,6 +147,13 @@ public interface MockDiagramScriptingInterface   {
 	 */
 	public void stopMockDiagram(UUID diagram);
 	/**
+	 * Update the connection type of a block anchor
+	 * @param diagramId
+	 * @param port name
+	 * @param type of the connection to be attached to this port
+	 */
+	public void updateBlockAnchor(UUID diagramId,String port,String type);
+	/**
 	 * Write to a tag
 	 * 
 	 * @param projectId the project from which to obtain the default tag provider

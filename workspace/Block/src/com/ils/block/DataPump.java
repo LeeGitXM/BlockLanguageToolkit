@@ -93,7 +93,7 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 			}
 			// If the interval is zero, we propagate the value immediately. Coerce to match output connection type
 			else {
-				value = coerceToMatchOutput(value);
+				value = coerceToMatchOutput(BlockConstants.OUT_PORT_NAME,value);
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,new BasicQualifiedValue(value));
 				controller.acceptCompletionNotification(nvn);
 			}
@@ -130,7 +130,7 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 			AnchorPrototype ap = anchors.get(0);
 			log.infof("%s.evaluate: proto type = %s",TAG,ap.getConnectionType());
 		}
-		value = coerceToMatchOutput(value);
+		value = coerceToMatchOutput(BlockConstants.OUT_PORT_NAME,value);
 		QualifiedValue qv = new BasicQualifiedValue(value);
 		OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 		controller.acceptCompletionNotification(nvn);
@@ -202,23 +202,5 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 		desc.setPreferredWidth(60);
 		desc.setBackground(new Color(125,240,230).getRGB());   // Dark Green
 		desc.setCtypeEditable(true);
-	}
-	
-	private Object coerceToMatchOutput(Object val) {
-		// Coerce the value to match the output
-		if( !anchors.isEmpty() && val!=null && val.toString().length()>0 ) { 
-			AnchorPrototype ap = anchors.get(0);  // There should be exactly one anchor, get its type.
-			log.infof("%s.evaluate: %s type = %s",TAG,(val==null?"null":val.toString()),ap.getConnectionType());
-			if( ConnectionType.DATA.equals(ap.getConnectionType()))  {
-				val = new Double(fcns.coerceToDouble(val));
-			}
-			else if( ConnectionType.TRUTHVALUE.equals(ap.getConnectionType())) {
-				boolean flag = fcns.coerceToBoolean(val);
-				if( flag ) val = TruthValue.TRUE;
-				else val = TruthValue.FALSE;
-			}
-			else val = val.toString();
-		}
-		return val;
 	}
 }

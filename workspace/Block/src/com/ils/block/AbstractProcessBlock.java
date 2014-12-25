@@ -342,7 +342,28 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		}
 		return result;
 	}
-	
+	// Assuming single output, force the data to match,
+	protected Object coerceToMatchOutput(String port,Object val) {
+		// Coerce the value to match the output
+		if( !anchors.isEmpty() && val!=null && val.toString().length()>0 ) { 
+			for(AnchorPrototype ap: anchors) {
+				if(ap.getName().equals(port)) {
+					log.infof("%s.coerceToMatchOutput: %s %s type = %s",getName(),ap.getName(),(val==null?"null":val.toString()),ap.getConnectionType());
+					if( ConnectionType.DATA.equals(ap.getConnectionType()))  {
+						val = new Double(fcns.coerceToDouble(val));
+					}
+					else if( ConnectionType.TRUTHVALUE.equals(ap.getConnectionType())) {
+						boolean flag = fcns.coerceToBoolean(val);
+						if( flag ) val = TruthValue.TRUE;
+						else val = TruthValue.FALSE;
+					}
+					else val = val.toString();
+					break;
+				}
+			}
+		}
+		return val;
+	}
 	// ================================= PropertyChangeListener ================================
 	/**
 	 * One of the block properties has changed. This default implementation simply updates

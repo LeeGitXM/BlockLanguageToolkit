@@ -117,6 +117,7 @@ public class Difference extends AbstractProcessBlock implements ProcessBlock {
 		if( vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(A_PORT_NAME)) {
 			if( qv!=null && qv.getValue()!=null ) {
 				a = qv;
+				log.tracef("%s.acceptValue: %s=%s",TAG,vcn.getConnection().getDownstreamPortName(),a.getValue().toString());
 			}
 			else {
 				a = null;
@@ -125,6 +126,7 @@ public class Difference extends AbstractProcessBlock implements ProcessBlock {
 		else if (vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(B_PORT_NAME)) {
 			if( qv!=null && qv.getValue()!=null && qv.getQuality().isGood()) {
 				b = qv;
+				log.tracef("%s.acceptValue: %s=%s",TAG,vcn.getConnection().getDownstreamPortName(),b.getValue().toString());
 			}
 			else {
 				b = null;
@@ -142,6 +144,7 @@ public class Difference extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void evaluate() {
 		if( !isLocked() ) {
+			difference = null;
 			if( a==null ) {
 				difference = new BasicQualifiedValue(new Double(Double.NaN),new BasicQuality("'a' is unset",Quality.Level.Bad));
 			}
@@ -172,7 +175,6 @@ public class Difference extends AbstractProcessBlock implements ProcessBlock {
 			}
 			
 			if( difference==null ) {     // Success!
-				
 				difference = new BasicQualifiedValue(new Double(aa-bb));
 			}
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,difference);

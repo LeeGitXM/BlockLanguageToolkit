@@ -301,7 +301,20 @@ public class MockDiagramScriptFunctions   {
 			log.infof("%s.stopMockDiagram: GatewayException (%s)",TAG,ge.getMessage());
 		}
 	}
-	
+	/**
+	 * Change the connection type of a specified anchor
+	 * @param diagram unique Id
+	 */
+	public static void updateBlockAnchor(UUID diagramId,String port,String type) {
+		log.debugf("%s.updateBlockAnchor: %s(%s) to %s ",TAG,diagramId.toString(),port,type);
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTTestProperties.MODULE_ID, "updateBlockAnchor", diagramId,port,type);
+		}
+		catch(Exception ge) {
+			log.infof("%s.stopMockDiagram: GatewayException (%s)",TAG,ge.getMessage());
+		}
+	}
 	/**
 	 * Transmit a signal with the specified command to the block-under-test.
 	 *   

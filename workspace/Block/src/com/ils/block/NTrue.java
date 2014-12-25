@@ -29,6 +29,7 @@ import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
+import com.inductiveautomation.ignition.common.sqltags.model.types.DataQuality;
 
 /**
  * This class tests if the number of true inputs is greater than a set value. Synchronizing
@@ -43,7 +44,6 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 	private final Watchdog dog;
 	private double synchInterval = 0.5; // 1/2 sec synchronization by default
 	protected TruthValue truthValue;
-	protected Quality.Level truthQuality;
 	protected int nTrue = 0;
 	
 	/**
@@ -76,7 +76,6 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 	private void initialize() {	
 		setName("NTrue");
 		truthValue = TruthValue.UNSET;
-		truthQuality = Quality.Level.Good;
 		// Define the time for "coalescing" inputs ~ msec
 		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,new Double(synchInterval),PropertyType.TIME,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL, synch);
@@ -100,7 +99,6 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 		super.reset();
 		qualifiedValueMap.clear();
 		truthValue = TruthValue.UNSET;
-		truthQuality = Quality.Level.Good;
 	}
 	
 	
@@ -133,11 +131,10 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 		if( !isLocked() ) {
 			TruthValue newState = getAggregateState();
 			log.infof("%s.evaluate: new = %s, old =%s",TAG,newState.name(),truthValue.name());
-			Quality q = getAggregateQuality();
-			if(newState!=truthValue || q.getLevel() != truthQuality) {
+			if(newState!=truthValue ) {
 				truthValue = newState;
-				truthQuality = q.getLevel();
-				QualifiedValue result = new BasicQualifiedValue(truthValue.name(),q);
+				QualifiedValue result = new BasicQualifiedValue(truthValue.name(),
+			            (truthValue.equals(TruthValue.UNKNOWN)?getAggregateQuality():DataQuality.GOOD_DATA));
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
 				controller.acceptCompletionNotification(nvn);
 				notifyOfStatus(result);
@@ -145,7 +142,7 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 		}
 	}
 	
-
+	
 	
 	/**
 	 * Handle a change to the coalescing interval.
@@ -224,18 +221,24 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 		Collection<QualifiedValue> values = qualifiedValueMap.values();
 		TruthValue result = TruthValue.UNSET;
 		int trues = 0;
+		int falses = 0;
 		
 		for(QualifiedValue qv:values) {
-			TruthValue tv = qualifiedValueAsTruthValue(qv);
-			if( tv==TruthValue.TRUE ) {
-				trues ++;
-			}
-			else if(tv.equals(TruthValue.UNKNOWN) || !qv.getQuality().isGood() ) {
-				result = TruthValue.UNKNOWN;
+			if(qv.getQuality().isGood()) {
+				TruthValue tv = qualifiedValueAsTruthValue(qv);
+				if( tv==TruthValue.TRUE ) {
+					trues ++;
+				}
+				else if(tv.equals(TruthValue.FALSE)) {
+					falses++;
+				}
 			}
 		}
 		if (trues >= nTrue) result = TruthValue.TRUE;
-		else if(result.equals(TruthValue.UNSET)) result = TruthValue.FALSE;
+		else if( falses > values.size()-nTrue ) result = TruthValue.FALSE;
+		else 								    result = TruthValue.UNKNOWN;
+		
+		log.infof("%s.evaluate T=%d,F=%d of %d => %s",TAG,trues,falses,values.size(),result.name());
 		return result;	
 	}
 }

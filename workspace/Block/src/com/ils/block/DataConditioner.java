@@ -165,7 +165,7 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 		if( value != null ) {
 			QualifiedValue outValue = value;
 			qualityName = "bad";
-			boolean good = true;
+			boolean good = true;    // For the quality input
 			if( quality.getValue() instanceof String ) {
 				good = quality.getValue().toString().equalsIgnoreCase("good");
 				if( !good ) qualityName = quality.getValue().toString();
@@ -179,6 +179,7 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 				good = false;
 				qualityName = "unexpected Quality data type";
 			}
+			// Now consider the value input
 			if( !value.getQuality().isGood() ) {
 				good = false;
 				qualityName = value.getQuality().getName();
@@ -190,15 +191,17 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 			else {
 				qualityName = "good";
 			}
-				
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outValue);
-			controller.acceptCompletionNotification(nvn);
 			
-			truthValue = (good?TruthValue.TRUE:TruthValue.FALSE);
-			QualifiedValue result = new BasicQualifiedValue(truthValue);
-			nvn = new OutgoingNotification(this,STATUS_PORT_NAME,result);
-			controller.acceptCompletionNotification(nvn);
-			notifyOfStatus(outValue,result);
+			if( !locked )	 {
+				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outValue);
+				controller.acceptCompletionNotification(nvn);
+
+				truthValue = (good?TruthValue.TRUE:TruthValue.FALSE);
+				QualifiedValue result = new BasicQualifiedValue(truthValue);
+				nvn = new OutgoingNotification(this,STATUS_PORT_NAME,result);
+				controller.acceptCompletionNotification(nvn);
+				notifyOfStatus(outValue,result);
+			}
 		}
 	}
 	

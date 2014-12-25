@@ -6,11 +6,13 @@ package com.ils.blt.test.gateway;
 import java.util.Date;
 import java.util.UUID;
 
+import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
+import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.Signal;
 import com.ils.blt.common.notification.SignalNotification;
@@ -342,9 +344,22 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 			controller.clearSubscriptions();
 		}
 	}
+	// The port must already exist
 	@Override
-	public void updateBlockAnchor(UUID diagramId,String port) {
-		tagWriter.updateTag(projectId.longValue(),tagPath, qv);
+	public void updateBlockAnchor(UUID diagramId,String port,String type) {
+		MockDiagram mock = (MockDiagram)(controller.getDiagram(diagramId));
+		if( mock!=null ) {
+			ProcessBlock uut = mock.getBlockUnderTest();
+			for( AnchorPrototype anchor:uut.getAnchors() ) {
+				if( anchor.getName().equalsIgnoreCase(port)) {
+					anchor.setConnectionType(ConnectionType.valueOf(type.toUpperCase()));
+					break;
+				}
+			}
+		}
+		else {
+			log.warnf("%s.updateBlockAnchor: Unknown output diagram %s", TAG,diagramId.toString());
+		}
 	}
 	@Override
 	public void updateTag(Long projectId,String tagPath,QualifiedValue qv) {

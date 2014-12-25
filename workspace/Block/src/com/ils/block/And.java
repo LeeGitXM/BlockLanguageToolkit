@@ -227,6 +227,10 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 				result = ts;
 				break;
 			}
+			else if( ts.equals(TruthValue.UNKNOWN) ) {
+				if(!result.equals(TruthValue.TRUE) ) result = TruthValue.UNKNOWN;
+				continue;
+			}
 			else {
 				if(result==TruthValue.UNSET ) result = TruthValue.TRUE;
 			}

@@ -36,20 +36,24 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
 
 /**
- * This class applies one of the Westinghouse (Western Electric) SPC rules to its input.
+ * This class applies SQC-like rules to its input with the objective of detecting trends.
  * If the scan interval is zero, then the application runs in an event-driven mode.
  * Otherwise, a timing loop is created and the input (the last value to have arrived) is
  * evaluated on loop timeout.
  */
 @ExecutableBlock
-public class SQC extends AbstractProcessBlock implements ProcessBlock {
-	private final String TAG = "SQC";
+public class TrendDetector extends AbstractProcessBlock implements ProcessBlock {
+	private final String TAG = "TrendDetector";
 	protected static final String BLOCK_PROPERTY_MAXIMUM_OUT_OF_RANGE = "MaximumOutOfRange";
 	protected static final String BLOCK_PROPERTY_SQC_LIMIT = "NumberOfStandardDeviations";
 	protected static final String BLOCK_PROPERTY_TEST_LABEL = "TestLabel";
 	protected static final String PORT_STANDARD_DEVIATION = "standardDeviation";
 	protected static final String PORT_TARGET = "target";
 	protected static final String PORT_VALUE = "value";
+	// Output ports
+	protected static final String PORT_SLOPE = "slope";
+	protected static final String PORT_VARIANCE = "var";
+	protected static final String PORT_PREDICTION = "prediction";
 	private final static int DEFAULT_BUFFER_SIZE = 10;
 	
 	
@@ -66,7 +70,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
-	public SQC() {
+	public TrendDetector() {
 		queue = new FixedSizeQueue<Double>(DEFAULT_BUFFER_SIZE);
 		initialize();
 		initializePrototype();
@@ -79,7 +83,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	 * @param parent universally unique Id identifying the parent of this block
 	 * @param block universally unique Id for the block
 	 */
-	public SQC(ExecutionController ec,UUID parent,UUID block) {
+	public TrendDetector(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
 		queue = new FixedSizeQueue<Double>(DEFAULT_BUFFER_SIZE);
 		initialize();
@@ -119,6 +123,13 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 
 		// Define the main output, a truth value.
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.TRUTHVALUE);
+		anchors.add(output);
+		// Auxiliary outputs contain trend calculations
+		output = new AnchorPrototype(PORT_SLOPE,AnchorDirection.OUTGOING,ConnectionType.DATA);
+		anchors.add(output);
+		output = new AnchorPrototype(PORT_VARIANCE,AnchorDirection.OUTGOING,ConnectionType.DATA);
+		anchors.add(output);
+		output = new AnchorPrototype(PORT_PREDICTION,AnchorDirection.OUTGOING,ConnectionType.DATA);
 		anchors.add(output);
 	}
 	
@@ -349,13 +360,13 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	 * Augment the palette prototype for this block class.
 	 */
 	private void initializePrototype() {
-		prototype.setPaletteIconPath("Block/icons/palette/SQC.png");
-		prototype.setPaletteLabel("SQC");
-		prototype.setTooltipText("Perform an SPC analysis on the input and place results on output");
+		prototype.setPaletteIconPath("Block/icons/palette/trend_observation.png");
+		prototype.setPaletteLabel("Trend");
+		prototype.setTooltipText("Perform an analysis on the input to detect trends");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_ANALYSIS);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
-		desc.setEmbeddedLabel("SQC");
+		desc.setEmbeddedLabel("Trend");
 		desc.setEmbeddedFontSize(36);
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setStyle(BlockStyle.SQUARE);

@@ -162,7 +162,15 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface{
 	public void stopMockDiagram(UUID diagramId) {
 		requestHandler.stopMockDiagram(diagramId);
 	}
-
+	/**
+	 * Update the connection type of a block anchor
+	 * @param diagramId
+	 * @param port name
+	 * @param type of the connection to be attached to this port
+	 */
+	public void updateBlockAnchor(UUID diagramId,String port,String type) {
+		requestHandler.updateBlockAnchor(diagramId,port,type);
+	}
 	/**
 	 * Transmit a signal with the specified command to the block-under-test.
 	 *   
