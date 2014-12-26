@@ -36,16 +36,16 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
 @ExecutableBlock
 public class DataConditioner extends AbstractProcessBlock implements ProcessBlock {
 	private final String TAG = "DataConditioner";
-	protected static String DATA_PORT_NAME = "value";
+	protected static String VALUE_PORT_NAME = "value";
 	protected static String QUALITY_PORT_NAME = "quality";
 	protected static String OUT_PORT_NAME = "out";
 	protected static String STATUS_PORT_NAME = "status";
 	private final Watchdog dog;
 	private double synchInterval = 0.5; // 1/2 sec synchronization by default
 	private String qualityName = "good";
-	protected QualifiedValue quality = new BasicQualifiedValue("good");
+	private QualifiedValue quality = new BasicQualifiedValue("good");
 	private QualifiedValue value = null;
-	protected TruthValue truthValue;
+	private TruthValue truthValue;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -80,7 +80,7 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 		setProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL, synch);
 		
 		// Define a two inputs -- one for the data, one for the quality
-		AnchorPrototype input = new AnchorPrototype(DATA_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
+		AnchorPrototype input = new AnchorPrototype(VALUE_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setAnnotation("V");
 		anchors.add(input);
 		input = new AnchorPrototype(QUALITY_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
@@ -139,20 +139,19 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 		this.state = BlockState.ACTIVE;
 		String blockId = vcn.getConnection().getSource().toString();
 		QualifiedValue qv = vcn.getValue();
-		if( qv!=null && qv.getValue()!=null && qv.getQuality().isGood()) {
-			if( vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(DATA_PORT_NAME)) {
-				value = qv;
-			}
-			else if (vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(QUALITY_PORT_NAME)) {
-				quality = qv;
-			}
-			else {
-				log.warnf("%s.acceptValue: Unexpected port designation (%s)",TAG,vcn.getConnection().getDownstreamPortName());
-			}
-			dog.setSecondsDelay(synchInterval);
-			controller.pet(dog);
-			log.debugf("%s.acceptValue got %s for %s", TAG,qv.getValue().toString(),blockId);
+
+		if( vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(VALUE_PORT_NAME)) {
+			value = qv;
 		}
+		else if (vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(QUALITY_PORT_NAME)) {
+			quality = qv;
+		}
+		else {
+			log.warnf("%s.acceptValue: Unexpected port designation (%s)",TAG,vcn.getConnection().getDownstreamPortName());
+		}
+		dog.setSecondsDelay(synchInterval);
+		controller.pet(dog);
+		log.debugf("%s.acceptValue got %s for %s", TAG,qv.getValue().toString(),blockId);
 	}
 	
 	
@@ -162,11 +161,17 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 	 */
 	@Override
 	public void evaluate() {
+		log.infof("%s.evaluate ...",TAG);
 		if( value != null ) {
 			QualifiedValue outValue = value;
+			log.tracef("%s.evaluate value %s(%s)", TAG,value.getValue().toString(),quality.getValue().toString());
 			qualityName = "bad";
 			boolean good = true;    // For the quality input
-			if( quality.getValue() instanceof String ) {
+			if( quality.getQuality()!=null && !quality.getQuality().isGood()) {
+				good = false;
+				qualityName = quality.getQuality().getName();
+			}
+			else if( quality.getValue() instanceof String ) {
 				good = quality.getValue().toString().equalsIgnoreCase("good");
 				if( !good ) qualityName = quality.getValue().toString();
 			}
@@ -195,6 +200,7 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 			if( !locked )	 {
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outValue);
 				controller.acceptCompletionNotification(nvn);
+				log.tracef("%s.evaluate result %s(%s)", TAG,outValue.getValue().toString(),quality.getValue().toString());
 
 				truthValue = (good?TruthValue.TRUE:TruthValue.FALSE);
 				QualifiedValue result = new BasicQualifiedValue(truthValue);

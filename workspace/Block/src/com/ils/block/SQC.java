@@ -152,6 +152,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		Quality qual = qv.getQuality();
 		String port = incoming.getConnection().getDownstreamPortName();
 		if( port.equals(PORT_VALUE)  ) {
+			log.infof("%s.acceptValue: %s (%s)",TAG,qv.getValue().toString(),qual.getName());
 			if( qual.isGood() && qv!=null && qv.getValue()!=null ) {
 				try {
 					Double dbl  = Double.parseDouble(qv.getValue().toString());
@@ -232,7 +233,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		if( Double.isNaN(standardDeviation) ) return;
 
 		// Evaluate the buffer and report
-		log.debugf("%s.evaluate %d of %d",TAG,queue.size(),sampleSize);
+		log.infof("%s.evaluate %d of %d",TAG,queue.size(),sampleSize);
 		if( queue.size() >= sampleSize) {
 			TruthValue newState = getRuleState();
 			if( !isLocked() && !newState.equals(truthState) ) {
@@ -241,6 +242,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 				QualifiedValue outval = new BasicQualifiedValue(truthState);
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 				controller.acceptCompletionNotification(nvn);
+				notifyOfStatus(outval);
 				
 				// Notify other blocks to suppress alternate results
 				if( truthState.equals(TruthValue.TRUE)) {

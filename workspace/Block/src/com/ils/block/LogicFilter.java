@@ -46,12 +46,12 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	private TruthValue currentState = TruthValue.UNSET;
 	private TruthValue currentValue = TruthValue.UNSET;
 	private double deadband = 0.0;
+	private double ratio = Double.NaN;
 	private final LinkedList<TruthValue> buffer;
 	private double limit = 0.0;
 	private double scanInterval = 1.0;    // ~secs
 	private double timeWindow = 60; // ~ secs
 	private HysteresisType hysteresis = HysteresisType.NEVER;
-	private BlockProperty ratioProperty = null;
 	private final Watchdog dog;
 	
 	/**
@@ -61,8 +61,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		dog = new Watchdog(TAG,this);
 		buffer = new LinkedList<TruthValue>();
 		initialize();
-		initializePrototype();
-		
+		initializePrototype();	
 	}
 	
 	/**
@@ -95,7 +94,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		setProperty(BlockConstants.BLOCK_PROPERTY_LIMIT, limitProperty);
 		BlockProperty windowProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW,new Double(timeWindow),PropertyType.TIME,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW, windowProperty);
-		ratioProperty = new BlockProperty(BLOCK_PROPERTY_RATIO,new Double(0.0),PropertyType.DOUBLE,false);
+		BlockProperty ratioProperty = new BlockProperty(BLOCK_PROPERTY_RATIO,new Double(0.0),PropertyType.DOUBLE,false);
 		ratioProperty.setBindingType(BindingType.ENGINE);
 		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, ratioProperty);
 
@@ -116,6 +115,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		buffer.clear();
 		currentState = TruthValue.UNSET;
 		currentValue = TruthValue.UNSET;
+		ratio = Double.NaN;
 	}
 
 	@Override
@@ -160,18 +160,18 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		while(buffer.size() > maxPoints ) {
 			buffer.removeFirst();
 		}
+		log.infof("%s.evaluate buffer %d of %d",TAG,buffer.size(),maxPoints);
 		
 		dog.setSecondsDelay(scanInterval);
 		controller.pet(dog);
 		
 		TruthValue newState = TruthValue.UNKNOWN;
 		if( buffer.size() >= maxPoints)  {
-			double ratio = computeRatio();
+			ratio = computeRatio();
 			// Even if locked, we update the current state
-			ratioProperty.setValue(ratio);
 			controller.sendPropertyNotification(getBlockId().toString(),BLOCK_PROPERTY_RATIO,new BasicQualifiedValue(new Double(ratio)));
 			newState = computeState(currentState,ratio);
-			log.tracef("%s.evaluate ... ratio %f (%s)",TAG,ratio,newState.name());
+			log.infof("%s.evaluate ... ratio %f (%s)",TAG,ratio,newState.name());
 		}
 		
 		if( !isLocked() ) {
@@ -183,7 +183,6 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 				notifyOfStatus(result);
 			}
 		}
-		
 	}
 	
 	/**
@@ -264,12 +263,11 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void notifyOfStatus() {
-		QualifiedValue qv = new BasicQualifiedValue(ratioProperty.getValue());
+		QualifiedValue qv = new BasicQualifiedValue(new Double(ratio));
 		notifyOfStatus(qv);
-		
 	}
 	private void notifyOfStatus(QualifiedValue qv) {
-		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
+		controller.sendPropertyNotification(getBlockId().toString(), BLOCK_PROPERTY_RATIO,qv);
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 	/**
@@ -284,7 +282,6 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 			qvMap.put("Value", tv.name());
 			descBuffer.add(qvMap);
 		}
-
 		return descriptor;
 	}
 	
@@ -324,7 +321,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	 * Compute the overall state, presumably because of a new input.
 	 * We take into account the hysteresis.
 	 */
-	private TruthValue computeState(TruthValue current,double ratio) {
+	private TruthValue computeState(TruthValue current,double currentRatio) {
 		
 		TruthValue result = TruthValue.UNSET;
 		double threshold = limit;
@@ -345,7 +342,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 			default:
 				threshold = limit;  
 		}
-		if( ratio>threshold ) result = TruthValue.TRUE;
+		if( currentRatio>threshold ) result = TruthValue.TRUE;
 		else result = TruthValue.FALSE;
 		return result;	
 	}

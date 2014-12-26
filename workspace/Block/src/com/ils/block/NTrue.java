@@ -238,7 +238,7 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 		else if( falses > values.size()-nTrue ) result = TruthValue.FALSE;
 		else 								    result = TruthValue.UNKNOWN;
 		
-		log.infof("%s.evaluate T=%d,F=%d of %d => %s",TAG,trues,falses,values.size(),result.name());
+		log.debugf("%s.evaluate T=%d,F=%d of %d, need %d => %s",TAG,trues,falses,values.size(),nTrue,result.name());
 		return result;	
 	}
 }
