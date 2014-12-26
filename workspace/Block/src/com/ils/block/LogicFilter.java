@@ -160,19 +160,17 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		while(buffer.size() > maxPoints ) {
 			buffer.removeFirst();
 		}
-		log.infof("%s.evaluate buffer %d of %d",TAG,buffer.size(),maxPoints);
+		//log.tracef("%s.evaluate buffer %d of %d",TAG,buffer.size(),maxPoints);
 		
 		dog.setSecondsDelay(scanInterval);
 		controller.pet(dog);
 		
 		TruthValue newState = TruthValue.UNKNOWN;
-		if( buffer.size() >= maxPoints)  {
-			ratio = computeRatio();
-			// Even if locked, we update the current state
-			controller.sendPropertyNotification(getBlockId().toString(),BLOCK_PROPERTY_RATIO,new BasicQualifiedValue(new Double(ratio)));
-			newState = computeState(currentState,ratio);
-			log.infof("%s.evaluate ... ratio %f (%s)",TAG,ratio,newState.name());
-		}
+		ratio = computeTrueRatio(maxPoints);
+		// Even if locked, we update the current state
+		controller.sendPropertyNotification(getBlockId().toString(),BLOCK_PROPERTY_RATIO,new BasicQualifiedValue(new Double(ratio)));
+		newState = computeState(currentState,ratio,computeFalseRatio(maxPoints));
+		log.tracef("%s.evaluate ... ratio %f (%s)",TAG,ratio,newState.name());
 		
 		if( !isLocked() ) {
 			if(newState!=currentState) {
@@ -304,24 +302,31 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	}
 	
 	/**
-	 * Compute the fraction of true. We are guaranteed 
-	 * that the buffer is not empty.
+	 * Compute the fraction of true (known over total window).
 	 */
-	private double computeRatio() {
+	private double computeTrueRatio(int pointsInWindow) {
 		int trueCount = 0;
-		int total = 0;
 		for(TruthValue tv:buffer) {
 			if( tv.equals(TruthValue.TRUE)) trueCount++;
-			total++;
 		}
-		return 1.0*trueCount/total;	
+		return 1.0*trueCount/pointsInWindow;	
+	}
+	/**
+	 * Compute the fraction of true (known over total window).
+	 */
+	private double computeFalseRatio(int pointsInWindow) {
+		int falseCount = 0;
+		for(TruthValue tv:buffer) {
+			if( tv.equals(TruthValue.FALSE)) falseCount++;
+		}
+		return 1.0*falseCount/pointsInWindow;	
 	}
 	
 	/**
 	 * Compute the overall state, presumably because of a new input.
 	 * We take into account the hysteresis.
 	 */
-	private TruthValue computeState(TruthValue current,double currentRatio) {
+	private TruthValue computeState(TruthValue current,double trueRatio,double falseRatio) {
 		
 		TruthValue result = TruthValue.UNSET;
 		double threshold = limit;
@@ -342,8 +347,9 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 			default:
 				threshold = limit;  
 		}
-		if( currentRatio>threshold ) result = TruthValue.TRUE;
-		else result = TruthValue.FALSE;
+		if( trueRatio>=threshold ) result = TruthValue.TRUE;
+		else if(falseRatio>1.0-threshold) result = TruthValue.FALSE;
+		else result = TruthValue.UNKNOWN;
 		return result;	
 	}
 }

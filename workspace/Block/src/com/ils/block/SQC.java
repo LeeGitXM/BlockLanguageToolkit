@@ -96,7 +96,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		BlockProperty clearProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET,new Boolean(clearOnReset),PropertyType.BOOLEAN,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET, clearProperty);
 		BlockProperty limitProperty = new BlockProperty(BLOCK_PROPERTY_SQC_LIMIT,new Double(limit),PropertyType.DOUBLE,true);
-		setProperty(BlockConstants.BLOCK_PROPERTY_LIMIT, limitProperty);
+		setProperty(BLOCK_PROPERTY_SQC_LIMIT, limitProperty);
 		BlockProperty limitTypeProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_LIMIT_TYPE,new String(limitType.name()),PropertyType.STRING,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_LIMIT_TYPE, limitTypeProperty);
 		BlockProperty maxOutProperty = new BlockProperty(BLOCK_PROPERTY_MAXIMUM_OUT_OF_RANGE,new Integer(maxOut),PropertyType.INTEGER,true);
@@ -152,7 +152,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		Quality qual = qv.getQuality();
 		String port = incoming.getConnection().getDownstreamPortName();
 		if( port.equals(PORT_VALUE)  ) {
-			log.infof("%s.acceptValue: %s (%s)",TAG,qv.getValue().toString(),qual.getName());
+			log.debugf("%s.acceptValue: %s (%s)",TAG,qv.getValue().toString(),qual.getName());
 			if( qual.isGood() && qv!=null && qv.getValue()!=null ) {
 				try {
 					Double dbl  = Double.parseDouble(qv.getValue().toString());
@@ -212,7 +212,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void acceptValue(SignalNotification sn) {
 		Signal signal = sn.getSignal();
-		log.infof("%s.acceptValue: signal = %s ",TAG,signal.getCommand());
+		log.debugf("%s.acceptValue: signal = %s ",TAG,signal.getCommand());
 		if( signal.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_CLEAR_HIGH) && limitType.equals(LimitType.HIGH)) {
 			reset();
 		}
@@ -228,12 +228,11 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void evaluate() {
-		log.infof("%s.evaluate",TAG);
 		if( Double.isNaN(mean) )              return;
 		if( Double.isNaN(standardDeviation) ) return;
 
 		// Evaluate the buffer and report
-		log.infof("%s.evaluate %d of %d",TAG,queue.size(),sampleSize);
+		log.debugf("%s.evaluate %d of %d",TAG,queue.size(),sampleSize);
 		if( queue.size() >= sampleSize) {
 			TruthValue newState = getRuleState();
 			if( !isLocked() && !newState.equals(truthState) ) {
@@ -260,7 +259,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 			}
 		}
 		else {
-			// Too few points (can still be TRUE)
+			// Too few points (can still be TRUE or FALSE)
 			TruthValue newState = getRuleState();
 			if( newState.equals(TruthValue.FALSE)) newState = TruthValue.UNKNOWN;
 			if( !truthState.equals(newState)) {
@@ -293,11 +292,11 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
-		log.debugf("%s.propertyChange: %s = %s",TAG,propertyName,event.getNewValue().toString());
+		log.infof("%s.propertyChange: %s = %s",TAG,propertyName,event.getNewValue().toString());
 		if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_MAXIMUM_OUT_OF_RANGE)) {
 			try {
 				maxOut = Integer.parseInt(event.getNewValue().toString());
-				if( maxOut<1 ) maxOut = 1;
+				if( maxOut<0 ) maxOut = 0;
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert max out-of-range to an integer (%s)",TAG,nfe.getLocalizedMessage());
@@ -381,7 +380,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		for( Double dbl:queue) {
 			double val = dbl.doubleValue();
 			
-			//log.infof("%s.getRuleState: val = %f (%f - %f)",TAG,val,lowLimit,highLimit);
+			log.tracef("%s.getRuleState: val = %f (%f - %f)",TAG,val,lowLimit,highLimit);
 			if( val < lowLimit) {
 				low++;
 			}
@@ -396,7 +395,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 			}
 			else if( val<mean ) {
 				lowside++;
-				if( highside>maxlowside ) maxlowside = lowside;
+				if( lowside>maxlowside ) maxlowside = lowside;
 				highside= 0;
 			}
 			else {
@@ -425,10 +424,10 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 			if( maxhighside >= maxOut || maxlowside >= maxOut ) result = TruthValue.TRUE; 
 			else if( total>=sampleSize ) result = TruthValue.FALSE;
 		}
-		else if( outside>=maxOut) result = TruthValue.TRUE;
+		else if( outside>maxOut) result = TruthValue.TRUE;
 		else if( total>=sampleSize ) result = TruthValue.FALSE;
 		
-		log.infof("%s.getRuleState: Of %d results,  %d high, %d low => %s (%s)",TAG,total,high,low,result.toString(),limitType.toString());
+		log.tracef("%s.getRuleState: Of %d results,  %d high, %d low, (cons %d,%d) => %s (%s)",TAG,total,high,low,maxlowside,maxhighside,result.toString(),limitType.toString());
 		return result;	
 	}
 }
