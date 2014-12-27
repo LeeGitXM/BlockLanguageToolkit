@@ -112,8 +112,11 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 
 	@Override
 	public void start() {
-		reset();
-		log.tracef("%s(%d).STARTED ...",TAG,hashCode());
+		if(!running) {
+			reset();
+			log.tracef("%s(%d).STARTED ...",TAG,hashCode());
+		}
+		super.start();
 	}
 	@Override
 	public void stop() {

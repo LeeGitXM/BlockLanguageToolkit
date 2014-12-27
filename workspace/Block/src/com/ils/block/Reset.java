@@ -86,10 +86,13 @@ public class Reset extends AbstractProcessBlock implements ProcessBlock {
 	}
 	@Override
 	public void start() {
-		log.debugf("%s.start",TAG);
-		this.state = BlockState.ACTIVE;
-		dog.setSecondsDelay(interval);
-		if( interval>MIN_RESET_INTERVAL) controller.pet(dog);
+		if( !running ) {
+			log.debugf("%s.start",TAG);
+			this.state = BlockState.ACTIVE;
+			dog.setSecondsDelay(interval);
+			if( interval>MIN_RESET_INTERVAL) controller.pet(dog);
+		}
+		super.start();
 	}
 	@Override
 	public void stop() {

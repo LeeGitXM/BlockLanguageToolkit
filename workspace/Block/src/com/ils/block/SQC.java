@@ -130,12 +130,8 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		}
 	}
 
-	@Override
-	public void start() {
-		clear();
-	}
-	
 	private void clear() {
+		log.infof("%s.clear: reset data buffer",TAG);
 		queue.clear();
 		truthState = TruthValue.UNSET;
 	}
@@ -152,7 +148,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		Quality qual = qv.getQuality();
 		String port = incoming.getConnection().getDownstreamPortName();
 		if( port.equals(PORT_VALUE)  ) {
-			log.debugf("%s.acceptValue: %s (%s)",TAG,qv.getValue().toString(),qual.getName());
+			log.infof("%s.acceptValue: %s (%s)",TAG,qv.getValue().toString(),qual.getName());
 			if( qual.isGood() && qv!=null && qv.getValue()!=null ) {
 				try {
 					Double dbl  = Double.parseDouble(qv.getValue().toString());

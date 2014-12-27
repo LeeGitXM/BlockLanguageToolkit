@@ -89,7 +89,7 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 		
 	}
 	private void notifyOfStatus(QualifiedValue qv) {
-		log.infof("%s.notifyOfStatus (%s)", TAG, qv.getValue().toString());
+		log.debugf("%s.notifyOfStatus (%s)", TAG, qv.getValue().toString());
 		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}

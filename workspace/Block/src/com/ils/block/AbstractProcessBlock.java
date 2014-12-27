@@ -300,7 +300,8 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	}
 	/**
 	 * Start any active monitoring or processing within the block.
-	 * This default method does nothing.
+	 * This default method does nothing. In general, a start does
+	 * NOT reset state in a block that is already running.
 	 */
 	@Override
 	public void start() { this.running = true;}
