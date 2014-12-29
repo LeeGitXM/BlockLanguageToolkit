@@ -315,9 +315,8 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	@Override
 	public void projectResourceModified(ProjectResource res,ResourceModification changeType) {
 		if (res.getResourceId() == resourceId) {
-			logger.infof("%s.projectResourceModified.%s: %s(%d), res %s(%d)",TAG,changeType.name(),getName(),this.resourceId,res.getName(),res.getResourceId());
+			logger.debugf("%s.projectResourceModified.%s: %s(%d), res %s(%d)",TAG,changeType.name(),getName(),this.resourceId,res.getName(),res.getResourceId());
 			if( res.getName()==null || !res.getName().equals(getName()) ) {
-				logger.infof("%s.projectResourceModified(%d), setting name %s to %s",TAG,this.resourceId,getName(),res.getName());
 				setName(res.getName());
 				setText(res.getName());
 			}

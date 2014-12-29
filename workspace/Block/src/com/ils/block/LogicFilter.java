@@ -120,7 +120,8 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 
 	@Override
 	public void start() {
-		reset();
+		if(!running) reset();
+		super.start();
 	}
 	@Override
 	public void stop() {

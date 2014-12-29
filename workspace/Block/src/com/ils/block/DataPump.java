@@ -16,7 +16,6 @@ import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
-import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
@@ -32,7 +31,9 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 @ExecutableBlock
 public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 	private final String TAG = "DataPump";
+	private final String PROPERTY_LIVE_ON_START = "LiveOnStart";
 	private final Watchdog dog;
+	private boolean liveOnStart = false;
 	private Double interval = Double.NaN;      // No interval by Default
 	private Object value = "";
 	
@@ -68,6 +69,11 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 			controller.pet(dog);
 		}
 	}
+	@Override
+	public void start() {
+		if(!running) reset();
+		super.start();
+	}
 	/**
 	 * Disconnect from the timer thread.
 	 */
@@ -85,7 +91,6 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 		String propertyName = event.getPropertyName();
 		log.infof("%s.propertyChange: Received %s = %s",TAG,propertyName,event.getNewValue().toString());
 		if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_VALUE)) {
-			
 			value = event.getNewValue();
 			if( !dog.isActive() && !Double.isNaN(interval) && interval>0.0) {
 				dog.setSecondsDelay(interval);
@@ -94,6 +99,7 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 			// If the interval is zero, we propagate the value immediately. Coerce to match output connection type
 			else {
 				value = coerceToMatchOutput(BlockConstants.OUT_PORT_NAME,value);
+				log.infof("%s.propertyChange: Propagating %s on output port",TAG,propertyName,value.toString());
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,new BasicQualifiedValue(value));
 				controller.acceptCompletionNotification(nvn);
 			}
@@ -106,9 +112,23 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 					dog.setSecondsDelay(interval);
 					controller.pet(dog);
 				}
+				else {
+					// Stop the pump
+					if( dog.isActive()) controller.removeWatchdog(dog);
+				}
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.propertyChange: Unable to convert interval to a double (%s)",TAG,nfe.getLocalizedMessage());
+				// Stop the pump
+				if( dog.isActive()) controller.removeWatchdog(dog);
+			}
+		}
+		else if( propertyName.equals(PROPERTY_LIVE_ON_START)) {
+			try {
+				liveOnStart = Boolean.parseBoolean(event.getNewValue().toString());
+			}
+			catch(NumberFormatException nfe) {
+				log.warnf("%s.propertyChange: Unable to convert live on start to a boolean (%s)",TAG,nfe.getLocalizedMessage());
 			}
 		}
 		else {
@@ -160,6 +180,8 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 		setProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL, intervalProperty);
 		BlockProperty valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,value,PropertyType.OBJECT,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
+		BlockProperty liveProperty = new BlockProperty(PROPERTY_LIVE_ON_START,new Boolean(liveOnStart),PropertyType.BOOLEAN,true);
+		setProperty(PROPERTY_LIVE_ON_START, liveProperty);
 		
 		// Define a single output
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);

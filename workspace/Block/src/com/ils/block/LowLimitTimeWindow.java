@@ -119,7 +119,8 @@ public class LowLimitTimeWindow extends AbstractProcessBlock implements ProcessB
 
 	@Override
 	public void start() {
-		reset();
+		if(!running) reset();
+		super.start();
 	}
 	@Override
 	public void stop() {

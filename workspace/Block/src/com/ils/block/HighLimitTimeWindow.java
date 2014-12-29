@@ -119,7 +119,8 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 
 	@Override
 	public void start() {
-		reset();
+		if( !running ) reset();
+		super.start();
 	}
 	@Override
 	public void stop() {
@@ -139,7 +140,7 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 			currentValue = Double.NaN;
 			try {
 				currentValue = Double.parseDouble(qv.getValue().toString());
-				log.infof("%s.acceptValue current value is %s",TAG,qv.getValue().toString());
+				log.debugf("%s.acceptValue current value is %s",TAG,qv.getValue().toString());
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.acceptValue exception converting incoming %s to double (%s)",TAG,qv.getValue().toString(),nfe.getLocalizedMessage());

@@ -140,11 +140,6 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 			clear();
 		}
 	}
-
-	@Override
-	public void start() {
-		clear();
-	}
 	
 	private void clear() {
 		queue.clear();

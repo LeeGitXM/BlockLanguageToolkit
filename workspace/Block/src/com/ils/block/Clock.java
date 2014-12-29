@@ -42,7 +42,6 @@ public class Clock extends AbstractProcessBlock implements ProcessBlock {
 		dog = new Watchdog(TAG,this);
 		initialize();
 		initializePrototype();
-		
 	}
 	
 	/**
@@ -83,11 +82,14 @@ public class Clock extends AbstractProcessBlock implements ProcessBlock {
 	// Initially set the value FALSE
 	@Override
 	public void start() {
-		log.infof("%s.start: emit FALSE",TAG);
-		if( !isLocked() ) {
-			OutgoingNotification sig = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,new BasicQualifiedValue(TruthValue.FALSE.name()));
-			controller.acceptCompletionNotification(sig);
+		if( !running ) {
+			log.infof("%s.start: emit FALSE",TAG);
+			if( !isLocked() ) {
+				OutgoingNotification sig = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,new BasicQualifiedValue(TruthValue.FALSE.name()));
+				controller.acceptCompletionNotification(sig);
+			}
 		}
+		super.start();
 	}
 	/**
 	 * Disconnect from the timer thread.
