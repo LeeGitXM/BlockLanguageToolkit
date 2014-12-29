@@ -9,7 +9,7 @@
 		<requiredignitionversion>7.7.0</requiredignitionversion>
 		<requiredframeworkversion>6</requiredframeworkversion>
 		<freemodule>true</freemodule>
-		<documentation>index.html</documentation>
+		<documentation>BlockLanguageToolkitDesign.htm</documentation>
 
 		<!-- Add the module dependencies for each scope -->
 		<!-- NOTE: Build fails here if we specify a Gateway dependency -->
