@@ -7,39 +7,26 @@ import java.awt.Color;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
-import com.ils.blt.common.block.AnchorDirection;
-import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
-import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.ProcessBlock;
-import com.ils.blt.common.block.PropertyType;
-import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
-import com.ils.blt.common.notification.IncomingNotification;
-import com.ils.blt.common.notification.OutgoingNotification;
-import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
  * A Source Connection is a special class that receives values directly
- * from the "engine". These values have originated from a Sink Connection
- * of the name configured in this block.
+ * from a tag that is meant to be logically connected to a SinkConnection. 
+ * Connected sources and sinks should share common names.
  */
 @ExecutableBlock
-public class SourceConnection extends AbstractProcessBlock implements ProcessBlock {
-	protected static String BLOCK_PROPERTY_SINK_NAME = "SinkName";
-	
+public class SourceConnection extends Input implements ProcessBlock {
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
 	public SourceConnection() {
-		initialize();
-		initializePrototype();
+		super();
 	}
-	
+
 	/**
 	 * Constructor. 
 	 * 
@@ -49,50 +36,21 @@ public class SourceConnection extends AbstractProcessBlock implements ProcessBlo
 	 */
 	public SourceConnection(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
-		initialize();
 	}
 	
 	/**
 	 * Add properties that are new for this class.
 	 * Populate them with default values.
 	 */
-	private void initialize() {
+	protected void initialize() {
+		super.initialize();
 		setName("SourceConnection");
-		BlockProperty sink = new BlockProperty(BLOCK_PROPERTY_SINK_NAME,"",PropertyType.STRING,true);
-		setProperty(BLOCK_PROPERTY_SINK_NAME, sink);
-		
-		// Define a single output. We receive a value from the "ether" and send it on our output connection
-		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.ANY);
-		anchors.add(output);
-	}
-	
-	/**
-	 * A new value has appeared on the input (routed by the engine). Simply pass it on.
-	 * @param incoming incoming new value.
-	 */
-	@Override
-	public void acceptValue(IncomingNotification incoming) {
-		super.acceptValue(incoming);
-		this.state = BlockState.ACTIVE;
-		QualifiedValue value = incoming.getValue();
-		OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,new BasicQualifiedValue(value));
-		controller.acceptCompletionNotification(nvn);
-		notifyOfStatus(value);
-
-	}
-	/**
-	 * Send status update notification for our last latest state.
-	 */
-	@Override
-	public void notifyOfStatus() {}
-	private void notifyOfStatus(QualifiedValue qv) {
-		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 	
 	/**
 	 * Augment the palette prototype for this block class.
 	 */
-	private void initializePrototype() {
+	protected void initializePrototype() {
 		prototype.setPaletteIconPath("Block/icons/palette/in_connection.png");
 		prototype.setPaletteLabel("Source");
 		prototype.setTooltipText("Receive data from a sink of the same name");

@@ -20,6 +20,7 @@ sqlite3 $DB < ${BIN}/insertClassMap.sql
 sqlite3 $DB < ${BIN}/insertAnchorMap.sql
 sqlite3 $DB < ${BIN}/insertClassProperties.sql
 sqlite3 $DB < ${BIN}/insertProcedures.sql
+sqlite3 $DB < ${BIN}/insertPreferences.sql
 sqlite3 $DB < ${BIN}/insertProperties.sql
 sqlite3 $DB < ${BIN}/insertPythonProperties.sql
 sqlite3 $DB < ${BIN}/insertTags.sql

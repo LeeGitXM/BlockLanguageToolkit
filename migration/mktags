@@ -7,12 +7,12 @@ then
     echo "USAGE: mktags"
 	exit 2
 fi
-REPO=~/Development/ils/repo
+REPO=~/Development/ils/src
 cd $REPO/blt
 BLT=`pwd`
 LIB=$REPO/external/lib
 JAR=${LIB}/blt-migration.jar
-DB=${BLT}/setup/db/conversion.db
+DB=${BLT}/migration/mdb/conversion.db
 # Use for debugging - ruins output file however.
 #cat ${MIGRATION}/$FIL-g2.json | java -cp ${JAR} -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000 -Dlog.level=INFO -Droot.class=APPLICATION com.ils.blt.migration.Migrator ${DB} > ${MIGRATION}/$FIL.json
 java -cp ${JAR} -Dlog.level=INFO com.ils.blt.migration.TagMigrator ${DB} 

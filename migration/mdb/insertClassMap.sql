@@ -14,14 +14,14 @@ insert into ClassMap values ('EM-GDA-LOGICAL-VARIABLE','com.ils.block.Parameter'
 insert into ClassMap values ('EM-GDA-LOW-LIMIT','com.ils.block.LowLimitObservation');
 insert into ClassMap values ('EM-GDA-LOW-LIMIT-WITH-DEADBAND','com.ils.block.LowLimitObservation');
 insert into ClassMap values ('EM-GDA-SET-VAR-FALSE','com.ils.block.Junction');
-insert into ClassMap values ('EM-GDA-SIMPLE-TREND-OBSERVATION','com.ils.block.TrendObservation');
+insert into ClassMap values ('EM-GDA-SIMPLE-TREND-OBSERVATION','com.ils.block.TrendDetector');
 insert into ClassMap values ('EM-GDA-SQC-DIAGNOSIS','xom.block.sqcdiagnosis.SQCDiagnosis');
 insert into ClassMap values ('EM-GDA-SQC-LIMIT-OBSERVATION','com.ils.block.SQC');
 insert into ClassMap values ('EM-GDA-SUBDIAGNOSIS','xom.block.subdiagnosis.SubDiagnosis');
 insert into ClassMap values ('EM-GDA-SYMBOLIC-VARIABLE','com.ils.block.Parameter');
 insert into ClassMap values ('EM-GDA-TEST-POINT','com.ils.block.TestPoint');
 insert into ClassMap values ('GDL-AND-GATE','com.ils.block.And');
-insert into ClassMap values ('GDL-ARITHMETIC-FUNCTION','xom.block.Arithmetic.Arithmetic');
+insert into ClassMap values ('GDL-ARITHMETIC-FUNCTION','xom.block.arithmetic.Arithmetic');
 insert into ClassMap values ('GDL-BLOCK-EVALUATION','com.ils.block.Clock');
 insert into ClassMap values ('GDL-BLOCK-RESET','com.ils.block.Reset');
 insert into ClassMap values ('GDL-CONCLUSION','com.ils.block.Junction');
@@ -35,7 +35,7 @@ insert into ClassMap values ('GDL-ENCAPSULATION-BLOCK','com.ils.block.Encapsulat
 insert into ClassMap values ('GDL-EQUALITY-OBSERVATION','com.ils.block.EqualityObservation');
 insert into ClassMap values ('GDL-INFERENCE-DELAY','com.ils.block.Delay');
 insert into ClassMap values ('GDL-INFERENCE-EVENT','com.ils.block.EdgeTrigger');
-insert into ClassMap values ('GDL-GENERIC-ACTION','xom.block.Action.Action');
+insert into ClassMap values ('GDL-GENERIC-ACTION','xom.block.action.Action');
 insert into ClassMap values ('GDL-HIGH-VALUE-OBSERVATION','com.ils.block.HighLimitObservation');
 insert into ClassMap values ('GDL-IN-RANGE-OBSERVATION','com.ils.block.RangeObservation');
 insert into ClassMap values ('GDL-LOW-VALUE-OBSERVATION','com.ils.block.LowLimitObservation');

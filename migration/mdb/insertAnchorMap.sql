@@ -20,7 +20,7 @@ insert into AnchorMap values ('EM-GDA-EXPIRATION-FILTER','DP-IN','in');
 insert into AnchorMap values ('EM-GDA-EXPIRATION-FILTER','DP-OUT','out');
 insert into AnchorMap values ('EM-GDA-FINAL-DIAGNOSIS','IP-IN','in');
 insert into AnchorMap values ('EM-GDA-FINAL-DIAGNOSIS','IP-OUT','out');
-insert into AnchorMap values ('EM-GDA-FINAL-DIAGNOSIS','CP-OUT','recommendation');
+insert into AnchorMap values ('EM-GDA-FINAL-DIAGNOSIS','CP-OUT','diagnosis');
 insert into AnchorMap values ('EM-GDA-HIGH-LIMIT','DP-IN','in');
 insert into AnchorMap values ('EM-GDA-HIGH-LIMIT','IP-OUT','out');
 insert into AnchorMap values ('EM-GDA-HIGH-LIMIT-WITH-DEADBAND','DP-IN','in');

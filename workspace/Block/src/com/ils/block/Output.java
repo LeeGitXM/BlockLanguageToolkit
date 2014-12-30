@@ -90,7 +90,7 @@ public class Output extends AbstractProcessBlock implements ProcessBlock {
 	 * Add properties that are new for this class.
 	 * Populate them with default values.
 	 */
-	private void initialize() {
+	protected void initialize() {
 		setName("Output");
 	    // TAG_WRITE means that we won't create a subscription to it
 		pathProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH,"",PropertyType.STRING,true);
@@ -109,7 +109,7 @@ public class Output extends AbstractProcessBlock implements ProcessBlock {
 	/**
 	 * Augment the palette prototype for this block class.
 	 */
-	private void initializePrototype() {
+	protected void initializePrototype() {
 		prototype.setPaletteIconPath("Block/icons/palette/output.png");
 		prototype.setPaletteLabel("Output");
 		prototype.setTooltipText("Write the incoming value to a pre-configured tag");

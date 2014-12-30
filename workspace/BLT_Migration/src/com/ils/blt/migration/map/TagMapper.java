@@ -31,6 +31,7 @@ public class TagMapper {
 	 * @param cxn open database connection
 	 */
 	public void createMap(Connection cxn) {
+		@SuppressWarnings("resource")
 		ResultSet rs = null;
 		try {
 			Statement statement = cxn.createStatement();
@@ -76,13 +77,15 @@ public class TagMapper {
 					bp.getBindingType().equals(BindingType.TAG_WRITE)) {
 					if( bp.getValue()!=null ) {
 						String unmapped = bp.getValue().toString();
+						// In the case of a source or sink, the name of the block correlates to the path
+						if( unmapped==null || unmapped.length()==0) unmapped = iblock.getName();
 						String mapped = tagMap.get(unmapped.trim());
 						if( mapped!=null) {
 							bp.setBinding(mapped);
 							bp.setValue("");  // Clear the value because we're bound to a tag
 						}
 						else {
-							System.err.println(TAG+".setTagPaths "+iblock.getName()+" ("+iblock.getClassName()+"):"+bp.getName()+"="+unmapped+" is not mapped to a tag path");
+							System.err.println(TAG+".setTagPaths "+iblock.getName()+"("+iblock.getClassName()+"):"+bp.getName()+"="+unmapped+" is not mapped to a tag path");
 						}
 					}
 					else {

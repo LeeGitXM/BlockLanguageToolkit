@@ -59,7 +59,7 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 	/**
 	 * Add the tag property and link it to the value property.
 	 */
-	private void initialize() {
+	protected void initialize() {
 		setName("Input");
 		// This property causes the engine to start a subscription.
 		tagPathProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH,"",PropertyType.OBJECT,true);
@@ -133,7 +133,7 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 	/**
 	 * Augment the palette prototype for this block class.
 	 */
-	private void initializePrototype() {
+	protected void initializePrototype() {
 		prototype.setPaletteIconPath("Block/icons/palette/input.png");
 		prototype.setPaletteLabel("Input");
 		prototype.setTooltipText("Place values on the output when a configured tag is updated");

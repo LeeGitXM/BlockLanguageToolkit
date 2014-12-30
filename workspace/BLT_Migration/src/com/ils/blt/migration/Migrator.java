@@ -24,6 +24,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.AnchorDirection;
+import com.ils.blt.common.block.RampMethod;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableApplication;
@@ -79,6 +80,7 @@ public class Migrator {
 		String connectPath = "jdbc:sqlite:"+path;
 
 		// Read database to generate conversion maps
+		@SuppressWarnings("resource")
 		Connection connection = null;
 		try {
 			connection = DriverManager.getConnection(connectPath);
@@ -182,8 +184,23 @@ public class Migrator {
 		sa.setName(g2a.getName());
 		sa.setId(UUID.nameUUIDFromBytes(g2a.getUuid().getBytes()));
 		for( G2Property prop:g2a.getProperties()) {
-			if(prop.getName().equalsIgnoreCase("highestPriorityProblem")) {
+			if(prop.getName().equalsIgnoreCase("groupRampMethod")) {
+				sa.setRampMethod(RampMethod.valueOf(prop.getValue().toString().toUpperCase()));
+			}
+			else if(prop.getName().equalsIgnoreCase("highestPriorityProblem")) {
 				sa.setHighestPriorityProblem(func.coerceToInteger(prop.getValue()));
+			}
+			else if(prop.getName().equalsIgnoreCase("includeInMainMenu")) {
+				sa.setIncludeInMenus(func.coerceToBoolean(prop.getValue()));
+			}
+			else if(prop.getName().equalsIgnoreCase("messageQueueName")) {
+				sa.setMessageQueue(prop.getValue().toString());
+			}
+			else if(prop.getName().equalsIgnoreCase("post")) {
+				sa.setConsole(prop.getValue().toString());
+			}
+			else if(prop.getName().equalsIgnoreCase("unit")) {
+				sa.setUnit(prop.getValue().toString());
 			}
 		}
 		int familyCount = g2a.getFamilies().length;
@@ -203,7 +220,10 @@ public class Migrator {
 		sf.setName(g2f.getName());
 		sf.setId(UUID.nameUUIDFromBytes(g2f.getUuid().getBytes()));
 		for( G2Property prop:g2f.getProperties()) {
-			if(prop.getName().equalsIgnoreCase("priority")) {
+			if(prop.getName().equalsIgnoreCase("label")) {
+				sf.setDescription(prop.getValue().toString());
+			}
+			else if(prop.getName().equalsIgnoreCase("priority")) {
 				sf.setPriority(func.coerceToInteger(prop.getValue()));
 			}
 		}

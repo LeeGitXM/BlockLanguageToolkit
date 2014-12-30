@@ -21,6 +21,11 @@ CREATE TABLE ClassProperty(
 	BindingType text NOT NULL,
 	Value text
 );
+-- Global preferences
+CREATE TABLE PreferenceMap(
+    Name  text NOT NULL,
+    Value text NOT NULL
+);
 
 -- Map a G2 block class to an Ignition block class
 -- Map properties of G2 blocks to properties of
