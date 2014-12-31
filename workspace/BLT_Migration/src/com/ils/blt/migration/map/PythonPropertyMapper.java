@@ -29,7 +29,7 @@ import com.ils.common.ClassList;
 public class PythonPropertyMapper {
 	private final String TAG = "PythonPropertyMapper";
 	private final Map<String,PrototypeSet> prototypeSetMap;       // Lookup by className
-	private final Map<String,BlockProperty[]> propertyArrayMap;    // Lookup by className
+	private final Map<String,BlockProperty[]> propertyArrayMap;   // Lookup by className
 	/** 
 	 * Constructor: 
 	 */
@@ -218,8 +218,14 @@ public class PythonPropertyMapper {
 	 */
 	public void setProperties(SerializableBlock iblock) {
 		String cname = iblock.getClassName();
-		BlockProperty[] properties = propertyArrayMap.get(cname);
-		if( properties!=null ) {
+		if( propertyArrayMap.get(cname)!=null ) {
+			BlockProperty[] propertiesTemplate = propertyArrayMap.get(cname);
+			BlockProperty[] properties = new BlockProperty[propertiesTemplate.length];
+			int index = 0;
+			for(BlockProperty bp:propertiesTemplate) {
+				properties[index] = bp.clone();
+				index++;
+			}
 			iblock.setProperties(properties);
 		}
 		else {

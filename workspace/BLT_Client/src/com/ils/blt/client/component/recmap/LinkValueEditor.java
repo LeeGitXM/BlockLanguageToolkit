@@ -8,6 +8,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -38,8 +39,8 @@ public class LinkValueEditor extends JDialog {
 	// A panel is designed to edit properties that are lists of strings.
 	private static final String PREFIX = BLTProperties.BLOCK_PREFIX;  // Required for text strings
 	private static final long serialVersionUID = 2002388376824434427L;
-	private final int DIALOG_HEIGHT = 180;
-	private final int DIALOG_WIDTH = 240;
+	private final int DIALOG_HEIGHT = 100;
+	private final int DIALOG_WIDTH = 180;
 	
 	private final VisualItem visualItem;
 	private JTextField textField;
@@ -49,6 +50,7 @@ public class LinkValueEditor extends JDialog {
 		this.visualItem = item;
 		this.setTitle(BundleUtil.get().getString(PREFIX+".LinkValueEditor.Title"));
 		setModal(false);
+		setAlwaysOnTop(true);
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
         this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));
@@ -62,7 +64,7 @@ public class LinkValueEditor extends JDialog {
 		setLayout(new BorderLayout());
 		JPanel internalPanel = new JPanel();
 	
-		internalPanel.setLayout(new MigLayout("ins 2","",""));
+		internalPanel.setLayout(new MigLayout("ins 10 20 10 20","[]","[][]"));
 		addSeparator(internalPanel,"Edit value");
 		textField = createTextField();
 		internalPanel.add(textField,"growx,wrap");

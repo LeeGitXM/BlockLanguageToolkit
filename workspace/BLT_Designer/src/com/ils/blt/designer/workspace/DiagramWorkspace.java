@@ -5,6 +5,7 @@ package com.ils.blt.designer.workspace;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Stroke;
@@ -683,17 +684,20 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		}
 		
 		// Display the custom editor
-		public void actionPerformed(ActionEvent e) {
+		public void actionPerformed(final ActionEvent e) {
 			// Apparently this only works if the class is in the same package (??)
 			try{
 				Class<?> clss = Class.forName(block.getEditorClass());
 				Constructor<?> ctor = clss.getDeclaredConstructor(new Class[] {DesignerContext.class,ProcessDiagramView.class,ProcessBlockView.class});
 				ProcessDiagramView pdv = getActiveDiagram();
 				final JDialog edtr = (JDialog)ctor.newInstance(context,pdv,block); 
+				Object source = e.getSource();
+				if( source instanceof Component) {
+					edtr.setLocationRelativeTo((Component)source);
+				}
 				edtr.pack();
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
-						edtr.setLocationByPlatform(true);
 						edtr.setVisible(true);
 					}
 				}); 
@@ -753,12 +757,15 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		}
 		
 		// Display the internals viewer
-		public void actionPerformed(ActionEvent e) {
-			final JDialog viewer = (JDialog)new BlockInternalsViewer(diagram,block);
+		public void actionPerformed(final ActionEvent e) {
+			final JDialog viewer = (JDialog)new BlockInternalsViewer(context.getFrame(),diagram,block);
+			Object source = e.getSource();
+			if( source instanceof Component) {
+				viewer.setLocationRelativeTo((Component)source);
+			}
 			viewer.pack();
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					viewer.setLocationByPlatform(true);
 					viewer.setVisible(true);
 				}
 			}); 

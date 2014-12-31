@@ -32,24 +32,20 @@ public class TagMigrator {
 	private final List<TagData> tags;
 	@SuppressWarnings("unused")
 	private final static JDBC driver = new JDBC(); // Force driver to be loaded
-	private final Map<String,String> preferences;
 	 
 	public TagMigrator() {
 		tags = new ArrayList<TagData>();
-		preferences = new HashMap<>();
 	}
 	
 	public void processDatabase(String path) {
 		String connectPath = "jdbc:sqlite:"+path;
 
 		// Read database to generate conversion maps
+		@SuppressWarnings("resource")
 		Connection connection = null;
 		try {
 			connection = DriverManager.getConnection(connectPath);
-			createPreferences(connection);
 			createList(connection);
-			//appendParameters(connection);
-			//appendSinkSources();
 		}
 		catch(SQLException e) {
 			// if the error message is "out of memory", 
@@ -75,6 +71,7 @@ public class TagMigrator {
 	 * @param cxn open database connection
 	 */
 	private void createList(Connection cxn) {
+		@SuppressWarnings("resource")
 		ResultSet rs = null;
 		try {
 			Statement statement = cxn.createStatement();
@@ -102,36 +99,7 @@ public class TagMigrator {
 		}
 	}
 	
-	/**
-	 * Create a map of name-value pairs for global properties
-	 * @param cxn open database connection
-	 */
-	private void createPreferences(Connection cxn) {
-		ResultSet rs = null;
-		try {
-			Statement statement = cxn.createStatement();
-			statement.setQueryTimeout(30);  // set timeout to 30 sec.
-			
-			rs = statement.executeQuery("select * from TagMap");
-			while(rs.next())
-			{
-				String name = rs.getString("Name");
-				String value = rs.getString("Value");
-				preferences.put(name,value);
-			}
-			rs.close();
-		}
-		catch(SQLException e) {
-			// if the error message is "out of memory", 
-			// it probably means no database file is found
-			System.err.println(e.getMessage());
-		}
-		finally {
-			if( rs!=null) {
-				try { rs.close(); } catch(SQLException ignore) {}
-			}
-		}
-	}
+
 	
 	/**
 	 * Iterate through the list of tags and write to std out as
@@ -177,7 +145,6 @@ public class TagMigrator {
 			
 		}
 		public String getPath() {return path;}
-		public String getType() {return type;}
 		public String getTypeCode() {
 			String tc = type;
 			if( type.equalsIgnoreCase("Double")) tc = "5";

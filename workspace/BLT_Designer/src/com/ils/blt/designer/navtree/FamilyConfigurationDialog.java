@@ -6,6 +6,7 @@ package com.ils.blt.designer.navtree;
 
 
 import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -33,8 +34,8 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 
 	
 	
-	public FamilyConfigurationDialog(SerializableFamily fam) {
-		super();
+	public FamilyConfigurationDialog(Frame frame,SerializableFamily fam) {
+		super(frame);
 		this.family = fam;
 		this.setTitle(PREFIX+".Family.Title");
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));

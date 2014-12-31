@@ -7,6 +7,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Image;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileWriter;
@@ -65,8 +66,8 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
  */
 public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavTreeNodeInterface, ProjectChangeListener  {
 	private static final String TAG = "DiagramTreeNode";
+	private static final int OFFSET = 100;
 	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
-
 	protected final LoggerEx logger = LogUtil.getLogger(getClass().getPackage().getName());
 	protected DesignerContext context;
 	private boolean dirty = false;     
@@ -346,12 +347,19 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
     		anchor = c;
     	}
 
-    	public void actionPerformed(ActionEvent e) {
+    	public void actionPerformed(final ActionEvent e) {
     		if( resourceId<0 ) return;   // Do nothing
     		try {
     			EventQueue.invokeLater(new Runnable() {
     				public void run() {
-    					ExportDialog dialog = new ExportDialog();
+    					ExportDialog dialog = new ExportDialog(context.getFrame());
+    					Object source = e.getSource();
+    					if( source instanceof Component) {
+    						dialog.setLocationRelativeTo((Component)source);
+    					}
+    					//dialog.setLocationRelativeTo(anchor);
+    					//Point p = dialog.getLocation();
+    					//dialog.setLocation((int)(p.getX()-OFFSET),(int)(p.getY()-OFFSET));
     					dialog.pack();
     					dialog.setVisible(true);   // Returns when dialog is closed
     					File output = dialog.getFilePath();

@@ -7,6 +7,7 @@ package com.ils.blt.designer.navtree;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Frame;
 
 import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
@@ -47,8 +48,8 @@ public class ConfigurationDialog extends JDialog {
 	protected boolean cancelled = false;
 	protected JComboBox<String> stateBox;
 	
-	public ConfigurationDialog() {
-		super();
+	public ConfigurationDialog(Frame frame) {
+		super(frame);
 		setModal(true);
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
         this.log = LogUtil.getLogger(getClass().getPackage().getName());

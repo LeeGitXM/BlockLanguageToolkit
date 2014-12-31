@@ -1,6 +1,7 @@
 package com.ils.blt.designer.navtree;
 
 import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -36,8 +37,8 @@ public class ImportDialog extends JDialog implements ActionListener {
 	private final Preferences prefs;
 	
 	// Doing nothing works quite well.
-	public ImportDialog(String label,String title) {
-		super();
+	public ImportDialog(Frame frame,String label,String title) {
+		super(frame);
 		setModal(true);
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
         setSize(new Dimension(DLG_WIDTH,DLG_HEIGHT));

@@ -59,7 +59,7 @@ public class NoteTextEditor extends JDialog {
 	private JTextArea textArea;
 	
 	public NoteTextEditor(DesignerContext context,ProcessDiagramView diag,ProcessBlockView view) {
-		super();
+		super(context.getFrame());
 		this.diagram = diag;
 		this.block = view;
 		this.setTitle(BundleUtil.get().getString(PREFIX+".NoteTextEdit.Title"));

@@ -8,6 +8,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
@@ -53,13 +54,12 @@ public class BlockInternalsViewer extends JDialog {
 	private List<Map<String,String>> buffer = null;
 	private JTable table;
 	
-	public BlockInternalsViewer(ProcessDiagramView dia,ProcessBlockView view) {
-		super();
+	public BlockInternalsViewer(Frame frame,ProcessDiagramView dia,ProcessBlockView view) {
+		super(frame);
 		this.diagram = dia;
 		this.block = view;
 		this.setTitle(String.format(BundleUtil.get().getString(PREFIX+".ViewInternals.Title",view.getName())));
 		setAlwaysOnTop(true);
-		setLocation(view.getLocation());
 		setModal(false);
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
         this.log = LogUtil.getLogger(getClass().getPackage().getName());

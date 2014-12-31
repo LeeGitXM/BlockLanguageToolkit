@@ -6,6 +6,7 @@ package com.ils.blt.designer.navtree;
 
 
 import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -34,8 +35,8 @@ public class ApplicationConfigurationDialog extends ConfigurationDialog {
 	private JTextField queueField;
 	private JTextField unitField;
 	
-	public ApplicationConfigurationDialog(SerializableApplication app) {
-		super();
+	public ApplicationConfigurationDialog(Frame frame,SerializableApplication app) {
+		super(frame);
 		this.application = app;
 		this.setTitle(PREFIX+".Application.Title");
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));

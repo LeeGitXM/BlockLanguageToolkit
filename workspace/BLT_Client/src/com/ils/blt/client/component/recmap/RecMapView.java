@@ -43,6 +43,7 @@ import prefuse.visual.VisualItem;
 import prefuse.visual.expression.InGroupPredicate;
 import prefuse.visual.tuple.TableNodeItem;
 
+import com.inductiveautomation.ignition.client.model.ClientContext;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 
@@ -61,7 +62,6 @@ public class RecMapView extends Display {
     private static final String map = "map";
     private static final String mapNodes = "map.nodes";
     private static final String mapEdges = "map.edges";
-    
     private LabelRenderer m_nodeRenderer;
     private EdgeRenderer m_edgeRenderer;
     private final ThreeColumnLayout columnLayout;
@@ -169,11 +169,11 @@ public class RecMapView extends Display {
         
         // initialize the display
         // WARNING: Use of Focus/ZoomToFit/Zoom Controls freeze the VisionUI
-        addControlListener(new RecMapSelector(recmap,1));
+        addControlListener(new RecMapSelector(recmap,1));    // Control-click
         addControlListener(new ZoomToFitControl());
         //addControlListener(new ZoomControl());
         //addControlListener(new WheelZoomControl());
-        addControlListener(new PanControl());
+        addControlListener(new PanControl());                // Drag
         
         
         // ------------------------------------------------

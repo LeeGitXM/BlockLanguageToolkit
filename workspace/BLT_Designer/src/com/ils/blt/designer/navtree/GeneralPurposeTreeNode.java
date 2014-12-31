@@ -9,6 +9,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Image;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -71,6 +72,7 @@ import com.inductiveautomation.ignition.designer.navtree.model.FolderNode;
  */
 public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInterface, ProjectChangeListener {
 	private static final String TAG = "GeneralPurposeTreeNode";
+	private static final int OFFSET = 100;
 	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
 	private final LoggerEx logger = LogUtil.getLogger(getClass().getPackage().getName());
 	private boolean dirty = false;
@@ -332,7 +334,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		context.addProjectChangeListener(this);
 		if (isRootFolder()) { 
 			ApplicationCreateAction applicationCreateAction = new ApplicationCreateAction(this);
-			ApplicationImportAction applicationImportAction = new ApplicationImportAction(this);
+			ApplicationImportAction applicationImportAction = new ApplicationImportAction(menu.getRootPane(),this);
 			ClearAction clearAction = new ClearAction();
 			DebugAction debugAction = new DebugAction();
 			SaveAllAction saveAllAction = new SaveAllAction(this);
@@ -360,7 +362,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			ApplicationExportAction applicationExportAction = new ApplicationExportAction(menu.getRootPane(),this);
 			FamilyCreateAction familyAction = new FamilyCreateAction(this);
 
-			ApplicationConfigureAction applicationConfigureAction = new ApplicationConfigureAction(getProjectResource());
+			ApplicationConfigureAction applicationConfigureAction = new ApplicationConfigureAction(menu.getRootPane(),getProjectResource());
 			treeSaveAction = new TreeSaveAction(this,PREFIX+".SaveApplication");
 
 			menu.add(familyAction);
@@ -373,11 +375,11 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		}
 		else if(getProjectResource().getResourceType().equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE)) {
 			DiagramCreateAction newDiagramAction = new DiagramCreateAction(this);
-			FamilyConfigureAction familyConfigureAction = new FamilyConfigureAction(getProjectResource());
+			FamilyConfigureAction familyConfigureAction = new FamilyConfigureAction(menu.getRootPane(),getProjectResource());
 			treeSaveAction = new TreeSaveAction(this,PREFIX+".SaveFamily");
 
 
-			ImportDiagramAction importAction = new ImportDiagramAction(this);
+			ImportDiagramAction importAction = new ImportDiagramAction(menu.getRootPane(),this);
 			menu.add(newDiagramAction);
 			menu.add(importAction);
 			menu.add(folderCreateAction);
@@ -392,8 +394,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			if( hasFamily() ) {
 				DiagramCreateAction diagramAction = new DiagramCreateAction(this);
 				menu.add(diagramAction);
-				ImportDiagramAction importAction = new ImportDiagramAction(this);
-				CloneDiagramAction cloneAction = new CloneDiagramAction(this);
+				ImportDiagramAction importAction = new ImportDiagramAction(menu.getRootPane(),this);
+				CloneDiagramAction cloneAction = new CloneDiagramAction(menu.getRootPane(),this);
 				menu.add(importAction);
 				menu.add(cloneAction);
 			}
@@ -688,10 +690,12 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	private class ApplicationConfigureAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
 		private final static String POPUP_TITLE = "Configure Application";
+		private final Component anchor;
 		private final ProjectResource res;
 
-		public ApplicationConfigureAction(ProjectResource resource)  {
+		public ApplicationConfigureAction(Component c,ProjectResource resource)  {
 			super(PREFIX+".ConfigureApplication",IconUtil.getIcon("gear"));  // preferences
+			anchor = c;
 			res = resource;
 		}
 
@@ -703,7 +707,10 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 						// Unmarshall the resource
 						SerializableApplication sa = deserializeApplication(res);
 						if( sa!=null ) {
-							ApplicationConfigurationDialog dialog = new ApplicationConfigurationDialog(sa);
+							ApplicationConfigurationDialog dialog = new ApplicationConfigurationDialog(context.getFrame(),sa);
+							dialog.setLocationRelativeTo(anchor);
+							Point p = dialog.getLocation();
+	    					dialog.setLocation((int)(p.getX()-OFFSET),(int)(p.getY()-OFFSET));
 							dialog.pack();
 							dialog.setVisible(true);   // Returns when dialog is closed
 							if( !dialog.isCancelled() ) {
@@ -778,7 +785,10 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			try {
 				EventQueue.invokeLater(new Runnable() {
 					public void run() {
-						ExportDialog dialog = new ExportDialog();
+						ExportDialog dialog = new ExportDialog(context.getFrame());
+						dialog.setLocationRelativeTo(anchor);
+						Point p = dialog.getLocation();
+    					dialog.setLocation((int)(p.getX()-OFFSET),(int)(p.getY()-OFFSET));
 						dialog.pack();
 						dialog.setVisible(true);   // Returns when dialog is closed
 						File output = dialog.getFilePath();
@@ -841,9 +851,11 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	private class ApplicationImportAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
 		private final static String POPUP_TITLE = "Import Application";
+		private final Component anchor;
 		private final AbstractResourceNavTreeNode root;
-		public ApplicationImportAction(AbstractResourceNavTreeNode parent)  {
+		public ApplicationImportAction(Component c,AbstractResourceNavTreeNode parent)  {
 			super(PREFIX+".ImportApplication",IconUtil.getIcon("import1"));  // preferences
+			this.anchor = c;
 			this.root = parent;
 		}
 
@@ -856,7 +868,10 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 							long newId = context.newResourceId();
 							String title = BundleUtil.get().getString(PREFIX+".Import.Application.DialogTitle");
 							String label = BundleUtil.get().getString(PREFIX+".Import.Application.NameLabel");
-							ImportDialog dialog = new ImportDialog(label,title);
+							ImportDialog dialog = new ImportDialog(context.getFrame(),label,title);
+							dialog.setLocationRelativeTo(anchor);
+							Point p = dialog.getLocation();
+	    					dialog.setLocation((int)(p.getX()-OFFSET),(int)(p.getY()-OFFSET));
 							dialog.pack();
 							dialog.setVisible(true);   // Returns when dialog is closed
 							File input = dialog.getFilePath();
@@ -973,8 +988,10 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	private class CloneDiagramAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
 		private final AbstractResourceNavTreeNode parentNode;
-		public CloneDiagramAction(AbstractResourceNavTreeNode pNode)  {
+		private final Component anchor;
+		public CloneDiagramAction(Component c,AbstractResourceNavTreeNode pNode)  {
 			super(PREFIX+".CloneDiagram",IconUtil.getIcon("copy"));  // preferences
+			this.anchor = c;
 			this.parentNode = pNode;
 		}
 
@@ -990,7 +1007,10 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 							workspace.open(newId);
 							String title = BundleUtil.get().getString(PREFIX+".Import.Diagram.DialogTitle");
 							String label = BundleUtil.get().getString(PREFIX+".Import.Diagram.NameLabel");
-							ImportDialog dialog = new ImportDialog(label,title);
+							ImportDialog dialog = new ImportDialog(context.getFrame(),label,title);
+							dialog.setLocationRelativeTo(anchor);
+							Point p = dialog.getLocation();
+	    					dialog.setLocation((int)(p.getX()-OFFSET),(int)(p.getY()-OFFSET));
 							dialog.pack();
 							dialog.setVisible(true);   // Returns when dialog is closed
 							File input = dialog.getFilePath();
@@ -1166,10 +1186,12 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	private class FamilyConfigureAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
 		private final static String POPUP_TITLE = "Configure Family";
+		private final Component anchor;
 		private ProjectResource res;
-		public FamilyConfigureAction(ProjectResource resource)  {
+		public FamilyConfigureAction(Component c,ProjectResource resource)  {
 			super(PREFIX+".ConfigureFamily",IconUtil.getIcon("gear"));  // preferences
-			res = resource;
+			this.anchor = c;
+			this.res = resource;
 		}
 
 		public void actionPerformed(ActionEvent e) {
@@ -1182,7 +1204,10 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 						logger.infof("%s.actionPerformed: deserializing ...%d",TAG,resourceId);
 						SerializableFamily sf = deserializeFamily(res);
 						if( sf!=null ) {
-							FamilyConfigurationDialog dialog = new FamilyConfigurationDialog(sf);
+							FamilyConfigurationDialog dialog = new FamilyConfigurationDialog(context.getFrame(),sf);
+							dialog.setLocationRelativeTo(anchor);
+							Point p = dialog.getLocation();
+	    					dialog.setLocation((int)(p.getX()-OFFSET),(int)(p.getY()-OFFSET));
 							dialog.pack();
 							dialog.setVisible(true);   // Returns when dialog is closed
 							if( !dialog.isCancelled()) {
@@ -1270,10 +1295,12 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	private class ImportDiagramAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
 		private final AbstractResourceNavTreeNode parentNode;
+		private final Component anchor;
 		private final static String POPUP_TITLE = "Import Diagram";
-		public ImportDiagramAction(AbstractResourceNavTreeNode pNode)  {
+		public ImportDiagramAction(Component c,AbstractResourceNavTreeNode pNode)  {
 			super(PREFIX+".ImportDiagram",IconUtil.getIcon("import1"));  // preferences
 			this.parentNode = pNode;
+			this.anchor = c;
 		}
 
 		public void actionPerformed(ActionEvent e) {
@@ -1286,7 +1313,10 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 							newId = context.newResourceId();
 							String title = BundleUtil.get().getString(PREFIX+".Import.Application.DialogTitle");
 							String label = BundleUtil.get().getString(PREFIX+".Import.Application.NameLabel");
-							ImportDialog dialog = new ImportDialog(label,title);
+							ImportDialog dialog = new ImportDialog(context.getFrame(),label,title);
+							dialog.setLocationRelativeTo(anchor);
+							Point p = dialog.getLocation();
+	    					dialog.setLocation((int)(p.getX()-OFFSET),(int)(p.getY()-OFFSET));
 							dialog.pack();
 							dialog.setVisible(true);   // Returns when dialog is closed
 							File input = dialog.getFilePath();

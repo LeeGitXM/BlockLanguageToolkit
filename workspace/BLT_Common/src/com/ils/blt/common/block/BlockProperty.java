@@ -161,6 +161,19 @@ public class BlockProperty implements NotificationChangeListener {
 		log.tracef("%s: toJson = %s",TAG,json);
 		return json;
 	}
+	/**
+	 * @return a copy of this property
+	 */
+	@Override
+	public BlockProperty clone() {
+		BlockProperty clone = new BlockProperty(getName(),getValue(),getType(),isEditable());
+		clone.setBinding(getBinding());
+		clone.setDisplayed(isDisplayed());
+		clone.setDisplayOffsetX(getDisplayOffsetX());
+		clone.setDisplayOffsetY(getDisplayOffsetY());
+		clone.setBindingType(getBindingType());
+		return clone;
+	}
 	
 	/**
 	 * A readable string representation for debugging.
