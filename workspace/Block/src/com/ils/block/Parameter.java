@@ -33,7 +33,8 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 public class Parameter extends AbstractProcessBlock implements ProcessBlock {
 	protected static String BLOCK_PROPERTY_TAG_PATH = "TagPath";
 	private BlockProperty tag = null;
-	
+	private BlockProperty valueProperty = null;
+	private QualifiedValue qv = null;    // Most recent output value
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
@@ -62,8 +63,12 @@ public class Parameter extends AbstractProcessBlock implements ProcessBlock {
 	private void initialize() {
 		setName("Parameter");
 		tag = new BlockProperty(BLOCK_PROPERTY_TAG_PATH,"",PropertyType.STRING,true);
+		tag.setBinding("");
 		tag.setBindingType(BindingType.TAG_READWRITE);
 		setProperty(BLOCK_PROPERTY_TAG_PATH, tag);
+		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.OBJECT,false);
+		valueProperty.setBindingType(BindingType.ENGINE);
+		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 		
 		// Define a single input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
@@ -91,37 +96,53 @@ public class Parameter extends AbstractProcessBlock implements ProcessBlock {
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
 		this.state = BlockState.ACTIVE;
-		QualifiedValue qv = vcn.getValue();
+		qv = vcn.getValue();
 		if( !isLocked() ) {
 			
 			if( vcn.getConnection()!=null ) {
 				// Arrival through the input connection
 				String path = tag.getValue().toString();
 				controller.updateTag(getParentId(),path, qv);
+				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+				controller.acceptCompletionNotification(nvn);
 			}
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
-			controller.acceptCompletionNotification(nvn);
+			else {
+				log.warnf("%s.acceptValue: received a null value, ignoring",getName());
+			}
+		}
+		// Even if locked, we update the current state
+		if( qv.getValue()!=null) {
+			valueProperty.setValue(qv.getValue());
 			notifyOfStatus(qv);
 		}
 	}
 	
 	/**
-	 * One of the block properties has changed. This default implementation does nothing.
+	 * The super method handles setting the new property. A save of the block
+	 * as a project resource will inform the controller so that it can change the
+	 * tag subscription, if necessary. 
 	 */
 	@Override
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
-		if(event.getPropertyName().equals(BLOCK_PROPERTY_TAG_PATH)) {
-			tag.setValue(event.getNewValue().toString());
+		String propertyName = event.getPropertyName();
+		if(propertyName.equals(BlockConstants.BLOCK_PROPERTY_TAG_PATH)) {
+			log.infof("%s.propertyChange path now %s",getName(),event.getNewValue().toString());
 		}
 	}
+
 	/**
-	 * Send status update notification for our last latest state.
+	 * Send status update notification for our last output value.
 	 */
 	@Override
-	public void notifyOfStatus() {}
-	private void notifyOfStatus(QualifiedValue qv) {
-		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	public void notifyOfStatus() {
+		if( qv.getValue()!=null) {
+			notifyOfStatus(qv);
+		}	
+	}
+	private void notifyOfStatus(QualifiedValue qval) {
+		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qval);
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qval);
 	}
 	/**
 	 * Augment the palette prototype for this block class.

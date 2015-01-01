@@ -17,11 +17,13 @@ import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
+import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
@@ -90,7 +92,6 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 			if( qv.getValue() != null ) {
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 				controller.acceptCompletionNotification(nvn);
-				notifyOfStatus(qv);
 			}
 			else {
 				log.warnf("%s.acceptValue: received a null value, ignoring",getName());
@@ -104,8 +105,9 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 	}
 
 	/**
-	 * On a change to the tag path, we need to inform the controller 
-	 * so as to change our subscription.
+	 * The super method handles setting the new property. A save of the block
+	 * as a project resource will inform the controller so that it can change the
+	 * tag subscription, if necessary. 
 	 */
 	@Override
 	public void propertyChange(BlockPropertyChangeEvent event) {
