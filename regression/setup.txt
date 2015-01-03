@@ -1,1 +1,4 @@
-step = "Setup"
+#
+# Define attributes that are valid for many tests
+#
+step: Setup

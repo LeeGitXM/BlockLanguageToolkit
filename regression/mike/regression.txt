@@ -1,1 +1,1 @@
-test= Block Language Toolkit Regression Suite
+test: Block Language Toolkit Regression Suite
