@@ -6,18 +6,18 @@
   <rev>1</rev>
   <build>2014092209</build>
 </version>
-<timestamp>2014-12-27 15:28:30</timestamp>
-<id>55</id>
+<timestamp>2015-01-05 15:33:31</timestamp>
+<id>61</id>
 <name>SimpleDiagrams</name>
 <title>Simple Diagrams</title>
 <description>Block Language Toolkit - UI Tests for Simple Diagrams</description>
 <enabled>true</enabled>
-<lastModified>1419719218924</lastModified>
+<lastModified>1420497187315</lastModified>
 <lastModifiedBy>chuckc</lastModifiedBy>
-<editCount>200</editCount>
-<uuid>73b4701f-c168-4c63-1308-748bcb08c72b</uuid>
+<editCount>9</editCount>
+<uuid>866fe31a-adfb-8ec8-b7bd-dcef7dc80baf</uuid>
 <resources>
-	<resource id='1456' name='sqc' module='block' modver='' type='blt.diagram' ver='0' dirty='true' editcount='200' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='1731' name='sqc' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiI0MDJi
 ZTVmOS0zOGM1LTQ2Y2MtYWRhYy1hMjkyYzY0YzQ1MDciLCJkaXNwbGF5IjoiaW4iLCJwYXJlbnRJ
@@ -243,7 +243,7 @@ aG90U3BvdFkiOjExLCJob3RTcG90SGVpZ2h0IjoxOCwiaG90U3BvdFdpZHRoIjoxOH0sInR5cGUi
 OiJEQVRBIn1dLCJpZCI6IjRlODg0NzA5LTQwN2ItNDJkNS05OTBmLTkyNDNhYTQwNGJlZSIsIm5h
 bWUiOiJzcWMiLCJyZXNvdXJjZUlkIjoxNDU2LCJzdGF0ZSI6IkFDVElWRSIsImRpcnR5IjpmYWxz
 ZSwiZW5jYXBzdWxhdGlvbkJsb2NrSWQiOm51bGx9]]></bytes></resource>
-	<resource id='1458' name='highobservation' module='block' modver='' type='blt.diagram' ver='0' dirty='true' editcount='187' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='1732' name='highobservation' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6Ik9VVEdPSU5HIiwiaWQiOiJhZmY5
 ZmRlMS1jMGQ0LTRiMmUtODYwMC03ZmU0NGQ5OTdmNTUiLCJkaXNwbGF5Ijoib3V0IiwicGFyZW50
@@ -377,7 +377,7 @@ OCwiaG90U3BvdFdpZHRoIjoxOH0sInR5cGUiOiJUUlVUSFZBTFVFIn1dLCJpZCI6IjU4MTAxMDli
 LWI2ZTItNDk1ZC05N2VjLTgyZDYzYmRhMTkzOSIsIm5hbWUiOiJoaWdob2JzZXJ2YXRpb24iLCJy
 ZXNvdXJjZUlkIjoxNDU4LCJzdGF0ZSI6IkFDVElWRSIsImRpcnR5Ijp0cnVlLCJlbmNhcHN1bGF0
 aW9uQmxvY2tJZCI6bnVsbH0=]]></bytes></resource>
-	<resource id='1449' name='' module='fpmi' modver='' type='client_tags' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='4' protected='false'>
+	<resource id='1733' name='' module='fpmi' modver='' type='client_tags' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='4' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[H4sIAAAAAAAAAG1QwUoDMRCdWOtuW2vrSREPe/USdpeVssVbS5GCerA/ENO0RjebdZNW/AjxJn6D
 F8G/0B/y6oQoeDAQ5mXy3uPNvBw9vY6+phfvj58np89vHwCwAUCmewWM4f/Tx7sNEBhhz5kS+Gqj
@@ -385,19 +385,19 @@ gntlf0AHNKFpnGRxnqZx7jWBvroR3BqEDVQvKiXpWtRG6hJbm2jxq8tSbIRI44Vjd9BaOQOsGusO
 /hhbI+pixzEIwO6ixiD3ur79Y9pD31pri3AL4HB2vYrGgkdxFiXHwzQfpkl0djmLXFKktAAmXCsq
 y/mKW7kWbGW1Yha96IJxq+sHl5lVVSG5b5u7wrKloaNCitLO2HKii7lw0ZroZ6USxjJV7YMfGkjo
 VwSN0M8MzdCHA+JIAXGTt3wYIAd+amg7SSf0S4dum/gtAIl+gHPqfQNtWM2uyAEAAA==]]></bytes></resource>
-	<resource id='1450' name='app75' module='block' modver='' type='blt.application' ver='0' dirty='true' editcount='184' parent='7bbbd6b9-3140-4328-a844-51817eb47574' oemlocked='false' scope='1' protected='false'>
+	<resource id='1734' name='app75' module='block' modver='' type='blt.application' ver='0' dirty='false' editcount='0' parent='7bbbd6b9-3140-4328-a844-51817eb47574' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJmYW1pbGllcyI6W10sImZvbGRlcnMiOm51bGwsImlkIjoiZGU1MGNkN2MtMmY4OS00NjczLTk1
 YmQtNDVjNGI3OGJiNmYwIiwibmFtZSI6Ik5ldyBBcHBsaWNhdGlvbiIsImNvbnNvbGUiOm51bGws
 ImRlc2NyaXB0aW9uIjoiIiwiaGlnaGVzdFByaW9yaXR5UHJvYmxlbSI6MCwiaW5jbHVkZUluTWVu
 dXMiOmZhbHNlLCJtZXNzYWdlUXVldWUiOiIiLCJyYW1wTWV0aG9kIjoiTk9ORSIsInVuaXQiOiIi
 LCJzdGF0ZSI6IkFDVElWRSJ9]]></bytes></resource>
-	<resource id='1451' name='family75' module='block' modver='' type='blt.family' ver='0' dirty='true' editcount='185' parent='de50cd7c-2f89-4673-95bd-45c4b78bb6f0' oemlocked='false' scope='1' protected='false'>
+	<resource id='1735' name='family75' module='block' modver='' type='blt.family' ver='0' dirty='false' editcount='0' parent='de50cd7c-2f89-4673-95bd-45c4b78bb6f0' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJkaWFncmFtcyI6W10sImZvbGRlcnMiOltdLCJpZCI6ImVjNTM1N2IyLTY5MGQtNDJjMC1iYzI2
 LTQwMzRjZjI2ODZkMyIsIm5hbWUiOiJOZXcgRmFtaWx5IiwiZGVzY3JpcHRpb24iOiIiLCJwcmlv
 cml0eSI6MCwic3RhdGUiOiJBQ1RJVkUifQ==]]></bytes></resource>
-	<resource id='1452' name='simplest' module='block' modver='' type='blt.diagram' ver='0' dirty='true' editcount='188' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='1736' name='simplest' module='block' modver='' type='blt.diagram' ver='0' dirty='true' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiI1NjRj
 YzY5Zi03ODFlLTQ2NzgtYWE1NC1mMzY5MGVhYWNmNzUiLCJkaXNwbGF5IjoiaW4iLCJwYXJlbnRJ
@@ -478,10 +478,10 @@ RyIsImlkIjoiaW4iLCJwYXJlbnRJZCI6IjY1OGY0OTk4LTY0ZjctNGI5OC04NDFiLTdiYzlhYWMy
 ZjU0ZiIsImFuY2hvclgiOjYsImFuY2hvclkiOjIxLCJwYXRoTGVhZGVyWCI6LTEwLCJwYXRoTGVh
 ZGVyWSI6MjEsImhvdFNwb3RYIjowLCJob3RTcG90WSI6MTUsImhvdFNwb3RIZWlnaHQiOjE1LCJo
 b3RTcG90V2lkdGgiOjEyfSwidHlwZSI6IkRBVEEifV0sImlkIjoiMWZiYzk1ODUtODdkOS00NWI4
-LWFjZGYtM2M3ZDAyZGI5OGRjIiwibmFtZSI6InNpbXBsZXN0IiwicmVzb3VyY2VJZCI6MTQ1Miwi
+LWFjZGYtM2M3ZDAyZGI5OGRjIiwibmFtZSI6InNpbXBsZXN0IiwicmVzb3VyY2VJZCI6MTczNiwi
 c3RhdGUiOiJBQ1RJVkUiLCJkaXJ0eSI6ZmFsc2UsImVuY2Fwc3VsYXRpb25CbG9ja0lkIjpudWxs
 fQ==]]></bytes></resource>
-	<resource id='1453' name='' module='' modver='7.7.1.2014092209' type='sr.global.props' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='7' protected='false'>
+	<resource id='1737' name='' module='' modver='7.7.1.2014092209' type='sr.global.props' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='7' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[H4sIAAAAAAAAAHWQsU7DMBRFn5tA27RFiIUKCYmVJT8AC6IIVAEFwcDqOm7rKokr26nERyA2xDew
 IPUv4IdYucZFDKVR7Hetd/PucV4Pn99Ov/qDxdPn8cXL+wcR1YhYf3e6OKP/ny2shKhrpevJEa9y
@@ -489,7 +489,7 @@ IPUv4IdYucZFDKVR7Hetd/PucV4Pn99Ov/qDxdPn8cXL+wcR1YhYf3e6OKP/ny2shKhrpevJEa9y
 eX5j9MwGtEjkXm0S7QDgpHITNEcq/41uIXKirNPmEacNgBSoDK9GbWCAdQaqCV8W8D0l+n5sB/2H
 wRVUm2j/74Z3t5f3fGwRNVeZND5re/k7WNdvzNM1wyUp2guRFNc8QyPwUj1hAYHYwVLEnmTVnax3
 t1bd7fXuzjd2fw494AEAAA==]]></bytes></resource>
-	<resource id='1454' name='sum' module='block' modver='' type='blt.diagram' ver='0' dirty='true' editcount='190' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='1738' name='sum' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiIyNzlk
 ZDIwNi00ZWEzLTQ5OTktYjRmYy00Njg2ZTA4ZDFiMTEiLCJkaXNwbGF5IjoiaW4iLCJwYXJlbnRJ
@@ -735,7 +735,7 @@ aG90U3BvdEhlaWdodCI6MTgsImhvdFNwb3RXaWR0aCI6MTh9LCJ0eXBlIjoiVFJVVEhWQUxVRSJ9
 XSwiaWQiOiI4ZWZiOTZhZC00ZDE3LTQ3MGEtODVkYS1iOTIwNWQ1Y2RkYzMiLCJuYW1lIjoic3Vt
 IiwicmVzb3VyY2VJZCI6MTQ1NCwic3RhdGUiOiJBQ1RJVkUiLCJkaXJ0eSI6ZmFsc2UsImVuY2Fw
 c3VsYXRpb25CbG9ja0lkIjpudWxsfQ==]]></bytes></resource>
-	<resource id='1455' name='gain' module='block' modver='' type='blt.diagram' ver='0' dirty='true' editcount='186' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='1739' name='gain' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiIxYjQz
 YzNhMC1iOWRiLTQ0YTgtYWExNi0xNWQ4MjM0MTk3MTgiLCJkaXNwbGF5IjoiaW4iLCJwYXJlbnRJ
@@ -928,6 +928,15 @@ Z2h0IjoxOCwiaG90U3BvdFdpZHRoIjoxOH0sInR5cGUiOiJEQVRBIn1dLCJpZCI6IjRmMjNhOWE4
 LTZjZmUtNDk0OC05NjMxLTUxNDM5OGM4MWNmYSIsIm5hbWUiOiJnYWluIiwicmVzb3VyY2VJZCI6
 MTQ1NSwic3RhdGUiOiJBQ1RJVkUiLCJkaXJ0eSI6ZmFsc2UsImVuY2Fwc3VsYXRpb25CbG9ja0lk
 IjpudWxsfQ==]]></bytes></resource>
+	<resource id='1740' name='' module='' modver='' type='designer.general.props' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='2' protected='false'>
+		<doc></doc>
+		<bytes><![CDATA[H4sIAAAAAAAAAG1Qy0oDMRQ9sdZOX1pdibiYrZswHTuUFnctVApFQX8gTlOJNpMyk7b0I8SduPAL
+3Aiu/QFd+y8u9Y5RcGEguTc359ybc+4Pbh97H8OT55u3o+O7p1cAawAbvnTfH/D/atCuECZ22Eab
+t3mTh0GzFXTCMOg4VMlcXMnYZpQWgNpkphVfyDRTJqHSOrX45bVCKmxSQ0XRI3g8zVlVqmiKG8D+
+yCT+UCR+EPnNqHsYdqOOPzo792loRJAtIqnE5lOJZCjWgJ1M2oGwcilWPaP1yIwlPdQJkHdnwPYk
+FVouTXr952NFoGyVlpkVekb3MtCPjeYqGc9jqxZSzK3RwhKaq8tEfSdjmVEuU65pyJT3f64DSYeY
+nqZmlu3CGQHmOdtQ8JwPKHpOJVgOKrHchbIbDbbnRKGSU6qek4Z6hTnPwHynH8XPvOcX3ybUDM8B
+AAA=]]></bytes></resource>
 </resources>
 <deletedResources>
 </deletedResources>

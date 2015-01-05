@@ -37,7 +37,6 @@ import com.inductiveautomation.ignition.common.sqltags.model.types.DataQuality;
  */
 @ExecutableBlock
 public class And extends AbstractProcessBlock implements ProcessBlock {
-	private final String TAG = "And";
 	// Keep map of values by originating block id
 	protected final Map<String,QualifiedValue> qualifiedValueMap;
 	private final Watchdog dog;
@@ -49,10 +48,10 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
 	public And() {
-		dog = new Watchdog(TAG,this);
 		qualifiedValueMap = new HashMap<String,QualifiedValue>();
 		initialize();
 		initializePrototype();
+		dog = new Watchdog(getName(),this);
 	}
 	
 	/**
@@ -64,9 +63,10 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	public And(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
-		dog = new Watchdog(TAG,this);
+		
 		qualifiedValueMap = new HashMap<String,QualifiedValue>();
 		initialize();
+		dog = new Watchdog(getName(),this);
 	}
 	
 	/**
@@ -121,7 +121,7 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 		String key = String.format("%s:%s",incoming.getConnection().getSource().toString(),
                                            incoming.getConnection().getUpstreamPortName());
 		QualifiedValue qv = incoming.getValue();
-		log.tracef("%s.acceptValue %s quality (%s) is good %s",TAG,qv.getValue().toString(),qv.getQuality().getName(),(qv.getQuality().isGood()?"GOOD":"BAD"));
+		log.tracef("%s.acceptValue %s quality (%s) is good %s",getName(),qv.getValue().toString(),qv.getQuality().getName(),(qv.getQuality().isGood()?"GOOD":"BAD"));
 		qualifiedValueMap.put(key, qv);
 		dog.setSecondsDelay(synchInterval);
 		controller.pet(dog);
@@ -134,8 +134,10 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void evaluate() {
+		log.infof("%s.evaluate",getName());
 		if( !isLocked() ) {
 			TruthValue newState = getAggregateState();
+			log.infof("%s.evaluate new: %s, old: %s",getName(),newState.name(),truthValue.name());
 			if(newState!=truthValue) {
 				truthValue = newState;
 				QualifiedValue result = new BasicQualifiedValue(truthValue.name(),
@@ -160,7 +162,7 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 				synchInterval = Double.parseDouble(event.getNewValue().toString());
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert synch interval to an double (%s)",TAG,nfe.getLocalizedMessage());
+				log.warnf("%s: propertyChange Unable to convert synch interval to an double (%s)",getName(),nfe.getLocalizedMessage());
 			}
 		}
 	}

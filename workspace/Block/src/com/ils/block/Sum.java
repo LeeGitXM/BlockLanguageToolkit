@@ -35,7 +35,6 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
  */
 @ExecutableBlock
 public class Sum extends AbstractProcessBlock implements ProcessBlock {
-	private final String TAG = "Sum";
 	// Keep map of values by originating block id
 	protected final Map<String,QualifiedValue> valueMap;
 	private final Watchdog dog;
@@ -45,10 +44,10 @@ public class Sum extends AbstractProcessBlock implements ProcessBlock {
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
 	public Sum() {
-		dog = new Watchdog(TAG,this);
 		valueMap = new HashMap<String,QualifiedValue>();
 		initialize();
 		initializePrototype();
+		dog = new Watchdog(getName(),this);
 	}
 	
 	/**
@@ -60,9 +59,9 @@ public class Sum extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	public Sum(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
-		dog = new Watchdog(TAG,this);
 		valueMap = new HashMap<String,QualifiedValue>();
 		initialize();
+		dog = new Watchdog(getName(),this);
 	}
 	
 	/**
@@ -118,11 +117,11 @@ public class Sum extends AbstractProcessBlock implements ProcessBlock {
 				Double dbl = Double.parseDouble(qv.getValue().toString());
 				qv = new BasicQualifiedValue(dbl,qv.getQuality(),qv.getTimestamp());
 				dog.setSecondsDelay(synchInterval);
-				log.tracef("%s.acceptValue got %s for %s", TAG,dbl.toString(),key);
+				log.tracef("%s.acceptValue got %s for %s", getName(),dbl.toString(),key);
 				controller.pet(dog);
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s.acceptValue: Unable to convert incoming value to a double (%s)",TAG,nfe.getLocalizedMessage());
+				log.warnf("%s.acceptValue: Unable to convert incoming value to a double (%s)",getName(),nfe.getLocalizedMessage());
 				qv = new BasicQualifiedValue(Double.NaN,new BasicQuality(nfe.getLocalizedMessage(),Quality.Level.Bad),qv.getTimestamp());
 			}
 			valueMap.put(key, qv);
@@ -134,14 +133,16 @@ public class Sum extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void evaluate() {
+		log.infof("%s.evaluate ...", getName());
 		if( !isLocked() && !valueMap.isEmpty()) {
-			synchronized(this) {
+			//synchronized(this) {
 				double value = getAggregateResult();
+				log.infof("%s.evaluate ... value = %3.2f", getName(),value);
 				QualifiedValue result = new BasicQualifiedValue(new Double(value),getAggregateQuality());
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
 				controller.acceptCompletionNotification(nvn);
 				notifyOfStatus(result);
-			}	
+			//}	
 		}
 	}
 	/**
@@ -164,7 +165,7 @@ public class Sum extends AbstractProcessBlock implements ProcessBlock {
 				synchInterval = Double.parseDouble(event.getNewValue().toString());
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert synch interval to a double (%s)",TAG,nfe.getLocalizedMessage());
+				log.warnf("%s: propertyChange Unable to convert synch interval to a double (%s)",getName(),nfe.getLocalizedMessage());
 			}
 		}
 	}

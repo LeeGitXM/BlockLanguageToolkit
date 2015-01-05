@@ -1,0 +1,5 @@
+log: Block Language Toolkit Regression Suite
+#
+# Run the collection of tests for the "simple" diagrams
+#
+include: simplest.txt

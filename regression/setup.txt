@@ -1,4 +1,6 @@
 #
 # Define attributes that are valid for many tests
 #
-step: Setup
+timefactor: 10
+tagprovider: XOM
+tagset: DiagramFeed MemoryTags/DiagramFeed

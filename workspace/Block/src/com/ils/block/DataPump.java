@@ -32,10 +32,11 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 	private final String TAG = "DataPump";
 	private final String PROPERTY_LIVE_ON_START = "LiveOnStart";
+	private BlockProperty liveProperty = null;
+	private BlockProperty valueProperty = null;
 	private final Watchdog dog;
-	private boolean liveOnStart = false;
 	private Double interval = Double.NaN;      // No interval by Default
-	private Object value = "";
+	private Object value;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -73,6 +74,12 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 	public void start() {
 		if(!running) reset();
 		super.start();
+		value = valueProperty.getValue();
+		Boolean liveOnStart = (Boolean)liveProperty.getValue();
+		if( liveOnStart!=null && value!=null && liveOnStart.booleanValue() ) {
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,new BasicQualifiedValue(value));
+			controller.acceptCompletionNotification(nvn);
+		}
 	}
 	/**
 	 * Disconnect from the timer thread.
@@ -123,14 +130,6 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 				if( dog.isActive()) controller.removeWatchdog(dog);
 			}
 		}
-		else if( propertyName.equals(PROPERTY_LIVE_ON_START)) {
-			try {
-				liveOnStart = Boolean.parseBoolean(event.getNewValue().toString());
-			}
-			catch(NumberFormatException nfe) {
-				log.warnf("%s.propertyChange: Unable to convert live on start to a boolean (%s)",TAG,nfe.getLocalizedMessage());
-			}
-		}
 		else {
 			log.warnf("%s.propertyChange:Unrecognized property (%s)",TAG,propertyName);
 		}
@@ -178,9 +177,9 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 		setName("DataPump");
 		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL,new Double(interval),PropertyType.TIME,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL, intervalProperty);
-		BlockProperty valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,value,PropertyType.OBJECT,true);
+		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,value,PropertyType.OBJECT,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
-		BlockProperty liveProperty = new BlockProperty(PROPERTY_LIVE_ON_START,new Boolean(liveOnStart),PropertyType.BOOLEAN,true);
+		liveProperty = new BlockProperty(PROPERTY_LIVE_ON_START,Boolean.FALSE,PropertyType.BOOLEAN,true);
 		setProperty(PROPERTY_LIVE_ON_START, liveProperty);
 		
 		// Define a single output

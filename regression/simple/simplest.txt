@@ -1,0 +1,8 @@
+#
+# Simple test of an input and readout
+#
+Tagset: DiagramFeed
+10:00 1
+10:01 2
+10:02 3
+10:03 4
