@@ -75,8 +75,8 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 		if(!running) reset();
 		super.start();
 		value = valueProperty.getValue();
-		Boolean liveOnStart = (Boolean)liveProperty.getValue();
-		if( liveOnStart!=null && value!=null && liveOnStart.booleanValue() ) {
+		String liveOnStart = liveProperty.getValue().toString();
+		if( liveOnStart!=null && value!=null && liveOnStart.equalsIgnoreCase("true") ) {
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,new BasicQualifiedValue(value));
 			controller.acceptCompletionNotification(nvn);
 		}
@@ -177,7 +177,7 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 		setName("DataPump");
 		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL,new Double(interval),PropertyType.TIME,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL, intervalProperty);
-		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,value,PropertyType.OBJECT,true);
+		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,new Double(0.0),PropertyType.OBJECT,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 		liveProperty = new BlockProperty(PROPERTY_LIVE_ON_START,Boolean.FALSE,PropertyType.BOOLEAN,true);
 		setProperty(PROPERTY_LIVE_ON_START, liveProperty);
