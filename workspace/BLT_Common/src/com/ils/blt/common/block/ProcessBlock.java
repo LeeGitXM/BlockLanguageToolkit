@@ -39,6 +39,10 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 */
 	public List<AnchorPrototype> getAnchors();
 	/**
+	 * @return the fully qualified path name of this block.
+	 */
+	public String getClassName();
+	/**
 	 * Place a value on a named output port of a block. 
 	 * This action does not change the internal state of the block.
 	 * It's intended use is to debug a diagram.
@@ -61,7 +65,6 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 * @return the block's label
 	 */
 	public String getName();
-
 	/**
 	 * @return the current state of the block
 	 */

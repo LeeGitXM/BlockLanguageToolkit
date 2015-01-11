@@ -60,6 +60,15 @@ public class ApplicationScriptFunctions   {
 	public static List getDiagramDescriptors(String projectName) {
 		return manager.getDiagramDescriptors(projectName);
 	}
+	/**
+	 * @param diagramId identifier of the diagram to be queried, a String
+	 * @param className fully qualified class name of blocks to be listed
+	 * @return a list of ids for blocks owned by a specified diagram that are of a
+	 *         specified class.
+	 */
+	public static List getDiagramBlocksOfClass(String diagramId,String className) {
+		return manager.getDiagramBlocksOfClass(diagramId,className);
+	}
 	
 	/**
 	 * @return the the internal state of a block.
@@ -67,7 +76,15 @@ public class ApplicationScriptFunctions   {
 	public static SerializableBlockStateDescriptor getInternalState(String diagramId,String blockId) {
 		return manager.getInternalState(diagramId,blockId);
 	}
-	
+	/**
+	 * @param diagramId identifier of the diagram owning the block, a String
+	 * @param blockId identifier of the block within the diagram, a String
+	 * @param propertyName name of the property for which a value is to be returned
+	 * @return the value of a specified block property.
+	 */
+	public static Object getPropertyValue(String diagramId,String blockId,String propertyName) {
+		return manager.getPropertyValue(diagramId,blockId,propertyName);
+	}
 	/**
 	 * Query the gateway for list of resources that it knows about. This is
 	 * a debugging aid. 

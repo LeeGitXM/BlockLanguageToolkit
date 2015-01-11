@@ -146,6 +146,8 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	@Override
 	public PalettePrototype getBlockPrototype() {return prototype; }
 	@Override
+	public String getClassName() {return this.getClass().getCanonicalName();}
+	@Override
 	public String getName() {return name;}
 	@Override
 	public long getProjectId() {return projectId;}

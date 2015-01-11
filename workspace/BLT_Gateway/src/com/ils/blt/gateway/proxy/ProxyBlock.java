@@ -46,6 +46,8 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	public void addProperty(BlockProperty prop) {
 		setProperty(prop.getName(),prop);
 	}
+	@Override
+	public String getClassName() { return className; }
 	
 	/**
 	 * @return the Python object for which this class is a proxy

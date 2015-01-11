@@ -108,6 +108,25 @@ public class ApplicationRequestHandler  {
 		return state;
 	}
 	
+	/**
+	 * @param diagramId identifier of the diagram to be queried, a String
+	 * @param className fully qualified class name of blocks to be listed
+	 * @return a list of ids for blocks owned by a specified diagram that are of a
+	 *         specified class.
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public List getDiagramBlocksOfClass(String diagramId,String className) {
+		log.debugf("%s.getDiagramBlocksOfClass: for diagram %s (%s)",TAG,diagramId,className);
+		List<String> blockList = new ArrayList<String>();
+		try {
+			blockList = (List<String>)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "getDiagramBlocksOfClass",diagramId,className);
+		}
+		catch(Exception ge) {
+			log.infof("%s.getBlockProperties: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		return blockList;
+	}
 	
 	/**
 	 * Obtain a list of BlockProperty objects for the specified block. If the block is not known to the gateway
@@ -258,6 +277,25 @@ public class ApplicationRequestHandler  {
 		}
 		return result;
 	}
+	/**
+	 * @param diagramId identifier of the diagram owning the block, a String
+	 * @param blockId identifier of the block within the diagram, a String
+	 * @param propertyName name of the property for which a value is to be returned
+	 * @return the value of a specified block property.
+	 */
+	public Object getPropertyValue(String diagramId,String blockId,String propertyName) {
+		Object result = null;
+		try {
+			result = GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "getPropertyValue",diagramId,blockId,propertyName);
+			log.debugf("%s.getPropertyValue ... %s",TAG,result.toString());
+		}
+		catch(Exception ge) {
+			log.infof("%s.getPropertyValue: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		return result;
+	}
+	
 	/**
 	 * Determine whether or not the engine is running.
 	 */

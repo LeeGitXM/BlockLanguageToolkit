@@ -45,19 +45,21 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 public class GatewayRpcDispatcher   {
 	private static String TAG = "GatewayRpcDispatcher";
 	private final LoggerEx log;
+	private final ControllerRequestHandler requestHandler;
 
 	/**
 	 * Constructor. There is a separate dispatcher for each project.
 	 */
 	public GatewayRpcDispatcher() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
+		requestHandler = ControllerRequestHandler.getInstance();
 	}
 	public void clearController() {
-		ControllerRequestHandler.getInstance().clearController();
+		requestHandler.clearController();
 	}
 	
 	public String databaseForProject(Long projectId) {
-		return ControllerRequestHandler.getInstance().databaseForProject(projectId.longValue());
+		return requestHandler.databaseForProject(projectId.longValue());
 	}
 	
 	/**
@@ -80,6 +82,18 @@ public class GatewayRpcDispatcher   {
 		ProcessDiagram diagram = controller.getDiagram(diagramUUID);
 		return new Boolean(diagram!=null);
 	}
+	
+	public List getDiagramBlocksOfClass(String diagramId,String className) {
+		UUID diagramUUID = null;
+		try {
+			diagramUUID = UUID.fromString(diagramId);
+		}
+		catch(IllegalArgumentException iae) {
+			log.warnf("%s.diagramExists: Diagram UUID string is illegal (%s), creating new",TAG,diagramId);
+			diagramUUID = UUID.nameUUIDFromBytes(diagramId.getBytes());
+		}
+		return requestHandler.getDiagramBlocksOfClass(diagramUUID,className);
+	}
 	/**
 	 * Query a block for its internal state. This allows a read-only display in the
 	 * designer to be useful for block debugging.
@@ -90,8 +104,7 @@ public class GatewayRpcDispatcher   {
 	 */
 	public String getInternalState(String diagramId,String blockId) {
 		log.infof("%s.getInternalState: (%s:%s)",TAG,diagramId,blockId);
-		SerializableBlockStateDescriptor desc = ControllerRequestHandler.getInstance().
-									getInternalState(diagramId,blockId);
+		SerializableBlockStateDescriptor desc = requestHandler.getInternalState(diagramId,blockId);
 		ObjectMapper mapper = new ObjectMapper();
 		String json = "";
 		try {
@@ -122,7 +135,7 @@ public class GatewayRpcDispatcher   {
 			log.warnf("%s.getBlockProperties: Block UUID string is illegal (%s), creating new",TAG,blockId);
 			blockUUID = UUID.nameUUIDFromBytes(blockId.getBytes());
 		}
-		BlockProperty[] propertyArray = ControllerRequestHandler.getInstance().
+		BlockProperty[] propertyArray = requestHandler.
 					getBlockProperties(className,projectId.longValue(),resourceId.longValue(),blockUUID);
 		List<String> result = null;
 		if( propertyArray!=null ) {
@@ -217,7 +230,7 @@ public class GatewayRpcDispatcher   {
 		Hashtable<String, Hashtable<String, String>> propertiesTable;
 		try {
 			propertiesTable = mapper.readValue(json, new TypeReference<Hashtable<String,Hashtable<String,String>>>(){});
-			Hashtable<String,Hashtable<String,String>> results = ControllerRequestHandler.getInstance().getConnectionAttributes(projectId,resourceId,connectionId,propertiesTable);
+			Hashtable<String,Hashtable<String,String>> results = requestHandler.getConnectionAttributes(projectId,resourceId,connectionId,propertiesTable);
 			log.debugf("%s: created table = %s",TAG,results);
 			json =  mapper.writeValueAsString(results);
 			log.debugf("%s: JSON=%s",TAG,json);
@@ -235,12 +248,12 @@ public class GatewayRpcDispatcher   {
 	}
 	
 	public String getControllerState() {
-		return ControllerRequestHandler.getInstance().getExecutionState();
+		return requestHandler.getExecutionState();
 	}
 
 
 	public String getDiagramState(Long projectId,Long resourceId) {
-		return ControllerRequestHandler.getInstance().getDiagramState(projectId,resourceId);
+		return requestHandler.getDiagramState(projectId,resourceId);
 	}
 	
 
@@ -268,13 +281,28 @@ public class GatewayRpcDispatcher   {
 		}
 		return results;
 	}
-
+	
+	public Object getPropertyValue(String diagramId,String blockId,String propertyName) {
+		BlockProperty property = null;
+		UUID diagramUUID;
+		UUID blockUUID;
+		try {
+			diagramUUID = UUID.fromString(diagramId);
+			blockUUID = UUID.fromString(blockId);
+			property = requestHandler.getBlockProperty(diagramUUID,blockUUID,propertyName);
+		}
+		catch(IllegalArgumentException iae) {
+			log.warnf("%s.getPropertyValue: Diagram or block UUID string is illegal (%s,%s),",TAG,diagramId,blockId);
+		}
+		
+		return property.getValue();
+	}
 	/** 
 	 *  @return
 	 */
 	public List<SerializableResourceDescriptor> queryControllerResources() {
 		log.infof("%s.queryControllerResources ...",TAG);
-		return  ControllerRequestHandler.getInstance().queryControllerResources();
+		return  requestHandler.queryControllerResources();
 	}
 	/** 
 	 * @param diagId the identifier of the diagram of interest
@@ -282,7 +310,7 @@ public class GatewayRpcDispatcher   {
 	 */
 	public List<SerializableResourceDescriptor> queryDiagram(String diagId) {
 		log.infof("%s.queryDiagram ... %s",TAG,diagId);
-		return  ControllerRequestHandler.getInstance().queryDiagramForBlocks(diagId);
+		return  requestHandler.queryDiagramForBlocks(diagId);
 	}
 	/**
 	 * Reset a block or diagram given its UUID
@@ -372,7 +400,7 @@ public class GatewayRpcDispatcher   {
 		try {
 			Collection<BlockProperty> properties = mapper.readValue(json, 
 					new TypeReference<Collection<BlockProperty>>(){});
-			ControllerRequestHandler.getInstance().setBlockProperties(getBlockUUID(diagramId),getBlockUUID(blockId),properties);
+			requestHandler.setBlockProperties(getBlockUUID(diagramId),getBlockUUID(blockId),properties);
 		} 
 		catch (JsonParseException jpe) {
 			log.warnf("%s.setBlockProperties: parse exception (%s)",TAG,jpe.getLocalizedMessage());
@@ -396,7 +424,7 @@ public class GatewayRpcDispatcher   {
 		ObjectMapper mapper = new ObjectMapper();
 		try {
 			BlockProperty property = mapper.readValue(json, BlockProperty.class);
-			ControllerRequestHandler.getInstance().setBlockProperty(getBlockUUID(diagramId),getBlockUUID(blockId),property);
+			requestHandler.setBlockProperty(getBlockUUID(diagramId),getBlockUUID(blockId),property);
 		} 
 		catch (JsonParseException jpe) {
 			log.warnf("%s.setBlockProperty: parse exception (%s)",TAG,jpe.getLocalizedMessage());
@@ -409,16 +437,16 @@ public class GatewayRpcDispatcher   {
 		}; 
 	}
 	public void setDiagramState(Long projectId,Long resourceId,String state) {
-		ControllerRequestHandler.getInstance().setDiagramState(projectId,resourceId,state);
+		requestHandler.setDiagramState(projectId,resourceId,state);
 	}
 	
 	public void startController() {
-		ControllerRequestHandler.getInstance().startController();
+		requestHandler.startController();
 	}
 	
 	
 	public void stopController() {
-		ControllerRequestHandler.getInstance().stopController();
+		requestHandler.stopController();
 	}
 	
 	/**
@@ -426,7 +454,7 @@ public class GatewayRpcDispatcher   {
 	 */
 	public void triggerStatusNotifications() {
 		log.infof("%s.triggerStatusNotifications ...",TAG);
-		ControllerRequestHandler.getInstance().triggerStatusNotifications();
+		requestHandler.triggerStatusNotifications();
 	}
 	
 	
@@ -442,7 +470,7 @@ public class GatewayRpcDispatcher   {
 		try {
 			Collection<SerializableAnchor> anchors = mapper.readValue(json, 
 					new TypeReference<Collection<SerializableAnchor>>(){});
-			ControllerRequestHandler.getInstance().updateBlockAnchors(diagramId,blockId,anchors);
+			requestHandler.updateBlockAnchors(diagramId,blockId,anchors);
 		} 
 		catch (JsonParseException jpe) {
 			log.warnf("%s.updateBlockAnchors: parse exception (%s)",TAG,jpe.getLocalizedMessage());

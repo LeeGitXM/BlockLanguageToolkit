@@ -122,6 +122,16 @@ public class ControllerRequestHandler   {
 		database = context.getProjectManager().getProps(projectId, ProjectVersion.Published).getDefaultDatasourceName();
 		return database;
 	}
+	public List getDiagramBlocksOfClass(UUID diagramId,String className) {
+		ProcessDiagram diagram = controller.getDiagram(diagramId);
+		List<String> result = new ArrayList<>();
+		for(ProcessBlock block:diagram.getProcessBlocks()) {
+			if( block.getClassName().equalsIgnoreCase(className)) {
+				result.add(block.getBlockId().toString());
+			}
+		}
+		return result;
+	}
 	/**
 	 * Query the block controller for a block specified by the block id. If the block
 	 * does not exist, create it.
@@ -168,9 +178,6 @@ public class ControllerRequestHandler   {
 		BlockProperty property = null;
 		if(block!=null) {
 			property = block.getProperty(propertyName);  // Existing block
-			String name = "null";
-			if(diagram!=null) name=diagram.getName();
-			log.debugf("%s.getProperty %s.%s %s",TAG,name,block.getName(),property.toString());
 		}
 		else {
 			log.warnf("%s.getProperty Block not found for %s.%s",TAG,parentId.toString(),blockId.toString());
@@ -225,6 +232,19 @@ public class ControllerRequestHandler   {
 			if( block!=null ) descriptor = block.getInternalStatus();
 		}
 		return descriptor;
+	}
+	public Object getPropertyValue(UUID diagramId,UUID blockId,String propertyName) {
+		Object val = null;
+		ProcessDiagram diagram = controller.getDiagram(diagramId);
+		if(diagram!=null) {
+			ProcessBlock block = controller.getBlock(diagram, blockId);
+			if( block!=null ) {
+				BlockProperty prop = block.getProperty(propertyName);
+				if( prop!=null) val = prop.getValue();
+			}
+		}
+		return val;
+
 	}
 	/**
 	 * Handle the block placing a new value on its output.
