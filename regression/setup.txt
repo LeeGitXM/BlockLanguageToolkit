@@ -1,6 +1,7 @@
 #
 # Define attributes that are valid for many tests
 #
+log: [DATE] [TIME] Start Testing ...
 timefactor: 10
 tagprovider: XOM
 tagset: DiagramFeed MemoryTags/DiagramFeed
