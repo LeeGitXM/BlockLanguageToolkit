@@ -501,8 +501,17 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					options,      // titles of buttons
 					options[0]);  //default button title
 			if( n==0 ) {
-				// Yes, save
-				saveDiagramResource((BlockDesignableContainer)container);
+				// Yes, save -- need to serialize the diagram
+				SerializableDiagram sd = diagram.createSerializableRepresentation();
+				ObjectMapper mapper = new ObjectMapper();
+				try {
+					byte[] bytes = mapper.writeValueAsBytes(sd);
+					context.updateResource(diagram.getResourceId(), bytes);
+					saveDiagramResource(container);
+				}
+				catch(JsonProcessingException jpe) {
+					logger.warnf("%s.onClose: serialization exception (%s)",TAG, jpe.getLocalizedMessage());
+				}
 			}
 			else {
 				// Mark diagram as clean, since we reverted changes
@@ -526,14 +535,15 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 	
 	/**
-	 * This method updates the project resource and then saves into the project.
+	 * This method obtains the project resourceId from the container and then 
+	 * saves the project resource. We assume that the resource has been updated.
 	 * @param c the tab
 	 */
 	public void saveDiagramResource(BlockDesignableContainer c) {
 		ProcessDiagramView diagram = (ProcessDiagramView)c.getModel();
-		logger.infof("%s: saveDiagramResource - %s ...",TAG,diagram.getDiagramName());
+		logger.infof("%s.saveDiagramResource - %s ...",TAG,diagram.getDiagramName());
 		diagram.setDirty(false);
-		long resid = c.getResourceId();
+		long resid = diagram.getResourceId();
 		executionEngine.executeOnce(new ResourceUpdateManager(this,context.getProject().getResource(resid)));
 		c.setBackground(diagram.getBackgroundColorForState());
 		SwingUtilities.invokeLater(new WorkspaceRepainter());

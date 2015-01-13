@@ -211,7 +211,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		result.setAnchors(ancs.toArray(new SerializableAnchor[ancs.size()]));
 		if( getProperties()!=null ) {
 			log.tracef("%s.convertToSerializable: %s has %d properties",TAG,getClassName(),getProperties().size());
-			log.tracef(getProperties().toString());
+			//log.trace(getProperties().toString());
 			result.setProperties(getProperties().toArray(new BlockProperty[getProperties().size()]));
 		}
 		else {
