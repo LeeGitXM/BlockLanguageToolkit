@@ -147,6 +147,7 @@ public class TagMapper {
 		int index = path.indexOf(']');
 		if( index>0 ) path = path.substring(index+1);
 		result = String.format("[%s]%s", preferences.get(TAG_PROVIDER_PREF_KEY),path);
+		//System.err.println(TAG+".setProvider="+result);
 		return result;
 	}
 }

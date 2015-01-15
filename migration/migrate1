@@ -8,7 +8,7 @@ BLT=~/Development/ils/src/blt
 #FIL=polyFlyingSwitch
 #FIL=oneBadFamily
 #FIL=vfuProductQuality
-FIL=vfuProductQuality
+FIL=crxProductQuality
 INDIR=$BLT/json/g2
 OUTDIR=$BLT/json/ignition
 mkdir -p $OUTDIR

@@ -29,11 +29,13 @@ import org.sqlite.JDBC;
 public class TagMigrator {
 	private final static String TAG = "TagMigrator";
 	private static final String USAGE = "Usage: tag_migrator <database>";
+	private final List<String> paths;  // Parent folder paths
 	private final List<TagData> tags;
 	@SuppressWarnings("unused")
 	private final static JDBC driver = new JDBC(); // Force driver to be loaded
 	 
 	public TagMigrator() {
+		paths = new ArrayList<>();
 		tags = new ArrayList<TagData>();
 	}
 	
@@ -113,16 +115,26 @@ public class TagMigrator {
 			String tagPath = td.getPath();
 			int pos = tagPath.indexOf("]");
 			if( pos>=0 ) tagPath = tagPath.substring(pos+1);
+			String fullPath = tagPath;
 			pos = tagPath.indexOf("/");
 			String path = "";
 			while( pos>0 ) {
 				String dir = tagPath.substring(0, pos);
-				System.out.println("<Tag name=\""+dir+"\" path=\""+path+"\" type=\"Folder\"/>");
+				if(!paths.contains(dir)) {
+					paths.add(dir);
+					System.out.println("<Tag name=\""+dir+"\" path=\""+path+"\" type=\"Folder\"/>");
+				}
 				path = dir;
 				tagPath = tagPath.substring(pos+1);
 				pos = tagPath.indexOf("/");
 			}
-			System.out.println("<Tag name=\""+tagPath+"\" path=\""+path+"\" type=\"DB\">");
+			// When writing the tag, use the entire parent directory
+			String tagName = tagPath;
+			tagPath = td.getPath();
+			pos = fullPath.lastIndexOf("/");
+			if( pos>0 ) path = fullPath.substring(0, pos);
+			else path = "";
+			System.out.println("<Tag name=\""+tagName+"\" path=\""+path+"\" type=\"DB\">");
 			System.out.println("<Property name=\"DataType\">"+td.getTypeCode()+"</Property>");
 			System.out.println("</Tag>");
 		}

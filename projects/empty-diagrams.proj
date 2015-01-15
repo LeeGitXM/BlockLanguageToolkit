@@ -3,21 +3,21 @@
 <version>
   <major>7</major>
   <minor>7</minor>
-  <rev>1</rev>
-  <build>2014092209</build>
+  <rev>2</rev>
+  <build>2014121709</build>
 </version>
-<timestamp>2014-11-24 08:23:37</timestamp>
-<id>33</id>
-<name>BlockToolkitDiagrams</name>
+<timestamp>2015-01-13 11:12:10</timestamp>
+<id>3</id>
+<name>EmptyDiagram</name>
 <title>Block Toolkit Diagrams - Vers 2</title>
 <description>Block Language Toolkit -  Empty Project - Version 2</description>
 <enabled>true</enabled>
-<lastModified>0</lastModified>
-<lastModifiedBy></lastModifiedBy>
-<editCount>0</editCount>
-<uuid>c76a2a63-d872-6496-fc37-55839a61ea20</uuid>
+<lastModified>1421115978983</lastModified>
+<lastModifiedBy>chuckc</lastModifiedBy>
+<editCount>44</editCount>
+<uuid>b92fc10a-538e-ef4e-008f-afa05205821f</uuid>
 <resources>
-	<resource id='832' name='load' module='' modver='' type='sr.script.project' ver='0' dirty='false' editcount='0' parent='5125e023-ed70-4bf6-9040-01b40c5c50fc' oemlocked='false' scope='7' protected='false'>
+	<resource id='40' name='load' module='' modver='' type='sr.script.project' ver='0' dirty='false' editcount='0' parent='5125e023-ed70-4bf6-9040-01b40c5c50fc' oemlocked='false' scope='7' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[H4sIAAAAAAAAAHVTzW7TQBCeNJTGFge4IA4cRokqOSFYdtU0agSHKBV/AiGlkThUHNx6nGxr71q7
 m6I+BOKGeAYkhMRbwAtxZdZ2IUhgyfLMt/N9M7Mz/tT/8Hn288Xrb+9/PHr28et3ANgCaD39cvdk
@@ -29,22 +29,22 @@ IVGVJIPNTJ7IMGAOkyrXs8nSMLFJGTqdcl2UoVUXJE3Ix4vKCpxk3zHOVO4YrBk4coU1ZS7Y5xKH
 ves6phbtipBk2v0DHjG1KtppuCt1X0OW+fVAwgbg5C72mGzVeE3gqv8abLgkdniekqQN+EZOc+r2
 w6afRokXqwVwJ9M8lXdKX4SXpA0vUr27O+rUNW3YbAPcyspCbATcAPDrrY4PR2MGtnnbrSjI2KQo
 70HNglan/gOg3alJsN2plx9aWK94hXZ+AYNVC+ZdAwAA]]></bytes></resource>
-	<resource id='833' name='' module='' modver='7.7.0.2014061610-beta3' type='sr.script.library' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='7' protected='false'>
+	<resource id='41' name='' module='' modver='7.7.0.2014061610-beta3' type='sr.script.library' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='7' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[H4sIAAAAAAAAAJuh2b/K+buX/6beUzYe09afZGBgYGJgYHQ72CO8jAE74AJiRgYGzpLM3NTiksTc
 AiCfg4GBOTmnGKJbJjixRMGrNE/ByBCIrAwsrEwMFXxdQhSMDAxNgErYGBgEzPXM9Qz0DC0sDHST
 UksSjYHC7EBj84E0CwODGEQapN7AzNDMEKGImYFBMK0oMTe1PL8oW68stag4Mz8PKM7KwMCTVpCb
 iSQEMjI/KSs1uQTkLk4GBpvk/Fy9zLyU0uSSzLLUxNKS/NzEEqBavcz0vEwwA6ggF0gVJxdlFpTo
 BYMpn8ykosSiSgkGiO0MjBwQXzIwc0Acy8DKAfEURIqdERQenCArARrz6XpdAQAA]]></bytes></resource>
-	<resource id='834' name='' module='' modver='7.7.0.2014071516' type='sr.global.props' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='7' protected='false'>
+	<resource id='42' name='' module='' modver='7.7.2.2014121709' type='sr.global.props' ver='0' dirty='false' editcount='1' parent='' oemlocked='false' scope='7' protected='false'>
 		<doc></doc>
-		<bytes><![CDATA[H4sIAAAAAAAAAHWQwUoDMRCGJ93VtttWxFMRBK9e9gX0IhYqImrRF8hm0zaa3SlJtuBDiHgRr149
-KIgvoS/UqxOz4qF22WT+MP/O/2Wf9u5fjhYn5+93XwfHj2+fANAAYMPXh+cP+P/ZoJUA9K10Aznm
-lXYD7rjFygh5xgtJ7ZhGiOBuYnYthbMkI4B9gUWqyrwSTs0lrxwW3CksUzUp1Y8gQ0FlZtB/lg41
-ZlxfGJzZgBYJ7dU6wBYBHFZuSs2x0r/RHYqcKuvQ3NJpjUAKqoxepNqiAdYZUm3y5QHfU1Lfj+0C
-7Pzd63J0esUnlgLmKpemTujR2EyjuNmsfwjr+415vna4JkTbIRTihqdoBWJoJixAANutRexZlt3J
-andn2d1d7e59A/Sok/biAQAA]]></bytes></resource>
-	<resource id='835' name='DataPump' module='fpmi' modver='' type='window' ver='0' dirty='false' editcount='0' parent='a3edbe9e-c119-479c-8f3d-6555c714a1fc' oemlocked='false' scope='4' protected='false'>
+		<bytes><![CDATA[H4sIAAAAAAAAAHWQQUoDMRSGXzqjbaetiKtSENy6mQvoRiwoRa2iC7dpJm0jM5OSZAoeQtyJZ3Aj
+CIJX0FN4C7f+MRUXtcMk7w/vn/d/mcfd+6fDr8Hw5e5j//jh+Z2IakRs8Nl7e6X/nw2shKhrpevL
+Ma9y1+eOW10ZIc94IdGOMUIEd12PbqRwFjIi2hO6SFWZVcKpueSV0wV3SpepmpTqR8BQoMyM9p+l
+R7ke8fzc6JkNaJHIvVon2gLAQeWmaI5V/hvdQuRUWafNLU5rAClQGV6N2sAA6wxUE74s4HtK9P3Y
+DvrXw1OoNtH23w0vL06u+MQiaq4yaXzW5uJ3sK7fmKdrhktS1AuRFNc8QyPwUj1hAYHYzkLEnmTZ
+nax2t5bd7dXuzjeYsLg/4AEAAA==]]></bytes></resource>
+	<resource id='43' name='DataPump' module='fpmi' modver='' type='window' ver='0' dirty='false' editcount='0' parent='a3edbe9e-c119-479c-8f3d-6555c714a1fc' oemlocked='false' scope='4' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[H4sIAAAAAAAAALS6Y5RmTbAu+JZt27Ztd9m2bdu2bds2u2y7i13schenvvvdc+aee+78mLVm9lq5
 ntyREU9EZEbstX9kBlV8lcjzD/mm2EleybT6nwAAABgAAJJiAy4+BPyfH7LvQQwAoDibumjY2ojb
@@ -363,7 +363,7 @@ sr3u5S3x/DpuwkvmsNIBDLzFFxkUSBUlneYKgEkyx2Ye+/tS/dnLLQ0OrrGsLzYHv5Q0g1LdM6S7
 Z9HIfOU0v67blwV8UboyJrmIToq9paecfWkd1JP1e9EbKpSo8v31qQW4unFuxwbMkCakzIak2LRg
 oQnLxqMUQZs4U2FRTbVgbdx5eAJBUWa9Sc1dQ3u8VJU0FUHyVsD/AhRcPJsrIgAAGgAAAAcAAAAK
 AgAAAAsIAAAAIgAAAA0KAQAAACMAAAABIAAAACQAAAAF/wAAAAHWuHHe8EgAAA==]]></bytes></resource>
-	<resource id='836' name='DiagramStatusWindow' module='fpmi' modver='' type='window' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='4' protected='false'>
+	<resource id='44' name='DiagramStatusWindow' module='fpmi' modver='' type='window' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='4' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[H4sIAAAAAAAAAG1WB1RTyRq+QUpCAOlNmkuRIkF6kSJVgQBKaCoiSSgJLQgJvShIk6IIoYmwgNIV
 kKKUVXovEnpxERABEUFAiiC8y2F33zvn7T1nzsz883/f/PPNPd+9aRIPi3V3jMxexXerX0kp6wIA
@@ -424,7 +424,7 @@ PLb63WSJwrrDhiWGNmvEhuXo8SSAtersXheADj0wVuAznWER5kCaGjyinULVS9051RxNlwU/LGp7
 BuFPUq0s1ZxDTPGYi+YtJFUH3Ot2U4uX7OPYfq3Xyv9RxZ86nSIVYNKVzFQ9Js9r4lIwsyhhcH8N
 9omf2cjgx/kwxhv1eUeCAyW5EjWi5NO8Tl6BZ79Y02xEZm9h+NsdfkEi4pGfBmn/zdXZ//Fpjr99
 mvP4N/3oePYfzo8DM7INAAA=]]></bytes></resource>
-	<resource id='837' name='' module='' modver='' type='designer.general.props' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='2' protected='false'>
+	<resource id='45' name='' module='' modver='' type='designer.general.props' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='2' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[H4sIAAAAAAAAAG1QvU7DMBA+U0qT/vA3IIQYsjJgxaElULE1UhFSBUNfwE1dZKjjKnFb8RCIDfEM
 LEg8AkzwQgwMcK4RYsBS/J3vLt/d9z3s3T12Ps7On2/fT07vn94AYAmAJJ+v/gv8f9bx8wBK6bjA
@@ -433,7 +433,7 @@ C6kzt9ZufyqCHs+DqBWwo3bE2mEc9JJ+gKOb2FIH2CyE6XIj5vymo5Xq6aHAwirSSkQC4BupRGG4
 muC7gSkrwgdIUq2ozIbT1MiZ4FOjFTc4mcrLTC6CoSgwFjlVSDqmyc+zK/Di44tcTyxVCWBjlHMl
 5jq//rO+FakHVyI1xTa4PiCe0wUlzzkJZc+5BsQ2VYi12ncLAtlxRkHV/lLznGBoVIlTCCRwnkL5
 y3J+A+iAlS7bAQAA]]></bytes></resource>
-	<resource id='838' name='BlockStatusWindow' module='fpmi' modver='' type='window' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='4' protected='false'>
+	<resource id='46' name='BlockStatusWindow' module='fpmi' modver='' type='window' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='4' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[H4sIAAAAAAAAAG1YBzCc3RpevYue6KtFi95F771EWVl1WWW1xS6iZAXRgySEIKKE6D16i975tRCd
 6KITRHDXuPe/d+b+38yZc77nPG8938xz5nvPHV+ofKalXxnbL6ORVNYHAAAwAQAM9RIa8zXAPz/3
@@ -513,7 +513,7 @@ CUySbkMLGmPfx5UfB6uLc75ZlQniBUMf72/JDSrfL5pm3XGwbcq2omQiin9gv45dlSng/bRKv5RS
 9chYzpJGnjsvYmWvhJEM9u7YYUNTg00+ZvkXWdhJz4yPff9M4rpC+xhmyFX63sGxxZoC4tnPZQU1
 q916vOJWEsSXrCpYtuFJVegQuytu/7Tg2JqLVHirqDz32t6H+PpmVjlD6LE0x/Dx1Nfr4DOXjJPY
 Y5G5Ly/iQ5TiawIjB29wSh/lt/0m/Kc7GtXfty7q/9y6aG5/ANzcvv0LNqkvnQoSAAA=]]></bytes></resource>
-	<resource id='839' name='' module='' modver='' type='event.scripts' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='1' protected='false'>
+	<resource id='47' name='' module='' modver='' type='event.scripts' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[H4sIAAAAAAAAAG1RzUoDMRCeWGu3f1YvIuIh0JMHw2a3WqxepBZEEJEWPG+3aY2azZJNW3wI8SY+
 gxfBt9CH8erV2UbEg4EwX2a++fvyvPP40v06u3h7+Dg6fXp9B4AlANJrfl4O4P+zhtcDKMR3GaJl
@@ -522,7 +522,7 @@ lBJSNdoqWoW2CFAbp0qymTCZ1Am6CEDZSiUyG6kU3w0A1qS9kbTUXgsqZiKxNIuNTNGhqcmJxsUm
 kRXz6B6TVnGhzBpEdayYL1bD2TNh+zl5mvYX+eguAKyPTaTEXJvbP1OUAQ5jrZhMRtPYypmIplar
 yGKUyUkiFwAJCo0bhrmaXZ2M5cRJW9LDGxHbbBNcJyCekwkKntMaip7TFUhOKpH8M8quP5AtpxhU
 8pSq57aAeoW4DYHQH5BXanwDp8WjMfwBAAA=]]></bytes></resource>
-	<resource id='840' name='reset' module='' modver='' type='sr.script.project' ver='0' dirty='false' editcount='0' parent='5125e023-ed70-4bf6-9040-01b40c5c50fc' oemlocked='false' scope='7' protected='false'>
+	<resource id='48' name='reset' module='' modver='' type='sr.script.project' ver='0' dirty='false' editcount='0' parent='5125e023-ed70-4bf6-9040-01b40c5c50fc' oemlocked='false' scope='7' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[H4sIAAAAAAAAAJWRQUsCQRiGv83MdelQl+jQYVgvLuS2K+qidBGFMorCFjpIh9EddWvHWWZGxR8R
 3aLfEETQv6g/1LVZ59Khi9/p5eV9+Pi+99V5fuv8XFx/Pn2fnr98fAHAFoBx9n4wCOH/KerMXuAG
@@ -531,12 +531,12 @@ Qb3LW8VLRrGM2UwZ7SRB/SwhUJ8IwhckskpWRMZoinmUWbLstKxiTFPGJRIrIQm1rKIWrsQTd8lj
 SUIW4knZHigSzxN538US38xpeiIklsQ+RnYvSojtbECOGKV4FmVse6iWbwQn8SzbWvEd9QwDYH/M
 MSVLxh/dBeFCHa//XWDDBzKSQskcwO44pfGfwDaApZvwm/VAGXnVkIwpUVfR9BA0BYapW4OcqSHI
 m7owMJCuZe2avwhJLF0RAgAA]]></bytes></resource>
-	<resource id='841' name='UseCases' module='block' modver='' type='blt.application' ver='0' dirty='false' editcount='0' parent='7bbbd6b9-3140-4328-a844-51817eb47574' oemlocked='false' scope='1' protected='false'>
+	<resource id='49' name='UseCases' module='block' modver='' type='blt.application' ver='0' dirty='true' editcount='40' parent='7bbbd6b9-3140-4328-a844-51817eb47574' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJmYW1pbGllcyI6W10sImZvbGRlcnMiOm51bGwsImhpZ2hlc3RQcmlvcml0eVByb2JsZW0iOjAu
 MCwiaWQiOiJkZjg0YjI5MC1kNmMzLTRhMDAtYWQ4Zi0zZjhkNjgxN2FkNTMiLCJuYW1lIjoiTmV3
 IEFwcGxpY2F0aW9uIn0=]]></bytes></resource>
-	<resource id='842' name='pump' module='' modver='' type='sr.script.project' ver='0' dirty='false' editcount='0' parent='5125e023-ed70-4bf6-9040-01b40c5c50fc' oemlocked='false' scope='7' protected='false'>
+	<resource id='50' name='pump' module='' modver='' type='sr.script.project' ver='0' dirty='false' editcount='0' parent='5125e023-ed70-4bf6-9040-01b40c5c50fc' oemlocked='false' scope='7' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[H4sIAAAAAAAAAK1VzW4cRRBuY5LsjDjABeXAoZiV5V1lM+wmKI5WcLBshTgiYHktfEAcend6d9uZ
 6R5N93izDxFxQzwDFyTegCO8ATfegitf9cz6TxyCFGus6a2u+uqrqq+nf+7/+MvBPy++/e3Nn188
@@ -557,19 +557,19 @@ zsL+BXOOroR0JvHRhna4/614QgB306mZNeh90lJrJXrpw1Llh8WqmyriDe4hGBCTA/inyf8+VEcZ
 f4hwzb0vxMfN7ccX3PDJ6Mno6g7cFuKjeYVhrmz1Kr1QlcMXF/Y7QnwwLwt9zYQ7+JMJDsgLXGSP
 RnjGo+H48R69PDwNV2dzE9+z03M18+6+aNDFVqeJFdudhoy402nuZLFFzTUdrJ1/ARFYkGT3BwAA
 ]]></bytes></resource>
-	<resource id='821' name='blt' module='' modver='' type='__folder' ver='0' dirty='false' editcount='0' parent='2cda0027-8033-4beb-ad02-0ef378c659be' oemlocked='false' scope='7' protected='false'>
+	<resource id='51' name='blt' module='' modver='' type='__folder' ver='0' dirty='false' editcount='0' parent='2cda0027-8033-4beb-ad02-0ef378c659be' oemlocked='false' scope='7' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[aHlY0q7bmqyQRO6Un6uWyw==]]></bytes></resource>
-	<resource id='822' name='DataPump' module='fpmi' modver='' type='__folder' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='4' protected='false'>
+	<resource id='52' name='DataPump' module='fpmi' modver='' type='__folder' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='4' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[/KEUx1VlPY+cRxnBnr7tow==]]></bytes></resource>
-	<resource id='823' name='test' module='' modver='' type='__folder' ver='0' dirty='false' editcount='0' parent='2cda0027-8033-4beb-ad02-0ef378c659be' oemlocked='false' scope='7' protected='false'>
+	<resource id='53' name='test' module='' modver='' type='__folder' ver='0' dirty='false' editcount='0' parent='2cda0027-8033-4beb-ad02-0ef378c659be' oemlocked='false' scope='7' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[n5+Osc7Ti7aKT9S0pSWvhw==]]></bytes></resource>
-	<resource id='824' name='datapump' module='' modver='' type='__folder' ver='0' dirty='false' editcount='0' parent='2cda0027-8033-4beb-ad02-0ef378c659be' oemlocked='false' scope='7' protected='false'>
+	<resource id='54' name='datapump' module='' modver='' type='__folder' ver='0' dirty='false' editcount='0' parent='2cda0027-8033-4beb-ad02-0ef378c659be' oemlocked='false' scope='7' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[/FBcDLQBQJD2S3DtI+AlUQ==]]></bytes></resource>
-	<resource id='825' name='abort' module='' modver='' type='sr.script.project' ver='0' dirty='false' editcount='0' parent='5125e023-ed70-4bf6-9040-01b40c5c50fc' oemlocked='false' scope='7' protected='false'>
+	<resource id='55' name='abort' module='' modver='' type='sr.script.project' ver='0' dirty='false' editcount='0' parent='5125e023-ed70-4bf6-9040-01b40c5c50fc' oemlocked='false' scope='7' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[H4sIAAAAAAAAAG2QT0sCQRjG383MdelQl+jQ4WW7KNS2K66L0kUU+kNRmNBBOozuuG06zjIzKn6I
 qFP0GYII+hb1hbo2OpcOvZf34cfzvMw8r+Wnt9bP+dXn4/fx6cvHFwCsAVgn7zu9EP6fovFsRV7k
@@ -577,7 +577,7 @@ qFP0GYII+hb1hbo2OpcOvZf34cfzvMw8r+Wnt9bP+dXn4/fx6cvHFwCsAVgn7zu9EP6fovFsRV7k
 bgM872OLZwuRJvdqFcRDPLu40XcVZ0RpnwbN8Rg7S4fEDpVUzGjsxHSIpM+FKpUbTjFlmZYoF1JR
 5hTN9hRJvLlIFe3yLklKbk+HyHSs7tpEkespy44GnDEyid0DdJvLY27Z/LzA+w90oKSWOYDNYcbS
 P+9eB3BMJ0E9jDTI665UyqhUhGW7YFJg2aY/yNkmBHnbVAcWmoJW1P4FfuaD6psBAAA=]]></bytes></resource>
-	<resource id='826' name='' module='fpmi' modver='' type='client_tags' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='4' protected='false'>
+	<resource id='56' name='' module='fpmi' modver='' type='client_tags' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='4' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[H4sIAAAAAAAAAG1QzUoDMRCeWGu3f1YvIuJhrx4Mm6pbW7wVihTUg32BNE3r6mazbtKKDyHeRPEN
 vAi+hb6QVydGxIOBMMPMfPN98z3u3L/0P4dnb3cfR8cPr+8AsARA+s9PvQr8/9bwBwAlkRrMlgE2
@@ -586,7 +586,7 @@ hiUCULWJksZylXud26OLeTjkWcjiMDrsRd1eFIcn56MQtezjyCrKNLbArIl4J7cKMBBa0SSbzIVN
 FpLPrVbcIgWdcmF1cetYeZ6nifBlc51aPjO0nyYysyM+G+h0It3SEsD6tOBK3uji6o/SBt5jpD3F
 jresoseXUlizCR4FJPAHQCnwHkI58CYBcUMV4kyuesFAtrxDUHOQeuApoFkj/kYg4U/iNrW+AHaW
 wsPUAQAA]]></bytes></resource>
-	<resource id='827' name='tags' module='' modver='' type='sr.script.project' ver='0' dirty='false' editcount='0' parent='87af25a5-b4d4-4f8a-b68b-d3ceb18e9f9f' oemlocked='false' scope='7' protected='false'>
+	<resource id='57' name='tags' module='' modver='' type='sr.script.project' ver='0' dirty='false' editcount='0' parent='87af25a5-b4d4-4f8a-b68b-d3ceb18e9f9f' oemlocked='false' scope='7' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[H4sIAAAAAAAAALWWzW7TQBDHN5RCYnGAC+LAYeVeGql1ndAvVfRQHCpSURJIAHFC23idLI13zXpd
 yIknQNwQz8AFiTfgCO/CmSuzazstom2Sqo6Ur/X8f/uf8cg7X6qfvnp/9lrfP/66/+jzt58IoSsI
@@ -601,17 +601,12 @@ IGpTJzI7vNMuEN4qEt54UiD8eZHOd152pqZP4uuWG+PNZjuX5Px/8oPCyF5h5EYR5FaiZir07LaN
 trgbKcSQEj6Bn0ddYIPs0Trt83fm0hdWnhRfZH3SHWYskKVPKA92k+b8ATKMVtiHj54ScmQOIUlD
 cXTaIaRlZx9CqUxbzp5V1bMumzS0meMjb7zXKdOYVfnXUR6U/4e5ch6hG0EUshPTqB5zxcEbyCu+
 g9KpFZXK6ZiK5srpkIvmy+kQjEo4nYvNavkvVEV/bGgLAAA=]]></bytes></resource>
-	<resource id='828' name='UseCaseFamily' module='block' modver='' type='blt.family' ver='0' dirty='false' editcount='0' parent='df84b290-d6c3-4a00-ad8f-3f8d6817ad53' oemlocked='false' scope='1' protected='false'>
+	<resource id='58' name='UseCaseFamily' module='block' modver='' type='blt.family' ver='0' dirty='true' editcount='41' parent='df84b290-d6c3-4a00-ad8f-3f8d6817ad53' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJkaWFncmFtcyI6W10sImZvbGRlcnMiOltdLCJpZCI6IjM3ZjlhNTdiLTE1MDQtNGRkZS05MjIz
 LWUyZGYyZjI5MTQyOSIsIm5hbWUiOiJOZXcgRmFtaWx5IiwiZGVzY3JpcHRpb24iOiIiLCJwcmlv
 cml0eSI6MCwic3RhdGUiOiJBQ1RJVkUifQ==]]></bytes></resource>
-	<resource id='829' name='Playground' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='37f9a57b-1504-4dde-9223-e2df2f291429' oemlocked='false' scope='1' protected='false'>
-		<doc></doc>
-		<bytes><![CDATA[eyJibG9ja3MiOltdLCJjb25uZWN0aW9ucyI6W10sImlkIjoiZGU0NmQzNzEtNzIyZS00ZmZhLTk3
-NGUtYjQwZTM4ODI4MTllIiwibmFtZSI6IlBsYXlncm91bmQiLCJyZXNvdXJjZUlkIjoyMDQsInN0
-YXRlIjoiQUNUSVZFIiwiZGlydHkiOmZhbHNlLCJlbmNhcHN1bGF0aW9uQmxvY2tJZCI6bnVsbH0=]]></bytes></resource>
-	<resource id='830' name='tokens' module='' modver='' type='sr.script.project' ver='0' dirty='false' editcount='0' parent='5125e023-ed70-4bf6-9040-01b40c5c50fc' oemlocked='false' scope='7' protected='false'>
+	<resource id='60' name='tokens' module='' modver='' type='sr.script.project' ver='0' dirty='false' editcount='0' parent='5125e023-ed70-4bf6-9040-01b40c5c50fc' oemlocked='false' scope='7' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[H4sIAAAAAAAAAIVUT09TQRBfBKR98aAX48HDQA+FWB4tGCCEHgjGCMGYADfgsO2btmvf2627U/58
 COLNePXqxcRv4FG/gZ/Eq7O75W9EmvZ15zf7Zn4z88t8nvv4dfPP9rvv57/W33z69lMI8UCIsdc/
@@ -627,7 +622,7 @@ ymXRv1QgXd6LbQx6zE/kWeinrxpJFcjJZNeNdJbcJbB79RWV81/hQDX1slmIurnn6k2ReYq3FXY5
 P+/kPTXG68oX5EgWA7anhBjn4Hx6KMTjlXQlraeN1dX6fAtJLjE8IcTTCPuVVl9uLDeunONCPOlY
 XisnxvbTY7SOtxzjk0I86gwKdQ3iJfp8jzfB9lDDYoO/a4362tIKvH21H5ZlXKVTpvUe2+SeiRhd
 jJXiu2K8FMmIyVIkK8Yg8g9o6S/WG6KjuAUAAA==]]></bytes></resource>
-	<resource id='831' name='TestSetupWindow' module='fpmi' modver='' type='window' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='4' protected='false'>
+	<resource id='61' name='TestSetupWindow' module='fpmi' modver='' type='window' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='4' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[H4sIAAAAAAAAAG26BVBcQbctPGgIFtzd3SW4BQ3u7oM7AwR3h0Bwd7dggzshWIBAcHd3d97k5d7v
 /+vdO1Vndvc+a6/evXbXqdNdJ40+rkLiTk6pPnZEUCbl+zAAAIAGAKCkq3H0PwD+9x8p5CICADBd
@@ -808,6 +803,61 @@ VBh5k+YtV0nc9LpbHh0ciiZ8FF7759bZew90tRjc0aNwky2X69EqcXComVLS/ME3SIjM/Chz556+
 LywUsZa5nJVFRcBpI7RRPt+rt2VVOZlMOgPcCJINJrO182Gns9aSueb+DQFrXfOBymvfj1slshvP
 VQ/jp7dlUAabfq2Z/ZY9s/wiPu3WYRos0WHERlIOxH52POwcTWoRLRaPb0kmqHap11MO1gWtlLlm
 jvqkGTZeFfulmr1vMLAOs65VuP/bCTTRf86Uif/7TJnk70dm//drr/8D98VbnNcoAAA=]]></bytes></resource>
+	<resource id='63' name='playground' module='block' modver='' type='blt.diagram' ver='0' dirty='true' editcount='44' parent='37f9a57b-1504-4dde-9223-e2df2f291429' oemlocked='false' scope='1' protected='false'>
+		<doc></doc>
+		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6Ik9VVEdPSU5HIiwiaWQiOiI1NDBj
+NjA4OS01NjlkLTQ0ODgtYmVmNi1lYTk5NDU1MzUwMGYiLCJkaXNwbGF5Ijoib3V0IiwicGFyZW50
+SWQiOiIzZWIwZGIwNy1lY2NmLTQ2YzctODY5ZS1kOGVhZWE5MTc5ZmQiLCJhbm5vdGF0aW9uIjoi
+IiwiY29ubmVjdGlvblR5cGUiOiJEQVRBIiwiaGludCI6IlVOU1BFQ0lGSUVEIiwibXVsdGlwbGUi
+OmZhbHNlfV0sImJhY2tncm91bmQiOi0xNjcxMTY4MSwiY2xhc3NOYW1lIjoiY29tLmlscy5ibG9j
+ay5JbnB1dCIsImRpcnR5IjpmYWxzZSwiZWRpdG9yQ2xhc3MiOm51bGwsImVtYmVkZGVkRm9udFNp
+emUiOjI0LCJlbWJlZGRlZEljb24iOiIiLCJlbWJlZGRlZExhYmVsIjoiIiwiaWNvblBhdGgiOm51
+bGwsIm5hbWUiOiJJTlBVVC03ODgiLCJuYW1lRGlzcGxheWVkIjpmYWxzZSwibmFtZU9mZnNldFgi
+OjAsIm5hbWVPZmZzZXRZIjowLCJvcmlnaW5hbElkIjpudWxsLCJwcmVmZXJyZWRIZWlnaHQiOjQ1
+LCJwcmVmZXJyZWRXaWR0aCI6NjAsInByb3BlcnRpZXMiOlt7ImVkaXRhYmxlIjpmYWxzZSwidHlw
+ZSI6Ik9CSkVDVCIsImJpbmRpbmciOiIiLCJiaW5kaW5nVHlwZSI6IkVOR0lORSIsImRpc3BsYXll
+ZCI6ZmFsc2UsImRpc3BsYXlPZmZzZXRYIjozMCwiZGlzcGxheU9mZnNldFkiOjUwLCJuYW1lIjoi
+VmFsdWUiLCJ2YWx1ZSI6IiJ9LHsiZWRpdGFibGUiOnRydWUsInR5cGUiOiJPQkpFQ1QiLCJiaW5k
+aW5nIjoiIiwiYmluZGluZ1R5cGUiOiJUQUdfUkVBRCIsImRpc3BsYXllZCI6ZmFsc2UsImRpc3Bs
+YXlPZmZzZXRYIjozMCwiZGlzcGxheU9mZnNldFkiOjUwLCJuYW1lIjoiVGFnUGF0aCIsInZhbHVl
+IjoiIn1dLCJyZWNlaXZlRW5hYmxlZCI6ZmFsc2UsInN0YXRlIjoiSU5JVElBTElaRUQiLCJzdGF0
+dXNUZXh0IjoiIiwic3R5bGUiOiJBUlJPVyIsInN1YndvcmtzcGFjZUlkIjpudWxsLCJ0cmFuc21p
+dEVuYWJsZWQiOmZhbHNlLCJ4IjoyODMsInkiOjExNywiaWQiOiIzZWIwZGIwNy1lY2NmLTQ2Yzct
+ODY5ZS1kOGVhZWE5MTc5ZmQifSx7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwi
+aWQiOiJjYmI2M2I0NC00NmY3LTQzNTMtYTExZC1kZDZjMTAxNDlhMDgiLCJkaXNwbGF5IjoiaW4i
+LCJwYXJlbnRJZCI6ImM0NWNlZmI1LWVkMjYtNDEzMi1iZmZiLTkzZjBhY2IxMDI3OSIsImFubm90
+YXRpb24iOiIiLCJjb25uZWN0aW9uVHlwZSI6IkRBVEEiLCJoaW50IjoiTCIsIm11bHRpcGxlIjpm
+YWxzZX0seyJkaXJlY3Rpb24iOiJPVVRHT0lORyIsImlkIjoiOGQ3Yzk4ZGYtMmE4Mi00N2I5LTgx
+MzItMDgwNmIxMTg2N2M1IiwiZGlzcGxheSI6Im91dCIsInBhcmVudElkIjoiYzQ1Y2VmYjUtZWQy
+Ni00MTMyLWJmZmItOTNmMGFjYjEwMjc5IiwiYW5ub3RhdGlvbiI6IiIsImNvbm5lY3Rpb25UeXBl
+IjoiREFUQSIsImhpbnQiOiJSIiwibXVsdGlwbGUiOmZhbHNlfV0sImJhY2tncm91bmQiOi0xLCJj
+bGFzc05hbWUiOiJjb20uaWxzLmJsb2NrLlJlYWRvdXQiLCJkaXJ0eSI6ZmFsc2UsImVkaXRvckNs
+YXNzIjpudWxsLCJlbWJlZGRlZEZvbnRTaXplIjoyOCwiZW1iZWRkZWRJY29uIjoiIiwiZW1iZWRk
+ZWRMYWJlbCI6IiIsImljb25QYXRoIjpudWxsLCJuYW1lIjoiUkVBRE9VVC01NzYiLCJuYW1lRGlz
+cGxheWVkIjpmYWxzZSwibmFtZU9mZnNldFgiOjAsIm5hbWVPZmZzZXRZIjowLCJvcmlnaW5hbElk
+IjpudWxsLCJwcmVmZXJyZWRIZWlnaHQiOjQwLCJwcmVmZXJyZWRXaWR0aCI6MTAwLCJwcm9wZXJ0
+aWVzIjpbeyJlZGl0YWJsZSI6dHJ1ZSwidHlwZSI6IlNUUklORyIsImJpbmRpbmciOiIiLCJiaW5k
+aW5nVHlwZSI6Ik5PTkUiLCJkaXNwbGF5ZWQiOmZhbHNlLCJkaXNwbGF5T2Zmc2V0WCI6MzAsImRp
+c3BsYXlPZmZzZXRZIjo1MCwibmFtZSI6IkZvcm1hdCIsInZhbHVlIjoiJXMifSx7ImVkaXRhYmxl
+IjpmYWxzZSwidHlwZSI6IlNUUklORyIsImJpbmRpbmciOiIiLCJiaW5kaW5nVHlwZSI6IkVOR0lO
+RSIsImRpc3BsYXllZCI6ZmFsc2UsImRpc3BsYXlPZmZzZXRYIjozMCwiZGlzcGxheU9mZnNldFki
+OjUwLCJuYW1lIjoiVmFsdWUiLCJ2YWx1ZSI6IiJ9XSwicmVjZWl2ZUVuYWJsZWQiOmZhbHNlLCJz
+dGF0ZSI6IklOSVRJQUxJWkVEIiwic3RhdHVzVGV4dCI6IiIsInN0eWxlIjoiUkVBRE9VVCIsInN1
+YndvcmtzcGFjZUlkIjpudWxsLCJ0cmFuc21pdEVuYWJsZWQiOmZhbHNlLCJ4Ijo0OTAsInkiOjg5
+LCJpZCI6ImM0NWNlZmI1LWVkMjYtNDEzMi1iZmZiLTkzZjBhY2IxMDI3OSJ9XSwiY29ubmVjdGlv
+bnMiOlt7ImJlZ2luQmxvY2siOiIzZWIwZGIwNy1lY2NmLTQ2YzctODY5ZS1kOGVhZWE5MTc5ZmQi
+LCJlbmRCbG9jayI6ImM0NWNlZmI1LWVkMjYtNDEzMi1iZmZiLTkzZjBhY2IxMDI3OSIsImJlZ2lu
+QW5jaG9yIjp7ImRpcmVjdGlvbiI6Ik9VVEdPSU5HIiwiaWQiOiJvdXQiLCJwYXJlbnRJZCI6IjNl
+YjBkYjA3LWVjY2YtNDZjNy04NjllLWQ4ZWFlYTkxNzlmZCIsImFuY2hvclgiOjU0LCJhbmNob3JZ
+IjoyMSwicGF0aExlYWRlclgiOjcwLCJwYXRoTGVhZGVyWSI6MjEsImhvdFNwb3RYIjo0OCwiaG90
+U3BvdFkiOjE1LCJob3RTcG90SGVpZ2h0IjoxNSwiaG90U3BvdFdpZHRoIjoxMn0sImVuZEFuY2hv
+ciI6eyJkaXJlY3Rpb24iOiJJTkNPTUlORyIsImlkIjoiaW4iLCJwYXJlbnRJZCI6ImM0NWNlZmI1
+LWVkMjYtNDEzMi1iZmZiLTkzZjBhY2IxMDI3OSIsImFuY2hvclgiOjAsImFuY2hvclkiOjIwLCJw
+YXRoTGVhZGVyWCI6LTEwLCJwYXRoTGVhZGVyWSI6MjAsImhvdFNwb3RYIjowLCJob3RTcG90WSI6
+MTEsImhvdFNwb3RIZWlnaHQiOjE4LCJob3RTcG90V2lkdGgiOjE4fSwidHlwZSI6IkRBVEEifV0s
+ImlkIjoiZjFkNWM2ZmEtNzE4OS00ZGNjLTgzNDktMjgyNWVmYzk3NGE0IiwibmFtZSI6InBsYXln
+cm91bmQiLCJyZXNvdXJjZUlkIjo2Mywic3RhdGUiOiJBQ1RJVkUiLCJkaXJ0eSI6dHJ1ZSwiZW5j
+YXBzdWxhdGlvbkJsb2NrSWQiOm51bGx9]]></bytes></resource>
 </resources>
 <deletedResources>
 </deletedResources>

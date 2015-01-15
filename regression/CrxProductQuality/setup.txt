@@ -1,0 +1,10 @@
+#
+# Define attributes that are valid for many tests
+#
+log: [DATE] [TIME] Start Testing ...
+timefactor: 10
+tag: DiagramInput MemoryTags/DiagramFeed
+tag: DiagramOutput MemoryTags/DiagramOutput
+tagprovider: XOM
+tagset: BasicDiagrams DiagramInput
+status: setup complete.
