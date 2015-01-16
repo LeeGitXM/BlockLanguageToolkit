@@ -133,11 +133,11 @@ public class Sum extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void evaluate() {
-		log.infof("%s.evaluate ...", getName());
+		//log.infof("%s.evaluate ...", getName());
 		if( !isLocked() && !valueMap.isEmpty()) {
 			//synchronized(this) {
 				double value = getAggregateResult();
-				log.infof("%s.evaluate ... value = %3.2f", getName(),value);
+				log.debugf("%s.evaluate ... value = %3.2f", getName(),value);
 				QualifiedValue result = new BasicQualifiedValue(new Double(value),getAggregateQuality());
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
 				controller.acceptCompletionNotification(nvn);

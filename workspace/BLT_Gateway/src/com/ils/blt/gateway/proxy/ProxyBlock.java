@@ -111,7 +111,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 *        and simple value.
 	 */
 	public void acceptValue(IncomingNotification vcn) {
-		delegate.acceptValue( getPythonBlock(), vcn.getConnection().getUpstreamPortName(), vcn.getValue());
+		delegate.acceptValue( getPythonBlock(), vcn.getConnection().getDownstreamPortName(), vcn.getValue());
 	}
 	
 	/**
@@ -122,12 +122,4 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	public void evaluate() { 
 		delegate.evaluate(getPythonBlock()); 
 	}
-
-
-	/** 
-	 * Do nothing
-	 */
-	@Override
-	public void propertyChange(BlockPropertyChangeEvent evt) {}
-
 }

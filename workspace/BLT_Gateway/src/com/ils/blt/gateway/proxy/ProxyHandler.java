@@ -106,19 +106,19 @@ public class ProxyHandler   {
 	 * Once we have the context, we can initialize all of the callbacks. 
 	 */
 	private void initializeCallbacks() {
+		acceptValueCallback.setScriptManager(context.getScriptManager());
 		createBlockCallback.setScriptManager(context.getScriptManager());
 		evaluateCallback.setScriptManager(context.getScriptManager());
 		getBlockPropertiesCallback.setScriptManager(context.getScriptManager());
 		getBlockPrototypesCallback.setScriptManager(context.getScriptManager());
 		setBlockPropertyCallback.setScriptManager(context.getScriptManager());
-		acceptValueCallback.setScriptManager(context.getScriptManager());
 	}
 	
 	/**
 	 * Inform the block that it has a new value on one of its inputs. There is no shared dictionary.
 	 * 
 	 * @param block
-	 * @param stub
+	 * @param stub the input port of the block on which the new value has arrived
 	 * @param value one of a QualifiedValue, Signal, Truth-value or String
 	 */
 	public void acceptValue(PyObject block,String stub,QualifiedValue value) {
@@ -359,9 +359,8 @@ public class ProxyHandler   {
 		if( block==null || prop==null ) return;
 		log.infof("%s.setProperty --- %s:%s",TAG,block.getClass(),prop.getName()); 
 		if( setBlockPropertyCallback.compileScript() ) {
-			PyDictionary pyDictionary = new PyDictionary();  // Empty
+
 			setBlockPropertyCallback.setLocalVariable(0,block.getPythonBlock());
-			setBlockPropertyCallback.setLocalVariable(1,pyDictionary);
 			// Convert the property object into a table to send to Python.
 			if( prop.getName()==null ) {
 				log.errorf("%s.setProperty: Property name cannot be null",TAG); 
@@ -377,8 +376,8 @@ public class ProxyHandler   {
 			if( prop.getValue()!=null) {
 				tbl.put(BLTProperties.BLOCK_ATTRIBUTE_VALUE,prop.getValue().toString());
 			}
-			PyDictionary dict = toPythonTranslator.tableToPyDictionary(tbl);
-			pyDictionary.__set__(new PyString("property"), dict);
+			PyDictionary pyDictionary = toPythonTranslator.tableToPyDictionary(tbl);
+			setBlockPropertyCallback.setLocalVariable(1,pyDictionary);
 			setBlockPropertyCallback.execute();
 		}
 	}

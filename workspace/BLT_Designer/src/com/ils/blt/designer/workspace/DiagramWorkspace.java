@@ -478,7 +478,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 	
 	public void close (long resourceId) {
-		logger.infof("%s: close resource %d",TAG,resourceId);
+		logger.debugf("%s: close resource %d",TAG,resourceId);
 		super.close(findDesignableContainer(resourceId));
 	}
 	
@@ -487,7 +487,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	// As it is ... a dialog pops up.
 	@Override
 	protected void onClose(DesignableContainer c) {
-		logger.infof("%s: onClose",TAG);
+		logger.debugf("%s: onClose",TAG);
 		BlockDesignableContainer container = (BlockDesignableContainer)c;
 		ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
 		if( diagram.isDirty()  ) {
@@ -528,7 +528,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 * the main menu. We actually save all the diagrams.
 	 */
 	public void saveOpenDiagrams() {
-		logger.infof("%s: saveOpenDiagrams",TAG);
+		logger.debugf("%s: saveOpenDiagrams",TAG);
 		for(DesignableContainer dc:openContainers.keySet()) {
 			saveDiagramResource((BlockDesignableContainer)dc);
 		}
@@ -541,7 +541,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 */
 	public void saveDiagramResource(BlockDesignableContainer c) {
 		ProcessDiagramView diagram = (ProcessDiagramView)c.getModel();
-		logger.infof("%s.saveDiagramResource - %s ...",TAG,diagram.getDiagramName());
+		logger.debugf("%s.saveDiagramResource - %s ...",TAG,diagram.getDiagramName());
 		diagram.setDirty(false);
 		long resid = diagram.getResourceId();
 		executionEngine.executeOnce(new ResourceUpdateManager(this,context.getProject().getResource(resid)));
@@ -565,7 +565,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	// =========================== DesignableWorkspaceListener ===========================
 	@Override
 	public void containerClosed(DesignableContainer c) {
-		logger.infof("%s.containerClosed: %s",TAG,c.getName());
+		logger.debugf("%s.containerClosed: %s",TAG,c.getName());
 		BlockDesignableContainer container = (BlockDesignableContainer)c;
 		ProcessDiagramView view = (ProcessDiagramView)(container.getModel());
 		view.removeChangeListener(this);
@@ -576,7 +576,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 */
 	@Override
 	public void containerOpened(DesignableContainer c) {
-		logger.infof("%s.containerOpened: %s",TAG,c.getName());
+		logger.debugf("%s.containerOpened: %s",TAG,c.getName());
 		BlockDesignableContainer container = (BlockDesignableContainer)c;
 		ProcessDiagramView view = (ProcessDiagramView)(container.getModel());
 		view.addChangeListener(this);
@@ -584,7 +584,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	@Override
 	public void containerSelected(DesignableContainer container) {
 		if( container==null ) logger.infof("%s.containerSelected is null",TAG);
-		else logger.infof("%s.containerSelected: %s",TAG,container.getName());
+		else logger.debugf("%s.containerSelected: %s",TAG,container.getName());
 	}
 	@Override
 	public void itemSelectionChanged(List<JComponent> selections) {

@@ -7,4 +7,5 @@ tag: DiagramInput MemoryTags/DiagramFeed
 tag: DiagramOutput MemoryTags/DiagramOutput
 tagprovider: XOM
 tagset: BasicDiagrams DiagramInput
+script: resetDiagram pylib/resetDiagram.py
 status: setup complete.
