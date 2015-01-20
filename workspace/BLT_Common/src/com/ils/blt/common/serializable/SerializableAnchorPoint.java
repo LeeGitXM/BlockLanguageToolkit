@@ -9,11 +9,13 @@ import com.ils.blt.common.block.AnchorDirection;
 
 /**
  * Implement a plain-old-java-object representing an anchor point
- * that is serializable via a XML or JSON serializer.
+ * that is serializable via a XML or JSON serializer. This class is 
+ * used in Designer scope. 
  * 
  * WARNING: Avoid the use of the Point class as it has a circular
  *          reference, making it non-serializable. Shape references
- *          Point also.
+ *          Point also. This class is used when connections are 
+ *          serialized.
  */
 public class SerializableAnchorPoint {
 	private final static String TAG = "SerializableAnchorPoint";
@@ -28,17 +30,19 @@ public class SerializableAnchorPoint {
 	private int hotSpotY = 0;
 	private int hotSpotHeight = 0;
 	private int hotSpotWidth = 0;
+	private Object lastValue = null;
+	private String lastQuality = null;    // Name of the most recent quality value
 	
 	public SerializableAnchorPoint() {
 	}
-	
-
 	
 	public Object getId() { return id; }
 	public AnchorDirection getDirection()   { return direction; }
 	public UUID getParentId() { return parentId; }
 	public int getAnchorX() { return anchorX; }
 	public int getAnchorY() { return anchorY; }
+	public Object getLastValue() { return lastValue; }
+	public String getLastQuality() { return lastQuality; }
 	public int getPathLeaderX() { return pathLeaderX; }
 	public int getPathLeaderY() { return pathLeaderY; }
 	public int getHotSpotX() {return hotSpotX;}
@@ -57,6 +61,8 @@ public class SerializableAnchorPoint {
 	public void setHotSpotY(int hotSpotY) {this.hotSpotY = hotSpotY;}
 	public void setHotSpotWidth(int hotSpotWidth) {this.hotSpotWidth = hotSpotWidth;}
 	public void setHotSpotHeight(int hotSpotHeight) {this.hotSpotHeight = hotSpotHeight;}
+	public void setLastQuality(String qualName) { this.lastQuality= qualName; } 
+	public void setLastValue(Object val) { this.lastValue= val; }
 	
 	// Convenience method
 	public void setHotSpot(Rectangle hs) { hotSpotX=hs.x; hotSpotY=hs.y; hotSpotWidth=hs.width; hotSpotHeight=hs.height; }

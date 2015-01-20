@@ -23,6 +23,10 @@ import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.NotificationHandler;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
+import com.inductiveautomation.ignition.common.model.values.BasicQuality;
+import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.model.values.Quality;
 import com.inductiveautomation.ignition.common.util.AbstractChangeable;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -81,6 +85,9 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 						AnchorPoint origin = new ProcessAnchorView(blocka,a);
 						AnchorPoint terminus = new ProcessAnchorView(blockb,b);
 						this.addConnection(origin,terminus);   // AnchorPoints
+						// Update most recent value from serialized connection anchor point
+						QualifiedValue qv = new BasicQualifiedValue(a.getLastValue(),new BasicQuality(a.getLastQuality(),Quality.Level.Good));
+						blocka.recordLatestValue(origin.getId().toString(), qv);
 					}
 					else {
 						if( blocka==null ) {
@@ -160,10 +167,19 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	// NOTE: This does not set connection type
 	private SerializableConnection convertConnectionToSerializable(Connection cxn) {
 		SerializableConnection result = new SerializableConnection();
-		if( cxn.getOrigin()!=null && cxn.getTerminus()!=null ) {	
-			result.setBeginBlock(cxn.getOrigin().getBlock().getId()); 
+		if( cxn.getOrigin()!=null && cxn.getTerminus()!=null ) {
+			AnchorPoint ap = cxn.getOrigin();
+			ProcessBlockView beginBlock = (ProcessBlockView)ap.getBlock();
+			String port = ap.getId().toString();
+			result.setBeginBlock(ap.getBlock().getId()); 
 			result.setEndBlock(cxn.getTerminus().getBlock().getId());
-			result.setBeginAnchor(createSerializableAnchorPoint(cxn.getOrigin()));
+			SerializableAnchorPoint sap = createSerializableAnchorPoint(cxn.getOrigin());
+			QualifiedValue qv = beginBlock.getLastValueForPort(port);
+			if( qv!=null ) {
+				sap.setLastQuality(qv.getQuality().getName());
+				sap.setLastValue(qv.getValue());
+			}
+			result.setBeginAnchor(sap);
 			result.setEndAnchor(createSerializableAnchorPoint(cxn.getTerminus()));
 		}
 		else {
@@ -217,11 +233,15 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			ProcessBlockView beginBlock = blockMap.get(scxn.getBeginBlock());
 			if( beginBlock!=null ) {
 				String port = scxn.getBeginAnchor().getId().toString();
+				SerializableAnchorPoint sap = scxn.getBeginAnchor();
 				boolean found = false;
 				for(ProcessAnchorDescriptor desc:beginBlock.getAnchors()) {
 					if( desc.getDisplay().equalsIgnoreCase(port) ) {
 						found = true;
 						scxn.setType(desc.getConnectionType());
+						QualifiedValue qv = desc.getLastValue();
+						sap.setLastQuality(qv.getQuality().getName());
+						sap.setLastValue(qv.getValue());
 					}
 				}
 				if( !found ) log.warnf("%s.createSerializableRepresentation: unable to find %s port in begin block",TAG,port);
@@ -368,24 +388,28 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		log.infof("%s.registerChangeListeners: ...",TAG);
 		NotificationHandler handler = NotificationHandler.getInstance();
 		// Connections. Register the upstream anchors (merely a convention).
+		// And while we're at it, update the connection state based on the latest
+		// value from our newly deserialized diagram.
 		for( Connection cxn:connections) {
 			BasicAnchorPoint bap = (BasicAnchorPoint)cxn.getOrigin();
 			if( bap!=null ) {    // Is null when block-and-connector library is hosed.
 				ProcessBlockView blk = (ProcessBlockView)bap.getBlock();
 				String key = NotificationKey.keyForConnection(blk.getId().toString(), bap.getId().toString());
 				log.tracef("%s.registerChangeListeners: adding %s",TAG,key);
+				handler.initializeNotification(key,blk.getLastValueForPort(bap.getId().toString()));
 				handler.addNotificationChangeListener(key,TAG, bap);
 			}
 		}
 		
 		// Register any properties "bound" to the engine
 		// It is the responsibility of the block to trigger
-		// this as it evaluates.
+		// this as it evaluates. Update the value from the newly desrialized diagram.
 		for(ProcessBlockView block:blockMap.values() ) {
 			for(BlockProperty prop:block.getProperties()) {
 				if( prop.getBindingType().equals(BindingType.ENGINE)) {
 					String key = NotificationKey.keyForProperty(block.getId().toString(), prop.getName());
 					log.tracef("%s.registerChangeListeners: adding %s(%d)",TAG,key,prop.hashCode());
+					handler.initializeNotification(key,new BasicQualifiedValue(prop.getValue()));
 					handler.addNotificationChangeListener(key,TAG, prop);
 					prop.addChangeListener(block);
 				}

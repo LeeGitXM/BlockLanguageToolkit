@@ -244,7 +244,7 @@ public class ApplicationRequestHandler  {
 		return result;
 	}
 	/**
-	 * Determine whether or not the engine is running.
+	 * @return internal details of a block for debugging purposes.
 	 */
 	public SerializableBlockStateDescriptor getInternalState(String diagramId,String blockId) {
 		//log.infof("%s.getInternalState ... %s,%s",TAG,diagramId,blockId);

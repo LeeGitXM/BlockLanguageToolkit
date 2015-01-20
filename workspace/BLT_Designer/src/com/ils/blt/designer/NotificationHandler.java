@@ -104,7 +104,25 @@ public class NotificationHandler implements PushNotificationListener {
 			
 		}
 	}
-
+	/**
+	 * Receive notification from a ProcessViewDiagram in the Designer. This is a mechanism
+	 * to restore the diagram display to its state prior to its last serialization.
+	 */
+	public void initializeNotification(String key,QualifiedValue value) {
+		if( key==null || value==null) return;
+		// Only initialize the payload map if the key doesn't exist
+		Object payload = payloadMap.get(key);
+		if( payload==null) payloadMap.put(key, value);
+		Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
+		if( listeners != null ) {
+			for(NotificationChangeListener listener:listeners.values()) {
+				log.tracef("%s.initializeNotification: key=%s - notifying %s",TAG,key,listener.getClass().getName());
+				listener.valueChange(value);
+			}
+			// Repaint the workspace
+			SwingUtilities.invokeLater(new WorkspaceRepainter());
+		}
+	}
 	/**
 	 * The key used for PushNotification is unique for each receiver. Consequently we make a map
 	 * containing each interested recipient, by key. When an update arrives we notify each listener

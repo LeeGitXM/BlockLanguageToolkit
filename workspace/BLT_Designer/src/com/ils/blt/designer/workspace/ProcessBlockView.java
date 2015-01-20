@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -24,6 +25,7 @@ import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.designer.workspace.ui.AbstractUIView;
 import com.ils.blt.designer.workspace.ui.UIFactory;
+import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
@@ -49,7 +51,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.Ab
 public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	private static final String TAG = "ProcessBlockView";
 	private final static Random random = new Random();
-	private Collection<ProcessAnchorDescriptor> anchors;
+	private Map<String,ProcessAnchorDescriptor> anchors;
 	private final EventListenerList listenerList;
 	private final ChangeEvent changeEvent;
 	private int background = Color.white.getRGB();
@@ -110,10 +112,10 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		this.receiveEnabled = descriptor.isReceiveEnabled();
 		this.transmitEnabled= descriptor.isTransmitEnabled();
 
-		this.anchors = new ArrayList<ProcessAnchorDescriptor>();
+		this.anchors = new HashMap<>();
 		for( AnchorPrototype ap:descriptor.getAnchors() ) {
 			log.debugf("%s: Creating anchor descriptor %s", TAG,ap.getName());
-			anchors.add( new ProcessAnchorDescriptor((ap.getAnchorDirection()==AnchorDirection.INCOMING?AnchorType.Terminus:AnchorType.Origin),
+			anchors.put(ap.getName(), new ProcessAnchorDescriptor((ap.getAnchorDirection()==AnchorDirection.INCOMING?AnchorType.Terminus:AnchorType.Origin),
 					ap.getConnectionType(),UUID.randomUUID(),ap.getName(),ap.getAnnotation(),ap.getHint(),ap.isMultiple()) );
 		}
 		this.properties = new ArrayList<BlockProperty>();
@@ -147,11 +149,11 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		this.receiveEnabled  = sb.isReceiveEnabled();
 		this.transmitEnabled = sb.isTransmitEnabled();
 		this.subworkspaceId = sb.getSubworkspaceId();
-		this.anchors = new ArrayList<ProcessAnchorDescriptor>();
+		this.anchors = new HashMap<>();
 		if(sb.getAnchors()!=null ) {
 			for( SerializableAnchor sa:sb.getAnchors() ) {
 				log.debugf("%s: Creating serializable anchor %s (%s)", TAG,sa.getDisplay(),sa.getConnectionType().name());
-				anchors.add( new ProcessAnchorDescriptor((sa.getDirection()==AnchorDirection.INCOMING?AnchorType.Terminus:AnchorType.Origin),
+				anchors.put(sa.getId().toString(), new ProcessAnchorDescriptor((sa.getDirection()==AnchorDirection.INCOMING?AnchorType.Terminus:AnchorType.Origin),
 						sa.getConnectionType(),sa.getId(),sa.getDisplay(),sa.getAnnotation(),sa.getHint(),sa.isMultiple()) );
 			}
 		}
@@ -166,7 +168,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		log.debugf("%s: Created %s %s (%s) view from serializable block", TAG, className, sb.getId().toString(),style.toString());
 	}
 	
-	
+	// NOTE: The most recent values on each port are stored in the connection anchor point
 	public SerializableAnchor convertAnchorToSerializable(ProcessAnchorDescriptor anchor) {
 		SerializableAnchor result = new SerializableAnchor();
 		result.setDirection(anchor.getType()==AnchorType.Origin?AnchorDirection.OUTGOING:AnchorDirection.INCOMING);
@@ -204,7 +206,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		result.setX(getLocation().x);
 		result.setY(getLocation().y);
 		
-		List<SerializableAnchor> ancs = new ArrayList<SerializableAnchor>();
+		List<SerializableAnchor> ancs = new ArrayList<>();
 		for( AnchorDescriptor anchor:getAnchors()) {
 			ancs.add(convertAnchorToSerializable((ProcessAnchorDescriptor)anchor));
 		}
@@ -246,7 +248,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		if( ui==null ) ui = factory.getUI(style, this);
 		return ui.getAnchorPoints();	
 	}
-	public Collection<ProcessAnchorDescriptor> getAnchors() { return anchors; }
+	public Collection<ProcessAnchorDescriptor> getAnchors() { return anchors.values(); }
 	public int getBackground() { return background;}
 	public String getClassName() { return className; }
 
@@ -276,6 +278,17 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	public String getIconPath() {return iconPath;}
 	@Override
 	public UUID getId() { return uuid; }
+	public QualifiedValue getLastValueForPort(String port) {
+		QualifiedValue qv = null;
+		ProcessAnchorDescriptor pad = anchors.get(port);
+		if( pad!=null ) {
+			qv = pad.getLastValue();
+		}
+		else {
+			log.warnf("%s.getLastValueForPort: Unknown port specified (%s)",TAG,port);
+		}
+		return qv;
+	}
 	// Location is the upper left.
 	@Override
 	public Point getLocation() {
@@ -303,6 +316,15 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	public boolean isNameDisplayed() { return nameDisplayed; }
 	public boolean isReceiveEnabled() {return receiveEnabled;}
 	public boolean isTransmitEnabled() {return transmitEnabled;}
+	public void recordLatestValue(String port,QualifiedValue qv) {
+		ProcessAnchorDescriptor pad = anchors.get(port);
+		if( pad!=null ) {
+			pad.setLastValue(qv);
+		}
+		else {
+			log.warnf("%s.recordLatestValue: Uknown port (%s)",TAG,port);
+		}
+	}
 	public void setCtypeEditable(boolean ctypeEditable) {this.ctypeEditable = ctypeEditable;}
 	public void setDirty(boolean dirty) {this.dirty = dirty;} 
 	public void setEditorClass(String editorClass) {this.editorClass = editorClass;}
@@ -320,7 +342,6 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		location = loc;
 		fireBlockMoved();
 	}
-	
 	public void setPreferredHeight(int preferredHeight) {this.preferredHeight = preferredHeight;}
 	public void setPreferredWidth(int preferredWidth) {this.preferredWidth = preferredWidth;}
 	public void setProperties(Collection<BlockProperty> props) { this.properties = props; }

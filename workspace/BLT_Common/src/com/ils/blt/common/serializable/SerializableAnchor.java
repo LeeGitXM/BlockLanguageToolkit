@@ -12,7 +12,8 @@ import com.ils.blt.common.connection.ConnectionType;
 
 /**
  * Implement a plain-old-java-object representing an anchor point
- * that is serializable via a JSON serializer.
+ * that is serializable via a JSON serializer. This class is used 
+ * whenever a block is serialized.
  */
 public class SerializableAnchor {
 	private final static String TAG = "SerializableAnchor";

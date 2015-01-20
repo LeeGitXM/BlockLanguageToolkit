@@ -87,14 +87,16 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 		cxnType = ctype;
 	}
 
+	public boolean allowMultipleConnections() { return allowMultiple; }
 	public Point getAnchor() { return anchor; }
 	public String getAnnotation() { return annotation; }
 	public ConnectionType getConnectionType() { return cxnType; }
-	public Point getPathLeader() { return pathLeader; }
 	public Shape getHotSpot() { return hotspot; }
+	public Point getPathLeader() { return pathLeader; }
 	public AnchorSide getSide() {return side;}
 	public void setSide(AnchorSide side) {this.side = side;}
-	public boolean allowMultipleConnections() { return allowMultiple; }
+	
+	
 	
 	// Methods for workspace connection rendering
 	/**
@@ -182,5 +184,6 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 		if( cxnType.equals(ConnectionType.TRUTHVALUE)) {
 			theTruth = fncs.qualifiedValueAsTruthValue(value);
 		}
+		((ProcessBlockView)getBlock()).recordLatestValue(id.toString(),value);
 	}
 }
