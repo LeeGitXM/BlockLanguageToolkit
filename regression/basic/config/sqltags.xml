@@ -1,28 +1,32 @@
 <Tags>
    <Tag name="MemoryTags" path="" type="Folder"/>
    <Tag name="MJKFeed3" path="MemoryTags" type="DB">
-      <Property name="Value">40.0</Property>
+      <Property name="Value">4.0</Property>
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="MJKFeed2" path="MemoryTags" type="DB">
       <Property name="Value">4.0</Property>
       <Property name="DataType">5</Property>
    </Tag>
+   <Tag name="SumResult" path="MemoryTags" type="DB">
+      <Property name="Value">0.0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
    <Tag name="DiagramOutput" path="MemoryTags" type="DB">
-      <Property name="Value">0</Property>
+      <Property name="Value">8</Property>
       <Property name="DataType">2</Property>
    </Tag>
    <Tag name="MJKQuality" path="MemoryTags" type="DB">
       <Property name="Value">good</Property>
       <Property name="DataType">7</Property>
    </Tag>
-   <Tag name="DiagramFeed" path="MemoryTags" type="DB">
-      <Property name="Value">1</Property>
-      <Property name="DataType">2</Property>
-   </Tag>
    <Tag name="MJKSQCTarget" path="MemoryTags" type="DB">
       <Property name="Value">3.0</Property>
       <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="DiagramFeed" path="MemoryTags" type="DB">
+      <Property name="Value">1</Property>
+      <Property name="DataType">2</Property>
    </Tag>
    <Tag name="MJKSQCStdDev" path="MemoryTags" type="DB">
       <Property name="Value">0.5</Property>

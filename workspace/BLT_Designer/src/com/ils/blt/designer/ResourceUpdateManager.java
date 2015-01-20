@@ -78,19 +78,23 @@ public class ResourceUpdateManager implements Runnable {
 				view.setDirty(false);
 			}
 		}
-		context.updateResource(res.getResourceId(),res.getData());   // Force an update
-		
-		diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
 		try {
+			context.updateResource(res.getResourceId(),res.getData());   // Force an update
+			diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
 			DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ...");  // Don't publish
+			// Make every thing clean again.
+			statusManager.clearDirtyChildCount(res.getResourceId());
+			Project project = context.getProject();
+			project.applyDiff(diff,false);
+		}
+		catch(IllegalArgumentException iae) {
+			logger.warnf("%s.run: Updating resource %d, it has been deleted (%s)",TAG,res.getResourceId(),iae.getMessage());
+			statusManager.deleteResource(res.getResourceId());
 		}
 		catch(GatewayException ge) {
 			logger.warnf("%s.run: Exception saving project resource %d (%s)",TAG,res.getResourceId(),ge.getMessage());
 		}
-		// Make every thing clean again.
-		statusManager.clearDirtyChildCount(res.getResourceId());
-		Project project = context.getProject();
-		project.applyDiff(diff,false);
+		
 		
 	}
 }

@@ -2,4 +2,4 @@ log: CRX Product Quality Test Suite
 #
 # Run the collection of tests for the "simple" diagrams
 #
-include: prod-ca-problem.txt
+run: prod-ca-problem.txt

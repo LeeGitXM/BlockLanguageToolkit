@@ -1,0 +1,19 @@
+#
+# Simple test of an input and readout
+#
+Test: Sum and Range Observation
+Step: Integer values
+Tagset: DualFeed
+10:00 1 1
+10:01 2 2
+10:01:55 Assert: SumResult = 4 "Sum is 4"
+10:02 3 -2
+10:03 4 4
+10:03:55 Assert: SumResult = 8 "Sum is 8"
+Step: Double values
+10:04 .1 -0.1
+10:05 2.43 2.57
+10:05:55 Assert: SumResult = 5 "Sum is 5"
+10:06 -1.4 5.6
+10:07 -12.12 12.12
+10:08:55 Assert: SumResult = 0 "Sum is 0"

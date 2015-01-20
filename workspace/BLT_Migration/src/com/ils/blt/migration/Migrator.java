@@ -24,6 +24,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.AnchorDirection;
+import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.RampMethod;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.serializable.SerializableAnchor;
@@ -351,6 +352,20 @@ public class Migrator {
 		else if( g2Block.getClassName().equalsIgnoreCase("GDL-INFERENCE-PATH-CONNECTION-POST") ) {
 			for( SerializableAnchor anchor:block.getAnchors()) {
 				anchor.setConnectionType(ConnectionType.TRUTHVALUE);
+			}
+		}
+		// PersistenceGate - convert minutes to seconds
+		else if( block.getClassName().startsWith("com.ils.block.PersistenceGate")) { 
+			for(BlockProperty prop:block.getProperties()) {
+				if( prop.getName().equalsIgnoreCase("TimeWindow" )) {
+					try {
+						double val = Double.parseDouble(prop.getValue().toString());
+						prop.setValue(new Double(val*60));
+					} 
+					catch(NumberFormatException nfe) {
+						System.err.println(String.format("%s: PersistenceGate delay is not a number (%s)",TAG,nfe.getMessage()));
+					}
+				}
 			}
 		}
 	}

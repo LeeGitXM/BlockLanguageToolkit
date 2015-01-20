@@ -2,7 +2,9 @@
 # Simple test of an input and readout
 #
 Test: Production CA Problem
-Step: All entries FALSE
+Step: All entries set false
 # Cat IN, Ca-SQC, Rx Value, Rx Quality
 Tagset: ProdCaProblem
 10:00 false,false,10.,good
+10:01 false,false,11.,
+10:02 false,false,12.,

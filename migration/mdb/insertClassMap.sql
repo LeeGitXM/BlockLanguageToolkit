@@ -8,7 +8,7 @@ insert into ClassMap values ('EM-GDA-EXPIRATION-FILTER','com.ils.block.Junction'
 insert into ClassMap values ('EM-GDA-FINAL-DIAGNOSIS','xom.block.finaldiagnosis.FinalDiagnosis');
 insert into ClassMap values ('EM-GDA-HIGH-LIMIT','com.ils.block.HighLimitObservation');
 insert into ClassMap values ('EM-GDA-HIGH-LIMIT-WITH-DEADBAND','com.ils.block.HighLimitObservation');
-insert into ClassMap values ('EM-GDA-LATCH','com.ils.block.EdgeTrigger');
+insert into ClassMap values ('EM-GDA-LATCH','com.ils.block.LogicLatch');
 insert into ClassMap values ('EM-GDA-LOGIC-FILTER','com.ils.block.LogicFilter');
 insert into ClassMap values ('EM-GDA-LOGICAL-VARIABLE','com.ils.block.Parameter');
 insert into ClassMap values ('EM-GDA-LOW-LIMIT','com.ils.block.LowLimitObservation');

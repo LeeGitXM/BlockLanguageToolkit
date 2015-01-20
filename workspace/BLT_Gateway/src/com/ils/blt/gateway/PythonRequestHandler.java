@@ -32,8 +32,8 @@ public class PythonRequestHandler   {
 		
 	}
 	/**
-	 * Traverse the parent nodes until we find an Application. If there is none in
-	 * our ancestry, return null.
+	 * Traverse the parent nodes until we find an Application. If there 
+	 * are none in our ancestry, return null.
 	 * 
 	 * @param parent identifier for the diagram, a string version of a UUID
 	 * @return the ancestrial application
@@ -59,7 +59,7 @@ public class PythonRequestHandler   {
 		return app;
 	}
 	/**
-	 * Find a block given the Id of the parent diagram and the Id of the block itself.
+	 * Find a block given the Id of the parent diagram the block itself.
 	 * 
 	 * @param parent identifier for the diagram, a string version of a UUID
 	 * @param blockId identifier for the block, a string version of a UUID
@@ -83,11 +83,8 @@ public class PythonRequestHandler   {
 		return block;
 	}
 	/**
-	 * Given an identifier string, return the associated diagram. The parent of
-	 * a block should be a diagram.
-	 * 
-	 * @param parent identifier for the block, a string version of a UUID
-	 * @return the diagram
+	 * @param parent identifier for the diagram, a string version of a UUID
+	 * @return the default database for the project containing this diagram
 	 */
 	public String getDefaultDatabase(String parent)  {
 		log.infof("%s.getDefaultDatabase, diagram = %s ",TAG,parent);
@@ -109,11 +106,9 @@ public class PythonRequestHandler   {
 		return dbName;
 	}
 	/**
-	 * Given an identifier string, return the associated diagram. The parent of
-	 * a block should be a diagram.
-	 * 
-	 * @param parent identifier for the block, a string version of a UUID
-	 * @return the diagram
+	 * @param parent identifier for the diagram, a string version of a UUID
+	 * @return the default tag provider for the project associated with 
+	 *         the specified diagram
 	 */
 	public String getDefaultTagProvider(String parent)  {
 		log.infof("%s.getDefaultTagProvider, diagram = %s ",TAG,parent);
@@ -135,8 +130,8 @@ public class PythonRequestHandler   {
 		return provider;
 	}
 	/**
-	 * Given an identifier string, return the associated diagram. The parent of
-	 * a block should be a diagram.
+	 * Given an identifier string, return the associated diagram. 
+	 * The parent of a block should be a diagram.
 	 * 
 	 * @param parent identifier for the block, a string version of a UUID
 	 * @return the diagram
@@ -157,8 +152,8 @@ public class PythonRequestHandler   {
 		return diag;
 	}
 	/**
-	 * Traverse the parent nodes until we find a family. If there is none in
-	 * our ancestry, return null.
+	 * Traverse the parent nodes until we find a family. If there 
+	 * are none in our ancestry, return null.
 	 * 
 	 * @param parent identifier for the diagram, a string version of a UUID
 	 * @return the ancestrial family

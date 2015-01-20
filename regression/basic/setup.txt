@@ -3,9 +3,16 @@
 #
 log: [DATE] [TIME] Start Testing ...
 timefactor: 10
+notification: sumObservation "C:4a8f708b-f77c-4dbf-abc2-7dd01a1224a1:out"
+# Script aliases
+script: resetDiagram pylib/resetDiagram.py
+# Tag aliases
 tag: DiagramInput MemoryTags/DiagramFeed
 tag: DiagramOutput MemoryTags/DiagramOutput
+tag: Feed2 MemoryTags/MJKFeed2
+tag: Feed3 MemoryTags/MJKFeed3
+tag: SumResult MemoryTags/SumResult
 tagprovider: XOM
 tagset: BasicDiagrams DiagramInput
-script: resetDiagram pylib/resetDiagram.py
+tagset: DualFeed Feed2 Feed3
 status: setup complete.

@@ -115,9 +115,9 @@ insert into PropertyMap values ('GDL-NUMERIC-ENTRY-POINT','nameOfSensor','TagPat
 insert into PropertyMap values ('GDL-NOT-GATE','logic','','STRING',1,'NONE');
 insert into PropertyMap values ('GDL-NOT-GATE','outputUncertainty','','DOUBLE',1,'NONE');
 insert into PropertyMap values ('GDL-PERSISTENCE-GATE','countBy','','INTEGER',1,'NONE');
-insert into PropertyMap values ('GDL-PERSISTENCE-GATE','delay','interval','DOUBLE',1,'NONE');
+insert into PropertyMap values ('GDL-PERSISTENCE-GATE','delay','TimeWindow','DOUBLE',1,'NONE');
 insert into PropertyMap values ('GDL-PERSISTENCE-GATE','displayUnits','','STRING',1,'NONE');
-insert into PropertyMap values ('GDL-PERSISTENCE-GATE','triggerOn','trigger','INTEGER',1,'NONE');
+insert into PropertyMap values ('GDL-PERSISTENCE-GATE','triggerOn','Trigger','BOOLEAN',1,'NONE');
 insert into PropertyMap values ('GDL-OR-GATE','logic','','STRING',1,'NONE');
 insert into PropertyMap values ('GDL-OR-GATE','maximumUnknownInputs','','INTEGER',1,'NONE');
 insert into PropertyMap values ('GDL-OR-GATE','outputUncertainty','','DOUBLE',1,'NONE');

@@ -1,7 +1,7 @@
 #
 # Simple test of an input and readout
 #
-Test: Basic Input to Output
+Test: Simple Input to Output
 Step: Integer values
 Tagset: BasicDiagrams
 10:00 1
