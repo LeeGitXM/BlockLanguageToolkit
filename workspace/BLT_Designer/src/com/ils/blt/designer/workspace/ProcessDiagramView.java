@@ -240,8 +240,10 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 						found = true;
 						scxn.setType(desc.getConnectionType());
 						QualifiedValue qv = desc.getLastValue();
-						sap.setLastQuality(qv.getQuality().getName());
-						sap.setLastValue(qv.getValue());
+						if( qv!=null ) {
+							sap.setLastQuality(qv.getQuality().getName());
+							sap.setLastValue(qv.getValue());
+						}
 					}
 				}
 				if( !found ) log.warnf("%s.createSerializableRepresentation: unable to find %s port in begin block",TAG,port);

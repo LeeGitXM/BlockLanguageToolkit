@@ -39,7 +39,7 @@ public class PythonRequestHandler   {
 	 * @return the ancestrial application
 	 */
 	public ProcessApplication getApplication(String parent)  {
-		log.infof("%s.getApplication, diagram = %s ",TAG,parent);
+		log.tracef("%s.getApplication, diagram = %s ",TAG,parent);
 		ProcessApplication app = null;
 		try {
 			UUID parentuuid = UUID.fromString(parent);
@@ -66,7 +66,7 @@ public class PythonRequestHandler   {
 	 * @return the referenced block
 	 */
 	public ProcessBlock getBlock(String parent,String blockId)  {
-		log.infof("%s.getBlock, diagram.block = %s.%s ",TAG,parent,blockId);
+		log.tracef("%s.getBlock, diagram.block = %s.%s ",TAG,parent,blockId);
 		ProcessBlock block = null;
 		try {
 			UUID parentuuid = UUID.fromString(parent);
@@ -87,7 +87,7 @@ public class PythonRequestHandler   {
 	 * @return the default database for the project containing this diagram
 	 */
 	public String getDefaultDatabase(String parent)  {
-		log.infof("%s.getDefaultDatabase, diagram = %s ",TAG,parent);
+		log.tracef("%s.getDefaultDatabase, diagram = %s ",TAG,parent);
 		String dbName = null;
 		try {
 			UUID parentuuid = UUID.fromString(parent);
@@ -111,7 +111,7 @@ public class PythonRequestHandler   {
 	 *         the specified diagram
 	 */
 	public String getDefaultTagProvider(String parent)  {
-		log.infof("%s.getDefaultTagProvider, diagram = %s ",TAG,parent);
+		log.tracef("%s.getDefaultTagProvider, diagram = %s ",TAG,parent);
 		String provider = null;
 		try {
 			UUID parentuuid = UUID.fromString(parent);
@@ -137,7 +137,7 @@ public class PythonRequestHandler   {
 	 * @return the diagram
 	 */
 	public ProcessDiagram getDiagram(String parent)  {
-		log.infof("%s.getDiagram, diagram = %s ",TAG,parent);
+		log.tracef("%s.getDiagram, diagram = %s ",TAG,parent);
 		ProcessDiagram diag = null;
 		try {
 			UUID parentuuid = UUID.fromString(parent);
@@ -159,7 +159,7 @@ public class PythonRequestHandler   {
 	 * @return the ancestrial family
 	 */
 	public ProcessFamily getFamily(String parent)  {
-		log.infof("%s.getFamily, diagram = %s ",TAG,parent);
+		log.tracef("%s.getFamily, diagram = %s ",TAG,parent);
 		ProcessFamily fam = null;
 		try {
 			UUID parentuuid = UUID.fromString(parent);

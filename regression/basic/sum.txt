@@ -8,6 +8,7 @@ Tagset: DualFeed
 10:01 2 2
 10:01:55 Assert: SumResult = 4 "Sum is 4"
 10:02 3 -2
+10:02:30 Assert: sumObservation = false
 10:03 4 4
 10:03:55 Assert: SumResult = 8 "Sum is 8"
 Step: Double values
@@ -16,4 +17,5 @@ Step: Double values
 10:05:55 Assert: SumResult = 5 "Sum is 5"
 10:06 -1.4 5.6
 10:07 -12.12 12.12
-10:08:55 Assert: SumResult = 0 "Sum is 0"
+10:07:55 Assert: SumResult = 0 "Sum is 0"
+10:07:55 Assert: sumObservation = true

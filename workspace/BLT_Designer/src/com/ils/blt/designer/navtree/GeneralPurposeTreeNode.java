@@ -280,26 +280,26 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	 */
 	@Override
 	protected AbstractNavTreeNode createChildNode(ProjectResource res) {
-		logger.infof("%s.createChildNode: %s(%d) type:%s, depth=%d", TAG,getName(),resourceId,res.getResourceType(),getDepth());
+		logger.debugf("%s.createChildNode: %s(%d) type:%s, depth=%d", TAG,getName(),resourceId,res.getResourceType(),getDepth());
 		AbstractResourceNavTreeNode node = statusManager.findNode(res.getResourceId());
 		if( node==null ) {
 			if (    ProjectResource.FOLDER_RESOURCE_TYPE.equals(res.getResourceType()))       {
 				node = new GeneralPurposeTreeNode(context, res, res.getDataAsUUID());
-				logger.infof("%s.createChildNode: (%s) %s->%s",TAG,res.getResourceType(),this.getName(),node.getName());
+				logger.tracef("%s.createChildNode: (%s) %s->%s",TAG,res.getResourceType(),this.getName(),node.getName());
 			}
 			else if ( BLTProperties.APPLICATION_RESOURCE_TYPE.equals(res.getResourceType()) )       {
 				SerializableApplication sa = deserializeApplication(res);
 				node = new GeneralPurposeTreeNode(context, res, sa.getId());
-				logger.infof("%s.createChildNode: (%s) %s->%s",TAG,res.getResourceType(),this.getName(),node.getName());
+				logger.tracef("%s.createChildNode: (%s) %s->%s",TAG,res.getResourceType(),this.getName(),node.getName());
 			}
 			else if ( BLTProperties.FAMILY_RESOURCE_TYPE.equals(res.getResourceType()) )       {
 				SerializableFamily fa = deserializeFamily(res); 
 				node = new GeneralPurposeTreeNode(context, res, fa.getId());
-				logger.infof("%s.createChildNode: (%s) %s->%s",TAG,res.getResourceType(),this.getName(),node.getName());
+				logger.tracef("%s.createChildNode: (%s) %s->%s",TAG,res.getResourceType(),this.getName(),node.getName());
 			}
 			else if (BLTProperties.DIAGRAM_RESOURCE_TYPE.equals(res.getResourceType())) {
 				node = new DiagramTreeNode(context,res,workspace);
-				logger.infof("%s.createChildDiagram: %s->%s",TAG,this.getName(),node.getName());
+				logger.tracef("%s.createChildDiagram: %s->%s",TAG,this.getName(),node.getName());
 			} 
 			else {
 				logger.warnf("%s: Attempted to create a child of type %s (ignored)",TAG,res.getResourceType());
@@ -309,7 +309,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			executionEngine.executeOnce(new ResourceUpdateManager(workspace,res));   /// Creates, syncs resource
 		}
 		else {
-			logger.infof("%s.createChildNode: REUSE %s->%s",TAG,this.getName(),node.getName());
+			logger.debugf("%s.createChildNode: REUSE %s->%s",TAG,this.getName(),node.getName());
 			if( node instanceof DiagramTreeNode ) context.addProjectChangeListener((DiagramTreeNode)node);
 		}
 		node.install(this);
