@@ -13,7 +13,7 @@ import com.inductiveautomation.factorypmi.application.binding.VisionClientContex
 import com.inductiveautomation.ignition.common.Dataset;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
-import com.inductiveautomation.sfc.uimodel.ChartUIModel;
+
 
 /** 
  * This class holds objects in a Tree structure. The tree is derived from
@@ -65,9 +65,6 @@ public class RecMapDataModel {
 	 * Initialize the UI
 	 */
 	private void initialize() {
-
-		UUID root = ChartUIModel.ROOT_FOLDER;
-		log.tracef("%s.initialize: ROOT_FOLDER = %s",TAG,root.toString());
 		update();
 	}
 	/**

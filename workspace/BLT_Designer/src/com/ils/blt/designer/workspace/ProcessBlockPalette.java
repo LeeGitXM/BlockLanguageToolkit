@@ -83,7 +83,7 @@ public class ProcessBlockPalette extends DockableFrame implements ResourceWorksp
 			else {
 				panel = (JPanel)tabbedPane.getComponentAt(tabIndex);
 			}
-			panel.add(component);
+			if(component!=null) panel.add(component);
 		}
 
 		setContentPane(tabbedPane);
