@@ -48,9 +48,9 @@ public class GatewayClientDelegate implements PushNotificationListener {
 	 */
 	@Override
 	public void receiveNotification(PushNotification notice) {
-		String type = notice.getMessageType();
-		Object payload = notice.getMessage();
-		log.info(TAG+" Received gateway notification:"+type+":"+payload.toString());
+		//String type = notice.getMessageType();
+		//Object payload = notice.getMessage();
+
 		/*
 		if(!type.equalsIgnoreCase(ILSProperties.GATEWAY_BLOCK_STATE_MESSAGE)) return;
 		try {
@@ -73,5 +73,4 @@ public class GatewayClientDelegate implements PushNotificationListener {
 		catch(ClassCastException cce ) {}  // Ignore
 		*/
 	}
-
 }

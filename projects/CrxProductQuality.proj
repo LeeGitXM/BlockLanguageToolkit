@@ -6,33 +6,32 @@
   <rev>2</rev>
   <build>2014121709</build>
 </version>
-<timestamp>2015-01-16 18:09:51</timestamp>
-<id>8</id>
+<timestamp>2015-01-22 00:31:50</timestamp>
+<id>0</id>
 <name>CrxProductQuality</name>
-<title>Crx Product Quality</title>
-<description></description>
+<title>CRX Product Quality</title>
+<description>For Migration Testing</description>
 <enabled>true</enabled>
-<lastModified>1421455885835</lastModified>
+<lastModified>1421911870781</lastModified>
 <lastModifiedBy>chuckc</lastModifiedBy>
-<editCount>61</editCount>
-<uuid>99a754a3-b693-01e8-63ed-d33f13c09160</uuid>
+<editCount>1</editCount>
+<uuid>e436c1b6-6925-bb60-dab5-b45010706ef6</uuid>
 <resources>
-	<resource id='188' name='' module='' modver='7.7.2.2014121709' type='sr.global.props' ver='0' dirty='true' editcount='0' parent='' oemlocked='false' scope='7' protected='false'>
+	<resource id='0' name='' module='' modver='7.7.2.2014121709' type='sr.global.props' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='7' protected='false'>
 		<doc></doc>
-		<bytes><![CDATA[H4sIAAAAAAAAAHWQQUrDQBSG3zTRtmkr4qoIgls3uYBuxIJS1Cq6cDudTNuRJFNmJgXPoMWdeAY3
-grfQm3gCt/7jVFzUhmTeH96f938vz3uPL0df/cHb/OPg5On1nYhqRKz/+XDfpv+vDTwJUddK15Mj
-XuWuxx23ujJCnvNCoh1jhAjuuh7eSuEsZES0L3SRqjKrhFMzySunC+6ULlM1LtWPgKFAmRrtP0uP
-cz3k+YXRUxvQIpF7tU60BYDDyk3QHKn8N7qFyImyTps7vK0BpEBluDVqAwOsM1BN+LKA7ynR92M7
-6N8MzqCw/c7fhleXp9d8bBE1U5k0Pmtz8TtY1x/M0zXDkhRth0iKa56hEXipnrCAQGx3IWJPsuxO
-Vrtby+72anfnG87iW7LgAQAA]]></bytes></resource>
-	<resource id='189' name='' module='fpmi' modver='' type='client_tags' ver='0' dirty='true' editcount='0' parent='' oemlocked='false' scope='4' protected='false'>
+		<bytes><![CDATA[H4sIAAAAAAAAAJuh2b/K+buX/6beUzYe09afZGBgYGJgYPQWaH2+mAE74AFiDgYG5uKSIiCLk4GB
+PSU1LbE0pwTIYwHqTQbS7EC6GKKcPT8pKzW5BMRjZmCwTs7P1cvMSylNLsksS00sLcnPTSzJzM/T
+y0zPywQzgApygVRBUT5Im557Tn5SYk5AUX4ByARuoCER/r5AFhcDg2xxaokLxOrgQJ+QxPRioLKy
+zJTUIr/E3FSIT5iTc0D62BgYhICqHUtLMoBq0jJzUqFKWIEOzQXSjECULwD1IaMEiGAEmcAJcTYD
+kxREEQMLE0gXB8RMBnYuRkhoMDAqQBksoEDBVM2FWzU3ANIyiEuFAQAA]]></bytes></resource>
+	<resource id='1' name='' module='fpmi' modver='' type='client_tags' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='4' protected='false'>
 		<doc></doc>
-		<bytes><![CDATA[H4sIAAAAAAAAAG1QvUpDMRQ+sdZ721pbNxGHuzi4hKbWlha3QpGCOlhwjmlaojc315u04kOImziK
-o4vgW+ib+ASunpAODgZCTg7fz/nO88Hj2/BnfP7x8HV88vT+CQBrAGT8/fqyD/+fJt5NgMhKd8a1
-xF8VGSIwmz3ao23abrEOa7Neqx84kbm6lsJZLEvInuVa0aUsrDIZttZRYsVjh54RI0ykHr0BsHcp
-p8mYZwnrJIwNWv0B6yanF5METY4QUkN37T3wNfhuIdm6Aqs6drwIAdieFTjrnSlu/vg20LowxmFZ
-ARgJo6nKpgvh1FLyhTOaOwTSGRfOFPd+Zp7nqRKhbW9Tx+eWDlMlMzfh85FJp9L7llHPKS2t4zrf
-gRAaSBxWBKU4ZIZyHBIC8aCI+OSVMAyQ3RAJqp5Si8PSoV4lISKQZFV4pcYv0PgDdcgBAAA=]]></bytes></resource>
+		<bytes><![CDATA[H4sIAAAAAAAAAG1QwU4CMRCdisiyiODNGA979dLsLhgC8UZCDEY8uD9QS8HqdrtuC8aPIN6M3+DF
+xL/QH/LqNOXgwSbNvE7fe3kzb6cv7+Of6fXn5vv84vXjCwB2AMhld9Ofwf+ni3cfoGGEnTEl8BWi
+gntld0AHNKVpnPSTNBnEQ69p6Nt7wa1BWEP1olSSrkVlpC6wtYsWW13Sc4oAaTx37BZaK2eAVWM9
+wB9jK0Rt7DgGAThcVBjkSVcPf0w76FtpbRHuAZxkd6toyoooTaM4HvWSUdyPrm6yCJOeIaUJMOFa
+UVnMV9zKtWArqxWz6EUXjFtdPbvMrCxzyX3bPOaWLQ0d51IUNmPLic7nwkWro5+VShjLVHkEfmgg
+gV8R1AI/M9QDHw6IIzWIm7zpwwA59lND6CStwC8d2iHxWwASbYFz6vwCw97ZocgBAAA=]]></bytes></resource>
 </resources>
 <deletedResources>
 </deletedResources>

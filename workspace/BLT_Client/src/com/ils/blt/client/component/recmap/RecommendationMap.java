@@ -4,6 +4,7 @@
 package com.ils.blt.client.component.recmap;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 
 import com.ils.blt.client.component.PrefuseViewerComponent;
 import com.ils.blt.common.BLTProperties;
@@ -24,7 +25,7 @@ public class RecommendationMap extends PrefuseViewerComponent {
 	private static final long serialVersionUID = 5508313516136446100L;
 	private static final String TAG = "RecommendationMap";
 	private static String PREFIX = BLTProperties.CUSTOM_PREFIX;              // For bundle identification
-	
+	private static Dimension PREFERRED_SIZE = new Dimension(180,180);
 	private RecMapDataModel model = null;
 	private Dataset outputs = null;
 	private BasicDataset recommendations = null;
@@ -34,6 +35,7 @@ public class RecommendationMap extends PrefuseViewerComponent {
 		setName(BundleUtil.get().getString(PREFIX+".RecommendationMap.Name"));
 		this.setOpaque(true);
 		this.setBorder(border);
+		this.setPreferredSize(PREFERRED_SIZE);
 		updateChartView();
 	}
 
@@ -65,9 +67,10 @@ public class RecommendationMap extends PrefuseViewerComponent {
 		updateChartView();
 	}
 	public Dataset getOutputs() {return outputs;}
-	public void setOutputs(Dataset outputs) {
-		this.outputs = outputs;
+	public void setOutputs(Dataset newOutputs) {
 		updateChartView();
+		
+		this.outputs = newOutputs;
 	}
 	
 	public RecMapDataModel getModel() { return model; }
@@ -83,13 +86,17 @@ public class RecommendationMap extends PrefuseViewerComponent {
 		return valid;
 	}
 	public void setRecommendations(Dataset recs) {
+		firePropertyChange(RecMapConstants.RECOMMENDATIONS_PROPERTY,this.recommendations,recs);
 		this.recommendations = new BasicDataset(recs);
 		updateChartView();
 	}
 	public void updateRecommendations(int row,String value) {
 		int col = recommendations.getColumnIndex(RecMapConstants.VALUE_COLUMN);
 		if( col>=0 ) {
+			Dataset old = new BasicDataset(recommendations);
 			recommendations.setValueAt(row, col, value);
+			firePropertyChange(RecMapConstants.RECOMMENDATIONS_PROPERTY,old,this.recommendations);
+			log.infof("%s.updateRecommendations: Fired property change on %s",TAG,RecMapConstants.RECOMMENDATIONS_PROPERTY);
 		}
 	}
 }

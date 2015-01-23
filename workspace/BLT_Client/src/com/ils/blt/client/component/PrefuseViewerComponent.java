@@ -19,10 +19,7 @@ import com.inductiveautomation.vision.api.client.components.model.AbstractVision
  */
 public abstract class PrefuseViewerComponent extends AbstractVisionComponent {
 	private static final long serialVersionUID = 6091339174784553157L;
-	
-	// Specify default block dimensions
-	protected static final int DEFAULT_FRAME_HEIGHT  = 200;   
-	protected static final int DEFAULT_FRAME_WIDTH   = 240;       
+	       
 	
 	protected static final Color BORDER_HIGHLIGHT_COLOR = new Color(250,250,250);
 	protected static final Color BORDER_SHADOW_COLOR = new Color(10,10,10);
@@ -47,7 +44,7 @@ public abstract class PrefuseViewerComponent extends AbstractVisionComponent {
 
 		border = new BevelBorder(BevelBorder.LOWERED,BORDER_HIGHLIGHT_COLOR,BORDER_SHADOW_COLOR);
 		
-		setPreferredSize(new Dimension(DEFAULT_FRAME_WIDTH,DEFAULT_FRAME_HEIGHT));
+		setPreferredSize(getSize());
 		setBackground(DEFAULT_BACKGROUND_COLOR);
 		setForeground(DEFAULT_FRAME_COLOR);
 		setFont(DEFAULT_HEADING_FONT);

@@ -1,15 +1,16 @@
 package com.ils.blt.client.component.recmap;
 
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Iterator;
-
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 import prefuse.action.layout.Layout;
 import prefuse.data.Node;
 import prefuse.data.tuple.TupleSet;
 import prefuse.visual.VisualItem;
+
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 
 /**
@@ -59,17 +60,23 @@ public class ThreeColumnLayout extends Layout {
         setMargin(10,10,10,10);   // top,left,bottom.right
         log.infof("%s.constructor group %s is %dx%d nodes (%s)",TAG,m_group,ncols,nrows,(isEnabled()?"ENABLED":"DISABLED"));
     }
-    
+    @Override
+    public void setLayoutBounds(Rectangle2D bnds) {
+    	super.setLayoutBounds(bnds);
+    	log.infof("%s.setLayoutBounds (%3.1f x %3.1f)",TAG,bnds.getWidth(),bnds.getHeight());
+    }
     /**
      * @see prefuse.action.Action#run(double)
      */
     public void run(double frac) {
         Rectangle2D b = getLayoutBounds();
-        double bx = b.getMinX(), by = b.getMinY();
-        double w = b.getWidth(), h = b.getHeight();
+        Point2D anchor = getLayoutAnchor();
+        double w = b.getWidth()*.75, h = b.getHeight()*.75;
+        //double bx = b.getMinX(), by = b.getMinY();
+        double bx = anchor.getX()-w/2, by = anchor.getY()-h/2;
         
         TupleSet ts = m_vis.getGroup(m_group);
-        log.infof("%s.run group %s has %d nodes",TAG,m_group,ts.getTupleCount());
+        log.infof("%s.run group %s has %d nodes (%3.1f x %3.1f)",TAG,m_group,ts.getTupleCount(),w,h);
         
         int sources = (nrows - nrows1)/2;
         int targets = (nrows - nrows3)/2;
@@ -126,7 +133,7 @@ public class ThreeColumnLayout extends Layout {
                 		span++;
                 	}
                 	linkSlots[row] = true;
-                	log.infof("%s.run recommendation = %d:%d->%d",TAG,src,tar,row);
+                	log.debugf("%s.run recommendation = %d:%d->%d",TAG,src,tar,row);
                 	y = by + h*((row)/(double)(nrows-1));
                 }
                 item.setVisible(true);

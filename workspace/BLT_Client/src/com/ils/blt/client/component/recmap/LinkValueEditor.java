@@ -39,7 +39,7 @@ public class LinkValueEditor extends JDialog {
 	// A panel is designed to edit properties that are lists of strings.
 	private static final String PREFIX = BLTProperties.BLOCK_PREFIX;  // Required for text strings
 	private static final long serialVersionUID = 2002388376824434427L;
-	private final int DIALOG_HEIGHT = 100;
+	private final int DIALOG_HEIGHT = 120;
 	private final int DIALOG_WIDTH = 180;
 	
 	private final VisualItem visualItem;

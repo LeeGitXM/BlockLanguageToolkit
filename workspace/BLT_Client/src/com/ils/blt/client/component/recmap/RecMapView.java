@@ -1,5 +1,5 @@
 /**
- * Copyright 2014. ILS Automation. All rights reserved.
+ * Copyright 2014-2015. ILS Automation. All rights reserved.
  * 
  * Derived from prefuse.org "TreeView" sample code.
  * https://github.com/prefuse/Prefuse
@@ -22,7 +22,6 @@ import prefuse.Visualization;
 import prefuse.action.Action;
 import prefuse.action.ActionList;
 import prefuse.action.ItemAction;
-import prefuse.action.RepaintAction;
 import prefuse.action.animate.ColorAnimator;
 import prefuse.action.animate.LocationAnimator;
 import prefuse.action.animate.QualityControlAnimator;
@@ -30,7 +29,10 @@ import prefuse.action.animate.VisibilityAnimator;
 import prefuse.action.assignment.ColorAction;
 import prefuse.action.assignment.FontAction;
 import prefuse.activity.SlowInSlowOutPacer;
+import prefuse.controls.FocusControl;
 import prefuse.controls.PanControl;
+import prefuse.controls.WheelZoomControl;
+import prefuse.controls.ZoomControl;
 import prefuse.controls.ZoomToFitControl;
 import prefuse.data.tuple.TupleSet;
 import prefuse.render.AbstractShapeRenderer;
@@ -39,11 +41,13 @@ import prefuse.render.EdgeRenderer;
 import prefuse.render.LabelRenderer;
 import prefuse.util.ColorLib;
 import prefuse.util.FontLib;
+import prefuse.util.GraphicsLib;
+import prefuse.util.display.DisplayLib;
 import prefuse.visual.VisualItem;
 import prefuse.visual.expression.InGroupPredicate;
 import prefuse.visual.tuple.TableNodeItem;
 
-import com.inductiveautomation.ignition.client.model.ClientContext;
+import com.ils.blt.client.component.ILSRepaintAction;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 
@@ -112,7 +116,7 @@ public class RecMapView extends Display {
         // quick repaint
         ActionList repaint = new ActionList();
         repaint.add(nodeColor);
-        repaint.add(new RepaintAction());
+        repaint.add(new ILSRepaintAction());
         m_vis.putAction("repaint", repaint);
         
         // full paint
@@ -123,7 +127,7 @@ public class RecMapView extends Display {
         // animate paint change
         ActionList animatePaint = new ActionList(400);
         animatePaint.add(new ColorAnimator(mapNodes));
-        animatePaint.add(new RepaintAction());
+        animatePaint.add(new ILSRepaintAction());
         m_vis.putAction("animatePaint", animatePaint);
 
         // create a grid layout action
@@ -134,7 +138,7 @@ public class RecMapView extends Display {
         columnLayout.setLayoutAnchor(new Point2D.Double(sz.getWidth()/2.,sz.getHeight()/2.));
         m_vis.putAction("columnLayout", columnLayout);
         
-        AutoPanAction autoPan = new AutoPanAction();
+        AutoCenterAction autoCenter = new AutoCenterAction();
         
         // create the filtering and layout
         ActionList filter = new ActionList();
@@ -149,41 +153,43 @@ public class RecMapView extends Display {
         // animated transition
         ActionList animate = new ActionList(1000);
         animate.setPacingFunction(new SlowInSlowOutPacer());
-        animate.add(autoPan);
+        animate.add(autoCenter);
         animate.add(new QualityControlAnimator());
         animate.add(new VisibilityAnimator(map));
         animate.add(new LocationAnimator(mapNodes));
         animate.add(new ColorAnimator(mapNodes));
-        animate.add(new RepaintAction());
+        animate.add(new ILSRepaintAction());
         m_vis.putAction("animate", animate);
         m_vis.alwaysRunAfter("filter", "animate");
 
-        
+
         // ------------------------------------------------
-        log.infof("%s.constructor: layout bounds %2.1f x %2.1f (%f,%f)",TAG,columnLayout.getLayoutBounds().getWidth(),
-        		                                          columnLayout.getLayoutBounds().getHeight(),
-        		                                          columnLayout.getLayoutBounds().getX(),
-        		                                          columnLayout.getLayoutBounds().getY()
-        		                                          );
-        //setSize(getWidth(),getHeight());
-        
+        setSize(getWidth(),getHeight());
         // initialize the display
-        // WARNING: Use of Focus/ZoomToFit/Zoom Controls freeze the VisionUI
         addControlListener(new RecMapSelector(recmap,1));    // Control-click
-        addControlListener(new ZoomToFitControl());
-        //addControlListener(new ZoomControl());
-        //addControlListener(new WheelZoomControl());
+        addControlListener(new ZoomToFitControl());          // Control right-mouse
+        addControlListener(new ZoomControl());
+        addControlListener(new WheelZoomControl());
         addControlListener(new PanControl());                // Drag
-        
-        
+        addControlListener(new FocusControl(2, "filter"));    // Double click
+       
         // ------------------------------------------------
         
         // filter graph and perform layout
         orient();
-        //DisplayLib.fitViewToBounds(this, columnLayout.getLayoutBounds(), RecMapConstants.ZOOM_DURATION);
         m_vis.run("filter");
-        log.infof("%s.constructor: controls complete",TAG);
 
+        //Rectangle2D bounds = m_vis.getBounds(map);
+        Rectangle2D bounds = columnLayout.getLayoutBounds();
+        log.infof("%s.constructor: visualization bounds %2.1f x %2.1f (%f,%f)",TAG,bounds.getWidth(),
+                bounds.getHeight(),
+                bounds.getX(),
+                bounds.getY()
+                );
+        int margin = (int)(bounds.getWidth()/10);
+        GraphicsLib.expand(bounds, margin * (int)(1/this.getScale()));
+        DisplayLib.fitViewToBounds(this, bounds, RecMapConstants.ZOOM_DURATION);
+        log.infof("%s.constructor: controls complete",TAG);
     }
     
     @Override
@@ -207,8 +213,8 @@ public class RecMapView extends Display {
    
     // ------------------------------------------------------------------------
    
-    
-    public class AutoPanAction extends Action {
+    // This appears to never execute
+    public class AutoCenterAction extends Action {
         private Point2D m_start = new Point2D.Double();
         private Point2D m_end   = new Point2D.Double();
         private Point2D m_cur   = new Point2D.Double();
@@ -231,8 +237,10 @@ public class RecMapView extends Display {
             else {
                 m_cur.setLocation(m_start.getX() + frac*(m_end.getX()-m_start.getX()),
                                   m_start.getY() + frac*(m_end.getY()-m_start.getY()));
-                panToAbs(m_cur);
+                panTo(m_cur);
+                zoom(m_cur,0.5);
             }
+            log.infof("%s.AutoCenterAction: frac %2.1f (%dx%d)",TAG,frac,getWidth(),getHeight());
         }
     }
     
