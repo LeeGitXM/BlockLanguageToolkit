@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.apache.wicket.markup.html.WebMarkupContainer;
 
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ModelManager;
 import com.ils.blt.gateway.proxy.ProxyHandler;
@@ -40,6 +41,11 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	private transient GatewayContext context = null;
 	private transient ModelManager mmgr = null;
 	private final LoggerEx log;
+	private final StatusData statusData = new StatusData();
+	
+	public static BLTGatewayHook get(GatewayContext ctx) { 
+		return (BLTGatewayHook)ctx.getModule(BLTProperties.MODULE_ID);
+	}
 	
 	public BLTGatewayHook() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
@@ -47,6 +53,10 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		BundleUtil.get().addBundle(prefix, getClass(), BUNDLE_NAME);
 	}
 		
+	
+	public StatusData getStatusData() {
+		return statusData;
+	}
 	// NOTE: During this period, the module status is LOADED, not RUNNING
 
 	@Override
