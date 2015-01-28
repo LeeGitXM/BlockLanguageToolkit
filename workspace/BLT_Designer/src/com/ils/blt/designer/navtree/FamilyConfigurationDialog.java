@@ -27,9 +27,12 @@ import com.ils.blt.common.serializable.SerializableFamily;
 public class FamilyConfigurationDialog extends ConfigurationDialog  { 
 	private final static String TAG = "FamilyConfigurationDialog";
 	private static final long serialVersionUID = 2882399376824334427L;
-	private final int DIALOG_HEIGHT = 240;
+	private final int DIALOG_HEIGHT = 280;
 	private final int DIALOG_WIDTH = 400;
 	private final SerializableFamily family;
+	private JTextField addHookField;
+	private JTextField deleteHookField;
+	private JTextField updateHookField;
 	protected JTextField priorityField;
 
 	
@@ -60,7 +63,18 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 		add(priorityField,"");
 		add(createLabel(PREFIX+".Family.State"),"gapleft 20");
 		stateBox = createActiveStateCombo(PREFIX+".Family.State",family.getState());
-		add(stateBox,"wrap");
+		add(stateBox,"wrap 20");
+		
+		addSeparator(this,PREFIX+".Family.Hooks");
+		add(createLabel(PREFIX+".Family.AddHook"),"");
+		addHookField = createTextField(PREFIX+".Family.AddHook",family.getAddHook());
+		add(addHookField,"span,wrap");
+		add(createLabel(PREFIX+".Family.DeleteHook"),"");
+		deleteHookField = createTextField(PREFIX+".Family.DeleteHook",family.getDeleteHook());
+		add(deleteHookField,"span,wrap");
+		add(createLabel(PREFIX+".Family.UpdateHook"),"");
+		updateHookField = createTextField(PREFIX+".Family.UpdateHook",family.getUpdateHook());
+		add(updateHookField,"span,wrap");
 
 
 		// The OK button copies data from the components and sets the property properties.
@@ -74,6 +88,9 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 				// Set attributes from fields
 				family.setName(nameField.getText());
 				family.setDescription(descriptionArea.getText());
+				family.setAddHook(addHookField.getText());
+				family.setDeleteHook(deleteHookField.getText());
+				family.setUpdateHook(updateHookField.getText());
 				try {
 					int pri = Integer.parseInt(priorityField.getText());
 					family.setPriority(pri);

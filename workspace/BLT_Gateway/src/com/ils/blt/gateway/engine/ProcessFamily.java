@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
+ *   (c) 2014-2015  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.gateway.engine;
 
@@ -16,6 +16,9 @@ public class ProcessFamily extends ProcessNode {
 	private String description = "";
 	private int priority = 0;
 	private ActiveState state = ActiveState.ACTIVE;
+	private String addHook = "";
+	private String deleteHook = "";
+	private String updateHook = "";
 	/**
 	 * Constructor: Create a family node from the NavTree structure of an diagram.
 	 *
@@ -34,6 +37,9 @@ public class ProcessFamily extends ProcessNode {
 	 */
 	public ProcessFamily(SerializableFamily fam,UUID parent) { 
 		super(fam.getName(),parent,fam.getId());
+		setAddHook(fam.getAddHook());
+		setDeleteHook(fam.getDeleteHook());
+		setUpdateHook(fam.getUpdateHook());
 	}
 	
 	public String getDescription() {return description;}
@@ -45,5 +51,12 @@ public class ProcessFamily extends ProcessNode {
 	public void setId(UUID id) {this.id = id;}
 	public void setPriority(int priority) {this.priority = priority;}
 	public void setState(ActiveState state) {this.state = state;}
+	
+	public String getAddHook() {return addHook;}
+	public String getDeleteHook() {return deleteHook;}
+	public String getUpdateHook() {return updateHook;}
+	public void setAddHook(String hook) {this.addHook = hook;}
+	public void setDeleteHook(String hook) {this.deleteHook = hook;}
+	public void setUpdateHook(String hook) {this.updateHook = hook;}
 }
 

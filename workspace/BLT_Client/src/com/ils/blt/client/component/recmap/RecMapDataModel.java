@@ -4,7 +4,6 @@
 package com.ils.blt.client.component.recmap;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 import prefuse.data.Graph;
 import prefuse.data.Table;
@@ -76,11 +75,13 @@ public class RecMapDataModel {
 		
 		Dataset diagnoses = recmap.getDiagnoses();
 		sourceRowCount = diagnoses.getRowCount();
+		int maxLength  = getMaxLength(diagnoses,RecMapConstants.NAME_COLUMN);
 		int row = 0;
 		while( row<diagnoses.getRowCount()) {
 			try {
 				int key = Integer.parseInt(diagnoses.getValueAt(row, RecMapConstants.ID_COLUMN).toString());
-				int index = addNodeTableRow(RecMapConstants.SOURCE_KIND,row,diagnoses.getValueAt(row, RecMapConstants.NAME_COLUMN).toString(),key);
+				int index = addNodeTableRow(RecMapConstants.SOURCE_KIND,row,
+						padToMax(diagnoses.getValueAt(row, RecMapConstants.NAME_COLUMN).toString(),maxLength),key);
 				diagnosisGridRowByKey.put(new Integer(key), new Integer(row));
 				diagnosisTableRowByKey.put(new Integer(key), new Integer(index));
 			}
@@ -93,6 +94,7 @@ public class RecMapDataModel {
 		}
 		Dataset outputs = recmap.getOutputs();
 		targetRowCount = outputs.getRowCount();
+		maxLength  = getMaxLength(outputs,RecMapConstants.NAME_COLUMN);
 		row = 0;
 		while( row<outputs.getRowCount()) {
 			try {
@@ -110,6 +112,8 @@ public class RecMapDataModel {
 		}
 		Dataset recommendations = recmap.getRecommendations();
 		recommendationCount = recommendations.getRowCount();
+		maxLength  = getMaxLength(recommendations,RecMapConstants.VALUE_COLUMN);
+		
 		row = 0;
 		while( row<recommendations.getRowCount()) {
 			int key1 = Integer.parseInt(recommendations.getValueAt(row, RecMapConstants.DIAGNOSIS_ID_COLUMN).toString());
@@ -119,8 +123,9 @@ public class RecMapDataModel {
 			if( source!=null && target!=null ) {
 				String key = String.format("%d:%d",key1,key2);
 				try {
-					Double dbl = Double.parseDouble(recommendations.getValueAt(row, RecMapConstants.VALUE_COLUMN).toString());
-					int index = addRecNodeTableRow(row,source.intValue(),target.intValue(),dbl);
+					double dbl = Double.parseDouble(recommendations.getValueAt(row, RecMapConstants.VALUE_COLUMN).toString());
+					int index = addRecNodeTableRow(row,source.intValue(),target.intValue(),
+							padToMax(String.valueOf(dbl),maxLength));
 					recommendationRowByKey.put(key, new Integer(index));
 					//log.infof("%s.update: added %d for %s to rec map",TAG,index,key);
 				}
@@ -192,12 +197,11 @@ public class RecMapDataModel {
 		nodes.setInt(row,RecMapConstants.ID,key);
 		nodes.setInt(row,RecMapConstants.INDEX,datasetRow);
 		nodes.setInt(row,RecMapConstants.ROW,row);
-		nodes.setDouble(row,RecMapConstants.VALUE,0.0);
 		return row;
 	}
 	// Add a row to the nodes list
 	// @return the number of the newly added row
-	private int addRecNodeTableRow(int datasetRow,int source,int target,Double value) {
+	private int addRecNodeTableRow(int datasetRow,int source,int target,String value) {
 		int row = nodes.getRowCount();
 		log.debugf("%s.addRecNodeTableRow: %d = (%d->%d)", TAG,row,source,target);
 		nodes.addRow();
@@ -206,8 +210,24 @@ public class RecMapDataModel {
 		nodes.setInt(row,RecMapConstants.ROW,row);
 		nodes.setInt(row,RecMapConstants.SOURCEROW,source);
 		nodes.setInt(row,RecMapConstants.TARGETROW,target);
-		nodes.setDouble(row,RecMapConstants.VALUE,value);
+		nodes.setString(row,RecMapConstants.VALUE,value);
 		return row;
 	}
 	
+	private int getMaxLength(Dataset ds,String colName) {
+		int result = 0;
+		int row = 0;
+		int rowCount = ds.getRowCount();
+		while( row<rowCount) {
+			int len = ds.getValueAt(row, colName).toString().length();
+			if( len>result) result = len;
+			row++;
+		}
+		return result;
+	}
+	
+	private String padToMax(String in,int max) {
+		String result = in + "                                      ";   // Max width 40
+		return result.substring(0, max);
+	}
 }

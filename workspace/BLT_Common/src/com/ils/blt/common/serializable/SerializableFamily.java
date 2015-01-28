@@ -2,6 +2,7 @@ package com.ils.blt.common.serializable;
 
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.ils.blt.common.block.ActiveState;
 
 
@@ -12,6 +13,7 @@ import com.ils.blt.common.block.ActiveState;
  * 
  * This POJO object should have no behavior.
  */
+@JsonIgnoreProperties
 public class SerializableFamily {
 	private SerializableDiagram[] diagrams;
 	private SerializableFolder[] folders;
@@ -20,6 +22,9 @@ public class SerializableFamily {
 	private String description = "";
 	private int priority = 0;
 	private ActiveState state = ActiveState.ACTIVE;
+	private String addHook = "";
+	private String deleteHook = "";
+	private String updateHook = "";
 	
 	public SerializableFamily() {	
 		diagrams = new SerializableDiagram[0];
@@ -56,4 +61,10 @@ public class SerializableFamily {
 	public void setPriority(int priority) {this.priority = priority;}
 	public void setState(ActiveState state) {this.state = state;}
 	
+	public String getAddHook() {return addHook;}
+	public String getDeleteHook() {return deleteHook;}
+	public String getUpdateHook() {return updateHook;}
+	public void setAddHook(String hook) {this.addHook = hook;}
+	public void setDeleteHook(String hook) {this.deleteHook = hook;}
+	public void setUpdateHook(String hook) {this.updateHook = hook;}
 }

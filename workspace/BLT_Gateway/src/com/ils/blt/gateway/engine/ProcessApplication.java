@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
+ *   (c) 2014-2015  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.gateway.engine;
 
@@ -22,6 +22,9 @@ public class ProcessApplication extends ProcessNode {
 	private RampMethod rampMethod = RampMethod.NONE;
 	private String unit = "";
 	private ActiveState state = ActiveState.ACTIVE;
+	private String addHook = "";
+	private String deleteHook = "";
+	private String updateHook = "";
 	/**
 	 * Constructor: Create an application node from the NavTree structure of an diagram.
 	 *
@@ -41,7 +44,11 @@ public class ProcessApplication extends ProcessNode {
 	 */
 	public ProcessApplication(SerializableApplication app,UUID parent) { 
 		super(app.getName(),parent,app.getId());
+		setAddHook(app.getAddHook());
+		setDeleteHook(app.getDeleteHook());
+		setUpdateHook(app.getUpdateHook());
 	}
+	
 	public String getConsole() {return console;}
 	public String getDescription() {return description;}
 	public int getHighestPriorityProblem() {return highestPriorityProblem;}
@@ -59,4 +66,11 @@ public class ProcessApplication extends ProcessNode {
 	public void setRampMethod(RampMethod rampMethod) {this.rampMethod = rampMethod;}
 	public void setState(ActiveState state) {this.state = state;}
 	public void setUnit(String unit) {this.unit = unit;}
+	
+	public String getAddHook() {return addHook;}
+	public String getDeleteHook() {return deleteHook;}
+	public String getUpdateHook() {return updateHook;}
+	public void setAddHook(String hook) {this.addHook = hook;}
+	public void setDeleteHook(String hook) {this.deleteHook = hook;}
+	public void setUpdateHook(String hook) {this.updateHook = hook;}
 }

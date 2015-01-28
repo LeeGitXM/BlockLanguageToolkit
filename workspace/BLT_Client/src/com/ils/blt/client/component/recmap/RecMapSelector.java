@@ -1,11 +1,10 @@
 package com.ils.blt.client.component.recmap;
 
-import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import javax.swing.SwingUtilities;
+import javax.swing.JOptionPane;
 
 import prefuse.controls.Control;
 import prefuse.controls.ControlAdapter;
@@ -17,7 +16,6 @@ import prefuse.visual.tuple.TableNodeItem;
  * A control that launches an edit dialog on selection of a "link" node.
  */
 public class RecMapSelector extends ControlAdapter implements Control {
-	private final int OFFSET = 20;
 	private final RecommendationMap map;
 	private final int clickCount;
 	private int clicks;
@@ -43,18 +41,13 @@ public class RecMapSelector extends ControlAdapter implements Control {
 						@Override
 						public void run() {
 							if( clicks==clickCount) {
-								final LinkValueEditor editor = new LinkValueEditor(item);
-								editor.pack();
-								editor.setLocationRelativeTo(map);
-								Point loc = editor.getLocation();
-								editor.setLocation((int)(loc.getX())+e.getX()+OFFSET, (int)(loc.getY())+e.getY()+OFFSET);   // Offset a little
-								SwingUtilities.invokeLater(new Runnable() {
-									public void run() {
-										editor.setVisible(true);
-										String val = editor.getEditedValue();
-										map.updateRecommendations(item.getInt(RecMapConstants.INDEX),val);
-									}
-								}); 
+								//Window root = SwingUtilities.getWindowAncestor(map);
+								String message = "Enter recommendation factor:";
+								String ans = JOptionPane.showInputDialog(map, message, item.getString(RecMapConstants.VALUE));
+								if( ans!=null) {
+									item.setString(RecMapConstants.VALUE, ans);
+									map.updateRecommendations(item.getInt(RecMapConstants.INDEX),ans);
+								}
 							}
 							clicks = 0;
 						}

@@ -10,6 +10,7 @@ package com.ils.blt.client.component.recmap;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
@@ -29,7 +30,6 @@ import prefuse.action.animate.VisibilityAnimator;
 import prefuse.action.assignment.ColorAction;
 import prefuse.action.assignment.FontAction;
 import prefuse.activity.SlowInSlowOutPacer;
-import prefuse.controls.FocusControl;
 import prefuse.controls.PanControl;
 import prefuse.controls.WheelZoomControl;
 import prefuse.controls.ZoomControl;
@@ -40,7 +40,6 @@ import prefuse.render.DefaultRendererFactory;
 import prefuse.render.EdgeRenderer;
 import prefuse.render.LabelRenderer;
 import prefuse.util.ColorLib;
-import prefuse.util.FontLib;
 import prefuse.util.GraphicsLib;
 import prefuse.util.display.DisplayLib;
 import prefuse.visual.VisualItem;
@@ -87,7 +86,6 @@ public class RecMapView extends Display {
         
         // NOTE: No images to render.
         m_nodeRenderer = new ThreeColumnLabelRenderer();
-        //m_nodeRenderer.setRenderType(AbstractShapeRenderer.RENDER_TYPE_FILL);
         m_nodeRenderer.setRenderType(AbstractShapeRenderer.RENDER_TYPE_DRAW_AND_FILL);
         m_nodeRenderer.setHorizontalAlignment(Constants.LEFT);
         m_nodeRenderer.setRoundedCorner(2,2);
@@ -142,7 +140,8 @@ public class RecMapView extends Display {
         
         // create the filtering and layout
         ActionList filter = new ActionList();
-        filter.add(new FontAction(mapNodes, FontLib.getFont("Tahoma", 16)));
+        //filter.add(new FontAction(mapNodes, FontLib.getFont("Tahoma", 16)));
+        filter.add(new FontAction(mapNodes, new Font("monospaced",Font.PLAIN,16)));
         filter.add(columnLayout);
         filter.add(textColor);
         filter.add(nodeColor);
@@ -166,12 +165,12 @@ public class RecMapView extends Display {
         // ------------------------------------------------
         setSize(getWidth(),getHeight());
         // initialize the display
-        addControlListener(new RecMapSelector(recmap,1));    // Control-click
+        addControlListener(new RecMapSelector(recmap,2));    // Double-click
         addControlListener(new ZoomToFitControl());          // Control right-mouse
         addControlListener(new ZoomControl());
         addControlListener(new WheelZoomControl());
         addControlListener(new PanControl());                // Drag
-        addControlListener(new FocusControl(2, "filter"));    // Double click
+        //addControlListener(new FocusControl(1, "filter"));   // Single click
        
         // ------------------------------------------------
         

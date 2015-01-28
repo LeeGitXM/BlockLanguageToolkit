@@ -24,11 +24,13 @@ import com.ils.blt.common.serializable.SerializableApplication;
  */
 
 public class ApplicationConfigurationDialog extends ConfigurationDialog { 
-	private final static String TAG = "ApplicationConfigurationDialog";
 	private static final long serialVersionUID = 2882399376824334427L;
-	private final int DIALOG_HEIGHT = 380;
+	private final int DIALOG_HEIGHT = 420;
 	private final int DIALOG_WIDTH = 440;
 	private final SerializableApplication application;
+	private JTextField addHookField;
+	private JTextField deleteHookField;
+	private JTextField updateHookField;
 	private JTextField consoleField;
 	private JCheckBox menuCheckBox;
 	private JComboBox<String> methodBox;
@@ -83,7 +85,18 @@ public class ApplicationConfigurationDialog extends ConfigurationDialog {
 		add(priorityField,"");
 		add(createLabel(PREFIX+".Application.State"),"gapleft 10");
 		stateBox = createActiveStateCombo(PREFIX+".Application.State",application.getState());
-		add(stateBox,"wrap");
+		add(stateBox,"wrap 20");
+		
+		addSeparator(this,PREFIX+".Application.Hooks");
+		add(createLabel(PREFIX+".Application.AddHook"),"");
+		addHookField = createTextField(PREFIX+".Application.AddHook",application.getAddHook());
+		add(addHookField,"span,wrap");
+		add(createLabel(PREFIX+".Application.DeleteHook"),"");
+		deleteHookField = createTextField(PREFIX+".Application.DeleteHook",application.getDeleteHook());
+		add(deleteHookField,"span,wrap");
+		add(createLabel(PREFIX+".Application.UpdateHook"),"");
+		updateHookField = createTextField(PREFIX+".Application.UpdateHook",application.getUpdateHook());
+		add(updateHookField,"span,wrap");
 
 		// The OK button copies data from the components and sets the property properties.
 		// It then returns to the main tab
@@ -104,6 +117,9 @@ public class ApplicationConfigurationDialog extends ConfigurationDialog {
 				application.setRampMethod(RampMethod.valueOf(method));
 				String activeState = (String)stateBox.getSelectedItem();
 				application.setState(ActiveState.valueOf(activeState));
+				application.setAddHook(addHookField.getText());
+				application.setDeleteHook(deleteHookField.getText());
+				application.setUpdateHook(updateHookField.getText());
 				dispose();
 			}
 		});

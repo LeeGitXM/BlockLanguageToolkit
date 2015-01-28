@@ -7,6 +7,7 @@ package com.ils.blt.designer.navtree;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Frame;
 
 import javax.swing.BorderFactory;
@@ -14,6 +15,8 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.WindowConstants;
@@ -64,7 +67,7 @@ public class ConfigurationDialog extends JDialog {
 	 */
 	private void initialize() {
 		final String columnConstraints = "para[][][][]";
-		final String layoutConstraints = "ins 10,gapy 5,gapx 5,fillx";
+		final String layoutConstraints = "ins 10,gapy 3,gapx 5,fillx";
 		final String rowConstraints = "para[][][][][][][][][]";
 		setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
 	}
@@ -132,7 +135,17 @@ public class ConfigurationDialog extends JDialog {
 		field.setToolTipText(BundleUtil.get().getString(bundle+".Desc"));
 		return field;
 	}
-	
+	/**
+	 * Add a separator to a panel using Mig layout
+	 */
+	protected void addSeparator(JDialog dialog,String text) {
+		JSeparator separator = new JSeparator();
+		JLabel label = new JLabel(BundleUtil.get().getString(text));
+		label.setFont(new Font("Tahoma", Font.PLAIN, 11));
+		label.setForeground(Color.BLUE);
+		dialog.add(label, "split 2,span");
+		dialog.add(separator, "growx,wrap");
+	}
 	/*
 	 * @return true if the user has selected the "Cancel" button.
 	 */

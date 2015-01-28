@@ -2,6 +2,7 @@ package com.ils.blt.common.serializable;
 
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.ils.blt.common.block.ActiveState;
 import com.ils.blt.common.block.RampMethod;
 
@@ -11,8 +12,10 @@ import com.ils.blt.common.block.RampMethod;
  * Implement a plain-old-java-object representing a model diagram
  * that is serializable via a JSON serializer.
  * 
- * This POJO objects should have no behavior.
+ * This POJO objects should have no behavior. The annotation is
+ * to make this backward-compatible to before callbacks were introduced.
  */
+@JsonIgnoreProperties
 public class SerializableApplication {
 	private SerializableFamily[] families;
 	private SerializableFolder[] folders;
@@ -27,6 +30,9 @@ public class SerializableApplication {
 	private RampMethod rampMethod = RampMethod.NONE;
 	private String unit = "";
 	private ActiveState state = ActiveState.ACTIVE;
+	private String addHook = "";
+	private String deleteHook = "";
+	private String updateHook = "";
 	
 	public SerializableApplication() {	
 		families = new SerializableFamily[0];
@@ -72,4 +78,11 @@ public class SerializableApplication {
 	public void setRampMethod(RampMethod rampMethod) {this.rampMethod = rampMethod;}
 	public void setState(ActiveState state) {this.state = state;}
 	public void setUnit(String unit) {this.unit = unit;}
+
+	public String getAddHook() {return addHook;}
+	public String getDeleteHook() {return deleteHook;}
+	public String getUpdateHook() {return updateHook;}
+	public void setAddHook(String hook) {this.addHook = hook;}
+	public void setDeleteHook(String hook) {this.deleteHook = hook;}
+	public void setUpdateHook(String hook) {this.updateHook = hook;}
 }
