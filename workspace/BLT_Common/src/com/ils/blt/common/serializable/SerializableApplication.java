@@ -4,7 +4,6 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.ils.blt.common.block.ActiveState;
-import com.ils.blt.common.block.RampMethod;
 
 
 
@@ -15,7 +14,7 @@ import com.ils.blt.common.block.RampMethod;
  * This POJO objects should have no behavior. The annotation is
  * to make this backward-compatible to before callbacks were introduced.
  */
-@JsonIgnoreProperties
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SerializableApplication {
 	private SerializableFamily[] families;
 	private SerializableFolder[] folders;

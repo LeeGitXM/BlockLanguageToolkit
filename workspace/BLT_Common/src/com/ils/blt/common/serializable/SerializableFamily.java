@@ -13,7 +13,7 @@ import com.ils.blt.common.block.ActiveState;
  * 
  * This POJO object should have no behavior.
  */
-@JsonIgnoreProperties
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SerializableFamily {
 	private SerializableDiagram[] diagrams;
 	private SerializableFolder[] folders;

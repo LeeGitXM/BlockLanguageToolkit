@@ -53,7 +53,7 @@ public class ApplicationConfigurationDialog extends ConfigurationDialog {
 	public ApplicationConfigurationDialog(Frame frame,SerializableApplication app) {
 		super(frame);
 		this.application = app;
-		this.setTitle(rb.getString("Aplication.Title"));
+		this.setTitle(rb.getString("Application.Title"));
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));
         initialize();
 	}
@@ -89,58 +89,58 @@ public class ApplicationConfigurationDialog extends ConfigurationDialog {
 		final String rowConstraints = "para[][][][][][][][][]";
 		
 		panel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
-		add(createLabel("Application.Name"),"");
+		panel.add(createLabel("Application.Name"),"");
 		nameField = createTextField("Application.Name.Desc",application.getName());
-		add(nameField,"span,wrap");
+		panel.add(nameField,"span,wrap");
 		
-		add(createLabel("Application.Description"),"gaptop 2,aligny top");
+		panel.add(createLabel("Application.Description"),"gaptop 2,aligny top");
 		String description = (String)properties.get(PROPERTY_DESCRIPTION);
 		if( description==null) description="";
 		descriptionArea = createTextArea("Application.Description.Desc",description);
-		add(descriptionArea,"gaptop 2,aligny top,span,wrap");
+		panel.add(descriptionArea,"gaptop 2,aligny top,span,wrap");
 		
-		add(createLabel("Application.Console"),"");
+		panel.add(createLabel("Application.Console"),"");
 		String console = (String)properties.get(PROPERTY_CONSOLE);
 		if( console==null) console="";
 		consoleField = createTextField("Application.Console.Desc",console);
-		add(consoleField,"span,wrap");
+		panel.add(consoleField,"span,wrap");
 		
-		add(createLabel("Application.Queue"),"");
+		panel.add(createLabel("Application.Queue"),"");
 		String queue = (String)properties.get(PROPERTY_MESSAGE_QUEUE);
 		if( queue==null) queue="";
 		queueField = createTextField("Application.Queue.Desc",queue);
-		add(queueField,"span,wrap");
+		panel.add(queueField,"span,wrap");
 		
-		add(createLabel("Application.Unit"),"");
+		panel.add(createLabel("Application.Unit"),"");
 		String unit = (String)properties.get(PROPERTY_UNIT);
 		if( unit==null) unit="";
 		unitField = createTextField("Application.Unit.Desc",unit);
-		add(unitField,"span,wrap");
+		panel.add(unitField,"span,wrap");
 		
-		add(createLabel("Application.Menu"),"");
+		panel.add(createLabel("Application.Menu"),"");
 		String include = (String)properties.get(PROPERTY_INCLUDE_IN_MENU);
 		boolean shouldInclude = false;
 		if( include!=null && include.equalsIgnoreCase("true")) shouldInclude = true;
 		menuCheckBox = createCheckBox("Application.Menu.Desc",shouldInclude);
-		add(menuCheckBox,"");
+		panel.add(menuCheckBox,"");
 		
-		add(createLabel("Application.Ramp"),"gapleft 10");
+		panel.add(createLabel("Application.Ramp"),"gapleft 10");
 		String method = (String)properties.get(PROPERTY_RAMP_METHOD);
 		if( method==null) method="";
 		methodBox = createRampMethodCombo("Application.Ramp.Desc",method);
-		add(methodBox,"wrap");
+		panel.add(methodBox,"wrap");
 		
-		add(createLabel("Application.Priority"),"");
+		panel.add(createLabel("Application.Priority"),"");
 		String priority = (String)properties.get(PROPERTY_HIGHEST_PRIORITY);
 		if( priority==null) priority="";
 		// Highest priority is read-only
 		JTextField priorityField = createTextField("Application.Priority.Desc",priority);
 		priorityField.setPreferredSize(NUMBER_BOX_SIZE);
 		priorityField.setEnabled(false);
-		add(priorityField,"");
-		add(createLabel("Application.State"),"gapleft 10");
+		panel.add(priorityField,"");
+		panel.add(createLabel("Application.State"),"gapleft 10");
 		stateBox = createActiveStateCombo("Application.State",application.getState());
-		add(stateBox,"wrap 20");
+		panel.add(stateBox,"wrap 20");
 		return panel;
 	}
 	/**

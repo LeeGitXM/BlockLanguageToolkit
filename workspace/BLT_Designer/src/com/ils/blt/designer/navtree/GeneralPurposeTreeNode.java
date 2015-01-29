@@ -430,7 +430,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			sa.setName(res.getName());   // Sync the SerializableApplication name w/ res
 		}
 		catch(Exception ex) {
-			logger.warnf("%s.deserializeApplication: Deserialization exception (%s)",ex.getMessage());
+			logger.warnf("%s.deserializeApplication: Deserialization exception (%s)",TAG,ex.getMessage());
 		}
 		return sa;
 	}
@@ -449,7 +449,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			sd.setName(res.getName());   // Sync the SerializableApplication name w/ res
 		}
 		catch(Exception ex) {
-			logger.warnf("%s.SerializableDiagram: Deserialization exception (%s)",ex.getMessage());
+			logger.warnf("%s.SerializableDiagram: Deserialization exception (%s)",TAG,ex.getMessage());
 		}
 		return sd;
 	}
