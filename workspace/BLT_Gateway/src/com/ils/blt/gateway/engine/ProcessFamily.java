@@ -14,9 +14,6 @@ import com.ils.blt.common.serializable.SerializableFamily;
 public class ProcessFamily extends ProcessNode {
 	private UUID id;
 	private ActiveState state = ActiveState.ACTIVE;
-	private String addHook = "";
-	private String cloneHook = "";
-	private String deleteHook = "";
 
 	/**
 	 * Constructor: Create a family node from the NavTree structure of an diagram.
@@ -36,9 +33,6 @@ public class ProcessFamily extends ProcessNode {
 	 */
 	public ProcessFamily(SerializableFamily fam,UUID parent) { 
 		super(fam.getName(),parent,fam.getId());
-		setAddHook(fam.getAddHook());
-		setCloneHook(fam.getCloneHook());
-		setDeleteHook(fam.getDeleteHook());
 	}
 	
 	public UUID getId() {return id;}
@@ -46,13 +40,5 @@ public class ProcessFamily extends ProcessNode {
 	
 	public void setId(UUID id) {this.id = id;}
 	public void setState(ActiveState state) {this.state = state;}
-	
-	public String getAddHook() {return addHook;}
-	public String getCloneHook() {return cloneHook;}
-	public String getDeleteHook() {return deleteHook;}
-
-	public void setAddHook(String hook) {this.addHook = hook;}
-	public void setCloneHook(String hook) {this.cloneHook = hook;}
-	public void setDeleteHook(String hook) {this.deleteHook = hook;}
 }
 

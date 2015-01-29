@@ -57,14 +57,7 @@ public class ConfigurationDialog extends JDialog {
 	protected JTextField nameField;
 	protected boolean cancelled = false;
 	protected JComboBox<String> stateBox;
-	// The hook tab is common to both dialogs.
-	protected JTextField addHookField;
-	protected JTextField cloneHookField;
-	protected JTextField deleteHookField;
-	protected JTextField getAuxDataHookField;
-	protected JTextField setAuxDataHookField;
-	protected JTextField updateHookField;
-	
+
 	// These are the keys to the map of properties that are common
 	public final static String PROPERTY_DESCRIPTION = "description";
 

@@ -16,22 +16,24 @@ import com.ils.blt.common.serializable.SerializableResourceDescriptor;
  * of applications, families, diagrams, blocks and connections. It also handles
  * functions of the engine itself. All requests are delegated to the 
  * ApplicationRequestManager.
+ * 
+ * These calls are available from any Ignition scope.
  */
 public class ApplicationScriptFunctions   {
-	private static ApplicationRequestHandler manager = new ApplicationRequestHandler();
+	private static ApplicationRequestHandler handler = new ApplicationRequestHandler();
 
 	/**
 	 * Remove all running diagrams from the controller. Cancel all tag subscriptions. 
 	 */
 	public static void clearController() {
-		manager.clearController();
+		handler.clearController();
 	}
 	
 	/**
 	 * @return the default database for the project defined by the supplied Id  
 	 */
 	public static String databaseForProject(long projectId) {
-		return manager.databaseForProject(projectId);
+		return handler.databaseForProject(projectId);
 	}
 	
 	/**
@@ -39,7 +41,7 @@ public class ApplicationScriptFunctions   {
 	 */
 	@SuppressWarnings("rawtypes")
 	public static List getBlockPrototypes() {
-		List<PalettePrototype> result = manager.getBlockPrototypes();
+		List<PalettePrototype> result = handler.getBlockPrototypes();
 		return result;
 	}
 	
@@ -47,7 +49,7 @@ public class ApplicationScriptFunctions   {
 	 * @return the current state of the controller.
 	 */
 	public static String getControllerState() {
-		return manager.getControllerState();
+		return handler.getControllerState();
 	}
 	
 	/**
@@ -58,7 +60,7 @@ public class ApplicationScriptFunctions   {
 	 */
 	@SuppressWarnings("rawtypes")
 	public static List getDiagramDescriptors(String projectName) {
-		return manager.getDiagramDescriptors(projectName);
+		return handler.getDiagramDescriptors(projectName);
 	}
 	/**
 	 * @param diagramId identifier of the diagram to be queried, a String
@@ -67,14 +69,14 @@ public class ApplicationScriptFunctions   {
 	 *         specified class.
 	 */
 	public static List getDiagramBlocksOfClass(String diagramId,String className) {
-		return manager.getDiagramBlocksOfClass(diagramId,className);
+		return handler.getDiagramBlocksOfClass(diagramId,className);
 	}
 	
 	/**
 	 * @return the the internal state of a block.
 	 */
 	public static SerializableBlockStateDescriptor getInternalState(String diagramId,String blockId) {
-		return manager.getInternalState(diagramId,blockId);
+		return handler.getInternalState(diagramId,blockId);
 	}
 	/**
 	 * @param diagramId identifier of the diagram owning the block, a String
@@ -83,7 +85,7 @@ public class ApplicationScriptFunctions   {
 	 * @return the value of a specified block property.
 	 */
 	public static Object getPropertyValue(String diagramId,String blockId,String propertyName) {
-		return manager.getPropertyValue(diagramId,blockId,propertyName);
+		return handler.getPropertyValue(diagramId,blockId,propertyName);
 	}
 	/**
 	 * Query the gateway for list of resources that it knows about. This is
@@ -93,7 +95,7 @@ public class ApplicationScriptFunctions   {
 	 */
 	@SuppressWarnings("rawtypes")
 	public static List queryControllerResources() {
-		List<SerializableResourceDescriptor> result = manager.queryControllerResources();
+		List<SerializableResourceDescriptor> result = handler.queryControllerResources();
 		return result;
 	}
 	/**
@@ -104,20 +106,20 @@ public class ApplicationScriptFunctions   {
 	 */
 	@SuppressWarnings("rawtypes")
 	public static List queryDiagram(String diagId) {
-		List<SerializableResourceDescriptor> result = manager.queryDiagram(diagId);
+		List<SerializableResourceDescriptor> result = handler.queryDiagram(diagId);
 		return result;
 	}
 	/**
 	 * Execute reset() on the specified block
 	 */
 	public static void resetBlock(String diagramId,String blockId) {
-		manager.resetBlock(diagramId,blockId);
+		handler.resetBlock(diagramId,blockId);
 	}
 	/**
 	 * Execute reset() on every block inside the controller
 	 */
 	public static void resetDiagram(String diagramId) {
-		manager.resetDiagram(diagramId);
+		handler.resetDiagram(diagramId);
 	}
 
 	/**
@@ -130,21 +132,21 @@ public class ApplicationScriptFunctions   {
 	 * @return true on success
 	 */
 	public static boolean sendLocalSignal(String diagramId,String className, String command) {
-		return manager.sendLocalSignal(diagramId,className,command);
+		return handler.sendLocalSignal(diagramId,className,command);
 	}
 	
 	/**
 	 * Start the block execution engine in the gateway.
 	 */
 	public static void startController() {
-		manager.startController();
+		handler.startController();
 	}
 
 	/**
 	 * Shutdown the block execution engine in the gateway.
 	 */
 	public static void stopController() {
-		manager.stopController();
+		handler.stopController();
 	}
 
 	/**
@@ -152,6 +154,6 @@ public class ApplicationScriptFunctions   {
 	 * status values. This is in order to update the UI. 
 	 */
 	public static void triggerStatusNotifications() {
-		manager.triggerStatusNotifications();
+		handler.triggerStatusNotifications();
 	}
 }

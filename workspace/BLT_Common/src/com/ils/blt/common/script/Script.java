@@ -2,7 +2,7 @@
  *   (c) 2014  ILS Automation. All rights reserved.
  *  
  */
-package com.ils.blt.common;
+package com.ils.blt.common.script;
 
 import org.python.core.CompileMode;
 import org.python.core.CompilerFlags;

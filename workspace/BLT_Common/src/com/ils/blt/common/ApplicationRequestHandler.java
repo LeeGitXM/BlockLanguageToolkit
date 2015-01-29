@@ -297,6 +297,25 @@ public class ApplicationRequestHandler  {
 	}
 	
 	/**
+	 * Acquire a value from the HSQL database table associated with the toolkit. A
+	 * null is returned if the string is not found.
+	 * @param propertyName name of the property for which a value is to be returned
+	 * @return the value of the specified property.
+	 */
+	public String getToolkitProperty(String propertyName) {
+		String result = null;
+		try {
+			result = GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "getToolkitProperty",propertyName);
+			log.debugf("%s.getToolkitProperty ... %s",TAG,result.toString());
+		}
+		catch(Exception ge) {
+			log.infof("%s.getToolkitProperty: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		return result;
+	}
+	
+	/**
 	 * Determine whether or not the engine is running.
 	 */
 	public boolean isControllerRunning() {
@@ -341,6 +360,22 @@ public class ApplicationRequestHandler  {
 			log.infof("%s.queryDiagram: GatewayException (%s)",TAG,ge.getMessage());
 		}
 		return result;
+	}
+	/**
+	 * Save a value into the HSQL database table associated with the toolkit. The 
+	 * table contains name-value pairs, so any name is allowable.
+	 * @param propertyName name of the property for which a value is to be set
+	 * @param the new value of the property.
+	 */
+	public void setToolkitProperty(String propertyName,String value) {
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "setToolkitProperty",propertyName,value);
+			log.debugf("%s.setToolkitProperty ... %s=%s",TAG,propertyName,value);
+		}
+		catch(Exception ge) {
+			log.infof("%s.setToolkitProperty: GatewayException (%s)",TAG,ge.getMessage());
+		}
 	}
 	/**
 	 * Execute reset() on a specified block

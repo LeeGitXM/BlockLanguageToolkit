@@ -335,6 +335,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		if (isRootFolder()) { 
 			ApplicationCreateAction applicationCreateAction = new ApplicationCreateAction(this);
 			ApplicationImportAction applicationImportAction = new ApplicationImportAction(menu.getRootPane(),this);
+			ToolkitConfigureAction configureAction = new ToolkitConfigureAction(menu.getRootPane());
 			ClearAction clearAction = new ClearAction();
 			DebugAction debugAction = new DebugAction();
 			SaveAllAction saveAllAction = new SaveAllAction(this);
@@ -348,6 +349,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			}
 			menu.add(applicationCreateAction);
 			menu.add(applicationImportAction);
+			menu.add(configureAction);
 			menu.add(saveAllAction);
 			menu.add(startAction);
 			menu.add(stopAction);
@@ -1430,6 +1432,34 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			catch(Exception ex) {
 				logger.warnf("%s: stopAction: ERROR: %s",TAG,ex.getMessage(),ex);
 				ErrorUtil.showError(TAG+" Exception stopping the controller",ex);
+			}
+		}
+	}
+	// Launch a dialog to configure tooolkit-wide attributes.
+	private class ToolkitConfigureAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final Component anchor;
+
+		public ToolkitConfigureAction(Component c)  {
+			super(PREFIX+".ConfigureToolkit",IconUtil.getIcon("gear"));  // preferences
+			anchor = c;
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			try {
+				EventQueue.invokeLater(new Runnable() {
+					public void run() {
+						ToolkitConfigurationDialog dialog = new ToolkitConfigurationDialog(context.getFrame());
+						dialog.setLocationRelativeTo(anchor);
+						Point p = dialog.getLocation();
+						dialog.setLocation((int)(p.getX()-OFFSET),(int)(p.getY()-OFFSET));
+						dialog.pack();
+						dialog.setVisible(true);   // Returns when dialog is closed
+					}
+				});
+			} 
+			catch (Exception err) {
+				ErrorUtil.showError(TAG+" Exception configuring toolkit",err);
 			}
 		}
 	}

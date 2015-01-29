@@ -28,7 +28,6 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 	private final int DIALOG_WIDTH = 400;
 	private final SerializableFamily family;
 	private JPanel mainPanel = null;
-	private JPanel scriptPanel = null;
 	protected JTextField priorityField;
 	
 	// These are the keys to the map of properties that are unique to applications
@@ -52,8 +51,6 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 		mainPanel = createMainPanel();
 		// Tab label,?,panel, tooltip
 		parentTabPanel.addTab(rb.getString("Family.Core.Tab"),null,mainPanel,rb.getString("Family.Core.Tab.Desc"));
-		scriptPanel = createScriptPanel();
-		parentTabPanel.addTab(rb.getString("Family.Script.Tab"),null,scriptPanel,rb.getString("Family.Script.Tab.Desc"));
 		parentTabPanel.setSelectedIndex(0);
 		setOKActions();
 	}
@@ -92,48 +89,6 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 		return panel;
 	}
 
-
-
-	/**
-	 * Create the content pane as a grid 4 columns wide:
-	 *     label | value | label | value
-	 *     label | value -- span 3
-	 */
-	private JPanel createScriptPanel() {
-		JPanel panel = new JPanel();
-		final String columnConstraints = "para[][][][]";
-		final String layoutConstraints = "ins 10,gapy 3,gapx 5,fillx";
-		final String rowConstraints = "para[][][][][][][][][]";
-		panel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
-
-
-		addSeparator(panel,"Family.Hooks");
-		panel.add(createLabel("Family.AddHook"),"");
-		addHookField = createTextField("Family.AddHook.Desc",family.getAddHook());
-		panel.add(addHookField,"span,wrap");
-
-		panel.add(createLabel("Family.CloneHook"),"");
-		cloneHookField = createTextField("Family.CloneHook.Desc",family.getCloneHook());
-		panel.add(cloneHookField,"span,wrap");
-
-		panel.add(createLabel("Family.DeleteHook"),"");
-		deleteHookField = createTextField("Family.DeleteHook.Desc",family.getDeleteHook());
-		panel.add(deleteHookField,"span,wrap");
-
-		panel.add(createLabel("Family.GetAuxDataHook"),"");
-		getAuxDataHookField = createTextField("Family.GetAuxDataHook.Desc",family.getGetAuxDataHook());
-		panel.add(getAuxDataHookField,"span,wrap");
-
-		panel.add(createLabel("Family.SetAuxDataHook"),"");
-		setAuxDataHookField = createTextField("Family.SetAuxDataHook.Desc",family.getSetAuxDataHook());
-		panel.add(setAuxDataHookField,"span,wrap");
-
-		panel.add(createLabel("Family.UpdateHook"),"");
-		updateHookField = createTextField("Family.UpdateHook.Desc",family.getUpdateHook());
-		panel.add(updateHookField,"span,wrap");
-		return panel;
-	}
-
 	// The OK button copies data from the components and sets the property
 	// properties.
 	// The super class already created the button and placed it in the panel. We
@@ -144,14 +99,6 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 			public void actionPerformed(ActionEvent e) {
 				// Set attributes from fields
 				family.setName(nameField.getText());
-
-				family.setAddHook(addHookField.getText());
-				family.setCloneHook(cloneHookField.getText());
-				family.setDeleteHook(deleteHookField.getText());
-				family.setGetAuxDataHook(getAuxDataHookField.getText());
-				family.setSetAuxDataHook(setAuxDataHookField.getText());
-				family.setUpdateHook(updateHookField.getText());
-
 				properties.put(PROPERTY_DESCRIPTION, descriptionArea.getText());
 				try {
 					int pri = Integer.parseInt(priorityField.getText());

@@ -15,9 +15,6 @@ import com.ils.blt.common.serializable.SerializableApplication;
 public class ProcessApplication extends ProcessNode {
 	private UUID id;
 	private ActiveState state = ActiveState.ACTIVE;
-	private String addHook = "";
-	private String cloneHook = "";
-	private String deleteHook = "";
 	
 	/**
 	 * Constructor: Create an application node from the NavTree structure of an diagram.
@@ -39,23 +36,11 @@ public class ProcessApplication extends ProcessNode {
 	public ProcessApplication(SerializableApplication app,UUID parent) { 
 		super(app.getName(),parent,app.getId());
 		setState(app.getState());
-		setAddHook(app.getAddHook());
-		setCloneHook(app.getCloneHook());
-		setDeleteHook(app.getDeleteHook());
 	}
 	
 	public ActiveState getState() {return state;}
 	public UUID getId() {return id;}
 	public void setId(UUID id) {this.id = id;}
 	public void setState(ActiveState s) { this.state = s; }
-
-	
-	public String getAddHook() {return addHook;}
-	public String getCloneHook() {return cloneHook;}
-	public String getDeleteHook() {return deleteHook;}
-
-	public void setAddHook(String hook) {this.addHook = hook;}
-	public void setCloneHook(String hook) {this.cloneHook = hook;}
-	public void setDeleteHook(String hook) {this.deleteHook = hook;}
 
 }

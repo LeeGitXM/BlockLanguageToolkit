@@ -22,12 +22,6 @@ public class SerializableApplication {
 	private UUID id;
 	private String name;
 	private ActiveState state = ActiveState.ACTIVE;
-	private String addHook = "";
-	private String cloneHook = "";
-	private String deleteHook = "";
-	private String getAuxDataHook = "";
-	private String setAuxDataHook = "";
-	private String updateHook = "";
 	
 	public SerializableApplication() {	
 		families = new SerializableFamily[0];
@@ -59,17 +53,4 @@ public class SerializableApplication {
 	public void setId(UUID id) {this.id = id;}
 	public void setName(String nam) { if(nam!=null) name=nam; }
 	public void setState(ActiveState state) {this.state = state;}
-
-	public String getAddHook() {return addHook;}
-	public String getCloneHook() {return cloneHook;}
-	public String getDeleteHook() {return deleteHook;}
-	public String getGetAuxDataHook() {return getAuxDataHook;}
-	public String getSetAuxDataHook() {return setAuxDataHook;}
-	public String getUpdateHook() {return updateHook;}
-	public void setAddHook(String hook) {this.addHook = hook;}
-	public void setCloneHook(String hook) {this.cloneHook = hook;}
-	public void setDeleteHook(String hook) {this.deleteHook = hook;}
-	public void setGetAuxDataHook(String hook) {this.getAuxDataHook = hook;}
-	public void setSetAuxDataHook(String hook) {this.setAuxDataHook = hook;}
-	public void setUpdateHook(String hook) {this.updateHook = hook;}
 }

@@ -35,7 +35,6 @@ public class ApplicationConfigurationDialog extends ConfigurationDialog {
 	private final SerializableApplication application;
 	private JPanel mainPanel = null;
 	private JPanel quantPanel = null;
-	private JPanel scriptPanel = null;
 	private JTextField consoleField;
 	private JCheckBox menuCheckBox;
 	private JComboBox<String> methodBox;
@@ -72,8 +71,6 @@ public class ApplicationConfigurationDialog extends ConfigurationDialog {
 		parentTabPanel.addTab(rb.getString("Application.Core.Tab"),null,mainPanel,rb.getString("Application.Core.Tab.Desc"));
 		quantPanel = createQuantOutputPanel();
 		parentTabPanel.addTab(rb.getString("Application.Quant.Tab"),null,quantPanel,rb.getString("Application.Quant.Tab.Desc"));
-		scriptPanel = createScriptPanel();
-		parentTabPanel.addTab(rb.getString("Application.Script.Tab"),null,scriptPanel,rb.getString("Application.Script.Tab.Desc"));
 		parentTabPanel.setSelectedIndex(0);
 		setOKActions();
 	}
@@ -151,45 +148,7 @@ public class ApplicationConfigurationDialog extends ConfigurationDialog {
 		return panel;
 	}
 
-		/**
-		 * Create the content pane as a grid 4 columns wide:
-		 *     label | value | label | value
-		 *     label | value -- span 3
-		 */
-		private JPanel createScriptPanel() {
-			JPanel panel = new JPanel();
-			final String columnConstraints = "para[][][][]";
-			final String layoutConstraints = "ins 10,gapy 3,gapx 5,fillx";
-			final String rowConstraints = "para[][][][][][][][][]";
-			panel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
-			
-			
-			addSeparator(panel,"Application.Hooks");
-			panel.add(createLabel("Application.AddHook"),"");
-			addHookField = createTextField("Application.AddHook.Desc",application.getAddHook());
-			panel.add(addHookField,"span,wrap");
-			
-			panel.add(createLabel("Application.CloneHook"),"");
-			cloneHookField = createTextField("Family.CloneHook.Desc",application.getCloneHook());
-			panel.add(cloneHookField,"span,wrap");
-			
-			panel.add(createLabel("Application.DeleteHook"),"");
-			deleteHookField = createTextField("Application.DeleteHook.Desc",application.getDeleteHook());
-			panel.add(deleteHookField,"span,wrap");
-			
-			panel.add(createLabel("Application.GetAuxDataHook"),"");
-			getAuxDataHookField = createTextField("Application.GetAuxDataHook.Desc",application.getGetAuxDataHook());
-			panel.add(getAuxDataHookField,"span,wrap");
-			
-			panel.add(createLabel("Application.SetAuxDataHook"),"");
-			setAuxDataHookField = createTextField("Application.SetAuxDataHook.Desc",application.getSetAuxDataHook());
-			panel.add(setAuxDataHookField,"span,wrap");
-			
-			panel.add(createLabel("Application.UpdateHook"),"");
-			updateHookField = createTextField("Application.UpdateHook.Desc",application.getUpdateHook());
-			panel.add(updateHookField,"span,wrap");
-			return panel;
-		}
+		
 		
 		
 		// The OK button copies data from the components and sets properties.
@@ -205,12 +164,7 @@ public class ApplicationConfigurationDialog extends ConfigurationDialog {
 					properties.put(PROPERTY_DESCRIPTION, descriptionArea.getText());
 					// TODO: fill the properties structure with all the other attributes
 					String activeState = (String)stateBox.getSelectedItem();
-					application.setAddHook(addHookField.getText());
-					application.setCloneHook(cloneHookField.getText());
-					application.setDeleteHook(deleteHookField.getText());
-					application.setGetAuxDataHook(getAuxDataHookField.getText());
-					application.setSetAuxDataHook(setAuxDataHookField.getText());
-					application.setUpdateHook(updateHookField.getText());
+
 					// TODO: Call the setAuxData script
 					dispose();
 				}
