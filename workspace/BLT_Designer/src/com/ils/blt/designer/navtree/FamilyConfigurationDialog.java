@@ -10,111 +10,167 @@ import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import net.miginfocom.swing.MigLayout;
+
 import com.ils.blt.common.block.ActiveState;
 import com.ils.blt.common.serializable.SerializableFamily;
-/**
- * Display a dialog to export a diagram.
- *    ExportDialog ed = new ExportDialog("Attribute Editor");
- *    bad.pack();
- *    bad.setVisible(true);   // Terminates when dialog closed.
- *    result = bad.getModel();
- */
 
+/**
+ * Display a dialog to configure a Family node
+ */
 public class FamilyConfigurationDialog extends ConfigurationDialog  { 
 	private final static String TAG = "FamilyConfigurationDialog";
 	private static final long serialVersionUID = 2882399376824334427L;
 	private final int DIALOG_HEIGHT = 280;
 	private final int DIALOG_WIDTH = 400;
 	private final SerializableFamily family;
-	private JTextField addHookField;
-	private JTextField deleteHookField;
-	private JTextField updateHookField;
+	private JPanel mainPanel = null;
+	private JPanel scriptPanel = null;
 	protected JTextField priorityField;
-
 	
+	// These are the keys to the map of properties that are unique to applications
+	public final static String PROPERTY_PRIORITY    = "priority";
 	
 	public FamilyConfigurationDialog(Frame frame,SerializableFamily fam) {
 		super(frame);
 		this.family = fam;
-		this.setTitle(PREFIX+".Family.Title");
+		this.setTitle(rb.getString("Family.Title"));
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));
         initialize();
 	}
-	
 	/**
-	 * Create the content pane and initialize layout.
+	 * The super class takes care of making a central tabbed pane.
+	 * Here we add the tabs ...
+	 * 1) Core attributes
+	 * 2) Python hook definitions.
 	 */
 	private void initialize() {
-		add(createLabel(PREFIX+".Family.Name"),"");
-		nameField = createTextField(PREFIX+".Family.Name",family.getName());
-		add(nameField,"span,wrap");
-	
-		add(createLabel(PREFIX+".Family.Description"),"gaptop 2,aligny top");
-		descriptionArea = createTextArea(PREFIX+".Family.Description",family.getDescription());
-		add(descriptionArea,"gaptop 2,aligny top,span,wrap");
-		
-		add(createLabel(PREFIX+".Family.Priority"),"");
-		priorityField = createTextField(PREFIX+".Family.Priority",String.valueOf(family.getPriority()));
+		// TODO: Call the getAuxData script
+		mainPanel = createMainPanel();
+		// Tab label,?,panel, tooltip
+		parentTabPanel.addTab(rb.getString("Family.Core.Tab"),null,mainPanel,rb.getString("Family.Core.Tab.Desc"));
+		scriptPanel = createScriptPanel();
+		parentTabPanel.addTab(rb.getString("Family.Script.Tab"),null,scriptPanel,rb.getString("Family.Script.Tab.Desc"));
+		parentTabPanel.setSelectedIndex(0);
+		setOKActions();
+	}
+
+	/**
+	 * Create the main data pane as a grid 4 columns wide:
+	 *     label | value | label | value
+	 *     label | value -- span 3
+	 */
+	private JPanel createMainPanel() {
+		JPanel panel = new JPanel();
+		final String columnConstraints = "para[][][][]";
+		final String layoutConstraints = "ins 10,gapy 3,gapx 5,fillx";
+		final String rowConstraints = "para[][][][][][][][][]";
+		panel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
+
+		panel.add(createLabel("Family.Name"),"");
+		nameField = createTextField("Family.Name.Desc",family.getName());
+		panel.add(nameField,"span,wrap");
+
+		panel.add(createLabel("Family.Description"),"gaptop 2,aligny top");
+		String description = (String)properties.get(PROPERTY_DESCRIPTION);
+		if( description==null) description="";
+		descriptionArea = createTextArea("Family.Description.Desc",description);
+		panel.add(descriptionArea,"gaptop 2,aligny top,span,wrap");
+
+		panel.add(createLabel("Family.Priority"),"");
+		String priority = (String)properties.get(PROPERTY_PRIORITY);
+		if( priority==null) priority="";
+		priorityField = createTextField("Family.Priority.Desc",priority);
 		priorityField.setPreferredSize(NUMBER_BOX_SIZE);
-		add(priorityField,"");
-		add(createLabel(PREFIX+".Family.State"),"gapleft 20");
-		stateBox = createActiveStateCombo(PREFIX+".Family.State",family.getState());
-		add(stateBox,"wrap 20");
-		
-		addSeparator(this,PREFIX+".Family.Hooks");
-		add(createLabel(PREFIX+".Family.AddHook"),"");
-		addHookField = createTextField(PREFIX+".Family.AddHook",family.getAddHook());
-		add(addHookField,"span,wrap");
-		add(createLabel(PREFIX+".Family.DeleteHook"),"");
-		deleteHookField = createTextField(PREFIX+".Family.DeleteHook",family.getDeleteHook());
-		add(deleteHookField,"span,wrap");
-		add(createLabel(PREFIX+".Family.UpdateHook"),"");
-		updateHookField = createTextField(PREFIX+".Family.UpdateHook",family.getUpdateHook());
-		add(updateHookField,"span,wrap");
+		panel.add(priorityField,"");
+		panel.add(createLabel("Family.State"),"gapleft 20");
+		stateBox = createActiveStateCombo("Family.State",family.getState());
+		panel.add(stateBox,"wrap 20");
+		return panel;
+	}
 
 
-		// The OK button copies data from the components and sets the property properties.
-		// It then returns to the main tab
-		JPanel buttonPanel = new JPanel();
-		add(buttonPanel, "dock south");
-		JButton okButton = new JButton("OK");
-		buttonPanel.add(okButton,"");
+
+	/**
+	 * Create the content pane as a grid 4 columns wide:
+	 *     label | value | label | value
+	 *     label | value -- span 3
+	 */
+	private JPanel createScriptPanel() {
+		JPanel panel = new JPanel();
+		final String columnConstraints = "para[][][][]";
+		final String layoutConstraints = "ins 10,gapy 3,gapx 5,fillx";
+		final String rowConstraints = "para[][][][][][][][][]";
+		panel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
+
+
+		addSeparator(panel,"Family.Hooks");
+		panel.add(createLabel("Family.AddHook"),"");
+		addHookField = createTextField("Family.AddHook.Desc",family.getAddHook());
+		panel.add(addHookField,"span,wrap");
+
+		panel.add(createLabel("Family.CloneHook"),"");
+		cloneHookField = createTextField("Family.CloneHook.Desc",family.getCloneHook());
+		panel.add(cloneHookField,"span,wrap");
+
+		panel.add(createLabel("Family.DeleteHook"),"");
+		deleteHookField = createTextField("Family.DeleteHook.Desc",family.getDeleteHook());
+		panel.add(deleteHookField,"span,wrap");
+
+		panel.add(createLabel("Family.GetAuxDataHook"),"");
+		getAuxDataHookField = createTextField("Family.GetAuxDataHook.Desc",family.getGetAuxDataHook());
+		panel.add(getAuxDataHookField,"span,wrap");
+
+		panel.add(createLabel("Family.SetAuxDataHook"),"");
+		setAuxDataHookField = createTextField("Family.SetAuxDataHook.Desc",family.getSetAuxDataHook());
+		panel.add(setAuxDataHookField,"span,wrap");
+
+		panel.add(createLabel("Family.UpdateHook"),"");
+		updateHookField = createTextField("Family.UpdateHook.Desc",family.getUpdateHook());
+		panel.add(updateHookField,"span,wrap");
+		return panel;
+	}
+
+	// The OK button copies data from the components and sets the property
+	// properties.
+	// The super class already created the button and placed it in the panel. We
+	// just
+	// need to add the action listener.
+	private void setOKActions() {
 		okButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {			
+			public void actionPerformed(ActionEvent e) {
 				// Set attributes from fields
 				family.setName(nameField.getText());
-				family.setDescription(descriptionArea.getText());
+
 				family.setAddHook(addHookField.getText());
+				family.setCloneHook(cloneHookField.getText());
 				family.setDeleteHook(deleteHookField.getText());
+				family.setGetAuxDataHook(getAuxDataHookField.getText());
+				family.setSetAuxDataHook(setAuxDataHookField.getText());
 				family.setUpdateHook(updateHookField.getText());
+
+				properties.put(PROPERTY_DESCRIPTION, descriptionArea.getText());
 				try {
 					int pri = Integer.parseInt(priorityField.getText());
-					family.setPriority(pri);
-				}
+					properties.put(PROPERTY_PRIORITY, String.valueOf(pri));
+				} 
 				catch (NumberFormatException nfe) {
-					log.warnf("%s.initialize: Priority (%s) must be an integer (%s)",TAG,priorityField.getText(),nfe.getMessage()); 
+					log.warnf("%s.initialize: Priority (%s) must be an integer (%s)",
+							TAG, priorityField.getText(), nfe.getMessage());
 				}
-				String activeState = (String)stateBox.getSelectedItem();
+				String activeState = (String) stateBox.getSelectedItem();
 				family.setState(ActiveState.valueOf(activeState));
+				// TODO: Call the setAuxData script
 				dispose();
 			}
 		});
-		JButton cancelButton = new JButton("Cancel");
-		buttonPanel.add(cancelButton,"");
-		cancelButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				cancelled = true;
-				dispose();
-			}			
-		});
 	}
+
 	/**
-	 * @return the family that we are editing. If the operation was
-	 *         a "cancel", return null.
+	 * @return the family that we are editing. 
 	 */
 	public SerializableFamily getFamily() { return family; }
 

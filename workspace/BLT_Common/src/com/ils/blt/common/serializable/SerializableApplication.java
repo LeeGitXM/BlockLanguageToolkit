@@ -22,16 +22,12 @@ public class SerializableApplication {
 
 	private UUID id;
 	private String name;
-	private String console;
-	private String description = "";
-	private int highestPriorityProblem = 0;
-	private boolean includeInMenus = false;
-	private String messageQueue = "";
-	private RampMethod rampMethod = RampMethod.NONE;
-	private String unit = "";
 	private ActiveState state = ActiveState.ACTIVE;
 	private String addHook = "";
+	private String cloneHook = "";
 	private String deleteHook = "";
+	private String getAuxDataHook = "";
+	private String setAuxDataHook = "";
 	private String updateHook = "";
 	
 	public SerializableApplication() {	
@@ -53,36 +49,28 @@ public class SerializableApplication {
 	    folders = extended;
 	}
 	
-	public String getConsole() {return console;}
-	public String getDescription() {return description;}
 	public SerializableFamily[] getFamilies() { return families; }
 	public SerializableFolder[] getFolders() {return folders;}
-	public int getHighestPriorityProblem() {return highestPriorityProblem;}
 	public UUID getId() {return id;}
-	public String getMessageQueue() {return messageQueue;}
 	public String getName() { return name; }
-	public RampMethod getRampMethod() {return rampMethod;}
 	public ActiveState getState() {return state;}
-	public String getUnit() {return unit;}
-	public boolean isIncludeInMenus() {return includeInMenus;}
 	
-	public void setConsole(String console) {this.console = console;}
-	public void setDescription(String description) {this.description = description;}
 	public void setFamilies(SerializableFamily[] list) { families=list; }
 	public void setFolders(SerializableFolder[] folders) {this.folders = folders;}
-	public void setHighestPriorityProblem(int highestPriorityProblem) {this.highestPriorityProblem = highestPriorityProblem;}
 	public void setId(UUID id) {this.id = id;}
-	public void setIncludeInMenus(boolean includeInMenu) {this.includeInMenus = includeInMenu;}
-	public void setMessageQueue(String messageQueue) {this.messageQueue = messageQueue;}
 	public void setName(String nam) { if(nam!=null) name=nam; }
-	public void setRampMethod(RampMethod rampMethod) {this.rampMethod = rampMethod;}
 	public void setState(ActiveState state) {this.state = state;}
-	public void setUnit(String unit) {this.unit = unit;}
 
 	public String getAddHook() {return addHook;}
+	public String getCloneHook() {return cloneHook;}
 	public String getDeleteHook() {return deleteHook;}
+	public String getGetAuxDataHook() {return getAuxDataHook;}
+	public String getSetAuxDataHook() {return setAuxDataHook;}
 	public String getUpdateHook() {return updateHook;}
 	public void setAddHook(String hook) {this.addHook = hook;}
+	public void setCloneHook(String hook) {this.cloneHook = hook;}
 	public void setDeleteHook(String hook) {this.deleteHook = hook;}
+	public void setGetAuxDataHook(String hook) {this.getAuxDataHook = hook;}
+	public void setSetAuxDataHook(String hook) {this.setAuxDataHook = hook;}
 	public void setUpdateHook(String hook) {this.updateHook = hook;}
 }

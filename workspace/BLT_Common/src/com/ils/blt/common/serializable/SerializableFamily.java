@@ -19,11 +19,12 @@ public class SerializableFamily {
 	private SerializableFolder[] folders;
 	private UUID id;
 	private String name;
-	private String description = "";
-	private int priority = 0;
 	private ActiveState state = ActiveState.ACTIVE;
 	private String addHook = "";
+	private String cloneHook = "";
 	private String deleteHook = "";
+	private String getAuxDataHook = "";
+	private String setAuxDataHook = "";
 	private String updateHook = "";
 	
 	public SerializableFamily() {	
@@ -45,26 +46,28 @@ public class SerializableFamily {
 	    System.arraycopy(folders, 0, extended, 0, folders.length);
 	    folders = extended;
 	}
-	public String getDescription() {return description;}
 	public SerializableDiagram[] getDiagrams() { return diagrams; }
 	public SerializableFolder[] getFolders() {return folders;}
 	public UUID getId() {return id;}
 	public String getName() { return name; }
-	public int getPriority() {return priority;}
 	public ActiveState getState() {return state;}
 	
-	public void setDescription(String description) {this.description = description;}
 	public void setDiagrams(SerializableDiagram[] list) { diagrams=list; }
 	public void setFolders(SerializableFolder[] folders) {this.folders = folders;}
 	public void setId(UUID id) {this.id = id;}
 	public void setName(String nam) { if(nam!=null) name=nam; }
-	public void setPriority(int priority) {this.priority = priority;}
 	public void setState(ActiveState state) {this.state = state;}
 	
 	public String getAddHook() {return addHook;}
+	public String getCloneHook() {return cloneHook;}
 	public String getDeleteHook() {return deleteHook;}
+	public String getGetAuxDataHook() {return getAuxDataHook;}
+	public String getSetAuxDataHook() {return setAuxDataHook;}
 	public String getUpdateHook() {return updateHook;}
 	public void setAddHook(String hook) {this.addHook = hook;}
+	public void setCloneHook(String hook) {this.cloneHook = hook;}
 	public void setDeleteHook(String hook) {this.deleteHook = hook;}
+	public void setGetAuxDataHook(String hook) {this.getAuxDataHook = hook;}
+	public void setSetAuxDataHook(String hook) {this.setAuxDataHook = hook;}
 	public void setUpdateHook(String hook) {this.updateHook = hook;}
 }

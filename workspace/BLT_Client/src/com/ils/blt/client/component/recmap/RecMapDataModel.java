@@ -99,7 +99,8 @@ public class RecMapDataModel {
 		while( row<outputs.getRowCount()) {
 			try {
 				int key = Integer.parseInt(outputs.getValueAt(row, RecMapConstants.ID_COLUMN).toString());
-				int index = addNodeTableRow(RecMapConstants.TARGET_KIND,row,outputs.getValueAt(row, RecMapConstants.NAME_COLUMN).toString(),key);
+				int index = addNodeTableRow(RecMapConstants.TARGET_KIND,row,
+						padToMax(outputs.getValueAt(row, RecMapConstants.NAME_COLUMN).toString(),maxLength),key);
 				outputGridRowByKey.put(new Integer(key), new Integer(row));
 				outputTableRowByKey.put(new Integer(key), new Integer(index));
 			}

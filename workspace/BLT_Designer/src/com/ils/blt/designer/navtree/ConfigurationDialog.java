@@ -5,54 +5,74 @@
 package com.ils.blt.designer.navtree;
 
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ResourceBundle;
 
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
 
-import net.miginfocom.swing.MigLayout;
-
-import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.ActiveState;
-import com.ils.blt.common.block.RampMethod;
-import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 /**
  * Parent dialog for Application and Family configurations.
- *    ConfigurationDialog cd = new ConfigurationDialog("Attribute Editor");
+ *    ConfigurationDialog cd = new ConfigurationDialog(frame, app or fam);
  *    cd.pack();
  *    cd.setVisible(true);   // Terminates when dialog closed.
- *    result = cd.getModel();
+ *    result = cd.getXXX();  // Data from user entries
  */
 
 public class ConfigurationDialog extends JDialog { 
-	protected static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
 	private static final long serialVersionUID = 2882399376824334427L;
-
+	protected final ResourceBundle rb;
 	protected static final Dimension COMBO_SIZE  = new Dimension(120,24);
 	protected static final Dimension DESCRIPTION_BOX_SIZE  = new Dimension(280,80);
 	protected static final Dimension NAME_BOX_SIZE  = new Dimension(280,24);
 	protected static final Dimension NUMBER_BOX_SIZE  = new Dimension(50,24);
 	protected final LoggerEx log;
+	protected final Map<String,Object> properties;
+	protected JTabbedPane parentTabPanel = null;
+	protected JButton okButton = null;
+	protected JButton cancelButton = null;
 	protected JTextArea descriptionArea;
 	protected JTextField nameField;
 	protected boolean cancelled = false;
 	protected JComboBox<String> stateBox;
+	// The hook tab is common to both dialogs.
+	protected JTextField addHookField;
+	protected JTextField cloneHookField;
+	protected JTextField deleteHookField;
+	protected JTextField getAuxDataHookField;
+	protected JTextField setAuxDataHookField;
+	protected JTextField updateHookField;
+	
+	// These are the keys to the map of properties that are common
+	public final static String PROPERTY_DESCRIPTION = "description";
+
 	
 	public ConfigurationDialog(Frame frame) {
 		super(frame);
+		this.properties = new HashMap<>();
+		this.rb = ResourceBundle.getBundle("com.ils.blt.designer.designer");  // designer.properties
 		setModal(true);
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
         this.log = LogUtil.getLogger(getClass().getPackage().getName());
@@ -61,15 +81,29 @@ public class ConfigurationDialog extends JDialog {
 	
 
 	/**
-	 * Create the content pane as a grid 4 columns wide:
-	 *     label | value | label | value
-	 *     label | value -- span 3
+	 * Create the UI widgets at the root of either an Application or Family
+	 * editor. The content pane holds a tabbed pane with multiple edit views.
+	 * The pane at the bottom holds "OK" and "Cancel" buttons.
 	 */
 	private void initialize() {
-		final String columnConstraints = "para[][][][]";
-		final String layoutConstraints = "ins 10,gapy 3,gapx 5,fillx";
-		final String rowConstraints = "para[][][][][][][][][]";
-		setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
+		parentTabPanel = new JTabbedPane(SwingConstants.BOTTOM);
+		parentTabPanel.setBorder(BorderFactory.createEtchedBorder());
+		
+		JPanel buttonPanel = new JPanel();
+		JPanel contentPanel = new JPanel(new BorderLayout());
+		contentPanel.add(parentTabPanel,BorderLayout.CENTER);
+		okButton = new JButton("OK");
+		buttonPanel.add(okButton,"");
+		cancelButton = new JButton("Cancel");
+		cancelButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				cancelled = true;
+				dispose();
+			}			
+		});
+		buttonPanel.add(cancelButton,"");
+		contentPanel.add(buttonPanel,BorderLayout.SOUTH);
+		setContentPane(contentPanel);
 	}
 	/**
 	 * Create a combo box for "active" state
@@ -79,7 +113,7 @@ public class ConfigurationDialog extends JDialog {
 		for(ActiveState as : ActiveState.values()) {
 			box.addItem(as.name());
 		}
-		box.setToolTipText(BundleUtil.get().getString(bundle+".Desc"));
+		box.setToolTipText(rb.getString(bundle));
 		box.setSelectedItem(state.name());
 		box.setPreferredSize(COMBO_SIZE);
 		return box;
@@ -89,7 +123,7 @@ public class ConfigurationDialog extends JDialog {
 	 */
 	protected JCheckBox createCheckBox(String bundle,boolean initialValue) {
 		JCheckBox box = new JCheckBox();
-		box.setToolTipText(BundleUtil.get().getString(bundle+".Desc")+": ");
+		box.setToolTipText(rb.getString(bundle)+": ");
 		box.setSelected(initialValue);
 		box.setText("");     // Don't use the standard label, it's on the wrong side.
 		return box;
@@ -98,22 +132,10 @@ public class ConfigurationDialog extends JDialog {
 	 * Create a new label. The text is the bundle key.
 	 */
 	protected JLabel createLabel(String bundle) {
-		JLabel label = new JLabel(BundleUtil.get().getString(bundle+".Name")+": ");
+		JLabel label = new JLabel(rb.getString(bundle)+": ");
 		return label;
 	}
-	/**
-	 * Create a combo box for ramp method
-	 */
-	protected JComboBox<String> createRampMethodCombo(String bundle,RampMethod method) {
-		JComboBox<String> box = new JComboBox<String>();
-		for(RampMethod as : RampMethod.values()) {
-			box.addItem(as.name());
-		}
-		box.setToolTipText(BundleUtil.get().getString(bundle+".Desc"));
-		box.setSelectedItem(method.name());
-		box.setPreferredSize(COMBO_SIZE);
-		return box;
-	}
+
 	/*
 	 * Create a text area for editing the description
 	 */
@@ -122,7 +144,7 @@ public class ConfigurationDialog extends JDialog {
 		area.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));     // Thickness
 		area.setPreferredSize(DESCRIPTION_BOX_SIZE);
 		area.setEditable(true);
-		area.setToolTipText(BundleUtil.get().getString(bundle+".Desc"));
+		area.setToolTipText(rb.getString(bundle));
 		return area;
 	}
 	/**
@@ -132,20 +154,21 @@ public class ConfigurationDialog extends JDialog {
 		final JTextField field = new JTextField(text);
 		field.setPreferredSize(NAME_BOX_SIZE);
 		field.setEditable(true);
-		field.setToolTipText(BundleUtil.get().getString(bundle+".Desc"));
+		field.setToolTipText(rb.getString(bundle));
 		return field;
 	}
 	/**
 	 * Add a separator to a panel using Mig layout
 	 */
-	protected void addSeparator(JDialog dialog,String text) {
+	protected void addSeparator(JPanel panel,String text) {
 		JSeparator separator = new JSeparator();
-		JLabel label = new JLabel(BundleUtil.get().getString(text));
+		JLabel label = new JLabel(rb.getString(text));
 		label.setFont(new Font("Tahoma", Font.PLAIN, 11));
 		label.setForeground(Color.BLUE);
-		dialog.add(label, "split 2,span");
-		dialog.add(separator, "growx,wrap");
+		panel.add(label, "split 2,span");
+		panel.add(separator, "growx,wrap");
 	}
+
 	/*
 	 * @return true if the user has selected the "Cancel" button.
 	 */

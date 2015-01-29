@@ -185,24 +185,7 @@ public class Migrator {
 		sa.setName(g2a.getName());
 		sa.setId(UUID.nameUUIDFromBytes(g2a.getUuid().getBytes()));
 		for( G2Property prop:g2a.getProperties()) {
-			if(prop.getName().equalsIgnoreCase("groupRampMethod")) {
-				sa.setRampMethod(RampMethod.valueOf(prop.getValue().toString().toUpperCase()));
-			}
-			else if(prop.getName().equalsIgnoreCase("highestPriorityProblem")) {
-				sa.setHighestPriorityProblem(func.coerceToInteger(prop.getValue()));
-			}
-			else if(prop.getName().equalsIgnoreCase("includeInMainMenu")) {
-				sa.setIncludeInMenus(func.coerceToBoolean(prop.getValue()));
-			}
-			else if(prop.getName().equalsIgnoreCase("messageQueueName")) {
-				sa.setMessageQueue(prop.getValue().toString());
-			}
-			else if(prop.getName().equalsIgnoreCase("post")) {
-				sa.setConsole(prop.getValue().toString());
-			}
-			else if(prop.getName().equalsIgnoreCase("unit")) {
-				sa.setUnit(prop.getValue().toString());
-			}
+			// TODO: Preserve the "external" properties as SQL
 		}
 		int familyCount = g2a.getFamilies().length;
 		int index = 0;
@@ -221,12 +204,7 @@ public class Migrator {
 		sf.setName(g2f.getName());
 		sf.setId(UUID.nameUUIDFromBytes(g2f.getUuid().getBytes()));
 		for( G2Property prop:g2f.getProperties()) {
-			if(prop.getName().equalsIgnoreCase("label")) {
-				sf.setDescription(prop.getValue().toString());
-			}
-			else if(prop.getName().equalsIgnoreCase("priority")) {
-				sf.setPriority(func.coerceToInteger(prop.getValue()));
-			}
+			// TODO: Preserve the "external" properties as SQL
 		}
 		int diagramCount = 0;
 		// We have run into some empty diagrams in the G2 exports

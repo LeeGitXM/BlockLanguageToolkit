@@ -408,13 +408,7 @@ public class ModelManager implements ProjectListener  {
 				if(node instanceof ProcessApplication )  {
 					ProcessApplication processApp = (ProcessApplication)node;
 					processApp.setId(application.getId());
-					processApp.setConsole(application.getConsole());
-					processApp.setDescription(application.getDescription());
-					processApp.setHighestPriorityProblem(application.getHighestPriorityProblem());
-					processApp.setMessageQueue(application.getMessageQueue());
-					processApp.setRampMethod(application.getRampMethod());
 					processApp.setState(application.getState());
-					processApp.setUnit(application.getUnit());
 				}
 			}
 		}
@@ -499,9 +493,7 @@ public class ModelManager implements ProjectListener  {
 				node.setName(res.getName());
 				if( node instanceof ProcessFamily ) {
 					ProcessFamily processFam = (ProcessFamily)node;
-					processFam.setDescription(family.getDescription());
 					processFam.setId(family.getId());
-					processFam.setPriority(family.getPriority());
 					processFam.setState(family.getState());
 				}
 			}
