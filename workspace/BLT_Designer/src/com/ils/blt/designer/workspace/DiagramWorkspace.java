@@ -14,6 +14,8 @@ import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.geom.Path2D;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -24,11 +26,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -89,7 +95,8 @@ import com.jidesoft.docking.DockingManager;
  * A Diagram workspace is a container that occupies the DockManager workspace
  * area. It, in turn, holds DockableFrames. These are JIDE components. In addition
  * to a palette and editor, the workspace holds a tabbed panel for holding
- * BlockDesignableContainers. These contain the visual representations of the diagrams.
+ * BlockDesignableContainers (DiagramWorkspaces). These contain the visual 
+ * representations of the diagrams.
  */
 public class DiagramWorkspace extends AbstractBlockWorkspace 
 							  implements ResourceWorkspace, DesignableWorkspaceListener,
@@ -107,6 +114,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	private Collection<ResourceWorkspaceFrame> frames;
 	protected SaveAction saveAction = null;  // Save properties of a block
 	private LoggerEx logger = LogUtil.getLogger(getClass().getPackage().getName());
+	private PopupListener rightClickHandler;
+	private JPopupMenu zoomPopup;
+	private ZoomAction zoomAction;
 
 	/**
 	 * Constructor:
@@ -116,9 +126,13 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		this.editActionHandler = new BlockActionHandler(this,context);
 		this.executionEngine = new BasicExecutionEngine(1,TAG);
 		this.addDesignableWorkspaceListener(this);
+		this.zoomPopup = createZoomPopup();
+		this.rightClickHandler = new PopupListener();
+		this.addMouseListener(rightClickHandler);
 		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
 		initialize();
-		setBackground(Color.red);	
+		setBackground(Color.red);
+		zoomAction = new ZoomAction(this);
 	}
 
 
@@ -782,4 +796,74 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
 		}
 	}
+	// ===================================== Right-click for popup on tab =======================================
+	private JPopupMenu createZoomPopup() {
+        JPopupMenu popup = new JPopupMenu("Zoom");
+        popup.add(createMenuItem("25%"));
+        popup.add(createMenuItem("50%"));
+        popup.add(createMenuItem("75%"));
+        popup.add(createMenuItem("100%"));
+        popup.add(createMenuItem("200%"));
+        return popup;
+    }
+ 
+    private JMenuItem createMenuItem(String s) {
+        JMenuItem item = new JMenuItem(s);
+        item.setActionCommand(s);
+        item.addActionListener(zoomAction);
+        return item;
+    }
+ 
+    private class ZoomAction extends AbstractAction {
+		private static final long serialVersionUID = 2344028524142169124L;
+		private int zoom = 100;  // Value is in percent.
+        private DiagramWorkspace workspace;
+        
+        public ZoomAction(DiagramWorkspace wksp) {
+        	this.workspace = wksp;
+        }
+   	 	@Override
+        public void actionPerformed(ActionEvent e) {
+            JMenuItem item = (JMenuItem)e.getSource();
+            String ac = item.getActionCommand();
+            logger.infof("%s.ZoomAction: %s",TAG,ac);
+            if(ac.equals("25%"))
+                zoom = 25;
+            else if(ac.equals("50%"))
+                zoom = 50;
+            else if(ac.equals("75%"))
+                zoom = 75;
+            else if(ac.equals("200%"))
+                zoom = 200;
+            else
+            	zoom = 100;
+            
+            workspace.getSelectedDesignPanel().setZoom(zoom);
+            SwingUtilities.invokeLater(new WorkspaceRepainter());
+        }
+    };
+ 
+    private class PopupListener extends MouseAdapter {
+        public void mousePressed(MouseEvent e)
+        {
+            checkForPopup(e);
+        }
+        public void mouseReleased(MouseEvent e)
+        {
+            checkForPopup(e);
+        }
+        public void mouseClicked(MouseEvent e)
+        {
+            checkForPopup(e);
+        }
+ 
+        private void checkForPopup(MouseEvent e)
+        {
+            if(e.isPopupTrigger())
+            {
+                Component c = e.getComponent();
+                zoomPopup.show(c, e.getX(), e.getY());
+            }
+        }
+    }
 }

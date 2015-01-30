@@ -9,13 +9,19 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.util.prefs.Preferences;
 
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import net.miginfocom.swing.MigLayout;
 
 import com.ils.blt.common.ApplicationRequestHandler;
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.script.ScriptConstants;
 
 /**
@@ -24,11 +30,15 @@ import com.ils.blt.common.script.ScriptConstants;
 public class ToolkitConfigurationDialog extends ConfigurationDialog  { 
 	private final static String TAG = "ToolkitConfigurationDialog";
 	private static final long serialVersionUID = 2882399376824334427L;
+	private final static String FILE_CHOOSER_NAME = "FileChoser";
 	private final int DIALOG_HEIGHT = 280;
 	private final int DIALOG_WIDTH = 400;
 	private JPanel applicationScriptPanel = null;
 	private JPanel familyScriptPanel = null;
 	private final ApplicationRequestHandler handler;
+	private final Preferences prefs;
+	private JFileChooser fc = null;
+	private JButton importButton = null;
 	// These are the text fields that hold script paths.
 	protected JTextField addAppHookField;
 	protected JTextField cloneAppHookField;
@@ -48,6 +58,7 @@ public class ToolkitConfigurationDialog extends ConfigurationDialog  {
 		this.handler = new ApplicationRequestHandler();
 		this.setTitle(rb.getString("Toolkit.Title"));
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));
+		this.prefs = Preferences.userRoot().node(BLTProperties.PREFERENCES_NAME);
         initialize();
 	}
 	/**
@@ -63,6 +74,7 @@ public class ToolkitConfigurationDialog extends ConfigurationDialog  {
 		familyScriptPanel = createFamilyScriptPanel();
 		parentTabPanel.addTab(rb.getString("Family.Script.Tab"),null,familyScriptPanel,rb.getString("Family.Script.Tab.Desc"));
 		parentTabPanel.setSelectedIndex(0);
+		addImportButton(this);
 		setOKActions();
 	}
 
@@ -85,7 +97,7 @@ public class ToolkitConfigurationDialog extends ConfigurationDialog  {
 		panel.add(addAppHookField,"span,wrap");
 		
 		panel.add(createLabel("Application.CloneHook"),"");
-		cloneAppHookField = createTextField("Family.CloneHook.Desc",handler.getToolkitProperty(ScriptConstants.APP_CLONE_TYPE));
+		cloneAppHookField = createTextField("Application.CloneHook.Desc",handler.getToolkitProperty(ScriptConstants.APP_CLONE_TYPE));
 		panel.add(cloneAppHookField,"span,wrap");
 		
 		panel.add(createLabel("Application.DeleteHook"),"");
@@ -173,4 +185,49 @@ public class ToolkitConfigurationDialog extends ConfigurationDialog  {
 		});
 	}
 
+	/**
+	 * Create a button and event listener that pops up a file chooser, 
+	 * then imports values into the text fields.
+	 */
+	private void addImportButton(final ToolkitConfigurationDialog dialog) {
+		importButton = new JButton("Import");
+		buttonPanel.add(importButton);
+		importButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				fc = new JFileChooser();
+				fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+			    FileNameExtensionFilter filter = new FileNameExtensionFilter("Property defaults", "csv");
+			    fc.setFileFilter(filter);
+			    String startDirectoryName = prefs.get(BLTProperties.PREF_CONFIG_DIRECTORY,System.getProperty(BLTProperties.EXIM_PATH));
+			    if(startDirectoryName!=null ) {
+			    	File startDirectory = new File(startDirectoryName);
+				    fc.setCurrentDirectory(startDirectory);
+			    }
+			    fc.setDialogTitle(rb.getString("Import.Configuration.Title"));
+			    fc.setApproveButtonText(rb.getString("Import.ApproveButton"));
+			    fc.setEnabled(false);
+			    fc.setMultiSelectionEnabled(false);
+			    fc.setName(FILE_CHOOSER_NAME);
+			    
+			    int option = fc.showOpenDialog(dialog);
+			    if( option==JFileChooser.APPROVE_OPTION) {
+			    	handleSelection(fc.getSelectedFile());
+			    }
+			}
+		});
+	}
+
+	/**
+	 * Handle results from the file chooser.
+	 */
+	private void handleSelection(File filePath) {
+		log.infof("%s.handleSelection %s ",TAG,filePath.getName());
+		if( filePath!=null ) {
+			String fileName = filePath.getName();
+			if(fileName.indexOf(".")<0) {
+				filePath = new File(filePath.getAbsolutePath()+".csv");
+			}
+			prefs.put(BLTProperties.PREF_CONFIG_DIRECTORY, filePath.getParent());
+		}
+	}
 }

@@ -51,6 +51,7 @@ public class ConfigurationDialog extends JDialog {
 	protected final LoggerEx log;
 	protected final Map<String,Object> properties;
 	protected JTabbedPane parentTabPanel = null;
+	protected JPanel buttonPanel = null;
 	protected JButton okButton = null;
 	protected JButton cancelButton = null;
 	protected JTextArea descriptionArea;
@@ -82,7 +83,7 @@ public class ConfigurationDialog extends JDialog {
 		parentTabPanel = new JTabbedPane(SwingConstants.BOTTOM);
 		parentTabPanel.setBorder(BorderFactory.createEtchedBorder());
 		
-		JPanel buttonPanel = new JPanel();
+		buttonPanel = new JPanel();
 		JPanel contentPanel = new JPanel(new BorderLayout());
 		contentPanel.add(parentTabPanel,BorderLayout.CENTER);
 		okButton = new JButton("OK");

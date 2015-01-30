@@ -28,10 +28,12 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ProcessDiagram;
+import com.ils.blt.gateway.persistence.ToolkitRecord;
 import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.ils.common.ClassList;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
 
 /**
@@ -45,14 +47,16 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 public class GatewayRpcDispatcher   {
 	private static String TAG = "GatewayRpcDispatcher";
 	private final LoggerEx log;
+	private final GatewayContext context;
 	private final ControllerRequestHandler requestHandler;
 
 	/**
 	 * Constructor. There is a separate dispatcher for each project.
 	 */
-	public GatewayRpcDispatcher() {
-		log = LogUtil.getLogger(getClass().getPackage().getName());
-		requestHandler = ControllerRequestHandler.getInstance();
+	public GatewayRpcDispatcher(GatewayContext ctx) {
+		this.context = ctx;
+		this.log = LogUtil.getLogger(getClass().getPackage().getName());
+		this.requestHandler = ControllerRequestHandler.getInstance();
 	}
 	public void clearController() {
 		requestHandler.clearController();
@@ -297,6 +301,7 @@ public class GatewayRpcDispatcher   {
 		
 		return property.getValue();
 	}
+	
 	/** 
 	 *  @return
 	 */
@@ -438,6 +443,19 @@ public class GatewayRpcDispatcher   {
 	}
 	public void setDiagramState(Long projectId,Long resourceId,String state) {
 		requestHandler.setDiagramState(projectId,resourceId,state);
+	}
+	
+	public String getToolkitProperty(String propertyName) {
+		ToolkitRecord record = context.getPersistenceInterface().find(ToolkitRecord.META, propertyName);
+		if( record!=null) return record.getValue();
+		else return "";
+	}
+	public void setToolkitProperty(String propertyName,String value) {
+		ToolkitRecord record = context.getPersistenceInterface().find(ToolkitRecord.META, propertyName);
+		if( record==null) record = context.getPersistenceInterface().createNew(ToolkitRecord.META);
+		record.setName(propertyName);
+		record.setValue(value);
+		context.getPersistenceInterface().save(record);
 	}
 	
 	public void startController() {

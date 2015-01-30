@@ -92,7 +92,7 @@ public class TagListener implements TagChangeListener   {
 				  property.getBindingType()==BindingType.TAG_MONITOR )   ) return;
 		
 		String tagPath = property.getBinding();
-		log.infof("%s.defineSubscription: considering %s:%s=%s",TAG,block.getName(),property.getName(),tagPath);
+		log.debugf("%s.defineSubscription: considering %s:%s=%s",TAG,block.getName(),property.getName(),tagPath);
 		if( tagPath!=null && tagPath.length() >0  ) {
 			boolean needToStartSubscription = false;
 			BlockPropertyPair key = new BlockPropertyPair(block,property);
@@ -176,7 +176,7 @@ public class TagListener implements TagChangeListener   {
 		SQLTagsManager tmgr = context.getTagManager();
 		try {
 			TagPath tp = TagPathParser.parse(tagPath);
-			log.infof("%s.stopSubscription: %s",TAG,tagPath);
+			log.debugf("%s.stopSubscription: %s",TAG,tagPath);
 			tmgr.unsubscribe(tp, this);
 		}
 		catch(IOException ioe) {
@@ -220,7 +220,7 @@ public class TagListener implements TagChangeListener   {
 			}
 
 			TagPath tp = TagPathParser.parse(tagPath);
-			log.infof("%s.startSubscriptionForTag: on tag path %s",TAG,tp.toStringFull());
+			log.debugf("%s.startSubscriptionForTag: on tag path %s",TAG,tp.toStringFull());
 
 			Tag tag = tmgr.getTag(tp);
 			if( tag!=null ) {

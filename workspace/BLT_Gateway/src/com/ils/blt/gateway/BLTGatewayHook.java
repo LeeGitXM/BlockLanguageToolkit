@@ -1,8 +1,9 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
+ *   (c) 2014-2015  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.gateway;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +12,7 @@ import org.apache.wicket.markup.html.WebMarkupContainer;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ModelManager;
+import com.ils.blt.gateway.persistence.ToolkitRecord;
 import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
@@ -42,6 +44,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	private transient ModelManager mmgr = null;
 	private final LoggerEx log;
 	private final StatusData statusData = new StatusData();
+	private ToolkitRecord record = null;
 	
 	public static BLTGatewayHook get(GatewayContext ctx) { 
 		return (BLTGatewayHook)ctx.getModule(BLTProperties.MODULE_ID);
@@ -65,11 +68,19 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 
 		// NOTE: Get serialization exception if ModelResourceManager is saved as a class member
 		//       Exception is thrown when we try to incorporate a StatusPanel
-		log.info(TAG+"Setup - enabled project listeners.");
+		log.info(TAG+"Setup - enable project listeners.");
 		ProxyHandler.getInstance().setContext(context);
 		ControllerRequestHandler.getInstance().setContext(context);
 		PythonRequestHandler.setContext(context);
-		dispatcher = new GatewayRpcDispatcher();
+		dispatcher = new GatewayRpcDispatcher(context);
+		
+		// Register the ToolkitRecord making sure that the table exists
+		try {
+			context.getSchemaUpdater().updatePersistentRecords(ToolkitRecord.META);
+		}
+		catch(SQLException sqle) {
+			log.error("BLTGatewayHook.setup: Error registering ToolkitRecord",sqle);
+		}
 	}
 
 	@Override
@@ -126,5 +137,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		}
 		
 	}
+	
+	public ToolkitRecord getPersistentRecord() { return record; }
 
 }

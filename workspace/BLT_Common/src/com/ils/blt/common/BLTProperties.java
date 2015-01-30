@@ -88,4 +88,5 @@ public interface BLTProperties   {
 	// Preferences keys
 	public static final String PREFERENCES_NAME     = "BLTPreferences";    // Preferences collection name
 	public static final String PREF_EXIM_DIRECTORY  = "ExImDirectory";     // Export/import directory
+	public static final String PREF_CONFIG_DIRECTORY= "ConfigDirectory";   // Project properties configuration
 }

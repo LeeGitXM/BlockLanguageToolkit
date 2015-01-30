@@ -46,7 +46,9 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	private static final String TAG = "ProcessDiagramView";
 	private final Map<UUID,ProcessBlockView> blockMap = new HashMap<UUID,ProcessBlockView>();
 	private List<Connection> connections = new ArrayList<Connection>();
-	private Dimension diagramSize = new Dimension(800,600);
+	private static final int MIN_WIDTH = 800;
+	private static final int MIN_HEIGHT = 600;
+	private Dimension diagramSize = new Dimension(MIN_WIDTH,MIN_HEIGHT);
 	private final UUID id;
 	private String name = "UNSET";
 	private UUID encapsulationBlockID = null;  // Used only if this diagram represents a sub-workspace
@@ -107,6 +109,15 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		// Do this at the end to override state change on adding blocks/connectors.
 		// Note this shouldn't represent a change for parents
 		this.dirty = diagram.isDirty();
+		// Compute diagram size to include all blocks
+		// We do this initially. From then on it's whatever the user leaves it at.
+		double maxX = MIN_WIDTH;
+		double maxY = MIN_HEIGHT;
+		for(ProcessBlockView blk:blockMap.values()) {
+			if( blk.getLocation().getX()+blk.getPreferredWidth()>maxX ) maxX = blk.getLocation().getX()+blk.getPreferredWidth();
+			if( blk.getLocation().getY()+blk.getPreferredHeight()>maxY) maxY = blk.getLocation().getY()+blk.getPreferredHeight();
+		}
+		diagramSize =  new Dimension((int)maxX,(int)maxY);
 	}
 	
 	public ProcessDiagramView(long resId,UUID uuid, String nam) {
