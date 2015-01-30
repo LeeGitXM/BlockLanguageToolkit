@@ -9,6 +9,7 @@ import com.ils.blt.client.component.recmap.RecommendationMap;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.ApplicationScriptFunctions;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.WorkspaceRepainter;
@@ -110,7 +111,13 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 			catch(Exception ie ) {
 				log.warnf("%s: Error creating vision palette entries (%s)",TAG,ie.getMessage());
 			}
-
+			
+		    // Initialize all the script modules from parameters stored in the ORM
+		    ScriptExtensionManager sem = ScriptExtensionManager.getInstance();
+		    for(String key: sem.scriptTypes()) {
+		    	String pythonPath = appRequestHandler.getToolkitProperty(key);
+		    	sem.setModulePath(key, pythonPath);
+		    }
 		}
 		
 		// Setup the diagram workspace

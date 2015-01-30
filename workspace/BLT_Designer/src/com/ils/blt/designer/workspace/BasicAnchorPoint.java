@@ -60,6 +60,7 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 	private boolean isGood = true;
 	private boolean allowMultiple = true;
 	private TruthValue theTruth = TruthValue.UNSET;
+	private QualifiedValue lastValue = null;
 	
 	/**
 	 * 
@@ -142,6 +143,11 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 		else
 			return WorkspaceConstants.CONNECTION_FILL_TEXT;
 	}
+	
+	/**
+	 * @return the last value received at this anchor point.
+	 */
+	public QualifiedValue getLastValue() { return lastValue; }
 	/**
 	 * @return the stroke that that is the connection background.
 	 *         Ultimately only its edges show as outines.
@@ -184,6 +190,7 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 		if( cxnType.equals(ConnectionType.TRUTHVALUE)) {
 			theTruth = fncs.qualifiedValueAsTruthValue(value);
 		}
+		lastValue = value;
 		((ProcessBlockView)getBlock()).recordLatestValue(id.toString(),value);
 	}
 }

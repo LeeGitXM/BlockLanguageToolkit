@@ -709,7 +709,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 						// Unmarshall the resource
 						SerializableApplication sa = deserializeApplication(res);
 						if( sa!=null ) {
-							ApplicationConfigurationDialog dialog = new ApplicationConfigurationDialog(context.getFrame(),sa);
+							ApplicationConfigurationDialog dialog = new ApplicationConfigurationDialog(context.getFrame(),context,sa);
 							dialog.setLocationRelativeTo(anchor);
 							Point p = dialog.getLocation();
 	    					dialog.setLocation((int)(p.getX()-OFFSET),(int)(p.getY()-OFFSET));
@@ -1206,7 +1206,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 						logger.infof("%s.actionPerformed: deserializing ...%d",TAG,resourceId);
 						SerializableFamily sf = deserializeFamily(res);
 						if( sf!=null ) {
-							FamilyConfigurationDialog dialog = new FamilyConfigurationDialog(context.getFrame(),sf);
+							FamilyConfigurationDialog dialog = new FamilyConfigurationDialog(context.getFrame(),context,sf);
 							dialog.setLocationRelativeTo(anchor);
 							Point p = dialog.getLocation();
 	    					dialog.setLocation((int)(p.getX()-OFFSET),(int)(p.getY()-OFFSET));
@@ -1449,7 +1449,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			try {
 				EventQueue.invokeLater(new Runnable() {
 					public void run() {
-						ToolkitConfigurationDialog dialog = new ToolkitConfigurationDialog(context.getFrame());
+						ToolkitConfigurationDialog dialog = new ToolkitConfigurationDialog(context.getFrame(),context);
 						dialog.setLocationRelativeTo(anchor);
 						Point p = dialog.getLocation();
 						dialog.setLocation((int)(p.getX()-OFFSET),(int)(p.getY()-OFFSET));

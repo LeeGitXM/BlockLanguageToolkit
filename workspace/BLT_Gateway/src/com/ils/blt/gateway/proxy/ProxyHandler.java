@@ -30,11 +30,10 @@ import com.ils.blt.common.connection.ConnectionType;
 import com.ils.common.JavaToPython;
 import com.ils.common.PythonToJava;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
-
-
 
 /**
  *  This handler provides for a specific collection of calls to the Python
@@ -61,7 +60,6 @@ public class ProxyHandler   {
 	private final Callback getBlockPropertiesCallback;
 	private final Callback getBlockPrototypesCallback;
 	private final Callback setBlockPropertyCallback;
-	
 
 
 	/**
@@ -99,29 +97,19 @@ public class ProxyHandler   {
 	 */
 	public void setContext(GatewayContext cntx) {
 		this.context = cntx;
-		initializeCallbacks();
 	}
 	
-	/**
-	 * Once we have the context, we can initialize all of the callbacks. 
-	 */
-	private void initializeCallbacks() {
-		acceptValueCallback.setScriptManager(context.getScriptManager());
-		createBlockCallback.setScriptManager(context.getScriptManager());
-		evaluateCallback.setScriptManager(context.getScriptManager());
-		getBlockPropertiesCallback.setScriptManager(context.getScriptManager());
-		getBlockPrototypesCallback.setScriptManager(context.getScriptManager());
-		setBlockPropertyCallback.setScriptManager(context.getScriptManager());
-	}
 	
 	/**
-	 * Inform the block that it has a new value on one of its inputs. There is no shared dictionary.
+	 * Called from the proxy into its Python implementation to inform the block that 
+	 * it has a new value on one of its inputs. There is no shared dictionary.
 	 * 
+	 * @param mgr the appropriate project-specific script manager
 	 * @param block
 	 * @param stub the input port of the block on which the new value has arrived
 	 * @param value one of a QualifiedValue, Signal, Truth-value or String
 	 */
-	public void acceptValue(PyObject block,String stub,QualifiedValue value) {
+	public void acceptValue(ScriptManager mgr,PyObject block,String stub,QualifiedValue value) {
 		
 		if(block==null || value==null || value.getValue()==null ) return;
 		String qualityName = BLTProperties.QUALITY_GOOD;
@@ -129,31 +117,34 @@ public class ProxyHandler   {
 		log.infof("%s.acceptValue --- %s %s (%s) on %s",TAG,block.toString(),value.getValue().toString(),qualityName,stub); 
 		if( acceptValueCallback.compileScript() ) {
 			// There are 4 values to be specified - block,port,value,quality.
+			acceptValueCallback.initializeLocalsMap(mgr);
 			acceptValueCallback.setLocalVariable(0,block);
 			acceptValueCallback.setLocalVariable(1,new PyString(stub));
 			acceptValueCallback.setLocalVariable(2,new PyString(value.getValue().toString()));
 			acceptValueCallback.setLocalVariable(3,new PyString(qualityName));
-			acceptValueCallback.execute();
+			acceptValueCallback.execute(mgr);
 		}
 	}
 
-	public ProxyBlock createBlockInstance(String className,UUID parentId,UUID blockId) {
-		ProxyBlock block = new ProxyBlock(className,parentId,blockId);
+	public ProxyBlock createBlockInstance(String className,UUID parentId,UUID blockId,long projectId) {
+		ScriptManager mgr = context.getProjectManager().getProjectScriptManager(projectId);
+		ProxyBlock block = new ProxyBlock(className,parentId,blockId,mgr);
 		log.infof("%s.createBlockInstance --- python proxy for %s",TAG,className); 
 		if( createBlockCallback.compileScript() ) {
 			PyDictionary pyDictionary = new PyDictionary();  // Empty
+			createBlockCallback.initializeLocalsMap(mgr);
 			createBlockCallback.setLocalVariable(0,new PyString(className));
 			createBlockCallback.setLocalVariable(1,new PyString(parentId.toString()));
 			createBlockCallback.setLocalVariable(2,new PyString(blockId.toString()));
 			createBlockCallback.setLocalVariable(3,pyDictionary);
 			log.debugf("%s.createInstance --- executing create script for %s",TAG,className); 
-			createBlockCallback.execute();
+			createBlockCallback.execute(mgr);
 			log.info(TAG+".createInstance: returned "+ pyDictionary);   // Should now be updated
 			// Contents of list are Hashtable<String,?>
 			PyObject pyBlock = (PyObject)pyDictionary.get("instance");
 			if( pyBlock!=null ) {
 				block.setPythonBlock(pyBlock);
-				BlockProperty[] props = getBlockProperties(pyBlock);
+				BlockProperty[] props = getBlockProperties(mgr,pyBlock);
 				for(BlockProperty prop:props) {
 					block.addProperty(prop);
 				}
@@ -173,13 +164,15 @@ public class ProxyHandler   {
 	 * Tell the block to do whatever it is supposed to do. The block is the only
 	 * argument passed.
 	 *
+	 * @param mgr the appropriate project-specific script manager
 	 * @param block the saved Py block
 	 */
-	public void evaluate(PyObject block) {
+	public void evaluate(ScriptManager mgr,PyObject block) {
 		log.debugf("%s.evaluate --- %s",TAG,block.toString());
 		if( evaluateCallback.compileScript() ) {
+			evaluateCallback.initializeLocalsMap(mgr);
 			evaluateCallback.setLocalVariable(0,block);
-			evaluateCallback.execute();
+			evaluateCallback.execute(mgr);
 		}
 	}
 	
@@ -187,19 +180,21 @@ public class ProxyHandler   {
 	 * Query a Python block to obtain a list of its properties. The block is expected
 	 * to exist.
 	 * 
+	 * @param mgr the appropriate project-specific script manager
 	 * @param block the python block
 	 * @return a new array of block properties.
 	 */
-	public BlockProperty[] getBlockProperties(PyObject block) {
+	public BlockProperty[] getBlockProperties(ScriptManager mgr,PyObject block) {
 		BlockProperty[] properties = null;
 		log.infof("%s.getBlockProperties ... ",TAG);
 		if( getBlockPropertiesCallback.compileScript() ) {
 			Object val = null;
 			UtilityFunctions fns = new UtilityFunctions();
 			PyList pyList = new PyList();  // Empty
+			getBlockPropertiesCallback.initializeLocalsMap(mgr);
 			getBlockPropertiesCallback.setLocalVariable(0,block);
 			getBlockPropertiesCallback.setLocalVariable(1,pyList);
-			getBlockPropertiesCallback.execute();
+			getBlockPropertiesCallback.execute(mgr);
 			log.info(TAG+".getBlockProperties returned "+ pyList);   // Should now be updated
 			// Contents of list are Hashtable<String,?>
 			List<?> list = toJavaTranslator.pyListToArrayList(pyList);
@@ -268,9 +263,11 @@ public class ProxyHandler   {
 	 * Query the python layer for a list of palette prototypes, one for
 	 * each block definition. The prototypes are returned as a list of dictionaries
 	 * and converted to PalettePrototype object here.
+	 * 
+	 * @param mgr the appropriate project-specific script manager
 	 * @return
 	 */
-	public List<PalettePrototype> getPalettePrototypes() {
+	public List<PalettePrototype> getPalettePrototypes(ScriptManager mgr) {
 		List<PalettePrototype> prototypes = new ArrayList<PalettePrototype>();
 		log.infof("%s.getPalettePrototypes (python) ... ",TAG);
 		if( getBlockPrototypesCallback.compileScript())  {
@@ -278,8 +275,9 @@ public class ProxyHandler   {
 			UtilityFunctions fns = new UtilityFunctions();
 			PyList pyList = new PyList();  // Empty
 			List<?> list = null;
+			getBlockPrototypesCallback.initializeLocalsMap(mgr);
 			getBlockPrototypesCallback.setLocalVariable(0,pyList);
-			getBlockPrototypesCallback.execute();
+			getBlockPrototypesCallback.execute(mgr);
 			log.debug(TAG+".getPalettePrototypes: returned "+ pyList);   // Should now be updated
 			// Contents of list are Hashtable<String,?>
 			list = toJavaTranslator.pyListToArrayList(pyList);
@@ -355,7 +353,7 @@ public class ProxyHandler   {
 		return prototypes;
 	}
 	
-	public void setBlockProperty(ProxyBlock block,BlockProperty prop) {
+	public void setBlockProperty(ScriptManager mgr,ProxyBlock block,BlockProperty prop) {
 		if( block==null || prop==null ) return;
 		log.infof("%s.setProperty --- %s:%s",TAG,block.getClass(),prop.getName()); 
 		if( setBlockPropertyCallback.compileScript() ) {
@@ -377,8 +375,9 @@ public class ProxyHandler   {
 				tbl.put(BLTProperties.BLOCK_ATTRIBUTE_VALUE,prop.getValue().toString());
 			}
 			PyDictionary pyDictionary = toPythonTranslator.tableToPyDictionary(tbl);
+			setBlockPropertyCallback.initializeLocalsMap(mgr);
 			setBlockPropertyCallback.setLocalVariable(1,pyDictionary);
-			setBlockPropertyCallback.execute();
+			setBlockPropertyCallback.execute(mgr);
 		}
 	}
 	

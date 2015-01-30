@@ -23,6 +23,7 @@ import net.miginfocom.swing.MigLayout;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.script.ScriptConstants;
+import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 /**
  * Display a dialog to configure attributes that are toolkit-wide.
@@ -53,8 +54,8 @@ public class ToolkitConfigurationDialog extends ConfigurationDialog  {
 	protected JTextField setFamAuxDataHookField;
 	protected JTextField updateFamHookField;
 
-	public ToolkitConfigurationDialog(Frame frame) {
-		super(frame);
+	public ToolkitConfigurationDialog(Frame frame,DesignerContext ctx) {
+		super(frame,ctx);
 		this.handler = new ApplicationRequestHandler();
 		this.setTitle(rb.getString("Toolkit.Title"));
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));

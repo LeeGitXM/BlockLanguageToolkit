@@ -19,6 +19,7 @@ import net.miginfocom.swing.MigLayout;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.designer.workspace.BasicAnchorPoint;
 import com.ils.blt.designer.workspace.ProcessBlockView;
+import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Connection;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
@@ -59,10 +60,12 @@ public class ConnectionPropertyEditor extends JPanel {
 		add(panel,"grow,push");
 	
 		// Upstream
-		panel = new BlockPanel("Upstream",(ProcessBlockView)cxn.getOrigin().getBlock());
+		panel = new BlockPanel("Upstream",(ProcessBlockView)cxn.getOrigin().getBlock(),
+				((BasicAnchorPoint)cxn.getOrigin()).getLastValue());
 		add(panel,"grow,push");
 		// Downstream
-		panel = new BlockPanel("Downstream",(ProcessBlockView)cxn.getTerminus().getBlock());
+		panel = new BlockPanel("Downstream",(ProcessBlockView)cxn.getTerminus().getBlock(),
+				((BasicAnchorPoint)cxn.getTerminus()).getLastValue());
 		add(panel,"grow,push");
 	}
 	
@@ -120,7 +123,7 @@ public class ConnectionPropertyEditor extends JPanel {
 		private static final String columnConstraints = "[para]0[][100lp,fill][60lp][95lp,fill]";
 		private static final String layoutConstraints = "ins 2";
 		private static final String rowConstraints = "";
-		public BlockPanel(String heading,ProcessBlockView blk) {
+		public BlockPanel(String heading,ProcessBlockView blk,QualifiedValue qv) {
 			setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));     // 3 cells across
 			addSeparator(this,heading);
 			
@@ -130,6 +133,8 @@ public class ConnectionPropertyEditor extends JPanel {
 			add(createTextField(blk.getClassName()),"span,growx");
 			add(createLabel("UUID"),"skip");
 			add(createTextField(blk.getId().toString()),"span,growx");
+			add(createLabel("LastValue"),"skip");
+			add(createTextField((qv==null?"":qv.getValue().toString())),"span,growx");
 		}
 	}
 	
@@ -149,7 +154,6 @@ public class ConnectionPropertyEditor extends JPanel {
 			add(createLabel("Type"),"skip");
 			add(createConnectionTypeCombo(((BasicAnchorPoint)cxn.getOrigin()).getConnectionType()),"skip");
 		}
-		
 	}
 }
 

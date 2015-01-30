@@ -33,6 +33,7 @@ import javax.swing.WindowConstants;
 import com.ils.blt.common.block.ActiveState;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.inductiveautomation.ignition.designer.model.DesignerContext;
 /**
  * Parent dialog for Application and Family configurations.
  *    ConfigurationDialog cd = new ConfigurationDialog(frame, app or fam);
@@ -43,6 +44,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 public class ConfigurationDialog extends JDialog { 
 	private static final long serialVersionUID = 2882399376824334427L;
+	protected final DesignerContext context;
 	protected final ResourceBundle rb;
 	protected static final Dimension COMBO_SIZE  = new Dimension(120,24);
 	protected static final Dimension DESCRIPTION_BOX_SIZE  = new Dimension(280,80);
@@ -63,8 +65,9 @@ public class ConfigurationDialog extends JDialog {
 	public final static String PROPERTY_DESCRIPTION = "description";
 
 	
-	public ConfigurationDialog(Frame frame) {
+	public ConfigurationDialog(Frame frame,DesignerContext ctx) {
 		super(frame);
+		this.context = ctx;
 		this.properties = new HashMap<>();
 		this.rb = ResourceBundle.getBundle("com.ils.blt.designer.designer");  // designer.properties
 		setModal(true);

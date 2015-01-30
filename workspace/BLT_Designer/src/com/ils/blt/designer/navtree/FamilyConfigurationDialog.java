@@ -17,6 +17,7 @@ import net.miginfocom.swing.MigLayout;
 
 import com.ils.blt.common.block.ActiveState;
 import com.ils.blt.common.serializable.SerializableFamily;
+import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 /**
  * Display a dialog to configure a Family node
@@ -33,8 +34,8 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 	// These are the keys to the map of properties that are unique to applications
 	public final static String PROPERTY_PRIORITY    = "priority";
 	
-	public FamilyConfigurationDialog(Frame frame,SerializableFamily fam) {
-		super(frame);
+	public FamilyConfigurationDialog(Frame frame,DesignerContext ctx,SerializableFamily fam) {
+		super(frame,ctx);
 		this.family = fam;
 		this.setTitle(rb.getString("Family.Title"));
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));

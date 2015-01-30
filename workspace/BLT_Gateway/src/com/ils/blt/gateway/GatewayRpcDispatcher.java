@@ -31,6 +31,7 @@ import com.ils.blt.gateway.engine.ProcessDiagram;
 import com.ils.blt.gateway.persistence.ToolkitRecord;
 import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.ils.common.ClassList;
+import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
@@ -192,9 +193,12 @@ public class GatewayRpcDispatcher   {
 			}
 		}
 		// Now add prototypes from Python-defined blocks
+		// NOTE: We use the gateway script manager because these blocks do
+		//       not yet exist in a diagram (or project).
 		ProxyHandler phandler = ProxyHandler.getInstance();
 		try {
-			List<PalettePrototype> prototypes = phandler.getPalettePrototypes();
+			ScriptManager mgr = context.getScriptManager();
+			List<PalettePrototype> prototypes = phandler.getPalettePrototypes(mgr);
 			for( PalettePrototype pp:prototypes) {
 				results.add(pp.toJson());
 			}

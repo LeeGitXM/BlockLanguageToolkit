@@ -5,7 +5,6 @@
 package com.ils.blt.common.script;
 
 
-
 /**
  *  These are constants dealing with the scripting extensions
  */
@@ -25,4 +24,8 @@ public interface ScriptConstants   {
 	public final static String FAM_SET_AUX_TYPE = "fam-set-aux-type"; 
 	public final static String FAM_UPDATE_TYPE  = "fam-update-type"; 
 
+	// These are the keys for individual sub-dictionaries
+	public final static String ARGS_KEY   = "arglist";
+	public final static String ENTRY_KEY  = "entry";
+	public final static String SCRIPT_KEY = "script";
 }

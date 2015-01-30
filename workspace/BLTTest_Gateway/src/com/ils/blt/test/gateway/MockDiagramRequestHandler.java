@@ -28,6 +28,7 @@ import com.ils.blt.test.gateway.mock.MockInputBlock;
 import com.ils.blt.test.gateway.mock.MockOutputBlock;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
@@ -77,7 +78,8 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 		// Instantiate a block from the class
 		ProcessBlock uut = requestHandler.createInstance(blockClass, mock.getSelf(), UUID.randomUUID());
 		if( uut==null) {
-			uut = ProxyHandler.getInstance().createBlockInstance(blockClass, mock.getSelf(), UUID.randomUUID());
+			// A mock diagram does not support scripting outside the external scripting area.
+			uut = ProxyHandler.getInstance().createBlockInstance(blockClass, mock.getSelf(), UUID.randomUUID(),-1);
 		}
 		if( uut!=null ) {
 			mock.addBlock(uut);

@@ -11,6 +11,7 @@ import com.ils.block.AbstractProcessBlock;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.notification.IncomingNotification;
+import com.inductiveautomation.ignition.common.script.ScriptManager;
 
 
 /**
@@ -24,6 +25,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	private final String className;
 	private PyObject pythonBlock = null;
 	private final ProxyHandler delegate = ProxyHandler.getInstance();
+	private final ScriptManager scriptManager;
 	
 
 	/**
@@ -33,9 +35,10 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 * @param diag ID of the diagram of which the block is a part
 	 * @param block identifier
 	 */
-	public ProxyBlock(String clss,UUID parent,UUID block) {
+	public ProxyBlock(String clss,UUID parent,UUID block,ScriptManager mgr) {
 		super(null,parent,block);
 		this.className = clss;
+		this.scriptManager = mgr;
 	}
 
 	/**
@@ -98,7 +101,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 		BlockProperty prop = getProperty(name);
 		if( prop!=null ) {
 			prop.setValue(obj);
-			delegate.setBlockProperty(this,prop);
+			delegate.setBlockProperty(scriptManager,this,prop);
 		}
 	}
 
@@ -110,7 +113,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 *        and simple value.
 	 */
 	public void acceptValue(IncomingNotification vcn) {
-		delegate.acceptValue( getPythonBlock(), vcn.getConnection().getDownstreamPortName(), vcn.getValue());
+		delegate.acceptValue( scriptManager,getPythonBlock(), vcn.getConnection().getDownstreamPortName(), vcn.getValue());
 	}
 	
 	/**
@@ -119,6 +122,6 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 * "quiet" time has passed without further input.
 	 */
 	public void evaluate() { 
-		delegate.evaluate(getPythonBlock()); 
+		delegate.evaluate(scriptManager,getPythonBlock()); 
 	}
 }

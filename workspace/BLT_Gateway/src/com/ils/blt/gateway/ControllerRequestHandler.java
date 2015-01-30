@@ -104,7 +104,12 @@ public class ControllerRequestHandler   {
 		catch( ClassNotFoundException cnf ) {
 			log.infof("%s.createInstance: Java class %s not found - trying Python",TAG,className);
 			ProxyHandler ph = ProxyHandler.getInstance();
-			block = ph.createBlockInstance(className,parentId,blockId);
+			BlockExecutionController controller = BlockExecutionController.getInstance();
+			ProcessDiagram diagram = controller.getDiagram(parentId);
+			if( diagram!=null ) {
+				long projectId = diagram.getProjectId();
+				block = ph.createBlockInstance(className,parentId,blockId,projectId);
+			}
 		}
 		catch( InstantiationException ie ) {
 			log.warnf("%s.createInstance: Error instantiating %s (%s)",TAG,className,ie.getLocalizedMessage()); 

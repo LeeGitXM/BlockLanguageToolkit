@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved.
+ *   (c) 2014-2015  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.gateway.proxy;
@@ -9,6 +9,7 @@ import org.python.core.CompilerFlags;
 import org.python.core.Py;
 import org.python.core.PyCode;
 import org.python.core.PyObject;
+import org.python.core.PyString;
 import org.python.core.PyStringMap;
 
 import com.inductiveautomation.ignition.common.script.JythonExecException;
@@ -18,6 +19,22 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 
 /**
+ * Callbacks are initiated by the Proxy block and made into the Python code for 
+ * which it is a proxy. These are standard commands, global for all blocks.
+ * However, the ScriptManager which executes them is project-dependent. The
+ * standard usage is to create a new locals map with each execution.
+ * 
+ * The standard execution pattern is:
+ *    if( callback.compileScript() ) {
+ *			// There are 4 values to be specified - block,port,value,quality.
+ *			callback.initializeLocalsMap(mgr);
+ *			callback.setLocalVariable(0,a);
+ *			callback.setLocalVariable(1,b);
+ *               . . .
+ *			callback.execute(mgr);
+ *	   }
+ *    
+ * 
  * A callback is a holder for parameters that define specific
  *  python modules. This is the base class for the set. Each
  *  callback corresponds to a specific module that is expected
@@ -33,7 +50,6 @@ public class Callback {
 	protected String pythonPackage;
 	private String[] localVariables;      // Derived from comma-separated
 	private String localVariableList;
-	private ScriptManager scriptManager = null;
 	private PyStringMap localsMap = null;
 
 
@@ -41,7 +57,6 @@ public class Callback {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		pythonPackage = "ils.blt.util";      // Default
 		module = "";
-		scriptManager = null;
 		localVariables = new String[0];
 		localVariableList="";
 		code = null;
@@ -69,11 +84,12 @@ public class Callback {
 	/**
 	 *  Run the script in line. On completion return the contents of the shared variable.
 	 */
-	public void execute() {
+	public void execute(ScriptManager scriptManager) {
+		if( localsMap == null ) throw new IllegalArgumentException("Attempt to execute with uninitialized locals map.");
 		String script = pythonPackage+"."+module;
 		log.infof("%s.execute: Running callback script ...(%s)",TAG,script);
 		try {
-			scriptManager.runCode(code,getLocalsMap());
+			scriptManager.runCode(code,localsMap);
 		}
 		catch( JythonExecException jee) {
 			log.error(String.format("%s.execute: JythonException executing python %s (%s) ",TAG,script,jee.getMessage()),jee);
@@ -82,11 +98,10 @@ public class Callback {
 			log.error(String.format("%s.execute: Error executing python %s (%s)",TAG,script,ex.getMessage()+")"),ex);
 		}
 		log.infof("%s: Completed callback script.",TAG);
+		localsMap = null;
 	}
 	
-	public void setScriptManager(ScriptManager mgr) {
-		this.scriptManager = mgr;
-	}
+
 	/**
 	 * Convert the comma-separated variable string into an array of strings.
 	 */
@@ -96,18 +111,26 @@ public class Callback {
 	}
 
 	/**
+	 * Clear the locals map. This must be called before any local variables are 
+	 * defined.
+	 * 
+	 * @param scriptManager script runner appropriate to the block
+	 *        upon which this is executed.
+	 */
+	public void initializeLocalsMap(ScriptManager scriptManager) {
+		localsMap = scriptManager.createLocalsMap();
+	}
+	/**
 	 * Setting a variable value creates a locals map. We need to set the
 	 * variables in the order that their names appear in the list.
 	 * @param index is the variable position in the argument list.
 	 * @param value the single local argument
 	 */
 	public void setLocalVariable(int index,PyObject value) {
-		if( localsMap == null ) localsMap = scriptManager.createLocalsMap();
+		if( localsMap == null ) throw new IllegalArgumentException("Locals map must be initialized before variables can be added.");
 
 		localsMap.__setitem__(localVariables[index],value);
 		log.debugf("%s.setLocalVariable: %s to %s",TAG,localVariables[index],value.toString());
 	}
-
-	public PyStringMap getLocalsMap() { return this.localsMap; }
 }
 

@@ -10,6 +10,7 @@ import java.util.List;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ModelManager;
 import com.ils.blt.gateway.persistence.ToolkitRecord;
@@ -101,8 +102,12 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	    }
 	    controller.start(context);
 	    context.getProjectManager().addProjectListener(mmgr);
-	    // Look for all "Controller Output" UDT instances
-	    
+	    // Initialize all the script modules from parameters stored in the ORM
+	    ScriptExtensionManager sem = ScriptExtensionManager.getInstance();
+	    for(String key: sem.scriptTypes()) {
+	    	String pythonPath = dispatcher.getToolkitProperty(key);
+	    	sem.setModulePath(key, pythonPath);
+	    }
 	    log.infof("%s: Startup complete.",TAG);
 	}
 

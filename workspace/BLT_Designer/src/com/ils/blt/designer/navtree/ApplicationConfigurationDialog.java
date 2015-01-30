@@ -9,10 +9,7 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.HashMap;
-import java.util.Map;
 
-import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
@@ -20,10 +17,10 @@ import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
 
-import com.ils.blt.common.block.ActiveState;
 import com.ils.blt.common.block.RampMethod;
 import com.ils.blt.common.serializable.SerializableApplication;
 import com.inductiveautomation.ignition.common.BundleUtil;
+import com.inductiveautomation.ignition.designer.model.DesignerContext;
 /**
  * Display a dialog to configure an Application node
  */
@@ -49,8 +46,8 @@ public class ApplicationConfigurationDialog extends ConfigurationDialog {
 	public final static String PROPERTY_RAMP_METHOD      = "rampMethod";
 	public final static String PROPERTY_UNIT             = "unit";
 	
-	public ApplicationConfigurationDialog(Frame frame,SerializableApplication app) {
-		super(frame);
+	public ApplicationConfigurationDialog(Frame frame,DesignerContext ctx,SerializableApplication app) {
+		super(frame,ctx);
 		this.application = app;
 		this.setTitle(rb.getString("Application.Title"));
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));

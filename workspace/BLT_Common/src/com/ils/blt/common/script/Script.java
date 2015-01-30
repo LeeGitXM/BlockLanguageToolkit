@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved.
+ *   (c) 2014-2015  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.common.script;
@@ -18,30 +18,49 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 
 /**
- * A script is a holder for an executable python module. Each script to
- * be executed is a separate instance of the class. The script isn't 
- * compiled until it is executed. 
+ * Scripts are initiated by a Java class in either Gateway or Client/Designer scopes.
+ * Each script is independently compiled and cached (via the ScriptExtensionManager).
+ * Different script managers can be used to execute the same script (not in parallel).
+ * The standard pattern for execution is: 
+ * The standard execution pattern is:
+ *    if( script.compileScript() ) {
+ *			// There are 4 values to be specified - block,port,value,quality.
+ *			script.initializeLocalsMap(mgr);
+ *			script.setLocalVariable(0,a);
+ *			script.setLocalVariable(1,b);
+ *                 . . .
+ *			script.execute(mgr);
+ *	   }
+ *   
+ * Individual subclasses simply define the execution entry point and arg list. 
  */
 public class Script {
 	private final static String TAG = "Script";
-	protected final LoggerEx log;
+	private final LoggerEx log;
 	private PyCode code;
-	protected String module;
-	protected String pythonPackage;
+	private String module = "";
+	private String pythonPackage;
 	private String[] localVariables;      // Derived from comma-separated
-	private String localVariableList;
-	private ScriptManager scriptManager = null;
+	private final String localVariableList;
 	private PyStringMap localsMap = null;
 
-
-	public Script() {
-		log = LogUtil.getLogger(getClass().getPackage().getName());
-		pythonPackage = "ils.blt.util";      // Default
-		module = "";
-		scriptManager = null;
-		localVariables = new String[0];
-		localVariableList="";
-		code = null;
+	/**
+	 * Create a new executable script
+	 * @param pythonPath complete path to module, including entry point
+	 * @param args
+	 */
+	public Script(String pythonPath,String args) {
+		this.log = LogUtil.getLogger(getClass().getPackage().getName());
+		this.pythonPackage = packageNameFromPath(pythonPath); 
+		this.module = moduleNameFromPath(pythonPath);
+		this.localVariables = args.split(",");
+		this.localVariableList=args;
+		this.code = null;
+	}
+	
+	public void setModule(String mod) { 
+		this.module = mod;
+		this.code = null;   // Needs compiling
 	}
 	
 	/**
@@ -52,7 +71,7 @@ public class Script {
 	 * @return true if the script compiled
 	 */
 	public boolean compileScript() {
-		if( code !=null ) return true;   // Already compiled               
+		if( code !=null || module.length()==0 ) return true;   // Already compiled               
 		String script = String.format("import %s;%s.%s(%s)",pythonPackage,pythonPackage,module,localVariableList);
 		log.infof("%s.compileScript: Compiling ... %s",TAG,script);
 		try {
@@ -66,11 +85,13 @@ public class Script {
 	/**
 	 *  Run the script in line. On completion return the contents of the shared variable.
 	 */
-	public void execute() {
+	public void execute(ScriptManager scriptManager) {
+		if( module.length()==0 ) return;   // Do nothing
+		if( localsMap == null ) throw new IllegalArgumentException("Attempt to execute with uninitialized locals map.");
 		String script = pythonPackage+"."+module;
 		log.infof("%s.execute: Running callback script ...(%s)",TAG,script);
 		try {
-			scriptManager.runCode(code,getLocalsMap());
+			scriptManager.runCode(code,localsMap);
 		}
 		catch( JythonExecException jee) {
 			log.error(String.format("%s.execute: JythonException executing python %s (%s) ",TAG,script,jee.getMessage()),jee);
@@ -79,19 +100,20 @@ public class Script {
 			log.error(String.format("%s.execute: Error executing python %s (%s)",TAG,script,ex.getMessage()+")"),ex);
 		}
 		log.infof("%s: Completed callback script.",TAG);
-	}
-	
-	public void setScriptManager(ScriptManager mgr) {
-		this.scriptManager = mgr;
-	}
-	/**
-	 * Convert the comma-separated variable string into an array of strings.
-	 */
-	protected void setLocalVariableList(String varlist) {
-		localVariableList = varlist;
-		localVariables = varlist.split(",");
+		localsMap = null;
 	}
 
+
+	/**
+	 * Clear the locals map. This must be called before any local variables are 
+	 * defined.
+	 * 
+	 * @param scriptManager script runner appropriate to the block
+	 *        upon which this is executed.
+	 */
+	public void initializeLocalsMap(ScriptManager scriptManager) {
+		localsMap = scriptManager.createLocalsMap();
+	}
 	/**
 	 * Setting a variable value creates a locals map. We need to set the
 	 * variables in the order that their names appear in the list.
@@ -99,12 +121,24 @@ public class Script {
 	 * @param value the single local argument
 	 */
 	public void setLocalVariable(int index,PyObject value) {
-		if( localsMap == null ) localsMap = scriptManager.createLocalsMap();
+		if( localsMap == null ) throw new IllegalArgumentException("Locals map must be initialized before variables can be added.");
 
 		localsMap.__setitem__(localVariables[index],value);
 		log.debugf("%s.setLocalVariable: %s to %s",TAG,localVariables[index],value.toString());
 	}
-
-	public PyStringMap getLocalsMap() { return this.localsMap; }
+	
+	// Strip off the last segment and return the rest.
+	private String packageNameFromPath(String path) {
+		int index = path.lastIndexOf(".");
+		if( index>0 ) path = path.substring(0, index);
+		return path;
+	}
+	
+	// Strip off the last segment and return the rest.
+	private String moduleNameFromPath(String path) {
+		int index = path.lastIndexOf(".");
+		if( index>0 ) path = path.substring(index+1);
+		return path;
+	}
 }
 

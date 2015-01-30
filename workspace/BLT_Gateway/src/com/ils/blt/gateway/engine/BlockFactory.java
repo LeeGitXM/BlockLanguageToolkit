@@ -55,8 +55,7 @@ public class BlockFactory  {
 	
 	/**
 	 * Create a concrete instance of a Process block represented by the serializable block.
-	 * @param projectId
-	 * @param resourceId
+	 * @param parentId
 	 * @param sb the block to be deserialized
 	 * @return the ProcessBlock created from the specified SerializableBlock
 	 */
@@ -79,7 +78,12 @@ public class BlockFactory  {
 		}
 		catch( ClassNotFoundException cnf ) {
 			log.debugf("%s.blockFromSerializable: No java class %s ... trying Python",TAG,className); 
-			block = proxyHandler.createBlockInstance( className, parentId,blockId );
+			BlockExecutionController controller = BlockExecutionController.getInstance();
+			ProcessDiagram diagram = controller.getDiagram(parentId);
+			if( diagram!=null ) {
+				long pid = diagram.getProjectId();
+				block = proxyHandler.createBlockInstance(className, parentId,blockId,pid);
+			}
 		}
 		catch( InstantiationException ie ) {
 			log.warnf("%s.blockFromSerializable: Error instantiating %s (%s)",TAG,className,ie.getLocalizedMessage()); 

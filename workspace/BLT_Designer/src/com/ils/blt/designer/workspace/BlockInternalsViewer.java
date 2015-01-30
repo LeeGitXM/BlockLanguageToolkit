@@ -31,6 +31,7 @@ import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.inductiveautomation.ignition.common.BundleUtil;
+import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 
@@ -131,6 +132,14 @@ public class BlockInternalsViewer extends JDialog {
 				row[1] = (attribute==null?" ":attribute);
 				dataModel.addRow(row);
 			}
+		}
+		
+		for( ProcessAnchorDescriptor pad: block.getAnchors() ) {
+			QualifiedValue qv = pad.getLastValue();
+			String [] row = new String[2];
+			row[0] = "port: "+ pad.getDisplay();
+			row[1] = (qv==null?"":qv.getValue().toString());
+			dataModel.addRow(row);
 		}
 		
         table = new JTable(dataModel);
