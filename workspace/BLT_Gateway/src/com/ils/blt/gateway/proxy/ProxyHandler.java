@@ -357,7 +357,7 @@ public class ProxyHandler   {
 		if( block==null || prop==null ) return;
 		log.infof("%s.setProperty --- %s:%s",TAG,block.getClass(),prop.getName()); 
 		if( setBlockPropertyCallback.compileScript() ) {
-
+			setBlockPropertyCallback.initializeLocalsMap(mgr);
 			setBlockPropertyCallback.setLocalVariable(0,block.getPythonBlock());
 			// Convert the property object into a table to send to Python.
 			if( prop.getName()==null ) {

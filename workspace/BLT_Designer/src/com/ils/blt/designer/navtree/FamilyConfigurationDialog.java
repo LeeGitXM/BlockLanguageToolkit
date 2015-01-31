@@ -5,6 +5,7 @@
 package com.ils.blt.designer.navtree;
 
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
@@ -42,7 +43,8 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
         initialize();
 	}
 	/**
-	 * The super class takes care of making a central tabbed pane.
+	 * The super class takes care of making a central tabbed pane --- but
+	 * we don't wantit. Simply put our mainPanel as the content pane.
 	 * Here we add the tabs ...
 	 * 1) Core attributes
 	 * 2) Python hook definitions.
@@ -50,9 +52,8 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 	private void initialize() {
 		// TODO: Call the getAuxData script
 		mainPanel = createMainPanel();
-		// Tab label,?,panel, tooltip
-		parentTabPanel.addTab(rb.getString("Family.Core.Tab"),null,mainPanel,rb.getString("Family.Core.Tab.Desc"));
-		parentTabPanel.setSelectedIndex(0);
+		contentPanel.remove(parentTabPanel);   // blow away the tab
+		contentPanel.add(mainPanel,BorderLayout.CENTER);
 		setOKActions();
 	}
 

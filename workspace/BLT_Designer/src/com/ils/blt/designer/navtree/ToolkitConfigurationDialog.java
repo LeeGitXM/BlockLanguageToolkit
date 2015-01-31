@@ -9,7 +9,11 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.prefs.Preferences;
 
 import javax.swing.JButton;
@@ -119,7 +123,14 @@ public class ToolkitConfigurationDialog extends ConfigurationDialog  {
 		return panel;
 	}
 
-
+	private void updateApplicationScriptPanel() {
+		addAppHookField.setText(handler.getToolkitProperty(ScriptConstants.APP_ADD_TYPE));
+		cloneAppHookField.setText(handler.getToolkitProperty(ScriptConstants.APP_CLONE_TYPE));
+		deleteAppHookField.setText(handler.getToolkitProperty(ScriptConstants.APP_DELETE_TYPE));
+		getAppAuxDataHookField.setText(handler.getToolkitProperty(ScriptConstants.APP_GET_AUX_TYPE));
+		setAppAuxDataHookField.setText(handler.getToolkitProperty(ScriptConstants.APP_SET_AUX_TYPE));
+		updateAppHookField.setText(handler.getToolkitProperty(ScriptConstants.APP_UPDATE_TYPE));
+	}
 	/**
 	 * Create the content pane as a grid 4 columns wide:
 	 *     label | value | label | value
@@ -158,6 +169,15 @@ public class ToolkitConfigurationDialog extends ConfigurationDialog  {
 		updateFamHookField = createTextField("Family.UpdateHook.Desc",handler.getToolkitProperty(ScriptConstants.FAM_UPDATE_TYPE));
 		panel.add(updateFamHookField,"span,wrap");
 		return panel;
+	}
+	
+	private void updateFamilyScriptPanel() {
+		addFamHookField.setText(handler.getToolkitProperty(ScriptConstants.FAM_ADD_TYPE));
+		cloneFamHookField.setText(handler.getToolkitProperty(ScriptConstants.FAM_CLONE_TYPE));
+		deleteFamHookField.setText(handler.getToolkitProperty(ScriptConstants.FAM_DELETE_TYPE));
+		getFamAuxDataHookField.setText(handler.getToolkitProperty(ScriptConstants.FAM_GET_AUX_TYPE));
+		setFamAuxDataHookField.setText(handler.getToolkitProperty(ScriptConstants.FAM_SET_AUX_TYPE));
+		updateFamHookField.setText(handler.getToolkitProperty(ScriptConstants.FAM_UPDATE_TYPE));
 	}
 
 	// The OK button copies data from the components and sets the property
@@ -228,7 +248,49 @@ public class ToolkitConfigurationDialog extends ConfigurationDialog  {
 			if(fileName.indexOf(".")<0) {
 				filePath = new File(filePath.getAbsolutePath()+".csv");
 			}
+			parseConfigFile(filePath);
 			prefs.put(BLTProperties.PREF_CONFIG_DIRECTORY, filePath.getParent());
+		}
+	}
+
+	/**
+	 * We assume that the file holds two columns = key, value
+	 * @param csv
+	 */
+	private void parseConfigFile(File csv) {
+		@SuppressWarnings("resource")
+		BufferedReader reader = null;
+		try { 
+			String line;
+			reader = new BufferedReader(new FileReader(csv));
+			while ((line = reader.readLine()) != null) {
+				// use comma as separator
+				String[] args = line.split(",");
+				if( args.length>1 ) {
+					log.debugf("%s.parseConfigFile. Read %s,%s ",TAG,args[0],args[1]);
+					handler.setToolkitProperty(args[0].trim(),args[1].trim());
+				}
+				else if( args.length>0 ) {
+					log.debugf("%s.parseConfigFile. Read %s, ",TAG,args[0]);
+					handler.setToolkitProperty(args[0].trim(),"");
+				}
+			}
+			updateApplicationScriptPanel();
+			updateFamilyScriptPanel();
+		} 
+		catch (FileNotFoundException fnfe) {
+			log.warnf("%s.parseConfigFile. File not found %s (%s) ",TAG,csv.getAbsolutePath(),fnfe.getMessage());
+		} 
+		catch (IOException ioe) {
+			log.warnf("%s.parseConfigFile. Exception reading %s (%s) ",TAG,csv.getAbsolutePath(),ioe.getMessage());
+		} 
+		finally {
+			if (reader != null) {
+				try {
+					reader.close();
+				} 
+				catch (IOException ignore) {}
+			}
 		}
 	}
 }

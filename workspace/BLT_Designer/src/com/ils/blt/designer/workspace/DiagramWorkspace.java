@@ -819,7 +819,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				int zoom = 100;
-				logger.infof("%s.createMenuItem: %s SELECTED!!",TAG,s);
 	            if(s.equals("25%"))
 	                zoom = 25;
 	            else if(s.equals("50%"))
