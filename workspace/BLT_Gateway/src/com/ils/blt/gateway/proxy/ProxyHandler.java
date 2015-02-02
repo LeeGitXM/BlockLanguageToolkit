@@ -355,13 +355,11 @@ public class ProxyHandler   {
 	
 	public void setBlockProperty(ScriptManager mgr,ProxyBlock block,BlockProperty prop) {
 		if( block==null || prop==null ) return;
-		log.infof("%s.setProperty --- %s:%s",TAG,block.getClass(),prop.getName()); 
+		log.infof("%s.setBlockProperty --- %s:%s",TAG,block.getClass(),prop.getName()); 
 		if( setBlockPropertyCallback.compileScript() ) {
-			setBlockPropertyCallback.initializeLocalsMap(mgr);
-			setBlockPropertyCallback.setLocalVariable(0,block.getPythonBlock());
 			// Convert the property object into a table to send to Python.
 			if( prop.getName()==null ) {
-				log.errorf("%s.setProperty: Property name cannot be null",TAG); 
+				log.errorf("%s.setBlockProperty: Property name cannot be null",TAG); 
 				return;
 			}
 			Hashtable<String,Object> tbl = new Hashtable<String,Object>();  
@@ -376,6 +374,7 @@ public class ProxyHandler   {
 			}
 			PyDictionary pyDictionary = toPythonTranslator.tableToPyDictionary(tbl);
 			setBlockPropertyCallback.initializeLocalsMap(mgr);
+			setBlockPropertyCallback.setLocalVariable(0,block.getPythonBlock());
 			setBlockPropertyCallback.setLocalVariable(1,pyDictionary);
 			setBlockPropertyCallback.execute(mgr);
 		}

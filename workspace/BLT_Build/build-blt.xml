@@ -270,7 +270,7 @@
 		<echo message="Deploying python scripts to ${ignition.py.lib}" />
 		<copy todir="${ignition.py.lib}">
 			<fileset dir="${xom.python.src.dir}">
-				<include name="emc/**/*.py" />
+				<include name="xom/**/*.py" />
 			</fileset>
 		</copy>
 		<copy todir="${ignition.py.lib}">

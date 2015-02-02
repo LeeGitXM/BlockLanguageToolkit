@@ -25,6 +25,7 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -42,7 +43,7 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 	private final Watchdog dog;
 	private BlockProperty valueProperty = null;
 	private double synchInterval = 0.5; // 1/2 sec synchronization by default
-	protected TruthValue truthValue;
+	protected TruthValue truthValue = TruthValue.UNSET;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -127,7 +128,6 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 		controller.pet(dog);
 	}
 	
-	
 	/**
 	 * The coalescing time has expired. Place the current state on the output,
 	 * if it has changed.
@@ -149,7 +149,16 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 			}
 		}
 	}
-	
+	/**
+	 * @return a block-specific description of internal statue
+	 */
+	@Override
+	public SerializableBlockStateDescriptor getInternalStatus() {
+		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
+		Map<String,String> attributes = descriptor.getAttributes();
+		attributes.put("Value", truthValue.name());
+		return descriptor;
+	}
 	/**
 	 * Handle a change to the coalescing interval.
 	 */

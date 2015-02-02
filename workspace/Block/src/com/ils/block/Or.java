@@ -25,6 +25,7 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -40,7 +41,7 @@ public class Or extends AbstractProcessBlock implements ProcessBlock {
 	private final String TAG = "Or";
 	// Keep map of values by originating block id
 	protected final Map<String,QualifiedValue> qualifiedValueMap;
-	protected TruthValue truthValue;
+	protected TruthValue truthValue = TruthValue.UNSET;
 	private final Watchdog dog;
 	private double synchInterval = 0.5; // 1/2 sec synchronization by default
 	
@@ -142,6 +143,16 @@ public class Or extends AbstractProcessBlock implements ProcessBlock {
 		}
 	}
 	
+	/**
+	 * @return a block-specific description of internal statue
+	 */
+	@Override
+	public SerializableBlockStateDescriptor getInternalStatus() {
+		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
+		Map<String,String> attributes = descriptor.getAttributes();
+		attributes.put("Value", truthValue.name());
+		return descriptor;
+	}
 	/**
 	 * Handle a change to the coalescing interval.
 	 */

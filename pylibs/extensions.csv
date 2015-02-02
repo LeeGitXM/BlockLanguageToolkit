@@ -1,12 +1,12 @@
 app-add-type,     xom.extensions.application.add
 app-clone-type,   xom.extensions.application.clone
 app-delete-type,  xom.extensions.application.delete
-app-get-aux-type, xom.extensions.application.get
-app-set-aux-type, xom.extensions.application.set
+app-get-aux-type, xom.extensions.application.getAux
+app-set-aux-type, xom.extensions.application.setAux
 app-update-type,  xom.extensions.application.update
 fam-add-type,     xom.extensions.family.add
 fam-clone-type,   xom.extensions.family.clone
 fam-delete-type,  xom.extensions.family.delete
-fam-get-aux-type, xom.extensions.family.get
-fam-set-aux-type, xom.extensions.family.set
+fam-get-aux-type, xom.extensions.family.getAux
+fam-set-aux-type, xom.extensions.family.setAux
 fam-update-type,  xom.extensions.family.update

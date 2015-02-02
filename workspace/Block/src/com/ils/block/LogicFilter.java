@@ -183,7 +183,20 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 			}
 		}
 	}
-	
+	/**
+	 * @return a block-specific description of internal statue
+	 */
+	@Override
+	public SerializableBlockStateDescriptor getInternalStatus() {
+		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
+		List<Map<String,String>> descBuffer = descriptor.getBuffer();
+		for( TruthValue tv:buffer) {
+			Map<String,String> qvMap = new HashMap<>();
+			qvMap.put("Value", tv.name());
+			descBuffer.add(qvMap);
+		}
+		return descriptor;
+	}
 	/**
 	 * Handle a changes to the various attributes.
 	 */
@@ -268,20 +281,6 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	private void notifyOfStatus(QualifiedValue qv) {
 		controller.sendPropertyNotification(getBlockId().toString(), BLOCK_PROPERTY_RATIO,qv);
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
-	}
-	/**
-	 * @return a block-specific description of internal statue
-	 */
-	@Override
-	public SerializableBlockStateDescriptor getInternalStatus() {
-		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
-		List<Map<String,String>> descBuffer = descriptor.getBuffer();
-		for( TruthValue tv:buffer) {
-			Map<String,String> qvMap = new HashMap<>();
-			qvMap.put("Value", tv.name());
-			descBuffer.add(qvMap);
-		}
-		return descriptor;
 	}
 	
 

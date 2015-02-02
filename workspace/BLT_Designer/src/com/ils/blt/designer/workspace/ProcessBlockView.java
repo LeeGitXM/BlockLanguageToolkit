@@ -285,7 +285,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 			qv = pad.getLastValue();
 		}
 		else {
-			log.warnf("%s.getLastValueForPort: Unknown port specified (%s)",TAG,port);
+			log.warnf("%s.getLastValueForPort: %s, unknown port specified (%s)",TAG,getName(),port);
 		}
 		return qv;
 	}
