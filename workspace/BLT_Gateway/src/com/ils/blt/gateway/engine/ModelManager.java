@@ -16,6 +16,7 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.connection.Connection;
+import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.common.serializable.DiagramState;
 import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.common.serializable.SerializableDiagram;
@@ -54,6 +55,7 @@ public class ModelManager implements ProjectListener  {
 	private final Map<UUID,ProcessNode> orphansByUUID;
 	private final Map<UUID,ProcessNode> nodesByUUID;
 	private final BlockExecutionController controller = BlockExecutionController.getInstance();
+	private final ScriptExtensionManager scriptManager = ScriptExtensionManager.getInstance();
 	
 	/**
 	 * Initially we query the gateway context to discover what resources exists. After that
@@ -401,6 +403,7 @@ public class ModelManager implements ProjectListener  {
 				ProjResKey key = new ProjResKey(projectId,res.getResourceId());
 				nodesByKey.put(key,node);
 				addToHierarchy(projectId,node);
+				
 			}
 			else {
 				// Update attributes

@@ -10,6 +10,8 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -17,6 +19,8 @@ import javax.swing.JTextField;
 import net.miginfocom.swing.MigLayout;
 
 import com.ils.blt.common.block.ActiveState;
+import com.ils.blt.common.script.ScriptConstants;
+import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.common.serializable.SerializableFamily;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
@@ -28,6 +32,7 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 	private static final long serialVersionUID = 2882399376824334427L;
 	private final int DIALOG_HEIGHT = 280;
 	private final int DIALOG_WIDTH = 400;
+	private final ScriptExtensionManager extensionManager = ScriptExtensionManager.getInstance();
 	private final SerializableFamily family;
 	private JPanel mainPanel = null;
 	protected JTextField priorityField;
@@ -50,7 +55,9 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 	 * 2) Python hook definitions.
 	 */
 	private void initialize() {
-		// TODO: Call the getAuxData script
+		// Fetch properties of the family associated with the database and not serialized.
+		extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAM_GET_AUX_TYPE, 
+				this.family,properties);
 		mainPanel = createMainPanel();
 		contentPanel.remove(parentTabPanel);   // blow away the tab
 		contentPanel.add(mainPanel,BorderLayout.CENTER);
@@ -92,10 +99,9 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 	}
 
 	// The OK button copies data from the components and sets the property
-	// properties.
-	// The super class already created the button and placed it in the panel. We
-	// just
-	// need to add the action listener.
+	// properties. The super class already created the button and placed it 
+	// in the panel. We just need to add the action listener.
+	// NOTE: The only database-resident properties are: desc and priority.
 	private void setOKActions() {
 		okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -112,7 +118,8 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 				}
 				String activeState = (String) stateBox.getSelectedItem();
 				family.setState(ActiveState.valueOf(activeState));
-				// TODO: Call the setAuxData script
+				extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAM_SET_AUX_TYPE, 
+						family,properties);
 				dispose();
 			}
 		});

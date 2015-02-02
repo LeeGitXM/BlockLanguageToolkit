@@ -1,0 +1,15 @@
+#
+# Simple test of an input and readout
+#
+Test: Exercise the Persistence block
+Step: Target is TRUE
+Show: browser "Diagnostic Toolkit"
+resetDiagram (app75/family75/persistence)
+Tagset: SingleBoolean
+10:00 true
+10:01 false
+10:01:10 Assert: persistence = FALSE "Interrupted target"
+10:02 3 true
+10:03 4
+10:03:10 Assert: persistence = FALSE "Before expiration time"
+10:05:10 Assert: persistence = TRUE  "After expiration time"
