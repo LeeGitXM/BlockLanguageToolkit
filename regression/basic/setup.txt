@@ -5,8 +5,8 @@ log: [DATE] [TIME] Start Testing ...
 timefactor: 10
 notification: persistence    "C:389ee5dc-824e-42be-8d04-86ea8a391c94:out"
 notification: sumObservation "C:4a8f708b-f77c-4dbf-abc2-7dd01a1224a1:out"
-# Script aliases
-script: resetDiagram pylib/resetDiagram.py
+# Script aliases - module is with respect to script directory
+script: resetDiagram pylib.resetDiagram.reset
 # Tag aliases
 tag: BooleanFeed  MemoryTags/BooleanFeed
 tag: DiagramInput MemoryTags/DiagramFeed

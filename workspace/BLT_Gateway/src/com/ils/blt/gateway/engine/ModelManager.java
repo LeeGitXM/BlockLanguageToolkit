@@ -401,6 +401,7 @@ public class ModelManager implements ProjectListener  {
 			if( node==null ) {
 				ProcessApplication processApp = new ProcessApplication(res.getName(),res.getParentUuid(),self);
 				processApp.setResourceId(res.getResourceId());
+				processApp.setProjectId(projectId);
 				// Add in the new Application
 				ProjResKey key = new ProjResKey(projectId,res.getResourceId());
 				nodesByKey.put(key,processApp);
@@ -409,11 +410,12 @@ public class ModelManager implements ProjectListener  {
 			}
 			else {
 				// Update attributes
+				String oldName = node.getName();
 				node.setName(res.getName());
 				if(node instanceof ProcessApplication )  {
 					ProcessApplication processApp = (ProcessApplication)node;
 					processApp.setState(application.getState());
-					extensionManager.runScript(sm, ScriptConstants.APP_UPDATE_SCRIPT,application.getName(),processApp.getSelf().toString());
+					extensionManager.runScript(sm, ScriptConstants.APP_UPDATE_SCRIPT,oldName,processApp.getSelf().toString());
 				}
 			}
 		}
@@ -489,6 +491,7 @@ public class ModelManager implements ProjectListener  {
 			if( node==null ) {
 				ProcessFamily processFam = new ProcessFamily(res.getName(),res.getParentUuid(),self);
 				processFam.setResourceId(res.getResourceId());
+				processFam.setProjectId(projectId);
 				// Add in the new Family
 				ProjResKey key = new ProjResKey(projectId,res.getResourceId());
 				nodesByKey.put(key,family);
@@ -497,11 +500,12 @@ public class ModelManager implements ProjectListener  {
 			}
 			else {
 				// Update attributes
+				String oldName = node.getName();
 				node.setName(res.getName());
 				if( node instanceof ProcessFamily ) {
 					ProcessFamily processFam = (ProcessFamily)node;
 					processFam.setState(family.getState());
-					extensionManager.runScript(sm, ScriptConstants.FAM_UPDATE_SCRIPT,family.getName(),processFam.getSelf().toString());
+					extensionManager.runScript(sm, ScriptConstants.FAM_UPDATE_SCRIPT,oldName,processFam.getSelf().toString());
 				}
 			}
 		}
@@ -519,6 +523,7 @@ public class ModelManager implements ProjectListener  {
 		if( node==null ) {
 			node = new ProcessNode(res.getName(),res.getParentUuid(),self);
 			node.setResourceId(res.getResourceId());
+			node.setProjectId(projectId);
 			// Add in the new Folder
 			ProjResKey key = new ProjResKey(projectId,res.getResourceId());
 			nodesByKey.put(key,node);

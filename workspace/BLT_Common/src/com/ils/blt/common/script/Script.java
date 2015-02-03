@@ -77,7 +77,6 @@ public class Script {
 		if( module.length()==0 ) return false;     // Module is unset
 		if( code !=null  )       return true;      // Already compiled               
 		String script = String.format("import %s;%s.%s(%s)",pythonPackage,pythonPackage,module,localVariableList);
-		log.infof("%s.compileScript: Compiling ... %s",TAG,script);
 		try {
 			code = Py.compile_flags(script,pythonPackage,CompileMode.exec,CompilerFlags.getCompilerFlags());
 	     }
@@ -93,7 +92,7 @@ public class Script {
 		if( module.length()==0 ) return;   // Do nothing
 		if( localsMap == null ) throw new IllegalArgumentException("Attempt to execute with uninitialized locals map.");
 		String script = pythonPackage+"."+module;
-		log.infof("%s.execute: Running callback script ...(%s)",TAG,script);
+		log.infof("%s.execute: Running callback script (%s)",TAG,script);
 		try {
 			scriptManager.runCode(code,localsMap);
 		}
@@ -103,7 +102,7 @@ public class Script {
 		catch(Exception ex) {
 			log.error(String.format("%s.execute: Error executing python %s (%s)",TAG,script,ex.getMessage()+")"),ex);
 		}
-		log.infof("%s: Completed callback script.",TAG);
+		log.tracef("%s: Completed callback script.",TAG);
 		localsMap = null;
 	}
 
@@ -126,6 +125,8 @@ public class Script {
 	 */
 	public void setLocalVariable(int index,PyObject value) {
 		if( localsMap == null ) throw new IllegalArgumentException("Locals map must be initialized before variables can be added.");
+		if( localVariables.length<=index ) throw new IllegalArgumentException(
+										String.format("%s.setLocalVariable %d, but defined list is: %s",entry,index,localVariableList));
 
 		localsMap.__setitem__(localVariables[index],value);
 		log.debugf("%s.setLocalVariable: %s to %s",TAG,localVariables[index],value.toString());

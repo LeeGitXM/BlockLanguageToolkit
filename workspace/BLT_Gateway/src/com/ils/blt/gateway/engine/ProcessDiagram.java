@@ -102,8 +102,6 @@ public class ProcessDiagram extends ProcessNode {
 	 * The ModelManager restarts the blocks once everything is in place.
 	 */
 	public void analyze(SerializableDiagram diagrm) {
-		log.infof("%s.analyze: %s ...",TAG,diagrm.getName());
-		
 		setName(diagrm.getName());     // Get our name from the resource
 		BlockFactory blockFactory = BlockFactory.getInstance();
 		ConnectionFactory connectionFactory = ConnectionFactory.getInstance();
@@ -117,7 +115,7 @@ public class ProcessDiagram extends ProcessNode {
 				pb = blockFactory.blockFromSerializable(getSelf(),sb);
 				if( pb!=null ) {
 					blocks.put(pb.getBlockId(), pb);
-					log.infof("%s.analyze: New block %s(%d)",TAG,pb.getName(),pb.hashCode());
+					log.debugf("%s.analyze: New block %s(%d)",TAG,pb.getName(),pb.hashCode());
 				}
 				else log.errorf("%s.analyze: ERROR %s failed to instantiate %s",TAG,diagrm.getName(),sb.getClassName());
 			}
