@@ -98,38 +98,38 @@ public class ToolkitConfigurationDialog extends ConfigurationDialog  {
 		
 		addSeparator(panel,"Application.Hooks");
 		panel.add(createLabel("Application.AddHook"),"");
-		addAppHookField = createTextField("Application.AddHook.Desc",handler.getToolkitProperty(ScriptConstants.APP_ADD_TYPE));
+		addAppHookField = createTextField("Application.AddHook.Desc",handler.getToolkitProperty(ScriptConstants.APP_ADD_SCRIPT));
 		panel.add(addAppHookField,"span,wrap");
 		
 		panel.add(createLabel("Application.CloneHook"),"");
-		cloneAppHookField = createTextField("Application.CloneHook.Desc",handler.getToolkitProperty(ScriptConstants.APP_CLONE_TYPE));
+		cloneAppHookField = createTextField("Application.CloneHook.Desc",handler.getToolkitProperty(ScriptConstants.APP_CLONE_SCRIPT));
 		panel.add(cloneAppHookField,"span,wrap");
 		
 		panel.add(createLabel("Application.DeleteHook"),"");
-		deleteAppHookField = createTextField("Application.DeleteHook.Desc",handler.getToolkitProperty(ScriptConstants.APP_DELETE_TYPE));
+		deleteAppHookField = createTextField("Application.DeleteHook.Desc",handler.getToolkitProperty(ScriptConstants.APP_DELETE_SCRIPT));
 		panel.add(deleteAppHookField,"span,wrap");
 		
 		panel.add(createLabel("Application.GetAuxDataHook"),"");
-		getAppAuxDataHookField = createTextField("Application.GetAuxDataHook.Desc",handler.getToolkitProperty(ScriptConstants.APP_GET_AUX_TYPE));
+		getAppAuxDataHookField = createTextField("Application.GetAuxDataHook.Desc",handler.getToolkitProperty(ScriptConstants.APP_GET_AUX_SCRIPT));
 		panel.add(getAppAuxDataHookField,"span,wrap");
 		
 		panel.add(createLabel("Application.SetAuxDataHook"),"");
-		setAppAuxDataHookField = createTextField("Application.SetAuxDataHook.Desc",handler.getToolkitProperty(ScriptConstants.APP_SET_AUX_TYPE));
+		setAppAuxDataHookField = createTextField("Application.SetAuxDataHook.Desc",handler.getToolkitProperty(ScriptConstants.APP_SET_AUX_SCRIPT));
 		panel.add(setAppAuxDataHookField,"span,wrap");
 		
 		panel.add(createLabel("Application.UpdateHook"),"");
-		updateAppHookField = createTextField("Application.UpdateHook.Desc",handler.getToolkitProperty(ScriptConstants.APP_UPDATE_TYPE));
+		updateAppHookField = createTextField("Application.UpdateHook.Desc",handler.getToolkitProperty(ScriptConstants.APP_UPDATE_SCRIPT));
 		panel.add(updateAppHookField,"span,wrap");
 		return panel;
 	}
 
 	private void updateApplicationScriptPanel() {
-		addAppHookField.setText(handler.getToolkitProperty(ScriptConstants.APP_ADD_TYPE));
-		cloneAppHookField.setText(handler.getToolkitProperty(ScriptConstants.APP_CLONE_TYPE));
-		deleteAppHookField.setText(handler.getToolkitProperty(ScriptConstants.APP_DELETE_TYPE));
-		getAppAuxDataHookField.setText(handler.getToolkitProperty(ScriptConstants.APP_GET_AUX_TYPE));
-		setAppAuxDataHookField.setText(handler.getToolkitProperty(ScriptConstants.APP_SET_AUX_TYPE));
-		updateAppHookField.setText(handler.getToolkitProperty(ScriptConstants.APP_UPDATE_TYPE));
+		addAppHookField.setText(handler.getToolkitProperty(ScriptConstants.APP_ADD_SCRIPT));
+		cloneAppHookField.setText(handler.getToolkitProperty(ScriptConstants.APP_CLONE_SCRIPT));
+		deleteAppHookField.setText(handler.getToolkitProperty(ScriptConstants.APP_DELETE_SCRIPT));
+		getAppAuxDataHookField.setText(handler.getToolkitProperty(ScriptConstants.APP_GET_AUX_SCRIPT));
+		setAppAuxDataHookField.setText(handler.getToolkitProperty(ScriptConstants.APP_SET_AUX_SCRIPT));
+		updateAppHookField.setText(handler.getToolkitProperty(ScriptConstants.APP_UPDATE_SCRIPT));
 	}
 	/**
 	 * Create the content pane as a grid 4 columns wide:
@@ -146,38 +146,38 @@ public class ToolkitConfigurationDialog extends ConfigurationDialog  {
 
 		addSeparator(panel,"Family.Hooks");
 		panel.add(createLabel("Family.AddHook"),"");
-		addFamHookField = createTextField("Family.AddHook.Desc",handler.getToolkitProperty(ScriptConstants.FAM_ADD_TYPE));
+		addFamHookField = createTextField("Family.AddHook.Desc",handler.getToolkitProperty(ScriptConstants.FAM_ADD_SCRIPT));
 		panel.add(addFamHookField,"span,wrap");
 
 		panel.add(createLabel("Family.CloneHook"),"");
-		cloneFamHookField = createTextField("Family.CloneHook.Desc",handler.getToolkitProperty(ScriptConstants.FAM_CLONE_TYPE));
+		cloneFamHookField = createTextField("Family.CloneHook.Desc",handler.getToolkitProperty(ScriptConstants.FAM_CLONE_SCRIPT));
 		panel.add(cloneFamHookField,"span,wrap");
 
 		panel.add(createLabel("Family.DeleteHook"),"");
-		deleteFamHookField = createTextField("Family.DeleteHook.Desc",handler.getToolkitProperty(ScriptConstants.FAM_DELETE_TYPE));
+		deleteFamHookField = createTextField("Family.DeleteHook.Desc",handler.getToolkitProperty(ScriptConstants.FAM_DELETE_SCRIPT));
 		panel.add(deleteFamHookField,"span,wrap");
 
 		panel.add(createLabel("Family.GetAuxDataHook"),"");
-		getFamAuxDataHookField = createTextField("Family.GetAuxDataHook.Desc",handler.getToolkitProperty(ScriptConstants.FAM_GET_AUX_TYPE));
+		getFamAuxDataHookField = createTextField("Family.GetAuxDataHook.Desc",handler.getToolkitProperty(ScriptConstants.FAM_GET_AUX_SCRIPT));
 		panel.add(getFamAuxDataHookField,"span,wrap");
 
 		panel.add(createLabel("Family.SetAuxDataHook"),"");
-		setFamAuxDataHookField = createTextField("Family.SetAuxDataHook.Desc",handler.getToolkitProperty(ScriptConstants.FAM_SET_AUX_TYPE));
+		setFamAuxDataHookField = createTextField("Family.SetAuxDataHook.Desc",handler.getToolkitProperty(ScriptConstants.FAM_SET_AUX_SCRIPT));
 		panel.add(setFamAuxDataHookField,"span,wrap");
 
 		panel.add(createLabel("Family.UpdateHook"),"");
-		updateFamHookField = createTextField("Family.UpdateHook.Desc",handler.getToolkitProperty(ScriptConstants.FAM_UPDATE_TYPE));
+		updateFamHookField = createTextField("Family.UpdateHook.Desc",handler.getToolkitProperty(ScriptConstants.FAM_UPDATE_SCRIPT));
 		panel.add(updateFamHookField,"span,wrap");
 		return panel;
 	}
 	
 	private void updateFamilyScriptPanel() {
-		addFamHookField.setText(handler.getToolkitProperty(ScriptConstants.FAM_ADD_TYPE));
-		cloneFamHookField.setText(handler.getToolkitProperty(ScriptConstants.FAM_CLONE_TYPE));
-		deleteFamHookField.setText(handler.getToolkitProperty(ScriptConstants.FAM_DELETE_TYPE));
-		getFamAuxDataHookField.setText(handler.getToolkitProperty(ScriptConstants.FAM_GET_AUX_TYPE));
-		setFamAuxDataHookField.setText(handler.getToolkitProperty(ScriptConstants.FAM_SET_AUX_TYPE));
-		updateFamHookField.setText(handler.getToolkitProperty(ScriptConstants.FAM_UPDATE_TYPE));
+		addFamHookField.setText(handler.getToolkitProperty(ScriptConstants.FAM_ADD_SCRIPT));
+		cloneFamHookField.setText(handler.getToolkitProperty(ScriptConstants.FAM_CLONE_SCRIPT));
+		deleteFamHookField.setText(handler.getToolkitProperty(ScriptConstants.FAM_DELETE_SCRIPT));
+		getFamAuxDataHookField.setText(handler.getToolkitProperty(ScriptConstants.FAM_GET_AUX_SCRIPT));
+		setFamAuxDataHookField.setText(handler.getToolkitProperty(ScriptConstants.FAM_SET_AUX_SCRIPT));
+		updateFamHookField.setText(handler.getToolkitProperty(ScriptConstants.FAM_UPDATE_SCRIPT));
 	}
 
 	// The OK button copies data from the components and sets the property
@@ -189,18 +189,18 @@ public class ToolkitConfigurationDialog extends ConfigurationDialog  {
 		okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				// Set attributes from fields
-				handler.setToolkitProperty(ScriptConstants.APP_ADD_TYPE,addAppHookField.getText());
-				handler.setToolkitProperty(ScriptConstants.APP_CLONE_TYPE,cloneAppHookField.getText());
-				handler.setToolkitProperty(ScriptConstants.APP_DELETE_TYPE,deleteAppHookField.getText());
-				handler.setToolkitProperty(ScriptConstants.APP_GET_AUX_TYPE,getAppAuxDataHookField.getText());
-				handler.setToolkitProperty(ScriptConstants.APP_SET_AUX_TYPE,setAppAuxDataHookField.getText());
-				handler.setToolkitProperty(ScriptConstants.APP_UPDATE_TYPE,updateAppHookField.getText());
-				handler.setToolkitProperty(ScriptConstants.FAM_ADD_TYPE,addFamHookField.getText());
-				handler.setToolkitProperty(ScriptConstants.FAM_CLONE_TYPE,cloneFamHookField.getText());
-				handler.setToolkitProperty(ScriptConstants.FAM_DELETE_TYPE,deleteFamHookField.getText());
-				handler.setToolkitProperty(ScriptConstants.FAM_GET_AUX_TYPE,getFamAuxDataHookField.getText());
-				handler.setToolkitProperty(ScriptConstants.FAM_SET_AUX_TYPE,setFamAuxDataHookField.getText());
-				handler.setToolkitProperty(ScriptConstants.FAM_UPDATE_TYPE,updateFamHookField.getText());
+				handler.setToolkitProperty(ScriptConstants.APP_ADD_SCRIPT,addAppHookField.getText());
+				handler.setToolkitProperty(ScriptConstants.APP_CLONE_SCRIPT,cloneAppHookField.getText());
+				handler.setToolkitProperty(ScriptConstants.APP_DELETE_SCRIPT,deleteAppHookField.getText());
+				handler.setToolkitProperty(ScriptConstants.APP_GET_AUX_SCRIPT,getAppAuxDataHookField.getText());
+				handler.setToolkitProperty(ScriptConstants.APP_SET_AUX_SCRIPT,setAppAuxDataHookField.getText());
+				handler.setToolkitProperty(ScriptConstants.APP_UPDATE_SCRIPT,updateAppHookField.getText());
+				handler.setToolkitProperty(ScriptConstants.FAM_ADD_SCRIPT,addFamHookField.getText());
+				handler.setToolkitProperty(ScriptConstants.FAM_CLONE_SCRIPT,cloneFamHookField.getText());
+				handler.setToolkitProperty(ScriptConstants.FAM_DELETE_SCRIPT,deleteFamHookField.getText());
+				handler.setToolkitProperty(ScriptConstants.FAM_GET_AUX_SCRIPT,getFamAuxDataHookField.getText());
+				handler.setToolkitProperty(ScriptConstants.FAM_SET_AUX_SCRIPT,setFamAuxDataHookField.getText());
+				handler.setToolkitProperty(ScriptConstants.FAM_UPDATE_SCRIPT,updateFamHookField.getText());
 				dispose();
 			}
 		});

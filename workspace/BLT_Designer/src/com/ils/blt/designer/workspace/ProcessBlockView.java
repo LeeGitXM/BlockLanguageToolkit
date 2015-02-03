@@ -153,7 +153,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		if(sb.getAnchors()!=null ) {
 			for( SerializableAnchor sa:sb.getAnchors() ) {
 				log.debugf("%s: Creating serializable anchor %s (%s)", TAG,sa.getDisplay(),sa.getConnectionType().name());
-				anchors.put(sa.getId().toString(), new ProcessAnchorDescriptor((sa.getDirection()==AnchorDirection.INCOMING?AnchorType.Terminus:AnchorType.Origin),
+				anchors.put(sa.getDisplay(), new ProcessAnchorDescriptor((sa.getDirection()==AnchorDirection.INCOMING?AnchorType.Terminus:AnchorType.Origin),
 						sa.getConnectionType(),sa.getId(),sa.getDisplay(),sa.getAnnotation(),sa.getHint(),sa.isMultiple()) );
 			}
 		}

@@ -64,8 +64,10 @@ public class ConnectionPropertyEditor extends JPanel {
 				((BasicAnchorPoint)cxn.getOrigin()).getLastValue());
 		add(panel,"grow,push");
 		// Downstream
+		// NOTE: Only the upstream anchor is populated with "last value". 
+		//       ---- so we just show it again.
 		panel = new BlockPanel("Downstream",(ProcessBlockView)cxn.getTerminus().getBlock(),
-				((BasicAnchorPoint)cxn.getTerminus()).getLastValue());
+				((BasicAnchorPoint)cxn.getOrigin()).getLastValue());
 		add(panel,"grow,push");
 	}
 	

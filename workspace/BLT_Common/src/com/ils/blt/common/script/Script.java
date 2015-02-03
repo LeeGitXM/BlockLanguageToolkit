@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2015  ILS Automation. All rights reserved.
+ *   (c) 2015  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.common.script;
@@ -38,6 +38,7 @@ public class Script {
 	private final static String TAG = "Script";
 	private final LoggerEx log;
 	private PyCode code;
+	private final String entry; 
 	private String module = "";
 	private String pythonPackage;
 	private String[] localVariables;      // Derived from comma-separated
@@ -46,20 +47,22 @@ public class Script {
 
 	/**
 	 * Create a new executable script
-	 * @param pythonPath complete path to module, including entry point
+	 * @param ep nominal entry point into script (unused)
 	 * @param args
 	 */
-	public Script(String pythonPath,String args) {
+	public Script(String ep,String args) {
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
-		this.pythonPackage = packageNameFromPath(pythonPath); 
-		this.module = moduleNameFromPath(pythonPath);
+		this.entry = ep;
+		this.pythonPackage = ""; 
+		this.module = "";
 		this.localVariables = args.split(",");
 		this.localVariableList=args;
 		this.code = null;
 	}
 	
-	public void setModule(String mod) { 
-		this.module = mod;
+	public void resetModulePath(String pythonPath) { 
+		this.module = moduleNameFromPath(pythonPath);
+		this.pythonPackage = packageNameFromPath(pythonPath);
 		this.code = null;   // Needs compiling
 	}
 	
@@ -71,14 +74,15 @@ public class Script {
 	 * @return true if the script compiled
 	 */
 	public boolean compileScript() {
-		if( code !=null || module.length()==0 ) return true;   // Already compiled               
+		if( module.length()==0 ) return false;     // Module is unset
+		if( code !=null  )       return true;      // Already compiled               
 		String script = String.format("import %s;%s.%s(%s)",pythonPackage,pythonPackage,module,localVariableList);
 		log.infof("%s.compileScript: Compiling ... %s",TAG,script);
 		try {
 			code = Py.compile_flags(script,pythonPackage,CompileMode.exec,CompilerFlags.getCompilerFlags());
 	     }
 		catch(Exception ex) {
-			log.errorf("%s.compileScript: Failed to compile script \n%s",TAG,script);
+			log.errorf("%s.compileScript: Failed to compile script \n%s",TAG,script,ex);
 		}
 		return code!=null;
 	}

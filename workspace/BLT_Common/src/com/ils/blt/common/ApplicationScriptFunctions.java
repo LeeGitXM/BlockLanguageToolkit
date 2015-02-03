@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved.
+ *   (c) 2014-2015  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.common;
@@ -28,14 +28,9 @@ public class ApplicationScriptFunctions   {
 	public static void clearController() {
 		handler.clearController();
 	}
-	
-	/**
-	 * @return the default database for the project defined by the supplied Id  
-	 */
-	public static String databaseForProject(long projectId) {
-		return handler.databaseForProject(projectId);
+	public static String getApplicationName(String uuid) {
+		return handler.getApplicationName(uuid);
 	}
-	
 	/**
 	 * Query the gateway for a list of prototypes for the defined blocks. 
 	 */
@@ -44,12 +39,21 @@ public class ApplicationScriptFunctions   {
 		List<PalettePrototype> result = handler.getBlockPrototypes();
 		return result;
 	}
-	
 	/**
 	 * @return the current state of the controller.
 	 */
 	public static String getControllerState() {
 		return handler.getControllerState();
+	}
+	
+	/**
+	 * @param diagramId identifier of the diagram to be queried, a String
+	 * @param className fully qualified class name of blocks to be listed
+	 * @return a list of ids for blocks owned by a specified diagram that are of a
+	 *         specified class.
+	 */
+	public static List getDiagramBlocksOfClass(String diagramId,String className) {
+		return handler.getDiagramBlocksOfClass(diagramId,className);
 	}
 	
 	/**
@@ -62,14 +66,8 @@ public class ApplicationScriptFunctions   {
 	public static List getDiagramDescriptors(String projectName) {
 		return handler.getDiagramDescriptors(projectName);
 	}
-	/**
-	 * @param diagramId identifier of the diagram to be queried, a String
-	 * @param className fully qualified class name of blocks to be listed
-	 * @return a list of ids for blocks owned by a specified diagram that are of a
-	 *         specified class.
-	 */
-	public static List getDiagramBlocksOfClass(String diagramId,String className) {
-		return handler.getDiagramBlocksOfClass(diagramId,className);
+	public static String getFamilyName(String uuid) {
+		return handler.getFamilyName(uuid);
 	}
 	
 	/**

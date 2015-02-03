@@ -20,15 +20,11 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.block.ProcessBlock;
-import com.ils.blt.common.block.TransmissionScope;
-import com.ils.blt.common.notification.BroadcastNotification;
-import com.ils.blt.common.notification.Signal;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ProcessDiagram;
-import com.ils.blt.gateway.persistence.ToolkitRecord;
 import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.ils.common.ClassList;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
@@ -42,7 +38,7 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
  *  Its purpose is simply to parse out a request and send it to the
  *  right handler. This class supports the aggregate of RPC interfaces.
  *  
- *  Make use of the BlockRequestHandler so as to provide
+ *  Make use of the ControllerRequestHandler as a delegate so as to provide
  *  a common handler for both the RPC and scripting interfaces.
  */
 public class GatewayRpcDispatcher   {
@@ -63,10 +59,6 @@ public class GatewayRpcDispatcher   {
 		requestHandler.clearController();
 	}
 	
-	public String databaseForProject(Long projectId) {
-		return requestHandler.databaseForProject(projectId.longValue());
-	}
-	
 	/**
 	 * This should always succeed because we create a block in the gateway whenever we 
 	 * create one from the palette.
@@ -75,51 +67,14 @@ public class GatewayRpcDispatcher   {
 	 */
 	public Boolean diagramExists(String uuidString) {
 		log.infof("%s.diagramExists ...",TAG);
-		BlockExecutionController controller = BlockExecutionController.getInstance();
-		UUID diagramUUID = null;
-		try {
-			diagramUUID = UUID.fromString(uuidString);
-		}
-		catch(IllegalArgumentException iae) {
-			log.warnf("%s.diagramExists: Diagram UUID string is illegal (%s), creating new",TAG,uuidString);
-			diagramUUID = UUID.nameUUIDFromBytes(uuidString.getBytes());
-		}
-		ProcessDiagram diagram = controller.getDiagram(diagramUUID);
-		return new Boolean(diagram!=null);
+		return new Boolean(requestHandler.diagramExists(uuidString));
 	}
-	
-	public List getDiagramBlocksOfClass(String diagramId,String className) {
-		UUID diagramUUID = null;
-		try {
-			diagramUUID = UUID.fromString(diagramId);
-		}
-		catch(IllegalArgumentException iae) {
-			log.warnf("%s.diagramExists: Diagram UUID string is illegal (%s), creating new",TAG,diagramId);
-			diagramUUID = UUID.nameUUIDFromBytes(diagramId.getBytes());
-		}
-		return requestHandler.getDiagramBlocksOfClass(diagramUUID,className);
+
+	public String getApplicationName(String uuid) {
+		return requestHandler.getApplicationName(uuid);
 	}
-	/**
-	 * Query a block for its internal state. This allows a read-only display in the
-	 * designer to be useful for block debugging.
-	 * 
-	 * @param diagramId
-	 * @param blockId
-	 * @return a JSON-serialized SerializableBlockStateDescriptor
-	 */
-	public String getInternalState(String diagramId,String blockId) {
-		log.infof("%s.getInternalState: (%s:%s)",TAG,diagramId,blockId);
-		SerializableBlockStateDescriptor desc = requestHandler.getInternalState(diagramId,blockId);
-		ObjectMapper mapper = new ObjectMapper();
-		String json = "";
-		try {
-			json = mapper.writeValueAsString(desc);
-		}
-		catch (JsonProcessingException jpe) {
-			log.warnf("%s.getInternalState: Exception (%s)",TAG,jpe.getLocalizedMessage());
-		}
-		return json;
-	}
+
+
 	/**
 	 * Query the specified block for its properties. If the block does not exist, create it, given the
 	 * specified class name. In the case of a new block, its diagram may also need to be created. 
@@ -166,60 +121,12 @@ public class GatewayRpcDispatcher   {
 	public List<String> getBlockPrototypes() {
 		log.infof("%s.getBlockPrototypes ...",TAG);
 		List<String> results = new ArrayList<String>();
-		ClassList cl = new ClassList();
-		List<Class<?>> classes = cl.getAnnotatedClasses(BLTProperties.BLOCK_JAR_NAME, ExecutableBlock.class,"com/ils/block/");
-		for( Class<?> cls:classes) {
-			log.debugf("   found block class: %s",cls.getName());
-			try {
-				Object obj = cls.newInstance();
-				if( obj instanceof ProcessBlock ) {
-					PalettePrototype bp = ((ProcessBlock)obj).getBlockPrototype();
-					String json = bp.toJson();
-					log.debugf("   json: %s",json);
-					results.add(json);
-				}
-				else {
-					log.warnf("%s: Class %s not a ProcessBlock",TAG,cls.getName());
-				}
-			} 
-			catch (InstantiationException ie) {
-				log.warnf("%s.getBlockPrototypes: Exception instantiating block (%s)",TAG,ie.getLocalizedMessage());
-			} 
-			catch (IllegalAccessException iae) {
-				log.warnf("%s.getBlockPrototypes: Access exception (%s)",TAG,iae.getMessage());
-			}
-			catch (Exception ex) {
-				log.warnf("%s.getBlockPrototypes: Runtime exception (%s)",TAG,ex.getMessage(),ex);
-			}
-		}
-		// Now add prototypes from Python-defined blocks
-		// NOTE: We use the gateway script manager because these blocks do
-		//       not yet exist in a diagram (or project).
-		ProxyHandler phandler = ProxyHandler.getInstance();
-		try {
-			ScriptManager mgr = context.getScriptManager();
-			List<PalettePrototype> prototypes = phandler.getPalettePrototypes(mgr);
-			for( PalettePrototype pp:prototypes) {
-				results.add(pp.toJson());
-			}
-		}
-		catch (Exception ex) {
-			log.warnf("%s.getBlockPrototypes: Runtime exception (%s)",TAG,ex.getMessage(),ex);
+		List<PalettePrototype> prototypes = requestHandler.getBlockPrototypes();
+		for(PalettePrototype pp:prototypes) {
+			results.add(pp.toJson());
 		}
 		log.infof("%s.getBlockPrototypes: returning %d palette prototypes",TAG,results.size());
 		return results;
-	}
-	/** Convert a string to a UUID. */
-	private UUID getBlockUUID(String blockId) {
-		UUID blockUUID;
-		try {
-			blockUUID = UUID.fromString(blockId);
-		}
-		catch(IllegalArgumentException iae) {
-			log.warnf("%s: getBlockProperties: Block UUID string is illegal (%s), creating new",TAG,blockId);
-			blockUUID = UUID.nameUUIDFromBytes(blockId.getBytes());
-		}
-		return blockUUID;
 	}
 	/**
 	 * Deserialize the incoming defaults, add/update from model, re-serialize.
@@ -254,22 +161,16 @@ public class GatewayRpcDispatcher   {
 		}
 		return json;
 	}
-	
 	public String getControllerState() {
 		return requestHandler.getExecutionState();
 	}
-
-
-	public String getDiagramState(Long projectId,Long resourceId) {
-		return requestHandler.getDiagramState(projectId,resourceId);
+	public List getDiagramBlocksOfClass(String diagramId,String className) {
+		return requestHandler.getDiagramBlocksOfClass(diagramId,className);
 	}
-	
-
 	public List<String> getDiagramDescriptors(String projectName) {
-
 		log.infof("%s.getDiagramDescriptors ...",TAG);
 		List<String> results = new ArrayList<String>();
-		List<SerializableResourceDescriptor> descriptors = BlockExecutionController.getInstance().getDiagramDescriptors(projectName);
+		List<SerializableResourceDescriptor> descriptors = requestHandler.getDiagramDescriptors(projectName);
 		ObjectMapper mapper = new ObjectMapper();
 		for(SerializableResourceDescriptor descriptor:descriptors) {
 			try {
@@ -290,20 +191,44 @@ public class GatewayRpcDispatcher   {
 		return results;
 	}
 	
-	public Object getPropertyValue(String diagramId,String blockId,String propertyName) {
-		BlockProperty property = null;
-		UUID diagramUUID;
-		UUID blockUUID;
+	public String getDiagramState(Long projectId,Long resourceId) {
+		return requestHandler.getDiagramState(projectId,resourceId).name();
+	}
+	
+	public String getFamilyName(String uuid) {
+		return requestHandler.getFamilyName(uuid);
+	}
+
+
+	/**
+	 * Query a block for its internal state. This allows a read-only display in the
+	 * designer to be useful for block debugging.
+	 * 
+	 * @param diagramId
+	 * @param blockId
+	 * @return a JSON-serialized SerializableBlockStateDescriptor
+	 */
+	public String getInternalState(String diagramId,String blockId) {
+		log.infof("%s.getInternalState: (%s:%s)",TAG,diagramId,blockId);
+		SerializableBlockStateDescriptor desc = requestHandler.getInternalState(diagramId,blockId);
+		ObjectMapper mapper = new ObjectMapper();
+		String json = "";
 		try {
-			diagramUUID = UUID.fromString(diagramId);
-			blockUUID = UUID.fromString(blockId);
-			property = requestHandler.getBlockProperty(diagramUUID,blockUUID,propertyName);
+			json = mapper.writeValueAsString(desc);
 		}
-		catch(IllegalArgumentException iae) {
-			log.warnf("%s.getPropertyValue: Diagram or block UUID string is illegal (%s,%s),",TAG,diagramId,blockId);
+		catch (JsonProcessingException jpe) {
+			log.warnf("%s.getInternalState: Exception (%s)",TAG,jpe.getLocalizedMessage());
 		}
-		
-		return property.getValue();
+		return json;
+	}
+	
+
+	public Object getPropertyValue(String diagramId,String blockId,String propertyName) {
+		return requestHandler.getPropertyValue(diagramId, blockId, propertyName);
+	}
+	
+	public String getToolkitProperty(String propertyName) {
+		return requestHandler.getToolkitProperty(propertyName);
 	}
 	
 	/** 
@@ -327,42 +252,18 @@ public class GatewayRpcDispatcher   {
 	 */
 	public void resetBlock(String diagramIdString,String blockIdString) {
 		log.infof("%s.resetBlock ...",TAG);
-		BlockExecutionController controller = BlockExecutionController.getInstance();
-		UUID diagramUUID = null;
-		UUID blockUUID = null;
-		try {
-			diagramUUID = UUID.fromString(diagramIdString);
-			blockUUID = UUID.fromString(blockIdString);
-		}
-		catch(IllegalArgumentException iae) {
-			log.warnf("%s.resetBlock: Diagram or block UUID string is illegal (%s, %s), creating new",TAG,diagramIdString,blockIdString);
-			diagramUUID = UUID.nameUUIDFromBytes(diagramIdString.getBytes());
-			blockUUID = UUID.nameUUIDFromBytes(blockIdString.getBytes());
-		}
-		controller.resetBlock(diagramUUID, blockUUID);
+		requestHandler.resetBlock(diagramIdString,blockIdString);
 	}
 	/** 
 	 *  Reset every block in a diagram specified by id.
 	 */
 	public void resetDiagram(String uuidString) {
 		log.infof("%s: resetDiagram ...",TAG);
-		
-		UUID diagramUUID = null;
-		try {
-			diagramUUID = UUID.fromString(uuidString);
-		}
-		catch(IllegalArgumentException iae) {
-			log.warnf("%s.resetDiagram: Diagram UUID string is illegal (%s), creating new",TAG,uuidString);
-			diagramUUID = UUID.nameUUIDFromBytes(uuidString.getBytes());
-		}
-		BlockExecutionController.getInstance().resetDiagram(diagramUUID);
+		requestHandler.resetDiagram(uuidString);
 	}
 
 	public Boolean resourceExists(Long projectId,Long resourceId) {
-		BlockExecutionController controller = BlockExecutionController.getInstance();
-		ProcessDiagram diagram = controller.getDiagram(projectId.longValue(), resourceId.longValue());
-		log.infof("%s.resourceExists diagram %d:%d ...%s",TAG,projectId,resourceId,(diagram!=null?"true":"false"));
-		return new Boolean(diagram!=null);
+		return new Boolean(requestHandler.resourceExists(projectId.longValue(), resourceId.longValue()));
 	}
 	/**
 	 * 
@@ -373,30 +274,9 @@ public class GatewayRpcDispatcher   {
 	 */
 	public Boolean sendLocalSignal(String uuidString, String className, String command) {
 		log.infof("%s.sendLocalSignal: %s %s %s",TAG,uuidString,className,command);
-		Boolean success = new Boolean(true);
-		UUID diagramUUID = null;
-		try {
-			diagramUUID = UUID.fromString(uuidString);
-		}
-		catch(IllegalArgumentException iae) {
-			log.warnf("%s.sendLocalSignal: Diagram UUID string is illegal (%s), creating new",TAG,uuidString);
-			diagramUUID = UUID.nameUUIDFromBytes(uuidString.getBytes());
-		}
-		ProcessDiagram diagram = BlockExecutionController.getInstance().getDiagram(diagramUUID);
-		if( diagram!=null ) {
-			// Create a broadcast notification
-			Signal sig = new Signal(command,"","");
-			BroadcastNotification broadcast = new BroadcastNotification(diagram.getSelf(),TransmissionScope.LOCAL,sig);
-			BlockExecutionController.getInstance().acceptBroadcastNotification(broadcast);
-		}
-		else {
-			log.warnf("%s.sendLocalSignal: Unable to find %s for %s command to %s",TAG,uuidString,command,className);
-			success = new Boolean(false);
-		}
-		return success;
+		return new Boolean(requestHandler.sendLocalSignal(uuidString, className, command));
 	}
 	
-
 	/** Set all changed properties for a block. 
 	 * @param diagramId the uniqueId of the parent diagram
 	 * @param blockId the uniqueId of the block
@@ -449,23 +329,12 @@ public class GatewayRpcDispatcher   {
 		requestHandler.setDiagramState(projectId,resourceId,state);
 	}
 	
-	public String getToolkitProperty(String propertyName) {
-		ToolkitRecord record = context.getPersistenceInterface().find(ToolkitRecord.META, propertyName);
-		if( record!=null) return record.getValue();
-		else return "";
-	}
 	public void setToolkitProperty(String propertyName,String value) {
-		ToolkitRecord record = context.getPersistenceInterface().find(ToolkitRecord.META, propertyName);
-		if( record==null) record = context.getPersistenceInterface().createNew(ToolkitRecord.META);
-		record.setName(propertyName);
-		record.setValue(value);
-		context.getPersistenceInterface().save(record);
+		requestHandler.setToolkitProperty(propertyName,value);
 	}
-	
 	public void startController() {
 		requestHandler.startController();
 	}
-	
 	
 	public void stopController() {
 		requestHandler.stopController();
@@ -479,7 +348,6 @@ public class GatewayRpcDispatcher   {
 		requestHandler.triggerStatusNotifications();
 	}
 	
-	
 	/** Change the properties of anchors for a block. 
 	 * @param diagramId the uniqueId of the parent diagram
 	 * @param blockId the uniqueId of the block
@@ -492,7 +360,9 @@ public class GatewayRpcDispatcher   {
 		try {
 			Collection<SerializableAnchor> anchors = mapper.readValue(json, 
 					new TypeReference<Collection<SerializableAnchor>>(){});
-			requestHandler.updateBlockAnchors(diagramId,blockId,anchors);
+			UUID diagramUUID = UUID.fromString(diagramId);
+			UUID blockUUID = UUID.fromString(blockId);
+			requestHandler.updateBlockAnchors(diagramUUID,blockUUID,anchors);
 		} 
 		catch (JsonParseException jpe) {
 			log.warnf("%s.updateBlockAnchors: parse exception (%s)",TAG,jpe.getLocalizedMessage());
@@ -502,6 +372,23 @@ public class GatewayRpcDispatcher   {
 		}
 		catch(IOException ioe) {
 			log.warnf("%s.updateBlockAnchors: IO exception (%s)",TAG,ioe.getLocalizedMessage());
-		}; 
+		}
+		catch(IllegalArgumentException iae) {
+			log.warnf("%s.sendLocalSignal: Diagram or block UUID string is illegal (%s,%s), creating new",TAG,diagramId,blockId);
+		}
+	}
+	
+	
+	/** Convert a string to a UUID. */
+	private UUID getBlockUUID(String blockId) {
+		UUID blockUUID;
+		try {
+			blockUUID = UUID.fromString(blockId);
+		}
+		catch(IllegalArgumentException iae) {
+			log.warnf("%s: getBlockProperties: Block UUID string is illegal (%s), creating new",TAG,blockId);
+			blockUUID = UUID.nameUUIDFromBytes(blockId.getBytes());
+		}
+		return blockUUID;
 	}
 }

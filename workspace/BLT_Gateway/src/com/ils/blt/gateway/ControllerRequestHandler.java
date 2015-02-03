@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved.
+ *   (c) 2014-2015  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.gateway;
@@ -12,27 +12,37 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.UUID;
 
+import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.ToolkitRequestHandler;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
+import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.block.ProcessBlock;
+import com.ils.blt.common.block.TransmissionScope;
 import com.ils.blt.common.connection.Connection;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
+import com.ils.blt.common.notification.BroadcastNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.blt.common.notification.Signal;
 import com.ils.blt.common.serializable.DiagramState;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.gateway.engine.BlockExecutionController;
+import com.ils.blt.gateway.engine.ProcessApplication;
 import com.ils.blt.gateway.engine.ProcessDiagram;
+import com.ils.blt.gateway.engine.ProcessFamily;
+import com.ils.blt.gateway.persistence.ToolkitRecord;
 import com.ils.blt.gateway.proxy.ProxyHandler;
+import com.ils.common.ClassList;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
-import com.inductiveautomation.ignition.common.project.ProjectVersion;
+import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
@@ -46,7 +56,22 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
  *  
  *  This class is a singleton for easy access throughout the application.
  */
-public class ControllerRequestHandler   {
+public class ControllerRequestHandler implements ToolkitRequestHandler  {
+	private final static String TAG = "ControllerRequestHandler";
+	private final LoggerEx log;
+	private GatewayContext context = null;
+	private static ControllerRequestHandler instance = null;
+	private final BlockExecutionController controller = BlockExecutionController.getInstance();
+	private final PythonRequestHandler pyHandler;
+	/**
+	 * Initialize with instances of the classes to be controlled.
+	 */
+	private ControllerRequestHandler() {
+		log = LogUtil.getLogger(getClass().getPackage().getName());
+		pyHandler = new PythonRequestHandler();
+	}
+	
+
 	/**
 	 * Static method to create and/or fetch the single instance.
 	 */
@@ -57,19 +82,6 @@ public class ControllerRequestHandler   {
 			}
 		}
 		return instance;
-	}
-	private final static String TAG = "ControllerRequestHandler";
-	private final LoggerEx log;
-	private GatewayContext context = null;
-	private static ControllerRequestHandler instance = null;
-	private final BlockExecutionController controller = BlockExecutionController.getInstance();
-	
-
-	/**
-	 * Initialize with instances of the classes to be controlled.
-	 */
-	private ControllerRequestHandler() {
-		log = LogUtil.getLogger(getClass().getPackage().getName());
 	}
 	/**
 	 * Remove all diagrams from the controller
@@ -118,24 +130,26 @@ public class ControllerRequestHandler   {
 		}
 		return block;
 	}
-	/**
-	 * @return the name of the database connection associated with the specified project
-	 */
-	public String databaseForProject(long projectId) {
-		String database = "DatabaseLookupFailed";
-		database = context.getProjectManager().getProps(projectId, ProjectVersion.Published).getDefaultDatasourceName();
-		return database;
-	}
-	public List getDiagramBlocksOfClass(UUID diagramId,String className) {
-		ProcessDiagram diagram = controller.getDiagram(diagramId);
-		List<String> result = new ArrayList<>();
-		for(ProcessBlock block:diagram.getProcessBlocks()) {
-			if( block.getClassName().equalsIgnoreCase(className)) {
-				result.add(block.getBlockId().toString());
-			}
+
+	@Override
+	public boolean diagramExists(String uuidString) {
+		UUID diagramUUID = null;
+		try {
+			diagramUUID = UUID.fromString(uuidString);
 		}
-		return result;
+		catch(IllegalArgumentException iae) {
+			log.warnf("%s.diagramExists: Diagram UUID string is illegal (%s), creating new",TAG,uuidString);
+			diagramUUID = UUID.nameUUIDFromBytes(uuidString.getBytes());
+		}
+		ProcessDiagram diagram = controller.getDiagram(diagramUUID);
+		return diagram!=null;
 	}
+	@Override
+	public String getApplicationName(String uuid) {
+		ProcessApplication app = pyHandler.getApplication(uuid);
+		return app.getName();
+	}
+	
 	/**
 	 * Query the block controller for a block specified by the block id. If the block
 	 * does not exist, create it.
@@ -166,7 +180,6 @@ public class ControllerRequestHandler   {
 		}
 		return results;
 	}
-	
 	/**
 	 * Query the execution controller for a specified block property. 
 	 * 
@@ -188,6 +201,51 @@ public class ControllerRequestHandler   {
 		}
 		return property;
 	}
+	@Override
+	public List<PalettePrototype> getBlockPrototypes() {
+		List<PalettePrototype> results = new ArrayList<>();
+		ClassList cl = new ClassList();
+		List<Class<?>> classes = cl.getAnnotatedClasses(BLTProperties.BLOCK_JAR_NAME, ExecutableBlock.class,"com/ils/block/");
+		for( Class<?> cls:classes) {
+			log.debugf("   found block class: %s",cls.getName());
+			try {
+				Object obj = cls.newInstance();
+				if( obj instanceof ProcessBlock ) {
+					PalettePrototype bp = ((ProcessBlock)obj).getBlockPrototype();
+					results.add(bp);
+				}
+				else {
+					log.warnf("%s: Class %s not a ProcessBlock",TAG,cls.getName());
+				}
+			} 
+			catch (InstantiationException ie) {
+				log.warnf("%s.getBlockPrototypes: Exception instantiating block (%s)",TAG,ie.getLocalizedMessage());
+			} 
+			catch (IllegalAccessException iae) {
+				log.warnf("%s.getBlockPrototypes: Access exception (%s)",TAG,iae.getMessage());
+			}
+			catch (Exception ex) {
+				log.warnf("%s.getBlockPrototypes: Runtime exception (%s)",TAG,ex.getMessage(),ex);
+			}
+		}
+		// Now add prototypes from Python-defined blocks
+		// NOTE: We use the gateway script manager because these blocks do
+		//       not yet exist in a diagram (or project).
+		ProxyHandler phandler = ProxyHandler.getInstance();
+		try {
+			ScriptManager mgr = context.getScriptManager();
+			List<PalettePrototype> prototypes = phandler.getPalettePrototypes(mgr);
+			for( PalettePrototype pp:prototypes) {
+				results.add(pp);
+			}
+		}
+		catch (Exception ex) {
+			log.warnf("%s.getBlockPrototypes: Runtime exception (%s)",TAG,ex.getMessage(),ex);
+		}
+		log.infof("%s.getBlockPrototypes: returning %d palette prototypes",TAG,results.size());
+		return results;
+	}
+	
 	/**
 	 * Query DiagramModel for classes connected at the beginning and end of the connection to obtain a list
 	 * of permissible port names. If the connection instance already exists in the Gateway model,
@@ -203,22 +261,62 @@ public class ControllerRequestHandler   {
 		Connection cxn  = controller.getConnection(projectId, resourceId, connectionId);
 		return attributes;
 	}
+	@Override
+	public String getControllerState() {
+		return getExecutionState();
+	}
+	@Override
+	public List getDiagramBlocksOfClass(String diagramId, String className) {
+		UUID diagramUUID = null;
+		try {
+			diagramUUID = UUID.fromString(diagramId);
+		}
+		catch(IllegalArgumentException iae) {
+			log.warnf("%s.diagramExists: Diagram UUID string is illegal (%s), creating new",TAG,diagramId);
+			diagramUUID = UUID.nameUUIDFromBytes(diagramId.getBytes());
+		}
+		return getDiagramBlocksOfClass(diagramUUID,className);
+	}
+	public List getDiagramBlocksOfClass(UUID diagramId,String className) {
+		ProcessDiagram diagram = controller.getDiagram(diagramId);
+		List<String> result = new ArrayList<>();
+		for(ProcessBlock block:diagram.getProcessBlocks()) {
+			if( block.getClassName().equalsIgnoreCase(className)) {
+				result.add(block.getBlockId().toString());
+			}
+		}
+		return result;
+	}
+	
+	@Override
+	public List<SerializableResourceDescriptor> getDiagramDescriptors(String projectName) {
+		List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors(projectName);
+		return descriptors;
+	}
+	
 	/**
 	 * @param projectId
 	 * @param resourceId
 	 * @return the current state of the specified diagram as a String.
 	 */
-	public String getDiagramState(Long projectId,Long resourceId) {
+	public DiagramState getDiagramState(Long projectId,Long resourceId) {
 		DiagramState state = DiagramState.ACTIVE;
 		ProcessDiagram diagram = controller.getDiagram(projectId, resourceId);
 		if( diagram!=null ) {
 			state = diagram.getState();
 		}
-		return state.name();
+		return state;
 	}
+
+	
 	
 	public String getExecutionState() {
 		return BlockExecutionController.getExecutionState();
+	}
+	@Override
+	public String getFamilyName(String uuid) {
+		ProcessFamily fam = pyHandler.getFamily(uuid);
+		return fam.getName();
 	}
 	/**
 	 * Query a block for its internal state. This allows a read-only display in the
@@ -237,6 +335,22 @@ public class ControllerRequestHandler   {
 		}
 		return descriptor;
 	}
+	
+	@Override
+	public Object getPropertyValue(String diagramId, String blockId,String propertyName) {
+		BlockProperty property = null;
+		UUID diagramUUID;
+		UUID blockUUID;
+		try {
+			diagramUUID = UUID.fromString(diagramId);
+			blockUUID = UUID.fromString(blockId);
+			property = getBlockProperty(diagramUUID,blockUUID,propertyName);
+		}
+		catch(IllegalArgumentException iae) {
+			log.warnf("%s.getPropertyValue: Diagram or block UUID string is illegal (%s,%s),",TAG,diagramId,blockId);
+		}
+		return property.getValue();
+	}
 	public Object getPropertyValue(UUID diagramId,UUID blockId,String propertyName) {
 		Object val = null;
 		ProcessDiagram diagram = controller.getDiagram(diagramId);
@@ -250,6 +364,19 @@ public class ControllerRequestHandler   {
 		return val;
 
 	}
+	
+	@Override
+	public String getToolkitProperty(String propertyName) {
+		ToolkitRecord record = context.getPersistenceInterface().find(ToolkitRecord.META, propertyName);
+		if( record!=null) return record.getValue();
+		else return "";
+	}
+	
+	@Override
+	public boolean isControllerRunning() {
+		return getExecutionState().equalsIgnoreCase("running");
+	}
+
 	/**
 	 * Handle the block placing a new value on its output.
 	 * 
@@ -278,7 +405,6 @@ public class ControllerRequestHandler   {
 			log.warnf("%s.postValue: one of %s or %s illegal UUID (%s)",TAG,parentuuid,blockId,iae.getMessage());
 		}
 	}
-	
 	/**
 	 * Query the ModelManager for a list of the project resources that it is currently
 	 * managing. This is a debugging service.
@@ -287,7 +413,10 @@ public class ControllerRequestHandler   {
 	public List<SerializableResourceDescriptor> queryControllerResources() {
 		return controller.queryControllerResources();
 	}
-	
+	@Override
+	public List<SerializableResourceDescriptor> queryDiagram(String diagramId) {
+		return queryDiagramForBlocks(diagramId);
+	}
 	/**
 	 * Query the ModelManager for a list of the project resources that it is currently
 	 * managing. This is a debugging service.
@@ -313,9 +442,65 @@ public class ControllerRequestHandler   {
 		}
 		return descriptors;
 	}
+	@Override
+	public void resetBlock(String diagramId, String blockId) {
+		UUID diagramUUID = null;
+		UUID blockUUID = null;
+		try {
+			diagramUUID = UUID.fromString(diagramId);
+			blockUUID = UUID.fromString(blockId);
+		}
+		catch(IllegalArgumentException iae) {
+			log.warnf("%s.resetBlock: Diagram or block UUID string is illegal (%s, %s), creating new",TAG,diagramId,blockId);
+			diagramUUID = UUID.nameUUIDFromBytes(diagramId.getBytes());
+			blockUUID = UUID.nameUUIDFromBytes(blockId.getBytes());
+		}
+		controller.resetBlock(diagramUUID, blockUUID);
+	}
+	@Override
+	public void resetDiagram(String diagramId) {
+		UUID diagramUUID = null;
+		try {
+			diagramUUID = UUID.fromString(diagramId);
+		}
+		catch(IllegalArgumentException iae) {
+			log.warnf("%s.resetDiagram: Diagram UUID string is illegal (%s), creating new",TAG,diagramId);
+			diagramUUID = UUID.nameUUIDFromBytes(diagramId.getBytes());
+		}
+		BlockExecutionController.getInstance().resetDiagram(diagramUUID);
+		
+	}
 
-	
-	
+	@Override
+	public boolean resourceExists(long projectId, long resid) {
+		ProcessDiagram diagram = controller.getDiagram(projectId, resid);
+		log.infof("%s.resourceExists diagram %d:%d ...%s",TAG,projectId,resid,(diagram!=null?"true":"false"));
+		return diagram!=null;
+	}
+	@Override
+	public boolean sendLocalSignal(String diagramId, String className,String command) {
+		Boolean success = new Boolean(true);
+		UUID diagramUUID = null;
+		try {
+			diagramUUID = UUID.fromString(diagramId);
+		}
+		catch(IllegalArgumentException iae) {
+			log.warnf("%s.sendLocalSignal: Diagram UUID string is illegal (%s), creating new",TAG,diagramId);
+			diagramUUID = UUID.nameUUIDFromBytes(diagramId.getBytes());
+		}
+		ProcessDiagram diagram = BlockExecutionController.getInstance().getDiagram(diagramUUID);
+		if( diagram!=null ) {
+			// Create a broadcast notification
+			Signal sig = new Signal(command,"","");
+			BroadcastNotification broadcast = new BroadcastNotification(diagram.getSelf(),TransmissionScope.LOCAL,sig);
+			BlockExecutionController.getInstance().acceptBroadcastNotification(broadcast);
+		}
+		else {
+			log.warnf("%s.sendLocalSignal: Unable to find %s for %s command to %s",TAG,diagramId,command,className);
+			success = new Boolean(false);
+		}
+		return success;
+	}
 	/**
 	 * Set the values of named properties in a block. This method ignores any binding that the
 	 * property may have and sets the value directly. Theoretically the value should be of the right
@@ -391,7 +576,6 @@ public class ControllerRequestHandler   {
 	public void setContext(GatewayContext cntx) {
 		this.context = cntx;
 	}
-	
 	/**
 	 * Enable or disable the specified diagram
 	 * @param projectId
@@ -410,20 +594,97 @@ public class ControllerRequestHandler   {
 			}
 		}
 	}
+	@Override
+	public void setToolkitProperty(String propertyName, String value) {
+		ToolkitRecord record = context.getPersistenceInterface().find(ToolkitRecord.META, propertyName);
+		if( record==null) record = context.getPersistenceInterface().createNew(ToolkitRecord.META);
+		record.setName(propertyName);
+		record.setValue(value);
+		context.getPersistenceInterface().save(record);
+	}
 	public void startController() {
 		BlockExecutionController.getInstance().start(context);
 	}
-	
 	public void stopController() {
 		BlockExecutionController.getInstance().stop();
 	}
-	
 	/**
 	 * Direct blocks in all diagrams to report their status for a UI update.
 	 */
 	public void triggerStatusNotifications() {
 		BlockExecutionController.getInstance().triggerStatusNotifications();
 	}
+			
+	/** Change the properties of anchors for a block. 
+	 * @param diagramId the uniqueId of the parent diagram
+	 * @param blockId the uniqueId of the block
+	 * @param anchorUpdates the complete anchor list for the block.
+	 */
+	public void updateBlockAnchors(String diagramId,String blockId, Collection<SerializableAnchor> anchorUpdates) {
+		UUID diagramUUID = UUID.fromString(diagramId);
+		ProcessDiagram diagram = controller.getDiagram(diagramUUID);
+		ProcessBlock block = null;
+		UUID blockUUID = UUID.fromString(blockId);
+		if( diagram!=null ) block = diagram.getBlock(blockUUID);
+		if(block!=null) {
+			List<AnchorPrototype> anchors = block.getAnchors();
+			for( SerializableAnchor anchorUpdate:anchorUpdates ) {
+				// These are undoubtedly very short lists ... do linear searches
+				boolean found = false;
+				for( AnchorPrototype anchor:anchors ) {
+					if( anchor.getName().equalsIgnoreCase(anchorUpdate.getDisplay())) {
+						anchor.setConnectionType(anchorUpdate.getConnectionType());
+						found = true;
+						break;
+					}
+				}
+				if( !found ) {
+					// Add previously unknown anchor
+					AnchorPrototype proto = new AnchorPrototype(anchorUpdate.getDisplay(),anchorUpdate.getDirection(),anchorUpdate.getConnectionType());
+					proto.setAnnotation(anchorUpdate.getAnnotation());
+					proto.setHint(anchorUpdate.getHint());
+					anchors.add(proto);
+				}
+			}
+		}
+	}
+
+
+	/** Change the properties of anchors for a block. 
+	 * @param diagramId the uniqueId of the parent diagram
+	 * @param blockId the uniqueId of the block
+	 * @param anchorUpdates the complete anchor list for the block.
+	 */
+	@Override
+	public void updateBlockAnchors(UUID diagramUUID, UUID blockUUID,Collection<SerializableAnchor> anchorUpdates) {
+
+		ProcessDiagram diagram = controller.getDiagram(diagramUUID);
+		ProcessBlock block = null;
+
+		if( diagram!=null ) block = diagram.getBlock(blockUUID);
+		if(block!=null) {
+			List<AnchorPrototype> anchors = block.getAnchors();
+			for( SerializableAnchor anchorUpdate:anchorUpdates ) {
+				// These are undoubtedly very short lists ... do linear searches
+				boolean found = false;
+				for( AnchorPrototype anchor:anchors ) {
+					if( anchor.getName().equalsIgnoreCase(anchorUpdate.getDisplay())) {
+						anchor.setConnectionType(anchorUpdate.getConnectionType());
+						found = true;
+						break;
+					}
+				}
+				if( !found ) {
+					// Add previously unknown anchor
+					AnchorPrototype proto = new AnchorPrototype(anchorUpdate.getDisplay(),anchorUpdate.getDirection(),anchorUpdate.getConnectionType());
+					proto.setAnnotation(anchorUpdate.getAnnotation());
+					proto.setHint(anchorUpdate.getHint());
+					anchors.add(proto);
+				}
+			}
+		}
+	}
+
 
 	// Handle all the intricasies of a property change
 	private void updateProperty(ProcessBlock block,BlockProperty existingProperty,BlockProperty newProperty) {
@@ -462,39 +723,6 @@ public class ControllerRequestHandler   {
 				BlockPropertyChangeEvent event = new BlockPropertyChangeEvent(block.getBlockId().toString(),newProperty.getName(),
 						existingProperty.getValue(),newProperty.getValue());
 				block.propertyChange(event);
-			}
-		}
-	}
-	/** Change the properties of anchors for a block. 
-	 * @param diagramId the uniqueId of the parent diagram
-	 * @param blockId the uniqueId of the block
-	 * @param anchorUpdates the complete anchor list for the block.
-	 */
-	public void updateBlockAnchors(String diagramId,String blockId, Collection<SerializableAnchor> anchorUpdates) {
-		UUID diagramUUID = UUID.fromString(diagramId);
-		ProcessDiagram diagram = controller.getDiagram(diagramUUID);
-		ProcessBlock block = null;
-		UUID blockUUID = UUID.fromString(blockId);
-		if( diagram!=null ) block = diagram.getBlock(blockUUID);
-		if(block!=null) {
-			List<AnchorPrototype> anchors = block.getAnchors();
-			for( SerializableAnchor anchorUpdate:anchorUpdates ) {
-				// These are undoubtedly very short lists ... do linear searches
-				boolean found = false;
-				for( AnchorPrototype anchor:anchors ) {
-					if( anchor.getName().equalsIgnoreCase(anchorUpdate.getDisplay())) {
-						anchor.setConnectionType(anchorUpdate.getConnectionType());
-						found = true;
-						break;
-					}
-				}
-				if( !found ) {
-					// Add previously unknown anchor
-					AnchorPrototype proto = new AnchorPrototype(anchorUpdate.getDisplay(),anchorUpdate.getDirection(),anchorUpdate.getConnectionType());
-					proto.setAnnotation(anchorUpdate.getAnnotation());
-					proto.setHint(anchorUpdate.getHint());
-					anchors.add(proto);
-				}
 			}
 		}
 	}

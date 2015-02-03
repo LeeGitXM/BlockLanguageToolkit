@@ -12,7 +12,6 @@ import com.ils.blt.common.serializable.SerializableFamily;
 * A family is a specialized process node.
 */
 public class ProcessFamily extends ProcessNode {
-	private UUID id;
 	private ActiveState state = ActiveState.ACTIVE;
 
 	/**
@@ -35,10 +34,7 @@ public class ProcessFamily extends ProcessNode {
 		super(fam.getName(),parent,fam.getId());
 	}
 	
-	public UUID getId() {return id;}
 	public ActiveState getState() {return state;}
-	
-	public void setId(UUID id) {this.id = id;}
 	public void setState(ActiveState state) {this.state = state;}
 }
 

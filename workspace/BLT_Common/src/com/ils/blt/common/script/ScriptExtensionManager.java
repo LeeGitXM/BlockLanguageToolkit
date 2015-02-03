@@ -1,5 +1,5 @@
 /**
- *   (c) 2013-2014  ILS Automation. All rights reserved.
+ *   (c) 2015  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.common.script;
@@ -26,7 +26,6 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 public class ScriptExtensionManager {
 	private static String TAG = "ScriptExtensionManager";
 	private final LoggerEx log;
-	private final Map<String,Script> scriptInstanceMap;    // Keyed by the script type.
 	private static ScriptExtensionManager instance = null;
 	private final JavaToPython j2p;
 	
@@ -38,21 +37,20 @@ public class ScriptExtensionManager {
 	 */
 	private ScriptExtensionManager() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
-		scriptInstanceMap = new HashMap<>();
 		// Initialize map with entry points and call list
 		scriptMap = new HashMap<>();
-		scriptMap.put(ScriptConstants.APP_ADD_TYPE,createMap("add","id,properties"));
-		scriptMap.put(ScriptConstants.APP_CLONE_TYPE,createMap("clone","id1,id2,properties"));
-		scriptMap.put(ScriptConstants.APP_DELETE_TYPE,createMap("delete","id"));
-		scriptMap.put(ScriptConstants.APP_GET_AUX_TYPE,createMap("get","id,properties"));
-		scriptMap.put(ScriptConstants.APP_SET_AUX_TYPE,createMap("set","id,properties"));
-		scriptMap.put(ScriptConstants.APP_UPDATE_TYPE,createMap("update","id,properties"));
-		scriptMap.put(ScriptConstants.FAM_ADD_TYPE,createMap("add","id,properties"));
-		scriptMap.put(ScriptConstants.FAM_CLONE_TYPE,createMap("clone","id1,id2,properties"));
-		scriptMap.put(ScriptConstants.FAM_DELETE_TYPE,createMap("delete","id"));
-		scriptMap.put(ScriptConstants.FAM_GET_AUX_TYPE,createMap("get","id,properties"));
-		scriptMap.put(ScriptConstants.FAM_SET_AUX_TYPE,createMap("set","id,properties"));
-		scriptMap.put(ScriptConstants.FAM_UPDATE_TYPE,createMap("update","id,properties"));
+		scriptMap.put(ScriptConstants.APP_ADD_SCRIPT,createMap("add","uuid"));
+		scriptMap.put(ScriptConstants.APP_CLONE_SCRIPT,createMap("clone","uuid1,uuid2"));
+		scriptMap.put(ScriptConstants.APP_DELETE_SCRIPT,createMap("delete","uuid"));
+		scriptMap.put(ScriptConstants.APP_GET_AUX_SCRIPT,createMap("get","uuid,properties"));
+		scriptMap.put(ScriptConstants.APP_SET_AUX_SCRIPT,createMap("set","uuid,properties"));
+		scriptMap.put(ScriptConstants.APP_UPDATE_SCRIPT,createMap("update","uuid"));
+		scriptMap.put(ScriptConstants.FAM_ADD_SCRIPT,createMap("add","uuid"));
+		scriptMap.put(ScriptConstants.FAM_CLONE_SCRIPT,createMap("clone","uudid1,uuid2"));
+		scriptMap.put(ScriptConstants.FAM_DELETE_SCRIPT,createMap("delete","uuid"));
+		scriptMap.put(ScriptConstants.FAM_GET_AUX_SCRIPT,createMap("get","uuid"));
+		scriptMap.put(ScriptConstants.FAM_SET_AUX_SCRIPT,createMap("set","uuid,properties"));
+		scriptMap.put(ScriptConstants.FAM_UPDATE_SCRIPT,createMap("update","uuid"));
 		
 		j2p = new JavaToPython();
 	}
@@ -80,14 +78,20 @@ public class ScriptExtensionManager {
 		if( map!=null ) {
 			Script script = (Script)map.get(ScriptConstants.SCRIPT_KEY);
 			if( script.compileScript()) {
-				script.initializeLocalsMap(mgr);
-				int index = 0;
-				for(Object arg:args) {
-					PyObject pyObject = j2p.objectToPy(arg);
-					script.setLocalVariable(index, pyObject);
-					index++;
+				try {
+					script.initializeLocalsMap(mgr);
+					int index = 0;
+					for(Object arg:args) {
+
+						PyObject pyObject = j2p.objectToPy(arg);
+						script.setLocalVariable(index, pyObject);
+						index++;
+					}
+					script.execute(mgr);
 				}
-				script.execute(mgr);
+				catch(Exception ex) {
+					log.warnf("%s.runScript: Exception (%s)",TAG,ex.getMessage(),ex);
+				}
 			}
 		}
 		else {
@@ -109,7 +113,7 @@ public class ScriptExtensionManager {
 		Map<String,Object> map = scriptMap.get(key);
 		if( map!=null ) {
 			Script script = (Script)map.get(ScriptConstants.SCRIPT_KEY);
-			script.setModule(pythonPath);
+			script.resetModulePath(pythonPath);
 		}
 		else {
 			log.warnf("%s.setModulePath: Unknown pythpn script type (%s)",TAG,key);

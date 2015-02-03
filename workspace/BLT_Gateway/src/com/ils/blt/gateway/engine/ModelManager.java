@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
+ *   (c) 2014-2015  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.gateway.engine;
 
@@ -16,6 +16,7 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.connection.Connection;
+import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.common.serializable.DiagramState;
 import com.ils.blt.common.serializable.SerializableApplication;
@@ -25,6 +26,7 @@ import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.project.ProjectVersion;
+import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
@@ -55,7 +57,7 @@ public class ModelManager implements ProjectListener  {
 	private final Map<UUID,ProcessNode> orphansByUUID;
 	private final Map<UUID,ProcessNode> nodesByUUID;
 	private final BlockExecutionController controller = BlockExecutionController.getInstance();
-	private final ScriptExtensionManager scriptManager = ScriptExtensionManager.getInstance();
+	private final ScriptExtensionManager extensionManager = ScriptExtensionManager.getInstance();
 	
 	/**
 	 * Initially we query the gateway context to discover what resources exists. After that
@@ -66,14 +68,13 @@ public class ModelManager implements ProjectListener  {
 	 */
 	public ModelManager(GatewayContext ctx) { 
 		this.context = ctx;
-		log = LogUtil.getLogger(getClass().getPackage().getName());
+		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		
 		nodesByKey = new HashMap<ProjResKey,ProcessNode>();
 		orphansByUUID = new HashMap<UUID,ProcessNode>();
 		nodesByUUID = new HashMap<UUID,ProcessNode>();
 		root = new RootNode(context);
 		nodesByUUID.put(root.getSelf(), root);
-		
 	}
 	
 	/**
@@ -335,10 +336,10 @@ public class ModelManager implements ProjectListener  {
 	public void projectAdded(Project staging, Project published) {
 		if( staging!=null ) {
 			long projectId = staging.getId();
-			log.infof("%s.projectAdded: %s (%d),staging",TAG,staging.getName(),projectId);
+			log.tracef("%s.projectAdded: %s (%d),staging",TAG,staging.getName(),projectId);
 			List<ProjectResource> resources = published.getResources();
 			for( ProjectResource res:resources ) {
-				log.infof("%s.projectAdded: resource %s (%d),type %s", TAG,res.getName(),
+				log.debugf("%s.projectAdded: resource %s (%d),type %s", TAG,res.getName(),
 						res.getResourceId(),res.getResourceType());
 				analyzeResource(projectId,res);
 			}
@@ -366,7 +367,7 @@ public class ModelManager implements ProjectListener  {
 	public void projectUpdated(Project diff, ProjectVersion vers) { 
 		
 		if( vers!=ProjectVersion.Staging ) return;  // Consider only the "Staging" version
-		log.infof("%s.projectUpdated: %s (%d)  %s", TAG,diff.getName(),diff.getId(),vers.toString());
+		log.debugf("%s.projectUpdated: %s (%d)  %s", TAG,diff.getName(),diff.getId(),vers.toString());
 		long projectId = diff.getId();
 		Set<Long> deleted = diff.getDeletedResources();
 		for (Long  resid : deleted) {
@@ -395,23 +396,24 @@ public class ModelManager implements ProjectListener  {
 		ProcessApplication application = deserializeApplicationResource(projectId,res);
 		if( application!=null ) {
 			UUID self = application.getSelf();
+			ScriptManager sm = getScriptManagerForProject(projectId.longValue());
 			ProcessNode node = nodesByUUID.get(self);
 			if( node==null ) {
-				node = new ProcessApplication(res.getName(),res.getParentUuid(),self);
-				node.setResourceId(res.getResourceId());
+				ProcessApplication processApp = new ProcessApplication(res.getName(),res.getParentUuid(),self);
+				processApp.setResourceId(res.getResourceId());
 				// Add in the new Application
 				ProjResKey key = new ProjResKey(projectId,res.getResourceId());
-				nodesByKey.put(key,node);
-				addToHierarchy(projectId,node);
-				
+				nodesByKey.put(key,processApp);
+				addToHierarchy(projectId,processApp);
+				extensionManager.runScript(sm, ScriptConstants.APP_ADD_SCRIPT, processApp.getSelf().toString());
 			}
 			else {
 				// Update attributes
 				node.setName(res.getName());
 				if(node instanceof ProcessApplication )  {
 					ProcessApplication processApp = (ProcessApplication)node;
-					processApp.setId(application.getId());
 					processApp.setState(application.getState());
+					extensionManager.runScript(sm, ScriptConstants.APP_UPDATE_SCRIPT,application.getName(),processApp.getSelf().toString());
 				}
 			}
 		}
@@ -424,7 +426,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param res the project resource containing the diagram
 	 */
 	private void addModifyDiagramResource(Long projectId,ProjectResource res) {
-		log.infof("%s.addModifyDiagramResource: %s(%d)",TAG,res.getName(),res.getResourceId());
+		log.debugf("%s.addModifyDiagramResource: %s(%d)",TAG,res.getName(),res.getResourceId());
 		SerializableDiagram sd = deserializeDiagramResource(projectId,res);
 		if( sd!=null ) {
 			// If this is an existing diagram, we need to remove the old version
@@ -448,7 +450,7 @@ public class ModelManager implements ProjectListener  {
 				diagram.analyze(sd);
 			}
 			if( !diagram.getState().equals(DiagramState.DISABLED) ) {
-				log.infof("%s.addModifyDiagramResource: starting tag subscriptions ...%d:%s",TAG,projectId,res.getName());
+				log.tracef("%s.addModifyDiagramResource: starting tag subscriptions ...%d:%s",TAG,projectId,res.getName());
 				for( ProcessBlock pb:diagram.getProcessBlocks()) {
 					for(BlockProperty bp:pb.getProperties()) {
 						controller.startSubscription(pb,bp);
@@ -456,7 +458,7 @@ public class ModelManager implements ProjectListener  {
 					pb.setProjectId(projectId);
 				}
 				if( BlockExecutionController.getExecutionState().equals(BlockExecutionController.CONTROLLER_RUNNING_STATE)) {
-					log.infof("%s.addModifyDiagramResource: starting blocks ...%d:%s",TAG,projectId,res.getName());
+					log.tracef("%s.addModifyDiagramResource: starting blocks ...%d:%s",TAG,projectId,res.getName());
 					for( ProcessBlock pb:diagram.getProcessBlocks()) {
 						pb.start();
 					}
@@ -478,26 +480,28 @@ public class ModelManager implements ProjectListener  {
 	 * @param res the project resource containing the diagram
 	 */
 	private void addModifyFamilyResource(Long projectId,ProjectResource res) {
-		log.infof("%s.addModifyFamilyResource: %s(%d)",TAG,res.getName(),res.getResourceId());
+		log.debugf("%s.addModifyFamilyResource: %s(%d)",TAG,res.getName(),res.getResourceId());
 		ProcessFamily family = deserializeFamilyResource(projectId,res);
 		if( family!=null ) {
 			UUID self = family.getSelf();
 			ProcessNode node = nodesByUUID.get(self);
+			ScriptManager sm = getScriptManagerForProject(projectId.longValue());
 			if( node==null ) {
-				node = new ProcessFamily(res.getName(),res.getParentUuid(),self);
-				node.setResourceId(res.getResourceId());
+				ProcessFamily processFam = new ProcessFamily(res.getName(),res.getParentUuid(),self);
+				processFam.setResourceId(res.getResourceId());
 				// Add in the new Family
 				ProjResKey key = new ProjResKey(projectId,res.getResourceId());
-				nodesByKey.put(key,node);
-				addToHierarchy(projectId,node);
+				nodesByKey.put(key,family);
+				addToHierarchy(projectId,family);
+				extensionManager.runScript(sm, ScriptConstants.FAM_ADD_SCRIPT, processFam.getSelf().toString());
 			}
 			else {
 				// Update attributes
 				node.setName(res.getName());
 				if( node instanceof ProcessFamily ) {
 					ProcessFamily processFam = (ProcessFamily)node;
-					processFam.setId(family.getId());
 					processFam.setState(family.getState());
+					extensionManager.runScript(sm, ScriptConstants.FAM_UPDATE_SCRIPT,family.getName(),processFam.getSelf().toString());
 				}
 			}
 		}
@@ -532,7 +536,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param node the node to be added
 	 */
 	private void addToHierarchy(long projectId,ProcessNode node) {
-		log.infof("%s.addToHierarchy: %s (%d:%s)",TAG,node.getName(),node.getResourceId(),node.getSelf().toString());
+		log.tracef("%s.addToHierarchy: %s (%d:%s)",TAG,node.getName(),node.getResourceId(),node.getSelf().toString());
 		UUID self     = node.getSelf();
 		nodesByUUID.put(self, node);
 		
@@ -540,22 +544,22 @@ public class ModelManager implements ProjectListener  {
 		// Add the node to the root.
 		if( node.getParent()==null )  {
 			root.addChild(node,projectId);
-			log.infof("%s.addToHierarchy: %s is a ROOT (null parent)",TAG,node.getName());
+			log.tracef("%s.addToHierarchy: %s is a ROOT (null parent)",TAG,node.getName());
 		}
 		else if( node.getParent().equals(BLTProperties.ROOT_FOLDER_UUID) )  {
 			root.addChild(node,projectId);
-			log.infof("%s.addToHierarchy: %s is a ROOT (parent is root folder)",TAG,node.getName());
+			log.tracef("%s.addToHierarchy: %s is a ROOT (parent is root folder)",TAG,node.getName());
 		}
 		else {
 			// If the parent is already in the tree, simply add the node as a child
 			// Otherwise add to our list of orphans
 			ProcessNode parent = nodesByUUID.get(node.getParent());
 			if(parent==null ) {
-				log.infof("%s.addToHierarchy: %s is an ORPHAN (parent is %s)",TAG,node.getName(),node.getParent().toString());
+				log.tracef("%s.addToHierarchy: %s is an ORPHAN (parent is %s)",TAG,node.getName(),node.getParent().toString());
 				orphansByUUID.put(self, node);
 			}
 			else {
-				log.infof("%s.addToHierarchy: %s is a CHILD of %s",TAG,node.getName(),parent.getName());
+				log.tracef("%s.addToHierarchy: %s is a CHILD of %s",TAG,node.getName(),parent.getName());
 				parent.addChild(node);
 			}
 		}	
@@ -584,6 +588,16 @@ public class ModelManager implements ProjectListener  {
 					}
 				}
 			}
+			else if(node instanceof ProcessApplication ) {
+				ScriptManager sm = getScriptManagerForProject(projectId.longValue());
+				ProcessApplication app = (ProcessApplication)node;
+				extensionManager.runScript(sm, ScriptConstants.APP_DELETE_SCRIPT,app.getSelf().toString());
+			}
+			else if(node instanceof ProcessFamily ) {
+				ScriptManager sm = getScriptManagerForProject(projectId.longValue());
+				ProcessFamily fam = (ProcessFamily)node;
+				extensionManager.runScript(sm, ScriptConstants.FAM_DELETE_SCRIPT,fam.getSelf().toString());
+			}
 
 			if( node.getParent()!=null ) {
 				ProcessNode parent = nodesByUUID.get(node.getParent());
@@ -594,7 +608,6 @@ public class ModelManager implements ProjectListener  {
 					}
 				}
 			}
-			
 		}
 	}
 	// Delete all process nodes for a given project.
@@ -635,9 +648,10 @@ public class ModelManager implements ProjectListener  {
 			SerializableApplication sa = mapper.readValue(json, SerializableApplication.class);
 			if( sa!=null ) {
 				sa.setName(res.getName());
-				log.infof("%s.deserializeApplicationResource: Successfully deserialized application %s",TAG,sa.getName());
+				log.debugf("%s.deserializeApplicationResource: Successfully deserialized application %s",TAG,sa.getName());
 				application = new ProcessApplication(sa,res.getParentUuid());
 				application.setResourceId(res.getResourceId());
+				application.setProjectId(projId);
 			}
 			else {
 				log.warnf("%s.deserializeApplicationResource: deserialization failed",TAG);
@@ -666,7 +680,7 @@ public class ModelManager implements ProjectListener  {
 			sd = mapper.readValue(json, SerializableDiagram.class);
 			if( sd!=null ) {
 				sd.setName(res.getName());       // Name comes from the resource
-				log.infof("%s.deserializeDiagramResource: Successfully deserialized diagram %s",TAG,sd.getName());
+				log.debugf("%s.deserializeDiagramResource: Successfully deserialized diagram %s",TAG,sd.getName());
 				sd.setResourceId(res.getResourceId());
 			}
 			else {
@@ -696,9 +710,10 @@ public class ModelManager implements ProjectListener  {
 			SerializableFamily sf = mapper.readValue(json, SerializableFamily.class);
 			if( sf!=null ) {
 				sf.setName(res.getName());     // Resource is the source of the name.
-				log.infof("%s.deserializeFamilyResource: Successfully deserialized family %s",TAG,sf.getName());
+				log.debugf("%s.deserializeFamilyResource: Successfully deserialized family %s",TAG,sf.getName());
 				family = new ProcessFamily(sf,res.getParentUuid());
 				family.setResourceId(res.getResourceId());
+				family.setProjectId(projId);
 			}
 			else {
 				log.warnf("%s: deserializeFamilyResource: deserialization failed",TAG);
@@ -709,6 +724,12 @@ public class ModelManager implements ProjectListener  {
 			log.warnf("%s.deserializeFamilyResource: exception (%s)",TAG,ex.getLocalizedMessage(),ex);
 		}
 		return family;
+	}
+	/**
+	 * @return the ScriptManager appropriate to the project
+	 */
+	private ScriptManager getScriptManagerForProject(long projectId) {
+		return context.getProjectManager().getProjectScriptManager(projectId);
 	}
 	/**
 	 * Call this method after each node is defined. It has already been 

@@ -43,7 +43,8 @@ public abstract class PrefuseViewerComponent extends AbstractVisionComponent {
 		setOpaque(true);
 
 		border = new BevelBorder(BevelBorder.LOWERED,BORDER_HIGHLIGHT_COLOR,BORDER_SHADOW_COLOR);
-		
+		Dimension sz = this.getSize();
+		log.infof("PrefuseViewerComponent.constructor: Size = %2.0f x %2.0f",sz.getWidth(),sz.getHeight());
 		setPreferredSize(getSize());
 		setBackground(DEFAULT_BACKGROUND_COLOR);
 		setForeground(DEFAULT_FRAME_COLOR);

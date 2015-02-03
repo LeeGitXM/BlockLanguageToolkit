@@ -96,7 +96,7 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
-		log.infof("%s.propertyChange: Received %s = %s",TAG,propertyName,event.getNewValue().toString());
+		//log.debugf("%s.propertyChange: Received %s = %s",TAG,propertyName,event.getNewValue().toString());
 		if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_VALUE)) {
 			value = event.getNewValue();
 			if( !dog.isActive() && !Double.isNaN(interval) && interval>0.0) {
@@ -106,7 +106,7 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 			// If the interval is zero, we propagate the value immediately. Coerce to match output connection type
 			else {
 				value = coerceToMatchOutput(BlockConstants.OUT_PORT_NAME,value);
-				log.infof("%s.propertyChange: Propagating %s on output port",TAG,propertyName,value.toString());
+				log.tracef("%s.propertyChange: Propagating %s on output port",TAG,propertyName,value.toString());
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,new BasicQualifiedValue(value));
 				controller.acceptCompletionNotification(nvn);
 			}

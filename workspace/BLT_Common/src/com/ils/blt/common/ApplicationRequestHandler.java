@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved.
+ *   (c) 2014-2015  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.common;
@@ -34,7 +34,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  *  
  *  Each request is relayed to the Gateway scope via an RPC call.
  */
-public class ApplicationRequestHandler  {
+public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	private final static String TAG = "ApplicationRequestHandler";
 	private final LoggerEx log;
 
@@ -59,22 +59,7 @@ public class ApplicationRequestHandler  {
 			log.infof("%s.clearController: GatewayException (%s)",TAG,ge.getMessage());
 		}
 	}
-	/**
-	 * @return the default database for the project defined by the supplied Id  
-	 */
-	public String databaseForProject(long projectId) {
-		String result = "null";
-		try {
-			Object value = GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "databaseForProject",new Long(projectId));
-			log.debugf("%s.databaseForProject  ...%d = %s",TAG,projectId,result);
-			if( value!=null ) result = value.toString();
-		}
-		catch(Exception ge) {
-			log.infof("%s.databaseForProject: GatewayException (%s)",TAG,ge.getMessage());
-		}
-		return result;
-	}
+
 	/**
 	 * Determine whether or not the indicated diagram is known to the controller.
 	 */
@@ -585,6 +570,34 @@ public class ApplicationRequestHandler  {
 		catch(Exception ge) {
 			log.infof("%s.setBlockProperties: GatewayException (%s)",TAG,ge.getMessage());
 		}		
+	}
+
+	@Override
+	public String getApplicationName(String uuid) {
+		log.infof("%s.getApplicationName... %s",TAG,uuid);
+		String name = "";
+		try {
+			name = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "getApplicationName",uuid);
+		}
+		catch(Exception ex) {
+			log.infof("%s.getApplicationName: Exception (%s)",TAG,ex.getMessage());
+		};
+		return name;
+	}
+
+	@Override
+	public String getFamilyName(String uuid) {
+		log.infof("%s.getFamilyName... %s",TAG,uuid);
+		String name = "";
+		try {
+			name = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "getFamilyName",uuid);
+		}
+		catch(Exception ex) {
+			log.infof("%s.getFamilyName: Exception (%s)",TAG,ex.getMessage());
+		};
+		return name;
 	}
 
 }

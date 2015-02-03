@@ -18,6 +18,7 @@ public class SerializableFamily {
 	private SerializableDiagram[] diagrams;
 	private SerializableFolder[] folders;
 	private UUID id;
+	private long resourceId = -1;
 	private String name;
 	private ActiveState state = ActiveState.ACTIVE;
 	
@@ -40,6 +41,7 @@ public class SerializableFamily {
 	    System.arraycopy(folders, 0, extended, 0, folders.length);
 	    folders = extended;
 	}
+
 	public SerializableDiagram[] getDiagrams() { return diagrams; }
 	public SerializableFolder[] getFolders() {return folders;}
 	public UUID getId() {return id;}

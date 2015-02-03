@@ -6,14 +6,12 @@ package com.ils.blt.gateway.engine;
 import java.util.UUID;
 
 import com.ils.blt.common.block.ActiveState;
-import com.ils.blt.common.block.RampMethod;
 import com.ils.blt.common.serializable.SerializableApplication;
 
 /**
  * An application is a specialized process node.
  */
 public class ProcessApplication extends ProcessNode {
-	private UUID id;
 	private ActiveState state = ActiveState.ACTIVE;
 	
 	/**
@@ -25,7 +23,6 @@ public class ProcessApplication extends ProcessNode {
 	 */
 	public ProcessApplication(String name,UUID parent,UUID self) { 
 		super(name,parent,self);
-		id = UUID.randomUUID();
 	}
 	
 	/**
@@ -39,8 +36,6 @@ public class ProcessApplication extends ProcessNode {
 	}
 	
 	public ActiveState getState() {return state;}
-	public UUID getId() {return id;}
-	public void setId(UUID id) {this.id = id;}
 	public void setState(ActiveState s) { this.state = s; }
 
 }

@@ -1,5 +1,5 @@
 /**
-e *   (c) 2013-2014  ILS Automation. All rights reserved.
+e *   (c) 2013-2015  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.gateway;
@@ -28,23 +28,21 @@ public class PythonRequestHandler   {
 	private final BlockExecutionController controller = BlockExecutionController.getInstance();
 	private static GatewayContext context = null;
 	
-	public PythonRequestHandler() {
-		
-	}
+	public PythonRequestHandler() {}
 	/**
 	 * Traverse the parent nodes until we find an Application. If there 
 	 * are none in our ancestry, return null.
 	 * 
-	 * @param parent identifier for the diagram, a string version of a UUID
+	 * @param nodeId identifier for the node, a string version of a UUID
 	 * @return the ancestrial application
 	 */
-	public ProcessApplication getApplication(String parent)  {
-		log.tracef("%s.getApplication, diagram = %s ",TAG,parent);
+	public ProcessApplication getApplication(String nodeId)  {
+		log.tracef("%s.getApplication, node = %s ",TAG,nodeId);
 		ProcessApplication app = null;
 		try {
-			UUID parentuuid = UUID.fromString(parent);
+			UUID uuid = UUID.fromString(nodeId);
 			
-			ProcessNode node = controller.getProcessNode(parentuuid);
+			ProcessNode node = controller.getProcessNode(uuid);
 			while( node!=null ) {
 				if( node instanceof ProcessApplication ) {
 					app = (ProcessApplication)node;
@@ -54,10 +52,12 @@ public class PythonRequestHandler   {
 			}
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.getApplication: %s is an illegal UUID (%s)",TAG,parent,iae.getMessage());
+			log.warnf("%s.getApplication: %s is an illegal UUID (%s)",TAG,nodeId,iae.getMessage());
 		}
 		return app;
 	}
+	
+	
 	/**
 	 * Find a block given the Id of the parent diagram the block itself.
 	 * 
@@ -83,25 +83,27 @@ public class PythonRequestHandler   {
 		return block;
 	}
 	/**
-	 * @param parent identifier for the diagram, a string version of a UUID
-	 * @return the default database for the project containing this diagram
+	 * Search the tree of node ancestors until we find one with the project set.
+	 * @param uuidString identifier for a node, a string version of a UUID
+	 * @return the default database for the project containing this node
 	 */
-	public String getDefaultDatabase(String parent)  {
-		log.tracef("%s.getDefaultDatabase, diagram = %s ",TAG,parent);
+	public String getDefaultDatabase(String uuidString)  {
+		log.tracef("%s.getDefaultDatabase, node = %s ",TAG,uuidString);
 		String dbName = null;
 		try {
-			UUID parentuuid = UUID.fromString(parent);
+			UUID parentuuid = UUID.fromString(uuidString);
 			ProcessNode node = controller.getProcessNode(parentuuid);
-			if( node instanceof ProcessDiagram ) {
-					ProcessDiagram diag = (ProcessDiagram)node;
-					if( diag!=null) {
-						long projectId = diag.getProjectId();
-						dbName = context.getProjectManager().getProps(projectId, ProjectVersion.Published).getDefaultDatasourceName();
-					}
+			while(  node!=null) {
+				long projectId = node.getProjectId();
+				if( projectId!=-1) {
+					dbName = context.getProjectManager().getProps(projectId, ProjectVersion.Published).getDefaultDatasourceName();
+					break;
+				}
+				node = controller.getProcessNode(node.getParent());
 			}
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.getDefaultDatabase: %s is an illegal UUID (%s)",TAG,parent,iae.getMessage());
+			log.warnf("%s.getDefaultDatabase: %s is an illegal UUID (%s)",TAG,uuidString,iae.getMessage());
 		}
 		return dbName;
 	}
@@ -110,22 +112,23 @@ public class PythonRequestHandler   {
 	 * @return the default tag provider for the project associated with 
 	 *         the specified diagram
 	 */
-	public String getDefaultTagProvider(String parent)  {
-		log.tracef("%s.getDefaultTagProvider, diagram = %s ",TAG,parent);
+	public String getDefaultTagProvider(String uuidString)  {
+		log.tracef("%s.getDefaultTagProvider, node = %s ",TAG,uuidString);
 		String provider = null;
 		try {
-			UUID parentuuid = UUID.fromString(parent);
-			ProcessNode node = controller.getProcessNode(parentuuid);
-			if( node instanceof ProcessDiagram ) {
-				ProcessDiagram diag = (ProcessDiagram)node;
-				if( diag!=null) {
-					long projectId = diag.getProjectId();
+			UUID uuid = UUID.fromString(uuidString);
+			ProcessNode node = controller.getProcessNode(uuid);
+			while(  node!=null) {
+				long projectId = node.getProjectId();
+				if( projectId!=-1) {
 					provider = context.getProjectManager().getProps(projectId, ProjectVersion.Published).getDefaultSQLTagsProviderName();
+					break;
 				}
+				node = controller.getProcessNode(node.getParent());
 			}
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.getDefaultTagProvider: %s is an illegal UUID (%s)",TAG,parent,iae.getMessage());
+			log.warnf("%s.getDefaultTagProvider: %s is an illegal UUID (%s)",TAG,uuidString,iae.getMessage());
 		}
 		return provider;
 	}
@@ -136,36 +139,37 @@ public class PythonRequestHandler   {
 	 * @param parent identifier for the block, a string version of a UUID
 	 * @return the diagram
 	 */
-	public ProcessDiagram getDiagram(String parent)  {
-		log.tracef("%s.getDiagram, diagram = %s ",TAG,parent);
+	public ProcessDiagram getDiagram(String diagramId)  {
+		log.tracef("%s.getDiagram, diagram = %s ",TAG,diagramId);
 		ProcessDiagram diag = null;
 		try {
-			UUID parentuuid = UUID.fromString(parent);
-			ProcessNode node = controller.getProcessNode(parentuuid);
+			UUID diagramuuid = UUID.fromString(diagramId);
+			ProcessNode node = controller.getProcessNode(diagramuuid);
 			if( node instanceof ProcessDiagram ) {
 					diag = (ProcessDiagram)node;
 			}
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.getDiagram: %s is an illegal UUID (%s)",TAG,parent,iae.getMessage());
+			log.warnf("%s.getDiagram: %s is an illegal UUID (%s)",TAG,diagramId,iae.getMessage());
 		}
 		return diag;
 	}
 	/**
-	 * Traverse the parent nodes until we find a family. If there 
+	 * Traverse the parent nodes until we find a Family. If there 
 	 * are none in our ancestry, return null.
 	 * 
-	 * @param parent identifier for the diagram, a string version of a UUID
+	 * @param nodeId identifier for the node, a string version of a UUID
 	 * @return the ancestrial family
 	 */
-	public ProcessFamily getFamily(String parent)  {
-		log.tracef("%s.getFamily, diagram = %s ",TAG,parent);
+	public ProcessFamily getFamily(String nodeId)  {
+		log.tracef("%s.getFamily, node = %s ",TAG,nodeId);
 		ProcessFamily fam = null;
 		try {
-			UUID parentuuid = UUID.fromString(parent);
-			ProcessNode node = controller.getProcessNode(parentuuid);
+			UUID nodeuuid = UUID.fromString(nodeId);
+			
+			ProcessNode node = controller.getProcessNode(nodeuuid);
 			while( node!=null ) {
-				if( node instanceof ProcessFamily ) {
+				if( node instanceof ProcessApplication ) {
 					fam = (ProcessFamily)node;
 					break;
 				}
@@ -173,7 +177,7 @@ public class PythonRequestHandler   {
 			}
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.getFamily: %s is an illegal UUID (%s)",TAG,parent,iae.getMessage());
+			log.warnf("%s.getFamily: %s is an illegal UUID (%s)",TAG,nodeId,iae.getMessage());
 		}
 		return fam;
 	}

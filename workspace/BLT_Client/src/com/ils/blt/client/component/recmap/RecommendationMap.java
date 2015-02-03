@@ -25,7 +25,6 @@ public class RecommendationMap extends PrefuseViewerComponent {
 	private static final long serialVersionUID = 5508313516136446100L;
 	private static final String TAG = "RecommendationMap";
 	private static String PREFIX = BLTProperties.CUSTOM_PREFIX;              // For bundle identification
-	private static Dimension PREFERRED_SIZE = new Dimension(180,180);
 	private RecMapDataModel model = null;
 	private Dataset outputs = null;
 	private BasicDataset recommendations = null;
@@ -35,7 +34,6 @@ public class RecommendationMap extends PrefuseViewerComponent {
 		setName(BundleUtil.get().getString(PREFIX+".RecommendationMap.Name"));
 		this.setOpaque(true);
 		this.setBorder(border);
-		this.setPreferredSize(PREFERRED_SIZE);
 		updateChartView();
 	}
 

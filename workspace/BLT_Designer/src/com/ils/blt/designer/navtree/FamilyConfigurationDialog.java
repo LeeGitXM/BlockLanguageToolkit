@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved.
+ *   (c) 2015  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.designer.navtree;
@@ -10,8 +10,6 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -37,9 +35,6 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 	private JPanel mainPanel = null;
 	protected JTextField priorityField;
 	
-	// These are the keys to the map of properties that are unique to applications
-	public final static String PROPERTY_PRIORITY    = "priority";
-	
 	public FamilyConfigurationDialog(Frame frame,DesignerContext ctx,SerializableFamily fam) {
 		super(frame,ctx);
 		this.family = fam;
@@ -56,8 +51,8 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 	 */
 	private void initialize() {
 		// Fetch properties of the family associated with the database and not serialized.
-		extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAM_GET_AUX_TYPE, 
-				this.family,properties);
+		extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAM_GET_AUX_SCRIPT, 
+				this.family.getId().toString(),properties);
 		mainPanel = createMainPanel();
 		contentPanel.remove(parentTabPanel);   // blow away the tab
 		contentPanel.add(mainPanel,BorderLayout.CENTER);
@@ -87,7 +82,7 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 		panel.add(descriptionArea,"gaptop 2,aligny top,span,wrap");
 
 		panel.add(createLabel("Family.Priority"),"");
-		String priority = (String)properties.get(PROPERTY_PRIORITY);
+		String priority = (String)properties.get(ScriptConstants.PROPERTY_PRIORITY);
 		if( priority==null) priority="";
 		priorityField = createTextField("Family.Priority.Desc",priority);
 		priorityField.setPreferredSize(NUMBER_BOX_SIZE);
@@ -110,7 +105,7 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 				properties.put(PROPERTY_DESCRIPTION, descriptionArea.getText());
 				try {
 					int pri = Integer.parseInt(priorityField.getText());
-					properties.put(PROPERTY_PRIORITY, String.valueOf(pri));
+					properties.put(ScriptConstants.PROPERTY_PRIORITY, String.valueOf(pri));
 				} 
 				catch (NumberFormatException nfe) {
 					log.warnf("%s.initialize: Priority (%s) must be an integer (%s)",
@@ -118,8 +113,8 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 				}
 				String activeState = (String) stateBox.getSelectedItem();
 				family.setState(ActiveState.valueOf(activeState));
-				extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAM_SET_AUX_TYPE, 
-						family,properties);
+				extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAM_SET_AUX_SCRIPT, 
+						family.getId().toString(),properties);
 				dispose();
 			}
 		});

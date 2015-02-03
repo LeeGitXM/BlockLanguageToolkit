@@ -20,9 +20,10 @@ public class ProcessNode {
 	private final Map<Long,ProcessNode> children;   // Key by resourceId
 	protected final LoggerEx log;
 	private String name;
-	private final UUID parent;
-	private long resourceId = -1;   // Resource set when serialized.
-	private final UUID self;
+	protected final UUID parent;
+	protected long projectId = -1;
+	protected long resourceId = -1;   // Resource set when serialized.
+	protected final UUID self;
 	private final String TAG = "ProcessNode";
 	
 	/**
@@ -66,7 +67,9 @@ public class ProcessNode {
 	 *         The parent of the root node is null.
 	 */
 	public UUID getParent() { return this.parent; }
-	public long getResourceId() {return resourceId;}
+	public long getResourceId() { return this.resourceId; }
+	public long getProjectId() {return projectId;}
+	public void setProjectId(long projectId) {this.projectId = projectId;}
 	/**
 	 * @return the UUID of this node
 	 */
