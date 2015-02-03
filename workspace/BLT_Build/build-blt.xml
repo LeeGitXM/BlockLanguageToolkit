@@ -20,8 +20,8 @@
 	<property name="block.src.dir" value="${root.dir}/blt/workspace/Block/src" />
 	<property name="ils.python.src.dir" value="${root.dir}/ils-python/ILS_Python/src" />
 	<property name="xom.python.src.dir" value="${root.dir}/xom-python/XOM_Python/src" />
-	<property name="ant.build.javac.source" value="1.7"/>
-	<property name="ant.build.javac.target" value="1.7"/>
+	<property name="ant.build.javac.source" value="1.8"/>
+	<property name="ant.build.javac.target" value="1.8"/>
 		
 	<!-- External jar classpath -->
 	<path id="ils-classpath">
@@ -117,7 +117,7 @@
 	<target name="common.build" description="Compile the source">
 		<echo  message="Using Java version ${ant.java.version}."/>
 		<mkdir dir="${common.bin.dir}"/>
-		<javac destdir="${common.bin.dir}" debug="true" target="1.7" includeantruntime="false">
+		<javac destdir="${common.bin.dir}" debug="true" target="1.8" includeantruntime="false">
 			<src path="${common.src.dir}"/>
 			<classpath refid="ils-classpath"/>
 		</javac>
@@ -129,7 +129,7 @@
 	<!-- Compile the Block Definition library -->
 			<target name="block.build" description="Compile the source">
 				<mkdir dir="${block.bin.dir}"/>
-				<javac destdir="${block.bin.dir}" debug="true" target="1.7" includeantruntime="false">
+				<javac destdir="${block.bin.dir}" debug="true" target="1.8" includeantruntime="false">
 					<src path="${block.src.dir}"/>
 					<classpath refid="BlockDefinition.classpath"/>
 				</javac>
