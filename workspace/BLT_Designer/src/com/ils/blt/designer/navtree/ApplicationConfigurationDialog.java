@@ -87,6 +87,11 @@ public class ApplicationConfigurationDialog extends ConfigurationDialog {
 		nameField = createTextField("Application.Name.Desc",application.getName());
 		panel.add(nameField,"span,wrap");
 		
+		panel.add(createLabel("Application.UUID"),"gaptop 2,aligny top");
+		JTextField uuidField = createTextField("Application.UUID.Desc",application.getId().toString());
+		uuidField.setEditable(false);
+		panel.add(nameField,"span,wrap");
+		
 		panel.add(createLabel("Application.Description"),"gaptop 2,aligny top");
 		String description = (String)properties.get(PROPERTY_DESCRIPTION);
 		if( description==null) description="";

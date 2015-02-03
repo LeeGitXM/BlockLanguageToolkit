@@ -37,7 +37,7 @@ public class PythonRequestHandler   {
 	 * @return the ancestrial application
 	 */
 	public ProcessApplication getApplication(String nodeId)  {
-		log.tracef("%s.getApplication, node = %s ",TAG,nodeId);
+		//log.infof("%s.getApplication, node = %s ",TAG,nodeId);
 		ProcessApplication app = null;
 		try {
 			UUID uuid = UUID.fromString(nodeId);
@@ -46,6 +46,7 @@ public class PythonRequestHandler   {
 			while( node!=null ) {
 				if( node instanceof ProcessApplication ) {
 					app = (ProcessApplication)node;
+					log.infof("%s.getApplication, found application = %s ",TAG,app.getName());
 					break;
 				}
 				node = controller.getProcessNode(node.getParent());
@@ -88,15 +89,16 @@ public class PythonRequestHandler   {
 	 * @return the default database for the project containing this node
 	 */
 	public String getDefaultDatabase(String uuidString)  {
-		log.tracef("%s.getDefaultDatabase, node = %s ",TAG,uuidString);
-		String dbName = null;
+		log.infof("%s.getDefaultDatabase, node = %s ",TAG,uuidString);
+		String dbName = "";
 		try {
-			UUID parentuuid = UUID.fromString(uuidString);
-			ProcessNode node = controller.getProcessNode(parentuuid);
-			while(  node!=null) {
+			UUID uuid = UUID.fromString(uuidString);
+			ProcessNode node = controller.getProcessNode(uuid);
+			while( node!=null) {
 				long projectId = node.getProjectId();
 				if( projectId!=-1) {
 					dbName = context.getProjectManager().getProps(projectId, ProjectVersion.Published).getDefaultDatasourceName();
+					log.infof("%s.getDefaultDatabase, name = %s ",TAG,dbName);
 					break;
 				}
 				node = controller.getProcessNode(node.getParent());
@@ -169,7 +171,7 @@ public class PythonRequestHandler   {
 			
 			ProcessNode node = controller.getProcessNode(nodeuuid);
 			while( node!=null ) {
-				if( node instanceof ProcessApplication ) {
+				if( node instanceof ProcessFamily ) {
 					fam = (ProcessFamily)node;
 					break;
 				}

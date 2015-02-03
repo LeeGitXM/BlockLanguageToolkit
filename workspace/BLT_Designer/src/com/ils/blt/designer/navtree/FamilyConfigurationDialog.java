@@ -75,6 +75,11 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 		nameField = createTextField("Family.Name.Desc",family.getName());
 		panel.add(nameField,"span,wrap");
 
+		panel.add(createLabel("Family.UUID"),"gaptop 2,aligny top");
+		JTextField uuidField = createTextField("Family.UUID.Desc",family.getId().toString());
+		uuidField.setEditable(false);
+		panel.add(nameField,"span,wrap");
+		
 		panel.add(createLabel("Family.Description"),"gaptop 2,aligny top");
 		String description = (String)properties.get(PROPERTY_DESCRIPTION);
 		if( description==null) description="";

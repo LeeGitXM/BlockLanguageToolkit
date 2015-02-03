@@ -1,10 +1,9 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
- *   Code based on sample code at: 
- *        http://www.codeproject.com/Articles/36459/PID-process-control-a-Cruise-Control-example
+ *   (c) 2014-2015  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -16,32 +15,36 @@ import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
+import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
+import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
- * Emit a configured signal when the monitored truth-value changes 
- * before the monitoring time expires.
+ * Monitor a truth-value. Do not emit it from the output until it has been unchanged for
+ * a configured interval. An input of the opposing state is processed immediately and
+ * resets the counter.
  */
 @ExecutableBlock
 public class PersistenceGate extends AbstractProcessBlock implements ProcessBlock {
 	private final String TAG = "PersistenceGate";
-	private final String BLOCK_PROPERTY_TRIGGER = "Trigger";
-	private int cycle = 0;
+	private int count = 0;     // Countdown - number of intervals to go ...
 	private double scanInterval = 10.;  // ~secs
 	private double timeWindow = 0.;  // ~secs
 	private String trigger = "";     // Nothing will trigger until this is set
 	private BlockProperty valueProperty = null;;
 	private final Watchdog dog;
+	protected TruthValue truthValue = TruthValue.UNSET;  // This is the output
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
@@ -70,14 +73,15 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 	 */
 	private void initialize() {	
 		setName("PersistenceGate");
-
+		truthValue = TruthValue.UNSET;
 		BlockProperty windowProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW,new Double(timeWindow),PropertyType.TIME,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW, windowProperty);
 		BlockProperty scanIntervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL,new Double(scanInterval),PropertyType.TIME,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL, scanIntervalProperty);
-		BlockProperty triggerProperty = new BlockProperty(BLOCK_PROPERTY_TRIGGER,trigger,PropertyType.STRING,true);
-		setProperty(BLOCK_PROPERTY_TRIGGER, triggerProperty);
-		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.BOOLEAN,false);
+		BlockProperty triggerProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER,trigger,PropertyType.STRING,true);
+		setProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER, triggerProperty);
+		// The value is the count-down shown in the UI
+		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"---------",PropertyType.STRING,false);
 		valueProperty.setBindingType(BindingType.ENGINE);
 		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 
@@ -93,6 +97,8 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 	public void reset() {
 		super.reset();
 		if( dog.isActive() ) controller.removeWatchdog(dog);
+		count = 0;
+		truthValue = TruthValue.UNSET;
 	}
 	/**
 	 * Disconnect from the timer thread.
@@ -110,20 +116,24 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 	@Override
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
-
+		this.state = BlockState.ACTIVE;
+		
 		QualifiedValue qv = vcn.getValue();
 		log.debugf("%s.acceptValue: Received %s",TAG,qv.getValue().toString());
 		// A different value than the trigger, or a bad value aborts the countdown
 		if( !qv.getQuality().isGood() || !qv.getValue().toString().equals(trigger) ) {
-			cycle = 0;
+			count = 0;
 			if( dog.isActive() ) {
 				controller.removeWatchdog(dog);
+				valueProperty.setValue("-------");
 			}
 			if( !isLocked() ) {
 				// Propagate value immediately
 				log.infof("%s.acceptValue: Sent immediate %s",TAG,qv.getValue().toString());
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 				controller.acceptCompletionNotification(nvn);
+				truthValue = qualifiedValueAsTruthValue(qv);
+				notifyOfStatus(qv);
 			}
 		}
 		else {
@@ -131,9 +141,9 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 			// Good quality and equal to the trigger.
 			if( !dog.isActive() ) {
 				// Start the countdown
-				cycle = (int)(timeWindow/scanInterval);
-				log.infof("%s.acceptValue: Start countdown %d cycles (%f in %f)",TAG,cycle,scanInterval,timeWindow);
-				if( cycle> 0 ) {
+				count = (int)(timeWindow/scanInterval+0.5);
+				log.infof("%s.acceptValue: Start countdown %d cycles (%f in %f)",TAG,count,scanInterval,timeWindow);
+				if( count> 0 ) {
 					dog.setSecondsDelay(scanInterval);
 					controller.pet(dog);
 				}
@@ -147,25 +157,26 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 	 */
 	@Override
 	public synchronized void evaluate() {
-		log.debugf("%s.evaluate ... cycle = %d",TAG,cycle);
-		if( cycle> 0 ) {
-			cycle--;
+		log.debugf("%s.evaluate ... cycle = %d",TAG,count);
+		if( count> 0 ) {
+			count--;
 			dog.setSecondsDelay(scanInterval);
 			controller.pet(dog);
 			
-			double timeRemaining = cycle*scanInterval;
+			double timeRemaining = count*scanInterval;
 			TimeUnit tu = TimeUtility.unitForValue(timeRemaining);
-			String formattedTime = String.format("%.2f %s", TimeUtility.valueForCanonicalValue(timeRemaining, tu),TimeUtility.abbreviationForUnit(tu));
+			String formattedTime = String.format("%.1f %s", TimeUtility.valueForCanonicalValue(timeRemaining, tu),TimeUtility.abbreviationForUnit(tu));
 			QualifiedValue qv = new BasicQualifiedValue(formattedTime); 
-			log.infof("%s.evaluate: cycle %d property value =  %s.",TAG,cycle,formattedTime);
-			valueProperty.setValue(formattedTime);
-			controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE, qv);
+			log.infof("%s.evaluate: cycle %d property value =  %s.",TAG,count,formattedTime);
+			notifyOfStatus();
 		}
 		else if( !isLocked()) {
 			// Finally propagate the held value
 			QualifiedValue outval = new BasicQualifiedValue(trigger);
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 			controller.acceptCompletionNotification(nvn);
+			valueProperty.setValue("-------");
+			truthValue = qualifiedValueAsTruthValue(outval);
 			notifyOfStatus(outval);
 		}
 	}
@@ -178,7 +189,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
 		log.infof("%s.propertyChange: Received %s = %s",TAG,propertyName,event.getNewValue().toString());
-		if( propertyName.equals(BLOCK_PROPERTY_TRIGGER)) {
+		if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_TRIGGER)) {
 			trigger = event.getNewValue().toString();
 			
 		}
@@ -204,16 +215,30 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		}
 	}
 	/**
+	 * @return a block-specific description of internal statue
+	 */
+	@Override
+	public SerializableBlockStateDescriptor getInternalStatus() {
+		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
+		Map<String,String> attributes = descriptor.getAttributes();
+		attributes.put("Count", String.valueOf(count));
+		attributes.put("Value", truthValue.name());
+		return descriptor;
+	}
+	
+	/**
 	 * Send status update notification for our last latest state.
 	 */
 	@Override
 	public void notifyOfStatus() {
-		QualifiedValue qv = new BasicQualifiedValue(valueProperty.getValue());
+		QualifiedValue qv = new BasicQualifiedValue(truthValue);
 		notifyOfStatus(qv);
 		
 	}
+	// NOTE: The "value" property is what we want to display (the countdown)
 	private void notifyOfStatus(QualifiedValue qv) {
-		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
+		QualifiedValue displayQV = new BasicQualifiedValue(valueProperty.getValue());
+		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,displayQV);
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 	/**
@@ -227,7 +252,6 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());
-		desc.setEmbeddedLabel("- N");
 		desc.setPreferredHeight(40);
 		desc.setPreferredWidth(80);
 		desc.setStyle(BlockStyle.READOUT);

@@ -46,6 +46,7 @@ public interface BlockConstants   {
 	public static final String BLOCK_PROPERTY_TAG_PATH = "TagPath";
 	public static final String BLOCK_PROPERTY_TEXT             = "Text";
 	public static final String BLOCK_PROPERTY_TIME_WINDOW      = "TimeWindow";
+	public static final String BLOCK_PROPERTY_TRIGGER          = "Trigger";
 	public static final String BLOCK_PROPERTY_TRIGGER_COUNT    = "TriggerCount";
 	public static final String BLOCK_PROPERTY_VALUE = "Value";                       // Current value
 	public static final String BLOCK_PROPERTY_WIDTH = "Width";

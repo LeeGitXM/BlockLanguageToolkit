@@ -1,4 +1,4 @@
 # Copyright 2015. ILS Automation. All rights reserved.
-# What now?
-def execute():
-	pass
+# Argument is the diagram path
+def reset(name):
+	print "Executed resetDiagram!!!!!"

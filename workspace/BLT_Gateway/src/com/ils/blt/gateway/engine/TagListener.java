@@ -106,13 +106,13 @@ public class TagListener implements TagChangeListener   {
 			}
 			if( list.contains(key))  {   
 				// Duplicate request, nothing to do
-				log.infof("%s.defineSubscription: %s:%s already subscribes to: %s",TAG,block.getName(),property.getName(),tagPath);
+				log.debugf("%s.defineSubscription: %s:%s already subscribes to: %s",TAG,block.getName(),property.getName(),tagPath);
 				return;
 			}
 			
 			list.add(key);
 			tagMap.put(key,tagPath);
-			log.infof("%s.defineSubscription: %s:%s now subscribes to: %s",TAG,block.getName(),property.getName(),tagPath);
+			log.debugf("%s.defineSubscription: %s:%s now subscribes to: %s",TAG,block.getName(),property.getName(),tagPath);
 			if(!stopped ) {
 				if(needToStartSubscription) startSubscriptionForTag(tagPath);
 				else updatePropertyValueFromLinkedProperty(key,list);   // Get the value from another block's property
