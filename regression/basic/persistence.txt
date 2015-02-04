@@ -3,7 +3,7 @@
 #
 Test: Exercise the Persistence block
 Step: Target is TRUE
-Show: browser "Project"
+Show: browser "Diagnostic Toolkit/app75/fam75/persistence"
 resetDiagram (app75/family75/persistence)
 Tagset: SingleBoolean
 10:00 true

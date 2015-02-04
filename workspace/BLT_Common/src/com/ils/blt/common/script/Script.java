@@ -61,8 +61,10 @@ public class Script {
 	}
 	
 	public void resetModulePath(String pythonPath) { 
-		this.module = moduleNameFromPath(pythonPath);
-		this.pythonPackage = packageNameFromPath(pythonPath);
+		if( pythonPath!=null && pythonPath.lenght()>0 ) {
+			this.module = moduleNameFromPath(pythonPath);
+			this.pythonPackage = packageNameFromPath(pythonPath);
+		}
 		this.code = null;   // Needs compiling
 	}
 	
