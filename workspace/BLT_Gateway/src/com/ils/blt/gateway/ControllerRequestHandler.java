@@ -598,9 +598,15 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	public void setToolkitProperty(String propertyName, String value) {
 		ToolkitRecord record = context.getPersistenceInterface().find(ToolkitRecord.META, propertyName);
 		if( record==null) record = context.getPersistenceInterface().createNew(ToolkitRecord.META);
-		record.setName(propertyName);
-		record.setValue(value);
-		context.getPersistenceInterface().save(record);
+		if( record!=null) {
+			record.setName(propertyName);
+			record.setValue(value);
+			context.getPersistenceInterface().save(record);
+		}
+		else {
+			log.warnf("%s.setToolkitProperty: %s=%s - failed to create persistence record (%s)",TAG,propertyName,value,ToolkitRecord.META.quoteName);
+		}
+		
 	}
 	public void startController() {
 		BlockExecutionController.getInstance().start(context);

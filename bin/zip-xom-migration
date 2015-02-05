@@ -26,7 +26,7 @@ cd ..
 ./migrate-all
 cd ..
 mkdir $TMP
-cp -a json $TMP
+cp -a json/ignition $TMP
 
 # Now zip and copy to subversion
 cd $REPO_ROOT
