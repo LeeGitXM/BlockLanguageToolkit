@@ -228,6 +228,7 @@ public class GatewayRpcDispatcher   {
 	}
 	
 	public String getToolkitProperty(String propertyName) {
+		log.infof("%s.getToolkitProperty: %s", TAG,propertyName);
 		return requestHandler.getToolkitProperty(propertyName);
 	}
 	
@@ -330,6 +331,7 @@ public class GatewayRpcDispatcher   {
 	}
 	
 	public void setToolkitProperty(String propertyName,String value) {
+		log.infof("%s.setToolkitProperty: %s: %s", TAG, propertyName, value);
 		requestHandler.setToolkitProperty(propertyName,value);
 	}
 	public void startController() {

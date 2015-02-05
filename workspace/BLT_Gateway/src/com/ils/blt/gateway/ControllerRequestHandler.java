@@ -367,9 +367,15 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	
 	@Override
 	public String getToolkitProperty(String propertyName) {
-		ToolkitRecord record = context.getPersistenceInterface().find(ToolkitRecord.META, propertyName);
-		if( record!=null) return record.getValue();
-		else return "";
+		String value = "";
+		try {
+			ToolkitRecord record = context.getPersistenceInterface().find(ToolkitRecord.META, propertyName);
+			if( record!=null) value =  record.getValue();
+		}
+		catch(Exception ex) {
+			log.warnf("%s.getToolkitProperty: Exception retrieving %s (%s),",TAG,propertyName,ex.getMessage());
+		}
+		return value;
 	}
 	
 	@Override
@@ -596,17 +602,21 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	}
 	@Override
 	public void setToolkitProperty(String propertyName, String value) {
-		ToolkitRecord record = context.getPersistenceInterface().find(ToolkitRecord.META, propertyName);
-		if( record==null) record = context.getPersistenceInterface().createNew(ToolkitRecord.META);
-		if( record!=null) {
-			record.setName(propertyName);
-			record.setValue(value);
-			context.getPersistenceInterface().save(record);
+		try {
+			ToolkitRecord record = context.getPersistenceInterface().find(ToolkitRecord.META, propertyName);
+			if( record==null) record = context.getPersistenceInterface().createNew(ToolkitRecord.META);
+			if( record!=null) {
+				record.setName(propertyName);
+				record.setValue(value);
+				context.getPersistenceInterface().save(record);
+			}
+			else {
+				log.warnf("%s.setToolkitProperty: %s=%s - failed to create persistence record (%s)",TAG,propertyName,value,ToolkitRecord.META.quoteName);
+			}
 		}
-		else {
-			log.warnf("%s.setToolkitProperty: %s=%s - failed to create persistence record (%s)",TAG,propertyName,value,ToolkitRecord.META.quoteName);
+		catch(Exception ex) {
+			log.warnf("%s.setToolkitProperty: Exception setting %s=%s (%s),",TAG,propertyName,value,ex.getMessage());
 		}
-		
 	}
 	public void startController() {
 		BlockExecutionController.getInstance().start(context);
