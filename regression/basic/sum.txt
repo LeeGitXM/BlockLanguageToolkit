@@ -3,6 +3,8 @@
 #
 Test: Sum and Range Observation
 Step: In-Range Values
+Show: browser "app75/family75/sum"
+resetDiagram (app75/family75/sum)
 Tagset: DualFeed
 10:00 1 1
 10:01 2 2

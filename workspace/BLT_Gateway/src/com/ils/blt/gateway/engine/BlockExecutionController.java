@@ -170,6 +170,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		else          return CONTROLLER_RUNNING_STATE;
 	}
 	
+	public WatchdogTimer getTimer() {return watchdogTimer;}
 	/**
 	 * Start the controller, watchdogTimer, tagListener and TagWriter.
 	 * @param ctxt the gateway context

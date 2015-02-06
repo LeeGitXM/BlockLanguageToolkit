@@ -132,7 +132,14 @@ public class ApplicationScriptFunctions   {
 	public static boolean sendLocalSignal(String diagramId,String className, String command) {
 		return handler.sendLocalSignal(diagramId,className,command);
 	}
-	
+	/**
+	 * Set a clock rate factor. This must NOT be exercised in a production environment.
+	 * This is a hook for testing only.
+	 * @param factor the amount to speed up or slow down the clock.
+	 */
+	public static void setTimeFactor(Double factor) {
+		handler.setTimeFactor(factor);
+	}
 	/**
 	 * Start the block execution engine in the gateway.
 	 */

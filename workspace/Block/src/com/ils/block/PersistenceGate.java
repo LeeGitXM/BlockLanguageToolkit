@@ -119,17 +119,17 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		this.state = BlockState.ACTIVE;
 		
 		QualifiedValue qv = vcn.getValue();
-		log.debugf("%s.acceptValue: Received %s",TAG,qv.getValue().toString());
+		log.debugf("%s.acceptValue: Received %s, trigger is %s",TAG,qv.getValue().toString(),trigger);
 		// A different value than the trigger, or a bad value aborts the countdown
-		if( !qv.getQuality().isGood() || !qv.getValue().toString().equals(trigger) ) {
+		if( !qv.getQuality().isGood() || !qv.getValue().toString().equalsIgnoreCase(trigger) ) {
 			count = 0;
 			if( dog.isActive() ) {
 				controller.removeWatchdog(dog);
-				valueProperty.setValue("-------");
+				valueProperty.setValue("---");
 			}
 			if( !isLocked() ) {
 				// Propagate value immediately
-				log.infof("%s.acceptValue: Sent immediate %s",TAG,qv.getValue().toString());
+				//log.infof("%s.acceptValue: No match, sent immediate %s",TAG,qv.getValue().toString());
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 				controller.acceptCompletionNotification(nvn);
 				truthValue = qualifiedValueAsTruthValue(qv);
@@ -137,7 +137,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 			}
 		}
 		else {
-			log.debugf("%s.acceptValue: Matched trigger %s",TAG,qv.getValue().toString());
+			//log.infof("%s.acceptValue: Matched trigger %s",TAG,qv.getValue().toString());
 			// Good quality and equal to the trigger.
 			if( !dog.isActive() ) {
 				// Start the countdown
@@ -157,7 +157,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 	 */
 	@Override
 	public synchronized void evaluate() {
-		log.debugf("%s.evaluate ... cycle = %d",TAG,count);
+		//log.infof("%s.evaluate ... cycle = %d",TAG,count);
 		if( count> 0 ) {
 			count--;
 			dog.setSecondsDelay(scanInterval);
@@ -166,8 +166,8 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 			double timeRemaining = count*scanInterval;
 			TimeUnit tu = TimeUtility.unitForValue(timeRemaining);
 			String formattedTime = String.format("%.1f %s", TimeUtility.valueForCanonicalValue(timeRemaining, tu),TimeUtility.abbreviationForUnit(tu));
-			QualifiedValue qv = new BasicQualifiedValue(formattedTime); 
-			log.infof("%s.evaluate: cycle %d property value =  %s.",TAG,count,formattedTime);
+			log.tracef("%s.evaluate: cycle %d property value =  %s.",TAG,count,formattedTime);
+			valueProperty.setValue(formattedTime);
 			notifyOfStatus();
 		}
 		else if( !isLocked()) {
@@ -175,7 +175,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 			QualifiedValue outval = new BasicQualifiedValue(trigger);
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 			controller.acceptCompletionNotification(nvn);
-			valueProperty.setValue("-------");
+			valueProperty.setValue("---");
 			truthValue = qualifiedValueAsTruthValue(outval);
 			notifyOfStatus(outval);
 		}
@@ -188,7 +188,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
-		log.infof("%s.propertyChange: Received %s = %s",TAG,propertyName,event.getNewValue().toString());
+		log.debugf("%s.propertyChange: Received %s = %s",TAG,propertyName,event.getNewValue().toString());
 		if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_TRIGGER)) {
 			trigger = event.getNewValue().toString();
 			

@@ -3,6 +3,7 @@
 #
 Test: Simple Input to Output
 Step: Integer values
+Show: browser "app75/family75/simplest"
 resetDiagram (app75/family75/simplest)
 Tagset: BasicDiagrams
 10:00 1

@@ -512,6 +512,22 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	}
 
 	/**
+	 * Set a clock rate factor. This must NOT be exercised in a production environment.
+	 * This is a hook for testing only.
+	 * @param factor the amount to speed up or slow down the clock.
+	 */
+	public void setTimeFactor(Double factor) {
+		log.infof("%s.setTimeFactor ... %s",TAG,String.valueOf(factor));
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "setTimeFactor",factor);
+		}
+		catch(Exception ge) {
+			log.infof("%s.setTimeFactor: GatewayException (%s:%s)",TAG,ge.getClass().getName(),ge.getMessage());
+		}
+	}
+	
+	/**
 	 * Save a value into the HSQL database table associated with the toolkit. The 
 	 * table contains name-value pairs, so any name is allowable.
 	 * @param propertyName name of the property for which a value is to be set

@@ -38,6 +38,7 @@ import com.ils.blt.gateway.engine.ProcessFamily;
 import com.ils.blt.gateway.persistence.ToolkitRecord;
 import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.ils.common.ClassList;
+import com.ils.common.watchdog.WatchdogTimer;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -599,6 +600,11 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				log.warnf("%s.setDiagramState: Unrecognized state(%s) sent to %s (%s)",TAG,state,diagram.getName());
 			}
 		}
+	}
+	public void setTimeFactor(Double factor) {
+		log.infof("%s.setTimeFactor: %s", TAG, String.valueOf(factor));
+		WatchdogTimer timer = controller.getTimer();
+		timer.setFactor(factor.doubleValue());
 	}
 	@Override
 	public void setToolkitProperty(String propertyName, String value) {

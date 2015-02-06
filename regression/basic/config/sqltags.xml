@@ -9,11 +9,11 @@
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="SumResult" path="MemoryTags" type="DB">
-      <Property name="Value">0.0</Property>
+      <Property name="Value">8.0</Property>
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="DiagramOutput" path="MemoryTags" type="DB">
-      <Property name="Value">8</Property>
+      <Property name="Value">1</Property>
       <Property name="DataType">2</Property>
    </Tag>
    <Tag name="MJKQuality" path="MemoryTags" type="DB">
@@ -31,5 +31,9 @@
    <Tag name="MJKSQCStdDev" path="MemoryTags" type="DB">
       <Property name="Value">0.5</Property>
       <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="BooleanFeed" path="MemoryTags" type="DB">
+      <Property name="Value">false</Property>
+      <Property name="DataType">6</Property>
    </Tag>
 </Tags>
