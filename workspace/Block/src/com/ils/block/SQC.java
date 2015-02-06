@@ -361,7 +361,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	/**
 	 * Compute the state, presumably because of a new input.
 	 */
-	private TruthValue getRuleState() {
+	private synchronized TruthValue getRuleState() {
 		TruthValue result = TruthValue.UNKNOWN;
 		int total= 0;
 		int high = 0;
@@ -373,6 +373,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		int outside = 0;
 		double highLimit = mean+(standardDeviation*limit);
 		double lowLimit  = mean-(standardDeviation*limit);
+		// Got a concurrent modification exception here. Thus the "synchronized".
 		for( Double dbl:queue) {
 			double val = dbl.doubleValue();
 			

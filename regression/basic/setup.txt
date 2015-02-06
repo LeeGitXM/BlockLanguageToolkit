@@ -6,8 +6,8 @@ timefactor: 10
 notification: persistence    "C:389ee5dc-824e-42be-8d04-86ea8a391c94:out"
 notification: sumObservation "C:4a8f708b-f77c-4dbf-abc2-7dd01a1224a1:out"
 # Script aliases - module is with respect to script directory
-script: setTimeFactor pylib.setTimeFactor.setFactor
-script: resetDiagram pylib.resetDiagram.reset
+script: setTimeFactor setTimeFactor.setFactor
+script: resetDiagram resetDiagram.reset
 setTimeFactor (10)
 # Tag aliases
 tag: BooleanFeed  MemoryTags/BooleanFeed

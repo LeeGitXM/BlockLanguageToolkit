@@ -41,7 +41,7 @@ import com.inductiveautomation.ignition.gateway.project.ProjectListener;
  * In addition, the model manager keeps a gateway representation of the NavTree.
  * This is used by Designer/Client scripts to find/access model components. 
  * 
- * NOTE: The project listener interface only triggers when the user selects 
+ * NOTE: The project listener interface only triggers when the user selects
  *       "Save and Publish".  We provide separate entry points for application
  *       startup and for the user selecting "Save" from the Designer.
  *
