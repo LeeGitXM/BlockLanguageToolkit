@@ -7,3 +7,4 @@ temp_modl/
 .DS_Store
 .recommenders/
 .version
+**/*.class
