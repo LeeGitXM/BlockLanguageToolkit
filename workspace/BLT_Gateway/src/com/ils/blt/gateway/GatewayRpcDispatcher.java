@@ -338,10 +338,12 @@ public class GatewayRpcDispatcher   {
 		requestHandler.setToolkitProperty(propertyName,value);
 	}
 	public void startController() {
+		log.infof("%s.startController ...",TAG);
 		requestHandler.startController();
 	}
 	
 	public void stopController() {
+		log.infof("%s.stopController ...",TAG);
 		requestHandler.stopController();
 	}
 	

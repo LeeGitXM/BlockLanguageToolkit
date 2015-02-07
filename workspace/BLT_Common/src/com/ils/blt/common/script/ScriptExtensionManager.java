@@ -42,14 +42,14 @@ public class ScriptExtensionManager {
 		scriptMap.put(ScriptConstants.APP_ADD_SCRIPT,createMap("add","uuid"));
 		scriptMap.put(ScriptConstants.APP_CLONE_SCRIPT,createMap("clone","uuid1,uuid2"));
 		scriptMap.put(ScriptConstants.APP_DELETE_SCRIPT,createMap("delete","uuid"));
-		scriptMap.put(ScriptConstants.APP_GET_AUX_SCRIPT,createMap("get","uuid,properties"));
-		scriptMap.put(ScriptConstants.APP_SET_AUX_SCRIPT,createMap("set","uuid,properties"));
+		scriptMap.put(ScriptConstants.APP_GET_AUX_SCRIPT,createMap("getAux","uuid,properties"));
+		scriptMap.put(ScriptConstants.APP_SET_AUX_SCRIPT,createMap("setAux","uuid,properties"));
 		scriptMap.put(ScriptConstants.APP_UPDATE_SCRIPT,createMap("update","name,uuid"));
 		scriptMap.put(ScriptConstants.FAM_ADD_SCRIPT,createMap("add","uuid"));
 		scriptMap.put(ScriptConstants.FAM_CLONE_SCRIPT,createMap("clone","uudid1,uuid2"));
 		scriptMap.put(ScriptConstants.FAM_DELETE_SCRIPT,createMap("delete","uuid"));
-		scriptMap.put(ScriptConstants.FAM_GET_AUX_SCRIPT,createMap("get","uuid"));
-		scriptMap.put(ScriptConstants.FAM_SET_AUX_SCRIPT,createMap("set","uuid,properties"));
+		scriptMap.put(ScriptConstants.FAM_GET_AUX_SCRIPT,createMap("getAux","uuid,properties"));
+		scriptMap.put(ScriptConstants.FAM_SET_AUX_SCRIPT,createMap("setAux","uuid,properties"));
 		scriptMap.put(ScriptConstants.FAM_UPDATE_SCRIPT,createMap("update","name,uuid"));
 		
 		j2p = new JavaToPython();

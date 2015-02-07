@@ -317,11 +317,11 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 */
 	public String getToolkitProperty(String propertyName) {
 		String result = null;
-		log.infof("%s.getToolkitProperty ... %s",TAG,propertyName);
+		//log.infof("%s.getToolkitProperty ... %s",TAG,propertyName);
 		try {
 			result = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "getToolkitProperty",propertyName);
-			log.infof("%s.getToolkitProperty ... got %s",TAG,result.toString());
+			log.infof("%s.getToolkitProperty ... %s = %s",TAG,propertyName,result.toString());
 		}
 		catch(Exception ge) {
 			log.infof("%s.getToolkitProperty: GatewayException (%s:%s)",TAG,ge.getClass().getName(),ge.getMessage());
@@ -538,7 +538,6 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "setToolkitProperty",propertyName,value);
-			log.infof("%s.setToolkitProperty ... succeeded %s=%s",TAG,propertyName,value);
 		}
 		catch(Exception ge) {
 			log.infof("%s.setToolkitProperty: GatewayException (%s:%s)",TAG,ge.getClass().getName(),ge.getMessage());
