@@ -32,8 +32,20 @@
       <Property name="Value">0.5</Property>
       <Property name="DataType">5</Property>
    </Tag>
+   <Tag name="NumericSink" path="MemoryTags" type="DB">
+      <Property name="Value">0.0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="NumericSource" path="MemoryTags" type="DB">
+      <Property name="Value">0.0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
    <Tag name="BooleanFeed" path="MemoryTags" type="DB">
-      <Property name="Value">false</Property>
+      <Property name="Value">true</Property>
       <Property name="DataType">6</Property>
+   </Tag>
+   <Tag name="NumericParameter" path="MemoryTags" type="DB">
+      <Property name="Value">0</Property>
+      <Property name="DataType">2</Property>
    </Tag>
 </Tags>
