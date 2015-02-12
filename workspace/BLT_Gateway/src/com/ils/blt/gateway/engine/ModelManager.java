@@ -581,8 +581,6 @@ public class ModelManager implements ProjectListener  {
 		ProjResKey key = new ProjResKey(projectId.longValue(),resourceId.longValue());
 		ProcessNode node = nodesByKey.get(key);
 		if( node!=null ) {
-			nodesByKey.remove(key);
-			nodesByUUID.remove(node.getSelf());
 			if( node instanceof ProcessDiagram ) {
 				ProcessDiagram diagram = (ProcessDiagram)node;
 
@@ -613,6 +611,9 @@ public class ModelManager implements ProjectListener  {
 					}
 				}
 			}
+			// Finally remove from the node maps
+			nodesByKey.remove(key);
+			nodesByUUID.remove(node.getSelf());
 		}
 	}
 	// Delete all process nodes for a given project.

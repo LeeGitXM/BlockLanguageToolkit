@@ -15,19 +15,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ils.block.annotation.ExecutableBlock;
-import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PalettePrototype;
-import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
-import com.ils.blt.gateway.engine.BlockExecutionController;
-import com.ils.blt.gateway.engine.ProcessDiagram;
-import com.ils.blt.gateway.proxy.ProxyHandler;
-import com.ils.common.ClassList;
-import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
@@ -228,7 +220,7 @@ public class GatewayRpcDispatcher   {
 	}
 	
 	public String getToolkitProperty(String propertyName) {
-		log.infof("%s.getToolkitProperty: %s", TAG,propertyName);
+		//log.infof("%s.getToolkitProperty: %s", TAG,propertyName);
 		return requestHandler.getToolkitProperty(propertyName);
 	}
 	
@@ -334,7 +326,7 @@ public class GatewayRpcDispatcher   {
 		requestHandler.setTimeFactor(factor);;
 	}
 	public void setToolkitProperty(String propertyName,String value) {
-		log.infof("%s.setToolkitProperty: %s: %s", TAG, propertyName, value);
+		//log.infof("%s.setToolkitProperty: %s: %s", TAG, propertyName, value);
 		requestHandler.setToolkitProperty(propertyName,value);
 	}
 	public void startController() {

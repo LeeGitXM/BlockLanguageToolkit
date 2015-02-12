@@ -27,6 +27,7 @@ import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.BroadcastNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.notification.Signal;
+import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.common.serializable.DiagramState;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
@@ -64,6 +65,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	private static ControllerRequestHandler instance = null;
 	private final BlockExecutionController controller = BlockExecutionController.getInstance();
 	private final PythonRequestHandler pyHandler;
+	private final ScriptExtensionManager sem = ScriptExtensionManager.getInstance();
+    
 	/**
 	 * Initialize with instances of the classes to be controlled.
 	 */
@@ -574,7 +577,6 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				props[index] = property;
 			}
 		}
-
 	}
 	/**
 	 * The gateway context must be specified before the instance is useful.
@@ -619,6 +621,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			else {
 				log.warnf("%s.setToolkitProperty: %s=%s - failed to create persistence record (%s)",TAG,propertyName,value,ToolkitRecord.META.quoteName);
 			}
+			sem.setModulePath(propertyName, value);
 		}
 		catch(Exception ex) {
 			log.warnf("%s.setToolkitProperty: Exception setting %s=%s (%s),",TAG,propertyName,value,ex.getMessage());
