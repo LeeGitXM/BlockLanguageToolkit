@@ -45,3 +45,8 @@ insert into ProcedureMap values ('do_temp-gda','ils.fd.TempOutputs.calculate');
 insert into ProcedureMap values ('prod-mooney-gda','ils.fd.ProductMooney.calculate');
 insert into ProcedureMap values ('not-specified','ils.fd.NoOutput.calculate');
 insert into ProcedureMap values ('unset-value','ils.fd.UnsetValue.calculate');
+-- Map G2 FinalDiagnosis calc methods into a python module.
+insert into ProcedureMap values ('calc-cstr_ens_problem-output-gda','ils.fd.CstrEnb.calculate');
+insert into ProcedureMap values ('calc-baler-vol-output-gda','ils.fd.BalerVolume.calculate');
+-- Map G2 utility methods into Python equivalents
+insert into ProcedureMap values ('g2-tw-popup','ils.utility.Window.displayClient');

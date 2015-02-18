@@ -1,4 +1,4 @@
-#!/bin/sh
+
 #  Use this version when debugging a single file.
 #
 BLT=~/Development/ils/src/blt

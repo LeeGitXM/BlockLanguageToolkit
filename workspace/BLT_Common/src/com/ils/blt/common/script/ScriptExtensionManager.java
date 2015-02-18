@@ -82,7 +82,6 @@ public class ScriptExtensionManager {
 					script.initializeLocalsMap(mgr);
 					int index = 0;
 					for(Object arg:args) {
-
 						PyObject pyObject = j2p.objectToPy(arg);
 						script.setLocalVariable(index, pyObject);
 						index++;
