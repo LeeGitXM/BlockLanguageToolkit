@@ -6,7 +6,6 @@ package com.ils.blt.designer.editor;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;

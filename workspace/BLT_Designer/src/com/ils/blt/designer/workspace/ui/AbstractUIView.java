@@ -21,7 +21,6 @@ import java.util.List;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 

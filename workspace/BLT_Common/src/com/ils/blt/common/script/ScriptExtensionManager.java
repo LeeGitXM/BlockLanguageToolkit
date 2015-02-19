@@ -4,13 +4,17 @@
  */
 package com.ils.blt.common.script;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.python.core.PyDictionary;
 import org.python.core.PyObject;
 
 import com.ils.common.JavaToPython;
+import com.ils.common.PythonToJava;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -28,6 +32,7 @@ public class ScriptExtensionManager {
 	private final LoggerEx log;
 	private static ScriptExtensionManager instance = null;
 	private final JavaToPython j2p;
+	private final PythonToJava p2j;
 	
 	public final Map<String,Map<String,Object>> scriptMap;
 	
@@ -53,6 +58,7 @@ public class ScriptExtensionManager {
 		scriptMap.put(ScriptConstants.FAM_UPDATE_SCRIPT,createMap("update","name,uuid"));
 		
 		j2p = new JavaToPython();
+		p2j = new PythonToJava();
 	}
 	
 	/**
@@ -80,13 +86,27 @@ public class ScriptExtensionManager {
 			if( script.compileScript()) {
 				try {
 					script.initializeLocalsMap(mgr);
+					List<PyObject> pyargs = new ArrayList<>();
 					int index = 0;
 					for(Object arg:args) {
-						PyObject pyObject = j2p.objectToPy(arg);
-						script.setLocalVariable(index, pyObject);
+						PyObject pyarg = j2p.objectToPy(arg);
+						script.setLocalVariable(index, pyarg);
+						pyargs.add(pyarg);
 						index++;
 					}
 					script.execute(mgr);
+					// For "complex" arguments, we update contents
+					// as a mechanism to return info from the script
+					index = 0;
+					for(Object arg:args) {
+						if( arg instanceof HashMap) {
+							PyObject pyarg = pyargs.get(index);
+							p2j.updateMapFromDictionary((HashMap<String,Object>)arg,(PyDictionary)pyarg);
+							log.debugf("%s.runScript: Updating map on return: %s",TAG,pyarg.toString());
+						}
+						
+						index++;
+					}
 				}
 				catch(Exception ex) {
 					log.warnf("%s.runScript: Exception (%s)",TAG,ex.getMessage(),ex);

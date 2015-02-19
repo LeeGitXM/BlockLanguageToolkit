@@ -27,7 +27,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
-import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JMenu;
@@ -37,8 +36,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.MenuKeyEvent;
-import javax.swing.event.MenuKeyListener;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
