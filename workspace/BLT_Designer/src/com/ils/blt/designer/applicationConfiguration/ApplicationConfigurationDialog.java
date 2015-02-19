@@ -49,30 +49,6 @@ public class ApplicationConfigurationDialog extends JDialog {
 	protected boolean cancelled = false;
 	protected final Map<String,Object> properties;
 	
-	public ApplicationConfigurationDialog(Frame frame,DesignerContext ctx,SerializableApplication app) {
-//PH		super(KEY);
-/*PH
-       	setInitIndex(10);
-
-*/
-		System.out.println("In ApplicationConfigurationDialog constructor");
-		setTitle(TITLE);
-		this.application = app;
-		this.context = ctx;
-		this.properties = new HashMap<>();
-		this.log = LogUtil.getLogger(getClass().getPackage().getName());
-		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));
-		
-		System.out.printf("Application: %s %n", application.getName());
-		
-		controller = new ApplicationConfigurationController(this);
-       	setContentPane(controller.getSlidingPane());
-//PH       	super(frame,ctx);
-		
-        initialize();
-	}
-
-
 	private static final long serialVersionUID = 2882399376824334427L;
 	private final int DIALOG_HEIGHT = 420;
 	private final int DIALOG_WIDTH = 440;
@@ -95,6 +71,26 @@ public class ApplicationConfigurationDialog extends JDialog {
 	public final static String PROPERTY_UNIT             = "unit";
 */
 
+	public ApplicationConfigurationDialog(Frame frame,DesignerContext ctx,SerializableApplication app) {
+		this.log = LogUtil.getLogger(getClass().getPackage().getName());
+		log.infof("In ApplicationConfigurationDialog constructor");
+		setTitle(TITLE);
+		this.application = app;
+		this.context = ctx;
+		this.properties = new HashMap<>();
+		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));
+		
+		log.infof("Application: %s", application.getName());
+		
+		initialize();
+		controller = new ApplicationConfigurationController(this);
+       	setContentPane(controller.getSlidingPane());
+        
+        log.infof("   ...leaving ApplicationConfigurationDialog constructor!");
+	}
+	
+	
+	
 	/**
 	 * The super class takes care of making a central tabbed pane.
 	 * Here we add the tabs ...
@@ -105,46 +101,14 @@ public class ApplicationConfigurationDialog extends JDialog {
 	private void initialize() {
 		log.infof("Initializing the application dialog, calling the get extension function...");
 			
-		
-		// Fetch properties of the family associated with the database and not serialized.
-
-		extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAM_GET_AUX_SCRIPT, 
+		// Fetch properties of the application associated with the database and not serialized.
+		extensionManager.runScript(context.getScriptManager(), ScriptConstants.APP_GET_AUX_SCRIPT, 
 				this.application.getId().toString(),properties);
 
 		log.infof("...back in Java land!");
-		// TODO: Call the getAuxData script
+		System.out.println("Properties: " + properties);
 	}
-	
-	
-	/**
-	 * Create the content pane and initialize layout.
-	 */
-	private JPanel createQuantOutputPanel() {
-		JPanel panel = new JPanel();
-		return panel;
-	}
-	
 		
-		// The OK button copies data from the components and sets properties.
-		// The super class already created the button and placed it in the panel. 
-		// We just add the action listener here.
-		private void setOKActions() {
-			// The OK button copies data from the components and sets the property properties.
-			// It then returns to the main tab
-/*
-			okButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					// Set attributes from fields
-					properties.put(PROPERTY_DESCRIPTION, descriptionArea.getText());
-					// TODO: fill the properties structure with all the other attributes
-					String activeState = (String)stateBox.getSelectedItem();
-
-					// TODO: Call the setAuxData script
-					dispose();
-				}
-			});
-*/
-		}
 	/**
 	 * Create a combo box for ramp method
 	 */

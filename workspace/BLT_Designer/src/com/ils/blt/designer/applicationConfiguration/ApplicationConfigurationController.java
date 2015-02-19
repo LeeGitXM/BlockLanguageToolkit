@@ -2,11 +2,18 @@ package com.ils.blt.designer.applicationConfiguration;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
 
 import javax.swing.JPanel;
 import javax.swing.ListModel;
 
+import org.python.core.PyList;
+
 import com.inductiveautomation.ignition.client.util.gui.SlidingPane;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 /** A controller for all the sliding panes that are involved in editing the application. */
@@ -15,6 +22,8 @@ public class ApplicationConfigurationController {
 	private ApplicationConfigurationDialog dialog;
 	private Application application;
 	private SortedListModel outputListModel;
+	private Map<String,Object> properties;
+	protected final LoggerEx log;
 	
 	interface EditorPane {
 		/** show yourself, after doing any necessary preparation. */
@@ -34,10 +43,18 @@ public class ApplicationConfigurationController {
 	private OutputEditorPane outputEditor;
 	
 	public ApplicationConfigurationController(ApplicationConfigurationDialog diag) {
+		this.log = diag.log;
+		log.infof("In ApplicationConfigurationController constructor...");
 		dialog = diag;
+		properties=dialog.properties;
+		
+		initializeApplication();
+		
 //PH		tagBrowser = new TagBrowserPane(this);
 		
-		System.out.println("In ApplicationConfigurationController constructor");
+//		application.setConsole((String) properties.get("Console"));
+//		System.out.printf("Application Console: %s %n", application.getConsole());
+		
 		
 		//TODO This would be a good time to go out and query the database...
 		outputListModel = new SortedListModel();
@@ -53,10 +70,8 @@ public class ApplicationConfigurationController {
 		home = new HomePane(this, application);
 		outputs = new OutputsPane(this, outputListModel);
 		outputEditor = new OutputEditorPane(this);
-		
-		
+
 		// sub-panes added according to the indexes above:
-		System.out.println("In ApplicationConfigurationController constructor");
 		slidingPane.add(home);
 		slidingPane.add(outputs);
 		slidingPane.add(outputEditor);
@@ -70,6 +85,30 @@ public class ApplicationConfigurationController {
 			public void actionPerformed(ActionEvent e) {doStringEdit();}
 		});
 */
+		log.infof("   ...leaving ApplicationConfigurationController constructor!");
+	}
+	
+	private void initializeApplication(){
+		log.infof("   ...initializing the Application data model...");
+		String post = (String) properties.get("Post");
+		System.out.printf("Application Post: %s %n", post);
+		
+		// Process the list of outputs (A list of dictionaries)
+		List<?> outputList = (List<?>) properties.get("QuantOutputs");
+		if( outputList!=null ) {
+			for(Object output : outputList) {
+				System.out.println("Output: " + output);
+			}
+		}
+		
+		// Process the list of consoles
+		List<?> consoleList = (List<?>) properties.get("Consoles");
+		if( consoleList!=null ) {
+			for(Object console : consoleList) {
+				System.out.println("Console: " + console);
+			}
+		}
+
 	}
 	
 	public void setContext(DesignerContext context) {

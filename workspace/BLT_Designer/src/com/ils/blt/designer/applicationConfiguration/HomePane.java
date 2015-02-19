@@ -1,19 +1,23 @@
 package com.ils.blt.designer.applicationConfiguration;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
 
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.border.BevelBorder;
@@ -27,9 +31,18 @@ import javax.swing.tree.TreeSelectionModel;
 
 
 
+
+
+
+
 import net.miginfocom.swing.MigLayout;
 
 
+
+
+
+
+import com.ils.blt.common.block.ActiveState;
 //import com.ils.sfc.client.step.AbstractIlsStepUI;
 import com.inductiveautomation.ignition.common.config.BasicPropertySet;
 import com.inductiveautomation.ignition.common.config.PropertyValue;
@@ -38,9 +51,16 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 	private ApplicationConfigurationController controller;
 	private Application application;
 	private static final long serialVersionUID = 2882399376824334427L;
+	protected static final Dimension COMBO_SIZE  = new Dimension(280,24);
 
+	final JPanel buttonPanel;
+	final JPanel mainPanel;
+	
 	final JTextField nameField = new JTextField();
-	//	private static Icon nextIcon = new ImageIcon(AbstractIlsStepUI.class.getResource("/images/add.png"));
+	final JTextArea descriptionTextArea = new JTextArea();
+	final JComboBox<String> consoleComboBox = new JComboBox<String>();
+	final JComboBox<String> queueComboBox = new JComboBox<String>();
+	private static Icon addIcon = new ImageIcon(Application.class.getResource("/images/add.png"));
 //	final JButton nextButton = new JButton(nextIcon);
 	final JButton nextButton = new JButton("Next");
 	final JButton cancelButton = new JButton("Cancel");
@@ -53,40 +73,67 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 	private Data recipeData;
 */	
 	public HomePane(ApplicationConfigurationController controller, Application app) {
-		super(new MigLayout(
-				"",										// Layout Constraints
-				"[50][50][50][50]",						// Column Constraints
-				""										// Row Constraints
-				));
+		super(new BorderLayout());
 		this.controller = controller;
 		this.application=app;
 
-		add(new JLabel("Application Configuration"), "cell 1 0 2 1");
+		// Add a couple of panels to the main panel
+		buttonPanel = new JPanel(new FlowLayout());
+		add(buttonPanel,BorderLayout.SOUTH);
 		
-		add(new JLabel("Name:"), "cell 0 3");
+		final String columnConstraints = "para[][][][]";
+		final String layoutConstraints = "ins 10,gapy 3,gapx 5,fillx";
+		final String rowConstraints = "para[][][][][][][][][]";		
+		mainPanel = new JPanel(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
+		add(mainPanel,BorderLayout.CENTER);
+		
+		// Add components to the main panel
+		mainPanel.add(new JLabel("Name:"),"");
 		nameField.setText(application.getName());
-		add(nameField, "wrap");
+		nameField.setPreferredSize(COMBO_SIZE);
+		mainPanel.add(nameField,"span,wrap");
 		
-		add(new JLabel("Description:"), "cell 0 4");
-		add(new JTextField(application.getDescription()), "wrap");
+		mainPanel.add(new JLabel("Description:"),"gaptop 2,aligny top");
+//		String description = (String)properties.get(PROPERTY_DESCRIPTION);
+//		if( description==null) description="";
+		descriptionTextArea.setText("My description");
+//		descriptionTextArea.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));     // Thickness
+//		descriptionTextArea.setPreferredSize(new Dimension(280,80));
+		descriptionTextArea.setEditable(true);
+		descriptionTextArea.setToolTipText("Random description");
+
+		JScrollPane scrollPane = new JScrollPane(descriptionTextArea);
+		scrollPane.setPreferredSize(new Dimension(280,80));
+		mainPanel.add(scrollPane,"gaptop 2,aligny top,span,wrap");
+
 		
-		add(new JLabel("Console:"), "cell 0 5");
+		mainPanel.add(new JLabel("Console:"), "cell 0 5");
+		nameField.setPreferredSize(COMBO_SIZE);
+		consoleComboBox.addItem("Console 1");
+		consoleComboBox.addItem("Console 2");
+		consoleComboBox.setToolTipText("The console where diagnosis will be added!");
+//		consoleBox.setSelectedItem(state.name());
+//		consoleBox.setPreferredSize(COMBO_SIZE);
+		mainPanel.add(consoleComboBox);
 		
-		add(new JLabel("Queue:"), "cell 0 6");
+		mainPanel.add(new JLabel("Queue:"), "cell 0 6");
+		queueComboBox.addItem("Queue 1");
+		queueComboBox.addItem("Queue 2");
+		queueComboBox.setToolTipText("The console where diagnosis will be added!");
+		mainPanel.add(queueComboBox);
 		
-		add(new JLabel("Unit:"), "cell 0 7");
-		
-		add(cancelButton, "cell 1 9");
+		// Add buttons to the button panel
+		buttonPanel.add(cancelButton, "cell 1 9");
 		cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {doCancel();}
 		});
 
-		add(okButton, "cell 2 9");
+		buttonPanel.add(okButton, "cell 2 9");
 		okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {doOk();}
 		});
 		
-		add(nextButton, "cell 3 10");
+		buttonPanel.add(nextButton, "cell 3 10");
 		nextButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {doNext();}			
 		});

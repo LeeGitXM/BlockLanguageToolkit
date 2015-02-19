@@ -7,6 +7,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
 
+import javax.swing.BoxLayout;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -30,10 +33,14 @@ public class OutputsPane extends JPanel implements ApplicationConfigurationContr
 	private ApplicationConfigurationController controller;
 	private SortedListModel outputListModel;
 	private static final long serialVersionUID = 2882399376824334428L;
-	final JButton previousButton = new JButton("Previous");
-	final JButton addButton = new JButton("Add");
-	final JButton deleteButton = new JButton("Delete");
+	private static Icon addIcon = new ImageIcon(Application.class.getResource("/images/add.png"));
+	private static Icon deleteIcon = new ImageIcon(Application.class.getResource("/images/delete.png"));
+	private static Icon previousIcon = new ImageIcon(Application.class.getResource("/images/arrow_left_green.png"));
+	final JButton previousButton = new JButton(previousIcon);
+	final JButton addButton = new JButton(addIcon);
+	final JButton deleteButton = new JButton(deleteIcon);
 	final JButton editButton = new JButton("Edit");
+	final JPanel buttonPanel;
 	final JList jlist;
 	final JScrollPane outputsScrollPane = new JScrollPane();
 /*	
@@ -43,44 +50,51 @@ public class OutputsPane extends JPanel implements ApplicationConfigurationContr
 	private Data recipeData;
 */	
 	public OutputsPane(ApplicationConfigurationController controller, SortedListModel model) {
-		super(new MigLayout(
-				"",										// Layout Constraints
-				"[20][300][20]",						// Column Constraints
-				"[10][10][10][10][200][10]"	// Row Constraints
-				));
-		System.out.println("In  constructor");
+		super(new BorderLayout(20, 30));
+		System.out.println("In Outputs pane constructor");
 		this.controller = controller;
 		this.outputListModel = model;
 		
 		JLabel label = new JLabel("Outputs");
-		add(label, "cell 1 0 1 1");
+		label.setHorizontalAlignment(JLabel.CENTER);
+		add(label, BorderLayout.NORTH);
 		
 		JList jlist = new JList(model);
 		JScrollPane scrollPane = new JScrollPane(jlist);
 		this.jlist=jlist;
-		add(scrollPane, "cell 0 1 2 4");
+		add(scrollPane, BorderLayout.CENTER);
 		
-		add(previousButton, "cell 0 5");
-		previousButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {doPrevious();}
-		});
-
-		add(addButton, "cell 2 1");
+		// The three button along the right are in their own panel
+		buttonPanel = new JPanel();
+		BoxLayout layout = new BoxLayout(buttonPanel, BoxLayout.Y_AXIS);
+		buttonPanel.setLayout(layout);
+		add(buttonPanel,BorderLayout.EAST);
+		
+		addButton.setAlignmentX(RIGHT_ALIGNMENT);
+		buttonPanel.add(addButton);
 		addButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {doAdd();}
 		});
 		
-		add(deleteButton, "cell 2 2");
+		deleteButton.setAlignmentX(RIGHT_ALIGNMENT);
+		buttonPanel.add(deleteButton);
 		deleteButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {doDelete();}
 		});
 		
-		add(editButton, "cell 2 3");
+		editButton.setAlignmentX(RIGHT_ALIGNMENT);
+		buttonPanel.add(editButton);
 		editButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {doEdit();}
 		});
 		
-
+		// The previous button should be all the way at the bottom, hugging the left side.
+		JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		add(bottomPanel,BorderLayout.SOUTH);
+		bottomPanel.add(previousButton);
+		previousButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {doPrevious();}
+		});
 		
 		//TODO Need to add a JList and a Jscrollpane here
 /*	
