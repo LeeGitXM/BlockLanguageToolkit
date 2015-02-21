@@ -2,9 +2,8 @@
 # Simple test of an input and readout
 #
 Test: Simple Input to Output
-Step: Integer values
+Step: Numeric tag reader
 Show: browser "app75/family75/simplest"
-resetDiagram (app75/family75/simplest)
 Tagset: BasicDiagrams
 10:00 1
 10:01 2
@@ -12,3 +11,14 @@ Tagset: BasicDiagrams
 10:02 3
 10:03 4
 10:03:10 Assert: DiagramOutput = 4 "Output is 4"
+resetDiagram (app75/family75/simplest)
+Step: Numeric source to sink
+Tagset: BasicSource
+10:04 99
+10:05 98
+10:05:10 Assert: Sink = 98 "Sink is 98"
+10:06 97
+10:07 96
+10:07:10 Assert: Parameter = 96 "Parameter is 96"
+10:08 95
+10:08:10 Assert: Sink = 95 "Sink is 95"

@@ -248,6 +248,9 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public ProcessNode getProcessNode(UUID id) {
 		return modelManager.getProcessNode(id);
 	}
+	public List<SerializableResourceDescriptor> getDiagramDescriptors() {
+		return modelManager.getDiagramDescriptors();
+	}
 	public List<SerializableResourceDescriptor> getDiagramDescriptors(String projectName) {
 		return modelManager.getDiagramDescriptors(projectName);
 	}

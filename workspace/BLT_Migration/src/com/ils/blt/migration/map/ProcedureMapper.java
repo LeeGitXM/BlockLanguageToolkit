@@ -41,7 +41,7 @@ public class ProcedureMapper {
 			while(rs.next())
 			{
 				String g2Procedure = rs.getString("G2Procedure");
-				String pythonModule = rs.getString("IgnitonProcedure");
+				String pythonModule = rs.getString("IgnitionProcedure");
 				
 				procedureMap.put(g2Procedure.toLowerCase(),pythonModule);
 			}

@@ -101,7 +101,7 @@ public class Parameter extends AbstractProcessBlock implements ProcessBlock {
 			
 			if( vcn.getConnection()!=null ) {
 				// Arrival through the input connection
-				String path = tag.getValue().toString();
+				String path = tag.getBinding().toString();
 				controller.updateTag(getParentId(),path, qv);
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 				controller.acceptCompletionNotification(nvn);

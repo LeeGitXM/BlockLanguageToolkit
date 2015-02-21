@@ -299,6 +299,14 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	}
 	
 	/**
+	 * When called from the gateway, we have no project. Get them all.
+	 */
+	public List<SerializableResourceDescriptor> getDiagramDescriptors() {
+		List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
+		return descriptors;
+	}
+	
+	/**
 	 * @param projectId
 	 * @param resourceId
 	 * @return the current state of the specified diagram as a String.

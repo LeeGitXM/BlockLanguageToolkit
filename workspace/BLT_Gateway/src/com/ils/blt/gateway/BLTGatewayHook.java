@@ -20,6 +20,7 @@ import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.project.ProjectVersion;
+import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.clientcomm.ClientReqSession;
@@ -127,6 +128,12 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		List<INamedTab>panels = new ArrayList<INamedTab>();
 		panels.add(new ExecutionStatus());
 		return panels;
+	}
+	
+	@Override
+	public void initializeScriptManager(ScriptManager mgr) {
+		super.initializeScriptManager(mgr);
+		mgr.addScriptModule(BLTProperties.APPLICATION_SCRIPT_PACKAGE, GatewayScriptFunctions.class);
 	}
 	
 	private static class ExecutionStatus extends AbstractNamedTab {

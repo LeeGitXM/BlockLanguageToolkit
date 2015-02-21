@@ -241,6 +241,30 @@ public class ModelManager implements ProjectListener  {
 	}
 	
 	/**
+	 * Get a list of all diagram tree paths
+	 * @return a list of diagram tree paths. If none found, return null. 
+	 */
+	public List<SerializableResourceDescriptor> getDiagramDescriptors() {
+		List<SerializableResourceDescriptor> result = new ArrayList<>();
+		for( Long projectId: root.allProjects() ) {
+			List<ProcessNode> nodes = root.allNodesForProject(projectId);
+			// For each diagram discovered, create a tree path.
+			for(ProcessNode node:nodes) {
+				if( node instanceof ProcessDiagram ) {
+					SerializableResourceDescriptor descriptor = new SerializableResourceDescriptor();
+					descriptor.setName(node.getName());
+					descriptor.setId(node.getSelf().toString());
+					descriptor.setProjectId(projectId);
+					descriptor.setResourceId(node.getResourceId());
+					descriptor.setPath(node.getTreePath(nodesByUUID));
+					result.add(descriptor);
+				}
+			}
+		}
+		return result;	
+	}
+	
+	/**
 	 * Remove a diagram that is not associated with a project resource,
 	 * nor with the folder hierarchy.
 	 * 

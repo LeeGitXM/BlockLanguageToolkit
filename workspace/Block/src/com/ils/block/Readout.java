@@ -57,7 +57,15 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 		this.fncs = new UtilityFunctions();
 		initialize();
 	}
-	
+	/**
+	 * On a reset, clear the display.
+	 */
+	@Override
+	public void reset() {
+		super.reset();
+		valueProperty.setValue("");
+		notifyOfStatus();
+	}
 	/**
 	 * Add properties that are new for this class.
 	 * Populate them with default values.
@@ -157,11 +165,7 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 				log.tracef("%s.acceptValue: port %s formatted value =  %s.",TAG,incoming.getConnection().getUpstreamPortName(),value);
 				notifyOfStatus(qv);
 			}
-			else {
-				
-			}
 		}
-
 	}
 	
 

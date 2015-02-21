@@ -3,5 +3,6 @@ log: Block Language Toolkit Regression Suite
 # Run the collection of tests for the "simple" diagrams
 #
 run: simplest.txt
-run: persistence
+run: persistence.txt
 run: sum.txt
+run: sqc.txt
