@@ -21,6 +21,7 @@ import java.util.List;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -253,8 +254,12 @@ public abstract class AbstractUIView extends JComponent
 	// Force a repaint.
 	@Override
 	public void update() {
-		//log.infof("%s.update %s ...",TAG,getBlock().getName());
-		repaint();
+		log.infof("%s.update %s ...",TAG,getBlock().getName());
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				repaint();
+			}
+		});
 	}
 	
 	// The block has changed, re-configure.
@@ -263,9 +268,14 @@ public abstract class AbstractUIView extends JComponent
 	
 	@Override
 	public void stateChanged(ChangeEvent event) {
-		// Clear, then re-layout the anchor points
-		getAnchorPoints().clear();
-		initAnchorPoints();
+		log.infof("%s.stateChanged %s ...",TAG,getBlock().getName());
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				// Clear, then re-layout the anchor points
+				getAnchorPoints().clear();
+				initAnchorPoints();
+			}
+		});
 	}
 	
 	protected void drawAnchors(Graphics2D g,int xoffset,int yoffset) {

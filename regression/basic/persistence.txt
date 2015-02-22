@@ -1,5 +1,5 @@
 #
-# Simple test of an input and readout
+# Test of a persistence gate. 5 min timer
 #
 Test: Exercise the Persistence block
 Step: Target is TRUE
@@ -12,4 +12,4 @@ Tagset: SingleBoolean
 10:02 3 true
 10:03 4
 10:03:10 Assert: persistence = FALSE "Before expiration time"
-10:05:10 Assert: persistence = TRUE  "After expiration time"
+10:08:20 Assert: persistence = TRUE  "After expiration time"

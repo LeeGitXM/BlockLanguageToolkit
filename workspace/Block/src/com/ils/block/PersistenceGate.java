@@ -81,7 +81,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		BlockProperty triggerProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER,trigger,PropertyType.STRING,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER, triggerProperty);
 		// The value is the count-down shown in the UI
-		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"---------",PropertyType.STRING,false);
+		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.STRING,false);
 		valueProperty.setBindingType(BindingType.ENGINE);
 		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 
@@ -99,6 +99,8 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		if( dog.isActive() ) controller.removeWatchdog(dog);
 		count = 0;
 		truthValue = TruthValue.UNSET;
+		valueProperty.setValue("");
+		notifyOfStatus();
 	}
 	/**
 	 * Disconnect from the timer thread.

@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
@@ -425,9 +426,18 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	 }
 
 	// ====================================== Change Listener =====================================
+	 /**
+	  * We are about to take UI action, so execute on the event thread.
+	  */
 	@Override
 	public void stateChanged(ChangeEvent e) {
-		if( ui != null ) ui.update();
+		if( ui != null ) {
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					ui.update();
+				}
+			});
+		}
 		
 	}
 }

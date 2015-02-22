@@ -11,6 +11,7 @@ import java.util.Collection;
 
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
@@ -114,8 +115,12 @@ public class NoteUIView extends AbstractUIView implements BlockViewUI, ChangeLis
 	/** Handle a change in properties that would affect the UI. */
 	public void stateChanged(ChangeEvent e) {
 		setSizeFromProperties();
-		blockComponent.invalidate();
-		blockComponent.repaint();
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				blockComponent.invalidate();
+				blockComponent.repaint();
+			}
+		});
 	}
 
 	/** Set the visible box's size from the width and height block properties. */
