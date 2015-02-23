@@ -2,6 +2,7 @@ package com.ils.blt.designer.applicationConfiguration;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -19,8 +20,8 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 /** A controller for all the sliding panes that are involved in editing the application. */
 public class ApplicationConfigurationController {
 	public static java.awt.Color background = new java.awt.Color(238,238,238);
-	private ApplicationConfigurationDialog dialog;
 	private Application application;
+	private ApplicationConfigurationDialog dialog;
 	private SortedListModel outputListModel;
 	private Map<String,Object> properties;
 	protected final LoggerEx log;
@@ -44,8 +45,9 @@ public class ApplicationConfigurationController {
 	
 	public ApplicationConfigurationController(ApplicationConfigurationDialog diag) {
 		this.log = diag.log;
-		log.infof("In ApplicationConfigurationController constructor...");
 		dialog = diag;
+		log.infof("In ApplicationConfigurationController constructor for %s...", dialog.getApplication().getName() );
+		
 		properties=dialog.properties;
 		
 		initializeApplication();
@@ -56,15 +58,20 @@ public class ApplicationConfigurationController {
 //		System.out.printf("Application Console: %s %n", application.getConsole());
 		
 		
-		//TODO This would be a good time to go out and query the database...
+		// This would be a good time to go out and query the database...
+		System.out.println("Properties: " + properties);
+		
 		outputListModel = new SortedListModel();
 		outputListModel.addAll(new String[] {"FC100.PV", "FC1001.PV", "Three", "FC1002.PV", "FC1003.PV", "FC1004.PV",
 				"FC1005.PV", "FC1006.PV", "FC1007.PV", "FC1008.PV", "FC1009.PV", "FC1010.PV"});
 		
 		application = new Application();
-		application.setName("My APP #1");
-		application.setConsole("VFU Console1");
-		application.setDescription("This is my first hard-coded application");
+		application.setName(dialog.getApplication().getName());
+		application.setDescription((String) properties.get("Description"));
+		application.setConsole((String) properties.get("Console"));
+		application.setConsoles((ArrayList<String>) properties.get("Consoles"));
+		application.setQueue((String) properties.get("MessageQueue"));
+		application.setQueues((ArrayList<String>) properties.get("MessageQueues"));
 		
 		// Create the sub-panes
 		home = new HomePane(this, application);

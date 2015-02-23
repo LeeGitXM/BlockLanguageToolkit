@@ -35,7 +35,11 @@ import javax.swing.tree.TreeSelectionModel;
 
 
 
+
+
 import net.miginfocom.swing.MigLayout;
+
+
 
 
 
@@ -91,35 +95,37 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 		mainPanel.add(new JLabel("Name:"),"");
 		nameField.setText(application.getName());
 		nameField.setPreferredSize(COMBO_SIZE);
+		nameField.setEditable(false);
+		nameField.setToolTipText("The name can only be changed from the project tree.");
 		mainPanel.add(nameField,"span,wrap");
-		
+
 		mainPanel.add(new JLabel("Description:"),"gaptop 2,aligny top");
-//		String description = (String)properties.get(PROPERTY_DESCRIPTION);
-//		if( description==null) description="";
-		descriptionTextArea.setText("My description");
-//		descriptionTextArea.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));     // Thickness
-//		descriptionTextArea.setPreferredSize(new Dimension(280,80));
+		String description = (String)application.getDescription();
+		if( description==null) description="";
+		descriptionTextArea.setText(description);
 		descriptionTextArea.setEditable(true);
-		descriptionTextArea.setToolTipText("Random description");
+		descriptionTextArea.setToolTipText("Optional description of this application");
 
 		JScrollPane scrollPane = new JScrollPane(descriptionTextArea);
 		scrollPane.setPreferredSize(new Dimension(280,80));
 		mainPanel.add(scrollPane,"gaptop 2,aligny top,span,wrap");
 
-		
 		mainPanel.add(new JLabel("Console:"), "cell 0 5");
-		nameField.setPreferredSize(COMBO_SIZE);
-		consoleComboBox.addItem("Console 1");
-		consoleComboBox.addItem("Console 2");
+		for(Object console : application.getConsoles()) {
+			consoleComboBox.addItem((String) console);
+		}
 		consoleComboBox.setToolTipText("The console where diagnosis will be added!");
-//		consoleBox.setSelectedItem(state.name());
-//		consoleBox.setPreferredSize(COMBO_SIZE);
+		consoleComboBox.setSelectedItem(application.getConsole());
+		consoleComboBox.setPreferredSize(COMBO_SIZE);
 		mainPanel.add(consoleComboBox);
 		
 		mainPanel.add(new JLabel("Queue:"), "cell 0 6");
-		queueComboBox.addItem("Queue 1");
-		queueComboBox.addItem("Queue 2");
-		queueComboBox.setToolTipText("The console where diagnosis will be added!");
+		for(Object q : application.getQueues()) {
+			queueComboBox.addItem((String) q);
+		}
+		queueComboBox.setToolTipText("The message queue where messages for this application will be posted!");
+		queueComboBox.setSelectedItem(application.getQueue());
+		queueComboBox.setPreferredSize(COMBO_SIZE);
 		mainPanel.add(queueComboBox);
 		
 		// Add buttons to the button panel
