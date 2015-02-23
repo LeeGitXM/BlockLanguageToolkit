@@ -13,12 +13,9 @@ cd $REPO_ROOT
 mkdir $TMP
 cd $REPO_ROOT/blt/migration
 rm -f mdb/*.db
-rm -f tdb/*.db
 rm -rf tags
 cp -a * $TMP
 cd mdb
-./mkdatabase
-cd ../tdb
 ./mkdatabase
 cd ..
 ./clear-json

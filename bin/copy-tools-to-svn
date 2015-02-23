@@ -1,0 +1,16 @@
+#!/bin/sh
+#
+# Save build products to the Subversion area for packaging.
+# Make sure that the release area has been cleaned and
+# VERS, DATE files updated
+#
+#set -x
+REPO_ROOT=~/Development/ils/src
+SVN=~/Development/ils/svn/EMChemicals/Release/src
+LIB=$REPO_ROOT/external/lib
+# Prepare directories
+TOOLDIR=$SVN/tools/blt-migration
+mkdir -p $TOOLDIR
+cd $REPO_ROOT/blt/migration
+cp migrate $TOOLDIR/migrate.sh
+cp $LIB/blt-migration.jar $TOOLDIR

@@ -233,14 +233,18 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 	 */
 	@Override
 	public void notifyOfStatus() {
-		QualifiedValue qv = new BasicQualifiedValue(truthValue);
-		notifyOfStatus(qv);
-		
+		if( getBlockId()!=null ) {
+			QualifiedValue qv = new BasicQualifiedValue(truthValue);
+			notifyOfStatus(qv);
+		}
 	}
 	// NOTE: The "value" property is what we want to display (the countdown)
 	private void notifyOfStatus(QualifiedValue qv) {
-		QualifiedValue displayQV = new BasicQualifiedValue(valueProperty.getValue());
-		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,displayQV);
+		Object val = valueProperty.getValue();
+		if( val!=null ) {
+			QualifiedValue displayQV = new BasicQualifiedValue(val.toString());
+			controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,displayQV);
+		}
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 	/**

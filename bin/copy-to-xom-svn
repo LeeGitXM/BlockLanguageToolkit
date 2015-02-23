@@ -17,7 +17,7 @@ cd $REPO_ROOT/blt/images
 cp -a Block $SVN/icons
 cd $REPO_ROOT/blt/projects
 cp blt_block_test.proj $SVN/project
-cp diagrams-readout.proj $SVN/project
+cp basic-diagrams.proj $SVN/project
 cd $REPO_ROOT/blt
 cp -a data $SVN
 cd $REPO_ROOT
