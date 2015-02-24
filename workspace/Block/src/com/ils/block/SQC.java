@@ -39,7 +39,7 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
  * This class applies one of the Westinghouse (Western Electric) SPC rules to its input.
  * If the scan interval is zero, then the application runs in an event-driven mode.
  * Otherwise, a timing loop is created and the input (the last value to have arrived) is
- * evaluated on loop timeout.
+ * evaluated on loop timeout. The output is TRUE if there is a rule violation.
  */
 @ExecutableBlock
 public class SQC extends AbstractProcessBlock implements ProcessBlock {
@@ -134,6 +134,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		log.infof("%s.clear: reset data buffer",TAG);
 		queue.clear();
 		truthState = TruthValue.UNSET;
+		notifyOfStatus();
 	}
 	
 	/**
@@ -279,6 +280,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		
 	}
 	private void notifyOfStatus(QualifiedValue qv) {
+		//log.infof("%s.notifyOfStatus %s = %s",TAG,getBlockId().toString(),qv.getValue().toString());
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 	/**
@@ -289,7 +291,15 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
 		log.infof("%s.propertyChange: %s = %s",TAG,propertyName,event.getNewValue().toString());
-		if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_MAXIMUM_OUT_OF_RANGE)) {
+		if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET)) {
+			try {
+				clearOnReset = Boolean.parseBoolean(event.getNewValue().toString());
+			}
+			catch(NumberFormatException nfe) {
+				log.warnf("%s: propertyChange Unable to convert clear flag to a boolean (%s)",TAG,nfe.getLocalizedMessage());
+			}
+		}
+		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_MAXIMUM_OUT_OF_RANGE)) {
 			try {
 				maxOut = Integer.parseInt(event.getNewValue().toString());
 				if( maxOut<0 ) maxOut = 0;

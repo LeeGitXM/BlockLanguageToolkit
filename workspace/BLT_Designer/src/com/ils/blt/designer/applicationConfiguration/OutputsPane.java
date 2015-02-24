@@ -59,9 +59,9 @@ public class OutputsPane extends JPanel implements ApplicationConfigurationContr
 		label.setHorizontalAlignment(JLabel.CENTER);
 		add(label, BorderLayout.NORTH);
 		
-		JList jlist = new JList(model);
-		JScrollPane scrollPane = new JScrollPane(jlist);
-		this.jlist=jlist;
+		JList lst = new JList(model);
+		JScrollPane scrollPane = new JScrollPane(lst);
+		this.jlist=lst;
 		add(scrollPane, BorderLayout.CENTER);
 		
 		// The three button along the right are in their own panel
