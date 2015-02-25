@@ -76,6 +76,7 @@ public class Junction extends AbstractProcessBlock implements ProcessBlock {
 		this.state = BlockState.ACTIVE;
 		if(!isLocked() ) {
 			QualifiedValue qv = vcn.getValue();
+			//log.infof("%s.acceptValue: %s", getName(),qv.getValue().toString());
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus(qv);

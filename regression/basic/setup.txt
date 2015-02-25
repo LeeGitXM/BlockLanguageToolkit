@@ -2,6 +2,7 @@
 # Define attributes that are valid for many tests
 #
 log: [DATE] [TIME] Start Testing ...
+notification: compareGain    "C:a46aefb0-0a9b-45e8-b6a1-ccb769292d95:out"
 notification: persistence    "C:389ee5dc-824e-42be-8d04-86ea8a391c94:out"
 notification: sqcResult      "C:a46aefb0-0a9b-45e8-b6a1-ccb769292d95:out"
 notification: sumObservation "C:4a8f708b-f77c-4dbf-abc2-7dd01a1224a1:out"
@@ -17,6 +18,9 @@ tag: DiagramInput MemoryTags/DiagramFeed
 tag: DiagramOutput MemoryTags/DiagramOutput
 tag: Feed2 MemoryTags/MJKFeed2
 tag: Feed3 MemoryTags/MJKFeed3
+tag: GainFeed1 MemoryTags/GainFeed1
+tag: GainFeed2 MemoryTags/GainFeed2
+tag: GainOutput MemoryTags/GainOutput
 tag: Parameter MemoryTags/NumericParameter
 tag: Sink MemoryTags/NumericSink
 tag: Source MemoryTags/NumericSource
@@ -29,5 +33,6 @@ tagset: BasicDiagrams DiagramInput
 tagset: BasicSource Source
 tagset: SingleBoolean BooleanFeed
 tagset: DualFeed Feed2 Feed3
+tagset: GainFeed GainFeed1 GainFeed2
 tagset: SQC Feed3 SQCStdDev SQCTarget
 status: setup complete.
