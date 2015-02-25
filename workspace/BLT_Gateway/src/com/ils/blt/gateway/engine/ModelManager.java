@@ -479,7 +479,7 @@ public class ModelManager implements ProjectListener  {
 				log.tracef("%s.addModifyDiagramResource: starting tag subscriptions ...%d:%s",TAG,projectId,res.getName());
 				for( ProcessBlock pb:diagram.getProcessBlocks()) {
 					for(BlockProperty bp:pb.getProperties()) {
-						controller.startSubscription(pb,bp);
+						controller.startSubscription(pb,bp);   // Does nothing for existing subscriptions
 					}
 					pb.setProjectId(projectId);
 				}

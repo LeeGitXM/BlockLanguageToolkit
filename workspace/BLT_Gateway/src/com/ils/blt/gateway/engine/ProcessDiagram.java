@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.connection.Connection;
@@ -22,6 +23,7 @@ import com.ils.blt.common.serializable.DiagramState;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableConnection;
 import com.ils.blt.common.serializable.SerializableDiagram;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
@@ -106,7 +108,7 @@ public class ProcessDiagram extends ProcessNode {
 		BlockFactory blockFactory = BlockFactory.getInstance();
 		ConnectionFactory connectionFactory = ConnectionFactory.getInstance();
 		
-		// Update the blocks
+		// Update the blocks - we've already deleted any not present in the new
 		SerializableBlock[] sblks = diagrm.getBlocks();
 		for( SerializableBlock sb:sblks ) {
 			UUID id = sb.getId();
@@ -122,9 +124,41 @@ public class ProcessDiagram extends ProcessNode {
 			else {
 				log.debugf("%s.analyze: Update block %s(%d)",TAG,pb.getName(),pb.hashCode());
 				pb.stop();
-				// Stop old subscriptions
-				for(BlockProperty prop:pb.getProperties()) {
-					controller.removeSubscription(pb, prop);
+				// Stop old subscriptions ONLY if the property changed, or no longer exists
+				// NOTE: The blockFactory update will take care of values. We're just worried about subscriptions
+				for( BlockProperty newProp:sb.getProperties() ) {
+					BlockProperty prop = pb.getProperty(sb.getName());
+					if( prop!=null ) {
+						// See if the binding changed.
+						if( !prop.getBindingType().equals(newProp.getBindingType()) ) {
+							// If the binding has changed - fix subscriptions.
+							controller.removeSubscription(pb,prop);
+							prop.setBindingType(newProp.getBindingType());
+							prop.setBinding(newProp.getBinding());
+							controller.startSubscription(pb,prop);
+							// If the new binding is a tag write - do the write.
+							if( !pb.isLocked() && 
+								(prop.getBindingType().equals(BindingType.TAG_READWRITE) ||
+										prop.getBindingType().equals(BindingType.TAG_WRITE))	   ) {
+									controller.updateTag(pb.getParentId(),prop.getBinding(), new BasicQualifiedValue(newProp.getValue()));
+							}	
+						}
+						else if( !prop.getBinding().equals(newProp.getBinding()) ) {
+							// Same type, new binding target.
+							controller.removeSubscription(pb, prop);
+							prop.setBinding(newProp.getBinding());
+							controller.startSubscription(pb,prop);
+							// If the new binding is a tag write - do the write.
+							if( !pb.isLocked() && 
+									(prop.getBindingType().equals(BindingType.TAG_READWRITE) ||
+								     prop.getBindingType().equals(BindingType.TAG_WRITE))	   ) {
+								controller.updateTag(pb.getParentId(),prop.getBinding(), new BasicQualifiedValue(newProp.getValue()));
+							}	
+						}
+					}
+					else {
+						controller.removeSubscription(pb, newProp);
+					}
 				}
 				blockFactory.updateBlockFromSerializable(pb,sb);
 			}
