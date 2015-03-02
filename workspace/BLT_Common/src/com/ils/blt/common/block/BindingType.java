@@ -1,5 +1,5 @@
 /**
- *   (c) 2013-2014  ILS Automation. All rights reserved. 
+ *   (c) 2013-2015  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.common.block;
 
@@ -11,6 +11,7 @@ public enum BindingType
 {
             NONE,
             ENGINE,
+            SCRIPT,
             TAG_READ,
             TAG_READWRITE,
             TAG_WRITE,

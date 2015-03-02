@@ -14,6 +14,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorT
 public class ProcessAnchorDescriptor extends AnchorDescriptor {
 	private ConnectionType connectionType;
 	private final String annotation;
+	private boolean hidden = false;
 	private PlacementHint hint;
 	private final boolean multiple;
 	private QualifiedValue lastValue = null;
@@ -24,6 +25,7 @@ public class ProcessAnchorDescriptor extends AnchorDescriptor {
 		this.connectionType = ctype;
 		this.annotation = note;
 		this.hint = placementHint;
+		this.hidden = false;
 		this.multiple = supportsMultiple;
 	}
 
@@ -32,6 +34,7 @@ public class ProcessAnchorDescriptor extends AnchorDescriptor {
 	public String getAnnotation() { return annotation; }
 	public PlacementHint getHint() { return hint; }
 	public QualifiedValue getLastValue() { return lastValue; }
+	public boolean isHidden() { return hidden; }
 	public boolean isMultiple() { return multiple; }
 	/**
 	 * Allow changes to the connection type for the rare instances where the
@@ -39,6 +42,7 @@ public class ProcessAnchorDescriptor extends AnchorDescriptor {
 	 * @param ct
 	 */
 	public void setConnectionType(ConnectionType ct) { this.connectionType=ct; }
+	public void setHidden(boolean flag) { this.hidden = flag; }
 	/**
 	 * We use this internally in the AbstractUIView to mark out placement definitively.
 	 */

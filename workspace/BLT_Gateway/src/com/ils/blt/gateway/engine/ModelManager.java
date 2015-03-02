@@ -11,14 +11,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.connection.Connection;
 import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.script.ScriptExtensionManager;
-import com.ils.blt.common.serializable.DiagramState;
 import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
@@ -707,6 +708,7 @@ public class ModelManager implements ProjectListener  {
 		SerializableDiagram sd = null;
 		try{
 			ObjectMapper mapper = new ObjectMapper();
+			//mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 			sd = mapper.readValue(json, SerializableDiagram.class);
 			if( sd!=null ) {
 				sd.setName(res.getName());       // Name comes from the resource

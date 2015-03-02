@@ -62,7 +62,7 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 	
 	@Override
 	public void reset() {
-		controller.removeWatchdog(dog);
+		timer.updateWatchdog(dog);  // pet dog
 		buffer.clear();
 	}
 	/**
@@ -71,7 +71,7 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void stop() {
 		super.stop();
-		controller.removeWatchdog(dog);
+		timer.updateWatchdog(dog);  // pet dog
 	}
 	/**
 	 * Handle a change to the delay interval or buffer size
@@ -104,13 +104,13 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 			synchronized(this) {
 				if( buffer.isEmpty() ) {
 					dog.setSecondsDelay(delayInterval);
-					controller.pet(dog);
+					timer.updateWatchdog(dog);  // pet dog
 				}
 				else {
 					// Possible if we've changed the expiration time.
 					if( dog.isActive() && dog.getExpiration()>expirationTime ) {
 						dog.setSecondsDelay(delayInterval);
-						controller.pet(dog);
+						timer.updateWatchdog(dog);  // pet dog
 					}
 				}
 				buffer.addLast(data);
@@ -140,7 +140,7 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 			long delay = head.timestamp - data.timestamp;
 			if( delay <= 0 ) delay = 1;  // Should never happen
 			dog.setDelay(delay);
-			controller.pet(dog);
+			timer.updateWatchdog(dog);  // pet dog
 		}
 	}
 	/**

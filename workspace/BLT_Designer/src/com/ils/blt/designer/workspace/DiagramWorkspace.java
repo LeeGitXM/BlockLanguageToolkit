@@ -226,8 +226,31 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					CustomEditAction cea = new CustomEditAction(pbv);
 					menu.add(cea);
 				}
+				if(pbv.isSignalAnchorDisplayed()) {
+					HideSignalAction hsa = new HideSignalAction(this,getActiveDiagram(),pbv);
+					menu.add(hsa);
+				}
+				else {
+					ShowSignalAction ssa = new ShowSignalAction(this,getActiveDiagram(),pbv);
+					menu.add(ssa);
+				}
 				ViewInternalsAction via = new ViewInternalsAction(getActiveDiagram(),pbv);
 				menu.add(via);
+				menu.addSeparator();
+				EvaluateAction ea = new EvaluateAction(pbv);
+				menu.add(ea);
+				ForceAction fa = new ForceAction(getActiveDiagram(),pbv);
+				menu.add(fa);
+				ResetAction ra = new ResetAction(pbv);
+				menu.add(ra);
+				if(pbv.isLocked()) {
+					UnlockAction ula = new UnlockAction(this,getActiveDiagram(),pbv);
+					menu.add(ula);
+				}
+				else {
+					LockAction la = new LockAction(this,getActiveDiagram(),pbv);
+					menu.add(la);
+				}
 				menu.addSeparator();
 				menu.add(context.getCutAction());
 				menu.add(context.getCopyAction());
@@ -743,6 +766,113 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		}
 	}
 	/**
+	 * Trigger the evaluation method of the currently selected block.
+	 */
+	private class EvaluateAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final ProcessBlockView block;
+		public EvaluateAction(ProcessBlockView blk)  {
+			super(PREFIX+".EvaluateBlock",IconUtil.getIcon("window_play"));  // preferences
+			this.block = blk;
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			ProcessDiagramView pdv = getActiveDiagram();
+			handler.evaluateBlock(pdv.getId().toString(),block.getId().toString());
+		}
+	}
+	/**
+	 * Display a dialog that allows the user to enter a value for
+	 * each output -- and then force propagation of that value. 
+	 */
+	private class ForceAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final ProcessDiagramView diagram;
+		private final ProcessBlockView block;
+		public ForceAction(ProcessDiagramView dia,ProcessBlockView blk)  {
+			super(PREFIX+".Force");
+			this.diagram = dia;
+			this.block = blk;
+		}
+		
+		// Display the internals viewer
+		public void actionPerformed(final ActionEvent e) {
+			final JDialog viewer = (JDialog)new ForceValueSettingsDialog(context.getFrame(),diagram,block);
+			Object source = e.getSource();
+			if( source instanceof Component) {
+				viewer.setLocationRelativeTo((Component)source);
+			}
+			viewer.pack();
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					viewer.setVisible(true);
+				}
+			}); 
+		}
+	}
+	/**
+	 * Configure the block to show the generic signal connection stub.
+	 */
+	private class HideSignalAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final ProcessBlockView block;
+		private final ProcessDiagramView diagram;
+		private final DiagramWorkspace workspace;
+		public HideSignalAction(DiagramWorkspace wksp,ProcessDiagramView diag,ProcessBlockView blk)  {
+			super(PREFIX+".ShowSignal",IconUtil.getIcon("trafficlight_red"));  // preferences
+			this.workspace = wksp;
+			this.diagram = diag;
+			this.block = blk;
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			block.setSignalAnchorDisplayed(false);
+			if( !diagram.isDirty()) {
+				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(diagram.getResourceId());
+				if( tab!=null ) workspace.saveDiagramResource(tab);
+			}
+		}
+	}
+	/**
+	 * Plce the currently selected block in lock mode.
+	 */
+	private class LockAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final ProcessBlockView block;
+		private final ProcessDiagramView diagram;
+		private final DiagramWorkspace workspace;
+		public LockAction(DiagramWorkspace wksp,ProcessDiagramView diag,ProcessBlockView blk)  {
+			super(PREFIX+".LockBlock",IconUtil.getIcon("lock"));  // preferences
+			this.workspace = wksp;
+			this.diagram = diag;
+			this.block = blk;
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			block.setLocked(true);
+			if( !diagram.isDirty()) {
+				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(diagram.getResourceId());
+				if( tab!=null ) workspace.saveDiagramResource(tab);
+			}
+		}
+	}
+	/**
+	 * Trigger the reset action on the current block.
+	 */
+	private class ResetAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final ProcessBlockView block;
+		public ResetAction(ProcessBlockView blk)  {
+			super(PREFIX+".ResetBlock",IconUtil.getIcon("refresh"));  // preferences
+			this.block = blk;
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			ProcessDiagramView pdv = getActiveDiagram();
+			handler.resetBlock(pdv.getId().toString(),block.getId().toString());
+		}
+	}
+	/**
 	 * "Save" implies a push of the block attributes into the model running in the Gateway.
 	 * This, in turn, makes the parent diagram resource dirty.
 	 */
@@ -762,7 +892,52 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			statusManager.clearDirtyChildCount(pdv.getResourceId());
 		}
 	}
-	
+	/**
+	 * Configure the block to show the generic signal connection stub.
+	 */
+	private class ShowSignalAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final ProcessBlockView block;
+		private final ProcessDiagramView diagram;
+		private final DiagramWorkspace workspace;
+		public ShowSignalAction(DiagramWorkspace wksp,ProcessDiagramView diag,ProcessBlockView blk)  {
+			super(PREFIX+".ShowSignal",IconUtil.getIcon("trafficlight_green"));  // preferences
+			this.workspace = wksp;
+			this.diagram = diag;
+			this.block = blk;
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			block.setSignalAnchorDisplayed(true);
+			if( !diagram.isDirty()) {
+				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(diagram.getResourceId());
+				if( tab!=null ) workspace.saveDiagramResource(tab);
+			}
+		}
+	}
+	/**
+	 * Trigger the evaluation method of the currently selected block.
+	 */
+	private class UnlockAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final ProcessBlockView block;
+		private final ProcessDiagramView diagram;
+		private final DiagramWorkspace workspace;
+		public UnlockAction(DiagramWorkspace wksp,ProcessDiagramView diag,ProcessBlockView blk)  {
+			super(PREFIX+".UnlockBlock",IconUtil.getIcon("lock_open"));  // preferences
+			this.workspace = wksp;
+			this.diagram = diag;
+			this.block = blk;
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			block.setLocked(false);
+			if( !diagram.isDirty()) {
+				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(diagram.getResourceId());
+				if( tab!=null ) workspace.saveDiagramResource(tab);
+			}
+		}
+	}
 	/**
 	 * Post an internals viewer for the block. The default shows
 	 * only name, class and UUID. Blocks may transmit additional

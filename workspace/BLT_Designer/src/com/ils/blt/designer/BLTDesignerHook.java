@@ -4,6 +4,12 @@
 package com.ils.blt.designer;
 
 
+import java.awt.event.ActionEvent;
+
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.SwingUtilities;
+
 import com.ils.blt.client.component.diagview.DiagramViewer;
 import com.ils.blt.client.component.recmap.RecommendationMap;
 import com.ils.blt.common.ApplicationRequestHandler;
@@ -25,6 +31,9 @@ import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.AbstractDesignerModuleHook;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.model.SaveContext;
+import com.inductiveautomation.ignition.designer.model.menu.JMenuMerge;
+import com.inductiveautomation.ignition.designer.model.menu.MenuBarMerge;
+import com.inductiveautomation.ignition.designer.model.menu.WellKnownMenuConstants;
 import com.inductiveautomation.vision.api.designer.VisionDesignerInterface;
 import com.inductiveautomation.vision.api.designer.palette.JavaBeanPaletteItem;
 import com.inductiveautomation.vision.api.designer.palette.Palette;
@@ -61,6 +70,25 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		super.initializeScriptManager(mgr);
 		mgr.addScriptModule(BLTProperties.APPLICATION_SCRIPT_PACKAGE,ApplicationScriptFunctions.class);
 	}
+	
+	// Insert a menu to allow control of database and tag provider.
+    @Override
+    public MenuBarMerge getModuleMenu() {
+        MenuBarMerge merge = new MenuBarMerge(BLTProperties.MODULE_ID);  // as suggested in javadocs
+        merge.addSeparator();
+
+        Action testControlAction = new AbstractAction("Diagram Configuration Panel") {
+            private static final long serialVersionUID = 5374667367733312464L;
+            public void actionPerformed(ActionEvent ae) {
+                SwingUtilities.invokeLater(new DialogRunner());
+            }
+        };
+
+        JMenuMerge controlMenu = new JMenuMerge(WellKnownMenuConstants.VIEW_MENU_NAME);
+        controlMenu.add(testControlAction);
+        merge.add(WellKnownMenuConstants.VIEW_MENU_LOCATION, controlMenu);
+        return merge;
+    }
 	
 	@Override
 	public void startup(DesignerContext ctx, LicenseState activationState) throws Exception {
@@ -197,4 +225,17 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	public void shutdown() {
 		super.shutdown();
 	}
+	 /**
+     * Display a popup dialog for configuration of dialog execution parameters.
+     * Run in a separate thread, as a modal dialog in-line here will freeze the UI.
+     */
+    private class DialogRunner implements Runnable {
+
+        public void run() {
+            log.debugf("%s.Launching setup dialog...",TAG);
+            SetupDialog setup = new SetupDialog(context);
+            setup.pack();
+            setup.setVisible(true);
+        }
+    }
 }

@@ -12,8 +12,10 @@ import java.util.Set;
 import java.util.UUID;
 
 import com.ils.blt.common.UtilityFunctions;
+import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
+import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockState;
@@ -30,6 +32,7 @@ import com.ils.blt.common.notification.Signal;
 import com.ils.blt.common.notification.SignalNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.WatchdogObserver;
+import com.ils.common.watchdog.WatchdogTimer;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -59,6 +62,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	protected boolean isTransmitter = false;
 	protected boolean running = false;
 	protected BlockState state = BlockState.INITIALIZED;
+	protected WatchdogTimer timer = null;
 
 	protected final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	/** Properties are a dictionary of attributes keyed by property name */
@@ -75,8 +79,8 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	public AbstractProcessBlock() {
 		propertyMap = new HashMap<>();
 		anchors = new ArrayList<AnchorPrototype>();
-		initialize();
 		initializePrototype();
+		initialize();
 	}
 	
 	/**
@@ -93,10 +97,15 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	}
 	
 	/**
-	 * Create an initial list of properties. There is none for the base class.
+	 * Create an initial list of properties. There are none for the base class.
+	 * We also add a stub for signals. Every block has this connection, but,
+	 * by default, it is hidden.
 	 */
 	private void initialize() {
 		this.state = BlockState.INITIALIZED;
+		AnchorPrototype sig = new AnchorPrototype(BlockConstants.SIGNAL_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.SIGNAL);
+		sig.setHidden(true);
+		anchors.add(sig);
 	}
 	
 	/**
@@ -163,6 +172,13 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	public String getStatusText() {return statusText;}
 	@Override
 	public void setStatusText(String statusText) {this.statusText = statusText;}
+	/**
+	 * @param t the new timer. Timer start/stop is managed by the controller.
+	 */
+	@Override
+	public void setTimer(WatchdogTimer t) { 
+		this.timer = t; 
+	}
 
 	/**
 	 * @param name the property (attribute) name.
@@ -238,7 +254,9 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 * The default method sets the state to INITIALIZED.
 	 */
 	@Override
-	public void reset() {this.state = BlockState.INITIALIZED;}
+	public void reset() {
+		this.state = BlockState.INITIALIZED;
+	}
 	/**
 	 * Accept a new value for a block property. In general this does not trigger
 	 * block evaluation. Use the property change listener interface to do so.

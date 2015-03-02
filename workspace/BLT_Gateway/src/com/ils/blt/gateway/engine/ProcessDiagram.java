@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.ProcessBlock;
@@ -19,10 +20,10 @@ import com.ils.blt.common.notification.BroadcastNotification;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.notification.SignalNotification;
-import com.ils.blt.common.serializable.DiagramState;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableConnection;
 import com.ils.blt.common.serializable.SerializableDiagram;
+import com.ils.common.watchdog.WatchdogTimer;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
@@ -116,6 +117,9 @@ public class ProcessDiagram extends ProcessNode {
 			if( pb==null ) {
 				pb = blockFactory.blockFromSerializable(getSelf(),sb);
 				if( pb!=null ) {
+					// Set timer
+					if(DiagramState.ACTIVE.equals(state)) pb.setTimer(controller.getTimer());
+					else if(DiagramState.ISOLATED.equals(state)) pb.setTimer(controller.getSecondaryTimer());
 					blocks.put(pb.getBlockId(), pb);
 					log.debugf("%s.analyze: New block %s(%d)",TAG,pb.getName(),pb.hashCode());
 				}
@@ -132,18 +136,21 @@ public class ProcessDiagram extends ProcessNode {
 						// See if the binding changed.
 						if( !prop.getBindingType().equals(newProp.getBindingType()) ) {
 							// If the binding has changed - fix subscriptions.
-							controller.removeSubscription(pb,prop);
+							if(!prop.getBindingType().equals(BindingType.NONE)) controller.removeSubscription(pb,prop);
 							prop.setBindingType(newProp.getBindingType());
 							prop.setBinding(newProp.getBinding());
-							controller.startSubscription(pb,prop);
-							// If the new binding is a tag write - do the write.
-							if( !pb.isLocked() && 
-								(prop.getBindingType().equals(BindingType.TAG_READWRITE) ||
-										prop.getBindingType().equals(BindingType.TAG_WRITE))	   ) {
-									controller.updateTag(pb.getParentId(),prop.getBinding(), new BasicQualifiedValue(newProp.getValue()));
-							}	
+							if(!prop.getBindingType().equals(BindingType.NONE)) {
+								controller.startSubscription(pb,prop);
+								// If the new binding is a tag write - do the write.
+								if( !pb.isLocked() && 
+									(prop.getBindingType().equals(BindingType.TAG_READWRITE) ||
+											prop.getBindingType().equals(BindingType.TAG_WRITE))	   ) {
+										controller.updateTag(pb.getParentId(),prop.getBinding(), new BasicQualifiedValue(newProp.getValue()));
+								}
+							}
 						}
-						else if( !prop.getBinding().equals(newProp.getBinding()) ) {
+						else if( !prop.getBindingType().equals(BindingType.NONE) &&
+								!prop.getBinding().equals(newProp.getBinding()) ) {
 							// Same type, new binding target.
 							controller.removeSubscription(pb, prop);
 							prop.setBinding(newProp.getBinding());
@@ -155,9 +162,6 @@ public class ProcessDiagram extends ProcessNode {
 								controller.updateTag(pb.getParentId(),prop.getBinding(), new BasicQualifiedValue(newProp.getValue()));
 							}	
 						}
-					}
-					else {
-						controller.removeSubscription(pb, newProp);
 					}
 				}
 				blockFactory.updateBlockFromSerializable(pb,sb);
@@ -263,16 +267,37 @@ public class ProcessDiagram extends ProcessNode {
 	 * of blocks within the diagram. It only affects the way that block results are 
 	 * propagated (or not) and whether or not subscriptions are in effect.
 	 * 
+	 * If the new state is ISOLATED, stop all blocks, set the state and re-setart. 
+	 * This is necessary to allow a swap-out of timers and tag providers.
+	 * Likewise if the state was ISOLATED, perform the same sequence.
+	 * 
 	 * @param s the new state
 	 */
 	public void setState(DiagramState s) {
-		boolean wasDisabled = DiagramState.DISABLED.equals(getState());
-		this.state = s;
-		if(wasDisabled && !DiagramState.DISABLED.equals(getState()) ) {
-			startSubscriptions();
-		}
-		else if(DiagramState.DISABLED.equals(getState()) ) {
-			stopSubscriptions();
+		// Do nothing if there is no change
+		if( !s.equals(getState())) {
+			// Check if we need to stop current subscriptions
+			if( !DiagramState.DISABLED.equals(getState()) ) {
+				stopSubscriptions();
+			}
+			// Stop blocks
+			for(ProcessBlock blk:blocks.values()) {
+				blk.stop();
+			}
+			// Set the proper timer
+			WatchdogTimer timer = controller.getTimer();
+			if( DiagramState.ISOLATED.equals(s)) controller.getSecondaryTimer();
+			this.state = s;
+
+
+			if(!DiagramState.DISABLED.equals(getState()) ) {
+				// Restart blocks
+				for(ProcessBlock blk:blocks.values()) {
+					blk.setTimer(timer);
+					blk.start();
+				}
+				startSubscriptions();
+			}
 		}
 	}
 	/**

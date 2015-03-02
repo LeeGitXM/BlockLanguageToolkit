@@ -1,5 +1,58 @@
 <Tags>
-   <Tag name="GainFeed2" path="" type="DB">
+   <Tag name="MemoryTags" path="" type="Folder"/>
+   <Tag name="DiagramFeed" path="MemoryTags" type="DB">
+      <Property name="Value">4</Property>
+      <Property name="DataType">2</Property>
+   </Tag>
+   <Tag name="MJKSQCStdDev" path="MemoryTags" type="DB">
+      <Property name="Value">0.0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="NumericSink" path="MemoryTags" type="DB">
+      <Property name="Value">95.0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="NumericSource" path="MemoryTags" type="DB">
+      <Property name="Value">95.0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="BooleanFeed" path="MemoryTags" type="DB">
+      <Property name="Value">true</Property>
+      <Property name="DataType">6</Property>
+   </Tag>
+   <Tag name="MJKFeed3" path="MemoryTags" type="DB">
+      <Property name="Value">0.56</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="MJKFeed2" path="MemoryTags" type="DB">
+      <Property name="Value">-12.12</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="SumResult" path="MemoryTags" type="DB">
+      <Property name="Value">-11.559999999999999</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="DiagramOutput" path="MemoryTags" type="DB">
+      <Property name="Value">4</Property>
+      <Property name="DataType">2</Property>
+   </Tag>
+   <Tag name="MJKQuality" path="MemoryTags" type="DB">
+      <Property name="Value">good</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="MJKSQCTarget" path="MemoryTags" type="DB">
+      <Property name="Value">0.01</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="GainFeed1" path="MemoryTags" type="DB">
+      <Property name="Value">0</Property>
+      <Property name="DataType">2</Property>
+   </Tag>
+   <Tag name="NumericParameter" path="MemoryTags" type="DB">
+      <Property name="Value">95</Property>
+      <Property name="DataType">2</Property>
+   </Tag>
+   <Tag name="GainFeed2" path="MemoryTags" type="DB">
       <Property name="Value">0</Property>
       <Property name="DataType">2</Property>
    </Tag>

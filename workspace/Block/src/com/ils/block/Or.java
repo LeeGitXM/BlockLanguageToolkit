@@ -101,7 +101,7 @@ public class Or extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void stop() {
 		super.stop();
-		controller.removeWatchdog(dog);
+		timer.removeWatchdog(dog);
 	}
 	/**
 	 * Notify the block that a new value has appeared on one of its input anchors.
@@ -119,7 +119,7 @@ public class Or extends AbstractProcessBlock implements ProcessBlock {
 		QualifiedValue qv = incoming.getValue();
 		qualifiedValueMap.put(key, qv);
 		dog.setSecondsDelay(synchInterval);
-		controller.pet(dog);
+		timer.updateWatchdog(dog);  // pet dog
 	}
 	
 

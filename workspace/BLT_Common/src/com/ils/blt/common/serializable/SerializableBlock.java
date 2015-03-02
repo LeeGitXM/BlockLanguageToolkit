@@ -3,6 +3,7 @@ package com.ils.blt.common.serializable;
 import java.awt.Color;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.BlockStyle;
@@ -15,6 +16,7 @@ import com.ils.blt.common.block.BlockStyle;
  * WARNING: Avoid use of Point class as it contains a circular reference
  *          to itself.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SerializableBlock {
 	private SerializableAnchor[] anchors = null;
 	private int background = Color.white.getRGB();
@@ -25,6 +27,7 @@ public class SerializableBlock {
 	private String embeddedIcon="";       // 32x32 icon to place in block in designer
 	private String embeddedLabel="";      // Label place in block in designer
 	private String iconPath="";           // Path to icon that is the entire block
+	private boolean locked = false;
 	private String name;
 	private boolean nameDisplayed = false;
 	private int nameOffsetX = 0;     // When displayed as an attribute
@@ -69,6 +72,7 @@ public class SerializableBlock {
 	public int getY() { return y; }
 	
 	public boolean isDirty() {return dirty;}
+	public boolean isLocked() {return locked;}
 	public boolean isNameDisplayed() {return nameDisplayed;}
 	public boolean isReceiveEnabled() {return receiveEnabled;}
 	public boolean isTransmitEnabled() {return transmitEnabled;}
@@ -87,6 +91,7 @@ public class SerializableBlock {
 	public void setEmbeddedLabel(String embeddedLabel) {this.embeddedLabel = embeddedLabel;}
 	public void setIconPath(String iconPath) {this.iconPath = iconPath;}
 	public void setId(UUID id) { uuid = id; }
+	public void setLocked(boolean flag) { this.locked = flag; }
 	public void setName(String label) { this.name = label; }
 	public void setNameDisplayed(boolean showName) {this.nameDisplayed = showName;}
 	public void setNameOffsetX(int nameOffsetX) {this.nameOffsetX = nameOffsetX;}

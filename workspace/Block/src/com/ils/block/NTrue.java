@@ -119,7 +119,7 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 		QualifiedValue qv = incoming.getValue();
 		qualifiedValueMap.put(key, qv);
 		dog.setSecondsDelay(synchInterval);
-		controller.pet(dog);
+		timer.updateWatchdog(dog);  // pet dog
 	}
 	
 	

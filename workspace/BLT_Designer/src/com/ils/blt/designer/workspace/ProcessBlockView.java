@@ -17,6 +17,7 @@ import javax.swing.event.EventListenerList;
 
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
+import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockState;
@@ -66,6 +67,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	private final UIFactory factory = new UIFactory() ;
 	private String iconPath="";                   // Path to icon that is the entire block
 	private boolean ctypeEditable=false;          // Can we globally change our connection types
+	private boolean locked = false;
 	private String name = null;                   // Text to display on the block
 	private boolean nameDisplayed = false;
 	private int nameOffsetX = 0;     // When displayed as an attribute
@@ -116,8 +118,10 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		this.anchors = new HashMap<>();
 		for( AnchorPrototype ap:descriptor.getAnchors() ) {
 			log.debugf("%s: Creating anchor descriptor %s", TAG,ap.getName());
-			anchors.put(ap.getName(), new ProcessAnchorDescriptor((ap.getAnchorDirection()==AnchorDirection.INCOMING?AnchorType.Terminus:AnchorType.Origin),
-					ap.getConnectionType(),UUID.randomUUID(),ap.getName(),ap.getAnnotation(),ap.getHint(),ap.isMultiple()) );
+			ProcessAnchorDescriptor pad = new ProcessAnchorDescriptor((ap.getAnchorDirection()==AnchorDirection.INCOMING?AnchorType.Terminus:AnchorType.Origin),
+					ap.getConnectionType(),UUID.randomUUID(),ap.getName(),ap.getAnnotation(),ap.getHint(),ap.isMultiple());
+			pad.setHidden(ap.isHidden());
+			anchors.put(ap.getName(), pad);
 		}
 		this.properties = new ArrayList<BlockProperty>();
 		log.debugf("%s: Created %s (%s) view from descriptor (%d anchors)", TAG, className, style.toString(),anchors.size());
@@ -138,6 +142,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		this.embeddedFontSize = sb.getEmbeddedFontSize();
 		this.encapsulation = (sb.getSubworkspaceId()!=null);
 		this.iconPath = sb.getIconPath();
+		this.locked   = sb.isLocked();
 		this.preferredHeight = sb.getPreferredHeight();
 		this.preferredWidth = sb.getPreferredWidth();
 		this.style = sb.getStyle();
@@ -154,8 +159,10 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		if(sb.getAnchors()!=null ) {
 			for( SerializableAnchor sa:sb.getAnchors() ) {
 				log.debugf("%s: Creating serializable anchor %s (%s)", TAG,sa.getDisplay(),sa.getConnectionType().name());
-				anchors.put(sa.getDisplay(), new ProcessAnchorDescriptor((sa.getDirection()==AnchorDirection.INCOMING?AnchorType.Terminus:AnchorType.Origin),
-						sa.getConnectionType(),sa.getId(),sa.getDisplay(),sa.getAnnotation(),sa.getHint(),sa.isMultiple()) );
+				ProcessAnchorDescriptor pad = new ProcessAnchorDescriptor((sa.getDirection()==AnchorDirection.INCOMING?AnchorType.Terminus:AnchorType.Origin),
+						sa.getConnectionType(),sa.getId(),sa.getDisplay(),sa.getAnnotation(),sa.getHint(),sa.isMultiple());
+				pad.setHidden(sa.isHidden());
+				anchors.put(sa.getDisplay(),pad);
 			}
 		}
 		this.properties = new ArrayList<BlockProperty>();
@@ -178,7 +185,10 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		result.setParentId(getId());
 		result.setConnectionType(anchor.getConnectionType());
 		result.setAnnotation(anchor.getAnnotation());
+		result.setHidden(anchor.isHidden());
 		result.setHint(anchor.getHint());
+		result.setMultiple(anchor.isMultiple());
+		result.setHidden(anchor.isHidden());
 		return result;
 	}
 	
@@ -192,6 +202,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		result.setEmbeddedLabel(getEmbeddedLabel());
 		result.setEmbeddedFontSize(getEmbeddedFontSize());
 		result.setIconPath(getIconPath());
+		result.setLocked(isLocked());
 		result.setName(getName());
 		result.setNameDisplayed(isNameDisplayed());
 		result.setNameOffsetX(getNameOffsetX());
@@ -314,8 +325,17 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	public boolean isCtypeEditable() {return ctypeEditable;}
 	public boolean isDirty() {return dirty;}
 	public boolean isEncapsulation() {return encapsulation;}
+	public boolean isLocked() {return locked;}
 	public boolean isNameDisplayed() { return nameDisplayed; }
 	public boolean isReceiveEnabled() {return receiveEnabled;}
+	public boolean isSignalAnchorDisplayed() {
+		for(ProcessAnchorDescriptor pad:anchors.values()) {
+			if(pad.getDisplay().equals(BlockConstants.SIGNAL_PORT_NAME)) {
+				return !pad.isHidden();
+			}
+		}
+		return false;
+	}
 	public boolean isTransmitEnabled() {return transmitEnabled;}
 	public void recordLatestValue(String port,QualifiedValue qv) {
 		ProcessAnchorDescriptor pad = anchors.get(port);
@@ -334,6 +354,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	public void setEmbeddedIcon(String embeddedIcon) {this.embeddedIcon = embeddedIcon;}
 	public void setEmbeddedLabel(String embeddedLabel) {this.embeddedLabel = embeddedLabel;}
 	public void setIconPath(String iconPath) {this.iconPath = iconPath;}
+	public void setLocked(boolean flag) {this.locked = flag;}
 	public void setName(String label) {this.name = label;}
 	public void setNameDisplayed(boolean showName) {this.nameDisplayed = showName;}
 	public void setNameOffsetX(int nameOffsetX) {this.nameOffsetX = nameOffsetX;}
@@ -348,6 +369,15 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	public void setProperties(Collection<BlockProperty> props) { this.properties = props; }
 	public void setReceiveEnabled(boolean receiveEnabled) {this.receiveEnabled = receiveEnabled;}
 	public void setBackground(int b)  { this.background = b; }
+	// Find the generic signal anchor and set its "hidden" property
+	public void setSignalAnchorDisplayed(boolean flag) {
+		for(ProcessAnchorDescriptor pad:anchors.values()) {
+			if(pad.getDisplay().equals(BlockConstants.SIGNAL_PORT_NAME)) {
+				pad.setHidden(!flag);
+				break;
+			}
+		}
+	}
 	public void setState(BlockState state) {if(state!=null) this.state = state;}
 	public void setStatusText(String statusText) { this.statusText = statusText; }
 	public void setStyle(BlockStyle s) { this.style = s; }

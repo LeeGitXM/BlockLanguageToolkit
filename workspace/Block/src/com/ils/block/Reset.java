@@ -83,7 +83,7 @@ public class Reset extends AbstractProcessBlock implements ProcessBlock {
 	public void reset() {
 		this.state = BlockState.ACTIVE;
 		dog.setSecondsDelay(interval);
-		if( interval>MIN_RESET_INTERVAL) controller.pet(dog);
+		if( interval>MIN_RESET_INTERVAL) timer.updateWatchdog(dog);  // pet dog
 	}
 	@Override
 	public void start() {
@@ -91,14 +91,14 @@ public class Reset extends AbstractProcessBlock implements ProcessBlock {
 			log.debugf("%s.start",TAG);
 			this.state = BlockState.ACTIVE;
 			dog.setSecondsDelay(interval);
-			if( interval>MIN_RESET_INTERVAL) controller.pet(dog);
+			if( interval>MIN_RESET_INTERVAL) timer.updateWatchdog(dog);  // pet dog
 		}
 		super.start();
 	}
 	@Override
 	public void stop() {
 		this.state = BlockState.INITIALIZED;
-		controller.removeWatchdog(dog);
+		timer.removeWatchdog(dog);
 		log.debugf("%s.stop",TAG);
 	}
 
@@ -118,10 +118,10 @@ public class Reset extends AbstractProcessBlock implements ProcessBlock {
 				interval = Double.parseDouble(event.getNewValue().toString());
 				if( interval>MIN_RESET_INTERVAL) {
 					dog.setSecondsDelay(interval);
-					controller.pet(dog);
+					timer.updateWatchdog(dog);  // pet dog
 				}
 				else {
-					controller.removeWatchdog(dog);
+					timer.removeWatchdog(dog);
 				}
 				
 			}
@@ -149,7 +149,7 @@ public class Reset extends AbstractProcessBlock implements ProcessBlock {
 		}
 		if( interval>MIN_RESET_INTERVAL ) {
 			dog.setSecondsDelay(interval);
-			controller.pet(dog);
+			timer.updateWatchdog(dog);  // pet dog
 		}
 	}
 	/**

@@ -124,6 +124,7 @@ public abstract class AbstractUIView extends JComponent
 		
 		// Create counts for each side. There are both defaults and placement hints.
 		for(ProcessAnchorDescriptor desc:block.getAnchors()) {
+			if( desc.isHidden()) continue;
 			PlacementHint hint = desc.getHint();
 			if(hint==null) hint = PlacementHint.UNSPECIFIED;
 			if( hint.equals(PlacementHint.L)) leftCount++;
@@ -173,7 +174,7 @@ public abstract class AbstractUIView extends JComponent
 		// Re-iterate using the same criteria as above
 		// NOTE: The anchor point should be on the component boundary. Stubs are drawn inward.
 		for(ProcessAnchorDescriptor desc:block.getAnchors()) {
-			
+			if( desc.isHidden()) continue;
 			// Top
 			if(desc.getHint().equals(PlacementHint.T) ) {
 				topIndex++;
@@ -230,7 +231,6 @@ public abstract class AbstractUIView extends JComponent
 						desc.isMultiple(),
 						desc.getAnnotation());
 				getAnchorPoints().add(ap);
-	
 			}
 		}
 	}
@@ -380,6 +380,12 @@ public abstract class AbstractUIView extends JComponent
 		if(block.isTransmitEnabled()) {
 			Rectangle bounds = new Rectangle(3*(sz.width-2*INSET)/4,0,BADGE_WIDTH,BADGE_HEIGHT);
 			String path = "Block/icons/badges/transmitter.png";
+			paintBadge(g,path,bounds);
+		}
+		// Locked
+		if(block.isLocked()) {
+			Rectangle bounds = new Rectangle(3*(sz.width-2*INSET)/4,3*(sz.height-2*INSET)/4,BADGE_WIDTH,BADGE_HEIGHT);
+			String path = "Block/icons/badges/lock.png";
 			paintBadge(g,path,bounds);
 		}
 	}

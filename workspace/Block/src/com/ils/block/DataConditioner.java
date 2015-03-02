@@ -107,7 +107,7 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 	@Override
 	public void stop() {
 		super.stop();
-		controller.removeWatchdog(dog);
+		timer.removeWatchdog(dog);
 	}
 	/**
 	 * Handle a change to the coalescing interval.
@@ -150,7 +150,7 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 			log.warnf("%s.acceptValue: Unexpected port designation (%s)",TAG,vcn.getConnection().getDownstreamPortName());
 		}
 		dog.setSecondsDelay(synchInterval);
-		controller.pet(dog);
+		timer.updateWatchdog(dog);  // pet dog
 		log.debugf("%s.acceptValue got %s for %s", TAG,qv.getValue().toString(),blockId);
 	}
 	

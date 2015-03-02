@@ -112,7 +112,7 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 		super.reset();
 		if( scanInterval>0.0) {
 			dog.setSecondsDelay(scanInterval);
-			controller.pet(dog);
+			timer.updateWatchdog(dog);  // pet dog
 		}
 		truthValue = TruthValue.UNSET;
 	}
@@ -124,7 +124,7 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 	}
 	@Override
 	public void stop() {
-		controller.removeWatchdog(dog);
+		timer.removeWatchdog(dog);
 	}
 	/**
 	 * A new value has arrived. Simply set the current value.
@@ -201,7 +201,7 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 		}
 
 		dog.setSecondsDelay(scanInterval);
-		controller.pet(dog);
+		timer.updateWatchdog(dog);  // pet dog
 	}
 	/**
 	 * Send status update notification for our last latest state.
@@ -281,7 +281,7 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 				if( scanInterval < 0.1 ) scanInterval = 0.1;   // Don't allow to go too fast
 				if( scanInterval < oldInterval ) {
 					dog.setSecondsDelay(scanInterval);
-					controller.pet(dog);
+					timer.updateWatchdog(dog);  // pet dog
 				}
 			}
 			catch(NumberFormatException nfe) {

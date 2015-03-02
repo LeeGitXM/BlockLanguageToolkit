@@ -89,7 +89,7 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void stop() {
 		super.stop();
-		controller.removeWatchdog(dog);
+		timer.removeWatchdog(dog);
 	}
 	/**
 	 * Add properties that are new for this class.
@@ -216,7 +216,7 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 				setPoint = Double.parseDouble(qv.getValue().toString());
 				if( !dog.isActive() ) {
 					dog.setSecondsDelay(interval);
-					controller.pet(dog);
+					timer.updateWatchdog(dog);  // pet dog
 				}
 			}
 			catch(NumberFormatException nfe) {
@@ -256,7 +256,7 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public synchronized void evaluate() {
 		dog.setSecondsDelay(interval);
-		controller.pet(dog);
+		timer.updateWatchdog(dog);  // pet dog
 		if( !isValid() ) return;
 		// Compute PID
 		double previousError = error;

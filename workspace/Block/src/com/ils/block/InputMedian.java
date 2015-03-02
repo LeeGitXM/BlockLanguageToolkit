@@ -127,7 +127,7 @@ public class InputMedian extends AbstractProcessBlock implements ProcessBlock {
 				qv = new BasicQualifiedValue(dbl,qv.getQuality(),qv.getTimestamp());
 				dog.setSecondsDelay(synchInterval);
 				log.tracef("%s.acceptValue got %s for %s", TAG,dbl.toString(),blockId);
-				controller.pet(dog);
+				timer.updateWatchdog(dog);  // pet dog
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.acceptValue: Unable to convert incoming value to a double (%s)",TAG,nfe.getLocalizedMessage());

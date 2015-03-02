@@ -5,6 +5,7 @@ package com.ils.blt.common.serializable;
 
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.ils.blt.common.block.*;
@@ -15,6 +16,7 @@ import com.ils.blt.common.connection.ConnectionType;
  * that is serializable via a JSON serializer. This class is used 
  * whenever a block is serialized.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SerializableAnchor {
 	private final static String TAG = "SerializableAnchor";
 	private AnchorDirection direction;   // 0=>Origin, 1=>Terminus
@@ -22,10 +24,11 @@ public class SerializableAnchor {
 	private String display = null;
 	private UUID parentId = null;
 	private LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
-	private String annotation;
-	private ConnectionType connectionType;
-	private PlacementHint hint;
-	private boolean multiple;
+	private String annotation = "";
+	private ConnectionType connectionType = ConnectionType.ANY;
+	private PlacementHint hint = PlacementHint.UNSPECIFIED;
+	private boolean hidden = false;
+	private boolean multiple = true;
 
 	public SerializableAnchor() {
 	}
@@ -37,6 +40,7 @@ public class SerializableAnchor {
 	public String getDisplay(){ return display; }
 	public PlacementHint getHint() {return hint;}
 	public UUID getParentId() { return parentId; }
+	public boolean isHidden() {return hidden;}
 	public boolean isMultiple() {return multiple;}
 
 	public void setId(Object identifier) { id=identifier; }
@@ -44,6 +48,7 @@ public class SerializableAnchor {
 	public void setConnectionType(ConnectionType connectionType) {this.connectionType = connectionType;}
 	public void setDirection(AnchorDirection t)   { direction=t; }
 	public void setDisplay(String text){display=text; }
+	public void setHidden(boolean hidden) {this.hidden = hidden;}
 	public void setHint(PlacementHint hint) {this.hint = hint;}
 	public void setMultiple(boolean multiple) {this.multiple = multiple;}
 	public void setParentId(UUID id) { parentId = id; };
@@ -75,6 +80,4 @@ public class SerializableAnchor {
 	public String toString() {
 		return String.format("%s: %s (%s)",TAG,id.toString(),(direction==AnchorDirection.INCOMING?"Incoming":"Outgoing"));
 	}
-
-	
 }

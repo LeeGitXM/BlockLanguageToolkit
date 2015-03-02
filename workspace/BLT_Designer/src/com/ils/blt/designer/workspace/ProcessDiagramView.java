@@ -11,11 +11,11 @@ import java.util.UUID;
 
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.notification.NotificationKey;
-import com.ils.blt.common.serializable.DiagramState;
 import com.ils.blt.common.serializable.SerializableAnchorPoint;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableConnection;
@@ -309,7 +309,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	 */
 	public Color getBackgroundColorForState() {
 		Color result = BLTProperties.DIAGRAM_ACTIVE_BACKGROUND;
-		if( getState().equals(DiagramState.RESTRICTED)) result = BLTProperties.DIAGRAM_RESTRICTED_BACKGROUND;
+		if( getState().equals(DiagramState.ISOLATED)) result = BLTProperties.DIAGRAM_ISOLATED_BACKGROUND;
 		else if( getState().equals(DiagramState.DISABLED)) result = BLTProperties.DIAGRAM_DISABLED_BACKGROUND;
 		else if( isDirty() ) result = BLTProperties.DIAGRAM_DIRTY_BACKGROUND;
 		return result;

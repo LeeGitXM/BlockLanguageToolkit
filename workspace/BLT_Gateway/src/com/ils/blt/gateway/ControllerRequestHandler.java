@@ -14,6 +14,7 @@ import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.ToolkitRequestHandler;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
@@ -28,7 +29,6 @@ import com.ils.blt.common.notification.BroadcastNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.notification.Signal;
 import com.ils.blt.common.script.ScriptExtensionManager;
-import com.ils.blt.common.serializable.DiagramState;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
@@ -147,6 +147,21 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 		ProcessDiagram diagram = controller.getDiagram(diagramUUID);
 		return diagram!=null;
+	}
+	@Override
+	public void evaluateBlock(String diagramId, String blockId) {
+		UUID diagramUUID = null;
+		UUID blockUUID = null;
+		try {
+			diagramUUID = UUID.fromString(diagramId);
+			blockUUID = UUID.fromString(blockId);
+		}
+		catch(IllegalArgumentException iae) {
+			log.warnf("%s.evaluateBlock: Diagram or block UUID string is illegal (%s, %s), creating new",TAG,diagramId,blockId);
+			diagramUUID = UUID.nameUUIDFromBytes(diagramId.getBytes());
+			blockUUID = UUID.nameUUIDFromBytes(blockId.getBytes());
+		}
+		controller.evaluateBlock(diagramUUID, blockUUID);
 	}
 	@Override
 	public String getApplicationName(String uuid) {
@@ -594,7 +609,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		this.context = cntx;
 	}
 	/**
-	 * Enable or disable the specified diagram
+	 * Set the state of the specified diagram. 
 	 * @param projectId
 	 * @param resourceId
 	 * @param state
@@ -613,7 +628,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	}
 	public void setTimeFactor(Double factor) {
 		log.infof("%s.setTimeFactor: %s", TAG, String.valueOf(factor));
-		WatchdogTimer timer = controller.getTimer();
+		WatchdogTimer timer = controller.getSecondaryTimer();
 		timer.setFactor(factor.doubleValue());
 	}
 	@Override

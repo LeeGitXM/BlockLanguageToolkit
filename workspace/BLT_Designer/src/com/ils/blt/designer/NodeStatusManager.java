@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.common.serializable.DiagramState;
+import com.ils.blt.common.DiagramState;
 import com.ils.blt.designer.navtree.NavTreeNodeInterface;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;

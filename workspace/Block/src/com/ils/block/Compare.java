@@ -131,7 +131,7 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 			}
 		}
 		dog.setSecondsDelay(synchInterval);
-		controller.pet(dog);
+		timer.updateWatchdog(dog);  // pet dog
 	}
 	
 	

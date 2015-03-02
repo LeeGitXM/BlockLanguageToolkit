@@ -64,10 +64,10 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void reset() {
 		super.reset();
-		controller.removeWatchdog(dog);    // Stop current cycle.
+		timer.removeWatchdog(dog);    // Stop current cycle.
 		if( !Double.isNaN(interval) && interval>0.0 ) {
 			dog.setSecondsDelay(interval);
-			controller.pet(dog);
+			timer.updateWatchdog(dog);  // pet dog
 		}
 	}
 	@Override
@@ -87,7 +87,7 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void stop() {
 		super.stop();
-		controller.removeWatchdog(dog);
+		timer.removeWatchdog(dog);
 	}
 	/**
 	 * Handle a changes to the various attributes.
@@ -101,7 +101,7 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 			value = event.getNewValue();
 			if( !dog.isActive() && !Double.isNaN(interval) && interval>0.0) {
 				dog.setSecondsDelay(interval);
-				controller.pet(dog);
+				timer.updateWatchdog(dog);  // pet dog
 			}
 			// If the interval is zero, we propagate the value immediately. Coerce to match output connection type
 			else {
@@ -117,17 +117,28 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 				// Start the pump
 				if( interval > 0.0 ) {
 					dog.setSecondsDelay(interval);
-					controller.pet(dog);
+					timer.updateWatchdog(dog);  // pet dog
 				}
 				else {
 					// Stop the pump
-					if( dog.isActive()) controller.removeWatchdog(dog);
+					if( dog.isActive()) timer.removeWatchdog(dog);
 				}
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.propertyChange: Unable to convert interval to a double (%s)",TAG,nfe.getLocalizedMessage());
 				// Stop the pump
-				if( dog.isActive()) controller.removeWatchdog(dog);
+				if( dog.isActive()) timer.removeWatchdog(dog);
+			}
+		}
+		else if( propertyName.equals(PROPERTY_LIVE_ON_START) ) {
+			try {
+				boolean live = Boolean.parseBoolean(event.getNewValue().toString());
+				liveProperty.setValue(new Boolean(live));
+			}
+			catch(NumberFormatException nfe) {
+				log.warnf("%s.propertyChange: Unable to convert live start to a boolean (%s)",TAG,nfe.getLocalizedMessage());
+				// Stop the pump
+				if( dog.isActive()) timer.removeWatchdog(dog);
 			}
 		}
 		else {
@@ -142,7 +153,7 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 	public synchronized void evaluate() {
 		if( Double.isNaN(interval) || interval<=0.0 ) return;   // Stops watchdog
 		dog.setSecondsDelay(interval);
-		controller.pet(dog);
+		timer.updateWatchdog(dog);  // pet dog
 		
 		// Coerce the value to match the output
 		if( !anchors.isEmpty()) {   // There should be exactly one, get its type.
@@ -189,7 +200,7 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 		// Start the pump
 		if( !Double.isNaN(interval) && interval > 0.0) {
 			dog.setSecondsDelay(interval);
-			controller.pet(dog);
+			timer.updateWatchdog(dog);  // pet dog
 		}
 	}
 	/**

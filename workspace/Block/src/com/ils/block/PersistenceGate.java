@@ -96,7 +96,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 	@Override
 	public void reset() {
 		super.reset();
-		if( dog.isActive() ) controller.removeWatchdog(dog);
+		if( dog.isActive() ) timer.removeWatchdog(dog);
 		count = 0;
 		truthValue = TruthValue.UNSET;
 		valueProperty.setValue("");
@@ -108,7 +108,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 	@Override
 	public void stop() {
 		super.stop();
-		controller.removeWatchdog(dog);
+		timer.removeWatchdog(dog);
 	}
 	/**
 	 * A new value has appeared on an input anchor. If it matches the trigger, start the count-down.
@@ -126,7 +126,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		if( !qv.getQuality().isGood() || !qv.getValue().toString().equalsIgnoreCase(trigger) ) {
 			count = 0;
 			if( dog.isActive() ) {
-				controller.removeWatchdog(dog);
+				timer.removeWatchdog(dog);
 				valueProperty.setValue("---");
 			}
 			if( !isLocked() ) {
@@ -147,7 +147,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 				log.infof("%s.acceptValue: Start countdown %d cycles (%f in %f)",TAG,count,scanInterval,timeWindow);
 				if( count> 0 ) {
 					dog.setSecondsDelay(scanInterval);
-					controller.pet(dog);
+					timer.updateWatchdog(dog);  // pet dog
 				}
 			}
 		}
@@ -163,7 +163,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		if( count> 0 ) {
 			count--;
 			dog.setSecondsDelay(scanInterval);
-			controller.pet(dog);
+			timer.updateWatchdog(dog);  // pet dog
 			
 			double timeRemaining = count*scanInterval;
 			TimeUnit tu = TimeUtility.unitForValue(timeRemaining);

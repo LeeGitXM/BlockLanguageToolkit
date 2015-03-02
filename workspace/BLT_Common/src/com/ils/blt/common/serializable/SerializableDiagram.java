@@ -2,6 +2,9 @@ package com.ils.blt.common.serializable;
 
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.ils.blt.common.DiagramState;
+
 
 
 /**
@@ -10,6 +13,7 @@ import java.util.UUID;
  * 
  * This POJO objects should have no behavior.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SerializableDiagram {
 	private SerializableBlock[] blocks;
 	private SerializableConnection[] connections;

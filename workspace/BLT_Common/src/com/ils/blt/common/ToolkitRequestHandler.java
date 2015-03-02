@@ -10,7 +10,6 @@ import java.util.UUID;
 
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PalettePrototype;
-import com.ils.blt.common.serializable.DiagramState;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
@@ -43,6 +42,10 @@ public interface ToolkitRequestHandler  {
 	 */
 	public boolean diagramExists(String uuidString) ;
 	/**
+	 * Execute evaluate() on a specified block
+	 */
+	public void evaluateBlock(String diagramId,String blockId) ;
+	/**
 	 * Determine whether or not the engine is running.
 	 */
 	public String getControllerState() ;
@@ -53,7 +56,7 @@ public interface ToolkitRequestHandler  {
 	 * @return a list of ids for blocks owned by a specified diagram that
 	 *         are of a specified class.
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings("rawtypes")
 	public List getDiagramBlocksOfClass(String diagramId,String className);
 	
 	/**
@@ -66,10 +69,8 @@ public interface ToolkitRequestHandler  {
 	 * @param className
 	 * @return an array of block properties for the subject block
 	 */
-	@SuppressWarnings("unchecked")
 	public BlockProperty[] getBlockProperties(String className,long projectId,long resourceId,UUID blockId) ;
 
-	@SuppressWarnings("unchecked")
 	public List<PalettePrototype> getBlockPrototypes() ;
 	
 	/**
@@ -77,7 +78,7 @@ public interface ToolkitRequestHandler  {
 	 */
 	public DiagramState getDiagramState(Long projectId, Long resourceId) ;
 	
-	@SuppressWarnings("unchecked")
+
 	public List<SerializableResourceDescriptor> getDiagramDescriptors(String projectName) ;
 	
 	/**
@@ -117,7 +118,6 @@ public interface ToolkitRequestHandler  {
 	 * 
 	 * @return a list of resources known to the BlockController.
 	 */
-	@SuppressWarnings("unchecked")
 	public List<SerializableResourceDescriptor> queryControllerResources() ;
 	/**
 	 * Query a diagram in the gateway for list of blocks that it knows about. 
@@ -125,7 +125,6 @@ public interface ToolkitRequestHandler  {
 	 * 
 	 * @return a list of blocks known to the diagram.
 	 */
-	@SuppressWarnings("unchecked")
 	public List<SerializableResourceDescriptor> queryDiagram(String diagramId) ;
 	/**
 	 * Save a value into the HSQL database table associated with the toolkit. The 

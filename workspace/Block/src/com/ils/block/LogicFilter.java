@@ -110,7 +110,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		super.reset();
 		if( scanInterval>0.0) {
 			dog.setSecondsDelay(scanInterval);
-			controller.pet(dog);
+			timer.updateWatchdog(dog);  // pet dog
 		}
 		buffer.clear();
 		currentState = TruthValue.UNSET;
@@ -125,7 +125,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	}
 	@Override
 	public void stop() {
-		controller.removeWatchdog(dog);
+		timer.removeWatchdog(dog);
 	}
 	
 	/**
@@ -164,7 +164,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		//log.tracef("%s.evaluate buffer %d of %d",TAG,buffer.size(),maxPoints);
 		
 		dog.setSecondsDelay(scanInterval);
-		controller.pet(dog);
+		timer.updateWatchdog(dog);  // pet dog
 		
 		TruthValue newState = TruthValue.UNKNOWN;
 		ratio = computeTrueRatio(maxPoints);
@@ -228,10 +228,10 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 					if( scanInterval < 0.1 ) scanInterval = 0.1;
 					if( scanInterval > timeWindow ) scanInterval = timeWindow;
 					dog.setSecondsDelay(scanInterval);
-					controller.pet(dog);
+					timer.updateWatchdog(dog);  // pet dog
 				}
 				else {
-					controller.removeWatchdog(dog);
+					timer.removeWatchdog(dog);
 				}
 			}
 			catch(NumberFormatException nfe) {
@@ -255,11 +255,11 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 					if( scanInterval > timeWindow ) {
 						scanInterval = timeWindow;
 						dog.setSecondsDelay(scanInterval);
-						controller.pet(dog);
+						timer.updateWatchdog(dog);  // pet dog
 					}
 				}
 				else {
-					controller.removeWatchdog(dog);
+					timer.removeWatchdog(dog);
 				}
 			}
 			catch(NumberFormatException nfe) {

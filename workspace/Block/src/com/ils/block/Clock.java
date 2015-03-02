@@ -97,7 +97,7 @@ public class Clock extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void stop() {
 		super.stop();
-		controller.removeWatchdog(dog);
+		timer.removeWatchdog(dog);
 	}
 	/**
 	 * We've received a transmitted signal. If it is appropriate 
@@ -109,7 +109,7 @@ public class Clock extends AbstractProcessBlock implements ProcessBlock {
 		log.infof("%s.acceptValue: signal = %s",TAG,signal.getCommand());
 		if( signal.getCommand() != null && signal.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_START) && interval > 0) {
 			dog.setSecondsDelay(interval);
-			controller.pet(dog);
+			timer.updateWatchdog(dog);  // pet dog
 		}
 	}
 	
@@ -126,7 +126,7 @@ public class Clock extends AbstractProcessBlock implements ProcessBlock {
 			controller.acceptCompletionNotification(sig);
 			notifyOfStatus(qv);
 		}
-		controller.removeWatchdog(dog);
+		timer.removeWatchdog(dog);
 	}
 	
 	/**
@@ -150,7 +150,7 @@ public class Clock extends AbstractProcessBlock implements ProcessBlock {
 				interval = Double.parseDouble(event.getNewValue().toString());
 				if( dog.isActive() && interval>0.0 ) {
 					dog.setSecondsDelay(interval);
-					controller.pet(dog);
+					timer.updateWatchdog(dog);  // pet dog
 				}
 			}
 			catch(NumberFormatException nfe) {

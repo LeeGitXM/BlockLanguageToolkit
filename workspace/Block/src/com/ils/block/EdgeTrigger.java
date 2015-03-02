@@ -63,7 +63,7 @@ public class EdgeTrigger extends AbstractProcessBlock implements ProcessBlock {
 	
 	@Override
 	public void reset() {
-		controller.removeWatchdog(dog);
+		timer.removeWatchdog(dog);
 	}
 	/**
 	 * Disconnect from the timer thread.
@@ -71,7 +71,7 @@ public class EdgeTrigger extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void stop() {
 		super.stop();
-		controller.removeWatchdog(dog);
+		timer.removeWatchdog(dog);
 	}
 	
 	/**
@@ -98,7 +98,7 @@ public class EdgeTrigger extends AbstractProcessBlock implements ProcessBlock {
 					TruthValue tv = vcn.getValueAsTruthValue();
 					if( tv.equals(trigger)) {	
 						dog.setSecondsDelay(holdInterval);
-						controller.pet(dog);
+						timer.updateWatchdog(dog);  // pet dog
 					}
 				}
 			}

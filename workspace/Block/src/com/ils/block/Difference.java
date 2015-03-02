@@ -99,7 +99,7 @@ public class Difference extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void stop() {
 		super.stop();
-		controller.removeWatchdog(dog);
+		timer.updateWatchdog(dog);  // pet dog
 	}
 	
 	/**
@@ -133,7 +133,7 @@ public class Difference extends AbstractProcessBlock implements ProcessBlock {
 			}
 		}
 		dog.setSecondsDelay(synchInterval);
-		controller.pet(dog);
+		timer.updateWatchdog(dog);  // pet dog
 	}
 	
 	

@@ -61,7 +61,15 @@ public class GatewayRpcDispatcher   {
 		log.infof("%s.diagramExists ...",TAG);
 		return new Boolean(requestHandler.diagramExists(uuidString));
 	}
-
+	/**
+	 * Execute the evaluate method on a block
+	 * @param diagramIdString
+	 * @param blockIdString
+	 */
+	public void evaluateBlock(String diagramIdString,String blockIdString) {
+		log.infof("%s.evaluateBlock ...",TAG);
+		requestHandler.evaluateBlock(diagramIdString,blockIdString);
+	}
 	public String getApplicationName(String uuid) {
 		return requestHandler.getApplicationName(uuid);
 	}
@@ -240,8 +248,9 @@ public class GatewayRpcDispatcher   {
 		return  requestHandler.queryDiagramForBlocks(diagId);
 	}
 	/**
-	 * Reset a block or diagram given its UUID
-	 * @param uuidString
+	 * Reset a block in a diagram given string forms of their UUID
+	 * @param diagramIdString
+	 * @param blockIdString
 	 */
 	public void resetBlock(String diagramIdString,String blockIdString) {
 		log.infof("%s.resetBlock ...",TAG);

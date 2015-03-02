@@ -98,7 +98,7 @@ public class Quotient extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void stop() {
 		super.stop();
-		controller.removeWatchdog(dog);
+		timer.removeWatchdog(dog);
 	}
 	/**
 	 * Handle a change to the coalescing interval.
@@ -146,7 +146,7 @@ public class Quotient extends AbstractProcessBlock implements ProcessBlock {
 			}
 		}
 		dog.setSecondsDelay(synchInterval);
-		controller.pet(dog);
+		timer.updateWatchdog(dog);  // pet dog
 	}
 	
 	

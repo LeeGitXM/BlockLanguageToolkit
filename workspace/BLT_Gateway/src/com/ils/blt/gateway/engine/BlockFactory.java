@@ -33,6 +33,7 @@ public class BlockFactory  {
 	private final static String TAG = "BlockFactory";
 	private final LoggerEx log = LogUtil.getLogger(BlockFactory.class.getPackage().getName());
 	private static BlockFactory instance = null;
+	private final BlockExecutionController controller = BlockExecutionController.getInstance();
 	private final ProxyHandler proxyHandler;
 	/**
 	 * Private per the Singleton pattern.
@@ -78,7 +79,6 @@ public class BlockFactory  {
 		}
 		catch( ClassNotFoundException cnf ) {
 			log.debugf("%s.blockFromSerializable: No java class %s ... trying Python",TAG,className); 
-			BlockExecutionController controller = BlockExecutionController.getInstance();
 			ProcessDiagram diagram = controller.getDiagram(parentId);
 			if( diagram!=null ) {
 				long pid = diagram.getProjectId();
@@ -92,7 +92,10 @@ public class BlockFactory  {
 			log.warnf("%s.blockFromSerializable: Security exception creating %s (%s)",TAG,className,iae.getLocalizedMessage()); 
 		}
 
-		if( block!=null ) updateBlockFromSerializable(block,sb);
+		if( block!=null ) {
+			block.setTimer(controller.getTimer());  // Initial value
+			updateBlockFromSerializable(block,sb);
+		}
 		return block;
 	}
 	
@@ -114,6 +117,7 @@ public class BlockFactory  {
 				AnchorPrototype proto = new AnchorPrototype(sa.getDisplay(),sa.getDirection(),sa.getConnectionType());
 				proto.setAnnotation(sa.getAnnotation());
 				proto.setHint(sa.getHint());
+				proto.setHidden(sa.isHidden());
 				proto.setIsMultiple(sa.isMultiple());
 				descriptors.add(proto);
 			}

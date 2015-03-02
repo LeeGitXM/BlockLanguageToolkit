@@ -29,7 +29,5 @@ public interface ExecutionController  {
 	public void clearSubscriptions();
 	public void sendPropertyNotification(String id, String propertyName, QualifiedValue val);
 	public void sendConnectionNotification(String blockid, String port, QualifiedValue val);
-	public void pet(Watchdog dog);
-	public void removeWatchdog(Watchdog dog);
 	public void updateTag(UUID diagramId,String path,QualifiedValue val);
 }

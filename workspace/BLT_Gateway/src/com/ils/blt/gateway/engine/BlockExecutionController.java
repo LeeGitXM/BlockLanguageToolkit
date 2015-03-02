@@ -13,6 +13,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.ProcessBlock;
@@ -24,10 +25,8 @@ import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.notification.SignalNotification;
-import com.ils.blt.common.serializable.DiagramState;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.common.BoundedBuffer;
-import com.ils.common.watchdog.Watchdog;
 import com.ils.common.watchdog.WatchdogTimer;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -48,6 +47,7 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
  */
 public class BlockExecutionController implements ExecutionController, Runnable {
 	private final static String TAG = "BlockExecutionController";
+	private static BlockExecutionController instance = null;
 	public final static String CONTROLLER_RUNNING_STATE = "running";
 	public final static String CONTROLLER_STOPPED_STATE = "stopped";
 	private static int BUFFER_SIZE = 100;       // Buffer Capacity
@@ -55,8 +55,8 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	private final LoggerEx log;
 	private GatewaySessionManager sessionManager = null;
 	private ModelManager modelManager = null;
-	private WatchdogTimer watchdogTimer = null;
-	private static BlockExecutionController instance = null;
+	private final WatchdogTimer watchdogTimer;
+	private final WatchdogTimer secondaryWatchdogTimer;  // For isolated
 	private final ExecutorService threadPool;
 
 
@@ -76,6 +76,9 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		this.tagListener = new TagListener(this);
 		this.tagWriter = new TagWriter();
 		this.buffer = new BoundedBuffer(BUFFER_SIZE);
+		// Timers get started and stopped with the controller
+		this.watchdogTimer = new WatchdogTimer();
+		this.secondaryWatchdogTimer = new WatchdogTimer();
 	}
 
 	/**
@@ -171,6 +174,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	}
 	
 	public WatchdogTimer getTimer() {return watchdogTimer;}
+	public WatchdogTimer getSecondaryTimer() {return secondaryWatchdogTimer;}
 	/**
 	 * Start the controller, watchdogTimer, tagListener and TagWriter.
 	 * @param ctxt the gateway context
@@ -185,11 +189,9 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		log.debugf("%s START - notification thread %d ",TAG,notificationThread.hashCode());
 		notificationThread.setDaemon(true);
 		notificationThread.start();
-		// Create a new watchdog timer each time we start the controller
-		// It is started on creation
-		watchdogTimer = new WatchdogTimer();
+		watchdogTimer.start();
+		secondaryWatchdogTimer.start();
 		sessionManager = context.getGatewaySessionManager();
-		
 		// Activate all of the blocks in the diagram.
 		modelManager.startBlocks();
 	}
@@ -206,8 +208,8 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 			notificationThread.interrupt();
 		}
 		tagListener.stop();
+		secondaryWatchdogTimer.stop();
 		watchdogTimer.stop();
-		watchdogTimer = null;
 		// Shutdown all of the blocks in the diagram.
 		modelManager.stopBlocks();
 		log.infof("%s: STOPPED",TAG);
@@ -229,6 +231,18 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 */
 	public void addTemporaryDiagram(ProcessDiagram diagram) {
 		modelManager.addTemporaryDiagram(diagram);
+	}
+	/**
+	 * Execute a block's evaluate method.
+	 * @param diagramId the block or diagram identifier.
+	 * @param blockId the block or diagram identifier.
+	 */
+	public void evaluateBlock(UUID diagramId,UUID blockId) {
+		ProcessDiagram diagram = modelManager.getDiagram(diagramId);
+		if( diagram!=null) {
+			ProcessBlock block = modelManager.getBlock(diagram, blockId);
+			if( block!=null) block.evaluate();
+		}
 	}
 	public ProcessBlock getBlock(ProcessDiagram diagram,UUID blockId) {
 		return modelManager.getBlock(diagram,blockId);
@@ -264,7 +278,6 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		if( diagram!=null) {
 			ProcessBlock block = modelManager.getBlock(diagram, blockId);
 			if( block!=null) block.reset();
-			
 		}
 	}
 	/**
@@ -335,7 +348,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	// ======================= Delegated to TagWriter ======================
 	/**
 	 * Write a value to a tag. If the diagram referenced diagram is disabled
-	 * or "restricted", then this method has no effect.
+	 * then this method has no effect.
 	 * @param diagramId UUID of the parent diagram
 	 * @param path
 	 * @param val
@@ -343,31 +356,14 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public void updateTag(UUID diagramId,String path,QualifiedValue val) {
 		log.infof("%s.updateTag %s = %s ",TAG,path,val.toString());
 		ProcessDiagram diagram = modelManager.getDiagram(diagramId);
-		if( diagram!=null && diagram.getState().equals(DiagramState.ACTIVE)) {
+		if( diagram!=null && !diagram.getState().equals(DiagramState.DISABLED)) {
 			tagWriter.updateTag(diagram.getProjectId(),path,val);
 		}
 		else {
 			log.infof("%s.updateTag REJECTED, diagram not active",TAG);
 		}
 	}
-	// ======================= Delegated to Watchdog ======================
-	/**
-	 * "pet" a watch dog. The watch dog must be updated to expire some time 
-	 * in the future. This method may also be used to insert a watch dog
-	 * into the timer list for the first time.
-	 * 
-	 * This method has no effect unless the controller is running.
-	 * @param pet the watchdog to stroke.
-	 */
-	public void pet(Watchdog dog) {
-		if(watchdogTimer!=null) watchdogTimer.updateWatchdog(dog);
-	}
-	/**
-	 * Remove a watch dog. Delete it from the list.
-	 */
-	public void removeWatchdog(Watchdog dog) {
-		if(watchdogTimer!=null) watchdogTimer.removeWatchdog(dog);
-	}
+
 	// ============================ Completion Handler =========================
 	/**
 	 * Wait for work to arrive at the output of a bounded buffer. The contents of the bounded buffer

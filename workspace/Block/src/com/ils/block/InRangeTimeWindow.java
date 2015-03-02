@@ -115,7 +115,7 @@ public class InRangeTimeWindow extends AbstractProcessBlock implements ProcessBl
 		super.reset();
 		if( scanInterval>0.0) {
 			dog.setSecondsDelay(scanInterval);
-			controller.pet(dog);
+			timer.updateWatchdog(dog);  // pet dog
 		}
 		truthValue = TruthValue.UNSET;
 	}
@@ -126,7 +126,7 @@ public class InRangeTimeWindow extends AbstractProcessBlock implements ProcessBl
 	}
 	@Override
 	public void stop() {
-		controller.removeWatchdog(dog);
+		timer.removeWatchdog(dog);
 	}
 	
 	/**
@@ -204,7 +204,7 @@ public class InRangeTimeWindow extends AbstractProcessBlock implements ProcessBl
 		}
 
 		dog.setSecondsDelay(scanInterval);
-		controller.pet(dog);
+		timer.updateWatchdog(dog);  // pet dog
 	}
 	/**
 	 * Send status update notification for our last latest state.
@@ -292,7 +292,7 @@ public class InRangeTimeWindow extends AbstractProcessBlock implements ProcessBl
 				if( scanInterval < 0.1 ) scanInterval = 0.1;   // Don't allow to go too fast
 				if( scanInterval < oldInterval ) {
 					dog.setSecondsDelay(scanInterval);
-					controller.pet(dog);
+					timer.updateWatchdog(dog);  // pet dog
 				}
 			}
 			catch(NumberFormatException nfe) {

@@ -23,7 +23,7 @@ import javax.swing.tree.TreePath;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.common.serializable.DiagramState;
+import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.designer.BLTDesignerHook;
@@ -129,7 +129,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		DebugDiagramAction debugAction = new DebugDiagramAction();
 		ResetDiagramAction resetAction = new ResetDiagramAction();
 		
-		// States are: ACTIVE, DISABLED, RESTRICTED
+		// States are: ACTIVE, DISABLED, ISOLATED
 		ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
 		DiagramState state = handler.getDiagramState(context.getProject().getId(), resourceId);
 		saveAction = new SaveDiagramAction(this);
@@ -137,12 +137,12 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		ssaActive.setEnabled(!state.equals(DiagramState.ACTIVE));
 		SetStateAction ssaDisable = new SetStateAction(DiagramState.DISABLED);
 		ssaDisable.setEnabled(!state.equals(DiagramState.DISABLED));
-		SetStateAction ssaRestricted = new SetStateAction(DiagramState.RESTRICTED);
-		ssaRestricted.setEnabled(!state.equals(DiagramState.RESTRICTED));
+		SetStateAction ssaIsolated = new SetStateAction(DiagramState.ISOLATED);
+		ssaIsolated.setEnabled(!state.equals(DiagramState.ISOLATED));
 		JMenu setStateMenu = new JMenu(BundleUtil.get().getString(PREFIX+".SetState"));
 		setStateMenu.add(ssaActive);
 		setStateMenu.add(ssaDisable);
-		setStateMenu.add(ssaRestricted);
+		setStateMenu.add(ssaIsolated);
 		menu.add(setStateMenu);
 		menu.add(saveAction);
 		menu.addSeparator();
@@ -224,12 +224,12 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			icon = openIcon;
 			DiagramState ds = statusManager.getResourceState(resourceId);
 			if( ds.equals(DiagramState.DISABLED))        icon = openDisabledIcon;
-			else if( ds.equals(DiagramState.RESTRICTED)) icon = openRestrictedIcon;
+			else if( ds.equals(DiagramState.ISOLATED)) icon = openRestrictedIcon;
 		}
 		else {
 			DiagramState ds = statusManager.getResourceState(resourceId);
 			if( ds.equals(DiagramState.DISABLED))        icon = closedDisabledIcon;
-			else if( ds.equals(DiagramState.RESTRICTED)) icon = closedRestrictedIcon;
+			else if( ds.equals(DiagramState.ISOLATED)) icon = closedRestrictedIcon;
 		}
 		return icon;
 	}

@@ -12,6 +12,7 @@ import com.ils.blt.common.notification.BlockPropertyChangeListener;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.SignalNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
+import com.ils.common.watchdog.WatchdogTimer;
 
 
 /**
@@ -168,6 +169,13 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 * @param text the current status of the block
 	 */
 	public void setStatusText(String text);
+	/**
+	 * Specify the timer to be used for all block-
+	 * internal timings. 
+	 * 
+	 * @param timer
+	 */
+	public void setTimer(WatchdogTimer timer);
 	/**
 	 * Start any active monitoring or processing within the block.
 	 */

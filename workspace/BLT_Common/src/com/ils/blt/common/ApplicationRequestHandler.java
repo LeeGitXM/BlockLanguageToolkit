@@ -16,7 +16,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PalettePrototype;
-import com.ils.blt.common.serializable.DiagramState;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
@@ -75,6 +74,20 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 			log.infof("%s.diagramExists: GatewayException (%s)",TAG,ge.getMessage());
 		}
 		return result;
+	}
+	/**
+	 * Execute evaluate() on a specified block
+	 */
+	public void evaluateBlock(String diagramId,String blockId) {
+		log.debugf("%s.evaluateBlock ...",TAG);
+
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "evaluateBlock",diagramId,blockId);
+		}
+		catch(Exception ge) {
+			log.infof("%s.evaluateBlock: GatewayException (%s)",TAG,ge.getMessage());
+		}
 	}
 	@Override
 	public String getApplicationName(String uuid) {

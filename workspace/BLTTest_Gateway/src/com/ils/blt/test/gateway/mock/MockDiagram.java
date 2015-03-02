@@ -7,11 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.connection.ProcessConnection;
-import com.ils.blt.common.serializable.DiagramState;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.gateway.engine.ProcessDiagram;
 

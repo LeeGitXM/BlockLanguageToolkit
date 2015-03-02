@@ -94,7 +94,7 @@ public class Product extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void stop() {
 		super.stop();
-		controller.removeWatchdog(dog);
+		timer.removeWatchdog(dog);
 	}
 	/**
 	 * Handle a change to the coalescing interval.
@@ -133,7 +133,7 @@ public class Product extends AbstractProcessBlock implements ProcessBlock {
 				qv = new BasicQualifiedValue(dbl,qv.getQuality(),qv.getTimestamp());
 				dog.setSecondsDelay(synchInterval);
 				log.tracef("%s.acceptValue got %s for %s", TAG,dbl.toString(),key);
-				controller.pet(dog);
+				timer.updateWatchdog(dog);  // pet dog
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.acceptValue: Unable to convert incoming value to a double (%s)",TAG,nfe.getLocalizedMessage());
