@@ -6,6 +6,7 @@ package com.ils.blt.gateway;
 
 import java.util.UUID;
 
+import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ProcessApplication;
@@ -95,10 +96,10 @@ public class PythonRequestHandler   {
 			UUID uuid = UUID.fromString(uuidString);
 			ProcessNode node = controller.getProcessNode(uuid);
 			while( node!=null) {
-				long projectId = node.getProjectId();
-				if( projectId!=-1) {
-					dbName = context.getProjectManager().getProps(projectId, ProjectVersion.Published).getDefaultDatasourceName();
-					log.infof("%s.getDefaultDatabase, name = %s ",TAG,dbName);
+				if(node instanceof ProcessDiagram ) {
+					ProcessDiagram diagram = (ProcessDiagram)node;
+					if( diagram.getState().equals(DiagramState.ISOLATED)) dbName = controller.getIsolationDatabase();
+					else dbName = controller.getProductionDatabase();
 					break;
 				}
 				node = controller.getProcessNode(node.getParent());
@@ -116,14 +117,15 @@ public class PythonRequestHandler   {
 	 */
 	public String getDefaultTagProvider(String uuidString)  {
 		log.tracef("%s.getDefaultTagProvider, node = %s ",TAG,uuidString);
-		String provider = null;
+		String provider = "";
 		try {
 			UUID uuid = UUID.fromString(uuidString);
 			ProcessNode node = controller.getProcessNode(uuid);
 			while(  node!=null) {
-				long projectId = node.getProjectId();
-				if( projectId!=-1) {
-					provider = context.getProjectManager().getProps(projectId, ProjectVersion.Published).getDefaultSQLTagsProviderName();
+				if(node instanceof ProcessDiagram ) {
+					ProcessDiagram diagram = (ProcessDiagram)node;
+					if( diagram.getState().equals(DiagramState.ISOLATED)) provider = controller.getIsolationProvider();
+					else provider = controller.getProductionProvider();
 					break;
 				}
 				node = controller.getProcessNode(node.getParent());

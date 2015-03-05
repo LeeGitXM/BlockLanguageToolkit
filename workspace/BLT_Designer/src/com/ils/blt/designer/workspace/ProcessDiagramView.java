@@ -15,6 +15,7 @@ import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
+import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.common.serializable.SerializableAnchorPoint;
 import com.ils.blt.common.serializable.SerializableBlock;
@@ -40,7 +41,7 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 /**
  * This class represents a diagram in the designer.
  */
-public class ProcessDiagramView extends AbstractChangeable implements BlockDiagramModel {
+public class ProcessDiagramView extends AbstractChangeable implements BlockDiagramModel,NotificationChangeListener {
 	private static LoggerEx log = LogUtil.getLogger(ProcessDiagramView.class.getPackage().getName());
 	// Use TAG as the "source" identifier when registering for notifications from Gateway
 	private static final String TAG = "ProcessDiagramView";
@@ -428,6 +429,8 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 				}
 			}
 		}
+		// Finally, register self
+		handler.addNotificationChangeListener(NotificationKey.keyForDiagram(getId().toString()),TAG,this);
 	}
 	
 	/**
@@ -453,5 +456,20 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 				}
 			}
 		}
+		// Finally, deregister self
+		handler.removeNotificationChangeListener(NotificationKey.keyForDiagram(getId().toString()),TAG);
+	}
+
+	// ------------------------------------------- Notification Change Listener --------------------------------------
+	/**
+	 * The value that we expect is a state change
+	 */
+	@Override
+	public void valueChange(QualifiedValue value) {
+		String stateString = value.getValue().toString();
+		DiagramState ds = DiagramState.valueOf(stateString);
+		setState(ds);
+		super.fireStateChanged();
+		
 	}
 }

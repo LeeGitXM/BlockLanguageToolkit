@@ -77,7 +77,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
         MenuBarMerge merge = new MenuBarMerge(BLTProperties.MODULE_ID);  // as suggested in javadocs
         merge.addSeparator();
 
-        Action testControlAction = new AbstractAction("Diagram Configuration Panel") {
+        Action testControlAction = new AbstractAction("Diagram Execution Properties") {
             private static final long serialVersionUID = 5374667367733312464L;
             public void actionPerformed(ActionEvent ae) {
                 SwingUtilities.invokeLater(new DialogRunner());

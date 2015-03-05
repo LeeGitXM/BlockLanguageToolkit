@@ -22,7 +22,7 @@ import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PropertyType;
 
 /**
- * Display a panel to edit the name of a block and its 
+ * Display a panel to edit the binding of a property and its 
  * attribute display.  This is one of the sliding panels
  * in the block editor.   
  */
@@ -81,7 +81,7 @@ public class ConfigurationPanel extends BasicEditPanel {
 		interiorPanel.add(displayPanel,"");
 
 		// The OK button copies data from the components and sets the property properties.
-		// It then returns to the main tab
+		// It then returns to the main tab. 
 		JPanel buttonPanel = new JPanel();
 		JButton okButton = new JButton("OK");
 		buttonPanel.add(okButton,"");

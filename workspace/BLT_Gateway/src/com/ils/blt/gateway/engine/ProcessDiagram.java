@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
+ *   (c) 2014-2015  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.gateway.engine;
 
@@ -298,6 +298,8 @@ public class ProcessDiagram extends ProcessNode {
 				}
 				startSubscriptions();
 			}
+			// Fire notification change
+			controller.sendStateNotification(diagram.getId().toString(), s.name());
 		}
 	}
 	/**

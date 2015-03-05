@@ -789,13 +789,13 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		private static final long serialVersionUID = 1L;
 		private final ProcessDiagramView diagram;
 		private final ProcessBlockView block;
-		public ForceAction(ProcessDiagramView dia,ProcessBlockView blk)  {
+		public ForceAction(ProcessDiagramView diag,ProcessBlockView blk)  {
 			super(PREFIX+".Force");
-			this.diagram = dia;
+			this.diagram = diag;
 			this.block = blk;
 		}
 		
-		// Display the internals viewer
+		// Display a dialog that allows user-entry of output values
 		public void actionPerformed(final ActionEvent e) {
 			final JDialog viewer = (JDialog)new ForceValueSettingsDialog(context.getFrame(),diagram,block);
 			Object source = e.getSource();
@@ -819,7 +819,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		private final ProcessDiagramView diagram;
 		private final DiagramWorkspace workspace;
 		public HideSignalAction(DiagramWorkspace wksp,ProcessDiagramView diag,ProcessBlockView blk)  {
-			super(PREFIX+".ShowSignal",IconUtil.getIcon("trafficlight_red"));  // preferences
+			super(PREFIX+".HideSignal",IconUtil.getIcon("trafficlight_red"));  // preferences
 			this.workspace = wksp;
 			this.diagram = diag;
 			this.block = blk;
@@ -831,6 +831,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(diagram.getResourceId());
 				if( tab!=null ) workspace.saveDiagramResource(tab);
 			}
+			// Repaint to update the stub
+			SwingUtilities.invokeLater(new WorkspaceRepainter());
 		}
 	}
 	/**
@@ -913,6 +915,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(diagram.getResourceId());
 				if( tab!=null ) workspace.saveDiagramResource(tab);
 			}
+			// Repaint to update the stub
+			SwingUtilities.invokeLater(new WorkspaceRepainter());
 		}
 	}
 	/**

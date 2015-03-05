@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved.
+ *   (c) 2015  ILS Automation. All rights reserved.
  *   http://docs.oracle.com/javase/tutorial/displayCode.html?code=http://docs.oracle.com/javase/tutorial/uiswing/examples/components/SharedModelDemoProject/src/components/SharedModelDemo.java
  */
 package com.ils.blt.designer.workspace;
@@ -11,175 +11,123 @@ import java.awt.Font;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
+import javax.swing.JTextField;
 import javax.swing.WindowConstants;
-import javax.swing.table.DefaultTableModel;
 
 import net.miginfocom.swing.MigLayout;
 
 import com.ils.blt.common.ApplicationRequestHandler;
-import com.ils.blt.common.BLTProperties;
-import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
-import com.inductiveautomation.ignition.common.BundleUtil;
-import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.ils.blt.common.block.TruthValue;
+import com.ils.blt.common.connection.ConnectionType;
+import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
 
 /**
- * This is a read-only viewer for blocks for blocks that return internal state
- * (theoretically all of them). 
+ * Allow the user to set a value to be propagated on each block output. 
  */
 
 public class ForceValueSettingsDialog extends JDialog {
-	private static String TAG = "BlockInternalsViewer";
-	private final LoggerEx log;
-	// A panel is designed to edit properties that are lists of strings.
-	private static final String PREFIX = BLTProperties.BLOCK_PREFIX;  // Required for text strings
-	private static final long serialVersionUID = 4004388376825535527L;
-	private final int DIALOG_HEIGHT = 320;
-	private final int DIALOG_WIDTH = 500;
-	private static final Dimension TABLE_SIZE  = new Dimension(480,120);
+	private static final long serialVersionUID = 4224388376825535527L;
+	private final Dimension ENTRY_BOX_SIZE = new Dimension(200,24);
+	private final int DIALOG_HEIGHT = 100;
+	private final int DIALOG_WIDTH = 300;
 	private final ProcessDiagramView diagram;
 	private final ProcessBlockView block;
-	private Map<String,String> attributes = null;
-	private List<Map<String,String>> buffer = null;
-	private JTable table;
+	private final Map<String,JComponent> componentMap;
+	private final ResourceBundle rb;
+	private final ApplicationRequestHandler requestHandler;
 	
-	public ForceValueSettingsDialog(Frame frame,ProcessDiagramView dia,ProcessBlockView view) {
+	public ForceValueSettingsDialog(Frame frame,ProcessDiagramView diag,ProcessBlockView view) {
 		super(frame);
-		this.diagram = dia;
+		this.diagram = diag;
 		this.block = view;
-		this.setTitle(String.format(BundleUtil.get().getString(PREFIX+".ViewInternals.Title",view.getName())));
+		this.setTitle("Force Block Output Values");
+		this.rb = ResourceBundle.getBundle("com.ils.blt.designer.block");  // block.properties
 		setAlwaysOnTop(true);
 		setModal(false);
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
-        this.log = LogUtil.getLogger(getClass().getPackage().getName());
-		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));
-		queryBlock();
+		// Extend the height depending on the count
+		int count = countOutputs(block);
+		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT+30*count));
+		this.componentMap = new HashMap<>();
+		this.requestHandler = new ApplicationRequestHandler();
         initialize();
 	}
 	
 	private void initialize() {
-		
-		// The internal panel has two panes - one for the table, the other for the list
+		// The internal panel contains a list of outputs with entry
+		// boxes for each according to type.
 		setLayout(new BorderLayout());
 		JPanel internalPanel = new JPanel();
 		
-		//Create the internal panel - it has two panes
-		internalPanel.setLayout(new MigLayout("ins 2","",""));
-		addSeparator(internalPanel,"Properties");
-		internalPanel.add(createPropertiesPanel(),"wrap");
+		internalPanel.add(createOutputsPane(),"wrap");
+		add(internalPanel, BorderLayout.CENTER);
 		
-		if( !buffer.isEmpty() ) {
-			addSeparator(internalPanel,"List");
-			internalPanel.add(createListPanel(),"wrap");
-		}
-		add(internalPanel,BorderLayout.CENTER);
-		
-
-		// The OK button simply closes the dialog
+		// The OK button reads the values from the widgets and propagates to output
 		JPanel buttonPanel = new JPanel();
 		add(buttonPanel, BorderLayout.SOUTH);
-		JButton okButton = new JButton("Dismiss");
+		JButton okButton = new JButton(rb.getString("Force.ForceButton"));
 		buttonPanel.add(okButton, "");
 		okButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// Loop over the values and place on output
+				for(String port:componentMap.keySet()) {
+					JComponent component = componentMap.get(port);
+					String value = null;
+					if( component instanceof JComboBox ) {
+						value = ((JComboBox)component).getSelectedItem().toString();
+					}
+					else if(component instanceof JTextField) {
+						value = ((JTextField)component).getText();
+					}
+					requestHandler.postResult(diagram.getId().toString(),block.getId().toString(),port,value);
+				}
+			}
+		});
+		JButton cancelButton = new JButton(rb.getString("Force.CancelButton"));
+		buttonPanel.add(cancelButton, "");
+		cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				dispose();
 			}
 		});
 	}
 
-	private void queryBlock() {
-		ApplicationRequestHandler handler = new ApplicationRequestHandler();
-		SerializableBlockStateDescriptor descriptor = handler.getInternalState(diagram.getId().toString(), block.getId().toString());
-		if( descriptor!=null ) {
-			attributes = descriptor.getAttributes();
-			buffer = descriptor.getBuffer();
-			log.infof("%s.queryBlock: %d properties, %d history entries",TAG, attributes.size(),buffer.size());
-		}
-	}
-	
-	
+		
 	/**
 	 * A list add panel is a panel appending a string element in the list. It contains:-
 	 *        Scroll pane with the table, two buttons at the bottom.
 	 */
-	private JPanel createPropertiesPanel()  {
-		JPanel outerPanel = new JPanel();
-		table = new JTable();		
-		//outerPanel.setLayout(new MigLayout("ins 2,filly","para[:480:]","[120]"));
-		outerPanel.setLayout(new MigLayout("ins 2,fillx,filly","",""));
-		String PRE = PREFIX+".ViewInternals.Col.";
-		String[] columnNames = { BundleUtil.get().getString(PRE+"Name"),
-				                 BundleUtil.get().getString(PRE+"Value") };
-		DefaultTableModel dataModel = new DefaultTableModel(columnNames,0);
-		// There should always be attributes
-		if( attributes!=null )  {
-			String [] row = new String[2];
-			for( String key:attributes.keySet()) {
-				row[0] = key;
-				String attribute = attributes.get(key);
-				row[1] = (attribute==null?" ":attribute);
-				dataModel.addRow(row);
+	private JPanel createOutputsPane()  {
+		JPanel outerPanel = new JPanel();		
+		outerPanel.setLayout(new MigLayout("top,flowy,ins 2,gapy 0:10:15","","[top]0[]"));
+		
+		for( ProcessAnchorDescriptor pad:block.getAnchors()) {
+			if( pad.getType().equals(AnchorType.Origin) ) {
+				addSeparator(outerPanel,pad.getDisplay());
+				if( pad.getConnectionType().equals(ConnectionType.TRUTHVALUE) ) {
+					JComboBox<String> box = createTruthValueCombo();
+					outerPanel.add(box,"gaptop 0,gapbottom 0,wrap");
+					componentMap.put(pad.getDisplay(), box);
+				}
+				// For most types, just a text box
+				else {
+					JTextField field = createTextField();
+					outerPanel.add(field,"gaptop 0,gapbottom 0,wrap");
+					componentMap.put(pad.getDisplay(), field);
+				}
 			}
 		}
-		
-		for( ProcessAnchorDescriptor pad: block.getAnchors() ) {
-			QualifiedValue qv = pad.getLastValue();
-			String [] row = new String[2];
-			row[0] = "port: "+ pad.getDisplay();
-			row[1] = (qv==null?"":qv.getValue().toString());
-			dataModel.addRow(row);
-		}
-		
-        table = new JTable(dataModel);
-        table.setPreferredSize(TABLE_SIZE);
-        table.setRowSelectionAllowed(true);
-        table.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-
-        
-        JScrollPane tablePane = new JScrollPane(table);
-        table.setFillsViewportHeight(true);
-        outerPanel.add(tablePane, "wrap");
-		return outerPanel;
-	}
-	
-	/**
-	 * A list add panel is a panel appending a string element in the list. It contains:-
-	 *        Scroll pane with the table, two buttons at the bottom.
-	 */
-	private JPanel createListPanel()  {
-		JPanel outerPanel = new JPanel();
-		table = new JTable();
-		Map<String,String> prototype = buffer.get(0);
-		String[] columnNames = prototype.keySet().toArray(new String[prototype.keySet().size()]);
-		int nColumns = columnNames.length;
-		//outerPanel.setLayout(new MigLayout("ins 2,filly","para[:480:]","[120]"));
-		outerPanel.setLayout(new MigLayout("ins 2,fillx,filly","",""));
-		DefaultTableModel dataModel = new DefaultTableModel(columnNames,0); 
-		for( Map<String,String> entity:buffer) {
-			String[] row = entity.values().toArray(new String[nColumns]);
-			dataModel.addRow(row);
-		}
-        table = new JTable(dataModel);
-        table.setPreferredSize(TABLE_SIZE);
-        table.setRowSelectionAllowed(true);
-        table.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-
-        
-        JScrollPane tablePane = new JScrollPane(table);
-        table.setFillsViewportHeight(true);
-        outerPanel.add(tablePane, "wrap");
 		return outerPanel;
 	}
 	
@@ -195,6 +143,35 @@ public class ForceValueSettingsDialog extends JDialog {
 		panel.add(separator, "growx,wrap");
 		return label;
 	}
-
+	/**
+	 * Create a text box for the binding field. This is editable.
+	 */
+	private JComboBox<String> createTruthValueCombo() {	
+		final JComboBox<String> valueCombo = new JComboBox<String>();
+		for(TruthValue tv : TruthValue.values()) {
+			valueCombo.addItem(tv.name());
+		}
+		valueCombo.setEditable(true);
+		valueCombo.setPreferredSize(ENTRY_BOX_SIZE);
+		return valueCombo;
+	}
+	/**
+	 * Create a text box for the binding field. This is editable.
+	 */
+	private JTextField createTextField() {	
+		JTextField field = new JTextField();
+		field.setEditable(true);
+		field.setPreferredSize(ENTRY_BOX_SIZE);
+		return field;
+	}
+	
+	private int countOutputs(ProcessBlockView blk) {
+		int count = 0;
+		for( ProcessAnchorDescriptor pad:block.getAnchors()) {
+			if( pad.getType().equals(AnchorType.Origin) ) count++;
+		}
+		return count;
+	}
+	
 }
 	

@@ -79,7 +79,7 @@ public abstract class AbstractUIView extends JComponent
 	public AbstractUIView(ProcessBlockView view,int defaultWidth,int defaultHeight) {
 		this.block = view;
 		this.block.addChangeListener(this);
-		setOpaque(false);
+		setOpaque(true);
 		int preferredHeight = view.getPreferredHeight();
 		if( preferredHeight<=0 ) preferredHeight = defaultHeight;
 		int preferredWidth = view.getPreferredWidth();
@@ -152,6 +152,7 @@ public abstract class AbstractUIView extends JComponent
 				leftCount++;
 			}
 		}
+		//log.infof("%s.initAnchorPoints counts(tblr) %d,%d,%d,%d ...",TAG,topCount,bottomCount,leftCount,rightCount);
 		
 		// Calculate side segments for the interior block (sans borders)
 		int inset = INSET+BORDER_WIDTH;   // Align the connections with the un-bordered block
@@ -178,7 +179,10 @@ public abstract class AbstractUIView extends JComponent
 			// Top
 			if(desc.getHint().equals(PlacementHint.T) ) {
 				topIndex++;
-				if(topCount==1) topIndex=3;
+				if(topCount==1) {
+					if(desc.getType().equals(AnchorType.Terminus)) topIndex=1;
+					else topIndex=3;
+				}
 				else if(topCount==2 && topIndex==2) topIndex++;
 				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Terminus,
 						desc.getConnectionType(),
@@ -193,7 +197,10 @@ public abstract class AbstractUIView extends JComponent
 			// Bottom
 			else if(desc.getHint().equals(PlacementHint.B) ) {
 				bottomIndex++;
-				if(bottomCount==1) bottomIndex=3;
+				if(bottomCount==1) {
+					if(desc.getType().equals(AnchorType.Terminus)) topIndex=1;
+					else bottomIndex=3;
+				}
 				else if(bottomCount==2 && bottomIndex==2) bottomIndex++;
 				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Origin,
 						desc.getConnectionType(),
@@ -257,6 +264,7 @@ public abstract class AbstractUIView extends JComponent
 		log.infof("%s.update %s ...",TAG,getBlock().getName());
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
+				initAnchorPoints();   // Handle anchorPoint animation.
 				repaint();
 			}
 		});

@@ -69,7 +69,6 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 		initialize();
 	}
 	
-	
 	/**
 	 * Offset is ...
 	 */

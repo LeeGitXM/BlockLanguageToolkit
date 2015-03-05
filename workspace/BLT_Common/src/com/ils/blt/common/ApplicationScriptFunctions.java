@@ -9,6 +9,7 @@ import java.util.List;
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
+import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 
 
 /**
@@ -46,6 +47,9 @@ public class ApplicationScriptFunctions   {
 		return handler.getControllerState();
 	}
 	
+	public static List<String> getDatasourceNames() {
+		return handler.getDatasourceNames();
+	}
 	/**
 	 * @param diagramId identifier of the diagram to be queried, a String
 	 * @param className fully qualified class name of blocks to be listed
@@ -108,6 +112,16 @@ public class ApplicationScriptFunctions   {
 		return result;
 	}
 	/**
+	 * Post a (simulated) block result on its output.
+	 * @param diagramId the parent diagram
+	 * @param blockId
+	 * @param port
+	 * @param value
+	 */
+	public static void postResult(String diagramId,String blockId,String port,String value) {
+		handler.postResult(diagramId,blockId, port, value);
+	}
+	/**
 	 * Execute reset() on the specified block
 	 */
 	public static void resetBlock(String diagramId,String blockId) {
@@ -119,7 +133,15 @@ public class ApplicationScriptFunctions   {
 	public static void resetDiagram(String diagramId) {
 		handler.resetDiagram(diagramId);
 	}
-
+	/**
+	 * Change the state of every diagram in the named application
+	 * to the specified state.
+	 * @param appname name of the application
+	 * @param state new diagram state
+	 */
+	public static void setApplicationState(String appname, String state) {
+		handler.setApplicationState(appname, state);
+	}
 	/**
 	 * Send a signal to all blocks of a particular class on a specified diagram.
 	 * This is a "local" transmission.
@@ -131,6 +153,14 @@ public class ApplicationScriptFunctions   {
 	 */
 	public static boolean sendLocalSignal(String diagramId,String className, String command) {
 		return handler.sendLocalSignal(diagramId,className,command);
+	}
+	/**
+	 * Specify the new state of a diagram
+	 * @param diagramId
+	 * @param state
+	 */
+	public static void setDiagramState(String diagramId, String state)  {
+		handler.setDiagramState(diagramId,state);
 	}
 	/**
 	 * Set a clock rate factor. This must NOT be exercised in a production environment.

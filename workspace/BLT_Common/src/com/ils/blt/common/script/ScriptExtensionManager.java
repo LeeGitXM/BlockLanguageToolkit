@@ -122,9 +122,7 @@ public class ScriptExtensionManager {
 	
 	/**
 	 * Define the code that corresponds to the well-known key.
-	 * If an empty path is specified, then the module will
-	 * be deactivated.
-	 * 
+	 * Ignore keys that are not in ScriptConstants.
 	 * @param key as found in ScriptConstants.
 	 * @param pythonPath
 	 */
@@ -135,7 +133,7 @@ public class ScriptExtensionManager {
 			script.resetModulePath(pythonPath);
 		}
 		else {
-			log.warnf("%s.setModulePath: Unknown pythpn script type (%s)",TAG,key);
+			log.tracef("%s.setModulePath: Unknown python script type (%s)",TAG,key);
 		}
 	}
 	

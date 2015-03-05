@@ -11,7 +11,6 @@ import java.util.UUID;
 import com.ils.blt.common.notification.BroadcastNotification;
 import com.ils.blt.common.notification.ConnectionPostNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
-import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -38,22 +37,44 @@ public class BasicExecutionController implements ExecutionController  {
 	public void alterSubscription(UUID diagramId,UUID id,String propertyName){
 		log.warnf("%s.alterSubscription: WARNING: Executed from stub class",TAG);
 	}
+	@Override
+	public void clearCache() {
+		log.warnf("%s.clearCache: WARNING: Executed from stub class",TAG);
+	}
 	public void clearSubscriptions(){
 		log.warnf("%s.clearSubscriptions: WARNING: Executed from stub class",TAG);
 	}
-	public void sendPropertyNotification(String id, String propertyName, QualifiedValue val){
-		log.warnf("%s.sendPropertyNotification: WARNING: Executed from stub class",TAG);
+	public String getIsolationDatabase() {
+		log.warnf("%s.getIsolationDatabase: WARNING: Executed from stub class",TAG);
+		return null;
+	}
+	public String getIsolationProvider() {
+		log.warnf("%s.getIsolationProvider: WARNING: Executed from stub class",TAG);
+		return null;
+	}
+	public String getProductionDatabase() {
+		log.warnf("%s.getProductionDatabase: WARNING: Executed from stub class",TAG);
+		return null;
+	}
+	public String getProductionProvider() {
+		log.warnf("%s.getProductionProvider: WARNING: Executed from stub class",TAG);
+		return null;
+	}
+	public double getIsolationTimeFactor() {
+		log.warnf("%s.getIsolationTimeFactor: WARNING: Executed from stub class",TAG);
+		return 0;
 	}
 	public void sendConnectionNotification(String blockid, String port, QualifiedValue val) {
 		log.warnf("%s.sendConnectionNotification: WARNING: Executed from stub class",TAG);
 	}
-	public void pet(Watchdog dog){
-		log.warnf("%s.pet: WARNING: Executed from stub class",TAG);
+	public void sendPropertyNotification(String id, String propertyName, QualifiedValue val){
+		log.warnf("%s.sendPropertyNotification: WARNING: Executed from stub class",TAG);
 	}
-	public void removeWatchdog(Watchdog dog){
-		log.warnf("%s.removeWatchdog: WARNING: Executed from stub class",TAG);
+	public void sendStateNotification(String id, String val){
+		log.warnf("%s.sendStateNotification: WARNING: Executed from stub class",TAG);
 	}
 	public void updateTag(UUID diagramId,String path,QualifiedValue val) {
 		log.warnf("%s.updateTag: WARNING: Executed from stub class",TAG);
 	}
+
 }

@@ -78,7 +78,14 @@ public interface ToolkitRequestHandler  {
 	 */
 	public DiagramState getDiagramState(Long projectId, Long resourceId) ;
 	
-
+	/**
+	 * It appears that there is no way in the client to obtain a list of data sources
+	 * (database connection names). Consequently, we implement our own. 
+	 * 
+	 * @return a list of data sources configured and enabled in the gateway.
+	 */
+	public List<String> getDatasourceNames();
+	
 	public List<SerializableResourceDescriptor> getDiagramDescriptors(String projectName) ;
 	
 	/**
@@ -126,13 +133,7 @@ public interface ToolkitRequestHandler  {
 	 * @return a list of blocks known to the diagram.
 	 */
 	public List<SerializableResourceDescriptor> queryDiagram(String diagramId) ;
-	/**
-	 * Save a value into the HSQL database table associated with the toolkit. The 
-	 * table contains name-value pairs, so any name is allowable.
-	 * @param propertyName name of the property for which a value is to be set
-	 * @param the new value of the property.
-	 */
-	public void setToolkitProperty(String propertyName,String value) ;
+	
 	/**
 	 * Execute reset() on a specified block
 	 */
@@ -146,6 +147,13 @@ public interface ToolkitRequestHandler  {
 	 * Determine whether or not the indicated resource is known to the controller.
 	 */
 	public boolean resourceExists(long projectId,long resid) ;
+	/**
+	 * Set the state of every diagram that is a member of the application to
+	 * the specified value.
+	 * @param appname
+	 * @param state
+	 */
+	public void setApplicationState(String appname, String state);
 	/** Update all changed properties for a block 
 	 * @param duuid diagram unique Id
 	 * @param buuid block unique Id
@@ -160,6 +168,7 @@ public interface ToolkitRequestHandler  {
 	public void setBlockProperty(UUID duuid,UUID buuid,BlockProperty property ) ;
 
 	public void setDiagramState(Long projectId, Long resourceId, String state) ;
+	public void setDiagramState(String diagramId, String state);
 
 
 	/**
@@ -172,8 +181,13 @@ public interface ToolkitRequestHandler  {
 	 * @param command string of the signal.
 	 */
 	public boolean sendLocalSignal(String diagramId,String className, String command) ;
-	
-	
+	/**
+	 * Save a value into the HSQL database table associated with the toolkit. The 
+	 * table contains name-value pairs, so any name is allowable.
+	 * @param propertyName name of the property for which a value is to be set
+	 * @param the new value of the property.
+	 */
+	public void setToolkitProperty(String propertyName,String value) ;
 	/**
 	 * Start the block execution engine in the gateway.
 	 */

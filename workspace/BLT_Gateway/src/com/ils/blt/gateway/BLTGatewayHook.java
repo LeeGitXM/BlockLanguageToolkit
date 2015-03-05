@@ -62,6 +62,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	public StatusData getStatusData() {
 		return statusData;
 	}
+	
 	// NOTE: During this period, the module status is LOADED, not RUNNING
 
 	@Override

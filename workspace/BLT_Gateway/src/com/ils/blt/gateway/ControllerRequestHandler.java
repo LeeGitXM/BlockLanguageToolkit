@@ -40,6 +40,7 @@ import com.ils.blt.gateway.persistence.ToolkitRecord;
 import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.ils.common.ClassList;
 import com.ils.common.watchdog.WatchdogTimer;
+import com.inductiveautomation.ignition.common.datasource.DatasourceStatus;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -47,6 +48,7 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.inductiveautomation.ignition.gateway.datasource.Datasource;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
 /**
@@ -285,6 +287,18 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		return getExecutionState();
 	}
 	@Override
+	public List<String> getDatasourceNames() {
+		List<Datasource> sources = context.getDatasourceManager().getDatasources();
+		List<String> result = new ArrayList<>();
+		for( Datasource source:sources) {
+			if(source.getStatus().equals(DatasourceStatus.VALID)) {
+				result.add(source.getName());
+			}
+		}
+		return result;
+	}
+	
+	@Override
 	public List getDiagramBlocksOfClass(String diagramId, String className) {
 		UUID diagramUUID = null;
 		try {
@@ -391,7 +405,9 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		return val;
 
 	}
-	
+	/**
+	 * On a failure to find the property, an empty string is returned.
+	 */
 	@Override
 	public String getToolkitProperty(String propertyName) {
 		String value = "";
@@ -409,9 +425,31 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	public boolean isControllerRunning() {
 		return getExecutionState().equalsIgnoreCase("running");
 	}
-
 	/**
-	 * Handle the block placing a new value on its output.
+	 * Handle the block placing a new value on its output. This minimalist version
+	 * is likely called from an external source through an RPC.
+	 * 
+	 * @param parentId identifier for the parent
+	 * @param blockId identifier for the block
+	 * @param port the output port on which to insert the result
+	 * @param value the result of the block's computation
+	 * @param quality of the reported output
+	 */
+	public void postValue(String parentId,String blockId,String port,String value)  {
+		log.infof("%s.postValue - %s = %s on %s",TAG,blockId,value,port);
+		try {
+			UUID diagramuuid = UUID.fromString(parentId);
+			UUID blockuuid   = UUID.fromString(blockId);
+			postValue(diagramuuid,blockuuid,port,value,BLTProperties.QUALITY_GOOD) ;
+		}
+		catch(IllegalArgumentException iae) {
+			log.warnf("%s.postValue: one of %s or %s illegal UUID (%s)",TAG,parentId,blockId,iae.getMessage());
+		}
+	}
+	
+	/**
+	 * Handle the block placing a new value on its output. This version is called from
+	 * a Python implementation of a block.
 	 * 
 	 * @param parentuuid identifier for the parent
 	 * @param blockId identifier for the block
@@ -535,6 +573,31 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		return success;
 	}
 	/**
+	 * Set the state of every diagram in an application to the specified value.
+	 * @param appname
+	 * @param state
+	 */
+	@Override
+	public void setApplicationState(String appname, String state) {
+		try {
+			DiagramState ds = DiagramState.valueOf(state);
+			for(SerializableResourceDescriptor srd:getDiagramDescriptors()) {
+				ProcessApplication app = pyHandler.getApplication(srd.getId());
+				if( app==null) continue;
+				if( app.getName().equals(appname)) {
+					UUID diagramuuid = UUID.fromString(srd.getId());
+					ProcessDiagram pd = controller.getDiagram(diagramuuid);
+					if( pd!=null) {
+						pd.setState(ds);    // Must notify designer
+					}
+				}
+			}
+		}
+		catch(IllegalArgumentException iae) {
+			log.warnf("%s.setApplicationState: Illegal state (%s) supplied (%s)",TAG,state,iae.getMessage());
+		}
+	}
+	/**
 	 * Set the values of named properties in a block. This method ignores any binding that the
 	 * property may have and sets the value directly. Theoretically the value should be of the right
 	 * type for the property, but if not, it can be expected to be coerced into the proper data type 
@@ -626,11 +689,35 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 	}
+	/**
+	 * Set the state of the specified diagram. 
+	 * @param diagramId UUID of the diagram
+	 * @param state
+	 */
+	public void setDiagramState(String diagramId,String state) {
+		UUID diagramUUID = UUID.fromString(diagramId);
+		ProcessDiagram diagram = controller.getDiagram(diagramUUID);
+		if( diagram!=null && state!=null ) {
+			try {
+				DiagramState ds = DiagramState.valueOf(state.toUpperCase());
+				diagram.setState(ds);
+			}
+			catch( IllegalArgumentException iae) {
+				log.warnf("%s.setDiagramState: Unrecognized state(%s) sent to %s (%s)",TAG,state,diagram.getName());
+			}
+		}
+	}
 	public void setTimeFactor(Double factor) {
 		log.infof("%s.setTimeFactor: %s", TAG, String.valueOf(factor));
 		WatchdogTimer timer = controller.getSecondaryTimer();
 		timer.setFactor(factor.doubleValue());
 	}
+	/**
+	 * We have two types of properties of interest here. The first set is found in ScriptConstants
+	 * and represents scripts used for external Python interfaces to Application/Family.
+	 * The second category represents database and tag interfaces for production and isolation
+	 * modes.
+	 */
 	@Override
 	public void setToolkitProperty(String propertyName, String value) {
 		try {
@@ -644,7 +731,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			else {
 				log.warnf("%s.setToolkitProperty: %s=%s - failed to create persistence record (%s)",TAG,propertyName,value,ToolkitRecord.META.quoteName);
 			}
-			sem.setModulePath(propertyName, value);
+			sem.setModulePath(propertyName, value);  // Does nothing for properties not part of Python external interface 
+			controller.clearCache();                 // Force retrieval production/isolation constants from HSQLdb on next access.
 		}
 		catch(Exception ex) {
 			log.warnf("%s.setToolkitProperty: Exception setting %s=%s (%s),",TAG,propertyName,value,ex.getMessage());
@@ -661,6 +749,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 */
 	public void triggerStatusNotifications() {
 		BlockExecutionController.getInstance().triggerStatusNotifications();
+		log.warnf("%s.triggerStatusNotifications: COMPLETE.",TAG);
 	}
 			
 	/** Change the properties of anchors for a block. 

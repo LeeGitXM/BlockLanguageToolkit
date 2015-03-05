@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved.
+ *   (c) 2014-2015  ILS Automation. All rights reserved.
  *  
  *   The block controller is designed to be called from the client
  *   via RPC. All methods must be thread safe,
@@ -11,7 +11,6 @@ import java.util.UUID;
 import com.ils.blt.common.notification.BroadcastNotification;
 import com.ils.blt.common.notification.ConnectionPostNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
-import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 
@@ -26,8 +25,15 @@ public interface ExecutionController  {
 	public void acceptCompletionNotification(OutgoingNotification note);
 	public void acceptConnectionPostNotification(ConnectionPostNotification note);
 	public void alterSubscription(UUID diagramId,UUID id,String propertyName);
+	public void clearCache();
 	public void clearSubscriptions();
+	public String getIsolationDatabase();
+	public String getIsolationProvider();
+	public String getProductionDatabase();
+	public String getProductionProvider();
+	public double getIsolationTimeFactor();
 	public void sendPropertyNotification(String id, String propertyName, QualifiedValue val);
 	public void sendConnectionNotification(String blockid, String port, QualifiedValue val);
+	public void sendStateNotification(String diagramid, String val);
 	public void updateTag(UUID diagramId,String path,QualifiedValue val);
 }

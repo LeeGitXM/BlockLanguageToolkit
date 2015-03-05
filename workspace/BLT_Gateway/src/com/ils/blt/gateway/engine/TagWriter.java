@@ -1,6 +1,6 @@
 /**
- *   (c) 2013-2014  ILS Automation. All rights reserved.
- *  
+ *   (c) 2013-2015  ILS Automation. All rights reserved.
+ *
  */
 package com.ils.blt.gateway.engine;
 
@@ -20,7 +20,10 @@ import com.inductiveautomation.ignition.gateway.sqltags.model.BasicAsyncWriteReq
 import com.inductiveautomation.ignition.gateway.sqltags.model.WriteRequest;
 
 /**
- *  A Tag writer updates tags with diagram outputs.
+ *  A Tag writer updates tags with diagram outputs. 
+ *  WARNING: Access this class through the BlockExecutionController
+ *           interfaces. The controller munges tag paths depending
+ *           on the state of the diagram (e.g. ISOLATION mode).
  */
 public class TagWriter  {
 	private static final String TAG = "TagWriter";

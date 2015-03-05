@@ -1,5 +1,5 @@
 /**
- *   (c) 2013  ILS Automation. All rights reserved.
+ *   (c) 2013-2015  ILS Automation. All rights reserved.
  *  
  *   The tag factory is designed to be called from the client
  *   via RPC. The client presents the same interface to scripting functions.
@@ -44,7 +44,6 @@ public class TagReader  {
 	 * Update tags with values from model results. The time assigned is the current
 	 * time. The list of tags to be updated varies with model type.
 	 * 
-	 * @param provider tag provider. Use an empty string for the default provider
 	 * @param path fully qualified tag path
 	 */
 	public QualifiedValue readTag(String path) {
@@ -54,7 +53,8 @@ public class TagReader  {
 		QualifiedValue result = null;
 		try {
 			TagPath tp = TagPathParser.parse(path);
-		    TagProvider provider = context.getTagManager().getTagProvider("default");
+			String name = providerNameFromPath(path); 
+		    TagProvider provider = context.getTagManager().getTagProvider(name);
 		    Tag tag = provider.getTag(tp);
 		    result = tag.getValue();
 		}
@@ -62,5 +62,16 @@ public class TagReader  {
 			log.warnf("%s.readTag: Exception parsing path %s",TAG,path);
 		}
 		return result;
+	}
+	
+	private String providerNameFromPath(String tagPath) {
+		String provider = "";
+		if( tagPath.startsWith("[") ) {
+			int index = tagPath.indexOf(']');
+			if( index>0 ) {
+				provider = tagPath.substring(1,index);
+			}
+		}
+		return provider;
 	}
 }

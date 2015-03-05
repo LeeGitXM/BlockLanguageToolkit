@@ -185,6 +185,21 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		return state;
 	}
 	
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<String> getDatasourceNames() {
+		List<String> names = new ArrayList<>();
+		try {
+			names = (List<String>)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "getDatasourceNames");
+		}
+		catch(Exception ge) {
+			log.infof("%s.getControllerState: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		return names;
+	}
+	
 	/**
 	 * @param diagramId identifier of the diagram to be queried, a String
 	 * @param className fully qualified class name of blocks to be listed
@@ -324,7 +339,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	
 	/**
 	 * Acquire a value from the HSQL database table associated with the toolkit. A
-	 * null is returned if the string is not found.
+	 * empty string is returned if the string is not found, null if an exception is thrown.
 	 * @param propertyName name of the property for which a value is to be returned
 	 * @return the value of the specified property.
 	 */
@@ -349,6 +364,22 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		String state = getControllerState();
 		if( state.equalsIgnoreCase("running")) isRunning = true;
 		return isRunning;
+	}
+	/**
+	 * Post a (simulated) block result on its output.
+	 * @param diagramId the parent diagram
+	 * @param blockId
+	 * @param port
+	 * @param value
+	 */
+	public void postResult(String diagramId,String blockId,String port,String value) {
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "postResult",diagramId,blockId,port,value);
+		}
+		catch(Exception ge) {
+			log.infof("%s.postResult: GatewayException (%s)",TAG,ge.getMessage());
+		}
 	}
 	/**
 	 * Query the gateway for list of resources that the block controller knows about. 
@@ -454,7 +485,23 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 		return result;
 	}
-
+	/**
+	 * Change the state of every diagram in the named application
+	 * to the specified state.
+	 * @param appname name of the application
+	 * @param state new diagram state
+	 */
+	@Override
+	public void setApplicationState(String appname, String state) {
+		log.infof("%s.setApplicationState for %s to %s...",TAG,appname,state);
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "setApplicationState",appname,state);
+		}
+		catch(Exception ex) {
+			log.infof("%s.setApplicationState: Exception (%s)",TAG,ex.getMessage());
+		}
+	}
 	/** Update all changed properties for a block 
 	 * @param duuid diagram unique Id
 	 * @param buuid block unique Id
@@ -517,6 +564,19 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "setDiagramState",projectId,resourceId,state);
+
+		}
+		catch(Exception ge) {
+			log.infof("%s.setDiagramState: GatewayException (%s)",TAG,ge.getMessage());
+		}
+	}
+	
+	@Override
+	public void setDiagramState(String diagramId, String state) {
+		log.debugf("%s.setDiagramState ... %s %s",TAG,diagramId,state);
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "setDiagramState",diagramId,state);
 
 		}
 		catch(Exception ge) {
@@ -629,5 +689,4 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 			log.infof("%s.setBlockProperties: GatewayException (%s)",TAG,ge.getMessage());
 		}		
 	}
-
 }

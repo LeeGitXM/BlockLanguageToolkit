@@ -113,7 +113,7 @@ public class MainPanel extends BasicEditPanel {
 	 */
 	public JButton createConfigurationButton(final BlockProperty prop) {
 		JButton btn = new JButton();
-		final String ICON_PATH  = "Block/icons/editor/data_link.png";
+		final String ICON_PATH  = "Block/icons/editor/data.png";
 		Image img = ImageLoader.getInstance().loadImage(ICON_PATH ,BlockEditConstants.BUTTON_SIZE);
 		if( img !=null) {
 			Icon icon = new ImageIcon(img);
@@ -140,7 +140,7 @@ public class MainPanel extends BasicEditPanel {
 	 */
 	public JButton createEditButton(final BlockProperty prop) {
 		JButton btn = new JButton();
-		final String ICON_PATH  = "Block/icons/editor/pencil.png";
+		final String ICON_PATH  = "Block/icons/editor/data_edit.png";
 		Image img = ImageLoader.getInstance().loadImage(ICON_PATH ,BlockEditConstants.BUTTON_SIZE);
 		if( img !=null) {
 			Icon icon = new ImageIcon(img);

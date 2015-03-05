@@ -1,5 +1,5 @@
 /**
- *   (c) 2013  ILS Automation. All rights reserved.
+ *   (c) 2013-2015  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.gateway.engine;
@@ -38,6 +38,10 @@ import com.inductiveautomation.ignition.gateway.sqltags.SQLTagsManager;
  *  The tag listener waits for inputs on a collection of tags and,
  *  whenever a tag value changes, the collector posts a change notice
  *  task directly to the block properties for which it is a listening proxy.
+ *  
+ *  WARNING: Access this class through the BlockExecutionController
+ *           interfaces. The controller munges tag paths depending
+ *           on the state of the diagram (e.g. ISOLATION mode).
  */
 public class TagListener implements TagChangeListener   {
 	private static final String TAG = "TagListener";
@@ -85,13 +89,8 @@ public class TagListener implements TagChangeListener   {
 	 *     b) We are sharing the tag, then update the property from the current value
 	 *                                of a shared property.
 	 */
-	public void defineSubscription(ProcessBlock block,BlockProperty property) {
-		if( block==null || property==null || 
-				!(property.getBindingType()==BindingType.TAG_READ || 
-				  property.getBindingType()==BindingType.TAG_READWRITE ||
-				  property.getBindingType()==BindingType.TAG_MONITOR )   ) return;
+	public void defineSubscription(ProcessBlock block,BlockProperty property,String tagPath) {
 		
-		String tagPath = property.getBinding();
 		log.debugf("%s.defineSubscription: considering %s:%s=%s",TAG,block.getName(),property.getName(),tagPath);
 		if( tagPath!=null && tagPath.length() >0  ) {
 			boolean needToStartSubscription = false;

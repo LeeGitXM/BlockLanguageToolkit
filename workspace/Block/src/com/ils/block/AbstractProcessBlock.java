@@ -293,13 +293,28 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	}
 	/**
 	 * The block is notified that signal has been sent to it.
-	 * The base implementation does nothing. The block
-	 * must be a receiver for this to be meaningful.
+	 * The base implementation handles to universal commands:
+	 *     reset
+	 *     lock/unlock
+	 *     evaluate
 	 * 
 	 * @param sn notification of a signal.
 	 */
 	@Override
 	public void acceptValue(SignalNotification sn) {
+		Signal sig = sn.getSignal();
+		if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_EVALUATE) ) {
+			evaluate();
+		}
+		else if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_LOCK) ) {
+			setLocked(true);
+		}
+		else if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_RESET) ) {
+			reset();
+		}
+		else if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_UNLOCK) ) {
+			setLocked(false);
+		}
 	}
 	/**
 	 * Send status update notifications for any properties

@@ -106,8 +106,8 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		closedIcon = iconFromPath("Block/icons/navtree/diagram_closed.png");
 		openDisabledIcon = iconFromPath("Block/icons/navtree/diagram_disabled.png");
 		closedDisabledIcon = iconFromPath("Block/icons/navtree/diagram_closed_disabled.png");
-		openRestrictedIcon = iconFromPath("Block/icons/navtree/diagram_restricted.png");
-		closedRestrictedIcon = iconFromPath("Block/icons/navtree/diagram_closed_restricted.png");
+		openRestrictedIcon = iconFromPath("Block/icons/navtree/diagram_isolated.png");
+		closedRestrictedIcon = iconFromPath("Block/icons/navtree/diagram_closed_isolated.png");
 		setIcon( closedIcon);
 		setItalic(statusManager.isResourceDirtyOrHasDirtyChidren(resourceId));
 		context.addProjectChangeListener(this);

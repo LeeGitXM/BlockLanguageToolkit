@@ -83,11 +83,14 @@ public interface BlockConstants   {
 	public static final int BLOCK_BACKGROUND_LIGHT_GRAY     = (new Color(240,240,240)).getRGB();
 	
 	// These are well-known commands
-	public static final String COMMAND_CLEAR_LOW               = "CLEAR_LOWER_SQC";
-	public static final String COMMAND_CLEAR_HIGH              = "CLEAR_UPPER_SQC";
-	public static final String COMMAND_INHIBIT                 = "INHIBIT";
-	public static final String COMMAND_RESET                   = "RESET";
-	public static final String COMMAND_START                   = "START";
+	public static final String COMMAND_CLEAR_LOW               	= "CLEAR_LOWER_SQC";
+	public static final String COMMAND_CLEAR_HIGH              	= "CLEAR_UPPER_SQC";
+	public static final String COMMAND_EVALUATE                 = "EVALUATE";
+	public static final String COMMAND_INHIBIT                 	= "INHIBIT";
+	public static final String COMMAND_LOCK                 	= "LOCK";
+	public static final String COMMAND_RESET                   	= "RESET";
+	public static final String COMMAND_START                   	= "START";
+	public static final String COMMAND_UNLOCK                 	= "UNLOCK";
 	
 	
 }

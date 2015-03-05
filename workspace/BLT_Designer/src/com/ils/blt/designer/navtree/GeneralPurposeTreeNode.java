@@ -23,6 +23,7 @@ import java.util.UUID;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 import javax.swing.tree.TreePath;
 
@@ -30,6 +31,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.serializable.ApplicationUUIDResetHandler;
 import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.common.serializable.SerializableDiagram;
@@ -370,6 +372,14 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 
 			menu.add(familyAction);
 			menu.add(folderCreateAction);
+			SetApplicationStateAction ssaActive = new SetApplicationStateAction(this,DiagramState.ACTIVE);
+			SetApplicationStateAction ssaDisable = new SetApplicationStateAction(this,DiagramState.DISABLED);
+			SetApplicationStateAction ssaIsolated = new SetApplicationStateAction(this,DiagramState.ISOLATED);
+			JMenu setStateMenu = new JMenu(BundleUtil.get().getString(PREFIX+".SetApplicationState"));
+			setStateMenu.add(ssaActive);
+			setStateMenu.add(ssaDisable);
+			setStateMenu.add(ssaIsolated);
+			menu.add(setStateMenu);
 			menu.addSeparator();
 			menu.add(applicationConfigureAction);
 			menu.add(applicationExportAction);
@@ -1396,6 +1406,24 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			if( !isRootFolder() ) return;
 			executionEngine.executeOnce(new ResourceSaveManager(workspace,node));
 			statusManager.cleanAll();
+		}
+	}
+	
+	/**
+	 * Recursively set the state of every diagram under the application to the selected value.
+	 */
+	private class SetApplicationStateAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final AbstractResourceNavTreeNode app;
+		private final DiagramState state;
+		public SetApplicationStateAction(AbstractResourceNavTreeNode applicationNode,DiagramState s)  {
+			super(PREFIX+".SetApplicationState."+s.name());
+			this.app = applicationNode;
+			this.state = s;
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			handler.setApplicationState(app.getName(), state.name());
 		}
 	}
 

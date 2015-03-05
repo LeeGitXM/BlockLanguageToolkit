@@ -164,7 +164,11 @@ public class GatewayRpcDispatcher   {
 	public String getControllerState() {
 		return requestHandler.getExecutionState();
 	}
-	public List getDiagramBlocksOfClass(String diagramId,String className) {
+	public List<String> getDatasourceNames() {
+		return requestHandler.getDatasourceNames();
+	}
+	
+	public List<String> getDiagramBlocksOfClass(String diagramId,String className) {
 		return requestHandler.getDiagramBlocksOfClass(diagramId,className);
 	}
 	public List<String> getDiagramDescriptors(String projectName) {
@@ -231,7 +235,15 @@ public class GatewayRpcDispatcher   {
 		//log.infof("%s.getToolkitProperty: %s", TAG,propertyName);
 		return requestHandler.getToolkitProperty(propertyName);
 	}
-	
+	/**
+	 * Post a block result on its output. The transaction is from an external source.
+	 * @param blockId
+	 * @param port
+	 * @param value
+	 */
+	public void postResult(String diagramId,String blockId,String port,String value) {
+		requestHandler.postValue(diagramId,blockId, port, value);
+	}
 	/** 
 	 *  @return
 	 */
@@ -255,6 +267,14 @@ public class GatewayRpcDispatcher   {
 	public void resetBlock(String diagramIdString,String blockIdString) {
 		log.infof("%s.resetBlock ...",TAG);
 		requestHandler.resetBlock(diagramIdString,blockIdString);
+	}
+	/**
+	 * Set the state of every diagram in an application to the specified value.
+	 * @param appname
+	 * @param state
+	 */
+	public void setApplicationState(String appname, String state) {
+		requestHandler.setApplicationState(appname,state);
 	}
 	/** 
 	 *  Reset every block in a diagram specified by id.
@@ -329,6 +349,9 @@ public class GatewayRpcDispatcher   {
 	}
 	public void setDiagramState(Long projectId,Long resourceId,String state) {
 		requestHandler.setDiagramState(projectId,resourceId,state);
+	}
+	public void setDiagramState(String diagramId,String state) {
+		requestHandler.setDiagramState(diagramId,state);
 	}
 	public void setTimeFactor(Double factor) {
 		log.infof("%s.setTimeFactor: %s: %s", TAG, String.valueOf(factor));

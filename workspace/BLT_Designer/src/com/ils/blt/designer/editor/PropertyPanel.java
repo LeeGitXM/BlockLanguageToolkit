@@ -71,9 +71,10 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	private static final String rowConstraints = "";
 	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	private final DesignerContext context;
+	private final JTextField bindingDisplayField;
 	private final JButton editButton;
 	private final JButton configurationButton;
-	private final JTextField bindingDisplayField;
+	
 	private JComboBox<String> valueComboBox;
 	private final JTextField valueDisplayField;
 	private final MainPanel parent;
