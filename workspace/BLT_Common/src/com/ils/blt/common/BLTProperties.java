@@ -14,6 +14,7 @@ import java.util.UUID;
 public interface BLTProperties   {   
 	public final static String MODULE_ID = "block";     // See module-blt.xml
 	public final static String MODULE_NAME = "BLT";     // See build-blt.xml
+	public final static String SFC_MODULE_ID = "com.ils.sfc"; 
 	
 	/** This is the name of the jar file containing block class definitions */
 	public final static String BLOCK_JAR_NAME = "block-definition";

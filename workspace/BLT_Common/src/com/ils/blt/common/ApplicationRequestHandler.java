@@ -585,24 +585,31 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	}
 
 	/**
-	 * Set a clock rate factor. This must NOT be exercised in a production environment.
-	 * This is a hook for testing only.
+	 * Set a clock rate factor for isolation mode only. We set in the SFC module
+	 * as well. If that module is not present, then we simply ignore the exception.
 	 * @param factor the amount to speed up or slow down the clock.
 	 */
-	public void setTimeFactor(Double factor) {
+	public void setTimeFactor(double factor) {
 		log.infof("%s.setTimeFactor ... %s",TAG,String.valueOf(factor));
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "setTimeFactor",factor);
+					BLTProperties.MODULE_ID, "setTimeFactor",new Double(factor));
 		}
 		catch(Exception ge) {
 			log.infof("%s.setTimeFactor: GatewayException (%s:%s)",TAG,ge.getClass().getName(),ge.getMessage());
 		}
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.SFC_MODULE_ID, "setTimeFactor",new Double(factor));
+		}
+		catch(Exception ignore) {}
 	}
 	
 	/**
 	 * Save a value into the HSQL database table associated with the toolkit. The 
-	 * table contains name-value pairs, so any name is allowable.
+	 * table contains name-value pairs, so any name is allowable. We also execute
+	 * this method on behalf of the SFC-module in case there are any side-effects
+	 * of saving particular parameters.
 	 * @param propertyName name of the property for which a value is to be set
 	 * @param the new value of the property.
 	 */
@@ -615,6 +622,11 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		catch(Exception ge) {
 			log.infof("%s.setToolkitProperty: GatewayException (%s:%s)",TAG,ge.getClass().getName(),ge.getMessage());
 		}
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.SFC_MODULE_ID, "setToolkitProperty",propertyName,value);
+		}
+		catch(Exception ignore) {}
 	}
 	
 	/**

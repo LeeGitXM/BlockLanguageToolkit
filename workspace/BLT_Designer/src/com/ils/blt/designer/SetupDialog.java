@@ -1,6 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved.
- *   http://docs.oracle.com/javase/tutorial/displayCode.html?code=http://docs.oracle.com/javase/tutorial/uiswing/examples/components/SharedModelDemoProject/src/components/SharedModelDemo.java
+ *   (c) 2015  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer;
 
@@ -32,13 +31,11 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 /**
- * This is a read-only viewer for test results. We query the controller
- * periodically to update. 
+ * Allow the user to define database connections and tag providers. This
+ * applies to all projects globally. 
  */
 
 public class SetupDialog extends JDialog {
-	private static String TAG = "SetupDialog";
-	private final LoggerEx log;
 	protected static final Dimension COMBO_SIZE  = new Dimension(200,24);
 	private static final long serialVersionUID = 2002388376824434427L;
 	private final int DIALOG_HEIGHT = 220;
@@ -57,12 +54,11 @@ public class SetupDialog extends JDialog {
 	public SetupDialog(DesignerContext ctx) {
 		super(ctx.getFrame());
 		this.context = ctx;
-		this.setTitle("Diagram Configuration");
+		this.setTitle("External Interface Configuration");
 		this.rb = ResourceBundle.getBundle("com.ils.blt.designer.designer");  // designer.properties
 		this.requestHandler = new ApplicationRequestHandler();
 		setModal(true);
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
-        this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));
         initialize();  
 	}
@@ -137,8 +133,11 @@ public class SetupDialog extends JDialog {
 		}
 		box.setToolTipText(rb.getString(bundle));
 		String currentValue = requestHandler.getToolkitProperty(key);
-		if( currentValue.length()==0 && !isIsolation) currentValue = context.getDefaultDatasourceName();
-		box.setSelectedItem(currentValue);
+		if( (currentValue==null || currentValue.length()==0) && !isIsolation) currentValue = context.getDefaultDatasourceName();
+		if( currentValue!=null ) box.setSelectedItem(currentValue);
+		else {
+			box.setSelectedIndex(0);  // The blank
+		}
 		// If the current value wasn't in the list, then add it.
 		if( box.getSelectedIndex()<0 ) {
 			box.addItem(currentValue);
@@ -231,7 +230,7 @@ public class SetupDialog extends JDialog {
 					JOptionPane.WARNING_MESSAGE);
 			secondaryProviderBox.setSelectedItem("");
 		}
-		else if( db1==null || db1.toString().length()==0 )  {
+		else if( tp1==null || tp1.toString().length()==0 )  {
 			JOptionPane.showMessageDialog(context.getFrame(),
 					"Production tag provider must be configured.",
 					"Unset provider warning",
@@ -270,6 +269,6 @@ public class SetupDialog extends JDialog {
 		requestHandler.setToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_ISOLATION_TIME,secondaryTimeFactorField.getText());
 		// This causes an immediate active update.
 		double speedup = Double.parseDouble(secondaryTimeFactorField.getText());  // We've already validated the field ...
-		requestHandler.setTimeFactor(new Double(speedup));
+		requestHandler.setTimeFactor(speedup);
 	}
 }

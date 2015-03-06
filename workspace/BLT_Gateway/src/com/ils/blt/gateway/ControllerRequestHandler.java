@@ -707,6 +707,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 	}
+	
 	public void setTimeFactor(Double factor) {
 		log.infof("%s.setTimeFactor: %s", TAG, String.valueOf(factor));
 		WatchdogTimer timer = controller.getSecondaryTimer();

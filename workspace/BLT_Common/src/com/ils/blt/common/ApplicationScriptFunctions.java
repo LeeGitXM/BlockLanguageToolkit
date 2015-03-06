@@ -163,11 +163,11 @@ public class ApplicationScriptFunctions   {
 		handler.setDiagramState(diagramId,state);
 	}
 	/**
-	 * Set a clock rate factor. This must NOT be exercised in a production environment.
-	 * This is a hook for testing only.
+	 * Set a clock rate factor. This will change timing for isolation mode only.
+	 * This method is provided as a hook for test frameworks.
 	 * @param factor the amount to speed up or slow down the clock.
 	 */
-	public static void setTimeFactor(Double factor) {
+	public static void setTimeFactor(double factor) {
 		handler.setTimeFactor(factor);
 	}
 	/**

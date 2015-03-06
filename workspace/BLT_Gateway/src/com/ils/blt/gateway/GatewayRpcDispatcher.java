@@ -354,8 +354,8 @@ public class GatewayRpcDispatcher   {
 		requestHandler.setDiagramState(diagramId,state);
 	}
 	public void setTimeFactor(Double factor) {
-		log.infof("%s.setTimeFactor: %s: %s", TAG, String.valueOf(factor));
-		requestHandler.setTimeFactor(factor);;
+		log.infof("%s.setTimeFactor: %s: %s", TAG, String.valueOf(factor.doubleValue()));
+		requestHandler.setTimeFactor(factor);
 	}
 	public void setToolkitProperty(String propertyName,String value) {
 		//log.infof("%s.setToolkitProperty: %s: %s", TAG, propertyName, value);
