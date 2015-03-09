@@ -129,7 +129,7 @@ public class SetupDialog extends JDialog {
 		box.removeAllItems();
 		box.addItem("");
 		for(String name:names) {
-			box.addItem(name);
+			if(name.length()>0) box.addItem(name);
 		}
 		box.setToolTipText(rb.getString(bundle));
 		String currentValue = requestHandler.getToolkitProperty(key);
@@ -156,7 +156,7 @@ public class SetupDialog extends JDialog {
 		box.removeAllItems();
 		box.addItem("");
 		for(TagProviderMeta meta:providers) {
-			box.addItem(meta.getName());
+			if( meta.getName().length()>0 ) box.addItem(meta.getName());
 		}
 		String currentValue = requestHandler.getToolkitProperty(key);
 		if( currentValue.length()==0 && !isIsolation ) currentValue = context.getDefaultSQLTagsProviderName();
