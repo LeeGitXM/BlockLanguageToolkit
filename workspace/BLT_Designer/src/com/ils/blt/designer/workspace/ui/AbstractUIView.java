@@ -45,13 +45,14 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorT
  * The main service this class provides is to draw anchor points at specified
  * location and orientation.
  * 
+ * 
  */
 @SuppressWarnings("serial")
 public abstract class AbstractUIView extends JComponent 
 									 implements BlockViewUI,ChangeListener {
 	private static final String TAG = "AbstractUIView";
 	protected final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
-	protected ProcessBlockView block = null;;
+	protected ProcessBlockView block = null;
 	private final List<AnchorPoint> anchorPoints;  // Entries are BasicAnchorPoint
 	protected BlockComponent blockComponent = null;
 	protected static int ANCHOR_ANNOTATION_TEXT_SIZE = 9;
@@ -69,6 +70,7 @@ public abstract class AbstractUIView extends JComponent
 	protected final static Color OUTLINE_COLOR = Color.BLACK;   // For stub
 	protected final static float OUTLINE_WIDTH = 1.0f;          // For stub
 	protected final static Color TEXT_COLOR = Color.BLACK;      // For embedded label
+	protected int hiddenIndex = -1;   // Allow for anchor to be hidden
 	
 	/**
 	 * Use default height and widths supplied by subclass when values not assigned by view.
@@ -111,6 +113,7 @@ public abstract class AbstractUIView extends JComponent
 	 *        markers to show so.
 	 */
 	protected void initAnchorPoints() {
+		getAnchorPoints().clear();
 		Dimension sz = getPreferredSize();
 		// These actually end up the number of connections on a side
 		int rightCount = 0;
@@ -122,9 +125,11 @@ public abstract class AbstractUIView extends JComponent
 		int bottomCount= 0;
 		int bottomIndex= 0;
 		
+		int index = 0;        // Count of descriptors
+		hiddenIndex = -1;     // Unless set, nothing is hidden
 		// Create counts for each side. There are both defaults and placement hints.
 		for(ProcessAnchorDescriptor desc:block.getAnchors()) {
-			if( desc.isHidden()) continue;
+			if( desc.isHidden()) hiddenIndex = index;
 			PlacementHint hint = desc.getHint();
 			if(hint==null) hint = PlacementHint.UNSPECIFIED;
 			if( hint.equals(PlacementHint.L)) leftCount++;
@@ -151,6 +156,7 @@ public abstract class AbstractUIView extends JComponent
 				desc.setHint(PlacementHint.L);
 				leftCount++;
 			}
+			index++;
 		}
 		//log.infof("%s.initAnchorPoints counts(tblr) %d,%d,%d,%d ...",TAG,topCount,bottomCount,leftCount,rightCount);
 		
@@ -175,7 +181,6 @@ public abstract class AbstractUIView extends JComponent
 		// Re-iterate using the same criteria as above
 		// NOTE: The anchor point should be on the component boundary. Stubs are drawn inward.
 		for(ProcessAnchorDescriptor desc:block.getAnchors()) {
-			if( desc.isHidden()) continue;
 			// Top
 			if(desc.getHint().equals(PlacementHint.T) ) {
 				topIndex++;
@@ -286,12 +291,15 @@ public abstract class AbstractUIView extends JComponent
 		});
 	}
 	
+	// For now we're only checking for a top anchor to be hidden.
 	protected void drawAnchors(Graphics2D g,int xoffset,int yoffset) {
 		// Preserve the original transform to roll back to at the end
 		AffineTransform originalTx = g.getTransform();
 		// Handle any offset of the block within the outer boundary
 		g.translate(xoffset,yoffset);
 		// Loop through the anchor points and draw squares for ports
+		// We assume that the anchor points are in the same order as the anchor descriptions
+		int index = 0;
 		for( AnchorPoint ap:anchorPoints) {
 			BasicAnchorPoint bap = (BasicAnchorPoint)ap;
 			AnchorSide side = bap.getSide();
@@ -300,7 +308,9 @@ public abstract class AbstractUIView extends JComponent
 			Point loc = bap.getAnchor();                // Center of the anchor point
 			// Paint the rectangle
 			if( bap.getConnectionType()==ConnectionType.DATA) g.setColor(getBackground());
-			else g.setColor(fillColorForConnectionType(bap.getConnectionType()));
+			else if( index==hiddenIndex)                      g.setColor(getBackground());
+			else     g.setColor(fillColorForConnectionType(bap.getConnectionType()));
+			
 			int x = 0;
 			int y = 0;
 			if( side==AnchorSide.TOP || side==AnchorSide.BOTTOM ) {
@@ -327,7 +337,6 @@ public abstract class AbstractUIView extends JComponent
 					g.drawLine(x,y, x, y+anchorLength+1);
 				}
 				else {
-					// NOTE: validated with ARROW style
 					g.drawLine(x,y+1, x+anchorLength+1, y+1);     
 					g.drawLine(x,y+anchorWidth, x+anchorLength, y+anchorWidth);
 				}
@@ -360,6 +369,7 @@ public abstract class AbstractUIView extends JComponent
 				Shape hotspot = bap.getHotSpot();
 				g.fill(hotspot);
 			}
+			index++;
 		}
 		// Reverse any transforms we made
 		g.setTransform(originalTx);

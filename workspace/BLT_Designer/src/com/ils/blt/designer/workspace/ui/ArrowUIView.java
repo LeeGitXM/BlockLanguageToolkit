@@ -36,7 +36,7 @@ public class ArrowUIView extends AbstractUIView implements BlockViewUI {
 	
 	public ArrowUIView(ProcessBlockView view) {
 		super(view,DEFAULT_WIDTH,DEFAULT_HEIGHT);
-		setOpaque(false);
+		setOpaque(true);
 		initAnchorPoints();
 		
 	}

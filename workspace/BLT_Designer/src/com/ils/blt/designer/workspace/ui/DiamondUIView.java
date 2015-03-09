@@ -20,7 +20,7 @@ public class DiamondUIView extends AbstractUIView implements BlockViewUI {
 	private static final int DEFAULT_WIDTH  = 60;
 	public DiamondUIView(ProcessBlockView view) {
 		super(view,DEFAULT_WIDTH,DEFAULT_HEIGHT);
-		setOpaque(false);
+		setOpaque(true);
 		initAnchorPoints();	
 	}
 
