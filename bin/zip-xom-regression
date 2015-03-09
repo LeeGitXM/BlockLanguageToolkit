@@ -1,0 +1,22 @@
+#!/bin/sh
+#
+# Save the migration files into a zip for distribution.
+#
+#set -x
+REPO_ROOT=~/Development/ils/src
+SVN=~/Development/ils/svn/EMChemicals/Release/src
+VERS=REGRESSION
+TMP=$REPO_ROOT/$VERS
+# Cleanup
+rm -rf $TMP
+cd $REPO_ROOT
+mkdir $TMP
+cd $REPO_ROOT/blt/regression
+rm -f *.log
+cp -a basic pylib $TMP
+cd ..
+# Now zip and copy to subversion
+cd $REPO_ROOT
+zip -r regression.zip $VERS
+cp regression.zip $SVN
+rm -rf $TMP
