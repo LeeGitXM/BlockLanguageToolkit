@@ -27,10 +27,10 @@ import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.notification.SignalNotification;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.gateway.ControllerRequestHandler;
-import com.ils.blt.gateway.persistence.ToolkitRecord;
 import com.ils.common.BoundedBuffer;
 import com.ils.common.watchdog.WatchdogTimer;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -566,7 +566,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public void sendStateNotification(String diagramid, String val) {
 		String key = NotificationKey.keyForDiagram(diagramid);
 		try {
-			sessionManager.sendNotification(ApplicationScope.DESIGNER, BLTProperties.MODULE_ID, key, val);
+			sessionManager.sendNotification(ApplicationScope.DESIGNER, BLTProperties.MODULE_ID, key, new BasicQualifiedValue(val));
 		}
 		catch(Exception ex) {
 			// Probably no receiver registered. This is to be expected if the designer is not running.

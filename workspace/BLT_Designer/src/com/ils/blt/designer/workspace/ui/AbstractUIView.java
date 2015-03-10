@@ -310,7 +310,7 @@ public abstract class AbstractUIView extends JComponent
 			if( bap.getConnectionType()==ConnectionType.DATA) g.setColor(getBackground());
 			else if( index==hiddenIndex)                      g.setColor(getBackground());
 			else     g.setColor(fillColorForConnectionType(bap.getConnectionType()));
-			
+			//log.infof("%s.drawAnchors index %d (hide %d)",TAG,index,hiddenIndex);
 			int x = 0;
 			int y = 0;
 			if( side==AnchorSide.TOP || side==AnchorSide.BOTTOM ) {

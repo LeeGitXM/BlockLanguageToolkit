@@ -99,7 +99,7 @@ public class NotificationHandler implements PushNotificationListener {
 				}
 			}
 			else {
-				log.warnf("%s.receiveNotification: key:%s, payload %s (ignored)",TAG,key,payload.getClass().getName());
+				log.warnf("%s.receiveNotification: key:%s, payload %s=%s (ignored)",TAG,key,payload.getClass().getName(),payload.toString());
 			}
 			
 		}

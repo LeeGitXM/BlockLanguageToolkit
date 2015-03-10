@@ -467,7 +467,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 	
 	public void open (long resourceId) {
-		logger.infof("%s: open - already open (%s)",TAG,(isOpen(resourceId)?"true":"false"));
+		logger.debugf("%s: open - already open (%s)",TAG,(isOpen(resourceId)?"true":"false"));
 		if(isOpen(resourceId) ) {
 			BlockDesignableContainer tab = (BlockDesignableContainer)findDesignableContainer(resourceId);
 			open(tab);  // Selects?
@@ -831,6 +831,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(diagram.getResourceId());
 				if( tab!=null ) workspace.saveDiagramResource(tab);
 			}
+			block.fireStateChanged();
 			// Repaint to update the stub
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
 		}
@@ -915,6 +916,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(diagram.getResourceId());
 				if( tab!=null ) workspace.saveDiagramResource(tab);
 			}
+			block.fireStateChanged();
 			// Repaint to update the stub
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
 		}
