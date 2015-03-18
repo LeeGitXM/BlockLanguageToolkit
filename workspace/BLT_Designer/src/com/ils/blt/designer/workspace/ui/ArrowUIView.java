@@ -15,6 +15,7 @@ import java.awt.geom.GeneralPath;
 
 import javax.swing.SwingUtilities;
 
+import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.designer.workspace.BasicAnchorPoint;
 import com.ils.blt.designer.workspace.ProcessAnchorDescriptor;
 import com.ils.blt.designer.workspace.ProcessBlockView;
@@ -54,19 +55,38 @@ public class ArrowUIView extends AbstractUIView implements BlockViewUI {
 		int outputIndex= 0;
 		
 		// Count inputs and outputs - just to be safe. There should be a max
-		// of one each.
+		// of one each exclusive of signal antenna.
+		int index   = -1;      // Count of descriptors
+		hiddenIndex = -1;     // Unless set, nothing is hidden
 		for(ProcessAnchorDescriptor desc:block.getAnchors()) {
+			index++;
+			if( desc.isHidden()) hiddenIndex = index;
+			if( desc.getConnectionType().equals(ConnectionType.SIGNAL)) continue;
 			if(desc.getType()==	AnchorType.Origin ) inSegmentCount++;
 			else if(desc.getType()==AnchorType.Terminus ) outSegmentCount++;
+			
 		}
 		outSegmentCount++;   // Now equals the number of segments on a side
 		inSegmentCount++;
 		int inset = INSET;   // Align with arrow without border
 		int ht = sz.height - BORDER_WIDTH;   // Effective height without border
+		int width = sz.width-2*inset;        // Effective interior width
 		
 		for(ProcessAnchorDescriptor desc:block.getAnchors()) {
+			// Top left signal -- approx 1/4 of way across
+			if( desc.getConnectionType().equals(ConnectionType.SIGNAL)) {
+				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Terminus,
+						desc.getConnectionType(),
+						new Point(inset+(width/4),0),
+						new Point(inset+(width/4),-3*SIGNAL_LEADER_LENGTH),
+						new Rectangle(width/4,0,2*inset,2*inset),
+						desc.isMultiple(),
+						desc.getAnnotation()); 
+				ap.setSide(AnchorSide.TOP);
+				getAnchorPoints().add(ap);
+			}
 			// Left side terminus
-			if( desc.getType()==AnchorType.Terminus  ) {
+			else if( desc.getType()==AnchorType.Terminus  ) {
 				outputIndex++;
 				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Terminus,
 						desc.getConnectionType(),
@@ -74,7 +94,8 @@ public class ArrowUIView extends AbstractUIView implements BlockViewUI {
 						new Point(-LEADER_LENGTH,outputIndex*ht/outSegmentCount),
 						new Rectangle(0,outputIndex*ht/outSegmentCount-inset,2*inset,2*inset+3), // Hotspot
 						desc.isMultiple(),
-						desc.getAnnotation());   
+						desc.getAnnotation());
+				ap.setSide(AnchorSide.LEFT);
 				getAnchorPoints().add(ap);
 				
 			}
@@ -88,6 +109,7 @@ public class ArrowUIView extends AbstractUIView implements BlockViewUI {
 						new Rectangle(sz.width-2*inset,inputIndex*ht/inSegmentCount-inset,2*inset,2*inset+3),
 						desc.isMultiple(),
 						desc.getAnnotation());
+				ap.setSide(AnchorSide.RIGHT);
 				getAnchorPoints().add(ap);
 			}
 		}
@@ -96,6 +118,7 @@ public class ArrowUIView extends AbstractUIView implements BlockViewUI {
 	// Paint a right-pointing arrow. 
 	@Override
 	protected void paintComponent(Graphics _g) {
+		
 		// Calling the super method effects an "erase".
 		Graphics2D g = (Graphics2D) _g;
 

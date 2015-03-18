@@ -189,13 +189,13 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				// NOTE: There is always a corresponding block in the gateway. One is created when we drop block from the palette.
 				saveAction.setEnabled(pbv.isDirty());
 				menu.add(saveAction);
-				
+				// NOTE: ctypeEditable gets turned off once a block has been serialized.
 				if( selection instanceof BlockComponent && pbv.isCtypeEditable() ) {
 					
 					// Types are: ANY, DATA, TEXT, TRUTH-VALUE
 					// Assume the type from the terminus anchor
 					Iterator<ProcessAnchorDescriptor> iterator = pbv.getAnchors().iterator();
-					ProcessAnchorDescriptor anch = iterator.next();  // Assumes at least one anchor
+					ProcessAnchorDescriptor anch = iterator.next();  // Assumes at least one outgoing anchor
 					while( anch.getType().equals(AnchorType.Origin) && iterator.hasNext()  ) {
 						anch = iterator.next();
 					}

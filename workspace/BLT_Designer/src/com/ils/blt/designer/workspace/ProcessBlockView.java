@@ -238,13 +238,20 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
     /**
      * Change the connection type of all anchors to a new specified
      * type. This has an effect only if ctypeEditable is true. This
-     * flag is always negative on restore from serialization.
+     * flag is always negative on restore from serialization. Additionally
+     * the first signal input is not disturbed.
      * @param newType
      */
     public void changeConnectorType(ConnectionType newType) {
     	if(ctypeEditable) {
+    		boolean foundSignal = false;
     		for( ProcessAnchorDescriptor anchor:getAnchors()) {
-    			anchor.setConnectionType(newType);
+    			if( !foundSignal && anchor.getConnectionType().equals(ConnectionType.SIGNAL)) {
+    				foundSignal = true;
+    			}
+    			else {
+    				anchor.setConnectionType(newType);
+    			}
     		}
     		fireStateChanged();
     	}
@@ -446,8 +453,8 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		 else {
 			 result = false;
 			 if(start.getConnectionType().equals(end.getConnectionType()) ||
-					 start.getConnectionType().equals(ConnectionType.ANY)      ||
-					 end.getConnectionType().equals(ConnectionType.ANY)   ) {
+		     	start.getConnectionType().equals(ConnectionType.ANY)      ||
+				end.getConnectionType().equals(ConnectionType.ANY)   ) {
 
 				 result = true;
 			 }
