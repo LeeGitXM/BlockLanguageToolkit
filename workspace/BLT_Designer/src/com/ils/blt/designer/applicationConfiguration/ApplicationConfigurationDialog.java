@@ -54,26 +54,12 @@ public class ApplicationConfigurationDialog extends JDialog {
 	private final int DIALOG_WIDTH = 440;
 	private final ScriptExtensionManager extensionManager = ScriptExtensionManager.getInstance();
 	private final SerializableApplication application;
-	private JTextField consoleField;
-	private JCheckBox menuCheckBox;
-	private JComboBox<String> methodBox;
-	private JTextField queueField;
-/*
-	private JTextField unitField;
-*/	
-	// These are the keys to the map of properties that are unique to applications
-	public final static String PROPERTY_CONSOLE          = "console";
-	public final static String PROPERTY_HIGHEST_PRIORITY = "highestPriority";
-	public final static String PROPERTY_INCLUDE_IN_MENU  = "includeInMenu";
-	public final static String PROPERTY_MESSAGE_QUEUE    = "messageQueue";
-	public final static String PROPERTY_RAMP_METHOD      = "rampMethod";
-/*
-	public final static String PROPERTY_UNIT             = "unit";
-*/
+	
+	// Getters
+	public LoggerEx getLog() { return log; }
 
 	public ApplicationConfigurationDialog(Frame frame,DesignerContext ctx,SerializableApplication app) {
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
-		log.infof("In ApplicationConfigurationDialog constructor");
 		setTitle(TITLE);
 		this.application = app;
 		this.context = ctx;
@@ -81,48 +67,34 @@ public class ApplicationConfigurationDialog extends JDialog {
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));
 		
 		log.infof("Application: %s", application.getName());
+		log.tracef("Calling the get extension function...");
 		
-		initialize();
+		// Fetch properties of the application associated with the database and not serialized.
+		extensionManager.runScript(context.getScriptManager(), ScriptConstants.APP_GET_AUX_SCRIPT, 
+				this.application.getId().toString(),properties);
+
+		log.tracef("...back in Java land!");
+		for (String key:properties.keySet()){
+			log.tracef("Properties: key = %s, value = %s", key, properties.get(key).getClass().getName());
+		}
+		log.tracef("Properties: " + properties);
+		
 		controller = new ApplicationConfigurationController(this);
        	setContentPane(controller.getSlidingPane());
         
         log.infof("   ...leaving ApplicationConfigurationDialog constructor!");
 	}
 	
-	
-	
-	/**
-	 * The super class takes care of making a central tabbed pane.
-	 * Here we add the tabs ...
-	 * 1) Core attributes
-	 * 2) Quant output definitions
-	 * 3) Python hook definitions.
-	 */
-	private void initialize() {
-		log.infof("Initializing the application dialog, calling the get extension function...");
-			
+	public void save(){
+		log.infof("In ApplicationConfigurationDialog:save()");
+		log.tracef("Properties: " + properties);
+		
 		// Fetch properties of the application associated with the database and not serialized.
-		extensionManager.runScript(context.getScriptManager(), ScriptConstants.APP_GET_AUX_SCRIPT, 
+		extensionManager.runScript(context.getScriptManager(), ScriptConstants.APP_SET_AUX_SCRIPT, 
 				this.application.getId().toString(),properties);
+	}
+		
 
-		log.infof("...back in Java land!");
-		System.out.println("Properties: " + properties);
-	}
-		
-	/**
-	 * Create a combo box for ramp method
-	 */
-	protected JComboBox<String> createRampMethodCombo(String bundle,String method) {
-		
-		JComboBox<String> box = new JComboBox<String>();
-		for(RampMethod as : RampMethod.values()) {
-			box.addItem(as.name());
-		}
-		box.setToolTipText(BundleUtil.get().getString(bundle));
-		box.setSelectedItem(method.toUpperCase());
-//		box.setPreferredSize(COMBO_SIZE);
-		return box;
-	}
 	/**
 	 * @return the application that we are configuring.
 	 */
@@ -132,6 +104,4 @@ public class ApplicationConfigurationDialog extends JDialog {
 	 * @return true if the user has selected the "Cancel" button.
 	 */
 	public boolean isCancelled() { return cancelled; }
-	
-	
 }

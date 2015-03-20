@@ -5,7 +5,9 @@ import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
@@ -31,7 +33,10 @@ import com.inductiveautomation.ignition.common.config.PropertyValue;
 
 public class OutputsPane extends JPanel implements ApplicationConfigurationController.EditorPane {
 	private ApplicationConfigurationController controller;
+	private Application application;
 	private SortedListModel outputListModel;
+	private Map<String,Object> outputMap;
+	private ArrayList< Map<String,Object> > outputList;
 	private static final long serialVersionUID = 2882399376824334428L;
 	private static Icon addIcon = new ImageIcon(Application.class.getResource("/images/add.png"));
 	private static Icon deleteIcon = new ImageIcon(Application.class.getResource("/images/delete.png"));
@@ -49,11 +54,12 @@ public class OutputsPane extends JPanel implements ApplicationConfigurationContr
 
 	private Data recipeData;
 */	
-	public OutputsPane(ApplicationConfigurationController controller, SortedListModel model) {
+	public OutputsPane(ApplicationConfigurationController controller, Application app, SortedListModel model) {
 		super(new BorderLayout(20, 30));
 		System.out.println("In Outputs pane constructor");
 		this.controller = controller;
 		this.outputListModel = model;
+		this.application = app;
 		
 		JLabel label = new JLabel("Outputs");
 		label.setHorizontalAlignment(JLabel.CENTER);
@@ -95,26 +101,58 @@ public class OutputsPane extends JPanel implements ApplicationConfigurationContr
 		previousButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {doPrevious();}
 		});
-		
-		//TODO Need to add a JList and a Jscrollpane here
-/*	
-		add(new JScrollPane(sourceList),
-				new GridBagConstraints(0,1,1,5,.5,1,GridBagConstraints.CENTER, 
-						GridBagConstraints.BOTH, EMPTY_INSETS,0,0));
-*/
-
+	}
+	
+	public void refresh(){
+		System.out.println("Refreshing...");
+		outputListModel.clear();
 	}
 
 	protected void doEdit() {
-		controller.getSlidingPane().setSelectedPane(2);
+		// Get the name of the output that is selected, if nothing is selected then return
+		String outputName= (String) jlist.getSelectedValue();
+		if( outputName==null ) {
+			System.out.println("Output is NULL!!!");
+			return;
+		}
+		
+		System.out.println("Output: " + outputName);
+
+		// Get the Map that corresponds to the name that is selected
+		Map<String,Object> outputMap=application.getOutput(outputName);
+		if (outputMap != null){
+			System.out.println("Looking at an Output" + outputMap);
+			// Get the output editor and call method that puts the output into the fields
+			OutputEditorPane outputEditor=controller.getOutputEditor();
+			outputEditor.updateFields(outputMap);
+			controller.getSlidingPane().setSelectedPane(2);
+		}
 	}
 
 	protected void doDelete() {
-		// TODO Auto-generated method stub
+		// Get the name of the output that is selected, if nothing is selected then return
+		String outputName= (String) jlist.getSelectedValue();
+		if( outputName==null ) {
+			System.out.println("Output is NULL!!!");
+			return;
+		}
+		System.out.println("Deleting Output: " + outputName + "...");
+		application.deleteQuantOutput(outputName);
+		controller.refreshOutputs();
 	}
 
 	protected void doAdd() {
-		controller.getSlidingPane().setSelectedPane(2);
+		System.out.println("In doAdd()");
+		
+		// Get the Map that corresponds to the name that is selected
+		Map<String,Object> outputMap=application.newOutput();
+		if (outputMap != null){
+			System.out.println("Looking at an Output" + outputMap);
+			// Get the output editor and call method that puts the output into the fields
+			OutputEditorPane outputEditor=controller.getOutputEditor();
+			outputEditor.updateFields(outputMap);
+			controller.getSlidingPane().setSelectedPane(2);
+		}
 	}
 
 	protected void doPrevious() {
@@ -126,39 +164,7 @@ public class OutputsPane extends JPanel implements ApplicationConfigurationContr
 		controller.slideTo(ApplicationConfigurationController.EDITOR);
 	}
 	
-/*
-	private void doAdd() {
-		controller.getFieldCreator().setRecipeData((Structure)recipeData);
-		controller.getFieldCreator().activate();
-	}
 
-	private void doEdit() {
-		PropertyValue<?> selectedPropertyValue = getPropertyEditor().getSelectedPropertyValue();
-		if(selectedPropertyValue == null) return;
-		if(selectedPropertyValue.getProperty().equals(IlsProperty.TAG_PATH)) {
-			controller.getTagBrowser().activate();
-		}
-		else if(selectedPropertyValue.getProperty().getType() == String.class) {
-			controller.getTextEditor().setText((String)selectedPropertyValue.getValue());
-			controller.getTextEditor().activate();
-		}
-	}
-
-	private void doRemove() {
-		PropertyValue<?> selectedPropertyValue = getPropertyEditor().getSelectedPropertyValue();
-		if(selectedPropertyValue == null) return;
-		Structure structureData = (Structure) recipeData;
-		structureData.removeDynamicProperty(selectedPropertyValue.getProperty());
-		getPropertyEditor().setPropertyValues(recipeData.getProperties(), false);
-	}
-*/	
-	private void doOK() {
-		System.out.println("In doOK");
-/*
-		recipeData.setProperties(editor.getPropertyValues());
-		controller.getBrowser().activate();
-*/
-	}
 /*
 	public PropertyEditor getPropertyEditor() {
 		return editor;

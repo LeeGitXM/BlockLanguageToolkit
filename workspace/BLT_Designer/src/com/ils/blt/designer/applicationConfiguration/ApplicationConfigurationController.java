@@ -24,7 +24,9 @@ public class ApplicationConfigurationController {
 	private ApplicationConfigurationDialog dialog;
 	private SortedListModel outputListModel;
 	private Map<String,Object> properties;
+	private Map<String,Object> outputMap;
 	protected final LoggerEx log;
+	private double mostNegativeIncrement;
 	
 	interface EditorPane {
 		/** show yourself, after doing any necessary preparation. */
@@ -43,6 +45,7 @@ public class ApplicationConfigurationController {
 	private OutputsPane outputs;
 	private OutputEditorPane outputEditor;
 	
+	// The constructor
 	public ApplicationConfigurationController(ApplicationConfigurationDialog diag) {
 		this.log = diag.log;
 		dialog = diag;
@@ -50,33 +53,15 @@ public class ApplicationConfigurationController {
 		
 		properties=dialog.properties;
 		
+		application = new Application();
 		initializeApplication();
 		
 //PH		tagBrowser = new TagBrowserPane(this);
 		
-//		application.setConsole((String) properties.get("Console"));
-//		System.out.printf("Application Console: %s %n", application.getConsole());
-		
-		
-		// This would be a good time to go out and query the database...
-		System.out.println("Properties: " + properties);
-		
-		outputListModel = new SortedListModel();
-		outputListModel.addAll(new String[] {"FC100.PV", "FC1001.PV", "Three", "FC1002.PV", "FC1003.PV", "FC1004.PV",
-				"FC1005.PV", "FC1006.PV", "FC1007.PV", "FC1008.PV", "FC1009.PV", "FC1010.PV"});
-		
-		application = new Application();
-		application.setName(dialog.getApplication().getName());
-		application.setDescription((String) properties.get("Description"));
-		application.setConsole((String) properties.get("Console"));
-		application.setConsoles((ArrayList<String>) properties.get("Consoles"));
-		application.setQueue((String) properties.get("MessageQueue"));
-		application.setQueues((ArrayList<String>) properties.get("MessageQueues"));
-		
 		// Create the sub-panes
 		home = new HomePane(this, application);
-		outputs = new OutputsPane(this, outputListModel);
-		outputEditor = new OutputEditorPane(this);
+		outputs = new OutputsPane(this, application, outputListModel);
+		outputEditor = new OutputEditorPane(this, application, outputListModel);
 
 		// sub-panes added according to the indexes above:
 		slidingPane.add(home);
@@ -84,38 +69,46 @@ public class ApplicationConfigurationController {
 		slidingPane.add(outputEditor);
 		slidingPane.add(new JPanel());  // a blank pane
 		slideTo(HOME);
-		
-		// hook into the property editor's string edit action so that
-		// we can do our own thing:
-/*PH	
-		editor.getPropertyEditor().setStringEditListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {doStringEdit();}
-		});
-*/
+
 		log.infof("   ...leaving ApplicationConfigurationController constructor!");
 	}
 	
 	private void initializeApplication(){
 		log.infof("   ...initializing the Application data model...");
-		String post = (String) properties.get("Post");
-		System.out.printf("Application Post: %s %n", post);
+		
+		// The data from the database has already been fetched and is in the properties dictionary.
+		// Transfer the data from the dictionary to the application object.
+		log.tracef("Properties: " + properties);
+
+		application.setName(dialog.getApplication().getName());
+		application.setDescription((String) properties.get("Description"));
+		application.setConsole((String) properties.get("Console"));
+		application.setConsoles((ArrayList<String>) properties.get("Consoles"));
+		application.setQueue((String) properties.get("MessageQueue"));
+		application.setQueues((ArrayList<String>) properties.get("MessageQueues"));
+		application.setGroupRampMethod((String) properties.get("GroupRampMethod"));
+		application.setPost((String) properties.get("Post"));
+		application.setUnit((String) properties.get("Unit"));
+		
+		outputListModel = new SortedListModel();
 		
 		// Process the list of outputs (A list of dictionaries)
 		List<?> outputList = (List<?>) properties.get("QuantOutputs");
+		log.tracef("OutputList: " + outputList);
 		if( outputList!=null ) {
-			for(Object output : outputList) {
-				System.out.println("Output: " + output);
+			for(Object obj : outputList) {
+				if (obj instanceof Hashtable){ 
+					outputMap = (Map<String,Object>) obj;
+					application.addQuantOutput(outputMap);
+				}
 			}
 		}
 		
+		// Build the list of output names that goes into the list widget
+		buildOutputListModel();
+		
 		// Process the list of consoles
 		List<?> consoleList = (List<?>) properties.get("Consoles");
-		if( consoleList!=null ) {
-			for(Object console : consoleList) {
-				System.out.println("Console: " + console);
-			}
-		}
-
 	}
 	
 	public void setContext(DesignerContext context) {
@@ -152,12 +145,36 @@ public class ApplicationConfigurationController {
 	}
 	
 	public void setOutputs(ListModel newValue){
+		System.out.println("In setOutputs()");
 		clearOutputListModel();
 		addOutputs(newValue);
 	}
 	
 	public void clearOutputListModel(){
 		outputListModel.clear();
+	}
+	
+	// Build the outputListModel from the list of QuantOutput maps
+	private void buildOutputListModel(){
+		log.tracef("In buildOutputListModel()");
+		List<?> outputList = (List<?>) application.getOutputs();
+		log.tracef("OutputList: " + outputList);
+		if( outputList!=null ) {
+			for(Object obj : outputList) {
+				if (obj instanceof Hashtable){ 
+					outputMap = (Map<String,Object>) obj;
+					log.tracef("Adding " + outputMap + " a " + obj.getClass().getName());
+					outputListModel.add(outputMap.get("QuantOutput"));
+				}
+			}
+		}
+	}
+		
+	// This is generally called after an output has been edited and the output list widget 
+	// needs to be refreshed
+	public void refreshOutputs(){
+		clearOutputListModel();
+		buildOutputListModel();
 	}
 	
 	private void fillListModel(SortedListModel model, ListModel newValues){
@@ -172,16 +189,26 @@ public class ApplicationConfigurationController {
 	}
 	
 	public void doOK(){
-		System.out.println("In ApplicationConfigurationController doOK");
-		//TODO Now would be a really good time to save things to the database
+		save();
+		dialog.save();
 		dialog.dispose();
 	}
 
 	public void doCancel(){
-		System.out.println("In ApplicationConfigurationController doCancel");
 		dialog.dispose();
 	}
 
+	// Convert the Application object to the property dictionary
+	public void save(){
+		properties.put("Console", application.getConsole());
+		properties.put("Description", application.getDescription());
+		properties.put("MessageQueue", application.getQueue());
+		properties.put("GroupRampMethod", application.getGroupRampMethod());
+		properties.put("Post", application.getPost());
+		properties.put("Unit", application.getUnit());
+		properties.put("QuantOutputs", application.getOutputs());
+	}
+	
 	/*
 	public static void main(String[] args) {
 		ApplicationConfigurationController controller = new ApplicationConfigurationController();		
@@ -192,5 +219,4 @@ public class ApplicationConfigurationController {
 		frame.setVisible(true);
 	}
 	*/
-
 }
