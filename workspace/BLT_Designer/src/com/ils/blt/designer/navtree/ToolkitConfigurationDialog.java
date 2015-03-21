@@ -27,6 +27,7 @@ import net.miginfocom.swing.MigLayout;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.script.ScriptConstants;
+import com.ils.blt.designer.config.ConfigurationDialog;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 /**

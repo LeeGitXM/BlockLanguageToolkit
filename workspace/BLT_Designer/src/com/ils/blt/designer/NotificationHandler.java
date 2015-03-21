@@ -82,7 +82,7 @@ public class NotificationHandler implements PushNotificationListener {
 		if( moduleId.equals(BLTProperties.MODULE_ID)) {
 			String key = notice.getMessageType();
 			Object payload = notice.getMessage();
-			log.tracef("%s.receiveNotification: key=%s,value=%s",TAG,key,payload.toString());
+			log.debugf("%s.receiveNotification: key=%s,value=%s",TAG,key,payload.toString());
 			if( payload instanceof QualifiedValue ) {
 				payloadMap.put(key, payload);
 				Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
@@ -141,7 +141,7 @@ public class NotificationHandler implements PushNotificationListener {
 		
 		// Make an immediate update 
 		Object payload = payloadMap.get(key);
-		if( payload!=null ) {
+		if( payload!=null && ((QualifiedValue)payload).getValue()!=null ) {
 			listener.valueChange((QualifiedValue)payload);
 			// Repaint the workspace
 			SwingUtilities.invokeLater(new WorkspaceRepainter());

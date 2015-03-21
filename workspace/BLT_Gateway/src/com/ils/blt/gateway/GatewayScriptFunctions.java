@@ -35,6 +35,15 @@ public class GatewayScriptFunctions   {
 	public static void resetDiagram(String diagramId) {
 		handler.resetDiagram(diagramId);
 	}
+	
+	/**
+	 * Set the state for every diagram under the named application.
+	 * @param app name of the application
+	 * @param state new state of the diagrams
+	 */
+	public static void setApplicationState(String app,String state) {
+		handler.setApplicationState(app,state);
+	}
 
 	/**
 	 * Set a clock rate factor. This must NOT be exercised in a production environment.

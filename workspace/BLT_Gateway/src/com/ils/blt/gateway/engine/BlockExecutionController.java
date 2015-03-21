@@ -418,9 +418,9 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 */
 	public void startSubscription(ProcessBlock block,BlockProperty property) {
 		if( block==null || property==null || 
-				!(property.getBindingType()==BindingType.TAG_READ || 
-				  property.getBindingType()==BindingType.TAG_READWRITE ||
-				  property.getBindingType()==BindingType.TAG_MONITOR )   ) return;
+				!(property.getBindingType().equals(BindingType.TAG_READ) || 
+				  property.getBindingType().equals(BindingType.TAG_READWRITE) ||
+				  property.getBindingType().equals(BindingType.TAG_MONITOR) )   ) return;
 		
 		String tagPath = property.getBinding();
 		ProcessDiagram diagram = getDiagram(block.getParentId());
@@ -440,16 +440,16 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 * @param val
 	 */
 	public void updateTag(UUID diagramId,String tagPath,QualifiedValue val) {
-		log.infof("%s.updateTag %s = %s ",TAG,tagPath,val.toString());
 		ProcessDiagram diagram = modelManager.getDiagram(diagramId);
 		if( diagram!=null && !diagram.getState().equals(DiagramState.DISABLED)) {
 			if(diagram.getState().equals(DiagramState.ISOLATED)) {
 				tagPath = replaceProviderInPath(tagPath, getIsolationProvider());
 			}
+			log.infof("%s.updateTag %s = %s ",TAG,tagPath,val.toString());
 			tagWriter.updateTag(diagram.getProjectId(),tagPath,val);
 		}
 		else {
-			log.infof("%s.updateTag REJECTED, diagram not active",TAG);
+			log.infof("%s.updateTag %s REJECTED, diagram not active",TAG,tagPath);
 		}
 	}
 

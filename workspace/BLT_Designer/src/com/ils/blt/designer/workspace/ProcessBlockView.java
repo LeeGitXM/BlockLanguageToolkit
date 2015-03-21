@@ -345,6 +345,8 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	}
 	public boolean isTransmitEnabled() {return transmitEnabled;}
 	public void recordLatestValue(String port,QualifiedValue qv) {
+		if( qv==null || qv.getValue()==null) return;
+		log.infof("%s.recordLatestValue: %s (%s) port %s (%s)",TAG,getName(),getId().toString(),port,qv.getValue().toString());
 		ProcessAnchorDescriptor pad = anchors.get(port);
 		if( pad!=null ) {
 			pad.setLastValue(qv);
@@ -465,6 +467,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	// ====================================== Change Listener =====================================
 	 /**
 	  * We are about to take UI action, so execute on the event thread.
+	  * This is probably in response to a change in one of the block properties.
 	  */
 	@Override
 	public void stateChanged(ChangeEvent e) {

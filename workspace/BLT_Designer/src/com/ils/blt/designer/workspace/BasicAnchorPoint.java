@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved.
+ *   (c) 2014-2015  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.workspace;
 
@@ -16,6 +16,8 @@ import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.designer.workspace.ui.AnchorSide;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorPoint;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
@@ -31,6 +33,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
  * and workspace connection rendering.
  */
 public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeListener {
+	private static LoggerEx log = LogUtil.getLogger(AnchorPoint.class.getPackage().getName());
 	// Here is our repertoire of strokes and colors ...
 	// The outline strokes are black and are laid down first.
 	private final Stroke signalOutlineStroke = new BasicStroke(WorkspaceConstants.CONNECTION_WIDTH_SIGNAL);
@@ -97,8 +100,7 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 	public AnchorSide getSide() {return side;}
 	public void setSide(AnchorSide side) {this.side = side;}
 	
-	
-	
+
 	// Methods for workspace connection rendering
 	/**
 	 * @return the stroke that covers the middle of the connection.
@@ -185,6 +187,8 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 	public void valueChange(QualifiedValue value) {
 		//  This is the most recent value to pass into the connection.
 		// Use it to determine the fill color
+		if(value.getValue()==null) return;
+		log.infof("BasicAnchorPoint.valueChange: received %s.",value.getValue().toString());
 		isEmpty = false;
 		isGood = value.getQuality().isGood();
 		if( cxnType.equals(ConnectionType.TRUTHVALUE)) {

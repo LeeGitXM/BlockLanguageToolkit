@@ -177,7 +177,7 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 		prototype.setPaletteIconPath("Block/icons/palette/readout.png");
 		prototype.setPaletteLabel("Readout");
 		prototype.setTooltipText("Show current connection value. Sample formats: %s (string), %3.2f (float), %d (integer)");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_CONNECTIVITY);
+		prototype.setTabName(BlockConstants.PALETTE_TAB_MISC);
 		BlockDescriptor view = prototype.getBlockDescriptor();
 		view.setBlockClass(getClass().getCanonicalName());
 		view.setStyle(BlockStyle.READOUT);

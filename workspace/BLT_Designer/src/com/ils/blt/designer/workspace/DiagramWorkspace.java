@@ -51,6 +51,8 @@ import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.ResourceUpdateManager;
+import com.ils.blt.designer.config.BlockInternalsViewer;
+import com.ils.blt.designer.config.ForceValueSettingsDialog;
 import com.ils.blt.designer.editor.PropertyEditorFrame;
 import com.inductiveautomation.ignition.client.designable.DesignableContainer;
 import com.inductiveautomation.ignition.client.util.LocalObjectTransferable;

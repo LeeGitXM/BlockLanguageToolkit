@@ -62,9 +62,9 @@ public class Output extends AbstractProcessBlock implements ProcessBlock {
 		this.state = BlockState.ACTIVE;
 		QualifiedValue qv = vcn.getValue();
 		if( !isLocked() ) {
-			log.tracef("%s.acceptValue: received %s",getName(),qv.toString());
+			log.debugf("%s.acceptValue: received %s",getName(),qv.toString());
 			if( pathProperty.getBindingType().equals(BindingType.TAG_WRITE)) {
-				log.debugf("%s.acceptValue: writing to path %s",getName(),pathProperty.getBinding().toString());
+				log.tracef("%s.acceptValue: writing to path %s",getName(),pathProperty.getBinding().toString());
 				controller.updateTag(getParentId(),pathProperty.getBinding().toString(), qv);
 			}
 			

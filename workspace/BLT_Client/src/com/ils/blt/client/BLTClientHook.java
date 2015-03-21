@@ -3,6 +3,7 @@
  */
 package com.ils.blt.client;
 
+import com.ils.blt.common.ApplicationScriptFunctions;
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.client.model.ClientContext;
@@ -20,11 +21,11 @@ public class BLTClientHook implements ClientModuleHook {
 		BundleUtil.get().addBundle(BLTProperties.CUSTOM_PREFIX,ClientModuleHook.class,HOOK_BUNDLE_NAME);
 	}
 	/**
-	 * Make the tag-creation script functions available.
+	 * Make the interface script functions available.
 	 */
 	@Override
 	public void initializeScriptManager(ScriptManager mgr) {
-		//mgr.addScriptModule(BLTProperties.GRAPHICS_SCRIPT_PACKAGE,GraphicsScriptFunctions.class);
+		mgr.addScriptModule(BLTProperties.APPLICATION_SCRIPT_PACKAGE,ApplicationScriptFunctions.class);
 	}
 
 	@Override

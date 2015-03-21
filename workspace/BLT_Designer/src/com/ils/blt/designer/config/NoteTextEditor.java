@@ -2,7 +2,7 @@
  *   (c) 2014  ILS Automation. All rights reserved.
  *   http://docs.oracle.com/javase/tutorial/displayCode.html?code=http://docs.oracle.com/javase/tutorial/uiswing/examples/components/SharedModelDemoProject/src/components/SharedModelDemo.java
  */
-package com.ils.blt.designer.workspace;
+package com.ils.blt.designer.config;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -31,6 +31,9 @@ import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
+import com.ils.blt.designer.workspace.ProcessBlockView;
+import com.ils.blt.designer.workspace.ProcessDiagramView;
+import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;

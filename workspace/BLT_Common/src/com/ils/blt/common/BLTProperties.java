@@ -67,6 +67,7 @@ public interface BLTProperties   {
 	public static final String PALETTE_ANCHOR_OUT  = "outports";    // A list of dictionaries
 	public static final String PALETTE_BLOCK_CLASS = "blockClass";
 	public static final String PALETTE_BLOCK_STYLE = "blockStyle";
+	public static final String PALETTE_EDITOR_CLASS = "editorClass";
 	public static final String PALETTE_ICON_PATH   = "iconPath";
 	public static final String PALETTE_LABEL       = "label";
 	public static final String PALETTE_NAME_DISPLAYED    = "nameDisplayed";

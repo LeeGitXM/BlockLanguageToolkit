@@ -2,22 +2,31 @@
 # Test ofa SQC block. 
 # Block attributes: 
 #  SampleSize    = 4
-#  MaxOutOfRange = 3
-#  ClearOnReset  = TRUE
-#  LimitType     = HIGH
+#  MaxOutOfRange = 1
+#  ClearOnReset  = TRUE,FALSE,TRUE
+#  LimitType     = HIGH,LOW,BOTH
 #  NumbeOfStandardDeviations = 1.5
 #  Block is TRUE if a rule has been violated
 #
 Test: SQC Block
 Step: In-Range Values
-Show: browser "app75/family75/sqcfinal"
-resetDiagram (app75/family75/sqcfinal)
+Show: browser "UseCases/UseCaseFamily/sqc"
+#Show: browser "app75/family75/sqc"
+resetDiagram (UseCases/UseCaseFamily/sqc)
+#resetDiagram (app75/family75/sqc)
 # Tags are: Feed StdDev Target
 Tagset: SQC
 09:59 .9 .9 .9
-10:00 1 1.0 0.01
+# Data change should cause blocks to clear
+10:00 0.9 1.0 0.01
 10:01 0.1 
-10:01:55 Assert: sqcResult = UNKNOWN  "Insufficient data"
+10:02 1.1
+10:02:55 Assert: SQC1 = false  "1 at threshold"
+10:02:55 Assert: SQC2 = false  "2 at threshold"
+10:02:55 Assert: SQC3 = false  "3 at threshold"
+10:03 1.4 
+Step: High Values
+exit:
 10:02 0.9
 10:03 1.5
 10:03:55 Assert: sqcResult = FALSE "All in range"

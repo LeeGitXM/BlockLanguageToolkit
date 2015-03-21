@@ -31,7 +31,7 @@ import com.ils.blt.common.block.RampMethod;
 import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.common.serializable.SerializableApplication;
-import com.ils.blt.designer.navtree.ConfigurationDialog;
+import com.ils.blt.designer.config.ConfigurationDialog;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.common.util.LogUtil;

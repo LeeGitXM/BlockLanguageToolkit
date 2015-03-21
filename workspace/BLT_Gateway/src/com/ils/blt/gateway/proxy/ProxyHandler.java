@@ -294,13 +294,15 @@ public class ProxyHandler   {
 						proto.setTooltipText(nullCheck(tbl.get(BLTProperties.PALETTE_TOOLTIP),""));
 						proto.setTabName(nullCheck(tbl.get(BLTProperties.PALETTE_TAB_NAME),BlockConstants.PALETTE_TAB_CONTROL));
 						
-						BlockDescriptor view = proto.getBlockDescriptor();
+						// The table that we get from Python contains attributes for the BlockDescriptor
+						// as well as the PalettePrototype
+						BlockDescriptor desc = proto.getBlockDescriptor();
 						val = tbl.get(BLTProperties.PALETTE_RECEIVE_ENABLED);
-						if( val!=null ) view.setReceiveEnabled(fns.coerceToBoolean(val.toString()));
+						if( val!=null ) desc.setReceiveEnabled(fns.coerceToBoolean(val.toString()));
 						val = tbl.get(BLTProperties.PALETTE_TRANSMIT_ENABLED);
-						if( val!=null ) view.setTransmitEnabled(fns.coerceToBoolean(val.toString()));
+						if( val!=null ) desc.setTransmitEnabled(fns.coerceToBoolean(val.toString()));
 						val = tbl.get(BLTProperties.PALETTE_VIEW_LABEL);
-						if( val!=null ) view.setEmbeddedLabel(val.toString());
+						if( val!=null ) desc.setEmbeddedLabel(val.toString());
 						val = tbl.get(BLTProperties.PALETTE_VIEW_BACKGROUND);
 						if( val!=null ) {
 							int background = 0xffffff; // White
@@ -310,21 +312,23 @@ public class ProxyHandler   {
 							catch(NumberFormatException nfe) {
 								log.infof("%s.getPalettePrototypes: Illegal background specification: %s (%s) ",TAG,val.toString(),nfe.getLocalizedMessage());  
 							}
-							view.setBackground(background);
+							desc.setBackground(background);
 						}
 						val = tbl.get(BLTProperties.PALETTE_VIEW_ICON);
-						if( val!=null ) view.setEmbeddedIcon(val.toString());
+						if( val!=null ) desc.setEmbeddedIcon(val.toString());
 						val = tbl.get(BLTProperties.PALETTE_VIEW_BLOCK_ICON);
-						if( val!=null ) view.setIconPath(val.toString());
+						if( val!=null ) desc.setIconPath(val.toString());
 						val = tbl.get(BLTProperties.PALETTE_VIEW_HEIGHT);
-						if( val!=null ) view.setPreferredHeight(fns.coerceToInteger(val));
+						if( val!=null ) desc.setPreferredHeight(fns.coerceToInteger(val));
 						val = tbl.get(BLTProperties.PALETTE_VIEW_WIDTH);
-						if( val!=null ) view.setPreferredWidth(fns.coerceToInteger(val));
-						view.setBlockClass(nullCheck(tbl.get(BLTProperties.PALETTE_BLOCK_CLASS),"project.block.BasicBlock.BasicBlock"));
+						if( val!=null ) desc.setPreferredWidth(fns.coerceToInteger(val));
+						desc.setBlockClass(nullCheck(tbl.get(BLTProperties.PALETTE_BLOCK_CLASS),"project.block.BasicBlock.BasicBlock"));
+						val = tbl.get(BLTProperties.PALETTE_EDITOR_CLASS);
+						if( val!=null ) desc.setEditorClass(val.toString());
 						val = tbl.get(BLTProperties.PALETTE_BLOCK_STYLE);
 						if( val!=null) {
 							try {
-								view.setStyle(BlockStyle.valueOf(val.toString().toUpperCase()));
+								desc.setStyle(BlockStyle.valueOf(val.toString().toUpperCase()));
 							}
 							catch(IllegalArgumentException iae ) {
 								log.warnf("%s.getPalettePrototypes: Illegal block style parameter (%) (%s)" , TAG,val,iae.getMessage());
@@ -335,9 +339,9 @@ public class ProxyHandler   {
 						}
 						// Now handle the anchors
 						val = tbl.get(BLTProperties.PALETTE_ANCHOR_IN);
-						if( val!=null ) addAnchorsToDescriptor(view,val,AnchorDirection.INCOMING);
+						if( val!=null ) addAnchorsToDescriptor(desc,val,AnchorDirection.INCOMING);
 						val = tbl.get(BLTProperties.PALETTE_ANCHOR_OUT);
-						if( val!=null ) addAnchorsToDescriptor(view,val,AnchorDirection.OUTGOING);
+						if( val!=null ) addAnchorsToDescriptor(desc,val,AnchorDirection.OUTGOING);
 						prototypes.add(proto); 
 					}
 				}

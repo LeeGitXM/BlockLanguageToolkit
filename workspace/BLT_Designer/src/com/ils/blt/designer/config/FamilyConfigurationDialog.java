@@ -2,7 +2,7 @@
  *   (c) 2015  ILS Automation. All rights reserved.
  *  
  */
-package com.ils.blt.designer.navtree;
+package com.ils.blt.designer.config;
 
 
 import java.awt.BorderLayout;

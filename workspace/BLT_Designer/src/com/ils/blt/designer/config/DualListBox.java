@@ -1,4 +1,4 @@
-package com.ils.blt.designer.workspace;
+package com.ils.blt.designer.config;
 
 import java.awt.*;
 import java.awt.event.*;

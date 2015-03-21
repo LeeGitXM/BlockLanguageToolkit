@@ -91,7 +91,7 @@ public class Encapsulation extends AbstractProcessBlock implements ProcessBlock 
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setEmbeddedIcon("Block/icons/embedded/green_arrow_down.png");
 		desc.setBlockClass(getClass().getCanonicalName());
-		desc.setEditorClass("com.ils.blt.designer.workspace.EncapsulationAnchorPointEditor");
+		desc.setEditorClass("com.ils.blt.designer.config.EncapsulationAnchorPointEditor");
 		desc.setStyle(BlockStyle.SQUARE);
 		desc.setPreferredHeight(100);
 		desc.setPreferredWidth(100);

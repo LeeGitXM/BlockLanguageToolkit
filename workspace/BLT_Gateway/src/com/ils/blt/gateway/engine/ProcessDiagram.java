@@ -42,7 +42,7 @@ public class ProcessDiagram extends ProcessNode {
 	private boolean valid = false;
 	protected final Map<UUID,ProcessBlock> blocks;
 	private final Map<ConnectionKey,ProcessConnection> connectionMap;            // Key by connection number
-	protected final Map<BlockPort,List<ProcessConnection>> outgoingConnections;   // Key by upstream block:port
+	protected final Map<BlockPort,List<ProcessConnection>> outgoingConnections;  // Key by upstream block:port
 	private DiagramState state = DiagramState.ACTIVE;
 	private final BlockExecutionController controller = BlockExecutionController.getInstance();
 	
@@ -76,7 +76,7 @@ public class ProcessDiagram extends ProcessNode {
 	}
 	/**
 	 * Remove blocks in this diagram that are NOT in the 
-	 * supplied list.
+	 * supplied list. Kill any tag subscriptions associated with those blocks.
 	 */
 	public void removeBlocksFromList(SerializableBlock[] newBlocks) {
 		List<UUID> uuids = new ArrayList<>();

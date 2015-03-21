@@ -2,7 +2,7 @@
  *   (c) 2015  ILS Automation. All rights reserved.
  *   http://docs.oracle.com/javase/tutorial/displayCode.html?code=http://docs.oracle.com/javase/tutorial/uiswing/examples/components/SharedModelDemoProject/src/components/SharedModelDemo.java
  */
-package com.ils.blt.designer.workspace;
+package com.ils.blt.designer.config;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -30,6 +30,9 @@ import net.miginfocom.swing.MigLayout;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
+import com.ils.blt.designer.workspace.ProcessAnchorDescriptor;
+import com.ils.blt.designer.workspace.ProcessBlockView;
+import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
 
 /**

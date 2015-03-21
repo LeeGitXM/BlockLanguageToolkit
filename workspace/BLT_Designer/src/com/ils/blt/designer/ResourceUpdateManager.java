@@ -74,7 +74,6 @@ public class ResourceUpdateManager implements Runnable {
 				catch(JsonProcessingException jpe) {
 					logger.warnf("%s.run: Exception serializing diagram, resource %d (%s)",TAG,resourceId,jpe.getMessage());
 				}
-				view.registerChangeListeners();
 				view.setDirty(false);
 			}
 		}

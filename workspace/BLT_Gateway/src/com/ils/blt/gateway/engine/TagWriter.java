@@ -9,8 +9,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.model.values.Quality;
 import com.inductiveautomation.ignition.common.project.ProjectVersion;
+import com.inductiveautomation.ignition.common.sqltags.model.Tag;
 import com.inductiveautomation.ignition.common.sqltags.model.TagPath;
+import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.sqltags.parser.TagPathParser;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -53,22 +56,50 @@ public class TagWriter  {
 	 */
 	public void updateTag(long projectId,String path,QualifiedValue qv) {
 		log.debugf("%s..updateTag: %s",TAG,path);
-		if( context==null) return;                   // Not initialized yet.
-		if(path==null || path.isEmpty() ) return;    // Path not set
-		List<WriteRequest<TagPath>> list = createTagList(path,qv);
-		if(list.size()==0) log.info(TAG+".updateTags: No results");
+		if( context==null) return;                             // Not initialized yet.
+		if(path==null || path.isEmpty() || qv==null ) return;  // Path or value not set
 		try {
+			TagPath tp = TagPathParser.parse(path);
+
 			String providerName = providerNameFromPath(path);
 			if( providerName.length()==0) providerName = context.getProjectManager().getProps(projectId, ProjectVersion.Published).getDefaultSQLTagsProviderName();
-		    TagProvider provider = context.getTagManager().getTagProvider(providerName);
-		    // We assume the same provider
-		    if( provider!= null && list!=null ) {
-		    	log.debugf("%s..updateTag: writing .... %s",TAG,qv.toString());
-		    	provider.write(list, null, true);	
-		    }
-		    else {
-		    	log.warnf("%s..updateTag: write to %s failed for provider",TAG,path,providerName);
-		    }
+			TagProvider provider = context.getTagManager().getTagProvider(providerName);
+			// We assume the same provider
+			if( provider!= null && qv.getValue()!=null ) {
+				log.infof("%s..updateTag: writing %s = %s",TAG,path,qv.getValue().toString());
+				Tag tag = provider.getTag(tp);
+				if( tag!=null ) {
+					// Coerce to the proper datatype
+					DataType dtype = tag.getDataType();
+					Object value = qv.getValue();
+					String strValue = value.toString();
+					if(      dtype==DataType.Float4 ||
+							dtype==DataType.Float8 )     value = Double.parseDouble(strValue);
+					else if( dtype==DataType.Int1 ||
+							dtype==DataType.Int2 ||
+							dtype==DataType.Int4 ||
+							dtype==DataType.Int8   )     value = Integer.parseInt(strValue);
+					else if( dtype==DataType.Boolean)     value = Boolean.parseBoolean(strValue);
+					else value = strValue;
+
+					LocalRequest request = new LocalRequest(tp,value,qv.getQuality());
+					List<WriteRequest<TagPath>> list = createTagList(request);
+					provider.write(list, null, true);    // true-> isSystem to bypass permission checks
+				}
+				else {
+					log.warnf("%s.updateTags: Provider %s did not find tag %s",TAG,providerName,path);
+				}
+			}
+			else {
+				log.warnf("%s.updateTag: write to %s failed for provider %s",TAG,path,providerName);
+			}
+		}
+		catch( IOException ioe) {
+			log.warnf(TAG+"%s.localRequest: parse exception for path %s (%s)",TAG,path,ioe.getMessage());
+		}
+		catch(NumberFormatException nfe) {
+			log.warn(TAG+"updateTag: Exception setting tag value ("+nfe.getLocalizedMessage()+")");
+			return;
 		}
 		catch(Exception ex) {
 			log.warn(TAG+".updateTags: Exception ("+ex.getLocalizedMessage()+")");
@@ -76,40 +107,31 @@ public class TagWriter  {
 	}
 
 
+
 	/** 
 	 * Tediously create a list of desired tag outputs. (We have only one).
 	 */
-	private List<WriteRequest<TagPath>> createTagList(String path,QualifiedValue qv) {
+	private List<WriteRequest<TagPath>> createTagList(LocalRequest request) {
 		List<WriteRequest<TagPath>> list = new ArrayList<WriteRequest<TagPath>>();
-		LocalRequest req = null;
-		log.debugf("%s.createTagList: path = %s",TAG,path);
-		req = new LocalRequest(path,qv);
-		if(req.isValid)list.add(req);
-
+		list.add(request);
 		return list;
 	}
+	
 	/**
 	 * Create a tag write request. 
 	 */
 	private class LocalRequest extends BasicAsyncWriteRequest<TagPath> {
-		public boolean isValid = false;
-		public LocalRequest( String path,QualifiedValue qv) {
+
+		public LocalRequest(TagPath tagpath,Object value,Quality quality) {
 			super();
-			if( qv!=null ) {
-				try {
-				    TagPath tp = TagPathParser.parse(path);
-				    if( log.isTraceEnabled()) log.tracef("%s.localRequest: adding %s",TAG,tp.toStringFull());
-				    this.setTarget(tp);
-				    this.setValue(qv.getValue());
-				    this.setResult(qv.getQuality());
-				    this.isValid = true;
-				}
-				catch( IOException ioe) {
-					log.warnf(TAG+"%s.localRequest: parse exception for path %s (%s)",TAG,path,ioe.getMessage());
-				}
+			{
+				this.setTarget(tagpath);
+				this.setValue(value);
+				this.setResult(quality);
 			}
 		}
 	}
+	
 	private String providerNameFromPath(String tagPath) {
 		String provider = "";
 		if( tagPath.startsWith("[") ) {

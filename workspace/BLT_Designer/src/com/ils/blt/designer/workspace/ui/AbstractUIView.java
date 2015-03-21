@@ -266,10 +266,9 @@ public abstract class AbstractUIView extends JComponent
 	// Force a repaint.
 	@Override
 	public void update() {
-		log.infof("%s.update %s ...",TAG,getBlock().getName());
+		log.debugf("%s.update %s ...",TAG,getBlock().getName());
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				initAnchorPoints();   // Handle anchorPoint animation.
 				repaint();
 			}
 		});
@@ -277,16 +276,27 @@ public abstract class AbstractUIView extends JComponent
 	
 	// The block has changed, re-configure.
 	// The base method just swaps out the target block.
-	public void reconfigure(ProcessBlockView pbv) { this.block = pbv;}
+	public void reconfigure(ProcessBlockView pbv) { 
+		log.infof("%s.reconfigure %s->%s (%s)",TAG,getBlock().getName(),pbv.getName(),pbv.getId().toString());
+		this.block = pbv;
+	}
 	
+	// The only "state" associated with the anchor points is the
+	// visibility of the signal stub. Recompute the hidden index
+	// and repaint.
 	@Override
 	public void stateChanged(ChangeEvent event) {
-		log.infof("%s.stateChanged %s ...",TAG,getBlock().getName());
+		int index = 0;        // Count of descriptors
+		hiddenIndex = -1;     // Unless set, nothing is hidden
+		// Create counts for each side. There are both defaults and placement hints.
+		for(ProcessAnchorDescriptor desc:block.getAnchors()) {
+			if( desc.isHidden()) hiddenIndex = index;
+			index++;
+		}
+		log.infof("%s.stateChanged %s ...hidden = %d",TAG,getBlock().getName(),hiddenIndex);
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				// Clear, then re-layout the anchor points
-				getAnchorPoints().clear();
-				initAnchorPoints();
+				repaint();
 			}
 		});
 	}

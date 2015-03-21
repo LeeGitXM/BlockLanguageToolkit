@@ -580,7 +580,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	@Override
 	public void setApplicationState(String appname, String state) {
 		try {
-			DiagramState ds = DiagramState.valueOf(state);
+			DiagramState ds = DiagramState.valueOf(state.toUpperCase());
 			for(SerializableResourceDescriptor srd:getDiagramDescriptors()) {
 				ProcessApplication app = pyHandler.getApplication(srd.getId());
 				if( app==null) continue;

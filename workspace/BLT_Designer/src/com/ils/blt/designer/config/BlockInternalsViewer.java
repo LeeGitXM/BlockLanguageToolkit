@@ -2,7 +2,7 @@
  *   (c) 2014  ILS Automation. All rights reserved.
  *   http://docs.oracle.com/javase/tutorial/displayCode.html?code=http://docs.oracle.com/javase/tutorial/uiswing/examples/components/SharedModelDemoProject/src/components/SharedModelDemo.java
  */
-package com.ils.blt.designer.workspace;
+package com.ils.blt.designer.config;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -30,6 +30,9 @@ import net.miginfocom.swing.MigLayout;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
+import com.ils.blt.designer.workspace.ProcessAnchorDescriptor;
+import com.ils.blt.designer.workspace.ProcessBlockView;
+import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;

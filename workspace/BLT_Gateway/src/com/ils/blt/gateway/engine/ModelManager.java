@@ -471,7 +471,8 @@ public class ModelManager implements ProjectListener  {
 			else {
 				// Delete all the old connections
 				diagram.clearConnections();
-				// Delete blocks in the old that are not present in the new
+				// Delete blocks in the old that are not present in the new.
+				// Stop subscriptions associated with those blocks.
 				diagram.removeBlocksFromList(sd.getBlocks());
 				// Add/update blocks, create new connections. Stop blocks, remove old subscriptions
 				diagram.analyze(sd);

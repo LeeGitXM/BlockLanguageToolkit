@@ -80,7 +80,7 @@ public class Note extends AbstractProcessBlock implements ProcessBlock {
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setStyle(BlockStyle.NOTE);
-		desc.setEditorClass("com.ils.blt.designer.workspace.NoteTextEditor");
+		desc.setEditorClass("com.ils.blt.designer.config.NoteTextEditor");
 		desc.setPreferredHeight(DEFAULT_HEIGHT);
 		desc.setPreferredWidth(DEFAULT_WIDTH);
 	}
