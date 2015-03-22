@@ -1,5 +1,5 @@
 /**
- *   (c) 2013  ILS Automation. All rights reserved. 
+ *   (c) 2013-2015  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -129,7 +129,15 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 			clear();
 		}
 	}
-
+	/**
+	 * If the block is stopped, clear its buffer.
+	 */
+	@Override
+	public void stop() {
+		super.stop();
+		clear();
+	}
+	
 	private void clear() {
 		log.infof("%s.clear: reset data buffer",TAG);
 		queue.clear();
@@ -209,12 +217,12 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void acceptValue(SignalNotification sn) {
 		Signal signal = sn.getSignal();
-		log.debugf("%s.acceptValue: signal = %s ",TAG,signal.getCommand());
+		log.infof("%s.acceptValue: %s signal = %s ",TAG,getName(),signal.getCommand());
 		if( signal.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_CLEAR_HIGH) && limitType.equals(LimitType.HIGH)) {
-			reset();
+			clear();
 		}
 		else if( signal.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_CLEAR_LOW) && limitType.equals(LimitType.LOW)) {
-			reset();
+			clear();
 		}
 	}
 	
@@ -230,42 +238,26 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 
 		// Evaluate the buffer and report
 		log.debugf("%s.evaluate %d of %d",TAG,queue.size(),sampleSize);
-		if( queue.size() >= sampleSize) {
-			TruthValue newState = getRuleState();
-			if( !isLocked() && !newState.equals(truthState) ) {
-				// Give it a new timestamp
-				truthState = newState;
-				QualifiedValue outval = new BasicQualifiedValue(truthState);
-				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
-				controller.acceptCompletionNotification(nvn);
-				notifyOfStatus(outval);
-				
-				// Notify other blocks to suppress alternate results
-				if( truthState.equals(TruthValue.TRUE)) {
-					if( limitType.equals(LimitType.HIGH )) {
-						Signal sig = new Signal(BlockConstants.COMMAND_CLEAR_LOW,"","");
-						BroadcastNotification broadcast = new BroadcastNotification(getParentId(),TransmissionScope.LOCAL,sig);
-						controller.acceptBroadcastNotification(broadcast);
-					}
-					else if( limitType.equals(LimitType.LOW )) {
-						Signal sig = new Signal(BlockConstants.COMMAND_CLEAR_HIGH,"","");
-						BroadcastNotification broadcast = new BroadcastNotification(getParentId(),TransmissionScope.LOCAL,sig);
-						controller.acceptBroadcastNotification(broadcast);
-					}
+		TruthValue newState = getRuleState();
+		if( !isLocked() && !newState.equals(truthState) ) {
+			// Give it a new timestamp
+			truthState = newState;
+			QualifiedValue outval = new BasicQualifiedValue(truthState);
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
+			controller.acceptCompletionNotification(nvn);
+			notifyOfStatus(outval);
+
+			// Notify other blocks to suppress alternate results
+			if( truthState.equals(TruthValue.TRUE)) {
+				if( limitType.equals(LimitType.HIGH )) {
+					Signal sig = new Signal(BlockConstants.COMMAND_CLEAR_LOW,"","");
+					BroadcastNotification broadcast = new BroadcastNotification(getParentId(),TransmissionScope.LOCAL,sig);
+					controller.acceptBroadcastNotification(broadcast);
 				}
-			}
-		}
-		else {
-			// Too few points (can still be TRUE or FALSE)
-			TruthValue newState = getRuleState();
-			if( newState.equals(TruthValue.FALSE)) newState = TruthValue.UNKNOWN;
-			if( !truthState.equals(newState)) {
-				truthState = newState;
-				if( !isLocked()  ) {
-					QualifiedValue outval = new BasicQualifiedValue(truthState);
-					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
-					controller.acceptCompletionNotification(nvn);
-					notifyOfStatus(outval);
+				else if( limitType.equals(LimitType.LOW )) {
+					Signal sig = new Signal(BlockConstants.COMMAND_CLEAR_HIGH,"","");
+					BroadcastNotification broadcast = new BroadcastNotification(getParentId(),TransmissionScope.LOCAL,sig);
+					controller.acceptBroadcastNotification(broadcast);
 				}
 			}
 		}
@@ -344,6 +336,12 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		Map<String,String> attributes = descriptor.getAttributes();
 		attributes.put("Mean (target)", String.valueOf(mean));
 		attributes.put("StandardDeviation", String.valueOf(standardDeviation));
+		attributes.put("Limit type", limitType.name());
+		attributes.put("Limit ~ std deviations", String.valueOf(limit));
+		attributes.put("Maximum Out of Range", String.valueOf(maxOut));
+		attributes.put("SampleSize", String.valueOf(sampleSize));
+		attributes.put("Current QueueSize", String.valueOf(queue.size()));
+		attributes.put("State", truthState.name());
 		List<Map<String,String>> descBuffer = descriptor.getBuffer();
 		for( Double dbl:queue) {
 			Map<String,String> qvMap = new HashMap<>();
@@ -432,9 +430,9 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 			else if( total>=sampleSize ) result = TruthValue.FALSE;
 		}
 		else if( outside>maxOut) result = TruthValue.TRUE;
-		else if( total>=sampleSize ) result = TruthValue.FALSE;
+		else if( total>=(sampleSize-maxOut) ) result = TruthValue.FALSE;
 		
-		log.tracef("%s.getRuleState: Of %d results,  %d high, %d low, (cons %d,%d) => %s (%s)",TAG,total,high,low,maxlowside,maxhighside,result.toString(),limitType.toString());
+		log.infof("%s.getRuleState: %s %d of %d results,  %d high, %d low, (cons %d,%d) => %s (%s)",TAG,getName(),total,sampleSize,high,low,maxlowside,maxhighside,result.toString(),limitType.toString());
 		return result;	
 	}
 }

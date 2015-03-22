@@ -146,7 +146,6 @@ public class BlockInternalsViewer extends JDialog {
 		}
 		
         table = new JTable(dataModel);
-        table.setPreferredSize(TABLE_SIZE);
         table.setRowSelectionAllowed(true);
         table.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 
@@ -175,7 +174,6 @@ public class BlockInternalsViewer extends JDialog {
 			dataModel.addRow(row);
 		}
         table = new JTable(dataModel);
-        table.setPreferredSize(TABLE_SIZE);
         table.setRowSelectionAllowed(true);
         table.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 

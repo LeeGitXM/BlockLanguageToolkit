@@ -188,7 +188,7 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 		//  This is the most recent value to pass into the connection.
 		// Use it to determine the fill color
 		if(value.getValue()==null) return;
-		log.infof("BasicAnchorPoint.valueChange: received %s.",value.getValue().toString());
+		log.tracef("BasicAnchorPoint.valueChange: received %s.",value.getValue().toString());
 		isEmpty = false;
 		isGood = value.getQuality().isGood();
 		if( cxnType.equals(ConnectionType.TRUTHVALUE)) {

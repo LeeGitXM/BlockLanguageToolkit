@@ -26,6 +26,7 @@ tag: Source MemoryTags/NumericSource
 tag: SQC1 MemoryTags/SQCOut1
 tag: SQC2 MemoryTags/SQCOut2
 tag: SQC3 MemoryTags/SQCOut3
+tag: SQC4 MemoryTags/SQCOut4
 tag: SQCStdDev MemoryTags/MJKSQCStdDev
 tag: SQCTarget MemoryTags/MJKSQCTarget
 tag: SumResult MemoryTags/SumResult
