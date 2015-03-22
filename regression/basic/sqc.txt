@@ -9,9 +9,7 @@
 #  Block is TRUE if a rule has been violated
 #
 Test: SQC Block
-Show: browser "UseCases/UseCaseFamily/sqc"
-#Show: browser "app75/family75/sqc"
-#resetDiagram (UseCases/UseCaseFamily/sqc)
+Show: browser "app75/family75/sqc"
 resetDiagram (app75/family75/sqc)
 # Tags are: Feed StdDev Target
 Tagset: SQC
