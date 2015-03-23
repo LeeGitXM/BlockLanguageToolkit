@@ -3,7 +3,14 @@ log: Block Language Toolkit Regression Suite
 # Run the collection of tests for the "simple" diagrams
 #
 run: readwrite.txt
+run: action.txt
+run: comparisons.txt
+run: clock.txt
+run: dataconditioner.txt
+run: finaldiagnosis.txt
 run: gain.txt
+run: observations.txt
 run: persistence.txt
-run: sum.txt
 run: sqc.txt
+run: sum.txt
+run: timedlimits.txt

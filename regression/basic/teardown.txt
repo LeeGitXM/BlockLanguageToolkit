@@ -2,7 +2,7 @@
 # 
 # This is a generic cleanup script for testing with 
 # the Test Frame utility.
-#setTimeFactor(1.0)
-#setStateForApplication("app75","ACTIVE")
+setTimeFactor(1.0)
+setStateForApplication("app75","ACTIVE")
 status: teardown complete
 log: [DATE] [TIME] test suite complete.

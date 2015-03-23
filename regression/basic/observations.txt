@@ -1,7 +1,7 @@
 #
-# Test of a persistence gate. 5 min timer
+# Test of various classes of observation blocks
 #
-Test: Persistence block
+Test: Observations
 Step: Target is TRUE
 Show: browser "app75/family75/persistence"
 resetDiagram (app75/family75/persistence)

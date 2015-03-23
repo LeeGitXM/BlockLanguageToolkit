@@ -1,10 +1,10 @@
 #
 # Test of a persistence gate. 5 min timer
 #
-Test: Persistence block
+Test: Final Diagnosis (not UI)
 Step: Target is TRUE
-Show: browser "app75/family75/persistence"
-resetDiagram (app75/family75/persistence)
+Show: browser "app75/family75/finaldiagnosis"
+resetDiagram (app75/family75/finaldiagnosis)
 Tagset: SingleBoolean
 10:00 true
 10:01 false

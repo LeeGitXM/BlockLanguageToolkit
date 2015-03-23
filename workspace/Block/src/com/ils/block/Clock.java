@@ -34,6 +34,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 public class Clock extends AbstractProcessBlock implements ProcessBlock {
 	private final String TAG = "Clock";
 	private double interval = 60;  // ~secs
+	private String command = BlockConstants.COMMAND_START;
 	private final Watchdog dog;
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -66,12 +67,18 @@ public class Clock extends AbstractProcessBlock implements ProcessBlock {
 		this.isReceiver = true;
 		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL,new Double(interval),PropertyType.TIME,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL, intervalProperty);
+		
+		BlockProperty commandProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_COMMAND,command,PropertyType.STRING,false);
+		setProperty(BlockConstants.BLOCK_PROPERTY_COMMAND, commandProperty);
 
 		// Define a single output
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.TRUTHVALUE);
 		anchors.add(output);
 	}
 	
+	/**
+	 * On reset report a false.
+	 */
 	@Override
 	public void reset() {
 		if( !isLocked() ) {
@@ -107,7 +114,7 @@ public class Clock extends AbstractProcessBlock implements ProcessBlock {
 	public void acceptValue(SignalNotification sn) {
 		Signal signal = sn.getSignal();
 		log.infof("%s.acceptValue: signal = %s",TAG,signal.getCommand());
-		if( signal.getCommand() != null && signal.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_START) && interval > 0) {
+		if( signal.getCommand() != null && signal.getCommand().equalsIgnoreCase(command) && interval > 0) {
 			dog.setSecondsDelay(interval);
 			timer.updateWatchdog(dog);  // pet dog
 		}

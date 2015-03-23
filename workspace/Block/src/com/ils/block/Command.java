@@ -56,7 +56,7 @@ public class Command extends AbstractProcessBlock implements ProcessBlock {
 	 * Define the synchronization property and ports.
 	 */
 	private void initialize() {	
-		setName("Signal");
+		setName("Command");
 		
 		BlockProperty commandProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_COMMAND,command.getCommand(),PropertyType.STRING,false);
 		setProperty(BlockConstants.BLOCK_PROPERTY_COMMAND, commandProperty);

@@ -1,7 +1,7 @@
 #
 # Test of a persistence gate. 5 min timer
 #
-Test: Persistence block
+Test: Comparisons with Timers
 Step: Target is TRUE
 Show: browser "app75/family75/persistence"
 resetDiagram (app75/family75/persistence)

@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
+ *   (c) 2014-2015  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -11,19 +11,15 @@ import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
-import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.ProcessBlock;
-import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
-import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
-import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
@@ -32,9 +28,8 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  */
 @ExecutableBlock
 public class LogicLatch extends AbstractProcessBlock implements ProcessBlock {
-	private static final String TAG = "LogicLatch";
 
-	protected TruthValue tv = TruthValue.UNKNOWN;
+	protected TruthValue tv = TruthValue.UNSET;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -45,7 +40,7 @@ public class LogicLatch extends AbstractProcessBlock implements ProcessBlock {
 	}
 	
 	/**
-	 * Constructor. Custom properties are "HoldInterval" and "Trigger".
+	 * Constructor.
 	 * 
 	 * @param ec execution controller for handling block output
 	 * @param parent universally unique Id identifying the parent of this block
@@ -58,31 +53,35 @@ public class LogicLatch extends AbstractProcessBlock implements ProcessBlock {
 	
 	@Override
 	public void reset() {
-		tv = TruthValue.UNKNOWN;
+		if( tv.equals(TruthValue.TRUE) || 
+			tv.equals(TruthValue.FALSE)   ) {
+			QualifiedValue qv = new BasicQualifiedValue(tv.name());
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+			controller.acceptCompletionNotification(nvn);
+			notifyOfStatus(qv);
+		}
 	}
 	
 	/**
-	 * A new value has appeared on an input anchor. Send it on its way. Start timer to 
-	 * propagate an inverse after the expiration time.
+	 * A new value has appeared on an input anchor. Send it on its way
+	 * if TRUE or FALSE. Otherwise do nothing.
 	 * @param vcn change notification.
 	 */
 	@Override
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
 		this.state = BlockState.ACTIVE;
-		if( tv.equals(TruthValue.UNKNOWN)) {
-			if( !isLocked() ) {
-				String port = vcn.getConnection().getDownstreamPortName();
-				if( port.equals(BlockConstants.IN_PORT_NAME) ) {
-					QualifiedValue qv = vcn.getValue();
-					if(qv.getQuality().isGood()) {
-						tv = qualifiedValueAsTruthValue(qv);
-					}
+		QualifiedValue qv = vcn.getValue();
+		if(qv.getQuality().isGood()) {
+			TruthValue incoming = qualifiedValueAsTruthValue(qv);
+			if( incoming.equals(TruthValue.TRUE) || incoming.equals(TruthValue.FALSE)) {
+				tv = incoming;
+				if( !isLocked() ) {
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 					controller.acceptCompletionNotification(nvn);
 					notifyOfStatus(qv);
 				}
-			}
+			}	
 		}
 	}
 	
