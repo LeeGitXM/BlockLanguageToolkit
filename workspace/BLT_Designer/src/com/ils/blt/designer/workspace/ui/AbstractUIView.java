@@ -266,7 +266,7 @@ public abstract class AbstractUIView extends JComponent
 	// Force a repaint.
 	@Override
 	public void update() {
-		log.debugf("%s.update %s ...",TAG,getBlock().getName());
+		log.infof("%s.update %s ...",TAG,getBlock().getName());
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				repaint();
@@ -274,11 +274,12 @@ public abstract class AbstractUIView extends JComponent
 		});
 	}
 	
-	// The block has changed, re-configure.
-	// The base method just swaps out the target block.
-	public void reconfigure(ProcessBlockView pbv) { 
-		log.infof("%s.reconfigure %s->%s (%s)",TAG,getBlock().getName(),pbv.getName(),pbv.getId().toString());
-		this.block = pbv;
+	// The block has changed, re-configure. The base method recalculates 
+	// anchor points. The only current use is when the user changes connection types.
+	public void reconfigure() { 
+		log.infof("%s.reconfigure (%s)",TAG,getBlock().getName());
+		initAnchorPoints();
+		
 	}
 	
 	// The only "state" associated with the anchor points is the

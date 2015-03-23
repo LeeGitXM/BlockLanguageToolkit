@@ -43,7 +43,7 @@ public class ProcessDiagram extends ProcessNode {
 	protected final Map<UUID,ProcessBlock> blocks;
 	private final Map<ConnectionKey,ProcessConnection> connectionMap;            // Key by connection number
 	protected final Map<BlockPort,List<ProcessConnection>> outgoingConnections;  // Key by upstream block:port
-	private DiagramState state = DiagramState.ACTIVE;
+	private DiagramState state = DiagramState.UNSET;                             // So that new state will be a change
 	private final BlockExecutionController controller = BlockExecutionController.getInstance();
 	
 	/**
@@ -284,16 +284,13 @@ public class ProcessDiagram extends ProcessNode {
 			for(ProcessBlock blk:blocks.values()) {
 				blk.stop();
 			}
-			// Set the proper timer
-			WatchdogTimer timer = controller.getTimer();
-			if( DiagramState.ISOLATED.equals(s)) controller.getSecondaryTimer();
-			this.state = s;
 
+			this.state = s;
+			updateBlockTimers();
 
 			if(!DiagramState.DISABLED.equals(getState()) ) {
 				// Restart blocks
 				for(ProcessBlock blk:blocks.values()) {
-					blk.setTimer(timer);
 					blk.start();
 				}
 				startSubscriptions();
@@ -307,6 +304,18 @@ public class ProcessDiagram extends ProcessNode {
 	 */
 	public boolean isValid() { return valid; }
 	
+	/**
+	 * Loop through the diagram's blocks setting the timer appropriate
+	 * to the diagram's state.
+	 */
+	public void updateBlockTimers() {
+		// Set the proper timer
+		WatchdogTimer timer = controller.getTimer();
+		if( DiagramState.ISOLATED.equals(getState())) timer = controller.getSecondaryTimer();
+		for(ProcessBlock blk:blocks.values()) {
+			blk.setTimer(timer);
+		}
+	}
 	/**
 	 * Make sure all components of a serializable connection are present. 
 	 * If not, the connection will be rejected.

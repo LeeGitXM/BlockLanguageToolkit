@@ -253,6 +253,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
     				anchor.setConnectionType(newType);
     			}
     		}
+    		ui.reconfigure();
     		fireStateChanged();
     	}
     }

@@ -22,7 +22,7 @@ insert into ClassMap values ('EM-GDA-SYMBOLIC-VARIABLE','com.ils.block.Parameter
 insert into ClassMap values ('EM-GDA-TEST-POINT','com.ils.block.TestPoint');
 insert into ClassMap values ('GDL-AND-GATE','com.ils.block.And');
 insert into ClassMap values ('GDL-ARITHMETIC-FUNCTION','xom.block.arithmetic.Arithmetic');
-insert into ClassMap values ('GDL-BLOCK-EVALUATION','com.ils.block.Clock');
+insert into ClassMap values ('GDL-BLOCK-EVALUATION','com.ils.block.Command');
 insert into ClassMap values ('GDL-BLOCK-RESET','com.ils.block.Reset');
 insert into ClassMap values ('GDL-CONCLUSION','com.ils.block.Junction');
 insert into ClassMap values ('GDL-D.D-DISPLAY','com.ils.block.Readout');

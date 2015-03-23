@@ -51,14 +51,6 @@ public class ReadoutUIView extends AbstractUIView implements BlockViewUI {
 		}
 		return vp;
 	}
-	
-	// The block has changed, re-configure.
-	// Swaps out the target block and re-find the value property.
-	@Override
-	public void reconfigure(ProcessBlockView pbv) { 
-		this.block = pbv;
-		valueProperty = findValueProperty();
-	}
 		
 	@Override
 	protected void paintComponent(Graphics _g) {
@@ -143,5 +135,4 @@ public class ReadoutUIView extends AbstractUIView implements BlockViewUI {
 		block.setEmbeddedLabel(value);
 		drawEmbeddedText(g,0,0);
 	}
-
 }

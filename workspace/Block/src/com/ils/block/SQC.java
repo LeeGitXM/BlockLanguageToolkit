@@ -139,7 +139,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	}
 	
 	private void clear() {
-		log.infof("%s.clear: reset data buffer",TAG);
+		log.debugf("%s.clear: reset data buffer",TAG);
 		queue.clear();
 		truthState = TruthValue.UNSET;
 		notifyOfStatus();
@@ -157,7 +157,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		Quality qual = qv.getQuality();
 		String port = incoming.getConnection().getDownstreamPortName();
 		if( port.equals(PORT_VALUE)  ) {
-			log.infof("%s.acceptValue: %s (%s)",TAG,qv.getValue().toString(),qual.getName());
+			log.debugf("%s.acceptValue: %s (%s)",TAG,qv.getValue().toString(),qual.getName());
 			if( qual.isGood() && qv!=null && qv.getValue()!=null ) {
 				try {
 					Double dbl  = Double.parseDouble(qv.getValue().toString());
@@ -217,7 +217,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void acceptValue(SignalNotification sn) {
 		Signal signal = sn.getSignal();
-		log.infof("%s.acceptValue: %s signal = %s ",TAG,getName(),signal.getCommand());
+		log.tracef("%s.acceptValue: %s signal = %s ",TAG,getName(),signal.getCommand());
 		if( signal.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_CLEAR_HIGH) && limitType.equals(LimitType.HIGH)) {
 			clear();
 		}
@@ -282,7 +282,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
-		log.infof("%s.propertyChange: %s = %s",TAG,propertyName,event.getNewValue().toString());
+		log.debugf("%s.propertyChange: %s = %s",TAG,propertyName,event.getNewValue().toString());
 		if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET)) {
 			try {
 				clearOnReset = Boolean.parseBoolean(event.getNewValue().toString());
@@ -432,7 +432,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		else if( outside>maxOut) result = TruthValue.TRUE;
 		else if( total>=(sampleSize-maxOut) ) result = TruthValue.FALSE;
 		
-		log.infof("%s.getRuleState: %s %d of %d results,  %d high, %d low, (cons %d,%d) => %s (%s)",TAG,getName(),total,sampleSize,high,low,maxlowside,maxhighside,result.toString(),limitType.toString());
+		log.tracef("%s.getRuleState: %s %d of %d results,  %d high, %d low, (cons %d,%d) => %s (%s)",TAG,getName(),total,sampleSize,high,low,maxlowside,maxhighside,result.toString(),limitType.toString());
 		return result;	
 	}
 }

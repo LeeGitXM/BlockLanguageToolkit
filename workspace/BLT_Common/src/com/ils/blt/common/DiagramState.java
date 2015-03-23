@@ -11,7 +11,8 @@ public enum DiagramState
 {
             ACTIVE,
             DISABLED,
-            ISOLATED
+            ISOLATED,
+            UNSET
             ;
           
  /**

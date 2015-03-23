@@ -85,8 +85,8 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		this.tagWriter = new TagWriter();
 		this.buffer = new BoundedBuffer(BUFFER_SIZE);
 		// Timers get started and stopped with the controller
-		this.watchdogTimer = new WatchdogTimer();
-		this.secondaryWatchdogTimer = new WatchdogTimer();
+		this.watchdogTimer = new WatchdogTimer("MainTimer");
+		this.secondaryWatchdogTimer = new WatchdogTimer("SecondaryTimer");
 	}
 
 	/**
@@ -257,8 +257,8 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		notificationThread.setDaemon(true);
 		notificationThread.start();
 		watchdogTimer.start();
-		// Set the reciprocal value.
-		secondaryWatchdogTimer.setFactor(1./getIsolationTimeFactor());
+		// NOTE: The watchdog uses the reciprocal of this ...
+		secondaryWatchdogTimer.setFactor(getIsolationTimeFactor());
 		secondaryWatchdogTimer.start();
 		sessionManager = context.getGatewaySessionManager();
 		// Activate all of the blocks in the diagram.

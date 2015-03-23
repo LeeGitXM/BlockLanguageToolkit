@@ -9,7 +9,7 @@ Tagset: SingleBoolean
 10:00 true
 10:01 false
 10:01:10 Assert: persistence = FALSE "Interrupted target"
-10:02 3 true
-10:03 4
-10:03:10 Assert: persistence = FALSE "Before expiration time"
-10:08:20 Assert: persistence = TRUE  "After expiration time"
+10:02 true
+10:03 true
+10:04:10 Assert: persistence = FALSE "false before expiration time"
+10:08:20 Assert: persistence = TRUE  "True after expiration time"

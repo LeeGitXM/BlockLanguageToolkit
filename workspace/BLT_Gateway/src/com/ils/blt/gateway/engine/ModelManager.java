@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
@@ -478,6 +477,7 @@ public class ModelManager implements ProjectListener  {
 				diagram.analyze(sd);
 			}
 			if( !diagram.getState().equals(DiagramState.DISABLED) ) {
+				diagram.updateBlockTimers();  // Make sure timers are correct for current diagram state.
 				log.tracef("%s.addModifyDiagramResource: starting tag subscriptions ...%d:%s",TAG,projectId,res.getName());
 				for( ProcessBlock pb:diagram.getProcessBlocks()) {
 					for(BlockProperty bp:pb.getProperties()) {

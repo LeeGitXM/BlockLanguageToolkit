@@ -34,6 +34,8 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  * Monitor a truth-value. Do not emit it from the output until it has been unchanged for
  * a configured interval. An input of the opposing state is processed immediately and
  * resets the counter.
+ * 
+ * Note taht an "active" watchdog is one that is waiting for its time to expire.
  */
 @ExecutableBlock
 public class PersistenceGate extends AbstractProcessBlock implements ProcessBlock {
@@ -121,30 +123,29 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		this.state = BlockState.ACTIVE;
 		
 		QualifiedValue qv = vcn.getValue();
-		log.debugf("%s.acceptValue: Received %s, trigger is %s",TAG,qv.getValue().toString(),trigger);
+		//log.infof("%s.acceptValue: Received %s, trigger is %s",TAG,qv.getValue().toString(),trigger);
 		// A different value than the trigger, or a bad value aborts the countdown
 		if( !qv.getQuality().isGood() || !qv.getValue().toString().equalsIgnoreCase(trigger) ) {
 			count = 0;
-			if( dog.isActive() ) {
-				timer.removeWatchdog(dog);
-				valueProperty.setValue("---");
-			}
+			valueProperty.setValue("");
+			if( dog.isActive() ) timer.removeWatchdog(dog);
 			if( !isLocked() ) {
-				// Propagate value immediately
-				//log.infof("%s.acceptValue: No match, sent immediate %s",TAG,qv.getValue().toString());
+				// Propagate value immediately and reset the block
+				log.tracef("%s.acceptValue: No match, sent immediate %s",TAG,qv.getValue().toString());
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 				controller.acceptCompletionNotification(nvn);
 				truthValue = qualifiedValueAsTruthValue(qv);
 				notifyOfStatus(qv);
 			}
 		}
-		else {
+		// Only execute if the block state is not at the trigger
+		else if( !trigger.equalsIgnoreCase(truthValue.name()) ) {
 			//log.infof("%s.acceptValue: Matched trigger %s",TAG,qv.getValue().toString());
 			// Good quality and equal to the trigger.
 			if( !dog.isActive() ) {
 				// Start the countdown
 				count = (int)(timeWindow/scanInterval+0.5);
-				log.infof("%s.acceptValue: Start countdown %d cycles (%f in %f)",TAG,count,scanInterval,timeWindow);
+				log.debugf("%s.acceptValue: Start countdown %d cycles (%f in %f)",TAG,count,scanInterval,timeWindow);
 				if( count> 0 ) {
 					dog.setSecondsDelay(scanInterval);
 					timer.updateWatchdog(dog);  // pet dog
@@ -159,16 +160,15 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 	 */
 	@Override
 	public synchronized void evaluate() {
-		//log.infof("%s.evaluate ... cycle = %d",TAG,count);
+		log.tracef("%s.evaluate: cycle %d fact = %2.1f.",TAG,count,timer.getFactor());
 		if( count> 0 ) {
-			count--;
 			dog.setSecondsDelay(scanInterval);
 			timer.updateWatchdog(dog);  // pet dog
 			
 			double timeRemaining = count*scanInterval;
 			TimeUnit tu = TimeUtility.unitForValue(timeRemaining);
 			String formattedTime = String.format("%.1f %s", TimeUtility.valueForCanonicalValue(timeRemaining, tu),TimeUtility.abbreviationForUnit(tu));
-			log.tracef("%s.evaluate: cycle %d property value =  %s.",TAG,count,formattedTime);
+			log.debugf("%s.evaluate: cycle %d property value =  %s.",TAG,count,formattedTime);
 			valueProperty.setValue(formattedTime);
 			notifyOfStatus();
 		}
@@ -181,6 +181,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 			truthValue = qualifiedValueAsTruthValue(outval);
 			notifyOfStatus(outval);
 		}
+		count--;
 	}
 	
 	/**
@@ -243,6 +244,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		Object val = valueProperty.getValue();
 		if( val!=null ) {
 			QualifiedValue displayQV = new BasicQualifiedValue(val.toString());
+			log.tracef("%s.notifyOfStatus display = %s",TAG,val.toString());
 			controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,displayQV);
 		}
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
