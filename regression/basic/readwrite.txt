@@ -45,6 +45,6 @@ Tagset: ReadWriteSource
 10:05:20 Assert: ReadWriteSink = 98 "Sink is 98"
 10:06 97
 10:07 96
-10:07:20 Assert: Parameter = 96 "Parameter is 96"
+10:07:10 Assert: Parameter = 96 "Parameter is 96"
 10:08 95
 10:08:20 Assert: ReadWriteSink = 95 "Sink is 95"

@@ -1,15 +1,11 @@
 package com.ils.blt.designer.applicationConfiguration;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.List;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -19,41 +15,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.JTree;
-import javax.swing.border.BevelBorder;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeSelectionModel;
-
-
-
-
-
-
-
-
-
-
-
 
 import net.miginfocom.swing.MigLayout;
-
-
-
-
-
-
-
-
-
-import com.ils.blt.common.block.ActiveState;
-import com.ils.blt.common.block.RampMethod;
-import com.inductiveautomation.ignition.common.BundleUtil;
-//import com.ils.sfc.client.step.AbstractIlsStepUI;
-import com.inductiveautomation.ignition.common.config.BasicPropertySet;
-import com.inductiveautomation.ignition.common.config.PropertyValue;
 
 public class HomePane extends JPanel implements ApplicationConfigurationController.EditorPane {
 	private ApplicationConfigurationController controller;

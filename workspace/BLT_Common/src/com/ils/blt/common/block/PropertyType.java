@@ -14,7 +14,6 @@ public enum PropertyType
             DOUBLE,
             INTEGER,
             BOOLEAN,
-            DISTRIBUTION,
             HTML,                // Gets an html editor
             HYSTERESIS,          // Hysteresis (TRUE,FALSE,ALWAYS,NEVER)
             LIMIT,               // Limit type (UPPER,LOWER,BOTH)

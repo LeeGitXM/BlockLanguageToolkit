@@ -1,7 +1,7 @@
 # Copyright 2015 ILS Automation. All rights reserved.
 # 
-# This is a generic cleanup script for testing with 
-# the Test Frame utility.
+# This is a generic cleanup script for testing basic_diagrams 
+# with the Test Frame utility.
 setTimeFactor(1.0)
 setStateForApplication("app75","ACTIVE")
 status: teardown complete

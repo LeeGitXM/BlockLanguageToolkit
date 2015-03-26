@@ -13,12 +13,12 @@ import org.apache.commons.math3.distribution.UniformRealDistribution;
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
+import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.BlockStyle;
-import com.ils.blt.common.block.DistributionType;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.connection.ConnectionType;
@@ -44,8 +44,11 @@ public class NoiseGenerator extends AbstractProcessBlock implements ProcessBlock
 	protected static String BLOCK_PROPERTY_MEAN = "Mean";
 	protected static String BLOCK_PROPERTY_STANDARD_DEVIATION = "StandardDeviation";
 	protected static String BLOCK_PROPERTY_UPPER = "Upper";
+	private static String DISTRIBUTION_EXPONENTIAL = "EXPONENTIAL";
+	private static String DISTRIBUTION_NORMAL      = "NORMAL";
+	private static String DISTRIBUTION_UNIFORM     = "UNIFORM";
 	private RealDistribution distribution = null;
-	private DistributionType distributionType = DistributionType.UNIFORM;
+	private String distributionType = DISTRIBUTION_UNIFORM;
 	private double lower = 0.;               // Default for uniform distribution
 	private double mean = 0.0;               // Default for normal distribution
 	private double standardDeviation = 1.0;  // Default for normal distribution
@@ -82,14 +85,14 @@ public class NoiseGenerator extends AbstractProcessBlock implements ProcessBlock
 		String propertyName = event.getPropertyName();
 		double val = Double.NaN;
 		if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_DISTRIBUTION)) {
-			if( distributionType==DistributionType.EXPONENTIAL )  distribution = new ExponentialDistribution(mean);
-			else if( distributionType==DistributionType.NORMAL )  distribution = new NormalDistribution(mean,standardDeviation);
-			else if( distributionType==DistributionType.UNIFORM )  distribution = new UniformRealDistribution(lower,upper);
+			if( distributionType.equals(DISTRIBUTION_EXPONENTIAL) )  distribution = new ExponentialDistribution(mean);
+			else if( distributionType.equals(DISTRIBUTION_NORMAL) )  distribution = new NormalDistribution(mean,standardDeviation);
+			else if( distributionType.equals(DISTRIBUTION_UNIFORM))  distribution = new UniformRealDistribution(lower,upper);
 		}
 		else if( propertyName.equals(BLOCK_PROPERTY_LOWER) ) {
 			try {
 				val = Double.parseDouble(event.getNewValue().toString());
-				if( distributionType==DistributionType.UNIFORM && val < upper) {
+				if( distributionType.equals(DISTRIBUTION_UNIFORM) && val < upper) {
 					lower = val;
 					distribution = new UniformRealDistribution(lower,upper);
 				}
@@ -101,8 +104,8 @@ public class NoiseGenerator extends AbstractProcessBlock implements ProcessBlock
 		else if( propertyName.equals(BLOCK_PROPERTY_MEAN) ) {
 			try {
 				mean = Double.parseDouble(event.getNewValue().toString());
-				if( distributionType==DistributionType.EXPONENTIAL )  distribution = new ExponentialDistribution(mean);
-				else if( distributionType==DistributionType.NORMAL )  distribution = new NormalDistribution(mean,standardDeviation);
+				if( distributionType.equals(DISTRIBUTION_EXPONENTIAL) )  distribution = new ExponentialDistribution(mean);
+				else if( distributionType.equals(DISTRIBUTION_NORMAL) )  distribution = new NormalDistribution(mean,standardDeviation);
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert upper to a double (%s)",TAG,nfe.getLocalizedMessage());
@@ -111,7 +114,7 @@ public class NoiseGenerator extends AbstractProcessBlock implements ProcessBlock
 		else if( propertyName.equals(BLOCK_PROPERTY_STANDARD_DEVIATION) ) {
 			try {
 				standardDeviation = Double.parseDouble(event.getNewValue().toString());
-				if( distributionType==DistributionType.NORMAL )  distribution = new NormalDistribution(mean,standardDeviation);
+				if( distributionType.equals(DISTRIBUTION_NORMAL) )  distribution = new NormalDistribution(mean,standardDeviation);
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert standard deviation to a double (%s)",TAG,nfe.getLocalizedMessage());
@@ -120,7 +123,7 @@ public class NoiseGenerator extends AbstractProcessBlock implements ProcessBlock
 		else if( propertyName.equals(BLOCK_PROPERTY_UPPER) ) {
 			try {
 				val = Double.parseDouble(event.getNewValue().toString());
-				if( distributionType==DistributionType.UNIFORM && val>lower) {
+				if( distributionType.equals(DISTRIBUTION_UNIFORM) && val>lower) {
 					upper = val;
 					distribution = new UniformRealDistribution(lower,upper);
 				}
@@ -180,7 +183,9 @@ public class NoiseGenerator extends AbstractProcessBlock implements ProcessBlock
 	private void initialize() {
 		setName("Noise generator");
 		distribution = new UniformRealDistribution();
-		BlockProperty type = new BlockProperty(BlockConstants.BLOCK_PROPERTY_DISTRIBUTION,distributionType.name(),PropertyType.STRING,true);
+		BlockProperty type = new BlockProperty(BlockConstants.BLOCK_PROPERTY_DISTRIBUTION,distributionType,PropertyType.STRING,true);
+		type.setBindingType(BindingType.OPTION);
+		type.setBinding(DISTRIBUTION_EXPONENTIAL+","+DISTRIBUTION_NORMAL+","+DISTRIBUTION_UNIFORM);
 		setProperty(BlockConstants.BLOCK_PROPERTY_DISTRIBUTION, type);
 		// Uniform Distribution
 		BlockProperty constant = new BlockProperty(BLOCK_PROPERTY_LOWER,new Double(lower),PropertyType.DOUBLE,true);

@@ -28,7 +28,6 @@ import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.DistributionType;
 import com.ils.blt.common.block.HysteresisType;
 import com.ils.blt.common.block.LimitType;
 import com.ils.blt.common.block.PropertyType;
@@ -105,8 +104,9 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		boolean isEnumerated = false;
 
 		// Handle the enumerated types
-		if( property.getType().equals(PropertyType.BOOLEAN)       ||          
-			property.getType().equals(PropertyType.DISTRIBUTION)   ||
+		if( 
+			property.getBindingType().equals(BindingType.OPTION)  ||
+			property.getType().equals(PropertyType.BOOLEAN)       ||          
 			property.getType().equals(PropertyType.HYSTERESIS)     ||   
 			property.getType().equals(PropertyType.LIMIT)          ||        
 			property.getType().equals(PropertyType.SCOPE)          ||	      
@@ -129,12 +129,17 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 			add(editButton,"w :25:,wrap");
 			editButton.setVisible(true);
 		}
-		else if( isEnumerated && property.getBindingType().equals(BindingType.ENGINE)     )  {
+		else if( isEnumerated && property.getBindingType().equals(BindingType.ENGINE) )  {
 			add(configurationButton,"w :25:,wrap");
 			valueComboBox.setEditable(false);
 			valueComboBox.setEnabled(false);
 		}
-		else if( isEnumerated ) ;                // Enumerated types are neither editable nor bindable
+		else if( isEnumerated ) {
+			// We add a configuration button for the simple reason of attribute display
+			add(configurationButton,"w :25:,wrap");
+			valueComboBox.setEditable(true);
+			valueComboBox.setEnabled(true);
+		}                // Enumerated types are neither editable nor bindable
 		else if( property.getBindingType().equals(BindingType.NONE) ||
 				 property.getBindingType().equals(BindingType.TAG_MONITOR) ||
 				 property.getBindingType().equals(BindingType.ENGINE)     )  {
@@ -303,8 +308,8 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	 */
 	private JComboBox<String> createValueCombo(final BlockProperty prop) {	
 		final JComboBox<String> valueCombo = new JComboBox<String>();
-		if( prop.getType().equals(PropertyType.BOOLEAN))          setBooleanCombo(valueCombo);
-		else if(prop.getType().equals(PropertyType.DISTRIBUTION)) setDistributionTypeCombo(valueCombo);
+		if(prop.getBindingType().equals(BindingType.OPTION))      setOptionCombo(valueCombo,prop);
+		else if( prop.getType().equals(PropertyType.BOOLEAN))     setBooleanCombo(valueCombo);
 		else if(prop.getType().equals(PropertyType.HYSTERESIS))   setHysteresisTypeCombo(valueCombo);
 		else if(prop.getType().equals(PropertyType.LIMIT))        setLimitTypeCombo(valueCombo);
 		else if(prop.getType().equals(PropertyType.SCOPE))	      setTransmissionScopeCombo(valueCombo);
@@ -345,12 +350,15 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	}
 	
 	/**
-	 * Populate a combo box for distribution type 
+	 * Populate a combo box for OPTION type. For these properties
+	 * the option list is a comma-separated set of values in the binding.
 	 */
-	private void setDistributionTypeCombo(JComboBox<String> box) {
+	private void setOptionCombo(JComboBox<String> box, BlockProperty prop) {
 		box.removeAllItems();
-		for(DistributionType dt : DistributionType.values()) {
-			box.addItem(dt.name());
+		String list = prop.getBinding();
+		String[] args = list.split(",");
+		for(String arg : args) {
+			box.addItem(arg);
 		}
 	}
 	/**

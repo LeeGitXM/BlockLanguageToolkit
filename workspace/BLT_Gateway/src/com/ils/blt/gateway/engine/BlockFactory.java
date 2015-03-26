@@ -1,5 +1,5 @@
 /**
- *   (c) 2012  ILS Automation. All rights reserved.
+ *   (c) 2012-2015  ILS Automation. All rights reserved.
  *  
  *   The block controller is designed to be called from the client
  *   via RPC. All methods must be thread safe,
@@ -141,7 +141,8 @@ public class BlockFactory  {
 							valueChange=true;
 						}
 					}
-					else if( BindingType.NONE.equals(property.getBindingType()) ) {
+					else if( BindingType.NONE.equals(property.getBindingType()) ||
+							 BindingType.OPTION.equals(property.getBindingType())    ) {
 						if( property.getValue()!=null && bp.getValue()!=null && !property.getValue().equals(bp.getValue())) {
 							valueChange=true;
 						}

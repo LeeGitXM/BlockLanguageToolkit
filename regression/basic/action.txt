@@ -2,14 +2,29 @@
 # Test of a persistence gate. 5 min timer
 #
 Test: Action and Math Function blocks
-Step: Target is TRUE
 Show: browser "app75/family75/action"
 resetDiagram (app75/family75/action)
-Tagset: SingleBoolean
+Step: BooleanFeed
+09:58 true
+09:59 false
 10:00 true
+halt:
+10:00:10 Assert: ActionOut = TRUE "Pass thru is true"
 10:01 false
-10:01:10 Assert: persistence = FALSE "Interrupted target"
-10:02 true
-10:03 true
-10:04:10 Assert: persistence = FALSE "false before expiration time"
-10:08:20 Assert: persistence = TRUE  "True after expiration time"
+10:01:10 Assert: ActionOut = FALSE "Pass thru is false"
+Tagset: DualInput
+Step: -90
+10:02 -90.
+10:02:10 Assert: 89.99 < Arithmetic1 < 90.01 "Absolute value = 90"
+Step: -45
+10:03 -45.
+10:03:10 Assert: 44.99 < Arithmetic1 < 45.01 "Absolute value = 45"
+Step: Zero 
+10:04 0.
+10:04:10 Assert: 0.0 <= Arithmetic1 < 0.01 "Absolute value = 0"
+Step: 45 
+10:05 45.
+10:05:10 Assert: 44.99 < Arithmetic1 < 45.01 "Absolute value = 45"
+Step: 90 
+10:06 90.
+10:06:10 Assert: 89.99 < Arithmetic1 < 90.01 "Absolute value = 90"

@@ -27,7 +27,6 @@ import javax.swing.ListModel;
 
 import net.miginfocom.swing.MigLayout;
 
-import com.ils.blt.common.block.RampMethod;
 import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.common.serializable.SerializableApplication;

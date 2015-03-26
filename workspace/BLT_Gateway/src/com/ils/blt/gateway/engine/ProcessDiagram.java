@@ -131,15 +131,21 @@ public class ProcessDiagram extends ProcessNode {
 				// Stop old subscriptions ONLY if the property changed, or no longer exists
 				// NOTE: The blockFactory update will take care of values. We're just worried about subscriptions
 				for( BlockProperty newProp:sb.getProperties() ) {
-					BlockProperty prop = pb.getProperty(sb.getName());
+					BlockProperty prop = pb.getProperty(newProp.getName());
 					if( prop!=null ) {
 						// See if the binding changed.
 						if( !prop.getBindingType().equals(newProp.getBindingType()) ) {
 							// If the binding has changed - fix subscriptions.
-							if(!prop.getBindingType().equals(BindingType.NONE)) controller.removeSubscription(pb,prop);
+							if(prop.getBindingType().equals(BindingType.TAG_MONITOR) ||
+							   prop.getBindingType().equals(BindingType.TAG_READ)    ||
+							   prop.getBindingType().equals(BindingType.TAG_READWRITE) ||
+							   prop.getBindingType().equals(BindingType.TAG_WRITE)) controller.removeSubscription(pb,prop);
 							prop.setBindingType(newProp.getBindingType());
 							prop.setBinding(newProp.getBinding());
-							if(!prop.getBindingType().equals(BindingType.NONE)) {
+							if(prop.getBindingType().equals(BindingType.TAG_MONITOR) ||
+							   prop.getBindingType().equals(BindingType.TAG_READ)    ||
+							   prop.getBindingType().equals(BindingType.TAG_READWRITE) ||
+							   prop.getBindingType().equals(BindingType.TAG_WRITE)) {
 								controller.startSubscription(pb,prop);
 								// If the new binding is a tag write - do the write.
 								if( !pb.isLocked() && 
@@ -150,7 +156,8 @@ public class ProcessDiagram extends ProcessNode {
 							}
 						}
 						else if( !prop.getBindingType().equals(BindingType.NONE) &&
-								!prop.getBinding().equals(newProp.getBinding()) ) {
+								 !prop.getBindingType().equals(BindingType.OPTION) &&
+								 !prop.getBinding().equals(newProp.getBinding()) ) {
 							// Same type, new binding target.
 							controller.removeSubscription(pb, prop);
 							prop.setBinding(newProp.getBinding());

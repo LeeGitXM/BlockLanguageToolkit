@@ -14,6 +14,11 @@ script: setTimeFactor setTimeFactor.setFactor(factor)
 timefactor: 20
 setTimeFactor (20)
 # Tag aliases
+tag: ActionOut    MemoryTags/ActionOut
+tag: Arithmetic1    MemoryTags/ArithmeticOut1
+tag: Arithmetic2    MemoryTags/ArithmeticOut2
+tag: Arithmetic3    MemoryTags/ArithmeticOut3
+tag: Arithmetic4    MemoryTags/ArithmeticOut4
 tag: BooleanFeed  MemoryTags/BooleanFeed
 tag: DoubleInput1 MemoryTags/DoubleInput1
 tag: DoubleInput2 MemoryTags/DoubleInput2

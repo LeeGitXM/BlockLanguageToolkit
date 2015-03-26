@@ -139,7 +139,6 @@ public class ProxyHandler   {
 			createBlockCallback.setLocalVariable(3,pyDictionary);
 			log.debugf("%s.createInstance --- executing create script for %s",TAG,className); 
 			createBlockCallback.execute(mgr);
-			log.info(TAG+".createInstance: returned "+ pyDictionary);   // Should now be updated
 			// Contents of list are Hashtable<String,?>
 			PyObject pyBlock = (PyObject)pyDictionary.get("instance");
 			if( pyBlock!=null ) {
@@ -186,7 +185,7 @@ public class ProxyHandler   {
 	 */
 	public BlockProperty[] getBlockProperties(ScriptManager mgr,PyObject block) {
 		BlockProperty[] properties = null;
-		log.infof("%s.getBlockProperties ... ",TAG);
+		log.debugf("%s.getBlockProperties ... ",TAG);
 		if( getBlockPropertiesCallback.compileScript() ) {
 			Object val = null;
 			UtilityFunctions fns = new UtilityFunctions();
@@ -195,7 +194,7 @@ public class ProxyHandler   {
 			getBlockPropertiesCallback.setLocalVariable(0,block);
 			getBlockPropertiesCallback.setLocalVariable(1,pyList);
 			getBlockPropertiesCallback.execute(mgr);
-			log.info(TAG+".getBlockProperties returned "+ pyList);   // Should now be updated
+			log.debug(TAG+".getBlockProperties returned "+ pyList);   // Should now be updated
 			// Contents of list are Hashtable<String,?>
 			List<?> list = toJavaTranslator.pyListToArrayList(pyList);
 			
@@ -245,7 +244,7 @@ public class ProxyHandler   {
 					
 				}
 				catch( Exception ex ) {
-					log.warnf("%s: getProperties: Exception processing prototype (%)" , TAG,ex.getMessage());
+					log.warnf("%s: getProperties: Exception processing prototype (%s)" , TAG,ex.getMessage());
 				}
 				index++;
 			}

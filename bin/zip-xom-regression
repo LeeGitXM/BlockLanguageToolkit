@@ -17,6 +17,6 @@ cp -a basic pylib $TMP
 cd ..
 # Now zip and copy to subversion
 cd $REPO_ROOT
-zip -r regression.zip $VERS
-cp regression.zip $SVN
+zip -r blt_regression.zip $VERS
+cp blt_regression.zip $SVN
 rm -rf $TMP
