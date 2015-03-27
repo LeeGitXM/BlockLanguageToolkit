@@ -36,7 +36,7 @@ Step: 45
 10:05:15 Assert: 44.99 < Arithmetic1 < 45.01 "Absolute value = 45"
 10:05:20 Assert: .708 > Arithmetic2 > .706 "sine = .707"
 10:05:30 Assert: .706 < Arithmetic3 < .708 "cosine = .707"
-10:05:40 Assert: .999 < Arithmetic4 < 1.01 "tan - 1"
+10:05:40 Assert: .999 < Arithmetic4 < 1.01 "tan = 1"
 Step: 90 
 10:06 90.
 10:06:10 Assert: 89.99 < Arithmetic1 < 90.01 "Absolute value = 90"

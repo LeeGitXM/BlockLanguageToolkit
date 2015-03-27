@@ -4,12 +4,8 @@ log: Block Language Toolkit Regression Suite
 #
 run: readwrite.txt
 run: action.txt
-run: comparisons.txt
 run: dataconditioner.txt
-run: finaldiagnosis.txt
 run: gain.txt
-run: observations.txt
 run: persistence.txt
 run: sqc.txt
 run: sum.txt
-run: timedlimits.txt

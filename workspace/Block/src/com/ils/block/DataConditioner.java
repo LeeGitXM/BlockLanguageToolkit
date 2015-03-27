@@ -36,14 +36,14 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
 @ExecutableBlock
 public class DataConditioner extends AbstractProcessBlock implements ProcessBlock {
 	private final String TAG = "DataConditioner";
-	protected static String VALUE_PORT_NAME = "value";
-	protected static String QUALITY_PORT_NAME = "quality";
-	protected static String OUT_PORT_NAME = "out";
-	protected static String STATUS_PORT_NAME = "status";
+	private static final String VALUE_PORT_NAME = "value";
+	private static final String QUALITY_PORT_NAME = "quality";
+	private static final String OUT_PORT_NAME = "out";
+	private static final String STATUS_PORT_NAME = "status";
+	private final QualifiedValue BAD_VALUE = new BasicQualifiedValue(0.0,new BasicQuality("BAD",Quality.Level.Bad));
 	private final Watchdog dog;
 	private double synchInterval = 0.5; // 1/2 sec synchronization by default
-	private String qualityName = "good";
-	private TruthValue quality = TruthValue.UNKNOWN;
+	private TruthValue qualityInput = TruthValue.UNKNOWN;
 	private QualifiedValue value = null;
 	private TruthValue truthValue = TruthValue.UNSET;
 	
@@ -98,7 +98,7 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 	@Override
 	public void reset() {
 		super.reset();
-		quality = TruthValue.UNKNOWN;
+		qualityInput = TruthValue.UNKNOWN;
 		value = null;
 	}
 	/**
@@ -142,10 +142,12 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 
 		if( vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(VALUE_PORT_NAME)) {
 			value = qv;
+			//log.infof("%s.acceptValue got VALUE =  %s", TAG,qv.getValue().toString());
 		}
 		else if (vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(QUALITY_PORT_NAME)) {
 			if( qv.getQuality().isGood()) {
-				quality = qualifiedValueAsTruthValue(qv);
+				qualityInput = qualifiedValueAsTruthValue(qv);
+				//log.infof("%s.acceptValue got QUALITY =  %s", TAG,qv.getValue().toString());
 			}
 		}
 		else {
@@ -165,15 +167,17 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 	@Override
 	public void evaluate() {
 		if( value != null && !locked  ) {
-			truthValue = quality;
+			truthValue = qualityInput;
 			if( !truthValue.equals(TruthValue.TRUE) && !value.getQuality().isGood()) truthValue = TruthValue.TRUE;
-			log.infof("%s.evaluate value %s(%s)", TAG,value.getValue().toString(),truthValue.name());
+			log.tracef("%s.evaluate value %s(%s)", getName(),value.getValue().toString(),truthValue.name());
 			
 			if( !truthValue.equals(TruthValue.TRUE) ) {
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,value);
 				controller.acceptCompletionNotification(nvn);
-				log.infof("%s.evaluate: propagating %s %s",getName(),value.getValue().toString(),
-						value.getQuality().getName());
+				//log.tracef("%s.evaluate: propagating %s %s",getName(),value.getValue().toString(),value.getQuality().getName());
+			}
+			else {
+				value = BAD_VALUE;
 			}
 			QualifiedValue result = new BasicQualifiedValue(truthValue);
 			OutgoingNotification nvn = new OutgoingNotification(this,STATUS_PORT_NAME,result);
@@ -202,7 +206,7 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 	public SerializableBlockStateDescriptor getInternalStatus() {
 		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
 		Map<String,String> attributes = descriptor.getAttributes();
-		attributes.put("Quality", quality.name());
+		attributes.put("Quality", qualityInput.name());
 		attributes.put("Result", truthValue.name());
 		return descriptor;
 	}
