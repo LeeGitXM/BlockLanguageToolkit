@@ -162,8 +162,10 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 				try {
 					Double dbl  = Double.parseDouble(qv.getValue().toString());
 					if( dbl!=null ) {
-						queue.add(dbl);
-						evaluate();
+						synchronized(this) {
+							queue.add(dbl);
+							evaluate();
+						}
 					}
 				}
 				catch(NumberFormatException nfe) {
@@ -369,7 +371,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	/**
 	 * Compute the state, presumably because of a new input.
 	 */
-	private synchronized TruthValue getRuleState() {
+	private TruthValue getRuleState() {
 		TruthValue result = TruthValue.UNKNOWN;
 		int total= 0;
 		int high = 0;
@@ -381,7 +383,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		int outside = 0;
 		double highLimit = mean+(standardDeviation*limit);
 		double lowLimit  = mean-(standardDeviation*limit);
-		// Got a concurrent modification exception here. Thus the "synchronized".
+		// Got a concurrent modification exception here.l
 		for( Double dbl:queue) {
 			double val = dbl.doubleValue();
 			

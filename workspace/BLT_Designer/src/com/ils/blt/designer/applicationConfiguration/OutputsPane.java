@@ -2,11 +2,8 @@ package com.ils.blt.designer.applicationConfiguration;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import javax.swing.BoxLayout;
@@ -17,26 +14,13 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTree;
-import javax.swing.border.BevelBorder;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeSelectionModel;
-
-import net.miginfocom.swing.MigLayout;
-
-import com.inductiveautomation.ignition.common.config.BasicPropertySet;
-import com.inductiveautomation.ignition.common.config.PropertyValue;
+import javax.swing.SwingConstants;
 
 
 public class OutputsPane extends JPanel implements ApplicationConfigurationController.EditorPane {
 	private ApplicationConfigurationController controller;
 	private Application application;
 	private SortedListModel outputListModel;
-	private Map<String,Object> outputMap;
-	private ArrayList< Map<String,Object> > outputList;
 	private static final long serialVersionUID = 2882399376824334428L;
 	private static Icon addIcon = new ImageIcon(Application.class.getResource("/images/add.png"));
 	private static Icon deleteIcon = new ImageIcon(Application.class.getResource("/images/delete.png"));
@@ -62,7 +46,7 @@ public class OutputsPane extends JPanel implements ApplicationConfigurationContr
 		this.application = app;
 		
 		JLabel label = new JLabel("Outputs");
-		label.setHorizontalAlignment(JLabel.CENTER);
+		label.setHorizontalAlignment(SwingConstants.CENTER);
 		add(label, BorderLayout.NORTH);
 		
 		JList lst = new JList(model);

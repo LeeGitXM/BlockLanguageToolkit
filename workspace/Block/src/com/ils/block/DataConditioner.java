@@ -43,9 +43,9 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 	private final Watchdog dog;
 	private double synchInterval = 0.5; // 1/2 sec synchronization by default
 	private String qualityName = "good";
-	private QualifiedValue quality = new BasicQualifiedValue("good");
+	private TruthValue quality = TruthValue.UNKNOWN;
 	private QualifiedValue value = null;
-	private TruthValue truthValue;
+	private TruthValue truthValue = TruthValue.UNSET;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -83,7 +83,7 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 		AnchorPrototype input = new AnchorPrototype(VALUE_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setAnnotation("V");
 		anchors.add(input);
-		input = new AnchorPrototype(QUALITY_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
+		input = new AnchorPrototype(QUALITY_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
 		input.setAnnotation("Q");
 		input.setHint(PlacementHint.L);
 		anchors.add(input);
@@ -98,7 +98,7 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 	@Override
 	public void reset() {
 		super.reset();
-		quality = new BasicQualifiedValue("good");
+		quality = TruthValue.UNKNOWN;
 		value = null;
 	}
 	/**
@@ -144,7 +144,9 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 			value = qv;
 		}
 		else if (vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(QUALITY_PORT_NAME)) {
-			quality = qv;
+			if( qv.getQuality().isGood()) {
+				quality = qualifiedValueAsTruthValue(qv);
+			}
 		}
 		else {
 			log.warnf("%s.acceptValue: Unexpected port designation (%s)",TAG,vcn.getConnection().getDownstreamPortName());
@@ -156,58 +158,25 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 	
 	
 	/**
-	 * The coalescing time has expired. Place the value on the output, possibly
-	 * modifying its quality..
+	 * The coalescing time has expired. Place the value on the output, but only if 
+	 * quality indicators are good. The quality port indicates the quality where 
+	 * a TRUE implied bad quality.
 	 */
 	@Override
 	public void evaluate() {
-		log.infof("%s.evaluate ...",TAG);
-		if( value != null ) {
-			QualifiedValue outValue = value;
-			log.tracef("%s.evaluate value %s(%s)", TAG,value.getValue().toString(),quality.getValue().toString());
-			qualityName = "bad";
-			boolean good = true;    // For the quality input
-			if( quality.getQuality()!=null && !quality.getQuality().isGood()) {
-				good = false;
-				qualityName = quality.getQuality().getName();
-			}
-			else if( quality.getValue() instanceof String ) {
-				good = quality.getValue().toString().equalsIgnoreCase("good");
-				if( !good ) qualityName = quality.getValue().toString();
-			}
-			else if( quality.getValue() instanceof TruthValue ) {
-				TruthValue tv = (TruthValue)quality.getValue();
-				good = tv.name().equals(TruthValue.TRUE.name());
-				if(good) qualityName = "good";
-			}
-			else {
-				good = false;
-				qualityName = "unexpected Quality data type";
-			}
-			// Now consider the value input
-			if( !value.getQuality().isGood() ) {
-				good = false;
-				qualityName = value.getQuality().getName();
-			}
-			else if(!good) {
-				BasicQuality q = new BasicQuality(qualityName,Quality.Level.Bad);
-				outValue = new BasicQualifiedValue(value.getValue(),q,value.getTimestamp());
-			}
-			else {
-				qualityName = "good";
-			}
+		if( value != null && !locked  ) {
+			truthValue = quality;
+			if( !truthValue.equals(TruthValue.TRUE) && !value.getQuality().isGood()) truthValue = TruthValue.TRUE;
+			log.tracef("%s.evaluate value %s(%s)", TAG,value.getValue().toString(),truthValue.name());
 			
-			if( !locked )	 {
-				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outValue);
+			if( !truthValue.equals(TruthValue.TRUE) ) {
+				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,value);
 				controller.acceptCompletionNotification(nvn);
-				log.tracef("%s.evaluate result %s(%s)", TAG,outValue.getValue().toString(),quality.getValue().toString());
-
-				truthValue = (good?TruthValue.TRUE:TruthValue.FALSE);
-				QualifiedValue result = new BasicQualifiedValue(truthValue);
-				nvn = new OutgoingNotification(this,STATUS_PORT_NAME,result);
-				controller.acceptCompletionNotification(nvn);
-				notifyOfStatus(outValue,result);
 			}
+			QualifiedValue result = new BasicQualifiedValue(truthValue);
+			OutgoingNotification nvn = new OutgoingNotification(this,STATUS_PORT_NAME,result);
+			controller.acceptCompletionNotification(nvn);
+			notifyOfStatus(value,result);
 		}
 	}
 	
@@ -231,7 +200,8 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 	public SerializableBlockStateDescriptor getInternalStatus() {
 		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
 		Map<String,String> attributes = descriptor.getAttributes();
-		attributes.put("Quality", qualityName);
+		attributes.put("Quality", quality.name());
+		attributes.put("Result", truthValue.name());
 		return descriptor;
 	}
 	/**

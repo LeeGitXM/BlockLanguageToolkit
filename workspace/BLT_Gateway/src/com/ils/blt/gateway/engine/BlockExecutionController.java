@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved.
+ *   (c) 2014-2105  ILS Automation. All rights reserved.
  *  
  *   The block controller is designed to be called from the client
  *   via RPC. All methods must be thread safe,
@@ -217,7 +217,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	@Override
 	public double getIsolationTimeFactor() {
 		if(Double.isNaN(isolationTimeFactor) ) {
-			String factor = ControllerRequestHandler.getInstance().getToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_PROVIDER);
+			String factor = ControllerRequestHandler.getInstance().getToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_ISOLATION_TIME);
 			try {
 				isolationTimeFactor = Double.parseDouble(factor);
 			}

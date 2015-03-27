@@ -66,7 +66,7 @@ public class TagWriter  {
 			TagProvider provider = context.getTagManager().getTagProvider(providerName);
 			// We assume the same provider
 			if( provider!= null && qv.getValue()!=null ) {
-				log.infof("%s..updateTag: writing %s = %s",TAG,path,qv.getValue().toString());
+				log.debugf("%s..updateTag: writing %s = %s",TAG,path,qv.getValue().toString());
 				Tag tag = provider.getTag(tp);
 				if( tag!=null ) {
 					// Coerce to the proper datatype
