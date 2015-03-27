@@ -20,6 +20,7 @@ tag: Arithmetic2    MemoryTags/ArithmeticOut2
 tag: Arithmetic3    MemoryTags/ArithmeticOut3
 tag: Arithmetic4    MemoryTags/ArithmeticOut4
 tag: BooleanFeed  MemoryTags/BooleanFeed
+tag: DataState  MemoryTags/DataState
 tag: DoubleInput1 MemoryTags/DoubleInput1
 tag: DoubleInput2 MemoryTags/DoubleInput2
 tag: Feed1 MemoryTags/MJKFeed1
@@ -27,6 +28,7 @@ tag: GainFeed1 MemoryTags/GainFeed1
 tag: GainFeed2 MemoryTags/GainFeed2
 tag: GainOutput MemoryTags/GainOutput
 tag: Parameter MemoryTags/NumericParameter
+tag: Quality  MemotyTags/Quality
 tag: Source MemoryTags/NumericSource
 tag: SQC1 MemoryTags/SQCOut1
 tag: SQC2 MemoryTags/SQCOut2
@@ -42,6 +44,8 @@ tag: Feed3 MemoryTags/MJKFeed3
 tag: Sink MemoryTags/NumericSink
 tag: Feed3 MemoryTags/MJKFeed3
 # Outputs are unique to each diagram
+tag: ConditionerData MemoryTags/ConditionerData
+tag: ConditionerQuality MemoryTags/ConditionerQuality
 tag: ReadWriteBooleanOutput MemoryTags/ReadWriteBooleanOutput
 tag: ReadWriteNumericOutput MemoryTags/ReadWriteNumericOutput
 tag: ReadWriteSink MemoryTags/ReadWriteSink
@@ -53,6 +57,7 @@ setStateForApplication("app75","ISOLATED")
 tagset: SingleBoolean BooleanFeed
 tagset: DualInput DoubleInput1 DoubleInput2
 tagset: GainFeed GainFeed1 GainFeed2
+tagset: DataConditioner Feed1 Quality DataState
 tagset: ReadWriteSource Source
 tagset: SQC Feed1 SQCStdDev SQCTarget
 

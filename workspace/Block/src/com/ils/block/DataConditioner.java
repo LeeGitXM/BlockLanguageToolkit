@@ -167,11 +167,13 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 		if( value != null && !locked  ) {
 			truthValue = quality;
 			if( !truthValue.equals(TruthValue.TRUE) && !value.getQuality().isGood()) truthValue = TruthValue.TRUE;
-			log.tracef("%s.evaluate value %s(%s)", TAG,value.getValue().toString(),truthValue.name());
+			log.infof("%s.evaluate value %s(%s)", TAG,value.getValue().toString(),truthValue.name());
 			
 			if( !truthValue.equals(TruthValue.TRUE) ) {
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,value);
 				controller.acceptCompletionNotification(nvn);
+				log.infof("%s.evaluate: propagating %s %s",getName(),value.getValue().toString(),
+						value.getQuality().getName());
 			}
 			QualifiedValue result = new BasicQualifiedValue(truthValue);
 			OutgoingNotification nvn = new OutgoingNotification(this,STATUS_PORT_NAME,result);

@@ -84,15 +84,15 @@ public class QualValue extends AbstractProcessBlock implements ProcessBlock {
 		setProperty(BlockConstants.BLOCK_PROPERTY_FORMAT, formatProperty);
 		
 		// Define an input for each of the three components
-		AnchorPrototype input = new AnchorPrototype(VALUE_PORT,AnchorDirection.INCOMING,ConnectionType.ANY);
-		input.setAnnotation("V");
-		anchors.add(input);
 		AnchorPrototype qual = new AnchorPrototype(QUALITY_PORT,AnchorDirection.INCOMING,ConnectionType.TEXT);
 		qual.setAnnotation("Q");
 		anchors.add(qual);
 		AnchorPrototype tim = new AnchorPrototype(TIME_PORT,AnchorDirection.INCOMING,ConnectionType.TEXT);
 		tim.setAnnotation("T");
 		anchors.add(tim);
+		AnchorPrototype input = new AnchorPrototype(VALUE_PORT,AnchorDirection.INCOMING,ConnectionType.ANY);
+		input.setAnnotation("V");
+		anchors.add(input);
 
 		// Define a single output
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.ANY);
@@ -178,6 +178,8 @@ public class QualValue extends AbstractProcessBlock implements ProcessBlock {
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus(result);
 			value = result;
+			log.infof("%s.evaluate: %s %s %s",getName(),value.getValue().toString(),
+					value.getQuality().getName(),formatter.format(value.getTimestamp()));
 		}
 	}
 
@@ -224,9 +226,7 @@ public class QualValue extends AbstractProcessBlock implements ProcessBlock {
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setEmbeddedLabel("QV");
-		desc.setEmbeddedFontSize(18);
-		desc.setPreferredHeight(60);
-		desc.setPreferredWidth(60);
+		desc.setEmbeddedFontSize(36);
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setStyle(BlockStyle.SQUARE);
 		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_LIGHT_GRAY);

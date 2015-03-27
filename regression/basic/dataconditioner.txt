@@ -1,15 +1,35 @@
 #
-# Test of a persistence gate. 5 min timer
+# Test of a data conditioner with qualified value
 #
-Test: Data Conditional block
-Step: Target is TRUE
+Test: Data Conditioner and QualifiedValue
 Show: browser "app75/family75/dataconditioner"
 resetDiagram (app75/family75/dataconditioner)
-Tagset: SingleBoolean
-10:00 true
-10:01 false
-10:01:10 Assert: persistence = FALSE "Interrupted target"
-10:02 true
-10:03 true
-10:04:10 Assert: persistence = FALSE "false before expiration time"
-10:08:20 Assert: persistence = TRUE  "True after expiration time"
+Tagset: DataConditioner
+Step: All good
+10:00 40.5 good false
+10:00:10 Assert: ConditionerData = 40.5  "Normal passthru"
+10:01 41.8 good false
+10:01:10 Assert: ConditionerData = 41.8  "Normal passthru"
+10:02 42.0 good false
+10:02:10 Assert: ConditionerData = 42    "Normal passthru (42)"
+10:02:20 Assert: ConditionerQuality = false "Good quality"
+Step: Bad qualified value
+10:03 68.1 ugly false
+10:04 68.8 bad false
+10:04:10 Assert: ConditionerData = 42  "No passthru with main input bad"
+10:04:20 Assert: ConditionerQuality = true "Quality problem"
+Step: Bad conditioner
+10:05 78.1 good true
+10:06 78.8 good true
+10:06:10 Assert: ConditionerData = 42  "No passthru condition line bad"
+10:06:20 Assert: ConditionerQuality = true "Quality problem"
+Step: Both bad
+10:07 88.1 bad false
+10:08 88.8 bad true
+10:08:10 Assert: ConditionerData = 42  "No passthru both indicators bad"
+10:08:20 Assert: ConditionerQuality = true "Quality problem"
+Step: Resumption of good
+10:09 78.1 bad false
+10:10 58.8 good false
+10:10:10 Assert: ConditionerData = 58.8  "Passthru when both are good"
+10:10:20 Assert: ConditionerQuality = false "Good quality"

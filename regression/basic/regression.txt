@@ -5,7 +5,6 @@ log: Block Language Toolkit Regression Suite
 run: readwrite.txt
 run: action.txt
 run: comparisons.txt
-run: clock.txt
 run: dataconditioner.txt
 run: finaldiagnosis.txt
 run: gain.txt
