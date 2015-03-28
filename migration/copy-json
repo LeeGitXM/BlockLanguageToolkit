@@ -3,9 +3,8 @@
 # for viewing in Eclipse.
 #
 BIN=`pwd`
-SVN=~/Development/ils/svn/EMChemicals/G2Artifacts/DiagnosticDiagramExports
+SVN=~/Development/ils/svn/EMChemicals/Migration/
 REPO=~/Development/ils/src/blt/json
 mkdir -p $REPO/g2
 mkdir -p $REPO/ignition
-cp ${SVN}/Samples/*.json $REPO/g2
-cp ${SVN}/Vistalon/*.json $REPO/g2
+cp ${SVN}/Vistalon/Exports/DiagnosticToolkit/json/*.json $REPO/g2
