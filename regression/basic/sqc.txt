@@ -62,7 +62,7 @@ Step: Out-of-Range Values
 10:12:55 Assert: SQC3 = true  "3 true at 4 out of range"
 10:12:55 Assert: SQC4 = true  "4 true"
 10:13 1.1
-10:13:55 Assert: SQC2 = true "2 true with 2 low values remaining"
+10:13:55 Assert: SQC2 = true "2 true with 2 low values, 1 high"
 10:14 0.9
 10:14:55 Assert: SQC2 = false "2 false with 1 low values remaining"
 10:14:55 Assert: SQC3 = false "3 false with 2 of 4 out of range"

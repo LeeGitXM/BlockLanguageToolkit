@@ -282,7 +282,6 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	public void acceptValue(IncomingNotification vcn) {
 		validate(vcn );
 		if( log.isTraceEnabled()) {
-			log.tracef("%s.acceptValue: incoming value: %s",getName(),valueToString(vcn.getValue().getValue()));
 			// An input from a TAG_READ bound property does not have a source
 			if( vcn.getConnection()!=null ) {
 				log.tracef("%s.acceptValue: from %s(%s)",getName(),

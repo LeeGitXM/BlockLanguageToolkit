@@ -434,7 +434,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		}
 		else {
 			if( outside>=minOut) result = TruthValue.TRUE;
-			else if( total+minOut-outside>sampleSize-minOut ) result = TruthValue.FALSE;
+			else if( total+minOut-outside>sampleSize ) result = TruthValue.FALSE;
 		}
 		
 		log.tracef("%s.getRuleState: %d of %d results,  %d high, %d low, %d outside, (cons %d,%d) => %s (%s)",getName(),total,sampleSize,high,low,outside,maxlowside,maxhighside,result.toString(),limitType.toString());
