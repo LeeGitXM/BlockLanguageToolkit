@@ -8,6 +8,7 @@
 REPO_ROOT=~/Development/ils/src
 SVN=~/Development/ils/svn/EMChemicals/Release/src
 # Prepare directories
+mkdir -p $SVN/config
 mkdir -p $SVN/icons
 mkdir -p $SVN/bin
 mkdir -p $SVN/project
@@ -20,6 +21,7 @@ cp blt_block_test.proj $SVN/project
 cp basic-diagrams.proj $SVN/project
 cd $REPO_ROOT/blt
 cp -a data $SVN
+cp -a pylibs $SVN/config
 cd $REPO_ROOT
 IGN=~/Development/ils/svn/EMChemicals/Ignition
 cp blt/workspace/BLT_Build/modules/BLT*.modl $IGN

@@ -2,14 +2,24 @@
 # Test of a persistence gate. 5 min timer
 #
 Test: Comparison blocks
-Step: Target is TRUE
-Show: browser "app75/family75/persistence"
-resetDiagram (app75/family75/persistence)
-Tagset: SingleBoolean
-10:00 true
-10:01 false
-10:01:10 Assert: persistence = FALSE "Interrupted target"
-10:02 true
-10:03 true
-10:04:10 Assert: persistence = FALSE "false before expiration time"
-10:08:20 Assert: persistence = TRUE  "True after expiration time"
+Show: browser "app75/family75/comparisons"
+resetDiagram (app75/family75/comparisons)
+Step: Input is positive
+Tagset: ComparisonDriver
+10:00 10.
+10:01:10 Assert: ComparisonOut2 = False "Max less than limit"
+10:01 13.
+10:01:10 Assert: ComparisonOut2 = True "Max greater than limit"
+10:01:20 Assert: ComparisonOut1 = False "x>y"
+10:01:30 Assert: ComparisonOut3 = False "abs x>y"
+Step: Input is negative
+10:02 -14
+10:03 -15
+10:03:10 Assert: ComparisonOut2 = True "Max greater than limit"
+10:01:20 Assert: ComparisonOut1 = True "x<y"
+10:01:30 Assert: ComparisonOut3 = False "abs x>y"
+Step: Input is zero
+10:03  0.0
+10:03:20 Assert: ComparisonOut1 = False "x=y"
+10:03:30 Assert: ComparisonOut3 = False "abs x=y"
+10:03:10 Assert: ComparisonOut2 = True "Max greater than limit"

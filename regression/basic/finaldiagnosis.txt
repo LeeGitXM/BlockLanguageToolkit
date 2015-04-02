@@ -1,13 +1,14 @@
 #
-# Test of a persistence gate. 5 min timer
+# Test of Final Diagnosis Calculations
 #
-Test: Final Diagnosis (not UI)
-Step: Target is TRUE
+Test: Final Diagnosis Calculations
 Show: browser "app75/family75/finaldiagnosis"
-resetDiagram (app75/family75/finaldiagnosis)
-Tagset: SingleBoolean
-10:00 true
-10:01 false
+resetDiagram (app75/fdfam1/finaldiagnosis)
+Tagset: FDSelect
+Step: Single Diagnosis
+10:00 0
+10:01 2
+halt:
 10:01:10 Assert: persistence = FALSE "Interrupted target"
 10:02 true
 10:03 true

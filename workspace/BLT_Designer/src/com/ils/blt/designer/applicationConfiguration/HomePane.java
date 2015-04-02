@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -80,8 +81,11 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 		mainPanel.add(scrollPane,"gaptop 2,aligny top,span,wrap");
 
 		mainPanel.add(new JLabel("Console:"), "cell 0 5");
-		for(Object console : application.getConsoles()) {
-			consoleComboBox.addItem((String) console);
+		List<String> consoles = application.getConsoles();
+		if( consoles!=null ) {
+			for(Object console : application.getConsoles()) {
+				consoleComboBox.addItem((String) console);
+			}
 		}
 		consoleComboBox.setToolTipText("The console where diagnosis will be added!");
 		consoleComboBox.setSelectedItem(application.getConsole());

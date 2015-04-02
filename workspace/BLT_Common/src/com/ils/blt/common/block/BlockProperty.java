@@ -32,8 +32,8 @@ public class BlockProperty implements NotificationChangeListener {
 	private String binding = "";
 	private BindingType bindingType = BindingType.NONE;
 	private boolean displayed   = false;
-	private int displayOffsetX = 30;
-	private int displayOffsetY = 50;
+	private int displayOffsetX = BlockConstants.DEFAULT_ATTRIBUTE_OFFSET_X;
+	private int displayOffsetY = BlockConstants.DEFAULT_ATTRIBUTE_OFFSET_Y;
 
 	private String name = "UNSET-NAME";
 	private Object value = "UNSET-VALUE";

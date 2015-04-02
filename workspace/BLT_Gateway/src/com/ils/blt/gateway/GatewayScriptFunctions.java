@@ -17,6 +17,7 @@ import java.util.List;
  */
 public class GatewayScriptFunctions   {
 	private static ControllerRequestHandler handler = ControllerRequestHandler.getInstance();
+	private static PythonRequestHandler pyhandler = new PythonRequestHandler();
 	
 	/**
 	 * Query the gateway for list of diagrams 
@@ -29,6 +30,12 @@ public class GatewayScriptFunctions   {
 		return handler.getDiagramDescriptors();
 	}
 	
+	/**
+	 * @return the python request handler
+	 */
+	public static PythonRequestHandler getHandler() {
+		return pyhandler;
+	}
 	/**
 	 * Execute reset() on every block inside the controller
 	 */

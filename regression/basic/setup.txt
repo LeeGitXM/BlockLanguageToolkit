@@ -20,9 +20,11 @@ tag: Arithmetic2    MemoryTags/ArithmeticOut2
 tag: Arithmetic3    MemoryTags/ArithmeticOut3
 tag: Arithmetic4    MemoryTags/ArithmeticOut4
 tag: BooleanFeed  MemoryTags/BooleanFeed
+tag: ComparisonFeed MemoryTags/ComparisonFeed
 tag: DataState  MemoryTags/DataState
 tag: DoubleInput1 MemoryTags/DoubleInput1
 tag: DoubleInput2 MemoryTags/DoubleInput2
+tag: FDSelector  MemoryTags/FDSelector
 tag: Feed1 MemoryTags/MJKFeed1
 tag: GainFeed1 MemoryTags/GainFeed1
 tag: GainFeed2 MemoryTags/GainFeed2
@@ -42,10 +44,12 @@ tag: DiagramOutput MemoryTags/DiagramOutput
 tag: Feed2 MemoryTags/MJKFeed2
 tag: Feed3 MemoryTags/MJKFeed3
 tag: Sink MemoryTags/NumericSink
-tag: Feed3 MemoryTags/MJKFeed3
 # Outputs are unique to each diagram
 tag: ConditionerData MemoryTags/ConditionerData
 tag: ConditionerQuality MemoryTags/ConditionerQuality
+tag: ComparisonOut1 MemoryTags/ComparisonOut1
+tag: ComparisonOut2 MemoryTags/ComparisonOut2
+tag: ComparisonOut3 MemoryTags/ComparisonOut3
 tag: ReadWriteBooleanOutput MemoryTags/ReadWriteBooleanOutput
 tag: ReadWriteNumericOutput MemoryTags/ReadWriteNumericOutput
 tag: ReadWriteSink MemoryTags/ReadWriteSink
@@ -55,9 +59,12 @@ setStateForApplication("app75","ISOLATED")
 #setStateForApplication("UseCases","ISOLATED")
 
 tagset: SingleBoolean BooleanFeed
+tagset: ComparisonDriver ComparisonFeed
 tagset: DualInput DoubleInput1 DoubleInput2
+tagset: FDSelect FDSelector
 tagset: GainFeed GainFeed1 GainFeed2
 tagset: DataConditioner Feed1 Quality DataState
+tagset: DualFeed Feed2 Feed3
 tagset: ReadWriteSource Source
 tagset: SQC Feed1 SQCStdDev SQCTarget
 

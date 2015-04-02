@@ -17,8 +17,8 @@
 		
 		<!-- Load in our jars for each scope -->
 		<jar scope="CD">blt-client.jar.pack.gz</jar>
-		<jar scope="D">blt-designer.jar.pack.gz</jar>
-		<jar scope="D">blt-common.jar.pack.gz</jar>
+		<jar scope="CD">blt-designer.jar.pack.gz</jar>
+		<jar scope="CD">blt-common.jar.pack.gz</jar>
 		<jar scope="CD">lucene-1.4.3.jar.pack.gz</jar>
 		<jar scope="CD">prefuse-1.0.1.jar.pack.gz</jar>
 		<jar scope="G">blt-gateway.jar</jar>

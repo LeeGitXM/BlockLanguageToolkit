@@ -22,19 +22,19 @@ Step: -90
 Step: -45
 10:03 -45.
 10:03:10 Assert: 44.99 < Arithmetic1 < 45.01 "Absolute value = 45"
-10:03:20 Assert: -.708 < Arithmetic2 < -.706 "sine = -.707"
+10:03:29 Assert: -.708 < Arithmetic2 < -.706 "sine = -.707"
 10:03:30 Assert: .708 > Arithmetic3 > .706 "cosine = .707"
 10:03:40 Assert: -1.001 < Arithmetic4 < -0.9999 "tan = -1"
 Step: Zero 
 10:04 0.
-10:04:10 Assert: 0.0 <= Arithmetic1 < 0.01 "Absolute value = 0"
+10:04:20 Assert: -0.1 <= Arithmetic1 < 0.01 "Absolute value = 0"
 10:04:20 Assert: -0.01 <= Arithmetic2 < 0.01 "sine = 0"
 10:04:30 Assert: -0.999 <= Arithmetic3 < 1.01 "cosine = 1"
 10:04:40 Assert: 0.0 <= Arithmetic4 < 0.01 "tan = 0"
 Step: 45 
 10:05 45.
 10:05:15 Assert: 44.99 < Arithmetic1 < 45.01 "Absolute value = 45"
-10:05:20 Assert: .708 > Arithmetic2 > .706 "sine = .707"
+10:05:29 Assert: .708 > Arithmetic2 > .706 "sine = .707"
 10:05:30 Assert: .706 < Arithmetic3 < .708 "cosine = .707"
 10:05:40 Assert: .999 < Arithmetic4 < 1.01 "tan = 1"
 Step: 90 

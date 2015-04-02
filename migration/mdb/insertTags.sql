@@ -57,11 +57,11 @@ insert into TagMap values ('FRNT_TPR_TIP_HT_DIFF','[]Tags/FRNT_TPR_TIP_HT/diff',
 insert into TagMap values ('FRNT_TPR_TIP_HT_MAX_DIFF','[]Tags/FRNT_TPR_TIP_HT/maxDiff','DOUBLE');
 insert into TagMap values ('MAX_CNTR_TPR_TIP_DELTA_FM_AVG','[]Tags/MAX_CNTR_TPR_TIP_DELTA_FM_AVG/value','DOUBLE');
 insert into TagMap values ('MIXTEE_IN_USE_0_EAST_1_WEST','[]Tags/MIXTEE_IN_USE_0_EAST_1_WEST/value','DOUBLE');
-insert into TagMap values ('MLR-GRADE-FLAG','[]Tags/MLR_GRADE_FLAG','DOUBLE');
-insert into TagMap values ('MLR-LAB-DATA','[]LabData/MLR_LAB_DATA/value','DOUBLE');
+insert into TagMap values ('MLR-GRADE-FLAG','[]Site/MLR-GRADE-FLAG','DOUBLE');
+insert into TagMap values ('MLR-LAB-DATA','[]LabData/MLR-LAB-DATA/rawValue','DOUBLE');
 insert into TagMap values ('MOONEY-LAB-DATA','[]LabData/MOONEY/value','DOUBLE');
 insert into TagMap values ('MOONEY_RESET_TIME_FOR_SF-3','[]Tags/MOONEY_RESET_TIME_FOR_SF_3/value','DOUBLE');
-insert into TagMap values ('OIL-GRADE-FLAG','[]Tags/OIL_GRADE_FLAG/value','DOUBLE');
+insert into TagMap values ('OIL-GRADE-FLAG','[]Site/OIL-GRADE-FLAG','DOUBLE');
 insert into TagMap values ('OIL-LAB-DATA','[]LabData/OIL_LAB_DATA/value','DOUBLE');
 insert into TagMap values ('POLYSPLIT-DATA','[]LabData/POLYSPLIT_DATA/highLImit','DOUBLE');
 insert into TagMap values ('POLYSPLIT-SQC-FLAG','[]Tags/POLYSPLIT_SQC_FLAG/highLImit','DOUBLE');
@@ -134,8 +134,8 @@ insert into TagMap values ('[the bad-value of FRNT_FEED_DIFF]','[]Tags/FRNT_FEED
 insert into TagMap values ('[the time-of-most-recent-recommendation-implementation of frnt_short_use_temp-gda]','[]Tags/FRNT_SHORT_USE_TEMP_GDA/implementationTime','INTEGER');
 insert into TagMap values ('[the bad-value of FRNT_TPR_TIP_HT_DIFF]','[]Tags/FRNT_TPR_TIP_HT_DIFF/badValue','DOUBLE');
 insert into TagMap values ('[the bad-value of MAX_CNTR_TPR_TIP_DELTA_FM_AVG]','[]Tags/MAX_CNTR_TPR_TIP_DELTA_FM_AVG/badValue','DOUBLE');
-insert into TagMap values ('[the standard-deviation of MLR-LAB-DATA]','[]LabData/MLR_LAB_DATA/standardDeviation','DOUBLE');
-insert into TagMap values ('[the target of MLR-LAB-DATA]','[]LabData/MLR_LAB_DATA/target','DOUBLE');
+insert into TagMap values ('[the standard-deviation of MLR-LAB-DATA]','[]LabData/MLR-SQC-LIMIT/standardDeviation','DOUBLE');
+insert into TagMap values ('[the target of MLR-LAB-DATA]','[]LabData/MLR-SQC-LIMIT/target','DOUBLE');
 insert into TagMap values ('[the bad-value of MIXTEE_IN_USE_0_EAST_1_WEST]','[]Tags/MIXTEE_IN_USE_0_EAST_1_WEST/badValue','DOUBLE');
 insert into TagMap values ('[the standard-deviation of MOONEY-LAB-DATA]','[]LabData/MOONEY/standardDeviation','DOUBLE');
 insert into TagMap values ('[the unix-sample-time of mooney-lab-data]','[]LabData/MOONEY/sampleTime','INTEGER');

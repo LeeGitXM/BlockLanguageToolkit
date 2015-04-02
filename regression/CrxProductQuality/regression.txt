@@ -1,5 +1,0 @@
-log: CRX Product Quality Test Suite
-#
-# Run the collection of tests for the "simple" diagrams
-#
-run: prod-ca-problem.txt

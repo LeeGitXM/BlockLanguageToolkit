@@ -10,7 +10,7 @@ TMP=$REPO_ROOT/$VERS
 # Cleanup
 rm -rf $TMP
 cd $REPO_ROOT
-mkdir $TMP
+mkdir -p $TMP
 cd $REPO_ROOT/blt/migration
 rm -f mdb/*.db
 rm -rf tags
@@ -22,7 +22,6 @@ cd ..
 ./copy-json
 ./migrate-all
 cd ..
-mkdir $TMP
 cp -a json/ignition $TMP
 
 # Now zip and copy to subversion

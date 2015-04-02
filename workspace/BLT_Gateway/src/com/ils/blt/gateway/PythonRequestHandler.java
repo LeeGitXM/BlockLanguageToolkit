@@ -14,10 +14,8 @@ import com.ils.blt.gateway.engine.ProcessDiagram;
 import com.ils.blt.gateway.engine.ProcessFamily;
 import com.ils.blt.gateway.engine.ProcessNode;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
-import com.inductiveautomation.ignition.common.project.ProjectVersion;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
-import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
 /**
  * This class exposes python-callable requests directed at the execution engine. 
@@ -27,7 +25,6 @@ public class PythonRequestHandler   {
 	private static final String TAG = "PythonRequestHandler";
 	private static LoggerEx log = LogUtil.getLogger(PythonRequestHandler.class.getPackage().getName());
 	private final BlockExecutionController controller = BlockExecutionController.getInstance();
-	private static GatewayContext context = null;
 	
 	public PythonRequestHandler() {}
 	/**
@@ -208,6 +205,4 @@ public class PythonRequestHandler   {
 			log.warnf("%s.postValue: one of %s or %s illegal UUID (%s)",TAG,parent,id,iae.getMessage());
 		}
 	}
-	
-	public static void setContext(GatewayContext ctx) { context=ctx;}
 }

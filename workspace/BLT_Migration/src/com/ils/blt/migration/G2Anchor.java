@@ -17,6 +17,7 @@ public class G2Anchor {
 	private String blockName;
 	private String direction;
 	private String port;
+	private String annotation = null;
 	private String type;
 	private String uuid;
 
@@ -66,10 +67,12 @@ public class G2Anchor {
 		}
 		return result;
 	}
+	public String getAnnotation() {return annotation;}
 	public String getDirection() {return direction;}
 	public String getPort() {return port;}
 	public String getType() {return type;}
 	public String getUuid() {return uuid;}
+	public void setAnnotation(String text) {this.annotation = text;}
 	public void setBlockClass(String blockClass) {this.blockClass = blockClass;}
 	public void setBlockName(String blockName) {this.blockName = blockName;}
 	public void setDirection(String d)   { this.direction=d; }

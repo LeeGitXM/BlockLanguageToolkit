@@ -100,6 +100,14 @@ public class BlockInternalsViewer extends JDialog {
 				dispose();
 			}
 		});
+		// The Refresh button acquires more data
+		JButton refreshButton = new JButton("Refresh");
+		buttonPanel.add(refreshButton, "");
+		okButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				refresh();
+			}
+		});
 	}
 
 	private void queryBlock() {
@@ -111,7 +119,12 @@ public class BlockInternalsViewer extends JDialog {
 			log.infof("%s.queryBlock: %d properties, %d history entries",TAG, attributes.size(),buffer.size());
 		}
 	}
-	
+	private void refresh() {
+		queryBlock();
+		removeAll();
+		initialize();
+		invalidate();
+	}
 	
 	/**
 	 * A list add panel is a panel appending a string element in the list. It contains:-
@@ -120,7 +133,6 @@ public class BlockInternalsViewer extends JDialog {
 	private JPanel createPropertiesPanel()  {
 		JPanel outerPanel = new JPanel();
 		table = new JTable();		
-		//outerPanel.setLayout(new MigLayout("ins 2,filly","para[:480:]","[120]"));
 		outerPanel.setLayout(new MigLayout("ins 2,fillx,filly","",""));
 		String PRE = PREFIX+".ViewInternals.Col.";
 		String[] columnNames = { BundleUtil.get().getString(PRE+"Name"),

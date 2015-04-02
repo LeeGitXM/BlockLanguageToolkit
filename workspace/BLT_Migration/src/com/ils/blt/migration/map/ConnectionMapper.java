@@ -75,6 +75,7 @@ public class ConnectionMapper {
 			anchor.setDisplay(g2cxn.getPort());
 			anchor.setId(UUID.randomUUID()); 
 			anchor.setParentId(iblock.getId());
+			anchor.setAnnotation(g2cxn.getAnnotation());   // May be null
 			String key = makeAnchorMapKey(iblock.getId(),anchor.getDisplay());
 			if( anchorMap.get(key)==null ) {   // Weed out duplicates
 				anchorMap.put(key, anchor);	

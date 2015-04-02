@@ -3,7 +3,8 @@
 CREATE TABLE AnchorMap(
 	G2Class text NOT NULL,
 	G2Port  text NOT NULL,
-	Port    text NOT NULL
+	Port    text NOT NULL,
+	Annotation text NULL
 );
 -- Map a G2 block class to an Ignition block class
 CREATE TABLE ClassMap(

@@ -18,11 +18,13 @@ import com.ils.blt.migration.G2Block;
  */
 public class AnchorMapper {
 	private final String TAG = "AnchorMapper";
-	private final Map<String,String> portMap;     // Lookup by G2 class and port
+	private final Map<String,String> annotationMap;  // Lookup by G2 class and port
+	private final Map<String,String> portMap;        // Lookup by G2 class and port
 	/** 
 	 * Constructor: 
 	 */
 	public AnchorMapper() {
+		annotationMap = new HashMap<String,String>();
 		portMap = new HashMap<String,String>();
 	}
 
@@ -45,10 +47,14 @@ public class AnchorMapper {
 				String g2Class = rs.getString("G2Class");
 				String g2Port  = rs.getString("G2Port");
 				String iPort   = rs.getString("Port");
+				String annote  = rs.getString("Annotation");
 				
 				// The key is G2Class:G2Port (uppercase to make case insensitive)
 				String key = makeKey(g2Class,g2Port);
 				portMap.put(key,iPort);
+				if( annote!=null && annote.length()>0 ) {
+					annotationMap.put(key,annote);
+				}
 			}
 			rs.close();
 		}
@@ -79,6 +85,8 @@ public class AnchorMapper {
 			String port = portMap.get(key);
 			if( port!=null) {
 				anchor.setPort(port);
+				String annote = annotationMap.get(key); 
+				anchor.setAnnotation(annote);
 			}
 			// If the G2 name is null, then we'll just use a default name by direction
 			else if(anchor.getPort()==null || anchor.getPort().equalsIgnoreCase("NONE")) {

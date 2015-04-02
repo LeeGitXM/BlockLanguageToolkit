@@ -1,0 +1,25 @@
+#
+# Test of a MLR problem
+#
+Test: MLR problem
+Show: browser "CSTR_PRODUCT_QUALITY-GDA/CSTR_MLR_PROBLEM-GDA/Cstr_Mlr_Problem"
+resetDiagram (CSTR_PRODUCT_QUALITY-GDA/CSTR_MLR_PROBLEM-GDA/Cstr_Mlr_Problem)
+# Tags are: value, stddev, target, grd-flag
+Tagset: MLR
+
+Step: Initialization
+09:58   Assert: appExists("CSTR_PRODUCT_QUALITY-GDA")=true
+09:58   Assert: famExists("CSTR_PRODUCT_QUALITY-GDA","CSTR_MLR_PROBLEM-GDA")=true
+initializeFinalDiagnosis("CSTR_PRODUCT_QUALITY-GDA/CSTR_MLR_PROBLEM-GDA/Cstr_Mlr_Problem","MLR_PROBLEM_FOR_CSTR-GDA")
+
+Step: In-Range Values
+09:59 500.0 100.0 500.0 1.0
+10:00 510.0
+
+10:02:00 Assert: SQCdiag = FALSE "intial state of sqc diag"
+10:02:01 Assert: SQC_Hi_1-1 = false "2 good vals of 1/1 hi"
+10:02:01 Assert: SQC_Hi_3-4 = UNKNOWN "intial state of 3/4 hi"
+10:02:01 Assert: SQC_Hi_9-9 = UNKNOWN "intial state of 9/9 hi"
+10:02:01 Assert: SQC_Lo_9-9 = UNKNOWN "intial state of 9/9 lo"
+10:02:01 Assert: SQC_Lo_3-4 = UNKNOWN "intial state of 3/4 lo"
+10:02:01 Assert: SQC_Lo_1-1 = false "2 good vals of 1/1 lo"

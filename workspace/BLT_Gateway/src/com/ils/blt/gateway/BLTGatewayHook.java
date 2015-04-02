@@ -15,6 +15,7 @@ import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ModelManager;
 import com.ils.blt.gateway.persistence.ToolkitRecord;
 import com.ils.blt.gateway.proxy.ProxyHandler;
+import com.ils.blt.gateway.wicket.StatusPanel;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.common.project.Project;
@@ -45,7 +46,6 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	private transient GatewayContext context = null;
 	private transient ModelManager mmgr = null;
 	private final LoggerEx log;
-	private final StatusData statusData = new StatusData();
 	private ToolkitRecord record = null;
 	
 	public static BLTGatewayHook get(GatewayContext ctx) { 
@@ -59,10 +59,6 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	}
 		
 	
-	public StatusData getStatusData() {
-		return statusData;
-	}
-	
 	// NOTE: During this period, the module status is LOADED, not RUNNING
 
 	@Override
@@ -74,7 +70,6 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		log.info(TAG+"Setup - enable project listeners.");
 		ProxyHandler.getInstance().setContext(context);
 		ControllerRequestHandler.getInstance().setContext(context);
-		PythonRequestHandler.setContext(context);
 		dispatcher = new GatewayRpcDispatcher(context);
 		
 		// Register the ToolkitRecord making sure that the table exists
@@ -127,7 +122,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	@Override
 	public List<? extends INamedTab> getStatusPanels() {
 		List<INamedTab>panels = new ArrayList<INamedTab>();
-		panels.add(new ExecutionStatus());
+		panels.add(new ToolkitStatus());
 		return panels;
 	}
 	
@@ -137,11 +132,11 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		mgr.addScriptModule(BLTProperties.APPLICATION_SCRIPT_PACKAGE, GatewayScriptFunctions.class);
 	}
 	
-	private static class ExecutionStatus extends AbstractNamedTab {
+	private static class ToolkitStatus extends AbstractNamedTab {
 		private static final long serialVersionUID = 64149723779427382L;
 
-		public ExecutionStatus() {
-			super("ExecutionStatus", "BLT.title");
+		public ToolkitStatus() {
+			super("ToolkitStatus", "BLT.title");
 		}
 		
 		@Override

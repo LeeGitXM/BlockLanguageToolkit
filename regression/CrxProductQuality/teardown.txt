@@ -1,7 +1,0 @@
-# Copyright 2015 ILS Automation. All rights reserved.
-# 
-# This is a generic cleanup script for testing with 
-# the Test Frame utility.
-status: teardown complete
-status: teardown finished
-log: [DATE] [TIME] test suite complete.

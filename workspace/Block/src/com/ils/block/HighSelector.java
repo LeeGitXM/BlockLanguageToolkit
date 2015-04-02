@@ -27,7 +27,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 @ExecutableBlock
 public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 	private final static String TAG = "HighSelector";
-	private double max = Double.NaN;
+	private double max = Double.MIN_VALUE;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -52,7 +52,7 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void reset() {
 		super.reset();
-		max = Double.NaN;
+		max = Double.MIN_VALUE;
 	}
 	
 	/**
@@ -88,7 +88,7 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 				double val = dbl.doubleValue();
 				if(!isLocked() ) {
 					if( qv.getQuality().isGood() ) {
-						if( Double.isNaN(max) || val>max ) {
+						if( val>max ) {
 							max = val;
 							OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 							controller.acceptCompletionNotification(nvn);

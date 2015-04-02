@@ -43,8 +43,7 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
  */
 @ExecutableBlock
 public class SQC extends AbstractProcessBlock implements ProcessBlock {
-	private final String TAG = "SQC";
-	protected static final String BLOCK_PROPERTY_MAXIMUM_OUT_OF_RANGE = "MaximumOutOfRange";
+	protected static final String BLOCK_PROPERTY_MINIMUM_OUT_OF_RANGE = "MinimumOutOfRange";
 	protected static final String BLOCK_PROPERTY_SQC_LIMIT = "NumberOfStandardDeviations";
 	protected static final String BLOCK_PROPERTY_TEST_LABEL = "TestLabel";
 	protected static final String PORT_STANDARD_DEVIATION = "standardDeviation";
@@ -53,15 +52,15 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	private final static int DEFAULT_BUFFER_SIZE = 10;
 	
 	
-	private boolean clearOnReset = false;
+	private boolean clearOnReset = true;
 	private double limit = 3.0;
 	private LimitType limitType = LimitType.HIGH;
-	private int maxOut = 0;
 	private FixedSizeQueue<Double> queue;
 	private int sampleSize = DEFAULT_BUFFER_SIZE;
+	private int minOut = sampleSize;  // Min out-of-range to conclude TRUE
 	private double standardDeviation = Double.NaN;
 	private double mean = Double.NaN;
-	TruthValue truthState = TruthValue.UNSET;
+	TruthValue truthState = TruthValue.UNKNOWN;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -97,10 +96,10 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		setProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET, clearProperty);
 		BlockProperty limitProperty = new BlockProperty(BLOCK_PROPERTY_SQC_LIMIT,new Double(limit),PropertyType.DOUBLE,true);
 		setProperty(BLOCK_PROPERTY_SQC_LIMIT, limitProperty);
-		BlockProperty limitTypeProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_LIMIT_TYPE,new String(limitType.name()),PropertyType.STRING,true);
+		BlockProperty limitTypeProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_LIMIT_TYPE,new String(limitType.name()),PropertyType.LIMIT,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_LIMIT_TYPE, limitTypeProperty);
-		BlockProperty maxOutProperty = new BlockProperty(BLOCK_PROPERTY_MAXIMUM_OUT_OF_RANGE,new Integer(maxOut),PropertyType.INTEGER,true);
-		setProperty(BLOCK_PROPERTY_MAXIMUM_OUT_OF_RANGE, maxOutProperty);
+		BlockProperty maxOutProperty = new BlockProperty(BLOCK_PROPERTY_MINIMUM_OUT_OF_RANGE,new Integer(minOut),PropertyType.INTEGER,true);
+		setProperty(BLOCK_PROPERTY_MINIMUM_OUT_OF_RANGE, maxOutProperty);
 		BlockProperty sizeProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE,new Integer(DEFAULT_BUFFER_SIZE),PropertyType.INTEGER,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE, sizeProperty);
 		BlockProperty labelProperty = new BlockProperty(BLOCK_PROPERTY_TEST_LABEL,"",PropertyType.STRING,true);
@@ -139,10 +138,13 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	}
 	
 	private void clear() {
-		log.debugf("%s.clear: reset data buffer",TAG);
+		log.debugf("%s.clear: reset data buffer",getName());
 		queue.clear();
-		truthState = TruthValue.UNSET;
-		notifyOfStatus();
+		truthState = TruthValue.UNKNOWN;
+		QualifiedValue outval = new BasicQualifiedValue(truthState);
+		OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
+		controller.acceptCompletionNotification(nvn);
+		notifyOfStatus(outval);
 	}
 	
 	/**
@@ -150,26 +152,24 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	 * @param vcn incoming new value.
 	 */
 	@Override
-	public void acceptValue(IncomingNotification incoming) {
+	public synchronized void acceptValue(IncomingNotification incoming) {
 		super.acceptValue(incoming);
 		this.state = BlockState.ACTIVE;
 		QualifiedValue qv = incoming.getValue();
 		Quality qual = qv.getQuality();
 		String port = incoming.getConnection().getDownstreamPortName();
+		log.debugf("%s.acceptValue: on %s %s (%s)",getName(),port,qv.getValue().toString(),qual.getName());
 		if( port.equals(PORT_VALUE)  ) {
-			log.debugf("%s.acceptValue: %s (%s)",TAG,qv.getValue().toString(),qual.getName());
 			if( qual.isGood() && qv!=null && qv.getValue()!=null ) {
 				try {
 					Double dbl  = Double.parseDouble(qv.getValue().toString());
 					if( dbl!=null ) {
-						synchronized(this) {
-							queue.add(dbl);
-							evaluate();
-						}
+						queue.add(dbl);  // Synchronize to avoid concurrent modification
+						evaluate();
 					}
 				}
 				catch(NumberFormatException nfe) {
-					log.warnf("%s.acceptValue exception converting incoming %s to double (%s)",TAG,qv.getValue().toString(),nfe.getLocalizedMessage());
+					log.warnf("%s.acceptValue exception converting incoming %s to double (%s)",getName(),qv.getValue().toString(),nfe.getLocalizedMessage());
 				}
 			}
 			else {
@@ -192,7 +192,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 				mean = Double.parseDouble(qv.getValue().toString());
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert target value to a float (%s)",TAG,nfe.getLocalizedMessage());
+				log.warnf("%s: propertyChange Unable to convert target value to a float (%s)",getName(),nfe.getLocalizedMessage());
 			}
 			evaluate();
 		}
@@ -203,7 +203,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 				standardDeviation = Double.parseDouble(qv.getValue().toString());
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert standard deviation value to a float (%s)",TAG,nfe.getLocalizedMessage());
+				log.warnf("%s: propertyChange Unable to convert standard deviation value to a float (%s)",getName(),nfe.getLocalizedMessage());
 			}
 			evaluate();
 		}
@@ -219,7 +219,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void acceptValue(SignalNotification sn) {
 		Signal signal = sn.getSignal();
-		log.tracef("%s.acceptValue: %s signal = %s ",TAG,getName(),signal.getCommand());
+		log.tracef("%s.acceptValue: signal = %s ",getName(),signal.getCommand());
 		if( signal.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_CLEAR_HIGH) && limitType.equals(LimitType.HIGH)) {
 			clear();
 		}
@@ -234,12 +234,12 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	 * We simply use this to do the calculation.
 	 */
 	@Override
-	public void evaluate() {
+	public synchronized void evaluate() {
 		if( Double.isNaN(mean) )              return;
 		if( Double.isNaN(standardDeviation) ) return;
 
 		// Evaluate the buffer and report
-		log.debugf("%s.evaluate %d of %d",TAG,queue.size(),sampleSize);
+		log.debugf("%s.evaluate %d of %d",getName(),queue.size(),sampleSize);
 		TruthValue newState = getRuleState();
 		if( !isLocked() && !newState.equals(truthState) ) {
 			// Give it a new timestamp
@@ -284,22 +284,22 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
-		log.debugf("%s.propertyChange: %s = %s",TAG,propertyName,event.getNewValue().toString());
+		log.debugf("%s.propertyChange: %s = %s",getName(),propertyName,event.getNewValue().toString());
 		if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET)) {
 			try {
 				clearOnReset = Boolean.parseBoolean(event.getNewValue().toString());
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert clear flag to a boolean (%s)",TAG,nfe.getLocalizedMessage());
+				log.warnf("%s: propertyChange Unable to convert clear flag to a boolean (%s)",getName(),nfe.getLocalizedMessage());
 			}
 		}
-		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_MAXIMUM_OUT_OF_RANGE)) {
+		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_MINIMUM_OUT_OF_RANGE)) {
 			try {
-				maxOut = Integer.parseInt(event.getNewValue().toString());
-				if( maxOut<0 ) maxOut = 0;
+				minOut = Integer.parseInt(event.getNewValue().toString());
+				if( minOut<1 ) minOut = 1;
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert max out-of-range to an integer (%s)",TAG,nfe.getLocalizedMessage());
+				log.warnf("%s: propertyChange Unable to convert max out-of-range to an integer (%s)",getName(),nfe.getLocalizedMessage());
 			}
 		}
 		else if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE)) {
@@ -310,7 +310,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 				reset();
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert sample size to an integer (%s)",TAG,nfe.getLocalizedMessage());
+				log.warnf("%s: propertyChange Unable to convert sample size to an integer (%s)",getName(),nfe.getLocalizedMessage());
 			}
 		}
 		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_SQC_LIMIT)) {
@@ -318,7 +318,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 				limit = Double.parseDouble(event.getNewValue().toString());
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert target value to a double (%s)",TAG,nfe.getLocalizedMessage());
+				log.warnf("%s: propertyChange Unable to convert target value to a double (%s)",getName(),nfe.getLocalizedMessage());
 			}
 		}
 		else if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_LIMIT_TYPE)) {
@@ -326,7 +326,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 			limitType = LimitType.valueOf(type);
 		}
 		else {
-			log.warnf("%s.propertyChange:Unrecognized property (%s)",TAG,propertyName);
+			log.warnf("%s.propertyChange:Unrecognized property (%s)",getName(),propertyName);
 		}
 	}
 	/**
@@ -340,7 +340,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		attributes.put("StandardDeviation", String.valueOf(standardDeviation));
 		attributes.put("Limit type", limitType.name());
 		attributes.put("Limit ~ std deviations", String.valueOf(limit));
-		attributes.put("Maximum Out of Range", String.valueOf(maxOut));
+		attributes.put("Minimum Out of Range", String.valueOf(minOut));
 		attributes.put("SampleSize", String.valueOf(sampleSize));
 		attributes.put("Current QueueSize", String.valueOf(queue.size()));
 		attributes.put("State", truthState.name());
@@ -387,7 +387,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		for( Double dbl:queue) {
 			double val = dbl.doubleValue();
 			
-			log.tracef("%s.getRuleState: val = %f (%f - %f)",TAG,val,lowLimit,highLimit);
+			log.tracef("%s.getRuleState: val = %f (%f,%f,%f)",getName(),val,lowLimit,mean,highLimit);
 			if( val < lowLimit) {
 				low++;
 			}
@@ -428,13 +428,16 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		}
 		
 		if( limitType.equals(LimitType.CONSECUTIVE) ) {
-			if( maxhighside >= maxOut || maxlowside >= maxOut ) result = TruthValue.TRUE; 
-			else if( total>=sampleSize ) result = TruthValue.FALSE;
+			int maxcurrent = (highside>lowside?highside:lowside);
+			if( maxhighside >= minOut || maxlowside >= minOut ) result = TruthValue.TRUE; 
+			else if( total+minOut-maxcurrent>sampleSize ) result = TruthValue.FALSE;
 		}
-		else if( outside>maxOut) result = TruthValue.TRUE;
-		else if( total>=(sampleSize-maxOut) ) result = TruthValue.FALSE;
+		else {
+			if( outside>=minOut) result = TruthValue.TRUE;
+			else if( total+minOut-outside>sampleSize-minOut ) result = TruthValue.FALSE;
+		}
 		
-		log.tracef("%s.getRuleState: %s %d of %d results,  %d high, %d low, (cons %d,%d) => %s (%s)",TAG,getName(),total,sampleSize,high,low,maxlowside,maxhighside,result.toString(),limitType.toString());
+		log.tracef("%s.getRuleState: %d of %d results,  %d high, %d low, %d outside, (cons %d,%d) => %s (%s)",getName(),total,sampleSize,high,low,outside,maxlowside,maxhighside,result.toString(),limitType.toString());
 		return result;	
 	}
 }

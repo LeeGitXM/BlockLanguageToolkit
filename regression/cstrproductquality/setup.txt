@@ -1,0 +1,37 @@
+#
+# Define attributes that are valid for many tests
+#
+log: [DATE] [TIME] Start Testing ...
+notification: SQCdiagnosis  "C:878d8e24-a0c0-4745-8051-377216336c2f:out"
+notification: SQC_Lo_1-1 "C:591aabea-f1cf-4648-ae68-342743d8fc24:out"
+notification: SQC_Lo_3-4 "C:fb169ceb-8acd-4d23-a06a-293fa9d2fcd8:out"
+notification: SQC_Lo_9-9 "C:1bf90853-13cf-4ca4-8519-394ee469f637:out"
+notification: SQC_Hi_1-1 "C:89b6dd62-b601-4ff1-bb22-88fe7feddc91:out"
+notification: SQC_Hi_3-4 "C:fb169ceb-8acd-4d23-a06a-293fa9d2fcd8:out"
+notification: SQC_Hi_9-9 "C:1bf90853-13cf-4ca4-8519-394ee469f637:out"
+
+# Script aliases - module is with respect to script directory
+script: appExists checkExists.application(name)
+script: famExists checkExists.family(app,name)
+script: initializeFinalDiagnosis configureFinalDiagnosis.initialize(diagram,block)
+script: resetDiagram resetDiagram.reset(name)
+script: setStateForApplication setDiagramState.setAll(name,state)
+script: setTimeFactor setTimeFactor.setFactor(factor)
+
+# We need to set the test framework and internal clocks the same
+timefactor: 15
+setTimeFactor (15)
+# Tag aliases
+tag: Value     "LabData/MLR-LAB-DATA"
+tag: StdDev    "LabData/MLR-SQC-LIMIT/standardDeviation"
+tag: Target    "LabData/MLR-SQC-LIMIT/target"
+tag: GrdFlag   Site/MLR-GRADE-FLAG
+
+# Outputs are unique to each diagram
+
+# Specify the provider that corresponds to the state of the diagrams
+tagprovider: XOM_ISOLATION
+setStateForApplication("CSTR_PRODUCT_QUALITY-GDA","ISOLATED")
+
+tagset: mlr-sqc Value StdDev Target GrdFlag
+status: setup complete.

@@ -77,6 +77,10 @@ public interface BlockConstants   {
 	public static final String PALETTE_TAB_OBSERVATION        = "Observation";
 	public static final String PALETTE_TAB_STATISTICS         = "Statistics";
 	public static final String PALETTE_TAB_MISC         = "Misc";
+	
+	// Default attribute offsets
+	public static final int DEFAULT_ATTRIBUTE_OFFSET_X     = 30;
+	public static final int DEFAULT_ATTRIBUTE_OFFSET_Y     = 75;
 	// Block filler colors
 	public static final int BLOCK_BACKGROUND_GRAYISH        = (new Color(208,215,220)).getRGB();
 	public static final int BLOCK_BACKGROUND_LIGHT_ROSE     = (new Color(220,208,200)).getRGB();

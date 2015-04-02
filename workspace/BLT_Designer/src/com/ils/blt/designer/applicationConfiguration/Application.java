@@ -1,8 +1,6 @@
 package com.ils.blt.designer.applicationConfiguration;
 
-import java.awt.BorderLayout;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -29,14 +27,15 @@ public class Application {
 	public String getName() { return name; }
 	public String getDescription() {return description;}
 	public String getConsole() {return console;}
-	public ArrayList<String> getConsoles() {return consoles;}
+	public List<String> getConsoles() {return consoles;}
 	public String getQueue() {return queue;}
-	public ArrayList<String> getQueues() {return queues;}
+	public List<String> getQueues() {return queues;}
 	public String getGroupRampMethod() {return groupRampMethod;}
 	public String getPost() {return post;}
 	public String getUnit() {return unit;}
-	public ArrayList< Map<String,Object> > getOutputs() {return outputList;}
+	public List< Map<String,Object> > getOutputs() {return outputList;}
 
+	@SuppressWarnings("unchecked")
 	public Map<String,Object> getOutput(String outputName) {
 		System.out.println("Getting " + outputName + " from output list: " + outputList);
 		Map<String,Object> outputMap = null;
