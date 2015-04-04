@@ -9,11 +9,11 @@ insert into PropertyMap values ('EM-GDA-COMPARE','bandwidth','','DOUBLE',1,'NONE
 insert into PropertyMap values ('EM-GDA-COMPARE','label','','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-DEADBAND-COMPARE','bandwidth','','DOUBLE',1,'NONE');
 insert into PropertyMap values ('EM-GDA-DEADBAND-COMPARE','label','','STRING',1,'NONE');
-insert into PropertyMap values ('EM-GDA-ELAPSED-TIME-VARIABLE','elapsedTimeMinutes','','STRING',1,'NONE');
+insert into PropertyMap values ('EM-GDA-ELAPSED-TIME-VARIABLE','elapsedTimeMinutes','InhibitInterval','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-ELAPSED-TIME-VARIABLE','label','','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-EXPIRATION-FILTER','label','','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','explanation','Explanation','STRING',1,'NONE');
-insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','label','','STRING',1,'NONE');
+insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','label','label','STRING',1,'NONE');
 -- NOTE: properties that are not used in Ignition map to empty strings.
 insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','logDiagnosisToDatabase','','BOOLEAN',1,'NONE');
 insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','manualMove','','BOOLEAN',1,'NONE');
@@ -22,7 +22,7 @@ insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','manualTextRequired',''
 insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','postTextRecommendation','PostTextRecommendation','BOOLEAN',1,'NONE');
 insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','priority','Priority','DOUBLE',1,'NONE');
 insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','recommendationCalculationMethod','CalculationMethod','STRING',1,'NONE');
-insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','recommendationMultiplier','Multiplier','DOUBLE',1,'NONE');
+insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','recommendationMultiplier','','DOUBLE',1,'NONE');
 insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','recommendationRefreshRateInMinutes','RecommendationRefreshInterval','DOUBLE',1,'NONE');
 insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','targets','Targets','LIST',1,'NONE');
 insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','textRecommendation','TextRecommendation','STRING',1,'NONE');
@@ -68,13 +68,13 @@ insert into PropertyMap values ('EM-GDA-SQC-LIMIT-OBSERVATION','numberOfStandard
 insert into PropertyMap values ('EM-GDA-SQC-LIMIT-OBSERVATION','optionalDesiredConfidence','','DOUBLE',1,'NONE');
 insert into PropertyMap values ('EM-GDA-SQC-LIMIT-OBSERVATION','sqcTestLabel','TestLabel','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-SubDIAGNOSIS','label','Label','STRING',1,'NONE');
-insert into PropertyMap values ('EM-GDA-SYMBOLIC-VARIABLE','LABEL','Label','STRING',1,'NONE');
+insert into PropertyMap values ('EM-GDA-SYMBOLIC-VARIABLE','LABEL','','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-TEST-POINT','label','Label','STRING',1,'NONE');
 insert into PropertyMap values ('GDL-AND-GATE','logic','','STRING',1,'NONE');
 insert into PropertyMap values ('GDL-AND-GATE','maximumUnknownInputs','','INTEGER',1,'NONE');
 insert into PropertyMap values ('GDL-AND-GATE','outputUncertainty','','DOUBLE',1,'NONE');
 insert into PropertyMap values ('GDL-AND-GATE','useExpiredInputs','','STRING',1,'NONE');
-insert into PropertyMap values ('GDL-ARITHMETIC-FUNCTION','arithmeticFunction','Funcion','BOOLEAN',1,'NONE');
+insert into PropertyMap values ('GDL-ARITHMETIC-FUNCTION','arithmeticFunction','Function','STRING',1,'NONE');
 insert into PropertyMap values ('GDL-CONCLUSION','statusOnInitialization','','BOOLEAN',1,'NONE');
 insert into PropertyMap values ('GDL-EQUALITY-OBSERVATION','equivalenceBand','Deadband','DOUBLE',1,'NONE');
 insert into PropertyMap values ('GDL-EQUALITY-OBSERVATION','hysteresisWhen','','DOUBLE',1,'NONE');
@@ -105,10 +105,11 @@ insert into PropertyMap values ('GDL-LOW-VALUE-OBSERVATION','statusOnInitializat
 insert into PropertyMap values ('GDL-LOW-VALUE-OBSERVATION','threshold','Limit','DOUBLE',1,'NONE');
 insert into PropertyMap values ('GDL-LOW-VALUE-OBSERVATION','thresholdUncertainty','Deadband','DOUBLE',1,'NONE');
 insert into PropertyMap values ('GDL-MOVING-AVERAGE','sampleSize','SampleSize','INTEGER',1,'NONE');
-insert into PropertyMap values ('GDL-MOVING-AVERAGE','sampleType','SampleType','STRING',1,'NONE');
+-- GDL-MOVING-AVERAGE is mapped into one of several Ignition blocks. depending on the sampleType
+insert into PropertyMap values ('GDL-MOVING-AVERAGE','sampleType','','STRING',1,'NONE');
 insert into PropertyMap values ('GDL-MOVING-AVERAGE','updateType','','STRING',1,'NONE');
 insert into PropertyMap values ('GDL-MOVING-AVERAGE','updateSize','','STRING',1,'NONE');
-insert into PropertyMap values ('GDL-MOVING-AVERAGE','eraseHistoryWhenReset','SampleType','BOOLEAN',1,'NONE');
+insert into PropertyMap values ('GDL-MOVING-AVERAGE','eraseHistoryWhenReset','clearOnReset','BOOLEAN',1,'NONE');
 insert into PropertyMap values ('GDL-MOVING-AVERAGE','requireFullHistory','','BOOLEAN',1,'NONE');
 insert into PropertyMap values ('GDL-MOVING-AVERAGE','valueOnInitialization','','STRING',1,'NONE');
 insert into PropertyMap values ('GDL-NUMERIC-ENTRY-POINT','nameOfSensor','TagPath','STRING',1,'TAG_READ');

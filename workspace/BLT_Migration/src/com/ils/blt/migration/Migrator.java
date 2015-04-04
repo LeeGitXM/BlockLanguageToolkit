@@ -385,7 +385,7 @@ public class Migrator {
 			
 		// Look for database path as an argument
 		if( args.length == 0) {
-			System.out.println(USAGE);
+			System.err.println(USAGE);
 			System.exit(1);
 		}
 		// Some of the embedded jars use log4j - redirect to std error. Log level is system property "log.level"

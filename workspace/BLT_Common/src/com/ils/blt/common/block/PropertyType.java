@@ -1,5 +1,5 @@
 /**
- *   (c) 2013-2014  ILS Automation. All rights reserved. 
+ *   (c) 2013-2015  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.common.block;
 
@@ -20,8 +20,7 @@ public enum PropertyType
             SCOPE,               // Transmission scope
             TIME,                // seconds, editor auto-scales display unit.
             TRUTHVALUE,
-            LIST,                // List of strings, char used to delimit is first value
-            QOLIST,              // List of Quant Output strings, comma-separated
+            LIST,                // List of comma-separated strings
             SCRIPT,              // Gets a Python editor
             SCRIPTREF,           // Name of a Python module to execute
             OBJECT               // Untyped primitive

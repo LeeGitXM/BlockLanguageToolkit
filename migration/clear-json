@@ -2,7 +2,6 @@
 # Remove all of the json files from the migration target area,
 # leaving only those checked into git.
 #
-BIN=`pwd`
-REPO=~/Development/ils/src/blt/json
-rm -f ${REPO}/g2/*.json
-rm -f ${REPO}/ignition/*.json
+JSON=${GIT_REPO}/blt/migration/json
+rm -f ${JSON}/g2/*.json
+rm -f ${JSON}/ignition/*.json

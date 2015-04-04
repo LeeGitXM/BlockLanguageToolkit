@@ -18,9 +18,9 @@ insert into PythonBlockProperties values ('xom.block.finaldiagnosis.FinalDiagnos
 -- insert into PythonBlockProperties values ('xom.block.finaldiagnosis.FinalDiagnosis','ManualMoveValue','DOUBLE',1);
 -- insert into PythonBlockProperties values ('xom.block.finaldiagnosis.FinalDiagnosis','ManualTextRequired','BOOLEAN',1);
 -- insert into PythonBlockProperties values ('xom.block.finaldiagnosis.FinalDiagnosis','Multiplier','DOUBLE',1);
-insert into PythonBlockProperties values ('xom.block.finaldiagnosis.FinalDiagnosis','PostRecommendation','BOOLEAN',1);
+insert into PythonBlockProperties values ('xom.block.finaldiagnosis.FinalDiagnosis','PostTextRecommendation','BOOLEAN',1);
 insert into PythonBlockProperties values ('xom.block.finaldiagnosis.FinalDiagnosis','Priority','DOUBLE',1);
-insert into PythonBlockProperties values ('xom.block.finaldiagnosis.FinalDiagnosis','Recommendation','STRING',1);
+insert into PythonBlockProperties values ('xom.block.finaldiagnosis.FinalDiagnosis','TextRecommendation','STRING',1);
 insert into PythonBlockProperties values ('xom.block.finaldiagnosis.FinalDiagnosis','RecommendationCallback','SCRIPTREF',1);
 insert into PythonBlockProperties values ('xom.block.finaldiagnosis.FinalDiagnosis','RecommendationRefreshInterval','DOUBLE',1);
 insert into PythonBlockProperties values ('xom.block.finaldiagnosis.FinalDiagnosis','Targets','LIST',1);

@@ -3,7 +3,7 @@ insert into ClassMap values ('EM-GDA-BAD-DATA-HANDLER','com.ils.block.DataCondit
 insert into ClassMap values ('EM-GDA-CLOCK-TIMER','com.ils.block.Clock');
 insert into ClassMap values ('EM-GDA-COMPARE','com.ils.block.Compare');
 insert into ClassMap values ('EM-GDA-DEADBAND-COMPARE','com.ils.block.CompareDeadband');
-insert into ClassMap values ('EM-GDA-ELAPSED-TIME-VARIABLE','com.ils.block.Junction');
+insert into ClassMap values ('EM-GDA-ELAPSED-TIME-VARIABLE','com.ils.block.Inhibitor');
 insert into ClassMap values ('EM-GDA-EXPIRATION-FILTER','com.ils.block.Junction');
 insert into ClassMap values ('EM-GDA-FINAL-DIAGNOSIS','xom.block.finaldiagnosis.FinalDiagnosis');
 insert into ClassMap values ('EM-GDA-HIGH-LIMIT','com.ils.block.HighLimitObservation');

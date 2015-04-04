@@ -26,7 +26,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 /**
  * On receipt of a trigger, this class inhibits further input from propagating.
  * Values that arrive during the inhibit period are discarded. Otherwise
- * values are propagated withput change.
+ * values are propagated without change.
  */
 @ExecutableBlock
 public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {

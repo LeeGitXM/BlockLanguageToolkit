@@ -71,6 +71,8 @@ public class PropertyMapper {
 	 * We also set other attributes that can be deduced from the name,
 	 * in particular:
 	 * 
+	 * In addition we make custom value conversions here.
+	 * 
 	 * @param g2Bock block created from G2
 	 * @param iblock Ignition equivalent derived from the G2 block
 	 */
@@ -79,17 +81,36 @@ public class PropertyMapper {
 		for(G2Property g2property:g2Block.getProperties()) {
 			String key = makePropertyMapKey(g2Block.getClassName(),g2property.getName());
 			String propName = propertyMap.get(key);
-			if( propName!=null ) {
+			// The map contains an empty string if the property is to be intentionally ignored
+			if( propName!=null && propName.length()>0 ) {
 				BlockProperty[] props = iblock.getProperties();
 				if( props!=null) {
+					boolean found = false;
 					for(BlockProperty bp: props ) {
 						if( bp.getName().equalsIgnoreCase(propName) ) {
-							//System.err.println(TAG+".setProperties match = "+key+", value = "+g2property.getValue());
+							found = true;
+							//System.err.println(TAG+".setProperties "+key+"="+bp.getName()+", value is "+g2property.getValue());
 							if(g2property.getValue()!=null && !g2property.getValue().toString().equalsIgnoreCase("none")) {
-								bp.setValue(g2property.getValue());
+								// Time conversion --- if the name contains "minutes", we convert to seconds
+								if( g2property.getName().endsWith("InMinutes") ||
+									g2property.getName().contains("TimeMin")	) {
+									try {
+										double dbl = Double.parseDouble(g2property.getValue().toString());
+										bp.setValue(new Double(dbl*60.));
+									}
+									catch (NumberFormatException nfe) {
+										System.err.println(String.format("%s.setProperties: Converting %s to seconds (%s)",TAG,g2property.getValue().toString(),nfe.getMessage()));
+									}
+								}
+								else {
+									bp.setValue(g2property.getValue());
+								}
 							}
 							break;
 						}
+					}
+					if( !found ) {
+						System.err.println(TAG+".setProperties: No ignition property "+propName+" for "+g2Block.getClassName()+"."+g2property.getName()+" ("+g2property.getValue().toString()+")");
 					}
 				}
 				else {
@@ -97,8 +118,8 @@ public class PropertyMapper {
 				}
 				
 			}
-			else {
-				System.err.println(TAG+".setProperties "+key+" is undefined");
+			else if( propName==null ) {
+				System.err.println(TAG+".setProperties "+g2Block.getClassName()+"."+g2property.getName()+" is not defined in the properties map");
 			}
 		}
 	}

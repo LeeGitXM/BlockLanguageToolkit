@@ -8,10 +8,9 @@ then
     echo "USAGE: migrate <inpath> <outpath>"
 	exit 2
 fi
-REPO=~/Development/ils/src
-cd $REPO/blt
+cd ${GIT_REPO}/blt
 BLT=`pwd`
-LIB=$REPO/external/lib
+LIB=${GIT_REPO}/external/lib
 JAR=${LIB}/blt-migration.jar
 DB=${BLT}/migration/mdb/conversion.db
 # Use for debugging - ruins output file however.

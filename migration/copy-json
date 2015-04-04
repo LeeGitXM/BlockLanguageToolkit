@@ -2,9 +2,8 @@
 # Copy the JSON files from svn into our project
 # for viewing in Eclipse.
 #
-BIN=`pwd`
-SVN=~/Development/ils/svn/EMChemicals/Migration/
-REPO=~/Development/ils/src/blt/json
-mkdir -p $REPO/g2
-mkdir -p $REPO/ignition
-cp ${SVN}/Vistalon/Exports/DiagnosticToolkit/json/*.json $REPO/g2
+SVN=${SVN_REPO}/EMChemicals/Migration/
+JSON=${GIT_REPO}/blt/migration/json
+mkdir -p $JSON/g2
+mkdir -p $JSON/ignition
+cp ${SVN}/Vistalon/Exports/DiagnosticToolkit/json/*.json $JSON/g2
