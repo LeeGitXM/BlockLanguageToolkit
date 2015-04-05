@@ -2,72 +2,54 @@
 # Define attributes that are valid for many tests
 #
 log: [DATE] [TIME] Start Testing ...
-notification: compareGain    "C:ac4e146c-cf94-4168-a595-69dfe5e89d31:out"
-notification: persistence    "C:389ee5dc-824e-42be-8d04-86ea8a391c94:out"
-notification: sqcResult      "C:a46aefb0-0a9b-45e8-b6a1-ccb769292d95:out"
-notification: sumObservation "C:4a8f708b-f77c-4dbf-abc2-7dd01a1224a1:out"
+notification: compareGain  notificationKey.construct("apps/family75/gain","COMPARE-354","out")
+notification: persistence  notificationKey.construct("apps/family75/persistence","PERSISTENCEGATE-954","out")
+notification: sumObservation notificationKey.construct("apps/family75/sum","OUTOFRANGEOBSERVATION-276","out")
 # Script aliases - module is with respect to script directory
-script: resetDiagram resetDiagram.reset(name)
-script: setStateForApplication setDiagramState.setAll(name,state)
-script: setTimeFactor setTimeFactor.setFactor(factor)
+script: resetDiagram diagramProxy.reset(name)
+script: setStateForApplication applicationProxy.setState(name,state)
+script: setTimeFactor timeFactor.setFactor(factor)
 # We need to set the test framework and internal clocks the same
 timefactor: 15
 setTimeFactor (15)
-# Tag aliases
-tag: ActionOut    MemoryTags/ActionOut
+
+# Tag aliases - use aliases for tag values used in assertions
+# Outputs should be unique to each diagram
+tag: ActionOut      MemoryTags/ActionOut
 tag: Arithmetic1    MemoryTags/ArithmeticOut1
 tag: Arithmetic2    MemoryTags/ArithmeticOut2
 tag: Arithmetic3    MemoryTags/ArithmeticOut3
 tag: Arithmetic4    MemoryTags/ArithmeticOut4
-tag: BooleanFeed  MemoryTags/BooleanFeed
-tag: ComparisonFeed MemoryTags/ComparisonFeed
-tag: DataState  MemoryTags/DataState
-tag: DoubleInput1 MemoryTags/DoubleInput1
-tag: DoubleInput2 MemoryTags/DoubleInput2
-tag: FDSelector  MemoryTags/FDSelector
-tag: Feed1 MemoryTags/MJKFeed1
-tag: GainFeed1 MemoryTags/GainFeed1
-tag: GainFeed2 MemoryTags/GainFeed2
-tag: GainOutput MemoryTags/GainOutput
-tag: Parameter MemoryTags/NumericParameter
-tag: Quality   MemoryTags/Quality
-tag: Source MemoryTags/NumericSource
-tag: SQC1 MemoryTags/SQCOut1
-tag: SQC2 MemoryTags/SQCOut2
-tag: SQC3 MemoryTags/SQCOut3
-tag: SQC4 MemoryTags/SQCOut4
-tag: SQCStdDev MemoryTags/MJKSQCStdDev
-tag: SQCTarget MemoryTags/MJKSQCTarget
-tag: SumResult MemoryTags/SumResult
-
-tag: DiagramOutput MemoryTags/DiagramOutput
-tag: Feed2 MemoryTags/MJKFeed2
-tag: Feed3 MemoryTags/MJKFeed3
-tag: Sink MemoryTags/NumericSink
-# Outputs are unique to each diagram
 tag: ConditionerData MemoryTags/ConditionerData
 tag: ConditionerQuality MemoryTags/ConditionerQuality
 tag: ComparisonOut1 MemoryTags/ComparisonOut1
 tag: ComparisonOut2 MemoryTags/ComparisonOut2
 tag: ComparisonOut3 MemoryTags/ComparisonOut3
+tag: GainOutput MemoryTags/GainOutput
+tag: Parameter MemoryTags/NumericParameter
 tag: ReadWriteBooleanOutput MemoryTags/ReadWriteBooleanOutput
 tag: ReadWriteNumericOutput MemoryTags/ReadWriteNumericOutput
 tag: ReadWriteSink MemoryTags/ReadWriteSink
+tag: Sink MemoryTags/NumericSink
+tag: SQC1 MemoryTags/SQCOut1
+tag: SQC2 MemoryTags/SQCOut2
+tag: SQC3 MemoryTags/SQCOut3
+tag: SQC4 MemoryTags/SQCOut4
+tag: SumResult MemoryTags/SumResult
+
 # Specify the provider that corresponds to the state of the diagrams
 tagprovider: XOM_ISOLATION
 setStateForApplication("app75","ISOLATED")
-#setStateForApplication("UseCases","ISOLATED")
 
-tagset: SingleBoolean BooleanFeed
-tagset: ComparisonDriver ComparisonFeed
-tagset: DualInput DoubleInput1 DoubleInput2
-tagset: FDSelect FDSelector
-tagset: GainFeed GainFeed1 GainFeed2
-tagset: DataConditioner Feed1 Quality DataState
-tagset: DualFeed Feed2 Feed3
-tagset: ReadWriteSource Source
-tagset: SQC Feed1 SQCStdDev SQCTarget
-
-
+# Use tag sets to drive tag values
+tagset: SingleBoolean MemoryTags/BooleanFeed
+tagset: ComparisonDriver MemoryTags/ComparisonFeed
+tagset: DualInput MemoryTags/DoubleInput1 MemoryTags/DoubleInput2
+tagset: FDSelect MemoryTags/FDSelector
+tagset: GainFeed MemoryTags/GainFeed1 MemoryTags/GainFeed2
+tagset: DataConditioner MemoryTags/MJKFeed1 MemoryTags/Quality MemoryTags/DataState
+tagset: DualFeed MemoryTags/MJKFeed2 MemoryTags/MJKFeed3
+tagset: ReadWriteSource MemoryTags/NumericSource
+tagset: SQC MemoryTags/MJKFeed1 MemoryTags/SQCStdDev MemoryTags/SQCTarget
 
 status: setup complete.

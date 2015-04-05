@@ -1,7 +1,9 @@
 # Copyright 2015. ILS Automation. All rights reserved.
-# Argument is the diagram path
+# Operations on a diagram
 import system.ils.blt.application as application
-def reset(name):
+
+# Argument is the diagram path
+def reset(common,name):
 	# The descriptor paths are :-separated, the input uses /
 	# the descriptor path starts with ":root:", the input stars with the application
 	descriptors = application.getDiagramDescriptors()

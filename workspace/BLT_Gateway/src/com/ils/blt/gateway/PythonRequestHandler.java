@@ -44,7 +44,7 @@ public class PythonRequestHandler   {
 			while( node!=null ) {
 				if( node instanceof ProcessApplication ) {
 					app = (ProcessApplication)node;
-					log.infof("%s.getApplication, found application = %s ",TAG,app.getName());
+					//log.infof("%s.getApplication, found application = %s ",TAG,app.getName());
 					break;
 				}
 				node = controller.getProcessNode(node.getParent());
@@ -81,6 +81,24 @@ public class PythonRequestHandler   {
 		}
 		return block;
 	}
+	/**
+	 * Find a block given the Id of the parent diagram the block itself.
+	 * 
+	 * @param diagram container for the blocks
+	 * @param blockName name of the block within the diagram
+	 * @return a string version of the Id of the block with the specified name, else null
+	 */
+	public String getBlockId(ProcessDiagram diagram,String blockName)  {
+		String id = null;
+		for( ProcessBlock block:diagram.getProcessBlocks() ) {
+			if( block.getName().equalsIgnoreCase(blockName)) {
+				id = block.getBlockId().toString();
+				break;
+			}
+		}
+		return id;
+	}
+	
 	/**
 	 * Search the tree of node ancestors until we find one with the project set.
 	 * @param uuidString identifier for a node, a string version of a UUID

@@ -1,0 +1,16 @@
+#
+# Test of a Input->Reader->Output
+#
+Test: SimpleLayout
+Show: browser "UseCases/UseCaseFamily/playground"
+# Tags are: BooleanFeed
+Tagset: SIMPLE
+Step: Simplest Case
+09:57 resetDiagram (UseCases/UseCaseFamily/playground)
+09:57:55 Assert: ReaderOutput = ""  "No data on reader"
+09:58 False
+09:58:15 True
+09:58:55 Assert: ReaderOutput = TRUE  "True at reader"
+09:59:05 False
+09:59:55 Assert: ReaderOutput = FALSE  "False at reader"
+

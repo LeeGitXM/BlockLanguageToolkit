@@ -1,5 +1,5 @@
 # Copyright 2015. ILS Automation. All rights reserved.
-# Configure the database for different FianlDiagnosis configurations
+# Configure the database for different FinalDiagnosis configurations
 # and calculation methods.
 # Calculation methods are of the form:
 #    xom.vistalon.diagToolkit.crxProductQuality.fd1_2_1
@@ -252,11 +252,9 @@ def initializeDatabase():
 	functionName = ds.getValueAt(row, 'function')
 	fileRoot = ds.getValueAt(row, 'fileRoot')
 	description = ds.getValueAt(row, 'description')
-																																																						# Start with a clean slate			
-																																																						initializeDatabase()
-																																																						
-																																																					# Run a specific test
-																																																						func = getattr(project.test.diagToolkit, functionName)
+	# Start with a clean slate			
+	initializeDatabase()
+	func = getattr(project.test.diagToolkit, functionName)
 	print "Starting ", functionName, "..."
 	func()
 	print "   .. finished", functionName

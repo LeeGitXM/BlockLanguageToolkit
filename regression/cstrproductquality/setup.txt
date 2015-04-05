@@ -11,12 +11,12 @@ notification: SQC_Hi_3-4 "C:fb169ceb-8acd-4d23-a06a-293fa9d2fcd8:out"
 notification: SQC_Hi_9-9 "C:1bf90853-13cf-4ca4-8519-394ee469f637:out"
 
 # Script aliases - module is with respect to script directory
-script: appExists checkExists.application(name)
-script: famExists checkExists.family(app,name)
-script: initializeFinalDiagnosis configureFinalDiagnosis.initialize(diagram,block)
-script: resetDiagram resetDiagram.reset(name)
-script: setStateForApplication setDiagramState.setAll(name,state)
-script: setTimeFactor setTimeFactor.setFactor(factor)
+script: appExists applicationProxy.exists(name)
+script: famExists familyProxy.exists(app,name)
+script: initializeFinalDiagnosis finalDiagnisisProxy.initialize(diagram,block)
+script: resetDiagram diagramProxy.reset(name)
+script: setStateForApplication applicationProxy.setState(name,state)
+script: setTimeFactor timeFactor.setFactor(factor)
 
 # We need to set the test framework and internal clocks the same
 timefactor: 15
