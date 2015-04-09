@@ -98,17 +98,15 @@ public class Parameter extends AbstractProcessBlock implements ProcessBlock {
 		this.state = BlockState.ACTIVE;
 		qv = vcn.getValue();
 		if( !isLocked() ) {
-			
-			if( vcn.getConnection()!=null ) {
+			if( vcn.getConnection()!=null && vcn.getConnection().getDownstreamPortName().equals(BlockConstants.IN_PORT_NAME) ) {
 				// Arrival through the input connection
 				String path = tag.getBinding().toString();
 				controller.updateTag(getParentId(),path, qv);
-				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
-				controller.acceptCompletionNotification(nvn);
+				log.infof("%s.acceptValue: Updated tag %s = %s",getName(),path,qv.getValue().toString());
 			}
-			else {
-				log.warnf("%s.acceptValue: received a null value, ignoring",getName());
-			}
+			// In either mode of update, we propagate the value on the output.
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+			controller.acceptCompletionNotification(nvn);
 		}
 		// Even if locked, we update the current state
 		if( qv.getValue()!=null) {

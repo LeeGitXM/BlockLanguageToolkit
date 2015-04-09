@@ -281,12 +281,17 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	@Override
 	public void acceptValue(IncomingNotification vcn) {
 		validate(vcn );
-		if( log.isTraceEnabled()) {
+		if( log.isDebugEnabled()) {
 			// An input from a TAG_READ bound property does not have a source
 			if( vcn.getConnection()!=null ) {
-				log.tracef("%s.acceptValue: from %s(%s)",getName(),
-						vcn.getConnection().getSource().toString(),
-						vcn.getConnection().getUpstreamPortName());
+				QualifiedValue qv = vcn.getValue();
+				if( qv!=null && qv.getValue()!=null ) {
+					log.debugf("%s.acceptValue: %s (%s) on %s",getName(),
+							qv.getValue().toString(),
+							qv.getQuality().getName(),
+							vcn.getConnection().getDownstreamPortName());
+
+				}
 			}
 		}
 	}
@@ -423,16 +428,18 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 * is enabled for debugging.
 	 */
 	private void validate(IncomingNotification vcn ) {
+		/*
 		if( log.isDebugEnabled() ) {
-			if(getName()==null)          log.warnf("AbstractProcessBlock.validate: getLabel is null");
+			if(getName()==null)          log.warnf("AbstractProcessBlock.validate: getName is null");
 			
-			if(vcn.getValue()==null)      log.warnf("AbstractProcessBlock.validate: getValue is null");
-			if(vcn.getConnection()==null) log.warnf("AbstractProcessBlock.validate: getConnection is null");
+			if(vcn.getValue()==null)      log.warnf("AbstractProcessBlock.validate: %s getValue is null",getName());
+			if(vcn.getConnection()==null) log.warnf("AbstractProcessBlock.validate: %s getConnection is null",getName());
 			else {
-				if(vcn.getConnection().getSource()==null) log.warnf("AbstractProcessBlock.validate: getSource is null");
-				if(vcn.getConnection().getUpstreamPortName()==null) log.warnf("AbstractProcessBlock.validate: getUpPort is null");
+				if(vcn.getConnection().getSource()==null) log.warnf("AbstractProcessBlock.validate: %s getSource is null",getName());
+				if(vcn.getConnection().getUpstreamPortName()==null) log.warnf("AbstractProcessBlock.validate: %s getUpPort is null",getName());
 			}
 		}
+		*/
 	}
 	
 	/**

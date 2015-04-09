@@ -20,6 +20,8 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.sqlite.JDBC;
 
+import com.ils.block.AbstractProcessBlock;
+
 /**
  * Read the tag mapping database table and create a tag import file
  * for Ignition.
@@ -85,7 +87,7 @@ public class TagMigrator {
 				String tagPath = rs.getString("TagPath");
 				String type = rs.getString("DataType");
 				TagData td = new TagData(tagPath,type);
-				tags.add(td);
+				if( !tags.contains(td) ) tags.add(td);
 			}
 			rs.close();
 		}
@@ -115,24 +117,27 @@ public class TagMigrator {
 			String tagPath = td.getPath();
 			int pos = tagPath.indexOf("]");
 			if( pos>=0 ) tagPath = tagPath.substring(pos+1);
-			String fullPath = tagPath;
+			String originalPath = tagPath;
 			pos = tagPath.indexOf("/");
 			String path = "";
+			String subPath = "";
 			while( pos>0 ) {
-				String dir = tagPath.substring(0, pos);
-				if(!paths.contains(dir)) {
-					paths.add(dir);
-					System.out.println("<Tag name=\""+dir+"\" path=\""+path+"\" type=\"Folder\"/>");
+				String dir = tagPath.substring(0, pos);  // Next segment
+				if(! path.isEmpty() ) path = path+"/";
+				path = path+dir;  
+				if(!paths.contains(path)) {
+					paths.add(path);
+					System.out.println("<Tag name=\""+dir+"\" path=\""+subPath+"\" type=\"Folder\"/>");
 				}
-				path = dir;
+				subPath = path;
 				tagPath = tagPath.substring(pos+1);
 				pos = tagPath.indexOf("/");
 			}
 			// When writing the tag, use the entire parent directory
 			String tagName = tagPath;
 			tagPath = td.getPath();
-			pos = fullPath.lastIndexOf("/");
-			if( pos>0 ) path = fullPath.substring(0, pos);
+			pos = originalPath.lastIndexOf("/");
+			if( pos>0 ) path = originalPath.substring(0, pos);
 			else path = "";
 			System.out.println("<Tag name=\""+tagName+"\" path=\""+path+"\" type=\"DB\">");
 			System.out.println("<Property name=\"DataType\">"+td.getTypeCode()+"</Property>");
@@ -164,6 +169,24 @@ public class TagMigrator {
 			else if( type.equalsIgnoreCase("Boolean")) tc = "6";
 			else if( type.equalsIgnoreCase("String")) tc = "7";
 			return tc;
+		}
+		
+		// So that class is comparable
+		// Same tagPath is sufficient to prove equality
+		@Override
+		public boolean equals(Object arg) {
+			boolean result = false;
+			if( arg instanceof TagData) {
+				TagData that = (TagData)arg;
+				if( this.getPath().equals(that.getPath()) ) {
+					result = true;
+				}
+			}
+			return result;
+		}
+		@Override
+		public int hashCode() {
+			return path.hashCode();
 		}
 	}
 	

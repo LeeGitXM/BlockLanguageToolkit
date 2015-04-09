@@ -19,16 +19,15 @@ import com.ils.blt.common.notification.SignalNotification;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.gateway.ControllerRequestHandler;
 import com.ils.blt.gateway.engine.BlockExecutionController;
-import com.ils.blt.gateway.engine.TagReader;
-import com.ils.blt.gateway.engine.TagWriter;
 import com.ils.blt.gateway.proxy.ProxyHandler;
+import com.ils.blt.gateway.tag.TagReader;
+import com.ils.blt.gateway.tag.TagWriter;
 import com.ils.blt.test.common.MockDiagramScriptingInterface;
 import com.ils.blt.test.gateway.mock.MockDiagram;
 import com.ils.blt.test.gateway.mock.MockInputBlock;
 import com.ils.blt.test.gateway.mock.MockOutputBlock;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
@@ -70,11 +69,12 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 	 * @return the Id of the diagram
 	 */
 	@Override
-	public UUID createMockDiagram(String blockClass) {
+	public UUID createMockDiagram(String blockClass,String project) {
+		long projectId = context.getProjectManager().getProjectId(project);
 		SerializableDiagram origin = new SerializableDiagram();
 		origin.setId(UUID.randomUUID());
 		origin.setName("Mock:"+blockClass);
-		MockDiagram mock = new MockDiagram(origin,null);  // No parent
+		MockDiagram mock = new MockDiagram(origin,null,projectId);  // No parent
 		// Instantiate a block from the class
 		ProcessBlock uut = requestHandler.createInstance(blockClass, mock.getSelf(), UUID.randomUUID());
 		if( uut==null) {

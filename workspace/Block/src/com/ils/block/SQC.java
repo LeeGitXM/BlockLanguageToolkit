@@ -158,7 +158,6 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		QualifiedValue qv = incoming.getValue();
 		Quality qual = qv.getQuality();
 		String port = incoming.getConnection().getDownstreamPortName();
-		log.debugf("%s.acceptValue: on %s %s (%s)",getName(),port,qv.getValue().toString(),qual.getName());
 		if( port.equals(PORT_VALUE)  ) {
 			if( qual.isGood() && qv!=null && qv.getValue()!=null ) {
 				try {
@@ -219,11 +218,12 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void acceptValue(SignalNotification sn) {
 		Signal signal = sn.getSignal();
-		log.tracef("%s.acceptValue: signal = %s ",getName(),signal.getCommand());
 		if( signal.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_CLEAR_HIGH) && limitType.equals(LimitType.HIGH)) {
+			log.tracef("%s.acceptValue: signal = %s ",getName(),signal.getCommand());
 			clear();
 		}
 		else if( signal.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_CLEAR_LOW) && limitType.equals(LimitType.LOW)) {
+			log.tracef("%s.acceptValue: signal = %s ",getName(),signal.getCommand());
 			clear();
 		}
 	}
@@ -274,7 +274,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		
 	}
 	private void notifyOfStatus(QualifiedValue qv) {
-		//log.infof("%s.notifyOfStatus %s = %s",TAG,getBlockId().toString(),qv.getValue().toString());
+		//log.tracef("%s.notifyOfStatus %s = %s",getName(),getBlockId().toString(),qv.getValue().toString());
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 	/**
@@ -324,6 +324,9 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		else if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_LIMIT_TYPE)) {
 			String type = event.getNewValue().toString().toUpperCase();
 			limitType = LimitType.valueOf(type);
+		}
+		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_TEST_LABEL)) {
+			;   // Default handling is sufficient
 		}
 		else {
 			log.warnf("%s.propertyChange:Unrecognized property (%s)",getName(),propertyName);

@@ -9,7 +9,6 @@ import org.python.core.CompilerFlags;
 import org.python.core.Py;
 import org.python.core.PyCode;
 import org.python.core.PyObject;
-import org.python.core.PyString;
 import org.python.core.PyStringMap;
 
 import com.inductiveautomation.ignition.common.script.JythonExecException;
@@ -48,8 +47,8 @@ public class Callback {
 	private PyCode code;
 	protected String module;
 	protected String pythonPackage;
-	private String[] localVariables;      // Derived from comma-separated
-	private String localVariableList;
+	private String[] localVariables  = new String[0];;      // Derived from comma-separated
+	private String localVariableList = "";
 	private PyStringMap localsMap = null;
 
 
@@ -57,8 +56,6 @@ public class Callback {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		pythonPackage = "ils.blt.util";      // Default
 		module = "";
-		localVariables = new String[0];
-		localVariableList="";
 		code = null;
 	}
 	
@@ -82,7 +79,7 @@ public class Callback {
 		return code!=null;
 	}
 	/**
-	 *  Run the script in line. On completion return the contents of the shared variable.
+	 *  Run the script in-line. On completion return the contents of the shared variable.
 	 */
 	public void execute(ScriptManager scriptManager) {
 		if( localsMap == null ) throw new IllegalArgumentException("Attempt to execute with uninitialized locals map.");
@@ -92,10 +89,10 @@ public class Callback {
 			scriptManager.runCode(code,localsMap);
 		}
 		catch( JythonExecException jee) {
-			log.error(String.format("%s.execute: JythonException executing python %s (%s) ",TAG,script,jee.getMessage()),jee);
+			log.error(String.format("%s.execute: JythonExecException executing python %s(%s)",TAG,script,localVariableList),jee);
 		}
 		catch(Exception ex) {
-			log.error(String.format("%s.execute: Error executing python %s (%s)",TAG,script,ex.getMessage()+")"),ex);
+			log.error(String.format("%s.execute: Error executing python %s(%s) (%s)",TAG,script,localVariableList,ex.getMessage()+")"),ex);
 		}
 		log.infof("%s: Completed callback script.",TAG);
 		localsMap = null;

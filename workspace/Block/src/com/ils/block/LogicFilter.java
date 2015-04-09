@@ -51,6 +51,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	private double limit = 0.0;
 	private double scanInterval = 1.0;    // ~secs
 	private double timeWindow = 60; // ~ secs
+	private int bufferSize = 1;
 	private HysteresisType hysteresis = HysteresisType.NEVER;
 	private final Watchdog dog;
 	
@@ -60,6 +61,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	public LogicFilter() {
 		dog = new Watchdog(TAG,this);
 		buffer = new LinkedList<TruthValue>();
+		bufferSize = (int)(0.5+timeWindow/scanInterval);
 		initialize();
 		initializePrototype();	
 	}
@@ -96,7 +98,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		setProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW, windowProperty);
 		BlockProperty ratioProperty = new BlockProperty(BLOCK_PROPERTY_RATIO,new Double(0.0),PropertyType.DOUBLE,false);
 		ratioProperty.setBindingType(BindingType.ENGINE);
-		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, ratioProperty);
+		setProperty(BLOCK_PROPERTY_RATIO, ratioProperty);
 
 		// Define a single input and output
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
@@ -153,25 +155,29 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public synchronized void evaluate() {
+
+		//log.tracef("%s.evaluate buffer %d of %d",getName(),buffer.size(),bufferSize);
+		// Set up the next poll, no matter what.
+		dog.setSecondsDelay(scanInterval);
+		timer.updateWatchdog(dog);  // pet dog
+		
 		if( currentValue.equals(TruthValue.UNSET) ) return;   // Nothing on input yet
 		
 		// Add the currentValue to the queue
 		buffer.addLast(currentValue);
-		int maxPoints = (int)(timeWindow/scanInterval);
-		while(buffer.size() > maxPoints ) {
+		
+		while(buffer.size() > bufferSize ) {
 			buffer.removeFirst();
 		}
-		//log.tracef("%s.evaluate buffer %d of %d",TAG,buffer.size(),maxPoints);
-		
-		dog.setSecondsDelay(scanInterval);
-		timer.updateWatchdog(dog);  // pet dog
 		
 		TruthValue newState = TruthValue.UNKNOWN;
-		ratio = computeTrueRatio(maxPoints);
-		// Even if locked, we update the current state
-		controller.sendPropertyNotification(getBlockId().toString(),BLOCK_PROPERTY_RATIO,new BasicQualifiedValue(new Double(ratio)));
-		newState = computeState(currentState,ratio,computeFalseRatio(maxPoints));
-		log.tracef("%s.evaluate ... ratio %f (%s)",TAG,ratio,newState.name());
+		if( buffer.size()>= bufferSize ) {
+			ratio = computeTrueRatio(bufferSize);
+			// Even if locked, we update the property state
+			controller.sendPropertyNotification(getBlockId().toString(),BLOCK_PROPERTY_RATIO,new BasicQualifiedValue(new Double(ratio)));
+			newState = computeState(currentState,ratio,computeFalseRatio(bufferSize));
+			log.tracef("%s.evaluate ... ratio %f (%s was %s)",getName(),ratio,newState.name(),currentState.name());
+		}
 		
 		if( !isLocked() ) {
 			if(newState!=currentState) {
@@ -189,11 +195,18 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public SerializableBlockStateDescriptor getInternalStatus() {
 		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
+		Map<String,String> attributes = descriptor.getAttributes();
+		attributes.put("Ratio", String.valueOf(ratio));
+		attributes.put("LatestValue", currentValue.name());
+		attributes.put("CurrentState", currentState.name());
+		
 		List<Map<String,String>> descBuffer = descriptor.getBuffer();
+		int index = 0;
 		for( TruthValue tv:buffer) {
 			Map<String,String> qvMap = new HashMap<>();
-			qvMap.put("Value", tv.name());
+			qvMap.put("RawValue"+index, tv.name());
 			descBuffer.add(qvMap);
+			index++;
 		}
 		return descriptor;
 	}
@@ -228,7 +241,8 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 					if( scanInterval < 0.1 ) scanInterval = 0.1;
 					if( scanInterval > timeWindow ) scanInterval = timeWindow;
 					dog.setSecondsDelay(scanInterval);
-					timer.updateWatchdog(dog);  // pet dog
+					timer.updateWatchdog(dog);  // pet do
+					bufferSize = (int)(0.5+timeWindow/scanInterval);
 				}
 				else {
 					timer.removeWatchdog(dog);
@@ -256,6 +270,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 						scanInterval = timeWindow;
 						dog.setSecondsDelay(scanInterval);
 						timer.updateWatchdog(dog);  // pet dog
+						if( scanInterval>0.0) bufferSize = (int)(0.5+timeWindow/scanInterval);
 					}
 				}
 				else {
@@ -279,7 +294,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		notifyOfStatus(qv);
 	}
 	private void notifyOfStatus(QualifiedValue qv) {
-		controller.sendPropertyNotification(getBlockId().toString(), BLOCK_PROPERTY_RATIO,qv);
+		controller.sendPropertyNotification(getBlockId().toString(), BLOCK_PROPERTY_RATIO,new BasicQualifiedValue(new Double(ratio)));
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 	

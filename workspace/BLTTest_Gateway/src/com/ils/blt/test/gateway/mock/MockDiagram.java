@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
+ *   (c) 2014-2015  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.test.gateway.mock;
 
@@ -30,8 +30,8 @@ public class MockDiagram extends ProcessDiagram {
 	 * @param diagm the unserialized object that represents the diagram.
 	 * @param parent 
 	 */
-	public MockDiagram(SerializableDiagram diagm,UUID parent) { 
-		super(diagm,parent);
+	public MockDiagram(SerializableDiagram diagm,UUID parent,long projId) { 
+		super(diagm,parent,projId);
 	}
 
 	public void addBlock(ProcessBlock block) {

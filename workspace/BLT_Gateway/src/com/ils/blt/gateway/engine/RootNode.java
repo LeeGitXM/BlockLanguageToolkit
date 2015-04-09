@@ -40,7 +40,7 @@ public class RootNode extends ProcessNode {
 	}
 	
 	public void addChild(ProcessNode child,long childProjectId) {
-		log.infof("%s.addChild: %s[%s]",TAG,getName(),child.getName());
+		log.debugf("%s.addChild: %s[%s]",TAG,getName(),child.getName());
 		Long key = new Long(childProjectId);
 		String projectName = context.getProjectManager().getProjectName(childProjectId, ProjectVersion.Published);
 		if( projectName==null ) {

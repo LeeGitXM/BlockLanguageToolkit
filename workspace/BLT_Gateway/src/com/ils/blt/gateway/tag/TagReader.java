@@ -4,7 +4,7 @@
  *   The tag factory is designed to be called from the client
  *   via RPC. The client presents the same interface to scripting functions.
  */
-package com.ils.blt.gateway.engine;
+package com.ils.blt.gateway.tag;
 
 import java.io.IOException;
 

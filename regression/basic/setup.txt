@@ -2,9 +2,9 @@
 # Define attributes that are valid for many tests
 #
 log: [DATE] [TIME] Start Testing ...
-notification: compareGain  notificationKey.construct("apps/family75/gain","COMPARE-354","out")
-notification: persistence  notificationKey.construct("apps/family75/persistence","PERSISTENCEGATE-954","out")
-notification: sumObservation notificationKey.construct("apps/family75/sum","OUTOFRANGEOBSERVATION-276","out")
+notification: compareGain  notificationKey.construct("app75/family75/gain","COMPARE-354","out")
+notification: persistence  notificationKey.construct("app75/family75/persistence","PERSISTENCEGATE-954","out")
+notification: sumObservation notificationKey.construct("app75/family75/sum","OUTOFRANGEOBSERVATION-276","out")
 # Script aliases - module is with respect to script directory
 script: resetDiagram diagramProxy.reset(name)
 script: setStateForApplication applicationProxy.setState(name,state)
@@ -26,6 +26,11 @@ tag: ComparisonOut1 MemoryTags/ComparisonOut1
 tag: ComparisonOut2 MemoryTags/ComparisonOut2
 tag: ComparisonOut3 MemoryTags/ComparisonOut3
 tag: GainOutput MemoryTags/GainOutput
+tag: InhibitorOutput MemoryTags/InhibitorOutput
+tag: LogicFilterTrue MemoryTags/LogicFilterTrue
+tag: LogicFilterFalse MemoryTags/LogicFilterFalse
+tag: LogicFilterAlways MemoryTags/LogicFilterAlways
+tag: LogicFilterNever MemoryTags/LogicFilterNever
 tag: Parameter MemoryTags/NumericParameter
 tag: ReadWriteBooleanOutput MemoryTags/ReadWriteBooleanOutput
 tag: ReadWriteNumericOutput MemoryTags/ReadWriteNumericOutput
@@ -44,12 +49,14 @@ setStateForApplication("app75","ISOLATED")
 # Use tag sets to drive tag values
 tagset: SingleBoolean MemoryTags/BooleanFeed
 tagset: ComparisonDriver MemoryTags/ComparisonFeed
-tagset: DualInput MemoryTags/DoubleInput1 MemoryTags/DoubleInput2
-tagset: FDSelect MemoryTags/FDSelector
-tagset: GainFeed MemoryTags/GainFeed1 MemoryTags/GainFeed2
 tagset: DataConditioner MemoryTags/MJKFeed1 MemoryTags/Quality MemoryTags/DataState
 tagset: DualFeed MemoryTags/MJKFeed2 MemoryTags/MJKFeed3
+tagset: DualInput MemoryTags/DoubleInput1 MemoryTags/DoubleInput2
+tagset: InhibitInput MemoryTags/InhibitorFeed MemoryTags/InhibitorFinalDiagnosis
+tagset: FDSelect MemoryTags/FDSelector
+tagset: GainFeed MemoryTags/GainFeed1 MemoryTags/GainFeed2
+tagset: LogicFilterInput MemoryTags/LogicFilterFeed
 tagset: ReadWriteSource MemoryTags/NumericSource
-tagset: SQC MemoryTags/MJKFeed1 MemoryTags/SQCStdDev MemoryTags/SQCTarget
+tagset: SQC MemoryTags/MJKFeed1 MemoryTags/MJKSQCStdDev MemoryTags/MJKSQCTarget
 
 status: setup complete.

@@ -266,7 +266,7 @@ public abstract class AbstractUIView extends JComponent
 	// Force a repaint.
 	@Override
 	public void update() {
-		log.infof("%s.update %s ...",TAG,getBlock().getName());
+		log.debugf("%s.update %s ...",TAG,getBlock().getName());
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				repaint();
@@ -277,7 +277,7 @@ public abstract class AbstractUIView extends JComponent
 	// The block has changed, re-configure. The base method recalculates 
 	// anchor points. The only current use is when the user changes connection types.
 	public void reconfigure() { 
-		log.infof("%s.reconfigure (%s)",TAG,getBlock().getName());
+		log.debugf("%s.reconfigure (%s)",TAG,getBlock().getName());
 		initAnchorPoints();
 		
 	}
@@ -294,7 +294,7 @@ public abstract class AbstractUIView extends JComponent
 			if( desc.isHidden()) hiddenIndex = index;
 			index++;
 		}
-		log.infof("%s.stateChanged %s ...hidden = %d",TAG,getBlock().getName(),hiddenIndex);
+		log.debugf("%s.stateChanged %s ...hidden = %d",TAG,getBlock().getName(),hiddenIndex);
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				repaint();

@@ -458,7 +458,7 @@ public class ModelManager implements ProjectListener  {
 			// If this is an existing diagram, we need to remove the old version
 			ProcessDiagram diagram = (ProcessDiagram)nodesByUUID.get(sd.getId());
 			if( diagram==null) {
-				diagram = new ProcessDiagram(sd,res.getParentUuid());
+				diagram = new ProcessDiagram(sd,res.getParentUuid(),projectId);
 				diagram.setResourceId(res.getResourceId());
 				diagram.setProjectId(projectId);
 				// Add in the new Diagram

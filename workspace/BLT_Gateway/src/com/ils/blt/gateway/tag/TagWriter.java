@@ -2,7 +2,7 @@
  *   (c) 2013-2015  ILS Automation. All rights reserved.
  *
  */
-package com.ils.blt.gateway.engine;
+package com.ils.blt.gateway.tag;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -78,8 +78,8 @@ public class TagWriter  {
 					else if( dtype==DataType.Int1 ||
 							dtype==DataType.Int2 ||
 							dtype==DataType.Int4 ||
-							dtype==DataType.Int8   )     value = Integer.parseInt(strValue);
-					else if( dtype==DataType.Boolean)     value = Boolean.parseBoolean(strValue);
+							dtype==DataType.Int8   )     value = (int)Double.parseDouble(strValue);
+					else if( dtype==DataType.Boolean)    value = Boolean.parseBoolean(strValue);
 					else value = strValue;
 
 					LocalRequest request = new LocalRequest(tp,value,qv.getQuality());
@@ -98,7 +98,7 @@ public class TagWriter  {
 			log.warnf(TAG+"%s.localRequest: parse exception for path %s (%s)",TAG,path,ioe.getMessage());
 		}
 		catch(NumberFormatException nfe) {
-			log.warn(TAG+"updateTag: Exception setting tag value ("+nfe.getLocalizedMessage()+")");
+			log.warn(TAG+".updateTag: NumberFormatException setting "+path+" to "+qv.getValue().toString()+"("+nfe.getLocalizedMessage()+")");
 			return;
 		}
 		catch(Exception ex) {

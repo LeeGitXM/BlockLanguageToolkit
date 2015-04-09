@@ -1,0 +1,21 @@
+#
+# Test of the inhibit block
+#
+Test: Inhibit Block with FinalDiagnosis
+Show: browser "app75/family75/inhibitor"
+resetDiagram (app75/family75/inhibitor)
+Tagset: InhibitInput
+Step: Passthrough
+10:00 12. false
+10:01 13.
+10:01:55 Assert: InhibitorOutput = 13 "Passthrough is 13"
+10:02 14.
+10:02:30 Assert: InhibitorOutput = 14 "Passthrough is 14"
+Step: Diagnosis True - Inhibit
+10:03 15. true
+10:04 16. 
+10:05 17.
+10:05:30 Assert: InhibitorOutput = 15 "Output inhibited"
+Step: Past Inhibit Interval
+10:09 21. false
+10:09:30 Assert: InhibitorOutput = 21 "Output again passes through"

@@ -41,9 +41,8 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface{
 	 * Create, but do not activate, a mock diagram.
 	 * @return the Id of the diagram
 	 */
-	@Override
-	public UUID createMockDiagram(String blockClass) {
-		return requestHandler.createMockDiagram(blockClass);
+	public UUID createMockDiagram(String blockClass,String project) {
+		return requestHandler.createMockDiagram(blockClass,project);
 	}
 	/**
 	 * Add an input block to the mock diagram. Connect it to the block-under-test's 

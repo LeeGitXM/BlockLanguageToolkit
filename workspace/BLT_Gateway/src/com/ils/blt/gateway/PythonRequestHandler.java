@@ -105,7 +105,6 @@ public class PythonRequestHandler   {
 	 * @return the default database for the project containing this node
 	 */
 	public String getDefaultDatabase(String uuidString)  {
-		log.infof("%s.getDefaultDatabase, node = %s ",TAG,uuidString);
 		String dbName = "";
 		try {
 			UUID uuid = UUID.fromString(uuidString);
@@ -123,6 +122,8 @@ public class PythonRequestHandler   {
 		catch(IllegalArgumentException iae) {
 			log.warnf("%s.getDefaultDatabase: %s is an illegal UUID (%s)",TAG,uuidString,iae.getMessage());
 		}
+		if( !dbName.isEmpty() ) log.infof("%s.getDefaultDatabase: %s ",TAG,dbName);
+		else                   log.warnf("%s.getDefaultDatabase: Database for diagram %s not found,",TAG,uuidString);
 		return dbName;
 	}
 	/**
@@ -149,6 +150,7 @@ public class PythonRequestHandler   {
 		catch(IllegalArgumentException iae) {
 			log.warnf("%s.getDefaultTagProvider: %s is an illegal UUID (%s)",TAG,uuidString,iae.getMessage());
 		}
+		if( provider.isEmpty() ) log.warnf("%s.getDefaultTagProvider: Provider for diagram %s not found,",TAG,uuidString);
 		return provider;
 	}
 	/**
@@ -222,5 +224,18 @@ public class PythonRequestHandler   {
 		catch(IllegalArgumentException iae) {
 			log.warnf("%s.postValue: one of %s or %s illegal UUID (%s)",TAG,parent,id,iae.getMessage());
 		}
+	}
+	/**
+	 * Broadcast a result to blocks in the diagram
+	 * 
+	 * @param parent identifier for the diagram, a string version of a UUID
+	 * @param className name of the class of blocks to be signaled
+	 * @param command the value of the signal
+	 */
+	public void sendLocalSignal(String parent,String command,String message,String arg)  {
+		log.infof("%s.sendLocalSignal - %s = %s %s %s ",TAG,parent,command,message,arg);
+		
+		ControllerRequestHandler.getInstance().sendLocalSignal(parent,command,message,arg);
+		
 	}
 }

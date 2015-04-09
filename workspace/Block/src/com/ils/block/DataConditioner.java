@@ -38,7 +38,6 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 	private final String TAG = "DataConditioner";
 	private static final String VALUE_PORT_NAME = "value";
 	private static final String QUALITY_PORT_NAME = "quality";
-	private static final String OUT_PORT_NAME = "out";
 	private static final String STATUS_PORT_NAME = "status";
 	private final QualifiedValue BAD_VALUE = new BasicQualifiedValue(0.0,new BasicQuality("BAD",Quality.Level.Bad));
 	private final Watchdog dog;

@@ -86,8 +86,8 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 		this.state = BlockState.ACTIVE;
 		qv = vcn.getValue();
 		if( !isLocked() ) {
-			log.infof("%s.acceptValue: received %s",getName(),qv.toString());
 			if( qv.getValue() != null ) {
+				log.debugf("%s.acceptValue: %s (%s)",getName(),qv.getValue().toString(),qv.getQuality().getName());
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 				controller.acceptCompletionNotification(nvn);
 			}

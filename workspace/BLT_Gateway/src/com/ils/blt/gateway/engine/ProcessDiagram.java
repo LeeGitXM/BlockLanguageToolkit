@@ -52,11 +52,12 @@ public class ProcessDiagram extends ProcessNode {
 	 * @param diagm the unserialized object that represents the diagram.
 	 * @param parent 
 	 */
-	public ProcessDiagram(SerializableDiagram diagm,UUID parent) { 
+	public ProcessDiagram(SerializableDiagram diagm,UUID parent,long projId) { 
 		super(diagm.getName(),parent,diagm.getId());
 		this.diagram = diagm;
 		this.state = diagm.getState();
 		this.resourceId = diagm.getResourceId();
+		this.projectId = projId;
 		blocks = new HashMap<UUID,ProcessBlock>();
 		connectionMap = new HashMap<ConnectionKey,ProcessConnection>();
 		outgoingConnections = new HashMap<BlockPort,List<ProcessConnection>>();
@@ -115,7 +116,7 @@ public class ProcessDiagram extends ProcessNode {
 			UUID id = sb.getId();
 			ProcessBlock pb = blocks.get(id);
 			if( pb==null ) {
-				pb = blockFactory.blockFromSerializable(getSelf(),sb);
+				pb = blockFactory.blockFromSerializable(getSelf(),sb,getProjectId());
 				if( pb!=null ) {
 					// Set timer
 					if(DiagramState.ACTIVE.equals(state)) pb.setTimer(controller.getTimer());
@@ -123,7 +124,9 @@ public class ProcessDiagram extends ProcessNode {
 					blocks.put(pb.getBlockId(), pb);
 					log.debugf("%s.analyze: New block %s(%d)",TAG,pb.getName(),pb.hashCode());
 				}
-				else log.errorf("%s.analyze: ERROR %s failed to instantiate %s",TAG,diagrm.getName(),sb.getClassName());
+				else {
+					log.errorf("%s.analyze: ERROR, diagram %s failed to instantiate block of type %s",TAG,diagrm.getName(),sb.getClassName());
+				}
 			}
 			else {
 				log.debugf("%s.analyze: Update block %s(%d)",TAG,pb.getName(),pb.hashCode());

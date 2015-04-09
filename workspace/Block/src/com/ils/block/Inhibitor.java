@@ -21,6 +21,7 @@ import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.notification.Signal;
 import com.ils.blt.common.notification.SignalNotification;
+import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
@@ -32,7 +33,8 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	private static final String TAG = "Inhibitor";
 	private double interval = 0.0;   // ~secs
-	private long periodEndTime = 0;
+	private final Watchdog dog;
+	private boolean inhibiting = false;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -40,6 +42,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	public Inhibitor() {
 		initialize();
 		initializePrototype();
+		dog = new Watchdog(TAG,this);
 	}
 	
 	/**
@@ -52,6 +55,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	public Inhibitor(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
+		dog = new Watchdog(TAG,this);
 	}
 	
 	
@@ -71,17 +75,16 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 		if( !isLocked() ) {
 			String port = vcn.getConnection().getDownstreamPortName();
 			if( port.equals(BlockConstants.IN_PORT_NAME)  ) {
-				if( System.currentTimeMillis() > periodEndTime ) { 
+				if( !inhibiting ) { 
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,vcn.getValue());
 					controller.acceptCompletionNotification(nvn);
 					notifyOfStatus(vcn.getValue());
 				}
 				else {
-					log.infof("%s.acceptValue: %s ignoring inhibited input ...",TAG,this.toString());
+					log.infof("%s.acceptValue: %s ignoring inhibited input ...",getName(),this.toString());
 				}
 			}
 		}
-		
 	}
 	
 	/**
@@ -96,9 +99,21 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	public void acceptValue(SignalNotification sn) {
 		Signal signal = sn.getSignal();
 		if( signal.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_INHIBIT)) {
-			periodEndTime = System.currentTimeMillis()+(long)(interval*1000);
-			log.infof("%s.acceptValue: %s received inhibit command",TAG,this.toString());
+			if( interval>0.0) {
+				dog.setSecondsDelay(interval);
+				timer.updateWatchdog(dog);  // pet dog
+				inhibiting = true;
+			}
+			log.infof("%s.acceptValue: %s received inhibit command (delay %f secs on %s)",getName(),this.toString(),interval,timer.getName());
 		}
+	}
+	/**
+	 * The interval has expired. We are no longer inhibiting.
+	 */
+	@Override
+	public void evaluate() {
+		log.infof("%s.evaluate: %s timeout expired",getName(),this.toString());
+		inhibiting = false;
 	}
 	
 	/**
@@ -165,6 +180,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	
 	@Override
 	public void reset() {
-		periodEndTime = 0;
+		timer.removeWatchdog(dog);
+		inhibiting = false;
 	}
 }

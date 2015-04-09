@@ -472,12 +472,13 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @param className filter of the receiver blocks to be targeted.
 	 * @param command string of the signal.
 	 */
-	public boolean sendLocalSignal(String diagramId,String className, String command) {
-		log.infof("%s.sendLocalSignal for %s %s %s...",TAG,diagramId,className,command);
+	@Override
+	public boolean sendLocalSignal(String diagramId, String command,String message,String arg) {
+		log.infof("%s.sendLocalSignal for %s %s %s %s...",TAG,diagramId,command,message,arg);
 		boolean result = false;
 		try {
 			Boolean value = GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "sendLocalSignal",diagramId,className,command);
+					BLTProperties.MODULE_ID, "sendLocalSignal",diagramId,command,message,arg);
 			if( value!=null ) result = value.booleanValue();
 		}
 		catch(Exception ex) {

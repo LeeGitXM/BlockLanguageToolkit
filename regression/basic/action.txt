@@ -16,9 +16,9 @@ Tagset: DualInput
 Step: -90
 10:02 -90.
 10:02:10 Assert: 89.99 < Arithmetic1 < 90.01 "Absolute value = 90"
-10:02:20 Assert: -1.01 < Arithmetic2 < -.999 "sine = -1."
-10:02:30 Assert: -0.01 < Arithmetic3 < .01   "cosine = 0"
-10:02:40 Assert: Arithmetic4 < -10000000.    "tan = -inf"
+10:02:30 Assert: -1.01 < Arithmetic2 < -.999 "sine = -1."
+10:02:40 Assert: -0.01 < Arithmetic3 < .01   "cosine = 0"
+10:02:50 Assert: Arithmetic4 < -10000000.    "tan = -inf"
 Step: -45
 10:03 -45.
 10:03:10 Assert: 44.99 < Arithmetic1 < 45.01 "Absolute value = 45"

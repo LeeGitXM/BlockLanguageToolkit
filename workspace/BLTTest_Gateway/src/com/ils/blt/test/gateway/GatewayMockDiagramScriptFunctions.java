@@ -33,9 +33,9 @@ public class GatewayMockDiagramScriptFunctions  {
 	 * @param blockClass class of block-under-test
 	 * @return the new uniqueId of the test diagramId
 	 */
-	public static UUID createMockDiagram(String blockClass) {
+	public static UUID createMockDiagram(String blockClass,String project) {
 		log.infof("%s.createMockDiagram: for class %s ",TAG,blockClass);
-		return requestHandler.createMockDiagram(blockClass);
+		return requestHandler.createMockDiagram(blockClass,project);
 	}
 	/**
 	 * Define an input connected to the named port. This input is held as part of the 

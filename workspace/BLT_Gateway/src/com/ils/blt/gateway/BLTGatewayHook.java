@@ -60,14 +60,14 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		
 	
 	// NOTE: During this period, the module status is LOADED, not RUNNING
-
+	//       This comes before startup().
 	@Override
 	public void setup(GatewayContext ctxt) {
 		this.context = ctxt;
 
 		// NOTE: Get serialization exception if ModelResourceManager is saved as a class member
 		//       Exception is thrown when we try to incorporate a StatusPanel
-		log.info(TAG+"Setup - enable project listeners.");
+		log.info(TAG+".setup - enable project listeners.");
 		ProxyHandler.getInstance().setContext(context);
 		ControllerRequestHandler.getInstance().setContext(context);
 		dispatcher = new GatewayRpcDispatcher(context);
@@ -88,23 +88,26 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		BlockExecutionController controller = BlockExecutionController.getInstance();
 	    mmgr = new ModelManager(context);
 	    controller.setDelegate(mmgr);
-	    List<Project> projects = this.context.getProjectManager().getProjectsFull(ProjectVersion.Staging);
-	    for( Project project:projects ) {
-	    	List<ProjectResource> resources = project.getResources();
-	    	for( ProjectResource res:resources ) {
-	    		log.infof("%s.startup - found %s resource, %d = %s", TAG,res.getResourceType(),
-	    				res.getResourceId(),res.getName());
-	    		mmgr.analyzeResource(project.getId(),res);
-	    	}
-	    }
 	    controller.start(context);
-	    context.getProjectManager().addProjectListener(mmgr);
 	    // Initialize all the script modules from parameters stored in the ORM
 	    ScriptExtensionManager sem = ScriptExtensionManager.getInstance();
 	    for(String key: sem.scriptTypes()) {
 	    	String pythonPath = dispatcher.getToolkitProperty(key);
 	    	sem.setModulePath(key, pythonPath);
 	    }
+	    // Load existing projects
+	    List<Project> projects = this.context.getProjectManager().getProjectsFull(ProjectVersion.Published);
+	    for( Project project:projects ) {
+	    	List<ProjectResource> resources = project.getResources();
+	    	for( ProjectResource res:resources ) {
+	    		// Model manager ignores resources that are not of interest to it.
+	    		log.infof("%s.startup - found %s resource, %d = %s", TAG,res.getResourceType(),
+	    				res.getResourceId(),res.getName());
+	    		mmgr.analyzeResource(project.getId(),res);
+	    	}
+	    }
+
+	    context.getProjectManager().addProjectListener(mmgr);
 	    log.infof("%s: Startup complete.",TAG);
 	}
 

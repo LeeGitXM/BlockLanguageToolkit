@@ -44,7 +44,8 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
  *  this class posts update notifications regarding those same attribute
  *  changes, expecting that that will be picked up by listeners associated with the UI.
  *  
- *  This class is a singleton for easy access throughout the application.
+ *  This class is a singleton for easy access throughout the application. Methods are
+ *  synchronized to insure that the script arguments are correctly grouped. 
  */
 public class ProxyHandler   {
 	private final static String TAG = "ProxyHandler";
@@ -76,7 +77,6 @@ public class ProxyHandler   {
 		getBlockPropertiesCallback = new GetBlockProperties();
 		getBlockPrototypesCallback = new GetBlockPrototypes();
 		setBlockPropertyCallback = new SetBlockProperty();
-		
 	}
 
 	/**
@@ -111,46 +111,51 @@ public class ProxyHandler   {
 	 */
 	public void acceptValue(ScriptManager mgr,PyObject block,String stub,QualifiedValue value) {
 		
-		if(block==null || value==null || value.getValue()==null ) return;
+		if(block==null || stub==null || value==null || value.getValue()==null ) return;
 		String qualityName = BLTProperties.QUALITY_GOOD;
 		if(!value.getQuality().isGood() ) qualityName = value.getQuality().getName();
 		log.infof("%s.acceptValue --- %s %s (%s) on %s",TAG,block.toString(),value.getValue().toString(),qualityName,stub); 
 		if( acceptValueCallback.compileScript() ) {
+			synchronized(acceptValueCallback) {
 			// There are 4 values to be specified - block,port,value,quality.
-			acceptValueCallback.initializeLocalsMap(mgr);
-			acceptValueCallback.setLocalVariable(0,block);
-			acceptValueCallback.setLocalVariable(1,new PyString(stub));
-			acceptValueCallback.setLocalVariable(2,new PyString(value.getValue().toString()));
-			acceptValueCallback.setLocalVariable(3,new PyString(qualityName));
-			acceptValueCallback.execute(mgr);
+				acceptValueCallback.initializeLocalsMap(mgr);
+				acceptValueCallback.setLocalVariable(0,block);
+				acceptValueCallback.setLocalVariable(1,new PyString(stub));
+				acceptValueCallback.setLocalVariable(2,new PyString(value.getValue().toString()));
+				acceptValueCallback.setLocalVariable(3,new PyString(qualityName));
+				acceptValueCallback.execute(mgr);
+			}
 		}
 	}
 
 	public ProxyBlock createBlockInstance(String className,UUID parentId,UUID blockId,long projectId) {
 		ScriptManager mgr = context.getProjectManager().getProjectScriptManager(projectId);
 		ProxyBlock block = new ProxyBlock(className,parentId,blockId,mgr);
-		log.infof("%s.createBlockInstance --- python proxy for %s",TAG,className); 
+		log.infof("%s.createBlockInstance --- python proxy for %s, project %d",TAG,className,projectId); 
 		if( createBlockCallback.compileScript() ) {
-			PyDictionary pyDictionary = new PyDictionary();  // Empty
-			createBlockCallback.initializeLocalsMap(mgr);
-			createBlockCallback.setLocalVariable(0,new PyString(className));
-			createBlockCallback.setLocalVariable(1,new PyString(parentId.toString()));
-			createBlockCallback.setLocalVariable(2,new PyString(blockId.toString()));
-			createBlockCallback.setLocalVariable(3,pyDictionary);
-			log.debugf("%s.createInstance --- executing create script for %s",TAG,className); 
-			createBlockCallback.execute(mgr);
-			// Contents of list are Hashtable<String,?>
-			PyObject pyBlock = (PyObject)pyDictionary.get("instance");
-			if( pyBlock!=null ) {
-				block.setPythonBlock(pyBlock);
-				BlockProperty[] props = getBlockProperties(mgr,pyBlock);
-				for(BlockProperty prop:props) {
-					block.addProperty(prop);
+			synchronized(createBlockCallback) {
+				PyDictionary pyDictionary = new PyDictionary();  // Empty
+				createBlockCallback.initializeLocalsMap(mgr);
+				createBlockCallback.setLocalVariable(0,new PyString(className));
+				createBlockCallback.setLocalVariable(1,new PyString(parentId.toString()));
+				createBlockCallback.setLocalVariable(2,new PyString(blockId.toString()));
+				createBlockCallback.setLocalVariable(3,pyDictionary);
+				log.debugf("%s.createInstance --- executing create script for %s",TAG,className); 
+				createBlockCallback.execute(mgr);
+
+				// Contents of list are Hashtable<String,?>
+				PyObject pyBlock = (PyObject)pyDictionary.get("instance");
+				if( pyBlock!=null ) {
+					block.setPythonBlock(pyBlock);
+					BlockProperty[] props = getBlockProperties(mgr,pyBlock);
+					for(BlockProperty prop:props) {
+						block.addProperty(prop);
+					}
 				}
-			}
-			else {
-				log.warnf("%s.createInstance: Failed to create instance of %s",TAG,className);
-				block = null;
+				else {
+					log.warnf("%s.createInstance: Failed to create instance of %s",TAG,className);
+					block = null;
+				}
 			}
 		}
 		else {
@@ -166,7 +171,7 @@ public class ProxyHandler   {
 	 * @param mgr the appropriate project-specific script manager
 	 * @param block the saved Py block
 	 */
-	public void evaluate(ScriptManager mgr,PyObject block) {
+	public synchronized void evaluate(ScriptManager mgr,PyObject block) {
 		log.debugf("%s.evaluate --- %s",TAG,block.toString());
 		if( evaluateCallback.compileScript() ) {
 			evaluateCallback.initializeLocalsMap(mgr);
@@ -183,7 +188,7 @@ public class ProxyHandler   {
 	 * @param block the python block
 	 * @return a new array of block properties.
 	 */
-	public BlockProperty[] getBlockProperties(ScriptManager mgr,PyObject block) {
+	public synchronized BlockProperty[] getBlockProperties(ScriptManager mgr,PyObject block) {
 		BlockProperty[] properties = null;
 		log.debugf("%s.getBlockProperties ... ",TAG);
 		if( getBlockPropertiesCallback.compileScript() ) {
@@ -266,7 +271,7 @@ public class ProxyHandler   {
 	 * @param mgr the appropriate project-specific script manager
 	 * @return
 	 */
-	public List<PalettePrototype> getPalettePrototypes(ScriptManager mgr) {
+	public synchronized List<PalettePrototype> getPalettePrototypes(ScriptManager mgr) {
 		List<PalettePrototype> prototypes = new ArrayList<PalettePrototype>();
 		log.infof("%s.getPalettePrototypes (python) ... ",TAG);
 		if( getBlockPrototypesCallback.compileScript())  {
@@ -356,7 +361,7 @@ public class ProxyHandler   {
 		return prototypes;
 	}
 	
-	public void setBlockProperty(ScriptManager mgr,ProxyBlock block,BlockProperty prop) {
+	public synchronized void setBlockProperty(ScriptManager mgr,ProxyBlock block,BlockProperty prop) {
 		if( block==null || prop==null ) return;
 		log.infof("%s.setBlockProperty --- %s:%s",TAG,block.getClass(),prop.getName()); 
 		if( setBlockPropertyCallback.compileScript() ) {

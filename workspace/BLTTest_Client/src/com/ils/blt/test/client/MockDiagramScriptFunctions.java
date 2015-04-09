@@ -33,10 +33,11 @@ public class MockDiagramScriptFunctions   {
 	 */
 	public static UUID createMockDiagram(String blockClass) {
 		log.debugf("%s.createMockDiagram: for class %s",TAG,blockClass);
+		String project = GatewayConnectionManager.getInstance().getProjectName();
 		UUID result = null;
 		try {
 			result = (UUID)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTTestProperties.MODULE_ID, "createMockDiagram", blockClass);
+					BLTTestProperties.MODULE_ID, "createMockDiagram", blockClass,project);
 		}
 		catch(Exception ge) {
 			log.infof("%s.createMockDiagram: GatewayException (%s)",TAG,ge.getMessage());

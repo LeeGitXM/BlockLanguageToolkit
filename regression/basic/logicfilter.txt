@@ -2,14 +2,28 @@
 # Logic filter: threshold is ??
 #
 Test: Logic Filter
-Step: Target is TRUE
 Show: browser "app75/family75/logicfilter"
+Tagset: LogicFilterInput
+Step: All true
+9:59:30 false
 resetDiagram (app75/family75/logicfilter)
-Tagset: SingleBoolean
 10:00 true
-10:01 false
-10:01:10 Assert: persistence = FALSE "Interrupted target"
-10:02 true
-10:03 true
-10:04:10 Assert: persistence = FALSE "false before expiration time"
-10:08:20 Assert: persistence = TRUE  "True after expiration time"
+10:02:10 Assert: LogicFilterTrue   = UNKNOWN "1 UNKNOWN before time window"
+10:02:10 Assert: LogicFilterFalse  = UNKNOWN "2 UNKNOWN before time window"
+10:02:10 Assert: LogicFilterAlways = UNKNOWN "3 UNKNOWN before time window"
+10:02:10 Assert: LogicFilterNever  = UNKNOWN "4 UNKNOWN before time window"
+10:04:10 Assert: LogicFilterTrue   = True "1 True past time window"
+10:04:10 Assert: LogicFilterFalse  = True "2 True past time window"
+10:04:10 Assert: LogicFilterAlways = True "3 True past time window"
+10:04:10 Assert: LogicFilterNever  = True "4 True past time window"
+10:04:30 false
+Step: All false
+10:05:00 false
+10:06:30 Assert: LogicFilterTrue   = True "1 True half-way"
+10:06:30 Assert: LogicFilterFalse  = True "2 True half-way"
+10:06:30 Assert: LogicFilterAlways = True "3 True half-way"
+10:06:30 Assert: LogicFilterNever  = True "4 True half-way"
+10:08:10 Assert: LogicFilterTrue   = False "1 False past window"
+10:08:10 Assert: LogicFilterFalse  = False "2 False past window"
+10:08:10 Assert: LogicFilterAlways = False "3 False past window"
+10:08:10 Assert: LogicFilterNever  = False "4 False past window"

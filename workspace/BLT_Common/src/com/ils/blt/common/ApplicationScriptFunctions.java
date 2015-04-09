@@ -151,8 +151,8 @@ public class ApplicationScriptFunctions   {
 	 * @param command string of the signal.
 	 * @return true on success
 	 */
-	public static boolean sendLocalSignal(String diagramId,String className, String command) {
-		return handler.sendLocalSignal(diagramId,className,command);
+	public static boolean sendLocalSignal(String diagramId,String command,String message,String arg) {
+		return handler.sendLocalSignal(diagramId,command,message,arg);
 	}
 	/**
 	 * Specify the new state of a diagram

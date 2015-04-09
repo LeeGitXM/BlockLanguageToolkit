@@ -290,13 +290,14 @@ public class GatewayRpcDispatcher   {
 	/**
 	 * 
 	 * @param uuidString identifier of the diagram for which the signal is local
-	 * @param className
 	 * @param command
+	 * @param message
+	 * @param arg
 	 * @return
 	 */
-	public Boolean sendLocalSignal(String uuidString, String className, String command) {
-		log.infof("%s.sendLocalSignal: %s %s %s",TAG,uuidString,className,command);
-		return new Boolean(requestHandler.sendLocalSignal(uuidString, className, command));
+	public Boolean sendLocalSignal(String uuidString, String command,String message,String arg) {
+		log.infof("%s.sendLocalSignal: %s %s %s %s",TAG,uuidString,command,message,arg);
+		return new Boolean(requestHandler.sendLocalSignal(uuidString,command,message,arg));
 	}
 	
 	/** Set all changed properties for a block. 
@@ -354,7 +355,7 @@ public class GatewayRpcDispatcher   {
 		requestHandler.setDiagramState(diagramId,state);
 	}
 	public void setTimeFactor(Double factor) {
-		log.infof("%s.setTimeFactor: %s: %s", TAG, String.valueOf(factor.doubleValue()));
+		log.infof("%s.setTimeFactor: %s", TAG, String.valueOf(factor.doubleValue()));
 		requestHandler.setTimeFactor(factor);
 	}
 	public void setToolkitProperty(String propertyName,String value) {

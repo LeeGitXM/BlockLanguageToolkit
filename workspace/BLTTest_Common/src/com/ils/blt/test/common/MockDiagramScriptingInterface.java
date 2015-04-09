@@ -24,9 +24,10 @@ public interface MockDiagramScriptingInterface   {
 	 * The diagram holds exactly one block, the "Unit Under Test".
 	 * 
 	 * @param blockClass
+	 * @param project the name of the owning project
 	 * @return the new uniqueId of the test diagram
 	 */
-	public UUID createMockDiagram(String blockClass);
+	public UUID createMockDiagram(String blockClass,String project);
 	/**
 	 * Define an input connected to the named port. This input is held as part of the 
 	 * mock diagram. Once defined, the input cannot be deleted.A separate (duplicate) 

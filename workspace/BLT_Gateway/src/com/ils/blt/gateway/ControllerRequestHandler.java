@@ -549,7 +549,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		return diagram!=null;
 	}
 	@Override
-	public boolean sendLocalSignal(String diagramId, String className,String command) {
+	public boolean sendLocalSignal(String diagramId, String command, String message, String argument) {
 		Boolean success = new Boolean(true);
 		UUID diagramUUID = null;
 		try {
@@ -562,12 +562,12 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		ProcessDiagram diagram = BlockExecutionController.getInstance().getDiagram(diagramUUID);
 		if( diagram!=null ) {
 			// Create a broadcast notification
-			Signal sig = new Signal(command,"","");
+			Signal sig = new Signal(command,message,argument);
 			BroadcastNotification broadcast = new BroadcastNotification(diagram.getSelf(),TransmissionScope.LOCAL,sig);
 			BlockExecutionController.getInstance().acceptBroadcastNotification(broadcast);
 		}
 		else {
-			log.warnf("%s.sendLocalSignal: Unable to find %s for %s command to %s",TAG,diagramId,command,className);
+			log.warnf("%s.sendLocalSignal: Unable to find diagram %s for %s command",TAG,diagramId,command);
 			success = new Boolean(false);
 		}
 		return success;

@@ -27,6 +27,8 @@ import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.notification.SignalNotification;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.gateway.ControllerRequestHandler;
+import com.ils.blt.gateway.tag.TagListener;
+import com.ils.blt.gateway.tag.TagWriter;
 import com.ils.common.BoundedBuffer;
 import com.ils.common.watchdog.WatchdogTimer;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
@@ -445,7 +447,6 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 			if(diagram.getState().equals(DiagramState.ISOLATED)) {
 				tagPath = replaceProviderInPath(tagPath, getIsolationProvider());
 			}
-			log.infof("%s.updateTag %s = %s ",TAG,tagPath,val.toString());
 			tagWriter.updateTag(diagram.getProjectId(),tagPath,val);
 		}
 		else {
@@ -508,6 +509,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 							
 						}
 					}
+					// Note: This can legitimately happen if the diagram is deleted.
 					else {
 						log.warnf("%s.run: diagram %s not found in value change notification",TAG,
 								inNote.getDiagramId().toString());

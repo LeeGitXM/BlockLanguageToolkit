@@ -62,7 +62,7 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 	
 	@Override
 	public void reset() {
-		timer.updateWatchdog(dog);  // pet dog
+		timer.removeWatchdog(dog);
 		buffer.clear();
 	}
 	/**
@@ -71,7 +71,7 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void stop() {
 		super.stop();
-		timer.updateWatchdog(dog);  // pet dog
+		timer.removeWatchdog(dog);
 	}
 	/**
 	 * Handle a change to the delay interval or buffer size
@@ -124,6 +124,7 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void evaluate() {
+		if(buffer.isEmpty()) return;     // Could happen on race between clearing buffer and removing watch-dog on a reset.
 		TimestampedData data = buffer.removeFirst();
 		if( !isLocked() ) {
 			log.tracef("%s.evaluate: %s",TAG,data.qv.getValue().toString());

@@ -128,7 +128,7 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 				format = "%s";
 			}
 		}
-		log.infof("READOUT: %s property change = %s",getName(),event.getNewValue().toString());
+		log.debugf("READOUT: %s property change %s = %s",getName(),propertyName,event.getNewValue().toString());
 	}
 	
 	/**

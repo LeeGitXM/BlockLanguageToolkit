@@ -177,10 +177,11 @@ public interface ToolkitRequestHandler  {
 	 * There may be no successful recipients.
 	 * 
 	 * @param diagramId
-	 * @param className filter of the receiver blocks to be targeted.
-	 * @param command string of the signal.
+	 * @param command string of the signal
+	 * @param message embedded in the transmitted signal
+	 * @param arg also a component of the transmitted signal
 	 */
-	public boolean sendLocalSignal(String diagramId,String className, String command) ;
+	public boolean sendLocalSignal(String diagramId,String command,String message,String arg) ;
 	/**
 	 * Save a value into the HSQL database table associated with the toolkit. The 
 	 * table contains name-value pairs, so any name is allowable.

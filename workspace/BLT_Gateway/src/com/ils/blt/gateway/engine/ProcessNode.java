@@ -42,7 +42,7 @@ public class ProcessNode {
 
 	public void addChild(ProcessNode child)    { 
 		children.put(new Long(child.getResourceId()),child);
-		log.infof("%s.addChild: %s[%s]",TAG,getName(),child.getName());
+		log.debugf("%s.addChild: %s[%s]",TAG,getName(),child.getName());
 	}
 
 	// So that class is comparable
