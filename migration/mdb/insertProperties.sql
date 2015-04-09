@@ -26,7 +26,7 @@ insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','recommendationMultipli
 insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','recommendationRefreshRateInMinutes','RecommendationRefreshInterval','DOUBLE',1,'NONE');
 insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','targets','Targets','LIST',1,'NONE');
 insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','textRecommendation','TextRecommendation','STRING',1,'NONE');
-insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','textRecommendationCallback','RecommendationCallback','STRING',1,'NONE');
+insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','textRecommendationCallback','TextRecommendationCallback','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','trapInsignificantRecommendationConditions','','BOOLEAN',1,'NONE');
 insert into PropertyMap values ('EM-GDA-HIGH-LIMIT','label','','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-HIGH-LIMIT','statusOnInitialization','','STRING',1,'NONE');

@@ -51,12 +51,12 @@ public class BlockInternalsViewer extends JDialog {
 	private static final long serialVersionUID = 4004388376825535527L;
 	private final int DIALOG_HEIGHT = 320;
 	private final int DIALOG_WIDTH = 500;
-	private static final Dimension TABLE_SIZE  = new Dimension(480,120);
 	private final ProcessDiagramView diagram;
 	private final ProcessBlockView block;
 	private Map<String,String> attributes = null;
 	private List<Map<String,String>> buffer = null;
-	private JTable table;
+	private JTable table = null;
+	JPanel internalPanel = null;
 	
 	public BlockInternalsViewer(Frame frame,ProcessDiagramView dia,ProcessBlockView view) {
 		super(frame);
@@ -68,25 +68,18 @@ public class BlockInternalsViewer extends JDialog {
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
         this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));
+		initialize();
 		queryBlock();
-        initialize();
+		updateInformation();
 	}
 	
 	private void initialize() {
 		
 		// The internal panel has two panes - one for the table, the other for the list
 		setLayout(new BorderLayout());
-		JPanel internalPanel = new JPanel();
-		
-		//Create the internal panel - it has two panes
+		internalPanel = new JPanel();
 		internalPanel.setLayout(new MigLayout("ins 2","",""));
-		addSeparator(internalPanel,"Properties");
-		internalPanel.add(createPropertiesPanel(),"wrap");
-		
-		if( !buffer.isEmpty() ) {
-			addSeparator(internalPanel,"List");
-			internalPanel.add(createListPanel(),"wrap");
-		}
+		//Create the internal panel - it has two panes
 		add(internalPanel,BorderLayout.CENTER);
 		
 
@@ -103,7 +96,7 @@ public class BlockInternalsViewer extends JDialog {
 		// The Refresh button acquires more data
 		JButton refreshButton = new JButton("Refresh");
 		buttonPanel.add(refreshButton, "");
-		okButton.addActionListener(new ActionListener() {
+		refreshButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				refresh();
 			}
@@ -116,14 +109,31 @@ public class BlockInternalsViewer extends JDialog {
 		if( descriptor!=null ) {
 			attributes = descriptor.getAttributes();
 			buffer = descriptor.getBuffer();
-			log.infof("%s.queryBlock: %d properties, %d history entries",TAG, attributes.size(),buffer.size());
+			log.infof("%s.queryBlock %s: %d properties, %d history entries",TAG, block.getName(),attributes.size(),buffer.size());
+		}
+		else {
+			log.infof("%s.queryBlock %s: no information returned",TAG,block.getName());
 		}
 	}
+	/**
+	 * Update the UI per most current information from the block
+	 */
+	private void updateInformation() {
+		internalPanel.removeAll();
+		addSeparator(internalPanel,"Properties");
+		internalPanel.add(createPropertiesPanel(),"wrap");
+		
+		if( !buffer.isEmpty() ) {
+			addSeparator(internalPanel,"List");
+			internalPanel.add(createListPanel(),"wrap");
+		}
+		internalPanel.revalidate();
+		internalPanel.repaint();
+	}
+	
 	private void refresh() {
 		queryBlock();
-		removeAll();
-		initialize();
-		invalidate();
+		updateInformation();
 	}
 	
 	/**

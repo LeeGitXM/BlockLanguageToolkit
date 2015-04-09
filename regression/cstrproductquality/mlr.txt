@@ -3,23 +3,43 @@
 #
 Test: MLR problem
 Show: browser "CSTR_PRODUCT_QUALITY-GDA/CSTR_MLR_PROBLEM-GDA/Cstr_Mlr_Problem"
-resetDiagram (CSTR_PRODUCT_QUALITY-GDA/CSTR_MLR_PROBLEM-GDA/Cstr_Mlr_Problem)
-# Tags are: value, stddev, target, grd-flag
-Tagset: MLR
 
-Step: Initialization
-09:58   Assert: appExists("CSTR_PRODUCT_QUALITY-GDA")=true
-09:58   Assert: famExists("CSTR_PRODUCT_QUALITY-GDA","CSTR_MLR_PROBLEM-GDA")=true
-initializeFinalDiagnosis("CSTR_PRODUCT_QUALITY-GDA/CSTR_MLR_PROBLEM-GDA/Cstr_Mlr_Problem","MLR_PROBLEM_FOR_CSTR-GDA")
+# Define data written to tags in the order: Value Target StdDev GrdFlag
+Tagset: mlr-sqc
 
 Step: In-Range Values
-09:59 500.0 100.0 500.0 1.0
-10:00 510.0
+09:55 480.0 399.0 100.0 1.1
 
-10:02:00 Assert: SQCdiag = FALSE "intial state of sqc diag"
-10:02:01 Assert: SQC_Hi_1-1 = false "2 good vals of 1/1 hi"
-10:02:01 Assert: SQC_Hi_3-4 = UNKNOWN "intial state of 3/4 hi"
-10:02:01 Assert: SQC_Hi_9-9 = UNKNOWN "intial state of 9/9 hi"
-10:02:01 Assert: SQC_Lo_9-9 = UNKNOWN "intial state of 9/9 lo"
-10:02:01 Assert: SQC_Lo_3-4 = UNKNOWN "intial state of 3/4 lo"
-10:02:01 Assert: SQC_Lo_1-1 = false "2 good vals of 1/1 lo"
+10:00:01 Assert: SQC-Hi-1-1 = false "1 good val of 1/1 hi"
+10:00:01 Assert: SQC-Hi-3-4 = UNKNOWN "intial state of 3/4 hi"
+10:00:01 Assert: SQC-Hi-9-9 = UNKNOWN "intial state of 9/9 hi"
+10:00:01 Assert: SQC-Lo-9-9 = UNKNOWN "intial state of 9/9 lo"
+10:00:01 Assert: SQC-Lo-3-4 = UNKNOWN "intial state of 3/4 lo"
+10:02:01 Assert: SQC-Lo-1-1 = false "1 good val of 1/1 lo"
+10:02:00 Assert: SQC-Diag = FALSE "intial state of sqc diag"
+
+Step: High Values
+10:03  912.0
+10:05  913.0
+10:06  914.0
+10:06  915.0
+10:06:01 Assert: SQC-Diag = true "high value came in"
+10:06:02 Assert: SQC-Hi-1-1 = true "1/1 hi became true"
+10:06:03 Assert: SQC-Hi-3-4 = true "3/4 hi became data"
+10:06:04 Assert: SQC-Hi-9-9 = false "9/9 hi not enough data"
+10:06:05 Assert: SQC-Lo-9-9 = false "9/9 lo not enough data"
+10:06:06 Assert: SQC-Lo-3-4 = false "3/4 lo not enough data"
+10:06:07 Assert: SQC-Lo-1-1 = false "1/1 lo continues false"
+
+Step: Out-of-Range Values
+
+
+Step: Clear On Reset
+10:12:00 resetDiagram (CSTR_PRODUCT_QUALITY-GDA/CSTR_MLR_PROBLEM-GDA/Cstr_Mlr_Problem)
+10:13:01 Assert: SQC-Hi-1-1 = unknown "final state of 1/1 hi"
+10:13:01 Assert: SQC-Hi-3-4 = UNKNOWN "final state of 3/4 hi"
+10:13:01 Assert: SQC-Hi-9-9 = UNKNOWN "final state of 9/9 hi"
+10:13:01 Assert: SQC-Lo-9-9 = UNKNOWN "final state of 9/9 lo"
+10:13:01 Assert: SQC-Lo-3-4 = UNKNOWN "final state of 3/4 lo"
+10:13:01 Assert: SQC-Lo-1-1 = unknown "final state of 1/1 lo"
+10:15:00 300.0 300.0 50.0 0.0

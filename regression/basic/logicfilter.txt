@@ -20,9 +20,9 @@ resetDiagram (app75/family75/logicfilter)
 Step: All false
 10:05:00 false
 10:06:30 Assert: LogicFilterTrue   = True "1 True half-way"
-10:06:30 Assert: LogicFilterFalse  = True "2 True half-way"
+10:06:30 Assert: LogicFilterFalse  = False "2 False half-way"
 10:06:30 Assert: LogicFilterAlways = True "3 True half-way"
-10:06:30 Assert: LogicFilterNever  = True "4 True half-way"
+10:07:30 Assert: LogicFilterNever  = False "4 False past half-way"
 10:08:10 Assert: LogicFilterTrue   = False "1 False past window"
 10:08:10 Assert: LogicFilterFalse  = False "2 False past window"
 10:08:10 Assert: LogicFilterAlways = False "3 False past window"

@@ -3,7 +3,7 @@
 import system.ils.blt.application as application
 def construct(common,diagramPath,blockName,port):
 	handler = application.getHandler()     # PythonRequestHandler
-	error = "DIAGRAM "+diagramPath+" NOT FOUND"
+	error = "Diagram "+diagramPath+" NOT FOUND"
 	notification = "KEY-NOT-FOUND"
 	# The descriptor paths are :-separated, the input uses /
 	# the descriptor path starts with ":root:", the input stars with the application
@@ -15,10 +15,10 @@ def construct(common,diagramPath,blockName,port):
 		if diagramPath == path:
 			diagram = handler.getDiagram(desc.id)
 			blockId = handler.getBlockId(diagram,blockName)
-			if len(blockId) > 0:
+			if len(blockId) <= 0:
 				error = "BLOCK "+blockName+" NOT FOUND in DIAGRAM"
 			else:
-				error = ""
+				error = "ok"
 			notification = "C:"+blockId+":"+port
 			break
 	print "notificationKey.construct="+notification+"("+error+")"

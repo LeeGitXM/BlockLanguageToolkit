@@ -297,7 +297,7 @@ public class TagListener implements TagChangeListener   {
 				if( list1!=null ) list.addAll(list1);
 				if( list2!=null ) list.addAll(list2);
 				if( list.size()==0 ) {
-					log.warnf("%s.tagChanged: %s - found no targets for %s or %s -- unsubscribing",TAG,tp.toStringPartial(),tp.toStringFull());
+					log.warnf("%s.tagChanged: %s - found no subscriber for %s -- unsubscribing",TAG,tp.toStringPartial(),tp.toStringFull());
 					stopSubscription(tp.toStringFull());
 					blockMap.remove(tp.toStringFull());
 					blockMap.remove(tp.toStringPartial());
