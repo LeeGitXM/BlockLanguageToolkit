@@ -197,9 +197,12 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					// Types are: ANY, DATA, TEXT, TRUTH-VALUE
 					// Assume the type from the terminus anchor
 					Iterator<ProcessAnchorDescriptor> iterator = pbv.getAnchors().iterator();
-					ProcessAnchorDescriptor anch = iterator.next();  // Assumes at least one outgoing anchor
-					while( anch.getType().equals(AnchorType.Origin) && iterator.hasNext()  ) {
+					ProcessAnchorDescriptor anch = null;  // Assumes at least one outgoing anchor
+					while( iterator.hasNext()  ) {
 						anch = iterator.next();
+						if( anch.getType().equals(AnchorType.Origin) && !anch.getConnectionType().equals(ConnectionType.SIGNAL) ) {
+							break;
+						}
 					}
 					if( anch!=null ) {
 						ConnectionType ct = anch.getConnectionType();
@@ -579,6 +582,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	public void saveDiagramResource(BlockDesignableContainer c) {
 		ProcessDiagramView diagram = (ProcessDiagramView)c.getModel();
 		logger.debugf("%s.saveDiagramResource - %s ...",TAG,diagram.getDiagramName());
+		diagram.registerChangeListeners();     // The diagram may include new components
 		diagram.setDirty(false);
 		long resid = diagram.getResourceId();
 		executionEngine.executeOnce(new ResourceUpdateManager(this,context.getProject().getResource(resid)));
@@ -705,7 +709,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			this.block = blk;
 		}
 		
-		// Change all stubs to the selected type.
+		// Change all stubs and downstream connections to the selected type.
 		// This does NOT make the block dirty, since the changes are automatically
 		// synched with the gateway.
 		public void actionPerformed(ActionEvent e) {
@@ -715,6 +719,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				anchors.add(block.convertAnchorToSerializable((ProcessAnchorDescriptor)anchor));
 			}
 			handler.updateBlockAnchors(diagram.getId(),block.getId(),anchors);
+			diagram.updateConnectionTypes(block,connectionType);
+			// Repaint the workspace
+			SwingUtilities.invokeLater(new WorkspaceRepainter());
 		}
 	}
 	/**

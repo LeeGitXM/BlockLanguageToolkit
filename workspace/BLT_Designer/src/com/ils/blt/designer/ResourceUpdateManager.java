@@ -62,6 +62,7 @@ public class ResourceUpdateManager implements Runnable {
 				// The diagram may not have been dirty in a structural sense, but update the resource
 				// anyway as block properties may have changed.
 				ProcessDiagramView view = (ProcessDiagramView)tab.getModel();
+				view.registerChangeListeners();
 				logger.infof("%s.run: updating ... %s(%d) ",TAG,tab.getName(),resourceId);
 				SerializableDiagram sd = view.createSerializableRepresentation();
 				sd.setName(tab.getName());
@@ -93,7 +94,6 @@ public class ResourceUpdateManager implements Runnable {
 		catch(GatewayException ge) {
 			logger.warnf("%s.run: Exception saving project resource %d (%s)",TAG,res.getResourceId(),ge.getMessage());
 		}
-		
-		
+		((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler().triggerStatusNotifications();
 	}
 }

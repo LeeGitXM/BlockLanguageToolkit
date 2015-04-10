@@ -2,15 +2,15 @@
 # Test of Final Diagnosis Calculations
 #
 Test: Final Diagnosis Calculations
-Show: browser "app75/family75/finaldiagnosis"
+Show: browser "app75/fdfam1/finaldiagnosis"
 resetDiagram (app75/fdfam1/finaldiagnosis)
-Tagset: FDSelect
-Step: Single Diagnosis
-10:00 0
-10:01 2
+Tagset: FD
+Step: Initialize
+10:00 false false false false ""
+applicationProxy.configureForTest("app75")
 halt:
-10:01:10 Assert: persistence = FALSE "Interrupted target"
-10:02 true
-10:03 true
-10:04:10 Assert: persistence = FALSE "false before expiration time"
-10:08:20 Assert: persistence = TRUE  "True after expiration time"
+
+assert: FinalDiagnosisProxy.validate("1.1") = success "Verify FD1-1 setup"
+
+Step: Initialize
+10:05 false false false false ""

@@ -53,7 +53,7 @@ tagset: DataConditioner MemoryTags/MJKFeed1 MemoryTags/Quality MemoryTags/DataSt
 tagset: DualFeed MemoryTags/MJKFeed2 MemoryTags/MJKFeed3
 tagset: DualInput MemoryTags/DoubleInput1 MemoryTags/DoubleInput2
 tagset: InhibitInput MemoryTags/InhibitorFeed MemoryTags/InhibitorFinalDiagnosis
-tagset: FDSelect MemoryTags/FDSelector
+tagset: FD MemoryTags/FdInput1-1 MemoryTags/FdInput2-1 MemoryTags/FdInput2-2 MemoryTags/FdInput2-3 Configuration/DiagnosticToolkit/vectorClampMode
 tagset: GainFeed MemoryTags/GainFeed1 MemoryTags/GainFeed2
 tagset: LogicFilterInput MemoryTags/LogicFilterFeed
 tagset: ReadWriteSource MemoryTags/NumericSource

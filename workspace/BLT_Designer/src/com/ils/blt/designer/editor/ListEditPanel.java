@@ -33,8 +33,7 @@ import com.inductiveautomation.ignition.client.images.ImageLoader;
 /**
  * Display a panel to edit lists of strings using a list box.
  * This is one of the sliding panels in the block editor.
- * The first character in the string is the delimiter. We use
- * it to separate the other items in the list.
+ * The list text consists of comma-separated strings. 
  * 
  *  There is no annotation for a list.
  */
@@ -43,7 +42,6 @@ public class ListEditPanel extends BasicEditPanel {
 	// A panel is designed to edit properties that are lists of strings.
 	private final static String TAG = "ListEditPanel";
 	private static final long serialVersionUID = 1L;
-	private static final String DEFAULT_DELIMITER = ",";
 	private BlockProperty property = null;
 	private final JLabel headingLabel;
 	private JButton addButton;      // Click to add a row
@@ -60,7 +58,6 @@ public class ListEditPanel extends BasicEditPanel {
 		editPanel.setLayout(new MigLayout("ins 2","",""));
 		headingLabel = addHeading(editPanel);
 		addSeparator(editPanel,"List");
-		editPanel.add(createDelimiterPanel(DEFAULT_DELIMITER),"wrap");
 		editPanel.add(createTablePanel(),"wrap");
 		add(editPanel,BorderLayout.CENTER);
 
@@ -73,9 +70,6 @@ public class ListEditPanel extends BasicEditPanel {
 			public void actionPerformed(ActionEvent e) {
 				if(property!=null) {
 					// Coerce to the correct data type
-					String delimiter = delimiterField.getText();
-					if( delimiter.length()<1 ) delimiter = DEFAULT_DELIMITER;
-					if( delimiter.length()>1 ) delimiter = delimiter.substring(0, 1);
 					DefaultTableModel dtm = (DefaultTableModel)table.getModel();
 					List<String> model = new ArrayList<>();
 					int rowCount = dtm.getRowCount();
@@ -89,7 +83,7 @@ public class ListEditPanel extends BasicEditPanel {
 						}
 						row++;
 					}
-					String list = BlockProperty.assembleList(model,delimiter);
+					String list = BlockProperty.assembleList(model);
 					log.debugf("%s.OK action: assembled list, %s = %s",TAG,property.getName(),list);
 					property.setValue(list);
 					editor.handlePropertyChange(property);   // Immediately update the running diagram
@@ -139,18 +133,6 @@ public class ListEditPanel extends BasicEditPanel {
 		field.setPreferredSize(BlockEditConstants.ENTRY_BOX_SIZE);
 		field.setEditable(true);
 		return field;
-	}
-	
-	/**
-	 * Create a panel for entry/display of the delimiter
-	 */
-	protected JPanel createDelimiterPanel(String delim) {
-		final JPanel panel = new JPanel();
-		panel.setLayout(new MigLayout("ins 2, fillx","para[]10[20]",""));     // 2 cells across
-		panel.add(createLabel("Delimiter"),"");
-		delimiterField = createTextField(delim);
-		panel.add(delimiterField,"wrap");
-		return panel;
 	}
 	
 	/**

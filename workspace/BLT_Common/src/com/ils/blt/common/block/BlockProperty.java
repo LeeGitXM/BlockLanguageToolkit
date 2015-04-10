@@ -26,6 +26,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  */
 public class BlockProperty implements NotificationChangeListener {
 	private static final String TAG = "BlockProperty";
+	private static final String COMMA = ",";
 	private static LoggerEx log = LogUtil.getLogger(PalettePrototype.class.getPackage().getName());
 	private boolean editable;
 	private PropertyType type = PropertyType.STRING;
@@ -121,14 +122,13 @@ public class BlockProperty implements NotificationChangeListener {
 	
 	/**
 	 * Helper methods for dealing with list data types. The list is stored as a single
-	 * delimited string - the delimiter is the first character. Clearly the delimiter 
-	 * must be a character not present in the strings.
+	 * comma-delimited string. Clearly the delimiter must not be present in the strings.
 	 */
-	public static String assembleList(List<String> list,String delimiter) {
+	public static String assembleList(List<String> list) {
 		StringBuffer s = new StringBuffer();
 		if( list!=null ) {
 			for(String text:list) {
-				s.append(delimiter);
+				if( s.length()>0 ) s.append(COMMA);
 				s.append(text);
 			}
 		}
@@ -137,9 +137,7 @@ public class BlockProperty implements NotificationChangeListener {
 	public static List<String> disassembleList(String raw) {
 		List<String> list = new ArrayList<>(); 
 		if( raw!=null && raw.length()>0 ) {
-			String delimiter = raw.substring(0, 1);
-			raw = raw.substring(1);
-			String[] subs = raw.split(delimiter);
+			String[] subs = raw.split(COMMA);
 			list = new ArrayList<String>(Arrays.asList(subs));
 		}
 		return list;

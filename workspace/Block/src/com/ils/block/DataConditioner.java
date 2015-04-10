@@ -9,6 +9,7 @@ import java.util.UUID;
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
+import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
@@ -43,7 +44,8 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 	private final Watchdog dog;
 	private double synchInterval = 0.5; // 1/2 sec synchronization by default
 	private TruthValue qualityInput = TruthValue.UNKNOWN;
-	private QualifiedValue value = null;
+	private BlockProperty valueProperty = null;
+	private QualifiedValue value = new BasicQualifiedValue("");
 	private TruthValue truthValue = TruthValue.UNSET;
 	
 	/**
@@ -77,6 +79,9 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 		// Define the time for "coalescing" inputs ~ msec
 		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,new Double(synchInterval),PropertyType.TIME,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL, synch);
+		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.STRING,false);
+		valueProperty.setBindingType(BindingType.ENGINE);
+		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 		
 		// Define a two inputs -- one for the data, one for the quality
 		AnchorPrototype input = new AnchorPrototype(VALUE_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
@@ -181,23 +186,25 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 			QualifiedValue result = new BasicQualifiedValue(truthValue);
 			OutgoingNotification nvn = new OutgoingNotification(this,STATUS_PORT_NAME,result);
 			controller.acceptCompletionNotification(nvn);
-			notifyOfStatus(value,result);
+			notifyOfStatus();
 		}
 	}
 	
 	/**
-	 * Send status update notification for our last latest state.
+	 * Send status update notification for our last latest state. We only update the value notification
+	 * if the quality is good.
 	 */
 	@Override
 	public void notifyOfStatus() {
-		QualifiedValue qv = new BasicQualifiedValue(truthValue);
-		notifyOfStatus(value,qv);
-		
-	}
-	private void notifyOfStatus(QualifiedValue val,QualifiedValue tv) {
-		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, val);
+		QualifiedValue tv = new BasicQualifiedValue(truthValue);
 		controller.sendConnectionNotification(getBlockId().toString(), STATUS_PORT_NAME, tv);
+		valueProperty.setValue(value.getValue());
+		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,value);
+		if( !truthValue.equals(TruthValue.TRUE)) {
+			controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, value);
+		}
 	}
+
 	/**
 	 * @return a block-specific description of internal status. Add quality to the default list
 	 */
@@ -207,6 +214,7 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 		Map<String,String> attributes = descriptor.getAttributes();
 		attributes.put("Quality", qualityInput.name());
 		attributes.put("Result", truthValue.name());
+		attributes.put("Value", value.getValue().toString());
 		return descriptor;
 	}
 	/**

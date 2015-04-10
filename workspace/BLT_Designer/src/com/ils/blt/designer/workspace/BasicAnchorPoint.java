@@ -56,7 +56,7 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 	private final Point anchor;
 	private final Point pathLeader;
 	private final Shape hotspot;
-	private final ConnectionType cxnType;
+	private ConnectionType cxnType;
 	private AnchorSide side;
 	private final String annotation;
 	private boolean isEmpty = true;
@@ -98,6 +98,7 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 	public Shape getHotSpot() { return hotspot; }
 	public Point getPathLeader() { return pathLeader; }
 	public AnchorSide getSide() {return side;}
+	public void setConnectionType(ConnectionType type) { this.cxnType = type; }
 	public void setSide(AnchorSide side) {this.side = side;}
 	
 

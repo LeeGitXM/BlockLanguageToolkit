@@ -54,11 +54,14 @@ public class ResourceSaveManager implements Runnable {
 	 */
 	public void saveSynchronously() {
 		saveDirtyDiagrams(root);
+		// Update UI
+		((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler().triggerStatusNotifications();
 	}
 	
 	@Override
 	public void run() {
 		saveNodeAndDescendants();
+		((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler().triggerStatusNotifications();
 	}
 	
 	// Recursively descend the node tree, looking for diagram resources where

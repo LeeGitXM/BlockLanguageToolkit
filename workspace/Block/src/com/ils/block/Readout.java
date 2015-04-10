@@ -30,7 +30,6 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  */
 @ExecutableBlock
 public class Readout extends AbstractProcessBlock implements ProcessBlock {
-	private final String TAG = "Readout";
 	private final UtilityFunctions fncs;
 	private String format = "%s";
 	private PropertyType type = PropertyType.STRING;
@@ -97,7 +96,7 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 		
 	}
 	private void notifyOfStatus(QualifiedValue qv) {
-		log.debugf("%s.notifyOfStatus (%s)", TAG, qv.getValue().toString());
+		log.debugf("%s.notifyOfStatus (%s)", getName(), qv.getValue().toString());
 		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
@@ -111,7 +110,7 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 		String propertyName = event.getPropertyName();
 		if(propertyName.equals(BlockConstants.BLOCK_PROPERTY_FORMAT)) {
 			format = event.getNewValue().toString();
-			log.debugf("%s.propertyChange: New display format is (%s).",TAG,format);
+			log.debugf("%s.propertyChange: New display format is (%s).",getName(),format);
 			// Validate the format for a data type
 			if( format.matches(".*%[0-9]*[.]?[0-9]*s.*") ) {
 				type=PropertyType.STRING;
@@ -123,7 +122,7 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 				type=PropertyType.DOUBLE;
 			}
 			else {
-				log.warnf("%s.propertyChange: Did not recognize format (%s), using (%s).",TAG,format,"%s");
+				log.warnf("%s.propertyChange: Did not recognize format (%s), using (%s).",getName(),format,"%s");
 				type=PropertyType.STRING;
 				format = "%s";
 			}
@@ -159,10 +158,10 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 					}
 				}
 				catch(Exception ex) {
-					log.warn(TAG+".acceptValue: error formatting "+qv.getValue()+" with "+format+" as "+type.name(),ex);  // Print stack trace
+					log.warn(getName()+".acceptValue: error formatting "+qv.getValue()+" with "+format+" as "+type.name(),ex);  // Print stack trace
 				}
 				qv = new BasicQualifiedValue(value,qv.getQuality(),qv.getTimestamp()); 
-				log.tracef("%s.acceptValue: port %s formatted value =  %s.",TAG,incoming.getConnection().getUpstreamPortName(),value);
+				log.tracef("%s.acceptValue: port %s formatted value =  %s.",getName(),incoming.getConnection().getUpstreamPortName(),value);
 				notifyOfStatus(qv);
 			}
 		}

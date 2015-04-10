@@ -15,6 +15,7 @@ import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
+import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.common.serializable.SerializableAnchorPoint;
@@ -32,6 +33,7 @@ import com.inductiveautomation.ignition.common.util.AbstractChangeable;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorPoint;
+import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.BlockDiagramModel;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Connection;
@@ -460,6 +462,26 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		}
 		// Finally, deregister self
 		handler.removeNotificationChangeListener(NotificationKey.keyForDiagram(getId().toString()),TAG);
+	}
+	
+	/**
+	 * We've updated the block, now update the types of the downstream connections.
+	 * @param block
+	 * @param type
+	 */
+	public void updateConnectionTypes(ProcessBlockView block,ConnectionType type) {
+		for(ProcessAnchorDescriptor pad:block.getAnchors()) {
+			if( pad.getType().equals(AnchorType.Origin) &&
+			    !pad.getConnectionType().equals(ConnectionType.SIGNAL)) {
+				for(Connection cxn:connections) {
+					BasicAnchorPoint bap = (BasicAnchorPoint)cxn.getOrigin();
+					if( bap.getBlock().getId().equals(block.getId())) {
+						bap.setConnectionType(type);
+					}
+				}
+			}
+				
+		}
 	}
 
 	// ------------------------------------------- Notification Change Listener --------------------------------------

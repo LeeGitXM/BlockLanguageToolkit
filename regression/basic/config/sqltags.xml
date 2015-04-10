@@ -1,14 +1,20 @@
 <Tags>
+   <Tag name="Configuration" path="" type="Folder"/>
+   <Tag name="DiagnosticToolkit" path="Configuration" type="Folder"/>
+   <Tag name="vectorClampMode" path="Configuration/DiagnosticToolkit" type="DB">
+      <Property name="Value">0</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
    <Tag name="MemoryTags" path="" type="Folder"/>
+   <Tag name="FdInput2-3" path="MemoryTags" type="DB">
+      <Property name="Value">false</Property>
+      <Property name="DataType">6</Property>
+   </Tag>
    <Tag name="ConditionerQuality" path="MemoryTags" type="DB">
       <Property name="Value">true</Property>
       <Property name="DataType">6</Property>
    </Tag>
-   <Tag name="InhibitorOutput" path="MemoryTags" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="LogicFilterFeed" path="MemoryTags" type="DB">
+   <Tag name="FdInput2-1" path="MemoryTags" type="DB">
       <Property name="Value">false</Property>
       <Property name="DataType">6</Property>
    </Tag>
@@ -16,13 +22,13 @@
       <Property name="Value">-1.73205081714</Property>
       <Property name="DataType">5</Property>
    </Tag>
+   <Tag name="FdInput2-2" path="MemoryTags" type="DB">
+      <Property name="Value">false</Property>
+      <Property name="DataType">6</Property>
+   </Tag>
    <Tag name="ConditionerData" path="MemoryTags" type="DB">
       <Property name="Value">7.42</Property>
       <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="DiagramFeed" path="MemoryTags" type="DB">
-      <Property name="Value">4</Property>
-      <Property name="DataType">2</Property>
    </Tag>
    <Tag name="ActionOut" path="MemoryTags" type="DB">
       <Property name="Value">true</Property>
@@ -45,54 +51,30 @@
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="SQCOut2" path="MemoryTags" type="DB">
-      <Property name="Value">UNKNOWN</Property>
+      <Property name="Value">TRUE</Property>
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="SQCOut1" path="MemoryTags" type="DB">
       <Property name="Value">UNKNOWN</Property>
       <Property name="DataType">7</Property>
    </Tag>
-   <Tag name="SumResult" path="MemoryTags" type="DB">
-      <Property name="Value">-11.559999999999999</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
    <Tag name="GainOutput" path="MemoryTags" type="DB">
-      <Property name="Value">120.0</Property>
+      <Property name="Value">88.0</Property>
       <Property name="DataType">5</Property>
       <Property name="EngLow">-1000.0</Property>
       <Property name="EngHigh">1000.0</Property>
    </Tag>
-   <Tag name="DataState" path="MemoryTags" type="DB">
-      <Property name="Value">false</Property>
-      <Property name="DataType">6</Property>
-   </Tag>
    <Tag name="LogicFilterAlways" path="MemoryTags" type="DB">
       <Property name="Value">0</Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="MJKQuality" path="MemoryTags" type="DB">
-      <Property name="Value">grood</Property>
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="ArithmeticOut3" path="MemoryTags" type="DB">
       <Property name="Value">-0.499999997927</Property>
       <Property name="DataType">5</Property>
    </Tag>
-   <Tag name="MJKSQCTarget" path="MemoryTags" type="DB">
-      <Property name="Value">3.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
    <Tag name="ArithmeticOut2" path="MemoryTags" type="DB">
       <Property name="Value">0.866025404981</Property>
       <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="FDSelector" path="MemoryTags" type="DB">
-      <Property name="Value">1</Property>
-      <Property name="DataType">2</Property>
-   </Tag>
-   <Tag name="LogicFilterTrue" path="MemoryTags" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
    </Tag>
    <Tag name="ArithmeticOut1" path="MemoryTags" type="DB">
       <Property name="Value">120.0</Property>
@@ -101,14 +83,6 @@
    <Tag name="ReadWriteSink" path="MemoryTags" type="DB">
       <Property name="Value">95.0</Property>
       <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="NumericParameter" path="MemoryTags" type="DB">
-      <Property name="Value">95</Property>
-      <Property name="DataType">2</Property>
-   </Tag>
-   <Tag name="ReadWriteBooleanOutput" path="MemoryTags" type="DB">
-      <Property name="Value">true</Property>
-      <Property name="DataType">6</Property>
    </Tag>
    <Tag name="ComparisonFeed" path="MemoryTags" type="DB">
       <Property name="Value">0.0</Property>
@@ -134,17 +108,9 @@
       <Property name="Value">false</Property>
       <Property name="DataType">6</Property>
    </Tag>
-   <Tag name="MJKSQCStdDev" path="MemoryTags" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
    <Tag name="DoubleInput2" path="MemoryTags" type="DB">
       <Property name="Value">22.0</Property>
       <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="LogicFilterNever" path="MemoryTags" type="DB">
-      <Property name="Value">0</Property>
-      <Property name="DataType">7</Property>
    </Tag>
    <Tag name="NumericSource" path="MemoryTags" type="DB">
       <Property name="Value">95.0</Property>
@@ -153,10 +119,6 @@
    <Tag name="DoubleInput1" path="MemoryTags" type="DB">
       <Property name="Value">120.0</Property>
       <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="BooleanFeed" path="MemoryTags" type="DB">
-      <Property name="Value">true</Property>
-      <Property name="DataType">6</Property>
    </Tag>
    <Tag name="Quality" path="MemoryTags" type="DB">
       <Property name="Value">blood</Property>
@@ -174,13 +136,69 @@
       <Property name="Value">0.0</Property>
       <Property name="DataType">5</Property>
    </Tag>
-   <Tag name="InhibitorFeed" path="MemoryTags" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
    <Tag name="DiagramOutput" path="MemoryTags" type="DB">
       <Property name="Value">4</Property>
       <Property name="DataType">2</Property>
+   </Tag>
+   <Tag name="InhibitorOutput" path="MemoryTags" type="DB">
+      <Property name="Value">0.0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="LogicFilterFeed" path="MemoryTags" type="DB">
+      <Property name="Value">false</Property>
+      <Property name="DataType">6</Property>
+   </Tag>
+   <Tag name="FdInput1-1" path="MemoryTags" type="DB">
+      <Property name="Value">true</Property>
+      <Property name="DataType">6</Property>
+   </Tag>
+   <Tag name="DiagramFeed" path="MemoryTags" type="DB">
+      <Property name="Value">4</Property>
+      <Property name="DataType">2</Property>
+   </Tag>
+   <Tag name="SumResult" path="MemoryTags" type="DB">
+      <Property name="Value">-11.559999999999999</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="DataState" path="MemoryTags" type="DB">
+      <Property name="Value">false</Property>
+      <Property name="DataType">6</Property>
+   </Tag>
+   <Tag name="MJKQuality" path="MemoryTags" type="DB">
+      <Property name="Value">grood</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="MJKSQCTarget" path="MemoryTags" type="DB">
+      <Property name="Value">3.0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="LogicFilterTrue" path="MemoryTags" type="DB">
+      <Property name="Value"></Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="NumericParameter" path="MemoryTags" type="DB">
+      <Property name="Value">95</Property>
+      <Property name="DataType">2</Property>
+   </Tag>
+   <Tag name="ReadWriteBooleanOutput" path="MemoryTags" type="DB">
+      <Property name="Value">true</Property>
+      <Property name="DataType">6</Property>
+   </Tag>
+   <Tag name="MJKSQCStdDev" path="MemoryTags" type="DB">
+      <Property name="Value">0.0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="LogicFilterNever" path="MemoryTags" type="DB">
+      <Property name="Value">0</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="BooleanFeed" path="MemoryTags" type="DB">
+      <Property name="Value">true</Property>
+      <Property name="DataType">6</Property>
+   </Tag>
+   <Tag name="InhibitorFeed" path="MemoryTags" type="DB">
+      <Property name="Value">0.0</Property>
+      <Property name="DataType">5</Property>
    </Tag>
    <Tag name="InhibitorFinalDiagnosis" path="MemoryTags" type="DB">
       <Property name="Value">false</Property>
