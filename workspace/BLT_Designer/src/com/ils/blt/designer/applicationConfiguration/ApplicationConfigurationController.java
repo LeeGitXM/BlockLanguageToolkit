@@ -1,7 +1,5 @@
 package com.ils.blt.designer.applicationConfiguration;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
@@ -10,10 +8,7 @@ import java.util.Map;
 import javax.swing.JPanel;
 import javax.swing.ListModel;
 
-import org.python.core.PyList;
-
 import com.inductiveautomation.ignition.client.util.gui.SlidingPane;
-import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 

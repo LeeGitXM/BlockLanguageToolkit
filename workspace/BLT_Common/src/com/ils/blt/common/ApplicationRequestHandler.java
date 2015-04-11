@@ -91,15 +91,17 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	}
 	@Override
 	public String getApplicationName(String uuid) {
-		log.infof("%s.getApplicationName... %s",TAG,uuid);
-		String name = "";
-		try {
-			name = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "getApplicationName",uuid);
+		String name = "NULL UUID";
+		if( uuid!=null) {
+			log.infof("%s.getApplicationName... %s",TAG,uuid);
+			try {
+				name = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+						BLTProperties.MODULE_ID, "getApplicationName",uuid);
+			}
+			catch(Exception ex) {
+				log.infof("%s.getApplicationName: Exception (%s)",TAG,ex.getMessage());
+			};
 		}
-		catch(Exception ex) {
-			log.infof("%s.getApplicationName: Exception (%s)",TAG,ex.getMessage());
-		};
 		return name;
 	}
 	
@@ -271,15 +273,17 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	}
 	@Override
 	public String getFamilyName(String uuid) {
-		log.infof("%s.getFamilyName... %s",TAG,uuid);
-		String name = "";
-		try {
-			name = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "getFamilyName",uuid);
+		String name = "NULL UUID";
+		if( uuid!=null ) {
+			log.infof("%s.getFamilyName... %s",TAG,uuid);
+			try {
+				name = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+						BLTProperties.MODULE_ID, "getFamilyName",uuid);
+			}
+			catch(Exception ex) {
+				log.infof("%s.getFamilyName: Exception (%s)",TAG,ex.getMessage());
+			};
 		}
-		catch(Exception ex) {
-			log.infof("%s.getFamilyName: Exception (%s)",TAG,ex.getMessage());
-		};
 		return name;
 	}
 	

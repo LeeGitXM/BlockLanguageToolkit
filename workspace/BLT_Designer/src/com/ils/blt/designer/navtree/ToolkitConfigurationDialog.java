@@ -5,6 +5,7 @@
 package com.ils.blt.designer.navtree;
 
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
@@ -16,10 +17,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.prefs.Preferences;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import net.miginfocom.swing.MigLayout;
@@ -41,6 +45,7 @@ public class ToolkitConfigurationDialog extends ConfigurationDialog  {
 	private final int DIALOG_WIDTH = 400;
 	private JPanel applicationScriptPanel = null;
 	private JPanel familyScriptPanel = null;
+	protected JTabbedPane parentTabPanel = null;
 	private final ApplicationRequestHandler handler;
 	private final Preferences prefs;
 	private JFileChooser fc = null;
@@ -60,7 +65,7 @@ public class ToolkitConfigurationDialog extends ConfigurationDialog  {
 	protected JTextField updateFamHookField;
 
 	public ToolkitConfigurationDialog(Frame frame,DesignerContext ctx) {
-		super(frame,ctx);
+		super(ctx);
 		this.handler = new ApplicationRequestHandler();
 		this.setTitle(rb.getString("Toolkit.Title"));
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));
@@ -68,18 +73,21 @@ public class ToolkitConfigurationDialog extends ConfigurationDialog  {
         initialize();
 	}
 	/**
-	 * The super class takes care of making a central tabbed pane.
-	 * Here we add the tabs ...
+	 * We ddd a central tabbed pane central tabbed pane.
+	 * then add tabs for ...
 	 * 1) Core attributes
 	 * 2) Python hook definitions.
 	 */
 	private void initialize() {
 		applicationScriptPanel = createApplicationScriptPanel();
 		// Tab label,?,panel, tooltip
+		parentTabPanel = new JTabbedPane(SwingConstants.BOTTOM);
+		parentTabPanel.setBorder(BorderFactory.createEtchedBorder());
 		parentTabPanel.addTab(rb.getString("Application.Script.Tab"),null,applicationScriptPanel,rb.getString("Application.Script.Tab.Desc"));
 		familyScriptPanel = createFamilyScriptPanel();
 		parentTabPanel.addTab(rb.getString("Family.Script.Tab"),null,familyScriptPanel,rb.getString("Family.Script.Tab.Desc"));
 		parentTabPanel.setSelectedIndex(0);
+		contentPanel.add(parentTabPanel,BorderLayout.CENTER);
 		addImportButton(this);
 		setOKActions();
 	}

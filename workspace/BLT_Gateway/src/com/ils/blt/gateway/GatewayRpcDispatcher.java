@@ -377,7 +377,12 @@ public class GatewayRpcDispatcher   {
 	 */
 	public void triggerStatusNotifications() {
 		log.infof("%s.triggerStatusNotifications ...",TAG);
-		requestHandler.triggerStatusNotifications();
+		try {
+			requestHandler.triggerStatusNotifications();
+		}
+		catch( Exception ex) {
+			log.errorf(TAG+".triggerStatusNotification: EXCEPTION", ex);
+		}
 	}
 	
 	/** Change the properties of anchors for a block. 

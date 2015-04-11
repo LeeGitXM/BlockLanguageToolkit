@@ -5,14 +5,16 @@ import java.awt.event.*;
 
 import javax.swing.*;
 
+import com.ils.blt.designer.applicationConfiguration.Application;
+
 import java.util.Iterator;
 
 public class DualListBox extends JPanel{
 	private static final Insets EMPTY_INSETS = new Insets(0,0,0,0);
-	private static final String ADD_BUTTON_LABEL = "Add >>";
-	private static final String REMOVE_BUTTON_LABEL = "<< Remove";
 	private static final String DEFAULT_SOURCE_CHOICE_LABEL = "Available Choices";
 	private static final String DEFAULT_DEST_CHOICE_LABEL = "Your Choices";
+	private static Icon addIcon = new ImageIcon(DualListBox.class.getResource("/images/arrow_right_blue.png"));
+	private static Icon removeIcon = new ImageIcon(DualListBox.class.getResource("/images/arrow_left_blue.png"));
 	private JLabel sourceLabel;
 	private JList sourceList;
 	private SortedListModel sourceListModel;
@@ -167,7 +169,7 @@ public class DualListBox extends JPanel{
 				new GridBagConstraints(0,1,1,5,0.5,1,GridBagConstraints.CENTER, 
 						GridBagConstraints.BOTH, EMPTY_INSETS,0,0));
 		
-		addButton = new JButton(ADD_BUTTON_LABEL);
+		addButton = new JButton(addIcon);
 		add(addButton,
 				new GridBagConstraints(1,2,1,2,0,.25,GridBagConstraints.CENTER, 
 						GridBagConstraints.NONE, EMPTY_INSETS,0,0));
@@ -175,7 +177,7 @@ public class DualListBox extends JPanel{
 		
 		// The insets here adds some space around the button, since it is larger than the ADD button, 
 		// without the insets, the two scroll areas will touch the button.
-		removeButton = new JButton(REMOVE_BUTTON_LABEL);
+		removeButton = new JButton(removeIcon);
 		add(removeButton,
 				new GridBagConstraints(1,4,1,2,0,.25,GridBagConstraints.CENTER, 
 						GridBagConstraints.NONE, new Insets(0,5,0,5),0,0));

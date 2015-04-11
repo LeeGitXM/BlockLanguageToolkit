@@ -57,6 +57,9 @@ public class ScriptExtensionManager {
 		scriptMap.put(ScriptConstants.FAM_SET_AUX_SCRIPT,createMap("setAux","uuid,properties"));
 		scriptMap.put(ScriptConstants.FAM_UPDATE_SCRIPT,createMap("update","name,uuid"));
 		
+		scriptMap.put(ScriptConstants.GENERIC_PROPERTY_GET_SCRIPT,createMap("getAux","uuid,properties"));
+		scriptMap.put(ScriptConstants.GENERIC_PROPERTY_SET_SCRIPT,createMap("setAux","uuid,properties"));
+		
 		j2p = new JavaToPython();
 		p2j = new PythonToJava();
 	}
@@ -76,7 +79,9 @@ public class ScriptExtensionManager {
 	/**
 	 * Execute the specified script with a new set of arguments.
 	 * 
-	 * @param type
+	 * @param mgr a script manager with proper context
+	 * @param key to a pre-configured script. The configuration includes
+	 *            module path, entry point and argument prototype.
 	 * @param args
 	 */
 	public void runScript(ScriptManager mgr,String key,Object...args) {
@@ -114,8 +119,24 @@ public class ScriptExtensionManager {
 			}
 		}
 		else {
-			log.warnf("%s.runScript: Unknown pythpn script type (%s)",TAG,key);
+			log.warnf("%s.runScript: Unknown python script type (%s)",TAG,key);
 		}
+	}
+	
+	/**
+	 * This method is for use with scripts that are not globally specified,
+	 * for example, those that are unique to a block or block class. The
+	 * key specifies the arg list, but, in this case, not the module path.
+	 * 
+	 * @param mgr a script manager with proper context
+	 * @param pythonPath the Python path to the module package, not including the entry point.
+	 * @param key to a pre-configured script type (but not an individual script. The 
+	 *            configuration includes entry point and argument prototype.
+	 * @param args actual arguments to the script
+	 */
+	public void runOneTimeScript(ScriptManager mgr,String pythonPath,String key,Object...args) {
+		setModulePath(key,pythonPath);
+		runScript(mgr,key,args);
 	}
 	
 	public Set<String> scriptTypes() {return scriptMap.keySet();}

@@ -11,7 +11,9 @@ import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.JComboBox;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
@@ -33,10 +35,12 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 	private final ScriptExtensionManager extensionManager = ScriptExtensionManager.getInstance();
 	private final SerializableFamily family;
 	private JPanel mainPanel = null;
+	protected JTextArea descriptionArea;
+	protected JComboBox<String> stateBox;
 	protected JTextField priorityField;
 	
 	public FamilyConfigurationDialog(Frame frame,DesignerContext ctx,SerializableFamily fam) {
-		super(frame,ctx);
+		super(ctx);
 		this.family = fam;
 		this.setTitle(rb.getString("Family.Title"));
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));
@@ -54,7 +58,6 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 		extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAM_GET_AUX_SCRIPT, 
 				this.family.getId().toString(),properties);
 		mainPanel = createMainPanel();
-		contentPanel.remove(parentTabPanel);   // blow away the tab
 		contentPanel.add(mainPanel,BorderLayout.CENTER);
 		setOKActions();
 	}

@@ -757,20 +757,19 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				}); 
 			}
 			catch(InvocationTargetException ite ) {
-				logger.infof("%s.customEditAction: Invocation failed for %s",TAG,block.getEditorClass()); 
+				logger.info(TAG+".customEditAction: Invocation failed for "+block.getEditorClass(),ite); 
 			}
 			catch(NoSuchMethodException nsme ) {
-				logger.infof("%s.customEditAction %s: Constructor taking diagram and block not found (%s)",TAG,block.getEditorClass(),nsme.getMessage()); 
+				logger.info(TAG+".customEditAction: Constructor taking diagram and block not found for "+block.getEditorClass(),nsme); 
 			}
 			catch(ClassNotFoundException cnfe) {
-				logger.infof("%s.customEditAction: Custom editor class (%s) not found (%s)",TAG,
-						block.getEditorClass(),cnfe.getLocalizedMessage());
+				logger.info(TAG+".customEditAction: Custom editor class "+block.getEditorClass()+" not found",cnfe);
 			}
 			catch( InstantiationException ie ) {
-				logger.infof("%s.customEditAction: Error instantiating %s (%s)",TAG,block.getEditorClass(),ie.getLocalizedMessage()); 
+				logger.info(TAG+".customEditAction: Error instantiating "+block.getEditorClass(),ie); 
 			}
 			catch( IllegalAccessException iae ) {
-				logger.infof("%s.customEditAction: Security exception creating %s (%s)",TAG,block.getEditorClass(),iae.getLocalizedMessage()); 
+				logger.info(TAG+".customEditAction: Security exception creating "+block.getEditorClass(),iae); 
 			}
 		}
 	}

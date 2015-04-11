@@ -40,7 +40,7 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 	private static final String VALUE_PORT_NAME = "value";
 	private static final String QUALITY_PORT_NAME = "quality";
 	private static final String STATUS_PORT_NAME = "status";
-	private final QualifiedValue BAD_VALUE = new BasicQualifiedValue(0.0,new BasicQuality("BAD",Quality.Level.Bad));
+	private static final QualifiedValue BAD_VALUE = new BasicQualifiedValue(0.0,new BasicQuality("BAD",Quality.Level.Bad));
 	private final Watchdog dog;
 	private double synchInterval = 0.5; // 1/2 sec synchronization by default
 	private TruthValue qualityInput = TruthValue.UNKNOWN;

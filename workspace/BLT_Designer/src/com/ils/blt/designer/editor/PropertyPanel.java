@@ -259,7 +259,6 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		else {
 			text = fncs.coerceToString(property.getValue());
 			// For list we lop off the delimiter.
-			if( property.getType().equals(PropertyType.LIST) && text.length()>1 ) text = text.substring(1);
 			log.debugf("%s.updateForProperty: property %s, raw value= %s",TAG,property.getName(),text);
 		}
 		
@@ -282,7 +281,12 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		else {
 			bindingDisplayField.setVisible(false);
 			// List is the only type with a custom editor
-			if( !property.getType().equals(PropertyType.LIST) ) editButton.setVisible(false);
+			if( !property.getType().equals(PropertyType.LIST) ) {
+				editButton.setVisible(false);
+				bindingDisplayField.setVisible(true);
+				valueDisplayField.setEnabled(false);
+				valueDisplayField.setEditable(false);
+			}
 			if( !property.getBindingType().equals(BindingType.ENGINE) ) {
 				valueDisplayField.setEnabled(true);
 				valueDisplayField.setEditable(true);

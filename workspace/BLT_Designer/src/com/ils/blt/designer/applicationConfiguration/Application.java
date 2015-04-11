@@ -8,19 +8,21 @@ import java.util.Map;
 public class Application {
 	private String name;
 	private Integer newOutputId = -1;
-	private String description;
-	private String console;
+	private String description = "";
+	private String console ="";
 	private ArrayList<String> consoles;
-	private String queue;
+	private String queue = "";
 	private ArrayList<String> queues;
 	private ArrayList< Map<String,Object> > outputList;
-	private String groupRampMethod;
-	private String post;
-	private String unit;
+	private String groupRampMethod = "";
+	private String post = "";
+	private String unit = "";
 	
 	// Constructor
 	public Application() {
+		consoles = new ArrayList<>();
 		outputList = new ArrayList< Map<String,Object> >();
+		queues = new ArrayList<>();
 	}
 	
 	// Getters

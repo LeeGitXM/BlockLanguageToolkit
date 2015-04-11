@@ -5,13 +5,14 @@ import system.ils.blt.application as application
 def configureForTest(common,name):
 	console = 'VFU'
 	grade = '28'
+	print "HEREEEE"
 
 	handler = application.getHandler()
 	db = handler.getDefaultDatabase(name)
 
-	vfuConsoleId=insertConsole(console,db)
-	app1Id=insertApplication(name,vfuConsoleId,db)
-	return app1Id
+	vfuConsoleId=getConsoleId(console,db)
+	appId=insertOrUpdateApplication(name,vfuConsoleId,db)
+	return appId
 
 # Place a result of "true" in the common dictionary
 # if the application is found in the default database.
@@ -36,16 +37,27 @@ def setState(common,name,state):
 # =============================== Helper Methods =========================
 # These are not directly callable from a test script
 # 
-def insertConsole(console,db):
-	SQL = "delete from DtConsole where console='%s'" % (console)
-	system.db.runUpdateQuery(SQL,db)
-	SQL = "insert into DtConsole (console) values ('%s')" % (console)
-	consoleId = system.db.runUpdateQuery(SQL,db, getKey=True)
+# return the id of the named console. The console record is created 
+#        if it does not currently exist.
+def getConsoleId(console,db):
+	SQL = "SELECT consoleId from DtConsole WHERE console='%s'" % (console)
+	consoleId = system.db.runScalarQuery(SQL,db)
+	if consoleId == None:
+		SQL = "INSERT into DtConsole (console) values ('%s')" % (console)
+		consoleId = system.db.runUpdateQuery(SQL,db, getKey=True)
 	return consoleId
 			
-# Define an application
-def insertApplication(application, consoleId):
-	SQL = "insert into DtApplication (application, ConsoleId) values ('%s', %i)" % (application, consoleId)
-	applicationId = system.db.runUpdateQuery(SQL, getKey=True)
-	return applicationIdNOTE: The above is an Application in the database
+# Correlate a console with the named application.
+# If the application does not exist, create it.
+# Return the applicationId
+def insertOrUpdateApplication(appName, consoleId,db):
+	SQL = "SELECT from DtApplication where application='%s'" % (appName)
+	applicationId = system.db.runScalarQuery(SQL,db)
+	if applicationId == None:
+		SQL = "INSERT into DtApplication (application, ConsoleId) values ('%s', %i)" % (appName, consoleId)
+		applicationId = system.db.runUpdateQuery(SQL,db, getKey=True)
+	else:
+		SQL = "UPDATE DtApplication SET ConsoleId=%i WHERE applicationId =  %i" % (consoleId,applicationId)
+		system.db.runUpdateQuery(SQL,db)
 
+	return applicationId

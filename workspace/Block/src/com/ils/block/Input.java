@@ -121,7 +121,7 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void notifyOfStatus() {
-		if( qv.getValue()!=null) {
+		if( qv!=null && qv.getValue()!=null) {
 			notifyOfStatus(qv);
 		}	
 	}

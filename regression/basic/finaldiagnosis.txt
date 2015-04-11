@@ -8,6 +8,8 @@ Tagset: FD
 Step: Initialize
 10:00 false false false false ""
 applicationProxy.configureForTest("app75")
+familyProxy.configureForTest("app75","fdfam1")
+familyProxy.configureForTest("app75","fdfam2")
 halt:
 
 assert: FinalDiagnosisProxy.validate("1.1") = success "Verify FD1-1 setup"

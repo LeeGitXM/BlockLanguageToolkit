@@ -9,7 +9,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
@@ -24,10 +23,8 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
-import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
 
 import com.ils.blt.common.block.ActiveState;
@@ -35,7 +32,7 @@ import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 /**
- * Parent dialog for Application and Family configurations.
+ * Parent dialog for Application, Family and other configurations.
  *    ConfigurationDialog cd = new ConfigurationDialog(frame, app or fam);
  *    cd.pack();
  *    cd.setVisible(true);   // Terminates when dialog closed.
@@ -52,22 +49,19 @@ public class ConfigurationDialog extends JDialog {
 	protected static final Dimension NUMBER_BOX_SIZE  = new Dimension(50,24);
 	protected final LoggerEx log;
 	protected final Map<String,Object> properties;
-	protected JTabbedPane parentTabPanel = null;
 	protected JPanel contentPanel = null;
 	protected JPanel buttonPanel = null;
 	protected JButton okButton = null;
 	protected JButton cancelButton = null;
-	protected JTextArea descriptionArea;
 	protected JTextField nameField;
 	protected boolean cancelled = false;
-	protected JComboBox<String> stateBox;
 
 	// These are the keys to the map of properties that are common
 	public final static String PROPERTY_DESCRIPTION = "description";
 
 	
-	public ConfigurationDialog(Frame frame,DesignerContext ctx) {
-		super(frame);
+	public ConfigurationDialog(DesignerContext ctx) {
+		super(ctx.getFrame());
 		this.context = ctx;
 		this.properties = new HashMap<>();
 		this.rb = ResourceBundle.getBundle("com.ils.blt.designer.designer");  // designer.properties
@@ -80,16 +74,12 @@ public class ConfigurationDialog extends JDialog {
 
 	/**
 	 * Create the UI widgets at the root of either an Application or Family
-	 * editor. The content pane holds a tabbed pane with multiple edit views.
+	 * editor. The content pane is an empty JPanel..
 	 * The pane at the bottom holds "OK" and "Cancel" buttons.
 	 */
 	private void initialize() {
-		parentTabPanel = new JTabbedPane(SwingConstants.BOTTOM);
-		parentTabPanel.setBorder(BorderFactory.createEtchedBorder());
-		
 		buttonPanel = new JPanel();
 		contentPanel = new JPanel(new BorderLayout());
-		contentPanel.add(parentTabPanel,BorderLayout.CENTER);
 		okButton = new JButton("OK");
 		buttonPanel.add(okButton,"");
 		cancelButton = new JButton("Cancel");

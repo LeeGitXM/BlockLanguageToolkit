@@ -93,9 +93,12 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 		mainPanel.add(consoleComboBox);
 		
 		mainPanel.add(new JLabel("Queue:"), "cell 0 6");
-		for(Object q : application.getQueues()) {
-			queueComboBox.addItem((String) q);
+		if( application.getQueues()!=null ) {
+			for(Object q : application.getQueues()) {
+				queueComboBox.addItem((String) q);
+			}
 		}
+		
 		queueComboBox.setToolTipText("The message queue where messages for this application will be posted!");
 		queueComboBox.setSelectedItem(application.getQueue());
 		queueComboBox.setPreferredSize(COMBO_SIZE);

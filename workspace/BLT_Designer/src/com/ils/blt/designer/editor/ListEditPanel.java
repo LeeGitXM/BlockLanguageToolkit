@@ -111,9 +111,6 @@ public class ListEditPanel extends BasicEditPanel {
 		String val = prop.getValue().toString();
 		log.debugf("%s.updateForProperty: %s (%s)",TAG,prop.getName(),val);
 		if( val.length()>1) {
-			// Delimiter is the first character 
-			String delimiter = val.substring(0, 1);
-			delimiterField.setText(delimiter);
 			List<String> model = BlockProperty.disassembleList(val);
 			DefaultTableModel dtm = (DefaultTableModel)table.getModel();
 			dtm.setRowCount(0);

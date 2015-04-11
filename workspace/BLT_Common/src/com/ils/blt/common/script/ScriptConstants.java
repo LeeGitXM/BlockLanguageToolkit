@@ -22,7 +22,10 @@ public interface ScriptConstants   {
 	public final static String FAM_DELETE_SCRIPT  = "fam-delete-script"; 
 	public final static String FAM_GET_AUX_SCRIPT = "fam-get-aux-script"; 
 	public final static String FAM_SET_AUX_SCRIPT = "fam-set-aux-script"; 
-	public final static String FAM_UPDATE_SCRIPT  = "fam-update-script"; 
+	public final static String FAM_UPDATE_SCRIPT  = "fam-update-script";
+	// These scripts are compiled with each use ...
+	public final static String GENERIC_PROPERTY_GET_SCRIPT  = "property-get-script";
+	public final static String GENERIC_PROPERTY_SET_SCRIPT  = "property-set-script";
 
 	// These are the keys for individual sub-dictionaries
 	public final static String ARGS_KEY   = "arglist";
@@ -30,5 +33,15 @@ public interface ScriptConstants   {
 	public final static String SCRIPT_KEY = "script";
 	
 	// These are standard names of properties
+	public static final String PROPERTY_NAME        = "Name";
 	public final static String PROPERTY_PRIORITY    = "priority";
+	
+	// These are properties of a final diagnosis (it also has a priority)
+	public final static String PROPERTY_CALCULATION_METHOD    = "calculationMethod";
+	public final static String PROPERTY_EXPLANATION    = "explanation";
+	public final static String PROPERTY_POST_TEXT_RECOMMENDATION    = "postTextRecommendation";
+	public final static String PROPERTY_REFRESH_RATE    = "refreshRate";
+	public final static String PROPERTY_TEXT_RECOMMENDATION    = "textRecommendation";
+	public final static String PROPERTY_TEXT_RECOMMENDATION_CALLBACK    = "textRecommendationCallback";
+	public final static String PROPERTY_TRAP_INSIGNITFICANT_RECOMMENDATIONS    = "trapInsignificantRecommendations";
 }
