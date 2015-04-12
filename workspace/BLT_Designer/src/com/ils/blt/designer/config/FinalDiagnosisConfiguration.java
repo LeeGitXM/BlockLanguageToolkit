@@ -23,6 +23,7 @@ import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
+import com.ils.common.ui.DualListBox;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 /**
