@@ -263,6 +263,10 @@ public class ModelManager implements ProjectListener  {
 		}
 		return result;	
 	}
+	/**
+	 * @return the root node of the diagram tree
+	 */
+	public RootNode getRootNode() { return root; }
 	
 	/**
 	 * Remove a diagram that is not associated with a project resource,

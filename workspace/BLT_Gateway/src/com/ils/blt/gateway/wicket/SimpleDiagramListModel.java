@@ -9,10 +9,10 @@ import com.ils.blt.gateway.engine.ModelManager;
 import com.ils.blt.gateway.engine.ProcessDiagram;
 
 
-public class DiagramListModel extends LoadableDetachableModel<List<ProcessDiagram>> {
+public class SimpleDiagramListModel extends LoadableDetachableModel<List<ProcessDiagram>> {
 	private static final long serialVersionUID = 3174385295574411202L;
 
-	public DiagramListModel() {	
+	public SimpleDiagramListModel() {	
 	}
 
 

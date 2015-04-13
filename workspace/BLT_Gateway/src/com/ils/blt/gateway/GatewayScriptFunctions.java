@@ -20,10 +20,11 @@ public class GatewayScriptFunctions   {
 	private static PythonRequestHandler pyhandler = new PythonRequestHandler();
 	
 	/**
-	 * Query the gateway for list of diagrams 
+	 * Query the gateway for list of diagrams. 
 	 * 
 	 * @param projectName
-	 * @return a list of tree-paths to the diagrams saved (ie. known to the Gateway).
+	 * @return a list of tree-paths to the diagrams saved 
+	 *         (ie. known to the Gateway).
 	 */
 	@SuppressWarnings("rawtypes")
 	public static List getDiagramDescriptors() {
@@ -31,7 +32,14 @@ public class GatewayScriptFunctions   {
 	}
 	
 	/**
-	 * @return the python request handler
+	 * The Python request handler is made available to
+	 * every block that is implemented in Python. The
+	 * handler provides facilities to acquire database and
+	 * tag provider references, and to submit block outputs.
+	 * 
+	 * The handler also provides access to diagram and block objects.
+	 * 
+	 * @return the python request handler.
 	 */
 	public static PythonRequestHandler getHandler() {
 		return pyhandler;

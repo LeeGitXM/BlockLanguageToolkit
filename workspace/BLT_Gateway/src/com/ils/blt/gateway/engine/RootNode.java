@@ -21,8 +21,9 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
  * Keep track of children by project.
  */
 public class RootNode extends ProcessNode {
+	private static final long serialVersionUID = 4266822873285521574L;
 	private static String TAG = "RootNode";
-	private final GatewayContext context;   // Use to get project name
+	protected final GatewayContext context;   // Use to get project name
 	// The child key is resourceId (which is immutable)
 	private final Map <Long,Map<Long,ProcessNode>>childrenByProjectId;
 	private final Map<String,Long> projectIdByName;

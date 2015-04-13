@@ -90,7 +90,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		return instance;
 	}
 	/**
-	 * Remove all diagrams from the controller
+	 * Remove all diagrams from the controller.
+	 * Cancel all tag subscriptions.
 	 */
 	public void clearController() {
 		controller.removeAllDiagrams();
@@ -750,7 +751,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 */
 	public void triggerStatusNotifications() {
 		BlockExecutionController.getInstance().triggerStatusNotifications();
-		log.warnf("%s.triggerStatusNotifications: COMPLETE.",TAG);
+		log.infof("%s.triggerStatusNotifications: Complete.",TAG);
 	}
 			
 	/** Change the properties of anchors for a block. 

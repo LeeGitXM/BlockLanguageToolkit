@@ -3,6 +3,7 @@
  */
 package com.ils.blt.gateway.engine;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,7 +17,8 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  * We require the hierarchy in the gateway for purposes of routing conclusions
  * to the proper destination.
  */
-public class ProcessNode {
+public class ProcessNode implements Serializable {
+	private static final long serialVersionUID = 6280701183405134254L;
 	private final Map<Long,ProcessNode> children;   // Key by resourceId
 	protected final LoggerEx log;
 	private String name;

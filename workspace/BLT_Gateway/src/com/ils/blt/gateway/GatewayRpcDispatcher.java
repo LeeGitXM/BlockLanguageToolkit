@@ -376,7 +376,6 @@ public class GatewayRpcDispatcher   {
 	 * Trigger status notifications for all current diagrams and their blocks.
 	 */
 	public void triggerStatusNotifications() {
-		log.infof("%s.triggerStatusNotifications ...",TAG);
 		try {
 			requestHandler.triggerStatusNotifications();
 		}

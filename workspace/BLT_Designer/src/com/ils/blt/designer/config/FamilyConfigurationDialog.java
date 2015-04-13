@@ -48,7 +48,7 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 	}
 	/**
 	 * The super class takes care of making a central tabbed pane --- but
-	 * we don't wantit. Simply put our mainPanel as the content pane.
+	 * we don't want it. Simply put our mainPanel as the content pane.
 	 * Here we add the tabs ...
 	 * 1) Core attributes
 	 * 2) Python hook definitions.

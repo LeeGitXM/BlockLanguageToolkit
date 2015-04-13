@@ -83,6 +83,8 @@ public class NotificationHandler implements PushNotificationListener {
 			String key = notice.getMessageType();
 			Object payload = notice.getMessage();
 			log.debugf("%s.receiveNotification: key=%s,value=%s",TAG,key,(payload==null?"null":payload.toString()));
+			if( payload==null ) return; // Ignore
+			
 			if( payload instanceof QualifiedValue ) {
 				payloadMap.put(key, payload);
 				Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);

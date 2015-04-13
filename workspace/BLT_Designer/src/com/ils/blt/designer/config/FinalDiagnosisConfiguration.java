@@ -32,16 +32,16 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 	private static final long serialVersionUID = 7211480530910862375L;
 	private static final String TAG = "FinalDiagnosisConfiguration";
-	private final int DIALOG_HEIGHT = 400;
-	private final int DIALOG_WIDTH = 400;
+	private final int DIALOG_HEIGHT = 520;
+	private final int DIALOG_WIDTH = 480;
 	private final ProcessDiagramView diagram;
 	private final ProcessBlockView block;
 	private final ApplicationRequestHandler requestHandler;
 	private final ScriptExtensionManager extensionManager = ScriptExtensionManager.getInstance();
-	private JPanel internalPanel = null;
-	
+	private JPanel mainPanel = null;
 	protected JTextField calculationMethodField;
-	protected JTextArea explanationArea;
+	protected JTextArea textRecommendationArea;
+	protected JTextArea postTextRecommendationArea;
 	protected JTextField priorityField;
 	protected JTextField refreshRateField;
 	protected JTextField recommendationMethodField;
@@ -59,8 +59,23 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 		this.requestHandler = new ApplicationRequestHandler();
         initialize();
 	}
-	
+	/**
+	 * The super class takes care of making a central tabbed pane --- but
+	 * we don't want it. Simply put our mainPanel as the content pane.
+	 * Here we add the tabs ...
+	 * 1) Core attributes
+	 * 2) Python hook definitions.
+	 */
 	private void initialize() {
+		// Fetch properties of the family associated with the database and not serialized.
+
+		mainPanel = createMainPanel();
+		contentPanel.add(mainPanel,BorderLayout.CENTER);
+		populatePanel();
+		setOKActions();
+	}
+	
+	private JPanel createMainPanel() {
 		for(BlockProperty prop:block.getProperties()) {
 			if( prop.getName().equals(BlockConstants.BLOCK_PROPERTY_GET_AUX_DATA_HOOK)) {
 				String scriptName = prop.getValue().toString();
@@ -78,19 +93,52 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 		
 		// The internal panel has two panes
 		// - one for the dual list box, the other for the remaining attributes
-		setLayout(new BorderLayout());
-		internalPanel = new JPanel();
-		internalPanel.setLayout(new MigLayout("ins 2","",""));
-		add(internalPanel,BorderLayout.CENTER);
+		//setLayout(new BorderLayout());
+		mainPanel = new JPanel();
+		mainPanel.setLayout(new MigLayout("ins 2","",""));
 		
-		addSeparator(internalPanel,"FinalDiagnosis.QuantOutputs");
+		
+		addSeparator(mainPanel,"FinalDiagnosis.QuantOutputs");
 		
 		DualListBox dual = new DualListBox();
 		dual.addSourceElements(new String[] {"One", "Two", "Three"});
-		internalPanel.add(dual, "wrap");
-
-		internalPanel.add(createPropertiesPanel(),"wrap");
-		
+		mainPanel.add(dual, "gapx 50 40,wrap");
+		mainPanel.add(createPropertiesPanel(),"wrap");
+		return mainPanel;
+	}
+	
+	/**
+	 * Read the database and fill fields in the dialog
+	 */
+	private void populatePanel() {
+		// Search block properties for the getter script
+		properties.clear();
+		for(BlockProperty prop:block.getProperties()) {
+			if( prop.getName().equals(BlockConstants.BLOCK_PROPERTY_GET_AUX_DATA_HOOK)) {
+				String scriptName = prop.getValue().toString();
+				try {
+					// Fetch properties of this block which associated with the database and not serialized.
+					extensionManager.runOneTimeScript(context.getScriptManager(), scriptName, 
+							ScriptConstants.GENERIC_PROPERTY_GET_SCRIPT, block.getId().toString(),properties);
+				}
+				catch(Exception ex) {
+					log.error(TAG+".actionPerformed: Exception getting properties ("+ex.getMessage()+")",ex);
+					return;
+				}
+				break;
+			}
+		}
+		// Now set the component values
+		calculationMethodField.setText(properties.getOrDefault(ScriptConstants.PROPERTY_CALCULATION_METHOD,"").toString());
+		postTextRecommendationArea.setText(properties.getOrDefault(ScriptConstants.PROPERTY_POST_TEXT_RECOMMENDATION,"").toString());
+		priorityField.setText(properties.getOrDefault(ScriptConstants.PROPERTY_PRIORITY,"0").toString());
+		refreshRateField.setText(properties.getOrDefault(ScriptConstants.PROPERTY_REFRESH_RATE,"0.0").toString());
+		textRecommendationArea.setText(properties.getOrDefault(ScriptConstants.PROPERTY_TEXT_RECOMMENDATION,"").toString());
+		recommendationMethodField.setText(properties.getOrDefault(ScriptConstants.PROPERTY_TEXT_RECOMMENDATION_CALLBACK,"").toString());
+		String val = properties.getOrDefault(ScriptConstants.PROPERTY_TRAP_INSIGNITFICANT_RECOMMENDATIONS,"1").toString();
+		trapBox.setSelected((val.equals("0")?false:true));
+	}
+	private void setOKActions() {
 		// The button panel is already added by the base class.
 		okButton.setText(rb.getString("FinalDiagnosisEditor.Save"));
 		okButton.addActionListener(new ActionListener() {
@@ -109,12 +157,14 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 							TAG, priorityField.getText(), nfe.getMessage());
 				}
 				properties.put(ScriptConstants.PROPERTY_CALCULATION_METHOD,calculationMethodField.getText());
-				properties.put(ScriptConstants.PROPERTY_EXPLANATION,explanationArea.getText());
+				properties.put(ScriptConstants.PROPERTY_POST_TEXT_RECOMMENDATION,postTextRecommendationArea.getText());
 				properties.put(ScriptConstants.PROPERTY_PRIORITY,priorityField.getText());
 				properties.put(ScriptConstants.PROPERTY_REFRESH_RATE,refreshRateField.getText());
+				properties.put(ScriptConstants.PROPERTY_TEXT_RECOMMENDATION,textRecommendationArea.getText());
 				properties.put(ScriptConstants.PROPERTY_TEXT_RECOMMENDATION_CALLBACK,recommendationMethodField.getText());
 				properties.put(ScriptConstants.PROPERTY_TRAP_INSIGNITFICANT_RECOMMENDATIONS,(trapBox.isSelected()?"1":"0"));
 				
+				// Search properties for the setter script
 				for(BlockProperty prop:block.getProperties()) {
 					if( prop.getName().equals(BlockConstants.BLOCK_PROPERTY_SET_AUX_DATA_HOOK)) {
 						String scriptName = prop.getValue().toString();
@@ -166,40 +216,46 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 		if( method==null) method="";
 		calculationMethodField = createTextField("FinalDiagnosis.CalcMethod.Desc",method);
 		calculationMethodField.setPreferredSize(NAME_BOX_SIZE);
-		panel.add(calculationMethodField,"");
+		panel.add(calculationMethodField,"span,wrap");
 		
-		panel.add(createLabel("FinalDiagnosis.Explanation"),"gaptop 2,aligny top");
-		String explanation = (String)properties.get(ScriptConstants.PROPERTY_EXPLANATION);
-		if( explanation==null) explanation="";
-		explanationArea = createTextArea("FinalDiagnosis.Explanation.Desc",explanation);
-		panel.add(explanationArea,"gaptop 2,aligny top,span,wrap");
+		panel.add(createLabel("FinalDiagnosis.TextRecommendation"),"gaptop 2,aligny top");
+		String recommendation = (String)properties.get(ScriptConstants.PROPERTY_TEXT_RECOMMENDATION);
+		if( recommendation==null) recommendation="";
+		textRecommendationArea = createTextArea("FinalDiagnosis.TextRecommendation.Desc",recommendation);
+		panel.add(textRecommendationArea,"gaptop 2,aligny top,span,wrap");
+		
+		panel.add(createLabel("FinalDiagnosis.PostTextRecommendation"),"gaptop 2,aligny top");
+		recommendation = (String)properties.get(ScriptConstants.PROPERTY_POST_TEXT_RECOMMENDATION);
+		if( recommendation==null) recommendation="";
+		postTextRecommendationArea = createTextArea("FinalDiagnosis.PostTextRecommendation.Desc",recommendation);
+		panel.add(postTextRecommendationArea,"gaptop 2,aligny top,span,wrap");
 
 		panel.add(createLabel("FinalDiagnosis.Priority"),"");
 		String priority = (String)properties.get(ScriptConstants.PROPERTY_PRIORITY);
 		if( priority==null) priority="";
 		priorityField = createTextField("FinalDiagnosis.Priority.Desc",priority);
 		priorityField.setPreferredSize(NUMBER_BOX_SIZE);
-		panel.add(priorityField,"");
+		panel.add(priorityField,"span,wrap");
 		
 		panel.add(createLabel("FinalDiagnosis.RefreshRate"),"");
 		String rate = (String)properties.get(ScriptConstants.PROPERTY_REFRESH_RATE);
 		if( rate==null) rate="";
 		refreshRateField = createTextField("FinalDiagnosis.RefreshRate.Desc",rate);
 		refreshRateField.setPreferredSize(NUMBER_BOX_SIZE);
-		panel.add(refreshRateField,"");
+		panel.add(refreshRateField,"span,wrap");
 		
 		panel.add(createLabel("FinalDiagnosis.RecommendationMethod"),"");
 		method = (String)properties.get(ScriptConstants.PROPERTY_TEXT_RECOMMENDATION_CALLBACK);
 		if( method==null) method="";
 		recommendationMethodField = createTextField("FinalDiagnosis.RecommendationMethod.Desc",method);
 		recommendationMethodField.setPreferredSize(NAME_BOX_SIZE);
-		panel.add(recommendationMethodField,"");
+		panel.add(recommendationMethodField,"span,wrap");
 		
 		panel.add(createLabel("FinalDiagnosis.TrapInsignificant"),"");
 		String tf = (String)properties.get(ScriptConstants.PROPERTY_TRAP_INSIGNITFICANT_RECOMMENDATIONS);
 		if( tf==null) tf="0";
 		trapBox = createCheckBox("FinalDiagnosis.TrapInsignificant.Desc",(tf.equals("0")?false:true));
-		panel.add(trapBox,"");
+		panel.add(trapBox,"span,wrap");
 		return panel;
 	}
 }

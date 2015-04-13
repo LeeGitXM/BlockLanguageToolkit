@@ -1,0 +1,30 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>Diagnostic Toolkit - Diagram Status</title>
+        <link rel="stylesheet" type="text/css" href="style.css"/>
+        <style>
+            .tree p {
+              margin: 0px;
+            }
+        </style>
+</head>
+<body> 
+   <h3>Diagnosic Toolkit</h3>
+   <wicket:extend>
+        <form wicket:id="form">
+                <p>
+                <!--
+                   <a wicket:id="collapseAll">collapse all</a>  <a wicket:id="expandAll">expand all</a>
+                </p>
+                <p>
+                    <wicket:child/>
+                </p>
+                -->
+                <input type="submit" wicket:id="clear" value="Clear"/>
+                <input type="submit" wicket:id="refresh" value="Refresh"/>
+            </form>
+    </wicket:extend>   
+</body>
+</html>

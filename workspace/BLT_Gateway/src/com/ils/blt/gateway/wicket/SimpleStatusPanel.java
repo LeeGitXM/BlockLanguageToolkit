@@ -10,11 +10,11 @@ import org.apache.wicket.model.IModel;
 
 import com.ils.blt.gateway.engine.ProcessDiagram;
 
-public class StatusPanel extends Panel {
+public class SimpleStatusPanel extends Panel {
 	private static final long serialVersionUID = 4204748023293522204L;
 
 
-	public StatusPanel(String id) {
+	public SimpleStatusPanel(String id) {
 		super(id);
 		
         // This is the static view of the diagram

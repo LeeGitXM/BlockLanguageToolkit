@@ -12,7 +12,7 @@ familyProxy.configureForTest("app75","fdfam1")
 familyProxy.configureForTest("app75","fdfam2")
 halt:
 
-assert: FinalDiagnosisProxy.validate("1.1") = success "Verify FD1-1 setup"
+assert: finalDiagnosisProxy.validate("1.1") = success "Verify FD1-1 setup"
 
 Step: Initialize
 10:05 false false false false ""

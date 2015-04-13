@@ -144,9 +144,9 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		
 		@Override
 		public WebMarkupContainer getPanel(String id) {
+			//return new SimpleStatusPanel(id);
 			return new StatusPanel(id);
 		}
-		
 	}
 	
 	public ToolkitRecord getPersistentRecord() { return record; }

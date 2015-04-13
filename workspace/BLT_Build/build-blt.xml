@@ -2,7 +2,7 @@
 
 	<import file="${basedir}/BLT_Build/build.xml"/>
 
-	<property name="version.build" value="0" />	
+	<property name="version.build" value="1" />	
 	<!-- Change version.beta value to "" for release builds -->
 	<property name="version.beta" value="-development" />		
 	<property name="BLTModule.version" value="1.6.1.${version.build}" />
@@ -100,6 +100,7 @@
 		<delete>
 		    <fileset dir="${common.bin.dir}">
 		        <include name="**/*.class"/>
+		    	<include name="**/*.png"/>
 		    </fileset>
 		</delete>
 	</target>
@@ -116,14 +117,17 @@
 	<!-- Compile the Common library -->
 	<target name="common.build" description="Compile the source">
 		<echo  message="Using Java version ${ant.java.version}."/>
-		<mkdir dir="${common.bin.dir}"/>
+		<mkdir dir="${common.bin.dir}/images"/>
 		<javac destdir="${common.bin.dir}" debug="true" target="1.8" includeantruntime="false">
 			<src path="${common.src.dir}"/>
 			<classpath refid="ils-classpath"/>
 		</javac>
+		<copy todir="${common.bin.dir}/images" >
+			<fileset dir="${common.src.dir}/images"/>
+		</copy>
 	</target>
 	<target name ="common.jar" description="Create a jar for the ILS Common library">
-	    <jar destfile="${jar.dir}/${common.jar.name}" includes="**/*.class" basedir="${common.bin.dir}"/>
+	    <jar destfile="${jar.dir}/${common.jar.name}" includes="**/*.class,**/*.png" basedir="${common.bin.dir}"/>
 	</target>
 	
 	<!-- Compile the Block Definition library -->
