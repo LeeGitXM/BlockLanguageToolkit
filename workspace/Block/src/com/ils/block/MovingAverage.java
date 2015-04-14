@@ -12,7 +12,6 @@ import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
@@ -94,7 +93,6 @@ public class MovingAverage extends AbstractProcessBlock implements ProcessBlock 
 	@Override
 	public void acceptValue(IncomingNotification incoming) {
 		super.acceptValue(incoming);
-		this.state = BlockState.ACTIVE;
 		double result = Double.NaN;
 		QualifiedValue qv = incoming.getValue();
 		Quality qual = qv.getQuality();

@@ -15,7 +15,6 @@ import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
@@ -44,7 +43,6 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 	protected final Map<String,QualifiedValue> qualifiedValueMap;
 	private final Watchdog dog;
 	private double synchInterval = 0.5; // 1/2 sec synchronization by default
-	protected TruthValue truthValue = TruthValue.UNSET;
 	protected int nTrue = 0;
 	
 	/**
@@ -76,7 +74,6 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	private void initialize() {	
 		setName("NTrue");
-		truthValue = TruthValue.UNSET;
 		// Define the time for "coalescing" inputs ~ msec
 		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,new Double(synchInterval),PropertyType.TIME,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL, synch);
@@ -98,8 +95,7 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void reset() {
 		super.reset();
-		qualifiedValueMap.clear();
-		truthValue = TruthValue.UNSET;
+		state = TruthValue.UNKNOWN;
 	}
 	
 	
@@ -113,7 +109,6 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void acceptValue(IncomingNotification incoming) {
 		super.acceptValue(incoming);
-		this.state = BlockState.ACTIVE;
 		String key = String.format("%s:%s",incoming.getConnection().getSource().toString(),
                                            incoming.getConnection().getUpstreamPortName());
 		QualifiedValue qv = incoming.getValue();
@@ -131,11 +126,11 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 	public void evaluate() {
 		if( !isLocked() ) {
 			TruthValue newState = getAggregateState();
-			log.infof("%s.evaluate: new = %s, old =%s",TAG,newState.name(),truthValue.name());
-			if(newState!=truthValue ) {
-				truthValue = newState;
-				QualifiedValue result = new BasicQualifiedValue(truthValue.name(),
-			            (truthValue.equals(TruthValue.UNKNOWN)?getAggregateQuality():DataQuality.GOOD_DATA));
+			log.infof("%s.evaluate: new = %s, old =%s",TAG,newState.name(),state.name());
+			if(newState!=state ) {
+				state = newState;
+				QualifiedValue result = new BasicQualifiedValue(state.name(),
+			            (state.equals(TruthValue.UNKNOWN)?getAggregateQuality():DataQuality.GOOD_DATA));
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
 				controller.acceptCompletionNotification(nvn);
 				notifyOfStatus(result);
@@ -150,7 +145,7 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 	public SerializableBlockStateDescriptor getInternalStatus() {
 		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
 		Map<String,String> attributes = descriptor.getAttributes();
-		attributes.put("Value", truthValue.name());
+		attributes.put("Value", state.name());
 		return descriptor;
 	}
 	
@@ -184,7 +179,7 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void notifyOfStatus() {
-		QualifiedValue qv = new BasicQualifiedValue(truthValue);
+		QualifiedValue qv = new BasicQualifiedValue(state);
 		notifyOfStatus(qv);
 		
 	}

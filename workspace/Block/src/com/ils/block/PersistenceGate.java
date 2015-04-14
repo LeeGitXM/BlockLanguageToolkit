@@ -15,7 +15,6 @@ import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
@@ -46,7 +45,6 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 	private String trigger = "";     // Nothing will trigger until this is set
 	private BlockProperty valueProperty = null;;
 	private final Watchdog dog;
-	protected TruthValue truthValue = TruthValue.UNSET;  // This is the output
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
@@ -75,7 +73,6 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 	 */
 	private void initialize() {	
 		setName("PersistenceGate");
-		truthValue = TruthValue.UNSET;
 		BlockProperty windowProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW,new Double(timeWindow),PropertyType.TIME,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW, windowProperty);
 		BlockProperty scanIntervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL,new Double(scanInterval),PropertyType.TIME,true);
@@ -100,7 +97,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		super.reset();
 		if( dog.isActive() ) timer.removeWatchdog(dog);
 		count = 0;
-		truthValue = TruthValue.UNSET;
+		state = TruthValue.UNKNOWN;
 		valueProperty.setValue("");
 		notifyOfStatus();
 	}
@@ -120,7 +117,6 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 	@Override
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
-		this.state = BlockState.ACTIVE;
 		
 		QualifiedValue qv = vcn.getValue();
 		//log.infof("%s.acceptValue: Received %s, trigger is %s",TAG,qv.getValue().toString(),trigger);
@@ -134,12 +130,12 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 				log.tracef("%s.acceptValue: No match, sent immediate %s",TAG,qv.getValue().toString());
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 				controller.acceptCompletionNotification(nvn);
-				truthValue = qualifiedValueAsTruthValue(qv);
+				state = qualifiedValueAsTruthValue(qv);
 				notifyOfStatus(qv);
 			}
 		}
 		// Only execute if the block state is not at the trigger
-		else if( !trigger.equalsIgnoreCase(truthValue.name()) ) {
+		else if( !trigger.equalsIgnoreCase(state.name()) ) {
 			//log.infof("%s.acceptValue: Matched trigger %s",TAG,qv.getValue().toString());
 			// Good quality and equal to the trigger.
 			if( !dog.isActive() ) {
@@ -178,7 +174,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 			controller.acceptCompletionNotification(nvn);
 			valueProperty.setValue("---");
-			truthValue = qualifiedValueAsTruthValue(outval);
+			state = qualifiedValueAsTruthValue(outval);
 			notifyOfStatus(outval);
 		}
 		count--;
@@ -225,7 +221,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
 		Map<String,String> attributes = descriptor.getAttributes();
 		attributes.put("Count", String.valueOf(count));
-		attributes.put("Value", truthValue.name());
+		attributes.put("Value", state.name());
 		return descriptor;
 	}
 	
@@ -235,7 +231,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 	@Override
 	public void notifyOfStatus() {
 		if( getBlockId()!=null ) {
-			QualifiedValue qv = new BasicQualifiedValue(truthValue);
+			QualifiedValue qv = new BasicQualifiedValue(state);
 			notifyOfStatus(qv);
 		}
 	}

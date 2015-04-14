@@ -16,7 +16,6 @@ import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.HysteresisType;
 import com.ils.blt.common.block.ProcessBlock;
@@ -45,7 +44,6 @@ public class LowLimitTimeWindow extends AbstractProcessBlock implements ProcessB
 	private double scanInterval = 1.0;    // ~secs
 	private double timeWindow = 60;     // ~ secs
 	private final Watchdog dog;
-	private TruthValue truthValue = TruthValue.UNSET;
 	private double limit;
 	private double deadband = 0;
 	private HysteresisType hysteresis = HysteresisType.NEVER;
@@ -114,7 +112,7 @@ public class LowLimitTimeWindow extends AbstractProcessBlock implements ProcessB
 			dog.setSecondsDelay(scanInterval);
 			timer.updateWatchdog(dog);  // pet dog
 		}
-		truthValue = TruthValue.UNSET;
+		state = TruthValue.UNSET;
 	}
 
 	@Override
@@ -134,7 +132,6 @@ public class LowLimitTimeWindow extends AbstractProcessBlock implements ProcessB
 	@Override
 	public void acceptValue(IncomingNotification incoming) {
 		super.acceptValue(incoming);
-		this.state = BlockState.ACTIVE;
 		QualifiedValue qv = incoming.getValue();
 		Quality qual = qv.getQuality();
 		if( qual.isGood() && qv.getValue()!=null ) {
@@ -180,10 +177,10 @@ public class LowLimitTimeWindow extends AbstractProcessBlock implements ProcessB
 		}
 		log.infof("%s.evaluate %d of %d points",TAG,buffer.size(),maxPoints);
 		if( buffer.size() >= maxPoints || !fillRequired) {
-			TruthValue result = checkPassConditions(truthValue);
-			if( !result.equals(truthValue) && !isLocked() ) {
+			TruthValue result = checkPassConditions(state);
+			if( !result.equals(state) && !isLocked() ) {
 				// Give it a new timestamp
-				truthValue = result;
+				state = result;
 				QualifiedValue outval = new BasicQualifiedValue(result);
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 				controller.acceptCompletionNotification(nvn);
@@ -191,8 +188,8 @@ public class LowLimitTimeWindow extends AbstractProcessBlock implements ProcessB
 			}
 		}
 		else {
-			if( !truthValue.equals(TruthValue.UNKNOWN) && !isLocked() ) {
-				truthValue = TruthValue.UNKNOWN;
+			if( !state.equals(TruthValue.UNKNOWN) && !isLocked() ) {
+				state = TruthValue.UNKNOWN;
 				QualifiedValue outval = new BasicQualifiedValue(TruthValue.UNKNOWN);
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 				controller.acceptCompletionNotification(nvn);
@@ -209,7 +206,7 @@ public class LowLimitTimeWindow extends AbstractProcessBlock implements ProcessB
 	 */
 	@Override
 	public void notifyOfStatus() {
-		QualifiedValue qv = new BasicQualifiedValue(truthValue);
+		QualifiedValue qv = new BasicQualifiedValue(state);
 		notifyOfStatus(qv);
 		
 	}

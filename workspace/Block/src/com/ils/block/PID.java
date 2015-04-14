@@ -13,7 +13,6 @@ import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.PlacementHint;
 import com.ils.blt.common.block.ProcessBlock;
@@ -198,7 +197,6 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
-		this.state = BlockState.ACTIVE;
 		String port = vcn.getConnection().getDownstreamPortName();
 		if( port.equals(BlockConstants.IN_PORT_NAME)  ) {
 			QualifiedValue qv = vcn.getValue();

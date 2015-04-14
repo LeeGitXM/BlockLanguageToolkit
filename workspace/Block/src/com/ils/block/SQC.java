@@ -15,7 +15,6 @@ import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.LimitType;
 import com.ils.blt.common.block.ProcessBlock;
@@ -60,7 +59,6 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	private int minOut = sampleSize;  // Min out-of-range to conclude TRUE
 	private double standardDeviation = Double.NaN;
 	private double mean = Double.NaN;
-	TruthValue truthState = TruthValue.UNKNOWN;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -140,11 +138,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	private void clear() {
 		log.debugf("%s.clear: reset data buffer",getName());
 		queue.clear();
-		truthState = TruthValue.UNKNOWN;
-		QualifiedValue outval = new BasicQualifiedValue(truthState);
-		OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
-		controller.acceptCompletionNotification(nvn);
-		notifyOfStatus(outval);
+		state = TruthValue.UNSET;
 	}
 	
 	/**
@@ -154,7 +148,6 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public synchronized void acceptValue(IncomingNotification incoming) {
 		super.acceptValue(incoming);
-		this.state = BlockState.ACTIVE;
 		QualifiedValue qv = incoming.getValue();
 		Quality qual = qv.getQuality();
 		String port = incoming.getConnection().getDownstreamPortName();
@@ -173,10 +166,10 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 			}
 			else {
 				// Bad quality, emit the result immediately
-				if( !truthState.equals(TruthValue.UNKNOWN) ) {
-					truthState = TruthValue.UNKNOWN;
+				if( !state.equals(TruthValue.UNKNOWN) ) {
+					state = TruthValue.UNKNOWN;
 					if( !isLocked() ) {
-						QualifiedValue outval = new BasicQualifiedValue(truthState,qual,qv.getTimestamp());
+						QualifiedValue outval = new BasicQualifiedValue(state,qual,qv.getTimestamp());
 						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 						controller.acceptCompletionNotification(nvn);
 					}
@@ -220,11 +213,21 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		Signal signal = sn.getSignal();
 		if( signal.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_CLEAR_HIGH) && limitType.equals(LimitType.HIGH)) {
 			log.tracef("%s.acceptValue: signal = %s ",getName(),signal.getCommand());
-			clear();
+			if( state.equals(TruthValue.TRUE)) {
+				state = TruthValue.FALSE; 
+				QualifiedValue outval = new BasicQualifiedValue(state);
+				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
+				controller.acceptCompletionNotification(nvn);
+			}
 		}
 		else if( signal.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_CLEAR_LOW) && limitType.equals(LimitType.LOW)) {
 			log.tracef("%s.acceptValue: signal = %s ",getName(),signal.getCommand());
-			clear();
+			if( state.equals(TruthValue.TRUE)) {
+				state = TruthValue.FALSE; 
+				QualifiedValue outval = new BasicQualifiedValue(state);
+				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
+				controller.acceptCompletionNotification(nvn);
+			}
 		}
 	}
 	
@@ -237,20 +240,21 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	public synchronized void evaluate() {
 		if( Double.isNaN(mean) )              return;
 		if( Double.isNaN(standardDeviation) ) return;
+		if( queue.size()==0 ) return;         // No value yet
 
 		// Evaluate the buffer and report
 		log.debugf("%s.evaluate %d of %d",getName(),queue.size(),sampleSize);
 		TruthValue newState = getRuleState();
-		if( !isLocked() && !newState.equals(truthState) ) {
+		if( !isLocked() && !newState.equals(state) ) {
 			// Give it a new timestamp
-			truthState = newState;
-			QualifiedValue outval = new BasicQualifiedValue(truthState);
+			state = newState;
+			QualifiedValue outval = new BasicQualifiedValue(state);
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus(outval);
 
 			// Notify other blocks to suppress alternate results
-			if( truthState.equals(TruthValue.TRUE)) {
+			if( state.equals(TruthValue.TRUE)) {
 				if( limitType.equals(LimitType.HIGH )) {
 					Signal sig = new Signal(BlockConstants.COMMAND_CLEAR_LOW,"","");
 					BroadcastNotification broadcast = new BroadcastNotification(getParentId(),TransmissionScope.LOCAL,sig);
@@ -269,7 +273,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void notifyOfStatus() {
-		QualifiedValue qv = new BasicQualifiedValue(truthState);
+		QualifiedValue qv = new BasicQualifiedValue(state);
 		notifyOfStatus(qv);
 		
 	}
@@ -346,7 +350,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		attributes.put("Minimum Out of Range", String.valueOf(minOut));
 		attributes.put("SampleSize", String.valueOf(sampleSize));
 		attributes.put("Current QueueSize", String.valueOf(queue.size()));
-		attributes.put("State", truthState.name());
+		attributes.put("State", state.name());
 		List<Map<String,String>> descBuffer = descriptor.getBuffer();
 		for( Double dbl:queue) {
 			Map<String,String> qvMap = new HashMap<>();

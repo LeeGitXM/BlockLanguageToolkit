@@ -6,6 +6,20 @@
 </head>
 <body> 
 <wicket:panel>
+	<h2>Diagram Hierarchy</h2>
+	<form wicket:id="form">
+                <p>
+                <table>
+                <tr>
+                <td><a wicket:id="collapseAll">collapse all</a></td>
+                <td>  <a wicket:id="expandAll">expand all</a> </td>
+                </tr>
+                </table>
+                </p>
+                <input type="submit" wicket:id="clear" value="Clear"/>
+                <input type="submit" wicket:id="refresh" value="Refresh"/>
+            </form>
+            
 	<h2>Currently defined diagrams</h2>
 		<ul>
 		<li wicket:id="diagrams">

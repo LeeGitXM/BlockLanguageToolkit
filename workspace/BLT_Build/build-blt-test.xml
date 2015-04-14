@@ -5,7 +5,7 @@
 	<property name="version.build" value="0" />	
 	<!-- Change version.beta value to "" for release builds -->
 	<property name="version.beta" value="-development" />		
-	<property name="BLTTestModule.version" value="1.5.0.${version.build}" />
+	<property name="BLTTestModule.version" value="1.5.1.${version.build}" />
 	<property name="BLTTestModule.name" value="BLTTest" />
 	<property name="BLTTestModule.release" value="0.5" />
 	<property name="BLTTestModule.description" value="Block Language Toolkit - Test" />

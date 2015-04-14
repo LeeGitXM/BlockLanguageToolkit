@@ -14,7 +14,6 @@ import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
@@ -86,7 +85,6 @@ public class Product extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void reset() {
 		super.reset();
-		valueMap.clear();
 	}
 	/**
 	 * Disconnect from the timer thread.
@@ -123,7 +121,6 @@ public class Product extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void acceptValue(IncomingNotification incoming) {
 		super.acceptValue(incoming);
-		this.state = BlockState.ACTIVE;
 		QualifiedValue qv = incoming.getValue();
 		if( qv!=null && qv.getValue()!=null ) {
 			String key = String.format("%s:%s",incoming.getConnection().getSource().toString(),

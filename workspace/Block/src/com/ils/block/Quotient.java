@@ -11,7 +11,6 @@ import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
@@ -89,8 +88,6 @@ public class Quotient extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void reset() {
 		super.reset();
-		a = null;
-		b = null;
 	}
 	/**
 	 * Disconnect from the timer thread.
@@ -127,7 +124,6 @@ public class Quotient extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
-		this.state = BlockState.ACTIVE;
 		QualifiedValue qv = vcn.getValue();
 		if( vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(DIVIDEND_PORT_NAME)) {
 			if( qv!=null && qv.getValue()!=null ) {

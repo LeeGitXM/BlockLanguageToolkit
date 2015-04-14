@@ -37,7 +37,6 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 @ExecutableBlock
 public class HighLimitSampleCount extends AbstractProcessBlock implements ProcessBlock {
 	private final static String TAG = "HighValuePattern";
-	private TruthValue truthValue = TruthValue.UNSET;
 	private double limit;
 	private final static int DEFAULT_BUFFER_SIZE = 1;
 	private final FixedSizeQueue<QualifiedValue> queue;
@@ -102,7 +101,8 @@ public class HighLimitSampleCount extends AbstractProcessBlock implements Proces
 	@Override
 	public void reset() {
 		super.reset();
-		truthValue = TruthValue.UNSET;
+		queue.clear();
+		state = TruthValue.UNKNOWN;
 	}
 	
 	/**
@@ -119,7 +119,7 @@ public class HighLimitSampleCount extends AbstractProcessBlock implements Proces
 			if( qv.getQuality().isGood() ) {
 				queue.add(qv);
 				if( queue.size() >= sampleSize || !fillRequired) {
-					TruthValue result = checkPassConditions(truthValue);
+					TruthValue result = checkPassConditions(state);
 					if( !isLocked() ) {
 						// Give it a new timestamp
 						QualifiedValue outval = new BasicQualifiedValue(result);
@@ -128,7 +128,7 @@ public class HighLimitSampleCount extends AbstractProcessBlock implements Proces
 						notifyOfStatus(outval);
 					}
 					// Even if locked, we update the current state
-					truthValue = result;
+					state = result;
 				}
 				else {
 					QualifiedValue outval = new BasicQualifiedValue(TruthValue.UNKNOWN);
@@ -154,7 +154,7 @@ public class HighLimitSampleCount extends AbstractProcessBlock implements Proces
 	 */
 	@Override
 	public void notifyOfStatus() {
-		QualifiedValue qv = new BasicQualifiedValue(truthValue);
+		QualifiedValue qv = new BasicQualifiedValue(state);
 		notifyOfStatus(qv);
 		
 	}
@@ -247,7 +247,7 @@ public class HighLimitSampleCount extends AbstractProcessBlock implements Proces
 	@Override
 	public void setLocked(boolean flag) {
 		if(this.locked && !flag ) {
-			truthValue = TruthValue.UNSET;
+			state = TruthValue.UNSET;
 		}
 		this.locked = flag;
 	}

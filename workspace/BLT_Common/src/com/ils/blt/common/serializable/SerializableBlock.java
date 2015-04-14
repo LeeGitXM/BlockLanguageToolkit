@@ -5,8 +5,8 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.BlockStyle;
+import com.ils.blt.common.block.TruthValue;
 
 /**
  * Implement a plain-old-java-object representing a process block
@@ -37,7 +37,7 @@ public class SerializableBlock {
 	private int preferredWidth  = 0;
 	private BlockProperty[] properties = null;
 	private boolean receiveEnabled = false;
-	private BlockState state = BlockState.INITIALIZED;
+	private TruthValue state = TruthValue.UNSET;
 	private String statusText;
 	private BlockStyle style = BlockStyle.SQUARE;
 	private UUID subworkspaceId = null;     // Non-null only for encapsulation blocks. Subworkspace is a diagram.
@@ -64,7 +64,7 @@ public class SerializableBlock {
 	public int getPreferredHeight() {return preferredHeight;}
 	public int getPreferredWidth() {return preferredWidth;}
 	public BlockProperty[] getProperties() { return properties; }
-	public BlockState getState() {return state;}
+	public TruthValue getState() {return state;}
 	public String getStatusText() { return statusText; }
 	public UUID getSubworkspaceId() {return subworkspaceId;}
 	public BlockStyle getStyle() { return style; }
@@ -101,7 +101,7 @@ public class SerializableBlock {
 	public void setPreferredWidth(int preferredWidth) {this.preferredWidth = preferredWidth;}
 	public void setProperties(BlockProperty[] array) { this.properties = array; }
 	public void setReceiveEnabled(boolean receiveEnabled) {this.receiveEnabled = receiveEnabled;}
-	public void setState(BlockState state) {if(state!=null) this.state = state;}
+	public void setState(TruthValue state) {if(state!=null) this.state = state;}
 	public void setStatusText(String statusText) { this.statusText = statusText; }
 	public void setSubworkspaceId(UUID subworkspace) {this.subworkspaceId = subworkspace;}
 	public void setStyle(BlockStyle style) { this.style = style; }

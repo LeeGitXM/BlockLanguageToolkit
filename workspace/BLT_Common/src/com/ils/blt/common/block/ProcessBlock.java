@@ -69,7 +69,7 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	/**
 	 * @return the current state of the block
 	 */
-	public BlockState getState();
+	public TruthValue getState();
 	/**
 	 * @return a string describing the status of the block. This 
 	 * 		string is used for the dynamic block display.
@@ -164,7 +164,7 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 * Set the current state of the block.
 	 * @param state
 	 */
-	public void setState(BlockState state);
+	public void setState(TruthValue state);
 	/**
 	 * @param text the current status of the block
 	 */

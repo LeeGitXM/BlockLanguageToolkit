@@ -34,7 +34,6 @@ public class RangeObservation extends AbstractProcessBlock implements ProcessBlo
 	private final static String BLOCK_PROPERTY_LOWER_LIMIT = "LowerLimit";
 	private final static String BLOCK_PROPERTY_UPPER_DEADBAND = "UpperDeadband";
 	private final static String BLOCK_PROPERTY_UPPER_LIMIT = "UpperLimit";
-	private TruthValue truthValue = TruthValue.UNSET;
 	private double lowerdeadband   = 0.;
 	private double lowerlimit   = 0.;
 	private double upperdeadband   = 0.;
@@ -63,7 +62,7 @@ public class RangeObservation extends AbstractProcessBlock implements ProcessBlo
 	@Override
 	public void reset() {
 		super.reset();
-		truthValue = TruthValue.UNSET;
+		state = TruthValue.UNKNOWN;
 	}
 	
 	/**
@@ -103,14 +102,14 @@ public class RangeObservation extends AbstractProcessBlock implements ProcessBlo
 		String val = qv.getValue().toString();
 		try {
 			double dbl = Double.parseDouble(val);
-			TruthValue newValue = truthValue;
+			TruthValue newValue = state;
 			if( dbl< upperlimit - upperdeadband && dbl>lowerlimit+lowerdeadband  ) newValue = TruthValue.TRUE;
 			if( dbl> upperlimit|| dbl<lowerlimit ) newValue = TruthValue.FALSE;
 			if( !qv.getQuality().isGood()) newValue = TruthValue.UNKNOWN;
-			if( !newValue.equals(truthValue)) {
-				truthValue = newValue;
+			if( !newValue.equals(state)) {
+				state = newValue;
 				if( !isLocked() ) {
-					QualifiedValue nqv = new BasicQualifiedValue(truthValue,qv.getQuality(),qv.getTimestamp());
+					QualifiedValue nqv = new BasicQualifiedValue(state,qv.getQuality(),qv.getTimestamp());
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,nqv);
 					controller.acceptCompletionNotification(nvn);
 					notifyOfStatus(nqv);
@@ -170,7 +169,7 @@ public class RangeObservation extends AbstractProcessBlock implements ProcessBlo
 	 */
 	@Override
 	public void notifyOfStatus() {
-		QualifiedValue qv = new BasicQualifiedValue(truthValue);
+		QualifiedValue qv = new BasicQualifiedValue(state);
 		notifyOfStatus(qv);
 		
 	}

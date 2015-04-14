@@ -15,7 +15,6 @@ import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
@@ -102,8 +101,6 @@ public class QualValue extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void reset() {
 		super.reset();
-		quality = DataQuality.GOOD_DATA;
-		timestamp = null;
 	}
 	
 	/**
@@ -125,7 +122,6 @@ public class QualValue extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void acceptValue(IncomingNotification incoming) {
 		super.acceptValue(incoming);
-		this.state = BlockState.ACTIVE;
 		String port = incoming.getConnection().getDownstreamPortName();
 		QualifiedValue qv = incoming.getValue();
 		if( port.equals(VALUE_PORT)  ) {

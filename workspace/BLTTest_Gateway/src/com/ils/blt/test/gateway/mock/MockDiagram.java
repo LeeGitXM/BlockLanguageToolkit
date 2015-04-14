@@ -13,6 +13,7 @@ import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.connection.ProcessConnection;
 import com.ils.blt.common.serializable.SerializableDiagram;
+import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ProcessDiagram;
 
 /**
@@ -21,8 +22,8 @@ import com.ils.blt.gateway.engine.ProcessDiagram;
  */
 public class MockDiagram extends ProcessDiagram {
 	private static String TAG = "MockDiagram";
-	ProcessBlock uut = null;    // Unit under test
-	
+	private ProcessBlock uut = null;    // Unit under test
+	private final BlockExecutionController controller;
 	
 	/**
 	 * Constructor: Create a model that encapsulates the structure of the blocks and connections
@@ -32,10 +33,14 @@ public class MockDiagram extends ProcessDiagram {
 	 */
 	public MockDiagram(SerializableDiagram diagm,UUID parent,long projId) { 
 		super(diagm,parent,projId);
+		this.controller = BlockExecutionController.getInstance();
 	}
 
 	public void addBlock(ProcessBlock block) {
-		if( !(block instanceof MockInputBlock || block instanceof MockOutputBlock) ) uut = block;
+		if( !(block instanceof MockInputBlock || block instanceof MockOutputBlock) ) {
+			uut = block;
+			block.setTimer(controller.getTimer());
+		}
 		try {
 			this.blocks.put(block.getBlockId(), block);
 		}

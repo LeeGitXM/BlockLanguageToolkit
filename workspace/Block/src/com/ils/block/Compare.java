@@ -11,7 +11,6 @@ import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
@@ -44,7 +43,6 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 	protected QualifiedValue x = null;
 	protected QualifiedValue y = null;
 	protected final Watchdog dog;
-	
 	protected double offset = 0;
 	
 	/**
@@ -80,7 +78,7 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,new Double(synchInterval),PropertyType.TIME,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL, synch);
 		
-		// Define a two inputs -- one for the divisor, one for the dividend
+		// Define two inputs 
 		AnchorPrototype input = new AnchorPrototype(X_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setAnnotation("x");
 		anchors.add(input);
@@ -95,8 +93,7 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void reset() {
 		super.reset();
-		x = null;
-		y = null;
+		state = TruthValue.UNKNOWN;
 	}
 	
 	
@@ -111,7 +108,6 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
-		this.state = BlockState.ACTIVE;
 		QualifiedValue qv = vcn.getValue();
 		if( vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(X_PORT_NAME)) {
 			if( qv!=null && qv.getValue()!=null ) {
@@ -140,19 +136,19 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void evaluate() {
 		if( !isLocked() ) {
-			TruthValue tv = TruthValue.UNKNOWN;
+			state = TruthValue.UNKNOWN;
 			currentValue = null;
 			if( x==null ) {
-				currentValue = new BasicQualifiedValue(tv,new BasicQuality("'x' is unset",Quality.Level.Bad));
+				currentValue = new BasicQualifiedValue(state,new BasicQuality("'x' is unset",Quality.Level.Bad));
 			}
 			else if( y==null ) {
-				currentValue = new BasicQualifiedValue(tv,new BasicQuality("'y' is unset",Quality.Level.Bad));
+				currentValue = new BasicQualifiedValue(state,new BasicQuality("'y' is unset",Quality.Level.Bad));
 			}
 			else if( !x.getQuality().isGood()) {
-				currentValue = new BasicQualifiedValue(tv,x.getQuality());
+				currentValue = new BasicQualifiedValue(state,x.getQuality());
 			}
 			else if( !y.getQuality().isGood()) {
-				currentValue = new BasicQualifiedValue(tv,y.getQuality());
+				currentValue = new BasicQualifiedValue(state,y.getQuality());
 			}
 			double xx = Double.NaN;
 			double yy = Double.NaN;
@@ -173,14 +169,14 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 			
 			if( currentValue==null ) {     // Success!
 				if( x.getQuality().isGood() && y.getQuality().isGood() ) {
-					tv = TruthValue.FALSE;
-					if( xx > yy+offset) tv = TruthValue.TRUE;
-					currentValue = new BasicQualifiedValue(tv);
+					state = TruthValue.FALSE;
+					if( xx > yy+offset)state = TruthValue.TRUE;
+					currentValue = new BasicQualifiedValue(state);
 				}
 				else {
 					Quality q = x.getQuality();
 					if( q.isGood()) q = y.getQuality();
-					currentValue = new BasicQualifiedValue(tv,q);
+					currentValue = new BasicQualifiedValue(state,q);
 					log.infof("%s.evaluate: UNKNOWN x=%s, y=%s",getName(),x.toString(),y.toString());
 				}
 				

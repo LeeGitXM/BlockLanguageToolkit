@@ -13,7 +13,6 @@ import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.PlacementHint;
 import com.ils.blt.common.block.ProcessBlock;
@@ -46,7 +45,6 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 	private TruthValue qualityInput = TruthValue.UNKNOWN;
 	private BlockProperty valueProperty = null;
 	private QualifiedValue value = new BasicQualifiedValue("");
-	private TruthValue truthValue = TruthValue.UNSET;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -75,7 +73,6 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 	 */
 	private void initialize() {	
 		setName("DataConditioner");
-		truthValue = TruthValue.UNSET;
 		// Define the time for "coalescing" inputs ~ msec
 		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,new Double(synchInterval),PropertyType.TIME,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL, synch);
@@ -140,7 +137,6 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 	@Override
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
-		this.state = BlockState.ACTIVE;
 		String blockId = vcn.getConnection().getSource().toString();
 		QualifiedValue qv = vcn.getValue();
 
@@ -171,11 +167,11 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 	@Override
 	public void evaluate() {
 		if( value != null && !locked  ) {
-			truthValue = qualityInput;
-			if( !truthValue.equals(TruthValue.TRUE) && !value.getQuality().isGood()) truthValue = TruthValue.TRUE;
-			log.tracef("%s.evaluate value %s(%s)", getName(),value.getValue().toString(),truthValue.name());
+			state = qualityInput;
+			if( !state.equals(TruthValue.TRUE) && !value.getQuality().isGood()) state = TruthValue.TRUE;
+			log.tracef("%s.evaluate value %s(%s)", getName(),value.getValue().toString(),state.name());
 			
-			if( !truthValue.equals(TruthValue.TRUE) ) {
+			if( !state.equals(TruthValue.TRUE) ) {
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,value);
 				controller.acceptCompletionNotification(nvn);
 				//log.tracef("%s.evaluate: propagating %s %s",getName(),value.getValue().toString(),value.getQuality().getName());
@@ -183,7 +179,7 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 			else {
 				value = BAD_VALUE;
 			}
-			QualifiedValue result = new BasicQualifiedValue(truthValue);
+			QualifiedValue result = new BasicQualifiedValue(state);
 			OutgoingNotification nvn = new OutgoingNotification(this,STATUS_PORT_NAME,result);
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus();
@@ -196,11 +192,11 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 	 */
 	@Override
 	public void notifyOfStatus() {
-		QualifiedValue tv = new BasicQualifiedValue(truthValue);
-		controller.sendConnectionNotification(getBlockId().toString(), STATUS_PORT_NAME, tv);
+		QualifiedValue qv = new BasicQualifiedValue(state);
+		controller.sendConnectionNotification(getBlockId().toString(), STATUS_PORT_NAME, qv);
 		valueProperty.setValue(value.getValue());
 		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,value);
-		if( !truthValue.equals(TruthValue.TRUE)) {
+		if( !state.equals(TruthValue.TRUE)) {
 			controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, value);
 		}
 	}
@@ -213,7 +209,7 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
 		Map<String,String> attributes = descriptor.getAttributes();
 		attributes.put("Quality", qualityInput.name());
-		attributes.put("Result", truthValue.name());
+		attributes.put("Result", state.name());
 		attributes.put("Value", value.getValue().toString());
 		return descriptor;
 	}

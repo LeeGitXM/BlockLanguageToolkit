@@ -18,7 +18,6 @@ import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.HysteresisType;
 import com.ils.blt.common.block.ProcessBlock;
@@ -42,8 +41,8 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
 @ExecutableBlock
 public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	private final String TAG = "LogicFilter";
+	private final static String BLOCK_PROPERTY_MINIMUM_TRUE_FRACTION = "MinumumTrueFraction";
 	private final static String BLOCK_PROPERTY_RATIO = "Ratio";
-	private TruthValue currentState = TruthValue.UNSET;
 	private TruthValue currentValue = TruthValue.UNSET;
 	private double deadband = 0.0;
 	private double ratio = Double.NaN;
@@ -92,8 +91,8 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		setProperty(BlockConstants.BLOCK_PROPERTY_HYSTERESIS, hProperty);
 		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL,new Double(scanInterval),PropertyType.TIME,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL, intervalProperty);
-		BlockProperty limitProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_LIMIT,new Double(limit),PropertyType.DOUBLE,true);
-		setProperty(BlockConstants.BLOCK_PROPERTY_LIMIT, limitProperty);
+		BlockProperty limitProperty = new BlockProperty(BLOCK_PROPERTY_MINIMUM_TRUE_FRACTION,new Double(limit),PropertyType.DOUBLE,true);
+		setProperty(BLOCK_PROPERTY_MINIMUM_TRUE_FRACTION,limitProperty);
 		BlockProperty windowProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW,new Double(timeWindow),PropertyType.TIME,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW, windowProperty);
 		BlockProperty ratioProperty = new BlockProperty(BLOCK_PROPERTY_RATIO,new Double(0.0),PropertyType.DOUBLE,false);
@@ -115,7 +114,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 			timer.updateWatchdog(dog);  // pet dog
 		}
 		buffer.clear();
-		currentState = TruthValue.UNSET;
+		state = TruthValue.UNSET;
 		currentValue = TruthValue.UNSET;
 		ratio = Double.NaN;
 	}
@@ -137,11 +136,12 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void acceptValue(IncomingNotification incoming) {
 		super.acceptValue(incoming);
-		this.state = BlockState.ACTIVE;
 		QualifiedValue qv = incoming.getValue();
 		Quality qual = qv.getQuality();
 		if( qual.isGood() && qv!=null && qv.getValue()!=null ) {
 			currentValue = incoming.getValueAsTruthValue();
+			log.tracef("%s.acceptValue ... received %s",getName(),currentValue.name());
+			if( state.equals(TruthValue.UNSET)) evaluate();  // Start cycling
 		}
 		else {
 			qv = new BasicQualifiedValue(Double.NaN,qual,qv.getTimestamp());
@@ -156,7 +156,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public synchronized void evaluate() {
 
-		//log.tracef("%s.evaluate buffer %d of %d",getName(),buffer.size(),bufferSize);
+		log.tracef("%s.evaluate buffer %d of %d, current value=%s, state=%s",getName(),buffer.size(),bufferSize,currentValue.name(),state.name());
 		// Set up the next poll, no matter what.
 		dog.setSecondsDelay(scanInterval);
 		timer.updateWatchdog(dog);  // pet dog
@@ -171,18 +171,18 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		}
 		
 		TruthValue newState = TruthValue.UNKNOWN;
-		if( buffer.size()>= bufferSize ) {
+		if( buffer.size() >= bufferSize*limit ) {
 			ratio = computeTrueRatio(bufferSize);
 			// Even if locked, we update the property state
 			controller.sendPropertyNotification(getBlockId().toString(),BLOCK_PROPERTY_RATIO,new BasicQualifiedValue(new Double(ratio)));
-			newState = computeState(currentState,ratio,computeFalseRatio(bufferSize));
-			log.tracef("%s.evaluate ... ratio %f (%s was %s)",getName(),ratio,newState.name(),currentState.name());
+			newState = computeState(state,ratio,computeFalseRatio(bufferSize));
+			log.tracef("%s.evaluate ... ratio %f (%s was %s)",getName(),ratio,newState.name(),state.name());
 		}
 		
 		if( !isLocked() ) {
-			if(newState!=currentState) {
-				currentState = newState;
-				QualifiedValue result = new BasicQualifiedValue(currentState.name());
+			if(newState!=state) {
+				state = newState;
+				QualifiedValue result = new BasicQualifiedValue(state.name());
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
 				controller.acceptCompletionNotification(nvn);
 				notifyOfStatus(result);
@@ -198,7 +198,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		Map<String,String> attributes = descriptor.getAttributes();
 		attributes.put("Ratio", String.valueOf(ratio));
 		attributes.put("LatestValue", currentValue.name());
-		attributes.put("CurrentState", currentState.name());
+		attributes.put("CurrentState", state.name());
 		
 		List<Map<String,String>> descBuffer = descriptor.getBuffer();
 		int index = 0;
@@ -243,6 +243,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 					dog.setSecondsDelay(scanInterval);
 					timer.updateWatchdog(dog);  // pet do
 					bufferSize = (int)(0.5+timeWindow/scanInterval);
+					log.infof("%s.propertyChange: buffer size now %d (%f / %f )",TAG,bufferSize,timeWindow,scanInterval);
 				}
 				else {
 					timer.removeWatchdog(dog);
@@ -252,7 +253,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 				log.warnf("%s.propertyChange: Unable to convert scan interval to a double (%s)",TAG,nfe.getLocalizedMessage());
 			}
 		}
-		else if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_LIMIT)) {
+		else if( propertyName.equalsIgnoreCase(BLOCK_PROPERTY_MINIMUM_TRUE_FRACTION)) {
 			try {
 				limit = Double.parseDouble(event.getNewValue().toString());
 				if( limit<0. ) limit = 0.0;
@@ -266,12 +267,11 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 			try {
 				timeWindow = Double.parseDouble(event.getNewValue().toString());
 				if( timeWindow>0.0) {
-					if( scanInterval > timeWindow ) {
-						scanInterval = timeWindow;
-						dog.setSecondsDelay(scanInterval);
-						timer.updateWatchdog(dog);  // pet dog
-						if( scanInterval>0.0) bufferSize = (int)(0.5+timeWindow/scanInterval);
-					}
+					if( scanInterval > timeWindow ) scanInterval = timeWindow;
+					dog.setSecondsDelay(scanInterval);
+					timer.updateWatchdog(dog);  // pet dog
+					if( scanInterval>0.0) bufferSize = (int)(0.5+timeWindow/scanInterval);
+					log.infof("%s.propertyChange: buffer size now %d (%f / %f )",TAG,bufferSize,timeWindow,scanInterval);
 				}
 				else {
 					timer.removeWatchdog(dog);

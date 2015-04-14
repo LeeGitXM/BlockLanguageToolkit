@@ -31,7 +31,6 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 public class EqualityObservation extends AbstractProcessBlock implements ProcessBlock {
 	private final static String TAG = "EqualityObservation";
 	private final static String BLOCK_PROPERTY_NOMINAL = "Nominal";
-	private TruthValue truthValue = TruthValue.UNSET;
 	private double deadband   = 0.;
 	private double nominal   = 0.;
 	
@@ -58,7 +57,7 @@ public class EqualityObservation extends AbstractProcessBlock implements Process
 	@Override
 	public void reset() {
 		super.reset();
-		truthValue = TruthValue.UNSET;
+		state = TruthValue.UNKNOWN;
 	}
 	
 	/**
@@ -96,13 +95,13 @@ public class EqualityObservation extends AbstractProcessBlock implements Process
 			double dbl = Double.parseDouble(val);
 			double lowerLimit = nominal-(deadband/2);
 			double upperLimit = nominal+(deadband/2);
-			TruthValue newValue = TruthValue.FALSE;
-			if( dbl >=lowerLimit && dbl<=upperLimit  ) newValue = TruthValue.TRUE;
-			if( !qv.getQuality().isGood()) newValue = TruthValue.UNKNOWN;
-			if( !newValue.equals(truthValue)) {
-				truthValue = newValue;
+			TruthValue newState = TruthValue.FALSE;
+			if( dbl >=lowerLimit && dbl<=upperLimit  ) newState = TruthValue.TRUE;
+			if( !qv.getQuality().isGood()) newState = TruthValue.UNKNOWN;
+			if( !newState.equals(state)) {
+				state = newState;
 				if( !isLocked() ) {
-					QualifiedValue nqv = new BasicQualifiedValue(truthValue,qv.getQuality(),qv.getTimestamp());
+					QualifiedValue nqv = new BasicQualifiedValue(state,qv.getQuality(),qv.getTimestamp());
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,nqv);
 					controller.acceptCompletionNotification(nvn);
 					notifyOfStatus(nqv);
@@ -119,7 +118,7 @@ public class EqualityObservation extends AbstractProcessBlock implements Process
 	 */
 	@Override
 	public void notifyOfStatus() {
-		QualifiedValue qv = new BasicQualifiedValue(truthValue);
+		QualifiedValue qv = new BasicQualifiedValue(state);
 		notifyOfStatus(qv);
 		
 	}
@@ -160,7 +159,7 @@ public class EqualityObservation extends AbstractProcessBlock implements Process
 	@Override
 	public void setLocked(boolean flag) {
 		if(this.locked && !flag ) {
-			truthValue = TruthValue.UNSET;
+			state = TruthValue.UNSET;
 		}
 		this.locked = flag;
 	}

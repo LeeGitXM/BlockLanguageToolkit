@@ -18,7 +18,6 @@ import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.TruthValue;
@@ -61,7 +60,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	protected boolean isReceiver = false;
 	protected boolean isTransmitter = false;
 	protected boolean running = false;
-	protected BlockState state = BlockState.INITIALIZED;
+	protected TruthValue state = TruthValue.UNSET;
 	protected WatchdogTimer timer = null;
 
 	protected final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
@@ -102,7 +101,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 * by default, it is hidden.
 	 */
 	private void initialize() {
-		this.state = BlockState.INITIALIZED;
+		this.state = TruthValue.UNSET;
 		AnchorPrototype sig = new AnchorPrototype(BlockConstants.SIGNAL_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.SIGNAL);
 		sig.setHidden(true);
 		anchors.add(sig);
@@ -163,9 +162,9 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	@Override
 	public void setProjectId(long projectId) {this.projectId = projectId;}
 	@Override
-	public BlockState getState() {return state;}
+	public TruthValue getState() {return state;}
 	@Override
-	public void setState(BlockState state) { if(state!=null) this.state = state; }
+	public void setState(TruthValue state) { if(state!=null) this.state = state; }
 	@Override
 	public void setName(String lbl) {this.name = lbl;}
 	@Override
@@ -203,7 +202,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		Map<String,String> attributes = descriptor.getAttributes();
 		attributes.put("Name", getName());
 		attributes.put("UUID", getBlockId().toString());
-		attributes.put("BlockState", getState().toString());
+		attributes.put("State", getState().toString());
 		return descriptor;
 	}
 	/**
@@ -255,7 +254,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 */
 	@Override
 	public void reset() {
-		this.state = BlockState.INITIALIZED;
+		this.state = TruthValue.UNSET;
 	}
 	/**
 	 * Accept a new value for a block property. In general this does not trigger
@@ -349,7 +348,10 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 * This default method does nothing.
 	 */
 	@Override
-	public void stop() {this.running = false;}
+	public void stop() {
+		this.running = false;
+		state = TruthValue.UNSET;
+	}
 	
 	/**
 	 * In the case where the block has specified a coalescing time, this method

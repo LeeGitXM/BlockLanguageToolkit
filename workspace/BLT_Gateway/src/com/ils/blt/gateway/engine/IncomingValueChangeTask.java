@@ -24,6 +24,7 @@ public class IncomingValueChangeTask implements Runnable{
 	public IncomingValueChangeTask(ProcessBlock blk,IncomingNotification vcn)  {
 		this.target = blk;
 		this.notification = vcn;
+		if( target==null ) throw new IllegalArgumentException("IncomingValueChangeTask: Target block is null");
 	}
 	
 	public void run()   { 

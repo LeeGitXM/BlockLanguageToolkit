@@ -13,7 +13,6 @@ import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.PlacementHint;
 import com.ils.blt.common.block.ProcessBlock;
@@ -81,7 +80,6 @@ public class Reset extends AbstractProcessBlock implements ProcessBlock {
 	
 	@Override
 	public void reset() {
-		this.state = BlockState.ACTIVE;
 		dog.setSecondsDelay(interval);
 		if( interval>MIN_RESET_INTERVAL) timer.updateWatchdog(dog);  // pet dog
 	}
@@ -89,7 +87,6 @@ public class Reset extends AbstractProcessBlock implements ProcessBlock {
 	public void start() {
 		if( !running ) {
 			log.debugf("%s.start",TAG);
-			this.state = BlockState.ACTIVE;
 			dog.setSecondsDelay(interval);
 			if( interval>MIN_RESET_INTERVAL) timer.updateWatchdog(dog);  // pet dog
 		}
@@ -97,7 +94,6 @@ public class Reset extends AbstractProcessBlock implements ProcessBlock {
 	}
 	@Override
 	public void stop() {
-		this.state = BlockState.INITIALIZED;
 		timer.removeWatchdog(dog);
 		log.debugf("%s.stop",TAG);
 	}

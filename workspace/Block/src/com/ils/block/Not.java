@@ -12,7 +12,6 @@ import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
@@ -83,11 +82,10 @@ public class Not extends AbstractProcessBlock implements ProcessBlock {
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
 		QualifiedValue qv = vcn.getValue();
-		this.state = BlockState.ACTIVE;
 		TruthValue tv = vcn.getValueAsTruthValue();
-		if( tv.equals(TruthValue.FALSE)) tv = TruthValue.TRUE;
-		else if( tv.equals(TruthValue.TRUE)) tv = TruthValue.FALSE;
-		QualifiedValue result = new BasicQualifiedValue(tv.name(),qv.getQuality(),qv.getTimestamp());
+		if( tv.equals(TruthValue.FALSE)) state = TruthValue.TRUE;
+		else if( tv.equals(TruthValue.TRUE)) state = TruthValue.FALSE;
+		QualifiedValue result = new BasicQualifiedValue(state.name(),qv.getQuality(),qv.getTimestamp());
 		if( !isLocked()) {
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
 			controller.acceptCompletionNotification(nvn);

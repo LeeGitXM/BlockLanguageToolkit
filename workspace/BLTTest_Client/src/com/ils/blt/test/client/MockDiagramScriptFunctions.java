@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved.
+ *   (c) 2014-2015  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.test.client;
@@ -31,9 +31,9 @@ public class MockDiagramScriptFunctions   {
 	 * @param blockClass
 	 * @return the new uniqueId of the test diagram
 	 */
-	public static UUID createMockDiagram(String blockClass) {
-		log.debugf("%s.createMockDiagram: for class %s",TAG,blockClass);
-		String project = GatewayConnectionManager.getInstance().getProjectName();
+	public static UUID createMockDiagram(String blockClass,String project) {
+		log.debugf("%s.createMockDiagram: for class %s, project %s",TAG,blockClass,project);
+		if( project==null) project = "";
 		UUID result = null;
 		try {
 			result = (UUID)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(

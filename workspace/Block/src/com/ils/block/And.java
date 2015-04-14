@@ -15,7 +15,6 @@ import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
@@ -25,7 +24,6 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
-import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -43,7 +41,6 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 	private final Watchdog dog;
 	private BlockProperty valueProperty = null;
 	private double synchInterval = 0.5; // 1/2 sec synchronization by default
-	protected TruthValue truthValue = TruthValue.UNSET;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -75,7 +72,7 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	private void initialize() {	
 		setName("And");
-		truthValue = TruthValue.UNSET;
+		state = TruthValue.UNSET;
 		// Define the time for "coalescing" inputs ~ msec
 		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,new Double(synchInterval),PropertyType.TIME,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL, synch);
@@ -95,8 +92,7 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void reset() {
 		super.reset();
-		qualifiedValueMap.clear();
-		truthValue = TruthValue.UNSET;
+		state = TruthValue.UNKNOWN;
 	}
 	
 	/**
@@ -118,7 +114,6 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void acceptValue(IncomingNotification incoming) {
 		super.acceptValue(incoming);
-		this.state = BlockState.ACTIVE;
 		String key = String.format("%s:%s",incoming.getConnection().getSource().toString(),
                                            incoming.getConnection().getUpstreamPortName());
 		QualifiedValue qv = incoming.getValue();
@@ -137,27 +132,17 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 		log.infof("%s.evaluate",getName());
 		if( !isLocked() ) {
 			TruthValue newState = getAggregateState();
-			log.infof("%s.evaluate new: %s, old: %s",getName(),newState.name(),truthValue.name());
-			if(newState!=truthValue) {
-				truthValue = newState;
-				QualifiedValue result = new BasicQualifiedValue(truthValue.name(),
-						                                        (truthValue.equals(TruthValue.UNKNOWN)?getAggregateQuality():DataQuality.GOOD_DATA));
+			log.infof("%s.evaluate new: %s, old: %s",getName(),newState.name(),state.name());
+			if(newState!=state) {
+				state = newState;
+				QualifiedValue result = new BasicQualifiedValue(state.name(),
+						                                        (state.equals(TruthValue.UNKNOWN)?getAggregateQuality():DataQuality.GOOD_DATA));
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
 				controller.acceptCompletionNotification(nvn);
-				valueProperty.setValue(truthValue);
+				valueProperty.setValue(state);
 				notifyOfStatus(result);
 			}
 		}
-	}
-	/**
-	 * @return a block-specific description of internal statue
-	 */
-	@Override
-	public SerializableBlockStateDescriptor getInternalStatus() {
-		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
-		Map<String,String> attributes = descriptor.getAttributes();
-		attributes.put("Value", truthValue.name());
-		return descriptor;
 	}
 	/**
 	 * Handle a change to the coalescing interval.
@@ -180,7 +165,7 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void notifyOfStatus() {
-		QualifiedValue qv = new BasicQualifiedValue(truthValue);
+		QualifiedValue qv = new BasicQualifiedValue(state);
 		notifyOfStatus(qv);
 		
 	}

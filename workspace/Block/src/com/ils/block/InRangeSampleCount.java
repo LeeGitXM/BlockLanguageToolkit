@@ -39,7 +39,6 @@ public class InRangeSampleCount extends AbstractProcessBlock implements ProcessB
 	private final static String TAG = "InRangePattern";
 	private final static String BLOCK_PROPERTY_LOWER_LIMIT  = "LowerLimit";
 	private final static String BLOCK_PROPERTY_UPPER_LIMIT  = "UpperLimit";
-	private TruthValue truthValue = TruthValue.UNSET;
 	private double lowerLimit = Double.MIN_VALUE;
 	private double upperLimit = Double.MAX_VALUE;
 	private final static int DEFAULT_BUFFER_SIZE = 1;
@@ -76,7 +75,7 @@ public class InRangeSampleCount extends AbstractProcessBlock implements ProcessB
 	 */
 	private void initialize() {	
 		setName("InRangeSample");
-		truthValue = TruthValue.UNSET;
+		state = TruthValue.UNSET;
 		BlockProperty minprop = new BlockProperty(BLOCK_PROPERTY_LOWER_LIMIT, lowerLimit,PropertyType.DOUBLE, true);
 		setProperty(BLOCK_PROPERTY_LOWER_LIMIT, minprop);
 		BlockProperty maxprop = new BlockProperty(BLOCK_PROPERTY_UPPER_LIMIT, upperLimit,PropertyType.DOUBLE, true);
@@ -104,7 +103,8 @@ public class InRangeSampleCount extends AbstractProcessBlock implements ProcessB
 	@Override
 	public void reset() {
 		super.reset();
-		truthValue = TruthValue.UNSET;
+		queue.clear();
+		state = TruthValue.UNKNOWN;
 	}
 	
 	/**
@@ -121,7 +121,7 @@ public class InRangeSampleCount extends AbstractProcessBlock implements ProcessB
 			if( qv.getQuality().isGood() ) {
 				queue.add(qv);
 				if( queue.size() >= sampleSize || !fillRequired) {
-					TruthValue result = checkPassConditions(truthValue);
+					TruthValue result = checkPassConditions(state);
 					if( !isLocked() ) {
 						// Give it a new timestamp
 						QualifiedValue outval = new BasicQualifiedValue(result);
@@ -130,7 +130,7 @@ public class InRangeSampleCount extends AbstractProcessBlock implements ProcessB
 						notifyOfStatus(outval);
 					}
 					// Even if locked, we update the current state
-					truthValue = result;
+					state = result;
 				}
 				else {
 					QualifiedValue outval = new BasicQualifiedValue(TruthValue.UNKNOWN);
@@ -156,7 +156,7 @@ public class InRangeSampleCount extends AbstractProcessBlock implements ProcessB
 	 */
 	@Override
 	public void notifyOfStatus() {
-		QualifiedValue qv = new BasicQualifiedValue(truthValue);
+		QualifiedValue qv = new BasicQualifiedValue(state);
 		notifyOfStatus(qv);
 		
 	}

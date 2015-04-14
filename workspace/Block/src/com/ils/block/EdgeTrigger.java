@@ -11,7 +11,6 @@ import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
@@ -82,7 +81,6 @@ public class EdgeTrigger extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
-		this.state = BlockState.ACTIVE;
 		String port = vcn.getConnection().getDownstreamPortName();
 		if( port.equals(BlockConstants.IN_PORT_NAME) ) {
 
@@ -114,16 +112,21 @@ public class EdgeTrigger extends AbstractProcessBlock implements ProcessBlock {
 		log.infof("%s.evaluate trigger is (%s)",TAG,trigger.name());
 		if( !isLocked() ) {
 			if( trigger.equals(TruthValue.FALSE)) {
-				status = new BasicQualifiedValue(TruthValue.TRUE.name());
+				state = TruthValue.TRUE;
+				status = new BasicQualifiedValue(state.name());
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,status);
 				controller.acceptCompletionNotification(nvn);
 				notifyOfStatus(status);
 			}
 			else if( trigger.equals(TruthValue.TRUE)) {
-				status = new BasicQualifiedValue(TruthValue.FALSE.name());
+				state = TruthValue.FALSE;
+				status = new BasicQualifiedValue(state.name());
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,status);
 				controller.acceptCompletionNotification(nvn);
 				notifyOfStatus(status);
+			}
+			else {
+				state = TruthValue.UNKNOWN;
 			}
 		}	
 	}

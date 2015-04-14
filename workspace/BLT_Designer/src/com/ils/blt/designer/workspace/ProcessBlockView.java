@@ -20,8 +20,8 @@ import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.BlockStyle;
+import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
@@ -78,7 +78,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	private int preferredWidth  = 0;              // Size the view to "natural" size
 	private Collection<BlockProperty> properties;
 	private boolean receiveEnabled = false;
-	private BlockState state = BlockState.INITIALIZED;
+	private TruthValue state = TruthValue.UNSET;
 	private String statusText;                    // Auxiliary text to display
 	private UUID subworkspaceId = null;           // Encapsulated diagram if encapsulation block
 	private BlockStyle style = BlockStyle.SQUARE;
@@ -106,7 +106,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		this.iconPath = descriptor.getIconPath();
 		this.preferredHeight = descriptor.getPreferredHeight();
 		this.preferredWidth = descriptor.getPreferredWidth();
-		this.state = BlockState.INITIALIZED;
+		this.state = TruthValue.UNSET;
 		this.statusText = "";
 		this.style = descriptor.getStyle();
 		this.nameDisplayed  = descriptor.isNameDisplayed();
@@ -320,7 +320,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	public int getPreferredHeight() {return preferredHeight;}
 	public int getPreferredWidth() {return preferredWidth;}
 	public Collection<BlockProperty> getProperties() { return properties; }
-	public BlockState getState() {return state;}
+	public TruthValue getState() {return state;}
 	public String getStatusText() { return statusText; }
 	public BlockStyle getStyle() { return style; }
 	public UUID getSubworkspaceId() {return subworkspaceId;}
@@ -388,7 +388,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 			}
 		}
 	}
-	public void setState(BlockState state) {if(state!=null) this.state = state;}
+	public void setState(TruthValue state) {if(state!=null) this.state = state;}
 	public void setStatusText(String statusText) { this.statusText = statusText; }
 	public void setStyle(BlockStyle s) { this.style = s; }
 	public void setSubworkspaceId(UUID subworkspaceId) {this.subworkspaceId = subworkspaceId;}

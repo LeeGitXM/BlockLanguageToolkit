@@ -37,7 +37,6 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 @ExecutableBlock
 public class LowLimitSampleCount extends AbstractProcessBlock implements ProcessBlock {
 	private final static String TAG = "LowValuePattern";
-	private TruthValue truthValue = TruthValue.UNSET;
 	private double limit;
 	private final static int DEFAULT_BUFFER_SIZE = 1;
 	private final FixedSizeQueue<QualifiedValue> queue;
@@ -74,7 +73,6 @@ public class LowLimitSampleCount extends AbstractProcessBlock implements Process
 	 */
 	private void initialize() {	
 		setName("LowValueSample");
-		truthValue = TruthValue.UNSET;
 		
 		BlockProperty bp = new BlockProperty(BlockConstants.BLOCK_PROPERTY_LIMIT,new Double(limit),PropertyType.DOUBLE,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_LIMIT, bp);
@@ -101,7 +99,8 @@ public class LowLimitSampleCount extends AbstractProcessBlock implements Process
 	@Override
 	public void reset() {
 		super.reset();
-		truthValue = TruthValue.UNSET;
+		queue.clear();
+		state = TruthValue.UNKNOWN;
 	}
 	
 	
@@ -119,7 +118,7 @@ public class LowLimitSampleCount extends AbstractProcessBlock implements Process
 			if( qv.getQuality().isGood() ) {
 				queue.add(qv);
 				if( queue.size() >= sampleSize || !fillRequired) {
-					TruthValue result = checkPassConditions(truthValue);
+					TruthValue result = checkPassConditions(state);
 					if( !isLocked() ) {
 						// Give it a new timestamp
 						QualifiedValue outval = new BasicQualifiedValue(result);
@@ -128,7 +127,7 @@ public class LowLimitSampleCount extends AbstractProcessBlock implements Process
 						notifyOfStatus(outval);
 					}
 					// Even if locked, we update the current state
-					truthValue = result;
+					state = result;
 				}
 				else {
 					QualifiedValue outval = new BasicQualifiedValue(TruthValue.UNKNOWN);
@@ -154,7 +153,7 @@ public class LowLimitSampleCount extends AbstractProcessBlock implements Process
 	 */
 	@Override
 	public void notifyOfStatus() {
-		QualifiedValue qv = new BasicQualifiedValue(truthValue);
+		QualifiedValue qv = new BasicQualifiedValue(state);
 		notifyOfStatus(qv);
 		
 	}

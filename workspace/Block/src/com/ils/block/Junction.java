@@ -10,7 +10,6 @@ import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
-import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.PlacementHint;
 import com.ils.blt.common.block.ProcessBlock;
@@ -73,7 +72,6 @@ public class Junction extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
-		this.state = BlockState.ACTIVE;
 		if(!isLocked() ) {
 			QualifiedValue qv = vcn.getValue();
 			//log.infof("%s.acceptValue: %s", getName(),qv.getValue().toString());

@@ -25,8 +25,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.PlacementHint;
+import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.designer.workspace.BasicAnchorPoint;
 import com.ils.blt.designer.workspace.ProcessAnchorDescriptor;
@@ -470,7 +470,7 @@ public abstract class AbstractUIView extends JComponent
 		Color color = WorkspaceConstants.CONNECTION_BACKGROUND;   // Black
 		if( block==null ) color = WorkspaceConstants.CONNECTION_BACKGROUND;  // An error
 		else if( type==ConnectionType.SIGNAL) color = WorkspaceConstants.CONNECTION_FILL_SIGNAL;
-		else if( block.getState().equals(BlockState.INITIALIZED)) color = WorkspaceConstants.CONNECTION_FILL_EMPTY;
+		else if( block.getState().equals(TruthValue.UNSET)) color = WorkspaceConstants.CONNECTION_FILL_EMPTY;
 		else if( type==ConnectionType.TRUTHVALUE ) color = WorkspaceConstants.CONNECTION_FILL_UNKNOWN;
 		else if( type==ConnectionType.DATA  ) color = WorkspaceConstants.CONNECTION_FILL_DATA;
 		else if( type==ConnectionType.TEXT  ) color = WorkspaceConstants.CONNECTION_FILL_TEXT;

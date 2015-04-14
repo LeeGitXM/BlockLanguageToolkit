@@ -24,7 +24,8 @@ public class ApplicationScriptFunctions   {
 	private static ApplicationRequestHandler handler = new ApplicationRequestHandler();
 
 	/**
-	 * Remove all running diagrams from the controller. Cancel all tag subscriptions. 
+	 * Remove all running diagrams from the controller. 
+	 * Cancel all tag subscriptions. 
 	 */
 	public static void clearController() {
 		handler.clearController();

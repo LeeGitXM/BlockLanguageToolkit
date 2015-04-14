@@ -12,7 +12,6 @@ import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
@@ -31,7 +30,6 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 @ExecutableBlock
 public class Unknown extends AbstractProcessBlock implements ProcessBlock {
 	BlockProperty valueProperty = null;
-	TruthValue tv = TruthValue.UNSET;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -83,13 +81,12 @@ public class Unknown extends AbstractProcessBlock implements ProcessBlock {
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
 		QualifiedValue qv = vcn.getValue();
-		this.state = BlockState.ACTIVE;
-		tv = vcn.getValueAsTruthValue();
-		if( tv.equals(TruthValue.UNKNOWN)) tv = TruthValue.TRUE;
-		else if( tv.equals(TruthValue.TRUE)) tv = TruthValue.FALSE;
-		else if( tv.equals(TruthValue.FALSE)) tv = TruthValue.FALSE;
-		log.infof("UNKNOWN.acceptValue SENDING %s",tv.name());
-		QualifiedValue result = new BasicQualifiedValue(tv.name(),qv.getQuality(),qv.getTimestamp());
+		TruthValue tv = vcn.getValueAsTruthValue();
+		if( tv.equals(TruthValue.UNKNOWN)) state = TruthValue.TRUE;
+		else if( tv.equals(TruthValue.TRUE)) state = TruthValue.FALSE;
+		else if( tv.equals(TruthValue.FALSE)) state = TruthValue.FALSE;
+		log.infof("UNKNOWN.acceptValue SENDING %s",state.name());
+		QualifiedValue result = new BasicQualifiedValue(state.name(),qv.getQuality(),qv.getTimestamp());
 		
 		
 		if( !isLocked()) {
@@ -97,7 +94,7 @@ public class Unknown extends AbstractProcessBlock implements ProcessBlock {
 			controller.acceptCompletionNotification(nvn);
 		}
 		// Set the internal property locked or not
-		valueProperty.setValue(tv);
+		valueProperty.setValue(state);
 		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,result);
 	}
 	

@@ -3,7 +3,6 @@
  */
 package com.ils.block;
 
-import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
@@ -11,7 +10,6 @@ import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
-import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.TruthValue;
@@ -19,7 +17,6 @@ import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
-import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
@@ -28,8 +25,6 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  */
 @ExecutableBlock
 public class LogicLatch extends AbstractProcessBlock implements ProcessBlock {
-
-	protected TruthValue tv = TruthValue.UNSET;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -53,9 +48,9 @@ public class LogicLatch extends AbstractProcessBlock implements ProcessBlock {
 	
 	@Override
 	public void reset() {
-		if( tv.equals(TruthValue.TRUE) || 
-			tv.equals(TruthValue.FALSE)   ) {
-			QualifiedValue qv = new BasicQualifiedValue(tv.name());
+		if( state.equals(TruthValue.TRUE) || 
+			state.equals(TruthValue.FALSE)   ) {
+			QualifiedValue qv = new BasicQualifiedValue(state.name());
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus(qv);
@@ -70,12 +65,11 @@ public class LogicLatch extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
-		this.state = BlockState.ACTIVE;
 		QualifiedValue qv = vcn.getValue();
 		if(qv.getQuality().isGood()) {
 			TruthValue incoming = qualifiedValueAsTruthValue(qv);
 			if( incoming.equals(TruthValue.TRUE) || incoming.equals(TruthValue.FALSE)) {
-				tv = incoming;
+				state = incoming;
 				if( !isLocked() ) {
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 					controller.acceptCompletionNotification(nvn);
@@ -86,22 +80,11 @@ public class LogicLatch extends AbstractProcessBlock implements ProcessBlock {
 	}
 	
 	/**
-	 * @return a block-specific description of internal statue
-	 */
-	@Override
-	public SerializableBlockStateDescriptor getInternalStatus() {
-		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
-		Map<String,String> attributes = descriptor.getAttributes();
-		attributes.put("Value", tv.name());
-		return descriptor;
-	}
-
-	/**
 	 * Send status update notification for our last latest state.
 	 */
 	@Override
 	public void notifyOfStatus() {
-		notifyOfStatus(new BasicQualifiedValue(tv.name()));	
+		notifyOfStatus(new BasicQualifiedValue(state.name()));	
 	}
 	private void notifyOfStatus(QualifiedValue qv) {
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);

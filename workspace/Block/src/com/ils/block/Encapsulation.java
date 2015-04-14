@@ -9,7 +9,6 @@ import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
@@ -65,7 +64,6 @@ public class Encapsulation extends AbstractProcessBlock implements ProcessBlock 
 	@Override
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
-		this.state = BlockState.ACTIVE;
 		QualifiedValue qv = vcn.getValue();
 		if( qv!=null && qv.getValue()!=null && qv.getQuality().isGood()) {
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);

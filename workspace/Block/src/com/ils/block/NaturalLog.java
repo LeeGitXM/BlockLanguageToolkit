@@ -12,7 +12,6 @@ import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
-import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.connection.ConnectionType;
@@ -82,7 +81,6 @@ public class NaturalLog extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
-		this.state = BlockState.ACTIVE;
 		if( !isLocked() ) {
 			QualifiedValue qv = vcn.getValue();
 			if( qv!=null && qv.getValue()!=null ) {
@@ -92,9 +90,9 @@ public class NaturalLog extends AbstractProcessBlock implements ProcessBlock {
 					if( valu>0.0) {
 						valu = ln.value(valu);
 						qv = new BasicQualifiedValue(new Double(valu),qv.getQuality(),qv.getTimestamp());
+						statusText = "";
 					}
 					else {
-						state = BlockState.ERROR;
 						statusText = "Value is less than or equal to zero";
 						qv = new BasicQualifiedValue(new Double(Double.POSITIVE_INFINITY),new BasicQuality("<= zero",Quality.Level.Bad),qv.getTimestamp());
 					}
@@ -138,7 +136,4 @@ public class NaturalLog extends AbstractProcessBlock implements ProcessBlock {
 		desc.setPreferredWidth(70);
 		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_LIGHT_GRAY);
 	}
-	
-	@Override
-	public String getStatusText() {if(!state.equals(BlockState.ERROR)) statusText = ""; return statusText;}
 }

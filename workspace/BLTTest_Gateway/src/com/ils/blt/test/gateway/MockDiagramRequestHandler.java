@@ -9,9 +9,9 @@ import java.util.UUID;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
+import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.Signal;
@@ -70,7 +70,13 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 	 */
 	@Override
 	public UUID createMockDiagram(String blockClass,String project) {
-		long projectId = context.getProjectManager().getProjectId(project);
+		long projectId = -1;
+		try {
+			context.getProjectManager().getProjectId(project);
+		}
+		catch(Exception ex) {
+			log.warnf("%s.createMockDiagram: No project named %s found, using global",TAG,project);
+		}
 		SerializableDiagram origin = new SerializableDiagram();
 		origin.setId(UUID.randomUUID());
 		origin.setName("Mock:"+blockClass);
@@ -186,7 +192,7 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 	 */
 	@Override
 	public String getState(UUID diagramId) {
-		BlockState state = BlockState.INITIALIZED;
+		TruthValue state = TruthValue.UNSET;
 		MockDiagram mock = (MockDiagram)controller.getDiagram(diagramId);
 		if( mock!=null ) {
 			ProcessBlock uut = mock.getBlockUnderTest();
@@ -335,6 +341,7 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 	public void stopMockDiagram(UUID diagramId) {
 		log.infof("%s.stopMockDiagram: %s ",TAG,diagramId.toString());
 		MockDiagram mock = (MockDiagram)controller.getDiagram(diagramId);
+		try {
 		if( mock!=null ) {
 			for(ProcessBlock block:mock.getProcessBlocks()) {
 				block.stop();
@@ -344,6 +351,10 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 			}
 			controller.stop();
 			controller.clearSubscriptions();
+		}
+		}
+		catch(Exception ex) {
+			log.info(TAG+".stopMockDiagram: EXCEPTION "+ex.getMessage(),ex);
 		}
 	}
 	// The port must already exist

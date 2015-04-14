@@ -95,19 +95,19 @@ public class CompareDeadband extends Compare implements ProcessBlock {
 	@Override
 	public void evaluate() {
 		log.tracef("%s.evaluate: %s,  x=%s, y=%s",getName(),truthValue.name(),(x==null?"null":x.toString()),(y==null?"null":y.toString()));
-		TruthValue tv = TruthValue.UNKNOWN;
+		state = TruthValue.UNKNOWN;
 		QualifiedValue result = null;
 		if( x==null ) {
-			result = new BasicQualifiedValue(tv,new BasicQuality("'x' is unset",Quality.Level.Bad));
+			result = new BasicQualifiedValue(state,new BasicQuality("'x' is unset",Quality.Level.Bad));
 		}
 		else if( y==null ) {
-			result = new BasicQualifiedValue(tv,new BasicQuality("'y' is unset",Quality.Level.Bad));
+			result = new BasicQualifiedValue(state,new BasicQuality("'y' is unset",Quality.Level.Bad));
 		}
 		else if( !x.getQuality().isGood()) {
-			result = new BasicQualifiedValue(tv,x.getQuality());
+			result = new BasicQualifiedValue(state,x.getQuality());
 		}
 		else if( !y.getQuality().isGood()) {
-			result = new BasicQualifiedValue(tv,y.getQuality());
+			result = new BasicQualifiedValue(state,y.getQuality());
 		}
 		double xx = Double.NaN;
 		double yy = Double.NaN;
@@ -146,7 +146,7 @@ public class CompareDeadband extends Compare implements ProcessBlock {
 			else {
 				Quality q = x.getQuality();
 				if( q.isGood()) q = y.getQuality();
-				result = new BasicQualifiedValue(tv,q);
+				result = new BasicQualifiedValue(state,q);
 			}
 
 		}

@@ -4,6 +4,7 @@
 package com.ils.block;
 
 import java.awt.Color;
+import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
@@ -13,7 +14,6 @@ import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.PlacementHint;
 import com.ils.blt.common.block.ProcessBlock;
@@ -23,6 +23,7 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
@@ -95,7 +96,6 @@ public class Parameter extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
-		this.state = BlockState.ACTIVE;
 		qv = vcn.getValue();
 		if( !isLocked() ) {
 			if( vcn.getConnection()!=null && vcn.getConnection().getDownstreamPortName().equals(BlockConstants.IN_PORT_NAME) ) {
@@ -113,6 +113,17 @@ public class Parameter extends AbstractProcessBlock implements ProcessBlock {
 			valueProperty.setValue(qv.getValue());
 			notifyOfStatus(qv);
 		}
+	}
+	
+	/**
+	 * @return a block-specific description of internal status. Add quality to the default list
+	 */
+	@Override
+	public SerializableBlockStateDescriptor getInternalStatus() {
+		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
+		Map<String,String> attributes = descriptor.getAttributes();
+		attributes.put("Value", valueProperty.getValue().toString());
+		return descriptor;
 	}
 	
 	/**

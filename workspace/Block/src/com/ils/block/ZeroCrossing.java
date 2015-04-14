@@ -26,7 +26,6 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 @ExecutableBlock
 public class ZeroCrossing extends AbstractProcessBlock implements ProcessBlock {
 	private final static String TAG = "ZeroCrossing";
-	private TruthValue truthValue = TruthValue.UNSET;
 	private double lastValue = Double.NaN;
 	
 	/**
@@ -52,7 +51,7 @@ public class ZeroCrossing extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void reset() {
 		super.reset();
-		truthValue = TruthValue.UNSET;
+		state = TruthValue.UNKNOWN;
 	}
 	
 	/**
@@ -103,10 +102,10 @@ public class ZeroCrossing extends AbstractProcessBlock implements ProcessBlock {
 				}
 				
 				
-				if( !result.equals(truthValue)) {
-					truthValue = result;
+				if( !result.equals(state)) {
+					state = result;
 					if( !isLocked() ) {
-						qv = new BasicQualifiedValue(truthValue,qv.getQuality(),qv.getTimestamp());
+						qv = new BasicQualifiedValue(state,qv.getQuality(),qv.getTimestamp());
 						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 						controller.acceptCompletionNotification(nvn);
 						notifyOfStatus(qv);
@@ -126,7 +125,7 @@ public class ZeroCrossing extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void notifyOfStatus() {
-		QualifiedValue qv = new BasicQualifiedValue(truthValue);
+		QualifiedValue qv = new BasicQualifiedValue(state);
 		notifyOfStatus(qv);
 		
 	}
@@ -140,7 +139,7 @@ public class ZeroCrossing extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void setLocked(boolean flag) {
 		if(this.locked && !flag ) {
-			truthValue = TruthValue.UNSET;
+			state = TruthValue.UNSET;
 		}
 		this.locked = flag;
 	}

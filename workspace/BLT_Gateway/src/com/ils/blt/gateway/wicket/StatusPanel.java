@@ -3,6 +3,9 @@ package com.ils.blt.gateway.wicket;
 import java.util.List;
 
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.Button;
+import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.Panel;
@@ -16,6 +19,37 @@ public class StatusPanel extends Panel {
 
 	public StatusPanel(String id) {
 		super(id);
+		
+		Form<Void> form = new Form<Void>("form");
+        add(form);
+        form.add(new Link<Void>("expandAll") {
+        	private static final long serialVersionUID = 1L;
+        	@Override
+            public void onClick() {
+                ProcessNodeExpansion.get().expandAll();
+            }
+        });
+        form.add(new Link<Void>("collapseAll") {
+        	private static final long serialVersionUID = 1L;
+        	@Override
+        	public void onClick() {
+        		ProcessNodeExpansion.get().collapseAll();
+        	}
+        });
+        
+        form.add(new Button("clear") {
+            private static final long serialVersionUID = 1L;
+            @Override
+            public void onSubmit() {
+            }
+        });
+        form.add(new Button("refresh") {
+            private static final long serialVersionUID = 1L;
+            @Override
+            public void onSubmit() {
+            }
+        });
+        
 		
         // This is the static view of the diagram
 		IModel<List<ProcessDiagram>> diagramListModel = new SimpleDiagramListModel();

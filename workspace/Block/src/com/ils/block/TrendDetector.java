@@ -15,7 +15,6 @@ import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.LimitType;
 import com.ils.blt.common.block.ProcessBlock;
@@ -65,7 +64,6 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 	private int sampleSize = DEFAULT_BUFFER_SIZE;
 	private double standardDeviation = Double.NaN;
 	private double mean = Double.NaN;
-	TruthValue truthState = TruthValue.UNSET;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -143,7 +141,7 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 	
 	private void clear() {
 		queue.clear();
-		truthState = TruthValue.UNSET;
+		state = TruthValue.UNKNOWN;
 	}
 	
 	/**
@@ -153,7 +151,6 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 	@Override
 	public void acceptValue(IncomingNotification incoming) {
 		super.acceptValue(incoming);
-		this.state = BlockState.ACTIVE;
 		QualifiedValue qv = incoming.getValue();
 		Quality qual = qv.getQuality();
 		String port = incoming.getConnection().getDownstreamPortName();
@@ -172,10 +169,10 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 			}
 			else {
 				// Bad quality, emit the result immediately
-				if( !truthState.equals(TruthValue.UNKNOWN) ) {
-					truthState = TruthValue.UNKNOWN;
+				if( !state.equals(TruthValue.UNKNOWN) ) {
+					state = TruthValue.UNKNOWN;
 					if( !isLocked() ) {
-						QualifiedValue outval = new BasicQualifiedValue(truthState,qual,qv.getTimestamp());
+						QualifiedValue outval = new BasicQualifiedValue(state,qual,qv.getTimestamp());
 						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 						controller.acceptCompletionNotification(nvn);
 					}
@@ -241,15 +238,15 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 		log.debugf("%s.evaluate %d of %d",TAG,queue.size(),sampleSize);
 		if( queue.size() >= sampleSize) {
 			TruthValue newState = getRuleState();
-			if( !isLocked() && !newState.equals(truthState) ) {
+			if( !isLocked() && !newState.equals(state) ) {
 				// Give it a new timestamp
-				truthState = newState;
-				QualifiedValue outval = new BasicQualifiedValue(truthState);
+				state = newState;
+				QualifiedValue outval = new BasicQualifiedValue(state);
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 				controller.acceptCompletionNotification(nvn);
 				
 				// Notify other blocks to suppress alternate results
-				if( truthState.equals(TruthValue.TRUE)) {
+				if( state.equals(TruthValue.TRUE)) {
 					if( limitType.equals(LimitType.HIGH )) {
 						Signal sig = new Signal(BlockConstants.COMMAND_CLEAR_LOW,"","");
 						BroadcastNotification broadcast = new BroadcastNotification(getParentId(),TransmissionScope.LOCAL,sig);
@@ -267,10 +264,10 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 			// Too few points (can still be TRUE)
 			TruthValue newState = getRuleState();
 			if( newState.equals(TruthValue.FALSE)) newState = TruthValue.UNKNOWN;
-			if( !truthState.equals(newState)) {
-				truthState = newState;
+			if( !state.equals(newState)) {
+				state = newState;
 				if( !isLocked()  ) {
-					QualifiedValue outval = new BasicQualifiedValue(truthState);
+					QualifiedValue outval = new BasicQualifiedValue(state);
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 					controller.acceptCompletionNotification(nvn);
 					notifyOfStatus(outval);
@@ -283,7 +280,7 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 	 */
 	@Override
 	public void notifyOfStatus() {
-		QualifiedValue qv = new BasicQualifiedValue(truthState);
+		QualifiedValue qv = new BasicQualifiedValue(state);
 		notifyOfStatus(qv);
 		
 	}

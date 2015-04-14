@@ -3,6 +3,7 @@
  */
 package com.ils.block;
 
+import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
@@ -21,6 +22,7 @@ import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.notification.Signal;
 import com.ils.blt.common.notification.SignalNotification;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
@@ -114,6 +116,16 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	public void evaluate() {
 		log.infof("%s.evaluate: %s timeout expired",getName(),this.toString());
 		inhibiting = false;
+	}
+	/**
+	 * @return a block-specific description of internal statue
+	 */
+	@Override
+	public SerializableBlockStateDescriptor getInternalStatus() {
+		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
+		Map<String,String> attributes = descriptor.getAttributes();
+		attributes.put("Inhibiting", (inhibiting?"true":"false"));
+		return descriptor;
 	}
 	
 	/**

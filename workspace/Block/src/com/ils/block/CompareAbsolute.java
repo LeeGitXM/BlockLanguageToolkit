@@ -78,18 +78,18 @@ public class CompareAbsolute extends Compare implements ProcessBlock {
 	public void evaluate() {
 		if( !isLocked() ) {
 			currentValue = null;
-			TruthValue tv = TruthValue.UNKNOWN;
+			state = TruthValue.UNKNOWN;
 			if( x==null ) {
-				currentValue = new BasicQualifiedValue(tv,new BasicQuality("'x' is unset",Quality.Level.Bad));
+				currentValue = new BasicQualifiedValue(state,new BasicQuality("'x' is unset",Quality.Level.Bad));
 			}
 			else if( y==null ) {
-				currentValue = new BasicQualifiedValue(tv,new BasicQuality("'y' is unset",Quality.Level.Bad));
+				currentValue = new BasicQualifiedValue(state,new BasicQuality("'y' is unset",Quality.Level.Bad));
 			}
 			else if( !x.getQuality().isGood()) {
-				currentValue = new BasicQualifiedValue(tv,x.getQuality());
+				currentValue = new BasicQualifiedValue(state,x.getQuality());
 			}
 			else if( !y.getQuality().isGood()) {
-				currentValue = new BasicQualifiedValue(tv,y.getQuality());
+				currentValue = new BasicQualifiedValue(state,y.getQuality());
 			}
 			double xx = Double.NaN;
 			double yy = Double.NaN;
@@ -110,16 +110,16 @@ public class CompareAbsolute extends Compare implements ProcessBlock {
 			
 			if( currentValue==null ) {     // Success!
 				if( x.getQuality().isGood() && y.getQuality().isGood() ) {
-					tv = TruthValue.FALSE;
+					state = TruthValue.FALSE;
 					if( xx<0.0) xx = -xx;
 					if( yy<0.0) yy = -yy;
-					if( xx > yy+offset) tv = TruthValue.TRUE;
-					currentValue = new BasicQualifiedValue(tv);
+					if( xx > yy+offset) state = TruthValue.TRUE;
+					currentValue = new BasicQualifiedValue(state);
 				}
 				else {
 					Quality q = x.getQuality();
 					if( q.isGood()) q = y.getQuality();
-					currentValue = new BasicQualifiedValue(tv,q);
+					currentValue = new BasicQualifiedValue(state,q);
 					log.infof("%s.evaluate: UNKNOWN x=%s, y=%s",getName(),x.toString(),y.toString());
 				}
 				

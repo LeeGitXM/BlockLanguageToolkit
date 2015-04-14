@@ -12,7 +12,6 @@ import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
-import com.ils.blt.common.block.BlockState;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.connection.ConnectionType;
@@ -81,7 +80,6 @@ public class Exponential extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
-		this.state = BlockState.ACTIVE;
 		if( !isLocked() ) {
 			QualifiedValue qv = vcn.getValue();
 			if( qv!=null && qv.getValue()!=null && qv.getQuality().isGood()) {

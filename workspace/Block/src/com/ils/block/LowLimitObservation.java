@@ -29,7 +29,6 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 @ExecutableBlock
 public class LowLimitObservation extends AbstractProcessBlock implements ProcessBlock {
 	private final static String TAG = "LowLimitObservation";
-	private TruthValue truthValue = TruthValue.UNSET;
 	private double deadband   = 0.;
 	private double limit      = 0.;
 	
@@ -56,7 +55,7 @@ public class LowLimitObservation extends AbstractProcessBlock implements Process
 	@Override
 	public void reset() {
 		super.reset();
-		truthValue = TruthValue.UNSET;
+		state = TruthValue.UNKNOWN;
 	}
 	
 	/**
@@ -94,14 +93,14 @@ public class LowLimitObservation extends AbstractProcessBlock implements Process
 			String val = qv.getValue().toString();
 			try {
 				double dbl = Double.parseDouble(val);
-				TruthValue newValue = truthValue;
+				TruthValue newValue = state;
 				if( dbl< limit   ) newValue = TruthValue.TRUE;
 				if( dbl> limit + deadband ) newValue = TruthValue.FALSE;
 				if( !qv.getQuality().isGood()) newValue = TruthValue.UNKNOWN;
-				if( !newValue.equals(truthValue)) {
-					truthValue = newValue;
+				if( !newValue.equals(state)) {
+					state = newValue;
 					if( !isLocked() ) {
-						QualifiedValue nqv = new BasicQualifiedValue(truthValue,qv.getQuality(),qv.getTimestamp());
+						QualifiedValue nqv = new BasicQualifiedValue(state,qv.getQuality(),qv.getTimestamp());
 						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,nqv);
 						controller.acceptCompletionNotification(nvn);
 						notifyOfStatus(nqv);
@@ -145,7 +144,7 @@ public class LowLimitObservation extends AbstractProcessBlock implements Process
 	 */
 	@Override
 	public void notifyOfStatus() {
-		QualifiedValue qv = new BasicQualifiedValue(truthValue);
+		QualifiedValue qv = new BasicQualifiedValue(state);
 		notifyOfStatus(qv);	
 	}
 	private void notifyOfStatus(QualifiedValue qv) {
@@ -158,7 +157,7 @@ public class LowLimitObservation extends AbstractProcessBlock implements Process
 	@Override
 	public void setLocked(boolean flag) {
 		if(this.locked && !flag ) {
-			truthValue = TruthValue.UNSET;
+			state = TruthValue.UNSET;
 		}
 		this.locked = flag;
 	}
