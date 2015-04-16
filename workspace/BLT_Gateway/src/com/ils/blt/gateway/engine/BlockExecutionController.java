@@ -30,6 +30,7 @@ import com.ils.blt.gateway.ControllerRequestHandler;
 import com.ils.blt.gateway.tag.TagListener;
 import com.ils.blt.gateway.tag.TagWriter;
 import com.ils.common.BoundedBuffer;
+import com.ils.common.watchdog.AcceleratedWatchdogTimer;
 import com.ils.common.watchdog.WatchdogTimer;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
@@ -60,7 +61,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	private GatewaySessionManager sessionManager = null;
 	private ModelManager modelManager = null;
 	private final WatchdogTimer watchdogTimer;
-	private final WatchdogTimer secondaryWatchdogTimer;  // For isolated
+	private final AcceleratedWatchdogTimer secondaryWatchdogTimer;  // For isolated
 	private final ExecutorService threadPool;
 
 	// Cache the values for tag provider and database
@@ -88,7 +89,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		this.buffer = new BoundedBuffer(BUFFER_SIZE);
 		// Timers get started and stopped with the controller
 		this.watchdogTimer = new WatchdogTimer("MainTimer");
-		this.secondaryWatchdogTimer = new WatchdogTimer("SecondaryTimer");
+		this.secondaryWatchdogTimer = new AcceleratedWatchdogTimer("SecondaryTimer");
 	}
 
 	/**
@@ -242,7 +243,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	}
 	
 	public WatchdogTimer getTimer() {return watchdogTimer;}
-	public WatchdogTimer getSecondaryTimer() {return secondaryWatchdogTimer;}
+	public AcceleratedWatchdogTimer getSecondaryTimer() {return secondaryWatchdogTimer;}
 
 	/**
 	 * Start the controller, watchdogTimer, tagListener and TagWriter.

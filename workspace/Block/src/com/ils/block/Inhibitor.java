@@ -33,7 +33,6 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  */
 @ExecutableBlock
 public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
-	private static final String TAG = "Inhibitor";
 	private double interval = 0.0;   // ~secs
 	private final Watchdog dog;
 	private boolean inhibiting = false;
@@ -44,7 +43,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	public Inhibitor() {
 		initialize();
 		initializePrototype();
-		dog = new Watchdog(TAG,this);
+		dog = new Watchdog(getName(),this);
 	}
 	
 	/**
@@ -57,7 +56,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	public Inhibitor(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
-		dog = new Watchdog(TAG,this);
+		dog = new Watchdog(getName(),this);
 	}
 	
 	
@@ -116,6 +115,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	public void evaluate() {
 		log.infof("%s.evaluate: %s timeout expired",getName(),this.toString());
 		inhibiting = false;
+		timer.removeWatchdog(dog);
 	}
 	/**
 	 * @return a block-specific description of internal statue
@@ -161,7 +161,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 				interval = Double.parseDouble(event.getNewValue().toString());
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s.propertyChange Unable to convert interval value to an double (%s)",TAG,nfe.getLocalizedMessage());
+				log.warnf("%s.propertyChange Unable to convert interval value to an double (%s)",getName(),nfe.getLocalizedMessage());
 			}
 		}
 	}

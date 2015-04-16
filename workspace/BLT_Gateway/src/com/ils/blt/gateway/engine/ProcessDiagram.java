@@ -211,7 +211,7 @@ public class ProcessDiagram extends ProcessNode {
 			}
 
 		}
-		log.infof("%s.analyze: Complete .... %d blocks and %d connections",TAG,diagrm.getBlocks().length,diagrm.getConnections().length);
+		log.infof("%s.analyze: %s complete .... %d blocks and %d connections",TAG,diagrm.getName(),diagrm.getBlocks().length,diagrm.getConnections().length);
 	}
 	
 	/**
@@ -299,13 +299,18 @@ public class ProcessDiagram extends ProcessNode {
 			updateBlockTimers();
 
 			if(!DiagramState.DISABLED.equals(getState()) ) {
-				// Restart blocks
+				// The two-phase start is probably not necessary here
+				// since we start the subscriptions after starting the blocks,
+				// but we'll do it anyway for consistency
 				for(ProcessBlock blk:blocks.values()) {
-					blk.start();
+					if( !blk.delayBlockStart() ) blk.start();
+				}
+				for(ProcessBlock blk:blocks.values()) {
+					if( blk.delayBlockStart() ) blk.start();
 				}
 				startSubscriptions();
 			}
-			// Fire notification change
+			// Fire diagram notification change
 			controller.sendStateNotification(diagram.getId().toString(), s.name());
 		}
 	}
@@ -367,10 +372,6 @@ public class ProcessDiagram extends ProcessNode {
 			}
 			pb.setProjectId(projectId);
 		}
-
-		for( ProcessBlock pb:getProcessBlocks()) {
-			pb.start();
-		}
 	}
 	private void stopSubscriptions() {
 		log.infof("%s.stopSubscriptions: ...%d:%s",TAG,projectId,getName());
@@ -379,10 +380,6 @@ public class ProcessDiagram extends ProcessNode {
 				controller.removeSubscription(pb,bp);
 			}
 			pb.setProjectId(projectId);
-		}
-
-		for( ProcessBlock pb:getProcessBlocks()) {
-			pb.stop();
 		}
 	}
 	/**

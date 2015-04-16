@@ -18,9 +18,9 @@ Tagset: SQC
 Step: In-Range Values
 09:57 0.0 0.0 0.0
 09:58 resetDiagram (app75/family75/sqc)
-09:58:55 Assert: SQC3 = UNKNOWN  "3 UNKNOWN after reset"
 09:59 .9 1.0 0.01
-10:00 0.93 
+10:00 Assert: SQC3 = UNKNOWN  "3 UNKNOWN after reset"
+10:00:01 0.93 
 10:00:50 Assert: SQC3 = False "3 False at threshold"
 10:00:55 Assert: SQC4 = UNKNOWN  "4 UNKNOWN before threshold"
 10:00:58 Assert: SQC1 = UNKNOWN  "1 UNKNOWN before threshold"
@@ -36,12 +36,12 @@ Step: High Values
 10:03 1.6
 10:03:55 Assert: SQC1 = true "1 true at 1 high"
 10:03:55 Assert: SQC3 = false "3 false at 1 high"
-10:06:55 Assert: SQC2 = UNKNOWN "2 UNKNOWN - reset by 1 going true"
+10:06:55 Assert: SQC2 = false "2 false at none low"
 10:04 1.7
 10:04:55 Assert: SQC1 = true  "1 true at 2 high"
 10:04:55 Assert: SQC3 = false "3 false at 2 high, need 3"
 10:06 1.71
-10:06:55 Assert: SQC2 = UNKNOWN "2 UNKNOWN due to low-side reset"
+10:06:55 Assert: SQC2 = false "2 false - unaffected by low-side reset"
 10:06:55 Assert: SQC4 = true  "4 true"
 10:07 1.75
 
@@ -53,7 +53,7 @@ Step: Low Values
 10:09:55 Assert: SQC2 = true  "2 true at 2 low"
 10:09:55 Assert: SQC4 = false "4 false at 2 on each side of target"
 10:10 -1.72
-10:10:55 Assert: SQC1 = UNKNOWN "1 buffer cleared by 2 going true"
+10:10:55 Assert: SQC1 = true "1 true at still 1 high"
 10:11 -1.8
 10:11:55 Assert: SQC3 = true  "3 true at 4 low"
 10:11:55 Assert: SQC4 = true  "4 true at 4 on low side"
@@ -61,11 +61,11 @@ Step: Low Values
 Step: Out-of-Range Values
 10:12 1.9
 10:12:55 Assert: SQC1 = true "1 true with 1 high value"
-10:12:55 Assert: SQC2 = UNKNOWN  "2 UNKNOWN due to low-side reset"
+10:12:55 Assert: SQC2 = false "2 emits false after clear low"
 10:12:55 Assert: SQC3 = true  "3 true at 4 out of range"
 10:12:55 Assert: SQC4 = true  "4 true"
 10:13 1.1
-10:13:55 Assert: SQC2 = UNKNOWN "2 UNKNOWN with no low values after reset by 1"
+10:13:55 Assert: SQC2 = true "2 true with 2 low values remaining"
 10:14 0.9
 10:14:55 Assert: SQC3 = false "3 false with 2 of 4 out of range"
 10:15 1.04
@@ -74,10 +74,10 @@ Step: Out-of-Range Values
 
 Step: Clear On Reset
 10:16    resetDiagram (app75/family75/sqc)
-10:16:45 Assert: SQC2 != UNKNOWN "2 not UNKNOWN after reset"
-10:16:55 Assert: SQC1 = UNKNOWN  "1 UNKNOWN after reset"
-10:17 7.5
-10:17:55 Assert: SQC1 = true  "1 true 1  after reset"
+10:16:10 Assert: SQC1 = true  "1 downstream output still true after reset"
+10:16:20 Assert: SQC2 != UNKNOWN "2 not UNKNOWN after reset"
+10:17 7.534
+10:17:55 Assert: SQC1 = true  "1 true 1 after reset"
 10:17:55 Assert: SQC4 = UNKNOWN  "4 UNKNOWN after reset"
 10:18 7.3
 10:18:55 Assert: SQC3 = UNKNOWN  "3 UNKNOWN after reset"

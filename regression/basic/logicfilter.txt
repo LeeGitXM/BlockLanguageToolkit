@@ -1,5 +1,6 @@
 #
-# Logic filter: threshold is ??
+# Logic filter: threshold is 50/50
+# Time window = 5 mins, interval = 1 min
 #
 Test: Logic Filter
 Show: browser "app75/family75/logicfilter"
@@ -8,22 +9,31 @@ Step: All true
 9:59:30 false
 resetDiagram (app75/family75/logicfilter)
 10:00 true
-10:02:10 Assert: LogicFilterTrue   = UNKNOWN "1 UNKNOWN before time window"
-10:02:10 Assert: LogicFilterFalse  = UNKNOWN "2 UNKNOWN before time window"
-10:02:10 Assert: LogicFilterAlways = UNKNOWN "3 UNKNOWN before time window"
-10:02:10 Assert: LogicFilterNever  = UNKNOWN "4 UNKNOWN before time window"
-10:04:10 Assert: LogicFilterTrue   = True "1 True past time window"
-10:04:10 Assert: LogicFilterFalse  = True "2 True past time window"
-10:04:10 Assert: LogicFilterAlways = True "3 True past time window"
-10:04:10 Assert: LogicFilterNever  = True "4 True past time window"
-10:04:30 false
+# When the buffer fills enough to assert TRUE, we make the conclusion
+10:00:20 Assert: LogicFilterTrue   = UNKNOWN "1 UNKNOWN before time window"
+10:00:20 Assert: LogicFilterNever  = UNKNOWN "4 UNKNOWN before time window"
+10:00:50 Assert: LogicFilterFalse  = UNKNOWN "2 UNKNOWN before time window"
+10:00:50 Assert: LogicFilterAlways = UNKNOWN "3 UNKNOWN before time window"
+10:03:20 Assert: LogicFilterTrue   = True "1 True far enough into window"
+10:03:20 Assert: LogicFilterFalse  = True "2 True far enough into window"
+10:03:20 Assert: LogicFilterAlways = True "3 True far enough into window"
+10:03:20 Assert: LogicFilterNever  = True "4 True far enough into window"
+10:05:10 Assert: LogicFilterTrue   = True "1 True past time window"
+10:05:10 Assert: LogicFilterFalse  = True "2 True past time window"
+10:05:10 Assert: LogicFilterAlways = True "3 True past time window"
+10:05:10 Assert: LogicFilterNever  = True "4 True past time window"
 Step: All false
-10:05:00 false
-10:06:30 Assert: LogicFilterTrue   = True "1 True half-way"
-10:06:30 Assert: LogicFilterFalse  = False "2 False half-way"
-10:06:30 Assert: LogicFilterAlways = True "3 True half-way"
-10:07:30 Assert: LogicFilterNever  = False "4 False past half-way"
-10:08:10 Assert: LogicFilterTrue   = False "1 False past window"
-10:08:10 Assert: LogicFilterFalse  = False "2 False past window"
-10:08:10 Assert: LogicFilterAlways = False "3 False past window"
-10:08:10 Assert: LogicFilterNever  = False "4 False past window"
+resetDiagram (app75/family75/logicfilter)
+10:06:00 false
+10:06:45 Assert: LogicFilterFalse  = UNKNOWN "2 UNKNOWN after reset"
+10:06:45 Assert: LogicFilterAlways = UNKNOWN "3 UNKNOWN after reset"
+10:07:20 Assert: LogicFilterTrue   = UNKNOWN "1 UNKNOWN after reset"
+10:07:20 Assert: LogicFilterNever  = UNKNOWN "4 UNKNOWN after reset"
+10:09:30 Assert: LogicFilterTrue   = False "1 False half-way"
+10:09:30 Assert: LogicFilterFalse  = False "2 False half-way"
+10:09:30 Assert: LogicFilterAlways = False "3 False half-way"
+10:09:30 Assert: LogicFilterNever  = False "4 False past half-way"
+10:12:10 Assert: LogicFilterTrue   = False "1 False past window"
+10:12:10 Assert: LogicFilterFalse  = False "2 False past window"
+10:12:10 Assert: LogicFilterAlways = False "3 False past window"
+10:12:10 Assert: LogicFilterNever  = False "4 False past window"

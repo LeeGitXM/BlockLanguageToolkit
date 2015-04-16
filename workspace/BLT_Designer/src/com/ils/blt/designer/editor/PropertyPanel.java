@@ -281,13 +281,16 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		else {
 			bindingDisplayField.setVisible(false);
 			// List is the only type with a custom editor
-			if( !property.getType().equals(PropertyType.LIST) ) {
-				editButton.setVisible(false);
-				bindingDisplayField.setVisible(true);
+			if( property.getType().equals(PropertyType.LIST) ) {
+				editButton.setVisible(true);
 				valueDisplayField.setEnabled(false);
 				valueDisplayField.setEditable(false);
 			}
-			if( !property.getBindingType().equals(BindingType.ENGINE) ) {
+			else if( property.getBindingType().equals(BindingType.ENGINE) ) {
+				valueDisplayField.setEnabled(false);
+				valueDisplayField.setEditable(false);
+			}
+			else {
 				valueDisplayField.setEnabled(true);
 				valueDisplayField.setEditable(true);
 			}

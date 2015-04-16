@@ -36,6 +36,14 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 */
 	public void acceptValue(SignalNotification sn);
 	/**
+	 * If true, the "engine" will delay calling the start() method
+	 * of this block until all other blocks that do not indicate
+	 * a delay have been started. 
+	 * @return true if this block should be ordered at the end
+	 *         of the startup process. 
+	 */
+	public boolean delayBlockStart();
+	/**
 	 * @return a list of anchor prototypes for the block.
 	 */
 	public List<AnchorPrototype> getAnchors();

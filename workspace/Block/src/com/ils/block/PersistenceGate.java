@@ -156,7 +156,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 	 */
 	@Override
 	public synchronized void evaluate() {
-		log.tracef("%s.evaluate: cycle %d fact = %2.1f.",TAG,count,timer.getFactor());
+		log.tracef("%s.evaluate: cycle %d (%s).",TAG,count,timer.getName());
 		if( count> 0 ) {
 			dog.setSecondsDelay(scanInterval);
 			timer.updateWatchdog(dog);  // pet dog

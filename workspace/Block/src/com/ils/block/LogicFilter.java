@@ -109,20 +109,18 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void reset() {
 		super.reset();
-		if( scanInterval>0.0) {
-			dog.setSecondsDelay(scanInterval);
-			timer.updateWatchdog(dog);  // pet dog
-		}
+		timer.removeWatchdog(dog);
 		buffer.clear();
 		state = TruthValue.UNSET;
 		currentValue = TruthValue.UNSET;
 		ratio = Double.NaN;
+		log.debugf("%s.reset ...",getName());
 	}
 
 	@Override
 	public void start() {
-		if(!running) reset();
 		super.start();
+		reset();
 	}
 	@Override
 	public void stop() {
@@ -140,8 +138,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		Quality qual = qv.getQuality();
 		if( qual.isGood() && qv!=null && qv.getValue()!=null ) {
 			currentValue = incoming.getValueAsTruthValue();
-			log.tracef("%s.acceptValue ... received %s",getName(),currentValue.name());
-			if( state.equals(TruthValue.UNSET)) evaluate();  // Start cycling
+			if(!dog.isActive()) evaluate();
 		}
 		else {
 			qv = new BasicQualifiedValue(Double.NaN,qual,qv.getTimestamp());
@@ -151,17 +148,21 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	}
 	/**
 	 * The interval has expired. Reset interval, then compute output.
-	 * Do not compute anything until all parameters have been set.
+	 * Do not compute anything if scan interval is illegal or
+	 * there has been no input since start or reset().
 	 */
 	@Override
 	public synchronized void evaluate() {
-
-		log.tracef("%s.evaluate buffer %d of %d, current value=%s, state=%s",getName(),buffer.size(),bufferSize,currentValue.name(),state.name());
+		log.tracef("%s.evaluate: currentValue %s",getName(),currentValue.name());
+		if( scanInterval<= 0.0) {
+			reset();
+			return;
+		}
+		if( currentValue.equals(TruthValue.UNSET) ) return;   // Nothing on input yet
+		
 		// Set up the next poll, no matter what.
 		dog.setSecondsDelay(scanInterval);
 		timer.updateWatchdog(dog);  // pet dog
-		
-		if( currentValue.equals(TruthValue.UNSET) ) return;   // Nothing on input yet
 		
 		// Add the currentValue to the queue
 		buffer.addLast(currentValue);
@@ -170,8 +171,11 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 			buffer.removeFirst();
 		}
 		
+		log.tracef("%s.evaluate buffer %d of %d, current value=%s, state=%s (%s)",
+				getName(),buffer.size(),bufferSize,currentValue.name(),state.name(),timer.getName());
+		
 		TruthValue newState = TruthValue.UNKNOWN;
-		if( buffer.size() >= bufferSize*limit ) {
+		if( buffer.size() >= 1 ) {
 			ratio = computeTrueRatio(bufferSize);
 			// Even if locked, we update the property state
 			controller.sendPropertyNotification(getBlockId().toString(),BLOCK_PROPERTY_RATIO,new BasicQualifiedValue(new Double(ratio)));
@@ -188,6 +192,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 				notifyOfStatus(result);
 			}
 		}
+		log.tracef("%s.evaluate: COMPLETE",getName());
 	}
 	/**
 	 * @return a block-specific description of internal statue
@@ -241,12 +246,12 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 					if( scanInterval < 0.1 ) scanInterval = 0.1;
 					if( scanInterval > timeWindow ) scanInterval = timeWindow;
 					dog.setSecondsDelay(scanInterval);
-					timer.updateWatchdog(dog);  // pet do
+					timer.updateWatchdog(dog);  // pet dog
 					bufferSize = (int)(0.5+timeWindow/scanInterval);
 					log.infof("%s.propertyChange: buffer size now %d (%f / %f )",TAG,bufferSize,timeWindow,scanInterval);
 				}
 				else {
-					timer.removeWatchdog(dog);
+					reset();
 				}
 			}
 			catch(NumberFormatException nfe) {
@@ -339,7 +344,8 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	
 	/**
 	 * Compute the overall state, presumably because of a new input.
-	 * We take into account the hysteresis.
+	 * We take into account the hysteresis. If the buffer is not full,
+	 * truw and false ratios will not add to one.
 	 */
 	private TruthValue computeState(TruthValue current,double trueRatio,double falseRatio) {
 		

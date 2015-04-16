@@ -3,6 +3,7 @@ package com.ils.blt.common.block;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.ConcurrentModificationException;
 import java.util.List;
 
 import javax.swing.event.ChangeEvent;
@@ -194,7 +195,14 @@ public class BlockProperty implements NotificationChangeListener {
 	public void valueChange(QualifiedValue val) {
 		log.tracef("%s(%d).valueChange %s now %s",TAG,hashCode(),getName(),val.getValue().toString());
 		if( val!=null && val.getValue()!=null) {
-			setValue(val.getValue());
+			try {
+				setValue(val.getValue());
+			}
+			catch(ConcurrentModificationException cme) {
+				// This is a possibility if the property listeners are also
+				// notification listeners. What a tangled web we weave.
+				log.infof("%s.valueChange of %s to %s threw ConcurrentModificationException (ignored)",TAG,getName(),val.getValue().toString());
+			}
 		}
 	}
 }

@@ -63,6 +63,7 @@ public class Parameter extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	private void initialize() {
 		setName("Parameter");
+		delayStart = true;
 		tag = new BlockProperty(BLOCK_PROPERTY_TAG_PATH,"",PropertyType.STRING,true);
 		tag.setBinding("");
 		tag.setBindingType(BindingType.TAG_READWRITE);
@@ -82,6 +83,20 @@ public class Parameter extends AbstractProcessBlock implements ProcessBlock {
 	}
 	
 	/**
+	 * We may have received a premature value due to creation of a subscription 
+	 * before we're actually started. Pass that value on now.
+	 */
+	@Override
+	public void start() {
+		super.start();
+		if( qv!=null &&  qv.getValue() != null && !isLocked()  ) {
+			log.debugf("%s.start: %s (%s)",getName(),qv.getValue().toString(),qv.getQuality().getName());
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+			controller.acceptCompletionNotification(nvn);
+		}
+	}
+	
+	/**
 	 * The block is notified that a new value has appeared on one of its input anchors.
 	 * Write the value to the configured tag. Handle any of the possible input types.
 	 * 
@@ -97,12 +112,12 @@ public class Parameter extends AbstractProcessBlock implements ProcessBlock {
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
 		qv = vcn.getValue();
-		if( !isLocked() ) {
+		if( !isLocked() && running ) {
 			if( vcn.getConnection()!=null && vcn.getConnection().getDownstreamPortName().equals(BlockConstants.IN_PORT_NAME) ) {
 				// Arrival through the input connection
 				String path = tag.getBinding().toString();
 				controller.updateTag(getParentId(),path, qv);
-				log.infof("%s.acceptValue: Updated tag %s = %s",getName(),path,qv.getValue().toString());
+				log.debugf("%s.acceptValue: Updated tag %s = %s",getName(),path,qv.getValue().toString());
 			}
 			// In either mode of update, we propagate the value on the output.
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);

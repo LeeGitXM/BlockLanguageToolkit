@@ -334,8 +334,12 @@ public class ModelManager implements ProjectListener  {
 		for( ProcessNode node:nodesByKey.values() ) {
 			if( node instanceof ProcessDiagram ) {
 				ProcessDiagram diagram = (ProcessDiagram)node;
+				// Start in two passes - input blocks come last
 				for( ProcessBlock pb:diagram.getProcessBlocks()) {
-					pb.start();
+					if( !pb.delayBlockStart() ) pb.start();
+				}
+				for( ProcessBlock pb:diagram.getProcessBlocks()) {
+					if( pb.delayBlockStart() ) pb.start();
 				}
 			}
 		}
@@ -781,7 +785,7 @@ public class ModelManager implements ProjectListener  {
 			// If is now resolved, remove node from orphan list and
 			// add as child of parent. Recurse it's children.
 			if(parent!=null ) {
-				log.infof("%s.resolveOrphans: %s RECONCILED with parent (%s)",TAG,orphan.getName(),parent.getName());
+				log.debugf("%s.resolveOrphans: %s RECONCILED with parent (%s)",TAG,orphan.getName(),parent.getName());
 				reconciledOrphans.add(orphan);
 			}
 		}

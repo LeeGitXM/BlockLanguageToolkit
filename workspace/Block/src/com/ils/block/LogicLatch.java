@@ -46,6 +46,10 @@ public class LogicLatch extends AbstractProcessBlock implements ProcessBlock {
 		initialize();
 	}
 	
+	/**
+	 * Do not call the base-class reset() as this sets outgoing
+	 * connection states to UNKNOWN.
+	 */
 	@Override
 	public void reset() {
 		if( state.equals(TruthValue.TRUE) || 

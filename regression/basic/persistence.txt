@@ -1,5 +1,7 @@
 #
 # Test of a persistence gate. 5 min timer
+# Note: We have seen failure to update clock rate
+#       when run as part of the mass regression test
 #
 Test: Persistence block
 Step: Target is TRUE

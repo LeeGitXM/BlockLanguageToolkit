@@ -60,6 +60,7 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	protected void initialize() {
 		setName("Input");
+		delayStart = true;
 		// This property causes the engine to start a subscription.
 		tagPathProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH,"",PropertyType.OBJECT,true);
 		tagPathProperty.setBinding("");
@@ -75,6 +76,20 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 	}
 	
 	/**
+	 * We may have received a premature value due to creation of a subscription 
+	 * before we're actually started. Pass that value on now.
+	 */
+	@Override
+	public void start() {
+		super.start();
+		if( qv!=null &&  qv.getValue() != null && !isLocked()  ) {
+			log.debugf("%s.start: %s (%s)",getName(),qv.getValue().toString(),qv.getQuality().getName());
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+			controller.acceptCompletionNotification(nvn);
+		}
+	}
+	
+	/**
 	 * The block is notified that a new value has appeared on a pseudo port named as
 	 * the tag path property. The value contains all the tag quality information.
 	 * @param vcn notification of the new value.
@@ -83,7 +98,7 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
 		qv = vcn.getValue();
-		if( !isLocked() ) {
+		if( !isLocked() && running ) {
 			if( qv.getValue() != null ) {
 				log.debugf("%s.acceptValue: %s (%s)",getName(),qv.getValue().toString(),qv.getQuality().getName());
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);

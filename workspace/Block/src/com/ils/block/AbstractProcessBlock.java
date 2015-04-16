@@ -47,7 +47,10 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  * available executable block types.
  */
 public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropertyChangeListener, WatchdogObserver {
-	
+	// These are the qualified values sent on a reset
+	private final static QualifiedValue UNKNOWN_TRUTH_VALUE = new BasicQualifiedValue(TruthValue.UNKNOWN);
+	private final static QualifiedValue NAN_DATA_VALUE = new BasicQualifiedValue(new Double(Double.NaN));
+	private final static QualifiedValue EMPTY_STRING_VALUE = new BasicQualifiedValue("");
 	protected ExecutionController controller = null;
 	private UUID blockId;
 	private UUID parentId;
@@ -56,7 +59,8 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	private String name = ".";
 	protected String statusText;
 	protected PalettePrototype prototype = null;
-	protected boolean locked = false;
+	protected boolean delayStart = false;
+	protected boolean locked     = false;
 	protected boolean isReceiver = false;
 	protected boolean isTransmitter = false;
 	protected boolean running = false;
@@ -149,6 +153,8 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 			}
 		}
 	}
+	@Override
+	public boolean delayBlockStart() { return this.delayStart; }
 	@Override
 	public List<AnchorPrototype>getAnchors() { return anchors; }
 	@Override
@@ -255,6 +261,22 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	@Override
 	public void reset() {
 		this.state = TruthValue.UNSET;
+		if( controller!=null ) {
+			// Send notifications on all outputs to indicate empty connections.
+			for(AnchorPrototype ap:getAnchors()) {
+				if( ap.getAnchorDirection().equals(AnchorDirection.OUTGOING) ) {
+					if( ap.getConnectionType().equals(ConnectionType.TRUTHVALUE)) {
+						controller.sendConnectionNotification(getBlockId().toString(), ap.getName(),UNKNOWN_TRUTH_VALUE);
+					}
+					if( ap.getConnectionType().equals(ConnectionType.DATA)) {
+						controller.sendConnectionNotification(getBlockId().toString(), ap.getName(),NAN_DATA_VALUE);
+					}
+					else {
+						controller.sendConnectionNotification(getBlockId().toString(), ap.getName(),EMPTY_STRING_VALUE);
+					}
+				}
+			}
+		}
 	}
 	/**
 	 * Accept a new value for a block property. In general this does not trigger
@@ -285,7 +307,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 			if( vcn.getConnection()!=null ) {
 				QualifiedValue qv = vcn.getValue();
 				if( qv!=null && qv.getValue()!=null ) {
-					log.debugf("%s.acceptValue: %s (%s) on %s",getName(),
+					log.debugf("%s.acceptValue: %s (%s) port: %s",getName(),
 							qv.getValue().toString(),
 							qv.getQuality().getName(),
 							vcn.getConnection().getDownstreamPortName());

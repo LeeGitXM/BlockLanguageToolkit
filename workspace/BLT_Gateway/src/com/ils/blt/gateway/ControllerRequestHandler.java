@@ -39,7 +39,7 @@ import com.ils.blt.gateway.engine.ProcessFamily;
 import com.ils.blt.gateway.persistence.ToolkitRecord;
 import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.ils.common.ClassList;
-import com.ils.common.watchdog.WatchdogTimer;
+import com.ils.common.watchdog.AcceleratedWatchdogTimer;
 import com.inductiveautomation.ignition.common.datasource.DatasourceStatus;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
@@ -711,7 +711,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	
 	public void setTimeFactor(Double factor) {
 		log.infof("%s.setTimeFactor: %s", TAG, String.valueOf(factor));
-		WatchdogTimer timer = controller.getSecondaryTimer();
+		AcceleratedWatchdogTimer timer = controller.getSecondaryTimer();
 		timer.setFactor(factor.doubleValue());
 	}
 	/**
