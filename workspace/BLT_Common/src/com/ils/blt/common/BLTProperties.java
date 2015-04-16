@@ -47,6 +47,14 @@ public interface BLTProperties   {
 	
 	// These are names of system properties  
 	public static final String EXIM_PATH = "blt.exim.path";            // Initial default for file choose dialogs
+	
+	// These are the key names used a the Python dictionary that defines an anchor prototype.
+	public static final String ANCHOR_ANNOTATION  = "annotation";   // port annotation
+	public static final String ANCHOR_DIRECTION   = "direction";    // incoming or outgoing
+	public static final String ANCHOR_HINT   = "hint";     			// Placement hint
+	public static final String ANCHOR_NAME   = "name";     			// Name of the anchor
+	public static final String ANCHOR_TYPE   = "type";              // Connection type
+		
 	// These are the key names allowed in the Python dictionary that defines a block attribute.
 	public static final String BLOCK_ATTRIBUTE_BINDING    = "binding";
 	public static final String BLOCK_ATTRIBUTE_BINDING_TYPE = "bindingType";

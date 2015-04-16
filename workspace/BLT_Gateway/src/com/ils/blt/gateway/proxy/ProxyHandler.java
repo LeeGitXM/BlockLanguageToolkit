@@ -24,6 +24,7 @@ import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.PalettePrototype;
+import com.ils.blt.common.block.PlacementHint;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
@@ -58,7 +59,9 @@ public class ProxyHandler   {
 	private final Callback acceptValueCallback;
 	private final Callback createBlockCallback;
 	private final Callback evaluateCallback;
+	private final Callback getBlockAnchorsCallback;
 	private final Callback getBlockPropertiesCallback;
+	private final Callback getBlockStateCallback;
 	private final Callback getBlockPrototypesCallback;
 	private final Callback setBlockPropertyCallback;
 
@@ -74,7 +77,9 @@ public class ProxyHandler   {
 		acceptValueCallback = new AcceptValue();
 		createBlockCallback = new CreateBlock();
 		evaluateCallback = new Evaluate();
+		getBlockAnchorsCallback = new GetBlockAnchors();
 		getBlockPropertiesCallback = new GetBlockProperties();
+		getBlockStateCallback = new GetBlockState();
 		getBlockPrototypesCallback = new GetBlockPrototypes();
 		setBlockPropertyCallback = new SetBlockProperty();
 	}
@@ -179,6 +184,71 @@ public class ProxyHandler   {
 			evaluateCallback.execute(mgr);
 		}
 	}
+	/**
+	 * Query the python block for a list of its anchors. The prototypes are returned as a list of dictionaries
+	 * and converted to PalettePrototype object here.
+	 * 
+	 * @param mgr the appropriate project-specific script manager
+	 * @return
+	 */
+	public synchronized List<AnchorPrototype> getBlockAnchors(ScriptManager mgr,PyObject block) {
+		List<AnchorPrototype> prototypes = new ArrayList<AnchorPrototype>();
+		log.infof("%s.getBlockAnchors (python) ... ",TAG);
+		if( getBlockAnchorsCallback.compileScript())  {
+			Object val = null;
+			UtilityFunctions fns = new UtilityFunctions();
+			PyList pyList = new PyList();  // Empty
+			List<?> list = null;
+			getBlockAnchorsCallback.initializeLocalsMap(mgr);
+			getBlockAnchorsCallback.setLocalVariable(0,pyList);
+			getBlockAnchorsCallback.execute(mgr);
+			log.debug(TAG+".getBlockAnchors: returned "+ pyList);   // Should now be updated
+			// Contents of list are Hashtable<String,?>
+			list = toJavaTranslator.pyListToArrayList(pyList);
+
+			for( Object obj:list ) { 
+				try {
+					if( obj instanceof Hashtable ) {
+						@SuppressWarnings("unchecked")
+						Hashtable<String,?> tbl = (Hashtable<String,?>)obj;
+						log.debug(TAG+".getBlockAnchors table "+ tbl);  
+						AnchorPrototype proto = new AnchorPrototype();
+						AnchorDirection direction = AnchorDirection.INCOMING;
+						try {
+							direction = AnchorDirection.valueOf(nullCheck(tbl.get(BLTProperties.ANCHOR_DIRECTION),"incoming").toUpperCase());
+						}
+						catch(IllegalArgumentException ignore) {}
+						proto.setAnchorDirection(direction);
+						proto.setAnnotation(nullCheck(tbl.get(BLTProperties.ANCHOR_ANNOTATION),""));
+						ConnectionType ctype = ConnectionType.ANY;
+						try {
+							ctype = ConnectionType.valueOf(nullCheck(tbl.get(BLTProperties.ANCHOR_TYPE),"any").toUpperCase());
+						}
+						catch(IllegalArgumentException ignore) {}
+						proto.setConnectionType(ctype);
+						proto.setHidden(false);
+						PlacementHint hint = PlacementHint.UNSPECIFIED;
+						try {
+							hint = PlacementHint.valueOf(nullCheck(tbl.get(BLTProperties.ANCHOR_HINT),"unspecified").toUpperCase());
+						}
+						catch(IllegalArgumentException ignore) {}
+						proto.setHint(hint);
+						proto.setIsMultiple(false);
+						proto.setName(nullCheck(tbl.get(BLTProperties.ANCHOR_NAME),"out"));
+						prototypes.add(proto); 
+					}
+				}
+				catch( Exception ex ) {
+					log.warnf("%s: getBlockAnchors: Exception processing prototype (%)" , TAG,ex.getMessage());
+				}
+			}
+		}
+		else {
+			log.infof("%s: getBlockAnchors: script compilation error (%s)",TAG,getBlockAnchorsCallback.module);
+		}
+		log.infof("%s: getBlockAnchors returning %d anchor prototypes from Python",TAG,prototypes.size()); 
+		return prototypes;
+	}
 	
 	/**
 	 * Query a Python block to obtain a list of its properties. The block is expected
@@ -263,6 +333,40 @@ public class ProxyHandler   {
 		return properties;
 	}
 
+	/**
+	 * Query a Python block to get its current state. The block is expected
+	 * to exist.
+	 * 
+	 * @param mgr the appropriate project-specific script manager
+	 * @param block the python block
+	 * @return a new array of block properties.
+	 */
+	public synchronized TruthValue getBlockState(ScriptManager mgr,PyObject block) {
+		TruthValue state = TruthValue.UNSET;
+		log.debugf("%s.getBlockState ... ",TAG);
+		if( getBlockStateCallback.compileScript() ) {
+			PyList pyList = new PyList();  // Empty
+			getBlockStateCallback.initializeLocalsMap(mgr);
+			getBlockStateCallback.setLocalVariable(0,block);
+			getBlockStateCallback.setLocalVariable(1,pyList);
+			getBlockStateCallback.execute(mgr);
+			log.debug(TAG+".getBlockProperties returned "+ pyList);   // Should now be updated
+			// Contents of list are Hashtable<String,?>
+			// We're looking for a single string entry in the list
+			List<?> list = toJavaTranslator.pyListToArrayList(pyList);
+			
+			for( Object obj:list ) { 
+				try {
+					state = TruthValue.valueOf(obj.toString().toUpperCase());	
+				}
+				catch( Exception ex ) {
+					log.warnf("%s: getProperties: Exception converting %s into a state (%s)" , TAG,obj.toString(),ex.getMessage());	
+				}
+			}
+		}
+
+		return state;
+	}
 	/**
 	 * Query the python layer for a list of palette prototypes, one for
 	 * each block definition. The prototypes are returned as a list of dictionaries

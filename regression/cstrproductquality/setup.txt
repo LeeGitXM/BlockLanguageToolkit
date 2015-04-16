@@ -11,6 +11,8 @@ notification: SQC-Hi-9-9 notificationKey.construct("CSTR_PRODUCT_QUALITY-GDA/CST
 notification: SQC-Lo-9-9 notificationKey.construct("CSTR_PRODUCT_QUALITY-GDA/CSTR_MLR_PROBLEM-GDA/Cstr_Mlr_Problem","MLR_LOW_9_OF_9-GDA","out")
 notification: SQC-Lo-3-4 notificationKey.construct("CSTR_PRODUCT_QUALITY-GDA/CSTR_MLR_PROBLEM-GDA/Cstr_Mlr_Problem","MLR_LOW_3_OF_4-GDA","out")
 notification: SQC-Lo-1-1 notificationKey.construct("CSTR_PRODUCT_QUALITY-GDA/CSTR_MLR_PROBLEM-GDA/Cstr_Mlr_Problem","MLR_LOW_1_OF_1-GDA","out")
+###final diagnosis has no attribute to view???
+###notification: Final-Diag notificationKey.construct("CSTR_PRODUCT_QUALITY-GDA/CSTR_MLR_PROBLEM-GDA/Cstr_Mlr_Problem","MLR_PROBLEM_FOR_CSTR-GDA","out")
 
 # Script aliases - module is with respect to script directory
 script: resetDiagram diagramProxy.reset(name)
@@ -18,8 +20,8 @@ script: setStateForApplication applicationProxy.setState(name,state)
 script: setTimeFactor timeFactor.setFactor(factor)
 
 # We need to set the test framework and internal clocks the same
-timefactor: 15
-setTimeFactor (15)
+timefactor: 10
+setTimeFactor (10)
 
 log: [DATE] [TIME] Completed script aliases and time 
 

@@ -41,7 +41,7 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
 @ExecutableBlock
 public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	private final String TAG = "LogicFilter";
-	private final static String BLOCK_PROPERTY_MINIMUM_TRUE_FRACTION = "MinumumTrueFraction";
+	private final static String BLOCK_PROPERTY_MINIMUM_TRUE_FRACTION = "MinimumTrueFraction";
 	private final static String BLOCK_PROPERTY_RATIO = "Ratio";
 	private TruthValue currentValue = TruthValue.UNSET;
 	private double deadband = 0.0;

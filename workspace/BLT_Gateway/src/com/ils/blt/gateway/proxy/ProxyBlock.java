@@ -3,14 +3,18 @@
  */
 package com.ils.blt.gateway.proxy;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.python.core.PyObject;
 
 import com.ils.block.AbstractProcessBlock;
+import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PalettePrototype;
+import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.notification.IncomingNotification;
+import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
 
 
@@ -38,6 +42,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	public ProxyBlock(String clss,UUID parent,UUID block,ScriptManager mgr) {
 		super(null,parent,block);
 		this.className = clss;
+		this.controller = BlockExecutionController.getInstance();
 		this.scriptManager = mgr;
 	}
 
@@ -48,6 +53,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	public void addProperty(BlockProperty prop) {
 		setProperty(prop.getName(),prop);
 	}
+	
 	@Override
 	public String getClassName() { return className; }
 	
@@ -69,6 +75,11 @@ public class ProxyBlock extends AbstractProcessBlock  {
 		}
 	}
 	
+	@Override
+	public List<AnchorPrototype>getAnchors() { 
+		return delegate.getBlockAnchors(scriptManager, pythonBlock); 
+	}
+	
 	/**
 	 * On a get, we return the locally cached property.
 	 * @param name the property (attribute) name.
@@ -87,6 +98,13 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	@Override
 	public PalettePrototype getBlockPrototype() {
 		return null;
+	}
+	/**
+	 * Get the state from the python
+	 */
+	@Override
+	public TruthValue getState() {
+		return delegate.getBlockState(scriptManager, pythonBlock);
 	}
 	
 	/**
@@ -112,6 +130,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 * @param value to accept. A qualified value has a timestamp, quality,
 	 *        and simple value.
 	 */
+	@Override
 	public void acceptValue(IncomingNotification vcn) {
 		delegate.acceptValue( scriptManager,getPythonBlock(), vcn.getConnection().getDownstreamPortName(), vcn.getValue());
 	}
@@ -121,6 +140,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 * will be called by the engine after receipt of input once the coalescing 
 	 * "quiet" time has passed without further input.
 	 */
+	@Override
 	public void evaluate() { 
 		delegate.evaluate(scriptManager,getPythonBlock()); 
 	}

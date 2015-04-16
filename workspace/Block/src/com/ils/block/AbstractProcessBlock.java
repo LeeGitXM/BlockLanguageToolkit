@@ -268,7 +268,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 					if( ap.getConnectionType().equals(ConnectionType.TRUTHVALUE)) {
 						controller.sendConnectionNotification(getBlockId().toString(), ap.getName(),UNKNOWN_TRUTH_VALUE);
 					}
-					if( ap.getConnectionType().equals(ConnectionType.DATA)) {
+					else if( ap.getConnectionType().equals(ConnectionType.DATA)) {
 						controller.sendConnectionNotification(getBlockId().toString(), ap.getName(),NAN_DATA_VALUE);
 					}
 					else {
