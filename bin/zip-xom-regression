@@ -12,8 +12,7 @@ rm -rf $TMP
 cd $REPO_ROOT
 mkdir $TMP
 cd $REPO_ROOT/blt/regression
-rm -f *.log
-cp -a basic pylib $TMP
+cp -a basic cstrproductquality pylib $TMP
 cd ..
 # Now zip and copy to subversion
 cd $REPO_ROOT
