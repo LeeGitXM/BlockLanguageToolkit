@@ -212,6 +212,20 @@ public class PythonRequestHandler   {
 	 * @param value the result of the block's computation
 	 * @param quality of the reported output
 	 */
+	public void sendConnectionNotification(String id, String port, String value)  {
+		log.infof("%s.sendConnectionNotification - %s = %s on %s",TAG,id,value.toString(),port);
+		controller.sendConnectionNotification(id, port, new BasicQualifiedValue(value));
+	}
+	
+	/**
+	 * Handle the block placing a new value on its output. The input may be PyObjects.
+	 * 
+	 * @param parent identifier for the parent, a string version of a UUID
+	 * @param id block identifier a string version of the UUID
+	 * @param port the output port on which to insert the result
+	 * @param value the result of the block's computation
+	 * @param quality of the reported output
+	 */
 	public void postValue(String parent,String id,String port,String value,String quality)  {
 		log.infof("%s.postValue - %s = %s (%s) on %s",TAG,id,value.toString(),quality.toString(),port);
 		

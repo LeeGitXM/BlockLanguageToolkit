@@ -59,10 +59,10 @@ public class ProxyHandler   {
 	private final Callback acceptValueCallback;
 	private final Callback createBlockCallback;
 	private final Callback evaluateCallback;
-	private final Callback getBlockAnchorsCallback;
 	private final Callback getBlockPropertiesCallback;
 	private final Callback getBlockStateCallback;
 	private final Callback getBlockPrototypesCallback;
+	private final Callback resetCallback;
 	private final Callback setBlockPropertyCallback;
 
 
@@ -77,10 +77,10 @@ public class ProxyHandler   {
 		acceptValueCallback = new AcceptValue();
 		createBlockCallback = new CreateBlock();
 		evaluateCallback = new Evaluate();
-		getBlockAnchorsCallback = new GetBlockAnchors();
 		getBlockPropertiesCallback = new GetBlockProperties();
 		getBlockStateCallback = new GetBlockState();
 		getBlockPrototypesCallback = new GetBlockPrototypes();
+		resetCallback = new Reset();
 		setBlockPropertyCallback = new SetBlockProperty();
 	}
 
@@ -184,71 +184,7 @@ public class ProxyHandler   {
 			evaluateCallback.execute(mgr);
 		}
 	}
-	/**
-	 * Query the python block for a list of its anchors. The prototypes are returned as a list of dictionaries
-	 * and converted to PalettePrototype object here.
-	 * 
-	 * @param mgr the appropriate project-specific script manager
-	 * @return
-	 */
-	public synchronized List<AnchorPrototype> getBlockAnchors(ScriptManager mgr,PyObject block) {
-		List<AnchorPrototype> prototypes = new ArrayList<AnchorPrototype>();
-		log.infof("%s.getBlockAnchors (python) ... ",TAG);
-		if( getBlockAnchorsCallback.compileScript())  {
-			Object val = null;
-			UtilityFunctions fns = new UtilityFunctions();
-			PyList pyList = new PyList();  // Empty
-			List<?> list = null;
-			getBlockAnchorsCallback.initializeLocalsMap(mgr);
-			getBlockAnchorsCallback.setLocalVariable(0,pyList);
-			getBlockAnchorsCallback.execute(mgr);
-			log.debug(TAG+".getBlockAnchors: returned "+ pyList);   // Should now be updated
-			// Contents of list are Hashtable<String,?>
-			list = toJavaTranslator.pyListToArrayList(pyList);
 
-			for( Object obj:list ) { 
-				try {
-					if( obj instanceof Hashtable ) {
-						@SuppressWarnings("unchecked")
-						Hashtable<String,?> tbl = (Hashtable<String,?>)obj;
-						log.debug(TAG+".getBlockAnchors table "+ tbl);  
-						AnchorPrototype proto = new AnchorPrototype();
-						AnchorDirection direction = AnchorDirection.INCOMING;
-						try {
-							direction = AnchorDirection.valueOf(nullCheck(tbl.get(BLTProperties.ANCHOR_DIRECTION),"incoming").toUpperCase());
-						}
-						catch(IllegalArgumentException ignore) {}
-						proto.setAnchorDirection(direction);
-						proto.setAnnotation(nullCheck(tbl.get(BLTProperties.ANCHOR_ANNOTATION),""));
-						ConnectionType ctype = ConnectionType.ANY;
-						try {
-							ctype = ConnectionType.valueOf(nullCheck(tbl.get(BLTProperties.ANCHOR_TYPE),"any").toUpperCase());
-						}
-						catch(IllegalArgumentException ignore) {}
-						proto.setConnectionType(ctype);
-						proto.setHidden(false);
-						PlacementHint hint = PlacementHint.UNSPECIFIED;
-						try {
-							hint = PlacementHint.valueOf(nullCheck(tbl.get(BLTProperties.ANCHOR_HINT),"unspecified").toUpperCase());
-						}
-						catch(IllegalArgumentException ignore) {}
-						proto.setHint(hint);
-						proto.setIsMultiple(false);
-						proto.setName(nullCheck(tbl.get(BLTProperties.ANCHOR_NAME),"out"));
-						prototypes.add(proto); 
-					}
-				}
-				catch( Exception ex ) {
-					log.warnf("%s: getBlockAnchors: Exception processing prototype (%)" , TAG,ex.getMessage());
-				}
-			}
-		}
-		else {
-			log.infof("%s: getBlockAnchors: script compilation error (%s)",TAG,getBlockAnchorsCallback.module);
-		}
-		log.infof("%s: getBlockAnchors returning %d anchor prototypes from Python",TAG,prototypes.size()); 
-		return prototypes;
-	}
 	
 	/**
 	 * Query a Python block to obtain a list of its properties. The block is expected
@@ -465,6 +401,22 @@ public class ProxyHandler   {
 		return prototypes;
 	}
 	
+	/**
+	 * Tell the block to reset itself. The block is the only
+	 * argument passed. Note that the python is responsible
+	 * for "clear" notifications on its outputs
+	 *
+	 * @param mgr the appropriate project-specific script manager
+	 * @param block the saved Py block
+	 */
+	public synchronized void reset(ScriptManager mgr,PyObject block) {
+		log.debugf("%s.reset --- %s",TAG,block.toString());
+		if( resetCallback.compileScript() ) {
+			resetCallback.initializeLocalsMap(mgr);
+			resetCallback.setLocalVariable(0,block);
+			resetCallback.execute(mgr);
+		}
+	}
 	public synchronized void setBlockProperty(ScriptManager mgr,ProxyBlock block,BlockProperty prop) {
 		if( block==null || prop==null ) return;
 		log.infof("%s.setBlockProperty --- %s:%s",TAG,block.getClass(),prop.getName()); 
