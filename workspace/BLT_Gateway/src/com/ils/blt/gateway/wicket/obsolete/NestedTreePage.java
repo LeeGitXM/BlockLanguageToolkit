@@ -1,4 +1,4 @@
-package com.ils.blt.gateway.wicket;
+package com.ils.blt.gateway.wicket.obsolete;
 /*
  *  Based on org.apache.wicket.examples.tree - NestedTreePage.java
  *  by Sven Meier with the following license:
@@ -28,6 +28,7 @@ import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.model.IModel;
 
 import com.ils.blt.gateway.engine.ProcessNode;
+import com.ils.blt.gateway.wicket.ProcessNodeProvider;
 import com.ils.blt.gateway.wicket.content.EditableFolderContent;
 
 /**

@@ -128,6 +128,12 @@ public class GatewayRpcDispatcher   {
 		log.infof("%s.getBlockPrototypes: returning %d palette prototypes",TAG,results.size());
 		return results;
 	}
+	
+
+	public String getBlockState(String diagramId, String blockName) {
+		return requestHandler.getBlockState(diagramId, blockName);
+	}
+	
 	/**
 	 * Deserialize the incoming defaults, add/update from model, re-serialize.
 	 * @param proj

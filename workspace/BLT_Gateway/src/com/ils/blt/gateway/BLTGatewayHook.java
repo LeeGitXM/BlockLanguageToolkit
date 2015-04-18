@@ -15,7 +15,7 @@ import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ModelManager;
 import com.ils.blt.gateway.persistence.ToolkitRecord;
 import com.ils.blt.gateway.proxy.ProxyHandler;
-import com.ils.blt.gateway.wicket.StatusPanel;
+import com.ils.blt.gateway.wicket.ToolkitStatusPanel;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.common.project.Project;
@@ -145,7 +145,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		@Override
 		public WebMarkupContainer getPanel(String id) {
 			//return new SimpleStatusPanel(id);
-			return new StatusPanel(id);
+			return new ToolkitStatusPanel(id);
 		}
 	}
 	

@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PalettePrototype;
+import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
@@ -221,7 +222,21 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 		return blockList;
 	}
-	
+	/**
+	 * @return the current state of the specified block.
+	 */
+	public String getBlockState(String diagramId, String blockName) {
+		String state = "UNKNOWN";
+		try {
+			state = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "getBlockState",diagramId,blockName);
+			log.debugf("%s.getBlockState %s = %s",TAG,blockName,state);
+		}
+		catch(Exception ge) {
+			log.infof("%s.getBlockState: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		return state;
+	}
 	@SuppressWarnings("unchecked")
 	public List<SerializableResourceDescriptor> getDiagramDescriptors(String projectName) {
 		log.infof("%s.getDiagramTreePaths for %s ...",TAG,projectName);

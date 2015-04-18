@@ -17,7 +17,7 @@ import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 
 
 /**
- *  This class is a common point for managing requests to the gateway dealing with the
+ *  This interface is a common point for managing requests to the gateway dealing with the
  *  execution engine and block status. It is designed for use by Java code in the designer 
  *  as well as Python scripting. It provides a way to request/set properties of 
  *  diagrams, blocks and connections.
@@ -72,7 +72,10 @@ public interface ToolkitRequestHandler  {
 	public BlockProperty[] getBlockProperties(String className,long projectId,long resourceId,UUID blockId) ;
 
 	public List<PalettePrototype> getBlockPrototypes() ;
-	
+	/**
+	 * @return the current state of the specified block.
+	 */
+	public String getBlockState(String diagramId, String blockName) ;
 	/**
 	 * @return the current state of the specified diagram.
 	 */

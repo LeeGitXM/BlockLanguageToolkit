@@ -267,6 +267,25 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		log.infof("%s.getBlockPrototypes: returning %d palette prototypes",TAG,results.size());
 		return results;
 	}
+	@Override
+	public String getBlockState(String diagramId, String blockName) {
+		String state = "UNKNOWN";
+		UUID diagramUUID = null;
+		try {
+			diagramUUID = UUID.fromString(diagramId);
+			ProcessDiagram diagram = controller.getDiagram(diagramUUID);
+			for(ProcessBlock block:diagram.getProcessBlocks()) {
+				if( block.getName().equalsIgnoreCase(blockName)) {
+					state = block.getState().name();
+					break;
+				}
+			}
+		}
+		catch(IllegalArgumentException iae) {
+			log.warnf("%s.getBlockState: Diagram UUID string is illegal (%s)",TAG,diagramId);
+		}
+		return state;
+	}
 	
 	/**
 	 * Query DiagramModel for classes connected at the beginning and end of the connection to obtain a list
@@ -311,6 +330,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 		return getDiagramBlocksOfClass(diagramUUID,className);
 	}
+	
 	public List getDiagramBlocksOfClass(UUID diagramId,String className) {
 		ProcessDiagram diagram = controller.getDiagram(diagramId);
 		List<String> result = new ArrayList<>();
@@ -865,5 +885,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 	}
+
+
+
 }
 
