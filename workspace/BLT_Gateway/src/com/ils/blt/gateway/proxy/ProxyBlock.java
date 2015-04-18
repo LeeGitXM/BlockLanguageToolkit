@@ -75,10 +75,6 @@ public class ProxyBlock extends AbstractProcessBlock  {
 		}
 	}
 	
-	@Override
-	public List<AnchorPrototype>getAnchors() { 
-		return delegate.getBlockAnchors(scriptManager, pythonBlock); 
-	}
 	
 	/**
 	 * On a get, we return the locally cached property.
@@ -143,5 +139,12 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	@Override
 	public void evaluate() { 
 		delegate.evaluate(scriptManager,getPythonBlock()); 
+	}
+	/**
+	 * Reset the block.
+	 */
+	@Override
+	public void reset() { 
+		delegate.reset(scriptManager,getPythonBlock()); 
 	}
 }

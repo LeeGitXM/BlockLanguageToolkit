@@ -34,6 +34,13 @@ public class ApplicationScriptFunctions   {
 		return handler.getApplicationName(uuid);
 	}
 	/**
+	 * @return the current state of the controller.
+	 */
+	public static String getBlockState(String diagramId,String blockName) {
+		return handler.getBlockState(diagramId,blockName);
+	}
+	
+	/**
 	 * Query the gateway for a list of prototypes for the defined blocks. 
 	 */
 	@SuppressWarnings("rawtypes")

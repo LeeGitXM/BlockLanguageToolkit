@@ -257,6 +257,9 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	
 	/**
 	 * The default method sets the state to INITIALIZED.
+	 * It also sends notifications to block outputs setting them to empty or
+	 * unknown. NOTE: This has no effect on Python blocks. They do this
+	 * for themselves.
 	 */
 	@Override
 	public void reset() {

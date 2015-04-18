@@ -17,25 +17,22 @@
  * limitations under the License.
  */
 
-package com.ils.blt.gateway.wicket;
+package com.ils.blt.gateway.wicket.obsolete;
 
 import java.util.Set;
 
 import org.apache.wicket.Component;
-import org.apache.wicket.behavior.Behavior;
 import org.apache.wicket.extensions.markup.html.repeater.tree.AbstractTree;
 import org.apache.wicket.extensions.markup.html.repeater.tree.NestedTree;
-import org.apache.wicket.extensions.markup.html.repeater.tree.theme.HumanTheme;
-import org.apache.wicket.markup.ComponentTag;
-import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.Form;
-import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 
 import com.ils.blt.gateway.engine.ProcessNode;
+import com.ils.blt.gateway.wicket.ProcessNodeExpansion;
+import com.ils.blt.gateway.wicket.ProcessNodeProvider;
 
 public class NestedStatusPanel extends Panel {
 	private static final long serialVersionUID = 4204748023293522204L;
