@@ -22,7 +22,7 @@ cd ..
 ./copy-json
 ./migrate-all
 cd ..
-cp -a json/ignition $TMP
+cp -a migration/json/ignition $TMP
 
 # Now zip and copy to subversion
 cd $REPO_ROOT
