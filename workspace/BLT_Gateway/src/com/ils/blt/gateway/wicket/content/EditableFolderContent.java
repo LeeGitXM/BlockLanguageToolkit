@@ -68,7 +68,7 @@ public class EditableFolderContent extends Content {
 
             @Override
             protected Component newLabelComponent(String nid, final IModel<ProcessNode> mdl) {
-                return new Label(nid, new PropertyModel<String>(mdl, "bar"));
+                return new Label(nid, new PropertyModel<String>(mdl, "name"));
 
             }
         };

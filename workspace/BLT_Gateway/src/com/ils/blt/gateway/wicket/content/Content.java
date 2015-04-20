@@ -26,10 +26,10 @@ import org.apache.wicket.model.IModel;
 
 import com.ils.blt.gateway.engine.ProcessNode;
 
-public abstract class Content implements IDetachable
-{
+public abstract class Content implements IDetachable {
+	private static final long serialVersionUID = 550568434948280302L;
 
-    /**
+	/**
      * Create new content.
      */
     public abstract Component newContentComponent(String id, AbstractTree<ProcessNode> tree,

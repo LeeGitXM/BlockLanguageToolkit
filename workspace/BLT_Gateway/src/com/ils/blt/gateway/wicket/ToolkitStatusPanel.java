@@ -1,14 +1,18 @@
 package com.ils.blt.gateway.wicket;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
+import org.apache.wicket.extensions.markup.html.repeater.data.table.HeadersToolbar;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
+import org.apache.wicket.extensions.markup.html.repeater.data.table.NoRecordsToolbar;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
 import org.apache.wicket.extensions.markup.html.repeater.tree.AbstractTree;
-import org.apache.wicket.extensions.markup.html.repeater.tree.DefaultNestedTree;
+import org.apache.wicket.extensions.markup.html.repeater.tree.TableTree;
 import org.apache.wicket.extensions.markup.html.repeater.tree.table.NodeModel;
 import org.apache.wicket.extensions.markup.html.repeater.tree.table.TreeColumn;
 import org.apache.wicket.markup.html.basic.Label;
@@ -19,11 +23,15 @@ import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.repeater.Item;
+import org.apache.wicket.markup.repeater.OddEvenItem;
+import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 
 import com.ils.blt.gateway.engine.ProcessDiagram;
 import com.ils.blt.gateway.engine.ProcessNode;
+import com.ils.blt.gateway.wicket.content.Content;
+import com.ils.blt.gateway.wicket.content.EditableFolderContent;
 import com.ils.blt.gateway.wicket.content.ProcessTreeBehavior;
 
 /**
@@ -32,9 +40,11 @@ import com.ils.blt.gateway.wicket.content.ProcessTreeBehavior;
 public class ToolkitStatusPanel extends Panel {
 	public static final long serialVersionUID = 4204748023293522204L;
     private ProcessNodeProvider provider = new ProcessNodeProvider();
+    private final Content content;
 
 	public ToolkitStatusPanel(String id) {
 		super(id);
+		this.content = new EditableFolderContent();
 		
 		Form<Void> form = new Form<Void>("form");
         add(form);
@@ -82,19 +92,31 @@ public class ToolkitStatusPanel extends Panel {
 		});
 	}
 	
-    private AbstractTree<ProcessNode> createTree(String nid,ProcessNodeProvider prov) {
-    	AbstractTree<ProcessNode> atree = new DefaultNestedTree<ProcessNode>(nid, prov) {
-    		private static final long serialVersionUID = 5798665408737036777L;
-    		/**
-    		 * To use a custom component for the representation of a node's content we would
-    		 * override this method.
-    		 */
-    		@Override
-    		protected Component newContentComponent(String cid, IModel<ProcessNode> node) {
-    			return super.newContentComponent(cid, node);
-    		}
-    	};
-    	return atree;
+    private AbstractTree<ProcessNode> createTree(String markup,ProcessNodeProvider prov ) {
+        List<IColumn<ProcessNode, String>> columns = createColumns();
+        IModel<Set<ProcessNode>> state = new ProcessNodeExpansionModel();
+
+        final TableTree<ProcessNode, String> tree = new TableTree<ProcessNode, String>(markup, columns, prov, Integer.MAX_VALUE, state) {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected Component newContentComponent(String id, IModel<ProcessNode> model) {
+                return ToolkitStatusPanel.this.newContentComponent(id, this, model);
+            }
+
+            @Override
+            protected Item<ProcessNode> newRowItem(String id, int index, IModel<ProcessNode> model) {
+                return new OddEvenItem<ProcessNode>(id, index, model);
+            }
+        };
+        tree.getTable().addTopToolbar(new HeadersToolbar<String>(tree.getTable(), null));
+        tree.getTable().addBottomToolbar(new NoRecordsToolbar(tree.getTable()));
+        return tree;
+    }
+    
+    @Override
+    public void detachModels() {
+        super.detachModels();
     }
     
     
@@ -140,7 +162,12 @@ public class ToolkitStatusPanel extends Panel {
         });
         return columns;
     }
-	
+    
+    private Component newContentComponent(String id, TableTree tree, IModel<ProcessNode> model) {
+        return content.newContentComponent(id, tree, model);
+    }
+    
+    
 	/*
 	protected AbstractTree<ProcessNode> createTree(ProcessNodeProvider prov,IModel<Set<ProcessNode>> state) {
 		final NestedTreePage page = new NestedTreePage(state);
@@ -181,14 +208,14 @@ public class ToolkitStatusPanel extends Panel {
         });
    
        
-	
+	  */
 	private class ProcessNodeExpansionModel extends AbstractReadOnlyModel<Set<ProcessNode>> {
-		private static final long serialVersionUID = -4327444737693656454L;
+		private static final long serialVersionUID = 4327444737693656454L;
 
 		@Override
         public Set<ProcessNode> getObject() {
             return ProcessNodeExpansion.get();
         }
     }
-    */
+  
 }
