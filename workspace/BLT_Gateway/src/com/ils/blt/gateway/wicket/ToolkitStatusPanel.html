@@ -3,53 +3,62 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <wicket:head>
-<style>
+	<style type="text/css">
 table {
-    width: 100%;
-    border: 1px solid #DDDDDD;
+	width: 100%;
+	border: 1px solid #DDDDDD;
 }
+
 tr.even {
-    background-color: #FFFFFF;
+	background-color: #FFFFFF;
 }
+
 tr.odd {
-    background-color: #EEEEEE;
+	background-color: #EEEEEE;
 }
+
 td.number {
-    text-align: right;
-    padding-right: 1em;
+	text-align: right;
+	padding-right: 1em;
 }
+
 td.text {
-    text-align: left;
-    padding-right: 1em;
+	text-align: left;
+	padding-right: 1em;
 }
 </style>
-        </wicket:head>
+</wicket:head>
 </head>
-<body> 
-<wicket:panel>
-	<h2>Diagram Hierarchy</h2>
-	<form wicket:id="form">
-                <p>
-                <table>
-                <tr>
-                <td><a wicket:id="collapseAll">collapse all</a></td>
-                <td>  <a wicket:id="expandAll">expand all</a> </td>
-                </tr>
-                <tr> 
-                	<div wicket:id="tree">[tree]</div>
-                </tr>
-                </table>
-                </p>
-                <input type="submit" wicket:id="clear" value="Clear"/>
-                <input type="submit" wicket:id="refresh" value="Refresh"/>
-            </form>
-            
-	<h2>Currently defined diagrams</h2>
-		<ul>
-		<li wicket:id="diagrams">
-			<span wicket:id="name"></span>
-		</li>
-		</ul>
-</wicket:panel>
+<body>
+	<wicket:panel>
+		<div class="status-panel">
+		<div class="title">Diagnostic Toolkit Resources</div>
+			
+				<h2>Diagram Hierarchy</h2>
+
+				<form wicket:id="form" action="">
+
+					<table>
+						<tr>
+							<td><a wicket:id="collapseAll">collapse all</a></td>
+							<td><a wicket:id="expandAll">expand all</a></td>
+						</tr>
+						<tr>
+							<div wicket:id="tree">[tree]</div>
+						</tr>
+						<tr>
+							<td><input type="submit" wicket:id="clear" value="Clear" /></td>
+							<td><input type="submit" wicket:id="refresh" value="Refresh" /></td>
+						</tr>
+					</table>
+				</form>
+
+				<h2>Currently defined diagrams</h2>
+
+				<ul>
+					<li wicket:id="diagrams"><span wicket:id="name"></span></li>
+				</ul>
+		</div>
+	</wicket:panel>
 </body>
 </html>

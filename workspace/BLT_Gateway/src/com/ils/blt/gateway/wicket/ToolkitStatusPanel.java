@@ -125,7 +125,7 @@ public class ToolkitStatusPanel extends Panel {
     // Hierarchy is project-application-(folder)-family-(folder)-diagram-block
     private List<IColumn<ProcessNode, String>> createColumns() {
         List<IColumn<ProcessNode, String>> columns = new ArrayList<>();
-        columns.add(new TreeColumn<ProcessNode, String>(Model.of("Tree")));
+        columns.add(new TreeColumn<ProcessNode, String>(Model.of("Node")));
         columns.add(new PropertyColumn<ProcessNode, String>(Model.of("Name"),"Name") {
         	private static final long serialVersionUID = 1L;
         	@Override
@@ -163,52 +163,11 @@ public class ToolkitStatusPanel extends Panel {
         return columns;
     }
     
-    private Component newContentComponent(String id, TableTree tree, IModel<ProcessNode> model) {
-        return content.newContentComponent(id, tree, model);
+    private Component newContentComponent(String id, TableTree<ProcessNode, String> ttree, IModel<ProcessNode> model) {
+        return content.newContentComponent(id, ttree, model);
     }
     
     
-	/*
-	protected AbstractTree<ProcessNode> createTree(ProcessNodeProvider prov,IModel<Set<ProcessNode>> state) {
-		final NestedTreePage page = new NestedTreePage(state);
-        tree = new NestedTree<ProcessNode>("tree", prov, state) {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            protected Component newContentComponent(String id, IModel<ProcessNode> model)
-            {
-                //return page.newContentComponent(id, model);
-            	return null;
-            }
-        };
-        return tree;
-    }
-    
-  
-        tree = new TreeTable("treeTable", createTreeModel(), columns);
-        tree.getTreeState().setAllowSelectMultiple(true);
-        add(tree);
-        tree.getTreeState().collapseAll();
-        tree = createTree(provider,new ProcessNodeExpansionModel());
-        
-        // Set the behavior of the tree
-        tree.add(new Behavior()  {
-            private static final long serialVersionUID = 1L;
-            public HumanTheme theme = new HumanTheme();
-
-            @Override
-            public void onComponentTag(Component component, ComponentTag tag) {
-                theme.onComponentTag(component, tag);
-            }
-
-            @Override
-            public void renderHead(Component component, IHeaderResponse response) {
-                theme.renderHead(component, response);
-            }
-        });
-   
-       
-	  */
 	private class ProcessNodeExpansionModel extends AbstractReadOnlyModel<Set<ProcessNode>> {
 		private static final long serialVersionUID = 4327444737693656454L;
 
