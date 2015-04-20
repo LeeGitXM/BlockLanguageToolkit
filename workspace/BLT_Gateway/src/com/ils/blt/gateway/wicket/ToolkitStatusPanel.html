@@ -33,24 +33,13 @@ td.text {
 	<wicket:panel>
 		<div class="status-panel">
 		<div class="title">Diagnostic Toolkit Resources</div>
-			
 				<h2>Diagram Hierarchy</h2>
-
 				<form wicket:id="form" action="">
 
-					<table>
-						<tr>
-							<td><a wicket:id="collapseAll">collapse all</a></td>
-							<td><a wicket:id="expandAll">expand all</a></td>
-						</tr>
-						<tr>
-							<div wicket:id="tree">[tree]</div>
-						</tr>
-						<tr>
-							<td><input type="submit" wicket:id="clear" value="Clear" /></td>
-							<td><input type="submit" wicket:id="refresh" value="Refresh" /></td>
-						</tr>
-					</table>
+					<p><a wicket:id="collapseAll">collapse all</a><a wicket:id="expandAll">expand all</a></p>
+					<p wicket:id="tree">[tree]</p>
+					<input type="submit" wicket:id="clear" value="Clear" />
+					<input type="submit" wicket:id="refresh" value="Refresh" />
 				</form>
 
 				<h2>Currently defined diagrams</h2>
