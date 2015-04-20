@@ -218,19 +218,22 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 				if(!result.equals(TruthValue.FALSE) ) result = TruthValue.UNKNOWN;
 				continue;
 			}
+			// Once we get a valid FALSE, it's all over
 			TruthValue ts = qualifiedValueAsTruthValue(qv);
 			if( ts==TruthValue.FALSE ) {
 				result = ts;
 				break;
 			}
-			else if( ts.equals(TruthValue.UNKNOWN) ) {
-				if(!result.equals(TruthValue.TRUE) ) result = TruthValue.UNKNOWN;
+			else if( ts.equals(TruthValue.TRUE) ) {
+				if( !result.equals(TruthValue.UNKNOWN))  result = TruthValue.TRUE;
 				continue;
 			}
-			else {
-				if(result==TruthValue.UNSET ) result = TruthValue.TRUE;
+			else  {
+				result = TruthValue.UNKNOWN;
+				continue;
 			}
 		}
+		if(result.equals(TruthValue.UNSET)) result = TruthValue.UNKNOWN;
 		return result;	
 	}
 }
