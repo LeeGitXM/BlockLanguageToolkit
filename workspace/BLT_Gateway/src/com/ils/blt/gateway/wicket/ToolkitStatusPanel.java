@@ -1,10 +1,19 @@
 package com.ils.blt.gateway.wicket;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import javatests.Foo;
+
 import org.apache.wicket.Component;
+import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
+import org.apache.wicket.extensions.markup.html.repeater.data.table.AbstractColumn;
+import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
+import org.apache.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
 import org.apache.wicket.extensions.markup.html.repeater.tree.AbstractTree;
 import org.apache.wicket.extensions.markup.html.repeater.tree.DefaultNestedTree;
+import org.apache.wicket.extensions.markup.html.repeater.tree.table.NodeModel;
+import org.apache.wicket.extensions.markup.html.repeater.tree.table.TreeColumn;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.Form;
@@ -12,7 +21,9 @@ import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.markup.repeater.Item;
 import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
 
 import com.ils.blt.gateway.engine.ProcessDiagram;
 import com.ils.blt.gateway.engine.ProcessNode;
@@ -22,7 +33,6 @@ import com.ils.blt.gateway.engine.ProcessNode;
  */
 public class ToolkitStatusPanel extends Panel {
 	public static final long serialVersionUID = 4204748023293522204L;
-    private AbstractTree<ProcessNode> tree;
     private ProcessNodeProvider provider = new ProcessNodeProvider();
 
 	public ToolkitStatusPanel(String id) {
@@ -59,13 +69,8 @@ public class ToolkitStatusPanel extends Panel {
         });
         
         AbstractTree<ProcessNode> tree = createTree("tree",provider);
-        
         form.add(tree);
      
-
-        
-       
-
         // This is the static view of the diagram
 		IModel<List<ProcessDiagram>> diagramListModel = new SimpleDiagramListModel();
 		add(new ListView<ProcessDiagram>("diagrams",diagramListModel) {
@@ -90,6 +95,50 @@ public class ToolkitStatusPanel extends Panel {
     		}
     	};
     	return atree;
+    }
+    
+    
+    // Create the columns for our tabluar view
+    // Node folder, name, state, transitions
+    // Hierarchy is project-application-(folder)-family-(folder)-diagram-block
+    private List<IColumn<ProcessNode, String>> createColumns() {
+        List<IColumn<ProcessNode, String>> columns = new ArrayList<>();
+        columns.add(new TreeColumn<ProcessNode, String>(Model.of("Tree")));
+        columns.add(new PropertyColumn<ProcessNode, String>(Model.of("Name"),"Name") {
+        	private static final long serialVersionUID = 1L;
+        	@Override
+            public void populateItem(Item<ICellPopulator<ProcessNode>> cellItem, String componentId,IModel<ProcessNode> rowModel) {
+                NodeModel<ProcessNode> nodeModel = (NodeModel<ProcessNode>)rowModel;
+                cellItem.add(new Label(componentId, "" + nodeModel.getDepth()));
+            }
+
+            @Override
+            public String getCssClass() { return "number";}
+        });
+        columns.add(new PropertyColumn<ProcessNode, String>(Model.of("State"), "State") {
+        	private static final long serialVersionUID = 1L;
+        	@Override
+            public void populateItem(Item<ICellPopulator<ProcessNode>> cellItem, String componentId,IModel<ProcessNode> rowModel) {
+                NodeModel<ProcessNode> nodeModel = (NodeModel<ProcessNode>)rowModel;
+                cellItem.add(new Label(componentId, "" + nodeModel.getDepth()));
+            }
+
+            @Override
+            public String getCssClass() { return "number";}
+        });
+        
+        columns.add(new PropertyColumn<ProcessNode, String>(Model.of("Transitions"), "Transitions"){
+        	private static final long serialVersionUID = 1L;
+        	@Override
+            public void populateItem(Item<ICellPopulator<ProcessNode>> cellItem, String componentId,IModel<ProcessNode> rowModel) {
+                NodeModel<ProcessNode> nodeModel = (NodeModel<ProcessNode>)rowModel;
+                cellItem.add(new Label(componentId, "" + nodeModel.getDepth()));
+            }
+
+            @Override
+            public String getCssClass() { return "number";}
+        });
+        return columns;
     }
 	
 	/*
