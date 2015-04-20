@@ -3,11 +3,8 @@ package com.ils.blt.gateway.wicket;
 import java.util.ArrayList;
 import java.util.List;
 
-import javatests.Foo;
-
 import org.apache.wicket.Component;
 import org.apache.wicket.extensions.markup.html.repeater.data.grid.ICellPopulator;
-import org.apache.wicket.extensions.markup.html.repeater.data.table.AbstractColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.PropertyColumn;
 import org.apache.wicket.extensions.markup.html.repeater.tree.AbstractTree;
@@ -27,6 +24,7 @@ import org.apache.wicket.model.Model;
 
 import com.ils.blt.gateway.engine.ProcessDiagram;
 import com.ils.blt.gateway.engine.ProcessNode;
+import com.ils.blt.gateway.wicket.content.ProcessTreeBehavior;
 
 /**
  * @see http://www.wicket-library.com/wicket-examples/nested/wicket/bookmarkable/org.apache.wicket.examples.ajax.builtin.tree.TreeTablePage?0
@@ -69,6 +67,8 @@ public class ToolkitStatusPanel extends Panel {
         });
         
         AbstractTree<ProcessNode> tree = createTree("tree",provider);
+        // Set the behavior of the tree
+        tree.add(new ProcessTreeBehavior());  // Set the behavior of the tree
         form.add(tree);
      
         // This is the static view of the diagram
@@ -113,7 +113,7 @@ public class ToolkitStatusPanel extends Panel {
             }
 
             @Override
-            public String getCssClass() { return "number";}
+            public String getCssClass() { return "text";}
         });
         columns.add(new PropertyColumn<ProcessNode, String>(Model.of("State"), "State") {
         	private static final long serialVersionUID = 1L;
@@ -124,7 +124,7 @@ public class ToolkitStatusPanel extends Panel {
             }
 
             @Override
-            public String getCssClass() { return "number";}
+            public String getCssClass() { return "text";}
         });
         
         columns.add(new PropertyColumn<ProcessNode, String>(Model.of("Transitions"), "Transitions"){
