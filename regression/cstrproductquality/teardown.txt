@@ -4,5 +4,8 @@
 # with the Test Frame utility.
 setTimeFactor(1.0)
 setStateForApplication("CSTR_PRODUCT_QUALITY-GDA","ACTIVE")
+resetDiagram (CSTR_PRODUCT_QUALITY-GDA/CSTR_MLR_PROBLEM-GDA/Cstr_Mlr_Problem)
+log: [DATE] [TIME] resetting diagram after activation
+
 status: teardown complete
 log: [DATE] [TIME] test suite complete.
