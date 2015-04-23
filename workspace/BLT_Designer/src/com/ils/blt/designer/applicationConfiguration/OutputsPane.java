@@ -12,6 +12,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
@@ -95,8 +96,8 @@ public class OutputsPane extends JPanel implements ApplicationConfigurationContr
 	protected void doEdit() {
 		// Get the name of the output that is selected, if nothing is selected then return
 		String outputName= (String) jlist.getSelectedValue();
-		if( outputName==null ) {
-			System.out.println("Output is NULL!!!");
+		if( outputName==null ) {	
+			JOptionPane.showMessageDialog(OutputsPane.this, "Please selecte an output to edit.");					
 			return;
 		}
 		

@@ -2,6 +2,7 @@ package com.ils.blt.designer.applicationConfiguration;
 
 
 import javax.swing.*;
+
 import java.util.*;
 
 public class SortedListModel extends AbstractListModel {

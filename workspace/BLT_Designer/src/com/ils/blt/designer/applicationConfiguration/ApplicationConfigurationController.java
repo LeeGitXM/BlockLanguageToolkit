@@ -16,12 +16,12 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 public class ApplicationConfigurationController {
 	public static java.awt.Color background = new java.awt.Color(238,238,238);
 	private Application application;
+	protected final DesignerContext context;
 	private ApplicationConfigurationDialog dialog;
 	private SortedListModel outputListModel;
 	private Map<String,Object> properties;
 	private Map<String,Object> outputMap;
 	protected final LoggerEx log;
-	private double mostNegativeIncrement;
 	
 	interface EditorPane {
 		/** show yourself, after doing any necessary preparation. */
@@ -34,16 +34,19 @@ public class ApplicationConfigurationController {
 	static final int HOME = 0;
 	static final int OUTPUTS = 1;
 	static final int EDITOR = 2;
+	static final int TAGSELECTOR = 3;
 	
 	// The sub-panes:
 	private HomePane home;
 	private OutputsPane outputs;
 	private OutputEditorPane outputEditor;
+	private TagSelectorPane tagSelector;
 	
 	// The constructor
 	public ApplicationConfigurationController(ApplicationConfigurationDialog diag) {
 		this.log = diag.log;
 		dialog = diag;
+		context = diag.context;
 		log.infof("In ApplicationConfigurationController constructor for %s...", dialog.getApplication().getName() );
 		
 		properties=dialog.properties;
@@ -51,17 +54,17 @@ public class ApplicationConfigurationController {
 		application = new Application();
 		initializeApplication();
 		
-//PH		tagBrowser = new TagBrowserPane(this);
-		
 		// Create the sub-panes
 		home = new HomePane(this, application);
 		outputs = new OutputsPane(this, application, outputListModel);
 		outputEditor = new OutputEditorPane(this, application, outputListModel);
+		tagSelector = new TagSelectorPane(this, application, outputEditor);
 
 		// sub-panes added according to the indexes above:
 		slidingPane.add(home);
 		slidingPane.add(outputs);
 		slidingPane.add(outputEditor);
+		slidingPane.add(tagSelector);
 		slidingPane.add(new JPanel());  // a blank pane
 		slideTo(HOME);
 
@@ -77,13 +80,15 @@ public class ApplicationConfigurationController {
 
 		application.setName(dialog.getApplication().getName());
 		application.setDescription((String) properties.get("Description"));
-		application.setConsole((String) properties.get("Console"));
-		application.setConsoles((ArrayList<String>) properties.get("Consoles"));
+		application.setPost((String) properties.get("Post"));
+		application.setPosts((ArrayList<String>) properties.get("Posts"));
 		application.setQueue((String) properties.get("MessageQueue"));
 		application.setQueues((ArrayList<String>) properties.get("MessageQueues"));
 		application.setGroupRampMethod((String) properties.get("GroupRampMethod"));
-		application.setPost((String) properties.get("Post"));
+		application.setGroupRampMethods((ArrayList<String>) properties.get("GroupRampMethods"));
 		application.setUnit((String) properties.get("Unit"));
+		application.setUnits((ArrayList<String>) properties.get("Units"));
+		application.setFeedbackMethods((ArrayList<String>) properties.get("FeedbackMethods"));
 		
 		outputListModel = new SortedListModel();
 		
@@ -195,7 +200,6 @@ public class ApplicationConfigurationController {
 
 	// Convert the Application object to the property dictionary
 	public void save(){
-		properties.put("Console", application.getConsole());
 		properties.put("Description", application.getDescription());
 		properties.put("MessageQueue", application.getQueue());
 		properties.put("GroupRampMethod", application.getGroupRampMethod());

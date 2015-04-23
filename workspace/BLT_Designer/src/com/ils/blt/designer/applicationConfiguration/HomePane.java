@@ -16,6 +16,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -31,15 +32,13 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 	
 	final JTextField nameField = new JTextField();
 	final JTextArea descriptionTextArea = new JTextArea();
-	final JComboBox<String> consoleComboBox = new JComboBox<String>();
+	final JComboBox<String> postComboBox = new JComboBox<String>();
 	final JComboBox<String> queueComboBox = new JComboBox<String>();
-	final JTextField groupRampMethodField = new JTextField();
-	final JTextField postField = new JTextField();
-	final JTextField unitField = new JTextField();
+	final JComboBox<String> groupRampMethodComboBox = new JComboBox<String>();
+	final JComboBox<String> unitComboBox = new JComboBox<String>();
 	
-	private static Icon addIcon = new ImageIcon(Application.class.getResource("/images/add.png"));
-//	final JButton nextButton = new JButton(nextIcon);
-	final JButton nextButton = new JButton("Outputs");
+	private static Icon nextIcon = new ImageIcon(Application.class.getResource("/images/arrow_right_green.png"));
+	final JButton nextButton = new JButton("Outputs", nextIcon);
 	final JButton cancelButton = new JButton("Cancel");
 	final JButton okButton = new JButton("OK");
 	// Don't add an Apply button becaus ethen I need to manage getting the id's of any quant outputs they create 
@@ -55,21 +54,18 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 		buttonPanel = new JPanel(new FlowLayout());
 		add(buttonPanel,BorderLayout.SOUTH);
 		
-		final String columnConstraints = "para[][][][]";
-		final String layoutConstraints = "ins 10,gapy 3,gapx 5,fillx";
-		final String rowConstraints = "para[][][][][][][][][]";		
-		mainPanel = new JPanel(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
+		mainPanel = new JPanel(new MigLayout());
 		add(mainPanel,BorderLayout.CENTER);
 		
 		// Add components to the main panel
-		mainPanel.add(new JLabel("Name:"),"");
+		mainPanel.add(new JLabel("Name:"),"align right");
 		nameField.setText(application.getName());
 		nameField.setPreferredSize(COMBO_SIZE);
 		nameField.setEditable(false);
 		nameField.setToolTipText("The name can only be changed from the project tree.");
 		mainPanel.add(nameField,"span,wrap");
 
-		mainPanel.add(new JLabel("Description:"),"gaptop 2,aligny top");
+		mainPanel.add(new JLabel("Description:"),"align right");
 		String description = (String)application.getDescription();
 		if( description==null) description="";
 		descriptionTextArea.setText(description);
@@ -80,19 +76,21 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 		scrollPane.setPreferredSize(AREA_SIZE);
 		mainPanel.add(scrollPane,"gaptop 2,aligny top,span,wrap");
 
-		mainPanel.add(new JLabel("Console:"), "cell 0 5");
-		List<String> consoles = application.getConsoles();
-		if( consoles!=null ) {
-			for(Object console : application.getConsoles()) {
-				consoleComboBox.addItem((String) console);
+		// Set up the Post Combo Box
+		mainPanel.add(new JLabel("Post:"), "align right");
+		List<String> posts = application.getPosts();
+		if( posts!=null ) {
+			for(Object post : application.getPosts()) {
+				postComboBox.addItem((String) post);
 			}
 		}
-		consoleComboBox.setToolTipText("The console where diagnosis will be added!");
-		consoleComboBox.setSelectedItem(application.getConsole());
-		consoleComboBox.setPreferredSize(COMBO_SIZE);
-		mainPanel.add(consoleComboBox);
+		postComboBox.setToolTipText("The console where diagnosis will be added!");
+		postComboBox.setSelectedItem(application.getPost());
+		postComboBox.setPreferredSize(COMBO_SIZE);
+		mainPanel.add(postComboBox, "wrap");
 		
-		mainPanel.add(new JLabel("Queue:"), "cell 0 6");
+		// Set up the Message Queue Combo Box
+		mainPanel.add(new JLabel("Queue:"), "align right");
 		if( application.getQueues()!=null ) {
 			for(Object q : application.getQueues()) {
 				queueComboBox.addItem((String) q);
@@ -102,58 +100,51 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 		queueComboBox.setToolTipText("The message queue where messages for this application will be posted!");
 		queueComboBox.setSelectedItem(application.getQueue());
 		queueComboBox.setPreferredSize(COMBO_SIZE);
-		mainPanel.add(queueComboBox);
-		
-		mainPanel.add(new JLabel("Ramp Method:"),"cell 0 7");
-		groupRampMethodField.setText(application.getGroupRampMethod());
-		groupRampMethodField.setPreferredSize(COMBO_SIZE);
-		groupRampMethodField.setToolTipText("The method for calculating group ramps.");
-		mainPanel.add(groupRampMethodField,"span,wrap");
-		
-		mainPanel.add(new JLabel("Post:"),"cell 0 8");
-		postField.setText(application.getPost());
-		postField.setPreferredSize(COMBO_SIZE);
-		postField.setToolTipText("The name of the post for this application.");
-		mainPanel.add(postField,"span,wrap");
-		
-		mainPanel.add(new JLabel("Unit:"),"cell 0 9");
-		unitField.setText(application.getUnit());
-		unitField.setPreferredSize(COMBO_SIZE);
-		unitField.setToolTipText("The name of the unit for this application.");
-		mainPanel.add(unitField,"span,wrap");
-		
-		
-		/**
-		 * Create a combo box for ramp method
-		 */
-/*
-		final JComboBox<String> createRampMethodCombo(String bundle,String method) {
-			
-			JComboBox<String> box = new JComboBox<String>();
-			for(RampMethod as : RampMethod.values()) {
-				box.addItem(as.name());
+		mainPanel.add(queueComboBox, "wrap");
+
+		// Set up the Group Ramp Method Combo Box
+		mainPanel.add(new JLabel("Ramp Method:"),"align right");
+		if( application.getGroupRampMethods()!=null ) {
+			for(Object o : application.getGroupRampMethods()) {
+				groupRampMethodComboBox.addItem((String) o);
 			}
-			box.setToolTipText(BundleUtil.get().getString(bundle));
-			box.setSelectedItem(method.toUpperCase());
-//			box.setPreferredSize(COMBO_SIZE);
-			return box;
 		}
-*/		
+		
+		groupRampMethodComboBox.setToolTipText("The Group Ramp Method that will be used for outputs in this application!");
+		groupRampMethodComboBox.setSelectedItem(application.getGroupRampMethod());
+		groupRampMethodComboBox.setPreferredSize(COMBO_SIZE);
+		mainPanel.add(groupRampMethodComboBox, "wrap");
+		
+		// Set up the Unit Combo Box
+		mainPanel.add(new JLabel("Unit:"),"align right");
+		if( application.getUnits()!=null ) {
+			for(Object o : application.getUnits()) {
+				unitComboBox.addItem((String) o);
+			}
+		}
+		
+		unitComboBox.setToolTipText("The unit associated with this application!");
+		unitComboBox.setSelectedItem(application.getUnit());
+		unitComboBox.setPreferredSize(COMBO_SIZE);
+		mainPanel.add(unitComboBox, "wrap");
+
+		mainPanel.add(nextButton,"cell 1 9,right");
+		nextButton.setHorizontalTextPosition(SwingConstants.LEFT);
+		nextButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {doNext();}			
+		});
+		
 		// Add buttons to the button panel
-		buttonPanel.add(okButton); //, "cell 1 9");
+		buttonPanel.add(okButton);
 		okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {doOk();}
 		});
 	
-		buttonPanel.add(cancelButton); //, "cell 3 9");
+		buttonPanel.add(cancelButton);
 		cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {doCancel();}
 		});
-		
-		buttonPanel.add(nextButton); //, "cell 5 9");
-		nextButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {doNext();}			
-		});
+
 	}
 
 	protected void doOk() {
@@ -167,12 +158,11 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 	
 	protected void save(){
 		// Set attributes from fields on this pane
-		application.setConsole((String) consoleComboBox.getSelectedItem());
+		application.setPost((String) postComboBox.getSelectedItem());
 		application.setDescription(descriptionTextArea.getText());
 		application.setQueue((String) queueComboBox.getSelectedItem());
-		application.setGroupRampMethod(groupRampMethodField.getText());
-		application.setPost(postField.getText());
-		application.setUnit(unitField.getText());
+		application.setGroupRampMethod((String) groupRampMethodComboBox.getSelectedItem());
+		application.setUnit((String) unitComboBox.getSelectedItem());
 	}
 
 	protected void doCancel() {

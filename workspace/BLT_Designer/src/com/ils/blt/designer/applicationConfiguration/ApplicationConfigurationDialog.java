@@ -4,7 +4,6 @@
  */
 package com.ils.blt.designer.applicationConfiguration;
 
-
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.GridBagLayout;
@@ -49,7 +48,7 @@ public class ApplicationConfigurationDialog extends JDialog {
 	protected final Map<String,Object> properties;
 	
 	private static final long serialVersionUID = 2882399376824334427L;
-	private final int DIALOG_HEIGHT = 420;
+	private final int DIALOG_HEIGHT = 500;
 	private final int DIALOG_WIDTH = 440;
 	private final ScriptExtensionManager extensionManager = ScriptExtensionManager.getInstance();
 	private final SerializableApplication application;
