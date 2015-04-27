@@ -55,7 +55,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	private UUID blockId;
 	private UUID parentId;
 	private long projectId = -1;    // This is the global project
-	
+	private String auxiliaryData = null;
 	private String name = ".";
 	protected String statusText;
 	protected PalettePrototype prototype = null;
@@ -157,6 +157,8 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	public boolean delayBlockStart() { return this.delayStart; }
 	@Override
 	public List<AnchorPrototype>getAnchors() { return anchors; }
+	public String getAuxiliaryData() {return auxiliaryData;}
+	public void setAuxiliaryData(String auxiliaryData) {this.auxiliaryData = auxiliaryData;}
 	@Override
 	public PalettePrototype getBlockPrototype() {return prototype; }
 	@Override
@@ -517,7 +519,5 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 */
 	@Override
 	public String toString() { return getName(); }
-
-	
 
 }

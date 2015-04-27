@@ -13,6 +13,9 @@ import java.util.Set;
 import org.python.core.PyDictionary;
 import org.python.core.PyObject;
 
+import com.ils.blt.common.ApplicationRequestHandler;
+import com.ils.blt.common.block.BlockDescriptor;
+import com.ils.blt.common.block.PalettePrototype;
 import com.ils.common.JavaToPython;
 import com.ils.common.PythonToJava;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
@@ -21,18 +24,23 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 
 /**
- *  The manger is a singleton used to compile and execute Python scripts. There is a fixed
- *  vocabulary of these scripts, all derived from the Script base class. 
+ *  The manger is a singleton used to compile and execute Python scripts. The
+ *  scripts come in three flavors (PROPERTY_GET_SCRIPT, PROPERTY_RENAME_SCRIPT,
+ *  and PROPERTY_SET_SCRIPT). The get/set have the same signature (uuid,properties).
+ *  The rename is (uuid,oldName,newName).  This group of scripts must be defined 
+ *  for every class that wants interact with external data.
  *  
- *  We maintain a script table to retain compiled versions of the scripts. There is
- *  one script of each type. Script local variables are updated on each invocation.
+ *  We maintain a script table to retain compiled versions of the scripts. Script 
+ *  local variables are updated on each invocation.
  */
 public class ScriptExtensionManager {
 	private static String TAG = "ScriptExtensionManager";
+	private final ApplicationRequestHandler handler;
 	private final LoggerEx log;
 	private static ScriptExtensionManager instance = null;
 	private final JavaToPython j2p;
 	private final PythonToJava p2j;
+	private List<String> flavors;
 	
 	public final Map<String,Map<String,Object>> scriptMap;
 	
@@ -44,24 +52,13 @@ public class ScriptExtensionManager {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		// Initialize map with entry points and call list
 		scriptMap = new HashMap<>();
-		scriptMap.put(ScriptConstants.APP_ADD_SCRIPT,createMap("add","uuid"));
-		scriptMap.put(ScriptConstants.APP_CLONE_SCRIPT,createMap("clone","uuid1,uuid2"));
-		scriptMap.put(ScriptConstants.APP_DELETE_SCRIPT,createMap("delete","uuid"));
-		scriptMap.put(ScriptConstants.APP_GET_AUX_SCRIPT,createMap("getAux","uuid,properties"));
-		scriptMap.put(ScriptConstants.APP_SET_AUX_SCRIPT,createMap("setAux","uuid,properties"));
-		scriptMap.put(ScriptConstants.APP_UPDATE_SCRIPT,createMap("update","name,uuid"));
-		scriptMap.put(ScriptConstants.FAM_ADD_SCRIPT,createMap("add","uuid"));
-		scriptMap.put(ScriptConstants.FAM_CLONE_SCRIPT,createMap("clone","uudid1,uuid2"));
-		scriptMap.put(ScriptConstants.FAM_DELETE_SCRIPT,createMap("delete","uuid"));
-		scriptMap.put(ScriptConstants.FAM_GET_AUX_SCRIPT,createMap("getAux","uuid,properties"));
-		scriptMap.put(ScriptConstants.FAM_SET_AUX_SCRIPT,createMap("setAux","uuid,properties"));
-		scriptMap.put(ScriptConstants.FAM_UPDATE_SCRIPT,createMap("update","name,uuid"));
-		
-		scriptMap.put(ScriptConstants.GENERIC_PROPERTY_GET_SCRIPT,createMap("getAux","uuid,properties"));
-		scriptMap.put(ScriptConstants.GENERIC_PROPERTY_SET_SCRIPT,createMap("setAux","uuid,properties"));
-		
+		handler = new ApplicationRequestHandler();
 		j2p = new JavaToPython();
 		p2j = new PythonToJava();
+		flavors = new ArrayList<>();
+		flavors.add(ScriptConstants.PROPERTY_GET_SCRIPT);
+		flavors.add(ScriptConstants.PROPERTY_RENAME_SCRIPT);
+		flavors.add(ScriptConstants.PROPERTY_SET_SCRIPT);
 	}
 	
 	/**
@@ -77,6 +74,85 @@ public class ScriptExtensionManager {
 	}
 	
 	/**
+	 * Adding a script has an advantage over an ad-hoc execution in that
+	 * the compilation is cached.
+	 * @param className
+	 * @param flavor
+	 * @param modulePath
+	 */
+	public void addScript(String className,String flavor,String modulePath) {
+		String key = makeKey(className,flavor);
+		String entry = "execute";
+		String arglist = "";
+		if( flavor.equals(ScriptConstants.PROPERTY_GET_SCRIPT))  {
+			entry = "getAux";
+			arglist = "uuid,properties";
+		}
+		else if( flavor.equals(ScriptConstants.PROPERTY_SET_SCRIPT))  {
+			entry = "setAux";
+			arglist = "uuid,properties";
+		}
+		else if( flavor.equals(ScriptConstants.PROPERTY_RENAME_SCRIPT))  {
+			entry = "rename";
+			arglist = "uuid,oldname,newname";
+		}
+		scriptMap.put(key,createMap(entry,arglist));
+	}
+	
+	public List<String> getFlavors() {
+		return flavors;
+	}
+	
+	/**
+	 * Query the blocks and return a list of classes that require
+	 * external interface scripts. We re-query each time we're asked.
+	 * @return
+	 */
+	public List<String> getClassNames() {
+		List<String> classNames = new ArrayList<>();
+		// These are givens
+		List<BlockDescriptor> descriptors = getClassDescriptors();
+		for( BlockDescriptor bd:descriptors ) {
+			classNames.add(bd.getBlockClass());
+		}
+		return classNames;
+	}
+	
+	/**
+	 * Query the blocks and return a list of descriptors for classes that require
+	 * external interface scripts. We re-query each time we're asked. The "embedded label"
+	 * is a good display label.
+	 * @return
+	 */
+	public List<BlockDescriptor> getClassDescriptors() {
+		List<BlockDescriptor> descriptors = new ArrayList<>();
+		// Start with the fixed ones
+		BlockDescriptor appDescriptor = new BlockDescriptor();
+		appDescriptor.setBlockClass(ScriptConstants.APPLICATION_CLASS_NAME);
+		appDescriptor.setEmbeddedLabel("Application");
+		descriptors.add(appDescriptor);
+		
+		BlockDescriptor famDescriptor = new BlockDescriptor();
+		famDescriptor.setBlockClass(ScriptConstants.FAMILY_CLASS_NAME);
+		famDescriptor.setEmbeddedLabel("Family");
+		descriptors.add(famDescriptor);
+		
+		BlockDescriptor blockDescriptor = null;
+		List<PalettePrototype> prototypes = handler.getBlockPrototypes();
+		for( PalettePrototype proto:prototypes) {
+			// log.tracef("%s.createScriptPanel: block class = %s",TAG,proto.getBlockDescriptor().getBlockClass());
+			if( proto.getBlockDescriptor().isExternallyAugmented() ) {
+				blockDescriptor = proto.getBlockDescriptor();
+				// Guarantee that the embedded label has a usable value.
+				String label = blockDescriptor.getEmbeddedLabel();
+				if( label==null || label.length()==0 ) blockDescriptor.setEmbeddedLabel(proto.getPaletteLabel());
+				descriptors.add(blockDescriptor);
+			}
+		}
+		return descriptors;
+	}
+	
+	/**
 	 * Execute the specified script with a new set of arguments.
 	 * 
 	 * @param mgr a script manager with proper context
@@ -84,7 +160,9 @@ public class ScriptExtensionManager {
 	 *            module path, entry point and argument prototype.
 	 * @param args
 	 */
-	public void runScript(ScriptManager mgr,String key,Object...args) {
+	@SuppressWarnings("unchecked")
+	public void runScript(ScriptManager mgr,String className,String flavor,Object...args) {
+		String key = makeKey(className,flavor);
 		Map<String,Object> map = scriptMap.get(key);
 		if( map!=null ) {
 			Script script = (Script)map.get(ScriptConstants.SCRIPT_KEY);
@@ -134,9 +212,10 @@ public class ScriptExtensionManager {
 	 *            configuration includes entry point and argument prototype.
 	 * @param args actual arguments to the script
 	 */
-	public void runOneTimeScript(ScriptManager mgr,String pythonPath,String key,Object...args) {
+	public void runOneTimeScript(ScriptManager mgr,String pythonPath,String className,String flavor,Object...args) {
+		String key = makeKey(className,flavor);
 		setModulePath(key,pythonPath);
-		runScript(mgr,key,args);
+		runScript(mgr,className,flavor,args);
 	}
 	
 	public Set<String> scriptTypes() {return scriptMap.keySet();}
@@ -164,5 +243,9 @@ public class ScriptExtensionManager {
 		result.put(ScriptConstants.ARGS_KEY, arglist);
 		result.put(ScriptConstants.SCRIPT_KEY, new Script(entry,arglist));
 		return result;
+	}
+	
+	public static String makeKey(String className,String flavor) {
+		return String.format("%s(%s)",className,flavor);
 	}
 }

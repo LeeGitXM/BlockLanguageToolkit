@@ -1,12 +1,9 @@
-app-add-script,     xom.extensions.application.add
-app-clone-script,   xom.extensions.application.clone
-app-delete-script,  xom.extensions.application.delete
-app-get-aux-script, xom.extensions.appProperties.getAux
-app-set-aux-script, xom.extensions.appProperties.setAux
-app-update-script,  xom.extensions.application.update
-fam-add-script,     xom.extensions.family.add
-fam-clone-script,   xom.extensions.family.clone
-fam-delete-script,  xom.extensions.family.delete
-fam-get-aux-script, xom.extensions.famProperties.getAux
-fam-set-aux-script, xom.extensions.famProperties.setAux
-fam-update-script,  xom.extensions.family.update
+com.ils.application,property-get-script,xom.extensions.appProperties.getAux
+com.ils.application,property-rename-script,xom.extensions.appProperties.rename
+com.ils.application,property-set-script,xom.extensions.appProperties.setAux
+com.ils.family,property-get-script,xom.extensions.famProperties.getAux
+com.ils.family,property-rename-script,xom.extensions.famProperties.rename
+com.ils.family,property-set-script,xom.extensions.famProperties.setAux
+xom.block.finaldiagnosis.FinalDiagnosis,property-get-script,xom.extensions.finalDiagnosisProperties.getAux
+xom.block.finaldiagnosis.FinalDiagnosis,property-rename-script,xom.extensions.finalDiagnosisProperties.rename
+xom.block.finaldiagnosis.FinalDiagnosis,property-set-script,xom.extensions.finalDiagnosisProperties.setAux

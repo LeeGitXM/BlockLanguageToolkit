@@ -150,11 +150,15 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 				log.warnf("%s: Error creating vision palette entries (%s)",TAG,ie.getMessage());
 			}
 			
-		    // Initialize all the script modules from parameters stored in the ORM
+		    // Initialize all the script modules from parameters stored in the ORM.
+			// We use all combinations of classes/flavors.
 		    ScriptExtensionManager sem = ScriptExtensionManager.getInstance();
-		    for(String key: sem.scriptTypes()) {
-		    	String pythonPath = appRequestHandler.getToolkitProperty(key);
-		    	sem.setModulePath(key, pythonPath);
+		    for( String flavor: sem.getFlavors() ) {
+		    	for(String clss: sem.getClassNames() ) {
+		    		String key = ScriptExtensionManager.makeKey(clss, flavor);
+			    	String pythonPath = appRequestHandler.getToolkitProperty(key);
+			    	if( pythonPath!=null ) sem.addScript(clss,flavor, pythonPath);
+			    }
 		    }
 		}
 		

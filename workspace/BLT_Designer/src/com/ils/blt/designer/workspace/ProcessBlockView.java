@@ -24,6 +24,7 @@ import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.serializable.SerializableAnchor;
+import com.ils.blt.common.serializable.SerializableAuxiliaryData;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.designer.workspace.ui.AbstractUIView;
 import com.ils.blt.designer.workspace.ui.UIFactory;
@@ -55,6 +56,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	private final static Random random = new Random();
 	private Map<String,ProcessAnchorDescriptor> anchors;
 	private final EventListenerList listenerList;
+	private SerializableAuxiliaryData auxiliaryData = null;
 	private final ChangeEvent changeEvent;
 	private int background = Color.white.getRGB();
 	private final String className;
@@ -132,6 +134,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		this.listenerList = new EventListenerList();
 		this.changeEvent  = new ChangeEvent(this);
 		this.uuid = sb.getId();
+		this.auxiliaryData = sb.getAuxiliaryData();
 		this.background = sb.getBackground();
 		this.className = sb.getClassName();
 		this.ctypeEditable  = false;
@@ -195,6 +198,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
     public SerializableBlock convertToSerializable() {
 		SerializableBlock result = new SerializableBlock();
 		result.setId(getId());
+		result.setAuxiliaryData(getAuxiliaryData());
 		result.setBackground(getBackground());
 		result.setClassName(getClassName());
 		result.setEditorClass(getEditorClass());
@@ -269,6 +273,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		return ui.getAnchorPoints();	
 	}
 	public Collection<ProcessAnchorDescriptor> getAnchors() { return anchors.values(); }
+	public SerializableAuxiliaryData getAuxiliaryData() {return auxiliaryData;}
 	public int getBackground() { return background;}
 	public String getClassName() { return className; }
 
@@ -356,6 +361,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 			log.warnf("%s.recordLatestValue: Uknown port (%s)",TAG,port);
 		}
 	}
+	public void setAuxiliaryData(SerializableAuxiliaryData auxiliaryData) {this.auxiliaryData = auxiliaryData;}
 	public void setCtypeEditable(boolean ctypeEditable) {this.ctypeEditable = ctypeEditable;}
 	public void setDirty(boolean dirty) {this.dirty = dirty;} 
 	public void setEditorClass(String editorClass) {this.editorClass = editorClass;}
@@ -393,6 +399,8 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	public void setStyle(BlockStyle s) { this.style = s; }
 	public void setSubworkspaceId(UUID subworkspaceId) {this.subworkspaceId = subworkspaceId;}
 	public void setTransmitEnabled(boolean transmitEnabled) {this.transmitEnabled = transmitEnabled;}
+	
+	
 	
 	/**
 	 * Create a name that is highly likely to be unique within the diagram.

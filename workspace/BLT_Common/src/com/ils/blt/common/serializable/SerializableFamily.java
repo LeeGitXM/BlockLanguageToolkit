@@ -18,7 +18,7 @@ public class SerializableFamily {
 	private SerializableDiagram[] diagrams;
 	private SerializableFolder[] folders;
 	private UUID id;
-	private long resourceId = -1;
+	private SerializableAuxiliaryData auxiliaryData;
 	private String name;
 	private ActiveState state = ActiveState.ACTIVE;
 	
@@ -27,6 +27,7 @@ public class SerializableFamily {
 		folders = new SerializableFolder[0];
 		name="UNSET";
 		id = UUID.randomUUID();
+		auxiliaryData = null;
 	}
 
 	public void addDiagram(SerializableDiagram sdiag) {
@@ -42,15 +43,17 @@ public class SerializableFamily {
 	    folders = extended;
 	}
 
+	public SerializableAuxiliaryData getAuxiliaryData() {return auxiliaryData;}
 	public SerializableDiagram[] getDiagrams() { return diagrams; }
 	public SerializableFolder[] getFolders() {return folders;}
 	public UUID getId() {return id;}
 	public String getName() { return name; }
 	public ActiveState getState() {return state;}
 	
+	public void setAuxiliaryData(SerializableAuxiliaryData auxiliaryData) {this.auxiliaryData = auxiliaryData;}
 	public void setDiagrams(SerializableDiagram[] list) { diagrams=list; }
 	public void setFolders(SerializableFolder[] folders) {this.folders = folders;}
 	public void setId(UUID id) {this.id = id;}
 	public void setName(String nam) { if(nam!=null) name=nam; }
-	public void setState(ActiveState state) {this.state = state;}
+	public void setState(ActiveState state) {this.state = state;}	
 }

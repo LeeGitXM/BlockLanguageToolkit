@@ -75,21 +75,18 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 		setOKActions();
 	}
 	
-	private JPanel createMainPanel() {
-		for(BlockProperty prop:block.getProperties()) {
-			if( prop.getName().equals(BlockConstants.BLOCK_PROPERTY_GET_AUX_DATA_HOOK)) {
-				String scriptName = prop.getValue().toString();
-				try {
-					// Fetch properties of this block which associated with the database and not serialized.
-					extensionManager.runOneTimeScript(context.getScriptManager(), scriptName, 
-							ScriptConstants.GENERIC_PROPERTY_GET_SCRIPT, block.getId().toString(),properties);
-				}
-				catch(Exception ex) {
-					log.error(TAG+".initialize: Exception getting properties ("+ex.getMessage()+")",ex);
-				}
-				break;
-			}
+	private JPanel createMainPanel() {	
+		try {
+			// Fetch properties of this block which associated with the database and not serialized.
+			extensionManager.runOneTimeScript(context.getScriptManager(), block.getClassName(), 
+					ScriptConstants.PROPERTY_GET_SCRIPT, block.getId().toString(),properties);
 		}
+		catch(Exception ex) {
+			log.error(TAG+".initialize: Exception getting properties ("+ex.getMessage()+")",ex);
+		}
+
+
+
 		
 		// The internal panel has two panes
 		// - one for the dual list box, the other for the remaining attributes
@@ -113,21 +110,18 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 	private void populatePanel() {
 		// Search block properties for the getter script
 		properties.clear();
-		for(BlockProperty prop:block.getProperties()) {
-			if( prop.getName().equals(BlockConstants.BLOCK_PROPERTY_GET_AUX_DATA_HOOK)) {
-				String scriptName = prop.getValue().toString();
-				try {
-					// Fetch properties of this block which associated with the database and not serialized.
-					extensionManager.runOneTimeScript(context.getScriptManager(), scriptName, 
-							ScriptConstants.GENERIC_PROPERTY_GET_SCRIPT, block.getId().toString(),properties);
-				}
-				catch(Exception ex) {
-					log.error(TAG+".actionPerformed: Exception getting properties ("+ex.getMessage()+")",ex);
-					return;
-				}
-				break;
-			}
+
+		try {
+			// Fetch properties of this block which associated with the database and not serialized.
+			extensionManager.runOneTimeScript(context.getScriptManager(), block.getClassName(), 
+					ScriptConstants.PROPERTY_GET_SCRIPT, block.getId().toString(),properties);
 		}
+		catch(Exception ex) {
+			log.error(TAG+".actionPerformed: Exception getting properties ("+ex.getMessage()+")",ex);
+			return;
+		}
+
+
 		// Now set the component values
 		calculationMethodField.setText(properties.getOrDefault(ScriptConstants.PROPERTY_CALCULATION_METHOD,"").toString());
 		postTextRecommendationArea.setText(properties.getOrDefault(ScriptConstants.PROPERTY_POST_TEXT_RECOMMENDATION,"").toString());
@@ -163,22 +157,16 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 				properties.put(ScriptConstants.PROPERTY_TEXT_RECOMMENDATION,textRecommendationArea.getText());
 				properties.put(ScriptConstants.PROPERTY_TEXT_RECOMMENDATION_CALLBACK,recommendationMethodField.getText());
 				properties.put(ScriptConstants.PROPERTY_TRAP_INSIGNITFICANT_RECOMMENDATIONS,(trapBox.isSelected()?"1":"0"));
-				
-				// Search properties for the setter script
-				for(BlockProperty prop:block.getProperties()) {
-					if( prop.getName().equals(BlockConstants.BLOCK_PROPERTY_SET_AUX_DATA_HOOK)) {
-						String scriptName = prop.getValue().toString();
-						try {
-							// Fetch properties of this block which associated with the database and not serialized.
-							extensionManager.runOneTimeScript(context.getScriptManager(), scriptName, 
-									ScriptConstants.GENERIC_PROPERTY_SET_SCRIPT, block.getId().toString(),properties);
-						}
-						catch(Exception ex) {
-							log.error(TAG+".actionPerformed: Exception setting properties ("+ex.getMessage()+")",ex);
-						}
-						break;
-					}
+
+				try {
+					// Fetch properties of this block which associated with the database and not serialized.
+					extensionManager.runOneTimeScript(context.getScriptManager(), block.getClassName(), 
+							ScriptConstants.PROPERTY_SET_SCRIPT, block.getId().toString(),properties);
 				}
+				catch(Exception ex) {
+					log.error(TAG+".actionPerformed: Exception setting properties ("+ex.getMessage()+")",ex);
+				}
+
 				dispose();
 			}
 		});

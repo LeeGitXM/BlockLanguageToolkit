@@ -55,7 +55,7 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 	 */
 	private void initialize() {
 		// Fetch properties of the family associated with the database and not serialized.
-		extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAM_GET_AUX_SCRIPT, 
+		extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAMILY_CLASS_NAME,ScriptConstants.PROPERTY_GET_SCRIPT,
 				this.family.getId().toString(),properties);
 		mainPanel = createMainPanel();
 		contentPanel.add(mainPanel,BorderLayout.CENTER);
@@ -121,7 +121,7 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 				}
 				String activeState = (String) stateBox.getSelectedItem();
 				family.setState(ActiveState.valueOf(activeState));
-				extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAM_SET_AUX_SCRIPT, 
+				extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAMILY_CLASS_NAME,ScriptConstants.PROPERTY_SET_SCRIPT, 
 						family.getId().toString(),properties);
 				dispose();
 			}

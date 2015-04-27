@@ -29,7 +29,6 @@ public interface BlockConstants   {
 	public static final String BLOCK_PROPERTY_DISTRIBUTION  = "Distribution";
 	public static final String BLOCK_PROPERTY_FILL_REQUIRED = "FillRequired";
 	public static final String BLOCK_PROPERTY_FORMAT        = "Format";
-	public static final String BLOCK_PROPERTY_GET_AUX_DATA_HOOK  = "GetAuxiliaryDataHook";
 	public static final String BLOCK_PROPERTY_HEIGHT        = "Height";
 	public static final String BLOCK_PROPERTY_HYSTERESIS    = "Hysteresis";
 	public static final String BLOCK_PROPERTY_INHIBIT_INTERVAL = "InhibitInterval";  // Inhibit period ~ sec
@@ -43,7 +42,6 @@ public interface BlockConstants   {
 	public static final String BLOCK_PROPERTY_SAMPLE_SIZE   = "SampleSize";
 	public static final String BLOCK_PROPERTY_SCOPE         = "Scope";	
 	public static final String BLOCK_PROPERTY_SCAN_INTERVAL    = "ScanInterval";     // Compute interval ~ sec
-	public static final String BLOCK_PROPERTY_SET_AUX_DATA_HOOK  = "SetAuxiliaryDataHook";
 	public static final String BLOCK_PROPERTY_STANDARD_DEVIATION = "StandardDeviation";
 	public static final String BLOCK_PROPERTY_SYNC_INTERVAL    = "SyncInterval";     // Time to coalesce inputs ~ sec
 	public static final String BLOCK_PROPERTY_TAG_PATH = "TagPath";

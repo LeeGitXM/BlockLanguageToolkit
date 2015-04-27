@@ -4,6 +4,9 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.BoxLayout;
@@ -17,21 +20,25 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 
+import com.ils.blt.common.serializable.SerializableAuxiliaryData;
+
 
 public class OutputsPane extends JPanel implements ApplicationConfigurationController.EditorPane {
-	private ApplicationConfigurationController controller;
-	private Application application;
+	private final ApplicationConfigurationController controller;
+	private final SerializableAuxiliaryData model;
 	private SortedListModel outputListModel;
+	private Integer newOutputId = -1;
 	private static final long serialVersionUID = 2882399376824334428L;
-	private static Icon addIcon = new ImageIcon(Application.class.getResource("/images/add.png"));
-	private static Icon deleteIcon = new ImageIcon(Application.class.getResource("/images/delete.png"));
-	private static Icon previousIcon = new ImageIcon(Application.class.getResource("/images/arrow_left_green.png"));
+	private static Icon addIcon = new ImageIcon(OutputsPane.class.getResource("/images/add.png"));
+	private static Icon deleteIcon = new ImageIcon(OutputsPane.class.getResource("/images/delete.png"));
+	private static Icon previousIcon = new ImageIcon(OutputsPane.class.getResource("/images/arrow_left_green.png"));
 	final JButton previousButton = new JButton(previousIcon);
 	final JButton addButton = new JButton(addIcon);
 	final JButton deleteButton = new JButton(deleteIcon);
 	final JButton editButton = new JButton("Edit");
 	final JPanel buttonPanel;
 	final JList jlist;
+	private final OutputEditorPane outputEditor;
 	final JScrollPane outputsScrollPane = new JScrollPane();
 /*	
 	private PropertyEditor editor = new PropertyEditor();
@@ -39,18 +46,19 @@ public class OutputsPane extends JPanel implements ApplicationConfigurationContr
 
 	private Data recipeData;
 */	
-	public OutputsPane(ApplicationConfigurationController controller, Application app, SortedListModel model) {
+	public OutputsPane(ApplicationConfigurationController controller,OutputEditorPane editor) {
 		super(new BorderLayout(20, 30));
 		System.out.println("In Outputs pane constructor");
 		this.controller = controller;
-		this.outputListModel = model;
-		this.application = app;
+		this.model = controller.getModel();
+		this.outputEditor = editor;
+		this.outputListModel = controller.getOutputListModel();
 		
 		JLabel label = new JLabel("Outputs");
 		label.setHorizontalAlignment(SwingConstants.CENTER);
 		add(label, BorderLayout.NORTH);
 		
-		JList lst = new JList(model);
+		JList lst = new JList(outputListModel);
 		JScrollPane scrollPane = new JScrollPane(lst);
 		this.jlist=lst;
 		add(scrollPane, BorderLayout.CENTER);
@@ -103,14 +111,26 @@ public class OutputsPane extends JPanel implements ApplicationConfigurationContr
 		
 		System.out.println("Output: " + outputName);
 
-		// Get the Map that corresponds to the name that is selected
-		Map<String,Object> outputMap=application.getOutput(outputName);
+		// Get the Map that corresponds to the name that is selected.
+		// We do a linear search ...
+		List<Map<String,String>> outputList=model.getMapLists().get("QuantOutputs");
+		Map<String,String> outputMap = null;
+		if( outputList!=null ) {
+			for(Map<String,String> map : outputList) {
+				String str = (String) map.get("QuantOutput");
+				if(str.equals(outputName)){
+					outputMap = map;
+					break;
+				}
+			}
+		}
+		
+		
 		if (outputMap != null){
 			System.out.println("Looking at an Output" + outputMap);
 			// Get the output editor and call method that puts the output into the fields
-			OutputEditorPane outputEditor=controller.getOutputEditor();
 			outputEditor.updateFields(outputMap);
-			controller.getSlidingPane().setSelectedPane(2);
+			controller.slideTo(ApplicationConfigurationDialog.EDITOR);
 		}
 	}
 
@@ -122,7 +142,17 @@ public class OutputsPane extends JPanel implements ApplicationConfigurationContr
 			return;
 		}
 		System.out.println("Deleting Output: " + outputName + "...");
-		application.deleteQuantOutput(outputName);
+		// Again we do a linear search ...
+		List<Map<String,String>> outputList=model.getMapLists().get("QuantOutputs");
+		if( outputList!=null ) {
+			for(Map<String,String> map : outputList) {
+				String str = (String) map.get("QuantOutput");
+				if(str.equals(outputName)){
+					outputList.remove(map);
+					break;
+				}
+			}
+		}
 		controller.refreshOutputs();
 	}
 
@@ -130,25 +160,49 @@ public class OutputsPane extends JPanel implements ApplicationConfigurationContr
 		System.out.println("In doAdd()");
 		
 		// Get the Map that corresponds to the name that is selected
-		Map<String,Object> outputMap=application.newOutput();
+		Map<String,String> outputMap=newOutput();
 		if (outputMap != null){
 			System.out.println("Looking at an Output" + outputMap);
 			// Get the output editor and call method that puts the output into the fields
-			OutputEditorPane outputEditor=controller.getOutputEditor();
 			outputEditor.updateFields(outputMap);
-			controller.getSlidingPane().setSelectedPane(2);
+			controller.slideTo(ApplicationConfigurationDialog.EDITOR);
 		}
 	}
 
 	protected void doPrevious() {
-		controller.getSlidingPane().setSelectedPane(0);		
+		controller.slideTo(ApplicationConfigurationDialog.HOME);		
 	}
 
 	@Override
 	public void activate() {
-		controller.slideTo(ApplicationConfigurationController.EDITOR);
+		controller.slideTo(ApplicationConfigurationDialog.EDITOR);
 	}
 	
+	// Create a new outputMap, which corresponds to a QuantOutput, with default values
+		public Map<String,String> newOutput() {
+			System.out.println("Creating a new output... ");
+			
+			Map<String,String> outputMap = new HashMap<String,String>();
+			outputMap.put("QuantOutputId",String.valueOf(newOutputId));
+			newOutputId = newOutputId - 1;
+			outputMap.put("QuantOutput", "");
+			outputMap.put("TagPath", "");
+			outputMap.put("MostNegativeIncrement",String.valueOf(-10.0));
+			outputMap.put("MostPositiveIncrement", String.valueOf(10.0));
+			outputMap.put("MinimumIncrement", String.valueOf(0.01));
+			outputMap.put("SetpointLowLimit", String.valueOf(0.0));
+			outputMap.put("SetpointHighLimit", String.valueOf(100.0));
+			outputMap.put("FeedbackMethod", "SIMPLE-SUM");
+			outputMap.put("IncrementalOutput", String.valueOf(true));
+			
+			List<Map<String,String>> outputList=model.getMapLists().get("QuantOutputs");
+			if( outputList==null ) {
+				outputList = new ArrayList<>();
+				model.getMapLists().put("QuantOutputs", outputList);
+			}
+			outputList.add(outputMap);
+			return outputMap;
+		}
 
 /*
 	public PropertyEditor getPropertyEditor() {

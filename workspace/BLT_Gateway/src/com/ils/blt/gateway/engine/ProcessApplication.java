@@ -5,14 +5,15 @@ package com.ils.blt.gateway.engine;
 
 import java.util.UUID;
 
-import com.ils.blt.common.block.ActiveState;
+import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.serializable.SerializableApplication;
 
 /**
  * An application is a specialized process node.
  */
 public class ProcessApplication extends ProcessNode {
-	private ActiveState state = ActiveState.ACTIVE;
+	private static final long serialVersionUID = 4193753660388679401L;
+	private DiagramState state = DiagramState.ACTIVE;
 	
 	/**
 	 * Constructor: Create an application node from the NavTree structure of an diagram.
@@ -35,7 +36,7 @@ public class ProcessApplication extends ProcessNode {
 		setState(app.getState());
 	}
 	
-	public ActiveState getState() {return state;}
-	public void setState(ActiveState s) { this.state = s; }
+	public DiagramState getState() {return state;}
+	public void setState(DiagramState s) { this.state = s; }
 
 }

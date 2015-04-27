@@ -31,7 +31,14 @@ public interface ToolkitRequestHandler  {
 	 *         superior to the node with the specified UUID
 	 */
 	public String getApplicationName(String uuid);
-
+	/**
+	 * Find the parent application or diagram of the entity referenced by
+	 * the supplied id. Test the state and return the name of the appropriate
+	 * database.  
+	 * @param uuid
+	 * @return database name
+	 */
+	public String getDatabaseForUUID(String uuid);
 	/**
 	 * Remove all current diagrams from the controller.
 	 */

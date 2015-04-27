@@ -3,13 +3,11 @@
  */
 package com.ils.blt.gateway.proxy;
 
-import java.util.List;
 import java.util.UUID;
 
 import org.python.core.PyObject;
 
 import com.ils.block.AbstractProcessBlock;
-import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.block.TruthValue;

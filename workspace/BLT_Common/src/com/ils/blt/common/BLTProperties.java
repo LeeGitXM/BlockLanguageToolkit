@@ -73,6 +73,7 @@ public interface BLTProperties   {
 	// These are the key names used a the Python dictionary that defines a block prototype.
 	public static final String PALETTE_ANCHOR_IN   = "inports";     // A list of dictionaries
 	public static final String PALETTE_ANCHOR_OUT  = "outports";    // A list of dictionaries
+	public static final String PALETTE_AUX_DATA    = "auxData";
 	public static final String PALETTE_BLOCK_CLASS = "blockClass";
 	public static final String PALETTE_BLOCK_STYLE = "blockStyle";
 	public static final String PALETTE_EDITOR_CLASS = "editorClass";

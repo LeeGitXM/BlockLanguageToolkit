@@ -12,6 +12,7 @@ import com.ils.blt.common.serializable.SerializableFamily;
 * A family is a specialized process node.
 */
 public class ProcessFamily extends ProcessNode {
+	private static final long serialVersionUID = 6466659606436686263L;
 	private ActiveState state = ActiveState.ACTIVE;
 
 	/**

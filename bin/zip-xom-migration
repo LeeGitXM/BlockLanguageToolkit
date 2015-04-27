@@ -21,6 +21,8 @@ cd ..
 ./clear-json
 ./copy-json
 ./migrate-all
+mkdir -p $TMP/config
+./mktags > $TMP/config/sqltags.xml
 cd ..
 cp -a migration/json/ignition $TMP
 

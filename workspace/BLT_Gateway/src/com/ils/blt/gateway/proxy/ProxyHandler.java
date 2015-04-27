@@ -341,6 +341,8 @@ public class ProxyHandler   {
 						// The table that we get from Python contains attributes for the BlockDescriptor
 						// as well as the PalettePrototype
 						BlockDescriptor desc = proto.getBlockDescriptor();
+						val = tbl.get(BLTProperties.PALETTE_AUX_DATA);
+						if( val!=null ) desc.setExternallyAugmented(fns.coerceToBoolean(val.toString()));
 						val = tbl.get(BLTProperties.PALETTE_RECEIVE_ENABLED);
 						if( val!=null ) desc.setReceiveEnabled(fns.coerceToBoolean(val.toString()));
 						val = tbl.get(BLTProperties.PALETTE_TRANSMIT_ENABLED);

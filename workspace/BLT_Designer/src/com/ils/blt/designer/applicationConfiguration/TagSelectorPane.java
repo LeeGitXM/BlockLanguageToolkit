@@ -3,38 +3,29 @@ package com.ils.blt.designer.applicationConfiguration;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
-import javax.swing.SwingConstants;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
-import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.designer.editor.BlockEditConstants;
-import com.ils.blt.designer.editor.TagBrowserPanel;
+import net.miginfocom.swing.MigLayout;
+
 import com.inductiveautomation.ignition.client.sqltags.tree.TagRenderer;
 import com.inductiveautomation.ignition.client.sqltags.tree.TagTreeNode;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
-import net.miginfocom.swing.MigLayout;
-
 class TagSelectorPane extends JPanel implements ApplicationConfigurationController.EditorPane{
-	private ApplicationConfigurationController controller;
-	private Application application;
-	private OutputEditorPane outputEditorPane;
-	private static Icon previousIcon = new ImageIcon(Application.class.getResource("/images/arrow_left_green.png"));
+	private final ApplicationConfigurationController controller;
+	private final OutputEditorPane outputEditorPane;
+	private static Icon previousIcon = new ImageIcon(TagSelectorPane.class.getResource("/images/arrow_left_green.png"));
 	final JButton previousButton = new JButton(previousIcon);
 	final JButton saveButton = new JButton("Ok");
 	
@@ -49,12 +40,11 @@ class TagSelectorPane extends JPanel implements ApplicationConfigurationControll
 	
 	
 	// The constructor
-	public TagSelectorPane(ApplicationConfigurationController controller, Application app, OutputEditorPane outputEditorPane) {
+	public TagSelectorPane(ApplicationConfigurationController controller,OutputEditorPane outputEditorPane) {
 		super(new BorderLayout(20, 30));
 		System.out.println("In TagSelector pane constructor");
 		this.controller = controller;
 		this.outputEditorPane = outputEditorPane;
-		this.application = app;
 		this.context = controller.context;
 		
 		JPanel mainPanel = new JPanel(new MigLayout("", "[right]"));
@@ -94,11 +84,11 @@ class TagSelectorPane extends JPanel implements ApplicationConfigurationControll
 	//  I don't think this is used...
 	@Override
 	public void activate() {
-		controller.slideTo(ApplicationConfigurationController.TAGSELECTOR);
+		controller.slideTo(ApplicationConfigurationDialog.TAGSELECTOR);
 	}
 	
 	protected void doPrevious() {
-		controller.getSlidingPane().setSelectedPane(ApplicationConfigurationController.EDITOR);		
+		controller.slideTo(ApplicationConfigurationDialog.EDITOR);		
 	}
 	
 	protected void doSave() {
@@ -119,6 +109,6 @@ class TagSelectorPane extends JPanel implements ApplicationConfigurationControll
 			return;
 		}
 		
-		controller.getSlidingPane().setSelectedPane(ApplicationConfigurationController.EDITOR);		
+		controller.slideTo(ApplicationConfigurationDialog.EDITOR);		
 	}
 }

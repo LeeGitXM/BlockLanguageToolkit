@@ -23,15 +23,15 @@ public class BlockDescriptor {
 	private static final String TAG = "BlockDescription";
 	private List<AnchorPrototype> anchors;
 	private int background = Color.white.getRGB();  // Transmit color as an int for serialization.
-	private String blockClass = null;               // Class of the block in the Gateway (app. ... implies Python)
+	private String blockClass = null;               // Class of the block in the Gateway (xom. ... implies Python)
 	private int    embeddedFontSize = 24;
 	private String embeddedIcon="";       // 32x32 icon to place in block in designer
 	private String embeddedLabel="";      // Label place in block in designer
 	private String editorClass = null;    // Class of custom property editor
+	
 	private boolean ctypeEditable=false;  // Can we globally change our connection types
 	private boolean encapsulation=false;  // Is this block is an encapsulation
-	
-
+	private boolean externallyAugmented  = false;     // True if this block uses auxiliary getters/setters
 	private String iconPath = null;       // Icon to use for an icon-only block
 	private boolean nameDisplayed = false;
 	private int nameOffsetX = 0;     // When displayed as an attribute
@@ -91,6 +91,7 @@ public class BlockDescriptor {
 	public int getPreferredHeight() {return preferredHeight;}
 	public int getPreferredWidth() {return preferredWidth;}
 	public BlockStyle getStyle() { return style; }
+	public boolean isExternallyAugmented()      { return externallyAugmented; }
 	public boolean isCtypeEditable() {return ctypeEditable;}
 	public boolean isEncapsulation() {return encapsulation;}
 	public boolean isNameDisplayed() {return nameDisplayed;}
@@ -100,6 +101,7 @@ public class BlockDescriptor {
 	public void setAnchors(List<AnchorPrototype> anchors) { this.anchors = anchors; }
 	public void setBackground(int background) {this.background = background;}
 	public void setBlockClass(String blockClass) { this.blockClass = blockClass; }
+	public void setExternallyAugmented(boolean flag)      { this.externallyAugmented = flag; }
 	public void setCtypeEditable(boolean ctypeEditable) {this.ctypeEditable = ctypeEditable;}
 	public void setEditorClass(String editorClass) {this.editorClass = editorClass;}
 	public void setEmbeddedFontSize(int embeddedFontSize) {this.embeddedFontSize = embeddedFontSize;}

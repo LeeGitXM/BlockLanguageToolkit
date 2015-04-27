@@ -4,24 +4,14 @@
 package com.ils.blt.designer.editor;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTree;
-import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
 
 import com.ils.blt.common.block.BlockProperty;
-import com.inductiveautomation.ignition.client.sqltags.tree.SQLTagTreeModel;
-import com.inductiveautomation.ignition.client.sqltags.tree.TagRenderer;
-import com.inductiveautomation.ignition.client.sqltags.tree.TagTreeNode;
-import com.inductiveautomation.ignition.common.sqltags.model.TagPath;
-import com.inductiveautomation.ignition.common.sqltags.parser.TagPathParser;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 /**

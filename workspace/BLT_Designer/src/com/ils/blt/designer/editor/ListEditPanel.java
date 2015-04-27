@@ -47,7 +47,6 @@ public class ListEditPanel extends BasicEditPanel {
 	private JButton addButton;      // Click to add a row
 	private JButton deleteButton;   // Click to delete a row
 
-	private JTextField delimiterField;
 	private JTable table;
 
 	public ListEditPanel(final BlockPropertyEditor editor) {

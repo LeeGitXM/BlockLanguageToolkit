@@ -9,7 +9,6 @@ import java.util.List;
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
-import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 
 
 /**
@@ -32,6 +31,9 @@ public class ApplicationScriptFunctions   {
 	}
 	public static String getApplicationName(String uuid) {
 		return handler.getApplicationName(uuid);
+	}
+	public static String getDatabaseForUUID(String uuid) {
+		return handler.getDatabaseForUUID(uuid);
 	}
 	/**
 	 * @return the current state of the controller.
@@ -64,6 +66,7 @@ public class ApplicationScriptFunctions   {
 	 * @return a list of ids for blocks owned by a specified diagram that are of a
 	 *         specified class.
 	 */
+	@SuppressWarnings({ "rawtypes" })
 	public static List getDiagramBlocksOfClass(String diagramId,String className) {
 		return handler.getDiagramBlocksOfClass(diagramId,className);
 	}

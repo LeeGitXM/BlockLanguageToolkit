@@ -18,7 +18,10 @@ import com.ils.common.watchdog.WatchdogTimer;
 /**
  * This interface defines an executable block in a diagram.
  * Each block carries its unique identity consisting of a projectId,
- * a diagramId and blockId. 
+ * a diagramId and blockId - or alternatively a diagramId and blockId.
+ * 
+ * NOTE: auxiliaryData are not referenced here as, even though the
+ *      information is serialized, there is no use of it in the Gateway.
  */
 public interface ProcessBlock extends BlockPropertyChangeListener {
 	/**

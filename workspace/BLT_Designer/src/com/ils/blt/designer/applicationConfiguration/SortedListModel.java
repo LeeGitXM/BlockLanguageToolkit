@@ -1,33 +1,38 @@
 package com.ils.blt.designer.applicationConfiguration;
 
 
-import javax.swing.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
-import java.util.*;
+import javax.swing.AbstractListModel;
 
-public class SortedListModel extends AbstractListModel {
-	SortedSet<Object> model;
+public class SortedListModel<E> extends AbstractListModel<E> {
+	private static final long serialVersionUID = 6241761754186190763L;
+	SortedSet<E> model;
 	
 	public SortedListModel(){
-		model = new TreeSet<Object>();
+		model = new TreeSet<E>();
 	}
 	
 	public int getSize() {
 		return model.size();
 	}
 	
-	public Object getElementAt(int index) {
-		return model.toArray()[index];
+	public E getElementAt(int index) {
+		return (E)model.toArray()[index];
 	}
 	
-	public void add(Object element){
+	public void add(E element){
 		if (model.add(element)) {
 			fireContentsChanged(this, 0, getSize());
 		}
 	}
 	
-	public void addAll(Object elements[]){
-		Collection<Object> c = Arrays.asList(elements);
+	public void addAll(E elements[]){
+		Collection<E> c = Arrays.asList(elements);
 		model.addAll(c);
 		fireContentsChanged(this, 0, getSize());
 	}
@@ -37,23 +42,23 @@ public class SortedListModel extends AbstractListModel {
 		fireContentsChanged(this, 0, getSize());
 	}
 	
-	public boolean contains(Object element){
+	public boolean contains(E element){
 		return model.contains(element);
 	}
 	
-	public Object firstElement() {
+	public E firstElement() {
 		return model.first();
 	}
 	
-	public Iterator iterator() {
+	public Iterator<E> iterator() {
 		return model.iterator();
 	}
 
-	public Object lastElement() {
+	public E lastElement() {
 		return model.last();
 	}
 	
-	public boolean removeElement(Object element){
+	public boolean removeElement(E element){
 		boolean removed = model.remove(element);
 		if (removed) {
 			fireContentsChanged(this, 0, getSize());

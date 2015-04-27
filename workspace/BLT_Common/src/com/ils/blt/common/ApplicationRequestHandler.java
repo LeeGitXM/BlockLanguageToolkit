@@ -16,7 +16,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PalettePrototype;
-import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
@@ -104,6 +103,28 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 			};
 		}
 		return name;
+	}
+	/**
+	 * Find the parent application or diagram of the entity referenced by
+	 * the supplied id. Test the state and return the name of the appropriate
+	 * database.  
+	 * @param uuid
+	 * @return database name
+	 */
+	@Override
+	public String getDatabaseForUUID(String uuid) {
+		String db = "NONE";
+		if( uuid!=null) {
+			log.infof("%s.getDatabaseForNode... %s",TAG,uuid);
+			try {
+				db = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+						BLTProperties.MODULE_ID, "getDatabaseForNode",uuid);
+			}
+			catch(Exception ex) {
+				log.infof("%s.getDatabaseForNode: Exception (%s)",TAG,ex.getMessage());
+			};
+		}
+		return db;
 	}
 	
 	/**

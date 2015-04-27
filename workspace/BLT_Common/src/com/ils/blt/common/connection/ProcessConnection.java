@@ -4,6 +4,7 @@
 package com.ils.blt.common.connection;
 
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.UUID;
 
 import com.ils.blt.common.block.BlockConstants;
@@ -79,14 +80,14 @@ public class ProcessConnection implements Connection {
 			temp.put(BlockConstants.CONNECTION_PROPERTY_QUALITY, value.getQuality().getName());
 			temp.put(BlockConstants.CONNECTION_PROPERTY_VALUE, value.getValue().toString());
 		}
-		String json = new JavaToJson().tableToJson(temp);
+		String json = new JavaToJson().objectToJson(temp);
 		return json;
 	}
 	/**
 	 * 
 	 */
 	public void updateFromJson(String json) {
-		Hashtable<String,?> table = new JsonToJava().jsonToTable(json);
+		Map<String,String> table = new JsonToJava().jsonToMap(json);
 		Object val = table.get(BlockConstants.CONNECTION_PROPERTY_DOWNSTREAM_PORT);
 		if( val!=null ) downstreamPort = val.toString();
 		val = table.get(BlockConstants.CONNECTION_PROPERTY_UPSTREAM_PORT);

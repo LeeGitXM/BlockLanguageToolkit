@@ -36,7 +36,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  *  The document is constant for the life of this instance.
  */
 public class ProcessDiagram extends ProcessNode {
-	
+	private static final long serialVersionUID = 3557397875746466629L;
 	private static String TAG = "ProcessDiagram";
 	private final SerializableDiagram diagram;
 	private boolean valid = false;

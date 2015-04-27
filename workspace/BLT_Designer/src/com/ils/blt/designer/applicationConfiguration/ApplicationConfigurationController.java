@@ -1,26 +1,26 @@
 package com.ils.blt.designer.applicationConfiguration;
 
-import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.JPanel;
-import javax.swing.ListModel;
-
-import com.inductiveautomation.ignition.client.util.gui.SlidingPane;
+import com.ils.blt.common.script.ScriptConstants;
+import com.ils.blt.common.script.ScriptExtensionManager;
+import com.ils.blt.common.serializable.SerializableApplication;
+import com.ils.blt.common.serializable.SerializableAuxiliaryData;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 /** A controller for all the sliding panes that are involved in editing the application. */
-public class ApplicationConfigurationController {
+public class ApplicationConfigurationController {	
 	public static java.awt.Color background = new java.awt.Color(238,238,238);
-	private Application application;
+	private final SerializableAuxiliaryData model;           // Data container operated on by panels
+	private final SerializableApplication application;       // The application that we update
 	protected final DesignerContext context;
-	private ApplicationConfigurationDialog dialog;
-	private SortedListModel outputListModel;
-	private Map<String,Object> properties;
-	private Map<String,Object> outputMap;
+	private final ApplicationConfigurationDialog dialog;
+	private final ScriptExtensionManager extensionManager = ScriptExtensionManager.getInstance();
+	private final SortedListModel outputListModel;
+	private Map<String,String> outputMap;
 	protected final LoggerEx log;
 	
 	interface EditorPane {
@@ -28,97 +28,144 @@ public class ApplicationConfigurationController {
 		public void activate();
 	}
 	
-	private SlidingPane slidingPane = new SlidingPane();
 	
-	// indices for the sub-panes:
-	static final int HOME = 0;
-	static final int OUTPUTS = 1;
-	static final int EDITOR = 2;
-	static final int TAGSELECTOR = 3;
-	
-	// The sub-panes:
-	private HomePane home;
-	private OutputsPane outputs;
-	private OutputEditorPane outputEditor;
-	private TagSelectorPane tagSelector;
 	
 	// The constructor
-	public ApplicationConfigurationController(ApplicationConfigurationDialog diag) {
-		this.log = diag.log;
-		dialog = diag;
-		context = diag.context;
-		log.infof("In ApplicationConfigurationController constructor for %s...", dialog.getApplication().getName() );
+	public ApplicationConfigurationController(DesignerContext ctx,ApplicationConfigurationDialog dlg,SerializableApplication app) {
+		this.context = ctx;
+		this.dialog = dlg;
+		this.log = dlg.getLog();
+		this.application = app;    // The real thing
+		this.model = new SerializableAuxiliaryData();
+		this.outputListModel = new SortedListModel();
 		
-		properties=dialog.properties;
-		
-		application = new Application();
-		initializeApplication();
-		
-		// Create the sub-panes
-		home = new HomePane(this, application);
-		outputs = new OutputsPane(this, application, outputListModel);
-		outputEditor = new OutputEditorPane(this, application, outputListModel);
-		tagSelector = new TagSelectorPane(this, application, outputEditor);
-
-		// sub-panes added according to the indexes above:
-		slidingPane.add(home);
-		slidingPane.add(outputs);
-		slidingPane.add(outputEditor);
-		slidingPane.add(tagSelector);
-		slidingPane.add(new JPanel());  // a blank pane
-		slideTo(HOME);
-
+		initializeModel();
 		log.infof("   ...leaving ApplicationConfigurationController constructor!");
 	}
 	
-	private void initializeApplication(){
+	// Create an empty model, then initialize from the database ...
+	private void initializeModel(){
 		log.infof("   ...initializing the Application data model...");
 		
-		// The data from the database has already been fetched and is in the properties dictionary.
-		// Transfer the data from the dictionary to the application object.
-		log.tracef("Properties: " + properties);
-
-		application.setName(dialog.getApplication().getName());
-		application.setDescription((String) properties.get("Description"));
-		application.setPost((String) properties.get("Post"));
-		application.setPosts((ArrayList<String>) properties.get("Posts"));
-		application.setQueue((String) properties.get("MessageQueue"));
-		application.setQueues((ArrayList<String>) properties.get("MessageQueues"));
-		application.setGroupRampMethod((String) properties.get("GroupRampMethod"));
-		application.setGroupRampMethods((ArrayList<String>) properties.get("GroupRampMethods"));
-		application.setUnit((String) properties.get("Unit"));
-		application.setUnits((ArrayList<String>) properties.get("Units"));
-		application.setFeedbackMethods((ArrayList<String>) properties.get("FeedbackMethods"));
+		// Fetch data from the database and store in the model
+		model.setProperties(new HashMap<String,String>());
+		model.setLists(new HashMap<>());
+		model.setMapLists(new HashMap<>());
+		model.getProperties().put("Name", application.getName());   // Use as a key when fetching
+		extensionManager.runScript(context.getScriptManager(),ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.PROPERTY_GET_SCRIPT, 
+				this.application.getId().toString(),model);
 		
-		outputListModel = new SortedListModel();
-		
-		// Process the list of outputs (A list of dictionaries)
-		List<?> outputList = (List<?>) properties.get("QuantOutputs");
-		log.tracef("OutputList: " + outputList);
-		if( outputList!=null ) {
-			for(Object obj : outputList) {
-				if (obj instanceof Hashtable){ 
-					outputMap = (Map<String,Object>) obj;
-					application.addQuantOutput(outputMap);
+		// If trace is enabled, then dump contents of the database query.
+		if( log.isTraceEnabled() ) {
+			Map<String,String> properties = application.getAuxiliaryData().getProperties();
+			for (String key:properties.keySet()) {
+				log.tracef("Properties: key = %s, value = %s", key, properties.get(key));
+			}
+			Map<String,List<String>> lists = application.getAuxiliaryData().getLists();
+			for (String key:lists.keySet()) {
+				List<String> list = lists.get(key);
+				for(String val:list) {
+					log.tracef("Lists: key = %s, value = %s", key, val);
+				}
+			}
+			 Map<String,List<Map<String,String>>> maplists = application.getAuxiliaryData().getMapLists();
+			for (String key:maplists.keySet()) {
+				List<Map<String,String>> maplist = maplists.get(key);
+				for (Map<String,String> map:maplist) {
+					for (String prop:map.keySet()) {
+						log.tracef("MapList(%s): name = %s, value = %s", key, prop, map.get(prop));
+					}
 				}
 			}
 		}
 		
+		/*
+		appDataContainer.setName(application.getName());
+		appDataContainer.setDescription(aux.getProperties().get("Description"));
+		appDataContainer.setPost(aux.getProperties().get("Post"));
+		appDataContainer.setPosts(aux.getLists().get("Posts"));
+		appDataContainer.setQueue(aux.getProperties().get("MessageQueue"));
+		appDataContainer.setQueues(aux.getLists().get("MessageQueues"));
+		appDataContainer.setGroupRampMethod(aux.getProperties().get("GroupRampMethod"));
+		appDataContainer.setGroupRampMethods(aux.getLists().get("GroupRampMethods"));
+		appDataContainer.setUnit(aux.getProperties().get("Unit"));
+		appDataContainer.setUnits(aux.getLists().get("Units"));
+		appDataContainer.setFeedbackMethods(aux.getLists().get("FeedbackMethods"));
+		*/
+	
 		// Build the list of output names that goes into the list widget
 		buildOutputListModel();
-		
-		// Process the list of consoles
-		List<?> consoleList = (List<?>) properties.get("Consoles");
 	}
+	public SerializableApplication getApplication() { return this.application; }
+	public SerializableAuxiliaryData getModel() { return this.model; }
+	public SortedListModel getOutputListModel() { return this.outputListModel; }
+	
+	public void doOK(){
+		save();
+		dialog.dispose();
+	}
+
+	public void doCancel(){
+		dialog.setCancelled(true);
+		dialog.dispose();
+	}
+	
+	
+	// This is generally called after an output has been edited and the output list widget 
+	// needs to be refreshed
+	public void refreshOutputs(){
+		clearOutputListModel();
+		buildOutputListModel();
+	}
+	
+	public void slideTo(int index) {
+		dialog.slideTo(index);	
+	}
+	
+	// Build the outputListModel from the list of QuantOutput maps
+	private void buildOutputListModel(){
+		log.tracef("In buildOutputListModel()");
+		List< Map<String,String> > outputList = model.getMapLists().get("QuantOutputs");
+		log.tracef("OutputList: " + outputList);
+		if( outputList!=null ) {
+			for(Map<String,String> outMap : outputList) {
+				log.tracef("Adding " + outMap + " a " + outMap.getClass().getName());
+				outputListModel.add(outMap.get("QuantOutput"));
+			}
+		}
+	}
+	private void clearOutputListModel(){
+		outputListModel.clear();
+	}
+	
+	// Convert the Application object to the property dictionary
+	private void save(){
+		log.infof("In ApplicationConfigurationController:save()");
+		try {
+			// Save values back to the database
+			extensionManager.runScript(context.getScriptManager(), ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.PROPERTY_SET_SCRIPT, 
+					this.application.getId().toString(),model);
+			// Replace the aux data structure in our serializable application
+			// NOTE: The Nav tree node that calls the dialog saves the application resource.
+			application.setAuxiliaryData(model);
+		}
+		catch( Exception ex ) {
+			log.errorf("ApplicationConfigurationController.save: Exception ("+ex.getMessage()+")",ex); // Throw stack trace
+		}
+			
+
+
+
+	}
+	
+	/*
 	
 	public void setContext(DesignerContext context) {
 //PH		tagBrowser.setContext(context);
 	}
 	
 	
-	public void slideTo(int index) {
-		slidingPane.setSelectedPane(index);	
-	}	
+	
 	
 	public SlidingPane getSlidingPane() {
 		return slidingPane;
@@ -130,10 +177,6 @@ public class ApplicationConfigurationController {
 
 	public OutputsPane getOutputs() {
 		return outputs;
-	}
-
-	public OutputEditorPane getOutputEditor() {
-		return outputEditor;
 	}
 	
 	public void addOutputs(ListModel newValue){
@@ -150,32 +193,9 @@ public class ApplicationConfigurationController {
 		addOutputs(newValue);
 	}
 	
-	public void clearOutputListModel(){
-		outputListModel.clear();
-	}
-	
-	// Build the outputListModel from the list of QuantOutput maps
-	private void buildOutputListModel(){
-		log.tracef("In buildOutputListModel()");
-		List<?> outputList = (List<?>) application.getOutputs();
-		log.tracef("OutputList: " + outputList);
-		if( outputList!=null ) {
-			for(Object obj : outputList) {
-				if (obj instanceof Hashtable){ 
-					outputMap = (Map<String,Object>) obj;
-					log.tracef("Adding " + outputMap + " a " + obj.getClass().getName());
-					outputListModel.add(outputMap.get("QuantOutput"));
-				}
-			}
-		}
-	}
-		
-	// This is generally called after an output has been edited and the output list widget 
-	// needs to be refreshed
-	public void refreshOutputs(){
-		clearOutputListModel();
-		buildOutputListModel();
-	}
+
+
+
 	
 	private void fillListModel(SortedListModel model, ListModel newValues){
 		int size = newValues.getSize();
@@ -187,27 +207,8 @@ public class ApplicationConfigurationController {
 	private void fillListModel(SortedListModel model, Object newValues[]){
 		model.addAll(newValues);
 	}
-	
-	public void doOK(){
-		save();
-		dialog.save();
-		dialog.dispose();
-	}
 
-	public void doCancel(){
-		dialog.dispose();
-	}
 
-	// Convert the Application object to the property dictionary
-	public void save(){
-		properties.put("Description", application.getDescription());
-		properties.put("MessageQueue", application.getQueue());
-		properties.put("GroupRampMethod", application.getGroupRampMethod());
-		properties.put("Post", application.getPost());
-		properties.put("Unit", application.getUnit());
-		properties.put("QuantOutputs", application.getOutputs());
-	}
-	
 	/*
 	public static void main(String[] args) {
 		ApplicationConfigurationController controller = new ApplicationConfigurationController();		

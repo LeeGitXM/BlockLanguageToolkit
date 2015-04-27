@@ -2,20 +2,15 @@ package com.ils.blt.designer.applicationConfiguration;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.Format;
 import java.text.NumberFormat;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -24,28 +19,20 @@ import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 import javax.swing.JTextField;
-import javax.swing.JTree;
 import javax.swing.SwingConstants;
-import javax.swing.border.BevelBorder;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeSelectionModel;
 
 import net.miginfocom.swing.MigLayout;
 
-import com.inductiveautomation.ignition.common.config.BasicPropertySet;
-import com.inductiveautomation.ignition.common.config.PropertyValue;
+import com.ils.blt.common.UtilityFunctions;
+import com.ils.blt.common.serializable.SerializableAuxiliaryData;
 
 
 public class OutputEditorPane extends JPanel implements ApplicationConfigurationController.EditorPane {
-	private ApplicationConfigurationController controller;
-	private Application application;
-	private Map<String,Object> outputMap;
+	private static final long serialVersionUID = -5387165467458025431L;
+	private final ApplicationConfigurationController controller;
+	private final SerializableAuxiliaryData model;
+	private Map<String,String> outputMap;
 	private static final Insets insets = new Insets(0,0,0,0);
 	protected static final Dimension COMBO_SIZE  = new Dimension(300,24);
 	final JTextField nameField = new JTextField();
@@ -57,20 +44,21 @@ public class OutputEditorPane extends JPanel implements ApplicationConfiguration
 	final JFormattedTextField setpointLowLimitField = new JFormattedTextField(NumberFormat.getInstance());
 	final JCheckBox incrementalOutputCheckBox = new JCheckBox();
 	final JComboBox<String> feedbackMethodComboBox = new JComboBox<String>();
-	private static Icon previousIcon = new ImageIcon(Application.class.getResource("/images/arrow_left_green.png"));
+	private static Icon previousIcon = new ImageIcon(OutputEditorPane.class.getResource("/images/arrow_left_green.png"));
 	final JButton previousButton = new JButton(previousIcon);
 	final JButton okButton = new JButton("Ok");
-	private static Icon tagBrowserIcon = new ImageIcon(Application.class.getResource("/images/arrow_right_green.png"));
+	private static Icon tagBrowserIcon = new ImageIcon(OutputEditorPane.class.getResource("/images/arrow_right_green.png"));
 	final JButton nextButton = new JButton("Tags", tagBrowserIcon);
+	private final UtilityFunctions fcns = new UtilityFunctions();
 	
 	protected static final Dimension TEXT_FIELD_SIZE  = new Dimension(300,24);
 	protected static final Dimension NUMERIC_FIELD_SIZE  = new Dimension(100,24);
 	
 	// The constructor
-	public OutputEditorPane(ApplicationConfigurationController controller, Application app, SortedListModel model) {
+	public OutputEditorPane(ApplicationConfigurationController controller) {
 		super(new BorderLayout(20, 30));
 		this.controller = controller;
-		this.application = app;
+		this.model = controller.getModel();
 		Format floatFormat = NumberFormat.getInstance();
 		System.out.println("In Output Editor pane constructor");
 				
@@ -98,12 +86,12 @@ public class OutputEditorPane extends JPanel implements ApplicationConfiguration
 
 		// Configure the Feedback method combo box
 		mainPanel.add(new JLabel("Feedback Method:"), "gap 10");
-		List<String> feedbackMethods = application.getFeedbackMethods();
+		List<String> feedbackMethods = model.getLists().get("FeedbackMethods");
 		System.out.println("Loading feedback methods...");
 		if( feedbackMethods!=null ) {
-			for(Object feedbackMethod : application.getFeedbackMethods()) {
+			for(String feedbackMethod : feedbackMethods) {
 				System.out.println("Found a feedback method...");
-				feedbackMethodComboBox.addItem((String) feedbackMethod);
+				feedbackMethodComboBox.addItem(feedbackMethod);
 			}
 		}
 		feedbackMethodComboBox.setToolTipText("The technique used to combine multiple recommendations for the this output!");
@@ -164,20 +152,20 @@ public class OutputEditorPane extends JPanel implements ApplicationConfiguration
 		add(mainPanel,BorderLayout.CENTER);
 	}
 
-	public void updateFields(Map<String,Object> map){
+	public void updateFields(Map<String,String> map){
 		System.out.println("In OutputEditorPane:updateFields() with " + map);
 		outputMap=map;
 		nameField.setText((String) outputMap.get("QuantOutput"));
 		tagField.setText((String) outputMap.get("TagPath"));
-		incrementalOutputCheckBox.setSelected((boolean) outputMap.get("IncrementalOutput"));
-		mostNegativeIncrementField.setValue(outputMap.get("MostNegativeIncrement"));
+		incrementalOutputCheckBox.setSelected(fcns.coerceToBoolean(outputMap.get("IncrementalOutput")));
+		Double dbl = fcns.coerceToDouble(outputMap.get("MostNegativeIncrement"));
+		mostNegativeIncrementField.setValue(dbl);
 		mostPositiveIncrementField.setValue(outputMap.get("MostPositiveIncrement"));
 		minimumIncrementField.setValue(outputMap.get("MinimumIncrement"));
 		setpointLowLimitField.setValue(outputMap.get("SetpointLowLimit"));
 		setpointHighLimitField.setValue(outputMap.get("SetpointHighLimit"));
 		feedbackMethodComboBox.setSelectedItem((String) outputMap.get("FeedbackMethod"));
 	}
-	
 
 	// The user pressed the OK button so save everything (I don't keep track of what, if anything, was 
 	// changed so assume they change everything.
@@ -187,33 +175,33 @@ public class OutputEditorPane extends JPanel implements ApplicationConfiguration
 		// Update the outputMap with everything in the screen
 		outputMap.put("QuantOutput", nameField.getText());
 		outputMap.put("TagPath", tagField.getText());
-		outputMap.put("IncrementalOutput", incrementalOutputCheckBox.isSelected());
-		outputMap.put("MostNegativeIncrement", mostNegativeIncrementField.getValue());
-		outputMap.put("MostPositiveIncrement", mostPositiveIncrementField.getValue());
-		outputMap.put("MinimumIncrement", minimumIncrementField.getValue());
-		outputMap.put("SetpointLowLimit", setpointLowLimitField.getValue());
-		outputMap.put("SetpointHighLimit", setpointHighLimitField.getValue());
-		outputMap.put("FeedbackMethod", feedbackMethodComboBox.getSelectedItem());
+		outputMap.put("IncrementalOutput", (incrementalOutputCheckBox.isSelected()?"true":"false"));
+		outputMap.put("MostNegativeIncrement", mostNegativeIncrementField.getText());
+		outputMap.put("MostPositiveIncrement", mostPositiveIncrementField.getText());
+		outputMap.put("MinimumIncrement", minimumIncrementField.getText());
+		outputMap.put("SetpointLowLimit", setpointLowLimitField.getText());
+		outputMap.put("SetpointHighLimit", setpointHighLimitField.getText());
+		outputMap.put("FeedbackMethod", feedbackMethodComboBox.getSelectedItem().toString());
 
 		System.out.println("Saving values: " + outputMap);
 		
 		controller.refreshOutputs();
 
 		// Slide back to the Outputs pane
-		controller.getSlidingPane().setSelectedPane(ApplicationConfigurationController.OUTPUTS);	
+		controller.slideTo(ApplicationConfigurationDialog.OUTPUTS);	
 	}
 
 	protected void doPrevious() {
-		controller.getSlidingPane().setSelectedPane(ApplicationConfigurationController.OUTPUTS);	
+		controller.slideTo(ApplicationConfigurationDialog.OUTPUTS);	
 	}
 	
 	protected void doTagSelector() {
-		controller.getSlidingPane().setSelectedPane(ApplicationConfigurationController.TAGSELECTOR);	
+		controller.slideTo(ApplicationConfigurationDialog.TAGSELECTOR);	
 	}
 
 	@Override
 	public void activate() {
-		controller.slideTo(ApplicationConfigurationController.EDITOR);
+		controller.slideTo(ApplicationConfigurationDialog.EDITOR);
 	}
 
 }

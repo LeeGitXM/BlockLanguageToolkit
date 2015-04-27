@@ -47,6 +47,7 @@ import com.ils.blt.designer.ResourceSaveManager;
 import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.blt.designer.applicationConfiguration.ApplicationConfigurationDialog;
 import com.ils.blt.designer.config.FamilyConfigurationDialog;
+import com.ils.blt.designer.config.ToolkitConfigurationDialog;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;

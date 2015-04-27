@@ -22,9 +22,8 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  * Each script is independently compiled and cached (via the ScriptExtensionManager).
  * Different script managers can be used to execute the same script (not in parallel).
  * The standard pattern for execution is: 
- * The standard execution pattern is:
  *    if( script.compileScript() ) {
- *			// There are 4 values to be specified - block,port,value,quality.
+ *			// There are 2 values to be specified - id, properties.
  *			script.initializeLocalsMap(mgr);
  *			script.setLocalVariable(0,a);
  *			script.setLocalVariable(1,b);

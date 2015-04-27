@@ -2,10 +2,10 @@
 
 	<import file="${basedir}/BLT_Build/build.xml"/>
 
-	<property name="version.build" value="7" />	
+	<property name="version.build" value="1" />	
 	<!-- Change version.beta value to "" for release builds -->
 	<property name="version.beta" value="-development" />		
-	<property name="BLTModule.version" value="1.6.2.${version.build}" />
+	<property name="BLTModule.version" value="1.6.3.${version.build}" />
 	<property name="BLTModule.name" value="BLT" />
 	<property name="BLTModule.release" value="0.4" />
 	<property name="BLTModule.description" value="Block Language Toolkit" />
@@ -156,7 +156,7 @@
 			<param name="modName" value="${BLTModule.name}_Common" />
 			<param name="sourceDirFolder" value="${BLTModule.name}_Common" />
 			<param name="jarName" value="blt-common" />
-			<param name="javacSource" value="1.7" />
+			<param name="javacSource" value="1.8" />
 			<param name="module.build.classpath" value="${BLTModule.name}_Common.classpath"/>
 		</antcall>
 		
@@ -172,7 +172,7 @@
 			<param name="modName" value="${BLTModule.name}_Gateway" />
 			<param name="sourceDirFolder" value="${BLTModule.name}_Gateway" />
 			<param name="jarName" value="blt-gateway" />
-			<param name="javacSource" value="1.7" />
+			<param name="javacSource" value="1.8" />
 			<param name="[replace]BLTGateway.properties:Meta.Version" value="${version.build}" />
 			<param name="[replace]BLTGateway.properties:Meta.ReleaseDate" value="${build.date}" />
 			<param name="module.build.classpath" value="${BLTModule.name}_Gateway.classpath"/>
@@ -183,7 +183,7 @@
 			<param name="modName" value="${BLTModule.name}_Client" />
 			<param name="sourceDirFolder" value="${BLTModule.name}_Client" />
 			<param name="jarName" value="blt-client" />
-			<param name="javacSource" value="1.7" />
+			<param name="javacSource" value="1.8" />
 			<param name="module.build.classpath" value="${BLTModule.name}_Client.classpath"/>
 		</antcall>
 		
@@ -192,7 +192,7 @@
 			<param name="modName" value="${BLTModule.name}_Designer" />
 			<param name="sourceDirFolder" value="${BLTModule.name}_Designer" />
 			<param name="jarName" value="blt-designer" />
-			<param name="javacSource" value="1.7" />
+			<param name="javacSource" value="1.8" />
 			<param name="module.build.classpath" value="${BLTModule.name}_Designer.classpath"/>
 		</antcall>
 		

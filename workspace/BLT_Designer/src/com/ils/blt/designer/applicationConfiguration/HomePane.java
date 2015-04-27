@@ -20,12 +20,16 @@ import javax.swing.SwingConstants;
 
 import net.miginfocom.swing.MigLayout;
 
+import com.ils.blt.common.serializable.SerializableAuxiliaryData;
+
 public class HomePane extends JPanel implements ApplicationConfigurationController.EditorPane {
-	private ApplicationConfigurationController controller;
-	private Application application;
+	private final ApplicationConfigurationController controller;
+	private final SerializableAuxiliaryData model;
 	private static final long serialVersionUID = 2882399376824334427L;
-	protected static final Dimension COMBO_SIZE  = new Dimension(300,24);
+	
 	protected static final Dimension AREA_SIZE  = new Dimension(300,80);
+	protected static final Dimension BUTTON_SIZE  = new Dimension(60,24);
+	protected static final Dimension COMBO_SIZE  = new Dimension(300,24);
 
 	final JPanel buttonPanel;
 	final JPanel mainPanel;
@@ -37,18 +41,22 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 	final JComboBox<String> groupRampMethodComboBox = new JComboBox<String>();
 	final JComboBox<String> unitComboBox = new JComboBox<String>();
 	
-	private static Icon nextIcon = new ImageIcon(Application.class.getResource("/images/arrow_right_green.png"));
+	private static Icon nextIcon = new ImageIcon(HomePane.class.getResource("/images/arrow_right_green.png"));
 	final JButton nextButton = new JButton("Outputs", nextIcon);
 	final JButton cancelButton = new JButton("Cancel");
 	final JButton okButton = new JButton("OK");
-	// Don't add an Apply button becaus ethen I need to manage getting the id's of any quant outputs they create 
+
+	// Don't add an Apply button because then I need to manage getting the id's of any quant outputs they create 
 	// back from the extension manager.
 	
 
-	public HomePane(ApplicationConfigurationController controller, Application app) {
+	public HomePane(ApplicationConfigurationController controller) {
 		super(new BorderLayout());
 		this.controller = controller;
-		this.application=app;
+		this.model = controller.getModel();
+		
+		okButton.setPreferredSize(BUTTON_SIZE);
+		cancelButton.setPreferredSize(BUTTON_SIZE);
 
 		// Add a couple of panels to the main panel
 		buttonPanel = new JPanel(new FlowLayout());
@@ -59,14 +67,14 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 		
 		// Add components to the main panel
 		mainPanel.add(new JLabel("Name:"),"align right");
-		nameField.setText(application.getName());
+		nameField.setText(model.getProperties().get("Name"));
 		nameField.setPreferredSize(COMBO_SIZE);
 		nameField.setEditable(false);
 		nameField.setToolTipText("The name can only be changed from the project tree.");
 		mainPanel.add(nameField,"span,wrap");
 
 		mainPanel.add(new JLabel("Description:"),"align right");
-		String description = (String)application.getDescription();
+		String description = model.getProperties().get("Description");
 		if( description==null) description="";
 		descriptionTextArea.setText(description);
 		descriptionTextArea.setEditable(true);
@@ -78,53 +86,56 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 
 		// Set up the Post Combo Box
 		mainPanel.add(new JLabel("Post:"), "align right");
-		List<String> posts = application.getPosts();
+		List<String> posts = model.getLists().get("Posts");
 		if( posts!=null ) {
-			for(Object post : application.getPosts()) {
-				postComboBox.addItem((String) post);
+			for(String post : posts) {
+				postComboBox.addItem(post);
 			}
 		}
 		postComboBox.setToolTipText("The console where diagnosis will be added!");
-		postComboBox.setSelectedItem(application.getPost());
+		postComboBox.setSelectedItem(model.getProperties().get("Post"));
 		postComboBox.setPreferredSize(COMBO_SIZE);
 		mainPanel.add(postComboBox, "wrap");
 		
 		// Set up the Message Queue Combo Box
 		mainPanel.add(new JLabel("Queue:"), "align right");
-		if( application.getQueues()!=null ) {
-			for(Object q : application.getQueues()) {
-				queueComboBox.addItem((String) q);
+		List<String> mqueues = model.getLists().get("MessageQueues");
+		if(mqueues!=null ) {
+			for(String q : mqueues) {
+				queueComboBox.addItem(q);
 			}
 		}
 		
 		queueComboBox.setToolTipText("The message queue where messages for this application will be posted!");
-		queueComboBox.setSelectedItem(application.getQueue());
+		queueComboBox.setSelectedItem(model.getProperties().get("MessageQueue"));
 		queueComboBox.setPreferredSize(COMBO_SIZE);
 		mainPanel.add(queueComboBox, "wrap");
 
 		// Set up the Group Ramp Method Combo Box
 		mainPanel.add(new JLabel("Ramp Method:"),"align right");
-		if( application.getGroupRampMethods()!=null ) {
-			for(Object o : application.getGroupRampMethods()) {
-				groupRampMethodComboBox.addItem((String) o);
+		List<String> methods = model.getLists().get("GroupRampMethods");
+		if( methods!=null ) {
+			for(String o : methods) {
+				groupRampMethodComboBox.addItem(o);
 			}
 		}
 		
 		groupRampMethodComboBox.setToolTipText("The Group Ramp Method that will be used for outputs in this application!");
-		groupRampMethodComboBox.setSelectedItem(application.getGroupRampMethod());
+		groupRampMethodComboBox.setSelectedItem(model.getProperties().get("GroupRampMethod"));
 		groupRampMethodComboBox.setPreferredSize(COMBO_SIZE);
 		mainPanel.add(groupRampMethodComboBox, "wrap");
 		
 		// Set up the Unit Combo Box
 		mainPanel.add(new JLabel("Unit:"),"align right");
-		if( application.getUnits()!=null ) {
-			for(Object o : application.getUnits()) {
-				unitComboBox.addItem((String) o);
+		List<String> units = model.getLists().get("Units");
+		if( units!=null ) {
+			for(String o : units) {
+				unitComboBox.addItem(o);
 			}
 		}
 		
 		unitComboBox.setToolTipText("The unit associated with this application!");
-		unitComboBox.setSelectedItem(application.getUnit());
+		unitComboBox.setSelectedItem(model.getProperties().get("Unit"));
 		unitComboBox.setPreferredSize(COMBO_SIZE);
 		mainPanel.add(unitComboBox, "wrap");
 
@@ -158,11 +169,11 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 	
 	protected void save(){
 		// Set attributes from fields on this pane
-		application.setPost((String) postComboBox.getSelectedItem());
-		application.setDescription(descriptionTextArea.getText());
-		application.setQueue((String) queueComboBox.getSelectedItem());
-		application.setGroupRampMethod((String) groupRampMethodComboBox.getSelectedItem());
-		application.setUnit((String) unitComboBox.getSelectedItem());
+		model.getProperties().put("Post",(String)postComboBox.getSelectedItem());
+		model.getProperties().put("Description",descriptionTextArea.getText());
+		model.getProperties().put("MessageQueue",(String) queueComboBox.getSelectedItem());
+		model.getProperties().put("GroupRampMethod",(String) groupRampMethodComboBox.getSelectedItem());
+		model.getProperties().put("Unit",(String) unitComboBox.getSelectedItem());
 	}
 
 	protected void doCancel() {
@@ -170,12 +181,12 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 	}
 
 	protected void doNext() {
-		controller.getSlidingPane().setSelectedPane(1);
+		controller.slideTo(ApplicationConfigurationDialog.OUTPUTS);
 	}
 
 	@Override
 	public void activate() {
-		controller.slideTo(ApplicationConfigurationController.HOME);
+		controller.slideTo(ApplicationConfigurationDialog.HOME);
 	}
 
 }

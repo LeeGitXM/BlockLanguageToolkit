@@ -17,8 +17,6 @@ import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.connection.Connection;
-import com.ils.blt.common.script.ScriptConstants;
-import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
@@ -57,7 +55,6 @@ public class ModelManager implements ProjectListener  {
 	private final Map<UUID,ProcessNode> orphansByUUID;
 	private final Map<UUID,ProcessNode> nodesByUUID;
 	private final BlockExecutionController controller = BlockExecutionController.getInstance();
-	private final ScriptExtensionManager extensionManager = ScriptExtensionManager.getInstance();
 	
 	/**
 	 * Initially we query the gateway context to discover what resources exists. After that
@@ -428,7 +425,6 @@ public class ModelManager implements ProjectListener  {
 		ProcessApplication application = deserializeApplicationResource(projectId,res);
 		if( application!=null ) {
 			UUID self = application.getSelf();
-			ScriptManager sm = getScriptManagerForProject(projectId.longValue());
 			ProcessNode node = nodesByUUID.get(self);
 			if( node==null ) {
 				ProcessApplication processApp = new ProcessApplication(res.getName(),res.getParentUuid(),self);
@@ -438,16 +434,13 @@ public class ModelManager implements ProjectListener  {
 				ProjResKey key = new ProjResKey(projectId,res.getResourceId());
 				nodesByKey.put(key,processApp);
 				addToHierarchy(projectId,processApp);
-				extensionManager.runScript(sm, ScriptConstants.APP_ADD_SCRIPT, processApp.getSelf().toString());
 			}
 			else {
 				// Update attributes
-				String oldName = node.getName();
 				node.setName(res.getName());
 				if(node instanceof ProcessApplication )  {
 					ProcessApplication processApp = (ProcessApplication)node;
 					processApp.setState(application.getState());
-					extensionManager.runScript(sm, ScriptConstants.APP_UPDATE_SCRIPT,oldName,processApp.getSelf().toString());
 				}
 			}
 		}
@@ -521,7 +514,6 @@ public class ModelManager implements ProjectListener  {
 		if( family!=null ) {
 			UUID self = family.getSelf();
 			ProcessNode node = nodesByUUID.get(self);
-			ScriptManager sm = getScriptManagerForProject(projectId.longValue());
 			if( node==null ) {
 				ProcessFamily processFam = new ProcessFamily(res.getName(),res.getParentUuid(),self);
 				processFam.setResourceId(res.getResourceId());
@@ -530,16 +522,13 @@ public class ModelManager implements ProjectListener  {
 				ProjResKey key = new ProjResKey(projectId,res.getResourceId());
 				nodesByKey.put(key,family);
 				addToHierarchy(projectId,family);
-				extensionManager.runScript(sm, ScriptConstants.FAM_ADD_SCRIPT, processFam.getSelf().toString());
 			}
 			else {
 				// Update attributes
-				String oldName = node.getName();
 				node.setName(res.getName());
 				if( node instanceof ProcessFamily ) {
 					ProcessFamily processFam = (ProcessFamily)node;
 					processFam.setState(family.getState());
-					extensionManager.runScript(sm, ScriptConstants.FAM_UPDATE_SCRIPT,oldName,processFam.getSelf().toString());
 				}
 			}
 		}
@@ -624,16 +613,6 @@ public class ModelManager implements ProjectListener  {
 						controller.removeSubscription(block, prop);
 					}
 				}
-			}
-			else if(node instanceof ProcessApplication ) {
-				ScriptManager sm = getScriptManagerForProject(projectId.longValue());
-				ProcessApplication app = (ProcessApplication)node;
-				extensionManager.runScript(sm, ScriptConstants.APP_DELETE_SCRIPT,app.getSelf().toString());
-			}
-			else if(node instanceof ProcessFamily ) {
-				ScriptManager sm = getScriptManagerForProject(projectId.longValue());
-				ProcessFamily fam = (ProcessFamily)node;
-				extensionManager.runScript(sm, ScriptConstants.FAM_DELETE_SCRIPT,fam.getSelf().toString());
 			}
 
 			if( node.getParent()!=null ) {

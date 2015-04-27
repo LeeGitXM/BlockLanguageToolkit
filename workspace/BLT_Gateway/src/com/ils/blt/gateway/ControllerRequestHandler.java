@@ -36,6 +36,7 @@ import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ProcessApplication;
 import com.ils.blt.gateway.engine.ProcessDiagram;
 import com.ils.blt.gateway.engine.ProcessFamily;
+import com.ils.blt.gateway.engine.ProcessNode;
 import com.ils.blt.gateway.persistence.ToolkitRecord;
 import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.ils.common.ClassList;
@@ -170,6 +171,48 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	public String getApplicationName(String uuid) {
 		ProcessApplication app = pyHandler.getApplication(uuid);
 		return app.getName();
+	}
+	
+	/**
+	 * Find the parent application or diagram of the entity referenced by
+	 * the supplied id. Test the state and return the name of the appropriate
+	 * database.  
+	 * @param uuid
+	 * @return database name
+	 */
+	public String getDatabaseForUUID(String nodeId) {
+		// Search up the tree for a parent diagram or application. Determine the
+		// state. Unless we find a diagram, we don't return any connection name.
+		String db = "NONE";
+		DiagramState ds = DiagramState.DISABLED;
+		try {
+			UUID uuid = UUID.fromString(nodeId);
+			
+			ProcessNode node = controller.getProcessNode(uuid);
+			while( node!=null ) {
+				if( node instanceof ProcessDiagram ) {
+					ds = ((ProcessDiagram)node).getState();
+					//log.infof("%s.getApplication, found application = %s ",TAG,app.getName());
+					break;
+				}
+				else if( node instanceof ProcessApplication ) {
+					ds = ((ProcessApplication)node).getState();
+					//log.infof("%s.getApplication, found application = %s ",TAG,app.getName());
+					break;
+				}
+				node = controller.getProcessNode(node.getParent());
+			}
+			if(ds.equals(DiagramState.ACTIVE)) {
+				db = getToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_DATABASE);
+			}
+			else if(ds.equals(DiagramState.ISOLATED)) {
+				db = getToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE);
+			}
+		}
+		catch(IllegalArgumentException iae) {
+			log.warnf("%s.getApplication: %s is an illegal UUID (%s)",TAG,nodeId,iae.getMessage());
+		}
+		return db;
 	}
 	
 	/**

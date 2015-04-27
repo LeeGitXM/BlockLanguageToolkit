@@ -19,6 +19,7 @@ import com.ils.blt.common.block.TruthValue;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SerializableBlock {
 	private SerializableAnchor[] anchors = null;
+	private SerializableAuxiliaryData auxiliaryData = null;
 	private int background = Color.white.getRGB();
 	private String className = null;
 	private boolean dirty = false;
@@ -49,6 +50,7 @@ public class SerializableBlock {
 		this.anchors = new SerializableAnchor[0];
 	}
 	public SerializableAnchor[] getAnchors() { return anchors; }
+	public SerializableAuxiliaryData getAuxiliaryData() {return auxiliaryData;}
 	public int getBackground() {return background;}
 	public String getClassName() {return className;}
 	public String getEditorClass() {return editorClass;}
@@ -82,6 +84,7 @@ public class SerializableBlock {
 			sa.setParentId(uuid);
 		}
 	}
+	public void setAuxiliaryData(SerializableAuxiliaryData auxiliaryData) {this.auxiliaryData = auxiliaryData;}
 	public void setBackground(int background) {this.background = background;}
 	public void setClassName(String className) {this.className = className;}
 	public void setDirty(boolean dirty) {this.dirty = dirty;}

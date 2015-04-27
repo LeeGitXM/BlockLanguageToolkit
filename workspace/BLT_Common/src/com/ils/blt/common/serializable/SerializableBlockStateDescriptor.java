@@ -1,4 +1,7 @@
-package com.ils.blt.common.serializable;
+/**
+ *   (c) 2015  ILS Automation. All rights reserved. 
+ */
+ package com.ils.blt.common.serializable;
 
 import java.io.Serializable;
 import java.util.ArrayList;

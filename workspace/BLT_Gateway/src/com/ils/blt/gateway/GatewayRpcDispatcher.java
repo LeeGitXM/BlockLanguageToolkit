@@ -73,7 +73,16 @@ public class GatewayRpcDispatcher   {
 	public String getApplicationName(String uuid) {
 		return requestHandler.getApplicationName(uuid);
 	}
-
+	/**
+	 * Find the parent application or diagram of the entity referenced by
+	 * the supplied id. Test the state and return the name of the appropriate
+	 * database.  
+	 * @param uuid
+	 * @return database name
+	 */
+	public String getDatabaseForUUID(String uuid) {
+		return requestHandler.getDatabaseForUUID(uuid);
+	}
 
 	/**
 	 * Query the specified block for its properties. If the block does not exist, create it, given the

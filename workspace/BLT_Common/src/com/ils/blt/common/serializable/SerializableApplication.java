@@ -3,6 +3,7 @@ package com.ils.blt.common.serializable;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.ActiveState;
 
 
@@ -18,15 +19,16 @@ import com.ils.blt.common.block.ActiveState;
 public class SerializableApplication {
 	private SerializableFamily[] families;
 	private SerializableFolder[] folders;
+	private SerializableAuxiliaryData auxiliaryData;
 
 	private UUID id;
 	private String name;
-	private ActiveState state = ActiveState.ACTIVE;
-	
+	private DiagramState state = DiagramState.ACTIVE;
 	public SerializableApplication() {	
 		families = new SerializableFamily[0];
 		name="UNSET";
 		id = UUID.randomUUID();
+		auxiliaryData = null;
 	}
 	
 	public void addFamily(SerializableFamily sfam) {
@@ -42,15 +44,17 @@ public class SerializableApplication {
 	    folders = extended;
 	}
 	
+	public SerializableAuxiliaryData getAuxiliaryData() {return auxiliaryData;}
 	public SerializableFamily[] getFamilies() { return families; }
 	public SerializableFolder[] getFolders() {return folders;}
 	public UUID getId() {return id;}
 	public String getName() { return name; }
-	public ActiveState getState() {return state;}
+	public DiagramState getState() {return state;}
 	
+	public void setAuxiliaryData(SerializableAuxiliaryData auxiliaryData) {this.auxiliaryData = auxiliaryData;}
 	public void setFamilies(SerializableFamily[] list) { families=list; }
 	public void setFolders(SerializableFolder[] folders) {this.folders = folders;}
 	public void setId(UUID id) {this.id = id;}
 	public void setName(String nam) { if(nam!=null) name=nam; }
-	public void setState(ActiveState state) {this.state = state;}
+	public void setState(DiagramState state) {this.state = state;}
 }

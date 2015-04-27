@@ -13,6 +13,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 import javax.swing.BorderFactory;
@@ -43,6 +44,7 @@ public class ConfigurationDialog extends JDialog {
 	private static final long serialVersionUID = 2882399376824334427L;
 	protected final DesignerContext context;
 	protected final ResourceBundle rb;
+	protected static final Dimension BUTTON_SIZE  = new Dimension(100,32);
 	protected static final Dimension COMBO_SIZE  = new Dimension(120,24);
 	protected static final Dimension DESCRIPTION_BOX_SIZE  = new Dimension(280,80);
 	protected static final Dimension NAME_BOX_SIZE  = new Dimension(280,24);
@@ -81,8 +83,10 @@ public class ConfigurationDialog extends JDialog {
 		buttonPanel = new JPanel();
 		contentPanel = new JPanel(new BorderLayout());
 		okButton = new JButton("OK");
+		okButton.setPreferredSize(BUTTON_SIZE);
 		buttonPanel.add(okButton,"");
 		cancelButton = new JButton("Cancel");
+		cancelButton.setPreferredSize(BUTTON_SIZE);
 		cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				cancelled = true;
@@ -146,11 +150,17 @@ public class ConfigurationDialog extends JDialog {
 		return field;
 	}
 	/**
-	 * Add a separator to a panel using Mig layout
+	 * Add a separator to a panel using Mig layout. For the 
+	 * separator text, use either the string directly, or 
+	 * the resource, if it exists.
 	 */
 	protected void addSeparator(JPanel panel,String text) {
 		JSeparator separator = new JSeparator();
-		JLabel label = new JLabel(rb.getString(text));
+		try {
+			text = rb.getString(text);
+		}
+		catch(MissingResourceException ignore) {}
+		JLabel label = new JLabel(text);
 		label.setFont(new Font("Tahoma", Font.PLAIN, 11));
 		label.setForeground(Color.BLUE);
 		panel.add(label, "split 2,span");
