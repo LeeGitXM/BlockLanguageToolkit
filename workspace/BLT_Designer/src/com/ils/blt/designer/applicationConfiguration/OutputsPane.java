@@ -20,12 +20,13 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 
-import com.ils.blt.common.serializable.SerializableAuxiliaryData;
+import com.ils.common.GeneralPurposeDataContainer;
+import com.ils.common.SortedListModel;
 
 
 public class OutputsPane extends JPanel implements ApplicationConfigurationController.EditorPane {
 	private final ApplicationConfigurationController controller;
-	private final SerializableAuxiliaryData model;
+	private final GeneralPurposeDataContainer model;
 	private SortedListModel outputListModel;
 	private Integer newOutputId = -1;
 	private static final long serialVersionUID = 2882399376824334428L;

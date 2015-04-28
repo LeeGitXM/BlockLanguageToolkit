@@ -6,10 +6,11 @@ package com.ils.blt.common.serializable;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.ils.blt.common.block.AnchorDirection;
+import com.ils.blt.common.block.PlacementHint;
+import com.ils.blt.common.connection.ConnectionType;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
-import com.ils.blt.common.block.*;
-import com.ils.blt.common.connection.ConnectionType;
 
 /**
  * Implement a plain-old-java-object representing an anchor point

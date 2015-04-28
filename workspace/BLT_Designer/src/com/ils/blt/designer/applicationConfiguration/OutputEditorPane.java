@@ -25,13 +25,13 @@ import javax.swing.SwingConstants;
 import net.miginfocom.swing.MigLayout;
 
 import com.ils.blt.common.UtilityFunctions;
-import com.ils.blt.common.serializable.SerializableAuxiliaryData;
+import com.ils.common.GeneralPurposeDataContainer;
 
 
 public class OutputEditorPane extends JPanel implements ApplicationConfigurationController.EditorPane {
 	private static final long serialVersionUID = -5387165467458025431L;
 	private final ApplicationConfigurationController controller;
-	private final SerializableAuxiliaryData model;
+	private final GeneralPurposeDataContainer model;
 	private Map<String,String> outputMap;
 	private static final Insets insets = new Insets(0,0,0,0);
 	protected static final Dimension COMBO_SIZE  = new Dimension(300,24);

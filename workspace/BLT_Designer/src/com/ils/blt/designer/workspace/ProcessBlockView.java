@@ -24,10 +24,10 @@ import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.serializable.SerializableAnchor;
-import com.ils.blt.common.serializable.SerializableAuxiliaryData;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.designer.workspace.ui.AbstractUIView;
 import com.ils.blt.designer.workspace.ui.UIFactory;
+import com.ils.common.GeneralPurposeDataContainer;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -56,7 +56,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	private final static Random random = new Random();
 	private Map<String,ProcessAnchorDescriptor> anchors;
 	private final EventListenerList listenerList;
-	private SerializableAuxiliaryData auxiliaryData = null;
+	private GeneralPurposeDataContainer auxiliaryData = null;
 	private final ChangeEvent changeEvent;
 	private int background = Color.white.getRGB();
 	private final String className;
@@ -273,7 +273,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		return ui.getAnchorPoints();	
 	}
 	public Collection<ProcessAnchorDescriptor> getAnchors() { return anchors.values(); }
-	public SerializableAuxiliaryData getAuxiliaryData() {return auxiliaryData;}
+	public GeneralPurposeDataContainer getAuxiliaryData() {return auxiliaryData;}
 	public int getBackground() { return background;}
 	public String getClassName() { return className; }
 
@@ -361,7 +361,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 			log.warnf("%s.recordLatestValue: Uknown port (%s)",TAG,port);
 		}
 	}
-	public void setAuxiliaryData(SerializableAuxiliaryData auxiliaryData) {this.auxiliaryData = auxiliaryData;}
+	public void setAuxiliaryData(GeneralPurposeDataContainer auxiliaryData) {this.auxiliaryData = auxiliaryData;}
 	public void setCtypeEditable(boolean ctypeEditable) {this.ctypeEditable = ctypeEditable;}
 	public void setDirty(boolean dirty) {this.dirty = dirty;} 
 	public void setEditorClass(String editorClass) {this.editorClass = editorClass;}

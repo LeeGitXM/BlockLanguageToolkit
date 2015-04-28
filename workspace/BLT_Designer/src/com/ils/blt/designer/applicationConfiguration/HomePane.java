@@ -20,15 +20,15 @@ import javax.swing.SwingConstants;
 
 import net.miginfocom.swing.MigLayout;
 
-import com.ils.blt.common.serializable.SerializableAuxiliaryData;
+import com.ils.common.GeneralPurposeDataContainer;
 
 public class HomePane extends JPanel implements ApplicationConfigurationController.EditorPane {
 	private final ApplicationConfigurationController controller;
-	private final SerializableAuxiliaryData model;
+	private final GeneralPurposeDataContainer model;
 	private static final long serialVersionUID = 2882399376824334427L;
 	
 	protected static final Dimension AREA_SIZE  = new Dimension(300,80);
-	protected static final Dimension BUTTON_SIZE  = new Dimension(60,24);
+	protected static final Dimension BUTTON_SIZE  = new Dimension(80,28);
 	protected static final Dimension COMBO_SIZE  = new Dimension(300,24);
 
 	final JPanel buttonPanel;

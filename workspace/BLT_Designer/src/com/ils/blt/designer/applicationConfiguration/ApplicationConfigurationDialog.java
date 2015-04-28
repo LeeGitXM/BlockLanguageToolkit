@@ -6,16 +6,11 @@ package com.ils.blt.designer.applicationConfiguration;
 
 import java.awt.Dimension;
 import java.awt.Frame;
-import java.util.List;
-import java.util.Map;
 
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 
-import com.ils.blt.common.script.ScriptConstants;
-import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.common.serializable.SerializableApplication;
-import com.ils.blt.common.serializable.SerializableAuxiliaryData;
 import com.inductiveautomation.ignition.client.util.gui.SlidingPane;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;

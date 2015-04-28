@@ -7,19 +7,20 @@ import java.util.Map;
 import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.common.serializable.SerializableApplication;
-import com.ils.blt.common.serializable.SerializableAuxiliaryData;
+import com.ils.common.GeneralPurposeDataContainer;
+import com.ils.common.SortedListModel;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 /** A controller for all the sliding panes that are involved in editing the application. */
 public class ApplicationConfigurationController {	
 	public static java.awt.Color background = new java.awt.Color(238,238,238);
-	private final SerializableAuxiliaryData model;           // Data container operated on by panels
+	private final GeneralPurposeDataContainer model;           // Data container operated on by panels
 	private final SerializableApplication application;       // The application that we update
 	protected final DesignerContext context;
 	private final ApplicationConfigurationDialog dialog;
 	private final ScriptExtensionManager extensionManager = ScriptExtensionManager.getInstance();
-	private final SortedListModel outputListModel;
+	private final SortedListModel<String> outputListModel;
 	private Map<String,String> outputMap;
 	protected final LoggerEx log;
 	
@@ -36,8 +37,8 @@ public class ApplicationConfigurationController {
 		this.dialog = dlg;
 		this.log = dlg.getLog();
 		this.application = app;    // The real thing
-		this.model = new SerializableAuxiliaryData();
-		this.outputListModel = new SortedListModel();
+		this.model = new GeneralPurposeDataContainer();
+		this.outputListModel = new SortedListModel<>();
 		
 		initializeModel();
 		log.infof("   ...leaving ApplicationConfigurationController constructor!");
@@ -45,7 +46,7 @@ public class ApplicationConfigurationController {
 	
 	// Create an empty model, then initialize from the database ...
 	private void initializeModel(){
-		log.infof("   ...initializing the Application data model...");
+		log.infof("   ...initializing the Application %s data model...",application.getName());
 		
 		// Fetch data from the database and store in the model
 		model.setProperties(new HashMap<String,String>());
@@ -57,18 +58,18 @@ public class ApplicationConfigurationController {
 		
 		// If trace is enabled, then dump contents of the database query.
 		if( log.isTraceEnabled() ) {
-			Map<String,String> properties = application.getAuxiliaryData().getProperties();
+			Map<String,String> properties = model.getProperties();
 			for (String key:properties.keySet()) {
 				log.tracef("Properties: key = %s, value = %s", key, properties.get(key));
 			}
-			Map<String,List<String>> lists = application.getAuxiliaryData().getLists();
+			Map<String,List<String>> lists = model.getLists();
 			for (String key:lists.keySet()) {
 				List<String> list = lists.get(key);
 				for(String val:list) {
 					log.tracef("Lists: key = %s, value = %s", key, val);
 				}
 			}
-			 Map<String,List<Map<String,String>>> maplists = application.getAuxiliaryData().getMapLists();
+			 Map<String,List<Map<String,String>>> maplists = model.getMapLists();
 			for (String key:maplists.keySet()) {
 				List<Map<String,String>> maplist = maplists.get(key);
 				for (Map<String,String> map:maplist) {
@@ -78,27 +79,13 @@ public class ApplicationConfigurationController {
 				}
 			}
 		}
-		
-		/*
-		appDataContainer.setName(application.getName());
-		appDataContainer.setDescription(aux.getProperties().get("Description"));
-		appDataContainer.setPost(aux.getProperties().get("Post"));
-		appDataContainer.setPosts(aux.getLists().get("Posts"));
-		appDataContainer.setQueue(aux.getProperties().get("MessageQueue"));
-		appDataContainer.setQueues(aux.getLists().get("MessageQueues"));
-		appDataContainer.setGroupRampMethod(aux.getProperties().get("GroupRampMethod"));
-		appDataContainer.setGroupRampMethods(aux.getLists().get("GroupRampMethods"));
-		appDataContainer.setUnit(aux.getProperties().get("Unit"));
-		appDataContainer.setUnits(aux.getLists().get("Units"));
-		appDataContainer.setFeedbackMethods(aux.getLists().get("FeedbackMethods"));
-		*/
 	
 		// Build the list of output names that goes into the list widget
 		buildOutputListModel();
 	}
 	public SerializableApplication getApplication() { return this.application; }
-	public SerializableAuxiliaryData getModel() { return this.model; }
-	public SortedListModel getOutputListModel() { return this.outputListModel; }
+	public GeneralPurposeDataContainer getModel() { return this.model; }
+	public SortedListModel<String> getOutputListModel() { return this.outputListModel; }
 	
 	public void doOK(){
 		save();

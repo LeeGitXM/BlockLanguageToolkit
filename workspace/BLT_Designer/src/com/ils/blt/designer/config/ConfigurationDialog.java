@@ -44,7 +44,7 @@ public class ConfigurationDialog extends JDialog {
 	private static final long serialVersionUID = 2882399376824334427L;
 	protected final DesignerContext context;
 	protected final ResourceBundle rb;
-	protected static final Dimension BUTTON_SIZE  = new Dimension(100,32);
+	protected static final Dimension BUTTON_SIZE  = new Dimension(90,28);
 	protected static final Dimension COMBO_SIZE  = new Dimension(120,24);
 	protected static final Dimension DESCRIPTION_BOX_SIZE  = new Dimension(280,80);
 	protected static final Dimension NAME_BOX_SIZE  = new Dimension(280,24);

@@ -39,6 +39,8 @@ import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.common.serializable.SerializableFolder;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.common.serializable.UUIDResetHandler;
+import com.ils.blt.designer.AuxiliaryDataRestoreManager;
+import com.ils.blt.designer.AuxiliaryDataSaveManager;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.ResourceCreateManager;
@@ -370,6 +372,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			FamilyCreateAction familyAction = new FamilyCreateAction(this);
 
 			ApplicationConfigureAction applicationConfigureAction = new ApplicationConfigureAction(menu.getRootPane(),getProjectResource());
+			RestoreAuxiliaryDataAction restoreAuxDataAction = new RestoreAuxiliaryDataAction(this);
+			SaveAuxiliaryDataAction saveAuxDataAction = new SaveAuxiliaryDataAction(this);
 			treeSaveAction = new TreeSaveAction(this,PREFIX+".SaveApplication");
 
 			menu.add(familyAction);
@@ -383,6 +387,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			setStateMenu.add(ssaIsolated);
 			menu.add(setStateMenu);
 			menu.addSeparator();
+			menu.add(saveAuxDataAction);
+			menu.add(restoreAuxDataAction);
 			menu.add(applicationConfigureAction);
 			menu.add(applicationExportAction);
 			menu.add(treeSaveAction);
@@ -1393,6 +1399,23 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			}
 		}
 	}
+	
+	// Launch a dialog that recursively saves auxiliary data from the application
+	// into the current database.
+	private class RestoreAuxiliaryDataAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final AbstractResourceNavTreeNode node;
+
+		public RestoreAuxiliaryDataAction(AbstractResourceNavTreeNode treeNode)  {
+			super(PREFIX+".RestoreAuxiliaryData",IconUtil.getIcon("data_replace"));  // preferences
+			node = treeNode;
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			// Traverse the hierarchy of the application, saving auxiliary data at each step
+			executionEngine.executeOnce(new AuxiliaryDataRestoreManager(node));
+		}
+	}
 	// Save the entire Application hierarchy.
 	private class SaveAllAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
@@ -1411,6 +1434,22 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		}
 	}
 	
+	// Launch a dialog that recursively saves auxiliary data from the application
+	// into the current database.
+	private class SaveAuxiliaryDataAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final AbstractResourceNavTreeNode node;
+
+		public SaveAuxiliaryDataAction(AbstractResourceNavTreeNode treeNode)  {
+			super(PREFIX+".SaveAuxiliaryData",IconUtil.getIcon("data_out"));  // preferences
+			node = treeNode;
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			// Traverse the hierarchy of the application, saving auxiliary data at each step
+			executionEngine.executeOnce(new AuxiliaryDataSaveManager(node));
+		}
+	}
 	/**
 	 * Recursively set the state of every diagram under the application to the selected value.
 	 */

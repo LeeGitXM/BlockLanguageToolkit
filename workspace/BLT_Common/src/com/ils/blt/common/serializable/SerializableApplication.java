@@ -4,7 +4,7 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.ils.blt.common.DiagramState;
-import com.ils.blt.common.block.ActiveState;
+import com.ils.common.GeneralPurposeDataContainer;
 
 
 
@@ -19,7 +19,7 @@ import com.ils.blt.common.block.ActiveState;
 public class SerializableApplication {
 	private SerializableFamily[] families;
 	private SerializableFolder[] folders;
-	private SerializableAuxiliaryData auxiliaryData;
+	private GeneralPurposeDataContainer auxiliaryData;
 
 	private UUID id;
 	private String name;
@@ -44,14 +44,14 @@ public class SerializableApplication {
 	    folders = extended;
 	}
 	
-	public SerializableAuxiliaryData getAuxiliaryData() {return auxiliaryData;}
+	public GeneralPurposeDataContainer getAuxiliaryData() {return auxiliaryData;}
 	public SerializableFamily[] getFamilies() { return families; }
 	public SerializableFolder[] getFolders() {return folders;}
 	public UUID getId() {return id;}
 	public String getName() { return name; }
 	public DiagramState getState() {return state;}
 	
-	public void setAuxiliaryData(SerializableAuxiliaryData auxiliaryData) {this.auxiliaryData = auxiliaryData;}
+	public void setAuxiliaryData(GeneralPurposeDataContainer auxiliaryData) {this.auxiliaryData = auxiliaryData;}
 	public void setFamilies(SerializableFamily[] list) { families=list; }
 	public void setFolders(SerializableFolder[] folders) {this.folders = folders;}
 	public void setId(UUID id) {this.id = id;}
