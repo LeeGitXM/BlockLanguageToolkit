@@ -53,7 +53,8 @@ public class ApplicationConfigurationController {
 		model.setLists(new HashMap<>());
 		model.setMapLists(new HashMap<>());
 		model.getProperties().put("Name", application.getName());   // Use as a key when fetching
-		extensionManager.runScript(context.getScriptManager(),ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.PROPERTY_GET_SCRIPT, 
+		try {
+			extensionManager.runScript(context.getScriptManager(),ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.PROPERTY_GET_SCRIPT, 
 				this.application.getId().toString(),model);
 		
 		// If trace is enabled, then dump contents of the database query.
@@ -82,7 +83,13 @@ public class ApplicationConfigurationController {
 	
 		// Build the list of output names that goes into the list widget
 		buildOutputListModel();
+		
+		}
+		catch( Exception ex ) {
+			log.errorf("ApplicationConfigurationController.initializeModel: Exception ("+ex.getMessage()+")",ex); // Throw stack trace
+		}
 	}
+	
 	public SerializableApplication getApplication() { return this.application; }
 	public GeneralPurposeDataContainer getModel() { return this.model; }
 	public SortedListModel<String> getOutputListModel() { return this.outputListModel; }
@@ -146,25 +153,6 @@ public class ApplicationConfigurationController {
 	}
 	
 	/*
-	
-	public void setContext(DesignerContext context) {
-//PH		tagBrowser.setContext(context);
-	}
-	
-	
-	
-	
-	public SlidingPane getSlidingPane() {
-		return slidingPane;
-	}
-
-	public HomePane getHome() {
-		return home;
-	}
-
-	public OutputsPane getOutputs() {
-		return outputs;
-	}
 	
 	public void addOutputs(ListModel newValue){
 		fillListModel(outputListModel, newValue);

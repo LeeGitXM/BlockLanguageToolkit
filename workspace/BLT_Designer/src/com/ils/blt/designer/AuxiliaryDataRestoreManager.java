@@ -2,16 +2,16 @@ package com.ils.blt.designer;
 
 import java.util.Enumeration;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.designer.navtree.DiagramTreeNode;
-import com.ils.blt.designer.navtree.NavTreeNodeInterface;
-import com.inductiveautomation.ignition.client.gateway_interface.GatewayException;
-import com.inductiveautomation.ignition.common.project.Project;
+import com.ils.blt.common.script.ScriptConstants;
+import com.ils.blt.common.script.ScriptExtensionManager;
+import com.ils.blt.common.serializable.SerializableApplication;
+import com.ils.blt.designer.workspace.ProcessBlockView;
+import com.ils.common.GeneralPurposeDataContainer;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
-import com.inductiveautomation.ignition.designer.IgnitionDesigner;
-import com.inductiveautomation.ignition.designer.gateway.DTGatewayInterface;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
 
@@ -25,10 +25,10 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
  */
 public class AuxiliaryDataRestoreManager implements Runnable {
 	private static final String TAG = "AuxiliaryDataRestoreManager";
-	private static final LoggerEx logger = LogUtil.getLogger(AuxiliaryDataRestoreManager.class.getPackage().getName());
+	private static final LoggerEx log = LogUtil.getLogger(AuxiliaryDataRestoreManager.class.getPackage().getName());
 	private static DesignerContext context = null;
-	private static NodeStatusManager statusManager = null;
 	private final AbstractResourceNavTreeNode root;	      // Root of our save.
+	private final ScriptExtensionManager extensionManager = ScriptExtensionManager.getInstance();
 	
 	public AuxiliaryDataRestoreManager(AbstractResourceNavTreeNode node) {
 		this.root = node;
@@ -40,35 +40,34 @@ public class AuxiliaryDataRestoreManager implements Runnable {
 	 */
 	public static void setContext(DesignerContext ctx) {
 		context = ctx;
-		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
-	}
-	
-	/**
-	 * Traverse the entire node hierarchy looking for diagrams that need saving.
-	 * When found, serialize into the project resource. This is in anticipation
-	 * of a top-level save.
-	 */
-	public void saveSynchronously() {
-		saveDirtyDiagrams(root);
-		// Update UI
-		((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler().triggerStatusNotifications();
 	}
 	
 	@Override
 	public void run() {
-		saveNodeAndDescendants();
-		((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler().triggerStatusNotifications();
+		recursivelyRestore(root);
 	}
 	
-	// Recursively descend the node tree, looking for diagram resources where
-	// the associated DiagramView is out-of-synch with the project resource.
-	// When found update the project resource.
-	private void saveDirtyDiagrams(AbstractResourceNavTreeNode node) {
+	// Recursively descend the node tree, looking for resources that have 
+	// auxiliary data. When found, restore that data into the node.
+	private void recursivelyRestore(AbstractResourceNavTreeNode node) {
 		ProjectResource res = node.getProjectResource();
 		if( res!=null ) {
-			logger.infof("%s.saveDirtyDiagrams: %s (%d)",TAG,res.getName(),res.getResourceId());
 			if(res.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE) ) {
-				// If the resource is open, we need to save it
+				try{
+					byte[] bytes = res.getData();
+					ObjectMapper mapper = new ObjectMapper();
+					SerializableApplication sa = mapper.readValue(new String(bytes), SerializableApplication.class);
+					restoreApplication(sa);
+				}
+				catch(Exception ex) {
+					log.warnf("%s.deserializeApplication: Deserialization exception (%s)",TAG,ex.getMessage());
+				}
+			}
+			else if(res.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE) ) {
+				
+			}
+			else if(res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
+				// Iterate over blocks
 			}
 		}
 		
@@ -76,64 +75,37 @@ public class AuxiliaryDataRestoreManager implements Runnable {
 		Enumeration walker = node.children();
 		while(walker.hasMoreElements()) {
 			Object child = walker.nextElement();
-			saveDirtyDiagrams((AbstractResourceNavTreeNode)child);
+			recursivelyRestore((AbstractResourceNavTreeNode)child);
 		}
 	}
-	
+	/**
+	 * Copy auxiliary data from the database into the node. The entire root
+	 * node hierarchy will be saved as project resources by the calling entity.
+	 */
+	private void restoreApplication(SerializableApplication app) {
+		try {
+			if(app.getAuxiliaryData()==null) app.setAuxiliaryData(new GeneralPurposeDataContainer());
+			extensionManager.runScript(context.getScriptManager(),ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.PROPERTY_GET_SCRIPT, 
+				app.getId().toString(),app.getAuxiliaryData());
+		}
+		catch( Exception ex ) {
+			log.errorf(TAG+".restoreNode: Exception ("+ex.getMessage()+")",ex); // Throw stack trace
+		}
 
-
-	// Recursively descend the node tree, gathering up associated resources.
-	// Since this is used during a save, set the resources clean.
-	private void accumulateDirtyNodeResources(AbstractResourceNavTreeNode node,Project diff) {
-		ProjectResource res = node.getProjectResource();
-		if( res!=null ) {
-			long resid = res.getResourceId();
-			// For a diagram include either dirty or "dirty children"
-			if( node instanceof DiagramTreeNode && 
-				( ((NavTreeNodeInterface)node).isDirty() ||
-				  statusManager.isResourceDirty(resid)      )  ) {
-				logger.infof("%s.accumulateDirtyNodeResources: diagram %s (%d)",TAG,res.getName(),resid);
-				diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
-			}
-			// For other nodes include only "dirty"
-			else if( node instanceof NavTreeNodeInterface && 
-					( ((NavTreeNodeInterface)node).isDirty()  )  ) {
-					logger.infof("%s.accumulateDirtyNodeResources: %s (%d)",TAG,res.getName(),resid);
-					diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
-			}
-			statusManager.clearDirtyChildCount(resid);
-		}
-		else {
-			statusManager.clearDirtyChildCount(BLTProperties.ROOT_RESOURCE_ID);
-		}
-		
-		
-		@SuppressWarnings("rawtypes")
-		Enumeration walker = node.children();
-		while(walker.hasMoreElements()) {
-			Object child = walker.nextElement();
-			accumulateDirtyNodeResources((AbstractResourceNavTreeNode)child,diff);
-		}
 	}
 	
 	/**
-	 * Save the current node and its descendants. During
-	 * the accumulation, we set the resources to "clean".
+	 * Copy auxiliary data from the database into the node. The entire root
+	 * node hierarchy will be saved as project resources by the calling entity.
 	 */
-	private void saveNodeAndDescendants() {
-		Project diff = context.getProject().getEmptyCopy();
-
-		// Scoop up the dirty nodes (that aren't deleted).
-		accumulateDirtyNodeResources(root,diff);
-		// Update the project with these nodes (informs the gateway also)
+	private void restoreNode(ProcessBlockView block, String className) {
 		try {
-			DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ...");  // Do not publish
+			extensionManager.runScript(context.getScriptManager(),className, ScriptConstants.PROPERTY_GET_SCRIPT, 
+				block.getId().toString(),block.getAuxiliaryData());
 		}
-		catch(GatewayException ge) {
-			logger.warnf("%s.saveNodeAndDescendants: Exception saving project resource %d (%s)",TAG,root.getProjectResource().getResourceId(),ge.getMessage());
+		catch( Exception ex ) {
+			log.errorf(TAG+".restoreNode: Exception ("+ex.getMessage()+")",ex); // Throw stack trace
 		}
-		// Mark these as "clean" in the current project so that we don't save again.
-		Project project = context.getProject();
-		project.applyDiff(diff,false);      // Apply diff, not dirty
+
 	}
 }

@@ -115,13 +115,13 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	public String getDatabaseForUUID(String uuid) {
 		String db = "NONE";
 		if( uuid!=null) {
-			log.infof("%s.getDatabaseForNode... %s",TAG,uuid);
+			log.infof("%s.getDatabaseForUUID... %s",TAG,uuid);
 			try {
 				db = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-						BLTProperties.MODULE_ID, "getDatabaseForNode",uuid);
+						BLTProperties.MODULE_ID, "getDatabaseForUUID",uuid);
 			}
 			catch(Exception ex) {
-				log.infof("%s.getDatabaseForNode: Exception (%s)",TAG,ex.getMessage());
+				log.infof("%s.getDatabaseForUUID: Exception (%s)",TAG,ex.getMessage());
 			};
 		}
 		return db;

@@ -30,6 +30,7 @@ import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.notification.Signal;
 import com.ils.blt.common.notification.SignalNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
+import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.watchdog.WatchdogObserver;
 import com.ils.common.watchdog.WatchdogTimer;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
@@ -55,7 +56,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	private UUID blockId;
 	private UUID parentId;
 	private long projectId = -1;    // This is the global project
-	private String auxiliaryData = null;
+	private GeneralPurposeDataContainer auxiliaryData = null;
 	private String name = ".";
 	protected String statusText;
 	protected PalettePrototype prototype = null;
@@ -157,8 +158,8 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	public boolean delayBlockStart() { return this.delayStart; }
 	@Override
 	public List<AnchorPrototype>getAnchors() { return anchors; }
-	public String getAuxiliaryData() {return auxiliaryData;}
-	public void setAuxiliaryData(String auxiliaryData) {this.auxiliaryData = auxiliaryData;}
+	public GeneralPurposeDataContainer getAuxiliaryData() {return auxiliaryData;}
+	public void setAuxiliaryData(GeneralPurposeDataContainer auxiliaryData) {this.auxiliaryData = auxiliaryData;}
 	@Override
 	public PalettePrototype getBlockPrototype() {return prototype; }
 	@Override

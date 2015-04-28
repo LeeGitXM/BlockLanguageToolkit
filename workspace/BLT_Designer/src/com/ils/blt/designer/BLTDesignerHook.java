@@ -103,6 +103,8 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	@Override
 	public void startup(DesignerContext ctx, LicenseState activationState) throws Exception {
 		this.context = ctx;
+		AuxiliaryDataRestoreManager.setContext(ctx);
+		AuxiliaryDataSaveManager.setContext(ctx);
 		ResourceCreateManager.setContext(ctx);
 		ResourceDeleteManager.setContext(ctx);
 		ResourceUpdateManager.setContext(ctx);
