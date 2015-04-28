@@ -157,7 +157,6 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		    	for(String clss: sem.getClassNames() ) {
 		    		String key = ScriptExtensionManager.makeKey(clss, flavor);
 			    	String pythonPath = appRequestHandler.getToolkitProperty(key);
-			    	log.infof("%s.addScript: %s-%s is %s",TAG,clss,flavor,pythonPath);
 			    	if( pythonPath!=null ) sem.addScript(clss,flavor, pythonPath);
 			    }
 		    }

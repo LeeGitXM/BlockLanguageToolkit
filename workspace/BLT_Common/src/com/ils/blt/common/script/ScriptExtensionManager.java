@@ -98,7 +98,7 @@ public class ScriptExtensionManager {
 		}
 		scriptMap.put(key,createMap(entry,arglist));
 		setModulePath(key,modulePath);
-		log.infof("%s.addScript: %s-%s is %s",TAG,className,flavor,modulePath);
+		log.debugf("%s.addScript: %s-%s is %s",TAG,className,flavor,modulePath);
 	}
 	
 	public List<String> getFlavors() {
