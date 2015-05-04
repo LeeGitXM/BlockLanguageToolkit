@@ -8,6 +8,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.JCheckBox;
@@ -39,12 +40,13 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 	private final ScriptExtensionManager extensionManager = ScriptExtensionManager.getInstance();
 	private JPanel mainPanel = null;
 	private final GeneralPurposeDataContainer model;           // Data container operated on by panels
+	protected DualListBox dual;
 	protected JTextField calculationMethodField;
 	protected JTextArea textRecommendationArea;
-	protected JTextArea postTextRecommendationArea;
+	protected JCheckBox postTextRecommendationBox;
 	protected JTextField priorityField;
 	protected JTextField refreshRateField;
-	protected JTextField recommendationMethodField;
+	protected JTextField recommendationCallbackField;
 	protected JCheckBox  trapBox;
 	
 	public FinalDiagnosisConfiguration(DesignerContext ctx,ProcessDiagramView diag,ProcessBlockView view) {
@@ -85,7 +87,7 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 		
 		addSeparator(mainPanel,"FinalDiagnosis.QuantOutputs");
 		
-		DualListBox dual = new DualListBox();
+		dual = new DualListBox();
 		dual.setSourceElements(model.getLists().get("QuantOutputs"));
 		dual.setDestinationElements(model.getLists().get("OutputsInUse"));
 		mainPanel.add(dual, "gapx 50 40,wrap");
@@ -166,10 +168,10 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 		panel.add(textRecommendationArea,"gaptop 2,aligny top,span,wrap");
 		
 		panel.add(createLabel("FinalDiagnosis.PostTextRecommendation"),"gaptop 2,aligny top");
-		recommendation = (String)properties.get("PostTextRecommendation");
-		if( recommendation==null) recommendation="";
-		postTextRecommendationArea = createTextArea("FinalDiagnosis.PostTextRecommendation.Desc",recommendation);
-		panel.add(postTextRecommendationArea,"gaptop 2,aligny top,span,wrap");
+		String postTextRec = (String)properties.get("PostTextRecommendation");
+		if( postTextRec==null) postTextRec="0";
+		postTextRecommendationBox = createCheckBox("FinalDiagnosis.PostTextRecommendation.Desc",(postTextRec.equals("0")?false:true));
+		panel.add(postTextRecommendationBox,"gaptop 2,aligny top,span,wrap");
 
 		panel.add(createLabel("FinalDiagnosis.Priority"),"");
 		String priority = (String)properties.get("Priority");
@@ -185,12 +187,12 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 		refreshRateField.setPreferredSize(NUMBER_BOX_SIZE);
 		panel.add(refreshRateField,"span,wrap");
 		
-		panel.add(createLabel("FinalDiagnosis.RecommendationMethod"),"");
+		panel.add(createLabel("FinalDiagnosis.RecommendationCallback"),"");
 		method = (String)properties.get("TextRecommendationCallback");
 		if( method==null) method="";
-		recommendationMethodField = createTextField("FinalDiagnosis.RecommendationMethod.Desc",method);
-		recommendationMethodField.setPreferredSize(NAME_BOX_SIZE);
-		panel.add(recommendationMethodField,"span,wrap");
+		recommendationCallbackField = createTextField("FinalDiagnosis.RecommendationCallback.Desc",method);
+		recommendationCallbackField.setPreferredSize(NAME_BOX_SIZE);
+		panel.add(recommendationCallbackField,"span,wrap");
 		
 		panel.add(createLabel("FinalDiagnosis.TrapInsignificant"),"");
 		String tf = (String)properties.get("TrapInsignificantRecommendations");
@@ -202,7 +204,17 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 	
 	// Copy the FinalDiagnosis auxiliary data back into the database
 	private void save(){
-
+		model.getProperties().put("CalculationMethod",calculationMethodField.getText());
+		model.getProperties().put("TextRecommendation", textRecommendationArea.getText());
+		model.getProperties().put("PostTextRecommendation", (postTextRecommendationBox.isSelected()?"1":"0"));
+		model.getProperties().put("Priority", priorityField.getText());
+		model.getProperties().put("RefreshRate", refreshRateField.getText());
+		model.getProperties().put("TextRecommendationCallback", recommendationCallbackField.getText());
+		model.getProperties().put("TrapInsignificantRecommendations", (trapBox.isSelected()?"1":"0"));
+		
+		List<String> inUseList = dual.getDestinations();
+		model.getLists().put("OutputsInUse",inUseList);
+		
 		// Save values back to the database
 		try {
 			extensionManager.runScript(context.getScriptManager(),block.getClassName(), ScriptConstants.PROPERTY_SET_SCRIPT, 
@@ -210,6 +222,7 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 			// Replace the aux data structure in our serializable application
 			// NOTE: The Nav tree node that calls the dialog saves the application resource.
 			block.setAuxiliaryData(model);
+			block.setDirty(true);
 		}
 		catch( Exception ex ) {
 			log.errorf(TAG+".save: Exception ("+ex.getMessage()+")",ex); // Throw stack trace

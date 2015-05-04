@@ -260,7 +260,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	}
 	@SuppressWarnings("unchecked")
 	public List<SerializableResourceDescriptor> getDiagramDescriptors(String projectName) {
-		log.infof("%s.getDiagramTreePaths for %s ...",TAG,projectName);
+		log.debugf("%s.getDiagramDescriptors for %s ...",TAG,projectName);
 		List<SerializableResourceDescriptor> result = new ArrayList<>();
 		List<String> jsonList = new ArrayList<String>();
 		try {
@@ -705,7 +705,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * status values. This is in order to update the UI. 
 	 */
 	public void triggerStatusNotifications() {
-		log.infof("%s.triggerStatusNotifications...",TAG);
+		//log.infof("%s.triggerStatusNotifications...",TAG);
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "triggerStatusNotifications");
