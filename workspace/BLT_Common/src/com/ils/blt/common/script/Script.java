@@ -63,7 +63,7 @@ public class Script {
 		if( pythonPath!=null && pythonPath.length()>0 ) {
 			this.module = moduleNameFromPath(pythonPath);
 			this.pythonPackage = packageNameFromPath(pythonPath);
-			log.infof("%s.resetModulePath: %s:%s from %s",TAG,pythonPackage,module,pythonPath);
+			//log.debugf("%s.resetModulePath: %s:%s from %s",TAG,pythonPackage,module,pythonPath);
 		}
 		this.code = null;   // Needs compiling
 	}

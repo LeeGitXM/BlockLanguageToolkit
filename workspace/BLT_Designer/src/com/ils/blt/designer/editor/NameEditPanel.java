@@ -18,8 +18,11 @@ import javax.swing.SwingUtilities;
 
 import net.miginfocom.swing.MigLayout;
 
+import com.ils.blt.common.script.ScriptConstants;
+import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.WorkspaceRepainter;
+import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 /**
  * Display a panel to edit the name of a block and its 
@@ -76,7 +79,20 @@ public class NameEditPanel extends BasicEditPanel {
 		buttonPanel.add(okButton,"");
 		okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if( !nameField.getText().isEmpty()) block.setName(nameField.getText());
+				if( !nameField.getText().isEmpty()) {
+					ScriptExtensionManager sem = ScriptExtensionManager.getInstance();
+					if( sem.getClassNames().contains(block.getClassName()) ) {
+						try {
+							DesignerContext context = parent.getContext();
+							sem.runScript(context.getScriptManager(),block.getClassName(), ScriptConstants.PROPERTY_RENAME_SCRIPT, 
+									editor.getDiagram().getId().toString(),block.getName(),nameField.getText());     // Old name, new name
+						}
+						catch( Exception ex ) {
+							log.errorf("NameEditPanel.constructor: Exception ("+ex.getMessage()+")",ex); // Throw stack trace
+						}
+					}
+					block.setName(nameField.getText());
+				}
 				try {
 					block.setNameDisplayed(annotationCheckBox.isSelected());
 					block.setNameOffsetX(Integer.parseInt(xfield.getText()));

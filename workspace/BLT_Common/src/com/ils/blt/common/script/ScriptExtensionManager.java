@@ -11,11 +11,13 @@ import java.util.Map;
 import java.util.Set;
 
 import org.python.core.PyDictionary;
+import org.python.core.PyList;
 import org.python.core.PyObject;
 
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.PalettePrototype;
+import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.JavaToPython;
 import com.ils.common.PythonToJava;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
@@ -184,12 +186,16 @@ public class ScriptExtensionManager {
 					// as a mechanism to return info from the script
 					index = 0;
 					for(Object arg:args) {
-						if( arg instanceof HashMap) {
+						if( arg instanceof Map) {
 							PyObject pyarg = pyargs.get(index);
-							p2j.updateMapFromDictionary((HashMap<String,Object>)arg,(PyDictionary)pyarg);
+							p2j.updateMapFromDictionary((Map<String,Object>)arg,(PyDictionary)pyarg);
 							log.debugf("%s.runScript: Updating map on return: %s",TAG,pyarg.toString());
 						}
-						
+						else if( arg instanceof GeneralPurposeDataContainer) {
+							PyObject pyarg = pyargs.get(index);
+							p2j.updateDataContainerFromPython((GeneralPurposeDataContainer)arg,(PyList)pyarg);
+							log.debugf("%s.runScript: Updating container on return: %s",TAG,pyarg.toString());
+						}
 						index++;
 					}
 				}

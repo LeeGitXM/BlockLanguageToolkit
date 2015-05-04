@@ -4,6 +4,6 @@ com.ils.application,property-set-script,xom.extensions.appProperties.setAux
 com.ils.family,property-get-script,xom.extensions.famProperties.getAux
 com.ils.family,property-rename-script,xom.extensions.famProperties.rename
 com.ils.family,property-set-script,xom.extensions.famProperties.setAux
-xom.block.finaldiagnosis.FinalDiagnosis,property-get-script,xom.extensions.finalDiagnosisProperties.getAux
-xom.block.finaldiagnosis.FinalDiagnosis,property-rename-script,xom.extensions.finalDiagnosisProperties.rename
-xom.block.finaldiagnosis.FinalDiagnosis,property-set-script,xom.extensions.finalDiagnosisProperties.setAux
+xom.block.finaldiagnosis.FinalDiagnosis,property-get-script,xom.extensions.fdProperties.getAux
+xom.block.finaldiagnosis.FinalDiagnosis,property-rename-script,xom.extensions.fdProperties.rename
+xom.block.finaldiagnosis.FinalDiagnosis,property-set-script,xom.extensions.fdProperties.setAux

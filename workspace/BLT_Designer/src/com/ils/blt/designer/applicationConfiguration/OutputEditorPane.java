@@ -5,7 +5,6 @@ import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.text.Format;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Map;
@@ -59,7 +58,6 @@ public class OutputEditorPane extends JPanel implements ApplicationConfiguration
 		super(new BorderLayout(20, 30));
 		this.controller = controller;
 		this.model = controller.getModel();
-		Format floatFormat = NumberFormat.getInstance();
 		System.out.println("In Output Editor pane constructor");
 				
 		JPanel mainPanel = new JPanel(new MigLayout("", "[right]"));
@@ -107,16 +105,19 @@ public class OutputEditorPane extends JPanel implements ApplicationConfiguration
 		incrementalContainer.add(new JLabel("Most Negative:"), "gap 10");
 		mostNegativeIncrementField.setPreferredSize(NUMERIC_FIELD_SIZE);
 		mostNegativeIncrementField.setToolTipText("The largest negative change.");
+		mostNegativeIncrementField.setFocusLostBehavior(JFormattedTextField.COMMIT_OR_REVERT);
 		incrementalContainer.add(mostNegativeIncrementField, "span, growx");
 
 		incrementalContainer.add(new JLabel("Most Positive:"), "gap 10");
 		mostPositiveIncrementField.setPreferredSize(NUMERIC_FIELD_SIZE);
 		mostPositiveIncrementField.setToolTipText("The largest positive change.");
+		mostPositiveIncrementField.setFocusLostBehavior(JFormattedTextField.COMMIT_OR_REVERT);
 		incrementalContainer.add(mostPositiveIncrementField, "span, growx");
 		
 		incrementalContainer.add(new JLabel("Min Change:"), "gap 10");
 		minimumIncrementField.setPreferredSize(NUMERIC_FIELD_SIZE);
 		minimumIncrementField.setToolTipText("The minimum absolute change.");
+		minimumIncrementField.setFocusLostBehavior(JFormattedTextField.COMMIT_OR_REVERT);
 		incrementalContainer.add(minimumIncrementField, "span, growx");
 
 		mainPanel.add(incrementalContainer, "span, growx, wrap");
@@ -127,11 +128,13 @@ public class OutputEditorPane extends JPanel implements ApplicationConfiguration
 		absoluteContainer.add(new JLabel("Low Limit:"), "gap 10");
 		setpointLowLimitField.setPreferredSize(NUMERIC_FIELD_SIZE);
 		setpointLowLimitField.setToolTipText("The absolute lower limit.");
+		setpointLowLimitField.setFocusLostBehavior(JFormattedTextField.COMMIT_OR_REVERT);
 		absoluteContainer.add(setpointLowLimitField, "span, growx");
 		
 		absoluteContainer.add(new JLabel("High Limit:"), "gap 10");
 		setpointHighLimitField.setPreferredSize(NUMERIC_FIELD_SIZE);
 		setpointHighLimitField.setToolTipText("The absolute upper limit.");
+		setpointHighLimitField.setFocusLostBehavior(JFormattedTextField.COMMIT_OR_REVERT);
 		absoluteContainer.add(setpointHighLimitField, "span, growx");
 		
 		mainPanel.add(absoluteContainer, "span, growx, wrap");
@@ -158,12 +161,16 @@ public class OutputEditorPane extends JPanel implements ApplicationConfiguration
 		nameField.setText((String) outputMap.get("QuantOutput"));
 		tagField.setText((String) outputMap.get("TagPath"));
 		incrementalOutputCheckBox.setSelected(fcns.coerceToBoolean(outputMap.get("IncrementalOutput")));
-		Double dbl = fcns.coerceToDouble(outputMap.get("MostNegativeIncrement"));
+		double dbl = fcns.coerceToDouble(outputMap.get("MostNegativeIncrement"));
 		mostNegativeIncrementField.setValue(dbl);
-		mostPositiveIncrementField.setValue(outputMap.get("MostPositiveIncrement"));
-		minimumIncrementField.setValue(outputMap.get("MinimumIncrement"));
-		setpointLowLimitField.setValue(outputMap.get("SetpointLowLimit"));
-		setpointHighLimitField.setValue(outputMap.get("SetpointHighLimit"));
+		dbl = fcns.coerceToDouble(outputMap.get("MostPositiveIncrement"));
+		mostPositiveIncrementField.setValue(dbl);
+		dbl = fcns.coerceToDouble(outputMap.get("MinimumIncrement"));
+		minimumIncrementField.setValue(dbl);
+		dbl = fcns.coerceToDouble(outputMap.get("SetpointLowLimit"));
+		setpointLowLimitField.setValue(dbl);
+		dbl = fcns.coerceToDouble(outputMap.get("SetpointHighLimit"));
+		setpointHighLimitField.setValue(dbl);
 		feedbackMethodComboBox.setSelectedItem((String) outputMap.get("FeedbackMethod"));
 	}
 
@@ -175,7 +182,7 @@ public class OutputEditorPane extends JPanel implements ApplicationConfiguration
 		// Update the outputMap with everything in the screen
 		outputMap.put("QuantOutput", nameField.getText());
 		outputMap.put("TagPath", tagField.getText());
-		outputMap.put("IncrementalOutput", (incrementalOutputCheckBox.isSelected()?"true":"false"));
+		outputMap.put("IncrementalOutput", (incrementalOutputCheckBox.isSelected()?"1":"0"));
 		outputMap.put("MostNegativeIncrement", mostNegativeIncrementField.getText());
 		outputMap.put("MostPositiveIncrement", mostPositiveIncrementField.getText());
 		outputMap.put("MinimumIncrement", minimumIncrementField.getText());

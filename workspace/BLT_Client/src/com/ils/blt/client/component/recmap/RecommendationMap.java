@@ -4,7 +4,6 @@
 package com.ils.blt.client.component.recmap;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 
 import com.ils.blt.client.component.PrefuseViewerComponent;
 import com.ils.blt.common.BLTProperties;

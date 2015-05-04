@@ -60,7 +60,6 @@ public class Migrator {
 	private final ConnectionMapper connectionMapper;
 	private final PropertyMapper propertyMapper;
 	private final TagMapper tagMapper;
-	private final UtilityFunctions func;
 
 
 	 
@@ -73,7 +72,6 @@ public class Migrator {
 		propertyMapper = new PropertyMapper();
 		pythonPropertyMapper = new PythonPropertyMapper();
 		tagMapper = new TagMapper();
-		func = new UtilityFunctions();
 	}
 	
 	public void processDatabase(String path) {
@@ -183,9 +181,6 @@ public class Migrator {
 		SerializableApplication sa = new SerializableApplication();
 		sa.setName(g2a.getName());
 		sa.setId(UUID.nameUUIDFromBytes(g2a.getUuid().getBytes()));
-		for( G2Property prop:g2a.getProperties()) {
-			// TODO: Preserve the "external" properties as SQL
-		}
 		int familyCount = g2a.getFamilies().length;
 		int index = 0;
 		SerializableFamily[] families = new SerializableFamily[familyCount];
@@ -202,9 +197,6 @@ public class Migrator {
 		SerializableFamily sf = new SerializableFamily();
 		sf.setName(g2f.getName());
 		sf.setId(UUID.nameUUIDFromBytes(g2f.getUuid().getBytes()));
-		for( G2Property prop:g2f.getProperties()) {
-			// TODO: Preserve the "external" properties as SQL
-		}
 		int diagramCount = 0;
 		// We have run into some empty diagrams in the G2 exports
 		// Cull these out.

@@ -15,6 +15,8 @@ import simpleorm.dataset.SFieldFlags;
  * @See: http://simpleorm.org/sorm/whitepaper.html
  */
 public class ToolkitRecord extends PersistentRecord {
+	private static final long serialVersionUID = 8143351320983681280L;
+
 	public static final String TABLE_NAME = "ILS_Toolkit_Properties";
 	
 	public static final RecordMeta<ToolkitRecord> META = new RecordMeta<>(ToolkitRecord.class, TABLE_NAME);

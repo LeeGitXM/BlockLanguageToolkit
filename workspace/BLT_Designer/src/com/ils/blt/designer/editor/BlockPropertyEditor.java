@@ -72,6 +72,8 @@ public class BlockPropertyEditor extends SlidingPane   {
 		setSelectedPane(BlockEditConstants.HOME_PANEL);   
 	}
 	public ProcessBlockView getBlock() { return this.block; }
+	public ProcessDiagramView getDiagram() { return this.diagram; }
+	
 	public void updatePanelForBlock(int panelIndex,ProcessBlockView blk) {
 		switch(panelIndex) {
 		case BlockEditConstants.NAME_EDIT_PANEL:
@@ -83,7 +85,7 @@ public class BlockPropertyEditor extends SlidingPane   {
 			break;
 		}
 	}
-
+	public DesignerContext getContext() { return this.context; }
 	/**
 	 * Changing the name is non-structural. If the diagram is not
 	 * dirty for structural reasons, then we go ahead and save the

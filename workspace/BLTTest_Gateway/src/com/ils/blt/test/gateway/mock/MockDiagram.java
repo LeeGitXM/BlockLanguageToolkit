@@ -21,6 +21,7 @@ import com.ils.blt.gateway.engine.ProcessDiagram;
  * of blocks. 
  */
 public class MockDiagram extends ProcessDiagram {
+	private static final long serialVersionUID = 1603451661866792378L;
 	private static String TAG = "MockDiagram";
 	private ProcessBlock uut = null;    // Unit under test
 	private final BlockExecutionController controller;

@@ -7,6 +7,8 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
@@ -16,13 +18,11 @@ import javax.swing.WindowConstants;
 
 import net.miginfocom.swing.MigLayout;
 
-import com.ils.blt.common.ApplicationRequestHandler;
-import com.ils.blt.common.block.BlockConstants;
-import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
+import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.ui.DualListBox;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
@@ -36,9 +36,9 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 	private final int DIALOG_WIDTH = 480;
 	private final ProcessDiagramView diagram;
 	private final ProcessBlockView block;
-	private final ApplicationRequestHandler requestHandler;
 	private final ScriptExtensionManager extensionManager = ScriptExtensionManager.getInstance();
 	private JPanel mainPanel = null;
+	private final GeneralPurposeDataContainer model;           // Data container operated on by panels
 	protected JTextField calculationMethodField;
 	protected JTextArea textRecommendationArea;
 	protected JTextArea postTextRecommendationArea;
@@ -49,6 +49,7 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 	
 	public FinalDiagnosisConfiguration(DesignerContext ctx,ProcessDiagramView diag,ProcessBlockView view) {
 		super(ctx);
+		this.model = new GeneralPurposeDataContainer();
 		this.diagram = diag;
 		this.block = view;
 		this.setTitle(rb.getString("FinalDiagnosisEditor.Title"));
@@ -56,7 +57,6 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 		setModal(false);
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));
-		this.requestHandler = new ApplicationRequestHandler();
         initialize();
 	}
 	/**
@@ -67,25 +67,13 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 	 * 2) Python hook definitions.
 	 */
 	private void initialize() {
-		// Fetch properties of the family associated with the database and not serialized.
-
+		retrieveAuxiliaryData();
 		mainPanel = createMainPanel();
 		contentPanel.add(mainPanel,BorderLayout.CENTER);
-		populatePanel();
 		setOKActions();
 	}
 	
 	private JPanel createMainPanel() {	
-		try {
-			// Fetch properties of this block which associated with the database and not serialized.
-			extensionManager.runOneTimeScript(context.getScriptManager(), block.getClassName(), 
-					ScriptConstants.PROPERTY_GET_SCRIPT, block.getId().toString(),properties);
-		}
-		catch(Exception ex) {
-			log.error(TAG+".initialize: Exception getting properties ("+ex.getMessage()+")",ex);
-		}
-
-
 
 		
 		// The internal panel has two panes
@@ -98,75 +86,38 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 		addSeparator(mainPanel,"FinalDiagnosis.QuantOutputs");
 		
 		DualListBox dual = new DualListBox();
-		dual.addSourceElements(new String[] {"One", "Two", "Three"});
+		dual.setSourceElements(model.getLists().get("QuantOutputs"));
+		dual.setDestinationElements(model.getLists().get("OutputsInUse"));
 		mainPanel.add(dual, "gapx 50 40,wrap");
 		mainPanel.add(createPropertiesPanel(),"wrap");
 		return mainPanel;
 	}
 	
 	/**
-	 * Read the database and fill fields in the dialog
+	 * Read the database and fill the model
 	 */
-	private void populatePanel() {
-		// Search block properties for the getter script
-		properties.clear();
-
+	private void retrieveAuxiliaryData() {
+		// Fetch properties of the diagnosis associated with the database and not serialized.
+		// Fetch from the database and store in the model
+		model.setProperties(new HashMap<String,String>());
+		model.setLists(new HashMap<>());
+		model.setMapLists(new HashMap<>());
+		model.getProperties().put("Name", block.getName());   // Use as a key when fetching
 		try {
-			// Fetch properties of this block which associated with the database and not serialized.
-			extensionManager.runOneTimeScript(context.getScriptManager(), block.getClassName(), 
-					ScriptConstants.PROPERTY_GET_SCRIPT, block.getId().toString(),properties);
+			extensionManager.runScript(context.getScriptManager(),block.getClassName(), ScriptConstants.PROPERTY_GET_SCRIPT, 
+					diagram.getId().toString(),model);
 		}
-		catch(Exception ex) {
-			log.error(TAG+".actionPerformed: Exception getting properties ("+ex.getMessage()+")",ex);
-			return;
+		catch( Exception ex ) {
+			log.errorf(TAG+".retrieveAuxiliaryData: Exception ("+ex.getMessage()+")",ex); // Throw stack trace
 		}
-
-
-		// Now set the component values
-		calculationMethodField.setText(properties.getOrDefault(ScriptConstants.PROPERTY_CALCULATION_METHOD,"").toString());
-		postTextRecommendationArea.setText(properties.getOrDefault(ScriptConstants.PROPERTY_POST_TEXT_RECOMMENDATION,"").toString());
-		priorityField.setText(properties.getOrDefault(ScriptConstants.PROPERTY_PRIORITY,"0").toString());
-		refreshRateField.setText(properties.getOrDefault(ScriptConstants.PROPERTY_REFRESH_RATE,"0.0").toString());
-		textRecommendationArea.setText(properties.getOrDefault(ScriptConstants.PROPERTY_TEXT_RECOMMENDATION,"").toString());
-		recommendationMethodField.setText(properties.getOrDefault(ScriptConstants.PROPERTY_TEXT_RECOMMENDATION_CALLBACK,"").toString());
-		String val = properties.getOrDefault(ScriptConstants.PROPERTY_TRAP_INSIGNITFICANT_RECOMMENDATIONS,"1").toString();
-		trapBox.setSelected((val.equals("0")?false:true));
 	}
+	
 	private void setOKActions() {
 		// The button panel is already added by the base class.
 		okButton.setText(rb.getString("FinalDiagnosisEditor.Save"));
 		okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				// Loop over the values and place in the target list
-				// Set attributes from fields
-				block.setName(nameField.getText());
-				properties.put(ScriptConstants.PROPERTY_NAME,nameField.getText());
-				
-				try {
-					int pri = Integer.parseInt(priorityField.getText());
-					properties.put(ScriptConstants.PROPERTY_PRIORITY, String.valueOf(pri));
-				} 
-				catch (NumberFormatException nfe) {
-					log.warnf("%s.initialize: Priority (%s) must be an integer (%s)",
-							TAG, priorityField.getText(), nfe.getMessage());
-				}
-				properties.put(ScriptConstants.PROPERTY_CALCULATION_METHOD,calculationMethodField.getText());
-				properties.put(ScriptConstants.PROPERTY_POST_TEXT_RECOMMENDATION,postTextRecommendationArea.getText());
-				properties.put(ScriptConstants.PROPERTY_PRIORITY,priorityField.getText());
-				properties.put(ScriptConstants.PROPERTY_REFRESH_RATE,refreshRateField.getText());
-				properties.put(ScriptConstants.PROPERTY_TEXT_RECOMMENDATION,textRecommendationArea.getText());
-				properties.put(ScriptConstants.PROPERTY_TEXT_RECOMMENDATION_CALLBACK,recommendationMethodField.getText());
-				properties.put(ScriptConstants.PROPERTY_TRAP_INSIGNITFICANT_RECOMMENDATIONS,(trapBox.isSelected()?"1":"0"));
-
-				try {
-					// Fetch properties of this block which associated with the database and not serialized.
-					extensionManager.runOneTimeScript(context.getScriptManager(), block.getClassName(), 
-							ScriptConstants.PROPERTY_SET_SCRIPT, block.getId().toString(),properties);
-				}
-				catch(Exception ex) {
-					log.error(TAG+".actionPerformed: Exception setting properties ("+ex.getMessage()+")",ex);
-				}
-
+				save();
 				dispose();
 			}
 		});
@@ -182,6 +133,7 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 	 *     label | value -- span 3
 	 */
 	private JPanel createPropertiesPanel() {
+		Map<String,String> properties = model.getProperties();
 		JPanel panel = new JPanel();
 		final String columnConstraints = "para[][][][]";
 		final String layoutConstraints = "ins 10,gapy 3,gapx 5,fillx";
@@ -191,6 +143,7 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 		panel.add(createLabel("FinalDiagnosis.Name"),"");
 		nameField = createTextField("FinalDiagnosis.Name.Desc",block.getName());
 		nameField.setPreferredSize(NAME_BOX_SIZE);
+		nameField.setEditable(false);
 		panel.add(nameField,"span,wrap");
 
 		panel.add(createLabel("FinalDiagnosis.UUID"),"gaptop 2,aligny top");
@@ -200,50 +153,66 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 		panel.add(uuidField,"span,wrap");
 		
 		panel.add(createLabel("FinalDiagnosis.CalcMethod"),"");
-		String method = (String)properties.get(ScriptConstants.PROPERTY_CALCULATION_METHOD);
+		String method = properties.get("CalculationMethod");
 		if( method==null) method="";
 		calculationMethodField = createTextField("FinalDiagnosis.CalcMethod.Desc",method);
 		calculationMethodField.setPreferredSize(NAME_BOX_SIZE);
 		panel.add(calculationMethodField,"span,wrap");
 		
 		panel.add(createLabel("FinalDiagnosis.TextRecommendation"),"gaptop 2,aligny top");
-		String recommendation = (String)properties.get(ScriptConstants.PROPERTY_TEXT_RECOMMENDATION);
+		String recommendation = (String)properties.get("TextRecommendation");
 		if( recommendation==null) recommendation="";
 		textRecommendationArea = createTextArea("FinalDiagnosis.TextRecommendation.Desc",recommendation);
 		panel.add(textRecommendationArea,"gaptop 2,aligny top,span,wrap");
 		
 		panel.add(createLabel("FinalDiagnosis.PostTextRecommendation"),"gaptop 2,aligny top");
-		recommendation = (String)properties.get(ScriptConstants.PROPERTY_POST_TEXT_RECOMMENDATION);
+		recommendation = (String)properties.get("PostTextRecommendation");
 		if( recommendation==null) recommendation="";
 		postTextRecommendationArea = createTextArea("FinalDiagnosis.PostTextRecommendation.Desc",recommendation);
 		panel.add(postTextRecommendationArea,"gaptop 2,aligny top,span,wrap");
 
 		panel.add(createLabel("FinalDiagnosis.Priority"),"");
-		String priority = (String)properties.get(ScriptConstants.PROPERTY_PRIORITY);
+		String priority = (String)properties.get("Priority");
 		if( priority==null) priority="";
 		priorityField = createTextField("FinalDiagnosis.Priority.Desc",priority);
 		priorityField.setPreferredSize(NUMBER_BOX_SIZE);
 		panel.add(priorityField,"span,wrap");
 		
 		panel.add(createLabel("FinalDiagnosis.RefreshRate"),"");
-		String rate = (String)properties.get(ScriptConstants.PROPERTY_REFRESH_RATE);
+		String rate = (String)properties.get("RefreshRate");
 		if( rate==null) rate="";
 		refreshRateField = createTextField("FinalDiagnosis.RefreshRate.Desc",rate);
 		refreshRateField.setPreferredSize(NUMBER_BOX_SIZE);
 		panel.add(refreshRateField,"span,wrap");
 		
 		panel.add(createLabel("FinalDiagnosis.RecommendationMethod"),"");
-		method = (String)properties.get(ScriptConstants.PROPERTY_TEXT_RECOMMENDATION_CALLBACK);
+		method = (String)properties.get("TextRecommendationCallback");
 		if( method==null) method="";
 		recommendationMethodField = createTextField("FinalDiagnosis.RecommendationMethod.Desc",method);
 		recommendationMethodField.setPreferredSize(NAME_BOX_SIZE);
 		panel.add(recommendationMethodField,"span,wrap");
 		
 		panel.add(createLabel("FinalDiagnosis.TrapInsignificant"),"");
-		String tf = (String)properties.get(ScriptConstants.PROPERTY_TRAP_INSIGNITFICANT_RECOMMENDATIONS);
+		String tf = (String)properties.get("TrapInsignificantRecommendations");
 		if( tf==null) tf="0";
 		trapBox = createCheckBox("FinalDiagnosis.TrapInsignificant.Desc",(tf.equals("0")?false:true));
 		panel.add(trapBox,"span,wrap");
 		return panel;
+	}
+	
+	// Copy the FinalDiagnosis auxiliary data back into the database
+	private void save(){
+
+		// Save values back to the database
+		try {
+			extensionManager.runScript(context.getScriptManager(),block.getClassName(), ScriptConstants.PROPERTY_SET_SCRIPT, 
+					diagram.getId().toString(),model);
+			// Replace the aux data structure in our serializable application
+			// NOTE: The Nav tree node that calls the dialog saves the application resource.
+			block.setAuxiliaryData(model);
+		}
+		catch( Exception ex ) {
+			log.errorf(TAG+".save: Exception ("+ex.getMessage()+")",ex); // Throw stack trace
+		}
 	}
 }

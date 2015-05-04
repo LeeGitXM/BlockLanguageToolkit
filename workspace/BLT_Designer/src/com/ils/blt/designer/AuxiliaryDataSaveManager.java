@@ -2,9 +2,14 @@ package com.ils.blt.designer;
 
 import java.util.Enumeration;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.script.ScriptExtensionManager;
+import com.ils.blt.common.serializable.SerializableApplication;
+import com.ils.blt.common.serializable.SerializableBlock;
+import com.ils.blt.common.serializable.SerializableDiagram;
+import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -45,18 +50,61 @@ public class AuxiliaryDataSaveManager implements Runnable {
 	}
 	
 	// Recursively descend the node tree, looking for resources that have 
-	// auxiliary data. When found, restore that data into the node.
+	// auxiliary data. When found, save that data into the database.
 	private void recursivelySave(AbstractResourceNavTreeNode node) {
 		ProjectResource res = node.getProjectResource();
 		if( res!=null ) {
 			if(res.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE) ) {
-
+				SerializableApplication sa = null;
+				try{
+					byte[] bytes = res.getData();
+					ObjectMapper mapper = new ObjectMapper();
+					sa = mapper.readValue(new String(bytes), SerializableApplication.class);
+					if( sa.getAuxiliaryData()!=null ) {
+						// Save values back to the database
+						extensionManager.runScript(context.getScriptManager(), ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.PROPERTY_SET_SCRIPT, 
+								sa.getId().toString(),sa.getAuxiliaryData());
+					}
+				}
+				catch(Exception ex) {
+					log.warnf("%s.recursivelySave: Deserialization exception (%s)",TAG,ex.getMessage());
+				}
 			}
 			else if(res.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE) ) {
-
+				SerializableFamily sf = null;
+				try{
+					byte[] bytes = res.getData();
+					ObjectMapper mapper = new ObjectMapper();
+					sf = mapper.readValue(new String(bytes), SerializableFamily.class);
+					if( sf.getAuxiliaryData()!=null ) {
+						// Save values back to the database
+						extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.PROPERTY_SET_SCRIPT, 
+								sf.getId().toString(),sf.getAuxiliaryData());
+					}
+				}
+				catch(Exception ex) {
+					log.warnf("%s.recursivelySave: Deserialization exception (%s)",TAG,ex.getMessage());
+				}
 			}
 			else if(res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
 				// Iterate over blocks
+				SerializableDiagram sd = null;
+				try{
+					byte[] bytes = res.getData();
+					ObjectMapper mapper = new ObjectMapper();
+					sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
+					// Loop over blocks in the diagram looking for ones with AUX data.
+					// If it has AUX data, attempt to save ...
+					for( SerializableBlock sb: sd.getBlocks()) {
+						if( sb.getAuxiliaryData()!=null ) {
+							extensionManager.runScript(context.getScriptManager(), sb.getClassName(), ScriptConstants.PROPERTY_SET_SCRIPT, 
+									sd.getId().toString(),sb.getAuxiliaryData());
+						}
+					}
+				}
+				catch(Exception ex) {
+					log.warnf("%s.recursivelySave: Deserialization exception (%s)",TAG,ex.getMessage());
+				}
 			}
 		}
 

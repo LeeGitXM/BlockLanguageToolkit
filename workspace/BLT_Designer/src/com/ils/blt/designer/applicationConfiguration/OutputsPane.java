@@ -19,6 +19,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
+import javax.swing.border.EmptyBorder;
 
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.SortedListModel;
@@ -27,7 +28,7 @@ import com.ils.common.SortedListModel;
 public class OutputsPane extends JPanel implements ApplicationConfigurationController.EditorPane {
 	private final ApplicationConfigurationController controller;
 	private final GeneralPurposeDataContainer model;
-	private SortedListModel outputListModel;
+	private SortedListModel<String> outputListModel;
 	private Integer newOutputId = -1;
 	private static final long serialVersionUID = 2882399376824334428L;
 	private static Icon addIcon = new ImageIcon(OutputsPane.class.getResource("/images/add.png"));
@@ -38,7 +39,7 @@ public class OutputsPane extends JPanel implements ApplicationConfigurationContr
 	final JButton deleteButton = new JButton(deleteIcon);
 	final JButton editButton = new JButton("Edit");
 	final JPanel buttonPanel;
-	final JList jlist;
+	private final JList<String> jlist;
 	private final OutputEditorPane outputEditor;
 	final JScrollPane outputsScrollPane = new JScrollPane();
 /*	
@@ -59,13 +60,14 @@ public class OutputsPane extends JPanel implements ApplicationConfigurationContr
 		label.setHorizontalAlignment(SwingConstants.CENTER);
 		add(label, BorderLayout.NORTH);
 		
-		JList lst = new JList(outputListModel);
-		JScrollPane scrollPane = new JScrollPane(lst);
-		this.jlist=lst;
+		jlist = new JList<String>(outputListModel);
+		JScrollPane scrollPane = new JScrollPane(jlist);
+		scrollPane.setBorder(new EmptyBorder(10,10,10,10));
 		add(scrollPane, BorderLayout.CENTER);
 		
 		// The three button along the right are in their own panel
 		buttonPanel = new JPanel();
+		buttonPanel.setBorder(new EmptyBorder(10,10,10,10));
 		BoxLayout layout = new BoxLayout(buttonPanel, BoxLayout.Y_AXIS);
 		buttonPanel.setLayout(layout);
 		add(buttonPanel,BorderLayout.EAST);
@@ -178,45 +180,30 @@ public class OutputsPane extends JPanel implements ApplicationConfigurationContr
 	public void activate() {
 		controller.slideTo(ApplicationConfigurationDialog.EDITOR);
 	}
-	
+
 	// Create a new outputMap, which corresponds to a QuantOutput, with default values
-		public Map<String,String> newOutput() {
-			System.out.println("Creating a new output... ");
-			
-			Map<String,String> outputMap = new HashMap<String,String>();
-			outputMap.put("QuantOutputId",String.valueOf(newOutputId));
-			newOutputId = newOutputId - 1;
-			outputMap.put("QuantOutput", "");
-			outputMap.put("TagPath", "");
-			outputMap.put("MostNegativeIncrement",String.valueOf(-10.0));
-			outputMap.put("MostPositiveIncrement", String.valueOf(10.0));
-			outputMap.put("MinimumIncrement", String.valueOf(0.01));
-			outputMap.put("SetpointLowLimit", String.valueOf(0.0));
-			outputMap.put("SetpointHighLimit", String.valueOf(100.0));
-			outputMap.put("FeedbackMethod", "SIMPLE-SUM");
-			outputMap.put("IncrementalOutput", String.valueOf(true));
-			
-			List<Map<String,String>> outputList=model.getMapLists().get("QuantOutputs");
-			if( outputList==null ) {
-				outputList = new ArrayList<>();
-				model.getMapLists().put("QuantOutputs", outputList);
-			}
-			outputList.add(outputMap);
-			return outputMap;
+	public Map<String,String> newOutput() {
+		System.out.println("Creating a new output... ");
+
+		Map<String,String> outputMap = new HashMap<String,String>();
+		outputMap.put("QuantOutputId",String.valueOf(newOutputId));
+		newOutputId = newOutputId - 1;
+		outputMap.put("QuantOutput", "");
+		outputMap.put("TagPath", "");
+		outputMap.put("MostNegativeIncrement",String.valueOf(-10.0));
+		outputMap.put("MostPositiveIncrement", String.valueOf(10.0));
+		outputMap.put("MinimumIncrement", String.valueOf(0.01));
+		outputMap.put("SetpointLowLimit", String.valueOf(0.0));
+		outputMap.put("SetpointHighLimit", String.valueOf(100.0));
+		outputMap.put("FeedbackMethod", "SIMPLE-SUM");
+		outputMap.put("IncrementalOutput", String.valueOf(true));
+
+		List<Map<String,String>> outputList=model.getMapLists().get("QuantOutputs");
+		if( outputList==null ) {
+			outputList = new ArrayList<>();
+			model.getMapLists().put("QuantOutputs", outputList);
 		}
-
-/*
-	public PropertyEditor getPropertyEditor() {
-		return editor;
+		outputList.add(outputMap);
+		return outputMap;
 	}
-
-	public void setRecipeData(Data recipeData) {
-		this.recipeData = recipeData;
-		boolean isStructure = recipeData instanceof Structure;
-		buttonPanel.getAddButton().setVisible(isStructure);
-		buttonPanel.getRemoveButton().setVisible(isStructure);
-		validate();
-		getPropertyEditor().setPropertyValues(recipeData.getProperties(), false);
-	}
-*/
 }

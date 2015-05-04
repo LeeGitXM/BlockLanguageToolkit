@@ -21,7 +21,6 @@ public class ApplicationConfigurationController {
 	private final ApplicationConfigurationDialog dialog;
 	private final ScriptExtensionManager extensionManager = ScriptExtensionManager.getInstance();
 	private final SortedListModel<String> outputListModel;
-	private Map<String,String> outputMap;
 	protected final LoggerEx log;
 	
 	interface EditorPane {
@@ -58,28 +57,7 @@ public class ApplicationConfigurationController {
 				this.application.getId().toString(),model);
 		
 		// If trace is enabled, then dump contents of the database query.
-		if( log.isTraceEnabled() ) {
-			Map<String,String> properties = model.getProperties();
-			for (String key:properties.keySet()) {
-				log.tracef("Properties: key = %s, value = %s", key, properties.get(key));
-			}
-			Map<String,List<String>> lists = model.getLists();
-			for (String key:lists.keySet()) {
-				List<String> list = lists.get(key);
-				for(String val:list) {
-					log.tracef("Lists: key = %s, value = %s", key, val);
-				}
-			}
-			 Map<String,List<Map<String,String>>> maplists = model.getMapLists();
-			for (String key:maplists.keySet()) {
-				List<Map<String,String>> maplist = maplists.get(key);
-				for (Map<String,String> map:maplist) {
-					for (String prop:map.keySet()) {
-						log.tracef("MapList(%s): name = %s, value = %s", key, prop, map.get(prop));
-					}
-				}
-			}
-		}
+		if( log.isTraceEnabled() ) model.dump();
 	
 		// Build the list of output names that goes into the list widget
 		buildOutputListModel();
@@ -132,9 +110,8 @@ public class ApplicationConfigurationController {
 		outputListModel.clear();
 	}
 	
-	// Convert the Application object to the property dictionary
+	// Copy the Application auxiliary data back into the database
 	private void save(){
-		log.infof("In ApplicationConfigurationController:save()");
 		try {
 			// Save values back to the database
 			extensionManager.runScript(context.getScriptManager(), ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.PROPERTY_SET_SCRIPT, 
@@ -146,52 +123,6 @@ public class ApplicationConfigurationController {
 		catch( Exception ex ) {
 			log.errorf("ApplicationConfigurationController.save: Exception ("+ex.getMessage()+")",ex); // Throw stack trace
 		}
-			
-
-
-
 	}
 	
-	/*
-	
-	public void addOutputs(ListModel newValue){
-		fillListModel(outputListModel, newValue);
-	}	
-	
-	public void addOutputs(Object newValue[]){
-		fillListModel(outputListModel, newValue);
-	}
-	
-	public void setOutputs(ListModel newValue){
-		System.out.println("In setOutputs()");
-		clearOutputListModel();
-		addOutputs(newValue);
-	}
-	
-
-
-
-	
-	private void fillListModel(SortedListModel model, ListModel newValues){
-		int size = newValues.getSize();
-		for (int i=0; i<size; i++) {
-			model.add(newValues.getElementAt(i));
-		}
-	}
-	
-	private void fillListModel(SortedListModel model, Object newValues[]){
-		model.addAll(newValues);
-	}
-
-
-	/*
-	public static void main(String[] args) {
-		ApplicationConfigurationController controller = new ApplicationConfigurationController();		
-		javax.swing.JFrame frame = new javax.swing.JFrame();
-		frame.setContentPane(controller.getSlidingPane());
-		frame.setSize(300,200);
-		frame.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
-		frame.setVisible(true);
-	}
-	*/
 }

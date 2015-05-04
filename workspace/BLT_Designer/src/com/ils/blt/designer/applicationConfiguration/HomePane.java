@@ -93,7 +93,11 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 			}
 		}
 		postComboBox.setToolTipText("The console where diagnosis will be added!");
-		postComboBox.setSelectedItem(model.getProperties().get("Post"));
+		String post = model.getProperties().get("Post");
+		if( post!=null ) postComboBox.setSelectedItem(post);
+		else if( postComboBox.getItemCount()>0) {
+			postComboBox.setSelectedIndex(0);
+		}
 		postComboBox.setPreferredSize(COMBO_SIZE);
 		mainPanel.add(postComboBox, "wrap");
 		
@@ -107,7 +111,11 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 		}
 		
 		queueComboBox.setToolTipText("The message queue where messages for this application will be posted!");
-		queueComboBox.setSelectedItem(model.getProperties().get("MessageQueue"));
+		String queue = model.getProperties().get("MessageQueue");
+		if( queue!=null ) queueComboBox.setSelectedItem(queue);
+		else if( queueComboBox.getItemCount()>0) {
+			queueComboBox.setSelectedIndex(0);
+		}
 		queueComboBox.setPreferredSize(COMBO_SIZE);
 		mainPanel.add(queueComboBox, "wrap");
 
@@ -121,7 +129,11 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 		}
 		
 		groupRampMethodComboBox.setToolTipText("The Group Ramp Method that will be used for outputs in this application!");
-		groupRampMethodComboBox.setSelectedItem(model.getProperties().get("GroupRampMethod"));
+		String method = model.getProperties().get("GroupRampMethod");
+		if( method!=null ) groupRampMethodComboBox.setSelectedItem(method);
+		else if( groupRampMethodComboBox.getItemCount()>0) {
+			groupRampMethodComboBox.setSelectedIndex(0);
+		}
 		groupRampMethodComboBox.setPreferredSize(COMBO_SIZE);
 		mainPanel.add(groupRampMethodComboBox, "wrap");
 		
@@ -135,7 +147,11 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 		}
 		
 		unitComboBox.setToolTipText("The unit associated with this application!");
-		unitComboBox.setSelectedItem(model.getProperties().get("Unit"));
+		String unit = model.getProperties().get("Unit");
+		if( unit!=null ) unitComboBox.setSelectedItem(unit);
+		else if( unitComboBox.getItemCount()>0) {
+			unitComboBox.setSelectedIndex(0);
+		}
 		unitComboBox.setPreferredSize(COMBO_SIZE);
 		mainPanel.add(unitComboBox, "wrap");
 

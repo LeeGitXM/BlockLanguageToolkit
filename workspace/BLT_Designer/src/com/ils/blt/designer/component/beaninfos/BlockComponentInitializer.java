@@ -16,7 +16,6 @@ import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
 import com.ils.blt.client.component.PrefuseViewerComponent;
-import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.factorypmi.designer.workspace.WindowWorkspace;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -31,7 +30,6 @@ import com.inductiveautomation.vision.api.designer.beans.ComponentPopupInitializ
  */
 public class BlockComponentInitializer implements ComponentPopupInitializer<PrefuseViewerComponent> {
 	private final static String TAG="BlockComponentInitializer";
-	private final static String PREFIX = BLTProperties.BUNDLE_PREFIX+".Workspace.Menu.";
 	protected final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	/**
 	 * Constructor: The superclass constructor takes an array of relevant custom

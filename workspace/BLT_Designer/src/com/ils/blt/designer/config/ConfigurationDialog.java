@@ -11,8 +11,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.HashMap;
-import java.util.Map;
+import java.text.NumberFormat;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
@@ -21,6 +20,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
@@ -28,6 +28,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 
+import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.ActiveState;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -50,7 +51,7 @@ public class ConfigurationDialog extends JDialog {
 	protected static final Dimension NAME_BOX_SIZE  = new Dimension(280,24);
 	protected static final Dimension NUMBER_BOX_SIZE  = new Dimension(50,24);
 	protected final LoggerEx log;
-	protected final Map<String,Object> properties;
+	private final UtilityFunctions fcns = new UtilityFunctions();
 	protected JPanel contentPanel = null;
 	protected JPanel buttonPanel = null;
 	protected JButton okButton = null;
@@ -58,14 +59,9 @@ public class ConfigurationDialog extends JDialog {
 	protected JTextField nameField;
 	protected boolean cancelled = false;
 
-	// These are the keys to the map of properties that are common
-	public final static String PROPERTY_DESCRIPTION = "description";
-
-	
 	public ConfigurationDialog(DesignerContext ctx) {
 		super(ctx.getFrame());
 		this.context = ctx;
-		this.properties = new HashMap<>();
 		this.rb = ResourceBundle.getBundle("com.ils.blt.designer.designer");  // designer.properties
 		setModal(true);
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
@@ -140,10 +136,34 @@ public class ConfigurationDialog extends JDialog {
 		return area;
 	}
 	/**
-	 * Create a text field for editing the name
+	 * Create a text field for editing strings
 	 */
 	protected JTextField createTextField(String bundle,String text) {	
 		final JTextField field = new JTextField(text);
+		field.setPreferredSize(NAME_BOX_SIZE);
+		field.setEditable(true);
+		field.setToolTipText(rb.getString(bundle));
+		return field;
+	}
+	/**
+	 * Create a text field for editing floating point values
+	 */
+	protected JFormattedTextField createDoubleField(String bundle,String text) {	
+		final JFormattedTextField field = new JFormattedTextField(NumberFormat.getInstance());
+		double dbl = fcns.coerceToDouble(text);
+		field.setValue(new Double(dbl));
+		field.setPreferredSize(NAME_BOX_SIZE);
+		field.setEditable(true);
+		field.setToolTipText(rb.getString(bundle));
+		return field;
+	}
+	/**
+	 * Create a text field for editing integer values
+	 */
+	protected JFormattedTextField createIntegerField(String bundle,String text) {	
+		final JFormattedTextField field = new JFormattedTextField(NumberFormat.getInstance());
+		int i = fcns.coerceToInteger(text);
+		field.setValue(new Integer(i));
 		field.setPreferredSize(NAME_BOX_SIZE);
 		field.setEditable(true);
 		field.setToolTipText(rb.getString(bundle));

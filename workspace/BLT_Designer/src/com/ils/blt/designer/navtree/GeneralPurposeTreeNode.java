@@ -32,6 +32,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
+import com.ils.blt.common.script.ScriptConstants;
+import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.common.serializable.ApplicationUUIDResetHandler;
 import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.common.serializable.SerializableDiagram;
@@ -248,6 +250,28 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		if (res.getResourceId() == this.resourceId) {
 			if( res.getName()==null || !res.getName().equals(getName()) ) {
 				logger.infof("%s.projectResourceModified(%d), setting name %s to %s",TAG,this.resourceId,getName(),res.getName());
+				ScriptExtensionManager extensionManager = ScriptExtensionManager.getInstance();
+				// For application or family name changes, we need to synchronize the database
+				if( res.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
+					try {
+						SerializableApplication sa = deserializeApplication(res);
+						extensionManager.runScript(context.getScriptManager(), ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.PROPERTY_RENAME_SCRIPT, 
+								sa.getId().toString(),getName(),res.getName());
+					}
+					catch( Exception ex ) {
+						log.errorf("ApplicationConfigurationController.save: Exception ("+ex.getMessage()+")",ex); // Throw stack trace
+					}
+				}
+				else if( res.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE)) {
+					try {
+						SerializableFamily sf = deserializeFamily(res);
+						extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.PROPERTY_RENAME_SCRIPT, 
+								sf.getId().toString(),getName(),res.getName());
+					}
+					catch( Exception ex ) {
+						log.errorf("ApplicationConfigurationController.save: Exception ("+ex.getMessage()+")",ex); // Throw stack trace
+					}
+				}	
 			}
 		}  
 		super.projectResourceModified(res, changeType);
@@ -1413,7 +1437,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 
 		public void actionPerformed(ActionEvent e) {
 			// Traverse the hierarchy of the application, saving auxiliary data at each step
-			executionEngine.executeOnce(new AuxiliaryDataRestoreManager(node));
+			executionEngine.executeOnce(new AuxiliaryDataRestoreManager(workspace,node));
 		}
 	}
 	// Save the entire Application hierarchy.
@@ -1434,7 +1458,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		}
 	}
 	
-	// Launch a dialog that recursively saves auxiliary data from the application
+	// Recursively save auxiliary data from the application and its descendants
 	// into the current database.
 	private class SaveAuxiliaryDataAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
@@ -1452,6 +1476,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	}
 	/**
 	 * Recursively set the state of every diagram under the application to the selected value.
+	 * If the selected value is ISOLATED, then we also update the external database from
+	 * the project resources.
 	 */
 	private class SetApplicationStateAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
@@ -1465,6 +1491,9 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 
 		public void actionPerformed(ActionEvent e) {
 			handler.setApplicationState(app.getName(), state.name());
+			if( state.name().equals(DiagramState.ISOLATED)) {
+				executionEngine.executeOnce(new AuxiliaryDataSaveManager(app));
+			}
 		}
 	}
 
@@ -1505,7 +1534,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			}
 		}
 	}
-	// Launch a dialog to configure tooolkit-wide attributes.
+	// Launch a dialog to configure toolkit-wide attributes.
 	private class ToolkitConfigureAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
 		private final Component anchor;

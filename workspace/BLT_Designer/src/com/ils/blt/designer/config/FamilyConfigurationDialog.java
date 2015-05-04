@@ -10,18 +10,20 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
 
 import javax.swing.JComboBox;
+import javax.swing.JFormattedTextField;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
 
-import com.ils.blt.common.block.ActiveState;
 import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.common.serializable.SerializableFamily;
+import com.ils.common.GeneralPurposeDataContainer;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 /**
@@ -34,14 +36,16 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 	private final int DIALOG_WIDTH = 400;
 	private final ScriptExtensionManager extensionManager = ScriptExtensionManager.getInstance();
 	private final SerializableFamily family;
+	private final GeneralPurposeDataContainer model;           // Data container operated on by panels
 	private JPanel mainPanel = null;
 	protected JTextArea descriptionArea;
 	protected JComboBox<String> stateBox;
-	protected JTextField priorityField;
+	protected JFormattedTextField priorityField;
 	
 	public FamilyConfigurationDialog(Frame frame,DesignerContext ctx,SerializableFamily fam) {
 		super(ctx);
 		this.family = fam;
+		this.model = new GeneralPurposeDataContainer();
 		this.setTitle(rb.getString("Family.Title"));
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));
         initialize();
@@ -54,9 +58,19 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 	 * 2) Python hook definitions.
 	 */
 	private void initialize() {
-		// Fetch properties of the family associated with the database and not serialized.
-		extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAMILY_CLASS_NAME,ScriptConstants.PROPERTY_GET_SCRIPT,
-				this.family.getId().toString(),properties);
+		// Fetch data from the database and store in the model
+		model.setProperties(new HashMap<String,String>());
+		model.setLists(new HashMap<>());
+		model.setMapLists(new HashMap<>());
+		model.getProperties().put("Name", family.getName());   // Use as a key when fetching
+		try {
+			extensionManager.runScript(context.getScriptManager(),ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.PROPERTY_GET_SCRIPT, 
+					this.family.getId().toString(),model);
+		}
+		catch( Exception ex ) {
+			log.errorf("FamilyConfigurationController.initialize: Exception ("+ex.getMessage()+")",ex); // Throw stack trace
+		}
+		
 		mainPanel = createMainPanel();
 		contentPanel.add(mainPanel,BorderLayout.CENTER);
 		setOKActions();
@@ -76,6 +90,7 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 
 		panel.add(createLabel("Family.Name"),"");
 		nameField = createTextField("Family.Name.Desc",family.getName());
+		nameField.setEditable(false);
 		panel.add(nameField,"span,wrap");
 
 		panel.add(createLabel("Family.UUID"),"gaptop 2,aligny top");
@@ -84,15 +99,15 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 		panel.add(uuidField,"span,wrap");
 		
 		panel.add(createLabel("Family.Description"),"gaptop 2,aligny top");
-		String description = (String)properties.get(PROPERTY_DESCRIPTION);
+		String description = model.getProperties().get("Description");
 		if( description==null) description="";
 		descriptionArea = createTextArea("Family.Description.Desc",description);
 		panel.add(descriptionArea,"gaptop 2,aligny top,span,wrap");
 
 		panel.add(createLabel("Family.Priority"),"");
-		String priority = (String)properties.get(ScriptConstants.PROPERTY_PRIORITY);
-		if( priority==null) priority="";
-		priorityField = createTextField("Family.Priority.Desc",priority);
+		String priority = model.getProperties().get("Priority");
+		if( priority==null) priority="0.0";
+		priorityField = createDoubleField("Family.Priority.Desc",priority);
 		priorityField.setPreferredSize(NUMBER_BOX_SIZE);
 		panel.add(priorityField,"");
 		panel.add(createLabel("Family.State"),"gapleft 20");
@@ -108,21 +123,7 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 	private void setOKActions() {
 		okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				// Set attributes from fields
-				family.setName(nameField.getText());
-				properties.put(PROPERTY_DESCRIPTION, descriptionArea.getText());
-				try {
-					int pri = Integer.parseInt(priorityField.getText());
-					properties.put(ScriptConstants.PROPERTY_PRIORITY, String.valueOf(pri));
-				} 
-				catch (NumberFormatException nfe) {
-					log.warnf("%s.initialize: Priority (%s) must be an integer (%s)",
-							TAG, priorityField.getText(), nfe.getMessage());
-				}
-				String activeState = (String) stateBox.getSelectedItem();
-				family.setState(ActiveState.valueOf(activeState));
-				extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAMILY_CLASS_NAME,ScriptConstants.PROPERTY_SET_SCRIPT, 
-						family.getId().toString(),properties);
+				save();
 				dispose();
 			}
 		});
@@ -133,4 +134,21 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 	 */
 	public SerializableFamily getFamily() { return family; }
 
+	// Copy the Family auxiliary data back into the database
+	private void save(){
+		log.infof("%s.save()",TAG);
+		model.getProperties().put("Description",descriptionArea.getText());
+		model.getProperties().put("Priority", priorityField.getText());
+		try {
+			// Save values back to the database
+			extensionManager.runScript(context.getScriptManager(),ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.PROPERTY_SET_SCRIPT,
+								       family.getId().toString(),model);
+			// Replace the aux data structure in our serializable application
+			// NOTE: The Nav tree node that calls the dialog saves the application resource.
+			family.setAuxiliaryData(model);
+		}
+		catch( Exception ex ) {
+			log.errorf(TAG+".save: Exception ("+ex.getMessage()+")",ex); // Throw stack trace
+		}
+	}
 }
