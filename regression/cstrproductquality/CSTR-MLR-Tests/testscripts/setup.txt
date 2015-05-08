@@ -1,0 +1,45 @@
+#
+# Define attributes that are valid for many tests
+#
+log: [DATE] [TIME] Start Testing ...
+
+# Use notifications to test values on block outputs
+notification: SQC-Diag notificationKey.construct("CSTR_PRODUCT_QUALITY-GDA/CSTR_MLR_PROBLEM-GDA/Cstr_Mlr_Problem","MLR_SQC-GDA","out")
+notification: SQC-Hi-1-1 notificationKey.construct("CSTR_PRODUCT_QUALITY-GDA/CSTR_MLR_PROBLEM-GDA/Cstr_Mlr_Problem","MLR_HIGH_1_OF_1-GDA","out")
+notification: SQC-Hi-3-4 notificationKey.construct("CSTR_PRODUCT_QUALITY-GDA/CSTR_MLR_PROBLEM-GDA/Cstr_Mlr_Problem","MLR_HIGH_3_OF_4-GDA","out")
+notification: SQC-Hi-9-9 notificationKey.construct("CSTR_PRODUCT_QUALITY-GDA/CSTR_MLR_PROBLEM-GDA/Cstr_Mlr_Problem","MLR_HIGH_9_OF_9-GDA","out")
+notification: SQC-Lo-9-9 notificationKey.construct("CSTR_PRODUCT_QUALITY-GDA/CSTR_MLR_PROBLEM-GDA/Cstr_Mlr_Problem","MLR_LOW_9_OF_9-GDA","out")
+notification: SQC-Lo-3-4 notificationKey.construct("CSTR_PRODUCT_QUALITY-GDA/CSTR_MLR_PROBLEM-GDA/Cstr_Mlr_Problem","MLR_LOW_3_OF_4-GDA","out")
+notification: SQC-Lo-1-1 notificationKey.construct("CSTR_PRODUCT_QUALITY-GDA/CSTR_MLR_PROBLEM-GDA/Cstr_Mlr_Problem","MLR_LOW_1_OF_1-GDA","out")
+notification: And notificationKey.construct("CSTR_PRODUCT_QUALITY-GDA/CSTR_MLR_PROBLEM-GDA/Cstr_Mlr_Problem","GDL-AND-GATE-XXX-4959","out")
+notification: Or notificationKey.construct("CSTR_PRODUCT_QUALITY-GDA/CSTR_MLR_PROBLEM-GDA/Cstr_Mlr_Problem","GDL-OR-GATE-XXX-4958","out")
+notification: TimerVal notificationKey.construct("CSTR_PRODUCT_QUALITY-GDA/CSTR_MLR_PROBLEM-GDA/Cstr_Mlr_Problem","CSTR-MLR-ELAPSED-TIMER","out")
+# notification: TimerState notificationKey.construct("CSTR_PRODUCT_QUALITY-GDA/CSTR_MLR_PROBLEM-GDA/Cstr_Mlr_Problem","CSTR-MLR-ELAPSED-TIMER","State")
+# notification: TimerInhibiting notificationKey.construct("CSTR_PRODUCT_QUALITY-GDA/CSTR_MLR_PROBLEM-GDA/Cstr_Mlr_Problem","CSTR-MLR-ELAPSED-TIMER","Inhibiting")
+notification: Equality notificationKey.construct("CSTR_PRODUCT_QUALITY-GDA/CSTR_MLR_PROBLEM-GDA/Cstr_Mlr_Problem","MLR-GRADE-TEST-GDA","out")
+# notification: Final-Diag notificationKey.construct("CSTR_PRODUCT_QUALITY-GDA/CSTR_MLR_PROBLEM-GDA/Cstr_Mlr_Problem","MLR_PROBLEM_FOR_CSTR-GDA","State")
+
+# Script aliases - module is with respect to script directory
+script: resetDiagram diagramProxy.reset(name)
+script: setStateForApplication applicationProxy.setState(name,state)
+script: setTimeFactor timeFactor.setFactor(factor)
+
+# We need to set the test framework and internal clocks the same
+timefactor: 5
+setTimeFactor (5)
+
+log: [DATE] [TIME] Completed script aliases and time 
+
+# Tag aliases - use aliases for tag values used in assertions
+# Note: For the diag toolkit, the tags that can be directly checked
+#       most often correspond to source or sink blocks
+
+# Specify the provider that corresponds to the state of the diagrams and reset diagram to be tested to initialize states  
+tagprovider: XOM_ISOLATION
+08:00 setStateForApplication("CSTR_PRODUCT_QUALITY-GDA","ISOLATED")
+08:01 resetDiagram (CSTR_PRODUCT_QUALITY-GDA/CSTR_MLR_PROBLEM-GDA/Cstr_Mlr_Problem)
+
+# Use tag sets to drive tag values
+tagset: mlr-sqc LabData/MLR-LAB-DATA/rawValue LabData/MLR-LAB-DATA-SQC/target LabData/MLR-LAB-DATA-SQC/standardDeviation Site/SINGLE-PERMISSIVES/MLR-GRADE-FLAG/rawValue
+
+status: setup complete.

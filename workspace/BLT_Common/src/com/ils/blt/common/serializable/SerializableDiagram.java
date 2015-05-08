@@ -73,4 +73,32 @@ public class SerializableDiagram {
 		newConnections[index] = newConnection;
 		connections = newConnections;
 	}
+	
+	/**
+	 * Remove a block from the block list.
+	 */
+	public void removeBlock(SerializableBlock block) {
+		int index = 0;
+		SerializableBlock[] newBlocks = new SerializableBlock[blocks.length];
+		for(SerializableBlock blk:newBlocks) {
+			if( blk.getId().equals(block.getId())) continue;
+			newBlocks[index]=blk;
+			index++;
+		}
+		this.blocks = newBlocks;
+	}
+	/**
+	 * Remove a connectoion from the block list.
+	 */
+	public void removeConnection(SerializableConnection connection) {
+		int index = 0;
+		SerializableConnection[] newConnections = new SerializableConnection[connections.length];
+		for(SerializableConnection cxn:newConnections) {
+			if( cxn.getBeginAnchor().getId().equals(connection.getBeginAnchor().getId()) &&
+				cxn.getEndAnchor().getId().equals(connection.getEndAnchor().getId())	) continue;
+			newConnections[index]=cxn;
+			index++;
+		}
+		this.connections = newConnections;
+	}
 }

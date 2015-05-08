@@ -1,0 +1,225 @@
+#
+# Test of a DML problem
+#
+Test: DML problem
+Show: browser "CSTR_PRODUCT_QUALITY-GDA/CSTR_DML_PROBLEM-GDA/Cstr_Dml_Problem"
+
+# Define data written to tags in the order: Value Target StdDev DMLFlagVal DMLFlagQual
+Tagset: mlr-sqc
+Step: Initial State Confirmation
+log: [DATE] [TIME] affirm inputs all zero
+# affirm input at nontest values
+09:40:00 1.0 0.2 0.1 0.0 false
+
+Step: Data Conditioner Test
+log: [DATE] ][TIME] begin data conditioner testing
+# send value with false, value with true, value and false at different times outsid the 0.5 sec window
+09:41:00 0.0 0.0 0.0 0.5 true
+09:41:30 Assert: DMLFlagVal = 0 "data not transmitted"
+halt:
+Step: Equality Test
+log: [DATE] ][TIME] begin equality observation testing
+# test equality
+09:51:00 Assert: Equality = false "equality expecting false - initial value of 0 entered"
+09:52:00 0.0 0.0 0.0 0.89
+09:53:00 Assert: Equality = false "equality expecting false - value of 0.89 < target-deadband entered"
+09:54:00 0.0 0.0 0.0 0.91
+09:55:00 Assert: Equality = true "equality expecting true - value of 0.91 > target-deadband entered"
+09:56:00 0.0 0.0 0.0 1.11
+09:57:00 Assert: Equality = false "equality expecting false - value of 1.11 > target+deadband entered"
+log: [DATE] [TIME] complete equality testing
+
+# affirm input at nontest values
+09:58:30 0.0 0.0 0.0 0.0
+Step: Reset Diagram Test
+
+09:59:00 resetDiagram (CSTR_PRODUCT_QUALITY-GDA/CSTR_DML_PROBLEM-GDA/Cstr_Dml_Problem)
+log: [DATE] [TIME] reset diagram - all blocks should set their state to unknown or unset
+
+10:00:00 Assert: SQC-Hi-1-1 = UNKNOWN "initial state of 1/1 hi expect unknown"
+10:00:00 Assert: SQC-Hi-3-4 = UNKNOWN "initial state of 3/4 hi expect unknown"
+10:00:00 Assert: SQC-Hi-9-9 = UNKNOWN "initial state of 9/9 hi expect unknown"
+10:00:10 Assert: SQC-Lo-9-9 = UNKNOWN "initial state of 9/9 lo expect unknown"
+10:00:10 Assert: SQC-Lo-3-4 = UNKNOWN "initial state of 3/4 lo expect unknown"
+10:00:10 Assert: SQC-Lo-1-1 = UNKNOWN "initial state of 1/1 hi expect unknown"
+10:00:10 Assert: TimerVal = 0 "initial value of elapsed time block not affected"
+# 10:00:10 Assert: TimerState = unset "initial state of time expect unset rather than unknown"
+# 10:00:10 Assert: TimerInhibiting = true "expect true after reset"
+10:00:10 Assert: Equality = unknown "equality expecting unknown on reset"
+10:00:20 Assert: Or = UNKNOWN "initial OR state"
+10:00:30 Assert: And = UNKNOWN "initial AND state"
+10:00:40 Assert: SQC-Diag = unset "initial state of sqc diag expect unknown"
+# 10:00:50 Assert: Final-Diag = unset "initial state of final diag"
+
+status: initialize state step complete
+log: [DATE] [TIME] complete reset testing
+
+Step: In-Range Values to Fill History
+10:01:00 480.0 400.0 100.0 1.0
+log: [DATE] [TIME] set value at 480 with target at 400 and std dev at 100 - grade flag true
+
+10:02:00 Assert: TimerVal = 480.0 "Currently expect value of 480 to pass thru timer blcock"
+10:02:01 Assert: SQC-Hi-1-1 = false "1 good val of 1/1 hi expect false"
+10:02:01 Assert: SQC-Hi-3-4 = UNKNOWN "only 1 datum in queue of 3/4 hi leaves unknown"
+10:02:01 Assert: SQC-Hi-9-9 = false "only 1 datum in queue of 9/9 hi precludes true hence false"
+10:02:06 Assert: SQC-Lo-9-9 = false "only 1 datum in queue of 9/9 lo precludes true hence false"
+10:02:06 Assert: SQC-Lo-3-4 = UNKNOWN "only 1 datum in queue of 3/4 lo leaves unknown"
+10:02:06 Assert: SQC-Lo-1-1 = false "1 good val of 1/1 lo expect false"
+# 10:02:16 Assert: TimerInhibiting = false "expect false in release 0.1r2"
+10:02:16 Assert: Equality = true "equality expecting true - value of 1 entered"
+10:02:26 Assert: Or = UNKNOWN "or block test - no input is true, but an input is unknown"
+10:02:26 Assert: And = UNKNOWN "and block test - an input is unknown, so state is unknown"
+10:02:36 Assert: SQC-Diag = unknown "sqc diag expect unknown"
+# 10:02:36 Assert: Final-Diag = unkknown "final diag expect unknown"
+
+10:02:40 479.0
+
+log: [DATE] [TIME] set value at 479 below target
+
+10:03:40 Assert: TimerVal = 479.0 "Currently expect value of 479 to pass thru timer block"
+10:03:41 Assert: SQC-Hi-1-1 = false "1 good val of 1/1 hi continues false"
+10:03:41 Assert: SQC-Hi-3-4 = false "2 good vals in queue of 3/4 hi precludes true hence false"
+10:03:41 Assert: SQC-Hi-9-9 = false "only 2 vals in queue of 9/9 hi precludes true hence false"
+10:03:46 Assert: SQC-Lo-9-9 = false "only 2 vals in queue of 9/9 lo precludes true hence false"
+10:03:46 Assert: SQC-Lo-3-4 = false "2 good vals in queue of 3/4 lo precludes true hence false"
+10:03:46 Assert: SQC-Lo-1-1 = false "1 good val of 1/1 lo continues false"
+10:03:48 Assert: Equality = true "equality expecting true - value of 1 entered"
+10:03:51 Assert: Or = false "or block - all inputs are false, so state is false"
+10:03:51 Assert: And = false "and block - an input is false, so state is false"
+10:03:56 Assert: SQC-Diag = false "and block is false so state is false"
+# 10:03:56 Assert: Final-Diag = false "sqc diag is false so final diad is false"
+
+log: [DATE] [TIME] set values at 478 481 482 483 484 485 486 to fill history queue every 10 seconds
+10:04:00 478.0
+10:04:10 481.0
+10:04:20 482.0
+10:04:30 483.0
+10:04:40 484.0
+10:04:50 485.0
+10:05:00 486.0
+
+10:05:30 Assert: TimerVal = 486.0 "Currently expect value of 486 to pass thru timer block"
+10:05:30 Assert: SQC-Hi-1-1 = false "1 good val of 1/1 hi expect false"
+10:05:30 Assert: SQC-Hi-3-4 = false "4 good vals in queue of 3/4 hi expect false"
+10:05:30 Assert: SQC-Hi-9-9 = false "9 good vals in queue of 9/9 hi expect false"
+10:05:35 Assert: SQC-Lo-9-9 = false "9 good vals in queue of 9/9 lo expect false"
+10:05:35 Assert: SQC-Lo-3-4 = false "4 good vals in queue of 3/4 lo expect false"
+10:05:35 Assert: SQC-Lo-1-1 = false "1 good val of 1/1 lo expect false"
+# 10:05:35 Assert: TimerState = unset "initial state of time expect unset rather than unkknown"
+# 10:05:35 Assert: TimerInhibiting = false "expect false with data coming through"
+10:05:35 Assert: Equality = true "equality expecting true - value of 1 entered"
+10:05:40 Assert: Or = false "or block test - all inputs false, none are unknown, state is false"
+10:05:40 Assert: And = false "and block test - one input true but one input false for and state"
+10:05:45 Assert: SQC-Diag = false "enough data to conclude"
+# 10:05:45 Assert: Final-Diag = false "enough data to conclude"
+
+status: filled history with in range data
+
+Step: All One Side of Mean
+log: [DATE] [TIME] add values at 487 488 489 to give nine hi
+log: [DATE] [TIME] allow time between hi and lo tier evaluations
+10:06:00 487.0
+10:06:15 488.0
+10:06:30 489.0
+10:07:15 Assert: TimerVal = 489.0 "Currently expect value of 489 to pass thru timer block"
+10:07:30 Assert: SQC-Hi-1-1 = false "1 good val of 1/1 hi expect false"
+10:07:30 Assert: SQC-Hi-3-4 = false "4 good vals in queue of 3/4 hi expect false"
+10:07:30 Assert: SQC-Hi-9-9 = true "9 vals above mean in queue of 9/9 hi expect true"
+10:07:35 Assert: SQC-Lo-9-9 = false "9 good vals in queue of 9/9 lo expect false"
+10:07:35 Assert: SQC-Lo-3-4 = false "4 good vals in queue of 3/4 lo expect false"
+10:07:35 Assert: SQC-Lo-1-1 = false "1 good val of 1/1 lo expect false"
+# 10:07:40 Assert: TimerState = unset "initial state of time expect unset rather than unkknown"
+# 10:07:40 Assert: TimerInhibiting = false "expect false with data coming through"
+10:07:40 Assert: Or = true "one input is true so state is true"
+10:07:50 Assert: And = true "or goes true to give true for and state"
+10:07:55 Assert: SQC-Diag = true "9/9 hi change to sqc diag expect true"
+status: end 9/9 test
+
+log: [DATE] [TIME] all OR behaviors tested
+log: [DATE] [TIME] all AND behaviors tested
+
+Step: High Values
+log: [DATE] [TIME] set values 912 913 914 all high
+log: [DATE] [TIME] 1/1 Hi goes true but will be ignored
+10:08:00  912.0
+
+10:08:30 Assert: SQC-Hi-1-1 = true "1/1 hi became true"
+10:08:30 Assert: SQC-Hi-3-4 = false "3/4 hi continues false"
+10:08:30 Assert: SQC-Hi-9-9 = true "9/9 hi continues true"
+10:08:35 Assert: SQC-Lo-9-9 = false "9/9 lo continues false"
+10:08:35 Assert: SQC-Lo-3-4 = false "3/4 lo continues false"
+10:08:35 Assert: SQC-Lo-1-1 = false "1/1 lo continues false"
+10:08:40 Assert: TimerVal = 912.0 "Currently expect value of 912 to pass thru timer block"
+# 10:08:40 Assert: TimerState = unset "initial state of time expect unset rather than unkknown"
+# 10:08:40 Assert: TimerInhibiting = false "expect false with data coming through"
+10:08:40 Assert: Or = true "continues true for or state"
+10:08:45 Assert: And = true "continues true for and state"
+10:08:50 Assert: SQC-Diag = true "sqc diag continues true"
+
+10:08:55  913.0
+10:09:00  914.0
+
+10:10:00 Assert: SQC-Hi-1-1 = true "1/1 hi continues true"
+10:10:00 Assert: SQC-Hi-3-4 = true "3/4 hi became true"
+10:10:00 Assert: SQC-Hi-9-9 = true "9/9 hi continues true"
+10:10:10 Assert: SQC-Lo-9-9 = false "9/9 lo continues false"
+10:10:10 Assert: SQC-Lo-3-4 = false "3/4 lo continues false"
+10:10:10 Assert: SQC-Lo-1-1 = false "1/1 lo continues false"
+10:10:15 Assert: TimerVal = 914.0 "Currently expect value of 914 to pass thru timer block"
+# 10:10:15 Assert: TimerState = unset "initial state of time expect unset rather than unkknown"
+# 10:10:15 Assert: TimerInhibiting = false "expect false with data coming through"
+10:10:20 Assert: Or = true "continues true for or state"
+10:10:30 Assert: And = true "continues true for and state"
+10:10:40 Assert: SQC-Diag = true "sqc diag continues true"
+# 10:10:50 Assert: Final-Diag = true "high value came in to final diag"
+
+Step: Opposing SQC State Test
+log: [DATE] [TIME] confirm all hi tests are true
+
+10:11:00 901.0
+10:11:05 902.0
+10:11:10 903.0
+10:10:15 904.0
+10:11:20 905.0
+10:11:25 906.0
+10:11:30 907.0
+10:11:35 908.0
+10:11:40 909.0
+
+10:12:00 Assert: SQC-Hi-1-1 = true "1/1 hi true"
+10:12:05 Assert: SQC-Hi-3-4 = true "3/4 hi true"
+10:12:10 Assert: SQC-Hi-9-9 = true "9/9 hi true"
+10:12:15 Assert: SQC-Lo-9-9 = false "9/9 lo false"
+10:12:20 Assert: SQC-Lo-3-4 = false "3/4 lo false"
+10:12:25 Assert: SQC-Lo-1-1 = false "1/1 lo false"
+
+log: [DATE] [TIME] let 1/1 lo become true -- hi tests should become false
+10:12:30 200.0
+
+10:13:00 Assert: SQC-Hi-1-1 = false "1/1 hi false"
+10:13:05 Assert: SQC-Hi-3-4 = false "3/4 hi false"
+10:13:10 Assert: SQC-Hi-9-9 = false "9/9 hi false"
+10:13:15 Assert: SQC-Lo-9-9 = false "9/9 lo false"
+10:13:20 Assert: SQC-Lo-3-4 = false "3/4 lo false"
+10:13:25 Assert: SQC-Lo-1-1 = true "1/1 lo true"
+
+status: end data perturbations
+
+Step: Clear On Reset
+10:14:00 resetDiagram (CSTR_PRODUCT_QUALITY-GDA/CSTR_DML_PROBLEM-GDA/Cstr_Dml_Problem)
+log: [DATE] [TIME] resetting diagram
+
+10:15:01 Assert: SQC-Hi-1-1 = unknown "final state of 1/1 hi"
+10:15:01 Assert: SQC-Hi-3-4 = UNKNOWN "final state of 3/4 hi"
+10:15:01 Assert: SQC-Hi-9-9 = UNKNOWN "final state of 9/9 hi"
+10:15:01 Assert: SQC-Lo-9-9 = UNKNOWN "final state of 9/9 lo"
+10:15:01 Assert: SQC-Lo-3-4 = UNKNOWN "final state of 3/4 lo"
+10:15:01 Assert: SQC-Lo-1-1 = unknown "final state of 1/1 lo"
+10:15:05 Assert: Or = UNKNOWN "final or state"
+10:15:10 Assert: And = UNKNOWN "final and state"
+10:15:15 Assert: SQC-Diag = unset "final state of sqc diag"
+# 10:13:20 Assert: Final-Diag = unset "final state of final diag"
+# change input to nontest values
+# 10:15:00 300.0 300.0 50.0 0.0
+
+status: mlr test script complete

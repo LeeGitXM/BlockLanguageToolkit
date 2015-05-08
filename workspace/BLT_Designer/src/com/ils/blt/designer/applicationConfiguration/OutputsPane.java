@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -19,7 +20,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
-import javax.swing.border.EmptyBorder;
+import javax.swing.border.EtchedBorder;
 
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.SortedListModel;
@@ -62,12 +63,13 @@ public class OutputsPane extends JPanel implements ApplicationConfigurationContr
 		
 		jlist = new JList<String>(outputListModel);
 		JScrollPane scrollPane = new JScrollPane(jlist);
-		scrollPane.setBorder(new EmptyBorder(10,10,10,10));
+		scrollPane.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(10,10,10,10),
+								BorderFactory.createEtchedBorder(EtchedBorder.RAISED)));
 		add(scrollPane, BorderLayout.CENTER);
 		
 		// The three button along the right are in their own panel
 		buttonPanel = new JPanel();
-		buttonPanel.setBorder(new EmptyBorder(10,10,10,10));
+		buttonPanel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
 		BoxLayout layout = new BoxLayout(buttonPanel, BoxLayout.Y_AXIS);
 		buttonPanel.setLayout(layout);
 		add(buttonPanel,BorderLayout.EAST);

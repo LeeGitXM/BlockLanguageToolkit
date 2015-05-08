@@ -477,7 +477,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			BlockDesignableContainer tab = (BlockDesignableContainer)findDesignableContainer(resourceId);
 			open(tab);  // Selects?
 		}
-		// NOTE: We tried obtaining a lock at this point, but it always seened to be busy without
+		// NOTE: We tried obtaining a lock at this point, but it always seemed to be busy without
 		//       an explicit save on opening.
 		else {
 			ProjectResource res = context.getProject().getResource(resourceId);	
@@ -513,6 +513,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			
 			BlockDesignableContainer tab = (BlockDesignableContainer)findDesignableContainer(resourceId);
 			tab.setBackground(diagram.getBackgroundColorForState());
+			
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
 		}
 	}

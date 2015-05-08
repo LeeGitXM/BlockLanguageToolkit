@@ -25,6 +25,7 @@ public class DiagramContainer extends BlockDesignableContainer {
 	public DiagramContainer(AbstractBlockWorkspace workspace,BlockDiagramModel model,EdgeRouter router,ConnectionPainter painter) {
 		super(workspace, model, router, painter);
 		fncs = new UtilityFunctions();
+		
 	}
 	
 	/**

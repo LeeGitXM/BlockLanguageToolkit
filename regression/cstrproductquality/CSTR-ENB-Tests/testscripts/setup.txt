@@ -1,0 +1,51 @@
+#
+# Define attributes that are valid for many tests
+#
+log: [DATE] [TIME] Start Testing ...
+# Define variables of interest
+problem = "CSTR_PRODUCT_QUALITY-GDA/CSTR_ENB_PROBLEM-GDA/Cstr_Enb_Problem"
+
+# Use notifications to test values on block outputs
+notification: SQC-Diag notificationKey.construct($problem,"ENB_SQC-GDA","out")
+notification: SQC-Hi-1-1 notificationKey.construct($problem,"ENB_HIGH_1_OF_1-GDA","out")
+notification: SQC-Hi-3-4 notificationKey.construct($problem,"ENB_HIGH_3_OF_4-GDA","out")
+notification: SQC-Hi-9-9 notificationKey.construct($problem,"ENB_HIGH_9_OF_9-GDA","out")
+notification: SQC-Lo-9-9 notificationKey.construct($problem,"ENB_LOW_9_OF_9-GDA","out")
+notification: SQC-Lo-3-4 notificationKey.construct($problem,"ENB_LOW_3_OF_4-GDA","out")
+notification: SQC-Lo-1-1 notificationKey.construct($problem,"ENB_LOW_1_OF_1-GDA","out")
+notification: And notificationKey.construct($problem,"GDL-AND-GATE-XXX-3634","out")
+notification: Or notificationKey.construct($problem,"GDL-OR-GATE-XXX-3633","out")
+notification: TimerVal notificationKey.construct($problem,"CSTR-ENB-ELAPSED-TIMER","out")
+notification: Equality notificationKey.construct($problem,"GDL-EQUALITY-OBSERVATION-XXX-141","out")
+notification: C9FlagVal notificationKey.construct($problem,"DATACONDITIONER-476","out")
+notification: C9FlagState notificationKey.construct($problem,"DATACONDITIONER-476","status")
+# notification: Final-Diag notificationKey.construct($problem,"ENB_PROBLEM_FOR_CSTR-GDA","State")
+# notification: TimerState notificationKey.construct($problem,"CSTR-ENB-ELAPSED-TIMER","State")
+# notification: TimerInhibiting notificationKey.construct($problem,"CSTR-ENB-ELAPSED-TIMER","Inhibiting")
+
+# Script aliases - module is with respect to script directory
+
+script: resetDiagram diagramProxy.reset(name)
+script: setStateForApplication applicationProxy.setState(name,state)
+script: setTimeFactor timeFactor.setFactor(factor)
+
+# We need to set the test framework and internal clocks the same
+timefactor: 5
+setTimeFactor (5)
+
+log: [DATE] [TIME] Completed script aliases and time 
+
+# Tag aliases - use aliases for tag values used in assertions
+# Note: For the diag toolkit, the tags that can be directly checked
+#       most often correspond to source or sink blocks
+
+# Specify the provider that corresponds to the state of the diagrams and reset diagram to be tested to initialize states  
+tagprovider: XOM_ISOLATION
+setStateForApplication("CSTR_PRODUCT_QUALITY-GDA","ISOLATED")
+resetDiagram ($problem)
+
+# Use tag sets to drive tag values
+tagset: enb-sqc LabData/ENB-LAB-DATA/rawValue LabData/ENB-LAB-DATA-SQC/target LabData/ENB-LAB-DATA-SQC/standardDeviation Site/SINGLE-PERMISSIVES/C9_GRADE_FLAG/rawValue Site/SINGLE-PERMISSIVES/C9_GRADE_FLAG/badValue
+tagset: dataqual site/SINGLE-PERMISSIVES/C9_GRADE_FLAG/rawValue site/SINGLE-PERMISSIVES/C9_GRADE_FLAG/badValue
+
+status: setup complete.

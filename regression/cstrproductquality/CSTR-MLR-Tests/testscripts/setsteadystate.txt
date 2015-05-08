@@ -1,0 +1,54 @@
+#
+# Test of a MLR problem
+#
+Test: MLR problem Initialize
+
+# Define data written to tags in the order: Value Target StdDev GrdFlag
+Tagset: mlr-sqc
+
+log: [DATE] [TIME] Define data written to tags in the order -- Value Target StdDev GrdFlag
+log: [DATE] [TIME] values - 477 478 479 480 481 482 483 484 485
+log: [DATE] [TIME] target is 480 with std dev of 100 with grade flag value of 1.0
+log: [DATE] [TIME] expecting all states to be false
+
+Step: Establish Steady State Near Target
+10:00:00 477.0 480.0 100.0 1.0
+10:00:05 478.0
+10:00:10 479.0
+10:00:15 480.0
+10:00:20 481.0
+10:00:25 482.0
+10:00:30 483.0
+10:00:35 484.0
+10:00:40 485.0
+
+10:01:00 Assert: SQC-Hi-1-1 = false "intial state of 1/1 hi expect false"
+10:01:00 Assert: SQC-Hi-3-4 = false "intial state of 3/4 hi expect false"
+10:01:00 Assert: SQC-Hi-9-9 = false "intial state of 9/9 hi expect false"
+10:01:10 Assert: SQC-Lo-9-9 = false "intial state of 9/9 lo expect false"
+10:01:10 Assert: SQC-Lo-3-4 = false "intial state of 3/4 lo expect false"
+10:01:10 Assert: SQC-Lo-1-1 = false "intial state of 1/1 hi expect false"
+10:01:15 Assert: TimerVal = 485 "most recent value introduced to diagram output of timer"
+10:01:15 Assert: TimerInhibiting = false "expect false with data coming through"
+10:01:15 Assert: Equality = true "equality expecting true - initial value of 1 entered"
+10:01:20 Assert: Or = false "or block - all inputs are false"
+10:01:20 Assert: And = false "and test - one input is false"
+10:01:30 Assert: SQC-Diag = false "intial state of sqc diag expect false"
+10:01:35 Assert: Final-Diag = false "initial state of final diag expect false"
+
+log: [DATE] [TIME] check states again 60 sec later
+10:02:00 Assert: SQC-Hi-1-1 = false "intial state of 1/1 hi"
+10:02:00 Assert: SQC-Hi-3-4 = false "intial state of 3/4 hi"
+10:02:00 Assert: SQC-Hi-9-9 = false "intial state of 9/9 hi"
+10:02:10 Assert: SQC-Lo-9-9 = false "intial state of 9/9 lo"
+10:02:10 Assert: SQC-Lo-3-4 = false "intial state of 3/4 lo"
+10:02:10 Assert: SQC-Lo-1-1 = false "intial state of 1/1 hi"
+10:02:15 Assert: TimerVal = 485 "initial state of elapsed time block"
+10:02:15 Assert: TimerInhibiting = false "expect false with data coming through"
+10:02:15 Assert: Equality = true "equality expecting true - initial value of 1 entered"
+10:02:20 Assert: Or = false "or block - all inputs are false"
+10:02:20 Assert: And = false "and test - one input is false"
+10:02:30 Assert: SQC-Diag = false "intial state of sqc diag"
+10:02:35 Assert: Final-Diag = false "initial state of final diag expect false"
+
+status: set stable operation completed

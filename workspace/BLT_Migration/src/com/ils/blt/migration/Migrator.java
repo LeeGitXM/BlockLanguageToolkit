@@ -10,6 +10,8 @@ import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.apache.log4j.BasicConfigurator;
@@ -22,13 +24,13 @@ import org.sqlite.JDBC;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.common.serializable.SerializableBlock;
+import com.ils.blt.common.serializable.SerializableConnection;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.migration.map.AnchorMapper;
@@ -78,7 +80,6 @@ public class Migrator {
 		String connectPath = "jdbc:sqlite:"+path;
 
 		// Read database to generate conversion maps
-		@SuppressWarnings("resource")
 		Connection connection = null;
 		try {
 			connection = DriverManager.getConnection(connectPath);
@@ -241,7 +242,7 @@ public class Migrator {
 			if(g2block.getY()>maxy) maxy = g2block.getY();
 		}
 		double xoffset = MINX - minx*SCALE_FACTOR;  // Right margin
-		double yoffset = MINY + maxy*SCALE_FACTOR;  // Top margin
+		double yoffset = MINY + miny*SCALE_FACTOR;  // Top margin
 		int index=0;
 		for( G2Block g2block:g2d.getBlocks()) {
 			SerializableBlock block = new SerializableBlock();
@@ -267,6 +268,7 @@ public class Migrator {
 		
 		// Finally we analyze the diagram as a whole to deduce connections and partial connections
 		connectionMapper.createConnectionSegments(g2d, sd);
+		performSpecialHandlingOnDiagram(sd);
 		return sd;
 	}
 
@@ -336,6 +338,44 @@ public class Migrator {
 					}
 				}
 			}
+		}
+	}
+	/**
+	 * Handle cleanup on the diagram as a whole.
+	 * @param diagram
+	 */
+	private void performSpecialHandlingOnDiagram(SerializableDiagram diagram) {
+		// Remove redundant blocks
+		List<SerializableBlock> blocksToDelete = new ArrayList<>();
+		for( SerializableBlock block:diagram.getBlocks()) {
+			if(block.getClassName().startsWith("com.ils.block.Junction")) {
+				SerializableAnchor[] anchors = block.getAnchors();
+				if( anchors.length==2 && 
+				    !anchors[0].getDirection().equals(anchors[1].getDirection()) ) {
+					
+					SerializableConnection incxn = null;
+					SerializableConnection outcxn= null;
+					for(SerializableConnection scxn:diagram.getConnections()) {
+						if(scxn.getBeginBlock().equals(block.getId())) outcxn = scxn;
+						else if(scxn.getEndBlock().equals(block.getId())) incxn = scxn;
+					}
+					if( incxn!=null && outcxn!=null) {
+						// Make two connections into one, delete block
+						incxn.setEndBlock(outcxn.getEndBlock());
+						if( incxn.getType().equals(ConnectionType.ANY)) incxn.setType(outcxn.getType());
+						diagram.removeBlock(block);
+						diagram.removeConnection(outcxn);
+					}
+					else {
+						System.err.println(String.format("%s: Unable to remove extraneous Junction (%s)",TAG,block.getName()));
+					}
+					
+				}
+			}
+		}
+		
+		for(SerializableBlock block:blocksToDelete) {
+			diagram.removeBlock(block);
 		}
 	}
 	/**

@@ -19,7 +19,7 @@ insert into ClassMap values ('EM-GDA-SQC-DIAGNOSIS','xom.block.sqcdiagnosis.SQCD
 insert into ClassMap values ('EM-GDA-SQC-LIMIT-OBSERVATION','com.ils.block.SQC');
 insert into ClassMap values ('EM-GDA-SUBDIAGNOSIS','xom.block.subdiagnosis.SubDiagnosis');
 insert into ClassMap values ('EM-GDA-SYMBOLIC-VARIABLE','com.ils.block.Parameter');
-insert into ClassMap values ('EM-GDA-TEST-POINT','com.ils.block.TestPoint');
+insert into ClassMap values ('EM-GDA-TEST-POINT','com.ils.block.Junction');
 insert into ClassMap values ('GDL-AND-GATE','com.ils.block.And');
 insert into ClassMap values ('GDL-ARITHMETIC-FUNCTION','xom.block.arithmetic.Arithmetic');
 insert into ClassMap values ('GDL-BLOCK-EVALUATION','com.ils.block.Command');

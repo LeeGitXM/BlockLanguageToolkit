@@ -50,7 +50,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	private final Map<UUID,ProcessBlockView> blockMap = new HashMap<UUID,ProcessBlockView>();
 	private List<Connection> connections = new ArrayList<Connection>();
 	private static final int MIN_WIDTH = 800;
-	private static final int MIN_HEIGHT = 600;
+	private static final int MIN_HEIGHT = 800;
 	private Dimension diagramSize = new Dimension(MIN_WIDTH,MIN_HEIGHT);
 	private final UUID id;
 	private String name = "UNSET";
@@ -119,8 +119,10 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		for(ProcessBlockView blk:blockMap.values()) {
 			if( blk.getLocation().getX()+blk.getPreferredWidth()>maxX ) maxX = blk.getLocation().getX()+blk.getPreferredWidth();
 			if( blk.getLocation().getY()+blk.getPreferredHeight()>maxY) maxY = blk.getLocation().getY()+blk.getPreferredHeight();
+			log.infof("%s.Constructor: Sizing %s (%f,%f)",TAG,blk.getName(),blk.getLocation().getX(),blk.getLocation().getY());
 		}
-		diagramSize =  new Dimension((int)maxX,(int)maxY);
+		diagramSize =  new Dimension((int)(maxX*1.05),(int)(maxY*1.25));
+		this.setDiagramSize(diagramSize);
 	}
 	
 	public ProcessDiagramView(long resId,UUID uuid, String nam) {
