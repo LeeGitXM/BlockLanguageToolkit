@@ -7,9 +7,8 @@
 #!/bin/sh
 #set -x
 DB=conversion.db
-REPO_ROOT=~/Development/ils/src
-BIN=$REPO_ROOT/blt/migration/mdb
-TARGETDIR=$REPO_ROOT/blt/migration/mdb
+BIN=$GIT_REPO/blt/migration/mdb
+TARGETDIR=$GIT_REPO/blt/migration/mdb
 mkdir -p ${TARGETDIR}
 
 

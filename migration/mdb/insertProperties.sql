@@ -69,7 +69,7 @@ insert into PropertyMap values ('EM-GDA-SQC-LIMIT-OBSERVATION','optionalDesiredC
 insert into PropertyMap values ('EM-GDA-SQC-LIMIT-OBSERVATION','sqcTestLabel','TestLabel','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-SubDIAGNOSIS','label','Label','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-SYMBOLIC-VARIABLE','LABEL','','STRING',1,'NONE');
-insert into PropertyMap values ('EM-GDA-TEST-POINT','label','Label','STRING',1,'NONE');
+insert into PropertyMap values ('EM-GDA-TEST-POINT','label','','STRING',1,'NONE');
 insert into PropertyMap values ('GDL-AND-GATE','logic','','STRING',1,'NONE');
 insert into PropertyMap values ('GDL-AND-GATE','maximumUnknownInputs','','INTEGER',1,'NONE');
 insert into PropertyMap values ('GDL-AND-GATE','outputUncertainty','','DOUBLE',1,'NONE');
