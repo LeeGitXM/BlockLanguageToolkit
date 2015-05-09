@@ -127,7 +127,7 @@ public class ConnectionMapper {
 				log.debugf("%s.createConnectionSegments: connection=%s",TAG,cxn.toString());
 			}
 		}
-		// Walk the diagram an create a lookup of diagram by blockId
+		// Walk the diagram and create a lookup of diagram by blockId
 		for( SerializableBlock blk:diagram.getBlocks()) {
 			diagramForBlockId.put(blk.getId(), diagram);
 		}
@@ -161,8 +161,9 @@ public class ConnectionMapper {
 				// Handle the case of a normal connection
 				if(beginBlock!=null && endBlock!=null && beginAnchor!=null && endAnchor!=null)  {
 					// Normal complete connection - both blocks on same diagram
-					diagramForBlockId.get(beginBlock.getId()).addConnection(cxn);
-					log.debugf("%s.createConnections: NORMAL::%s",TAG,cxn.toString());
+					SerializableDiagram sd = diagramForBlockId.get(beginBlock.getId());
+					sd.addConnection(cxn);
+					log.debugf("%s.createConnections: NORMAL::%s (%s has %d)",TAG,cxn.toString(),sd.getName(),sd.getConnections().length);
 				}
 				// There are 4 special cases relating to connection posts.
 				// NOTE: The block lookup on the "through" end (null anchor) will have failed

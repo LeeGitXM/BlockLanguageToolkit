@@ -64,6 +64,7 @@ public class SerializableDiagram {
 	 * Add a connection to this diagram. Woe to any entity holding on to the old array.
 	 */
 	public void addConnection(SerializableConnection newConnection) {
+		if( newConnection==null ) throw new IllegalArgumentException("Attempt to add a null connection to "+getName());
 		SerializableConnection[] newConnections = new SerializableConnection[connections.length+1];
 		int index = 0;
 		for(SerializableConnection cxn:connections) {
@@ -75,12 +76,15 @@ public class SerializableDiagram {
 	}
 	
 	/**
-	 * Remove a block from the block list.
+	 * Remove a block from the block list. The caller is responsible for calling this
+	 * method with a block that is currently in the diagram. If no match is found
+	 * expect an IndexOutOfRangeException.
 	 */
 	public void removeBlock(SerializableBlock block) {
 		int index = 0;
-		SerializableBlock[] newBlocks = new SerializableBlock[blocks.length];
-		for(SerializableBlock blk:newBlocks) {
+		SerializableBlock[] newBlocks = new SerializableBlock[blocks.length-1];
+		for(SerializableBlock blk:blocks) {
+			if( blk==null ) throw new NullPointerException("Null block found while searching for block to remove in diagram "+getName());
 			if( blk.getId().equals(block.getId())) continue;
 			newBlocks[index]=blk;
 			index++;
@@ -88,13 +92,20 @@ public class SerializableDiagram {
 		this.blocks = newBlocks;
 	}
 	/**
-	 * Remove a connectoion from the block list.
+	 * Remove a connection from the block list. The caller is responsible for calling this
+	 * method with a connection that is currently in the diagram. If no match is found
+	 * expect an IndexOutOfRangeException.
 	 */
 	public void removeConnection(SerializableConnection connection) {
 		int index = 0;
-		SerializableConnection[] newConnections = new SerializableConnection[connections.length];
-		for(SerializableConnection cxn:newConnections) {
-			if( cxn.getBeginAnchor().getId().equals(connection.getBeginAnchor().getId()) &&
+		SerializableConnection[] newConnections = new SerializableConnection[connections.length-1];
+		for(SerializableConnection cxn:connections) {
+			if( cxn==null ) throw new NullPointerException("Null connection found while searching for connection to remove in diagram "+getName());
+			if( cxn.getBeginAnchor() == null ) continue;  // Dangling
+			if( cxn.getEndAnchor() == null )   continue;  // Dangling
+			if( cxn.getBeginBlock().equals(connection.getBeginBlock())                   &&
+				cxn.getBeginAnchor().getId().equals(connection.getBeginAnchor().getId()) &&
+				cxn.getEndBlock().equals(connection.getEndBlock())                       &&
 				cxn.getEndAnchor().getId().equals(connection.getEndAnchor().getId())	) continue;
 			newConnections[index]=cxn;
 			index++;

@@ -54,7 +54,7 @@ public class Migrator {
 	private G2Application g2application = null;    // G2 Application read from JSON
 	private G2Diagram g2diagram = null;            // G2 Diagram read from JSON
 	private SerializableApplication application = null;   // The result
-	private SerializableDiagram diagram = null;           // The result
+	private SerializableDiagram diagram = null;           // An alternate result (obsolete)
 	private final AnchorMapper anchorMapper;
 	private final ClassNameMapper classMapper;
 	private final ProcedureMapper procedureMapper;
@@ -168,8 +168,11 @@ public class Migrator {
 		application = createSerializableApplication(g2application);
 		connectionMapper.createConnections();
 		connectionMapper.reconcileUnresolvedConnections();
+		postProcess(application);
+		
 	}
 	/**
+	 * The root is a diagram. Convert from G2 objects into
 	 * Convert from G2 objects into a BLTView diagram
 	 */
 	public void migrateDiagram() {
@@ -242,7 +245,7 @@ public class Migrator {
 			if(g2block.getY()>maxy) maxy = g2block.getY();
 		}
 		double xoffset = MINX - minx*SCALE_FACTOR;  // Right margin
-		double yoffset = MINY + miny*SCALE_FACTOR;  // Top margin
+		double yoffset = MINY + maxy*SCALE_FACTOR;  // Top margin
 		int index=0;
 		for( G2Block g2block:g2d.getBlocks()) {
 			SerializableBlock block = new SerializableBlock();
@@ -268,7 +271,6 @@ public class Migrator {
 		
 		// Finally we analyze the diagram as a whole to deduce connections and partial connections
 		connectionMapper.createConnectionSegments(g2d, sd);
-		performSpecialHandlingOnDiagram(sd);
 		return sd;
 	}
 
@@ -344,10 +346,10 @@ public class Migrator {
 	 * Handle cleanup on the diagram as a whole.
 	 * @param diagram
 	 */
-	private void performSpecialHandlingOnDiagram(SerializableDiagram diagram) {
+	private void performSpecialHandlingOnDiagram(SerializableDiagram sdiag) {
 		// Remove redundant blocks
 		List<SerializableBlock> blocksToDelete = new ArrayList<>();
-		for( SerializableBlock block:diagram.getBlocks()) {
+		for( SerializableBlock block:sdiag.getBlocks()) {
 			if(block.getClassName().startsWith("com.ils.block.Junction")) {
 				SerializableAnchor[] anchors = block.getAnchors();
 				if( anchors.length==2 && 
@@ -355,27 +357,51 @@ public class Migrator {
 					
 					SerializableConnection incxn = null;
 					SerializableConnection outcxn= null;
-					for(SerializableConnection scxn:diagram.getConnections()) {
+					for(SerializableConnection scxn:sdiag.getConnections()) {
+						if( scxn==null ) {
+							System.err.println(String.format("%s.NULL connection in diagram %s",TAG,sdiag.getName()));
+							continue;
+						}
+						if(scxn.getBeginBlock()==null ) continue;   // Dangling connection
+						if(scxn.getEndBlock()==null )   continue;
 						if(scxn.getBeginBlock().equals(block.getId())) outcxn = scxn;
 						else if(scxn.getEndBlock().equals(block.getId())) incxn = scxn;
 					}
 					if( incxn!=null && outcxn!=null) {
+						//System.err.println(String.format("%s.JUNCTION %s: in connection %s",TAG,block.getName(),incxn.toString()));
+						//System.err.println(String.format("%s.JUNCTION %s: out connection %s",TAG,block.getName(),incxn.toString()));
 						// Make two connections into one, delete block
 						incxn.setEndBlock(outcxn.getEndBlock());
-						if( incxn.getType().equals(ConnectionType.ANY)) incxn.setType(outcxn.getType());
-						diagram.removeBlock(block);
-						diagram.removeConnection(outcxn);
+						incxn.setEndAnchor(outcxn.getEndAnchor());
+						if( !outcxn.getType().equals(ConnectionType.ANY)) incxn.setType(outcxn.getType());
+						//System.err.println(String.format("%s.JUNCTION new connection %s",TAG,incxn.toString()));
+						blocksToDelete.add(block);
+						sdiag.removeConnection(outcxn);
 					}
 					else {
-						System.err.println(String.format("%s: Unable to remove extraneous Junction (%s)",TAG,block.getName()));
+						System.err.println(String.format("%s: %s - unable to remove extraneous Junction (%s)",TAG,sdiag.getName(),block.getName()));
 					}
-					
 				}
 			}
 		}
 		
 		for(SerializableBlock block:blocksToDelete) {
-			diagram.removeBlock(block);
+			sdiag.removeBlock(block);
+		}
+
+	}
+	/**
+	 * Perform any special processing after application is created.
+	 * Currently this method finds all diagrams and cleans those up ... 
+	 * We assume there are no intervening folders.
+	 */
+	private void postProcess(SerializableApplication app) {
+		SerializableFamily[] fams = app.getFamilies();
+		for(SerializableFamily fam:fams) {
+			SerializableDiagram[] diags = fam.getDiagrams();
+			for(SerializableDiagram sd:diags) {
+				performSpecialHandlingOnDiagram(sd);
+			}			
 		}
 	}
 	/**
@@ -449,6 +475,7 @@ public class Migrator {
 			if(root.equals(RootClass.APPLICATION) ) {
 				m.migrateApplication();
 			}
+			// NOTE: This is obsolete (and probably buggy).
 			else if(root.equals(RootClass.DIAGRAM)) {
 				m.migrateDiagram();
 			}

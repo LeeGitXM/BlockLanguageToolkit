@@ -58,27 +58,31 @@ public class UUIDResetHandler   {
 				sa.setParentId(sb.getId());
 			}
 		}
-		// Now connections
-
+		// Now the connections
 		for(SerializableConnection sc:diagram.getConnections()) {
+			UUID revised = null;
 			// Start
 			UUID id = sc.getBeginBlock();
-			UUID revised = blockLookup.get(id);
-			if( revised!=null ) {
-				sc.setBeginBlock(revised);
-			}
-			else {
-				log.warnf("%s: UUID lookup failed for begin block.", TAG);
-				success = false;
+			if( id!=null ) {  // Dangling
+				revised = blockLookup.get(id);
+				if( revised!=null ) {
+					sc.setBeginBlock(revised);
+				}
+				else {
+					log.warnf("%s: UUID lookup failed for begin block.", TAG);
+					success = false;
+				}
 			}
 			// End
 			id = sc.getEndBlock();
-			revised = blockLookup.get(id);
-			if( revised!=null ) {
-				sc.setEndBlock(revised);
-			}
-			else {
-				log.warnf("%s: UUID lookup failed for end block.", TAG);
+			if( id!=null ) {  // Dangling
+				revised = blockLookup.get(id);
+				if( revised!=null ) {
+					sc.setEndBlock(revised);
+				}
+				else {
+					log.warnf("%s: UUID lookup failed for end block.", TAG);
+				}
 			}
 			// And the anchors of the connections ...
 			SerializableAnchorPoint sap = sc.getBeginAnchor();
