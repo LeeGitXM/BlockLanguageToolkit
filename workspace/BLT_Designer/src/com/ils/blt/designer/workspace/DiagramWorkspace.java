@@ -78,6 +78,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.BlockDi
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Connection;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.ConnectionPainter;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.ArrowConnectionPainter;
+import com.inductiveautomation.ignition.designer.blockandconnector.routing.EdgeRouter;
 import com.inductiveautomation.ignition.designer.designable.DesignPanel;
 import com.inductiveautomation.ignition.designer.designable.DesignableWorkspaceListener;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
@@ -279,6 +280,17 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	@Override
 	protected BlockDesignableContainer newDesignableContainer(BlockDiagramModel bdm) {
 		return new DiagramContainer(this,bdm,this.newEdgeRouter(bdm),this.newConnectionPainter(bdm));
+	}
+	
+	@Override
+	protected EdgeRouter newEdgeRouter(BlockDiagramModel bdm) {
+		ProcessDiagramView mdl = (ProcessDiagramView)bdm;
+		if( mdl.getConnections().size()>15) {
+			return new HighPerformanceEdgeRouter();
+		}
+		else {
+			return super.newEdgeRouter(bdm);
+		}
 	}
 	
 	@Override
@@ -689,7 +701,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				super.stroke = origin.getCoreStroke();
 				super.standardColor=origin.getCoreColor();
 				super.paintConnection(g, cxn, route, selected, hover);
-			}	
+			}
 		}
 	}
 	
