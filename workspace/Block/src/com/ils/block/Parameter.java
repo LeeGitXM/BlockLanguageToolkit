@@ -33,7 +33,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 @ExecutableBlock
 public class Parameter extends AbstractProcessBlock implements ProcessBlock {
 	protected static String BLOCK_PROPERTY_TAG_PATH = "TagPath";
-	private BlockProperty tag = null;
+	private BlockProperty tagProperty = null;
 	private BlockProperty valueProperty = null;
 	private QualifiedValue qv = null;    // Most recent output value
 	/**
@@ -64,10 +64,10 @@ public class Parameter extends AbstractProcessBlock implements ProcessBlock {
 	private void initialize() {
 		setName("Parameter");
 		delayStart = true;
-		tag = new BlockProperty(BLOCK_PROPERTY_TAG_PATH,"",PropertyType.STRING,true);
-		tag.setBinding("");
-		tag.setBindingType(BindingType.TAG_READWRITE);
-		setProperty(BLOCK_PROPERTY_TAG_PATH, tag);
+		tagProperty = new BlockProperty(BLOCK_PROPERTY_TAG_PATH,"",PropertyType.STRING,true);
+		tagProperty.setBinding("");
+		tagProperty.setBindingType(BindingType.TAG_READWRITE);
+		setProperty(BLOCK_PROPERTY_TAG_PATH, tagProperty);
 		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.OBJECT,false);
 		valueProperty.setBindingType(BindingType.ENGINE);
 		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
@@ -115,7 +115,7 @@ public class Parameter extends AbstractProcessBlock implements ProcessBlock {
 		if( !isLocked() && running ) {
 			if( vcn.getConnection()!=null && vcn.getConnection().getDownstreamPortName().equals(BlockConstants.IN_PORT_NAME) ) {
 				// Arrival through the input connection
-				String path = tag.getBinding().toString();
+				String path = tagProperty.getBinding().toString();
 				controller.updateTag(getParentId(),path, qv);
 				log.debugf("%s.acceptValue: Updated tag %s = %s",getName(),path,qv.getValue().toString());
 			}
@@ -141,6 +141,19 @@ public class Parameter extends AbstractProcessBlock implements ProcessBlock {
 		return descriptor;
 	}
 	
+	/**
+	 * This method is not called during normal operation of the block.
+	 * It is called externally to propagate a tag value.
+	 */
+	@Override
+	public void evaluate() {
+		String path = tagProperty.getBinding().toString();
+		QualifiedValue val = controller.getTagValue(path);
+		if( val!=null ) {
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,val);
+			controller.acceptCompletionNotification(nvn);
+		}
+	}
 	/**
 	 * The super method handles setting the new property. A save of the block
 	 * as a project resource will inform the controller so that it can change the

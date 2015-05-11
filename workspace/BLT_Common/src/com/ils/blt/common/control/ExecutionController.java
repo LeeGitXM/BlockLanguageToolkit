@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2015  ILS Automation. All rights reserved.
+cccccccccccccccccccccc *   (c) 2014-2015  ILS Automation. All rights reserved.
  *  
  *   The block controller is designed to be called from the client
  *   via RPC. All methods must be thread safe,
@@ -32,6 +32,7 @@ public interface ExecutionController  {
 	public String getProductionDatabase();
 	public String getProductionProvider();
 	public double getIsolationTimeFactor();
+	public QualifiedValue getTagValue(String path);
 	public void sendPropertyNotification(String id, String propertyName, QualifiedValue val);
 	public void sendConnectionNotification(String blockid, String port, QualifiedValue val);
 	public void sendStateNotification(String diagramid, String val);

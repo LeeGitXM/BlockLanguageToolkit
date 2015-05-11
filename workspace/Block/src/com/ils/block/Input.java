@@ -116,6 +116,19 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 	}
 
 	/**
+	 * This method is not called during normal operation of the block.
+	 * It is called externally to propagate a tag value.
+	 */
+	@Override
+	public void evaluate() {
+		String path = tagPathProperty.getBinding().toString();
+		QualifiedValue val = controller.getTagValue(path);
+		if( val!=null ) {
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,val);
+			controller.acceptCompletionNotification(nvn);
+		}
+	}
+	/**
 	 * The super method handles setting the new property. A save of the block
 	 * as a project resource will inform the controller so that it can change the
 	 * tag subscription, if necessary. 

@@ -64,6 +64,10 @@ public class BasicExecutionController implements ExecutionController  {
 		log.warnf("%s.getIsolationTimeFactor: WARNING: Executed from stub class",TAG);
 		return 0;
 	}
+	public QualifiedValue getTagValue(String path) {
+		log.warnf("%s.getTagValue: WARNING: Executed from stub class",TAG);
+		return null;
+	}
 	public void sendConnectionNotification(String blockid, String port, QualifiedValue val) {
 		log.warnf("%s.sendConnectionNotification: WARNING: Executed from stub class",TAG);
 	}

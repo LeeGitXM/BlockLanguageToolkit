@@ -167,7 +167,6 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 	public void notifyOfStatus() {
 		QualifiedValue qv = new BasicQualifiedValue(state);
 		notifyOfStatus(qv);
-		
 	}
 	private void notifyOfStatus(QualifiedValue qv) {
 		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);

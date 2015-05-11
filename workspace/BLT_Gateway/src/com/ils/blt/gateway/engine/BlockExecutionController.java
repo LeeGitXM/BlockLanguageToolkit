@@ -28,6 +28,7 @@ import com.ils.blt.common.notification.SignalNotification;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.gateway.ControllerRequestHandler;
 import com.ils.blt.gateway.tag.TagListener;
+import com.ils.blt.gateway.tag.TagReader;
 import com.ils.blt.gateway.tag.TagWriter;
 import com.ils.common.BoundedBuffer;
 import com.ils.common.watchdog.AcceleratedWatchdogTimer;
@@ -72,6 +73,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	private double isolationTimeFactor= Double.NaN;
 
 	private final BoundedBuffer buffer;
+	private final TagReader  tagReader;
 	private final TagListener tagListener;    // Tag subscriber
 	private final TagWriter tagWriter;
 	private Thread notificationThread = null;
@@ -84,6 +86,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	private BlockExecutionController() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.threadPool = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
+		this.tagReader  = new TagReader();
 		this.tagListener = new TagListener(this);
 		this.tagWriter = new TagWriter();
 		this.buffer = new BoundedBuffer(BUFFER_SIZE);
@@ -253,6 +256,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		log.infof("%s: STARTED",TAG);
 		if(!stopped) return;  
 		stopped = false;
+		tagReader.initialize(context);
 		tagListener.start(context);
 		tagWriter.initialize(context);
 		this.notificationThread = new Thread(this, "BlockExecutionController");
@@ -356,7 +360,10 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		}
 	}
 	/**
-	 * Reset all blocks on a diagram.
+	 * Reset all blocks on a diagram. Resetting blocks with
+	 * truth-value outputs, propagates an UNKNOWN. This is 
+	 * done by the blocks. After all of this, cause the input
+	 * blocks to evaluate.
 	 * @param diagramId the diagram identifier.
 	 */
 	public void resetDiagram(UUID diagramId) {
@@ -364,6 +371,10 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		if( diagram!=null) {
 			for(ProcessBlock block:diagram.getProcessBlocks() ) {
 				block.reset();
+			}
+			// The blocks that delay start are those that propagate tag values.
+			for(ProcessBlock block:diagram.getProcessBlocks() ) {
+				if( block.delayBlockStart() ) block.evaluate();
 			}
 		}
 	}
@@ -396,6 +407,11 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	@Override
 	public void clearSubscriptions() {
 		tagListener.clearSubscriptions();
+	}
+	
+	@Override
+	public QualifiedValue getTagValue(String path) {
+		return tagReader.readTag(path);
 	}
 	/**
 	 * Stop the tag subscription associated with a particular property of a block.

@@ -277,8 +277,9 @@ public class ProcessDiagram extends ProcessNode {
 	 * of blocks within the diagram. It only affects the way that block results are 
 	 * propagated (or not) and whether or not subscriptions are in effect.
 	 * 
-	 * If the new state is ISOLATED, stop all blocks, set the state and re-setart. 
-	 * This is necessary to allow a swap-out of timers and tag providers.
+	 * If the new state is ISOLATED, stop all blocks, set the state and re-start. 
+	 * This is necessary to allow a swap-out of timers and tag providers. During
+	 * this time, set the state to DISABLED to prevent propagation of new tag values.
 	 * Likewise if the state was ISOLATED, perform the same sequence.
 	 * 
 	 * @param s the new state
@@ -308,6 +309,7 @@ public class ProcessDiagram extends ProcessNode {
 				for(ProcessBlock blk:blocks.values()) {
 					if( blk.delayBlockStart() ) blk.start();
 				}
+
 				startSubscriptions();
 			}
 			// Fire diagram notification change
@@ -364,14 +366,20 @@ public class ProcessDiagram extends ProcessNode {
 		return reason;
 	}
 	
+	// This is only called on a diagram state change. Here we temporarily set the
+	// diagram to DISABLED in order to suppress tag updates due to new bindings.
 	private void startSubscriptions() {
 		log.infof("%s.startSubscriptions: ...%d:%s",TAG,projectId,getName());
+		DiagramState current = this.state;
+		this.state = DiagramState.DISABLED;
 		for( ProcessBlock pb:getProcessBlocks()) {
 			for(BlockProperty bp:pb.getProperties()) {
 				controller.startSubscription(pb,bp);
 			}
 			pb.setProjectId(projectId);
 		}
+		log.infof("%s.startSubscriptions: ... %s complete",TAG,getName());
+		this.state = current;
 	}
 	private void stopSubscriptions() {
 		log.infof("%s.stopSubscriptions: ...%d:%s",TAG,projectId,getName());

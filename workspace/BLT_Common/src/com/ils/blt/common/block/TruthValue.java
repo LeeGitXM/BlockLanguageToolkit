@@ -14,8 +14,6 @@ public enum TruthValue
             FALSE,
             TRUE,
             UNKNOWN,
-            INITIALIZED,        // Deprecated
-            ACTIVE              // Deprecated
             ;
            
  /**

@@ -21,7 +21,6 @@ public enum PropertyType
             TIME,                // seconds, editor auto-scales display unit.
             TRUTHVALUE,
             LIST,                // List of comma-separated strings
-            QOLIST,              // Deprecated. Use LIST instead. 
             SCRIPT,              // Gets a Python editor
             SCRIPTREF,           // Name of a Python module to execute
             OBJECT               // Untyped primitive

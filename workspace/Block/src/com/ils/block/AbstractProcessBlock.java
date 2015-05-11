@@ -261,7 +261,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	/**
 	 * The default method sets the state to INITIALIZED.
 	 * It also sends notifications to block outputs setting them to empty or
-	 * unknown. NOTE: This has no effect on Python blocks. They do this
+	 * unknown. NOTE: This has no effect on Python blocks. They must do this
 	 * for themselves.
 	 */
 	@Override
@@ -269,10 +269,13 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		this.state = TruthValue.UNSET;
 		if( controller!=null ) {
 			// Send notifications on all outputs to indicate empty connections.
+			// For truth-values, actually propagate UNKNOWN.
 			for(AnchorPrototype ap:getAnchors()) {
 				if( ap.getAnchorDirection().equals(AnchorDirection.OUTGOING) ) {
 					if( ap.getConnectionType().equals(ConnectionType.TRUTHVALUE)) {
 						controller.sendConnectionNotification(getBlockId().toString(), ap.getName(),UNKNOWN_TRUTH_VALUE);
+						OutgoingNotification nvn = new OutgoingNotification(this,ap.getName(),UNKNOWN_TRUTH_VALUE);
+						controller.acceptCompletionNotification(nvn);
 					}
 					else if( ap.getConnectionType().equals(ConnectionType.DATA)) {
 						controller.sendConnectionNotification(getBlockId().toString(), ap.getName(),NAN_DATA_VALUE);
