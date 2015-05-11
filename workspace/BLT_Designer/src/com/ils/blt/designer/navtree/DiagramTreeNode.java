@@ -294,9 +294,9 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	 */
 	@Override
 	public void projectUpdated(Project diff) {
-		logger.info(TAG+".projectUpdated "+diff.getDescription());
+		logger.debug(TAG+".projectUpdated "+diff.getDescription());
 		if (diff.isResourceDirty(resourceId) && !diff.isResourceDeleted(resourceId)) {
-			logger.infof("%s: projectUpdated, setting name ...",TAG);
+			logger.infof("%s.projectUpdated, setting name ...",TAG);
 			setName(diff.getResource(resourceId).getName());
 			refresh();
 		}

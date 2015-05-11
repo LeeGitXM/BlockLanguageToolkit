@@ -138,7 +138,6 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 		super.acceptValue(incoming);
 		QualifiedValue qv = incoming.getValue();
 		if( qv!=null && qv.getValue()!=null ) {
-			valueProperty.setValue(qv.getValue());
 			if( !isLocked()  ) {
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 				controller.acceptCompletionNotification(nvn);
@@ -159,6 +158,7 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 					log.warn(getName()+".acceptValue: error formatting "+qv.getValue()+" with "+format+" as "+type.name(),ex);  // Print stack trace
 				}
 				qv = new BasicQualifiedValue(value,qv.getQuality(),qv.getTimestamp()); 
+				valueProperty.setValue(value);
 				log.tracef("%s.acceptValue: port %s formatted value =  %s.",getName(),incoming.getConnection().getUpstreamPortName(),value);
 				notifyOfStatus(qv);
 			}

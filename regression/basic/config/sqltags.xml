@@ -1,10 +1,4 @@
 <Tags>
-   <Tag name="Configuration" path="" type="Folder"/>
-   <Tag name="DiagnosticToolkit" path="Configuration" type="Folder"/>
-   <Tag name="vectorClampMode" path="Configuration/DiagnosticToolkit" type="DB">
-      <Property name="Value">0</Property>
-      <Property name="DataType">7</Property>
-   </Tag>
    <Tag name="MemoryTags" path="" type="Folder"/>
    <Tag name="FdInput2-3" path="MemoryTags" type="DB">
       <Property name="Value">false</Property>
@@ -91,6 +85,10 @@
    <Tag name="LogicFilterFalse" path="MemoryTags" type="DB">
       <Property name="Value">false</Property>
       <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="LimitInput" path="MemoryTags" type="DB">
+      <Property name="Value">0.0</Property>
+      <Property name="DataType">5</Property>
    </Tag>
    <Tag name="ReadWriteNumericOutput" path="MemoryTags" type="DB">
       <Property name="Value">22.0</Property>

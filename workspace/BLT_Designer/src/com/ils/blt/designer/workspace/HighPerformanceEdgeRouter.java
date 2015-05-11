@@ -33,26 +33,22 @@ public class HighPerformanceEdgeRouter extends AbstractEdgeRouter {
 	
 	@Override
 	public void setup(Map<UUID, Rectangle> obstacles) {
-		log.infof("%s.setup ...",TAG);
+		log.infof("%s.setup ... %d blocks",TAG,obstacles.size());
 		this.rectangles = obstacles;
 	}
  
+	/**
+	 * This gets called several times during the routing of each point.
+	 */
 	@Override
 	protected Point getBlockLocation(UUID id) {
-		log.infof("%s.getBlockLocation ...",TAG);
 		return rectangles.get(id).getLocation();
 	}
-	@Override
-	public Path2D route(AnchorPoint start, Point end) {
-		log.infof("%s.route (anchor-point) ...",TAG);
-		return super.route(start, end);
-	}
-	@Override
-	public Path2D route(AnchorPoint start, AnchorPoint end) {
-		log.infof("%s.route (anchor-anchor) ...",TAG);
-		return super.route(start, end);
-	}
-	
+
+	/**
+	 * This gets called right after the setup() method, once per creation
+	 * of the diagram.
+	 */
 	@Override
 	protected List<Point> route(Point start, Point end, Point trueStart, Point trueEnd) {
 		log.infof("%s.route ...",TAG);
@@ -73,14 +69,16 @@ public class HighPerformanceEdgeRouter extends AbstractEdgeRouter {
 		return points;
 	}
  
+	/**
+	 * This gets called right after the setup() method, once per creation
+	 * of the diagram.
+	 */
 	@Override
 	public List<Path2D> routeAll(Collection<Connection> connections) {
-		log.infof("%s.routeAll ...",TAG);
+		log.debugf("%s.routeAll ...",TAG);
 		return super.routeAll(connections);
 	}
  
 	@Override
-	public void paintDebug(Graphics2D g) {
-		log.infof("%s.paintDebug ...",TAG);
-	}
+	public void paintDebug(Graphics2D g) {}
 }

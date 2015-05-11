@@ -39,6 +39,7 @@ import javax.swing.event.ChangeListener;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -497,6 +498,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			logger.debugf("%s: open - diagram = %s",TAG,json);
 			SerializableDiagram sd = null;
 			ObjectMapper mapper = new ObjectMapper();
+			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+			mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
 			try {
 				sd = mapper.readValue(json,SerializableDiagram.class);
 				// Synchronize names as the resource may have been re-named since it was serialized
