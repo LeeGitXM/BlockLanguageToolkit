@@ -61,7 +61,6 @@ public class ProcessDiagram extends ProcessNode {
 		blocks = new HashMap<UUID,ProcessBlock>();
 		connectionMap = new HashMap<ConnectionKey,ProcessConnection>();
 		outgoingConnections = new HashMap<BlockPort,List<ProcessConnection>>();
-		analyze(diagram);
 	}
 
 	public ProcessBlock getBlock(UUID id) { return blocks.get(id); }

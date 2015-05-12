@@ -366,10 +366,10 @@ public class ModelManager implements ProjectListener  {
 	public void projectAdded(Project staging, Project published) {
 		if( staging!=null ) {
 			long projectId = staging.getId();
-			log.tracef("%s.projectAdded: %s (%d),staging",TAG,staging.getName(),projectId);
+			log.infof("%s.projectAdded: %s (%d),staging",TAG,staging.getName(),projectId);
 			List<ProjectResource> resources = published.getResources();
 			for( ProjectResource res:resources ) {
-				log.debugf("%s.projectAdded: resource %s (%d),type %s", TAG,res.getName(),
+				log.infof("%s.projectAdded: resource %s (%d),type %s", TAG,res.getName(),
 						res.getResourceId(),res.getResourceType());
 				analyzeResource(projectId,res);
 			}
@@ -397,7 +397,7 @@ public class ModelManager implements ProjectListener  {
 	public void projectUpdated(Project diff, ProjectVersion vers) { 
 		
 		if( vers!=ProjectVersion.Staging ) return;  // Consider only the "Staging" version
-		log.debugf("%s.projectUpdated: %s (%d)  %s", TAG,diff.getName(),diff.getId(),vers.toString());
+		log.infof("%s.projectUpdated: %s (%d)  %s", TAG,diff.getName(),diff.getId(),vers.toString());
 		long projectId = diff.getId();
 		Set<Long> deleted = diff.getDeletedResources();
 		for (Long  resid : deleted) {
@@ -408,7 +408,7 @@ public class ModelManager implements ProjectListener  {
 		List<ProjectResource> resources = diff.getResources();
 		for( ProjectResource res:resources ) {
 			//if( res.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)) continue;
-			log.debugf("%s.projectUpdated: add/update resource %s (%d),type %s (%s)", TAG,res.getName(),
+			log.infof("%s.projectUpdated: add/update resource %s (%d),type %s (%s)", TAG,res.getName(),
 					res.getResourceId(),res.getResourceType(),(diff.isResourceDirty(res)?"dirty":"clean"));
 			analyzeResource(projectId,res);
 		}
@@ -417,12 +417,13 @@ public class ModelManager implements ProjectListener  {
 	// ===================================== Private Methods ==========================================
 	/**
 	 * Add or update an application in the model from a ProjectResource.
-	 * This is essentially just a tree node.
+	 * This is essentially just a tree node. Use presence in the node map
+	 * to determine whether or not this is a new resource or an update.
 	 * @param projectId the identity of a project
 	 * @param res the project resource containing the diagram
 	 */
 	private void addModifyApplicationResource(Long projectId,ProjectResource res) {
-		log.debugf("%s.addModifyApplicationResource: %s(%d)",TAG,res.getName(),res.getResourceId());
+		log.infof("%s.addModifyApplicationResource: %s(%d)",TAG,res.getName(),res.getResourceId());
 		ProcessApplication application = deserializeApplicationResource(projectId,res);
 		if( application!=null ) {
 			UUID self = application.getSelf();
@@ -444,6 +445,9 @@ public class ModelManager implements ProjectListener  {
 					processApp.setState(application.getState());
 				}
 			}
+		}
+		else {
+			log.warnf("%s.addModifyApplicationResource: failed to deserialize %s(%d)",TAG,res.getName(),res.getResourceId());
 		}
 	}
 	/**
@@ -467,8 +471,10 @@ public class ModelManager implements ProjectListener  {
 				ProjResKey key = new ProjResKey(projectId,res.getResourceId());
 				nodesByKey.put(key,diagram);
 				addToHierarchy(projectId,diagram);
+				diagram.analyze(sd);   // Determines connections
 			}
-			// Update the diagram with new features - leave the old in place 
+			// Carefully update the diagram with new features/properties.
+			// Leave existing blocks/subscriptions "as-is". 
 			else {
 				// Delete all the old connections
 				diagram.clearConnections();
@@ -498,7 +504,6 @@ public class ModelManager implements ProjectListener  {
 				log.infof("%s.addModifyDiagramResource: diagram is DISABLED (did not start subscriptions)...%d:%s",TAG,projectId,res.getName());
 			}
 		}
-
 		else {
 			log.warnf("%s.addModifyDiagramResource - Failed to create diagram from resource (%s)",TAG,res.getName());
 		}
@@ -532,6 +537,9 @@ public class ModelManager implements ProjectListener  {
 					processFam.setState(family.getState());
 				}
 			}
+		}
+		else {
+			log.warnf("%s.addModifyFamilyResource: failed to deserialize %s(%d)",TAG,res.getName(),res.getResourceId());
 		}
 	}
 	/**
@@ -747,12 +755,7 @@ public class ModelManager implements ProjectListener  {
 		}
 		return family;
 	}
-	/**
-	 * @return the ScriptManager appropriate to the project
-	 */
-	private ScriptManager getScriptManagerForProject(long projectId) {
-		return context.getProjectManager().getProjectScriptManager(projectId);
-	}
+
 	/**
 	 * Call this method after each node is defined. It has already been 
 	 * added to the nodesByUUID and, if appropriate, the orphan list.

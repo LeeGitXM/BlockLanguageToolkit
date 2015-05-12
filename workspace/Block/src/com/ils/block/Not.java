@@ -57,6 +57,7 @@ public class Not extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	private void initialize() {	
 		setName("Not");
+		state = TruthValue.UNSET;
 		
 		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,TruthValue.UNKNOWN,PropertyType.TRUTHVALUE,false);
 		valueProperty.setBindingType(BindingType.ENGINE);
@@ -72,6 +73,11 @@ public class Not extends AbstractProcessBlock implements ProcessBlock {
 		anchors.add(output);
 	}
 	
+	@Override
+	public void reset() {
+		super.reset();
+		state = TruthValue.UNKNOWN;
+	}
 
 	/**
 	 * Notify the block that a new value has appeared on one of its input anchors.
@@ -91,11 +97,9 @@ public class Not extends AbstractProcessBlock implements ProcessBlock {
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus(result);
 		}
-		else {
-			// Set the internal property locked or not
-			valueProperty.setValue(tv);
-			controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,result);
-		}
+		// Set the internal property locked or not
+		valueProperty.setValue(result.getValue());
+		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,result);
 	}
 	/**
 	 * Send status update notification for our last latest state.
