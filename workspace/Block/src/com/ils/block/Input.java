@@ -88,6 +88,11 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 			controller.acceptCompletionNotification(nvn);
 		}
 	}
+
+	@Override
+	public void stop() {
+		super.stop();
+	}
 	
 	/**
 	 * The block is notified that a new value has appeared on a pseudo port named as

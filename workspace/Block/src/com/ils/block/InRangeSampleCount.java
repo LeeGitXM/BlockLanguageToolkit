@@ -79,7 +79,7 @@ public class InRangeSampleCount extends AbstractProcessBlock implements ProcessB
 		BlockProperty minprop = new BlockProperty(BLOCK_PROPERTY_LOWER_LIMIT, lowerLimit,PropertyType.DOUBLE, true);
 		setProperty(BLOCK_PROPERTY_LOWER_LIMIT, minprop);
 		BlockProperty maxprop = new BlockProperty(BLOCK_PROPERTY_UPPER_LIMIT, upperLimit,PropertyType.DOUBLE, true);
-		setProperty(BLOCK_PROPERTY_LOWER_LIMIT, maxprop);
+		setProperty(BLOCK_PROPERTY_UPPER_LIMIT, maxprop);
 		BlockProperty fillProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_FILL_REQUIRED,new Boolean(fillRequired),PropertyType.BOOLEAN,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_FILL_REQUIRED, fillProperty);
 		BlockProperty sizeProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE,new Integer(sampleSize),PropertyType.INTEGER,true);
@@ -120,29 +120,23 @@ public class InRangeSampleCount extends AbstractProcessBlock implements ProcessB
 			log.infof("%s.acceptValue: Received %s",TAG,qv.getValue().toString());
 			if( qv.getQuality().isGood() ) {
 				queue.add(qv);
-				if( queue.size() >= sampleSize || !fillRequired) {
-					TruthValue result = checkPassConditions(state);
-					if( !isLocked() ) {
-						// Give it a new timestamp
-						QualifiedValue outval = new BasicQualifiedValue(result);
-						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
-						controller.acceptCompletionNotification(nvn);
-						notifyOfStatus(outval);
-					}
-					// Even if locked, we update the current state
-					state = result;
-				}
-				else {
-					QualifiedValue outval = new BasicQualifiedValue(TruthValue.UNKNOWN);
+				TruthValue result = checkPassConditions(state);
+				if( queue.size()<sampleSize && fillRequired && result.equals(TruthValue.FALSE) ) result = TruthValue.UNKNOWN;
+				if( !isLocked() ) {
+					// Give it a new timestamp
+					QualifiedValue outval = new BasicQualifiedValue(result);
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 					controller.acceptCompletionNotification(nvn);
 					notifyOfStatus(outval);
 				}
+				// Even if locked, we update the current state
+				state = result;
 			}
 			else {
 				// Post bad value on output, clear queue
 				if( !isLocked() ) {
-					QualifiedValue outval = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
+					state = TruthValue.UNKNOWN;
+					QualifiedValue outval = new BasicQualifiedValue(state.name(),qv.getQuality(),qv.getTimestamp());
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 					controller.acceptCompletionNotification(nvn);
 					notifyOfStatus(outval);
@@ -188,7 +182,7 @@ public class InRangeSampleCount extends AbstractProcessBlock implements ProcessB
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
 
-		if(propertyName.equals(BLOCK_PROPERTY_LOWER_LIMIT)) {
+		if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_LOWER_LIMIT)) {
 			try {
 				lowerLimit = Double.parseDouble(event.getNewValue().toString());
 			}
@@ -196,7 +190,7 @@ public class InRangeSampleCount extends AbstractProcessBlock implements ProcessB
 				log.warnf("%s: propertyChange Unable to convert lower limit to a double (%s)",TAG,nfe.getLocalizedMessage());
 			}
 		}
-		else if(propertyName.equals(BLOCK_PROPERTY_UPPER_LIMIT)) {
+		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_UPPER_LIMIT)) {
 			try {
 				upperLimit = Double.parseDouble(event.getNewValue().toString());
 			}
@@ -308,24 +302,24 @@ public class InRangeSampleCount extends AbstractProcessBlock implements ProcessB
 			lowerThreshold = lowerLimit;  
 		}
 		int count = 0;
+		double val = Double.NaN;
 		Iterator<QualifiedValue> walker = queue.iterator();
 		while( walker.hasNext() ) {
 			QualifiedValue qv = walker.next();
 			if( qv.getQuality().isGood() ) {
-				double val = 0.0;
 				try {
 					val = Double.parseDouble(qv.getValue().toString());
-					if( val>=lowerThreshold && val<=upperThreshold ) count++;
+					if( val<lowerThreshold || val>upperThreshold ) count++;
 				}
 				catch(NumberFormatException nfe) {
 					log.warnf("%s:checkPassConditions detected not-a-number in queue (%s), ignored",TAG,nfe.getLocalizedMessage());
-					continue;
 				}
-			};
+			}
 		}
 
 		if( count>=triggerCount ) result = TruthValue.TRUE;
 		else result = TruthValue.FALSE;
+		//log.tracef("%s:checkPassConditions count %d (%f,%f,%f) %s",TAG,count,lowerThreshold,val,upperThreshold,result.name());
 		return result;
 	}
 }

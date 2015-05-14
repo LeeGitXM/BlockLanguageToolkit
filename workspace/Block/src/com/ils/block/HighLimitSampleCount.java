@@ -118,29 +118,24 @@ public class HighLimitSampleCount extends AbstractProcessBlock implements Proces
 			log.infof("%s.acceptValue: Received %s",TAG,qv.getValue().toString());
 			if( qv.getQuality().isGood() ) {
 				queue.add(qv);
-				if( queue.size() >= sampleSize || !fillRequired) {
-					TruthValue result = checkPassConditions(state);
-					if( !isLocked() ) {
-						// Give it a new timestamp
-						QualifiedValue outval = new BasicQualifiedValue(result);
-						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
-						controller.acceptCompletionNotification(nvn);
-						notifyOfStatus(outval);
-					}
-					// Even if locked, we update the current state
-					state = result;
-				}
-				else {
-					QualifiedValue outval = new BasicQualifiedValue(TruthValue.UNKNOWN);
+				TruthValue result = checkPassConditions(state);
+				if( queue.size()<sampleSize && fillRequired && result.equals(TruthValue.FALSE) ) result = TruthValue.UNKNOWN;
+				//log.infof("%s.acceptValue: Calculated %s (%d of %d) hyst=%s",TAG,result.name(),queue.size(),sampleSize,hysteresis.name());
+				if( !isLocked() ) {
+					// Give it a new timestamp
+					QualifiedValue outval = new BasicQualifiedValue(result);
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 					controller.acceptCompletionNotification(nvn);
 					notifyOfStatus(outval);
 				}
+				// Even if locked, we update the current state
+				state = result;
 			}
 			else {
 				// Post bad value on output, clear queue
 				if( !isLocked() ) {
-					QualifiedValue outval = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
+					state = TruthValue.UNKNOWN;
+					QualifiedValue outval = new BasicQualifiedValue(state.name(),qv.getQuality(),qv.getTimestamp());
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 					controller.acceptCompletionNotification(nvn);
 					notifyOfStatus(outval);
@@ -187,7 +182,7 @@ public class HighLimitSampleCount extends AbstractProcessBlock implements Proces
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
 
-		if(propertyName.equals(BlockConstants.BLOCK_PROPERTY_LIMIT)) {
+		if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_LIMIT)) {
 			try {
 				limit = Double.parseDouble(event.getNewValue().toString());
 			}
@@ -306,9 +301,8 @@ public class HighLimitSampleCount extends AbstractProcessBlock implements Proces
 				}
 				catch(NumberFormatException nfe) {
 					log.warnf("%s:checkPassConditions detected not-a-number in queue (%s), ignored",TAG,nfe.getLocalizedMessage());
-					continue;
 				}
-			};
+			}
 		}
 
 		if( count>=triggerCount ) result = TruthValue.TRUE;

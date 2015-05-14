@@ -11,6 +11,7 @@ import java.awt.Font;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Map;
 
@@ -29,6 +30,7 @@ import net.miginfocom.swing.MigLayout;
 
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.designer.workspace.ProcessAnchorDescriptor;
 import com.ils.blt.designer.workspace.ProcessBlockView;
@@ -37,6 +39,7 @@ import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
 
 /**
  * This is a read-only viewer for blocks for blocks that return internal state
@@ -51,6 +54,7 @@ public class BlockInternalsViewer extends JDialog {
 	private static final long serialVersionUID = 4004388376825535527L;
 	private final int DIALOG_HEIGHT = 320;
 	private final int DIALOG_WIDTH = 500;
+	private static SimpleDateFormat dateFormatter = new SimpleDateFormat(BlockConstants.TIMESTAMP_FORMAT);
 	private final ProcessDiagramView diagram;
 	private final ProcessBlockView block;
 	private Map<String,String> attributes = null;
@@ -160,11 +164,18 @@ public class BlockInternalsViewer extends JDialog {
 		}
 		
 		for( ProcessAnchorDescriptor pad: block.getAnchors() ) {
-			QualifiedValue qv = pad.getLastValue();
-			String [] row = new String[2];
-			row[0] = "port: "+ pad.getDisplay();
-			row[1] = (qv==null?"":qv.getValue().toString());
-			dataModel.addRow(row);
+			if(pad.getType().equals(AnchorType.Origin)) {
+				QualifiedValue qv = pad.getLastValue();
+				String [] row = new String[2];
+				row[0] = "port: "+ pad.getDisplay();
+				String text = "";
+				if( qv!=null ) text = String.format("%s  %s  %s", 
+						(qv.getValue()==null?"null":qv.getValue().toString()),
+						(qv.getQuality() ==null?"null":qv.getQuality().toString()),
+						                   dateFormatter.format(qv.getTimestamp()));
+				row[1] = (qv==null?"":qv.getValue().toString());
+				dataModel.addRow(row);
+			}
 		}
 		
         table = new JTable(dataModel);

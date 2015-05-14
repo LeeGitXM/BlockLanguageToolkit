@@ -25,7 +25,6 @@ import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.project.ProjectVersion;
-import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
@@ -461,29 +460,35 @@ public class ModelManager implements ProjectListener  {
 		log.debugf("%s.addModifyDiagramResource: %s(%d)",TAG,res.getName(),res.getResourceId());
 		SerializableDiagram sd = deserializeDiagramResource(projectId,res);
 		if( sd!=null ) {
-			// If this is an existing diagram, we need to remove the old version
 			ProcessDiagram diagram = (ProcessDiagram)nodesByUUID.get(sd.getId());
 			if( diagram==null) {
+				// Create a new diagram
 				diagram = new ProcessDiagram(sd,res.getParentUuid(),projectId);
 				diagram.setResourceId(res.getResourceId());
 				diagram.setProjectId(projectId);
-				// Add in the new Diagram
+				// Add the new diagram to our hierarchy
 				ProjResKey key = new ProjResKey(projectId,res.getResourceId());
 				nodesByKey.put(key,diagram);
 				addToHierarchy(projectId,diagram);
-				diagram.analyze(sd);   // Determines connections
+				diagram.createBlocks(sd);
+				diagram.updateConnections(sd);
+				diagram.startSubscriptions();
 			}
 			// Carefully update the diagram with new features/properties.
 			// Leave existing blocks/subscriptions "as-is". 
 			else {
+				diagram.setName(sd.getName());
 				// Delete all the old connections
 				diagram.clearConnections();
 				// Delete blocks in the old that are not present in the new.
 				// Stop subscriptions associated with those blocks.
-				diagram.removeBlocksFromList(sd.getBlocks());
-				// Add/update blocks, create new connections. Stop blocks, remove old subscriptions
-				diagram.analyze(sd);
+				diagram.removeUnusedBlocks(sd.getBlocks());
+				diagram.createBlocks(sd);       // Adds blocks that are new in update
+				diagram.updateConnections(sd);  // Adds connections that are new in update
+				diagram.updateProperties(sd);
+				diagram.setState(sd.getState());// Handle state change, if any
 			}
+			/*
 			if( !diagram.getState().equals(DiagramState.DISABLED) ) {
 				diagram.updateBlockTimers();  // Make sure timers are correct for current diagram state.
 				log.tracef("%s.addModifyDiagramResource: starting tag subscriptions ...%d:%s",TAG,projectId,res.getName());
@@ -503,6 +508,7 @@ public class ModelManager implements ProjectListener  {
 			else {
 				log.infof("%s.addModifyDiagramResource: diagram is DISABLED (did not start subscriptions)...%d:%s",TAG,projectId,res.getName());
 			}
+			*/
 		}
 		else {
 			log.warnf("%s.addModifyDiagramResource - Failed to create diagram from resource (%s)",TAG,res.getName());

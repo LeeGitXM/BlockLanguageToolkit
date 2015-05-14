@@ -22,7 +22,6 @@ public class GatewayScriptFunctions   {
 	/**
 	 * Query the gateway for list of diagrams. 
 	 * 
-	 * @param projectName
 	 * @return a list of tree-paths to the diagrams saved 
 	 *         (ie. known to the Gateway).
 	 */

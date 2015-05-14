@@ -38,7 +38,6 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 public class ProcessDiagram extends ProcessNode {
 	private static final long serialVersionUID = 3557397875746466629L;
 	private static String TAG = "ProcessDiagram";
-	private final SerializableDiagram diagram;
 	private boolean valid = false;
 	protected final Map<UUID,ProcessBlock> blocks;
 	private final Map<ConnectionKey,ProcessConnection> connectionMap;            // Key by connection number
@@ -49,12 +48,11 @@ public class ProcessDiagram extends ProcessNode {
 	/**
 	 * Constructor: Create a model that encapsulates the structure of the blocks and connections
 	 *              of a diagram.
-	 * @param diagm the unserialized object that represents the diagram.
+	 * @param diagm the serializable version of this object.
 	 * @param parent 
 	 */
 	public ProcessDiagram(SerializableDiagram diagm,UUID parent,long projId) { 
 		super(diagm.getName(),parent,diagm.getId());
-		this.diagram = diagm;
 		this.state = diagm.getState();
 		this.resourceId = diagm.getResourceId();
 		this.projectId = projId;
@@ -78,7 +76,7 @@ public class ProcessDiagram extends ProcessNode {
 	 * Remove blocks in this diagram that are NOT in the 
 	 * supplied list. Kill any tag subscriptions associated with those blocks.
 	 */
-	public void removeBlocksFromList(SerializableBlock[] newBlocks) {
+	public void removeUnusedBlocks(SerializableBlock[] newBlocks) {
 		List<UUID> uuids = new ArrayList<>();
 		for(SerializableBlock sb:newBlocks) {
 			uuids.add(sb.getId());
@@ -98,86 +96,48 @@ public class ProcessDiagram extends ProcessNode {
 	}
 	
 	/**
-	 * Analyze the diagram for nodes. This is valid as long as the existing diagram
-	 * has no blocks that are NOT represented in the serializable version.
+	 * Clone blocks from the subject serializable diagram and add them to the current.
+	 * In order to make this applicable for updates, we skip any blocks that currently
+	 * exist. Newly created blocks are started.
 	 * 
-	 * During this process we stop any existing blocks and remove tag subscriptions.
-	 * The ModelManager restarts the blocks once everything is in place.
+	 * @param diagram the serializable template of this object.
 	 */
-	public void analyze(SerializableDiagram diagrm) {
-		setName(diagrm.getName());     // Get our name from the resource
+	public void createBlocks(SerializableDiagram diagram) {
 		BlockFactory blockFactory = BlockFactory.getInstance();
-		ConnectionFactory connectionFactory = ConnectionFactory.getInstance();
-		
+
 		// Update the blocks - we've already deleted any not present in the new
-		SerializableBlock[] sblks = diagrm.getBlocks();
+		SerializableBlock[] sblks = diagram.getBlocks();
 		for( SerializableBlock sb:sblks ) {
 			UUID id = sb.getId();
 			ProcessBlock pb = blocks.get(id);
 			if( pb==null ) {
 				pb = blockFactory.blockFromSerializable(getSelf(),sb,getProjectId());
 				if( pb!=null ) {
-					// Set timer
+					// Set the proper timer
 					if(DiagramState.ACTIVE.equals(state)) pb.setTimer(controller.getTimer());
 					else if(DiagramState.ISOLATED.equals(state)) pb.setTimer(controller.getSecondaryTimer());
+					pb.setProjectId(projectId);
 					blocks.put(pb.getBlockId(), pb);
 					log.debugf("%s.analyze: New block %s(%d)",TAG,pb.getName(),pb.hashCode());
+					pb.start();
 				}
 				else {
-					log.errorf("%s.analyze: ERROR, diagram %s failed to instantiate block of type %s",TAG,diagrm.getName(),sb.getClassName());
+					log.errorf("%s.analyze: ERROR, diagram %s failed to instantiate block of type %s",TAG,diagram.getName(),sb.getClassName());
 				}
-			}
-			else {
-				log.debugf("%s.analyze: Update block %s(%d)",TAG,pb.getName(),pb.hashCode());
-				pb.stop();
-				// Stop old subscriptions ONLY if the property changed, or no longer exists
-				// NOTE: The blockFactory update will take care of values. We're just worried about subscriptions
-				for( BlockProperty newProp:sb.getProperties() ) {
-					BlockProperty prop = pb.getProperty(newProp.getName());
-					if( prop!=null ) {
-						// See if the binding changed.
-						if( !prop.getBindingType().equals(newProp.getBindingType()) ) {
-							// If the binding has changed - fix subscriptions.
-							if(prop.getBindingType().equals(BindingType.TAG_MONITOR) ||
-							   prop.getBindingType().equals(BindingType.TAG_READ)    ||
-							   prop.getBindingType().equals(BindingType.TAG_READWRITE) ||
-							   prop.getBindingType().equals(BindingType.TAG_WRITE)) controller.removeSubscription(pb,prop);
-							prop.setBindingType(newProp.getBindingType());
-							prop.setBinding(newProp.getBinding());
-							if(prop.getBindingType().equals(BindingType.TAG_MONITOR) ||
-							   prop.getBindingType().equals(BindingType.TAG_READ)    ||
-							   prop.getBindingType().equals(BindingType.TAG_READWRITE) ||
-							   prop.getBindingType().equals(BindingType.TAG_WRITE)) {
-								controller.startSubscription(pb,prop);
-								// If the new binding is a tag write - do the write.
-								if( !pb.isLocked() && 
-									(prop.getBindingType().equals(BindingType.TAG_READWRITE) ||
-											prop.getBindingType().equals(BindingType.TAG_WRITE))	   ) {
-										controller.updateTag(pb.getParentId(),prop.getBinding(), new BasicQualifiedValue(newProp.getValue()));
-								}
-							}
-						}
-						else if( !prop.getBindingType().equals(BindingType.NONE) &&
-								 !prop.getBindingType().equals(BindingType.OPTION) &&
-								 !prop.getBinding().equals(newProp.getBinding()) ) {
-							// Same type, new binding target.
-							controller.removeSubscription(pb, prop);
-							prop.setBinding(newProp.getBinding());
-							controller.startSubscription(pb,prop);
-							// If the new binding is a tag write - do the write.
-							if( !pb.isLocked() && 
-									(prop.getBindingType().equals(BindingType.TAG_READWRITE) ||
-								     prop.getBindingType().equals(BindingType.TAG_WRITE))	   ) {
-								controller.updateTag(pb.getParentId(),prop.getBinding(), new BasicQualifiedValue(newProp.getValue()));
-							}	
-						}
-					}
-				}
-				blockFactory.updateBlockFromSerializable(pb,sb);
 			}
 		}
+	}
+	/**
+	 * Clone connections from the subject serializable diagram and add them to the current.
+	 * In order to make this applicable for updates, we skip any connections that currently
+	 * exist.
+	 * 
+	 * @param diagram the serializable template of this object.
+	 */
+	public void updateConnections(SerializableDiagram diagram) {
+		ConnectionFactory connectionFactory = ConnectionFactory.getInstance();
 		// Update the connections
-		SerializableConnection[] scxns = diagrm.getConnections();
+		SerializableConnection[] scxns = diagram.getConnections();
 		for( SerializableConnection sc:scxns ) {
 			if( validConnection(sc) ) {
 				ConnectionKey cxnkey = new ConnectionKey(sc.getBeginBlock().toString(),sc.getBeginAnchor().getId().toString(),
@@ -206,11 +166,82 @@ public class ProcessDiagram extends ProcessNode {
 				}
 			}
 			else {
-				log.warnf("%s.analyze: %s has invalid serialized connection (%s)",TAG,diagrm.getName(),invalidConnectionReason(sc));
+				log.warnf("%s.analyze: %s has invalid serialized connection (%s)",TAG,diagram.getName(),invalidConnectionReason(sc));
 			}
 
 		}
-		log.infof("%s.analyze: %s complete .... %d blocks and %d connections",TAG,diagrm.getName(),diagrm.getBlocks().length,diagrm.getConnections().length);
+	}
+	
+	/**
+	 * Compare blocks in the serializable version to the current. Update and adjust subscriptions where necessary.
+	 * 
+	 * @param diagram the serializable template of this object.
+	 */
+	public void updateProperties(SerializableDiagram diagram) {
+		BlockFactory blockFactory = BlockFactory.getInstance();
+		SerializableBlock[] sblks = diagram.getBlocks();
+		for( SerializableBlock sb:sblks ) {
+			UUID id = sb.getId();
+			ProcessBlock pb = blocks.get(id);
+			if( pb!=null ) {
+				log.debugf("%s.updateProperties: Update block %s",TAG,pb.getName());
+				boolean hasChanged = false;
+				// Stop old subscriptions ONLY if the property changed, or no longer exists
+				// NOTE: The blockFactory update will take care of values. We're just worried about subscriptions
+				for( BlockProperty newProp:sb.getProperties() ) {
+					BlockProperty prop = pb.getProperty(newProp.getName());
+					if( prop!=null ) {
+						// See if the binding changed.
+						if( !prop.getBindingType().equals(newProp.getBindingType()) ) {
+							hasChanged = true;
+							pb.stop();
+							// If the binding has changed - fix subscriptions.
+							if(prop.getBindingType().equals(BindingType.TAG_MONITOR) ||
+							   prop.getBindingType().equals(BindingType.TAG_READ)    ||
+							   prop.getBindingType().equals(BindingType.TAG_READWRITE) ||
+							   prop.getBindingType().equals(BindingType.TAG_WRITE)) controller.removeSubscription(pb,prop);
+							prop.setBindingType(newProp.getBindingType());
+							prop.setBinding(newProp.getBinding());
+							if(prop.getBindingType().equals(BindingType.TAG_MONITOR) ||
+							   prop.getBindingType().equals(BindingType.TAG_READ)    ||
+							   prop.getBindingType().equals(BindingType.TAG_READWRITE) ||
+							   prop.getBindingType().equals(BindingType.TAG_WRITE)) {
+								controller.startSubscription(pb,prop);
+								// If the new binding is a tag write - do the write.
+								if( !pb.isLocked() && 
+									(prop.getBindingType().equals(BindingType.TAG_READWRITE) ||
+											prop.getBindingType().equals(BindingType.TAG_WRITE))	   ) {
+										controller.updateTag(pb.getParentId(),prop.getBinding(), new BasicQualifiedValue(newProp.getValue()));
+								}
+							}
+						}
+						else if( !prop.getBindingType().equals(BindingType.NONE) &&
+								 !prop.getBindingType().equals(BindingType.OPTION) &&
+								 !prop.getBinding().equals(newProp.getBinding()) ) {
+							// Same type, new binding target.
+							hasChanged = true;
+							pb.stop();
+							controller.removeSubscription(pb, prop);
+							prop.setBinding(newProp.getBinding());
+							controller.startSubscription(pb,prop);
+							// If the new binding is a tag write - do the write.
+							if( !pb.isLocked() && 
+									(prop.getBindingType().equals(BindingType.TAG_READWRITE) ||
+								     prop.getBindingType().equals(BindingType.TAG_WRITE))	   ) {
+								controller.updateTag(pb.getParentId(),prop.getBinding(), new BasicQualifiedValue(newProp.getValue()));
+							}	
+						}
+					}
+				}
+				blockFactory.updateBlockFromSerializable(pb,sb);
+				if( hasChanged ) {
+					pb.start();
+				}
+			}
+			else {
+				log.errorf("%s.updateProperties: ERROR, block %s missung in diagram %s ",TAG,sb.getName(),diagram.getName());
+			}
+		}
 	}
 	
 	/**
@@ -309,10 +340,10 @@ public class ProcessDiagram extends ProcessNode {
 					if( blk.delayBlockStart() ) blk.start();
 				}
 
-				startSubscriptions();
+				restartSubscriptions();
 			}
 			// Fire diagram notification change
-			controller.sendStateNotification(diagram.getId().toString(), s.name());
+			controller.sendStateNotification(this.self.toString(), s.name());
 		}
 	}
 	/**
@@ -364,20 +395,26 @@ public class ProcessDiagram extends ProcessNode {
 		else if(sc.getEndAnchor().getId()==null )      reason = "End anchor has no Id";
 		return reason;
 	}
-	
-	// This is only called on a diagram state change. Here we temporarily set the
-	// diagram to DISABLED in order to suppress tag updates due to new bindings.
-	private void startSubscriptions() {
-		log.infof("%s.startSubscriptions: ...%d:%s",TAG,projectId,getName());
-		DiagramState current = this.state;
-		this.state = DiagramState.DISABLED;
+	// This should only be called on a new diagram, or on new blocks for an existing
+	// diagram. Note that "starting" a subscription on an existing property *should* 
+	// do nothing.
+	public void startSubscriptions() {
+		//log.infof("%s.startSubscriptions: ...%d:%s",TAG,projectId,getName());
 		for( ProcessBlock pb:getProcessBlocks()) {
 			for(BlockProperty bp:pb.getProperties()) {
 				controller.startSubscription(pb,bp);
 			}
-			pb.setProjectId(projectId);
 		}
-		log.infof("%s.startSubscriptions: ... %s complete",TAG,getName());
+	}
+	
+	// This is only called on a diagram state change. Here we temporarily set the
+	// diagram to DISABLED in order to suppress tag updates due to new bindings.
+	private void restartSubscriptions() {
+		//log.infof("%s.restartSubscriptions: ...%d:%s",TAG,projectId,getName());
+		DiagramState current = this.state;
+		this.state = DiagramState.DISABLED;
+		startSubscriptions();
+		//log.infof("%s.restartSubscriptions: ... %s complete",TAG,getName());
 		this.state = current;
 	}
 	private void stopSubscriptions() {
@@ -386,7 +423,6 @@ public class ProcessDiagram extends ProcessNode {
 			for(BlockProperty bp:pb.getProperties()) {
 				controller.removeSubscription(pb,bp);
 			}
-			pb.setProjectId(projectId);
 		}
 	}
 	/**

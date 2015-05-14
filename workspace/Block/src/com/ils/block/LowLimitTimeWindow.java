@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
+ *   (c) 2014-2015  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -37,8 +37,6 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
  */
 @ExecutableBlock
 public class LowLimitTimeWindow extends AbstractProcessBlock implements ProcessBlock {
-	private final String TAG = "LowLimitTimeWindow";
-
 	private final LinkedList<Double> buffer;
 	private double currentValue = Double.NaN;
 	private double scanInterval = 1.0;    // ~secs
@@ -54,7 +52,7 @@ public class LowLimitTimeWindow extends AbstractProcessBlock implements ProcessB
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
 	public LowLimitTimeWindow() {
-		dog = new Watchdog(TAG,this);
+		dog = new Watchdog(getName(),this);
 		buffer = new LinkedList<Double>();
 		initialize();
 		initializePrototype();
@@ -69,7 +67,7 @@ public class LowLimitTimeWindow extends AbstractProcessBlock implements ProcessB
 	 */
 	public LowLimitTimeWindow(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
-		dog = new Watchdog(TAG,this);
+		dog = new Watchdog(getName(),this);
 		buffer = new LinkedList<Double>();
 		initialize();
 	}
@@ -108,16 +106,13 @@ public class LowLimitTimeWindow extends AbstractProcessBlock implements ProcessB
 	@Override
 	public void reset() {
 		super.reset();
-		if( scanInterval>0.0) {
-			dog.setSecondsDelay(scanInterval);
-			timer.updateWatchdog(dog);  // pet dog
-		}
+		buffer.clear();
+		timer.removeWatchdog(dog);    // Stop evaluation
 		state = TruthValue.UNSET;
 	}
 
 	@Override
 	public void start() {
-		if(!running) reset();
 		super.start();
 	}
 	@Override
@@ -127,7 +122,7 @@ public class LowLimitTimeWindow extends AbstractProcessBlock implements ProcessB
 	
 	/**
 	 * A new value has arrived. Simply set the current value.
-	 * (We poll the current value on an interval).
+	 * If the timer is not running, start it now.
 	 */
 	@Override
 	public void acceptValue(IncomingNotification incoming) {
@@ -138,25 +133,18 @@ public class LowLimitTimeWindow extends AbstractProcessBlock implements ProcessB
 			currentValue = Double.NaN;
 			try {
 				currentValue = Double.parseDouble(qv.getValue().toString());
-				log.infof("%s.acceptValue current value is %s",TAG,qv.getValue().toString());
+				log.tracef("%s.acceptValue: %s",getName(),qv.getValue().toString());
+				if(!isLocked() && !dog.isActive() && scanInterval>0.0 ) {
+					dog.setSecondsDelay(scanInterval);
+					timer.updateWatchdog(dog);  // pet dog
+				}
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s.acceptValue exception converting incoming %s to double (%s)",TAG,qv.getValue().toString(),nfe.getLocalizedMessage());
+				log.warnf("%s.acceptValue: Exception converting incoming %s to double (%s)",getName(),qv.getValue().toString(),nfe.getLocalizedMessage());
 			}
-		}
-		else if(!qual.isGood()) {
-			// Bad quality, emit the result immediately
-			currentValue = Double.NaN;
-			if( !isLocked() ) {
-				QualifiedValue outval = new BasicQualifiedValue(TruthValue.UNKNOWN,qual,qv.getTimestamp());
-				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
-				controller.acceptCompletionNotification(nvn);
-				notifyOfStatus(outval);
-			}
-			reset();     // Reset the evaluation interval
 		}
 		else {
-			log.warnf("%s.acceptValue received a GOOD value, but null",TAG);
+			log.warnf("%s.acceptValue received a GOOD value, but null",getName());
 		}
 	}
 	
@@ -175,28 +163,17 @@ public class LowLimitTimeWindow extends AbstractProcessBlock implements ProcessB
 		while(buffer.size() > maxPoints ) {
 			buffer.removeFirst();
 		}
-		log.infof("%s.evaluate %d of %d points",TAG,buffer.size(),maxPoints);
-		if( buffer.size() >= maxPoints || !fillRequired) {
-			TruthValue result = checkPassConditions(state);
-			if( !result.equals(state) && !isLocked() ) {
-				// Give it a new timestamp
-				state = result;
-				QualifiedValue outval = new BasicQualifiedValue(result);
-				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
-				controller.acceptCompletionNotification(nvn);
-				notifyOfStatus(outval);
-			}
+		//log.infof("%s.evaluate %d of %d points",TAG,buffer.size(),maxPoints);
+		TruthValue result = checkPassConditions(state);
+		if( buffer.size()<maxPoints && fillRequired && result.equals(TruthValue.FALSE) ) result = TruthValue.UNKNOWN;
+		if( !result.equals(state) && !isLocked() ) {
+			// Give it a new timestamp
+			state = result;
+			QualifiedValue outval = new BasicQualifiedValue(result);
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
+			controller.acceptCompletionNotification(nvn);
+			notifyOfStatus(outval);
 		}
-		else {
-			if( !state.equals(TruthValue.UNKNOWN) && !isLocked() ) {
-				state = TruthValue.UNKNOWN;
-				QualifiedValue outval = new BasicQualifiedValue(TruthValue.UNKNOWN);
-				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
-				controller.acceptCompletionNotification(nvn);
-				notifyOfStatus(outval);
-			}
-		}
-		
 
 		dog.setSecondsDelay(scanInterval);
 		timer.updateWatchdog(dog);  // pet dog
@@ -235,13 +212,13 @@ public class LowLimitTimeWindow extends AbstractProcessBlock implements ProcessB
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
-		log.infof("%s.propertyChange: %s = %s",TAG,propertyName,event.getNewValue().toString());
+		log.debugf("%s.propertyChange: %s = %s",getName(),propertyName,event.getNewValue().toString());
 		if(propertyName.equals(BlockConstants.BLOCK_PROPERTY_LIMIT)) {
 			try {
 				limit = Double.parseDouble(event.getNewValue().toString());
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert limit to a double (%s)",TAG,nfe.getLocalizedMessage());
+				log.warnf("%s: propertyChange Unable to convert limit to a double (%s)",getName(),nfe.getLocalizedMessage());
 			}
 		}
 		else if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_DEADBAND)) {
@@ -249,7 +226,7 @@ public class LowLimitTimeWindow extends AbstractProcessBlock implements ProcessB
 				deadband = Double.parseDouble(event.getNewValue().toString());
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s.propertyChange: Unable to convert deadband to a double (%s)",TAG,nfe.getLocalizedMessage());
+				log.warnf("%s.propertyChange: Unable to convert deadband to a double (%s)",getName(),nfe.getLocalizedMessage());
 			}
 		}
 		else if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_FILL_REQUIRED)) {
@@ -260,7 +237,7 @@ public class LowLimitTimeWindow extends AbstractProcessBlock implements ProcessB
 				hysteresis = HysteresisType.valueOf(event.getNewValue().toString().toUpperCase());
 			}
 			catch(IllegalArgumentException iae) {
-				log.warnf("%s.propertyChange: Unable to convert hysteresis (%s)",TAG,iae.getLocalizedMessage());
+				log.warnf("%s.propertyChange: Unable to convert hysteresis (%s)",getName(),iae.getLocalizedMessage());
 			}
 		}
 		else if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_TRIGGER_COUNT) ) {
@@ -269,7 +246,7 @@ public class LowLimitTimeWindow extends AbstractProcessBlock implements ProcessB
 				triggerCount = Integer.parseInt(event.getNewValue().toString());
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert trigger count to an integer (%s)",TAG,nfe.getLocalizedMessage());
+				log.warnf("%s: propertyChange Unable to convert trigger count to an integer (%s)",getName(),nfe.getLocalizedMessage());
 			}
 		}
 		else if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL)) {
@@ -277,13 +254,13 @@ public class LowLimitTimeWindow extends AbstractProcessBlock implements ProcessB
 				double oldInterval = scanInterval;
 				scanInterval = Double.parseDouble(event.getNewValue().toString());
 				if( scanInterval < 0.1 ) scanInterval = 0.1;   // Don't allow to go too fast
-				if( scanInterval < oldInterval ) {
+				if( dog.isActive() && scanInterval < oldInterval ) {
 					dog.setSecondsDelay(scanInterval);
 					timer.updateWatchdog(dog);  // pet dog
 				}
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s.propertyChange: Unable to convert scan interval to a double (%s)",TAG,nfe.getLocalizedMessage());
+				log.warnf("%s.propertyChange: Unable to convert scan interval to a double (%s)",getName(),nfe.getLocalizedMessage());
 			}
 		}
 		else if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW)) {
@@ -292,11 +269,11 @@ public class LowLimitTimeWindow extends AbstractProcessBlock implements ProcessB
 				if( timeWindow<=0.0) timeWindow = scanInterval;
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s.propertyChange: Unable to convert scan interval to a double (%s)",TAG,nfe.getLocalizedMessage());
+				log.warnf("%s.propertyChange: Unable to convert scan interval to a double (%s)",getName(),nfe.getLocalizedMessage());
 			}
 		}
 		else {
-			log.warnf("%s.propertyChange:Unrecognized property (%s)",TAG,propertyName);
+			log.warnf("%s.propertyChange:Unrecognized property (%s)",getName(),propertyName);
 		}	
 	}
 	/**
@@ -341,15 +318,18 @@ public class LowLimitTimeWindow extends AbstractProcessBlock implements ProcessB
 			threshold = limit;  
 		}
 		int count = 0;
+		Double val = Double.NaN;
 		Iterator<Double> walker = buffer.iterator();
 		while( walker.hasNext() ) {
 			Double dbl = walker.next();
-			double val = dbl.doubleValue();
+			val = dbl.doubleValue();
 			if( val<threshold ) count++;
 		}
 
 		if( count>=triggerCount ) result = TruthValue.TRUE;
 		else result = TruthValue.FALSE;
+		int size = (int)((timeWindow+0.99*scanInterval)/scanInterval);
+		//log.tracef("%s:checkPassConditions count %d of %d (%f<%f) %s (was %s)",getName(),count,size,threshold,val,result.name(),current.name());
 		return result;
 	}
 }
