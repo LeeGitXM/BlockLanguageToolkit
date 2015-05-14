@@ -11,6 +11,8 @@ import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 
+import com.ils.blt.common.block.BlockConstants;
+import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.WorkspaceConstants;
 
@@ -24,14 +26,42 @@ public class ClampUIView extends AbstractUIView implements BlockViewUI {
 	private static final long serialVersionUID = 2130868310475735865L;
 	private static final int DEFAULT_HEIGHT = 60;
 	private static final int DEFAULT_WIDTH  = 80;
+	private BlockProperty expirationProperty = null;
 	
 	public ClampUIView(ProcessBlockView view) {
 		super(view,DEFAULT_WIDTH,DEFAULT_HEIGHT);
 		setOpaque(false);
 		initAnchorPoints();
+		expirationProperty = findExpirationProperty();
 	}
 	
-
+	private BlockProperty findExpirationProperty() {
+		BlockProperty ep = null;
+		for( BlockProperty bp:block.getProperties()) {
+			if( bp.getName()!=null && bp.getName().equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_EXPIRATION_TIME)) {
+				ep = bp;
+			}
+		}
+		return ep;
+	}
+	
+	/**
+	 *  Draw "badge" icons on top of the main rendering to indicate various block properties.
+	 *  This class adds the capability for "inhibiting" icons.  
+	 */
+	protected void drawBadges(Graphics2D g) {
+		super.drawBadges(g);
+		if(expirationProperty!=null) {
+			Dimension sz = getPreferredSize();
+			long time = ((Long)expirationProperty.getValue()).longValue();
+			if( time>0 && time>System.currentTimeMillis() ) {
+				Rectangle bounds = new Rectangle(3*(sz.width-2*INSET)/4,3*(sz.height-2*INSET)/4,BADGE_WIDTH,BADGE_HEIGHT);
+				String path = "Block/icons/badges/inhibit.png";
+				paintBadge(g,path,bounds);
+			}
+		}
+	}
+	
 	// Draw a rectangle with stubbed ends. Then draw a path through it.
 	@Override
 	protected void paintComponent(Graphics _g) {

@@ -478,7 +478,7 @@ public abstract class AbstractUIView extends JComponent
 		return color;
 	}
 	
-	private void paintBadge(Graphics2D g,String iconPath,Rectangle bounds) {
+	protected void paintBadge(Graphics2D g,String iconPath,Rectangle bounds) {
 		if( iconPath == null || iconPath.length()==0 ) return;
 	
 		Dimension imageSize = new Dimension(bounds.width,bounds.height);

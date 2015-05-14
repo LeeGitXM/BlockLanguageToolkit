@@ -27,6 +27,7 @@ public interface BlockConstants   {
 	public static final String BLOCK_PROPERTY_COMMAND       = "Command";
 	public static final String BLOCK_PROPERTY_DEADBAND      = "Deadband";
 	public static final String BLOCK_PROPERTY_DISTRIBUTION  = "Distribution";
+	public static final String BLOCK_PROPERTY_EXPIRATION_TIME = "ExpirationTime";  // System time ~ msecs
 	public static final String BLOCK_PROPERTY_FILL_REQUIRED = "FillRequired";
 	public static final String BLOCK_PROPERTY_FORMAT        = "Format";
 	public static final String BLOCK_PROPERTY_HEIGHT        = "Height";

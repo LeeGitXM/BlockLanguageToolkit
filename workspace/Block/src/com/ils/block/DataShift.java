@@ -144,7 +144,7 @@ public class DataShift extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	private void initialize() {
 		setName("DataShift");
-		BlockProperty samples = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE,new Integer(sampleSize),PropertyType.INTEGER,true);
+		BlockProperty samples = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE,new Long(sampleSize),PropertyType.INTEGER,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE, samples);
 		
 		// Define a single input

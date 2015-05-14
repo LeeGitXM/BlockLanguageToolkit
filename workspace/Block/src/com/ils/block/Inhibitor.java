@@ -3,12 +3,15 @@
  */
 package com.ils.block;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
+import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
@@ -23,7 +26,6 @@ import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.notification.Signal;
 import com.ils.blt.common.notification.SignalNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
-import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
@@ -33,9 +35,10 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  */
 @ExecutableBlock
 public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
+	private final static String DEFAULT_FORMAT = "YYYY/MM/dd hh:mm:ss";
+	private SimpleDateFormat formatter = new SimpleDateFormat(DEFAULT_FORMAT);
+	private BlockProperty expirationProperty = null;
 	private double interval = 0.0;   // ~secs
-	private final Watchdog dog;
-	private boolean inhibiting = false;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -43,7 +46,6 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	public Inhibitor() {
 		initialize();
 		initializePrototype();
-		dog = new Watchdog(getName(),this);
 	}
 	
 	/**
@@ -56,9 +58,13 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	public Inhibitor(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
-		dog = new Watchdog(getName(),this);
 	}
 	
+	@Override
+	public void reset() {
+		super.reset();
+		expirationProperty.setValue(0);
+	}
 	
 	/**
 	 * A new value has appeared on an input anchor. If we are in an "inhibit" state, then 
@@ -76,13 +82,16 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 		if( !isLocked() ) {
 			String port = vcn.getConnection().getDownstreamPortName();
 			if( port.equals(BlockConstants.IN_PORT_NAME)  ) {
-				if( !inhibiting ) { 
-					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,vcn.getValue());
+				QualifiedValue qv = vcn.getValue();
+				long time = ((Long)expirationProperty.getValue()).longValue();
+				if( qv.getQuality().isGood() &&  
+						(time==0 || qv.getTimestamp().getTime()>=time) ) {
+					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 					controller.acceptCompletionNotification(nvn);
 					notifyOfStatus(vcn.getValue());
 				}
 				else {
-					log.infof("%s.acceptValue: %s ignoring inhibited input ...",getName(),this.toString());
+					log.infof("%s.acceptValue: %s ignoring inhibited or BAD input ...",getName(),this.toString());
 				}
 			}
 		}
@@ -100,22 +109,19 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	public void acceptValue(SignalNotification sn) {
 		Signal signal = sn.getSignal();
 		if( signal.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_INHIBIT)) {
-			if( interval>0.0) {
-				dog.setSecondsDelay(interval);
-				timer.updateWatchdog(dog);  // pet dog
-				inhibiting = true;
-			}
+			long now = System.currentTimeMillis();
+			expirationProperty.setValue(new Long(now+(long)(interval*1000)));
 			log.infof("%s.acceptValue: %s received inhibit command (delay %f secs on %s)",getName(),this.toString(),interval,timer.getName());
 		}
 	}
-	/**
-	 * The interval has expired. We are no longer inhibiting.
-	 */
-	@Override
-	public void evaluate() {
-		log.infof("%s.evaluate: %s timeout expired",getName(),this.toString());
-		inhibiting = false;
-		timer.removeWatchdog(dog);
+	private boolean inhibits() { 
+		boolean inhibiting = false;
+		long time = ((Long)expirationProperty.getValue()).longValue();
+		if( time>0) {
+			long now = System.currentTimeMillis();
+			if( now < time ) inhibiting = true;
+		}
+		return inhibiting; 
 	}
 	/**
 	 * @return a block-specific description of internal statue
@@ -124,7 +130,13 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	public SerializableBlockStateDescriptor getInternalStatus() {
 		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
 		Map<String,String> attributes = descriptor.getAttributes();
-		attributes.put("Inhibiting", (inhibiting?"true":"false"));
+		
+		attributes.put("Inhibiting", (inhibits()?"true":"false"));
+		long time = ((Long)expirationProperty.getValue()).longValue();
+		if( time>0 ) {
+			Date expiration = new Date(time);
+			attributes.put("Inhibit Expiration",formatter.format(expiration) );
+		}
 		return descriptor;
 	}
 	
@@ -137,6 +149,9 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 		this.isReceiver = true;
 		BlockProperty constant = new BlockProperty(BlockConstants.BLOCK_PROPERTY_INHIBIT_INTERVAL,new Double(interval),PropertyType.TIME,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_INHIBIT_INTERVAL, constant);
+		expirationProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_EXPIRATION_TIME,new Long(0),PropertyType.INTEGER,true);
+		expirationProperty.setBindingType(BindingType.ENGINE);   // Is not editable outside this class
+		setProperty(BlockConstants.BLOCK_PROPERTY_EXPIRATION_TIME, expirationProperty);
 		
 		// Define a data input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
@@ -188,11 +203,5 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setStyle(BlockStyle.CLAMP);
 		desc.setReceiveEnabled(true);
-	}
-	
-	@Override
-	public void reset() {
-		timer.removeWatchdog(dog);
-		inhibiting = false;
 	}
 }
