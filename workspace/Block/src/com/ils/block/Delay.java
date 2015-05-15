@@ -3,7 +3,11 @@
  */
 package com.ils.block;
 
+import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
@@ -20,6 +24,7 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -168,6 +173,23 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 		// Define a single output
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
 		anchors.add(output);
+	}
+	
+	/**
+	 * @return a block-specific description of internal statue
+	 */
+	@Override
+	public SerializableBlockStateDescriptor getInternalStatus() {
+		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
+		List<Map<String,String>> outbuffer = descriptor.getBuffer();
+		for( TimestampedData td:buffer) {
+			Map<String,String> qvMap = new HashMap<>();
+			qvMap.put("Value", td.qv.getValue().toString());
+			qvMap.put("Expiration", formatter.format(new Date(td.timestamp)));
+			outbuffer.add(qvMap);
+		}
+
+		return descriptor;
 	}
 	
 	/**

@@ -3,7 +3,6 @@
  */
 package com.ils.block;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
@@ -35,8 +34,6 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  */
 @ExecutableBlock
 public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
-	private final static String DEFAULT_FORMAT = "YYYY/MM/dd hh:mm:ss";
-	private SimpleDateFormat formatter = new SimpleDateFormat(DEFAULT_FORMAT);
 	private BlockProperty expirationProperty = null;
 	private double interval = 0.0;   // ~secs
 	

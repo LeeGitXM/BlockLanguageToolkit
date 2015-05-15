@@ -46,7 +46,7 @@ public class QualValue extends AbstractProcessBlock implements ProcessBlock {
 	private QualifiedValue value = null;
 	private Quality   quality = DataQuality.GOOD_DATA;
 	private Date      timestamp    = null;
-	private SimpleDateFormat formatter = new SimpleDateFormat(DEFAULT_FORMAT);
+	private SimpleDateFormat dateFormatter = new SimpleDateFormat(DEFAULT_FORMAT);
 	private double synchInterval = 0.5; // 1/2 sec synchronization by default
 	
 	/**
@@ -133,10 +133,10 @@ public class QualValue extends AbstractProcessBlock implements ProcessBlock {
 		}
 		else if( port.equals(TIME_PORT)  ) {
 			try {
-				timestamp = formatter.parse(qv.getValue().toString());
+				timestamp = dateFormatter.parse(qv.getValue().toString());
 			}
 			catch(ParseException pe) {
-				log.errorf("%s.acceptValue: Exception formatting time as %s (%s)",getName(),formatter.toString(),pe.getLocalizedMessage());
+				log.errorf("%s.acceptValue: Exception formatting time as %s (%s)",getName(),dateFormatter.toString(),pe.getLocalizedMessage());
 			} 
 		}
 
@@ -154,7 +154,7 @@ public class QualValue extends AbstractProcessBlock implements ProcessBlock {
 		Map<String,String> attributes = descriptor.getAttributes();
 		if( value!=null ) attributes.put("Value", value.getValue().toString());
 		attributes.put("Quality", quality.toString());
-		if(timestamp!=null) attributes.put("Timestamp",formatter.format(timestamp));
+		if(timestamp!=null) attributes.put("Timestamp",dateFormatter.format(timestamp));
 		return descriptor;
 	}
 	/**
@@ -175,7 +175,7 @@ public class QualValue extends AbstractProcessBlock implements ProcessBlock {
 			notifyOfStatus(result);
 			value = result;
 			log.tracef("%s.evaluate: %s %s %s",getName(),value.getValue().toString(),
-					value.getQuality().getName(),formatter.format(value.getTimestamp()));
+					value.getQuality().getName(),dateFormatter.format(value.getTimestamp()));
 		}
 	}
 
@@ -187,7 +187,7 @@ public class QualValue extends AbstractProcessBlock implements ProcessBlock {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
 		if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_FORMAT)) {
-			formatter = new SimpleDateFormat(event.getNewValue().toString());
+			dateFormatter = new SimpleDateFormat(event.getNewValue().toString());
 		}
 		else if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL)) {
 			try {

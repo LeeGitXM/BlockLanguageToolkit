@@ -3,6 +3,7 @@
  */
 package com.ils.block;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -52,6 +53,8 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	private final static QualifiedValue UNKNOWN_TRUTH_VALUE = new BasicQualifiedValue(TruthValue.UNKNOWN);
 	private final static QualifiedValue NAN_DATA_VALUE = new BasicQualifiedValue(new Double(Double.NaN));
 	private final static QualifiedValue EMPTY_STRING_VALUE = new BasicQualifiedValue("");
+	protected final static String DEFAULT_FORMAT = "YYYY/MM/dd hh:mm:ss";
+	protected final static SimpleDateFormat formatter = new SimpleDateFormat(DEFAULT_FORMAT);
 	protected ExecutionController controller = null;
 	private UUID blockId;
 	private UUID parentId;
