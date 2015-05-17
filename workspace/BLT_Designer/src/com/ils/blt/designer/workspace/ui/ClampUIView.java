@@ -53,7 +53,11 @@ public class ClampUIView extends AbstractUIView implements BlockViewUI {
 		super.drawBadges(g);
 		if(expirationProperty!=null) {
 			Dimension sz = getPreferredSize();
-			long time = ((Long)expirationProperty.getValue()).longValue();
+			long time = 0;
+			Object obj = expirationProperty.getValue();
+			if( obj instanceof Long ) time = ((Long)expirationProperty.getValue()).longValue();
+			else if( obj instanceof Integer ) time = ((Integer)expirationProperty.getValue()).longValue();
+			 
 			if( time>0 && time>System.currentTimeMillis() ) {
 				Rectangle bounds = new Rectangle(3*(sz.width-2*INSET)/4,3*(sz.height-2*INSET)/4,BADGE_WIDTH,BADGE_HEIGHT);
 				String path = "Block/icons/badges/inhibit.png";

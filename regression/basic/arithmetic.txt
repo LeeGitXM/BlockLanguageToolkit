@@ -2,8 +2,8 @@
 # Test of a persistence gate. 5 min timer
 #
 Test: Action and Math Function blocks
-Show: browser "app75/family75/action"
-resetDiagram (app75/family75/action)
+Show: browser "app75/family75/arithmetic"
+resetDiagram (app75/family75/arithmetic)
 Step: BooleanFeed
 Tagset: SingleBoolean
 09:58 True

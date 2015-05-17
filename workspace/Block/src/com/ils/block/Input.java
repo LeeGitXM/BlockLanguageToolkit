@@ -127,7 +127,7 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void evaluate() {
 		String path = tagPathProperty.getBinding().toString();
-		QualifiedValue val = controller.getTagValue(path);
+		QualifiedValue val = controller.getTagValue(getParentId(),path);
 		if( val!=null ) {
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,val);
 			controller.acceptCompletionNotification(nvn);

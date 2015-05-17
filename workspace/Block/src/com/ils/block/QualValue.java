@@ -37,7 +37,6 @@ import com.inductiveautomation.ignition.common.sqltags.model.types.DataQuality;
  */
 @ExecutableBlock
 public class QualValue extends AbstractProcessBlock implements ProcessBlock {
-	private final static String DEFAULT_FORMAT = "YYYY/MM/dd hh:mm:ss";
 	private final static String QUALITY_PORT = "quality";
 	private final static String TIME_PORT    = "time";
 	private final static String VALUE_PORT   = "value";

@@ -64,7 +64,7 @@ public class BasicExecutionController implements ExecutionController  {
 		log.warnf("%s.getIsolationTimeFactor: WARNING: Executed from stub class",TAG);
 		return 0;
 	}
-	public QualifiedValue getTagValue(String path) {
+	public QualifiedValue getTagValue(UUID diagramId,String path) {
 		log.warnf("%s.getTagValue: WARNING: Executed from stub class",TAG);
 		return null;
 	}

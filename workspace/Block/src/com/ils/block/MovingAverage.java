@@ -151,7 +151,7 @@ public class MovingAverage extends AbstractProcessBlock implements ProcessBlock 
 		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
 		Map<String,String> attributes = descriptor.getAttributes();
 		attributes.put("CountToPresent", String.valueOf(count));
-		attributes.put("SumToPresent", String.valueOf(count));
+		attributes.put("SumToPresent", String.valueOf(sum));
 		return descriptor;
 	}
 	

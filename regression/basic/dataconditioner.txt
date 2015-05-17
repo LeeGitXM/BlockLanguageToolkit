@@ -3,8 +3,9 @@
 #
 Test: Data Conditioner and QualifiedValue
 Show: browser "app75/family75/dataconditioner"
-resetDiagram (app75/family75/dataconditioner)
 Tagset: DataConditioner
+09:59:30 22.3 "not good" true
+resetDiagram (app75/family75/dataconditioner)
 Step: All good
 10:00 40.3 good false
 10:00:40 Assert: ConditionerData = 40.3  "Normal passthru"
@@ -16,7 +17,7 @@ Step: All good
 
 Step: Bad qualified value
 10:03 68.1 ugly false
-10:04 68.8 bad false
+10:04 68.8 BAD false
 10:04:40 Assert: ConditionerData = 42  "No passthru with main input bad"
 10:04:50 Assert: ConditionerQuality = true "Quality problem"
 Step: Bad conditioner

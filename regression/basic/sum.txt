@@ -1,5 +1,5 @@
 #
-# Simple test of an input and readout
+# Simple test of a sum block
 #
 Test: Sum and Range Observation
 Step: In-Range Values

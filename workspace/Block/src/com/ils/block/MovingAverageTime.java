@@ -1,5 +1,5 @@
 /**
- *   (c) 2013  ILS Automation. All rights reserved. 
+ *   (c) 2014-1015  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -20,6 +20,7 @@ import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
+import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
@@ -99,10 +100,8 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 	@Override
 	public void reset() {
 		super.reset();
-		if( scanInterval>0.0) {
-			dog.setSecondsDelay(scanInterval);
-			timer.updateWatchdog(dog);  // pet dog
-		}
+		timer.removeWatchdog(dog);    // Stop evaluation
+		state = TruthValue.UNSET;
 		if( clearOnReset ) {
 			buffer.clear();
 			currentValue = Double.NaN;
@@ -111,10 +110,6 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 
 	@Override
 	public void start() {
-		if(!running) {
-			reset();
-			log.tracef("%s(%d).STARTED ...",TAG,hashCode());
-		}
 		super.start();
 	}
 	@Override
@@ -135,21 +130,15 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 			currentValue = Double.NaN;
 			try {
 				currentValue = Double.parseDouble(qv.getValue().toString());
-				log.debugf("%s(%d).acceptValue current value is %s",TAG,hashCode(),qv.getValue().toString());
+				log.tracef("%s.acceptValue: %s",getName(),qv.getValue().toString());
+				if(!isLocked() && !dog.isActive() && scanInterval>0.0 ) {
+					dog.setSecondsDelay(scanInterval);
+					timer.updateWatchdog(dog);  // pet dog
+				}
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.acceptValue exception converting incoming %s to double (%s)",TAG,qv.getValue().toString(),nfe.getLocalizedMessage());
 			}
-		}
-		else if(!qual.isGood()) {
-			// Bad quality, emit the result immediately
-			currentValue = Double.NaN;
-			if( !isLocked() ) {
-				QualifiedValue outval = new BasicQualifiedValue(new Double(Double.NaN),qual,qv.getTimestamp());
-				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
-				controller.acceptCompletionNotification(nvn);
-			}
-			reset();     // Reset the evaluation interval
 		}
 		else {
 			log.warnf("%s.acceptValue received a GOOD value, but null",TAG);

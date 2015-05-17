@@ -119,6 +119,10 @@ public class ProcessDiagram extends ProcessNode {
 					pb.setProjectId(projectId);
 					blocks.put(pb.getBlockId(), pb);
 					log.debugf("%s.analyze: New block %s(%d)",TAG,pb.getName(),pb.hashCode());
+					// If we create a block, then start any appropriate subscriptions
+					for(BlockProperty bp:pb.getProperties()) {
+						controller.startSubscription(pb,bp);
+					}
 					pb.start();
 				}
 				else {
@@ -239,7 +243,7 @@ public class ProcessDiagram extends ProcessNode {
 				}
 			}
 			else {
-				log.errorf("%s.updateProperties: ERROR, block %s missung in diagram %s ",TAG,sb.getName(),diagram.getName());
+				log.errorf("%s.updateProperties: ERROR, block %s missing in diagram %s ",TAG,sb.getName(),diagram.getName());
 			}
 		}
 	}
@@ -339,7 +343,6 @@ public class ProcessDiagram extends ProcessNode {
 				for(ProcessBlock blk:blocks.values()) {
 					if( blk.delayBlockStart() ) blk.start();
 				}
-
 				restartSubscriptions();
 			}
 			// Fire diagram notification change
@@ -413,7 +416,11 @@ public class ProcessDiagram extends ProcessNode {
 		//log.infof("%s.restartSubscriptions: ...%d:%s",TAG,projectId,getName());
 		DiagramState current = this.state;
 		this.state = DiagramState.DISABLED;
-		startSubscriptions();
+		for( ProcessBlock pb:getProcessBlocks()) {
+			for(BlockProperty bp:pb.getProperties()) {
+				controller.restartSubscription(this,pb,bp,current);
+			}
+		}
 		//log.infof("%s.restartSubscriptions: ... %s complete",TAG,getName());
 		this.state = current;
 	}

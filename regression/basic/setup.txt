@@ -20,6 +20,9 @@ tag: Arithmetic1    MemoryTags/ArithmeticOut1
 tag: Arithmetic2    MemoryTags/ArithmeticOut2
 tag: Arithmetic3    MemoryTags/ArithmeticOut3
 tag: Arithmetic4    MemoryTags/ArithmeticOut4
+tag: Average1    MemoryTags/AverageOut1
+tag: Average2    MemoryTags/AverageOut2
+tag: Average3    MemoryTags/AverageOut3
 tag: ConditionerData MemoryTags/ConditionerData
 tag: ConditionerQuality MemoryTags/ConditionerQuality
 tag: ComparisonOut1 MemoryTags/ComparisonOut1
@@ -48,6 +51,7 @@ setStateForApplication("app75","ISOLATED")
 
 # Use tag sets to drive tag values
 tagset: SingleBoolean MemoryTags/BooleanFeed
+tagset: AverageFeed MemoryTags/AverageFeed Average1 Average2 Average3
 tagset: ComparisonDriver MemoryTags/ComparisonFeed
 tagset: DataConditioner MemoryTags/MJKFeed1 MemoryTags/Quality MemoryTags/DataState
 tagset: DualFeed MemoryTags/MJKFeed2 MemoryTags/MJKFeed3

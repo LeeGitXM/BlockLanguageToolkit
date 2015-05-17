@@ -410,7 +410,11 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	}
 	
 	@Override
-	public QualifiedValue getTagValue(String path) {
+	public QualifiedValue getTagValue(UUID diagramId,String path) {
+		ProcessDiagram diagram = getDiagram(diagramId);
+		if( diagram!=null && diagram.getState().equals(DiagramState.ISOLATED) ) {
+			path = replaceProviderInPath(path, getIsolationProvider());
+		}
 		return tagReader.readTag(path);
 	}
 	/**
@@ -444,6 +448,24 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		String tagPath = property.getBinding();
 		ProcessDiagram diagram = getDiagram(block.getParentId());
 		if( diagram!=null && diagram.getState().equals(DiagramState.ISOLATED) ) {
+			tagPath = replaceProviderInPath(tagPath, getIsolationProvider());
+		}
+		tagListener.defineSubscription(block,property,tagPath);
+	}
+	
+	/**
+	 * Restart a subscription for a block attribute associated with a tag.
+	 * This is probably due to a diagram state change. If so, the diagram is 
+	 * temporarily disabled in order to suppress tag change updates.
+	 */
+	public void restartSubscription(ProcessDiagram diagram,ProcessBlock block,BlockProperty property,DiagramState state) {
+		if( block==null || property==null || 
+				!(property.getBindingType().equals(BindingType.TAG_READ) || 
+				  property.getBindingType().equals(BindingType.TAG_READWRITE) ||
+				  property.getBindingType().equals(BindingType.TAG_MONITOR) )   ) return;
+		
+		String tagPath = property.getBinding();
+		if( state.equals(DiagramState.ISOLATED) ) {
 			tagPath = replaceProviderInPath(tagPath, getIsolationProvider());
 		}
 		tagListener.defineSubscription(block,property,tagPath);

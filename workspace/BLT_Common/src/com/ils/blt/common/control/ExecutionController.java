@@ -32,7 +32,7 @@ public interface ExecutionController  {
 	public String getProductionDatabase();
 	public String getProductionProvider();
 	public double getIsolationTimeFactor();
-	public QualifiedValue getTagValue(String path);
+	public QualifiedValue getTagValue(UUID diagramId,String path);
 	public void sendPropertyNotification(String id, String propertyName, QualifiedValue val);
 	public void sendConnectionNotification(String blockid, String port, QualifiedValue val);
 	public void sendStateNotification(String diagramid, String val);
