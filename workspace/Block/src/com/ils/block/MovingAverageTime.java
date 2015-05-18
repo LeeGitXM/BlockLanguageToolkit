@@ -37,8 +37,6 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
  */
 @ExecutableBlock
 public class MovingAverageTime extends AbstractProcessBlock implements ProcessBlock {
-	private final String TAG = "MovingAverageTime";
-
 	private final LinkedList<Double> buffer;
 	private boolean clearOnReset = false;
 	private double currentValue = Double.NaN;
@@ -51,9 +49,9 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
 	public MovingAverageTime() {
-		dog = new Watchdog(TAG,this);
-		buffer = new LinkedList<Double>();
 		initialize();
+		buffer = new LinkedList<Double>();
+		dog = new Watchdog(getName(),this);
 		initializePrototype();
 	}
 	
@@ -66,9 +64,10 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 	 */
 	public MovingAverageTime(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
-		dog = new Watchdog(TAG,this);
-		buffer = new LinkedList<Double>();
 		initialize();
+		dog = new Watchdog(getName(),this);
+		buffer = new LinkedList<Double>();
+		
 	}
 	
 	/**
@@ -130,18 +129,18 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 			currentValue = Double.NaN;
 			try {
 				currentValue = Double.parseDouble(qv.getValue().toString());
-				log.tracef("%s.acceptValue: %s",getName(),qv.getValue().toString());
-				if(!isLocked() && !dog.isActive() && scanInterval>0.0 ) {
+				log.tracef("%s.acceptValue: %s (%3.1f)",getName(),qv.getValue().toString(),currentValue);
+				if( !dog.isActive() && scanInterval>0.0 ) {
 					dog.setSecondsDelay(scanInterval);
 					timer.updateWatchdog(dog);  // pet dog
 				}
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s.acceptValue exception converting incoming %s to double (%s)",TAG,qv.getValue().toString(),nfe.getLocalizedMessage());
+				log.warnf("%s.acceptValue exception converting incoming %s to double (%s)",getName(),qv.getValue().toString(),nfe.getLocalizedMessage());
 			}
 		}
 		else {
-			log.warnf("%s.acceptValue received a GOOD value, but null",TAG);
+			log.warnf("%s.acceptValue received a GOOD value, but null",getName());
 		}
 	}
 	
@@ -151,7 +150,6 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 	@Override
 	public void evaluate() {
 		if( Double.isNaN(currentValue) ) return;
-		log.tracef("%s(%d).evaluate ...",TAG,hashCode());
 		// Evaluate the buffer and report
 		// Add the currentValue to the queue
 		Double val = new Double(currentValue);
@@ -160,10 +158,10 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 		while(buffer.size() > maxPoints ) {
 			buffer.removeFirst();
 		}
-		log.tracef("%s(%d).evaluate %d of %d points",TAG,hashCode(),buffer.size(),maxPoints);
+		log.tracef("%s(%d).evaluate %d of %d points",getName(),hashCode(),buffer.size(),maxPoints);
 		if( buffer.size() >= maxPoints) {
 			double result = computeAverage();
-			log.tracef("%s(%d).evaluate avg=%f",TAG,hashCode(),result);
+			log.tracef("%s(%d).evaluate avg=%f",getName(),hashCode(),result);
 			if( !isLocked() ) {
 				// Give it a new timestamp
 				QualifiedValue outval = new BasicQualifiedValue(result);
@@ -201,13 +199,13 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
-		log.infof("%s(%d).propertyChange: %s = %s",TAG,hashCode(),propertyName,event.getNewValue().toString());
+		log.infof("%s(%d).propertyChange: %s = %s",getName(),hashCode(),propertyName,event.getNewValue().toString());
 		if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET)) {
 			try {
 				clearOnReset = Boolean.parseBoolean(event.getNewValue().toString());
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert clear flag to a boolean (%s)",TAG,nfe.getLocalizedMessage());
+				log.warnf("%s: propertyChange Unable to convert clear flag to a boolean (%s)",getName(),nfe.getLocalizedMessage());
 			}
 		}	
 		else if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL)) {
@@ -215,13 +213,13 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 				double oldInterval = scanInterval;
 				scanInterval = Double.parseDouble(event.getNewValue().toString());
 				if( scanInterval < 0.1 ) scanInterval = 0.1;   // Don't allow to go too fast
-				if( scanInterval < oldInterval ) {
+				if( dog.isActive() && scanInterval < oldInterval ) {
 					dog.setSecondsDelay(scanInterval);
 					timer.updateWatchdog(dog);  // pet dog
 				}
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s.propertyChange: Unable to convert scan interval to a double (%s)",TAG,nfe.getLocalizedMessage());
+				log.warnf("%s.propertyChange: Unable to convert scan interval to a double (%s)",getName(),nfe.getLocalizedMessage());
 			}
 		}
 		else if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW)) {
@@ -230,7 +228,7 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 				if( timeWindow<=0.0) timeWindow = scanInterval;
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s.propertyChange: Unable to convert scan interval to a double (%s)",TAG,nfe.getLocalizedMessage());
+				log.warnf("%s.propertyChange: Unable to convert scan interval to a double (%s)",getName(),nfe.getLocalizedMessage());
 			}
 		}	
 	}
@@ -239,7 +237,7 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 	 */
 	@Override
 	public SerializableBlockStateDescriptor getInternalStatus() {
-		log.infof("%s(%d).getInternalStatus: buffer size = %d",TAG,hashCode(),buffer.size());
+		log.infof("%s(%d).getInternalStatus: buffer size = %d",getName(),hashCode(),buffer.size());
 		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
 		Map<String,String> attributes = descriptor.getAttributes();
 		attributes.put("Average", String.valueOf(currentValue));

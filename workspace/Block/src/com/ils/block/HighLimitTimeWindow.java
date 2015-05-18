@@ -52,9 +52,9 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
 	public HighLimitTimeWindow() {
+		initialize();
 		dog = new Watchdog(getName(),this);
 		buffer = new LinkedList<Double>();
-		initialize();
 		initializePrototype();
 	}
 	
@@ -67,9 +67,9 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 	 */
 	public HighLimitTimeWindow(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
+		initialize();
 		dog = new Watchdog(getName(),this);
 		buffer = new LinkedList<Double>();
-		initialize();
 	}
 	
 	/**
@@ -133,7 +133,7 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 			try {
 				currentValue = Double.parseDouble(qv.getValue().toString());
 				log.infof("%s.acceptValue: %s",getName(),qv.getValue().toString());
-				if(!isLocked() && !dog.isActive() && scanInterval>0.0 ) {
+				if(!dog.isActive() && scanInterval>0.0 ) {
 					dog.setSecondsDelay(scanInterval);
 					timer.updateWatchdog(dog);  // pet dog
 					log.infof("HighLimit.acceptValue TRIGGERED TIMER");
@@ -169,13 +169,12 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 		if( buffer.size()<maxPoints && fillRequired && result.equals(TruthValue.FALSE) ) result = TruthValue.UNKNOWN;
 		if( !result.equals(state) && !isLocked() ) {
 			// Give it a new timestamp
-			state = result;
 			QualifiedValue outval = new BasicQualifiedValue(result);
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus(outval);
 		}
-	
+		state = result;  // State updates when locked,
 		dog.setSecondsDelay(scanInterval);
 		timer.updateWatchdog(dog);  // pet dog
 	}

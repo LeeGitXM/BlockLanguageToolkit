@@ -49,8 +49,8 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
 	public PersistenceGate() {
-		dog = new Watchdog(TAG,this);
 		initialize();
+		dog = new Watchdog(TAG,this);
 		initializePrototype();
 	}
 	
@@ -63,8 +63,8 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 	 */
 	public PersistenceGate(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
-		dog = new Watchdog(TAG,this);
 		initialize();
+		dog = new Watchdog(TAG,this);
 	}
 	
 	/**

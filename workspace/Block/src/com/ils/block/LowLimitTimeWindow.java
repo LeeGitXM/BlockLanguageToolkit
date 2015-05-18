@@ -52,9 +52,9 @@ public class LowLimitTimeWindow extends AbstractProcessBlock implements ProcessB
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
 	public LowLimitTimeWindow() {
-		dog = new Watchdog(getName(),this);
-		buffer = new LinkedList<Double>();
 		initialize();
+		buffer = new LinkedList<Double>();
+		dog = new Watchdog(getName(),this);
 		initializePrototype();
 	}
 	
@@ -67,9 +67,9 @@ public class LowLimitTimeWindow extends AbstractProcessBlock implements ProcessB
 	 */
 	public LowLimitTimeWindow(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
-		dog = new Watchdog(getName(),this);
-		buffer = new LinkedList<Double>();
 		initialize();
+		buffer = new LinkedList<Double>();
+		dog = new Watchdog(getName(),this);
 	}
 	
 	/**
@@ -134,7 +134,7 @@ public class LowLimitTimeWindow extends AbstractProcessBlock implements ProcessB
 			try {
 				currentValue = Double.parseDouble(qv.getValue().toString());
 				log.tracef("%s.acceptValue: %s",getName(),qv.getValue().toString());
-				if(!isLocked() && !dog.isActive() && scanInterval>0.0 ) {
+				if(!dog.isActive() && scanInterval>0.0 ) {
 					dog.setSecondsDelay(scanInterval);
 					timer.updateWatchdog(dog);  // pet dog
 				}
@@ -163,18 +163,17 @@ public class LowLimitTimeWindow extends AbstractProcessBlock implements ProcessB
 		while(buffer.size() > maxPoints ) {
 			buffer.removeFirst();
 		}
-		//log.infof("%s.evaluate %d of %d points",TAG,buffer.size(),maxPoints);
+		log.tracef("%s.evaluate %d of %d points",getName(),buffer.size(),maxPoints);
 		TruthValue result = checkPassConditions(state);
 		if( buffer.size()<maxPoints && fillRequired && result.equals(TruthValue.FALSE) ) result = TruthValue.UNKNOWN;
 		if( !result.equals(state) && !isLocked() ) {
 			// Give it a new timestamp
-			state = result;
 			QualifiedValue outval = new BasicQualifiedValue(result);
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus(outval);
 		}
-
+		state = result;
 		dog.setSecondsDelay(scanInterval);
 		timer.updateWatchdog(dog);  // pet dog
 	}
@@ -329,7 +328,7 @@ public class LowLimitTimeWindow extends AbstractProcessBlock implements ProcessB
 		if( count>=triggerCount ) result = TruthValue.TRUE;
 		else result = TruthValue.FALSE;
 		int size = (int)((timeWindow+0.99*scanInterval)/scanInterval);
-		//log.tracef("%s:checkPassConditions count %d of %d (%f<%f) %s (was %s)",getName(),count,size,threshold,val,result.name(),current.name());
+		log.tracef("%s:checkPassConditions count %d of %d (%f<%f) %s (was %s)",getName(),count,size,threshold,val,result.name(),current.name());
 		return result;
 	}
 }

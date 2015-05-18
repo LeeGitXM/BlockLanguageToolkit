@@ -254,8 +254,16 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	}
 	@Override
 	public boolean isLocked() {return locked;}
+	/**
+	 * When unlocking we set the state to UNSET to force
+	 * an output next evaluation.
+	 */
 	@Override
-	public void setLocked(boolean locked) {this.locked = locked;}
+	public void setLocked(boolean locked) {
+		if(this.locked && !locked) this.state = TruthValue.UNSET;
+		this.locked = locked;
+		
+	}
 	@Override
 	public boolean isReceiver() { return isReceiver; }
 	@Override

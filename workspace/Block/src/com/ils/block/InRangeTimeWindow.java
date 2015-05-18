@@ -55,9 +55,9 @@ public class InRangeTimeWindow extends AbstractProcessBlock implements ProcessBl
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
 	public InRangeTimeWindow() {
+		initialize();
 		dog = new Watchdog(getName(),this);
 		buffer = new LinkedList<Double>();
-		initialize();
 		initializePrototype();
 	}
 	
@@ -70,9 +70,9 @@ public class InRangeTimeWindow extends AbstractProcessBlock implements ProcessBl
 	 */
 	public InRangeTimeWindow(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
+		initialize();
 		dog = new Watchdog(getName(),this);
 		buffer = new LinkedList<Double>();
-		initialize();
 	}
 	
 	/**
@@ -138,7 +138,7 @@ public class InRangeTimeWindow extends AbstractProcessBlock implements ProcessBl
 			try {
 				currentValue = Double.parseDouble(qv.getValue().toString());
 				log.infof("%s.acceptValue: %s",getName(),qv.getValue().toString());
-				if(!isLocked() && !dog.isActive() && scanInterval>0.0 ) {
+				if( !dog.isActive() && scanInterval>0.0 ) {
 					dog.setSecondsDelay(scanInterval);
 					timer.updateWatchdog(dog);  // pet dog
 					log.infof("InRange.acceptValue TRIGGERED TIMER");
@@ -158,7 +158,6 @@ public class InRangeTimeWindow extends AbstractProcessBlock implements ProcessBl
 	 */
 	@Override
 	public void evaluate() {
-		log.infof("InRange.evaluate EVALUATING");
 		if( Double.isNaN(currentValue) ) return;
 
 		// Evaluate the buffer and report
@@ -169,18 +168,17 @@ public class InRangeTimeWindow extends AbstractProcessBlock implements ProcessBl
 		while(buffer.size() > maxPoints ) {
 			buffer.removeFirst();
 		}
-		log.infof("%s.evaluate %d of %d points",getName(),buffer.size(),maxPoints);
+		log.tracef("%s.evaluate %d of %d points",getName(),buffer.size(),maxPoints);
 		TruthValue result = checkPassConditions(state);
 		if( buffer.size()<maxPoints && fillRequired && result.equals(TruthValue.FALSE) ) result = TruthValue.UNKNOWN;
 		if( !result.equals(state) && !isLocked() ) {
 			// Give it a new timestamp
-			state = result;
 			QualifiedValue outval = new BasicQualifiedValue(result);
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus(outval);
 		}
-
+		state = result;
 		dog.setSecondsDelay(scanInterval);
 		timer.updateWatchdog(dog);  // pet dog
 	}
@@ -359,7 +357,7 @@ public class InRangeTimeWindow extends AbstractProcessBlock implements ProcessBl
 		if( count>=triggerCount ) result = TruthValue.TRUE;
 		else result = TruthValue.FALSE;
 		int size = (int)((timeWindow+0.99*scanInterval)/scanInterval);
-		log.infof("%s:checkPassConditions count %d of %d (%f<%f<%f) %s (was %s)",getName(),count,size,lowerThreshold,val,upperThreshold,result.name(),current.name());
+		log.tracef("%s:checkPassConditions count %d of %d (%f<%f<%f) %s (was %s)",getName(),count,size,lowerThreshold,val,upperThreshold,result.name(),current.name());
 		return result;
 	}
 }

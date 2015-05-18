@@ -43,8 +43,8 @@ public class Sum extends AbstractProcessBlock implements ProcessBlock {
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
 	public Sum() {
-		valueMap = new HashMap<String,QualifiedValue>();
 		initialize();
+		valueMap = new HashMap<String,QualifiedValue>();
 		initializePrototype();
 		dog = new Watchdog(getName(),this);
 	}
@@ -58,8 +58,8 @@ public class Sum extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	public Sum(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
-		valueMap = new HashMap<String,QualifiedValue>();
 		initialize();
+		valueMap = new HashMap<String,QualifiedValue>();
 		dog = new Watchdog(getName(),this);
 	}
 	

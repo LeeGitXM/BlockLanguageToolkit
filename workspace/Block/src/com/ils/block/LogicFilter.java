@@ -58,10 +58,10 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
 	public LogicFilter() {
-		dog = new Watchdog(TAG,this);
+		initialize();
 		buffer = new LinkedList<TruthValue>();
 		bufferSize = (int)(0.5+timeWindow/scanInterval);
-		initialize();
+		dog = new Watchdog(getName(),this);
 		initializePrototype();	
 	}
 	
@@ -74,9 +74,9 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	public LogicFilter(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
-		dog = new Watchdog(TAG,this);
-		buffer = new LinkedList<TruthValue>();
 		initialize();
+		buffer = new LinkedList<TruthValue>();
+		dog = new Watchdog(getName(),this);
 	}
 	
 	/**
@@ -345,7 +345,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	/**
 	 * Compute the overall state, presumably because of a new input.
 	 * We take into account the hysteresis. If the buffer is not full,
-	 * truw and false ratios will not add to one.
+	 * true and false ratios will not add to one.
 	 */
 	private TruthValue computeState(TruthValue current,double trueRatio,double falseRatio) {
 		

@@ -46,8 +46,8 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
 	public And() {
-		qualifiedValueMap = new HashMap<String,QualifiedValue>();
 		initialize();
+		qualifiedValueMap = new HashMap<String,QualifiedValue>();
 		initializePrototype();
 		dog = new Watchdog(getName(),this);
 	}
@@ -61,9 +61,8 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	public And(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
-		
-		qualifiedValueMap = new HashMap<String,QualifiedValue>();
 		initialize();
+		qualifiedValueMap = new HashMap<String,QualifiedValue>();
 		dog = new Watchdog(getName(),this);
 	}
 	
