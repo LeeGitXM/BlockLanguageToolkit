@@ -5,23 +5,22 @@
 # source and "external" python,
 #
 #set -x
-REPO_ROOT=~/Development/ils/src
 SVN=~/Development/ils/svn/EMChemicals/Release/src
 # ILS python  ("source" and build)
-cd $REPO_ROOT/ils-python/ILS_Python/src
+cd ${GIT_REPO}/ils-python/ILS_Python/src
 zip -r $SVN/ils-python.zip ils 
-cd $REPO_ROOT/ils-python
+cd ${GIT_REPO}/ils-python
 zip -r $SVN/ils-python-src.zip ILS_Python
 # XOM python  ("source" and build)
-cd $REPO_ROOT/xom-python/XOM_Python/src
+cd ${GIT_REPO}/xom-python/XOM_Python/src
 zip -r $SVN/xom-python.zip * 
-cd $REPO_ROOT/xom-python
+cd ${GIT_REPO}/xom-python
 zip -r $SVN/xom-python-src.zip XOM_Python
 
 # Copy the jar files ...
-cd $REPO_ROOT/blt
-BLD=$REPO_ROOT/blt/workspace/BLT_Build/temp_modl
-EXT=$REPO_ROOT/external/lib
+cd ${GIT_REPO}/blt
+BLD=${GIT_REPO}/blt/workspace/BLT_Build/temp_modl
+EXT=${GIT_REPO}/external/lib
 rm -rf lib
 mkdir -p lib/core/gateway
 mkdir -p lib/core/common

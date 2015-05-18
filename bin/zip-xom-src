@@ -5,13 +5,12 @@
 # running this script.
 #
 #set -x
-REPO_ROOT=~/Development/ils/src
 SVN=~/Development/ils/svn/EMChemicals
 VERS=blt-`cat $SVN/Release/VERS`
-TMP=$REPO_ROOT/$VERS
+TMP=${GIT_REPO}/$VERS
 # Cleanup
 rm -rf $TMP
-cd $REPO_ROOT
+cd ${GIT_REPO}
 rm -rf external/cachedir
 rm -rf ils-common/bin/*
 rm -rf ils-common/workspace/doc/*
@@ -21,17 +20,17 @@ rm -rf blt/workspace/*/temp_modl
 mkdir $TMP
 
 mkdir $TMP/external
-cd $REPO_ROOT/external; cp -a .project .classpath lib $TMP/external
+cd ${GIT_REPO}/external; cp -a .project .classpath lib $TMP/external
 
 mkdir $TMP/ignition-77
-cd $REPO_ROOT/ignition-77; cp -a .project .classpath lib $TMP/ignition-77
+cd ${GIT_REPO}/ignition-77; cp -a .project .classpath lib $TMP/ignition-77
 
 mkdir $TMP/ils-common
-cd $REPO_ROOT/ils-common/ILS_Common; cp -a .project .classpath src $TMP/ils-common
-cd $REPO_ROOT/ils-common/; cp -a *.xml $TMP/ils-common
+cd ${GIT_REPO}/ils-common/ILS_Common; cp -a .project .classpath src $TMP/ils-common
+cd ${GIT_REPO}/ils-common/; cp -a *.xml $TMP/ils-common
 
 mkdir $TMP/blt
-cd $REPO_ROOT/blt; cp -a workspace $TMP/blt
+cd ${GIT_REPO}/blt; cp -a workspace $TMP/blt
 
 # Scrub the temp area before zipping
 cd $TMP
@@ -46,7 +45,7 @@ rm -rf ils-common/.metadata
 rm -rf ils-common/.recommenders
 
 # Now zip and copy to subversion
-cd $REPO_ROOT/$VERS
+cd ${GIT_REPO}/$VERS
 zip -r $VERS.zip *
 cp $VERS.zip $SVN/Release/src
 rm -rf $TMP
