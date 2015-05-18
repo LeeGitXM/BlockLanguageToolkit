@@ -1,0 +1,9 @@
+#!/bin/sh
+# Copy the JSON files from svn into our project
+# for viewing in Eclipse.
+#
+SVN=${SVN_REPO}/EMChemicals/G2Artifacts/
+PROCS=${GIT_REPO}/blt/migration/procs
+mkdir -p ${PROCS}/g2/vistalon/calculations
+mkdir -p ${PROCS}/ignition/vistalon/calculations
+cp ${SVN}/Source\ code/vist-monitoring/procedures/*.txt ${PROCS}/g2/vistalon/calculations

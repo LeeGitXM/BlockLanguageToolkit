@@ -1,19 +1,18 @@
 #!/bin/sh
-#  Procedure migration script
+#  Procedure translation script
 # -- options for log.level:  INFO,DEBUG,TRACE
 #
-if [ $# -lt 1 ]
+if [ $# -lt 3 ]
 then
-    echo "USAGE: translate <file>"
+    echo "USAGE: translate <file> <pkg> <outdir>"
 	exit 2
 fi
-REPO=~/Development/ils/src
-cd $REPO/blt
+cd ${GIT_REPO}/blt
 BLT=`pwd`
-LIB=$REPO/external/lib
+LIB=${GIT_REPO}/external/lib
 JAR=${LIB}/g2-translation.jar
 DB=${BLT}/migration/mdb/conversion.db
-OUTDIR=${BLT}/migration/out
+OUTDIR=$3
 mkdir -p ${OUTDIR}
 #cat $1 | java -cp ${JAR} -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000 -Dlog.level=INFO -Droot.class=APPLICATION com.ils.blt.migration.Migrator ${DB}
-cat $1 | java -cp ${JAR} -Dprocedure.package=ils.blt.fd -Dlog.level=TRACE com.ils.python.translation.G2ProcedureTranslator ${OUTDIR} ${DB} 
+cat $1 | java -cp ${JAR} -Dprocedure.package=$2 -Dlog.level=TRACE com.ils.python.translation.G2ProcedureTranslator ${OUTDIR} ${DB} 

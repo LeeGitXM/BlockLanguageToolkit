@@ -1,7 +1,17 @@
-
-#  Use this version when debugging a single file.
+#!/bin/sh
+# Process all of the json files in the repository "g2" area.
+# Save the results in the json storate area for ignition.
 #
-BLT=~/Development/ils/src/blt
-FIL=CALC-NO-OUTPUT-GDA.txt
-DIR=${BLT}/migration/g2procs/fd
-${BLT}/migration/translate $DIR/$FIL
+BLT=${GIT_REPO}/blt
+PROCS=${BLT}/migration/procs
+APP=$BLT/migration/translate
+cd $BLT/migration
+cd $INDIR
+PKG="ils.blt.fd.vistalon"
+INDIR=${PROCS}/g2/vistalon/calculations
+OUTDIR=${PROCS}/ignition/ils/blt/fd/vistalon
+mkdir -p ${OUTDIR}
+cd ${INDIR}
+fil=STARTUP_TIMER-GDA.txt
+echo "Processing $fil ..."
+$APP $INDIR/$fil ${PKG} ${OUTDIR}

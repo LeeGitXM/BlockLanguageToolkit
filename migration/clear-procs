@@ -1,0 +1,7 @@
+#!/bin/sh
+# Remove all of the json files from the migration target area,
+# leaving only those checked into git.
+#
+PROCS=${GIT_REPO}/blt/migration/procs
+rm -f ${PROCS}/g2/*n
+rm -f ${PROCS}/ignition/*

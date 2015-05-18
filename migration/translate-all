@@ -2,16 +2,23 @@
 # Process all of the json files in the repository "g2" area.
 # Save the results in the json storate area for ignition.
 #
-fil=CRX-WARNINGS.txt
 BLT=${GIT_REPO}/blt
 PROCS=${BLT}/migration/procs
 APP=$BLT/migration/translate
+mkdir -p $INDIR
+mkdir -p $OUTDIR
 cd $BLT/migration
+./clear-procs
+./copy-procs
 cd $INDIR
+echo "Processing Vistalon Calculation Methods"
 PKG="ils.blt.fd.vistalon"
-INDIR=${PROCS}/g2/vistalon/calculations
+INDIR=${PROCS}/g2/vistalon/calculation
 OUTDIR=${PROCS}/ignition/ils/blt/fd/vistalon
 mkdir -p ${OUTDIR}
 cd ${INDIR}
-echo "Processing $fil ..."
-$APP $INDIR/$fil ${PKG} ${OUTDIR}
+for fil in *.txt
+do
+	echo "Processing $fil ..."
+    $APP $INDIR/$fil ${PKG} ${OUTDIR}
+done
