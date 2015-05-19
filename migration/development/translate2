@@ -6,12 +6,8 @@ BLT=${GIT_REPO}/blt
 PROCS=${BLT}/migration/procs
 APP=$BLT/migration/translate
 cd $BLT/migration
-cd $INDIR
-PKG="ils.blt.fd.vistalon"
 INDIR=${PROCS}/g2/vistalon/calculations
-OUTDIR=${PROCS}/ignition/ils/blt/fd/vistalon
-mkdir -p ${OUTDIR}
-cd ${INDIR}
+OUTDIR=${PROCS}/ignition/vistalon
 fil=CALC-DO_TEMP-OUTPUTS-GDA.txt
 echo "Processing $fil ..."
-$APP $INDIR/$fil ${PKG} ${OUTDIR}
+$APP $INDIR/$fil ${OUTDIR}

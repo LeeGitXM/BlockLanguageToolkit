@@ -12,13 +12,11 @@ cd $BLT/migration
 ./copy-procs
 cd $INDIR
 echo "Processing Vistalon Calculation Methods"
-PKG="ils.blt.fd.vistalon"
 INDIR=${PROCS}/g2/vistalon/calculation
-OUTDIR=${PROCS}/ignition/ils/blt/fd/vistalon
-mkdir -p ${OUTDIR}
+OUTDIR=${PROCS}/ignition/vistalon
 cd ${INDIR}
 for fil in *.txt
 do
 	echo "Processing $fil ..."
-    $APP $INDIR/$fil ${PKG} ${OUTDIR}
+    $APP $INDIR/$fil $OUTDIR
 done
