@@ -5,12 +5,11 @@
 # VERS, DATE files updated
 #
 #set -x
-REPO_ROOT=~/Development/ils/src
 SVN=~/Development/ils/svn/EMChemicals/Release/src
-LIB=$REPO_ROOT/external/lib
+LIB=${GIT_REPO}/external/lib
 # Prepare directories
 TOOLDIR=$SVN/tools/blt-migration
 mkdir -p $TOOLDIR
-cd $REPO_ROOT/blt/migration
+cd ${GIT_REPO}/blt/migration
 cp migrate $TOOLDIR/migrate.sh
 cp $LIB/blt-migration.jar $TOOLDIR

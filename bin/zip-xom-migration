@@ -3,15 +3,14 @@
 # Save the migration files into a zip for distribution.
 #
 #set -x
-REPO_ROOT=~/Development/ils/src
 SVN=~/Development/ils/svn/EMChemicals/Release/src
 VERS=MIGRATION
-TMP=$REPO_ROOT/$VERS
+TMP=${GIT_REPO}/$VERS
 # Cleanup
 rm -rf $TMP
-cd $REPO_ROOT
+cd ${GIT_REPO}
 mkdir -p $TMP
-cd $REPO_ROOT/blt/migration
+cd ${GIT_REPO}/blt/migration
 rm -f mdb/*.db
 rm -rf tags
 cp -a * $TMP
@@ -27,7 +26,7 @@ cd ..
 cp -a migration/json/ignition $TMP
 
 # Now zip and copy to subversion
-cd $REPO_ROOT
+cd ${GIT_REPO}
 zip -r migration.zip $VERS
 cp migration.zip $SVN
 rm -rf $TMP

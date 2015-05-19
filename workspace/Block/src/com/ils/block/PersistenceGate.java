@@ -50,8 +50,8 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 	 */
 	public PersistenceGate() {
 		initialize();
-		dog = new Watchdog(TAG,this);
 		initializePrototype();
+		dog = new Watchdog(getName(),this);
 	}
 	
 	/**
@@ -64,7 +64,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 	public PersistenceGate(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
-		dog = new Watchdog(TAG,this);
+		dog = new Watchdog(getName(),this);
 	}
 	
 	/**
@@ -89,7 +89,6 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.TRUTHVALUE);
 		anchors.add(input);
 		anchors.add(output);
-		reset();
 	}
 	
 	@Override
