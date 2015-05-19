@@ -27,7 +27,7 @@ class TagSelectorPane extends JPanel implements ApplicationConfigurationControll
 	private final OutputEditorPane outputEditorPane;
 	private static Icon previousIcon = new ImageIcon(TagSelectorPane.class.getResource("/images/arrow_left_green.png"));
 	final JButton previousButton = new JButton(previousIcon);
-	final JButton saveButton = new JButton("Ok");
+	final JButton cancelButton = new JButton("Cancel");
 	
 	// Copied from Chuck...
 	private static final long serialVersionUID = 1L;
@@ -69,13 +69,15 @@ class TagSelectorPane extends JPanel implements ApplicationConfigurationControll
 		add(bottomPanel,BorderLayout.SOUTH);
 		
 		bottomPanel.add(previousButton);
+		previousButton.setPreferredSize(ApplicationConfigurationConstants.BUTTON_SIZE);
 		previousButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {doPrevious();}
 		});
 		
-		bottomPanel.add(saveButton);
-		saveButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {doSave();}
+		bottomPanel.add(cancelButton);
+		cancelButton.setPreferredSize(ApplicationConfigurationConstants.BUTTON_SIZE);
+		cancelButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {doCancel();}
 		});
 		
 		add(mainPanel,BorderLayout.CENTER);
@@ -84,14 +86,14 @@ class TagSelectorPane extends JPanel implements ApplicationConfigurationControll
 	//  I don't think this is used...
 	@Override
 	public void activate() {
-		controller.slideTo(ApplicationConfigurationDialog.TAGSELECTOR);
+		controller.slideTo(ApplicationConfigurationConstants.TAGSELECTOR);
+	}
+	
+	protected void doCancel() {
+		controller.slideTo(ApplicationConfigurationConstants.EDITOR);		
 	}
 	
 	protected void doPrevious() {
-		controller.slideTo(ApplicationConfigurationDialog.EDITOR);		
-	}
-	
-	protected void doSave() {
 		System.out.println("Saving...");
 		
 		TreePath[] selectedPaths = tagTreeSelectionModel.getSelectionPaths();
@@ -109,6 +111,6 @@ class TagSelectorPane extends JPanel implements ApplicationConfigurationControll
 			return;
 		}
 		
-		controller.slideTo(ApplicationConfigurationDialog.EDITOR);		
+		controller.slideTo(ApplicationConfigurationConstants.EDITOR);		
 	}
 }

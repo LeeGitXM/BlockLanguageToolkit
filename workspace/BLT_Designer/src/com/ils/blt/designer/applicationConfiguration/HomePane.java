@@ -28,8 +28,7 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 	private static final long serialVersionUID = 2882399376824334427L;
 	
 	protected static final Dimension AREA_SIZE  = new Dimension(300,80);
-	protected static final Dimension BUTTON_SIZE  = new Dimension(80,28);
-	protected static final Dimension COMBO_SIZE  = new Dimension(300,24);
+	
 
 	final JPanel buttonPanel;
 	final JPanel mainPanel;
@@ -55,8 +54,8 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 		this.controller = controller;
 		this.model = controller.getModel();
 		
-		okButton.setPreferredSize(BUTTON_SIZE);
-		cancelButton.setPreferredSize(BUTTON_SIZE);
+		okButton.setPreferredSize(ApplicationConfigurationConstants.BUTTON_SIZE);
+		cancelButton.setPreferredSize(ApplicationConfigurationConstants.BUTTON_SIZE);
 
 		// Add a couple of panels to the main panel
 		buttonPanel = new JPanel(new FlowLayout());
@@ -68,7 +67,7 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 		// Add components to the main panel
 		mainPanel.add(new JLabel("Name:"),"align right");
 		nameField.setText(model.getProperties().get("Name"));
-		nameField.setPreferredSize(COMBO_SIZE);
+		nameField.setPreferredSize(ApplicationConfigurationConstants.COMBO_SIZE);
 		nameField.setEditable(false);
 		nameField.setToolTipText("The name can only be changed from the project tree.");
 		mainPanel.add(nameField,"span,wrap");
@@ -98,7 +97,7 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 		else if( postComboBox.getItemCount()>0) {
 			postComboBox.setSelectedIndex(0);
 		}
-		postComboBox.setPreferredSize(COMBO_SIZE);
+		postComboBox.setPreferredSize(ApplicationConfigurationConstants.COMBO_SIZE);
 		mainPanel.add(postComboBox, "wrap");
 		
 		// Set up the Message Queue Combo Box
@@ -116,7 +115,7 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 		else if( queueComboBox.getItemCount()>0) {
 			queueComboBox.setSelectedIndex(0);
 		}
-		queueComboBox.setPreferredSize(COMBO_SIZE);
+		queueComboBox.setPreferredSize(ApplicationConfigurationConstants.COMBO_SIZE);
 		mainPanel.add(queueComboBox, "wrap");
 
 		// Set up the Group Ramp Method Combo Box
@@ -134,7 +133,7 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 		else if( groupRampMethodComboBox.getItemCount()>0) {
 			groupRampMethodComboBox.setSelectedIndex(0);
 		}
-		groupRampMethodComboBox.setPreferredSize(COMBO_SIZE);
+		groupRampMethodComboBox.setPreferredSize(ApplicationConfigurationConstants.COMBO_SIZE);
 		mainPanel.add(groupRampMethodComboBox, "wrap");
 		
 		// Set up the Unit Combo Box
@@ -152,7 +151,7 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 		else if( unitComboBox.getItemCount()>0) {
 			unitComboBox.setSelectedIndex(0);
 		}
-		unitComboBox.setPreferredSize(COMBO_SIZE);
+		unitComboBox.setPreferredSize(ApplicationConfigurationConstants.COMBO_SIZE);
 		mainPanel.add(unitComboBox, "wrap");
 
 		mainPanel.add(nextButton,"cell 1 9,right");
@@ -197,12 +196,12 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 	}
 
 	protected void doNext() {
-		controller.slideTo(ApplicationConfigurationDialog.OUTPUTS);
+		controller.slideTo(ApplicationConfigurationConstants.OUTPUTS);
 	}
 
 	@Override
 	public void activate() {
-		controller.slideTo(ApplicationConfigurationDialog.HOME);
+		controller.slideTo(ApplicationConfigurationConstants.HOME);
 	}
 
 }

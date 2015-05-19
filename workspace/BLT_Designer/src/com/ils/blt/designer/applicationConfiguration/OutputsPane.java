@@ -1,6 +1,7 @@
 package com.ils.blt.designer.applicationConfiguration;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -75,18 +76,21 @@ public class OutputsPane extends JPanel implements ApplicationConfigurationContr
 		add(buttonPanel,BorderLayout.EAST);
 		
 		addButton.setAlignmentX(RIGHT_ALIGNMENT);
+		addButton.setPreferredSize(ApplicationConfigurationConstants.EDIT_BUTTON_SIZE);
 		buttonPanel.add(addButton);
 		addButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {doAdd();}
 		});
 		
 		deleteButton.setAlignmentX(RIGHT_ALIGNMENT);
+		deleteButton.setPreferredSize(ApplicationConfigurationConstants.EDIT_BUTTON_SIZE);
 		buttonPanel.add(deleteButton);
 		deleteButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {doDelete();}
 		});
 		
 		editButton.setAlignmentX(RIGHT_ALIGNMENT);
+		editButton.setPreferredSize(ApplicationConfigurationConstants.EDIT_BUTTON_SIZE);
 		buttonPanel.add(editButton);
 		editButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {doEdit();}
@@ -96,6 +100,7 @@ public class OutputsPane extends JPanel implements ApplicationConfigurationContr
 		JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		add(bottomPanel,BorderLayout.SOUTH);
 		bottomPanel.add(previousButton);
+		previousButton.setPreferredSize(ApplicationConfigurationConstants.BUTTON_SIZE);
 		previousButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {doPrevious();}
 		});
@@ -135,7 +140,7 @@ public class OutputsPane extends JPanel implements ApplicationConfigurationContr
 			System.out.println("Looking at an Output" + outputMap);
 			// Get the output editor and call method that puts the output into the fields
 			outputEditor.updateFields(outputMap);
-			controller.slideTo(ApplicationConfigurationDialog.EDITOR);
+			controller.slideTo(ApplicationConfigurationConstants.EDITOR);
 		}
 	}
 
@@ -161,26 +166,24 @@ public class OutputsPane extends JPanel implements ApplicationConfigurationContr
 		controller.refreshOutputs();
 	}
 
-	protected void doAdd() {
-		System.out.println("In doAdd()");
-		
+	protected void doAdd() {	
 		// Get the Map that corresponds to the name that is selected
 		Map<String,String> outputMap=newOutput();
 		if (outputMap != null){
 			System.out.println("Looking at an Output" + outputMap);
 			// Get the output editor and call method that puts the output into the fields
 			outputEditor.updateFields(outputMap);
-			controller.slideTo(ApplicationConfigurationDialog.EDITOR);
+			controller.slideTo(ApplicationConfigurationConstants.EDITOR);
 		}
 	}
 
 	protected void doPrevious() {
-		controller.slideTo(ApplicationConfigurationDialog.HOME);		
+		controller.slideTo(ApplicationConfigurationConstants.HOME);		
 	}
 
 	@Override
 	public void activate() {
-		controller.slideTo(ApplicationConfigurationDialog.EDITOR);
+		controller.slideTo(ApplicationConfigurationConstants.EDITOR);
 	}
 
 	// Create a new outputMap, which corresponds to a QuantOutput, with default values

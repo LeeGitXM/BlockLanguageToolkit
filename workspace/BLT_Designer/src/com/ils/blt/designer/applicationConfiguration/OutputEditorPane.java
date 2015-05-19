@@ -33,7 +33,6 @@ public class OutputEditorPane extends JPanel implements ApplicationConfiguration
 	private final GeneralPurposeDataContainer model;
 	private Map<String,String> outputMap;
 	private static final Insets insets = new Insets(0,0,0,0);
-	protected static final Dimension COMBO_SIZE  = new Dimension(300,24);
 	final JTextField nameField = new JTextField();
 	final JTextField tagField = new JTextField();
 	final JFormattedTextField mostNegativeIncrementField = new JFormattedTextField(NumberFormat.getInstance());
@@ -45,7 +44,7 @@ public class OutputEditorPane extends JPanel implements ApplicationConfiguration
 	final JComboBox<String> feedbackMethodComboBox = new JComboBox<String>();
 	private static Icon previousIcon = new ImageIcon(OutputEditorPane.class.getResource("/images/arrow_left_green.png"));
 	final JButton previousButton = new JButton(previousIcon);
-	final JButton okButton = new JButton("Ok");
+	final JButton cancelButton = new JButton("Cancel");
 	private static Icon tagBrowserIcon = new ImageIcon(OutputEditorPane.class.getResource("/images/arrow_right_green.png"));
 	final JButton nextButton = new JButton("Tags", tagBrowserIcon);
 	private final UtilityFunctions fcns = new UtilityFunctions();
@@ -93,7 +92,7 @@ public class OutputEditorPane extends JPanel implements ApplicationConfiguration
 			}
 		}
 		feedbackMethodComboBox.setToolTipText("The technique used to combine multiple recommendations for the this output!");
-		feedbackMethodComboBox.setPreferredSize(COMBO_SIZE);
+		feedbackMethodComboBox.setPreferredSize(ApplicationConfigurationConstants.COMBO_SIZE);
 		mainPanel.add(feedbackMethodComboBox, "span, growx, wrap");
 		
 		mainPanel.add(new JLabel("Incremental Output:"), "gap 10");
@@ -143,13 +142,15 @@ public class OutputEditorPane extends JPanel implements ApplicationConfiguration
 		JPanel bottomPanel = new JPanel(new MigLayout("","[25%, left][50%, center][25%]",""));
 		add(bottomPanel, BorderLayout.SOUTH);
 		bottomPanel.add(previousButton);
+		previousButton.setPreferredSize(ApplicationConfigurationConstants.BUTTON_SIZE);
 		previousButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {doPrevious();}
 		});
 
-		bottomPanel.add(okButton);
-		okButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {doOk();}
+		bottomPanel.add(cancelButton);
+		cancelButton.setPreferredSize(ApplicationConfigurationConstants.BUTTON_SIZE);
+		cancelButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {doCancel();}
 		});
 		
 		add(mainPanel,BorderLayout.CENTER);
@@ -176,7 +177,7 @@ public class OutputEditorPane extends JPanel implements ApplicationConfiguration
 
 	// The user pressed the OK button so save everything (I don't keep track of what, if anything, was 
 	// changed so assume they change everything.
-	protected void doOk() {
+	protected void doPrevious() {
 		System.out.println("In OutputEditorPane:doOk()");
 		
 		// Update the outputMap with everything in the screen
@@ -195,20 +196,20 @@ public class OutputEditorPane extends JPanel implements ApplicationConfiguration
 		controller.refreshOutputs();
 
 		// Slide back to the Outputs pane
-		controller.slideTo(ApplicationConfigurationDialog.OUTPUTS);	
+		controller.slideTo(ApplicationConfigurationConstants.OUTPUTS);	
 	}
 
-	protected void doPrevious() {
-		controller.slideTo(ApplicationConfigurationDialog.OUTPUTS);	
+	protected void doCancel() {
+		controller.slideTo(ApplicationConfigurationConstants.OUTPUTS);	
 	}
 	
 	protected void doTagSelector() {
-		controller.slideTo(ApplicationConfigurationDialog.TAGSELECTOR);	
+		controller.slideTo(ApplicationConfigurationConstants.TAGSELECTOR);	
 	}
 
 	@Override
 	public void activate() {
-		controller.slideTo(ApplicationConfigurationDialog.EDITOR);
+		controller.slideTo(ApplicationConfigurationConstants.EDITOR);
 	}
 
 }

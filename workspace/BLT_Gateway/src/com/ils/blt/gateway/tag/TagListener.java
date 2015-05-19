@@ -219,6 +219,8 @@ public class TagListener implements TagChangeListener   {
 			String providerName = providerNameFromPath(tagPath);
 			if( providerName.length()==0) {
 				providerName = context.getProjectManager().getProps(typicalBlock.getProjectId(), ProjectVersion.Published).getDefaultSQLTagsProviderName();
+				int pos = tagPath.indexOf("]");
+				if(pos>0) tagPath = tagPath.substring(pos+1);
 				tagPath = String.format("[%s]%s",providerName,tagPath);
 			}
 
@@ -249,6 +251,9 @@ public class TagListener implements TagChangeListener   {
 		}
 		catch(IllegalArgumentException iae) {
 			log.errorf("%s.startSubscriptionForProperty - illegal argument for %s (%s)",TAG,tagPath,iae.getMessage());
+		}
+		catch(Exception ex) {
+			log.errorf("%s.startSubscriptionForProperty - Exception %s (%s)",TAG,ex.getMessage(),tagPath);
 		}
 	}
 	/**

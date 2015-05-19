@@ -96,7 +96,6 @@ public class ApplicationConfigurationController {
 	
 	// Build the outputListModel from the list of QuantOutput maps
 	private void buildOutputListModel(){
-		log.tracef("In buildOutputListModel()");
 		List< Map<String,String> > outputList = model.getMapLists().get("QuantOutputs");
 		log.tracef("OutputList: " + outputList);
 		if( outputList!=null ) {

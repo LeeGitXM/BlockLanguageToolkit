@@ -21,19 +21,12 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 public class ApplicationConfigurationDialog extends JDialog { 
 	private static String KEY = "ILS Application Editor";
 	private static String TITLE = "Application Editor";
-	// Indices for the sub-panes. We add them in this order ...
-	public static final int HOME = 0;
-	public static final int OUTPUTS = 1;
-	public static final int EDITOR = 2;
-	public static final int TAGSELECTOR = 3;
-	
+
 	protected final DesignerContext context;
 	protected final LoggerEx log;
 	private final ApplicationConfigurationController controller;
 	protected boolean cancelled = false;
 	private static final long serialVersionUID = 2882399376824334427L;
-	private final int DIALOG_HEIGHT = 500;
-	private final int DIALOG_WIDTH = 440;
 	private final SlidingPane slidingPane;
 	
 	// Getters
@@ -43,7 +36,7 @@ public class ApplicationConfigurationDialog extends JDialog {
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		setTitle(TITLE);
 		this.context = ctx;
-		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));
+		this.setPreferredSize(new Dimension(ApplicationConfigurationConstants.DIALOG_WIDTH,ApplicationConfigurationConstants.DIALOG_HEIGHT));
 		controller = new ApplicationConfigurationController(context,this,app);
 		
 		slidingPane = new SlidingPane();
@@ -62,7 +55,7 @@ public class ApplicationConfigurationDialog extends JDialog {
 		slidingPane.add(outputEditor);
 		slidingPane.add(new TagSelectorPane(controller, outputEditor));
 		slidingPane.add(new JPanel());  // a blank pane
-		slideTo(HOME);
+		slideTo(ApplicationConfigurationConstants.HOME);
 	}
 
 	public void slideTo(int tab) {
