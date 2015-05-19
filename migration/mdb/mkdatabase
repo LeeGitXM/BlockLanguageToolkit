@@ -15,6 +15,7 @@ mkdir -p ${TARGETDIR}
 cd ${TARGETDIR}
 rm -f $DB
 sqlite3 $DB < ${BIN}/createTables.sql
+sqlite3 $DB < ${BIN}/insertArguments.sql
 sqlite3 $DB < ${BIN}/insertClassMap.sql
 sqlite3 $DB < ${BIN}/insertAnchorMap.sql
 sqlite3 $DB < ${BIN}/insertClassProperties.sql

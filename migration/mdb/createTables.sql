@@ -12,6 +12,12 @@ CREATE TABLE ClassMap(
     IgnitionClass text NOT NULL
 );
 
+-- Map string arguments to procedures from
+-- G2 to Ignition
+CREATE TABLE ArgumentMap(
+    G2Argument text NOT NULL,
+    IgnitionArgument text NOT NULL
+);
 -- Set properties of Ignition blocks based on a 
 -- G2 class. These properties rely only on the G2 class.
 CREATE TABLE ClassProperty(
