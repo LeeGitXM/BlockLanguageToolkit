@@ -1,0 +1,12 @@
+#!/bin/sh
+# Translate a single method used in the VFU calc methods
+#  - we start from the top and work down testing one-at-a-time
+#
+MIGRATION=${GIT_REPO}/blt/migration
+FIL=CALC-NO-OUTPUT-GDA
+#FIL=CALC-BALER-TEMP-PROBLEM-OUTPUT-GDA
+#FIL=CALC-RESLURRY-PROBLEM-OUTPUT-GDA
+#FIL=CALC-BALER-VOL_PROBLEM-OUTPUT-GDA
+DIR=${MIGRATION}/procs/g2/vistalon
+OUTDIR=${MIGRATION}/procs/ignition/vistalon
+${MIGRATION}/translate $DIR/$FIL $OUTDIR

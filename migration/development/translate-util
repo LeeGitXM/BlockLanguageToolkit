@@ -1,0 +1,14 @@
+#!/bin/sh
+# Translate a single utility method. We've discovered this
+# because it is referenced in another routine
+#  - we start from the top and work down testing one-at-a-time
+# NOTE: "!" means we don't have a G2 export yet
+#       "*" means that the method is hand-coded
+#
+MIGRATION=${GIT_REPO}/blt/migration
+FIL=OUTPUT-MSG-CORE.txt
+#*FIL=em-create-message.txt
+#*FIL=em-get-quant-recommendation-def.txt
+DIR=${MIGRATION}/procs/g2/api
+OUTDIR=${MIGRATION}/procs/ignition/api
+${MIGRATION}/translate $DIR/$FIL $OUTDIR

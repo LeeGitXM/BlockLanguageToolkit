@@ -3,5 +3,5 @@
 # leaving only those checked into git.
 #
 PROCS=${GIT_REPO}/blt/migration/procs
-rm -f ${PROCS}/g2/*n
-rm -f ${PROCS}/ignition/*
+rm -rf ${PROCS}/g2/*
+rm -rf ${PROCS}/ignition/*
