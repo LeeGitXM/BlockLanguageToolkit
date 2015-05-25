@@ -19,7 +19,6 @@ cd ${GIT_REPO}/blt/projects
 cp blt_block_test.proj $SVN/project
 cp basic-diagrams.proj $SVN/project
 cd ${GIT_REPO}/blt
-cp -a data $SVN
 cp -a pylibs $SVN/config
 cd ${GIT_REPO}
 IGN=~/Development/ils/svn/EMChemicals/Ignition

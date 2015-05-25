@@ -49,6 +49,7 @@ import com.jidesoft.docking.DockingManager;
 public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	private static final String TAG = "BLTDesignerHook";
 	private static final String INTERFACE_MENU_TITLE  = "External Interface Configuration";
+	private static final String VALIDATION_MENU_TITLE = "Validate Diagrams";
 	public static String BLOCK_BUNDLE_NAME   = "block";        // Properties file is block.properties
 	public static String HOOK_BUNDLE_NAME   = "designer";      // Properties file is designer.properties
 	public static String PREFIX = BLTProperties.BUNDLE_PREFIX; // Properties is accessed by this prefix
@@ -87,15 +88,23 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
         MenuBarMerge merge = new MenuBarMerge(BLTProperties.MODULE_ID);  // as suggested in javadocs
         merge.addSeparator();
 
-        Action testControlAction = new AbstractAction(INTERFACE_MENU_TITLE) {
+        Action setupAction = new AbstractAction(INTERFACE_MENU_TITLE) {
             private static final long serialVersionUID = 5374667367733312464L;
             public void actionPerformed(ActionEvent ae) {
-                SwingUtilities.invokeLater(new DialogRunner());
+                SwingUtilities.invokeLater(new SetupDialogRunner());
+            }
+        };
+        
+        Action validateAction = new AbstractAction(VALIDATION_MENU_TITLE) {
+            private static final long serialVersionUID = 5374667367733312464L;
+            public void actionPerformed(ActionEvent ae) {
+                SwingUtilities.invokeLater(new ValidationDialogRunner());
             }
         };
 
         JMenuMerge controlMenu = new JMenuMerge(WellKnownMenuConstants.VIEW_MENU_NAME);
-        controlMenu.add(testControlAction);
+        controlMenu.add(setupAction);
+        controlMenu.add(validateAction);
         merge.add(WellKnownMenuConstants.VIEW_MENU_LOCATION, controlMenu);
         return merge;
     }
@@ -279,13 +288,26 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
      * Display a popup dialog for configuration of dialog execution parameters.
      * Run in a separate thread, as a modal dialog in-line here will freeze the UI.
      */
-    private class DialogRunner implements Runnable {
+    private class SetupDialogRunner implements Runnable {
 
         public void run() {
             log.debugf("%s.Launching setup dialog...",TAG);
             SetupDialog setup = new SetupDialog(context);
             setup.pack();
             setup.setVisible(true);
+        }
+    }
+    /**
+     * Display a popup dialog for configuration of dialog execution parameters.
+     * Run in a separate thread, as a modal dialog in-line here will freeze the UI.
+     */
+    private class ValidationDialogRunner implements Runnable {
+
+        public void run() {
+            log.debugf("%s.Launching setup dialog...",TAG);
+            ValidationDialog validator = new ValidationDialog(context);
+            validator.pack();
+            validator.setVisible(true);
         }
     }
 }
