@@ -11,7 +11,7 @@ import java.util.Map;
 
 
 /**
- * Use this class to transfer internal block state between a block
+ * Use this class to transfer internal block attributes between a block
  * in the Gateway and a status screen in the Designer. We assume that
  * this is a one-way communication. It is the responsibility of the editor
  * make sense of the data transmitted.

@@ -58,7 +58,9 @@ public interface BLTProperties   {
 	// These are the key names allowed in the Python dictionary that defines a block attribute.
 	public static final String BLOCK_ATTRIBUTE_BINDING    = "binding";
 	public static final String BLOCK_ATTRIBUTE_BINDING_TYPE = "bindingType";
+	public static final String BLOCK_ATTRIBUTE_CLASS      = "class";
 	public static final String BLOCK_ATTRIBUTE_EDITABLE   = "editable";
+	public static final String BLOCK_ATTRIBUTE_ID         = "uuid";
 	public static final String BLOCK_ATTRIBUTE_NAME       = "name";
 	public static final String BLOCK_ATTRIBUTE_QUALITY    = "quality";
 	public static final String BLOCK_ATTRIBUTE_DATA_TYPE  = "type";

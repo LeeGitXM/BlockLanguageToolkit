@@ -188,7 +188,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	 */
 	public void listControllerResources() {
 		try {
-			List <SerializableResourceDescriptor> descriptors = handler.queryControllerResources();
+			List <SerializableResourceDescriptor> descriptors = handler.listResourceNodes();
 			for( SerializableResourceDescriptor descriptor : descriptors ) {
 				logger.info("Res: "+descriptor.getProjectId()+":"+descriptor.getResourceId()+" "+
 						descriptor.getType()+" ("+descriptor.getName()+")");

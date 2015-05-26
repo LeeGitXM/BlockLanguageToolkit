@@ -13,6 +13,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -24,8 +25,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
-import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.ResourceDeleteManager;
@@ -587,9 +588,12 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			ProcessDiagramView view = (ProcessDiagramView)tab.getModel();
 			ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
 			try {
-				List <SerializableResourceDescriptor> descriptors = handler.queryDiagram(view.getId().toString());
-				for( SerializableResourceDescriptor descriptor : descriptors ) {
-					logger.info("Block: "+descriptor.getName()+"\t"+descriptor.getClassName()+"\t("+descriptor.getId()+")");
+				List <SerializableBlockStateDescriptor> descriptors = handler.listBlocksInDiagram(view.getId().toString());
+				for( SerializableBlockStateDescriptor descriptor : descriptors ) {
+					Map<String,String> attributes = descriptor.getAttributes();
+					String clss = attributes.get(BLTProperties.BLOCK_ATTRIBUTE_CLASS);
+					String uid = attributes.get(BLTProperties.BLOCK_ATTRIBUTE_ID);
+					logger.info("Block: "+descriptor.getName()+"\t"+clss+"\t("+uid+")");
 				}
 			} 
 			catch (Exception ex) {

@@ -184,12 +184,12 @@ public class GatewayRpcDispatcher   {
 	}
 	
 	public List<String> getDiagramBlocksOfClass(String diagramId,String className) {
-		return requestHandler.getDiagramBlocksOfClass(diagramId,className);
+		return requestHandler.listDiagramBlocksOfClass(diagramId,className);
 	}
 	public List<String> getDiagramDescriptors(String projectName) {
 		log.infof("%s.getDiagramDescriptors ...",TAG);
 		List<String> results = new ArrayList<String>();
-		List<SerializableResourceDescriptor> descriptors = requestHandler.getDiagramDescriptors(projectName);
+		List<SerializableResourceDescriptor> descriptors = requestHandler.listDiagramDescriptors(projectName);
 		ObjectMapper mapper = new ObjectMapper();
 		for(SerializableResourceDescriptor descriptor:descriptors) {
 			try {
@@ -264,15 +264,15 @@ public class GatewayRpcDispatcher   {
 	 */
 	public List<SerializableResourceDescriptor> queryControllerResources() {
 		log.infof("%s.queryControllerResources ...",TAG);
-		return  requestHandler.queryControllerResources();
+		return  requestHandler.listResourceNodes();
 	}
 	/** 
 	 * @param diagId the identifier of the diagram of interest
 	 *  @return
 	 */
-	public List<SerializableResourceDescriptor> queryDiagram(String diagId) {
+	public List<SerializableBlockStateDescriptor> queryDiagram(String diagId) {
 		log.infof("%s.queryDiagram ... %s",TAG,diagId);
-		return  requestHandler.queryDiagramForBlocks(diagId);
+		return  requestHandler.listBlocksInDiagram(diagId);
 	}
 	/**
 	 * Reset a block in a diagram given string forms of their UUID

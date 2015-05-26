@@ -14,5 +14,4 @@ JAR=${LIB}/g2-translation.jar
 DB=${BLT}/migration/mdb/conversion.db
 OUTDIR=$2
 mkdir -p ${OUTDIR}
-#cat $1 | java -cp ${JAR} -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000 -Dlog.level=INFO com.ils.blt.migration.Migrator ${OUTDIR}  ${DB}
 java -cp ${JAR} -Dlog.level=DEBUG com.ils.python.translation.G2ProcedureTranslator $1 ${OUTDIR} ${DB} 

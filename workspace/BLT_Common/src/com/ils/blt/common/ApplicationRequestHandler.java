@@ -48,6 +48,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	/**
 	 * Remove all current diagrams from the controller.
 	 */
+	@Override
 	public void clearController() {
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
@@ -62,6 +63,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	/**
 	 * Determine whether or not the indicated diagram is known to the controller.
 	 */
+	@Override
 	public boolean diagramExists(String uuidString) {
 		boolean result = false;
 		try {
@@ -78,6 +80,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	/**
 	 * Execute evaluate() on a specified block
 	 */
+	@Override
 	public void evaluateBlock(String diagramId,String blockId) {
 		log.debugf("%s.evaluateBlock ...",TAG);
 
@@ -105,29 +108,6 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		return name;
 	}
 	/**
-	 * Find the parent application or diagram of the entity referenced by
-	 * the supplied id. Test the state and return the name of the appropriate
-	 * database.  
-	 * @param uuid
-	 * @return database name
-	 */
-	@Override
-	public String getDatabaseForUUID(String uuid) {
-		String db = "NONE";
-		if( uuid!=null) {
-			log.infof("%s.getDatabaseForUUID... %s",TAG,uuid);
-			try {
-				db = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-						BLTProperties.MODULE_ID, "getDatabaseForUUID",uuid);
-			}
-			catch(Exception ex) {
-				log.infof("%s.getDatabaseForUUID: Exception (%s)",TAG,ex.getMessage());
-			};
-		}
-		return db;
-	}
-	
-	/**
 	 * Obtain a list of BlockProperty objects for the specified block. If the block is not known to the gateway
 	 * it will be created.
 	 * 
@@ -138,6 +118,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @return an array of block properties for the subject block
 	 */
 	@SuppressWarnings("unchecked")
+	@Override
 	public BlockProperty[] getBlockProperties(String className,long projectId,long resourceId,UUID blockId) {
 		log.debugf("%s.getBlockProperties: for block %s (%s)",TAG,blockId.toString(),className);
 		BlockProperty[] result = null;
@@ -169,6 +150,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	}
 	
 	@SuppressWarnings("unchecked")
+	@Override
 	public List<PalettePrototype> getBlockPrototypes() {
 		log.tracef("%s.getBlockPrototypes ...",TAG);
 		List<PalettePrototype> result = new ArrayList<PalettePrototype>();
@@ -190,11 +172,29 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 		return result;
 	}
+	
+	/**
+	 * @return the current state of the specified block.
+	 */
+	@Override
+	public String getBlockState(String diagramId, String blockName) {
+		String state = "UNKNOWN";
+		try {
+			state = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "getBlockState",diagramId,blockName);
+			log.debugf("%s.getBlockState %s = %s",TAG,blockName,state);
+		}
+		catch(Exception ge) {
+			log.infof("%s.getBlockState: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		return state;
+	}
 
 
 	/**
 	 * Determine whether or not the engine is running.
 	 */
+	@Override
 	public String getControllerState() {
 		String state = "";
 		try {
@@ -210,6 +210,29 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	}
 	
 	
+	/**
+	 * Find the parent application or diagram of the entity referenced by
+	 * the supplied id. Test the state and return the name of the appropriate
+	 * database.  
+	 * @param uuid
+	 * @return database name
+	 */
+	@Override
+	public String getDatabaseForUUID(String uuid) {
+		String db = "NONE";
+		if( uuid!=null) {
+			log.infof("%s.getDatabaseForUUID... %s",TAG,uuid);
+			try {
+				db = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+						BLTProperties.MODULE_ID, "getDatabaseForUUID",uuid);
+			}
+			catch(Exception ex) {
+				log.infof("%s.getDatabaseForUUID: Exception (%s)",TAG,ex.getMessage());
+			};
+		}
+		return db;
+	}
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<String> getDatasourceNames() {
@@ -223,77 +246,22 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 		return names;
 	}
-	
-	/**
-	 * @param diagramId identifier of the diagram to be queried, a String
-	 * @param className fully qualified class name of blocks to be listed
-	 * @return a list of ids for blocks owned by a specified diagram that are of a
-	 *         specified class.
-	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public List getDiagramBlocksOfClass(String diagramId,String className) {
-		log.debugf("%s.getDiagramBlocksOfClass: for diagram %s (%s)",TAG,diagramId,className);
-		List<String> blockList = new ArrayList<String>();
+	@Override
+	public SerializableResourceDescriptor getDiagramForBlock(String blockId) {
+		SerializableResourceDescriptor result = null;
 		try {
-			blockList = (List<String>)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "getDiagramBlocksOfClass",diagramId,className);
+			result = (SerializableResourceDescriptor)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "getDiagramForBlock",blockId);
 		}
 		catch(Exception ge) {
-			log.infof("%s.getBlockProperties: GatewayException (%s)",TAG,ge.getMessage());
-		}
-		return blockList;
-	}
-	/**
-	 * @return the current state of the specified block.
-	 */
-	public String getBlockState(String diagramId, String blockName) {
-		String state = "UNKNOWN";
-		try {
-			state = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "getBlockState",diagramId,blockName);
-			log.debugf("%s.getBlockState %s = %s",TAG,blockName,state);
-		}
-		catch(Exception ge) {
-			log.infof("%s.getBlockState: GatewayException (%s)",TAG,ge.getMessage());
-		}
-		return state;
-	}
-	@SuppressWarnings("unchecked")
-	public List<SerializableResourceDescriptor> getDiagramDescriptors(String projectName) {
-		log.debugf("%s.getDiagramDescriptors for %s ...",TAG,projectName);
-		List<SerializableResourceDescriptor> result = new ArrayList<>();
-		List<String> jsonList = new ArrayList<String>();
-		try {
-			jsonList = (List<String>)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "getDiagramDescriptors",projectName);
-		}
-		catch(Exception ge) {
-			log.infof("%s.getDiagramDescriptors: GatewayException (%s)",TAG,ge.getMessage());
-		}
-		if( jsonList!=null) {
-
-			ObjectMapper mapper = new ObjectMapper();
-			for(String json:jsonList) {
-				try {
-					SerializableResourceDescriptor entry = mapper.readValue(json, SerializableResourceDescriptor.class);
-					result.add(entry);
-				} 
-				catch (JsonParseException jpe) {
-					log.warnf("%s: getDiagramDescriptors parse exception (%s)",TAG,jpe.getLocalizedMessage());
-				}
-				catch(JsonMappingException jme) {
-					log.warnf("%s: getDiagramDescriptors mapping exception (%s)",TAG,jme.getLocalizedMessage());
-				}
-				catch(IOException ioe) {
-					log.warnf("%s: getDiagramDescriptors IO exception (%s)",TAG,ioe.getLocalizedMessage());
-				}
-			}
+			log.infof("%s.getDiagramState: GatewayException (%s)",TAG,ge.getMessage());
 		}
 		return result;
 	}
 	/**
 	 * @return the current state of the specified diagram.
 	 */
+	@Override
 	public DiagramState getDiagramState(Long projectId, Long resourceId) {
 		DiagramState result = DiagramState.ACTIVE;
 		try {
@@ -322,10 +290,10 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 		return name;
 	}
-	
 	/**
 	 * @return internal details of a block for debugging purposes.
 	 */
+	@Override
 	public SerializableBlockStateDescriptor getInternalState(String diagramId,String blockId) {
 		//log.infof("%s.getInternalState ... %s,%s",TAG,diagramId,blockId);
 		SerializableBlockStateDescriptor result = new SerializableBlockStateDescriptor();
@@ -396,14 +364,155 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 		return result;
 	}
+	
 	/**
 	 * Determine whether or not the engine is running.
 	 */
+	@Override
 	public boolean isControllerRunning() {
 		boolean isRunning = false;
 		String state = getControllerState();
 		if( state.equalsIgnoreCase("running")) isRunning = true;
 		return isRunning;
+	}
+	@Override
+	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(String diagramId,String blockId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<SerializableBlockStateDescriptor> listBlocksForTag(String tagpath) {
+		List<SerializableBlockStateDescriptor> result = null;
+		try {
+			result = (List<SerializableBlockStateDescriptor> )GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "listBlocksForTag",tagpath);
+		}
+		catch(Exception ge) {
+			log.infof("%s.queryDiagram: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		return result;
+	}
+	/**
+	 * Query a diagram in the gateway for list of blocks that it knows about. 
+	 * This is a debugging aid. 
+	 * 
+	 * @return a list of blocks known to the diagram.
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<SerializableBlockStateDescriptor> listBlocksInDiagram(String diagramId) {
+		List<SerializableBlockStateDescriptor> result = null;
+		try {
+			result = (List<SerializableBlockStateDescriptor> )GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "queryDiagram",diagramId);
+		}
+		catch(Exception ge) {
+			log.infof("%s.queryDiagram: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		return result;
+	}
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<SerializableBlockStateDescriptor> listConfigurationErrors() {
+		List<SerializableBlockStateDescriptor> result = null;
+		try {
+			result = (List<SerializableBlockStateDescriptor> )GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "listConfigurationErrors");
+		}
+		catch(Exception ge) {
+			log.infof("%s.listConfigurationErrors: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		return result;
+	}
+	/**
+	 * @param diagramId identifier of the diagram to be queried, a String
+	 * @param className fully qualified class name of blocks to be listed
+	 * @return a list of ids for blocks owned by a specified diagram that are of a
+	 *         specified class.
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+	public List listDiagramBlocksOfClass(String diagramId,String className) {
+		log.debugf("%s.getDiagramBlocksOfClass: for diagram %s (%s)",TAG,diagramId,className);
+		List<String> blockList = new ArrayList<String>();
+		try {
+			blockList = (List<String>)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "listDiagramBlocksOfClass",diagramId,className);
+		}
+		catch(Exception ge) {
+			log.infof("%s.listDiagramBlocksOfClass: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		return blockList;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<SerializableResourceDescriptor> listDiagramDescriptors(String projectName) {
+		log.debugf("%s.listDiagramDescriptors for %s ...",TAG,projectName);
+		List<SerializableResourceDescriptor> result = new ArrayList<>();
+		List<String> jsonList = new ArrayList<String>();
+		try {
+			jsonList = (List<String>)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "listDiagramDescriptors",projectName);
+		}
+		catch(Exception ge) {
+			log.infof("%s.listDiagramDescriptors: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		if( jsonList!=null) {
+
+			ObjectMapper mapper = new ObjectMapper();
+			for(String json:jsonList) {
+				try {
+					SerializableResourceDescriptor entry = mapper.readValue(json, SerializableResourceDescriptor.class);
+					result.add(entry);
+				} 
+				catch (JsonParseException jpe) {
+					log.warnf("%s: listDiagramDescriptors parse exception (%s)",TAG,jpe.getLocalizedMessage());
+				}
+				catch(JsonMappingException jme) {
+					log.warnf("%s: listDiagramDescriptors mapping exception (%s)",TAG,jme.getLocalizedMessage());
+				}
+				catch(IOException ioe) {
+					log.warnf("%s: listDiagramDescriptors IO exception (%s)",TAG,ioe.getLocalizedMessage());
+				}
+			}
+		}
+		return result;
+	}
+
+	
+	/**
+	 * Query the gateway for list of resources that the block controller knows about. 
+	 * This is a debugging aid. 
+	 * 
+	 * @return a list of resources known to the BlockController.
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<SerializableResourceDescriptor> listResourceNodes() {
+		List<SerializableResourceDescriptor> result = null;
+		try {
+			result = (List<SerializableResourceDescriptor> )GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "listResourceNodes");
+		}
+		catch(Exception ge) {
+			log.infof("%s.listResourceNodes: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		return result;
+	}
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<SerializableBlockStateDescriptor> listSourcesForSink(String blockId) {
+		List<SerializableBlockStateDescriptor> blockList = new ArrayList<>();
+		try {
+			blockList = (List<SerializableBlockStateDescriptor>)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "listSourcesForSink",blockId);
+		}
+		catch(Exception ge) {
+			log.infof("%s.listSourcesForSink: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		return blockList;
 	}
 	/**
 	 * Post a (simulated) block result on its output.
@@ -421,42 +530,8 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 			log.infof("%s.postResult: GatewayException (%s)",TAG,ge.getMessage());
 		}
 	}
-	/**
-	 * Query the gateway for list of resources that the block controller knows about. 
-	 * This is a debugging aid. 
-	 * 
-	 * @return a list of resources known to the BlockController.
-	 */
-	@SuppressWarnings("unchecked")
-	public List<SerializableResourceDescriptor> queryControllerResources() {
-		List<SerializableResourceDescriptor> result = null;
-		try {
-			result = (List<SerializableResourceDescriptor> )GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "queryControllerResources");
-		}
-		catch(Exception ge) {
-			log.infof("%s.queryControllerResources: GatewayException (%s)",TAG,ge.getMessage());
-		}
-		return result;
-	}
-	/**
-	 * Query a diagram in the gateway for list of blocks that it knows about. 
-	 * This is a debugging aid. 
-	 * 
-	 * @return a list of blocks known to the diagram.
-	 */
-	@SuppressWarnings("unchecked")
-	public List<SerializableResourceDescriptor> queryDiagram(String diagramId) {
-		List<SerializableResourceDescriptor> result = null;
-		try {
-			result = (List<SerializableResourceDescriptor> )GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "queryDiagram",diagramId);
-		}
-		catch(Exception ge) {
-			log.infof("%s.queryDiagram: GatewayException (%s)",TAG,ge.getMessage());
-		}
-		return result;
-	}
+
+
 	/**
 	 * Execute reset() on a specified block
 	 */
@@ -471,7 +546,8 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 			log.infof("%s.resetBlock: GatewayException (%s)",TAG,ge.getMessage());
 		}
 	}
-
+	
+	
 	/**
 	 * Execute reset() on every block on the diagram
 	 */
@@ -486,6 +562,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 			log.infof("%s.resetDiagram: GatewayException (%s)",TAG,ge.getMessage());
 		}
 	}
+	
 	/**
 	 * Determine whether or not the indicated resource is known to the controller.
 	 */
@@ -502,7 +579,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		if( result==null ) return false;
 		return result.booleanValue();
 	}
-	
+
 	/**
 	 * Send a signal to all blocks of a particular class on a specified diagram.
 	 * This is a "local" transmission. The diagram is specified by a tree-path.
@@ -526,6 +603,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 		return result;
 	}
+	
 	/**
 	 * Change the state of every diagram in the named application
 	 * to the specified state.
@@ -543,6 +621,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 			log.infof("%s.setApplicationState: Exception (%s)",TAG,ex.getMessage());
 		}
 	}
+	
 	/** Update all changed properties for a block 
 	 * @param duuid diagram unique Id
 	 * @param buuid block unique Id
@@ -569,8 +648,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 			log.infof("%s.setBlockProperties: GatewayException (%s)",TAG,ge.getMessage());
 		}		
 	}
-
-
+	
 	/** Update a single changed property for a block 
 	 * @param duuid diagram unique Id
 	 * @param buuid block unique Id
@@ -598,8 +676,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 			log.infof("%s.setBlockProperty: GatewayException (%s)",TAG,ge.getMessage());
 		}		
 	}
-	
-	
+
 	public void setDiagramState(Long projectId, Long resourceId, String state) {
 		log.debugf("%s.setDiagramState ... %d:%d %s",TAG,projectId.longValue(),resourceId.longValue(),state);
 		try {
@@ -611,7 +688,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 			log.infof("%s.setDiagramState: GatewayException (%s)",TAG,ge.getMessage());
 		}
 	}
-	
+
 	@Override
 	public void setDiagramState(String diagramId, String state) {
 		log.debugf("%s.setDiagramState ... %s %s",TAG,diagramId,state);
@@ -645,7 +722,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 		catch(Exception ignore) {}
 	}
-	
+
 	/**
 	 * Save a value into the HSQL database table associated with the toolkit. The 
 	 * table contains name-value pairs, so any name is allowable. We also execute
@@ -654,6 +731,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @param propertyName name of the property for which a value is to be set
 	 * @param the new value of the property.
 	 */
+	@Override
 	public void setToolkitProperty(String propertyName,String value) {
 		log.tracef("%s.setToolkitProperty ... %s=%s",TAG,propertyName,value);
 		try {
@@ -669,10 +747,11 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 		catch(Exception ignore) {}
 	}
-	
+
 	/**
 	 * Start the block execution engine in the gateway.
 	 */
+	@Override
 	public void startController() {
 		log.debugf("%s.startController ...",TAG);
 
@@ -684,10 +763,11 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 			log.infof("%s.startController: GatewayException (%s)",TAG,ge.getMessage());
 		}
 	}
-	
+
 	/**
 	 * Shutdown the block execution engine in the gateway.
 	 */
+	@Override
 	public void stopController() {
 		log.debugf("%s.stopController ...",TAG);
 
@@ -704,6 +784,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * Direct the blocks in a specified diagram to report their
 	 * status values. This is in order to update the UI. 
 	 */
+	@Override
 	public void triggerStatusNotifications() {
 		//log.infof("%s.triggerStatusNotifications...",TAG);
 		try {
@@ -720,6 +801,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @param duuid diagram unique Id
 	 * @param buuid block unique Id
 	 */
+	@Override
 	public void updateBlockAnchors(UUID duuid,UUID buuid, Collection<SerializableAnchor> anchors ) {
 		String diagId  = duuid.toString();
 		String blockId = buuid.toString();

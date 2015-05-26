@@ -51,4 +51,5 @@ insert into ProcedureMap values ('calc-baler-vol-output-gda','ils.vistalon.fd.Ba
 insert into ProcedureMap values ('em-get-quant-recommendation','ils.diagToolkit.recommendation.calculateFinalRecommendation');
 insert into ProcedureMap values ('em-create-message','ils.queue.message.insert');
 insert into ProcedureMap values ('g2-tw-popup','ils.vistalon.util.Window.displayClient');
+insert into ProcedureMap values ('output-msg','ils.diagToolkit.util.outputMessage.create');
 insert into ProcedureMap values ('output-msg-core','ils.diagToolkit.util.outputMessageCore.create');

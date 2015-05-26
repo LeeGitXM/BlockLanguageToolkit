@@ -27,67 +27,59 @@ import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 public interface ToolkitRequestHandler  {
 	
 	/**
+	 * Remove all current diagrams from the controller.
+	 */
+	public void clearController();
+	/**
+	 * Determine whether or not the indicated diagram is known to the controller.
+	 * @param diagramId string representation of the diagram's unique id
+	 */
+	public boolean diagramExists(String diagramId) ;
+	/**
+	 * Execute evaluate() on a specified block
+	 */
+	public void evaluateBlock(String diagramId,String blockId) ;
+
+	/**
+	 * @param uuid string representation of the application's unique id
 	 * @return the name of the application that is equal to or
 	 *         superior to the node with the specified UUID
 	 */
 	public String getApplicationName(String uuid);
 	/**
-	 * Find the parent application or diagram of the entity referenced by
-	 * the supplied id. Test the state and return the name of the appropriate
-	 * database.  
-	 * @param uuid
-	 * @return database name
+	 * Obtain a list of BlockProperty objects for the specified block. 
+	 * If the block is not known to the gateway it will be created.
+	 * 
+	 * @param className class name of the block
+	 * @param projectId
+	 * @param resourceId
+	 * @param blockId
+	 *
+	 * @return an array of block properties for the subject block
 	 */
-	public String getDatabaseForUUID(String uuid);
+	public BlockProperty[] getBlockProperties(String className,long projectId,long resourceId,UUID blockId) ;
+	public List<PalettePrototype> getBlockPrototypes() ;
+	
 	/**
-	 * Remove all current diagrams from the controller.
+	 * @param diagramId string representation of the diagram's unique id
+	 * @param blockName name of the block within the diagram
+	 * @return the current state of the specified block.
 	 */
-	public void clearController();
-
-	/**
-	 * Determine whether or not the indicated diagram is known to the controller.
-	 */
-	public boolean diagramExists(String uuidString) ;
-	/**
-	 * Execute evaluate() on a specified block
-	 */
-	public void evaluateBlock(String diagramId,String blockId) ;
+	public String getBlockState(String diagramId, String blockName) ;
+	
 	/**
 	 * Determine whether or not the engine is running.
 	 */
 	public String getControllerState() ;
-	
-	/**
-	 * @param diagramId identifier of the diagram to be queried, a String
-	 * @param className fully qualified class name of blocks to be listed
-	 * @return a list of ids for blocks owned by a specified diagram that
-	 *         are of a specified class.
-	 */
-	@SuppressWarnings("rawtypes")
-	public List getDiagramBlocksOfClass(String diagramId,String className);
-	
-	/**
-	 * Obtain a list of BlockProperty objects for the specified block. 
-	 * If the block is not known to the gateway it will be created.
-	 * 
-	 * @param projectId
-	 * @param resourceId
-	 * @param blockId
-	 * @param className
-	 * @return an array of block properties for the subject block
-	 */
-	public BlockProperty[] getBlockProperties(String className,long projectId,long resourceId,UUID blockId) ;
 
-	public List<PalettePrototype> getBlockPrototypes() ;
 	/**
-	 * @return the current state of the specified block.
+	 * Find the parent application or diagram of the entity referenced by
+	 * the supplied id. Test the state and return the name of the appropriate
+	 * database.  
+	 * @param uuid the uniqueId (string) of any node in the nav tree.
+	 * @return database name
 	 */
-	public String getBlockState(String diagramId, String blockName) ;
-	/**
-	 * @return the current state of the specified diagram.
-	 */
-	public DiagramState getDiagramState(Long projectId, Long resourceId) ;
-	
+	public String getDatabaseForUUID(String uuid);
 	/**
 	 * It appears that there is no way in the client to obtain a list of data sources
 	 * (database connection names). Consequently, we implement our own. 
@@ -96,8 +88,16 @@ public interface ToolkitRequestHandler  {
 	 */
 	public List<String> getDatasourceNames();
 	
-	public List<SerializableResourceDescriptor> getDiagramDescriptors(String projectName) ;
+	/**
+	 * blockId String representation of the block's internal Id.
+	 * @return the diagram that is a parent of the specified block.
+	 */
+	public SerializableResourceDescriptor getDiagramForBlock(String blockId) ;
 	
+	/**
+	 * @return the current state of the specified diagram.
+	 */
+	public DiagramState getDiagramState(Long projectId, Long resourceId) ;
 	/**
 	 * @return the name of the family that is equal to or
 	 *         superior to the node with the specified UUID
@@ -108,6 +108,7 @@ public interface ToolkitRequestHandler  {
 	 * @return internal details of a block for debugging purposes.
 	 */
 	public SerializableBlockStateDescriptor getInternalState(String diagramId,String blockId) ;
+	
 	/**
 	 * @param diagramId identifier of the diagram owning the block, a String
 	 * @param blockId identifier of the block within the diagram, a String
@@ -128,22 +129,70 @@ public interface ToolkitRequestHandler  {
 	 * Determine whether or not the engine is running.
 	 */
 	public boolean isControllerRunning() ;
+	/**
+	 * Query a diagram in the gateway for list of its blocks. 
+	 * @param diagramId identifier of the diagram owning the block, a String
+	 * @return a list of blocks belonging to the diagram.
+	 */
+	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(String diagramId,String blockId);
 	
 	/**
-	 * Query the gateway for list of resources that the block controller knows about. 
-	 * This is a debugging aid. 
+	 * List all blocks that have properties bound to the supplied tag path. 
+	 * @param tagpath the path for the tag of interest.
+	 * @return a list of blocks associated with the tag.
+	 */
+	public List<SerializableBlockStateDescriptor> listBlocksForTag(String tagpath) ;
+	
+	/**
+	 * Query a diagram in the gateway for list of its blocks. 
+	 * @param diagramId identifier of the diagram owning the blocks, a String 
+	 * @return a list of blocks belonging to the diagram.
+	 */
+	public List<SerializableBlockStateDescriptor> listBlocksInDiagram(String diagramId) ; 
+	
+	/**
+	 * The result is a list of SerializableBlockState descriptors for those 
+	 * blocks in any project that have configuration issues. Descriptor attributes
+	 * contain at least the project and a path to the block. The descriptor 
+	 * contains a textual description of whatever problem is detected.
+	 * @return a list of blocks that have incomplete or incorrect configuration.
+	 */
+	public List<SerializableBlockStateDescriptor> listConfigurationErrors() ;
+	
+	/**
+	 * @param diagramId identifier of the diagram to be queried, a String
+	 * @param className fully qualified class name of blocks to be listed
+	 * @return a list of ids for blocks owned by a specified diagram that
+	 *         are of a specified class.
+	 */
+	@SuppressWarnings("rawtypes")
+	public List listDiagramBlocksOfClass(String diagramId,String className);
+	
+	/**
+	 * Query the gateway for list of diagrams belonging to a project. 
+	 * 
+	 * @param projectName
+	 * @return a list of tree-paths to the diagrams saved (ie. known to the Gateway).
+	 */
+	public List<SerializableResourceDescriptor> listDiagramDescriptors(String projectName) ;
+	
+	/**
+	 * Query the gateway for list of resource nodes that the block controller
+	 * knows about. This should correspond to what is displayed in the designer
+	 * nav tree for all loaded projects. 
 	 * 
 	 * @return a list of resources known to the BlockController.
 	 */
-	public List<SerializableResourceDescriptor> queryControllerResources() ;
-	/**
-	 * Query a diagram in the gateway for list of blocks that it knows about. 
-	 * This is a debugging aid. 
-	 * 
-	 * @return a list of blocks known to the diagram.
-	 */
-	public List<SerializableResourceDescriptor> queryDiagram(String diagramId) ;
+	public List<SerializableResourceDescriptor> listResourceNodes();
 	
+	/**
+	 * Query the gateway for list of its source blocks associated with the
+	 * specified sink. The blocks that are returned all belong to the same
+	 * application as the sink.
+	 * @param blockId identifier for the sink block, a String 
+	 * @return a list of blocks logically connected to the sink.
+	 */
+	public List<SerializableBlockStateDescriptor> listSourcesForSink(String blockId) ;
 	/**
 	 * Execute reset() on a specified block
 	 */
@@ -158,30 +207,6 @@ public interface ToolkitRequestHandler  {
 	 */
 	public boolean resourceExists(long projectId,long resid) ;
 	/**
-	 * Set the state of every diagram that is a member of the application to
-	 * the specified value.
-	 * @param appname
-	 * @param state
-	 */
-	public void setApplicationState(String appname, String state);
-	/** Update all changed properties for a block 
-	 * @param duuid diagram unique Id
-	 * @param buuid block unique Id
-	 */
-	public void setBlockProperties(UUID duuid,UUID buuid, Collection<BlockProperty> props ) ;
-	
-	/** Update a single changed property for a block 
-	 * @param duuid diagram unique Id
-	 * @param buuid block unique Id
-	 * @param property the changed property
-	 */
-	public void setBlockProperty(UUID duuid,UUID buuid,BlockProperty property ) ;
-
-	public void setDiagramState(Long projectId, Long resourceId, String state) ;
-	public void setDiagramState(String diagramId, String state);
-
-
-	/**
 	 * Send a signal to all blocks of a particular class on a specified diagram.
 	 * This is a "local" transmission. The diagram is specified by a tree-path.
 	 * There may be no successful recipients.
@@ -192,6 +217,30 @@ public interface ToolkitRequestHandler  {
 	 * @param arg also a component of the transmitted signal
 	 */
 	public boolean sendLocalSignal(String diagramId,String command,String message,String arg) ;
+	/**
+	 * Set the state of every diagram that is a member of the application to
+	 * the specified value.
+	 * @param appname
+	 * @param state
+	 */
+	public void setApplicationState(String appname, String state);
+	
+	/** Update all changed properties for a block 
+	 * @param duuid diagram unique Id
+	 * @param buuid block unique Id
+	 */
+	public void setBlockProperties(UUID duuid,UUID buuid, Collection<BlockProperty> props ) ;
+
+	/** Update a single changed property for a block 
+	 * @param duuid diagram unique Id
+	 * @param buuid block unique Id
+	 * @param property the changed property
+	 */
+	public void setBlockProperty(UUID duuid,UUID buuid,BlockProperty property ) ;
+	public void setDiagramState(Long projectId, Long resourceId, String state) ;
+
+
+	public void setDiagramState(String diagramId, String state);
 	/**
 	 * Save a value into the HSQL database table associated with the toolkit. The 
 	 * table contains name-value pairs, so any name is allowable.
