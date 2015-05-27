@@ -433,11 +433,11 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
-	public List listDiagramBlocksOfClass(String diagramId,String className) {
+	public List<SerializableBlockStateDescriptor> listDiagramBlocksOfClass(String diagramId,String className) {
 		log.debugf("%s.getDiagramBlocksOfClass: for diagram %s (%s)",TAG,diagramId,className);
-		List<String> blockList = new ArrayList<String>();
+		List<SerializableBlockStateDescriptor> blockList = new ArrayList<>();
 		try {
-			blockList = (List<String>)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+			blockList = (List<SerializableBlockStateDescriptor>)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "listDiagramBlocksOfClass",diagramId,className);
 		}
 		catch(Exception ge) {

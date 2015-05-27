@@ -56,10 +56,17 @@ public class TagReader  {
 			String name = providerNameFromPath(path); 
 		    TagProvider provider = context.getTagManager().getTagProvider(name);
 		    Tag tag = provider.getTag(tp);
+		    if( tag==null ) throw new IllegalArgumentException(String.format("Provider %s has no tag for path %s",name,path));
 		    result = tag.getValue();
 		}
 		catch(IOException ioe) {
-			log.warnf("%s.readTag: Exception parsing path %s",TAG,path);
+			log.warnf("%s.readTag: Exception parsing path %s (%s)",TAG,path,ioe.getMessage());
+		}
+		catch(IllegalArgumentException iae) {
+			log.warnf("%s.readTag: Exception evaluating %s (%s)",TAG,path,iae.getMessage());
+		}
+		catch(Exception ex) {
+			log.warnf("%s.readTag: Exception evaluating %s (%s)",TAG,path,ex.getMessage());
 		}
 		return result;
 	}

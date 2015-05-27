@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
@@ -321,7 +322,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 */
 	@Override
 	public void acceptValue(IncomingNotification vcn) {
-		validate(vcn );
+		checkIncomingValue(vcn );
 		if( log.isDebugEnabled()) {
 			// An input from a TAG_READ bound property does not have a source
 			if( vcn.getConnection()!=null ) {
@@ -471,7 +472,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 * Validate the incoming value. This does not execute unless the logger
 	 * is enabled for debugging.
 	 */
-	private void validate(IncomingNotification vcn ) {
+	private void checkIncomingValue(IncomingNotification vcn ) {
 		/*
 		if( log.isDebugEnabled() ) {
 			if(getName()==null)          log.warnf("AbstractProcessBlock.validate: getName is null");
@@ -484,6 +485,47 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 			}
 		}
 		*/
+	}
+	/**
+	 * Convert the block into a portable, serializable description.
+	 * The basic descriptor holds common attributes of the block.
+	 * @return the descriptor
+	 */
+	@Override
+	public SerializableBlockStateDescriptor toDescriptor() {
+		SerializableBlockStateDescriptor descriptor = new SerializableBlockStateDescriptor();
+		descriptor.setName(getName());
+		descriptor.setIdString(getBlockId().toString());
+		Map<String,String> attributes = new HashMap<>();
+		attributes.put(BLTProperties.BLOCK_ATTRIBUTE_CLASS,getClassName());
+		descriptor.setAttributes(attributes);
+		return descriptor;
+	}
+	
+	/**
+	 * @param tagpath
+	 * @return true if any property of the block is bound to
+	 *         the supplied tagpath. The comparison does not
+	 *         consider the provider portion of the path.
+	 */
+	@Override
+	public boolean usesTag(String tagpath) {
+		int pos = tagpath.indexOf("]");
+		if(pos>0) tagpath = tagpath.substring(pos+1);
+		for(BlockProperty property:propertyMap.values()) {
+			String binding = property.getBinding();
+			if( binding.endsWith(tagpath)) return true;
+		}
+		return false;
+	}
+	/**
+	 * Check the block configuration for missing or conflicting
+	 * information.
+	 * @return a validation summary. Null if everything checks out.
+	 */
+	@Override
+	public String validate() {
+		return null;
 	}
 	
 	/**

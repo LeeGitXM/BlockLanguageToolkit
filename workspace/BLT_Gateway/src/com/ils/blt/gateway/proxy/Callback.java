@@ -84,7 +84,7 @@ public class Callback {
 	public void execute(ScriptManager scriptManager) {
 		if( localsMap == null ) throw new IllegalArgumentException("Attempt to execute with uninitialized locals map.");
 		String script = pythonPackage+"."+module;
-		log.infof("%s.execute: Running callback script ...(%s)",TAG,script);
+		log.tracef("%s.execute: Running callback script ...(%s)",TAG,script);
 		try {
 			scriptManager.runCode(code,localsMap);
 		}
@@ -94,7 +94,7 @@ public class Callback {
 		catch(Exception ex) {
 			log.error(String.format("%s.execute: Error executing python %s(%s) (%s)",TAG,script,localVariableList,ex.getMessage()+")"),ex);
 		}
-		log.infof("%s: Completed callback script.",TAG);
+		log.tracef("%s: Completed callback script.",TAG);
 		localsMap = null;
 	}
 	

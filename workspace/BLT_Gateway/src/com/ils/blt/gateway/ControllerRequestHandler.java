@@ -363,16 +363,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		return result;
 	}
 	
-	public List getDiagramBlocksOfClass(UUID diagramId,String className) {
-		ProcessDiagram diagram = controller.getDiagram(diagramId);
-		List<String> result = new ArrayList<>();
-		for(ProcessBlock block:diagram.getProcessBlocks()) {
-			if( block.getClassName().equalsIgnoreCase(className)) {
-				result.add(block.getBlockId().toString());
-			}
-		}
-		return result;
-	}
+
 	
 	/**
 	 * When called from the gateway, we have no project. Get them all.
@@ -522,12 +513,19 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	}
 	@Override
 	public List<SerializableBlockStateDescriptor> listConfigurationErrors() {
-		// TODO Auto-generated method stub
-		return null;
+		List<SerializableBlockStateDescriptor> result = new ArrayList<>();
+		SerializableBlockStateDescriptor descriptor = new SerializableBlockStateDescriptor();
+		descriptor.setName("NAME!");
+		Map<String,String> attributes = new HashMap<>();
+		attributes.put(BLTProperties.BLOCK_ATTRIBUTE_PATH,"squiggly-path");
+		attributes.put(BLTProperties.BLOCK_ATTRIBUTE_ISSUE,"it's al wrong");
+		descriptor.setAttributes(attributes);
+		result.add(descriptor);
+		return result;
 	}
 	
 	@Override
-	public List listDiagramBlocksOfClass(String diagramId, String className) {
+	public List<SerializableBlockStateDescriptor> listDiagramBlocksOfClass(String diagramId, String className) {
 		UUID diagramUUID = null;
 		try {
 			diagramUUID = UUID.fromString(diagramId);
@@ -536,8 +534,21 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			log.warnf("%s.diagramExists: Diagram UUID string is illegal (%s), creating new",TAG,diagramId);
 			diagramUUID = UUID.nameUUIDFromBytes(diagramId.getBytes());
 		}
-		return getDiagramBlocksOfClass(diagramUUID,className);
+		
+		ProcessDiagram diagram = controller.getDiagram(diagramUUID);
+		List<SerializableBlockStateDescriptor> result = new ArrayList<>();
+		if( diagram!=null ) {
+			for(ProcessBlock block:diagram.getProcessBlocks()) {
+				if( block.getClassName().equalsIgnoreCase(className)) {
+					SerializableBlockStateDescriptor rd = new SerializableBlockStateDescriptor();
+					rd.setName(block.getName());
+					result.add(rd);
+				}
+			}
+		}
+		return result;
 	}
+	
 	@Override
 	public List<SerializableResourceDescriptor> listDiagramDescriptors(String projectName) {
 		List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors(projectName);

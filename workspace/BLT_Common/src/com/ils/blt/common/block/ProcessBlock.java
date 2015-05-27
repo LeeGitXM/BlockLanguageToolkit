@@ -47,13 +47,11 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 */
 	public boolean delayBlockStart();
 	/**
-	 * @return a list of anchor prototypes for the block.
+	 * In the case where the block has specified a coalescing time,
+	 * this method will be called by the engine after receipt of input
+	 * once the coalescing "quiet" time has passed without further input.
 	 */
-	public List<AnchorPrototype> getAnchors();
-	/**
-	 * @return the fully qualified path name of this block.
-	 */
-	public String getClassName();
+	public void evaluate();
 	/**
 	 * Place a value on a named output port of a block. 
 	 * This action does not change the internal state of the block.
@@ -64,19 +62,59 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 *        into a data type appropriate to the connection.
 	 */
 	public void forcePost(String port, String value);
-
 	/**
-	 * @return the Id of the block's diagram (parent).
+	 * @return a list of anchor prototypes for the block.
 	 */
-	public UUID getParentId();
+	public List<AnchorPrototype> getAnchors();
+
 	/**
 	 * @return the universally unique Id of the block.
 	 */
 	public UUID getBlockId();
 	/**
+	 * @return information necessary to populate the block 
+	 *          palette and subsequently paint a new block
+	 *          dropped on the workspace.
+	 */
+	public PalettePrototype getBlockPrototype();
+	/**
+	 * @return the fully qualified path name of this block.
+	 */
+	public String getClassName();
+	/**
+	 * @return information related to the workings of the block.
+	 *        The information returned varies depending on the 
+	 *        block. At the very least the data contains the 
+	 *        block UUID and class. The data is read-only.
+	 */
+	public SerializableBlockStateDescriptor getInternalStatus();
+	/**
 	 * @return the block's label
 	 */
 	public String getName();
+	
+	/**
+	 * @return the Id of the block's diagram (parent).
+	 */
+	public UUID getParentId();
+	/**
+	 * @return the id of the project under which this block was created.
+	 */
+	public long getProjectId() ;
+	/**
+	 * @return all properties of the block. The array may be used
+	 * 			to updated properties directly.
+	 */
+	public BlockProperty[] getProperties();
+	/**
+	 * @return a particular property by name.
+	 */
+	public BlockProperty getProperty(String name);
+	/**
+	 * @return a list of names of properties known to this class.
+	 */
+	public Set<String> getPropertyNames() ;
+	
 	/**
 	 * @return the current state of the block
 	 */
@@ -86,38 +124,6 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 * 		string is used for the dynamic block display.
 	 */
 	public String getStatusText();
-	
-	/**
-	 * @return information necessary to populate the block 
-	 *          palette and subsequently paint a new block
-	 *          dropped on the workspace.
-	 */
-	public PalettePrototype getBlockPrototype();
-	/**
-	 * @return information related to the workings of the block.
-	 *        The information returned varies depending on the 
-	 *        block. At the very least the data contains the 
-	 *        block UUID and class. The data is read-only.
-	 */
-	public SerializableBlockStateDescriptor getInternalStatus();
-	/**
-	 * @return a particular property by name.
-	 */
-	public BlockProperty getProperty(String name);
-	/**
-	 * @return the id of the project under which this block was created.
-	 */
-	public long getProjectId() ;
-	/**
-	 * @return a list of names of properties known to this class.
-	 */
-	public Set<String> getPropertyNames() ;
-	
-	/**
-	 * @return all properties of the block. The array may be used
-	 * 			to updated properties directly.
-	 */
-	public BlockProperty[] getProperties();
 	/**
 	 * @return true if this block is locked for debugging purposes.
 	 */
@@ -139,6 +145,11 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 * notification for animation that is most necessary.
 	 */
 	public void notifyOfStatus();
+	//===================== PropertyChangeListener ======================
+	/**
+	 * This is a stricter implementation that enforces QualifiedValue data.
+	 */
+	public void propertyChange(BlockPropertyChangeEvent event);
 	/**
 	 * Reset the internal state of the block.
 	 */
@@ -195,15 +206,25 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 * Terminate any active operations within the block.
 	 */
 	public void stop();
+	
 	/**
-	 * In the case where the block has specified a coalescing time,
-	 * this method will be called by the engine after receipt of input
-	 * once the coalescing "quiet" time has passed without further input.
+	 * Convert the block into a portable, serializable description.
+	 * The descriptor holds common attributes of the block.
+	 * @return the descriptor
 	 */
-	public void evaluate();
-	//===================== PropertyChangeListener ======================
+	public SerializableBlockStateDescriptor toDescriptor();
+	
 	/**
-	 * This is a stricter implementation that enforces QualifiedValue data.
+	 * @param tagpath
+	 * @return true if any property of the block is bound to
+	 *         the supplied tagpath. The comparison does not
+	 *         consider the provider portion of the path.
 	 */
-	public void propertyChange(BlockPropertyChangeEvent event);
+	public boolean usesTag(String tagpath);
+	/**
+	 * Check the block configuration for missing or conflicting
+	 * information.
+	 * @return a validation summary. Null if everything checks out.
+	 */
+	public String validate();
 }

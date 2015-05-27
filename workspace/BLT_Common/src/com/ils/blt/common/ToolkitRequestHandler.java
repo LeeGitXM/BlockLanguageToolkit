@@ -166,7 +166,7 @@ public interface ToolkitRequestHandler  {
 	 *         are of a specified class.
 	 */
 	@SuppressWarnings("rawtypes")
-	public List listDiagramBlocksOfClass(String diagramId,String className);
+	public List<SerializableBlockStateDescriptor> listDiagramBlocksOfClass(String diagramId,String className);
 	
 	/**
 	 * Query the gateway for list of diagrams belonging to a project. 

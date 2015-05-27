@@ -135,7 +135,7 @@ public class ProxyHandler   {
 	public ProxyBlock createBlockInstance(String className,UUID parentId,UUID blockId,long projectId) {
 		ScriptManager mgr = context.getProjectManager().getProjectScriptManager(projectId);
 		ProxyBlock block = new ProxyBlock(className,parentId,blockId,mgr);
-		log.infof("%s.createBlockInstance --- python proxy for %s, project %d",TAG,className,projectId); 
+		log.debugf("%s.createBlockInstance --- python proxy for %s, project %d",TAG,className,projectId); 
 		if( createBlockCallback.compileScript() ) {
 			synchronized(createBlockCallback) {
 				PyDictionary pyDictionary = new PyDictionary();  // Empty
@@ -312,7 +312,7 @@ public class ProxyHandler   {
 	 */
 	public synchronized List<PalettePrototype> getPalettePrototypes(ScriptManager mgr) {
 		List<PalettePrototype> prototypes = new ArrayList<PalettePrototype>();
-		log.infof("%s.getPalettePrototypes (python) ... ",TAG);
+		log.debugf("%s.getPalettePrototypes (python) ... ",TAG);
 		if( getBlockPrototypesCallback.compileScript())  {
 			Object val = null;
 			UtilityFunctions fns = new UtilityFunctions();
@@ -420,7 +420,7 @@ public class ProxyHandler   {
 	}
 	public synchronized void setBlockProperty(ScriptManager mgr,ProxyBlock block,BlockProperty prop) {
 		if( block==null || prop==null ) return;
-		log.infof("%s.setBlockProperty --- %s:%s",TAG,block.getClass(),prop.getName()); 
+		log.debugf("%s.setBlockProperty --- %s:%s",TAG,block.getClass(),prop.getName()); 
 		if( setBlockPropertyCallback.compileScript() ) {
 			// Convert the property object into a table to send to Python.
 			if( prop.getName()==null ) {

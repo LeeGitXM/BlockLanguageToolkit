@@ -61,7 +61,9 @@ public interface BLTProperties   {
 	public static final String BLOCK_ATTRIBUTE_CLASS      = "class";
 	public static final String BLOCK_ATTRIBUTE_EDITABLE   = "editable";
 	public static final String BLOCK_ATTRIBUTE_ID         = "uuid";
+	public static final String BLOCK_ATTRIBUTE_ISSUE      = "issue";   // Reason for being invalid
 	public static final String BLOCK_ATTRIBUTE_NAME       = "name";
+	public static final String BLOCK_ATTRIBUTE_PATH       = "path";
 	public static final String BLOCK_ATTRIBUTE_QUALITY    = "quality";
 	public static final String BLOCK_ATTRIBUTE_DATA_TYPE  = "type";
 	public static final String BLOCK_ATTRIBUTE_VALUE      = "value";
