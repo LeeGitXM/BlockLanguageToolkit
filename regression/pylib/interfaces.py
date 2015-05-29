@@ -2,10 +2,9 @@
 # Test the client/designer "toolkit" scripting interfaces
 import system.ils.blt.application as application
 # Return a list of block names that match the class criterion
-def listBlocksOfClass(common,dpath,className):
-	print "LIST BLOCKS"
+def listBlocksOfClass(common,dpath,classname):
 	diagid = getDiagram(dpath).getSelf().toString()
-	print "PASSED"
+	print "DIAGRAM=",diagid
 # blocks is a list of SerializableBlockStateDescriptor
 	blocks = application.listDiagramBlocksOfClass(diagid,classname)
 	lst = []

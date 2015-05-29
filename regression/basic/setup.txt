@@ -1,6 +1,4 @@
 #
-# Define attributes that are valid for many tests
-#
 log: [DATE] [TIME] Start Testing ...
 notification: compareGain  notificationKey.construct("app75/family75/gain","COMPARE-354","out")
 notification: persistence  notificationKey.construct("app75/family75/persistence","PERSISTENCEGATE-954","out")

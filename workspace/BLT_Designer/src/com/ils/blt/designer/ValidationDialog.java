@@ -10,18 +10,14 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
-import java.util.Map;
 import java.util.ResourceBundle;
 
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.WindowConstants;
 import javax.swing.table.DefaultTableModel;
@@ -31,7 +27,6 @@ import net.miginfocom.swing.MigLayout;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
-import com.inductiveautomation.ignition.common.sqltags.model.TagProviderMeta;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
@@ -44,8 +39,8 @@ public class ValidationDialog extends JDialog {
 	private static String TAG = "ValidationDialog";
 	private final LoggerEx log;
 	private static final long serialVersionUID = 2002388376824434427L;
-	private final int DIALOG_HEIGHT = 220;
-	private final int DIALOG_WIDTH = 560;
+	private final int DIALOG_HEIGHT = 300;
+	private final int DIALOG_WIDTH = 600;
 	private String[] columnNames = {"Block","Issue"};
 	private List<SerializableBlockStateDescriptor> issues = null;
 	private final ApplicationRequestHandler requestHandler;
@@ -127,8 +122,8 @@ public class ValidationDialog extends JDialog {
 		JPanel outerPanel = new JPanel();
 		JTable table = new JTable();
 		int nColumns = columnNames.length;
-		//outerPanel.setLayout(new MigLayout("ins 2,filly","",""));
-		outerPanel.setLayout(new MigLayout("ins 2,fillx,filly","para[:480:]","[120]"));
+		outerPanel.setLayout(new MigLayout("ins 2,fillx,filly","",""));
+		//outerPanel.setLayout(new MigLayout("ins 2,fillx,filly","para[:480:]","[120]"));
 		DefaultTableModel dataModel = new DefaultTableModel(columnNames,0); 
 		for( SerializableBlockStateDescriptor bsd:issues) {
 			String[] row = new String[nColumns];
@@ -142,6 +137,8 @@ public class ValidationDialog extends JDialog {
 
         
         JScrollPane tablePane = new JScrollPane(table);
+        tablePane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        tablePane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         table.setFillsViewportHeight(true);
         outerPanel.add(tablePane, "wrap");
 		return outerPanel;

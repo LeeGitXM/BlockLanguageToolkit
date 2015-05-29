@@ -2,7 +2,6 @@ log: Block Language Toolkit Regression Suite
 #
 # Run the collection of tests for the "simple" diagrams
 #
-run: readwrite.txt
 run: arithmetic.txt
 run: average.txt
 run: comparisons.txt
@@ -11,5 +10,6 @@ run: gain.txt
 run: inhibit.txt
 run: logicfilter.txt
 run: persistence.txt
+run: readwrite.txt
 run: sqc.txt
 run: sum.txt
