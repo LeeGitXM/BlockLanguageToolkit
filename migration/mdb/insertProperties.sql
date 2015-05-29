@@ -12,7 +12,7 @@ insert into PropertyMap values ('EM-GDA-DEADBAND-COMPARE','label','','STRING',1,
 insert into PropertyMap values ('EM-GDA-ELAPSED-TIME-VARIABLE','elapsedTimeMinutes','InhibitInterval','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-ELAPSED-TIME-VARIABLE','label','','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-EXPIRATION-FILTER','label','','STRING',1,'NONE');
-insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','explanation','Explanation','STRING',1,'NONE');
+insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','explanation','','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','label','label','STRING',1,'NONE');
 -- NOTE: properties that are not used in Ignition map to empty strings.
 insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','logDiagnosisToDatabase','','BOOLEAN',1,'NONE');
@@ -20,11 +20,11 @@ insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','manualMove','','BOOLEA
 insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','manualMoveValue','','DOUBLE',1,'NONE');
 insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','manualTextRequired','','BOOLEAN',1,'NONE');
 insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','postTextRecommendation','','BOOLEAN',1,'NONE');
-insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','priority','Priority','DOUBLE',1,'NONE');
+insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','priority','','DOUBLE',1,'NONE');
 insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','recommendationCalculationMethod','','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','recommendationMultiplier','','DOUBLE',1,'NONE');
 insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','recommendationRefreshRateInMinutes','','DOUBLE',1,'NONE');
-insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','targets','Targets','LIST',1,'NONE');
+insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','targets','','LIST',1,'NONE');
 insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','textRecommendation','','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','textRecommendationCallback','','STRING',1,'NONE');
 insert into PropertyMap values ('EM-GDA-FINAL-DIAGNOSIS','trapInsignificantRecommendationConditions','','BOOLEAN',1,'NONE');

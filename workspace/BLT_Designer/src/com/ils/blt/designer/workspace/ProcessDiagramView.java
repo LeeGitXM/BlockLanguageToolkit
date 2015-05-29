@@ -142,7 +142,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		Collection<BlockProperty> propertyList;
 		propertyList = new ArrayList<BlockProperty>();
 		ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
-		BlockProperty[] properties = handler.getBlockProperties(block.getClassName(),context.getProject().getId(),resourceId,block.getId());
+		List<BlockProperty> properties = handler.getBlockProperties(block.getClassName(),context.getProject().getId(),resourceId,block.getId());
 		for(BlockProperty property:properties) {
 			propertyList.add(property);
 		}

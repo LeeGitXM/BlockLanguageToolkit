@@ -7,6 +7,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,8 +89,12 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 		addSeparator(mainPanel,"FinalDiagnosis.QuantOutputs");
 		
 		dual = new DualListBox();
-		dual.setSourceElements(model.getLists().get("QuantOutputs"));
-		dual.setDestinationElements(model.getLists().get("OutputsInUse"));
+		List<String> q0 = model.getLists().get("QuantOutputs");
+		if( q0==null ) q0 = new ArrayList<>();
+		dual.setSourceElements(q0);
+		List<String> q1 = model.getLists().get("OutputsInUse");
+		if( q1==null ) q1 = new ArrayList<>();
+		dual.setDestinationElements(q1);
 		mainPanel.add(dual, "gapx 50 40,wrap");
 		mainPanel.add(createPropertiesPanel(),"wrap");
 		return mainPanel;

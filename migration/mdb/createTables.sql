@@ -46,6 +46,13 @@ CREATE TABLE PropertyMap(
 	BindingType text NOT NULL
 );
 
+-- Map values of properties found in G2 blocks to
+-- Ignition equivalents. 
+CREATE TABLE PropertyValueMap(
+    Property text NOT NULL,
+	G2Value text NOT NULL,
+	IgnitionValue text NOT NULL
+);
 -- These are properties of blocks that are fixed
 -- no matter what. Applicable to python blocks.
 CREATE TABLE PythonBlockProperties(
@@ -60,14 +67,9 @@ CREATE TABLE PythonBlockProperties(
 -- described. Attributes of Java-defined blocks
 -- come directly from the class definitions.
 CREATE TABLE PythonPrototypes(
-    BlockClass text PRIMARY KEY ,
-	Style text,
-    EmbeddedIconPath text,
-    EmbeddedLabel text,
-    IconPath text,
-    FontSize integer,
-    Width integer,
-    Height integer
+    BlockClass text,
+	Key text,
+	Value text
 );
 -- Map G2 GSI names to Ignition tags
 -- Key is G2 class and port

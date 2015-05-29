@@ -525,7 +525,22 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 */
 	@Override
 	public String validate() {
-		return null;
+		StringBuffer summary = new StringBuffer();
+		for(BlockProperty property:propertyMap.values()) {
+			BindingType bindingType = property.getBindingType();
+			if( bindingType.equals(BindingType.TAG_MONITOR) ||
+				bindingType.equals(BindingType.TAG_READ)    ||
+				bindingType.equals(BindingType.TAG_WRITE)   ||
+				bindingType.equals(BindingType.TAG_READWRITE) ) {
+				
+				String tagPath = property.getBinding();
+				if( controller.validateTag(getParentId(),tagPath) ) {
+					summary.append(String.format("%s: tag (%s) not configured\t",property.getName(),tagPath));
+				}
+			}
+		}
+		if( summary.length()==0 ) return null;
+		else return summary.toString();
 	}
 	
 	/**

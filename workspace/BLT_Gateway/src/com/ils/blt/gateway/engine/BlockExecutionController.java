@@ -347,6 +347,9 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public List<SerializableResourceDescriptor> getDiagramDescriptors(String projectName) {
 		return modelManager.getDiagramDescriptors(projectName);
 	}
+	public String pathForBlock(UUID blockId) {
+		return modelManager.pathForBlock(blockId);
+	}
 	/**
 	 * Reset a block.
 	 * @param diagramId the block or diagram identifier.
@@ -492,6 +495,28 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 			log.infof("%s.updateTag %s REJECTED, diagram not active",TAG,tagPath);
 		}
 	}
+	
+	/**
+	 * Write a value to a tag. If the diagram referenced diagram is disabled
+	 * then this method has no effect.
+	 * @param diagramId UUID of the parent diagram
+	 * @param tagPath
+	 */
+	public boolean validateTag(UUID diagramId,String tagPath) {
+		boolean result = false;
+		ProcessDiagram diagram = modelManager.getDiagram(diagramId);
+		if( diagram!=null ) {
+			if(diagram.getState().equals(DiagramState.ISOLATED)) {
+				tagPath = replaceProviderInPath(tagPath, getIsolationProvider());
+			}
+			result = tagWriter.validateTag(diagram.getProjectId(),tagPath);
+		}
+		else {
+			log.infof("%s.validateTag %s, parent diagram not found",TAG,tagPath);
+		}
+		return result;
+	}
+
 
 	// ============================ Completion Handler =========================
 	/**

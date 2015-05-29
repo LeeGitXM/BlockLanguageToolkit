@@ -4,7 +4,7 @@ import system.ils.blt.application as application
 # Return a list of block names that match the class criterion
 def listBlocksOfClass(common,dpath,className):
 	print "LIST BLOCKS"
-	diagid = getDiagram(dpath)
+	diagid = getDiagram(dpath).getSelf().toString()
 	print "PASSED"
 # blocks is a list of SerializableBlockStateDescriptor
 	blocks = application.listDiagramBlocksOfClass(diagid,classname)
@@ -21,11 +21,13 @@ def getDiagram(dpath):
 	# the descriptor path starts with ":root:", 
 	# the input starts with the application
 	descriptors = application.getDiagramDescriptors()
+	handler = application.getHandler()
 	for desc in descriptors:
 		path = desc.path[6:]
 		path = path.replace(":","/")
 		#print desc.id, path
 		if dpath == path:
-			diagram = application.getDiagram(desc.id)
+			diagram = handler.getDiagram(desc.id)
+	# Diagram is a ProcessDiagram
 	return diagram
 

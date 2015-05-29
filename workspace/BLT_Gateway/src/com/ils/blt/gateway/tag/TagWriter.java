@@ -106,7 +106,48 @@ public class TagWriter  {
 		}
 	}
 
+	/**
+	 * Update a tag - if the provider name is not supplied, then use the default
+	 * assigned to the project. The time assigned is the current
+	 * time. The list of tags to be updated varies with model type.
+	 * 
+	 * @param path fully qualified tag path
+	 * @return trueif this tag is managed by the tag manager
+	 */
+	public boolean validateTag(long projectId,String path) {
+		log.debugf("%s..validateTag: %s",TAG,path);
+		if( context==null) return true;
+		// Not initialized yet.
+		boolean result = false;
+		if(path==null || path.isEmpty() ) return result;  // Path or value not set
+		try {
+			TagPath tp = TagPathParser.parse(path);
 
+			String providerName = providerNameFromPath(path);
+			if( providerName.length()==0) providerName = context.getProjectManager().getProps(projectId, ProjectVersion.Published).getDefaultSQLTagsProviderName();
+			TagProvider provider = context.getTagManager().getTagProvider(providerName);
+			// We assume the same provider
+			if( provider!= null  ) {
+				Tag tag = provider.getTag(tp);
+				if( tag!=null ) {
+					result = true;
+				}
+				else {
+					log.warnf("%s.validateTag: Provider %s did not find tag %s",TAG,providerName,path);
+				}
+			}
+			else {
+				log.warnf("%s.validateTag: no provider for %s ",TAG,path);
+			}
+		}
+		catch( IOException ioe) {
+			log.warnf(TAG+"%s.localRequest: parse exception for path %s (%s)",TAG,path,ioe.getMessage());
+		}
+		catch(Exception ex) {
+			log.warn(TAG+".validateTag: Exception ("+ex.getLocalizedMessage()+")");
+		}
+		return result;
+	}
 
 	/** 
 	 * Tediously create a list of desired tag outputs. (We have only one).

@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.ils.block.annotation.ExecutableBlock;
+import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
@@ -28,14 +30,16 @@ import com.ils.common.ClassList;
  */
 public class PythonPropertyMapper {
 	private final String TAG = "PythonPropertyMapper";
-	private final Map<String,PrototypeSet> prototypeSetMap;       // Lookup by className
-	private final Map<String,BlockProperty[]> propertyArrayMap;   // Lookup by className
+	private final Map<String,Map<String,String>> descriptorMap; // Lookup by className
+	private final Map<String,BlockProperty[]> propertyArrayMap;       // Lookup by className
+	private final UtilityFunctions fcns;
 	/** 
 	 * Constructor: 
 	 */
 	public PythonPropertyMapper() {
-		prototypeSetMap = new HashMap<String,PrototypeSet>();
+		descriptorMap = new HashMap<>();
 		propertyArrayMap = new HashMap<String,BlockProperty[]>();
+		fcns = new UtilityFunctions();
 	}
 
 	/**
@@ -62,9 +66,27 @@ public class PythonPropertyMapper {
 					ProcessBlock block = (ProcessBlock)obj;
 					PalettePrototype bp = block.getBlockPrototype();
 					BlockDescriptor bd = bp.getBlockDescriptor();
-					PrototypeSet ps = new PrototypeSet(bd.getStyle(),bd.getEmbeddedIcon(),bd.getEmbeddedLabel(),bd.getIconPath(),
-																bd.getEmbeddedFontSize(),bd.getPreferredWidth(),bd.getPreferredHeight());
-					prototypeSetMap.put(bd.getBlockClass(),ps);
+					Map<String,String> descriptors = new HashMap<>(); 
+					descriptors.put(BLTProperties.PALETTE_BLOCK_STYLE,bd.getStyle().name());
+					descriptors.put(BLTProperties.PALETTE_EDITOR_CLASS,bd.getEditorClass());
+					descriptors.put(BLTProperties.PALETTE_ICON_PATH,bp.getPaletteIconPath());
+					descriptors.put(BLTProperties.PALETTE_LABEL,bp.getPaletteLabel());
+					descriptors.put(BLTProperties.PALETTE_NAME_DISPLAYED,(bd.isNameDisplayed()?"true":"false"));
+					descriptors.put(BLTProperties.PALETTE_NAME_OFFSET_X,String.valueOf(bd.getNameOffsetX()));
+					descriptors.put(BLTProperties.PALETTE_NAME_OFFSET_Y,String.valueOf(bd.getNameOffsetY()));
+					descriptors.put(BLTProperties.PALETTE_RECEIVE_ENABLED,(bd.isReceiveEnabled()?"true":"false"));
+					descriptors.put(BLTProperties.PALETTE_TRANSMIT_ENABLED,(bd.isTransmitEnabled()?"true":"false"));
+					descriptors.put(BLTProperties.PALETTE_TOOLTIP,bp.getTooltipText());
+					descriptors.put(BLTProperties.PALETTE_TAB_NAME,bp.getTabName());
+					descriptors.put(BLTProperties.PALETTE_VIEW_BACKGROUND,String.valueOf(bd.getBackground()));
+					descriptors.put(BLTProperties.PALETTE_VIEW_BLOCK_ICON,bd.getIconPath());
+					descriptors.put(BLTProperties.PALETTE_VIEW_FONT_SIZE,String.valueOf(bd.getEmbeddedFontSize()));
+					descriptors.put(BLTProperties.PALETTE_VIEW_HEIGHT,String.valueOf(bd.getPreferredHeight()));
+					descriptors.put(BLTProperties.PALETTE_VIEW_ICON,bd.getEmbeddedIcon());
+					descriptors.put(BLTProperties.PALETTE_VIEW_LABEL,bd.getEmbeddedLabel());
+					descriptors.put(BLTProperties.PALETTE_VIEW_WIDTH,String.valueOf(bd.getPreferredWidth()));
+
+					descriptorMap.put(bd.getBlockClass(),descriptors);
 					BlockProperty[] properties = block.getProperties();
 					propertyArrayMap.put(bd.getBlockClass(),properties);
 				}
@@ -94,23 +116,16 @@ public class PythonPropertyMapper {
 			while(rs.next())
 			{
 				String blockClass = rs.getString("BlockClass");
-				String styleName = rs.getString("Style");
-				BlockStyle style = BlockStyle.SQUARE;
-				try {
-					style = BlockStyle.valueOf(styleName.toUpperCase());
+				String key = rs.getString("Key");
+				String value = rs.getString("Value");
+				
+				Map<String,String> descriptors = descriptorMap.get(blockClass);
+				if(descriptors == null) {
+					descriptors = new HashMap<>();
+					descriptorMap.put(blockClass, descriptors);
+					
 				}
-				catch(IllegalArgumentException iae) {
-					System.err.println(TAG+": Illegal value of style ("+styleName+") for class "+blockClass);
-				}
-				String eIcon = rs.getString("EmbeddedIconPath");
-				String eLabel = rs.getString("EmbeddedLabel");
-				String iPath = rs.getString("IconPath");
-				int fontSize = (int)rs.getLong("FontSize");
-				int width = (int)rs.getLong("Width");
-				int height = (int)rs.getLong("Height");
-
-				PrototypeSet ps = new PrototypeSet(style,eIcon,eLabel,iPath,fontSize,width,height);
-				prototypeSetMap.put(blockClass,ps);
+				descriptors.put(key, value);
 			}
 			rs.close();
 		}
@@ -184,25 +199,88 @@ public class PythonPropertyMapper {
 	 * continue processing and collect all the errors at once).
 	 * 
 	 * We also set the class attributes that exist for all blocks,
-	 * in particular, the palette prototype definition.
+	 * in particular, the palette prototype definition. Not all
+	 * prototype attributes apply to a block inside the diagram
+	 * (Some are purely for the palette).
 	 * 
 	 * @param iblock outgoing Ignition equivalent
 	 */
 	public void setPrototypeAttributes(SerializableBlock iblock) {
 		String cname = iblock.getClassName();
 		if( cname!=null) {
-			PrototypeSet protoset = prototypeSetMap.get(cname);
-			if( protoset!=null ) {
-				iblock.setEmbeddedIcon(protoset.getEmbeddedIcon());
-				iblock.setEmbeddedLabel(protoset.getEmbeddedLabel());
-				iblock.setEmbeddedFontSize(protoset.getEmbeddedFontSize() );
-				iblock.setIconPath(protoset.getIconPath());
-				iblock.setPreferredHeight(protoset.getPreferredHeight());
-				iblock.setPreferredWidth(protoset.getPreferredWidth());
-				iblock.setStyle(protoset.getStyle());
+			Map<String,String> descriptors = descriptorMap.get(cname); 
+			if( descriptors!=null ) {
+				for(String key:descriptors.keySet()) {
+					String value = descriptors.get(key);
+					try {
+						if( key.equalsIgnoreCase(BLTProperties.PALETTE_BLOCK_STYLE) ) {
+							iblock.setStyle(BlockStyle.valueOf(value.toUpperCase()));
+						}
+						else if( key.equalsIgnoreCase(BLTProperties.PALETTE_EDITOR_CLASS) ) {
+							iblock.setEditorClass(value);
+						}
+						else if( key.equalsIgnoreCase(BLTProperties.PALETTE_ICON_PATH) ) {
+							;  // Palette icon (?)
+						}
+						else if( key.equalsIgnoreCase(BLTProperties.PALETTE_LABEL) ) {
+							;
+						}
+						else if( key.equalsIgnoreCase(BLTProperties.PALETTE_NAME_DISPLAYED) ) {
+							iblock.setNameDisplayed(value.equalsIgnoreCase("true"));
+						}
+						else if( key.equalsIgnoreCase(BLTProperties.PALETTE_NAME_OFFSET_X) ) {
+							iblock.setNameOffsetX(fcns.coerceToInteger(value));
+						}
+						else if( key.equalsIgnoreCase(BLTProperties.PALETTE_NAME_OFFSET_Y) ) {
+							iblock.setNameOffsetY(fcns.coerceToInteger(value));
+						}
+						else if( key.equalsIgnoreCase(BLTProperties.PALETTE_RECEIVE_ENABLED) ) {
+							iblock.setReceiveEnabled(value.equalsIgnoreCase("true"));
+						}
+						else if( key.equalsIgnoreCase(BLTProperties.PALETTE_TRANSMIT_ENABLED) ) {
+							iblock.setTransmitEnabled(value.equalsIgnoreCase("true"));
+						}
+						else if( key.equalsIgnoreCase(BLTProperties.PALETTE_TOOLTIP) ) {
+							;
+						}
+						else if( key.equalsIgnoreCase(BLTProperties.PALETTE_TAB_NAME) ) {
+							;
+						}
+						else if( key.equalsIgnoreCase(BLTProperties.PALETTE_VIEW_BACKGROUND) ) {
+							iblock.setBackground(fcns.coerceToInteger(value));
+						}
+						else if( key.equalsIgnoreCase(BLTProperties.PALETTE_VIEW_BLOCK_ICON) ) {
+							iblock.setIconPath(value);
+						}
+						else if( key.equalsIgnoreCase(BLTProperties.PALETTE_VIEW_FONT_SIZE) ) {
+							iblock.setEmbeddedFontSize(fcns.coerceToInteger(value));
+						}
+						else if( key.equalsIgnoreCase(BLTProperties.PALETTE_VIEW_HEIGHT) ) {
+							iblock.setPreferredHeight(fcns.coerceToInteger(value));
+						}
+						else if( key.equalsIgnoreCase(BLTProperties.PALETTE_VIEW_ICON) ) {
+							iblock.setEmbeddedIcon(value);
+						}
+						else if( key.equalsIgnoreCase(BLTProperties.PALETTE_VIEW_LABEL) ) {
+							iblock.setEmbeddedLabel(value);
+						}
+						else if( key.equalsIgnoreCase(BLTProperties.PALETTE_VIEW_WIDTH) ) {
+							iblock.setPreferredWidth(fcns.coerceToInteger(value));
+						}
+
+						else {
+							System.err.println(TAG+".setPrototypeAttributes: Unknown prototype attribute "+key);
+						}
+					}
+					catch(Exception ex) {
+						System.err.println(TAG+".setPrototypeAttributes: Illegal conversion of "+key+"="+value);
+					}
+
+				}
+
 			}
 			else {
-				System.err.println(TAG+".setPrototypeAttributes: No map entry for "+cname);
+				System.err.println(TAG+".setPrototypeAttributes: Unknown class for prototype "+cname);
 			}
 		}
 		else {
@@ -232,36 +310,6 @@ public class PythonPropertyMapper {
 			System.err.println(TAG+".setProperties: No properties found for class "+cname);
 			//System.err.println(TAG+".setProperties: ---- dump map ---\n "+properties);
 		}
-	}
-
-
-	/**
-	 * These are the palette prototype attributes; constant for all instances of a class.
-	 */
-	private class PrototypeSet {
-		private final BlockStyle style;
-		private final String embeddedIcon;       // 32x32 icon to place in block in designer
-		private final String embeddedLabel;      // Label place in block in designer
-		private final int    embeddedFontSize;   // Points in font for embedded label
-		private final String iconPath;           // Path to icon that is the entire block
-		private final int preferredHeight;
-		private final int preferredWidth; 
-		public PrototypeSet( BlockStyle s,String eIcon,String eLabel,String iPath,int eFont,int pWidth,int pHeight) {
-			this.style = s;
-			this.embeddedIcon = eIcon;
-			this.embeddedLabel = eLabel;
-			this.iconPath = iPath;
-			this.embeddedFontSize = eFont;
-			this.preferredWidth = pWidth;
-			this.preferredHeight = pHeight;
-		}
-		public BlockStyle getStyle() { return this.style; }
-		public String getEmbeddedIcon() {return embeddedIcon;}
-		public String getEmbeddedLabel() {return embeddedLabel;}
-		public int getEmbeddedFontSize() {return embeddedFontSize;}
-		public String getIconPath() {return iconPath;}
-		public int getPreferredHeight() {return preferredHeight;}
-		public int getPreferredWidth() {return preferredWidth;}
 	}
 }
 	

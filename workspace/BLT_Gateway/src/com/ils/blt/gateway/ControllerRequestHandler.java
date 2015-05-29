@@ -92,6 +92,12 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 		return instance;
 	}
+	@Override
+	public List<SerializableResourceDescriptor> childNodes(String nodeId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
 	/**
 	 * Remove all diagrams from the controller.
 	 * Cancel all tag subscriptions.
@@ -99,7 +105,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	public void clearController() {
 		controller.removeAllDiagrams();
 	}
-	
+
 	/**
 	 * Create an instance of a named class. If the class is not found in the JVM, try Python 
 	 * @param key
@@ -140,7 +146,6 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 		return block;
 	}
-
 	@Override
 	public boolean diagramExists(String uuidString) {
 		UUID diagramUUID = null;
@@ -169,6 +174,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 		controller.evaluateBlock(diagramUUID, blockUUID);
 	}
+	
 	@Override
 	public String getApplicationName(String uuid) {
 		ProcessApplication app = pyHandler.getApplication(uuid);
@@ -185,27 +191,32 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @param blockId
 	 * @return the properties of an existing or new block.
 	 */
-	public BlockProperty[] getBlockProperties(String className,long projectId,long resourceId, UUID blockId) {
+	@Override
+	public List<BlockProperty> getBlockProperties(String className,long projectId,long resourceId, UUID blockId) {
 		// If the instance doesn't exist, create one
 		log.debugf("%s.getBlockProperties of %s (%s)",TAG,className,blockId.toString());
-		BlockProperty[] results = null;
+		List<BlockProperty> results = new ArrayList<>();
 		ProcessDiagram diagram = controller.getDiagram(projectId, resourceId);
 		ProcessBlock block = null;
 		if( diagram!=null ) block = diagram.getBlock(blockId);
+		BlockProperty[] props = null;
 		if(block!=null) {
-			results = block.getProperties();  // Existing block
-			log.tracef("%s.getProperties existing %s = %s",TAG,block.getClass().getName(),results.toString());
+			props = block.getProperties();  // Existing block
+			log.tracef("%s.getProperties existing %s = %s",TAG,block.getClass().getName(),props.toString());
 		}
 		else {
 			block = createInstance(className,(diagram!=null?diagram.getSelf():null),blockId);  // Block is not (yet) attached to a diagram
 			if(block!=null) {
-				results = block.getProperties();
-				log.tracef("%s.getProperties new %s = %s",TAG,block.getClass().getName(),results.toString());
+				props = block.getProperties();
+				log.tracef("%s.getProperties new %s = %s",TAG,block.getClass().getName(),props.toString());
 			}
+		}
+		for(BlockProperty prop:props) {
+			results.add(prop);
 		}
 		return results;
 	}
-	
+
 	/**
 	 * Query the execution controller for a specified block property. 
 	 * 
@@ -271,6 +282,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		log.infof("%s.getBlockPrototypes: returning %d palette prototypes",TAG,results.size());
 		return results;
 	}
+	
 	@Override
 	public String getBlockState(String diagramId, String blockName) {
 		String state = "UNKNOWN";
@@ -305,11 +317,13 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		Connection cxn  = controller.getConnection(projectId, resourceId, connectionId);
 		return attributes;
 	}
-	
 	@Override
 	public String getControllerState() {
 		return getExecutionState();
 	}
+	
+
+	
 	/**
 	 * Find the parent application or diagram of the entity referenced by
 	 * the supplied id. Test the state and return the name of the appropriate
@@ -351,6 +365,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 		return db;
 	}
+	
 	@Override
 	public List<String> getDatasourceNames() {
 		List<Datasource> sources = context.getDatasourceManager().getDatasources();
@@ -362,8 +377,6 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 		return result;
 	}
-	
-
 	
 	/**
 	 * When called from the gateway, we have no project. Get them all.
@@ -378,6 +391,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	
 	
 	/**
 	 * @param projectId
@@ -392,18 +407,15 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 		return state;
 	}
-	
 	public String getExecutionState() {
 		return BlockExecutionController.getExecutionState();
 	}
-
-	
-	
 	@Override
 	public String getFamilyName(String uuid) {
 		ProcessFamily fam = pyHandler.getFamily(uuid);
 		return fam.getName();
 	}
+	
 	/**
 	 * Query a block for its internal state. This allows a read-only display in the
 	 * designer to be useful for block debugging.
@@ -436,7 +448,6 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 		return property.getValue();
 	}
-	
 	public Object getPropertyValue(UUID diagramId,UUID blockId,String propertyName) {
 		Object val = null;
 		ProcessDiagram diagram = controller.getDiagram(diagramId);
@@ -450,6 +461,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		return val;
 
 	}
+	
 	/**
 	 * On a failure to find the property, an empty string is returned.
 	 */
@@ -471,15 +483,14 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	}
 	
 	@Override
-	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(
-			String diagramId, String blockId) {
+	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(String diagramId,String blockId) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 	@Override
-	public List<SerializableBlockStateDescriptor> listBlocksForTag(
-			String tagpath) {
+	public List<SerializableBlockStateDescriptor> listBlocksForTag(String tagpath) {
 		// TODO Auto-generated method stub
+		List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
 		return null;
 	}
 	
@@ -511,19 +522,32 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 		return descriptors;
 	}
+	
+	@Override
+	public List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(String diagramId, String blockId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 	@Override
 	public List<SerializableBlockStateDescriptor> listConfigurationErrors() {
 		List<SerializableBlockStateDescriptor> result = new ArrayList<>();
-		SerializableBlockStateDescriptor descriptor = new SerializableBlockStateDescriptor();
-		descriptor.setName("NAME!");
-		Map<String,String> attributes = new HashMap<>();
-		attributes.put(BLTProperties.BLOCK_ATTRIBUTE_PATH,"squiggly-path");
-		attributes.put(BLTProperties.BLOCK_ATTRIBUTE_ISSUE,"it's al wrong");
-		descriptor.setAttributes(attributes);
-		result.add(descriptor);
+		List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
+		for(SerializableResourceDescriptor res:descriptors) {
+			UUID diagramId = makeUUID(res.getId());
+			ProcessDiagram diagram = controller.getDiagram(diagramId);
+			for( ProcessBlock block:diagram.getProcessBlocks() ) {
+				String problem = block.validate();
+				if( problem!=null) {
+					SerializableBlockStateDescriptor descriptor = block.toDescriptor();
+					descriptor.getAttributes().put(BLTProperties.BLOCK_ATTRIBUTE_PATH, controller.pathForBlock(block.getBlockId()));
+					descriptor.getAttributes().put(BLTProperties.BLOCK_ATTRIBUTE_ISSUE, problem);
+					result.add(descriptor);
+				}
+			}
+		}
 		return result;
 	}
-	
 	@Override
 	public List<SerializableBlockStateDescriptor> listDiagramBlocksOfClass(String diagramId, String className) {
 		UUID diagramUUID = null;
@@ -540,21 +564,18 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		if( diagram!=null ) {
 			for(ProcessBlock block:diagram.getProcessBlocks()) {
 				if( block.getClassName().equalsIgnoreCase(className)) {
-					SerializableBlockStateDescriptor rd = new SerializableBlockStateDescriptor();
-					rd.setName(block.getName());
+					SerializableBlockStateDescriptor rd = block.toDescriptor();
 					result.add(rd);
 				}
 			}
 		}
 		return result;
 	}
-	
 	@Override
 	public List<SerializableResourceDescriptor> listDiagramDescriptors(String projectName) {
 		List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors(projectName);
 		return descriptors;
 	}
-
 	/**
 	 * Query the ModelManager for a list of the project resources that it is currently
 	 * managing. This is a debugging service.
@@ -564,8 +585,20 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		return controller.queryControllerResources();
 	}
 	@Override
+	public List<SerializableBlockStateDescriptor> listSinksForSource(
+			String blockId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
 	public List<SerializableBlockStateDescriptor> listSourcesForSink(
 			String blockId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	@Override
+	public String pathForNode(String nodeId) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -647,13 +680,15 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		BlockExecutionController.getInstance().resetDiagram(diagramUUID);
 		
 	}
+			
 	@Override
 	public boolean resourceExists(long projectId, long resid) {
 		ProcessDiagram diagram = controller.getDiagram(projectId, resid);
 		log.infof("%s.resourceExists diagram %d:%d ...%s",TAG,projectId,resid,(diagram!=null?"true":"false"));
 		return diagram!=null;
 	}
-	
+
+
 	@Override
 	public boolean sendLocalSignal(String diagramId, String command, String message, String argument) {
 		Boolean success = new Boolean(true);
@@ -678,6 +713,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 		return success;
 	}
+
+
 	/**
 	 * Set the state of every diagram in an application to the specified value.
 	 * @param appname
@@ -703,6 +740,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			log.warnf("%s.setApplicationState: Illegal state (%s) supplied (%s)",TAG,state,iae.getMessage());
 		}
 	}
+
+
 	/**
 	 * Set the values of named properties in a block. This method ignores any binding that the
 	 * property may have and sets the value directly. Theoretically the value should be of the right
@@ -737,6 +776,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 	}
+
+
 	/**
 	 * Set the value of a named property in a block. This method ignores any binding that the
 	 * property may have and sets the value directly. Theoretically the value should be of the right
@@ -770,6 +811,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 	}
+
+
 	/**
 	 * The gateway context must be specified before the instance is useful.
 	 * @param cntx the GatewayContext
@@ -777,7 +820,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	public void setContext(GatewayContext cntx) {
 		this.context = cntx;
 	}
-			
+
+
 	/**
 	 * Set the state of the specified diagram. 
 	 * @param projectId
@@ -851,7 +895,6 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			log.warnf("%s.setToolkitProperty: Exception setting %s=%s (%s),",TAG,propertyName,value,ex.getMessage());
 		}
 	}
-
 
 	public void startController() {
 		BlockExecutionController.getInstance().start(context);
@@ -943,6 +986,18 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	}
 
 
+	private UUID makeUUID(String name) {
+		UUID uuid = null;
+		try {
+			uuid = UUID.fromString(name);
+		}
+		catch(IllegalArgumentException iae) {
+			uuid = UUID.nameUUIDFromBytes(name.getBytes());
+		}
+		return uuid;
+	}
+
+
 	// Handle all the intricasies of a property change
 	private void updateProperty(ProcessBlock block,BlockProperty existingProperty,BlockProperty newProperty) {
 		if( !existingProperty.isEditable() )  return;
@@ -983,8 +1038,6 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 	}
-
-
 
 }
 

@@ -104,7 +104,6 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		this.embeddedIcon = descriptor.getEmbeddedIcon();
 		this.embeddedLabel= descriptor.getEmbeddedLabel();
 		this.embeddedFontSize= descriptor.getEmbeddedFontSize();
-		this.editorClass = descriptor.getEditorClass();
 		this.iconPath = descriptor.getIconPath();
 		this.preferredHeight = descriptor.getPreferredHeight();
 		this.preferredWidth = descriptor.getPreferredWidth();

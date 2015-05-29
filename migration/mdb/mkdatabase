@@ -22,6 +22,7 @@ sqlite3 $DB < ${BIN}/insertClassProperties.sql
 sqlite3 $DB < ${BIN}/insertProcedures.sql
 sqlite3 $DB < ${BIN}/insertPreferences.sql
 sqlite3 $DB < ${BIN}/insertProperties.sql
+sqlite3 $DB < ${BIN}/insertPropertyValues.sql
 sqlite3 $DB < ${BIN}/insertPythonProperties.sql
 sqlite3 $DB < ${BIN}/insertProcClassMap.sql
 sqlite3 $DB < ${BIN}/insertProcGlobalMap.sql

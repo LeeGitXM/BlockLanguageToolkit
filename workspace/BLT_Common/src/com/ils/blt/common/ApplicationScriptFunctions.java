@@ -22,6 +22,9 @@ import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 public class ApplicationScriptFunctions   {
 	private static ApplicationRequestHandler handler = new ApplicationRequestHandler();
 
+	public static List<SerializableResourceDescriptor> childNodes(String nodeId) {
+		return handler.childNodes(nodeId);
+	}
 	/**
 	 * Remove all running diagrams from the controller. 
 	 * Cancel all tag subscriptions. 
@@ -29,6 +32,7 @@ public class ApplicationScriptFunctions   {
 	public static void clearController() {
 		handler.clearController();
 	}
+	
 	public static String getApplicationName(String uuid) {
 		return handler.getApplicationName(uuid);
 	}
@@ -78,6 +82,13 @@ public class ApplicationScriptFunctions   {
 		return handler.getDiagramForBlock(blockId);
 	}
 	
+	/**
+	 * @return the current state of the specified diagram.
+	 */
+	public static DiagramState getDiagramState(Long projectId, Long resourceId)  {
+		return handler.getDiagramState(projectId,resourceId);
+	}
+	
 	public static String getFamilyName(String uuid) {
 		return handler.getFamilyName(uuid);
 	}
@@ -87,7 +98,6 @@ public class ApplicationScriptFunctions   {
 	public static SerializableBlockStateDescriptor getInternalState(String diagramId,String blockId) {
 		return handler.getInternalState(diagramId,blockId);
 	}
-	
 	/**
 	 * @param diagramId identifier of the diagram owning the block, a String
 	 * @param blockId identifier of the block within the diagram, a String
@@ -107,9 +117,10 @@ public class ApplicationScriptFunctions   {
 		return handler.getToolkitProperty(propertyName);
 	}
 	/**
-	 * Query a diagram in the gateway for list of its blocks. 
+	 * Query a diagram in the gateway for list of its blocks that are downstream
+	 * of the specified block. 
 	 * @param diagramId identifier of the diagram owning the block, a String
-	 * @return a list of blocks belonging to the diagram.
+	 * @return a list of blocks downstream of the block specified, in the diagram.
 	 */
 	public static List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(String diagramId,String blockId){
 		return handler.listBlocksDownstreamOf(diagramId,blockId);
@@ -122,7 +133,6 @@ public class ApplicationScriptFunctions   {
 	public static List<SerializableBlockStateDescriptor> listBlocksForTag(String tagpath) {
 		return handler.listBlocksForTag(tagpath);
 	}
-	
 	/**
 	 * Query a diagram in the gateway for list of its blocks. 
 	 * @param diagramId identifier of the diagram owning the blocks, a String 
@@ -130,6 +140,15 @@ public class ApplicationScriptFunctions   {
 	 */
 	public static List<SerializableBlockStateDescriptor> listBlocksInDiagram(String diagramId) {
 		return handler.listBlocksInDiagram(diagramId);
+	}
+	/**
+	 * Query a diagram in the gateway for list of its blocks that are upstream
+	 * of the specified block. 
+	 * @param diagramId identifier of the diagram owning the block, a String
+	 * @return a list of blocks upstream of the block specified, in the diagram.
+	 */
+	public static List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(String diagramId,String blockId){
+		return handler.listBlocksUpstreamOf(diagramId,blockId);
 	}
 	
 	/**
@@ -153,6 +172,7 @@ public class ApplicationScriptFunctions   {
 	public static List listDiagramBlocksOfClass(String diagramId,String className) {
 		return handler.listDiagramBlocksOfClass(diagramId,className);
 	}
+	
 	/**
 	 * Query the gateway for list of diagrams belonging to a project. 
 	 * 
@@ -162,7 +182,6 @@ public class ApplicationScriptFunctions   {
 	public static List<SerializableResourceDescriptor> listDiagramDescriptors(String projectName) {
 		return handler.listDiagramDescriptors(projectName);
 	}
-	
 	/**
 	 * Query the gateway for list of resource nodes that the block controller
 	 * knows about. This should correspond to what is displayed in the designer
@@ -174,6 +193,16 @@ public class ApplicationScriptFunctions   {
 		return handler.listResourceNodes();
 	}
 	/**
+	 * Query the gateway for list of its sink blocks associated with the
+	 * specified source. The blocks that are returned are not constrained
+	 * to be part of the same diagram, family or application.
+	 * @param blockId identifier for the source block, a String 
+	 * @return a list of blocks logically connected to the source.
+	 */
+	public static List<SerializableBlockStateDescriptor> listSinksForSource(String blockId) {
+		return handler.listSinksForSource(blockId);
+	}
+	/**
 	 * Query the gateway for list of its source blocks associated with the
 	 * specified sink. The blocks that are returned all belong to the same
 	 * application as the sink.
@@ -182,6 +211,14 @@ public class ApplicationScriptFunctions   {
 	 */
 	public static List<SerializableBlockStateDescriptor> listSourcesForSink(String blockId) {
 		return handler.listSourcesForSink(blockId);
+	}
+	/** 
+	 * @param nodeId
+	 * @return a colon-separated path to the specified node. The path includes
+	 *         the project name.
+	 */
+	public String pathForNode(String nodeId) {
+		return handler.pathForNode(nodeId);
 	}
 	/**
 	 * Post a (simulated) block result on its output.
@@ -204,13 +241,13 @@ public class ApplicationScriptFunctions   {
 		List<SerializableResourceDescriptor> result = handler.listResourceNodes();
 		return result;
 	}
-
 	/**
 	 * Execute reset() on the specified block
 	 */
 	public static void resetBlock(String diagramId,String blockId) {
 		handler.resetBlock(diagramId,blockId);
 	}
+
 	/**
 	 * Execute reset() on every block inside the controller
 	 */
@@ -269,7 +306,6 @@ public class ApplicationScriptFunctions   {
 	public static void startController() {
 		handler.startController();
 	}
-
 	/**
 	 * Shutdown the block execution engine in the gateway.
 	 */

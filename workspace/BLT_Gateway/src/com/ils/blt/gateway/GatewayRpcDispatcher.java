@@ -52,10 +52,15 @@ public class GatewayRpcDispatcher   {
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.requestHandler = ControllerRequestHandler.getInstance();
 	}
+	
+	public List<SerializableResourceDescriptor> childNodes(String nodeId) {
+		return requestHandler.childNodes(nodeId);
+	}
+	
 	public void clearController() {
 		requestHandler.clearController();
 	}
-	
+
 	/**
 	 * This should always succeed because we create a block in the gateway whenever we 
 	 * create one from the palette.
@@ -76,9 +81,12 @@ public class GatewayRpcDispatcher   {
 		log.infof("%s.evaluateBlock ...",TAG);
 		requestHandler.evaluateBlock(diagramIdString,blockIdString);
 	}
+	
+
 	public String getApplicationName(String uuid) {
 		return requestHandler.getApplicationName(uuid);
 	}
+	
 
 	/**
 	 * Query the specified block for its properties. If the block does not exist, create it, given the
@@ -100,12 +108,12 @@ public class GatewayRpcDispatcher   {
 			log.warnf("%s.getBlockProperties: Block UUID string is illegal (%s), creating new",TAG,blockId);
 			blockUUID = UUID.nameUUIDFromBytes(blockId.getBytes());
 		}
-		BlockProperty[] propertyArray = requestHandler.
+		List<BlockProperty> propertyList = requestHandler.
 					getBlockProperties(className,projectId.longValue(),resourceId.longValue(),blockUUID);
 		List<String> result = null;
-		if( propertyArray!=null ) {
+		if( propertyList!=null ) {
 			result = new ArrayList<String>();
-			for( BlockProperty prop:propertyArray ) {
+			for( BlockProperty prop:propertyList ) {
 				// Python can return some nulls in the array
 				if( prop!=null ) {
 					result.add(prop.toJson());
@@ -118,8 +126,6 @@ public class GatewayRpcDispatcher   {
 		if( result!=null) log.debugf("%s.getBlockProperties: %s = %s",TAG,className,result.toString());
 		return result;
 	}
-	
-
 	/** The blocks implemented in Java are expected to reside in a jar named "block-definition.jar".
 	 *  We add the blocks implemented in Python to this list. We consider only classes that are in
 	 *  a "com/ils/block" package.
@@ -172,10 +178,12 @@ public class GatewayRpcDispatcher   {
 		}
 		return json;
 	}
+	
+	
 	public String getControllerState() {
 		return requestHandler.getExecutionState();
 	}
-	
+
 	/**
 	 * Find the parent application or diagram of the entity referenced by
 	 * the supplied id. Test the state and return the name of the appropriate
@@ -186,11 +194,13 @@ public class GatewayRpcDispatcher   {
 	public String getDatabaseForUUID(String uuid) {
 		return requestHandler.getDatabaseForUUID(uuid);
 	}
+	
+
 	public List<String> getDatasourceNames() {
 		return requestHandler.getDatasourceNames();
 	}
 	
-	
+
 	public List<String> getDiagramDescriptors(String projectName) {
 		log.infof("%s.getDiagramDescriptors ...",TAG);
 		List<String> results = new ArrayList<String>();
@@ -214,17 +224,14 @@ public class GatewayRpcDispatcher   {
 		}
 		return results;
 	}
-
 	public SerializableResourceDescriptor getDiagramForBlock(String blockId) {
-		// TODO Auto-generated method stub
-		return null;
+		return requestHandler.getDiagramForBlock(blockId);
 	}
-	
 
 	public String getDiagramState(Long projectId,Long resourceId) {
 		return requestHandler.getDiagramState(projectId,resourceId).name();
 	}
-	
+
 
 	public String getFamilyName(String uuid) {
 		return requestHandler.getFamilyName(uuid);
@@ -250,26 +257,29 @@ public class GatewayRpcDispatcher   {
 		}
 		return json;
 	}
-
+	
 	public Object getPropertyValue(String diagramId,String blockId,String propertyName) {
 		return requestHandler.getPropertyValue(diagramId, blockId, propertyName);
 	}
+	
 	public String getToolkitProperty(String propertyName) {
 		//log.infof("%s.getToolkitProperty: %s", TAG,propertyName);
 		return requestHandler.getToolkitProperty(propertyName);
 	}
 
 	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(String diagramId, String blockId) {
-		// TODO Auto-generated method stub
-		return null;
+		return requestHandler.listBlocksDownstreamOf(diagramId, blockId);
 	}
+	
 	public List<SerializableBlockStateDescriptor> listBlocksForTag(String tagpath) {
 		return requestHandler.listBlocksForTag(tagpath);
 	}
-	
 	public List<SerializableBlockStateDescriptor> listBlocksInDiagram(String diagramId) {
-		// TODO Auto-generated method stub
-		return null;
+		return requestHandler.listBlocksInDiagram(diagramId);
+	}
+	
+	public List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(String diagramId, String blockId) {
+		return requestHandler.listBlocksUpstreamOf(diagramId, blockId);
 	}
 	
 	public List<SerializableBlockStateDescriptor> listConfigurationErrors() {
@@ -279,17 +289,28 @@ public class GatewayRpcDispatcher   {
 	public List<SerializableBlockStateDescriptor> listDiagramBlocksOfClass(String diagramId, String className) {
 		return requestHandler.listDiagramBlocksOfClass(diagramId, className);
 	}
+	
+	
 	public List<SerializableResourceDescriptor> listDiagramDescriptors(String projectName) {
 		return requestHandler.listDiagramDescriptors(projectName);
 	}
+
 	public List<SerializableResourceDescriptor> listResourceNodes() {
 		return requestHandler.listResourceNodes();
 	}
-	
-	public List<SerializableBlockStateDescriptor> listSourcesForSink(String blockId) {
-		// TODO Auto-generated method stub
-		return null;
+
+	public List<SerializableBlockStateDescriptor> listSinksForSource(String blockId) {
+		return requestHandler.listSinksForSource(blockId);
 	}
+
+	public List<SerializableBlockStateDescriptor> listSourcesForSink(String blockId) {
+		return requestHandler.listSourcesForSink(blockId);
+	}
+	
+	public String pathForNode(String nodeId) {
+		return requestHandler.pathForNode(nodeId);
+	}
+
 	/**
 	 * Post a block result on its output. The transaction is from an external source.
 	 * @param blockId
@@ -299,7 +320,7 @@ public class GatewayRpcDispatcher   {
 	public void postResult(String diagramId,String blockId,String port,String value) {
 		requestHandler.postValue(diagramId,blockId, port, value);
 	}
-	
+
 	/** 
 	 *  @return
 	 */
@@ -307,7 +328,6 @@ public class GatewayRpcDispatcher   {
 		log.infof("%s.queryControllerResources ...",TAG);
 		return  requestHandler.listResourceNodes();
 	}
-	
 	/** 
 	 * @param diagId the identifier of the diagram of interest
 	 *  @return
@@ -316,7 +336,6 @@ public class GatewayRpcDispatcher   {
 		log.infof("%s.queryDiagram ... %s",TAG,diagId);
 		return  requestHandler.listBlocksInDiagram(diagId);
 	}
-	
 	/**
 	 * Reset a block in a diagram given string forms of their UUID
 	 * @param diagramIdString
@@ -326,8 +345,6 @@ public class GatewayRpcDispatcher   {
 		log.infof("%s.resetBlock ...",TAG);
 		requestHandler.resetBlock(diagramIdString,blockIdString);
 	}
-	
-	
 	/** 
 	 *  Reset every block in a diagram specified by id.
 	 */
@@ -352,6 +369,7 @@ public class GatewayRpcDispatcher   {
 		return new Boolean(requestHandler.sendLocalSignal(uuidString,command,message,arg));
 	}
 
+
 	/**
 	 * Set the state of every diagram in an application to the specified value.
 	 * @param appname
@@ -360,6 +378,7 @@ public class GatewayRpcDispatcher   {
 	public void setApplicationState(String appname, String state) {
 		requestHandler.setApplicationState(appname,state);
 	}
+
 	/** Set all changed properties for a block. 
 	 * @param diagramId the uniqueId of the parent diagram
 	 * @param blockId the uniqueId of the block
@@ -383,6 +402,12 @@ public class GatewayRpcDispatcher   {
 		catch(IOException ioe) {
 			log.warnf("%s.setBlockProperties: IO exception (%s)",TAG,ioe.getLocalizedMessage());
 		}; 
+	}
+
+	public void setBlockProperties(String diagId, String blockId,Collection<BlockProperty> props) {
+		UUID duuid = getBlockUUID(diagId);
+		UUID buuid = getBlockUUID(blockId);
+		requestHandler.setBlockProperties(duuid,buuid,props);
 	}
 
 	/** Set a new value for the specified block property. 
@@ -409,28 +434,35 @@ public class GatewayRpcDispatcher   {
 		}; 
 	}
 
+
 	public void setDiagramState(Long projectId,Long resourceId,String state) {
 		requestHandler.setDiagramState(projectId,resourceId,state);
 	}
+
 	public void setDiagramState(String diagramId,String state) {
 		requestHandler.setDiagramState(diagramId,state);
 	}
+
 	public void setTimeFactor(Double factor) {
 		log.infof("%s.setTimeFactor: %s", TAG, String.valueOf(factor.doubleValue()));
 		requestHandler.setTimeFactor(factor);
 	}
+
 	public void setToolkitProperty(String propertyName,String value) {
 		//log.infof("%s.setToolkitProperty: %s: %s", TAG, propertyName, value);
 		requestHandler.setToolkitProperty(propertyName,value);
 	}
+
 	public void startController() {
 		log.infof("%s.startController ...",TAG);
 		requestHandler.startController();
 	}
+
 	public void stopController() {
 		log.infof("%s.stopController ...",TAG);
 		requestHandler.stopController();
 	}
+
 	/**
 	 * Trigger status notifications for all current diagrams and their blocks.
 	 */
@@ -442,6 +474,7 @@ public class GatewayRpcDispatcher   {
 			log.errorf(TAG+".triggerStatusNotification: EXCEPTION", ex);
 		}
 	}
+
 	/** Change the properties of anchors for a block. 
 	 * @param diagramId the uniqueId of the parent diagram
 	 * @param blockId the uniqueId of the block

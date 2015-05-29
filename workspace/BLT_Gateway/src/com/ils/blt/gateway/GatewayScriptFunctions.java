@@ -23,12 +23,19 @@ public class GatewayScriptFunctions   {
 	private static ControllerRequestHandler handler = ControllerRequestHandler.getInstance();
 	private static PythonRequestHandler pyhandler = new PythonRequestHandler();
 	
+	public static List<SerializableResourceDescriptor> childNodes(String nodeId) {
+		return handler.childNodes(nodeId);
+	}
+
 	/**
 	 * Remove all running diagrams from the controller. 
 	 * Cancel all tag subscriptions. 
 	 */
 	public static void clearController() {
 		handler.clearController();
+	}
+	public static void evaluateBlock(String diagramId,String blockId) {
+		handler.evaluateBlock(diagramId,blockId);
 	}
 	public static String getApplicationName(String uuid) {
 		return handler.getApplicationName(uuid);
@@ -148,7 +155,15 @@ public class GatewayScriptFunctions   {
 	public static List<SerializableBlockStateDescriptor> listBlocksInDiagram(String diagramId) {
 		return handler.listBlocksInDiagram(diagramId);
 	}
-	
+	/**
+	 * Query a diagram in the gateway for list of its blocks that are upstream
+	 * of the specified block. 
+	 * @param diagramId identifier of the diagram owning the block, a String
+	 * @return a list of blocks upstream of the block specified, in the diagram.
+	 */
+	public static List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(String diagramId,String blockId){
+		return handler.listBlocksUpstreamOf(diagramId,blockId);
+	}
 	/**
 	 * The result is a list of SerializableBlockState descriptors for those 
 	 * blocks in any project that have configuration issues. Descriptor attributes
@@ -190,6 +205,17 @@ public class GatewayScriptFunctions   {
 	public static List<SerializableResourceDescriptor> listResourceNodes(){
 		return handler.listResourceNodes();
 	}
+
+	/**
+	 * Query the gateway for list of its sink blocks associated with the
+	 * specified source. The blocks that are returned are not constrained
+	 * to be part of the same diagram, family or application.
+	 * @param blockId identifier for the source block, a String 
+	 * @return a list of blocks logically connected to the source.
+	 */
+	public static List<SerializableBlockStateDescriptor> listSinksForSource(String blockId) {
+		return handler.listSinksForSource(blockId);
+	}
 	/**
 	 * Query the gateway for list of its source blocks associated with the
 	 * specified sink. The blocks that are returned all belong to the same
@@ -199,6 +225,14 @@ public class GatewayScriptFunctions   {
 	 */
 	public static List<SerializableBlockStateDescriptor> listSourcesForSink(String blockId) {
 		return handler.listSourcesForSink(blockId);
+	}
+	/** 
+	 * @param nodeId
+	 * @return a colon-separated path to the specified node. The path includes
+	 *         the project name.
+	 */
+	public String pathForNode(String nodeId) {
+		return handler.pathForNode(nodeId);
 	}
 	/**
 	 * Post a (simulated) block result on its output.

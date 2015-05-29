@@ -265,6 +265,15 @@ public class ModelManager implements ProjectListener  {
 	 */
 	public RootNode getRootNode() { return root; }
 	
+	
+	public String pathForBlock(UUID blockId) {
+		String path = "";
+		ProcessNode node = nodesByUUID.get(blockId);
+		if( node!=null) path = node.getTreePath(nodesByUUID);
+		
+		return path.toString();
+		
+	}
 	/**
 	 * Remove a diagram that is not associated with a project resource,
 	 * nor with the folder hierarchy.

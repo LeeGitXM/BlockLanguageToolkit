@@ -38,6 +38,7 @@ import com.ils.blt.migration.map.ClassNameMapper;
 import com.ils.blt.migration.map.ConnectionMapper;
 import com.ils.blt.migration.map.ProcedureMapper;
 import com.ils.blt.migration.map.PropertyMapper;
+import com.ils.blt.migration.map.PropertyValueMapper;
 import com.ils.blt.migration.map.PythonPropertyMapper;
 import com.ils.blt.migration.map.TagMapper;
 
@@ -61,6 +62,7 @@ public class Migrator {
 	private final PythonPropertyMapper pythonPropertyMapper;
 	private final ConnectionMapper connectionMapper;
 	private final PropertyMapper propertyMapper;
+	private final PropertyValueMapper propertyValueMapper;
 	private final TagMapper tagMapper;
 
 
@@ -72,6 +74,7 @@ public class Migrator {
 		connectionMapper = new ConnectionMapper();
 		procedureMapper = new ProcedureMapper();
 		propertyMapper = new PropertyMapper();
+		propertyValueMapper = new PropertyValueMapper();
 		pythonPropertyMapper = new PythonPropertyMapper();
 		tagMapper = new TagMapper();
 	}
@@ -87,6 +90,7 @@ public class Migrator {
 			classMapper.createMap(connection);
 			procedureMapper.createMap(connection);
 			propertyMapper.createMap(connection);
+			propertyValueMapper.createMap(connection);
 			pythonPropertyMapper.createMap(connection);
 			tagMapper.createMap(connection);
 		}
@@ -340,6 +344,11 @@ public class Migrator {
 					}
 				}
 			}
+		}
+		// Modify property values if appropriate
+		for(BlockProperty prop:block.getProperties()) {
+			String newValue = propertyValueMapper.getPropertyValueForIgnition(prop.getName(),prop.getValue().toString());
+			if( newValue!=null) prop.setValue(newValue);
 		}
 	}
 	/**

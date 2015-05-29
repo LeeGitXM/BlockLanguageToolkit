@@ -80,5 +80,9 @@ public class BasicExecutionController implements ExecutionController  {
 	public void updateTag(UUID diagramId,String path,QualifiedValue val) {
 		log.warnf("%s.updateTag: WARNING: Executed from stub class",TAG);
 	}
+	public boolean validateTag(UUID diagramId,String tagPath) {
+		log.warnf("%s.validateTag: WARNING: Executed from stub class",TAG);
+		return false;
+	}
 
 }

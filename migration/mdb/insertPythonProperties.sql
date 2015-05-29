@@ -1,29 +1,39 @@
 -- These are class-dependent attributes for classes implemented in Python
+-- Columns are:  className, Key, Value  for the block descriptors.
+--    keys: blockStyle,editorClass,iconPath,label,nameDisplayed,nameOffsetX,nameOffsetY,tooltip,tabName,
+--          viewBackgroundColor,viewBlockIcon,viewFontSize,viewHeight,viewIcon,viewLabel,viewWidth
 -- Columns are:  className, shape,embedded icon,embedded text, icon path, text size, width, height 
--- NOTE: The icon path is an icon path to use if the entire rendering is an icon.
-insert into PythonPrototypes values ('xom.block.action.Action','SQUARE','Block/icons/embedded/gear.png','','',24,70,70);
-insert into PythonPrototypes values ('xom.block.arithmetic.Arithmetic','SQUARE','Block/icons/embedded/fx.png','','',24,150,100);
-insert into PythonPrototypes values ('xom.block.finaldiagnosis.FinalDiagnosis','SQUARE','','Final Diagnosis','',24,100,80);
-insert into PythonPrototypes values ('xom.block.sqcdiagnosis.SQCDiagnosis','SQUARE','','SQC Diagnosis','',24,100,80);
-insert into PythonPrototypes values ('xom.block.subdiagnosis.SubDiagnosis','SQUARE','','Sub Diagnosis','',24,100,80);
+insert into PythonPrototypes values ('xom.block.action.Action','blockstyle','SQUARE');
+insert into PythonPrototypes values ('xom.block.action.Action','viewIcon','Block/icons/embedded/gear.png');
+insert into PythonPrototypes values ('xom.block.action.Action','viewFontSize','24');
+insert into PythonPrototypes values ('xom.block.action.Action','viewHeight','70');
+insert into PythonPrototypes values ('xom.block.action.Action','viewWidth','70');
+insert into PythonPrototypes values ('xom.block.arithmetic.Arithmetic','blockstyle','SQUARE');
+insert into PythonPrototypes values ('xom.block.arithmetic.Arithmetic','viewIcon','Block/icons/embedded/gear.png');
+insert into PythonPrototypes values ('xom.block.arithmetic.Arithmetic','viewFontSize','24');
+insert into PythonPrototypes values ('xom.block.arithmetic.Arithmetic','viewHeight','100');
+insert into PythonPrototypes values ('xom.block.arithmetic.Arithmetic','viewWidth','150');
+insert into PythonPrototypes values ('xom.block.finaldiagnosis.FinalDiagnosis','blockstyle','SQUARE');
+insert into PythonPrototypes values ('xom.block.finaldiagnosis.FinalDiagnosis','editorClass','com.ils.blt.designer.config.FinalDiagnosisConfiguration');
+insert into PythonPrototypes values ('xom.block.finaldiagnosis.FinalDiagnosis','viewLabel','Final Diagnosis');
+insert into PythonPrototypes values ('xom.block.finaldiagnosis.FinalDiagnosis','viewFontSize','24');
+insert into PythonPrototypes values ('xom.block.finaldiagnosis.FinalDiagnosis','viewHeight','80');
+insert into PythonPrototypes values ('xom.block.finaldiagnosis.FinalDiagnosis','viewWidth','100');
+
+insert into PythonPrototypes values ('xom.block.sqcdiagnosis.SQCDiagnosis','blockstyle','SQUARE');
+insert into PythonPrototypes values ('xom.block.sqcdiagnosis.SQCDiagnosis','viewLabel','SQC Diagnosis');
+insert into PythonPrototypes values ('xom.block.sqcdiagnosis.SQCDiagnosis','viewFontSize','24');
+insert into PythonPrototypes values ('xom.block.sqcdiagnosis.SQCDiagnosis','viewHeight','80');
+insert into PythonPrototypes values ('xom.block.sqcdiagnosis.SQCDiagnosis','viewWidth','100');
+insert into PythonPrototypes values ('xom.block.subdiagnosis.SubDiagnosis','blockstyle','SQUARE');
+insert into PythonPrototypes values ('xom.block.subdiagnosis.SubDiagnosis','viewLabel','Sub Diagnosis');
+insert into PythonPrototypes values ('xom.block.subdiagnosis.SubDiagnosis','viewFontSize','24');
+insert into PythonPrototypes values ('xom.block.subdiagnosis.SubDiagnosis','viewHeight','80');
+insert into PythonPrototypes values ('xom.block.subdiagnosis.SubDiagnosis','viewWidth','100');
 
 -- Columns are:  className, propertyName, propertyType, editable
 insert into PythonBlockProperties values ('xom.block.action.Action','Script','STRING',1);
 insert into PythonBlockProperties values ('xom.block.arithmetic.Arithmetic','Function','STRING',1);
-insert into PythonBlockProperties values ('xom.block.finaldiagnosis.FinalDiagnosis','CalculationMethod','SCRIPTREF',1);
-insert into PythonBlockProperties values ('xom.block.finaldiagnosis.FinalDiagnosis','Explanation','STRING',1);
 insert into PythonBlockProperties values ('xom.block.finaldiagnosis.FinalDiagnosis','Label','STRING',1);
--- insert into PythonBlockProperties values ('xom.block.finaldiagnosis.FinalDiagnosis','LogToDatabase','BOOLEAN',1);
--- insert into PythonBlockProperties values ('xom.block.finaldiagnosis.FinalDiagnosis','ManualMove','BOOLEAN',1);
--- insert into PythonBlockProperties values ('xom.block.finaldiagnosis.FinalDiagnosis','ManualMoveValue','DOUBLE',1);
--- insert into PythonBlockProperties values ('xom.block.finaldiagnosis.FinalDiagnosis','ManualTextRequired','BOOLEAN',1);
--- insert into PythonBlockProperties values ('xom.block.finaldiagnosis.FinalDiagnosis','Multiplier','DOUBLE',1);
-insert into PythonBlockProperties values ('xom.block.finaldiagnosis.FinalDiagnosis','PostTextRecommendation','BOOLEAN',1);
-insert into PythonBlockProperties values ('xom.block.finaldiagnosis.FinalDiagnosis','Priority','DOUBLE',1);
-insert into PythonBlockProperties values ('xom.block.finaldiagnosis.FinalDiagnosis','TextRecommendation','STRING',1);
-insert into PythonBlockProperties values ('xom.block.finaldiagnosis.FinalDiagnosis','TextRecommendationCallback','SCRIPTREF',1);
-insert into PythonBlockProperties values ('xom.block.finaldiagnosis.FinalDiagnosis','RecommendationRefreshInterval','DOUBLE',1);
-insert into PythonBlockProperties values ('xom.block.finaldiagnosis.FinalDiagnosis','Targets','LIST',1);
--- insert into PythonBlockProperties values ('xom.block.finaldiagnosis.FinalDiagnosis','TrapInsignificantConditions','BOOLEAN',1);
 insert into PythonBlockProperties values ('xom.block.sqcdiagnosis.SQCDiagnosis','Label','STRING',1);
 insert into PythonBlockProperties values ('xom.block.subdiagnosis.SubDiagnosis','Label','STRING',1);

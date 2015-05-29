@@ -37,4 +37,5 @@ public interface ExecutionController  {
 	public void sendConnectionNotification(String blockid, String port, QualifiedValue val);
 	public void sendStateNotification(String diagramid, String val);
 	public void updateTag(UUID diagramId,String path,QualifiedValue val);
+	public boolean validateTag(UUID diagramId,String tagPath); 
 }

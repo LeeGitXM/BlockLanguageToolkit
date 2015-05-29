@@ -127,8 +127,8 @@ public class ValidationDialog extends JDialog {
 		JPanel outerPanel = new JPanel();
 		JTable table = new JTable();
 		int nColumns = columnNames.length;
-		//outerPanel.setLayout(new MigLayout("ins 2,filly","para[:480:]","[120]"));
-		outerPanel.setLayout(new MigLayout("ins 2,fillx,filly","",""));
+		//outerPanel.setLayout(new MigLayout("ins 2,filly","",""));
+		outerPanel.setLayout(new MigLayout("ins 2,fillx,filly","para[:480:]","[120]"));
 		DefaultTableModel dataModel = new DefaultTableModel(columnNames,0); 
 		for( SerializableBlockStateDescriptor bsd:issues) {
 			String[] row = new String[nColumns];

@@ -19,6 +19,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  */
 public class ProcessNode implements Serializable {
 	private static final long serialVersionUID = 6280701183405134254L;
+	private final static String PATH_SEPARATOR = ":";
 	private final Map<Long,ProcessNode> children;   // Key by resourceId
 	protected final LoggerEx log;
 	private String name;
@@ -87,12 +88,12 @@ public class ProcessNode implements Serializable {
 		StringBuffer buf = new StringBuffer(name);
 		ProcessNode parentNode = nodesByUUID.get(getParent());
 		while(parentNode!=null) {
-			buf.insert(0,":");
+			buf.insert(0,PATH_SEPARATOR);
 			buf.insert(0,parentNode.getName());
 			if( parentNode.getParent()==null) break;
 			parentNode = nodesByUUID.get(parentNode.getParent());
 		}
-		buf.insert(0,":");  // Leading colon
+		buf.insert(0,PATH_SEPARATOR);  // Leading colon
 		return buf.toString();
 	}
 	@Override
