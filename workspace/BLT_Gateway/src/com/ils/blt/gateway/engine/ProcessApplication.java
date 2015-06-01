@@ -5,8 +5,10 @@ package com.ils.blt.gateway.engine;
 
 import java.util.UUID;
 
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.serializable.SerializableApplication;
+import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 
 /**
  * An application is a specialized process node.
@@ -38,5 +40,10 @@ public class ProcessApplication extends ProcessNode {
 	
 	public DiagramState getState() {return state;}
 	public void setState(DiagramState s) { this.state = s; }
-
+	@Override
+	public SerializableResourceDescriptor toResourceDescriptor() {
+		SerializableResourceDescriptor descriptor = super.toResourceDescriptor();
+		descriptor.setType(BLTProperties.APPLICATION_RESOURCE_TYPE);
+		return descriptor;
+	}
 }

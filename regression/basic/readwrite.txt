@@ -1,50 +1,60 @@
 #
 # Simple test of an input and readout
 #
+DIAGRAM="app75/family75/readwrite"
+Show: browser $DIAGRAM
+
+tag: Parameter MemoryTags/NumericParameter
+tag: ReadWriteBooleanOutput MemoryTags/ReadWriteBooleanOutput
+tag: ReadWriteNumericOutput MemoryTags/ReadWriteNumericOutput
+tag: ReadWriteSink MemoryTags/ReadWriteSink
+tagset: SingleBoolean MemoryTags/BooleanFeed
+tagset: DualInput MemoryTags/DoubleInput1 MemoryTags/DoubleInput2
+tagset: ReadWriteSource MemoryTags/NumericSource
+
 Test: Reading and Writing Tags
 Step: Boolean tag reader
-Show: browser "app75/family75/readwrite"
 Tagset: SingleBoolean
 10:00 true
 10:00:20 Assert: ReadWriteBooleanOutput = True "Output is true"
-10:01 false
-10:01:20 Assert: ReadWriteBooleanOutput = False "Output is false"
-10:02 true
-10:03 true
-10:03:20 Assert: ReadWriteBooleanOutput = True "Output is true"
+10:00:30 false
+10:00:40 Assert: ReadWriteBooleanOutput = False "Output is false"
+10:01 true
+10:01:30 true
+10:01:40 Assert: ReadWriteBooleanOutput = True "Output is true"
 
 Step: Numeric tag reader
 Tagset: DualInput
-10:04  1
-10:04:20 Assert: ReadWriteNumericOutput = 1 "Output is 1"
-10:05  2
-10:06  3
-10:06:20 Assert: ReadWriteNumericOutput = 3 "Output is 3"
-10:07  4
-10:08  5
-10:08:20 Assert: ReadWriteNumericOutput = 5 "Output is 5"
+10:02  1
+10:02:20 Assert: ReadWriteNumericOutput = 1 "Output is 1"
+10:02:30  2
+10:03  3
+10:03:20 Assert: ReadWriteNumericOutput = 3 "Output is 3"
+10:03:30  4
+10:04  5
+10:04:20 Assert: ReadWriteNumericOutput = 5 "Output is 5"
 
 
 Step: Dual Inputs
-resetDiagram (app75/family75/readwrite)
-10:09  1
-10:09:20 Assert: ReadWriteNumericOutput = 1 "Output is 1"
-10:10  , 2
-10:10:20 Assert: ReadWriteNumericOutput = 2 "Output is 2"
-10:10  , 2
-10:10:20 Assert: ReadWriteNumericOutput = 2 "Output is 2"
-10:10  3
-10:10:20 Assert: ReadWriteNumericOutput = 3 "Output is 3"
-10:10  4 2
-10:10:20 Assert: ReadWriteNumericOutput = 4 "Output is 4"
+resetDiagram ($DIAGRAM)
+10:05  1
+10:05:20 Assert: ReadWriteNumericOutput = 1 "Output is 1"
+10:05:30  , 2
+10:05:40 Assert: ReadWriteNumericOutput = 2 "Output is 2"
+10:06  , 2
+10:06:20 Assert: ReadWriteNumericOutput = 2 "Output is 2"
+10:06:30  3
+10:06:40 Assert: ReadWriteNumericOutput = 3 "Output is 3"
+10:07  4 2
+10:07:20 Assert: ReadWriteNumericOutput = 4 "Output is 4"
 
 Step: Numeric source to sink
 Tagset: ReadWriteSource
-10:10 99
-10:11 98
-10:12:20 Assert: ReadWriteSink = 98 "Sink is 98"
-10:13 97
-10:14 96
-10:15:10 Assert: Parameter = 96 "Parameter is 96"
-10:16 95
-10:16:20 Assert: ReadWriteSink = 95 "Sink is 95"
+10:07:30 99
+10:08 98
+10:08:20 Assert: ReadWriteSink = 98 "Sink is 98"
+10:08:30 97
+10:09 96
+10:09:10 Assert: Parameter = 96 "Parameter is 96"
+10:09:30 95
+10:09:40 Assert: ReadWriteSink = 95 "Sink is 95"

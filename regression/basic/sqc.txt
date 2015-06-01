@@ -9,77 +9,125 @@
 #  NumbeOfStandardDeviations = 1.5
 #  Block is TRUE if a rule has been violated
 #
-Test: SQC Block
-Show: browser "app75/family75/sqc"
+DIAGRAM="app75/family75/sqc"
+Show: browser $DIAGRAM
+
+# SQC Blocks have custom names
+S1="SQC-1"
+S2="SQC-2"
+S3="SQC-3"
+S4="SQC-4"
+
+tag: SQC1 MemoryTags/SQCOut1
+tag: SQC2 MemoryTags/SQCOut2
+tag: SQC3 MemoryTags/SQCOut3
+tag: SQC4 MemoryTags/SQCOut4
+
 # Tags are: Feed StdDev Target
+tagset: SQC MemoryTags/MJKFeed1 MemoryTags/MJKSQCStdDev MemoryTags/MJKSQCTarget
 Tagset: SQC
 
 # NOTE: Cannot count on SQC-2 during initialization because if does not clear on reset.
+Test: SQC Block
 Step: In-Range Values
 09:57 0.0 0.0 0.0
-09:58 resetDiagram (app75/family75/sqc)
+09:58 resetDiagram ($DIAGRAM)
 09:59 .9 1.0 0.01
-10:00 Assert: SQC3 = UNKNOWN  "3 UNKNOWN after reset"
+10:00 Assert: getState($DIAGRAM,$S3) = UNKNOWN  "3 state  UNKNOWN after reset"
+10:05 Assert: SQC3                   = UNKNOWN  "3 output UNKNOWN after reset"
 10:00:01 0.93 
-10:00:50 Assert: SQC3 = False "3 False at threshold"
-10:00:55 Assert: SQC4 = UNKNOWN  "4 UNKNOWN before threshold"
-10:00:58 Assert: SQC1 = UNKNOWN  "1 UNKNOWN before threshold"
+10:00:50 Assert: getState($DIAGRAM,$S3) = False "3 state  False at threshold"
+10:00:52 Assert: SQC3                   = False "3 output False at threshold"
+10:00:53 Assert: getState($DIAGRAM,$S4) = UNKNOWN  "4 state  UNKNOWN before threshold"
+10:00:55 Assert: SQC4                   = UNKNOWN  "4 output UNKNOWN before threshold"
+10:00:57 Assert: getState($DIAGRAM,$S1) = UNKNOWN  "1 state  UNKNOWN before threshold"
+10:00:58 Assert: SQC1                   = UNKNOWN  "1 output UNKNOWN before threshold"
 10:01 0.1 
-10:01:55 Assert: SQC3 = false "3 false past threshold"
+10:01:50 Assert: getState($DIAGRAM,$S3) = false "3 state  false past threshold"
+10:01:55 Assert: SQC3                   = false "3 output false past threshold"
 10:02 1.1
-10:02:55 Assert: SQC1 = false "1 false at threshold"
-10:02:55 Assert: SQC2 = false "2 false at threshold"
-10:02:55 Assert: SQC4 = true  "4 true at threshold"
+10:02:45 Assert: getState($DIAGRAM,$S1) = false "1 state  false at threshold"
+10:02:42 Assert: SQC1                   = false "1 output false at threshold"
+10:02:45 Assert: getState($DIAGRAM,$S2) = false "2 state  false at threshold"
+10:02:47 Assert: SQC2                   = false "2 output false at threshold"
+10:02:50 Assert: getState($DIAGRAM,$S4) = true  "4 state  true at threshold"
+10:02:55 Assert: SQC4                   = true  "4 output true at threshold"
 10:03 1.4 
 
 Step: High Values
 10:03 1.6
-10:03:55 Assert: SQC1 = true "1 true at 1 high"
-10:03:55 Assert: SQC3 = false "3 false at 1 high"
-10:06:55 Assert: SQC2 = false "2 false at none low"
+10:03:40 Assert: getState($DIAGRAM,$S1) = true "1 state  true at 1 high"
+10:03:45 Assert: SQC1                   = true "1 output true at 1 high"
+10:03:50 Assert: getState($DIAGRAM,$S3) = false "3 state  false at 1 high"
+10:03:55 Assert: SQC3                   = false "3 output false at 1 high"
+10:06:50 Assert: getState($DIAGRAM,$S2) = false "2 state  false at none low"
+10:06:55 Assert: SQC2                   = false "2 output false at none low"
 10:04 1.7
-10:04:55 Assert: SQC1 = true  "1 true at 2 high"
-10:04:55 Assert: SQC3 = false "3 false at 2 high, need 3"
+10:04:40 Assert: getState($DIAGRAM,$S1) = true  "1 state  true at 2 high"
+10:04:45 Assert: SQC1                   = true  "1 output true at 2 high"
+10:04:50 Assert: getState($DIAGRAM,$S3) = false "3 state  false at 2 high, need 3"
+10:04:55 Assert: SQC3                   = false "3 output false at 2 high, need 3"
 10:06 1.71
-10:06:55 Assert: SQC2 = false "2 false - unaffected by low-side reset"
-10:06:55 Assert: SQC4 = true  "4 true"
+10:06:40 Assert: getState($DIAGRAM,$S2) = false "2 state  false - unaffected by low-side reset"
+10:06:45 Assert: SQC2                   = false "2 output false - unaffected by low-side reset"
+10:06:50 Assert: getState($DIAGRAM,$S4) = true  "4 state  true"
+10:06:55 Assert: SQC4                   = true  "4 output true"
 10:07 1.75
 
 Step: Low Values
 10:08 -1.6
-10:08:55 Assert: SQC1 = true  "1 true at 1 on other side of target"
-10:08:55 Assert: SQC4 = true  "4 true at 1 on other side of target"
+10:08:40 Assert: getState($DIAGRAM,$S1) = true  "1 state  true at 1 on other side of target"
+10:08:45 Assert: SQC1                   = true  "1 output true at 1 on other side of target"
+10:08:50 Assert: getState($DIAGRAM,$S4) = true  "4 state  true at 1 on other side of target"
+10:08:55 Assert: SQC4                   = true  "4 output true at 1 on other side of target"
 10:09 -1.7
-10:09:55 Assert: SQC2 = true  "2 true at 2 low"
-10:09:55 Assert: SQC4 = false "4 false at 2 on each side of target"
+10:09:40 Assert: getState($DIAGRAM,$S2) = true  "2 state  true at 2 low"
+10:09:45 Assert: SQC2                   = true  "2 output true at 2 low"
+10:09:50 Assert: getState($DIAGRAM,$S4) = false "4 state  false at 2 on each side of target"
+10:09:55 Assert: SQC4                   = false "4 output false at 2 on each side of target"
 10:10 -1.72
-10:10:55 Assert: SQC1 = true "1 true at still 1 high"
+10:10:50 Assert: getState($DIAGRAM,$S1) = true "1 state  true at still 1 high"
+10:10:55 Assert: SQC1                   = true "1 output true at still 1 high"
 10:11 -1.8
-10:11:55 Assert: SQC3 = true  "3 true at 4 low"
-10:11:55 Assert: SQC4 = true  "4 true at 4 on low side"
+10:11:40 Assert: getState($DIAGRAM,$S3) = true  "3 state  true at 4 low"
+10:11:45 Assert: SQC3                   = true  "3 output true at 4 low"
+10:11:50 Assert: getState($DIAGRAM,$S4) = true  "4 state  true at 4 on low side"
+10:11:55 Assert: SQC4                   = true  "4 output true at 4 on low side"
 
 Step: Out-of-Range Values
 10:12 1.9
-10:12:55 Assert: SQC1 = true "1 true with 1 high value"
-10:12:55 Assert: SQC2 = false "2 emits false after clear low"
-10:12:55 Assert: SQC3 = true  "3 true at 4 out of range"
-10:12:55 Assert: SQC4 = true  "4 true"
+10:12:50 Assert: getState($DIAGRAM,$S1) = true "1 state  true with 1 high value"
+10:12:51 Assert: SQC1                   = true "1 output true with 1 high value"
+10:12:52 Assert: getState($DIAGRAM,$S2) = false "2 state  emits false after clear low"
+10:12:53 Assert: SQC2                   = false "2 output emits false after clear low"
+10:12:54 Assert: getState($DIAGRAM,$S3) = true  "3 state  true at 4 out of range"
+10:12:55 Assert: SQC3                   = true  "3 output true at 4 out of range"
+10:12:56 Assert: getState($DIAGRAM,$S4) = true  "4 state  true"
+10:12:57 Assert: SQC4                   = true  "4 output true"
 10:13 1.1
-10:13:55 Assert: SQC2 = true "2 true with 2 low values remaining"
+10:13:50 Assert: getState($DIAGRAM,$S2) = true "2 state  true with 2 low values remaining"
+10:13:55 Assert: SQC2                   = true "2 output true with 2 low values remaining"
 10:14 0.9
-10:14:55 Assert: SQC3 = false "3 false with 2 of 4 out of range"
+10:14:50 Assert: getState($DIAGRAM,$S3) = false "3 state  false with 2 of 4 out of range"
+10:14:55 Assert: SQC3                   = false "3 output false with 2 of 4 out of range"
 10:15 1.04
-10:15:45 Assert: SQC2 = false "2 false with last 3 in-range"
+10:15:40 Assert: getState($DIAGRAM,$S2) = false "2 state  false with last 3 in-range"
+10:15:45 Assert: SQC2                   = false "2 output false with last 3 in-range"
 
 
 Step: Clear On Reset
-10:16    resetDiagram (app75/family75/sqc)
+10:16    resetDiagram ($DIAGRAM)
 10:16:10 Assert: SQC1 = true  "1 downstream output still true after reset"
-10:16:20 Assert: SQC2 != UNKNOWN "2 not UNKNOWN after reset"
+10:16:20 Assert: getState($DIAGRAM,$S2) != UNKNOWN "2 state  not UNKNOWN after reset"
+10:16:25 Assert: SQC2                   != UNKNOWN "2 output not UNKNOWN after reset"
 10:17 7.534
-10:17:55 Assert: SQC1 = true  "1 true 1 after reset"
-10:17:55 Assert: SQC4 = UNKNOWN  "4 UNKNOWN after reset"
+10:17:40 Assert: getState($DIAGRAM,$S1) = true  "1 state  true 1 after reset"
+10:17:45 Assert: SQC1                   = true  "1 output true 1 after reset"
+10:17:50 Assert: getState($DIAGRAM,$S4) = UNKNOWN  "4 state  UNKNOWN after reset"
+10:17:55 Assert: SQC4                   = UNKNOWN  "4 output UNKNOWN after reset"
 10:18 7.3
-10:18:55 Assert: SQC3 = UNKNOWN  "3 UNKNOWN after reset"
+10:18:50 Assert: getState($DIAGRAM,$S3) = UNKNOWN  "3 state  UNKNOWN after reset"
+10:18:55 Assert: SQC3                   = UNKNOWN  "3 output UNKNOWN after reset"
 10:19 7.42
-10:19:25 Assert: SQC3 = true  "3 true 3 after reset"
+10:19:20 Assert: getState($DIAGRAM,$S3) = true  "3 state  true 3 after reset"
+10:19:25 Assert: SQC3                   = true  "3 output true 3 after reset"

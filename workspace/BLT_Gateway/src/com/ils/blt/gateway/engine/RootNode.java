@@ -102,6 +102,20 @@ public class RootNode extends ProcessNode {
 		list.add(root);
 	}
 	
+	/**
+	 * Do a search to get the name of the project for this node.
+	 * @return
+	 */
+	public String projectName() {
+		String name = "";
+		for( String key:projectIdByName.keySet()) {
+			if(projectIdByName.get(key).longValue()==projectId ) {
+				name = key;
+				break;
+			}	
+		}
+		return name;	
+	}
  
 	/**
 	 * Remove the children of a project. 

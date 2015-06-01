@@ -1,10 +1,14 @@
 #
 # Test of Final Diagnosis Calculations
 #
-Test: Final Diagnosis Calculations
-Show: browser "app75/fdfam1/finaldiagnosis"
-resetDiagram (app75/fdfam1/finaldiagnosis)
+DIAGRAM="app75/family75/finaldiagosis"
+Show: browser $DIAGRAM
+resetDiagram ($DIAGRAM)
+
+tagset: FD MemoryTags/FdInput1-1 MemoryTags/FdInput2-1 MemoryTags/FdInput2-2 MemoryTags/FdInput2-3 Configuration/DiagnosticToolkit/vectorClampMode
 Tagset: FD
+
+Test: Final Diagnosis Calculations
 Step: Initialize
 10:00 false false false false ""
 applicationProxy.configureForTest("app75")

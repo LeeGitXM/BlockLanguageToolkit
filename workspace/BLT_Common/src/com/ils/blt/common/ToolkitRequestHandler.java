@@ -216,11 +216,12 @@ public interface ToolkitRequestHandler  {
 	 */
 	public List<SerializableBlockStateDescriptor> listSourcesForSink(String blockId) ;
 	/** 
-	 * @param nodeId
-	 * @return a colon-separated path to the specified node. The path includes
+	 * @param diagramId of the parent diagram
+	 * @param blockName name of the block within the diagram
+	 * @return a colon-separated path to the specified block. The path includes
 	 *         the project name.
 	 */
-	public String pathForNode(String nodeId);
+	public String pathForBlock(String diagramId,String blockName);
 	/**
 	 * Execute reset() on a specified block
 	 */

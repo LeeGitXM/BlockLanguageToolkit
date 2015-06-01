@@ -1,16 +1,24 @@
 #
 # Test of a data conditioner with qualified value
 #
-Test: Data Conditioner and QualifiedValue
-Show: browser "app75/family75/dataconditioner"
+DIAGRAM="app75/family75/dataconditioner"
+C="DATACONDITIONER-341"
+Show: browser $DIAGRAM
+
+tagset: DataConditioner MemoryTags/MJKFeed1 MemoryTags/Quality MemoryTags/DataState
+tag: ConditionerData MemoryTags/ConditionerData
+tag: ConditionerQuality MemoryTags/ConditionerQuality
+
 Tagset: DataConditioner
 09:59:30 22.3 "not good" true
-resetDiagram (app75/family75/dataconditioner)
+resetDiagram ($DIAGRAM)
+Test: Data Conditioner and QualifiedValue
 Step: All good
 10:00 40.3 good false
-10:00:40 Assert: ConditionerData = 40.3  "Normal passthru"
+10:00:45 Assert: ConditionerData = 40.3  "Normal passthru"
+10:00:50 Assert: getState($DIAGRAM,$C) = FALSE  "block state is normal"
 10:01 41.8 good false
-10:01:40 Assert: ConditionerData = 41.8  "Normal passthru"
+10:01:45 Assert: ConditionerData = 41.8  "Normal passthru"
 10:02 42.0 good false
 10:02:40 Assert: ConditionerData = 42    "Normal passthru (42)"
 10:02:50 Assert: ConditionerQuality = false "Good quality"
@@ -19,7 +27,8 @@ Step: Bad qualified value
 10:03 68.1 ugly false
 10:04 68.8 BAD false
 10:04:40 Assert: ConditionerData = 42  "No passthru with main input bad"
-10:04:50 Assert: ConditionerQuality = true "Quality problem"
+10:04:50 Assert: getState($DIAGRAM,$C) = TRUE  "block state indicates problem"
+10:04:55 Assert: ConditionerQuality = true "Quality problem"
 Step: Bad conditioner
 10:05 78.1 good true
 10:06 78.8 good true
@@ -30,10 +39,12 @@ Step: Both bad
 10:07 88.1 bad false
 10:08 88.8 bad true
 10:08:10 Assert: ConditionerData = 42  "No passthru both indicators bad"
+10:08:50 Assert: getState($DIAGRAM,$C) = TRUE  "block state indicates problem"
 10:08:20 Assert: ConditionerQuality = true "Quality problem"
 
 Step: Resumption of good
 10:09 78.1 bad false
 10:10 58.8 good false
 10:10:40 Assert: ConditionerData = 58.8  "Passthru when both are good"
+10:10:45 Assert: getState($DIAGRAM,$C) = FALSE  "block state is false"
 10:10:50 Assert: ConditionerQuality = false "Good quality"

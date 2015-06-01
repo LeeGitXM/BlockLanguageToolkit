@@ -10,7 +10,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
+import com.ils.blt.common.block.AnchorDirection;
+import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.ProcessBlock;
@@ -23,6 +26,7 @@ import com.ils.blt.common.notification.SignalNotification;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableConnection;
 import com.ils.blt.common.serializable.SerializableDiagram;
+import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.common.watchdog.WatchdogTimer;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -41,6 +45,7 @@ public class ProcessDiagram extends ProcessNode {
 	private boolean valid = false;
 	protected final Map<UUID,ProcessBlock> blocks;
 	private final Map<ConnectionKey,ProcessConnection> connectionMap;            // Key by connection number
+	protected final Map<BlockPort,List<ProcessConnection>> incomingConnections;  // Key by downstream block:port
 	protected final Map<BlockPort,List<ProcessConnection>> outgoingConnections;  // Key by upstream block:port
 	private DiagramState state = DiagramState.UNSET;                             // So that new state will be a change
 	private final BlockExecutionController controller = BlockExecutionController.getInstance();
@@ -58,6 +63,7 @@ public class ProcessDiagram extends ProcessNode {
 		this.projectId = projId;
 		blocks = new HashMap<UUID,ProcessBlock>();
 		connectionMap = new HashMap<ConnectionKey,ProcessConnection>();
+		incomingConnections = new HashMap<BlockPort,List<ProcessConnection>>();
 		outgoingConnections = new HashMap<BlockPort,List<ProcessConnection>>();
 	}
 
@@ -70,6 +76,7 @@ public class ProcessDiagram extends ProcessNode {
 	 */
 	public void clearConnections() {
 		connectionMap.clear();
+		incomingConnections.clear();
 		outgoingConnections.clear();
 	}
 	/**
@@ -167,6 +174,20 @@ public class ProcessDiagram extends ProcessNode {
 				}
 				else {
 					log.warnf("%s.analyze: Source block (%s) not found for connection",TAG,pc.getSource().toString());
+				}
+				ProcessBlock downstreamBlock = blocks.get(pc.getTarget());
+				if( downstreamBlock!=null ) {
+					BlockPort key = new BlockPort(downstreamBlock,pc.getDownstreamPortName());
+					List<ProcessConnection> connections = incomingConnections.get(key);
+					if( connections==null ) {
+						connections = new ArrayList<ProcessConnection>();
+						incomingConnections.put(key, connections);
+						log.tracef("%s.analyze: mapping connection from %s:%s",TAG,upstreamBlock.getBlockId().toString(),pc.getDownstreamPortName());
+					}
+					if( !connections.contains(pc) ) connections.add(pc);
+				}
+				else {
+					log.warnf("%s.analyze: Target block (%s) not found for connection",TAG,pc.getTarget().toString());
 				}
 			}
 			else {
@@ -272,6 +293,48 @@ public class ProcessDiagram extends ProcessNode {
 		return notifications;
 	}
 	/**
+	 * @param root the subject block
+	 * @return a list of blocks connected to the output(s) of the specified block.
+	 */
+	public List<ProcessBlock> getDownstreamBlocks(ProcessBlock root) {
+		List<ProcessBlock> downstream = new ArrayList<>();
+		for( AnchorPrototype ap:root.getAnchors() ) {
+			if( ap.getAnchorDirection().equals(AnchorDirection.OUTGOING)) {
+				String port = ap.getName();
+				BlockPort key = new BlockPort(root,port);
+				List<ProcessConnection> cxns = outgoingConnections.get(key);
+				if( cxns!=null ) {
+					for(ProcessConnection cxn:cxns) {
+						UUID blockId = cxn.getTarget();
+						downstream.add(blocks.get(blockId));
+					}
+				}		
+			}
+		}
+		return downstream;
+	}
+	/**
+	 * @param root the subject block
+	 * @return a list of blocks connected to the output(s) of the specified block.
+	 */
+	public List<ProcessBlock> getUpstreamBlocks(ProcessBlock root) {
+		List<ProcessBlock> upstream = new ArrayList<>();
+		for( AnchorPrototype ap:root.getAnchors() ) {
+			if( ap.getAnchorDirection().equals(AnchorDirection.INCOMING)) {
+				String port = ap.getName();
+				BlockPort key = new BlockPort(root,port);
+				List<ProcessConnection> cxns = incomingConnections.get(key);
+				if( cxns!=null ) {
+					for(ProcessConnection cxn:cxns) {
+						UUID blockId = cxn.getTarget();
+						upstream.add(blocks.get(blockId));
+					}
+				}		
+			}
+		}
+		return upstream;
+	}
+	/**
 	 * We have just received a notification of a value change. Determine which blocks are connected downstream,
 	 * and create notifications for each. In/Out are from the point of view of a block, so are backwards here.
 	 * An empty return indicates no downstream connection.
@@ -353,7 +416,12 @@ public class ProcessDiagram extends ProcessNode {
 	 * Report on whether or not the DOM contained more than one connected node.
 	 */
 	public boolean isValid() { return valid; }
-	
+	@Override
+	public SerializableResourceDescriptor toResourceDescriptor() {
+		SerializableResourceDescriptor descriptor = super.toResourceDescriptor();
+		descriptor.setType(BLTProperties.DIAGRAM_RESOURCE_TYPE);
+		return descriptor;
+	}
 	/**
 	 * Loop through the diagram's blocks setting the timer appropriate
 	 * to the diagram's state.

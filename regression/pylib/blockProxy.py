@@ -1,17 +1,64 @@
 # Copyright 2015. ILS Automation. All rights reserved.
-# OPerations on a block
+# Operations on a block
 import system.ils.blt.application as application
 
-# Argument is the diagram path
-def internalValue(common,diagramName,blockName,attribute):
+# Internal status is a SerializableBlockStateDescriptor
+# -- the descriptor has methods getAttributes(), getBuffer()
+# -- both return lists of dictionaries.
+# dpath - the diagram path
+# blockName - name of the block within the diagram
+# attName - name of the desired parameter in the internal structure
+def internalValue(common,dpath,blockName,attName):
+	diagram = getDiagram(dpath)
+	for block in diagram.getProcessBlocks:
+		if block.getName == blockName:
+			attributes = block.getInternalStatus().getAttributes()
+			attribute = attributes.get(attName)
+			common['result'] = attribute
+			return 
+			
+# Return the value of a property of a block
+def getBlockProperty(common,dpath,blockName,propName):
+	diagram = getDiagram(dpath)
+	for block in diagram.getProcessBlocks():
+		if block.getName() == blockName:
+			prop = block.getProperty(propName)
+			if prop != None:
+				common['result'] = prop.getValue()
+			return
+
+# Set the value of a property of a block
+def setBlockProperty(common,dpath,blockName,propName,value):
+	diagram = getDiagram(dpath)
+	for block in diagram.getProcessBlocks():
+		if block.getName() == blockName:
+			prop = block.getProperty(propName)
+			if prop != None:
+				prop.setValue(value)
+			return
+
+# Return the state of a block
+def getBlockState(common,dpath,blockName):
+	diagram = getDiagram(dpath)
+	for block in diagram.getProcessBlocks():
+		if block.getName() == blockName:
+			common['result'] = block.getState()
+			return
+
+# -------------------------- Helper methods ----------------------
+# Return a ProcessDiagram at the specified path
+def getDiagram(dpath):
+	diagram = None
 	# The descriptor paths are :-separated, the input uses /
-	# the descriptor path starts with ":root:", the input stars with the application
+	# the descriptor path starts with ":root:", 
+	# the input starts with the application
 	descriptors = application.getDiagramDescriptors()
+	handler = application.getHandler()
 	for desc in descriptors:
 		path = desc.path[6:]
 		path = path.replace(":","/")
 		#print desc.id, path
-		if name == path:
-			application.resetDiagram(desc.id)
-			break
+		if dpath == path:
+			diagram = handler.getDiagram(desc.id)
+	return diagram
 

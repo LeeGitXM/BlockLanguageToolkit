@@ -3,15 +3,24 @@
 # Note: We have seen failure to update clock rate
 #       when run as part of the mass regression test
 #
+DIAGRAM="app75/family75/persistence"
+GATE="PERSISTENCEGATE-954"
+Show: browser $DIAGRAM
+resetDiagram ($DIAGRAM)
+
+notification: persistence  notificationKey.construct($DIAGRAM,$GATE,"out")
+tagset: SingleBoolean MemoryTags/BooleanFeed
+
+Tagset: SingleBoolean
 Test: Persistence block
 Step: Target is TRUE
-Show: browser "app75/family75/persistence"
-resetDiagram (app75/family75/persistence)
-Tagset: SingleBoolean
 10:00 true
 10:01 false
-10:01:10 Assert: persistence = FALSE "Interrupted target"
+10:01:10 Assert: persistence = FALSE "Interrupted target notification"
+10:01:20 Assert: getState($DIAGRAM,$GATE) = FALSE "Interrupted target state"
 10:02 true
 10:03 true
-10:04:10 Assert: persistence = FALSE "false before expiration time"
-10:08:20 Assert: persistence = TRUE  "True after expiration time"
+10:04:10 Assert: persistence = FALSE "false notification before expiration time"
+10:04:10 Assert: getState($DIAGRAM,$GATE) = FALSE "false state before expiration time"
+10:08:20 Assert: persistence = TRUE  "True notification after expiration time"
+10:08:20 Assert: getState($DIAGRAM,$GATE) = TRUE  "True state after expiration time"

@@ -1,10 +1,12 @@
 #
-# Test of a persistence gate. 5 min timer
+# Test of a clock block
 #
+DIAGRAM="app75/family75/clock"
+Show: browser $DIAGRAM
+resetDiagram ($DIAGRAM)
+
 Test: Clock and Latch blocks
 Step: Target is TRUE
-Show: browser "app75/family75/clock"
-resetDiagram (app75/family75/clock)
 Tagset: SingleBoolean
 10:00 true
 10:01 false

@@ -121,4 +121,23 @@ public class Output extends AbstractProcessBlock implements ProcessBlock {
 		desc.setBackground(new Color(125,110,230).getRGB());   // Purple
 		desc.setCtypeEditable(true);
 	}
+	
+	/**
+	 * Check the block configuration for missing input tag.
+	 * @return a validation summary. Null if everything checks out.
+	 */
+	@Override
+	public String validate() {
+		String generic = super.validate();
+		StringBuffer summary = new StringBuffer();
+		if( generic!=null ) summary.append(generic);
+		
+		String binding = pathProperty.getBinding();
+		if( binding==null || binding.length()==0 ) {
+			summary.append(String.format("%s: binding is not configured\t",pathProperty.getName()));
+		}
+		
+		if( summary.length()==0 ) return null;
+		else return summary.toString();
+	}
 }

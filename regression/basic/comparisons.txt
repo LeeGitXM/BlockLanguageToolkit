@@ -1,25 +1,39 @@
 #
-# Test of a persistence gate. 5 min timer
+# Test of various comparison blocks
+# -- use both output tags and state
 #
+DIAGRAM="app75/family75/comparisons"
+Show: browser $DIAGRAM
+resetDiagram ($DIAGRAM)
+C1="COMPARE-173"
+C2="HIGHLIMITOBSERVATION-429"
+C3="COMPAREABSOLUTE-236"
+tag: ComparisonOut1 MemoryTags/ComparisonOut1
+tag: ComparisonOut2 MemoryTags/ComparisonOut2
+tag: ComparisonOut3 MemoryTags/ComparisonOut3
+tagset: ComparisonDriver MemoryTags/ComparisonFeed
+
 Test: Comparison blocks
-Show: browser "app75/family75/comparisons"
-resetDiagram (app75/family75/comparisons)
 Step: Input is positive
 Tagset: ComparisonDriver
 10:00 10.
-10:01:10 Assert: ComparisonOut2 = False "Max less than limit"
+10:00:10 Assert: ComparisonOut2 = False "Max less than limit"
+10:00:20 Assert: getState($DIAGRAM,$C2) = FALSE "Max less than limit"
 10:01 13.
 10:01:10 Assert: ComparisonOut2 = True "Max greater than limit"
 10:01:20 Assert: ComparisonOut1 = False "x>y"
 10:01:30 Assert: ComparisonOut3 = False "abs x>y"
+10:01:40 Assert: getState($DIAGRAM,$C3) = FALSE "abs x>y"
 Step: Input is negative
 10:02 -14
 10:03 -15
 10:03:10 Assert: ComparisonOut2 = True "Max greater than limit"
-10:01:20 Assert: ComparisonOut1 = True "x<y"
-10:01:30 Assert: ComparisonOut3 = False "abs x>y"
+10:03:20 Assert: ComparisonOut1 = True "x<y"
+10:03:25 Assert: getState($DIAGRAM,$C1) = TRUE "x<y"
+10:03:30 Assert: ComparisonOut3 = False "abs x>y"
 Step: Input is zero
-10:03  0.0
-10:03:20 Assert: ComparisonOut1 = False "x=y"
-10:03:30 Assert: ComparisonOut3 = False "abs x=y"
-10:03:10 Assert: ComparisonOut2 = True "Max greater than limit"
+10:04  0.0
+10:04:20 Assert: ComparisonOut1 = False "x=y"
+10:04:30 Assert: ComparisonOut3 = False "abs x=y"
+10:04:40 Assert: ComparisonOut2 = True "Max greater than limit"
+10:04:50 Assert: getState($DIAGRAM,$C2) = TRUE "Max greater than limit"

@@ -307,8 +307,8 @@ public class GatewayRpcDispatcher   {
 		return requestHandler.listSourcesForSink(blockId);
 	}
 	
-	public String pathForNode(String nodeId) {
-		return requestHandler.pathForNode(nodeId);
+	public String pathForBlock(String diagramId,String blockName) {
+		return requestHandler.pathForBlock(diagramId,blockName);
 	}
 
 	/**

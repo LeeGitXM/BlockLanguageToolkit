@@ -529,9 +529,16 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	}
 	
 	@Override
-	public String pathForNode(String nodeId) {
-		// TODO Auto-generated method stub
-		return null;
+	public String pathForBlock(String diagramId,String blockName) {
+		String path = "";
+		try {
+			path = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID,"pathForBlock",diagramId,blockName);
+		}
+		catch(Exception ge) {
+			log.infof("%s.pathForBlock: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		return path;
 	}
 
 	/**

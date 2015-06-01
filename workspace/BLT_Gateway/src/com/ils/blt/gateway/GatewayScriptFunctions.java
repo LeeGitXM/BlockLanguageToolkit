@@ -227,12 +227,13 @@ public class GatewayScriptFunctions   {
 		return handler.listSourcesForSink(blockId);
 	}
 	/** 
-	 * @param nodeId
-	 * @return a colon-separated path to the specified node. The path includes
+	 * @param diagramId of the parent diagram
+	 * @param blockName name of the block within the diagram
+	 * @return a colon-separated path to the specified block. The path includes
 	 *         the project name.
 	 */
-	public String pathForNode(String nodeId) {
-		return handler.pathForNode(nodeId);
+	public String pathForBlock(String diagramId,String blockName) {
+		return handler.pathForBlock(diagramId,blockName);
 	}
 	/**
 	 * Post a (simulated) block result on its output.

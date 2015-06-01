@@ -1,21 +1,42 @@
 #
 # Test of the inhibit block
 #
-Test: Inhibit Block with FinalDiagnosis
-Show: browser "app75/family75/inhibitor"
-resetDiagram (app75/family75/inhibitor)
+DIAGRAM="app75/family75/inhibitor"
+INHIBITOR="INHIBITOR-112"
+tag: InhibitorOutput MemoryTags/InhibitorOutput
+tagset: InhibitInput MemoryTags/InhibitorFeed MemoryTags/InhibitorFinalDiagnosis
+
 Tagset: InhibitInput
+Show: browser $DIAGRAM
+resetDiagram ($DIAGRAM)
+
+Test: Inhibit Block with FinalDiagnosis
 Step: Passthrough
 10:00 12. false
-10:01 13.
-10:01:55 Assert: InhibitorOutput = 13 "Passthrough is 13"
+10:00:30 13.
+10:00:50 Assert: InhibitorOutput = 13 "Passthrough is 13"
+10:00:55 Assert: getState($DIAGRAM,$INHIBITOR) = FALSE  "Inhibitor state is OK"
+10:01 14.
+10:01:30 Assert: InhibitorOutput = 14 "Passthrough is 14"
+
+Step: Diagnosis True - Does not change Inhibit
+10:02 15. true
+10:02:30 16. 
+10:03 17.
+10:03:30 Assert: InhibitorOutput = 17 "Output not automatically inhibited by final diagnosis"
+
+halt:
+Step: Past Inhibit Interval
+10:09 21. false
+10:09:30 Assert: InhibitorOutput = 21 "Output again passes through"
+
 10:02 14.
 10:02:30 Assert: InhibitorOutput = 14 "Passthrough is 14"
 Step: Diagnosis True - Inhibit
 10:03 15. true
 10:04 16. 
 10:05 17.
-10:05:30 Assert: InhibitorOutput = 15 "Output inhibited"
+10:05:30 Assert: InhibitorOutput = 17 "Output not automitacally inhibited by final diagnosis"
 Step: Past Inhibit Interval
 10:09 21. false
 10:09:30 Assert: InhibitorOutput = 21 "Output again passes through"

@@ -25,6 +25,7 @@ import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.notification.SignalNotification;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.gateway.ControllerRequestHandler;
 import com.ils.blt.gateway.tag.TagListener;
@@ -347,8 +348,20 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public List<SerializableResourceDescriptor> getDiagramDescriptors(String projectName) {
 		return modelManager.getDiagramDescriptors(projectName);
 	}
-	public String pathForBlock(UUID blockId) {
-		return modelManager.pathForBlock(blockId);
+	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(UUID diagramId,UUID blockId) {
+		return modelManager.listBlocksDownstreamOf(diagramId, blockId);
+	}
+	public List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(UUID diagramId,UUID blockId) {
+		return modelManager.listBlocksUpstreamOf(diagramId, blockId);
+	}
+	/**
+	 * The node must be an element of the nav-tree, that is an application,
+	 * family, folder or diagram. 
+	 * @param nodeId
+	 * @return colon-separated path to the indicated node
+	 */
+	public String pathForNode(UUID nodeId) {
+		return modelManager.pathForNode(nodeId);
 	}
 	/**
 	 * Reset a block.

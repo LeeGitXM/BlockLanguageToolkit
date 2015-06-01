@@ -5,8 +5,10 @@ package com.ils.blt.gateway.engine;
 
 import java.util.UUID;
 
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.ActiveState;
 import com.ils.blt.common.serializable.SerializableFamily;
+import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 
 /**
 * A family is a specialized process node.
@@ -37,5 +39,11 @@ public class ProcessFamily extends ProcessNode {
 	
 	public ActiveState getState() {return state;}
 	public void setState(ActiveState state) {this.state = state;}
+	@Override
+	public SerializableResourceDescriptor toResourceDescriptor() {
+		SerializableResourceDescriptor descriptor = super.toResourceDescriptor();
+		descriptor.setType(BLTProperties.FAMILY_RESOURCE_TYPE);
+		return descriptor;
+	}
 }
 

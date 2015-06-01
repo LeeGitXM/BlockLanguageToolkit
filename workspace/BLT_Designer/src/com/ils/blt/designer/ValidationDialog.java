@@ -9,6 +9,10 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -19,8 +23,10 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.WindowConstants;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -41,10 +47,13 @@ public class ValidationDialog extends JDialog {
 	private static final long serialVersionUID = 2002388376824434427L;
 	private final int DIALOG_HEIGHT = 300;
 	private final int DIALOG_WIDTH = 600;
+	private final int TABLE_HEIGHT = 500;
+	private final int TABLE_WIDTH = 1200;
 	private String[] columnNames = {"Block","Issue"};
 	private List<SerializableBlockStateDescriptor> issues = null;
 	private final ApplicationRequestHandler requestHandler;
 	private final ResourceBundle rb;
+	private JTable table = null;
 	private JPanel internalPanel = null;
 	
 	public ValidationDialog(DesignerContext ctx) {
@@ -68,11 +77,10 @@ public class ValidationDialog extends JDialog {
 		internalPanel = new JPanel();
 		internalPanel.setLayout(new MigLayout("ins 10","",""));
 		add(internalPanel,BorderLayout.CENTER);
-		
-		
-		// The OK button simply closes the dialog
+
 		JPanel buttonPanel = new JPanel();
 		add(buttonPanel, BorderLayout.SOUTH);
+		// The OK button simply closes the dialog
 		JButton okButton = new JButton("Dismiss");
 		buttonPanel.add(okButton, "");
 		okButton.addActionListener(new ActionListener() {
@@ -82,12 +90,43 @@ public class ValidationDialog extends JDialog {
 			}
 		});
 		
-		// The Eport button posts a file-choose dialog
+		// The Export button posts a file-choose dialog
 		JButton exportButton = new JButton("Export");
 		buttonPanel.add(exportButton, "");
-		okButton.addActionListener(new ActionListener() {
+		exportButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				saveEntries();
+				SaveVaidationResultsDialog dialog = new SaveVaidationResultsDialog(rootPane,exportButton);
+				dialog.pack();
+				dialog.setVisible(true);   // Returns when dialog is closed
+				File output = dialog.getFilePath();
+				if( output!=null )  {
+					// If we've been fed a Windows path, then we assume we're on a Windows system
+					try {
+						@SuppressWarnings("resource")
+						BufferedWriter writer = new BufferedWriter(new FileWriter(output));
+						if( table!=null) {
+							TableModel dataModel = table.getModel();
+							int rows = dataModel.getRowCount();
+							int cols = dataModel.getColumnCount();
+							int row = 0;
+							while(row<rows ) {
+								int col = 0;
+								while( col<cols ) {
+									writer.write(dataModel.getValueAt(row, col).toString());
+									col++;
+									if(col==cols ) writer.write("\n");
+									else 		   writer.write(",");
+								}
+								row++;
+							}
+						}
+					    writer.flush();
+					    writer.close();
+					}
+					catch(IOException ioe) {
+						log.warnf("%s.openLog: Failed to open %s (%s)",TAG,output,ioe.getLocalizedMessage());
+					}
+				}
 			}
 		});
 	}
@@ -120,10 +159,9 @@ public class ValidationDialog extends JDialog {
 	 */
 	private JPanel createListPanel()  {
 		JPanel outerPanel = new JPanel();
-		JTable table = new JTable();
+		table = new JTable();
 		int nColumns = columnNames.length;
 		outerPanel.setLayout(new MigLayout("ins 2,fillx,filly","",""));
-		//outerPanel.setLayout(new MigLayout("ins 2,fillx,filly","para[:480:]","[120]"));
 		DefaultTableModel dataModel = new DefaultTableModel(columnNames,0); 
 		for( SerializableBlockStateDescriptor bsd:issues) {
 			String[] row = new String[nColumns];
@@ -134,11 +172,14 @@ public class ValidationDialog extends JDialog {
         table = new JTable(dataModel);
         table.setRowSelectionAllowed(true);
         table.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        table.setPreferredScrollableViewportSize(new Dimension(TABLE_WIDTH, TABLE_HEIGHT));
 
         
         JScrollPane tablePane = new JScrollPane(table);
-        tablePane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        tablePane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        tablePane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        tablePane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+
         table.setFillsViewportHeight(true);
         outerPanel.add(tablePane, "wrap");
 		return outerPanel;

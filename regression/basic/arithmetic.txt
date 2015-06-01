@@ -1,9 +1,19 @@
 #
-# Test of a persistence gate. 5 min timer
+# Test of action and arithmetic blocks
 #
+DIAGRAM="app75/family75/arithmetic"
+Show: browser $DIAGRAM
+resetDiagram ($DIAGRAM)
+
+tag: ActionOut      MemoryTags/ActionOut
+tag: Arithmetic1    MemoryTags/ArithmeticOut1
+tag: Arithmetic2    MemoryTags/ArithmeticOut2
+tag: Arithmetic3    MemoryTags/ArithmeticOut3
+tag: Arithmetic4    MemoryTags/ArithmeticOut4
+tagset: SingleBoolean MemoryTags/BooleanFeed
+tagset: DualInput     MemoryTags/DoubleInput1 MemoryTags/DoubleInput2
+
 Test: Action and Math Function blocks
-Show: browser "app75/family75/arithmetic"
-resetDiagram (app75/family75/arithmetic)
 Step: BooleanFeed
 Tagset: SingleBoolean
 09:58 True

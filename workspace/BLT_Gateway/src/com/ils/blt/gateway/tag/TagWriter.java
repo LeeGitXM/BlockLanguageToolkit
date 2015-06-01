@@ -107,7 +107,7 @@ public class TagWriter  {
 	}
 
 	/**
-	 * Update a tag - if the provider name is not supplied, then use the default
+	 * Determine if the tag path is valid - if the provider name is not supplied, then use the default
 	 * assigned to the project. The time assigned is the current
 	 * time. The list of tags to be updated varies with model type.
 	 * 

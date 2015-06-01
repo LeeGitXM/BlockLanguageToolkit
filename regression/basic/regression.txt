@@ -11,5 +11,6 @@ run: inhibit.txt
 run: logicfilter.txt
 run: persistence.txt
 run: readwrite.txt
+run: scripting.txt
 run: sqc.txt
 run: sum.txt

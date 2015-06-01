@@ -1,11 +1,18 @@
 #
 # Test of the scripting interface
 #
-Test: Scripting Interface
 DIAGRAM = "app75/family75/routing"
 Show: browser $DIAGRAM
 resetDiagram ($DIAGRAM)
+
+# Script aliases used for this test
+script: blocksDownstream interfaces.listBlocksDownstreamOf(dpath,bname)
+script: blocksOfClass interfaces.listBlocksOfClass(dpath,cname)
+script: blocksUpstream interfaces.listBlocksUpstreamOf(dpath,bname)
+
+Test: Scripting Interface
 Step: Blocks of Class
 assert: blocksOfClass($DIAGRAM,"com.ils.block.Inhibitor") contains "INHIBITOR-551" "Inhibitor-551 is an Inhibitor"
-assert: blocksOfClass($DIAGRAM,"com.ils.block.Parameter") contains "PARAMETER-234" "Parameter-234 is a Parameter"
+assert: blocksOfClass($DIAGRAM,"com.ils.block.Parameter") contains "RoutingParameter" "RountingParameter is a Parameter"
 assert: ! blocksOfClass($DIAGRAM,"com.ils.block.Input") contains "INHIBITOR-551" "Inhibitor-551 is not an Input"
+assert: count of blocksOfClass($DIAGRAM,"com.ils.block.DataPump") = 7 "7 data pumps"

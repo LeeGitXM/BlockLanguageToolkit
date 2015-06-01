@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 
@@ -103,5 +105,14 @@ public class ProcessNode implements Serializable {
 	public void removeChild(ProcessNode child) { children.remove(new Long(child.getResourceId()));} 
 	public void setName(String nam) { this.name = nam; }
 	public void setResourceId(long resourceId) {this.resourceId = resourceId;}
+	public SerializableResourceDescriptor toResourceDescriptor() {
+		SerializableResourceDescriptor descriptor = new SerializableResourceDescriptor();
+		descriptor.setName(getName());
+		descriptor.setId(self.toString());
+		descriptor.setProjectId(projectId);
+		descriptor.setResourceId(resourceId);
+		descriptor.setType(BLTProperties.FOLDER_RESOURCE_TYPE);
+		return descriptor;
+	}
 	
 }

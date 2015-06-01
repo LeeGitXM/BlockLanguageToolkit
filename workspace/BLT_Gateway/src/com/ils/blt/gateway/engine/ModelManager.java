@@ -19,6 +19,7 @@ import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.connection.Connection;
 import com.ils.blt.common.serializable.SerializableApplication;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
@@ -265,12 +266,56 @@ public class ModelManager implements ProjectListener  {
 	 */
 	public RootNode getRootNode() { return root; }
 	
+	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(UUID diagramId,UUID blockId) {
+		List<ProcessBlock> blocks = new ArrayList<>();
+		ProcessDiagram diagram = getDiagram(diagramId);
+		ProcessBlock start = getBlock(diagram,blockId);
+		traverseDownstream(diagram,start,blocks);
+		List<SerializableBlockStateDescriptor> results = new ArrayList<>();
+		for( ProcessBlock block:blocks ) {
+			results.add(block.toDescriptor());
+		}
+		return results;
+	}
 	
-	public String pathForBlock(UUID blockId) {
+	private void traverseDownstream(ProcessDiagram diagram,ProcessBlock block,List<ProcessBlock> blocks) {
+		if( block!=null && !blocks.contains(block)) {
+			for(ProcessBlock blk:diagram.getDownstreamBlocks(block)) {
+				blocks.add(blk);
+				traverseDownstream(diagram,blk,blocks);
+			}
+		}
+	}
+	public List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(UUID diagramId,UUID blockId) {
+		List<ProcessBlock> blocks = new ArrayList<>();
+		ProcessDiagram diagram = getDiagram(diagramId);
+		ProcessBlock start = getBlock(diagram,blockId);
+		traverseUpstream(diagram,start,blocks);
+		List<SerializableBlockStateDescriptor> results = new ArrayList<>();
+		for( ProcessBlock block:blocks ) {
+			results.add(block.toDescriptor());
+		}
+		return results;
+	}
+	private void traverseUpstream(ProcessDiagram diagram,ProcessBlock block,List<ProcessBlock> blocks) {
+		if( block!=null && !blocks.contains(block)) {
+			for(ProcessBlock blk:diagram.getUpstreamBlocks(block)) {
+				blocks.add(blk);
+				traverseUpstream(diagram,blk,blocks);
+			}
+		}
+	}
+	// Node must be in the nav-tree. Include project name.
+	public String pathForNode(UUID nodeId) {
 		String path = "";
-		ProcessNode node = nodesByUUID.get(blockId);
-		if( node!=null) path = node.getTreePath(nodesByUUID);
-		
+		ProcessNode node = nodesByUUID.get(nodeId);
+		if( node!=null) {
+			// treePath includes "root", replace this with project.
+			path = node.getTreePath(nodesByUUID);
+			path = path.substring(5); // Strip off :root
+			String projectName = root.getProjectName();
+			path = projectName+path;
+		}
 		return path.toString();
 		
 	}

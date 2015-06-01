@@ -1,12 +1,19 @@
 #
 # Simple test of average blocks
 #
+DIAGRAM="app75/family75/average"
+Show: browser $DIAGRAM
+
+tag: Average1    MemoryTags/AverageOut1
+tag: Average2    MemoryTags/AverageOut2
+tag: Average3    MemoryTags/AverageOut3
+tagset: AverageFeed MemoryTags/AverageFeed Average1 Average2 Average3
+
 Test: Averages
 Step: Average n Samples
-Show: browser "app75/family75/average"
 Tagset: AverageFeed
 09:59 0 -1 -1 -1
-09:59:30 resetDiagram (app75/family75/average)
+09:59:30 resetDiagram ($DIAGRAM)
 10:00 10 
 10:00:55 Assert: Average1 = -1 "No result with first value"
 10:01 20
@@ -15,17 +22,19 @@ Tagset: AverageFeed
 10:03:30 Assert: Average1 = 15 "Average when buffer fills"
 10:03 40
 10:03:30 Assert: Average1 = 25 "Average with next reading"
+
 Step: Average Time Window
 10:03:45 10 -1 -1 -1
-10:04:00 resetDiagram (app75/family75/average)
+10:04:00 resetDiagram ($DIAGRAM)
 10:04:55 Assert: Average2 = -1 "No result with first value"
 10:05 30
 10:05:45 Assert: 24.9 < Average2 < 30.01 "Average when window fills"
 10:06:45 Assert: Average2 = 30 "Window constant with no more input"
+
 Step: Average Over All Time
 10:07 10 -1 -1 -1
-resetDiagram (app75/family75/average)
-10:07:55 Assert: Average3 = 10 "First value is the value"
+resetDiagram ($DIAGRAM)
+10:07:30 Assert: Average3 = 10 "First value is the value"
 10:08 20
 10:08:20 30
 10:08:55 Assert: Average3 = 20 "Values independent of arrival time"

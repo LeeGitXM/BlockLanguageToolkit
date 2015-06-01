@@ -14,12 +14,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import com.ils.block.SourceConnection;
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.ToolkitRequestHandler;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
+import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.block.ProcessBlock;
@@ -94,8 +96,16 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	}
 	@Override
 	public List<SerializableResourceDescriptor> childNodes(String nodeId) {
-		// TODO Auto-generated method stub
-		return null;
+		UUID uuid = makeUUID(nodeId);
+		ProcessNode node = controller.getProcessNode(uuid);
+		List<SerializableResourceDescriptor> result = new ArrayList<>();
+		if( node!=null ) {
+			Collection<ProcessNode> children =  node.getChildren();
+			for( ProcessNode child:children ) {
+				result.add(child.toResourceDescriptor());
+			}
+		}
+		return result;
 	}
 	
 	/**
@@ -385,14 +395,17 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
 		return descriptors;
 	}
-	
 	@Override
 	public SerializableResourceDescriptor getDiagramForBlock(String blockId) {
-		// TODO Auto-generated method stub
-		return null;
+		SerializableResourceDescriptor result = null;
+		UUID uuid = makeUUID(blockId);
+		ProcessNode block = controller.getProcessNode(uuid);
+		if( block!=null ) {
+			ProcessNode diagram = controller.getProcessNode(block.getParent());
+			if( diagram!=null ) result = diagram.toResourceDescriptor();
+		}
+		return result;
 	}
-
-	
 	
 	/**
 	 * @param projectId
@@ -484,14 +497,32 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	
 	@Override
 	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(String diagramId,String blockId) {
-		// TODO Auto-generated method stub
-		return null;
+		UUID diauuid = makeUUID(diagramId);
+		UUID blockuuid = makeUUID(blockId);
+		return controller.listBlocksDownstreamOf(diauuid,blockuuid);
 	}
+	
 	@Override
 	public List<SerializableBlockStateDescriptor> listBlocksForTag(String tagpath) {
-		// TODO Auto-generated method stub
+		List<SerializableBlockStateDescriptor> results = new ArrayList<>();
 		List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
-		return null;
+		for(SerializableResourceDescriptor descriptor:descriptors) {
+			UUID diagId = makeUUID(descriptor.getId());
+
+			ProcessDiagram diagram = controller.getDiagram(diagId);
+			if( diagram!=null) {
+				Collection<ProcessBlock> blocks = diagram.getProcessBlocks();
+				for(ProcessBlock block:blocks) {
+					if( block.usesTag(tagpath)) {
+						results.add(block.toDescriptor());
+					}
+				}
+			}
+			else {
+				log.warnf("%s.queryDiagramForBlocks: no diagram found for descriptor %s",TAG,descriptor.getId());
+			}
+		}
+		return results;
 	}
 	
 	/**
@@ -525,8 +556,9 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	
 	@Override
 	public List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(String diagramId, String blockId) {
-		// TODO Auto-generated method stub
-		return null;
+		UUID diauuid = makeUUID(diagramId);
+		UUID blockuuid = makeUUID(blockId);
+		return controller.listBlocksUpstreamOf(diauuid,blockuuid);
 	}
 
 	@Override
@@ -540,7 +572,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				String problem = block.validate();
 				if( problem!=null) {
 					SerializableBlockStateDescriptor descriptor = block.toDescriptor();
-					descriptor.getAttributes().put(BLTProperties.BLOCK_ATTRIBUTE_PATH, controller.pathForBlock(block.getBlockId()));
+					descriptor.getAttributes().put(BLTProperties.BLOCK_ATTRIBUTE_PATH, pathForBlock(diagramId.toString(),block.getName()));
 					descriptor.getAttributes().put(BLTProperties.BLOCK_ATTRIBUTE_ISSUE, problem);
 					result.add(descriptor);
 				}
@@ -584,23 +616,90 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	public List<SerializableResourceDescriptor> listResourceNodes() {
 		return controller.queryControllerResources();
 	}
+	
+	/**
+	 * Do an exhaustive search for all sink blocks that have the same binding
+	 * as the specified block. We cover all diagrams in the system.
+	 * @param blockId
+	 * @return
+	 */
 	@Override
-	public List<SerializableBlockStateDescriptor> listSinksForSource(
-			String blockId) {
-		// TODO Auto-generated method stub
-		return null;
+	public List<SerializableBlockStateDescriptor> listSinksForSource(String blockId) {
+		List<SerializableBlockStateDescriptor> results = new ArrayList<>();
+		UUID uuid = makeUUID(blockId);
+		ProcessNode sourceNode = controller.getProcessNode(uuid);
+		String tagPath = null;
+		if( sourceNode instanceof ProcessBlock ) {
+			ProcessBlock source = (ProcessBlock)sourceNode;
+			BlockProperty prop = source.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+			if( prop!=null ) tagPath = prop.getBinding();
+		}
+		
+		if( tagPath!=null && tagPath.length()>0 ) {
+			List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
+			for(SerializableResourceDescriptor descriptor:descriptors) {
+				UUID diaguuid = makeUUID(descriptor.getId());
+				ProcessDiagram diagram = controller.getDiagram(diaguuid);
+				for(ProcessBlock sink:diagram.getProcessBlocks()) {
+					if( sink.getClassName().equals("com.ils.block.sinkConnection") ) {
+						BlockProperty prop = sink.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+						if( prop!=null && tagPath.equals(prop.getBinding())  ) {
+							results.add(sink.toDescriptor());
+						}
+					}
+				}
+			}
+		}
+		else {
+			log.warnf("%s.listSinksForSource: Block %s not found or not bound",TAG,blockId);
+		}
+		
+		return results;
 	}
+	/**
+	 * Do an exhaustive search for all source blocks that have the same binding
+	 * as the specified block. We cover all diagrams in the system.
+	 * @param blockId
+	 * @return
+	 */
 	@Override
-	public List<SerializableBlockStateDescriptor> listSourcesForSink(
-			String blockId) {
-		// TODO Auto-generated method stub
-		return null;
+	public List<SerializableBlockStateDescriptor> listSourcesForSink(String blockId) {
+		List<SerializableBlockStateDescriptor> results = new ArrayList<>();
+		UUID uuid = makeUUID(blockId);
+		ProcessNode sinkNode = controller.getProcessNode(uuid);
+		String tagPath = null;
+		if( sinkNode instanceof ProcessBlock ) {
+			ProcessBlock sink = (ProcessBlock)sinkNode;
+			BlockProperty prop = sink.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+			if( prop!=null ) tagPath = prop.getBinding();
+		}
+		
+		if( tagPath!=null && tagPath.length()>0 ) {
+			List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
+			for(SerializableResourceDescriptor descriptor:descriptors) {
+				UUID diaguuid = makeUUID(descriptor.getId());
+				ProcessDiagram diagram = controller.getDiagram(diaguuid);
+				for(ProcessBlock source:diagram.getProcessBlocks()) {
+					if( source.getClassName().equals("com.ils.block.sourceConnection") ) {
+						BlockProperty prop = source.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+						if( prop!=null && tagPath.equals(prop.getBinding())  ) {
+							results.add(source.toDescriptor());
+						}
+					}
+				}
+			}
+		}
+		else {
+			log.warnf("%s.listSourcesForSink: Block %s not found or not bound",TAG,blockId);
+		}
+		return results;
 	}
 	
 	@Override
-	public String pathForNode(String nodeId) {
-		// TODO Auto-generated method stub
-		return null;
+	public String pathForBlock(String diagramId,String blockName) {
+		UUID uuid = makeUUID(diagramId);
+		String path = controller.pathForNode(uuid);
+		return String.format("%s:%s",path,blockName);
 	}
 	/**
 	 * Handle the block placing a new value on its output. This minimalist version
