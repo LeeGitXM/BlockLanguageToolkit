@@ -2,16 +2,36 @@
 # Operations on a diagram
 import system.ils.blt.application as application
 
+# Return the state of the diagram
+def getState(common,dpath):
+	diagid = getDiagram(dpath).getSelf().toString()
+	state = application.getDiagramState(diagid)
+
+# Legal states are: ACTIVE,DISABLED,ISOLATED
+def setState(common,dpath,state):
+	diagid = getDiagram(dpath).getSelf().toString()
+	application.setDiagramState(diagid,state)
+	
+
 # Argument is the diagram path
-def reset(common,name):
+def reset(common,dpath):
+	diagid = getDiagram(dpath).getSelf().toString()
+	application.resetDiagram(diagid)
+
+# -------------------------- Helper methods ----------------------
+# Return a ProcessDiagram at the specified path
+def getDiagram(dpath):
+	diagram = None
 	# The descriptor paths are :-separated, the input uses /
-	# the descriptor path starts with ":root:", the input stars with the application
+	# the descriptor path starts with ":root:", 
+	# the input starts with the application
 	descriptors = application.getDiagramDescriptors()
+	handler = application.getHandler()
 	for desc in descriptors:
 		path = desc.path[6:]
 		path = path.replace(":","/")
 		#print desc.id, path
-		if name == path:
-			application.resetDiagram(desc.id)
-			break
+		if dpath == path:
+			diagram = handler.getDiagram(desc.id)
+	return diagram
 

@@ -88,7 +88,12 @@ public class ApplicationScriptFunctions   {
 	public static DiagramState getDiagramState(Long projectId, Long resourceId)  {
 		return handler.getDiagramState(projectId,resourceId);
 	}
-	
+	/**
+	 * @return the current state of the specified diagram.
+	 */
+	public static DiagramState getDiagramState(String diagramId)  {
+		return handler.getDiagramState(diagramId);
+	}
 	public static String getFamilyName(String uuid) {
 		return handler.getFamilyName(uuid);
 	}
@@ -122,8 +127,8 @@ public class ApplicationScriptFunctions   {
 	 * @param diagramId identifier of the diagram owning the block, a String
 	 * @return a list of blocks downstream of the block specified, in the diagram.
 	 */
-	public static List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(String diagramId,String blockId){
-		return handler.listBlocksDownstreamOf(diagramId,blockId);
+	public static List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(String diagramId,String blockName){
+		return handler.listBlocksDownstreamOf(diagramId,blockName);
 	}
 	/**
 	 * List all blocks that have properties bound to the supplied tag path. 
@@ -147,8 +152,8 @@ public class ApplicationScriptFunctions   {
 	 * @param diagramId identifier of the diagram owning the block, a String
 	 * @return a list of blocks upstream of the block specified, in the diagram.
 	 */
-	public static List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(String diagramId,String blockId){
-		return handler.listBlocksUpstreamOf(diagramId,blockId);
+	public static List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(String diagramId,String blockName){
+		return handler.listBlocksUpstreamOf(diagramId,blockName);
 	}
 	
 	/**
@@ -199,8 +204,8 @@ public class ApplicationScriptFunctions   {
 	 * @param blockId identifier for the source block, a String 
 	 * @return a list of blocks logically connected to the source.
 	 */
-	public static List<SerializableBlockStateDescriptor> listSinksForSource(String blockId) {
-		return handler.listSinksForSource(blockId);
+	public static List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId,String blockName) {
+		return handler.listSinksForSource(diagramId,blockName);
 	}
 	/**
 	 * Query the gateway for list of its source blocks associated with the
@@ -209,8 +214,8 @@ public class ApplicationScriptFunctions   {
 	 * @param blockId identifier for the sink block, a String 
 	 * @return a list of blocks logically connected to the sink.
 	 */
-	public static List<SerializableBlockStateDescriptor> listSourcesForSink(String blockId) {
-		return handler.listSourcesForSink(blockId);
+	public static List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId,String blockName) {
+		return handler.listSourcesForSink(diagramId,blockName);
 	}
 	/** 
 	 * @param diagramId of the parent diagram
@@ -218,7 +223,7 @@ public class ApplicationScriptFunctions   {
 	 * @return a colon-separated path to the specified block. The path includes
 	 *         the project name
 	 */
-	public String pathForBlock(String diagramId,String blockName) {
+	public static String pathForBlock(String diagramId,String blockName) {
 		return handler.pathForBlock(diagramId,blockName);
 	}
 	/**

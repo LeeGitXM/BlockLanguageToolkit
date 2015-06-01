@@ -3,6 +3,7 @@
 #
 DIAGRAM="app75/family75/inhibitor"
 INHIBITOR="INHIBITOR-112"
+script: sendSignal interfaces.sendLocalSignal(diagid,command.message,arg)
 tag: InhibitorOutput MemoryTags/InhibitorOutput
 tagset: InhibitInput MemoryTags/InhibitorFeed MemoryTags/InhibitorFinalDiagnosis
 
@@ -25,18 +26,13 @@ Step: Diagnosis True - Does not change Inhibit
 10:03 17.
 10:03:30 Assert: InhibitorOutput = 17 "Output not automatically inhibited by final diagnosis"
 
-halt:
-Step: Past Inhibit Interval
-10:09 21. false
-10:09:30 Assert: InhibitorOutput = 21 "Output again passes through"
+Step: Inhibit via Script Interface
+10:03:10 sendLocalSignal($DIAGRAM,"inhibit","","")
+10:03:30 21. false
+10:04 Assert: InhibitorOutput = 17 "Output is inhibited"
+10:04:30 Assert: getState($DIAGRAM,$INHIBITOR) = TRUE "Inhibitor state is TRUE"
 
-10:02 14.
-10:02:30 Assert: InhibitorOutput = 14 "Passthrough is 14"
-Step: Diagnosis True - Inhibit
-10:03 15. true
-10:04 16. 
-10:05 17.
-10:05:30 Assert: InhibitorOutput = 17 "Output not automitacally inhibited by final diagnosis"
-Step: Past Inhibit Interval
-10:09 21. false
-10:09:30 Assert: InhibitorOutput = 21 "Output again passes through"
+Step: Inhibit Interval Expires
+10:10 14.
+10:10:30 Assert: InhibitorOutput = 14 "Passthrough is 14"
+10:10:45 Assert: getState($DIAGRAM,$INHIBITOR) = FALSE "Inhibitor state is OK"

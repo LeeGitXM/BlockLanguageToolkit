@@ -7,12 +7,59 @@ resetDiagram ($DIAGRAM)
 
 # Script aliases used for this test
 script: blocksDownstream interfaces.listBlocksDownstreamOf(dpath,bname)
+script: blocksForTag interfaces.listBlocksForTag(tagpath)
+script: blocksInDiagram interfaces.listBlocksInDiagram(dpath)
 script: blocksOfClass interfaces.listBlocksOfClass(dpath,cname)
 script: blocksUpstream interfaces.listBlocksUpstreamOf(dpath,bname)
+script: pathForBlock   interfaces.pathForBlock(dpath,bname)
+script: sinksForSource interfaces.listSinksForSource(dpath,bname)
+script: sourcesForSink interfaces.listSourcesForSink(dpath,bname)
 
 Test: Scripting Interface
+Step: Blocks in Diagram
+assert: blocksInDiagram($DIAGRAM) contains "INHIBITOR-551" "Inhibitor-551 is in diagram"
+assert: blocksInDiagram($DIAGRAM) contains "RoutingParameter" "RountingParameter is in diagram"
+assert: count of blocksInDiagram($DIAGRAM) = 19 "19 blocks in diagram"
+
 Step: Blocks of Class
 assert: blocksOfClass($DIAGRAM,"com.ils.block.Inhibitor") contains "INHIBITOR-551" "Inhibitor-551 is an Inhibitor"
 assert: blocksOfClass($DIAGRAM,"com.ils.block.Parameter") contains "RoutingParameter" "RountingParameter is a Parameter"
 assert: ! blocksOfClass($DIAGRAM,"com.ils.block.Input") contains "INHIBITOR-551" "Inhibitor-551 is not an Input"
-assert: count of blocksOfClass($DIAGRAM,"com.ils.block.DataPump") = 7 "7 data pumps"
+assert: count of blocksOfClass($DIAGRAM,"com.ils.block.DataPump") = 6 "6 data pumps"
+
+Step: Downstream of Block
+assert: blocksDownstream($DIAGRAM,"DATAPUMP-4") contains "QUALVALUE-712" "QualValue 712 is downstream of datapump 4"
+assert: blocksDownstream($DIAGRAM,"DATAPUMP-4") contains "RoutingParameter" "RoutingParameteris downstream of datapump 4"
+assert: count of blocksDownstream($DIAGRAM,"DATAPUMP-4") = 4  "4 blocks downstream of datapump 4"
+assert: blocksDownstream($DIAGRAM,"COMMAND-225") contains "INHIBITOR-380" "Inhibitor 380 is downstream of command 225"
+assert: ! blocksDownstream($DIAGRAM,"COMMAND-225") contains "RoutingParameter" "RoutingParameter is not downstream of command 225"
+assert: count of blocksDownstream($DIAGRAM,"COMMAND-225") = 4  "4 blocks downstream of command 225"
+
+Step: Upstream of Block 
+assert: blocksUpstream($DIAGRAM,"OUTPUT-817") contains "COMMAND-225" "Command-225 is upstream of OUTPUT-817"
+assert: blocksUpstream($DIAGRAM,"OUTPUT-817") contains "JUNCTION-605" "Junction-605 is upstream of OUTPUT-817"
+assert: !blocksUpstream($DIAGRAM,"OUTPUT-817") contains "OUTPUT-514" "Output 514 is not upstream of OUTPUT-817"
+assert: count of blocksUpstream($DIAGRAM,"OUTPUT-817") = 6 "6 blocks upstream of OUTPUT-817"
+assert: count of blocksUpstream($DIAGRAM,"DATAPUMP-4") = 0 "0 blocks upstream of data pump"
+
+Step: Sources for Sink
+assert: sourcesForSink($DIAGRAM,"SINKCONNECTION-538") contains "INHIBITOR-551" "Inhibitor-551 is an Inhibitor"
+assert: sourcesForSink($DIAGRAM,"SINKCONNECTON-538") contains "RoutingParameter" "RountingParameter is a Parameter"
+assert: ! sourcesForSink($DIAGRAM,"SINKCONNECTION-538") contains "INHIBITOR-551" "Inhibitor-551 is not connected"
+assert: count of sourcesForSink($DIAGRAM,"DATAPUMP-549") = 0 "0 sources for a data pump"
+
+Step: Sinks for Source
+assert: sinksForSource($DIAGRAM,"SOURCECONECTION-358") contains "INHIBITOR-551" "Inhibitor-551 is an Inhibitor"
+assert: sinksForSource($DIAGRAM,"SOURCECONNECTION-358") contains "RoutingParameter" "RountingParameter is a Parameter"
+assert: ! sinksForSource($DIAGRAM,"SOURCECONNECTION-358") contains "INHIBITOR-551" "Inhibitor-551 is not an Input"
+assert: count of sinksForSource($DIAGRAM,"SOURCECONNECTION-358") = 0 "0 sinks for a data pump"
+assert: count of sinksForSource($DIAGRAM,"DATAPUMP-549") = 0 "0 sinks for a data pump"
+
+Step: Blocks for Tag
+assert: blocksForTag("[XOM_ISOLATION]MemoryTags/ComparisonOut3") contains "OUTPUT-514" "Output 514 uses ComparisonOut3"
+assert: blocksForTag("[XOM_ISOLATION]MemoryTags/MJKFeed1") contains "INPUT-219" "Input 219 (SQC) uses MJKFeed1"
+assert: ! blocksForTag("[XOM_ISOLATION]MemoryTags/MJKFeed1") contains "INHIBITOR-551" "Inhibitor 551 does not use MJKFeed1"
+assert: count of blocksForTag("[XOM_ISOLATION]MemoryTags/BooleanFeed") = 5 "5 blocks use BooleanFeed"
+
+Step: Path for Block
+assert: pathForBlock($DIAGRAM,"OUTPUT-514") = ":app75:family75:routing:OUTPUT-514" "Path for output 514"

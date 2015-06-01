@@ -105,6 +105,7 @@ public interface ToolkitRequestHandler  {
 	 * @return the current state of the specified diagram.
 	 */
 	public DiagramState getDiagramState(Long projectId, Long resourceId) ;
+	public DiagramState getDiagramState(String diagramId);
 	
 	/**
 	 * @return the name of the family that is equal to or
@@ -139,10 +140,11 @@ public interface ToolkitRequestHandler  {
 	/**
 	 * Query a diagram in the gateway for list of its blocks that are downstream
 	 * of the specified block. 
-	 * @param diagramId identifier of the diagram owning the block, a String
+	 * @param diagramId of the parent diagram
+	 * @param blockName name of the block within the diagram
 	 * @return a list of blocks belonging to the diagram.
 	 */
-	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(String diagramId,String blockId);
+	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(String diagramId,String blockName);
 	/**
 	 * List all blocks that have properties bound to the supplied tag path. 
 	 * @param tagpath the path for the tag of interest.
@@ -152,7 +154,7 @@ public interface ToolkitRequestHandler  {
 	
 	/**
 	 * Query a diagram in the gateway for list of its blocks. 
-	 * @param diagramId identifier of the diagram owning the blocks, a String 
+	 * @param diagramId of the parent diagram
 	 * @return a list of blocks belonging to the diagram.
 	 */
 	public List<SerializableBlockStateDescriptor> listBlocksInDiagram(String diagramId) ;
@@ -160,10 +162,11 @@ public interface ToolkitRequestHandler  {
 	/**
 	 * Query a diagram in the gateway for list of its blocks that are upstream
 	 * of the specified block. 
-	 * @param diagramId identifier of the diagram owning the block, a String
+	 * @param diagramId of the parent diagram
+	 * @param blockName name of the block within the diagram
 	 * @return a list of blocks belonging to the diagram.
 	 */
-	public List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(String diagramId,String blockId); 
+	public List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(String diagramId,String blockName); 
 	
 	/**
 	 * The result is a list of SerializableBlockState descriptors for those 
@@ -203,18 +206,20 @@ public interface ToolkitRequestHandler  {
 	 * Query the gateway for list of its sink blocks associated with the
 	 * specified source. The blocks that are returned are not constrained
 	 * to be part of the same diagram, family or application.
-	 * @param blockId identifier for the source block, a String 
+	 * @param diagramId of the parent diagram
+	 * @param blockName name of the block within the diagram 
 	 * @return a list of blocks logically connected to the source.
 	 */
-	public List<SerializableBlockStateDescriptor> listSinksForSource(String blockId) ;
+	public List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId,String blockName) ;
 	/**
 	 * Query the gateway for list of its source blocks associated with the
 	 * specified sink. The blocks that are returned are not constrained
 	 * to be part of the same diagram, family or application.
-	 * @param blockId identifier for the sink block, a String 
+	 * @param diagramId of the parent diagram
+	 * @param blockName name of the block within the diagram  
 	 * @return a list of blocks logically connected to the sink.
 	 */
-	public List<SerializableBlockStateDescriptor> listSourcesForSink(String blockId) ;
+	public List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId,String blockName) ;
 	/** 
 	 * @param diagramId of the parent diagram
 	 * @param blockName name of the block within the diagram
@@ -224,8 +229,10 @@ public interface ToolkitRequestHandler  {
 	public String pathForBlock(String diagramId,String blockName);
 	/**
 	 * Execute reset() on a specified block
+	 * @param diagramId of the parent diagram
+	 * @param blockName name of the block within the diagram 
 	 */
-	public void resetBlock(String diagramId,String blockId) ;
+	public void resetBlock(String diagramId,String blockName) ;
 
 	/**
 	 * Execute reset() on every block on the diagram

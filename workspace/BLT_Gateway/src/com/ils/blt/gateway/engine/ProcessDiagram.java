@@ -68,6 +68,17 @@ public class ProcessDiagram extends ProcessNode {
 	}
 
 	public ProcessBlock getBlock(UUID id) { return blocks.get(id); }
+	// For now we just do a linear search
+	public ProcessBlock getBlockByName(String name) { 
+		ProcessBlock result = null;
+		for(ProcessBlock blk:getProcessBlocks()) {
+			if(blk.getName().equals(name)) {
+				result = blk;
+				break;
+			}
+		}
+		return result;
+	}
 	public Collection<ProcessBlock> getProcessBlocks() { return blocks.values(); }
 
 	

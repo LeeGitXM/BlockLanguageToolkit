@@ -132,11 +132,12 @@ public class GatewayScriptFunctions   {
 	}
 	/**
 	 * Query a diagram in the gateway for list of its blocks. 
-	 * @param diagramId identifier of the diagram owning the block, a String
+	 * @param diagramId of the parent diagram
+	 * @param blockName name of the block within the diagram
 	 * @return a list of blocks belonging to the diagram.
 	 */
-	public static List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(String diagramId,String blockId){
-		return handler.listBlocksDownstreamOf(diagramId,blockId);
+	public static List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(String diagramId,String blockName){
+		return handler.listBlocksDownstreamOf(diagramId,blockName);
 	}
 	/**
 	 * List all blocks that have properties bound to the supplied tag path. 
@@ -149,7 +150,8 @@ public class GatewayScriptFunctions   {
 	
 	/**
 	 * Query a diagram in the gateway for list of its blocks. 
-	 * @param diagramId identifier of the diagram owning the blocks, a String 
+	 * @param diagramId of the parent diagram
+	 * @param blockName name of the block within the diagram
 	 * @return a list of blocks belonging to the diagram.
 	 */
 	public static List<SerializableBlockStateDescriptor> listBlocksInDiagram(String diagramId) {
@@ -158,11 +160,12 @@ public class GatewayScriptFunctions   {
 	/**
 	 * Query a diagram in the gateway for list of its blocks that are upstream
 	 * of the specified block. 
-	 * @param diagramId identifier of the diagram owning the block, a String
+	 * @param diagramId of the parent diagram
+	 * @param blockName name of the block within the diagram
 	 * @return a list of blocks upstream of the block specified, in the diagram.
 	 */
-	public static List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(String diagramId,String blockId){
-		return handler.listBlocksUpstreamOf(diagramId,blockId);
+	public static List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(String diagramId,String blockName){
+		return handler.listBlocksUpstreamOf(diagramId,blockName);
 	}
 	/**
 	 * The result is a list of SerializableBlockState descriptors for those 
@@ -210,21 +213,23 @@ public class GatewayScriptFunctions   {
 	 * Query the gateway for list of its sink blocks associated with the
 	 * specified source. The blocks that are returned are not constrained
 	 * to be part of the same diagram, family or application.
-	 * @param blockId identifier for the source block, a String 
+	 * @param diagramId of the parent diagram
+	 * @param blockName name of the block within the diagram
 	 * @return a list of blocks logically connected to the source.
 	 */
-	public static List<SerializableBlockStateDescriptor> listSinksForSource(String blockId) {
-		return handler.listSinksForSource(blockId);
+	public static List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId,String blockName) {
+		return handler.listSinksForSource(diagramId,blockName);
 	}
 	/**
 	 * Query the gateway for list of its source blocks associated with the
 	 * specified sink. The blocks that are returned all belong to the same
 	 * application as the sink.
-	 * @param blockId identifier for the sink block, a String 
+	 * @param diagramId of the parent diagram
+	 * @param blockName name of the block within the diagram
 	 * @return a list of blocks logically connected to the sink.
 	 */
-	public static List<SerializableBlockStateDescriptor> listSourcesForSink(String blockId) {
-		return handler.listSourcesForSink(blockId);
+	public static List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId,String blockName) {
+		return handler.listSourcesForSink(diagramId,blockName);
 	}
 	/** 
 	 * @param diagramId of the parent diagram
@@ -232,7 +237,7 @@ public class GatewayScriptFunctions   {
 	 * @return a colon-separated path to the specified block. The path includes
 	 *         the project name.
 	 */
-	public String pathForBlock(String diagramId,String blockName) {
+	public static String pathForBlock(String diagramId,String blockName) {
 		return handler.pathForBlock(diagramId,blockName);
 	}
 	/**

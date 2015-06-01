@@ -45,6 +45,11 @@ def getBlockState(common,dpath,blockName):
 			common['result'] = block.getState()
 			return
 
+# Reset an individual block
+def resetBlock(common,dpath,blockName):
+	diagid = getDiagram(dpath).getSelf().toString()
+	application.resetBlock(diagid,blockName)
+
 # -------------------------- Helper methods ----------------------
 # Return a ProcessDiagram at the specified path
 def getDiagram(dpath):

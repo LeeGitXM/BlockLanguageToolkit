@@ -8,7 +8,8 @@ import system.ils.blt.application as application
 def listBlocksDownstreamOf(common,dpath,blockName):
 	diagid = getDiagram(dpath).getSelf().toString()
     # blocks is a list of SerializableBlockStateDescriptor
-	blocks = application.listBlocksDownStreamOf(diagid,blockName)
+	blocks = application.listBlocksDownstreamOf(diagid,blockName)
+	print "==================== blocksDownstreamOf =============="
 	lst = []
 	for block in blocks:
 		print block.getName()
@@ -21,6 +22,7 @@ def listBlocksUpstreamOf(common,dpath,blockName):
 	diagid = getDiagram(dpath).getSelf().toString()
     # blocks is a list of SerializableBlockStateDescriptor
 	blocks = application.listBlocksUpstreamOf(diagid,blockName)
+	print "==================== blocksUpstreamOf =============="
 	lst = []
 	for block in blocks:
 		print block.getName()
@@ -34,7 +36,6 @@ def listBlocksOfClass(common,dpath,classname):
 	blocks = application.listDiagramBlocksOfClass(diagid,classname)
 	lst = []
 	for block in blocks:
-		print block.getName()
 		lst.append(block.getName())
 	common['result'] = lst 
 
@@ -45,7 +46,6 @@ def listBlocksInDiagram(common,dpath):
 	blocks = application.listBlocksInDiagram(diagid)
 	lst = []
 	for block in blocks:
-		print block.getName()
 		lst.append(block.getName())
 	common['result'] = lst 
 
@@ -55,6 +55,7 @@ def listBlocksInDiagram(common,dpath):
 def listBlocksForTag(common,tagpath):
     # blocks is a list of SerializableBlockStateDescriptor
 	blocks = application.listBlocksForTag(tagpath)
+	print "==================== blocksForTag =============="
 	lst = []
 	for block in blocks:
 		print block.getName()
@@ -67,15 +68,12 @@ def listBlocksForTag(common,tagpath):
 def listSinksForSource(common,dpath,blockName):
 	diagid = getDiagram(dpath).getSelf().toString()
     # blocks is a list of SerializableBlockStateDescriptor
-	blocks = application.listBlocksInDiagram(diagid)
+	blocks = application.listSinksForSource(diagid,blockName)
+	print "==================== sinksForSource =============="
 	lst = []
-	for source in blocks:
-		if source.getName()==blockName:
-			blocks = application.listSinksForSource(source.getId().toString())
-			for block in blocks:
-				print block.getName()
-				lst.append(block.getName())
-			break
+	for block in blocks:
+		print block.getName()
+		lst.append(block.getName())
 
 	common['result'] = lst 
 
@@ -85,21 +83,19 @@ def listSinksForSource(common,dpath,blockName):
 def listSourcesForSink(common,dpath,blockName):
 	diagid = getDiagram(dpath).getSelf().toString()
     # blocks is a list of SerializableBlockStateDescriptor
-	blocks = application.listBlocksInDiagram(diagid)
+	blocks = application.listSourcesForSink(diagid,blockName)
+	print "==================== sourcesForSink =============="
 	lst = []
-	for sink in blocks:
-		if sink.getName()==blockName:
-			blocks = application.listSourcesForSink(sink.getId().toString())
-			for block in blocks:
-				print block.getName()
-				lst.append(block.getName())
-			break
+	for block in blocks:
+		print block.getName()
+		lst.append(block.getName())
 
 	common['result'] = lst 
 
 # Return the navigation path to a block or diagram
-def pathForNode(common,nodeId):
-	path = application.pathForNode(nodeId)
+def pathForBlock(common,dpath,bname):
+	diagid = getDiagram(dpath).getSelf().toString()
+	path = application.pathForBlock(diagid,bname)
 	common['result'] = path 
 
 # Propagate a signal to any receivers on the diagra

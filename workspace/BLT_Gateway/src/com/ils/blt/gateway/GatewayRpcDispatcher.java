@@ -232,7 +232,10 @@ public class GatewayRpcDispatcher   {
 		return requestHandler.getDiagramState(projectId,resourceId).name();
 	}
 
-
+	public String getDiagramState(String diagramId) {
+		return requestHandler.getDiagramState(diagramId).name();
+	}
+	
 	public String getFamilyName(String uuid) {
 		return requestHandler.getFamilyName(uuid);
 	}
@@ -267,8 +270,8 @@ public class GatewayRpcDispatcher   {
 		return requestHandler.getToolkitProperty(propertyName);
 	}
 
-	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(String diagramId, String blockId) {
-		return requestHandler.listBlocksDownstreamOf(diagramId, blockId);
+	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(String diagramId, String blockName) {
+		return requestHandler.listBlocksDownstreamOf(diagramId, blockName);
 	}
 	
 	public List<SerializableBlockStateDescriptor> listBlocksForTag(String tagpath) {
@@ -278,8 +281,8 @@ public class GatewayRpcDispatcher   {
 		return requestHandler.listBlocksInDiagram(diagramId);
 	}
 	
-	public List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(String diagramId, String blockId) {
-		return requestHandler.listBlocksUpstreamOf(diagramId, blockId);
+	public List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(String diagramId, String blockName) {
+		return requestHandler.listBlocksUpstreamOf(diagramId, blockName);
 	}
 	
 	public List<SerializableBlockStateDescriptor> listConfigurationErrors() {
@@ -299,12 +302,12 @@ public class GatewayRpcDispatcher   {
 		return requestHandler.listResourceNodes();
 	}
 
-	public List<SerializableBlockStateDescriptor> listSinksForSource(String blockId) {
-		return requestHandler.listSinksForSource(blockId);
+	public List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId,String blockName) {
+		return requestHandler.listSinksForSource(diagramId,blockName);
 	}
 
-	public List<SerializableBlockStateDescriptor> listSourcesForSink(String blockId) {
-		return requestHandler.listSourcesForSink(blockId);
+	public List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId,String blockName) {
+		return requestHandler.listSourcesForSink(diagramId,blockName);
 	}
 	
 	public String pathForBlock(String diagramId,String blockName) {
@@ -339,11 +342,11 @@ public class GatewayRpcDispatcher   {
 	/**
 	 * Reset a block in a diagram given string forms of their UUID
 	 * @param diagramIdString
-	 * @param blockIdString
+	 * @param blockName
 	 */
-	public void resetBlock(String diagramIdString,String blockIdString) {
+	public void resetBlock(String diagramIdString,String blockName) {
 		log.infof("%s.resetBlock ...",TAG);
-		requestHandler.resetBlock(diagramIdString,blockIdString);
+		requestHandler.resetBlock(diagramIdString,blockName);
 	}
 	/** 
 	 *  Reset every block in a diagram specified by id.
