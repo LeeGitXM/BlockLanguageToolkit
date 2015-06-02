@@ -14,10 +14,11 @@ Step: Average n Samples
 Tagset: AverageFeed
 09:59 0 -1 -1 -1
 09:59:30 resetDiagram ($DIAGRAM)
+09:59:45 PRIOR1 = Average1
 10:00 10 
-10:00:55 Assert: Average1 = -1 "No result with first value"
+10:00:55 Assert: Average1 = $PRIOR1 "No result with first value"
 10:01 20
-10:01:55 Assert: Average1 = -1 "No result until buffer fills"
+10:01:55 Assert: Average1 = $PRIOR1 "No result until buffer fills"
 10:02 30
 10:03:30 Assert: Average1 = 15 "Average when buffer fills"
 10:03 40

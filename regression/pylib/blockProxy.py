@@ -46,7 +46,7 @@ def getBlockState(common,dpath,blockName):
 			return
 
 # Reset an individual block
-def resetBlock(common,dpath,blockName):
+def reset(common,dpath,blockName):
 	diagid = getDiagram(dpath).getSelf().toString()
 	application.resetBlock(diagid,blockName)
 

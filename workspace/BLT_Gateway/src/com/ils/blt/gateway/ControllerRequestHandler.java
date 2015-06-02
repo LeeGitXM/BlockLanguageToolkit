@@ -773,8 +773,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		UUID diagramUUID = makeUUID(diagramId);
 		ProcessDiagram diagram = controller.getDiagram(diagramUUID);
 		if( diagram!=null) {
-			ProcessNode block = diagram.getChildForName(blockName);
-			if( block!=null ) controller.resetBlock(diagramUUID, block.getSelf());
+			ProcessBlock block = diagram.getBlockByName(blockName);
+			if( block!=null ) controller.resetBlock(diagramUUID, block.getBlockId());
 		}
 		else {
 			log.warnf("%s.resetBlock: no diagram found for %s",TAG,diagramId);

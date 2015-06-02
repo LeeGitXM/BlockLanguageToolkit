@@ -261,7 +261,12 @@ public class GatewayScriptFunctions   {
 		List<SerializableResourceDescriptor> result = handler.listResourceNodes();
 		return result;
 	}
-
+	/**
+	 * Execute reset() on the specified block
+	 */
+	public static void resetBlock(String diagramId,String blockId) {
+		handler.resetBlock(diagramId,blockId);
+	}
 	/**
 	 * Execute reset() on every block inside the controller
 	 */

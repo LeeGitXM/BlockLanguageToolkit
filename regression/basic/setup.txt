@@ -5,6 +5,7 @@ log: [DATE] [TIME] Start Testing ...
 # Script aliases - module is with respect to script directory
 # -- these are scripts of general interest
 script: getState blockProxy.getBlockState(dpath,name)
+script: resetBlock blockProxy.reset(dpath,name)
 script: resetDiagram diagramProxy.reset(name)
 script: setStateForApplication applicationProxy.setState(name,state)
 script: setTimeFactor timeFactor.setFactor(factor)

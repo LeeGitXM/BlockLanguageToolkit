@@ -30,14 +30,15 @@ Tagset: SQC
 # NOTE: Cannot count on SQC-2 during initialization because if does not clear on reset.
 Test: SQC Block
 Step: In-Range Values
-09:57 0.0 0.0 0.0
-09:58 resetDiagram ($DIAGRAM)
+09:58:15 0.0 0.0 0.0
+09:58:30 resetDiagram ($DIAGRAM)
 09:59 .9 1.0 0.01
-10:00 Assert: getState($DIAGRAM,$S3) = UNKNOWN  "3 state  UNKNOWN after reset"
-10:05 Assert: SQC3                   = UNKNOWN  "3 output UNKNOWN after reset"
-10:00:01 0.93 
-10:00:50 Assert: getState($DIAGRAM,$S3) = False "3 state  False at threshold"
-10:00:52 Assert: SQC3                   = False "3 output False at threshold"
+09:59:45 resetBlock($DIAGRAM,$S3)
+10:00 Assert: getState($DIAGRAM,$S3) = UNSET    "3 state  UNSET after block reset"
+10:00:10 Assert: SQC3                = UNKNOWN  "3 output UNKNOWN after reset"
+10:00:20 0.93 
+10:00:50 Assert: getState($DIAGRAM,$S3) = UNKNOWN "3 state  UNKNOWN at first value"
+10:00:52 Assert: SQC3                   = UNKNOWN "3 output UNKNOWN at first value"
 10:00:53 Assert: getState($DIAGRAM,$S4) = UNKNOWN  "4 state  UNKNOWN before threshold"
 10:00:55 Assert: SQC4                   = UNKNOWN  "4 output UNKNOWN before threshold"
 10:00:57 Assert: getState($DIAGRAM,$S1) = UNKNOWN  "1 state  UNKNOWN before threshold"
@@ -116,8 +117,9 @@ Step: Out-of-Range Values
 
 
 Step: Clear On Reset
-10:16    resetDiagram ($DIAGRAM)
-10:16:10 Assert: SQC1 = true  "1 downstream output still true after reset"
+10:16    resetBlock($DIAGRAM,$S1)
+10:16:10 Assert: SQC1 = UNKNOWN  "1 downstream output UNKNOWN after block reset"
+10:16:05    resetDiagram ($DIAGRAM)
 10:16:20 Assert: getState($DIAGRAM,$S2) != UNKNOWN "2 state  not UNKNOWN after reset"
 10:16:25 Assert: SQC2                   != UNKNOWN "2 output not UNKNOWN after reset"
 10:17 7.534
