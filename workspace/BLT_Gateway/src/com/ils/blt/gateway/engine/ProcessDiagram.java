@@ -337,7 +337,7 @@ public class ProcessDiagram extends ProcessNode {
 				List<ProcessConnection> cxns = incomingConnections.get(key);
 				if( cxns!=null ) {
 					for(ProcessConnection cxn:cxns) {
-						UUID blockId = cxn.getTarget();
+						UUID blockId = cxn.getSource();
 						upstream.add(blocks.get(blockId));
 					}
 				}		

@@ -14,13 +14,11 @@ import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 
-
-
 /**
- *  This interface is a common point for managing requests to the gateway dealing with the
- *  execution engine and block status. It is designed for use by Java code in the designer 
- *  as well as Python scripting. It provides a way to request/set properties of 
- *  diagrams, blocks and connections.
+ *  This interface is a common point for managing requests to the gateway dealing with
+ *  the execution engine and block status. It is designed for use by Java code in the
+ *  designer as well as Python scripting. It provides a way to request/set properties 
+ *   of diagrams, blocks and connections.
  *  
  *  Each request is relayed to the Gateway scope via an RPC call.
  */

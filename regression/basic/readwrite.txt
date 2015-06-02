@@ -7,10 +7,11 @@ Show: browser $DIAGRAM
 tag: Parameter MemoryTags/NumericParameter
 tag: ReadWriteBooleanOutput MemoryTags/ReadWriteBooleanOutput
 tag: ReadWriteNumericOutput MemoryTags/ReadWriteNumericOutput
-tag: ReadWriteSink MemoryTags/ReadWriteSink
+tag: Source MemoryTags/Connection-A
+tag: Sink MemoryTags/Connection-B
 tagset: SingleBoolean MemoryTags/BooleanFeed
 tagset: DualInput MemoryTags/DoubleInput1 MemoryTags/DoubleInput2
-tagset: ReadWriteSource MemoryTags/NumericSource
+tagset: ReadWriteSource MemoryTags/Connection-A
 
 Test: Reading and Writing Tags
 Step: Boolean tag reader
@@ -45,16 +46,16 @@ resetDiagram ($DIAGRAM)
 10:06:20 Assert: ReadWriteNumericOutput = 2 "Output is 2"
 10:06:30  3
 10:06:40 Assert: ReadWriteNumericOutput = 3 "Output is 3"
-10:07  4 2
+10:07  4 
 10:07:20 Assert: ReadWriteNumericOutput = 4 "Output is 4"
 
 Step: Numeric source to sink
 Tagset: ReadWriteSource
 10:07:30 99
 10:08 98
-10:08:20 Assert: ReadWriteSink = 98 "Sink is 98"
+10:08:20 Assert: Sink = 98 "Sink is 98"
 10:08:30 97
 10:09 96
 10:09:10 Assert: Parameter = 96 "Parameter is 96"
 10:09:30 95
-10:09:40 Assert: ReadWriteSink = 95 "Sink is 95"
+10:09:40 Assert: Sink = 95 "Sink is 95"

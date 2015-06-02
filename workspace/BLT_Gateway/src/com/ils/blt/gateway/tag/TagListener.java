@@ -145,14 +145,14 @@ public class TagListener implements TagChangeListener   {
 	 */
 	public void removeSubscription(ProcessBlock block,BlockProperty property,String tagPath) {
 		if( tagPath==null) return;    // There was no subscription
-		log.debugf("%s.removeSubscription: considering %s:%s=%s",TAG,block.getName(),property.getName(),tagPath);
+		//log.debugf("%s.removeSubscription: considering %s:%s=%s",TAG,block.getName(),property.getName(),tagPath);
 		List<BlockPropertyPair> list = blockMap.get(tagPath);
 		if(list==null) return;
 		BlockPropertyPair key = new BlockPropertyPair(block,property);
 		list.remove(key);
 		// Once the list is empty, we cancel the subscription
 		if(list.isEmpty()) {
-			log.infof("%s.removeSubscription: cancelled %s:%s=%s",TAG,block.getName(),property.getName(),tagPath);
+			log.debugf("%s.removeSubscription: cancelled %s:%s=%s",TAG,block.getName(),property.getName(),tagPath);
 			blockMap.remove(tagPath);
 			if(!stopped) {
 				// If we're running unsubscribe
@@ -225,12 +225,12 @@ public class TagListener implements TagChangeListener   {
 			}
 
 			TagPath tp = TagPathParser.parse(tagPath);
-			log.debugf("%s.startSubscriptionForTag: on tag path %s",TAG,tp.toStringFull());
+			//log.debugf("%s.startSubscriptionForTag: on tag path %s",TAG,tp.toStringFull());
 
 			Tag tag = tmgr.getTag(tp);
 			if( tag!=null ) {
 				QualifiedValue value = tag.getValue();
-				log.infof("%s.startSubscriptionForTag: got a %s value for %s (%s at %s)",TAG,
+				log.debugf("%s.startSubscriptionForTag: got a %s value for %s (%s at %s)",TAG,
 						(value.getQuality().isGood()?"GOOD":"BAD"),
 						tag.getName(),value.getValue(),
 						dateFormatter.format(value.getTimestamp()));
@@ -290,7 +290,7 @@ public class TagListener implements TagChangeListener   {
 		Tag tag = event.getTag();
 		if( tag!=null && tag.getValue()!=null && tp!=null ) {
 			try {
-				log.infof("%s: tagChanged: got a %s value for %s (%s at %s)",TAG,
+				log.debugf("%s: tagChanged: got a %s value for %s (%s at %s)",TAG,
 					(tag.getValue().getQuality().isGood()?"GOOD":"BAD"),
 					tag.getName(),tag.getValue().getValue(),
 					dateFormatter.format(tag.getValue().getTimestamp()));

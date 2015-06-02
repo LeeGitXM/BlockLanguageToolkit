@@ -213,7 +213,7 @@ public class PythonRequestHandler   {
 	 * @param quality of the reported output
 	 */
 	public void postValue(String parent,String id,String port,String value,String quality)  {
-		log.infof("%s.postValue - %s = %s (%s) on %s",TAG,id,value.toString(),quality.toString(),port);
+		log.debugf("%s.postValue - %s = %s (%s) on %s",TAG,id,value.toString(),quality.toString(),port);
 		
 		try {
 			UUID uuid = UUID.fromString(id);
@@ -236,7 +236,7 @@ public class PythonRequestHandler   {
 	 * @param quality of the reported output
 	 */
 	public void sendConnectionNotification(String id, String port, String value)  {
-		log.infof("%s.sendConnectionNotification - %s = %s on %s",TAG,id,value.toString(),port);
+		log.tracef("%s.sendConnectionNotification - %s = %s on %s",TAG,id,value.toString(),port);
 		controller.sendConnectionNotification(id, port, new BasicQualifiedValue(value));
 	}
 	/**
@@ -247,7 +247,7 @@ public class PythonRequestHandler   {
 	 * @param command the value of the signal
 	 */
 	public void sendLocalSignal(String parent,String command,String message,String arg)  {
-		log.infof("%s.sendLocalSignal - %s = %s %s %s ",TAG,parent,command,message,arg);
+		log.debugf("%s.sendLocalSignal - %s = %s %s %s ",TAG,parent,command,message,arg);
 		
 		ControllerRequestHandler.getInstance().sendLocalSignal(parent,command,message,arg);
 		

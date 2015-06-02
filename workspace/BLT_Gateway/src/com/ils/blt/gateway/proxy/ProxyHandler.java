@@ -118,7 +118,7 @@ public class ProxyHandler   {
 		if(block==null || stub==null || value==null || value.getValue()==null ) return;
 		String qualityName = BLTProperties.QUALITY_GOOD;
 		if(!value.getQuality().isGood() ) qualityName = value.getQuality().getName();
-		log.infof("%s.acceptValue --- %s %s (%s) on %s",TAG,block.toString(),value.getValue().toString(),qualityName,stub); 
+		log.debugf("%s.acceptValue --- %s %s (%s) on %s",TAG,block.toString(),value.getValue().toString(),qualityName,stub); 
 		if( acceptValueCallback.compileScript() ) {
 			synchronized(acceptValueCallback) {
 			// There are 4 values to be specified - block,port,value,quality.

@@ -281,7 +281,7 @@ public class ModelManager implements ProjectListener  {
 	private void traverseDownstream(ProcessDiagram diagram,ProcessBlock block,List<ProcessBlock> blocks) {
 		if( block!=null && !blocks.contains(block)) {
 			for(ProcessBlock blk:diagram.getDownstreamBlocks(block)) {
-				blocks.add(blk);
+				blocks.add(block);
 				traverseDownstream(diagram,blk,blocks);
 			}
 		}
@@ -300,7 +300,7 @@ public class ModelManager implements ProjectListener  {
 	private void traverseUpstream(ProcessDiagram diagram,ProcessBlock block,List<ProcessBlock> blocks) {
 		if( block!=null && !blocks.contains(block)) {
 			for(ProcessBlock blk:diagram.getUpstreamBlocks(block)) {
-				blocks.add(blk);
+				blocks.add(block);
 				traverseUpstream(diagram,blk,blocks);
 			}
 		}

@@ -651,9 +651,11 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		
 		if( tagPath!=null && tagPath.length()>0 ) {
 			List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
-			for(SerializableResourceDescriptor descriptor:descriptors) {
+			for(SerializableResourceDescriptor desc:descriptors) {
+				UUID diaguuid = makeUUID(desc.getId());
+				diagram = controller.getDiagram(diaguuid);
 				for(ProcessBlock sink:diagram.getProcessBlocks()) {
-					if( sink.getClassName().equals("com.ils.block.sinkConnection") ) {
+					if( sink.getClassName().equalsIgnoreCase("com.ils.block.SinkConnection") ) {
 						BlockProperty prop = sink.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 						if( prop!=null && tagPath.equals(prop.getBinding())  ) {
 							results.add(sink.toDescriptor());
@@ -692,8 +694,10 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		if( tagPath!=null && tagPath.length()>0 ) {
 			List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
 			for(SerializableResourceDescriptor descriptor:descriptors) {
+				UUID diaguuid = makeUUID(descriptor.getId());
+				diagram = controller.getDiagram(diaguuid);
 				for(ProcessBlock source:diagram.getProcessBlocks()) {
-					if( source.getClassName().equals("com.ils.block.sourceConnection") ) {
+					if( source.getClassName().equalsIgnoreCase("com.ils.block.SourceConnection") ) {
 						BlockProperty prop = source.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 						if( prop!=null && tagPath.equals(prop.getBinding())  ) {
 							results.add(source.toDescriptor());
