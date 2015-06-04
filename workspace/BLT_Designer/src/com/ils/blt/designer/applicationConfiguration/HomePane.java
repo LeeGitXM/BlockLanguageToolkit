@@ -35,7 +35,6 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 	
 	final JTextField nameField = new JTextField();
 	final JTextArea descriptionTextArea = new JTextArea();
-	final JComboBox<String> postComboBox = new JComboBox<String>();
 	final JComboBox<String> queueComboBox = new JComboBox<String>();
 	final JComboBox<String> groupRampMethodComboBox = new JComboBox<String>();
 	final JComboBox<String> unitComboBox = new JComboBox<String>();
@@ -83,23 +82,6 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 		scrollPane.setPreferredSize(AREA_SIZE);
 		mainPanel.add(scrollPane,"gaptop 2,aligny top,span,wrap");
 
-		// Set up the Post Combo Box
-		mainPanel.add(new JLabel("Post:"), "align right");
-		List<String> posts = model.getLists().get("Posts");
-		if( posts!=null ) {
-			for(String post : posts) {
-				postComboBox.addItem(post);
-			}
-		}
-		postComboBox.setToolTipText("The console where diagnosis will be added!");
-		String post = model.getProperties().get("Post");
-		if( post!=null ) postComboBox.setSelectedItem(post);
-		else if( postComboBox.getItemCount()>0) {
-			postComboBox.setSelectedIndex(0);
-		}
-		postComboBox.setPreferredSize(ApplicationConfigurationConstants.COMBO_SIZE);
-		mainPanel.add(postComboBox, "wrap");
-		
 		// Set up the Message Queue Combo Box
 		mainPanel.add(new JLabel("Queue:"), "align right");
 		List<String> mqueues = model.getLists().get("MessageQueues");
@@ -184,7 +166,6 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 	
 	protected void save(){
 		// Set attributes from fields on this pane
-		model.getProperties().put("Post",(String)postComboBox.getSelectedItem());
 		model.getProperties().put("Description",descriptionTextArea.getText());
 		model.getProperties().put("MessageQueue",(String) queueComboBox.getSelectedItem());
 		model.getProperties().put("GroupRampMethod",(String) groupRampMethodComboBox.getSelectedItem());

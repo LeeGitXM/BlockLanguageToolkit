@@ -5,8 +5,10 @@
 SVN=${SVN_REPO}/EMChemicals/G2Artifacts
 PROCS=${GIT_REPO}/blt/migration/procs
 mkdir -p ${PROCS}/g2/api
-mkdir -p ${PROCS}/g2/vistalon
+mkdir -p ${PROCS}/g2/vistalon/calculation
 mkdir -p ${PROCS}/ignition/api
 mkdir -p ${PROCS}/ignition/vistalon
-cp ${SVN}/Source\ code/vist-monitoring/procedures/*.txt ${PROCS}/g2/vistalon
+cp ${SVN}/Source\ code/vist-monitoring/procedures/CALC*.txt ${PROCS}/g2/vistalon/calculation
+cp ${SVN}/Source\ code/vist-monitoring/procedures/DO_*.txt ${PROCS}/g2/vistalon/calculation
+cp ${SVN}/Source\ code/vist-monitoring/procedures/PROD-MOONEY*.txt ${PROCS}/g2/vistalon/calculation
 cp ${SVN}/Source\ code/em-diag-toolkit/procedures/OUTPUT-MSG-CORE.txt ${PROCS}/g2/api

@@ -9,4 +9,4 @@ FIL=DO_SPLIT_RATE_CHG-GDA
 #FIL=DO_SINGLE_RATE_CHG-GDA
 DIR=${MIGRATION}/procs/g2/vistalon
 OUTDIR=${MIGRATION}/procs/ignition/vistalon
-${MIGRATION}/translate $DIR/$FIL $OUTDIR
+${MIGRATION}/translate.calc $DIR/$FIL $OUTDIR

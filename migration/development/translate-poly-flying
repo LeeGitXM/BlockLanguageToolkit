@@ -9,4 +9,4 @@ FIL=DO_SPLIT_FLYING_SWITCH-GDA
 #FIL=DO_SINGLE_FLYING_SWITCH-GDA
 DIR=${MIGRATION}/procs/g2/vistalon
 OUTDIR=${MIGRATION}/procs/ignition/vistalon
-${MIGRATION}/translate $DIR/$FIL $OUTDIR
+${MIGRATION}/translate.calc $DIR/$FIL $OUTDIR

@@ -5,7 +5,7 @@
 fil=CRX-WARNINGS.txt
 BLT=${GIT_REPO}/blt
 PROCS=${BLT}/migration/procs
-APP=$BLT/migration/translate
+APP=$BLT/migration/translate.calc
 cd $BLT/migration
 INDIR=${PROCS}/g2/vistalon/calculations
 OUTDIR=${PROCS}/ignition/vistalon

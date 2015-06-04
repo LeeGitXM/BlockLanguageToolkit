@@ -4,4 +4,4 @@
 BLT=~/Development/ils/src/blt
 FIL=CALC-CSTR_CA_PROBLEM-OUTPUT-GDA.txt
 DIR=${BLT}/migration/g2procs/fd
-${BLT}/migration/translate $DIR/$FIL
+${BLT}/migration/translate.calc $DIR/$FIL

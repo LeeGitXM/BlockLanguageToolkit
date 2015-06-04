@@ -9,4 +9,4 @@ FIL=CALC-NO-OUTPUT-GDA
 #FIL=CALC-BALER-VOL_PROBLEM-OUTPUT-GDA
 DIR=${MIGRATION}/procs/g2/vistalon
 OUTDIR=${MIGRATION}/procs/ignition/vistalon
-${MIGRATION}/translate $DIR/$FIL $OUTDIR
+${MIGRATION}/translate.calc $DIR/$FIL $OUTDIR

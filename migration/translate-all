@@ -1,10 +1,11 @@
 #!/bin/sh
 # Process all of the json files in the repository "g2" area.
+# -- use the translation variant for FInalDiagnosis calculations
 # Save the results in the json storate area for ignition.
 #
 BLT=${GIT_REPO}/blt
 PROCS=${BLT}/migration/procs
-APP=$BLT/migration/translate
+APP=$BLT/migration/translate.calc
 mkdir -p $INDIR
 mkdir -p $OUTDIR
 cd $BLT/migration

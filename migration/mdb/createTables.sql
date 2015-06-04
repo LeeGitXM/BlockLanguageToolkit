@@ -1,3 +1,5 @@
+-- Copyright 2015. ILS Automaition. All rights reserved.
+-- These tables hold conversion mappings between G2
 -- Map stub to anchor names
 -- Key is G2 class and port
 CREATE TABLE AnchorMap(
@@ -89,7 +91,8 @@ CREATE TABLE ProcClassMap(
 -- Map a G2 procedure to a python module
 CREATE TABLE ProcedureMap(
     G2Procedure text PRIMARY KEY ,
-    IgnitionProcedure text NOT NULL
+    IgnitionProcedure text NOT NULL,
+	ReturnType text
 );
 
 -- Set properties of Ignition blocks based on a 

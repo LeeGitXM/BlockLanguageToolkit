@@ -3,7 +3,7 @@
 -- NOTE: value is not a legitimate tag name
 -- NOTE: Tag names must be unique, folder placement is immaterial.
 --
--- The following tags represent Source/Sink connections
+-- The following tags represent Source/Sink connections in []DiagnosticToolkit/Connections
 --
 insert into TagMap values ('AB-BALER-VOL-LAB-SQC-PATH','[]Connections/ABBalerVolLab','STRING');
 insert into TagMap values ('AB-BALER-VOL-FTNIR-SQC-PATH','[]Connections/ABBalerVolFtnir','STRING');
@@ -70,7 +70,7 @@ insert into TagMap values ('AB-BALER-VOL-LAB-DATA','[]LabData/VFU/AB-BALER-VOL-L
 insert into TagMap values ('CD-BALER-VOL-LAB-DATA','[]LabData/VFU/CD-BALER-VOL-LAB-DATA/value','DOUBLE');
 insert into TagMap values ('E-BALER-VOL-LAB-DATA','[]LabData/VFU/E-BALER-VOL-LAB-DATA/value','DOUBLE');
 --
-insert into TagMap values ('AB-BALER-VOL-FTNIR-DATA','[]LabData/VFU/AB-BALER-VOL-FTNIR/value','DOUBLE');  
+insert into TagMap values ('AB-BALER-VOL-FTNIR-DATA','[]LabData/VFU/AB-BALER-VOL-FTNIR/val ue','DOUBLE');  
 insert into TagMap values ('CD-BALER-VOL-FTNIR-DATA','[]LabData/VFU/CD-BALER-VOL-FTNIR/value','DOUBLE');
 insert into TagMap values ('E-BALER-VOL-FTNIR-DATA','[]LabData/VFU/E-BALER-VOL-FTNIR/value','DOUBLE');
 --
@@ -241,22 +241,14 @@ insert into TagMap values ('C9-IN-CRUMB','[]LabData/RLA3/C9-IN-CRUMB/value','DOU
 insert into TagMap values ('[the time-of-most-recent-recommendation-implementation of frnt_short_use_temp-gda]','[]Tags/FRNT_SHORT_USE_TEMP_GDA/implementationTime','INTEGER');
 insert into TagMap values ('[the time-of-most-recent-grade-change of rla3-run-hours]','[]Tags/RLA3_RUN_HOURS/gradeChangeTime','INTEGER');
 --
--- these tags do not exist in G2
---
--- insert into TagMap values ('EM-GDA-SYMBOLIC-VARIABLE-XXX-291','[]Site/Parameters/SymbolicVariable291','STRING');
--- insert into TagMap values ('EM-GDA-SYMBOLIC-VARIABLE-XXX-292','[]Site/Parameters/SymbolicVariable292','STRING');
--- insert into TagMap values ('EM-GDA-LOGICAL-VARIABLE-XXX-293','[]Site/Parameters/LogicalVariable293','STRING');
--- insert into TagMap values ('GDL-DATA-PATH-CONNECTION-POST-XXX-490','[]Connections/ConnectionPost490','STRING');
--- insert into TagMap values ('GDL-DATA-PATH-CONNECTION-POST-XXX-491','[]Connections/ConnectionPost491','STRING');
--- insert into TagMap values ('GDL-DATA-PATH-CONNECTION-POST-XXX-492','[]Connections/ConnectionPost492','STRING');
--- insert into TagMap values ('GDL-DATA-PATH-CONNECTION-POST-XXX-568','[]Connections/ConnectionPost568-a','STRING');
--- insert into TagMap values ('GDL-DATA-PATH-CONNECTION-POST-XXX-569','[]Connections/ConnectionPost569','STRING');
--- insert into TagMap values ('GDL-INFERENCE-PATH-CONNECTION-POST-XXX-488','[]Connections/ConnectionPost488','STRING');
--- insert into TagMap values ('GDL-INFERENCE-PATH-CONNECTION-POST-XXX-489','[]Connections/ConnectionPost489','STRING');
--- insert into TagMap values ('GDL-INFERENCE-PATH-CONNECTION-POST-XXX-568','[]Connections/ConnectionPost568-b','STRING'); 
-
---
--- don't know what this does
+-- These tags do not exist in G2, but are necessary in the toolkit to replicate functionality of G2 parameters, variables and connection posts
 --
 insert into TagMap values ('EM-GDA-SYMBOLIC-VARIABLE-XXX-4651','[]Site/Parameters/SymbolicVariable4651','STRING');
+
 --
+-- The following have been found in calculation procedures and have yet to be mapped to "real" tag paths
+-- Vistalon
+insert into TagMap values ('mooney_filtered_value','[]LabData/RLA3/MOONEY-LAB-DATA/filteredValue','DOUBLE');
+insert into TagMap values ('[the ml-cat-gain of current-running-gains]','[]Site/CSTR/CURRENT-GAINS/MlCat','DOUBLE');
+insert into TagMap values ('[the ml-h2-gain of current-running-gains]', '[]Site/CSTR/CURRENT-GAINS/MlH2','DOUBLE');
+insert into TagMap values ('[the ml-c3-gain of current-running-gains]', '[]Site/CSTR/CURRENT-GAINS/MlC3','DOUBLE');
