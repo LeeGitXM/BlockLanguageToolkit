@@ -1,22 +1,29 @@
 #
-# Test of Final Diagnosis Calculations
+# Test of our simple problem
 #
-DIAGRAM="app75/family75/finaldiagosis"
+Test: Simple Test of a Final Diagnosis
+
+DIAGRAM="app75/family75/finaldiagnosis"
+FINAL_DIAGNOSIS="FDbbbb"
+
 Show: browser $DIAGRAM
-resetDiagram ($DIAGRAM)
 
-tagset: FD MemoryTags/FdInput1-1 MemoryTags/FdInput2-1 MemoryTags/FdInput2-2 MemoryTags/FdInput2-3 Configuration/DiagnosticToolkit/vectorClampMode
-Tagset: FD
+notification: HiLimitOutput notificationKey.construct($DIAGRAM,"HIGHLIMITOBSERVATION-867","out")
 
-Test: Final Diagnosis Calculations
-Step: Initialize
-10:00 false false false false ""
-applicationProxy.configureForTest("app75")
-familyProxy.configureForTest("app75","fdfam1")
-familyProxy.configureForTest("app75","fdfam2")
-halt:
+# Define data written to tags in the order: Value Target StdDev MLRGrdFlag SeriesRxGrd CRxGrd PolyPropFmFD
+Tagset: input-tags Tags/T1_PV
+Tagset: input-tags
 
-assert: finalDiagnosisProxy.validate("1.1") = success "Verify FD1-1 setup"
+Step: Test Low value
+log: [DATE] [TIME] set input less than high limit
+# affirm input at initial values
+09:50:00 4.2
+09:50:30 Assert: HiLimitOutput = FALSE "Hi Limit expecting false - input value of 4.2 entered"
+09:50:30 Assert: getState($DIAGRAM,$FINAL_DIAGNOSIS) = FALSE "state = False"
 
-Step: Initialize
-10:05 false false false false ""
+Step: Test High Value
+log: []DATE] ][TIME] set input greater than high limit
+09:51:00  8.8
+09:51:30 Assert: HiLimitOutput = TRUE "Hi limit expecting true - input value of 8.8 entered"
+
+status: Final Diagnosis script complete

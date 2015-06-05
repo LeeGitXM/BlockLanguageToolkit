@@ -15,6 +15,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
+import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -36,15 +37,16 @@ public class MainPanel extends BasicEditPanel {
 	private final static String TAG = "MainPanel";
 	private final ProcessBlockView block;
 	private final Map<String,PropertyPanel> panelMap;
+	private final CorePropertyPanel corePanel;
 
 	public MainPanel(DesignerContext context,BlockPropertyEditor editor,ProcessBlockView blk) {
 		super(editor);
 		this.block = blk;
 		this.panelMap = new HashMap<String,PropertyPanel>();
+		this.corePanel = new CorePropertyPanel(block);
 
 		setLayout(new MigLayout("top,flowy,ins 2,gapy 0:10:15","","[top]0[]"));
-		JPanel panel = new CorePropertyPanel(block);
-		add(panel,"grow,push");
+		add(corePanel,"grow,push");
 
 		log.debugf("%s.mainPanel: - editing %s (%s)",TAG,block.getId().toString(),block.getClassName());
 		PropertyPanel propertyPanel = null;
@@ -77,6 +79,13 @@ public class MainPanel extends BasicEditPanel {
 	 * This is the property summary on the main panel.
 	 * @param prop
 	 */
+	public void updatePanelForBlock(ProcessBlockView pbv) {
+		 corePanel.updatePanelForBlock(pbv);
+	}
+	/**
+	 * This is the property summary on the main panel.
+	 * @param prop
+	 */
 	public void updatePanelForProperty(BlockProperty prop ) {
 		log.tracef("%s.updatePanelForProperty: %s", TAG,prop.getName());
 		PropertyPanel pp = panelMap.get(prop.getName());
@@ -90,17 +99,23 @@ public class MainPanel extends BasicEditPanel {
 		private static final String columnConstraints = "[para]0[]0[]";
 		private static final String layoutConstraints = "ins 2";
 		private static final String rowConstraints = "[para]0[]0[]";
+		private final JTextField nameField;
 
 		public CorePropertyPanel(ProcessBlockView blk) {
 			setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
 			addSeparator(this,"Core");
 			add(createLabel("Name"),"skip");
-			add(createTextField(blk.getName()),"growx,pushx");
+			nameField = createTextField(blk.getName());
+			add(nameField,"growx,pushx");
 			add(createNameEditButton(blk),"w :25:");
 			add(createLabel("Class"),"newline,skip");
 			add(createTextField(blk.getClassName()),"span,growx");
 			add(createLabel("UUID"),"skip");
 			add(createTextField(blk.getId().toString()),"span,growx");
+		}
+		
+		public void updatePanelForBlock(ProcessBlockView pbv) {
+			nameField.setText(pbv.getName());
 		}
 	}
 	

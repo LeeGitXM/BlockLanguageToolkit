@@ -248,7 +248,22 @@ insert into TagMap values ('EM-GDA-SYMBOLIC-VARIABLE-XXX-4651','[]Site/Parameter
 --
 -- The following have been found in calculation procedures and have yet to be mapped to "real" tag paths
 -- Vistalon
+insert into TagMap values ('enb_filtered_value','[]LabData/RLA3/ENB-LAB-DATA/filteredValue','DOUBLE');
+insert into TagMap values ('ethylene_filtered_value','[]LabData/RLA3/ETHYLENE-LAB-DATA/filteredValue','DOUBLE');
 insert into TagMap values ('mooney_filtered_value','[]LabData/RLA3/MOONEY-LAB-DATA/filteredValue','DOUBLE');
+insert into TagMap values ('split_feed_grade','[]Site/CSTR/SPLIT_FEED_GRADE','BOOLEAN');
+insert into TagMap values ('[the c2-c3-gain of current-running-gains]','[]Site/CSTR/CURRENT-GAINS/C2C3','DOUBLE');
+insert into TagMap values ('[the c2-c9-gain of current-running-gains]','[]Site/CSTR/CURRENT-GAINS/C2C9','DOUBLE');
+insert into TagMap values ('[the c2-h2-gain of current-running-gains]','[]Site/CSTR/CURRENT-GAINS/C2H2','DOUBLE');
+insert into TagMap values ('[the c2-r2c3-gain of current-running-gains]','[]Site/CSTR/CURRENT-GAINS/C2R2C3','DOUBLE');
+insert into TagMap values ('[the c2-cat-gain of current-running-gains]','[]Site/CSTR/CURRENT-GAINS/C2Cat','DOUBLE');
+insert into TagMap values ('[the dml-r1c2-gain of current-running-gains]','[]Site/CSTR/CURRENT-GAINS/DmlR1C2','DOUBLE');
+insert into TagMap values ('[the enb-cat-gain of current-running-gains]','[]Site/CSTR/CURRENT-GAINS/EnbCat','DOUBLE');
+insert into TagMap values ('[the enb-c3-gain of current-running-gains]','[]Site/CSTR/CURRENT-GAINS/EnbC3','DOUBLE');
+insert into TagMap values ('[the enb-c3-gain of current-running-gains]','[]Site/CSTR/CURRENT-GAINS/EnbC3','DOUBLE');
+insert into TagMap values ('[the enb-enb-gain of current-running-gains]','[]Site/CSTR/CURRENT-GAINS/EnbEnb','DOUBLE');
+insert into TagMap values ('[the enb-h2-gain of current-running-gains]','[]Site/CSTR/CURRENT-GAINS/EnbH2','DOUBLE');
+insert into TagMap values ('[the enb-c3-gain of current-running-gains]','[]Site/CSTR/CURRENT-GAINS/EnbC3','DOUBLE');
 insert into TagMap values ('[the ml-cat-gain of current-running-gains]','[]Site/CSTR/CURRENT-GAINS/MlCat','DOUBLE');
 insert into TagMap values ('[the ml-h2-gain of current-running-gains]', '[]Site/CSTR/CURRENT-GAINS/MlH2','DOUBLE');
 insert into TagMap values ('[the ml-c3-gain of current-running-gains]', '[]Site/CSTR/CURRENT-GAINS/MlC3','DOUBLE');

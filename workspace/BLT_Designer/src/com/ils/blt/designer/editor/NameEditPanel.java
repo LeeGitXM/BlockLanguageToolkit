@@ -98,6 +98,7 @@ public class NameEditPanel extends BasicEditPanel {
 					block.setNameOffsetX(Integer.parseInt(xfield.getText()));
 					block.setNameOffsetY(Integer.parseInt(yfield.getText()));
 					setSelectedPane(BlockEditConstants.HOME_PANEL);
+					editor.updatePanelForBlock(BlockEditConstants.HOME_PANEL, block);
 					editor.saveDiagram();
 				}
 				catch(NumberFormatException nfe) {

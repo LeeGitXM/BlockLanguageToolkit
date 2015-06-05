@@ -79,8 +79,10 @@ public class BlockPropertyEditor extends SlidingPane   {
 		case BlockEditConstants.NAME_EDIT_PANEL:
 			nameEditPanel.updateForBlock(blk);
 			break;
-		case BlockEditConstants.CONFIGURATION_PANEL:
 		case BlockEditConstants.HOME_PANEL: 
+			mainPanel.updatePanelForBlock(blk);
+			break;
+		case BlockEditConstants.CONFIGURATION_PANEL:
 		default:
 			break;
 		}
