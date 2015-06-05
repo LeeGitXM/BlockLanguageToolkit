@@ -40,10 +40,13 @@ def setBlockProperty(common,dpath,blockName,propName,value):
 # Return the state of a block
 def getBlockState(common,dpath,blockName):
 	diagram = getDiagram(dpath)
+	result = blockName+" NOT FOUND"
 	for block in diagram.getProcessBlocks():
 		if block.getName() == blockName:
-			common['result'] = block.getState()
-			return
+			result = block.getState()
+			break
+
+	common['result'] = result
 
 # Reset an individual block
 def reset(common,dpath,blockName):
