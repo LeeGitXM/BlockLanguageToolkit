@@ -12,4 +12,6 @@ TOOLDIR=$SVN/tools/blt-migration
 mkdir -p $TOOLDIR
 cd ${GIT_REPO}/blt/migration
 cp migrate $TOOLDIR/migrate.sh
+cp translate $TOOLDIR/translate.sh
+cp translate.calc $TOOLDIR/translate.calc.sh
 cp $LIB/blt-migration.jar $TOOLDIR

@@ -48,9 +48,11 @@ insert into ProcedureMap(G2Procedure,IgnitionProcedure) values ('unset-value','i
 insert into ProcedureMap(G2Procedure,IgnitionProcedure) values ('calc-cstr_ens_problem-output-gda','ils.vistalon.cstr.CstrEnb.calculate');
 insert into ProcedureMap(G2Procedure,IgnitionProcedure) values ('calc-baler-vol-output-gda','ils.vistalon.fd.BalerVolume.calculate');
 -- Map G2 utility methods into Python equivalents
+insert into ProcedureMap(G2Procedure,IgnitionProcedure) values ('em-create-message','ils.queue.message.insert');
 insert into ProcedureMap(G2Procedure,IgnitionProcedure,ReturnType) values ('em-get-quant-recommendation-def','ils.diagToolkit.recommendation.defineQuantOutput','dictionary');
 insert into ProcedureMap(G2Procedure,IgnitionProcedure) values ('em-get-quant-recommendation','ils.diagToolkit.recommendation.calculateFinalRecommendation');
-insert into ProcedureMap(G2Procedure,IgnitionProcedure) values ('em-create-message','ils.queue.message.insert');
+insert into ProcedureMap(G2Procedure,IgnitionProcedure) values ('em-get-application','ils.diagToolkit.finalDiagnosis.getApplication');
+insert into ProcedureMap(G2Procedure,IgnitionProcedure) values ('em-get-target','ils.diagToolkit.finalDiagnosis.getUpstreamSQCTargetValue');
 insert into ProcedureMap(G2Procedure,IgnitionProcedure) values ('g2-tw-popup','ils.vistalon.util.Window.displayClient');
 insert into ProcedureMap(G2Procedure,IgnitionProcedure) values ('output-msg','ils.diagToolkit.util.outputMessage.create');
 insert into ProcedureMap(G2Procedure,IgnitionProcedure) values ('output-msg-core','ils.diagToolkit.util.outputMessageCore.create');

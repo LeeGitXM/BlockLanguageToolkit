@@ -10,6 +10,7 @@ import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.block.common.FixedSizeQueue;
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
@@ -357,6 +358,18 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 			qvMap.put("Value", String.valueOf(dbl));
 			descBuffer.add(qvMap);
 		}
+		return descriptor;
+	}
+	/**
+	 * Add the value of the target input to the standard descriptor.
+	 * @return the descriptor
+	 */
+	@Override
+	public SerializableBlockStateDescriptor toDescriptor() {
+		SerializableBlockStateDescriptor descriptor = super.toDescriptor();
+		Map<String,String> attributes = descriptor.getAttributes();
+		attributes.put(BLTProperties.BLOCK_ATTRIBUTE_TARGET,String.valueOf(mean));
+		descriptor.setAttributes(attributes);
 		return descriptor;
 	}
 	/**

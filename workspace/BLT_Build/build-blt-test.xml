@@ -79,7 +79,6 @@
 	<target name="clean" description="Remove previous test build products" >
 		<delete file="${basedir}/BLT_Build/modules/${BLTTestModule.name}-module-unsigned.modl" />
 		<delete dir="${basedir}/BLT_Build/release" />
-		<delete dir="${basedir}/BLT_Build/temp_modl" />
 	</target>	
 	
 	<!-- Compile the Common library -->

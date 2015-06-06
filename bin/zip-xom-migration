@@ -13,7 +13,6 @@ mkdir -p $TMP
 cd ${GIT_REPO}/blt/migration
 rm -f mdb/*.db
 rm -rf tags
-cp -a * $TMP
 cd mdb
 ./mkdatabase
 cd ..
@@ -21,12 +20,14 @@ cd ..
 ./copy-json
 ./migrate-all
 mkdir -p $TMP/config
+mkdir -p $TMP/procs
 ./mktags > $TMP/config/sqltags.xml
-cd ..
-cp -a migration/json/ignition $TMP
+cp -a json/ignition/* $TMP
+cd procs/ignition
+cp -a * $TMP/procs
 
 # Now zip and copy to subversion
-cd ${GIT_REPO}
-zip -r migration.zip $VERS
-cp migration.zip $SVN
+cd ${GIT_REPO}/$VERS
+zip -r blt-migration.zip *
+cp blt-migration.zip $SVN
 rm -rf $TMP

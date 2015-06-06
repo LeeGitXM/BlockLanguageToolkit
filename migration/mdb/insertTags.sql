@@ -248,16 +248,30 @@ insert into TagMap values ('EM-GDA-SYMBOLIC-VARIABLE-XXX-4651','[]Site/Parameter
 --
 -- The following have been found in calculation procedures and have yet to be mapped to "real" tag paths
 -- Vistalon
+insert into TagMap values ('ca_filtered_value','[]LabData/RLA3/CA-LAB-DATA/filteredValue','DOUBLE');
+insert into TagMap values ('dc2_filtered_value','[]LabData/RLA3/DC2-LAB-DATA/filteredValue','DOUBLE');
+insert into TagMap values ('denb_filtered_value','[]LabData/RLA3/DENB-LAB-DATA/filteredValue','DOUBLE');
 insert into TagMap values ('enb_filtered_value','[]LabData/RLA3/ENB-LAB-DATA/filteredValue','DOUBLE');
 insert into TagMap values ('ethylene_filtered_value','[]LabData/RLA3/ETHYLENE-LAB-DATA/filteredValue','DOUBLE');
 insert into TagMap values ('mooney_filtered_value','[]LabData/RLA3/MOONEY-LAB-DATA/filteredValue','DOUBLE');
+insert into TagMap values ('oil_filtered_value','[]LabData/RLA3/OIL-LAB-DATA/filteredValue','DOUBLE');
+insert into TagMap values ('polysplit_filtered_value','[]LabData/RLA3/POLYSPLIT-LAB-DATA/filteredValue','DOUBLE');
 insert into TagMap values ('split_feed_grade','[]Site/CSTR/SPLIT_FEED_GRADE','BOOLEAN');
+insert into TagMap values ('stab_filtered_value','[]LabData/RLA3/STAB-LAB-DATA/filteredValue','DOUBLE');
+insert into TagMap values ('cast-disposition-entry','[]Site/CAST-DISPOSITION-ENTRY','DOUBLE');
+insert into TagMap values ('d20-service-status','[]Site/SERVICE-STATUS/D20','DOUBLE');
+insert into TagMap values ('s88-rc-main-c2-rate-ramper','[]Site/S88-RC-MAIN/C2-RATE-RAMPER','DOUBLE');
+insert into TagMap values ('s88-rc-r2-c2-rate-ramper','[]Site/S88-RC-MAIN/C2-R2-RAMPER','DOUBLE');
 insert into TagMap values ('[the c2-c3-gain of current-running-gains]','[]Site/CSTR/CURRENT-GAINS/C2C3','DOUBLE');
 insert into TagMap values ('[the c2-c9-gain of current-running-gains]','[]Site/CSTR/CURRENT-GAINS/C2C9','DOUBLE');
 insert into TagMap values ('[the c2-h2-gain of current-running-gains]','[]Site/CSTR/CURRENT-GAINS/C2H2','DOUBLE');
 insert into TagMap values ('[the c2-r2c3-gain of current-running-gains]','[]Site/CSTR/CURRENT-GAINS/C2R2C3','DOUBLE');
 insert into TagMap values ('[the c2-cat-gain of current-running-gains]','[]Site/CSTR/CURRENT-GAINS/C2Cat','DOUBLE');
+insert into TagMap values ('[the dc2-r1c3-gain of current-running-gains]','[]Site/CSTR/CURRENT-GAINS/Dc2R1C3','DOUBLE');
+insert into TagMap values ('[the dc2-r2c3-gain of current-running-gains]','[]Site/CSTR/CURRENT-GAINS/Dc2R2C3','DOUBLE');
 insert into TagMap values ('[the dml-r1c2-gain of current-running-gains]','[]Site/CSTR/CURRENT-GAINS/DmlR1C2','DOUBLE');
+insert into TagMap values ('[the denb-r1enb-gain of current-running-gains]','[]Site/CSTR/CURRENT-GAINS/DenbR1Enb','DOUBLE');
+insert into TagMap values ('[the denb-r2enb-gain of current-running-gains]','[]Site/CSTR/CURRENT-GAINS/DenbR2Enb','DOUBLE');
 insert into TagMap values ('[the enb-cat-gain of current-running-gains]','[]Site/CSTR/CURRENT-GAINS/EnbCat','DOUBLE');
 insert into TagMap values ('[the enb-c3-gain of current-running-gains]','[]Site/CSTR/CURRENT-GAINS/EnbC3','DOUBLE');
 insert into TagMap values ('[the enb-c3-gain of current-running-gains]','[]Site/CSTR/CURRENT-GAINS/EnbC3','DOUBLE');
@@ -267,3 +281,6 @@ insert into TagMap values ('[the enb-c3-gain of current-running-gains]','[]Site/
 insert into TagMap values ('[the ml-cat-gain of current-running-gains]','[]Site/CSTR/CURRENT-GAINS/MlCat','DOUBLE');
 insert into TagMap values ('[the ml-h2-gain of current-running-gains]', '[]Site/CSTR/CURRENT-GAINS/MlH2','DOUBLE');
 insert into TagMap values ('[the ml-c3-gain of current-running-gains]', '[]Site/CSTR/CURRENT-GAINS/MlC3','DOUBLE');
+insert into TagMap values ('[the ps-r1c2-gain of current-running-gains]', '[]Site/CSTR/CURRENT-GAINS/PsR1C2','DOUBLE');
+insert into TagMap values ('[the ps-r2c2-gain of current-running-gains]', '[]Site/CSTR/CURRENT-GAINS/PsR2C2','DOUBLE');
+insert into TagMap values ('[the lower_limit of STAB-LAB-DATA]','[]LabData/RLA3/STAB-LAB-DATA/lowerLimit','DOUBLE');

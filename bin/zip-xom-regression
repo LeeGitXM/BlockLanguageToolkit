@@ -9,12 +9,13 @@ TMP=${GIT_REPO}/$VERS
 # Cleanup
 rm -rf $TMP
 cd ${GIT_REPO}
-mkdir $TMP
+mkdir -p $TMP/pylib
 cd ${GIT_REPO}/blt/regression
-cp -a basic cstrproductquality pylib $TMP
+cp -a basic $TMP
+cp -a pylib/*.py $TMP/pylib
 cd ..
 # Now zip and copy to subversion
-cd ${GIT_REPO}
-zip -r blt_regression.zip $VERS
+cd ${GIT_REPO}/$VERS
+zip -r blt_regression.zip * 
 cp blt_regression.zip $SVN
 rm -rf $TMP

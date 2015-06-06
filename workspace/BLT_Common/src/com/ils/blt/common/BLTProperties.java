@@ -65,6 +65,7 @@ public interface BLTProperties   {
 	public static final String BLOCK_ATTRIBUTE_NAME       = "name";
 	public static final String BLOCK_ATTRIBUTE_PATH       = "path";
 	public static final String BLOCK_ATTRIBUTE_QUALITY    = "quality";
+	public static final String BLOCK_ATTRIBUTE_TARGET     = "target";
 	public static final String BLOCK_ATTRIBUTE_DATA_TYPE  = "type";
 	public static final String BLOCK_ATTRIBUTE_VALUE      = "value";
 	
