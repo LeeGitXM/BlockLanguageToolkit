@@ -193,7 +193,6 @@ public class ProcessDiagram extends ProcessNode {
 					if( connections==null ) {
 						connections = new ArrayList<ProcessConnection>();
 						incomingConnections.put(key, connections);
-						log.tracef("%s.analyze: mapping connection from %s:%s",TAG,upstreamBlock.getBlockId().toString(),pc.getDownstreamPortName());
 					}
 					if( !connections.contains(pc) ) connections.add(pc);
 				}

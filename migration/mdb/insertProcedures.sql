@@ -56,6 +56,8 @@ insert into ProcedureMap(G2Procedure,IgnitionProcedure) values ('em-get-target',
 insert into ProcedureMap(G2Procedure,IgnitionProcedure) values ('g2-tw-popup','ils.vistalon.util.Window.displayClient');
 insert into ProcedureMap(G2Procedure,IgnitionProcedure) values ('output-msg','ils.diagToolkit.util.outputMessage.create');
 insert into ProcedureMap(G2Procedure,IgnitionProcedure) values ('output-msg-core','ils.diagToolkit.util.outputMessageCore.create');
+-- Map to a no-op
+insert into ProcedureMap(G2Procedure,IgnitionProcedure) values ('build-message-on-workspace','ils.blt.lib.noopint');
 -- These are generic utility methods
 insert into ProcedureMap(G2Procedure,IgnitionProcedure) values ('getengineDebugMode','ils.blt.lib.getDebugMode');
 insert into ProcedureMap(G2Procedure,IgnitionProcedure) values ('getengineName','ils.blt.lib.getName');
