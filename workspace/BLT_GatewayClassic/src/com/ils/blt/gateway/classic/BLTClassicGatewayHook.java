@@ -11,7 +11,6 @@ import org.apache.wicket.markup.html.WebMarkupContainer;
 
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.script.ScriptExtensionManager;
-import com.ils.blt.gateway.common.BasicRequestHandler;
 import com.ils.blt.gateway.common.GatewayRpcDispatcher;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ModelManager;
@@ -41,8 +40,6 @@ import com.inductiveautomation.ignition.gateway.web.models.INamedTab;
  */
 public class BLTClassicGatewayHook extends AbstractGatewayModuleHook  {
 	public static String TAG = "BLTGatewayHook";
-	public static String BUNDLE_NAME = "block";// Properties file is block.properties
-	private final String prefix = "BLT";
 	private transient GatewayRpcDispatcher dispatcher = null;
 	private transient GatewayContext context = null;
 	private transient ModelManager mmgr = null;
@@ -57,7 +54,6 @@ public class BLTClassicGatewayHook extends AbstractGatewayModuleHook  {
 	public BLTClassicGatewayHook() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		log.info(TAG+"Initializing BLT Gateway hook");
-		BundleUtil.get().addBundle(prefix, getClass(), BUNDLE_NAME);
 	}
 		
 	
@@ -147,7 +143,6 @@ public class BLTClassicGatewayHook extends AbstractGatewayModuleHook  {
 		
 		@Override
 		public WebMarkupContainer getPanel(String id) {
-			//return new SimpleStatusPanel(id);
 			return new ToolkitStatusPanel(id);
 		}
 	}

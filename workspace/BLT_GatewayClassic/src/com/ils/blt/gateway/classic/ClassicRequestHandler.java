@@ -38,13 +38,9 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
  *  of the execution engine. The requests can be expected arrive both through the scripting interface
  *  and the RPC diispatcher.In general, the calls are made to update properties 
  *  in the block objects and to trigger their evaluation.
- *  
- *  
- *  This class is a singleton for easy access throughout the application.
  */
 public class ClassicRequestHandler extends BasicRequestHandler implements ToolkitRequestHandler  {
 	private final static String TAG = "ClassicRequestHandler";
-
 	private final PythonRequestHandler pyHandler;
     
 	/**

@@ -20,8 +20,14 @@ import com.ils.blt.common.serializable.SerializableResourceDescriptor;
  * These calls are available from any Ignition scope.
  */
 public class SchematicScriptFunctions   {
-	private static ControllerRequestHandler handler = ControllerRequestHandler.getInstance();
-	private static PythonRequestHandler pyhandler = new PythonRequestHandler();
+	private static SchematicRequestHandler handler;
+	private static PythonRequestHandler pyhandler;
+	// These methods must be called before scriting is functional.
+	public static void setRequestHandler(SchematicRequestHandler h)      { 
+		handler   = h; 
+		pyhandler = new PythonRequestHandler(handler);
+	};
+	
 	
 	public static List<SerializableResourceDescriptor> childNodes(String nodeId) {
 		return handler.childNodes(nodeId);
@@ -36,9 +42,6 @@ public class SchematicScriptFunctions   {
 	}
 	public static void evaluateBlock(String diagramId,String blockId) {
 		handler.evaluateBlock(diagramId,blockId);
-	}
-	public static String getApplicationName(String uuid) {
-		return handler.getApplicationName(uuid);
 	}
 	
 	/**
@@ -89,10 +92,7 @@ public class SchematicScriptFunctions   {
 	public static SerializableResourceDescriptor getDiagramForBlock(String blockId) {
 		return handler.getDiagramForBlock(blockId);
 	}
-	
-	public static String getFamilyName(String uuid) {
-		return handler.getFamilyName(uuid);
-	}
+
 	/**
 	 * The Python request handler is made available to
 	 * every block that is implemented in Python. The

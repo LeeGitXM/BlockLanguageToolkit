@@ -1,7 +1,9 @@
 /**
  *   (c) 2015  ILS Automation. All rights reserved. 
  */
-package com.ils.blt.common.block;
+package com.ils.sblock;
+
+import com.ils.blt.common.block.CoreBlock;
 
 /**
  * This interface defines a block in a schematic diagram. The

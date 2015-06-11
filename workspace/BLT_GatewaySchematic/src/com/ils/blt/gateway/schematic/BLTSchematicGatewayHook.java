@@ -8,16 +8,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.wicket.markup.html.WebMarkupContainer;
-import org.eclipse.jetty.http.HttpParser.ProxyHandler;
 
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.script.ScriptExtensionManager;
-import com.ils.blt.gateway.GatewayRpcDispatcher;
+import com.ils.blt.gateway.common.GatewayRpcDispatcher;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ModelManager;
 import com.ils.blt.gateway.persistence.ToolkitRecord;
 import com.ils.blt.gateway.wicket.ToolkitStatusPanel;
-import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
@@ -39,24 +37,22 @@ import com.inductiveautomation.ignition.gateway.web.models.INamedTab;
  * 
  * At present this code does nothing.
  */
-public class BLTGatewayHook extends AbstractGatewayModuleHook  {
-	public static String TAG = "BLTGatewayHook";
-	public static String BUNDLE_NAME = "block";// Properties file is block.properties
-	private final String prefix = "BLT";
+public class BLTSchematicGatewayHook extends AbstractGatewayModuleHook  {
+	public static String TAG = "BLTSchematicGatewayHook";
 	private transient GatewayRpcDispatcher dispatcher = null;
 	private transient GatewayContext context = null;
 	private transient ModelManager mmgr = null;
+	private transient SchematicRequestHandler requestHandler = null;
 	private final LoggerEx log;
 	private ToolkitRecord record = null;
 	
-	public static BLTGatewayHook get(GatewayContext ctx) { 
-		return (BLTGatewayHook)ctx.getModule(BLTProperties.MODULE_ID);
+	public static BLTSchematicGatewayHook get(GatewayContext ctx) { 
+		return (BLTSchematicGatewayHook)ctx.getModule(BLTProperties.MODULE_ID);
 	}
 	
-	public BLTGatewayHook() {
+	public BLTSchematicGatewayHook() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		log.info(TAG+"Initializing BLT Gateway hook");
-		BundleUtil.get().addBundle(prefix, getClass(), BUNDLE_NAME);
 	}
 		
 	
@@ -69,9 +65,8 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		// NOTE: Get serialization exception if ModelResourceManager is saved as a class member
 		//       Exception is thrown when we try to incorporate a StatusPanel
 		log.info(TAG+".setup - enable project listeners.");
-		ProxyHandler.getInstance().setContext(context);
-		ControllerRequestHandler.getInstance().setContext(context);
-		dispatcher = new GatewayRpcDispatcher(context);
+		requestHandler = new SchematicRequestHandler(context);
+		dispatcher = new GatewayRpcDispatcher(context,requestHandler);
 		
 		// Register the ToolkitRecord making sure that the table exists
 		try {
@@ -87,8 +82,9 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	    
 	    // Look for all block resources and inform the execution controller
 		BlockExecutionController controller = BlockExecutionController.getInstance();
-	    mmgr = new ModelManager(context);
+	    mmgr = new SchematicModelManager(context);
 	    controller.setDelegate(mmgr);
+	    controller.setRequestHandler(requestHandler);
 	    controller.start(context);
 	    // Initialize all the script modules from parameters stored in the ORM
 	    ScriptExtensionManager sem = ScriptExtensionManager.getInstance();
@@ -133,7 +129,8 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	@Override
 	public void initializeScriptManager(ScriptManager mgr) {
 		super.initializeScriptManager(mgr);
-		mgr.addScriptModule(BLTProperties.APPLICATION_SCRIPT_PACKAGE, GatewayScriptFunctions.class);
+		SchematicScriptFunctions.setRequestHandler(requestHandler);
+		mgr.addScriptModule(BLTProperties.APPLICATION_SCRIPT_PACKAGE, SchematicScriptFunctions.class);
 	}
 	
 	private static class ToolkitStatus extends AbstractNamedTab {
@@ -145,7 +142,6 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		
 		@Override
 		public WebMarkupContainer getPanel(String id) {
-			//return new SimpleStatusPanel(id);
 			return new ToolkitStatusPanel(id);
 		}
 	}

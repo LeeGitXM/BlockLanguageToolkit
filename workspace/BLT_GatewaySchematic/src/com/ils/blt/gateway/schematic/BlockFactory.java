@@ -15,12 +15,13 @@ import java.util.UUID;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.SchematicBlock;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.gateway.engine.BlockExecutionController;
+import com.ils.sblock.SchematicBlock;
+import com.ils.sblock.proxy.ProxyHandler;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 
@@ -34,10 +35,12 @@ public class BlockFactory  {
 	private final LoggerEx log = LogUtil.getLogger(BlockFactory.class.getPackage().getName());
 	private static BlockFactory instance = null;
 	private final BlockExecutionController controller = BlockExecutionController.getInstance();
+	private final ProxyHandler proxyHandler;
 	/**
 	 * Private per the Singleton pattern.
 	 */
 	private BlockFactory() {
+		proxyHandler = ProxyHandler.getInstance();
 	}
 
 	/**
@@ -77,7 +80,8 @@ public class BlockFactory  {
 			log.warnf("%s.blockFromSerializable %s: Three argument constructor not found (%s)",TAG,className,nsme.getMessage()); 
 		}
 		catch( ClassNotFoundException cnf ) {
-			log.warnf("%s.blockFromSerializable: No java class %s",TAG,className); 
+			log.warnf("%s.blockFromSerializable: No java class %s - trying Python",TAG,className); 
+			block = proxyHandler.createBlockInstance(className,parentId,blockId,projectId);
 		}
 		catch( InstantiationException ie ) {
 			log.warnf("%s.blockFromSerializable: Error instantiating %s (%s)",TAG,className,ie.getLocalizedMessage()); 

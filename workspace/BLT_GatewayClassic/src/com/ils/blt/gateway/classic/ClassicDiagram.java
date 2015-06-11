@@ -27,13 +27,11 @@ import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
  * of a ProcessDiagramView as viewed in the Designer.
  *  
  * This class provides answers to questions that the model control may ask about "what's next?".  
- * 
- *  The document is constant for the life of this instance.
  */
 public class ClassicDiagram extends BasicDiagram {
 	
 	private static final long serialVersionUID = 3667397875746466629L;
-	private static String TAG = "ProcessDiagram";
+	private static String TAG = "ClassicDiagram";
 	
 	/**
 	 * Constructor: Create a model that encapsulates the structure of the blocks and connections

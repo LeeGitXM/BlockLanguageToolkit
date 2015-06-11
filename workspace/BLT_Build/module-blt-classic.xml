@@ -31,8 +31,8 @@
 		<jar scope="GD">jackson-annotations-2.2.3.jar</jar>
 		<jar scope="GCD">ils-common.jar</jar>
 		<!-- Tell the Gateway and/or Designer where to find the hooks -->
-		<hook scope="G">com.ils.blt.gateway.classic.BLTClassicGatewayHook</hook>
-		<hook scope="D">com.ils.blt.designer.BLTClassicDesignerHook</hook>
+		<hook scope="G">com.ils.blt.gateway.schematic.BLTSchematicGatewayHook</hook>
+		<hook scope="D">com.ils.blt.designer.BLTSchematicDesignerHook</hook>
 		<hook scope="C">com.ils.blt.client.BLTClientHook</hook>
 	</module>
 </modules>

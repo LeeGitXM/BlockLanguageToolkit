@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <modules>
 	<module>
-		<id>block</id>
+		<id>schematic-block</id>
 		<name>@NAME@</name>
 		<description>@DESCRIPTION@</description>
 		<version>@VERSION@</version>
@@ -23,7 +23,6 @@
 		<jar scope="CD">prefuse-1.0.1.jar.pack.gz</jar>
 		<jar scope="G">blt-gateway.jar</jar>
 		<jar scope="G">blt-gateway-common.jar</jar>
-		<jar scope="G">blt-gateway-classic.jar</jar>
 		<jar scope="G">blt-gateway-schematic.jar</jar>
 		<jar scope="G">blt-common.jar</jar>
 		<jar scope="G">commons-math3-3.1.1.jar</jar>

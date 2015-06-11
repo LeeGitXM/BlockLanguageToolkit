@@ -1,0 +1,18 @@
+/**
+ *   (c) 2014  ILS Automation. All rights reserved.
+ *  
+ */
+package com.ils.sblock.proxy;
+
+/**
+ * Define the module that returns the property list for a block. 
+ */
+public class GetBlockProperties extends Callback {
+
+	public GetBlockProperties() {
+		module = "getBlockProperties";
+		setLocalVariableList("block,properties");
+	}
+
+}
+

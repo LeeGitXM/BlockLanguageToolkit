@@ -11,7 +11,6 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.AbstractBlock;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.SchematicBlock;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
