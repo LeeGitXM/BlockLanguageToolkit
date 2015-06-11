@@ -93,7 +93,7 @@ public class ForceValueSettingsDialog extends JDialog {
 					else if(component instanceof JTextField) {
 						value = ((JTextField)component).getText();
 					}
-					requestHandler.postResult(diagram.getId().toString(),block.getId().toString(),port,value);
+					requestHandler.postValue(diagram.getId().toString(),block.getId().toString(),port,value);
 				}
 			}
 		});

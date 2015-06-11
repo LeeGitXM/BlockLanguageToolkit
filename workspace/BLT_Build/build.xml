@@ -1,5 +1,5 @@
 <project name="BLTBuild" basedir="../">
-
+	<!-- Configure general purpose-ant activities --> 
 	<!-- Allows external ant tasks like <if> to be used -->
 	<taskdef resource="net/sf/antcontrib/antcontrib.properties">
 		<classpath>

@@ -1,0 +1,304 @@
+<project name="BLTModuleBuilder" basedir="../" default="BuildAndInstallModule">
+
+	<import file="${basedir}/BLT_Build/build.xml"/>
+
+	<property name="version.build" value="1" />	
+	<!-- Change version.beta value to "" for release builds -->
+	<property name="version.beta" value="-development" />		
+	<property name="BLTModule.version" value="2.0.0.${version.build}" />
+	<property name="BLTModule.name" value="BLT" />
+	<property name="BLTModule.release" value="2.0" />
+	<property name="BLTModule.description" value="Block Language Toolkit" />
+	<property name="root.dir" value="${basedir}/../.." />
+	<property name="jar.dir" value="${root.dir}/external/lib" />
+	<property name="sdk.dir" value="${root.dir}/ignition-77/lib" />
+	<property name="common.jar.name" value="ils-common.jar" />
+	<property name="common.bin.dir" value="${root.dir}/ils-common/bin" />
+	<property name="common.src.dir" value="${root.dir}/ils-common/ILS_Common/src" />
+	<property name="block.jar.name" value="block-definition.jar" />
+	<property name="block.bin.dir" value="${root.dir}/blt/workspace/Block/bin" />
+	<property name="block.src.dir" value="${root.dir}/blt/workspace/Block/src" />
+	<property name="ils.python.src.dir" value="${root.dir}/ils-python/ILS_Python/src" />
+	<property name="xom.python.src.dir" value="${root.dir}/xom-python/XOM_Python/src" />
+	<property name="ant.build.javac.source" value="1.8"/>
+	<property name="ant.build.javac.target" value="1.8"/>
+		
+	<!-- External jar classpath -->
+	<path id="ils-classpath">
+	   <fileset dir="${jar.dir}">
+	      <include name="*.jar"/>
+	   </fileset>
+		<fileset dir="${sdk.dir}">
+			 <include name="*.jar"/>
+		</fileset>
+	   <pathelement path="${build.dir}"/>
+	</path>
+	
+	<!-- Common jar classpath -->
+		<!-- The gateway, designer and clients depend on the Common -->
+		<path id="BLT_Common.classpath">
+			<path refid="Ignition_SDK.classpath" />
+			<path refid="ExternalJar.classpath" />
+		</path>
+	
+	<!-- Block Definition jar classpath -->
+	<!-- The block jar depends on BLT Common -->
+	<path id="BlockDefinition.classpath">
+		<path refid="BLT_Common.classpath" />
+		<fileset dir="${basedir}/BLT_Build/bin/BLT_Common/dist/" includes="*.jar" />
+	</path>
+		
+	<!-- Gateway jar classpath -->
+	<path id="BLT_Gateway.classpath">
+		<path refid="BLT_Common.classpath" />
+		<path refid="ExternalJar.classpath" />
+		<fileset dir="${basedir}/BLT_Build/bin/BLT_Common/dist/" includes="*.jar" />
+		<fileset dir="${jar.dir}" includes="${block.jar.name}" />
+	</path>	
+	<!-- Client jar classpath -->
+	<path id="BLT_Client.classpath">
+		<path refid="BLT_Common.classpath" />
+		<path refid="ExternalJar.classpath" />
+		<fileset dir="${basedir}/BLT_Build/bin/BLT_Common/dist/" includes="*.jar" />
+		<fileset dir="${jar.dir}" includes="${block.jar.name}" />
+	</path>
+	
+	<!-- Designer jar classpath -->
+	<path id="BLT_Designer.classpath">
+		<path refid="BLT_Common.classpath" />
+		<path refid="ExternalJar.classpath" />
+		<fileset dir="${basedir}/BLT_Build/bin/BLT_Common/dist/" includes="*.jar" />
+		<fileset dir="${basedir}/BLT_Build/bin/${BLTModule.name}_Client/dist/" includes="*.jar" />
+		<fileset dir="${jar.dir}" includes="${block.jar.name}" />
+	</path>
+
+	<!-- Migration jar classpath -->
+	<path id="BLT_Migration.classpath">
+		<path refid="BLT_Common.classpath" />
+		<path refid="ExternalJar.classpath" />
+		<fileset dir="${basedir}/BLT_Build/bin/BLT_Common/dist/" includes="*.jar" />
+		<fileset dir="${basedir}/BLT_Build/bin/BLT_Designer/dist/" includes="*.jar" />
+	</path>
+	
+	<!-- This target will build the toolkit module and deploy it to the local Ignition gateway -->
+		<target name="BuildAndInstallModule" depends="clean, build, deploy" />
+	
+	<!-- Clean Block Definition -->
+	<target name="clean.block" >
+		<mkdir dir="${block.bin.dir}"/>
+		<delete file="${jar.dir}/${block.jar.name}" />
+		<delete>
+		    <fileset dir="${block.bin.dir}">
+		        <include name="**/*.class"/>
+		    </fileset>
+		</delete>
+	</target>
+	<!-- Clean ILS common -->
+	<target name="clean.common" >
+		<mkdir dir="${common.bin.dir}"/>
+		<delete file="${jar.dir}/${common.jar.name}" />
+		<delete>
+		    <fileset dir="${common.bin.dir}">
+		        <include name="**/*.class"/>
+		    	<include name="**/*.png"/>
+		    </fileset>
+		</delete>
+	</target>
+
+	<!-- Cleans all previously built files (leaves doc) -->
+	<target name="clean" depends="clean.common,clean.block" description="Remove existing build products" >
+		<delete dir="${basedir}/BLT_Build/bin" />
+		<delete file="${basedir}/BLT_Build/modules/${BLTModule.name}-module-unsigned.modl" />
+		<delete dir="${basedir}/BLT_Build/release" />
+		<delete dir="${basedir}/BLT_Build/temp_modl" />   
+	</target>	
+	
+	
+	<!-- Compile the Common library -->
+	<target name="common.build" description="Compile the source">
+		<echo  message="Using Java version ${ant.java.version}."/>
+		<mkdir dir="${common.bin.dir}/images"/>
+		<javac destdir="${common.bin.dir}" debug="true" target="1.8" includeantruntime="false">
+			<src path="${common.src.dir}"/>
+			<classpath refid="ils-classpath"/>
+		</javac>
+		<copy todir="${common.bin.dir}/images" >
+			<fileset dir="${common.src.dir}/images"/>
+		</copy>
+	</target>
+	<target name ="common.jar" description="Create a jar for the ILS Common library">
+	    <jar destfile="${jar.dir}/${common.jar.name}" includes="**/*.class,**/*.png" basedir="${common.bin.dir}"/>
+	</target>
+	
+	<!-- Compile the Block Definition library -->
+			<target name="block.build" description="Compile the source">
+				<mkdir dir="${block.bin.dir}"/>
+				<javac destdir="${block.bin.dir}" debug="true" target="1.8" includeantruntime="false">
+					<src path="${block.src.dir}"/>
+					<classpath refid="BlockDefinition.classpath"/>
+				</javac>
+			</target>
+			<target name ="block.jar" description="Create a jar for the Block Definition library">
+				<jar destfile="${jar.dir}/${block.jar.name}" includes="**/*.class" basedir="${block.bin.dir}"/>
+			</target>
+
+	<!-- Builds the toolkit module jars and the final .modl file -->
+	<target name="build" depends="common.build,common.jar" description="Compile the source">
+		<echo message="${BLTModule.name} ${BLTModule.version}" />	
+		<delete dir="${basedir}/BLT_Build/temp_modl" />	
+		
+		<!-- build.date and version.build are both defined in build.xml -->
+		<echo message="Build date: ${build.date}" />
+		<echo message="Build version: ${version.build}" />	
+				
+		<!-- BLT Common jar -->
+		<antcall target="MakeProject">
+			<param name="modName" value="${BLTModule.name}_Common" />
+			<param name="sourceDirFolder" value="${BLTModule.name}_Common" />
+			<param name="jarName" value="blt-common" />
+			<param name="javacSource" value="1.8" />
+			<param name="module.build.classpath" value="${BLTModule.name}_Common.classpath"/>
+		</antcall>
+		
+		
+		<antcall target="block.build">
+		</antcall>
+		
+		<antcall target="block.jar">
+		</antcall>
+		
+		<!-- BLT Gateway Common jar -->
+		<antcall target="MakeProject">
+			<param name="modName" value="${BLTModule.name}_GatewayCommon" />
+			<param name="sourceDirFolder" value="${BLTModule.name}_GatewayCommon" />
+			<param name="jarName" value="blt-gateway" />
+			<param name="javacSource" value="1.8" />
+			<param name="[replace]BLTGateway.properties:Meta.Version" value="${version.build}" />
+			<param name="[replace]BLTGateway.properties:Meta.ReleaseDate" value="${build.date}" />
+			<param name="module.build.classpath" value="${BLTModule.name}_Gateway.classpath"/>
+		</antcall>
+		
+		<!-- BLT Gateway Classic jar -->
+		<antcall target="MakeProject">
+			<param name="modName" value="${BLTModule.name}_GatewayClassic" />
+			<param name="sourceDirFolder" value="${BLTModule.name}_GatewayClassic" />
+			<param name="jarName" value="blt-gateway" />
+			<param name="javacSource" value="1.8" />
+			<param name="[replace]BLTGateway.properties:Meta.Version" value="${version.build}" />
+			<param name="[replace]BLTGateway.properties:Meta.ReleaseDate" value="${build.date}" />
+			<param name="module.build.classpath" value="${BLTModule.name}_Gateway.classpath"/>
+		</antcall>
+
+		<!-- BLT Client jar -->
+		<antcall target="MakeProject">
+			<param name="modName" value="${BLTModule.name}_Client" />
+			<param name="sourceDirFolder" value="${BLTModule.name}_Client" />
+			<param name="jarName" value="blt-client" />
+			<param name="javacSource" value="1.8" />
+			<param name="module.build.classpath" value="${BLTModule.name}_Client.classpath"/>
+		</antcall>
+		
+		<!-- BLT Designer jar -->
+		<antcall target="MakeProject">
+			<param name="modName" value="${BLTModule.name}_Designer" />
+			<param name="sourceDirFolder" value="${BLTModule.name}_Designer" />
+			<param name="jarName" value="blt-designer" />
+			<param name="javacSource" value="1.8" />
+			<param name="module.build.classpath" value="${BLTModule.name}_Designer.classpath"/>
+		</antcall>
+		
+		<!-- Create .modl file -->
+		<echo message="Making ${BLTModule.name} modl" />
+
+		<mkdir dir="${basedir}/BLT_Build/temp_modl" />
+		<mkdir dir="${basedir}/BLT_Build/modules" />
+		
+
+		<copy file="${basedir}/BLT_Build/module-blt-classic.xml" tofile="${basedir}/BLT_Build/temp_modl/module.xml" overwrite="true" />
+
+		<replace file="${basedir}/BLT_Build/temp_modl/module.xml" token="@NAME@" value="${BLTModule.name}" />
+		<replace file="${basedir}/BLT_Build/temp_modl/module.xml" token="@DESCRIPTION@" value="${BLTModule.description}" />
+		<replace file="${basedir}/BLT_Build/temp_modl/module.xml" token="@VERSION@" value="${BLTModule.version}" />
+
+		<!-- Pack200 and then copy the designer, client jars -->
+		<pack200 src="${basedir}/BLT_Build/bin/${BLTModule.name}_Client/dist/blt-client.jar" destfile="${basedir}/BLT_Build/temp_modl/blt-client.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
+		<pack200 src="${basedir}/BLT_Build/bin/${BLTModule.name}_Designer/dist/blt-designer.jar" destfile="${basedir}/BLT_Build/temp_modl/blt-designer.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
+		<pack200 src="${basedir}/BLT_Build/bin/${BLTModule.name}_Common/dist/blt-common.jar" destfile="${basedir}/BLT_Build/temp_modl/blt-common.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
+		<pack200 src="${basedir}/../../external/lib/ils-common.jar" destfile="${basedir}/BLT_Build/temp_modl/ils-common.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
+		<pack200 src="${basedir}/../../external/lib/block-definition.jar" destfile="${basedir}/BLT_Build/temp_modl/block-definition.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
+		<pack200 src="${basedir}/../../external/lib/jackson-core-2.2.3.jar" destfile="${basedir}/BLT_Build/temp_modl/jackson-core-2.2.3.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
+		<pack200 src="${basedir}/../../external/lib/jackson-databind-2.2.3.jar" destfile="${basedir}/BLT_Build/temp_modl/jackson-databind-2.2.3.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
+		<pack200 src="${basedir}/../../external/lib/jackson-annotations-2.2.3.jar" destfile="${basedir}/BLT_Build/temp_modl/jackson-annotations-2.2.3.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
+		<pack200 src="${basedir}/../../external/lib/lucene-1.4.3.jar" destfile="${basedir}/BLT_Build/temp_modl/lucene-1.4.3.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
+		<pack200 src="${basedir}/../../external/lib/prefuse-1.0.1.jar" destfile="${basedir}/BLT_Build/temp_modl/prefuse-1.0.1.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
+		
+		<!-- Copy gateway jar -->
+		<copy file="${basedir}/BLT_Build/bin/${BLTModule.name}_Gateway/dist/blt-gateway.jar" todir="${basedir}/BLT_Build/temp_modl/" />
+		<copy file="${basedir}/BLT_Build/bin/${BLTModule.name}_Common/dist/blt-common.jar" todir="${basedir}/BLT_Build/temp_modl/" />
+		
+		<!-- Copy dependent jars -->
+		<copy file="${jar.dir}/${common.jar.name}" todir="${basedir}/BLT_Build/temp_modl/" />
+		<copy file="${basedir}/../../external/lib/jackson-core-2.2.3.jar" todir="${basedir}/BLT_Build/temp_modl/" />
+		<copy file="${basedir}/../../external/lib/jackson-databind-2.2.3.jar" todir="${basedir}/BLT_Build/temp_modl/" />
+		<copy file="${basedir}/../../external/lib/jackson-annotations-2.2.3.jar" todir="${basedir}/BLT_Build/temp_modl/" />
+		<copy file="${basedir}/../../external/lib/commons-math3-3.1.1.jar" todir="${basedir}/BLT_Build/temp_modl/" />
+		<copy file="${jar.dir}/${block.jar.name}" todir="${basedir}/BLT_Build/temp_modl/" />
+
+		<!-- Copy license file and javadoc into the bundle -->
+		<mkdir dir="${basedir}/BLT_Build/doc" />
+		<copy file="${basedir}/BLT_Build/license.html" todir="${basedir}/BLT_Build/temp_modl/" />
+		<copy todir="${basedir}/BLT_Build/temp_modl/doc">
+		    <fileset dir="${basedir}/BLT_Build/doc"/>
+		</copy>
+		<!-- Echo the version into .version in the bundle and to be saved -->
+		<echo message="${BLTModule.name}-${BLTModule.version}" file="${basedir}/BLT_Build/temp_modl/.version" append="false"/>
+		<echo message="${BLTModule.name}-${BLTModule.name}:${BLTModule.release}" file="${basedir}/BLT_Build/.version" append="false"/>
+		
+		<!-- Zip it all up -->
+		<zip zipfile="${basedir}/BLT_Build/modules/${BLTModule.name}-module-unsigned.modl" basedir="${basedir}/BLT_Build/temp_modl" />
+	</target>
+	
+	<!-- Install jar files that are necessary for the Python scripts -->
+	<target name="python.jars" >
+		<echo message="Copying jar files from ${basedir}/BLT_Build/temp_modl" />
+		<copy todir="${ignition.py.lib}/../../lib/core/common">
+			<fileset dir="${basedir}/BLT_Build/temp_modl">
+				<include name="ils-common.jar" />
+				<include name="blt-common.jar" />
+			</fileset>
+		</copy>
+		<copy todir="${ignition.py.lib}/../../lib/core/common">
+			<fileset dir="${jar.dir}">
+				<include name="jackson*.jar" />
+			</fileset>
+		</copy>
+		<copy todir="${ignition.py.lib}/../../lib/core/gateway">
+			<fileset dir="${basedir}/BLT_Build/temp_modl">
+				<include name="commons-math3-3.1.1.jar" />
+				<include name="blt-gateway.jar" />
+				<include name="block-definition.jar" />
+			</fileset>
+		</copy>
+	</target>
+	<!-- Install the Python source files -->
+	<target name="python" >
+		<echo message="Deploying python scripts to ${ignition.py.lib}" />
+		<copy todir="${ignition.py.lib}">
+			<fileset dir="${xom.python.src.dir}">
+				<include name="xom/**/*.py" />
+			</fileset>
+		</copy>
+		<copy todir="${ignition.py.lib}">
+			<fileset dir="${ils.python.src.dir}">
+				<include name="ils/**/*.py" />
+			</fileset>
+		</copy>
+	</target>
+
+	<!-- Installs BLT module in local Ignition gateway. Note that the gateway must be running in developer mode for this to succeed. -->
+	<target name="deploy" depends="build,python.jars,python" >
+		<echo message="Installing ${BLTModule.name} on Ignition Gateway." />
+		<postmodule posturl="${local.gateway.url}" modulefile="${basedir}/BLT_Build/modules/${BLTModule.name}-module-unsigned.modl" />
+	</target>	
+
+</project>

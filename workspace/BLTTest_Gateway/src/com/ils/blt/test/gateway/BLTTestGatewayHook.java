@@ -3,6 +3,8 @@
  */
 package com.ils.blt.test.gateway;
 
+import com.ils.blt.gateway.classic.ClassicModelManager;
+import com.ils.blt.gateway.classic.ClassicRequestHandler;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ModelManager;
 import com.ils.blt.test.common.BLTTestProperties;
@@ -44,10 +46,10 @@ public class BLTTestGatewayHook extends AbstractGatewayModuleHook  {
 	@Override
 	public void startup(LicenseState licenseState) {
 		// Look for all block resources and inform the execution controller
-	    mmgr = new ModelManager(context);
+	    mmgr = new ClassicModelManager(context);
 	    BlockExecutionController.getInstance().setDelegate(mmgr);
-	    
-	    MockDiagramRequestHandler requestHandler = new MockDiagramRequestHandler(context);
+	    ClassicRequestHandler handler = new ClassicRequestHandler(context);
+	    MockDiagramRequestHandler requestHandler = new MockDiagramRequestHandler(context,handler);
 	    dispatcher = new BLTTGatewayRpcDispatcher(context,requestHandler);
 		GatewayMockDiagramScriptFunctions.requestHandler = requestHandler;
 		log.infof("%s.startup: complete.",TAG);

@@ -9,17 +9,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.ils.block.annotation.ExecutableBlock;
+import com.ils.block.ProcessBlock;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.PalettePrototype;
-import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.common.ClassList;
+import com.ils.common.annotation.ExecutableBlock;
 
 /**
  * Given a block class create the proper set of properties.

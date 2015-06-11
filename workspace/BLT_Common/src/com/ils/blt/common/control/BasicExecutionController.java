@@ -18,7 +18,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 /**
  *  This is a rudimentary implementation of the Execution Controller interface. 
  *  It's function is as a stand-in for the true block execution controller in
- *  other environments separate from the Gateway. It does nothing but log warnings.
+ *  other environments (like Migration) separate from the Gateway. It does nothing but log warnings.
  */
 public class BasicExecutionController implements ExecutionController  {
 	protected static final String TAG = "BasicExecutionController";

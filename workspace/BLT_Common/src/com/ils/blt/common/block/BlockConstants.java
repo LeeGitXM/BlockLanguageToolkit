@@ -77,7 +77,7 @@ public interface BlockConstants   {
 	public static final String PALETTE_TAB_LOGIC              = "Logic";
 	public static final String PALETTE_TAB_OBSERVATION        = "Observation";
 	public static final String PALETTE_TAB_STATISTICS         = "Statistics";
-	public static final String PALETTE_TAB_MISC         = "Misc";
+	public static final String PALETTE_TAB_MISC               = "Misc";
 	
 	// Default attribute offsets
 	public static final int DEFAULT_ATTRIBUTE_OFFSET_X     = 30;

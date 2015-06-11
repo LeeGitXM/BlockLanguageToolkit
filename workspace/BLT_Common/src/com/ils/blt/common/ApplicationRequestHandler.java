@@ -582,16 +582,17 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	}
 
 	/**
-	 * Post a (simulated) block result on its output.
+	 * Post a (simulated) block result on its output. This is called as a result of
+	 * a block "force" action.
 	 * @param diagramId the parent diagram
 	 * @param blockId
 	 * @param port
 	 * @param value
 	 */
-	public void postResult(String diagramId,String blockId,String port,String value) {
+	public void postValue(String diagramId,String blockId,String port,String value) {
 		try {
 			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "postResult",diagramId,blockId,port,value);
+					BLTProperties.MODULE_ID, "postValue",diagramId,blockId,port,value);
 		}
 		catch(Exception ge) {
 			log.infof("%s.postResult: GatewayException (%s)",TAG,ge.getMessage());

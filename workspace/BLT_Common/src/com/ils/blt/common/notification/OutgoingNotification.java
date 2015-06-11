@@ -3,7 +3,7 @@
  */
 package com.ils.blt.common.notification;
 
-import com.ils.blt.common.block.ProcessBlock;
+import com.ils.blt.common.block.CoreBlock;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
@@ -19,7 +19,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  * This is a property container with no behavior.
  */
 public class OutgoingNotification {
-	private final ProcessBlock block;
+	private final CoreBlock block;
 	private final String port;
 	private final QualifiedValue value;
 	
@@ -30,13 +30,13 @@ public class OutgoingNotification {
 	 * @param prt the output port on which the value was placed.
 	 * @param val the new value
 	 */
-	public OutgoingNotification(ProcessBlock blk,String prt, QualifiedValue val)  {	
+	public OutgoingNotification(CoreBlock blk,String prt, QualifiedValue val)  {	
 		this.block = blk;
 		this.port = prt;
 		this.value = val;
 	}
 	
-	public ProcessBlock getBlock()      { return block; }
+	public CoreBlock getBlock()      { return block; }
 	public String getPort()             { return port; }
 	public QualifiedValue getValue()    { return value; }
 }

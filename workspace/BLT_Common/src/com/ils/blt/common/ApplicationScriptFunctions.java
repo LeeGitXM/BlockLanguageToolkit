@@ -234,7 +234,7 @@ public class ApplicationScriptFunctions   {
 	 * @param value
 	 */
 	public static void postResult(String diagramId,String blockId,String port,String value) {
-		handler.postResult(diagramId,blockId, port, value);
+		handler.postValue(diagramId,blockId, port, value);
 	}
 	/**
 	 * Query the gateway for list of resources that it knows about. This is

@@ -226,6 +226,14 @@ public interface ToolkitRequestHandler  {
 	 */
 	public String pathForBlock(String diagramId,String blockName);
 	/**
+	 * Post a block result on its output. The transaction is from an external source.
+	 * This is called as a result of a block "force" action.
+	 * @param blockId
+	 * @param port
+	 * @param value
+	 */
+	public void postValue(String parentId,String blockId,String port,String value);
+	/**
 	 * Execute reset() on a specified block
 	 * @param diagramId of the parent diagram
 	 * @param blockName name of the block within the diagram 

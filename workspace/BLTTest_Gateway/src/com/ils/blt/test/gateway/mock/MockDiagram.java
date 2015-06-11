@@ -7,20 +7,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.ils.block.ProcessBlock;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.AnchorPrototype;
-import com.ils.blt.common.block.ProcessBlock;
+import com.ils.blt.common.block.CoreBlock;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.connection.ProcessConnection;
 import com.ils.blt.common.serializable.SerializableDiagram;
+import com.ils.blt.gateway.classic.ClassicDiagram;
+import com.ils.blt.gateway.common.BasicDiagram.BlockPort;
 import com.ils.blt.gateway.engine.BlockExecutionController;
-import com.ils.blt.gateway.engine.ProcessDiagram;
 
 /**
  * A mock diagram is a process diagram, specially created for functional testing
  * of blocks. 
  */
-public class MockDiagram extends ProcessDiagram {
+public class MockDiagram extends ClassicDiagram {
 	private static final long serialVersionUID = 1603451661866792378L;
 	private static String TAG = "MockDiagram";
 	private ProcessBlock uut = null;    // Unit under test
@@ -56,7 +58,7 @@ public class MockDiagram extends ProcessDiagram {
 	public void analyze() {
 		log.infof("%s.analyze: Block-under-test is %s",TAG,uut.getName());
 		if(uut!=null) {
-			for(ProcessBlock block:this.getProcessBlocks()) {
+			for(CoreBlock block:this.getDiagramBlocks()) {
 				if( block instanceof MockInputBlock ) {
 					MockInputBlock mib = (MockInputBlock)block;
 					AnchorPrototype anchor = getAnchorForPort(mib.getPort());
@@ -112,7 +114,7 @@ public class MockDiagram extends ProcessDiagram {
 	public MockInputBlock getInputForPort(String port,int index) {
 		MockInputBlock result = null;
 		int count = 0;
-		for(ProcessBlock block:getProcessBlocks()) {
+		for(CoreBlock block:getDiagramBlocks()) {
 			if(block instanceof MockInputBlock) {
 				MockInputBlock mib = (MockInputBlock)block;
 				if(mib.getPort().equalsIgnoreCase(port)) {
@@ -129,7 +131,7 @@ public class MockDiagram extends ProcessDiagram {
 	
 	public MockOutputBlock getOutputForPort(String port) {
 		MockOutputBlock result = null;
-		for(ProcessBlock block:getProcessBlocks()) {
+		for(CoreBlock block:getDiagramBlocks()) {
 			if(block instanceof MockOutputBlock) {
 				MockOutputBlock mob = (MockOutputBlock)block;
 				if(mob.getPort().equalsIgnoreCase(port)) {
@@ -145,7 +147,7 @@ public class MockDiagram extends ProcessDiagram {
 	 * This is a special interface for the testing MockDiagram.
 	 */
 	private void addOutgoingConnection(ProcessConnection pc) {
-		ProcessBlock pb = getBlock(pc.getSource());
+		CoreBlock pb = getBlock(pc.getSource());
 		if( pb!=null ) {
 			BlockPort key = new BlockPort(pb,pc.getUpstreamPortName());
 			List<ProcessConnection> list = new ArrayList<ProcessConnection>();

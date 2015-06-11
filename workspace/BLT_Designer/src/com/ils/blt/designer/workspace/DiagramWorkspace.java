@@ -433,10 +433,10 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						logger.infof("%s: serializeDiagram created json ... %s",TAG,json);
 
 						byte[] bytes = json.getBytes();
-						logger.debugf("%s: DiagramAction. create new %s resource %d (%d bytes)",TAG,BLTProperties.DIAGRAM_RESOURCE_TYPE,
+						logger.debugf("%s: DiagramAction. create new %s resource %d (%d bytes)",TAG,BLTProperties.CLASSIC_DIAGRAM_RESOURCE_TYPE,
 								newId,bytes.length);
 						ProjectResource resource = new ProjectResource(newId,
-								BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
+								BLTProperties.MODULE_ID, BLTProperties.CLASSIC_DIAGRAM_RESOURCE_TYPE,
 								pbv.getName(), ApplicationScope.GATEWAY, bytes);
 						resource.setParentUuid(getActiveDiagram().getId());
 						executionEngine.executeOnce(new ResourceUpdateManager(this,resource));					

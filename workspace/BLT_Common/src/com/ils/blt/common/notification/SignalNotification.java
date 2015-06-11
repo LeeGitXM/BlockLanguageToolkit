@@ -3,7 +3,7 @@
  */
 package com.ils.blt.common.notification;
 
-import com.ils.blt.common.block.ProcessBlock;
+import com.ils.blt.common.block.CoreBlock;
 
 /**
  * A SignalNotification is an in-bound message to a block that contains
@@ -13,7 +13,7 @@ import com.ils.blt.common.block.ProcessBlock;
  * This is a property container with no behavior.
  */
 public class SignalNotification {
-	private final ProcessBlock block;
+	private final CoreBlock block;
 	private final Signal signal;
 	
 	/**
@@ -22,11 +22,11 @@ public class SignalNotification {
 	 * @param blk the addressee of the notification
 	 * @param sig the signal to be delivered to the block.
 	 */
-	public SignalNotification(ProcessBlock blk,Signal sig)  {
+	public SignalNotification(CoreBlock blk,Signal sig)  {
 		this.block = blk;
 		this.signal = sig;
 	}
 	
-	public ProcessBlock getBlock() {return block;}
+	public CoreBlock getBlock() {return block;}
 	public Signal getSignal() {return signal;}
 }

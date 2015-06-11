@@ -1,5 +1,5 @@
 /**
-cccccccccccccccccccccc *   (c) 2014-2015  ILS Automation. All rights reserved.
+ *   (c) 2014-2015  ILS Automation. All rights reserved.
  *  
  *   The block controller is designed to be called from the client
  *   via RPC. All methods must be thread safe,
@@ -20,7 +20,6 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  *  within the Block Definition project. 
  */
 public interface ExecutionController  {
-
 	public void acceptBroadcastNotification(BroadcastNotification note);
 	public void acceptCompletionNotification(OutgoingNotification note);
 	public void acceptConnectionPostNotification(ConnectionPostNotification note);

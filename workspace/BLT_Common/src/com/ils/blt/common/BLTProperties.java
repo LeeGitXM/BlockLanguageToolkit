@@ -20,9 +20,10 @@ public interface BLTProperties   {
 	public final static String BLOCK_JAR_NAME = "block-definition";
 	
 	public final static String APPLICATION_RESOURCE_TYPE   = "blt.application";
-	public final static String DIAGRAM_RESOURCE_TYPE       = "blt.diagram";
+	public final static String CLASSIC_DIAGRAM_RESOURCE_TYPE = "blt.diagram";
 	public final static String FAMILY_RESOURCE_TYPE        = "blt.family";
 	public final static String FOLDER_RESOURCE_TYPE        = "__folder";
+	public final static String SCHEMATIC_DIAGRAM_RESOURCE_TYPE = "blt.schematic.diagram";
 	
 	public final static String APPLICATION_SCRIPT_PACKAGE      = "system.ils.blt.application";
 	
@@ -101,15 +102,20 @@ public interface BLTProperties   {
 	
 	// Name to use for "Good" Quality
 	public static final String QUALITY_GOOD        = "Good";
+	public static final String NOT_FOUND           = "NotFound";
 	// Preferences keys
 	public static final String PREFERENCES_NAME     = "BLTPreferences";    // Preferences collection name
 	public static final String PREF_EXIM_DIRECTORY  = "ExImDirectory";     // Export/import directory
 	public static final String PREF_CONFIG_DIRECTORY= "ConfigDirectory";   // Project properties configuration
 	// These are the names of toolkit properties that are to be stored in HSQLdb
+	public static final String TOOLKIT_PROPERTY_ACTIVE_BLOCKS       = "EnableActive";       // Enable active dialogs
+	public static final String TOOLKIT_PROPERTY_COMPILED_BLOCKS     = "EnableCompiled";     // Enable schematic dialogs
 	public static final String TOOLKIT_PROPERTY_DATABASE            = "Database";           // Production database
+	public static final String TOOLKIT_PROPERTY_ENHANCED_TREE       = "EnhancedTree";       // Show Applications/Families
 	public static final String TOOLKIT_PROPERTY_ISOLATION_DATABASE  = "SecondaryDatabase";  // Database when in isolation
 	public static final String TOOLKIT_PROPERTY_PROVIDER            = "Provider";           // Production tag provider
 	public static final String TOOLKIT_PROPERTY_ISOLATION_PROVIDER  = "SecondaryProvider";  // Tag provider when in isolation
 	public static final String TOOLKIT_PROPERTY_ISOLATION_TIME      = "SecondaryTimeFactor";// Time speedup when in isolation
+	
 	
 }

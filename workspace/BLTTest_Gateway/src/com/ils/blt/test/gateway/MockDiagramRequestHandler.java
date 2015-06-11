@@ -6,10 +6,12 @@ package com.ils.blt.test.gateway;
 import java.util.Date;
 import java.util.UUID;
 
+import com.ils.block.ProcessBlock;
+import com.ils.block.proxy.ProxyHandler;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.ProcessBlock;
+import com.ils.blt.common.block.CoreBlock;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
@@ -17,9 +19,8 @@ import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.Signal;
 import com.ils.blt.common.notification.SignalNotification;
 import com.ils.blt.common.serializable.SerializableDiagram;
-import com.ils.blt.gateway.ControllerRequestHandler;
+import com.ils.blt.gateway.classic.ClassicRequestHandler;
 import com.ils.blt.gateway.engine.BlockExecutionController;
-import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.ils.blt.gateway.tag.TagReader;
 import com.ils.blt.gateway.tag.TagWriter;
 import com.ils.blt.test.common.MockDiagramScriptingInterface;
@@ -45,19 +46,19 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 	private final static String TAG = "MockDiagramRequestHandler";
 	private final LoggerEx log;
 	private GatewayContext context = null;
-	private final ControllerRequestHandler requestHandler;
+	private final ClassicRequestHandler requestHandler;
 	private final BlockExecutionController controller;
 	private final TagReader tagReader;
 	private final TagWriter tagWriter;
 	
 	/**
-	 * Initialize with a Gateway context.
+	 * Initialize with a Gateway context and request handler.
 	 */
-	public MockDiagramRequestHandler(GatewayContext cntx) {
+	public MockDiagramRequestHandler(GatewayContext cntx, ClassicRequestHandler handler) {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.controller = BlockExecutionController.getInstance();
 		this.context = cntx;
-		this.requestHandler = ControllerRequestHandler.getInstance();
+		this.requestHandler = handler;
 		this.tagWriter = new TagWriter();
 		this.tagReader = new TagReader();
 		tagWriter.initialize(context);
@@ -324,7 +325,7 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 		if( mock!=null ) {
 			controller.start(context);
 			mock.analyze();  // Analyze connections
-			for(ProcessBlock block:mock.getProcessBlocks()) {
+			for(CoreBlock block:mock.getDiagramBlocks()) {
 				block.start();
 				for(BlockProperty prop:block.getProperties()) {
 					controller.startSubscription(block, prop);
@@ -343,7 +344,7 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 		MockDiagram mock = (MockDiagram)controller.getDiagram(diagramId);
 		try {
 		if( mock!=null ) {
-			for(ProcessBlock block:mock.getProcessBlocks()) {
+			for(CoreBlock block:mock.getDiagramBlocks()) {
 				block.stop();
 				for(BlockProperty prop:block.getProperties()) {
 					controller.removeSubscription(block, prop);

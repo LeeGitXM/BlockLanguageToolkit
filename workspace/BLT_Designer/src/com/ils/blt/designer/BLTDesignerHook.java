@@ -237,7 +237,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		else if( resource.getResourceType().equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE) ) {
 			return PREFIX+".Export.Family.Category";
 		}
-		else if( resource.getResourceType().equalsIgnoreCase(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
+		else if( resource.getResourceType().equalsIgnoreCase(BLTProperties.CLASSIC_DIAGRAM_RESOURCE_TYPE) ) {
 			return PREFIX+".Export.Diagram.Category";
 		}
 		else { 

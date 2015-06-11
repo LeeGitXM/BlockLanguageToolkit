@@ -86,7 +86,7 @@ public class AuxiliaryDataSaveManager implements Runnable {
 					log.warnf("%s.recursivelySave: Deserialization exception (%s)",TAG,ex.getMessage());
 				}
 			}
-			else if(res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
+			else if(res.getResourceType().equals(BLTProperties.CLASSIC_DIAGRAM_RESOURCE_TYPE) ) {
 				// Iterate over blocks
 				SerializableDiagram sd = null;
 				try{

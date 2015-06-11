@@ -328,7 +328,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				node = new GeneralPurposeTreeNode(context, res, fa.getId());
 				logger.tracef("%s.createChildNode: (%s) %s->%s",TAG,res.getResourceType(),this.getName(),node.getName());
 			}
-			else if (BLTProperties.DIAGRAM_RESOURCE_TYPE.equals(res.getResourceType())) {
+			else if (BLTProperties.CLASSIC_DIAGRAM_RESOURCE_TYPE.equals(res.getResourceType())) {
 				node = new DiagramTreeNode(context,res,workspace);
 				logger.tracef("%s.createChildDiagram: %s->%s",TAG,this.getName(),node.getName());
 			} 
@@ -616,7 +616,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				AbstractResourceNavTreeNode child = (AbstractResourceNavTreeNode)walker.nextElement();
 				ProjectResource cres = child.getProjectResource();
 				if(cres==null) continue;
-				if( cres.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
+				if( cres.getResourceType().equals(BLTProperties.CLASSIC_DIAGRAM_RESOURCE_TYPE)) {
 					SerializableDiagram sd = recursivelyDeserializeDiagram(child);
 					if( sd!=null ) sfam.addDiagram(sd);
 				}
@@ -651,7 +651,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				AbstractResourceNavTreeNode child = (AbstractResourceNavTreeNode)walker.nextElement();
 				ProjectResource cres = child.getProjectResource();
 				if(cres==null) continue;
-				if( cres.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
+				if( cres.getResourceType().equals(BLTProperties.CLASSIC_DIAGRAM_RESOURCE_TYPE)) {
 					SerializableDiagram sd = recursivelyDeserializeDiagram(child);
 					if( sd!=null ) sfold.addDiagram(sd);
 				}
@@ -988,7 +988,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				String json = mapper.writeValueAsString(sd);
 				if(logger.isTraceEnabled() ) logger.trace(json);
 				ProjectResource resource = new ProjectResource(newId,
-						BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
+						BLTProperties.MODULE_ID, BLTProperties.CLASSIC_DIAGRAM_RESOURCE_TYPE,
 						sd.getName(), ApplicationScope.GATEWAY, json.getBytes());
 				resource.setParentUuid(parentId);
 				executionEngine.executeOnce(new ResourceCreateManager(resource));	
@@ -1065,7 +1065,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 										// Note: Requires Java 1.7
 										byte[] bytes = Files.readAllBytes(input.toPath());
 										ProjectResource resource = new ProjectResource(newId,
-												BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
+												BLTProperties.MODULE_ID, BLTProperties.CLASSIC_DIAGRAM_RESOURCE_TYPE,
 												"CLONE", ApplicationScope.GATEWAY, bytes);
 										resource.setParentUuid(getFolderId());
 										new ResourceCreateManager(resource).run();	
@@ -1207,9 +1207,9 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				String json = serializeDiagram(diagram);	
 				logger.debugf("%s.DiagramCreateAction. json=%s",TAG,json);
 				byte[] bytes = json.getBytes();
-				logger.infof("%s.DiagramCreateAction. create new %s(%d), %s (%d bytes)",TAG,BLTProperties.DIAGRAM_RESOURCE_TYPE,newId,
+				logger.infof("%s.DiagramCreateAction. create new %s(%d), %s (%d bytes)",TAG,BLTProperties.CLASSIC_DIAGRAM_RESOURCE_TYPE,newId,
 						newName,bytes.length);
-				ProjectResource resource = new ProjectResource(newId,BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
+				ProjectResource resource = new ProjectResource(newId,BLTProperties.MODULE_ID, BLTProperties.CLASSIC_DIAGRAM_RESOURCE_TYPE,
 						newName, ApplicationScope.GATEWAY, bytes);
 				resource.setParentUuid(getFolderId());
 				logger.infof("%s: parent: %s",TAG,getFolderId().toString());
@@ -1383,7 +1383,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 											String json = mapper.writeValueAsString(sd);
 											logger.debugf("%s:ImportDiagramAction saved resource as:\n%s", TAG,json);
 											ProjectResource resource = new ProjectResource(newId,
-													BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
+													BLTProperties.MODULE_ID, BLTProperties.CLASSIC_DIAGRAM_RESOURCE_TYPE,
 													sd.getName(), ApplicationScope.GATEWAY, json.getBytes());
 											resource.setParentUuid(getFolderId());
 											new ResourceCreateManager(resource).run();	
