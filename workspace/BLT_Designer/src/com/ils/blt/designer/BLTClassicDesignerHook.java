@@ -46,7 +46,7 @@ import com.inductiveautomation.vision.api.designer.palette.Palette;
 import com.inductiveautomation.vision.api.designer.palette.PaletteItemGroup;
 import com.jidesoft.docking.DockingManager;
 
-public class BLTDesignerHook extends AbstractDesignerModuleHook  {
+public class BLTClassicDesignerHook extends AbstractDesignerModuleHook  {
 	private static final String TAG = "BLTDesignerHook";
 	private static final String INTERFACE_MENU_TITLE  = "External Interface Configuration";
 	private static final String VALIDATION_MENU_TITLE = "Validate Diagrams";
@@ -63,11 +63,11 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	
 	// Register separate properties files for designer things and block things
 	static {
-		BundleUtil.get().addBundle(BLTProperties.BUNDLE_PREFIX,BLTDesignerHook.class,HOOK_BUNDLE_NAME);
-		BundleUtil.get().addBundle(BLTProperties.BLOCK_PREFIX,BLTDesignerHook.class,BLOCK_BUNDLE_NAME);
+		BundleUtil.get().addBundle(BLTProperties.BUNDLE_PREFIX,BLTClassicDesignerHook.class,HOOK_BUNDLE_NAME);
+		BundleUtil.get().addBundle(BLTProperties.BLOCK_PREFIX,BLTClassicDesignerHook.class,BLOCK_BUNDLE_NAME);
 	}
 	
-	public BLTDesignerHook() {
+	public BLTClassicDesignerHook() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		nodeStatusManager = new NodeStatusManager();
 	}

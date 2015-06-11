@@ -44,7 +44,7 @@ public class ResourceSaveManager implements Runnable {
 	 */
 	public static void setContext(DesignerContext ctx) {
 		context = ctx;
-		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
+		statusManager = ((BLTClassicDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
 	}
 	
 	/**
@@ -55,13 +55,13 @@ public class ResourceSaveManager implements Runnable {
 	public void saveSynchronously() {
 		saveDirtyDiagrams(root);
 		// Update UI
-		((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler().triggerStatusNotifications();
+		((BLTClassicDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler().triggerStatusNotifications();
 	}
 	
 	@Override
 	public void run() {
 		saveNodeAndDescendants();
-		((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler().triggerStatusNotifications();
+		((BLTClassicDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler().triggerStatusNotifications();
 	}
 	
 	// Recursively descend the node tree, looking for diagram resources where

@@ -43,7 +43,7 @@ import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.common.serializable.UUIDResetHandler;
 import com.ils.blt.designer.AuxiliaryDataRestoreManager;
 import com.ils.blt.designer.AuxiliaryDataSaveManager;
-import com.ils.blt.designer.BLTDesignerHook;
+import com.ils.blt.designer.BLTClassicDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.ResourceCreateManager;
 import com.ils.blt.designer.ResourceDeleteManager;
@@ -92,7 +92,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	private final NodeStatusManager statusManager;
 	private final FolderCreateAction folderCreateAction;
 	private TreeSaveAction treeSaveAction = null;
-	private final ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
+	private final ApplicationRequestHandler handler = ((BLTClassicDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
 	private final ExecutionManager executionEngine;
 
 	private final ImageIcon defaultIcon = IconUtil.getIcon("folder_closed");
@@ -111,8 +111,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		this.executionEngine = new BasicExecutionEngine(1,TAG);
 		deleteNodeAction = null;
 		folderCreateAction = new FolderCreateAction(this);
-		workspace = ((BLTDesignerHook)ctx.getModule(BLTProperties.MODULE_ID)).getWorkspace();
-		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
+		workspace = ((BLTClassicDesignerHook)ctx.getModule(BLTProperties.MODULE_ID)).getWorkspace();
+		statusManager = ((BLTClassicDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
 		setText(BundleUtil.get().getString(PREFIX+".RootFolderName"));
 		closedIcon = IconUtil.getIcon("folder_closed");
 		setIcon(closedIcon);
@@ -135,8 +135,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		
 		deleteNodeAction = new DeleteNodeAction(this);
 		folderCreateAction = new FolderCreateAction(this);
-		workspace = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getWorkspace();
-		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
+		workspace = ((BLTClassicDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getWorkspace();
+		statusManager = ((BLTClassicDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
 
 		if(resource.getResourceType().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
 			closedIcon = iconFromPath("Block/icons/navtree/application_folder_closed.png");

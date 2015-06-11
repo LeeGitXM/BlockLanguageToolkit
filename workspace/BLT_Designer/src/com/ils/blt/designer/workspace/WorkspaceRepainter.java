@@ -1,7 +1,7 @@
 package com.ils.blt.designer.workspace;
 
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.designer.BLTDesignerHook;
+import com.ils.blt.designer.BLTClassicDesignerHook;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 /**
@@ -26,7 +26,7 @@ public class WorkspaceRepainter implements Runnable {
 	
 	@Override
 	public void run() {
-		DiagramWorkspace workspace = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getWorkspace();
+		DiagramWorkspace workspace = ((BLTClassicDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getWorkspace();
 		if( workspace!=null ) {
 			workspace.repaint(200);  // Paint in 200 ms
 		}

@@ -43,7 +43,7 @@ public class ResourceUpdateManager implements Runnable {
 	 */
 	public static void setContext(DesignerContext ctx) {
 		context = ctx;
-		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
+		statusManager = ((BLTClassicDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
 	}
 	
 	@Override
@@ -94,6 +94,6 @@ public class ResourceUpdateManager implements Runnable {
 		catch(GatewayException ge) {
 			logger.warnf("%s.run: Exception saving project resource %d (%s)",TAG,res.getResourceId(),ge.getMessage());
 		}
-		((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler().triggerStatusNotifications();
+		((BLTClassicDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler().triggerStatusNotifications();
 	}
 }

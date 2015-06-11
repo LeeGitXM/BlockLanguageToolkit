@@ -49,7 +49,7 @@ import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableDiagram;
-import com.ils.blt.designer.BLTDesignerHook;
+import com.ils.blt.designer.BLTClassicDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.blt.designer.config.BlockInternalsViewer;
@@ -130,7 +130,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		this.zoomPopup = createZoomPopup();
 		this.rightClickHandler = new PopupListener();
 		this.addMouseListener(rightClickHandler);
-		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
+		statusManager = ((BLTClassicDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
 		initialize();
 		setBackground(Color.red);
 	}

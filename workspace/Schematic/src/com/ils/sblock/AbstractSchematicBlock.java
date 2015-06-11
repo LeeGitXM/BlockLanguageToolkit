@@ -7,10 +7,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.AbstractBlock;
+import com.ils.blt.common.block.BindingType;
+import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.SchematicBlock;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.IncomingNotification;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 
@@ -60,7 +65,24 @@ public abstract class AbstractSchematicBlock extends AbstractBlock implements Sc
         inputMap.put(port, value);
         if(inputMap.size()==inputCount) evaluate();
 	}
-
+	/**
+	 * Write this block's contribution to the diagram's procedure. The default
+	 * implementation does nothing.
+	 */
+	@Override
+	public void evaluate() {}
+	
+	/**
+	 * Send status update notifications for any properties
+	 * or output connections known to the designer. For 
+	 * schematics we have no such properties.
+	 * 
+	 * It is expected that most blocks will implement this in
+	 * a more efficient way.
+	 */
+	@Override
+	public void notifyOfStatus() {
+	}
 	/**
 	 * Resetting a schematic block simply involves setting the visit count to zero.
 	 */
@@ -68,11 +90,19 @@ public abstract class AbstractSchematicBlock extends AbstractBlock implements Sc
 	public void reset() {
 		inputMap.clear();
 	}
-	
 	/**
-	 * Write this block's contribution to the diagram's procedure. The default
-	 * implementation does nothing.
+	 * Convert the block into a portable, serializable description.
+	 * The basic descriptor holds common attributes of the block.
+	 * @return the descriptor
 	 */
 	@Override
-	public void evaluate() {}
+	public SerializableBlockStateDescriptor toDescriptor() {
+		SerializableBlockStateDescriptor descriptor = new SerializableBlockStateDescriptor();
+		descriptor.setName(getName());
+		descriptor.setIdString(getBlockId().toString());
+		Map<String,String> attributes = new HashMap<>();
+		attributes.put(BLTProperties.BLOCK_ATTRIBUTE_CLASS,getClassName());
+		descriptor.setAttributes(attributes);
+		return descriptor;
+	}
 }

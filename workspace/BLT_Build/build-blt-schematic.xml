@@ -55,6 +55,13 @@
 		<fileset dir="${basedir}/BLT_Build/bin/BLT_Common/dist/" includes="*.jar" />
 		<fileset dir="${jar.dir}" includes="${block.jar.name}" />
 	</path>	
+	<!-- GatewayClassic jar classpath -->
+	<path id="BLT_GatewayClassic.classpath">
+		<path refid="BLT_Gateway.classpath" />
+		<fileset dir="${basedir}/BLT_Build/bin/BLT_GatewayCommon/dist/" includes="*.jar" />
+		<fileset dir="${jar.dir}" includes="${block.jar.name}" />
+	</path>	
+	
 	<!-- Client jar classpath -->
 	<path id="BLT_Client.classpath">
 		<path refid="BLT_Common.classpath" />
@@ -131,26 +138,19 @@
 	</target>
 	
 	<!-- Compile the Block Definition library -->
-			<target name="block.build" description="Compile the source">
-				<mkdir dir="${block.bin.dir}"/>
-				<javac destdir="${block.bin.dir}" debug="true" target="1.8" includeantruntime="false">
-					<src path="${block.src.dir}"/>
-					<classpath refid="BlockDefinition.classpath"/>
-				</javac>
-			</target>
-			<target name ="block.jar" description="Create a jar for the Block Definition library">
-				<jar destfile="${jar.dir}/${block.jar.name}" includes="**/*.class" basedir="${block.bin.dir}"/>
-			</target>
-
-	<!-- Builds the toolkit module jars and the final .modl file -->
-	<target name="build" depends="common.build,common.jar" description="Compile the source">
-		<echo message="${BLTModule.name} ${BLTModule.version}" />	
-		<delete dir="${basedir}/BLT_Build/temp_modl" />	
-		
-		<!-- build.date and version.build are both defined in build.xml -->
-		<echo message="Build date: ${build.date}" />
-		<echo message="Build version: ${version.build}" />	
-				
+	<target name="block.build" description="Compile the source">
+		<mkdir dir="${block.bin.dir}"/>
+		<javac destdir="${block.bin.dir}" debug="true" target="1.8" includeantruntime="false">
+			<src path="${block.src.dir}"/>
+			<classpath refid="BlockDefinition.classpath"/>
+		</javac>
+	</target>
+	<target name ="block.jar" description="Create a jar for the Block Definition library">
+		<jar destfile="${jar.dir}/${block.jar.name}" includes="**/*.class" basedir="${block.bin.dir}"/>
+	</target>
+	
+	<!-- Build the common modules -->
+	<target name="blt.common" depends="common.build,common.jar" description="Compile the source">
 		<!-- BLT Common jar -->
 		<antcall target="MakeProject">
 			<param name="modName" value="${BLTModule.name}_Common" />
@@ -159,14 +159,7 @@
 			<param name="javacSource" value="1.8" />
 			<param name="module.build.classpath" value="${BLTModule.name}_Common.classpath"/>
 		</antcall>
-		
-		
-		<antcall target="block.build">
-		</antcall>
-		
-		<antcall target="block.jar">
-		</antcall>
-		
+				
 		<!-- BLT Gateway Common jar -->
 		<antcall target="MakeProject">
 			<param name="modName" value="${BLTModule.name}_GatewayCommon" />
@@ -177,16 +170,26 @@
 			<param name="[replace]BLTGateway.properties:Meta.ReleaseDate" value="${build.date}" />
 			<param name="module.build.classpath" value="${BLTModule.name}_Gateway.classpath"/>
 		</antcall>
+	</target>
+
+	<!-- Builds the toolkit module jars and the final .modl file -->
+	<target name="build" depends="blt.common,block.build,block.jar" description="Compile the source">
+		<echo message="${BLTModule.name} ${BLTModule.version}" />	
+		<delete dir="${basedir}/BLT_Build/temp_modl" />	
 		
+		<!-- build.date and version.build are both defined in build.xml -->
+		<echo message="Build date: ${build.date}" />
+		<echo message="Build version: ${version.build}" />	
+
 		<!-- BLT Gateway Classic jar -->
 		<antcall target="MakeProject">
 			<param name="modName" value="${BLTModule.name}_GatewayClassic" />
 			<param name="sourceDirFolder" value="${BLTModule.name}_GatewayClassic" />
-			<param name="jarName" value="blt-gateway" />
+			<param name="jarName" value="blt-classic-gateway" />
 			<param name="javacSource" value="1.8" />
 			<param name="[replace]BLTGateway.properties:Meta.Version" value="${version.build}" />
 			<param name="[replace]BLTGateway.properties:Meta.ReleaseDate" value="${build.date}" />
-			<param name="module.build.classpath" value="${BLTModule.name}_Gateway.classpath"/>
+			<param name="module.build.classpath" value="${BLTModule.name}_GatewayClassic.classpath"/>
 		</antcall>
 
 		<!-- BLT Client jar -->
@@ -232,8 +235,9 @@
 		<pack200 src="${basedir}/../../external/lib/lucene-1.4.3.jar" destfile="${basedir}/BLT_Build/temp_modl/lucene-1.4.3.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		<pack200 src="${basedir}/../../external/lib/prefuse-1.0.1.jar" destfile="${basedir}/BLT_Build/temp_modl/prefuse-1.0.1.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		
-		<!-- Copy gateway jar -->
-		<copy file="${basedir}/BLT_Build/bin/${BLTModule.name}_Gateway/dist/blt-gateway.jar" todir="${basedir}/BLT_Build/temp_modl/" />
+		<!-- Copy gateway jars -->
+		<copy file="${basedir}/BLT_Build/bin/${BLTModule.name}_GatewayClassic/dist/blt-classic-gateway.jar" todir="${basedir}/BLT_Build/temp_modl/" />
+		<copy file="${basedir}/BLT_Build/bin/${BLTModule.name}_GatewayCommon/dist/blt-gateway.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy file="${basedir}/BLT_Build/bin/${BLTModule.name}_Common/dist/blt-common.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		
 		<!-- Copy dependent jars -->

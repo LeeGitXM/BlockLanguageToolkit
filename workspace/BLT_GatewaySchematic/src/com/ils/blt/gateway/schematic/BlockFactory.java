@@ -12,10 +12,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import com.ils.block.ProcessBlock;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
+import com.ils.blt.common.block.SchematicBlock;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.serializable.SerializableAnchor;
@@ -59,16 +59,16 @@ public class BlockFactory  {
 	 * @param projectId needed to find the correct script manager in the event of a block created from Python
 	 * @return the ProcessBlock created from the specified SerializableBlock
 	 */
-	public ProcessBlock blockFromSerializable(UUID parentId,SerializableBlock sb,long projectId) {
+	public SchematicBlock blockFromSerializable(UUID parentId,SerializableBlock sb,long projectId) {
 		String className = sb.getClassName();
 		UUID blockId = sb.getId();
 		log.debugf("%s.blockFromSerializable: Create instance of %s (%s)",TAG,className,blockId.toString());   // Should be updated
-		ProcessBlock block = null;
+		SchematicBlock block = null;
 		// If we can't create a Java class, try python ...
 		try {
 			Class<?> clss = Class.forName(className);
 			Constructor<?> ctor = clss.getDeclaredConstructor(new Class[] {ExecutionController.class,UUID.class,UUID.class});
-			block = (ProcessBlock)ctor.newInstance(BlockExecutionController.getInstance(),parentId,sb.getId());
+			block = (SchematicBlock)ctor.newInstance(BlockExecutionController.getInstance(),parentId,sb.getId());
 		}
 		catch(InvocationTargetException ite ) {
 			log.warnf("%s.blockFromSerializable %s: Invocation failed (%s)",TAG,className,ite.getMessage()); 
@@ -87,7 +87,6 @@ public class BlockFactory  {
 		}
 
 		if( block!=null ) {
-			block.setTimer(controller.getTimer());  // Initial value
 			updateBlockFromSerializable(block,sb);
 		}
 		return block;
@@ -100,7 +99,7 @@ public class BlockFactory  {
 	 * @param pb
 	 * @param sb
 	 */
-	public void updateBlockFromSerializable(ProcessBlock pb,SerializableBlock sb) {
+	public void updateBlockFromSerializable(SchematicBlock pb,SerializableBlock sb) {
 		pb.setName(sb.getName());
 		// Update anchors first.  We do this because in some blocks property update behavior depends
 		// on the datatype of the anchors.
@@ -166,5 +165,4 @@ public class BlockFactory  {
 			log.errorf("%s.updateBlockFromSerializable: No properties found in process block",TAG);
 		}
 	}
-	
 }

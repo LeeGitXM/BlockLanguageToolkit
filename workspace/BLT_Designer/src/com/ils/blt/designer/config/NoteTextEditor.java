@@ -29,7 +29,7 @@ import net.miginfocom.swing.MigLayout;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.designer.BLTDesignerHook;
+import com.ils.blt.designer.BLTClassicDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
@@ -71,7 +71,7 @@ public class NoteTextEditor extends JDialog {
         this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));
         initialize();
-        this.statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
+        this.statusManager = ((BLTClassicDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
         this.updateTask = new UpdateTask(textLabel,textArea);
         this.executor = Executors.newSingleThreadScheduledExecutor();
         executor.scheduleAtFixedRate(updateTask, 3, 10, TimeUnit.SECONDS);

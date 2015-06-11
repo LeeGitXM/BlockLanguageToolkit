@@ -27,7 +27,7 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
-import com.ils.blt.designer.BLTDesignerHook;
+import com.ils.blt.designer.BLTClassicDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.ResourceDeleteManager;
 import com.ils.blt.designer.ResourceUpdateManager;
@@ -97,7 +97,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		this.executionEngine = new BasicExecutionEngine(1,TAG);
 		this.resourceId = resource.getResourceId();
 		this.workspace = ws;
-		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
+		statusManager = ((BLTClassicDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
 		setName(resource.getName());
 		setText(resource.getName());
 		
@@ -131,7 +131,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		ResetDiagramAction resetAction = new ResetDiagramAction();
 		
 		// States are: ACTIVE, DISABLED, ISOLATED
-		ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
+		ApplicationRequestHandler handler = ((BLTClassicDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
 		DiagramState state = handler.getDiagramState(context.getProject().getId(), resourceId);
 		saveAction = new SaveDiagramAction(this);
 		SetStateAction ssaActive = new SetStateAction(DiagramState.ACTIVE);
@@ -539,7 +539,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 				}
 
 				// Inform the gateway of the state change
-				ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
+				ApplicationRequestHandler handler = ((BLTClassicDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
 				handler.setDiagramState(context.getProject().getId(), resourceId,state.name());
 				statusManager.setResourceState(resourceId,state);
 				setIcon(getIcon());
@@ -586,7 +586,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			// If the diagram is open on a tab, call the workspace method to update the project resource
 			// from the diagram view. This method handles re-paint of the background.
 			ProcessDiagramView view = (ProcessDiagramView)tab.getModel();
-			ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
+			ApplicationRequestHandler handler = ((BLTClassicDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
 			try {
 				List <SerializableBlockStateDescriptor> descriptors = handler.listBlocksInDiagram(view.getId().toString());
 				for( SerializableBlockStateDescriptor descriptor : descriptors ) {

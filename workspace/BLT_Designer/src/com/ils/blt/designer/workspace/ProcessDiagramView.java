@@ -22,7 +22,7 @@ import com.ils.blt.common.serializable.SerializableAnchorPoint;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableConnection;
 import com.ils.blt.common.serializable.SerializableDiagram;
-import com.ils.blt.designer.BLTDesignerHook;
+import com.ils.blt.designer.BLTClassicDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.NotificationHandler;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
@@ -141,7 +141,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	public void initBlockProperties(ProcessBlockView block) {
 		Collection<BlockProperty> propertyList;
 		propertyList = new ArrayList<BlockProperty>();
-		ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
+		ApplicationRequestHandler handler = ((BLTClassicDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
 		List<BlockProperty> properties = handler.getBlockProperties(block.getClassName(),context.getProject().getId(),resourceId,block.getId());
 		for(BlockProperty property:properties) {
 			propertyList.add(property);
@@ -391,7 +391,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	@Override
 	public void fireStateChanged() {
 		if( !suppressStateChangeNotification ) {
-			NodeStatusManager statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
+			NodeStatusManager statusManager = ((BLTClassicDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
 			statusManager.incrementDirtyNodeCount(getResourceId());
 			setDirty(true); // Fires super method which informs the listeners.
 		}
