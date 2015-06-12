@@ -21,8 +21,8 @@
 		<jar scope="CD">blt-common.jar.pack.gz</jar>
 		<jar scope="CD">lucene-1.4.3.jar.pack.gz</jar>
 		<jar scope="CD">prefuse-1.0.1.jar.pack.gz</jar>
-		<jar scope="G">blt-gateway-common.jar</jar>
-		<jar scope="G">blt-gateway-classic.jar</jar>
+		<jar scope="G">blt-gateway.jar</jar>
+		<jar scope="G">blt-classic-gateway.jar</jar>
 		<jar scope="G">blt-common.jar</jar>
 		<jar scope="G">commons-math3-3.1.1.jar</jar>
 		<jar scope="GD">block-definition.jar</jar>

@@ -6,7 +6,8 @@
 	<!-- Change version.beta value to "" for release builds -->
 	<property name="version.beta" value="-development" />		
 	<property name="BLTModule.version" value="2.0.0.${version.build}" />
-	<property name="BLTModule.name" value="BLT" />
+	<property name="BLTModule.name" value="BLT-Classic" />
+	<property name="BLTModule.prefix" value="BLT" />
 	<property name="BLTModule.release" value="2.0" />
 	<property name="BLTModule.description" value="Block Language Toolkit" />
 	<property name="root.dir" value="${basedir}/../.." />
@@ -75,7 +76,7 @@
 		<path refid="BLT_Common.classpath" />
 		<path refid="ExternalJar.classpath" />
 		<fileset dir="${basedir}/BLT_Build/bin/BLT_Common/dist/" includes="*.jar" />
-		<fileset dir="${basedir}/BLT_Build/bin/${BLTModule.name}_Client/dist/" includes="*.jar" />
+		<fileset dir="${basedir}/BLT_Build/bin/${BLTModule.prefix}_Client/dist/" includes="*.jar" />
 		<fileset dir="${jar.dir}" includes="${block.jar.name}" />
 	</path>
 
@@ -153,22 +154,22 @@
 	<target name="blt.common" depends="common.build,common.jar" description="Compile the source">
 		<!-- BLT Common jar -->
 		<antcall target="MakeProject">
-			<param name="modName" value="${BLTModule.name}_Common" />
-			<param name="sourceDirFolder" value="${BLTModule.name}_Common" />
+			<param name="modName" value="${BLTModule.prefix}_Common" />
+			<param name="sourceDirFolder" value="${BLTModule.prefix}_Common" />
 			<param name="jarName" value="blt-common" />
 			<param name="javacSource" value="1.8" />
-			<param name="module.build.classpath" value="${BLTModule.name}_Common.classpath"/>
+			<param name="module.build.classpath" value="${BLTModule.prefix}_Common.classpath"/>
 		</antcall>
 				
 		<!-- BLT Gateway Common jar -->
 		<antcall target="MakeProject">
-			<param name="modName" value="${BLTModule.name}_GatewayCommon" />
-			<param name="sourceDirFolder" value="${BLTModule.name}_GatewayCommon" />
+			<param name="modName" value="${BLTModule.prefix}_GatewayCommon" />
+			<param name="sourceDirFolder" value="${BLTModule.prefix}_GatewayCommon" />
 			<param name="jarName" value="blt-gateway" />
 			<param name="javacSource" value="1.8" />
 			<param name="[replace]BLTGateway.properties:Meta.Version" value="${version.build}" />
 			<param name="[replace]BLTGateway.properties:Meta.ReleaseDate" value="${build.date}" />
-			<param name="module.build.classpath" value="${BLTModule.name}_Gateway.classpath"/>
+			<param name="module.build.classpath" value="${BLTModule.prefix}_Gateway.classpath"/>
 		</antcall>
 	</target>
 
@@ -183,31 +184,31 @@
 
 		<!-- BLT Gateway Classic jar -->
 		<antcall target="MakeProject">
-			<param name="modName" value="${BLTModule.name}_GatewayClassic" />
-			<param name="sourceDirFolder" value="${BLTModule.name}_GatewayClassic" />
+			<param name="modName" value="${BLTModule.prefix}_GatewayClassic" />
+			<param name="sourceDirFolder" value="${BLTModule.prefix}_GatewayClassic" />
 			<param name="jarName" value="blt-classic-gateway" />
 			<param name="javacSource" value="1.8" />
 			<param name="[replace]BLTGateway.properties:Meta.Version" value="${version.build}" />
 			<param name="[replace]BLTGateway.properties:Meta.ReleaseDate" value="${build.date}" />
-			<param name="module.build.classpath" value="${BLTModule.name}_GatewayClassic.classpath"/>
+			<param name="module.build.classpath" value="${BLTModule.prefix}_GatewayClassic.classpath"/>
 		</antcall>
 
 		<!-- BLT Client jar -->
 		<antcall target="MakeProject">
-			<param name="modName" value="${BLTModule.name}_Client" />
-			<param name="sourceDirFolder" value="${BLTModule.name}_Client" />
+			<param name="modName" value="${BLTModule.prefix}_Client" />
+			<param name="sourceDirFolder" value="${BLTModule.prefix}_Client" />
 			<param name="jarName" value="blt-client" />
 			<param name="javacSource" value="1.8" />
-			<param name="module.build.classpath" value="${BLTModule.name}_Client.classpath"/>
+			<param name="module.build.classpath" value="${BLTModule.prefix}_Client.classpath"/>
 		</antcall>
 		
 		<!-- BLT Designer jar -->
 		<antcall target="MakeProject">
-			<param name="modName" value="${BLTModule.name}_Designer" />
-			<param name="sourceDirFolder" value="${BLTModule.name}_Designer" />
+			<param name="modName" value="${BLTModule.prefix}_Designer" />
+			<param name="sourceDirFolder" value="${BLTModule.prefix}_Designer" />
 			<param name="jarName" value="blt-designer" />
 			<param name="javacSource" value="1.8" />
-			<param name="module.build.classpath" value="${BLTModule.name}_Designer.classpath"/>
+			<param name="module.build.classpath" value="${BLTModule.prefix}_Designer.classpath"/>
 		</antcall>
 		
 		<!-- Create .modl file -->
@@ -224,9 +225,9 @@
 		<replace file="${basedir}/BLT_Build/temp_modl/module.xml" token="@VERSION@" value="${BLTModule.version}" />
 
 		<!-- Pack200 and then copy the designer, client jars -->
-		<pack200 src="${basedir}/BLT_Build/bin/${BLTModule.name}_Client/dist/blt-client.jar" destfile="${basedir}/BLT_Build/temp_modl/blt-client.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
-		<pack200 src="${basedir}/BLT_Build/bin/${BLTModule.name}_Designer/dist/blt-designer.jar" destfile="${basedir}/BLT_Build/temp_modl/blt-designer.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
-		<pack200 src="${basedir}/BLT_Build/bin/${BLTModule.name}_Common/dist/blt-common.jar" destfile="${basedir}/BLT_Build/temp_modl/blt-common.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
+		<pack200 src="${basedir}/BLT_Build/bin/${BLTModule.prefix}_Client/dist/blt-client.jar" destfile="${basedir}/BLT_Build/temp_modl/blt-client.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
+		<pack200 src="${basedir}/BLT_Build/bin/${BLTModule.prefix}_Designer/dist/blt-designer.jar" destfile="${basedir}/BLT_Build/temp_modl/blt-designer.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
+		<pack200 src="${basedir}/BLT_Build/bin/${BLTModule.prefix}_Common/dist/blt-common.jar" destfile="${basedir}/BLT_Build/temp_modl/blt-common.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		<pack200 src="${basedir}/../../external/lib/ils-common.jar" destfile="${basedir}/BLT_Build/temp_modl/ils-common.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		<pack200 src="${basedir}/../../external/lib/block-definition.jar" destfile="${basedir}/BLT_Build/temp_modl/block-definition.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		<pack200 src="${basedir}/../../external/lib/jackson-core-2.2.3.jar" destfile="${basedir}/BLT_Build/temp_modl/jackson-core-2.2.3.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
@@ -236,9 +237,9 @@
 		<pack200 src="${basedir}/../../external/lib/prefuse-1.0.1.jar" destfile="${basedir}/BLT_Build/temp_modl/prefuse-1.0.1.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		
 		<!-- Copy gateway jars -->
-		<copy file="${basedir}/BLT_Build/bin/${BLTModule.name}_GatewayClassic/dist/blt-classic-gateway.jar" todir="${basedir}/BLT_Build/temp_modl/" />
-		<copy file="${basedir}/BLT_Build/bin/${BLTModule.name}_GatewayCommon/dist/blt-gateway.jar" todir="${basedir}/BLT_Build/temp_modl/" />
-		<copy file="${basedir}/BLT_Build/bin/${BLTModule.name}_Common/dist/blt-common.jar" todir="${basedir}/BLT_Build/temp_modl/" />
+		<copy file="${basedir}/BLT_Build/bin/${BLTModule.prefix}_GatewayClassic/dist/blt-classic-gateway.jar" todir="${basedir}/BLT_Build/temp_modl/" />
+		<copy file="${basedir}/BLT_Build/bin/${BLTModule.prefix}_GatewayCommon/dist/blt-gateway.jar" todir="${basedir}/BLT_Build/temp_modl/" />
+		<copy file="${basedir}/BLT_Build/bin/${BLTModule.prefix}_Common/dist/blt-common.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		
 		<!-- Copy dependent jars -->
 		<copy file="${jar.dir}/${common.jar.name}" todir="${basedir}/BLT_Build/temp_modl/" />
