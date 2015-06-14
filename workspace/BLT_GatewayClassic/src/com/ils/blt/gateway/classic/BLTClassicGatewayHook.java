@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.apache.wicket.markup.html.WebMarkupContainer;
 
+import com.ils.block.proxy.ProxyHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.gateway.common.GatewayRpcDispatcher;
@@ -16,7 +17,6 @@ import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ModelManager;
 import com.ils.blt.gateway.persistence.ToolkitRecord;
 import com.ils.blt.gateway.wicket.ToolkitStatusPanel;
-import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
@@ -53,7 +53,7 @@ public class BLTClassicGatewayHook extends AbstractGatewayModuleHook  {
 	
 	public BLTClassicGatewayHook() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
-		log.info(TAG+"Initializing BLT Gateway hook");
+		log.info(TAG+"Initializing BLT Classic Gateway hook");
 	}
 		
 	
@@ -68,7 +68,7 @@ public class BLTClassicGatewayHook extends AbstractGatewayModuleHook  {
 		log.info(TAG+".setup - enable project listeners.");
 		requestHandler = new ClassicRequestHandler(context);
 		dispatcher = new GatewayRpcDispatcher(context,requestHandler);
-		
+		ProxyHandler.getInstance().setContext(context);
 		// Register the ToolkitRecord making sure that the table exists
 		try {
 			context.getSchemaUpdater().updatePersistentRecords(ToolkitRecord.META);

@@ -15,6 +15,7 @@ import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.gateway.common.BasicDiagram;
 import com.ils.blt.gateway.engine.ModelManager;
 import com.ils.blt.gateway.engine.ProcessNode;
+import com.ils.blt.gateway.engine.RootNode;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
@@ -45,6 +46,7 @@ public class SchematicModelManager extends ModelManager  {
 	 */
 	public SchematicModelManager(GatewayContext ctx) { 
 		super(ctx);
+		this.root = new RootNode(context,BLTProperties.SCHEMATIC_ROOT_FOLDER_UUID);
 	}
 	
 	
@@ -138,27 +140,6 @@ public class SchematicModelManager extends ModelManager  {
 				diagram.updateProperties(sd);
 				diagram.setState(sd.getState());// Handle state change, if any
 			}
-			/*
-			if( !diagram.getState().equals(DiagramState.DISABLED) ) {
-				diagram.updateBlockTimers();  // Make sure timers are correct for current diagram state.
-				log.tracef("%s.addModifyDiagramResource: starting tag subscriptions ...%d:%s",TAG,projectId,res.getName());
-				for( CoreBlock pb:diagram.getCoreBlocks()) {
-					for(BlockProperty bp:pb.getProperties()) {
-						controller.startSubscription(pb,bp);   // Does nothing for existing subscriptions
-					}
-					pb.setProjectId(projectId);
-				}
-				if( BlockExecutionController.getExecutionState().equals(BlockExecutionController.CONTROLLER_RUNNING_STATE)) {
-					log.tracef("%s.addModifyDiagramResource: starting blocks ...%d:%s",TAG,projectId,res.getName());
-					for( CoreBlock pb:diagram.getCoreBlocks()) {
-						pb.start();
-					}
-				}
-			}
-			else {
-				log.infof("%s.addModifyDiagramResource: diagram is DISABLED (did not start subscriptions)...%d:%s",TAG,projectId,res.getName());
-			}
-			*/
 		}
 		else {
 			log.warnf("%s.addModifyDiagramResource - Failed to create diagram from resource (%s)",TAG,res.getName());
@@ -206,7 +187,7 @@ public class SchematicModelManager extends ModelManager  {
 			root.addChild(node,projectId);
 			log.tracef("%s.addToHierarchy: %s is a ROOT (null parent)",TAG,node.getName());
 		}
-		else if( node.getParent().equals(BLTProperties.ROOT_FOLDER_UUID) )  {
+		else if( node.getParent().equals(BLTProperties.SCHEMATIC_ROOT_FOLDER_UUID) )  {
 			root.addChild(node,projectId);
 			log.tracef("%s.addToHierarchy: %s is a ROOT (parent is root folder)",TAG,node.getName());
 		}
@@ -258,5 +239,10 @@ public class SchematicModelManager extends ModelManager  {
 		}
 		return sd;
 
+	}
+	@Override
+	public void removeAllDiagrams() {
+		super.removeAllDiagrams();
+		root = new RootNode(context,BLTProperties.SCHEMATIC_ROOT_FOLDER_UUID);
 	}
 }

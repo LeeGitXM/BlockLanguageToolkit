@@ -3,32 +3,16 @@
  */
 package com.ils.sblock;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
-import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
-import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
-import com.ils.blt.common.block.PropertyType;
-import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
-import com.ils.blt.common.notification.BlockPropertyChangeEvent;
-import com.ils.blt.common.notification.IncomingNotification;
-import com.ils.blt.common.notification.OutgoingNotification;
-import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.annotation.CompilableBlock;
-import com.ils.common.watchdog.Watchdog;
-import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.Quality;
-import com.inductiveautomation.ignition.common.sqltags.model.types.DataQuality;
 
 /**
  * This class emits the "or" of its inputs. Synchronizing

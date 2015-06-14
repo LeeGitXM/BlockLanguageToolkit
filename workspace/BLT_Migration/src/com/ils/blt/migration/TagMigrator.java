@@ -41,7 +41,6 @@ public class TagMigrator {
 		String connectPath = "jdbc:sqlite:"+path;
 
 		// Read database to generate conversion maps
-		@SuppressWarnings("resource")
 		Connection connection = null;
 		try {
 			connection = DriverManager.getConnection(connectPath);
@@ -71,7 +70,6 @@ public class TagMigrator {
 	 * @param cxn open database connection
 	 */
 	private void createList(Connection cxn) {
-		@SuppressWarnings("resource")
 		ResultSet rs = null;
 		try {
 			Statement statement = cxn.createStatement();

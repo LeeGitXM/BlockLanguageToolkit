@@ -16,6 +16,7 @@ import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ModelManager;
 import com.ils.blt.gateway.persistence.ToolkitRecord;
 import com.ils.blt.gateway.wicket.ToolkitStatusPanel;
+import com.ils.sblock.proxy.ProxyHandler;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
@@ -52,7 +53,7 @@ public class BLTSchematicGatewayHook extends AbstractGatewayModuleHook  {
 	
 	public BLTSchematicGatewayHook() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
-		log.info(TAG+"Initializing BLT Gateway hook");
+		log.info(TAG+"Initializing BLT Schematic Gateway hook");
 	}
 		
 	
@@ -67,7 +68,7 @@ public class BLTSchematicGatewayHook extends AbstractGatewayModuleHook  {
 		log.info(TAG+".setup - enable project listeners.");
 		requestHandler = new SchematicRequestHandler(context);
 		dispatcher = new GatewayRpcDispatcher(context,requestHandler);
-		
+		ProxyHandler.getInstance().setContext(context);
 		// Register the ToolkitRecord making sure that the table exists
 		try {
 			context.getSchemaUpdater().updatePersistentRecords(ToolkitRecord.META);

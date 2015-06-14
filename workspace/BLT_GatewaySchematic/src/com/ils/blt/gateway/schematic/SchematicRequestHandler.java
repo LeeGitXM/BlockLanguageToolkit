@@ -25,7 +25,6 @@ import com.ils.common.ClassList;
 import com.ils.common.annotation.ExecutableBlock;
 import com.ils.sblock.SchematicBlock;
 import com.ils.sblock.proxy.ProxyHandler;
-import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 

@@ -15,7 +15,6 @@ import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.connection.ProcessConnection;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.gateway.classic.ClassicDiagram;
-import com.ils.blt.gateway.common.BasicDiagram.BlockPort;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 
 /**

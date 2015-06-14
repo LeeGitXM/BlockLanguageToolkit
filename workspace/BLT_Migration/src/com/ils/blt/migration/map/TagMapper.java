@@ -36,7 +36,6 @@ public class TagMapper {
 	 * @param cxn open database connection
 	 */
 	public void createMap(Connection cxn) {
-		@SuppressWarnings("resource")
 		ResultSet rs = null;
 		try {
 			Statement statement = cxn.createStatement();

@@ -5,7 +5,6 @@ package com.ils.block;
 
 import com.ils.blt.common.block.CoreBlock;
 import com.ils.blt.common.block.TruthValue;
-import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.WatchdogTimer;
 
 

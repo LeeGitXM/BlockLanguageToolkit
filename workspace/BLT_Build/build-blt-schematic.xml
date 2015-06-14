@@ -7,6 +7,7 @@
 	<property name="version.beta" value="-development" />		
 	<property name="BLTModule.version" value="2.0.0.${version.build}" />
 	<property name="BLTModule.name" value="BLT-Schematic" />
+	<property name="BLTModule.prefix" value="BLT" />
 	<property name="BLTModule.release" value="2.0" />
 	<property name="BLTModule.description" value="Block Language Toolkit" />
 	<property name="root.dir" value="${basedir}/../.." />
@@ -15,9 +16,9 @@
 	<property name="common.jar.name" value="ils-common.jar" />
 	<property name="common.bin.dir" value="${root.dir}/ils-common/bin" />
 	<property name="common.src.dir" value="${root.dir}/ils-common/ILS_Common/src" />
-	<property name="sblock.jar.name" value="schematic-block-definition.jar" />
-	<property name="sblock.bin.dir" value="${root.dir}/blt/workspace/Schematic/bin" />
-	<property name="sblock.src.dir" value="${root.dir}/blt/workspace/Schematic/src" />
+	<property name="block.jar.name" value="schematic-block-definition.jar" />
+	<property name="block.bin.dir" value="${root.dir}/blt/workspace/Schematic/bin" />
+	<property name="block.src.dir" value="${root.dir}/blt/workspace/Schematic/src" />
 	<property name="ils.python.src.dir" value="${root.dir}/ils-python/ILS_Python/src" />
 	<property name="xom.python.src.dir" value="${root.dir}/xom-python/XOM_Python/src" />
 	<property name="ant.build.javac.source" value="1.8"/>
@@ -53,13 +54,12 @@
 		<path refid="BLT_Common.classpath" />
 		<path refid="ExternalJar.classpath" />
 		<fileset dir="${basedir}/BLT_Build/bin/BLT_Common/dist/" includes="*.jar" />
-		<fileset dir="${jar.dir}" includes="${sblock.jar.name}" />
+		<fileset dir="${jar.dir}" includes="${block.jar.name}" />
 	</path>	
 	<!-- GatewaySchematic jar classpath -->
 	<path id="BLT_GatewaySchematic.classpath">
 		<path refid="BLT_Gateway.classpath" />
 		<fileset dir="${basedir}/BLT_Build/bin/BLT_GatewayCommon/dist/" includes="*.jar" />
-		<fileset dir="${jar.dir}" includes="${sblock.jar.name}" />
 	</path>	
 	
 	<!-- Client jar classpath -->
@@ -67,7 +67,7 @@
 		<path refid="BLT_Common.classpath" />
 		<path refid="ExternalJar.classpath" />
 		<fileset dir="${basedir}/BLT_Build/bin/BLT_Common/dist/" includes="*.jar" />
-		<fileset dir="${jar.dir}" includes="${sblock.jar.name}" />
+		<fileset dir="${jar.dir}" includes="${block.jar.name}" />
 	</path>
 	
 	<!-- Designer jar classpath -->
@@ -75,8 +75,14 @@
 		<path refid="BLT_Common.classpath" />
 		<path refid="ExternalJar.classpath" />
 		<fileset dir="${basedir}/BLT_Build/bin/BLT_Common/dist/" includes="*.jar" />
-		<fileset dir="${basedir}/BLT_Build/bin/${BLTModule.name}_Client/dist/" includes="*.jar" />
-		<fileset dir="${jar.dir}" includes="${sblock.jar.name}" />
+		<fileset dir="${basedir}/BLT_Build/bin/${BLTModule.prefix}_Client/dist/" includes="*.jar" />
+		<fileset dir="${jar.dir}" includes="${block.jar.name}" />
+	</path>
+	
+	<!-- Designer Schematic jar classpath -->
+	<path id="BLT_DesignerSchematic.classpath">
+		<path refid="BLT_Designer.classpath" />
+		<fileset dir="${basedir}/BLT_Build/bin/BLT_DesignerCommon/dist/" includes="*.jar" />
 	</path>
 
 	<!-- Migration jar classpath -->
@@ -92,10 +98,10 @@
 	
 	<!-- Clean Block Definition -->
 	<target name="clean.block" >
-		<mkdir dir="${sblock.bin.dir}"/>
-		<delete file="${jar.dir}/${sblock.jar.name}" />
+		<mkdir dir="${block.bin.dir}"/>
+		<delete file="${jar.dir}/${block.jar.name}" />
 		<delete>
-		    <fileset dir="${sblock.bin.dir}">
+		    <fileset dir="${block.bin.dir}">
 		        <include name="**/*.class"/>
 		    </fileset>
 		</delete>
@@ -137,43 +143,61 @@
 	    <jar destfile="${jar.dir}/${common.jar.name}" includes="**/*.class,**/*.png" basedir="${common.bin.dir}"/>
 	</target>
 	
-	<!-- Compile the Schematic Block Definition library -->
-	<target name="sblock.build" description="Compile the source">
-		<mkdir dir="${sblock.bin.dir}"/>
-		<javac destdir="${sblock.bin.dir}" debug="true" target="1.8" includeantruntime="false">
-			<src path="${sblock.src.dir}"/>
+	<!-- Compile the Block Definition library -->
+	<target name="block.build" description="Compile the source">
+		<mkdir dir="${block.bin.dir}"/>
+		<javac destdir="${block.bin.dir}" debug="true" target="1.8" includeantruntime="false">
+			<src path="${block.src.dir}"/>
 			<classpath refid="BlockDefinition.classpath"/>
 		</javac>
 	</target>
-	<target name ="sblock.jar" description="Create a jar for the Block Definition library">
-		<jar destfile="${jar.dir}/${sblock.jar.name}" includes="**/*.class" basedir="${sblock.bin.dir}"/>
+	<target name ="block.jar" description="Create a jar for the Block Definition library">
+		<jar destfile="${jar.dir}/${block.jar.name}" includes="**/*.class" basedir="${block.bin.dir}"/>
 	</target>
 	
 	<!-- Build the common modules -->
 	<target name="blt.common" depends="common.build,common.jar" description="Compile the source">
 		<!-- BLT Common jar -->
 		<antcall target="MakeProject">
-			<param name="modName" value="${BLTModule.name}_Common" />
-			<param name="sourceDirFolder" value="${BLTModule.name}_Common" />
+			<param name="modName" value="${BLTModule.prefix}_Common" />
+			<param name="sourceDirFolder" value="${BLTModule.prefix}_Common" />
 			<param name="jarName" value="blt-common" />
 			<param name="javacSource" value="1.8" />
-			<param name="module.build.classpath" value="${BLTModule.name}_Common.classpath"/>
+			<param name="module.build.classpath" value="${BLTModule.prefix}_Common.classpath"/>
 		</antcall>
 				
 		<!-- BLT Gateway Common jar -->
 		<antcall target="MakeProject">
-			<param name="modName" value="${BLTModule.name}_GatewayCommon" />
-			<param name="sourceDirFolder" value="${BLTModule.name}_GatewayCommon" />
+			<param name="modName" value="${BLTModule.prefix}_GatewayCommon" />
+			<param name="sourceDirFolder" value="${BLTModule.prefix}_GatewayCommon" />
 			<param name="jarName" value="blt-gateway" />
 			<param name="javacSource" value="1.8" />
 			<param name="[replace]BLTGateway.properties:Meta.Version" value="${version.build}" />
 			<param name="[replace]BLTGateway.properties:Meta.ReleaseDate" value="${build.date}" />
-			<param name="module.build.classpath" value="${BLTModule.name}_Gateway.classpath"/>
+			<param name="module.build.classpath" value="${BLTModule.prefix}_Gateway.classpath"/>
+		</antcall>
+		
+		<!-- BLT Client jar -->
+		<antcall target="MakeProject">
+			<param name="modName" value="${BLTModule.prefix}_Client" />
+			<param name="sourceDirFolder" value="${BLTModule.prefix}_Client" />
+			<param name="jarName" value="blt-client" />
+			<param name="javacSource" value="1.8" />
+			<param name="module.build.classpath" value="${BLTModule.prefix}_Client.classpath"/>
+		</antcall>
+		
+		<!-- BLT Designer jar -->
+		<antcall target="MakeProject">
+			<param name="modName" value="${BLTModule.prefix}_DesignerCommon" />
+			<param name="sourceDirFolder" value="${BLTModule.prefix}_DesignerCommon" />
+			<param name="jarName" value="blt-designer" />
+			<param name="javacSource" value="1.8" />
+			<param name="module.build.classpath" value="${BLTModule.prefix}_Designer.classpath"/>
 		</antcall>
 	</target>
 
 	<!-- Builds the toolkit module jars and the final .modl file -->
-	<target name="build" depends="blt.common,sblock.build,sblock.jar" description="Compile the source">
+	<target name="build" depends="blt.common,block.build,block.jar" description="Compile the source">
 		<echo message="${BLTModule.name} ${BLTModule.version}" />	
 		<delete dir="${basedir}/BLT_Build/temp_modl" />	
 		
@@ -183,31 +207,22 @@
 
 		<!-- BLT Gateway Schematic jar -->
 		<antcall target="MakeProject">
-			<param name="modName" value="${BLTModule.name}_GatewaySchematic" />
-			<param name="sourceDirFolder" value="${BLTModule.name}_GatewaySchematic" />
+			<param name="modName" value="${BLTModule.prefix}_GatewaySchematic" />
+			<param name="sourceDirFolder" value="${BLTModule.prefix}_GatewaySchematic" />
 			<param name="jarName" value="blt-schematic-gateway" />
 			<param name="javacSource" value="1.8" />
 			<param name="[replace]BLTGateway.properties:Meta.Version" value="${version.build}" />
 			<param name="[replace]BLTGateway.properties:Meta.ReleaseDate" value="${build.date}" />
-			<param name="module.build.classpath" value="${BLTModule.name}_GatewaySchematic.classpath"/>
-		</antcall>
-
-		<!-- BLT Client jar -->
-		<antcall target="MakeProject">
-			<param name="modName" value="${BLTModule.name}_Client" />
-			<param name="sourceDirFolder" value="${BLTModule.name}_Client" />
-			<param name="jarName" value="blt-client" />
-			<param name="javacSource" value="1.8" />
-			<param name="module.build.classpath" value="${BLTModule.name}_Client.classpath"/>
+			<param name="module.build.classpath" value="${BLTModule.prefix}_GatewaySchematic.classpath"/>
 		</antcall>
 		
-		<!-- BLT Designer jar -->
+		<!-- BLT Schematic Designer jar -->
 		<antcall target="MakeProject">
-			<param name="modName" value="${BLTModule.name}_Designer" />
-			<param name="sourceDirFolder" value="${BLTModule.name}_Designer" />
-			<param name="jarName" value="blt-designer" />
+			<param name="modName" value="${BLTModule.prefix}_DesignerSchematic" />
+			<param name="sourceDirFolder" value="${BLTModule.prefix}_DesignerSchematic" />
+			<param name="jarName" value="blt-schematic-designer" />
 			<param name="javacSource" value="1.8" />
-			<param name="module.build.classpath" value="${BLTModule.name}_Designer.classpath"/>
+			<param name="module.build.classpath" value="${BLTModule.prefix}_DesignerSchematic.classpath"/>
 		</antcall>
 		
 		<!-- Create .modl file -->
@@ -217,16 +232,17 @@
 		<mkdir dir="${basedir}/BLT_Build/modules" />
 		
 
-		<copy file="${basedir}/BLT_Build/module-blt-classic.xml" tofile="${basedir}/BLT_Build/temp_modl/module.xml" overwrite="true" />
+		<copy file="${basedir}/BLT_Build/module-blt-schematic.xml" tofile="${basedir}/BLT_Build/temp_modl/module.xml" overwrite="true" />
 
 		<replace file="${basedir}/BLT_Build/temp_modl/module.xml" token="@NAME@" value="${BLTModule.name}" />
 		<replace file="${basedir}/BLT_Build/temp_modl/module.xml" token="@DESCRIPTION@" value="${BLTModule.description}" />
 		<replace file="${basedir}/BLT_Build/temp_modl/module.xml" token="@VERSION@" value="${BLTModule.version}" />
 
 		<!-- Pack200 and then copy the designer, client jars -->
-		<pack200 src="${basedir}/BLT_Build/bin/${BLTModule.name}_Client/dist/blt-client.jar" destfile="${basedir}/BLT_Build/temp_modl/blt-client.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
-		<pack200 src="${basedir}/BLT_Build/bin/${BLTModule.name}_Designer/dist/blt-designer.jar" destfile="${basedir}/BLT_Build/temp_modl/blt-designer.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
-		<pack200 src="${basedir}/BLT_Build/bin/${BLTModule.name}_Common/dist/blt-common.jar" destfile="${basedir}/BLT_Build/temp_modl/blt-common.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
+		<pack200 src="${basedir}/BLT_Build/bin/${BLTModule.prefix}_Client/dist/blt-client.jar" destfile="${basedir}/BLT_Build/temp_modl/blt-client.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
+		<pack200 src="${basedir}/BLT_Build/bin/${BLTModule.prefix}_Designer/dist/blt-designer.jar" destfile="${basedir}/BLT_Build/temp_modl/blt-designer.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
+		<pack200 src="${basedir}/BLT_Build/bin/${BLTModule.prefix}_DesignerSchematic/dist/blt-schematic-designer.jar" destfile="${basedir}/BLT_Build/temp_modl/blt-schematic-designer.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
+		<pack200 src="${basedir}/BLT_Build/bin/${BLTModule.prefix}_Common/dist/blt-common.jar" destfile="${basedir}/BLT_Build/temp_modl/blt-common.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		<pack200 src="${basedir}/../../external/lib/ils-common.jar" destfile="${basedir}/BLT_Build/temp_modl/ils-common.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		<pack200 src="${basedir}/../../external/lib/block-definition.jar" destfile="${basedir}/BLT_Build/temp_modl/block-definition.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		<pack200 src="${basedir}/../../external/lib/jackson-core-2.2.3.jar" destfile="${basedir}/BLT_Build/temp_modl/jackson-core-2.2.3.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
@@ -236,9 +252,9 @@
 		<pack200 src="${basedir}/../../external/lib/prefuse-1.0.1.jar" destfile="${basedir}/BLT_Build/temp_modl/prefuse-1.0.1.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		
 		<!-- Copy gateway jars -->
-		<copy file="${basedir}/BLT_Build/bin/${BLTModule.name}_GatewaySchematic/dist/blt-schematic-gateway.jar" todir="${basedir}/BLT_Build/temp_modl/" />
-		<copy file="${basedir}/BLT_Build/bin/${BLTModule.name}_GatewayCommon/dist/blt-gateway.jar" todir="${basedir}/BLT_Build/temp_modl/" />
-		<copy file="${basedir}/BLT_Build/bin/${BLTModule.name}_Common/dist/blt-common.jar" todir="${basedir}/BLT_Build/temp_modl/" />
+		<copy file="${basedir}/BLT_Build/bin/${BLTModule.prefix}_GatewaySchematic/dist/blt-schematic-gateway.jar" todir="${basedir}/BLT_Build/temp_modl/" />
+		<copy file="${basedir}/BLT_Build/bin/${BLTModule.prefix}_GatewayCommon/dist/blt-gateway.jar" todir="${basedir}/BLT_Build/temp_modl/" />
+		<copy file="${basedir}/BLT_Build/bin/${BLTModule.prefix}_Common/dist/blt-common.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		
 		<!-- Copy dependent jars -->
 		<copy file="${jar.dir}/${common.jar.name}" todir="${basedir}/BLT_Build/temp_modl/" />
@@ -246,7 +262,7 @@
 		<copy file="${basedir}/../../external/lib/jackson-databind-2.2.3.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy file="${basedir}/../../external/lib/jackson-annotations-2.2.3.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy file="${basedir}/../../external/lib/commons-math3-3.1.1.jar" todir="${basedir}/BLT_Build/temp_modl/" />
-		<copy file="${jar.dir}/${sblock.jar.name}" todir="${basedir}/BLT_Build/temp_modl/" />
+		<copy file="${jar.dir}/${block.jar.name}" todir="${basedir}/BLT_Build/temp_modl/" />
 
 		<!-- Copy license file and javadoc into the bundle -->
 		<mkdir dir="${basedir}/BLT_Build/doc" />
@@ -280,7 +296,7 @@
 			<fileset dir="${basedir}/BLT_Build/temp_modl">
 				<include name="commons-math3-3.1.1.jar" />
 				<include name="blt-gateway.jar" />
-				<include name="schematic-block-definition.jar" />
+				<include name="block-definition.jar" />
 			</fileset>
 		</copy>
 	</target>

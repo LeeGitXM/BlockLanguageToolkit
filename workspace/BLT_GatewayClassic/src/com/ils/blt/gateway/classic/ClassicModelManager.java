@@ -19,6 +19,7 @@ import com.ils.blt.gateway.engine.ModelManager;
 import com.ils.blt.gateway.engine.ProcessApplication;
 import com.ils.blt.gateway.engine.ProcessFamily;
 import com.ils.blt.gateway.engine.ProcessNode;
+import com.ils.blt.gateway.engine.RootNode;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
@@ -50,6 +51,7 @@ public class ClassicModelManager extends ModelManager  {
 	 */
 	public ClassicModelManager(GatewayContext ctx) { 
 		super(ctx);
+		this.root = new RootNode(context,BLTProperties.CLASSIC_ROOT_FOLDER_UUID);
 	}
 	
 	
@@ -286,7 +288,7 @@ public class ClassicModelManager extends ModelManager  {
 			root.addChild(node,projectId);
 			log.tracef("%s.addToHierarchy: %s is a ROOT (null parent)",TAG,node.getName());
 		}
-		else if( node.getParent().equals(BLTProperties.ROOT_FOLDER_UUID) )  {
+		else if( node.getParent().equals(BLTProperties.CLASSIC_ROOT_FOLDER_UUID) )  {
 			root.addChild(node,projectId);
 			log.tracef("%s.addToHierarchy: %s is a ROOT (parent is root folder)",TAG,node.getName());
 		}
@@ -402,7 +404,9 @@ public class ClassicModelManager extends ModelManager  {
 		}
 		return family;
 	}
-
-	
-	
+	@Override
+	public void removeAllDiagrams() {
+		super.removeAllDiagrams();
+		root = new RootNode(context,BLTProperties.CLASSIC_ROOT_FOLDER_UUID);
+	}
 }

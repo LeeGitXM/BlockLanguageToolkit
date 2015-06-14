@@ -8,8 +8,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
-import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.common.project.ProjectVersion;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
@@ -31,10 +31,11 @@ public class RootNode extends ProcessNode {
 	
 	/**
 	 * Constructor: 
-	 * @param ctx Gateway context 
+	 * @param ctx Gateway context
+	 * @param rootId UUID for this root node (there can be several) 
 	 */
-	public RootNode(GatewayContext ctx) { 
-		super("root",null,BLTProperties.ROOT_FOLDER_UUID);
+	public RootNode(GatewayContext ctx,UUID rootId) { 
+		super("root",null,rootId);
 		this.context = ctx;
 		this.projectIdByName = new HashMap<String,Long>();
 		this.childrenByProjectId = new HashMap<Long,Map<Long,ProcessNode>>();

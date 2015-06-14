@@ -470,7 +470,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @return a list of ids for blocks owned by a specified diagram that are of a
 	 *         specified class.
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings("unchecked")
 	@Override
 	public List<SerializableBlockStateDescriptor> listDiagramBlocksOfClass(String diagramId,String className) {
 		log.debugf("%s.getDiagramBlocksOfClass: for diagram %s (%s)",TAG,diagramId,className);

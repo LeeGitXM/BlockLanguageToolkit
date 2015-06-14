@@ -28,9 +28,12 @@ public interface BLTProperties   {
 	public final static String APPLICATION_SCRIPT_PACKAGE      = "system.ils.blt.application";
 	
 	/** This unique ID represents the root node in the project tree */
-	public static final UUID ROOT_FOLDER_UUID = UUID
+	public static final UUID CLASSIC_ROOT_FOLDER_UUID = UUID
 			.fromString("7bbbd6b9-3140-4328-a844-51817eb47574");
-	public static final String ROOT_FOLDER_NAME = "ROOT";
+	public static final UUID SCHEMATIC_ROOT_FOLDER_UUID = UUID
+			.fromString("7cccd6b9-3140-4328-a844-51817eb47574");
+	public static final String CLASSIC_ROOT_FOLDER_NAME = "CROOT";
+	public static final String SCHEMATIC_ROOT_FOLDER_NAME = "SROOT";
 	public static final long ROOT_PARENT_ID = 0;    // For the status manager
 	public static final long ROOT_RESOURCE_ID = -1;
 	

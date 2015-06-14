@@ -66,7 +66,6 @@ public abstract class ModelManager implements ProjectListener  {
 		nodesByKey = new HashMap<ProjResKey,ProcessNode>();
 		orphansByUUID = new HashMap<UUID,ProcessNode>();
 		nodesByUUID = new HashMap<UUID,ProcessNode>();
-		root = new RootNode(context);
 		nodesByUUID.put(root.getSelf(), root);
 	}
 	
@@ -349,7 +348,6 @@ public abstract class ModelManager implements ProjectListener  {
 		nodesByKey.clear();
 		orphansByUUID.clear();
 		nodesByUUID.clear();
-		root = new RootNode(context);
 		log.infof("%s.removeAllDiagrams ... complete",TAG);
 	}
 	/**

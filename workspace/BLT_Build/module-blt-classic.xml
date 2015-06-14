@@ -18,6 +18,7 @@
 		<!-- Load in our jars for each scope -->
 		<jar scope="CD">blt-client.jar.pack.gz</jar>
 		<jar scope="CD">blt-designer.jar.pack.gz</jar>
+		<jar scope="CD">blt-classic-designer.jar.pack.gz</jar>
 		<jar scope="CD">blt-common.jar.pack.gz</jar>
 		<jar scope="CD">lucene-1.4.3.jar.pack.gz</jar>
 		<jar scope="CD">prefuse-1.0.1.jar.pack.gz</jar>
@@ -31,8 +32,8 @@
 		<jar scope="GD">jackson-annotations-2.2.3.jar</jar>
 		<jar scope="GCD">ils-common.jar</jar>
 		<!-- Tell the Gateway and/or Designer where to find the hooks -->
-		<hook scope="G">com.ils.blt.gateway.schematic.BLTSchematicGatewayHook</hook>
-		<hook scope="D">com.ils.blt.designer.BLTSchematicDesignerHook</hook>
+		<hook scope="G">com.ils.blt.gateway.classic.BLTClassicGatewayHook</hook>
+		<hook scope="D">com.ils.blt.designer.BLTClassicDesignerHook</hook>
 		<hook scope="C">com.ils.blt.client.BLTClientHook</hook>
 	</module>
 </modules>

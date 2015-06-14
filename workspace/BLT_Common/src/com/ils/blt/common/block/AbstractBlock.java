@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
