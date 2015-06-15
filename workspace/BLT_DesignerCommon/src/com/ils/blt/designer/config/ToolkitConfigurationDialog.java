@@ -30,7 +30,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import net.miginfocom.swing.MigLayout;
 
-import com.ils.blt.common.ApplicationRequestHandler;
+import com.ils.blt.common.ModuleRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.PalettePrototype;
@@ -48,7 +48,7 @@ public class ToolkitConfigurationDialog extends ConfigurationDialog  {
 	private final int DIALOG_HEIGHT = 360;
 	private final int DIALOG_WIDTH = 400;
 	private JPanel scriptPanel = null;
-	private final ApplicationRequestHandler handler;
+	private final ModuleRequestHandler handler;
 	private final ScriptExtensionManager sem;
 	private final Preferences prefs;
 	private JFileChooser fc = null;
@@ -57,7 +57,7 @@ public class ToolkitConfigurationDialog extends ConfigurationDialog  {
 
 	public ToolkitConfigurationDialog(Frame frame,DesignerContext ctx) {
 		super(ctx);
-		this.handler = new ApplicationRequestHandler();
+		this.handler = new ModuleRequestHandler();
 		this.sem = ScriptExtensionManager.getInstance();
 		this.classPanels = new HashMap<>();
 		this.setTitle(rb.getString("Toolkit.Title"));

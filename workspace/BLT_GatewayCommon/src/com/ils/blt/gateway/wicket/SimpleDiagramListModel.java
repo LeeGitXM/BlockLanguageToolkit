@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.apache.wicket.model.LoadableDetachableModel;
 
-import com.ils.blt.gateway.common.BasicDiagram;
+import com.ils.blt.gateway.BasicDiagram;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ModelManager;
 

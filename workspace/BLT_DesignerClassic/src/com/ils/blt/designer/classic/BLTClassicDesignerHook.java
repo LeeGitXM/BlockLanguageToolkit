@@ -18,8 +18,8 @@ import javax.swing.SwingUtilities;
 
 import com.ils.blt.client.component.diagview.DiagramViewer;
 import com.ils.blt.client.component.recmap.RecommendationMap;
-import com.ils.blt.common.ApplicationRequestHandler;
-import com.ils.blt.common.ApplicationScriptFunctions;
+import com.ils.blt.common.ModuleRequestHandler;
+import com.ils.blt.common.ModuleScriptFunctions;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.ToolkitRequestHandler;
 import com.ils.blt.common.script.ScriptExtensionManager;
@@ -57,9 +57,6 @@ import com.jidesoft.docking.DockingManager;
 
 public class BLTClassicDesignerHook extends AbstractDesignerModuleHook  {
 	private static final String TAG = "BLTDesignerHook";
-	private static final String INTERFACE_MENU_TITLE  = "External Interface Configuration";
-	private static final String VALIDATION_MENU_TITLE = "Validate Diagrams";
-	public static String BLOCK_BUNDLE_NAME   = "block";        // Properties file is block.properties
 	public static String HOOK_BUNDLE_NAME   = "designer";      // Properties file is designer.properties
 	public static String PREFIX = BLTProperties.BUNDLE_PREFIX; // Properties is accessed by this prefix
 
@@ -73,20 +70,19 @@ public class BLTClassicDesignerHook extends AbstractDesignerModuleHook  {
 	// Register separate properties files for designer things and block things
 	static {
 		BundleUtil.get().addBundle(BLTProperties.BUNDLE_PREFIX,BLTClassicDesignerHook.class,HOOK_BUNDLE_NAME);
-		BundleUtil.get().addBundle(BLTProperties.BLOCK_PREFIX,BLTClassicDesignerHook.class,BLOCK_BUNDLE_NAME);
 	}
 	
 	public BLTClassicDesignerHook() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		nodeStatusManager = new NodeStatusManager();
-		appRequestHandler = new ApplicationRequestHandler();
+		appRequestHandler = new ModuleRequestHandler();
 	}
 	
 	
 	@Override
 	public void initializeScriptManager(ScriptManager mgr) {
 		super.initializeScriptManager(mgr);
-		mgr.addScriptModule(BLTProperties.APPLICATION_SCRIPT_PACKAGE,ApplicationScriptFunctions.class);
+		mgr.addScriptModule(BLTProperties.CLASSIC_SCRIPT_PACKAGE,ModuleScriptFunctions.class);
 	}
 	
 	// Insert a menu to allow control of database and tag provider.
@@ -94,10 +90,10 @@ public class BLTClassicDesignerHook extends AbstractDesignerModuleHook  {
     public MenuBarMerge getModuleMenu() {
     	JMenuMerge controlMenu = new JMenuMerge(WellKnownMenuConstants.VIEW_MENU_NAME);
     	MenuBarMerge merge = new MenuBarMerge(BLTProperties.MODULE_ID);  // as suggested in javadocs
-    	if( !menuExists(context.getFrame(),INTERFACE_MENU_TITLE) ) {
+    	if( !menuExists(context.getFrame(),BLTProperties.INTERFACE_MENU_TITLE) ) {
     		merge.addSeparator();
 
-    		Action setupAction = new AbstractAction(INTERFACE_MENU_TITLE) {
+    		Action setupAction = new AbstractAction(BLTProperties.INTERFACE_MENU_TITLE) {
     			private static final long serialVersionUID = 5374667367733312464L;
     			public void actionPerformed(ActionEvent ae) {
     				SwingUtilities.invokeLater(new SetupDialogRunner());
@@ -105,8 +101,8 @@ public class BLTClassicDesignerHook extends AbstractDesignerModuleHook  {
     		};
     		controlMenu.add(setupAction);
     	}
-    	if( !menuExists(context.getFrame(),VALIDATION_MENU_TITLE) ) {
-    		Action validateAction = new AbstractAction(VALIDATION_MENU_TITLE) {
+    	if( !menuExists(context.getFrame(),BLTProperties.VALIDATION_MENU_TITLE) ) {
+    		Action validateAction = new AbstractAction(BLTProperties.VALIDATION_MENU_TITLE) {
     			private static final long serialVersionUID = 5374667367733312464L;
     			public void actionPerformed(ActionEvent ae) {
     				SwingUtilities.invokeLater(new ValidationDialogRunner());

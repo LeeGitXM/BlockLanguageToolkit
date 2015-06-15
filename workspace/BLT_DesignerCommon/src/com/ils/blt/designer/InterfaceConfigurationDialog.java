@@ -24,7 +24,7 @@ import javax.swing.WindowConstants;
 
 import net.miginfocom.swing.MigLayout;
 
-import com.ils.blt.common.ApplicationRequestHandler;
+import com.ils.blt.common.ModuleRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.common.sqltags.model.TagProviderMeta;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
@@ -40,7 +40,7 @@ public class InterfaceConfigurationDialog extends JDialog {
 	private final int DIALOG_HEIGHT = 220;
 	private final int DIALOG_WIDTH = 560;
 	private final DesignerContext context;
-	private final ApplicationRequestHandler requestHandler;
+	private final ModuleRequestHandler requestHandler;
 	private final ResourceBundle rb;
 	// These are the widgets that will contain the user selections
 	protected JComboBox<String> mainDatabaseBox;
@@ -55,7 +55,7 @@ public class InterfaceConfigurationDialog extends JDialog {
 		this.context = ctx;
 		this.setTitle("External Interface Configuration");
 		this.rb = ResourceBundle.getBundle("com.ils.blt.designer.designer");  // designer.properties
-		this.requestHandler = new ApplicationRequestHandler();
+		this.requestHandler = new ModuleRequestHandler();
 		setModal(true);
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));

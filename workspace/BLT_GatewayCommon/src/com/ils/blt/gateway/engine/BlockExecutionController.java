@@ -28,7 +28,7 @@ import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.notification.SignalNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
-import com.ils.blt.gateway.common.BasicDiagram;
+import com.ils.blt.gateway.BasicDiagram;
 import com.ils.blt.gateway.tag.TagListener;
 import com.ils.blt.gateway.tag.TagReader;
 import com.ils.blt.gateway.tag.TagWriter;

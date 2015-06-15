@@ -22,8 +22,9 @@ import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
-import com.ils.blt.gateway.common.BasicDiagram;
-import com.ils.blt.gateway.common.BasicRequestHandler;
+import com.ils.blt.gateway.BasicDiagram;
+import com.ils.blt.gateway.BasicRequestHandler;
+import com.ils.blt.gateway.PythonRequestHandler;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ProcessApplication;
 import com.ils.blt.gateway.engine.ProcessFamily;
@@ -202,18 +203,12 @@ public class ClassicRequestHandler extends BasicRequestHandler implements Toolki
 		return state;
 	}
 	
-
-	
-	
-	
 	@Override
 	public String getFamilyName(String uuid) {
 		ProcessFamily fam = pyHandler.getFamily(uuid);
 		return fam.getName();
 	}
 	
-
-
 	/**
 	 * Set the state of every diagram in an application to the specified value.
 	 * @param appname

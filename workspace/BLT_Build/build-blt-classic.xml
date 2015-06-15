@@ -240,7 +240,7 @@
 
 		<!-- Pack200 and then copy the designer, client jars -->
 		<pack200 src="${basedir}/BLT_Build/bin/${BLTModule.prefix}_Client/dist/blt-client.jar" destfile="${basedir}/BLT_Build/temp_modl/blt-client.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
-		<pack200 src="${basedir}/BLT_Build/bin/${BLTModule.prefix}_Designer/dist/blt-designer.jar" destfile="${basedir}/BLT_Build/temp_modl/blt-designer.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
+		<pack200 src="${basedir}/BLT_Build/bin/${BLTModule.prefix}_DesignerCommon/dist/blt-designer.jar" destfile="${basedir}/BLT_Build/temp_modl/blt-designer.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		<pack200 src="${basedir}/BLT_Build/bin/${BLTModule.prefix}_DesignerClassic/dist/blt-classic-designer.jar" destfile="${basedir}/BLT_Build/temp_modl/blt-classic-designer.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		<pack200 src="${basedir}/BLT_Build/bin/${BLTModule.prefix}_Common/dist/blt-common.jar" destfile="${basedir}/BLT_Build/temp_modl/blt-common.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		<pack200 src="${basedir}/../../external/lib/ils-common.jar" destfile="${basedir}/BLT_Build/temp_modl/ils-common.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />

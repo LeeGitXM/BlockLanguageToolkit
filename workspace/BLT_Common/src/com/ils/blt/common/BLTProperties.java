@@ -16,8 +16,9 @@ public interface BLTProperties   {
 	public final static String MODULE_NAME = "BLT";     // See build-blt.xml
 	public final static String SFC_MODULE_ID = "com.ils.sfc"; 
 	
-	/** This is the name of the jar file containing block class definitions */
+	/** This are the names of the jar files containing block class definitions */
 	public final static String BLOCK_JAR_NAME = "block-definition";
+	public final static String SCHEMATIC_BLOCK_JAR_NAME = "schematic-block-definition";
 	
 	public final static String APPLICATION_RESOURCE_TYPE   = "blt.application";
 	public final static String CLASSIC_DIAGRAM_RESOURCE_TYPE = "blt.diagram";
@@ -25,7 +26,8 @@ public interface BLTProperties   {
 	public final static String FOLDER_RESOURCE_TYPE        = "__folder";
 	public final static String SCHEMATIC_DIAGRAM_RESOURCE_TYPE = "blt.schematic.diagram";
 	
-	public final static String APPLICATION_SCRIPT_PACKAGE      = "system.ils.blt.application";
+	public final static String CLASSIC_SCRIPT_PACKAGE      = "system.ils.blt.diagram";
+	public final static String SCHEMATIC_SCRIPT_PACKAGE    = "system.ils.blt.schematic";
 	
 	/** This unique ID represents the root node in the project tree */
 	public static final UUID CLASSIC_ROOT_FOLDER_UUID = UUID
@@ -103,6 +105,10 @@ public interface BLTProperties   {
 	public static final String PALETTE_VIEW_LABEL  = "viewLabel";
 	public static final String PALETTE_VIEW_WIDTH  = "viewWidth";
 	
+	// Dialog Titles
+	public static final String INTERFACE_MENU_TITLE  = "External Interface Configuration";
+	public static final String VALIDATION_MENU_TITLE = "Validate Diagrams";
+	
 	// Name to use for "Good" Quality
 	public static final String QUALITY_GOOD        = "Good";
 	public static final String NOT_FOUND           = "NotFound";
@@ -110,6 +116,11 @@ public interface BLTProperties   {
 	public static final String PREFERENCES_NAME     = "BLTPreferences";    // Preferences collection name
 	public static final String PREF_EXIM_DIRECTORY  = "ExImDirectory";     // Export/import directory
 	public static final String PREF_CONFIG_DIRECTORY= "ConfigDirectory";   // Project properties configuration
+	// These are the names of diagram configurable properties (specific instances saved in HSQLdb)
+	public static final String DIAGRAM_PROPERTY_ROOT_NAME           = "RootName";       // Name of root node in nav tree
+	public static final String DIAGRAM_PROPERTY_CLASSIC_ROOT_NAME   = "ClassicRootName";       // Name of root node in nav tree
+	public static final String DIAGRAM_PROPERTY_SCHEMATIC_ROOT_NAME = "SchematicRootName";       // Name of root node in nav tree
+	
 	// These are the names of toolkit properties that are to be stored in HSQLdb
 	public static final String TOOLKIT_PROPERTY_ACTIVE_BLOCKS       = "EnableActive";       // Enable active dialogs
 	public static final String TOOLKIT_PROPERTY_COMPILED_BLOCKS     = "EnableCompiled";     // Enable schematic dialogs

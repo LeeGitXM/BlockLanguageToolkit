@@ -28,7 +28,7 @@ import javax.swing.table.DefaultTableModel;
 
 import net.miginfocom.swing.MigLayout;
 
-import com.ils.blt.common.ApplicationRequestHandler;
+import com.ils.blt.common.ModuleRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
@@ -108,7 +108,7 @@ public class BlockInternalsViewer extends JDialog {
 	}
 
 	private void queryBlock() {
-		ApplicationRequestHandler handler = new ApplicationRequestHandler();
+		ModuleRequestHandler handler = new ModuleRequestHandler();
 		SerializableBlockStateDescriptor descriptor = handler.getInternalState(diagram.getId().toString(), block.getId().toString());
 		if( descriptor!=null ) {
 			attributes = descriptor.getAttributes();

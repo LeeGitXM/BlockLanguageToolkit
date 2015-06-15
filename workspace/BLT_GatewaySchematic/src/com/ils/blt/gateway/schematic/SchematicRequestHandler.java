@@ -18,8 +18,8 @@ import com.ils.blt.common.block.CoreBlock;
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
-import com.ils.blt.gateway.common.BasicDiagram;
-import com.ils.blt.gateway.common.BasicRequestHandler;
+import com.ils.blt.gateway.BasicDiagram;
+import com.ils.blt.gateway.BasicRequestHandler;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.common.ClassList;
 import com.ils.common.annotation.ExecutableBlock;
@@ -36,14 +36,12 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
  */
 public class SchematicRequestHandler extends BasicRequestHandler implements ToolkitRequestHandler  {
 	private final static String TAG = "SchematicRequestHandler";
-	private final PythonRequestHandler pyHandler;
     
 	/**
 	 * Initialize with instances of the classes to be controlled.
 	 */
 	public SchematicRequestHandler(GatewayContext ctx) {
 		super(ctx);
-		pyHandler = new PythonRequestHandler(this);
 	}
 
 
@@ -131,7 +129,7 @@ public class SchematicRequestHandler extends BasicRequestHandler implements Tool
 	public List<PalettePrototype> getBlockPrototypes() {
 		List<PalettePrototype> results = new ArrayList<>();
 		ClassList cl = new ClassList();
-		List<Class<?>> classes = cl.getAnnotatedClasses(BLTProperties.BLOCK_JAR_NAME, ExecutableBlock.class,"com/ils/block/");
+		List<Class<?>> classes = cl.getAnnotatedClasses(BLTProperties.SCHEMATIC_BLOCK_JAR_NAME, ExecutableBlock.class,"com/ils/block/");
 		for( Class<?> cls:classes) {
 			log.debugf("   found block class: %s",cls.getName());
 			try {

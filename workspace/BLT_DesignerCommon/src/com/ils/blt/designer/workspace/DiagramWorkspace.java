@@ -37,7 +37,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ils.blt.common.ApplicationRequestHandler;
+import com.ils.blt.common.ModuleRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.serializable.SerializableAnchor;
@@ -93,7 +93,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	private static final long serialVersionUID = 4627016159409031941L;
 	public static final String PREFIX = BLTProperties.BLOCK_PREFIX;
 	protected static final DataFlavor BlockDataFlavor = LocalObjectTransferable.flavorForClass(ObservablePropertySet.class);
-	protected final ApplicationRequestHandler handler = new ApplicationRequestHandler();
+	protected final ModuleRequestHandler handler = new ModuleRequestHandler();
 	protected final DesignerContext context;
 	protected final EditActionHandler editActionHandler;
 	protected final ExecutionManager executionEngine;

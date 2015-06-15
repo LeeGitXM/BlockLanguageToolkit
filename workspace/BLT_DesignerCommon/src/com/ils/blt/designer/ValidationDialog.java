@@ -30,7 +30,7 @@ import javax.swing.table.TableModel;
 
 import net.miginfocom.swing.MigLayout;
 
-import com.ils.blt.common.ApplicationRequestHandler;
+import com.ils.blt.common.ModuleRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -51,7 +51,7 @@ public class ValidationDialog extends JDialog {
 	private final int TABLE_WIDTH = 1200;
 	private String[] columnNames = {"Block","Issue"};
 	private List<SerializableBlockStateDescriptor> issues = null;
-	private final ApplicationRequestHandler requestHandler;
+	private final ModuleRequestHandler requestHandler;
 	private final ResourceBundle rb;
 	private JTable table = null;
 	private JPanel internalPanel = null;
@@ -61,7 +61,7 @@ public class ValidationDialog extends JDialog {
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.setTitle("Diagram Validity Analysis");
 		this.rb = ResourceBundle.getBundle("com.ils.blt.designer.designer");  // designer.properties
-		this.requestHandler = new ApplicationRequestHandler();
+		this.requestHandler = new ModuleRequestHandler();
 		setModal(true);
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));

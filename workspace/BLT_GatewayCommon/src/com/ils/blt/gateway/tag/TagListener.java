@@ -20,7 +20,7 @@ import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.CoreBlock;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
-import com.ils.blt.gateway.common.BasicDiagram;
+import com.ils.blt.gateway.BasicDiagram;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.IncomingValueChangeTask;
 import com.ils.blt.gateway.engine.PropertyChangeEvaluationTask;

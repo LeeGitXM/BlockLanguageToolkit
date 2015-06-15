@@ -11,7 +11,7 @@ import org.apache.wicket.markup.html.WebMarkupContainer;
 
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.script.ScriptExtensionManager;
-import com.ils.blt.gateway.common.GatewayRpcDispatcher;
+import com.ils.blt.gateway.GatewayRpcDispatcher;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ModelManager;
 import com.ils.blt.gateway.persistence.ToolkitRecord;
@@ -131,7 +131,7 @@ public class BLTSchematicGatewayHook extends AbstractGatewayModuleHook  {
 	public void initializeScriptManager(ScriptManager mgr) {
 		super.initializeScriptManager(mgr);
 		SchematicScriptFunctions.setRequestHandler(requestHandler);
-		mgr.addScriptModule(BLTProperties.APPLICATION_SCRIPT_PACKAGE, SchematicScriptFunctions.class);
+		mgr.addScriptModule(BLTProperties.SCHEMATIC_SCRIPT_PACKAGE, SchematicScriptFunctions.class);
 	}
 	
 	private static class ToolkitStatus extends AbstractNamedTab {

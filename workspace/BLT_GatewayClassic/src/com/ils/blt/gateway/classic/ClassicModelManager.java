@@ -14,7 +14,7 @@ import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
-import com.ils.blt.gateway.common.BasicDiagram;
+import com.ils.blt.gateway.BasicDiagram;
 import com.ils.blt.gateway.engine.ModelManager;
 import com.ils.blt.gateway.engine.ProcessApplication;
 import com.ils.blt.gateway.engine.ProcessFamily;
@@ -52,6 +52,7 @@ public class ClassicModelManager extends ModelManager  {
 	public ClassicModelManager(GatewayContext ctx) { 
 		super(ctx);
 		this.root = new RootNode(context,BLTProperties.CLASSIC_ROOT_FOLDER_UUID);
+		nodesByUUID.put(root.getSelf(), root);
 	}
 	
 	

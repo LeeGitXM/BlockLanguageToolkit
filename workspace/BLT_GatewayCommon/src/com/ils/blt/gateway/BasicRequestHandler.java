@@ -2,7 +2,7 @@
  *   (c) 2014-2015  ILS Automation. All rights reserved.
  *  
  */
-package com.ils.blt.gateway.common;
+package com.ils.blt.gateway;
 
 import java.util.ArrayList;
 import java.util.Collection;

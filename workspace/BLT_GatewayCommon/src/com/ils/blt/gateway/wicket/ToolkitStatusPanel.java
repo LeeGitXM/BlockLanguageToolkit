@@ -27,7 +27,7 @@ import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 
-import com.ils.blt.gateway.common.BasicDiagram;
+import com.ils.blt.gateway.BasicDiagram;
 import com.ils.blt.gateway.engine.ProcessNode;
 import com.ils.blt.gateway.wicket.content.Content;
 import com.ils.blt.gateway.wicket.content.EditableFolderContent;

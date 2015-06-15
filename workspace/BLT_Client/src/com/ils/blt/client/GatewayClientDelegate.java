@@ -22,7 +22,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  *  method that is invoked.
  */
 public class GatewayClientDelegate implements PushNotificationListener {
-	private static String TAG = "GatewayDelegate: ";
+	private static String TAG = "GatewayClientDelegate: ";
 	private LoggerEx log = null;
 
 	

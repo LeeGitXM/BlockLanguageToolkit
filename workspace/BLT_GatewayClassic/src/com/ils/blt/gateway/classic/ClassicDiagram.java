@@ -18,7 +18,7 @@ import com.ils.blt.common.notification.SignalNotification;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
-import com.ils.blt.gateway.common.BasicDiagram;
+import com.ils.blt.gateway.BasicDiagram;
 import com.ils.common.watchdog.WatchdogTimer;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 

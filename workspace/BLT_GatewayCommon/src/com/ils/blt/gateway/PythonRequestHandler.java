@@ -2,13 +2,12 @@
 e *   (c) 2013-2015  ILS Automation. All rights reserved.
  *  
  */
-package com.ils.blt.gateway.classic;
+package com.ils.blt.gateway;
 
 import java.util.UUID;
 
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.CoreBlock;
-import com.ils.blt.gateway.common.BasicDiagram;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ProcessApplication;
 import com.ils.blt.gateway.engine.ProcessFamily;
@@ -25,9 +24,9 @@ public class PythonRequestHandler   {
 	private static final String TAG = "PythonRequestHandler";
 	private static LoggerEx log = LogUtil.getLogger(PythonRequestHandler.class.getPackage().getName());
 	private final BlockExecutionController controller = BlockExecutionController.getInstance();
-	private final ClassicRequestHandler requestHandler;
+	private final BasicRequestHandler requestHandler;
 	
-	public PythonRequestHandler(ClassicRequestHandler handler) {
+	public PythonRequestHandler(BasicRequestHandler handler) {
 		this.requestHandler = handler;
 	}
 	/**

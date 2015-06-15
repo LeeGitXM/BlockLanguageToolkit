@@ -12,7 +12,7 @@ import org.apache.wicket.markup.html.WebMarkupContainer;
 import com.ils.block.proxy.ProxyHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.script.ScriptExtensionManager;
-import com.ils.blt.gateway.common.GatewayRpcDispatcher;
+import com.ils.blt.gateway.GatewayRpcDispatcher;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ModelManager;
 import com.ils.blt.gateway.persistence.ToolkitRecord;
@@ -131,7 +131,7 @@ public class BLTClassicGatewayHook extends AbstractGatewayModuleHook  {
 	public void initializeScriptManager(ScriptManager mgr) {
 		super.initializeScriptManager(mgr);
 		ClassicScriptFunctions.setRequestHandler(requestHandler);
-		mgr.addScriptModule(BLTProperties.APPLICATION_SCRIPT_PACKAGE, ClassicScriptFunctions.class);
+		mgr.addScriptModule(BLTProperties.CLASSIC_SCRIPT_PACKAGE, ClassicScriptFunctions.class);
 	}
 	
 	private static class ToolkitStatus extends AbstractNamedTab {

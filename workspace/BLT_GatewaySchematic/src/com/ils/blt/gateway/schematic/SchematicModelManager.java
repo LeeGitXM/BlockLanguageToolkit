@@ -12,7 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
-import com.ils.blt.gateway.common.BasicDiagram;
+import com.ils.blt.gateway.BasicDiagram;
 import com.ils.blt.gateway.engine.ModelManager;
 import com.ils.blt.gateway.engine.ProcessNode;
 import com.ils.blt.gateway.engine.RootNode;
@@ -46,7 +46,8 @@ public class SchematicModelManager extends ModelManager  {
 	 */
 	public SchematicModelManager(GatewayContext ctx) { 
 		super(ctx);
-		this.root = new RootNode(context,BLTProperties.SCHEMATIC_ROOT_FOLDER_UUID);
+		this.root = new RootNode(ctx,BLTProperties.SCHEMATIC_ROOT_FOLDER_UUID);
+		nodesByUUID.put(root.getSelf(), root);
 	}
 	
 	

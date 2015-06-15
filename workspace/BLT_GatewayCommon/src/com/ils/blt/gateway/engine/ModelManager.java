@@ -17,7 +17,7 @@ import com.ils.blt.common.block.CoreBlock;
 import com.ils.blt.common.connection.Connection;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
-import com.ils.blt.gateway.common.BasicDiagram;
+import com.ils.blt.gateway.BasicDiagram;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.project.ProjectVersion;
@@ -66,7 +66,6 @@ public abstract class ModelManager implements ProjectListener  {
 		nodesByKey = new HashMap<ProjResKey,ProcessNode>();
 		orphansByUUID = new HashMap<UUID,ProcessNode>();
 		nodesByUUID = new HashMap<UUID,ProcessNode>();
-		nodesByUUID.put(root.getSelf(), root);
 	}
 	
 	/**

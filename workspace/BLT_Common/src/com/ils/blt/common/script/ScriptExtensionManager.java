@@ -14,7 +14,7 @@ import org.python.core.PyDictionary;
 import org.python.core.PyList;
 import org.python.core.PyObject;
 
-import com.ils.blt.common.ApplicationRequestHandler;
+import com.ils.blt.common.ModuleRequestHandler;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.common.GeneralPurposeDataContainer;
@@ -37,7 +37,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  */
 public class ScriptExtensionManager {
 	private static String TAG = "ScriptExtensionManager";
-	private final ApplicationRequestHandler handler;
+	private final ModuleRequestHandler handler;
 	private final LoggerEx log;
 	private static ScriptExtensionManager instance = null;
 	private final JavaToPython j2p;
@@ -54,7 +54,7 @@ public class ScriptExtensionManager {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		// Initialize map with entry points and call list
 		scriptMap = new HashMap<>();
-		handler = new ApplicationRequestHandler();
+		handler = new ModuleRequestHandler();
 		j2p = new JavaToPython();
 		p2j = new PythonToJava();
 		flavors = new ArrayList<>();

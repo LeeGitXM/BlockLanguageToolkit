@@ -33,7 +33,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  *  
  *  Each request is relayed to the Gateway scope via an RPC call.
  */
-public class ApplicationRequestHandler implements ToolkitRequestHandler {
+public class ModuleRequestHandler implements ToolkitRequestHandler {
 	private final static String TAG = "ApplicationRequestHandler";
 	private final LoggerEx log;
 
@@ -41,7 +41,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * Constructor adds common attributes that are needed to generate unique keys to identify
 	 * blocks and connectors.
 	 */
-	public ApplicationRequestHandler()  {
+	public ModuleRequestHandler()  {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 	}
 
