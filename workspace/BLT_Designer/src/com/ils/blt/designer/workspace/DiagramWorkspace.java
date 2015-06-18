@@ -893,10 +893,12 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			super(PREFIX+".ResetBlock",IconUtil.getIcon("refresh"));  // preferences
 			this.block = blk;
 		}
-
+		/**
+		 * Block name is unique within a diagram
+		 */
 		public void actionPerformed(ActionEvent e) {
 			ProcessDiagramView pdv = getActiveDiagram();
-			handler.resetBlock(pdv.getId().toString(),block.getId().toString());
+			handler.resetBlock(pdv.getId().toString(),block.getName());
 		}
 	}
 	/**

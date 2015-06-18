@@ -3,10 +3,10 @@
 #  - we start from the top and work down testing one-at-a-time
 #
 MIGRATION=${GIT_REPO}/blt/migration
-FIL=DO_SPLIT_FLYING_SWITCH-GDA
-#FIL=DO_C_FLYING_SWITCH-GDA
-#FIL=DO_SERIES_FLYING_SWITCH-GDA
-#FIL=DO_SINGLE_FLYING_SWITCH-GDA
-DIR=${MIGRATION}/procs/g2/vistalon
-OUTDIR=${MIGRATION}/procs/ignition/vistalon
+FIL=DO_SPLIT_FLYING_SWITCH-GDA.txt
+FIL=DO_C_FLYING_SWITCH-GDA.txt
+#FIL=DO_SERIES_FLYING_SWITCH-GDA.txt
+#FIL=DO_SINGLE_FLYING_SWITCH-GDA.txt
+DIR=${MIGRATION}/procs/g2/vistalon/calculation
+OUTDIR=${MIGRATION}/procs/ignition
 ${MIGRATION}/translate.calc $DIR/$FIL $OUTDIR

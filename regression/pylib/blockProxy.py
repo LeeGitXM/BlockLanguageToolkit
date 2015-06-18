@@ -8,14 +8,44 @@ import system.ils.blt.application as application
 # dpath - the diagram path
 # blockName - name of the block within the diagram
 # attName - name of the desired parameter in the internal structure
-def internalValue(common,dpath,blockName,attName):
+def internalAttribute(common,dpath,blockName,attName):
 	diagram = getDiagram(dpath)
-	for block in diagram.getProcessBlocks:
-		if block.getName == blockName:
+	for block in diagram.getProcessBlocks():
+		if block.getName() == blockName:
 			attributes = block.getInternalStatus().getAttributes()
 			attribute = attributes.get(attName)
 			common['result'] = attribute
-			return 
+	return 
+			
+# Internal status is a SerializableBlockStateDescriptor
+# -- the descriptor has methods getAttributes(), getBuffer()
+# -- both return lists of dictionaries.
+# dpath - the diagram path
+# blockName - name of the block within the diagram
+def internalBufferSize(common,dpath,blockName):
+	diagram = getDiagram(dpath)
+	for block in diagram.getProcessBlocks():
+		print block.getName()
+		if block.getName() == blockName:
+			size = block.getInternalStatus().getBuffer().size()
+			common['result'] = size
+	return 
+
+# Internal status is a SerializableBlockStateDescriptor
+# -- the descriptor has methods getAttributes(), getBuffer()
+# -- both return lists of dictionaries.
+# dpath - the diagram path
+# blockName - name of the block within the diagram
+# attName - name of the attribute to read from the dictionary
+# index - position in buffer (zero-based)
+def internalBufferValue(common,dpath,blockName,attName,index):
+	diagram = getDiagram(dpath)
+	for block in diagram.getProcessBlocks():
+		print block.getName()
+		if block.getName() == blockName:
+			map = block.getInternalStatus().getBuffer().get(int(index))
+			common['result'] = map.get(attName)
+	return 
 			
 # Return the value of a property of a block
 def getBlockProperty(common,dpath,blockName,propName):

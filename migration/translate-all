@@ -5,19 +5,13 @@
 #
 BLT=${GIT_REPO}/blt
 PROCS=${BLT}/migration/procs
-APP=$BLT/migration/translate.calc
-mkdir -p $INDIR
-mkdir -p $OUTDIR
+OUTDIR=${PROCS}/ignition/xom/vistalon
 cd $BLT/migration
 ./clear-procs
 ./copy-procs
-cd $INDIR
 echo "Processing Vistalon Calculation Methods"
-INDIR=${PROCS}/g2/vistalon/calculation
-OUTDIR=${PROCS}/ignition/vistalon
-cd ${INDIR}
-for fil in *.txt
-do
-	echo "Processing $fil ..."
-    $APP $INDIR/$fil $OUTDIR
-done
+mkdir -p $OUTDIR
+./translate-cstr
+cd ${PROCS}/ignition/xom/vistalon
+cp -a * ${GIT_REPO}/xom-python/XOM_Python/src/xom/vistalon
+echo "Translated procedures copied to XOM-PYTHON repository. Checkin and commit."
