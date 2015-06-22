@@ -10,9 +10,10 @@ then
 fi
 cd ${GIT_REPO}/blt
 BLT=`pwd`
+SFC=`${GIT_REPO}/sfc
 LIB=${GIT_REPO}/external/lib
 JAR=${LIB}/blt-migration.jar
-DB=${BLT}/migration/mdb/conversion.db
+DB=${SFC}/migration/mdb/conversion.db
 # Use for debugging - ruins output file however.
 #cat $1 | java -cp ${JAR} -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000 -Dlog.level=INFO -Droot.class=APPLICATION com.ils.blt.migration.Migrator ${DB}
 cat $1 | java -cp ${JAR} -Dlog.level=INFO -Droot.class=APPLICATION com.ils.blt.migration.Migrator ${DB} > $2

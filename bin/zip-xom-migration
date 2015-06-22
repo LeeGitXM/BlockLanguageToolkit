@@ -1,6 +1,8 @@
 #!/bin/sh
 #
 # Save the migration files into a zip for distribution.
+# --- actually do the migration. NOTE: migration 
+#     database is in the SFC area (shared)
 #
 #set -x
 SVN=~/Development/ils/svn/EMChemicals/Release/src
@@ -10,12 +12,13 @@ TMP=${GIT_REPO}/$VERS
 rm -rf $TMP
 cd ${GIT_REPO}
 mkdir -p $TMP
-cd ${GIT_REPO}/blt/migration
+# Share name conversion library with SFC
+cd ${GIT_REPO}/sfc/migration
 rm -f mdb/*.db
 rm -rf tags
 cd mdb
 ./mkdatabase
-cd ..
+cd ${GIT_REPO}/blt/migration
 ./clear-json
 ./copy-json
 ./migrate-all

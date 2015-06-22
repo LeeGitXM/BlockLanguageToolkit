@@ -9,9 +9,10 @@ then
 fi
 cd ${GIT_REPO}/blt
 BLT=`pwd`
+SFC=${GIT_REPO}/sfc
 LIB=${GIT_REPO}/external/lib
 JAR=${LIB}/g2-translation.jar
-DB=${BLT}/migration/mdb/conversion.db
+DB=${SFC}/migration/mdb/conversion.db
 OUTDIR=$2
 mkdir -p ${OUTDIR}
 java -cp ${JAR} -Dlog.level=DEBUG com.ils.python.translation.G2ProcedureTranslator $1 ${OUTDIR} ${DB} 
