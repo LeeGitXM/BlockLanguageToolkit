@@ -25,7 +25,7 @@ public class BLTClientHook implements ClientModuleHook {
 	 */
 	@Override
 	public void initializeScriptManager(ScriptManager mgr) {
-		mgr.addScriptModule(BLTProperties.APPLICATION_SCRIPT_PACKAGE,ApplicationScriptFunctions.class);
+		mgr.addScriptModule(BLTProperties.DIAGRAM_SCRIPT_PACKAGE,ApplicationScriptFunctions.class);
 	}
 
 	@Override

@@ -132,7 +132,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	@Override
 	public void initializeScriptManager(ScriptManager mgr) {
 		super.initializeScriptManager(mgr);
-		mgr.addScriptModule(BLTProperties.APPLICATION_SCRIPT_PACKAGE, GatewayScriptFunctions.class);
+		mgr.addScriptModule(BLTProperties.DIAGRAM_SCRIPT_PACKAGE, GatewayScriptFunctions.class);
 	}
 	
 	private static class ToolkitStatus extends AbstractNamedTab {

@@ -11,7 +11,8 @@ cd $BLT/migration
 ./copy-procs
 echo "Processing Vistalon Calculation Methods"
 mkdir -p $OUTDIR
-./translate-cstr
+./translate-cstr all
+./translate-crx all
 cd ${PROCS}/ignition/xom/vistalon
 cp -a * ${GIT_REPO}/xom-python/XOM_Python/src/xom/vistalon
 echo "Translated procedures copied to XOM-PYTHON repository. Checkin and commit."

@@ -1,11 +1,11 @@
 # Copyright 2015. ILS Automation. All rights reserved.
 
-import system.ils.blt.application as application
+import system.ils.blt.diagram as script
 
 # 
 # We assume that the application record has already been inserted
 def configureForTest(common,appName,famName):
-	handler = application.getHandler()
+	handler = script.getHandler()
 	db = handler.getDefaultDatabase(name)
 
 	appId=insertApplication(name,vfuConsoleId,db)
@@ -15,7 +15,7 @@ def configureForTest(common,appName,famName):
 # if the family is found in the default database.
 # Argument is the family name
 def family(common,app,family):
-	handler = application.getHandler()
+	handler = script.getHandler()
 	db = handler.getDefaultDatabase(name)
 	SQL = "SELECT FamilyId FROM DtFamily "\
           " WHERE Application = '%s' "\
@@ -32,7 +32,7 @@ def family(common,app,family):
 # if the application is found in the default database.
 # Argument is the application name
 def exists(common,name):
-	handler = application.getHandler()
+	handler = script.getHandler()
 	db = handler.getDefaultDatabase(name)
 	SQL = "SELECT ApplicationId FROM DtApplication "\
           " WHERE Application = '%s';" % name
@@ -46,7 +46,7 @@ def exists(common,name):
 #  This method refers to an application node in the Nav tree
 def setState(common,name,state):
 	print name,":",state
-	application.setApplicationState(name,state)
+	script.setApplicationState(name,state)
 # 
 # =============================== Helper Methods =========================
 # These are not directly callable from a test script

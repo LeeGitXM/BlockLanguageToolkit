@@ -24,7 +24,7 @@ public interface BLTProperties   {
 	public final static String FAMILY_RESOURCE_TYPE        = "blt.family";
 	public final static String FOLDER_RESOURCE_TYPE        = "__folder";
 	
-	public final static String APPLICATION_SCRIPT_PACKAGE      = "system.ils.blt.application";
+	public final static String DIAGRAM_SCRIPT_PACKAGE      = "system.ils.blt.diagram";
 	
 	/** This unique ID represents the root node in the project tree */
 	public static final UUID ROOT_FOLDER_UUID = UUID

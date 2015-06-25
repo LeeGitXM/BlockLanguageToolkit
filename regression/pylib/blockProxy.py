@@ -1,6 +1,6 @@
 # Copyright 2015. ILS Automation. All rights reserved.
 # Operations on a block
-import system.ils.blt.application as application
+import system.ils.blt.diagram as script
 
 # Internal status is a SerializableBlockStateDescriptor
 # -- the descriptor has methods getAttributes(), getBuffer()
@@ -81,7 +81,7 @@ def getBlockState(common,dpath,blockName):
 # Reset an individual block
 def reset(common,dpath,blockName):
 	diagid = getDiagram(dpath).getSelf().toString()
-	application.resetBlock(diagid,blockName)
+	script.resetBlock(diagid,blockName)
 
 # -------------------------- Helper methods ----------------------
 # Return a ProcessDiagram at the specified path
@@ -90,8 +90,8 @@ def getDiagram(dpath):
 	# The descriptor paths are :-separated, the input uses /
 	# the descriptor path starts with ":root:", 
 	# the input starts with the application
-	descriptors = application.getDiagramDescriptors()
-	handler = application.getHandler()
+	descriptors = script.getDiagramDescriptors()
+	handler = script.getHandler()
 	for desc in descriptors:
 		path = desc.path[6:]
 		path = path.replace(":","/")
