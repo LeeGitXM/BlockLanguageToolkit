@@ -28,7 +28,6 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
  */
 @ExecutableBlock
 public class Log extends AbstractProcessBlock implements ProcessBlock {
-	private final String TAG = "Log";
 	protected double value = Double.NaN;
 	protected final Log10 log10;
 	
@@ -98,7 +97,7 @@ public class Log extends AbstractProcessBlock implements ProcessBlock {
 					}
 				}
 				catch(NumberFormatException nfe) {
-					log.warnf("%s.acceptValue: Unable to convert incoming value to a double (%s)",TAG,nfe.getLocalizedMessage());
+					log.warnf("%s.acceptValue: Unable to convert incoming value to a double (%s)",getName(),nfe.getLocalizedMessage());
 					qv = new BasicQualifiedValue(new Double(Double.NaN),new BasicQuality(nfe.getLocalizedMessage(),Quality.Level.Bad),qv.getTimestamp());
 				}
 			}

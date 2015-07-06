@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="blockdef.makejar" default="all" basedir=".">
+	<property name="jar.dir" value="${basedir}/../../../external/lib" />
+	<property name="sdk.dir" value="${basedir}/../../../ignition-77/lib" />
+	<property name="jar.name" value="block-definition.jar" />
+	<property name="build.dir" value="bin" />
+	<property name="src.dir" value="src" />
+	
+	<path id="blk-classpath">
+	   <fileset dir="${jar.dir}">
+	      <include name="*.jar"/>
+	   </fileset>
+		<fileset dir="${sdk.dir}">
+			 <include name="*.jar"/>
+		</fileset>
+	   <pathelement path="${build.dir}"/>
+	</path>
+	
+	<!-- This target will build the Block Definition library and deploy it to the local filesystem -->
+	<target name="all" depends="clean, build, jar" />
+	
+	<!-- Remove the existing target -->
+	<target name="clean" description="Remove existing build products">
+		<delete file="${jar.dir}/${jar.name}" />
+        <delete>
+            <fileset dir="${build.dir}">
+                <include name="**/*.class"/>
+            </fileset>
+        </delete>
+	</target>
+	
+	<!-- Compile the library -->
+	<target name="build" description="Compile the source">
+		<mkdir dir="${build.dir}"/>
+		<javac destdir="${build.dir}" source="1.6" target="1.6" debug="true" debuglevel="lines,vars,source">
+		     <src path="${src.dir}"/>
+		     <classpath refid="blk-classpath"/>
+		</javac>
+	</target>
+	
+	<target name ="jar" description="Create a jar for the Block Definition library">
+    	<jar destfile="${jar.dir}/${jar.name}" includes="**/*.class" basedir="bin"/>
+	</target>
+</project>

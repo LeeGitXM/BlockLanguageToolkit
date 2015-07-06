@@ -58,7 +58,7 @@ import com.jidesoft.docking.DockingManager;
 public class BLTClassicDesignerHook extends AbstractDesignerModuleHook  {
 	private static final String TAG = "BLTDesignerHook";
 	public static String HOOK_BUNDLE_NAME   = "designer";      // Properties file is designer.properties
-	public static String PREFIX = BLTProperties.BUNDLE_PREFIX; // Properties is accessed by this prefix
+	public static String PREFIX = BLTProperties.CUSTOM_PREFIX; // Properties is accessed by this prefix
 
 	private GeneralPurposeTreeNode rootNode = null;
 	private DesignerContext context = null;
@@ -69,7 +69,7 @@ public class BLTClassicDesignerHook extends AbstractDesignerModuleHook  {
 	
 	// Register separate properties files for designer things and block things
 	static {
-		BundleUtil.get().addBundle(BLTProperties.BUNDLE_PREFIX,BLTClassicDesignerHook.class,HOOK_BUNDLE_NAME);
+		BundleUtil.get().addBundle(BLTProperties.CUSTOM_PREFIX,BLTClassicDesignerHook.class,HOOK_BUNDLE_NAME);
 	}
 	
 	public BLTClassicDesignerHook() {
@@ -138,7 +138,7 @@ public class BLTClassicDesignerHook extends AbstractDesignerModuleHook  {
 
 			// Populate the palette
 			PaletteItemGroup group = null;
-			String paletteName = BundleUtil.get().getString(PREFIX+".Palette.Name");
+			String paletteName = BundleUtil.get().getStringLenient(PREFIX+".Palette.Name");
 			if ((group = palette.getGroup(paletteName)) == null) {
 				group = palette.addGroup(paletteName);
 			}
@@ -154,13 +154,13 @@ public class BLTClassicDesignerHook extends AbstractDesignerModuleHook  {
 			JavaBeanPaletteItem jbpi = null;
 			try {
 				jbpi = new JavaBeanPaletteItem(DiagramViewer.class) {
-					public String getShortDescription() { return BundleUtil.get().getString(BLTProperties.BLOCK_PREFIX+".DiagramViewer.Desc"); }
-					public String getDisplayName() { return BundleUtil.get().getString(BLTProperties.BLOCK_PREFIX+".DiagramViewer.Display"); }
+					public String getShortDescription() { return BundleUtil.get().getStringLenient(BLTProperties.CUSTOM_PREFIX+".DiagramViewer.Desc"); }
+					public String getDisplayName() { return BundleUtil.get().getStringLenient(BLTProperties.CUSTOM_PREFIX+".DiagramViewer.Display"); }
 				};
 				group.addPaletteItem(jbpi);
 				jbpi =new JavaBeanPaletteItem(RecommendationMap.class){
-					public String getShortDescription() { return BundleUtil.get().getString(BLTProperties.BLOCK_PREFIX+".RecommendationMap.Desc"); }
-					public String getDisplayName() { return BundleUtil.get().getString(BLTProperties.BLOCK_PREFIX+".RecommendationMap.Display"); }
+					public String getShortDescription() { return BundleUtil.get().getStringLenient(BLTProperties.CUSTOM_PREFIX+".RecommendationMap.Desc"); }
+					public String getDisplayName() { return BundleUtil.get().getStringLenient(BLTProperties.CUSTOM_PREFIX+".RecommendationMap.Display"); }
 				};
 				group.addPaletteItem(jbpi);
 			}

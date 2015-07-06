@@ -35,7 +35,6 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  */
 @ExecutableBlock
 public class HighLimitSampleCount extends AbstractProcessBlock implements ProcessBlock {
-	private final static String TAG = "HighValuePattern";
 	private double limit;
 	private final static int DEFAULT_BUFFER_SIZE = 1;
 	private final FixedSizeQueue<QualifiedValue> queue;
@@ -114,7 +113,7 @@ public class HighLimitSampleCount extends AbstractProcessBlock implements Proces
 		String port = vcn.getConnection().getDownstreamPortName();
 		if( port.equals(BlockConstants.IN_PORT_NAME) ) {
 			QualifiedValue qv = vcn.getValue();
-			log.infof("%s.acceptValue: Received %s",TAG,qv.getValue().toString());
+			log.infof("%s.acceptValue: Received %s",getName(),qv.getValue().toString());
 			if( qv.getQuality().isGood() ) {
 				queue.add(qv);
 				TruthValue result = checkPassConditions(state);
@@ -186,7 +185,7 @@ public class HighLimitSampleCount extends AbstractProcessBlock implements Proces
 				limit = Double.parseDouble(event.getNewValue().toString());
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert limit to a double (%s)",TAG,nfe.getLocalizedMessage());
+				log.warnf("%s: propertyChange Unable to convert limit to a double (%s)",getName(),nfe.getLocalizedMessage());
 			}
 		}
 		else if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_DEADBAND)) {
@@ -194,7 +193,7 @@ public class HighLimitSampleCount extends AbstractProcessBlock implements Proces
 				deadband = Double.parseDouble(event.getNewValue().toString());
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s.propertyChange: Unable to convert deadband to a double (%s)",TAG,nfe.getLocalizedMessage());
+				log.warnf("%s.propertyChange: Unable to convert deadband to a double (%s)",getName(),nfe.getLocalizedMessage());
 			}
 		}
 		else if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_FILL_REQUIRED)) {
@@ -205,7 +204,7 @@ public class HighLimitSampleCount extends AbstractProcessBlock implements Proces
 				hysteresis = HysteresisType.valueOf(event.getNewValue().toString().toUpperCase());
 			}
 			catch(IllegalArgumentException iae) {
-				log.warnf("%s.propertyChange: Unable to convert hysteresis (%s)",TAG,iae.getLocalizedMessage());
+				log.warnf("%s.propertyChange: Unable to convert hysteresis (%s)",getName(),iae.getLocalizedMessage());
 			}
 		}
 		else if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE) ) {
@@ -218,7 +217,7 @@ public class HighLimitSampleCount extends AbstractProcessBlock implements Proces
 				}
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert sample size to an integer (%s)",TAG,nfe.getLocalizedMessage());
+				log.warnf("%s: propertyChange Unable to convert sample size to an integer (%s)",getName(),nfe.getLocalizedMessage());
 			}
 		}
 		else if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_TRIGGER_COUNT) ) {
@@ -227,11 +226,11 @@ public class HighLimitSampleCount extends AbstractProcessBlock implements Proces
 				triggerCount = Integer.parseInt(event.getNewValue().toString());
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert trigger count to an integer (%s)",TAG,nfe.getLocalizedMessage());
+				log.warnf("%s: propertyChange Unable to convert trigger count to an integer (%s)",getName(),nfe.getLocalizedMessage());
 			}
 		}
 		else {
-			log.warnf("%s.propertyChange:Unrecognized property (%s)",TAG,propertyName);
+			log.warnf("%s.propertyChange:Unrecognized property (%s)",getName(),propertyName);
 		}
 	}
 	/**
@@ -299,7 +298,7 @@ public class HighLimitSampleCount extends AbstractProcessBlock implements Proces
 					if( val>threshold ) count++;
 				}
 				catch(NumberFormatException nfe) {
-					log.warnf("%s:checkPassConditions detected not-a-number in queue (%s), ignored",TAG,nfe.getLocalizedMessage());
+					log.warnf("%s:checkPassConditions detected not-a-number in queue (%s), ignored",getName(),nfe.getLocalizedMessage());
 				}
 			}
 		}

@@ -66,7 +66,7 @@ public class ClassicDiagramWorkspace extends DiagramWorkspace                   
 		tabbedPalette.setInitMode(DockContext.STATE_FRAMEDOCKED);
 		tabbedPalette.setInitSide(DockContext.DOCK_SIDE_NORTH);
 		tabbedPalette.setInitIndex(0);
-		tabbedPalette.setTitle(BundleUtil.get().getString(PREFIX+".Palette.Title"));
+		tabbedPalette.setTitle(BundleUtil.get().getStringLenient(PREFIX+".Palette.Title"));
 		tabbedPalette.setTabTitle(PREFIX+".Palette.Tab.Title");
 		tabbedPalette.setSideTitle("SideTitle");
 		tabbedPalette.putClientProperty("menu.text", PREFIX+".Palette.Title");

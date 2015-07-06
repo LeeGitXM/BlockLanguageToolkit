@@ -61,7 +61,7 @@ import com.inductiveautomation.ignition.designer.navtree.model.FolderNode;
 public abstract class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInterface, ProjectChangeListener {
 	protected static final String TAG = "GeneralPurposeTreeNode";
 	protected static final int OFFSET = 100;
-	protected static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
+	protected static final String PREFIX = BLTProperties.CUSTOM_PREFIX;  // Required for some defaults
 	protected final LoggerEx logger = LogUtil.getLogger(getClass().getPackage().getName());
 	protected boolean dirty = false;
 	protected final DiagramWorkspace workspace;

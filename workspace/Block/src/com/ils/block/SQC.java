@@ -368,7 +368,6 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		SerializableBlockStateDescriptor descriptor = super.toDescriptor();
 		Map<String,String> attributes = descriptor.getAttributes();
 		attributes.put(BLTProperties.BLOCK_ATTRIBUTE_TARGET,String.valueOf(mean));
-		descriptor.setAttributes(attributes);
 		return descriptor;
 	}
 	/**

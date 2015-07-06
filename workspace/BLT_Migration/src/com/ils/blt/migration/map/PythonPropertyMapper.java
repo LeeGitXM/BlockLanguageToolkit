@@ -112,7 +112,7 @@ public class PythonPropertyMapper {
 			Statement statement = cxn.createStatement();
 			statement.setQueryTimeout(30);  // set timeout to 30 sec.
 
-			rs = statement.executeQuery("select * from PythonPrototypes");
+			rs = statement.executeQuery("select * from BltPythonPrototypes");
 			while(rs.next())
 			{
 				String blockClass = rs.getString("BlockClass");
@@ -145,7 +145,7 @@ public class PythonPropertyMapper {
 			Statement statement = cxn.createStatement();
 			statement.setQueryTimeout(30);  // set timeout to 30 sec.
 
-			rs = statement.executeQuery("select * from PythonBlockProperties");
+			rs = statement.executeQuery("select * from BltPythonBlockProperties");
 			// We really need arrays. Use lists as we iterate through database.
 			Map<String,List<BlockProperty>> propertyListMap = new HashMap<String,List<BlockProperty>>();
 			while(rs.next())

@@ -34,7 +34,5 @@ public class SerializableBlockStateDescriptor implements Serializable {
 	public String getIdString() {return idString;}
 	public void setIdString(String idString) {this.idString = idString;}
 	public Map<String, String> getAttributes() {return attributes;}
-	public void setAttributes(Map<String, String> attributes) {this.attributes = attributes;}
 	public List<Map<String, String>> getBuffer() {return buffer;}
-	public void setBuffer(List<Map<String, String>> buffer) {this.buffer = buffer;}
 }

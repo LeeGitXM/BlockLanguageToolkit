@@ -91,7 +91,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	protected static final String TAG = "DiagramWorkspace";
 	private static final String key   = "DiagramWorkspace";
 	private static final long serialVersionUID = 4627016159409031941L;
-	public static final String PREFIX = BLTProperties.BLOCK_PREFIX;
+	public static final String PREFIX = BLTProperties.CUSTOM_PREFIX;
 	protected static final DataFlavor BlockDataFlavor = LocalObjectTransferable.flavorForClass(ObservablePropertySet.class);
 	protected final ModuleRequestHandler handler = new ModuleRequestHandler();
 	protected final DesignerContext context;
@@ -695,10 +695,10 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			super(PREFIX+".ResetBlock",IconUtil.getIcon("refresh"));  // preferences
 			this.block = blk;
 		}
-
+		// Name is guaranteed to be unique within a diagram
 		public void actionPerformed(ActionEvent e) {
 			ProcessDiagramView pdv = getActiveDiagram();
-			handler.resetBlock(pdv.getId().toString(),block.getId().toString());
+			handler.resetBlock(pdv.getId().toString(),block.getName());
 		}
 	}
 	/**

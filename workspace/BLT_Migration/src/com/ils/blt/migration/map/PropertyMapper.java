@@ -1,4 +1,4 @@
-package com.ils.blt.migration.map;
+ZZpackage com.ils.blt.migration.map;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -44,7 +44,7 @@ public class PropertyMapper {
 			{
 				String g2Class = rs.getString("G2Class");
 				String g2Property = rs.getString("G2Property");
-				String iProperty = rs.getString("Name");
+				String iProperty = rs.getString("Property");
 				String key = makePropertyMapKey(g2Class,g2Property);
 				propertyMap.put(key,iProperty);
 			}
