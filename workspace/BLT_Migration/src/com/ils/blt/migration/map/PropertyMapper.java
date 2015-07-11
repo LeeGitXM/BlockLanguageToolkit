@@ -1,4 +1,4 @@
-ZZpackage com.ils.blt.migration.map;
+package com.ils.blt.migration.map;
 
 import java.sql.Connection;
 import java.sql.ResultSet;

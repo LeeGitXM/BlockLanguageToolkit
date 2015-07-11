@@ -16,8 +16,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
 
-import com.ils.blt.common.ModuleScriptFunctions;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.ModuleScriptFunctions;
 import com.ils.blt.common.ToolkitRequestHandler;
 import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.designer.NodeStatusManager;
@@ -30,6 +30,7 @@ import com.ils.blt.designer.SetupDialog;
 import com.ils.blt.designer.ValidationDialog;
 import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
 import com.ils.blt.designer.schematic.workspace.SchematicDiagramWorkspace;
+import com.ils.blt.designer.search.BLTSearchProvider;
 import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
@@ -58,6 +59,7 @@ public class BLTSchematicDesignerHook extends AbstractDesignerModuleHook  {
 	private SchematicDiagramWorkspace workspace = null;
 	private ToolkitRequestHandler appRequestHandler = null;
 	private final NodeStatusManager nodeStatusManager;
+	private BLTSearchProvider searchProvider = null;
 	
 	// Register separate properties files for designer things and block things
 	static {
@@ -114,7 +116,7 @@ public class BLTSchematicDesignerHook extends AbstractDesignerModuleHook  {
 		ResourceSaveManager.setup(ctx,nodeStatusManager,appRequestHandler);
 		context.addBeanInfoSearchPath("com.ils.blt.designer.component.beaninfos");
 		
-
+		
 		// Initialize all the script modules from parameters stored in the ORM.
 		// We use all combinations of classes/flavors.
 		ScriptExtensionManager sem = ScriptExtensionManager.getInstance();
@@ -136,6 +138,9 @@ public class BLTSchematicDesignerHook extends AbstractDesignerModuleHook  {
 		// ready when diagrams are displayed. The constructor is sufficient.
 		NotificationHandler.getInstance();
 		WorkspaceRepainter.setup(ctx,workspace);
+		// Configure find/replace
+		searchProvider = new BLTSearchProvider(context,rootNode.getName(),appRequestHandler,nodeStatusManager);
+		context.registerSearchProvider(searchProvider);
 	}
 	
 	public NodeStatusManager getNavTreeStatusManager() { return nodeStatusManager; }

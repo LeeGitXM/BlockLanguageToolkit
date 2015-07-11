@@ -7,6 +7,7 @@ run: average.txt
 run: comparisons.txt
 run: dataconditioner.txt
 run: gain.txt
+run: highlimit.txt
 run: inhibit.txt
 run: logicfilter.txt
 run: persistence.txt

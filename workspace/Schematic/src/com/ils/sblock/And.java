@@ -5,6 +5,8 @@ package com.ils.sblock;
 
 import java.util.UUID;
 
+import com.ils.blt.common.annotation.CompilableBlock;
+import com.ils.blt.common.annotation.ExecutableBlock;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
@@ -12,13 +14,12 @@ import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
-import com.ils.common.annotation.ExecutableBlock;
 
 /**
  * This class emits the "and" of its inputs. Synchronizing
  * is available. Inputs and outputs are truth-values.
  */
-@ExecutableBlock
+@CompilableBlock
 public class And extends AbstractSchematicBlock implements SchematicBlock {
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.

@@ -18,9 +18,9 @@ import javax.swing.SwingUtilities;
 
 import com.ils.blt.client.component.diagview.DiagramViewer;
 import com.ils.blt.client.component.recmap.RecommendationMap;
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.ModuleRequestHandler;
 import com.ils.blt.common.ModuleScriptFunctions;
-import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.ToolkitRequestHandler;
 import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.designer.NodeStatusManager;
@@ -33,6 +33,7 @@ import com.ils.blt.designer.SetupDialog;
 import com.ils.blt.designer.ValidationDialog;
 import com.ils.blt.designer.classic.workspace.ClassicDiagramWorkspace;
 import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
+import com.ils.blt.designer.search.BLTSearchProvider;
 import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.inductiveautomation.factorypmi.designer.palette.model.DefaultPaletteItemGroup;
 import com.inductiveautomation.ignition.common.BundleUtil;
@@ -66,6 +67,7 @@ public class BLTClassicDesignerHook extends AbstractDesignerModuleHook  {
 	private ClassicDiagramWorkspace workspace = null;
 	private ToolkitRequestHandler appRequestHandler = null;
 	private final NodeStatusManager nodeStatusManager;
+	private BLTSearchProvider searchProvider = null;
 	
 	// Register separate properties files for designer things and block things
 	static {
@@ -192,6 +194,9 @@ public class BLTClassicDesignerHook extends AbstractDesignerModuleHook  {
 		// Query the gateway for latest notifications from all blocks
 		appRequestHandler.triggerStatusNotifications();
 		WorkspaceRepainter.setup(ctx,workspace);
+		// Configure find/replace
+		searchProvider = new BLTSearchProvider(context,rootNode.getName(),appRequestHandler,nodeStatusManager);
+		context.registerSearchProvider(searchProvider);
 	}
 	
 	public NodeStatusManager getNavTreeStatusManager() { return nodeStatusManager; }

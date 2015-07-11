@@ -25,7 +25,6 @@ public class MockDiagram extends ClassicDiagram {
 	private static final long serialVersionUID = 1603451661866792378L;
 	private static String TAG = "MockDiagram";
 	private ProcessBlock uut = null;    // Unit under test
-	private final BlockExecutionController controller;
 	
 	/**
 	 * Constructor: Create a model that encapsulates the structure of the blocks and connections
@@ -35,7 +34,6 @@ public class MockDiagram extends ClassicDiagram {
 	 */
 	public MockDiagram(SerializableDiagram diagm,UUID parent,long projId) { 
 		super(diagm,parent,projId);
-		this.controller = BlockExecutionController.getInstance();
 	}
 
 	public void addBlock(ProcessBlock block) {

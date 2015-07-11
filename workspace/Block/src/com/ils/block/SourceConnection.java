@@ -6,11 +6,11 @@ package com.ils.block;
 import java.awt.Color;
 import java.util.UUID;
 
+import com.ils.blt.common.annotation.ExecutableBlock;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.control.ExecutionController;
-import com.ils.common.annotation.ExecutableBlock;
 
 /**
  * A Source Connection is a special class that receives values directly

@@ -6,6 +6,7 @@ package com.ils.sblock;
 import java.awt.Color;
 import java.util.UUID;
 
+import com.ils.blt.common.annotation.CompilableBlock;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
@@ -16,7 +17,6 @@ import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
-import com.ils.common.annotation.CompilableBlock;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**

@@ -12,6 +12,7 @@ import java.util.UUID;
 
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.ToolkitRequestHandler;
+import com.ils.blt.common.annotation.ExecutableBlock;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.CoreBlock;
@@ -22,7 +23,6 @@ import com.ils.blt.gateway.BasicDiagram;
 import com.ils.blt.gateway.BasicRequestHandler;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.common.ClassList;
-import com.ils.common.annotation.ExecutableBlock;
 import com.ils.sblock.SchematicBlock;
 import com.ils.sblock.proxy.ProxyHandler;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
