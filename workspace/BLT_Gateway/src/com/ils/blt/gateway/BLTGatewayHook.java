@@ -95,9 +95,10 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	    	String pythonPath = dispatcher.getToolkitProperty(key);
 	    	sem.setModulePath(key, pythonPath);
 	    }
-	    // Load existing projects
+	    // Load existing projects - skip the global project and any that are disabled.
 	    List<Project> projects = this.context.getProjectManager().getProjectsFull(ProjectVersion.Published);
 	    for( Project project:projects ) {
+	    	if( !project.isEnabled() || project.getId()==-1 ) continue;
 	    	List<ProjectResource> resources = project.getResources();
 	    	for( ProjectResource res:resources ) {
 	    		// Model manager ignores resources that are not of interest to it.

@@ -23,6 +23,7 @@ import com.ils.blt.common.ApplicationScriptFunctions;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
+import com.ils.blt.designer.search.BLTSearchProvider;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.inductiveautomation.factorypmi.designer.palette.model.DefaultPaletteItemGroup;
@@ -60,6 +61,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	private DiagramWorkspace workspace = null;
 	private ApplicationRequestHandler appRequestHandler = null;
 	private final NodeStatusManager nodeStatusManager;
+	private BLTSearchProvider searchProvider = null;
 	
 	// Register separate properties files for designer things and block things
 	static {
@@ -121,7 +123,9 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		WorkspaceRepainter.setContext(ctx);
 		appRequestHandler = new ApplicationRequestHandler();
 		context.addBeanInfoSearchPath("com.ils.blt.designer.component.beaninfos");
-		
+		searchProvider = new BLTSearchProvider(context);
+		context.registerSearchProvider(searchProvider);
+				
 		// Place icons for our custom widgets on the Vision palette
 		VisionDesignerInterface vdi = 
 					(VisionDesignerInterface) context.getModule(VisionDesignerInterface.VISION_MODULE_ID);

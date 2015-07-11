@@ -116,6 +116,7 @@ public class Callback {
 	 */
 	public void initializeLocalsMap(ScriptManager scriptManager) {
 		localsMap = scriptManager.createLocalsMap();
+		//else log.errorf("%s.initializeLocalsMap: ERROR script manager is null", TAG);;
 	}
 	/**
 	 * Setting a variable value creates a locals map. We need to set the
