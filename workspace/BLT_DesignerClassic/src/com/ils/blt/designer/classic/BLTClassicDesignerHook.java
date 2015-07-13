@@ -19,7 +19,6 @@ import javax.swing.SwingUtilities;
 import com.ils.blt.client.component.diagview.DiagramViewer;
 import com.ils.blt.client.component.recmap.RecommendationMap;
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.common.ModuleRequestHandler;
 import com.ils.blt.common.ModuleScriptFunctions;
 import com.ils.blt.common.ToolkitRequestHandler;
 import com.ils.blt.common.script.ScriptExtensionManager;
@@ -29,7 +28,6 @@ import com.ils.blt.designer.ResourceCreateManager;
 import com.ils.blt.designer.ResourceDeleteManager;
 import com.ils.blt.designer.ResourceSaveManager;
 import com.ils.blt.designer.ResourceUpdateManager;
-import com.ils.blt.designer.SetupDialog;
 import com.ils.blt.designer.ValidationDialog;
 import com.ils.blt.designer.classic.workspace.ClassicDiagramWorkspace;
 import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
@@ -77,21 +75,23 @@ public class BLTClassicDesignerHook extends AbstractDesignerModuleHook  {
 	public BLTClassicDesignerHook() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		nodeStatusManager = new NodeStatusManager();
-		appRequestHandler = new ModuleRequestHandler();
+		appRequestHandler = new ClassicRequestHandler();
 	}
 	
 	
 	@Override
 	public void initializeScriptManager(ScriptManager mgr) {
 		super.initializeScriptManager(mgr);
+		ModuleScriptFunctions.setRequestHandler(appRequestHandler);
 		mgr.addScriptModule(BLTProperties.CLASSIC_SCRIPT_PACKAGE,ModuleScriptFunctions.class);
+		ScriptExtensionManager.getInstance().setToolkitRequestHandler(appRequestHandler);
 	}
 	
 	// Insert a menu to allow control of database and tag provider.
     @Override
     public MenuBarMerge getModuleMenu() {
     	JMenuMerge controlMenu = new JMenuMerge(WellKnownMenuConstants.VIEW_MENU_NAME);
-    	MenuBarMerge merge = new MenuBarMerge(BLTProperties.MODULE_ID);  // as suggested in javadocs
+    	MenuBarMerge merge = new MenuBarMerge(BLTProperties.CLASSIC_MODULE_ID);  // as suggested in javadocs
     	if( !menuExists(context.getFrame(),BLTProperties.INTERFACE_MENU_TITLE) ) {
     		merge.addSeparator();
 
@@ -183,7 +183,7 @@ public class BLTClassicDesignerHook extends AbstractDesignerModuleHook  {
 		}
 		
 		// Setup the diagram workspace
-		workspace = new ClassicDiagramWorkspace(context);
+		workspace = new ClassicDiagramWorkspace(context,appRequestHandler);
 		rootNode = new ClassicTreeNode(context,workspace,appRequestHandler,nodeStatusManager);
 		context.getProjectBrowserRoot().getProjectFolder().addChild(rootNode);
 		context.registerResourceWorkspace(workspace);
@@ -303,7 +303,7 @@ public class BLTClassicDesignerHook extends AbstractDesignerModuleHook  {
 
         public void run() {
             log.debugf("%s.Launching setup dialog...",TAG);
-            SetupDialog setup = new SetupDialog(context);
+            ClassicSetupDialog setup = new ClassicSetupDialog(context,appRequestHandler);
             setup.pack();
             setup.setVisible(true);
         }
@@ -316,7 +316,7 @@ public class BLTClassicDesignerHook extends AbstractDesignerModuleHook  {
 
         public void run() {
             log.debugf("%s.Launching setup dialog...",TAG);
-            ValidationDialog validator = new ValidationDialog(context);
+            ValidationDialog validator = new ValidationDialog(context,appRequestHandler);
             validator.pack();
             validator.setVisible(true);
         }

@@ -14,7 +14,7 @@ import org.python.core.PyDictionary;
 import org.python.core.PyList;
 import org.python.core.PyObject;
 
-import com.ils.blt.common.ModuleRequestHandler;
+import com.ils.blt.common.ToolkitRequestHandler;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.common.GeneralPurposeDataContainer;
@@ -33,11 +33,12 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  *  for every class that wants interact with external data.
  *  
  *  We maintain a script table to retain compiled versions of the scripts. Script 
- *  local variables are updated on each invocation.
+ *  local variables are updated on each invocation. This feature applies only to 
+ *  the "classic" version of the toolkit.
  */
 public class ScriptExtensionManager {
 	private static String TAG = "ScriptExtensionManager";
-	private final ModuleRequestHandler handler;
+	private ToolkitRequestHandler handler = null;
 	private final LoggerEx log;
 	private static ScriptExtensionManager instance = null;
 	private final JavaToPython j2p;
@@ -54,7 +55,6 @@ public class ScriptExtensionManager {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		// Initialize map with entry points and call list
 		scriptMap = new HashMap<>();
-		handler = new ModuleRequestHandler();
 		j2p = new JavaToPython();
 		p2j = new PythonToJava();
 		flavors = new ArrayList<>();
@@ -62,6 +62,12 @@ public class ScriptExtensionManager {
 		flavors.add(ScriptConstants.PROPERTY_RENAME_SCRIPT);
 		flavors.add(ScriptConstants.PROPERTY_SET_SCRIPT);
 	}
+	
+	/**
+	 * This class is used in a variety of scopes. Initialize the request handler in each of them.
+	 * @param h
+	 */
+	public void setToolkitRequestHandler(ToolkitRequestHandler h) { this.handler = h; }
 	
 	/**
 	 * Static method to create and/or fetch the single instance.

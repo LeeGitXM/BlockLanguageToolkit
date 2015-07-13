@@ -20,7 +20,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -34,11 +33,10 @@ import javax.swing.event.ChangeListener;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ils.blt.common.ModuleRequestHandler;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.ToolkitRequestHandler;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
@@ -55,7 +53,6 @@ import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.config.ObservablePropertySet;
 import com.inductiveautomation.ignition.common.execution.ExecutionManager;
 import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngine;
-import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -86,14 +83,14 @@ import com.jidesoft.docking.DockingManager;
  * BlockDesignableContainers (DiagramWorkspaces). These contain the visual 
  * representations of the diagrams.
  */
-public class DiagramWorkspace extends AbstractBlockWorkspace 
+public abstract class DiagramWorkspace extends AbstractBlockWorkspace 
 							  implements ResourceWorkspace, DesignableWorkspaceListener,ChangeListener                   {
 	protected static final String TAG = "DiagramWorkspace";
 	private static final String key   = "DiagramWorkspace";
 	private static final long serialVersionUID = 4627016159409031941L;
 	public static final String PREFIX = BLTProperties.CUSTOM_PREFIX;
 	protected static final DataFlavor BlockDataFlavor = LocalObjectTransferable.flavorForClass(ObservablePropertySet.class);
-	protected final ModuleRequestHandler handler = new ModuleRequestHandler();
+	protected final ToolkitRequestHandler requestHandler;;
 	protected final DesignerContext context;
 	protected final EditActionHandler editActionHandler;
 	protected final ExecutionManager executionEngine;
@@ -107,8 +104,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	/**
 	 * Constructor:
 	 */
-	public DiagramWorkspace(DesignerContext ctx) {
+	public DiagramWorkspace(DesignerContext ctx,ToolkitRequestHandler handler) {
 		this.context = ctx;
+		this.requestHandler = handler;
 		this.editActionHandler = new BlockActionHandler(this,context);
 		this.executionEngine = new BasicExecutionEngine(1,TAG);
 		this.addDesignableWorkspaceListener(this);
@@ -248,63 +246,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 * @return blocks that were recently serialized as a result of a copy.
 	 */
 	@Override
-	public Collection<Block> pasteBlocks(String json) {
-		logger.infof("%s.pasteBlocks: %s",TAG,json);
-		ObjectMapper mapper = new ObjectMapper();
-		Collection<Block>results = new ArrayList<Block>();
-		JavaType type = mapper.getTypeFactory().constructCollectionType(ArrayList.class, SerializableBlock.class);
-		try {
-			List<SerializableBlock>list = mapper.readValue(json, type);
-			for(SerializableBlock sb:list) {
-				ProcessBlockView pbv = new ProcessBlockView(sb);
-				pbv.createPseudoRandomName();
-				pbv.createRandomId();
-				results.add(pbv);
-				// Special handling for an encapsulation block - create its sub-workspace
-				if(pbv.isEncapsulation()) {
-					try {
-						final long newId = context.newResourceId();
-						SerializableDiagram diagram = new SerializableDiagram();
-						diagram.setName(pbv.getName());
-						diagram.setResourceId(newId);
-						diagram.setId(UUID.randomUUID());
-						diagram.setEncapsulationBlockId(pbv.getId());
-						diagram.setDirty(false);    // Will become dirty as soon as we add a block
-						logger.infof("%s: new diagram for encapsulation block ...",TAG);
-						try{ 
-						    json = mapper.writeValueAsString(diagram);
-						}
-						catch(JsonProcessingException jpe) {
-							logger.warnf("%s: Unable to serialize diagram (%s)",TAG,jpe.getMessage());
-						}
-						logger.infof("%s: serializeDiagram created json ... %s",TAG,json);
-
-						byte[] bytes = json.getBytes();
-						logger.debugf("%s: DiagramAction. create new %s resource %d (%d bytes)",TAG,BLTProperties.CLASSIC_DIAGRAM_RESOURCE_TYPE,
-								newId,bytes.length);
-						ProjectResource resource = new ProjectResource(newId,
-								BLTProperties.MODULE_ID, BLTProperties.CLASSIC_DIAGRAM_RESOURCE_TYPE,
-								pbv.getName(), ApplicationScope.GATEWAY, bytes);
-						resource.setParentUuid(getActiveDiagram().getId());
-						executionEngine.executeOnce(new ResourceUpdateManager(this,resource));					
-					} 
-					catch (Exception err) {
-						ErrorUtil.showError(TAG+" Exception pasting blocks",err);
-					}
-				}
-			}
-		} 
-		catch (JsonParseException jpe) {
-			logger.warnf("%s: pasteBlocks parse exception (%s)",TAG,jpe.getLocalizedMessage());
-		}
-		catch(JsonMappingException jme) {
-			logger.warnf("%s: pasteBlocks mapping exception (%s)",TAG,jme.getLocalizedMessage());
-		}
-		catch(IOException ioe) {
-			logger.warnf("%s: pasteBlocks IO exception (%s)",TAG,ioe.getLocalizedMessage());
-		}; 
-		return results;
-	}
+	public abstract Collection<Block> pasteBlocks(String json);
 
 
 	@Override
@@ -361,7 +303,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			catch (IOException ioe) {
 				logger.warnf("%s: open io exception (%s)",TAG,ioe.getLocalizedMessage());
 			}
-			ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd,context,handler,statusManager);
+			ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd,context,requestHandler,statusManager);
 			for( Block blk:diagram.getBlocks()) {
 				ProcessBlockView pbv = (ProcessBlockView)blk;
 				diagram.initBlockProperties(pbv);
@@ -536,7 +478,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			for( AnchorDescriptor anchor:block.getAnchors()) {
 				anchors.add(block.convertAnchorToSerializable((ProcessAnchorDescriptor)anchor));
 			}
-			handler.updateBlockAnchors(diagram.getId(),block.getId(),anchors);
+			requestHandler.updateBlockAnchors(diagram.getId(),block.getId(),anchors);
 			diagram.updateConnectionTypes(block,connectionType);
 			// Repaint the workspace
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
@@ -604,7 +546,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
 		public void actionPerformed(ActionEvent e) {
 			ProcessDiagramView pdv = getActiveDiagram();
-			handler.evaluateBlock(pdv.getId().toString(),block.getId().toString());
+			requestHandler.evaluateBlock(pdv.getId().toString(),block.getId().toString());
 		}
 	}
 	/**
@@ -623,7 +565,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		
 		// Display a dialog that allows user-entry of output values
 		public void actionPerformed(final ActionEvent e) {
-			final JDialog viewer = (JDialog)new ForceValueSettingsDialog(context.getFrame(),diagram,block);
+			final JDialog viewer = (JDialog)new ForceValueSettingsDialog(context.getFrame(),diagram,block,requestHandler);
 			Object source = e.getSource();
 			if( source instanceof Component) {
 				viewer.setLocationRelativeTo((Component)source);
@@ -698,7 +640,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		// Name is guaranteed to be unique within a diagram
 		public void actionPerformed(ActionEvent e) {
 			ProcessDiagramView pdv = getActiveDiagram();
-			handler.resetBlock(pdv.getId().toString(),block.getName());
+			requestHandler.resetBlock(pdv.getId().toString(),block.getName());
 		}
 	}
 	/**
@@ -716,7 +658,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		public void actionPerformed(ActionEvent e) {
 			logger.info("DiagramWorkspace: SAVE BLOCK");
 			ProcessDiagramView pdv = getActiveDiagram();
-			handler.setBlockProperties(pdv.getId(),block.getId(), block.getProperties());
+			requestHandler.setBlockProperties(pdv.getId(),block.getId(), block.getProperties());
 			block.setDirty(false);
 			statusManager.clearDirtyChildCount(pdv.getResourceId());
 		}
@@ -787,7 +729,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		
 		// Display the internals viewer
 		public void actionPerformed(final ActionEvent e) {
-			final JDialog viewer = (JDialog)new BlockInternalsViewer(context.getFrame(),diagram,block);
+			final JDialog viewer = (JDialog)new BlockInternalsViewer(context.getFrame(),diagram,block,requestHandler);
 			Object source = e.getSource();
 			if( source instanceof Component) {
 				viewer.setLocationRelativeTo((Component)source);

@@ -20,7 +20,9 @@ import com.ils.blt.common.serializable.SerializableResourceDescriptor;
  * These calls are available from any Ignition scope.
  */
 public class ModuleScriptFunctions   {
-	private static ModuleRequestHandler handler = new ModuleRequestHandler();
+	private static ToolkitRequestHandler handler = null;
+	
+	public static void setRequestHandler(ToolkitRequestHandler h) { handler = h; }
 
 	public static List<SerializableResourceDescriptor> childNodes(String nodeId) {
 		return handler.childNodes(nodeId);

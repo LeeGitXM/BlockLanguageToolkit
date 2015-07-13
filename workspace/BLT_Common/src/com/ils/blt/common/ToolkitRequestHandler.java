@@ -122,7 +122,10 @@ public interface ToolkitRequestHandler  {
 	 * @return the value of a specified block property.
 	 */
 	public Object getPropertyValue(String diagramId,String blockId,String propertyName) ;
-	
+	/**
+	 * @return the Id of the module to which this handler applies.
+	 */
+	public String getModuleId() ;
 	/**
 	 * Acquire a value from the HSQL database table associated with the toolkit. A
 	 * null is returned if the string is not found.
@@ -283,6 +286,14 @@ public interface ToolkitRequestHandler  {
 
 	public void setDiagramState(Long projectId, Long resourceId, String state) ;
 	public void setDiagramState(String diagramId, String state);
+	
+	/**
+	 * Set a clock rate factor. This will change timing for isolation mode only.
+	 * This method is provided as a hook for test frameworks.
+	 * @param factor the amount to speed up or slow down the clock.
+	 */
+	public void setTimeFactor(double factor);
+	
 	/**
 	 * Save a value into the HSQL database table associated with the toolkit. The 
 	 * table contains name-value pairs, so any name is allowable.

@@ -12,8 +12,10 @@ import java.util.UUID;
  *  Define an interface for accessing module properties .
  */
 public interface BLTProperties   {   
-	public final static String MODULE_ID = "block";     // See module-blt.xml
-	public final static String MODULE_NAME = "BLT";     // See build-blt.xml
+	public final static String CLASSIC_MODULE_ID = "block";              // See module-blt-classic.xml
+	public final static String CLASSIC_MODULE_NAME = "BLT-Classic";      // See build-blt-classic.xml
+	public final static String SCHEMATIC_MODULE_ID = "schematic-block";  // See module-blt-schematic.xml
+	public final static String SCHEMATIC_MODULE_NAME = "BLT-Schematic";  // See build-blt-schematic.xml
 	public final static String SFC_MODULE_ID = "com.ils.sfc"; 
 	
 	/** This are the names of the jar files containing block class definitions */

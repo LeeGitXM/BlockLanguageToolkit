@@ -582,7 +582,7 @@ public class ClassicTreeNode extends GeneralPurposeTreeNode  {
 				byte[] bytes = json.getBytes();
 				logger.infof("%s.ApplicationCreateAction. create new %s(%d), %s (%d bytes)",TAG,BLTProperties.APPLICATION_RESOURCE_TYPE,newResId,
 						newName,bytes.length);
-				ProjectResource resource = new ProjectResource(newResId,BLTProperties.MODULE_ID, BLTProperties.APPLICATION_RESOURCE_TYPE,
+				ProjectResource resource = new ProjectResource(newResId,BLTProperties.CLASSIC_MODULE_ID, BLTProperties.APPLICATION_RESOURCE_TYPE,
 						newName, ApplicationScope.GATEWAY, bytes);
 				resource.setParentUuid(getFolderId());
 				logger.infof("%s: parent: %s",TAG,getFolderId().toString());
@@ -718,7 +718,7 @@ public class ClassicTreeNode extends GeneralPurposeTreeNode  {
 											String json = mapper.writeValueAsString(sa);
 											if(logger.isTraceEnabled() ) logger.trace(json);
 											ProjectResource resource = new ProjectResource(newId,
-													BLTProperties.MODULE_ID, BLTProperties.APPLICATION_RESOURCE_TYPE,
+													BLTProperties.CLASSIC_MODULE_ID, BLTProperties.APPLICATION_RESOURCE_TYPE,
 													sa.getName(), ApplicationScope.GATEWAY, json.getBytes());
 											resource.setParentUuid(getFolderId());
 											new ResourceCreateManager(resource).run();
@@ -768,7 +768,7 @@ public class ClassicTreeNode extends GeneralPurposeTreeNode  {
 				String json = mapper.writeValueAsString(sf);
 				if(logger.isTraceEnabled() ) logger.trace(json);
 				ProjectResource resource = new ProjectResource(newId,
-						BLTProperties.MODULE_ID, BLTProperties.FAMILY_RESOURCE_TYPE,
+						BLTProperties.CLASSIC_MODULE_ID, BLTProperties.FAMILY_RESOURCE_TYPE,
 						sf.getName(), ApplicationScope.GATEWAY, json.getBytes());
 				resource.setParentUuid(parentId);
 				logger.infof("%s:ApplicationImportAction importing family %s(%s) (%s/%s)", TAG,sf.getName(),newId,parentId.toString(),sf.getId().toString());
@@ -810,7 +810,7 @@ public class ClassicTreeNode extends GeneralPurposeTreeNode  {
 				byte[] bytes = json.getBytes();
 				logger.infof("%s.DiagramCreateAction. create new %s(%d), %s (%d bytes)",TAG,BLTProperties.CLASSIC_DIAGRAM_RESOURCE_TYPE,newId,
 						newName,bytes.length);
-				ProjectResource resource = new ProjectResource(newId,BLTProperties.MODULE_ID, BLTProperties.CLASSIC_DIAGRAM_RESOURCE_TYPE,
+				ProjectResource resource = new ProjectResource(newId,BLTProperties.CLASSIC_MODULE_ID, BLTProperties.CLASSIC_DIAGRAM_RESOURCE_TYPE,
 						newName, ApplicationScope.GATEWAY, bytes);
 				resource.setParentUuid(getFolderId());
 				logger.infof("%s: parent: %s",TAG,getFolderId().toString());
@@ -898,7 +898,7 @@ public class ClassicTreeNode extends GeneralPurposeTreeNode  {
 				byte[] bytes = json.getBytes();
 				logger.infof("%s.FamilyCreateAction. create new %s(%d), %s (%d bytes)",TAG,BLTProperties.FAMILY_RESOURCE_TYPE,newId,
 						newName,bytes.length);
-				ProjectResource resource = new ProjectResource(newId,BLTProperties.MODULE_ID, BLTProperties.FAMILY_RESOURCE_TYPE,
+				ProjectResource resource = new ProjectResource(newId,BLTProperties.CLASSIC_MODULE_ID, BLTProperties.FAMILY_RESOURCE_TYPE,
 						newName, ApplicationScope.GATEWAY, bytes);
 				resource.setParentUuid(getFolderId());
 				logger.infof("%s.familyCreateAction: res(%d) %s, fam %s, parent: %s",TAG,newId,resource.getName(),fam.getName(),getFolderId().toString());
@@ -958,7 +958,7 @@ public class ClassicTreeNode extends GeneralPurposeTreeNode  {
 											String json = mapper.writeValueAsString(sd);
 											logger.debugf("%s:ImportDiagramAction saved resource as:\n%s", TAG,json);
 											ProjectResource resource = new ProjectResource(newId,
-													BLTProperties.MODULE_ID, BLTProperties.CLASSIC_DIAGRAM_RESOURCE_TYPE,
+													BLTProperties.CLASSIC_MODULE_ID, BLTProperties.CLASSIC_DIAGRAM_RESOURCE_TYPE,
 													sd.getName(), ApplicationScope.GATEWAY, json.getBytes());
 											resource.setParentUuid(getFolderId());
 											new ResourceCreateManager(resource).run();	
@@ -1006,7 +1006,7 @@ public class ClassicTreeNode extends GeneralPurposeTreeNode  {
 			String json = mapper.writeValueAsString(sd);
 			if(logger.isTraceEnabled() ) logger.trace(json);
 			ProjectResource resource = new ProjectResource(newId,
-					BLTProperties.MODULE_ID, BLTProperties.CLASSIC_DIAGRAM_RESOURCE_TYPE,
+					BLTProperties.CLASSIC_MODULE_ID, BLTProperties.CLASSIC_DIAGRAM_RESOURCE_TYPE,
 					sd.getName(), ApplicationScope.GATEWAY, json.getBytes());
 			resource.setParentUuid(parentId);
 			executionEngine.executeOnce(new ResourceCreateManager(resource));	

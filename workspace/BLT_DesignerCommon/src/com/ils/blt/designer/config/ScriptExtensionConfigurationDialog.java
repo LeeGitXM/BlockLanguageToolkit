@@ -30,34 +30,33 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import net.miginfocom.swing.MigLayout;
 
-import com.ils.blt.common.ModuleRequestHandler;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.ToolkitRequestHandler;
 import com.ils.blt.common.block.BlockDescriptor;
-import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.script.ScriptExtensionManager;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 /**
- * Display a dialog to configure attributes that are toolkit-wide.
+ * Display a dialog to configure attributes that are implemented as script extensions.
  */
-public class ToolkitConfigurationDialog extends ConfigurationDialog  { 
+public class ScriptExtensionConfigurationDialog extends ConfigurationDialog  { 
 	private final static String TAG = "ToolkitConfigurationDialog";
 	private static final long serialVersionUID = 2882399976824334427L;
 	private final static String FILE_CHOOSER_NAME = "FileChoser";
 	private final int DIALOG_HEIGHT = 360;
 	private final int DIALOG_WIDTH = 400;
 	private JPanel scriptPanel = null;
-	private final ModuleRequestHandler handler;
+	private final ToolkitRequestHandler requestHandler;
 	private final ScriptExtensionManager sem;
 	private final Preferences prefs;
 	private JFileChooser fc = null;
 	private JButton importButton = null;
 	private final Map<String,AuxInterfacePanel> classPanels;
 
-	public ToolkitConfigurationDialog(Frame frame,DesignerContext ctx) {
+	public ScriptExtensionConfigurationDialog(Frame frame,DesignerContext ctx,ToolkitRequestHandler handler) {
 		super(ctx);
-		this.handler = new ModuleRequestHandler();
+		this.requestHandler = handler;
 		this.sem = ScriptExtensionManager.getInstance();
 		this.classPanels = new HashMap<>();
 		this.setTitle(rb.getString("Toolkit.Title"));
@@ -107,13 +106,13 @@ public class ToolkitConfigurationDialog extends ConfigurationDialog  {
 			AuxInterfacePanel panel = classPanels.get(clss);
 			// Query and update for each flavor
 			key = ScriptExtensionManager.makeKey(clss,ScriptConstants.PROPERTY_GET_SCRIPT); 
-			value = handler.getToolkitProperty(key);
+			value = requestHandler.getToolkitProperty(key);
 			if (value!=null ) panel.updateGetField(value);
 			key = ScriptExtensionManager.makeKey(clss,ScriptConstants.PROPERTY_SET_SCRIPT);
-			value = handler.getToolkitProperty(key);
+			value = requestHandler.getToolkitProperty(key);
 			if (value!=null ) panel.updateSetField(value);
 			key = ScriptExtensionManager.makeKey(clss,ScriptConstants.PROPERTY_RENAME_SCRIPT);
-			value = handler.getToolkitProperty(key);
+			value = requestHandler.getToolkitProperty(key);
 			if (value!=null ) panel.updateRenameField(value);
 		}
 	}
@@ -133,13 +132,13 @@ public class ToolkitConfigurationDialog extends ConfigurationDialog  {
 					// Query and update for both flavors. We update the database as well as the script manager
 					key = ScriptExtensionManager.makeKey(clss,ScriptConstants.PROPERTY_GET_SCRIPT); 
 					sem.addScript(clss, ScriptConstants.PROPERTY_GET_SCRIPT, panel.getGetFieldValue());
-					handler.setToolkitProperty(key,panel.getGetFieldValue());
+					requestHandler.setToolkitProperty(key,panel.getGetFieldValue());
 					key = ScriptExtensionManager.makeKey(clss,ScriptConstants.PROPERTY_SET_SCRIPT);
 					sem.addScript(clss, ScriptConstants.PROPERTY_SET_SCRIPT, panel.getSetFieldValue());
-					handler.setToolkitProperty(key,panel.getSetFieldValue());
+					requestHandler.setToolkitProperty(key,panel.getSetFieldValue());
 					key = ScriptExtensionManager.makeKey(clss,ScriptConstants.PROPERTY_RENAME_SCRIPT);
 					sem.addScript(clss, ScriptConstants.PROPERTY_RENAME_SCRIPT, panel.getRenameFieldValue());
-					handler.setToolkitProperty(key,panel.getRenameFieldValue());
+					requestHandler.setToolkitProperty(key,panel.getRenameFieldValue());
 				}
 				dispose();
 			}
@@ -150,7 +149,7 @@ public class ToolkitConfigurationDialog extends ConfigurationDialog  {
 	 * Create a button and event listener that pops up a file chooser, 
 	 * then imports values into the text fields.
 	 */
-	private void addImportButton(final ToolkitConfigurationDialog dialog) {
+	private void addImportButton(final ScriptExtensionConfigurationDialog dialog) {
 		importButton = new JButton("Import");
 		importButton.setPreferredSize(BUTTON_SIZE);
 		buttonPanel.add(importButton);
@@ -209,12 +208,12 @@ public class ToolkitConfigurationDialog extends ConfigurationDialog  {
 				if( args.length>2 ) {
 					log.infof("%s.parseConfigFile. Read %s,%s,%s ",TAG,args[0],args[1],args[2]);
 					String key = ScriptExtensionManager.makeKey(args[0].trim(),args[1].trim());  // Class, flavor
-					handler.setToolkitProperty(key,args[2].trim());
+					requestHandler.setToolkitProperty(key,args[2].trim());
 				}
 				else if( args.length>1 ) {
 					log.infof("%s.parseConfigFile. Read %s,%s ",TAG,args[0],args[1]);
 					String key = ScriptExtensionManager.makeKey(args[0].trim(),args[1].trim());  // Class, flavor
-					handler.setToolkitProperty(key,"");
+					requestHandler.setToolkitProperty(key,"");
 				}
 				else if(!line.startsWith("#")){
 					log.warnf("%s.parseConfigFile: Less than 2 fields, ignored (%s)",TAG,line);

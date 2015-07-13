@@ -108,12 +108,13 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		return instance;
 	}
 	/**
-	 * The request handler must be specified before the controller is useful.
+	 * The request handler and target module must be specified before the controller is useful.
 	 */
 	public void setRequestHandler(ToolkitRequestHandler h) {
 		this.requestHandler = h;
 	}
 	/**
+	 * 
 	 * Someone has injected a message into the system via broadcast
 	 */
 	@Override
@@ -607,7 +608,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		String key = NotificationKey.keyForProperty(blkid,propertyName);
 		log.tracef("%s.sendPropertyNotification: %s (%s)",TAG,key,val.toString());
 		try {
-			sessionManager.sendNotification(ApplicationScope.DESIGNER, BLTProperties.MODULE_ID, key, val);
+			sessionManager.sendNotification(ApplicationScope.DESIGNER, requestHandler.getModuleId(), key, val);
 		}
 		catch(Exception ex) {
 			// Probably no receiver registered. This is to be expected if the designer is not running.
@@ -626,7 +627,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public void sendConnectionNotification(String blockid, String port, QualifiedValue val) {
 		String key = NotificationKey.keyForConnection(blockid,port);
 		try {
-			sessionManager.sendNotification(ApplicationScope.DESIGNER, BLTProperties.MODULE_ID, key, val);
+			sessionManager.sendNotification(ApplicationScope.DESIGNER, requestHandler.getModuleId(), key, val);
 		}
 		catch(Exception ex) {
 			// Probably no receiver registered. This is to be expected if the designer is not running.
@@ -643,7 +644,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public void sendStateNotification(String diagramid, String val) {
 		String key = NotificationKey.keyForDiagram(diagramid);
 		try {
-			sessionManager.sendNotification(ApplicationScope.DESIGNER, BLTProperties.MODULE_ID, key, new BasicQualifiedValue(val));
+			sessionManager.sendNotification(ApplicationScope.DESIGNER, requestHandler.getModuleId(), key, new BasicQualifiedValue(val));
 		}
 		catch(Exception ex) {
 			// Probably no receiver registered. This is to be expected if the designer is not running.

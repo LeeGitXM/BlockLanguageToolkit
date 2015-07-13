@@ -58,14 +58,16 @@ public class BasicRequestHandler implements ToolkitRequestHandler  {
 	private final static String TAG = "BasicRequestHandler";
 	protected final LoggerEx log;
 	protected final GatewayContext context;
+	protected final String moduleId;
 	protected final BlockExecutionController controller = BlockExecutionController.getInstance();
 	protected final ScriptExtensionManager sem = ScriptExtensionManager.getInstance();
     
 	/**
 	 * Initialize with context and appropriate python handler.
 	 */
-	public BasicRequestHandler(GatewayContext ctx) {
+	public BasicRequestHandler(GatewayContext ctx,String module) {
 		this.context = ctx;
+		this.moduleId = module;
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 	}
 	
@@ -1003,6 +1005,21 @@ public class BasicRequestHandler implements ToolkitRequestHandler  {
 				block.propertyChange(event);
 			}
 		}
+	}
+
+	/**
+	 * This only applies to the secondary timer.
+	 */
+	@Override
+	public void setTimeFactor(double factor) {
+		AcceleratedWatchdogTimer timer = controller.getSecondaryTimer();
+		timer.setFactor(factor);
+	}
+
+
+	@Override
+	public String getModuleId() {
+		return moduleId;
 	}
 
 }

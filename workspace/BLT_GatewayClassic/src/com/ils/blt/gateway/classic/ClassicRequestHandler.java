@@ -48,7 +48,7 @@ public class ClassicRequestHandler extends BasicRequestHandler implements Toolki
 	 * Initialize with instances of the classes to be controlled.
 	 */
 	public ClassicRequestHandler(GatewayContext ctx) {
-		super(ctx);
+		super(ctx,BLTProperties.CLASSIC_MODULE_ID);
 		pyHandler = new PythonRequestHandler(this);
 	}
 

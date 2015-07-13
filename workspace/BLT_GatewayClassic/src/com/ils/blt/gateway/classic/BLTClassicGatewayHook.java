@@ -48,7 +48,7 @@ public class BLTClassicGatewayHook extends AbstractGatewayModuleHook  {
 	private ToolkitRecord record = null;
 	
 	public static BLTClassicGatewayHook get(GatewayContext ctx) { 
-		return (BLTClassicGatewayHook)ctx.getModule(BLTProperties.MODULE_ID);
+		return (BLTClassicGatewayHook)ctx.getModule(BLTProperties.CLASSIC_MODULE_ID);
 	}
 	
 	public BLTClassicGatewayHook() {
@@ -67,6 +67,7 @@ public class BLTClassicGatewayHook extends AbstractGatewayModuleHook  {
 		//       Exception is thrown when we try to incorporate a StatusPanel
 		log.info(TAG+".setup - enable project listeners.");
 		requestHandler = new ClassicRequestHandler(context);
+		ScriptExtensionManager.getInstance().setToolkitRequestHandler(requestHandler);
 		dispatcher = new GatewayRpcDispatcher(context,requestHandler);
 		ProxyHandler.getInstance().setContext(context);
 		// Register the ToolkitRecord making sure that the table exists

@@ -30,8 +30,8 @@ import javax.swing.table.TableModel;
 
 import net.miginfocom.swing.MigLayout;
 
-import com.ils.blt.common.ModuleRequestHandler;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.ToolkitRequestHandler;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -51,17 +51,17 @@ public class ValidationDialog extends JDialog {
 	private final int TABLE_WIDTH = 1200;
 	private String[] columnNames = {"Block","Issue"};
 	private List<SerializableBlockStateDescriptor> issues = null;
-	private final ModuleRequestHandler requestHandler;
+	private final ToolkitRequestHandler requestHandler;
 	private final ResourceBundle rb;
 	private JTable table = null;
 	private JPanel internalPanel = null;
 	
-	public ValidationDialog(DesignerContext ctx) {
+	public ValidationDialog(DesignerContext ctx,ToolkitRequestHandler handler) {
 		super(ctx.getFrame());
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.setTitle("Diagram Validity Analysis");
 		this.rb = ResourceBundle.getBundle("com.ils.blt.designer.designer");  // designer.properties
-		this.requestHandler = new ModuleRequestHandler();
+		this.requestHandler = handler;
 		setModal(true);
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));
@@ -95,7 +95,7 @@ public class ValidationDialog extends JDialog {
 		buttonPanel.add(exportButton, "");
 		exportButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				SaveVaidationResultsDialog dialog = new SaveVaidationResultsDialog(rootPane,exportButton);
+				SaveValidationResultsDialog dialog = new SaveValidationResultsDialog(rootPane,exportButton);
 				dialog.pack();
 				dialog.setVisible(true);   // Returns when dialog is closed
 				File output = dialog.getFilePath();

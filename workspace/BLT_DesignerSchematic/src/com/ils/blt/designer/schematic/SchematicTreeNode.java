@@ -239,7 +239,7 @@ public class SchematicTreeNode extends GeneralPurposeTreeNode  {
 				byte[] bytes = json.getBytes();
 				logger.infof("%s.DiagramCreateAction. create new %s(%d), %s (%d bytes)",TAG,BLTProperties.SCHEMATIC_DIAGRAM_RESOURCE_TYPE,newId,
 						newName,bytes.length);
-				ProjectResource resource = new ProjectResource(newId,BLTProperties.MODULE_ID, BLTProperties.SCHEMATIC_DIAGRAM_RESOURCE_TYPE,
+				ProjectResource resource = new ProjectResource(newId,BLTProperties.SCHEMATIC_MODULE_ID, BLTProperties.SCHEMATIC_DIAGRAM_RESOURCE_TYPE,
 						newName, ApplicationScope.GATEWAY, bytes);
 				resource.setParentUuid(getFolderId());
 				logger.infof("%s: parent: %s",TAG,getFolderId().toString());
@@ -304,7 +304,7 @@ public class SchematicTreeNode extends GeneralPurposeTreeNode  {
 											String json = mapper.writeValueAsString(sd);
 											logger.debugf("%s:ImportDiagramAction saved resource as:\n%s", TAG,json);
 											ProjectResource resource = new ProjectResource(newId,
-													BLTProperties.MODULE_ID, BLTProperties.SCHEMATIC_DIAGRAM_RESOURCE_TYPE,
+													BLTProperties.SCHEMATIC_MODULE_ID, BLTProperties.SCHEMATIC_DIAGRAM_RESOURCE_TYPE,
 													sd.getName(), ApplicationScope.GATEWAY, json.getBytes());
 											resource.setParentUuid(getFolderId());
 											new ResourceCreateManager(resource).run();	
@@ -352,7 +352,7 @@ public class SchematicTreeNode extends GeneralPurposeTreeNode  {
 			String json = mapper.writeValueAsString(sd);
 			if(logger.isTraceEnabled() ) logger.trace(json);
 			ProjectResource resource = new ProjectResource(newId,
-					BLTProperties.MODULE_ID, BLTProperties.CLASSIC_DIAGRAM_RESOURCE_TYPE,
+					BLTProperties.SCHEMATIC_MODULE_ID, BLTProperties.SCHEMATIC_DIAGRAM_RESOURCE_TYPE,
 					sd.getName(), ApplicationScope.GATEWAY, json.getBytes());
 			resource.setParentUuid(parentId);
 			executionEngine.executeOnce(new ResourceCreateManager(resource));	

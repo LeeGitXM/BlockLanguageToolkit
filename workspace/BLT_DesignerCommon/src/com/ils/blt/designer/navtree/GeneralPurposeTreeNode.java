@@ -34,7 +34,7 @@ import com.ils.blt.designer.ResourceCreateManager;
 import com.ils.blt.designer.ResourceDeleteManager;
 import com.ils.blt.designer.ResourceSaveManager;
 import com.ils.blt.designer.ResourceUpdateManager;
-import com.ils.blt.designer.config.ToolkitConfigurationDialog;
+import com.ils.blt.designer.config.ScriptExtensionConfigurationDialog;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
@@ -86,7 +86,7 @@ public abstract class GeneralPurposeTreeNode extends FolderNode implements NavTr
 	 * @param ctx the designer context
 	 */
 	public GeneralPurposeTreeNode(DesignerContext ctx,UUID nodeId,DiagramWorkspace wksp,ToolkitRequestHandler handler,NodeStatusManager sm) {
-		super(ctx, BLTProperties.MODULE_ID, ApplicationScope.GATEWAY,nodeId);
+		super(ctx, handler.getModuleId(), ApplicationScope.GATEWAY,nodeId);
 		this.resourceId = BLTProperties.ROOT_RESOURCE_ID;
 		this.executionEngine = new BasicExecutionEngine(1,TAG);
 		this.requestHandler  = handler;
@@ -376,7 +376,7 @@ public abstract class GeneralPurposeTreeNode extends FolderNode implements NavTr
 										// Note: Requires Java 1.7
 										byte[] bytes = Files.readAllBytes(input.toPath());
 										ProjectResource resource = new ProjectResource(newId,
-												BLTProperties.MODULE_ID, BLTProperties.CLASSIC_DIAGRAM_RESOURCE_TYPE,
+												requestHandler.getModuleId(), BLTProperties.CLASSIC_DIAGRAM_RESOURCE_TYPE,
 												"CLONE", ApplicationScope.GATEWAY, bytes);
 										resource.setParentUuid(getFolderId());
 										new ResourceCreateManager(resource).run();	
@@ -510,7 +510,7 @@ public abstract class GeneralPurposeTreeNode extends FolderNode implements NavTr
 				final long newResId = context.newResourceId();
 				String newName = BundleUtil.get().getString(PREFIX+".NewFolder.Default.Name");
 				if( newName==null) newName = "New Folks";  // Missing Resource
-				UUID newId = context.addFolder(newResId, BLTProperties.MODULE_ID, ApplicationScope.GATEWAY, newName, getFolderId());
+				UUID newId = context.addFolder(newResId, requestHandler.getModuleId(), ApplicationScope.GATEWAY, newName, getFolderId());
 				logger.infof("%s.FolderCreateAction. create new %s(%d), %s (%s, parent %s)",TAG,BLTProperties.FOLDER_RESOURCE_TYPE,newResId,newName,
 						newId.toString(),getFolderId().toString());
 				//recreate();
@@ -593,7 +593,7 @@ public abstract class GeneralPurposeTreeNode extends FolderNode implements NavTr
 			try {
 				EventQueue.invokeLater(new Runnable() {
 					public void run() {
-						ToolkitConfigurationDialog dialog = new ToolkitConfigurationDialog(context.getFrame(),context);
+						ScriptExtensionConfigurationDialog dialog = new ScriptExtensionConfigurationDialog(context.getFrame(),context,requestHandler);
 						dialog.setLocationRelativeTo(anchor);
 						Point p = dialog.getLocation();
 						dialog.setLocation((int)(p.getX()-OFFSET),(int)(p.getY()-OFFSET));

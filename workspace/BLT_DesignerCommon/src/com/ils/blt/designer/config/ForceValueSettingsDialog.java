@@ -27,7 +27,7 @@ import javax.swing.WindowConstants;
 
 import net.miginfocom.swing.MigLayout;
 
-import com.ils.blt.common.ModuleRequestHandler;
+import com.ils.blt.common.ToolkitRequestHandler;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.designer.workspace.ProcessAnchorDescriptor;
@@ -48,12 +48,13 @@ public class ForceValueSettingsDialog extends JDialog {
 	private final ProcessBlockView block;
 	private final Map<String,JComponent> componentMap;
 	private final ResourceBundle rb;
-	private final ModuleRequestHandler requestHandler;
+	private final ToolkitRequestHandler requestHandler;
 	
-	public ForceValueSettingsDialog(Frame frame,ProcessDiagramView diag,ProcessBlockView view) {
+	public ForceValueSettingsDialog(Frame frame,ProcessDiagramView diag,ProcessBlockView view,ToolkitRequestHandler handler) {
 		super(frame);
 		this.diagram = diag;
 		this.block = view;
+		this.requestHandler = handler;
 		this.setTitle("Force Block Output Values");
 		this.rb = ResourceBundle.getBundle("com.ils.blt.designer.block");  // block.properties
 		setAlwaysOnTop(true);
@@ -63,7 +64,7 @@ public class ForceValueSettingsDialog extends JDialog {
 		int count = countOutputs(block);
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT+30*count));
 		this.componentMap = new HashMap<>();
-		this.requestHandler = new ModuleRequestHandler();
+		
         initialize();
 	}
 	

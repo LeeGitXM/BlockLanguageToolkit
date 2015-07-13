@@ -28,8 +28,8 @@ import javax.swing.table.DefaultTableModel;
 
 import net.miginfocom.swing.MigLayout;
 
-import com.ils.blt.common.ModuleRequestHandler;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.ToolkitRequestHandler;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.designer.workspace.ProcessAnchorDescriptor;
@@ -57,15 +57,17 @@ public class BlockInternalsViewer extends JDialog {
 	private static SimpleDateFormat dateFormatter = new SimpleDateFormat(BlockConstants.TIMESTAMP_FORMAT);
 	private final ProcessDiagramView diagram;
 	private final ProcessBlockView block;
+	private final ToolkitRequestHandler requestHandler;
 	private Map<String,String> attributes = null;
 	private List<Map<String,String>> buffer = null;
 	private JTable table = null;
 	JPanel internalPanel = null;
 	
-	public BlockInternalsViewer(Frame frame,ProcessDiagramView dia,ProcessBlockView view) {
+	public BlockInternalsViewer(Frame frame,ProcessDiagramView dia,ProcessBlockView view,ToolkitRequestHandler handler) {
 		super(frame);
 		this.diagram = dia;
 		this.block = view;
+		this.requestHandler = handler;
 		this.setTitle(String.format(BundleUtil.get().getString(PREFIX+".ViewInternals.Title",view.getName())));
 		setAlwaysOnTop(true);
 		setModal(false);
@@ -108,8 +110,7 @@ public class BlockInternalsViewer extends JDialog {
 	}
 
 	private void queryBlock() {
-		ModuleRequestHandler handler = new ModuleRequestHandler();
-		SerializableBlockStateDescriptor descriptor = handler.getInternalState(diagram.getId().toString(), block.getId().toString());
+		SerializableBlockStateDescriptor descriptor = requestHandler.getInternalState(diagram.getId().toString(), block.getId().toString());
 		if( descriptor!=null ) {
 			attributes = descriptor.getAttributes();
 			buffer = descriptor.getBuffer();

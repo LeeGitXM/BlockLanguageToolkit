@@ -63,7 +63,7 @@ public class ClassicModelManager extends ModelManager  {
 	 * @param res the model resource
 	 */
 	public void analyzeResource(Long projectId,ProjectResource res) {
-		if( res.getModuleId().equalsIgnoreCase(BLTProperties.MODULE_ID)) {
+		if( res.getModuleId().equalsIgnoreCase(BLTProperties.CLASSIC_MODULE_ID)) {
 			String type = res.getResourceType();
 			
 			if( type.equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE) ) {

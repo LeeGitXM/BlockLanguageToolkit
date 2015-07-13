@@ -75,11 +75,14 @@ public class NotificationHandler implements PushNotificationListener {
 	 *   2) The key (contains a UUID)
 	 *   3) Lookup object with UUID
 	 *   4) Update the object state.
+	 *   
+	 *  Enable this for any of the known BLT moduleIds 
 	 */
 	@Override
 	public void receiveNotification(PushNotification notice) {
 		String moduleId = notice.getModuleId();
-		if( moduleId.equals(BLTProperties.MODULE_ID)) {
+		if( moduleId.equals(BLTProperties.CLASSIC_MODULE_ID) ||
+			moduleId.equals(BLTProperties.SCHEMATIC_MODULE_ID)	) {
 			String key = notice.getMessageType();
 			Object payload = notice.getMessage();
 			log.debugf("%s.receiveNotification: key=%s,value=%s",TAG,key,(payload==null?"null":payload.toString()));

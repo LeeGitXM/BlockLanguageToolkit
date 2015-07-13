@@ -48,7 +48,7 @@ public class BLTSchematicGatewayHook extends AbstractGatewayModuleHook  {
 	private ToolkitRecord record = null;
 	
 	public static BLTSchematicGatewayHook get(GatewayContext ctx) { 
-		return (BLTSchematicGatewayHook)ctx.getModule(BLTProperties.MODULE_ID);
+		return (BLTSchematicGatewayHook)ctx.getModule(BLTProperties.SCHEMATIC_MODULE_ID);
 	}
 	
 	public BLTSchematicGatewayHook() {
@@ -67,6 +67,7 @@ public class BLTSchematicGatewayHook extends AbstractGatewayModuleHook  {
 		//       Exception is thrown when we try to incorporate a StatusPanel
 		log.info(TAG+".setup - enable project listeners.");
 		requestHandler = new SchematicRequestHandler(context);
+		ScriptExtensionManager.getInstance().setToolkitRequestHandler(requestHandler);   // Probably never used
 		dispatcher = new GatewayRpcDispatcher(context,requestHandler);
 		ProxyHandler.getInstance().setContext(context);
 		// Register the ToolkitRecord making sure that the table exists

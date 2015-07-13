@@ -32,7 +32,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  *    result = bad.getModel();
  */
 
-public class SaveVaidationResultsDialog extends JDialog implements ActionListener { 
+public class SaveValidationResultsDialog extends JDialog implements ActionListener { 
 	private final static String TAG = "SaveVaidationResultsDialog";
 	private static final String APPROVE_BUTTON = "OK";
 	private final static String DIALOG_TITLE = "Save Validation Results";
@@ -47,7 +47,7 @@ public class SaveVaidationResultsDialog extends JDialog implements ActionListene
 	private final Preferences prefs;
 	
 	
-	public SaveVaidationResultsDialog(JRootPane root,JComponent parent) {
+	public SaveValidationResultsDialog(JRootPane root,JComponent parent) {
 		super(SwingUtilities.getWindowAncestor(root));
 		setModal(true);
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);

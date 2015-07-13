@@ -41,7 +41,7 @@ public class SchematicRequestHandler extends BasicRequestHandler implements Tool
 	 * Initialize with instances of the classes to be controlled.
 	 */
 	public SchematicRequestHandler(GatewayContext ctx) {
-		super(ctx);
+		super(ctx,BLTProperties.SCHEMATIC_MODULE_ID);
 	}
 
 

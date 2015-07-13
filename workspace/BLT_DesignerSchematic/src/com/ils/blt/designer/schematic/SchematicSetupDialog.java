@@ -1,7 +1,7 @@
 /**
  *   (c) 2015  ILS Automation. All rights reserved.
  */
-package com.ils.blt.designer;
+package com.ils.blt.designer.schematic;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -20,33 +20,33 @@ import javax.swing.WindowConstants;
 
 import net.miginfocom.swing.MigLayout;
 
-import com.ils.blt.common.ModuleRequestHandler;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.ToolkitRequestHandler;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 /**
  * Allow the user to define properties of the block language toolkit. 
  */
 
-public class SetupDialog extends JDialog {
+public class SchematicSetupDialog extends JDialog {
 	protected static final Dimension COMBO_SIZE  = new Dimension(200,24);
 	private static final long serialVersionUID = 2002388376824434427L;
 	private final int DIALOG_HEIGHT = 220;
 	private final int DIALOG_WIDTH = 560;
 	private final DesignerContext context;
-	private final ModuleRequestHandler requestHandler;
+	private final ToolkitRequestHandler requestHandler;
 	private final ResourceBundle rb;
 	// These are the widgets that will contain the user selections
 	protected JCheckBox useActiveCheckbox;
 	protected JCheckBox useCompiledCheckbox;
 	protected JCheckBox enableEnhancedCheckbox;
 	
-	public SetupDialog(DesignerContext ctx) {
+	public SchematicSetupDialog(DesignerContext ctx,ToolkitRequestHandler handler) {
 		super(ctx.getFrame());
 		this.context = ctx;
 		this.setTitle("Toolkit Configuration");
 		this.rb = ResourceBundle.getBundle("com.ils.blt.designer.designer");  // designer.properties
-		this.requestHandler = new ModuleRequestHandler();
+		this.requestHandler = handler;
 		setModal(true);
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));

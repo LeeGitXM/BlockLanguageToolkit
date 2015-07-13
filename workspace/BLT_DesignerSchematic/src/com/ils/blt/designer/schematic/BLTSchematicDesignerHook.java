@@ -26,7 +26,6 @@ import com.ils.blt.designer.ResourceCreateManager;
 import com.ils.blt.designer.ResourceDeleteManager;
 import com.ils.blt.designer.ResourceSaveManager;
 import com.ils.blt.designer.ResourceUpdateManager;
-import com.ils.blt.designer.SetupDialog;
 import com.ils.blt.designer.ValidationDialog;
 import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
 import com.ils.blt.designer.schematic.workspace.SchematicDiagramWorkspace;
@@ -68,6 +67,7 @@ public class BLTSchematicDesignerHook extends AbstractDesignerModuleHook  {
 	
 	public BLTSchematicDesignerHook() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
+		appRequestHandler = new SchematicRequestHandler();
 		nodeStatusManager = new NodeStatusManager();
 	}
 	
@@ -75,14 +75,16 @@ public class BLTSchematicDesignerHook extends AbstractDesignerModuleHook  {
 	@Override
 	public void initializeScriptManager(ScriptManager mgr) {
 		super.initializeScriptManager(mgr);
+		ModuleScriptFunctions.setRequestHandler(appRequestHandler);
 		mgr.addScriptModule(BLTProperties.SCHEMATIC_SCRIPT_PACKAGE,ModuleScriptFunctions.class);
+		ScriptExtensionManager.getInstance().setToolkitRequestHandler(appRequestHandler);
 	}
 	
 	// Insert a menu to allow control of database and tag provider.
     @Override
     public MenuBarMerge getModuleMenu() {
     	JMenuMerge controlMenu = new JMenuMerge(WellKnownMenuConstants.VIEW_MENU_NAME);
-    	MenuBarMerge merge = new MenuBarMerge(BLTProperties.MODULE_ID);  // as suggested in javadocs
+    	MenuBarMerge merge = new MenuBarMerge(BLTProperties.SCHEMATIC_MODULE_ID);  // as suggested in javadocs
     	if( !menuExists(context.getFrame(),BLTProperties.INTERFACE_MENU_TITLE) ) {
     		merge.addSeparator();
     		Action setupAction = new AbstractAction(BLTProperties.INTERFACE_MENU_TITLE) {
@@ -129,7 +131,7 @@ public class BLTSchematicDesignerHook extends AbstractDesignerModuleHook  {
 		}
 
 		// Setup the diagram workspace
-		workspace = new SchematicDiagramWorkspace(context);
+		workspace = new SchematicDiagramWorkspace(context,appRequestHandler);
 		rootNode = new SchematicTreeNode(context,workspace,appRequestHandler,nodeStatusManager);
 		context.getProjectBrowserRoot().getProjectFolder().addChild(rootNode);
 		context.registerResourceWorkspace(workspace);
@@ -241,7 +243,7 @@ public class BLTSchematicDesignerHook extends AbstractDesignerModuleHook  {
 
         public void run() {
             log.debugf("%s.Launching setup dialog...",TAG);
-            SetupDialog setup = new SetupDialog(context);
+            SchematicSetupDialog setup = new SchematicSetupDialog(context,appRequestHandler);
             setup.pack();
             setup.setVisible(true);
         }
@@ -254,7 +256,7 @@ public class BLTSchematicDesignerHook extends AbstractDesignerModuleHook  {
 
         public void run() {
             log.debugf("%s.Launching setup dialog...",TAG);
-            ValidationDialog validator = new ValidationDialog(context);
+            ValidationDialog validator = new ValidationDialog(context,appRequestHandler);
             validator.pack();
             validator.setVisible(true);
         }

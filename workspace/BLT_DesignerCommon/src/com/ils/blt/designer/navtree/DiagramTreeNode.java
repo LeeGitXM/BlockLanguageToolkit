@@ -22,7 +22,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.tree.TreePath;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ils.blt.common.ModuleRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.ToolkitRequestHandler;
@@ -484,8 +483,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	    }
 	    
 		public void actionPerformed(ActionEvent e) {
-			ModuleRequestHandler handler = new ModuleRequestHandler();
-			handler.resetDiagram(workspace.getActiveDiagram().getId().toString());
+			requestHandler.resetDiagram(workspace.getActiveDiagram().getId().toString());
 		}
 	}
 	private class SaveDiagramAction extends BaseAction {

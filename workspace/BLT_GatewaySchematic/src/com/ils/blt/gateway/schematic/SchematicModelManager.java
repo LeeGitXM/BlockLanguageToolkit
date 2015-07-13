@@ -58,7 +58,7 @@ public class SchematicModelManager extends ModelManager  {
 	 * @param res the model resource
 	 */
 	public void analyzeResource(Long projectId,ProjectResource res) {
-		if( res.getModuleId().equalsIgnoreCase(BLTProperties.MODULE_ID)) {
+		if( res.getModuleId().equalsIgnoreCase(BLTProperties.SCHEMATIC_MODULE_ID)) {
 			String type = res.getResourceType();
 			
 			if( type.equalsIgnoreCase(BLTProperties.SCHEMATIC_DIAGRAM_RESOURCE_TYPE) ) {

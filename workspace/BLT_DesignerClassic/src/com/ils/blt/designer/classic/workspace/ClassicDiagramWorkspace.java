@@ -8,16 +8,28 @@ import java.awt.BasicStroke;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
 import java.awt.geom.Path2D;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.ToolkitRequestHandler;
 import com.ils.blt.common.connection.ConnectionType;
+import com.ils.blt.common.serializable.SerializableBlock;
+import com.ils.blt.common.serializable.SerializableDiagram;
+import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.blt.designer.classic.BLTClassicDesignerHook;
 import com.ils.blt.designer.editor.PropertyEditorFrame;
 import com.ils.blt.designer.workspace.BasicAnchorPoint;
@@ -27,10 +39,14 @@ import com.ils.blt.designer.workspace.ProcessBlockPalette;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.ils.blt.designer.workspace.WorkspaceConstants;
+import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;
+import com.inductiveautomation.ignition.common.model.ApplicationScope;
+import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
+import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.BlockDiagramModel;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Connection;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.ConnectionPainter;
@@ -52,9 +68,9 @@ public class ClassicDiagramWorkspace extends DiagramWorkspace                   
 	/**
 	 * Constructor:
 	 */
-	public ClassicDiagramWorkspace(DesignerContext ctx) {
-		super(ctx);
-		this.statusManager = ((BLTClassicDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
+	public ClassicDiagramWorkspace(DesignerContext ctx,ToolkitRequestHandler handler) {
+		super(ctx,handler);
+		this.statusManager = ((BLTClassicDesignerHook)context.getModule(BLTProperties.CLASSIC_MODULE_ID)).getNavTreeStatusManager();
 		initialize();
 	}
 
@@ -62,7 +78,7 @@ public class ClassicDiagramWorkspace extends DiagramWorkspace                   
 	// Initialize the workspace frames.
 	private void initialize() {
 		// Create palette
-		ProcessBlockPalette tabbedPalette = new ProcessBlockPalette(context, this,handler);
+		ProcessBlockPalette tabbedPalette = new ProcessBlockPalette(context, this,requestHandler);
 		tabbedPalette.setInitMode(DockContext.STATE_FRAMEDOCKED);
 		tabbedPalette.setInitSide(DockContext.DOCK_SIDE_NORTH);
 		tabbedPalette.setInitIndex(0);
@@ -196,7 +212,69 @@ public class ClassicDiagramWorkspace extends DiagramWorkspace                   
 		return new ClassicDiagramContainer(this,bdm,this.newEdgeRouter(bdm),this.newConnectionPainter(bdm));
 	}
 	
-	
+	/**
+	 * Deserialize blocks that were serialized during a "copy" action.
+	 * The serialized string was stored on the clipboard.
+	 * @return blocks that were recently serialized as a result of a copy.
+	 */
+	@Override
+	public Collection<Block> pasteBlocks(String json) {
+		logger.infof("%s.pasteBlocks: %s",TAG,json);
+		ObjectMapper mapper = new ObjectMapper();
+		Collection<Block>results = new ArrayList<Block>();
+		JavaType type = mapper.getTypeFactory().constructCollectionType(ArrayList.class, SerializableBlock.class);
+		try {
+			List<SerializableBlock>list = mapper.readValue(json, type);
+			for(SerializableBlock sb:list) {
+				ProcessBlockView pbv = new ProcessBlockView(sb);
+				pbv.createPseudoRandomName();
+				pbv.createRandomId();
+				results.add(pbv);
+				// Special handling for an encapsulation block - create its sub-workspace
+				if(pbv.isEncapsulation()) {
+					try {
+						final long newId = context.newResourceId();
+						SerializableDiagram diagram = new SerializableDiagram();
+						diagram.setName(pbv.getName());
+						diagram.setResourceId(newId);
+						diagram.setId(UUID.randomUUID());
+						diagram.setEncapsulationBlockId(pbv.getId());
+						diagram.setDirty(false);    // Will become dirty as soon as we add a block
+						logger.infof("%s: new diagram for encapsulation block ...",TAG);
+						try{ 
+							json = mapper.writeValueAsString(diagram);
+						}
+						catch(JsonProcessingException jpe) {
+							logger.warnf("%s: Unable to serialize diagram (%s)",TAG,jpe.getMessage());
+						}
+						logger.infof("%s: serializeDiagram created json ... %s",TAG,json);
+
+						byte[] bytes = json.getBytes();
+						logger.debugf("%s: DiagramAction. create new %s resource %d (%d bytes)",TAG,BLTProperties.CLASSIC_DIAGRAM_RESOURCE_TYPE,
+								newId,bytes.length);
+						ProjectResource resource = new ProjectResource(newId,
+								requestHandler.getModuleId(), BLTProperties.CLASSIC_DIAGRAM_RESOURCE_TYPE,
+								pbv.getName(), ApplicationScope.GATEWAY, bytes);
+						resource.setParentUuid(getActiveDiagram().getId());
+						executionEngine.executeOnce(new ResourceUpdateManager(this,resource));					
+					} 
+					catch (Exception err) {
+						ErrorUtil.showError(TAG+" Exception pasting blocks",err);
+					}
+				}
+			}
+		} 
+		catch (JsonParseException jpe) {
+			logger.warnf("%s: pasteBlocks parse exception (%s)",TAG,jpe.getLocalizedMessage());
+		}
+		catch(JsonMappingException jme) {
+			logger.warnf("%s: pasteBlocks mapping exception (%s)",TAG,jme.getLocalizedMessage());
+		}
+		catch(IOException ioe) {
+			logger.warnf("%s: pasteBlocks IO exception (%s)",TAG,ioe.getLocalizedMessage());
+		}; 
+		return results;
+	}
 	/**
 	 * Paint connections. The cross-section is dependent on the connection type.
 	 */
