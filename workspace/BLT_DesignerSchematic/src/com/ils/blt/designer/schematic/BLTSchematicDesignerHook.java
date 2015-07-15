@@ -77,7 +77,6 @@ public class BLTSchematicDesignerHook extends AbstractDesignerModuleHook  {
 		super.initializeScriptManager(mgr);
 		ModuleScriptFunctions.setRequestHandler(appRequestHandler);
 		mgr.addScriptModule(BLTProperties.SCHEMATIC_SCRIPT_PACKAGE,ModuleScriptFunctions.class);
-		ScriptExtensionManager.getInstance().setToolkitRequestHandler(appRequestHandler);
 	}
 	
 	// Insert a menu to allow control of database and tag provider.
@@ -122,6 +121,7 @@ public class BLTSchematicDesignerHook extends AbstractDesignerModuleHook  {
 		// Initialize all the script modules from parameters stored in the ORM.
 		// We use all combinations of classes/flavors.
 		ScriptExtensionManager sem = ScriptExtensionManager.getInstance();
+		sem.setToolkitRequestHandler(appRequestHandler);
 		for( String flavor: sem.getFlavors() ) {
 			for(String clss: sem.getClassNames() ) {
 				String key = ScriptExtensionManager.makeKey(clss, flavor);

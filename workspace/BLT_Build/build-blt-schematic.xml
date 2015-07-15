@@ -296,7 +296,8 @@
 			<fileset dir="${basedir}/BLT_Build/temp_modl">
 				<include name="commons-math3-3.1.1.jar" />
 				<include name="blt-gateway.jar" />
-				<include name="block-definition.jar" />
+				<include name="blt-schematic-gateway.jar" />
+				<include name="schematic-block-definition.jar" />
 			</fileset>
 		</copy>
 	</target>

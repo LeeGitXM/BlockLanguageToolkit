@@ -1,5 +1,5 @@
 /**
- *   (c) 2013-2014  ILS Automation. All rights reserved.
+ *   (c) 2013-2015  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.editor;
 
@@ -32,10 +32,10 @@ import com.jidesoft.docking.DockableFrame;
 @SuppressWarnings("serial")
 public class PropertyEditorFrame extends DockableFrame implements ResourceWorkspaceFrame{
 	private static final String TAG = "PropertyEditorFrame";
-	public static final String DOCKING_KEY = "ProcessDiagramEditorFrame";
 	public static final String TITLE = "Block Properties Editor";
 	public static final String SHORT_TITLE = "Properties";
 	private final DesignerContext context;
+	private final String dockingKey;
 	private final NodeStatusManager statusManager;
 	private final DiagramWorkspace workspace;
 	private final JPanel contentPanel;
@@ -45,10 +45,11 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 	/**
 	 * Constructor 
 	 */
-	public PropertyEditorFrame(DesignerContext ctx,DiagramWorkspace workspace,NodeStatusManager sm) {
-		super(DOCKING_KEY, IconUtil.getRootIcon("delay_block_16.png"));  // Pinned icon
+	public PropertyEditorFrame(DesignerContext ctx,DiagramWorkspace workspace,NodeStatusManager sm,String key) {
+		super(key, IconUtil.getRootIcon("delay_block_16.png"));  // Pinned icon
 		this.context = ctx;
 		log.debugf("%s.PropertyEditorFrame: CONSTRUCTOR ...",TAG);
+		this.dockingKey = key;
 		this.statusManager = sm;
 		this.workspace = workspace;
 		workspace.addDesignableWorkspaceListener(new DiagramWorkspaceListener());
@@ -59,7 +60,7 @@ public class PropertyEditorFrame extends DockableFrame implements ResourceWorksp
 
 	@Override
 	public String getKey() {
-		return DOCKING_KEY;
+		return dockingKey;
 	}
 
 	/** 

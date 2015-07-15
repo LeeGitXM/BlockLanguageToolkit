@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <modules>
 	<module>
-		<id>blocktest</id>
+		<id>mock-block</id>
 		<name>@NAME@</name>
 		<description>@DESCRIPTION@</description>
 		<version>@VERSION@</version>
@@ -29,8 +29,8 @@
 		<jar scope="GD">jackson-databind-2.2.3.jar</jar>
 		<jar scope="GD">jackson-annotations-2.2.3.jar</jar>
 		<!-- Tell the Gateway and/or Designer where to find the hooks -->
-		<hook scope="G">com.ils.blt.test.gateway.BLTTestGatewayHook</hook>
-		<hook scope="D">com.ils.blt.test.designer.BLTTestDesignerHook</hook>
-		<hook scope="C">com.ils.blt.test.client.BLTTestClientHook</hook>
+		<hook scope="G">com.ils.blt.gateway.test.BLTTestGatewayHook</hook>
+		<hook scope="D">com.ils.blt.designer.test.BLTTestDesignerHook</hook>
+		<hook scope="C">com.ils.blt.client.test.BLTTestClientHook</hook>
 	</module>
 </modules>

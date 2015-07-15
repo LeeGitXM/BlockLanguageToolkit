@@ -9,13 +9,15 @@ import java.util.UUID;
 
 
 /**
- *  Define an interface for accessing module properties .
+ *  Define an interface for accessing module properties. We have constants for all the known "flavors" here.
  */
 public interface BLTProperties   {   
 	public final static String CLASSIC_MODULE_ID = "block";              // See module-blt-classic.xml
 	public final static String CLASSIC_MODULE_NAME = "BLT-Classic";      // See build-blt-classic.xml
 	public final static String SCHEMATIC_MODULE_ID = "schematic-block";  // See module-blt-schematic.xml
 	public final static String SCHEMATIC_MODULE_NAME = "BLT-Schematic";  // See build-blt-schematic.xml
+	public final static String TEST_MODULE_ID = "mock-block";            // See module-blt-test.xml
+	public final static String TEST_MODULE_NAME = "BLT-Test";            // See build-blt-test.xml
 	public final static String SFC_MODULE_ID = "com.ils.sfc"; 
 	
 	/** This are the names of the jar files containing block class definitions */
@@ -31,13 +33,18 @@ public interface BLTProperties   {
 	public final static String CLASSIC_SCRIPT_PACKAGE      = "system.ils.blt.diagram";
 	public final static String SCHEMATIC_SCRIPT_PACKAGE    = "system.ils.blt.schematic";
 	
-	/** This unique ID represents the root node in the project tree */
+	/** This unique ID represents the root node in the project tree 
+	 *  Note: The test system does not have a visible node.
+	 */
 	public static final UUID CLASSIC_ROOT_FOLDER_UUID = UUID
 			.fromString("7bbbd6b9-3140-4328-a844-51817eb47574");
 	public static final UUID SCHEMATIC_ROOT_FOLDER_UUID = UUID
 			.fromString("7cccd6b9-3140-4328-a844-51817eb47574");
-	public static final String CLASSIC_ROOT_FOLDER_NAME = "CROOT";
+	public static final UUID TEST_ROOT_FOLDER_UUID = UUID
+			.fromString("7dddd6b9-3140-4328-a844-51817eb47574");
+	public static final String CLASSIC_ROOT_FOLDER_NAME   = "CROOT";
 	public static final String SCHEMATIC_ROOT_FOLDER_NAME = "SROOT";
+	public static final String TEST_ROOT_FOLDER_NAME      = "TROOT";
 	public static final long ROOT_PARENT_ID = 0;    // For the status manager
 	public static final long ROOT_RESOURCE_ID = -1;
 	

@@ -64,6 +64,8 @@ import com.jidesoft.docking.DockContext;
  */
 public class ClassicDiagramWorkspace extends DiagramWorkspace                               {
 	private static final long serialVersionUID = 3033621416859049938L;
+	private static final String dockingKey = "ClassicBlockPalette";
+	private static final String editorKey = "ClassicPropertyEditorFrame";
 	private static final String key = "ClassicDiagramWorkspace";
 	/**
 	 * Constructor:
@@ -78,7 +80,7 @@ public class ClassicDiagramWorkspace extends DiagramWorkspace                   
 	// Initialize the workspace frames.
 	private void initialize() {
 		// Create palette
-		ProcessBlockPalette tabbedPalette = new ProcessBlockPalette(context, this,requestHandler);
+		ProcessBlockPalette tabbedPalette = new ProcessBlockPalette(context, this,requestHandler,dockingKey);
 		tabbedPalette.setInitMode(DockContext.STATE_FRAMEDOCKED);
 		tabbedPalette.setInitSide(DockContext.DOCK_SIDE_NORTH);
 		tabbedPalette.setInitIndex(0);
@@ -90,7 +92,7 @@ public class ClassicDiagramWorkspace extends DiagramWorkspace                   
 		frames = new ArrayList<ResourceWorkspaceFrame>();
 		frames.add(tabbedPalette);
 		
-		PropertyEditorFrame pef = new PropertyEditorFrame(context,this,statusManager);
+		PropertyEditorFrame pef = new PropertyEditorFrame(context,this,statusManager,editorKey);
 		pef.setInitMode(DockContext.STATE_FRAMEDOCKED);
 		pef.setInitSide(DockContext.DOCK_SIDE_WEST);
 		pef.setInitIndex(10);

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/BlockDef"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/Ignition-77"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/BLT_CommonTest"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/BLT_Common"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

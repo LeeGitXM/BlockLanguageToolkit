@@ -61,6 +61,8 @@ import com.jidesoft.docking.DockContext;
  */
 public class SchematicDiagramWorkspace extends DiagramWorkspace           {
 	private static final long serialVersionUID = 6885838413495575622L;
+	private static final String dockingKey = "SchematicBlockPalette";
+	private static final String editorKey = "SchematicPropertyEditorFrame";
 	private static final String key = "SchematicDiagramWorkspace";
 	/**
 	 * Constructor:
@@ -75,7 +77,7 @@ public class SchematicDiagramWorkspace extends DiagramWorkspace           {
 	// Initialize the workspace frames.
 	private void initialize() {
 		// Create palette
-		ProcessBlockPalette tabbedPalette = new ProcessBlockPalette(context, this,requestHandler);
+		ProcessBlockPalette tabbedPalette = new ProcessBlockPalette(context, this,requestHandler,dockingKey);
 		tabbedPalette.setInitMode(DockContext.STATE_FRAMEDOCKED);
 		tabbedPalette.setInitSide(DockContext.DOCK_SIDE_NORTH);
 		tabbedPalette.setInitIndex(0);
@@ -87,7 +89,7 @@ public class SchematicDiagramWorkspace extends DiagramWorkspace           {
 		frames = new ArrayList<ResourceWorkspaceFrame>();
 		frames.add(tabbedPalette);
 		
-		PropertyEditorFrame pef = new PropertyEditorFrame(context,this,statusManager);
+		PropertyEditorFrame pef = new PropertyEditorFrame(context,this,statusManager,editorKey);
 		pef.setInitMode(DockContext.STATE_FRAMEDOCKED);
 		pef.setInitSide(DockContext.DOCK_SIDE_WEST);
 		pef.setInitIndex(10);

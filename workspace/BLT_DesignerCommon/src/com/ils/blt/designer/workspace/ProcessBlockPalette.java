@@ -45,9 +45,9 @@ import com.jidesoft.docking.DockableFrame;
 public class ProcessBlockPalette extends DockableFrame implements ResourceWorkspaceFrame{
 	private static final long serialVersionUID = 4627016359409031941L;
 	private static final String TAG = "ProcessBlockPalette";
-	public static final String DOCKING_KEY = "ProcessBlockPalette";
 	private static final Dimension IMAGE_SIZE = new Dimension(32,32);
 	private final DesignerContext context;
+	private final String dockingKey;
 	private final AbstractBlockWorkspace workspace;
 	private LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	private final ToolkitRequestHandler requestHandler;
@@ -55,10 +55,11 @@ public class ProcessBlockPalette extends DockableFrame implements ResourceWorksp
 	/**
 	 * Constructor 
 	 */
-	public ProcessBlockPalette(DesignerContext ctx,AbstractBlockWorkspace workspace,ToolkitRequestHandler handler) {
-		super(DOCKING_KEY, IconUtil.getRootIcon("delay_block_16.png"));  // Pinned icon
+	public ProcessBlockPalette(DesignerContext ctx,AbstractBlockWorkspace workspace,ToolkitRequestHandler handler,String key) {
+		super(key, IconUtil.getRootIcon("delay_block_16.png"));  // Pinned icon
 		setUndockedBounds(new Rectangle(200, 100, 550, 130));
 		this.context = ctx;
+		this.dockingKey = key;
 		setAutohideHeight(100);
 		setAutohideWidth(120);
 		setDockedHeight(100);
@@ -90,7 +91,7 @@ public class ProcessBlockPalette extends DockableFrame implements ResourceWorksp
 
 	@Override
 	public String getKey() {
-		return DOCKING_KEY;
+		return dockingKey;
 	}
 
 

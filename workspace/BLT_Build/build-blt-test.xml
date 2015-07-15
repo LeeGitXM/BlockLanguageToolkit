@@ -5,10 +5,10 @@
 	<property name="version.build" value="0" />	
 	<!-- Change version.beta value to "" for release builds -->
 	<property name="version.beta" value="-development" />		
-	<property name="BLTTestModule.version" value="1.5.1.${version.build}" />
-	<property name="BLTTestModule.name" value="BLTTest" />
-	<property name="BLTTestModule.release" value="0.5" />
-	<property name="BLTTestModule.description" value="Block Language Toolkit - Test" />
+	<property name="BLTModule.version" value="1.5.1.${version.build}" />
+	<property name="BLTModule.name" value="BLT-Test" />
+	<property name="BLTModule.release" value="0.5" />
+	<property name="BLTModule.description" value="Block Language Toolkit - Test" />
 	<property name="root.dir" value="${basedir}/../.." />
 	<property name="jar.dir" value="${root.dir}/external/lib" />
 	<property name="sdk.dir" value="${root.dir}/ignition-77/lib" />
@@ -41,34 +41,34 @@
 	
 	<!-- Common jar classpath -->
 	<!-- The gateway, designer and clients depend on the Common -->
-	<path id="BLTTest_Common.classpath">
+	<path id="BLT_CommonTest.classpath">
 		<path refid="Ignition_SDK.classpath" />
 		<path refid="ExternalJar.classpath" />
 	</path>
 		
 	<!-- Gateway jar classpath -->
-	<path id="BLTTest_Gateway.classpath">
-		<path refid="BLTTest_Common.classpath" />
+	<path id="BLT_GatewayTest.classpath">
+		<path refid="BLT_CommonTest.classpath" />
 		<path refid="ExternalJar.classpath" />
 		<fileset dir="${basedir}/BLT_Build/bin/BLT_Common/dist/" includes="*.jar" />
 		<fileset dir="${basedir}/BLT_Build/bin/BLT_Gateway/dist/" includes="*.jar" />
-		<fileset dir="${basedir}/BLT_Build/bin/BLTTest_Common/dist/" includes="*.jar" />
+		<fileset dir="${basedir}/BLT_Build/bin/BLT_CommonTest/dist/" includes="*.jar" />
 		<fileset dir="${jar.dir}" includes="${block.jar.name}" />
 	</path>	
 	<!-- Client jar classpath -->
-	<path id="BLTTest_Client.classpath">
-		<path refid="BLTTest_Common.classpath" />
+	<path id="BLT_ClientTest.classpath">
+		<path refid="BLT_CommonTest.classpath" />
 		<path refid="ExternalJar.classpath" />
-		<fileset dir="${basedir}/BLT_Build/bin/BLTTest_Common/dist/" includes="*.jar" />
+		<fileset dir="${basedir}/BLT_Build/bin/BLT_CommonTest/dist/" includes="*.jar" />
 		<fileset dir="${jar.dir}" includes="${block.jar.name}" />
 	</path>
 	
 	<!-- Designer jar classpath -->
-	<path id="BLTTest_Designer.classpath">
-		<path refid="BLTTest_Common.classpath" />
+	<path id="BLT_DesignerTest.classpath">
+		<path refid="BLT_CommonTest.classpath" />
 		<path refid="ExternalJar.classpath" />
-		<fileset dir="${basedir}/BLT_Build/bin/BLTTest_Common/dist/" includes="*.jar" />
-		<fileset dir="${basedir}/BLT_Build/bin/${BLTTestModule.name}_Client/dist/" includes="*.jar" />
+		<fileset dir="${basedir}/BLT_Build/bin/BLT_CommonTest/dist/" includes="*.jar" />
+		<fileset dir="${basedir}/BLT_Build/bin/${BLTModule.name}_Client/dist/" includes="*.jar" />
 		<fileset dir="${jar.dir}" includes="${block.jar.name}" />
 	</path>
 	
@@ -77,7 +77,7 @@
 
 	<!-- Cleans previously built files - except for BLT jar files  -->
 	<target name="clean" description="Remove previous test build products" >
-		<delete file="${basedir}/BLT_Build/modules/${BLTTestModule.name}-module-unsigned.modl" />
+		<delete file="${basedir}/BLT_Build/modules/${BLTModule.name}-module-unsigned.modl" />
 		<delete dir="${basedir}/BLT_Build/release" />
 	</target>	
 	
@@ -96,7 +96,7 @@
 	
 	<!-- Builds the toolkit module jars and the final .modl file -->
 	<target name="build" depends="common.build,common.jar" description="Compile the source">
-		<echo message="${BLTTestModule.name} ${BLTTestModule.version}" />	
+		<echo message="${BLTModule.name} ${BLTModule.version}" />	
 		<delete dir="${basedir}/BLT_Build/temp_modl" />	
 		
 		<!-- build.date and version.build are both defined in build.xml -->
@@ -105,44 +105,44 @@
 				
 		<!-- BLTTest Common jar -->
 		<antcall target="MakeProject">
-			<param name="modName" value="${BLTTestModule.name}_Common" />
-			<param name="sourceDirFolder" value="${BLTTestModule.name}_Common" />
+			<param name="modName" value="${BLTModule.name}_Common" />
+			<param name="sourceDirFolder" value="${BLTModule.name}_Common" />
 			<param name="jarName" value="BLTTest-common" />
 			<param name="javacSource" value="1.7" />
-			<param name="module.build.classpath" value="${BLTTestModule.name}_Common.classpath"/>
+			<param name="module.build.classpath" value="${BLTModule.name}_Common.classpath"/>
 		</antcall>
 		
 		<!-- BLTTest Gateway jar -->
 		<antcall target="MakeProject">
-			<param name="modName" value="${BLTTestModule.name}_Gateway" />
-			<param name="sourceDirFolder" value="${BLTTestModule.name}_Gateway" />
+			<param name="modName" value="${BLTModule.name}_Gateway" />
+			<param name="sourceDirFolder" value="${BLTModule.name}_Gateway" />
 			<param name="jarName" value="BLTTest-gateway" />
 			<param name="javacSource" value="1.7" />
 			<param name="[replace]BLTTestGateway.properties:Meta.Version" value="${version.build}" />
 			<param name="[replace]BLTTestGateway.properties:Meta.ReleaseDate" value="${build.date}" />
-			<param name="module.build.classpath" value="${BLTTestModule.name}_Gateway.classpath"/>
+			<param name="module.build.classpath" value="${BLTModule.name}_Gateway.classpath"/>
 		</antcall>
 
 		<!-- BLTTest Client jar -->
 		<antcall target="MakeProject">
-			<param name="modName" value="${BLTTestModule.name}_Client" />
-			<param name="sourceDirFolder" value="${BLTTestModule.name}_Client" />
+			<param name="modName" value="${BLTModule.name}_Client" />
+			<param name="sourceDirFolder" value="${BLTModule.name}_Client" />
 			<param name="jarName" value="BLTTest-client" />
 			<param name="javacSource" value="1.7" />
-			<param name="module.build.classpath" value="${BLTTestModule.name}_Client.classpath"/>
+			<param name="module.build.classpath" value="${BLTModule.name}_Client.classpath"/>
 		</antcall>
 		
 		<!-- BLTTest Designer jar -->
 		<antcall target="MakeProject">
-			<param name="modName" value="${BLTTestModule.name}_Designer" />
-			<param name="sourceDirFolder" value="${BLTTestModule.name}_Designer" />
+			<param name="modName" value="${BLTModule.name}_Designer" />
+			<param name="sourceDirFolder" value="${BLTModule.name}_Designer" />
 			<param name="jarName" value="BLTTest-designer" />
 			<param name="javacSource" value="1.7" />
-			<param name="module.build.classpath" value="${BLTTestModule.name}_Designer.classpath"/>
+			<param name="module.build.classpath" value="${BLTModule.name}_Designer.classpath"/>
 		</antcall>
 		
 		<!-- Create .modl file -->
-		<echo message="Making ${BLTTestModule.name} modl" />
+		<echo message="Making ${BLTModule.name} modl" />
 
 		<mkdir dir="${basedir}/BLT_Build/temp_modl" />
 		<mkdir dir="${basedir}/BLT_Build/modules" />
@@ -150,14 +150,14 @@
 
 		<copy file="${basedir}/BLT_Build/module-blt-test.xml" tofile="${basedir}/BLT_Build/temp_modl/module.xml" overwrite="true" />
 
-		<replace file="${basedir}/BLT_Build/temp_modl/module.xml" token="@NAME@" value="${BLTTestModule.name}" />
-		<replace file="${basedir}/BLT_Build/temp_modl/module.xml" token="@DESCRIPTION@" value="${BLTTestModule.description}" />
-		<replace file="${basedir}/BLT_Build/temp_modl/module.xml" token="@VERSION@" value="${BLTTestModule.version}" />
+		<replace file="${basedir}/BLT_Build/temp_modl/module.xml" token="@NAME@" value="${BLTModule.name}" />
+		<replace file="${basedir}/BLT_Build/temp_modl/module.xml" token="@DESCRIPTION@" value="${BLTModule.description}" />
+		<replace file="${basedir}/BLT_Build/temp_modl/module.xml" token="@VERSION@" value="${BLTModule.version}" />
 
 		<!-- Pack200 and then copy the designer, client jars -->
-		<pack200 src="${basedir}/BLT_Build/bin/${BLTTestModule.name}_Client/dist/BLTTest-client.jar" destfile="${basedir}/BLT_Build/temp_modl/blt-test-client.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
-		<pack200 src="${basedir}/BLT_Build/bin/${BLTTestModule.name}_Designer/dist/BLTTest-designer.jar" destfile="${basedir}/BLT_Build/temp_modl/blt-test-designer.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
-		<pack200 src="${basedir}/BLT_Build/bin/${BLTTestModule.name}_Common/dist/BLTTest-common.jar" destfile="${basedir}/BLT_Build/temp_modl/blt-test-common.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
+		<pack200 src="${basedir}/BLT_Build/bin/${BLTModule.name}_Client/dist/BLTTest-client.jar" destfile="${basedir}/BLT_Build/temp_modl/blt-test-client.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
+		<pack200 src="${basedir}/BLT_Build/bin/${BLTModule.name}_Designer/dist/BLTTest-designer.jar" destfile="${basedir}/BLT_Build/temp_modl/blt-test-designer.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
+		<pack200 src="${basedir}/BLT_Build/bin/${BLTModule.name}_Common/dist/BLTTest-common.jar" destfile="${basedir}/BLT_Build/temp_modl/blt-test-common.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		<pack200 src="${basedir}/../../external/lib/ils-common.jar" destfile="${basedir}/BLT_Build/temp_modl/ils-common.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		<pack200 src="${basedir}/../../external/lib/block-definition.jar" destfile="${basedir}/BLT_Build/temp_modl/block-definition.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		<pack200 src="${basedir}/../../external/lib/jackson-core-2.2.3.jar" destfile="${basedir}/BLT_Build/temp_modl/jackson-core-2.2.3.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
@@ -165,8 +165,8 @@
 		<pack200 src="${basedir}/../../external/lib/jackson-annotations-2.2.3.jar" destfile="${basedir}/BLT_Build/temp_modl/jackson-annotations-2.2.3.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		
 		<!-- Copy gateway jar -->
-		<copy file="${basedir}/BLT_Build/bin/${BLTTestModule.name}_Gateway/dist/BLTTest-gateway.jar" tofile="${basedir}/BLT_Build/temp_modl/blt-test-gateway.jar" />
-		<copy file="${basedir}/BLT_Build/bin/${BLTTestModule.name}_Common/dist/BLTTest-common.jar" tofile="${basedir}/BLT_Build/temp_modl/blt-test-common.jar" />
+		<copy file="${basedir}/BLT_Build/bin/${BLTModule.name}_Gateway/dist/BLTTest-gateway.jar" tofile="${basedir}/BLT_Build/temp_modl/blt-test-gateway.jar" />
+		<copy file="${basedir}/BLT_Build/bin/${BLTModule.name}_Common/dist/BLTTest-common.jar" tofile="${basedir}/BLT_Build/temp_modl/blt-test-common.jar" />
 		<copy file="${basedir}/BLT_Build/bin/BLT_Common/dist/blt-common.jar" todir="${basedir}/BLT_Build/temp_modl" />
 		<copy file="${basedir}/BLT_Build/bin/BLT_Gateway/dist/blt-gateway.jar" todir="${basedir}/BLT_Build/temp_modl" />
 		
@@ -185,17 +185,17 @@
 		    <fileset dir="${basedir}/BLT_Build/doc"/>
 		</copy>
 		<!-- Echo the version into .version in the bundle and to be saved -->
-		<echo message="${BLTTestModule.name}-${BLTTestModule.version}" file="${basedir}/BLT_Build/temp_modl/.version" append="false"/>
-		<echo message="${BLTTestModule.name}-${BLTTestModule.name}:${BLTTestModule.release}" file="${basedir}/BLT_Build/.version" append="false"/>
+		<echo message="${BLTModule.name}-${BLTModule.version}" file="${basedir}/BLT_Build/temp_modl/.version" append="false"/>
+		<echo message="${BLTModule.name}-${BLTModule.name}:${BLTModule.release}" file="${basedir}/BLT_Build/.version" append="false"/>
 		
 		<!-- Zip it all up -->
-		<zip zipfile="${basedir}/BLT_Build/modules/${BLTTestModule.name}-module-unsigned.modl" basedir="${basedir}/BLT_Build/temp_modl" />
+		<zip zipfile="${basedir}/BLT_Build/modules/${BLTModule.name}-module-unsigned.modl" basedir="${basedir}/BLT_Build/temp_modl" />
 	</target>
 
 	<!-- Installs BLTTest module in local Ignition gateway. Note that the gateway must be running in developer mode for this to succeed. -->
 	<target name="deploy" depends="build" >
-		<echo message="Installing ${BLTTestModule.name} on Ignition Gateway." />
-		<postmodule posturl="${local.gateway.url}" modulefile="${basedir}/BLT_Build/modules/${BLTTestModule.name}-module-unsigned.modl" />
+		<echo message="Installing ${BLTModule.name} on Ignition Gateway." />
+		<postmodule posturl="${local.gateway.url}" modulefile="${basedir}/BLT_Build/modules/${BLTModule.name}-module-unsigned.modl" />
 	</target>	
 
 </project>
