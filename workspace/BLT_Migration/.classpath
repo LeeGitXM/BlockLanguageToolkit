@@ -6,7 +6,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/BlockDef"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/BLT_Common"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ILS_Common"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/BLT_Designer"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Ignition-77"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
