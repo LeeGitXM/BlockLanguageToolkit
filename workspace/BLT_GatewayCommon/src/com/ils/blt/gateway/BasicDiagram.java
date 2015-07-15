@@ -151,8 +151,9 @@ public abstract class BasicDiagram extends ProcessNode {
 		
 		Collection<IncomingNotification>notifications = new ArrayList<IncomingNotification>();
 		BlockPort key = new BlockPort(block,port);
-		List<ProcessConnection> cxns = outgoingConnections.get(key);
-		if( cxns!=null ) {
+		if( outgoingConnections.get(key)!=null ) {
+			// Use copy to prevent concurrent modification exception.
+			List<ProcessConnection> cxns = new ArrayList<>(outgoingConnections.get(key));
 			for(ProcessConnection cxn:cxns) {
 				UUID blockId = cxn.getTarget();
 				CoreBlock blk = blocks.get(blockId);
