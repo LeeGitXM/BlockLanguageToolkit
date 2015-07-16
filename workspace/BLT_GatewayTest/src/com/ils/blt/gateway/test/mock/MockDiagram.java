@@ -4,6 +4,7 @@
 package com.ils.blt.gateway.test.mock;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -13,9 +14,10 @@ import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.CoreBlock;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.connection.ProcessConnection;
+import com.ils.blt.common.notification.BroadcastNotification;
+import com.ils.blt.common.notification.SignalNotification;
 import com.ils.blt.common.serializable.SerializableDiagram;
-import com.ils.blt.gateway.classic.ClassicDiagram;
-import com.ils.blt.gateway.engine.BlockExecutionController;
+import com.ils.blt.gateway.BasicDiagram;
 
 /**
  * A mock diagram is a process diagram, specially created for functional testing
@@ -169,5 +171,27 @@ public class MockDiagram extends BasicDiagram {
 			}
 		}
 		return anchor;
+	}
+
+	@Override
+	public void createBlocks(SerializableDiagram diagram) {
+	}
+
+	@Override
+	public Collection<SignalNotification> getBroadcastNotifications(BroadcastNotification incoming) {
+		return null;
+	}
+
+	@Override
+	public void setState(DiagramState s) {
+		this.state = s;  // No side effects
+	}
+
+	@Override
+	public void updateBlockTimers() {
+	}
+
+	@Override
+	public void updateProperties(SerializableDiagram diagram) {
 	}
 }

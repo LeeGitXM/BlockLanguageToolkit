@@ -7,7 +7,7 @@ package com.ils.blt.designer.test;
 
 
 import com.ils.blt.client.test.MockDiagramScriptFunctions;
-import com.ils.blt.test.common.BLTTestProperties;
+import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.common.expressions.ExpressionFunctionManager;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
@@ -31,7 +31,7 @@ public class BLTTestDesignerHook extends AbstractDesignerModuleHook {
 	@Override
 	public void initializeScriptManager(ScriptManager mgr) {
 		super.initializeScriptManager(mgr);
-		mgr.addScriptModule(BLTTestProperties.MOCK_SCRIPT_PACKAGE,MockDiagramScriptFunctions.class);
+		mgr.addScriptModule(BLTProperties.TEST_SCRIPT_PACKAGE,MockDiagramScriptFunctions.class);
 	}
 	
 	@Override

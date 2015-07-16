@@ -5,8 +5,8 @@ package com.ils.blt.gateway.test;
 
 import java.util.UUID;
 
+import com.ils.blt.common.test.MockDiagramScriptingInterface;
 import com.ils.blt.gateway.engine.BlockExecutionController;
-import com.ils.blt.test.common.MockDiagramScriptingInterface;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;

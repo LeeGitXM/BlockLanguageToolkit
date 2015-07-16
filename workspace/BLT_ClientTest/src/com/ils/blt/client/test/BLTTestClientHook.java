@@ -3,7 +3,7 @@
  */
 package com.ils.blt.client.test;
 
-import com.ils.blt.common.test.BLTTestProperties;
+import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.client.model.ClientContext;
 import com.inductiveautomation.ignition.common.expressions.ExpressionFunctionManager;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
@@ -18,7 +18,7 @@ public class BLTTestClientHook implements ClientModuleHook {
 	 */
 	@Override
 	public void initializeScriptManager(ScriptManager mgr) {
-		mgr.addScriptModule(BLTTestProperties.MOCK_SCRIPT_PACKAGE,MockDiagramScriptFunctions.class);
+		mgr.addScriptModule(BLTProperties.TEST_SCRIPT_PACKAGE,MockDiagramScriptFunctions.class);
 	}
 
 	@Override

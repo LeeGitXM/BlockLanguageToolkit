@@ -32,6 +32,7 @@ public interface BLTProperties   {
 	
 	public final static String CLASSIC_SCRIPT_PACKAGE      = "system.ils.blt.diagram";
 	public final static String SCHEMATIC_SCRIPT_PACKAGE    = "system.ils.blt.schematic";
+	public final static String TEST_SCRIPT_PACKAGE         = "system.ils.blt.mock";
 	
 	/** This unique ID represents the root node in the project tree 
 	 *  Note: The test system does not have a visible node.

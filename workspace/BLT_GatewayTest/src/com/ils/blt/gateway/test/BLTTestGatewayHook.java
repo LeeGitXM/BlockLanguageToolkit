@@ -3,11 +3,11 @@
  */
 package com.ils.blt.gateway.test;
 
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.gateway.classic.ClassicModelManager;
 import com.ils.blt.gateway.classic.ClassicRequestHandler;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ModelManager;
-import com.ils.blt.test.common.BLTTestProperties;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -68,7 +68,7 @@ public class BLTTestGatewayHook extends AbstractGatewayModuleHook  {
 	@Override
 	public void initializeScriptManager(ScriptManager mgr) {
 		super.initializeScriptManager(mgr);
-		mgr.addScriptModule(BLTTestProperties.MOCK_SCRIPT_PACKAGE,GatewayMockDiagramScriptFunctions.class);
+		mgr.addScriptModule(BLTProperties.TEST_SCRIPT_PACKAGE,GatewayMockDiagramScriptFunctions.class);
 	}
 
 }
