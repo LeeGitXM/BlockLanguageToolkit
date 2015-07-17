@@ -179,29 +179,31 @@ public class ProcessDiagram extends ProcessNode {
 					if( connections==null ) {
 						connections = new ArrayList<ProcessConnection>();
 						outgoingConnections.put(key, connections);
-						log.tracef("%s.analyze: mapping connection from %s:%s",TAG,upstreamBlock.getBlockId().toString(),pc.getUpstreamPortName());
+						log.tracef("%s.updateConnections: mapping connection from %s:%s",TAG,upstreamBlock.getBlockId().toString(),pc.getUpstreamPortName());
 					}
 					if( !connections.contains(pc) ) connections.add(pc);
 				}
 				else {
-					log.warnf("%s.analyze: Source block (%s) not found for connection",TAG,pc.getSource().toString());
+					log.warnf("%s.updateConnections: Source block (%s) not found for connection",TAG,pc.getSource().toString());
 				}
 				ProcessBlock downstreamBlock = blocks.get(pc.getTarget());
-				if( downstreamBlock!=null ) {
+				if( downstreamBlock!=null && pc.getDownstreamPortName()!=null) {
+					log.warnf("%s.updateConnections: Connect to downstream port %s",TAG,pc.getDownstreamPortName());
 					BlockPort key = new BlockPort(downstreamBlock,pc.getDownstreamPortName());
 					List<ProcessConnection> connections = incomingConnections.get(key);
 					if( connections==null ) {
 						connections = new ArrayList<ProcessConnection>();
+						log.warnf("%s.updateConnections: We've died here ...",TAG);
 						incomingConnections.put(key, connections);
 					}
 					if( !connections.contains(pc) ) connections.add(pc);
 				}
 				else {
-					log.warnf("%s.analyze: Target block (%s) not found for connection",TAG,pc.getTarget().toString());
+					log.warnf("%s.updateConnections: Target block (%s) not found for connection",TAG,pc.getTarget().toString());
 				}
 			}
 			else {
-				log.warnf("%s.analyze: %s has invalid serialized connection (%s)",TAG,diagram.getName(),invalidConnectionReason(sc));
+				log.warnf("%s.updateConnections: %s has invalid serialized connection (%s)",TAG,diagram.getName(),invalidConnectionReason(sc));
 			}
 
 		}
@@ -358,8 +360,8 @@ public class ProcessDiagram extends ProcessNode {
 		
 		Collection<IncomingNotification>notifications = new ArrayList<IncomingNotification>();
 		BlockPort key = new BlockPort(block,port);
-		List<ProcessConnection> cxns = outgoingConnections.get(key);
-		if( cxns!=null ) {
+		if( outgoingConnections.get(key)!=null ) {
+			List<ProcessConnection> cxns = new ArrayList<>(outgoingConnections.get(key));
 			for(ProcessConnection cxn:cxns) {
 				UUID blockId = cxn.getTarget();
 				ProcessBlock blk = blocks.get(blockId);
