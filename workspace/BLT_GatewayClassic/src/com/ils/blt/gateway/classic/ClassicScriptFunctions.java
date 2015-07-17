@@ -26,7 +26,7 @@ public class ClassicScriptFunctions   {
 	// These methods must be called before scriting is functional.
 	public static void setRequestHandler(ClassicRequestHandler h)      { 
 		handler   = h; 
-		pyhandler = new PythonRequestHandler(handler);
+		pyhandler = new PythonRequestHandler();
 	};
 	
 	

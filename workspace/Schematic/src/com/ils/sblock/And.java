@@ -6,7 +6,6 @@ package com.ils.sblock;
 import java.util.UUID;
 
 import com.ils.blt.common.annotation.CompilableBlock;
-import com.ils.blt.common.annotation.ExecutableBlock;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;

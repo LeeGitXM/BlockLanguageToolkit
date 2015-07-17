@@ -25,7 +25,6 @@ import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.gateway.BasicDiagram;
 import com.ils.blt.gateway.BasicRequestHandler;
-import com.ils.blt.gateway.PythonRequestHandler;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ProcessApplication;
 import com.ils.blt.gateway.engine.ProcessFamily;
@@ -42,14 +41,12 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
  */
 public class ClassicRequestHandler extends BasicRequestHandler implements ToolkitRequestHandler  {
 	private final static String TAG = "ClassicRequestHandler";
-	private final PythonRequestHandler pyHandler;
     
 	/**
 	 * Initialize with instances of the classes to be controlled.
 	 */
 	public ClassicRequestHandler(GatewayContext ctx) {
 		super(ctx,BLTProperties.CLASSIC_MODULE_ID);
-		pyHandler = new PythonRequestHandler(this);
 	}
 
 

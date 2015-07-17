@@ -295,12 +295,16 @@ public abstract class BasicDiagram extends ProcessNode {
 			}
 		}
 	}
+	
+	/**
+	 * This MUST be overidden to set the descriptor type.
+	 */
 	@Override
 	public SerializableResourceDescriptor toResourceDescriptor() {
 		SerializableResourceDescriptor descriptor = super.toResourceDescriptor();
-		descriptor.setType(BLTProperties.CLASSIC_DIAGRAM_RESOURCE_TYPE);
 		return descriptor;
 	}
+
 	
 	/**
 	 * Loop through the diagram's blocks setting the timer appropriate

@@ -117,6 +117,8 @@ public interface BLTProperties   {
 	
 	// Dialog Titles
 	public static final String INTERFACE_MENU_TITLE  = "External Interface Configuration";
+	public static final String CLASSIC_TOOLKIT_CONFIGURATION_MENU_TITLE  = "Diagnostic Blocks Toolkit Configuration";
+	public static final String SCHEMATIC_TOOLKIT_CONFIGURATION_MENU_TITLE  = "Schematic Blocks Toolkit Configuration";
 	public static final String VALIDATION_MENU_TITLE = "Validate Diagrams";
 	
 	// Name to use for "Good" Quality
@@ -126,20 +128,23 @@ public interface BLTProperties   {
 	public static final String PREFERENCES_NAME     = "BLTPreferences";    // Preferences collection name
 	public static final String PREF_EXIM_DIRECTORY  = "ExImDirectory";     // Export/import directory
 	public static final String PREF_CONFIG_DIRECTORY= "ConfigDirectory";   // Project properties configuration
+	
 	// These are the names of diagram configurable properties (specific instances saved in HSQLdb)
-	public static final String DIAGRAM_PROPERTY_ROOT_NAME           = "RootName";       // Name of root node in nav tree
-	public static final String DIAGRAM_PROPERTY_CLASSIC_ROOT_NAME   = "ClassicRootName";       // Name of root node in nav tree
-	public static final String DIAGRAM_PROPERTY_SCHEMATIC_ROOT_NAME = "SchematicRootName";       // Name of root node in nav tree
+	public static final String DEFAULT_CLASSIC_ROOT_FOLDER_NAME   = "ClassicRootName";       // Name of root node in nav tree
+	public static final String DEFAULT_SCHEMATIC_ROOT_FOLDER_NAME = "SchematicRootName";       // Name of root node in nav tree
 	
 	// These are the names of toolkit properties that are to be stored in HSQLdb
-	public static final String TOOLKIT_PROPERTY_ACTIVE_BLOCKS       = "EnableActive";       // Enable active dialogs
-	public static final String TOOLKIT_PROPERTY_COMPILED_BLOCKS     = "EnableCompiled";     // Enable schematic dialogs
+	public static final String TOOLKIT_PROPERTY_CLASSIC_ROOT        = "ClassicRootFolder";  // Name of root folder in Nav tree
 	public static final String TOOLKIT_PROPERTY_DATABASE            = "Database";           // Production database
 	public static final String TOOLKIT_PROPERTY_ENHANCED_TREE       = "EnhancedTree";       // Show Applications/Families
+	public static final String TOOLKIT_PROPERTY_FALSE_COLOR         = "ClassicFalseColor";  // An int color
 	public static final String TOOLKIT_PROPERTY_ISOLATION_DATABASE  = "SecondaryDatabase";  // Database when in isolation
-	public static final String TOOLKIT_PROPERTY_PROVIDER            = "Provider";           // Production tag provider
 	public static final String TOOLKIT_PROPERTY_ISOLATION_PROVIDER  = "SecondaryProvider";  // Tag provider when in isolation
 	public static final String TOOLKIT_PROPERTY_ISOLATION_TIME      = "SecondaryTimeFactor";// Time speedup when in isolation
+	public static final String TOOLKIT_PROPERTY_PROVIDER            = "Provider";           // Production tag provider
+	public static final String TOOLKIT_PROPERTY_SCHEMATIC_ROOT      = "SchematicRootFolder";// Name of root folder in Nav tree
+	public static final String TOOLKIT_PROPERTY_TRUE_COLOR          = "ClassicTrueColor";   // An int color
+	
 	
 	
 }

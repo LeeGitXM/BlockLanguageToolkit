@@ -12,6 +12,7 @@ import org.apache.wicket.markup.html.WebMarkupContainer;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.gateway.GatewayRpcDispatcher;
+import com.ils.blt.gateway.PythonRequestHandler;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ModelManager;
 import com.ils.blt.gateway.persistence.ToolkitRecord;
@@ -67,6 +68,7 @@ public class BLTSchematicGatewayHook extends AbstractGatewayModuleHook  {
 		//       Exception is thrown when we try to incorporate a StatusPanel
 		log.info(TAG+".setup - enable project listeners.");
 		requestHandler = new SchematicRequestHandler(context);
+		PythonRequestHandler.initialize(requestHandler);
 		ScriptExtensionManager.getInstance().setToolkitRequestHandler(requestHandler);   // Probably never used
 		dispatcher = new GatewayRpcDispatcher(context,requestHandler);
 		ProxyHandler.getInstance().setContext(context);

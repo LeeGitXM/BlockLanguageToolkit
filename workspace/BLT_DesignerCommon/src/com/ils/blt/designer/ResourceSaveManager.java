@@ -74,7 +74,8 @@ public class ResourceSaveManager implements Runnable {
 		ProjectResource res = node.getProjectResource();
 		if( res!=null ) {
 			logger.infof("%s.saveDirtyDiagrams: %s (%d)",TAG,res.getName(),res.getResourceId());
-			if(res.getResourceType().equals(BLTProperties.CLASSIC_DIAGRAM_RESOURCE_TYPE) ) {
+			if(res.getResourceType().equals(BLTProperties.CLASSIC_DIAGRAM_RESOURCE_TYPE) ||
+			   res.getResourceType().equals(BLTProperties.SCHEMATIC_DIAGRAM_RESOURCE_TYPE )	) {
 				// If the resource is open, we need to save it
 				workspace.saveOpenDiagrams();
 			}

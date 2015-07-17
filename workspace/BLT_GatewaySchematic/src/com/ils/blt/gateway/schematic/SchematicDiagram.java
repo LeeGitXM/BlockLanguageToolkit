@@ -82,6 +82,7 @@ public class SchematicDiagram extends BasicDiagram {
 		Collection<SignalNotification>notifications = new ArrayList<SignalNotification>();
 		return notifications;
 	}
+
 	/**
 	 * Reset all blocks in the diagram, then evaluate the inputs.
 	 */

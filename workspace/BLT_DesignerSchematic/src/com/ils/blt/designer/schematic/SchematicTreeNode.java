@@ -58,7 +58,9 @@ public class SchematicTreeNode extends GeneralPurposeTreeNode  {
 	 */
 	public SchematicTreeNode(DesignerContext ctx,DiagramWorkspace wksp,ToolkitRequestHandler handler,NodeStatusManager sm) {
 		super(ctx,BLTProperties.SCHEMATIC_ROOT_FOLDER_UUID,wksp,handler,sm);
-		this.setName(BLTProperties.SCHEMATIC_ROOT_FOLDER_NAME);
+		String rootName = requestHandler.getToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_SCHEMATIC_ROOT);
+		if( rootName == null ) rootName = BLTProperties.DEFAULT_SCHEMATIC_ROOT_FOLDER_NAME;
+		this.setName(rootName);
 		setText(BundleUtil.get().getString(PREFIX+".RootFolderSchematicName"));
 	}
 	/**

@@ -50,7 +50,6 @@ public class SchematicRequestHandler implements ToolkitRequestHandler {
 
 	@Override
 	public List<SerializableResourceDescriptor> childNodes(String nodeId) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

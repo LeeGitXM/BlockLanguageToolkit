@@ -60,15 +60,18 @@ public class BasicRequestHandler implements ToolkitRequestHandler  {
 	protected final GatewayContext context;
 	protected final String moduleId;
 	protected final BlockExecutionController controller = BlockExecutionController.getInstance();
+	protected final PythonRequestHandler pyHandler;
 	protected final ScriptExtensionManager sem = ScriptExtensionManager.getInstance();
     
 	/**
 	 * Initialize with context and appropriate python handler.
+	 * Note: The PythonRequestHandler class is initialized in thehook.
 	 */
 	public BasicRequestHandler(GatewayContext ctx,String module) {
 		this.context = ctx;
 		this.moduleId = module;
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
+		this.pyHandler = new PythonRequestHandler();
 	}
 	
 

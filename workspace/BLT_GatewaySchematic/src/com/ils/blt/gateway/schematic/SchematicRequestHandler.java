@@ -12,7 +12,7 @@ import java.util.UUID;
 
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.ToolkitRequestHandler;
-import com.ils.blt.common.annotation.ExecutableBlock;
+import com.ils.blt.common.annotation.CompilableBlock;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.CoreBlock;
@@ -129,7 +129,7 @@ public class SchematicRequestHandler extends BasicRequestHandler implements Tool
 	public List<PalettePrototype> getBlockPrototypes() {
 		List<PalettePrototype> results = new ArrayList<>();
 		ClassList cl = new ClassList();
-		List<Class<?>> classes = cl.getAnnotatedClasses(BLTProperties.SCHEMATIC_BLOCK_JAR_NAME, ExecutableBlock.class,"com/ils/block/");
+		List<Class<?>> classes = cl.getAnnotatedClasses(BLTProperties.SCHEMATIC_BLOCK_JAR_NAME, CompilableBlock.class,"com/ils/sblock/");
 		for( Class<?> cls:classes) {
 			log.debugf("   found block class: %s",cls.getName());
 			try {
@@ -139,7 +139,7 @@ public class SchematicRequestHandler extends BasicRequestHandler implements Tool
 					results.add(bp);
 				}
 				else {
-					log.warnf("%s: Class %s not a ProcessBlock",TAG,cls.getName());
+					log.warnf("%s.getBlockPrototypes: Class %s not a SchematicBlock",TAG,cls.getName());
 				}
 			} 
 			catch (InstantiationException ie) {

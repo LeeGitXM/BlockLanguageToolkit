@@ -55,7 +55,8 @@ public class ResourceUpdateManager implements Runnable {
 		// Now save the resource, as it is.
 		Project diff = context.getProject().getEmptyCopy();
 		
-		if(res.getResourceType().equals(BLTProperties.CLASSIC_DIAGRAM_RESOURCE_TYPE) ) {
+		if(res.getResourceType().equals(BLTProperties.CLASSIC_DIAGRAM_RESOURCE_TYPE) ||
+		   res.getResourceType().equals(BLTProperties.SCHEMATIC_DIAGRAM_RESOURCE_TYPE)	) {
 			// If the resource is open, we need to save it
 			long resourceId = res.getResourceId();
 			BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId);

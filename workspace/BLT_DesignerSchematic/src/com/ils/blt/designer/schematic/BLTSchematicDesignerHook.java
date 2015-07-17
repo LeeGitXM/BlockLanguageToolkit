@@ -20,13 +20,13 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.ModuleScriptFunctions;
 import com.ils.blt.common.ToolkitRequestHandler;
 import com.ils.blt.common.script.ScriptExtensionManager;
+import com.ils.blt.designer.InterfaceConfigurationDialog;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.NotificationHandler;
 import com.ils.blt.designer.ResourceCreateManager;
 import com.ils.blt.designer.ResourceDeleteManager;
 import com.ils.blt.designer.ResourceSaveManager;
 import com.ils.blt.designer.ResourceUpdateManager;
-import com.ils.blt.designer.ValidationDialog;
 import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
 import com.ils.blt.designer.schematic.workspace.SchematicDiagramWorkspace;
 import com.ils.blt.designer.search.BLTSearchProvider;
@@ -71,6 +71,7 @@ public class BLTSchematicDesignerHook extends AbstractDesignerModuleHook  {
 		nodeStatusManager = new NodeStatusManager();
 	}
 	
+	public GeneralPurposeTreeNode getRootNode() { return this.rootNode; }
 	
 	@Override
 	public void initializeScriptManager(ScriptManager mgr) {
@@ -89,16 +90,16 @@ public class BLTSchematicDesignerHook extends AbstractDesignerModuleHook  {
     		Action setupAction = new AbstractAction(BLTProperties.INTERFACE_MENU_TITLE) {
     			private static final long serialVersionUID = 5374667367733312464L;
     			public void actionPerformed(ActionEvent ae) {
-    				SwingUtilities.invokeLater(new SetupDialogRunner());
+    				SwingUtilities.invokeLater(new ExternalInterfaceDialogRunner());
     			}
     		};
     		controlMenu.add(setupAction);
     	}
-    	if( !menuExists(context.getFrame(),BLTProperties.VALIDATION_MENU_TITLE) ) {
-    		Action validateAction = new AbstractAction(BLTProperties.VALIDATION_MENU_TITLE) {
+    	if( !menuExists(context.getFrame(),BLTProperties.SCHEMATIC_TOOLKIT_CONFIGURATION_MENU_TITLE) ) {
+    		Action validateAction = new AbstractAction(BLTProperties.SCHEMATIC_TOOLKIT_CONFIGURATION_MENU_TITLE) {
     			private static final long serialVersionUID = 5374667367733312464L;
     			public void actionPerformed(ActionEvent ae) {
-    				SwingUtilities.invokeLater(new ValidationDialogRunner());
+    				SwingUtilities.invokeLater(new SchematicConfigurationDialogRunner());
     			}
     		};
     		controlMenu.add(validateAction);
@@ -235,30 +236,30 @@ public class BLTSchematicDesignerHook extends AbstractDesignerModuleHook  {
 		
 		return false;
 	}
-	 /**
+	/**
      * Display a popup dialog for configuration of dialog execution parameters.
      * Run in a separate thread, as a modal dialog in-line here will freeze the UI.
      */
-    private class SetupDialogRunner implements Runnable {
+    private class ExternalInterfaceDialogRunner implements Runnable {
 
         public void run() {
-            log.debugf("%s.Launching setup dialog...",TAG);
-            SchematicSetupDialog setup = new SchematicSetupDialog(context,appRequestHandler);
-            setup.pack();
-            setup.setVisible(true);
+            log.debugf("%s.Launching interface configuration dialog...",TAG);
+            InterfaceConfigurationDialog dialog = new InterfaceConfigurationDialog(context,appRequestHandler);
+            dialog.pack();
+            dialog.setVisible(true);
         }
     }
     /**
      * Display a popup dialog for configuration of dialog execution parameters.
      * Run in a separate thread, as a modal dialog in-line here will freeze the UI.
      */
-    private class ValidationDialogRunner implements Runnable {
+    private class SchematicConfigurationDialogRunner implements Runnable {
 
         public void run() {
             log.debugf("%s.Launching setup dialog...",TAG);
-            ValidationDialog validator = new ValidationDialog(context,appRequestHandler);
-            validator.pack();
-            validator.setVisible(true);
+            SchematicConfigurationDialog dialog = new SchematicConfigurationDialog(context,appRequestHandler);
+            dialog.pack();
+            dialog.setVisible(true);
         }
     }
 }

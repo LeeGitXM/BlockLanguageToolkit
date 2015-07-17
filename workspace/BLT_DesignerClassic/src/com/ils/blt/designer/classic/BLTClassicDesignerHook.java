@@ -22,6 +22,7 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.ModuleScriptFunctions;
 import com.ils.blt.common.ToolkitRequestHandler;
 import com.ils.blt.common.script.ScriptExtensionManager;
+import com.ils.blt.designer.InterfaceConfigurationDialog;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.NotificationHandler;
 import com.ils.blt.designer.ResourceCreateManager;
@@ -57,7 +58,7 @@ import com.jidesoft.docking.DockingManager;
 public class BLTClassicDesignerHook extends AbstractDesignerModuleHook  {
 	private static final String TAG = "BLTDesignerHook";
 	public static String HOOK_BUNDLE_NAME   = "designer";      // Properties file is designer.properties
-	public static String PREFIX = BLTProperties.CUSTOM_PREFIX; // Properties is accessed by this prefix
+	public static String PREFIX = BLTProperties.CUSTOM_PREFIX; // Properties are accessed by this prefix
 
 	private GeneralPurposeTreeNode rootNode = null;
 	private DesignerContext context = null;
@@ -78,6 +79,7 @@ public class BLTClassicDesignerHook extends AbstractDesignerModuleHook  {
 		appRequestHandler = new ClassicRequestHandler();
 	}
 	
+	public GeneralPurposeTreeNode getRootNode() { return this.rootNode; }
 	
 	@Override
 	public void initializeScriptManager(ScriptManager mgr) {
@@ -97,10 +99,19 @@ public class BLTClassicDesignerHook extends AbstractDesignerModuleHook  {
     		Action setupAction = new AbstractAction(BLTProperties.INTERFACE_MENU_TITLE) {
     			private static final long serialVersionUID = 5374667367733312464L;
     			public void actionPerformed(ActionEvent ae) {
-    				SwingUtilities.invokeLater(new SetupDialogRunner());
+    				SwingUtilities.invokeLater(new ExternalInterfaceConfigurationRunner());
     			}
     		};
     		controlMenu.add(setupAction);
+    	}
+    	if( !menuExists(context.getFrame(),BLTProperties.CLASSIC_TOOLKIT_CONFIGURATION_MENU_TITLE) ) {
+    		Action validateAction = new AbstractAction(BLTProperties.CLASSIC_TOOLKIT_CONFIGURATION_MENU_TITLE) {
+    			private static final long serialVersionUID = 5374667367733312464L;
+    			public void actionPerformed(ActionEvent ae) {
+    				SwingUtilities.invokeLater(new ClassicConfigurationDialogRunner());
+    			}
+    		};
+    		controlMenu.add(validateAction);
     	}
     	if( !menuExists(context.getFrame(),BLTProperties.VALIDATION_MENU_TITLE) ) {
     		Action validateAction = new AbstractAction(BLTProperties.VALIDATION_MENU_TITLE) {
@@ -299,13 +310,26 @@ public class BLTClassicDesignerHook extends AbstractDesignerModuleHook  {
      * Display a popup dialog for configuration of dialog execution parameters.
      * Run in a separate thread, as a modal dialog in-line here will freeze the UI.
      */
-    private class SetupDialogRunner implements Runnable {
+    private class ExternalInterfaceConfigurationRunner implements Runnable {
 
         public void run() {
             log.debugf("%s.Launching setup dialog...",TAG);
-            ClassicSetupDialog setup = new ClassicSetupDialog(context,appRequestHandler);
-            setup.pack();
-            setup.setVisible(true);
+            InterfaceConfigurationDialog dialog = new InterfaceConfigurationDialog(context,appRequestHandler);
+            dialog.pack();
+            dialog.setVisible(true);
+        }
+    }
+    /**
+     * Display a popup dialog for configuration of dialog execution parameters.
+     * Run in a separate thread, as a modal dialog in-line here will freeze the UI.
+     */
+    private class ClassicConfigurationDialogRunner implements Runnable {
+
+        public void run() {
+            log.debugf("%s.Launching setup dialog...",TAG);
+            ClassicConfigurationDialog dialog = new ClassicConfigurationDialog(context,appRequestHandler);
+            dialog.pack();
+            dialog.setVisible(true);
         }
     }
     /**

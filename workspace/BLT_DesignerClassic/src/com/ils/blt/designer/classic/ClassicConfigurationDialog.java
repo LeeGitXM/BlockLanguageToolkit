@@ -1,7 +1,7 @@
 /**
  *   (c) 2015  ILS Automation. All rights reserved.
  */
-package com.ils.blt.designer.schematic;
+package com.ils.blt.designer.classic;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -16,6 +16,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 
 import net.miginfocom.swing.MigLayout;
@@ -25,11 +26,16 @@ import com.ils.blt.common.ToolkitRequestHandler;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 /**
- * Allow the user to define properties of the block language toolkit. 
+ * Allow the user to define properties of the block language toolkit - classic edition. 
+ * Configurable properties are:
+ *    Root name
+ *    Extend tree hierarchy
+ *    TRUE color
+ *    FALSE COLOR
  */
 
-public class SchematicSetupDialog extends JDialog {
-	protected static final Dimension COMBO_SIZE  = new Dimension(200,24);
+public class ClassicConfigurationDialog extends JDialog {
+	protected static final Dimension TEXT_FIELD_SIZE  = new Dimension(200,24);
 	private static final long serialVersionUID = 2002388376824434427L;
 	private final int DIALOG_HEIGHT = 220;
 	private final int DIALOG_WIDTH = 560;
@@ -37,15 +43,13 @@ public class SchematicSetupDialog extends JDialog {
 	private final ToolkitRequestHandler requestHandler;
 	private final ResourceBundle rb;
 	// These are the widgets that will contain the user selections
-	protected JCheckBox useActiveCheckbox;
-	protected JCheckBox useCompiledCheckbox;
 	protected JCheckBox enableEnhancedCheckbox;
 	
-	public SchematicSetupDialog(DesignerContext ctx,ToolkitRequestHandler handler) {
+	public ClassicConfigurationDialog(DesignerContext ctx,ToolkitRequestHandler handler) {
 		super(ctx.getFrame());
 		this.context = ctx;
 		this.setTitle("Toolkit Configuration");
-		this.rb = ResourceBundle.getBundle("com.ils.blt.designer.designer");  // designer.properties
+		this.rb = ResourceBundle.getBundle("com.ils.blt.designer.classic.designer");  // designer.properties
 		this.requestHandler = handler;
 		setModal(true);
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
@@ -63,17 +67,8 @@ public class SchematicSetupDialog extends JDialog {
 
 		
 		// Navtree Configurations
-		internalPanel.add(createLabel("Setup.UseActive"),"");
-		useActiveCheckbox = createCheckbox("Setup.UseActive.tooltip");
-		useActiveCheckbox.setSelected((requestHandler.getToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_ACTIVE_BLOCKS).equalsIgnoreCase("TRUE")?true:false));
-		internalPanel.add(useActiveCheckbox, "wrap");
-		internalPanel.add(createLabel("Setup.UseSchematic"),"");
-		useCompiledCheckbox = createCheckbox("Setup.UseSchematic.tooltip");
-		useCompiledCheckbox.setSelected((requestHandler.getToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_COMPILED_BLOCKS).equalsIgnoreCase("TRUE")?true:false));
-		internalPanel.add(useCompiledCheckbox, "wrap");
-		
 		internalPanel.add(createLabel("Setup.EnhancedTree"),"");
-		enableEnhancedCheckbox = createCheckbox("Setup.UseActive.tooltip");
+		enableEnhancedCheckbox = createCheckbox("Setup.EnhancedTree.tooltip");
 		enableEnhancedCheckbox.setSelected((requestHandler.getToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_ENHANCED_TREE).equalsIgnoreCase("TRUE")?true:false));
 		internalPanel.add(enableEnhancedCheckbox, "wrap");
 		
@@ -120,7 +115,22 @@ public class SchematicSetupDialog extends JDialog {
 		box.setToolTipText(rb.getString(key));
 		return box;
 	}
-	
+	/**
+	 * Create a combo box that is populated with a list of tag providers
+	 */
+	private JTextField createTextField(String bundle,String key) {
+		JTextField field = new JTextField();
+		field.setText("1.0");  // Default
+		field.setForeground(Color.BLACK);
+		if( key.length()>0 ) {
+			String currentValue = requestHandler.getToolkitProperty(key);
+			if( currentValue!=null && currentValue.length()>0 ) {
+				field.setText(currentValue);
+			}
+		}
+		field.setPreferredSize(TEXT_FIELD_SIZE);
+		return field;
+	}
 	private void validateEntries() {
 		
 	}
@@ -129,8 +139,6 @@ public class SchematicSetupDialog extends JDialog {
 	// The validation has made them all legal
 	private void saveEntries() {
 		// For these we set new values for the next time queried
-		requestHandler.setToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_ACTIVE_BLOCKS,useActiveCheckbox.isSelected()?"TRUE":"FALSE");
-		requestHandler.setToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_COMPILED_BLOCKS,useCompiledCheckbox.isSelected()?"TRUE":"FALSE" );
 		requestHandler.setToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_ENHANCED_TREE,(enableEnhancedCheckbox.isSelected()?"TRUE":"FALSE") );
 	}
 }

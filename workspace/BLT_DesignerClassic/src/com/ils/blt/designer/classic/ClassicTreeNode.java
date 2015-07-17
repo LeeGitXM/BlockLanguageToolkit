@@ -74,7 +74,9 @@ public class ClassicTreeNode extends GeneralPurposeTreeNode  {
 	 */
 	public ClassicTreeNode(DesignerContext ctx,DiagramWorkspace wksp,ToolkitRequestHandler handler,NodeStatusManager sm) {
 		super(ctx,BLTProperties.CLASSIC_ROOT_FOLDER_UUID,wksp,handler,sm);
-		this.setName(BLTProperties.CLASSIC_ROOT_FOLDER_NAME);
+		String rootName = requestHandler.getToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_CLASSIC_ROOT);
+		if( rootName == null ) rootName = BLTProperties.DEFAULT_CLASSIC_ROOT_FOLDER_NAME;
+		this.setName(rootName);
 		this.resourceId = BLTProperties.ROOT_RESOURCE_ID;
 		setText(BundleUtil.get().getString(PREFIX+".RootFolderClassicName"));
 		closedIcon = IconUtil.getIcon("folder_closed");

@@ -24,10 +24,19 @@ public class PythonRequestHandler   {
 	private static final String TAG = "PythonRequestHandler";
 	private static LoggerEx log = LogUtil.getLogger(PythonRequestHandler.class.getPackage().getName());
 	private final BlockExecutionController controller = BlockExecutionController.getInstance();
-	private final BasicRequestHandler requestHandler;
+	private static BasicRequestHandler requestHandler = null;
 	
-	public PythonRequestHandler(BasicRequestHandler handler) {
-		this.requestHandler = handler;
+	public PythonRequestHandler() {
+		
+	}
+	
+	/**
+	 * In order to support a null-arg constructor for the python blocks,
+	 * we set embedded handlers as statics. (They were final anyway).
+	 * This method MUST be called before any other use of the class.
+	 */
+	public static void initialize(BasicRequestHandler handler) {
+		requestHandler = handler;
 	}
 	/**
 	 * Traverse the parent nodes until we find an Application. If there 

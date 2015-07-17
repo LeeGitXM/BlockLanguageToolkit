@@ -317,23 +317,8 @@ public abstract class ModelManager implements ProjectListener  {
 	 * 
 	 * @return
 	 */
-	public List<SerializableResourceDescriptor> queryControllerResources() {
-		List<SerializableResourceDescriptor> result = new ArrayList<SerializableResourceDescriptor>();
-		for( Long projectId:root.allProjects() ) {
-			for(ProcessNode node: root.allNodesForProject(projectId)) {
-				SerializableResourceDescriptor sd = new SerializableResourceDescriptor();
-				sd.setName(node.getName());
-				sd.setProjectId(projectId.longValue());
-				sd.setResourceId(node.getResourceId());
-				if( node instanceof ProcessApplication ) sd.setType(BLTProperties.APPLICATION_RESOURCE_TYPE);
-				else if( node instanceof ProcessFamily ) sd.setType(BLTProperties.FAMILY_RESOURCE_TYPE);
-				else if( node instanceof BasicDiagram )sd.setType(BLTProperties.CLASSIC_DIAGRAM_RESOURCE_TYPE);
-				else sd.setType(BLTProperties.FOLDER_RESOURCE_TYPE);
-				result.add(sd);
-			}
-		}
-		return result;
-	}
+	public abstract List<SerializableResourceDescriptor> queryControllerResources() ;
+	
 	/**
 	 * Traverse the application trees, removing all resources. 
 	 * This call does NOT do a SAVE. Therefore all resources will be restored

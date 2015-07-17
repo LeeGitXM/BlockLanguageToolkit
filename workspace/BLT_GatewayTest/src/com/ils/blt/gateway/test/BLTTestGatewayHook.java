@@ -4,6 +4,7 @@
 package com.ils.blt.gateway.test;
 
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.gateway.PythonRequestHandler;
 import com.ils.blt.gateway.classic.ClassicModelManager;
 import com.ils.blt.gateway.classic.ClassicRequestHandler;
 import com.ils.blt.gateway.engine.BlockExecutionController;
@@ -49,6 +50,7 @@ public class BLTTestGatewayHook extends AbstractGatewayModuleHook  {
 	    mmgr = new ClassicModelManager(context);
 	    BlockExecutionController.getInstance().setDelegate(mmgr);
 	    ClassicRequestHandler handler = new ClassicRequestHandler(context);
+	    PythonRequestHandler.initialize(handler);
 	    MockDiagramRequestHandler requestHandler = new MockDiagramRequestHandler(context,handler);
 	    dispatcher = new BLTTGatewayRpcDispatcher(context,requestHandler);
 		GatewayMockDiagramScriptFunctions.requestHandler = requestHandler;
