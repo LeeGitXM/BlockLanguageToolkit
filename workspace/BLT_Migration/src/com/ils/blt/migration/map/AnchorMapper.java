@@ -41,7 +41,7 @@ public class AnchorMapper {
 			Statement statement = cxn.createStatement();
 			statement.setQueryTimeout(30);  // set timeout to 30 sec.
 
-			rs = statement.executeQuery("select * from AnchorMap");
+			rs = statement.executeQuery("select * from BltAnchorMap");
 			while(rs.next())
 			{
 				String g2Class = rs.getString("G2Class");

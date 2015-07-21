@@ -12,6 +12,7 @@ import java.util.Map;
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.UtilityFunctions;
+import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
@@ -112,10 +113,10 @@ public class PythonPropertyMapper {
 			Statement statement = cxn.createStatement();
 			statement.setQueryTimeout(30);  // set timeout to 30 sec.
 
-			rs = statement.executeQuery("select * from PythonPrototypes");
+			rs = statement.executeQuery("select * from BltPythonPrototypes");
 			while(rs.next())
 			{
-				String blockClass = rs.getString("BlockClass");
+				String blockClass = rs.getString("BlockClass");   // Python path
 				String key = rs.getString("Key");
 				String value = rs.getString("Value");
 				
@@ -145,7 +146,7 @@ public class PythonPropertyMapper {
 			Statement statement = cxn.createStatement();
 			statement.setQueryTimeout(30);  // set timeout to 30 sec.
 
-			rs = statement.executeQuery("select * from PythonBlockProperties");
+			rs = statement.executeQuery("select * from BltPythonBlockProperties");
 			// We really need arrays. Use lists as we iterate through database.
 			Map<String,List<BlockProperty>> propertyListMap = new HashMap<String,List<BlockProperty>>();
 			while(rs.next())
@@ -167,7 +168,7 @@ public class PythonPropertyMapper {
 				catch(IllegalArgumentException iae) {
 					System.err.println(TAG+": Illegal value of type ("+typeName+") for class "+className);
 				}
-				long editable = rs.getLong("Editable");
+				long editable = rs.getLong("Editable"); 
 				if(rs.wasNull()) editable = 0;
 				property.setEditable(editable>0);
 				pl.add(property);

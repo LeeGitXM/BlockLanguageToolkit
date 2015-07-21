@@ -1,0 +1,26 @@
+prod-mooney-gda
+(
+APPLICATION: class em-application,
+FD: class em-gda-final-diagnosis
+) 
+
+begin
+    collect data ( timing out after opc-latency-time) 
+        Prod_Avg = the average value of prod-ml-lab-data during the last min (hours-to-avg-prod-ml-gda , grade-run-hours) hours;
+        Prod_Std_Dev = the standard deviation of prod-ml-lab-data during the last min (hours-to-avg-prod-ml-gda , grade-run-hours) hours; 
+        Rx_Avg = the average value of mooney-lab-data between min (hours-to-offset-rx-ml-gda + hours-to-avg-prod-ml-gda , grade-run-hours) hours ago and min (hours-to-offset-rx-ml-gda , grade-run-hours) hours ago; 
+        Rx_Std_Dev = the standard deviation of mooney-lab-data between min (hours-to-offset-rx-ml-gda + hours-to-avg-prod-ml-gda , grade-run-hours) hours ago and min (hours-to-offset-rx-ml-gda , grade-run-hours) hours ago; 
+        if timeout then begin
+           Msg = "Unable to collect data for product Mooney analysis. Will try again on next lab sample."; 
+            return; 
+        end 
+    end; { collect data } 
+
+    collect data ( timing out after opc-latency-time) 
+        MaxRxSD = max-mst-var-gda (round (rla3-current-grade)); 
+        CtlGain = ml-mst-bias-ctl-gain-gda (round (rla3-current-grade)); 
+    if timeout then
+        begin 
+            MaxRxSD = max-mst-var-gda (3666);
+            CtlGain = ml-mst-bias-ctl-gain-gda (3666); 
+end 
