@@ -346,9 +346,11 @@ public class Migrator {
 			}
 		}
 		// Modify property values if appropriate
-		for(BlockProperty prop:block.getProperties()) {
-			String newValue = propertyValueMapper.getPropertyValueForIgnition(prop.getName(),prop.getValue().toString());
-			if( newValue!=null) prop.setValue(newValue);
+		if( block.getProperties()!=null ) {
+			for(BlockProperty prop:block.getProperties()) {
+				String newValue = propertyValueMapper.getPropertyValueForIgnition(prop.getName(),prop.getValue().toString());
+				if( newValue!=null) prop.setValue(newValue);
+			}
 		}
 	}
 	/**

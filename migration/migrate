@@ -10,7 +10,7 @@ then
 fi
 cd ${GIT_REPO}/blt
 BLT=`pwd`
-SFC=`${GIT_REPO}/sfc
+SFC=${GIT_REPO}/sfc
 LIB=${GIT_REPO}/external/lib
 JAR=${LIB}/blt-migration.jar
 DB=${SFC}/migration/mdb/conversion.db
