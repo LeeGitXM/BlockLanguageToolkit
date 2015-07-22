@@ -1,14 +1,14 @@
 # Copyright 2015. ILS Automation. All rights reserved.
 # Test the client/designer "toolkit" scripting interfaces
 
-import system.ils.blt.application as application
+import system.ils.blt.diagram as script
 
 # Return a list of name of blocks that are downstream of the 
 # specified block - and in the same diagram
 def listBlocksDownstreamOf(common,dpath,blockName):
 	diagid = getDiagram(dpath).getSelf().toString()
     # blocks is a list of SerializableBlockStateDescriptor
-	blocks = application.listBlocksDownstreamOf(diagid,blockName)
+	blocks = script.listBlocksDownstreamOf(diagid,blockName)
 	print "==================== blocksDownstreamOf =============="
 	lst = []
 	for block in blocks:
@@ -21,7 +21,7 @@ def listBlocksDownstreamOf(common,dpath,blockName):
 def listBlocksUpstreamOf(common,dpath,blockName):
 	diagid = getDiagram(dpath).getSelf().toString()
     # blocks is a list of SerializableBlockStateDescriptor
-	blocks = application.listBlocksUpstreamOf(diagid,blockName)
+	blocks = script.listBlocksUpstreamOf(diagid,blockName)
 	print "==================== blocksUpstreamOf =============="
 	lst = []
 	for block in blocks:
@@ -33,7 +33,7 @@ def listBlocksUpstreamOf(common,dpath,blockName):
 def listBlocksOfClass(common,dpath,classname):
 	diagid = getDiagram(dpath).getSelf().toString()
     # blocks is a list of SerializableBlockStateDescriptor
-	blocks = application.listDiagramBlocksOfClass(diagid,classname)
+	blocks = script.listDiagramBlocksOfClass(diagid,classname)
 	lst = []
 	for block in blocks:
 		lst.append(block.getName())
@@ -43,7 +43,7 @@ def listBlocksOfClass(common,dpath,classname):
 def listBlocksInDiagram(common,dpath):
 	diagid = getDiagram(dpath).getSelf().toString()
     # blocks is a list of SerializableBlockStateDescriptor
-	blocks = application.listBlocksInDiagram(diagid)
+	blocks = script.listBlocksInDiagram(diagid)
 	lst = []
 	for block in blocks:
 		lst.append(block.getName())
@@ -54,7 +54,7 @@ def listBlocksInDiagram(common,dpath):
 # diagrams.
 def listBlocksForTag(common,tagpath):
     # blocks is a list of SerializableBlockStateDescriptor
-	blocks = application.listBlocksForTag(tagpath)
+	blocks = script.listBlocksForTag(tagpath)
 	print "==================== blocksForTag =============="
 	lst = []
 	for block in blocks:
@@ -83,7 +83,7 @@ def listSinksForSource(common,dpath,blockName):
 def listSourcesForSink(common,dpath,blockName):
 	diagid = getDiagram(dpath).getSelf().toString()
     # blocks is a list of SerializableBlockStateDescriptor
-	blocks = application.listSourcesForSink(diagid,blockName)
+	blocks = script.listSourcesForSink(diagid,blockName)
 	print "==================== sourcesForSink =============="
 	lst = []
 	for block in blocks:
@@ -95,13 +95,13 @@ def listSourcesForSink(common,dpath,blockName):
 # Return the navigation path to a block or diagram
 def pathForBlock(common,dpath,bname):
 	diagid = getDiagram(dpath).getSelf().toString()
-	path = application.pathForBlock(diagid,bname)
+	path = script.pathForBlock(diagid,bname)
 	common['result'] = path 
 
 # Propagate a signal to any receivers on the diagra
 def sendLocalSignal(common,dpath,command,message,arg):
 	diagid = getDiagram(dpath).getSelf().toString()
-	application.sendLocalSignal(diagid,command,message,arg)
+	script.sendLocalSignal(diagid,command,message,arg)
 
 # -------------------------- Helper methods ----------------------
 # Return the ProcessDiagram at the specified path
@@ -110,8 +110,8 @@ def getDiagram(dpath):
 	# The descriptor paths are :-separated, the input uses /
 	# the descriptor path starts with ":root:", 
 	# the input starts with the application
-	descriptors = application.getDiagramDescriptors()
-	handler = application.getHandler()
+	descriptors = script.getDiagramDescriptors()
+	handler = script.getHandler()
 	for desc in descriptors:
 		path = desc.path[6:]
 		path = path.replace(":","/")

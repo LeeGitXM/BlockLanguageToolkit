@@ -39,14 +39,15 @@ public class PropertyMapper {
 			Statement statement = cxn.createStatement();
 			statement.setQueryTimeout(30);  // set timeout to 30 sec.
 
-			rs = statement.executeQuery("select * from PropertyMap");
+			rs = statement.executeQuery("select * from BltPropertyMap");
 			while(rs.next())
 			{
 				String g2Class = rs.getString("G2Class");
 				String g2Property = rs.getString("G2Property");
-				String iProperty = rs.getString("Property");
+				String iProperty = rs.getString("PropertyName");
 				String key = makePropertyMapKey(g2Class,g2Property);
 				propertyMap.put(key,iProperty);
+				//System.err.println(TAG+".createMap key="+key+", value="+iProperty);
 			}
 			rs.close();
 		}

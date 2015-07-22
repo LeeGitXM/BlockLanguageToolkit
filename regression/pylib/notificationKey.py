@@ -1,13 +1,13 @@
 # Copyright 2015. ILS Automation. All rights reserved.
 # Argument is the diagram path
-import system.ils.blt.application as application
+import system.ils.blt.diagram as script
 def construct(common,diagramPath,blockName,port):
-	handler = application.getHandler()     # PythonRequestHandler
+	handler = script.getHandler()     # PythonRequestHandler
 	error = "Diagram "+diagramPath+" NOT FOUND"
 	notification = "KEY-NOT-FOUND"
 	# The descriptor paths are :-separated, the input uses /
 	# the descriptor path starts with ":root:", the input stars with the application
-	descriptors = application.getDiagramDescriptors()
+	descriptors = script.getDiagramDescriptors()
 	for desc in descriptors:
 		path = desc.path[6:]
 		path = path.replace(":","/")
