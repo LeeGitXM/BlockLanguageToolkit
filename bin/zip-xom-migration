@@ -22,7 +22,6 @@ cd ${GIT_REPO}/blt/migration
 ./clear-json
 ./copy-json
 ./migrate-all
-exit
 mkdir -p $TMP/config
 mkdir -p $TMP/procs
 ./mktags > $TMP/config/sqltags.xml

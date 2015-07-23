@@ -7,9 +7,8 @@ then
     echo "USAGE: mktags"
 	exit 2
 fi
-REPO=~/Development/ils/src
-cd $REPO/blt
-BLT=`pwd`
+BLT=${GIT_REPO}/blt
+cd $BLT
 SFC=${GIT_REPO}/sfc
 LIB=$REPO/external/lib
 JAR=${LIB}/blt-migration.jar
