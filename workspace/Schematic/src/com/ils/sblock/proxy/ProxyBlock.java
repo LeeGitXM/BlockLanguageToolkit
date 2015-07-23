@@ -9,7 +9,6 @@ import org.python.core.PyObject;
 
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PalettePrototype;
-import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.sblock.AbstractSchematicBlock;

@@ -3,37 +3,12 @@
  */
 package com.ils.blt.gateway;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.Executors;
 
-import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.ToolkitRequestHandler;
-import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.CoreBlock;
-import com.ils.blt.common.connection.Connection;
-import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
-import com.ils.blt.common.serializable.SerializableResourceDescriptor;
-import com.ils.blt.gateway.BasicDiagram;
-import com.ils.blt.gateway.engine.BlockExecutionController;
-import com.ils.blt.gateway.tag.TagListener;
-import com.ils.blt.gateway.tag.TagReader;
-import com.ils.blt.gateway.tag.TagWriter;
-import com.ils.common.BoundedBuffer;
-import com.ils.common.watchdog.AcceleratedWatchdogTimer;
-import com.ils.common.watchdog.WatchdogTimer;
-import com.inductiveautomation.ignition.common.project.Project;
-import com.inductiveautomation.ignition.common.project.ProjectResource;
-import com.inductiveautomation.ignition.common.project.ProjectVersion;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
-import com.inductiveautomation.ignition.gateway.model.GatewayContext;
-import com.inductiveautomation.ignition.gateway.project.ProjectListener;
 
 /**
  * This class is a cache of configuration settings. The repository is
