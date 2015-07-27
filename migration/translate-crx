@@ -1,0 +1,55 @@
+#!/bin/sh
+# Translate methods used in the CSTR calc methods
+# Process the .txt files in the process repository "g2" area.
+# If the argument is "all", then all the files are processed.
+# If the argument is "next" then the current file is processed
+# and deleted. Then the next file is processed.
+#
+# We start with raw G2 exports. Convert, then save the
+# results in the procedure storage area for ignition.
+#
+OPT="one"
+if [ $# -gt 0 ]
+then
+    OPT=$1
+fi
+MIGRATION=${GIT_REPO}/blt/migration
+
+FIL=CALC-FRNT_SHORT_USE_TEMP-OUTPUTS-GDA.txt
+FIL="$FIL CALC-FRNT_ERROR_CHNG_FEEDS-OUTPUTS-GDA.txt"
+FIL="$FIL CALC-FRNT_SHORT_TEMP_INHIB-OUTPUTS-GDA.txt"
+FIL="$FIL CALC-FRNT_ERROR_CHNG_FEEDS-OUTPUTS-GDA.txt"
+FIL="$FIL CALC-SWAP_FRNT_FEEDS-OUTPUTS-GDA.txt"
+FIL="$FIL CALC-HIGH_C2_CHNG_FEEDS-OUTPUTS-GDA.txt"
+FIL="$FIL CALC-DO_CAT-OUTPUTS-GDA.txt"
+FIL="$FIL CALC-DO_TEMP-OUTPUTS-GDA.txt"
+FIL="$FIL CALC-DO_GRAVITY-OUTPUTS.txt"
+FIL="$FIL CALC-CRX_STAB_PROBLEM-OUTPUT-GDA.txt"
+FIL="$FIL CALC-C2_PROBLEM-OUTPUT-GDA.txt"
+FIL="$FIL CALC-MAIN_FEED-OUTPUTS-GDA.txt"
+FIL="$FIL CALC-CRX_CA_PROBLEM-OUTPUT-GDA.txt"
+FIL="$FIL CALC-SDSTRM_C3-OUTPUTS-GDA.txt"
+FIL="$FIL CALC-SWAP_CNTR_FEEDS-OUTPUTS-GDA.txt"
+DIR=${MIGRATION}/procs/g2/vistalon/calculation
+OUTDIR=${MIGRATION}/procs/ignition
+cd $DIR
+for file in $FIL
+do
+	if [ -f $DIR/$file ]
+	then
+	    echo "Processing $fil..."
+	    ${MIGRATION}/translate.calc $DIR/$file $OUTDIR
+	else 
+		continue
+	fi
+	if [ $OPT == "all" ]
+	then
+		continue
+	elif [ $OPT == "one" ]
+	then
+		exit
+	else
+		rm $DIR/$file
+		OPT="one"
+	fi
+done
