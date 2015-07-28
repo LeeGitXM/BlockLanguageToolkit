@@ -160,7 +160,7 @@ public class ProxyHandler   {
 					block.setPythonBlock(pyBlock);
 					BlockProperty[] props = getBlockProperties(mgr,pyBlock);
 					for(BlockProperty prop:props) {
-						block.addProperty(prop);
+						if( prop!=null) block.addProperty(prop);
 					}
 				}
 				else {

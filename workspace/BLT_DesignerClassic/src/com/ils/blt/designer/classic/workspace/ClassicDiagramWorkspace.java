@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.UUID;
 
 import javax.swing.JComponent;
@@ -67,12 +68,14 @@ public class ClassicDiagramWorkspace extends DiagramWorkspace                   
 	private static final String dockingKey = "ClassicBlockPalette";
 	private static final String editorKey = "ClassicPropertyEditorFrame";
 	private static final String key = "ClassicDiagramWorkspace";
+	private final ResourceBundle rb;
 	/**
 	 * Constructor:
 	 */
 	public ClassicDiagramWorkspace(DesignerContext ctx,ToolkitRequestHandler handler) {
 		super(ctx,handler);
 		this.statusManager = ((BLTClassicDesignerHook)context.getModule(BLTProperties.CLASSIC_MODULE_ID)).getNavTreeStatusManager();
+		this.rb = ResourceBundle.getBundle("com.ils.blt.designer.classic.designer");  // designer.properties
 		initialize();
 	}
 
@@ -84,10 +87,10 @@ public class ClassicDiagramWorkspace extends DiagramWorkspace                   
 		tabbedPalette.setInitMode(DockContext.STATE_FRAMEDOCKED);
 		tabbedPalette.setInitSide(DockContext.DOCK_SIDE_NORTH);
 		tabbedPalette.setInitIndex(0);
-		tabbedPalette.setTitle(BundleUtil.get().getStringLenient(PREFIX+".Palette.Title"));
-		tabbedPalette.setTabTitle(PREFIX+".Palette.Tab.Title");
-		tabbedPalette.setSideTitle("SideTitle");
-		tabbedPalette.putClientProperty("menu.text", PREFIX+".Palette.Title");
+		tabbedPalette.setTitle(rb.getString("Palette.Title"));
+		tabbedPalette.setTabTitle(rb.getString("Palette.Tab.Title"));
+		tabbedPalette.setSideTitle(rb.getString("Palette.Side.Title"));
+		tabbedPalette.putClientProperty("menu.text",rb.getString("Palette.Title"));
 		
 		frames = new ArrayList<ResourceWorkspaceFrame>();
 		frames.add(tabbedPalette);
