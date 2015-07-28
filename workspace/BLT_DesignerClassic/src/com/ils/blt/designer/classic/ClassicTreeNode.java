@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.UUID;
 
 import javax.swing.JMenu;
@@ -67,6 +68,7 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
  */
 public class ClassicTreeNode extends GeneralPurposeTreeNode  {
 
+	
 	/** 
 	 * Create a new folder node representing the root folder. The root folder does
 	 * not worry about cleanliness.
@@ -78,7 +80,7 @@ public class ClassicTreeNode extends GeneralPurposeTreeNode  {
 		if( rootName == null ) rootName = BLTProperties.DEFAULT_CLASSIC_ROOT_FOLDER_NAME;
 		this.setName(rootName);
 		this.resourceId = BLTProperties.ROOT_RESOURCE_ID;
-		setText(BundleUtil.get().getString(PREFIX+".RootFolderClassicName"));
+		this.setText(rootName);
 		closedIcon = IconUtil.getIcon("folder_closed");
 		setIcon(closedIcon);
 		openIcon = IconUtil.getIcon("folder");

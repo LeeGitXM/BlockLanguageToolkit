@@ -50,7 +50,6 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
  */
 public class SchematicTreeNode extends GeneralPurposeTreeNode  {
 
-
 	/** 
 	 * Create a new folder node representing the root folder. The root folder does
 	 * not worry about cleanliness.
@@ -61,7 +60,7 @@ public class SchematicTreeNode extends GeneralPurposeTreeNode  {
 		String rootName = requestHandler.getToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_SCHEMATIC_ROOT);
 		if( rootName == null ) rootName = BLTProperties.DEFAULT_SCHEMATIC_ROOT_FOLDER_NAME;
 		this.setName(rootName);
-		setText(BundleUtil.get().getString(PREFIX+".RootFolderSchematicName"));
+		this.setText(rootName);
 	}
 	/**
 	 * This version of the constructor is used for all except the root. Create
