@@ -87,7 +87,7 @@ public class ProcessConnection implements Connection {
 	 * 
 	 */
 	public void updateFromJson(String json) {
-		Map<String,String> table = new JsonToJava().jsonToMap(json);
+		Map<String,?> table = new JsonToJava().jsonToMap(json);
 		Object val = table.get(BlockConstants.CONNECTION_PROPERTY_DOWNSTREAM_PORT);
 		if( val!=null ) downstreamPort = val.toString();
 		val = table.get(BlockConstants.CONNECTION_PROPERTY_UPSTREAM_PORT);

@@ -132,7 +132,7 @@ public class DataShift extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void notifyOfStatus() {
-		notifyOfStatus(lastValue);
+		if( lastValue!=null ) notifyOfStatus(lastValue);
 	}
 	private void notifyOfStatus(QualifiedValue qv) {
 		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);

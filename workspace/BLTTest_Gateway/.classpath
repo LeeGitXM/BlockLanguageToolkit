@@ -8,5 +8,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/Ignition-77"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/BLTTest_Common"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/BlockDef"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/BLT_Gateway"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

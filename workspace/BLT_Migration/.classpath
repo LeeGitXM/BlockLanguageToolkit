@@ -7,5 +7,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/BLT_Common"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ILS_Common"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Ignition-77"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/BLT_Designer"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

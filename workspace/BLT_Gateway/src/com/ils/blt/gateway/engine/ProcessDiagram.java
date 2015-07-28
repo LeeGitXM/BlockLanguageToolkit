@@ -188,12 +188,10 @@ public class ProcessDiagram extends ProcessNode {
 				}
 				ProcessBlock downstreamBlock = blocks.get(pc.getTarget());
 				if( downstreamBlock!=null && pc.getDownstreamPortName()!=null) {
-					log.warnf("%s.updateConnections: Connect to downstream port %s",TAG,pc.getDownstreamPortName());
 					BlockPort key = new BlockPort(downstreamBlock,pc.getDownstreamPortName());
 					List<ProcessConnection> connections = incomingConnections.get(key);
 					if( connections==null ) {
 						connections = new ArrayList<ProcessConnection>();
-						log.warnf("%s.updateConnections: We've died here ...",TAG);
 						incomingConnections.put(key, connections);
 					}
 					if( !connections.contains(pc) ) connections.add(pc);
