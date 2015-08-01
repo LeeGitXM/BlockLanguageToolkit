@@ -7,6 +7,9 @@ import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -111,13 +114,26 @@ public class Migrator {
 			}
 		}
 	}
-	
 	/**
 	 * Read standard input. Convert into G2 Diagram
 	 */
-	public void processInput() {
+	public void processFileInput(Path infile) {
 		if( !ok ) return;
-		
+		try {
+			byte[] bytes = Files.readAllBytes(infile);
+			convertToG2(bytes);
+		}
+		catch( IOException ioe) {
+			System.err.println(String.format("%s.processFileInput: IOException (%s)",TAG,ioe.getLocalizedMessage())); 
+			ok = false;
+		}
+	}
+	/**
+	 * Read standard input. Convert into G2 Diagram
+	 */
+	public void processStandardInput() {
+		if( !ok ) return;
+
 		// Read of stdin is expected to be from a re-directed file. 
 		// We gobble the whole thing here. Scrub out CR
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
@@ -130,10 +146,16 @@ public class Migrator {
 			}
 		}
 		catch(IOException ignore) {}
-		
+
+		// Now convert into G2
+		byte[] bytes = input.toString().getBytes();
+		convertToG2(bytes);
+
+	}
+
+	private void convertToG2(byte[] bytes) {
 		// Now convert into G2
 		try {
-			byte[] bytes = input.toString().getBytes();
 			ObjectMapper mapper = new ObjectMapper();
 			mapper.configure(JsonParser.Feature.ALLOW_COMMENTS, true);
 			mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
@@ -162,7 +184,6 @@ public class Migrator {
 			ok = false;
 		}
 	}
-	
 	/**
 	 * Convert from G2 objects into a BLTView diagram
 	 */
@@ -346,10 +367,15 @@ public class Migrator {
 			}
 		}
 		// Modify property values if appropriate
-		for(BlockProperty prop:block.getProperties()) {
-			String newValue = propertyValueMapper.getPropertyValueForIgnition(prop.getName(),prop.getValue().toString());
-			if( newValue!=null) prop.setValue(newValue);
+		if( block.getProperties()!=null ) {
+			for(BlockProperty prop:block.getProperties()) {
+				String newValue = propertyValueMapper.getPropertyValueForIgnition(prop.getName(),prop.getValue().toString());
+				if( newValue!=null) prop.setValue(newValue);
+			}
 		}
+		// Add anchors, if needed. The migration doesn't add anchors if there is no connection.
+		anchorMapper.augmentAnchors(block);
+		
 	}
 	/**
 	 * Handle cleanup on the diagram as a whole.
@@ -475,12 +501,21 @@ public class Migrator {
 		}
       
 		Migrator m = new Migrator(root);
-		String path = args[0];
+		String dbpath = args[0];
 		// In case we've been fed a Windows path, convert
-		path = path.replace("\\", "/");
+		// We're expecting an absolute path.
+		dbpath = dbpath.replace("\\", "/");
 		try {
-			m.processDatabase(path);
-			m.processInput();
+			m.processDatabase(dbpath);
+			if(args.length>1) {
+				String filepath = args[1];
+				filepath.replace("\\", "/");
+				Path inpath = Paths.get(filepath);
+				m.processFileInput(inpath);
+			}
+			else {
+				m.processStandardInput();
+			}
 			if(root.equals(RootClass.APPLICATION) ) {
 				m.migrateApplication();
 			}

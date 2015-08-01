@@ -57,6 +57,22 @@ public class SerializableAnchor {
 	// So that class may be used as a map key
 	// Same name and parent is sufficient to prove equality
 	@Override
+	public SerializableAnchor clone() {
+		SerializableAnchor newAnchor = new SerializableAnchor();
+		newAnchor.setId(UUID.randomUUID());
+		newAnchor.setAnnotation(annotation);
+		newAnchor.setConnectionType(connectionType);
+		newAnchor.setDirection(direction);
+		newAnchor.setDisplay(display);
+		newAnchor.setHidden(hidden );
+		newAnchor.setHint(hint);
+		newAnchor.setMultiple(multiple);
+		newAnchor.setParentId(parentId);
+		return newAnchor;
+	}
+	// So that class may be used as a map key
+	// Same name and parent is sufficient to prove equality
+	@Override
 	public boolean equals(Object arg) {
 		boolean result = false;
 		if( arg instanceof SerializableAnchor) {
@@ -66,7 +82,7 @@ public class SerializableAnchor {
 				result = true;
 			}
 		}
-		log.info(toString()+" equals "+arg.toString()+" "+result);
+		log.trace(toString()+" equals "+arg.toString()+" "+result);
 		return result;
 	}
 	@Override
