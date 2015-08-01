@@ -1,9 +1,11 @@
 #!/bin/sh
 #
 # Save the migration files into a zip for distribution.
+# -- also copy the test script library to svn
 #
 #set -x
 SVN=~/Development/ils/svn/EMChemicals/Release/src
+PYLIB=~/Development/ils/svn/Migration/Common/pylib
 VERS=REGRESSION
 TMP=${GIT_REPO}/$VERS
 # Cleanup
@@ -13,6 +15,8 @@ mkdir -p $TMP/pylib
 cd ${GIT_REPO}/blt/regression
 cp -a basic $TMP
 cp -a pylib/*.py $TMP/pylib
+mkdir -p $PYLIB
+cp -a pylib/*.py $PYLIB
 cd ..
 # Now zip and copy to subversion
 cd ${GIT_REPO}/$VERS
