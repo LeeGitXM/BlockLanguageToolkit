@@ -51,7 +51,7 @@ public class UtilityFunctions  {
 	public int parseInteger(String val) {
 		int result = 0;
 		try{
-			result = Integer.parseInt(val);
+			result = Integer.decode(val);    // Works with hex
 		}
 		catch(NumberFormatException nfe) {
 			double dbl = parseDouble(val);

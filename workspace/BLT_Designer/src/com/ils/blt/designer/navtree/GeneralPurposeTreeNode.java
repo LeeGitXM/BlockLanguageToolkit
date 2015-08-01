@@ -28,6 +28,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.tree.TreePath;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
@@ -490,6 +491,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		try{
 			byte[] bytes = res.getData();
 			ObjectMapper mapper = new ObjectMapper();
+			mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
 			sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
 			sd.setName(res.getName());   // Sync the SerializableApplication name w/ res
 		}
@@ -1374,6 +1376,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 										// It would be nice to simply convert to a resource.
 										// Unfortunately we have to replace all UUIDs with new ones
 										ObjectMapper mapper = new ObjectMapper();
+										mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
 										SerializableDiagram sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
 										if( sd!=null ) {
 											logger.infof("%s:ImportDiagramAction imported diagram:\n%s", TAG,sd.getName());

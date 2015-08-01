@@ -55,9 +55,10 @@ public class HighPerformanceEdgeRouter extends AbstractEdgeRouter {
 	 * bottom.
 	 */
 	@Override
-	protected List<Point> route(Point start, Point end, Point trueStart, Point trueEnd) {
+	protected List<Point> route(Point start, Point end, Point trueStart, Point trueEnd) {   
 		//log.infof("%s.route ...",TAG);
 		List<Point> points = new ArrayList<Point>(2);
+		if( start==null || end==null || trueStart==null || trueEnd==null ) return points; // Nothing to draw
 		if (start.x == end.x || start.y == end.y) {
 			// straight line. Nothing more required
 			points.add(start);	

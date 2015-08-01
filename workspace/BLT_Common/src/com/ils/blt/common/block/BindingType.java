@@ -3,6 +3,9 @@
  */
 package com.ils.blt.common.block;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 
 /**
  * This enumeration class describes the types of bindings available for a property.
@@ -20,7 +23,7 @@ public enum BindingType
             TAG_WRITE,
             TAG_MONITOR
             ;
-           
+   
  /**
   * @return  a comma-separated list of all binding types in a single String.
   */
