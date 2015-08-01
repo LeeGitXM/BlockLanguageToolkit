@@ -11,6 +11,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.JButton;
@@ -421,7 +422,14 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 			log.tracef("%s.createValueDisplayField: property %s,value= %s, display= %s (%s)",TAG,property.getName(),property.getValue().toString(),
 					val,currentTimeUnit.name());
 		}
-		if( prop.isEditable() && !prop.getType().equals(PropertyType.LIST)) {
+		// A date is intrinsically non-editable.
+		if( prop.getType().equals(PropertyType.DATE)) {
+			val = dateFormatter.format(new Date(fncs.coerceToLong(prop.getValue())));
+			field = new JTextField(val.toString());
+			field.setEditable(false);
+			field.setEnabled(false);
+		}
+		else if( prop.isEditable() && !prop.getType().equals(PropertyType.LIST)) {
 			field = new EditableTextField(prop,val.toString());
 			field.addFocusListener(this);
 			field.addKeyListener(this);
@@ -508,6 +516,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 				if( prop.getType().equals(PropertyType.BOOLEAN ))     fieldValue = new Boolean(fncs.coerceToBoolean(fieldValue));
 				else if( prop.getType().equals(PropertyType.DOUBLE )) fieldValue = new Double(fncs.coerceToDouble(fieldValue));
 				else if( prop.getType().equals(PropertyType.INTEGER ))fieldValue = new Integer(fncs.coerceToInteger(fieldValue));
+				else if( prop.getType().equals(PropertyType.DATE ))   fieldValue = dateFormatter.format(new Date(fncs.coerceToLong(fieldValue)));
 				else if(prop.getType().equals(PropertyType.TIME)) {
 					// Scale field value for time unit. Get back to seconds.
 					double interval = fncs.coerceToDouble(fieldValue);
@@ -543,6 +552,9 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 					// Scale value for time unit.
 					double interval = fncs.coerceToDouble(text);
 					text = fncs.coerceToString(TimeUtility.valueForCanonicalValue(interval,currentTimeUnit));
+				}
+				else if(property.getType().equals(PropertyType.DATE) ) {
+					text = dateFormatter.format(new Date(fncs.coerceToLong(text)));
 				}
 				valueDisplayField.setText(text);
 			}
