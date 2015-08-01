@@ -11,6 +11,7 @@ package com.ils.blt.common.block;
 public enum PropertyType
 {
             STRING,
+            DATE,                // Actually a long, but display as a date
             DOUBLE,
             INTEGER,
             BOOLEAN,
