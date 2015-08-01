@@ -42,7 +42,6 @@ public class UtilityFunctions  {
 		}
 		return result;
 	}
-	
 	/**
 	 * Safely parse an int. Catch and report a format exception.
 	 * @return  the integer equivalent of the input. If the input
@@ -56,6 +55,23 @@ public class UtilityFunctions  {
 		catch(NumberFormatException nfe) {
 			double dbl = parseDouble(val);
 			if( !Double.isNaN(dbl)) result = (int)dbl;
+		}
+		return result;
+	}
+	
+	/**
+	 * Safely parse a long. Catch and report a format exception.
+	 * @return  the long equivalent of the input. If the input
+	 *         could not be parsed then return zero.
+	 */
+	public long parseLong(String val) {
+		long result = 0;
+		try{
+			result = Long.decode(val);    // Works with hex
+		}
+		catch(NumberFormatException nfe) {
+			double dbl = parseDouble(val);
+			if( !Double.isNaN(dbl)) result = (long)dbl;
 		}
 		return result;
 	}
@@ -95,8 +111,23 @@ public class UtilityFunctions  {
 		int result = 0;
 		if( val !=null ) {
 			if( val instanceof Integer)      result = ((Integer)val).intValue();
+			else if( val instanceof Long)    result = ((Long)val).intValue();
 			else if( val instanceof Double)  result = ((Double)val).intValue();
 			else                             result = parseInteger(val.toString());
+		}
+		return result;
+	}
+	/**
+	 * Force a Double, Integer or String to an int. Reports NumberFormatException
+	 * for bad input - and sets result to 0.
+	 */
+	public long coerceToLong(Object val) {
+		long result = 0;
+		if( val !=null ) {
+			if( val instanceof Long)         result = ((Long)val).longValue();
+			else if( val instanceof Integer) result = ((Integer)val).intValue();
+			else if( val instanceof Double)  result = ((Double)val).longValue();
+			else                             result = parseLong(val.toString());
 		}
 		return result;
 	}
