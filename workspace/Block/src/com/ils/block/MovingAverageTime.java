@@ -10,7 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import com.ils.blt.common.annotation.ExecutableBlock;
+import com.ils.block.annotation.ExecutableBlock;
+import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
@@ -18,6 +19,7 @@ import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
+import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
@@ -36,20 +38,21 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
  */
 @ExecutableBlock
 public class MovingAverageTime extends AbstractProcessBlock implements ProcessBlock {
-	private final LinkedList<Double> buffer;
+	private final LinkedList<QualifiedValue> buffer;
 	private boolean clearOnReset = false;
-	private double currentValue = Double.NaN;
+	private QualifiedValue currentValue = null;
 	private double scanInterval = 15.0;    // ~secs
 	private double timeWindow = 60;        // ~ secs
 	private final Watchdog dog;
 	private BlockProperty valueProperty = null;
+	private final UtilityFunctions fncs = new UtilityFunctions();
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
 	public MovingAverageTime() {
 		initialize();
-		buffer = new LinkedList<Double>();
+		buffer = new LinkedList<>();
 		dog = new Watchdog(getName(),this);
 		initializePrototype();
 	}
@@ -65,7 +68,7 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 		super(ec,parent,block);
 		initialize();
 		dog = new Watchdog(getName(),this);
-		buffer = new LinkedList<Double>();
+		buffer = new LinkedList<>();
 		
 	}
 	
@@ -82,7 +85,7 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 		setProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW, windowProperty);
 		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL,new Double(scanInterval),PropertyType.TIME,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL, intervalProperty);
-		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,new Double(currentValue),PropertyType.DOUBLE,false);
+		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,new Double(Double.NaN),PropertyType.DOUBLE,false);
 		valueProperty.setBindingType(BindingType.ENGINE);
 		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 		
@@ -102,7 +105,7 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 		state = TruthValue.UNSET;
 		if( clearOnReset ) {
 			buffer.clear();
-			currentValue = Double.NaN;
+			currentValue = null;
 		}
 	}
 
@@ -125,9 +128,8 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 		QualifiedValue qv = incoming.getValue();
 		Quality qual = qv.getQuality();
 		if( qual.isGood() && qv.getValue()!=null ) {
-			currentValue = Double.NaN;
 			try {
-				currentValue = Double.parseDouble(qv.getValue().toString());
+				currentValue = qv;
 				log.tracef("%s.acceptValue: %s (%3.1f)",getName(),qv.getValue().toString(),currentValue);
 				if( !dog.isActive() && scanInterval>0.0 ) {
 					dog.setSecondsDelay(scanInterval);
@@ -148,11 +150,10 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 	 */
 	@Override
 	public void evaluate() {
-		if( Double.isNaN(currentValue) ) return;
+		if( currentValue==null) return;
 		// Evaluate the buffer and report
 		// Add the currentValue to the queue
-		Double val = new Double(currentValue);
-		buffer.addLast(val);
+		buffer.addLast(currentValue);
 		int maxPoints = (int)((timeWindow+0.99*scanInterval)/scanInterval);
 		while(buffer.size() > maxPoints ) {
 			buffer.removeFirst();
@@ -168,11 +169,9 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 				controller.acceptCompletionNotification(nvn);
 				notifyOfStatus(outval);
 			}
-			else {
-				// Even if locked, we update the current state
-				valueProperty.setValue(result);
-				controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,new BasicQualifiedValue(result));
-			}
+			// Even if locked, we update the current state
+			valueProperty.setValue(result);
+			controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,new BasicQualifiedValue(result));
 		}
 
 		dog.setSecondsDelay(scanInterval);
@@ -241,11 +240,13 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 		Map<String,String> attributes = descriptor.getAttributes();
 		attributes.put("Average", String.valueOf(currentValue));
 		List<Map<String,String>> descBuffer = descriptor.getBuffer();
-		Iterator<Double> walker = buffer.iterator();
+		Iterator<QualifiedValue> walker = buffer.iterator();
 		while( walker.hasNext() ) {
-			Double dbl = walker.next();
 			Map<String,String> qvMap = new HashMap<>();
-			qvMap.put("Value", String.valueOf(dbl));
+			QualifiedValue qv = walker.next();
+			qvMap.put("Value", qv.getValue().toString());
+			qvMap.put("Quality", qv.getQuality().toString());
+			qvMap.put("Timestamp", qv.getTimestamp().toString());
 			descBuffer.add(qvMap);
 		}
 
@@ -277,9 +278,9 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 		double sum = 0.0;
 		int count = 0;
 		
-		for( Double dbl:buffer) {
-			if( dbl==null ) continue;  // Shouldn't happen
-			double val = dbl.doubleValue();
+		for( QualifiedValue qv:buffer) {
+			if( qv==null ) continue;  // Shouldn't happen
+			double val = fncs.coerceToDouble(qv.getValue());
 			sum = sum + val;
 			count++;
 		}
