@@ -5,8 +5,9 @@
 package com.ils.sblock.proxy;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.python.core.PyDictionary;
@@ -218,9 +219,9 @@ public class ProxyHandler   {
 			properties = new BlockProperty[list.size()];
 			for( Object obj:list ) { 
 				try {
-					if( obj instanceof Hashtable ) {
+					if( obj instanceof Map ) {
 						@SuppressWarnings("unchecked")
-						Hashtable<String,?> tbl = (Hashtable<String,?>)obj;
+						Map<String,?> tbl = (Map<String,?>)obj;
 						log.debug(TAG+": getProperties property = "+ tbl);  
 						BlockProperty prop = new BlockProperty();
 						prop.setName(nullCheck(tbl.get(BLTProperties.BLOCK_ATTRIBUTE_NAME),"unnamed"));
@@ -328,14 +329,14 @@ public class ProxyHandler   {
 			getBlockPrototypesCallback.setLocalVariable(0,pyList);
 			getBlockPrototypesCallback.execute(mgr);
 			log.debug(TAG+".getPalettePrototypes: returned "+ pyList);   // Should now be updated
-			// Contents of list are Hashtable<String,?>
+			// Contents of list are Map<String,?>
 			list = toJavaTranslator.pyListToArrayList(pyList);
 
 			for( Object obj:list ) { 
 				try {
-					if( obj instanceof Hashtable ) {
+					if( obj instanceof Map ) {  // Note: Both Hashtable and HashMap implement Map
 						@SuppressWarnings("unchecked")
-						Hashtable<String,?> tbl = (Hashtable<String,?>)obj;
+						Map<String,?> tbl = (Map<String,?>)obj;
 						log.debug(TAG+".getPalettePrototypes first table "+ tbl);  
 						PalettePrototype proto = new PalettePrototype();
 						proto.setPaletteIconPath(nullCheck(tbl.get(BLTProperties.PALETTE_ICON_PATH),"Block/icons/embedded/transmitter.png"));
@@ -382,10 +383,10 @@ public class ProxyHandler   {
 								desc.setStyle(BlockStyle.valueOf(val.toString().toUpperCase()));
 							}
 							catch(IllegalArgumentException iae ) {
-								log.warnf("%s.getPalettePrototypes: Illegal block style parameter (%) (%s)" , TAG,val,iae.getMessage());
+								log.warnf("%s.getPalettePrototypes: Illegal block style parameter (%s) (%s)" , TAG,val,iae.getMessage());
 							}
 							catch(Exception ex ) {
-								log.warnf("%s.getPalettePrototypes: Illegal block style (%) (%s)" , TAG,val,ex.getMessage());
+								log.warnf("%s.getPalettePrototypes: Illegal block style (%s) (%s)" , TAG,val,ex.getMessage());
 							}
 						}
 						// Now handle the anchors
@@ -397,7 +398,7 @@ public class ProxyHandler   {
 					}
 				}
 				catch( Exception ex ) {
-					log.warnf("%s: getPalettePrototypes: Exception processing prototype (%)" , TAG,ex.getMessage());
+					log.warnf("%s: getPalettePrototypes: Exception processing prototype (%s)" , TAG,ex.getMessage());
 				}
 			}
 		}
@@ -433,7 +434,7 @@ public class ProxyHandler   {
 				log.errorf("%s.setBlockProperty: Property name cannot be null",TAG); 
 				return;
 			}
-			Hashtable<String,Object> tbl = new Hashtable<String,Object>();  
+			Map<String,Object> tbl = new HashMap<String,Object>();  
 			tbl.put(BLTProperties.BLOCK_ATTRIBUTE_NAME,prop.getName());
 			if(prop.getBinding()!=null) tbl.put(BLTProperties.BLOCK_ATTRIBUTE_BINDING,prop.getBinding());
 			if(prop.getBindingType()!=null) tbl.put(BLTProperties.BLOCK_ATTRIBUTE_BINDING_TYPE,prop.getBindingType().toString());
@@ -465,8 +466,8 @@ public class ProxyHandler   {
 		log.debugf(TAG+": addAnchorsToPrototype "+l);
 		if( l instanceof List ) {
 			for( Object t: (List)l ) {
-				if( t instanceof Hashtable ) {
-					Hashtable tbl = (Hashtable<String,?>)t;
+				if( t instanceof Map ) {
+					Map tbl = (Map<String,?>)t;
 					Object name = tbl.get("name");
 					Object type = tbl.get("type");
 					if( name!=null && type!=null ) {

@@ -395,7 +395,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	}
 	public void setState(TruthValue state) {if(state!=null) this.state = state;}
 	public void setStatusText(String statusText) { this.statusText = statusText; }
-	public void setStyle(BlockStyle s) { this.style = s; }
+	public void setStyle(BlockStyle s) { if(style!=null) this.style = s; }
 	public void setSubworkspaceId(UUID subworkspaceId) {this.subworkspaceId = subworkspaceId;}
 	public void setTransmitEnabled(boolean transmitEnabled) {this.transmitEnabled = transmitEnabled;}
 	

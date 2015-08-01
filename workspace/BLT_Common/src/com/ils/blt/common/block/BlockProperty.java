@@ -9,6 +9,7 @@ import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -25,6 +26,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  * the Jackson JSON serializer. This is the reason that the get/set methods 
  * use the concrete SerializedQualifiedValue class rather than the interface.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class BlockProperty implements NotificationChangeListener {
 	private static final String TAG = "BlockProperty";
 	private static final String COMMA = ",";
@@ -97,6 +99,7 @@ public class BlockProperty implements NotificationChangeListener {
 		}
 		return property;
 	}
+	// NOTE: The deserializer may attempt to set nulls for enum mismatches. Don't let it.
 	public boolean isEditable() {return editable;}
 	public void setEditable(boolean editable) {this.editable = editable;}
 	public String getBinding() {return binding;}
@@ -110,9 +113,9 @@ public class BlockProperty implements NotificationChangeListener {
 	public int getDisplayOffsetY() {return displayOffsetY;}
 	public void setDisplayOffsetY(int externalOffsetY) {this.displayOffsetY = externalOffsetY;}
 	public BindingType getBindingType() { return bindingType; }
-	public void setBindingType(BindingType type) { this.bindingType = type; }
+	public void setBindingType(BindingType type) { if(type!=null) this.bindingType = type; }
 	public PropertyType getType() {return type;}
-	public void setType(PropertyType type) {this.type = type;}
+	public void setType(PropertyType type) {if(type!=null) this.type = type;}
 	public Object getValue() {return value;}
 	public void setValue(Object obj) {
 		if(obj==null) throw new IllegalArgumentException("null property not allowed");

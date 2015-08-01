@@ -5,8 +5,9 @@
 package com.ils.block.proxy;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.python.core.PyDictionary;
@@ -218,9 +219,9 @@ public class ProxyHandler   {
 			properties = new BlockProperty[list.size()];
 			for( Object obj:list ) { 
 				try {
-					if( obj instanceof Hashtable ) {
+					if( obj instanceof Map ) {  // Note: Both Hashtable and HashMap implement Map
 						@SuppressWarnings("unchecked")
-						Hashtable<String,?> tbl = (Hashtable<String,?>)obj;
+						Map<String,?> tbl = (Map<String,?>)obj;
 						log.debug(TAG+": getProperties property = "+ tbl);  
 						BlockProperty prop = new BlockProperty();
 						prop.setName(nullCheck(tbl.get(BLTProperties.BLOCK_ATTRIBUTE_NAME),"unnamed"));
@@ -231,10 +232,10 @@ public class ProxyHandler   {
 								prop.setBindingType(BindingType.valueOf(val.toString().toUpperCase()));
 							}
 							catch(IllegalArgumentException iae ) {
-								log.warnf("%s: getProperties: Illegal binding type (%) (%s)" , TAG,val,iae.getMessage());
+								log.warnf("%s: getProperties: Illegal binding type (%s) (%s)" , TAG,val,iae.getMessage());
 							}
 							catch(Exception ex ) {
-								log.warnf("%s: getProperties: Illegal binding type (%) (%s)" , TAG,val,ex.getMessage());
+								log.warnf("%s: getProperties: Illegal binding type (%s) (%s)" , TAG,val,ex.getMessage());
 							}
 						}
 						val = tbl.get(BLTProperties.BLOCK_ATTRIBUTE_EDITABLE);
@@ -245,10 +246,10 @@ public class ProxyHandler   {
 								prop.setType(PropertyType.valueOf(val.toString().toUpperCase()));
 							}
 							catch(IllegalArgumentException iae ) {
-								log.warnf("%s: getProperties: Illegal data type (%) (%s)" , TAG,val,iae.getMessage());
+								log.warnf("%s: getProperties: Illegal data type (%s) (%s)" , TAG,val,iae.getMessage());
 							}
 							catch(Exception ex ) {
-								log.warnf("%s: getProperties: Illegal data type (%) (%s)" , TAG,val,ex.getMessage());
+								log.warnf("%s: getProperties: Illegal data type (%s) (%s)" , TAG,val,ex.getMessage());
 							}
 						}
 						val = tbl.get(BLTProperties.BLOCK_ATTRIBUTE_VALUE);
@@ -292,7 +293,7 @@ public class ProxyHandler   {
 			getBlockStateCallback.setLocalVariable(1,pyList);
 			getBlockStateCallback.execute(mgr);
 			log.debug(TAG+".getBlockProperties returned "+ pyList);   // Should now be updated
-			// Contents of list are Hashtable<String,?>
+			// Contents of list are Map<String,?>
 			// We're looking for a single string entry in the list
 			List<?> list = toJavaTranslator.pyListToArrayList(pyList);
 			
@@ -328,14 +329,14 @@ public class ProxyHandler   {
 			getBlockPrototypesCallback.setLocalVariable(0,pyList);
 			getBlockPrototypesCallback.execute(mgr);
 			log.debug(TAG+".getPalettePrototypes: returned "+ pyList);   // Should now be updated
-			// Contents of list are Hashtable<String,?>
+			// Contents of list are Map<String,?>
 			list = toJavaTranslator.pyListToArrayList(pyList);
 
 			for( Object obj:list ) { 
 				try {
-					if( obj instanceof Hashtable ) {
+					if( obj instanceof Map) {
 						@SuppressWarnings("unchecked")
-						Hashtable<String,?> tbl = (Hashtable<String,?>)obj;
+						Map<String,?> tbl = (Map<String,?>)obj;
 						log.debug(TAG+".getPalettePrototypes first table "+ tbl);  
 						PalettePrototype proto = new PalettePrototype();
 						proto.setPaletteIconPath(nullCheck(tbl.get(BLTProperties.PALETTE_ICON_PATH),"Block/icons/embedded/transmitter.png"));
@@ -433,7 +434,7 @@ public class ProxyHandler   {
 				log.errorf("%s.setBlockProperty: Property name cannot be null",TAG); 
 				return;
 			}
-			Hashtable<String,Object> tbl = new Hashtable<String,Object>();  
+			Map<String,Object> tbl = new HashMap<String,Object>();  
 			tbl.put(BLTProperties.BLOCK_ATTRIBUTE_NAME,prop.getName());
 			if(prop.getBinding()!=null) tbl.put(BLTProperties.BLOCK_ATTRIBUTE_BINDING,prop.getBinding());
 			if(prop.getBindingType()!=null) tbl.put(BLTProperties.BLOCK_ATTRIBUTE_BINDING_TYPE,prop.getBindingType().toString());
@@ -465,8 +466,8 @@ public class ProxyHandler   {
 		log.debugf(TAG+": addAnchorsToPrototype "+l);
 		if( l instanceof List ) {
 			for( Object t: (List)l ) {
-				if( t instanceof Hashtable ) {
-					Hashtable tbl = (Hashtable<String,?>)t;
+				if( t instanceof Map ) {
+					Map tbl = (Map<String,?>)t;
 					Object name = tbl.get("name");
 					Object type = tbl.get("type");
 					if( name!=null && type!=null ) {

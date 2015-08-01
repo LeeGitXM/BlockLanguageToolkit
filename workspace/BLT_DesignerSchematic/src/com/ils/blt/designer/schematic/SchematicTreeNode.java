@@ -20,6 +20,7 @@ import java.util.UUID;
 import javax.swing.JPopupMenu;
 import javax.swing.tree.TreePath;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.ToolkitRequestHandler;
@@ -296,6 +297,7 @@ public class SchematicTreeNode extends GeneralPurposeTreeNode  {
 										// It would be nice to simply convert to a resource.
 										// Unfortunately we have to replace all UUIDs with new ones
 										ObjectMapper mapper = new ObjectMapper();
+										mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL, true);
 										SerializableDiagram sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
 										if( sd!=null ) {
 											logger.infof("%s:ImportDiagramAction imported diagram:\n%s", TAG,sd.getName());

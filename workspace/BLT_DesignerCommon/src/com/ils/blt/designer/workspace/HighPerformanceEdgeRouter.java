@@ -53,11 +53,14 @@ public class HighPerformanceEdgeRouter extends AbstractEdgeRouter {
 	 * right. That is the vast majority of blocks have inputs on the left and 
 	 * outputs on the right. Only a few have inputs on top or outputs on the 
 	 * bottom.
+	 * 
+	 * If there is no connection, return an empty array.
 	 */
 	@Override
 	protected List<Point> route(Point start, Point end, Point trueStart, Point trueEnd) {
 		//log.infof("%s.route ...",TAG);
 		List<Point> points = new ArrayList<Point>(2);
+		if( start==null || end==null || trueStart==null || trueEnd==null ) return points;
 		if (start.x == end.x || start.y == end.y) {
 			// straight line. Nothing more required
 			points.add(start);	

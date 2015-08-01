@@ -1,3 +1,4 @@
+<!-- NOTE: We intentionally name the common jar files the same as the version 1 names, to force an overwrite. -->
 <project name="BLTModuleBuilder" basedir="../" default="BuildAndInstallModule">
 
 	<import file="${basedir}/BLT_Build/build.xml"/>
