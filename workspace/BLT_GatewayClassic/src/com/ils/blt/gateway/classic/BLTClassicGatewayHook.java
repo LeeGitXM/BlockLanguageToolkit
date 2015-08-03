@@ -18,6 +18,7 @@ import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ModelManager;
 import com.ils.blt.gateway.persistence.ToolkitRecord;
 import com.ils.blt.gateway.wicket.ToolkitStatusPanel;
+import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
@@ -41,6 +42,8 @@ import com.inductiveautomation.ignition.gateway.web.models.INamedTab;
  */
 public class BLTClassicGatewayHook extends AbstractGatewayModuleHook  {
 	public static String TAG = "BLTGatewayHook";
+	private static String BUNDLE_NAME = "gateway";   // File is gateway.properties
+	private static String BUNDLE_PREFIX = "BLT";     // Use "BLT." to reference
 	private transient GatewayRpcDispatcher dispatcher = null;
 	private transient GatewayContext context = null;
 	private transient ModelManager mmgr = null;
@@ -55,6 +58,7 @@ public class BLTClassicGatewayHook extends AbstractGatewayModuleHook  {
 	public BLTClassicGatewayHook() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		log.info(TAG+"Initializing BLT Classic Gateway hook");
+		BundleUtil.get().addBundle(BUNDLE_PREFIX,getClass(),BUNDLE_NAME);
 	}
 		
 	
@@ -138,9 +142,11 @@ public class BLTClassicGatewayHook extends AbstractGatewayModuleHook  {
 		mgr.addScriptModule(BLTProperties.CLASSIC_SCRIPT_PACKAGE, ClassicScriptFunctions.class);
 	}
 	
+	
 	private static class ToolkitStatus extends AbstractNamedTab {
 		private static final long serialVersionUID = 64149723779427382L;
 
+		// Class uses the bundle utility
 		public ToolkitStatus() {
 			super("ToolkitStatus", "BLT.title");
 		}

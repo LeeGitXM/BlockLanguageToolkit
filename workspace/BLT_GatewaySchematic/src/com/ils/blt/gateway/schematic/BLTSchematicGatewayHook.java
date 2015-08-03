@@ -18,6 +18,7 @@ import com.ils.blt.gateway.engine.ModelManager;
 import com.ils.blt.gateway.persistence.ToolkitRecord;
 import com.ils.blt.gateway.wicket.ToolkitStatusPanel;
 import com.ils.sblock.proxy.ProxyHandler;
+import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
@@ -41,6 +42,8 @@ import com.inductiveautomation.ignition.gateway.web.models.INamedTab;
  */
 public class BLTSchematicGatewayHook extends AbstractGatewayModuleHook  {
 	public static String TAG = "BLTSchematicGatewayHook";
+	private static String BUNDLE_NAME = "gateway";   // File is gateway.properties
+	private static String BUNDLE_PREFIX = "BLT";     // Use "BLT." to reference
 	private transient GatewayRpcDispatcher dispatcher = null;
 	private transient GatewayContext context = null;
 	private transient ModelManager mmgr = null;
@@ -55,6 +58,7 @@ public class BLTSchematicGatewayHook extends AbstractGatewayModuleHook  {
 	public BLTSchematicGatewayHook() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		log.info(TAG+"Initializing BLT Schematic Gateway hook");
+		BundleUtil.get().addBundle(BUNDLE_PREFIX,getClass(),BUNDLE_NAME);
 	}
 		
 	
