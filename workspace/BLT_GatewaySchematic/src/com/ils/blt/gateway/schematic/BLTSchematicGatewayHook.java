@@ -43,7 +43,7 @@ import com.inductiveautomation.ignition.gateway.web.models.INamedTab;
 public class BLTSchematicGatewayHook extends AbstractGatewayModuleHook  {
 	public static String TAG = "BLTSchematicGatewayHook";
 	private static String BUNDLE_NAME = "gateway";   // File is gateway.properties
-	private static String BUNDLE_PREFIX = "BLT";     // Use "BLT." to reference
+	private static String BUNDLE_PREFIX = "Schematic";     // Use "Schematic." to reference
 	private transient GatewayRpcDispatcher dispatcher = null;
 	private transient GatewayContext context = null;
 	private transient ModelManager mmgr = null;
@@ -67,7 +67,6 @@ public class BLTSchematicGatewayHook extends AbstractGatewayModuleHook  {
 	@Override
 	public void setup(GatewayContext ctxt) {
 		this.context = ctxt;
-
 		// NOTE: Get serialization exception if ModelResourceManager is saved as a class member
 		//       Exception is thrown when we try to incorporate a StatusPanel
 		log.info(TAG+".setup - enable project listeners.");
@@ -146,7 +145,7 @@ public class BLTSchematicGatewayHook extends AbstractGatewayModuleHook  {
 		private static final long serialVersionUID = 64149723779427382L;
 
 		public ToolkitStatus() {
-			super("ToolkitStatus", "BLT.title");
+			super("ToolkitStatus", "Schematic.title");
 		}
 		
 		@Override

@@ -22,6 +22,7 @@ import net.miginfocom.swing.MigLayout;
 
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.ToolkitRequestHandler;
+import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 /**
@@ -32,7 +33,7 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 public class SchematicConfigurationDialog extends JDialog {
 	protected static final Dimension TEXT_FIELD_SIZE  = new Dimension(200,24);
-	private static final long serialVersionUID = 2002388376824434427L;
+	private static final long serialVersionUID = 2112388376824434427L;
 	private final int DIALOG_HEIGHT = 220;
 	private final int DIALOG_WIDTH = 560;
 	private final DesignerContext context;
@@ -44,7 +45,7 @@ public class SchematicConfigurationDialog extends JDialog {
 	public SchematicConfigurationDialog(DesignerContext ctx,ToolkitRequestHandler handler) {
 		super(ctx.getFrame());
 		this.context = ctx;
-		this.setTitle("Toolkit Configuration");
+		this.setTitle("Schematic Block Toolkit Configuration");
 		this.rb = ResourceBundle.getBundle("com.ils.blt.designer.schematic.designer");  // designer.properties
 		this.requestHandler = handler;
 		setModal(true);
@@ -63,9 +64,9 @@ public class SchematicConfigurationDialog extends JDialog {
 		
 		// Navtree Configurations
 		internalPanel.add(createLabel("Configuration.RootName"),"");
-		String name = requestHandler.getToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_SCHEMATIC_ROOT);
-		if( name == null ) name = BLTProperties.DEFAULT_SCHEMATIC_ROOT_FOLDER_NAME;
-		rootNameTextField = createTextField("Configuration.RootName.tooltip",name);
+		String value = requestHandler.getToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_SCHEMATIC_ROOT);
+		if( value == null ) value = BLTProperties.DEFAULT_SCHEMATIC_ROOT_FOLDER_NAME;
+		rootNameTextField = createTextField("Configuration.RootName.tooltip",value);
 		internalPanel.add(rootNameTextField, "wrap");
 		
 		add(internalPanel,BorderLayout.CENTER);
@@ -106,18 +107,14 @@ public class SchematicConfigurationDialog extends JDialog {
 	}
 	
 	/**
-	 * Create a combo box that is populated with a list of tag providers
+	 * Create a text field that maps to a system property
 	 */
-	private JTextField createTextField(String bundle,String key) {
+	private JTextField createTextField(String bundle,String currentValue) {
 		JTextField field = new JTextField();
-		field.setText("1.0");  // Default
+		field.setText("");  // Default
 		field.setForeground(Color.BLACK);
-		if( key.length()>0 ) {
-			String currentValue = requestHandler.getToolkitProperty(key);
-			if( currentValue!=null && currentValue.length()>0 ) {
-				field.setText(currentValue);
-			}
-		}
+		if( currentValue!=null ) field.setText(currentValue);
+
 		field.setPreferredSize(TEXT_FIELD_SIZE);
 		return field;
 	}
@@ -127,5 +124,7 @@ public class SchematicConfigurationDialog extends JDialog {
 	private void saveEntries() {
 		// For these we set new values for the next time queried
 		requestHandler.setToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_SCHEMATIC_ROOT,rootNameTextField.getText() );
+		GeneralPurposeTreeNode rootNode = ((BLTSchematicDesignerHook)context.getModule(BLTProperties.SCHEMATIC_MODULE_ID)).getRootNode();
+		rootNode.setName(rootNameTextField.getText());
 	}
 }

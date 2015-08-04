@@ -43,7 +43,7 @@ import com.inductiveautomation.ignition.gateway.web.models.INamedTab;
 public class BLTClassicGatewayHook extends AbstractGatewayModuleHook  {
 	public static String TAG = "BLTGatewayHook";
 	private static String BUNDLE_NAME = "gateway";   // File is gateway.properties
-	private static String BUNDLE_PREFIX = "BLT";     // Use "BLT." to reference
+	private static String BUNDLE_PREFIX = "Classic";     // Use "Classic." to reference
 	private transient GatewayRpcDispatcher dispatcher = null;
 	private transient GatewayContext context = null;
 	private transient ModelManager mmgr = null;
@@ -148,7 +148,7 @@ public class BLTClassicGatewayHook extends AbstractGatewayModuleHook  {
 
 		// Class uses the bundle utility
 		public ToolkitStatus() {
-			super("ToolkitStatus", "BLT.title");
+			super("ToolkitStatus", "Classic.title");
 		}
 		
 		@Override
