@@ -11,7 +11,7 @@ script: getState blockProxy.getBlockState(dpath,name)
 script: resetBlock blockProxy.reset(dpath,name)
 script: resetDiagram diagramProxy.reset(name)
 script: setStateForApplication applicationProxy.setState(name,state)
-script: setTimeFactor timeFactor.setFactor(factor)
+script: setTimeFactor timeFactor.setTimeFactor(factor)
 # We need to set the test framework and internal clocks the same
 timefactor: 15
 setTimeFactor (15)

@@ -1,6 +1,6 @@
 # Copyright 2015. ILS Automation. All rights reserved.
 # Argument is the diagram path
-def setFactor(common,factor):
+def setTimeFactor(common,factor):
 	import system.ils.blt.diagram as script
 	script.setTimeFactor(float(factor))
 
