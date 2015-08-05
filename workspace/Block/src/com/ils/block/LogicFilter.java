@@ -153,7 +153,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public synchronized void evaluate() {
-		log.tracef("%s.evaluate: currentValue %s",getName(),currentValue.name());
+		//log.tracef("%s.evaluate: currentValue %s",getName(),currentValue.name());
 		if( scanInterval<= 0.0) {
 			reset();
 			return;
@@ -171,8 +171,8 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 			buffer.removeFirst();
 		}
 		
-		log.tracef("%s.evaluate buffer %d of %d, current value=%s, state=%s (%s)",
-				getName(),buffer.size(),bufferSize,currentValue.name(),state.name(),timer.getName());
+		//log.tracef("%s.evaluate buffer %d of %d, current value=%s, state=%s (%s)",
+		//		getName(),buffer.size(),bufferSize,currentValue.name(),state.name(),timer.getName());
 		
 		TruthValue newState = TruthValue.UNKNOWN;
 		if( buffer.size() >= 1 ) {
@@ -180,7 +180,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 			// Even if locked, we update the property state
 			controller.sendPropertyNotification(getBlockId().toString(),BLOCK_PROPERTY_RATIO,new BasicQualifiedValue(new Double(ratio)));
 			newState = computeState(state,ratio,computeFalseRatio(bufferSize));
-			log.tracef("%s.evaluate ... ratio %f (%s was %s)",getName(),ratio,newState.name(),state.name());
+			//log.tracef("%s.evaluate ... ratio %f (%s was %s)",getName(),ratio,newState.name(),state.name());
 		}
 		
 		if( !isLocked() ) {
@@ -192,7 +192,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 				notifyOfStatus(result);
 			}
 		}
-		log.tracef("%s.evaluate: COMPLETE",getName());
+		//log.tracef("%s.evaluate: COMPLETE",getName());
 	}
 	/**
 	 * @return a block-specific description of internal statue

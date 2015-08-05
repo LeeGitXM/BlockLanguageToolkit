@@ -68,7 +68,7 @@ def listBlocksForTag(common,tagpath):
 def listSinksForSource(common,dpath,blockName):
 	diagid = getDiagram(dpath).getSelf().toString()
     # blocks is a list of SerializableBlockStateDescriptor
-	blocks = application.listSinksForSource(diagid,blockName)
+	blocks = script.listSinksForSource(diagid,blockName)
 	print "==================== sinksForSource =============="
 	lst = []
 	for block in blocks:

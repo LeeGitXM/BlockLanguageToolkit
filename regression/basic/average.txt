@@ -24,7 +24,7 @@ Tagset: AverageFeed
 10:03 40
 10:03:30 Assert: Average1 = 25 "Average with next reading"
 
-Step: Average Time Window
+Step: "Average Time Window"
 10:03:45 10 -1 -1 -1
 10:04:00 resetDiagram ($DIAGRAM)
 10:04:55 Assert: Average2 = -1 "No result with first value"

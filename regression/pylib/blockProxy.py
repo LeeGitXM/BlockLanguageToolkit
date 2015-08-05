@@ -11,7 +11,10 @@ import system.ils.blt.diagram as script
 def internalAttribute(common,dpath,blockName,attName):
 	diagram = getDiagram(dpath)
 	for block in diagram.getProcessBlocks():
+		print block.getName()
 		if block.getName() == blockName:
+			print blockName
+			print block
 			attributes = block.getInternalStatus().getAttributes()
 			attribute = attributes.get(attName)
 			common['result'] = attribute
