@@ -22,6 +22,7 @@ import net.miginfocom.swing.MigLayout;
 
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.ToolkitRequestHandler;
+import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
@@ -124,7 +125,7 @@ public class SchematicConfigurationDialog extends JDialog {
 	private void saveEntries() {
 		// For these we set new values for the next time queried
 		requestHandler.setToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_SCHEMATIC_ROOT,rootNameTextField.getText() );
-		GeneralPurposeTreeNode rootNode = ((BLTSchematicDesignerHook)context.getModule(BLTProperties.SCHEMATIC_MODULE_ID)).getRootNode();
-		rootNode.setName(rootNameTextField.getText());
+		SchematicTreeNode rootNode = ((BLTSchematicDesignerHook)context.getModule(BLTProperties.SCHEMATIC_MODULE_ID)).getRootNode();
+		rootNode.setRootName(rootNameTextField.getText());
 	}
 }

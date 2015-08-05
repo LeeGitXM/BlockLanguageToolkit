@@ -16,6 +16,7 @@ def setState(common,dpath,state):
 
 # Argument is the diagram path
 def reset(common,dpath):
+	print "reset "+dpath
 	diagid = getDiagram(dpath).getSelf().toString()
 	script.resetDiagram(diagid)
 
@@ -31,7 +32,7 @@ def getDiagram(dpath):
 	for desc in descriptors:
 		path = desc.path[6:]
 		path = path.replace(":","/")
-		#print desc.id, path
+		print desc.id, path
 		if dpath == path:
 			diagram = handler.getDiagram(desc.id)
 	return diagram

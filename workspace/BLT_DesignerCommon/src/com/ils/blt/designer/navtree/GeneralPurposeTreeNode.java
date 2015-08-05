@@ -156,7 +156,6 @@ public abstract class GeneralPurposeTreeNode extends FolderNode implements NavTr
 				getFolderId().equals(BLTProperties.SCHEMATIC_ROOT_FOLDER_UUID)  );
 	}
 	public void setDirty(boolean flag) { this.dirty = flag; }
-	public void setName(String newName) { super.setName(newName); }
 	/**
 	 * Query the block controller in the Gateway. The resources that it knows
 	 * about may, or may not, coincide with those in the Designer. 

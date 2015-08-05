@@ -177,6 +177,12 @@ public class SchematicTreeNode extends GeneralPurposeTreeNode  {
 		return getFolderId().equals(BLTProperties.SCHEMATIC_ROOT_FOLDER_UUID);
 	}
 
+	public void setRootName(String rootName) {
+		if( isRootFolder() ) {
+			this.setName(rootName);
+			this.setText(rootName);
+		}
+	}
 	
 	// Recursively descend the node tree, gathering up associated resources.
 	// Deserialize them and add as proper children of the parent

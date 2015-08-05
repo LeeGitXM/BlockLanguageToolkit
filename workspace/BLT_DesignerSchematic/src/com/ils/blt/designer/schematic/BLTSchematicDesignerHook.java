@@ -52,7 +52,7 @@ public class BLTSchematicDesignerHook extends AbstractDesignerModuleHook  {
 	public static String HOOK_BUNDLE_NAME   = "designer";      // Properties file is designer.properties
 	public static String PREFIX = BLTProperties.BUNDLE_PREFIX; // Properties is accessed by this prefix
 
-	private GeneralPurposeTreeNode rootNode = null;
+	private SchematicTreeNode rootNode = null;
 	private DesignerContext context = null;
 	private final LoggerEx log;
 	private SchematicDiagramWorkspace workspace = null;
@@ -71,7 +71,7 @@ public class BLTSchematicDesignerHook extends AbstractDesignerModuleHook  {
 		nodeStatusManager = new NodeStatusManager();
 	}
 	
-	public GeneralPurposeTreeNode getRootNode() { return this.rootNode; }
+	public SchematicTreeNode getRootNode() { return this.rootNode; }
 	
 	@Override
 	public void initializeScriptManager(ScriptManager mgr) {

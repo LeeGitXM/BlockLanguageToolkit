@@ -58,7 +58,7 @@ Step: Blocks for Tag
 assert: blocksForTag("[XOM_ISOLATION]MemoryTags/ComparisonOut3") contains "OUTPUT-514" "Output 514 uses ComparisonOut3"
 assert: blocksForTag("[XOM_ISOLATION]MemoryTags/MJKFeed1") contains "INPUT-219" "Input 219 (SQC) uses MJKFeed1"
 assert: ! blocksForTag("[XOM_ISOLATION]MemoryTags/MJKFeed1") contains "INHIBITOR-551" "Inhibitor 551 does not use MJKFeed1"
-assert: count of blocksForTag("[XOM_ISOLATION]MemoryTags/BooleanFeed") = 5 "5 blocks use BooleanFeed"
+assert: count of blocksForTag("[XOM_ISOLATION]MemoryTags/BooleanFeed") = 4 "4 blocks use BooleanFeed"
 
 Step: Path for Block
 assert: pathForBlock($DIAGRAM,"OUTPUT-514") = ":app75:family75:routing:OUTPUT-514" "Path for output 514"
