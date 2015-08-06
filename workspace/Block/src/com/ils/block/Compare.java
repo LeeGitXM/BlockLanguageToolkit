@@ -20,8 +20,8 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
-import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
@@ -139,16 +139,16 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 			state = TruthValue.UNKNOWN;
 			currentValue = null;
 			if( x==null ) {
-				currentValue = new BasicQualifiedValue(state,new BasicQuality("'x' is unset",Quality.Level.Bad));
+				currentValue = new TestAwareQualifiedValue(timer,state,new BasicQuality("'x' is unset",Quality.Level.Bad));
 			}
 			else if( y==null ) {
-				currentValue = new BasicQualifiedValue(state,new BasicQuality("'y' is unset",Quality.Level.Bad));
+				currentValue = new TestAwareQualifiedValue(timer,state,new BasicQuality("'y' is unset",Quality.Level.Bad));
 			}
 			else if( !x.getQuality().isGood()) {
-				currentValue = new BasicQualifiedValue(state,x.getQuality());
+				currentValue = new TestAwareQualifiedValue(timer,state,x.getQuality());
 			}
 			else if( !y.getQuality().isGood()) {
-				currentValue = new BasicQualifiedValue(state,y.getQuality());
+				currentValue = new TestAwareQualifiedValue(timer,state,y.getQuality());
 			}
 			double xx = Double.NaN;
 			double yy = Double.NaN;
@@ -159,11 +159,11 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 						yy = Double.parseDouble(y.getValue().toString());
 					}
 					catch(NumberFormatException nfe) {
-						currentValue = new BasicQualifiedValue(TruthValue.UNKNOWN,new BasicQuality("'y' is not a valid double",Quality.Level.Bad));
+						currentValue = new TestAwareQualifiedValue(timer,TruthValue.UNKNOWN,new BasicQuality("'y' is not a valid double",Quality.Level.Bad));
 					}
 				}
 				catch(NumberFormatException nfe) {
-					currentValue = new BasicQualifiedValue(TruthValue.UNKNOWN,new BasicQuality("'x' is not a valid double",Quality.Level.Bad));
+					currentValue = new TestAwareQualifiedValue(timer,TruthValue.UNKNOWN,new BasicQuality("'x' is not a valid double",Quality.Level.Bad));
 				}
 			}
 			
@@ -171,12 +171,12 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 				if( x.getQuality().isGood() && y.getQuality().isGood() ) {
 					state = TruthValue.FALSE;
 					if( xx > yy+offset)state = TruthValue.TRUE;
-					currentValue = new BasicQualifiedValue(state);
+					currentValue = new TestAwareQualifiedValue(timer,state);
 				}
 				else {
 					Quality q = x.getQuality();
 					if( q.isGood()) q = y.getQuality();
-					currentValue = new BasicQualifiedValue(state,q);
+					currentValue = new TestAwareQualifiedValue(timer,state,q);
 					log.infof("%s.evaluate: UNKNOWN x=%s, y=%s",getName(),x.toString(),y.toString());
 				}
 				

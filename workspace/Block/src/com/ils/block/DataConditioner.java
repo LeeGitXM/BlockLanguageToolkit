@@ -24,6 +24,7 @@ import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
+import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
@@ -39,7 +40,6 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 	private static final String VALUE_PORT_NAME = "value";
 	private static final String QUALITY_PORT_NAME = "quality";
 	private static final String STATUS_PORT_NAME = "status";
-	private static final QualifiedValue BAD_VALUE = new BasicQualifiedValue(0.0,new BasicQuality("BAD",Quality.Level.Bad));
 	private final Watchdog dog;
 	private double synchInterval = 0.5; // 1/2 sec synchronization by default
 	private TruthValue qualityInput = TruthValue.UNKNOWN;
@@ -177,9 +177,9 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 				//log.tracef("%s.evaluate: propagating %s %s",getName(),value.getValue().toString(),value.getQuality().getName());
 			}
 			else {
-				value = BAD_VALUE;
+				value =  new TestAwareQualifiedValue(timer,0.0,new BasicQuality("BAD",Quality.Level.Bad));
 			}
-			QualifiedValue result = new BasicQualifiedValue(state);
+			QualifiedValue result = new TestAwareQualifiedValue(timer,state);
 			OutgoingNotification nvn = new OutgoingNotification(this,STATUS_PORT_NAME,result);
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus();
@@ -192,7 +192,7 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 	 */
 	@Override
 	public void notifyOfStatus() {
-		QualifiedValue qv = new BasicQualifiedValue(state);
+		QualifiedValue qv = new TestAwareQualifiedValue(timer,state);
 		controller.sendConnectionNotification(getBlockId().toString(), STATUS_PORT_NAME, qv);
 		valueProperty.setValue(value.getValue());
 		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,value);

@@ -19,7 +19,7 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.notification.Signal;
 import com.ils.blt.common.notification.SignalNotification;
-import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
+import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
@@ -80,7 +80,7 @@ public class Receiver extends AbstractProcessBlock implements ProcessBlock {
 					patternProperty.getValue().toString().equalsIgnoreCase(signal.getPattern())) {
 			// Passed the filtering. Send to the output.
 			log.infof("%s.setValue: passing signal to output ",TAG);
-			QualifiedValue sig = new BasicQualifiedValue(signal);
+			QualifiedValue sig = new TestAwareQualifiedValue(timer,signal);
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.CONTROL_PORT_NAME,sig);
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus(sig);

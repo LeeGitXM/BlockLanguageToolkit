@@ -24,8 +24,8 @@ import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.notification.Signal;
 import com.ils.blt.common.notification.SignalNotification;
+import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
-import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
@@ -275,16 +275,16 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 		
 		
 		log.tracef("%s: evaluate - pid out is %f",TAG,result);
-		QualifiedValue ans = new BasicQualifiedValue(result);
+		QualifiedValue ans = new TestAwareQualifiedValue(timer,result);
 		OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,ans);
 		controller.acceptCompletionNotification(nvn);
-		QualifiedValue prop = new BasicQualifiedValue(proportionalContribution);
+		QualifiedValue prop = new TestAwareQualifiedValue(timer,proportionalContribution);
 		nvn = new OutgoingNotification(this,PROPORTIONAL_PORT,prop);
 		controller.acceptCompletionNotification(nvn);
-		QualifiedValue integ = new BasicQualifiedValue(integralContribution);
+		QualifiedValue integ = new TestAwareQualifiedValue(timer,integralContribution);
 		nvn = new OutgoingNotification(this,INTEGRAL_PORT,integ);
 		controller.acceptCompletionNotification(nvn);
-		QualifiedValue deriv = new BasicQualifiedValue(derivativeContribution);
+		QualifiedValue deriv = new TestAwareQualifiedValue(timer,derivativeContribution);
 		nvn = new OutgoingNotification(this,DERIVATIVE_PORT,deriv);
 		controller.acceptCompletionNotification(nvn);
 		notifyOfStatus(ans,prop,integ,deriv);		

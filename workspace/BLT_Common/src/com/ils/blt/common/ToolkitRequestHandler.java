@@ -251,6 +251,18 @@ public interface ToolkitRequestHandler  {
 	 * @param arg also a component of the transmitted signal
 	 */
 	public boolean sendLocalSignal(String diagramId,String command,String message,String arg) ;
+	/**
+	 * Send a signal to all blocks of a particular class on a specified diagram.
+	 * This is a "local" transmission. The diagram is specified by a tree-path.
+	 * There may be no successful recipients. This version time-stamps the signal sent
+	 * 
+	 * @param diagramId
+	 * @param command string of the signal
+	 * @param message embedded in the transmitted signal
+	 * @param arg also a component of the transmitted signal
+	 * @param time unix time, milli-seconds since the start of the epoch
+	 */
+	public boolean sendLocalSignal(String diagramId,String command,String message,String arg,long time) ;
 	
 	/**
 	 * Set the state of every diagram that is a member of the application to

@@ -25,8 +25,8 @@ import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
+import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
-import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
@@ -169,7 +169,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		}
 		else if( !isLocked()) {
 			// Finally propagate the held value
-			QualifiedValue outval = new BasicQualifiedValue(trigger);
+			QualifiedValue outval = new TestAwareQualifiedValue(timer,trigger);
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 			controller.acceptCompletionNotification(nvn);
 			valueProperty.setValue("---");
@@ -230,7 +230,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 	@Override
 	public void notifyOfStatus() {
 		if( getBlockId()!=null ) {
-			QualifiedValue qv = new BasicQualifiedValue(state);
+			QualifiedValue qv = new TestAwareQualifiedValue(timer,state);
 			notifyOfStatus(qv);
 		}
 	}
@@ -238,7 +238,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 	private void notifyOfStatus(QualifiedValue qv) {
 		Object val = valueProperty.getValue();
 		if( val!=null ) {
-			QualifiedValue displayQV = new BasicQualifiedValue(val.toString());
+			QualifiedValue displayQV = new TestAwareQualifiedValue(timer,val.toString());
 			log.tracef("%s.notifyOfStatus display = %s",TAG,val.toString());
 			controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,displayQV);
 		}

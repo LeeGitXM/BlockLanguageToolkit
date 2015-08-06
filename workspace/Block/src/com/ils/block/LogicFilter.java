@@ -29,6 +29,7 @@ import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
+import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -178,7 +179,8 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		if( buffer.size() >= 1 ) {
 			ratio = computeTrueRatio(bufferSize);
 			// Even if locked, we update the property state
-			controller.sendPropertyNotification(getBlockId().toString(),BLOCK_PROPERTY_RATIO,new BasicQualifiedValue(new Double(ratio)));
+			controller.sendPropertyNotification(getBlockId().toString(),BLOCK_PROPERTY_RATIO,
+						new TestAwareQualifiedValue(timer,new Double(ratio)));
 			newState = computeState(state,ratio,computeFalseRatio(bufferSize));
 			//log.tracef("%s.evaluate ... ratio %f (%s was %s)",getName(),ratio,newState.name(),state.name());
 		}
@@ -186,7 +188,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		if( !isLocked() ) {
 			if(newState!=state) {
 				state = newState;
-				QualifiedValue result = new BasicQualifiedValue(state.name());
+				QualifiedValue result = new TestAwareQualifiedValue(timer,state.name());
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
 				controller.acceptCompletionNotification(nvn);
 				notifyOfStatus(result);
@@ -295,11 +297,12 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void notifyOfStatus() {
-		QualifiedValue qv = new BasicQualifiedValue(new Double(ratio));
+		QualifiedValue qv = new TestAwareQualifiedValue(timer,new Double(ratio));
 		notifyOfStatus(qv);
 	}
 	private void notifyOfStatus(QualifiedValue qv) {
-		controller.sendPropertyNotification(getBlockId().toString(), BLOCK_PROPERTY_RATIO,new BasicQualifiedValue(new Double(ratio)));
+		controller.sendPropertyNotification(getBlockId().toString(), BLOCK_PROPERTY_RATIO,
+				new TestAwareQualifiedValue(timer,new Double(ratio)));
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 	

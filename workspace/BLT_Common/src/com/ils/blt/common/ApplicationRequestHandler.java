@@ -670,6 +670,30 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	}
 
 	/**
+	 * Send a signal to all blocks of a particular class on a specified diagram.
+	 * This is a "local" transmission. The diagram is specified by a tree-path.
+	 * There may be no successful recipients. The signals are timestamped with
+	 * the specified time
+	 * 
+	 * @param diagramId
+	 * @param className filter of the receiver blocks to be targeted.
+	 * @param command string of the signal.
+	 */
+	@Override
+	public boolean sendLocalSignal(String diagramId, String command,String message,String arg,long time) {
+		log.infof("%s.sendLocalSignal for %s %s %s %s...",TAG,diagramId,command,message,arg);
+		boolean result = false;
+		try {
+			Boolean value = GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "sendLocalSignal",diagramId,command,message,arg,new Long(time));
+			if( value!=null ) result = value.booleanValue();
+		}
+		catch(Exception ex) {
+			log.infof("%s.sendLocalSignal: Exception (%s)",TAG,ex.getMessage());
+		}
+		return result;
+	}
+	/**
 	 * Change the state of every diagram in the named application
 	 * to the specified state.
 	 * @param appname name of the application
@@ -766,11 +790,29 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 			log.infof("%s.setDiagramState: GatewayException (%s)",TAG,ge.getMessage());
 		}
 	}
-
+	/**
+	 * Tell the testing timer about the difference between test time
+	 * and current time.
+	 * @param offset the difference between test time and current time
+	 *        ~ msecs. A positive number implies that the test time is
+	 *        in the past.
+	 */
+	public void setTestTimeOffset(long offset) {
+		log.infof("%s.setTestTimeOffset ... %s",TAG,String.valueOf(offset));
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "setTestTimeOffset",new Long(offset));
+		}
+		catch(Exception ge) {
+			log.infof("%s.setTestTimeOffset: GatewayException (%s:%s)",TAG,ge.getClass().getName(),ge.getMessage());
+		}
+	}
+	
 	/**
 	 * Set a clock rate factor for isolation mode only. We set in the SFC module
 	 * as well. If that module is not present, then we simply ignore the exception.
-	 * @param factor the amount to speed up or slow down the clock.
+	 * @param factor the amount to speed up or slow down the clock. A value greater
+	 *        than one implies an accelerated clock.
 	 */
 	public void setTimeFactor(double factor) {
 		log.infof("%s.setTimeFactor ... %s",TAG,String.valueOf(factor));

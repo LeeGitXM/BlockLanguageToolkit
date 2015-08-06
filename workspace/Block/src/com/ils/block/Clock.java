@@ -23,8 +23,8 @@ import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.notification.Signal;
 import com.ils.blt.common.notification.SignalNotification;
+import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
-import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
@@ -83,7 +83,8 @@ public class Clock extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void reset() {
 		if( !isLocked() ) {
-			OutgoingNotification sig = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,new BasicQualifiedValue(TruthValue.FALSE.name()));
+			OutgoingNotification sig = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,
+					new TestAwareQualifiedValue(timer,TruthValue.FALSE.name()));
 			controller.acceptCompletionNotification(sig);
 		}
 	}
@@ -93,7 +94,8 @@ public class Clock extends AbstractProcessBlock implements ProcessBlock {
 		if( !running ) {
 			log.infof("%s.start: emit FALSE",TAG);
 			if( !isLocked() ) {
-				OutgoingNotification sig = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,new BasicQualifiedValue(TruthValue.FALSE.name()));
+				OutgoingNotification sig = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,
+						new TestAwareQualifiedValue(timer,TruthValue.FALSE.name()));
 				controller.acceptCompletionNotification(sig);
 			}
 		}
@@ -129,7 +131,7 @@ public class Clock extends AbstractProcessBlock implements ProcessBlock {
 		log.infof("%s.evaluate ... %f secs",TAG,interval);
 		
 		if( !isLocked() ) {
-			QualifiedValue qv = new BasicQualifiedValue(TruthValue.TRUE.name());
+			QualifiedValue qv = new TestAwareQualifiedValue(timer,TruthValue.TRUE.name());
 			OutgoingNotification sig = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 			controller.acceptCompletionNotification(sig);
 			notifyOfStatus(qv);

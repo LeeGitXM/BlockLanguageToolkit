@@ -11,7 +11,7 @@ public class AcceptValue extends Callback {
 
 	public AcceptValue() {
 		module = "acceptValue";
-		setLocalVariableList("block,port,value,quality");
+		setLocalVariableList("block,port,value,quality,time");
 	}
 }
 

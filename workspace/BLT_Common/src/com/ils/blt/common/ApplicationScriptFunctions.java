@@ -290,6 +290,17 @@ public class ApplicationScriptFunctions   {
 		handler.setDiagramState(diagramId,state);
 	}
 	/**
+	 * Tell the testing timer about the difference between test time
+	 * and current time.
+	 * @param offset the difference between test time and current time
+	 *        ~ msecs. A positive number implies that the test time is
+	 *        in the past.
+	 */
+	public void setTestTimeOffset(long offset) {
+		handler.setTestTimeOffset(offset);
+	}
+	
+	/**
 	 * Set a clock rate factor. This will change timing for isolation mode only.
 	 * This method is provided as a hook for test frameworks.
 	 * @param factor the amount to speed up or slow down the clock.

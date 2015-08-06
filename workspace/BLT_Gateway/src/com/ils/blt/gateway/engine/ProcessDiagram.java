@@ -297,7 +297,7 @@ public class ProcessDiagram extends ProcessNode {
 		Collection<SignalNotification>notifications = new ArrayList<SignalNotification>();
 		for( ProcessBlock block:getProcessBlocks()) {
 			if( !block.isReceiver() ) continue;
-			SignalNotification sn = new SignalNotification(block,incoming.getSignal());
+			SignalNotification sn = new SignalNotification(block,incoming.getValue());
 			notifications.add(sn);
 		}
 		return notifications;

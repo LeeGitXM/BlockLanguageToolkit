@@ -33,9 +33,9 @@ import com.ils.blt.common.notification.Signal;
 import com.ils.blt.common.notification.SignalNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.GeneralPurposeDataContainer;
+import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.WatchdogObserver;
 import com.ils.common.watchdog.WatchdogTimer;
-import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -50,10 +50,6 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  * available executable block types.
  */
 public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropertyChangeListener, WatchdogObserver {
-	// These are the qualified values sent on a reset
-	private final static QualifiedValue UNKNOWN_TRUTH_VALUE = new BasicQualifiedValue(TruthValue.UNKNOWN);
-	private final static QualifiedValue NAN_DATA_VALUE = new BasicQualifiedValue(new Double(Double.NaN));
-	private final static QualifiedValue EMPTY_STRING_VALUE = new BasicQualifiedValue("");
 	protected final static String DEFAULT_FORMAT = "YYYY/MM/dd hh:mm:ss";
 	protected final static SimpleDateFormat formatter = new SimpleDateFormat(DEFAULT_FORMAT);
 	protected ExecutionController controller = null;
@@ -153,7 +149,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 					log.warnf("%s.forcePost: Unable to coerce %s to %s (%s)",getName(),sval,ct.name(),iae.getLocalizedMessage());
 				}
 
-				OutgoingNotification nvn = new OutgoingNotification(this,port,new BasicQualifiedValue(value));
+				OutgoingNotification nvn = new OutgoingNotification(this,port,new TestAwareQualifiedValue(timer,value));
 				controller.acceptCompletionNotification(nvn);
 			}
 		}
@@ -285,14 +281,17 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 			for(AnchorPrototype ap:getAnchors()) {
 				if( ap.getAnchorDirection().equals(AnchorDirection.OUTGOING) ) {
 					if( ap.getConnectionType().equals(ConnectionType.TRUTHVALUE)) {
+						QualifiedValue UNKNOWN_TRUTH_VALUE = new TestAwareQualifiedValue(timer,TruthValue.UNKNOWN);
 						controller.sendConnectionNotification(getBlockId().toString(), ap.getName(),UNKNOWN_TRUTH_VALUE);
 						OutgoingNotification nvn = new OutgoingNotification(this,ap.getName(),UNKNOWN_TRUTH_VALUE);
 						controller.acceptCompletionNotification(nvn);
 					}
 					else if( ap.getConnectionType().equals(ConnectionType.DATA)) {
+						QualifiedValue NAN_DATA_VALUE = new TestAwareQualifiedValue(timer,new Double(Double.NaN));
 						controller.sendConnectionNotification(getBlockId().toString(), ap.getName(),NAN_DATA_VALUE);
 					}
 					else {
+						QualifiedValue EMPTY_STRING_VALUE = new TestAwareQualifiedValue(timer,"");
 						controller.sendConnectionNotification(getBlockId().toString(), ap.getName(),EMPTY_STRING_VALUE);
 					}
 				}
@@ -374,7 +373,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	public void notifyOfStatus() {
 		for( BlockProperty bp:getProperties()) {
 			if( bp.getBindingType().equals(BindingType.ENGINE) ) {
-				QualifiedValue qv = new BasicQualifiedValue(bp.getValue());
+				QualifiedValue qv = new TestAwareQualifiedValue(timer,bp.getValue());
 				controller.sendPropertyNotification(getBlockId().toString(),bp.getName(), qv);
 			}
 		}

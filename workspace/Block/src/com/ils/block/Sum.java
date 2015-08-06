@@ -22,6 +22,7 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
@@ -135,7 +136,7 @@ public class Sum extends AbstractProcessBlock implements ProcessBlock {
 			//synchronized(this) {
 				double value = getAggregateResult();
 				log.debugf("%s.evaluate ... value = %3.2f", getName(),value);
-				QualifiedValue result = new BasicQualifiedValue(new Double(value),getAggregateQuality());
+				QualifiedValue result = new TestAwareQualifiedValue(timer,new Double(value),getAggregateQuality());
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
 				controller.acceptCompletionNotification(nvn);
 				notifyOfStatus(result);

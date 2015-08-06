@@ -22,8 +22,8 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.notification.Signal;
+import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
-import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
@@ -138,7 +138,7 @@ public class Reset extends AbstractProcessBlock implements ProcessBlock {
 	public synchronized void evaluate() {
 		log.infof("%s.evaluate ... %f secs",TAG,interval);
 		if( !isLocked() ) {
-			QualifiedValue result = new BasicQualifiedValue(signal);
+			QualifiedValue result = new TestAwareQualifiedValue(timer,signal);
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus(result);

@@ -28,8 +28,8 @@ import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
+import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
-import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
 
@@ -164,14 +164,14 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 			log.tracef("%s(%d).evaluate avg=%f",getName(),hashCode(),result);
 			if( !isLocked() ) {
 				// Give it a new timestamp
-				QualifiedValue outval = new BasicQualifiedValue(result);
+				QualifiedValue outval = new TestAwareQualifiedValue(timer,result);
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 				controller.acceptCompletionNotification(nvn);
 				notifyOfStatus(outval);
 			}
 			// Even if locked, we update the current state
 			valueProperty.setValue(result);
-			controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,new BasicQualifiedValue(result));
+			controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,new TestAwareQualifiedValue(timer,result));
 		}
 
 		dog.setSecondsDelay(scanInterval);
@@ -182,7 +182,7 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 	 */
 	@Override
 	public void notifyOfStatus() {
-		QualifiedValue qv = new BasicQualifiedValue(valueProperty.getValue());
+		QualifiedValue qv = new TestAwareQualifiedValue(timer,valueProperty.getValue());
 		notifyOfStatus(qv);
 		
 	}

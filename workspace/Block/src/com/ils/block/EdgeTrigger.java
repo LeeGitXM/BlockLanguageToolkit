@@ -20,6 +20,7 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -113,14 +114,14 @@ public class EdgeTrigger extends AbstractProcessBlock implements ProcessBlock {
 		if( !isLocked() ) {
 			if( trigger.equals(TruthValue.FALSE)) {
 				state = TruthValue.TRUE;
-				status = new BasicQualifiedValue(state.name());
+				status = new TestAwareQualifiedValue(timer,state.name());
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,status);
 				controller.acceptCompletionNotification(nvn);
 				notifyOfStatus(status);
 			}
 			else if( trigger.equals(TruthValue.TRUE)) {
 				state = TruthValue.FALSE;
-				status = new BasicQualifiedValue(state.name());
+				status = new TestAwareQualifiedValue(timer,state.name());
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,status);
 				controller.acceptCompletionNotification(nvn);
 				notifyOfStatus(status);

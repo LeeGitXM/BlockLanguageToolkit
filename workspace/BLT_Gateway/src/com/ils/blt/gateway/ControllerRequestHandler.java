@@ -8,6 +8,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -805,6 +806,11 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 
 	@Override
 	public boolean sendLocalSignal(String diagramId, String command, String message, String argument) {
+		return sendLocalSignal( diagramId, command, message, argument,new Date().getTime());
+	}
+
+	@Override
+	public boolean sendLocalSignal(String diagramId, String command, String message, String argument,long time) {
 		Boolean success = new Boolean(true);
 		UUID diagramUUID = null;
 		try {
@@ -818,7 +824,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		if( diagram!=null ) {
 			// Create a broadcast notification
 			Signal sig = new Signal(command,message,argument);
-			BroadcastNotification broadcast = new BroadcastNotification(diagram.getSelf(),TransmissionScope.LOCAL,sig);
+			BroadcastNotification broadcast = new BroadcastNotification(diagram.getSelf(),TransmissionScope.LOCAL,
+					                              new BasicQualifiedValue(sig,new BasicQuality(),new Date(time)));
 			BlockExecutionController.getInstance().acceptBroadcastNotification(broadcast);
 		}
 		else {
@@ -827,8 +834,6 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 		return success;
 	}
-
-
 	/**
 	 * Set the state of every diagram in an application to the specified value.
 	 * @param appname
@@ -975,7 +980,18 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 	}
 
-
+	/**
+	 * Tell the testing timer about the difference between test time
+	 * and current time. Apply this automatically to the test timer
+	 * @param offset the difference between test time and current time
+	 *        ~ msecs. A positive number implies that the test time is
+	 *        in the past.
+	 */
+	public void setTestTimeOffset(long offset) {
+		AcceleratedWatchdogTimer timer = controller.getSecondaryTimer();
+		timer.setTestTimeOffset(offset);
+	}
+	
 	public void setTimeFactor(Double factor) {
 		log.infof("%s.setTimeFactor: %s", TAG, String.valueOf(factor));
 		AcceleratedWatchdogTimer timer = controller.getSecondaryTimer();

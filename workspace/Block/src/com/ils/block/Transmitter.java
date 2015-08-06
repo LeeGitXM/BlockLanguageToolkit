@@ -20,6 +20,7 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BroadcastNotification;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.Signal;
+import com.ils.common.watchdog.TestAwareQualifiedValue;
 
 /**
  * A transmitter is a special class that propagates broadcast messages directly
@@ -85,7 +86,7 @@ public class Transmitter extends AbstractProcessBlock implements ProcessBlock {
 			catch(IllegalArgumentException iae) {
 				log.warnf("%s.setValue: %s property has illegal value (%s)",TAG,BlockConstants.BLOCK_PROPERTY_SCOPE,iae.getLocalizedMessage());
 			}
-			BroadcastNotification broadcast = new BroadcastNotification(getParentId(),scope,sig);
+			BroadcastNotification broadcast = new BroadcastNotification(getParentId(),scope,new TestAwareQualifiedValue(timer,sig));
 			controller.acceptBroadcastNotification(broadcast);
 		}
 	}
