@@ -29,6 +29,7 @@ import com.ils.blt.common.notification.Signal;
 import com.ils.blt.common.notification.SignalNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.FixedSizeQueue;
+import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
@@ -240,7 +241,7 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 			if( !isLocked() && !newState.equals(state) ) {
 				// Give it a new timestamp
 				state = newState;
-				QualifiedValue outval = new BasicQualifiedValue(state);
+				QualifiedValue outval = new TestAwareQualifiedValue(timer,state);
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 				controller.acceptCompletionNotification(nvn);
 				
@@ -248,12 +249,14 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 				if( state.equals(TruthValue.TRUE)) {
 					if( limitType.equals(LimitType.HIGH )) {
 						Signal sig = new Signal(BlockConstants.COMMAND_CLEAR_LOW,"","");
-						BroadcastNotification broadcast = new BroadcastNotification(getParentId(),TransmissionScope.LOCAL,sig);
+						QualifiedValue qv = new TestAwareQualifiedValue(timer,sig);
+						BroadcastNotification broadcast = new BroadcastNotification(getParentId(),TransmissionScope.LOCAL,qv);
 						controller.acceptBroadcastNotification(broadcast);
 					}
 					else if( limitType.equals(LimitType.LOW )) {
 						Signal sig = new Signal(BlockConstants.COMMAND_CLEAR_HIGH,"","");
-						BroadcastNotification broadcast = new BroadcastNotification(getParentId(),TransmissionScope.LOCAL,sig);
+						QualifiedValue qv = new TestAwareQualifiedValue(timer,sig);
+						BroadcastNotification broadcast = new BroadcastNotification(getParentId(),TransmissionScope.LOCAL,qv);
 						controller.acceptBroadcastNotification(broadcast);
 					}
 				}
@@ -266,7 +269,7 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 			if( !state.equals(newState)) {
 				state = newState;
 				if( !isLocked()  ) {
-					QualifiedValue outval = new BasicQualifiedValue(state);
+					QualifiedValue outval = new TestAwareQualifiedValue(timer,state);
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 					controller.acceptCompletionNotification(nvn);
 					notifyOfStatus(outval);
@@ -279,7 +282,7 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 	 */
 	@Override
 	public void notifyOfStatus() {
-		QualifiedValue qv = new BasicQualifiedValue(state);
+		QualifiedValue qv = new TestAwareQualifiedValue(timer,state);
 		notifyOfStatus(qv);
 		
 	}

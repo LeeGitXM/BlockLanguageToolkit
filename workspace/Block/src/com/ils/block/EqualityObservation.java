@@ -19,6 +19,7 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
@@ -28,6 +29,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  */
 @ExecutableBlock
 public class EqualityObservation extends AbstractProcessBlock implements ProcessBlock {
+	private final static String TAG = "EqualityObservation";
 	private final static String BLOCK_PROPERTY_NOMINAL = "Nominal";
 	private double deadband   = 0.;
 	private double nominal   = 0.;
@@ -107,7 +109,7 @@ public class EqualityObservation extends AbstractProcessBlock implements Process
 			}
 		}
 		catch(NumberFormatException nfe) {
-			log.warnf("%s: setValue Unable to convert incoming value (%s) to a double (%s)",getName(),val,nfe.getLocalizedMessage());
+			log.warnf("%s: setValue Unable to convert incoming value (%s) to a double (%s)",TAG,val,nfe.getLocalizedMessage());
 		}
 		
 	}
@@ -116,7 +118,7 @@ public class EqualityObservation extends AbstractProcessBlock implements Process
 	 */
 	@Override
 	public void notifyOfStatus() {
-		QualifiedValue qv = new BasicQualifiedValue(state);
+		QualifiedValue qv = new TestAwareQualifiedValue(timer,state);
 		notifyOfStatus(qv);
 		
 	}
@@ -137,7 +139,7 @@ public class EqualityObservation extends AbstractProcessBlock implements Process
 				if( deadband<0.0) deadband = -deadband;
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert deadband to a double (%s)",getName(),nfe.getLocalizedMessage());
+				log.warnf("%s: propertyChange Unable to convert deadband to a double (%s)",TAG,nfe.getLocalizedMessage());
 			}
 		}
 		else if(propertyName.equals(BLOCK_PROPERTY_NOMINAL)) {
@@ -145,7 +147,7 @@ public class EqualityObservation extends AbstractProcessBlock implements Process
 				nominal = Double.parseDouble(event.getNewValue().toString());
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert target to a double (%s)",getName(),nfe.getLocalizedMessage());
+				log.warnf("%s: propertyChange Unable to convert target to a double (%s)",TAG,nfe.getLocalizedMessage());
 			}
 		}
 	}

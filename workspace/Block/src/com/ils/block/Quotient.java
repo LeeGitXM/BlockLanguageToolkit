@@ -18,8 +18,8 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
-import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
@@ -154,16 +154,16 @@ public class Quotient extends AbstractProcessBlock implements ProcessBlock {
 		if( !isLocked() ) {
 			QualifiedValue result = null;
 			if( a==null ) {
-				result = new BasicQualifiedValue(new Double(Double.NaN),new BasicQuality("dividend is unset",Quality.Level.Bad));
+				result = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("dividend is unset",Quality.Level.Bad));
 			}
 			else if( b==null ) {
-				result = new BasicQualifiedValue(new Double(Double.NaN),new BasicQuality("divisor is unset",Quality.Level.Bad));
+				result = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("divisor is unset",Quality.Level.Bad));
 			}
 			else if( !a.getQuality().isGood()) {
-				result = new BasicQualifiedValue(new Double(Double.NaN),a.getQuality());
+				result = new TestAwareQualifiedValue(timer,new Double(Double.NaN),a.getQuality());
 			}
 			else if( !b.getQuality().isGood()) {
-				result = new BasicQualifiedValue(new Double(Double.NaN),b.getQuality());
+				result = new TestAwareQualifiedValue(timer,new Double(Double.NaN),b.getQuality());
 			}
 			double aa = Double.NaN;
 			double bb = Double.NaN;
@@ -173,21 +173,21 @@ public class Quotient extends AbstractProcessBlock implements ProcessBlock {
 					try {
 						bb = Double.parseDouble(b.getValue().toString());
 						if( bb==0.0) {
-							result = new BasicQualifiedValue(new Double(Double.NaN),new BasicQuality("divide by zero",Quality.Level.Bad));
+							result = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("divide by zero",Quality.Level.Bad));
 						}
 					}
 					catch(NumberFormatException nfe) {
-						result = new BasicQualifiedValue(new Double(Double.NaN),new BasicQuality("divisor is not a valid double",Quality.Level.Bad));
+						result = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("divisor is not a valid double",Quality.Level.Bad));
 					}
 				}
 				catch(NumberFormatException nfe) {
-					result = new BasicQualifiedValue(new Double(Double.NaN),new BasicQuality("dividend is not a valid double",Quality.Level.Bad));
+					result = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("dividend is not a valid double",Quality.Level.Bad));
 				}
 			}
 			
 			if( result==null ) {     // Success!
 				
-				result = new BasicQualifiedValue(new Double(aa/bb));
+				result = new TestAwareQualifiedValue(timer,new Double(aa/bb));
 			}
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
 			controller.acceptCompletionNotification(nvn);

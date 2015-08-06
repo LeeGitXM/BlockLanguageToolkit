@@ -4,6 +4,7 @@ e *   (c) 2013-2015  ILS Automation. All rights reserved.
  */
 package com.ils.blt.gateway;
 
+import java.util.Date;
 import java.util.UUID;
 
 import com.ils.blt.common.DiagramState;
@@ -13,6 +14,8 @@ import com.ils.blt.gateway.engine.ProcessApplication;
 import com.ils.blt.gateway.engine.ProcessFamily;
 import com.ils.blt.gateway.engine.ProcessNode;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
+import com.inductiveautomation.ignition.common.model.values.BasicQuality;
+import com.inductiveautomation.ignition.common.model.values.Quality;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 
@@ -223,14 +226,17 @@ public class PythonRequestHandler   {
 	 * @param value the result of the block's computation
 	 * @param quality of the reported output
 	 */
-	public void postValue(String parent,String id,String port,String value,String quality)  {
+	public void postValue(String parent,String id,String port,String value,String quality,long time)  {
 		log.debugf("%s.postValue - %s = %s (%s) on %s",TAG,id,value.toString(),quality.toString(),port);
 		
 		try {
 			UUID uuid = UUID.fromString(id);
 			UUID parentuuid = UUID.fromString(parent);
 			requestHandler.postValue(parentuuid,uuid,port,value,quality);
-			controller.sendConnectionNotification(id, port, new BasicQualifiedValue(value));
+			controller.sendConnectionNotification(id, port, 
+					new BasicQualifiedValue(value,
+							new BasicQuality(quality,(quality.equalsIgnoreCase("good")?Quality.Level.Good:Quality.Level.Bad)),
+							new Date(time)));
 		}
 		catch(IllegalArgumentException iae) {
 			log.warnf("%s.postValue: one of %s or %s illegal UUID (%s)",TAG,parent,id,iae.getMessage());
@@ -246,9 +252,12 @@ public class PythonRequestHandler   {
 	 * @param value the result of the block's computation
 	 * @param quality of the reported output
 	 */
-	public void sendConnectionNotification(String id, String port, String value)  {
+	public void sendConnectionNotification(String id, String port, String value,String quality,long time)  {
 		log.tracef("%s.sendConnectionNotification - %s = %s on %s",TAG,id,value.toString(),port);
-		controller.sendConnectionNotification(id, port, new BasicQualifiedValue(value));
+		controller.sendConnectionNotification(id, port, 
+				new BasicQualifiedValue(value,
+						new BasicQuality(quality,(quality.equalsIgnoreCase("good")?Quality.Level.Good:Quality.Level.Bad)),
+						new Date(time)));
 	}
 	/**
 	 * Broadcast a result to blocks in the diagram
@@ -257,10 +266,10 @@ public class PythonRequestHandler   {
 	 * @param className name of the class of blocks to be signaled
 	 * @param command the value of the signal
 	 */
-	public void sendLocalSignal(String parent,String command,String message,String arg)  {
+	public void sendLocalSignal(String parent,String command,String message,String arg,long time)  {
 		log.debugf("%s.sendLocalSignal - %s = %s %s %s ",TAG,parent,command,message,arg);
 		
-		requestHandler.sendLocalSignal(parent,command,message,arg);
+		requestHandler.sendLocalSignal(parent,command,message,arg,time);
 		
 	}
 }

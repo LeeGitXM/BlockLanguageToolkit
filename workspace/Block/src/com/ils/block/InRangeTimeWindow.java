@@ -26,8 +26,8 @@ import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
+import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
-import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
 
@@ -172,7 +172,7 @@ public class InRangeTimeWindow extends AbstractProcessBlock implements ProcessBl
 		if( buffer.size()<maxPoints && fillRequired && result.equals(TruthValue.FALSE) ) result = TruthValue.UNKNOWN;
 		if( !result.equals(state) && !isLocked() ) {
 			// Give it a new timestamp
-			QualifiedValue outval = new BasicQualifiedValue(result);
+			QualifiedValue outval = new TestAwareQualifiedValue(timer,result);
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus(outval);
@@ -186,7 +186,7 @@ public class InRangeTimeWindow extends AbstractProcessBlock implements ProcessBl
 	 */
 	@Override
 	public void notifyOfStatus() {
-		QualifiedValue qv = new BasicQualifiedValue(state);
+		QualifiedValue qv = new TestAwareQualifiedValue(timer,state);
 		notifyOfStatus(qv);
 		
 	}

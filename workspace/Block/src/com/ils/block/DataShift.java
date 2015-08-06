@@ -19,6 +19,7 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
@@ -78,7 +79,7 @@ public class DataShift extends AbstractProcessBlock implements ProcessBlock {
 				log.debugf("%s.acceptValue: Popped %s",TAG,lastValue.getValue().toString());
 				if( !isLocked() ) {
 					// Give it a new timestamp
-					QualifiedValue outval = new BasicQualifiedValue(lastValue.getValue());
+					QualifiedValue outval = new TestAwareQualifiedValue(timer,lastValue.getValue(),qv.getQuality());
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 					controller.acceptCompletionNotification(nvn);
 					notifyOfStatus(outval);
@@ -88,7 +89,7 @@ public class DataShift extends AbstractProcessBlock implements ProcessBlock {
 		else {
 			if( lastValue!=null && !isLocked()) {
 				// Propagate a bad value result
-				QualifiedValue outval = new BasicQualifiedValue(lastValue.getValue(),qv.getQuality());
+				QualifiedValue outval = new BasicQualifiedValue(lastValue.getValue(),qv.getQuality(),qv.getTimestamp());
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 				controller.acceptCompletionNotification(nvn);
 				notifyOfStatus(outval);
@@ -111,7 +112,7 @@ public class DataShift extends AbstractProcessBlock implements ProcessBlock {
 					QualifiedValue qv = buffer.removeFirst();
 					if( !isLocked() ) {
 						// Give it a new timestamp
-						QualifiedValue outval = new BasicQualifiedValue(qv.getValue());
+						QualifiedValue outval = new TestAwareQualifiedValue(timer,qv.getValue());
 						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 						controller.acceptCompletionNotification(nvn);
 						notifyOfStatus(outval);
@@ -131,7 +132,7 @@ public class DataShift extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void notifyOfStatus() {
-		if( lastValue!=null) notifyOfStatus(lastValue);
+		if( lastValue!=null ) notifyOfStatus(lastValue);
 	}
 	private void notifyOfStatus(QualifiedValue qv) {
 		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);

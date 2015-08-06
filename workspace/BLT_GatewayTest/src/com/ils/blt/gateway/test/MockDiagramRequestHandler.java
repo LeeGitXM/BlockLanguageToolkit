@@ -391,7 +391,7 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 		if( mock!=null ) {
 			ProcessBlock uut = mock.getBlockUnderTest();
 			Signal sig= new Signal(command,arg,msg);
-			SignalNotification snote = new SignalNotification(uut,sig);
+			SignalNotification snote = new SignalNotification(uut,new BasicQualifiedValue(sig));
 			uut.acceptValue(snote);
 		}
 		return (new Date()).getTime();

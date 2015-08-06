@@ -9,6 +9,7 @@ import java.util.List;
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
+import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 
 
 /**
@@ -290,6 +291,16 @@ public class ModuleScriptFunctions   {
 	 */
 	public static void setDiagramState(String diagramId, String state)  {
 		handler.setDiagramState(diagramId,state);
+	}
+	/**
+	 * Tell the testing timer about the difference between test time
+	 * and current time.
+	 * @param offset the difference between test time and current time
+	 *        ~ msecs. A positive number implies that the test time is
+	 *        in the past.
+	 */
+	public static void setTestTimeOffset(long offset) {
+		handler.setTestTimeOffset(offset);
 	}
 	/**
 	 * Set a clock rate factor. This will change timing for isolation mode only.

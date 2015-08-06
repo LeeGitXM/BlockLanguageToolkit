@@ -6,6 +6,7 @@ package com.ils.blt.gateway;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -699,6 +700,11 @@ public class BasicRequestHandler implements ToolkitRequestHandler  {
 
 	@Override
 	public boolean sendLocalSignal(String diagramId, String command, String message, String argument) {
+		return sendLocalSignal( diagramId, command, message, argument,new Date().getTime());
+	}
+
+	@Override
+	public boolean sendLocalSignal(String diagramId, String command, String message, String argument,long time) {
 		Boolean success = new Boolean(true);
 		UUID diagramUUID = null;
 		try {
@@ -712,7 +718,8 @@ public class BasicRequestHandler implements ToolkitRequestHandler  {
 		if( diagram!=null ) {
 			// Create a broadcast notification
 			Signal sig = new Signal(command,message,argument);
-			BroadcastNotification broadcast = new BroadcastNotification(diagram.getSelf(),TransmissionScope.LOCAL,sig);
+			BroadcastNotification broadcast = new BroadcastNotification(diagram.getSelf(),TransmissionScope.LOCAL,
+					                              new BasicQualifiedValue(sig,new BasicQuality(),new Date(time)));
 			BlockExecutionController.getInstance().acceptBroadcastNotification(broadcast);
 		}
 		else {
@@ -721,6 +728,7 @@ public class BasicRequestHandler implements ToolkitRequestHandler  {
 		}
 		return success;
 	}
+	/**
 
 
 	/**
@@ -1009,7 +1017,18 @@ public class BasicRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 	}
-
+	/**
+	 * Tell the testing timer about the difference between test time
+	 * and current time. Apply this automatically to the test timer
+	 * @param offset the difference between test time and current time
+	 *        ~ msecs. A positive number implies that the test time is
+	 *        in the past.
+	 */
+	public void setTestTimeOffset(long offset) {
+		AcceleratedWatchdogTimer timer = controller.getSecondaryTimer();
+		timer.setTestTimeOffset(offset);
+	}
+	
 	/**
 	 * This only applies to the secondary timer.
 	 */

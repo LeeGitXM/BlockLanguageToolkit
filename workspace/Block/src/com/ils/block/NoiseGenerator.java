@@ -148,7 +148,7 @@ public class NoiseGenerator extends AbstractProcessBlock implements ProcessBlock
 				try {
 					value = Double.parseDouble(qv.getValue().toString());
 					if( distribution!=null) value += distribution.sample();
-					qv = new BasicQualifiedValue(value);
+					qv = new BasicQualifiedValue(value,qv.getQuality(),qv.getTimestamp());
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 					controller.acceptCompletionNotification(nvn);
 					notifyOfStatus(qv);

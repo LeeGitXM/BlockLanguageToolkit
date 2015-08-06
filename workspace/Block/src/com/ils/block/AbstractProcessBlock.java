@@ -3,14 +3,17 @@
  */
 package com.ils.block;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.common.block.AbstractBlock;
+import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
@@ -29,10 +32,12 @@ import com.ils.blt.common.notification.Signal;
 import com.ils.blt.common.notification.SignalNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.GeneralPurposeDataContainer;
+import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.WatchdogObserver;
 import com.ils.common.watchdog.WatchdogTimer;
-import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 
 /**
@@ -43,13 +48,17 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  * as the signal to group a particular subclass into the list of 
  * available executable block types.
  */
-public abstract class AbstractProcessBlock extends AbstractBlock implements ProcessBlock, BlockPropertyChangeListener, WatchdogObserver {
-	// These are the qualified values sent on a reset
-	private final static QualifiedValue UNKNOWN_TRUTH_VALUE = new BasicQualifiedValue(TruthValue.UNKNOWN);
-	private final static QualifiedValue NAN_DATA_VALUE = new BasicQualifiedValue(new Double(Double.NaN));
-	private final static QualifiedValue EMPTY_STRING_VALUE = new BasicQualifiedValue("");
+public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropertyChangeListener, WatchdogObserver {
+	protected final static String DEFAULT_FORMAT = "YYYY/MM/dd hh:mm:ss";
+	protected final static SimpleDateFormat formatter = new SimpleDateFormat(DEFAULT_FORMAT);
+	protected ExecutionController controller = null;
+	private UUID blockId;
+	private UUID parentId;
+	private long projectId = -1;    // This is the global project
 	private GeneralPurposeDataContainer auxiliaryData = null;
+	private String name = ".";
 	protected String statusText;
+	protected PalettePrototype prototype = null;
 	protected boolean delayStart = false;
 	protected boolean locked     = false;
 	protected boolean isReceiver = false;
@@ -58,11 +67,21 @@ public abstract class AbstractProcessBlock extends AbstractBlock implements Proc
 	protected TruthValue state = TruthValue.UNSET;
 	protected WatchdogTimer timer = null;
 
+	protected final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
+	/** Properties are a dictionary of attributes keyed by property name */
+	protected final Map<String,BlockProperty> propertyMap;
+	/** Describe ports/stubs where connections join the block */
+	protected List<AnchorPrototype> anchors;
+	protected final UtilityFunctions fcns = new UtilityFunctions();
+
+	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 *              It does not correspond to a functioning block.
 	 */
 	public AbstractProcessBlock() {
+		propertyMap = new HashMap<>();
+		anchors = new ArrayList<AnchorPrototype>();
 		initializePrototype();
 		initialize();
 	}
@@ -74,7 +93,10 @@ public abstract class AbstractProcessBlock extends AbstractBlock implements Proc
 	 * @param block universally unique Id for the block
 	 */
 	public AbstractProcessBlock(ExecutionController ec, UUID parent, UUID block) {
-		super(ec,parent,block);
+		this();
+		this.controller = ec;
+		this.blockId = block;
+		this.parentId = parent;
 	}
 	
 	/**
@@ -93,8 +115,14 @@ public abstract class AbstractProcessBlock extends AbstractBlock implements Proc
 	 * Fill a prototype object with defaults - as much as is reasonable.
 	 */
 	private void initializePrototype() {
-		prototype.getBlockDescriptor().setReceiveEnabled(isReceiver);
-		prototype.getBlockDescriptor().setTransmitEnabled(isTransmitter);
+		prototype = new PalettePrototype();
+		BlockDescriptor blockDescriptor = prototype.getBlockDescriptor();
+		blockDescriptor.setAnchors(anchors);
+		blockDescriptor.setReceiveEnabled(isReceiver);
+		blockDescriptor.setTransmitEnabled(isTransmitter);
+		
+		// Currently this refers to a path in /images of the BLT_Designer source area.
+		prototype.setPaletteIconPath("unknown.png");
 	}
 	
 	/**
@@ -120,7 +148,7 @@ public abstract class AbstractProcessBlock extends AbstractBlock implements Proc
 					log.warnf("%s.forcePost: Unable to coerce %s to %s (%s)",getName(),sval,ct.name(),iae.getLocalizedMessage());
 				}
 
-				OutgoingNotification nvn = new OutgoingNotification(this,port,new BasicQualifiedValue(value));
+				OutgoingNotification nvn = new OutgoingNotification(this,port,new TestAwareQualifiedValue(timer,value));
 				controller.acceptCompletionNotification(nvn);
 			}
 		}
@@ -134,10 +162,19 @@ public abstract class AbstractProcessBlock extends AbstractBlock implements Proc
 	@Override
 	public PalettePrototype getBlockPrototype() {return prototype; }
 	@Override
+	public String getClassName() {return this.getClass().getCanonicalName();}
+	@Override
+	public String getName() {return name;}
+	@Override
+	public long getProjectId() {return projectId;}
+	@Override
+	public void setProjectId(long projectId) {this.projectId = projectId;}
+	@Override
 	public TruthValue getState() {return state;}
 	@Override
 	public void setState(TruthValue state) { if(state!=null) this.state = state; }
-
+	@Override
+	public void setName(String lbl) {this.name = lbl;}
 	@Override
 	public String getStatusText() {return statusText;}
 	@Override
@@ -149,6 +186,20 @@ public abstract class AbstractProcessBlock extends AbstractBlock implements Proc
 	public void setTimer(WatchdogTimer t) { 
 		this.timer = t; 
 	}
+
+	/**
+	 * @param name the property (attribute) name.
+	 * @return a particular property given its name.
+	 */
+	@Override
+	public BlockProperty getProperty(String nam) {
+		return propertyMap.get(nam);
+	}
+	
+	@Override
+	public UUID getParentId() { return parentId; }
+	@Override
+	public UUID getBlockId() { return blockId; }
 	
 	/**
 	 * @return a block-specific description of internal statue
@@ -229,14 +280,17 @@ public abstract class AbstractProcessBlock extends AbstractBlock implements Proc
 			for(AnchorPrototype ap:getAnchors()) {
 				if( ap.getAnchorDirection().equals(AnchorDirection.OUTGOING) ) {
 					if( ap.getConnectionType().equals(ConnectionType.TRUTHVALUE)) {
+						QualifiedValue UNKNOWN_TRUTH_VALUE = new TestAwareQualifiedValue(timer,TruthValue.UNKNOWN);
 						controller.sendConnectionNotification(getBlockId().toString(), ap.getName(),UNKNOWN_TRUTH_VALUE);
 						OutgoingNotification nvn = new OutgoingNotification(this,ap.getName(),UNKNOWN_TRUTH_VALUE);
 						controller.acceptCompletionNotification(nvn);
 					}
 					else if( ap.getConnectionType().equals(ConnectionType.DATA)) {
+						QualifiedValue NAN_DATA_VALUE = new TestAwareQualifiedValue(timer,new Double(Double.NaN));
 						controller.sendConnectionNotification(getBlockId().toString(), ap.getName(),NAN_DATA_VALUE);
 					}
 					else {
+						QualifiedValue EMPTY_STRING_VALUE = new TestAwareQualifiedValue(timer,"");
 						controller.sendConnectionNotification(getBlockId().toString(), ap.getName(),EMPTY_STRING_VALUE);
 					}
 				}
@@ -318,7 +372,7 @@ public abstract class AbstractProcessBlock extends AbstractBlock implements Proc
 	public void notifyOfStatus() {
 		for( BlockProperty bp:getProperties()) {
 			if( bp.getBindingType().equals(BindingType.ENGINE) ) {
-				QualifiedValue qv = new BasicQualifiedValue(bp.getValue());
+				QualifiedValue qv = new TestAwareQualifiedValue(timer,bp.getValue());
 				controller.sendPropertyNotification(getBlockId().toString(),bp.getName(), qv);
 			}
 		}
@@ -446,6 +500,22 @@ public abstract class AbstractProcessBlock extends AbstractBlock implements Proc
 	}
 	
 	/**
+	 * @param tagpath
+	 * @return true if any property of the block is bound to
+	 *         the supplied tagpath. The comparison does not
+	 *         consider the provider portion of the path.
+	 */
+	@Override
+	public boolean usesTag(String tagpath) {
+		int pos = tagpath.indexOf("]");
+		if(pos>0) tagpath = tagpath.substring(pos+1);
+		for(BlockProperty property:propertyMap.values()) {
+			String binding = property.getBinding();
+			if( binding.endsWith(tagpath)) return true;
+		}
+		return false;
+	}
+	/**
 	 * Check the block configuration for missing or conflicting
 	 * information.
 	 * @return a validation summary. Null if everything checks out.
@@ -469,5 +539,54 @@ public abstract class AbstractProcessBlock extends AbstractBlock implements Proc
 		if( summary.length()==0 ) return null;
 		else return summary.toString();
 	}
+	
+	/**
+	 * Convert a value received on an input connection 
+	 * into a string. Used for debugging purposes.
+	 * @param val
+	 * @return
+	 */
+	private String valueToString(Object val) {
+		String result = "";
+		if( val==null ) {
+			result = "NULL";
+		}
+		else if( val instanceof QualifiedValue ) {
+			Object value = ((QualifiedValue)val).getValue();
+			if( value==null ) result = "NULL";
+			else              result = value.toString();
+		}
+		else if(val instanceof Signal ) {
+			result = String.format("%s:%s",((Signal)val).getCommand(),((Signal)val).getArg());
+		}
+		else {
+			result = val.toString();
+		}
+		return result;
+	}
+	
+	// So that class is comparable
+	// Same blockId is sufficient to prove equality
+	@Override
+	public boolean equals(Object arg) {
+		boolean result = false;
+		if( arg instanceof AbstractProcessBlock) {
+			AbstractProcessBlock that = (AbstractProcessBlock)arg;
+			if( this.getBlockId().equals(that.getBlockId()) ) {
+				result = true;
+			}
+		}
+		return result;
+	}
+	@Override
+	public int hashCode() {
+		return this.getBlockId().hashCode();
+	}
+	
+	/**
+	 * Identify the block as a string. Make this as user-friendly as possible.
+	 */
+	@Override
+	public String toString() { return getName(); }
 
 }

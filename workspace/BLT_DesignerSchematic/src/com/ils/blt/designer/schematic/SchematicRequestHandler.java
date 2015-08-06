@@ -37,7 +37,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  *  Each request is relayed to the Gateway scope via an RPC call.
  */
 public class SchematicRequestHandler implements ToolkitRequestHandler {
-	private final static String TAG = "ApplicationRequestHandler";
+	private final static String TAG = "SchematicRequestHandler";
 	private final LoggerEx log;
 
 	/**
@@ -671,6 +671,30 @@ public class SchematicRequestHandler implements ToolkitRequestHandler {
 		}
 		return result;
 	}
+	
+	/**
+	 * Send a signal to all blocks of a particular class on a specified diagram.
+	 * This is a "local" transmission. The diagram is specified by a tree-path.
+	 * There may be no successful recipients.
+	 * 
+	 * @param diagramId
+	 * @param className filter of the receiver blocks to be targeted.
+	 * @param command string of the signal.
+	 */
+	@Override
+	public boolean sendLocalSignal(String diagramId, String command,String message,String arg,long time) {
+		log.infof("%s.sendLocalSignal for %s %s %s %s...",TAG,diagramId,command,message,arg);
+		boolean result = false;
+		try {
+			Boolean value = GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.SCHEMATIC_MODULE_ID, "sendLocalSignal",diagramId,command,message,arg,new Long(time));
+			if( value!=null ) result = value.booleanValue();
+		}
+		catch(Exception ex) {
+			log.infof("%s.sendLocalSignal: Exception (%s)",TAG,ex.getMessage());
+		}
+		return result;
+	}
 
 	/**
 	 * Change the state of every diagram in the named application
@@ -769,7 +793,23 @@ public class SchematicRequestHandler implements ToolkitRequestHandler {
 			log.infof("%s.setDiagramState: GatewayException (%s)",TAG,ge.getMessage());
 		}
 	}
-
+	/**
+	 * Tell the testing timer about the difference between test time
+	 * and current time.
+	 * @param offset the difference between test time and current time
+	 *        ~ msecs. A positive number implies that the test time is
+	 *        in the past.
+	 */
+	public void setTestTimeOffset(long offset) {
+		log.infof("%s.setTestTimeOffset ... %s",TAG,String.valueOf(offset));
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.SCHEMATIC_MODULE_ID, "setTestTimeOffset",new Long(offset));
+		}
+		catch(Exception ge) {
+			log.infof("%s.setTestTimeOffset: GatewayException (%s:%s)",TAG,ge.getClass().getName(),ge.getMessage());
+		}
+	}
 	/**
 	 * Set a clock rate factor for isolation mode only. We set in the SFC module
 	 * as well. If that module is not present, then we simply ignore the exception.

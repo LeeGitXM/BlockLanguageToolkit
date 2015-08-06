@@ -16,7 +16,7 @@ import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
-import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
+import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
@@ -53,7 +53,7 @@ public class LogicLatch extends AbstractProcessBlock implements ProcessBlock {
 	public void reset() {
 		if( state.equals(TruthValue.TRUE) || 
 			state.equals(TruthValue.FALSE)   ) {
-			QualifiedValue qv = new BasicQualifiedValue(state.name());
+			QualifiedValue qv = new TestAwareQualifiedValue(timer,state.name());
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus(qv);
@@ -87,7 +87,7 @@ public class LogicLatch extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void notifyOfStatus() {
-		notifyOfStatus(new BasicQualifiedValue(state.name()));	
+		notifyOfStatus(new TestAwareQualifiedValue(timer,state.name()));	
 	}
 	private void notifyOfStatus(QualifiedValue qv) {
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);

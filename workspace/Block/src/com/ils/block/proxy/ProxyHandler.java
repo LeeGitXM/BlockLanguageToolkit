@@ -12,6 +12,7 @@ import java.util.UUID;
 
 import org.python.core.PyDictionary;
 import org.python.core.PyList;
+import org.python.core.PyLong;
 import org.python.core.PyObject;
 import org.python.core.PyString;
 
@@ -131,10 +132,10 @@ public class ProxyHandler   {
 			synchronized(acceptValueCallback) {
 			// There are 4 values to be specified - block,port,value,quality.
 				acceptValueCallback.initializeLocalsMap(mgr);
-				acceptValueCallback.setLocalVariable(0,block);
 				acceptValueCallback.setLocalVariable(1,new PyString(stub));
 				acceptValueCallback.setLocalVariable(2,new PyString(value.getValue().toString()));
 				acceptValueCallback.setLocalVariable(3,new PyString(qualityName));
+				acceptValueCallback.setLocalVariable(4,new PyLong(value.getTimestamp().getTime()));
 				acceptValueCallback.execute(mgr);
 			}
 		}

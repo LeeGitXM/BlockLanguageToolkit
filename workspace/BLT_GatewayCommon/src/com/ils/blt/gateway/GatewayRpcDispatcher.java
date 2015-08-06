@@ -341,7 +341,18 @@ public class GatewayRpcDispatcher   {
 		return new Boolean(requestHandler.sendLocalSignal(uuidString,command,message,arg));
 	}
 
-
+	/**
+	 * 
+	 * @param uuidString identifier of the diagram for which the signal is local
+	 * @param command
+	 * @param message
+	 * @param arg
+	 * @param time the time to be assigned to the signal
+	 * @return
+	 */
+	public Boolean sendLocalSignal(String uuidString, String command,String message,String arg,Long time) {
+		return new Boolean(requestHandler.sendLocalSignal(uuidString,command,message,arg,time.longValue()));
+	}
 	/**
 	 * Set the state of every diagram in an application to the specified value.
 	 * @param appname
@@ -414,7 +425,16 @@ public class GatewayRpcDispatcher   {
 	public void setDiagramState(String diagramId,String state) {
 		requestHandler.setDiagramState(diagramId,state);
 	}
-
+	/**
+	 * Tell the testing timer about the difference between test time
+	 * and current time.
+	 * @param offset the difference between test time and current time
+	 *        ~ msecs. A positive number implies that the test time is
+	 *        in the past.
+	 */
+	public void setTestTimeOffset(Long offset) {
+		requestHandler.setTestTimeOffset(offset.longValue());
+	}
 	/** 
 	 * We only allow setting of the isolation mode.
 	 * @param factor

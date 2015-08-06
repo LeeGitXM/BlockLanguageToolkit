@@ -95,7 +95,7 @@ public class ClassicDiagram extends BasicDiagram {
 			if( cb instanceof ProcessBlock ) {
 				ProcessBlock block = (ProcessBlock)cb;
 				if( !block.isReceiver() ) continue;
-				SignalNotification sn = new SignalNotification(block,incoming.getSignal());
+				SignalNotification sn = new SignalNotification(block,incoming.getValue());
 				notifications.add(sn);
 			}
 		}

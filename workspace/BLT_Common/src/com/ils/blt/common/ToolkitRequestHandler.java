@@ -13,6 +13,7 @@ import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
+import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 
 /**
  *  This interface is a common point for managing requests to the gateway dealing with
@@ -262,7 +263,18 @@ public interface ToolkitRequestHandler  {
 	 * @param arg also a component of the transmitted signal
 	 */
 	public boolean sendLocalSignal(String diagramId,String command,String message,String arg) ;
-	
+	/**
+	 * Send a signal to all blocks of a particular class on a specified diagram.
+	 * This is a "local" transmission. The diagram is specified by a tree-path.
+	 * There may be no successful recipients. This version time-stamps the signal sent
+	 * 
+	 * @param diagramId
+	 * @param command string of the signal
+	 * @param message embedded in the transmitted signal
+	 * @param arg also a component of the transmitted signal
+	 * @param time unix time, milli-seconds since the start of the epoch
+	 */
+	public boolean sendLocalSignal(String diagramId,String command,String message,String arg,long time) ;
 	/**
 	 * Set the state of every diagram that is a member of the application to
 	 * the specified value.
@@ -286,7 +298,14 @@ public interface ToolkitRequestHandler  {
 
 	public void setDiagramState(Long projectId, Long resourceId, String state) ;
 	public void setDiagramState(String diagramId, String state);
-	
+	/**
+	 * Tell the testing timer about the difference between test time
+	 * and current time.
+	 * @param offset the difference between test time and current time
+	 *        ~ msecs. A positive number implies that the test time is
+	 *        in the past.
+	 */
+	public void setTestTimeOffset(long offset);
 	/**
 	 * Set a clock rate factor. This will change timing for isolation mode only.
 	 * This method is provided as a hook for test frameworks.

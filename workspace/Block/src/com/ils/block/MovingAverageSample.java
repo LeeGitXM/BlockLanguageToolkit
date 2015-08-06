@@ -26,6 +26,7 @@ import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.FixedSizeQueue;
+import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
@@ -114,7 +115,7 @@ public class MovingAverageSample extends AbstractProcessBlock implements Process
 					double result = computeAverage();
 					if( !isLocked() ) {
 						// Give it a new timestamp
-						QualifiedValue outval = new BasicQualifiedValue(result);
+						QualifiedValue outval = new BasicQualifiedValue(result,qv.getQuality(),qv.getTimestamp());
 						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 						controller.acceptCompletionNotification(nvn);
 						notifyOfStatus(outval);
@@ -144,7 +145,7 @@ public class MovingAverageSample extends AbstractProcessBlock implements Process
 	 */
 	@Override
 	public void notifyOfStatus() {
-		QualifiedValue qv = new BasicQualifiedValue(valueProperty.getValue());
+		QualifiedValue qv = new TestAwareQualifiedValue(timer,valueProperty.getValue());
 		notifyOfStatus(qv);
 		
 	}
@@ -173,7 +174,8 @@ public class MovingAverageSample extends AbstractProcessBlock implements Process
 					queue.setBufferSize(sampleSize);
 					// Even if locked, we update the current state
 					valueProperty.setValue(0.0);
-					controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,new BasicQualifiedValue(0.0));
+					controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,
+							new TestAwareQualifiedValue(timer,0.0));
 				}
 			}
 			catch(NumberFormatException nfe) {

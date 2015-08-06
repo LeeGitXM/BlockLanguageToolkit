@@ -4,6 +4,7 @@
 package com.ils.blt.common.notification;
 
 import com.ils.blt.common.block.CoreBlock;
+import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
  * A SignalNotification is an in-bound message to a block that contains
@@ -14,19 +15,20 @@ import com.ils.blt.common.block.CoreBlock;
  */
 public class SignalNotification {
 	private final CoreBlock block;
-	private final Signal signal;
+	private final QualifiedValue value;
 	
 	/**
 	 * Constructor. The signal is the only property.
 	 * 
 	 * @param blk the addressee of the notification
-	 * @param sig the signal to be delivered to the block.
+	 * @param qv a QualifiedValue containing the signal to be delivered to the block.
 	 */
-	public SignalNotification(CoreBlock blk,Signal sig)  {
+	public SignalNotification(CoreBlock blk,QualifiedValue qv)  {
 		this.block = blk;
-		this.signal = sig;
+		this.value = qv;
 	}
 	
 	public CoreBlock getBlock() {return block;}
-	public Signal getSignal() {return signal;}
+	public Signal getSignal() {return (Signal)value.getValue();}
+	public QualifiedValue getValue() {return value;}
 }

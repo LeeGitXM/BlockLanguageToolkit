@@ -20,8 +20,8 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
+import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
-import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
@@ -76,7 +76,8 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 		value = valueProperty.getValue();
 		String liveOnStart = liveProperty.getValue().toString();
 		if( liveOnStart!=null && value!=null && liveOnStart.equalsIgnoreCase("true") ) {
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,new BasicQualifiedValue(value));
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME
+					,new TestAwareQualifiedValue(timer,value));
 			controller.acceptCompletionNotification(nvn);
 		}
 	}
@@ -106,7 +107,8 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 			else {
 				value = coerceToMatchOutput(BlockConstants.OUT_PORT_NAME,value);
 				log.tracef("%s.propertyChange: Propagating %s on output port",TAG,propertyName,value.toString());
-				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,new BasicQualifiedValue(value));
+				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,
+						                         new TestAwareQualifiedValue(timer,value));
 				controller.acceptCompletionNotification(nvn);
 			}
 		}
@@ -160,7 +162,7 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 			log.infof("%s.evaluate: proto type = %s",TAG,ap.getConnectionType());
 		}
 		value = coerceToMatchOutput(BlockConstants.OUT_PORT_NAME,value);
-		QualifiedValue qv = new BasicQualifiedValue(value);
+		QualifiedValue qv = new TestAwareQualifiedValue(timer,value);
 		OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 		controller.acceptCompletionNotification(nvn);
 		notifyOfStatus(qv);
@@ -207,7 +209,7 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void notifyOfStatus() {
-		QualifiedValue qv = new BasicQualifiedValue(value);
+		QualifiedValue qv = new TestAwareQualifiedValue(timer,value);
 		notifyOfStatus(qv);
 		
 	}

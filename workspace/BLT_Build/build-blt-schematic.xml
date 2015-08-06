@@ -2,10 +2,10 @@
 
 	<import file="${basedir}/BLT_Build/build.xml"/>
 
-	<property name="version.build" value="1" />	
+	<property name="version.build" value="0" />	
 	<!-- Change version.beta value to "" for release builds -->
 	<property name="version.beta" value="-development" />		
-	<property name="BLTModule.version" value="2.0.0.${version.build}" />
+	<property name="BLTModule.version" value="2.0.1.${version.build}" />
 	<property name="BLTModule.name" value="BLT-Schematic" />
 	<property name="BLTModule.prefix" value="BLT" />
 	<property name="BLTModule.release" value="2.0" />

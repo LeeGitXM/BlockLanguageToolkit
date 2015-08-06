@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved.
+ *   (c) 2014-2015  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.block.proxy;
@@ -11,7 +11,7 @@ public class AcceptValue extends Callback {
 
 	public AcceptValue() {
 		module = "acceptValue";
-		setLocalVariableList("block,port,value,quality");
+		setLocalVariableList("block,port,value,quality,time");
 	}
 }
 

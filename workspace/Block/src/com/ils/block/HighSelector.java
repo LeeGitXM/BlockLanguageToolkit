@@ -24,8 +24,8 @@ import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
+import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
-import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
@@ -164,7 +164,7 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void notifyOfStatus() {
-		QualifiedValue qv = new BasicQualifiedValue(valueProperty.getValue().toString());
+		QualifiedValue qv = new TestAwareQualifiedValue(timer,valueProperty.getValue().toString());
 		notifyOfStatus(qv);
 	}
 	private void notifyOfStatus(QualifiedValue qv) {

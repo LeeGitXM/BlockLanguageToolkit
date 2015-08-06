@@ -102,7 +102,7 @@ public class NaturalLog extends AbstractProcessBlock implements ProcessBlock {
 				}
 			}
 			else {
-				qv = new BasicQualifiedValue(new Double(Double.NaN),new BasicQuality("null value",Quality.Level.Bad));
+				qv = new BasicQualifiedValue(new Double(Double.NaN),new BasicQuality("null value",Quality.Level.Bad),qv.getTimestamp());
 			}
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 			controller.acceptCompletionNotification(nvn);
