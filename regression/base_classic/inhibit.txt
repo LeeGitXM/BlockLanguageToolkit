@@ -1,9 +1,9 @@
 #
 # Test of the inhibit block
+#  - use full date to allow timed offset
 #
 DIAGRAM="app75/family75/inhibitor"
-INHIBITOR="INHIBITOR-112"
-script: sendSignal interfaces.sendLocalSignal(diagid,command.message,arg)
+INHIBITOR="INHIBITOR-650"
 tag: InhibitorOutput MemoryTags/InhibitorOutput
 tagset: InhibitInput MemoryTags/InhibitorFeed MemoryTags/InhibitorFinalDiagnosis
 
@@ -13,26 +13,31 @@ resetDiagram ($DIAGRAM)
 
 Test: Inhibit Block with FinalDiagnosis
 Step: Passthrough
-10:00 12. false
-10:00:30 13.
-10:00:50 Assert: InhibitorOutput = 13 "Passthrough is 13"
-10:00:55 Assert: getState($DIAGRAM,$INHIBITOR) = FALSE  "Inhibitor state is OK"
-10:01 14.
-10:01:30 Assert: InhibitorOutput = 14 "Passthrough is 14"
+
+2000/01/01 10:00 12. false
+2000/01/01 10:00 setTestTimeOffset(2000,1,1,10,0,0)
+2000/01/01 10:00:30 13.
+2000/01/01 10:00:40 Assert: InhibitorOutput = 13 "Passthrough is 13"
+2000/01/01 10:00:45 Assert: getState($DIAGRAM,$INHIBITOR) = UNSET  "Inhibitor state is UNSET"
+2000/01/01 10:00:50 Assert: getInternalAttribute($DIAGRAM,$INHIBITOR,"Inhibiting") = false  "Inhibitor is not inhibiting"
+
+2000/01/01 10:01 14.
+2000/01/01 10:01:30 Assert: InhibitorOutput = 14 "Passthrough is 14"
 
 Step: Diagnosis True - Does not change Inhibit
-10:02 15. true
-10:02:30 16. 
-10:03 17.
-10:03:30 Assert: InhibitorOutput = 17 "Output not automatically inhibited by final diagnosis"
+2000/01/01 10:02 15. true
+2000/01/01 10:02:30 16. 
+2000/01/01 10:03 17.
+2000/01/01 10:03:30 Assert: InhibitorOutput = 17 "Output not automatically inhibited by final diagnosis"
 
 Step: Inhibit via Script Interface
-10:03:10 sendLocalSignal($DIAGRAM,"inhibit","","")
-10:03:30 21. false
-10:04 Assert: InhibitorOutput = 17 "Output is inhibited"
-10:04:30 Assert: getState($DIAGRAM,$INHIBITOR) = TRUE "Inhibitor state is TRUE"
+10:04:00 sendTimestampedSignal($DIAGRAM,"inhibit",2000,1,1,10,4,0)
+10:04:30 Assert: getInternalAttribute($DIAGRAM,$INHIBITOR,"Inhibiting") = true  "Inhibitor is now inhibiting"
+10:04:40 21. false
+10:04:50 Assert: InhibitorOutput = 17 "Output is inhibited"
+10:04:50 Assert: getState($DIAGRAM,$INHIBITOR) = UNSET "Inhibitor state is UNSET"
 
 Step: Inhibit Interval Expires
-10:10 14.
-10:10:30 Assert: InhibitorOutput = 14 "Passthrough is 14"
-10:10:45 Assert: getState($DIAGRAM,$INHIBITOR) = FALSE "Inhibitor state is OK"
+10:06 14.
+10:06:30 Assert: InhibitorOutput = 14 "Passthrough is 14"
+10:06:50 Assert: getInternalAttribute($DIAGRAM,$INHIBITOR,"Inhibiting") = false  "Inhibitor is not inhibiting"

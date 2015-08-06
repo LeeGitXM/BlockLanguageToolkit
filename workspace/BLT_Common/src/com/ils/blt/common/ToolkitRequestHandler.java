@@ -274,7 +274,7 @@ public interface ToolkitRequestHandler  {
 	 * @param arg also a component of the transmitted signal
 	 * @param time unix time, milli-seconds since the start of the epoch
 	 */
-	public boolean sendLocalSignal(String diagramId,String command,String message,String arg,long time) ;
+	public boolean sendTimestampedSignal(String diagramId,String command,String message,String arg,long time) ;
 	/**
 	 * Set the state of every diagram that is a member of the application to
 	 * the specified value.

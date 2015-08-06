@@ -294,6 +294,18 @@ public class ClassicScriptFunctions   {
 		return handler.sendLocalSignal(diagramId,command,message,arg);
 	}
 	/**
+	 * Send a signal to all blocks of a particular class on a specified diagram.
+	 * This is a "local" transmission with a user-specified timestamp
+	 * 
+	 * @param diagramId diagram identifier
+	 * @param className filter of the receiver blocks to be targeted.
+	 * @param command string of the signal.
+	 * @return true on success
+	 */
+	public static boolean sendTimestampedSignal(String diagramId,String command,String message,String arg,long time) {
+		return handler.sendTimestampedSignal(diagramId,command,message,arg,time);
+	}
+	/**
 	 * Set the state for every diagram under the named application.
 	 * @param app name of the application
 	 * @param state new state of the diagrams

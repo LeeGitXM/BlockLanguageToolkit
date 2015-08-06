@@ -682,16 +682,16 @@ public class ClassicRequestHandler implements ToolkitRequestHandler {
 	 * @param command string of the signal.
 	 */
 	@Override
-	public boolean sendLocalSignal(String diagramId, String command,String message,String arg,long time) {
-		log.infof("%s.sendLocalSignal for %s %s %s %s...",TAG,diagramId,command,message,arg);
+	public boolean sendTimestampedSignal(String diagramId, String command,String message,String arg,long time) {
+		log.infof("%s.sendTimestampedSignal for %s %s %s %s...",TAG,diagramId,command,message,arg);
 		boolean result = false;
 		try {
 			Boolean value = GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.CLASSIC_MODULE_ID, "sendLocalSignal",diagramId,command,message,arg,new Long(time));
+					BLTProperties.CLASSIC_MODULE_ID, "sendTimestampedSignal",diagramId,command,message,arg,new Long(time));
 			if( value!=null ) result = value.booleanValue();
 		}
 		catch(Exception ex) {
-			log.infof("%s.sendLocalSignal: Exception (%s)",TAG,ex.getMessage());
+			log.infof("%s.sendTimestampedSignal: Exception (%s)",TAG,ex.getMessage());
 		}
 		return result;
 	}

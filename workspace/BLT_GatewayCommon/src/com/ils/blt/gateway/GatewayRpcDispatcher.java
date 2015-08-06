@@ -350,8 +350,8 @@ public class GatewayRpcDispatcher   {
 	 * @param time the time to be assigned to the signal
 	 * @return
 	 */
-	public Boolean sendLocalSignal(String uuidString, String command,String message,String arg,Long time) {
-		return new Boolean(requestHandler.sendLocalSignal(uuidString,command,message,arg,time.longValue()));
+	public Boolean sendTimestampedSignal(String uuidString, String command,String message,String arg,Long time) {
+		return new Boolean(requestHandler.sendTimestampedSignal(uuidString,command,message,arg,time.longValue()));
 	}
 	/**
 	 * Set the state of every diagram in an application to the specified value.

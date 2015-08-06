@@ -276,6 +276,19 @@ public class ModuleScriptFunctions   {
 		return handler.sendLocalSignal(diagramId,command,message,arg);
 	}
 	/**
+	 * Send a signal to all blocks of a particular class on a specified diagram.
+	 * This is a "local" transmission. The signal is assigned a timestamp.
+	 * 
+	 * @param diagramId diagram identifier
+	 * @param className filter of the receiver blocks to be targeted.
+	 * @param command string of the signal
+	 * @param time user-assigned timestamp
+	 * @return true on success
+	 */
+	public static boolean sendTimestampedSignal(String diagramId,String command,String message,String arg,long time) {
+		return handler.sendTimestampedSignal(diagramId,command,message,arg,time);
+	}
+	/**
 	 * Change the state of every diagram in the named application
 	 * to the specified state.
 	 * @param appname name of the application

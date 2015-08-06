@@ -700,18 +700,18 @@ public class BasicRequestHandler implements ToolkitRequestHandler  {
 
 	@Override
 	public boolean sendLocalSignal(String diagramId, String command, String message, String argument) {
-		return sendLocalSignal( diagramId, command, message, argument,new Date().getTime());
+		return sendTimestampedSignal( diagramId, command, message, argument,new Date().getTime());
 	}
 
 	@Override
-	public boolean sendLocalSignal(String diagramId, String command, String message, String argument,long time) {
+	public boolean sendTimestampedSignal(String diagramId, String command, String message, String argument,long time) {
 		Boolean success = new Boolean(true);
 		UUID diagramUUID = null;
 		try {
 			diagramUUID = UUID.fromString(diagramId);
 		}
 		catch(IllegalArgumentException iae) {
-			log.warnf("%s.sendLocalSignal: Diagram UUID string is illegal (%s), creating new",TAG,diagramId);
+			log.warnf("%s.sendTimestampedSignal: Diagram UUID string is illegal (%s), creating new",TAG,diagramId);
 			diagramUUID = UUID.nameUUIDFromBytes(diagramId.getBytes());
 		}
 		BasicDiagram diagram = BlockExecutionController.getInstance().getDiagram(diagramUUID);
@@ -723,7 +723,7 @@ public class BasicRequestHandler implements ToolkitRequestHandler  {
 			BlockExecutionController.getInstance().acceptBroadcastNotification(broadcast);
 		}
 		else {
-			log.warnf("%s.sendLocalSignal: Unable to find diagram %s for %s command",TAG,diagramId,command);
+			log.warnf("%s.sendTimestampedSignal: Unable to find diagram %s for %s command",TAG,diagramId,command);
 			success = new Boolean(false);
 		}
 		return success;

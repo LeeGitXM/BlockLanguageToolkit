@@ -266,10 +266,10 @@ public class PythonRequestHandler   {
 	 * @param className name of the class of blocks to be signaled
 	 * @param command the value of the signal
 	 */
-	public void sendLocalSignal(String parent,String command,String message,String arg,long time)  {
-		log.debugf("%s.sendLocalSignal - %s = %s %s %s ",TAG,parent,command,message,arg);
+	public void sendTimestampeSignal(String parent,String command,String message,String arg,long time)  {
+		log.debugf("%s.sendTimestampedSignal - %s = %s %s %s ",TAG,parent,command,message,arg);
 		
-		requestHandler.sendLocalSignal(parent,command,message,arg,time);
+		requestHandler.sendTimestampedSignal(parent,command,message,arg,time);
 		
 	}
 }
