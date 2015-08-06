@@ -25,6 +25,8 @@ import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.notification.Signal;
 import com.ils.blt.common.notification.SignalNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
+import com.ils.common.watchdog.Watchdog;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
@@ -36,12 +38,15 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	private BlockProperty expirationProperty = null;
 	private double interval = 0.0;   // ~secs
+	private boolean inhibiting = false;
+	private final Watchdog dog;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
 	public Inhibitor() {
 		initialize();
+		dog = new Watchdog(getName(),this);
 		initializePrototype();
 	}
 	
@@ -55,12 +60,15 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	public Inhibitor(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
+		dog = new Watchdog(getName(),this);
 	}
 	
 	@Override
 	public void reset() {
 		super.reset();
 		expirationProperty.setValue(0L);
+		inhibiting = false;
+		timer.removeWatchdog(dog);
 	}
 	
 	/**
@@ -80,15 +88,18 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 			String port = vcn.getConnection().getDownstreamPortName();
 			if( port.equals(BlockConstants.IN_PORT_NAME)  ) {
 				QualifiedValue qv = vcn.getValue();
-				long time = ((Long)expirationProperty.getValue()).longValue();
-				if( qv.getQuality().isGood() &&  
-						(time==0 || qv.getTimestamp().getTime()>=time) ) {
+			
+				log.infof("%s.acceptValue: Received value %s (%s)",getName(),qv.getValue().toString(),
+						       formatter.format(qv.getTimestamp()));
+				long expirationTime = ((Long)expirationProperty.getValue()).longValue();
+				if( qv.getQuality().isGood() && 
+						(expirationTime==0 || qv.getTimestamp().getTime()>=expirationTime)) {
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 					controller.acceptCompletionNotification(nvn);
 					notifyOfStatus(vcn.getValue());
 				}
 				else {
-					log.infof("%s.acceptValue: %s ignoring inhibited or BAD input ...",getName(),this.toString());
+					log.infof("%s.acceptValue: Ignoring inhibited or BAD input ... (%s)",getName(),qv.getValue().toString());
 				}
 			}
 		}
@@ -106,20 +117,19 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	public void acceptValue(SignalNotification sn) {
 		Signal signal = sn.getSignal();
 		if( signal.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_INHIBIT)) {
-			long now = System.currentTimeMillis();
-			expirationProperty.setValue(new Long(now+(long)(interval*1000)));
-			log.infof("%s.acceptValue: %s received inhibit command (delay %f secs on %s)",getName(),this.toString(),interval,timer.getName());
+			expirationProperty.setValue(new Long(sn.getValue().getTimestamp().getTime()+(long)(interval*1000)));
+			controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_EXPIRATION_TIME,
+					new BasicQualifiedValue(expirationProperty.getValue(),sn.getValue().getQuality(),sn.getValue().getTimestamp()));
+			if( log.isInfoEnabled()) {
+				long time = ((Long)expirationProperty.getValue()).longValue();
+				Date expiration = new Date(time);
+				log.infof("%s.acceptValue: Received inhibit command (delay %f secs to %s)",getName(),interval,formatter.format(expiration));
+			}
+			inhibiting = true;
+			dog.setSecondsDelay(interval);
 		}
 	}
-	private boolean inhibits() { 
-		boolean inhibiting = false;
-		long time = ((Long)expirationProperty.getValue()).longValue();
-		if( time>0) {
-			long now = System.currentTimeMillis();
-			if( now < time ) inhibiting = true;
-		}
-		return inhibiting; 
-	}
+
 	/**
 	 * @return a block-specific description of internal statue
 	 */
@@ -128,13 +138,24 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
 		Map<String,String> attributes = descriptor.getAttributes();
 		
-		attributes.put("Inhibiting", (inhibits()?"true":"false"));
+		attributes.put("Inhibiting", (inhibiting?"true":"false"));
+		log.infof("%s.getInternalStatus: inhibiting %s",getName(),attributes.get("Inhibiting"));
 		long time = ((Long)expirationProperty.getValue()).longValue();
 		if( time>0 ) {
 			Date expiration = new Date(time);
 			attributes.put("Inhibit Expiration",formatter.format(expiration) );
 		}
 		return descriptor;
+	}
+	/**
+	 * The inhibit interval timer has expired. The "inhibiting" flag
+	 * merely indicates that inputs with a current time-stamp will be
+	 * denied. Inputs with past time-stamps may or may not propagate.
+	 */
+	@Override
+	public void evaluate() {
+		inhibiting = false;
+		log.infof("%s.evaluate: Set inhibit flag false",getName());
 	}
 	
 	/**

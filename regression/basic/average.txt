@@ -25,15 +25,22 @@ Tagset: AverageFeed
 10:03:30 Assert: Average1 = 25 "Average with next reading"
 
 Step: "Average Time Window"
+# Time window is 2 minutes, scan is 30 seconds, 4 values held.
 10:03:45 10 -1 -1 -1
 10:04:00 resetDiagram ($DIAGRAM)
-10:04:55 Assert: Average2 = -1 "No result with first value"
-10:05 30
-10:05:45 Assert: 24.9 < Average2 < 30.01 "Average when window fills"
-10:06:45 Assert: Average2 = 30 "Window constant with no more input"
+10:04:15 PRIOR2 = Average2
+10:04:20 64 
+10:04:55 Assert: Average2 = $PRIOR2 "No result with first value"
+10:04:50 -64
+10:05:20 50
+10:05:45 Assert: Average2 = $PRIOR2 "No result until initial period expires"
+10:05:50 60
+10:06:20 70
+10:06:30 Assert: 28.9 < Average2 < 29.01 "Average when window fills"
+10:06:55 Assert: 62.0 < Average2 < 63.0 "Window constant with no more input"
 
 Step: Average Over All Time
-10:07 10 -1 -1 -1
+10:07:20 10 -1 -1 -1
 resetDiagram ($DIAGRAM)
 10:07:30 Assert: Average3 = 10 "First value is the value"
 10:08 20

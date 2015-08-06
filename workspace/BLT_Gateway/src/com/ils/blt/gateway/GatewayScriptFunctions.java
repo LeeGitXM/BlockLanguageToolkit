@@ -273,7 +273,6 @@ public class GatewayScriptFunctions   {
 	public static void resetDiagram(String diagramId) {
 		handler.resetDiagram(diagramId);
 	}
-	
 	/**
 	 * Send a signal to all blocks of a particular class on a specified diagram.
 	 * This is a "local" transmission.
@@ -285,6 +284,18 @@ public class GatewayScriptFunctions   {
 	 */
 	public static boolean sendLocalSignal(String diagramId,String command,String message,String arg) {
 		return handler.sendLocalSignal(diagramId,command,message,arg);
+	}
+	/**
+	 * Send a signal to all blocks of a particular class on a specified diagram.
+	 * This is a "local" transmission. The timestamp is supplied in the call.
+	 * 
+	 * @param diagramId diagram identifier
+	 * @param className filter of the receiver blocks to be targeted.
+	 * @param command string of the signal.
+	 * @return true on success
+	 */
+	public static boolean sendTimestampedSignal(String diagramId,String command,String message,String arg,long time) {
+		return handler.sendTimestampedSignal(diagramId,command,message,arg,time);
 	}
 	/**
 	 * Set the state for every diagram under the named application.
@@ -309,7 +320,7 @@ public class GatewayScriptFunctions   {
 	 *        ~ msecs. A positive number implies that the test time is
 	 *        in the past.
 	 */
-	public void setTestTimeOffset(long offset) {
+	public static void setTestTimeOffset(long offset) {
 		handler.setTestTimeOffset(offset);
 	}
 	/**

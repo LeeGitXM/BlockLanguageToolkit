@@ -254,10 +254,11 @@ public class PythonRequestHandler   {
 	 * @param parent identifier for the diagram, a string version of a UUID
 	 * @param className name of the class of blocks to be signaled
 	 * @param command the value of the signal
+	 * @param time the time associated with this signal
 	 */
-	public void sendLocalSignal(String parent,String command,String message,String arg,long time)  {
+	public void sendTimestampedSignal(String parent,String command,String message,String arg,long time)  {
 		log.debugf("%s.sendLocalSignal - %s = %s %s %s ",TAG,parent,command,message,arg);
-		ControllerRequestHandler.getInstance().sendLocalSignal(parent,command,message,arg,time);
+		ControllerRequestHandler.getInstance().sendTimestampedSignal(parent,command,message,arg,time);
 		
 	}
 }

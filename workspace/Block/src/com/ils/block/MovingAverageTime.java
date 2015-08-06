@@ -286,6 +286,7 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 		}
 		
 		if( count>0 ) result = sum/count;
+		//log.infof("%s.computeAverage: sum = %f, count = %d, result = %f",getName(),sum,count,result);
 		return result;	
 	}
 }
