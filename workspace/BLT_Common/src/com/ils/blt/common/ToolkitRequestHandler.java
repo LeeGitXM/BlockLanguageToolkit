@@ -225,6 +225,12 @@ public interface ToolkitRequestHandler  {
 	 *         the project name.
 	 */
 	public String pathForBlock(String diagramId,String blockName);
+	/** 
+	 * @param nodeId UUID as a String of a node in the navigation tree
+	 * @return a slash-separated path to the specified node. The path 
+	 *         root is a slash representing the top node of the navigation tree.
+	 */
+	public String pathForNode(String nodeId);
 	/**
 	 * Execute reset() on a specified block
 	 * @param diagramId of the parent diagram

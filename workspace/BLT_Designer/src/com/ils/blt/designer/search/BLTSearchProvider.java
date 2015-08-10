@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.common.gui.progress.TaskProgressListener;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -27,6 +28,9 @@ public class BLTSearchProvider implements SearchProvider {
 	@Override
 	public List<Object> getCategories() {
 		List<Object> cts = new ArrayList<>();
+		cts.add("Application");
+		cts.add("Family");
+		cts.add("Diagram");
 		cts.add("Block");
 		return cts;
 	}
@@ -38,7 +42,7 @@ public class BLTSearchProvider implements SearchProvider {
 
 	@Override
 	public boolean hasSelectableObjects() {
-		return false;
+		return true;
 	}
 
 	@Override
@@ -48,27 +52,45 @@ public class BLTSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Iterator<SearchObject> retrieveSearchableObjects(
-			Collection<Object> selectedCategories, List<Object> arg1,
-			TaskProgressListener progress) {
+	public Iterator<SearchObject> retrieveSearchableObjects(Collection<Object> selectedCategories, List<Object> arg1,TaskProgressListener progress) {
 		SearchObjectAggregator agg = new SearchObjectAggregator(progress);
-		List<ProjectResource> resources = context.getProject().getResourcesOfType("block", "blt.diagram");
-		for(ProjectResource res:resources) {
-			log.infof("%s.retrieveSearchableObjects resId = %d",TAG,res.getResourceId());
-			agg.add(new DiagramSearchCursor(context,res.getResourceId()));
+		List<ProjectResource> resources = null;
+		if( selectedCategories.contains("Diagram") || selectedCategories.contains("Block") ) {
+			boolean searchDiagrams = selectedCategories.contains("Diagram");
+			boolean searchBlocks   = selectedCategories.contains("Block");
+			resources = context.getProject().getResourcesOfType(BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE);
+			for(ProjectResource res:resources) {
+				log.infof("%s.retrieveSearchableObjects resId = %d",TAG,res.getResourceId());
+				agg.add(new DiagramSearchCursor(context,res.getResourceId(),searchDiagrams,searchBlocks));
+			}
+		}
+		if( selectedCategories.contains("Application") ) {
+			resources = context.getProject().getResourcesOfType(BLTProperties.MODULE_ID, BLTProperties.APPLICATION_RESOURCE_TYPE);
+			for(ProjectResource res:resources) {
+				log.infof("%s.retrieveSearchableObjects resId = %d",TAG,res.getResourceId());
+				agg.add(new ApplicationSearchCursor(context,res.getResourceId()));
+			}
+		}
+		
+		if( selectedCategories.contains("Family") ) {
+			resources = context.getProject().getResourcesOfType(BLTProperties.MODULE_ID, BLTProperties.FAMILY_RESOURCE_TYPE);
+			for(ProjectResource res:resources) {
+				log.infof("%s.retrieveSearchableObjects resId = %d",TAG,res.getResourceId());
+				agg.add(new FamilySearchCursor(context,res.getResourceId()));
+			}
 		}
 		return agg;
 	}
 
 	@Override
 	public void selectObjects(SelectedObjectsHandler arg0) {
-		// ignore
+		log.infof("%s.selectObjects",TAG);
 		
 	}
 
 	@Override
 	public String selectedObjectsToString(List<Object> arg0) {
-		// ignore
+		log.infof("%s.selectedObjectsToString",TAG);
 		return null;
 	}
 }

@@ -226,6 +226,14 @@ public class ApplicationScriptFunctions   {
 	public static String pathForBlock(String diagramId,String blockName) {
 		return handler.pathForBlock(diagramId,blockName);
 	}
+	/** 
+	 * @param nodeId UUID as a String of a node in the navigation tree
+	 * @return a slash-separated path to the specified node. The path 
+	 *         root is a slash representing the top node of the navigation tree.
+	 */
+	public static String pathForNode(String nodeId) {
+		return handler.pathForNode(nodeId);
+	}
 	/**
 	 * Post a (simulated) block result on its output.
 	 * @param diagramId the parent diagram

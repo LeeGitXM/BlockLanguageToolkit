@@ -313,7 +313,14 @@ public class GatewayRpcDispatcher   {
 	public String pathForBlock(String diagramId,String blockName) {
 		return requestHandler.pathForBlock(diagramId,blockName);
 	}
-
+	/** 
+	 * @param nodeId UUID as a String of a node in the navigation tree
+	 * @return a slash-separated path to the specified node. The path 
+	 *         root is a slash representing the top node of the navigation tree.
+	 */
+	public String pathForNode(String nodeId) {
+		return requestHandler.pathForNode(nodeId);
+	}
 	/**
 	 * Post a block result on its output. The transaction is from an external source.
 	 * @param blockId

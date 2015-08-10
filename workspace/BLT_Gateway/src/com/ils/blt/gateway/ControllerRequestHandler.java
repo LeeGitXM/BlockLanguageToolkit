@@ -719,6 +719,17 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		String path = controller.pathForNode(uuid);
 		return String.format("%s:%s",path,blockName);
 	}
+	/** 
+	 * @param nodeId UUID as a String of a node in the navigation tree
+	 * @return a slash-separated path to the specified node. The path 
+	 *         root is a slash representing the top node of the navigation tree.
+	 */
+	@Override
+	public String pathForNode(String nodeId) {
+		UUID uuid = makeUUID(nodeId);
+		String path = controller.pathForNode(uuid);
+		return path;
+	}
 	/**
 	 * Handle the block placing a new value on its output. This minimalist version
 	 * is likely called from an external source through an RPC.

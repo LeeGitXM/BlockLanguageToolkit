@@ -113,9 +113,9 @@ public class QualValue extends AbstractProcessBlock implements ProcessBlock {
 	
 	/**
 	 * Notify the block that a new value has appeared on one of its input anchors.
-	 * For now we simply record the change in the map and start the watchdog. 
+	 * For now we simply record the change in the map and start the watchdog. Only
+	 * start the watchdog on receipt of a value. 
 	 * 
-	 * Note: there can be several connections attached to a given port.
 	 * @param incoming new value.
 	 */
 	@Override
@@ -125,23 +125,28 @@ public class QualValue extends AbstractProcessBlock implements ProcessBlock {
 		QualifiedValue qv = incoming.getValue();
 		if( port.equals(VALUE_PORT)  ) {
 			value = qv;
+			if( synchInterval>0 ) {
+				dog.setSecondsDelay(synchInterval);
+				timer.updateWatchdog(dog);  // pet dog
+			}
 		}
 		else if( port.equals(QUALITY_PORT)  ) {
 			if( qv.getValue().toString().equalsIgnoreCase("good")) quality = DataQuality.GOOD_DATA;
 			else quality = new BasicQuality(qv.getValue().toString(),Quality.Level.Bad);
 		}
 		else if( port.equals(TIME_PORT)  ) {
-			try {
-				timestamp = dateFormatter.parse(qv.getValue().toString());
+			if( qv.getValue() instanceof Date ) {
+				timestamp = (Date)qv.getValue();
 			}
-			catch(ParseException pe) {
-				log.errorf("%s.acceptValue: Exception formatting time as %s (%s)",getName(),dateFormatter.toString(),pe.getLocalizedMessage());
-			} 
-		}
-
-		if( synchInterval>0 ) {
-			dog.setSecondsDelay(synchInterval);
-			timer.updateWatchdog(dog);  // pet dog
+			else {
+				try {
+					
+					timestamp = dateFormatter.parse(qv.getValue().toString());
+				}
+				catch(ParseException pe) {
+					log.errorf("%s.acceptValue: Exception formatting time as %s (%s)",getName(),dateFormatter.toString(),pe.getLocalizedMessage());
+				} 
+			}
 		}
 	}
 	/**

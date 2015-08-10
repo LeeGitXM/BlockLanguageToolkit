@@ -9,6 +9,8 @@ import javax.swing.ImageIcon;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.findreplace.SearchObject;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 /**
@@ -16,41 +18,47 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
  * @author chuckc
  *
  */
-public class DiagramNameSearchObject implements SearchObject {
-	private static final Dimension IMAGE_SIZE = new Dimension(32,32);
-	private final ProcessDiagramView diagram;
+public class ApplicationNameSearchObject implements SearchObject {
+	private final String TAG = "ApplicationNameSearchObject";
+	private final LoggerEx log;
+	private static final Dimension IMAGE_SIZE = new Dimension(20,20);
+	
+	private final String applicationName;
+	private final String rootName;
 	private final DesignerContext context;
 	
-	public DiagramNameSearchObject(DesignerContext ctx,ProcessDiagramView dia) {
+	public ApplicationNameSearchObject(DesignerContext ctx,String root,String app) {
 		this.context = ctx;
-		this.diagram = dia;
+		this.applicationName = app;
+		this.rootName = root;
+		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 	}
 	@Override
 	public Icon getIcon() {
 		ImageIcon icon = null;
-		Image img = ImageLoader.getInstance().loadImage("Block/icons/navtree/diagram.png",IMAGE_SIZE);
+		Image img = ImageLoader.getInstance().loadImage("Block/icons/navtree/application_folder.png",IMAGE_SIZE);
 		if( img !=null) icon = new ImageIcon(img);
 		return icon;
 	}
 
 	@Override
 	public String getName() {
-		return diagram.getDiagramName();
+		return applicationName;
 	}
 
 	@Override
 	public String getOwnerName() {
-		return BLTProperties.MODULE_NAME;
+		return rootName;
 	}
 
 	@Override
 	public String getText() {
-		return diagram.getDiagramName();
+		return applicationName;
 	}
 
 	@Override
 	public void locate() {
-		// TODO Auto-generated method stub
+		log.infof("%s.locate:  Need to navigate to: %s",TAG,applicationName);
 		
 	}
 

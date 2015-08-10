@@ -66,7 +66,6 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
  */
 public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavTreeNodeInterface, ProjectChangeListener  {
 	private static final String TAG = "DiagramTreeNode";
-	private static final int OFFSET = 100;
 	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
 	protected final LoggerEx logger = LogUtil.getLogger(getClass().getPackage().getName());
 	protected DesignerContext context;

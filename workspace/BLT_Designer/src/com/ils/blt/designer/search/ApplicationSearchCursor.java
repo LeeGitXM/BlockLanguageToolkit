@@ -17,21 +17,17 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.findreplace.SearchObjectCursor;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
-public class DiagramSearchCursor extends SearchObjectCursor {
+public class ApplicationSearchCursor extends SearchObjectCursor {
 	private final String TAG = "DiagramSearchCursor";
 	private final DesignerContext context;
 	private ProcessDiagramView diagram; 
 	private final LoggerEx log;
 	private final long resId;
-	private final boolean searchDiagrams;
-	private final boolean searchBlocks;
 	private int index = 0;
 	
-	public DiagramSearchCursor(DesignerContext ctx,long res,boolean diagrams,boolean blocks) {
+	public ApplicationSearchCursor(DesignerContext ctx,long res) {
 		this.context = ctx;
 		this.resId = res;
-		this.searchDiagrams = diagrams;
-		this.searchBlocks = blocks;
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.index = 0;
 	}
@@ -41,15 +37,11 @@ public class DiagramSearchCursor extends SearchObjectCursor {
 		// Deserialize here - first time through only - return next block cursor
 		if( index==0 ) {
 			diagram = deserializeResource(resId);
-		}
-		
-		if( index==0 && searchDiagrams ) {
-			
 			so = new DiagramNameSearchObject(context,diagram);
 			log.infof("%s.next %s",TAG,diagram.getDiagramName());
 		}
-		else if( searchBlocks ) {
-			int jndex = (searchDiagrams?1:0);
+		else {
+			int jndex = 1;
 			Iterator<? extends Block> blockWalker = diagram.getBlocks().iterator();
 			while( blockWalker.hasNext() ) {
 				Object temp = new BlockSearchCursor(context,diagram,(ProcessBlockView)(blockWalker.next()));
