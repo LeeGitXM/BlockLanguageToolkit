@@ -27,7 +27,7 @@ public class PropertySearchCursor extends SearchObjectCursor {
 		// Depending on the binding, return either the value or binding string
 		//log.infof("%s.next %d %s:%s",TAG,index,block.getName(),property.getName());
 		if( index==0 ) {
-			so = new PropertySearchObject(context,block,property);
+			so = new PropertySearchObject(block,property);
 		}
 		index++;
 		return so;

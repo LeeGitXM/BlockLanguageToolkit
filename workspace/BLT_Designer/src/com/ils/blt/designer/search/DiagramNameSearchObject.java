@@ -2,6 +2,7 @@ package com.ils.blt.designer.search;
 
 import javax.swing.Icon;
 
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.designer.findreplace.SearchObject;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
@@ -31,12 +32,11 @@ public class DiagramNameSearchObject implements SearchObject {
 
 	@Override
 	public String getOwnerName() {
-		return "Owner";
+		return BLTProperties.MODULE_NAME;
 	}
 
 	@Override
 	public String getText() {
-		// TODO Auto-generated method stub
 		return diagram.getDiagramName();
 	}
 
@@ -48,8 +48,7 @@ public class DiagramNameSearchObject implements SearchObject {
 
 	@Override
 	public void setText(String arg0) throws IllegalArgumentException {
-		// TODO Auto-generated method stub
-		
+		throw new IllegalArgumentException("The name of a diagram may be changed only in the Designer navigation tree");
 	}
 
 }

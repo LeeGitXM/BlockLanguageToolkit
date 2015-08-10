@@ -6,7 +6,6 @@ import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.inductiveautomation.ignition.designer.findreplace.SearchObject;
-import com.inductiveautomation.ignition.designer.model.DesignerContext;
 /**
  * Return either the binding or the value string.
  * @author chuckc
@@ -14,12 +13,10 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
  */
 public class PropertySearchObject implements SearchObject {
 	
-	private final DesignerContext context;
 	private final ProcessBlockView block;
 	private final BlockProperty property;
 	
-	public PropertySearchObject(DesignerContext ctx,ProcessBlockView parent,BlockProperty prop) {
-		this.context = ctx;
+	public PropertySearchObject(ProcessBlockView parent,BlockProperty prop) {;
 		this.block = parent;
 		this.property = prop;
 	}
