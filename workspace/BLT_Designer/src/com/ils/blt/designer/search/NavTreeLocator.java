@@ -5,7 +5,9 @@
 package com.ils.blt.designer.search;
 
 import java.util.Enumeration;
+import java.util.UUID;
 
+import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -32,45 +34,133 @@ public class NavTreeLocator {
 	}
 
 	/**
-	 * Select an item in the navigation tree given its path.
+	 * Select an item in the navigation tree given its name and the Id of its immediate parent.  
+	 * We use the parentId, append the node name to construct the path. It is colon-separated
+	 * with a leading colon for the root.
+	 */
+	public void locate(String parentId,String name) {
+		ApplicationRequestHandler handler = new ApplicationRequestHandler();
+		String path = handler.pathForNode(parentId);
+		if( path!=null ) {
+			ProjectBrowserRoot project = context.getProjectBrowserRoot();
+			AbstractNavTreeNode root = null;
+			AbstractNavTreeNode node = null;
+			// Get the "ROOT" node before we traverse the hierarchy.
+			root = project.findChild("Project");
+			if( root!=null ) node = findChildInTree(root,"ROOT");
+
+			// The specified path is colon-delimited.
+			if( name!=null && !name.isEmpty() ) path = path+":"+name;
+			String[] pathArray = path.toString().split(":");
+
+			int index = 1;   // Skip the empty root
+			while( index<pathArray.length ) {
+				node = findChildInTree(node,pathArray[index]);
+				if( node!=null ) {
+					node.expand();
+					try {
+						Thread.sleep(100); 
+					}
+					catch(InterruptedException ignore) {}
+				}
+				else{
+					log.warnf("%s.receiveNotification: Unable to find node (%s) on browser path",TAG,pathArray[index]);
+					break;
+				}
+				index++;
+			}
+
+			if( node!=null ) {
+				node.onDoubleClick();    // Opens the diagram
+			}
+			else {
+				log.warnf("%s.locate: Unable to open browser path (%s)",TAG,path.toString());
+			}
+		}
+	}
+	
+	/**
+	 * Select an item in the navigation tree given its id. The path is colon-separated
+	 * with a leading colon for the root.
+	 */
+	public void locate(UUID nodeId) {
+		ApplicationRequestHandler handler = new ApplicationRequestHandler();
+		String path = handler.pathForNode(nodeId.toString());
+		if( path!=null ) {
+			ProjectBrowserRoot project = context.getProjectBrowserRoot();
+			AbstractNavTreeNode root = null;
+			AbstractNavTreeNode node = null;
+			// Get the "ROOT" node before we traverse the hierarchy.
+			root = project.findChild("Project");
+			if( root!=null ) node = findChildInTree(root,"ROOT");
+
+			// The specified path is colon-delimited.
+			String[] pathArray = path.toString().split(":");
+
+			int index = 1;   // Skip the empty root
+			while( index<pathArray.length ) {
+				node = findChildInTree(node,pathArray[index]);
+				if( node!=null ) {
+					node.expand();
+					try {
+						Thread.sleep(100); 
+					}
+					catch(InterruptedException ignore) {}
+				}
+				else{
+					log.warnf("%s.receiveNotification: Unable to find node (%s) on browser path",TAG,pathArray[index]);
+					break;
+				}
+				index++;
+			}
+
+			if( node!=null ) {
+				node.onDoubleClick();    // Opens the diagram
+			}
+			else {
+				log.warnf("%s.locate: Unable to open browser path (%s)",TAG,path.toString());
+			}
+		}
+	}
+	/**
+	 * Open an item immediately under the root node. There is no parent.
 	 */
 	public void locate(String path) {
-		String moduleId = BLTProperties.MODULE_ID;
+		if( path!=null ) {
+			ProjectBrowserRoot project = context.getProjectBrowserRoot();
+			AbstractNavTreeNode root = null;
+			AbstractNavTreeNode node = null;
+			// Get the "ROOT" node before we traverse the hierarchy.
+			root = project.findChild("Project");
+			if( root!=null ) node = findChildInTree(root,"ROOT");
 
-		ProjectBrowserRoot project = context.getProjectBrowserRoot();
-		AbstractNavTreeNode root = null;
-		AbstractNavTreeNode node = null;
-		// Get the "ROOT" node before we traverse the hierarchy.
-		root = project.findChild("Project");
-		if( root!=null ) node = findChildInTree(root,"ROOT");
+			// The array will consist of the single name
+			String[] pathArray = path.split(":");
 
-		// The specified path is slash-delimited.
-		String[] pathArray = path.toString().split("/");
-
-		int index = 0;
-		while( index<pathArray.length ) {
-			node = findChildInTree(node,pathArray[index]);
-			if( node!=null ) {
-				node.expand();
-				try {
-					Thread.sleep(100); 
+			int index = 0;   // Skip the empty root
+			while( index<pathArray.length ) {
+				node = findChildInTree(node,pathArray[index]);
+				if( node!=null ) {
+					node.expand();
+					try {
+						Thread.sleep(100); 
+					}
+					catch(InterruptedException ignore) {}
 				}
-				catch(InterruptedException ignore) {}
+				else{
+					log.warnf("%s.locate: Unable to find node (%s) on browser path",TAG,pathArray[index]);
+					break;
+				}
+				index++;
 			}
-			else{
-				log.warnf("%s.receiveNotification: Unable to find node (%s) on browser path",TAG,pathArray[index]);
-				break;
+
+			if( node!=null ) {
+				node.onDoubleClick();    // Opens the diagram
 			}
-			index++;
+			else {
+				log.warnf("%s.receiveNotification: Unable to open browser path (%s)",TAG,path.toString());
+			}
 		}
-
-		if( node!=null ) {
-			node.onDoubleClick();    // Opens the diagram
-		}
-		else {
-			log.warnf("%s.receiveNotification: Unable to open browser path (%s)",TAG,path.toString());
-		}
-
 	}
 	
 	/**
@@ -88,7 +178,7 @@ public class NavTreeLocator {
 
 			while( nodeWalker.hasMoreElements() ) {
 				child = nodeWalker.nextElement();
-				log.tracef("%s.findChildInTree: testing %s vs %s",TAG,name,child.getName());
+				//log.tracef("%s.findChildInTree: testing %s vs %s",TAG,name,child.getName());
 				if( child.getName().equalsIgnoreCase(name)) {
 					match = child;
 					break;

@@ -31,7 +31,7 @@ public class FamilySearchCursor extends SearchObjectCursor {
 			family = context.getProject().getResource(resId);
 			ApplicationRequestHandler appHandler = new ApplicationRequestHandler();
 			String appName = appHandler.getApplicationName(family.getParentUuid().toString());
-			so = new FamilyNameSearchObject(context,appName,family.getName());
+			so = new FamilyNameSearchObject(context,appName,family.getName(),family.getParentUuid().toString());
 			log.infof("%s.next %s",TAG,family.getName());
 		}
 		index++;

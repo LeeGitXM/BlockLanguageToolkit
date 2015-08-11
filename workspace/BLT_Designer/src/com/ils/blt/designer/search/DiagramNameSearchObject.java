@@ -2,6 +2,7 @@ package com.ils.blt.designer.search;
 
 import java.awt.Dimension;
 import java.awt.Image;
+import java.util.ResourceBundle;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -9,6 +10,7 @@ import javax.swing.ImageIcon;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
+import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.designer.findreplace.SearchObject;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 /**
@@ -17,13 +19,17 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
  *
  */
 public class DiagramNameSearchObject implements SearchObject {
-	private static final Dimension IMAGE_SIZE = new Dimension(32,32);
+	private static final Dimension IMAGE_SIZE = new Dimension(18,18);
 	private final ProcessDiagramView diagram;
+	private final String familyName;
 	private final DesignerContext context;
+	private final ResourceBundle rb;
 	
-	public DiagramNameSearchObject(DesignerContext ctx,ProcessDiagramView dia) {
+	public DiagramNameSearchObject(DesignerContext ctx,String fam,ProcessDiagramView dia) {
 		this.context = ctx;
 		this.diagram = dia;
+		this.familyName = fam;
+		this.rb = ResourceBundle.getBundle("com.ils.blt.designer.designer");  // designer.properties
 	}
 	@Override
 	public Icon getIcon() {
@@ -40,7 +46,7 @@ public class DiagramNameSearchObject implements SearchObject {
 
 	@Override
 	public String getOwnerName() {
-		return BLTProperties.MODULE_NAME;
+		return familyName;
 	}
 
 	@Override
@@ -50,13 +56,14 @@ public class DiagramNameSearchObject implements SearchObject {
 
 	@Override
 	public void locate() {
-		// TODO Auto-generated method stub
+		NavTreeLocator locator = new NavTreeLocator(context);
+		locator.locate(diagram.getId());
 		
 	}
 
 	@Override
 	public void setText(String arg0) throws IllegalArgumentException {
-		throw new IllegalArgumentException("The name of a diagram may be changed only in the Designer navigation tree");
+		ErrorUtil.showWarning(rb.getString("Locator.DiagramChangeWarning"),rb.getString("Locator.WarningTitle") ,false);
 	}
 
 }

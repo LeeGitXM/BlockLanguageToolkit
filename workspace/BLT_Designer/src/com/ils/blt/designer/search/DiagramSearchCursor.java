@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
@@ -25,13 +26,16 @@ public class DiagramSearchCursor extends SearchObjectCursor {
 	private final long resId;
 	private final boolean searchDiagrams;
 	private final boolean searchBlocks;
+	private final int searchKey;
+	private String familyName;
 	private int index = 0;
 	
-	public DiagramSearchCursor(DesignerContext ctx,long res,boolean diagrams,boolean blocks) {
+	public DiagramSearchCursor(DesignerContext ctx,long res,int key) {
 		this.context = ctx;
 		this.resId = res;
-		this.searchDiagrams = diagrams;
-		this.searchBlocks = blocks;
+		this.searchKey = key;
+		this.searchDiagrams = (key&BLTSearchProvider.SEARCH_DIAGRAM)!=0;
+		this.searchBlocks = (key & (BLTSearchProvider.SEARCH_BLOCK +BLTSearchProvider.SEARCH_PROPERTY) )!=0;
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.index = 0;
 	}
@@ -41,18 +45,20 @@ public class DiagramSearchCursor extends SearchObjectCursor {
 		// Deserialize here - first time through only - return next block cursor
 		if( index==0 ) {
 			diagram = deserializeResource(resId);
+			ApplicationRequestHandler appRequestHandler = new ApplicationRequestHandler();
+			familyName = appRequestHandler.getFamilyName(diagram.getId().toString());
 		}
 		
 		if( index==0 && searchDiagrams ) {
 			
-			so = new DiagramNameSearchObject(context,diagram);
+			so = new DiagramNameSearchObject(context,familyName,diagram);
 			log.infof("%s.next %s",TAG,diagram.getDiagramName());
 		}
 		else if( searchBlocks ) {
 			int jndex = (searchDiagrams?1:0);
 			Iterator<? extends Block> blockWalker = diagram.getBlocks().iterator();
 			while( blockWalker.hasNext() ) {
-				Object temp = new BlockSearchCursor(context,diagram,(ProcessBlockView)(blockWalker.next()));
+				Object temp = new BlockSearchCursor(context,diagram,(ProcessBlockView)(blockWalker.next()),searchKey);
 				if( jndex==index ) {
 					so = temp;
 					break;

@@ -17,6 +17,11 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 public class BLTSearchProvider implements SearchProvider {
 	private final String TAG = "BLTSearchProvider";
+	public final static int SEARCH_APPLICATION = 1;
+	public final static int SEARCH_FAMILY = 2;
+	public final static int SEARCH_DIAGRAM = 4;
+	public final static int SEARCH_BLOCK = 8;
+	public final static int SEARCH_PROPERTY = 16;
 	private final LoggerEx log;
 	private final DesignerContext context;
 	
@@ -32,6 +37,7 @@ public class BLTSearchProvider implements SearchProvider {
 		cts.add("Family");
 		cts.add("Diagram");
 		cts.add("Block");
+		cts.add("Property");
 		return cts;
 	}
 
@@ -55,13 +61,21 @@ public class BLTSearchProvider implements SearchProvider {
 	public Iterator<SearchObject> retrieveSearchableObjects(Collection<Object> selectedCategories, List<Object> arg1,TaskProgressListener progress) {
 		SearchObjectAggregator agg = new SearchObjectAggregator(progress);
 		List<ProjectResource> resources = null;
+		int searchKey = 0;
+		
+		if( selectedCategories.contains("Application") ) searchKey += SEARCH_APPLICATION;
+		if( selectedCategories.contains("Family") ) searchKey += SEARCH_FAMILY;
+		if( selectedCategories.contains("Diagram") ) searchKey += SEARCH_DIAGRAM;
+		if( selectedCategories.contains("Block") ) searchKey += SEARCH_BLOCK;
+		if( selectedCategories.contains("Property") ) searchKey += SEARCH_PROPERTY;
+		
 		if( selectedCategories.contains("Diagram") || selectedCategories.contains("Block") ) {
 			boolean searchDiagrams = selectedCategories.contains("Diagram");
 			boolean searchBlocks   = selectedCategories.contains("Block");
 			resources = context.getProject().getResourcesOfType(BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE);
 			for(ProjectResource res:resources) {
 				log.infof("%s.retrieveSearchableObjects resId = %d",TAG,res.getResourceId());
-				agg.add(new DiagramSearchCursor(context,res.getResourceId(),searchDiagrams,searchBlocks));
+				agg.add(new DiagramSearchCursor(context,res.getResourceId(),searchKey));
 			}
 		}
 		if( selectedCategories.contains("Application") ) {

@@ -7,68 +7,67 @@ import java.util.ResourceBundle;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
-import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.block.BlockProperty;
+import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.findreplace.SearchObject;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 /**
- * Simply return the diagram name for editing.
+ * View the name of the property
  * @author chuckc
  *
  */
-public class ApplicationNameSearchObject implements SearchObject {
-	private final String TAG = "ApplicationNameSearchObject";
-	private final LoggerEx log;
+public class PropertyNameSearchObject implements SearchObject {
 	private static final Dimension IMAGE_SIZE = new Dimension(18,18);
-	private final String applicationName;
-	private final String rootName;
+	private final ProcessDiagramView diagram;
+	private final ProcessBlockView block;
 	private final DesignerContext context;
+	private final BlockProperty property;
 	private final ResourceBundle rb;
 	
-	public ApplicationNameSearchObject(DesignerContext ctx,String root,String app) {
+	public PropertyNameSearchObject(DesignerContext ctx,ProcessDiagramView grandparent,ProcessBlockView parent,BlockProperty prop) {;
 		this.context = ctx;
-		this.applicationName = app;
-		this.rootName = root;
-		this.log = LogUtil.getLogger(getClass().getPackage().getName());
+		this.diagram = grandparent;
+		this.block = parent;
+		this.property = prop;
 		this.rb = ResourceBundle.getBundle("com.ils.blt.designer.designer");  // designer.properties
 	}
 	@Override
 	public Icon getIcon() {
 		ImageIcon icon = null;
-		Image img = ImageLoader.getInstance().loadImage("Block/icons/navtree/application_folder_closed.png",IMAGE_SIZE);
+		Image img = ImageLoader.getInstance().loadImage("Block/icons/palette/blank.png",IMAGE_SIZE);
 		if( img !=null) icon = new ImageIcon(img);
 		return icon;
 	}
 
 	@Override
 	public String getName() {
-		return applicationName;
+		return block.getName();
 	}
 
 	@Override
 	public String getOwnerName() {
-		return rootName;
+		return diagram.getName();
 	}
 
 	@Override
 	public String getText() {
-		return applicationName;
+		return property.getName();
 	}
 
 	@Override
 	public void locate() {
 		NavTreeLocator locator = new NavTreeLocator(context);
-		locator.locate(applicationName);
+		locator.locate(diagram.getId());
 		
 	}
 
 	@Override
 	public void setText(String arg0) throws IllegalArgumentException {
-		ErrorUtil.showWarning(rb.getString("Locator.ApplicationChangeWarning"),rb.getString("Locator.WarningTitle") ,false);
+		ErrorUtil.showWarning(rb.getString("Locator.PropertyChangeWarning"),rb.getString("Locator.WarningTitle") ,false);
+		
 	}
 
 }
