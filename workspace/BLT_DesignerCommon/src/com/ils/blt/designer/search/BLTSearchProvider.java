@@ -5,8 +5,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import com.ils.blt.common.ToolkitRequestHandler;
-import com.ils.blt.designer.NodeStatusManager;
+import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.common.gui.progress.TaskProgressListener;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -18,35 +17,38 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 public class BLTSearchProvider implements SearchProvider {
 	private final String TAG = "BLTSearchProvider";
+	public final static int SEARCH_APPLICATION = 1;
+	public final static int SEARCH_FAMILY = 2;
+	public final static int SEARCH_DIAGRAM = 4;
+	public final static int SEARCH_BLOCK = 8;
+	public final static int SEARCH_PROPERTY = 16;
 	private final LoggerEx log;
 	private final DesignerContext context;
-	private final String title;
-	private final ToolkitRequestHandler requestHandler;
-	private final NodeStatusManager nodeStatusManager;
 	
-	public BLTSearchProvider(DesignerContext ctx,String label,ToolkitRequestHandler handler,NodeStatusManager sm ) {
+	public BLTSearchProvider(DesignerContext ctx ) {
 		this.context = ctx;
-		this.title = label;
-		this.requestHandler = handler;
-		this.nodeStatusManager = sm;
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 	}
 
 	@Override
 	public List<Object> getCategories() {
 		List<Object> cts = new ArrayList<>();
+		cts.add("Application");
+		cts.add("Family");
+		cts.add("Diagram");
 		cts.add("Block");
+		cts.add("Property");
 		return cts;
 	}
 
 	@Override
 	public String getName() {
-		return title;
+		return "Diagnostic Toolkit";
 	}
 
 	@Override
 	public boolean hasSelectableObjects() {
-		return false;
+		return true;
 	}
 
 	@Override
@@ -56,27 +58,51 @@ public class BLTSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Iterator<SearchObject> retrieveSearchableObjects(
-			Collection<Object> selectedCategories, List<Object> arg1,
-			TaskProgressListener progress) {
+	public Iterator<SearchObject> retrieveSearchableObjects(Collection<Object> selectedCategories, List<Object> arg1,TaskProgressListener progress) {
 		SearchObjectAggregator agg = new SearchObjectAggregator(progress);
-		List<ProjectResource> resources = context.getProject().getResourcesOfType("block", "blt.diagram");
-		for(ProjectResource res:resources) {
-			log.infof("%s.retrieveSearchableObjects resId = %d",TAG,res.getResourceId());
-			agg.add(new DiagramSearchCursor(context,res.getResourceId(),requestHandler,nodeStatusManager));
+		List<ProjectResource> resources = null;
+		int searchKey = 0;
+		
+		if( selectedCategories.contains("Application") ) searchKey += SEARCH_APPLICATION;
+		if( selectedCategories.contains("Family") ) searchKey += SEARCH_FAMILY;
+		if( selectedCategories.contains("Diagram") ) searchKey += SEARCH_DIAGRAM;
+		if( selectedCategories.contains("Block") ) searchKey += SEARCH_BLOCK;
+		if( selectedCategories.contains("Property") ) searchKey += SEARCH_PROPERTY;
+		
+		if( selectedCategories.contains("Diagram") || selectedCategories.contains("Block") ) {
+			resources = context.getProject().getResourcesOfType(BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE);
+			for(ProjectResource res:resources) {
+				log.infof("%s.retrieveSearchableObjects resId = %d",TAG,res.getResourceId());
+				agg.add(new DiagramSearchCursor(context,res.getResourceId(),searchKey));
+			}
+		}
+		if( selectedCategories.contains("Application") ) {
+			resources = context.getProject().getResourcesOfType(BLTProperties.MODULE_ID, BLTProperties.APPLICATION_RESOURCE_TYPE);
+			for(ProjectResource res:resources) {
+				log.infof("%s.retrieveSearchableObjects resId = %d",TAG,res.getResourceId());
+				agg.add(new ApplicationSearchCursor(context,res.getResourceId()));
+			}
+		}
+		
+		if( selectedCategories.contains("Family") ) {
+			resources = context.getProject().getResourcesOfType(BLTProperties.MODULE_ID, BLTProperties.FAMILY_RESOURCE_TYPE);
+			for(ProjectResource res:resources) {
+				log.infof("%s.retrieveSearchableObjects resId = %d",TAG,res.getResourceId());
+				agg.add(new FamilySearchCursor(context,res.getResourceId()));
+			}
 		}
 		return agg;
 	}
 
 	@Override
 	public void selectObjects(SelectedObjectsHandler arg0) {
-		// ignore
+		log.infof("%s.selectObjects",TAG);
 		
 	}
 
 	@Override
 	public String selectedObjectsToString(List<Object> arg0) {
-		// ignore
+		log.infof("%s.selectedObjectsToString",TAG);
 		return null;
 	}
 }

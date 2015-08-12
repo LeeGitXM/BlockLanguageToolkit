@@ -7,10 +7,10 @@ import java.util.ResourceBundle;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
-import com.ils.blt.common.BLTProperties;
-import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.findreplace.SearchObject;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 /**
@@ -18,52 +18,56 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
  * @author chuckc
  *
  */
-public class DiagramNameSearchObject implements SearchObject {
+public class FamilyNameSearchObject implements SearchObject {
+	private final String TAG = "FamilyNameSearchObject";
+	private final LoggerEx log;
 	private static final Dimension IMAGE_SIZE = new Dimension(18,18);
-	private final ProcessDiagramView diagram;
+	private final String applicationName;
 	private final String familyName;
+	private final String parentId;
 	private final DesignerContext context;
 	private final ResourceBundle rb;
 	
-	public DiagramNameSearchObject(DesignerContext ctx,String fam,ProcessDiagramView dia) {
+	public FamilyNameSearchObject(DesignerContext ctx,String app,String fam,String parentUUID) {
 		this.context = ctx;
-		this.diagram = dia;
+		this.applicationName = app;
 		this.familyName = fam;
+		this.parentId = parentUUID;
 		this.rb = ResourceBundle.getBundle("com.ils.blt.designer.designer");  // designer.properties
+		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 	}
 	@Override
 	public Icon getIcon() {
 		ImageIcon icon = null;
-		Image img = ImageLoader.getInstance().loadImage("Block/icons/navtree/diagram.png",IMAGE_SIZE);
+		Image img = ImageLoader.getInstance().loadImage("Block/icons/navtree/family_folder_closed.png",IMAGE_SIZE);
 		if( img !=null) icon = new ImageIcon(img);
 		return icon;
 	}
 
 	@Override
 	public String getName() {
-		return diagram.getDiagramName();
-	}
-
-	@Override
-	public String getOwnerName() {
 		return familyName;
 	}
 
 	@Override
+	public String getOwnerName() {
+		return applicationName;
+	}
+
+	@Override
 	public String getText() {
-		return diagram.getDiagramName();
+		return familyName;
 	}
 
 	@Override
 	public void locate() {
 		NavTreeLocator locator = new NavTreeLocator(context);
-		locator.locate(diagram.getId());
-		
+		locator.locate(parentId,familyName);
 	}
 
 	@Override
 	public void setText(String arg0) throws IllegalArgumentException {
-		ErrorUtil.showWarning(rb.getString("Locator.DiagramChangeWarning"),rb.getString("Locator.WarningTitle") ,false);
+		ErrorUtil.showWarning(rb.getString("Locator.FamilyChangeWarning"),rb.getString("Locator.WarningTitle") ,false);
 	}
 
 }

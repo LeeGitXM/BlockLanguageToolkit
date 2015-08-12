@@ -7,10 +7,8 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ils.blt.common.ToolkitRequestHandler;
+import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.serializable.SerializableDiagram;
-import com.ils.blt.designer.NodeStatusManager;
-import com.ils.blt.designer.NotificationHandler;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
@@ -26,15 +24,18 @@ public class DiagramSearchCursor extends SearchObjectCursor {
 	private ProcessDiagramView diagram; 
 	private final LoggerEx log;
 	private final long resId;
-	private final ToolkitRequestHandler requestHandler;
-	private final NodeStatusManager nodeStatusManager;
+	private final boolean searchDiagrams;
+	private final boolean searchBlocks;
+	private final int searchKey;
+	private String familyName;
 	private int index = 0;
 	
-	public DiagramSearchCursor(DesignerContext ctx,long res,ToolkitRequestHandler handler,NodeStatusManager sm) {
+	public DiagramSearchCursor(DesignerContext ctx,long res,int key) {
 		this.context = ctx;
 		this.resId = res;
-		this.requestHandler = handler;
-		this.nodeStatusManager = sm;
+		this.searchKey = key;
+		this.searchDiagrams = (key&BLTSearchProvider.SEARCH_DIAGRAM)!=0;
+		this.searchBlocks = (key & (BLTSearchProvider.SEARCH_BLOCK +BLTSearchProvider.SEARCH_PROPERTY) )!=0;
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.index = 0;
 	}
@@ -44,14 +45,20 @@ public class DiagramSearchCursor extends SearchObjectCursor {
 		// Deserialize here - first time through only - return next block cursor
 		if( index==0 ) {
 			diagram = deserializeResource(resId);
-			so = new DiagramNameSearchObject(context,diagram);
+			ApplicationRequestHandler appRequestHandler = new ApplicationRequestHandler();
+			familyName = appRequestHandler.getFamilyName(diagram.getId().toString());
+		}
+		
+		if( index==0 && searchDiagrams ) {
+			
+			so = new DiagramNameSearchObject(context,familyName,diagram);
 			log.infof("%s.next %s",TAG,diagram.getDiagramName());
 		}
-		else {
-			int jndex = 1;
+		else if( searchBlocks ) {
+			int jndex = (searchDiagrams?1:0);
 			Iterator<? extends Block> blockWalker = diagram.getBlocks().iterator();
 			while( blockWalker.hasNext() ) {
-				Object temp = new BlockSearchCursor(context,diagram,(ProcessBlockView)(blockWalker.next()));
+				Object temp = new BlockSearchCursor(context,diagram,(ProcessBlockView)(blockWalker.next()),searchKey);
 				if( jndex==index ) {
 					so = temp;
 					break;
@@ -85,7 +92,7 @@ public class DiagramSearchCursor extends SearchObjectCursor {
 		catch (IOException ioe) {
 			log.warnf("%s: open io exception (%s)",TAG,ioe.getLocalizedMessage());
 		}
-		diagram = new ProcessDiagramView(res.getResourceId(),sd,context,requestHandler,nodeStatusManager);
+		ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd, context);
 		return diagram;
 	}
 }
