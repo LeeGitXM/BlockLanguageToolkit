@@ -70,8 +70,6 @@ public class BLTSearchProvider implements SearchProvider {
 		if( selectedCategories.contains("Property") ) searchKey += SEARCH_PROPERTY;
 		
 		if( selectedCategories.contains("Diagram") || selectedCategories.contains("Block") ) {
-			boolean searchDiagrams = selectedCategories.contains("Diagram");
-			boolean searchBlocks   = selectedCategories.contains("Block");
 			resources = context.getProject().getResourcesOfType(BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE);
 			for(ProjectResource res:resources) {
 				log.infof("%s.retrieveSearchableObjects resId = %d",TAG,res.getResourceId());
