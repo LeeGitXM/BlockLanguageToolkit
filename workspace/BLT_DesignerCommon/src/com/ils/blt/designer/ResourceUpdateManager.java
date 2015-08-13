@@ -66,7 +66,6 @@ public class ResourceUpdateManager implements Runnable {
 				// The diagram may not have been dirty in a structural sense, but update the resource
 				// anyway as block properties may have changed.
 				ProcessDiagramView view = (ProcessDiagramView)tab.getModel();
-				view.registerChangeListeners();
 				logger.infof("%s.run: updating ... %s(%d) ",TAG,tab.getName(),resourceId);
 				SerializableDiagram sd = view.createSerializableRepresentation();
 				sd.setName(tab.getName());
@@ -80,6 +79,7 @@ public class ResourceUpdateManager implements Runnable {
 					logger.warnf("%s.run: Exception serializing diagram, resource %d (%s)",TAG,resourceId,jpe.getMessage());
 				}
 				view.setDirty(false);
+				view.registerChangeListeners();
 			}
 		}
 		try {
