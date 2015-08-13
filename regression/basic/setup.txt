@@ -19,7 +19,7 @@ timefactor: 15
 setTimeFactor (15)
 
 # Specify the provider that corresponds to the state of the diagrams
-tagprovider: XOM_ISOLATION
+tagprovider: ICC2015_ISOLATION
 setStateForApplication("app75","ISOLATED")
 
 status: setup complete.

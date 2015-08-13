@@ -533,7 +533,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 				
 				String tagPath = property.getBinding();
 				if( !controller.validateTag(getParentId(),tagPath) ) {
-					summary.append(String.format("%s: configured tag (%s) dos not exist\t",property.getName(),tagPath));
+					summary.append(String.format("%s: configured tag (%s) does not exist\t",property.getName(),tagPath));
 				}
 			}
 		}
