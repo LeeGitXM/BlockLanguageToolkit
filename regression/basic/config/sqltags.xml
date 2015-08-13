@@ -1,4 +1,78 @@
 <Tags>
+   <Tag name="Dairy" path="" type="Folder"/>
+   <Tag name="fan" path="Dairy" type="DB">
+      <Property name="Value">0</Property>
+      <Property name="DataType">2</Property>
+      <Property name="OPCServer">Ignition OPC-UA Server</Property>
+      <Property name="OPCItemPath">[Simulator]_Meta:Overview/AU 2/Fan 1 HOA</Property>
+   </Tag>
+   <Tag name="dischargePressure" path="Dairy" type="DB">
+      <Property name="Value">39.0</Property>
+      <Property name="DataType">4</Property>
+      <Property name="OPCServer">Ignition OPC-UA Server</Property>
+      <Property name="OPCItemPath">[Simulator]_Meta:Refrigeration/dischargePressure</Property>
+   </Tag>
+   <Tag name="mixerLevel" path="Dairy" type="DB">
+      <Property name="Value">88</Property>
+      <Property name="DataType">2</Property>
+      <Property name="OPCServer">Ignition OPC-UA Server</Property>
+      <Property name="OPCItemPath">[Simulator]_Meta:Refrigeration/receiverLevel</Property>
+   </Tag>
+   <Tag name="pressureInlet" path="Dairy" type="DB">
+      <Property name="Value">15</Property>
+      <Property name="DataType">2</Property>
+      <Property name="OPCServer">Ignition OPC-UA Server</Property>
+      <Property name="OPCItemPath">[Simulator]_Meta:Refrigeration/Compressor1/pressureInletOil</Property>
+   </Tag>
+   <Tag name="tempInlet" path="Dairy" type="DB">
+      <Property name="Value">23</Property>
+      <Property name="DataType">2</Property>
+      <Property name="OPCServer">Ignition OPC-UA Server</Property>
+      <Property name="OPCItemPath">[Simulator]_Meta:Refrigeration/Compressor1/tempInletOil</Property>
+   </Tag>
+   <Tag name="dischargeTemp" path="Dairy" type="DB">
+      <Property name="Value">23</Property>
+      <Property name="DataType">2</Property>
+      <Property name="OPCServer">Ignition OPC-UA Server</Property>
+      <Property name="OPCItemPath">[Simulator]_Meta:Refrigeration/dischargeTemp</Property>
+   </Tag>
+   <Tag name="fillLevel" path="Dairy" type="DB">
+      <Property name="Value">5</Property>
+      <Property name="DataType">2</Property>
+      <Property name="OPCServer">Ignition OPC-UA Server</Property>
+      <Property name="OPCItemPath">[Simulator]_Meta:Refrigeration/accumulatorLevel</Property>
+   </Tag>
+   <Tag name="pump" path="Dairy" type="DB">
+      <Property name="Value">0</Property>
+      <Property name="DataType">2</Property>
+      <Property name="OPCServer">Ignition OPC-UA Server</Property>
+      <Property name="OPCItemPath">[Simulator]_Meta:Overview/AU 1/Fan 1 HOA</Property>
+   </Tag>
+   <Tag name="valve" path="Dairy" type="DB">
+      <Property name="Value">40</Property>
+      <Property name="DataType">2</Property>
+      <Property name="OPCServer">Ignition OPC-UA Server</Property>
+      <Property name="OPCItemPath">[Simulator]_Meta:Overview/AU 1/Fan 2 HOA</Property>
+   </Tag>
+   <Tag name="tempSuction" path="Dairy" type="DB">
+      <Property name="Value">14</Property>
+      <Property name="DataType">2</Property>
+      <Property name="OPCServer">Ignition OPC-UA Server</Property>
+      <Property name="OPCItemPath">[Simulator]_Meta:Refrigeration/Compressor1/tempSuction</Property>
+   </Tag>
+   <Tag name="DataPump" path="" type="Folder"/>
+   <Tag name="lineNumber" path="DataPump" type="DB">
+      <Property name="Value">9</Property>
+      <Property name="DataType">2</Property>
+   </Tag>
+   <Tag name="simulationState" path="DataPump" type="DB">
+      <Property name="Value">Idle</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="command" path="DataPump" type="DB">
+      <Property name="Value">Run</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
    <Tag name="MemoryTags" path="" type="Folder"/>
    <Tag name="FdInput2-3" path="MemoryTags" type="DB">
       <Property name="Value">false</Property>

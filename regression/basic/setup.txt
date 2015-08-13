@@ -18,8 +18,8 @@ script: setTimeFactor timeFactor.setTimeFactor(factor)
 timefactor: 15
 setTimeFactor (15)
 
-# Specify the provider that corresponds to the state of the diagrams
-tagprovider: ICC2015_ISOLATION
+# Specify the provider that corresponds to the application configuration
+tagprovider: TAG_ISOLATION
 setStateForApplication("app75","ISOLATED")
 
 status: setup complete.
