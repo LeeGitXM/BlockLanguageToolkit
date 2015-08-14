@@ -37,7 +37,7 @@ Step: "Average Time Window"
 10:05:50 60
 10:06:20 70
 10:06:30 Assert: 28.9 < Average2 < 29.01 "Average when window fills"
-10:06:55 Assert: 62.0 < Average2 < 63.0 "Window constant with no more input"
+10:06:55 Assert: 61.5 < Average2 < 63.0 "Window constant with no more input"
 
 Step: Average Over All Time
 10:07:20 10 -1 -1 -1

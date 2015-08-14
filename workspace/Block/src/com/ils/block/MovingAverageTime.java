@@ -235,7 +235,7 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 	 */
 	@Override
 	public SerializableBlockStateDescriptor getInternalStatus() {
-		log.infof("%s(%d).getInternalStatus: buffer size = %d",getName(),hashCode(),buffer.size());
+		log.tracef("%s(%d).getInternalStatus: buffer size = %d",getName(),hashCode(),buffer.size());
 		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
 		Map<String,String> attributes = descriptor.getAttributes();
 		attributes.put("Average", String.valueOf(currentValue));
@@ -249,7 +249,6 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 			qvMap.put("Timestamp", qv.getTimestamp().toString());
 			descBuffer.add(qvMap);
 		}
-
 		return descriptor;
 	}
 	

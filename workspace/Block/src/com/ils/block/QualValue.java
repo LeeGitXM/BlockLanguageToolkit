@@ -170,7 +170,7 @@ public class QualValue extends AbstractProcessBlock implements ProcessBlock {
 		if( value==null ) return;   // Shouldn't happen
 		if( !isLocked() ) {
 			Quality q = quality;
-			if( q.isGood() ) q = value.getQuality();
+			if( q.isGood() && value.getQuality()!=null ) q = value.getQuality();
 			Date ts = value.getTimestamp();
 			if(timestamp!=null ) ts = timestamp;
 			QualifiedValue result = new BasicQualifiedValue(value.getValue(),q,ts);

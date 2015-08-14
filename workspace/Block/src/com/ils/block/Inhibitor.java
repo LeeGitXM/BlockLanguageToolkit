@@ -51,7 +51,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	}
 	
 	/**
-	 * Constructor. Custom property is "filterConstant".
+	 * Constructor. Custom property is "interval".
 	 * 
 	 * @param ec execution controller for handling block output
 	 * @param parent universally unique Id identifying the parent of this block
@@ -88,18 +88,22 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 			String port = vcn.getConnection().getDownstreamPortName();
 			if( port.equals(BlockConstants.IN_PORT_NAME)  ) {
 				QualifiedValue qv = vcn.getValue();
-			
-				log.infof("%s.acceptValue: Received value %s (%s)",getName(),qv.getValue().toString(),
-						       formatter.format(qv.getTimestamp()));
-				long expirationTime = ((Long)expirationProperty.getValue()).longValue();
-				if( qv.getQuality().isGood() && 
-						(expirationTime==0 || qv.getTimestamp().getTime()>=expirationTime)) {
-					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
-					controller.acceptCompletionNotification(nvn);
-					notifyOfStatus(vcn.getValue());
+				if(qv == null || qv.getValue()==null ) {
+					log.infof("%s.acceptValue: Received value %s (%s)",getName(),qv.getValue().toString(),
+							formatter.format(qv.getTimestamp()));
+					long expirationTime = ((Long)expirationProperty.getValue()).longValue();
+					if( qv.getQuality().isGood() && 
+							(expirationTime==0 || qv.getTimestamp().getTime()>=expirationTime)) {
+						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+						controller.acceptCompletionNotification(nvn);
+						notifyOfStatus(vcn.getValue());
+					}
+					else {
+						log.infof("%s.acceptValue: Ignoring inhibited or BAD input ... (%s)",getName(),qv.getValue().toString());
+					}
 				}
 				else {
-					log.infof("%s.acceptValue: Ignoring inhibited or BAD input ... (%s)",getName(),qv.getValue().toString());
+					log.infof("%s.acceptValue: Received null value (IGNORED)",getName());
 				}
 			}
 		}
