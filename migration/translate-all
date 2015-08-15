@@ -14,5 +14,6 @@ mkdir -p $OUTDIR
 ./translate-cstr all
 ./translate-crx all
 cd ${PROCS}/ignition
-cp -a project ${GIT_REPO}/xom-python/XOM_Python/src
+# No longer copy into the Git repository
+#cp -a project ${GIT_REPO}/xom-python/XOM_Python/src
 echo "Translated procedures copied to XOM-PYTHON repository. Checkin and commit."
