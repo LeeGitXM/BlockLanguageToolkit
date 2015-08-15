@@ -26,8 +26,8 @@ mkdir -p $TMP/config
 mkdir -p $TMP/procs
 ./mktags > $TMP/config/sqltags.xml
 cp -a json/ignition/* $TMP
-cd procs/ignition
-cp -a * $TMP/procs
+cd ${GIT_REPO}/xom-python/XOM_Python/src
+cp -a project xom  $TMP/procs
 
 # Now zip and copy to subversion
 cd ${GIT_REPO}/$VERS

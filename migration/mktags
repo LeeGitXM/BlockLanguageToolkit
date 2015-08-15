@@ -10,7 +10,7 @@ fi
 BLT=${GIT_REPO}/blt
 cd $BLT
 SFC=${GIT_REPO}/sfc
-LIB=$REPO/external/lib
+LIB=${GIT_REPO}/external/lib
 JAR=${LIB}/blt-migration.jar
 DB=${SFC}/migration/mdb/conversion.db
 # Use for debugging - ruins output file however.
