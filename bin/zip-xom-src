@@ -5,7 +5,7 @@
 # running this script.
 #
 #set -x
-SVN=~/Development/ils/svn/EMChemicals
+SVN=${SVN_REPO}/EMChemicals
 VERS=blt-`cat $SVN/Release/VERS`
 TMP=${GIT_REPO}/$VERS
 # Cleanup

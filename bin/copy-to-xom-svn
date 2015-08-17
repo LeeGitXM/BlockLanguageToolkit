@@ -17,7 +17,8 @@ cd ${GIT_REPO}/blt/images
 cp -a Block $SVN/icons
 cd ${GIT_REPO}/blt/projects
 cp blt_block_test.proj $SVN/project
-cp basic-diagrams.proj $SVN/project
+cd ${GIT_REPO}/blt/regression/basic/config
+cp basic_diagrams.proj $SVN/project
 cd ${GIT_REPO}/blt
 cp -a pylibs $SVN/config
 cd ${GIT_REPO}

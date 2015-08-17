@@ -5,7 +5,7 @@
 # VERS, DATE files updated
 #
 #set -x
-SVN=~/Development/ils/svn/Lafarge/Release/src
+SVN=${SVN_REPO}/Lafarge/Release/src
 # Prepare directories
 mkdir -p $SVN/icons
 mkdir -p $SVN/bin
@@ -20,6 +20,6 @@ cp diagrams-readout.proj $SVN/project
 cd ${GIT_REPO}/blt
 cp -a data $SVN
 cd ${GIT_REPO}
-IGN=~/Development/ils/svn/Lafarge/Ignition
+IGN=${SVN_REPO}/Lafarge/Ignition
 cp blt/workspace/BLT_Build/modules/BLT-*.modl $IGN
 

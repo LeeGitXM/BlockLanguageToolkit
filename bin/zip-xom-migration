@@ -5,7 +5,7 @@
 #     database is in the SFC area (shared)
 #
 #set -x
-SVN=~/Development/ils/svn/EMChemicals/Release/src
+SVN=${SVN_REPO}/EMChemicals/Release/src
 VERS=MIGRATION
 TMP=${GIT_REPO}/$VERS
 # Cleanup

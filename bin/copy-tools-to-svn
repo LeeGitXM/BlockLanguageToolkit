@@ -5,7 +5,7 @@
 # VERS, DATE files updated
 #
 #set -x
-SVN=~/Development/ils/svn/EMChemicals/Release/src
+SVN=${SVN_REPO}/EMChemicals/Release/src
 LIB=${GIT_REPO}/external/lib
 # Prepare directories
 TOOLDIR=$SVN/tools/blt-migration

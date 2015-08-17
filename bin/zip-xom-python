@@ -5,7 +5,7 @@
 # source and "external" python,
 #
 #set -x
-SVN=~/Development/ils/svn/EMChemicals/Release/src
+SVN=${SVN_REPO}/EMChemicals/Release/src
 # ILS python  ("source" and build)
 cd ${GIT_REPO}/ils-python/ILS_Python/src
 zip -r $SVN/ils-python.zip ils 

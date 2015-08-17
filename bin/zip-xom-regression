@@ -4,8 +4,8 @@
 # -- also copy the test script library to svn
 #
 #set -x
-SVN=~/Development/ils/svn/EMChemicals/Release/src
-PYLIB=~/Development/ils/svn/Migration/Common/pylib
+SVN=${SVN_REPO}/EMChemicals/Release/src
+PYLIB=${SVN_REPO}/Migration/Common/pylib
 VERS=REGRESSION
 TMP=${GIT_REPO}/$VERS
 # Cleanup
