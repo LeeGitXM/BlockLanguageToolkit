@@ -5,7 +5,6 @@
 #
 #set -x
 SVN=${SVN_REPO}/EMChemicals/Release/src
-PYLIB=${SVN_REPO}/Migration/Common/pylib
 VERS=REGRESSION
 TMP=${GIT_REPO}/$VERS
 # Cleanup
@@ -14,10 +13,9 @@ cd ${GIT_REPO}
 mkdir -p $TMP/pylib
 cd ${GIT_REPO}/blt/regression
 cp -a basic $TMP
+# pylib is checked into ils-python
+cd ${GIT_REPO}/ils-python/ILS_Python/src
 cp -a pylib/*.py $TMP/pylib
-mkdir -p $PYLIB
-cp -a pylib/*.py $PYLIB
-cd ..
 # Now zip and copy to subversion
 cd ${GIT_REPO}/$VERS
 zip -r blt-regression.zip * 

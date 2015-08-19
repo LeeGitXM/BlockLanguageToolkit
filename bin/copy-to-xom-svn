@@ -24,4 +24,7 @@ cp -a pylibs $SVN/config
 cd ${GIT_REPO}
 IGN=${SVN_REPO}/EMChemicals/Ignition
 cp blt/workspace/BLT_Build/modules/BLT*.modl $IGN
-
+#
+# Copy the test framework python libraries to svn
+cd ${GIT_REPO}/ils-python/ILS_Python/src/
+cp -a pylib ${SVN_REPO}/EMChemicals/Migration/Common
