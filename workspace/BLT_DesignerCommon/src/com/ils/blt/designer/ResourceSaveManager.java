@@ -3,7 +3,6 @@ package com.ils.blt.designer;
 import java.util.Enumeration;
 
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.common.ToolkitRequestHandler;
 import com.ils.blt.designer.navtree.DiagramTreeNode;
 import com.ils.blt.designer.navtree.NavTreeNodeInterface;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
@@ -33,7 +32,6 @@ public class ResourceSaveManager implements Runnable {
 	private static NodeStatusManager statusManager = null;
 	private final AbstractResourceNavTreeNode root;	      // Root of our save.
 	private final DiagramWorkspace workspace;
-	private static ToolkitRequestHandler applicationRequestHandler = null;
 	
 	public ResourceSaveManager(DiagramWorkspace wksp,AbstractResourceNavTreeNode node) {
 		this.root = node;
@@ -44,10 +42,9 @@ public class ResourceSaveManager implements Runnable {
 	 * Call this method from the hook as soon as the context is established.
 	 * @param context
 	 */
-	public static void setup(DesignerContext ctx,NodeStatusManager sm,ToolkitRequestHandler th) {
+	public static void setContext(DesignerContext ctx) {
 		context = ctx;
-		statusManager = sm;
-		applicationRequestHandler = th;
+		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
 	}
 	
 	/**
@@ -58,13 +55,16 @@ public class ResourceSaveManager implements Runnable {
 	public void saveSynchronously() {
 		saveDirtyDiagrams(root);
 		// Update UI
-		applicationRequestHandler.triggerStatusNotifications();
+		((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler().triggerStatusNotifications();
 	}
 	
 	@Override
 	public void run() {
-		saveNodeAndDescendants();
-		applicationRequestHandler.triggerStatusNotifications();
+		int dirtyCount = saveNodeAndDescendants();
+		// Update UI
+		if( dirtyCount>0 ) {
+			((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler().triggerStatusNotifications();
+		}
 	}
 	
 	// Recursively descend the node tree, looking for diagram resources where
@@ -74,8 +74,7 @@ public class ResourceSaveManager implements Runnable {
 		ProjectResource res = node.getProjectResource();
 		if( res!=null ) {
 			logger.infof("%s.saveDirtyDiagrams: %s (%d)",TAG,res.getName(),res.getResourceId());
-			if(res.getResourceType().equals(BLTProperties.CLASSIC_DIAGRAM_RESOURCE_TYPE) ||
-			   res.getResourceType().equals(BLTProperties.SCHEMATIC_DIAGRAM_RESOURCE_TYPE )	) {
+			if(res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
 				// If the resource is open, we need to save it
 				workspace.saveOpenDiagrams();
 			}
@@ -89,12 +88,11 @@ public class ResourceSaveManager implements Runnable {
 		}
 	}
 	
-
-
 	// Recursively descend the node tree, gathering up associated resources.
 	// Since this is used during a save, set the resources clean.
-	private void accumulateDirtyNodeResources(AbstractResourceNavTreeNode node,Project diff) {
+	private int accumulateDirtyNodeResources(AbstractResourceNavTreeNode node,Project diff) {
 		ProjectResource res = node.getProjectResource();
+		int dirtyCount = 0;
 		if( res!=null ) {
 			long resid = res.getResourceId();
 			// For a diagram include either dirty or "dirty children"
@@ -104,12 +102,15 @@ public class ResourceSaveManager implements Runnable {
 				logger.infof("%s.accumulateDirtyNodeResources: diagram %s (%d)",TAG,res.getName(),resid);
 				diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
 				workspace.saveOpenDiagrams();   // Close if open
+				dirtyCount++;
+				
 			}
 			// For other nodes include only "dirty"
 			else if( node instanceof NavTreeNodeInterface && 
 					( ((NavTreeNodeInterface)node).isDirty()  )  ) {
 					logger.infof("%s.accumulateDirtyNodeResources: %s (%d)",TAG,res.getName(),resid);
 					diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
+					dirtyCount++;
 			}
 			statusManager.clearDirtyChildCount(resid);
 		}
@@ -122,19 +123,20 @@ public class ResourceSaveManager implements Runnable {
 		Enumeration walker = node.children();
 		while(walker.hasMoreElements()) {
 			Object child = walker.nextElement();
-			accumulateDirtyNodeResources((AbstractResourceNavTreeNode)child,diff);
+			dirtyCount += accumulateDirtyNodeResources((AbstractResourceNavTreeNode)child,diff);
 		}
+		return dirtyCount;
 	}
 	
 	/**
 	 * Save the current node and its descendants. During
 	 * the accumulation, we set the resources to "clean".
 	 */
-	private void saveNodeAndDescendants() {
+	private int saveNodeAndDescendants() {
 		Project diff = context.getProject().getEmptyCopy();
 
 		// Scoop up the dirty nodes (that aren't deleted).
-		accumulateDirtyNodeResources(root,diff);
+		int dirtyCount = accumulateDirtyNodeResources(root,diff);
 		// Update the project with these nodes (informs the gateway also)
 		try {
 			DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ...");  // Do not publish
@@ -145,7 +147,6 @@ public class ResourceSaveManager implements Runnable {
 		// Mark these as "clean" in the current project so that we don't save again.
 		Project project = context.getProject();
 		project.applyDiff(diff,false);      // Apply diff, not dirty
+		return dirtyCount;
 	}
-	
-
 }

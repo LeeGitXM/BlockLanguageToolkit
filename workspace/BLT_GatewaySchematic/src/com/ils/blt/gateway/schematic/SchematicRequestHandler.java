@@ -195,7 +195,7 @@ public class SchematicRequestHandler extends BasicRequestHandler implements Tool
 			else {
 				// The event came explicitly from the designer/client. Send event whether it changed or not.
 				if( existingProperty.getBindingType().equals(BindingType.NONE) && newProperty.getValue()!=null   )   {
-					log.debugf("%s.setProperty sending event ...",TAG);
+					log.debugf("%s.updateProperty sending event ...",TAG);
 					BlockPropertyChangeEvent event = new BlockPropertyChangeEvent(block.getBlockId().toString(),newProperty.getName(),
 							existingProperty.getValue(),newProperty.getValue());
 					block.propertyChange(event);

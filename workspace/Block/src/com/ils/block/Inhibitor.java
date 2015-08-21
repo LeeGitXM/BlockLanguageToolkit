@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
+ *   (c) 2014-2105  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -7,7 +7,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
 
-import com.ils.blt.common.annotation.ExecutableBlock;
+import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
@@ -15,6 +15,7 @@ import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
+import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
@@ -24,6 +25,7 @@ import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.notification.Signal;
 import com.ils.blt.common.notification.SignalNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
+import com.ils.common.watchdog.AcceleratedWatchdogTimer;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -50,7 +52,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	}
 	
 	/**
-	 * Constructor. Custom property is "filterConstant".
+	 * Constructor. Custom property is "interval".
 	 * 
 	 * @param ec execution controller for handling block output
 	 * @param parent universally unique Id identifying the parent of this block
@@ -87,18 +89,22 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 			String port = vcn.getConnection().getDownstreamPortName();
 			if( port.equals(BlockConstants.IN_PORT_NAME)  ) {
 				QualifiedValue qv = vcn.getValue();
-			
-				log.infof("%s.acceptValue: Received value %s (%s)",getName(),qv.getValue().toString(),
-						       formatter.format(qv.getTimestamp()));
-				long expirationTime = ((Long)expirationProperty.getValue()).longValue();
-				if( qv.getQuality().isGood() && 
-						(expirationTime==0 || qv.getTimestamp().getTime()>=expirationTime)) {
-					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
-					controller.acceptCompletionNotification(nvn);
-					notifyOfStatus(vcn.getValue());
+				if( qv != null && qv.getValue()!=null ) {
+					log.infof("%s.acceptValue: Received value %s (%s)",getName(),qv.getValue().toString(),
+							formatter.format(qv.getTimestamp()));
+					long expirationTime = ((Long)expirationProperty.getValue()).longValue();
+					if( qv.getQuality().isGood() && 
+							(expirationTime==0 || qv.getTimestamp().getTime()>=expirationTime)) {
+						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+						controller.acceptCompletionNotification(nvn);
+						notifyOfStatus(vcn.getValue());
+					}
+					else {
+						log.infof("%s.acceptValue: Ignoring inhibited or BAD input ... (%s)",getName(),qv.getValue().toString());
+					}
 				}
 				else {
-					log.infof("%s.acceptValue: Ignoring inhibited or BAD input ... (%s)",getName(),qv.getValue().toString());
+					log.infof("%s.acceptValue: Received null %s (IGNORED)",getName(),(qv==null?"":"value"));
 				}
 			}
 		}
@@ -119,13 +125,19 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 			expirationProperty.setValue(new Long(sn.getValue().getTimestamp().getTime()+(long)(interval*1000)));
 			controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_EXPIRATION_TIME,
 					new BasicQualifiedValue(expirationProperty.getValue(),sn.getValue().getQuality(),sn.getValue().getTimestamp()));
-			if( log.isInfoEnabled()) {
+			if( log.isDebugEnabled()) {
 				long time = ((Long)expirationProperty.getValue()).longValue();
 				Date expiration = new Date(time);
 				log.infof("%s.acceptValue: Received inhibit command (delay %f secs to %s)",getName(),interval,formatter.format(expiration));
+				if( timer instanceof AcceleratedWatchdogTimer) {
+					AcceleratedWatchdogTimer awt = (AcceleratedWatchdogTimer)timer;
+					log.infof("%s.acceptValue: Setting %f/%f seconds delay from %s",getName(),interval,awt.getFactor(),
+							formatter.format(new Date(awt.getTestTime())));
+				}
 			}
 			inhibiting = true;
 			dog.setSecondsDelay(interval);
+			timer.updateWatchdog(dog);  // pet dog
 		}
 	}
 
@@ -138,7 +150,6 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 		Map<String,String> attributes = descriptor.getAttributes();
 		
 		attributes.put("Inhibiting", (inhibiting?"true":"false"));
-		log.infof("%s.getInternalStatus: inhibiting %s",getName(),attributes.get("Inhibiting"));
 		long time = ((Long)expirationProperty.getValue()).longValue();
 		if( time>0 ) {
 			Date expiration = new Date(time);
@@ -171,11 +182,11 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 		setProperty(BlockConstants.BLOCK_PROPERTY_EXPIRATION_TIME, expirationProperty);
 		
 		// Define a data input
-		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
+		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
 		anchors.add(input);
 		
 		// Define a single output
-		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
+		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.ANY);
 		anchors.add(output);
 	}
 	

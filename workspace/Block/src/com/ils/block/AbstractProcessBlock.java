@@ -49,7 +49,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  * available executable block types.
  */
 public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropertyChangeListener, WatchdogObserver {
-	protected final static String DEFAULT_FORMAT = "YYYY/MM/dd hh:mm:ss";
+	protected final static String DEFAULT_FORMAT = "yyyy/MM/dd hh:mm:ss";
 	protected final static SimpleDateFormat formatter = new SimpleDateFormat(DEFAULT_FORMAT);
 	protected ExecutionController controller = null;
 	private UUID blockId;
@@ -440,7 +440,10 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 						if( flag ) val = TruthValue.TRUE;
 						else val = TruthValue.FALSE;
 					}
-					else val = val.toString();
+					else if( ConnectionType.TEXT.equals(ap.getConnectionType())) {
+						val = val.toString();
+					}
+					// For type ANY, just leave alone
 					break;
 				}
 			}

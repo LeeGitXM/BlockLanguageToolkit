@@ -9,13 +9,14 @@ import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
 
-import com.ils.blt.common.annotation.ExecutableBlock;
+import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
+import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
@@ -84,7 +85,7 @@ public class QualValue extends AbstractProcessBlock implements ProcessBlock {
 		AnchorPrototype qual = new AnchorPrototype(QUALITY_PORT,AnchorDirection.INCOMING,ConnectionType.TEXT);
 		qual.setAnnotation("Q");
 		anchors.add(qual);
-		AnchorPrototype tim = new AnchorPrototype(TIME_PORT,AnchorDirection.INCOMING,ConnectionType.TEXT);
+		AnchorPrototype tim = new AnchorPrototype(TIME_PORT,AnchorDirection.INCOMING,ConnectionType.ANY);
 		tim.setAnnotation("T");
 		anchors.add(tim);
 		AnchorPrototype input = new AnchorPrototype(VALUE_PORT,AnchorDirection.INCOMING,ConnectionType.ANY);
@@ -99,6 +100,7 @@ public class QualValue extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void reset() {
 		super.reset();
+		timestamp = null;
 	}
 	
 	/**
@@ -112,9 +114,9 @@ public class QualValue extends AbstractProcessBlock implements ProcessBlock {
 	
 	/**
 	 * Notify the block that a new value has appeared on one of its input anchors.
-	 * For now we simply record the change in the map and start the watchdog. 
+	 * For now we simply record the change in the map and start the watchdog. Only
+	 * start the watchdog on receipt of a value. 
 	 * 
-	 * Note: there can be several connections attached to a given port.
 	 * @param incoming new value.
 	 */
 	@Override
@@ -124,23 +126,29 @@ public class QualValue extends AbstractProcessBlock implements ProcessBlock {
 		QualifiedValue qv = incoming.getValue();
 		if( port.equals(VALUE_PORT)  ) {
 			value = qv;
+			if( synchInterval>0 ) {
+				dog.setSecondsDelay(synchInterval);
+				timer.updateWatchdog(dog);  // pet dog
+			}
 		}
 		else if( port.equals(QUALITY_PORT)  ) {
 			if( qv.getValue().toString().equalsIgnoreCase("good")) quality = DataQuality.GOOD_DATA;
 			else quality = new BasicQuality(qv.getValue().toString(),Quality.Level.Bad);
 		}
 		else if( port.equals(TIME_PORT)  ) {
-			try {
-				timestamp = dateFormatter.parse(qv.getValue().toString());
+			if( qv.getValue() instanceof Date ) {
+				timestamp = (Date)qv.getValue();
+				log.infof("%s.acceptValue: Received date as (%s)",getName(),dateFormatter.format(timestamp));
 			}
-			catch(ParseException pe) {
-				log.errorf("%s.acceptValue: Exception formatting time as %s (%s)",getName(),dateFormatter.toString(),pe.getLocalizedMessage());
-			} 
-		}
-
-		if( synchInterval>0 ) {
-			dog.setSecondsDelay(synchInterval);
-			timer.updateWatchdog(dog);  // pet dog
+			else {
+				try {
+					timestamp = dateFormatter.parse(qv.getValue().toString());
+					log.infof("%s.acceptValue: time as string (%s)",getName(),dateFormatter.format(timestamp));
+				}
+				catch(ParseException pe) {
+					log.errorf("%s.acceptValue: Exception formatting time as %s (%s)",getName(),dateFormatter.toString(),pe.getLocalizedMessage());
+				} 
+			}
 		}
 	}
 	/**
@@ -164,7 +172,7 @@ public class QualValue extends AbstractProcessBlock implements ProcessBlock {
 		if( value==null ) return;   // Shouldn't happen
 		if( !isLocked() ) {
 			Quality q = quality;
-			if( q.isGood() ) q = value.getQuality();
+			if( q.isGood() && value.getQuality()!=null ) q = value.getQuality();
 			Date ts = value.getTimestamp();
 			if(timestamp!=null ) ts = timestamp;
 			QualifiedValue result = new BasicQualifiedValue(value.getValue(),q,ts);
@@ -172,7 +180,7 @@ public class QualValue extends AbstractProcessBlock implements ProcessBlock {
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus(result);
 			value = result;
-			log.tracef("%s.evaluate: %s %s %s",getName(),value.getValue().toString(),
+			log.infof("%s.evaluate: %s %s %s",getName(),value.getValue().toString(),
 					value.getQuality().getName(),dateFormatter.format(value.getTimestamp()));
 		}
 	}
