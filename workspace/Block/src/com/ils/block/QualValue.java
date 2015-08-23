@@ -85,7 +85,7 @@ public class QualValue extends AbstractProcessBlock implements ProcessBlock {
 		AnchorPrototype qual = new AnchorPrototype(QUALITY_PORT,AnchorDirection.INCOMING,ConnectionType.TEXT);
 		qual.setAnnotation("Q");
 		anchors.add(qual);
-		AnchorPrototype tim = new AnchorPrototype(TIME_PORT,AnchorDirection.INCOMING,ConnectionType.TEXT);
+		AnchorPrototype tim = new AnchorPrototype(TIME_PORT,AnchorDirection.INCOMING,ConnectionType.ANY);
 		tim.setAnnotation("T");
 		anchors.add(tim);
 		AnchorPrototype input = new AnchorPrototype(VALUE_PORT,AnchorDirection.INCOMING,ConnectionType.ANY);
@@ -100,6 +100,7 @@ public class QualValue extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void reset() {
 		super.reset();
+		timestamp = null;
 	}
 	
 	/**
@@ -137,11 +138,12 @@ public class QualValue extends AbstractProcessBlock implements ProcessBlock {
 		else if( port.equals(TIME_PORT)  ) {
 			if( qv.getValue() instanceof Date ) {
 				timestamp = (Date)qv.getValue();
+				log.infof("%s.acceptValue: Received date as (%s)",getName(),dateFormatter.format(timestamp));
 			}
 			else {
 				try {
-					
 					timestamp = dateFormatter.parse(qv.getValue().toString());
+					log.infof("%s.acceptValue: time as string (%s)",getName(),dateFormatter.format(timestamp));
 				}
 				catch(ParseException pe) {
 					log.errorf("%s.acceptValue: Exception formatting time as %s (%s)",getName(),dateFormatter.toString(),pe.getLocalizedMessage());
@@ -178,7 +180,7 @@ public class QualValue extends AbstractProcessBlock implements ProcessBlock {
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus(result);
 			value = result;
-			log.tracef("%s.evaluate: %s %s %s",getName(),value.getValue().toString(),
+			log.infof("%s.evaluate: %s %s %s",getName(),value.getValue().toString(),
 					value.getQuality().getName(),dateFormatter.format(value.getTimestamp()));
 		}
 	}

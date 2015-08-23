@@ -349,7 +349,7 @@ public class TagListener implements TagChangeListener   {
 		try {
 			// Treat the notification differently depending on the binding
 			if( property.getBindingType().equals(BindingType.TAG_MONITOR)) {
-				log.debugf("%s.tagChanged: property change for %s:%s",TAG,block.getName(),property.getName());
+				log.debugf("%s.updateProperty: property change for %s:%s",TAG,block.getName(),property.getName());
 				PropertyChangeEvaluationTask task = new PropertyChangeEvaluationTask(block,
 								new BlockPropertyChangeEvent(block.getBlockId().toString(),property.getName(),property.getValue(),value.getValue()));
 				Thread propertyChangeThread = new Thread(task, "PropertyChange");
@@ -364,11 +364,11 @@ public class TagListener implements TagChangeListener   {
 					threadPool.execute(new IncomingValueChangeTask(block,notice));	
 			}
 			else {
-				log.warnf("%s.tagChanged: %s property no longer bound (%s)",TAG,property.getName(),property.getBindingType());
+				log.warnf("%s.updateProperty: %s property no longer bound (%s)",TAG,property.getName(),property.getBindingType());
 			}
 		}
 		catch(Exception ex) {
-			log.warnf("%s.tagChanged: Failed to execute change event (%s)",TAG,ex.getLocalizedMessage()); 
+			log.warnf("%s.updateProperty: Failed to execute change event (%s)",TAG,ex.getLocalizedMessage()); 
 		}
 	}
 	

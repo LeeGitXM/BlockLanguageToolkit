@@ -2,13 +2,14 @@
 # Test of the inhibit block
 #  - use full date to allow timed offset
 #  - inhibit intervals are: 2, 3 minutes respectively
+# We need to specify the date on all commands, else time goes backwards
 #
 DIAGRAM="app75/family75/inhibitor"
 INHIBIT1="INHIBITOR-285"
 INHIBIT2="INHIBITOR-650"
 tag: InhibitorOutput1 MemoryTags/InhibitorOutput1
 tag: InhibitorOutput2 MemoryTags/InhibitorOutput2
-tagset: InhibitInput MemoryTags/InhibitorFeed1 MemoryTags/InhibitorFeed2 MemoryTags/InhibitorFinalDiagnosis MemoryTags/TimestampInput
+tagset: InhibitInput MemoryTags/InhibitorFeed1 MemoryTags/InhibitorFeed2 MemoryTags/InhibitorFinalDiagnosis MemoryTags/StringDateInput MemoryTags/DateInput
 
 Tagset: InhibitInput
 Show: browser $DIAGRAM
@@ -39,23 +40,27 @@ Step: Diagnosis True - Does not change Inhibit
 2000/01/01 10:04:55 Assert: InhibitorOutput2 = 17 "Output 2 not automatically inhibited by final diagnosis"
 
 Step: Inhibit via Script Interface
-10:05:00 sendTimestampedSignal($DIAGRAM,"inhibit",2000,1,1,10,5,0)
-10:05:30 Assert: getInternalAttribute($DIAGRAM,$INHIBIT1,"Inhibiting") = true  "Inhibitor 1 is now inhibiting"
-10:05:30 Assert: getInternalAttribute($DIAGRAM,$INHIBIT2,"Inhibiting") = true  "Inhibitor 2 is now inhibiting"
-10:05:40 42. 21. false
-10:06:15 Assert: InhibitorOutput1 = 74 "Output 1 is inhibited"
+2000/01/01 10:05:00 sendTimestampedSignal($DIAGRAM,"inhibit",2000,1,1,10,5,0)
+2000/01/01 10:05:30 Assert: getInternalAttribute($DIAGRAM,$INHIBIT1,"Inhibiting") = true  "Inhibitor 1 is now inhibiting"
+2000/01/01 10:05:30 Assert: getInternalAttribute($DIAGRAM,$INHIBIT2,"Inhibiting") = true  "Inhibitor 2 is now inhibiting"
+2000/01/01 10:05:40 42. 21. false
+2000/01/01 10:06:15 Assert: InhibitorOutput1 = 74 "Output 1 is inhibited"
 # Inhibit of #2 will fail unless tag provider is a "simple" provider
-10:06:15 Assert: InhibitorOutput2 = 17 "Output 2 is inhibited"
-10:06:15 Assert: getState($DIAGRAM,$INHIBIT1) = UNSET "Inhibitor 1 state is UNSET"
-10:06:15 Assert: getState($DIAGRAM,$INHIBIT2) = UNSET "Inhibitor 2 state is UNSET"
+2000/01/01 10:06:15 Assert: InhibitorOutput2 = 17 "Output 2 is inhibited"
+2000/01/01 10:06:15 Assert: getState($DIAGRAM,$INHIBIT1) = UNSET "Inhibitor 1 state is UNSET"
+2000/01/01 10:06:15 Assert: getState($DIAGRAM,$INHIBIT2) = UNSET "Inhibitor 2 state is UNSET"
 
 Step: Create Qualified Values
-10:06:30 42.4 22.4 false "2000/01/01 10:06:30"
-10:06:45 Assert: InhibitorOutput1 = 74 "Output 1 inhibits"
+2000/01/01 10:06:30 42.4 22.4 false  "2000/01/01 10:00:00"
+2000/01/01 10:06:45 Assert: InhibitorOutput1 = 74 "Output 1 inhibits"
 
 Step: Inhibit Interval Expires
-10:07:10 Assert: getInternalAttribute($DIAGRAM,$INHIBIT1,"Inhibiting") = false  "Inhibitor 1 interval has expired"
-10:07:10 Assert: getInternalAttribute($DIAGRAM,$INHIBIT2,"Inhibiting") = true  "Inhibitor 2 has not expired"
-10:07:12 33. 14.
-10:07:30 Assert: InhibitorOutput1 = 33 "Passthrough  1 is 33"
-10:08:15 Assert: getInternalAttribute($DIAGRAM,$INHIBIT2,"Inhibiting") = false  "Inhibitor 2 has expired"
+2000/01/01 10:07:10 Assert: getInternalAttribute($DIAGRAM,$INHIBIT1,"Inhibiting") = false  "Inhibitor 1 interval has expired"
+2000/01/01 10:07:10 Assert: getInternalAttribute($DIAGRAM,$INHIBIT2,"Inhibiting") = true  "Inhibitor 2 has not expired"
+2000/01/01 10:07:20 42.4 22.4 false  "2001/04/28 10:00:00" "2000/01/01 10:00:30"
+2000/01/01 10:07:30 Assert: InhibitorOutput1 = 74 "Old date (string) on Output 1 is still inhibited"
+2000/01/01 10:07:45 33. 14.
+2000/01/01 10:07:50 42.4 22.4 false ,, "2000/01/01 10:06:30"
+2000/01/01 10:08:00 Assert: InhibitorOutput1 = 33 "Old date (date) on Output 1 is still inhibited"
+2000/01/01 10:08:30 Assert: InhibitorOutput2 = 22.4 "Passthrough  2 is 22.4"
+2000/01/01 10:08:45 Assert: getInternalAttribute($DIAGRAM,$INHIBIT2,"Inhibiting") = false  "Inhibitor 2 has expired"

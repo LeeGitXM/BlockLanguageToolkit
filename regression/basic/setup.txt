@@ -20,7 +20,7 @@ setTimeFactor (15)
 
 # Specify the provider that corresponds to the application configuration
 #tagprovider: TAG_ISOLATION
-tagprovider: TAG_HISTORICAL
+tagprovider: HISTORY
 setStateForApplication("app75","ISOLATED")
 
 status: setup complete.

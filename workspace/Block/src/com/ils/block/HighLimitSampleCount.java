@@ -117,8 +117,11 @@ public class HighLimitSampleCount extends AbstractProcessBlock implements Proces
 			QualifiedValue qv = vcn.getValue();
 			log.infof("%s.acceptValue: Received %s",getName(),qv.getValue().toString());
 			if( qv.getQuality().isGood() ) {
-				queue.add(qv);
-				TruthValue result = checkPassConditions(state);
+				TruthValue result = TruthValue.UNKNOWN;
+				synchronized(this) {
+					queue.add(qv);
+					result = checkPassConditions(state); 
+				}
 				if( queue.size()<sampleSize && fillRequired && result.equals(TruthValue.FALSE) ) result = TruthValue.UNKNOWN;
 				//log.infof("%s.acceptValue: Calculated %s (%d of %d) hyst=%s",TAG,result.name(),queue.size(),sampleSize,hysteresis.name());
 				if( !isLocked() ) {
