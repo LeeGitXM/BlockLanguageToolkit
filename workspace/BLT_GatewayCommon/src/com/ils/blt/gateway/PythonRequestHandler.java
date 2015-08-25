@@ -231,12 +231,16 @@ public class PythonRequestHandler   {
 		
 		try {
 			UUID uuid = UUID.fromString(id);
-			UUID parentuuid = UUID.fromString(parent);
-			requestHandler.postValue(parentuuid,uuid,port,value,quality);
-			controller.sendConnectionNotification(id, port, 
-					new BasicQualifiedValue(value,
-							new BasicQuality(quality,(quality.equalsIgnoreCase("good")?Quality.Level.Good:Quality.Level.Bad)),
-							new Date(time)));
+			BasicDiagram diagram = getDiagram(parent); 
+			// Do nothing if diagram is disabled
+			if( diagram!=null && !diagram.getState().equals(DiagramState.DISABLED)) {
+				UUID parentuuid = UUID.fromString(parent);
+				requestHandler.postValue(parentuuid,uuid,port,value,quality);
+				controller.sendConnectionNotification(id, port, 
+						new BasicQualifiedValue(value,
+								new BasicQuality(quality,(quality.equalsIgnoreCase("good")?Quality.Level.Good:Quality.Level.Bad)),
+								new Date(time)));
+			}
 		}
 		catch(IllegalArgumentException iae) {
 			log.warnf("%s.postValue: one of %s or %s illegal UUID (%s)",TAG,parent,id,iae.getMessage());
