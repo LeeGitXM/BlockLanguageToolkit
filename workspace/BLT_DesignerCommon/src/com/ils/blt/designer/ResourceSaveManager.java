@@ -3,6 +3,7 @@ package com.ils.blt.designer;
 import java.util.Enumeration;
 
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.ToolkitRequestHandler;
 import com.ils.blt.designer.navtree.DiagramTreeNode;
 import com.ils.blt.designer.navtree.NavTreeNodeInterface;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
@@ -30,21 +31,25 @@ public class ResourceSaveManager implements Runnable {
 	private static final LoggerEx logger = LogUtil.getLogger(ResourceSaveManager.class.getPackage().getName());
 	private static DesignerContext context = null;
 	private static NodeStatusManager statusManager = null;
+	private static ToolkitRequestHandler applicationRequestHandler = null;
 	private final AbstractResourceNavTreeNode root;	      // Root of our save.
 	private final DiagramWorkspace workspace;
+
 	
 	public ResourceSaveManager(DiagramWorkspace wksp,AbstractResourceNavTreeNode node) {
 		this.root = node;
 		this.workspace = wksp;
 	}
 	
+	
 	/**
 	 * Call this method from the hook as soon as the context is established.
 	 * @param context
 	 */
-	public static void setContext(DesignerContext ctx) {
+	public static void setup(DesignerContext ctx,NodeStatusManager sm,ToolkitRequestHandler apphandle) {
 		context = ctx;
-		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
+		statusManager =sm;
+		applicationRequestHandler = apphandle;
 	}
 	
 	/**
@@ -55,7 +60,7 @@ public class ResourceSaveManager implements Runnable {
 	public void saveSynchronously() {
 		saveDirtyDiagrams(root);
 		// Update UI
-		((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler().triggerStatusNotifications();
+		applicationRequestHandler.triggerStatusNotifications();
 	}
 	
 	@Override
@@ -63,7 +68,7 @@ public class ResourceSaveManager implements Runnable {
 		int dirtyCount = saveNodeAndDescendants();
 		// Update UI
 		if( dirtyCount>0 ) {
-			((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler().triggerStatusNotifications();
+			applicationRequestHandler.triggerStatusNotifications();
 		}
 	}
 	
@@ -74,7 +79,9 @@ public class ResourceSaveManager implements Runnable {
 		ProjectResource res = node.getProjectResource();
 		if( res!=null ) {
 			logger.infof("%s.saveDirtyDiagrams: %s (%d)",TAG,res.getName(),res.getResourceId());
-			if(res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
+			if(res.getResourceType().equals(BLTProperties.CLASSIC_DIAGRAM_RESOURCE_TYPE) ||
+			   res.getResourceType().equals(BLTProperties.SCHEMATIC_DIAGRAM_RESOURCE_TYPE)	) {
+
 				// If the resource is open, we need to save it
 				workspace.saveOpenDiagrams();
 			}

@@ -14,6 +14,7 @@ import java.util.UUID;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.ToolkitRequestHandler;
+import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.annotation.ExecutableBlock;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
@@ -21,6 +22,7 @@ import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.CoreBlock;
 import com.ils.blt.common.block.PalettePrototype;
+import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TransmissionScope;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.BroadcastNotification;
@@ -63,6 +65,7 @@ public class BasicRequestHandler implements ToolkitRequestHandler  {
 	protected final BlockExecutionController controller = BlockExecutionController.getInstance();
 	protected final PythonRequestHandler pyHandler;
 	protected final ScriptExtensionManager sem = ScriptExtensionManager.getInstance();
+	private final UtilityFunctions fcns;
     
 	/**
 	 * Initialize with context and appropriate python handler.
@@ -73,6 +76,7 @@ public class BasicRequestHandler implements ToolkitRequestHandler  {
 		this.moduleId = module;
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.pyHandler = new PythonRequestHandler();
+		this.fcns = new UtilityFunctions();
 	}
 	
 
@@ -812,7 +816,43 @@ public class BasicRequestHandler implements ToolkitRequestHandler  {
 		}
 	}
 
-
+	/** Change the value of a block property in such a way that the block and UI
+	 * are notified of the change.
+	 *  
+	 * @param diagramId diagram's unique Id as a String
+	 * @param bname 
+	 * @param pname the changed property
+	 * @param value the new value of the property. The value will be coerced into the correct data type in the gateway 
+	 */
+	public void setBlockPropertyValue(String diagramId,String bname,String pname,String value )  {
+		BasicDiagram diagram = null;
+		UUID uuid = UUID.fromString(diagramId);
+		if( uuid!=null ) diagram = controller.getDiagram(uuid);
+		if( diagram!=null ) {
+			CoreBlock block = diagram.getBlockByName(bname);
+			if( block!=null ) {
+				BlockProperty prop = block.getProperty(pname);
+				if( prop!=null ) {
+					BlockPropertyChangeEvent bpe = new BlockPropertyChangeEvent(bname,pname,prop.getValue(),value);
+					if( prop.getType().equals(PropertyType.BOOLEAN) ) prop.setValue(fcns.coerceToBoolean(value));
+					if( prop.getType().equals(PropertyType.DOUBLE) ) prop.setValue(fcns.coerceToDouble(value));
+					if( prop.getType().equals(PropertyType.INTEGER) ) prop.setValue(fcns.coerceToInteger(value));
+					else  prop.setValue(fcns.coerceToString(value));
+					block.propertyChange(bpe);
+					controller.sendPropertyNotification(block.getBlockId().toString(),pname,new BasicQualifiedValue(prop.getValue()));
+				}
+				else{
+					log.warnf("%s.setBlockPropertyValue: Unable to find property %s in block %s:%s",TAG,pname,diagramId,bname,diagram.getName());
+				}
+			}
+			else{
+				log.warnf("%s.setBlockPropertyValue: Unable to find block %s in diagram %s",TAG,diagramId,bname,diagram.getName());
+			}
+		}
+		else{
+			log.warnf("%s.setBlockPropertyValue: Unable to find diagram %s for block %s",TAG,diagramId,bname);
+		}
+	}
 	/**
 	 * Set the state of the specified diagram. 
 	 * @param projectId

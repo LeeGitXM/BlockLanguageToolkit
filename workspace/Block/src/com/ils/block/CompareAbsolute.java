@@ -56,7 +56,7 @@ public class CompareAbsolute extends Compare implements ProcessBlock {
 		setName("CompareAbsolute");
 		
 		anchors.clear();  // Re-define the anchors here
-		// Define a two inputs -- one for the divisor, one for the dividend
+		// Define a two inputs 
 		AnchorPrototype input = new AnchorPrototype(X_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setAnnotation("|x|");
 		anchors.add(input);
