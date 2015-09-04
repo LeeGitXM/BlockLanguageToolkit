@@ -467,6 +467,10 @@ public class GatewayRpcDispatcher   {
 	public void setBlockPropertyValue(String diagramId,String bname,String pname,String value )  {
 		requestHandler.setBlockPropertyValue(diagramId,bname,pname,value);
 	}
+	
+	public void setDiagramState(Long projectId,Long resourceId,String state) {
+		requestHandler.setDiagramState(projectId,resourceId,state);
+	}
 
 	public void setDiagramState(String diagramId,String state) {
 		requestHandler.setDiagramState(diagramId,state);
