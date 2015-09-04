@@ -781,6 +781,25 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 			log.infof("%s.setBlockProperty: GatewayException (%s)",TAG,ge.getMessage());
 		}		
 	}
+	
+	/** Change the value of a block property in such a way that the block and UI
+	 * are notified of the change.
+	 *  
+	 * @param diagramId diagram's unique Id as a String
+	 * @param bname 
+	 * @param pname the changed property
+	 * @param value the new value of the property. The value will be coerced into the correct data type in the gateway 
+	 */
+	public void setBlockPropertyValue(String diagramId,String bname,String pname,String value )  {
+		log.debugf("%s.setBlockPropertyValue: %s %s %s=%s", TAG, diagramId,bname, pname,value);
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+				BLTProperties.MODULE_ID, "setBlockPropertyValue", diagramId,bname, pname,value);
+		}
+		catch(Exception ge) {
+			log.infof("%s.setBlockPropertyValue: GatewayException (%s)",TAG,ge.getMessage());
+		}		
+	}
 
 	public void setDiagramState(Long projectId, Long resourceId, String state) {
 		log.debugf("%s.setDiagramState ... %d:%d %s",TAG,projectId.longValue(),resourceId.longValue(),state);

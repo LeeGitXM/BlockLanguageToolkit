@@ -3,6 +3,7 @@
  */
 package com.ils.block;
 
+import java.util.Date;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
@@ -79,10 +80,10 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 		setProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL, synch);
 		
 		// Define two inputs 
-		AnchorPrototype input = new AnchorPrototype(X_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
+		AnchorPrototype input = new AnchorPrototype(X_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
 		input.setAnnotation("x");
 		anchors.add(input);
-		input = new AnchorPrototype(Y_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
+		input = new AnchorPrototype(Y_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
 		input.setAnnotation("y");
 		anchors.add(input);
 
@@ -154,12 +155,24 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 			double yy = Double.NaN;
 			if( currentValue == null ) {
 				try {
-					xx = Double.parseDouble(x.getValue().toString());
-					try {
-						yy = Double.parseDouble(y.getValue().toString());
+					// Handle dates
+					if( x.getValue() instanceof Date || y.getValue() instanceof Date ) {
+						if( !(x.getValue() instanceof Date) || !(y.getValue() instanceof Date)  ) {
+							currentValue = new TestAwareQualifiedValue(timer,TruthValue.UNKNOWN,new BasicQuality("If one input is a Date, then both must be",Quality.Level.Bad));
+						}
+						else {
+							xx = ((Date)(x.getValue())).getTime();
+							yy = ((Date)(y.getValue())).getTime();
+						}
 					}
-					catch(NumberFormatException nfe) {
-						currentValue = new TestAwareQualifiedValue(timer,TruthValue.UNKNOWN,new BasicQuality("'y' is not a valid double",Quality.Level.Bad));
+					else {
+						xx = Double.parseDouble(x.getValue().toString());
+						try {
+							yy = Double.parseDouble(y.getValue().toString());
+						}
+						catch(NumberFormatException nfe) {
+							currentValue = new TestAwareQualifiedValue(timer,TruthValue.UNKNOWN,new BasicQuality("'y' is not a valid double",Quality.Level.Bad));
+						}
 					}
 				}
 				catch(NumberFormatException nfe) {

@@ -283,12 +283,22 @@ public interface ToolkitRequestHandler  {
 	 * @param buuid block unique Id
 	 */
 	public void setBlockProperties(UUID duuid,UUID buuid, Collection<BlockProperty> props ) ;
-	/** Update a single changed property for a block 
+	/** Update a single property for a block 
 	 * @param duuid diagram unique Id
 	 * @param buuid block unique Id
 	 * @param property the changed property
 	 */
 	public void setBlockProperty(UUID duuid,UUID buuid,BlockProperty property ) ;
+	
+	/** Change the value of a block property in such a way that the block and UI
+	 * are notified of the change.
+	 *  
+	 * @param diagramId diagram's unique Id as a String
+	 * @param bname 
+	 * @param pname the changed property
+	 * @param value the new value of the property. The value will be coerced into the correct data type in the gateway 
+	 */
+	public void setBlockPropertyValue(String diagramId,String bname,String pname,String value ) ;
 
 
 	public void setDiagramState(Long projectId, Long resourceId, String state) ;

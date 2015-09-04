@@ -456,9 +456,16 @@ public class GatewayRpcDispatcher   {
 		}; 
 	}
 
-
-	public void setDiagramState(Long projectId,Long resourceId,String state) {
-		requestHandler.setDiagramState(projectId,resourceId,state);
+	/** Change the value of a block property in such a way that the block and UI
+	 * are notified of the change.
+	 *  
+	 * @param diagramId diagram's unique Id as a String
+	 * @param bname 
+	 * @param pname the changed property
+	 * @param value the new value of the property. The value will be coerced into the correct data type in the gateway 
+	 */
+	public void setBlockPropertyValue(String diagramId,String bname,String pname,String value )  {
+		requestHandler.setBlockPropertyValue(diagramId,bname,pname,value);
 	}
 
 	public void setDiagramState(String diagramId,String state) {

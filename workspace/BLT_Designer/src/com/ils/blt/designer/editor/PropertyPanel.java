@@ -102,18 +102,10 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		}
 
 		valueDisplayField = createValueDisplayField(property);  // May not be used ...
-		boolean isEnumerated = false;
-
+	
 		// Handle the enumerated types
-		if( 
-			property.getBindingType().equals(BindingType.OPTION)  ||
-			property.getType().equals(PropertyType.BOOLEAN)       ||          
-			property.getType().equals(PropertyType.HYSTERESIS)     ||   
-			property.getType().equals(PropertyType.LIMIT)          ||        
-			property.getType().equals(PropertyType.SCOPE)          ||	      
-			property.getType().equals(PropertyType.TRUTHVALUE)          ) {
-
-			isEnumerated = true;
+		boolean isEnumerated = isPropertyEnumerated(property);
+		if( isEnumerated  ) {
 			valueComboBox = createValueCombo(property);
 			add(valueComboBox,"skip,growx,push");
 		}
@@ -173,7 +165,8 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		}
 		
 		// Register for notifications
-		if(property.getBindingType().equals(BindingType.ENGINE) ) {
+		// The "plain" (NONE) properties can be changed by python scripting
+		if(property.getBindingType().equals(BindingType.ENGINE) || property.getBindingType().equals(BindingType.NONE)) {
 			NotificationHandler handler = NotificationHandler.getInstance();
 			String key = NotificationKey.keyForProperty(block.getId().toString(), property.getName());
 			log.infof("%s.registerChangeListeners: adding %s",TAG,key);
@@ -188,7 +181,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	}
 	// Un-subscribe to anything we're listening on ...
 	public void unsubscribe() {
-		if( property.getBindingType().equals(BindingType.ENGINE) ) {
+		if( property.getBindingType().equals(BindingType.ENGINE)|| property.getBindingType().equals(BindingType.NONE) ) {
 			NotificationHandler handler = NotificationHandler.getInstance();
 			String key = NotificationKey.keyForProperty(block.getId().toString(), property.getName());
 			handler.removeNotificationChangeListener(key,TAG);
@@ -441,6 +434,15 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		}
 		return field;
 	}
+	// Enumerated types use a combo box instead of a text field
+	private boolean isPropertyEnumerated(BlockProperty prop) {
+			return (prop.getBindingType().equals(BindingType.OPTION)  ||
+				    prop.getType().equals(PropertyType.BOOLEAN)       ||          
+				    prop.getType().equals(PropertyType.HYSTERESIS)     ||   
+				    prop.getType().equals(PropertyType.LIMIT)          ||        
+				    prop.getType().equals(PropertyType.SCOPE)          ||	      
+				    prop.getType().equals(PropertyType.TRUTHVALUE)          ); 
+	}
 	
 	/**
 	 * A component field that remembers the associated block property and
@@ -543,7 +545,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	// ======================================= Notification Change Listener ===================================
 	@Override
 	public void valueChange(final QualifiedValue value) {
-		log.debugf("%s.valueChange: - %s new value (%s)",TAG,property.getName(),value.getValue().toString());
+		log.infof("%s.valueChange: - %s new value (%s)",TAG,property.getName(),value.getValue().toString());
 		//property.setValue(value.getValue());  // Block should have its own subscription to value changes.
 		SwingUtilities.invokeLater( new Runnable() {
 			public void run() {
@@ -556,7 +558,12 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 				else if(property.getType().equals(PropertyType.DATE) ) {
 					text = dateFormatter.format(new Date(fncs.coerceToLong(text)));
 				}
-				valueDisplayField.setText(text);
+				if( isPropertyEnumerated(property)) {
+					valueComboBox.setSelectedItem(text.toUpperCase());
+				}
+				else {
+					valueDisplayField.setText(text);
+				}
 			}
 		});
 		

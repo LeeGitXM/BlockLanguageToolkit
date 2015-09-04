@@ -2,6 +2,7 @@
 # Test of the scripting interface
 #
 DIAGRAM = "app75/family75/routing"
+DATAPUMP="DATAPUMP-3"
 Show: browser $DIAGRAM
 resetDiagram ($DIAGRAM)
 
@@ -11,11 +12,19 @@ script: blocksForTag interfaces.listBlocksForTag(tagpath)
 script: blocksInDiagram interfaces.listBlocksInDiagram(dpath)
 script: blocksOfClass interfaces.listBlocksOfClass(dpath,cname)
 script: blocksUpstream interfaces.listBlocksUpstreamOf(dpath,bname)
+script: getBlockProperty blockProxy.getBlockProperty(dpath,block,property)
 script: pathForBlock   interfaces.pathForBlock(dpath,bname)
+script: setBlockProperty blockProxy.setBlockProperty(dpath,block,property,value)
 script: sinksForSource interfaces.listSinksForSource(dpath,bname)
 script: sourcesForSink interfaces.listSourcesForSink(dpath,bname)
 
 Test: Scripting Interface
+Step: Block Properties
+assert: getBlockProperty($DIAGRAM,$DATAPUMP,"LiveOnStart") = False "Get LiveOnStart in DATAPUMP-3"
+setBlockProperty($DIAGRAM,$DATAPUMP,"LiveOnStart","TRUE")
+assert: getBlockProperty($DIAGRAM,$DATAPUMP,"LiveOnStart") = True "Get LiveOnStart in DATAPUMP-3"
+setBlockProperty($DIAGRAM,$DATAPUMP,"LiveOnStart","FALSE")
+
 Step: Blocks in Diagram
 assert: blocksInDiagram($DIAGRAM) contains "INHIBITOR-551" "Inhibitor-551 is in diagram"
 assert: blocksInDiagram($DIAGRAM) contains "RoutingParameter" "RountingParameter is in diagram"

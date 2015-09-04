@@ -1,5 +1,6 @@
 # Copyright 2015 ILS Automation
 # General-purpose setup activities.
+# NOTE: The tag here must match that set for the application.
 #
 log: [DATE] [TIME] Start Testing ...
 # Script aliases - module is with respect to script directory
@@ -19,8 +20,8 @@ timefactor: 15
 setTimeFactor (15)
 
 # Specify the provider that corresponds to the application configuration
-#tagprovider: TAG_ISOLATION
-tagprovider: HISTORY
+tagprovider: TAG_ISOLATION
+#tagprovider: HISTORY
 setStateForApplication("app75","ISOLATED")
 
 status: setup complete.

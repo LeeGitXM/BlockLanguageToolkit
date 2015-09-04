@@ -82,7 +82,7 @@ public class NotificationHandler implements PushNotificationListener {
 		if( moduleId.equals(BLTProperties.MODULE_ID)) {
 			String key = notice.getMessageType();
 			Object payload = notice.getMessage();
-			log.debugf("%s.receiveNotification: key=%s,value=%s",TAG,key,(payload==null?"null":payload.toString()));
+			log.tracef("%s.receiveNotification: key=%s,value=%s",TAG,key,(payload==null?"null":payload.toString()));
 			if( payload==null ) return; // Ignore
 			
 			if( payload instanceof QualifiedValue ) {
@@ -90,7 +90,7 @@ public class NotificationHandler implements PushNotificationListener {
 				Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
 				if( listeners != null ) {
 					for(NotificationChangeListener listener:listeners.values()) {
-						log.tracef("%s.receiveNotification: key=%s - notifying %s",TAG,key,listener.getClass().getName());
+						log.debugf("%s.receiveNotification: key=%s - notifying %s",TAG,key,listener.getClass().getName());
 						listener.valueChange((QualifiedValue)payload);
 					}
 					// Repaint the workspace
