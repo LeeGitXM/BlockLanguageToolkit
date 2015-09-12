@@ -360,7 +360,7 @@ public class TagListener implements TagChangeListener   {
 					// Set property with no notifications
 					property.setValue(value.getValue());
 					// The tag subscription acts as a pseudo input
-					IncomingNotification notice = new IncomingNotification(value);
+					IncomingNotification notice = new IncomingNotification(property.getName(),value);
 					threadPool.execute(new IncomingValueChangeTask(block,notice));	
 			}
 			else {

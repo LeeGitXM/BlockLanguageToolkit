@@ -441,8 +441,7 @@ public abstract class AbstractUIView extends JComponent
 	
 	// Draw the text that is part of the rendered box. Recognize \n or \\n as newlines.
 	// Pad with spaces so that we center
-	// The yborder is all we care about for the moment. As for x, the lines are always centered.
-	protected void drawEmbeddedText(Graphics2D g,int offset,int bordery) {
+	protected void drawEmbeddedText(Graphics2D g,int offsetx,int offsety) {
 		String text = block.getEmbeddedLabel();
 		if( text == null || text.length()==0 ) return;
 		Dimension sz = getPreferredSize();
@@ -452,7 +451,7 @@ public abstract class AbstractUIView extends JComponent
 		int dy = 3*block.getEmbeddedFontSize()/4;
 		int y = sz.height/2 - (lineCount-1)*dy/2;
 		for( String line: lines) {
-			paintTextAt(g,line,sz.width/2+offset,y,Color.BLACK,block.getEmbeddedFontSize());
+			paintTextAt(g,line,sz.width/2+offsetx,y+offsety,Color.BLACK,block.getEmbeddedFontSize());
 			y+=dy;
 		}
 	}

@@ -35,7 +35,7 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 	private static final long serialVersionUID = 7211480530910862375L;
 	private static final String TAG = "FinalDiagnosisConfiguration";
 	private final int DIALOG_HEIGHT = 520;
-	private final int DIALOG_WIDTH = 480;
+	private final int DIALOG_WIDTH = 600;
 	private final ProcessDiagramView diagram;
 	private final ProcessBlockView block;
 	private final ScriptExtensionManager extensionManager = ScriptExtensionManager.getInstance();
@@ -83,20 +83,29 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 		// - one for the dual list box, the other for the remaining attributes
 		//setLayout(new BorderLayout());
 		mainPanel = new JPanel();
-		mainPanel.setLayout(new MigLayout("ins 2","",""));
+		mainPanel.setLayout(new MigLayout("ins 2,fill","[][]","[][200:1000:2000][]"));
 		
 		
 		addSeparator(mainPanel,"FinalDiagnosis.QuantOutputs");
 		
 		dual = new DualListBox();
-		List<String> q0 = model.getLists().get("QuantOutputs");
-		if( q0==null ) q0 = new ArrayList<>();
-		dual.setSourceElements(q0);
 		List<String> q1 = model.getLists().get("OutputsInUse");
 		if( q1==null ) q1 = new ArrayList<>();
 		dual.setDestinationElements(q1);
-		mainPanel.add(dual, "gapx 50 40,wrap");
-		mainPanel.add(createPropertiesPanel(),"wrap");
+		// The outputs are ALL possibilities. Subtract 
+		// those already being used.
+		List<String> q0 = model.getLists().get("QuantOutputs");
+		if( q0!=null ) {
+			for( String inUse:q1) {
+				q0.remove(inUse);
+			}
+		}
+		else {
+			q0 = new ArrayList<>();
+		}
+		dual.setSourceElements(q0);
+		mainPanel.add(dual, "gapx 50 40,grow,wrap");
+		mainPanel.add(createPropertiesPanel(),"growx,wrap");
 		return mainPanel;
 	}
 	
@@ -149,34 +158,31 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 
 		panel.add(createLabel("FinalDiagnosis.Name"),"");
 		nameField = createTextField("FinalDiagnosis.Name.Desc",block.getName());
-		nameField.setPreferredSize(NAME_BOX_SIZE);
 		nameField.setEditable(false);
-		panel.add(nameField,"span,wrap");
+		panel.add(nameField,"span,growx,wrap");
 
 		panel.add(createLabel("FinalDiagnosis.UUID"),"gaptop 2,aligny top");
 		JTextField uuidField = createTextField("FinalDiagnosis.UUID.Desc",block.getId().toString());
-		uuidField.setPreferredSize(NAME_BOX_SIZE);
 		uuidField.setEditable(false);
-		panel.add(uuidField,"span,wrap");
+		panel.add(uuidField,"span,growx,wrap");
 		
 		panel.add(createLabel("FinalDiagnosis.CalcMethod"),"");
 		String method = properties.get("CalculationMethod");
 		if( method==null) method="";
 		calculationMethodField = createTextField("FinalDiagnosis.CalcMethod.Desc",method);
-		calculationMethodField.setPreferredSize(NAME_BOX_SIZE);
-		panel.add(calculationMethodField,"span,wrap");
+		panel.add(calculationMethodField,"span,growx,wrap");
 		
 		panel.add(createLabel("FinalDiagnosis.TextRecommendation"),"gaptop 2,aligny top");
 		String recommendation = (String)properties.get("TextRecommendation");
 		if( recommendation==null) recommendation="";
 		textRecommendationArea = createTextArea("FinalDiagnosis.TextRecommendation.Desc",recommendation);
-		panel.add(textRecommendationArea,"gaptop 2,aligny top,span,wrap");
+		panel.add(textRecommendationArea,"gaptop 2,aligny top,span,growx,wrap");
 		
 		panel.add(createLabel("FinalDiagnosis.PostTextRecommendation"),"gaptop 2,aligny top");
 		String postTextRec = (String)properties.get("PostTextRecommendation");
 		if( postTextRec==null) postTextRec="0";
 		postTextRecommendationBox = createCheckBox("FinalDiagnosis.PostTextRecommendation.Desc",(postTextRec.equals("0")?false:true));
-		panel.add(postTextRecommendationBox,"gaptop 2,aligny top,span,wrap");
+		panel.add(postTextRecommendationBox,"gaptop 2,aligny top,span,growx,wrap");
 
 		panel.add(createLabel("FinalDiagnosis.Priority"),"");
 		String priority = (String)properties.get("Priority");
@@ -196,8 +202,7 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 		method = (String)properties.get("TextRecommendationCallback");
 		if( method==null) method="";
 		recommendationCallbackField = createTextField("FinalDiagnosis.RecommendationCallback.Desc",method);
-		recommendationCallbackField.setPreferredSize(NAME_BOX_SIZE);
-		panel.add(recommendationCallbackField,"span,wrap");
+		panel.add(recommendationCallbackField,"span,growx,wrap");
 		
 		panel.add(createLabel("FinalDiagnosis.TrapInsignificant"),"");
 		String tf = (String)properties.get("TrapInsignificantRecommendations");

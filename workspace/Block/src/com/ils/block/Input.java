@@ -4,6 +4,9 @@
 package com.ils.block;
 
 import java.awt.Color;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
@@ -21,6 +24,7 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
@@ -32,9 +36,9 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 @ExecutableBlock
 public class Input extends AbstractProcessBlock implements ProcessBlock {
 	private BlockProperty tagPathProperty = null;
-	private BlockProperty valueProperty = null;
-	private QualifiedValue qv = null;    // Most recent output value
-	
+	protected BlockProperty valueProperty = null;
+	protected QualifiedValue qv = null;    // Most recent output value
+	protected SimpleDateFormat dateFormatter = new SimpleDateFormat(DEFAULT_FORMAT);
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
@@ -44,7 +48,7 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 	}
 	
 	/**
-	 * Constructor: Custom property is "entry"
+	 * Constructor: Custom property is "tag path"
 	 * 
 	 * @param ec execution controller for handling block output
 	 * @param parent universally unique Id identifying the parent of this block
@@ -135,6 +139,18 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 		}
 	}
 	/**
+	 * @return a block-specific description of internal statue
+	 */
+	@Override
+	public SerializableBlockStateDescriptor getInternalStatus() {
+		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
+		Map<String,String> attributes = descriptor.getAttributes();
+		if( qv!=null && qv.getValue()!=null ) attributes.put("Value", qv.getValue().toString());
+		if( qv!=null && qv.getQuality()!=null )attributes.put("Quality", qv.getQuality().toString());
+		if(qv!=null && qv.getTimestamp()!=null) attributes.put("Timestamp",dateFormatter.format(new Date(qv.getTimestamp().getTime())));
+		return descriptor;
+	}
+	/**
 	 * The super method handles setting the new property. A save of the block
 	 * as a project resource will inform the controller so that it can change the
 	 * tag subscription, if necessary. 
@@ -157,7 +173,7 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 			notifyOfStatus(qv);
 		}	
 	}
-	private void notifyOfStatus(QualifiedValue qval) {
+	protected void notifyOfStatus(QualifiedValue qval) {
 		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qval);
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qval);
 	}

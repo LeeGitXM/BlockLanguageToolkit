@@ -22,6 +22,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  */
 public class IncomingNotification {
 	private final Connection connection;
+	private final String propertyName;
 	private final QualifiedValue value;
 	
 	/**
@@ -31,8 +32,9 @@ public class IncomingNotification {
 	 * 
 	 * @param val the new value
 	 */
-	public IncomingNotification(QualifiedValue val)  {	
+	public IncomingNotification(String propName,QualifiedValue val)  {	
 		this.connection = null;
+		this.propertyName = propName;
 		this.value = val;
 	}
 	/**
@@ -44,10 +46,12 @@ public class IncomingNotification {
 	 */
 	public IncomingNotification(Connection cxn, QualifiedValue val)  {	
 		this.connection = cxn;
+		this.propertyName = null;
 		this.value = val;
 	}
 	
 	public Connection getConnection()    { return connection; }
+	public String getPropertyName()      { return propertyName; }
 	/**
 	 * Convert the value to a qualified value. If null, generate
 	 * a qualified value of BAD quality.

@@ -57,7 +57,6 @@ public class OutputEditorPane extends JPanel implements ApplicationConfiguration
 		super(new BorderLayout(20, 30));
 		this.controller = controller;
 		this.model = controller.getModel();
-		System.out.println("In Output Editor pane constructor");
 				
 		JPanel mainPanel = new JPanel(new MigLayout("", "[right]"));
 

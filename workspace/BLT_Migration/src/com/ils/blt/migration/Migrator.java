@@ -28,7 +28,10 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.block.AnchorDirection;
+import com.ils.blt.common.block.BlockConstants;
+import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
+import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableApplication;
@@ -366,6 +369,7 @@ public class Migrator {
 				}
 			}
 		}
+		
 		// Modify property values if appropriate
 		if( block.getProperties()!=null ) {
 			for(BlockProperty prop:block.getProperties()) {
@@ -423,7 +427,63 @@ public class Migrator {
 		for(SerializableBlock block:blocksToDelete) {
 			sdiag.removeBlock(block);
 		}
-
+		
+		// Look for input blocks connected to Inhibit blocks. Convert to LabData
+		for( SerializableBlock block:sdiag.getBlocks()) {
+			if(block.getClassName().startsWith("com.ils.block.Input")) {
+				SerializableConnection incxn = null;
+				SerializableConnection outcxn= null;
+				for(SerializableConnection scxn:sdiag.getConnections()) {
+					if( scxn==null ) {
+						continue;
+					}
+					if(scxn.getBeginBlock()==null ) continue;   // Dangling connection
+					if(scxn.getEndBlock()==null )   continue;
+					if(scxn.getBeginBlock().equals(block.getId())) {
+						UUID downstream = scxn.getEndBlock();
+						for( SerializableBlock downstreamblock:sdiag.getBlocks()) {
+							if( downstreamblock.getClassName().startsWith("com.ils.block.Inhibitor") &&
+									downstream.equals(downstreamblock.getId() ) ) {
+								// Found it!
+								block.setClassName("com.ils.block.LabData");
+								block.setEmbeddedLabel("Lab Data");
+								block.setEmbeddedFontSize(16);
+								block.setStyle(BlockStyle.ARROW);
+								block.setPreferredHeight(50);
+								block.setPreferredWidth(70);
+								block.setBackground(BlockConstants.BLOCK_BACKGROUND_LIGHT_ROSE);
+								
+								BlockProperty[] properties = block.getProperties();
+								BlockProperty[] newProperties = new BlockProperty[properties.length+1];
+								int i = 0;
+								for(BlockProperty bp:properties) {
+									if( bp.getName().equalsIgnoreCase("TagPath")) {
+										bp.setName("ValueTagPath");
+										BlockProperty newProp = new BlockProperty();
+										newProp.setName("TimeTagPath");
+										String path = bp.getBinding();
+										int pos = path.lastIndexOf("/");
+										if(pos>0) {
+											path = path.substring(0,pos+1);
+											path = path + "sampleTime";
+										}
+										newProp.setBinding(path);
+										newProp.setBindingType(bp.getBindingType());
+										newProp.setEditable(bp.isEditable());
+										newProp.setType(bp.getType());
+										newProperties[properties.length] = newProp;
+									}
+									newProperties[i] = bp;
+									i++;
+								}
+								block.setProperties(newProperties);
+							}
+						}
+					}
+					
+				}
+			}
+		}
 	}
 	/**
 	 * Perform any special processing after application is created.

@@ -1492,10 +1492,28 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			this.state = s;
 		}
 
+		// We need to set the state both locally and in the gateway
 		public void actionPerformed(ActionEvent e) {
 			handler.setApplicationState(app.getName(), state.name());
 			if( state.name().equals(DiagramState.ISOLATED)) {
 				executionEngine.executeOnce(new AuxiliaryDataSaveManager(app));
+			}
+			// Set the nodes in the navtree
+			recursivelyUpdateNodeState(app,state);
+		}
+		
+		public void recursivelyUpdateNodeState(AbstractNavTreeNode node,DiagramState state) {
+			if( node==null) return;
+			if( node instanceof DiagramTreeNode ) {
+				statusManager.setResourceState(((DiagramTreeNode) node).getResourceId(),state);
+				DiagramTreeNode dtn = (DiagramTreeNode)node;
+				dtn.setIcon(dtn.getIcon());
+				dtn.refresh();
+			}
+			@SuppressWarnings("unchecked")
+			Enumeration<AbstractNavTreeNode>  childWalker = node.children();
+			while(childWalker.hasMoreElements()) {
+				recursivelyUpdateNodeState(childWalker.nextElement(),state);
 			}
 		}
 	}

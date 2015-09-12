@@ -29,8 +29,10 @@ import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
+import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.common.JavaToPython;
 import com.ils.common.PythonToJava;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -65,7 +67,7 @@ public class ProxyHandler   {
 	private final Callback getBlockPrototypesCallback;
 	private final Callback resetCallback;
 	private final Callback setBlockPropertyCallback;
-
+	private final BlockExecutionController controller = BlockExecutionController.getInstance();
 
 	/**
 	 * Initialize with instances of the classes to be controlled.
@@ -445,6 +447,8 @@ public class ProxyHandler   {
 			setBlockPropertyCallback.setLocalVariable(0,block.getPythonBlock());
 			setBlockPropertyCallback.setLocalVariable(1,pyDictionary);
 			setBlockPropertyCallback.execute(mgr);
+			
+			QualifiedValue qv = new BasicQualifiedValue(prop.getValue());
 		}
 	}
 	

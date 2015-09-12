@@ -169,13 +169,15 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			diagram.unregisterChangeListeners();
 			workspace.close(resourceId);
 		}
+		setIcon(getIcon());
+		refresh();
 	}
 	
 	/**
 	 *  If the diagram associated with this node is open, save its state.
 	 */
 	public void saveOpenDiagram() {
-		logger.infof("%s.closeAndSave: res %d",TAG,resourceId);
+		logger.infof("%s.saveOpenDiagram: res %d",TAG,resourceId);
 		// If the diagram is open on a tab, call the workspace method to update the project resource
 		// from the diagram view. This method handles re-paint of the background.
 
@@ -204,6 +206,8 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 
 	public boolean isDirty() { return dirty; }
 	public void setDirty(boolean flag) { this.dirty = flag; }
+	@Override 
+	public void setIcon(Icon icon) { super.setIcon(icon); }  // Make public
 	
 	@Override
 	public long getResourceId() { return this.resourceId; }
@@ -247,6 +251,8 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	@Override
 	public void onDoubleClick() {
 		workspace.open(resourceId);
+		setIcon(getIcon());  // Change icon to show we're now open
+		refresh();
 	}
 	
 	/**
