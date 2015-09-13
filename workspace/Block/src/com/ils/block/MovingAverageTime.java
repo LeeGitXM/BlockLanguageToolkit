@@ -126,7 +126,7 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 		super.acceptValue(incoming);
 		QualifiedValue qv = incoming.getValue();
 		Quality qual = qv.getQuality();
-		if( qual.isGood() && qv.getValue()!=null ) {
+		if( qual.isGood() && qv.getValue()!=null && !qv.getValue().toString().isEmpty() ) {
 			try {
 				currentValue = qv;
 				log.tracef("%s.acceptValue: %s (%3.1f)",getName(),qv.getValue().toString(),currentValue);

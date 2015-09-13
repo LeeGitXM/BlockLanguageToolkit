@@ -116,6 +116,11 @@ public interface ToolkitRequestHandler  {
 	 */
 	public SerializableBlockStateDescriptor getInternalState(String diagramId,String blockId) ;
 	/**
+	 * @param nodeId identifier of a node in the navigation tree
+	 * @return a slash-delimited path for the node.
+	 */
+	public Object getPathForNode(String nodeId) ;
+	/**
 	 * @param diagramId identifier of the diagram owning the block, a String
 	 * @param blockId identifier of the block within the diagram, a String
 	 * @param propertyName name of the property for which a value is to be returned

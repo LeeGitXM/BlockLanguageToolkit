@@ -126,7 +126,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 */
 	@Override
 	public void acceptValue(IncomingNotification vcn) {
-		delegate.acceptValue( scriptManager,getPythonBlock(), vcn.getConnection().getDownstreamPortName(), vcn.getValue());
+		delegate.acceptValue( scriptManager,getPythonBlock(),vcn.getConnection().getDownstreamPortName(),vcn.getValue());
 	}
 	
 	/**

@@ -7,8 +7,7 @@ package com.ils.blt.designer.search;
 import java.util.Enumeration;
 import java.util.UUID;
 
-import com.ils.blt.common.ApplicationRequestHandler;
-import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.ToolkitRequestHandler;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
@@ -24,13 +23,15 @@ public class NavTreeLocator {
 	private static String TAG = "NavTreeLocator";
 	private final LoggerEx log;
 	private final DesignerContext context;
+	private final ToolkitRequestHandler handler;
 
 	/**
 	 * The handler
 	 */
-	public NavTreeLocator(DesignerContext ctx) {
+	public NavTreeLocator(DesignerContext ctx,ToolkitRequestHandler h) {
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.context = ctx;
+		this.handler = h;
 	}
 
 	/**
@@ -39,7 +40,6 @@ public class NavTreeLocator {
 	 * with a leading colon for the root.
 	 */
 	public void locate(String parentId,String name) {
-		ApplicationRequestHandler handler = new ApplicationRequestHandler();
 		String path = handler.pathForNode(parentId);
 		if( path!=null ) {
 			ProjectBrowserRoot project = context.getProjectBrowserRoot();
@@ -84,7 +84,6 @@ public class NavTreeLocator {
 	 * with a leading colon for the root.
 	 */
 	public void locate(UUID nodeId) {
-		ApplicationRequestHandler handler = new ApplicationRequestHandler();
 		String path = handler.pathForNode(nodeId.toString());
 		if( path!=null ) {
 			ProjectBrowserRoot project = context.getProjectBrowserRoot();

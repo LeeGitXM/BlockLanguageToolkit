@@ -185,7 +185,7 @@ public class ArrowUIView extends AbstractUIView implements BlockViewUI {
 		g.setBackground(originalBackground);
 		drawAnchors(g,-BORDER_WIDTH/2,-BORDER_WIDTH/2);
 		drawEmbeddedIcon(g);
-		drawEmbeddedText(g,0,0);
+		drawEmbeddedText(g,-2,-2);
 		drawBadges(g);
 	}
 

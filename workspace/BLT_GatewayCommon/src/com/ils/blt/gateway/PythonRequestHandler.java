@@ -264,6 +264,20 @@ public class PythonRequestHandler   {
 						new Date(time)));
 	}
 	/**
+	 * Handle the block setting a new property value.
+	 * 
+	 * @param parent identifier for the parent, a string version of a UUID
+	 * @param id block identifier a string version of the UUID
+	 * @param port the output port on which to insert the result
+	 * @param value the result of the block's computation
+	 * @param quality of the reported output
+	 */
+	public void sendPropertyNotification(String id, String port, String value)  {
+		log.tracef("%s.sendPropertyNotification - %s = %s on %s",TAG,id,value.toString(),port);
+		controller.sendConnectionNotification(id, port, new BasicQualifiedValue(value));
+	}
+
+	/**
 	 * Broadcast a result to blocks in the diagram
 	 * 
 	 * @param parent identifier for the diagram, a string version of a UUID

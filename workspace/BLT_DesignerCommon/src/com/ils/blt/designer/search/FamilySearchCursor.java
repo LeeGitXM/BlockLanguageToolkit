@@ -1,6 +1,5 @@
 package com.ils.blt.designer.search;
 
-import com.ils.blt.common.ApplicationRequestHandler;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;

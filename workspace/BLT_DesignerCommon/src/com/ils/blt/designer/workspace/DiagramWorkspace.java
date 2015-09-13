@@ -45,6 +45,7 @@ import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.blt.designer.config.BlockInternalsViewer;
 import com.ils.blt.designer.config.ForceValueSettingsDialog;
+import com.ils.blt.designer.navtree.DiagramTreeNode;
 import com.inductiveautomation.ignition.client.designable.DesignableContainer;
 import com.inductiveautomation.ignition.client.util.LocalObjectTransferable;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
@@ -364,6 +365,11 @@ public abstract class DiagramWorkspace extends AbstractBlockWorkspace
 				statusManager.clearDirtyChildCount(diagram.getResourceId());
 				//context.releaseLock(container.getResourceId());
 			}
+		}
+		DiagramTreeNode node = (DiagramTreeNode)statusManager.findNode(container.getResourceId());
+		if( node!=null ) {
+			node.setIcon(node.getIcon());
+			node.refresh();
 		}
 		diagram.unregisterChangeListeners();
 		
