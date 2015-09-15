@@ -139,6 +139,17 @@ public class ProxyBlock extends AbstractProcessBlock  {
 		delegate.evaluate(scriptManager,getPythonBlock()); 
 	}
 	/**
+	 * Send status update notifications for any properties
+	 * or output connections known to the designer. 
+	 * 
+	 * In particular, this is called on startup to trigger
+	 * status notifications.
+	 */
+	@Override
+	public void notifyOfStatus() {
+		delegate.notifyOfStatus(scriptManager,getPythonBlock());
+	}
+	/**
 	 * Reset the block.
 	 */
 	@Override
