@@ -419,7 +419,7 @@ public class ModelManager implements ProjectListener  {
 	public void projectAdded(Project staging, Project published) {
 		if( staging!=null ) {
 			long projectId = staging.getId();
-			log.infof("%s.projectAdded: %s (%d),staging",TAG,staging.getName(),projectId);
+			log.debugf("%s.projectAdded: %s (%d),staging",TAG,staging.getName(),projectId);
 			List<ProjectResource> resources = published.getResources();
 			for( ProjectResource res:resources ) {
 				log.infof("%s.projectAdded: resource %s (%d),type %s", TAG,res.getName(),

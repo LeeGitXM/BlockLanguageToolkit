@@ -65,9 +65,9 @@ public class ProxyHandler   {
 	private final Callback getBlockPropertiesCallback;
 	private final Callback getBlockStateCallback;
 	private final Callback getBlockPrototypesCallback;
+	private final Callback notifyOfStatusCallback;
 	private final Callback resetCallback;
 	private final Callback setBlockPropertyCallback;
-	private final BlockExecutionController controller = BlockExecutionController.getInstance();
 
 	/**
 	 * Initialize with instances of the classes to be controlled.
@@ -83,6 +83,7 @@ public class ProxyHandler   {
 		getBlockPropertiesCallback = new GetBlockProperties();
 		getBlockStateCallback = new GetBlockState();
 		getBlockPrototypesCallback = new GetBlockPrototypes();
+		notifyOfStatusCallback = new NotifyOfStatus();
 		resetCallback = new Reset();
 		setBlockPropertyCallback = new SetBlockProperty();
 	}
@@ -406,7 +407,21 @@ public class ProxyHandler   {
 		log.infof("%s: getPalettePrototypes returning %d protos from Python",TAG,prototypes.size()); 
 		return prototypes;
 	}
-	
+	/**
+	 * Tell the block to issue status notifications. The block is the only
+	 * argument passed.
+	 *
+	 * @param mgr the appropriate project-specific script manager
+	 * @param block the saved Py block
+	 */
+	public synchronized void notifyOfStatus(ScriptManager mgr,PyObject block) {
+		log.debugf("%s.notifyOfStatus --- %s",TAG,block.toString());
+		if( notifyOfStatusCallback.compileScript() ) {
+			notifyOfStatusCallback.initializeLocalsMap(mgr);
+			notifyOfStatusCallback.setLocalVariable(0,block);
+			notifyOfStatusCallback.execute(mgr);
+		}
+	}
 	/**
 	 * Tell the block to reset itself. The block is the only
 	 * argument passed. Note that the python is responsible

@@ -8,11 +8,14 @@ import java.util.UUID;
 import org.python.core.PyObject;
 
 import com.ils.block.AbstractProcessBlock;
+import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.gateway.engine.BlockExecutionController;
+import com.ils.common.watchdog.TestAwareQualifiedValue;
+import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
 
 
@@ -100,7 +103,17 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	public TruthValue getState() {
 		return delegate.getBlockState(scriptManager, pythonBlock);
 	}
-	
+	/**
+	 * Send status update notifications for any properties
+	 * or output connections known to the designer. 
+	 * 
+	 * In particular, this is called on startup to trigger
+	 * status notifications.
+	 */
+	@Override
+	public void notifyOfStatus() {
+		delegate.notifyOfStatus(scriptManager,getPythonBlock());
+	}
 	/**
 	 * Accept a new value for a block property. Push through to the
 	 * Python layer. It is up to the block to determine whether or not
