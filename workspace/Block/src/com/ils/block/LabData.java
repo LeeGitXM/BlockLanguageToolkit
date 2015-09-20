@@ -42,7 +42,6 @@ public class LabData extends Input implements ProcessBlock {
 	private final static String BLOCK_PROPERTY_TIME_PATH = "TimeTagPath";
 	private final static String BLOCK_PROPERTY_VALUE_PATH = "ValueTagPath";
 	private BlockProperty timePathProperty = null;
-	private BlockProperty valueProperty = null;
 	private BlockProperty valuePathProperty = null;
 	
 	private Quality quality = null;
@@ -121,11 +120,6 @@ public class LabData extends Input implements ProcessBlock {
 	@Override
 	public void acceptValue(IncomingNotification incoming) {
 		super.acceptValue(incoming);
-		String propName = incoming.getPropertyName();
-		if( propName.equalsIgnoreCase(BLOCK_PROPERTY_VALUE_PATH) ) {
-			// Save off the quality from the value
-			quality = incoming.getValue().getQuality();
-		}
 		if( synchInterval>0 ) {
 			dog.setSecondsDelay(synchInterval);
 			timer.updateWatchdog(dog);  // pet dog

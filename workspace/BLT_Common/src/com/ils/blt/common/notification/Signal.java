@@ -16,8 +16,8 @@ public class Signal implements Serializable {
 	private static final long serialVersionUID = 3694163288904551177L;
 	private String command = "";
 	private String arg = "";
-	private String message = "";
-	private String pattern = null;
+	private String payload = "";
+	private String pattern = "";
 	
 	/**
 	 * Constructor: No-arg variety required to be serializable
@@ -30,27 +30,28 @@ public class Signal implements Serializable {
 	 * Constructor. 
 	 * 
 	 * @param command
-	 * @param arg
-	 * @param msg
+	 * @param argument
+	 * @param payload
 	 */
-	public Signal(String command,String arg,String msg)  {	
+	public Signal(String command,String argument,String payload)  {	
 		this.command = command;
-		this.arg = arg;
-		this.message = msg;
+		this.arg = argument;
+		this.payload = payload;
 	}
 
 
 	public String getCommand() {return command;}
-	public String getArg() {return arg;}
-	public String getMessage() {return message;}
+	public String getArgument() {return arg;}
+	public String getPayload() {return payload;}
 	public String getPattern() {return pattern;}
 	public void setCommand(String cmd) {this.command = cmd;}
-	public void setArg(String a) {this.arg = a;}
-	public void setMessage(String msg) {this.message = msg;}
-	public void setPattern(String pattern) {this.pattern = pattern;}
+	public void setArgument(String a) {this.arg = a;}
+	public void setPayload(String msg) {this.payload = msg;}
+	public void setPattern(String pat) {this.pattern = pat;}
+
 
 	@Override
 	public String toString() {
-		return String.format("%s:%s:%s",command,arg,message);
+		return String.format("%s:%s:%s",command,arg,payload);
 	}
 }

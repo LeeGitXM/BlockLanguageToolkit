@@ -338,7 +338,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	}
 	/**
 	 * The block is notified that signal has been sent to it.
-	 * The base implementation handles to universal commands:
+	 * The base implementation handles the universal commands:
 	 *     reset
 	 *     lock/unlock
 	 *     evaluate
@@ -348,7 +348,10 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	@Override
 	public void acceptValue(SignalNotification sn) {
 		Signal sig = sn.getSignal();
-		if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_EVALUATE) ) {
+		if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_CONFIGURE) ) {
+			
+		}
+		else if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_EVALUATE) ) {
 			evaluate();
 		}
 		else if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_LOCK) ) {
@@ -360,6 +363,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		else if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_UNLOCK) ) {
 			setLocked(false);
 		}
+
 	}
 	/**
 	 * Send status update notifications for any properties
@@ -561,7 +565,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 			else              result = value.toString();
 		}
 		else if(val instanceof Signal ) {
-			result = String.format("%s:%s",((Signal)val).getCommand(),((Signal)val).getArg());
+			result = String.format("%s:%s",((Signal)val).getCommand(),((Signal)val).getArgument());
 		}
 		else {
 			result = val.toString();

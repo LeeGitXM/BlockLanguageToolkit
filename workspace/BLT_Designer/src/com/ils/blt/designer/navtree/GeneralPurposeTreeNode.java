@@ -1502,10 +1502,10 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			recursivelyUpdateNodeState(app,state);
 		}
 		
-		public void recursivelyUpdateNodeState(AbstractNavTreeNode node,DiagramState state) {
+		public void recursivelyUpdateNodeState(AbstractNavTreeNode node,DiagramState diagramState) {
 			if( node==null) return;
 			if( node instanceof DiagramTreeNode ) {
-				statusManager.setResourceState(((DiagramTreeNode) node).getResourceId(),state);
+				statusManager.setResourceState(((DiagramTreeNode) node).getResourceId(),diagramState);
 				DiagramTreeNode dtn = (DiagramTreeNode)node;
 				dtn.setIcon(dtn.getIcon());
 				dtn.refresh();
@@ -1513,7 +1513,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			@SuppressWarnings("unchecked")
 			Enumeration<AbstractNavTreeNode>  childWalker = node.children();
 			while(childWalker.hasMoreElements()) {
-				recursivelyUpdateNodeState(childWalker.nextElement(),state);
+				recursivelyUpdateNodeState(childWalker.nextElement(),diagramState);
 			}
 		}
 	}

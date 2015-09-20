@@ -90,6 +90,7 @@ public interface BlockConstants   {
 	// These are well-known commands
 	public static final String COMMAND_CLEAR_LOW               	= "CLEAR_LOWER_SQC";
 	public static final String COMMAND_CLEAR_HIGH              	= "CLEAR_UPPER_SQC";
+	public static final String COMMAND_CONFIGURE                = "CONFIGURE";
 	public static final String COMMAND_EVALUATE                 = "EVALUATE";
 	public static final String COMMAND_INHIBIT                 	= "INHIBIT";
 	public static final String COMMAND_LOCK                 	= "LOCK";
