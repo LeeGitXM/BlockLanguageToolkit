@@ -105,7 +105,7 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void acceptValue(IncomingNotification vcn) {
-		super.acceptValue(vcn);
+		baseAcceptValue(vcn);
 		qv = vcn.getValue();
 		if( !isLocked() && running ) {
 			if( qv.getValue() != null ) {
@@ -123,6 +123,14 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 			valueProperty.setValue(qv.getValue());
 			notifyOfStatus(qv);
 		}
+	}
+	
+	/*
+	 * Provide a way for sub-classes to override acceptValue with
+	 * different semantics that we have here.
+	 */
+	protected void baseAcceptValue(IncomingNotification vcn) {
+		super.acceptValue(vcn);
 	}
 
 	/**

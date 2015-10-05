@@ -27,10 +27,7 @@ import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.Quality;
-import com.inductiveautomation.ignition.common.sqltags.model.types.DataQuality;
 
 /**
  * Construct a qualified value from separate inputs for value and time.
@@ -43,8 +40,8 @@ public class LabData extends Input implements ProcessBlock {
 	private final static String BLOCK_PROPERTY_VALUE_PATH = "ValueTagPath";
 	private BlockProperty timePathProperty = null;
 	private BlockProperty valuePathProperty = null;
-	
-	private Quality quality = null;
+	protected QualifiedValue currentValue = null;   // Most recent output value
+	protected QualifiedValue currentTime = null;    // Most recent output value
 	private final Watchdog dog;
 	private double synchInterval = 0.5; // 1/2 sec synchronization by default
 	
@@ -114,15 +111,47 @@ public class LabData extends Input implements ProcessBlock {
 	/**
 	 * The block is notified that a new value has appeared on one of the pseudo 
 	 * ports - either the value or time path property. Wait for the synchronization
-	 * interval to emit the value.
+	 * interval to emit the value. The name of the "port" is the name of the
+	 * property.
 	 * @param vcn notification of the new value.
 	 */
 	@Override
 	public void acceptValue(IncomingNotification incoming) {
-		super.acceptValue(incoming);
+		baseAcceptValue(incoming);
+		String port = incoming.getConnection().getDownstreamPortName();
+		if( port.equalsIgnoreCase(timePathProperty.getName() )) {
+			currentTime = incoming.getValue();
+		}
+		else if( port.equalsIgnoreCase(valuePathProperty.getName() )) {
+			currentValue = incoming.getValue();
+		}
+		else {
+			log.warnf("%s.acceptValue: received a value for an unknown property (%s), ignoring",getName(),port);
+		}
+	
+		if( !isLocked() && running ) {
+			if( qv.getValue() != null ) {
+				log.infof("%s.acceptValue: %s (%s at %s)",getName(),qv.getValue().toString(),qv.getQuality().getName(),
+						qv.getTimestamp().toString());
+				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+				controller.acceptCompletionNotification(nvn);
+			}
+			else {
+				log.warnf("%s.acceptValue: received a null value, ignoring",getName());
+			}
+		}
+		// Even if locked, we update the current state
+		if( qv.getValue()!=null) {
+			valueProperty.setValue(qv.getValue());
+			notifyOfStatus(qv);
+		}
+		
 		if( synchInterval>0 ) {
 			dog.setSecondsDelay(synchInterval);
 			timer.updateWatchdog(dog);  // pet dog
+		}
+		else {
+			evaluate();
 		}
 	}
 
@@ -133,23 +162,22 @@ public class LabData extends Input implements ProcessBlock {
 	 */
 	@Override
 	public void evaluate() {
-		if( qv == null || valuePathProperty.getValue()==null || timePathProperty.getValue()==null ) return; // Shouldn't happen
+		if( currentTime==null || currentValue==null ) return; // Shouldn't happen
 		if( !isLocked() ) {
 			Date timestamp = null;
-			if( timePathProperty.getValue() instanceof Date ) {
-				timestamp = (Date)timePathProperty.getValue();
-				
+			if( currentTime.getValue() instanceof Date ) {
+				timestamp = (Date)currentTime.getValue();
 			}
 			else {
 				try {
-					timestamp = dateFormatter.parse(timePathProperty.getValue().toString());
+					timestamp = dateFormatter.parse(currentTime.getValue().toString());
 				}
 				catch(ParseException pe) {
 					log.errorf("%s.acceptValue: Exception formatting time as %s (%s)",getName(),dateFormatter.toString(),pe.getLocalizedMessage());
 				} 
 			}
 			log.infof("%s.evaluate: Using date as (%s)",getName(),dateFormatter.format(timestamp));
-			QualifiedValue result = new BasicQualifiedValue(qv.getValue(),qv.getQuality(),timestamp);
+			QualifiedValue result = new BasicQualifiedValue(currentValue.getValue(),currentValue.getQuality(),timestamp);
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus(result);
@@ -176,6 +204,9 @@ public class LabData extends Input implements ProcessBlock {
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert synch interval to an double (%s)",getName(),nfe.getLocalizedMessage());
 			}
+		}
+		else if(propertyName.equals(BLOCK_PROPERTY_TIME_PATH)) {
+			log.infof("%s.propertyChange time path now %s",getName(),event.getNewValue().toString());
 		}
 	}
 	
