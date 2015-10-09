@@ -120,7 +120,7 @@ public class TruthValuePulse extends AbstractProcessBlock implements ProcessBloc
 		prototype.setTooltipText("On signal, emit a truth-value for a configured interval");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_CONTROL);
 		BlockDescriptor view = prototype.getBlockDescriptor();
-		view.setEmbeddedIcon("Block/icons/embedded/latch.png");
+		view.setEmbeddedIcon("Block/icons/embedded/signal_pulse.png");
 		view.setBlockClass(getClass().getCanonicalName());
 		view.setStyle(BlockStyle.SQUARE);
 		view.setPreferredHeight(60);
