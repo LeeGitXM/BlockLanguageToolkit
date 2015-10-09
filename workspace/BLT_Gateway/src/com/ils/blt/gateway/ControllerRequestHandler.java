@@ -589,21 +589,27 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	public List<SerializableBlockStateDescriptor> listConfigurationErrors() {
 		List<SerializableBlockStateDescriptor> result = new ArrayList<>();
 		List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
-		for(SerializableResourceDescriptor res:descriptors) {
-			UUID diagramId = makeUUID(res.getId());
-			ProcessDiagram diagram = controller.getDiagram(diagramId);
-			for( ProcessBlock block:diagram.getProcessBlocks() ) {
-				String problem = block.validate();
-				if( problem!=null) {
-					SerializableBlockStateDescriptor descriptor = block.toDescriptor();
-					descriptor.getAttributes().put(BLTProperties.BLOCK_ATTRIBUTE_PATH, pathForBlock(diagramId.toString(),block.getName()));
-					descriptor.getAttributes().put(BLTProperties.BLOCK_ATTRIBUTE_ISSUE, problem);
-					result.add(descriptor);
+		try {
+			for(SerializableResourceDescriptor res:descriptors) {
+				UUID diagramId = makeUUID(res.getId());
+				ProcessDiagram diagram = controller.getDiagram(diagramId);
+				for( ProcessBlock block:diagram.getProcessBlocks() ) {
+					String problem = block.validate();
+					if( problem!=null) {
+						SerializableBlockStateDescriptor descriptor = block.toDescriptor();
+						descriptor.getAttributes().put(BLTProperties.BLOCK_ATTRIBUTE_PATH, pathForBlock(diagramId.toString(),block.getName()));
+						descriptor.getAttributes().put(BLTProperties.BLOCK_ATTRIBUTE_ISSUE, problem);
+						result.add(descriptor);
+					}
 				}
 			}
 		}
+		catch(Exception ex) {
+			log.info(TAG+".listConfigurationErrors: Exception ("+ex.getMessage()+")",ex);
+		}
 		return result;
 	}
+	
 	@Override
 	public List<SerializableBlockStateDescriptor> listDiagramBlocksOfClass(String diagramId, String className) {
 		UUID diagramuuid = makeUUID(diagramId);

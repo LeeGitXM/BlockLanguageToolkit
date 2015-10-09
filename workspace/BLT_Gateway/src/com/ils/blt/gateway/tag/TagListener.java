@@ -115,12 +115,29 @@ public class TagListener implements TagChangeListener   {
 			
 			list.add(key);
 			tagMap.put(key,tagPath);
-			log.debugf("%s.defineSubscription: %s:%s now subscribes to: %s",TAG,block.getName(),property.getName(),tagPath);
+			log.debugf("%s.defineSubscription: %s:%s now subscribes to: %s (%s)",TAG,block.getName(),property.getName(),
+					tagPath,(needToStartSubscription?"START":"ALREADY SUBSCRIBED"));
 			if(!stopped ) {
 				if(needToStartSubscription) startSubscriptionForTag(tagPath);
 				else updatePropertyValueFromLinkedProperty(key,list);   // Get the value from another block's property
 			}
 		}
+	}
+	/**
+	 * Check and see if the current block/property has a subscription.
+	 * @param block
+	 * @param property
+	 * @return
+	 */
+	public boolean hasActiveSubscription(ProcessBlock block,BlockProperty property) {
+		BlockPropertyPair key = new BlockPropertyPair(block,property);
+		boolean result = false;
+		String path = property.getBinding();
+		if( path!=null ) {
+			List<BlockPropertyPair> list = blockMap.get(path);
+			if( list!=null && list.contains(key)) result = true;
+		}
+		return result;
 	}
 	/**
 	 * Remove a subscription based on a property. We assume that the tag path in
@@ -159,6 +176,7 @@ public class TagListener implements TagChangeListener   {
 				SQLTagsManager tmgr = context.getTagManager();
 				try {
 					TagPath tp = TagPathParser.parse(tagPath);
+					log.debugf("%s.removeSubscription: unsubscribed to %s",TAG,tagPath);
 					tmgr.unsubscribe(tp, this);
 				}
 				catch(IOException ioe) {
@@ -226,13 +244,12 @@ public class TagListener implements TagChangeListener   {
 
 			TagPath tp = TagPathParser.parse(tagPath);
 			//log.debugf("%s.startSubscriptionForTag: on tag path %s",TAG,tp.toStringFull());
-
 			Tag tag = tmgr.getTag(tp);
 			if( tag!=null ) {
 				QualifiedValue value = tag.getValue();
-				log.debugf("%s.startSubscriptionForTag: got a %s value for %s (%s at %s)",TAG,
+				log.debugf("%s.startSubscriptionForTag: %s = %s (%s at %s)",TAG,
+						tp.toStringFull(),value.getValue(),
 						(value.getQuality().isGood()?"GOOD":"BAD"),
-						tag.getName(),value.getValue(),
 						dateFormatter.format(value.getTimestamp()));
 				// Do not pass along nulls -- tag was never set
 				if(value.getValue()!=null ) {
@@ -243,17 +260,20 @@ public class TagListener implements TagChangeListener   {
 						updateProperty(block,property,value);
 					}
 				}
+				tmgr.subscribe(tp, this);
 			}
-			tmgr.subscribe(tp, this);
+			else {
+				log.errorf("%s.startSubscriptionForTag: Failed. (%s unknown to provider %s)",TAG,tp.toStringFull(),providerName);
+			}
 		}
 		catch(IOException ioe) {
-			log.errorf("%s.startSubscriptionForProperty (%s)",TAG,ioe.getMessage());
+			log.errorf("%s.startSubscriptionForTag (%s)",TAG,ioe.getMessage());
 		}
 		catch(IllegalArgumentException iae) {
-			log.errorf("%s.startSubscriptionForProperty - illegal argument for %s (%s)",TAG,tagPath,iae.getMessage());
+			log.errorf("%s.startSubscriptionForTag - illegal argument for %s (%s)",TAG,tagPath,iae.getMessage());
 		}
 		catch(Exception ex) {
-			log.errorf("%s.startSubscriptionForProperty - Exception %s (%s)",TAG,ex.getMessage(),tagPath);
+			log.errorf("%s.startSubscriptionForTag - Exception %s (%s)",TAG,ex.getMessage(),tagPath);
 		}
 	}
 	/**
@@ -290,10 +310,10 @@ public class TagListener implements TagChangeListener   {
 		Tag tag = event.getTag();
 		if( tag!=null && tag.getValue()!=null && tp!=null ) {
 			try {
-				log.debugf("%s: tagChanged: got a %s value for %s (%s at %s)",TAG,
-					(tag.getValue().getQuality().isGood()?"GOOD":"BAD"),
-					tag.getName(),tag.getValue().getValue(),
-					dateFormatter.format(tag.getValue().getTimestamp()));
+				log.debugf("%s.tagChanged: %s received %s (%s at %s)",TAG,tp.toStringFull(),
+						tag.getValue().getValue(),
+						(tag.getValue().getQuality().isGood()?"GOOD":"BAD"),
+						dateFormatter.format(tag.getValue().getTimestamp()));
 				// The subscription may be to the fully qualified tag path
 				// and/or the path assuming the default provider
 				List<BlockPropertyPair> list1 = blockMap.get(tp.toStringFull());
@@ -302,7 +322,7 @@ public class TagListener implements TagChangeListener   {
 				if( list1!=null ) list.addAll(list1);
 				if( list2!=null ) list.addAll(list2);
 				if( list.size()==0 ) {
-					log.warnf("%s.tagChanged: %s - found no subscriber for %s -- unsubscribing",TAG,tp.toStringPartial(),tp.toStringFull());
+					log.warnf("%s.tagChanged: %s - found no subscriber, unsubscribing",TAG,tp.toStringFull());
 					stopSubscription(tp.toStringFull());
 					blockMap.remove(tp.toStringFull());
 					blockMap.remove(tp.toStringPartial());
@@ -321,7 +341,6 @@ public class TagListener implements TagChangeListener   {
 					else {
 						log.warnf("%s.tagChanged: %s, subscriber %s has no parent diagram",TAG,tp.toStringFull(),block.getName());
 					}
-					
 				}			
 			}
 			catch(Exception ex) {

@@ -112,14 +112,14 @@ public class TagWriter  {
 	 * time. The list of tags to be updated varies with model type.
 	 * 
 	 * @param path fully qualified tag path
-	 * @return trueif this tag is managed by the tag manager
+	 * @return reason that tag is invalid, else null
 	 */
-	public boolean validateTag(long projectId,String path) {
+	public String validateTag(long projectId,String path) {
 		log.debugf("%s..validateTag: %s",TAG,path);
-		if( context==null) return true;
+		if( context==null) return null;
 		// Not initialized yet.
-		boolean result = false;
-		if(path==null || path.isEmpty() ) return result;  // Path or value not set
+		String reason = null;
+		if(path==null || path.isEmpty() ) return null;  // Path or value not set
 		try {
 			TagPath tp = TagPathParser.parse(path);
 
@@ -130,23 +130,36 @@ public class TagWriter  {
 			if( provider!= null  ) {
 				Tag tag = provider.getTag(tp);
 				if( tag!=null ) {
-					result = true;
+					if( !tag.isEnabled() ) {
+						reason = "is disabled";
+					}
+					else {
+						DataType dt = tag.getDataType();
+						for( DataType classicType:DataType.CLASSIC_TYPES_NO_DATASET) {
+							if(dt.equals(classicType))  return null;    // Good, a match
+						}
+						reason = String.format("datatype (%s) is not recognized",dt.toString());
+					}
 				}
 				else {
 					log.warnf("%s.validateTag: Provider %s did not find tag %s",TAG,providerName,path);
+					reason = String.format("is unknown to provider %s", providerName);
 				}
 			}
 			else {
 				log.warnf("%s.validateTag: no provider for %s ",TAG,path);
+				reason = "is not known to any provider";
 			}
 		}
 		catch( IOException ioe) {
 			log.warnf(TAG+"%s.localRequest: parse exception for path %s (%s)",TAG,path,ioe.getMessage());
+			reason = "has an unparsable tag path";
 		}
 		catch(Exception ex) {
 			log.warn(TAG+".validateTag: Exception ("+ex.getLocalizedMessage()+")");
+			reason = ex.getMessage();
 		}
-		return result;
+		return reason;
 	}
 
 	/** 

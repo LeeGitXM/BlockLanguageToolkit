@@ -433,6 +433,10 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		}
 		return tagReader.readTag(path);
 	}
+	@Override
+	public boolean hasActiveSubscription(ProcessBlock block,BlockProperty property) {
+		return tagListener.hasActiveSubscription(block, property);
+	}
 	/**
 	 * Stop the tag subscription associated with a particular property of a block.
 	 * There may be other entities still subscribed to the same tag.
@@ -510,13 +514,14 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	}
 	
 	/**
-	 * Write a value to a tag. If the diagram referenced diagram is disabled
+	 * Write a value to a tag. If the referenced diagram is disabled
 	 * then this method has no effect.
 	 * @param diagramId UUID of the parent diagram
 	 * @param tagPath
+	 * @return reason else null if the path is valid
 	 */
-	public boolean validateTag(UUID diagramId,String tagPath) {
-		boolean result = false;
+	public String validateTag(UUID diagramId,String tagPath) {
+		String result = null;
 		ProcessDiagram diagram = modelManager.getDiagram(diagramId);
 		if( diagram!=null ) {
 			if(diagram.getState().equals(DiagramState.ISOLATED)) {

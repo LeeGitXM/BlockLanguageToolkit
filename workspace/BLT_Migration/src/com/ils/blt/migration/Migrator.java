@@ -431,8 +431,6 @@ public class Migrator {
 		// Look for input blocks connected to Inhibit blocks. Convert to LabData
 		for( SerializableBlock block:sdiag.getBlocks()) {
 			if(block.getClassName().startsWith("com.ils.block.Input")) {
-				SerializableConnection incxn = null;
-				SerializableConnection outcxn= null;
 				for(SerializableConnection scxn:sdiag.getConnections()) {
 					if( scxn==null ) {
 						continue;

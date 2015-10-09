@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import javax.swing.DefaultListSelectionModel;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -25,6 +26,8 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.WindowConstants;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
@@ -171,10 +174,30 @@ public class ValidationDialog extends JDialog {
 		}
         table = new JTable(dataModel);
         table.setRowSelectionAllowed(true);
-        table.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-        table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        table.setColumnSelectionAllowed(false);
+        // This trick makes the whole row selectable
+        table.getColumnModel().setSelectionModel( new DefaultListSelectionModel() {
+			private static final long serialVersionUID = 1L;
+			@Override
+            public int getLeadSelectionIndex() {
+                return -1;
+            }
+        });
+        table.setAutoCreateRowSorter(true);
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         table.setPreferredScrollableViewportSize(new Dimension(TABLE_WIDTH, TABLE_HEIGHT));
 
+        // Select on the row and navigate to the char. 
+        table.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
+            public void valueChanged(ListSelectionEvent event) {
+                // On a click we get the nav tree path and display the diagram.
+            	// Get proper row even if sorted.
+            	int baseRow = table.convertRowIndexToModel(table.getSelectedRow());
+            	//long resId = ((Long)tableModel.getValueAt(baseRow,0)).longValue();
+				//hook.getWorkspace().openChart(resId);
+            }
+        });
         
         JScrollPane tablePane = new JScrollPane(table);
         tablePane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);

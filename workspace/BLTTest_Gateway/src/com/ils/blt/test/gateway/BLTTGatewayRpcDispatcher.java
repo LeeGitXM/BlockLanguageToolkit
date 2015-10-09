@@ -21,7 +21,6 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface{
 	private static String TAG = "BLTTGatewayRpcDispatcher";
 	private final LoggerEx log;
-	private final GatewayContext context;
 	private final BlockExecutionController controller;
 	private final MockDiagramRequestHandler requestHandler;
 	
@@ -31,7 +30,6 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface{
 	 */
 	public BLTTGatewayRpcDispatcher(GatewayContext cntx,MockDiagramRequestHandler rh ) {
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
-		this.context = cntx;
 		this.controller = BlockExecutionController.getInstance();
 		this.requestHandler = rh;
 	}

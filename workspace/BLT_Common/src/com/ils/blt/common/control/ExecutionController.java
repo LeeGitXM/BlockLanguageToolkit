@@ -1,5 +1,5 @@
-/**
-cccccccccccccccccccccc *   (c) 2014-2015  ILS Automation. All rights reserved.
+/*
+ *   (c) 2014-2015  ILS Automation. All rights reserved.
  *  
  *   The block controller is designed to be called from the client
  *   via RPC. All methods must be thread safe,
@@ -8,6 +8,8 @@ package com.ils.blt.common.control;
 
 import java.util.UUID;
 
+import com.ils.blt.common.block.BlockProperty;
+import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.notification.BroadcastNotification;
 import com.ils.blt.common.notification.ConnectionPostNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
@@ -32,10 +34,11 @@ public interface ExecutionController  {
 	public String getProductionDatabase();
 	public String getProductionProvider();
 	public double getIsolationTimeFactor();
+	public boolean hasActiveSubscription(ProcessBlock block,BlockProperty property);
 	public QualifiedValue getTagValue(UUID diagramId,String path);
 	public void sendPropertyNotification(String id, String propertyName, QualifiedValue val);
 	public void sendConnectionNotification(String blockid, String port, QualifiedValue val);
 	public void sendStateNotification(String diagramid, String val);
 	public void updateTag(UUID diagramId,String path,QualifiedValue val);
-	public boolean validateTag(UUID diagramId,String tagPath); 
+	public String validateTag(UUID diagramId,String tagPath); 
 }

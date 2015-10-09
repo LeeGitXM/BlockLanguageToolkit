@@ -51,7 +51,6 @@
 	<!-- Gateway jar classpath -->
 	<path id="BLT_Gateway.classpath">
 		<path refid="BLT_Common.classpath" />
-		<path refid="ExternalJar.classpath" />
 		<fileset dir="${basedir}/BLT_Build/bin/BLT_Common/dist/" includes="*.jar" />
 		<fileset dir="${jar.dir}" includes="${block.jar.name}" />
 	</path>	

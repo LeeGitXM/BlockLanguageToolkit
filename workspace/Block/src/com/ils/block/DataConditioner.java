@@ -194,10 +194,12 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 	public void notifyOfStatus() {
 		QualifiedValue qv = new TestAwareQualifiedValue(timer,state);
 		controller.sendConnectionNotification(getBlockId().toString(), STATUS_PORT_NAME, qv);
-		valueProperty.setValue(value.getValue());
-		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,value);
-		if( !state.equals(TruthValue.TRUE)) {
-			controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, value);
+		if( value!=null) {
+			valueProperty.setValue(value.getValue());
+			controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,value);
+			if( !state.equals(TruthValue.TRUE)) {
+				controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, value);
+			}
 		}
 	}
 

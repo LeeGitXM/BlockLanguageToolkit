@@ -68,7 +68,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	protected TruthValue state = TruthValue.UNSET;
 	protected WatchdogTimer timer = null;
 
-	protected final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
+	protected LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	/** Properties are a dictionary of attributes keyed by property name */
 	protected final Map<String,BlockProperty> propertyMap;
 	/** Describe ports/stubs where connections join the block */
@@ -539,8 +539,12 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 				bindingType.equals(BindingType.TAG_READWRITE) ) {
 				
 				String tagPath = property.getBinding();
-				if( !controller.validateTag(getParentId(),tagPath) ) {
-					summary.append(String.format("%s: configured tag (%s) does not exist\t",property.getName(),tagPath));
+				String reason = controller.validateTag(getParentId(),tagPath);
+				if( reason!=null ) {
+					summary.append(String.format("%s: tag (%s) %s\t",property.getName(),tagPath,reason));
+				}
+				else if( !controller.hasActiveSubscription(this, property)) {
+					summary.append(String.format("%s: has no subscription for tag %s\t",property.getName(),tagPath));
 				}
 			}
 		}

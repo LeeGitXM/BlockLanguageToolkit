@@ -26,6 +26,7 @@ import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.util.LogUtil;
 
 /**
  * This class subscribes to value changes for a specified tag.
@@ -45,6 +46,7 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 	public Input() {
 		initialize();
 		initializePrototype();
+		log = LogUtil.getLogger(getClass().getPackage().getName()+".input");
 	}
 	
 	/**
@@ -109,7 +111,7 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 		qv = vcn.getValue();
 		if( !isLocked() && running ) {
 			if( qv.getValue() != null ) {
-				log.infof("%s.acceptValue: %s (%s at %s)",getName(),qv.getValue().toString(),qv.getQuality().getName(),
+				log.infof("%s.acceptValue: propagating %s (%s at %s)",getName(),qv.getValue().toString(),qv.getQuality().getName(),
 						qv.getTimestamp().toString());
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 				controller.acceptCompletionNotification(nvn);
@@ -142,6 +144,7 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 		String path = tagPathProperty.getBinding().toString();
 		QualifiedValue val = controller.getTagValue(getParentId(),path);
 		if( val!=null ) {
+			log.debugf("%s.evaluate: Read %s = %s",getName(),path,val.getValue().toString());
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,val);
 			controller.acceptCompletionNotification(nvn);
 		}
@@ -213,9 +216,11 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 		StringBuffer summary = new StringBuffer();
 		if( generic!=null ) summary.append(generic);
 		
-		String binding = tagPathProperty.getBinding();
-		if( binding==null || binding.length()==0 ) {
-			summary.append(String.format("%s: binding is not configured\t",tagPathProperty.getName()));
+		if( tagPathProperty!=null ) {
+			String binding = tagPathProperty.getBinding();
+			if( binding==null || binding.length()==0 ) {
+				summary.append(String.format("%s: binding is not configured\t",tagPathProperty.getName()));
+			}
 		}
 		
 		if( summary.length()==0 ) return null;

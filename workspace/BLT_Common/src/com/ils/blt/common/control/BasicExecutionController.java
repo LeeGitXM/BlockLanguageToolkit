@@ -8,6 +8,8 @@ package com.ils.blt.common.control;
 
 import java.util.UUID;
 
+import com.ils.blt.common.block.BlockProperty;
+import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.notification.BroadcastNotification;
 import com.ils.blt.common.notification.ConnectionPostNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
@@ -68,6 +70,10 @@ public class BasicExecutionController implements ExecutionController  {
 		log.warnf("%s.getTagValue: WARNING: Executed from stub class",TAG);
 		return null;
 	}
+	public boolean hasActiveSubscription(ProcessBlock block,BlockProperty property) {
+		log.warnf("%s.hasActiveSubscription: WARNING: Executed from stub class",TAG);
+		return false;
+	}
 	public void sendConnectionNotification(String blockid, String port, QualifiedValue val) {
 		log.warnf("%s.sendConnectionNotification: WARNING: Executed from stub class",TAG);
 	}
@@ -80,9 +86,9 @@ public class BasicExecutionController implements ExecutionController  {
 	public void updateTag(UUID diagramId,String path,QualifiedValue val) {
 		log.warnf("%s.updateTag: WARNING: Executed from stub class",TAG);
 	}
-	public boolean validateTag(UUID diagramId,String tagPath) {
+	public String validateTag(UUID diagramId,String tagPath) {
 		log.warnf("%s.validateTag: WARNING: Executed from stub class",TAG);
-		return false;
+		return null;
 	}
 
 }

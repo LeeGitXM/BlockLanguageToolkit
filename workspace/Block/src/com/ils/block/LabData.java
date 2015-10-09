@@ -63,6 +63,7 @@ public class LabData extends Input implements ProcessBlock {
 	 */
 	public LabData(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
+		initialize();
 		dog = new Watchdog(getName(),this);
 	}
 	
@@ -118,40 +119,47 @@ public class LabData extends Input implements ProcessBlock {
 	@Override
 	public void acceptValue(IncomingNotification incoming) {
 		baseAcceptValue(incoming);
-		String port = incoming.getConnection().getDownstreamPortName();
-		if( port.equalsIgnoreCase(timePathProperty.getName() )) {
-			currentTime = incoming.getValue();
-		}
-		else if( port.equalsIgnoreCase(valuePathProperty.getName() )) {
-			currentValue = incoming.getValue();
-		}
-		else {
-			log.warnf("%s.acceptValue: received a value for an unknown property (%s), ignoring",getName(),port);
-		}
-	
-		if( !isLocked() && running ) {
-			if( qv.getValue() != null ) {
-				log.infof("%s.acceptValue: %s (%s at %s)",getName(),qv.getValue().toString(),qv.getQuality().getName(),
-						qv.getTimestamp().toString());
-				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
-				controller.acceptCompletionNotification(nvn);
+		// There may be no input connection
+		if( incoming.getConnection()!=null && incoming.getConnection().getDownstreamPortName()!=null ) {
+			String port = incoming.getConnection().getDownstreamPortName();
+			if( port.equalsIgnoreCase(timePathProperty.getName() )) {
+				currentTime = incoming.getValue();
+			}
+			else if( port.equalsIgnoreCase(valuePathProperty.getName() )) {
+				currentValue = incoming.getValue();
 			}
 			else {
-				log.warnf("%s.acceptValue: received a null value, ignoring",getName());
+				log.warnf("%s.acceptValue: received a value for an unknown property (%s), ignoring",getName(),port);
+			}
+
+			if( !isLocked() && running ) {
+				if( qv.getValue() != null ) {
+					log.infof("%s.acceptValue: %s (%s at %s)",getName(),qv.getValue().toString(),qv.getQuality().getName(),
+							qv.getTimestamp().toString());
+					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+					controller.acceptCompletionNotification(nvn);
+				}
+				else {
+					log.warnf("%s.acceptValue: received a null value, ignoring",getName());
+				}
+			}
+			// Even if locked, we update the current state
+			if( qv.getValue()!=null) {
+				valueProperty.setValue(qv.getValue());
+				notifyOfStatus(qv);
+			}
+
+
+			if( synchInterval>0 ) {
+				dog.setSecondsDelay(synchInterval);
+				timer.updateWatchdog(dog);  // pet dog
+			}
+			else {
+				evaluate();
 			}
 		}
-		// Even if locked, we update the current state
-		if( qv.getValue()!=null) {
-			valueProperty.setValue(qv.getValue());
-			notifyOfStatus(qv);
-		}
-		
-		if( synchInterval>0 ) {
-			dog.setSecondsDelay(synchInterval);
-			timer.updateWatchdog(dog);  // pet dog
-		}
 		else {
-			evaluate();
+			log.warnf("%s.acceptValue: received a value with no port designation, ignoring",getName());
 		}
 	}
 
@@ -230,7 +238,8 @@ public class LabData extends Input implements ProcessBlock {
 	}
 	
 	/**
-	 * Check the block configuration for missing input tag.
+	 * Check the block configuration for missing input tags. We cannot call 
+	 * the super version of this method.
 	 * @return a validation summary. Null if everything checks out.
 	 */
 	@Override
