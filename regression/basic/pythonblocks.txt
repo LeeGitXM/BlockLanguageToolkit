@@ -1,0 +1,20 @@
+#
+# Simple test of an input and readout
+#
+DIAGRAM="app75/family75/pythonblocks"
+Show: browser $DIAGRAM
+
+tag: PythonBooleanOutput MemoryTags/PythonBooleanOutput
+tagset: SingleBoolean MemoryTags/BooleanFeed
+
+Test: Blocks Written in Python
+Step: Boolean tag reader
+Tagset: SingleBoolean
+10:00 true
+10:00:20 Assert: PythonBooleanOutput = True "Output is true"
+10:00:30 false
+10:00:40 Assert: PythonBooleanOutput = False "Output is false"
+10:01 true
+10:01:30 true
+10:01:40 Assert: PythonBooleanOutput = True "Output is true"
+

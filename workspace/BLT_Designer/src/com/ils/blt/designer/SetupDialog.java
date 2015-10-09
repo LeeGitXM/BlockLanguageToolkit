@@ -260,10 +260,10 @@ public class SetupDialog extends JDialog {
 	// The validation has made them all legal
 	private void saveEntries() {
 		// For these we set new values for the next time queried
-		requestHandler.setToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_DATABASE,mainDatabaseBox.getSelectedItem().toString() );
-		requestHandler.setToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE,secondaryDatabaseBox.getSelectedItem().toString() );
-		requestHandler.setToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_PROVIDER,mainProviderBox.getSelectedItem().toString() );
-		requestHandler.setToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER,secondaryProviderBox.getSelectedItem().toString() );
+		if(mainDatabaseBox.getSelectedItem()!=null)      requestHandler.setToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_DATABASE,mainDatabaseBox.getSelectedItem().toString() );
+		if(secondaryDatabaseBox.getSelectedItem()!=null) requestHandler.setToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE,secondaryDatabaseBox.getSelectedItem().toString() );
+		if(mainProviderBox.getSelectedItem()!=null)      requestHandler.setToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_PROVIDER,mainProviderBox.getSelectedItem().toString() );
+		if(secondaryProviderBox.getSelectedItem()!=null) requestHandler.setToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER,secondaryProviderBox.getSelectedItem().toString() );
 		requestHandler.setToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_ISOLATION_TIME,secondaryTimeFactorField.getText());
 		// This causes an immediate active update.
 		double speedup = Double.parseDouble(secondaryTimeFactorField.getText());  // We've already validated the field ...

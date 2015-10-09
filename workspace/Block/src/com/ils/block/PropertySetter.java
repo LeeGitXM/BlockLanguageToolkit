@@ -26,7 +26,9 @@ import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
- * This class emits a signal that sets a property of a downstream block.
+ * On receipt of a truth-value that matches the criterion, this class emits a 
+ * specified CONFIGURE signal with the intent of setting property values in the 
+ * downstream block.
  */
 @ExecutableBlock
 public class PropertySetter extends AbstractProcessBlock implements ProcessBlock {
@@ -77,7 +79,8 @@ public class PropertySetter extends AbstractProcessBlock implements ProcessBlock
 	
 
 	/**
-	 * When a fresh value arrives that matches the trigger, send the output signal.
+	 * As soon as a fresh value arrives, trigger the output signal.
+	 * Retain the timestamp.
 	 * @param vcn incoming new value.
 	 */
 	@Override
@@ -107,6 +110,7 @@ public class PropertySetter extends AbstractProcessBlock implements ProcessBlock
 			notifyOfStatus(result);
 		}
 	}
+
 	/**
 	 * Handle a changes to the various attributes.
 	 */
@@ -142,13 +146,14 @@ public class PropertySetter extends AbstractProcessBlock implements ProcessBlock
 	 * Augment the palette prototype for this block class.
 	 */
 	private void initializePrototype() {
-		prototype.setPaletteIconPath("Block/icons/palette/flash.png");
-		prototype.setPaletteLabel("Command");
-		prototype.setTooltipText("Transmit a fixed command on a signal connection");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_CONTROL);
+
+		prototype.setPaletteIconPath("Block/icons/palette/property_edit.png");
+		prototype.setPaletteLabel("SetProperty");
+		prototype.setTooltipText("Transmit a signal to set properties of the downstream block");
+		prototype.setTabName(BlockConstants.PALETTE_TAB_MISC);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
-		desc.setEmbeddedIcon("Block/icons/embedded/flash.png");
+		desc.setEmbeddedIcon("Block/icons/embedded/edit.png");
 		desc.setPreferredHeight(60);
 		desc.setPreferredWidth(60);
 		desc.setBlockClass(getClass().getCanonicalName());
