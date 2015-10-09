@@ -29,15 +29,15 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  * This class emits a specified signal.
  */
 @ExecutableBlock
-public class Command extends AbstractProcessBlock implements ProcessBlock {
-	private static String TAG = "Command";
+public class TruthValuePulse extends AbstractProcessBlock implements ProcessBlock {
+	private static String TAG = "TruthValuePulse";
 	private Signal command = new Signal();
 	private TruthValue trigger = TruthValue.TRUE;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
-	public Command() {
+	public TruthValuePulse() {
 		initialize();
 		initializePrototype();
 	}
@@ -49,7 +49,7 @@ public class Command extends AbstractProcessBlock implements ProcessBlock {
 	 * @param parent universally unique Id identifying the parent of this block
 	 * @param block universally unique Id for the block
 	 */
-	public Command(ExecutionController ec,UUID parent,UUID block) {
+	public TruthValuePulse(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
 	}
@@ -59,7 +59,7 @@ public class Command extends AbstractProcessBlock implements ProcessBlock {
 	 * Define the synchronization property and ports.
 	 */
 	private void initialize() {	
-		setName("Command");
+		setName("TruthValuePulse");
 		
 		BlockProperty commandProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_COMMAND,command.getCommand(),PropertyType.STRING,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_COMMAND, commandProperty);

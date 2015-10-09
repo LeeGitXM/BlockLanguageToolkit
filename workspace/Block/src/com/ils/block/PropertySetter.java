@@ -26,18 +26,18 @@ import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
- * This class emits a specified signal.
+ * This class emits a signal that sets a property of a downstream block.
  */
 @ExecutableBlock
-public class Command extends AbstractProcessBlock implements ProcessBlock {
-	private static String TAG = "Command";
+public class PropertySetter extends AbstractProcessBlock implements ProcessBlock {
+	private static String TAG = "PropertySetter";
 	private Signal command = new Signal();
 	private TruthValue trigger = TruthValue.TRUE;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
-	public Command() {
+	public PropertySetter() {
 		initialize();
 		initializePrototype();
 	}
@@ -49,7 +49,7 @@ public class Command extends AbstractProcessBlock implements ProcessBlock {
 	 * @param parent universally unique Id identifying the parent of this block
 	 * @param block universally unique Id for the block
 	 */
-	public Command(ExecutionController ec,UUID parent,UUID block) {
+	public PropertySetter(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
 	}
@@ -59,7 +59,7 @@ public class Command extends AbstractProcessBlock implements ProcessBlock {
 	 * Define the synchronization property and ports.
 	 */
 	private void initialize() {	
-		setName("Command");
+		setName("PropertySetter");
 		
 		BlockProperty commandProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_COMMAND,command.getCommand(),PropertyType.STRING,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_COMMAND, commandProperty);
@@ -115,7 +115,7 @@ public class Command extends AbstractProcessBlock implements ProcessBlock {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
 		log.infof("%s.propertyChange: Received %s = %s",TAG,propertyName,event.getNewValue().toString());
-		if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_COMMAND)) {
+		if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_INTERVAL)) {
 			command.setCommand(event.getNewValue().toString());
 		}
 		else if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_TRIGGER)) {
