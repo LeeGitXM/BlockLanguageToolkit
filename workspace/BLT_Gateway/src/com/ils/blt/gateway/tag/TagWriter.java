@@ -14,6 +14,7 @@ import com.inductiveautomation.ignition.common.project.ProjectVersion;
 import com.inductiveautomation.ignition.common.sqltags.model.Tag;
 import com.inductiveautomation.ignition.common.sqltags.model.TagPath;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
+import com.inductiveautomation.ignition.common.sqltags.model.types.TagType;
 import com.inductiveautomation.ignition.common.sqltags.parser.TagPathParser;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -132,6 +133,10 @@ public class TagWriter  {
 				if( tag!=null ) {
 					if( !tag.isEnabled() ) {
 						reason = "is disabled";
+					}
+					else if(tag.getType().equals(TagType.Folder) || tag.getType().equals(TagType.UDT_DEF) ||
+							tag.getType().equals(TagType.UDT_INST)   ) {
+						reason = String.format("tag type (%s) is not a simple type",tag.getType().toString());
 					}
 					else {
 						DataType dt = tag.getDataType();

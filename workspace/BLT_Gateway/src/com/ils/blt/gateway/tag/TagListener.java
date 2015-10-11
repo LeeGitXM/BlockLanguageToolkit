@@ -52,7 +52,7 @@ public class TagListener implements TagChangeListener   {
 	private static int THREAD_POOL_SIZE = 10;   // Notification threads
 	private final LoggerEx log;
 	private GatewayContext context = null;
-	private final Map<String,List<BlockPropertyPair>> blockMap;  // Blocks-Properties keyed by tag path
+	private final Map<String,List<BlockPropertyPair>> blockMap;  // Blocks-Properties keyed by tag path (case-insensitive)
 	private final Map<BlockPropertyPair,String>       tagMap;    // Tag paths keyed by Block-Property
 	private final SimpleDateFormat dateFormatter;
 	private boolean stopped = true;
@@ -93,29 +93,29 @@ public class TagListener implements TagChangeListener   {
 	 *     b) We are sharing the tag, then update the property from the current value
 	 *                                of a shared property.
 	 */
-	public void defineSubscription(ProcessBlock block,BlockProperty property,String tagPath) {
+	public synchronized void defineSubscription(ProcessBlock block,BlockProperty property,String tagPath) {
 		
-		log.debugf("%s.defineSubscription: considering %s:%s=%s",TAG,block.getName(),property.getName(),tagPath);
+		log.infof("%s.defineSubscription: considering %s:%s=%s",TAG,block.getName(),property.getName(),tagPath);
 		if( tagPath!=null && tagPath.length() >0  ) {
 			boolean needToStartSubscription = false;
 			BlockPropertyPair key = new BlockPropertyPair(block,property);
 			// If we've seen this before, then ignore
-			List<BlockPropertyPair> list = blockMap.get(tagPath); 
+			List<BlockPropertyPair> list = blockMap.get(tagPath.toUpperCase()); 
 			if( list==null ) {
 				// First time we've seen this tag, start subscription
 				list = new ArrayList<BlockPropertyPair>();
-				blockMap.put(tagPath,list );
+				blockMap.put(tagPath.toUpperCase(),list );
 				needToStartSubscription = true;
 			}
 			if( list.contains(key))  {   
 				// Duplicate request, nothing to do
-				log.debugf("%s.defineSubscription: %s:%s already subscribes to: %s",TAG,block.getName(),property.getName(),tagPath);
+				log.infof("%s.defineSubscription: %s:%s already subscribes to: %s",TAG,block.getName(),property.getName(),tagPath);
 				return;
 			}
 			
 			list.add(key);
 			tagMap.put(key,tagPath);
-			log.debugf("%s.defineSubscription: %s:%s now subscribes to: %s (%s)",TAG,block.getName(),property.getName(),
+			log.infof("%s.defineSubscription: %s:%s now subscribes to: %s (%s)",TAG,block.getName(),property.getName(),
 					tagPath,(needToStartSubscription?"START":"ALREADY SUBSCRIBED"));
 			if(!stopped ) {
 				if(needToStartSubscription) startSubscriptionForTag(tagPath);
@@ -134,7 +134,7 @@ public class TagListener implements TagChangeListener   {
 		boolean result = false;
 		String path = property.getBinding();
 		if( path!=null ) {
-			List<BlockPropertyPair> list = blockMap.get(path);
+			List<BlockPropertyPair> list = blockMap.get(path.toUpperCase());
 			if( list!=null && list.contains(key)) result = true;
 		}
 		return result;
@@ -160,24 +160,24 @@ public class TagListener implements TagChangeListener   {
 	 * 
 	 * @param tagPath
 	 */
-	public void removeSubscription(ProcessBlock block,BlockProperty property,String tagPath) {
+	public synchronized void removeSubscription(ProcessBlock block,BlockProperty property,String tagPath) {
 		if( tagPath==null) return;    // There was no subscription
 		//log.debugf("%s.removeSubscription: considering %s:%s=%s",TAG,block.getName(),property.getName(),tagPath);
-		List<BlockPropertyPair> list = blockMap.get(tagPath);
+		List<BlockPropertyPair> list = blockMap.get(tagPath.toUpperCase());
 		if(list==null) return;
 		BlockPropertyPair key = new BlockPropertyPair(block,property);
 		list.remove(key);
 		// Once the list is empty, we cancel the subscription
 		if(list.isEmpty()) {
-			log.debugf("%s.removeSubscription: cancelled %s:%s=%s",TAG,block.getName(),property.getName(),tagPath);
-			blockMap.remove(tagPath);
+			log.infof("%s.removeSubscription: cancelled %s:%s=%s",TAG,block.getName(),property.getName(),tagPath);
+			blockMap.remove(tagPath.toUpperCase());
 			if(!stopped) {
 				// If we're running unsubscribe
 				SQLTagsManager tmgr = context.getTagManager();
 				try {
 					TagPath tp = TagPathParser.parse(tagPath);
-					log.debugf("%s.removeSubscription: unsubscribed to %s",TAG,tagPath);
 					tmgr.unsubscribe(tp, this);
+					log.infof("%s.removeSubscription: unsubscribed to %s",TAG,tagPath);
 				}
 				catch(IOException ioe) {
 					log.errorf("%s.removeSubscription (%s)",TAG,ioe.getMessage());
@@ -225,7 +225,7 @@ public class TagListener implements TagChangeListener   {
 	 */
 	private void startSubscriptionForTag(String tagPath) {
 		SQLTagsManager tmgr = context.getTagManager();
-		List<BlockPropertyPair> list = blockMap.get(tagPath);    // Should never be null
+		List<BlockPropertyPair> list = blockMap.get(tagPath.toUpperCase());    // Should never be null
 		if( list==null || list.size()==0 ) {
 			log.warnf("%s.startSubscriptionForTag: %s - found no block/properties",TAG,tagPath);
 			return;
@@ -243,11 +243,11 @@ public class TagListener implements TagChangeListener   {
 			}
 
 			TagPath tp = TagPathParser.parse(tagPath);
-			//log.debugf("%s.startSubscriptionForTag: on tag path %s",TAG,tp.toStringFull());
+			log.infof("%s.startSubscriptionForTag: on tag path %s",TAG,tp.toStringFull());
 			Tag tag = tmgr.getTag(tp);
 			if( tag!=null ) {
 				QualifiedValue value = tag.getValue();
-				log.debugf("%s.startSubscriptionForTag: %s = %s (%s at %s)",TAG,
+				log.infof("%s.startSubscriptionForTag: %s = %s (%s at %s)",TAG,
 						tp.toStringFull(),value.getValue(),
 						(value.getQuality().isGood()?"GOOD":"BAD"),
 						dateFormatter.format(value.getTimestamp()));
@@ -316,15 +316,15 @@ public class TagListener implements TagChangeListener   {
 						dateFormatter.format(tag.getValue().getTimestamp()));
 				// The subscription may be to the fully qualified tag path
 				// and/or the path assuming the default provider
-				List<BlockPropertyPair> list1 = blockMap.get(tp.toStringFull());
-				List<BlockPropertyPair> list2 = blockMap.get(tp.toStringPartial());
+				List<BlockPropertyPair> list1 = blockMap.get(tp.toStringFull().toUpperCase());
+				List<BlockPropertyPair> list2 = blockMap.get(tp.toStringPartial().toUpperCase());
 				List<BlockPropertyPair> list = new ArrayList<>();
 				if( list1!=null ) list.addAll(list1);
 				if( list2!=null ) list.addAll(list2);
 				if( list.size()==0 ) {
 					log.warnf("%s.tagChanged: %s - found no subscriber, unsubscribing",TAG,tp.toStringFull());
-					stopSubscription(tp.toStringFull());
-					blockMap.remove(tp.toStringFull());
+					stopSubscription(tp.toStringFull().toUpperCase());
+					blockMap.remove(tp.toStringFull().toUpperCase());
 					blockMap.remove(tp.toStringPartial());
 					return;
 				}
@@ -402,36 +402,36 @@ public class TagListener implements TagChangeListener   {
 		}
 	}
 	// ====================================== ProjectResourceKey =================================
-		/**
-		 * Class for keyed storage by ProcessBlock and Property
-		 */
-		private class BlockPropertyPair {
-			private final ProcessBlock block;
-			private final BlockProperty property;
-			public BlockPropertyPair(ProcessBlock blk,BlockProperty prop) {
-				this.block = blk;
-				this.property = prop;
-			}
-			public ProcessBlock  getBlock()    { return block; }
-			public BlockProperty getProperty() { return property; }
-			
-			// So that class may be used as a map key
-			// Same blockId and propertyName is sufficient to prove equality
-			@Override
-			public boolean equals(Object arg) {
-				boolean result = false;
-				if( arg instanceof BlockPropertyPair) {
-					BlockPropertyPair that = (BlockPropertyPair)arg;
-					if( (this.getBlock().getBlockId().toString().equalsIgnoreCase(that.getBlock().getBlockId().toString()) ) &&
-						(this.getProperty().getName().equalsIgnoreCase(that.getProperty().getName()) )   ) {
-						result = true;
-					}
-				}
-				return result;
-			}
-			@Override
-			public int hashCode() {
-				return (int)(this.block.hashCode()+this.property.getName().hashCode());
-			}
+	/**
+	 * Class for keyed storage by ProcessBlock and Property
+	 */
+	private class BlockPropertyPair {
+		private final ProcessBlock block;
+		private final BlockProperty property;
+		public BlockPropertyPair(ProcessBlock blk,BlockProperty prop) {
+			this.block = blk;
+			this.property = prop;
 		}
+		public ProcessBlock  getBlock()    { return block; }
+		public BlockProperty getProperty() { return property; }
+
+		// So that class may be used as a map key
+		// Same blockId and propertyName is sufficient to prove equality
+		@Override
+		public boolean equals(Object arg) {
+			boolean result = false;
+			if( arg instanceof BlockPropertyPair) {
+				BlockPropertyPair that = (BlockPropertyPair)arg;
+				if( (this.getBlock().getBlockId().toString().equalsIgnoreCase(that.getBlock().getBlockId().toString()) ) &&
+						(this.getProperty().getName().equalsIgnoreCase(that.getProperty().getName()) )   ) {
+					result = true;
+				}
+			}
+			return result;
+		}
+		@Override
+		public int hashCode() {
+			return (int)(this.block.hashCode()+this.property.getName().hashCode());
+		}
+	}
 }

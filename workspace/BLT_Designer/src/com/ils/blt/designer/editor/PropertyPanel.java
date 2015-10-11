@@ -558,10 +558,13 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 				else if(property.getType().equals(PropertyType.DATE) ) {
 					text = dateFormatter.format(new Date(fncs.coerceToLong(text)));
 				}
+				// If we set components willy-nilly, we end up in an update loop.
 				if( isPropertyEnumerated(property)) {
-					valueComboBox.setSelectedItem(text.toUpperCase());
+					if( !valueComboBox.getSelectedItem().toString().equalsIgnoreCase(text)) {
+						valueComboBox.setSelectedItem(text.toUpperCase());
+					}	
 				}
-				else {
+				else if(!valueDisplayField.getText().equals(text)) {
 					valueDisplayField.setText(text);
 				}
 			}

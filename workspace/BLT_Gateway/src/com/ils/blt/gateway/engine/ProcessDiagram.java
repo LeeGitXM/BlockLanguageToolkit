@@ -503,7 +503,7 @@ public class ProcessDiagram extends ProcessNode {
 		this.state = current;
 	}
 	private void stopSubscriptions() {
-		log.infof("%s.stopSubscriptions: ...%d:%s",TAG,projectId,getName());
+		log.infof("%s.stopSubscriptions: project %d:%s",TAG,projectId,getName());
 		for( ProcessBlock pb:getProcessBlocks()) {
 			for(BlockProperty bp:pb.getProperties()) {
 				controller.removeSubscription(pb,bp);

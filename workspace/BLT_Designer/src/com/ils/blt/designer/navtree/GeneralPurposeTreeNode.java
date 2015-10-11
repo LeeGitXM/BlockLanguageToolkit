@@ -986,6 +986,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		private void importDiagram(UUID parentId,SerializableDiagram sd) {
 			ObjectMapper mapper = new ObjectMapper();
 			try{
+				sd.setState(DiagramState.DISABLED);
 				long newId = context.newResourceId();
 				String json = mapper.writeValueAsString(sd);
 				if(logger.isTraceEnabled() ) logger.trace(json);
@@ -1383,6 +1384,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 											UUIDResetHandler uuidHandler = new UUIDResetHandler(sd);
 											uuidHandler.convertUUIDs();
 											sd.setDirty(true);    // Dirty because gateway doesn't know about it yet
+											sd.setState(DiagramState.DISABLED);
 											String json = mapper.writeValueAsString(sd);
 											logger.debugf("%s:ImportDiagramAction saved resource as:\n%s", TAG,json);
 											ProjectResource resource = new ProjectResource(newId,

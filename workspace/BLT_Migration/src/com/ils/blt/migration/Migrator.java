@@ -28,8 +28,8 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.block.AnchorDirection;
+import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
-import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.connection.ConnectionType;
@@ -318,6 +318,12 @@ public class Migrator {
 			for(SerializableAnchor anc:anchors) {
 				if( anc.getDirection().equals(AnchorDirection.OUTGOING)) {
 					block.setClassName("com.ils.block.SourceConnection");
+					for(BlockProperty prop:block.getProperties() ) {
+						if( prop.getName().equals(BlockConstants.BLOCK_PROPERTY_TAG_PATH)) {
+							prop.setBindingType(BindingType.TAG_READ);
+							break;
+						}
+					}
 					break;
 				}
 			}
@@ -394,8 +400,8 @@ public class Migrator {
 				if( anchors.length==2 && 
 				    !anchors[0].getDirection().equals(anchors[1].getDirection()) ) {
 					
-					SerializableConnection incxn = null;
-					SerializableConnection outcxn= null;
+					List<SerializableConnection> inConnections = new ArrayList<>();
+					List<SerializableConnection> outConnections = new ArrayList<>();
 					for(SerializableConnection scxn:sdiag.getConnections()) {
 						if( scxn==null ) {
 							System.err.println(String.format("%s.NULL connection in diagram %s",TAG,sdiag.getName()));
@@ -403,22 +409,46 @@ public class Migrator {
 						}
 						if(scxn.getBeginBlock()==null ) continue;   // Dangling connection
 						if(scxn.getEndBlock()==null )   continue;
-						if(scxn.getBeginBlock().equals(block.getId())) outcxn = scxn;
-						else if(scxn.getEndBlock().equals(block.getId())) incxn = scxn;
+						if(scxn.getBeginBlock().equals(block.getId())) outConnections.add(scxn);
+						else if(scxn.getEndBlock().equals(block.getId())) inConnections.add(scxn);
 					}
-					if( incxn!=null && outcxn!=null) {
+					
+					// Draw connections between all combinations.
+					if( !inConnections.isEmpty() && !outConnections.isEmpty()) {
 						//System.err.println(String.format("%s.JUNCTION %s: in connection %s",TAG,block.getName(),incxn.toString()));
 						//System.err.println(String.format("%s.JUNCTION %s: out connection %s",TAG,block.getName(),incxn.toString()));
-						// Make two connections into one, delete block
-						incxn.setEndBlock(outcxn.getEndBlock());
-						incxn.setEndAnchor(outcxn.getEndAnchor());
-						if( !outcxn.getType().equals(ConnectionType.ANY)) incxn.setType(outcxn.getType());
+						for(SerializableConnection incxn:inConnections ) {
+							int count = 0;
+							for(SerializableConnection outcxn:outConnections) {
+								// Reuse - re-target the input connection
+								if(count==0 ) {
+									incxn.setEndBlock(outcxn.getEndBlock());
+									incxn.setEndAnchor(outcxn.getEndAnchor());
+									if( !outcxn.getType().equals(ConnectionType.ANY)) incxn.setType(outcxn.getType());
+								}
+								else {
+									// Create a new connection
+									SerializableConnection cxn = new SerializableConnection();
+									cxn.setBeginBlock(incxn.getBeginBlock());
+									cxn.setBeginAnchor(incxn.getBeginAnchor());
+									cxn.setType(incxn.getType());
+									cxn.setEndBlock(outcxn.getEndBlock());
+									cxn.setEndAnchor(outcxn.getEndAnchor());
+									if( !outcxn.getType().equals(ConnectionType.ANY)) cxn.setType(outcxn.getType());
+									sdiag.addConnection(cxn);
+								}
+								count++;
+							}
+						}
+						// Delete the junction block
 						//System.err.println(String.format("%s.JUNCTION new connection %s",TAG,incxn.toString()));
 						blocksToDelete.add(block);
-						sdiag.removeConnection(outcxn);
+						for(SerializableConnection outcxn:outConnections) {
+							sdiag.removeConnection(outcxn);
+						}
 					}
 					else {
-						System.err.println(String.format("%s: %s - unable to remove extraneous Junction (%s)",TAG,sdiag.getName(),block.getName()));
+						System.err.println(String.format("%s: %s - unable to remove extraneous Junction (%s) - it is dangling",TAG,sdiag.getName(),block.getName()));
 					}
 				}
 			}

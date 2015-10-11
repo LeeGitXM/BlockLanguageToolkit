@@ -13,6 +13,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -39,6 +40,8 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
+import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
+import com.inductiveautomation.ignition.designer.navtree.model.ProjectBrowserRoot;
 
 /**
  * Scan all dialogs defined in the gateway and report any issues. 
@@ -55,17 +58,20 @@ public class ValidationDialog extends JDialog {
 	private String[] columnNames = {"Block","Issue"};
 	private List<SerializableBlockStateDescriptor> issues = null;
 	private final ApplicationRequestHandler requestHandler;
+	private final DesignerContext context;
 	private final ResourceBundle rb;
 	private JTable table = null;
 	private JPanel internalPanel = null;
 	
 	public ValidationDialog(DesignerContext ctx) {
 		super(ctx.getFrame());
+		this.context = ctx;
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.setTitle("Diagram Validity Analysis");
 		this.rb = ResourceBundle.getBundle("com.ils.blt.designer.designer");  // designer.properties
 		this.requestHandler = new ApplicationRequestHandler();
-		setModal(true);
+		setModal(false);
+		setAlwaysOnTop(true);
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));
 		initialize();
@@ -88,7 +94,6 @@ public class ValidationDialog extends JDialog {
 		buttonPanel.add(okButton, "");
 		okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				saveEntries();
 				dispose();
 			}
 		});
@@ -185,17 +190,51 @@ public class ValidationDialog extends JDialog {
         });
         table.setAutoCreateRowSorter(true);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
         table.setPreferredScrollableViewportSize(new Dimension(TABLE_WIDTH, TABLE_HEIGHT));
 
         // Select on the row and navigate to the char. 
         table.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
             public void valueChanged(ListSelectionEvent event) {
                 // On a click we get the nav tree path and display the diagram.
-            	// Get proper row even if sorted.
+            	// Get proper row even if sorted. First column is the nav tree path.
             	int baseRow = table.convertRowIndexToModel(table.getSelectedRow());
-            	//long resId = ((Long)tableModel.getValueAt(baseRow,0)).longValue();
-				//hook.getWorkspace().openChart(resId);
+            	String path = table.getModel().getValueAt(baseRow, 0).toString();
+            	// Lop off the block name to get the diagram path
+            	int pos = path.lastIndexOf(":");
+            	if( pos>0 ) path = path.substring(0, pos);
+            	ProjectBrowserRoot project = context.getProjectBrowserRoot();
+            	AbstractNavTreeNode root = null;
+            	AbstractNavTreeNode node = null;
+            	root = project.findChild("Project");
+            	if(root!=null) node = findChildInTree(root,"ROOT");
+            	// The specified path is colon-delimited.
+				String[] pathArray = path.toString().split(":");
+
+				int index = 1;  // Skip the leading colon
+				while( index<pathArray.length ) {
+					node = findChildInTree(node,pathArray[index]);
+					if( node!=null ) {
+						node.expand();
+						try {
+							Thread.sleep(100); 
+						}
+						catch(InterruptedException ignore) {}
+					}
+					else{
+						log.warnf("%s.receiveNotification: Unable to find node (%s) on browser path",TAG,pathArray[index]);
+						break;
+					}
+					index++;
+				}
+
+				if( node!=null ) {
+					node.onDoubleClick();    // Opens the diagram
+				}
+				else {
+					log.warnf("%s.receiveNotification: Unable to open browser path (%s)",TAG,path.toString());
+				}
+            	
             }
         });
         
@@ -218,10 +257,28 @@ public class ValidationDialog extends JDialog {
 		return label;
 	}
 	
-
-	// Read all widget values and save to persistent storage.
-	// The validation has made them all legal
-	private void saveEntries() {
-		
+	/**
+	 * We have not been successful with the findChild method .. so we've taken it on ourselves.
+	 * @param root
+	 * @param name
+	 * @return
+	 */
+	private AbstractNavTreeNode findChildInTree(AbstractNavTreeNode root,String name) {
+		AbstractNavTreeNode match = null;
+		if( root!=null ) {
+			@SuppressWarnings("unchecked")
+			Enumeration<AbstractNavTreeNode> nodeWalker = root.children();
+			AbstractNavTreeNode child = null;
+			
+			while( nodeWalker.hasMoreElements() ) {
+				child = nodeWalker.nextElement();
+				log.infof("%s.findChildInTree: testing %s vs %s",TAG,name,child.getName());
+				if( child.getName().equalsIgnoreCase(name)) {
+					match = child;
+					break;
+				}
+			}
+		}
+		return match;
 	}
 }

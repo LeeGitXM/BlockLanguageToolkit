@@ -435,7 +435,13 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	}
 	@Override
 	public boolean hasActiveSubscription(ProcessBlock block,BlockProperty property) {
-		return tagListener.hasActiveSubscription(block, property);
+		// If the block is disabled, report true (meaning not a problem)
+		ProcessDiagram diagram = getDiagram(block.getParentId());
+		boolean result = true;
+		if( diagram !=null && !diagram.getState().equals(DiagramState.DISABLED)) {
+			result = tagListener.hasActiveSubscription(block, property);
+		}
+		return result;
 	}
 	/**
 	 * Stop the tag subscription associated with a particular property of a block.
@@ -444,7 +450,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public void removeSubscription(ProcessBlock block,BlockProperty property) {
 		if( property!=null && property.getBinding()!=null && 
 			(	property.getBindingType()==BindingType.TAG_READ || 
-				property.getBindingType()==BindingType.TAG_READ ||
+				property.getBindingType()==BindingType.TAG_READWRITE ||
 				property.getBindingType()==BindingType.TAG_MONITOR )  ) {
 			String tagPath = property.getBinding().toString();
 			ProcessDiagram diagram = getDiagram(block.getParentId());
