@@ -5,7 +5,7 @@
 	<property name="version.build" value="16" />	
 	<property name="root.dir" value="${basedir}/../.." />
 	<property name="jar.dir" value="${root.dir}/external/lib" />
-	<property name="sdk.dir" value="${root.dir}/ignition-77/lib" />
+	<property name="sdk.dir" value="${root.dir}/ignition-78/Ignition-78/lib" />
 	<property name="common.jar.name" value="ils-common.jar" />
 	<property name="common.bin.dir" value="${root.dir}/common/workspace/ILS_Common/bin" />
 	<property name="common.src.dir" value="${root.dir}/common/workspace/ILS_Common/src" />
@@ -15,18 +15,6 @@
 	<property name="migration.src.dir" value="${root.dir}/blt/workspace/BLT_Migration/src" />
 	<property name="ant.build.javac.source" value="1.7"/>
 	<property name="ant.build.javac.target" value="1.7"/>
-		
-	<!-- External jar classpath -->
-	<path id="ils-classpath">
-	   <fileset dir="${jar.dir}">
-	      <include name="*.jar"/>
-	   </fileset>
-		<fileset dir="${sdk.dir}">
-			 <include name="*.jar"/>
-		</fileset>
-	   <pathelement path="${build.dir}"/>
-	</path>
-	
 	
 	<!-- Common jar classpath -->
 	<!-- The gateway, designer and clients depend on the Common -->
@@ -73,11 +61,14 @@
 		    <zipgroupfileset dir="${jar.dir}" includes="sqlite-jdbc*.jar"/>
 			<zipgroupfileset dir="${jar.dir}" includes="${block.jar.name}"/>
 			<zipgroupfileset dir="${jar.dir}" includes="jackson-*.jar"/>
+			<zipgroupfileset dir="${jar.dir}" includes="commons-lang3*.jar"/>
 			<zipgroupfileset dir="${jar.dir}" includes="commons-math*.jar"/>
 			<zipgroupfileset dir="${sdk.dir}" includes="ignition-common.jar"/>
 			<zipgroupfileset dir="${sdk.dir}" includes="designer-api.jar"/>
 			<zipgroupfileset dir="${sdk.dir}" includes="client-api.jar"/>
 			<zipgroupfileset dir="${jar.dir}" includes="ils-common.jar"/>
+			<zipgroupfileset dir="${jar.dir}" includes="log4j*.jar"/>
+			<zipgroupfileset dir="${jar.dir}" includes="slf4j*.jar"/>
 			<zipgroupfileset dir="${basedir}/BLT_Build/bin/BLT_Common/dist/" includes="*.jar"/>
 			<zipgroupfileset dir="${basedir}/BLT_Build/bin/BLT_Designer/dist/" includes="*.jar"/>
 		</jar>
