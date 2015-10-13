@@ -185,7 +185,7 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 		for( TimestampedData td:buffer) {
 			Map<String,String> qvMap = new HashMap<>();
 			qvMap.put("Value", td.qv.getValue().toString());
-			qvMap.put("Expiration", formatter.format(new Date(td.timestamp)));
+			qvMap.put("Expiration", dateFormatter.format(new Date(td.timestamp)));
 			outbuffer.add(qvMap);
 		}
 		return descriptor;

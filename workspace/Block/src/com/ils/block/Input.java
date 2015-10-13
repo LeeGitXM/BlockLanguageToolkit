@@ -39,7 +39,6 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 	private BlockProperty tagPathProperty = null;
 	protected BlockProperty valueProperty = null;
 	protected QualifiedValue qv = null;    // Most recent output value
-	protected SimpleDateFormat dateFormatter = new SimpleDateFormat(DEFAULT_FORMAT);
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */

@@ -3,12 +3,14 @@
 # NOTE: The tag here must match that set for the application.
 #
 log: [DATE] [TIME] Start Testing ...
+PROVIDER = "TAG_ISOLATION"
 # Script aliases - module is with respect to script directory
 # -- these are scripts of general interest
 script: getInternalAttribute blockProxy.internalAttribute(dpath,name,att)
 script: getInternalBufferSize blockProxy.internalBufferSize(dpath,name)
 script: getInternalBufferValue blockProxy.internalBufferValue(dpath,name,att,row)
 script: getState blockProxy.getBlockState(dpath,name)
+script: getTagTime timeFactor.getTagTime(tpath,provider)
 script: resetBlock blockProxy.reset(dpath,name)
 script: resetDiagram diagramProxy.reset(name)
 script: sendTimestampedSignal interfaces.sendTimestampedSignal(dpath,command,yr,mon,day,hr,min,sec)
@@ -20,8 +22,7 @@ timefactor: 15
 setTimeFactor (15)
 
 # Specify the provider that corresponds to the application configuration
-tagprovider: TAG_ISOLATION
-#tagprovider: HISTORY
+tagprovider: $PROVIDER
 setStateForApplication("app75","ISOLATED")
 
 status: setup complete.

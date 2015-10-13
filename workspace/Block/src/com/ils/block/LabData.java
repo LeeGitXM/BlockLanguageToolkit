@@ -6,7 +6,6 @@ package com.ils.block;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
@@ -24,7 +23,6 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
-import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -38,10 +36,11 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 public class LabData extends Input implements ProcessBlock {
 	private final static String BLOCK_PROPERTY_TIME_PATH = "TimeTagPath";
 	private final static String BLOCK_PROPERTY_VALUE_PATH = "ValueTagPath";
+	private SimpleDateFormat customFormatter = new SimpleDateFormat(DEFAULT_FORMAT);
 	private BlockProperty timePathProperty = null;
 	private BlockProperty valuePathProperty = null;
 	protected QualifiedValue currentValue = null;   // Most recent output value
-	protected QualifiedValue currentTime = null;    // Most recent output value
+	protected Date currentTime = null;              // Most recent output value
 	private final Watchdog dog;
 	private double synchInterval = 0.5; // 1/2 sec synchronization by default
 	
@@ -119,47 +118,54 @@ public class LabData extends Input implements ProcessBlock {
 	@Override
 	public void acceptValue(IncomingNotification incoming) {
 		baseAcceptValue(incoming);
+		String port = null;
+		
 		// There may be no input connection
-		if( incoming.getConnection()!=null && incoming.getConnection().getDownstreamPortName()!=null ) {
-			String port = incoming.getConnection().getDownstreamPortName();
-			if( port.equalsIgnoreCase(timePathProperty.getName() )) {
-				currentTime = incoming.getValue();
-			}
-			else if( port.equalsIgnoreCase(valuePathProperty.getName() )) {
-				currentValue = incoming.getValue();
-			}
-			else {
-				log.warnf("%s.acceptValue: received a value for an unknown property (%s), ignoring",getName(),port);
-			}
-
-			if( !isLocked() && running ) {
-				if( qv.getValue() != null ) {
-					log.infof("%s.acceptValue: %s (%s at %s)",getName(),qv.getValue().toString(),qv.getQuality().getName(),
-							qv.getTimestamp().toString());
-					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
-					controller.acceptCompletionNotification(nvn);
-				}
-				else {
-					log.warnf("%s.acceptValue: received a null value, ignoring",getName());
-				}
-			}
-			// Even if locked, we update the current state
-			if( qv.getValue()!=null) {
-				valueProperty.setValue(qv.getValue());
-				notifyOfStatus(qv);
-			}
-
-
-			if( synchInterval>0 ) {
-				dog.setSecondsDelay(synchInterval);
-				timer.updateWatchdog(dog);  // pet dog
-			}
-			else {
-				evaluate();
-			}
+		if( incoming.getConnection()!=null  ) {
+			port = incoming.getConnection().getDownstreamPortName();
+		}
+		else if(incoming.getPropertyName()!=null) {
+			port = incoming.getPropertyName();
 		}
 		else {
 			log.warnf("%s.acceptValue: received a value with no port designation, ignoring",getName());
+			return;
+		}
+			
+		if( port.equalsIgnoreCase(timePathProperty.getName()) && incoming.getValue().getValue()!=null ) {
+			// The input can be either a date or string 
+			Date timestamp = null;
+			if( incoming.getValue().getValue() instanceof Date ) {
+				timestamp = (Date)incoming.getValue().getValue();
+			}
+			else {
+				try {
+					timestamp = customFormatter.parse(incoming.getValue().getValue().toString());
+				}
+				catch(ParseException pe) {
+					log.errorf("%s.acceptValue: Exception formatting time as %s (%s)",getName(),dateFormatter.toString(),pe.getLocalizedMessage());
+				} 
+			}
+			currentTime = timestamp;
+		}
+		else if( port.equalsIgnoreCase(valuePathProperty.getName() )) {
+			currentValue = incoming.getValue();
+		}
+		else {
+			log.warnf("%s.acceptValue: received a value for an unknown property (%s), ignoring",getName(),port);
+			return;
+		}
+		
+		if( currentValue!=null && currentTime!=null) {
+			qv = new BasicQualifiedValue(currentValue.getValue(),currentValue.getQuality(),currentTime);
+		}
+
+		if( synchInterval>0 ) {
+			dog.setSecondsDelay(synchInterval);
+			timer.updateWatchdog(dog);  // pet dog
+		}
+		else {
+			evaluate();
 		}
 	}
 
@@ -170,26 +176,11 @@ public class LabData extends Input implements ProcessBlock {
 	 */
 	@Override
 	public void evaluate() {
-		if( currentTime==null || currentValue==null ) return; // Shouldn't happen
+		if( qv == null ) return; // Shouldn't happen
 		if( !isLocked() ) {
-			Date timestamp = null;
-			if( currentTime.getValue() instanceof Date ) {
-				timestamp = (Date)currentTime.getValue();
-			}
-			else {
-				try {
-					timestamp = dateFormatter.parse(currentTime.getValue().toString());
-				}
-				catch(ParseException pe) {
-					log.errorf("%s.acceptValue: Exception formatting time as %s (%s)",getName(),dateFormatter.toString(),pe.getLocalizedMessage());
-				} 
-			}
-			log.infof("%s.evaluate: Using date as (%s)",getName(),dateFormatter.format(timestamp));
-			QualifiedValue result = new BasicQualifiedValue(currentValue.getValue(),currentValue.getQuality(),timestamp);
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 			controller.acceptCompletionNotification(nvn);
-			notifyOfStatus(result);
-			qv = result;
+			notifyOfStatus(qv);
 			log.infof("%s.evaluate: %s %s %s",getName(),qv.getValue().toString(),
 					qv.getQuality().getName(),dateFormatter.format(qv.getTimestamp()));
 		}
@@ -203,7 +194,7 @@ public class LabData extends Input implements ProcessBlock {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
 		if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_FORMAT)) {
-			dateFormatter = new SimpleDateFormat(event.getNewValue().toString());
+			customFormatter = new SimpleDateFormat(event.getNewValue().toString());
 		}
 		else if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL)) {
 			try {

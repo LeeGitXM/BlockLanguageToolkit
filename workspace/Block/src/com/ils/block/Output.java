@@ -76,12 +76,12 @@ public class Output extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void notifyOfStatus() {
-		QualifiedValue qv = new TestAwareQualifiedValue(timer,valueProperty.getValue());
-		notifyOfStatus(qv);
+		QualifiedValue qvalue = new TestAwareQualifiedValue(timer,valueProperty.getValue());
+		notifyOfStatus(qvalue);
 		
 	}
-	private void notifyOfStatus(QualifiedValue qv) {
-		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
+	private void notifyOfStatus(QualifiedValue qvalue) {
+		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qvalue);
 	}
 	
 	/**

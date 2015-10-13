@@ -29,12 +29,12 @@ public class HighPerformanceEdgeRouter extends AbstractEdgeRouter {
 	private static final String TAG = "HighPerformanceEdgeRouter";
 	private static LoggerEx log = LogUtil.getLogger(HighPerformanceEdgeRouter.class.getPackage().getName());
 	private Map<UUID, Rectangle> rectangles;
-	private static final int BLOCK_SIZE = 100;    // Typical
+	private static final int BLOCK_SIZE = 100;     // Nominal
 	private static final int ROUNDING_RADIUS = 8;
 	
 	@Override
 	public void setup(Map<UUID, Rectangle> obstacles) {
-		log.infof("%s.setup ... %d blocks",TAG,obstacles.size());
+		//log.infof("%s.setup ... %d blocks",TAG,obstacles.size());
 		this.rectangles = obstacles;
 	}
  
@@ -53,6 +53,8 @@ public class HighPerformanceEdgeRouter extends AbstractEdgeRouter {
 	 * right. That is the vast majority of blocks have inputs on the left and 
 	 * outputs on the right. Only a few have inputs on top or outputs on the 
 	 * bottom.
+	 * 
+	 * The "true" values are the midpoints of the stub. 
 	 */
 	@Override
 	protected List<Point> route(Point start, Point end, Point trueStart, Point trueEnd) {   
@@ -93,6 +95,8 @@ public class HighPerformanceEdgeRouter extends AbstractEdgeRouter {
 	 * of the diagram. It transforms the connections to window units,
 	 * calls route() on each connections, then calls the pathmaker
 	 * to create 2D paths.
+	 * 
+	 * "Y" increases downward
 	 */
 	@Override
 	public List<Path2D> routeAll(Collection<Connection> connections) {
@@ -126,13 +130,42 @@ public class HighPerformanceEdgeRouter extends AbstractEdgeRouter {
 		}
 	}
 	private void drawRightToTop(Point start,Point end,List<Point>points) {
-		// TODO
-		points.add(start);
-		points.add(new Point(end.x, start.y));
-		points.add(end);
+		//log.infof("%s.drawRightToTop %d,%d -> %d,%d ...",TAG,start.x,start.y,end.x,end.y);
+		// Target is lower right
+		if( start.y+ROUNDING_RADIUS<end.y && start.x+ROUNDING_RADIUS<end.x ) {
+				points.add(start);
+				points.add(new Point(end.x, start.y));
+				points.add(end);
+		}
+		// Target is lower left
+		else if( start.x+ROUNDING_RADIUS>=end.x && start.y+BLOCK_SIZE/2+2*ROUNDING_RADIUS<end.y ) {
+			int midy = (start.y+BLOCK_SIZE/2+end.y)/2 + ROUNDING_RADIUS;
+			points.add(start);
+			points.add(new Point(start.x, midy));
+			points.add(new Point(end.x, midy));
+			points.add(end);
+		}
+		// Target is upper right
+		else if( start.y>=end.y-ROUNDING_RADIUS && start.x+ROUNDING_RADIUS<end.x ) {
+			//log.infof("%s.drawRightToTop upper right %d,%d -> %d,%d ...",TAG,start.x,start.y,end.x,end.y);
+			int top = end.y-2*ROUNDING_RADIUS;
+			points.add(start);
+			points.add(new Point(start.x, top));
+			points.add(new Point(end.x, top));
+			points.add(end);
+		}
+		// Target is upper left
+		else {
+			//log.infof("%s.drawRightToTop upper left %d,%d -> %d,%d ...",TAG,start.x,start.y,end.x,end.y);
+			int top = end.y-2*ROUNDING_RADIUS;
+			if(top>start.y-2*ROUNDING_RADIUS-BLOCK_SIZE/2) top=start.y-2*ROUNDING_RADIUS-BLOCK_SIZE/2;
+			points.add(start);
+			points.add(new Point(start.x, top));
+			points.add(new Point(end.x, top));
+			points.add(end);
+		}
 	}
 	private void drawBottomToLeft(Point start,Point end,List<Point>points) {
-		// TODO
 		points.add(start);	
 		points.add(new Point(start.x, end.y));
 		points.add(end);

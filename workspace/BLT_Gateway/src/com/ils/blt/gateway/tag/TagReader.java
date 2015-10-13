@@ -47,7 +47,7 @@ public class TagReader  {
 	 * @param path fully qualified tag path
 	 */
 	public QualifiedValue readTag(String path) {
-		log.infof("%s..readTag: %s",TAG,path);
+		log.debugf("%s..readTag: %s",TAG,path);
 		if( context==null) return null;                   // Not initialized yet.
 		if(path==null || path.isEmpty() ) return null;    // Path not set
 		QualifiedValue result = null;

@@ -95,7 +95,7 @@ public class TagListener implements TagChangeListener   {
 	 */
 	public synchronized void defineSubscription(ProcessBlock block,BlockProperty property,String tagPath) {
 		
-		log.infof("%s.defineSubscription: considering %s:%s=%s",TAG,block.getName(),property.getName(),tagPath);
+		log.debugf("%s.defineSubscription: considering %s:%s=%s",TAG,block.getName(),property.getName(),tagPath);
 		if( tagPath!=null && tagPath.length() >0  ) {
 			boolean needToStartSubscription = false;
 			BlockPropertyPair key = new BlockPropertyPair(block,property);
@@ -109,14 +109,14 @@ public class TagListener implements TagChangeListener   {
 			}
 			if( list.contains(key))  {   
 				// Duplicate request, nothing to do
-				log.infof("%s.defineSubscription: %s:%s already subscribes to: %s",TAG,block.getName(),property.getName(),tagPath);
+				log.debugf("%s.defineSubscription: %s:%s already subscribes to: %s",TAG,block.getName(),property.getName(),tagPath);
 				return;
 			}
 			
 			list.add(key);
 			tagMap.put(key,tagPath);
 			log.infof("%s.defineSubscription: %s:%s now subscribes to: %s (%s)",TAG,block.getName(),property.getName(),
-					tagPath,(needToStartSubscription?"START":"ALREADY SUBSCRIBED"));
+					tagPath,(needToStartSubscription?"START":"PIGGY-BACK"));
 			if(!stopped ) {
 				if(needToStartSubscription) startSubscriptionForTag(tagPath);
 				else updatePropertyValueFromLinkedProperty(key,list);   // Get the value from another block's property
@@ -169,7 +169,7 @@ public class TagListener implements TagChangeListener   {
 		list.remove(key);
 		// Once the list is empty, we cancel the subscription
 		if(list.isEmpty()) {
-			log.infof("%s.removeSubscription: cancelled %s:%s=%s",TAG,block.getName(),property.getName(),tagPath);
+			log.debugf("%s.removeSubscription: cancelled %s:%s=%s",TAG,block.getName(),property.getName(),tagPath);
 			blockMap.remove(tagPath.toUpperCase());
 			if(!stopped) {
 				// If we're running unsubscribe
@@ -243,11 +243,10 @@ public class TagListener implements TagChangeListener   {
 			}
 
 			TagPath tp = TagPathParser.parse(tagPath);
-			log.infof("%s.startSubscriptionForTag: on tag path %s",TAG,tp.toStringFull());
 			Tag tag = tmgr.getTag(tp);
 			if( tag!=null ) {
 				QualifiedValue value = tag.getValue();
-				log.infof("%s.startSubscriptionForTag: %s = %s (%s at %s)",TAG,
+				log.debugf("%s.startSubscriptionForTag: %s = %s (%s at %s)",TAG,
 						tp.toStringFull(),value.getValue(),
 						(value.getQuality().isGood()?"GOOD":"BAD"),
 						dateFormatter.format(value.getTimestamp()));

@@ -51,7 +51,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  */
 public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropertyChangeListener, WatchdogObserver {
 	protected final static String DEFAULT_FORMAT = "yyyy/MM/dd hh:mm:ss";
-	protected final static SimpleDateFormat formatter = new SimpleDateFormat(DEFAULT_FORMAT);
+	protected final static SimpleDateFormat dateFormatter = new SimpleDateFormat(DEFAULT_FORMAT);
 	protected ExecutionController controller = null;
 	private UUID blockId;
 	private UUID parentId;
@@ -78,7 +78,8 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
-	 *              It does not correspond to a functioning block.
+	 *              In this usage, it does not correspond to a functioning block. This constructor
+	 *              is also used when deserializing. Properties are restored after this initialization.
 	 */
 	public AbstractProcessBlock() {
 		propertyMap = new HashMap<>();
@@ -325,11 +326,11 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		if( log.isDebugEnabled()) {
 			// An input from a TAG_READ bound property does not have a source
 			if( vcn.getConnection()!=null ) {
-				QualifiedValue qv = vcn.getValue();
-				if( qv!=null && qv.getValue()!=null ) {
+				QualifiedValue qvalue = vcn.getValue();
+				if( qvalue!=null && qvalue.getValue()!=null ) {
 					log.debugf("%s.acceptValue: %s (%s) port: %s",getName(),
-							qv.getValue().toString(),
-							qv.getQuality().getName(),
+							qvalue.getValue().toString(),
+							qvalue.getQuality().getName(),
 							vcn.getConnection().getDownstreamPortName());
 
 				}
