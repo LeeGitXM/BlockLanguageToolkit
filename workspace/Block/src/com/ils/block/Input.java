@@ -110,7 +110,7 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 		qv = vcn.getValue();
 		if( !isLocked() && running ) {
 			if( qv.getValue() != null ) {
-				log.infof("%s.acceptValue: propagating %s (%s at %s)",getName(),qv.getValue().toString(),qv.getQuality().getName(),
+				log.debugf("%s.acceptValue: propagating %s (%s at %s)",getName(),qv.getValue().toString(),qv.getQuality().getName(),
 						qv.getTimestamp().toString());
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 				controller.acceptCompletionNotification(nvn);

@@ -115,7 +115,7 @@ public class TagListener implements TagChangeListener   {
 			
 			list.add(key);
 			tagMap.put(key,tagPath);
-			log.infof("%s.defineSubscription: %s:%s now subscribes to: %s (%s)",TAG,block.getName(),property.getName(),
+			log.debugf("%s.defineSubscription: %s:%s now subscribes to: %s (%s)",TAG,block.getName(),property.getName(),
 					tagPath,(needToStartSubscription?"START":"PIGGY-BACK"));
 			if(!stopped ) {
 				if(needToStartSubscription) startSubscriptionForTag(tagPath);
@@ -177,7 +177,7 @@ public class TagListener implements TagChangeListener   {
 				try {
 					TagPath tp = TagPathParser.parse(tagPath);
 					tmgr.unsubscribe(tp, this);
-					log.infof("%s.removeSubscription: unsubscribed to %s",TAG,tagPath);
+					log.debugf("%s.removeSubscription: unsubscribed to %s",TAG,tagPath);
 				}
 				catch(IOException ioe) {
 					log.errorf("%s.removeSubscription (%s)",TAG,ioe.getMessage());
