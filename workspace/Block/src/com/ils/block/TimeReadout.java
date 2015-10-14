@@ -3,6 +3,7 @@
  */
 package com.ils.block;
 
+import java.text.SimpleDateFormat;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
@@ -26,20 +27,16 @@ import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
- * Present a digital readout of the time of last value that passed through.
+ * Present a digital readout of the last value that passed through.
  */
 @ExecutableBlock
-public class Readout extends AbstractProcessBlock implements ProcessBlock {
-	protected final UtilityFunctions fncs;
-	private String format = "%s";
-	private PropertyType type = PropertyType.STRING;
-	protected BlockProperty valueProperty = null;
+public class TimeReadout extends Readout implements ProcessBlock {
+	private SimpleDateFormat customFormatter = new SimpleDateFormat(DEFAULT_FORMAT);
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
-	public Readout() {
-		this.fncs = new UtilityFunctions();
+	public TimeReadout() {
 		initialize();
 		initializePrototype();
 	}
@@ -51,83 +48,45 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 	 * @param parent universally unique Id identifying the parent of this block
 	 * @param block universally unique Id for the block
 	 */
-	public Readout(ExecutionController ec,UUID parent,UUID block) {
+	public TimeReadout(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
-		this.fncs = new UtilityFunctions();
 		initialize();
-	}
-	/**
-	 * On a reset, clear the display.
-	 */
-	@Override
-	public void reset() {
-		super.reset();
-		valueProperty.setValue("");
-		notifyOfStatus();
 	}
 	/**
 	 * Add properties that are new for this class.
 	 * Populate them with default values.
 	 */
 	private void initialize() {	
-		setName("Readout");
+		setName("TimeReadout");
 		// Define the display format
-		BlockProperty fmt = new BlockProperty(BlockConstants.BLOCK_PROPERTY_FORMAT,format,PropertyType.STRING,true);
+		BlockProperty fmt = new BlockProperty(BlockConstants.BLOCK_PROPERTY_FORMAT,DEFAULT_FORMAT,PropertyType.STRING,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_FORMAT, fmt);
 		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.STRING,false);
 		valueProperty.setBindingType(BindingType.ENGINE);
 		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 		
 		// Define a single input -- but allow multiple connections
-		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
+		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
 		anchors.add(input);
 
 		// Define a single output
-		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
+		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.ANY);
 		anchors.add(output);
-	}
-	/**
-	 * Send status update notification for our last output value.
-	 */
-	@Override
-	public void notifyOfStatus() {
-		QualifiedValue qv = new TestAwareQualifiedValue(timer,valueProperty.getValue());
-		notifyOfStatus(qv);
-		
-	}
-	protected void notifyOfStatus(QualifiedValue qv) {
-		log.debugf("%s.notifyOfStatus (%s)", getName(), qv.getValue().toString());
-		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
-		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 	
 	/**
-	 * Handle a change to the format. The format must be a legal SimpleDateFormat.
+	 * Handle a change to the format. We deduce data type from the format.
 	 */
 	@Override
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
 		if(propertyName.equals(BlockConstants.BLOCK_PROPERTY_FORMAT)) {
-			format = event.getNewValue().toString();
+			String format = event.getNewValue().toString();
 			log.debugf("%s.propertyChange: New display format is (%s).",getName(),format);
-			// Validate the format for a data type
-			if( format.matches(".*%[0-9]*[.]?[0-9]*s.*") ) {
-				type=PropertyType.STRING;
-			}
-			else if( format.matches(".*%[0-9]*d.*") ) {
-				type=PropertyType.INTEGER;
-			}
-			else if( format.matches(".*%[0-9]*[.]?[0-9]*f.*") ) {
-				type=PropertyType.DOUBLE;
-			}
-			else {
-				log.warnf("%s.propertyChange: Did not recognize format (%s), using (%s).",getName(),format,"%s");
-				type=PropertyType.STRING;
-				format = "%s";
-			}
+			customFormatter = new SimpleDateFormat(format);
 		}
-		log.debugf("READOUT: %s property change %s = %s",getName(),propertyName,event.getNewValue().toString());
+		log.debugf("TIMEREADOUT: %s property change %s = %s",getName(),propertyName,event.getNewValue().toString());
 	}
 	
 	/**
@@ -143,44 +102,36 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 				controller.acceptCompletionNotification(nvn);
 				// Convert the value according to the data type specified by the format.
-				String value = "";
 				try {
-					if( type==PropertyType.DOUBLE) {
-						value = String.format(format, fncs.coerceToDouble(qv.getValue()));
-					}
-					else if( type==PropertyType.INTEGER) {
-						value = String.format(format, fncs.coerceToInteger(qv.getValue()));
-					}
-					else {
-						value = String.format(format,fncs.coerceToString(qv.getValue()));
-					}
+					String value = customFormatter.format(qv.getTimestamp());
+					valueProperty.setValue(value);
+					log.tracef("%s.acceptValue: port %s formatted value =  %s.",getName(),incoming.getConnection().getUpstreamPortName(),value);
+					
+					qv = new BasicQualifiedValue(value,qv.getQuality(),qv.getTimestamp()); 
+					valueProperty.setValue(value);
+					log.tracef("%s.acceptValue: port %s formatted value =  %s.",getName(),incoming.getConnection().getUpstreamPortName(),value);
+					notifyOfStatus(qv);
 				}
 				catch(Exception ex) {
-					log.warn(getName()+".acceptValue: error formatting "+qv.getValue()+" with "+format+" as "+type.name(),ex);  // Print stack trace
-				}
-				qv = new BasicQualifiedValue(value,qv.getQuality(),qv.getTimestamp()); 
-				valueProperty.setValue(value);
-				log.tracef("%s.acceptValue: port %s formatted value =  %s.",getName(),incoming.getConnection().getUpstreamPortName(),value);
-				notifyOfStatus(qv);
+					log.warn(getName()+".acceptValue: error formatting timestamp",ex);  // Print stack trace
+				} 
 			}
 		}
 	}
-	
-
 	
 	/**
 	 * Define the palette prototype for this block class.
 	 */
 	private void initializePrototype() {
-		prototype.setPaletteIconPath("Block/icons/palette/readout.png");
-		prototype.setPaletteLabel("Readout");
-		prototype.setTooltipText("Show current connection value. Sample formats: %s (string), %3.2f (float), %d (integer)");
+		prototype.setPaletteIconPath("Block/icons/palette/time_readout.png");
+		prototype.setPaletteLabel("TimeReadout");
+		prototype.setTooltipText("Show time of most recent value. Use SimpleDateFormat to configure the output.");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_MISC);
 		BlockDescriptor view = prototype.getBlockDescriptor();
 		view.setBlockClass(getClass().getCanonicalName());
 		view.setStyle(BlockStyle.READOUT);
 		view.setPreferredHeight(40);
-		view.setPreferredWidth(100);    // 15 chars
+		view.setPreferredWidth(150);    // 20 chars
 		view.setCtypeEditable(true);
 	}
 }

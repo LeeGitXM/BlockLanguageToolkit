@@ -40,6 +40,7 @@ public interface BlockConstants   {
 	public static final String BLOCK_PROPERTY_LIMIT_TYPE    = "LimitType";
 	public static final String BLOCK_PROPERTY_MEAN          = "Mean";
 	public static final String BLOCK_PROPERTY_OFFSET        = "Offset";
+	public static final String BLOCK_PROPERTY_PROPERTY      = "Property";            // Property name
 	public static final String BLOCK_PROPERTY_SAMPLE_SIZE   = "SampleSize";
 	public static final String BLOCK_PROPERTY_SCOPE         = "Scope";	
 	public static final String BLOCK_PROPERTY_SCAN_INTERVAL    = "ScanInterval";     // Compute interval ~ sec

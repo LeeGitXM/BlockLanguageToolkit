@@ -3,6 +3,7 @@
  */
 package com.ils.block;
 
+import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
@@ -14,27 +15,26 @@ import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
-import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.notification.Signal;
-import com.ils.blt.common.notification.SignalNotification;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
- * On receipt of a truth-value that matches the criterion, this class emits a 
+ * On receipt of a data value on its input, this class emits a 
  * specified CONFIGURE signal with the intent of setting property values in the 
  * downstream block.
  */
 @ExecutableBlock
 public class PropertySetter extends AbstractProcessBlock implements ProcessBlock {
 	private static String TAG = "PropertySetter";
-	private Signal command = new Signal();
-	private TruthValue trigger = TruthValue.TRUE;
+	private Signal signal = null;   // Last signal sent
+	private String propertyName = "";
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -63,13 +63,11 @@ public class PropertySetter extends AbstractProcessBlock implements ProcessBlock
 	private void initialize() {	
 		setName("PropertySetter");
 		
-		BlockProperty commandProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_COMMAND,command.getCommand(),PropertyType.STRING,true);
-		setProperty(BlockConstants.BLOCK_PROPERTY_COMMAND, commandProperty);
-		BlockProperty triggerProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER,trigger,PropertyType.BOOLEAN,true);
-		setProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER, triggerProperty);
+		BlockProperty propertyProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_PROPERTY,propertyName,PropertyType.STRING,true);
+		setProperty(BlockConstants.BLOCK_PROPERTY_PROPERTY, propertyProperty);
 		
 		// Define a single input
-		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
+		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
 		anchors.add(input);
 
 		// Define a single output
@@ -77,6 +75,11 @@ public class PropertySetter extends AbstractProcessBlock implements ProcessBlock
 		anchors.add(output);
 	}
 	
+	@Override
+	public void reset() {
+		super.reset();
+		signal = null;
+	}
 
 	/**
 	 * As soon as a fresh value arrives, trigger the output signal.
@@ -88,23 +91,9 @@ public class PropertySetter extends AbstractProcessBlock implements ProcessBlock
 		super.acceptValue(vcn);
 		QualifiedValue qv = vcn.getValue();
 		
-		if( qv.getQuality().isGood() && !isLocked() && qv.getValue().toString().equalsIgnoreCase(trigger.name()))  {
-			QualifiedValue result = new BasicQualifiedValue(command,qv.getQuality(),qv.getTimestamp());
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
-			controller.acceptCompletionNotification(nvn);
-			notifyOfStatus(result);
-		}
-	}
-	/**
-	 * When a fresh value arrives that matches the trigger, send the output signal.
-	 * @param vcn incoming new value.
-	 */
-	@Override
-	public void acceptValue(SignalNotification sn) {
-		Signal sig = sn.getSignal();
-
-		if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_START))  {
-			QualifiedValue result = new BasicQualifiedValue(command);
+		if( qv.getQuality().isGood() && !isLocked() && qv.getValue() != null )  {
+			signal = new Signal(BlockConstants.COMMAND_CONFIGURE,propertyName,qv.getValue().toString());
+			QualifiedValue result = new BasicQualifiedValue(signal,qv.getQuality(),qv.getTimestamp());
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus(result);
@@ -117,23 +106,30 @@ public class PropertySetter extends AbstractProcessBlock implements ProcessBlock
 	@Override
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
-		String propertyName = event.getPropertyName();
-		log.infof("%s.propertyChange: Received %s = %s",TAG,propertyName,event.getNewValue().toString());
-		if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_INTERVAL)) {
-			command.setCommand(event.getNewValue().toString());
-		}
-		else if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_TRIGGER)) {
-			try {
-				trigger = TruthValue.valueOf(event.getNewValue().toString().toUpperCase());
-			}
-			catch(IllegalArgumentException iae) {
-				log.warnf("%s.propertyChange: Trigger must be a TruthValue (%s)",TAG,iae.getMessage());
-			}
+		String propName = event.getPropertyName();
+		log.infof("%s.propertyChange: Received %s = %s",TAG,propName,event.getNewValue().toString());
+		if( propName.equals(BlockConstants.BLOCK_PROPERTY_PROPERTY)) {
+			propertyName = event.getNewValue().toString();
 		}
 		else {
 			log.warnf("%s.propertyChange:Unrecognized property (%s)",TAG,propertyName);
 		}
 	}
+	/**
+	 * @return a block-specific description of internal statue
+	 */
+	@Override
+	public SerializableBlockStateDescriptor getInternalStatus() {
+		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
+		Map<String,String> attributes = descriptor.getAttributes();
+		
+		if( signal!=null ) {
+			attributes.put("Property Name",signal.getArgument() );
+			attributes.put("Property Value",signal.getPayload());
+		}
+		return descriptor;
+	}
+	
 	/**
 	 * Send status update notification for our last latest state.
 	 */

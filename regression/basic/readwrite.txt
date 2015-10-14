@@ -4,6 +4,8 @@
 DIAGRAM="app75/family75/readwrite"
 Show: browser $DIAGRAM
 
+tag: LabDataDate MemoryTags/LabDataDate
+tag: LabDataStringDate MemoryTags/LabDataStringDate
 tag: LabDataOutput1 MemoryTags/LabDataOutput1
 tag: LabDataOutput2 MemoryTags/LabDataOutput2
 tag: Parameter MemoryTags/NumericParameter
@@ -71,7 +73,10 @@ Step: LabData Block
 Tagset: LabDataInput
 # Note: Need to wait for the coalescing time for new output
 10:10:00 33
-10:10:20 Assert: LabDataOutput1 = 33 "LabData1 out=33"
-10:10:20 Assert: LabDataOutput2 = 33 "LabData2 out=33"
-10:10:30 Assert: getTagTime($PROVIDER,LabDataOutput1) < 0 "LabData1 time not set"
-10:10:30 Assert: getTagTime($PROVIDER,LabDataOutput2) < 0 "LabData2 time not set"
+10:10:05 setStringValue($PROVIDER,LabDataStringDate,"2000/07/04 12:00:00")
+10:10:10 setDateValue($PROVIDER,LabDataDate,"2010/07/04 12:00:00")
+10:10:30 Assert: LabDataOutput1 = 33 "LabData1 out=33"
+10:10:30 Assert: LabDataOutput2 = 33 "LabData2 out=33"
+# The block's format is a date only
+10:10:50 Assert: getProperty($DIAGRAM,"LABDATA-DATE_READOUT","Value")  = "2010/07/04"  "LabData1 time is its initial time"
+10:10:50 Assert: getProperty($DIAGRAM,"LABDATA-STRINGDATE_READOUT","Value")  = "2000/07/04"  "LabData1 time is its initial time"

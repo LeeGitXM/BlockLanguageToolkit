@@ -14,6 +14,8 @@ run: persistence.txt
 run: pythonblocks.txt
 run: readwrite.txt
 run: scripting.txt
+run: setproperty.txt
 run: sqc.txt
 run: sum.txt
 run: timedlimits.txt
+run: truthpulse.txt
