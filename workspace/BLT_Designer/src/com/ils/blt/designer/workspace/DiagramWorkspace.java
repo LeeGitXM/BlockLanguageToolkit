@@ -587,12 +587,16 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 	/**
 	 * This is called as a result of a user "Save" selection on
-	 * the main menu. We actually save all the diagrams.
+	 * the main menu. If the diagram indicated by the resouceId
+	 * is open, then save it.
 	 */
-	public void saveOpenDiagrams() {
+	public void saveOpenDiagram(long resourceId) {
 		logger.debugf("%s: saveOpenDiagrams",TAG);
 		for(DesignableContainer dc:openContainers.keySet()) {
-			saveDiagramResource((BlockDesignableContainer)dc);
+			BlockDesignableContainer bdc = (BlockDesignableContainer)dc;
+			if( bdc.getResourceId()==resourceId ) {
+				saveDiagramResource((BlockDesignableContainer)dc);
+			}
 		}
 	}
 	

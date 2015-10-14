@@ -1,32 +1,20 @@
 #
 # Simple test of a sum block
 #
-DIAGRAM="app75/family75/sum"
-OBS="OUTOFRANGEOBSERVATION-276"
+DIAGRAM="app75/family75/setproperty"
+TARGET="HIGHLIMITTIMEWINDOW"
 Show: browser $DIAGRAM
-resetDiagram (DIAGRAM)
+resetDiagram ($DIAGRAM)
 
-notification: sumObservation notificationKey.construct($DIAGRAM,$OBS,"out")
-tag: SumResult MemoryTags/SumResult
-tagset: DualFeed MemoryTags/MJKFeed2 MemoryTags/MJKFeed3
+tagset: DualFeed MemoryTags/DoubleInput1 MemoryTags/DoubleInput2
 
-Test: Sum and Range Observation
-Step: In-Range Values
+Test: Setting Properties
+Step: Multiple Values
 Tagset: DualFeed
-10:00 1 1
-10:01 2 2
-10:01:55 Assert: SumResult = 4 "Sum is 4"
-10:02 3 2
-10:02:30 Assert: sumObservation = FALSE "Observe In-Range notification"
-10:02:30 Assert: getState($DIAGRAM,$OBS) = FALSE "Observe In-Range state"
-10:03 4 4
-10:03:55 Assert: SumResult = 8 "Sum is 8"
-Step: Out-of-Range Values
-10:04 .1 -0.1
-10:05 2.43 2.57
-10:05:55 Assert: SumResult = 5 "Sum is 5"
-10:06 -1.4 5.6
-10:07 -12.12 12.12
-10:07:45 Assert: SumResult = 0 "Sum is 0"
-10:07:55 Assert: sumObservation = TRUE "Observe Out-of-Range notification"
-10:08:00 Assert: getState($DIAGRAM,$OBS) = TRUE "Observe Out-of-Range state"
+10:00 66.8 135.4
+10:01 98.1 1947
+10:01:50 Assert: getProperty($DIAGRAM,$TARGET,"Deadband")  = "98.1" "Deadband property is set"
+10:01:50 Assert: getProperty($DIAGRAM,$TARGET,"Limit")     = "1947"  "Limit property is set"
+10:02 100.1 2014
+10:02:50 Assert: getProperty($DIAGRAM,$TARGET,"Deadband")  = "100.1" "Deadband property is updated"
+10:02:50 Assert: getProperty($DIAGRAM,$TARGET,"Limit")     = "2014"  "Limit property is updated"

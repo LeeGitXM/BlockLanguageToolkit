@@ -492,11 +492,12 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	 */
 	@Override
 	public void valueChange(QualifiedValue value) {
-		log.infof("%s.valueChange: received %s.",TAG,value.getValue().toString());
 		String stateString = value.getValue().toString();
 		DiagramState ds = DiagramState.valueOf(stateString);
-		setState(ds);
-		super.fireStateChanged();
-		
+		if( !ds.equals(this.state)) {
+			log.infof("%s.valueChange: new state %s",TAG,value.getValue().toString());
+			setState(ds);
+			super.fireStateChanged();
+		}
 	}
 }

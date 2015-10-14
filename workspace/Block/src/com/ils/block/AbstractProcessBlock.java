@@ -350,7 +350,13 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	public void acceptValue(SignalNotification sn) {
 		Signal sig = sn.getSignal();
 		if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_CONFIGURE) ) {
-			
+			String propertyName = sig.getArgument();
+			BlockProperty bp = getProperty(propertyName);
+			if( bp!=null ) {
+				bp.setValue(sig.getPayload());
+				QualifiedValue qv = new TestAwareQualifiedValue(timer,bp.getValue());
+				controller.sendPropertyNotification(getBlockId().toString(),bp.getName(), qv);
+			}
 		}
 		else if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_EVALUATE) ) {
 			evaluate();

@@ -128,10 +128,10 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void evaluate() {
-		log.infof("%s.evaluate",getName());
+		log.debugf("%s.evaluate",getName());
 		if( !isLocked() ) {
 			TruthValue newState = getAggregateState();
-			log.infof("%s.evaluate new: %s, old: %s",getName(),newState.name(),state.name());
+			log.debugf("%s.evaluate new: %s, old: %s",getName(),newState.name(),state.name());
 			if(newState!=state) {
 				state = newState;
 				QualifiedValue result = new TestAwareQualifiedValue(timer,state.name(),
@@ -155,7 +155,7 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 				synchInterval = Double.parseDouble(event.getNewValue().toString());
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert synch interval to an double (%s)",getName(),nfe.getLocalizedMessage());
+				log.warnf("%s: propertyChange Unable to convert synch interval to a double (%s)",getName(),nfe.getLocalizedMessage());
 			}
 		}
 	}

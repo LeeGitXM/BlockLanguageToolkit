@@ -23,14 +23,24 @@ import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.notification.Signal;
 import com.ils.blt.common.notification.SignalNotification;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
+import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.sqltags.model.types.DataQuality;
 
+/**
+ *  When a truth-value matching the trigger arrives, then the block emits a TRUE,
+ *  waits for the interval to expire and emits a FALSE.
+ * @author chuckc
+ *
+ */
 @ExecutableBlock
 public class TruthValuePulse extends AbstractProcessBlock implements ProcessBlock {
 	private static String TAG = "TruthValuePulse";
-	private Signal command = new Signal();
+	private static final double DEFAULT_INTERVAL = 60.;  // ~ seconds
+	private double interval = DEFAULT_INTERVAL; // One minute pulse by default
 	private TruthValue trigger = TruthValue.TRUE;
+	private final Watchdog dog;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -38,6 +48,7 @@ public class TruthValuePulse extends AbstractProcessBlock implements ProcessBloc
 	public TruthValuePulse() {
 		initialize();
 		initializePrototype();
+		dog = new Watchdog(getName(),this);
 	}
 	
 	/**
@@ -51,29 +62,9 @@ public class TruthValuePulse extends AbstractProcessBlock implements ProcessBloc
 	public TruthValuePulse(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
+		dog = new Watchdog(getName(),this);
 	}
 
-	/**
-	 * Define the synchronization property and ports.
-	 */
-	private void initialize() {	
-		setName("TruthValuePulse");
-		
-		BlockProperty commandProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_COMMAND,command.getCommand(),PropertyType.STRING,true);
-		setProperty(BlockConstants.BLOCK_PROPERTY_COMMAND, commandProperty);
-		BlockProperty triggerProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER,trigger,PropertyType.BOOLEAN,true);
-		setProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER, triggerProperty);
-		
-		// Define a single input
-		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
-		anchors.add(input);
-
-		// Define a single output
-		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.SIGNAL);
-		anchors.add(output);
-	}
-	
-	
 	/**
 	 * Do not call the base-class reset() as this sets outgoing
 	 * connection states to UNKNOWN.
@@ -82,12 +73,45 @@ public class TruthValuePulse extends AbstractProcessBlock implements ProcessBloc
 	public void reset() {
 		if( state.equals(TruthValue.TRUE) || 
 			state.equals(TruthValue.FALSE)   ) {
+			state = TruthValue.FALSE;
 			QualifiedValue qv = new TestAwareQualifiedValue(timer,state.name());
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus(qv);
 		}
+		timer.removeWatchdog(dog);
 	}
+	/**
+	 * Disconnect from the timer thread.
+	 */
+	@Override
+	public void stop() {
+		super.stop();
+		timer.removeWatchdog(dog);
+	}
+	
+	/**
+	 * Define the interval and trigger properties and ports.
+	 */
+	private void initialize() {	
+		setName("TruthValuePulse");
+		
+		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL,new Double(interval),PropertyType.TIME,true);
+		setProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL, intervalProperty);
+		BlockProperty triggerProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER,trigger,PropertyType.BOOLEAN,true);
+		setProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER, triggerProperty);
+		
+		// Define a single input
+		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
+		anchors.add(input);
+
+		// Define a single output
+		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.TRUTHVALUE);
+		anchors.add(output);
+	}
+	
+	
+	
 	
 	/**
 	 * A new value has appeared on an input anchor. Send it on its way
@@ -100,27 +124,30 @@ public class TruthValuePulse extends AbstractProcessBlock implements ProcessBloc
 		QualifiedValue qv = vcn.getValue();
 		
 		if( qv.getQuality().isGood() && !isLocked() && qv.getValue().toString().equalsIgnoreCase(trigger.name()))  {
-			QualifiedValue result = new BasicQualifiedValue(command,qv.getQuality(),qv.getTimestamp());
+			QualifiedValue result = new BasicQualifiedValue(TruthValue.TRUE,qv.getQuality(),qv.getTimestamp());
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
 			controller.acceptCompletionNotification(nvn);
+			setState(TruthValue.TRUE);
 			notifyOfStatus(result);
+			dog.setSecondsDelay(interval);
+			timer.updateWatchdog(dog);  // pet dog
 		}
 	}
 	/**
-	 * When a fresh value arrives that matches the trigger, send the output signal.
-	 * @param vcn incoming new value.
+	 * The interval has expired. Propagate a FALSE
 	 */
 	@Override
-	public void acceptValue(SignalNotification sn) {
-		Signal sig = sn.getSignal();
-
-		if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_START))  {
-			QualifiedValue result = new BasicQualifiedValue(command);
+	public void evaluate() {
+		log.debugf("%s.evaluate",getName());
+		if( !isLocked() ) {
+			setState(TruthValue.FALSE);
+			QualifiedValue result = new TestAwareQualifiedValue(timer,state.name(),DataQuality.GOOD_DATA);
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus(result);
 		}
 	}
+	
 	/**
 	 * Handle a changes to the various attributes.
 	 */
@@ -129,8 +156,13 @@ public class TruthValuePulse extends AbstractProcessBlock implements ProcessBloc
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
 		log.infof("%s.propertyChange: Received %s = %s",TAG,propertyName,event.getNewValue().toString());
-		if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_COMMAND)) {
-			command.setCommand(event.getNewValue().toString());
+		if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_INTERVAL)) {
+			try {
+				interval = Double.parseDouble(event.getNewValue().toString());
+			}
+			catch(NumberFormatException nfe) {
+				log.warnf("%s: propertyChange Unable to convert interval to a double (%s)",getName(),nfe.getLocalizedMessage());
+			}
 		}
 		else if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_TRIGGER)) {
 			try {
@@ -172,5 +204,4 @@ public class TruthValuePulse extends AbstractProcessBlock implements ProcessBloc
 		view.setPreferredHeight(60);
 		view.setPreferredWidth(60);
 	}
-
 }

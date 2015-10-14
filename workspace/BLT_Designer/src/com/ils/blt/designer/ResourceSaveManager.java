@@ -76,7 +76,7 @@ public class ResourceSaveManager implements Runnable {
 			logger.infof("%s.saveDirtyDiagrams: %s (%d)",TAG,res.getName(),res.getResourceId());
 			if(res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
 				// If the resource is open, we need to save it
-				workspace.saveOpenDiagrams();
+				workspace.saveOpenDiagram(res.getResourceId());
 			}
 		}
 		
@@ -101,7 +101,7 @@ public class ResourceSaveManager implements Runnable {
 				  statusManager.isResourceDirty(resid)      )  ) {
 				logger.infof("%s.accumulateDirtyNodeResources: diagram %s (%d)",TAG,res.getName(),resid);
 				diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
-				workspace.saveOpenDiagrams();   // Close if open
+				workspace.saveOpenDiagram(res.getResourceId());   // Close if open
 				dirtyCount++;
 				
 			}
