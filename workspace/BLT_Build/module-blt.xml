@@ -21,14 +21,19 @@
 		<jar scope="CD">blt-common.jar.pack.gz</jar>
 		<jar scope="CD">lucene-1.4.3.jar.pack.gz</jar>
 		<jar scope="CD">prefuse-1.0.1.jar.pack.gz</jar>
+		<jar scope="CD">ils-common.jar.pack.gz</jar>
+		<jar scope="D">block-definition.jar.pack.gz</jar>
+		<jar scope="D">jackson-core-2.2.3.jar.pack.gz</jar>
+		<jar scope="D">jackson-databind-2.2.3.jar.pack.gz</jar>
+		<jar scope="D">jackson-annotations-2.2.3.jar.pack.gz</jar>
 		<jar scope="G">blt-gateway.jar</jar>
 		<jar scope="G">blt-common.jar</jar>
 		<jar scope="G">commons-math3-3.1.1.jar</jar>
-		<jar scope="GD">block-definition.jar</jar>
-		<jar scope="GD">jackson-core-2.2.3.jar</jar>
-		<jar scope="GD">jackson-databind-2.2.3.jar</jar>
-		<jar scope="GD">jackson-annotations-2.2.3.jar</jar>
-		<jar scope="GCD">ils-common.jar</jar>
+		<jar scope="G">block-definition.jar</jar>
+		<jar scope="G">jackson-core-2.2.3.jar</jar>
+		<jar scope="G">jackson-databind-2.2.3.jar</jar>
+		<jar scope="G">jackson-annotations-2.2.3.jar</jar>
+		<jar scope="G">ils-common.jar</jar>
 		<!-- Tell the Gateway and/or Designer where to find the hooks -->
 		<hook scope="G">com.ils.blt.gateway.BLTGatewayHook</hook>
 		<hook scope="D">com.ils.blt.designer.BLTDesignerHook</hook>
