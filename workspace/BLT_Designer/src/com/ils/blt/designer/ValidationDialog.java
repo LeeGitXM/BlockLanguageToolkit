@@ -103,7 +103,7 @@ public class ValidationDialog extends JDialog {
 		buttonPanel.add(exportButton, "");
 		exportButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				SaveVaidationResultsDialog dialog = new SaveVaidationResultsDialog(rootPane,exportButton);
+				SaveValidationResultsDialog dialog = new SaveValidationResultsDialog(rootPane,exportButton);
 				dialog.pack();
 				dialog.setVisible(true);   // Returns when dialog is closed
 				File output = dialog.getFilePath();
