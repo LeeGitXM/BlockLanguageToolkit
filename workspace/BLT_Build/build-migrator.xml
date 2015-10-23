@@ -5,7 +5,7 @@
 	<property name="version.build" value="16" />	
 	<property name="root.dir" value="${basedir}/../.." />
 	<property name="jar.dir" value="${root.dir}/external/lib" />
-	<property name="sdk.dir" value="${root.dir}/ignition-78/Ignition-78/lib" />
+	<property name="sdk.dir" value="${root.dir}/ignition-78/lib" />
 	<property name="common.jar.name" value="ils-common.jar" />
 	<property name="common.bin.dir" value="${root.dir}/common/workspace/ILS_Common/bin" />
 	<property name="common.src.dir" value="${root.dir}/common/workspace/ILS_Common/src" />
