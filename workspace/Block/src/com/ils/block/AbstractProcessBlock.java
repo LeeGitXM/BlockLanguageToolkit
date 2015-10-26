@@ -550,7 +550,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 				if( reason!=null ) {
 					summary.append(String.format("%s: tag (%s) %s\t",property.getName(),tagPath,reason));
 				}
-				else if( !bindingType.equals(BindingType.TAG_WRITE) && !controller.hasActiveSubscription(this, property)) {
+				else if( !bindingType.equals(BindingType.TAG_WRITE) && !controller.hasActiveSubscription(this, property,tagPath)) {
 					summary.append(String.format("%s: has no subscription for tag %s\t",property.getName(),tagPath));
 				}
 			}

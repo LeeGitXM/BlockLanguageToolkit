@@ -32,6 +32,7 @@ import com.ils.blt.gateway.tag.TagListener;
 import com.ils.blt.gateway.tag.TagReader;
 import com.ils.blt.gateway.tag.TagWriter;
 import com.ils.common.BoundedBuffer;
+import com.ils.common.persistence.ToolkitProperties;
 import com.ils.common.watchdog.AcceleratedWatchdogTimer;
 import com.ils.common.watchdog.WatchdogTimer;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
@@ -94,6 +95,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		// Timers get started and stopped with the controller
 		this.watchdogTimer = new WatchdogTimer("MainTimer");
 		this.secondaryWatchdogTimer = new AcceleratedWatchdogTimer("SecondaryTimer");
+		this.clearCache();
 	}
 
 	/**
@@ -192,28 +194,28 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	@Override
 	public String getIsolationDatabase() {
 		if(isolationDatabase==null) {
-			isolationDatabase = ControllerRequestHandler.getInstance().getToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE);
+			isolationDatabase = ControllerRequestHandler.getInstance().getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE);
 		}
 		return isolationDatabase;
 	}
 	@Override
 	public String getProductionDatabase() {
 		if(productionDatabase==null) {
-			productionDatabase = ControllerRequestHandler.getInstance().getToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_DATABASE);
+			productionDatabase = ControllerRequestHandler.getInstance().getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE);
 		}
 		return productionDatabase;
 	}
 	@Override
 	public String getIsolationProvider() {
 		if(isolationProvider==null) {
-			isolationProvider = ControllerRequestHandler.getInstance().getToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER);
+			isolationProvider = ControllerRequestHandler.getInstance().getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER);
 		}
 		return isolationProvider;
 	}
 	@Override
 	public String getProductionProvider() {
 		if(productionProvider==null) {
-			productionProvider = ControllerRequestHandler.getInstance().getToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_PROVIDER);
+			productionProvider = ControllerRequestHandler.getInstance().getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
 		}
 		return productionProvider;
 	}
@@ -224,7 +226,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	@Override
 	public double getIsolationTimeFactor() {
 		if(Double.isNaN(isolationTimeFactor) ) {
-			String factor = ControllerRequestHandler.getInstance().getToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_ISOLATION_TIME);
+			String factor = ControllerRequestHandler.getInstance().getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_TIME);
 			try {
 				isolationTimeFactor = Double.parseDouble(factor);
 			}
@@ -428,18 +430,15 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	@Override
 	public QualifiedValue getTagValue(UUID diagramId,String path) {
 		ProcessDiagram diagram = getDiagram(diagramId);
-		if( diagram!=null && diagram.getState().equals(DiagramState.ISOLATED) ) {
-			path = replaceProviderInPath(path, getIsolationProvider());
-		}
 		return tagReader.readTag(path);
 	}
 	@Override
-	public boolean hasActiveSubscription(ProcessBlock block,BlockProperty property) {
+	public boolean hasActiveSubscription(ProcessBlock block,BlockProperty property,String tagPath) {
 		// If the block is disabled, report true (meaning not a problem)
 		ProcessDiagram diagram = getDiagram(block.getParentId());
 		boolean result = true;
 		if( diagram !=null && !diagram.getState().equals(DiagramState.DISABLED)) {
-			result = tagListener.hasActiveSubscription(block, property);
+			result = tagListener.hasActiveSubscription(block, property,tagPath);
 		}
 		return result;
 	}
@@ -454,9 +453,6 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 				property.getBindingType()==BindingType.TAG_MONITOR )  ) {
 			String tagPath = property.getBinding().toString();
 			ProcessDiagram diagram = getDiagram(block.getParentId());
-			if( diagram!=null && diagram.getState().equals(DiagramState.ISOLATED) ) {
-				tagPath = replaceProviderInPath(tagPath, getIsolationProvider());
-			}
 			if( tagPath!=null && tagPath.length()>0) {
 				tagListener.removeSubscription(block,property,tagPath);
 			}
@@ -473,9 +469,6 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		
 		String tagPath = property.getBinding();
 		ProcessDiagram diagram = getDiagram(block.getParentId());
-		if( diagram!=null && diagram.getState().equals(DiagramState.ISOLATED) ) {
-			tagPath = replaceProviderInPath(tagPath, getIsolationProvider());
-		}
 		tagListener.defineSubscription(block,property,tagPath);
 	}
 	
@@ -491,9 +484,6 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 				  property.getBindingType().equals(BindingType.TAG_MONITOR) )   ) return;
 		
 		String tagPath = property.getBinding();
-		if( state.equals(DiagramState.ISOLATED) ) {
-			tagPath = replaceProviderInPath(tagPath, getIsolationProvider());
-		}
 		tagListener.defineSubscription(block,property,tagPath);
 	}
 
@@ -509,9 +499,6 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public void updateTag(UUID diagramId,String tagPath,QualifiedValue val) {
 		ProcessDiagram diagram = modelManager.getDiagram(diagramId);
 		if( diagram!=null && !diagram.getState().equals(DiagramState.DISABLED)) {
-			if(diagram.getState().equals(DiagramState.ISOLATED)) {
-				tagPath = replaceProviderInPath(tagPath, getIsolationProvider());
-			}
 			tagWriter.updateTag(diagram.getProjectId(),tagPath,val);
 		}
 		else {
@@ -530,9 +517,6 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		String result = null;
 		ProcessDiagram diagram = modelManager.getDiagram(diagramId);
 		if( diagram!=null ) {
-			if(diagram.getState().equals(DiagramState.ISOLATED)) {
-				tagPath = replaceProviderInPath(tagPath, getIsolationProvider());
-			}
 			result = tagWriter.validateTag(diagram.getProjectId(),tagPath);
 		}
 		else {
@@ -629,6 +613,23 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		}
 	}
 	/**
+	 * Notify any notification listeners of changes to the binding of a block property. The most
+	 * common case where this is used is when a tag provider is changed.
+	 */
+	@Override
+	public void sendPropertyBindingNotification(String blkid, String propertyName,String binding) {
+		if( binding==null ) return;
+		String key = NotificationKey.keyForPropertyBinding(blkid,propertyName);
+		log.tracef("%s.sendPropertyBindingNotification: %s (%s)",TAG,key,binding);
+		try {
+			sessionManager.sendNotification(ApplicationScope.DESIGNER, BLTProperties.MODULE_ID, key, binding);
+		}
+		catch(Exception ex) {
+			// Probably no receiver registered. This is to be expected if the designer is not running.
+			log.debugf("%s.sendPropertyBindingNotification: Error transmitting %s (%s)",TAG,key,ex.getMessage());
+		}
+	}
+	/**
 	 * Notify any listeners in the Client or Designer scopes of the a change in the value carried by a connection.
 	 * A connection is uniquely identified by a block and output port. The sender of this notification is the
 	 * controller (this). The typical receiver is a BasicAnchorPoint embedded in a connection in the UI.
@@ -665,10 +666,6 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		}
 	}
 	
-	private String replaceProviderInPath(String path,String providerName) {
-		int pos = path.indexOf("]");
-		path = path.substring(pos+1);
-		return String.format("[%s]%s", providerName,path);
-	}
+	
 
 }

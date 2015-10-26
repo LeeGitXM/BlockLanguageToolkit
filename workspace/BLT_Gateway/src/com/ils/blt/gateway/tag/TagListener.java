@@ -18,6 +18,8 @@ import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.ProcessBlock;
+import com.ils.blt.common.block.PropertyType;
+import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.gateway.engine.BlockExecutionController;
@@ -95,7 +97,7 @@ public class TagListener implements TagChangeListener   {
 	 */
 	public synchronized void defineSubscription(ProcessBlock block,BlockProperty property,String tagPath) {
 		
-		log.debugf("%s.defineSubscription: considering %s:%s=%s",TAG,block.getName(),property.getName(),tagPath);
+		log.infof("%s.defineSubscription: considering %s:%s=%s",TAG,block.getName(),property.getName(),tagPath);
 		if( tagPath!=null && tagPath.length() >0  ) {
 			boolean needToStartSubscription = false;
 			BlockPropertyPair key = new BlockPropertyPair(block,property);
@@ -129,14 +131,11 @@ public class TagListener implements TagChangeListener   {
 	 * @param property
 	 * @return
 	 */
-	public boolean hasActiveSubscription(ProcessBlock block,BlockProperty property) {
+	public boolean hasActiveSubscription(ProcessBlock block,BlockProperty property,String path) {
 		BlockPropertyPair key = new BlockPropertyPair(block,property);
 		boolean result = false;
-		String path = property.getBinding();
-		if( path!=null ) {
-			List<BlockPropertyPair> list = blockMap.get(path.toUpperCase());
-			if( list!=null && list.contains(key)) result = true;
-		}
+		List<BlockPropertyPair> list = blockMap.get(path.toUpperCase());
+		if( list!=null && list.contains(key)) result = true;
 		return result;
 	}
 	/**
@@ -263,16 +262,20 @@ public class TagListener implements TagChangeListener   {
 			}
 			else {
 				log.errorf("%s.startSubscriptionForTag: Failed. (%s unknown to provider %s)",TAG,tp.toStringFull(),providerName);
+				setPropertiesForBadTag(list);
 			}
 		}
 		catch(IOException ioe) {
 			log.errorf("%s.startSubscriptionForTag (%s)",TAG,ioe.getMessage());
+			setPropertiesForBadTag(list);
 		}
 		catch(IllegalArgumentException iae) {
 			log.errorf("%s.startSubscriptionForTag - illegal argument for %s (%s)",TAG,tagPath,iae.getMessage());
+			setPropertiesForBadTag(list);
 		}
 		catch(Exception ex) {
 			log.errorf("%s.startSubscriptionForTag - Exception %s (%s)",TAG,ex.getMessage(),tagPath);
+			setPropertiesForBadTag(list);
 		}
 	}
 	/**
@@ -399,6 +402,21 @@ public class TagListener implements TagChangeListener   {
 			QualifiedValue value = new BasicQualifiedValue(typicalProperty.getValue());
 			updateProperty(key.getBlock(),property,value);
 		}
+	}
+	
+	// The tag doesn't exist, or is in error
+	private void setPropertiesForBadTag(List<BlockPropertyPair> list) {
+		for(BlockPropertyPair key:list) {
+			ProcessBlock block = key.getBlock();
+			BlockProperty property = key.getProperty();
+			// Reject blocks that are in a disabled diagram
+			ProcessDiagram parent = controller.getDiagram(block.getParentId());
+			if( parent!=null ) {
+				if( property.getType().equals(PropertyType.BOOLEAN) ) updateProperty(block,property,new BasicQualifiedValue(TruthValue.UNKNOWN));
+				else if( property.getType().equals(PropertyType.DOUBLE) ) updateProperty(block,property,new BasicQualifiedValue(new Double(Double.NaN)));
+				else updateProperty(block,property,new BasicQualifiedValue(""));
+			}
+		}		
 	}
 	// ====================================== ProjectResourceKey =================================
 	/**

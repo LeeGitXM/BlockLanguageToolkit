@@ -63,6 +63,7 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 public class PropertyPanel extends JPanel implements ChangeListener, FocusListener, KeyListener, NotificationChangeListener,TagChangeListener {
 	private static final long serialVersionUID = 2264535784255009984L;
 	private static SimpleDateFormat dateFormatter = new SimpleDateFormat(BlockConstants.TIMESTAMP_FORMAT);
+	private final NotificationHandler notificationHandler = NotificationHandler.getInstance();
 	private static UtilityFunctions fncs = new UtilityFunctions();
 	// Use TAG as the "source" attribute when registering for Notifications from Gateway
 	private final static String TAG = "PropertyPanel";
@@ -148,14 +149,18 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 			configurationButton.setVisible(false); 
 		}
 		
-		// A possible second line.
-		// If the BindingType is TAG, display the binding
+		// A possible second line. If the BindingType is TAG, display the binding
+		// A fresh property may not have had a binding update for provider change.
+		// Do it now..
 		add(bindingDisplayField,"skip,growx,push");
 		add(editButton,"w :25:,wrap");
 		if( property.getBindingType().equals(BindingType.TAG_MONITOR) ||
 				property.getBindingType().equals(BindingType.TAG_READ) ||
 				property.getBindingType().equals(BindingType.TAG_READWRITE) ||
 				property.getBindingType().equals(BindingType.TAG_WRITE)	) {
+			String binding = main.getEditor().modifyPathForProvider(property.getBinding());
+			property.setBinding(binding);
+			bindingDisplayField.setText(binding);
 			bindingDisplayField.setVisible(true);
 			editButton.setVisible(true);
 		}
@@ -167,51 +172,48 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		// Register for notifications
 		// The "plain" (NONE) properties can be changed by python scripting
 		if(property.getBindingType().equals(BindingType.ENGINE) || property.getBindingType().equals(BindingType.NONE)) {
-			NotificationHandler handler = NotificationHandler.getInstance();
 			String key = NotificationKey.keyForProperty(block.getId().toString(), property.getName());
 			log.infof("%s.registerChangeListeners: adding %s",TAG,key);
-			handler.addNotificationChangeListener(key,TAG,this);
+			notificationHandler.addNotificationChangeListener(key,TAG,this);
 		}
 		else if( property.getBindingType().equals(BindingType.TAG_MONITOR) ||
 				property.getBindingType().equals(BindingType.TAG_READ) ||
 				property.getBindingType().equals(BindingType.TAG_READWRITE) ||
 				property.getBindingType().equals(BindingType.TAG_WRITE)	) {
+			String key = NotificationKey.keyForPropertyBinding(block.getId().toString(), property.getName());
+			log.infof("%s.registerChangeListeners: adding %s",TAG,key);
+			notificationHandler.addNotificationChangeListener(key,TAG,this);
 			subscribeToTagPath(property.getBinding());
 		}
 	}
 	// Un-subscribe to anything we're listening on ...
 	public void unsubscribe() {
 		if( property.getBindingType().equals(BindingType.ENGINE)|| property.getBindingType().equals(BindingType.NONE) ) {
-			NotificationHandler handler = NotificationHandler.getInstance();
 			String key = NotificationKey.keyForProperty(block.getId().toString(), property.getName());
-			handler.removeNotificationChangeListener(key,TAG);
+			notificationHandler.removeNotificationChangeListener(key,TAG);
 		}
 		else if( property.getBindingType().equals(BindingType.TAG_MONITOR) ||
 				property.getBindingType().equals(BindingType.TAG_READ) ||
 				property.getBindingType().equals(BindingType.TAG_READWRITE) ||
 				property.getBindingType().equals(BindingType.TAG_WRITE)	) {
+			String key = NotificationKey.keyForPropertyBinding(block.getId().toString(), property.getName());
+			notificationHandler.removeNotificationChangeListener(key,TAG);
 			unsubscribeToTagPath(property.getBinding());
 		}
 		property.removeChangeListener(this);
 	}
-	// Subscribe to a tag. This will fail if the tag path is unset of illegal.
+	// Subscribe to a tag. This will fail if the tag path is unset or illegal.
+	// The provider has been set in the panel constructor.
 	private void subscribeToTagPath(String path) {
 		if( path==null || path.length()==0 ) return;  // Fail silently for path not set
-		
-		// If tag path isn't in canonical form, make it that way by prepending provider
-		String providerName = providerNameFromPath(path);
-		if( providerName.length()==0) {
-			providerName = context.getDefaultSQLTagsProviderName();
-			path = String.format("[%s]%s",providerName,path);
-		}
-		log.debugf("%s.subscribeToTagPath: - %s (%s)",TAG,property.getName(),path);
+		log.infof("%s.subscribeToTagPath: - %s (%s)",TAG,property.getName(),path);
 		ClientTagManager tmgr = context.getTagManager();
 		try {
 			TagPath tp = TagPathParser.parse(path);
 			tmgr.subscribe(tp, this);
 		}
 		catch(IOException ioe) {
-			log.errorf("%s.unsubscribe tag path parse error for %s (%s)",TAG,path,ioe.getMessage());
+			log.errorf("%s.subscribeToTagPath tag path parse error for %s (%s)",TAG,path,ioe.getMessage());
 		}
 	}
 	
@@ -226,18 +228,8 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 			tmgr.unsubscribe(tp, this);
 		}
 		catch(IOException ioe) {
-			log.errorf("%s.unsubscribe tag path parse error for %s (%s)",TAG,path,ioe.getMessage());
+			log.errorf("%s.unsubscribeToTagPath tag path parse error for %s (%s)",TAG,path,ioe.getMessage());
 		}
-	}
-	private String providerNameFromPath(String tagPath) {
-		String provider = "";
-		if( tagPath.startsWith("[") ) {
-			int index = tagPath.indexOf(']');
-			if( index>0 ) {
-				provider = tagPath.substring(1,index);
-			}
-		}
-		return provider;
 	}
 	
 	// Update the panel UI for new property data. Called from Config panel via main panel.
@@ -265,8 +257,9 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 			String oldPath = bindingDisplayField.getText();
 			unsubscribeToTagPath(oldPath);
 			
-			bindingDisplayField.setText(fncs.coerceToString(property.getBinding()));
-			subscribeToTagPath(property.getBinding());
+			String tagPath = fncs.coerceToString(property.getBinding());
+			bindingDisplayField.setText(tagPath);
+			subscribeToTagPath(tagPath);
 			editButton.setVisible(true);
 			bindingDisplayField.setVisible(true);
 			valueDisplayField.setEnabled(false);
@@ -536,13 +529,27 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		else {
 			if( !field.getText().equals(prop.getBinding()) ) {
 				unsubscribeToTagPath(prop.getBinding());
-				prop.setBinding(field.getText());
-				subscribeToTagPath(prop.getBinding());
+				String tagPath = parent.getEditor().modifyPathForProvider(field.getText());
+				prop.setBinding(tagPath);
+				subscribeToTagPath(tagPath);
 				parent.handlePropertyChange(prop);		
 			}
 		}
 	}
 	// ======================================= Notification Change Listener ===================================
+	@Override
+	public void bindingChange(String binding) {
+		log.infof("%s.bindingChange: - %s new binding (%s)",TAG,property.getName(),binding);
+		//property.setValue(value.getValue());  // Block should have its own subscription to value changes.
+		SwingUtilities.invokeLater( new Runnable() {
+			public void run() {
+				unsubscribeToTagPath(bindingDisplayField.getText());
+				bindingDisplayField.setText(binding);
+				property.setBinding(binding);
+				subscribeToTagPath(binding);
+			}
+		});
+	}
 	@Override
 	public void valueChange(final QualifiedValue value) {
 		log.infof("%s.valueChange: - %s new value (%s)",TAG,property.getName(),value.getValue().toString());
@@ -569,8 +576,8 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 				}
 			}
 		});
-		
 	}
+	
 	// =========================================== Tag Change Listener ===================================
 	// Set this to null as we're interested in all tag properties
 	@Override

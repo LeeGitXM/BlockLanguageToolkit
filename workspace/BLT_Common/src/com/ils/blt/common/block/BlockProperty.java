@@ -192,7 +192,22 @@ public class BlockProperty implements NotificationChangeListener {
 			return String.format("%s (%s)=%s",getName(),getBindingType().name(),(binding==null?"null":binding));
 		}
 	}
-
+	/**
+	 * Update a binding based on a push notification. Note that this
+	 * does NOT trigger change listeners.
+	 */
+	@Override
+	public void bindingChange(String bindTo) {
+		log.tracef("%s(%d).bindingChange %s now %s",TAG,hashCode(),getName(),bindTo);
+		try {
+			setBinding(bindTo);
+		}
+		catch(ConcurrentModificationException cme) {
+			// This is a possibility if the property listeners are also
+			// notification listeners. What a tangled web we weave.
+			log.infof("%s.bindingChange of %s to %s threw ConcurrentModificationException (ignored)",TAG,getName(),bindTo);
+		}
+	}
 	/**
 	 * Update a value based on a push notification. Note that this
 	 * triggers any change listeners on this property. These

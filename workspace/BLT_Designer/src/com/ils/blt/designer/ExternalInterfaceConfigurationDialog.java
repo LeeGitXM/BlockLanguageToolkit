@@ -24,7 +24,8 @@ import javax.swing.WindowConstants;
 import net.miginfocom.swing.MigLayout;
 
 import com.ils.blt.common.ApplicationRequestHandler;
-import com.ils.blt.common.BLTProperties;
+import com.ils.common.persistence.ToolkitProperties;
+import com.ils.common.persistence.ToolkitRecordHandler;
 import com.inductiveautomation.ignition.common.sqltags.model.TagProviderMeta;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
@@ -33,7 +34,7 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
  * applies to all projects globally. 
  */
 
-public class SetupDialog extends JDialog {
+public class ExternalInterfaceConfigurationDialog extends JDialog {
 	protected static final Dimension COMBO_SIZE  = new Dimension(200,24);
 	private static final long serialVersionUID = 2002388376824434427L;
 	private final int DIALOG_HEIGHT = 220;
@@ -48,8 +49,12 @@ public class SetupDialog extends JDialog {
 	protected JComboBox<String> secondaryProviderBox;
 	protected JTextField mainTimeFactorField;
 	protected JTextField secondaryTimeFactorField;
+	private int primaryDatabaseInitialSelection = -1;
+	private int secondaryDatabaseInitialSelection = -1;
+	private int primaryProviderInitialSelection = -1;
+	private int secondaryProviderInitialSelection = -1;
 	
-	public SetupDialog(DesignerContext ctx) {
+	public ExternalInterfaceConfigurationDialog(DesignerContext ctx) {
 		super(ctx.getFrame());
 		this.context = ctx;
 		this.setTitle("External Interface Configuration");
@@ -74,16 +79,22 @@ public class SetupDialog extends JDialog {
 		
 		// Databases
 		internalPanel.add(createLabel("Setup.Database"),"");
-		mainDatabaseBox  = createDatabaseCombo("Setup.ProductionDatabase.tooltip",BLTProperties.TOOLKIT_PROPERTY_DATABASE,false);
+		mainDatabaseBox  = createDatabaseCombo("Setup.ProductionDatabase.tooltip",ToolkitProperties.TOOLKIT_PROPERTY_DATABASE,false);
+		primaryDatabaseInitialSelection = mainDatabaseBox.getSelectedIndex();
 		internalPanel.add(mainDatabaseBox, "");
-		secondaryDatabaseBox = createDatabaseCombo("Setup.IsolationDatabase.tooltip",BLTProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE,true);
+		
+		secondaryDatabaseBox = createDatabaseCombo("Setup.IsolationDatabase.tooltip",ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE,true);
+		secondaryDatabaseInitialSelection = secondaryDatabaseBox.getSelectedIndex();
 		internalPanel.add(secondaryDatabaseBox, "wrap");
 		
 		// Tag providers
 		internalPanel.add(createLabel("Setup.Provider"),"");
-		mainProviderBox = createProviderCombo("Setup.ProductionProvider.tooltip",BLTProperties.TOOLKIT_PROPERTY_PROVIDER,false);
+		mainProviderBox = createProviderCombo("Setup.ProductionProvider.tooltip",ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER,false);
+		primaryProviderInitialSelection = mainProviderBox.getSelectedIndex();
 		internalPanel.add(mainProviderBox, "");
-		secondaryProviderBox = createProviderCombo("Setup.IsolationProvider.tooltip",BLTProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER,true);
+		
+		secondaryProviderBox = createProviderCombo("Setup.IsolationProvider.tooltip",ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER,true);
+		secondaryProviderInitialSelection = secondaryProviderBox.getSelectedIndex();
 		internalPanel.add(secondaryProviderBox, "wrap");
 		
 		// Time factor
@@ -91,7 +102,7 @@ public class SetupDialog extends JDialog {
 		mainTimeFactorField = createTimeFactorTextField("Setup.ProductionTimeFactor.tooltip","");
 		mainTimeFactorField.setEnabled(false);
 		internalPanel.add(mainTimeFactorField, "");
-		secondaryTimeFactorField = createTimeFactorTextField("Setup.IsolationTimeFactor.tooltip",BLTProperties.TOOLKIT_PROPERTY_ISOLATION_TIME);
+		secondaryTimeFactorField = createTimeFactorTextField("Setup.IsolationTimeFactor.tooltip",ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_TIME);
 		internalPanel.add(secondaryTimeFactorField, "wrap");
 		
 		add(internalPanel,BorderLayout.CENTER);
@@ -260,11 +271,19 @@ public class SetupDialog extends JDialog {
 	// The validation has made them all legal
 	private void saveEntries() {
 		// For these we set new values for the next time queried
-		if(mainDatabaseBox.getSelectedItem()!=null)      requestHandler.setToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_DATABASE,mainDatabaseBox.getSelectedItem().toString() );
-		if(secondaryDatabaseBox.getSelectedItem()!=null) requestHandler.setToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE,secondaryDatabaseBox.getSelectedItem().toString() );
-		if(mainProviderBox.getSelectedItem()!=null)      requestHandler.setToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_PROVIDER,mainProviderBox.getSelectedItem().toString() );
-		if(secondaryProviderBox.getSelectedItem()!=null) requestHandler.setToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER,secondaryProviderBox.getSelectedItem().toString() );
-		requestHandler.setToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_ISOLATION_TIME,secondaryTimeFactorField.getText());
+		if(mainDatabaseBox.getSelectedIndex()>=0 && mainDatabaseBox.getSelectedIndex()!=primaryDatabaseInitialSelection) { 
+			requestHandler.setToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE,mainDatabaseBox.getSelectedItem().toString() );
+		}
+		if(secondaryDatabaseBox.getSelectedIndex()>=0 && secondaryDatabaseBox.getSelectedIndex()!=secondaryDatabaseInitialSelection) { 
+			requestHandler.setToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE,secondaryDatabaseBox.getSelectedItem().toString() );
+		}
+		if(mainProviderBox.getSelectedIndex()>=0 && mainProviderBox.getSelectedIndex()!=primaryProviderInitialSelection) {
+			requestHandler.setToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER,mainProviderBox.getSelectedItem().toString() );
+		}
+		if(secondaryProviderBox.getSelectedIndex()>=0 && secondaryProviderBox.getSelectedIndex()!=secondaryProviderInitialSelection) {
+			requestHandler.setToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER,secondaryProviderBox.getSelectedItem().toString() );
+		}
+		requestHandler.setToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_TIME,secondaryTimeFactorField.getText());
 		// This causes an immediate active update.
 		double speedup = Double.parseDouble(secondaryTimeFactorField.getText());  // We've already validated the field ...
 		requestHandler.setTimeFactor(speedup);

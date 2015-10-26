@@ -27,6 +27,8 @@ import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableConnection;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
+import com.ils.blt.gateway.ControllerRequestHandler;
+import com.ils.common.persistence.ToolkitProperties;
 import com.ils.common.watchdog.WatchdogTimer;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -407,6 +409,15 @@ public class ProcessDiagram extends ProcessNode {
 			updateBlockTimers();
 
 			if(!DiagramState.DISABLED.equals(getState()) ) {
+				String provider = null;
+				if( DiagramState.ISOLATED.equals(getState())) {
+					provider = ControllerRequestHandler.getInstance().getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER);
+				}
+				else {
+					provider = ControllerRequestHandler.getInstance().getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
+				}		
+				updatePropertyProviders(provider);
+				
 				// The two-phase start is probably not necessary here
 				// since we start the subscriptions after starting the blocks,
 				// but we'll do it anyway for consistency
@@ -502,7 +513,10 @@ public class ProcessDiagram extends ProcessNode {
 		//log.infof("%s.restartSubscriptions: ... %s complete",TAG,getName());
 		this.state = current;
 	}
-	private void stopSubscriptions() {
+	/**
+	 * Stop all subscriptions for properties in blocks in this diagram
+	 */
+	public void stopSubscriptions() {
 		log.infof("%s.stopSubscriptions: project %d:%s",TAG,projectId,getName());
 		for( ProcessBlock pb:getProcessBlocks()) {
 			for(BlockProperty bp:pb.getProperties()) {
@@ -510,6 +524,50 @@ public class ProcessDiagram extends ProcessNode {
 			}
 		}
 	}
+	/**
+	 * For every property in this diagram that has a binding, alter its
+	 * path to the new provider. This involves stopping and restarting subscriptions.
+	 * We do this by first disabling the diagram, then re-enabling.
+	 * 
+	 * @param provider the new provider
+	 */
+	public void updateTagProvider(String provider) {
+		DiagramState originalState = getState();
+		if( originalState.equals(DiagramState.DISABLED)) return;
+		setState(DiagramState.DISABLED);
+		setState(originalState);
+	}
+	
+	/**
+	 * For every property that is bound to a tag, update its provider.
+	 * @param provider
+	 */
+	public void updatePropertyProviders(String provider) {
+		for( ProcessBlock pb:getProcessBlocks()) {
+			for(BlockProperty bp:pb.getProperties()) {
+				BindingType bindingType = bp.getBindingType();
+				if( bindingType.equals(BindingType.TAG_MONITOR) ||
+					bindingType.equals(BindingType.TAG_READ)    ||
+					bindingType.equals(BindingType.TAG_WRITE)   ||
+					bindingType.equals(BindingType.TAG_READWRITE) ) {
+					
+					String tagPath = bp.getBinding();
+					String newPath = replaceProviderInPath(tagPath,provider);
+					if( !tagPath.equals(newPath)) {
+						bp.setBinding(newPath);
+						controller.sendPropertyBindingNotification(pb.getBlockId().toString(), bp.getName(), newPath);
+					}
+				}	
+			}
+		}
+	}
+	
+	private String replaceProviderInPath(String path,String providerName) {
+		int pos = path.indexOf("]");
+		if( pos>0 ) path = path.substring(pos+1);
+		return String.format("[%s]%s", providerName,path);
+	}
+	
 	/**
 	 * Class for keyed storage of downstream block,port for a connection.
 	 */

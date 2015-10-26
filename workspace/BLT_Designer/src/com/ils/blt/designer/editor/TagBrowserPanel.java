@@ -66,6 +66,7 @@ public class TagBrowserPanel extends BasicEditPanel {
 					if(selectedPaths[0].getLastPathComponent() instanceof TagTreeNode ) {
 						TagTreeNode node = (TagTreeNode)(selectedPaths[0].getLastPathComponent());
 						selectedPath = node.getTagPath().toString();
+						selectedPath = editor.modifyPathForProvider(selectedPath);
 						if(property!=null) {
 							log.debugf("TagBrowserPanel set property %s, binding now %s",property.getName(),selectedPath);
 							property.setBinding(selectedPath);
@@ -91,13 +92,14 @@ public class TagBrowserPanel extends BasicEditPanel {
 		});
 		add(buttonPanel,BorderLayout.SOUTH);
 	}
+	// The path has already been altered for the correct provider
 	public void updateForProperty(BlockProperty prop) {
 		this.property = prop;
-		if(property.getBinding()!=null && (property.getBinding().length()>0) ) {
-			log.debugf("TagBrowserPanel.updateForProperty binding = %s",property.getBinding());
-			TagPath tp = TagPathParser.parseSafe(property.getBinding());
+		String path = property.getBinding();
+		if(path!=null && (path.length()>0) ) {
+			log.debugf("TagBrowserPanel.updateForProperty %s binding = %s",property.getName(),path);
+			TagPath tp = TagPathParser.parseSafe(path);
 			if( tp!=null ) {
-				log.debugf("TagBrowserPanel.updateForProperty binding parsed as %s",tp.toString());
 				SQLTagTreeModel sttm = (SQLTagTreeModel)tagTree.getModel();
 				try {
 					TreePath treePath = sttm.getPathForTag(tp);
@@ -116,7 +118,7 @@ public class TagBrowserPanel extends BasicEditPanel {
 				}
 			}
 			else {
-				log.warnf("TagBrowserPanel.updateForProperty: Current binding,%s, is not a tag path",property.getBinding());
+				log.warnf("TagBrowserPanel.updateForProperty: Current binding,%s, is not a tag path",path);
 			}
 		}
 	}

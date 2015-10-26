@@ -42,9 +42,10 @@ import com.ils.blt.gateway.engine.ProcessApplication;
 import com.ils.blt.gateway.engine.ProcessDiagram;
 import com.ils.blt.gateway.engine.ProcessFamily;
 import com.ils.blt.gateway.engine.ProcessNode;
-import com.ils.blt.gateway.persistence.ToolkitRecord;
 import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.ils.common.ClassList;
+import com.ils.common.persistence.ToolkitProperties;
+import com.ils.common.persistence.ToolkitRecordHandler;
 import com.ils.common.watchdog.AcceleratedWatchdogTimer;
 import com.inductiveautomation.ignition.common.datasource.DatasourceStatus;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
@@ -74,6 +75,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	private final BlockExecutionController controller = BlockExecutionController.getInstance();
 	private final PythonRequestHandler pyHandler;
 	private final ScriptExtensionManager sem = ScriptExtensionManager.getInstance();
+	private ToolkitRecordHandler toolkitRecordHandler;
 	private final UtilityFunctions fcns;
     
 	/**
@@ -367,10 +369,10 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				node = controller.getProcessNode(node.getParent());
 			}
 			if(ds.equals(DiagramState.ACTIVE)) {
-				db = getToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_DATABASE);
+				db = getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE);
 			}
 			else if(ds.equals(DiagramState.ISOLATED)) {
-				db = getToolkitProperty(BLTProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE);
+				db = getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE);
 			}
 		}
 		catch(IllegalArgumentException iae) {
@@ -497,15 +499,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 */
 	@Override
 	public String getToolkitProperty(String propertyName) {
-		String value = "";
-		try {
-			ToolkitRecord record = context.getPersistenceInterface().find(ToolkitRecord.META, propertyName);
-			if( record!=null) value =  record.getValue();
-		}
-		catch(Exception ex) {
-			log.warnf("%s.getToolkitProperty: Exception retrieving %s (%s),",TAG,propertyName,ex.getMessage());
-		}
-		return value;
+		return toolkitRecordHandler.getToolkitProperty(propertyName);
 	}
 	@Override
 	public boolean isControllerRunning() {
@@ -995,6 +989,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 */
 	public void setContext(GatewayContext cntx) {
 		this.context = cntx;
+		toolkitRecordHandler = new ToolkitRecordHandler(context); 
 	}
 
 
@@ -1064,34 +1059,18 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 */
 	@Override
 	public void setToolkitProperty(String propertyName, String value) {
-		try {
-			ToolkitRecord record = context.getPersistenceInterface().find(ToolkitRecord.META, propertyName);
-			if( record==null) record = context.getPersistenceInterface().createNew(ToolkitRecord.META);
-			if( record!=null) {
-				record.setName(propertyName);
-				record.setValue(value);
-				context.getPersistenceInterface().save(record);
-			}
-			else {
-				log.warnf("%s.setToolkitProperty: %s=%s - failed to create persistence record (%s)",TAG,propertyName,value,ToolkitRecord.META.quoteName);
-			}
-			sem.setModulePath(propertyName, value);  // Does nothing for properties not part of Python external interface 
-			controller.clearCache();                 // Force retrieval production/isolation constants from HSQLdb on next access.
-		}
-		catch(Exception ex) {
-			log.warnf("%s.setToolkitProperty: Exception setting %s=%s (%s),",TAG,propertyName,value,ex.getMessage());
-		}
+		toolkitRecordHandler.setToolkitProperty(propertyName, value);
+		sem.setModulePath(propertyName, value);  // Does nothing for properties not part of Python external interface 
+		controller.clearCache();                 // Force retrieval production/isolation constants from HSQLdb on next access.
 	}
 
 	public void startController() {
 		BlockExecutionController.getInstance().start(context);
 	}
 
-
 	public void stopController() {
 		BlockExecutionController.getInstance().stop();
 	}
-
 
 	/**
 	 * Direct blocks in all diagrams to report their status for a UI update.

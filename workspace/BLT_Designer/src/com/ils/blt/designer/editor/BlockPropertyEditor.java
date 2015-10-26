@@ -6,10 +6,13 @@ package com.ils.blt.designer.editor;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.ils.blt.common.ApplicationRequestHandler;
+import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
+import com.ils.common.persistence.ToolkitProperties;
 import com.inductiveautomation.ignition.client.util.gui.SlidingPane;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
@@ -27,6 +30,7 @@ public class BlockPropertyEditor extends SlidingPane   {
 	private final DiagramWorkspace workspace;
 	private final ProcessDiagramView diagram;
 	private final ProcessBlockView block;
+	private final ApplicationRequestHandler requestHandler;
 	private static final List<String> coreAttributeNames;
 	
 	private final MainPanel          mainPanel;       // display the properties for a block
@@ -48,6 +52,7 @@ public class BlockPropertyEditor extends SlidingPane   {
 	 */
 	public BlockPropertyEditor(DesignerContext ctx,DiagramWorkspace wksp,ProcessBlockView view) {
 		this.context = ctx;
+		this.requestHandler = new ApplicationRequestHandler();
 		this.workspace = wksp;
 		this.diagram = wksp.getActiveDiagram();
 		this.block = view;
@@ -106,8 +111,6 @@ public class BlockPropertyEditor extends SlidingPane   {
 	 * we've only changed a block property. Save the project resource.
 	 */
 	public void handlePropertyChange(BlockProperty property) {
-		//ApplicationRequestHandler handler = new ApplicationRequestHandler();
-		//handler.setBlockProperty(diagram.getId(), block.getId(), property);
 		saveDiagram();
 	}
 	
@@ -137,6 +140,31 @@ public class BlockPropertyEditor extends SlidingPane   {
 		default:
 			break;
 		}
+	}
+	/**
+	 * Modify a tag path to account for global production/isolation providers
+	 * as well as the current state of the diagram.
+	 * @param path
+	 * @return the modified path.
+	 */
+	public String modifyPathForProvider(String path) {
+		String tagPath = path;
+		if( path!=null && !path.isEmpty() ) {
+			if( diagram.getState().equals(DiagramState.ISOLATED)) {
+				String provider = requestHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER);
+				tagPath = replaceProviderInPath(path,provider);
+			}
+			else {
+				String provider = requestHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
+				tagPath = replaceProviderInPath(path,provider);
+			}
+		}
+		return tagPath;
+	}
+	private String replaceProviderInPath(String path,String providerName) {
+		int pos = path.indexOf("]");
+		if( pos>0 ) path = path.substring(pos+1);
+		return String.format("[%s]%s", providerName,path);
 	}
 }
 

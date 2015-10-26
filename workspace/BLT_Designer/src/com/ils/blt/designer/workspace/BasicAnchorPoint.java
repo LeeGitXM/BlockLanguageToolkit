@@ -179,6 +179,12 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 	}
 
 	/**
+	 * Receive an event from the Gateway. Ignore a binding change,
+	 */
+	@Override
+	public void bindingChange(String value) {}
+
+	/**
 	 * Receive an event from the Gateway. Use the information to color
 	 * the connection. By convention we use the Origin as it is already
 	 * used to determine the connection type. NOTE: registration for 

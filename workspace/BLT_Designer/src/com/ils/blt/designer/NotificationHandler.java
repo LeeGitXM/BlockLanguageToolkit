@@ -11,6 +11,7 @@ import javax.swing.SwingUtilities;
 
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.notification.NotificationChangeListener;
+import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.client.gateway_interface.PushNotificationListener;
@@ -100,6 +101,20 @@ public class NotificationHandler implements PushNotificationListener {
 					log.debugf("%s.receiveNotification: no receiver for key=%s,value=%s",TAG,key,payload.toString());
 				}
 			}
+			else if(NotificationKey.isPropertyBindingKey(key)) {
+				Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
+				if( listeners != null ) {
+					for(NotificationChangeListener listener:listeners.values()) {
+						log.debugf("%s.receiveNotification: key=%s - notifying %s",TAG,key,listener.getClass().getName());
+						listener.bindingChange(payload.toString());
+					}
+					// Repaint the workspace
+					SwingUtilities.invokeLater(new WorkspaceRepainter());
+				}
+				else {
+					log.debugf("%s.receiveNotification: no receiver for key=%s,value=%s",TAG,key,payload.toString());
+				}
+			}
 			else {
 				log.warnf("%s.receiveNotification: key:%s, payload %s=%s (ignored)",TAG,key,payload.getClass().getName(),payload.toString());
 			}
@@ -109,6 +124,7 @@ public class NotificationHandler implements PushNotificationListener {
 	/**
 	 * Receive notification from a ProcessViewDiagram in the Designer. This is a mechanism
 	 * to restore the diagram display to its state prior to its last serialization.
+	 * Note: This is used only for properties bound to ENGINE.
 	 */
 	public void initializeNotification(String key,QualifiedValue value) {
 		if( key==null || value==null) return;
@@ -119,7 +135,7 @@ public class NotificationHandler implements PushNotificationListener {
 		if( listeners != null ) {
 			for(NotificationChangeListener listener:listeners.values()) {
 				log.tracef("%s.initializeNotification: key=%s - notifying %s",TAG,key,listener.getClass().getName());
-				listener.valueChange(value);
+				if( NotificationKey.isPropertyValueKey(key) ) listener.valueChange(value);
 			}
 			// Repaint the workspace
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
@@ -133,7 +149,7 @@ public class NotificationHandler implements PushNotificationListener {
 	 * @param listener
 	 */
 	public void addNotificationChangeListener(String key,String source,NotificationChangeListener listener) {
-		log.tracef("%s.addNotificationChangeListener: source=%s key=%s (%s)",TAG,source,key,listener.getClass().getName());
+		log.debugf("%s.addNotificationChangeListener: source=%s key=%s (%s)",TAG,source,key,listener.getClass().getName());
 		Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
 		if( listeners==null) {
 			listeners = new HashMap<>();

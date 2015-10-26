@@ -421,7 +421,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		
 		// Register any properties "bound" to the engine
 		// It is the responsibility of the block to trigger
-		// this as it evaluates. Update the value from the newly desrialized diagram.
+		// this as it evaluates. Update the value from the newly deserialized diagram.
 		for(ProcessBlockView block:blockMap.values() ) {
 			for(BlockProperty prop:block.getProperties()) {
 				if( prop.getBindingType().equals(BindingType.ENGINE)) {
@@ -487,6 +487,12 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	}
 
 	// ------------------------------------------- Notification Change Listener --------------------------------------
+	/**
+	 * Do nothing for a binding change - it just doesn't apply
+	 */
+	@Override
+	public void bindingChange(String binding) {}
+	
 	/**
 	 * The value that we expect is a state change
 	 */

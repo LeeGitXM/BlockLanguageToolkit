@@ -16,6 +16,11 @@ public interface NotificationChangeListener extends EventListener  {
 
 	//============================= NotificationChangeListener ===========================
 	/**
+	 * A property binding has changed
+	 */
+	public void bindingChange(String binding);
+	
+	/**
 	 * Just send the new value.
 	 */
 	public void valueChange(QualifiedValue value);

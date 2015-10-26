@@ -92,6 +92,8 @@ public class Not extends AbstractProcessBlock implements ProcessBlock {
 		TruthValue tv = vcn.getValueAsTruthValue();
 		if( tv.equals(TruthValue.FALSE)) state = TruthValue.TRUE;
 		else if( tv.equals(TruthValue.TRUE)) state = TruthValue.FALSE;
+		else if(tv.equals(TruthValue.UNKNOWN)) state = TruthValue.UNKNOWN;
+		else return;  // Ignore an UNSET
 		QualifiedValue result = new BasicQualifiedValue(state.name(),qv.getQuality(),qv.getTimestamp());
 		if( !isLocked()) {
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);

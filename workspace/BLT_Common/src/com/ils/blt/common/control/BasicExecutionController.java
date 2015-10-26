@@ -70,12 +70,15 @@ public class BasicExecutionController implements ExecutionController  {
 		log.warnf("%s.getTagValue: WARNING: Executed from stub class",TAG);
 		return null;
 	}
-	public boolean hasActiveSubscription(ProcessBlock block,BlockProperty property) {
+	public boolean hasActiveSubscription(ProcessBlock block,BlockProperty property,String tagPath) {
 		log.warnf("%s.hasActiveSubscription: WARNING: Executed from stub class",TAG);
 		return false;
 	}
 	public void sendConnectionNotification(String blockid, String port, QualifiedValue val) {
 		log.warnf("%s.sendConnectionNotification: WARNING: Executed from stub class",TAG);
+	}
+	public void sendPropertyBindingNotification(String id, String propertyName, String val){
+		log.warnf("%s.sendPropertyBindingNotification: WARNING: Executed from stub class",TAG);
 	}
 	public void sendPropertyNotification(String id, String propertyName, QualifiedValue val){
 		log.warnf("%s.sendPropertyNotification: WARNING: Executed from stub class",TAG);

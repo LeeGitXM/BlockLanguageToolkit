@@ -13,9 +13,10 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ModelManager;
-import com.ils.blt.gateway.persistence.ToolkitRecord;
+import com.ils.blt.gateway.persistence.ToolkitRecordListener;
 import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.ils.blt.gateway.wicket.ToolkitStatusPanel;
+import com.ils.common.persistence.ToolkitRecord;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.common.project.Project;
@@ -47,6 +48,8 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	private transient ModelManager mmgr = null;
 	private final LoggerEx log;
 	private ToolkitRecord record = null;
+	private ToolkitRecordListener recordListener;
+	
 	
 	public static BLTGatewayHook get(GatewayContext ctx) { 
 		return (BLTGatewayHook)ctx.getModule(BLTProperties.MODULE_ID);
@@ -71,6 +74,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		ProxyHandler.getInstance().setContext(context);
 		ControllerRequestHandler.getInstance().setContext(context);
 		dispatcher = new GatewayRpcDispatcher(context);
+		recordListener = new ToolkitRecordListener(context);
 		
 		// Register the ToolkitRecord making sure that the table exists
 		try {
@@ -108,12 +112,15 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	    	}
 	    }
 
+	    // Register for changes to our permanent settings
+	    ToolkitRecord.META.addRecordListener(recordListener);
 	    context.getProjectManager().addProjectListener(mmgr);
 	    log.infof("%s: Startup complete.",TAG);
 	}
 
 	@Override
 	public void shutdown() {
+		ToolkitRecord.META.removeRecordListener(recordListener);
 		context.getProjectManager().removeProjectListener(mmgr);
 		BlockExecutionController.getInstance().stop();
 	}

@@ -38,4 +38,25 @@ public class NotificationKey
 	public static String keyForProperty(String blkid,String pname) {
 		return String.format("P:%s:%s",blkid,pname);
 	}
+	/**
+	 * @return  a push-notification key for a block property. The Id is
+	 *         the block Id followed by the property name.
+	 */
+	public static String keyForPropertyBinding(String blkid,String pname) {
+		return String.format("B:%s:%s",blkid,pname);
+	}
+	/**
+	 * Test a key for type. 
+	 * @return  true if this is a binding key.
+	 */
+	public static boolean isPropertyBindingKey(String key) {
+		return key.startsWith("B");
+	}
+	/**
+	 * Test a key for type. 
+	 * @return  true if this is a value key.
+	 */
+	public static boolean isPropertyValueKey(String key) {
+		return key.startsWith("P");
+	}
 }

@@ -105,11 +105,4 @@ public interface BLTProperties   {
 	public static final String PREFERENCES_NAME     = "BLTPreferences";    // Preferences collection name
 	public static final String PREF_EXIM_DIRECTORY  = "ExImDirectory";     // Export/import directory
 	public static final String PREF_CONFIG_DIRECTORY= "ConfigDirectory";   // Project properties configuration
-	// These are the names of toolkit properties that are to be stored in HSQLdb
-	public static final String TOOLKIT_PROPERTY_DATABASE            = "Database";           // Production database
-	public static final String TOOLKIT_PROPERTY_ISOLATION_DATABASE  = "SecondaryDatabase";  // Database when in isolation
-	public static final String TOOLKIT_PROPERTY_PROVIDER            = "Provider";           // Production tag provider
-	public static final String TOOLKIT_PROPERTY_ISOLATION_PROVIDER  = "SecondaryProvider";  // Tag provider when in isolation
-	public static final String TOOLKIT_PROPERTY_ISOLATION_TIME      = "SecondaryTimeFactor";// Time speedup when in isolation
-	
 }

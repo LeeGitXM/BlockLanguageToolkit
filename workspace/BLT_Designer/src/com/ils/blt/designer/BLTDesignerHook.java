@@ -84,9 +84,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	// Insert a menu to allow control of database and tag provider.
     @Override
     public MenuBarMerge getModuleMenu() {
-    	
-    	if( menuExists(context.getFrame(),INTERFACE_MENU_TITLE) ) return super.getModuleMenu();
-    	
+ 	
         MenuBarMerge merge = new MenuBarMerge(BLTProperties.MODULE_ID);  // as suggested in javadocs
         merge.addSeparator();
 
@@ -105,7 +103,9 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
         };
 
         JMenuMerge controlMenu = new JMenuMerge(WellKnownMenuConstants.VIEW_MENU_NAME);
-        controlMenu.add(setupAction);
+        if( !menuExists(context.getFrame(),INTERFACE_MENU_TITLE) ) {
+        	controlMenu.add(setupAction);
+        }
         controlMenu.add(validateAction);
         merge.add(WellKnownMenuConstants.VIEW_MENU_LOCATION, controlMenu);
         return merge;
@@ -296,7 +296,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 
         public void run() {
             log.debugf("%s.Launching setup dialog...",TAG);
-            SetupDialog setup = new SetupDialog(context);
+            ExternalInterfaceConfigurationDialog setup = new ExternalInterfaceConfigurationDialog(context);
             setup.pack();
             setup.setVisible(true);
         }

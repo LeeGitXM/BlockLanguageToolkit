@@ -24,23 +24,24 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 public class BasicEditPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	protected final LoggerEx log;
-	protected final BlockPropertyEditor parent;
+	protected final BlockPropertyEditor editor;
 	
 	
 	
-	public BasicEditPanel(BlockPropertyEditor editor) {
-		this.parent = editor;
+	public BasicEditPanel(BlockPropertyEditor bpe) {
+		this.editor = bpe;
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 	}
 	protected void updatePanelForBlock(int index,ProcessBlockView block) {
-		parent.updatePanelForBlock(index,block);
+		editor.updatePanelForBlock(index,block);
 	}
 	protected void updatePanelForProperty(int index,BlockProperty prop) {
-		parent.updatePanelForProperty(index,prop);
+		editor.updatePanelForProperty(index,prop);
 	}
 	protected void setSelectedPane(int selection) {
-		parent.setSelectedPane(selection);
+		editor.setSelectedPane(selection);
 	}
+	public BlockPropertyEditor getEditor() { return this.editor; }
 	
 	// ========================== Component Creation Methods ========================
 	/**
