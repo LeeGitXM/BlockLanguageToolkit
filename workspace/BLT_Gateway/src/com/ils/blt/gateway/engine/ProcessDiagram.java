@@ -535,6 +535,7 @@ public class ProcessDiagram extends ProcessNode {
 		DiagramState originalState = getState();
 		if( originalState.equals(DiagramState.DISABLED)) return;
 		setState(DiagramState.DISABLED);
+		updatePropertyProviders(provider);
 		setState(originalState);
 	}
 	
@@ -542,7 +543,7 @@ public class ProcessDiagram extends ProcessNode {
 	 * For every property that is bound to a tag, update its provider.
 	 * @param provider
 	 */
-	public void updatePropertyProviders(String provider) {
+	private void updatePropertyProviders(String provider) {
 		for( ProcessBlock pb:getProcessBlocks()) {
 			for(BlockProperty bp:pb.getProperties()) {
 				BindingType bindingType = bp.getBindingType();

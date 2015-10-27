@@ -528,11 +528,11 @@ public class ModelManager implements ProjectListener  {
 				diagram.updateConnections(sd);
 				if( diagram.getState().equals(DiagramState.ACTIVE)) {
 					String provider = controller.getProductionProvider();
-					diagram.updatePropertyProviders(provider);
+					diagram.updateTagProvider(provider);
 				}
 				else if (diagram.getState().equals(DiagramState.ISOLATED)) {
 					String provider = controller.getIsolationProvider();
-					diagram.updatePropertyProviders(provider);
+					diagram.updateTagProvider(provider);
 				}
 				diagram.startSubscriptions();
 			}
