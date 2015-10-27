@@ -44,6 +44,10 @@ public class Note extends AbstractProcessBlock implements ProcessBlock {
 	public Note(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
+		
+		// Overwrite blocks stored before 10/01/2015
+		BlockDescriptor desc = prototype.getBlockDescriptor();
+		desc.setEditorClass("com.ils.blt.designer.config.NoteTextEditor");
 	}
 
 	/**

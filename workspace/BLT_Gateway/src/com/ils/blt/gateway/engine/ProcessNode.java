@@ -83,7 +83,7 @@ public class ProcessNode implements Serializable {
 	/**
 	 * Traverse the parentage prepending names to produce a tree path.
 	 * The full path does NOT include the project name.
-	 * nodesByUUID we need help coverting our UUIDs to objects
+	 * Use nodesByUUID to help converting our UUIDs to objects
 	 * @return
 	 */
 	public String getTreePath(Map<UUID,ProcessNode> nodesByUUID) {

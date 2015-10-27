@@ -205,10 +205,11 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	 * We filter out those that are global (have no module) as these
 	 * are system things that we don't care about for the moment.
 	 */
-	public void listProjectResources() {
+	public void listProjectBLTResources() {
 		List <ProjectResource> resources = context.getProject().getResources();
 		for( ProjectResource res : resources ) {
 			if( res.getModuleId()==null || res.getModuleId().length()==0) continue;
+			if( !res.getResourceType().startsWith("blt")) continue;     // List only diagram resources
 			logger.info("Res: "+res.getResourceId()+" "+res.getResourceType()+" "+res.getModuleId()+" ("+res.getName()+
 					":"+res.getParentUuid()+")");
 		}
@@ -338,7 +339,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				throw new IllegalArgumentException();
 			}
 			statusManager.createResourceStatus(node,resourceId, res.getResourceId());
-			executionEngine.executeOnce(new ResourceUpdateManager(workspace,res));   /// Creates, syncs resource
+			// NOte: This shouldn't be necessary - plus it causes problems on a delete (when we search for resources to delete)
+			//executionEngine.executeOnce(new ResourceUpdateManager(workspace,res));   /// Creates, syncs resource
 		}
 		else {
 			logger.debugf("%s.createChildNode: REUSE %s->%s",TAG,this.getName(),node.getName());
@@ -1109,9 +1111,9 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			logger.info("============================ Resources (Designer) =========================");
-			listProjectResources();
-			logger.info("============================ Resources (Gateway) ==========================");
+			logger.info("============================ BLT Resources (Designer) =========================");
+			listProjectBLTResources();
+			logger.info("============================ BLT Resources (Gateway)  =========================");
 			listControllerResources();
 			logger.infof("================================ (proj = %d )==============================",context.getProject().getId());
 		}

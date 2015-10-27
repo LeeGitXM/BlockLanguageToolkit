@@ -419,8 +419,8 @@ public class ModelManager implements ProjectListener  {
 	public void projectAdded(Project staging, Project published) {
 		if( staging!=null ) {
 			long projectId = staging.getId();
-			log.debugf("%s.projectAdded: %s (%d),staging",TAG,staging.getName(),projectId);
-			List<ProjectResource> resources = published.getResources();
+			log.debugf("%s.projectAdded: %s (%d),published",TAG,staging.getName(),projectId);
+			List<ProjectResource> resources = staging.getResources();
 			for( ProjectResource res:resources ) {
 				log.infof("%s.projectAdded: resource %s (%d),type %s", TAG,res.getName(),
 						res.getResourceId(),res.getResourceType());
@@ -452,18 +452,19 @@ public class ModelManager implements ProjectListener  {
 		if( vers!=ProjectVersion.Staging ) return;  // Consider only the "Staging" version
 		log.infof("%s.projectUpdated: %s (%d)  %s", TAG,diff.getName(),diff.getId(),vers.toString());
 		long projectId = diff.getId();
-		Set<Long> deleted = diff.getDeletedResources();
-		for (Long  resid : deleted) {
-			log.infof("%s.projectUpdated: delete resource %d:%d", TAG,projectId,resid);
-			deleteResource(new Long(projectId),resid);
-		}
-		
+
 		List<ProjectResource> resources = diff.getResources();
 		for( ProjectResource res:resources ) {
 			//if( res.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)) continue;
 			log.infof("%s.projectUpdated: add/update resource %s (%d),type %s (%s)", TAG,res.getName(),
 					res.getResourceId(),res.getResourceType(),(diff.isResourceDirty(res)?"dirty":"clean"));
 			analyzeResource(new Long(projectId),res);
+		}
+		
+		Set<Long> deleted = diff.getDeletedResources();
+		for (Long  resid : deleted) {
+			log.infof("%s.projectUpdated: delete resource %d:%d", TAG,projectId,resid);
+			deleteResource(new Long(projectId),resid);
 		}
 	}
 	

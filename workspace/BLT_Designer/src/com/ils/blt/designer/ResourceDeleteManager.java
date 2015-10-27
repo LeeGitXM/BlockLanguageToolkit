@@ -89,7 +89,7 @@ public class ResourceDeleteManager {
 		accumulateDescendantResources(root,resources);
 	}
 	
-	// We have grave difficulty here with the locking. Nodes that are newly create appear to be 
+	// We have grave difficulty here with the locking. Nodes that are newly created appear to be 
 	// initially locked by some entity, not us. For now we give up an simply ignore the locks.
 	public boolean deleteResources() {
 		// First get all the locks
@@ -165,7 +165,7 @@ public class ResourceDeleteManager {
 		}
 
 		@SuppressWarnings("rawtypes")
-		Enumeration walker = node.children();
+		Enumeration walker = node.children();   // Note: actually instantiates the nav tree node
 		while(walker.hasMoreElements()) {
 			Object child = walker.nextElement();
 			accumulateDescendantResources((AbstractResourceNavTreeNode)child,rlist);
