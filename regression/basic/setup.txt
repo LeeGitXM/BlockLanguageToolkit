@@ -25,8 +25,8 @@ script: setTimeFactor timeFactor.setTimeFactor(factor)
 timefactor: 15
 setTimeFactor (15)
 
-PROVIDER = getIsolationProvider()
 # Specify the provider that corresponds to the application configuration
+PROVIDER = getIsolationProvider()
 tagprovider: $PROVIDER
 setStateForApplication("app75","ISOLATED")
 
