@@ -17,7 +17,7 @@ tag: Sink MemoryTags/Connection-B
 tagset: SingleBoolean MemoryTags/BooleanFeed
 tagset: DualInput MemoryTags/DoubleInput1 MemoryTags/DoubleInput2
 tagset: LabDataInput MemoryTags/LabDataData
-tagset: ReadWriteSource MemoryTags/Connection-A
+tagset: ReadWriteSource Source
 
 Test: Reading and Writing Tags
 Step: Boolean tag reader

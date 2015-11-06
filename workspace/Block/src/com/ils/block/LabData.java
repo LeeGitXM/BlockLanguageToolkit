@@ -142,8 +142,13 @@ public class LabData extends Input implements ProcessBlock {
 				try {
 					timestamp = customFormatter.parse(incoming.getValue().getValue().toString());
 				}
+				catch(NumberFormatException nfe) {
+					log.errorf("%s.acceptValue: Exception formatting time %s as %s (%s)",getName(),incoming.getValue().getValue().toString(),
+							dateFormatter.toString(),nfe.getLocalizedMessage());
+				}
 				catch(ParseException pe) {
-					log.errorf("%s.acceptValue: Exception formatting time as %s (%s)",getName(),dateFormatter.toString(),pe.getLocalizedMessage());
+					log.errorf("%s.acceptValue: Exception formatting time %s as %s (%s)",getName(),incoming.getValue().getValue().toString(),
+							dateFormatter.toString(),pe.getLocalizedMessage());
 				} 
 			}
 			currentTime = timestamp;
