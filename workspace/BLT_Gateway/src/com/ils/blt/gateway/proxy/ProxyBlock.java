@@ -8,14 +8,11 @@ import java.util.UUID;
 import org.python.core.PyObject;
 
 import com.ils.block.AbstractProcessBlock;
-import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.gateway.engine.BlockExecutionController;
-import com.ils.common.watchdog.TestAwareQualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
 
 

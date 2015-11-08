@@ -1221,10 +1221,6 @@
       <Property name="Value">false</Property>
       <Property name="DataType">6</Property>
    </Tag>
-   <Tag name="PythonBooleanOutput" path="MemoryTags" type="DB">
-      <Property name="Value">false</Property>
-      <Property name="DataType">6</Property>
-   </Tag>
    <Tag name="ConditionerQuality" path="MemoryTags" type="DB">
       <Property name="Value">false</Property>
       <Property name="DataType">6</Property>
@@ -1284,7 +1280,7 @@
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="SubDiagnosisInput" path="MemoryTags" type="DB">
-      <Property name="Value">false</Property>
+      <Property name="Value">true</Property>
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="SQCOut2" path="MemoryTags" type="DB">
@@ -1296,11 +1292,11 @@
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="Connection-A" path="MemoryTags" type="DB">
-      <Property name="Value">95</Property>
+      <Property name="Value"></Property>
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="Connection-B" path="MemoryTags" type="DB">
-      <Property name="Value">95</Property>
+      <Property name="Value"></Property>
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="GainOutput" path="MemoryTags" type="DB">
@@ -1338,8 +1334,12 @@
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="ReadWriteStringOutput" path="MemoryTags" type="DB">
-      <Property name="Value">95</Property>
+      <Property name="Value"></Property>
       <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="SQCDiagnosisOutput" path="MemoryTags" type="DB">
+      <Property name="Value">true</Property>
+      <Property name="DataType">6</Property>
    </Tag>
    <Tag name="ComparisonFeed" path="MemoryTags" type="DB">
       <Property name="Value">0.0</Property>
@@ -1358,7 +1358,7 @@
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="ReadWriteNumericOutput" path="MemoryTags" type="DB">
-      <Property name="Value">4.0</Property>
+      <Property name="Value">44.632</Property>
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="StringDateInput" path="MemoryTags" type="DB">
@@ -1422,7 +1422,7 @@
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="SQCDiagnosisInput" path="MemoryTags" type="DB">
-      <Property name="Value">false</Property>
+      <Property name="Value">true</Property>
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="DiagramOutput" path="MemoryTags" type="DB">
@@ -1430,7 +1430,7 @@
       <Property name="DataType">2</Property>
    </Tag>
    <Tag name="LabDataTime" path="MemoryTags" type="DB">
-      <Property name="Value">2015-12-31 17:00:00</Property>
+      <Property name="Value">1969-12-31 17:00:02</Property>
       <Property name="DataType">8</Property>
       <Property name="FormatString">yyyy-MM-dd h:mm:ss aa</Property>
    </Tag>
@@ -1459,7 +1459,7 @@
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="AverageOut3" path="MemoryTags" type="DB">
-      <Property name="Value">200.0</Property>
+      <Property name="Value">230.0</Property>
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="DiagramFeed" path="MemoryTags" type="DB">
@@ -1467,7 +1467,7 @@
       <Property name="DataType">2</Property>
    </Tag>
    <Tag name="AverageOut1" path="MemoryTags" type="DB">
-      <Property name="Value">177.5</Property>
+      <Property name="Value">230.0</Property>
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="LabDataData" path="MemoryTags" type="DB">
@@ -1528,6 +1528,10 @@
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="BooleanFeed" path="MemoryTags" type="DB">
+      <Property name="Value">true</Property>
+      <Property name="DataType">6</Property>
+   </Tag>
+   <Tag name="SubDiagnosisOutput" path="MemoryTags" type="DB">
       <Property name="Value">true</Property>
       <Property name="DataType">6</Property>
    </Tag>

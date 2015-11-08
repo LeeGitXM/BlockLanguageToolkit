@@ -72,6 +72,7 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
 import com.inductiveautomation.ignition.designer.navtree.model.FolderNode;
+import com.jidesoft.plaf.basic.Resource;
 /**
  * A folder in the designer scope to support the diagnostics toolkit diagram
  * layout. In addition to standard folders, folders can be of type "Application" or
@@ -339,7 +340,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				throw new IllegalArgumentException();
 			}
 			statusManager.createResourceStatus(node,resourceId, res.getResourceId());
-			// NOte: This shouldn't be necessary - plus it causes problems on a delete (when we search for resources to delete)
+			// Note: This shouldn't be necessary - plus it causes problems on a delete (when we search for resources to delete)
 			//executionEngine.executeOnce(new ResourceUpdateManager(workspace,res));   /// Creates, syncs resource
 		}
 		else {
@@ -496,6 +497,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
 			sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
 			sd.setName(res.getName());   // Sync the SerializableApplication name w/ res
+			statusManager.setResourceState(resourceId, sd.getState());
 		}
 		catch(Exception ex) {
 			logger.warnf("%s.SerializableDiagram: Deserialization exception (%s)",TAG,ex.getMessage());
@@ -996,6 +998,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 						BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
 						sd.getName(), ApplicationScope.GATEWAY, json.getBytes());
 				resource.setParentUuid(parentId);
+				statusManager.setResourceState(newId, sd.getState());
 				executionEngine.executeOnce(new ResourceCreateManager(resource));	
 			} 
 			catch (Exception ex) {
@@ -1395,6 +1398,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 											resource.setParentUuid(getFolderId());
 											new ResourceCreateManager(resource).run();	
 											parentNode.selectChild(new long[] {newId} );
+											statusManager.setResourceState(newId, sd.getState());
 											setDirty(true);
 										}
 										else {
@@ -1484,7 +1488,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	/**
 	 * Recursively set the state of every diagram under the application to the selected value.
 	 * If the selected value is ISOLATED, then we also update the external database from
-	 * the project resources.
+	 * the project resources. If there is a state change, we save the diagram to keep
+	 * project resource/gateway/designer all in sync.
 	 */
 	private class SetApplicationStateAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
@@ -1509,10 +1514,13 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		public void recursivelyUpdateNodeState(AbstractNavTreeNode node,DiagramState diagramState) {
 			if( node==null) return;
 			if( node instanceof DiagramTreeNode ) {
-				statusManager.setResourceState(((DiagramTreeNode) node).getResourceId(),diagramState);
 				DiagramTreeNode dtn = (DiagramTreeNode)node;
-				dtn.setIcon(dtn.getIcon());
-				dtn.refresh();
+				DiagramState oldState = statusManager.getResourceState(resourceId);
+				if( !oldState.equals(diagramState)) {
+					updateState(dtn.getProjectResource(),diagramState);
+					dtn.setIcon(dtn.getIcon());
+					dtn.refresh();
+				}
 			}
 			@SuppressWarnings("unchecked")
 			Enumeration<AbstractNavTreeNode>  childWalker = node.children();
@@ -1587,6 +1595,20 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			}
 		}
 	}
+	/**
+	 * If there is a change, then we need to update the resource
+	 * and inform the Gateway
+	 * @param res
+	 */
+	private void updateState(ProjectResource res,DiagramState state) {
+		if( res!=null ) {
+			// Inform the gateway of the state change
+			new ResourceUpdateManager(workspace,res).run();	
+			statusManager.setResourceState(res.getResourceId(),state);
+			setDirty(false);
+		}
+	}
+	
 	// Save this node and all its descendants.
 	private class TreeSaveAction extends BaseAction {
 		private static final long serialVersionUID = 1L;

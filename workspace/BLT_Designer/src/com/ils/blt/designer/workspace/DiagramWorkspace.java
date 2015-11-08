@@ -503,8 +503,10 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
 			try {
 				sd = mapper.readValue(json,SerializableDiagram.class);
-				// Synchronize names as the resource may have been re-named since it was serialized
+				// Synchronize names as the resource may have been re-named and/or
+				// state changed since it was serialized
 				sd.setName(res.getName());
+				sd.setState(statusManager.getResourceState(resourceId));
 			} 
 			catch (JsonParseException jpe) {
 				logger.warnf("%s: open parse exception (%s)",TAG,jpe.getLocalizedMessage());

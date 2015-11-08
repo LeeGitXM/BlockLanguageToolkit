@@ -1,5 +1,5 @@
 /**
- *   (c) 2013-2014  ILS Automation. All rights reserved.
+ *   (c) 2013-2015  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.navtree;
 
@@ -70,7 +70,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	protected final LoggerEx logger = LogUtil.getLogger(getClass().getPackage().getName());
 	protected DesignerContext context;
 	private boolean dirty = false;     
-	protected long resourceId;
+	protected final long resourceId;
 	private final ExecutionManager executionEngine;
 	protected final DiagramWorkspace workspace;
 	private SaveDiagramAction saveAction = null;
@@ -123,15 +123,24 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		if( this.getParent()==null ) {
 			logger.errorf("%s.initPopupMenu: ERROR: Diagram (%d) has no parent",TAG,hashCode());
 		}
+		// If there is a diagram open that is dirty, turn off some of the options.
+		boolean cleanView = true;
+		BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId);
+		if( tab!=null ) {
+			ProcessDiagramView view = (ProcessDiagramView)tab.getModel();
+			cleanView = !view.isDirty();
+		}
 		ExportDiagramAction exportAction = new ExportDiagramAction(menu.getRootPane(),resourceId);
+		exportAction.setEnabled(cleanView);
 		menu.add(exportAction);
 		DeleteDiagramAction diagramDeleteAction = new DeleteDiagramAction(this);
 		DebugDiagramAction debugAction = new DebugDiagramAction();
 		ResetDiagramAction resetAction = new ResetDiagramAction();
+		resetAction.setEnabled(cleanView);
+		renameAction.setEnabled(cleanView);
 		
 		// States are: ACTIVE, DISABLED, ISOLATED
-		ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
-		DiagramState state = handler.getDiagramState(context.getProject().getId(), resourceId);
+		DiagramState state = statusManager.getResourceState(resourceId);
 		saveAction = new SaveDiagramAction(this);
 		SetStateAction ssaActive = new SetStateAction(DiagramState.ACTIVE);
 		ssaActive.setEnabled(!state.equals(DiagramState.ACTIVE));
@@ -140,6 +149,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		SetStateAction ssaIsolated = new SetStateAction(DiagramState.ISOLATED);
 		ssaIsolated.setEnabled(!state.equals(DiagramState.ISOLATED));
 		JMenu setStateMenu = new JMenu(BundleUtil.get().getString(PREFIX+".SetState"));
+		setStateMenu.setEnabled(cleanView);
 		setStateMenu.add(ssaActive);
 		setStateMenu.add(ssaDisable);
 		setStateMenu.add(ssaIsolated);
@@ -212,6 +222,9 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	@Override
 	public long getResourceId() { return this.resourceId; }
 	
+	/**
+	 * This is the resource ..
+	 */
 	@Override
 	public ProjectResource getProjectResource() {
 		return context.getProject().getResource(resourceId);
@@ -224,14 +237,13 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	@Override
 	public Icon getIcon() {	
 		icon = closedIcon;
+		DiagramState ds = statusManager.getResourceState(resourceId);
 		if( workspace.isOpen(resourceId) ) {
 			icon = openIcon;
-			DiagramState ds = statusManager.getResourceState(resourceId);
 			if( ds.equals(DiagramState.DISABLED))        icon = openDisabledIcon;
 			else if( ds.equals(DiagramState.ISOLATED)) icon = openRestrictedIcon;
 		}
 		else {
-			DiagramState ds = statusManager.getResourceState(resourceId);
 			if( ds.equals(DiagramState.DISABLED))        icon = closedDisabledIcon;
 			else if( ds.equals(DiagramState.ISOLATED)) icon = closedRestrictedIcon;
 		}
@@ -521,32 +533,33 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 
 		public void actionPerformed(ActionEvent e) {
 			try {
-				// If the diagram is showing, then all we do is set the view
+				// Even if the diagram is showing, we need to do a save to change the state.
+				// (That's why this selection is disabled when the view is dirty)
+				DiagramState oldState = null;
+				ProjectResource res = context.getProject().getResource(resourceId);
 				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId);
 				if( tab!=null ) {
 					ProcessDiagramView view = (ProcessDiagramView)(tab.getModel());
+					oldState = view.getState();
 					view.setState(state);
 					tab.setBackground(view.getBackgroundColorForState());
 				}
 				// Otherwise we need to de-serialize and re-serialize
 				else {
-					ProjectResource res = context.getProject().getResource(resourceId);
 					byte[]bytes = res.getData();
 					SerializableDiagram sd = null;
 					ObjectMapper mapper = new ObjectMapper();
 					sd = mapper.readValue(bytes,SerializableDiagram.class);
+					oldState = sd.getState();
 					// Synchronize names as the resource may have been re-named since it was serialized
 					sd.setName(res.getName());
 					sd.setState(state);
 					bytes = mapper.writeValueAsBytes(sd);
 					res.setData(bytes); 
-					setDirty(true);
 				}
-
-				// Inform the gateway of the state change
-				ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
-				handler.setDiagramState(context.getProject().getId(), resourceId,state.name());
-				statusManager.setResourceState(resourceId,state);
+				if( !oldState.equals(state)) {
+					updateState(res,state);
+				}
 				setIcon(getIcon());
 				refresh();
 			} 
@@ -557,6 +570,20 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			}
 		}
 	}
+	/**
+	 * If there is a change, then we need to update the resource
+	 * and inform the Gateway
+	 * @param res
+	 */
+	private void updateState(ProjectResource res,DiagramState state) {
+		if( res!=null ) {
+			new ResourceUpdateManager(workspace,res).run();
+			statusManager.setResourceState(resourceId,state);
+			setDirty(false);
+		}
+	}
+
+	
 	@Override
 	protected DesignerProjectContext projectCtx() {
 		return context;

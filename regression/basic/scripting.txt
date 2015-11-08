@@ -28,7 +28,7 @@ setBlockProperty($DIAGRAM,$DATAPUMP,"LiveOnStart","FALSE")
 Step: Blocks in Diagram
 assert: blocksInDiagram($DIAGRAM) contains "INHIBITOR-551" "Inhibitor-551 is in diagram"
 assert: blocksInDiagram($DIAGRAM) contains "RoutingParameter" "RountingParameter is in diagram"
-assert: count of blocksInDiagram($DIAGRAM) = 19 "19 blocks in diagram"
+assert: count of blocksInDiagram($DIAGRAM) = 21 "21 blocks in diagram"
 
 Step: Blocks of Class
 assert: blocksOfClass($DIAGRAM,"com.ils.block.Inhibitor") contains "INHIBITOR-551" "Inhibitor-551 is an Inhibitor"

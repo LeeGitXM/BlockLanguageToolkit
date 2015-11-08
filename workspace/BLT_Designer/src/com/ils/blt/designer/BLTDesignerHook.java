@@ -60,7 +60,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	private final LoggerEx log;
 	private DiagramWorkspace workspace = null;
 	private ApplicationRequestHandler appRequestHandler = null;
-	private final NodeStatusManager nodeStatusManager;
+	private NodeStatusManager nodeStatusManager = null;
 	private BLTSearchProvider searchProvider = null;
 	
 	// Register separate properties files for designer things and block things
@@ -71,7 +71,6 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	
 	public BLTDesignerHook() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
-		nodeStatusManager = new NodeStatusManager();
 	}
 	
 	
@@ -114,6 +113,8 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	@Override
 	public void startup(DesignerContext ctx, LicenseState activationState) throws Exception {
 		this.context = ctx;
+		appRequestHandler = new ApplicationRequestHandler();
+		nodeStatusManager = new NodeStatusManager(appRequestHandler,context.getProject().getId());
 		AuxiliaryDataRestoreManager.setContext(ctx);
 		AuxiliaryDataSaveManager.setContext(ctx);
 		ResourceCreateManager.setContext(ctx);
@@ -121,7 +122,6 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		ResourceUpdateManager.setContext(ctx);
 		ResourceSaveManager.setContext(ctx);
 		WorkspaceRepainter.setContext(ctx);
-		appRequestHandler = new ApplicationRequestHandler();
 		context.addBeanInfoSearchPath("com.ils.blt.designer.component.beaninfos");
 		searchProvider = new BLTSearchProvider(context);
 		context.registerSearchProvider(searchProvider);

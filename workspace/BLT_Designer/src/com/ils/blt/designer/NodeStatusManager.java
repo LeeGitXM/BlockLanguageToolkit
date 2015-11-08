@@ -1,12 +1,12 @@
 /**
- *   (c) 2013-2014  ILS Automation. All rights reserved.
- *  
+ *   (c) 2013-2015  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.designer.navtree.NavTreeNodeInterface;
@@ -30,14 +30,18 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
 public class NodeStatusManager  {
 	private static String TAG = "NodeStatusManager";
 	private final LoggerEx log;
+	private final ApplicationRequestHandler handler;
+	private final Long projectId;
 	private final Map<Long,StatusEntry> statusByResourceId;
 	
 
 	/**
-	 * The handler, make this private per Singleton pattern ...
+	 * The handler. There should be only one - owned by the hook instance
 	 */
-	public NodeStatusManager() {
-		log = LogUtil.getLogger(getClass().getPackage().getName());
+	public NodeStatusManager(ApplicationRequestHandler h,long projId) {
+		this.log = LogUtil.getLogger(getClass().getPackage().getName());
+		this.handler = h;
+		this.projectId = new Long(projId);
 		statusByResourceId = new HashMap<>();
 	}
 		
@@ -85,7 +89,8 @@ public class NodeStatusManager  {
 		Long key = new Long(BLTProperties.ROOT_RESOURCE_ID);
 		if( statusByResourceId.get(key) == null ) {
 			Long parentKey = new Long(BLTProperties.ROOT_PARENT_ID);
-			statusByResourceId.put(key,new StatusEntry(node,parentKey));
+			DiagramState s = handler.getDiagramState(projectId, key);  
+			statusByResourceId.put(key,new StatusEntry(node,parentKey,s));
 		}
 	}
 	
@@ -95,11 +100,12 @@ public class NodeStatusManager  {
 	 * @param resourceId
 	 */
 	public void createResourceStatus(AbstractResourceNavTreeNode node,long parentResourceId,long resourceId) {
-		log.infof("%s.newResource(%d:%d)",TAG,parentResourceId,resourceId);
+		log.debugf("%s.newResource(%d:%d)",TAG,parentResourceId,resourceId);
 		if(node.getProjectResource()==null) throw new IllegalArgumentException("No project resource");
 		Long key = new Long(resourceId);
 		if( statusByResourceId.get(key) == null ) {
-			statusByResourceId.put(key,new StatusEntry(node,parentResourceId));
+			DiagramState s = handler.getDiagramState(projectId, key); 
+			statusByResourceId.put(key,new StatusEntry(node,parentResourceId,s));
 		}
 	}
 	/**
@@ -129,17 +135,24 @@ public class NodeStatusManager  {
 	 * @param resourceId
 	 */
 	public void deleteResource(long resourceId ) {
-		log.infof("%s.deleteResource(%d)",TAG,resourceId);
+		log.debugf("%s.deleteResource(%d)",TAG,resourceId);
 		Long key = new Long(resourceId);
 		StatusEntry se = statusByResourceId.get(resourceId);
 		if( se!=null ) se.prepareToBeDeleted();
 		statusByResourceId.remove(key);
 	}
 	
+	/**
+	 * @param resourceId
+	 * @return a cached diagram state.
+	 */
 	public DiagramState getResourceState(long resourceId) {
-		DiagramState result = DiagramState.ACTIVE;  
+		DiagramState result = DiagramState.UNSET;
 		StatusEntry se = statusByResourceId.get(resourceId);
-		if( se!=null ) result = se.getState();
+		if( se!=null ) {
+			result = se.getState();
+		}
+		log.debugf("%s.getResourceState: %d = %s",TAG,resourceId,result.name());
 		return result;
 	}	
 	/**
@@ -197,11 +210,18 @@ public class NodeStatusManager  {
 		else log.debugf("%s.isResourceDirty(%d) - resource UNDEFINED",TAG,resourceId);
 		return result;
 	}
-	
+
+	/**	
+	 * A state change, is of necessity, accompanied by a save. Clear the dirty count.
+	 * We explicitly synchronize with the gateway, but cache the result.
+	 */
 	public void setResourceState(long resourceId,DiagramState bs) {
+		log.debugf("%s.setResourceState: %d = %s",TAG,resourceId,bs.name());
+		handler.setDiagramState(projectId, new Long(resourceId), bs.name());
 		StatusEntry se = statusByResourceId.get(resourceId);
 		if( se!=null ) {
 			se.setState(bs);
+			clearDirtyChildCount(resourceId);
 		}
 	}
 
@@ -333,15 +353,16 @@ public class NodeStatusManager  {
 		private int dirtyChildren = 0;
 		private final long parentId;           // A resourceId
 		private final long resourceId;
-		private DiagramState state = DiagramState.ACTIVE;
+		private DiagramState state;
 		private final AbstractResourceNavTreeNode node;
 		
-		public StatusEntry(AbstractResourceNavTreeNode antn, long parent)  {
+		public StatusEntry(AbstractResourceNavTreeNode antn, long parent, DiagramState s)  {
 			ProjectResource pr = antn.getProjectResource();
 			long resid = BLTProperties.ROOT_RESOURCE_ID;
 			if(pr!=null) resid = pr.getResourceId();
 			this.resourceId = resid;
 			this.parentId = parent;
+			this.state = s;
 			this.node = antn;
 		}
 		
@@ -350,7 +371,7 @@ public class NodeStatusManager  {
 		public int getDirtyChildCount() {return dirtyChildren;}
 		public AbstractResourceNavTreeNode getNode() { return node; }
 		public long getParent() { return parentId; }
-		public DiagramState getState() {return state;}
+		public DiagramState getState() { return state; }
 		public void incrementDirtyChildCount() {dirtyChildren+=1;}
 		// Note: isDirty refers to the node of interest alone, excluding children
 		public boolean isDirty() {return dirtyChildren>0;}
@@ -365,11 +386,9 @@ public class NodeStatusManager  {
 				((NavTreeNodeInterface)this.node).updateUI(isDirty());
 			}
 		}
-
-		public void setState(DiagramState state) {this.state = state;}
+		public void setState(DiagramState s) { this.state = s; }
 		@Override
 		public String toString() {
-			
 			String dump = String.format("%s(%d) was %s, parent: %d, dirty children %d",node.getName(),resourceId,(dirty?"dirty":"clean"),parentId,dirtyChildren);
 			return dump;
 		}
