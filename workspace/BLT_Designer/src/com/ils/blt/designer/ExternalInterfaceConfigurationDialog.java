@@ -25,7 +25,6 @@ import net.miginfocom.swing.MigLayout;
 
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.common.persistence.ToolkitProperties;
-import com.ils.common.persistence.ToolkitRecordHandler;
 import com.inductiveautomation.ignition.common.sqltags.model.TagProviderMeta;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 

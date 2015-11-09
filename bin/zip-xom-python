@@ -14,6 +14,7 @@ zip -r $SVN/ils-python-src.zip ILS_Python
 # XOM python  ("source" and build)
 cd ${GIT_REPO}/xom-python/XOM_Python/src
 zip -r $SVN/xom-python.zip * 
+zip -d $SVN/xom-python.zip xom/emre/\*
 cd ${GIT_REPO}/xom-python
 zip -r $SVN/xom-python-src.zip XOM_Python
 
