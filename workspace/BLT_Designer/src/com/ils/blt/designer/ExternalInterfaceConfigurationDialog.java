@@ -113,9 +113,10 @@ public class ExternalInterfaceConfigurationDialog extends JDialog {
 		buttonPanel.add(okButton, "");
 		okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				validateEntries();
-				saveEntries();
-				dispose();
+				if( validateEntries() ) {
+					saveEntries();
+					dispose();
+				}
 			}
 		});
 		JButton cancelButton = new JButton("Cancel");
@@ -204,7 +205,8 @@ public class ExternalInterfaceConfigurationDialog extends JDialog {
 		return label;
 	}
 	
-	private void validateEntries() {
+	private boolean validateEntries() {
+		boolean result = false;
 		// Do not allow tag providers to be the same
 		Object db1 = mainDatabaseBox.getSelectedItem();
 		Object db2 = secondaryDatabaseBox.getSelectedItem();
@@ -225,45 +227,60 @@ public class ExternalInterfaceConfigurationDialog extends JDialog {
 					JOptionPane.WARNING_MESSAGE);
 			mainDatabaseBox.setSelectedItem(context.getDefaultDatasourceName());
 		}
-
-		// Do not allow tag providers to be the same
-		Object tp1 = mainProviderBox.getSelectedItem();
-		Object tp2 = secondaryProviderBox.getSelectedItem();
-		if( tp1!=null && tp2!=null && tp1.toString().length()>0 && tp2.toString().length()>0 &&
-				tp1.toString().equals(tp2.toString()) )  {
-
-			JOptionPane.showMessageDialog(context.getFrame(),
-					"Isolation mode tag provider must not be the same as production.",
-					"Tag provider equivalence warning",
-					JOptionPane.WARNING_MESSAGE);
-			secondaryProviderBox.setSelectedItem("");
+		else {
+			result = true;
 		}
-		else if( tp1==null || tp1.toString().length()==0 )  {
-			JOptionPane.showMessageDialog(context.getFrame(),
-					"Production tag provider must be configured.",
-					"Unset provider warning",
-					JOptionPane.WARNING_MESSAGE);
-			mainProviderBox.setSelectedItem(context.getDefaultSQLTagsProviderName());
-		}
-		// Check numeric value of the speed factor
-		String val = secondaryTimeFactorField.getText();
-		try {
-			double speedup = Double.parseDouble(val);
-			if( speedup<=0.0001 ) {
+
+		if( result ) {
+			result = false;
+			// Do not allow tag providers to be the same
+			Object tp1 = mainProviderBox.getSelectedItem();
+			Object tp2 = secondaryProviderBox.getSelectedItem();
+			if( tp1!=null && tp2!=null && tp1.toString().length()>0 && tp2.toString().length()>0 &&
+					tp1.toString().equals(tp2.toString()) )  {
+
 				JOptionPane.showMessageDialog(context.getFrame(),
-						"Time speedup ("+val+") must be greater than zero",
+						"Isolation mode tag provider must not be the same as production.",
+						"Tag provider equivalence warning",
+						JOptionPane.WARNING_MESSAGE);
+				secondaryProviderBox.setSelectedItem("");
+			}
+			else if( tp1==null || tp1.toString().length()==0 )  {
+				JOptionPane.showMessageDialog(context.getFrame(),
+						"Production tag provider must be configured.",
+						"Unset provider warning",
+						JOptionPane.WARNING_MESSAGE);
+				mainProviderBox.setSelectedItem(context.getDefaultSQLTagsProviderName());
+			}
+			else {
+				result = true;
+			}
+		}
+		
+		if( result ) {
+			// Check numeric value of the speed factor
+			String val = secondaryTimeFactorField.getText();
+			try {
+				double speedup = Double.parseDouble(val);
+				if( speedup<=0.0001 ) {
+					JOptionPane.showMessageDialog(context.getFrame(),
+							"Time speedup ("+val+") must be greater than zero",
+							"Invalid time factor warning",
+							JOptionPane.WARNING_MESSAGE);
+					secondaryTimeFactorField.setText("1.0");
+					result = false;
+				}
+			}
+			catch(NumberFormatException nfe) {
+				JOptionPane.showMessageDialog(context.getFrame(),
+						"Time speedup ("+val+") must be numeric",
 						"Invalid time factor warning",
 						JOptionPane.WARNING_MESSAGE);
 				secondaryTimeFactorField.setText("1.0");
+				result = false;
 			}
 		}
-		catch(NumberFormatException nfe) {
-			JOptionPane.showMessageDialog(context.getFrame(),
-					"Time speedup ("+val+") must be numeric",
-					"Invalid time factor warning",
-					JOptionPane.WARNING_MESSAGE);
-			secondaryTimeFactorField.setText("1.0");
-		}
+		return result;
 	}
 
 	// Read all widget values and save to persistent storage.
