@@ -145,11 +145,14 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 * notification for animation that is most necessary.
 	 */
 	public void notifyOfStatus();
-	//===================== PropertyChangeListener ======================
 	/**
-	 * This is a stricter implementation that enforces QualifiedValue data.
+	 * Add a time-stamped entry to the block's activity log.
+	 * The log is viewable as part of the internal status.
+	 * @param desc description of the activity being recorded. 
+	 *        Presumably this comes from a controlled vocabulary
+	 * @param value a new value associated with the activity, if any.
 	 */
-	public void propertyChange(BlockPropertyChangeEvent event);
+	public void recordActivity(String desc,String value);
 	/**
 	 * Reset the internal state of the block.
 	 */
@@ -227,4 +230,10 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 * @return a validation summary. Null if everything checks out.
 	 */
 	public String validate();
+	
+	//===================== PropertyChangeListener ======================
+	/**
+	 * This is a stricter implementation that enforces QualifiedValue data.
+	 */
+	public void propertyChange(BlockPropertyChangeEvent event);
 }

@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.ils.blt.common.block.Activity;
+
 
 /**
  * Use this class to transfer internal block attributes between a block
@@ -22,10 +24,12 @@ public class SerializableBlockStateDescriptor implements Serializable {
 	private String idString = null;     // Block Id
 	private Map<String,String> attributes;
 	private List<Map<String,String>> buffer;
+	private List<Activity> activities;
 	
 	public SerializableBlockStateDescriptor() {	
 		name="UNSET";
 		attributes = new HashMap<>();
+		activities = new ArrayList<>();
 		buffer = new ArrayList<>();
 	}
 
@@ -35,4 +39,5 @@ public class SerializableBlockStateDescriptor implements Serializable {
 	public void setIdString(String idString) {this.idString = idString;}
 	public Map<String, String> getAttributes() {return attributes;}
 	public List<Map<String, String>> getBuffer() {return buffer;}
+	public List<Activity> getActivities() {return activities;}
 }

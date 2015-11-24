@@ -30,6 +30,7 @@ import net.miginfocom.swing.MigLayout;
 
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.block.Activity;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.designer.workspace.ProcessAnchorDescriptor;
@@ -52,12 +53,13 @@ public class BlockInternalsViewer extends JDialog {
 	// A panel is designed to edit properties that are lists of strings.
 	private static final String PREFIX = BLTProperties.BLOCK_PREFIX;  // Required for text strings
 	private static final long serialVersionUID = 4004388376825535527L;
-	private final int DIALOG_HEIGHT = 320;
+	private final int DIALOG_HEIGHT = 400;
 	private final int DIALOG_WIDTH = 500;
 	private static SimpleDateFormat dateFormatter = new SimpleDateFormat(BlockConstants.TIMESTAMP_FORMAT);
 	private final ProcessDiagramView diagram;
 	private final ProcessBlockView block;
 	private Map<String,String> attributes = null;
+	private List<Activity> activities = null;
 	private List<Map<String,String>> buffer = null;
 	private JTable table = null;
 	JPanel internalPanel = null;
@@ -79,7 +81,8 @@ public class BlockInternalsViewer extends JDialog {
 	
 	private void initialize() {
 		
-		// The internal panel has two panes - one for the table, the other for the list
+		// The internal panel has three panes - one for properties, one for an activity history
+		// and the other for any internal buffer
 		setLayout(new BorderLayout());
 		internalPanel = new JPanel();
 		internalPanel.setLayout(new MigLayout("ins 2","",""));
@@ -112,6 +115,7 @@ public class BlockInternalsViewer extends JDialog {
 		SerializableBlockStateDescriptor descriptor = handler.getInternalState(diagram.getId().toString(), block.getId().toString());
 		if( descriptor!=null ) {
 			attributes = descriptor.getAttributes();
+			activities = descriptor.getActivities();
 			buffer = descriptor.getBuffer();
 			log.infof("%s.queryBlock %s: %d properties, %d history entries",TAG, block.getName(),attributes.size(),buffer.size());
 		}
@@ -127,9 +131,13 @@ public class BlockInternalsViewer extends JDialog {
 		addSeparator(internalPanel,"Properties");
 		internalPanel.add(createPropertiesPanel(),"wrap");
 		
+		if( !activities.isEmpty() ) {
+			addSeparator(internalPanel,"Activities");
+			internalPanel.add(createActivitiesPanel(),"wrap");
+		}
 		if( !buffer.isEmpty() ) {
-			addSeparator(internalPanel,"List");
-			internalPanel.add(createListPanel(),"wrap");
+			addSeparator(internalPanel,"History Buffer");
+			internalPanel.add(createHistoryBufferPanel(),"wrap");
 		}
 		internalPanel.revalidate();
 		internalPanel.repaint();
@@ -190,10 +198,41 @@ public class BlockInternalsViewer extends JDialog {
 	}
 	
 	/**
-	 * A list add panel is a panel appending a string element in the list. It contains:-
-	 *        Scroll pane with the table, two buttons at the bottom.
+	 * Create a panel for displaying recent activities of a block.  An activity contains
+	 * a timestamp, description, value.
 	 */
-	private JPanel createListPanel()  {
+	private JPanel createActivitiesPanel()  {
+		JPanel outerPanel = new JPanel();
+		table = new JTable();
+		String[] columnNames = {"Timestamp","Activity","Value"};
+		int nColumns = columnNames.length;
+		//outerPanel.setLayout(new MigLayout("ins 2,filly","para[:480:]","[120]"));
+		outerPanel.setLayout(new MigLayout("ins 2,fillx,filly","",""));
+		DefaultTableModel dataModel = new DefaultTableModel(columnNames,0); 
+		for( Activity activity:activities) {
+			String[] row = new String[nColumns];
+			row[0] = dateFormatter.format(activity.getTimestamp());
+			row[1] = activity.getAction();
+			row[2] = activity.getValue();
+			dataModel.addRow(row);
+		}
+        table = new JTable(dataModel);
+        table.setRowSelectionAllowed(true);
+        table.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+
+        
+        JScrollPane tablePane = new JScrollPane(table);
+        table.setFillsViewportHeight(true);
+        outerPanel.add(tablePane, "wrap");
+		return outerPanel;
+	}
+	
+	/**
+	 * Create a panel for displaying some internal buffer of a block.  Usually this
+	 * is some kind of a history. E.g.. the time-stamped entries in a time-average block.
+	 * The first table in the list is used derive the column names.
+	 */
+	private JPanel createHistoryBufferPanel()  {
 		JPanel outerPanel = new JPanel();
 		table = new JTable();
 		Map<String,String> prototype = buffer.get(0);

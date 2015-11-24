@@ -24,7 +24,9 @@ public class OutgoingNotification {
 	private final QualifiedValue value;
 	
 	/**
-	 * Constructor. Value is expressed as a QualifiedValue
+	 * Constructor. Value is expressed as a QualifiedValue. 
+	 *              Log creation of the notification in the block's 
+	 *              history.
 	 * 
 	 * @param blk the block that is the source of the value.
 	 * @param prt the output port on which the value was placed.
@@ -34,6 +36,7 @@ public class OutgoingNotification {
 		this.block = blk;
 		this.port = prt;
 		this.value = val;
+		block.recordActivity(prt, val.getValue().toString());
 	}
 	
 	public ProcessBlock getBlock()      { return block; }

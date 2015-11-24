@@ -183,7 +183,12 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	@Override
 	public TruthValue getState() {return state;}
 	@Override
-	public void setState(TruthValue state) { if(state!=null) this.state = state; }
+	public void setState(TruthValue state) { 
+		if(state!=null) {
+			this.state = state; 
+			recordActivity(Activity.ACTIVITY_STATE,state.name());
+		}
+	}
 	@Override
 	public void setName(String lbl) {this.name = lbl;}
 	@Override
@@ -222,6 +227,13 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		attributes.put("Name", getName());
 		attributes.put("UUID", getBlockId().toString());
 		attributes.put("State", getState().toString());
+		if( activities.size()>0 ) {
+			List<Activity> buffer = descriptor.getActivities();
+			for( Activity act:activities) {
+				buffer.add(act.clone());
+			}
+		}
+
 		return descriptor;
 	}
 	/**
@@ -277,6 +289,20 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	public boolean isTransmitter() { return isTransmitter; }
 	
 	/**
+	 * Add a time-stamped entry to the block's activity log.
+	 * The log is viewable as part of the internal status.
+	 * @param desc description of the activity being recorded. 
+	 *        Presumably this comes from a controlled vocabulary
+	 * @param value a new value associated with the activity, if any.
+	 */
+	public void recordActivity(String desc,String value) {
+		if( activities.getBufferSize()>0) {
+			if(value==null) value="";
+			Activity activity = new Activity(desc,value);
+			activities.add(activity);
+		}
+	}
+	/**
 	 * The default method sets the state to INITIALIZED.
 	 * It also sends notifications to block outputs setting them to empty or
 	 * unknown. NOTE: This has no effect on Python blocks. They must do this
@@ -285,6 +311,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	@Override
 	public void reset() {
 		this.state = TruthValue.UNSET;
+		recordActivity(Activity.ACTIVITY_RESET,"");
 		if( controller!=null ) {
 			// Send notifications on all outputs to indicate empty connections.
 			// For truth-values, actually propagate UNKNOWN.
@@ -487,6 +514,16 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 			Object oldValue = event.getOldValue();
 			log.debugf("%s.propertyChange: %s from %s to %s",this.getName(),propertyName,
 					(oldValue==null?"null":oldValue.toString()),newValue.toString());
+		}
+		// Handle the one property that is global
+		if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE)) {
+			try {
+				int bufferSize = Integer.parseInt(event.getNewValue().toString());
+				activities.setBufferSize(bufferSize);
+			}
+			catch(NumberFormatException nfe) {
+				log.warnf("%s: propertyChange Unable to convert buffer size to an integer (%s)",getName(),nfe.getLocalizedMessage());
+			}
 		}
 	}
 	
