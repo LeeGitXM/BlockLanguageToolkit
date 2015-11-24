@@ -6,6 +6,7 @@ package com.ils.blt.test.gateway;
 import java.util.Date;
 import java.util.UUID;
 
+import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
@@ -19,13 +20,15 @@ import com.ils.blt.common.notification.SignalNotification;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.gateway.ControllerRequestHandler;
 import com.ils.blt.gateway.engine.BlockExecutionController;
+import com.ils.blt.gateway.engine.ProcessDiagram;
 import com.ils.blt.gateway.proxy.ProxyHandler;
-import com.ils.blt.gateway.tag.TagReader;
-import com.ils.blt.gateway.tag.TagWriter;
 import com.ils.blt.test.common.MockDiagramScriptingInterface;
 import com.ils.blt.test.gateway.mock.MockDiagram;
 import com.ils.blt.test.gateway.mock.MockInputBlock;
 import com.ils.blt.test.gateway.mock.MockOutputBlock;
+import com.ils.common.tag.TagReader;
+import com.ils.common.tag.TagUtility;
+import com.ils.common.tag.TagWriter;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -58,10 +61,8 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 		this.controller = BlockExecutionController.getInstance();
 		this.context = cntx;
 		this.requestHandler = ControllerRequestHandler.getInstance();
-		this.tagWriter = new TagWriter();
-		this.tagReader = new TagReader();
-		tagWriter.initialize(context);
-		tagReader.initialize(context);
+		this.tagWriter = new TagWriter(context);
+		this.tagReader = new TagReader(context);
 	}
 	/**
 	 * Create, but do not activate, a mock diagram.
@@ -374,10 +375,20 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 			log.warnf("%s.updateBlockAnchor: Unknown output diagram %s", TAG,diagramId.toString());
 		}
 	}
+	
+	// ======================= Delegated to TagWriter ======================
+	/**
+	 * Write a value to a tag. If the diagram referenced diagram is disabled
+	 * then this method has no effect.
+	 * @param diagramId UUID of the parent diagram
+	 * @param tagPath
+	 * @param val
+	 */
 	@Override
-	public void updateTag(Long projectId,String tagPath,QualifiedValue qv) {
-		tagWriter.updateTag(projectId.longValue(),tagPath, qv);
+	public void updateTag(String tagPath,QualifiedValue qv) {
+		tagWriter.write(tagPath, qv.getValue().toString(),qv.getTimestamp().getTime());
 	}
+	
 	/**
 	 * Transmit a signal with the specified command to the block-under-test.
 	 *   

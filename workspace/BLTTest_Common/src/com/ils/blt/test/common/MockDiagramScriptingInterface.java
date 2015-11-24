@@ -157,12 +157,10 @@ public interface MockDiagramScriptingInterface   {
 	/**
 	 * Write to a tag
 	 * 
-	 * @param projectId the project from which to obtain the default tag provider
-	 *                  should one not be specified in the path.
 	 * @param path a fully qualified tag path
 	 * @param value the qualified value to be written to the tag.
 	 */
-	public void updateTag(Long projectId,String path,QualifiedValue value);
+	public void updateTag(String path,QualifiedValue val);
 	/**
 	 * Transmit a signal with the specified command to the block-under-test.
 	 *   

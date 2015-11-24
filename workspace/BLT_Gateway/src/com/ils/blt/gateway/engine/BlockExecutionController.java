@@ -29,10 +29,12 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.gateway.ControllerRequestHandler;
 import com.ils.blt.gateway.tag.TagListener;
-import com.ils.blt.gateway.tag.TagReader;
-import com.ils.blt.gateway.tag.TagWriter;
 import com.ils.common.BoundedBuffer;
 import com.ils.common.persistence.ToolkitProperties;
+import com.ils.common.tag.TagReader;
+import com.ils.common.tag.TagUtility;
+import com.ils.common.tag.TagValidator;
+import com.ils.common.tag.TagWriter;
 import com.ils.common.watchdog.AcceleratedWatchdogTimer;
 import com.ils.common.watchdog.WatchdogTimer;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
@@ -75,9 +77,10 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	private double isolationTimeFactor= Double.NaN;
 
 	private final BoundedBuffer buffer;
-	private final TagReader  tagReader;
+	private TagReader  tagReader = null;
 	private final TagListener tagListener;    // Tag subscriber
-	private final TagWriter tagWriter;
+	private TagValidator tagValidator = null;
+	private TagWriter tagWriter = null;
 	private Thread notificationThread = null;
 	// Make this static so we can test without creating an instance.
 	private static boolean stopped = true;
@@ -88,9 +91,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	private BlockExecutionController() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.threadPool = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
-		this.tagReader  = new TagReader();
 		this.tagListener = new TagListener(this);
-		this.tagWriter = new TagWriter();
 		this.buffer = new BoundedBuffer(BUFFER_SIZE);
 		// Timers get started and stopped with the controller
 		this.watchdogTimer = new WatchdogTimer("MainTimer");
@@ -259,9 +260,11 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		log.infof("%s: STARTED",TAG);
 		if(!stopped) return;  
 		stopped = false;
-		tagReader.initialize(context);
+		this.tagReader = new TagReader(context);
 		tagListener.start(context);
-		tagWriter.initialize(context);
+		this.tagValidator = new TagValidator(context);
+		this.tagWriter = new TagWriter(context);
+		//tagWriter.initialize(context);
 		this.notificationThread = new Thread(this, "BlockExecutionController");
 		log.debugf("%s START - notification thread %d ",TAG,notificationThread.hashCode());
 		notificationThread.setDaemon(true);
@@ -499,7 +502,15 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public void updateTag(UUID diagramId,String tagPath,QualifiedValue val) {
 		ProcessDiagram diagram = modelManager.getDiagram(diagramId);
 		if( diagram!=null && !diagram.getState().equals(DiagramState.DISABLED)) {
-			tagWriter.updateTag(diagram.getProjectId(),tagPath,val);
+			if(diagram.getState().equals(DiagramState.ACTIVE)) {
+				String provider = getProductionProvider();
+				tagPath = TagUtility.replaceProviderInPath(provider,tagPath);
+			}
+			if(diagram.getState().equals(DiagramState.ISOLATED)) {
+				String provider = getIsolationProvider();
+				tagPath = TagUtility.replaceProviderInPath(provider,tagPath);
+			}
+			tagWriter.write(tagPath,val.getValue().toString(),val.getTimestamp().getTime());
 		}
 		else {
 			log.infof("%s.updateTag %s REJECTED, diagram not active",TAG,tagPath);
@@ -517,7 +528,8 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		String result = null;
 		ProcessDiagram diagram = modelManager.getDiagram(diagramId);
 		if( diagram!=null ) {
-			result = tagWriter.validateTag(diagram.getProjectId(),tagPath);
+			//result = tagWriter.validateTag(diagram.getProjectId(),tagPath);
+			result = null;
 		}
 		else {
 			log.infof("%s.validateTag %s, parent diagram not found",TAG,tagPath);

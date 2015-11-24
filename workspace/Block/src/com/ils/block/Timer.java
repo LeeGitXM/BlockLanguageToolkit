@@ -28,10 +28,11 @@ import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
- * Emit a configured signal on a configured interval
+ * The Timer block writes the number of seconds that it has been in a specified state. The
+ * output is written at a configured interval.
  */
 @ExecutableBlock
-public class Clock extends AbstractProcessBlock implements ProcessBlock {
+public class Timer extends AbstractProcessBlock implements ProcessBlock {
 	private final String TAG = "Clock";
 	private double interval = 60;  // ~secs
 	private String trigger = BlockConstants.COMMAND_START;
@@ -39,7 +40,7 @@ public class Clock extends AbstractProcessBlock implements ProcessBlock {
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
-	public Clock() {
+	public Timer() {
 		dog = new Watchdog(TAG,this);
 		initialize();
 		initializePrototype();
@@ -52,7 +53,7 @@ public class Clock extends AbstractProcessBlock implements ProcessBlock {
 	 * @param parent universally unique Id identifying the parent of this block
 	 * @param block universally unique Id for the block
 	 */
-	public Clock(ExecutionController ec,UUID parent,UUID block) {
+	public Timer(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
 		dog = new Watchdog(TAG,this);
 		initialize();

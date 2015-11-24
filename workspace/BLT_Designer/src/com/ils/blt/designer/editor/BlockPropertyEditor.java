@@ -13,6 +13,7 @@ import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.ils.common.persistence.ToolkitProperties;
+import com.ils.common.tag.TagUtility;
 import com.inductiveautomation.ignition.client.util.gui.SlidingPane;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
@@ -152,19 +153,14 @@ public class BlockPropertyEditor extends SlidingPane   {
 		if( path!=null && !path.isEmpty() ) {
 			if( diagram.getState().equals(DiagramState.ISOLATED)) {
 				String provider = requestHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER);
-				tagPath = replaceProviderInPath(path,provider);
+				tagPath = TagUtility.replaceProviderInPath(provider,path);
 			}
 			else {
 				String provider = requestHandler.getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
-				tagPath = replaceProviderInPath(path,provider);
+				tagPath = TagUtility.replaceProviderInPath(provider,path);
 			}
 		}
 		return tagPath;
-	}
-	private String replaceProviderInPath(String path,String providerName) {
-		int pos = path.indexOf("]");
-		if( pos>0 ) path = path.substring(pos+1);
-		return String.format("[%s]%s", providerName,path);
 	}
 }
 

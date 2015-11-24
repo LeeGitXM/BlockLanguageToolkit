@@ -7,7 +7,6 @@ import java.text.SimpleDateFormat;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
-import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
@@ -22,7 +21,6 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
-import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
@@ -72,10 +70,12 @@ public class TimeReadout extends Readout implements ProcessBlock {
 		// Define a single output
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.ANY);
 		anchors.add(output);
+		
+		type = PropertyType.DATE;
 	}
 	
 	/**
-	 * Handle a change to the format. We deduce data type from the format.
+	 * Handle a change to the format. The format must be a legal SimpleDateFormat.
 	 */
 	@Override
 	public void propertyChange(BlockPropertyChangeEvent event) {
@@ -85,6 +85,7 @@ public class TimeReadout extends Readout implements ProcessBlock {
 			String format = event.getNewValue().toString();
 			log.debugf("%s.propertyChange: New display format is (%s).",getName(),format);
 			customFormatter = new SimpleDateFormat(format);
+			type = PropertyType.DATE;
 		}
 		log.debugf("TIMEREADOUT: %s property change %s = %s",getName(),propertyName,event.getNewValue().toString());
 	}

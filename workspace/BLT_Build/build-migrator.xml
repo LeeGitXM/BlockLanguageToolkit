@@ -19,7 +19,7 @@
 	<!-- Common jar classpath -->
 	<!-- The gateway, designer and clients depend on the Common -->
 	<path id="BLT_Common.classpath">
-		<path refid="Ignition_SDK.classpath" />
+		<path refid="ignition-sdk.classpath" />
 		<path refid="ExternalJar.classpath" />
 	</path>
 		

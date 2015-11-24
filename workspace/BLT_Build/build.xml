@@ -27,14 +27,18 @@
 	</tstamp>
 
 	<!-- SDK jar classpath. This classpath includes all the jars needed to build a module against the SDK. -->
-	<path id="Ignition_SDK.classpath">
+	<path id="ignition-sdk.classpath">
 		<fileset dir="${basedir}/../../ignition-78/lib" includes="*.jar" />
 	</path>
+	
 	<!-- External jar classpath. This classpath includes all the jars needed to build a module against the SDK. -->
 	<path id="ExternalJar.classpath">
-		 <fileset dir="${basedir}/../../external/lib" includes="ils*.jar" />
+		 <fileset dir="${basedir}/../../external/lib" includes="ils-*.jar" />
+		 <fileset dir="${basedir}/../../external/lib" includes="commons-lang3*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="commons-math3*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="jackson-*.jar" />
+		 <fileset dir="${basedir}/../../external/lib" includes="jcommon*.jar" />
+		 <fileset dir="${basedir}/../../external/lib" includes="jfreechart*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="jython-*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="log4j*.jar" />
 		 <fileset dir="${basedir}/../../external/lib" includes="lucene*.jar" />

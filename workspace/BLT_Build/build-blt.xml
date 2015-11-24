@@ -2,10 +2,10 @@
 
 	<import file="${basedir}/BLT_Build/build.xml"/>
 
-	<property name="version.build" value="4" />	
+	<property name="version.build" value="0" />	
 	<!-- Change version.beta value to "" for release builds -->
 	<property name="version.beta" value="-development" />		
-	<property name="BLTModule.version" value="1.6.8.${version.build}" />
+	<property name="BLTModule.version" value="1.6.9.${version.build}" />
 	<property name="BLTModule.name" value="BLT" />
 	<property name="BLTModule.release" value="0.5" />
 	<property name="BLTModule.description" value="Block Language Toolkit" />
@@ -37,7 +37,7 @@
 	<!-- Common jar classpath -->
 		<!-- The gateway, designer and clients depend on the Common -->
 		<path id="BLT_Common.classpath">
-			<path refid="Ignition_SDK.classpath" />
+			<path refid="ignition-sdk.classpath" />
 			<path refid="ExternalJar.classpath" />
 		</path>
 	
@@ -119,7 +119,7 @@
 		<mkdir dir="${common.bin.dir}/images"/>
 		<javac destdir="${common.bin.dir}" debug="true" target="1.8" includeantruntime="false">
 			<src path="${common.src.dir}"/>
-			<classpath refid="ils-classpath"/>
+			<classpath refid="BLT_Common.classpath"/>
 		</javac>
 		<copy todir="${common.bin.dir}/images" >
 			<fileset dir="${common.src.dir}/images"/>

@@ -6,6 +6,7 @@ package com.ils.blt.gateway;
 
 import java.util.List;
 
+import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
@@ -26,7 +27,6 @@ public class GatewayScriptFunctions   {
 	public static List<SerializableResourceDescriptor> childNodes(String nodeId) {
 		return handler.childNodes(nodeId);
 	}
-
 	/**
 	 * Remove all running diagrams from the controller. 
 	 * Cancel all tag subscriptions. 
@@ -40,7 +40,6 @@ public class GatewayScriptFunctions   {
 	public static String getApplicationName(String uuid) {
 		return handler.getApplicationName(uuid);
 	}
-	
 	/**
 	 * Query the gateway for a list of prototypes for the defined blocks. 
 	 */
@@ -55,14 +54,12 @@ public class GatewayScriptFunctions   {
 	public static String getBlockState(String diagramId,String blockName) {
 		return handler.getBlockState(diagramId,blockName);
 	}
-	
 	/**
 	 * @return the current state of the controller.
 	 */
 	public static String getControllerState() {
 		return handler.getControllerState();
 	}
-	
 	public static String getDatabaseForUUID(String uuid) {
 		return handler.getDatabaseForUUID(uuid);
 	}
@@ -70,7 +67,6 @@ public class GatewayScriptFunctions   {
 	public static List<String> getDatasourceNames() {
 		return handler.getDatasourceNames();
 	}
-	
 	/**
 	 * Query the gateway for list of diagrams. 
 	 * 
@@ -81,7 +77,6 @@ public class GatewayScriptFunctions   {
 	public static List getDiagramDescriptors() {
 		return handler.getDiagramDescriptors();
 	}
-	
 	/**
 	 * blockId String representation of the block's internal Id.
 	 * @return the diagram that is a parent of the specified block.
@@ -89,7 +84,12 @@ public class GatewayScriptFunctions   {
 	public static SerializableResourceDescriptor getDiagramForBlock(String blockId) {
 		return handler.getDiagramForBlock(blockId);
 	}
-	
+	/**
+	 * @return the current state of the specified diagram.
+	 */
+	public static DiagramState getDiagramState(String diagramId)  {
+		return handler.getDiagramState(diagramId);
+	}
 	public static String getFamilyName(String uuid) {
 		return handler.getFamilyName(uuid);
 	}
@@ -147,7 +147,6 @@ public class GatewayScriptFunctions   {
 	public static List<SerializableBlockStateDescriptor> listBlocksForTag(String tagpath) {
 		return handler.listBlocksForTag(tagpath);
 	}
-	
 	/**
 	 * Query a diagram in the gateway for list of its blocks. 
 	 * @param diagramId of the parent diagram
@@ -177,7 +176,6 @@ public class GatewayScriptFunctions   {
 	public static List<SerializableBlockStateDescriptor> listConfigurationErrors() {
 		return handler.listConfigurationErrors();
 	}
-	
 	/**
 	 * @param diagramId identifier of the diagram to be queried, a String
 	 * @param className fully qualified class name of blocks to be listed
@@ -197,7 +195,6 @@ public class GatewayScriptFunctions   {
 	public static List<SerializableResourceDescriptor> listDiagramDescriptors(String projectName) {
 		return handler.listDiagramDescriptors(projectName);
 	}
-	
 	/**
 	 * Query the gateway for list of resource nodes that the block controller
 	 * knows about. This should correspond to what is displayed in the designer
@@ -208,7 +205,6 @@ public class GatewayScriptFunctions   {
 	public static List<SerializableResourceDescriptor> listResourceNodes(){
 		return handler.listResourceNodes();
 	}
-
 	/**
 	 * Query the gateway for list of its sink blocks associated with the
 	 * specified source. The blocks that are returned are not constrained
@@ -239,6 +235,14 @@ public class GatewayScriptFunctions   {
 	 */
 	public static String pathForBlock(String diagramId,String blockName) {
 		return handler.pathForBlock(diagramId,blockName);
+	}
+	/** 
+	 * @param nodeId UUID as a String of a node in the navigation tree
+	 * @return a slash-separated path to the specified node. The path 
+	 *         root is a slash representing the top node of the navigation tree.
+	 */
+	public static String pathForNode(String nodeId) {
+		return handler.pathForNode(nodeId);
 	}
 	/**
 	 * Post a (simulated) block result on its output.

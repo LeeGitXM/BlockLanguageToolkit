@@ -32,7 +32,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 public class Readout extends AbstractProcessBlock implements ProcessBlock {
 	protected final UtilityFunctions fncs;
 	private String format = "%s";
-	private PropertyType type = PropertyType.STRING;
+	protected PropertyType type = PropertyType.STRING;
 	protected BlockProperty valueProperty = null;
 	
 	/**
@@ -102,7 +102,7 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 	}
 	
 	/**
-	 * Handle a change to the format. The format must be a legal SimpleDateFormat.
+	 * Handle a change to the format. We deduce data type from the format.
 	 */
 	@Override
 	public void propertyChange(BlockPropertyChangeEvent event) {
@@ -121,8 +121,9 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 			else if( format.matches(".*%[0-9]*[.]?[0-9]*f.*") ) {
 				type=PropertyType.DOUBLE;
 			}
+			// Sub-classes should override to a property type different from
+			// STRING, INTEGER, DOUBLE
 			else {
-				log.warnf("%s.propertyChange: Did not recognize format (%s), using (%s).",getName(),format,"%s");
 				type=PropertyType.STRING;
 				format = "%s";
 			}
@@ -132,36 +133,40 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 	
 	/**
 	 * A new value has appeared on the input. Post a notification, then pass it on.
+	 * Ignore types that are not explicitly handled by this class.
 	 * @param incoming incoming new value.
 	 */
 	@Override
 	public void acceptValue(IncomingNotification incoming) {
 		super.acceptValue(incoming);
-		QualifiedValue qv = incoming.getValue();
-		if( qv!=null && qv.getValue()!=null ) {
-			if( !isLocked()  ) {
-				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
-				controller.acceptCompletionNotification(nvn);
-				// Convert the value according to the data type specified by the format.
-				String value = "";
-				try {
-					if( type==PropertyType.DOUBLE) {
-						value = String.format(format, fncs.coerceToDouble(qv.getValue()));
+		if( type.equals(PropertyType.BOOLEAN) || type.equals(PropertyType.DOUBLE) ||
+				type.equals(PropertyType.INTEGER) || type.equals(PropertyType.STRING)     ) {
+			QualifiedValue qv = incoming.getValue();
+			if( qv!=null && qv.getValue()!=null ) {
+				if( !isLocked()  ) {
+					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+					controller.acceptCompletionNotification(nvn);
+					// Convert the value according to the data type specified by the format.
+					String value = "";
+					try {
+						if( type==PropertyType.DOUBLE) {
+							value = String.format(format, fncs.coerceToDouble(qv.getValue()));
+						}
+						else if( type==PropertyType.INTEGER) {
+							value = String.format(format, fncs.coerceToInteger(qv.getValue()));
+						}
+						else {
+							value = String.format(format,fncs.coerceToString(qv.getValue()));
+						}
 					}
-					else if( type==PropertyType.INTEGER) {
-						value = String.format(format, fncs.coerceToInteger(qv.getValue()));
+					catch(Exception ex) {
+						log.warn(getName()+".acceptValue: error formatting "+qv.getValue()+" with "+format+" as "+type.name(),ex);  // Print stack trace
 					}
-					else {
-						value = String.format(format,fncs.coerceToString(qv.getValue()));
-					}
+					qv = new BasicQualifiedValue(value,qv.getQuality(),qv.getTimestamp()); 
+					valueProperty.setValue(value);
+					log.tracef("%s.acceptValue: port %s formatted value =  %s.",getName(),incoming.getConnection().getUpstreamPortName(),value);
+					notifyOfStatus(qv);
 				}
-				catch(Exception ex) {
-					log.warn(getName()+".acceptValue: error formatting "+qv.getValue()+" with "+format+" as "+type.name(),ex);  // Print stack trace
-				}
-				qv = new BasicQualifiedValue(value,qv.getQuality(),qv.getTimestamp()); 
-				valueProperty.setValue(value);
-				log.tracef("%s.acceptValue: port %s formatted value =  %s.",getName(),incoming.getConnection().getUpstreamPortName(),value);
-				notifyOfStatus(qv);
 			}
 		}
 	}

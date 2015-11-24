@@ -32,7 +32,9 @@ public class ApplicationScriptFunctions   {
 	public static void clearController() {
 		handler.clearController();
 	}
-	
+	public static void evaluateBlock(String diagramId,String blockId) {
+		handler.evaluateBlock(diagramId,blockId);
+	}
 	public static String getApplicationName(String uuid) {
 		return handler.getApplicationName(uuid);
 	}
@@ -50,7 +52,6 @@ public class ApplicationScriptFunctions   {
 	public static String getBlockState(String diagramId,String blockName) {
 		return handler.getBlockState(diagramId,blockName);
 	}
-	
 	/**
 	 * @return the current state of the controller.
 	 */
@@ -81,7 +82,6 @@ public class ApplicationScriptFunctions   {
 	public static SerializableResourceDescriptor getDiagramForBlock(String blockId) {
 		return handler.getDiagramForBlock(blockId);
 	}
-	
 	/**
 	 * @return the current state of the specified diagram.
 	 */
@@ -155,7 +155,6 @@ public class ApplicationScriptFunctions   {
 	public static List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(String diagramId,String blockName){
 		return handler.listBlocksUpstreamOf(diagramId,blockName);
 	}
-	
 	/**
 	 * The result is a list of SerializableBlockState descriptors for those 
 	 * blocks in any project that have configuration issues. Descriptor attributes
@@ -177,7 +176,6 @@ public class ApplicationScriptFunctions   {
 	public static List listDiagramBlocksOfClass(String diagramId,String className) {
 		return handler.listDiagramBlocksOfClass(diagramId,className);
 	}
-	
 	/**
 	 * Query the gateway for list of diagrams belonging to a project. 
 	 * 
@@ -261,7 +259,6 @@ public class ApplicationScriptFunctions   {
 	public static void resetBlock(String diagramId,String blockId) {
 		handler.resetBlock(diagramId,blockId);
 	}
-
 	/**
 	 * Execute reset() on every block inside the controller
 	 */

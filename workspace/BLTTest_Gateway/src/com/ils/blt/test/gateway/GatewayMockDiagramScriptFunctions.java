@@ -216,8 +216,8 @@ public class GatewayMockDiagramScriptFunctions  {
 		}
 	}
 	
-	public static void updateTag(long projectId,String tagPath,QualifiedValue qv) {
-		requestHandler.updateTag(projectId,tagPath, qv);
+	public static void updateTag(String tagPath,QualifiedValue qv) {
+		requestHandler.updateTag(tagPath, qv);
 	}
 	
 	/**

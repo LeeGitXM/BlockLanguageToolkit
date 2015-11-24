@@ -23,6 +23,7 @@ public interface BlockConstants   {
 	public static final String SIGNAL_PORT_NAME    = "signal";   // Signal (every block has one)
 		
 	// These are block property names that used in multiple block definitions
+	public static final String BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE = "ActivityBufferSize";
 	public static final String BLOCK_PROPERTY_CLEAR_ON_RESET = "ClearOnReset";
 	public static final String BLOCK_PROPERTY_COMMAND       = "Command";
 	public static final String BLOCK_PROPERTY_DEADBAND      = "Deadband";

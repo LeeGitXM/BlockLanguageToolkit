@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
-import com.ils.block.common.FixedSizeQueue;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
@@ -30,6 +29,7 @@ import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.notification.Signal;
 import com.ils.blt.common.notification.SignalNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
+import com.ils.common.FixedSizeQueue;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;

@@ -192,7 +192,7 @@ public class BLTTGatewayRpcDispatcher implements MockDiagramScriptingInterface{
 	}
 
 	@Override
-	public void updateTag(Long projectId,String tagPath,QualifiedValue qv) {
-		requestHandler.updateTag(projectId.longValue(),tagPath, qv);
+	public void updateTag(String tagPath,QualifiedValue qv) {
+		requestHandler.updateTag(tagPath, qv);
 	}
 }

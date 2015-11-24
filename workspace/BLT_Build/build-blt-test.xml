@@ -36,13 +36,13 @@
 	<!-- The gateway, designer and clients depend on the Common -->
 	<path id="BlockDefinition.classpath">
 		<path refid="ExternalJar.classpath" />
-		<path refid="Ignition_SDK.classpath" />
+		<path refid="ignition-sdk.classpath" />
 	</path>
 	
 	<!-- Common jar classpath -->
 	<!-- The gateway, designer and clients depend on the Common -->
 	<path id="BLTTest_Common.classpath">
-		<path refid="Ignition_SDK.classpath" />
+		<path refid="ignition-sdk.classpath" />
 		<path refid="ExternalJar.classpath" />
 	</path>
 		
@@ -109,7 +109,7 @@
 			<param name="sourceDirFolder" value="${BLTTestModule.name}_Common" />
 			<param name="jarName" value="BLTTest-common" />
 			<param name="javacSource" value="1.7" />
-			<param name="module.build.classpath" value="${BLTTestModule.name}_Common.classpath"/>
+			<param name="module.build.classpath" value="ignition-sdk.classpath"/>
 		</antcall>
 		
 		<!-- BLTTest Gateway jar -->

@@ -14,6 +14,7 @@ import java.util.UUID;
 
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.UtilityFunctions;
+import com.ils.blt.common.block.Activity;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
@@ -22,6 +23,7 @@ import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.block.ProcessBlock;
+import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
@@ -32,6 +34,7 @@ import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.notification.Signal;
 import com.ils.blt.common.notification.SignalNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
+import com.ils.common.FixedSizeQueue;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.WatchdogObserver;
@@ -52,6 +55,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropertyChangeListener, WatchdogObserver {
 	protected final static String DEFAULT_FORMAT = "yyyy/MM/dd hh:mm:ss";
 	protected final static SimpleDateFormat dateFormatter = new SimpleDateFormat(DEFAULT_FORMAT);
+	protected final FixedSizeQueue<Activity> activities;
 	protected ExecutionController controller = null;
 	private UUID blockId;
 	private UUID parentId;
@@ -84,6 +88,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	public AbstractProcessBlock() {
 		propertyMap = new HashMap<>();
 		anchors = new ArrayList<AnchorPrototype>();
+		activities = new FixedSizeQueue<Activity>(0);
 		initializePrototype();
 		initialize();
 	}
@@ -111,6 +116,10 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		AnchorPrototype sig = new AnchorPrototype(BlockConstants.SIGNAL_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.SIGNAL);
 		sig.setHidden(true);
 		anchors.add(sig);
+		
+		// Define a property that holds the size of the activity buffer. This applies to all blocks.
+		BlockProperty bufferSize = new BlockProperty(BlockConstants.BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE,new Integer(activities.size()),PropertyType.INTEGER,true);
+		setProperty(BlockConstants.BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE, bufferSize);
 	}
 	
 	/**
