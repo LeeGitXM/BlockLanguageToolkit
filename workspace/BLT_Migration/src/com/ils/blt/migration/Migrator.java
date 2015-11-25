@@ -375,6 +375,18 @@ public class Migrator {
 				}
 			}
 		}
+		// Timer and Sub-Diagnosis - if they are "named", then set tag path
+		else if( block.getClassName().startsWith("com.ils.block.Timer") || 
+				 block.getClassName().startsWith("xom.block.subdiagnosis") ) { 
+			int pos = block.getName().indexOf("-XXX-");
+			if( pos<0 ) {
+				for(BlockProperty prop:block.getProperties()) {
+					if( prop.getName().equalsIgnoreCase("TagPath" )) {
+						prop.setBinding("[]DiagnosticToolkit/Blocks/"+block.getName());
+					}
+				}
+			}
+		}
 		
 		// Modify property values if appropriate
 		if( block.getProperties()!=null ) {

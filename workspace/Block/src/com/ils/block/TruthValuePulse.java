@@ -29,17 +29,17 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataQuality;
 
 /**
- *  When a truth-value matching the trigger arrives, then the block emits a TRUE,
- *  waits for the interval to expire and emits a FALSE.
- * @author chuckc
+ *  When the block is rest, then the block emits a configured truth-value,
+ *  waits for the interval to expire and emits the opposite.
  *
  */
 @ExecutableBlock
 public class TruthValuePulse extends AbstractProcessBlock implements ProcessBlock {
 	private static String TAG = "TruthValuePulse";
+	private final static String BLOCK_PROPERTY_PULSE_VALUE= "PulseValue";
 	private static final double DEFAULT_INTERVAL = 60.;  // ~ seconds
 	private double interval = DEFAULT_INTERVAL; // One minute pulse by default
-	private TruthValue trigger = TruthValue.TRUE;
+	private TruthValue pulse = TruthValue.TRUE;
 	private final Watchdog dog;
 	
 	/**
@@ -49,6 +49,7 @@ public class TruthValuePulse extends AbstractProcessBlock implements ProcessBloc
 		initialize();
 		initializePrototype();
 		dog = new Watchdog(getName(),this);
+		delayStart = true;
 	}
 	
 	/**
@@ -71,6 +72,8 @@ public class TruthValuePulse extends AbstractProcessBlock implements ProcessBloc
 	 */
 	@Override
 	public void reset() {
+		super.reset();
+		start();
 		if( state.equals(TruthValue.TRUE) || 
 			state.equals(TruthValue.FALSE)   ) {
 			state = TruthValue.FALSE;
@@ -81,6 +84,24 @@ public class TruthValuePulse extends AbstractProcessBlock implements ProcessBloc
 		}
 		timer.removeWatchdog(dog);
 	}
+	
+	/**
+	 * This block is one, like Input blocks, that propagate
+	 * a value on block start, including reset.
+	 */
+	@Override
+	public void start() {
+		super.start();
+		setState(pulse);
+		if( !isLocked()  ) {
+			QualifiedValue qv = new TestAwareQualifiedValue(timer,state);
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+			controller.acceptCompletionNotification(nvn);
+		}
+		dog.setSecondsDelay(interval);
+		timer.updateWatchdog(dog);
+	}
+	
 	/**
 	 * Disconnect from the timer thread.
 	 */
@@ -98,53 +119,35 @@ public class TruthValuePulse extends AbstractProcessBlock implements ProcessBloc
 		
 		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL,new Double(interval),PropertyType.TIME,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL, intervalProperty);
-		BlockProperty triggerProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER,trigger,PropertyType.BOOLEAN,true);
-		setProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER, triggerProperty);
-		
-		// Define a single input
-		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
-		anchors.add(input);
+		BlockProperty pulseProperty = new BlockProperty(BLOCK_PROPERTY_PULSE_VALUE,pulse,PropertyType.BOOLEAN,true);
+		setProperty(BLOCK_PROPERTY_PULSE_VALUE, pulseProperty);
 
 		// Define a single output
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.TRUTHVALUE);
 		anchors.add(output);
 	}
 	
-	
-	
-	
+
 	/**
-	 * A new value has appeared on an input anchor. Send it on its way
-	 * if TRUE or FALSE. Otherwise do nothing.
-	 * @param vcn change notification.
-	 */
-	@Override
-	public void acceptValue(IncomingNotification vcn) {
-		super.acceptValue(vcn);
-		QualifiedValue qv = vcn.getValue();
-		
-		if( qv.getQuality().isGood() && !isLocked() && qv.getValue().toString().equalsIgnoreCase(trigger.name()))  {
-			QualifiedValue result = new BasicQualifiedValue(TruthValue.TRUE,qv.getQuality(),qv.getTimestamp());
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
-			controller.acceptCompletionNotification(nvn);
-			setState(TruthValue.TRUE);
-			notifyOfStatus(result);
-			dog.setSecondsDelay(interval);
-			timer.updateWatchdog(dog);  // pet dog
-		}
-	}
-	/**
-	 * The interval has expired. Propagate a FALSE
+	 * The interval has expired. Propagate the inverse of the PULSE value
 	 */
 	@Override
 	public void evaluate() {
 		log.debugf("%s.evaluate",getName());
 		if( !isLocked() ) {
-			setState(TruthValue.FALSE);
-			QualifiedValue result = new TestAwareQualifiedValue(timer,state.name(),DataQuality.GOOD_DATA);
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
-			controller.acceptCompletionNotification(nvn);
-			notifyOfStatus(result);
+			if( pulse.equals(TruthValue.TRUE)) {
+				setState(TruthValue.FALSE);
+			}
+			else {
+				setState(TruthValue.TRUE);
+			}
+			
+			if( !isLocked()  ) {
+				QualifiedValue qv = new TestAwareQualifiedValue(timer,state);
+				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+				controller.acceptCompletionNotification(nvn);
+				notifyOfStatus(qv);
+			}
 		}
 	}
 	
@@ -164,9 +167,16 @@ public class TruthValuePulse extends AbstractProcessBlock implements ProcessBloc
 				log.warnf("%s: propertyChange Unable to convert interval to a double (%s)",getName(),nfe.getLocalizedMessage());
 			}
 		}
-		else if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_TRIGGER)) {
+		else if( propertyName.equals(BLOCK_PROPERTY_PULSE_VALUE)) {
 			try {
-				trigger = TruthValue.valueOf(event.getNewValue().toString().toUpperCase());
+				TruthValue tv = TruthValue.valueOf(event.getNewValue().toString().toUpperCase());
+				// Only allow TRUE/FALSE
+				if( tv.equals(TruthValue.TRUE) || tv.equals(TruthValue.FALSE)) {
+					pulse = tv;
+				}
+				else {
+					log.warnf("%s.propertyChange: Trigger must TRUE or FALSE, was %s",TAG,event.getNewValue().toString());
+				}
 			}
 			catch(IllegalArgumentException iae) {
 				log.warnf("%s.propertyChange: Trigger must be a TruthValue (%s)",TAG,iae.getMessage());
@@ -195,7 +205,7 @@ public class TruthValuePulse extends AbstractProcessBlock implements ProcessBloc
 	private void initializePrototype() {
 		prototype.setPaletteIconPath("Block/icons/palette/true_pulse.png");
 		prototype.setPaletteLabel("TruthPulse");
-		prototype.setTooltipText("On signal, emit a truth-value for a configured interval");
+		prototype.setTooltipText("On reset, emit a truth-value for a configured interval");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_CONTROL);
 		BlockDescriptor view = prototype.getBlockDescriptor();
 		view.setEmbeddedIcon("Block/icons/embedded/signal_pulse.png");

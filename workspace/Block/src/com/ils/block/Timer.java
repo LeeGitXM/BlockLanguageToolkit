@@ -8,8 +8,10 @@ package com.ils.block;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
+import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
+import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
@@ -20,11 +22,11 @@ import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
+import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
-import com.ils.blt.common.notification.Signal;
-import com.ils.blt.common.notification.SignalNotification;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
@@ -33,9 +35,16 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  */
 @ExecutableBlock
 public class Timer extends AbstractProcessBlock implements ProcessBlock {
-	private final String TAG = "Clock";
+	private final String TAG = "Timer";
+	private final static String BLOCK_PROPERTY_ACCUMULATE_VALUES = "AccumulateValues";
+	private final static String BLOCK_PROPERTY_STOP_ON = "StopOn";
 	private double interval = 60;  // ~secs
-	private String trigger = BlockConstants.COMMAND_START;
+	private boolean accumulateValues = false;
+	private double duration = 0.;  //Elapsed time ~ secs at the triggering state.
+	private QualifiedValue qv = null;    // Most recent output value
+	private BlockProperty tagProperty = null;
+	private TruthValue stopOn = TruthValue.FALSE;
+	private TruthValue trigger = TruthValue.TRUE;
 	private final Watchdog dog;
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -64,14 +73,24 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 	 * Populate them with default values.
 	 */
 	private void initialize() {	
-		setName("Clock");
+		setName("Timer");
 		this.isReceiver = true;
+		BlockProperty accumulateProperty = new BlockProperty(BLOCK_PROPERTY_ACCUMULATE_VALUES,new Boolean(accumulateValues),PropertyType.BOOLEAN,true);
+		setProperty(BLOCK_PROPERTY_ACCUMULATE_VALUES, accumulateProperty);
 		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL,new Double(interval),PropertyType.TIME,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL, intervalProperty);
+		tagProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH,"",PropertyType.STRING,true);
+		tagProperty.setBinding("");
+		tagProperty.setBindingType(BindingType.TAG_READWRITE);
+		setProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH, tagProperty);
+		BlockProperty commandProperty = new BlockProperty(BLOCK_PROPERTY_STOP_ON,stopOn,PropertyType.TRUTHVALUE,true);
+		setProperty(BLOCK_PROPERTY_STOP_ON, commandProperty);
+		BlockProperty triggerProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER,trigger,PropertyType.TRUTHVALUE,true);
+		setProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER, triggerProperty);
 		
-		BlockProperty commandProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER,trigger,PropertyType.STRING,false);
-		setProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER, commandProperty);
-		
+		// Define a single input
+		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
+		anchors.add(input);
 
 		// Define a single output
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.TRUTHVALUE);
@@ -79,29 +98,14 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 	}
 	
 	/**
-	 * On reset report a false.
+	 * On reset clear the counter.
 	 */
 	@Override
 	public void reset() {
-		if( !isLocked() ) {
-			OutgoingNotification sig = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,
-					new TestAwareQualifiedValue(timer,TruthValue.FALSE.name()));
-			controller.acceptCompletionNotification(sig);
-		}
+		super.reset();
+		duration = 0;
 	}
-	// Initially set the value FALSE
-	@Override
-	public void start() {
-		if( !running ) {
-			log.infof("%s.start: emit FALSE",TAG);
-			if( !isLocked() ) {
-				OutgoingNotification sig = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,
-						new TestAwareQualifiedValue(timer,TruthValue.FALSE.name()));
-				controller.acceptCompletionNotification(sig);
-			}
-		}
-		super.start();
-	}
+
 	/**
 	 * Disconnect from the timer thread.
 	 */
@@ -111,55 +115,93 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 		timer.removeWatchdog(dog);
 	}
 	/**
-	 * We've received a transmitted signal. If it is appropriate 
-	 * based on our configured filters, forward the signal on to our output.
-	 * @param sn 
+	 * A new value has appeared on the input. If it represents a change and
+	 * matches the trigger, then we start counting.
+	 * @param vcn change notification.
 	 */
-	public void acceptValue(SignalNotification sn) {
-		Signal signal = sn.getSignal();
-		log.infof("%s.acceptValue: signal = %s",TAG,signal.getCommand());
-		if( signal.getCommand() != null && signal.getCommand().equalsIgnoreCase(trigger) && interval > 0) {
-			dog.setSecondsDelay(interval);
-			timer.updateWatchdog(dog);  // pet dog
+	@Override
+	public void acceptValue(IncomingNotification vcn) {
+		super.acceptValue(vcn);
+		String port = vcn.getConnection().getDownstreamPortName();
+		if( port.equals(BlockConstants.IN_PORT_NAME) ) {
+			TruthValue tv = vcn.getValueAsTruthValue();
+			if( !tv.equals(state) )  {
+				// This represents a state change
+				if( trigger.equals(tv)  ) {
+					if( !accumulateValues) duration = 0.0;
+					qv = new BasicQualifiedValue(new Integer((int)duration));
+					evaluate();
+				}
+				else if(stopOn.equals(tv)) {
+					evaluate();  // One last time
+					timer.removeWatchdog(dog);
+				}
+				setState(tv);
+			}
 		}
 	}
-	
 	/**
-	 * The interval has expired. Turn true. Do nothing else unless we are reset.
+	 * The interval has expired. If we are still in the triggering state,
+	 * then emit a value. Write to the tag, if configured.
 	 */
 	@Override
 	public synchronized void evaluate() {
 		log.infof("%s.evaluate ... %f secs",TAG,interval);
-		
-		if( !isLocked() ) {
-			QualifiedValue qv = new TestAwareQualifiedValue(timer,TruthValue.TRUE.name());
-			OutgoingNotification sig = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
-			controller.acceptCompletionNotification(sig);
-			notifyOfStatus(qv);
+		//if we're in the triggering state, then update duration, re-set the timer
+		if(state.equals(trigger) && qv!=null ) {
+			duration += (timer.getTestTime() - qv.getTimestamp().getTime()) * timer.getFactor();
+			if( !isLocked() ) {
+				qv = new TestAwareQualifiedValue(timer,new Double(duration));
+				OutgoingNotification sig = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+				controller.acceptCompletionNotification(sig);
+	
+				String path = tagProperty.getBinding().toString();
+				if( !path.isEmpty() ) controller.updateTag(getParentId(),path, qv);
+				notifyOfStatus(qv);
+			}
+			// Stoke the dog
+			dog.setSecondsDelay(interval);
+			timer.updateWatchdog(dog);  // pet dog
 		}
-		timer.removeWatchdog(dog);
+		else {
+			timer.removeWatchdog(dog);
+		}
 	}
 	
 	/**
 	 * Send status update notification for our last latest state.
 	 */
 	@Override
-	public void notifyOfStatus() {}
-	private void notifyOfStatus(QualifiedValue qv) {
-		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	public void notifyOfStatus() {
+		notifyOfStatus(qv);
+	}
+	private void notifyOfStatus(QualifiedValue qualValue) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qualValue);
 	}
 	/**
-	 * Note, an interval change resets the timeput period.
+	 * Note, an interval change resets the timeout period.
 	 */
 	@Override
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
+		String val = event.getNewValue().toString();
 		log.infof("%s.propertyChange: Received %s = %s",TAG,propertyName,event.getNewValue().toString());
-		if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_INTERVAL)) {
+		if( propertyName.equalsIgnoreCase(BLOCK_PROPERTY_ACCUMULATE_VALUES) ) {
 			try {
-				interval = Double.parseDouble(event.getNewValue().toString());
-				if( dog.isActive() && interval>0.0 ) {
+				accumulateValues = Boolean.parseBoolean(val);
+			}
+			catch(NumberFormatException nfe) {
+				log.warnf("%s: propertyChange Unable to convert accumulate values flag to a boolean (%s)",getName(),nfe.getLocalizedMessage());
+			}
+		}
+		else if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_INTERVAL)) {
+			try {
+				interval = Double.parseDouble(val);
+				if( dog.isActive() && interval>0.0 && state.equals(trigger) ) {
+					// Update duration for "time served". 
+					double elapsed = (timer.getTestTime() - qv.getTimestamp().getTime())/1000;
+					duration+=elapsed;
 					dog.setSecondsDelay(interval);
 					timer.updateWatchdog(dog);  // pet dog
 				}
@@ -169,7 +211,21 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 			}
 		}
 		else if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_TRIGGER)) {
-			trigger = event.getNewValue().toString();
+			try {
+				trigger = TruthValue.valueOf(val.toUpperCase());
+			}
+			catch(IllegalArgumentException iae) {
+				log.warnf("%s: propertyChange Unable to convert %s to a truth value (%s)",TAG,val,iae.getLocalizedMessage());
+			}
+		}
+		
+		else if( propertyName.equalsIgnoreCase(BLOCK_PROPERTY_STOP_ON) ) {
+			try {
+				stopOn = TruthValue.valueOf(val.toUpperCase());
+			}
+			catch(IllegalArgumentException iae) {
+				log.warnf("%s: propertyChange Unable to convert %s to a truth value (%s)",TAG,val,iae.getLocalizedMessage());
+			}
 		}
 		else {
 			log.warnf("%s.propertyChange:Unrecognized property (%s)",TAG,propertyName);
@@ -182,8 +238,8 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	private void initializePrototype() {
 		prototype.setPaletteIconPath("Block/icons/palette/clock.png");
-		prototype.setPaletteLabel("Clock");
-		prototype.setTooltipText("Send a signal to connected blocks");
+		prototype.setPaletteLabel("Timer");
+		prototype.setTooltipText("Record time in the configured state ~ secs");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_CONTROL);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();

@@ -4,6 +4,7 @@ e *   (c) 2013-2015  ILS Automation. All rights reserved.
  */
 package com.ils.blt.gateway;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.UUID;
 
@@ -16,7 +17,9 @@ import com.ils.blt.gateway.engine.ProcessFamily;
 import com.ils.blt.gateway.engine.ProcessNode;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
+import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
+import com.inductiveautomation.ignition.common.sqltags.model.types.DataQuality;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 
@@ -277,5 +280,24 @@ public class PythonRequestHandler   {
 		log.debugf("%s.sendLocalSignal - %s = %s %s %s ",TAG,parent,command,message,arg);
 		ControllerRequestHandler.getInstance().sendTimestampedSignal(parent,command,message,arg,time);
 		
+	}
+	/**
+	 * Write a value to the named tag. The provider is the provider appropriate to
+	 * the referenced diagram
+	 * 
+	 * @param parent identifier for the diagram, a string version of a UUID
+	 * @param tagPath name of the class of blocks to be signaled
+	 * @param data the value to be written
+	 * @param quality the quality of the output
+	 * @param time the time associated with this write operation
+	 */
+	public void updateTag(String parent,String tagPath,String data,String quality,long time)  {
+		log.debugf("%s.updateTag - %s = %s %s %s %d ",TAG,parent,tagPath,data,quality,time);
+
+		UUID diagId = UUID.fromString(parent);
+		Quality q = DataQuality.GOOD_DATA;
+		if(!quality.equalsIgnoreCase("good")) q = new BasicQuality(quality,Quality.Level.Bad);
+		QualifiedValue qv = new BasicQualifiedValue(data,q,new Date(time));
+		controller.updateTag(diagId, tagPath, qv);
 	}
 }

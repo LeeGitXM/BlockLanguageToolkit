@@ -32,7 +32,6 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  */
 @ExecutableBlock
 public class Parameter extends AbstractProcessBlock implements ProcessBlock {
-	protected static String BLOCK_PROPERTY_TAG_PATH = "TagPath";
 	private BlockProperty tagProperty = null;
 	private BlockProperty valueProperty = null;
 	private QualifiedValue qv = null;    // Most recent output value
@@ -64,10 +63,10 @@ public class Parameter extends AbstractProcessBlock implements ProcessBlock {
 	private void initialize() {
 		setName("Parameter");
 		delayStart = true;
-		tagProperty = new BlockProperty(BLOCK_PROPERTY_TAG_PATH,"",PropertyType.STRING,true);
+		tagProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH,"",PropertyType.STRING,true);
 		tagProperty.setBinding("");
 		tagProperty.setBindingType(BindingType.TAG_READWRITE);
-		setProperty(BLOCK_PROPERTY_TAG_PATH, tagProperty);
+		setProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH, tagProperty);
 		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.OBJECT,false);
 		valueProperty.setBindingType(BindingType.ENGINE);
 		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
