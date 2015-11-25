@@ -6,6 +6,7 @@ run: arithmetic.txt
 run: average.txt
 run: comparisons.txt
 run: dataconditioner.txt
+run: datecompare.txt
 run: gain.txt
 run: highlimit.txt
 run: inhibit.txt
@@ -13,7 +14,7 @@ run: logicfilter.txt
 run: persistence.txt
 run: pythonblocks.txt
 run: readwrite.txt
-run: scripting.txt
+run: routing.txt
 run: setproperty.txt
 run: sqc.txt
 run: sum.txt

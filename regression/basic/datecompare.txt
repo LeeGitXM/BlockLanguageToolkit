@@ -1,0 +1,19 @@
+#
+# Test of a compare block with date inputs.
+#
+DIAGRAM="app75/family75/datecompare"
+Show: browser $DIAGRAM
+resetDiagram ($DIAGRAM)
+tag: comparison MemoryTags/ComparisonOut5
+tagset: DualDouble MemoryTags/DoubleInput1 MemoryTags/DoubleInput2
+
+# TRUE when double1 is sent, FALSE when double 2 is sent
+Test: Comparison of Dates
+Step: Two Date Forks
+Tagset: DualDouble
+10:00 1 
+10:00:10 Assert: comparison = TRUE "TRUE when received input 1"
+10:00:20 , 2
+10:00:30 Assert: comparison = FALSE "FALSE when received input 2"
+10:00:40 3
+10:00:50 Assert: comparison = TRUE "TRUE when received input 1"

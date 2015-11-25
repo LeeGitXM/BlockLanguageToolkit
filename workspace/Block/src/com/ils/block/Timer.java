@@ -56,7 +56,7 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 	}
 	
 	/**
-	 * Constructor. Custom properties are limit, standardDeviation
+	 * Constructor.
 	 * 
 	 * @param ec execution controller for handling block output
 	 * @param parent universally unique Id identifying the parent of this block
@@ -81,7 +81,7 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 		setProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL, intervalProperty);
 		tagProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH,"",PropertyType.STRING,true);
 		tagProperty.setBinding("");
-		tagProperty.setBindingType(BindingType.TAG_READWRITE);
+		tagProperty.setBindingType(BindingType.TAG_WRITE);
 		setProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH, tagProperty);
 		BlockProperty commandProperty = new BlockProperty(BLOCK_PROPERTY_STOP_ON,stopOn,PropertyType.TRUTHVALUE,true);
 		setProperty(BLOCK_PROPERTY_STOP_ON, commandProperty);
@@ -93,7 +93,7 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 		anchors.add(input);
 
 		// Define a single output
-		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.TRUTHVALUE);
+		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
 		anchors.add(output);
 	}
 	
@@ -248,6 +248,5 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 		desc.setPreferredHeight(60);
 		desc.setPreferredWidth(60);
 		desc.setStyle(BlockStyle.SQUARE);
-		desc.setReceiveEnabled(true);
 	}
 }

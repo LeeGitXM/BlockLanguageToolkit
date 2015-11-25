@@ -1300,7 +1300,7 @@
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="GainOutput" path="MemoryTags" type="DB">
-      <Property name="Value">220.0</Property>
+      <Property name="Value">88.0</Property>
       <Property name="DataType">5</Property>
       <Property name="EngLow">-1000.0</Property>
       <Property name="EngHigh">1000.0</Property>
@@ -1338,7 +1338,11 @@
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="SQCDiagnosisOutput" path="MemoryTags" type="DB">
-      <Property name="Value">true</Property>
+      <Property name="Value">false</Property>
+      <Property name="DataType">6</Property>
+   </Tag>
+   <Tag name="SubdiagnosisInternalRecorder" path="MemoryTags" type="DB">
+      <Property name="Value">false</Property>
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="ComparisonFeed" path="MemoryTags" type="DB">
@@ -1358,7 +1362,7 @@
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="ReadWriteNumericOutput" path="MemoryTags" type="DB">
-      <Property name="Value">44.632</Property>
+      <Property name="Value">2.0</Property>
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="StringDateInput" path="MemoryTags" type="DB">
@@ -1382,7 +1386,7 @@
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="DoubleInput2" path="MemoryTags" type="DB">
-      <Property name="Value">44.632</Property>
+      <Property name="Value">2.0</Property>
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="NumericSource" path="MemoryTags" type="DB">
@@ -1390,7 +1394,7 @@
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="DoubleInput1" path="MemoryTags" type="DB">
-      <Property name="Value">4.0</Property>
+      <Property name="Value">138.0</Property>
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="StringParameter" path="MemoryTags" type="DB">
@@ -1422,17 +1426,21 @@
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="SQCDiagnosisInput" path="MemoryTags" type="DB">
-      <Property name="Value">true</Property>
+      <Property name="Value">false</Property>
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="DiagramOutput" path="MemoryTags" type="DB">
-      <Property name="Value">8</Property>
+      <Property name="Value">32</Property>
       <Property name="DataType">2</Property>
    </Tag>
    <Tag name="LabDataTime" path="MemoryTags" type="DB">
       <Property name="Value">1969-12-31 17:00:02</Property>
       <Property name="DataType">8</Property>
       <Property name="FormatString">yyyy-MM-dd h:mm:ss aa</Property>
+   </Tag>
+   <Tag name="ComparisonOut5" path="MemoryTags" type="DB">
+      <Property name="Value">false</Property>
+      <Property name="DataType">6</Property>
    </Tag>
    <Tag name="AverageFeed" path="MemoryTags" type="DB">
       <Property name="Value">230.0</Property>
@@ -1463,7 +1471,7 @@
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="DiagramFeed" path="MemoryTags" type="DB">
-      <Property name="Value">-12</Property>
+      <Property name="Value">32</Property>
       <Property name="DataType">2</Property>
    </Tag>
    <Tag name="AverageOut1" path="MemoryTags" type="DB">
@@ -1494,6 +1502,10 @@
       <Property name="Value">false</Property>
       <Property name="DataType">6</Property>
    </Tag>
+   <Tag name="TimerOutput" path="MemoryTags" type="DB">
+      <Property name="Value">0</Property>
+      <Property name="DataType">2</Property>
+   </Tag>
    <Tag name="MJKQuality" path="MemoryTags" type="DB">
       <Property name="Value">grood</Property>
       <Property name="DataType">7</Property>
@@ -1522,6 +1534,10 @@
    <Tag name="MJKSQCStdDev" path="MemoryTags" type="DB">
       <Property name="Value">1.0</Property>
       <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="TimerInternalRecorder" path="MemoryTags" type="DB">
+      <Property name="Value">1</Property>
+      <Property name="DataType">2</Property>
    </Tag>
    <Tag name="LogicFilterNever" path="MemoryTags" type="DB">
       <Property name="Value">FALSE</Property>

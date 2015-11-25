@@ -5,13 +5,10 @@ DIAGRAM="app75/family75/timedlimits"
 Show: browser $DIAGRAM
 resetDiagram ($DIAGRAM)
 
-Tagset: SingleBoolean
-Test: Comparisons with Timers
-Step: Target is TRUE
-10:00 true
-10:01 false
-10:01:10 Assert: persistence = FALSE "Interrupted target"
-10:02 true
-10:03 true
-10:04:10 Assert: persistence = FALSE "false before expiration time"
-10:08:20 Assert: persistence = TRUE  "True after expiration time"
+Tagset: SingleDouble
+Test: High Limit Time Window
+Step: No hysteresis
+10:00 1.0
+10:01 2.1
+10:02 3.2
+10:03 4.3

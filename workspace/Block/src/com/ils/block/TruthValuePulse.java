@@ -213,5 +213,6 @@ public class TruthValuePulse extends AbstractProcessBlock implements ProcessBloc
 		view.setStyle(BlockStyle.SQUARE);
 		view.setPreferredHeight(60);
 		view.setPreferredWidth(60);
+		view.setReceiveEnabled(true);
 	}
 }
