@@ -5,10 +5,10 @@
  */
 package com.ils.block;
 
+import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
-import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
@@ -24,6 +24,7 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
@@ -122,36 +123,39 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
-		String port = vcn.getConnection().getDownstreamPortName();
-		if( port.equals(BlockConstants.IN_PORT_NAME) ) {
-			TruthValue tv = vcn.getValueAsTruthValue();
-			if( !tv.equals(state) )  {
-				// This represents a state change
-				if( trigger.equals(tv)  ) {
-					if( !accumulateValues) duration = 0.0;
-					qv = new BasicQualifiedValue(new Integer((int)duration));
-					evaluate();
+		if( vcn.getConnection()!=null ) {
+			String port = vcn.getConnection().getDownstreamPortName();
+			if( port.equals(BlockConstants.IN_PORT_NAME) ) {
+				TruthValue tv = vcn.getValueAsTruthValue();
+				if( !tv.equals(state) )  {
+					setState(tv);
+					// This represents a state change
+					if( trigger.equals(tv)  ) {
+						if( !accumulateValues) duration = 0.0;
+						qv = new BasicQualifiedValue(new Integer((int)duration));
+						evaluate();
+					}
+					else if(stopOn.equals(tv)) {
+						evaluate();  // One last time
+						timer.removeWatchdog(dog);
+					}
 				}
-				else if(stopOn.equals(tv)) {
-					evaluate();  // One last time
-					timer.removeWatchdog(dog);
-				}
-				setState(tv);
 			}
 		}
 	}
 	/**
-	 * The interval has expired. If we are still in the triggering state,
-	 * then emit a value. Write to the tag, if configured.
+	 * The interval has expired. Update the duration, then emit a value. 
+	 * Write to the tag, if configured. If we're in the triggering state,
+	 * set the timer for another cycle, else terminate it.
 	 */
 	@Override
 	public synchronized void evaluate() {
 		log.infof("%s.evaluate ... %f secs",TAG,interval);
 		//if we're in the triggering state, then update duration, re-set the timer
-		if(state.equals(trigger) && qv!=null ) {
-			duration += (timer.getTestTime() - qv.getTimestamp().getTime()) * timer.getFactor();
+		if( qv!=null ) {
+			duration += ((timer.getTestTime() - qv.getTimestamp().getTime()) * timer.getFactor())/1000.;
 			if( !isLocked() ) {
-				qv = new TestAwareQualifiedValue(timer,new Double(duration));
+				qv = new TestAwareQualifiedValue(timer,new Integer((int)duration));
 				OutgoingNotification sig = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 				controller.acceptCompletionNotification(sig);
 	
@@ -159,7 +163,9 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 				if( !path.isEmpty() ) controller.updateTag(getParentId(),path, qv);
 				notifyOfStatus(qv);
 			}
-			// Stoke the dog
+		}
+		if(state.equals(trigger) ) {
+			// Stroke the dog
 			dog.setSecondsDelay(interval);
 			timer.updateWatchdog(dog);  // pet dog
 		}
@@ -232,6 +238,16 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 		}
 	}
 	
+	/**
+	 * @return a block-specific description of internal statue
+	 */
+	@Override
+	public SerializableBlockStateDescriptor getInternalStatus() {
+		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
+		Map<String,String> attributes = descriptor.getAttributes();
+		attributes.put("SecondsInState", String.valueOf(duration));
+		return descriptor;
+	}
 	
 	/**
 	 * Augment the palette prototype for this block class.

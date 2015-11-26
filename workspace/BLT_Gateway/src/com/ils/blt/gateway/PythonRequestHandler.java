@@ -286,12 +286,13 @@ public class PythonRequestHandler   {
 	 * the referenced diagram
 	 * 
 	 * @param parent identifier for the diagram, a string version of a UUID
-	 * @param tagPath name of the class of blocks to be signaled
+	 * @param tagPath path to the tag
 	 * @param data the value to be written
 	 * @param quality the quality of the output
 	 * @param time the time associated with this write operation
 	 */
 	public void updateTag(String parent,String tagPath,String data,String quality,long time)  {
+		if( tagPath==null || tagPath.isEmpty() ) return;   // Fail silently
 		log.debugf("%s.updateTag - %s = %s %s %s %d ",TAG,parent,tagPath,data,quality,time);
 
 		UUID diagId = UUID.fromString(parent);

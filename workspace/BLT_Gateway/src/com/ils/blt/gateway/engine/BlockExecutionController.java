@@ -506,7 +506,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 				String provider = getProductionProvider();
 				tagPath = TagUtility.replaceProviderInPath(provider,tagPath);
 			}
-			if(diagram.getState().equals(DiagramState.ISOLATED)) {
+			else if(diagram.getState().equals(DiagramState.ISOLATED)) {
 				String provider = getIsolationProvider();
 				tagPath = TagUtility.replaceProviderInPath(provider,tagPath);
 			}

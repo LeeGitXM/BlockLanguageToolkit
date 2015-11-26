@@ -18,15 +18,10 @@ import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
-import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
-import com.ils.blt.common.notification.Signal;
-import com.ils.blt.common.notification.SignalNotification;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
-import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.sqltags.model.types.DataQuality;
 
 /**
  *  When the block is rest, then the block emits a configured truth-value,
@@ -49,7 +44,6 @@ public class TruthValuePulse extends AbstractProcessBlock implements ProcessBloc
 		initialize();
 		initializePrototype();
 		dog = new Watchdog(getName(),this);
-		delayStart = true;
 	}
 	
 	/**
@@ -74,15 +68,6 @@ public class TruthValuePulse extends AbstractProcessBlock implements ProcessBloc
 	public void reset() {
 		super.reset();
 		start();
-		if( state.equals(TruthValue.TRUE) || 
-			state.equals(TruthValue.FALSE)   ) {
-			state = TruthValue.FALSE;
-			QualifiedValue qv = new TestAwareQualifiedValue(timer,state.name());
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
-			controller.acceptCompletionNotification(nvn);
-			notifyOfStatus(qv);
-		}
-		timer.removeWatchdog(dog);
 	}
 	
 	/**
@@ -116,6 +101,7 @@ public class TruthValuePulse extends AbstractProcessBlock implements ProcessBloc
 	 */
 	private void initialize() {	
 		setName("TruthValuePulse");
+		delayStart = true;
 		
 		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL,new Double(interval),PropertyType.TIME,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL, intervalProperty);

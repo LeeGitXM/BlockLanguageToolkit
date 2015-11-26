@@ -258,9 +258,11 @@ public class ProcessDiagram extends ProcessNode {
 							// Same type, new binding target.
 							hasChanged = true;
 							pb.stop();
-							controller.removeSubscription(pb, prop);
-							prop.setBinding(newProp.getBinding());
-							controller.startSubscription(pb,prop);
+							if( !prop.getBindingType().equals(BindingType.TAG_WRITE) ) {
+								controller.removeSubscription(pb, prop);
+								controller.startSubscription(pb,newProp);
+							}
+				
 							// If the new binding is a tag write - do the write.
 							if( !pb.isLocked() && 
 									(prop.getBindingType().equals(BindingType.TAG_READWRITE) ||

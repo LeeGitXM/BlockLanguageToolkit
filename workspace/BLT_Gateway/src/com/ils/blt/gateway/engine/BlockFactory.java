@@ -138,6 +138,12 @@ public class BlockFactory  {
 							valueChange=true;
 						}
 					}
+					else if( !property.getBindingType().equals(BindingType.NONE) &&
+							 !property.getBindingType().equals(BindingType.OPTION) &&
+							 !property.getBinding().equals(bp.getBinding()) ) {
+						// Same type, new binding target - force the value to be different
+						valueChange=true;
+					}
 					else if( BindingType.NONE.equals(property.getBindingType()) ||
 							 BindingType.OPTION.equals(property.getBindingType())    ) {
 						if( property.getValue()!=null && bp.getValue()!=null && !property.getValue().equals(bp.getValue())) {

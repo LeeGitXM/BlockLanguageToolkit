@@ -129,14 +129,19 @@ public class ProxyBlock extends AbstractProcessBlock  {
 
 	
 	/**
-	 * Notify the block that a new value has appeared on one of its input anchors.
+	 * Notify the block that a new value has appeared on one of its input anchors. If the block has
+	 * an embedded tag, it is possible that there is no port.
 	 * @param port name of the incoming anchor point
 	 * @param value to accept. A qualified value has a timestamp, quality,
 	 *        and simple value.
 	 */
 	@Override
 	public void acceptValue(IncomingNotification vcn) {
-		delegate.acceptValue( scriptManager,getPythonBlock(),vcn.getConnection().getDownstreamPortName(),vcn.getValue());
+		String port = null;
+		if(vcn.getConnection()!=null  ) {
+			port = vcn.getConnection().getDownstreamPortName();
+		}
+		delegate.acceptValue( scriptManager,getPythonBlock(),port,vcn.getValue());
 	}
 	
 	/**
