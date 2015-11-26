@@ -4,6 +4,7 @@
 package com.ils.block;
 
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
@@ -91,7 +92,8 @@ public class TimeReadout extends Readout implements ProcessBlock {
 	}
 	
 	/**
-	 * A new value has appeared on the input. Post a notification, then pass it on.
+	 * A new value has appeared on the input. Post a notification, then pass it on. If the value is, itself,
+	 * a date, then display it
 	 * @param incoming incoming new value.
 	 */
 	@Override
@@ -102,9 +104,17 @@ public class TimeReadout extends Readout implements ProcessBlock {
 			if( !isLocked()  ) {
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 				controller.acceptCompletionNotification(nvn);
-				// Convert the value according to the data type specified by the format.
 				try {
-					String value = customFormatter.format(qv.getTimestamp());
+					String value = "";
+					// Convert the value according to the data type specified by the format.
+					if( qv.getValue() instanceof java.util.Date ) {
+						value = customFormatter.format((java.util.Date)(qv.getValue()));
+					}
+					else {
+						value = customFormatter.format(qv.getTimestamp());
+					}
+			
+					
 					valueProperty.setValue(value);
 					log.tracef("%s.acceptValue: port %s formatted value =  %s.",getName(),incoming.getConnection().getUpstreamPortName(),value);
 					
@@ -126,7 +136,7 @@ public class TimeReadout extends Readout implements ProcessBlock {
 	private void initializePrototype() {
 		prototype.setPaletteIconPath("Block/icons/palette/time_readout.png");
 		prototype.setPaletteLabel("TimeReadout");
-		prototype.setTooltipText("Show time of most recent value. Use SimpleDateFormat to configure the output.");
+		prototype.setTooltipText("Show the time the most recent value. Use SimpleDateFormat to configure the output.");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_MISC);
 		BlockDescriptor view = prototype.getBlockDescriptor();
 		view.setBlockClass(getClass().getCanonicalName());

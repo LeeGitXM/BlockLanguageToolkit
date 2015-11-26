@@ -39,20 +39,3 @@ Step: Input is zero
 10:04:40 Assert: ComparisonOut2 = True "Max greater than limit"
 10:04:50 Assert: getState($DIAGRAM,$C2) = TRUE "Max greater than limit"
 
-Step: Date Comparison
-tagset: ComparisonDateDriver MemoryTags/DateCompare1 MemoryTags/DateCompare2
-tagset: ComparisonDateDriver
-10:05:00   "2000/01/02 11:22:33" "2002/01/02 11:22:33"
-10:05:20 Assert: ComparisonOut4 = False "Compare year in dates"
-10:05:40   "2002/02/02 11:22:33" "2002/01/02 11:22:33"
-10:06:00 Assert: ComparisonOut4 = True "Compare month in dates"
-10:06:20   "2000/01/22 11:22:33" "2000/01/23 11:22:33"
-10:06:40 Assert: ComparisonOut4 = False "Compare day in dates"
-10:07:00   "2000/01/02 11:22:33" "2000/01/02 10:22:33"
-10:07:15 Assert: ComparisonOut4 = True "Compare hour in dates"
-10:07:30   "2002/01/02 11:21:33" "2002/01/02 11:22:33"
-10:07:45 Assert: ComparisonOut4 = False "Compare minute in dates"
-10:08:00   "2010/06/02 11:22:33" "2010/06/02 11:22:30"
-10:08:15 Assert: ComparisonOut4 = True "Compare second in dates"
-10:08:00   "2002/01/02 11:22:33" "2002/01/02 11:22:33"
-10:08:15 Assert: ComparisonOut4 = False "Compare equality in dates"

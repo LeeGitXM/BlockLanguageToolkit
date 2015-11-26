@@ -213,7 +213,7 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 		QualifiedValue result = null;
 		
 		for(QualifiedValue qv:values) {
-			if(qv.getQuality().isGood() && qv.getValue()!=null) {
+			if(qv.getQuality().isGood() && qv.getValue()!=null && !qv.getValue().toString().isEmpty()) {
 				double val = func.coerceToDouble(qv.getValue().toString());
 				if(val>max ) {
 					max = val;
