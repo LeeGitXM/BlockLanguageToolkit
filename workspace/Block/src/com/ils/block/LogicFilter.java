@@ -224,7 +224,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
-		log.infof("%s.propertyChange: Received %s = %s",TAG,propertyName,event.getNewValue().toString());
+		log.debugf("%s.propertyChange: Received %s = %s",TAG,propertyName,event.getNewValue().toString());
 		if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_DEADBAND)) {
 			try {
 				deadband = Double.parseDouble(event.getNewValue().toString());
@@ -250,7 +250,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 					dog.setSecondsDelay(scanInterval);
 					timer.updateWatchdog(dog);  // pet dog
 					bufferSize = (int)(0.5+timeWindow/scanInterval);
-					log.infof("%s.propertyChange: buffer size now %d (%f / %f )",TAG,bufferSize,timeWindow,scanInterval);
+					log.debugf("%s.propertyChange: buffer size now %d (%f / %f )",TAG,bufferSize,timeWindow,scanInterval);
 				}
 				else {
 					reset();
@@ -278,7 +278,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 					dog.setSecondsDelay(scanInterval);
 					timer.updateWatchdog(dog);  // pet dog
 					if( scanInterval>0.0) bufferSize = (int)(0.5+timeWindow/scanInterval);
-					log.infof("%s.propertyChange: buffer size now %d (%f / %f )",TAG,bufferSize,timeWindow,scanInterval);
+					log.debugf("%s.propertyChange: buffer size now %d (%f / %f )",TAG,bufferSize,timeWindow,scanInterval);
 				}
 				else {
 					timer.removeWatchdog(dog);
@@ -287,6 +287,9 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.propertyChange: Unable to convert scan interval to a double (%s)",TAG,nfe.getLocalizedMessage());
 			}
+		}
+		else if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE)) {
+			;   // Handled by superclass
 		}
 		else {
 			log.warnf("%s.propertyChange:Unrecognized property (%s)",TAG,propertyName);

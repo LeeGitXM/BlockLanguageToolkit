@@ -115,7 +115,7 @@ public class HighLimitSampleCount extends AbstractProcessBlock implements Proces
 		String port = vcn.getConnection().getDownstreamPortName();
 		if( port.equals(BlockConstants.IN_PORT_NAME) ) {
 			QualifiedValue qv = vcn.getValue();
-			log.infof("%s.acceptValue: Received %s",getName(),qv.getValue().toString());
+			log.debugf("%s.acceptValue: Received %s",getName(),qv.getValue().toString());
 			if( qv.getQuality().isGood() ) {
 				TruthValue result = TruthValue.UNKNOWN;
 				synchronized(this) {

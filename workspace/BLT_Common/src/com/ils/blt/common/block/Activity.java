@@ -12,6 +12,8 @@ public class Activity implements Cloneable,Serializable  {
 	// These are some standard actions
 	public final static String ACTIVITY_RESET = "RESET";
 	public final static String ACTIVITY_STATE = "STATE";
+	public final static String ACTIVITY_START = "START";
+	public final static String ACTIVITY_STOP  = "STOP";
 	private Date timestamp;
 	private String action;   // Name of the activity (from a controlled vocabulary)
 	private String value;

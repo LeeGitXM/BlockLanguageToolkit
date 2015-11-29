@@ -138,12 +138,12 @@ public class QualValue extends AbstractProcessBlock implements ProcessBlock {
 		else if( port.equals(TIME_PORT)  ) {
 			if( qv.getValue() instanceof Date ) {
 				timestamp = (Date)qv.getValue();
-				log.infof("%s.acceptValue: Received date as (%s)",getName(),customFormatter.format(timestamp));
+				log.tracef("%s.acceptValue: Received date as (%s)",getName(),customFormatter.format(timestamp));
 			}
 			else {
 				try {
 					timestamp = customFormatter.parse(qv.getValue().toString());
-					log.infof("%s.acceptValue: time as string (%s)",getName(),customFormatter.format(timestamp));
+					log.tracef("%s.acceptValue: time as string (%s)",getName(),customFormatter.format(timestamp));
 				}
 				catch(ParseException pe) {
 					log.errorf("%s.acceptValue: Exception formatting time as %s (%s)",getName(),customFormatter.toString(),pe.getLocalizedMessage());
@@ -180,7 +180,7 @@ public class QualValue extends AbstractProcessBlock implements ProcessBlock {
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus(result);
 			value = result;
-			log.infof("%s.evaluate: %s %s %s",getName(),value.getValue().toString(),
+			log.tracef("%s.evaluate: %s %s %s",getName(),value.getValue().toString(),
 					value.getQuality().getName(),customFormatter.format(value.getTimestamp()));
 		}
 	}

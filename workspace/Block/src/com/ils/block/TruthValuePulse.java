@@ -6,6 +6,7 @@ package com.ils.block;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
+import com.ils.blt.common.block.Activity;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
@@ -62,21 +63,11 @@ public class TruthValuePulse extends AbstractProcessBlock implements ProcessBloc
 
 	/**
 	 * Do not call the base-class reset() as this sets outgoing
-	 * connection states to UNKNOWN.
+	 * connection states to UNKNOWN. This block allows only true/false
 	 */
 	@Override
 	public void reset() {
-		super.reset();
-		start();
-	}
-	
-	/**
-	 * This block is one, like Input blocks, that propagate
-	 * a value on block start, including reset.
-	 */
-	@Override
-	public void start() {
-		super.start();
+		recordActivity(Activity.ACTIVITY_RESET,"");
 		setState(pulse);
 		if( !isLocked()  ) {
 			QualifiedValue qv = new TestAwareQualifiedValue(timer,state);
@@ -86,6 +77,7 @@ public class TruthValuePulse extends AbstractProcessBlock implements ProcessBloc
 		dog.setSecondsDelay(interval);
 		timer.updateWatchdog(dog);
 	}
+
 	
 	/**
 	 * Disconnect from the timer thread.
@@ -101,7 +93,7 @@ public class TruthValuePulse extends AbstractProcessBlock implements ProcessBloc
 	 */
 	private void initialize() {	
 		setName("TruthValuePulse");
-		delayStart = true;
+		delayStart = false;
 		
 		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL,new Double(interval),PropertyType.TIME,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL, intervalProperty);
@@ -115,11 +107,13 @@ public class TruthValuePulse extends AbstractProcessBlock implements ProcessBloc
 	
 
 	/**
-	 * The interval has expired. Propagate the inverse of the PULSE value
+	 * The interval has expired. Propagate the inverse of the PULSE value.
+	 * NOTE: The diagram reset explicitly calls evaluate() on blocks that
+	 *       are marked as "delayStart". 
 	 */
 	@Override
 	public void evaluate() {
-		log.debugf("%s.evaluate",getName());
+		log.infof("%s.evaluate",getName());
 		if( !isLocked() ) {
 			if( pulse.equals(TruthValue.TRUE)) {
 				setState(TruthValue.FALSE);
@@ -144,7 +138,7 @@ public class TruthValuePulse extends AbstractProcessBlock implements ProcessBloc
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
-		log.infof("%s.propertyChange: Received %s = %s",TAG,propertyName,event.getNewValue().toString());
+		log.debugf("%s.propertyChange: Received %s = %s",TAG,propertyName,event.getNewValue().toString());
 		if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_INTERVAL)) {
 			try {
 				interval = Double.parseDouble(event.getNewValue().toString());

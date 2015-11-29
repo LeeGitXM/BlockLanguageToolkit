@@ -114,7 +114,7 @@ public class Command extends AbstractProcessBlock implements ProcessBlock {
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
-		log.infof("%s.propertyChange: Received %s = %s",TAG,propertyName,event.getNewValue().toString());
+		log.debugf("%s.propertyChange: Received %s = %s",TAG,propertyName,event.getNewValue().toString());
 		if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_COMMAND)) {
 			command.setCommand(event.getNewValue().toString());
 		}

@@ -4,7 +4,6 @@
 DIAGRAM="app75/family75/truthpulse"
 Show: browser $DIAGRAM
 PULSE = "TRUTHVALUEPULSER"
-resetDIagram($DIAGRAM)
 
 tag: Output MemoryTags/PulseOutput
 tag: TimerInternal MemoryTags/TimerInternalRecorder
@@ -12,11 +11,11 @@ tag: SubDiagInternal MemoryTags/SubdiagnosisInternalRecorder
 
 Test: Truth Pulse
 Step: Trigger Pulse 
-10:00 resetBlock($DIAGRAM,$PULSE)
-10:00:20 Assert: Output = TRUE "Pulse is TRUE"
-10:00:40 Assert: Output = TRUE "Pulse TRUE before expiration"
-10:00:40 Assert: 10 < TimerInternal < 60  "Timer between 10 and 60 before expiration"
-10:00:40 Assert: SubDiagInternal = TRUE  "SubDiagnosis TRUE before expiration"
-10:01:20 Assert: Output = FALSE "Pulse FALSE after expiration"
-10:01:30 Assert: 59 < TimerInternal < 61  "Timer at 60 after expiration"
-10:01:40 Assert: SubDiagInternal = FALSE  "SubDiagnosis FALSE after expiration"
+10:00:00 resetDiagram($DIAGRAM)
+10:00:10 Assert: Output = TRUE "Pulse is TRUE"
+10:00:13 Assert: Output = TRUE "Pulse TRUE before expiration"
+10:00:15 Assert: 10 < TimerInternal < 120  "Timer between 10 and 120 before expiration"
+10:00:17 Assert: SubDiagInternal = TRUE  "SubDiagnosis TRUE before expiration"
+10:02:20 Assert: Output = FALSE "Pulse FALSE after expiration"
+10:02:30 Assert: 118 < TimerInternal < 121  "Timer at 120 after expiration"
+10:02:40 Assert: SubDiagInternal = FALSE  "SubDiagnosis FALSE after expiration"

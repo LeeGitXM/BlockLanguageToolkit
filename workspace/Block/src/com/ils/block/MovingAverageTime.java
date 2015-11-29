@@ -130,7 +130,7 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 		if( qual.isGood() && qv.getValue()!=null && !qv.getValue().toString().isEmpty() ) {
 			try {
 				currentValue = qv;
-				log.tracef("%s.acceptValue: %s (%3.1f)",getName(),qv.getValue().toString(),currentValue);
+				log.tracef("%s.acceptValue: %s",getName(),qv.getValue().toString());
 				if( !dog.isActive() && scanInterval>0.0 ) {
 					dog.setSecondsDelay(scanInterval);
 					timer.updateWatchdog(dog);  // pet dog
@@ -197,7 +197,7 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
-		log.infof("%s(%d).propertyChange: %s = %s",getName(),hashCode(),propertyName,event.getNewValue().toString());
+		log.debugf("%s(%d).propertyChange: %s = %s",getName(),hashCode(),propertyName,event.getNewValue().toString());
 		if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET)) {
 			try {
 				clearOnReset = Boolean.parseBoolean(event.getNewValue().toString());
@@ -285,7 +285,7 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 		}
 		
 		if( count>0 ) result = sum/count;
-		//log.infof("%s.computeAverage: sum = %f, count = %d, result = %f",getName(),sum,count,result);
+		log.tracef("%s.computeAverage: sum = %f, count = %d, result = %f",getName(),sum,count,result);
 		return result;	
 	}
 }

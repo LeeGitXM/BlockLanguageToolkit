@@ -51,14 +51,16 @@ resetDiagram ($DIAGRAM)
 Step: All false
 resetDiagram ($DIAGRAM)
 10:06:00 false
-10:06:45 Assert: LogicFilterFalse       = UNKNOWN "2 output UNKNOWN after reset"
-10:06:50 Assert: getState($DIAGRAM,$F2) = UNKNOWN "2 state  UNKNOWN after reset"
-10:06:55 Assert: LogicFilterAlways      = UNKNOWN "3 output UNKNOWN after reset"
-10:07:00 Assert: getState($DIAGRAM,$F3) = UNKNOWN "3 state  UNKNOWN after reset"
-10:07:20 Assert: LogicFilterTrue        = UNKNOWN "1 output UNKNOWN after reset"
-10:07:25 Assert: getState($DIAGRAM,$F1) = UNKNOWN "1 state  UNKNOWN after reset"
-10:07:30 Assert: LogicFilterNever       = UNKNOWN "4 output UNKNOWN after reset"
-10:07:35 Assert: getState($DIAGRAM,$F4) = UNKNOWN "4 state  UNKNOWN after reset"
+10:06:05 Assert: LogicFilterFalse       = UNKNOWN "2 output UNKNOWN after reset"
+10:06:10 Assert: getState($DIAGRAM,$F2) = UNKNOWN "2 state  UNKNOWN after reset"
+10:06:15 Assert: LogicFilterAlways      = UNKNOWN "3 output UNKNOWN after reset"
+10:06:20 Assert: getState($DIAGRAM,$F3) = UNKNOWN "3 state  UNKNOWN after reset"
+10:06:25 Assert: LogicFilterTrue        = UNKNOWN "1 output UNKNOWN after reset"
+10:06:30 Assert: getState($DIAGRAM,$F1) = UNKNOWN "1 state  UNKNOWN after reset"
+10:06:35 Assert: LogicFilterNever       = UNKNOWN "4 output UNKNOWN after reset"
+10:06:40 Assert: getState($DIAGRAM,$F4) = UNKNOWN "4 state  UNKNOWN after reset"
+halt:
+
 10:09:30 Assert: LogicFilterTrue        = False "1 output False half-way"
 10:09:35 Assert: getState($DIAGRAM,$F1) = False "1 state  False half-way"
 10:09:40 Assert: LogicFilterFalse       = False "2 output False half-way"

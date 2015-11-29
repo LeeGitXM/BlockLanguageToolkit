@@ -132,11 +132,11 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 			currentValue = Double.NaN;
 			try {
 				currentValue = Double.parseDouble(qv.getValue().toString());
-				log.infof("%s.acceptValue: %s",getName(),qv.getValue().toString());
+				log.debugf("%s.acceptValue: %s",getName(),qv.getValue().toString());
 				if(!dog.isActive() && scanInterval>0.0 ) {
 					dog.setSecondsDelay(scanInterval);
 					timer.updateWatchdog(dog);  // pet dog
-					log.infof("HighLimit.acceptValue TRIGGERED TIMER");
+					log.debugf("HighLimit.acceptValue TRIGGERED TIMER");
 				}
 			}
 			catch(NumberFormatException nfe) {

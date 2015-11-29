@@ -150,7 +150,7 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public synchronized void evaluate() {
-		log.infof("%s.evaluate ... %f secs",TAG,interval);
+		//log.infof("%s.evaluate ... %f secs",TAG,interval);
 		//if we're in the triggering state, then update duration, re-set the timer
 		if( qv!=null ) {
 			duration += ((timer.getTestTime() - qv.getTimestamp().getTime()) * timer.getFactor())/1000.;
@@ -192,7 +192,7 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
 		String val = event.getNewValue().toString();
-		log.infof("%s.propertyChange: Received %s = %s",TAG,propertyName,event.getNewValue().toString());
+		log.debugf("%s.propertyChange: Received %s = %s",TAG,propertyName,event.getNewValue().toString());
 		if( propertyName.equalsIgnoreCase(BLOCK_PROPERTY_ACCUMULATE_VALUES) ) {
 			try {
 				accumulateValues = Boolean.parseBoolean(val);

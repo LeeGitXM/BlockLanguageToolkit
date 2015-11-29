@@ -90,7 +90,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 			if( port.equals(BlockConstants.IN_PORT_NAME)  ) {
 				QualifiedValue qv = vcn.getValue();
 				if( qv != null && qv.getValue()!=null ) {
-					log.infof("%s.acceptValue: Received value %s (%s)",getName(),qv.getValue().toString(),
+					log.tracef("%s.acceptValue: Received value %s (%s)",getName(),qv.getValue().toString(),
 							dateFormatter.format(qv.getTimestamp()));
 					long expirationTime = ((Long)expirationProperty.getValue()).longValue();
 					if( qv.getQuality().isGood() && 
@@ -128,10 +128,10 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 			if( log.isDebugEnabled()) {
 				long time = ((Long)expirationProperty.getValue()).longValue();
 				Date expiration = new Date(time);
-				log.infof("%s.acceptValue: Received inhibit command (delay %f secs to %s)",getName(),interval,dateFormatter.format(expiration));
+				log.debugf("%s.acceptValue: Received inhibit command (delay %f secs to %s)",getName(),interval,dateFormatter.format(expiration));
 				if( timer instanceof AcceleratedWatchdogTimer) {
 					AcceleratedWatchdogTimer awt = (AcceleratedWatchdogTimer)timer;
-					log.infof("%s.acceptValue: Setting %f/%f seconds delay from %s",getName(),interval,awt.getFactor(),
+					log.debugf("%s.acceptValue: Setting %f/%f seconds delay from %s",getName(),interval,awt.getFactor(),
 							dateFormatter.format(new Date(awt.getTestTime())));
 				}
 			}
@@ -165,7 +165,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void evaluate() {
 		inhibiting = false;
-		log.infof("%s.evaluate: Set inhibit flag false",getName());
+		log.tracef("%s.evaluate: Set inhibit flag false",getName());
 	}
 	
 	/**

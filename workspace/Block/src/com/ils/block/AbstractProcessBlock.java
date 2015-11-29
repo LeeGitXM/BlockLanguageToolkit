@@ -317,7 +317,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 			// For truth-values, actually propagate UNKNOWN.
 			for(AnchorPrototype ap:getAnchors()) {
 				if( ap.getAnchorDirection().equals(AnchorDirection.OUTGOING) ) {
-					if( ap.getConnectionType().equals(ConnectionType.TRUTHVALUE)) {
+					if( ap.getConnectionType().equals(ConnectionType.TRUTHVALUE) ) {
 						QualifiedValue UNKNOWN_TRUTH_VALUE = new TestAwareQualifiedValue(timer,TruthValue.UNKNOWN);
 						controller.sendConnectionNotification(getBlockId().toString(), ap.getName(),UNKNOWN_TRUTH_VALUE);
 						OutgoingNotification nvn = new OutgoingNotification(this,ap.getName(),UNKNOWN_TRUTH_VALUE);
@@ -431,7 +431,10 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 * NOT reset state in a block that is already running.
 	 */
 	@Override
-	public void start() { this.running = true;}
+	public void start() { 
+		this.running = true;
+		recordActivity(Activity.ACTIVITY_START,"");
+	}
 	/**
 	 * Terminate any active operations within the block.
 	 * This default method does nothing.
@@ -440,6 +443,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	public void stop() {
 		this.running = false;
 		state = TruthValue.UNSET;
+		recordActivity(Activity.ACTIVITY_STOP,"");
 	}
 	
 	/**
@@ -479,7 +483,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		if( !anchors.isEmpty() && val!=null && val.toString().length()>0 ) { 
 			for(AnchorPrototype ap: anchors) {
 				if(ap.getName().equals(port)) {
-					log.infof("%s.coerceToMatchOutput: %s %s type = %s",getName(),ap.getName(),(val==null?"null":val.toString()),ap.getConnectionType());
+					log.debugf("%s.coerceToMatchOutput: %s %s type = %s",getName(),ap.getName(),(val==null?"null":val.toString()),ap.getConnectionType());
 					if( ConnectionType.DATA.equals(ap.getConnectionType()))  {
 						val = new Double(fcns.coerceToDouble(val));
 					}

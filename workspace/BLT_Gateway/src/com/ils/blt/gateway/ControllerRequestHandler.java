@@ -129,7 +129,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 */
 	public ProcessBlock createInstance(String className,UUID parentId,UUID blockId) {
 		
-		log.infof("%s.createInstance of %s (%s:%s)",TAG,className,(parentId==null?"null":parentId.toString()),blockId.toString());
+		log.debugf("%s.createInstance of %s (%s:%s)",TAG,className,(parentId==null?"null":parentId.toString()),blockId.toString());
 		ProcessBlock block = null;
 		try {
 			Class<?> clss = Class.forName(className);
@@ -145,7 +145,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			log.warnf("%s.createInstance %s: Three argument constructor not found (%s)",TAG,className,nsme.getMessage()); 
 		}
 		catch( ClassNotFoundException cnf ) {
-			log.infof("%s.createInstance: Java class %s not found - trying Python",TAG,className);
+			log.debugf("%s.createInstance: Java class %s not found - trying Python",TAG,className);
 			ProxyHandler ph = ProxyHandler.getInstance();
 			ProcessDiagram diagram = controller.getDiagram(parentId);
 			if( diagram!=null ) {
@@ -745,7 +745,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @param quality of the reported output
 	 */
 	public void postValue(String parentId,String blockId,String port,String value)  {
-		log.infof("%s.postValue - %s = %s on %s",TAG,blockId,value,port);
+		log.tracef("%s.postValue - %s = %s on %s",TAG,blockId,value,port);
 		try {
 			UUID diagramuuid = UUID.fromString(parentId);
 			UUID blockuuid   = UUID.fromString(blockId);
@@ -766,7 +766,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @param quality of the reported output
 	 */
 	public void postValue(UUID parentuuid,UUID blockId,String port,String value,String quality)  {
-		log.infof("%s.postValue - %s = %s (%s) on %s",TAG,blockId,value,quality,port);
+		log.tracef("%s.postValue - %s = %s (%s) on %s",TAG,blockId,value,quality,port);
 		try {
 			ProcessDiagram diagram = controller.getDiagram(parentuuid);
 			if( diagram!=null) {
@@ -814,7 +814,6 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	@Override
 	public boolean resourceExists(long projectId, long resid) {
 		ProcessDiagram diagram = controller.getDiagram(projectId, resid);
-		log.infof("%s.resourceExists diagram %d:%d ...%s",TAG,projectId,resid,(diagram!=null?"true":"false"));
 		return diagram!=null;
 	}
 
@@ -1077,7 +1076,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 */
 	public void triggerStatusNotifications() {
 		BlockExecutionController.getInstance().triggerStatusNotifications();
-		log.infof("%s.triggerStatusNotifications: Complete.",TAG);
+		log.debugf("%s.triggerStatusNotifications: Complete.",TAG);
 	}
 
 

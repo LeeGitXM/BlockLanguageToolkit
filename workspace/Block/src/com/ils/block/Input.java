@@ -169,7 +169,7 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
 		if(propertyName.equals(BlockConstants.BLOCK_PROPERTY_TAG_PATH)) {
-			log.infof("%s.propertyChange path now %s",getName(),event.getNewValue().toString());
+			log.debugf("%s.propertyChange path now %s",getName(),event.getNewValue().toString());
 		}
 	}
 	

@@ -137,11 +137,11 @@ public class InRangeTimeWindow extends AbstractProcessBlock implements ProcessBl
 			currentValue = Double.NaN;
 			try {
 				currentValue = Double.parseDouble(qv.getValue().toString());
-				log.infof("%s.acceptValue: %s",getName(),qv.getValue().toString());
+				log.tracef("%s.acceptValue: %s",getName(),qv.getValue().toString());
 				if( !dog.isActive() && scanInterval>0.0 ) {
 					dog.setSecondsDelay(scanInterval);
 					timer.updateWatchdog(dog);  // pet dog
-					log.infof("InRange.acceptValue TRIGGERED TIMER");
+					log.debugf("InRange.acceptValue TRIGGERED TIMER");
 				}
 			}
 			catch(NumberFormatException nfe) {

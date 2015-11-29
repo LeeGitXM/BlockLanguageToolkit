@@ -107,7 +107,7 @@ public class PropertySetter extends AbstractProcessBlock implements ProcessBlock
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
 		String propName = event.getPropertyName();
-		log.infof("%s.propertyChange: Received %s = %s",TAG,propName,event.getNewValue().toString());
+		log.debugf("%s.propertyChange: Received %s = %s",TAG,propName,event.getNewValue().toString());
 		if( propName.equals(BlockConstants.BLOCK_PROPERTY_PROPERTY)) {
 			propertyName = event.getNewValue().toString();
 		}

@@ -186,7 +186,7 @@ public class LabData extends Input implements ProcessBlock {
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus(qv);
-			log.infof("%s.evaluate: %s %s %s",getName(),qv.getValue().toString(),
+			log.tracef("%s.evaluate: %s %s %s",getName(),qv.getValue().toString(),
 					qv.getQuality().getName(),dateFormatter.format(qv.getTimestamp()));
 		}
 	}
@@ -210,7 +210,7 @@ public class LabData extends Input implements ProcessBlock {
 			}
 		}
 		else if(propertyName.equals(BLOCK_PROPERTY_TIME_PATH)) {
-			log.infof("%s.propertyChange time path now %s",getName(),event.getNewValue().toString());
+			log.debugf("%s.propertyChange time path now %s",getName(),event.getNewValue().toString());
 		}
 	}
 	

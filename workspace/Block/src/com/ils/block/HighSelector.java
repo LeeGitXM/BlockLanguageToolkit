@@ -127,7 +127,7 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void evaluate() {
-		log.infof("%s.evaluate",getName());
+		log.tracef("%s.evaluate",getName());
 		if( !isLocked() ) {
 			QualifiedValue max = getMaxValue();
 			if( max!=null ) {
