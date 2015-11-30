@@ -96,6 +96,7 @@ public class MovingAverageSample extends AbstractProcessBlock implements Process
 		super.reset();
 		if( clearOnReset) {
 			queue.clear();
+			valueProperty.setValue(new Double(Double.NaN));
 		}
 	}
 	

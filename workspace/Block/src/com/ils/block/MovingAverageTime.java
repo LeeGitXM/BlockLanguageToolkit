@@ -106,6 +106,7 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 		if( clearOnReset ) {
 			buffer.clear();
 			currentValue = null;
+			valueProperty.setValue(new Double(Double.NaN));
 		}
 	}
 
