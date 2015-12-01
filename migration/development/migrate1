@@ -4,11 +4,11 @@
 BLT=${GIT_REPO}/blt
 #FIL=dirtSimpleApplication
 #FIL=dirtSimpleApplicationWithConnections
-#FIL=crxProductQuality
+FIL=crxProductQuality
 #FIL=polyFlyingSwitch
 #FIL=oneBadFamily
 #FIL=vfuProductQuality
-FIL=cstrProductQuality
+#FIL=cstrProductQuality
 INDIR=$BLT/migration/json/g2
 OUTDIR=$BLT/migration/json/ignition
 mkdir -p $OUTDIR

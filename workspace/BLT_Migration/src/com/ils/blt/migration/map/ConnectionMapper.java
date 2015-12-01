@@ -372,8 +372,8 @@ public class ConnectionMapper {
 				log.debugf("%s.reconcileUnresolvedConnections: SINK::%s",TAG,sinkConnection);
 			}
 			else {
-				log.warnf("%s.reconcileUnresolvedConnections: Block to sink=%s (ignored)",
-						TAG,sink.getTarget().getId().toString());
+				log.warnf("%s.reconcileUnresolvedConnections: %s - block %s to sink %s (ignored)",
+						TAG,sink.getParent().getName(),sink.getTarget().getName(),sink.getPost().getName());
 			}
 		}
 		// Loop over all the source posts
@@ -392,8 +392,8 @@ public class ConnectionMapper {
 				log.debugf("%s.reconcileUnresolvedConnections: SOURCE::%s",TAG,sourceConnection);
 			}
 			else {
-				log.warnf("%s.reconcileUnresolvedConnections: Block to source=%s (ignored)",
-						TAG,source.getTarget().getId().toString());
+				log.warnf("%s.reconcileUnresolvedConnections: %s - block %s to source %s (ignored)",
+						TAG,source.getParent().getName(),source.getTarget().getName(),source.getPost().getName());
 			}
 		}
 	}

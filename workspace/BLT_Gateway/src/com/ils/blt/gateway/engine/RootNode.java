@@ -43,14 +43,14 @@ public class RootNode extends ProcessNode {
 	public void addChild(ProcessNode child,long childProjectId) {
 		log.debugf("%s.addChild: %s[%s]",TAG,getName(),child.getName());
 		Long key = new Long(childProjectId);
-		String projectName = context.getProjectManager().getProjectName(childProjectId, ProjectVersion.Published);
+		String projectName = context.getProjectManager().getProjectName(childProjectId, ProjectVersion.Staging);
 		if( projectName==null ) {
 			log.warnf("%s.addChild: No name for projectId %d. No child added.",TAG,childProjectId);
 			return;
 		}
-		if( projectIdByName.get(projectName) == null ) {
-			projectIdByName.put(projectName,key);
-		}
+		// If the project name now has a new Id, we've done an "overwrite".
+		// The old projectId has no resources.
+		projectIdByName.put(projectName,key);
 		
 		Map<Long,ProcessNode>map = childrenByProjectId.get(key);
 		if( map==null ) {

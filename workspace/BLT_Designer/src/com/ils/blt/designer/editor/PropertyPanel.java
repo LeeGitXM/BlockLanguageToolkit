@@ -173,7 +173,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		// The "plain" (NONE) properties can be changed by python scripting
 		if(property.getBindingType().equals(BindingType.ENGINE) || property.getBindingType().equals(BindingType.NONE)) {
 			String key = NotificationKey.keyForProperty(block.getId().toString(), property.getName());
-			log.infof("%s.registerChangeListeners: adding %s",TAG,key);
+			log.debugf("%s.registerChangeListeners: adding %s for ENGINE",TAG,key);
 			notificationHandler.addNotificationChangeListener(key,TAG,this);
 		}
 		else if( property.getBindingType().equals(BindingType.TAG_MONITOR) ||
@@ -181,7 +181,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 				property.getBindingType().equals(BindingType.TAG_READWRITE) ||
 				property.getBindingType().equals(BindingType.TAG_WRITE)	) {
 			String key = NotificationKey.keyForPropertyBinding(block.getId().toString(), property.getName());
-			log.infof("%s.registerChangeListeners: adding %s",TAG,key);
+			log.debugf("%s.registerChangeListeners: adding %s for %s",TAG,key,property.getBindingType().name());
 			notificationHandler.addNotificationChangeListener(key,TAG,this);
 			subscribeToTagPath(property.getBinding());
 		}
@@ -206,7 +206,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	// The provider has been set in the panel constructor.
 	private void subscribeToTagPath(String path) {
 		if( path==null || path.length()==0 ) return;  // Fail silently for path not set
-		log.infof("%s.subscribeToTagPath: - %s (%s)",TAG,property.getName(),path);
+		log.tracef("%s.subscribeToTagPath: - %s (%s)",TAG,property.getName(),path);
 		ClientTagManager tmgr = context.getTagManager();
 		try {
 			TagPath tp = TagPathParser.parse(path);
@@ -539,7 +539,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	// ======================================= Notification Change Listener ===================================
 	@Override
 	public void bindingChange(String binding) {
-		log.infof("%s.bindingChange: - %s new binding (%s)",TAG,property.getName(),binding);
+		log.debugf("%s.bindingChange: - %s new binding (%s)",TAG,property.getName(),binding);
 		//property.setValue(value.getValue());  // Block should have its own subscription to value changes.
 		SwingUtilities.invokeLater( new Runnable() {
 			public void run() {
@@ -552,7 +552,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	}
 	@Override
 	public void valueChange(final QualifiedValue value) {
-		log.infof("%s.valueChange: - %s new value (%s)",TAG,property.getName(),value.getValue().toString());
+		log.debugf("%s.valueChange: - %s new value (%s)",TAG,property.getName(),value.getValue().toString());
 		//property.setValue(value.getValue());  // Block should have its own subscription to value changes.
 		SwingUtilities.invokeLater( new Runnable() {
 			public void run() {

@@ -94,7 +94,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param projectId the identity of a project
 	 * @param res the model resource
 	 */
-	public void analyzeResource(Long projectId,ProjectResource res) {
+	public void analyzeResource(long projectId,ProjectResource res) {
 		if( res.getModuleId().equalsIgnoreCase(BLTProperties.MODULE_ID)) {
 			String type = res.getResourceType();
 			
@@ -418,9 +418,22 @@ public class ModelManager implements ProjectListener  {
 	@Override
 	public void projectAdded(Project staging, Project published) {
 		if( staging!=null ) {
-			long projectId = staging.getId();
-			log.debugf("%s.projectAdded: %s (%d),published",TAG,staging.getName(),projectId);
-			List<ProjectResource> resources = staging.getResources();
+			if( staging.isEnabled() && staging.getId()!=-1 ) {
+				long projectId = staging.getId();
+				log.infof("%s.projectAdded: %s (%d),staging",TAG,staging.getName(),projectId);
+				List<ProjectResource> resources = staging.getResources();
+				for( ProjectResource res:resources ) {
+					log.infof("%s.projectAdded: resource %s (%d),type %s", TAG,res.getName(),
+							res.getResourceId(),res.getResourceType());
+					analyzeResource(projectId,res);
+				}
+			}
+		}
+		// This seems to be totally redundant.
+		else if( published!=null ) {
+			long projectId = published.getId();
+			log.infof("%s.projectAdded: %s (%d),published",TAG,published.getName(),projectId);
+			List<ProjectResource> resources = published.getResources();
 			for( ProjectResource res:resources ) {
 				log.infof("%s.projectAdded: resource %s (%d),type %s", TAG,res.getName(),
 						res.getResourceId(),res.getResourceType());
@@ -434,7 +447,7 @@ public class ModelManager implements ProjectListener  {
 	@Override
 	public void projectDeleted(long projectId) {
 		log.infof("%s.projectDeleted: (id=%d)",TAG,projectId);
-		deleteProjectResources(new Long(projectId));
+		deleteProjectResources(projectId);
 		
 	}
 	/**
@@ -448,9 +461,8 @@ public class ModelManager implements ProjectListener  {
 	 */
 	@Override
 	public void projectUpdated(Project diff, ProjectVersion vers) { 
-		
+		log.infof("%s.projectUpdated: %s (%d)  %s",TAG,diff.getName(),diff.getId(),vers.toString());
 		if( vers!=ProjectVersion.Staging ) return;  // Consider only the "Staging" version
-		log.infof("%s.projectUpdated: %s (%d)  %s", TAG,diff.getName(),diff.getId(),vers.toString());
 		long projectId = diff.getId();
 
 		List<ProjectResource> resources = diff.getResources();
@@ -462,9 +474,10 @@ public class ModelManager implements ProjectListener  {
 		}
 		
 		Set<Long> deleted = diff.getDeletedResources();
-		for (Long  resid : deleted) {
+		for (Long  rid : deleted) {
+			long resid = rid.longValue();
 			log.infof("%s.projectUpdated: delete resource %d:%d", TAG,projectId,resid);
-			deleteResource(new Long(projectId),resid);
+			deleteResource(projectId,resid);
 		}
 	}
 	
@@ -476,7 +489,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param projectId the identity of a project
 	 * @param res the project resource containing the diagram
 	 */
-	private void addModifyApplicationResource(Long projectId,ProjectResource res) {
+	private void addModifyApplicationResource(long projectId,ProjectResource res) {
 		log.infof("%s.addModifyApplicationResource: %s(%d)",TAG,res.getName(),res.getResourceId());
 		ProcessApplication application = deserializeApplicationResource(projectId,res);
 		if( application!=null ) {
@@ -511,7 +524,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param projectId the identity of a project
 	 * @param res the project resource containing the diagram
 	 */
-	private void addModifyDiagramResource(Long projectId,ProjectResource res) {
+	private void addModifyDiagramResource(long projectId,ProjectResource res) {
 		log.debugf("%s.addModifyDiagramResource: %s(%d)",TAG,res.getName(),res.getResourceId());
 		SerializableDiagram sd = deserializeDiagramResource(projectId,res);
 		if( sd!=null ) {
@@ -583,7 +596,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param projectId the identity of a project
 	 * @param res the project resource containing the diagram
 	 */
-	private void addModifyFamilyResource(Long projectId,ProjectResource res) {
+	private void addModifyFamilyResource(long projectId,ProjectResource res) {
 		log.debugf("%s.addModifyFamilyResource: %s(%d)",TAG,res.getName(),res.getResourceId());
 		ProcessFamily family = deserializeFamilyResource(projectId,res);
 		if( family!=null ) {
@@ -677,9 +690,9 @@ public class ModelManager implements ProjectListener  {
 	 * Presumably the diagram has been deleted.
 	 * @param projectId the identity of a project.
 	 */
-	private void deleteResource(Long projectId,Long resourceId) {
+	private void deleteResource(long projectId,long resourceId) {
 		log.debugf("%s.deleteResource: %d:%d",TAG,projectId,resourceId);
-		ProjResKey key = new ProjResKey(projectId.longValue(),resourceId.longValue());
+		ProjResKey key = new ProjResKey(projectId,resourceId);
 		ProcessNode node = nodesByKey.get(key);
 		if( node!=null ) {
 			if( node instanceof ProcessDiagram ) {
@@ -708,7 +721,7 @@ public class ModelManager implements ProjectListener  {
 		}
 	}
 	// Delete all process nodes for a given project.
-	private void deleteProjectResources(Long projectId) {
+	private void deleteProjectResources(long projectId) {
 		log.infof("%s.deleteProjectResources: proj = %d",TAG,projectId);
 		List<ProcessNode> nodes = root.allNodesForProject(projectId);
 		for(ProcessNode node:nodes) {
@@ -722,7 +735,7 @@ public class ModelManager implements ProjectListener  {
 				}
 				
 			}
-			ProjResKey key = new ProjResKey(projectId.longValue(),node.getResourceId());
+			ProjResKey key = new ProjResKey(projectId,node.getResourceId());
 			nodesByKey.remove(key);
 			nodesByUUID.remove(node.getSelf());
 		}
