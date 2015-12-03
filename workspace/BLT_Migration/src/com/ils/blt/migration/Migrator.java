@@ -211,7 +211,7 @@ public class Migrator {
 	
 	private SerializableApplication createSerializableApplication(G2Application g2a) {
 		SerializableApplication sa = new SerializableApplication();
-		sa.setName(g2a.getName());
+		sa.setName(toCamelCase(g2a.getName()));
 		sa.setId(UUID.nameUUIDFromBytes(g2a.getUuid().getBytes()));
 		int familyCount = g2a.getFamilies().length;
 		int index = 0;
@@ -227,7 +227,7 @@ public class Migrator {
 	
 	private SerializableFamily createSerializableFamily(G2Family g2f) {
 		SerializableFamily sf = new SerializableFamily();
-		sf.setName(g2f.getName());
+		sf.setName(toCamelCase(g2f.getName()));
 		sf.setId(UUID.nameUUIDFromBytes(g2f.getUuid().getBytes()));
 		int diagramCount = 0;
 		// We have run into some empty diagrams in the G2 exports
@@ -252,7 +252,7 @@ public class Migrator {
 	
 	private SerializableDiagram createSerializableDiagram(G2Diagram g2d) {
 		SerializableDiagram sd = new SerializableDiagram();
-		sd.setName(g2d.getName());
+		sd.setName(toCamelCase(g2d.getName()));
 		sd.setId(UUID.nameUUIDFromBytes(g2d.getName().getBytes()));  // Name is unique
 		// Create the blocks before worrying about connections
 		int blockCount = g2d.getBlocks().length;
@@ -292,6 +292,8 @@ public class Migrator {
 			// Need to set values here ...
 			procedureMapper.setPythonModuleNames(block);
 			tagMapper.setTagPaths(block);
+			// Now that we're done all the mapping, scrub the name
+			block.setName(toCamelCase(g2block.getName()));
 			blocks[index]=block;
 			index++;
 		}
@@ -629,6 +631,53 @@ public class Migrator {
 			System.err.println(String.format("%s.main: UncaughtException (%s)",TAG,ex.getMessage()));
 			ex.printStackTrace(System.err);
 		}
+	}
+	/**
+	 * Remove dashes and spaces. Convert to camel-case.
+	 * @param input
+	 * @return munged name
+	 */
+	private String toCamelCase(String input) {
+		// Replace XXX with an underscore
+		input = input.replace("-XXX-", "|");
+		//Strip off the _GDA and -GDA
+		input = input.replace("-GDA", "");
+		input = input.replace("_GDA", "");
+		input = input.replace("-GDA-", "");
+	    StringBuilder camelCase = new StringBuilder();
+	    boolean nextTitleCase = true;
+	    //log.tracef("toCamelCase: %s",input);
+	    for (char c : input.toCharArray()) {
+	    	// Apparently a / to TitleCase is '_'. Just pass as-is
+	    	if (c=='/'  ) {
+	    		nextTitleCase = true;
+	            ;
+	        }
+	    	else if (Character.isSpaceChar(c)) {
+	            nextTitleCase = true;
+	            continue;
+	        } 
+	        // remove illegal, unwanted characters
+	        else if (c=='-' ||
+	        		 c=='#' ||
+	        		 c==':' ||
+	        		 c=='_' ||
+	        		 c=='.'    ) {
+	            nextTitleCase = true;
+	            continue;
+	        } 
+	        else if (nextTitleCase) {
+	            c = Character.toUpperCase(c);
+	            nextTitleCase = false;
+	        }
+	        else {
+	        	c = Character.toLowerCase(c);
+	        }
+	        camelCase.append(c);
+	    }
+	    String output = camelCase.toString().replace("|", "_");
+	    //log.tracef("toCamelCase: result %s",camelCase.toString());
+	    return output;
 	}
 
 }
