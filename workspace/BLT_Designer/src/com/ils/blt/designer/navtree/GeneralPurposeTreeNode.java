@@ -72,7 +72,6 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
 import com.inductiveautomation.ignition.designer.navtree.model.FolderNode;
-import com.jidesoft.plaf.basic.Resource;
 /**
  * A folder in the designer scope to support the diagnostics toolkit diagram
  * layout. In addition to standard folders, folders can be of type "Application" or
@@ -485,7 +484,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	}
 
 	/**
-	 * Convert the resource data into a SerializableApplication
+	 * Convert the resource data into a deserializeDiagram.
 	 * @param res
 	 * @return
 	 */
@@ -991,6 +990,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			ObjectMapper mapper = new ObjectMapper();
 			try{
 				sd.setState(DiagramState.DISABLED);
+				sd.setDirty(true);
 				long newId = context.newResourceId();
 				String json = mapper.writeValueAsString(sd);
 				if(logger.isTraceEnabled() ) logger.trace(json);

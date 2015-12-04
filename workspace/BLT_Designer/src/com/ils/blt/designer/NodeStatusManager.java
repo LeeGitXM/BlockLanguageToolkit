@@ -100,12 +100,19 @@ public class NodeStatusManager  {
 	 * @param resourceId
 	 */
 	public void createResourceStatus(AbstractResourceNavTreeNode node,long parentResourceId,long resourceId) {
-		log.debugf("%s.newResource(%d:%d)",TAG,parentResourceId,resourceId);
+		log.debugf("%s.createResourceStatus(%d:%d)",TAG,parentResourceId,resourceId);
 		if(node.getProjectResource()==null) throw new IllegalArgumentException("No project resource");
 		Long key = new Long(resourceId);
-		if( statusByResourceId.get(key) == null ) {
-			DiagramState s = handler.getDiagramState(projectId, key); 
+		StatusEntry se = statusByResourceId.get(key);
+		if( se == null ) {
+			DiagramState s = handler.getDiagramState(projectId, key);
+			log.debugf("%s.createResourceStatus: new status entry %s",TAG,s);
 			statusByResourceId.put(key,new StatusEntry(node,parentResourceId,s));
+		}
+		// We had a "provisional" entry 
+		else if( se.getNode()==null ) {
+			se.setNode(node);
+			se.setParent(parentResourceId);
 		}
 	}
 	/**
@@ -222,6 +229,11 @@ public class NodeStatusManager  {
 		if( se!=null ) {
 			se.setState(bs);
 			clearDirtyChildCount(resourceId);
+		}
+		else {
+			se = new StatusEntry(bs);
+			statusByResourceId.put(resourceId,se);
+			log.debugf("%s.setResourceState: no existing StatusEntry",TAG);
 		}
 	}
 
@@ -351,16 +363,29 @@ public class NodeStatusManager  {
 	private class StatusEntry {
 		private boolean dirty = false;
 		private int dirtyChildren = 0;
-		private final long parentId;           // A resourceId
-		private final long resourceId;
+		private long parentId;           // A resourceId
+		private long resourceId;
 		private DiagramState state;
-		private final AbstractResourceNavTreeNode node;
+		private AbstractResourceNavTreeNode node;
+		/**
+		 * "Provisional" constructor. We've just created a node (probably
+		 * via Application import). We have the resource state, but not 
+		 * NavTreeNode.
+		 */
+		public StatusEntry(DiagramState s)  {
+			this.parentId = -1;
+			this.state = s;
+			this.node = null;
+		}
 		
+		/**
+		 * Constructor.
+		 * @param antn
+		 * @param parent
+		 * @param s
+		 */
 		public StatusEntry(AbstractResourceNavTreeNode antn, long parent, DiagramState s)  {
-			ProjectResource pr = antn.getProjectResource();
-			long resid = BLTProperties.ROOT_RESOURCE_ID;
-			if(pr!=null) resid = pr.getResourceId();
-			this.resourceId = resid;
+			setNode(antn);
 			this.parentId = parent;
 			this.state = s;
 			this.node = antn;
@@ -370,7 +395,14 @@ public class NodeStatusManager  {
 		public void decrementDirtyChildCount() {dirtyChildren-=1;}
 		public int getDirtyChildCount() {return dirtyChildren;}
 		public AbstractResourceNavTreeNode getNode() { return node; }
+		public void setNode(AbstractResourceNavTreeNode antn) {
+			ProjectResource pr = antn.getProjectResource();
+			long resid = BLTProperties.ROOT_RESOURCE_ID;
+			if(pr!=null) resid = pr.getResourceId();
+			this.resourceId = resid;
+		}
 		public long getParent() { return parentId; }
+		public void setParent(long pid) { this.parentId=pid; }
 		public DiagramState getState() { return state; }
 		public void incrementDirtyChildCount() {dirtyChildren+=1;}
 		// Note: isDirty refers to the node of interest alone, excluding children

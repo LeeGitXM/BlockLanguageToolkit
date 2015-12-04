@@ -240,11 +240,11 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		DiagramState ds = statusManager.getResourceState(resourceId);
 		if( workspace.isOpen(resourceId) ) {
 			icon = openIcon;
-			if( ds.equals(DiagramState.DISABLED))        icon = openDisabledIcon;
+			if( ds.equals(DiagramState.DISABLED))      icon = openDisabledIcon;
 			else if( ds.equals(DiagramState.ISOLATED)) icon = openRestrictedIcon;
 		}
 		else {
-			if( ds.equals(DiagramState.DISABLED))        icon = closedDisabledIcon;
+			if( ds.equals(DiagramState.DISABLED))      icon = closedDisabledIcon;
 			else if( ds.equals(DiagramState.ISOLATED)) icon = closedRestrictedIcon;
 		}
 		return icon;

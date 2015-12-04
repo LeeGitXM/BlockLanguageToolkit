@@ -543,12 +543,14 @@ public class ModelManager implements ProjectListener  {
 				if( diagram.getState().equals(DiagramState.ACTIVE)) {
 					String provider = controller.getProductionProvider();
 					diagram.updateTagProvider(provider);
+					diagram.startSubscriptions();
 				}
 				else if (diagram.getState().equals(DiagramState.ISOLATED)) {
 					String provider = controller.getIsolationProvider();
 					diagram.updateTagProvider(provider);
+					diagram.startSubscriptions();
 				}
-				diagram.startSubscriptions();
+				
 			}
 			// Carefully update the diagram with new features/properties.
 			// Leave existing blocks/subscriptions "as-is". 
