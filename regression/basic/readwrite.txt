@@ -11,7 +11,6 @@ tag: LabDataOutput2 MemoryTags/LabDataOutput2
 tag: Parameter MemoryTags/NumericParameter
 tag: ReadWriteBooleanOutput MemoryTags/ReadWriteBooleanOutput
 tag: ReadWriteNumericOutput MemoryTags/ReadWriteNumericOutput
-:q!
 
 tag: Source MemoryTags/Connection-A
 tag: Sink MemoryTags/Connection-B

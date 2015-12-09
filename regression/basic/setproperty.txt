@@ -11,10 +11,14 @@ tagset: DualFeed MemoryTags/DoubleInput1 MemoryTags/DoubleInput2
 Test: Setting Properties
 Step: Multiple Values
 Tagset: DualFeed
-10:00 66.8 135.4
-10:01 98.1 1947
+10:01 66.8 135.4
+10:01:20 98.1 1947
 10:01:50 Assert: getProperty($DIAGRAM,$TARGET,"Deadband")  = "98.1" "Deadband property is set"
 10:01:50 Assert: getProperty($DIAGRAM,$TARGET,"Limit")     = "1947"  "Limit property is set"
 10:02 100.1 2014
 10:02:50 Assert: getProperty($DIAGRAM,$TARGET,"Deadband")  = "100.1" "Deadband property is updated"
 10:02:50 Assert: getProperty($DIAGRAM,$TARGET,"Limit")     = "2014"  "Limit property is updated"
+
+Step: Scripting Interface
+10:03:00 setProperty($DIAGRAM,$TARGET,"Limit","2020")
+10:03:20 Assert: getProperty($DIAGRAM,$TARGET,"Limit")     = "2020"  "Limit property is updated by script"

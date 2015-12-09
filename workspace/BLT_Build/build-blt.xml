@@ -230,6 +230,7 @@
 		<copy file="${basedir}/../../external/lib/jackson-databind-2.2.3.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy file="${basedir}/../../external/lib/jackson-annotations-2.2.3.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy file="${basedir}/../../external/lib/commons-math3-3.1.1.jar" todir="${basedir}/BLT_Build/temp_modl/" />
+		<copy file="${basedir}/../../external/lib/ils-common.jar" todir="${basedir}/BLT_Build/temp_modl/" />
 		<copy file="${jar.dir}/${block.jar.name}" todir="${basedir}/BLT_Build/temp_modl/" />
 
 		<!-- Copy license file and javadoc into the bundle -->
@@ -244,29 +245,6 @@
 		
 		<!-- Zip it all up -->
 		<zip zipfile="${basedir}/BLT_Build/modules/${BLTModule.name}-module-unsigned.modl" basedir="${basedir}/BLT_Build/temp_modl" />
-	</target>
-	
-	<!-- Install jar files that are necessary for the Python scripts -->
-	<target name="python.jars" >
-		<echo message="Copying jar files from ${basedir}/BLT_Build/temp_modl" />
-		<copy todir="${ignition.py.lib}/../../lib/core/common">
-			<fileset dir="${basedir}/BLT_Build/temp_modl">
-				<include name="ils-common.jar" />
-				<include name="blt-common.jar" />
-			</fileset>
-		</copy>
-		<copy todir="${ignition.py.lib}/../../lib/core/common">
-			<fileset dir="${jar.dir}">
-				<include name="jackson*.jar" />
-			</fileset>
-		</copy>
-		<copy todir="${ignition.py.lib}/../../lib/core/gateway">
-			<fileset dir="${basedir}/BLT_Build/temp_modl">
-				<include name="commons-math3-3.1.1.jar" />
-				<include name="blt-gateway.jar" />
-				<include name="block-definition.jar" />
-			</fileset>
-		</copy>
 	</target>
 	<!-- Install the Python source files -->
 	<target name="python" >
@@ -284,7 +262,7 @@
 	</target>
 
 	<!-- Installs BLT module in local Ignition gateway. Note that the gateway must be running in developer mode for this to succeed. -->
-	<target name="deploy" depends="build,python.jars,python" >
+	<target name="deploy" depends="build,python" >
 		<echo message="Installing ${BLTModule.name} on Ignition Gateway." />
 		<postmodule posturl="${local.gateway.url}" modulefile="${basedir}/BLT_Build/modules/${BLTModule.name}-module-unsigned.modl" />
 	</target>	
