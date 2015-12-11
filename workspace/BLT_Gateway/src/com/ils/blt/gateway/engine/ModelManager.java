@@ -23,6 +23,7 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
+import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.project.ProjectVersion;
@@ -52,6 +53,7 @@ public class ModelManager implements ProjectListener  {
 	private final LoggerEx log;
 	/** Access nodes by either UUID or tree path */
 	private RootNode root;
+	private final Map<Long,UUID> uuidByProjectId;
 	private final Map<ProjResKey,ProcessNode> nodesByKey; 
 	private final Map<UUID,ProcessNode> orphansByUUID;
 	private final Map<UUID,ProcessNode> nodesByUUID;
@@ -71,6 +73,7 @@ public class ModelManager implements ProjectListener  {
 		nodesByKey = new HashMap<ProjResKey,ProcessNode>();
 		orphansByUUID = new HashMap<UUID,ProcessNode>();
 		nodesByUUID = new HashMap<UUID,ProcessNode>();
+		uuidByProjectId = new HashMap<>();
 		root = new RootNode(context);
 		nodesByUUID.put(root.getSelf(), root);
 	}
@@ -413,13 +416,14 @@ public class ModelManager implements ProjectListener  {
 	// ====================== Project Listener Interface ================================
 	/**
 	 * We don't care if the new project is a staging or published version.
-	 * Analyze either project resources and update the controller.
+	 * Analyze only the staging project resources and update the controller.
 	 */
 	@Override
 	public void projectAdded(Project staging, Project published) {
 		if( staging!=null ) {
 			if( staging.isEnabled() && staging.getId()!=-1 ) {
 				long projectId = staging.getId();
+				uuidByProjectId.put(new Long(projectId), staging.getUuid());
 				log.infof("%s.projectAdded: %s (%d),staging",TAG,staging.getName(),projectId);
 				List<ProjectResource> resources = staging.getResources();
 				for( ProjectResource res:resources ) {
@@ -427,17 +431,6 @@ public class ModelManager implements ProjectListener  {
 							res.getResourceId(),res.getResourceType());
 					analyzeResource(projectId,res);
 				}
-			}
-		}
-		// This seems to be totally redundant.
-		else if( published!=null ) {
-			long projectId = published.getId();
-			log.infof("%s.projectAdded: %s (%d),published",TAG,published.getName(),projectId);
-			List<ProjectResource> resources = published.getResources();
-			for( ProjectResource res:resources ) {
-				log.infof("%s.projectAdded: resource %s (%d),type %s", TAG,res.getName(),
-						res.getResourceId(),res.getResourceType());
-				analyzeResource(projectId,res);
 			}
 		}
 	}
@@ -464,6 +457,15 @@ public class ModelManager implements ProjectListener  {
 		log.infof("%s.projectUpdated: %s (%d)  %s",TAG,diff.getName(),diff.getId(),vers.toString());
 		if( vers!=ProjectVersion.Staging ) return;  // Consider only the "Staging" version
 		long projectId = diff.getId();
+		UUID olduuid = uuidByProjectId.get(new Long(projectId));
+		if( olduuid==null ) {
+			log.warnf("%s.projectUpdated: No existing project (%d) found",TAG,projectId);
+		}
+		else if( !olduuid.equals(diff.getUuid()) ) {
+			log.warnf("%s.projectUpdated: Replacing project (%d)",TAG,projectId);
+			deleteProjectResources(projectId);
+		}
+		
 
 		List<ProjectResource> resources = diff.getResources();
 		for( ProjectResource res:resources ) {
@@ -868,7 +870,8 @@ public class ModelManager implements ProjectListener  {
 	
 	// ====================================== ProjectResourceKey =================================
 	/**
-	 * Class for keyed storage by projectId, resourceId
+	 * Class for keyed storage by projectId, resourceId. We keep the UUID for comparisons
+	 * when updates arrive. The UUID lets us know if this is a completely new project or not.
 	 */
 	private class ProjResKey {
 		private final long projectId;

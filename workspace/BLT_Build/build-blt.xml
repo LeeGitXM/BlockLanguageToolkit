@@ -2,7 +2,7 @@
 
 	<import file="${basedir}/BLT_Build/build.xml"/>
 
-	<property name="version.build" value="7" />	
+	<property name="version.build" value="10" />	
 	<!-- Change version.beta value to "" for release builds -->
 	<property name="version.beta" value="-development" />		
 	<property name="BLTModule.version" value="1.6.9.${version.build}" />
@@ -260,9 +260,31 @@
 			</fileset>
 		</copy>
 	</target>
+	<!-- Install jar files that are necessary for the Python scripts -->
+	<target name="python.jars" >
+		<echo message="Copying jar files from ${basedir}/BLT_Build/temp_modl" />
+		<copy todir="${ignition.py.lib}/../../lib/core/common">
+			<fileset dir="${basedir}/BLT_Build/temp_modl">
+				<include name="ils-common.jar" />
+				<include name="blt-common.jar" />
+			</fileset>
+		</copy>
+		<copy todir="${ignition.py.lib}/../../lib/core/common">
+			<fileset dir="${jar.dir}">
+				<include name="jackson*.jar" />
+			</fileset>
+		</copy>
+		<copy todir="${ignition.py.lib}/../../lib/core/gateway">
+			<fileset dir="${basedir}/BLT_Build/temp_modl">
+				<include name="commons-math3-3.1.1.jar" />
+				<include name="blt-gateway.jar" />
+				<include name="block-definition.jar" />
+			</fileset>
+		</copy>
+	</target>
 
 	<!-- Installs BLT module in local Ignition gateway. Note that the gateway must be running in developer mode for this to succeed. -->
-	<target name="deploy" depends="build,python" >
+	<target name="deploy" depends="build,python,python.jars" >
 		<echo message="Installing ${BLTModule.name} on Ignition Gateway." />
 		<postmodule posturl="${local.gateway.url}" modulefile="${basedir}/BLT_Build/modules/${BLTModule.name}-module-unsigned.modl" />
 	</target>	

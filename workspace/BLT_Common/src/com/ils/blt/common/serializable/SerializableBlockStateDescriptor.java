@@ -20,6 +20,7 @@ import com.ils.blt.common.block.Activity;
  */
 public class SerializableBlockStateDescriptor implements Serializable {
 	private static final long serialVersionUID = 5499297358912286066L;
+	private String className;
 	private String name;
 	private String idString = null;     // Block Id
 	private Map<String,String> attributes;
@@ -32,7 +33,8 @@ public class SerializableBlockStateDescriptor implements Serializable {
 		activities = new ArrayList<>();
 		buffer = new ArrayList<>();
 	}
-
+    public String getclassName() { return className; }
+    public void setClassName(String name) { this.className = name; }
 	public String getName() {return name;}
 	public void setName(String name) {this.name = name;}
 	public String getIdString() {return idString;}
