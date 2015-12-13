@@ -235,7 +235,7 @@ public class TagListener implements TagChangeListener   {
 			// We assume that all tags in the list have the same default provider
 			String providerName = providerNameFromPath(tagPath);
 			if( providerName.length()==0) {
-				providerName = context.getProjectManager().getProps(typicalBlock.getProjectId(), ProjectVersion.Published).getDefaultSQLTagsProviderName();
+				providerName = context.getProjectManager().getProps(typicalBlock.getProjectId(), ProjectVersion.Staging).getDefaultSQLTagsProviderName();
 				int pos = tagPath.indexOf("]");
 				if(pos>0) tagPath = tagPath.substring(pos+1);
 				tagPath = String.format("[%s]%s",providerName,tagPath);

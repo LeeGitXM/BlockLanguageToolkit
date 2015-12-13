@@ -6,6 +6,7 @@ package com.ils.blt.gateway.engine;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -25,7 +26,7 @@ public class ProcessNode implements Serializable {
 	private final Map<Long,ProcessNode> children;   // Key by resourceId
 	protected final LoggerEx log;
 	private String name;
-	protected final UUID parent;
+	protected UUID parent;
 	protected long projectId = -1;
 	protected long resourceId = -1;   // Resource set when serialized.
 	protected final UUID self;
@@ -74,7 +75,19 @@ public class ProcessNode implements Serializable {
 	public UUID getParent() { return this.parent; }
 	public long getResourceId() { return this.resourceId; }
 	public long getProjectId() {return projectId;}
+	public void setParent(UUID p) { this.parent = p; }
 	public void setProjectId(long projectId) {this.projectId = projectId;}
+	
+	/**
+	 * Create a list of descendants by recursing through the children. Add
+	 * self to the list last. This results in a list ordered bottom up.
+	 */
+	public void collectDescendants(List<ProcessNode> descendants) { 
+		for(ProcessNode child:getChildren()) {
+			child.collectDescendants(descendants);
+		}
+		descendants.add(this);
+	}
 	/**
 	 * @return the UUID of this node
 	 */

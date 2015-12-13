@@ -2,6 +2,7 @@ package com.ils.blt.gateway.wicket;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.wicket.Component;
@@ -29,9 +30,11 @@ import org.apache.wicket.model.Model;
 
 import com.ils.blt.gateway.engine.ProcessDiagram;
 import com.ils.blt.gateway.engine.ProcessNode;
+import com.ils.blt.gateway.engine.ProjectResourceKey;
 import com.ils.blt.gateway.wicket.content.Content;
 import com.ils.blt.gateway.wicket.content.EditableFolderContent;
 import com.ils.blt.gateway.wicket.content.ProcessTreeBehavior;
+import com.inductiveautomation.ignition.common.project.ProjectResource;
 
 /**
  * @see http://www.wicket-library.com/wicket-examples/nested/wicket/bookmarkable/org.apache.wicket.examples.ajax.builtin.tree.TreeTablePage?0
@@ -40,20 +43,16 @@ public class ToolkitStatusPanel extends Panel {
 	public static final long serialVersionUID = 4204748023293522204L;
     private ProcessNodeProvider provider = new ProcessNodeProvider();
     private final Content content;
+    private Map<ProjectResourceKey,ProjectResource> resourceMap;
 
-	public ToolkitStatusPanel(String id) {
+
+	public ToolkitStatusPanel(String id,Map<ProjectResourceKey,ProjectResource> map) {
 		super(id);
 		this.content = new EditableFolderContent();
+		this.resourceMap = map;
 		
 		Form<Void> form = new Form<Void>("form");
         add(form);
-        form.add(new Link<Void>("expandAll") {
-        	private static final long serialVersionUID = 1L;
-        	@Override
-            public void onClick() {
-                ProcessNodeExpansion.get().expandAll();
-            }
-        });
         form.add(new Link<Void>("collapseAll") {
         	private static final long serialVersionUID = 1L;
         	@Override
@@ -61,11 +60,11 @@ public class ToolkitStatusPanel extends Panel {
         		ProcessNodeExpansion.get().collapseAll();
         	}
         });
-        
-        form.add(new Button("clear") {
-            private static final long serialVersionUID = 1L;
-            @Override
-            public void onSubmit() {
+        form.add(new Link<Void>("expandAll") {
+        	private static final long serialVersionUID = 1L;
+        	@Override
+            public void onClick() {
+                ProcessNodeExpansion.get().expandAll();
             }
         });
         form.add(new Button("refresh") {
@@ -73,6 +72,15 @@ public class ToolkitStatusPanel extends Panel {
             @Override
             public void onSubmit() {
             }
+        });
+        form.add(new Button("synchronize") {
+        	private static final long serialVersionUID = 1L;
+        	@Override
+        	public void onSubmit() {
+        		ProcessNodeSynchronizer sync = new ProcessNodeSynchronizer(resourceMap);
+        		sync.removeExcessNodes();
+        		sync.createMissingResources();
+        	}
         });
         
         AbstractTree<ProcessNode> tree = createTree("tree",provider);
@@ -86,7 +94,7 @@ public class ToolkitStatusPanel extends Panel {
 			private static final long serialVersionUID = 3537127058517061095L;
 			protected void populateItem(ListItem<ProcessDiagram> item) {
 				ProcessDiagram diagram = item.getModelObject();
-				String label = String.format("%3d.%4d: %s", diagram.getProjectId(),diagram.getResourceId(),diagram.getName());
+				String label = String.format("%3d.%4d: %s\t(%s)", diagram.getProjectId(),diagram.getResourceId(),diagram.getName(),diagram.getState().name());
 				item.add(new Label("name",label));
 			}
 		});

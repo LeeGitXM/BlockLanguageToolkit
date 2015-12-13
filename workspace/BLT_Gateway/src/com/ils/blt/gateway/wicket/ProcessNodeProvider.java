@@ -1,7 +1,5 @@
 package com.ils.blt.gateway.wicket;
 
-
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;

@@ -1211,6 +1211,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				diagram.setResourceId(newId);
 				diagram.setId(UUID.randomUUID());
 				diagram.setDirty(false);    // Will become dirty as soon as we add a block
+				diagram.setState(DiagramState.DISABLED);
 
 				String json = serializeDiagram(diagram);	
 				logger.debugf("%s.DiagramCreateAction. json=%s",TAG,json);

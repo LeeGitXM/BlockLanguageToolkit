@@ -5,7 +5,9 @@ package com.ils.blt.gateway;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.wicket.markup.html.WebMarkupContainer;
 
@@ -13,6 +15,7 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ModelManager;
+import com.ils.blt.gateway.engine.ProjectResourceKey;
 import com.ils.blt.gateway.persistence.ToolkitRecordListener;
 import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.ils.blt.gateway.wicket.ToolkitStatusPanel;
@@ -42,9 +45,10 @@ import com.inductiveautomation.ignition.gateway.web.models.INamedTab;
 public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	public static String TAG = "BLTGatewayHook";
 	public static String BUNDLE_NAME = "block";// Properties file is block.properties
+	private static GatewayContext context = null;
+	
 	private final String prefix = "BLT";
 	private transient GatewayRpcDispatcher dispatcher = null;
-	private transient GatewayContext context = null;
 	private transient ModelManager mmgr = null;
 	private final LoggerEx log;
 	private ToolkitRecord record = null;
@@ -66,7 +70,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	//       This comes before startup().
 	@Override
 	public void setup(GatewayContext ctxt) {
-		this.context = ctxt;
+		context = ctxt;
 
 		// NOTE: Get serialization exception if ModelResourceManager is saved as a class member
 		//       Exception is thrown when we try to incorporate a StatusPanel
@@ -100,7 +104,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	    	sem.setModulePath(key, pythonPath);
 	    }
 	    // Load existing projects - skip the global project and any that are disabled.
-	    List<Project> projects = this.context.getProjectManager().getProjectsFull(ProjectVersion.Published);
+	    List<Project> projects = context.getProjectManager().getProjectsFull(ProjectVersion.Staging);
 	    for( Project project:projects ) {
 	    	if( !project.isEnabled() || project.getId()==-1 ) continue;
 	    	List<ProjectResource> resources = project.getResources();
@@ -149,11 +153,28 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		public ToolkitStatus() {
 			super("ToolkitStatus", "BLT.title");
 		}
-		
+
 		@Override
 		public WebMarkupContainer getPanel(String id) {
-			//return new SimpleStatusPanel(id);
-			return new ToolkitStatusPanel(id);
+			// We need to pass something serializable to the panel, thus the list of resources
+			// We also need to make sure this is up-to-date.
+			Map<ProjectResourceKey,ProjectResource> resourceMap = new HashMap<>();
+			List<Project> projects = context.getProjectManager().getProjectsFull(ProjectVersion.Staging);
+			for( Project project:projects ) {
+				if( !project.isEnabled() || project.getId()==-1 ) continue;
+				List<ProjectResource> reslist = project.getResources();
+				for( ProjectResource res:reslist ) {
+					if( res.getModuleId().equalsIgnoreCase(BLTProperties.MODULE_ID)) {
+						if( res.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE) || 
+								res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ||
+								res.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE) ||
+								res.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)   ) {
+							resourceMap.put(new ProjectResourceKey(project.getId(),res.getResourceId()),res);
+						}
+					}
+				}
+			}
+			return new ToolkitStatusPanel(id,resourceMap);
 		}
 	}
 	

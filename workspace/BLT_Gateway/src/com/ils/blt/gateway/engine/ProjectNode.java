@@ -28,7 +28,7 @@ public class ProjectNode extends ProcessNode {
 		super("",rootNode.self,me);
 		this.projectId = projId;
 		this.root = rootNode;
-		setName(root.context.getProjectManager().getProjectName(projectId, ProjectVersion.Published));
+		setName(root.context.getProjectManager().getProjectName(projectId, ProjectVersion.Staging));
 	}
 
 	public void addChild(ProjectNode child)    { 

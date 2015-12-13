@@ -90,7 +90,7 @@ public class RootNode extends ProcessNode {
 			}
 		}
 		else {
-			log.warnf("%s.allNodesForProject: No nodes found for project %d", TAG,queryProjectId.longValue());
+			log.debugf("%s.allNodesForProject: No nodes found for project %d", TAG,queryProjectId.longValue());
 		}
 		return nodes;
 	}

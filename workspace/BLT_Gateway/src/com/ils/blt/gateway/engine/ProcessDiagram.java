@@ -566,9 +566,12 @@ public class ProcessDiagram extends ProcessNode {
 	}
 	
 	private String replaceProviderInPath(String path,String providerName) {
-		int pos = path.indexOf("]");
-		if( pos>0 ) path = path.substring(pos+1);
-		return String.format("[%s]%s", providerName,path);
+		if( !path.isEmpty() ) {
+			int pos = path.indexOf("]");
+			if( pos>0 ) path = path.substring(pos+1);
+			if( !path.isEmpty() ) path =  String.format("[%s]%s", providerName,path);
+		}
+		return path;
 	}
 	
 	/**

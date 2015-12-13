@@ -9,7 +9,6 @@ import java.util.UUID;
 
 import org.apache.wicket.MetaDataKey;
 import org.apache.wicket.Session;
-import org.apache.wicket.model.AbstractReadOnlyModel;
 
 import com.ils.blt.gateway.engine.ProcessNode;
 
@@ -32,15 +31,14 @@ public class ProcessNodeExpansion implements Set<ProcessNode>, Serializable {
 	private Set<UUID> ids = new HashSet<UUID>();
 	private boolean inverse = false;
 	
-
-	public void expandAll() {
-		ids.clear();
-		inverse = true;
-	}
-
 	public void collapseAll(){
 		ids.clear();
 		inverse = false;
+	}
+	
+	public void expandAll() {
+		ids.clear();
+		inverse = true;
 	}
 
 	@Override
