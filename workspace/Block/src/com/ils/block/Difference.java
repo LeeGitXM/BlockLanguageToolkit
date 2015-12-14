@@ -3,6 +3,7 @@
  */
 package com.ils.block;
 
+import java.util.Date;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
@@ -14,6 +15,7 @@ import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
+import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
@@ -157,6 +159,18 @@ public class Difference extends AbstractProcessBlock implements ProcessBlock {
 			double bb = Double.NaN;
 			if( difference == null ) {
 				try {
+					// Handle dates
+					if( a.getValue() instanceof Date || b.getValue() instanceof Date ) {
+						if( !(b.getValue() instanceof Date) || !(b.getValue() instanceof Date)  ) {
+							difference = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("If one input is a Date, then both must be",Quality.Level.Bad));
+						}
+						else {
+							aa = ((Date)(a.getValue())).getTime();
+							bb = ((Date)(b.getValue())).getTime();
+							aa = aa/1000.;  // Convert to seconds
+							bb = bb/1000.; 
+						}
+					}
 					aa = Double.parseDouble(a.getValue().toString());
 					try {
 						bb = Double.parseDouble(b.getValue().toString());
