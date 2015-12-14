@@ -22,3 +22,5 @@ Tagset: DualFeed
 Step: Scripting Interface
 10:03:00 setProperty($DIAGRAM,$TARGET,"Limit","2020")
 10:03:20 Assert: getProperty($DIAGRAM,$TARGET,"Limit")     = "2020"  "Limit property is updated by script"
+10:03:30 setProperty($DIAGRAM,$TARGET,"Limit","1955")
+10:03:50 Assert: getProperty($DIAGRAM,$TARGET,"Limit")     = "1955"  "Limit property is updated again by script"
