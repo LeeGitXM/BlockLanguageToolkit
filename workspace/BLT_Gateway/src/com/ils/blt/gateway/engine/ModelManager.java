@@ -941,8 +941,11 @@ public class ModelManager implements ProjectListener  {
 						parent = nodesByUUID.get(parentuuid);
 					}
 				}
-				log.debugf("%s.resolveOrphans: %s RECONCILED with parent (%s)",TAG,orphan.getName(),parent.getName());
-				if( parent!=null )reconciledOrphans.add(orphan);
+				
+				if( parent!=null ) {
+					log.debugf("%s.resolveOrphans: %s RECONCILED with parent (%s)",TAG,orphan.getName(),parent.getName());
+					reconciledOrphans.add(orphan);
+				}
 			}
 		}
 		for( ProcessNode orphan:reconciledOrphans) {
