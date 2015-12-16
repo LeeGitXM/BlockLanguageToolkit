@@ -25,6 +25,9 @@ setBlockProperty($DIAGRAM,$DATAPUMP,"LiveOnStart","TRUE")
 assert: getBlockProperty($DIAGRAM,$DATAPUMP,"LiveOnStart") = True "Get LiveOnStart in DATAPUMP-3"
 setBlockProperty($DIAGRAM,$DATAPUMP,"LiveOnStart","FALSE")
 
+Step: Diagram Name from Block
+assert: getDiagramNameForBlock($DIAGRAM,$DATAPUMP) = "routing" "Obtain diagram name from blockId"
+
 Step: Blocks in Diagram
 assert: blocksInDiagram($DIAGRAM) contains "INHIBITOR-551" "Inhibitor-551 is in diagram"
 assert: blocksInDiagram($DIAGRAM) contains "RoutingParameter" "RountingParameter is in diagram"

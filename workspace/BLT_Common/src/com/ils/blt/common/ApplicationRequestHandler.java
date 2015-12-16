@@ -252,7 +252,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 					BLTProperties.MODULE_ID, "getDiagramForBlock",blockId);
 		}
 		catch(Exception ge) {
-			log.infof("%s.getDiagramState: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.getDiagramForBlock: GatewayException (%s)",TAG,ge.getMessage());
 		}
 		return result;
 	}

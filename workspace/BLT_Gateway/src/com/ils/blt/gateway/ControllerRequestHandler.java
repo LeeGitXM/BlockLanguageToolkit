@@ -400,16 +400,15 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
 		return descriptors;
 	}
+	// Search all diagrams for the target block.
 	@Override
 	public SerializableResourceDescriptor getDiagramForBlock(String blockId) {
-		SerializableResourceDescriptor result = null;
 		UUID uuid = makeUUID(blockId);
-		ProcessNode block = controller.getProcessNode(uuid);
-		if( block!=null ) {
-			ProcessNode diagram = controller.getProcessNode(block.getParent());
-			if( diagram!=null ) result = diagram.toResourceDescriptor();
+		List<ProcessDiagram> diagrams = controller.getDelegate().getDiagrams();
+		for(ProcessDiagram diagram:diagrams) {
+			if( diagram.getBlock(uuid)!=null) return diagram.toResourceDescriptor();
 		}
-		return result;
+		return null;
 	}
 	
 	/**
