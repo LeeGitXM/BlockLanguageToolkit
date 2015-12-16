@@ -25,7 +25,7 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
  */
 public class ResourceDeleteManager {
 	private static final String TAG = "ResourceDeleteManager";
-	private static final LoggerEx logger = LogUtil.getLogger(ResourceDeleteManager.class.getPackage().getName());
+	private static final LoggerEx log = LogUtil.getLogger(ResourceDeleteManager.class.getPackage().getName());
 	private static DesignerContext context = null;
 	private static NodeStatusManager statusManager = null;
 	private final AbstractResourceNavTreeNode root;
@@ -61,7 +61,7 @@ public class ResourceDeleteManager {
 		Project diff = context.getProject().getEmptyCopy();
 		for( ProjectResource pr:resources) {
 			if( pr.getResourceId()==BLTProperties.ROOT_RESOURCE_ID) continue; 
-			logger.infof("%s.deleteInProject: Adding %d to delete list",TAG,pr.getResourceId());
+			log.infof("%s.deleteInProject: Adding %d to delete list",TAG,pr.getResourceId());
 			diff.deleteResource(pr.getResourceId(), true);
 			statusManager.deleteResource(pr.getResourceId());  // Prepares the node for deletion
 		}
@@ -72,7 +72,7 @@ public class ResourceDeleteManager {
 				DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ...");  // Do not publish
 			}
 			catch(GatewayException ge) {
-				logger.warnf("%s.deleteInProject: Exception deleting project resources under %d (%s)",TAG,rootId,ge.getMessage());
+				log.warnf("%s.deleteInProject: Exception deleting project resources under %d (%s)",TAG,rootId,ge.getMessage());
 			}
 			
 			// Mark these as "clean" in the current project so that we don't save again.
@@ -80,7 +80,7 @@ public class ResourceDeleteManager {
 			project.applyDiff(diff,false);      // Apply diff, not dirty
 		}
 		else {
-			logger.errorf("%s.deleteInProject: Resource %d not deleted",TAG,rootId);
+			log.errorf("%s.deleteInProject: Resource %d not deleted",TAG,rootId);
 		}
 		
 	}
@@ -112,7 +112,7 @@ public class ResourceDeleteManager {
 			for(ProjectResource pr:resources) {
 				long rid = pr.getResourceId();
 				context.deleteResource(rid);
-				logger.infof("%s.DeleteNodeAction: deleted resource %d",TAG,rid);
+				log.infof("%s.DeleteNodeAction: deleted resource %d",TAG,rid);
 			}
 		}
 //		else {

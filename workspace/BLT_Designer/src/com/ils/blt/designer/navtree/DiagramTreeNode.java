@@ -67,7 +67,7 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
 public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavTreeNodeInterface, ProjectChangeListener  {
 	private static final String TAG = "DiagramTreeNode";
 	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
-	protected final LoggerEx logger = LogUtil.getLogger(getClass().getPackage().getName());
+	protected final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	protected DesignerContext context;
 	private boolean dirty = false;     
 	protected final long resourceId;
@@ -121,7 +121,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	protected void initPopupMenu(JPopupMenu menu, TreePath[] paths,List<AbstractNavTreeNode> selection, int modifiers) {
 		setupEditActions(paths, selection);
 		if( this.getParent()==null ) {
-			logger.errorf("%s.initPopupMenu: ERROR: Diagram (%d) has no parent",TAG,hashCode());
+			log.errorf("%s.initPopupMenu: ERROR: Diagram (%d) has no parent",TAG,hashCode());
 		}
 		// If there is a diagram open that is dirty, turn off some of the options.
 		boolean cleanView = true;
@@ -170,7 +170,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	 *  conclude that the workspace is not dirty.
 	 */
 	public void closeAndCommit() {
-		logger.infof("%s.closeAndCommit: res %d",TAG,resourceId);
+		log.infof("%s.closeAndCommit: res %d",TAG,resourceId);
 		if( workspace.isOpen(resourceId) ) {
 			DesignableContainer c = workspace.findDesignableContainer(resourceId);
 			BlockDesignableContainer container = (BlockDesignableContainer)c;
@@ -187,7 +187,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	 *  If the diagram associated with this node is open, save its state.
 	 */
 	public void saveOpenDiagram() {
-		logger.infof("%s.saveOpenDiagram: res %d",TAG,resourceId);
+		log.infof("%s.saveOpenDiagram: res %d",TAG,resourceId);
 		// If the diagram is open on a tab, call the workspace method to update the project resource
 		// from the diagram view. This method handles re-paint of the background.
 
@@ -282,7 +282,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		}
 		String oldName = getProjectResource().getName();
 		try {
-			logger.infof("%s.onEdit: alterName from %s to %s",TAG,oldName,newTextValue);
+			log.infof("%s.onEdit: alterName from %s to %s",TAG,oldName,newTextValue);
 			context.structuredRename(resourceId, newTextValue);
 			executionEngine.executeOnce(new ResourceUpdateManager(workspace,getProjectResource()));
 			// If it's open, change its name. Otherwise we sync on opening.
@@ -313,9 +313,9 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	 */
 	@Override
 	public void projectUpdated(Project diff) {
-		logger.debug(TAG+".projectUpdated "+diff.getDescription());
+		log.debug(TAG+".projectUpdated "+diff.getDescription());
 		if (diff.isResourceDirty(resourceId) && !diff.isResourceDeleted(resourceId)) {
-			logger.infof("%s.projectUpdated, setting name ...",TAG);
+			log.infof("%s.projectUpdated, setting name ...",TAG);
 			setName(diff.getResource(resourceId).getName());
 			refresh();
 		}
@@ -334,7 +334,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	@Override
 	public void projectResourceModified(ProjectResource res,ResourceModification changeType) {
 		if (res.getResourceId() == resourceId) {
-			logger.debugf("%s.projectResourceModified.%s: %s(%d), res %s(%d)",TAG,changeType.name(),getName(),this.resourceId,res.getName(),res.getResourceId());
+			log.debugf("%s.projectResourceModified.%s: %s(%d), res %s(%d)",TAG,changeType.name(),getName(),this.resourceId,res.getName(),res.getResourceId());
 			if( res.getName()==null || !res.getName().equals(getName()) ) {
 				setName(res.getName());
 				setText(res.getName());
@@ -349,11 +349,11 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			logger.info("============================ Diagram (Designer) ========================");
+			log.info("============================ Diagram (Designer) ========================");
 			listDiagramComponents();
-			logger.info("============================ Diagram(Gateway) ==========================");
+			log.info("============================ Diagram(Gateway) ==========================");
 			listDiagramGatewayComponents();
-			logger.info("========================================================================");
+			log.info("========================================================================");
 		}
 	}
     private class ExportDiagramAction extends BaseAction {
@@ -383,7 +383,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
     					File output = dialog.getFilePath();
     					boolean success = false;
     					if( output!=null ) {
-    						logger.debugf("%s.actionPerformed: dialog returned %s",TAG,output.getAbsolutePath());
+    						log.debugf("%s.actionPerformed: dialog returned %s",TAG,output.getAbsolutePath());
     						try {
     							if(output.exists()) {
     								output.setWritable(true); 
@@ -565,7 +565,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 				refresh();
 			} 
 			catch (Exception ex) {
-				logger.warn(String.format("%s.setStateAction: ERROR: %s",TAG,ex.getMessage()),ex);
+				log.warn(String.format("%s.setStateAction: ERROR: %s",TAG,ex.getMessage()),ex);
 				ErrorUtil.showError(TAG+" Exception setting state",ex);
 				
 			}
@@ -601,11 +601,11 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			ProcessDiagramView view = (ProcessDiagramView)tab.getModel();
 			for( Block blk:view.getBlocks()) {
 				ProcessBlockView pbv = (ProcessBlockView)blk;
-				logger.info("Block: "+pbv.getName()+"\t"+pbv.getClassName()+"\t("+pbv.getId().toString()+")");
+				log.info("Block: "+pbv.getName()+"\t"+pbv.getClassName()+"\t("+pbv.getId().toString()+")");
 			}
 		}
 		else {
-			logger.info("     Diagram must be open in tab ...");
+			log.info("     Diagram must be open in tab ...");
 		}
 	}
 
@@ -626,16 +626,16 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 					Map<String,String> attributes = descriptor.getAttributes();
 					String clss = attributes.get(BLTProperties.BLOCK_ATTRIBUTE_CLASS);
 					String uid = attributes.get(BLTProperties.BLOCK_ATTRIBUTE_ID);
-					logger.info("Block: "+descriptor.getName()+"\t"+clss+"\t("+uid+")");
+					log.info("Block: "+descriptor.getName()+"\t"+clss+"\t("+uid+")");
 				}
 			} 
 			catch (Exception ex) {
-				logger.warnf("%s. startAction: ERROR: %s",TAG,ex.getMessage(),ex);
+				log.warnf("%s. startAction: ERROR: %s",TAG,ex.getMessage(),ex);
 				ErrorUtil.showError(TAG+" Exception listing diagram components",ex);
 			}
 		}
 		else {
-			logger.info("     Diagram must be open in tab ...");
+			log.info("     Diagram must be open in tab ...");
 		}
 	}
 	/**
@@ -656,7 +656,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	 * that is structurally different than what is being shown in the designer UI.
 	 */
 	public void updateUI(boolean drty) {
-		logger.debugf("%s.setDirty: dirty = %s",TAG,(drty?"true":"false"));
+		log.debugf("%s.setDirty: dirty = %s",TAG,(drty?"true":"false"));
 		setItalic(drty);
 		if( saveAction!=null ) saveAction.setEnabled(drty);
 		refresh();
