@@ -61,7 +61,7 @@ public class ResourceDeleteManager {
 		Project diff = context.getProject().getEmptyCopy();
 		for( ProjectResource pr:resources) {
 			if( pr.getResourceId()==BLTProperties.ROOT_RESOURCE_ID) continue; 
-			log.infof("%s.deleteInProject: Adding %d to delete list",TAG,pr.getResourceId());
+			log.tracef("%s.deleteInProject: Adding %d to delete list",TAG,pr.getResourceId());
 			diff.deleteResource(pr.getResourceId(), true);
 			statusManager.deleteResource(pr.getResourceId());  // Prepares the node for deletion
 		}

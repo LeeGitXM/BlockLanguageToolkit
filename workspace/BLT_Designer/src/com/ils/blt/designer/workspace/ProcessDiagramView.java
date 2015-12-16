@@ -403,7 +403,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	 * update themselves.
 	 */
 	public void registerChangeListeners() {
-		log.infof("%s.registerChangeListeners: %s...",TAG,getName());
+		log.debugf("%s.registerChangeListeners: %s...",TAG,getName());
 		NotificationHandler handler = NotificationHandler.getInstance();
 		// Connections. Register the upstream anchors (merely a convention).
 		// And while we're at it, update the connection state based on the latest
@@ -444,7 +444,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	 * on notifications from the Gateway.
 	 */
 	public void unregisterChangeListeners() {
-		log.infof("%s.unregisterChangeListeners: ...",TAG);
+		log.debugf("%s.unregisterChangeListeners: ...",TAG);
 		NotificationHandler handler = NotificationHandler.getInstance();
 		// Connections. Un-register the upstream anchors (these are what was originally registered).
 		for( Connection cxn:connections) {

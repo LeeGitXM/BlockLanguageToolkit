@@ -170,7 +170,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	 *  conclude that the workspace is not dirty.
 	 */
 	public void closeAndCommit() {
-		log.infof("%s.closeAndCommit: res %d",TAG,resourceId);
+		log.debugf("%s.closeAndCommit: res %d",TAG,resourceId);
 		if( workspace.isOpen(resourceId) ) {
 			DesignableContainer c = workspace.findDesignableContainer(resourceId);
 			BlockDesignableContainer container = (BlockDesignableContainer)c;
