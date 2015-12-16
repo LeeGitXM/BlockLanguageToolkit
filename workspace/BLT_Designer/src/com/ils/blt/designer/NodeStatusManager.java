@@ -100,20 +100,21 @@ public class NodeStatusManager  {
 	 * @param resourceId
 	 */
 	public void createResourceStatus(AbstractResourceNavTreeNode node,long parentResourceId,long resourceId) {
-		log.debugf("%s.createResourceStatus(%d:%d)",TAG,parentResourceId,resourceId);
 		if(node.getProjectResource()==null) throw new IllegalArgumentException("No project resource");
 		Long key = new Long(resourceId);
 		StatusEntry se = statusByResourceId.get(key);
 		if( se == null ) {
 			DiagramState s = handler.getDiagramState(projectId, key);
-			log.debugf("%s.createResourceStatus: new status entry %s",TAG,s);
-			statusByResourceId.put(key,new StatusEntry(node,parentResourceId,s));
+			se = new StatusEntry(node,parentResourceId,s);
+			statusByResourceId.put(key,se);
 		}
 		// We had a "provisional" entry 
 		else if( se.getNode()==null ) {
 			se.setNode(node);
 			se.setParent(parentResourceId);
 		}
+		log.debugf("%s.createResourceStatus: %s (%d:%d) %s",TAG,(node==null?"":node.getName()),parentResourceId,resourceId,
+				                                           (se.getState()==null?"":se.getState().name()));
 	}
 	/**
 	 * For a parent, note that a dirty child has been saved 
@@ -159,7 +160,7 @@ public class NodeStatusManager  {
 		if( se!=null ) {
 			result = se.getState();
 		}
-		log.debugf("%s.getResourceState: %d = %s",TAG,resourceId,result.name());
+		log.tracef("%s.getResourceState: %s(%d) = %s",TAG,(se==null?"null":se.getName()),resourceId,result.name());
 		return result;
 	}	
 	/**
@@ -223,7 +224,6 @@ public class NodeStatusManager  {
 	 * We explicitly synchronize with the gateway, but cache the result.
 	 */
 	public void setResourceState(long resourceId,DiagramState bs) {
-		log.debugf("%s.setResourceState: %d = %s",TAG,resourceId,bs.name());
 		handler.setDiagramState(projectId, new Long(resourceId), bs.name());
 		StatusEntry se = statusByResourceId.get(resourceId);
 		if( se!=null ) {
@@ -233,8 +233,8 @@ public class NodeStatusManager  {
 		else {
 			se = new StatusEntry(bs);
 			statusByResourceId.put(resourceId,se);
-			log.debugf("%s.setResourceState: no existing StatusEntry",TAG);
 		}
+		log.tracef("%s.setResourceState: %s(%d) = %s",TAG,se.getName(),resourceId,bs.name());
 	}
 
 	/**
@@ -394,6 +394,7 @@ public class NodeStatusManager  {
 		public void clearDirtyChildCount() {dirtyChildren=0;}
 		public void decrementDirtyChildCount() {dirtyChildren-=1;}
 		public int getDirtyChildCount() {return dirtyChildren;}
+		public String getName() { return (node==null?"":node.getName()); }
 		public AbstractResourceNavTreeNode getNode() { return node; }
 		public void setNode(AbstractResourceNavTreeNode antn) {
 			ProjectResource pr = antn.getProjectResource();
@@ -421,7 +422,8 @@ public class NodeStatusManager  {
 		public void setState(DiagramState s) { this.state = s; }
 		@Override
 		public String toString() {
-			String dump = String.format("%s(%d) was %s, parent: %d, dirty children %d",node.getName(),resourceId,(dirty?"dirty":"clean"),parentId,dirtyChildren);
+			String dump = String.format("%s(%d) %s, parent: %d, %s, %d dirty children",getName(),resourceId,state.name(),parentId,
+					(dirty?"dirty":"clean"),dirtyChildren);
 			return dump;
 		}
 	}

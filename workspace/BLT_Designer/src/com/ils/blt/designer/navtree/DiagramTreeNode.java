@@ -203,6 +203,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			view.registerChangeListeners();
 		}
 	}
+
 	@Override
 	public boolean confirmDelete(List<? extends AbstractNavTreeNode> selections) {
 		// We only care about the first

@@ -54,6 +54,7 @@ import com.ils.blt.designer.applicationConfiguration.ApplicationConfigurationDia
 import com.ils.blt.designer.config.FamilyConfigurationDialog;
 import com.ils.blt.designer.config.ToolkitConfigurationDialog;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
+import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
@@ -67,6 +68,7 @@ import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.UndoManager;
+import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
@@ -768,7 +770,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 								String json = serializeApplication(sa);
 								res.setName(sa.getName());
 								res.setData(json.getBytes());
-								new ResourceUpdateManager(workspace,res).run();	
+								new ResourceUpdateManager(workspace,res).run();
 							}
 						}
 						else {
@@ -1504,24 +1506,31 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 
 		// We need to set the state both locally and in the gateway
 		public void actionPerformed(ActionEvent e) {
+			// We don't know which state we're coming from for the various diagrams.
+			// Save off the aux data before we change state.
+			executionEngine.executeOnce(new AuxiliaryDataSaveManager(app));
+			// Tell the gateway to set the state of all diagrams under the application
 			handler.setApplicationState(app.getName(), state.name());
-			if( state.name().equals(DiagramState.ISOLATED)) {
-				executionEngine.executeOnce(new AuxiliaryDataSaveManager(app));
-			}
-			// Set the nodes in the navtree
+			
+			// Set the nodes in the navtree.
 			recursivelyUpdateNodeState(app,state);
 		}
-		
+		// Set the state locally to match. It's redundant to inform the Gateway
 		public void recursivelyUpdateNodeState(AbstractNavTreeNode node,DiagramState diagramState) {
 			if( node==null) return;
 			if( node instanceof DiagramTreeNode ) {
 				DiagramTreeNode dtn = (DiagramTreeNode)node;
-				DiagramState oldState = statusManager.getResourceState(resourceId);
-				if( !oldState.equals(diagramState)) {
-					updateState(dtn.getProjectResource(),diagramState);
-					dtn.setIcon(dtn.getIcon());
-					dtn.refresh();
+				statusManager.setResourceState(dtn.getResourceId(),diagramState);
+				
+				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(dtn.getResourceId());
+				if( tab!=null ) {
+					ProcessDiagramView view = (ProcessDiagramView)(tab.getModel());
+					view.setState(diagramState);
+					tab.setBackground(view.getBackgroundColorForState());
 				}
+				dtn.setIcon(dtn.getIcon());
+				dtn.refresh();
+				dtn.setDirty(false);
 			}
 			@SuppressWarnings("unchecked")
 			Enumeration<AbstractNavTreeNode>  childWalker = node.children();
@@ -1596,19 +1605,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			}
 		}
 	}
-	/**
-	 * If there is a change, then we need to update the resource
-	 * and inform the Gateway
-	 * @param res
-	 */
-	private void updateState(ProjectResource res,DiagramState state) {
-		if( res!=null ) {
-			// Inform the gateway of the state change
-			new ResourceUpdateManager(workspace,res).run();	
-			statusManager.setResourceState(res.getResourceId(),state);
-			setDirty(false);
-		}
-	}
+
 	
 	// Save this node and all its descendants.
 	private class TreeSaveAction extends BaseAction {

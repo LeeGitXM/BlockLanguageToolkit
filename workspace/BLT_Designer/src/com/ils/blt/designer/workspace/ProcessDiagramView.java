@@ -403,7 +403,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	 * update themselves.
 	 */
 	public void registerChangeListeners() {
-		log.infof("%s.registerChangeListeners: ...",TAG);
+		log.infof("%s.registerChangeListeners: %s...",TAG,getName());
 		NotificationHandler handler = NotificationHandler.getInstance();
 		// Connections. Register the upstream anchors (merely a convention).
 		// And while we're at it, update the connection state based on the latest
@@ -501,7 +501,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		String stateString = value.getValue().toString();
 		DiagramState ds = DiagramState.valueOf(stateString);
 		if( !ds.equals(this.state)) {
-			log.infof("%s.valueChange: new state %s",TAG,value.getValue().toString());
+			log.infof("%s.valueChange: %s state = %s",TAG,getName(),value.getValue().toString());
 			setState(ds);
 			super.fireStateChanged();
 		}
