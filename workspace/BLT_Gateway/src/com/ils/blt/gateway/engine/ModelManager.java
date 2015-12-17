@@ -282,16 +282,20 @@ public class ModelManager implements ProjectListener  {
 		ProcessBlock start = getBlock(diagram,blockId);
 		traverseDownstream(diagram,start,blocks);
 		List<SerializableBlockStateDescriptor> results = new ArrayList<>();
+		int index = 0;
 		for( ProcessBlock block:blocks ) {
+			index++;
+			if( index<2 ) continue;   // Skip the start block
 			results.add(block.toDescriptor());
+			
 		}
 		return results;
 	}
 	
 	private void traverseDownstream(ProcessDiagram diagram,ProcessBlock block,List<ProcessBlock> blocks) {
 		if( block!=null && !blocks.contains(block)) {
+			blocks.add(block);
 			for(ProcessBlock blk:diagram.getDownstreamBlocks(block)) {
-				blocks.add(block);
 				traverseDownstream(diagram,blk,blocks);
 			}
 		}
@@ -302,15 +306,18 @@ public class ModelManager implements ProjectListener  {
 		ProcessBlock start = getBlock(diagram,blockId);
 		traverseUpstream(diagram,start,blocks);
 		List<SerializableBlockStateDescriptor> results = new ArrayList<>();
+		int index = 0;
 		for( ProcessBlock block:blocks ) {
-			results.add(block.toDescriptor());
+			index++;
+			if( index<2 ) continue;  // skil start block
+ 			results.add(block.toDescriptor());
 		}
 		return results;
 	}
 	private void traverseUpstream(ProcessDiagram diagram,ProcessBlock block,List<ProcessBlock> blocks) {
 		if( block!=null && !blocks.contains(block)) {
+			blocks.add(block);
 			for(ProcessBlock blk:diagram.getUpstreamBlocks(block)) {
-				blocks.add(block);
 				traverseUpstream(diagram,blk,blocks);
 			}
 		}
