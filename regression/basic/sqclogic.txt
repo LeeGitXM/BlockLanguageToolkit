@@ -1,0 +1,22 @@
+#
+# Simple test of a sum block
+#
+DIAGRAM="app75/family75/sqclogic"
+FILTER="HIGHLIMITTIMEWINDOW"
+SQC="SQCLOGICSQC"
+Show: browser $DIAGRAM
+resetDiagram ($DIAGRAM)
+
+tagset: TripleFeed MemoryTags/MJKFeed1 MemoryTags/MJKSQCStdDev MamoryTags/MJKSQCTarget
+
+Test: SQC Block Feeds a Logic Filter
+Step: Upstream Properties
+Tagset: TripleFeed
+10:00:00 10.0, 1.0, 12.0
+10:00:20 Assert: getProperty($DIAGRAM,$SQC,"SampleSize")  = "10" "SampleSize property is set"
+10:00:20 Assert: getProperty($DIAGRAM,$SQC,"NumberOfStandardDeviations")  = 3.0  "Number of standard deviations is set"
+10:00:20 Assert: getProperty($DIAGRAM,$SQC,"LimitType")  = "HIGH" "Limit type property is set"
+10:00:20 Assert: getState($DIAGRAM,$SQC)     = "UNKNOWN"  "State is UNKNOWN"
+10:00:20 Assert: getInternalAttribute($DIAGRAM,$SQC,"Mean (target)")     = 0.01  "Mean exists"
+10:00:20 Assert: getInternalAttribute($DIAGRAM,$SQC,"StandardDeviation") = 1.0  "Standard deviation exists"
+
