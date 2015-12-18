@@ -17,6 +17,7 @@ run: readwrite.txt
 run: routing.txt
 run: setproperty.txt
 run: sqc.txt
+run: sqclogic.txt
 run: sum.txt
 run: timedlimits.txt
 run: truthpulse.txt

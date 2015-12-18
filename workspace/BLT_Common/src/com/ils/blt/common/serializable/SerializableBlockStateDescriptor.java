@@ -33,7 +33,7 @@ public class SerializableBlockStateDescriptor implements Serializable {
 		activities = new ArrayList<>();
 		buffer = new ArrayList<>();
 	}
-    public String getclassName() { return className; }
+    public String getClassName() { return className; }
     public void setClassName(String name) { this.className = name; }
 	public String getName() {return name;}
 	public void setName(String name) {this.name = name;}

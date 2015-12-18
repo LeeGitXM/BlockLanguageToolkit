@@ -5,7 +5,6 @@
 log: [DATE] [TIME] Start Testing ...
 # Script aliases - module is with respect to script directory
 # -- these are scripts of general interest
-script: getDiagramNameForBlock blockProxy.getDiagramForBlock(dpath,name)
 script: getInternalAttribute blockProxy.internalAttribute(dpath,name,att)
 script: getInternalBufferSize blockProxy.internalBufferSize(dpath,name)
 script: getInternalBufferValue blockProxy.internalBufferValue(dpath,name,att,row)

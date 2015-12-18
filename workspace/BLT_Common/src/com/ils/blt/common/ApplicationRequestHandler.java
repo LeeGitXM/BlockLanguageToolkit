@@ -489,32 +489,12 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	public List<SerializableResourceDescriptor> listDiagramDescriptors(String projectName) {
 		log.debugf("%s.listDiagramDescriptors for %s ...",TAG,projectName);
 		List<SerializableResourceDescriptor> result = new ArrayList<>();
-		List<String> jsonList = new ArrayList<String>();
 		try {
-			jsonList = (List<String>)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+			result = (List<SerializableResourceDescriptor>)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
 					BLTProperties.MODULE_ID, "listDiagramDescriptors",projectName);
 		}
 		catch(Exception ge) {
 			log.infof("%s.listDiagramDescriptors: GatewayException (%s)",TAG,ge.getMessage());
-		}
-		if( jsonList!=null) {
-
-			ObjectMapper mapper = new ObjectMapper();
-			for(String json:jsonList) {
-				try {
-					SerializableResourceDescriptor entry = mapper.readValue(json, SerializableResourceDescriptor.class);
-					result.add(entry);
-				} 
-				catch (JsonParseException jpe) {
-					log.warnf("%s: listDiagramDescriptors parse exception (%s)",TAG,jpe.getLocalizedMessage());
-				}
-				catch(JsonMappingException jme) {
-					log.warnf("%s: listDiagramDescriptors mapping exception (%s)",TAG,jme.getLocalizedMessage());
-				}
-				catch(IOException ioe) {
-					log.warnf("%s: listDiagramDescriptors IO exception (%s)",TAG,ioe.getLocalizedMessage());
-				}
-			}
 		}
 		return result;
 	}
