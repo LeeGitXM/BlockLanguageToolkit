@@ -31,6 +31,7 @@ import com.ils.blt.gateway.ControllerRequestHandler;
 import com.ils.blt.gateway.tag.TagListener;
 import com.ils.common.BoundedBuffer;
 import com.ils.common.persistence.ToolkitProperties;
+import com.ils.common.tag.ProviderRegistry;
 import com.ils.common.tag.TagReader;
 import com.ils.common.tag.TagUtility;
 import com.ils.common.tag.TagValidator;
@@ -263,7 +264,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		this.tagReader = new TagReader(context);
 		tagListener.start(context);
 		this.tagValidator = new TagValidator(context);
-		this.tagWriter = new TagWriter(context);
+		this.tagWriter = new TagWriter(context,new ProviderRegistry());
 		//tagWriter.initialize(context);
 		this.notificationThread = new Thread(this, "BlockExecutionController");
 		log.debugf("%s START - notification thread %d ",TAG,notificationThread.hashCode());
