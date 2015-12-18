@@ -556,7 +556,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 */
 	@Override
 	public SerializableBlockStateDescriptor toDescriptor() {
-		SerializableBlockStateDescriptor descriptor = new SerializableBlockStateDescriptor();
+		SerializableBlockStateDescriptor descriptor = getInternalStatus();
 		descriptor.setClassName(getClassName());
 		descriptor.setName(getName());
 		descriptor.setIdString(getBlockId().toString());

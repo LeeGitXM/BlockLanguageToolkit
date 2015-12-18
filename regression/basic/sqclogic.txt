@@ -2,7 +2,6 @@
 # Simple test of a sum block
 #
 DIAGRAM="app75/family75/sqclogic"
-FILTER="HIGHLIMITTIMEWINDOW"
 SQC="SQCLOGICSQC"
 Show: browser $DIAGRAM
 resetDiagram ($DIAGRAM)
