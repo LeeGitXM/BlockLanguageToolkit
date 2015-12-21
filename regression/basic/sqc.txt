@@ -10,7 +10,7 @@
 #  Block is TRUE if a rule has been violated
 #
 DIAGRAM="app75/family75/sqc"
-Show: browser $DIAGRAM
+Show: diagram $DIAGRAM
 
 # SQC Blocks have custom names
 S1="SQC-1"

@@ -6,7 +6,7 @@ Test: Simple Test of a Final Diagnosis
 DIAGRAM="app75/family75/finaldiagnosis"
 FINAL_DIAGNOSIS="FDbbbb"
 
-Show: browser $DIAGRAM
+Show: diagram $DIAGRAM
 
 notification: HiLimitOutput notificationKey.construct($DIAGRAM,"HIGHLIMITOBSERVATION-867","out")
 

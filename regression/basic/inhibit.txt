@@ -12,7 +12,7 @@ tag: InhibitorOutput2 MemoryTags/InhibitorOutput2
 tagset: InhibitInput MemoryTags/InhibitorFeed1 MemoryTags/InhibitorFeed2 MemoryTags/InhibitorFinalDiagnosis MemoryTags/StringDateInput MemoryTags/DateInput
 
 Tagset: InhibitInput
-Show: browser $DIAGRAM
+Show: diagram $DIAGRAM
 resetDiagram ($DIAGRAM)
 
 Test: Inhibit Block with FinalDiagnosis

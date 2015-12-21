@@ -3,7 +3,7 @@
 # Time window = 5 mins, interval = 1 min
 #
 DIAGRAM="app75/family75/logicfilter"
-Show: browser $DIAGRAM
+Show: diagram $DIAGRAM
 F1="LOGICFILTER-129"
 F2="LOGICFILTER-790"
 F3="LOGICFILTER-141"

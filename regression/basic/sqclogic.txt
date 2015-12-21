@@ -3,7 +3,7 @@
 #
 DIAGRAM="app75/family75/sqclogic"
 SQC="SQCLOGICSQC"
-Show: browser $DIAGRAM
+Show: diagram $DIAGRAM
 resetDiagram ($DIAGRAM)
 
 tagset: TripleFeed MemoryTags/MJKFeed1 MemoryTags/MJKSQCStdDev MamoryTags/MJKSQCTarget

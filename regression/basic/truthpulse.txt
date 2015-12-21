@@ -2,7 +2,7 @@
 # Simple test of a sum block
 #
 DIAGRAM="app75/family75/truthpulse"
-Show: browser $DIAGRAM
+Show: diagram $DIAGRAM
 PULSE = "TRUTHVALUEPULSER"
 
 tag: Output MemoryTags/PulseOutput

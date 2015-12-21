@@ -3,7 +3,7 @@
 # -- 3 of 5 limit is 10
 #
 DIAGRAM="app75/family75/highlimit"
-Show: browser $DIAGRAM
+Show: diagram $DIAGRAM
 H1="INPUT-561-173"
 H2="HIGHLIMITSAMPLECOUNT-660"
 notification: limit notificationKey.construct($DIAGRAM,$H2,"out")

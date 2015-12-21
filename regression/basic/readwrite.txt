@@ -2,7 +2,7 @@
 # Simple test of an input and readout
 #
 DIAGRAM="app75/family75/readwrite"
-Show: browser $DIAGRAM
+Show: diagram $DIAGRAM
 
 LabDataDate="MemoryTags/LabDataTime"
 LabDataStringDate="MemoryTags/LabDataStringTime"

@@ -4,7 +4,7 @@
 DIAGRAM = "app75/family75/routing"
 DATAPUMP="DATAPUMP-3"
 QUALVALUE="QUALVALUE-712"
-Show: browser $DIAGRAM
+Show: diagram $DIAGRAM
 resetDiagram ($DIAGRAM)
 
 # Script aliases used for this test

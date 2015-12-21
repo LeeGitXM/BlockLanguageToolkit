@@ -2,7 +2,7 @@
 # Test of a compare block with date inputs.
 #
 DIAGRAM="app75/family75/datecompare"
-Show: browser $DIAGRAM
+Show: diagram $DIAGRAM
 resetDiagram ($DIAGRAM)
 tag: comparison MemoryTags/ComparisonOut5
 tag: ComparisonOut4 MemoryTags/ComparisonOut4

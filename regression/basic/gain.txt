@@ -3,7 +3,7 @@
 #
 DIAGRAM="app75/family75/gain"
 COMP="COMPARE-354"
-Show: browser $DIAGRAM
+Show: diagram $DIAGRAM
 resetDiagram ($DIAGRAM)
 
 notification: compareGain  notificationKey.construct($DIAGRAM,$COMP,"out")

@@ -2,7 +2,7 @@
 # Test of action and arithmetic blocks
 #
 DIAGRAM="app75/family75/arithmetic"
-Show: browser $DIAGRAM
+Show: diagram $DIAGRAM
 resetDiagram ($DIAGRAM)
 
 tag: ActionOut      MemoryTags/ActionOut

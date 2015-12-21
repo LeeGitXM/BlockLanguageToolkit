@@ -2,7 +2,7 @@
 # Test of various classes of observation blocks
 #
 DIAGRAM="app75/family75/observations"
-Show: browser $DIAGRAM
+Show: diagram $DIAGRAM
 resetDiagram ($DIAGRAM)
 
 Tagset: SingleBoolean

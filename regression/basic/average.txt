@@ -2,7 +2,7 @@
 # Simple test of average blocks
 #
 DIAGRAM="app75/family75/average"
-Show: browser $DIAGRAM
+Show: diagram $DIAGRAM
 
 tag: Average1    MemoryTags/AverageOut1
 tag: Average2    MemoryTags/AverageOut2

@@ -2,7 +2,7 @@
 # Test of limit blocks with time window
 #
 DIAGRAM="app75/family75/timedlimits"
-Show: browser $DIAGRAM
+Show: diagram $DIAGRAM
 resetDiagram ($DIAGRAM)
 
 Tagset: SingleDouble

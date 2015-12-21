@@ -2,7 +2,7 @@
 # Simple test of a single input
 #
 DIAGRAM="app75/family75/newt"
-Show: browser $DIAGRAM
+Show: diagram $DIAGRAM
 
 tag: Feed  MemoryTags/DiagramFeed
 tagset: SingleFeed Feed

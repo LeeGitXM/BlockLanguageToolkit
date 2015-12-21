@@ -3,7 +3,7 @@
 #
 DIAGRAM="app75/family75/sum"
 OBS="OUTOFRANGEOBSERVATION-276"
-Show: browser $DIAGRAM
+Show: diagram $DIAGRAM
 resetDiagram ($DIAGRAM)
 
 notification: sumObservation notificationKey.construct($DIAGRAM,$OBS,"out")
