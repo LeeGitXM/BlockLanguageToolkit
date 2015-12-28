@@ -9,7 +9,7 @@ tagset: SingleFeed Feed
 
 Test: Write to a single tag
 Step: Increament an integer tag
-Tagset: SingleBoolean
+Tagset: SingleFeed
 10:00:00 1
 10:00:20 2
 10:00:30 3
