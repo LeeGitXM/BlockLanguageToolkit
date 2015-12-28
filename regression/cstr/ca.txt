@@ -1,0 +1,46 @@
+#
+# Test of the scripting interface
+#
+DIAGRAM = "CstrProductQuality/CstrCaProblem/CstrCaProblem"
+SQCDIAGNOSIS="CaSqc"
+Show: diagram $DIAGRAM
+resetDiagram ($DIAGRAM)
+
+# Script aliases used for this test
+script: getDiagramNameForBlock blockProxy.getDiagramForBlock(dpath,name)
+script: blocksDownstream interfaces.listBlocksDownstreamOf(dpath,bname)
+script: blocksForTag interfaces.listBlocksForTag(tagpath)
+script: blocksInDiagram interfaces.listBlocksInDiagram(dpath)
+script: blocksOfClass interfaces.listBlocksOfClass(dpath,clss)
+script: blocksOfClassDownstream interfaces.listBlocksOfClassDownstream(dpath,name,clss)
+script: blocksOfClassUpstream interfaces.listBlocksOfClassUpstream(dpath,name,clss)
+script: blocksUpstream interfaces.listBlocksUpstreamOf(dpath,bname)
+script: getBlockProperty blockProxy.getBlockProperty(dpath,block,property)
+script: pathForBlock   interfaces.pathForBlock(dpath,bname)
+script: setBlockProperty blockProxy.setBlockProperty(dpath,block,property,value)
+script: sinksForSource interfaces.listSinksForSource(dpath,bname)
+script: sourcesForSink interfaces.listSourcesForSink(dpath,bname)
+
+Test: CA Problem
+Step: Diagram Name from Block
+assert: getDiagramNameForBlock($DIAGRAM,$SQCDIAGNOSIS) = "CstrCaProblem" "Obtain diagram name from blockId"
+
+Step: Blocks in Diagram
+assert: blocksInDiagram($DIAGRAM) contains "CaLow9Of9" "CaLow9Of9 is in diagram"
+assert: count of blocksInDiagram($DIAGRAM) = 29 "29 blocks in diagram"
+
+Step: Blocks of Class
+assert: blocksOfClass($DIAGRAM,"com.ils.block.SQC") contains "CaLow9Of9" "CaLow9Of9 is an SQC"
+assert: blocksOfClass($DIAGRAM,"com.ils.block.SQC") contains "CaHigh9Of9" "CaHigh9Of9 is an SQC"
+assert: count of blocksOfClass($DIAGRAM,"com.ils.block.SQC") = 6 "6 SQC blocks"
+assert: blocksOfClassUpstream($DIAGRAM,$SQCDIAGNOSIS,"com.ils.block.SQC") contains "CaLow9Of9" "CaLow9Of9 is upstream of SQC Diagnosis"
+
+Step: Downstream of Block
+assert: blocksDownstream($DIAGRAM,$SQCDIAGNOSIS) contains "CaProblemForCstr" "Final diagnosis is downstream of diagnosis"
+assert: count of blocksDownstream($DIAGRAM,$SQCDIAGNOSIS) = 3  "3 blocks downstream of command SQC Diagnosis"
+
+Step: Upstream of Block 
+assert: blocksUpstream($DIAGRAM,$SQCDIAGNOSIS) contains "CaHigh9Of9" "CaHigh9Of9 is upstream of SQC Diagnosis"
+assert: blocksUpstream($DIAGRAM,$SQCDIAGNOSIS) contains "CaLow9Of9" "CaLow9Of9 is upstream of SQC Diagnosis"
+assert: blocksUpstream($DIAGRAM,$SQCDIAGNOSIS) contains "GdlNumericEntryPoint_133" "GdlNumericEntryPoint_133 (LabData) is upstream of SQC Diagnosis"
+assert: count of blocksUpstream($DIAGRAM,$SQCDIAGNOSIS) = 17 "17 blocks upstream of SQC Diagnosis"

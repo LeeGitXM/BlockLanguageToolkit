@@ -100,7 +100,7 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 	public void reset() {
 		super.reset();
 		qualityInput = TruthValue.UNKNOWN;
-		value = null;
+		value = new BasicQualifiedValue("");
 	}
 	/**
 	 * Disconnect from the timer thread.
@@ -157,8 +157,6 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 		timer.updateWatchdog(dog);  // pet dog
 		log.debugf("%s.acceptValue got %s for %s", TAG,qv.getValue().toString(),blockId);
 	}
-	
-	
 	/**
 	 * The coalescing time has expired. Place the value on the output, but only if 
 	 * quality indicators are good. The quality port indicates the quality where 
@@ -185,7 +183,6 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 			notifyOfStatus();
 		}
 	}
-	
 	/**
 	 * Send status update notification for our last latest state. We only update the value notification
 	 * if the quality is good.
@@ -202,7 +199,6 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 			}
 		}
 	}
-
 	/**
 	 * @return a block-specific description of internal status. Add quality to the default list
 	 */
@@ -212,7 +208,10 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 		Map<String,String> attributes = descriptor.getAttributes();
 		attributes.put("Quality", qualityInput.name());
 		attributes.put("Result", state.name());
-		attributes.put("Value", value.getValue().toString());
+		if(value.getValue()==null )
+			attributes.put("Value", "None");
+		else
+			attributes.put("Value", value.getValue().toString());
 		return descriptor;
 	}
 	/**

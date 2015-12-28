@@ -1,0 +1,8 @@
+# Copyright 2015 ILS Automation. All rights reserved.
+# 
+# This is a generic cleanup script for testing basic_diagrams 
+# with the Test Frame utility.
+setTimeFactor(1.0)
+setStateForApplication("CstrProductQuality","ACTIVE")
+status: teardown complete
+log: [DATE] [TIME] test suite complete.
