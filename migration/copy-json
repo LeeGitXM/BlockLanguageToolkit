@@ -6,4 +6,4 @@ SVN=${SVN_REPO}/EMChemicals/Migration/
 JSON=${GIT_REPO}/blt/migration/json
 mkdir -p $JSON/g2
 mkdir -p $JSON/ignition
-cp ${SVN}/Vistalon/Exports/DiagnosticToolkit/json/*.json $JSON/g2
+cp ${SVN}/Vistalon/Exports\ From\ G2/DiagnosticToolkit/json/*.json $JSON/g2
