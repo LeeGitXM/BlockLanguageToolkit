@@ -24,6 +24,7 @@ import com.ils.blt.test.common.MockDiagramScriptingInterface;
 import com.ils.blt.test.gateway.mock.MockDiagram;
 import com.ils.blt.test.gateway.mock.MockInputBlock;
 import com.ils.blt.test.gateway.mock.MockOutputBlock;
+import com.ils.common.tag.ProviderRegistry;
 import com.ils.common.tag.TagReader;
 import com.ils.common.tag.TagWriter;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
@@ -58,7 +59,7 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 		this.controller = BlockExecutionController.getInstance();
 		this.context = cntx;
 		this.requestHandler = ControllerRequestHandler.getInstance();
-		this.tagWriter = new TagWriter(context);
+		this.tagWriter = new TagWriter(context,new ProviderRegistry());
 		this.tagReader = new TagReader(context);
 	}
 	/**
