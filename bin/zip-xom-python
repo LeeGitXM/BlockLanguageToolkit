@@ -33,7 +33,8 @@ cp $BLD/blt-common.jar common
 cp -a $EXT/ils-common.jar common
 cp -a $EXT/ils-common.jar common
 cp -a $EXT/jackson* common
-cp -a $EXT/jackson* common
+cp -a $BLD/blt-common*.gz common
+cp -a $BLD/jackson*.gz common
 mkdir -p $SVN/python-lib
 cd ../..
 cp -a lib $SVN/python-lib
