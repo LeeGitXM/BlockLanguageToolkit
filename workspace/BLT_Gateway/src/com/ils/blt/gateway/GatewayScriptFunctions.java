@@ -116,6 +116,15 @@ public class GatewayScriptFunctions   {
 	 * @param diagramId identifier of the diagram owning the block, a String
 	 * @param blockId identifier of the block within the diagram, a String
 	 * @param propertyName name of the property for which a value is to be returned
+	 * @return the binding (e.g. tag path)  of a specified block property.
+	 */
+	public static Object getPropertyBinding(String diagramId,String blockId,String propertyName) {
+		return handler.getPropertyBinding(diagramId,blockId,propertyName);
+	}
+	/**
+	 * @param diagramId identifier of the diagram owning the block, a String
+	 * @param blockId identifier of the block within the diagram, a String
+	 * @param propertyName name of the property for which a value is to be returned
 	 * @return the value of a specified block property.
 	 */
 	public static Object getPropertyValue(String diagramId,String blockId,String propertyName) {

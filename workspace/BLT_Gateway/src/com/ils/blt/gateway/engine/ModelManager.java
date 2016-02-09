@@ -165,6 +165,7 @@ public class ModelManager implements ProjectListener  {
 		}
 		return cxn;
 	}
+	public GatewayContext getContext() { return this.context; }
 	
 	/**
 	 * Get a specified diagram by its Id. 
@@ -789,7 +790,7 @@ public class ModelManager implements ProjectListener  {
 		ProcessNode head = nodesByKey.get(key);
 		if( head!=null ) {
 			List<ProcessNode> nodesToDelete = new ArrayList<>();
-			head.collectDescendants(nodesToDelete);
+			head.collectDescendants(nodesToDelete);  // "head" is in the list
 			for(ProcessNode node:nodesToDelete ) {
 				if( node instanceof ProcessDiagram ) {
 					ProcessDiagram diagram = (ProcessDiagram)node;
@@ -800,8 +801,11 @@ public class ModelManager implements ProjectListener  {
 							controller.removeSubscription(block, prop);
 						}
 					}
+					ProjectResourceKey diagramkey = new ProjectResourceKey(projectId,node.getResourceId());
+					nodesByKey.remove(diagramkey);
 				}
-
+				
+				
 				if( node.getParent()!=null ) {
 					ProcessNode parent = nodesByUUID.get(node.getParent());
 					if( parent!=null ) {
@@ -811,11 +815,9 @@ public class ModelManager implements ProjectListener  {
 						}
 					}
 				}
-
 				// Finally remove from the node maps
 				nodesByUUID.remove(node.getSelf());
 			}
-			nodesByKey.remove(key);
 		}
 	}
 	// Delete all process nodes for a given project.

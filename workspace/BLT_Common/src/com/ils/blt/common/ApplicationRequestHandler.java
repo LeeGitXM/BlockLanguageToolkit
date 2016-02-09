@@ -341,7 +341,25 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 		return result;
 	}
-	
+	/**
+	 * @param diagramId identifier of the diagram owning the block, a String
+	 * @param blockId identifier of the block within the diagram, a String
+	 * @param propertyName name of the property for which a value is to be returned
+	 * @return the binding (tag path) of a specified block property. If there is no binding,
+	 *         return an empty string.
+	 */
+	public Object getPropertyBinding(String diagramId,String blockId,String propertyName) {
+		Object result = null;
+		try {
+			result = GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "getPropertyBinding",diagramId,blockId,propertyName);
+			log.debugf("%s.getPropertyBinding ... %s",TAG,result.toString());
+		}
+		catch(Exception ge) {
+			log.infof("%s.getPropertyBinding: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		return result;
+	}
 	/**
 	 * @param diagramId identifier of the diagram owning the block, a String
 	 * @param blockId identifier of the block within the diagram, a String

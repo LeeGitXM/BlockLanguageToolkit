@@ -1,6 +1,7 @@
 package com.ils.blt.gateway.wicket;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -28,13 +29,16 @@ import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.gateway.engine.ProcessDiagram;
 import com.ils.blt.gateway.engine.ProcessNode;
 import com.ils.blt.gateway.engine.ProjectResourceKey;
 import com.ils.blt.gateway.wicket.content.Content;
 import com.ils.blt.gateway.wicket.content.EditableFolderContent;
 import com.ils.blt.gateway.wicket.content.ProcessTreeBehavior;
+import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
+import com.inductiveautomation.ignition.common.project.ProjectVersion;
 
 /**
  * @see http://www.wicket-library.com/wicket-examples/nested/wicket/bookmarkable/org.apache.wicket.examples.ajax.builtin.tree.TreeTablePage?0
@@ -43,13 +47,11 @@ public class ToolkitStatusPanel extends Panel {
 	public static final long serialVersionUID = 4204748023293522204L;
     private ProcessNodeProvider provider = new ProcessNodeProvider();
     private final Content content;
-    private Map<ProjectResourceKey,ProjectResource> resourceMap;
 
 
-	public ToolkitStatusPanel(String id,Map<ProjectResourceKey,ProjectResource> map) {
+	public ToolkitStatusPanel(String id) {
 		super(id);
 		this.content = new EditableFolderContent();
-		this.resourceMap = map;
 		
 		Form<Void> form = new Form<Void>("form");
         add(form);
@@ -77,9 +79,10 @@ public class ToolkitStatusPanel extends Panel {
         	private static final long serialVersionUID = 1L;
         	@Override
         	public void onSubmit() {
-        		ProcessNodeSynchronizer sync = new ProcessNodeSynchronizer(resourceMap);
+        		ProcessNodeSynchronizer sync = new ProcessNodeSynchronizer();
         		sync.removeExcessNodes();
         		sync.createMissingResources();
+        		sync.removeOrphans();
         	}
         });
         
@@ -175,7 +178,6 @@ public class ToolkitStatusPanel extends Panel {
         return content.newContentComponent(id, ttree, model);
     }
     
-    
 	private class ProcessNodeExpansionModel extends AbstractReadOnlyModel<Set<ProcessNode>> {
 		private static final long serialVersionUID = 4327444737693656454L;
 
@@ -185,4 +187,5 @@ public class ToolkitStatusPanel extends Panel {
         }
     }
   
+	
 }

@@ -258,6 +258,9 @@ public class GatewayRpcDispatcher   {
 		}
 		return json;
 	}
+	public Object getPropertyBinding(String diagramId,String blockId,String propertyName) {
+		return requestHandler.getPropertyBinding(diagramId, blockId, propertyName);
+	}
 	
 	public Object getPropertyValue(String diagramId,String blockId,String propertyName) {
 		return requestHandler.getPropertyValue(diagramId, blockId, propertyName);

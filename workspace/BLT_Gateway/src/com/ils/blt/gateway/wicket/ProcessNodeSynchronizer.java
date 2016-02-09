@@ -1,16 +1,24 @@
 package com.ils.blt.gateway.wicket;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ModelManager;
+import com.ils.blt.gateway.engine.ProcessDiagram;
 import com.ils.blt.gateway.engine.ProcessNode;
 import com.ils.blt.gateway.engine.ProjectResourceKey;
+import com.ils.blt.gateway.engine.RootNode;
+import com.inductiveautomation.ignition.common.model.ApplicationScope;
+import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
+import com.inductiveautomation.ignition.common.project.ProjectVersion;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
 /**
  * Reconcile any differences between the ModelManager and the ProjectManager.
@@ -26,11 +34,11 @@ public class ProcessNodeSynchronizer {
     /**
      * Constructor.
      */
-    public ProcessNodeSynchronizer(Map<ProjectResourceKey,ProjectResource> map) {
+    public ProcessNodeSynchronizer() {
     	this.log = LogUtil.getLogger(getClass().getPackage().getName());
     	this.modelManager = BlockExecutionController.getInstance().getDelegate();
     	this.nodesToDelete = new ArrayList<>();
-    	this.resourceMap = map;
+    	this.resourceMap = createResourceMap(modelManager.getContext());
     }
 
     /**
@@ -69,10 +77,65 @@ public class ProcessNodeSynchronizer {
     	}
     	log.infof("%s.removeExcessNodes ==========================       Complete      ==================================", TAG);
     }
-   
-    private void checkChildren(ProcessNode node) {
-    	for(ProcessNode child: node.getChildren()) {
-    		child.getResourceId();
+    
+    /**
+     * Iterate through the ProcessNodes known to the model.
+     * Delete any that do not have parents and are not root nodes.
+     * Delete the accompanying resource. Hopefully this refers only
+     * to a legacy issue and will never happen again.
+     */
+    public void removeOrphans() {
+    	log.infof("%s.removeOrphans ======================== Searching Process Nodes ================================", TAG);
+    	nodesToDelete.clear();
+        List<ProcessDiagram> diagrams = modelManager.getDiagrams();
+    	RootNode root = modelManager.getRootNode();
+    	for( ProcessDiagram child:diagrams) {
+    		if( !child.getSelf().equals(root.getSelf()) && modelManager.getProcessNode(child.getParent())==null ) {
+    			ProjectResourceKey key = new ProjectResourceKey(child.getProjectId(),child.getResourceId());
+    			nodesToDelete.add(key);
+    			log.infof("%s.removeOrphans: DELETING node %d:%d (has no parent)", TAG,key.getProjectId(),key.getResourceId());
+    		}
     	}
+    	// Actually remove the resource.
+    	for(ProjectResourceKey key:nodesToDelete) {
+    		modelManager.deleteResource(key.getProjectId(), key.getResourceId());
+    		// Delete the current node and all its children.
+    		GatewayContext context = modelManager.getContext();
+    		Project project = context.getProjectManager().getProject(key.getProjectId(), ApplicationScope.GATEWAY, ProjectVersion.Staging);
+    		if( project!=null ) {
+    			project.deleteResource(key.getResourceId(), true); // Mark as dirty
+    			try {
+    				context.getProjectManager().saveProject(project, null, null, "Removing orphan resource", false);
+    			}
+    			catch(Exception ex) {
+    				log.warnf("%s.removeOrphans: Failed to save project when deleting node %d:%d (%s)", TAG,key.getProjectId(),key.getResourceId(),
+    						   ex.getMessage());
+    			}
+    		}
+
+    	}
+    	log.infof("%s.removeOrphans ==========================       Complete      ==================================", TAG);
+    }
+
+    private Map<ProjectResourceKey,ProjectResource> createResourceMap(GatewayContext context) {
+    	// We need to pass something serializable to the panel, thus the list of resources
+    	// We also need to make sure this is up-to-date.
+    	Map<ProjectResourceKey,ProjectResource> map = new HashMap<>();
+    	List<Project> projects = context.getProjectManager().getProjectsFull(ProjectVersion.Staging);
+    	for( Project project:projects ) {
+    		if( !project.isEnabled() || project.getId()==-1 ) continue;
+    		List<ProjectResource> reslist = project.getResources();
+    		for( ProjectResource res:reslist ) {
+    			if( res.getModuleId().equalsIgnoreCase(BLTProperties.MODULE_ID)) {
+    				if( res.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE) || 
+    						res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ||
+    						res.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE) ||
+    						res.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)   ) {
+    					map.put(new ProjectResourceKey(project.getId(),res.getResourceId()),res);
+    				}
+    			}
+    		}
+    	}
+    	return map;
     }
 }

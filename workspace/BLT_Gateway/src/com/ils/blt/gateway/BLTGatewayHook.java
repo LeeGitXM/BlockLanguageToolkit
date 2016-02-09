@@ -156,25 +156,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 
 		@Override
 		public WebMarkupContainer getPanel(String id) {
-			// We need to pass something serializable to the panel, thus the list of resources
-			// We also need to make sure this is up-to-date.
-			Map<ProjectResourceKey,ProjectResource> resourceMap = new HashMap<>();
-			List<Project> projects = context.getProjectManager().getProjectsFull(ProjectVersion.Staging);
-			for( Project project:projects ) {
-				if( !project.isEnabled() || project.getId()==-1 ) continue;
-				List<ProjectResource> reslist = project.getResources();
-				for( ProjectResource res:reslist ) {
-					if( res.getModuleId().equalsIgnoreCase(BLTProperties.MODULE_ID)) {
-						if( res.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE) || 
-								res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ||
-								res.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE) ||
-								res.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)   ) {
-							resourceMap.put(new ProjectResourceKey(project.getId(),res.getResourceId()),res);
-						}
-					}
-				}
-			}
-			return new ToolkitStatusPanel(id,resourceMap);
+			return new ToolkitStatusPanel(id);
 		}
 	}
 	

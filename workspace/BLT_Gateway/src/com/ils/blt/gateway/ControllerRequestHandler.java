@@ -465,6 +465,23 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		return descriptor;
 	}
 	@Override
+	public Object getPropertyBinding(String diagramId, String blockId,String propertyName) {
+		BlockProperty property = null;
+		UUID diagramUUID;
+		UUID blockUUID;
+		try {
+			diagramUUID = UUID.fromString(diagramId);
+			blockUUID = UUID.fromString(blockId);
+			property = getBlockProperty(diagramUUID,blockUUID,propertyName);
+		}
+		catch(IllegalArgumentException iae) {
+			log.warnf("%s.getPropertyBinding: Diagram or block UUID string is illegal (%s,%s),",TAG,diagramId,blockId);
+		}
+		String binding = property.getBinding();
+		if( binding==null ) binding = "";
+		return binding;
+	}
+	@Override
 	public Object getPropertyValue(String diagramId, String blockId,String propertyName) {
 		BlockProperty property = null;
 		UUID diagramUUID;
