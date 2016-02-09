@@ -4,8 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.ils.blt.client.ClientScriptExtensionManager;
 import com.ils.blt.common.script.ScriptConstants;
-import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.SortedListModel;
@@ -19,7 +19,7 @@ public class ApplicationConfigurationController {
 	private final SerializableApplication application;       // The application that we update
 	protected final DesignerContext context;
 	private final ApplicationConfigurationDialog dialog;
-	private final ScriptExtensionManager extensionManager = ScriptExtensionManager.getInstance();
+	private final ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
 	private final SortedListModel<String> outputListModel;
 	protected final LoggerEx log;
 	

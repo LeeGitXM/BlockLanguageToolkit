@@ -18,11 +18,13 @@ import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.connection.Connection;
+import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
+import com.ils.blt.gateway.GatewayScriptExtensionManager;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.project.ProjectVersion;
@@ -58,6 +60,7 @@ public class ModelManager implements ProjectListener  {
 	private final Map<UUID,ProcessNode> orphansByUUID;
 	private final Map<UUID,ProcessNode> nodesByUUID;
 	private final BlockExecutionController controller = BlockExecutionController.getInstance();
+	private final GatewayScriptExtensionManager extensionManager = GatewayScriptExtensionManager.getInstance();
 	
 	/**
 	 * Initially we query the gateway context to discover what resources exists. After that
@@ -576,6 +579,9 @@ public class ModelManager implements ProjectListener  {
 				addToHierarchy(projectId,diagram);
 				diagram.createBlocks(sd);
 				diagram.updateConnections(sd);
+				// 	Invoke any extension scripts
+				extensionManager.runScript(context.getScriptManager(), ScriptConstants.DIAGRAM_CLASS_NAME, 
+										ScriptConstants.NODE_CREATE_SCRIPT, diagram.getSelf().toString());
 			}
 			else if(diagram.getProjectId() != projectId) {
 				// The same UUID, but a different project, is a different resource

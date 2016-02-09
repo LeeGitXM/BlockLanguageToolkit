@@ -16,12 +16,13 @@ import javax.swing.JMenuItem;
 import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
 
+import com.ils.blt.client.ClientScriptExtensionManager;
 import com.ils.blt.client.component.diagview.DiagramViewer;
 import com.ils.blt.client.component.recmap.RecommendationMap;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.ApplicationScriptFunctions;
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.common.script.ScriptExtensionManager;
+import com.ils.blt.common.script.AbstractScriptExtensionManager;
 import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
 import com.ils.blt.designer.search.BLTSearchProvider;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
@@ -167,12 +168,15 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 			
 		    // Initialize all the script modules from parameters stored in the ORM.
 			// We use all combinations of classes/flavors.
-		    ScriptExtensionManager sem = ScriptExtensionManager.getInstance();
+		    ClientScriptExtensionManager sem = ClientScriptExtensionManager.getInstance();
 		    for( String flavor: sem.getFlavors() ) {
 		    	for(String clss: sem.getClassNames() ) {
-		    		String key = ScriptExtensionManager.makeKey(clss, flavor);
+		    		String key = AbstractScriptExtensionManager.makeKey(clss, flavor);
 			    	String pythonPath = appRequestHandler.getToolkitProperty(key);
-			    	if( pythonPath!=null ) sem.addScript(clss,flavor, pythonPath);
+			    	if( pythonPath!=null ) {
+			    		sem.setModulePath(key, pythonPath);
+			    		sem.addScript(clss,flavor, pythonPath);
+			    	}
 			    }
 		    }
 		}

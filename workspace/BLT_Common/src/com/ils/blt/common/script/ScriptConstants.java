@@ -13,7 +13,9 @@ public interface ScriptConstants   {
 	// block classes. Here are the "className" keys that we use for extensions
 	public final static String APPLICATION_CLASS_NAME  = "com.ils.application";
 	public final static String FAMILY_CLASS_NAME       = "com.ils.family";
+	public final static String DIAGRAM_CLASS_NAME      = "com.ils.diagram";
 	// There are a pair of scripts for each class with extensions. 
+	public final static String NODE_CREATE_SCRIPT   = "node-create-script";
 	public final static String PROPERTY_GET_SCRIPT     = "property-get-script";
 	public final static String PROPERTY_RENAME_SCRIPT  = "property-rename-script";
 	public final static String PROPERTY_SET_SCRIPT     = "property-set-script";

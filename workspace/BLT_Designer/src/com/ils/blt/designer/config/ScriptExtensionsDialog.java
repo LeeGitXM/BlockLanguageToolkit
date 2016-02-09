@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved.
+ *   (c) 2014-2016  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.designer.config;
@@ -28,39 +28,40 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import net.miginfocom.swing.MigLayout;
-
+import com.ils.blt.client.ClientScriptExtensionManager;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.BlockDescriptor;
-import com.ils.blt.common.block.PalettePrototype;
+import com.ils.blt.common.script.AbstractScriptExtensionManager;
 import com.ils.blt.common.script.ScriptConstants;
-import com.ils.blt.common.script.ScriptExtensionManager;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
+import net.miginfocom.swing.MigLayout;
+
 /**
- * Display a dialog to configure attributes that are toolkit-wide.
+ * Display a dialog to configure scripts that extend what the
+ * block language toolkit normally does.
  */
-public class ToolkitConfigurationDialog extends ConfigurationDialog  { 
-	private final static String TAG = "ToolkitConfigurationDialog";
+public class ScriptExtensionsDialog extends ConfigurationDialog  { 
+	private final static String TAG = "ScriptExtensionsDialog";
 	private static final long serialVersionUID = 2882399976824334427L;
 	private final static String FILE_CHOOSER_NAME = "FileChoser";
 	private final int DIALOG_HEIGHT = 360;
 	private final int DIALOG_WIDTH = 400;
 	private JPanel scriptPanel = null;
 	private final ApplicationRequestHandler handler;
-	private final ScriptExtensionManager sem;
+	private final ClientScriptExtensionManager sem;
 	private final Preferences prefs;
 	private JFileChooser fc = null;
 	private JButton importButton = null;
 	private final Map<String,AuxInterfacePanel> classPanels;
 
-	public ToolkitConfigurationDialog(Frame frame,DesignerContext ctx) {
+	public ScriptExtensionsDialog(Frame frame,DesignerContext ctx) {
 		super(ctx);
 		this.handler = new ApplicationRequestHandler();
-		this.sem = ScriptExtensionManager.getInstance();
+		this.sem = ClientScriptExtensionManager.getInstance();
 		this.classPanels = new HashMap<>();
-		this.setTitle(rb.getString("Toolkit.Title"));
+		this.setTitle(rb.getString("Extensions.Title"));
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));
 		this.prefs = Preferences.userRoot().node(BLTProperties.PREFERENCES_NAME);
         initialize();
@@ -92,7 +93,12 @@ public class ToolkitConfigurationDialog extends ConfigurationDialog  {
 		for( BlockDescriptor desc:descriptors ) {
 			log.tracef("%s.createScriptPanel: block class = %s",TAG,desc.getBlockClass());
 			addSeparator(panel,desc.getEmbeddedLabel());
-			interfacePanel = new AuxInterfacePanel("","","");
+			if(desc.getBlockClass().equalsIgnoreCase(ScriptConstants.DIAGRAM_CLASS_NAME) ) {
+				interfacePanel = new AuxInterfacePanel("");  // Has create script only
+			}
+			else {
+				interfacePanel = new AuxInterfacePanel("","","");
+			}
 			panel.add(interfacePanel, "skip,growx,push");
 			classPanels.put(desc.getBlockClass(), interfacePanel);
 		}
@@ -106,15 +112,18 @@ public class ToolkitConfigurationDialog extends ConfigurationDialog  {
 		for( String clss:classPanels.keySet()) {
 			AuxInterfacePanel panel = classPanels.get(clss);
 			// Query and update for each flavor
-			key = ScriptExtensionManager.makeKey(clss,ScriptConstants.PROPERTY_GET_SCRIPT); 
+			key = AbstractScriptExtensionManager.makeKey(clss,ScriptConstants.PROPERTY_GET_SCRIPT); 
 			value = handler.getToolkitProperty(key);
 			if (value!=null ) panel.updateGetField(value);
-			key = ScriptExtensionManager.makeKey(clss,ScriptConstants.PROPERTY_SET_SCRIPT);
+			key = AbstractScriptExtensionManager.makeKey(clss,ScriptConstants.PROPERTY_SET_SCRIPT);
 			value = handler.getToolkitProperty(key);
 			if (value!=null ) panel.updateSetField(value);
-			key = ScriptExtensionManager.makeKey(clss,ScriptConstants.PROPERTY_RENAME_SCRIPT);
+			key = AbstractScriptExtensionManager.makeKey(clss,ScriptConstants.PROPERTY_RENAME_SCRIPT);
 			value = handler.getToolkitProperty(key);
 			if (value!=null ) panel.updateRenameField(value);
+			key = AbstractScriptExtensionManager.makeKey(clss,ScriptConstants.NODE_CREATE_SCRIPT);
+			value = handler.getToolkitProperty(key);
+			if (value!=null ) panel.updateCreateField(value);
 		}
 	}
 	
@@ -131,15 +140,18 @@ public class ToolkitConfigurationDialog extends ConfigurationDialog  {
 				for( String clss:classPanels.keySet()) {
 					AuxInterfacePanel panel = classPanels.get(clss);
 					// Query and update for both flavors. We update the database as well as the script manager
-					key = ScriptExtensionManager.makeKey(clss,ScriptConstants.PROPERTY_GET_SCRIPT); 
+					key = AbstractScriptExtensionManager.makeKey(clss,ScriptConstants.PROPERTY_GET_SCRIPT); 
 					sem.addScript(clss, ScriptConstants.PROPERTY_GET_SCRIPT, panel.getGetFieldValue());
 					handler.setToolkitProperty(key,panel.getGetFieldValue());
-					key = ScriptExtensionManager.makeKey(clss,ScriptConstants.PROPERTY_SET_SCRIPT);
+					key = AbstractScriptExtensionManager.makeKey(clss,ScriptConstants.PROPERTY_SET_SCRIPT);
 					sem.addScript(clss, ScriptConstants.PROPERTY_SET_SCRIPT, panel.getSetFieldValue());
 					handler.setToolkitProperty(key,panel.getSetFieldValue());
-					key = ScriptExtensionManager.makeKey(clss,ScriptConstants.PROPERTY_RENAME_SCRIPT);
+					key = AbstractScriptExtensionManager.makeKey(clss,ScriptConstants.PROPERTY_RENAME_SCRIPT);
 					sem.addScript(clss, ScriptConstants.PROPERTY_RENAME_SCRIPT, panel.getRenameFieldValue());
 					handler.setToolkitProperty(key,panel.getRenameFieldValue());
+					key = AbstractScriptExtensionManager.makeKey(clss,ScriptConstants.NODE_CREATE_SCRIPT);
+					sem.addScript(clss, ScriptConstants.NODE_CREATE_SCRIPT, panel.getCreateFieldValue());
+					handler.setToolkitProperty(key,panel.getCreateFieldValue());
 				}
 				dispose();
 			}
@@ -150,7 +162,7 @@ public class ToolkitConfigurationDialog extends ConfigurationDialog  {
 	 * Create a button and event listener that pops up a file chooser, 
 	 * then imports values into the text fields.
 	 */
-	private void addImportButton(final ToolkitConfigurationDialog dialog) {
+	private void addImportButton(final ScriptExtensionsDialog dialog) {
 		importButton = new JButton("Import");
 		importButton.setPreferredSize(BUTTON_SIZE);
 		buttonPanel.add(importButton);
@@ -209,12 +221,12 @@ public class ToolkitConfigurationDialog extends ConfigurationDialog  {
 				String[] args = line.split(",");
 				if( args.length>2 ) {
 					log.infof("%s.parseConfigFile. Read %s,%s,%s ",TAG,args[0],args[1],args[2]);
-					String key = ScriptExtensionManager.makeKey(args[0].trim(),args[1].trim());  // Class, flavor
+					String key = AbstractScriptExtensionManager.makeKey(args[0].trim(),args[1].trim());  // Class, flavor
 					handler.setToolkitProperty(key,args[2].trim());
 				}
 				else if( args.length>1 ) {
 					log.infof("%s.parseConfigFile. Read %s,%s ",TAG,args[0],args[1]);
-					String key = ScriptExtensionManager.makeKey(args[0].trim(),args[1].trim());  // Class, flavor
+					String key = AbstractScriptExtensionManager.makeKey(args[0].trim(),args[1].trim());  // Class, flavor
 					handler.setToolkitProperty(key,"");
 				}
 				else if(!line.startsWith("#")){
@@ -253,6 +265,7 @@ public class ToolkitConfigurationDialog extends ConfigurationDialog  {
 		private static final String columnConstraints = "";
 		private static final String layoutConstraints = "ins 2";
 		private static final String rowConstraints = "";
+		private final JTextField createScriptField;
 		private final JTextField getScriptField;
 		private final JTextField setScriptField;
 		private final JTextField renameScriptField;
@@ -276,12 +289,28 @@ public class ToolkitConfigurationDialog extends ConfigurationDialog  {
 			renameScriptField = new JTextField( renamePath);
 			renameScriptField.setPreferredSize(NAME_BOX_SIZE);
 			add(renameScriptField,"skip,growx,wrap");
+			createScriptField = new JTextField("");
+		}
+		// Short version for a diagram. It only has a "create" field.
+		public AuxInterfacePanel(String createPath) {
+			setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));     // 3 cells across
+			
+			JLabel getLabel = new JLabel("Create");
+			add(getLabel,"");
+			createScriptField = new JTextField(createPath);
+			createScriptField.setPreferredSize(NAME_BOX_SIZE);
+			add(createScriptField,"skip,growx,wrap");
+			getScriptField = new JTextField("");
+			setScriptField = new JTextField("");
+			renameScriptField = new JTextField("");
 		}
 		public String getGetFieldValue() { return getScriptField.getText(); }
 		public String getSetFieldValue() { return setScriptField.getText(); }
+		public String getCreateFieldValue() { return createScriptField.getText(); }
 		public String getRenameFieldValue() { return renameScriptField.getText(); }
 		public void updateGetField(String val) { getScriptField.setText(val); }
 		public void updateSetField(String val) { setScriptField.setText(val); }
+		public void updateCreateField(String val) { createScriptField.setText(val); }
 		public void updateRenameField(String val) { renameScriptField.setText(val); }
 	}
 }

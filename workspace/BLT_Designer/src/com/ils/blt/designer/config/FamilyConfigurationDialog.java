@@ -1,5 +1,5 @@
 /**
- *   (c) 2015  ILS Automation. All rights reserved.
+ *   (c) 2015-2106  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.designer.config;
@@ -18,13 +18,13 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-import net.miginfocom.swing.MigLayout;
-
+import com.ils.blt.client.ClientScriptExtensionManager;
 import com.ils.blt.common.script.ScriptConstants;
-import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
+
+import net.miginfocom.swing.MigLayout;
 
 /**
  * Display a dialog to configure a Family node
@@ -34,7 +34,7 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 	private static final long serialVersionUID = 2882399376824334427L;
 	private final int DIALOG_HEIGHT = 280;
 	private final int DIALOG_WIDTH = 400;
-	private final ScriptExtensionManager extensionManager = ScriptExtensionManager.getInstance();
+	private final ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
 	private final SerializableFamily family;
 	private final GeneralPurposeDataContainer model;           // Data container operated on by panels
 	private JPanel mainPanel = null;

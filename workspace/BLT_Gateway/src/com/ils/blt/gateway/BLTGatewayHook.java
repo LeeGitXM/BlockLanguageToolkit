@@ -5,17 +5,14 @@ package com.ils.blt.gateway;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.wicket.markup.html.WebMarkupContainer;
 
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.common.script.ScriptExtensionManager;
+import com.ils.blt.common.script.AbstractScriptExtensionManager;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ModelManager;
-import com.ils.blt.gateway.engine.ProjectResourceKey;
 import com.ils.blt.gateway.persistence.ToolkitRecordListener;
 import com.ils.blt.gateway.proxy.ProxyHandler;
 import com.ils.blt.gateway.wicket.ToolkitStatusPanel;
@@ -52,6 +49,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	private transient ModelManager mmgr = null;
 	private final LoggerEx log;
 	private ToolkitRecord record = null;
+	private final ControllerRequestHandler requestHandler;
 	private ToolkitRecordListener recordListener;
 	
 	
@@ -63,6 +61,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		log.info(TAG+"Initializing BLT Gateway hook");
 		BundleUtil.get().addBundle(prefix, getClass(), BUNDLE_NAME);
+		requestHandler = ControllerRequestHandler.getInstance();
 	}
 		
 	
@@ -76,7 +75,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		//       Exception is thrown when we try to incorporate a StatusPanel
 		log.info(TAG+".setup - enable project listeners.");
 		ProxyHandler.getInstance().setContext(context);
-		ControllerRequestHandler.getInstance().setContext(context);
+		requestHandler.setContext(context);
 		dispatcher = new GatewayRpcDispatcher(context);
 		recordListener = new ToolkitRecordListener(context);
 		
@@ -98,11 +97,19 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	    controller.setDelegate(mmgr);
 	    controller.start(context);
 	    // Initialize all the script modules from parameters stored in the ORM
-	    ScriptExtensionManager sem = ScriptExtensionManager.getInstance();
-	    for(String key: sem.scriptTypes()) {
-	    	String pythonPath = dispatcher.getToolkitProperty(key);
-	    	sem.setModulePath(key, pythonPath);
+	    GatewayScriptExtensionManager sem = GatewayScriptExtensionManager.getInstance();
+	    for( String flavor: sem.getFlavors() ) {
+	    	for(String clss: sem.getClassNames() ) {
+	    		String key = AbstractScriptExtensionManager.makeKey(clss, flavor);
+		    	String pythonPath = requestHandler.getToolkitProperty(key);
+		    	if( pythonPath!=null && !pythonPath.isEmpty() ) {
+		    		sem.setModulePath(key, pythonPath);
+		    		sem.addScript(clss,flavor, pythonPath);
+		    	}
+		    }
 	    }
+
+	    
 	    // Load existing projects - skip the global project and any that are disabled.
 	    List<Project> projects = context.getProjectManager().getProjectsFull(ProjectVersion.Staging);
 	    for( Project project:projects ) {

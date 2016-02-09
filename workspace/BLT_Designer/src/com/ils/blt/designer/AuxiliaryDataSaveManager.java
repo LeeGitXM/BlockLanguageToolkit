@@ -3,9 +3,9 @@ package com.ils.blt.designer;
 import java.util.Enumeration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ils.blt.client.ClientScriptExtensionManager;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.script.ScriptConstants;
-import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableDiagram;
@@ -30,7 +30,7 @@ public class AuxiliaryDataSaveManager implements Runnable {
 	private static final LoggerEx log = LogUtil.getLogger(AuxiliaryDataSaveManager.class.getPackage().getName());
 	private static DesignerContext context = null;
 	private final AbstractResourceNavTreeNode root;	      // Root of our save.
-	private final ScriptExtensionManager extensionManager = ScriptExtensionManager.getInstance();
+	private final ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
 	
 	public AuxiliaryDataSaveManager(AbstractResourceNavTreeNode node) {
 		this.root = node;

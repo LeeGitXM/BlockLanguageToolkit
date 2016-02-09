@@ -1,5 +1,5 @@
 /**
- *   (c) 2015  ILS Automation. All rights reserved.
+ *   (c) 2015-2016  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.common.script;
@@ -8,15 +8,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.python.core.PyDictionary;
 import org.python.core.PyList;
 import org.python.core.PyObject;
 
-import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.block.BlockDescriptor;
-import com.ils.blt.common.block.PalettePrototype;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.JavaToPython;
 import com.ils.common.PythonToJava;
@@ -26,53 +23,43 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 
 /**
- *  The manger is a singleton used to compile and execute Python scripts. The
- *  scripts come in three flavors (PROPERTY_GET_SCRIPT, PROPERTY_RENAME_SCRIPT,
- *  and PROPERTY_SET_SCRIPT). The get/set have the same signature (uuid,properties).
- *  The rename is (uuid,oldName,newName).  This group of scripts must be defined 
+ *  The manger is an abstract base class used to compile and execute Python scripts.
+ *  The scripts come in 4 flavors (PROPERTY_GET_SCRIPT, PROPERTY_RENAME_SCRIPT,
+ *  PROPERTY_SET_SCRIPT and NODE_CREATE_SCRIPT). The standard signatures are:
+ *  	get/set(uuid,properties).
+ *  	rename(uuid,oldName,newName)
+ *  	create(uuid)
+ *  This group of scripts must be defined 
  *  for every class that wants interact with external data.
  *  
  *  We maintain a script table to retain compiled versions of the scripts. Script 
  *  local variables are updated on each invocation.
+ *  
+ *  Concrete versions exist in both gateway and client/designer scopes.
  */
-public class ScriptExtensionManager {
-	private static String TAG = "ScriptExtensionManager";
-	private final ApplicationRequestHandler handler;
-	private final LoggerEx log;
-	private static ScriptExtensionManager instance = null;
-	private final JavaToPython j2p;
-	private final PythonToJava p2j;
-	private List<String> flavors;
-	
-	public final Map<String,Map<String,Object>> scriptMap;
+public abstract class AbstractScriptExtensionManager {
+	private static String TAG = "AbstractScriptExtensionManager";
+	protected final LoggerEx log;
+	protected final JavaToPython j2p;
+	protected final PythonToJava p2j;
+	protected final List<String> flavors;
+	protected final Map<String,Map<String,Object>> scriptMap;
 	
 	/**
-	 * The handler, make this private per Singleton pattern ...
-	 * The initialization here is logically to a static initializer.
+	 * The handler.
 	 */
-	private ScriptExtensionManager() {
+	protected AbstractScriptExtensionManager() {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
 		// Initialize map with entry points and call list
 		scriptMap = new HashMap<>();
-		handler = new ApplicationRequestHandler();
 		j2p = new JavaToPython();
 		p2j = new PythonToJava();
 		flavors = new ArrayList<>();
+		flavors.add(ScriptConstants.NODE_CREATE_SCRIPT);
 		flavors.add(ScriptConstants.PROPERTY_GET_SCRIPT);
 		flavors.add(ScriptConstants.PROPERTY_RENAME_SCRIPT);
 		flavors.add(ScriptConstants.PROPERTY_SET_SCRIPT);
-	}
-	
-	/**
-	 * Static method to create and/or fetch the single instance.
-	 */
-	public static ScriptExtensionManager getInstance() {
-		if( instance==null) {
-			synchronized(ScriptExtensionManager.class) {
-				instance = new ScriptExtensionManager();
-			}
-		}
-		return instance;
+		
 	}
 	
 	/**
@@ -98,9 +85,13 @@ public class ScriptExtensionManager {
 			entry = "rename";
 			arglist = "uuid,oldname,newname";
 		}
+		else if( flavor.equals(ScriptConstants.NODE_CREATE_SCRIPT))  {
+			entry = "create";
+			arglist = "uuid";
+		}
 		scriptMap.put(key,createMap(entry,arglist));
 		setModulePath(key,modulePath);
-		log.debugf("%s.addScript: %s-%s is %s",TAG,className,flavor,modulePath);
+		log.infof("%s.addScript: %s is %s",TAG,key,modulePath);
 	}
 	
 	public List<String> getFlavors() {
@@ -123,38 +114,10 @@ public class ScriptExtensionManager {
 	}
 	
 	/**
-	 * Query the blocks and return a list of descriptors for classes that require
-	 * external interface scripts. We re-query each time we're asked. The "embedded label"
-	 * is a good display label.
-	 * @return
+	 * This method is abstract for the sole reason that interfaces 
+	 * to get the class list differ in Client and Gateway scopes.
 	 */
-	public List<BlockDescriptor> getClassDescriptors() {
-		List<BlockDescriptor> descriptors = new ArrayList<>();
-		// Start with the fixed ones
-		BlockDescriptor appDescriptor = new BlockDescriptor();
-		appDescriptor.setBlockClass(ScriptConstants.APPLICATION_CLASS_NAME);
-		appDescriptor.setEmbeddedLabel("Application");
-		descriptors.add(appDescriptor);
-		
-		BlockDescriptor famDescriptor = new BlockDescriptor();
-		famDescriptor.setBlockClass(ScriptConstants.FAMILY_CLASS_NAME);
-		famDescriptor.setEmbeddedLabel("Family");
-		descriptors.add(famDescriptor);
-		
-		BlockDescriptor blockDescriptor = null;
-		List<PalettePrototype> prototypes = handler.getBlockPrototypes();
-		for( PalettePrototype proto:prototypes) {
-			// log.tracef("%s.createScriptPanel: block class = %s",TAG,proto.getBlockDescriptor().getBlockClass());
-			if( proto.getBlockDescriptor().isExternallyAugmented() ) {
-				blockDescriptor = proto.getBlockDescriptor();
-				// Guarantee that the embedded label has a usable value.
-				String label = blockDescriptor.getEmbeddedLabel();
-				if( label==null || label.length()==0 ) blockDescriptor.setEmbeddedLabel(proto.getPaletteLabel());
-				descriptors.add(blockDescriptor);
-			}
-		}
-		return descriptors;
-	}
+	public abstract  List<BlockDescriptor> getClassDescriptors();
 	
 	/**
 	 * Execute the specified script with a new set of arguments.
@@ -225,8 +188,6 @@ public class ScriptExtensionManager {
 		setModulePath(key,pythonPath);
 		runScript(mgr,className,flavor,args);
 	}
-	
-	public Set<String> scriptTypes() {return scriptMap.keySet();}
 	
 	/**
 	 * Define the code that corresponds to the well-known key.

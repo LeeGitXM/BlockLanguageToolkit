@@ -1,5 +1,5 @@
 /**
- *   (c) 2015  ILS Automation. All rights reserved.
+ *   (c) 2015-2016  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.config;
 
@@ -18,15 +18,15 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 
-import net.miginfocom.swing.MigLayout;
-
+import com.ils.blt.client.ClientScriptExtensionManager;
 import com.ils.blt.common.script.ScriptConstants;
-import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.ui.DualListBox;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
+
+import net.miginfocom.swing.MigLayout;
 
 /**
  * Display a dialog to configure the outputs available for a Final Diagnosis.
@@ -38,7 +38,7 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 	private final int DIALOG_WIDTH = 600;
 	private final ProcessDiagramView diagram;
 	private final ProcessBlockView block;
-	private final ScriptExtensionManager extensionManager = ScriptExtensionManager.getInstance();
+	private final ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
 	private JPanel mainPanel = null;
 	private final GeneralPurposeDataContainer model;           // Data container operated on by panels
 	protected DualListBox dual;

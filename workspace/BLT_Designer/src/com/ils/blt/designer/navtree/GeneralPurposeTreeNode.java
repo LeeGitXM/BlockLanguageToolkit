@@ -30,11 +30,11 @@ import javax.swing.tree.TreePath;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ils.blt.client.ClientScriptExtensionManager;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.script.ScriptConstants;
-import com.ils.blt.common.script.ScriptExtensionManager;
 import com.ils.blt.common.serializable.ApplicationUUIDResetHandler;
 import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.common.serializable.SerializableDiagram;
@@ -52,7 +52,7 @@ import com.ils.blt.designer.ResourceSaveManager;
 import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.blt.designer.applicationConfiguration.ApplicationConfigurationDialog;
 import com.ils.blt.designer.config.FamilyConfigurationDialog;
-import com.ils.blt.designer.config.ToolkitConfigurationDialog;
+import com.ils.blt.designer.config.ScriptExtensionsDialog;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
@@ -254,7 +254,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		if (res.getResourceId() == this.resourceId) {
 			if( res.getName()==null || !res.getName().equals(getName()) ) {
 				logger.infof("%s.projectResourceModified(%d), setting name %s to %s",TAG,this.resourceId,getName(),res.getName());
-				ScriptExtensionManager extensionManager = ScriptExtensionManager.getInstance();
+				ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
 				// For application or family name changes, we need to synchronize the database
 				if( res.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
 					try {
@@ -1591,7 +1591,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			try {
 				EventQueue.invokeLater(new Runnable() {
 					public void run() {
-						ToolkitConfigurationDialog dialog = new ToolkitConfigurationDialog(context.getFrame(),context);
+						ScriptExtensionsDialog dialog = new ScriptExtensionsDialog(context.getFrame(),context);
 						dialog.setLocationRelativeTo(anchor);
 						Point p = dialog.getLocation();
 						dialog.setLocation((int)(p.getX()-OFFSET),(int)(p.getY()-OFFSET));
