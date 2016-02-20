@@ -287,16 +287,16 @@ public class ExternalInterfaceConfigurationDialog extends JDialog {
 	// The validation has made them all legal
 	private void saveEntries() {
 		// For these we set new values for the next time queried
-		if(mainDatabaseBox.getSelectedIndex()>=0 && mainDatabaseBox.getSelectedIndex()!=primaryDatabaseInitialSelection) { 
+		if(mainDatabaseBox.getSelectedIndex()>=0 ) { 
 			requestHandler.setToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE,mainDatabaseBox.getSelectedItem().toString() );
 		}
-		if(secondaryDatabaseBox.getSelectedIndex()>=0 && secondaryDatabaseBox.getSelectedIndex()!=secondaryDatabaseInitialSelection) { 
+		if(secondaryDatabaseBox.getSelectedIndex()>=0 ) { 
 			requestHandler.setToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE,secondaryDatabaseBox.getSelectedItem().toString() );
 		}
-		if(mainProviderBox.getSelectedIndex()>=0 && mainProviderBox.getSelectedIndex()!=primaryProviderInitialSelection) {
+		if(mainProviderBox.getSelectedIndex()>=0 ) {
 			requestHandler.setToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER,mainProviderBox.getSelectedItem().toString() );
 		}
-		if(secondaryProviderBox.getSelectedIndex()>=0 && secondaryProviderBox.getSelectedIndex()!=secondaryProviderInitialSelection) {
+		if(secondaryProviderBox.getSelectedIndex()>=0 ) {
 			requestHandler.setToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER,secondaryProviderBox.getSelectedItem().toString() );
 		}
 		requestHandler.setToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_TIME,secondaryTimeFactorField.getText());

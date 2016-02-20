@@ -21,6 +21,7 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
  * Search the descendants of the specified node, looking for open diagrams.
  * Close them and save them along with any dirty nodes to the project and gateway.
  * Use ExecutionManager.executeOnce() to invoke this in the background.
+ * Do not re-execute the same instance.
  * 
  * @author chuckc
  *
@@ -32,10 +33,12 @@ public class ResourceSaveManager implements Runnable {
 	private static NodeStatusManager statusManager = null;
 	private final AbstractResourceNavTreeNode root;	      // Root of our save.
 	private final DiagramWorkspace workspace;
+	private final ThreadCounter counter = ThreadCounter.getInstance();
 	
 	public ResourceSaveManager(DiagramWorkspace wksp,AbstractResourceNavTreeNode node) {
 		this.root = node;
 		this.workspace = wksp;
+		this.counter.incrementCount();
 	}
 	
 	/**
@@ -65,6 +68,7 @@ public class ResourceSaveManager implements Runnable {
 		if( dirtyCount>0 ) {
 			((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler().triggerStatusNotifications();
 		}
+		this.counter.decrementCount();
 	}
 	
 	// Recursively descend the node tree, looking for diagram resources where

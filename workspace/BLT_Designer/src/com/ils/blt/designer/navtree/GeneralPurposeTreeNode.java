@@ -25,6 +25,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -50,6 +51,7 @@ import com.ils.blt.designer.ResourceCreateManager;
 import com.ils.blt.designer.ResourceDeleteManager;
 import com.ils.blt.designer.ResourceSaveManager;
 import com.ils.blt.designer.ResourceUpdateManager;
+import com.ils.blt.designer.ThreadCounter;
 import com.ils.blt.designer.applicationConfiguration.ApplicationConfigurationDialog;
 import com.ils.blt.designer.config.FamilyConfigurationDialog;
 import com.ils.blt.designer.config.ScriptExtensionsDialog;
@@ -97,7 +99,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	private TreeSaveAction treeSaveAction = null;
 	private final ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
 	private final ExecutionManager executionEngine;
-
+	private final ThreadCounter threadCounter = ThreadCounter.getInstance();
 	private final ImageIcon defaultIcon = IconUtil.getIcon("folder_closed");
 	private final ImageIcon openIcon;
 	private final ImageIcon closedIcon;
@@ -370,7 +372,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		context.addProjectChangeListener(this);
 		if (isRootFolder()) { 
 			ApplicationCreateAction applicationCreateAction = new ApplicationCreateAction(this);
-			ApplicationImportAction applicationImportAction = new ApplicationImportAction(menu.getRootPane(),this);
+			ApplicationImportAction applicationImportAction = new ApplicationImportAction(context.getFrame(),this);
 			ToolkitConfigureAction configureAction = new ToolkitConfigureAction(menu.getRootPane());
 			ClearAction clearAction = new ClearAction();
 			DebugAction debugAction = new DebugAction();
@@ -915,7 +917,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			try {
 				EventQueue.invokeLater(new Runnable() {
 					public void run() {
-
 						try {
 							long newId = context.newResourceId();
 							String title = BundleUtil.get().getString(PREFIX+".Import.Application.DialogTitle");
@@ -925,9 +926,10 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 							Point p = dialog.getLocation();
 	    					dialog.setLocation((int)(p.getX()-OFFSET),(int)(p.getY()-OFFSET));
 							dialog.pack();
+							root.setBold(true);
+							threadCounter.reset();
 							dialog.setVisible(true);   // Returns when dialog is closed
 							File input = dialog.getFilePath();
-
 							if( input!=null ) {
 								if( input.exists() && input.canRead()) {
 									try {
@@ -973,20 +975,23 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 								else {
 									ErrorUtil.showWarning(String.format("ApplicationImportAction: Selected file does not exist or is not readable: %s",input.getAbsolutePath()),POPUP_TITLE);
 								}
+								
 							}  // Cancel
+							ThreadCompletionDetector detector = new ThreadCompletionDetector(root);
+							new Thread(detector).start();
+							
 						} 
 						catch (Exception ex) {
 							ErrorUtil.showError(String.format("ApplicationImportAction: Unhandled Exception (%s)",ex.getMessage()),POPUP_TITLE,ex,true);
 						}
-						// No need to inform of success, we'll see the new diagram
 					}
+		
 				});
 			} 
 			catch (Exception err) {
 				ErrorUtil.showError(TAG+" Exception importing application",err);
 			}
 		}
-
 
 		private void importDiagram(UUID parentId,SerializableDiagram sd) {
 			ObjectMapper mapper = new ObjectMapper();
@@ -1001,7 +1006,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 						sd.getName(), ApplicationScope.GATEWAY, json.getBytes());
 				resource.setParentUuid(parentId);
 				statusManager.setResourceState(newId, sd.getState());
-				executionEngine.executeOnce(new ResourceCreateManager(resource));	
+				executionEngine.executeOnce(new ResourceCreateManager(resource));
 			} 
 			catch (Exception ex) {
 				ErrorUtil.showError(String.format("ApplicationImportAction: importing diagrm, unhandled Exception (%s)",ex.getMessage()),POPUP_TITLE,ex,true);
@@ -1467,8 +1472,12 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		public void actionPerformed(ActionEvent e) {
 			// Traverse the entire hierarchy, saving each step
 			if( !isRootFolder() ) return;
+			node.setBold(true);
+			threadCounter.reset();
 			executionEngine.executeOnce(new ResourceSaveManager(workspace,node));
 			statusManager.cleanAll();
+			ThreadCompletionDetector detector = new ThreadCompletionDetector(node);
+			new Thread(detector).start();
 		}
 	}
 	
@@ -1606,7 +1615,34 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		}
 	}
 
-	
+	// Wait until the background threads are quiescent
+	private class ThreadCompletionDetector implements Runnable {
+		private static final long serialVersionUID = 1L;
+		private final AbstractResourceNavTreeNode node;
+
+		public ThreadCompletionDetector(AbstractResourceNavTreeNode treeNode)  {
+			node = treeNode;
+		}
+
+		public void run() {
+			// Wait for all the threads to complete
+			for(;;) {
+				try {
+					Thread.sleep(250);
+					if( threadCounter.isQuiescent()) break;
+				}
+				catch(InterruptedException ie) {
+					break;
+				}
+			}
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					node.setBold(false);
+				}
+			});
+		}
+	}
+
 	// Save this node and all its descendants.
 	private class TreeSaveAction extends BaseAction {
 		private static final long serialVersionUID = 1L;

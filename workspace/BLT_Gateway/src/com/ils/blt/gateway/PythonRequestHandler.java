@@ -4,7 +4,6 @@ e *   (c) 2013-2015  ILS Automation. All rights reserved.
  */
 package com.ils.blt.gateway;
 
-import java.io.IOException;
 import java.util.Date;
 import java.util.UUID;
 

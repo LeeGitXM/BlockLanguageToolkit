@@ -93,6 +93,7 @@ public class GatewayScriptFunctions   {
 	public static String getFamilyName(String uuid) {
 		return handler.getFamilyName(uuid);
 	}
+
 	/**
 	 * The Python request handler is made available to
 	 * every block that is implemented in Python. The
@@ -129,6 +130,15 @@ public class GatewayScriptFunctions   {
 	 */
 	public static Object getPropertyValue(String diagramId,String blockId,String propertyName) {
 		return handler.getPropertyValue(diagramId,blockId,propertyName);
+	}
+	/**
+	 * The controller request handler is made available to scripting
+	 * functions that execute in the Gateway.
+	 * 
+	 * @return the python request handler.
+	 */
+	public static ControllerRequestHandler getRequestHandler() {
+		return handler;
 	}
 	/**
 	 * Acquire a value from the HSQL database table associated with the toolkit. A

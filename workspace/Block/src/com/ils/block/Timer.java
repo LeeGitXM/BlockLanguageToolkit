@@ -1,7 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
- *   Code based on sample code at: 
- *        http://www.codeproject.com/Articles/36459/PID-process-control-a-Cruise-Control-example
+ *   (c) 2014-2016  ILS Automation. All rights reserved.  
  */
 package com.ils.block;
 

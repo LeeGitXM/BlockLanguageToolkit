@@ -94,6 +94,7 @@ public class PropertySetter extends AbstractProcessBlock implements ProcessBlock
 		if( qv.getQuality().isGood() && !isLocked() && qv.getValue() != null )  {
 			signal = new Signal(BlockConstants.COMMAND_CONFIGURE,propertyName,qv.getValue().toString());
 			QualifiedValue result = new BasicQualifiedValue(signal,qv.getQuality(),qv.getTimestamp());
+			// This ends up as a signal notification on the output.
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus(result);

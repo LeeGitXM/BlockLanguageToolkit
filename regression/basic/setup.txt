@@ -2,7 +2,7 @@
 # General-purpose setup activities.
 # NOTE: The tag here must match that set for the application.
 #
-log: [DATE] [TIME] Start Testing ...
+log: [DATE] [TIME] Start Testing ... 
 # Script aliases - module is with respect to script directory
 # -- these are scripts of general interest
 script: getInternalAttribute blockProxy.internalAttribute(dpath,name,att)
@@ -30,5 +30,4 @@ setTimeFactor (15)
 PROVIDER = getIsolationProvider()
 tagprovider: $PROVIDER
 setStateForApplication("app75","ISOLATED")
-
 status: setup complete.

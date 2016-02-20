@@ -389,8 +389,10 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 			String propertyName = sig.getArgument();
 			BlockProperty bp = getProperty(propertyName);
 			if( bp!=null ) {
-				bp.setValue(sig.getPayload());
-				QualifiedValue qv = new TestAwareQualifiedValue(timer,bp.getValue());
+				// Simulate the signal payload coming in as a value change. We don't really know the source
+				BlockPropertyChangeEvent event = new BlockPropertyChangeEvent(getBlockId().toString(), propertyName, bp.getValue(), sig.getPayload());
+				propertyChange(event);
+				QualifiedValue qv = new TestAwareQualifiedValue(timer,bp.getValue());  // Value now event payload.
 				controller.sendPropertyNotification(getBlockId().toString(),bp.getName(), qv);
 			}
 		}

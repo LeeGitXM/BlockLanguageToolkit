@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2105  ILS Automation. All rights reserved.
+ *   (c) 2014-2016  ILS Automation. All rights reserved.
  *  
  *   The block controller is designed to be called from the client
  *   via RPC. All methods must be thread safe,
@@ -24,6 +24,7 @@ import com.ils.blt.common.notification.ConnectionPostNotification;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.blt.common.notification.Signal;
 import com.ils.blt.common.notification.SignalNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
@@ -34,7 +35,6 @@ import com.ils.common.persistence.ToolkitProperties;
 import com.ils.common.tag.ProviderRegistry;
 import com.ils.common.tag.TagReader;
 import com.ils.common.tag.TagUtility;
-import com.ils.common.tag.TagValidator;
 import com.ils.common.tag.TagWriter;
 import com.ils.common.watchdog.AcceleratedWatchdogTimer;
 import com.ils.common.watchdog.WatchdogTimer;
@@ -45,8 +45,6 @@ import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.clientcomm.GatewaySessionManager;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
-
-
 
 /**
  *  The block execution controller is responsible for the dynamic activity for the collection
@@ -80,7 +78,6 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	private final BoundedBuffer buffer;
 	private TagReader  tagReader = null;
 	private final TagListener tagListener;    // Tag subscriber
-	private TagValidator tagValidator = null;
 	private TagWriter tagWriter = null;
 	private Thread notificationThread = null;
 	// Make this static so we can test without creating an instance.
@@ -263,7 +260,6 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		stopped = false;
 		this.tagReader = new TagReader(context);
 		tagListener.start(context);
-		this.tagValidator = new TagValidator(context);
 		this.tagWriter = new TagWriter(context,new ProviderRegistry());
 		//tagWriter.initialize(context);
 		this.notificationThread = new Thread(this, "BlockExecutionController");
@@ -433,7 +429,6 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	
 	@Override
 	public QualifiedValue getTagValue(UUID diagramId,String path) {
-		ProcessDiagram diagram = getDiagram(diagramId);
 		return tagReader.readTag(path);
 	}
 	@Override
@@ -456,7 +451,6 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 				property.getBindingType()==BindingType.TAG_READWRITE ||
 				property.getBindingType()==BindingType.TAG_MONITOR )  ) {
 			String tagPath = property.getBinding().toString();
-			ProcessDiagram diagram = getDiagram(block.getParentId());
 			if( tagPath!=null && tagPath.length()>0) {
 				tagListener.removeSubscription(block,property,tagPath);
 			}
@@ -472,7 +466,6 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 				  property.getBindingType().equals(BindingType.TAG_MONITOR) )   ) return;
 		
 		String tagPath = property.getBinding();
-		ProcessDiagram diagram = getDiagram(block.getParentId());
 		tagListener.defineSubscription(block,property,tagPath);
 	}
 	
@@ -557,20 +550,32 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 					sendConnectionNotification(pb.getBlockId().toString(),inNote.getPort(),inNote.getValue());
 					ProcessDiagram dm = modelManager.getDiagram(pb.getParentId());
 					if( dm!=null) {
-						Collection<IncomingNotification> outgoing = dm.getOutgoingNotifications(inNote);
-						// It is common for display blocks, for example, to be left unconnected.
-						// Don't get too worried about this.
-						if( outgoing.isEmpty() ) log.debugf("%s: no downstream connections found ...",TAG);
-						for(IncomingNotification outNote:outgoing) {
-							UUID outBlockId = outNote.getConnection().getTarget();
-							ProcessBlock outBlock = dm.getBlock(outBlockId);
-							if( outBlock!=null ) {
-								log.tracef("%s.run: sending outgoing notification: to %s:%s = %s", TAG,outBlock.toString(),
-										  outNote.getConnection().getDownstreamPortName(),outNote.getValue().toString());
-								threadPool.execute(new IncomingValueChangeTask(outBlock,outNote));
+						// Values that are signals are processed separately
+						if( inNote.getValue().getValue() instanceof Signal ) {
+							Collection<SignalNotification> outgoing = dm.getOutgoingSignalNotifications(inNote);
+							// It is common for display blocks, for example, to be left unconnected.
+							// Don't get too worried about this.
+							if( outgoing.isEmpty() ) log.debugf("%s: no downstream blocks found ...",TAG);
+							for(SignalNotification outNote:outgoing) {
+									threadPool.execute(new IncomingBroadcastTask(outNote.getBlock(),outNote));
 							}
-							else {
-								log.warnf("%s: run: target block %s not found in diagram map ",TAG,outBlockId.toString());
+						}
+						else {
+							Collection<IncomingNotification> outgoing = dm.getOutgoingNotifications(inNote);
+							// It is common for display blocks, for example, to be left unconnected.
+							// Don't get too worried about this.
+							if( outgoing.isEmpty() ) log.debugf("%s: no downstream connections found ...",TAG);
+							for(IncomingNotification outNote:outgoing) {
+								UUID outBlockId = outNote.getConnection().getTarget();
+								ProcessBlock outBlock = dm.getBlock(outBlockId);
+								if( outBlock!=null ) {
+									log.tracef("%s.run: sending outgoing notification: to %s:%s = %s", TAG,outBlock.toString(),
+											  outNote.getConnection().getDownstreamPortName(),outNote.getValue().toString());
+									threadPool.execute(new IncomingValueChangeTask(outBlock,outNote));
+								}
+								else {
+									log.warnf("%s: run: target block %s not found in diagram map ",TAG,outBlockId.toString());
+								}
 							}
 						}
 					}
@@ -580,8 +585,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 				}
 				else if( work instanceof BroadcastNotification) {
 					BroadcastNotification inNote = (BroadcastNotification)work;
-					
-					// Query the diagram to find out what's next. The diagramId is the resourceId
+					// Query the diagram to find out what's next. These are "unconnected" signals.
 					ProcessDiagram dm = modelManager.getDiagram(inNote.getDiagramId());
 					if( dm!=null) {
 						log.debugf("%s.run: processing broadcast to diagram %s (%s)", TAG,dm.getName(),inNote.getSignal().getCommand());

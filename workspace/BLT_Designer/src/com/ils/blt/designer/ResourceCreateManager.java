@@ -13,6 +13,7 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 /**
  * Create a project resource and make it permanent.
  * Use ExecutionManager.executeOnce() to invoke this in the background.
+ * Do not re-execute the same instance.
  * 
  * @author chuckc
  *
@@ -22,9 +23,11 @@ public class ResourceCreateManager implements Runnable {
 	private static final LoggerEx logger = LogUtil.getLogger(ResourceCreateManager.class.getPackage().getName());
 	private static DesignerContext context = null;
 	private final ProjectResource res;
+	private final ThreadCounter counter = ThreadCounter.getInstance();
 
 	public ResourceCreateManager(ProjectResource pr) {
 		this.res = pr;
+		this.counter.incrementCount();
 	}
 	
 	/**
@@ -37,20 +40,21 @@ public class ResourceCreateManager implements Runnable {
 	
 	@Override
 	public void run() {
-		if( res==null ) return;
-		// Now save the resource, as it is.
-		Project diff = context.getProject().getEmptyCopy();
-		context.updateResource(res);   // Force an update
-		
-		diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
-		try {
-			DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ...");  // Don't publish
+		if( res!=null ) {
+			// Now save the resource, as it is.
+			Project diff = context.getProject().getEmptyCopy();
+			context.updateResource(res);   // Force an update
+
+			diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
+			try {
+				DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ...");  // Don't publish
+			}
+			catch(GatewayException ge) {
+				logger.warnf("%s.run: Exception saving project resource %d (%s)",TAG,res.getResourceId(),ge.getMessage());
+			}
+			Project project = context.getProject();
+			project.applyDiff(diff,false);
 		}
-		catch(GatewayException ge) {
-			logger.warnf("%s.run: Exception saving project resource %d (%s)",TAG,res.getResourceId(),ge.getMessage());
-		}
-		Project project = context.getProject();
-		project.applyDiff(diff,false);
-		
+		this.counter.decrementCount();
 	}
 }

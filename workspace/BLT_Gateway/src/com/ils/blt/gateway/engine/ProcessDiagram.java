@@ -349,7 +349,7 @@ public class ProcessDiagram extends ProcessNode {
 		return upstream;
 	}
 	/**
-	 * We have just received a notification of a value change. Determine which blocks are connected downstream,
+	 * The controller is processing notifications of block output values. Determine which blocks are connected downstream,
 	 * and create notifications for each. In/Out are from the point of view of a block, so are backwards here.
 	 * An empty return indicates no downstream connection.
 	 * @param new value notification of an incoming change
@@ -378,6 +378,40 @@ public class ProcessDiagram extends ProcessNode {
 		}
 		else {
 			log.debugf("%s.getOutgoingNotifications: no connections found for %s:%s",TAG,block.getBlockId().toString(),port);
+		}
+		return notifications;
+	}
+	
+	/**
+	 * The controller is processing notifications of a block output signal. Determine which blocks are connected downstream,
+	 * and create signal notifications for each. In/Out are from the point of view of a block, so are backwards here.
+	 * An empty return indicates no downstream connection.
+	 * @param new signal notification of an incoming change
+	 * @return a new signal notification for the downstream block(s)
+	 */
+	public Collection<SignalNotification> getOutgoingSignalNotifications(OutgoingNotification incoming) {
+		ProcessBlock block = incoming.getBlock();
+		String port = incoming.getPort();
+		QualifiedValue value = incoming.getValue();
+
+		Collection<SignalNotification>notifications = new ArrayList<SignalNotification>();
+		BlockPort key = new BlockPort(block,port);
+		if( outgoingConnections.get(key)!=null ) {
+			List<ProcessConnection> cxns = new ArrayList<>(outgoingConnections.get(key));
+			for(ProcessConnection cxn:cxns) {
+				UUID blockId = cxn.getTarget();
+				ProcessBlock blk = blocks.get(blockId);
+				if( blk!=null ) {
+					SignalNotification vcn = new SignalNotification(blk,value);
+					notifications.add(vcn);
+				}
+				else {
+					log.warnf("%s.getOutgoingSignalNotifications: Target block %s not found for connection",TAG,blockId.toString());
+				}
+			}
+		}
+		else {
+			log.debugf("%s.getOutgoingSignalNotifications: no connections found for %s:%s",TAG,block.getBlockId().toString(),port);
 		}
 		return notifications;
 	}

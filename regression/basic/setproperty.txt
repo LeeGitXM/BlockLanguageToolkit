@@ -1,5 +1,5 @@
 #
-# Simple test of a sum block
+# Simple test of a limit block
 #
 DIAGRAM="app75/family75/setproperty"
 TARGET="HIGHLIMITTIMEWINDOW"

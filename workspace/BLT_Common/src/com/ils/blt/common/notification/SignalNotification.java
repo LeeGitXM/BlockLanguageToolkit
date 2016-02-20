@@ -1,5 +1,5 @@
 /**
- *   (c) 2013  ILS Automation. All rights reserved. 
+ *   (c) 2013-2016  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.common.notification;
 
@@ -8,8 +8,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
  * A SignalNotification is an in-bound message to a block that contains
- * a signal object as its data. The block must be typed as a signal receptor.
- * There is no relationship to connections.
+ * a signal object as its data. There is no relationship to connections.
  * 
  * This is a property container with no behavior.
  */
