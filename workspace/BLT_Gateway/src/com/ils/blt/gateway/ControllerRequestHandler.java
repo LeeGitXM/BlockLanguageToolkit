@@ -806,6 +806,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		if( diagram!=null) {
 			ProcessBlock block = diagram.getBlockByName(blockName);
 			if( block!=null ) controller.resetBlock(diagramUUID, block.getBlockId());
+			else log.warnf("%s.resetBlock: block %s not found on diagram %s",TAG,blockName,diagram.getName());
 		}
 		else {
 			log.warnf("%s.resetBlock: no diagram found for %s",TAG,diagramId);

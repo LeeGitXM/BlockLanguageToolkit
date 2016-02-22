@@ -372,10 +372,15 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 */
 	public void resetBlock(UUID diagramId,UUID blockId) {
 		ProcessDiagram diagram = modelManager.getDiagram(diagramId);
+		ProcessBlock block = null;
 		if( diagram!=null) {
-			ProcessBlock block = modelManager.getBlock(diagram, blockId);
-			if( block!=null) block.reset();
+			block = modelManager.getBlock(diagram, blockId);
+			if( block!=null) {
+				block.reset();
+				log.debugf("%s.resetBlock: diagram:block %s:%s RESET",TAG,diagram.getName(),block.getName());
+			}
 		}
+		if(block==null) log.infof("%s.resetBlock: diagram:block %s:%s NOT FOUND",TAG,diagramId.toString(),blockId.toString());
 	}
 	/**
 	 * Reset all blocks on a diagram. Resetting blocks with
@@ -394,6 +399,10 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 			for(ProcessBlock block:diagram.getProcessBlocks() ) {
 				if( block.delayBlockStart() ) block.evaluate();
 			}
+			log.debugf("%s.resetBlock: diagram %s RESET",TAG,diagram.getName());
+		}
+		else {
+			log.infof("%s.resetDiagram: diagram %s NOT FOUND",TAG,diagramId.toString());
 		}
 	}
 
