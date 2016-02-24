@@ -379,6 +379,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 *     reset
 	 *     lock/unlock
 	 *     evaluate
+	 *     configure
 	 * 
 	 * @param sn notification of a signal.
 	 */

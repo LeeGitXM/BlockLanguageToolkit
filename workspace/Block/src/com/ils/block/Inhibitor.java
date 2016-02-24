@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
+import com.ils.blt.common.block.Activity;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
@@ -100,6 +101,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 						notifyOfStatus(vcn.getValue());
 					}
 					else {
+						recordActivity(Activity.ACTIVITY_BLOCKED,qv.getValue().toString());
 						log.infof("%s.acceptValue: Ignoring inhibited or BAD input ... (%s)",getName(),qv.getValue().toString());
 					}
 				}
@@ -125,9 +127,9 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 			expirationProperty.setValue(new Long(sn.getValue().getTimestamp().getTime()+(long)(interval*1000)));
 			controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_EXPIRATION_TIME,
 					new BasicQualifiedValue(expirationProperty.getValue(),sn.getValue().getQuality(),sn.getValue().getTimestamp()));
+			long time = ((Long)expirationProperty.getValue()).longValue();
+			Date expiration = new Date(time);
 			if( log.isDebugEnabled()) {
-				long time = ((Long)expirationProperty.getValue()).longValue();
-				Date expiration = new Date(time);
 				log.debugf("%s.acceptValue: Received inhibit command (delay %f secs to %s)",getName(),interval,dateFormatter.format(expiration));
 				if( timer instanceof AcceleratedWatchdogTimer) {
 					AcceleratedWatchdogTimer awt = (AcceleratedWatchdogTimer)timer;
@@ -135,6 +137,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 							dateFormatter.format(new Date(awt.getTestTime())));
 				}
 			}
+			recordActivity(Activity.ACTIVITY_SET_EXPIRATION,dateFormatter.format(expiration));
 			inhibiting = true;
 			dog.setSecondsDelay(interval);
 			timer.updateWatchdog(dog);  // pet dog

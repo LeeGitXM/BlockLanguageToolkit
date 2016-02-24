@@ -10,6 +10,7 @@ import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.block.Activity;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
@@ -363,6 +364,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		}
 		return descriptor;
 	}
+
 	/**
 	 * Add the value of the target input to the standard descriptor.
 	 * @return the descriptor
@@ -385,7 +387,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setEmbeddedLabel("SQC");
-		desc.setEmbeddedFontSize(36);
+		desc.setEmbeddedFontSize(20);
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setStyle(BlockStyle.SQUARE);
 		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_LIGHT_GRAY);

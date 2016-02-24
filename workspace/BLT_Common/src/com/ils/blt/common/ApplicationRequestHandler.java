@@ -66,6 +66,18 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 	}
 	/**
+	 * Clear any watermark on a diagram. 
+	 */
+	public void clearWatermark(String diagramId) {
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+									BLTProperties.MODULE_ID, "clearWatermark",diagramId);
+		}
+		catch(Exception ge) {
+			log.infof("%s.clearWatermark: GatewayException (%s)",TAG,ge.getMessage());
+		}
+	}
+	/**
 	 * Determine whether or not the indicated diagram is known to the controller.
 	 */
 	@Override
@@ -615,6 +627,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	/**
 	 * Execute reset() on a specified block
 	 */
+	@Override
 	public void resetBlock(String diagramId,String blockName) {
 		log.debugf("%s.resetBlock ...",TAG);
 
@@ -630,6 +643,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	/**
 	 * Execute reset() on every block on the diagram
 	 */
+	@Override
 	public void resetDiagram(String diagramId) {
 		log.debugf("%s.resetDiagram ...",TAG);
 
@@ -645,6 +659,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	/**
 	 * Determine whether or not the indicated resource is known to the controller.
 	 */
+	@Override
 	public boolean resourceExists(long projectId,long resid) {
 		Boolean result = null;
 		try {
@@ -682,6 +697,30 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 		return result;
 	}
+	/**
+	 * Send a signal directly to a specified block.
+	 * This is a "local" transmission. The signal timestamp is "now".
+	 * 
+	 * @param diagramId diagram identifier
+	 * @param command string of the signal.
+	 * @param message command payload
+	 * @return true on success
+	 */
+	@Override
+	public boolean sendSignal(String diagramId,String blockName,String command,String message) {
+		log.infof("%s.sendSignal for %s:%s %s %s...",TAG,diagramId,blockName,command,message);
+		boolean result = false;
+		try {
+			Boolean value = GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "sendSignal",diagramId,blockName,command,message);
+			if( value!=null ) result = value.booleanValue();
+		}
+		catch(Exception ex) {
+			log.infof("%s.sendSignal: Exception (%s)",TAG,ex.getMessage());
+		}
+		return result;
+	}
+
 
 	/**
 	 * Send a signal to all blocks of a particular class on a specified diagram.
@@ -690,7 +729,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * the specified time
 	 * 
 	 * @param diagramId
-	 * @param className filter of the receiver blocks to be targeted.
+	 * @param arg filter of the receiver blocks to be targeted.
 	 * @param command string of the signal.
 	 */
 	@Override
@@ -729,6 +768,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @param duuid diagram unique Id
 	 * @param buuid block unique Id
 	 */
+	@Override
 	public void setBlockProperties(UUID duuid,UUID buuid, Collection<BlockProperty> props ) {
 		String diagId  = duuid.toString();
 		String blockId = buuid.toString();
@@ -757,6 +797,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @param buuid block unique Id
 	 * @param property the changed property
 	 */
+	@Override
 	public void setBlockProperty(UUID duuid,UUID buuid,BlockProperty property ) {
 		String diagId  = duuid.toString();
 		String blockId = buuid.toString();
@@ -788,6 +829,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @param pname the changed property
 	 * @param value the new value of the property. The value will be coerced into the correct data type in the gateway 
 	 */
+	@Override
 	public void setBlockPropertyValue(String diagramId,String bname,String pname,String value )  {
 		log.debugf("%s.setBlockPropertyValue: %s %s %s=%s", TAG, diagramId,bname, pname,value);
 		try {
@@ -798,7 +840,25 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 			log.infof("%s.setBlockPropertyValue: GatewayException (%s)",TAG,ge.getMessage());
 		}		
 	}
-
+	/** 
+	 * Drive a block to the specified state. 
+	 *  
+	 * @param diagramId diagram's unique Id as a String
+	 * @param bname 
+	 * @param state the new state of the block. The value will be coerced into a truth-value in the gateway 
+	 */
+	@Override
+	public void setBlockState(String diagramId,String bname,String state ) {
+		log.debugf("%s.setBlockState ... %s:%s %s",TAG,diagramId,bname,state);
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "setBlockState",diagramId,bname,state);
+		}
+		catch(Exception ge) {
+			log.infof("%s.setBlockState: GatewayException (%s)",TAG,ge.getMessage());
+		}
+	}
+	@Override
 	public void setDiagramState(Long projectId, Long resourceId, String state) {
 		log.debugf("%s.setDiagramState ... %d:%d %s",TAG,projectId.longValue(),resourceId.longValue(),state);
 		try {
@@ -888,6 +948,18 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		catch(Exception ignore) {}
 	}
 
+	/**
+	 * Define a watermark for a diagram. This is shown only in the designer. 
+	 */
+	public void setWatermark(String diagramId,String text) {
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+									BLTProperties.MODULE_ID, "setWatermark",diagramId,text);
+		}
+		catch(Exception ge) {
+			log.infof("%s.setWatermark: GatewayException (%s)",TAG,ge.getMessage());
+		}
+	}
 	/**
 	 * Start the block execution engine in the gateway.
 	 */

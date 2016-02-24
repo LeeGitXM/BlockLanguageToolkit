@@ -1,5 +1,5 @@
 /**
-   *   (c) 2014  ILS Automation. All rights reserved. 
+   *   (c) 2014-2016  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.common.notification;
 
@@ -24,4 +24,9 @@ public interface NotificationChangeListener extends EventListener  {
 	 * Just send the new value.
 	 */
 	public void valueChange(QualifiedValue value);
+	/**
+	 * Watermark has changed. This is currently used only for diagrams,
+	 * but could conceivably be used for block marquees.
+	 */
+	public void watermarkChange(String newWatermark);
 }

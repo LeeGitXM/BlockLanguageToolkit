@@ -32,6 +32,12 @@ public class ApplicationScriptFunctions   {
 	public static void clearController() {
 		handler.clearController();
 	}
+	/**
+	 * Clear any watermark currently on a diagram. 
+	 */
+	public static void clearWatermark(String diagramId) {
+		handler.clearWatermark(diagramId);
+	}
 	public static void evaluateBlock(String diagramId,String blockId) {
 		handler.evaluateBlock(diagramId,blockId);
 	}
@@ -279,12 +285,25 @@ public class ApplicationScriptFunctions   {
 	 * This is a "local" transmission. The signal timestamp is "now".
 	 * 
 	 * @param diagramId diagram identifier
-	 * @param className filter of the receiver blocks to be targeted.
 	 * @param command string of the signal.
+	 * @param message command payload
+	 * @param arg a modifier meant to distinguish who receives the signal, e.e class name
 	 * @return true on success
 	 */
 	public static boolean sendLocalSignal(String diagramId,String command,String message,String arg) {
 		return handler.sendLocalSignal(diagramId,command,message,arg);
+	}
+	/**
+	 * Send a signal directly to a specified block.
+	 * This is a "local" transmission. The signal timestamp is "now".
+	 * 
+	 * @param diagramId diagram identifier
+	 * @param command string of the signal.
+	 * @param message command payload
+	 * @return true on success
+	 */
+	public static boolean sendSignal(String diagramId,String blockName,String command,String message) {
+		return handler.sendSignal(diagramId,blockName,command,message);
 	}
 	/**
 	 * Send a signal to all blocks of a particular class on a specified diagram.
@@ -307,6 +326,17 @@ public class ApplicationScriptFunctions   {
 	 */
 	public static void setApplicationState(String appname, String state) {
 		handler.setApplicationState(appname, state);
+	}
+	/** 
+	 * Drive a block to the specified state. Other than the state change, there are normally
+	 * no other side effects. 
+	 *  
+	 * @param diagramId diagram's unique Id as a String
+	 * @param bname 
+	 * @param value the new state of the block. The value will be coerced into a truth-value in the gateway 
+	 */
+	public static void setBlockState(String diagramId,String bname,String value ) {
+		handler.setBlockState(diagramId, bname, value);
 	}
 	/** Change the value of a block property in such a way that the block and UI
 	 * are notified of the change.
@@ -354,6 +384,12 @@ public class ApplicationScriptFunctions   {
 	 */
 	public static void setToolkitProperty(String propertyName,String value) {
 		handler.setToolkitProperty(propertyName,value);
+	}
+	/**
+	 * Define a watermark for a diagram. 
+	 */
+	public static void setWatermark(String diagramId,String text) {
+		handler.setWatermark(diagramId,text);
 	}
 	/**
 	 * Start the block execution engine in the gateway.

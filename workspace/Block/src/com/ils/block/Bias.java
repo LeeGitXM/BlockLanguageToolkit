@@ -146,7 +146,7 @@ public class Bias extends AbstractProcessBlock implements ProcessBlock {
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setEmbeddedLabel("b");
-		desc.setEmbeddedFontSize(36);
+		desc.setEmbeddedFontSize(32);
 		desc.setStyle(BlockStyle.DIAMOND);
 		desc.setPreferredHeight(70);
 		desc.setPreferredWidth(70);

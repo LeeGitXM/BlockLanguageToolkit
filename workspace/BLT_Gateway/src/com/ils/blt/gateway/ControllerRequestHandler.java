@@ -27,6 +27,7 @@ import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TransmissionScope;
+import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.Connection;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
@@ -46,6 +47,7 @@ import com.ils.common.ClassList;
 import com.ils.common.persistence.ToolkitProperties;
 import com.ils.common.persistence.ToolkitRecordHandler;
 import com.ils.common.watchdog.AcceleratedWatchdogTimer;
+import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.common.datasource.DatasourceStatus;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
@@ -116,8 +118,16 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * Remove all diagrams from the controller.
 	 * Cancel all tag subscriptions.
 	 */
+	@Override
 	public void clearController() {
 		controller.removeAllDiagrams();
+	}
+	
+	/**
+	 * Clear any watermark on a diagram. 
+	 */
+	public void clearWatermark(String diagramId) {
+		controller.sendWatermarkNotification(diagramId,"");
 	}
 
 	/**
@@ -415,6 +425,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @param resourceId
 	 * @return the current state of the specified diagram as a DiagramState.
 	 */
+	@Override
 	public DiagramState getDiagramState(Long projectId,Long resourceId) {
 		DiagramState state = DiagramState.ACTIVE;
 		ProcessDiagram diagram = controller.getDiagram(projectId, resourceId);
@@ -427,6 +438,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @param resourceId
 	 * @return the current state of the specified diagram as a DiagramState.
 	 */
+	@Override
 	public DiagramState getDiagramState(String diagramId) {
 		DiagramState state = DiagramState.ACTIVE;
 		UUID diagramuuid=makeUUID(diagramId);
@@ -436,7 +448,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 		return state;
 	}
-	
+
 	public String getExecutionState() {
 		return BlockExecutionController.getExecutionState();
 	}
@@ -454,6 +466,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @param blockId
 	 * @return a SerializableBlockStateDescriptor
 	 */
+	@Override
 	public SerializableBlockStateDescriptor getInternalState(String diagramId,String blockId) {
 		SerializableBlockStateDescriptor descriptor = null;
 		ProcessDiagram diagram = controller.getDiagram(UUID.fromString(diagramId));
@@ -495,6 +508,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 		return property.getValue();
 	}
+	
 	public Object getPropertyValue(UUID diagramId,UUID blockId,String propertyName) {
 		Object val = null;
 		ProcessDiagram diagram = controller.getDiagram(diagramId);
@@ -644,6 +658,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * managing. This is a debugging service.
 	 * @return
 	 */
+	@Override
 	public List<SerializableResourceDescriptor> listResourceNodes() {
 		return controller.queryControllerResources();
 	}
@@ -838,10 +853,42 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	public boolean sendLocalSignal(String diagramId, String command, String message, String argument) {
 		return sendTimestampedSignal( diagramId, command, message, argument,new Date().getTime());
 	}
-
+	
+	/**
+	 * We wrap a signal into a Qualified value and send it on.
+	 * @param diagramId
+	 * @param blockName
+	 * @param command
+	 * @param message
+	 * @return
+	 */
+	@Override
+	public boolean sendSignal(String diagramId,String blockName,String command,String message) {
+		boolean success = Boolean.TRUE;
+		UUID diagramUUID = null;
+		try {
+			diagramUUID = UUID.fromString(diagramId);
+		}
+		catch(IllegalArgumentException iae) {
+			log.warnf("%s.sendSignal: Diagram UUID string is illegal (%s), creating new",TAG,diagramId);
+			diagramUUID = UUID.nameUUIDFromBytes(diagramId.getBytes());
+		}
+		ProcessDiagram diagram = BlockExecutionController.getInstance().getDiagram(diagramUUID);
+		if( diagram!=null ) {
+			// Create an output notification
+			Signal sig = new Signal(command,message,"");
+			BroadcastNotification broadcast = new BroadcastNotification(diagram.getSelf(),blockName,new BasicQualifiedValue(sig));
+			BlockExecutionController.getInstance().acceptBroadcastNotification(broadcast);
+		}
+		else {
+			log.warnf("%s.sendSignal: Unable to find diagram %s for %s command to %s",TAG,diagramId,command,blockName);
+			success = Boolean.FALSE;
+		}
+		return success;
+	}
 	@Override
 	public boolean sendTimestampedSignal(String diagramId, String command, String message, String argument,long time) {
-		Boolean success = new Boolean(true);
+		boolean success = Boolean.TRUE;
 		UUID diagramUUID = null;
 		try {
 			diagramUUID = UUID.fromString(diagramId);
@@ -860,7 +907,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 		else {
 			log.warnf("%s.sendTimestampedSignal: Unable to find diagram %s for %s command",TAG,diagramId,command);
-			success = new Boolean(false);
+			success = Boolean.FALSE;
 		}
 		return success;
 	}
@@ -998,6 +1045,31 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			log.warnf("%s.setBlockPropertyValue: Unable to find diagram %s for block %s",TAG,diagramId,bname);
 		}
 	}
+	public void setBlockState(String diagramId,String bname,String stateName ) {
+		ProcessDiagram diagram = null;
+		UUID uuid = UUID.fromString(diagramId);
+		if( uuid!=null ) diagram = controller.getDiagram(uuid);
+		if( diagram!=null ) {
+			ProcessBlock block = diagram.getBlockByName(bname);
+			if( block!=null ) {
+				try {
+					TruthValue state = TruthValue.valueOf(stateName);
+					block.setState(state);
+					block.notifyOfStatus();
+				}
+				catch(IllegalArgumentException iae) {
+					log.warnf("%s.setBlockState: State %s in block %s:%s is not a legal truth value",TAG,stateName,bname,diagram.getName());
+				}
+			}
+			else{
+				log.warnf("%s.setBlockState: Unable to find block %s in diagram %s",TAG,diagramId,bname,diagram.getName());
+			}
+		}
+		else{
+			log.warnf("%s.setBlockState: Unable to find diagram %s for block %s",TAG,diagramId,bname);
+		}
+	}
+	
 	/**
 	 * The gateway context must be specified before the instance is useful.
 	 * @param cntx the GatewayContext
@@ -1079,6 +1151,13 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		controller.clearCache();                 // Force retrieval production/isolation constants from HSQLdb on next access.
 	}
 
+	/**
+	 * Define a watermark for a diagram. 
+	 */
+	public void setWatermark(String diagramId,String text) {
+		controller.sendWatermarkNotification(diagramId,text);
+	}
+	
 	public void startController() {
 		BlockExecutionController.getInstance().start(context);
 	}

@@ -91,7 +91,7 @@ public class NotificationHandler implements PushNotificationListener {
 				Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
 				if( listeners != null ) {
 					for(NotificationChangeListener listener:listeners.values()) {
-						log.debugf("%s.receiveNotification: key=%s - notifying %s",TAG,key,listener.getClass().getName());
+						log.tracef("%s.receiveNotification: key=%s - notifying %s",TAG,key,listener.getClass().getName());
 						listener.valueChange((QualifiedValue)payload);
 					}
 					// Repaint the workspace
@@ -105,8 +105,22 @@ public class NotificationHandler implements PushNotificationListener {
 				Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
 				if( listeners != null ) {
 					for(NotificationChangeListener listener:listeners.values()) {
-						log.debugf("%s.receiveNotification: key=%s - notifying %s",TAG,key,listener.getClass().getName());
+						log.tracef("%s.receiveNotification: key=%s - notifying %s",TAG,key,listener.getClass().getName());
 						listener.bindingChange(payload.toString());
+					}
+					// Repaint the workspace
+					SwingUtilities.invokeLater(new WorkspaceRepainter());
+				}
+				else {
+					log.debugf("%s.receiveNotification: no receiver for key=%s,value=%s",TAG,key,payload.toString());
+				}
+			}
+			else if(NotificationKey.isWatermarkKey(key)) {
+				Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
+				if( listeners != null ) {
+					for(NotificationChangeListener listener:listeners.values()) {
+						log.tracef("%s.receiveNotification: key=%s - notifying %s",TAG,key,listener.getClass().getName());
+						listener.watermarkChange(payload.toString());
 					}
 					// Repaint the workspace
 					SwingUtilities.invokeLater(new WorkspaceRepainter());

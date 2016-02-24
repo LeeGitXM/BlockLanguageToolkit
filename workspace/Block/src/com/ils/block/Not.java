@@ -128,7 +128,7 @@ public class Not extends AbstractProcessBlock implements ProcessBlock {
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setEmbeddedLabel("NOT");
-		desc.setEmbeddedFontSize(12);
+		desc.setEmbeddedFontSize(10);
 		desc.setPreferredHeight(60);
 		desc.setPreferredWidth(60);
 		desc.setBlockClass(getClass().getCanonicalName());

@@ -183,7 +183,7 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setEmbeddedLabel("AND");
-		desc.setEmbeddedFontSize(18);
+		desc.setEmbeddedFontSize(16);
 		desc.setPreferredHeight(60);
 		desc.setPreferredWidth(60);
 		desc.setBlockClass(getClass().getCanonicalName());

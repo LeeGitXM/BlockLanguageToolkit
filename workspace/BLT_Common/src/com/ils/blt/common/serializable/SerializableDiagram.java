@@ -22,6 +22,7 @@ public class SerializableDiagram {
 	private UUID encapsulationBlockID = null;   // Applies only to diagrams that are sub-workspaces of an encapsulation
 	private long resourceId = -1;
 	private DiagramState state = DiagramState.ACTIVE;
+	private String watermark = "";
 	private boolean dirty = false;
 
 	public SerializableDiagram() {	
@@ -38,6 +39,7 @@ public class SerializableDiagram {
 	public String getName() { return name; }
 	public long getResourceId() {return resourceId;}
 	public DiagramState getState() {return state;}
+	public String getWatermark() {return watermark;}
 	public boolean isDirty() {return dirty;}
 	
 	public void setBlocks(SerializableBlock[] list) { blocks=list; }
@@ -48,6 +50,7 @@ public class SerializableDiagram {
 	public void setName(String nam) { if(nam!=null) name=nam; }
 	public void setResourceId(long resourceId) {this.resourceId = resourceId;}
 	public void setState(DiagramState state) {this.state = state;}
+	public void setWatermark(String mark) { this.watermark = mark; }
 	
 	/**
 	 * This is a linear search. We are assured (not guaranteed) that the

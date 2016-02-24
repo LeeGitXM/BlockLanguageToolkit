@@ -368,6 +368,8 @@ public class ProxyHandler   {
 						if( val!=null ) desc.setEmbeddedIcon(val.toString());
 						val = tbl.get(BLTProperties.PALETTE_VIEW_BLOCK_ICON);
 						if( val!=null ) desc.setIconPath(val.toString());
+						val = tbl.get(BLTProperties.PALETTE_VIEW_FONT_SIZE);
+						if( val!=null ) desc.setEmbeddedFontSize(fns.coerceToInteger(val));
 						val = tbl.get(BLTProperties.PALETTE_VIEW_HEIGHT);
 						if( val!=null ) desc.setPreferredHeight(fns.coerceToInteger(val));
 						val = tbl.get(BLTProperties.PALETTE_VIEW_WIDTH);

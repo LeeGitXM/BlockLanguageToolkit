@@ -362,7 +362,7 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setEmbeddedLabel("Trend");
-		desc.setEmbeddedFontSize(36);
+		desc.setEmbeddedFontSize(18);
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setStyle(BlockStyle.SQUARE);
 		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_LIGHT_GRAY);

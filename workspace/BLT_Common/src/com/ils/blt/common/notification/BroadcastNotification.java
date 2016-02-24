@@ -16,11 +16,13 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  */
 public class BroadcastNotification {
 	private final UUID diagramId;
+	private final String blockName;
 	private final TransmissionScope scope;
 	private final QualifiedValue value;
 	
 	/**
-	 * Constructor. Note that the qualified value is guaranteed to hold a signal.
+	 * Constructor. Use this constructor to define a broadcast to multiple blocks in a diagram.
+	 *              Note that the qualified value is guaranteed to hold a signal.
 	 * @param diagramId
 	 * @param scope
 	 * @param qualified value containing the signal to be transmitted.
@@ -29,8 +31,24 @@ public class BroadcastNotification {
 		this.diagramId = diagId;
 		this.scope = tscope;
 		this.value = qv;
+		this.blockName = null;
 	}
 	
+	/**
+	 * Constructor. Use this constructor to send a signal to a specific block.
+	 *              Note that the qualified value is guaranteed to hold a signal.
+	 * @param diagramId
+	 * @param block name of the target block
+	 * @param qualified value containing the signal to be transmitted.
+	 */
+	public BroadcastNotification(UUID diagId,String block,QualifiedValue qv)  {
+		this.diagramId = diagId;
+		this.scope = TransmissionScope.BLOCK;
+		this.value = qv;
+		this.blockName = block;
+	}
+	
+	public String getBlockName() { return this.blockName; }
 	public UUID getDiagramId() {return diagramId;}
 	public Signal getSignal() {return (Signal)value.getValue();}
 	public QualifiedValue getValue() {return value;}

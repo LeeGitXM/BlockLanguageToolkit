@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2015  ILS Automation. All rights reserved. 
+ *   (c) 2014-2016  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.gateway.engine;
 
@@ -17,6 +17,7 @@ import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.ProcessBlock;
+import com.ils.blt.common.block.TransmissionScope;
 import com.ils.blt.common.connection.Connection;
 import com.ils.blt.common.connection.ProcessConnection;
 import com.ils.blt.common.notification.BroadcastNotification;
@@ -73,10 +74,12 @@ public class ProcessDiagram extends ProcessNode {
 	// For now we just do a linear search
 	public ProcessBlock getBlockByName(String name) { 
 		ProcessBlock result = null;
-		for(ProcessBlock blk:getProcessBlocks()) {
-			if(blk.getName().equals(name)) {
-				result = blk;
-				break;
+		if( name!=null ) {
+			for(ProcessBlock blk:getProcessBlocks()) {
+				if(blk.getName().equals(name)) {
+					result = blk;
+					break;
+				}
 			}
 		}
 		return result;
@@ -297,13 +300,27 @@ public class ProcessDiagram extends ProcessNode {
 	 * @return a new value notification for the receiving block(s)
 	 */
 	public Collection<SignalNotification> getBroadcastNotifications(BroadcastNotification incoming) {
-		
 		Collection<SignalNotification>notifications = new ArrayList<SignalNotification>();
-		for( ProcessBlock block:getProcessBlocks()) {
-			if( !block.isReceiver() ) continue;
-			SignalNotification sn = new SignalNotification(block,incoming.getValue());
-			notifications.add(sn);
+		if( incoming.getScope().equals(TransmissionScope.BLOCK)) {
+			// Send to a single, specified block
+			ProcessBlock block = getBlockByName(incoming.getBlockName());
+			if( block!=null ) {
+				SignalNotification sn = new SignalNotification(block,incoming.getValue());
+				notifications.add(sn);
+			}
+			else {
+				log.warnf("%s.getBroadcastNotifications: Target block %s not found in %s",TAG,incoming.getBlockName(),getName());
+			}
 		}
+		else {
+			// This is really TransmissionScope.LOCAL
+			for( ProcessBlock block:getProcessBlocks()) {
+				if( !block.isReceiver() ) continue;
+				SignalNotification sn = new SignalNotification(block,incoming.getValue());
+				notifications.add(sn);
+			}
+		}
+		
 		return notifications;
 	}
 	/**

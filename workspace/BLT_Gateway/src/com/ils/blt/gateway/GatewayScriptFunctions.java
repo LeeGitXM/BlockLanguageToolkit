@@ -6,10 +6,12 @@ package com.ils.blt.gateway;
 
 import java.util.List;
 
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
+import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 
 
 /**
@@ -26,6 +28,12 @@ public class GatewayScriptFunctions   {
 	
 	public static List<SerializableResourceDescriptor> childNodes(String nodeId) {
 		return handler.childNodes(nodeId);
+	}
+	/**
+	 * Clear any watermark on a diagram. 
+	 */
+	public static void clearWatermark(String diagramId) {
+		handler.clearWatermark(diagramId);
 	}
 	/**
 	 * Remove all running diagrams from the controller. 
@@ -339,6 +347,11 @@ public class GatewayScriptFunctions   {
 	public static void setBlockPropertyValue(String diagramId,String bname,String pname,String value )  {
 		handler.setBlockPropertyValue(diagramId, bname, pname, value);
 	}
+	
+	public static void setBlockState(String diagramId,String bname,String state ) {
+		handler.setBlockState(diagramId,bname,state);
+	}
+	
 	/**
 	 * Specify the new state of a diagram
 	 * @param diagramId
@@ -373,6 +386,12 @@ public class GatewayScriptFunctions   {
 	 */
 	public static void setToolkitProperty(String propertyName,String value) {
 		handler.setToolkitProperty(propertyName,value);
+	}
+	/**
+	 * Define a watermark for a diagram. 
+	 */
+	public static void setWatermark(String diagramId,String text) {
+		handler.setWatermark(diagramId,text);
 	}
 	/**
 	 * Start the block execution engine in the gateway.

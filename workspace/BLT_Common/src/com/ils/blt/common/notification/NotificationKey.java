@@ -59,4 +59,18 @@ public class NotificationKey
 	public static boolean isPropertyValueKey(String key) {
 		return key.startsWith("P");
 	}
+	/**
+	 * Test a key for type. 
+	 * @return  true if this is a watermark key.
+	 */
+	public static boolean isWatermarkKey(String key) {
+		return key.startsWith("W");
+	}
+	/**
+	 * @return  a push-notification key for a diagram's watermark. The Id is
+	 *         simply the diagram Id.
+	 */
+	public static String watermarkKeyForDiagram(String did) {
+		return String.format("W:%s",did);
+	}
 }

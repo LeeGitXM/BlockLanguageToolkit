@@ -691,7 +691,23 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 			log.debugf("%s.sendDiagramNotification: Error transmitting %s (%s)",TAG,key,ex.getMessage());
 		}
 	}
-	
+	/**
+	 * Notify any listeners in the Client or Designer scopes that a diagram needs a different watermark. 
+	 * A diagram is always saved from the designer, so it is not necessary to save this locally.
+	 * @param diagramid unique Id of the diagram
+	 * @param val new state
+	 */
+	@Override
+	public void sendWatermarkNotification(String diagramid, String val) {
+		String key = NotificationKey.watermarkKeyForDiagram(diagramid);
+		try {
+			sessionManager.sendNotification(ApplicationScope.DESIGNER, BLTProperties.MODULE_ID, key,val );
+		}
+		catch(Exception ex) {
+			// Probably no receiver registered. This is to be expected if the designer is not running.
+			log.debugf("%s.sendWatermarkNotification: Error transmitting %s (%s)",TAG,key,ex.getMessage());
+		}
+	}
 	
 
 }

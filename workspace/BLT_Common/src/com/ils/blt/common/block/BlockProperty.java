@@ -227,4 +227,6 @@ public class BlockProperty implements NotificationChangeListener {
 			}
 		}
 	}
+	@Override
+	public void watermarkChange(String val) {}
 }

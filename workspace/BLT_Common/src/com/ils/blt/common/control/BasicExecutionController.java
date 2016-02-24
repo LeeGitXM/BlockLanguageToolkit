@@ -86,6 +86,9 @@ public class BasicExecutionController implements ExecutionController  {
 	public void sendStateNotification(String id, String val){
 		log.warnf("%s.sendStateNotification: WARNING: Executed from stub class",TAG);
 	}
+	public void sendWatermarkNotification(String diagramid, String val) {
+		log.warnf("%s.sendWatermarkNotification: WARNING: Executed from stub class",TAG);
+	}
 	public void updateTag(UUID diagramId,String path,QualifiedValue val) {
 		log.warnf("%s.updateTag: WARNING: Executed from stub class",TAG);
 	}

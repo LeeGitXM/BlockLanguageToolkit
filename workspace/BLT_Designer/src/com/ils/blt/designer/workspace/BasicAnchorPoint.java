@@ -204,4 +204,6 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 		lastValue = value;
 		((ProcessBlockView)getBlock()).recordLatestValue(id.toString(),value);
 	}
+	@Override
+	public void watermarkChange(String watermark) {}
 }

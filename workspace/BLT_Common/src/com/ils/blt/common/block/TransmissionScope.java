@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
+ *   (c) 2014-2016  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.common.block;
 
@@ -13,7 +13,8 @@ public enum TransmissionScope
             GLOBAL,
             APPLICATION,
             FAMILY,
-            LOCAL
+            LOCAL,
+            BLOCK
             ;
            
  /**

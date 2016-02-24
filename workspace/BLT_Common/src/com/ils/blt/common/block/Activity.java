@@ -10,7 +10,9 @@ import java.util.Date;
 public class Activity implements Cloneable,Serializable  {
 	private static final long serialVersionUID = -6862986291141763186L;
 	// These are some standard actions
+	public final static String ACTIVITY_BLOCKED = "BLOCKED";
 	public final static String ACTIVITY_RESET = "RESET";
+	public final static String ACTIVITY_SET_EXPIRATION = "SET EXPIRATION";
 	public final static String ACTIVITY_STATE = "STATE";
 	public final static String ACTIVITY_START = "START";
 	public final static String ACTIVITY_STOP  = "STOP";

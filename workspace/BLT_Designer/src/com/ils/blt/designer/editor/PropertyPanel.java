@@ -613,4 +613,6 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		//log.infof("%s.stateChanged: - %s",TAG,property.getName());
 		update();	
 	}
+	@Override
+	public void watermarkChange(String mark) {}
 }

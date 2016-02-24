@@ -72,6 +72,8 @@ public class LabData extends Input implements ProcessBlock {
 	@Override
 	protected void initialize() {	
 		setName("LabData");
+		delayStart = true;
+		
 		// This property causes the engine to start a subscription.
 		timePathProperty = new BlockProperty(BLOCK_PROPERTY_TIME_PATH,"",PropertyType.OBJECT,true);
 		timePathProperty.setBinding("");
@@ -95,7 +97,7 @@ public class LabData extends Input implements ProcessBlock {
 		setProperty(BlockConstants.BLOCK_PROPERTY_FORMAT, formatProperty);
 		
 		// Define a single output
-		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.ANY);
+		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
 		anchors.add(output);
 	}
 	
@@ -225,12 +227,13 @@ public class LabData extends Input implements ProcessBlock {
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setEmbeddedLabel("Lab Data");
-		desc.setEmbeddedFontSize(16);
+		desc.setEmbeddedFontSize(10);
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setStyle(BlockStyle.ARROW);
 		desc.setPreferredHeight(50);
 		desc.setPreferredWidth(70);
 		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_LIGHT_ROSE);
+		desc.setCtypeEditable(true);
 	}
 	
 	/**

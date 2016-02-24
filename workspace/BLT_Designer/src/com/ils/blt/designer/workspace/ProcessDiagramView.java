@@ -61,6 +61,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	private boolean dirty = false;   // A newly created diagram is "dirty" until it is saved
 	                                 // but this looks better. It'll be dirty again with the first block
 	private boolean suppressStateChangeNotification = false;
+	private String watermark = "";
 	
 	/**
 	 * Constructor: Create an instance given a SerializableDiagram
@@ -70,6 +71,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	public ProcessDiagramView (long resid,SerializableDiagram diagram, DesignerContext context) {
 		this(resid,diagram.getId(),diagram.getName());
 		this.state = diagram.getState();
+		this.watermark = diagram.getWatermark();
 		this.context = context;
 		suppressStateChangeNotification = true;
 		synchronized(this) {
@@ -234,6 +236,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		diagram.setId(getId());
 		diagram.setState(state);
 		diagram.setDirty(dirty);
+		diagram.setWatermark(watermark);
 		List<SerializableBlock> sblocks = new ArrayList<SerializableBlock>();
 		for( ProcessBlockView blk:blockMap.values()) {
 			SerializableBlock sb = blk.convertToSerializable();
@@ -357,7 +360,9 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	public long getResourceId() {
 		return resourceId;
 	}
-
+	
+	public String getWatermark() {return watermark;}
+	public void setWatermark(String mark) { this.watermark = mark; }
 
 	@Override
 	public boolean isConnectionValid(AnchorPoint startingAnchor, AnchorPoint endAnchor) {
@@ -413,7 +418,6 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			if( bap!=null ) {    // Is null when block-and-connector library is hosed.
 				ProcessBlockView blk = (ProcessBlockView)bap.getBlock();
 				String key = NotificationKey.keyForConnection(blk.getId().toString(), bap.getId().toString());
-				log.tracef("%s.registerChangeListeners: adding %s",TAG,key);
 				handler.initializeNotification(key,blk.getLastValueForPort(bap.getId().toString()));
 				handler.addNotificationChangeListener(key,TAG, bap);
 			}
@@ -426,17 +430,17 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			for(BlockProperty prop:block.getProperties()) {
 				if( prop.getBindingType().equals(BindingType.ENGINE)) {
 					String key = NotificationKey.keyForProperty(block.getId().toString(), prop.getName());
-					log.tracef("%s.registerChangeListeners: adding %s(%d)",TAG,key,prop.hashCode());
 					handler.initializeNotification(key,new BasicQualifiedValue(prop.getValue()));
 					handler.addNotificationChangeListener(key,TAG, prop);
 					prop.addChangeListener(block);
 				}
 			}
 		}
-		// Finally, register self
+		// Finally, register self for state and watermark changes
 		String key = NotificationKey.keyForDiagram(getId().toString());
 		handler.addNotificationChangeListener(key,TAG,this);
-		log.tracef("%s.registerChangeListeners: diagram listening to %s",TAG,key);
+		key = NotificationKey.watermarkKeyForDiagram(getId().toString());
+		handler.addNotificationChangeListener(key,TAG,this);
 	}
 	
 	/**
@@ -505,5 +509,10 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			setState(ds);
 			super.fireStateChanged();
 		}
+	}
+	
+	@Override
+	public void watermarkChange(String mark) {
+		setWatermark(mark);
 	}
 }

@@ -55,6 +55,13 @@ public class GatewayRpcDispatcher   {
 		return requestHandler.childNodes(nodeId);
 	}
 	
+	/**
+	 * Clear any watermark on a diagram. 
+	 */
+	public void clearWatermark(String diagramId) {
+		requestHandler.clearWatermark(diagramId);
+	}
+	
 	public void clearController() {
 		requestHandler.clearController();
 	}
@@ -379,6 +386,9 @@ public class GatewayRpcDispatcher   {
 		log.infof("%s.sendLocalSignal: %s %s %s %s",TAG,uuidString,command,message,arg);
 		return new Boolean(requestHandler.sendLocalSignal(uuidString,command,message,arg));
 	}
+	public boolean sendSignal(String diagramId,String blockName,String command,String message) {
+		return new Boolean(requestHandler.sendSignal(diagramId,blockName,command,message));
+	}
 	/**
 	 * 
 	 * @param uuidString identifier of the diagram for which the signal is local
@@ -469,6 +479,10 @@ public class GatewayRpcDispatcher   {
 		requestHandler.setBlockPropertyValue(diagramId,bname,pname,value);
 	}
 	
+	public void setBlockState(String diagramId,String bname,String state ) {
+		requestHandler.setBlockState(diagramId,bname,state);
+	}
+	
 	public void setDiagramState(Long projectId,Long resourceId,String state) {
 		requestHandler.setDiagramState(projectId,resourceId,state);
 	}
@@ -495,6 +509,13 @@ public class GatewayRpcDispatcher   {
 	public void setToolkitProperty(String propertyName,String value) {
 		//log.infof("%s.setToolkitProperty: %s: %s", TAG, propertyName, value);
 		requestHandler.setToolkitProperty(propertyName,value);
+	}
+	
+	/**
+	 * Define a watermark for a diagram. 
+	 */
+	public void setWatermark(String diagramId,String text) {
+		requestHandler.setWatermark(diagramId,text);
 	}
 
 	public void startController() {

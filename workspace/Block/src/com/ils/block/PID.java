@@ -313,7 +313,7 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setEmbeddedLabel("PID");
-		desc.setEmbeddedFontSize(52);
+		desc.setEmbeddedFontSize(24);
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setStyle(BlockStyle.SQUARE);
 		desc.setReceiveEnabled(true);

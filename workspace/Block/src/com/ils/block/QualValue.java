@@ -230,7 +230,7 @@ public class QualValue extends AbstractProcessBlock implements ProcessBlock {
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setEmbeddedLabel("QV");
-		desc.setEmbeddedFontSize(36);
+		desc.setEmbeddedFontSize(18);
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setStyle(BlockStyle.SQUARE);
 		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_LIGHT_GRAY);

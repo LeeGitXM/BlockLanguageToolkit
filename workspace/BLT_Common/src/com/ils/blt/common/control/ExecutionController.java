@@ -40,6 +40,7 @@ public interface ExecutionController  {
 	public void sendPropertyNotification(String id, String propertyName, QualifiedValue val);
 	public void sendConnectionNotification(String blockid, String port, QualifiedValue val);
 	public void sendStateNotification(String diagramid, String val);
+	public void sendWatermarkNotification(String diagramid, String val);
 	public void updateTag(UUID diagramId,String path,QualifiedValue val);
 	public String validateTag(UUID diagramId,String tagPath); 
 }

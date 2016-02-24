@@ -20,6 +20,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.routing.EdgeR
 
 public class DiagramContainer extends BlockDesignableContainer {
 	private static final long serialVersionUID = 7484274138362308991L;
+	private static final double WATERMARK_ROTATION = -0.3; // Radians counter-clockwise
 	private final UtilityFunctions fncs;
 
 	public DiagramContainer(AbstractBlockWorkspace workspace,BlockDiagramModel model,EdgeRouter router,ConnectionPainter painter) {
@@ -44,22 +45,34 @@ public class DiagramContainer extends BlockDesignableContainer {
 		super.paintComponent(_g);
 		Graphics2D g = (Graphics2D) _g;
 		
+		// First, paint a watermark, if it exists
+		ProcessDiagramView diagram = (ProcessDiagramView)getModel();
+		String watermark = diagram.getWatermark();
+		if( watermark!=null && !watermark.isEmpty() ) {
+			g.rotate(WATERMARK_ROTATION);   // Radians counter-clockwise
+			float x = (float) (diagram.getDiagramSize().getWidth()/8);
+			float y = (float) (diagram.getDiagramSize().getHeight()/2);
+			paintTextAt(g,watermark,x,y, Color.LIGHT_GRAY,96);
+			g.rotate(-WATERMARK_ROTATION); 
+		}
 		// Paint "displayed" properties.
 		for(Block blk:getModel().getBlocks() ) {
 			ProcessBlockView pbv = (ProcessBlockView)blk;
 			float xpos = pbv.getLocation().x;
 			float ypos = pbv.getLocation().y;
 			if(pbv.isNameDisplayed() ) {
-				paintTextAt(g,pbv.getName(),xpos+pbv.getNameOffsetX(),ypos+pbv.getNameOffsetY(),Color.DARK_GRAY,18);
+				paintTextAt(g,pbv.getName(),xpos+pbv.getNameOffsetX(),ypos+pbv.getNameOffsetY(),Color.DARK_GRAY,12);
 			}
 			
 			for(BlockProperty bp:pbv.getProperties()) {
 				if(bp.isDisplayed() && bp.getValue()!=null) {
 					String val = fncs.coerceToString(bp.getValue());
-					paintTextAt(g,val,xpos+bp.getDisplayOffsetX(),ypos+bp.getDisplayOffsetY(),Color.DARK_GRAY,24);
+					paintTextAt(g,val,xpos+bp.getDisplayOffsetX(),ypos+bp.getDisplayOffsetY(),Color.DARK_GRAY,12);
 				}
 			}
 		}
+		
+
 		
 	}
 	
@@ -73,13 +86,13 @@ public class DiagramContainer extends BlockDesignableContainer {
 	 */
 	private void paintTextAt(Graphics2D g, String text, float xpos, float ypos, Color fill,int fontSize) {
 		Font font = g.getFont();
-		font = font.deriveFont(fontSize);
+		font = font.deriveFont((float)fontSize);
 		FontRenderContext frc = g.getFontRenderContext();
 		GlyphVector vector = font.createGlyphVector(frc, text);
 		Rectangle2D bounds = vector.getVisualBounds();
 		// xpos, ypos are centers. Adjust to upper left.
-		ypos+= bounds.getHeight()/2f;
-		xpos-= bounds.getWidth()/2f;
+		ypos+= (float)(bounds.getHeight()/2);
+		xpos-= (float)(bounds.getWidth()/2);
 
 		Shape textShape = vector.getOutline(xpos, ypos);
 		g.setColor(fill);

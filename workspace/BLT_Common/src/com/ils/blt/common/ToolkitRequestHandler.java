@@ -266,6 +266,16 @@ public interface ToolkitRequestHandler  {
 	 */
 	public boolean sendLocalSignal(String diagramId,String command,String message,String arg) ;
 	/**
+	 * Send a signal directly to a specified block.
+	 * This is a "local" transmission. The signal timestamp is "now".
+	 * 
+	 * @param diagramId diagram identifier
+	 * @param command string of the signal.
+	 * @param message command payload
+	 * @return true on success
+	 */
+	public boolean sendSignal(String diagramId,String blockName,String command,String message);
+	/**
 	 * Send a signal to all blocks of a particular class on a specified diagram.
 	 * This is a "local" transmission. The diagram is specified by a tree-path.
 	 * There may be no successful recipients. This version time-stamps the signal sent
@@ -308,7 +318,14 @@ public interface ToolkitRequestHandler  {
 	 */
 	public void setBlockPropertyValue(String diagramId,String bname,String pname,String value ) ;
 
-
+	/** 
+	 * Drive a block to the specified state. 
+	 *  
+	 * @param diagramId diagram's unique Id as a String
+	 * @param bname 
+	 * @param state the new state of the block. The value will be coerced into a truth-value in the gateway 
+	 */
+	public void setBlockState(String diagramId,String bname,String state );
 	public void setDiagramState(Long projectId, Long resourceId, String state) ;
 	public void setDiagramState(String diagramId, String state);
 	/**

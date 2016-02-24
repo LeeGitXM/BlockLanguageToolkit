@@ -145,7 +145,7 @@ public class Gain extends AbstractProcessBlock implements ProcessBlock {
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setEmbeddedLabel("K");
-		desc.setEmbeddedFontSize(36);
+		desc.setEmbeddedFontSize(28);
 		desc.setStyle(BlockStyle.DIAMOND);
 		desc.setPreferredHeight(70);
 		desc.setPreferredWidth(70);

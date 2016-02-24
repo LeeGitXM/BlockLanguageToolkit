@@ -473,7 +473,7 @@ public abstract class AbstractUIView extends JComponent
 		else if( type==ConnectionType.TRUTHVALUE ) color = WorkspaceConstants.CONNECTION_FILL_UNKNOWN;
 		else if( type==ConnectionType.DATA  ) color = WorkspaceConstants.CONNECTION_FILL_DATA;
 		else if( type==ConnectionType.TEXT  ) color = WorkspaceConstants.CONNECTION_FILL_TEXT;
-		else if( type==ConnectionType.ANY  ) color = WorkspaceConstants.CONNECTION_FILL_TEXT;
+		else if( type==ConnectionType.ANY  ) color = WorkspaceConstants.CONNECTION_FILL_ANY;
 		return color;
 	}
 	
@@ -502,7 +502,7 @@ public abstract class AbstractUIView extends JComponent
 	 */
 	private void paintTextAt(Graphics2D g, String text, float xpos, float ypos, Color fill,int fontSize) {
 		Font font = g.getFont();
-		font = font.deriveFont(fontSize);
+		font = font.deriveFont((float)fontSize);  // This is, presumably the correct way
 		FontRenderContext frc = g.getFontRenderContext();
 		GlyphVector vector = font.createGlyphVector(frc, text);
 		Rectangle2D bounds = vector.getVisualBounds();
