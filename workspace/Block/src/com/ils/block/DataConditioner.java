@@ -227,7 +227,7 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 		desc.setEmbeddedLabel("Data\nConditioner");
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setStyle(BlockStyle.SQUARE);
-		desc.setEmbeddedFontSize(16);
+		desc.setEmbeddedFontSize(12);
 		desc.setPreferredHeight(80);
 		desc.setPreferredWidth(100);
 		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_LIGHT_GRAY); 

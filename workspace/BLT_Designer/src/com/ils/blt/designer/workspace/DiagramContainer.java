@@ -50,9 +50,15 @@ public class DiagramContainer extends BlockDesignableContainer {
 		String watermark = diagram.getWatermark();
 		if( watermark!=null && !watermark.isEmpty() ) {
 			g.rotate(WATERMARK_ROTATION);   // Radians counter-clockwise
-			float x = (float) (diagram.getDiagramSize().getWidth()/8);
+			float x = (float) (diagram.getDiagramSize().getWidth()/2);
 			float y = (float) (diagram.getDiagramSize().getHeight()/2);
-			paintTextAt(g,watermark,x,y, Color.LIGHT_GRAY,96);
+			int size = 16;
+			if(watermark.length()<5) size = 240;
+			else if(watermark.length()<9) size = 124;
+			else if(watermark.length()<17) size = 72;
+			else if(watermark.length()<33) size = 48;
+			
+			paintTextAt(g,watermark,x,y, Color.LIGHT_GRAY,size);
 			g.rotate(-WATERMARK_ROTATION); 
 		}
 		// Paint "displayed" properties.
@@ -93,6 +99,10 @@ public class DiagramContainer extends BlockDesignableContainer {
 		// xpos, ypos are centers. Adjust to upper left.
 		ypos+= (float)(bounds.getHeight()/2);
 		xpos-= (float)(bounds.getWidth()/2);
+		
+		System.out.println(String.format("DiagramContainer: %s at %3.0f,%3.0f size %3.0f,%3.0f in %3.0f,%3.0f",text,xpos,ypos,
+				bounds.getWidth(),bounds.getHeight(),
+				((ProcessDiagramView)getModel()).getDiagramSize().getWidth(),((ProcessDiagramView)getModel()).getDiagramSize().getHeight()));
 
 		Shape textShape = vector.getOutline(xpos, ypos);
 		g.setColor(fill);

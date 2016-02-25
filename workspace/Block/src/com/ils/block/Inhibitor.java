@@ -152,6 +152,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
 		Map<String,String> attributes = descriptor.getAttributes();
 		
+		attributes.put("Interval~secs", String.valueOf(interval));
 		attributes.put("Inhibiting", (inhibiting?"true":"false"));
 		long time = ((Long)expirationProperty.getValue()).longValue();
 		if( time>0 ) {

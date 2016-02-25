@@ -151,7 +151,9 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 		//log.infof("%s.evaluate ... %f secs",TAG,interval);
 		//if we're in the triggering state, then update duration, re-set the timer
 		if( qv!=null ) {
-			duration += ((timer.getTestTime() - qv.getTimestamp().getTime()) * timer.getFactor())/1000.;
+			long testtime = timer.getTestTime();
+			long qvtime = qv.getTimestamp().getTime();
+			duration += ((testtime - qvtime) * timer.getFactor())/1000.;
 			if( !isLocked() ) {
 				qv = new TestAwareQualifiedValue(timer,new Integer((int)duration));
 				OutgoingNotification sig = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);

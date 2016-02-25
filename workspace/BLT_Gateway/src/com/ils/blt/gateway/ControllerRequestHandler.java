@@ -1053,7 +1053,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			ProcessBlock block = diagram.getBlockByName(bname);
 			if( block!=null ) {
 				try {
-					TruthValue state = TruthValue.valueOf(stateName);
+					TruthValue state = TruthValue.valueOf(stateName.toUpperCase());
 					block.setState(state);
 					block.notifyOfStatus();
 				}

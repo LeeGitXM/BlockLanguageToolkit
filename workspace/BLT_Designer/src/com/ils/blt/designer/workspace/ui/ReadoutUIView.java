@@ -127,9 +127,9 @@ public class ReadoutUIView extends AbstractUIView implements BlockViewUI {
 		
 		// Set the font size based on the string length.
 		// Assumes 100px block width
-		int fontSize = 10;  // Small
-		if( value.length()<7 ) fontSize = 18;
-		else if( value.length()<11 ) fontSize = 16;
+		int fontSize = 8;  // Small
+		if( value.length()<7 ) fontSize = 16;
+		else if( value.length()<13 ) fontSize = 12;
 		
 		block.setEmbeddedFontSize(fontSize);
 		block.setEmbeddedLabel(value);
