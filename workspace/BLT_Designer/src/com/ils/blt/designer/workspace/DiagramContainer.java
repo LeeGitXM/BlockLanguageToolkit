@@ -7,6 +7,7 @@ import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 
 import com.ils.blt.common.UtilityFunctions;
@@ -49,17 +50,18 @@ public class DiagramContainer extends BlockDesignableContainer {
 		ProcessDiagramView diagram = (ProcessDiagramView)getModel();
 		String watermark = diagram.getWatermark();
 		if( watermark!=null && !watermark.isEmpty() ) {
-			g.rotate(WATERMARK_ROTATION);   // Radians counter-clockwise
 			float x = (float) (diagram.getDiagramSize().getWidth()/2);
 			float y = (float) (diagram.getDiagramSize().getHeight()/2);
 			int size = 16;
 			if(watermark.length()<5) size = 240;
 			else if(watermark.length()<9) size = 124;
-			else if(watermark.length()<17) size = 72;
+			else if(watermark.length()<17) size = 96;
 			else if(watermark.length()<33) size = 48;
-			
-			paintTextAt(g,watermark,x,y, Color.LIGHT_GRAY,size);
-			g.rotate(-WATERMARK_ROTATION); 
+			AffineTransform save = g.getTransform();
+			g.translate(x, y);
+			g.rotate(WATERMARK_ROTATION);
+			paintTextAt(g,watermark,0,0, Color.LIGHT_GRAY,size); 
+			g.setTransform(save);
 		}
 		// Paint "displayed" properties.
 		for(Block blk:getModel().getBlocks() ) {
@@ -93,6 +95,7 @@ public class DiagramContainer extends BlockDesignableContainer {
 	private void paintTextAt(Graphics2D g, String text, float xpos, float ypos, Color fill,int fontSize) {
 		Font font = g.getFont();
 		font = font.deriveFont((float)fontSize);
+
 		FontRenderContext frc = g.getFontRenderContext();
 		GlyphVector vector = font.createGlyphVector(frc, text);
 		Rectangle2D bounds = vector.getVisualBounds();
@@ -100,10 +103,11 @@ public class DiagramContainer extends BlockDesignableContainer {
 		ypos+= (float)(bounds.getHeight()/2);
 		xpos-= (float)(bounds.getWidth()/2);
 		
+		/*
 		System.out.println(String.format("DiagramContainer: %s at %3.0f,%3.0f size %3.0f,%3.0f in %3.0f,%3.0f",text,xpos,ypos,
 				bounds.getWidth(),bounds.getHeight(),
 				((ProcessDiagramView)getModel()).getDiagramSize().getWidth(),((ProcessDiagramView)getModel()).getDiagramSize().getHeight()));
-
+		*/
 		Shape textShape = vector.getOutline(xpos, ypos);
 		g.setColor(fill);
 		g.fill(textShape);

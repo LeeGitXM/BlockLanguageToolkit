@@ -130,7 +130,7 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 					// This represents a state change
 					if( trigger.equals(tv)  ) {
 						if( !accumulateValues) duration = 0.0;
-						qv = new BasicQualifiedValue(new Integer((int)duration));
+						qv = new TestAwareQualifiedValue(timer,new Integer((int)duration));
 						evaluate();
 					}
 					else if(stopOn.equals(tv)) {
