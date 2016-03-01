@@ -7,6 +7,7 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.serializable.SerializableBlock;
@@ -73,22 +74,19 @@ public class ProcedureMapper {
 					System.err.println(TAG+".setPythonModuleNames: No name on a block property in "+iblock.getName()+" ("+iblock.getClassName()+") - ignored");
 					continue;
 				}
-				if( bp.getType().equals(PropertyType.SCRIPTREF)) {
-					if( bp.getValue()!=null ) {
-						//System.err.println(TAG+".setPythonModuleNames: Convert "+iblock.getName()+"."+bp.getName()+" ("+bp.getValue()+")");
-						String unmapped = bp.getValue().toString().toLowerCase();
-						String converted = procedureMap.get(unmapped.trim());
-						if( converted!=null) {
-							bp.setValue(converted);  
-						}
-						else {
-							System.err.println(TAG+".setPythonModuleNames "+iblock.getName()+" ("+iblock.getClassName()+"):"+bp.getName()+";"+unmapped+" is not mapped to a python module");
-						}
+				// Look at "script" attributes to convert python.
+				// Note: The script property type is unused.
+				if( bp.getType().equals(PropertyType.SCRIPTREF) ||
+				    bp.getName().equalsIgnoreCase("script")         ) {
+					//System.err.println(TAG+".setPythonModuleNames: Convert "+iblock.getName()+"."+bp.getName()+" ("+bp.getValue()+")");
+					String unmapped = bp.getValue().toString().toLowerCase();
+					String converted = procedureMap.get(unmapped.trim());
+					if( converted!=null) {
+						bp.setValue(converted);  
 					}
-					// Don't complain re: null
-					//else {
-					//	System.err.println(TAG+".setPythonModuleNames"+iblock.getName()+" "+bp.getName()+" found a null procedure entry");
-					//}
+					else {
+						System.err.println(TAG+".setPythonModuleNames "+iblock.getName()+" ("+iblock.getClassName()+"):"+bp.getName()+";"+unmapped+" is not mapped to a python module");
+					}
 				}
 			}
 		}
