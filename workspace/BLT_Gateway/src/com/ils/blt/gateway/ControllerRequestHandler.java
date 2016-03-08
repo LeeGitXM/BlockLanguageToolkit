@@ -457,7 +457,21 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		ProcessFamily fam = pyHandler.getFamily(uuid);
 		return fam.getName();
 	}
-	
+	/**
+	 * @param diagramId
+	 * @param blockId
+	 * @return an explanation for the block's current state
+	 */
+	@Override
+	public String getExplanation(String diagramId,String blockId) {
+		String explanation = "";
+		ProcessDiagram diagram = controller.getDiagram(UUID.fromString(diagramId));
+		if(diagram!=null) {
+			ProcessBlock block = controller.getBlock(diagram, UUID.fromString(blockId));
+			if( block!=null ) explanation = block.getExplanation();
+		}
+		return explanation;
+	}
 	/**
 	 * Query a block for its internal state. This allows a read-only display in the
 	 * designer to be useful for block debugging.

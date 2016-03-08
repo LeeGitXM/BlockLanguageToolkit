@@ -110,6 +110,10 @@ public interface ToolkitRequestHandler  {
 	 *         superior to the node with the specified UUID
 	 */
 	public String getFamilyName(String uuid);
+	/**
+	 * @return an explanation for the state of a block.
+	 */
+	public String getExplanation(String diagramId,String blockId);
 	
 	/**
 	 * @return internal details of a block for debugging purposes.

@@ -82,6 +82,17 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 */
 	public String getClassName();
 	/**
+	 * Blocks that have a logical output are responsible for 
+	 * compiling a string that describes the reason for either 
+	 * a TRUE or FALSE result. If the block has logical inputs
+	 * then the explanation accounts for upstream explanations.
+	 * 
+	 * @return an explanation for the current state of the block.
+	 *         If this is a block that has no relevant state, return
+	 *         an empty string.
+	 */
+	public String getExplanation();
+	/**
 	 * @return information related to the workings of the block.
 	 *        The information returned varies depending on the 
 	 *        block. At the very least the data contains the 

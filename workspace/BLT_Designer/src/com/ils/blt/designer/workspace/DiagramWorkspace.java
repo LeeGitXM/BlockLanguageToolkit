@@ -45,6 +45,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
@@ -52,6 +53,7 @@ import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.ResourceUpdateManager;
+import com.ils.blt.designer.config.BlockExplanationViewer;
 import com.ils.blt.designer.config.BlockInternalsViewer;
 import com.ils.blt.designer.config.ForceValueSettingsDialog;
 import com.ils.blt.designer.editor.PropertyEditorFrame;
@@ -241,6 +243,13 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				else {
 					ShowSignalAction ssa = new ShowSignalAction(this,getActiveDiagram(),pbv);
 					menu.add(ssa);
+				}
+				// Display an explanation if the block is currently TRUE or FALSE
+				
+				String currentState = handler.getBlockState(getActiveDiagram().getId().toString(),pbv.getName());
+				if( currentState!=null && (currentState.equalsIgnoreCase("true")|| currentState.equalsIgnoreCase("false"))) {
+					ExplanationAction act = new ExplanationAction(getActiveDiagram(),pbv);
+					menu.add(act);
 				}
 				ViewInternalsAction via = new ViewInternalsAction(getActiveDiagram(),pbv);
 				menu.add(via);
@@ -818,6 +827,36 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		}
 	}
 	/**
+	 * Display a popup dialog for this block showing an explanation
+	 * for its state.  This applies only to blocks that are currently
+	 * TRUE or FALSE.
+	 */
+	private class ExplanationAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final ProcessDiagramView diagram;
+		private final ProcessBlockView block;
+		public ExplanationAction(ProcessDiagramView dia,ProcessBlockView blk)  {
+			super(PREFIX+".Explanation");
+			this.diagram = dia;
+			this.block = blk;
+		}
+		
+		// Display the internals viewer
+		public void actionPerformed(final ActionEvent e) {
+			final JDialog viewer = (JDialog)new BlockExplanationViewer(context.getFrame(),diagram,block);
+			Object source = e.getSource();
+			if( source instanceof Component) {
+				viewer.setLocationRelativeTo((Component)source);
+			}
+			viewer.pack();
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					viewer.setVisible(true);
+				}
+			}); 
+		}
+	}
+	/**
 	 * Display a dialog that allows the user to enter a value for
 	 * each output -- and then force propagation of that value. 
 	 */
@@ -982,6 +1021,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			}
 		}
 	}
+
 	/**
 	 * Post an internals viewer for the block. The default shows
 	 * only name, class and UUID. Blocks may transmit additional

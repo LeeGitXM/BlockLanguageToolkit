@@ -174,6 +174,18 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	public PalettePrototype getBlockPrototype() {return prototype; }
 	@Override
 	public String getClassName() {return this.getClass().getCanonicalName();}
+	/**
+	 * Blocks that have a logical output are responsible for 
+	 * compiling a string that describes the reason for either 
+	 * a TRUE or FALSE result. If the block has logical inputs
+	 * then the explanation accounts for upstream explanations.
+	 * 
+	 * @return an explanation for the current state of the block.
+	 *         If this is a block that has no relevant state, return
+	 *         an empty string.
+	 */
+	@Override
+	public String getExplanation() { return ""; }
 	@Override
 	public String getName() {return name;}
 	@Override

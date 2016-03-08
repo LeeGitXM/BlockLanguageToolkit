@@ -43,7 +43,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
 
 /**
- * This is a read-only viewer for blocks for blocks that return internal state
+ * This is a read-only viewer for blocks that return internal state
  * (theoretically all of them). 
  */
 

@@ -116,6 +116,12 @@ public class GatewayScriptFunctions   {
 		return pyhandler;
 	}
 	/**
+	 * @return an explanation for the state of a block.
+	 */
+	public static String getExplanation(String diagramId,String blockId) {
+		return handler.getExplanation(diagramId,blockId);
+	}
+	/**
 	 * @return the the internal state of a block.
 	 */
 	public static SerializableBlockStateDescriptor getInternalState(String diagramId,String blockId) {

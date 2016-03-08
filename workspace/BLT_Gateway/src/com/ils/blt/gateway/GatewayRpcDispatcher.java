@@ -15,11 +15,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
+import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
@@ -243,6 +245,12 @@ public class GatewayRpcDispatcher   {
 	
 	public String getFamilyName(String uuid) {
 		return requestHandler.getFamilyName(uuid);
+	}
+	/**
+	 * @return an explanation for the state of a block.
+	 */
+	public String getExplanation(String diagramId,String blockId) {
+		return requestHandler.getExplanation(diagramId,blockId);
 	}
 	/**
 	 * Query a block for its internal state. This allows a read-only display in the

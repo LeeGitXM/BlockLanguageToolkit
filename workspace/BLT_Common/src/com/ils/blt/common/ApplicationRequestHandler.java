@@ -317,7 +317,22 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 		return name;
 	}
-	
+	/**
+	 * @return an explanation for the state of a block.
+	 */
+	@Override
+	public String getExplanation(String diagramId,String blockId) {
+		String reason="";
+
+		try {
+			reason = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "getExplanation",diagramId,blockId);
+		}
+		catch(Exception ex) {
+			log.infof("%s.getExplanation: Exception (%s)",TAG,ex.getMessage());
+		};
+		return reason;
+	}
 	/**
 	 * @return internal details of a block for debugging purposes.
 	 */
