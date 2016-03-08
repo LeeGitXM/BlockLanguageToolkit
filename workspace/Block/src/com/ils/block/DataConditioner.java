@@ -147,7 +147,8 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 		else if (vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(QUALITY_PORT_NAME)) {
 			if( qv.getQuality().isGood()) {
 				qualityInput = qualifiedValueAsTruthValue(qv);
-				//log.infof("%s.acceptValue got QUALITY =  %s", TAG,qv.getValue().toString());
+				// Update the timestamp of the data value
+				value = new TestAwareQualifiedValue(timer,value.getValue(),value.getQuality());
 			}
 		}
 		else {
@@ -174,9 +175,7 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 				controller.acceptCompletionNotification(nvn);
 				//log.tracef("%s.evaluate: propagating %s %s",getName(),value.getValue().toString(),value.getQuality().getName());
 			}
-			else {
-				value =  new TestAwareQualifiedValue(timer,0.0,new BasicQuality("BAD",Quality.Level.Bad));
-			}
+			
 			QualifiedValue result = new TestAwareQualifiedValue(timer,state);
 			OutgoingNotification nvn = new OutgoingNotification(this,STATUS_PORT_NAME,result);
 			controller.acceptCompletionNotification(nvn);
