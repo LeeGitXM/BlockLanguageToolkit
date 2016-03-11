@@ -1524,22 +1524,12 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			// Set the nodes in the navtree.
 			recursivelyUpdateNodeState(app,state);
 		}
-		// Set the state locally to match. It's redundant to inform the Gateway
+		// Set the state locally to match and save changes to disk. It's redundant to inform the Gateway.
 		public void recursivelyUpdateNodeState(AbstractNavTreeNode node,DiagramState diagramState) {
 			if( node==null) return;
 			if( node instanceof DiagramTreeNode ) {
 				DiagramTreeNode dtn = (DiagramTreeNode)node;
-				statusManager.setResourceState(dtn.getResourceId(),diagramState);
-				
-				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(dtn.getResourceId());
-				if( tab!=null ) {
-					ProcessDiagramView view = (ProcessDiagramView)(tab.getModel());
-					view.setState(diagramState);
-					tab.setBackground(view.getBackgroundColorForState());
-				}
-				dtn.setIcon(dtn.getIcon());
-				dtn.refresh();
-				dtn.setDirty(false);
+				dtn.setDiagramState(diagramState);
 			}
 			@SuppressWarnings("unchecked")
 			Enumeration<AbstractNavTreeNode>  childWalker = node.children();

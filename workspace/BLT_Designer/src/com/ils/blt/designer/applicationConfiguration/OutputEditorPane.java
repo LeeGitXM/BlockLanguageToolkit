@@ -21,18 +21,22 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
-import net.miginfocom.swing.MigLayout;
-
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.common.GeneralPurposeDataContainer;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
+
+import net.miginfocom.swing.MigLayout;
 
 
 public class OutputEditorPane extends JPanel implements ApplicationConfigurationController.EditorPane {
 	private static final long serialVersionUID = -5387165467458025431L;
+	private final static String CLSS = "OutputEditorPane";
+	private static final Insets insets = new Insets(0,0,0,0);
 	private final ApplicationConfigurationController controller;
 	private final GeneralPurposeDataContainer model;
 	private Map<String,String> outputMap;
-	private static final Insets insets = new Insets(0,0,0,0);
+	private final LoggerEx log;
 	final JTextField nameField = new JTextField();
 	final JTextField tagField = new JTextField();
 	final JFormattedTextField mostNegativeIncrementField = new JFormattedTextField(NumberFormat.getInstance());
@@ -56,6 +60,7 @@ public class OutputEditorPane extends JPanel implements ApplicationConfiguration
 	public OutputEditorPane(ApplicationConfigurationController controller) {
 		super(new BorderLayout(20, 30));
 		this.controller = controller;
+		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.model = controller.getModel();
 				
 		JPanel mainPanel = new JPanel(new MigLayout("", "[right]"));
@@ -83,10 +88,8 @@ public class OutputEditorPane extends JPanel implements ApplicationConfiguration
 		// Configure the Feedback method combo box
 		mainPanel.add(new JLabel("Feedback Method:"), "gap 10");
 		List<String> feedbackMethods = model.getLists().get("FeedbackMethods");
-		System.out.println("Loading feedback methods...");
 		if( feedbackMethods!=null ) {
 			for(String feedbackMethod : feedbackMethods) {
-				System.out.println("Found a feedback method...");
 				feedbackMethodComboBox.addItem(feedbackMethod);
 			}
 		}
@@ -156,7 +159,6 @@ public class OutputEditorPane extends JPanel implements ApplicationConfiguration
 	}
 
 	public void updateFields(Map<String,String> map){
-		System.out.println("In OutputEditorPane:updateFields() with " + map);
 		outputMap=map;
 		nameField.setText((String) outputMap.get("QuantOutput"));
 		tagField.setText((String) outputMap.get("TagPath"));
@@ -177,7 +179,6 @@ public class OutputEditorPane extends JPanel implements ApplicationConfiguration
 	// The user pressed the OK button so save everything (I don't keep track of what, if anything, was 
 	// changed so assume they change everything.
 	protected void doPrevious() {
-		System.out.println("In OutputEditorPane:doOk()");
 		
 		// Update the outputMap with everything in the screen
 		outputMap.put("QuantOutput", nameField.getText());
@@ -190,7 +191,7 @@ public class OutputEditorPane extends JPanel implements ApplicationConfiguration
 		outputMap.put("SetpointHighLimit", setpointHighLimitField.getText());
 		outputMap.put("FeedbackMethod", feedbackMethodComboBox.getSelectedItem().toString());
 
-		System.out.println("Saving values: " + outputMap);
+		log.infof("%s.doPrevious: Saving values %s\n ",CLSS,outputMap.toString());
 		
 		controller.refreshOutputs();
 

@@ -28,7 +28,7 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
  */
 public class ResourceSaveManager implements Runnable {
 	private static final String TAG = "ResourceSaveManager";
-	private static final LoggerEx logger = LogUtil.getLogger(ResourceSaveManager.class.getPackage().getName());
+	private static final LoggerEx log = LogUtil.getLogger(ResourceSaveManager.class.getPackage().getName());
 	private static DesignerContext context = null;
 	private static NodeStatusManager statusManager = null;
 	private final AbstractResourceNavTreeNode root;	      // Root of our save.
@@ -77,7 +77,7 @@ public class ResourceSaveManager implements Runnable {
 	private void saveDirtyDiagrams(AbstractResourceNavTreeNode node) {
 		ProjectResource res = node.getProjectResource();
 		if( res!=null ) {
-			logger.infof("%s.saveDirtyDiagrams: %s (%d)",TAG,res.getName(),res.getResourceId());
+			log.infof("%s.saveDirtyDiagrams: %s (%d)",TAG,res.getName(),res.getResourceId());
 			if(res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
 				// If the resource is open, we need to save it
 				workspace.saveOpenDiagram(res.getResourceId());
@@ -103,7 +103,7 @@ public class ResourceSaveManager implements Runnable {
 			if( node instanceof DiagramTreeNode && 
 				( ((NavTreeNodeInterface)node).isDirty() ||
 				  statusManager.isResourceDirty(resid)      )  ) {
-				logger.infof("%s.accumulateDirtyNodeResources: diagram %s (%d)",TAG,res.getName(),resid);
+				log.debugf("%s.accumulateDirtyNodeResources: diagram %s (%d)",TAG,res.getName(),resid);
 				diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
 				workspace.saveOpenDiagram(res.getResourceId());   // Close if open
 				dirtyCount++;
@@ -112,7 +112,7 @@ public class ResourceSaveManager implements Runnable {
 			// For other nodes include only "dirty"
 			else if( node instanceof NavTreeNodeInterface && 
 					( ((NavTreeNodeInterface)node).isDirty()  )  ) {
-					logger.infof("%s.accumulateDirtyNodeResources: %s (%d)",TAG,res.getName(),resid);
+					log.debugf("%s.accumulateDirtyNodeResources: %s (%d)",TAG,res.getName(),resid);
 					diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
 					dirtyCount++;
 			}
@@ -144,10 +144,15 @@ public class ResourceSaveManager implements Runnable {
 		// Update the project with these nodes (informs the gateway also)
 		try {
 			DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ...");  // Do not publish
+			for(ProjectResource res:diff.getResources()) {
+				log.infof("%s.saveNodeAndDescendants: Saved %s (%d)",TAG,res.getName(),res.getResourceId());
+			}
+			
 		}
 		catch(GatewayException ge) {
-			logger.warnf("%s.saveNodeAndDescendants: Exception saving project resource %d (%s)",TAG,root.getProjectResource().getResourceId(),ge.getMessage());
+			log.warnf("%s.saveNodeAndDescendants: Exception saving project resource %d (%s)",TAG,root.getProjectResource().getResourceId(),ge.getMessage());
 		}
+		
 		// Mark these as "clean" in the current project so that we don't save again.
 		Project project = context.getProject();
 		project.applyDiff(diff,false);      // Apply diff, not dirty

@@ -532,44 +532,55 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			try {
-				// Even if the diagram is showing, we need to do a save to change the state.
-				// (That's why this selection is disabled when the view is dirty)
-				DiagramState oldState = null;
-				ProjectResource res = context.getProject().getResource(resourceId);
-				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId);
-				if( tab!=null ) {
-					ProcessDiagramView view = (ProcessDiagramView)(tab.getModel());
-					oldState = view.getState();
-					view.setState(state);
-					tab.setBackground(view.getBackgroundColorForState());
-				}
-				// Otherwise we need to de-serialize and re-serialize
-				else {
-					byte[]bytes = res.getData();
-					SerializableDiagram sd = null;
-					ObjectMapper mapper = new ObjectMapper();
-					sd = mapper.readValue(bytes,SerializableDiagram.class);
-					oldState = sd.getState();
-					// Synchronize names as the resource may have been re-named since it was serialized
-					sd.setName(res.getName());
-					sd.setState(state);
-					bytes = mapper.writeValueAsBytes(sd);
-					res.setData(bytes); 
-				}
-				if( !oldState.equals(state)) {
-					updateState(res,state);
-				}
-				setIcon(getIcon());
-				refresh();
-			} 
-			catch (Exception ex) {
-				log.warn(String.format("%s.setStateAction: ERROR: %s",TAG,ex.getMessage()),ex);
-				ErrorUtil.showError(TAG+" Exception setting state",ex);
-				
-			}
+			setDiagramState(state);
 		}
 	}
+	/**
+	 * Provide public access for the action of setting the state of a diagram.
+	 * In particular this is used when recursively setting state from the application
+	 * level.
+	 *  
+	 * @param state
+	 */
+	public void setDiagramState(DiagramState state) {
+		try {
+			// Even if the diagram is showing, we need to do a save to change the state.
+			// (That's why this selection is disabled when the view is dirty)
+			DiagramState oldState = null;
+			ProjectResource res = context.getProject().getResource(resourceId);
+			BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(resourceId);
+			if( tab!=null ) {
+				ProcessDiagramView view = (ProcessDiagramView)(tab.getModel());
+				oldState = view.getState();
+				view.setState(state);
+				tab.setBackground(view.getBackgroundColorForState());
+			}
+			// Otherwise we need to de-serialize and re-serialize
+			else {
+				byte[]bytes = res.getData();
+				SerializableDiagram sd = null;
+				ObjectMapper mapper = new ObjectMapper();
+				sd = mapper.readValue(bytes,SerializableDiagram.class);
+				oldState = sd.getState();
+				// Synchronize names as the resource may have been re-named since it was serialized
+				sd.setName(res.getName());
+				sd.setState(state);
+				bytes = mapper.writeValueAsBytes(sd);
+				res.setData(bytes); 
+			}
+			if( !oldState.equals(state)) {
+				updateState(res,state);
+			}
+			setIcon(getIcon());
+			refresh();
+		} 
+		catch (Exception ex) {
+			log.warn(String.format("%s.setStateAction: ERROR: %s",TAG,ex.getMessage()),ex);
+			ErrorUtil.showError(TAG+" Exception setting state",ex);
+			
+		}
+	}
+	
 	/**
 	 * If there is a change, then we need to update the resource
 	 * and inform the Gateway

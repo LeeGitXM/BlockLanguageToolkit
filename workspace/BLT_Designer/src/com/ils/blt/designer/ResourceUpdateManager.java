@@ -26,7 +26,7 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
  */
 public class ResourceUpdateManager implements Runnable {
 	private static final String TAG = "ResourceUpdateManager";
-	private static final LoggerEx logger = LogUtil.getLogger(ResourceUpdateManager.class.getPackage().getName());
+	private static final LoggerEx log = LogUtil.getLogger(ResourceUpdateManager.class.getPackage().getName());
 	private static DesignerContext context = null;
 	private static NodeStatusManager statusManager = null;
 	private final ProjectResource res;
@@ -64,17 +64,17 @@ public class ResourceUpdateManager implements Runnable {
 					// The diagram may not have been dirty in a structural sense, but update the resource
 					// anyway as block properties may have changed.
 					ProcessDiagramView view = (ProcessDiagramView)tab.getModel();
-					logger.infof("%s.run: updating ... %s(%d) ",TAG,tab.getName(),resourceId);
+					log.infof("%s.run: updating ... %s(%d) ",TAG,tab.getName(),resourceId);
 					SerializableDiagram sd = view.createSerializableRepresentation();
 					sd.setName(tab.getName());
 					ObjectMapper mapper = new ObjectMapper();
 					try{
 						byte[] bytes = mapper.writeValueAsBytes(sd);
-						logger.tracef("%s.run JSON = %s",TAG,new String(bytes));
+						log.tracef("%s.run JSON = %s",TAG,new String(bytes));
 						res.setData(bytes);
 					}
 					catch(JsonProcessingException jpe) {
-						logger.warnf("%s.run: Exception serializing diagram, resource %d (%s)",TAG,resourceId,jpe.getMessage());
+						log.warnf("%s.run: Exception serializing diagram, resource %d (%s)",TAG,resourceId,jpe.getMessage());
 					}
 					view.setDirty(false);
 					view.registerChangeListeners();
@@ -84,17 +84,20 @@ public class ResourceUpdateManager implements Runnable {
 				context.updateResource(res.getResourceId(),res.getData());   // Force an update
 				diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
 				DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ...");  // Don't publish
+				for(ProjectResource res:diff.getResources()) {
+					log.infof("%s.run: Saved %s (%d)",TAG,res.getName(),res.getResourceId());
+				}
 				// Make every thing clean again.
 				statusManager.clearDirtyChildCount(res.getResourceId());
 				Project project = context.getProject();
 				project.applyDiff(diff,false);
 			}
 			catch(IllegalArgumentException iae) {
-				logger.warnf("%s.run: Updating resource %d, it has been deleted (%s)",TAG,res.getResourceId(),iae.getMessage());
+				log.warnf("%s.run: Updating resource %d, it has been deleted (%s)",TAG,res.getResourceId(),iae.getMessage());
 				statusManager.deleteResource(res.getResourceId());
 			}
 			catch(GatewayException ge) {
-				logger.warnf("%s.run: Exception saving project resource %d (%s)",TAG,res.getResourceId(),ge.getMessage());
+				log.warnf("%s.run: Exception saving project resource %d (%s)",TAG,res.getResourceId(),ge.getMessage());
 			}
 			((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler().triggerStatusNotifications();
 		}
