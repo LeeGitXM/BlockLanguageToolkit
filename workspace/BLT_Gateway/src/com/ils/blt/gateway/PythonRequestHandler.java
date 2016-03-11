@@ -8,7 +8,7 @@ import java.util.Date;
 import java.util.UUID;
 
 import com.ils.blt.common.DiagramState;
-import com.ils.blt.common.block.ProcessBlock;
+import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ProcessApplication;
 import com.ils.blt.gateway.engine.ProcessDiagram;

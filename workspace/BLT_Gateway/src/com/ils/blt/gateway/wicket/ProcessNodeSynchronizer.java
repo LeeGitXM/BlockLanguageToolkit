@@ -1,6 +1,7 @@
 package com.ils.blt.gateway.wicket;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,7 +9,6 @@ import java.util.Map;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ModelManager;
-import com.ils.blt.gateway.engine.ProcessDiagram;
 import com.ils.blt.gateway.engine.ProcessNode;
 import com.ils.blt.gateway.engine.ProjectResourceKey;
 import com.ils.blt.gateway.engine.RootNode;
@@ -79,7 +79,7 @@ public class ProcessNodeSynchronizer {
     }
     
     /**
-     * Iterate through the ProcessNodes known to the model.
+     * Iterate through the ProcessNodes known to the model. This includes families.
      * Delete any that do not have parents and are not root nodes.
      * Delete the accompanying resource. Hopefully this refers only
      * to a legacy issue and will never happen again.
@@ -87,9 +87,10 @@ public class ProcessNodeSynchronizer {
     public void removeOrphans() {
     	log.infof("%s.removeOrphans ======================== Searching Process Nodes ================================", TAG);
     	nodesToDelete.clear();
-        List<ProcessDiagram> diagrams = modelManager.getDiagrams();
+    	Map<ProjectResourceKey,ProcessNode> nodesByKey = modelManager.getNodesByKey();
+    	Collection<ProcessNode> nodes = nodesByKey.values();
     	RootNode root = modelManager.getRootNode();
-    	for( ProcessDiagram child:diagrams) {
+    	for( ProcessNode child:nodes) {
     		if( !child.getSelf().equals(root.getSelf()) && modelManager.getProcessNode(child.getParent())==null ) {
     			ProjectResourceKey key = new ProjectResourceKey(child.getProjectId(),child.getResourceId());
     			nodesToDelete.add(key);

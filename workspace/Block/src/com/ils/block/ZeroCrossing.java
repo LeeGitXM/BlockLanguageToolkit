@@ -6,12 +6,13 @@ package com.ils.block;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
+import com.ils.blt.common.DiagnosticDiagram;
+import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockStyle;
-import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
@@ -122,13 +123,28 @@ public class ZeroCrossing extends AbstractProcessBlock implements ProcessBlock {
 		}
 	}
 	/**
+	 * The explanation for this block just reports the observation status
+	 * 
+	 * @return an explanation for the current state of the block.
+	 */
+	@Override
+	public String getExplanation(DiagnosticDiagram parent) {
+		String explanation = "";
+		if( state.equals(TruthValue.TRUE) ) {
+			explanation = String.format("At %s, prior value has changed sign",getName());
+		}
+		else if( state.equals(TruthValue.FALSE)) {
+			explanation = String.format("At %s, last two values are of the same sign",getName());
+		}
+		return explanation;
+	}
+	/**
 	 * Send status update notification for our last latest state.
 	 */
 	@Override
 	public void notifyOfStatus() {
 		QualifiedValue qv = new TestAwareQualifiedValue(timer,state);
 		notifyOfStatus(qv);
-		
 	}
 	private void notifyOfStatus(QualifiedValue qv) {
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);

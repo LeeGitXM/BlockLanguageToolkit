@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
+import com.ils.blt.common.DiagnosticDiagram;
+import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
@@ -16,8 +18,8 @@ import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
-import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
+import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
@@ -147,6 +149,22 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 			controller.acceptCompletionNotification(nvn);
 		}
 	}
+	@Override
+	public String getExplanation(DiagnosticDiagram parent) { 
+		String explanation = "";
+		String tagPath = tagPathProperty.getBinding().toString();
+		if( tagPath!=null && !tagPath.isEmpty()) {
+			int pos = tagPath.lastIndexOf("/");
+			if(pos>0 ) tagPath = tagPath.substring(pos+1);
+			if( state.equals(TruthValue.FALSE)) {
+				explanation = String.format("At %s, %s is false",getName(),tagPath);
+			}
+			else if( state.equals(TruthValue.TRUE)) {
+				explanation = String.format("At %s, %s is true",getName(),tagPath);
+			}
+		}
+		return explanation; 
+	}
 	/**
 	 * @return a block-specific description of internal statue
 	 */
@@ -183,6 +201,7 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 		}	
 	}
 	protected void notifyOfStatus(QualifiedValue qval) {
+		updateStateForNewValue(qval);
 		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qval);
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qval);
 	}

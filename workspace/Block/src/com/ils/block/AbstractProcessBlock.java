@@ -13,6 +13,8 @@ import java.util.Set;
 import java.util.UUID;
 
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.DiagnosticDiagram;
+import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.Activity;
 import com.ils.blt.common.block.AnchorDirection;
@@ -22,7 +24,6 @@ import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PalettePrototype;
-import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
@@ -181,11 +182,25 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 * then the explanation accounts for upstream explanations.
 	 * 
 	 * @return an explanation for the current state of the block.
+	 *         By default it is the concatenated explanations of all 
+	 *         upstream blocks with the same state.
 	 *         If this is a block that has no relevant state, return
 	 *         an empty string.
 	 */
 	@Override
-	public String getExplanation() { return ""; }
+	public String getExplanation(DiagnosticDiagram parent) {
+		String explanation = "";
+		if( state.equals(TruthValue.TRUE) || state.equals(TruthValue.FALSE)) {
+			List<ProcessBlock>predecessors = parent.getUpstreamBlocks(this);
+			for( ProcessBlock predecessor:predecessors ) {
+				if( state.equals(predecessor.getState())) {
+					if(!explanation.isEmpty()) explanation = explanation + ", ";
+					explanation = explanation + predecessor.getExplanation(parent);
+				}
+			}
+		}
+		return explanation;
+	}
 	@Override
 	public String getName() {return name;}
 	@Override
@@ -196,7 +211,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	public TruthValue getState() {return state;}
 	@Override
 	public void setState(TruthValue state) { 
-		if(state!=null) {
+		if(state!=null && !this.state.equals(state)) {
 			this.state = state; 
 			recordActivity(Activity.ACTIVITY_STATE,state.name());
 		}
@@ -579,7 +594,19 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		attributes.put(BLTProperties.BLOCK_ATTRIBUTE_CLASS,getClassName());
 		return descriptor;
 	}
-	
+	/**
+	 * This is useful for blocks that have no real interest in the state. It's merely
+	 * a bookkeeping step that denotes pass-thru of a truth-value.
+	 * @param qv
+	 */
+	protected void updateStateForNewValue(QualifiedValue qv) {
+		if(qv.getValue() instanceof TruthValue ) setState((TruthValue)qv.getValue());
+		else if(qv.getValue() instanceof Boolean ) {
+			if( ((Boolean)qv.getValue()).booleanValue()) setState(TruthValue.TRUE);
+			else setState(TruthValue.FALSE);
+		}
+		else setState(TruthValue.UNSET);
+	}
 	/**
 	 * @param tagpath
 	 * @return true if any property of the block is bound to

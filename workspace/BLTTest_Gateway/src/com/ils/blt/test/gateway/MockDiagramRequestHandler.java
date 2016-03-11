@@ -6,10 +6,10 @@ package com.ils.blt.test.gateway;
 import java.util.Date;
 import java.util.UUID;
 
+import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;

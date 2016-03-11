@@ -82,7 +82,6 @@ public class NoteTextEditor extends JDialog {
 		// The internal panel has two panes - one for the JTextPane, the other for the JTextArea.
 		setLayout(new BorderLayout());
 		JPanel internalPanel = new JPanel();
-	
 		internalPanel.setLayout(new MigLayout("ins 2","",""));
 		addSeparator(internalPanel,"Edit Text here (use HTML for formatting)");
 		textArea = createTextArea(internalPanel);

@@ -3,7 +3,7 @@
  */
 package com.ils.blt.gateway.engine;
 
-import com.ils.blt.common.block.ProcessBlock;
+import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 
 /**

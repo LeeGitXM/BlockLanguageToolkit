@@ -8,8 +8,8 @@ package com.ils.blt.common.control;
 
 import java.util.UUID;
 
+import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.notification.BroadcastNotification;
 import com.ils.blt.common.notification.ConnectionPostNotification;
 import com.ils.blt.common.notification.OutgoingNotification;

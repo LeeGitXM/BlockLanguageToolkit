@@ -3,9 +3,12 @@
  */
 package com.ils.block;
 
+import java.util.List;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
+import com.ils.blt.common.DiagnosticDiagram;
+import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
@@ -13,7 +16,6 @@ import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
-import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
@@ -103,6 +105,32 @@ public class Not extends AbstractProcessBlock implements ProcessBlock {
 		// Set the internal property locked or not
 		valueProperty.setValue(result.getValue());
 		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,result);
+	}
+	/**
+	 * Describe the reason for either a TRUE or FALSE state. .
+	 * 
+	 * @return an explanation for the current state of this block.
+	 *         Look at upstream blocks with the opposite state.
+	 */
+	@Override
+	public String getExplanation(DiagnosticDiagram parent) {
+		String explanation = "";
+		List<ProcessBlock>predecessors = parent.getUpstreamBlocks(this);
+		if( state.equals(TruthValue.TRUE) ) {
+			for( ProcessBlock predecessor:predecessors ) {
+				if( TruthValue.FALSE.equals(predecessor.getState())) {
+					explanation = predecessor.getExplanation(parent);
+				}
+			}
+		}
+		else if( state.equals(TruthValue.FALSE) ) {
+			for( ProcessBlock predecessor:predecessors ) {
+				if( TruthValue.TRUE.equals(predecessor.getState())) {
+					explanation = predecessor.getExplanation(parent);
+				}
+			}
+		}
+		return explanation;
 	}
 	/**
 	 * Send status update notification for our last latest state.

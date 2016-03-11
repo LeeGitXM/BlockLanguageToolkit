@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
+ *   (c) 2014-2016  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -7,13 +7,14 @@ import java.util.Date;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
+import com.ils.blt.common.DiagnosticDiagram;
+import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
-import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
@@ -129,7 +130,24 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 		dog.setSecondsDelay(synchInterval);
 		timer.updateWatchdog(dog);  // pet dog
 	}
-	
+	/**
+	 * The explanation for this block just reports the comparison results
+	 * 
+	 * @return an explanation for the current state of the block.
+	 */
+	@Override
+	public String getExplanation(DiagnosticDiagram parent) {
+		String explanation = "";
+		if( state.equals(TruthValue.TRUE) ) {
+			explanation = String.format("At %s, input %s > %s plus offset of %3.2f",getName(),
+														x.getValue().toString(),y.getValue().toString(),offset);
+		}
+		else if( state.equals(TruthValue.FALSE)) {
+			explanation = String.format("At %s, input %s <= %s plus offest of %3.2f",getName(),
+														x.getValue().toString(),y.getValue().toString(),offset);
+		}
+		return explanation;
+	}
 	
 	/**
 	 * The coalescing time has expired. Place the current state on the output,

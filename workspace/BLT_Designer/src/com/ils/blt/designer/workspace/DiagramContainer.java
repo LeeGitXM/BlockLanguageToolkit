@@ -79,9 +79,6 @@ public class DiagramContainer extends BlockDesignableContainer {
 				}
 			}
 		}
-		
-
-		
 	}
 	
 	/**

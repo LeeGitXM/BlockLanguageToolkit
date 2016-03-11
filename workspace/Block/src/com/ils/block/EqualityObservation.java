@@ -6,13 +6,14 @@ package com.ils.block;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
+import com.ils.blt.common.DiagnosticDiagram;
+import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
-import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
@@ -34,6 +35,7 @@ public class EqualityObservation extends AbstractProcessBlock implements Process
 	private final static String BLOCK_PROPERTY_NOMINAL = "Nominal";
 	private double deadband   = 0.;
 	private double nominal   = 0.;
+	private QualifiedValue observation = null;    // Most recent value
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -59,6 +61,7 @@ public class EqualityObservation extends AbstractProcessBlock implements Process
 	public void reset() {
 		super.reset();
 		state = TruthValue.UNKNOWN;
+		observation = null;
 	}
 	
 	/**
@@ -90,19 +93,19 @@ public class EqualityObservation extends AbstractProcessBlock implements Process
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
 	
-		QualifiedValue qv = vcn.getValue();
-		String val = qv.getValue().toString();
+		observation = vcn.getValue();
+		String val = observation.getValue().toString();
 		try {
 			double dbl = Double.parseDouble(val);
 			double lowerLimit = nominal-(deadband/2);
 			double upperLimit = nominal+(deadband/2);
 			TruthValue newState = TruthValue.FALSE;
 			if( dbl >=lowerLimit && dbl<=upperLimit  ) newState = TruthValue.TRUE;
-			if( !qv.getQuality().isGood()) newState = TruthValue.UNKNOWN;
+			if( !observation.getQuality().isGood()) newState = TruthValue.UNKNOWN;
 			if( !newState.equals(state)) {
 				state = newState;
 				if( !isLocked() ) {
-					QualifiedValue nqv = new BasicQualifiedValue(state,qv.getQuality(),qv.getTimestamp());
+					QualifiedValue nqv = new BasicQualifiedValue(state,observation.getQuality(),observation.getTimestamp());
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,nqv);
 					controller.acceptCompletionNotification(nvn);
 					notifyOfStatus(nqv);
@@ -112,19 +115,36 @@ public class EqualityObservation extends AbstractProcessBlock implements Process
 		catch(NumberFormatException nfe) {
 			log.warnf("%s: setValue Unable to convert incoming value (%s) to a double (%s)",TAG,val,nfe.getLocalizedMessage());
 		}
-		
+	}
+	/**
+	 * The explanation for this block just reports the observation status
+	 * 
+	 * @return an explanation for the current state of the block.
+	 */
+	@Override
+	public String getExplanation(DiagnosticDiagram parent) {
+		String explanation = "";
+		if( observation!=null && state.equals(TruthValue.TRUE) ) {
+			explanation = String.format("At %s, %s is not within tolerance the nominal (%3.2f)",getName(),
+														observation.getValue().toString(),nominal);
+		}
+		else if( observation!=null && state.equals(TruthValue.FALSE)) {
+			explanation = String.format("At %s, %s is within tolerance of the nominal (%3.2f)",getName(),
+														observation.getValue().toString(),nominal);
+		}
+		return explanation;
 	}
 	/**
 	 * Send status update notification for our last latest state.
 	 */
 	@Override
 	public void notifyOfStatus() {
-		QualifiedValue qv = new TestAwareQualifiedValue(timer,state);
-		notifyOfStatus(qv);
+		QualifiedValue qualValue = new TestAwareQualifiedValue(timer,state);
+		notifyOfStatus(qualValue);
 		
 	}
-	private void notifyOfStatus(QualifiedValue qv) {
-		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	private void notifyOfStatus(QualifiedValue qualValue) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qualValue);
 	}
 	
 	/**

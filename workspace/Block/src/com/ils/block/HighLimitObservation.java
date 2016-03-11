@@ -6,13 +6,14 @@ package com.ils.block;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
+import com.ils.blt.common.DiagnosticDiagram;
+import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
-import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
@@ -32,6 +33,7 @@ public class HighLimitObservation extends AbstractProcessBlock implements Proces
 	private final static String TAG = "HighLimitObservation";
 	private double deadband   = 0.;
 	private double limit   = 0.;
+	private QualifiedValue observation = null;    // Most recent value
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -57,6 +59,7 @@ public class HighLimitObservation extends AbstractProcessBlock implements Proces
 	public void reset() {
 		super.reset();
 		state = TruthValue.UNKNOWN;
+		observation = null;
 	}
 	
 	/**
@@ -90,18 +93,18 @@ public class HighLimitObservation extends AbstractProcessBlock implements Proces
 		String port = vcn.getConnection().getDownstreamPortName();
 		
 		if( port.equalsIgnoreCase(BlockConstants.IN_PORT_NAME) ) {
-			QualifiedValue qv = vcn.getValue();
-			String val = qv.getValue().toString();
+			observation = vcn.getValue();
+			String val = observation.getValue().toString();
 			try {
 				double dbl = Double.parseDouble(val);
 				TruthValue newValue = state;
 				if( dbl > limit   ) newValue = TruthValue.TRUE;
 				if( dbl < limit - deadband ) newValue = TruthValue.FALSE;
-				if( !qv.getQuality().isGood()) newValue = TruthValue.UNKNOWN;
+				if( !observation.getQuality().isGood()) newValue = TruthValue.UNKNOWN;
 				if( !newValue.equals(state)) {
 					state = newValue;
 					if( !isLocked() ) {
-						QualifiedValue nqv = new BasicQualifiedValue(state,qv.getQuality(),qv.getTimestamp());
+						QualifiedValue nqv = new BasicQualifiedValue(state,observation.getQuality(),observation.getTimestamp());
 						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,nqv);
 						controller.acceptCompletionNotification(nvn);
 						notifyOfStatus(nqv);
@@ -112,6 +115,24 @@ public class HighLimitObservation extends AbstractProcessBlock implements Proces
 				log.warnf("%s: setValue Unable to convert incoming value (%s) to a double (%s)",TAG,val,nfe.getLocalizedMessage());
 			}
 		}
+	}
+	/**
+	 * The explanation for this block just reports the observation status
+	 * 
+	 * @return an explanation for the current state of the block.
+	 */
+	@Override
+	public String getExplanation(DiagnosticDiagram parent) {
+		String explanation = "";
+		if( observation!=null && state.equals(TruthValue.TRUE) ) {
+			explanation = String.format("At %s, %s exceeds the high limit (%3.2f)",getName(),
+														observation.getValue().toString(),limit);
+		}
+		else if( observation!=null && state.equals(TruthValue.FALSE)) {
+			explanation = String.format("At %s, %s does not exceed the high limit (%3.2f)",getName(),
+					observation.getValue().toString(),limit);
+		}
+		return explanation;
 	}
 	/**
 	 * Send status update notification for our last latest state.

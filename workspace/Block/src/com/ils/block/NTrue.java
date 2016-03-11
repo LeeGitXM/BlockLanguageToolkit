@@ -5,10 +5,13 @@ package com.ils.block;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
+import com.ils.blt.common.DiagnosticDiagram;
+import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
@@ -16,7 +19,6 @@ import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
-import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
@@ -117,7 +119,34 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 		timer.updateWatchdog(dog);  // pet dog
 	}
 	
-	
+	/**
+	 * The explanation for this block is simply the current count of current 
+	 * TRUE inputs.
+	 * 
+	 * @return an explanation for the current state of the block.
+	 *         By default it is the concatenated explanations of all 
+	 *         upstream blocks with the same state.
+	 *         If this is a block that has no relevant state, return
+	 *         an empty string.
+	 */
+	@Override
+	public String getExplanation(DiagnosticDiagram parent) {
+		String explanation = "";
+		if( state.equals(TruthValue.TRUE) || state.equals(TruthValue.FALSE)) {
+			Collection<QualifiedValue> values = qualifiedValueMap.values();
+			int trues = 0;
+			for(QualifiedValue qv:values) {
+				if(qv.getQuality().isGood()) {
+					TruthValue tv = qualifiedValueAsTruthValue(qv);
+					if( tv.equals(TruthValue.TRUE )) {
+						trues ++;
+					}
+				}
+			}
+			explanation = String.format("At %s, %s inputs are true (%d needed)",getName(),trues,nTrue);
+		}
+		return explanation;
+	}
 	/**
 	 * The coalescing time has expired. Place the current state on the output,
 	 * if it has changed or its quality has changed.
@@ -199,7 +228,7 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setEmbeddedLabel("N");
-		desc.setEmbeddedFontSize(18);
+		desc.setEmbeddedFontSize(14);
 		desc.setPreferredHeight(60);
 		desc.setPreferredWidth(60);
 		desc.setBlockClass(getClass().getCanonicalName());
@@ -231,7 +260,7 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 		for(QualifiedValue qv:values) {
 			if(qv.getQuality().isGood()) {
 				TruthValue tv = qualifiedValueAsTruthValue(qv);
-				if( tv==TruthValue.TRUE ) {
+				if( tv.equals(TruthValue.TRUE) ) {
 					trues ++;
 				}
 				else if(tv.equals(TruthValue.FALSE)) {

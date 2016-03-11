@@ -1,14 +1,17 @@
 /**
- *   (c) 2014-2015  ILS Automation. All rights reserved. 
+ *   (c) 2014-2016  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
+import com.ils.blt.common.DiagnosticDiagram;
+import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
@@ -16,7 +19,6 @@ import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
-import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
@@ -121,7 +123,43 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 		dog.setSecondsDelay(synchInterval);
 		timer.updateWatchdog(dog);  // pet dog
 	}
-	
+	/**
+	 * On a TRUE or FALSE, concatenate the upstream reasons.
+	 * 
+	 * @return an explanation for the current state of the block.
+	 */
+	@Override
+	public String getExplanation(DiagnosticDiagram parent) {
+		String explanation = "";
+		StringBuffer sb = new StringBuffer("(");
+		int count = 0;
+		if( state.equals(TruthValue.TRUE) ) {
+			List<ProcessBlock>predecessors = parent.getUpstreamBlocks(this);
+			for( ProcessBlock predecessor:predecessors ) {
+				if( state.equals(TruthValue.TRUE)) {
+					count ++;
+					if(sb.length()>1) sb.append(" and ");
+					sb.append(predecessor.getExplanation(parent));
+				}
+			}
+		}
+		else if( state.equals(TruthValue.FALSE) ) {
+			List<ProcessBlock>predecessors = parent.getUpstreamBlocks(this);
+			for( ProcessBlock predecessor:predecessors ) {
+				if( state.equals(TruthValue.FALSE)) {
+					count++;
+					if(sb.length()>1) sb.append(" or ");
+					sb.append(predecessor.getExplanation(parent));
+				}
+			}
+		}
+		if(count==1) explanation = sb.substring(1);    // Drop parenthesis
+		else if(count>1) {
+			sb.append(")");
+			explanation = sb.toString();
+		}
+		return explanation;
+	}
 	/**
 	 * The coalescing time has expired. Place the current state on the output,
 	 * if it has changed.
@@ -183,7 +221,7 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setEmbeddedLabel("AND");
-		desc.setEmbeddedFontSize(16);
+		desc.setEmbeddedFontSize(14);
 		desc.setPreferredHeight(60);
 		desc.setPreferredWidth(60);
 		desc.setBlockClass(getClass().getCanonicalName());

@@ -10,7 +10,8 @@ import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.common.block.Activity;
+import com.ils.blt.common.DiagnosticDiagram;
+import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
@@ -18,7 +19,6 @@ import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.LimitType;
-import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TransmissionScope;
 import com.ils.blt.common.block.TruthValue;
@@ -60,8 +60,10 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	private FixedSizeQueue<Double> queue;
 	private int sampleSize = DEFAULT_BUFFER_SIZE;
 	private int minOut = sampleSize;  // Min out-of-range to conclude TRUE
+	private int total  = 0; // current number of observations out of limits.
 	private double standardDeviation = Double.NaN;
 	private double mean = Double.NaN;
+
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -274,6 +276,20 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		}
 	}
 	/**
+	 * The explanation for this block just reports m of n.
+	 * 
+	 * @return an explanation for the current state of the block.
+	 */
+	@Override
+	public String getExplanation(DiagnosticDiagram parent) {
+		String explanation = "";
+		if( state.equals(TruthValue.TRUE) || state.equals(TruthValue.FALSE)) {
+			explanation = String.format("At %s (type %s), %d of the last %d are outside limits (%d allowed)",getName(),limitType.name(),
+					total,queue.size(),minOut);		
+		}
+		return explanation;
+	}
+	/**
 	 * Send status update notification for our last latest state.
 	 */
 	@Override
@@ -353,6 +369,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		attributes.put("Limit type", limitType.name());
 		attributes.put("Limit ~ std deviations", String.valueOf(limit));
 		attributes.put("Minimum Out of Range", String.valueOf(minOut));
+		attributes.put("Current Out of Range", String.valueOf(total));
 		attributes.put("SampleSize", String.valueOf(sampleSize));
 		attributes.put("Current QueueSize", String.valueOf(queue.size()));
 		attributes.put("State", state.name());
@@ -397,7 +414,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	private TruthValue getRuleState() {
 		TruthValue result = TruthValue.UNKNOWN;
-		int total= 0;
+		this.total= 0;
 		int high = 0;
 		int low  = 0;
 		int highside  = 0;   // Consecutive

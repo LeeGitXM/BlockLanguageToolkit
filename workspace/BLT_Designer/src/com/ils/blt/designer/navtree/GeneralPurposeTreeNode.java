@@ -1474,8 +1474,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			if( !isRootFolder() ) return;
 			node.setBold(true);
 			threadCounter.reset();
-			executionEngine.executeOnce(new ResourceSaveManager(workspace,node));
 			statusManager.cleanAll();
+			executionEngine.executeOnce(new ResourceSaveManager(workspace,node));
 			ThreadCompletionDetector detector = new ThreadCompletionDetector(node);
 			new Thread(detector).start();
 		}

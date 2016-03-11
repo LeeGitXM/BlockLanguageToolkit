@@ -3,9 +3,12 @@
  */
 package com.ils.block;
 
+import java.util.List;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
+import com.ils.blt.common.DiagnosticDiagram;
+import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
@@ -13,7 +16,6 @@ import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
-import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
@@ -98,7 +100,23 @@ public class Unknown extends AbstractProcessBlock implements ProcessBlock {
 		valueProperty.setValue(state);
 		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,result);
 	}
-	
+	/**
+	 * The predecessor state is the reason (I guess). Assume only a single 
+	 * block on the input.
+	 * 
+	 * @return an explanation for the current state of the block.
+	 */
+	@Override
+	public String getExplanation(DiagnosticDiagram parent) {
+		String explanation = "";
+		if( state.equals(TruthValue.TRUE) || state.equals(TruthValue.FALSE)) {
+			List<ProcessBlock>predecessors = parent.getUpstreamBlocks(this);
+			for( ProcessBlock predecessor:predecessors ) {
+				explanation = String.format("At %s, predecessor is %s",getName(),predecessor.getState().name());
+			}
+		}
+		return explanation;
+	}
 	/**
 	 * Send status update notification for our last latest state.
 	 */
@@ -118,7 +136,7 @@ public class Unknown extends AbstractProcessBlock implements ProcessBlock {
 	private void initializePrototype() {
 		prototype.setPaletteIconPath("Block/icons/palette/unknown.png");
 		prototype.setPaletteLabel("Unknown");
-		prototype.setTooltipText("Negate the input and place in on the output");
+		prototype.setTooltipText("Return TRUE if the input is UNKNOWN");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_LOGIC);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();

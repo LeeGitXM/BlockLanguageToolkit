@@ -11,12 +11,13 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.DiagnosticDiagram;
 import com.ils.blt.common.DiagramState;
+import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.block.TransmissionScope;
 import com.ils.blt.common.connection.Connection;
 import com.ils.blt.common.connection.ProcessConnection;
@@ -42,7 +43,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  * 
  *  The document is constant for the life of this instance.
  */
-public class ProcessDiagram extends ProcessNode {
+public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	private static final long serialVersionUID = 3557397875746466629L;
 	private static String TAG = "ProcessDiagram";
 	private boolean valid = false;
@@ -346,7 +347,7 @@ public class ProcessDiagram extends ProcessNode {
 	}
 	/**
 	 * @param root the subject block
-	 * @return a list of blocks connected to the output(s) of the specified block.
+	 * @return a list of blocks connected to the input(s) of the specified block.
 	 */
 	public List<ProcessBlock> getUpstreamBlocks(ProcessBlock root) {
 		List<ProcessBlock> upstream = new ArrayList<>();

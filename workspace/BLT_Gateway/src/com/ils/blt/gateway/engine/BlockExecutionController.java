@@ -14,9 +14,9 @@ import java.util.concurrent.Executors;
 
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
+import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.ProcessBlock;
 import com.ils.blt.common.connection.Connection;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BroadcastNotification;

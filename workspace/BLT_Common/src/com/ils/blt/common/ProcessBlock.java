@@ -1,12 +1,16 @@
 /**
  *   (c) 2013-2014  ILS Automation. All rights reserved. 
  */
-package com.ils.blt.common.block;
+package com.ils.blt.common;
 
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import com.ils.blt.common.block.AnchorPrototype;
+import com.ils.blt.common.block.BlockProperty;
+import com.ils.blt.common.block.PalettePrototype;
+import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.BlockPropertyChangeListener;
 import com.ils.blt.common.notification.IncomingNotification;
@@ -87,11 +91,12 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 * a TRUE or FALSE result. If the block has logical inputs
 	 * then the explanation accounts for upstream explanations.
 	 * 
+	 * @param diagram the diagram on which this block is placed.
 	 * @return an explanation for the current state of the block.
 	 *         If this is a block that has no relevant state, return
 	 *         an empty string.
 	 */
-	public String getExplanation();
+	public String getExplanation(DiagnosticDiagram parent);
 	/**
 	 * @return information related to the workings of the block.
 	 *        The information returned varies depending on the 

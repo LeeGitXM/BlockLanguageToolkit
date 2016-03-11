@@ -3,7 +3,7 @@
  */
 package com.ils.blt.common.notification;
 
-import com.ils.blt.common.block.ProcessBlock;
+import com.ils.blt.common.ProcessBlock;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
