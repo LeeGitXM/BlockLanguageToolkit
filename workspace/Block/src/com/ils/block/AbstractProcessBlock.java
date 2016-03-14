@@ -54,7 +54,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  * available executable block types.
  */
 public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropertyChangeListener, WatchdogObserver {
-	protected final static String DEFAULT_FORMAT = "yyyy/MM/dd hh:mm:ss";
+	protected final static String DEFAULT_FORMAT = "yyyy/MM/dd HH:mm:ss";
 	protected final static SimpleDateFormat dateFormatter = new SimpleDateFormat(DEFAULT_FORMAT);
 	protected final FixedSizeQueue<Activity> activities;
 	protected ExecutionController controller = null;

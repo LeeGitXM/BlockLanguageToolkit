@@ -23,7 +23,7 @@
 	<property name="p200props" value="${basedir}/BLT_Build/pack200.properties" />
 
 	<tstamp>
-		<format property="build.date" pattern="MM/dd/yyyy hh:mm aa" />
+		<format property="build.date" pattern="MM/dd/yyyy HH:mm" />
 	</tstamp>
 
 	<!-- SDK jar classpath. This classpath includes all the jars needed to build a module against the SDK. -->
