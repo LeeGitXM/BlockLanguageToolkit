@@ -126,6 +126,21 @@ public class TagListener implements TagChangeListener   {
 		}
 	}
 	/**
+	 * As a debugging aid, show the tag path that is currently associated with
+	 * the indicated block and property.
+	 * 
+	 * @param block
+	 * @param property
+	 * @return the tag path as a String the corresponds to the current subscription
+	 *         for the indicated block and property. If there is none, return null.
+	 */
+	public String getSubscribedPath(ProcessBlock block,BlockProperty property) {
+		BlockPropertyPair key = new BlockPropertyPair(block,property);
+		String path = tagMap.get(key);
+		return path;
+	}
+	
+	/**
 	 * Check and see if the current block/property has a subscription.
 	 * @param block
 	 * @param property
@@ -448,7 +463,10 @@ public class TagListener implements TagChangeListener   {
 		}
 		@Override
 		public int hashCode() {
-			return (int)(this.block.hashCode()+this.property.getName().hashCode());
+			int code = 0;
+			if( this.block!=null)     code+=this.block.hashCode();
+			if( this.property!=null ) code+=this.property.getName().hashCode();
+			return code;
 		}
 	}
 }

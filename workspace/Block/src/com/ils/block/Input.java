@@ -129,7 +129,7 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 	
 	/*
 	 * Provide a way for sub-classes to override acceptValue with
-	 * different semantics that we have here.
+	 * different semantics than we have here.
 	 */
 	protected void baseAcceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
@@ -175,6 +175,8 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 		if( qv!=null && qv.getValue()!=null ) attributes.put("Value", qv.getValue().toString());
 		if( qv!=null && qv.getQuality()!=null )attributes.put("Quality", qv.getQuality().toString());
 		if(qv!=null && qv.getTimestamp()!=null) attributes.put("Timestamp",dateFormatter.format(new Date(qv.getTimestamp().getTime())));
+		String path = controller.getSubscribedPath(this, tagPathProperty);
+		attributes.put("CurrentSubscription",path);
 		return descriptor;
 	}
 	/**

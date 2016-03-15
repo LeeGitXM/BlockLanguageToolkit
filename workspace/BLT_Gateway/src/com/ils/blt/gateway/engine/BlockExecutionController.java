@@ -435,7 +435,10 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public void clearSubscriptions() {
 		tagListener.clearSubscriptions();
 	}
-	
+	@Override
+	public String getSubscribedPath(ProcessBlock block,BlockProperty property) {
+		return tagListener.getSubscribedPath(block,property);
+	}
 	@Override
 	public QualifiedValue getTagValue(UUID diagramId,String path) {
 		return tagReader.readTag(path);

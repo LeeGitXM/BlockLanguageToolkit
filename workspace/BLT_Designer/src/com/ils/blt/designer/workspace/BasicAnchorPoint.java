@@ -143,6 +143,8 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 				return WorkspaceConstants.CONNECTION_FILL_FALSE;
 			else
 				return WorkspaceConstants.CONNECTION_FILL_UNKNOWN;
+		else if( cxnType.equals(ConnectionType.ANY))
+			return WorkspaceConstants.CONNECTION_FILL_ANY;
 		else
 			return WorkspaceConstants.CONNECTION_FILL_TEXT;
 	}

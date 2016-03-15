@@ -553,6 +553,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 				ProcessDiagramView view = (ProcessDiagramView)(tab.getModel());
 				oldState = view.getState();
 				view.setState(state);
+				updateState(res,state);
 				tab.setBackground(view.getBackgroundColorForState());
 			}
 			// Otherwise we need to de-serialize and re-serialize
@@ -567,10 +568,11 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 				sd.setState(state);
 				bytes = mapper.writeValueAsBytes(sd);
 				res.setData(bytes); 
+				if( !oldState.equals(state)) {
+					updateState(res,state);
+				}
 			}
-			if( !oldState.equals(state)) {
-				updateState(res,state);
-			}
+			
 			setIcon(getIcon());
 			refresh();
 		} 

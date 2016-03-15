@@ -6,12 +6,10 @@ package com.ils.blt.gateway;
 
 import java.util.List;
 
-import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
-import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 
 
 /**

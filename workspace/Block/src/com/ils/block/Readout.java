@@ -3,6 +3,7 @@
  */
 package com.ils.block;
 
+import java.util.Date;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
@@ -154,6 +155,9 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 						}
 						else if( type==PropertyType.INTEGER) {
 							value = String.format(format, fncs.coerceToInteger(qv.getValue()));
+						}
+						else if(qv.getValue() instanceof Date) {
+							value = dateFormatter.format(qv.getValue());
 						}
 						else {
 							value = String.format(format,fncs.coerceToString(qv.getValue()));

@@ -158,29 +158,31 @@ public class Difference extends AbstractProcessBlock implements ProcessBlock {
 			double aa = Double.NaN;
 			double bb = Double.NaN;
 			if( difference == null ) {
-				try {
-					// Handle dates
-					if( a.getValue() instanceof Date || b.getValue() instanceof Date ) {
-						if( !(b.getValue() instanceof Date) || !(b.getValue() instanceof Date)  ) {
-							difference = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("If one input is a Date, then both must be",Quality.Level.Bad));
-						}
-						else {
-							aa = ((Date)(a.getValue())).getTime();
-							bb = ((Date)(b.getValue())).getTime();
-							aa = aa/1000.;  // Convert to seconds
-							bb = bb/1000.; 
-						}
+				// Handle dates
+				if( a.getValue() instanceof Date || b.getValue() instanceof Date ) {
+					if( !(a.getValue() instanceof Date) || !(b.getValue() instanceof Date)  ) {
+						difference = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("If one input is a Date, then both must be",Quality.Level.Bad));
 					}
-					aa = Double.parseDouble(a.getValue().toString());
-					try {
-						bb = Double.parseDouble(b.getValue().toString());
-					}
-					catch(NumberFormatException nfe) {
-						difference = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("'b' is not a valid double",Quality.Level.Bad));
+					else {
+						aa = ((Date)(a.getValue())).getTime();
+						bb = ((Date)(b.getValue())).getTime();
+						aa = aa/1000.;  // Convert to seconds
+						bb = bb/1000.; 
 					}
 				}
-				catch(NumberFormatException nfe) {
-					difference = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("'a' is not a valid double",Quality.Level.Bad));
+				else {
+					try {
+						aa = Double.parseDouble(a.getValue().toString());
+						try {
+							bb = Double.parseDouble(b.getValue().toString());
+						}
+						catch(NumberFormatException nfe) {
+							difference = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("'b' is not a valid double",Quality.Level.Bad));
+						}
+					}
+					catch(NumberFormatException nfe) {
+						difference = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("'a' is not a valid double",Quality.Level.Bad));
+					}
 				}
 			}
 			
