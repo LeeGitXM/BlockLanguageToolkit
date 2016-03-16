@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
+import com.ils.blt.common.DiagnosticDiagram;
 import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
@@ -144,11 +145,6 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 			currentValue = incoming.getValueAsTruthValue();
 			if(!dog.isActive()) evaluate();
 		}
-		else {
-			qv = new BasicQualifiedValue(Double.NaN,qual,qv.getTimestamp());
-			reset();     // Reset the evaluation interval
-		}
-
 	}
 	/**
 	 * The interval has expired. Reset interval, then compute output.
@@ -191,13 +187,28 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		if( !isLocked() ) {
 			if(newState!=state) {
 				state = newState;
-				QualifiedValue result = new TestAwareQualifiedValue(timer,state.name());
+				QualifiedValue result = new TestAwareQualifiedValue(timer,state);
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
 				controller.acceptCompletionNotification(nvn);
 				notifyOfStatus(result);
 			}
 		}
-		//log.tracef("%s.evaluate: COMPLETE",getName());
+	}
+	/**
+	 * The explanation for this block just reports the comparison results
+	 * 
+	 * @return an explanation for the current state of the block.
+	 */
+	@Override
+	public String getExplanation(DiagnosticDiagram parent) {
+		String explanation = "";
+		if( state.equals(TruthValue.TRUE) ) {
+			explanation = String.format("At %s, True ratio %s > %3.2f",getName(),String.valueOf(ratio),limit);
+		}
+		else if( state.equals(TruthValue.FALSE)) {
+			explanation = String.format("At %s, False ratio %s >= %3.2f",getName(),String.valueOf(1.0-ratio),limit);
+		}
+		return explanation;
 	}
 	/**
 	 * @return a block-specific description of internal statue
@@ -209,6 +220,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		attributes.put("Ratio", String.valueOf(ratio));
 		attributes.put("LatestValue", currentValue.name());
 		attributes.put("CurrentState", state.name());
+		attributes.put("ActivelySampling",(dog.isActive()?"TRUE":"FALSE") );
 		
 		List<Map<String,String>> descBuffer = descriptor.getBuffer();
 		int index = 0;
