@@ -815,10 +815,9 @@ public class ModelManager implements ProjectListener  {
 							controller.removeSubscription(block, prop);
 						}
 					}
-					ProjectResourceKey diagramkey = new ProjectResourceKey(projectId,node.getResourceId());
-					nodesByKey.remove(diagramkey);
 				}
-				
+				ProjectResourceKey nodekey = new ProjectResourceKey(projectId,node.getResourceId());
+				nodesByKey.remove(nodekey);
 				
 				if( node.getParent()!=null ) {
 					ProcessNode parent = nodesByUUID.get(node.getParent());

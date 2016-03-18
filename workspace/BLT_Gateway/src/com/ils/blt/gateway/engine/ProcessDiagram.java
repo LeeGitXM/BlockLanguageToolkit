@@ -651,15 +651,15 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 					
 					String tagPath = bp.getBinding();
 					if( tagPath==null || tagPath.isEmpty()) continue;
+					String properPath = replaceProviderInPath(tagPath,provider);
 					String path = controller.getSubscribedPath(pb, bp);
-					if( !tagPath.equals(path)) {
+					if( !properPath.equals(path)) {
 						log.infof("%s.validatePropertyProviders: WRONG provider for %s:%s (%s will use %s)",TAG,pb.getName(),bp.getName(),
 														path,provider);
 						controller.removeSubscription(pb, bp);
-						String newPath = replaceProviderInPath(tagPath,provider);
-						bp.setBinding(newPath);
+						bp.setBinding(properPath);
 						controller.startSubscription(pb, bp);
-						controller.sendPropertyBindingNotification(pb.getBlockId().toString(), bp.getName(), newPath);
+						controller.sendPropertyBindingNotification(pb.getBlockId().toString(), bp.getName(), properPath);
 					}
 				}	
 			}
