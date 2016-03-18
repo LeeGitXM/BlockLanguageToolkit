@@ -160,9 +160,6 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		}
 		if( currentValue.equals(TruthValue.UNSET) ) return;   // Nothing on input yet
 		
-		// Set up the next poll, no matter what.
-		dog.setSecondsDelay(scanInterval);
-		timer.updateWatchdog(dog);  // pet dog
 		
 		// Add the currentValue to the queue
 		buffer.addLast(currentValue);
@@ -192,6 +189,11 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 				controller.acceptCompletionNotification(nvn);
 				notifyOfStatus(result);
 			}
+		}
+		// Set up the next poll, if we're not homegeneous.
+		if( ratio>0.0 || ratio<1.0) {
+			dog.setSecondsDelay(scanInterval);
+			timer.updateWatchdog(dog);  // pet dog
 		}
 	}
 	/**

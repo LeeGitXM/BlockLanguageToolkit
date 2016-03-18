@@ -564,7 +564,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param res the project resource containing the diagram
 	 */
 	private void addModifyDiagramResource(long projectId,ProjectResource res) {
-		log.debugf("%s.addModifyDiagramResource: %s(%d)",TAG,res.getName(),res.getResourceId());
+		log.infof("%s.addModifyDiagramResource: %s(%d)",TAG,res.getName(),res.getResourceId());
 		SerializableDiagram sd = deserializeDiagramResource(projectId,res);
 		if( sd!=null ) {
 			ProcessDiagram diagram = (ProcessDiagram)nodesByUUID.get(sd.getId());
@@ -579,6 +579,12 @@ public class ModelManager implements ProjectListener  {
 				addToHierarchy(projectId,diagram);
 				diagram.createBlocks(sd);
 				diagram.updateConnections(sd);
+				if(!diagram.getState().equals(sd.getState()) ) {
+					diagram.setState(sd.getState()); 
+				}
+				else {
+					diagram.validateSubscriptions();
+				}
 				// 	Invoke any extension scripts
 				extensionManager.runScript(context.getScriptManager(), ScriptConstants.DIAGRAM_CLASS_NAME, 
 										ScriptConstants.NODE_CREATE_SCRIPT, diagram.getSelf().toString());
@@ -607,10 +613,11 @@ public class ModelManager implements ProjectListener  {
 				ProjectResourceKey key = new ProjectResourceKey(projectId,res.getResourceId());
 				nodesByKey.put(key,diagram);
 				addToHierarchy(projectId,diagram);
+				// New Diagrams are always disabled
 				diagram.createBlocks(sd);
 				diagram.updateConnections(sd);
-				// New Diagrams are always disabled
 				diagram.setState(DiagramState.DISABLED);
+				
 			}
 			// Carefully update the diagram with new features/properties.
 			// Leave existing blocks/subscriptions "as-is". 
@@ -625,6 +632,7 @@ public class ModelManager implements ProjectListener  {
 				diagram.updateConnections(sd);  // Adds connections that are new in update
 				diagram.updateProperties(sd);
 				diagram.setState(sd.getState());// Handle state change, if any
+				
 			}
 		}
 		else {

@@ -448,7 +448,8 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	 * @param s the new state
 	 */
 	public void setState(DiagramState s) {
-		// Do nothing if there is no change
+		
+		// Only restart subscriptions on a change.
 		if( !s.equals(getState())) {
 			// Check if we need to stop current subscriptions
 			if( !DiagramState.DISABLED.equals(getState()) ) {
@@ -594,8 +595,9 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	}
 	
 	/**
-	 * For every property that is bound to a tag, update its provider.
+	 * For every property that is bound to a tag, update its provider. 
 	 * @param provider
+	 * @return true if there were any changes.
 	 */
 	private void updatePropertyProviders(String provider) {
 		for( ProcessBlock pb:getProcessBlocks()) {
@@ -624,6 +626,44 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 			if( !path.isEmpty() ) path =  String.format("[%s]%s", providerName,path);
 		}
 		return path;
+	}
+	
+	/**
+	 * For every property that is bound to a tag, make sure that it is subscribed to the proper provider. 
+	 * @param provider appropriate to diagram state.
+	 */
+	public void validateSubscriptions() {
+		if(DiagramState.DISABLED.equals(getState())) return;
+		String provider = null;
+		if( DiagramState.ISOLATED.equals(getState())) {
+			provider = ControllerRequestHandler.getInstance().getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER);
+		}
+		else {
+			provider = ControllerRequestHandler.getInstance().getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
+		}
+		
+		for( ProcessBlock pb:getProcessBlocks()) {
+			for(BlockProperty bp:pb.getProperties()) {
+				BindingType bindingType = bp.getBindingType();
+				if( bindingType.equals(BindingType.TAG_MONITOR) ||
+					bindingType.equals(BindingType.TAG_READ)    ||
+					bindingType.equals(BindingType.TAG_READWRITE) ) {
+					
+					String tagPath = bp.getBinding();
+					if( tagPath==null || tagPath.isEmpty()) continue;
+					String path = controller.getSubscribedPath(pb, bp);
+					if( !tagPath.equals(path)) {
+						log.infof("%s.validatePropertyProviders: WRONG provider for %s:%s (%s will use %s)",TAG,pb.getName(),bp.getName(),
+														path,provider);
+						controller.removeSubscription(pb, bp);
+						String newPath = replaceProviderInPath(tagPath,provider);
+						bp.setBinding(newPath);
+						controller.startSubscription(pb, bp);
+						controller.sendPropertyBindingNotification(pb.getBlockId().toString(), bp.getName(), newPath);
+					}
+				}	
+			}
+		}
 	}
 	
 	/**
