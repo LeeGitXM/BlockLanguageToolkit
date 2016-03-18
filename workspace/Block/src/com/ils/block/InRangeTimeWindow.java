@@ -121,7 +121,8 @@ public class InRangeTimeWindow extends AbstractProcessBlock implements ProcessBl
 	}
 	@Override
 	public void stop() {
-		timer.removeWatchdog(dog);
+		super.stop();
+		timer.removeWatchdog(dog);    // Stop evaluation
 	}
 	
 	/**

@@ -105,6 +105,7 @@ public class HighLimitSampleCount extends AbstractProcessBlock implements Proces
 		state = TruthValue.UNKNOWN;
 	}
 	
+	
 	/**
 	 * A new value has arrived. Add it to the queue.
 	 * @param vcn incoming new value.

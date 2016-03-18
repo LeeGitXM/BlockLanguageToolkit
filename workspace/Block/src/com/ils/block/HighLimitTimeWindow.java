@@ -115,10 +115,13 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 	public void start() {
 		super.start();
 	}
+	
 	@Override
 	public void stop() {
+		super.stop();
 		timer.removeWatchdog(dog);
 	}
+	
 	/**
 	 * A new value has arrived. Simply set the current value.
 	 * If the timer is not running, start it now.

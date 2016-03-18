@@ -479,8 +479,14 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 				for(ProcessBlock blk:blocks.values()) {
 					if( !blk.delayBlockStart() ) blk.start();
 				}
+				// Make sure that the Inputs don't propagate an old value.
 				for(ProcessBlock blk:blocks.values()) {
-					if( blk.delayBlockStart() ) blk.start();
+					if( blk.delayBlockStart() ) {
+						boolean lock = blk.isLocked();
+						blk.setLocked(true);
+						blk.start();
+						blk.setLocked(lock);
+					}
 				}
 				restartSubscriptions();
 			}

@@ -101,9 +101,8 @@ public class LowLimitSampleCount extends AbstractProcessBlock implements Process
 	public void reset() {
 		super.reset();
 		queue.clear();
-		state = TruthValue.UNKNOWN;
+		state = TruthValue.UNSET;
 	}
-	
 	
 	/**
 	 * A new value has arrived. Add it to the queue.

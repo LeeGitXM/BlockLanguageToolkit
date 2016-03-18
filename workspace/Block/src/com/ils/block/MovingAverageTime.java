@@ -110,10 +110,7 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 		}
 	}
 
-	@Override
-	public void start() {
-		super.start();
-	}
+
 	@Override
 	public void stop() {
 		timer.removeWatchdog(dog);

@@ -117,7 +117,8 @@ public class LowLimitTimeWindow extends AbstractProcessBlock implements ProcessB
 	}
 	@Override
 	public void stop() {
-		timer.removeWatchdog(dog);
+		super.stop();
+		timer.removeWatchdog(dog);    // Stop evaluation
 	}
 	
 	/**
