@@ -107,7 +107,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param res the model resource
 	 */
 	public void analyzeResource(long projectId,ProjectResource res) {
-		if( res.getModuleId().equalsIgnoreCase(BLTProperties.MODULE_ID)) {
+		if( res.getModuleId()!=null && res.getModuleId().equalsIgnoreCase(BLTProperties.MODULE_ID)) {
 			String type = res.getResourceType();
 			
 			if( type.equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE) ) {
