@@ -1,10 +1,9 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved.
+ *   (c) 2014-2016  ILS Automation. All rights reserved.
  */
 package com.ils.blt.client.component.recmap;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 
 import com.ils.blt.client.component.PrefuseViewerComponent;
 import com.ils.blt.common.BLTProperties;
@@ -25,13 +24,12 @@ import com.inductiveautomation.ignition.common.Dataset;
 public class RecommendationMap extends PrefuseViewerComponent {
 	private static final long serialVersionUID = 5508313516136446100L;
 	private static final String TAG = "RecommendationMap";
-	private static final String PREFIX = BLTProperties.CUSTOM_PREFIX;              // For bundle identification
-	private static final Dimension MIN_SIZE = new Dimension(40,40);
+	private static String PREFIX = BLTProperties.CUSTOM_PREFIX;              // For bundle identification
 	private RecMapDataModel model = null;
 	private BasicDataset connections = null;
-	private BasicDataset outputs = null;
+	private Dataset outputs = null;
 	private BasicDataset recommendations = null;
-	private BasicDataset diagnoses = null;
+	private Dataset diagnoses = null;
 
 	public RecommendationMap() {
 		setName(BundleUtil.get().getString(PREFIX+".RecommendationMap.Name"));
@@ -41,7 +39,7 @@ public class RecommendationMap extends PrefuseViewerComponent {
 	}
 
 	private void updateChartView() {
-		if( isConfigured() ) {
+		if( configured() ) {
 			removeAll();
 			invalidate();
 			log.infof("%s.update: Creating RecommendationMapView ..%d x %d.",TAG,getWidth(),getHeight());
@@ -59,7 +57,6 @@ public class RecommendationMap extends PrefuseViewerComponent {
 		model = new RecMapDataModel(context,this);
 		return new RecMapView(this);
 	}
-	
 	public RecMapDataModel getModel() { return model; }
 	
 	// We need getters/setters for all the bound properties
@@ -72,51 +69,42 @@ public class RecommendationMap extends PrefuseViewerComponent {
 	
 	public Dataset getDiagnoses() {return diagnoses;}
 	public void setDiagnoses(Dataset diagnoses) {
-		firePropertyChange(RecMapConstants.DIAGNOSES_PROPERTY,this.diagnoses,diagnoses);
-		this.diagnoses = new BasicDataset(diagnoses);
+		this.diagnoses = diagnoses;
 		updateChartView();
 	}
 	public Dataset getOutputs() {return outputs;}
 	public void setOutputs(Dataset newOutputs) {
-		firePropertyChange(RecMapConstants.OUTPUTS_PROPERTY,this.outputs,newOutputs);
-		this.outputs = new BasicDataset(newOutputs);
 		updateChartView();
+		
+		this.outputs = newOutputs;
 	}
+	
 	
 	public Dataset getRecommendations() {return recommendations;}
-	public void setRecommendations(Dataset recs) {
-		firePropertyChange(RecMapConstants.RECOMMENDATIONS_PROPERTY,this.recommendations,recs);
-		this.recommendations = new BasicDataset(recs);
-		updateChartView();
-	}
+	
 	
 	// TODO: Check dataset columns
-	public boolean isConfigured() {
+	private boolean configured() {
 		boolean valid = false;
-		if( connections!=null && connections.getRowCount()>0 &&
-			diagnoses!=null && diagnoses.getRowCount()>0 &&
-			recommendations!=null &&
+		if( diagnoses!=null && diagnoses.getRowCount()>0 &&
+			recommendations!=null && recommendations.getRowCount()>0 &&
 			outputs!=null && outputs.getRowCount()>0 	) {
 			valid = true;
 		}
 		return valid;
 	}
-	@Override
-	public Dimension getSize() {
-		Dimension dim = super.getSize();
-		if(dim==null || dim.getWidth()<MIN_SIZE.getWidth()) {
-			dim = MIN_SIZE;
-		}
-		return dim;
+	public void setRecommendations(Dataset recs) {
+		firePropertyChange(RecMapConstants.RECOMMENDATIONS_PROPERTY,this.recommendations,recs);
+		this.recommendations = new BasicDataset(recs);
+		updateChartView();
 	}
-	
-	public void updateDiagnosis(int row,String value) {
-		int col = diagnoses.getColumnIndex(RecMapConstants.MULTIPLIER);
+	public void updateRecommendations(int row,String value) {
+		int col = recommendations.getColumnIndex(RecMapConstants.VALUE_COLUMN);
 		if( col>=0 ) {
-			Dataset old = new BasicDataset(diagnoses);
-			diagnoses.setValueAt(row, col, value);
-			firePropertyChange(RecMapConstants.DIAGNOSES_PROPERTY,old,this.diagnoses);
-			log.infof("%s.updateDiagnosis: Fired property change on %s",TAG,RecMapConstants.DIAGNOSES_PROPERTY);
+			Dataset old = new BasicDataset(recommendations);
+			recommendations.setValueAt(row, col, value);
+			firePropertyChange(RecMapConstants.RECOMMENDATIONS_PROPERTY,old,this.recommendations);
+			log.infof("%s.updateRecommendations: Fired property change on %s",TAG,RecMapConstants.RECOMMENDATIONS_PROPERTY);
 		}
 	}
 }

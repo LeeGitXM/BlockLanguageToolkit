@@ -20,6 +20,7 @@ public interface RecMapConstants   {
 	public static final String OUTPUT_ID_COLUMN        = "OutputId";
 	public static final String ID_COLUMN     = "Id";
 	public static final String NAME_COLUMN    = "Name";
+	public static final String VALUE_COLUMN   = "Auto";           // DELETE THIS
 	
 	// VisualItem column names
 	public static final String KIND    = "Kind";       // diagnosis, recommendation, output
@@ -37,6 +38,7 @@ public interface RecMapConstants   {
 	public static final String PROBLEM    = "Problem";       // Diagnosis
 	public static final String RECOMMENDATION = "Recommendation"; // Output
 	public static final String TARGET     = "Target";        // Output
+	public static final String VALUE     = "Auto";           // DELETE THIS
 	
 	// "kinds" of nodes
 	public static final int SOURCE_KIND      = 0;
