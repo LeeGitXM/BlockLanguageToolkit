@@ -1,3 +1,6 @@
+/**
+ *   (c) 2014-2016 ILS Automation. All rights reserved. 
+ */
 package com.ils.blt.client.component.recmap;
 
 import java.awt.geom.Point2D;
@@ -17,7 +20,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  * Based on GridLayout. This layout is specific to a grid containing:
  *    1) Source column
  *    2) Target column
- *    3) Link column - middle column has edges to source and target. 
+ *    3) Center column - middle column displays blocks, but they are unconnected. 
  *  
  */
 public class ThreeColumnLayout extends Layout {
@@ -38,7 +41,7 @@ public class ThreeColumnLayout extends Layout {
      * Create a new ThreeColumnLayout using the specified grid dimensions.
      * @param group the data group to layout
      * @param rows1 the number of rows in the source column
-     * @param rows2 the number of rows in the link column
+     * @param rows2 the number of rows in the center column
      * @param rows3 the number of rows in the target column
      * @param col name of the item column that contains the column index
      * @param sourceCol name of the item column that contains the sourceReference
@@ -78,6 +81,7 @@ public class ThreeColumnLayout extends Layout {
         TupleSet ts = m_vis.getGroup(m_group);
         log.infof("%s.run group %s has %d nodes (%3.1f x %3.1f)",TAG,m_group,ts.getTupleCount(),w,h);
         
+        // Attempt to center the nodes in the middle
         int sources = (nrows - nrows1)/2;
         int targets = (nrows - nrows3)/2;
         boolean linkSlots[] = new boolean[nrows];
@@ -113,7 +117,8 @@ public class ThreeColumnLayout extends Layout {
                 	x = bx + w*((coltype)/2.0);
                 	int src = item.getInt(sourceRefColumn);
                 	int tar = item.getInt(targetRefColumn);
-                	int preference = (src+tar)/2;
+                	int preference = (src+tar-1)/2;
+                	if( preference<0 ) preference=0;
                 	int span = 0;
                 	row = preference;
                 	// Try above and below the preferred, until we get an opening

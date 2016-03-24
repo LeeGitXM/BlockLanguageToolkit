@@ -33,7 +33,7 @@ public class RecMapSelector extends ControlAdapter implements Control {
 		if( !e.isControlDown() ) return;
 		if( item instanceof TableNodeItem ) {
 			int nodeType = item.getInt(RecMapConstants.KIND);
-			if( nodeType==RecMapConstants.LINK_KIND) {
+			if( nodeType==RecMapConstants.INFO_KIND) {
 				if( clicks==0 ) {
 					// Set a timer to wait for the correct number of clicks
 					Timer t = new Timer("clickTimer",false);
@@ -42,11 +42,11 @@ public class RecMapSelector extends ControlAdapter implements Control {
 						public void run() {
 							if( clicks==clickCount) {
 								//Window root = SwingUtilities.getWindowAncestor(map);
-								String message = "Enter recommendation factor:";
-								String ans = JOptionPane.showInputDialog(map, message, item.getString(RecMapConstants.VALUE));
+								String message = "Enter multiplier:";
+								String ans = JOptionPane.showInputDialog(map, message, item.getString(RecMapConstants.MULTIPLIER));
 								if( ans!=null) {
-									item.setString(RecMapConstants.VALUE, ans);
-									map.updateRecommendations(item.getInt(RecMapConstants.INDEX),ans);
+									item.setString(RecMapConstants.MULTIPLIER, ans);
+									map.updateDiagnosis(item.getInt(RecMapConstants.INDEX),ans);
 								}
 							}
 							clicks = 0;

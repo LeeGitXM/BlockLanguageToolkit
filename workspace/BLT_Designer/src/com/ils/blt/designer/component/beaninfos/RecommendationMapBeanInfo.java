@@ -32,7 +32,7 @@ public class RecommendationMapBeanInfo extends CommonBeanInfo {
 	private static final LoggerEx logger = LogUtil.getLogger(RecommendationMapBeanInfo.class.getPackage().getName());
 	
 	/**
-	 * Constructor: Create a beaninfo object for the CallbackBlock. The
+	 * Constructor: Create a beaninfo object for the RecommendationMap. The
 	 *              superclass fills in common properties and customizers.
 	 */
 	public RecommendationMapBeanInfo() {
@@ -45,7 +45,10 @@ public class RecommendationMapBeanInfo extends CommonBeanInfo {
 	protected void initProperties() throws IntrospectionException {
 		// Adds common properties
 		super.initProperties();
+		addProp("minimumSize", "Size", "Component size", CAT_DATA,PREFERRED_MASK|EXPERT_MASK);
 		
+		addBoundProp(RecMapConstants.CONNECTIONS_PROPERTY, "Connections", "A map of final diagnosis to outputs", 
+                CAT_DATA,PREFERRED_MASK | BOUND_MASK | EXPERT_MASK);
 		addBoundProp(RecMapConstants.DIAGNOSES_PROPERTY, "Diagnoses", "A list of final diagnosis values", 
 					                                       CAT_DATA,PREFERRED_MASK | BOUND_MASK | EXPERT_MASK);
 		addBoundProp(RecMapConstants.OUTPUTS_PROPERTY, "Outputs", "A list of outputs for which recommendations apply", 
@@ -76,8 +79,8 @@ public class RecommendationMapBeanInfo extends CommonBeanInfo {
 		case BeanInfo.ICON_COLOR_16x16:
 		case BeanInfo.ICON_MONO_16x16:
 			return new ImageIcon(getClass().getResource("/images/recommendation_map_16.png")).getImage();
-		case SimpleBeanInfo.ICON_COLOR_32x32:
-		case SimpleBeanInfo.ICON_MONO_32x32:
+		case BeanInfo.ICON_COLOR_32x32:
+		case BeanInfo.ICON_MONO_32x32:
 		default:
 			return new ImageIcon(getClass().getResource("/images/recommendation_map_32.png")).getImage();
 		}

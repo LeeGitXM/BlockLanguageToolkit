@@ -1,5 +1,5 @@
 /**
- *   (c) 2013  ILS Automation. All rights reserved. 
+ *   (c) 2016  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -17,8 +17,11 @@ import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.LimitType;
+import com.ils.blt.common.block.PlacementHint;
 import com.ils.blt.common.block.PropertyType;
+import com.ils.blt.common.block.SlopeCalculationOption;
 import com.ils.blt.common.block.TransmissionScope;
+import com.ils.blt.common.block.TrendDirection;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
@@ -44,33 +47,54 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
 @ExecutableBlock
 public class TrendDetector extends AbstractProcessBlock implements ProcessBlock {
 	private final String TAG = "TrendDetector";
-	protected static final String BLOCK_PROPERTY_MAXIMUM_OUT_OF_RANGE = "MaximumOutOfRange";
-	protected static final String BLOCK_PROPERTY_SQC_LIMIT = "NumberOfStandardDeviations";
+	protected static final String BLOCK_PROPERTY_CALCULATION_OPTION = "SlopeCalculationOption";
+	protected static final String BLOCK_PROPERTY_RELATIVE_TO_TARGET = "RelativeToTarget";
+	protected static final String BLOCK_PROPERTY_STANDARD_DEVIATION_MULTIPLIER = "StandardDeviationMultiplicativeFactor";
 	protected static final String BLOCK_PROPERTY_TEST_LABEL = "TestLabel";
+	protected static final String BLOCK_PROPERTY_TREND_COUNT_THRESHOLD = "TrendCountThreshold";
+	protected static final String BLOCK_PROPERTY_TREND_DIRECTION = "TrendDirection";
+	protected static final String BLOCK_PROPERTY_TREND_POINTS_REQUIRED = "NumberOfTrendPointsRequired";
+	
+	
+	// Input ports
 	protected static final String PORT_STANDARD_DEVIATION = "standardDeviation";
 	protected static final String PORT_TARGET = "target";
 	protected static final String PORT_VALUE = "value";
 	// Output ports
 	protected static final String PORT_SLOPE = "slope";
 	protected static final String PORT_VARIANCE = "var";
-	protected static final String PORT_PREDICTION = "prediction";
+	protected static final String PORT_PROJECTION = "projection";
 	private final static int DEFAULT_BUFFER_SIZE = 10;
 	
 	
 	private boolean clearOnReset = false;
-	private double limit = 3.0;
-	private LimitType limitType = LimitType.HIGH;
-	private int maxOut = 0;
-	private FixedSizeQueue<Double> queue;
-	private int sampleSize = DEFAULT_BUFFER_SIZE;
+	private SlopeCalculationOption calculationOption = SlopeCalculationOption.AVERAGE;
+	private int countThreshold = 2;
+	private double multiplier = 1.0;
+	private int pointsRequired = DEFAULT_BUFFER_SIZE;
+	private boolean relativeToTarget = false;
+	private TrendDirection trendDirection = TrendDirection.BOTH;
+	
+	
+	private FixedSizeQueue<QualifiedValue> buffer;
+
 	private double standardDeviation = Double.NaN;
 	private double mean = Double.NaN;
+	// Calculated parameters
+	private double slope = Double.NaN;
+	private double variance = Double.NaN;
+	private double intercept = Double.NaN;
+	private double interceptVariance = Double.NaN;
+	private double projection = Double.NaN;
+	// Counts
+	int downwardCount = 0;
+	int upwardCount   = 0;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
 	public TrendDetector() {
-		queue = new FixedSizeQueue<Double>(DEFAULT_BUFFER_SIZE);
+		buffer = new FixedSizeQueue<QualifiedValue>(DEFAULT_BUFFER_SIZE);
 		initialize();
 		initializePrototype();
 	}
@@ -84,7 +108,7 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 	 */
 	public TrendDetector(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
-		queue = new FixedSizeQueue<Double>(DEFAULT_BUFFER_SIZE);
+		buffer = new FixedSizeQueue<QualifiedValue>(DEFAULT_BUFFER_SIZE);
 		initialize();
 	}
 	
@@ -93,21 +117,26 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 	 * Populate them with default values.
 	 */
 	private void initialize() {	
-		setName("SQC");
-		this.isReceiver = true;
-		this.isTransmitter = true;
+		setName("Trend");
+		this.isReceiver = false;
+		this.isTransmitter = false;
+		BlockProperty calculationOptionProperty = new BlockProperty(BLOCK_PROPERTY_CALCULATION_OPTION,calculationOption,PropertyType.SLOPEOPTION,true);
+		setProperty(BLOCK_PROPERTY_CALCULATION_OPTION, calculationOptionProperty);
 		BlockProperty clearProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET,new Boolean(clearOnReset),PropertyType.BOOLEAN,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET, clearProperty);
-		BlockProperty limitProperty = new BlockProperty(BLOCK_PROPERTY_SQC_LIMIT,new Double(limit),PropertyType.DOUBLE,true);
-		setProperty(BlockConstants.BLOCK_PROPERTY_LIMIT, limitProperty);
-		BlockProperty limitTypeProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_LIMIT_TYPE,new String(limitType.name()),PropertyType.STRING,true);
-		setProperty(BlockConstants.BLOCK_PROPERTY_LIMIT_TYPE, limitTypeProperty);
-		BlockProperty maxOutProperty = new BlockProperty(BLOCK_PROPERTY_MAXIMUM_OUT_OF_RANGE,new Integer(maxOut),PropertyType.INTEGER,true);
-		setProperty(BLOCK_PROPERTY_MAXIMUM_OUT_OF_RANGE, maxOutProperty);
-		BlockProperty sizeProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE,new Integer(DEFAULT_BUFFER_SIZE),PropertyType.INTEGER,true);
-		setProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE, sizeProperty);
 		BlockProperty labelProperty = new BlockProperty(BLOCK_PROPERTY_TEST_LABEL,"",PropertyType.STRING,true);
 		setProperty(BLOCK_PROPERTY_TEST_LABEL, labelProperty);
+		BlockProperty thresholdProperty = new BlockProperty(BLOCK_PROPERTY_TREND_COUNT_THRESHOLD,new Integer(countThreshold),PropertyType.INTEGER,true);
+		setProperty(BLOCK_PROPERTY_TREND_COUNT_THRESHOLD, thresholdProperty);
+		BlockProperty pointsRequiredProperty = new BlockProperty(BLOCK_PROPERTY_TREND_POINTS_REQUIRED,new Integer(pointsRequired),PropertyType.INTEGER,true);
+		setProperty(BLOCK_PROPERTY_TREND_POINTS_REQUIRED, pointsRequiredProperty);
+		BlockProperty relativeToTargetProperty = new BlockProperty(BLOCK_PROPERTY_RELATIVE_TO_TARGET,new Boolean(relativeToTarget),PropertyType.BOOLEAN,true);
+		setProperty(BLOCK_PROPERTY_RELATIVE_TO_TARGET, relativeToTargetProperty);
+		BlockProperty multiplierProperty = new BlockProperty(BLOCK_PROPERTY_STANDARD_DEVIATION_MULTIPLIER,new Double(multiplier),PropertyType.DOUBLE,true);
+		setProperty(BLOCK_PROPERTY_STANDARD_DEVIATION_MULTIPLIER, multiplierProperty);
+		BlockProperty directionProperty = new BlockProperty(BLOCK_PROPERTY_TREND_DIRECTION,trendDirection,PropertyType.TRENDDIRECTION,true);
+		setProperty(BLOCK_PROPERTY_TREND_DIRECTION, directionProperty);
+		
 		
 		// Define a 3 inputs.
 		AnchorPrototype input = new AnchorPrototype(PORT_STANDARD_DEVIATION,AnchorDirection.INCOMING,ConnectionType.DATA);
@@ -125,10 +154,16 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 		anchors.add(output);
 		// Auxiliary outputs contain trend calculations
 		output = new AnchorPrototype(PORT_SLOPE,AnchorDirection.OUTGOING,ConnectionType.DATA);
+		output.setAnnotation("S");
+		output.setHint(PlacementHint.B);
 		anchors.add(output);
 		output = new AnchorPrototype(PORT_VARIANCE,AnchorDirection.OUTGOING,ConnectionType.DATA);
+		output.setAnnotation("V");
+		output.setHint(PlacementHint.B);
 		anchors.add(output);
-		output = new AnchorPrototype(PORT_PREDICTION,AnchorDirection.OUTGOING,ConnectionType.DATA);
+		output = new AnchorPrototype(PORT_PROJECTION,AnchorDirection.OUTGOING,ConnectionType.DATA);
+		output.setAnnotation("P");
+		output.setHint(PlacementHint.B);
 		anchors.add(output);
 	}
 	
@@ -137,12 +172,15 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 		super.reset();
 		if( clearOnReset ) {
 			clear();
+
 		}
 	}
 	
 	private void clear() {
-		queue.clear();
+		buffer.clear();
 		state = TruthValue.UNKNOWN;
+		downwardCount = 0;
+		upwardCount   = 0;
 	}
 	
 	/**
@@ -157,16 +195,35 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 		String port = incoming.getConnection().getDownstreamPortName();
 		if( port.equals(PORT_VALUE)  ) {
 			if( qual.isGood() && qv!=null && qv.getValue()!=null ) {
-				try {
-					Double dbl  = Double.parseDouble(qv.getValue().toString());
-					if( dbl!=null ) {
-						queue.add(dbl);
+				if( !buffer.isEmpty() ) {
+					QualifiedValue lastPoint = buffer.getLast();
+					try {
+						double val = ((Double)(lastPoint.getValue())).doubleValue();
+						double lowLimit = val - standardDeviation*multiplier;
+						double highLimit = val + standardDeviation*multiplier;
+						double current = Double.parseDouble(qv.getValue().toString());
+						if( current>=lowLimit && current<=highLimit) {
+							// Guarantee that the qualified value contains a Double
+							buffer.add(new BasicQualifiedValue(new Double(current),qv.getQuality(),qv.getTimestamp()));
+							if(current>val) {
+								upwardCount++;
+								downwardCount = 0;
+							}
+							else {
+								downwardCount++;
+								upwardCount = 0;
+							}
+						}
 						evaluate();
 					}
+					catch(NumberFormatException nfe) {
+						log.warnf("%s: propertyChange Unable to convert number of points required to an integer (%s)",TAG,nfe.getLocalizedMessage());
+					}
 				}
-				catch(NumberFormatException nfe) {
-					log.warnf("%s.acceptValue exception converting incoming %s to double (%s)",TAG,qv.getValue().toString(),nfe.getLocalizedMessage());
+				else {
+					buffer.add(qv);
 				}
+				
 			}
 			else {
 				// Bad quality, emit the result immediately
@@ -204,27 +261,7 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 			evaluate();
 		}
 	}
-	/**
-	 * We're received a transmitted signal. Deal with it, if appropriate.
-	 * At a later time, we may implement pattern filtering or some other
-	 * method to filter out unwanted messages. For now, if we recognize the command,
-	 * then execute it.
-	 * 
-	 * @param sn signal notification.
-	 */
-	@Override
-	public void acceptValue(SignalNotification sn) {
-		Signal signal = sn.getSignal();
-		log.infof("%s.acceptValue: signal = %s ",TAG,signal.getCommand());
-		if( signal.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_CLEAR_HIGH) && limitType.equals(LimitType.HIGH)) {
-			reset();
-		}
-		else if( signal.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_CLEAR_LOW) && limitType.equals(LimitType.LOW)) {
-			reset();
-		}
-	}
-	
-	
+
 	/**
 	 * Unlike most blocks, this method is not associated with a timer expiration.
 	 * We simply use this to do the calculation.
@@ -236,9 +273,10 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 		if( Double.isNaN(standardDeviation) ) return;
 
 		// Evaluate the buffer and report
-		log.debugf("%s.evaluate %d of %d",TAG,queue.size(),sampleSize);
-		if( queue.size() >= sampleSize) {
-			TruthValue newState = getRuleState();
+		log.debugf("%s.evaluate %d of %d",TAG,buffer.size(),pointsRequired);
+		if( buffer.size() >= pointsRequired) {
+			//Calculate the slope of the data
+			TruthValue newState = getTrendState();
 			if( !isLocked() && !newState.equals(state) ) {
 				// Give it a new timestamp
 				state = newState;
@@ -246,35 +284,20 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 				controller.acceptCompletionNotification(nvn);
 				
-				// Notify other blocks to suppress alternate results
 				if( state.equals(TruthValue.TRUE)) {
-					if( limitType.equals(LimitType.HIGH )) {
-						Signal sig = new Signal(BlockConstants.COMMAND_CLEAR_LOW,"","");
-						QualifiedValue qv = new TestAwareQualifiedValue(timer,sig);
-						BroadcastNotification broadcast = new BroadcastNotification(getParentId(),TransmissionScope.LOCAL,qv);
-						controller.acceptBroadcastNotification(broadcast);
-					}
-					else if( limitType.equals(LimitType.LOW )) {
-						Signal sig = new Signal(BlockConstants.COMMAND_CLEAR_HIGH,"","");
-						QualifiedValue qv = new TestAwareQualifiedValue(timer,sig);
-						BroadcastNotification broadcast = new BroadcastNotification(getParentId(),TransmissionScope.LOCAL,qv);
-						controller.acceptBroadcastNotification(broadcast);
-					}
-				}
-			}
-		}
-		else {
-			// Too few points (can still be TRUE)
-			TruthValue newState = getRuleState();
-			if( newState.equals(TruthValue.FALSE)) newState = TruthValue.UNKNOWN;
-			if( !state.equals(newState)) {
-				state = newState;
-				if( !isLocked()  ) {
-					QualifiedValue outval = new TestAwareQualifiedValue(timer,state);
-					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
+					// Propagate the other values
+					outval = new TestAwareQualifiedValue(timer,slope);
+					nvn = new OutgoingNotification(this,PORT_SLOPE,outval);
 					controller.acceptCompletionNotification(nvn);
-					notifyOfStatus(outval);
-				}
+					// output the standardDeviation, not variance
+					outval = new TestAwareQualifiedValue(timer,Math.sqrt(variance));
+					nvn = new OutgoingNotification(this,PORT_VARIANCE,outval);
+					controller.acceptCompletionNotification(nvn);
+					outval = new TestAwareQualifiedValue(timer,projection);
+					nvn = new OutgoingNotification(this,PORT_PROJECTION,outval);
+					controller.acceptCompletionNotification(nvn);
+				}	
+				notifyOfStatus();
 			}
 		}
 	}
@@ -298,37 +321,58 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
 		log.debugf("%s.propertyChange: %s = %s",TAG,propertyName,event.getNewValue().toString());
-		if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_MAXIMUM_OUT_OF_RANGE)) {
-			try {
-				maxOut = Integer.parseInt(event.getNewValue().toString());
-				if( maxOut<1 ) maxOut = 1;
-			}
-			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert max out-of-range to an integer (%s)",TAG,nfe.getLocalizedMessage());
-			}
-		}
-		else if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE)) {
-			try {
-				sampleSize = Integer.parseInt(event.getNewValue().toString());
-				if( sampleSize < 1 ) sampleSize = 1; 
-				queue.setBufferSize(sampleSize);
-				reset();
-			}
-			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert sample size to an integer (%s)",TAG,nfe.getLocalizedMessage());
-			}
-		}
-		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_SQC_LIMIT)) {
-			try {
-				limit = Double.parseDouble(event.getNewValue().toString());
-			}
-			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert target value to a double (%s)",TAG,nfe.getLocalizedMessage());
-			}
-		}
-		else if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_LIMIT_TYPE)) {
+		if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_CALCULATION_OPTION)) {
 			String type = event.getNewValue().toString().toUpperCase();
-			limitType = LimitType.valueOf(type);
+			calculationOption = SlopeCalculationOption.valueOf(type);
+		}
+		else if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET)) {
+			try {
+				clearOnReset = Boolean.parseBoolean(event.getNewValue().toString());
+			}
+			catch(NumberFormatException nfe) {
+				log.warnf("%s: propertyChange Unable to convert clear flag to a boolean (%s)",getName(),nfe.getLocalizedMessage());
+			}
+		}
+		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_RELATIVE_TO_TARGET)) {
+			try {
+				relativeToTarget = Boolean.parseBoolean(event.getNewValue().toString());
+			}
+			catch(NumberFormatException nfe) {
+				log.warnf("%s: propertyChange Unable to convert relative to target flag to a boolean (%s)",getName(),nfe.getLocalizedMessage());
+			}
+		}
+		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_STANDARD_DEVIATION_MULTIPLIER)) {
+			try {
+				multiplier = Double.parseDouble(event.getNewValue().toString());
+			}
+			catch(NumberFormatException nfe) {
+				log.warnf("%s: propertyChange Unable to convert multiplier value to a double (%s)",TAG,nfe.getLocalizedMessage());
+			}
+		}
+		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_TEST_LABEL)) {
+			;   // Default handling is sufficient
+		}
+		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_TREND_DIRECTION)) {
+			String type = event.getNewValue().toString().toUpperCase();
+			trendDirection = TrendDirection.valueOf(type);
+		}
+		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_TREND_COUNT_THRESHOLD)) {
+			try {
+				countThreshold = Integer.parseInt(event.getNewValue().toString());
+				if( countThreshold<2 ) countThreshold = 2;
+			}
+			catch(NumberFormatException nfe) {
+				log.warnf("%s: propertyChange Unable to convert number of count thresholdto an integer (%s)",TAG,nfe.getLocalizedMessage());
+			}
+		}
+		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_TREND_POINTS_REQUIRED)) {
+			try {
+				pointsRequired = Integer.parseInt(event.getNewValue().toString());
+				if( pointsRequired<2 ) pointsRequired = 2;
+			}
+			catch(NumberFormatException nfe) {
+				log.warnf("%s: propertyChange Unable to convert number of points required to an integer (%s)",TAG,nfe.getLocalizedMessage());
+			}
 		}
 		else {
 			log.warnf("%s.propertyChange:Unrecognized property (%s)",TAG,propertyName);
@@ -344,9 +388,9 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 		attributes.put("Mean (target)", String.valueOf(mean));
 		attributes.put("StandardDeviation", String.valueOf(standardDeviation));
 		List<Map<String,String>> descBuffer = descriptor.getBuffer();
-		for( Double dbl:queue) {
+		for( QualifiedValue qv:buffer) {
 			Map<String,String> qvMap = new HashMap<>();
-			qvMap.put("Value", String.valueOf(dbl));
+			qvMap.put("Value", qv.getValue().toString());
 			descBuffer.add(qvMap);
 		}
 		return descriptor;
@@ -365,74 +409,100 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 		desc.setEmbeddedFontSize(18);
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setStyle(BlockStyle.SQUARE);
+		desc.setPreferredWidth(100);
 		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_LIGHT_GRAY);
 	}
 	/**
-	 * Compute the state, presumably because of a new input.
+	 * Compute the trend detection state, presumably because of a new input.
+	 * We are guaranteed that the buffer is full. 
 	 */
-	private TruthValue getRuleState() {
+	private TruthValue getTrendState() {
 		TruthValue result = TruthValue.UNKNOWN;
-		int total= 0;
-		int high = 0;
-		int low  = 0;
-		int highside  = 0;   // Consecutive
-		int lowside   = 0;
-		int maxhighside  = 0;   // Consecutive
-		int maxlowside   = 0;
-		int outside = 0;
-		double highLimit = mean+(standardDeviation*limit);
-		double lowLimit  = mean-(standardDeviation*limit);
-		for( Double dbl:queue) {
-			double val = dbl.doubleValue();
-			
-			//log.infof("%s.getRuleState: val = %f (%f - %f)",TAG,val,lowLimit,highLimit);
-			if( val < lowLimit) {
-				low++;
+		// Calculate the slope of the data
+		if( estimateSlope() ) {
+			double current = ((Double)buffer.getLast().getValue()).doubleValue();
+			if( upwardCount>countThreshold && !trendDirection.equals(TrendDirection.DOWNWARD)) {
+				if( relativeToTarget && current<mean ) result=TruthValue.TRUE;
+				else if( relativeToTarget && current>=mean ) result=TruthValue.UNKNOWN;
+				else result=TruthValue.TRUE;
 			}
-			else if( val > highLimit) {
-				high++;
-			}
-			
-			if( val>mean ) {
-				highside++;
-				if( highside>maxhighside ) maxhighside = highside;
-				lowside= 0;
-			}
-			else if( val<mean ) {
-				lowside++;
-				if( highside>maxlowside ) maxlowside = lowside;
-				highside= 0;
+			else if( downwardCount>countThreshold && !trendDirection.equals(TrendDirection.UPWARD)) {
+				if( relativeToTarget && current<mean ) result=TruthValue.TRUE;
+				else if( relativeToTarget && current>=mean ) result=TruthValue.UNKNOWN;
+				else result=TruthValue.TRUE;
 			}
 			else {
-				lowside= 0;
-				highside = 0;
+				result=TruthValue.FALSE;
 			}
-			
-			if(limitType.equals(LimitType.LOW) ) {
-				if( val <lowLimit) {
-					outside++;
-				}
-			}
-			else if(limitType.equals(LimitType.HIGH) ) {
-				if( val > highLimit) {
-					outside++;
-				}
-			}
-			else if(limitType.equals(LimitType.BOTH) ) {
-				if(      val > highLimit) outside++;
-				else if( val < lowLimit) outside++;
-			}
-			total++;
 		}
-		
-		if( limitType.equals(LimitType.CONSECUTIVE) ) {
-			if( maxhighside >= maxOut || maxlowside >= maxOut ) result = TruthValue.TRUE; 
-			else if( total>=sampleSize ) result = TruthValue.FALSE;
-		}
-		else if( outside>=maxOut) result = TruthValue.TRUE;
-		else if( total>=sampleSize ) result = TruthValue.FALSE;
-		
-		log.infof("%s.getRuleState: Of %d results,  %d high, %d low => %s (%s)",TAG,total,high,low,result.toString(),limitType.toString());
+		log.infof("%s.getTrendState: %d upward, %d downward => %s (%s)",TAG,upwardCount,downwardCount,result.toString(),trendDirection.toString());
 		return result;	
+	}
+	/**
+	 * Compute the slope and projected value. This function is only called if the required
+	 * point threshold is met.
+	 */
+	private boolean estimateSlope() {
+		boolean success = true;
+		QualifiedValue begin = buffer.getFirst();
+		QualifiedValue end = buffer.getLast();
+		double averageInterval = ((double)(end.getTimestamp().getTime() - begin.getTimestamp().getTime()))/(pointsRequired-1);
+		if( calculationOption.equals(SlopeCalculationOption.AVERAGE)) {
+			
+			slope = (((Double)(end.getValue())).doubleValue() - ((Double)(begin.getValue())).doubleValue() ) /
+					(end.getTimestamp().getTime() - begin.getTimestamp().getTime() );
+			// To calculate the projected value, we need the average time interval represented by the points
+			// and then take the last point to project forward in time.
+			projection = slope*averageInterval + ((Double)(end.getValue())).doubleValue();
+			variance = 0.0;
+		}
+		else {
+			// Linear fit
+			if( leastSquareRegression() ) {
+				projection = slope * (averageInterval + end.getTimestamp().getTime()) + intercept;
+			}
+			else {
+				success =  false;
+			}
+		}
+		return success;
+	}
+	/**
+	 * Calculate the coefficients for the equation of the line (y = Mx + B) that best fits 
+	 * the supplied points using a least squares regression.  Note that this method is only
+	 * called if there are sufficient points in the buffer
+	 * @return true if a slope could be calculated
+	 */
+	private boolean leastSquareRegression() {
+		if( standardDeviation<=0.0 ) return false;
+		
+		slope = 0.0;
+		variance = 0.0;
+		projection = 0.0;
+
+		double S = 0.0; 
+		double Sx = 0.0; 
+		double Sy = 0.0; 
+		double Sxx = 0.0; 
+		double Sxy = 0.0;
+		for(QualifiedValue qv:buffer) {
+			double x = qv.getTimestamp().getTime();     // msecs
+			double y = ((Double)(qv.getValue())).doubleValue();
+			S = S + 1/(standardDeviation*standardDeviation);
+			Sx = Sx + x/(standardDeviation*standardDeviation);
+			Sy = Sy + y/(standardDeviation*standardDeviation);
+			Sxx = Sxx + x*x/(standardDeviation*standardDeviation);
+			Sxy = Sxy + x*y/(standardDeviation*standardDeviation);
+		}
+		double DEN = S * Sxx - Sx*Sx;
+		// Calculate slope and intercept.  Make sure DEN is not 0! 
+		if( DEN == 0.0 ) return false;
+
+		slope = (S * Sxy - Sx * Sy)/DEN;
+		variance = S / DEN;
+		intercept = (Sxx * Sy - Sx * Sxy)/DEN;
+		interceptVariance = Sxx / DEN;
+
+		return true;
 	}
 }

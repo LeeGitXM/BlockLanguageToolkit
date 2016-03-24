@@ -1,5 +1,5 @@
 /**
- * Copyright 2014-2015. ILS Automation. All rights reserved.
+ * Copyright 2014-2016. ILS Automation. All rights reserved.
  * 
  * Derived from prefuse.org "TreeView" sample code.
  * https://github.com/prefuse/Prefuse
@@ -16,6 +16,10 @@ import java.awt.geom.Rectangle2D;
 
 import javax.swing.BorderFactory;
 import javax.swing.border.BevelBorder;
+
+import com.ils.blt.client.component.ILSRepaintAction;
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 import prefuse.Constants;
 import prefuse.Display;
@@ -34,11 +38,12 @@ import prefuse.controls.PanControl;
 import prefuse.controls.WheelZoomControl;
 import prefuse.controls.ZoomControl;
 import prefuse.controls.ZoomToFitControl;
+import prefuse.data.Graph;
+import prefuse.data.Table;
+import prefuse.data.Tuple;
 import prefuse.data.tuple.TupleSet;
-import prefuse.render.AbstractShapeRenderer;
 import prefuse.render.DefaultRendererFactory;
 import prefuse.render.EdgeRenderer;
-import prefuse.render.LabelRenderer;
 import prefuse.util.ColorLib;
 import prefuse.util.GraphicsLib;
 import prefuse.util.display.DisplayLib;
@@ -46,13 +51,9 @@ import prefuse.visual.VisualItem;
 import prefuse.visual.expression.InGroupPredicate;
 import prefuse.visual.tuple.TableNodeItem;
 
-import com.ils.blt.client.component.ILSRepaintAction;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
-
 
 /**
- * Demonstration of a node-link tree viewer
+ * A node-link tree viewer
  *
  * @version 1.0
  * @author <a href="http://jheer.org">jeffrey heer</a>
@@ -61,12 +62,18 @@ public class RecMapView extends Display {
 	private static final long serialVersionUID = 3253162293683958367L;
 	private static final String TAG = "RecMapView";
 	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
+	
+	// Group Names
+    public static final String GROUP_ALL             = "map";
+    public static final String GROUP_ALL_NODES       = Graph.NODES;    // All nodes
+    public static final String GROUP_DIAGNOSIS_NODES = "map.diagnosis.nodes";
+    public static final String GROUP_OUTPUT_NODES    = "map.output.nodes";
+    public static final String GROUP_REC_NODES       = "map.rec.nodes";
+    public static final String GROUP_ALL_EDGES       = Graph.EDGES;
+    public static final String GROUP_PLAIN_EDGES     = "map.plain.edges";
+    public static final String GROUP_ACTIVE_EDGES    = "map.active.edges";
     
-    private static final String map = "map";
-    private static final String mapNodes = "map.nodes";
-    private static final String mapEdges = "map.edges";
-    private LabelRenderer m_nodeRenderer;
-    private EdgeRenderer m_edgeRenderer;
+    private EdgeRenderer edgeRenderer;
     private final ThreeColumnLayout columnLayout;
    
     public RecMapView(RecommendationMap recmap) {
@@ -76,40 +83,78 @@ public class RecMapView extends Display {
         RecMapDataModel model = recmap.getModel();
         
         // NOTE: Returns a VisualGraph, node/edge tables are VisualTables
-        //                             node items are TableNodeItems
-        m_vis.addGraph(map, model.getGraph());
+        //                              node items are TableNodeItems
+        m_vis.addGraph(GROUP_ALL, model.getGraph());
+        // Assign nodes to secondary groups
+        Table nodes = model.getNodes();
+        int rows = nodes.getRowCount();
+        int row = 0;
+        TupleSet diagSet = new Table();
+        TupleSet outSet = new Table();
+        TupleSet infoSet = new Table();
+        while(row<rows) {
+        	Tuple tuple = nodes.getTuple(row);
+        	int kind = nodes.getInt(row, RecMapConstants.KIND);
+        	if( kind == RecMapConstants.SOURCE_KIND ) diagSet.addTuple(tuple);
+        	else if( kind == RecMapConstants.TARGET_KIND ) outSet.addTuple(tuple);
+        	else if( kind == RecMapConstants.INFO_KIND ) infoSet.addTuple(tuple);
+        	else {
+        		log.infof("%s.constructor: unrecognized KIND column %d",TAG,kind);
+        	}
+        	row++;
+        }
+        m_vis.add(GROUP_DIAGNOSIS_NODES,diagSet);
+        m_vis.add(GROUP_OUTPUT_NODES,outSet);
+        m_vis.add(GROUP_REC_NODES,infoSet);
+        
+        // Assign edges to secondary groups
+        Table edges = model.getEdges();
+        rows = edges.getRowCount();
+        row = 0;
+        TupleSet plainSet = new Table();
+        TupleSet activeSet = new Table();
+        while(row<rows) {
+        	Tuple tuple = edges.getTuple(row);
+        	boolean active = edges.getBoolean(row, RecMapConstants.ACTIVE);
+        	if( active) activeSet.addTuple(tuple);
+        	else  plainSet.addTuple(tuple);
+        	row++;
+        }
+        m_vis.add(GROUP_PLAIN_EDGES,plainSet);
+        m_vis.add(GROUP_ACTIVE_EDGES,activeSet);
+  
+        
         setSize(sz);
         setBackground(new Color(230,228,227));
         setBorder(BorderFactory.createCompoundBorder(
                                 BorderFactory.createBevelBorder(BevelBorder.RAISED), 
                                 BorderFactory.createBevelBorder(BevelBorder.LOWERED)));
         
-        // NOTE: No images to render.
-        m_nodeRenderer = new ThreeColumnLabelRenderer();
-        m_nodeRenderer.setRenderType(AbstractShapeRenderer.RENDER_TYPE_DRAW_AND_FILL);
-        m_nodeRenderer.setHorizontalAlignment(Constants.LEFT);
-        m_nodeRenderer.setRoundedCorner(2,2);
-        m_nodeRenderer.setVerticalPadding(3);
-        m_nodeRenderer.setHorizontalPadding(4);
-
-        m_edgeRenderer = new EdgeRenderer(Constants.EDGE_TYPE_LINE);
-        m_edgeRenderer.setDefaultLineWidth(2.0);
+        DefaultRendererFactory rf = new DefaultRendererFactory();
         
-        DefaultRendererFactory rf = new DefaultRendererFactory(m_nodeRenderer);
-        rf.add(new InGroupPredicate(mapEdges), m_edgeRenderer);
+        // NOTE: Specific subtype for each node group.
+        DiagnosisRenderer diagRenderer = new DiagnosisRenderer();
+        rf.add(new InGroupPredicate(GROUP_DIAGNOSIS_NODES), diagRenderer);
+        OutputRenderer outRenderer = new OutputRenderer();
+        rf.add(new InGroupPredicate(GROUP_OUTPUT_NODES), outRenderer);
+        RecommendationRenderer recRenderer = new RecommendationRenderer();
+        rf.add(new InGroupPredicate(GROUP_REC_NODES), recRenderer);
+
+        edgeRenderer = new EdgeRenderer(Constants.EDGE_TYPE_LINE);
+        edgeRenderer.setDefaultLineWidth(2.0);
+        rf.add(new InGroupPredicate(GROUP_PLAIN_EDGES), edgeRenderer);
+        rf.add(new InGroupPredicate(GROUP_ACTIVE_EDGES), edgeRenderer);
+        
         m_vis.setRendererFactory(rf);
                
         // colors
-        ItemAction nodeColor = new NodeColorAction(mapNodes);
-        ItemAction textColor = new ColorAction(mapNodes,
+        ItemAction nodeColor = new NodeColorAction(GROUP_ALL_NODES);
+        ItemAction textColor = new ColorAction(GROUP_ALL_NODES,
                 VisualItem.TEXTCOLOR, ColorLib.rgb(0,0,0));
-        ItemAction strokeColor = new ColorAction(mapNodes,
+        ItemAction strokeColor = new ColorAction(GROUP_ALL_NODES,
                 VisualItem.STROKECOLOR, ColorLib.rgb(0,0,0));
         m_vis.putAction("strokeColor", strokeColor);
         m_vis.putAction("textColor", textColor);
-        
-        ItemAction edgeColor = new ColorAction(mapEdges,
-                VisualItem.STROKECOLOR, ColorLib.rgb(150,150,150));
         
         // quick repaint
         ActionList repaint = new ActionList();
@@ -124,12 +169,12 @@ public class RecMapView extends Display {
         
         // animate paint change
         ActionList animatePaint = new ActionList(400);
-        animatePaint.add(new ColorAnimator(mapNodes));
+        animatePaint.add(new ColorAnimator(GROUP_ALL_NODES));
         animatePaint.add(new ILSRepaintAction());
         m_vis.putAction("animatePaint", animatePaint);
 
         // create a grid layout action
-        columnLayout = new ThreeColumnLayout(map,model.getSourceRowCount(),model.getRecommendationCount(),model.getTargetRowCount(),
+        columnLayout = new ThreeColumnLayout(GROUP_ALL,model.getSourceRowCount(),model.getRecommendationCount(),model.getTargetRowCount(),
         									RecMapConstants.KIND,RecMapConstants.SOURCEROW,RecMapConstants.TARGETROW);
         // Rectangle(x,y,width,height)
         columnLayout.setLayoutBounds(new Rectangle2D.Double(0.,0.,sz.width,sz.height));
@@ -138,15 +183,18 @@ public class RecMapView extends Display {
         
         AutoCenterAction autoCenter = new AutoCenterAction();
         
+        ItemAction activeEdgeColor = new ColorAction(GROUP_ACTIVE_EDGES,VisualItem.STROKECOLOR, ColorLib.rgb(150,255,150));
+        ItemAction plainEdgeColor = new ColorAction(GROUP_PLAIN_EDGES,VisualItem.STROKECOLOR, ColorLib.rgb(150,150,150));
         // create the filtering and layout
         ActionList filter = new ActionList();
         //filter.add(new FontAction(mapNodes, FontLib.getFont("Tahoma", 16)));
-        filter.add(new FontAction(mapNodes, new Font("monospaced",Font.PLAIN,16)));
+        filter.add(new FontAction(GROUP_ALL_NODES, new Font("monospaced",Font.PLAIN,16)));
         filter.add(columnLayout);
         filter.add(textColor);
         filter.add(nodeColor);
         filter.add(strokeColor);
-        filter.add(edgeColor);
+        filter.add(activeEdgeColor);
+        filter.add(plainEdgeColor);
         m_vis.putAction("filter", filter);
         
         // animated transition
@@ -154,9 +202,9 @@ public class RecMapView extends Display {
         animate.setPacingFunction(new SlowInSlowOutPacer());
         animate.add(autoCenter);
         animate.add(new QualityControlAnimator());
-        animate.add(new VisibilityAnimator(map));
-        animate.add(new LocationAnimator(mapNodes));
-        animate.add(new ColorAnimator(mapNodes));
+        animate.add(new VisibilityAnimator(GROUP_ALL));
+        animate.add(new LocationAnimator(GROUP_ALL_NODES));
+        animate.add(new ColorAnimator(GROUP_ALL_NODES));
         animate.add(new ILSRepaintAction());
         m_vis.putAction("animate", animate);
         m_vis.alwaysRunAfter("filter", "animate");
@@ -200,11 +248,10 @@ public class RecMapView extends Display {
     // ------------------------------------------------------------------------
    // Set orientation left-to-right.
     public void orient() {
-            m_nodeRenderer.setHorizontalAlignment(Constants.LEFT);
-            m_edgeRenderer.setHorizontalAlignment1(Constants.RIGHT);
-            m_edgeRenderer.setHorizontalAlignment2(Constants.LEFT);
-            m_edgeRenderer.setVerticalAlignment1(Constants.CENTER);
-            m_edgeRenderer.setVerticalAlignment2(Constants.CENTER);
+            edgeRenderer.setHorizontalAlignment1(Constants.RIGHT);
+            edgeRenderer.setHorizontalAlignment2(Constants.LEFT);
+            edgeRenderer.setVerticalAlignment1(Constants.CENTER);
+            edgeRenderer.setVerticalAlignment2(Constants.CENTER);
     }
 
     

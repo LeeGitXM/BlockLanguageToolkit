@@ -22,8 +22,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import net.miginfocom.swing.MigLayout;
-
 import com.ils.blt.common.TimeUtility;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.BindingType;
@@ -32,7 +30,9 @@ import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.HysteresisType;
 import com.ils.blt.common.block.LimitType;
 import com.ils.blt.common.block.PropertyType;
+import com.ils.blt.common.block.SlopeCalculationOption;
 import com.ils.blt.common.block.TransmissionScope;
+import com.ils.blt.common.block.TrendDirection;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.common.notification.NotificationKey;
@@ -49,6 +49,8 @@ import com.inductiveautomation.ignition.common.sqltags.parser.TagPathParser;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
+
+import net.miginfocom.swing.MigLayout;
 
 /**
  * This is a panel on the "home" panel page that edits exactly one property,
@@ -309,6 +311,8 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		else if(prop.getType().equals(PropertyType.HYSTERESIS))   setHysteresisTypeCombo(valueCombo);
 		else if(prop.getType().equals(PropertyType.LIMIT))        setLimitTypeCombo(valueCombo);
 		else if(prop.getType().equals(PropertyType.SCOPE))	      setTransmissionScopeCombo(valueCombo);
+		else if(prop.getType().equals(PropertyType.SLOPEOPTION))  setSlopeCalculationOptionCombo(valueCombo);
+		else if(prop.getType().equals(PropertyType.TRENDDIRECTION)) setTrendDirectionCombo(valueCombo);
 		else if(prop.getType().equals(PropertyType.TRUTHVALUE) )  setTruthValueCombo(valueCombo); 
 		valueCombo.setEditable(true);
 		valueCombo.repaint();
@@ -375,7 +379,16 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 			box.addItem(scope.name());
 		}
 	}
-
+	/**
+	 * Populate a combo box for trend slope calculation option
+	 */
+	private void setSlopeCalculationOptionCombo(JComboBox<String> box) {
+		box.removeAllItems();
+		for(SlopeCalculationOption opt : SlopeCalculationOption.values()) {
+			box.addItem(opt.name());
+		}
+	}
+	
 	/**
 	 * Populate a combo box for transmission scope
 	 */
@@ -383,6 +396,15 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		box.removeAllItems();
 		for(TransmissionScope scope : TransmissionScope.values()) {
 			box.addItem(scope.name());
+		}
+	}
+	/**
+	 * Populate a combo box for trend direction
+	 */
+	private void setTrendDirectionCombo(JComboBox<String> box) {
+		box.removeAllItems();
+		for(TrendDirection direction : TrendDirection.values()) {
+			box.addItem(direction.name());
 		}
 	}
 	/**
@@ -433,7 +455,9 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 				    prop.getType().equals(PropertyType.BOOLEAN)       ||          
 				    prop.getType().equals(PropertyType.HYSTERESIS)     ||   
 				    prop.getType().equals(PropertyType.LIMIT)          ||        
-				    prop.getType().equals(PropertyType.SCOPE)          ||	      
+				    prop.getType().equals(PropertyType.SCOPE)          ||
+				    prop.getType().equals(PropertyType.SLOPEOPTION)    ||
+				    prop.getType().equals(PropertyType.TRENDDIRECTION) ||
 				    prop.getType().equals(PropertyType.TRUTHVALUE)          ); 
 	}
 	

@@ -90,7 +90,6 @@ public class BlockExplanationViewer extends JDialog {
 
 	
 	private void refresh() {
-		ApplicationRequestHandler handler = new ApplicationRequestHandler();
 		explanation = handler.getExplanation(diagram.getId().toString(), block.getId().toString());
 		textArea.setText(explanation);
 	}

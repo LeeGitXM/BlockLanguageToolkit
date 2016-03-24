@@ -84,8 +84,8 @@ public class ResourceUpdateManager implements Runnable {
 				context.updateResource(res.getResourceId(),res.getData());   // Force an update
 				diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
 				DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ...");  // Don't publish
-				for(ProjectResource res:diff.getResources()) {
-					log.infof("%s.run: Saved %s (%d)",TAG,res.getName(),res.getResourceId());
+				for(ProjectResource pr:diff.getResources()) {
+					log.infof("%s.run: Saved %s (%d)",TAG,pr.getName(),pr.getResourceId());
 				}
 				// Make every thing clean again.
 				statusManager.clearDirtyChildCount(res.getResourceId());

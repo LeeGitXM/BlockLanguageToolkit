@@ -5,7 +5,7 @@ package com.ils.blt.common.block;
 
 
 /**
- * This enumeration class describes the possible vlues for a limit type
+ * This enumeration class describes the possible values for a limit type
  */
 public enum HysteresisType
 {

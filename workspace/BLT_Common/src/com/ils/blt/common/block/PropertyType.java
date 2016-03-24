@@ -19,7 +19,9 @@ public enum PropertyType
             HYSTERESIS,          // Hysteresis (TRUE,FALSE,ALWAYS,NEVER)
             LIMIT,               // Limit type (UPPER,LOWER,BOTH)
             SCOPE,               // Transmission scope
+            SLOPEOPTION,         // Slope calculation option
             TIME,                // seconds, editor auto-scales display unit.
+            TRENDDIRECTION,
             TRUTHVALUE,
             LIST,                // List of comma-separated strings
             SCRIPT,              // Gets a Python editor

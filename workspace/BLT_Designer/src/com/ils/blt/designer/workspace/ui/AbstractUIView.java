@@ -170,8 +170,9 @@ public abstract class AbstractUIView extends JComponent
 		// With exactly one on top or bottom, push to the rightmost quarter.
 		int topSegments = topCount+1;
 		if( topCount == 1 || topCount==2) topSegments = 4;
-		int bottomSegments = bottomCount+1;
+		int bottomSegments = bottomCount+2;
 		if( bottomCount == 1 || bottomCount==2) bottomSegments = 4;
+		else bottomIndex = 1;    // Shift right
 		int leftSegments = leftCount+1;
 		if( leftCount == 2) leftSegments = 4;
 		int rightSegments = rightCount+1;
@@ -201,17 +202,18 @@ public abstract class AbstractUIView extends JComponent
 			}
 			// Bottom
 			else if(desc.getHint().equals(PlacementHint.B) ) {
-				bottomIndex++;
+				bottomIndex++;  
 				if(bottomCount==1) {
-					if(desc.getType().equals(AnchorType.Terminus)) topIndex=1;
+					if(desc.getType().equals(AnchorType.Terminus)) bottomIndex=1;
 					else bottomIndex=3;
 				}
 				else if(bottomCount==2 && bottomIndex==2) bottomIndex++;
+			
 				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Origin,
 						desc.getConnectionType(),
-						new Point(inset+bottomIndex*(interiorWidth)/bottomSegments,sz.height),
-						new Point(inset+bottomIndex*(interiorWidth)/bottomSegments,sz.height+LEADER_LENGTH),
-						new Rectangle(bottomIndex*(interiorWidth)/bottomSegments,sz.height-2*inset,2*inset,2*inset),
+						new Point(inset+(bottomIndex*interiorWidth)/bottomSegments,sz.height),
+						new Point(inset+(bottomIndex*interiorWidth)/bottomSegments,sz.height+LEADER_LENGTH),
+						new Rectangle((bottomIndex*interiorWidth)/bottomSegments,sz.height-2*inset,2*inset,2*inset),
 						desc.isMultiple(),
 						desc.getAnnotation());   // Hotspot shape.
 				ap.setSide(AnchorSide.BOTTOM);
@@ -362,7 +364,7 @@ public abstract class AbstractUIView extends JComponent
 				}
 				else if( side==AnchorSide.BOTTOM ) {
 					x = loc.x;
-					y = loc.y-3*anchorLength;
+					y = loc.y-3*anchorLength/2;
 				}
 				else if( side==AnchorSide.LEFT  ) {
 					x = loc.x+2*anchorWidth;
