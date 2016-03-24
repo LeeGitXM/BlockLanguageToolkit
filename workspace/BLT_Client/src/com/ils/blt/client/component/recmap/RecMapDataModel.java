@@ -153,17 +153,27 @@ public class RecMapDataModel {
 			try {
 				int key1 = Integer.parseInt(connections.getValueAt(row, RecMapConstants.DIAGNOSIS_ID_COLUMN).toString());
 				int key2 = Integer.parseInt(connections.getValueAt(row, RecMapConstants.OUTPUT_ID_COLUMN).toString());
-				//boolean active = Boolean.parseBoolean(connections.getValueAt(row, RecMapConstants.ACTIVE).toString());
+				boolean active = Boolean.parseBoolean(connections.getValueAt(row, RecMapConstants.ACTIVE).toString());
 				Integer diagRow = diagnosisTableRowByKey.get(new Integer(key1));
 				Integer outRow  = outputTableRowByKey.get(new Integer(key2));
-				if( diagRow!=null&&outRow!=null) {
+				String key3 = String.format("%d:%d",key1,key2);
+				Integer recRow  = recommendationRowByKey.get(key3);
+				
+				if( !active && diagRow!=null&&outRow!=null) {
 					addEdgeTableRow(diagRow.intValue(),outRow.intValue());
 				}
+				else if( active && diagRow!=null&&outRow!=null&&recRow!=null) {
+					addEdgeTableRow(diagRow.intValue(),recRow.intValue());
+					addEdgeTableRow(recRow.intValue(),outRow.intValue());
+				}
 				else if( diagRow==null) {
-					log.warnf("%s.update: Diagnostic node not found for key %s",TAG,key1);
+					log.warnf("%s.update: Diagnostic node not found for key %d",TAG,key1);
+				}
+				else if( outRow==null) {
+					log.warnf("%s.update: Output node not found for key %d",TAG,key2);
 				}
 				else{
-					log.warnf("%s.update: Output node not found for key %s",TAG,key2);
+					log.warnf("%s.update: Recommendation node not found for key %s",TAG,key3);
 				}
 			}
 			catch(ArrayIndexOutOfBoundsException aiobe) {
