@@ -38,14 +38,11 @@ import prefuse.controls.PanControl;
 import prefuse.controls.WheelZoomControl;
 import prefuse.controls.ZoomControl;
 import prefuse.controls.ZoomToFitControl;
-import prefuse.data.Graph;
-import prefuse.data.Table;
-import prefuse.data.Tuple;
 import prefuse.data.tuple.TupleSet;
 import prefuse.render.AbstractShapeRenderer;
 import prefuse.render.DefaultRendererFactory;
 import prefuse.render.EdgeRenderer;
-import prefuse.render.LabelRenderer;
+import prefuse.render.Renderer;
 import prefuse.util.ColorLib;
 import prefuse.util.GraphicsLib;
 import prefuse.util.display.DisplayLib;
@@ -70,7 +67,7 @@ public class RecMapView extends Display {
     private static final String GROUP_ALL_NODES = "map.nodes";  // Magic name, not Graph.NODES.
     private static final String GROUP_ALL_EDGES = "map.edges";  // Magic name, not Graph.EDGES.
  
-    private LabelRenderer m_nodeRenderer;
+    private TableLabelRenderer nodeRenderer;
     private EdgeRenderer edgeRenderer;
     private final ThreeColumnLayout columnLayout;
    
@@ -92,25 +89,23 @@ public class RecMapView extends Display {
                                 BorderFactory.createBevelBorder(BevelBorder.LOWERED)));
         
         // NOTE: No images to render.
-        m_nodeRenderer = new ThreeColumnLabelRenderer();
-        m_nodeRenderer.setRenderType(AbstractShapeRenderer.RENDER_TYPE_DRAW_AND_FILL);
-        m_nodeRenderer.setHorizontalAlignment(Constants.LEFT);
-        m_nodeRenderer.setRoundedCorner(2,2);
-        m_nodeRenderer.setVerticalPadding(3);
-        m_nodeRenderer.setHorizontalPadding(4);
+        nodeRenderer = new TableLabelRenderer();
+        nodeRenderer.setRenderType(AbstractShapeRenderer.RENDER_TYPE_DRAW_AND_FILL);
+        nodeRenderer.setHorizontalAlignment(Constants.LEFT);
+        nodeRenderer.setRoundedCorner(2,2);
+        nodeRenderer.setVerticalPadding(3);
+        nodeRenderer.setHorizontalPadding(4);
 
         edgeRenderer = new RecMapEdgeRenderer(Constants.EDGE_TYPE_LINE);
  
-        DefaultRendererFactory rf = new DefaultRendererFactory(m_nodeRenderer);
+        DefaultRendererFactory rf = new DefaultRendererFactory(nodeRenderer);
         rf.add(new InGroupPredicate(GROUP_ALL_EDGES), edgeRenderer);
         m_vis.setRendererFactory(rf);
                
         // colors
         ItemAction nodeColor = new NodeColorAction(GROUP_ALL_NODES);
-        ItemAction textColor = new ColorAction(GROUP_ALL_NODES,
-                VisualItem.TEXTCOLOR, ColorLib.rgb(0,0,0));
-        ItemAction strokeColor = new ColorAction(GROUP_ALL_NODES,
-                VisualItem.STROKECOLOR, ColorLib.rgb(0,0,0));
+        ItemAction textColor = new ColorAction(GROUP_ALL_NODES,VisualItem.TEXTCOLOR, ColorLib.rgb(0,0,0));
+        ItemAction strokeColor = new ColorAction(GROUP_ALL_NODES,VisualItem.STROKECOLOR, ColorLib.rgb(0,0,0));
         m_vis.putAction("strokeColor", strokeColor);
         m_vis.putAction("textColor", textColor);
         
@@ -206,7 +201,6 @@ public class RecMapView extends Display {
     // ------------------------------------------------------------------------
    // Set orientation left-to-right.
     public void orient() {
-            m_nodeRenderer.setHorizontalAlignment(Constants.LEFT);
             edgeRenderer.setHorizontalAlignment1(Constants.RIGHT);
             edgeRenderer.setHorizontalAlignment2(Constants.LEFT);
             edgeRenderer.setVerticalAlignment1(Constants.CENTER);

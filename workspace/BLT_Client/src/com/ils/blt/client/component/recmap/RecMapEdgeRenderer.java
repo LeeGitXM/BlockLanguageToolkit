@@ -18,10 +18,10 @@ public class RecMapEdgeRenderer extends EdgeRenderer {
 	
 	@Override
     protected double getLineWidth(VisualItem item) {
-		double width = 2.0;
+		double width = 1.0;
         if ( item.canGetBoolean(RecMapConstants.ACTIVE) ) {
         	boolean active = item.getBoolean(RecMapConstants.ACTIVE);
-        	if( active ) width = 8.0;           
+        	if( active ) width = 7.0;           
         }
         return width;
     }

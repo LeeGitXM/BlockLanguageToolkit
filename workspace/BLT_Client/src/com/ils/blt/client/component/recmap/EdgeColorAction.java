@@ -27,7 +27,7 @@ public class EdgeColorAction extends ColorAction {
         if ( item instanceof TableEdgeItem && item.canGetBoolean(RecMapConstants.ACTIVE) ) {
         	boolean active = item.getBoolean(RecMapConstants.ACTIVE);
         	if( active ) color= ColorLib.rgb(27,88,27);
-        	else color= ColorLib.rgb(140,140,140);
+        	else color= ColorLib.rgb(180,180,180);
         }
         return color;
     }
