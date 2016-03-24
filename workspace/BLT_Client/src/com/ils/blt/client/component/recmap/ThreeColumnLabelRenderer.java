@@ -30,12 +30,7 @@ public class ThreeColumnLabelRenderer extends LabelRenderer {
         if ( item.canGetString(RecMapConstants.KIND) ) {
         	int kind = item.getInt(RecMapConstants.KIND);
         	// If this is the "link", then use the VALUE
-        	if( kind==RecMapConstants.INFO_KIND) {
-        		s = item.getString(RecMapConstants.VALUE); 
-        	}
-        	else {
-        		s = item.getString(RecMapConstants.NAME); 
-        	}
+        	s = item.getString(RecMapConstants.NAME); 
             return s;           
         }
         return s;
