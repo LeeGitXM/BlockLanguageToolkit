@@ -27,9 +27,9 @@ public class RecommendationMap extends PrefuseViewerComponent {
 	private static String PREFIX = BLTProperties.CUSTOM_PREFIX;              // For bundle identification
 	private RecMapDataModel model = null;
 	private BasicDataset connections = null;
-	private Dataset outputs = null;
+	private BasicDataset outputs = null;
 	private BasicDataset recommendations = null;
-	private Dataset diagnoses = null;
+	private BasicDataset diagnoses = null;
 
 	public RecommendationMap() {
 		setName(BundleUtil.get().getString(PREFIX+".RecommendationMap.Name"));
@@ -39,7 +39,7 @@ public class RecommendationMap extends PrefuseViewerComponent {
 	}
 
 	private void updateChartView() {
-		if( configured() ) {
+		if( isConfigured() ) {
 			removeAll();
 			invalidate();
 			log.infof("%s.update: Creating RecommendationMapView ..%d x %d.",TAG,getWidth(),getHeight());
@@ -68,36 +68,37 @@ public class RecommendationMap extends PrefuseViewerComponent {
 	}
 	
 	public Dataset getDiagnoses() {return diagnoses;}
-	public void setDiagnoses(Dataset diagnoses) {
-		this.diagnoses = diagnoses;
+	public void setDiagnoses(Dataset newDiagnoses) {
+		firePropertyChange(RecMapConstants.DIAGNOSES_PROPERTY,this.diagnoses,newDiagnoses);
+		this.diagnoses = new BasicDataset(newDiagnoses);
 		updateChartView();
 	}
 	public Dataset getOutputs() {return outputs;}
 	public void setOutputs(Dataset newOutputs) {
+		firePropertyChange(RecMapConstants.OUTPUTS_PROPERTY,this.outputs,newOutputs);
+		this.outputs = new BasicDataset(newOutputs);
 		updateChartView();
-		
-		this.outputs = newOutputs;
 	}
 	
-	
 	public Dataset getRecommendations() {return recommendations;}
-	
+	public void setRecommendations(Dataset newRecommendations) {
+		firePropertyChange(RecMapConstants.RECOMMENDATIONS_PROPERTY,this.recommendations,newRecommendations);
+		this.recommendations = new BasicDataset(newRecommendations);
+		updateChartView();
+	}
 	
 	// TODO: Check dataset columns
-	private boolean configured() {
+	public boolean isConfigured() {
 		boolean valid = false;
-		if( diagnoses!=null && diagnoses.getRowCount()>0 &&
-			recommendations!=null && recommendations.getRowCount()>0 &&
+		if( connections!=null && connections.getRowCount()>0 &&
+			diagnoses!=null && diagnoses.getRowCount()>0 &&
+			recommendations!=null &&
 			outputs!=null && outputs.getRowCount()>0 	) {
 			valid = true;
 		}
 		return valid;
 	}
-	public void setRecommendations(Dataset recs) {
-		firePropertyChange(RecMapConstants.RECOMMENDATIONS_PROPERTY,this.recommendations,recs);
-		this.recommendations = new BasicDataset(recs);
-		updateChartView();
-	}
+
 	public void updateRecommendations(int row,String value) {
 		int col = recommendations.getColumnIndex(RecMapConstants.VALUE_COLUMN);
 		if( col>=0 ) {

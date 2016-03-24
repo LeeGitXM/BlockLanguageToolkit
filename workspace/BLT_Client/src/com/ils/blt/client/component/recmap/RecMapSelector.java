@@ -6,6 +6,9 @@ import java.util.TimerTask;
 
 import javax.swing.JOptionPane;
 
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
+
 import prefuse.controls.Control;
 import prefuse.controls.ControlAdapter;
 import prefuse.visual.VisualItem;
@@ -16,6 +19,8 @@ import prefuse.visual.tuple.TableNodeItem;
  * A control that launches an edit dialog on selection of a "link" node.
  */
 public class RecMapSelector extends ControlAdapter implements Control {
+	private final static String CLSS = "RecMapSelector";
+	private final LoggerEx log;
 	private final RecommendationMap map;
 	private final int clickCount;
 	private int clicks;
@@ -23,6 +28,7 @@ public class RecMapSelector extends ControlAdapter implements Control {
 	public RecMapSelector(RecommendationMap rm,int c) {
 		this.map = rm;
 		this.clickCount = c;
+		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		clicks = 0;
 	}
    
@@ -33,7 +39,7 @@ public class RecMapSelector extends ControlAdapter implements Control {
 		if( !e.isControlDown() ) return;
 		if( item instanceof TableNodeItem ) {
 			int nodeType = item.getInt(RecMapConstants.KIND);
-			if( nodeType==RecMapConstants.INFO_KIND) {
+			if( nodeType==RecMapConstants.SOURCE_KIND) {
 				if( clicks==0 ) {
 					// Set a timer to wait for the correct number of clicks
 					Timer t = new Timer("clickTimer",false);
@@ -43,7 +49,14 @@ public class RecMapSelector extends ControlAdapter implements Control {
 							if( clicks==clickCount) {
 								//Window root = SwingUtilities.getWindowAncestor(map);
 								String message = "Enter multiplier:";
-								String ans = JOptionPane.showInputDialog(map, message, item.getString(RecMapConstants.MULTIPLIER));
+								String value = "";
+								try {
+									value = item.getString(RecMapConstants.MULTIPLIER);
+								}
+								catch(Exception ex) {
+									log.warnf("%s.itemClicked: Exception - missing multiplier in dataset (%s)",CLSS,ex.getLocalizedMessage());
+								}
+								String ans = JOptionPane.showInputDialog(map, message, value);
 								if( ans!=null) {
 									item.setString(RecMapConstants.MULTIPLIER, ans);
 									map.updateRecommendations(item.getInt(RecMapConstants.INDEX),ans);
