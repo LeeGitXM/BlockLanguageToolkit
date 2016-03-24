@@ -1,17 +1,18 @@
 /**
- * Copyright 2014. ILS Automation. All rights reserved.
+ * Copyright 2016. ILS Automation. All rights reserved.
  */
 package com.ils.blt.client.component.recmap;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-
-import prefuse.data.Graph;
-import prefuse.data.Table;
 
 import com.inductiveautomation.factorypmi.application.binding.VisionClientContext;
 import com.inductiveautomation.ignition.common.Dataset;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
+
+import prefuse.data.Graph;
+import prefuse.data.Table;
 
 
 /** 
@@ -19,7 +20,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  * the input datasets. We recreate the tree whenever the datasets change.
  */
 public class RecMapDataModel {
-	private static final String TAG = "RecommendationMapDataModel";
+	private static final String TAG = "RecMapDataModel";
 	
 	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	private final RecommendationMap recmap;
@@ -30,6 +31,7 @@ public class RecMapDataModel {
 	private final Map<Integer,Integer> outputGridRowByKey;
 	private final Map<Integer,Integer> outputTableRowByKey;
 	private final Map<String,Integer> recommendationRowByKey; // Key is concatenation of diagnosis:output
+	private final Map<Integer,List<NameValuePair>> attributesByRow;
 	private int sourceRowCount = 0;
 	private int targetRowCount = 0;
 	private int recommendationCount = 0;
@@ -52,6 +54,7 @@ public class RecMapDataModel {
 		// The node direction is from parent to child.
 		edges.addColumn(Graph.DEFAULT_SOURCE_KEY, int.class);
 		edges.addColumn(Graph.DEFAULT_TARGET_KEY, int.class);
+		attributesByRow = new HashMap<>();
 		diagnosisGridRowByKey = new HashMap<>();
 		diagnosisTableRowByKey = new HashMap<>();
 		outputGridRowByKey = new HashMap<>();
@@ -143,22 +146,28 @@ public class RecMapDataModel {
 			row++;
 		}
 		
-
-		// Create links
+		// Create links -- connections
+		Dataset connections = recmap.getConnections();
 		row = 0;
-		while( row<recommendations.getRowCount()) {
-			int key1 = Integer.parseInt(recommendations.getValueAt(row, RecMapConstants.DIAGNOSIS_ID_COLUMN).toString());
-			int key2 = Integer.parseInt(recommendations.getValueAt(row, RecMapConstants.OUTPUT_ID_COLUMN).toString());
-			String key = String.format("%d:%d",key1,key2);
-			Integer diagRow = diagnosisTableRowByKey.get(new Integer(key1));
-			Integer outRow  = outputTableRowByKey.get(new Integer(key2));
-			Integer recRow = recommendationRowByKey.get(key);
-			if( recRow!=null) {
-				if( diagRow!=null ) addEdgeTableRow(diagRow.intValue(),recRow.intValue());
-				if( outRow!=null )  addEdgeTableRow(recRow.intValue(),outRow.intValue());
+		while( row<connections.getRowCount()) {
+			try {
+				int key1 = Integer.parseInt(connections.getValueAt(row, RecMapConstants.DIAGNOSIS_ID_COLUMN).toString());
+				int key2 = Integer.parseInt(connections.getValueAt(row, RecMapConstants.OUTPUT_ID_COLUMN).toString());
+				//boolean active = Boolean.parseBoolean(connections.getValueAt(row, RecMapConstants.ACTIVE).toString());
+				Integer diagRow = diagnosisTableRowByKey.get(new Integer(key1));
+				Integer outRow  = outputTableRowByKey.get(new Integer(key2));
+				if( diagRow!=null&&outRow!=null) {
+					addEdgeTableRow(diagRow.intValue(),outRow.intValue());
+				}
+				else if( diagRow==null) {
+					log.warnf("%s.update: Diagnostic node not found for key %s",TAG,key1);
+				}
+				else{
+					log.warnf("%s.update: Output node not found for key %s",TAG,key2);
+				}
 			}
-			else {
-				log.warnf("%s.update: Recommendation not found for key %s",TAG,key);
+			catch(ArrayIndexOutOfBoundsException aiobe) {
+				log.warnf("%s.update: Exception reading connection dataset (%s)",TAG,aiobe.getMessage());
 			}
 			row++;
 		}
