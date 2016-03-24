@@ -6,7 +6,6 @@ package com.ils.blt.designer.component.beaninfos;
 import java.awt.Image;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
-import java.beans.SimpleBeanInfo;
 
 import javax.swing.ImageIcon;
 
@@ -45,7 +44,6 @@ public class RecommendationMapBeanInfo extends CommonBeanInfo {
 	protected void initProperties() throws IntrospectionException {
 		// Adds common properties
 		super.initProperties();
-		addProp("minimumSize", "Size", "Component size", CAT_DATA,PREFERRED_MASK|EXPERT_MASK);
 		
 		addBoundProp(RecMapConstants.CONNECTIONS_PROPERTY, "Connections", "A map of final diagnosis to outputs", 
                 CAT_DATA,PREFERRED_MASK | BOUND_MASK | EXPERT_MASK);
