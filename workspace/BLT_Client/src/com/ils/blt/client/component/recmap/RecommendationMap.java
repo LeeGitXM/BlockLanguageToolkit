@@ -4,6 +4,7 @@
 package com.ils.blt.client.component.recmap;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 
 import com.ils.blt.client.component.PrefuseViewerComponent;
 import com.ils.blt.common.BLTProperties;
@@ -24,6 +25,7 @@ import com.inductiveautomation.ignition.common.Dataset;
 public class RecommendationMap extends PrefuseViewerComponent {
 	private static final long serialVersionUID = 5508313516136446100L;
 	private static final String TAG = "RecommendationMap";
+	private static final Dimension MIN_SIZE = new Dimension(40,40);
 	private static String PREFIX = BLTProperties.CUSTOM_PREFIX;              // For bundle identification
 	private RecMapDataModel model = null;
 	private BasicDataset connections = null;
@@ -87,6 +89,15 @@ public class RecommendationMap extends PrefuseViewerComponent {
 		updateChartView();
 	}
 	
+	@Override
+	public Dimension getSize() {
+		Dimension dim = super.getSize();
+		if(dim==null || dim.getWidth()<MIN_SIZE.getWidth()) {
+			dim = MIN_SIZE;
+		}
+		return dim;
+	}
+	
 	// TODO: Check dataset columns
 	public boolean isConfigured() {
 		boolean valid = false;
@@ -99,13 +110,13 @@ public class RecommendationMap extends PrefuseViewerComponent {
 		return valid;
 	}
 
-	public void updateRecommendations(int row,String value) {
-		int col = recommendations.getColumnIndex(RecMapConstants.VALUE_COLUMN);
+	public void updateDiagnosis(int row,String value) {
+		int col = diagnoses.getColumnIndex(RecMapConstants.MULTIPLIER);
 		if( col>=0 ) {
-			Dataset old = new BasicDataset(recommendations);
-			recommendations.setValueAt(row, col, value);
-			firePropertyChange(RecMapConstants.RECOMMENDATIONS_PROPERTY,old,this.recommendations);
-			log.infof("%s.updateRecommendations: Fired property change on %s",TAG,RecMapConstants.RECOMMENDATIONS_PROPERTY);
+			Dataset old = new BasicDataset(diagnoses);
+			diagnoses.setValueAt(row, col, value);
+			firePropertyChange(RecMapConstants.DIAGNOSES_PROPERTY,old,this.diagnoses);
+			log.infof("%s.updateDiagnosis: Fired property change on %s",TAG,RecMapConstants.DIAGNOSES_PROPERTY);
 		}
 	}
 }

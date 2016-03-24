@@ -12,25 +12,21 @@ import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
+import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
-import com.ils.blt.common.block.LimitType;
 import com.ils.blt.common.block.PlacementHint;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.SlopeCalculationOption;
-import com.ils.blt.common.block.TransmissionScope;
 import com.ils.blt.common.block.TrendDirection;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
-import com.ils.blt.common.notification.BroadcastNotification;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
-import com.ils.blt.common.notification.Signal;
-import com.ils.blt.common.notification.SignalNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.FixedSizeQueue;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
@@ -48,7 +44,10 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
 public class TrendDetector extends AbstractProcessBlock implements ProcessBlock {
 	private final String TAG = "TrendDetector";
 	protected static final String BLOCK_PROPERTY_CALCULATION_OPTION = "SlopeCalculationOption";
+	protected static final String BLOCK_PROPERTY_PROJECTION = "ProjectedValue";
 	protected static final String BLOCK_PROPERTY_RELATIVE_TO_TARGET = "RelativeToTarget";
+	protected static final String BLOCK_PROPERTY_SLOPE = "CalculatedSlope";
+	protected static final String BLOCK_PROPERTY_STDDEV = "CalculatedStandardDeviation";
 	protected static final String BLOCK_PROPERTY_STANDARD_DEVIATION_MULTIPLIER = "StandardDeviationMultiplicativeFactor";
 	protected static final String BLOCK_PROPERTY_TEST_LABEL = "TestLabel";
 	protected static final String BLOCK_PROPERTY_TREND_COUNT_THRESHOLD = "TrendCountThreshold";
@@ -81,6 +80,7 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 	private double standardDeviation = Double.NaN;
 	private double mean = Double.NaN;
 	// Calculated parameters
+	private double lastSignificantValue = Double.NaN;
 	private double slope = Double.NaN;
 	private double variance = Double.NaN;
 	private double intercept = Double.NaN;
@@ -137,6 +137,17 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 		BlockProperty directionProperty = new BlockProperty(BLOCK_PROPERTY_TREND_DIRECTION,trendDirection,PropertyType.TRENDDIRECTION,true);
 		setProperty(BLOCK_PROPERTY_TREND_DIRECTION, directionProperty);
 		
+		// Define ancillary properties that are "bound to the engine"
+		BlockProperty slopeProperty = new BlockProperty(BLOCK_PROPERTY_SLOPE,new Double(0.0),PropertyType.DOUBLE,false);
+		slopeProperty.setBindingType(BindingType.ENGINE);
+		setProperty(BLOCK_PROPERTY_SLOPE, slopeProperty);
+		BlockProperty stddevProperty = new BlockProperty(BLOCK_PROPERTY_STDDEV,new Double(0.0),PropertyType.DOUBLE,false);
+		slopeProperty.setBindingType(BindingType.ENGINE);
+		setProperty(BLOCK_PROPERTY_STDDEV, stddevProperty);
+		BlockProperty projectionProperty = new BlockProperty(BLOCK_PROPERTY_PROJECTION,new Double(0.0),PropertyType.DOUBLE,false);
+		projectionProperty.setBindingType(BindingType.ENGINE);
+		setProperty(BLOCK_PROPERTY_PROJECTION, projectionProperty);
+		
 		
 		// Define a 3 inputs.
 		AnchorPrototype input = new AnchorPrototype(PORT_STANDARD_DEVIATION,AnchorDirection.INCOMING,ConnectionType.DATA);
@@ -181,6 +192,7 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 		state = TruthValue.UNKNOWN;
 		downwardCount = 0;
 		upwardCount   = 0;
+		lastSignificantValue = Double.NaN;
 	}
 	
 	/**
@@ -197,15 +209,12 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 			if( qual.isGood() && qv!=null && qv.getValue()!=null ) {
 				if( !buffer.isEmpty() ) {
 					QualifiedValue lastPoint = buffer.getLast();
+					// Preserve the last value if we're within std deviation .... 
 					try {
-						double val = ((Double)(lastPoint.getValue())).doubleValue();
-						double lowLimit = val - standardDeviation*multiplier;
-						double highLimit = val + standardDeviation*multiplier;
+						double previous = ((Double)(lastPoint.getValue())).doubleValue();
 						double current = Double.parseDouble(qv.getValue().toString());
-						if( current>=lowLimit && current<=highLimit) {
-							// Guarantee that the qualified value contains a Double
-							buffer.add(new BasicQualifiedValue(new Double(current),qv.getQuality(),qv.getTimestamp()));
-							if(current>val) {
+						if( isSignificantlyDifferent(current) ) {
+							if(current>previous) {
 								upwardCount++;
 								downwardCount = 0;
 							}
@@ -213,17 +222,24 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 								downwardCount++;
 								upwardCount = 0;
 							}
+							evaluate();
 						}
-						evaluate();
+						buffer.add(new TestAwareQualifiedValue(timer,new Double(current)));
 					}
 					catch(NumberFormatException nfe) {
-						log.warnf("%s: propertyChange Unable to convert number of points required to an integer (%s)",TAG,nfe.getLocalizedMessage());
+						log.warnf("%s.acceptValue Unable to convert number of points required to an integer (%s)",TAG,nfe.getLocalizedMessage());
 					}
 				}
 				else {
 					buffer.add(qv);
+					try {
+						double current = Double.parseDouble(qv.getValue().toString());
+						lastSignificantValue = current;  // First value in buffer is significant
+					}
+					catch(NumberFormatException nfe) {
+						log.warnf("%s.acceptValue Unable to convert current value to a double (%s)",TAG,nfe.getLocalizedMessage());
+					}
 				}
-				
 			}
 			else {
 				// Bad quality, emit the result immediately
@@ -243,22 +259,33 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 			if( qv==null || qv.getValue()==null) return;
 			try {
 				mean = Double.parseDouble(qv.getValue().toString());
+				// Need to test for last buffer value significant
+				QualifiedValue lastPoint = buffer.getLast();
+				double last = (Double)(lastPoint.getValue());
+				if( isSignificantlyDifferent(last) ) {
+					evaluate();
+				}
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert target value to a float (%s)",TAG,nfe.getLocalizedMessage());
 			}
-			evaluate();
+			
 		}
 		else if( port.equals(PORT_STANDARD_DEVIATION)  ) {
 			qv = incoming.getValue();
 			if( qv==null || qv.getValue()==null) return;
 			try {
 				standardDeviation = Double.parseDouble(qv.getValue().toString());
+				// Need to test for last buffer value significant
+				QualifiedValue lastPoint = buffer.getLast();
+				double last = (Double)(lastPoint.getValue());
+				if( isSignificantlyDifferent(last) ) {
+					evaluate();
+				}
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert standard deviation value to a float (%s)",TAG,nfe.getLocalizedMessage());
 			}
-			evaluate();
 		}
 	}
 
@@ -284,22 +311,46 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 				controller.acceptCompletionNotification(nvn);
 				
-				if( state.equals(TruthValue.TRUE)) {
+				if( state.equals(TruthValue.TRUE) || state.equals(TruthValue.FALSE)) {
 					// Propagate the other values
 					outval = new TestAwareQualifiedValue(timer,slope);
 					nvn = new OutgoingNotification(this,PORT_SLOPE,outval);
 					controller.acceptCompletionNotification(nvn);
 					// output the standardDeviation, not variance
-					outval = new TestAwareQualifiedValue(timer,Math.sqrt(variance));
+					double stddev = Math.sqrt(variance);
+					outval = new TestAwareQualifiedValue(timer,stddev);
 					nvn = new OutgoingNotification(this,PORT_VARIANCE,outval);
 					controller.acceptCompletionNotification(nvn);
 					outval = new TestAwareQualifiedValue(timer,projection);
 					nvn = new OutgoingNotification(this,PORT_PROJECTION,outval);
 					controller.acceptCompletionNotification(nvn);
+					// Write the auxilliary values to block parameters
+					controller.sendPropertyNotification(getBlockId().toString(),BLOCK_PROPERTY_SLOPE,
+							new TestAwareQualifiedValue(timer,new Double(slope)));
+					controller.sendPropertyNotification(getBlockId().toString(),BLOCK_PROPERTY_STDDEV,
+							new TestAwareQualifiedValue(timer,new Double(stddev)));
+					controller.sendPropertyNotification(getBlockId().toString(),BLOCK_PROPERTY_PROJECTION,
+							new TestAwareQualifiedValue(timer,new Double(projection)));
 				}	
 				notifyOfStatus();
 			}
 		}
+	}
+	
+	/**
+	 * Test to see if the most recent point is significantly different from the last
+	 * @return
+	 */
+	private boolean isSignificantlyDifferent(double newval) {
+		boolean result = false;
+		if( !Double.isNaN(lastSignificantValue) ) {
+			double lowLimit = lastSignificantValue - standardDeviation*multiplier;
+			double highLimit = lastSignificantValue + standardDeviation*multiplier;
+			if( newval<lowLimit || newval>=highLimit) {
+				result = true;
+			}
+		}
+		return result;
 	}
 	/**
 	 * Send status update notification for our last latest state.
@@ -494,6 +545,7 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 			Sxx = Sxx + x*x/(standardDeviation*standardDeviation);
 			Sxy = Sxy + x*y/(standardDeviation*standardDeviation);
 		}
+		// Denominator
 		double DEN = S * Sxx - Sx*Sx;
 		// Calculate slope and intercept.  Make sure DEN is not 0! 
 		if( DEN == 0.0 ) return false;

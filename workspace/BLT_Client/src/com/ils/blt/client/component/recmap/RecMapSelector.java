@@ -59,7 +59,7 @@ public class RecMapSelector extends ControlAdapter implements Control {
 								String ans = JOptionPane.showInputDialog(map, message, value);
 								if( ans!=null) {
 									item.setString(RecMapConstants.MULTIPLIER, ans);
-									map.updateRecommendations(item.getInt(RecMapConstants.INDEX),ans);
+									map.updateDiagnosis(item.getInt(RecMapConstants.INDEX),ans);
 								}
 							}
 							clicks = 0;
