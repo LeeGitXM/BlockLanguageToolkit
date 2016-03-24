@@ -67,11 +67,9 @@ public class RecMapView extends Display {
     
 	// Groups
     private static final String GROUP_ALL = "map";
-    private static final String GROUP_ALL_NODES = "map.nodes";
-    private static final String GROUP_ALL_EDGES = "map.edges";
-    public static final String GROUP_PLAIN_EDGES     = "map.plain.edges";
-    public static final String GROUP_ACTIVE_EDGES    = "map.active.edges";
-    
+    private static final String GROUP_ALL_NODES = "map.nodes";  // Magic name, not Graph.NODES.
+    private static final String GROUP_ALL_EDGES = "map.edges";  // Magic name, not Graph.EDGES.
+ 
     private LabelRenderer m_nodeRenderer;
     private EdgeRenderer edgeRenderer;
     private final ThreeColumnLayout columnLayout;
@@ -86,22 +84,7 @@ public class RecMapView extends Display {
         //                             node items are TableNodeItems
         m_vis.addGraph(GROUP_ALL, model.getGraph());
         
-        // Assign edges to secondary groups
-        Table edges = model.getEdges();
-        int rows = edges.getRowCount();
-        int row = 0;
-        TupleSet plainSet = new Table();
-        TupleSet activeSet = new Table();
-        while(row<rows) {
-        	Tuple tuple = edges.getTuple(row);
-        	boolean active = edges.getBoolean(row, RecMapConstants.ACTIVE);
-        	if( active) activeSet.addTuple(tuple);
-        	else  plainSet.addTuple(tuple);
-        	row++;
-        }
-        //m_vis.add(GROUP_PLAIN_EDGES,plainSet);
-        //m_vis.add(GROUP_ACTIVE_EDGES,activeSet);
-        
+    
         setSize(sz);
         setBackground(new Color(230,228,227));
         setBorder(BorderFactory.createCompoundBorder(
@@ -116,14 +99,10 @@ public class RecMapView extends Display {
         m_nodeRenderer.setVerticalPadding(3);
         m_nodeRenderer.setHorizontalPadding(4);
 
-        edgeRenderer = new EdgeRenderer(Constants.EDGE_TYPE_LINE);
-        edgeRenderer.setDefaultLineWidth(2.0);
-        
+        edgeRenderer = new RecMapEdgeRenderer(Constants.EDGE_TYPE_LINE);
+ 
         DefaultRendererFactory rf = new DefaultRendererFactory(m_nodeRenderer);
         rf.add(new InGroupPredicate(GROUP_ALL_EDGES), edgeRenderer);
-        //rf.add(new InGroupPredicate(GROUP_PLAIN_EDGES), edgeRenderer);
-        //rf.add(new InGroupPredicate(GROUP_ACTIVE_EDGES), edgeRenderer);
-        
         m_vis.setRendererFactory(rf);
                
         // colors
@@ -135,8 +114,8 @@ public class RecMapView extends Display {
         m_vis.putAction("strokeColor", strokeColor);
         m_vis.putAction("textColor", textColor);
         
-        ItemAction activeEdgeColor = new ColorAction(GROUP_ALL_EDGES,VisualItem.STROKECOLOR, ColorLib.rgb(150,255,150));
-        //ItemAction plainEdgeColor = new ColorAction(GROUP_PLAIN_EDGES,VisualItem.STROKECOLOR, ColorLib.rgb(150,150,150));
+        //ItemAction edgeColorAction = new EdgeColorAction(GROUP_ALL_EDGES,VisualItem.STROKECOLOR, ColorLib.rgb(150,255,150));
+        ItemAction edgeColorAction = new EdgeColorAction(GROUP_ALL_EDGES);
         
         // quick repaint
         ActionList repaint = new ActionList();
@@ -173,8 +152,7 @@ public class RecMapView extends Display {
         filter.add(textColor);
         filter.add(nodeColor);
         filter.add(strokeColor);
-        filter.add(activeEdgeColor);
-        //filter.add(plainEdgeColor);
+        filter.add(edgeColorAction);
         m_vis.putAction("filter", filter);
         
         // animated transition
