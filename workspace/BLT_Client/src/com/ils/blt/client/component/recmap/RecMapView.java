@@ -18,6 +18,9 @@ import javax.swing.BorderFactory;
 import javax.swing.border.BevelBorder;
 
 import com.ils.blt.client.component.ILSRepaintAction;
+import com.ils.blt.client.component.recmap.delegate.DiagnosisDelegate;
+import com.ils.blt.client.component.recmap.delegate.OutputDelegate;
+import com.ils.blt.client.component.recmap.delegate.RecommendationDelegate;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 
@@ -42,7 +45,6 @@ import prefuse.data.tuple.TupleSet;
 import prefuse.render.AbstractShapeRenderer;
 import prefuse.render.DefaultRendererFactory;
 import prefuse.render.EdgeRenderer;
-import prefuse.render.Renderer;
 import prefuse.util.ColorLib;
 import prefuse.util.GraphicsLib;
 import prefuse.util.display.DisplayLib;
@@ -92,7 +94,7 @@ public class RecMapView extends Display {
         nodeRenderer = new TableLabelRenderer();
         nodeRenderer.setRenderType(AbstractShapeRenderer.RENDER_TYPE_DRAW_AND_FILL);
         nodeRenderer.setHorizontalAlignment(Constants.LEFT);
-        nodeRenderer.setRoundedCorner(2,2);
+        nodeRenderer.setRoundedCorner(1,1);
         nodeRenderer.setVerticalPadding(3);
         nodeRenderer.setHorizontalPadding(4);
 
@@ -137,7 +139,13 @@ public class RecMapView extends Display {
         columnLayout.setLayoutAnchor(new Point2D.Double(sz.getWidth()/2.,sz.getHeight()/2.));
         m_vis.putAction("columnLayout", columnLayout);
         
-        AutoCenterAction autoCenter = new AutoCenterAction();
+        
+        
+        RecMapTooltipControl tooltipControl = new RecMapTooltipControl();
+        tooltipControl.setDelegate(RecMapConstants.SOURCE_KIND, new DiagnosisDelegate());
+        tooltipControl.setDelegate(RecMapConstants.INFO_KIND, new RecommendationDelegate());
+        tooltipControl.setDelegate(RecMapConstants.TARGET_KIND, new OutputDelegate());
+        addControlListener(tooltipControl);
         
         // create the filtering and layout
         ActionList filter = new ActionList();
@@ -152,6 +160,7 @@ public class RecMapView extends Display {
         
         // animated transition
         ActionList animate = new ActionList(1000);
+        AutoCenterAction autoCenter = new AutoCenterAction();
         animate.setPacingFunction(new SlowInSlowOutPacer());
         animate.add(autoCenter);
         animate.add(new QualityControlAnimator());

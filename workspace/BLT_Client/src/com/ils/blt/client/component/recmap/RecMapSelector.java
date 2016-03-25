@@ -33,10 +33,11 @@ public class RecMapSelector extends ControlAdapter implements Control {
 	}
    
     /**
+     * On a double-click of a diagnosis block, display a dialog requesting the multiplier.
      * @see prefuse.controls.Control#itemClicked(prefuse.visual.VisualItem, java.awt.event.MouseEvent)
      */
 	public void itemClicked(final VisualItem item, final MouseEvent e) {
-		if( !e.isControlDown() ) return;
+		//if( !e.isControlDown() ) return;
 		if( item instanceof TableNodeItem ) {
 			int nodeType = item.getInt(RecMapConstants.KIND);
 			if( nodeType==RecMapConstants.SOURCE_KIND) {
@@ -50,16 +51,27 @@ public class RecMapSelector extends ControlAdapter implements Control {
 								//Window root = SwingUtilities.getWindowAncestor(map);
 								String message = "Enter multiplier:";
 								String value = "";
-								try {
-									value = item.getString(RecMapConstants.MULTIPLIER);
+								if( item.canGetDouble(RecMapConstants.MULTIPLIER) ) {
+									value = String.valueOf(item.getDouble(RecMapConstants.MULTIPLIER));
 								}
-								catch(Exception ex) {
-									log.warnf("%s.itemClicked: Exception - missing multiplier in dataset (%s)",CLSS,ex.getLocalizedMessage());
+								else {
+									log.warnf("%s.itemClicked: Missing field \"%s\" in dataset",CLSS,RecMapConstants.MULTIPLIER);
 								}
 								String ans = JOptionPane.showInputDialog(map, message, value);
 								if( ans!=null) {
-									item.setString(RecMapConstants.MULTIPLIER, ans);
-									map.updateDiagnosis(item.getInt(RecMapConstants.INDEX),ans);
+									if( item.canSetDouble(RecMapConstants.MULTIPLIER)) {
+										try {
+											double dbl = Double.parseDouble(ans);
+											item.setDouble(RecMapConstants.MULTIPLIER,dbl);
+											map.updateDiagnosis(item.getInt(RecMapConstants.INDEX),ans);
+										}
+										catch(NumberFormatException nfe) {
+											log.warnf("%s.itemClicked: Could not parse \"%s\" as a double (%s)",CLSS,ans,nfe.getLocalizedMessage());
+										}
+									}
+									else {
+										log.warnf("%s.itemClicked: Missing field \"%s\" in dataset - failed to set",CLSS,RecMapConstants.MULTIPLIER);
+									}
 								}
 							}
 							clicks = 0;
