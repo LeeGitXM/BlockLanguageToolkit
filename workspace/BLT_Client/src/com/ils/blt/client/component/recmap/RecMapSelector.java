@@ -63,7 +63,7 @@ public class RecMapSelector extends ControlAdapter implements Control {
 										try {
 											double dbl = Double.parseDouble(ans);
 											item.setDouble(RecMapConstants.MULTIPLIER,dbl);
-											map.updateDiagnosis(item.getInt(RecMapConstants.INDEX),ans);
+											map.updateDiagnosis(item.getInt(RecMapConstants.DSROW),ans);
 										}
 										catch(NumberFormatException nfe) {
 											log.warnf("%s.itemClicked: Could not parse \"%s\" as a double (%s)",CLSS,ans,nfe.getLocalizedMessage());

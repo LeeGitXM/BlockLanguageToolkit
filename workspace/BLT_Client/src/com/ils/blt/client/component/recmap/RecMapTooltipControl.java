@@ -22,11 +22,13 @@ import prefuse.visual.tuple.TableNodeItem;
 public class RecMapTooltipControl extends ControlAdapter {
 	private final static String CLSS = "RecMapTooltipControl";
 	private final Map<Integer,TextDelegate> delegates;
+	private final RecMapDataModel model;
 	private final LoggerEx log;
 
-	public RecMapTooltipControl() {
+	public RecMapTooltipControl(RecMapDataModel mdl) {
 		this.delegates = new HashMap<>();
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
+		this.model = mdl;
 	}
 	
 	public void setDelegate(int kind,TextDelegate delegate) {
@@ -38,10 +40,11 @@ public class RecMapTooltipControl extends ControlAdapter {
 		log.infof("%s.itemEntered ....",CLSS);
 		if( item instanceof TableNodeItem ) {
 			int kind = item.getInt(RecMapConstants.KIND);
+			int row = item.getInt(RecMapConstants.ROW);
 			TextDelegate delegate = delegates.get(new Integer(kind));
 			if( delegate!=null) {
 				Display display = (Display)event.getSource();
-				display.setToolTipText(delegate.getTooltipText(item));
+				display.setToolTipText(delegate.getTooltipText(item,model.getAttributes(row)));
 			}
 		}
     }

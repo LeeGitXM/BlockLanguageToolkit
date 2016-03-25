@@ -3,6 +3,8 @@
  */
 package com.ils.blt.client.component.recmap.delegate;
 
+import java.util.Properties;
+
 import com.ils.blt.client.component.recmap.RecMapConstants;
 import com.ils.blt.client.component.recmap.TextDelegate;
 
@@ -44,7 +46,40 @@ public class DiagnosisDelegate implements TextDelegate {
 	}
 
 	@Override
-	public String getTooltipText(VisualItem item) {
-		return "Diagnosis";
+	public String getTooltipText(VisualItem item,Properties properties) {
+		return getHtml(item,properties);
+	}
+	
+	private String getHtml(VisualItem item,Properties properties) {
+		String name = "DIAGNOSIS";
+		if( item.canGetString(RecMapConstants.NAME) ) {
+			name = item.getString(RecMapConstants.NAME);
+		}
+		String problem = "PROBLEM";
+		if( properties!=null && properties.getProperty(RecMapConstants.PROBLEM)!=null ) {
+			problem = properties.getProperty(RecMapConstants.PROBLEM);
+		}
+		String multiplier = "1.0";
+		if( properties!=null && properties.getProperty(RecMapConstants.MULTIPLIER)!=null ) {
+			String prop = properties.getProperty(RecMapConstants.MULTIPLIER);
+			if( prop!=null) multiplier = String.valueOf(prop);
+		}
+		String html = 
+			"<html>" + 
+				"<div style=\"background:rgb(200,200,200)\">" +
+					"<center><h3>"+name+"</h3></center>" +
+				"</div>" +
+				"<div>" +
+				"<table>" +
+				"<tr>" +
+				"<td>Problem:</td><td>"+problem+"</td>"+
+				"</tr>" +
+				"<tr>" +
+				"<td>Multiplier:</td><td>"+multiplier+"</td>"+
+				"</tr>" +
+				"</table>" +
+				"</div>" +
+			"</html>";
+		return html;
 	}
 } 

@@ -24,19 +24,19 @@ public interface RecMapConstants   {
 	// VisualItem column names
 	public static final String KIND    = "Kind";       // diagnosis, recommendation, output
 	public static final String ID       = "Id";
-	public static final String INDEX    = "Index";     // Row of the dataset
+	public static final String DSROW    = "DsRow";     // Row of the dataset
 	public static final String NAME     = "Name";
-	public static final String ROW      = "Row";
+	public static final String ROW      = "Row";       // Number of the node
 	public static final String SOURCEROW  = "SourceRef";
 	public static final String TARGETROW  = "TargetRef";
-	public static final String ACTIVE     = "Active";        // Connection
-	public static final String AUTO       = "Auto";          // Recomendations
-	public static final String CURRENT    = "CurrentSetpoint"; // Output
-	public static final String FINAL      = "FinalSetpoint"; // Output
-	public static final String MULTIPLIER = "Multiplier";    // Diagnosis
-	public static final String PROBLEM    = "Problem";       // Diagnosis
-	public static final String RECOMMENDATION = "Recommendation"; // Output
-	public static final String TARGET     = "Target";        // Output
+	public static final String ACTIVE     = "Active";        // Connection    - boolean
+	public static final String AUTO       = "Auto";          // Recomendation - double
+	public static final String CURRENT    = "CurrentSetpoint"; // Output    - double
+	public static final String FINAL      = "FinalSetpoint"; // Output      - double
+	public static final String MULTIPLIER = "Multiplier";    // Diagnosis   - double
+	public static final String PROBLEM    = "Problem";       // Diagnosis   - string
+	public static final String RECOMMENDATION = "Recommendation"; // Output - double
+	public static final String TARGET     = "Target";        // Output      - double
 	
 	// "kinds" of nodes
 	public static final int SOURCE_KIND      = 0;

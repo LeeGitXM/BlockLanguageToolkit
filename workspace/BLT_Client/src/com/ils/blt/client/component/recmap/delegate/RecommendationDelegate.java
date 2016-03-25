@@ -3,6 +3,8 @@
  */
 package com.ils.blt.client.component.recmap.delegate;
 
+import java.util.Properties;
+
 import com.ils.blt.client.component.recmap.RecMapConstants;
 import com.ils.blt.client.component.recmap.TextDelegate;
 
@@ -43,7 +45,7 @@ public class RecommendationDelegate implements TextDelegate {
 	}
 
 	@Override
-	public String getTooltipText(VisualItem item) {
+	public String getTooltipText(VisualItem item,Properties properties) {
 		return "Recommendaation";
 	}
 } 

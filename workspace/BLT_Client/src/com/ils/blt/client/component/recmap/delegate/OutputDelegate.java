@@ -3,6 +3,8 @@
  */
 package com.ils.blt.client.component.recmap.delegate;
 
+import java.util.Properties;
+
 import com.ils.blt.client.component.recmap.RecMapConstants;
 import com.ils.blt.client.component.recmap.TextDelegate;
 
@@ -40,7 +42,7 @@ public class OutputDelegate implements TextDelegate {
 		return null;
 	}
 	@Override
-	public String getTooltipText(VisualItem item) {
+	public String getTooltipText(VisualItem item,Properties properties) {
 		return "<html><h1>Output Delegate</h1></html>";
 	}
 } 

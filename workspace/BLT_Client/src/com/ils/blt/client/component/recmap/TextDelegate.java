@@ -3,6 +3,8 @@
  */
 package com.ils.blt.client.component.recmap;
 
+import java.util.Properties;
+
 import prefuse.visual.VisualItem;
 
 /**
@@ -21,5 +23,5 @@ public interface TextDelegate {
     /**
      * @return a tooltip for the VisualItem
      */
-    public String getTooltipText(VisualItem item);
+    public String getTooltipText(VisualItem item,Properties properties);
 } 

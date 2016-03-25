@@ -141,7 +141,7 @@ public class RecMapView extends Display {
         
         
         
-        RecMapTooltipControl tooltipControl = new RecMapTooltipControl();
+        RecMapTooltipControl tooltipControl = new RecMapTooltipControl(recmap.getModel());
         tooltipControl.setDelegate(RecMapConstants.SOURCE_KIND, new DiagnosisDelegate());
         tooltipControl.setDelegate(RecMapConstants.INFO_KIND, new RecommendationDelegate());
         tooltipControl.setDelegate(RecMapConstants.TARGET_KIND, new OutputDelegate());

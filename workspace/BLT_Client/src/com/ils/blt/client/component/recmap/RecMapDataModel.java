@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import com.inductiveautomation.factorypmi.application.binding.VisionClientContext;
 import com.inductiveautomation.ignition.common.Dataset;
@@ -32,7 +33,7 @@ public class RecMapDataModel {
 	private final Map<Integer,Integer> outputDatasetRowByKey;
 	private final Map<Integer,Integer> outputTableRowByKey;
 	private final Map<String,Integer> recommendationRowByKey; // Key is concatenation of diagnosis:output
-	private final Map<Integer,List<NameValuePair>> attributesByRow;
+	private final Map<Integer,Properties> attributesByRow;
 	private int sourceRowCount = 0;
 	private int targetRowCount = 0;
 	private int recommendationCount = 0;
@@ -44,7 +45,7 @@ public class RecMapDataModel {
 		nodes.addColumn(RecMapConstants.KIND, int.class);   // Count of linked connections
 		nodes.addColumn(RecMapConstants.NAME, String.class);
 		nodes.addColumn(RecMapConstants.ID,  int.class);       
-		nodes.addColumn(RecMapConstants.INDEX, int.class);    // Row from original dataset 
+		nodes.addColumn(RecMapConstants.DSROW, int.class);    // Row from original dataset 
 		nodes.addColumn(RecMapConstants.ROW, int.class);          
 		nodes.addColumn(RecMapConstants.SOURCEROW, int.class); 
 		nodes.addColumn(RecMapConstants.TARGETROW, int.class); 
@@ -75,7 +76,7 @@ public class RecMapDataModel {
 	/**
 	 * @return a list of attributes for a given node
 	 */
-	public List<NameValuePair> getAttributes(int row) { return attributesByRow.get(new Integer(row)); }
+	public Properties getAttributes(int row) { return attributesByRow.get(new Integer(row)); }
 	/**
 	 * @return all of the edges
 	 */
@@ -95,46 +96,46 @@ public class RecMapDataModel {
 		Dataset diagnoses = recmap.getDiagnoses();
 		sourceRowCount = diagnoses.getRowCount();
 		int maxLength  = getMaxLength(diagnoses,RecMapConstants.NAME_COLUMN);
-		int row = 0;
-		while( row<diagnoses.getRowCount()) {
+		int datasetRow = 0;
+		while( datasetRow<diagnoses.getRowCount()) {
 			try {
-				int key = Integer.parseInt(diagnoses.getValueAt(row, RecMapConstants.ID_COLUMN).toString());
-				int index = addNodeTableRow(RecMapConstants.SOURCE_KIND,row,
-						padToMax(diagnoses.getValueAt(row, RecMapConstants.NAME_COLUMN).toString(),maxLength),key);
-				diagnosisDatasetRowByKey.put(new Integer(key), new Integer(row));
-				diagnosisTableRowByKey.put(new Integer(key), new Integer(index));
-				List<NameValuePair> attributes = attributesByRow.get(new Integer(index));
+				int key = Integer.parseInt(diagnoses.getValueAt(datasetRow, RecMapConstants.ID_COLUMN).toString());
+				int row = addNodeTableRow(RecMapConstants.SOURCE_KIND,datasetRow,
+						padToMax(diagnoses.getValueAt(datasetRow, RecMapConstants.NAME_COLUMN).toString(),maxLength),key);
+				diagnosisDatasetRowByKey.put(new Integer(key), new Integer(datasetRow));
+				diagnosisTableRowByKey.put(new Integer(key), new Integer(row));
+				Properties attributes = attributesByRow.get(new Integer(row));
 				if( attributes==null ) {
-					attributes = new ArrayList<>();
-					attributesByRow.put(new Integer(index), attributes);
+					attributes = new Properties();
+					attributesByRow.put(new Integer(row), attributes);
 				}
 				addAttribute(attributes,diagnoses,row,RecMapConstants.PROBLEM);
 				addAttribute(attributes,diagnoses,row,RecMapConstants.MULTIPLIER);
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.update: diagnosis ID %s for %s is not a number (%s)",TAG,
-						diagnoses.getValueAt(row, RecMapConstants.ID_COLUMN).toString(),
-						diagnoses.getValueAt(row, RecMapConstants.NAME_COLUMN).toString(), nfe.getMessage());
+						diagnoses.getValueAt(datasetRow, RecMapConstants.ID_COLUMN).toString(),
+						diagnoses.getValueAt(datasetRow, RecMapConstants.NAME_COLUMN).toString(), nfe.getMessage());
 			}
 			catch(ArrayIndexOutOfBoundsException aiobe) {
 				log.warnf("%s.update: Exception reading diagnosis dataset (%s)",TAG,aiobe.getMessage());
 			}
-			row++;
+			datasetRow++;
 		}
 		Dataset outputs = recmap.getOutputs();
 		targetRowCount = outputs.getRowCount();
 		maxLength  = getMaxLength(outputs,RecMapConstants.NAME_COLUMN);
-		row = 0;
-		while( row<outputs.getRowCount()) {
+		datasetRow = 0;
+		while( datasetRow<outputs.getRowCount()) {
 			try {
-				int key = Integer.parseInt(outputs.getValueAt(row, RecMapConstants.ID_COLUMN).toString());
-				int index = addNodeTableRow(RecMapConstants.TARGET_KIND,row,
-						padToMax(outputs.getValueAt(row, RecMapConstants.NAME_COLUMN).toString(),maxLength),key);
-				outputDatasetRowByKey.put(new Integer(key), new Integer(row));
-				outputTableRowByKey.put(new Integer(key), new Integer(index));
-				List<NameValuePair> attributes = attributesByRow.get(new Integer(index));
+				int key = Integer.parseInt(outputs.getValueAt(datasetRow, RecMapConstants.ID_COLUMN).toString());
+				int row = addNodeTableRow(RecMapConstants.TARGET_KIND,datasetRow,
+						padToMax(outputs.getValueAt(datasetRow, RecMapConstants.NAME_COLUMN).toString(),maxLength),key);
+				outputDatasetRowByKey.put(new Integer(key), new Integer(datasetRow));
+				outputTableRowByKey.put(new Integer(key), new Integer(row));
+				Properties attributes = attributesByRow.get(new Integer(row));
 				if( attributes==null ) {
-					attributes = new ArrayList<>();
+					attributes = new Properties();
 					attributesByRow.put(new Integer(row), attributes);
 				}
 				addAttribute(attributes,outputs,row,RecMapConstants.CURRENT);
@@ -144,51 +145,51 @@ public class RecMapDataModel {
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.update: output ID %s for %s is not a number (%s)",TAG,
-						outputs.getValueAt(row, RecMapConstants.ID_COLUMN).toString(),
-						outputs.getValueAt(row, RecMapConstants.NAME_COLUMN).toString(), nfe.getMessage());
+						outputs.getValueAt(datasetRow, RecMapConstants.ID_COLUMN).toString(),
+						outputs.getValueAt(datasetRow, RecMapConstants.NAME_COLUMN).toString(), nfe.getMessage());
 			}
 			catch(ArrayIndexOutOfBoundsException aiobe) {
 				log.warnf("%s.update: Exception reading outputs dataset (%s)",TAG,aiobe.getMessage());
 			}
-			row++;
+			datasetRow++;
 		}
 		Dataset recommendations = recmap.getRecommendations();
 		recommendationCount = recommendations.getRowCount();
 		maxLength  = getMaxLength(recommendations,RecMapConstants.NAME_COLUMN);
 		
-		row = 0;
-		while( row<recommendations.getRowCount()) {
-			int key1 = Integer.parseInt(recommendations.getValueAt(row, RecMapConstants.DIAGNOSIS_ID_COLUMN).toString());
+		datasetRow = 0;
+		while( datasetRow<recommendations.getRowCount()) {
+			int key1 = Integer.parseInt(recommendations.getValueAt(datasetRow, RecMapConstants.DIAGNOSIS_ID_COLUMN).toString());
 			Integer source = diagnosisDatasetRowByKey.get(new Integer(key1));
-			int key2 = Integer.parseInt(recommendations.getValueAt(row, RecMapConstants.OUTPUT_ID_COLUMN).toString());
+			int key2 = Integer.parseInt(recommendations.getValueAt(datasetRow, RecMapConstants.OUTPUT_ID_COLUMN).toString());
 			Integer target = outputDatasetRowByKey.get(new Integer(key2));
 			if( source!=null && target!=null ) {
 				String key = String.format("%d:%d",key1,key2);
-				int index = addRecommendationNodeTableRow(row,source.intValue(),target.intValue());
-				recommendationRowByKey.put(key, new Integer(index));
+				int row = addRecommendationNodeTableRow(datasetRow,source.intValue(),target.intValue());
+				recommendationRowByKey.put(key, new Integer(row));
 				//log.infof("%s.update: added %d for %s to rec map",TAG,index,key);
-				List<NameValuePair> attributes = attributesByRow.get(new Integer(index));
+				Properties attributes = attributesByRow.get(new Integer(row));
 				if( attributes==null ) {
-					attributes = new ArrayList<>();
+					attributes = new Properties();
 					attributesByRow.put(new Integer(row), attributes);
 				}
 				addAttribute(attributes,outputs,row,RecMapConstants.AUTO);
 			}
 			else {
 				log.warnf("%s.update: Recommendations %s has incorrect source %d, or target %d reference",TAG,
-						recommendations.getValueAt(row, RecMapConstants.NAME).toString(),key1,key2);
+						recommendations.getValueAt(datasetRow, RecMapConstants.NAME).toString(),key1,key2);
 			}
-			row++;
+			datasetRow++;
 		}
 		
 		// Create links -- connections
 		Dataset connections = recmap.getConnections();
-		row = 0;
-		while( row<connections.getRowCount()) {
+		datasetRow = 0;
+		while( datasetRow<connections.getRowCount()) {
 			try {
-				int key1 = Integer.parseInt(connections.getValueAt(row, RecMapConstants.DIAGNOSIS_ID_COLUMN).toString());
-				int key2 = Integer.parseInt(connections.getValueAt(row, RecMapConstants.OUTPUT_ID_COLUMN).toString());
-				Boolean active =  (Boolean)connections.getValueAt(row, RecMapConstants.ACTIVE);
+				int key1 = Integer.parseInt(connections.getValueAt(datasetRow, RecMapConstants.DIAGNOSIS_ID_COLUMN).toString());
+				int key2 = Integer.parseInt(connections.getValueAt(datasetRow, RecMapConstants.OUTPUT_ID_COLUMN).toString());
+				Boolean active =  (Boolean)connections.getValueAt(datasetRow, RecMapConstants.ACTIVE);
 				
 				Integer diagRow = diagnosisTableRowByKey.get(new Integer(key1));
 				Integer outRow  = outputTableRowByKey.get(new Integer(key2));
@@ -218,7 +219,7 @@ public class RecMapDataModel {
 			catch(ArrayIndexOutOfBoundsException aiobe) {
 				log.warn(String.format("%s.update: Exception reading connection dataset (%s)",TAG,aiobe.getLocalizedMessage(),aiobe));
 			}
-			row++;
+			datasetRow++;
 		}
 	}
 	
@@ -235,14 +236,14 @@ public class RecMapDataModel {
 	public int getRecommendationCount() { return recommendationCount; }
 
 	
-	private void addAttribute(List<NameValuePair> attributes,Dataset ds,int row,String colName) {
+	private void addAttribute(Properties attributes,Dataset ds,int row,String colName) {
 		String value = "";
 		try {
 			Object obj = ds.getValueAt(row, colName);
 			if( obj!=null) value = obj.toString();
 		}
 		catch(ArrayIndexOutOfBoundsException ignore) {}  // Column not in dataset
-		attributes.add(new NameValuePair(colName,value)) ;
+		attributes.setProperty(colName,value) ;
 	}
 	
 	// Create a connection between nodes
@@ -265,7 +266,7 @@ public class RecMapDataModel {
 		nodes.setInt(row,RecMapConstants.KIND,kind); 
 		nodes.setString(row,RecMapConstants.NAME,name);
 		nodes.setInt(row,RecMapConstants.ID,key);
-		nodes.setInt(row,RecMapConstants.INDEX,datasetRow);
+		nodes.setInt(row,RecMapConstants.DSROW,datasetRow);
 		nodes.setInt(row,RecMapConstants.ROW,row);
 		return row;
 	}
@@ -277,7 +278,7 @@ public class RecMapDataModel {
 		nodes.addRow();
 		nodes.setInt(row,RecMapConstants.KIND,RecMapConstants.INFO_KIND); 
 		nodes.setString(row,RecMapConstants.NAME,"Rec");
-		nodes.setInt(row,RecMapConstants.INDEX,datasetRow);
+		nodes.setInt(row,RecMapConstants.DSROW,datasetRow);
 		nodes.setInt(row,RecMapConstants.ROW,row);
 		nodes.setInt(row,RecMapConstants.SOURCEROW,source);
 		nodes.setInt(row,RecMapConstants.TARGETROW,target);
