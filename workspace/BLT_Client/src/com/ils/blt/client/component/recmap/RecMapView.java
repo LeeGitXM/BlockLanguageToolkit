@@ -147,7 +147,6 @@ public class RecMapView extends Display {
         columnLayout.setLayoutAnchor(new Point2D.Double(sz.getWidth()/2.,sz.getHeight()/2.));
         m_vis.putAction("columnLayout", columnLayout);
         
-        
         ToolTipManager.sharedInstance().setDismissDelay(DISMISS_DELAY);   // Prolong view time.
         UIManager.put("ToolTip.background", new ColorUIResource(250,250,250)); // Light gray
         // Create a thin block border around the tooltip area

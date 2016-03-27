@@ -33,8 +33,6 @@ public class OutputDelegate implements TextDelegate {
 		if( properties!=null && properties.getProperty(RecMapConstants.CURRENT)!=null ) {
 			currentSetpoint = properties.getProperty(RecMapConstants.CURRENT);
 		}
-		sb.append(RecMapConstants.CURRENT);
-		sb.append(": ");
 		sb.append(currentSetpoint);
         sb.append("\n");
         return sb.toString();

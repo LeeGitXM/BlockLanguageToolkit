@@ -5,8 +5,10 @@ package com.ils.blt.client.component.recmap;
 
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.RectangularShape;
 import java.awt.geom.RoundRectangle2D;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,6 +19,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 import prefuse.Constants;
 import prefuse.render.LabelRenderer;
+import prefuse.util.ColorLib;
 import prefuse.util.FontLib;
 import prefuse.util.GraphicsLib;
 import prefuse.util.StringLib;
@@ -37,6 +40,8 @@ public class TableLabelRenderer extends LabelRenderer {
 	private final Map<Integer,TextDelegate> delegates;
 	private final RecMapDataModel model;
 	private String m_header = "";
+	/** Transform used to scale and position header (not visible from base class) */
+    private AffineTransform m_headertransform = new AffineTransform();
 	
     /**
      */
@@ -47,6 +52,7 @@ public class TableLabelRenderer extends LabelRenderer {
     	m_imageMargin = 2;
     	m_horizBorder = 2;
     	m_vertBorder = 2;
+    	setRenderType(RENDER_TYPE_DRAW_AND_FILL);
     }
     
     public void setDelegate(int kind,TextDelegate delegate) {
@@ -59,18 +65,170 @@ public class TableLabelRenderer extends LabelRenderer {
     @Override
     public void render(Graphics2D g, VisualItem item) {
     	log.infof("%s.render ....",CLSS);
-		if( item instanceof TableNodeItem ) {
-			int kind = item.getInt(RecMapConstants.KIND);
-			int row = item.getInt(RecMapConstants.ROW);
-			TextDelegate delegate = delegates.get(new Integer(kind));
-			if( delegate!=null) {
-				Properties properties = model.getAttributes(row);
-				Shape shape = getShape(item,delegate,properties);
-		        if (shape != null)
-		            drawShape(g, item, shape);
+    	TextDelegate delegate = delegateFromItem(item);
+        if( delegate!=null ) {
+        	Properties properties = propertiesFromItem(item);
+        	RectangularShape shape = getShape(item,delegate,properties);
+		    if (shape != null) {
+		         // fill the shape, if requested
+		         int type = getRenderType(item);
+		         if ( type==RENDER_TYPE_FILL || type==RENDER_TYPE_DRAW_AND_FILL )
+		             GraphicsLib.paint(g, item, shape, getStroke(item), RENDER_TYPE_FILL);
+
+		         // now render the image and text
+		         String text = m_text;
+		         Image  img  = getImage(item);
+		         
+		         if ( text == null && img == null )
+		             return;
+		                         
+		         double size = item.getSize();
+		         boolean useInt = 1.5 > Math.max(g.getTransform().getScaleX(),
+		                                         g.getTransform().getScaleY());
+		         double x = shape.getMinX() + size*m_horizBorder;
+		         double y = shape.getMinY() + size*m_vertBorder;
+		         
+		         // render image
+		         if ( img != null ) {            
+		             double w = size * img.getWidth(null);
+		             double h = size * img.getHeight(null);
+		             double ix=x, iy=y;
+		             
+		             // determine one co-ordinate based on the image position
+		             switch ( m_imagePos ) {
+		             case Constants.LEFT:
+		                 x += w + size*m_imageMargin;
+		                 break;
+		             case Constants.RIGHT:
+		                 ix = shape.getMaxX() - size*m_horizBorder - w;
+		                 break;
+		             case Constants.TOP:
+		                 y += h + size*m_imageMargin;
+		                 break;
+		             case Constants.BOTTOM:
+		                 iy = shape.getMaxY() - size*m_vertBorder - h;
+		                 break;
+		             default:
+		                 throw new IllegalStateException(
+		                         "Unrecognized image alignment setting.");
+		             }
+		             
+		             // determine the other coordinate based on image alignment
+		             switch ( m_imagePos ) {
+		             case Constants.LEFT:
+		             case Constants.RIGHT:
+		                 // need to set image y-coordinate
+		                 switch ( m_vImageAlign ) {
+		                 case Constants.TOP:
+		                     break;
+		                 case Constants.BOTTOM:
+		                     iy = shape.getMaxY() - size*m_vertBorder - h;
+		                     break;
+		                 case Constants.CENTER:
+		                     iy = shape.getCenterY() - h/2;
+		                     break;
+		                 }
+		                 break;
+		             case Constants.TOP:
+		             case Constants.BOTTOM:
+		                 // need to set image x-coordinate
+		                 switch ( m_hImageAlign ) {
+		                 case Constants.LEFT:
+		                     break;
+		                 case Constants.RIGHT:
+		                     ix = shape.getMaxX() - size*m_horizBorder - w;
+		                     break;
+		                 case Constants.CENTER:
+		                     ix = shape.getCenterX() - w/2;
+		                     break;
+		                 }
+		                 break;
+		             }
+		             
+		             if ( useInt && size == 1.0 ) {
+		                 // if possible, use integer precision
+		                 // results in faster, flicker-free image rendering
+		                 g.drawImage(img, (int)ix, (int)iy, null);
+		             } 
+		             else {
+		                 m_headertransform.setTransform(size,0,0,size,ix,iy);
+		                 g.drawImage(img, m_headertransform, null);
+		             }
+		         }
+		         
+		         // render text
+		         int textColor = item.getTextColor();
+		         if ( text != null && ColorLib.alpha(textColor) > 0 ) {
+		             g.setPaint(ColorLib.getColor(textColor));
+		             g.setFont(m_font);
+		             FontMetrics fm = DEFAULT_GRAPHICS.getFontMetrics(m_font);
+
+		             // compute available width
+		             double tw;
+		             switch ( m_imagePos ) {
+		             case Constants.TOP:
+		             case Constants.BOTTOM:
+		                 tw = shape.getWidth() - 2*size*m_horizBorder;
+		                 break;
+		             default:
+		                 tw = m_textDim.width;
+		             }
+		             
+		             // compute available height
+		             double th;
+		             switch ( m_imagePos ) {
+		             case Constants.LEFT:
+		             case Constants.RIGHT:
+		                 th = shape.getHeight() - 2*size*m_vertBorder;
+		                 break;
+		             default:
+		                 th = m_textDim.height;
+		             }
+		             
+		             // compute starting y-coordinate
+		             y += fm.getAscent();
+		             switch ( m_vTextAlign ) {
+		             case Constants.TOP:
+		                 break;
+		             case Constants.BOTTOM:
+		                 y += th - m_textDim.height;
+		                 break;
+		             case Constants.CENTER:
+		                 y += (th - m_textDim.height)/2;
+		             }
+		             
+		             // render each line of text
+		             int lh = fm.getHeight(); // the line height
+		             int start = 0, end = text.indexOf(m_delim);
+		             for ( ; end >= 0; y += lh ) {
+		                 drawString(g, fm, text.substring(start, end), useInt, x, y, tw);
+		                 start = end+1;
+		                 end = text.indexOf(m_delim, start);   
+		             }
+		             drawString(g, fm, text.substring(start), useInt, x, y, tw);
+		         }
+		     
+		         // draw border
+		         if (type==RENDER_TYPE_DRAW || type==RENDER_TYPE_DRAW_AND_FILL) {
+		             GraphicsLib.paint(g,item,shape,getStroke(item),RENDER_TYPE_DRAW);
+		         }
 			}
 		}
-        
+    }
+    
+    /**
+     * Handle the case where this is called internally.
+     */
+    @Override
+    public Shape getShape(VisualItem item) {
+    	log.infof("%s.getShape ....",CLSS);
+    	Shape shape = null;
+    	TextDelegate delegate = delegateFromItem(item);
+        if( delegate!=null ) {
+        	Properties properties = propertiesFromItem(item);
+        	shape = getShape(item,delegate,properties);
+		}
+		return shape;
     }
     
     /**
@@ -80,19 +238,19 @@ public class TableLabelRenderer extends LabelRenderer {
      * that we pass along the delegate and properties.
      * @param item the item for which to get the Shape
      */
-    private Shape getShape(VisualItem item,TextDelegate delegate,Properties properties) {
+    private RectangularShape getShape(VisualItem item,TextDelegate delegate,Properties properties) {
         AffineTransform at = getTransform(item);
-        Shape rawShape = getRawShape(item,delegate,properties);
-        return (at==null || rawShape==null ? rawShape : at.createTransformedShape(rawShape));
+        RectangularShape rawShape = getRawShape(item,delegate,properties);
+        return (at==null || rawShape==null ? rawShape : (RectangularShape)at.createTransformedShape(rawShape));
     }
-    
+
     /**
      * Similar to a call with the same name in LabelRenderer, except that we 
      * have a header string instead of an image. The code is shamelessly 
      * plagiarized from LabelRenderer.
      * @see prefuse.render.LabelRenderer#getRawShape(prefuse.visual.VisualItem)
      */
-    private Shape getRawShape(VisualItem item,TextDelegate delegate,Properties properties) {
+    private RectangularShape getRawShape(VisualItem item,TextDelegate delegate,Properties properties) {
         m_header = delegate.getHeaderText(item, properties);
         m_text = delegate.getBodyText(item, properties);
         double size = item.getSize();
@@ -125,10 +283,11 @@ public class TableLabelRenderer extends LabelRenderer {
             RoundRectangle2D rr = (RoundRectangle2D)m_bbox;
             rr.setRoundRect(m_pt.getX(), m_pt.getY(), w, h,
                             size*m_arcWidth, size*m_arcHeight);
-        } else {
+        } 
+        else {
             m_bbox.setFrame(m_pt.getX(), m_pt.getY(), w, h);
         }
-        return m_bbox;
+        return (RectangularShape)m_bbox;
     }
     
     /**
@@ -144,22 +303,31 @@ public class TableLabelRenderer extends LabelRenderer {
     
 
     /**
-     * Returns the text to draw. Subclasses can override this class to
-     * perform custom text selection.
+     * We should not be using this method. Throw exception
      * @param item the item to represent as a <code>String</code>
      * @return a <code>String</code> to draw
      */
     protected String getText(VisualItem item) {
-        String s = null;
-        if ( item.canGetString(RecMapConstants.KIND) ) {
-        	int kind = item.getInt(RecMapConstants.KIND);
-        	// If this is the "link", then use the VALUE
-        	s = item.getString(RecMapConstants.NAME); 
-            return s;           
-        }
-        return s;
+        throw new IllegalArgumentException("getText not applicable to this class");
     }
-    
+    /**
+     * @see prefuse.render.Renderer#setBounds(prefuse.visual.VisualItem)
+     */
+    @Override
+    public void setBounds(VisualItem item) {
+        if ( !m_manageBounds ) return;
+        TextDelegate delegate = delegateFromItem(item);
+        if( delegate!=null ) {
+        	Properties properties = propertiesFromItem(item);
+            Shape shape = getShape(item,delegate,properties);
+            if ( shape == null ) {
+                item.setBounds(item.getX(), item.getY(), 0, 0);
+            } 
+            else {
+                GraphicsLib.setBounds(item, shape, getStroke(item));
+            }
+        }
+    }
     // Stolen from LabelRenderer where it is a private method.
     // This potential shortens the text. As a side effect, it sets 
     // class members that hold dimensions and font sizes. 
@@ -214,5 +382,50 @@ public class TableLabelRenderer extends LabelRenderer {
         
         return str==null ? text : str.toString();
     }
-
+    
+    private TextDelegate delegateFromItem(VisualItem item) {
+    	TextDelegate delegate = null;
+    	if( item instanceof TableNodeItem ) {
+    		int kind = item.getInt(RecMapConstants.KIND);
+    		delegate = delegates.get(new Integer(kind));
+    	}
+    	return delegate;
+    }
+    
+    // Stolen directly from LabelRenderer (it was private final)
+    private void drawString(Graphics2D g, FontMetrics fm, String text,
+            boolean useInt, double x, double y, double w)  {
+        // compute the x-coordinate
+        double tx;
+        switch ( m_hTextAlign ) {
+        case Constants.LEFT:
+            tx = x;
+            break;
+        case Constants.RIGHT:
+            tx = x + w - fm.stringWidth(text);
+            break;
+        case Constants.CENTER:
+            tx = x + (w - fm.stringWidth(text)) / 2;
+            break;
+        default:
+            throw new IllegalStateException(
+                    "Unrecognized text alignment setting.");
+        }
+        // use integer precision unless zoomed-in
+        // results in more stable drawing
+        if ( useInt ) {
+            g.drawString(text, (int)tx, (int)y);
+        } else {
+            g.drawString(text, (float)tx, (float)y);
+        }
+    }
+    private Properties propertiesFromItem(VisualItem item) {
+    	Properties properties = null;
+    	if( item instanceof TableNodeItem ) {
+    		int row = item.getInt(RecMapConstants.ROW);
+    		properties = model.getAttributes(row);
+    	}
+    	return properties;
+    }
+    			
 } 

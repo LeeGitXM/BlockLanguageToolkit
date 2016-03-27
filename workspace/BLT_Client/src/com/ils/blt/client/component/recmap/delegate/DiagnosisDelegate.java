@@ -48,8 +48,6 @@ public class DiagnosisDelegate implements TextDelegate {
     @Override
     public String getHeaderText(VisualItem item,Properties properties) {
         StringBuilder sb = new StringBuilder();
-        sb.append(RecMapConstants.NAME);
-        sb.append(": ");
         sb.append(item.getString(RecMapConstants.NAME)); 
         return sb.toString();
     }
@@ -75,8 +73,8 @@ public class DiagnosisDelegate implements TextDelegate {
 		}
 		String html = 
 			"<html>" + 
-				"<p style=\"background:rgb(250,250,250);height:3px\"/>" +
-				"<div style=\"background:rgb(230,230,230);border-style:grooved;border-width:2px 0px 0px 0px;border-color:rgb(120,240,120)\">" +
+				"<div style=\"background:rgb(250,250,250);height:1px\"/>" +
+				"<div style=\"background:rgb(230,230,230);border-style:grooved;border-width:1px 0px 0px 0px;border-color:rgb(120,240,120)\">" +
 					"<center><h3>"+name+"</h3></center>" +
 				"</div>" +
 				"<div>" +
