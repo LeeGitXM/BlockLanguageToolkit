@@ -53,6 +53,7 @@ public class TableLabelRenderer extends LabelRenderer {
     	m_horizBorder = 2;
     	m_vertBorder = 2;
     	setRenderType(RENDER_TYPE_DRAW_AND_FILL);
+    	setManageBounds(true);   // False doesn't work
     }
     
     public void setDelegate(int kind,TextDelegate delegate) {
@@ -315,7 +316,7 @@ public class TableLabelRenderer extends LabelRenderer {
      */
     @Override
     public void setBounds(VisualItem item) {
-        if ( !m_manageBounds ) return;
+        if ( !m_manageBounds ) return;   // Things don't go well
         TextDelegate delegate = delegateFromItem(item);
         if( delegate!=null ) {
         	Properties properties = propertiesFromItem(item);

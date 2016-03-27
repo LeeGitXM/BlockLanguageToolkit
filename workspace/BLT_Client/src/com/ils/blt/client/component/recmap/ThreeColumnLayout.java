@@ -142,12 +142,12 @@ public class ThreeColumnLayout extends Layout {
                 	y = by + h*((row)/(double)(nrows-1));
                 }
                 item.setVisible(true);
-                /*
+                
                 // We have the midpoints, now adjust so midpoint is center of item
                 Rectangle2D bounds = item.getBounds();
-                setX(item,null,x-bounds.getWidth()/2);
-                setY(item,null,y+bounds.getHeight()/2);
-                */
+                x = x-bounds.getWidth()/2;
+                y = y+bounds.getHeight()/2;
+                
                 setX(item,null,x);
                 setY(item,null,y);
         	}

@@ -73,8 +73,7 @@ public class DiagnosisDelegate implements TextDelegate {
 		}
 		String html = 
 			"<html>" + 
-				"<div style=\"background:rgb(250,250,250);height:1px\"/>" +
-				"<div style=\"background:rgb(230,230,230);border-style:grooved;border-width:1px 0px 0px 0px;border-color:rgb(120,240,120)\">" +
+				"<div style=\"background:rgb(230,230,230);border-style:solid;border-width:3px 0px 0px 0px;border-color:rgb(250,250,250)\">" +
 					"<center><h3>"+name+"</h3></center>" +
 				"</div>" +
 				"<div>" +
