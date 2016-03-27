@@ -15,7 +15,11 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 import javax.swing.BorderFactory;
+import javax.swing.ToolTipManager;
+import javax.swing.UIManager;
 import javax.swing.border.BevelBorder;
+import javax.swing.border.Border;
+import javax.swing.plaf.ColorUIResource;
 
 import com.ils.blt.client.component.ILSRepaintAction;
 import com.ils.blt.client.component.recmap.delegate.DiagnosisDelegate;
@@ -63,6 +67,7 @@ public class RecMapView extends Display {
 	private static final long serialVersionUID = 3253162293683958367L;
 	private static final String TAG = "RecMapView";
 	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
+	private static final int DISMISS_DELAY = 10000;  // ~ msecs
     
 	// Groups
     private static final String GROUP_ALL = "map";
@@ -91,12 +96,15 @@ public class RecMapView extends Display {
                                 BorderFactory.createBevelBorder(BevelBorder.LOWERED)));
         
         // NOTE: No images to render.
-        nodeRenderer = new TableLabelRenderer();
+        nodeRenderer = new TableLabelRenderer(recmap.getModel());
         nodeRenderer.setRenderType(AbstractShapeRenderer.RENDER_TYPE_DRAW_AND_FILL);
         nodeRenderer.setHorizontalAlignment(Constants.LEFT);
         nodeRenderer.setRoundedCorner(1,1);
         nodeRenderer.setVerticalPadding(3);
         nodeRenderer.setHorizontalPadding(4);
+        nodeRenderer.setDelegate(RecMapConstants.SOURCE_KIND, new DiagnosisDelegate());
+        nodeRenderer.setDelegate(RecMapConstants.INFO_KIND, new RecommendationDelegate());
+        nodeRenderer.setDelegate(RecMapConstants.TARGET_KIND, new OutputDelegate());
 
         edgeRenderer = new RecMapEdgeRenderer(Constants.EDGE_TYPE_LINE);
  
@@ -140,6 +148,11 @@ public class RecMapView extends Display {
         m_vis.putAction("columnLayout", columnLayout);
         
         
+        ToolTipManager.sharedInstance().setDismissDelay(DISMISS_DELAY);   // Prolong view time.
+        UIManager.put("ToolTip.background", new ColorUIResource(250,250,250)); // Light gray
+        // Create a thin block border around the tooltip area
+        Border border = BorderFactory.createLineBorder(new Color(20,20,20)); 
+        UIManager.put("ToolTip.border", border);
         
         RecMapTooltipControl tooltipControl = new RecMapTooltipControl(recmap.getModel());
         tooltipControl.setDelegate(RecMapConstants.SOURCE_KIND, new DiagnosisDelegate());

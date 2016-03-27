@@ -22,28 +22,37 @@ public class DiagnosisDelegate implements TextDelegate {
     }
     
     /**
-     * Returns the text to draw. Subclasses can override this class to
-     * perform custom text selection.
+     * Returns the text to draw. multiple properties separated
+     * by a blank lines.
      * @param item the item to represent as a <code>String</code>
      * @return a <code>String</code> to draw
      */
-    public String getText(VisualItem item) {
-        String s = null;
-        s = item.getString(RecMapConstants.NAME); 
-        return s;
+    @Override
+    public String getBodyText(VisualItem item,Properties properties) {
+        StringBuilder sb = new StringBuilder();
+        String multiplier = "0.0";
+		if( properties!=null && properties.getProperty(RecMapConstants.MULTIPLIER)!=null ) {
+			multiplier = properties.getProperty(RecMapConstants.MULTIPLIER);
+		}
+		sb.append(RecMapConstants.MULTIPLIER);
+		sb.append(": ");
+		sb.append(multiplier);
+        sb.append("\n");
+        return sb.toString();
     }
-
-	@Override
-	public String getBodyText(VisualItem item) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getHeaderText(VisualItem item) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    /**
+     * Returns the text that appears in the block header. 
+     * @param item the item to represent as a <code>String</code>
+     * @return a <code>String</code> to draw
+     */
+    @Override
+    public String getHeaderText(VisualItem item,Properties properties) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(RecMapConstants.NAME);
+        sb.append(": ");
+        sb.append(item.getString(RecMapConstants.NAME)); 
+        return sb.toString();
+    }
 
 	@Override
 	public String getTooltipText(VisualItem item,Properties properties) {
@@ -66,7 +75,8 @@ public class DiagnosisDelegate implements TextDelegate {
 		}
 		String html = 
 			"<html>" + 
-				"<div style=\"background:rgb(200,200,200)\">" +
+				"<p style=\"background:rgb(250,250,250);height:3px\"/>" +
+				"<div style=\"background:rgb(230,230,230);border-style:grooved;border-width:2px 0px 0px 0px;border-color:rgb(120,240,120)\">" +
 					"<center><h3>"+name+"</h3></center>" +
 				"</div>" +
 				"<div>" +

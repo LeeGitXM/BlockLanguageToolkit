@@ -13,13 +13,14 @@ import prefuse.visual.VisualItem;
  */
 public interface TextDelegate {
 	/**
-     * @return delimited text for the body of the label block
+     * @return delimited text for the body of the block
      */
-    public String getBodyText(VisualItem item);
-	/**
-     * @return delimited text for the header of the label block
+    public String getBodyText(VisualItem item,Properties properties);
+    /**
+     * @return single-line text that is the header of the block
      */
-    public String getHeaderText(VisualItem item);
+    public String getHeaderText(VisualItem item,Properties properties);
+
     /**
      * @return a tooltip for the VisualItem
      */

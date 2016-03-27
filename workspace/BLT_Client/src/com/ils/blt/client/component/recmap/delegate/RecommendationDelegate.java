@@ -19,30 +19,35 @@ public class RecommendationDelegate implements TextDelegate {
      */
     public RecommendationDelegate() {
     }
-   
     /**
-     * Returns the text to draw. Subclasses can override this class to
-     * perform custom text selection.
+     * Returns the text to draw in the block header.
+     * The name is simply "Recommendation"
      * @param item the item to represent as a <code>String</code>
      * @return a <code>String</code> to draw
      */
-    protected String getText(VisualItem item) {
-        String s = null;
-        s = item.getString(RecMapConstants.NAME); 
-        return s;
+    @Override
+    public String getHeaderText(VisualItem item,Properties properties) {
+        return "Recommendation";
     }
-
-	@Override
-	public String getBodyText(VisualItem item) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getHeaderText(VisualItem item) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    /**
+     * Returns the text to draw. multiple properties separated
+     * by a blank lines.
+     * @param item the item to represent as a <code>String</code>
+     * @return a <code>String</code> to draw
+     */
+    @Override
+    public String getBodyText(VisualItem item,Properties properties) {
+        StringBuilder sb = new StringBuilder();
+        String auto = "0.0";
+		if( properties!=null && properties.getProperty(RecMapConstants.AUTO)!=null ) {
+			auto = properties.getProperty(RecMapConstants.AUTO);
+		}
+		sb.append(RecMapConstants.AUTO);
+		sb.append(": ");
+		sb.append(auto);
+        sb.append("\n");
+        return sb.toString();
+    }
 
 	@Override
 	public String getTooltipText(VisualItem item,Properties properties) {
