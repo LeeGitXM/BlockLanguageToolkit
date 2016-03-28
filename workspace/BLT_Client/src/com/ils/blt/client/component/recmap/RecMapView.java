@@ -10,7 +10,6 @@ package com.ils.blt.client.component.recmap;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
@@ -50,6 +49,7 @@ import prefuse.render.AbstractShapeRenderer;
 import prefuse.render.DefaultRendererFactory;
 import prefuse.render.EdgeRenderer;
 import prefuse.util.ColorLib;
+import prefuse.util.FontLib;
 import prefuse.util.GraphicsLib;
 import prefuse.util.display.DisplayLib;
 import prefuse.visual.VisualItem;
@@ -104,7 +104,7 @@ public class RecMapView extends Display {
         nodeRenderer.setDelegate(RecMapConstants.INFO_KIND, new RecommendationDelegate());
         nodeRenderer.setDelegate(RecMapConstants.TARGET_KIND, new OutputDelegate());
 
-        edgeRenderer = new RecMapEdgeRenderer(Constants.EDGE_TYPE_CURVE);
+        edgeRenderer = new RecMapEdgeRenderer(Constants.EDGE_TYPE_LINE);
  
         DefaultRendererFactory rf = new DefaultRendererFactory(nodeRenderer);
         rf.add(new InGroupPredicate(GROUP_ALL_EDGES), edgeRenderer);
@@ -161,8 +161,8 @@ public class RecMapView extends Display {
         
         // create the filtering and layout
         ActionList filter = new ActionList();
-        //filter.add(new FontAction(mapNodes, FontLib.getFont("Tahoma", 16)));
-        filter.add(new FontAction(GROUP_ALL_NODES, new Font("monospaced",Font.PLAIN,16)));
+        filter.add(new FontAction(GROUP_ALL_NODES, FontLib.getFont("Arial", 12)));
+        //filter.add(new FontAction(GROUP_ALL_NODES, new Font("monospaced",Font.PLAIN,16)));
         filter.add(columnLayout);
         filter.add(textColor);
         filter.add(nodeColor);

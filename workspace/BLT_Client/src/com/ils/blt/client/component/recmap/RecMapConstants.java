@@ -18,12 +18,10 @@ public interface RecMapConstants   {
 	// Dataset column names
 	public static final String DIAGNOSIS_ID_COLUMN     = "DiagnosisId";
 	public static final String OUTPUT_ID_COLUMN        = "OutputId";
-	public static final String ID_COLUMN     = "Id";
 	public static final String NAME_COLUMN    = "Name";
 	
 	// VisualItem column names
 	public static final String KIND    = "Kind";       // diagnosis, recommendation, output
-	public static final String ID       = "Id";
 	public static final String DSROW    = "DsRow";     // Row of the dataset
 	public static final String NAME     = "Name";
 	public static final String ROW      = "Row";       // Number of the node

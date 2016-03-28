@@ -90,11 +90,7 @@ public class TableLabelRenderer extends LabelRenderer {
 		             GraphicsLib.paint(g, item, halfhigh, getStroke(item), RENDER_TYPE_DRAW_AND_FILL);
 		         }
 		         
-		         // draw header border
-		         if (type==RENDER_TYPE_DRAW || type==RENDER_TYPE_DRAW_AND_FILL) {
-		             //GraphicsLib.paint(g,item,shape,getStroke(item),RENDER_TYPE_DRAW);
-		         }
-		         
+
 		         boolean useInt = 1.5 > Math.max(g.getTransform().getScaleX(),
 		                                         g.getTransform().getScaleY());
 		         
@@ -118,7 +114,7 @@ public class TableLabelRenderer extends LabelRenderer {
 		             if( hh>m_maxheight) hh = m_maxheight;
 		             
 		             // compute starting y-coordinate - align to center of top 1/2
-		             y += fm.getAscent();
+		             //y += fm.getAscent();
 		             y += hh/4;
 		             
 		             // render each line of text
@@ -165,7 +161,7 @@ public class TableLabelRenderer extends LabelRenderer {
 		     
 		         // draw outside border
 		         if (type==RENDER_TYPE_DRAW || type==RENDER_TYPE_DRAW_AND_FILL) {
-		             GraphicsLib.paint(g,item,shape,getStroke(item),RENDER_TYPE_DRAW);
+		             //GraphicsLib.paint(g,item,shape,getStroke(item),RENDER_TYPE_DRAW);
 		         }
 			}
 		}
