@@ -33,6 +33,8 @@ public class OutputDelegate implements TextDelegate {
 		if( properties!=null && properties.getProperty(RecMapConstants.CURRENT)!=null ) {
 			currentSetpoint = properties.getProperty(RecMapConstants.CURRENT);
 		}
+		sb.append(RecMapConstants.CURRENT);
+		sb.append(": ");
 		sb.append(currentSetpoint);
         sb.append("\n");
         return sb.toString();
@@ -45,8 +47,6 @@ public class OutputDelegate implements TextDelegate {
     @Override
     public String getHeaderText(VisualItem item,Properties properties) {
         StringBuilder sb = new StringBuilder();
-        sb.append(RecMapConstants.NAME);
-        sb.append(": ");
         sb.append(item.getString(RecMapConstants.NAME)); 
         return sb.toString();
     }

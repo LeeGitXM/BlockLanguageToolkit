@@ -141,10 +141,11 @@ public class RecMapView extends Display {
         // create a grid layout action
         columnLayout = new ThreeColumnLayout(GROUP_ALL,model.getSourceRowCount(),model.getRecommendationCount(),model.getTargetRowCount(),
         									RecMapConstants.KIND,RecMapConstants.SOURCEROW,RecMapConstants.TARGETROW);
-        columnLayout.setNodeSizeMaxima(nodeRenderer);
         // Rectangle(x,y,width,height)
         columnLayout.setLayoutBounds(new Rectangle2D.Double(0.,0.,sz.width,sz.height));
         columnLayout.setLayoutAnchor(new Point2D.Double(sz.getWidth()/2.,sz.getHeight()/2.));
+        columnLayout.setNodeSizeMaxima(nodeRenderer);
+        
         m_vis.putAction("columnLayout", columnLayout);
         
         ToolTipManager.sharedInstance().setDismissDelay(DISMISS_DELAY);   // Prolong view time.
@@ -187,7 +188,7 @@ public class RecMapView extends Display {
         // ------------------------------------------------
         setSize(getWidth(),getHeight());
         // initialize the display
-        addControlListener(new RecMapSelector(recmap,2));    // Double-click
+        addControlListener(new RecMapSelector(recmap,model.getAttributeMap(),2));    // Double-click
         addControlListener(new ZoomToFitControl());          // Control right-mouse
         addControlListener(new ZoomControl());
         addControlListener(new WheelZoomControl());

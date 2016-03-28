@@ -78,6 +78,10 @@ public class RecMapDataModel {
 	 */
 	public Properties getAttributes(int row) { return attributesByRow.get(new Integer(row)); }
 	/**
+	 * @return the map of attributes by row
+	 */
+	public Map<Integer,Properties> getAttributeMap() { return attributesByRow; }
+	/**
 	 * @return all of the edges
 	 */
 	public Table getEdges() { return this.edges; }

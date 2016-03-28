@@ -5,7 +5,6 @@ package com.ils.blt.client.component.recmap;
 
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.RectangularShape;
@@ -101,17 +100,8 @@ public class TableLabelRenderer extends LabelRenderer {
 		             double hh = m_textDim.height;
 		             if( hh>m_maxheight) hh = m_maxheight;
 		             
-		             // compute starting y-coordinate
+		             // compute starting y-coordinate - align top
 		             y += fm.getAscent();
-		             switch ( m_vTextAlign ) {
-		             case Constants.TOP:
-		                 break;
-		             case Constants.BOTTOM:
-		                 y += hh - m_textDim.height;
-		                 break;
-		             case Constants.CENTER:
-		                 y += (hh - m_textDim.height)/2;
-		             }
 		             
 		             // render each line of text
 		             int lh = fm.getHeight(); // the line height
@@ -124,12 +114,12 @@ public class TableLabelRenderer extends LabelRenderer {
 		             drawString(g, fm, text.substring(start), useInt, x, y, hw);
 		         }
 		     
-		         // draw border
+		         // draw header border
 		         if (type==RENDER_TYPE_DRAW || type==RENDER_TYPE_DRAW_AND_FILL) {
 		             GraphicsLib.paint(g,item,shape,getStroke(item),RENDER_TYPE_DRAW);
 		         }
 			
-		         // render body text
+		         // render body text - we're counting on one line, but this has code to handle multiple.
 		         text = m_text;
 		         if ( text != null && ColorLib.alpha(textColor) > 0 ) {
 		             g.setPaint(ColorLib.getColor(textColor));
@@ -167,7 +157,7 @@ public class TableLabelRenderer extends LabelRenderer {
 		             drawString(g, fm, text.substring(start), useInt, x, y, tw);
 		         }
 		     
-		         // draw border
+		         // draw outside border
 		         if (type==RENDER_TYPE_DRAW || type==RENDER_TYPE_DRAW_AND_FILL) {
 		             GraphicsLib.paint(g,item,shape,getStroke(item),RENDER_TYPE_DRAW);
 		         }
