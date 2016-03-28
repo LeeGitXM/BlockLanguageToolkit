@@ -40,6 +40,8 @@ public class TableLabelRenderer extends LabelRenderer {
 	private final Map<Integer,TextDelegate> delegates;
 	private final RecMapDataModel model;
 	private String m_header = "";
+	private double m_maxheight = 1.;
+	private double m_maxwidth = 1.;
 	/** Transform used to scale and position header (not visible from base class) */
     private AffineTransform m_headertransform = new AffineTransform();
 	
@@ -65,99 +67,26 @@ public class TableLabelRenderer extends LabelRenderer {
      */
     @Override
     public void render(Graphics2D g, VisualItem item) {
-    	log.infof("%s.render ....",CLSS);
+    	//log.infof("%s.render ....",CLSS);
     	TextDelegate delegate = delegateFromItem(item);
         if( delegate!=null ) {
         	Properties properties = propertiesFromItem(item);
         	RectangularShape shape = getShape(item,delegate,properties);
 		    if (shape != null) {
-		         // fill the shape, if requested
+		         // fill the header shape, if requested
 		         int type = getRenderType(item);
-		         if ( type==RENDER_TYPE_FILL || type==RENDER_TYPE_DRAW_AND_FILL )
+		         if ( type==RENDER_TYPE_FILL || type==RENDER_TYPE_DRAW_AND_FILL ) {
 		             GraphicsLib.paint(g, item, shape, getStroke(item), RENDER_TYPE_FILL);
-
-		         // now render the image and text
-		         String text = m_text;
-		         Image  img  = getImage(item);
-		         
-		         if ( text == null && img == null )
-		             return;
-		                         
-		         double size = item.getSize();
-		         boolean useInt = 1.5 > Math.max(g.getTransform().getScaleX(),
-		                                         g.getTransform().getScaleY());
-		         double x = shape.getMinX() + size*m_horizBorder;
-		         double y = shape.getMinY() + size*m_vertBorder;
-		         
-		         // render image
-		         if ( img != null ) {            
-		             double w = size * img.getWidth(null);
-		             double h = size * img.getHeight(null);
-		             double ix=x, iy=y;
-		             
-		             // determine one co-ordinate based on the image position
-		             switch ( m_imagePos ) {
-		             case Constants.LEFT:
-		                 x += w + size*m_imageMargin;
-		                 break;
-		             case Constants.RIGHT:
-		                 ix = shape.getMaxX() - size*m_horizBorder - w;
-		                 break;
-		             case Constants.TOP:
-		                 y += h + size*m_imageMargin;
-		                 break;
-		             case Constants.BOTTOM:
-		                 iy = shape.getMaxY() - size*m_vertBorder - h;
-		                 break;
-		             default:
-		                 throw new IllegalStateException(
-		                         "Unrecognized image alignment setting.");
-		             }
-		             
-		             // determine the other coordinate based on image alignment
-		             switch ( m_imagePos ) {
-		             case Constants.LEFT:
-		             case Constants.RIGHT:
-		                 // need to set image y-coordinate
-		                 switch ( m_vImageAlign ) {
-		                 case Constants.TOP:
-		                     break;
-		                 case Constants.BOTTOM:
-		                     iy = shape.getMaxY() - size*m_vertBorder - h;
-		                     break;
-		                 case Constants.CENTER:
-		                     iy = shape.getCenterY() - h/2;
-		                     break;
-		                 }
-		                 break;
-		             case Constants.TOP:
-		             case Constants.BOTTOM:
-		                 // need to set image x-coordinate
-		                 switch ( m_hImageAlign ) {
-		                 case Constants.LEFT:
-		                     break;
-		                 case Constants.RIGHT:
-		                     ix = shape.getMaxX() - size*m_horizBorder - w;
-		                     break;
-		                 case Constants.CENTER:
-		                     ix = shape.getCenterX() - w/2;
-		                     break;
-		                 }
-		                 break;
-		             }
-		             
-		             if ( useInt && size == 1.0 ) {
-		                 // if possible, use integer precision
-		                 // results in faster, flicker-free image rendering
-		                 g.drawImage(img, (int)ix, (int)iy, null);
-		             } 
-		             else {
-		                 m_headertransform.setTransform(size,0,0,size,ix,iy);
-		                 g.drawImage(img, m_headertransform, null);
-		             }
 		         }
 		         
-		         // render text
+		         boolean useInt = 1.5 > Math.max(g.getTransform().getScaleX(),
+		                                         g.getTransform().getScaleY());
+		         
+		         double x = shape.getMinX() + m_horizBorder;
+		         double y = shape.getMinY() + m_vertBorder;
+		  
+		         // First render the header
+		         String text = m_header;
 		         int textColor = item.getTextColor();
 		         if ( text != null && ColorLib.alpha(textColor) > 0 ) {
 		             g.setPaint(ColorLib.getColor(textColor));
@@ -165,26 +94,55 @@ public class TableLabelRenderer extends LabelRenderer {
 		             FontMetrics fm = DEFAULT_GRAPHICS.getFontMetrics(m_font);
 
 		             // compute available width
-		             double tw;
-		             switch ( m_imagePos ) {
-		             case Constants.TOP:
-		             case Constants.BOTTOM:
-		                 tw = shape.getWidth() - 2*size*m_horizBorder;
-		                 break;
-		             default:
-		                 tw = m_textDim.width;
-		             }
+		             double hw = m_textDim.width;
+		             if( hw>m_maxwidth) hw = m_maxwidth;
 		             
 		             // compute available height
-		             double th;
-		             switch ( m_imagePos ) {
-		             case Constants.LEFT:
-		             case Constants.RIGHT:
-		                 th = shape.getHeight() - 2*size*m_vertBorder;
+		             double hh = m_textDim.height;
+		             if( hh>m_maxheight) hh = m_maxheight;
+		             
+		             // compute starting y-coordinate
+		             y += fm.getAscent();
+		             switch ( m_vTextAlign ) {
+		             case Constants.TOP:
 		                 break;
-		             default:
-		                 th = m_textDim.height;
+		             case Constants.BOTTOM:
+		                 y += hh - m_textDim.height;
+		                 break;
+		             case Constants.CENTER:
+		                 y += (hh - m_textDim.height)/2;
 		             }
+		             
+		             // render each line of text
+		             int lh = fm.getHeight(); // the line height
+		             int start = 0, end = text.indexOf(m_delim);
+		             for ( ; end >= 0; y += lh ) {
+		                 drawString(g, fm, text.substring(start, end), useInt, x, y, hw);
+		                 start = end+1;
+		                 end = text.indexOf(m_delim, start);   
+		             }
+		             drawString(g, fm, text.substring(start), useInt, x, y, hw);
+		         }
+		     
+		         // draw border
+		         if (type==RENDER_TYPE_DRAW || type==RENDER_TYPE_DRAW_AND_FILL) {
+		             GraphicsLib.paint(g,item,shape,getStroke(item),RENDER_TYPE_DRAW);
+		         }
+			
+		         // render body text
+		         text = m_text;
+		         if ( text != null && ColorLib.alpha(textColor) > 0 ) {
+		             g.setPaint(ColorLib.getColor(textColor));
+		             g.setFont(m_font);
+		             FontMetrics fm = DEFAULT_GRAPHICS.getFontMetrics(m_font);
+
+		             // compute available width
+		             double tw = m_textDim.width;
+		             if( tw>m_maxwidth) tw = m_maxwidth;
+		             
+		             // compute available height
+		             double th = m_textDim.height;
+		             if( th>m_maxheight) tw = m_maxheight;
 		             
 		             // compute starting y-coordinate
 		             y += fm.getAscent();
@@ -257,11 +215,11 @@ public class TableLabelRenderer extends LabelRenderer {
         double size = item.getSize();
         
         // get header dimensions
-        double iw=0, ih=0;
+        double hw=0, hh=0;
         if ( m_header != null ) {
         	m_header = computeTextDimensions(item, m_header, size);
-            ih = m_textDim.height;
-            iw = m_textDim.width;     
+            hh = m_textDim.height;
+            hw = m_textDim.width;     
         }
         
         // get text dimensions
@@ -274,8 +232,8 @@ public class TableLabelRenderer extends LabelRenderer {
         
         // get bounding box dimensions. The header is always on top.
         double w=0, h=0;
-        w = Math.max(tw, size*iw) + size*2*m_horizBorder;
-        h = th + size*(ih + 2*m_vertBorder + (th>0 && ih>0 ? m_imageMargin : 0));
+        w = Math.max(tw, size*hw) + size*2*m_horizBorder;
+        h = th + size*(hh + 2*m_vertBorder + (th>0 && hh>0 ? m_imageMargin : 0));
       
         // get the top-left point, using the current alignment settings
         getAlignedPoint(m_pt, item, w, h, m_xAlign, m_yAlign);
@@ -329,6 +287,9 @@ public class TableLabelRenderer extends LabelRenderer {
             }
         }
     }
+    public void setMaximumHeight(double h) { this.m_maxheight = h; }
+    public void setMaximumWidth(double w) { this.m_maxwidth = w; }
+    
     // Stolen from LabelRenderer where it is a private method.
     // This potential shortens the text. As a side effect, it sets 
     // class members that hold dimensions and font sizes. 

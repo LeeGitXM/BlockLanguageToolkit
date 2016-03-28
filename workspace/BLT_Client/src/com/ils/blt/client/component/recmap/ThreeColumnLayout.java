@@ -7,13 +7,14 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Iterator;
 
+import com.inductiveautomation.ignition.common.util.LogUtil;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
+
 import prefuse.action.layout.Layout;
 import prefuse.data.Node;
 import prefuse.data.tuple.TupleSet;
+import prefuse.util.GraphicsLib;
 import prefuse.visual.VisualItem;
-
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 
 /**
@@ -75,8 +76,7 @@ public class ThreeColumnLayout extends Layout {
         Rectangle2D b = getLayoutBounds();
         Point2D anchor = getLayoutAnchor();
         double w = b.getWidth()*.75, h = b.getHeight()*.75;
-        //double bx = b.getMinX(), by = b.getMinY();
-        double bx = anchor.getX()-w/2, by = anchor.getY()-h/2;
+        double bx = anchor.getX()-w/2, by = anchor.getY()-h/2; 
         
         TupleSet ts = m_vis.getGroup(m_group);
         log.infof("%s.run group %s has %d nodes (%3.1f x %3.1f)",TAG,m_group,ts.getTupleCount(),w,h);
@@ -147,15 +147,13 @@ public class ThreeColumnLayout extends Layout {
                 Rectangle2D bounds = item.getBounds();
                 x = x-bounds.getWidth()/2;
                 y = y+bounds.getHeight()/2;
-                
+            
                 setX(item,null,x);
                 setY(item,null,y);
         	}
         }
         log.infof("%s.run group %s complete ...",TAG,m_group);
     }
-    
-    
     /**
      * Get the number of grid columns.
      * @return the number of grid columns
@@ -172,5 +170,21 @@ public class ThreeColumnLayout extends Layout {
         return nrows;
     }
     
-    
+    /**
+     * Inform the renderer of the maximum dimensions reasonable for a node.
+     * @param renderer
+     */
+    public void setNodeSizeMaxima(TableLabelRenderer renderer) {
+    	Rectangle2D b = getLayoutBounds();
+    	double w = b.getWidth()*.75;
+    	double h = b.getHeight()*.75;
+        double maxItemWidth = w/5;  // At least on block width between
+    	renderer.setMaximumWidth(maxItemWidth);
+    	
+    	int maxrows = nrows1;
+    	if( nrows2>maxrows) maxrows = nrows2;
+    	if( nrows3>maxrows) maxrows = nrows3;
+    	renderer.setMaximumHeight(h);
+
+    }
 } // end of class GridLayout

@@ -87,7 +87,6 @@ public class RecMapView extends Display {
         // NOTE: Returns a VisualGraph, node/edge tables are VisualTables
         //                             node items are TableNodeItems
         m_vis.addGraph(GROUP_ALL, model.getGraph());
-        
     
         setSize(sz);
         setBackground(new Color(230,228,227));
@@ -142,6 +141,7 @@ public class RecMapView extends Display {
         // create a grid layout action
         columnLayout = new ThreeColumnLayout(GROUP_ALL,model.getSourceRowCount(),model.getRecommendationCount(),model.getTargetRowCount(),
         									RecMapConstants.KIND,RecMapConstants.SOURCEROW,RecMapConstants.TARGETROW);
+        columnLayout.setNodeSizeMaxima(nodeRenderer);
         // Rectangle(x,y,width,height)
         columnLayout.setLayoutBounds(new Rectangle2D.Double(0.,0.,sz.width,sz.height));
         columnLayout.setLayoutAnchor(new Point2D.Double(sz.getWidth()/2.,sz.getHeight()/2.));
