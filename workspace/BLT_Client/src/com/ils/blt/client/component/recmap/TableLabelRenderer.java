@@ -114,8 +114,8 @@ public class TableLabelRenderer extends LabelRenderer {
 		             if( hh>m_maxheight) hh = m_maxheight;
 		             
 		             // compute starting y-coordinate - align to center of top 1/2
-		             //y += fm.getAscent();
-		             y += hh/4;
+		             //y += fm.getAscent()/2;
+		             y += hh/2;
 		             
 		             // render each line of text
 		             int lh = fm.getHeight(); // the line height
@@ -143,10 +143,13 @@ public class TableLabelRenderer extends LabelRenderer {
 		             
 		             // compute available height
 		             double th = m_textDim.height;
-		             if( th>m_maxheight) tw = m_maxheight;
+		             if( th>m_maxheight) th = m_maxheight;
 		             
 		             // compute starting y-coordinate - align to center of bottom 1/2
+		             y = shape.getMinY() + m_vertBorder;
+		             y += shape.getHeight()/2;
 		             y += th/2;
+		             //y += fm.getAscent()/2;
 		             
 		             // render each line of text
 		             int lh = fm.getHeight(); // the line height
