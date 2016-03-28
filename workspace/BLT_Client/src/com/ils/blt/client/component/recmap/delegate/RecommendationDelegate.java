@@ -51,6 +51,29 @@ public class RecommendationDelegate implements TextDelegate {
 
 	@Override
 	public String getTooltipText(VisualItem item,Properties properties) {
-		return "Recommendaation";
+		return getHtml(item,properties);
+	}
+	
+	private String getHtml(VisualItem item,Properties properties) {
+		String name = "Recommendation";  // There is no name in the dataset
+		String auto = "0.0";             // Whatever this means
+		if( properties!=null && properties.getProperty(RecMapConstants.AUTO)!=null ) {
+			String prop = properties.getProperty(RecMapConstants.AUTO);
+			if( prop!=null) auto = String.valueOf(prop);
+		}
+		String html = 
+			"<html>" + 
+				"<div style=\"background:rgb(172,185,190);border-style:solid;border-width:3px 0px 0px 0px;border-color:rgb(250,250,250)\">" +
+					"<center><h3>"+name+"</h3></center>" +
+				"</div>" +
+				"<div>" +
+				"<table>" +
+				"<tr>" +
+				"<td>Auto:</td><td>"+auto+"</td>"+
+				"</tr>" +
+				"</table>" +
+				"</div>" +
+			"</html>";
+		return html;
 	}
 } 

@@ -97,7 +97,6 @@ public class RecMapView extends Display {
         // NOTE: No images to render.
         nodeRenderer = new TableLabelRenderer(recmap.getModel());
         nodeRenderer.setRenderType(AbstractShapeRenderer.RENDER_TYPE_DRAW_AND_FILL);
-        nodeRenderer.setHorizontalAlignment(Constants.LEFT);
         nodeRenderer.setRoundedCorner(1,1);
         nodeRenderer.setVerticalPadding(3);
         nodeRenderer.setHorizontalPadding(4);
@@ -105,7 +104,7 @@ public class RecMapView extends Display {
         nodeRenderer.setDelegate(RecMapConstants.INFO_KIND, new RecommendationDelegate());
         nodeRenderer.setDelegate(RecMapConstants.TARGET_KIND, new OutputDelegate());
 
-        edgeRenderer = new RecMapEdgeRenderer(Constants.EDGE_TYPE_LINE);
+        edgeRenderer = new RecMapEdgeRenderer(Constants.EDGE_TYPE_CURVE);
  
         DefaultRendererFactory rf = new DefaultRendererFactory(nodeRenderer);
         rf.add(new InGroupPredicate(GROUP_ALL_EDGES), edgeRenderer);

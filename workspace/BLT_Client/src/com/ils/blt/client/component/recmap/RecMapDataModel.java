@@ -157,6 +157,7 @@ public class RecMapDataModel {
 			}
 			datasetRow++;
 		}
+		
 		Dataset recommendations = recmap.getRecommendations();
 		recommendationCount = recommendations.getRowCount();
 		maxLength  = getMaxLength(recommendations,RecMapConstants.NAME_COLUMN);
@@ -177,7 +178,7 @@ public class RecMapDataModel {
 					attributes = new Properties();
 					attributesByRow.put(new Integer(row), attributes);
 				}
-				addAttribute(attributes,outputs,row,RecMapConstants.AUTO);
+				addAttribute(attributes,recommendations,row,RecMapConstants.AUTO);
 			}
 			else {
 				log.warnf("%s.update: Recommendations %s has incorrect source %d, or target %d reference",TAG,

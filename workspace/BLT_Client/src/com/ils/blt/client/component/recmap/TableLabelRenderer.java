@@ -3,10 +3,12 @@
  */
 package com.ils.blt.client.component.recmap;
 
+import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
 import java.awt.geom.RectangularShape;
 import java.awt.geom.RoundRectangle2D;
 import java.util.HashMap;
@@ -35,6 +37,7 @@ import prefuse.visual.tuple.TableNodeItem;
  */
 public class TableLabelRenderer extends LabelRenderer {
 	private static final String CLSS = "TableLabelRenderer";
+	private final static Color BACKGROUND = new Color(250,250,250);   // Cream
 	private final LoggerEx log;
 	private final Map<Integer,TextDelegate> delegates;
 	private final RecMapDataModel model;
@@ -72,10 +75,24 @@ public class TableLabelRenderer extends LabelRenderer {
         	Properties properties = propertiesFromItem(item);
         	RectangularShape shape = getShape(item,delegate,properties);
 		    if (shape != null) {
-		         // fill the header shape, if requested
+		         // fill the header shape (1/2 height), if requested
 		         int type = getRenderType(item);
 		         if ( type==RENDER_TYPE_FILL || type==RENDER_TYPE_DRAW_AND_FILL ) {
-		             GraphicsLib.paint(g, item, shape, getStroke(item), RENDER_TYPE_FILL);
+		        	 // First paint the entire block ivory
+		        	 int saveColor = item.getFillColor();
+		        	 item.setFillColor(BACKGROUND.getRGB());
+		        	 GraphicsLib.paint(g, item, shape, getStroke(item), RENDER_TYPE_DRAW_AND_FILL);
+		        	 
+		        	 item.setFillColor(saveColor);
+		        	 RectangularShape halfhigh = new Rectangle2D.Double(shape.getMinX(),
+		        			 					shape.getMinY(),
+		        			 					shape.getWidth(),shape.getHeight()/2.);
+		             GraphicsLib.paint(g, item, halfhigh, getStroke(item), RENDER_TYPE_DRAW_AND_FILL);
+		         }
+		         
+		         // draw header border
+		         if (type==RENDER_TYPE_DRAW || type==RENDER_TYPE_DRAW_AND_FILL) {
+		             //GraphicsLib.paint(g,item,shape,getStroke(item),RENDER_TYPE_DRAW);
 		         }
 		         
 		         boolean useInt = 1.5 > Math.max(g.getTransform().getScaleX(),
@@ -84,7 +101,7 @@ public class TableLabelRenderer extends LabelRenderer {
 		         double x = shape.getMinX() + m_horizBorder;
 		         double y = shape.getMinY() + m_vertBorder;
 		  
-		         // First render the header
+		         // First render the header. Header is 1/2 the height, centered
 		         String text = m_header;
 		         int textColor = item.getTextColor();
 		         if ( text != null && ColorLib.alpha(textColor) > 0 ) {
@@ -100,8 +117,9 @@ public class TableLabelRenderer extends LabelRenderer {
 		             double hh = m_textDim.height;
 		             if( hh>m_maxheight) hh = m_maxheight;
 		             
-		             // compute starting y-coordinate - align top
+		             // compute starting y-coordinate - align to center of top 1/2
 		             y += fm.getAscent();
+		             y += hh/4;
 		             
 		             // render each line of text
 		             int lh = fm.getHeight(); // the line height
@@ -114,10 +132,7 @@ public class TableLabelRenderer extends LabelRenderer {
 		             drawString(g, fm, text.substring(start), useInt, x, y, hw);
 		         }
 		     
-		         // draw header border
-		         if (type==RENDER_TYPE_DRAW || type==RENDER_TYPE_DRAW_AND_FILL) {
-		             GraphicsLib.paint(g,item,shape,getStroke(item),RENDER_TYPE_DRAW);
-		         }
+
 			
 		         // render body text - we're counting on one line, but this has code to handle multiple.
 		         text = m_text;
@@ -134,17 +149,8 @@ public class TableLabelRenderer extends LabelRenderer {
 		             double th = m_textDim.height;
 		             if( th>m_maxheight) tw = m_maxheight;
 		             
-		             // compute starting y-coordinate
-		             y += fm.getAscent();
-		             switch ( m_vTextAlign ) {
-		             case Constants.TOP:
-		                 break;
-		             case Constants.BOTTOM:
-		                 y += th - m_textDim.height;
-		                 break;
-		             case Constants.CENTER:
-		                 y += (th - m_textDim.height)/2;
-		             }
+		             // compute starting y-coordinate - align to center of bottom 1/2
+		             y += th/2;
 		             
 		             // render each line of text
 		             int lh = fm.getHeight(); // the line height
