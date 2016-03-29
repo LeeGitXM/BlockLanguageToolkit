@@ -100,6 +100,8 @@ public class TableLabelRenderer extends LabelRenderer {
 		  
 		         // First render the header. Header is 1/2 the height, centered
 		         String text = delegate.getHeaderText(item, properties);
+		         m_font = item.getFont();
+		         m_font = scaleFontForText(m_font,text,itemWidth,itemHeight/2);
 		         m_hTextAlign = Constants.CENTER;
 		         int textColor = item.getTextColor();
 		         if ( text != null && ColorLib.alpha(textColor) > 0 ) {
@@ -118,15 +120,10 @@ public class TableLabelRenderer extends LabelRenderer {
 		             // compute starting y-coordinate - align to center of top 1/2
 		             y += hh/2;
 		             
-		             // render each line of text - center horizontally
+		             // render  text - center horizontally
 		             int lh = fm.getHeight(); // the line height
-		             int start = 0, end = text.indexOf(m_delim);
-		             for ( ; end >= 0; y += lh ) {
-		                 drawString(g, fm, text.substring(start, end), useInt, x, y, hw);
-		                 start = end+1;
-		                 end = text.indexOf(m_delim, start);   
-		             }
-		             drawString(g, fm, text.substring(start), useInt, x, y, hw);
+
+		             drawString(g, fm, text, useInt, x, y, hw);
 		         }
 		     
 
@@ -154,13 +151,8 @@ public class TableLabelRenderer extends LabelRenderer {
 		             
 		             // render each line of text - left align
 		             int lh = fm.getHeight(); // the line height
-		             int start = 0, end = text.indexOf(m_delim);
-		             for ( ; end >= 0; y += lh ) {
-		                 drawString(g, fm, text.substring(start, end), useInt, x, y, tw);
-		                 start = end+1;
-		                 end = text.indexOf(m_delim, start);   
-		             }
-		             drawString(g, fm, text.substring(start), useInt, x, y, tw);
+
+		             drawString(g, fm, text, useInt, x, y, tw);
 		         }
 			}
 		}
@@ -168,58 +160,24 @@ public class TableLabelRenderer extends LabelRenderer {
     
 
     /**
-     * Returns the shape describing the boundary of an item. The shape's
-     * coordinates should be in absolute (item-space) coordinates.
-     * Similar to a call with the same name inAbstractShapeRenderer, except
-     * that we pass along the delegate and properties.
-     * @param item the item for which to get the Shape
-     */
-    private RectangularShape getShape(VisualItem item,TextDelegate delegate,Properties properties) {
-        AffineTransform at = getTransform(item);
-        RectangularShape rawShape = (RectangularShape)getRawShape(item);
-        return (at==null || rawShape==null ? rawShape : (RectangularShape)at.createTransformedShape(rawShape));
-    }
-
-    /**
-     * Similar to a call with the same name in LabelRenderer, except that we 
-     * have a header string instead of an image. The code is shamelessly 
-     * plagiarized from LabelRenderer.
-     * @see prefuse.render.LabelRenderer#getRawShape(prefuse.visual.VisualItem)
+     * The parent method returns a variable size that depends on the lenght of the text.
+     * This version returns a fixed size box and then relies on modification of the
+     * font to fit the text into the box.
      */
     @Override
     protected Shape getRawShape(VisualItem item) {
-        m_header = "Test header";
-        m_text = "Test properties for sizing";
-        double size = item.getSize();
         
-        // get header dimensions
-        double hw=0, hh=0;
-        if ( m_header != null ) {
-        	m_header = computeTextDimensions(item, m_header, size);
-            hh = m_textDim.height;
-            hw = m_textDim.width;     
-        }
+        // use bounding box dimensions. 
+		double w=itemWidth  + 2*m_horizBorder; 
+        double h=itemHeight + 2*m_vertBorder;
         
-        // get text dimensions
-        int tw=0, th=0;
-        if ( m_text != null ) {
-            m_text = computeTextDimensions(item, m_text, size);
-            th = m_textDim.height;
-            tw = m_textDim.width;   
-        }
-        
-        // get bounding box dimensions. The header is always on top.
-        double w=0, h=0;
-        w = Math.max(tw, size*hw) + size*2*m_horizBorder;
-        h = th + size*(hh + 2*m_vertBorder + (th>0 && hh>0 ? m_imageMargin : 0));
-      
         // get the top-left point, using the current alignment settings
         getAlignedPoint(m_pt, item, w, h, m_xAlign, m_yAlign);
         
         if ( m_bbox instanceof RoundRectangle2D ) {
             RoundRectangle2D rr = (RoundRectangle2D)m_bbox;
             rr.setRoundRect(m_pt.getX(), m_pt.getY(), w, h,
-                            size*m_arcWidth, size*m_arcHeight);
+                            m_arcWidth, m_arcHeight);
         } 
         else {
             m_bbox.setFrame(m_pt.getX(), m_pt.getY(), w, h);
@@ -251,60 +209,6 @@ public class TableLabelRenderer extends LabelRenderer {
     public void setMaximumHeight(double h) { this.itemHeight = h; }
     public void setMaximumWidth(double w) { this.itemWidth = w; }
     
-    // Stolen from LabelRenderer where it is a private method.
-    // This potential shortens the text. As a side effect, it sets 
-    // class members that hold dimensions and font sizes. 
-    private String computeTextDimensions(VisualItem item, String text,double size) {
-        // put item font in temp member variable
-        m_font = item.getFont();
-        // scale the font as needed
-        if ( size != 1 ) {
-            m_font = FontLib.getFont(m_font.getName(), m_font.getStyle(),
-                                     size*m_font.getSize());
-        }
-        
-        FontMetrics fm = DEFAULT_GRAPHICS.getFontMetrics(m_font);
-        StringBuffer str = null;
-        
-        // compute the number of lines and the maximum width
-        int nlines = 1, w = 0, start = 0, end = text.indexOf(m_delim);
-        m_textDim.width = 0;
-        String line;
-        for ( ; end >= 0; ++nlines ) {
-            w = fm.stringWidth(line=text.substring(start,end));
-            // abbreviate line as needed
-            if ( m_maxTextWidth > -1 && w > m_maxTextWidth ) {
-                if ( str == null )
-                    str = new StringBuffer(text.substring(0,start));
-                str.append(StringLib.abbreviate(line, fm, m_maxTextWidth));
-                str.append(m_delim);
-                w = m_maxTextWidth;
-            } else if ( str != null ) {
-                str.append(line).append(m_delim);
-            }
-            // update maximum width and substring indices
-            m_textDim.width = Math.max(m_textDim.width, w);
-            start = end+1;
-            end = text.indexOf(m_delim, start);
-        }
-        w = fm.stringWidth(line=text.substring(start));
-        // abbreviate line as needed
-        if ( m_maxTextWidth > -1 && w > m_maxTextWidth ) {
-            if ( str == null )
-                str = new StringBuffer(text.substring(0,start));
-            str.append(StringLib.abbreviate(line, fm, m_maxTextWidth));
-            w = m_maxTextWidth;
-        } else if ( str != null ) {
-            str.append(line);
-        }
-        // update maximum width
-        m_textDim.width = Math.max(m_textDim.width, w);
-        
-        // compute the text height
-        m_textDim.height = fm.getHeight() * nlines;
-        
-        return str==null ? text : str.toString();
-    }
     /**
      * @return a font (no smaller than 6) that will fit the text in the area allotted.
      *         This function only downsizes the font. The original setting should
@@ -324,7 +228,6 @@ public class TableLabelRenderer extends LabelRenderer {
         	if( fontSize<6 ) fontSize = 6;
             font = FontLib.getFont(font.getName(), font.getStyle(),fontSize);
         }
-        
         return font;
     }
     
