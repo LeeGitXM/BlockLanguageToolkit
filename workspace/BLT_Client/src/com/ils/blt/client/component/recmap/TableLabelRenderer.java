@@ -74,7 +74,7 @@ public class TableLabelRenderer extends LabelRenderer {
     	TextDelegate delegate = delegateFromItem(item);
         if( delegate!=null ) {
         	Properties properties = propertiesFromItem(item);
-        	RectangularShape shape = getShape(item,delegate,properties);
+        	RectangularShape shape = (RectangularShape)getShape(item);
 		    if (shape != null) {
 		         // fill the header shape (1/2 height), if requested
 		         int type = getRenderType(item);
@@ -166,22 +166,7 @@ public class TableLabelRenderer extends LabelRenderer {
 		}
     }
     
-    /**
-     * Handle the case where this is called internally.
-     */
-    /*
-    @Override
-    public Shape getShape(VisualItem item) {
-    	log.infof("%s.getShape ....",CLSS);
-    	Shape shape = null;
-    	TextDelegate delegate = delegateFromItem(item);
-        if( delegate!=null ) {
-        	Properties properties = propertiesFromItem(item);
-        	shape = getShape(item,delegate,properties);
-		}
-		return shape;
-    }
-    */
+
     /**
      * Returns the shape describing the boundary of an item. The shape's
      * coordinates should be in absolute (item-space) coordinates.
@@ -262,26 +247,7 @@ public class TableLabelRenderer extends LabelRenderer {
     protected String getText(VisualItem item) {
         throw new IllegalArgumentException("getText not applicable to this class");
     }
-    /**
-     * @see prefuse.render.Renderer#setBounds(prefuse.visual.VisualItem)
-     */
-    /*
-    @Override
-    public void setBounds(VisualItem item) {
-        if ( !m_manageBounds ) return;   // Things don't go well
-        TextDelegate delegate = delegateFromItem(item);
-        if( delegate!=null ) {
-        	Properties properties = propertiesFromItem(item);
-            Shape shape = getShape(item,delegate,properties);
-            if ( shape == null ) {
-                item.setBounds(item.getX(), item.getY(), 0, 0);
-            } 
-            else {
-                GraphicsLib.setBounds(item, shape, getStroke(item));
-            }
-        }
-    }
-    */
+
     public void setMaximumHeight(double h) { this.m_maxheight = h; }
     public void setMaximumWidth(double w) { this.m_maxwidth = w; }
     
