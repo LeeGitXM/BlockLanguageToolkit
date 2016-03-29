@@ -42,11 +42,9 @@ public class TableLabelRenderer extends LabelRenderer {
 	private final LoggerEx log;
 	private final Map<Integer,TextDelegate> delegates;
 	private final RecMapDataModel model;
-	private String m_header = "";
 	private double itemHeight = 1.;
 	private double itemWidth = 1.;
-	/** Transform used to scale and position header (not visible from base class) */
-    private AffineTransform m_headertransform = new AffineTransform();
+
 	
     /**
      */

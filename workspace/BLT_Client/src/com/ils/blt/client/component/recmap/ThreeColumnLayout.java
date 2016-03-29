@@ -72,13 +72,13 @@ public class ThreeColumnLayout extends Layout {
     	log.infof("%s.setLayoutBounds (%3.1f x %3.1f)",TAG,bnds.getWidth(),bnds.getHeight());
     	Rectangle2D b = getLayoutBounds();
     	double w = b.getWidth()*0.8;  // 20% space in-between blocks
-        maxItemWidth = w/3;  // At least on block width between
+        maxItemWidth = w/3;
     	
     	int maxrows = 2;
     	if( nrows1>maxrows) maxrows = nrows1;
     	if( nrows2>maxrows) maxrows = nrows2;
     	if( nrows3>maxrows) maxrows = nrows3;
-    	double h = b.getHeight()*0.8;
+    	double h = b.getHeight()*0.75;
     	maxItemHeight = h/maxrows;
     }
     /**
