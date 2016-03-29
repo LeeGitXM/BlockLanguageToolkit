@@ -28,6 +28,8 @@ public class ThreeColumnLayout extends Layout {
 	private static final String TAG = "ThreeColumnLayout";
 	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 
+	private double maxItemHeight = 0.0;
+	private double maxItemWidth  = 0.0;
 	protected  int nrows;
     protected  int ncols = 3;
     protected  int nrows1;
@@ -68,6 +70,16 @@ public class ThreeColumnLayout extends Layout {
     public void setLayoutBounds(Rectangle2D bnds) {
     	super.setLayoutBounds(bnds);
     	log.infof("%s.setLayoutBounds (%3.1f x %3.1f)",TAG,bnds.getWidth(),bnds.getHeight());
+    	Rectangle2D b = getLayoutBounds();
+    	double w = b.getWidth()*.75;
+        maxItemWidth = w/5;  // At least on block width between
+    	
+    	int maxrows = 2;
+    	if( nrows1>maxrows) maxrows = nrows1;
+    	if( nrows2>maxrows) maxrows = nrows2;
+    	if( nrows3>maxrows) maxrows = nrows3;
+    	double h = b.getHeight()*.75;
+    	maxItemHeight = h/maxrows;
     }
     /**
      * @see prefuse.action.Action#run(double)
@@ -175,16 +187,7 @@ public class ThreeColumnLayout extends Layout {
      * @param renderer
      */
     public void setNodeSizeMaxima(TableLabelRenderer renderer) {
-    	Rectangle2D b = getLayoutBounds();
-    	double w = b.getWidth()*.75;
-    	double h = b.getHeight()*.75;
-        double maxItemWidth = w/5;  // At least on block width between
     	renderer.setMaximumWidth(maxItemWidth);
-    	
-    	int maxrows = nrows1;
-    	if( nrows2>maxrows) maxrows = nrows2;
-    	if( nrows3>maxrows) maxrows = nrows3;
-    	renderer.setMaximumHeight(h);
-
+    	renderer.setMaximumHeight(maxItemHeight);
     }
 } // end of class GridLayout
