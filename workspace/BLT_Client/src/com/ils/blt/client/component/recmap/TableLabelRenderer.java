@@ -4,6 +4,7 @@
 package com.ils.blt.client.component.recmap;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Shape;
@@ -333,6 +334,28 @@ public class TableLabelRenderer extends LabelRenderer {
         m_textDim.height = fm.getHeight() * nlines;
         
         return str==null ? text : str.toString();
+    }
+    /**
+     * @return a font (no smaller than 6) that will fit the text in the area allotted.
+     *         This function only downsizes the font. The original setting should
+     *         define the largest size desired.
+     */
+    private Font scaleFontForText(Font font,String text,double w,double h) {
+        // Get the metrics for the default font size
+    	FontMetrics fm = DEFAULT_GRAPHICS.getFontMetrics(font);
+    	int stringWidth = fm.stringWidth(text);
+    	int stringHeight= fm.getHeight();
+    	
+    	double ratio = w/stringWidth;
+    	if( ratio > h/stringHeight ) ratio = h/stringHeight;
+        // scale the font if needed
+        if ( ratio < 1 ) {
+        	int fontSize = (int)(ratio*font.getSize());
+        	if( fontSize<6 ) fontSize = 6;
+            font = FontLib.getFont(font.getName(), font.getStyle(),fontSize);
+        }
+        
+        return font;
     }
     
     private TextDelegate delegateFromItem(VisualItem item) {

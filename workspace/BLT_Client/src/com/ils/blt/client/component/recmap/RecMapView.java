@@ -161,7 +161,7 @@ public class RecMapView extends Display {
         
         // create the filtering and layout
         ActionList filter = new ActionList();
-        filter.add(new FontAction(GROUP_ALL_NODES, FontLib.getFont("Arial", 12)));
+        filter.add(new FontAction(GROUP_ALL_NODES, FontLib.getFont("Arial", 16)));
         //filter.add(new FontAction(GROUP_ALL_NODES, new Font("monospaced",Font.PLAIN,16)));
         filter.add(columnLayout);
         filter.add(textColor);
