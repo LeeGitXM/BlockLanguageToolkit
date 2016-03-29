@@ -43,8 +43,8 @@ public class TableLabelRenderer extends LabelRenderer {
 	private final Map<Integer,TextDelegate> delegates;
 	private final RecMapDataModel model;
 	private String m_header = "";
-	private double m_maxheight = 1.;
-	private double m_maxwidth = 1.;
+	private double itemHeight = 1.;
+	private double itemWidth = 1.;
 	/** Transform used to scale and position header (not visible from base class) */
     private AffineTransform m_headertransform = new AffineTransform();
 	
@@ -99,7 +99,7 @@ public class TableLabelRenderer extends LabelRenderer {
 		         double y = shape.getMinY() + m_vertBorder;
 		  
 		         // First render the header. Header is 1/2 the height, centered
-		         String text = m_header;
+		         String text = delegate.getHeaderText(item, properties);
 		         m_hTextAlign = Constants.CENTER;
 		         int textColor = item.getTextColor();
 		         if ( text != null && ColorLib.alpha(textColor) > 0 ) {
@@ -109,11 +109,11 @@ public class TableLabelRenderer extends LabelRenderer {
 
 		             // compute available width
 		             double hw = m_textDim.width;
-		             if( hw>m_maxwidth) hw = m_maxwidth;
+		             if( hw>itemWidth) hw = itemWidth;
 		             
 		             // compute available height
 		             double hh = m_textDim.height;
-		             if( hh>m_maxheight) hh = m_maxheight;
+		             if( hh>itemHeight) hh = itemHeight;
 		             
 		             // compute starting y-coordinate - align to center of top 1/2
 		             y += hh/2;
@@ -132,7 +132,7 @@ public class TableLabelRenderer extends LabelRenderer {
 
 			
 		         // render body text - we're counting on one line, but this has code to handle multiple.
-		         text = m_text;
+		         text = delegate.getBodyText(item, properties);
 		         m_hTextAlign = Constants.LEFT;
 		         if ( text != null && ColorLib.alpha(textColor) > 0 ) {
 		             g.setPaint(ColorLib.getColor(textColor));
@@ -141,11 +141,11 @@ public class TableLabelRenderer extends LabelRenderer {
 
 		             // compute available width
 		             double tw = m_textDim.width;
-		             if( tw>m_maxwidth) tw = m_maxwidth;
+		             if( tw>itemWidth) tw = itemWidth;
 		             
 		             // compute available height
 		             double th = m_textDim.height;
-		             if( th>m_maxheight) th = m_maxheight;
+		             if( th>itemHeight) th = itemHeight;
 		             
 		             // compute starting y-coordinate - align to center of bottom 1/2
 		             y = shape.getMinY() + m_vertBorder;
@@ -248,8 +248,8 @@ public class TableLabelRenderer extends LabelRenderer {
         throw new IllegalArgumentException("getText not applicable to this class");
     }
 
-    public void setMaximumHeight(double h) { this.m_maxheight = h; }
-    public void setMaximumWidth(double w) { this.m_maxwidth = w; }
+    public void setMaximumHeight(double h) { this.itemHeight = h; }
+    public void setMaximumWidth(double w) { this.itemWidth = w; }
     
     // Stolen from LabelRenderer where it is a private method.
     // This potential shortens the text. As a side effect, it sets 
