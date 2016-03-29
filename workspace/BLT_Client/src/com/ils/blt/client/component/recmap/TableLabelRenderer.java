@@ -99,6 +99,7 @@ public class TableLabelRenderer extends LabelRenderer {
 		  
 		         // First render the header. Header is 1/2 the height, centered
 		         String text = m_header;
+		         m_hTextAlign = Constants.CENTER;
 		         int textColor = item.getTextColor();
 		         if ( text != null && ColorLib.alpha(textColor) > 0 ) {
 		             g.setPaint(ColorLib.getColor(textColor));
@@ -114,10 +115,9 @@ public class TableLabelRenderer extends LabelRenderer {
 		             if( hh>m_maxheight) hh = m_maxheight;
 		             
 		             // compute starting y-coordinate - align to center of top 1/2
-		             //y += fm.getAscent()/2;
 		             y += hh/2;
 		             
-		             // render each line of text
+		             // render each line of text - center horizontally
 		             int lh = fm.getHeight(); // the line height
 		             int start = 0, end = text.indexOf(m_delim);
 		             for ( ; end >= 0; y += lh ) {
@@ -132,6 +132,7 @@ public class TableLabelRenderer extends LabelRenderer {
 			
 		         // render body text - we're counting on one line, but this has code to handle multiple.
 		         text = m_text;
+		         m_hTextAlign = Constants.LEFT;
 		         if ( text != null && ColorLib.alpha(textColor) > 0 ) {
 		             g.setPaint(ColorLib.getColor(textColor));
 		             g.setFont(m_font);
@@ -147,11 +148,10 @@ public class TableLabelRenderer extends LabelRenderer {
 		             
 		             // compute starting y-coordinate - align to center of bottom 1/2
 		             y = shape.getMinY() + m_vertBorder;
-		             y += shape.getHeight()/2;
+		             y += shape.getHeight()/2;    // Now at midpoint
 		             y += th/2;
-		             //y += fm.getAscent()/2;
 		             
-		             // render each line of text
+		             // render each line of text - left align
 		             int lh = fm.getHeight(); // the line height
 		             int start = 0, end = text.indexOf(m_delim);
 		             for ( ; end >= 0; y += lh ) {
@@ -160,11 +160,6 @@ public class TableLabelRenderer extends LabelRenderer {
 		                 end = text.indexOf(m_delim, start);   
 		             }
 		             drawString(g, fm, text.substring(start), useInt, x, y, tw);
-		         }
-		     
-		         // draw outside border
-		         if (type==RENDER_TYPE_DRAW || type==RENDER_TYPE_DRAW_AND_FILL) {
-		             //GraphicsLib.paint(g,item,shape,getStroke(item),RENDER_TYPE_DRAW);
 		         }
 			}
 		}
@@ -350,8 +345,7 @@ public class TableLabelRenderer extends LabelRenderer {
     }
     
     // Stolen directly from LabelRenderer (it was private final)
-    private void drawString(Graphics2D g, FontMetrics fm, String text,
-            boolean useInt, double x, double y, double w)  {
+    private void drawString(Graphics2D g, FontMetrics fm, String text,boolean useInt, double x, double y, double w)  {
         // compute the x-coordinate
         double tx;
         switch ( m_hTextAlign ) {
