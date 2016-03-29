@@ -169,6 +169,7 @@ public class TableLabelRenderer extends LabelRenderer {
     /**
      * Handle the case where this is called internally.
      */
+    /*
     @Override
     public Shape getShape(VisualItem item) {
     	log.infof("%s.getShape ....",CLSS);
@@ -180,7 +181,7 @@ public class TableLabelRenderer extends LabelRenderer {
 		}
 		return shape;
     }
-    
+    */
     /**
      * Returns the shape describing the boundary of an item. The shape's
      * coordinates should be in absolute (item-space) coordinates.
@@ -190,7 +191,7 @@ public class TableLabelRenderer extends LabelRenderer {
      */
     private RectangularShape getShape(VisualItem item,TextDelegate delegate,Properties properties) {
         AffineTransform at = getTransform(item);
-        RectangularShape rawShape = getRawShape(item,delegate,properties);
+        RectangularShape rawShape = (RectangularShape)getRawShape(item);
         return (at==null || rawShape==null ? rawShape : (RectangularShape)at.createTransformedShape(rawShape));
     }
 
@@ -200,9 +201,10 @@ public class TableLabelRenderer extends LabelRenderer {
      * plagiarized from LabelRenderer.
      * @see prefuse.render.LabelRenderer#getRawShape(prefuse.visual.VisualItem)
      */
-    private RectangularShape getRawShape(VisualItem item,TextDelegate delegate,Properties properties) {
-        m_header = delegate.getHeaderText(item, properties);
-        m_text = delegate.getBodyText(item, properties);
+    @Override
+    protected Shape getRawShape(VisualItem item) {
+        m_header = "Test header";
+        m_text = "Test properties for sizing";
         double size = item.getSize();
         
         // get header dimensions
@@ -263,6 +265,7 @@ public class TableLabelRenderer extends LabelRenderer {
     /**
      * @see prefuse.render.Renderer#setBounds(prefuse.visual.VisualItem)
      */
+    /*
     @Override
     public void setBounds(VisualItem item) {
         if ( !m_manageBounds ) return;   // Things don't go well
@@ -278,6 +281,7 @@ public class TableLabelRenderer extends LabelRenderer {
             }
         }
     }
+    */
     public void setMaximumHeight(double h) { this.m_maxheight = h; }
     public void setMaximumWidth(double w) { this.m_maxwidth = w; }
     
