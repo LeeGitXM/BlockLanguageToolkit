@@ -102,57 +102,39 @@ public class TableLabelRenderer extends LabelRenderer {
 		         String text = delegate.getHeaderText(item, properties);
 		         m_font = item.getFont();
 		         m_font = scaleFontForText(m_font,text,itemWidth,itemHeight/2);
-		         m_hTextAlign = Constants.CENTER;
 		         int textColor = item.getTextColor();
 		         if ( text != null && ColorLib.alpha(textColor) > 0 ) {
 		             g.setPaint(ColorLib.getColor(textColor));
 		             g.setFont(m_font);
 		             FontMetrics fm = DEFAULT_GRAPHICS.getFontMetrics(m_font);
 
-		             // compute available width
-		             double hw = m_textDim.width;
-		             if( hw>itemWidth) hw = itemWidth;
-		             
-		             // compute available height
-		             double hh = m_textDim.height;
-		             if( hh>itemHeight) hh = itemHeight;
-		             
-		             // compute starting y-coordinate - align to center of top 1/2
-		             y += hh/2;
-		             
-		             // render  text - center horizontally
-		             int lh = fm.getHeight(); // the line height
-
-		             drawString(g, fm, text, useInt, x, y, hw);
+		             double dx = (itemWidth-fm.stringWidth(text))/2.;
+		             if(dx<0.) dx = 0.;
+		             double dy = (itemHeight-fm.getHeight())/4.;
+		             if(dy<0.) dy = 0.;
+		   
+		             y+=itemHeight/4;  // Center in the upper half
+		             drawString(g, text, useInt, x+dx, y+dy);
 		         }
 		     
 
 			
 		         // render body text - we're counting on one line, but this has code to handle multiple.
 		         text = delegate.getBodyText(item, properties);
-		         m_hTextAlign = Constants.LEFT;
+		         m_font = item.getFont();
+		         m_font = scaleFontForText(m_font,text,itemWidth,itemHeight/2);
 		         if ( text != null && ColorLib.alpha(textColor) > 0 ) {
 		             g.setPaint(ColorLib.getColor(textColor));
 		             g.setFont(m_font);
 		             FontMetrics fm = DEFAULT_GRAPHICS.getFontMetrics(m_font);
 
-		             // compute available width
-		             double tw = m_textDim.width;
-		             if( tw>itemWidth) tw = itemWidth;
-		             
-		             // compute available height
-		             double th = m_textDim.height;
-		             if( th>itemHeight) th = itemHeight;
-		             
-		             // compute starting y-coordinate - align to center of bottom 1/2
-		             y = shape.getMinY() + m_vertBorder;
-		             y += shape.getHeight()/2;    // Now at midpoint
-		             y += th/2;
-		             
-		             // render each line of text - left align
-		             int lh = fm.getHeight(); // the line height
+		             // left align
+		             double dy = (itemHeight-fm.getHeight())/4.;
+		             if(dy<0.) dy = 0.;
+		   
+		             y+=itemHeight/2;  // Center in the lower half
 
-		             drawString(g, fm, text, useInt, x, y, tw);
+		             drawString(g, text, useInt, x, y+dy);
 		         }
 			}
 		}
@@ -170,17 +152,15 @@ public class TableLabelRenderer extends LabelRenderer {
         // use bounding box dimensions. 
 		double w=itemWidth  + 2*m_horizBorder; 
         double h=itemHeight + 2*m_vertBorder;
-        
-        // get the top-left point, using the current alignment settings
-        getAlignedPoint(m_pt, item, w, h, m_xAlign, m_yAlign);
+        // use the top-left point,
+        m_pt.setLocation(item.getX(),item.getY());
         
         if ( m_bbox instanceof RoundRectangle2D ) {
             RoundRectangle2D rr = (RoundRectangle2D)m_bbox;
-            rr.setRoundRect(m_pt.getX(), m_pt.getY(), w, h,
-                            m_arcWidth, m_arcHeight);
+            rr.setRoundRect(m_pt.getX(), m_pt.getY(), w, h, m_arcWidth, m_arcHeight);
         } 
         else {
-            m_bbox.setFrame(m_pt.getX(), m_pt.getY(), w, h);
+            m_bbox.setFrame(item.getX(), item.getY(), w, h);
         }
         return (RectangularShape)m_bbox;
     }
@@ -190,12 +170,13 @@ public class TableLabelRenderer extends LabelRenderer {
      * stroke and fill color values from the specified VisualItem. This method
      * can be called by subclasses in custom rendering routines. 
      */
+    /*
     @Override
     protected void drawShape(Graphics2D g, VisualItem item, Shape shape) {
         GraphicsLib.paint(g, item, shape, getStroke(item), getRenderType(item));
     }
     
-    
+    */
 
     /**
      * We should not be using this method. Throw exception
@@ -241,29 +222,14 @@ public class TableLabelRenderer extends LabelRenderer {
     }
     
     // Stolen directly from LabelRenderer (it was private final)
-    private void drawString(Graphics2D g, FontMetrics fm, String text,boolean useInt, double x, double y, double w)  {
-        // compute the x-coordinate
-        double tx;
-        switch ( m_hTextAlign ) {
-        case Constants.LEFT:
-            tx = x;
-            break;
-        case Constants.RIGHT:
-            tx = x + w - fm.stringWidth(text);
-            break;
-        case Constants.CENTER:
-            tx = x + (w - fm.stringWidth(text)) / 2;
-            break;
-        default:
-            throw new IllegalStateException(
-                    "Unrecognized text alignment setting.");
-        }
+    private void drawString(Graphics2D g,String text,boolean useInt, double x, double y)  {
+
         // use integer precision unless zoomed-in
         // results in more stable drawing
         if ( useInt ) {
-            g.drawString(text, (int)tx, (int)y);
+            g.drawString(text, (int)x, (int)y);
         } else {
-            g.drawString(text, (float)tx, (float)y);
+            g.drawString(text, (float)x, (float)y);
         }
     }
     private Properties propertiesFromItem(VisualItem item) {
