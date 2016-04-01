@@ -205,6 +205,13 @@ public class GatewayRpcDispatcher   {
 		return requestHandler.getDatasourceNames();
 	}
 	
+	/**
+	 * @param diagramId String representation of the diagram's internal Id.
+	 * @return a descriptor for the diagram that corresponds to that Id.
+	 */
+	public SerializableResourceDescriptor getDiagram(String diagramId) {
+		return requestHandler.getDiagram(diagramId);
+	}
 
 	public List<String> getDiagramDescriptors(String projectName) {
 		log.infof("%s.getDiagramDescriptors ...",TAG);

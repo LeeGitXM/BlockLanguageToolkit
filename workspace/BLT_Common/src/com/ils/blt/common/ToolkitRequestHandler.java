@@ -93,6 +93,11 @@ public interface ToolkitRequestHandler  {
 	 * @return a list of data sources configured and enabled in the gateway.
 	 */
 	public List<String> getDatasourceNames();
+	/**
+	 * @param diagramId String representation of the diagram's internal Id.
+	 * @return a descriptor for the diagram that corresponds to that Id.
+	 */
+	public SerializableResourceDescriptor getDiagram(String diagramId) ;
 	
 	/**
 	 * blockId String representation of the block's internal Id.

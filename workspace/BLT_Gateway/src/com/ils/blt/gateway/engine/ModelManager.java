@@ -117,7 +117,7 @@ public class ModelManager implements ProjectListener  {
 				addModifyFamilyResource(projectId,res);
 			}
 			else if( type.equalsIgnoreCase(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
-				addModifyDiagramResource(projectId,res);	
+				addModifyDiagramResource(projectId,res);
 			}
 			else if( type.equalsIgnoreCase(BLTProperties.FOLDER_RESOURCE_TYPE) ) {
 				addModifyFolderResource(projectId,res);
@@ -585,9 +585,6 @@ public class ModelManager implements ProjectListener  {
 				else {
 					diagram.validateSubscriptions();
 				}
-				// 	Invoke any extension scripts
-				extensionManager.runScript(context.getScriptManager(), ScriptConstants.DIAGRAM_CLASS_NAME, 
-										ScriptConstants.NODE_CREATE_SCRIPT, diagram.getSelf().toString());
 			}
 			else if(diagram.getProjectId() != projectId) {
 				// The same UUID, but a different project, is a different resource
@@ -632,7 +629,11 @@ public class ModelManager implements ProjectListener  {
 				diagram.updateConnections(sd);  // Adds connections that are new in update
 				diagram.updateProperties(sd);
 				diagram.setState(sd.getState());// Handle state change, if any
-				
+			}
+			//	Invoke extension script on diagram save
+			if( diagram!=null ) {
+				extensionManager.runScript(context.getScriptManager(), ScriptConstants.DIAGRAM_CLASS_NAME, 
+						ScriptConstants.NODE_SAVE_SCRIPT, diagram.getSelf().toString());
 			}
 		}
 		else {

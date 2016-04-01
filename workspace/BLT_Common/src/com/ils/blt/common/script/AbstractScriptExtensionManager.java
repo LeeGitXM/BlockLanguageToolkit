@@ -25,10 +25,10 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 /**
  *  The manger is an abstract base class used to compile and execute Python scripts.
  *  The scripts come in 4 flavors (PROPERTY_GET_SCRIPT, PROPERTY_RENAME_SCRIPT,
- *  PROPERTY_SET_SCRIPT and NODE_CREATE_SCRIPT). The standard signatures are:
+ *  PROPERTY_SET_SCRIPT and NODE_SAVE_SCRIPT). The standard signatures are:
  *  	get/set(uuid,properties).
  *  	rename(uuid,oldName,newName)
- *  	create(uuid)
+ *  	save(uuid)
  *  This group of scripts must be defined 
  *  for every class that wants interact with external data.
  *  
@@ -55,7 +55,7 @@ public abstract class AbstractScriptExtensionManager {
 		j2p = new JavaToPython();
 		p2j = new PythonToJava();
 		flavors = new ArrayList<>();
-		flavors.add(ScriptConstants.NODE_CREATE_SCRIPT);
+		flavors.add(ScriptConstants.NODE_SAVE_SCRIPT);
 		flavors.add(ScriptConstants.PROPERTY_GET_SCRIPT);
 		flavors.add(ScriptConstants.PROPERTY_RENAME_SCRIPT);
 		flavors.add(ScriptConstants.PROPERTY_SET_SCRIPT);
@@ -85,8 +85,8 @@ public abstract class AbstractScriptExtensionManager {
 			entry = "rename";
 			arglist = "uuid,oldname,newname";
 		}
-		else if( flavor.equals(ScriptConstants.NODE_CREATE_SCRIPT))  {
-			entry = "create";
+		else if( flavor.equals(ScriptConstants.NODE_SAVE_SCRIPT))  {
+			entry = "save";
 			arglist = "uuid";
 		}
 		scriptMap.put(key,createMap(entry,arglist));

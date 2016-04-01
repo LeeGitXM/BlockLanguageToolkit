@@ -400,7 +400,20 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 		return result;
 	}
-	
+	/**
+	 * @param diagramId String representation of the diagram's internal Id.
+	 * @return a descriptor for the diagram that corresponds to that Id.
+	 */
+	@Override
+	public SerializableResourceDescriptor getDiagram(String diagramId) {
+		SerializableResourceDescriptor descriptor = null;
+		UUID uuid = makeUUID(diagramId);
+		ProcessDiagram diagram = controller.getDiagram(uuid);
+		if( diagram!=null ) {
+			descriptor = diagram.toResourceDescriptor();
+		}
+		return descriptor;
+	}
 	/**
 	 * When called from the gateway, we have no project. Get them all.
 	 */

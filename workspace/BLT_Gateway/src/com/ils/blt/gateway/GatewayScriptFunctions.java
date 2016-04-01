@@ -74,6 +74,13 @@ public class GatewayScriptFunctions   {
 		return handler.getDatasourceNames();
 	}
 	/**
+	 * @param diagramId String representation of the diagram's internal Id.
+	 * @return a descriptor for the diagram that corresponds to that Id.
+	 */
+	public static SerializableResourceDescriptor getDiagram(String diagramId) {
+		return handler.getDiagram(diagramId);
+	}
+	/**
 	 * Query the gateway for list of diagrams. 
 	 * 
 	 * @return a list of tree-paths to the diagrams saved 

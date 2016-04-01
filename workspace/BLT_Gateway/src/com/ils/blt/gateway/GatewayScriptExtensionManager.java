@@ -1,5 +1,5 @@
 /**
- *   (c) 2015  ILS Automation. All rights reserved.
+ *   (c) 2015-2106  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.gateway;
@@ -15,10 +15,10 @@ import com.ils.blt.common.script.ScriptConstants;
 /**
  *  The manger is a singleton used to compile and execute Python scripts. The
  *  scripts come in 4 flavors (PROPERTY_GET_SCRIPT, PROPERTY_RENAME_SCRIPT,
- *  PROPERTY_SET_SCRIPT and NODE_CREATE_SCRIPT). The standard signatures are:
+ *  PROPERTY_SET_SCRIPT and NODE_SAVE_SCRIPT). The standard signatures are:
  *  	get/set(uuid,properties).
  *  	rename(uuid,oldName,newName)
- *  	create(uuid)
+ *  	save(uuid)
  *  This group of scripts must be defined 
  *  for every class that wants interact with external data.
  *  

@@ -243,6 +243,23 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 		return db;
 	}
+	/**
+	 * @param diagramId String representation of the diagram's internal Id.
+	 * @return a descriptor for the diagram that corresponds to that Id.
+	 */
+	@Override
+	public SerializableResourceDescriptor getDiagram(String diagramId)  {
+		SerializableResourceDescriptor result = null;
+		try {
+			result = (SerializableResourceDescriptor)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "getDiagram",diagramId);
+		}
+		catch(Exception ge) {
+			log.infof("%s.getDiagram: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		return result;
+	}
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<String> getDatasourceNames() {

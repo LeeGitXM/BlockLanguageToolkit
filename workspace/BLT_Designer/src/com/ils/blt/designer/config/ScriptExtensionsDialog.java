@@ -121,9 +121,9 @@ public class ScriptExtensionsDialog extends ConfigurationDialog  {
 			key = AbstractScriptExtensionManager.makeKey(clss,ScriptConstants.PROPERTY_RENAME_SCRIPT);
 			value = handler.getToolkitProperty(key);
 			if (value!=null ) panel.updateRenameField(value);
-			key = AbstractScriptExtensionManager.makeKey(clss,ScriptConstants.NODE_CREATE_SCRIPT);
+			key = AbstractScriptExtensionManager.makeKey(clss,ScriptConstants.NODE_SAVE_SCRIPT);
 			value = handler.getToolkitProperty(key);
-			if (value!=null ) panel.updateCreateField(value);
+			if (value!=null ) panel.updateSaveField(value);
 		}
 	}
 	
@@ -149,9 +149,9 @@ public class ScriptExtensionsDialog extends ConfigurationDialog  {
 					key = AbstractScriptExtensionManager.makeKey(clss,ScriptConstants.PROPERTY_RENAME_SCRIPT);
 					sem.addScript(clss, ScriptConstants.PROPERTY_RENAME_SCRIPT, panel.getRenameFieldValue());
 					handler.setToolkitProperty(key,panel.getRenameFieldValue());
-					key = AbstractScriptExtensionManager.makeKey(clss,ScriptConstants.NODE_CREATE_SCRIPT);
-					sem.addScript(clss, ScriptConstants.NODE_CREATE_SCRIPT, panel.getCreateFieldValue());
-					handler.setToolkitProperty(key,panel.getCreateFieldValue());
+					key = AbstractScriptExtensionManager.makeKey(clss,ScriptConstants.NODE_SAVE_SCRIPT);
+					sem.addScript(clss, ScriptConstants.NODE_SAVE_SCRIPT, panel.getSaveFieldValue());
+					handler.setToolkitProperty(key,panel.getSaveFieldValue());
 				}
 				dispose();
 			}
@@ -295,7 +295,7 @@ public class ScriptExtensionsDialog extends ConfigurationDialog  {
 		public AuxInterfacePanel(String createPath) {
 			setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));     // 3 cells across
 			
-			JLabel getLabel = new JLabel("Create");
+			JLabel getLabel = new JLabel("Save");
 			add(getLabel,"");
 			createScriptField = new JTextField(createPath);
 			createScriptField.setPreferredSize(NAME_BOX_SIZE);
@@ -306,11 +306,11 @@ public class ScriptExtensionsDialog extends ConfigurationDialog  {
 		}
 		public String getGetFieldValue() { return getScriptField.getText(); }
 		public String getSetFieldValue() { return setScriptField.getText(); }
-		public String getCreateFieldValue() { return createScriptField.getText(); }
+		public String getSaveFieldValue() { return createScriptField.getText(); }
 		public String getRenameFieldValue() { return renameScriptField.getText(); }
 		public void updateGetField(String val) { getScriptField.setText(val); }
 		public void updateSetField(String val) { setScriptField.setText(val); }
-		public void updateCreateField(String val) { createScriptField.setText(val); }
+		public void updateSaveField(String val) { createScriptField.setText(val); }
 		public void updateRenameField(String val) { renameScriptField.setText(val); }
 	}
 }
