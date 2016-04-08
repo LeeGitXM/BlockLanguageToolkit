@@ -19,18 +19,8 @@ rm -rf blt/workspace/*/bin/*
 rm -rf blt/workspace/*/temp_modl
 mkdir $TMP
 
-mkdir $TMP/external
-cd ${GIT_REPO}/external; cp -a .project .classpath lib $TMP/external
-
-mkdir $TMP/ignition-77
-cd ${GIT_REPO}/ignition-77; cp -a .project .classpath lib $TMP/ignition-77
-
-mkdir $TMP/ils-common
-cd ${GIT_REPO}/ils-common/ILS_Common; cp -a .project .classpath src $TMP/ils-common
-cd ${GIT_REPO}/ils-common/; cp -a *.xml $TMP/ils-common
-
 mkdir $TMP/blt
-cd ${GIT_REPO}/blt; cp -a workspace $TMP/blt
+cd ${GIT_REPO}/blt; cp -a workspace/*/src $TMP/blt
 
 # Scrub the temp area before zipping
 cd $TMP
