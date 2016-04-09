@@ -484,21 +484,27 @@ public class ModelManager implements ProjectListener  {
 			deleteProjectResources(projectId);
 		}
 		
-
-		List<ProjectResource> resources = diff.getResources();
-		for( ProjectResource res:resources ) {
-			//if( res.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)) continue;
-			log.infof("%s.projectUpdated: add/update resource %s (%d),type %s (%s)", TAG,res.getName(),
-					res.getResourceId(),res.getResourceType(),(diff.isResourceDirty(res)?"dirty":"clean"));
-			analyzeResource(new Long(projectId),res);
+		if( diff.isEnabled() ) {
+			List<ProjectResource> resources = diff.getResources();
+			for( ProjectResource res:resources ) {
+				//if( res.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)) continue;
+				log.infof("%s.projectUpdated: add/update resource %s (%d),type %s (%s)", TAG,res.getName(),
+						res.getResourceId(),res.getResourceType(),(diff.isResourceDirty(res)?"dirty":"clean"));
+				analyzeResource(new Long(projectId),res);
+			}
+			
+			Set<Long> deleted = diff.getDeletedResources();
+			for (Long  rid : deleted) {
+				long resid = rid.longValue();
+				log.infof("%s.projectUpdated: delete resource %d:%d", TAG,projectId,resid);
+				deleteResource(projectId,resid);
+			}
+		}
+		else {     // Delete projects that are disabled
+			deleteProjectResources(projectId);
 		}
 		
-		Set<Long> deleted = diff.getDeletedResources();
-		for (Long  rid : deleted) {
-			long resid = rid.longValue();
-			log.infof("%s.projectUpdated: delete resource %d:%d", TAG,projectId,resid);
-			deleteResource(projectId,resid);
-		}
+
 	}
 	
 	// ===================================== Private Methods ==========================================
