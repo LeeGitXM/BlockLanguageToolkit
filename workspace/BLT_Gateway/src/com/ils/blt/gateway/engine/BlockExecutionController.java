@@ -35,6 +35,7 @@ import com.ils.common.persistence.ToolkitProperties;
 import com.ils.common.tag.ProviderRegistry;
 import com.ils.common.tag.TagReader;
 import com.ils.common.tag.TagUtility;
+import com.ils.common.tag.TagValidator;
 import com.ils.common.tag.TagWriter;
 import com.ils.common.watchdog.AcceleratedWatchdogTimer;
 import com.ils.common.watchdog.WatchdogTimer;
@@ -67,6 +68,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	private final WatchdogTimer watchdogTimer;
 	private final AcceleratedWatchdogTimer secondaryWatchdogTimer;  // For isolated
 	private final ExecutorService threadPool;
+	private TagValidator tagValidator = null;
 
 	// Cache the values for tag provider and database
 	private String productionDatabase = null;
@@ -260,6 +262,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		stopped = false;
 		this.tagReader = new TagReader(context);
 		tagListener.start(context);
+		this.tagValidator = new TagValidator(context);
 		this.tagWriter = new TagWriter(context,new ProviderRegistry());
 		//tagWriter.initialize(context);
 		this.notificationThread = new Thread(this, "BlockExecutionController");
@@ -524,8 +527,9 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	}
 	
 	/**
-	 * Write a value to a tag. If the referenced diagram is disabled
-	 * then this method has no effect.
+	 * Test the validity of a tag path. If the referenced diagram is disabled
+	 * then this method has no effect. Otherwise we need to set the proper
+	 * provider.
 	 * @param diagramId UUID of the parent diagram
 	 * @param tagPath
 	 * @return reason else null if the path is valid
@@ -533,12 +537,11 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public String validateTag(UUID diagramId,String tagPath) {
 		String result = null;
 		ProcessDiagram diagram = modelManager.getDiagram(diagramId);
-		if( diagram!=null ) {
-			//result = tagWriter.validateTag(diagram.getProjectId(),tagPath);
-			result = null;
+		if( diagram!=null && !diagram.getState().equals(DiagramState.DISABLED) ) {
+			result = tagValidator.validateTag(tagPath);
 		}
 		else {
-			log.infof("%s.validateTag %s, parent diagram not found",TAG,tagPath);
+			log.infof("%s.validateTag %s, parent diagram not found or disabled",TAG,tagPath);
 		}
 		return result;
 	}

@@ -235,28 +235,4 @@ public class LabData extends Input implements ProcessBlock {
 		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_LIGHT_ROSE);
 		desc.setCtypeEditable(true);
 	}
-	
-	/**
-	 * Check the block configuration for missing input tags. We cannot call 
-	 * the super version of this method.
-	 * @return a validation summary. Null if everything checks out.
-	 */
-	@Override
-	public String validate() {
-		String generic = super.validate();
-		StringBuffer summary = new StringBuffer();
-		if( generic!=null ) summary.append(generic);
-		
-		String binding = timePathProperty.getBinding();
-		if( binding==null || binding.length()==0 ) {
-			summary.append(String.format("%s: binding is not configured\t",timePathProperty.getName()));
-		}
-		binding = valuePathProperty.getBinding();
-		if( binding==null || binding.length()==0 ) {
-			summary.append(String.format("%s: binding is not configured\t",valuePathProperty.getName()));
-		}
-		
-		if( summary.length()==0 ) return null;
-		else return summary.toString();
-	}
 }

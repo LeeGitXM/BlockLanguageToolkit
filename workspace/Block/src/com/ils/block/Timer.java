@@ -3,6 +3,7 @@
  */
 package com.ils.block;
 
+import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
 
@@ -25,7 +26,6 @@ import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
-import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
@@ -44,6 +44,7 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 	private BlockProperty tagProperty = null;
 	private TruthValue stopOn = TruthValue.FALSE;
 	private TruthValue trigger = TruthValue.TRUE;
+	private Date triggerReceiptTime = null;
 	private final Watchdog dog;
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -131,6 +132,7 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 					if( trigger.equals(tv)  ) {
 						if( !accumulateValues) duration = 0.0;
 						qv = new TestAwareQualifiedValue(timer,new Integer((int)duration));
+						triggerReceiptTime = qv.getTimestamp();
 						evaluate();
 					}
 					else if(stopOn.equals(tv)) {
@@ -246,6 +248,9 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
 		Map<String,String> attributes = descriptor.getAttributes();
 		attributes.put("SecondsInState", String.valueOf(duration));
+		if( triggerReceiptTime!=null ) {
+			attributes.put("TriggerReceiptTime", dateFormatter.format(triggerReceiptTime));
+		}
 		return descriptor;
 	}
 	
