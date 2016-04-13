@@ -634,17 +634,23 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		for(BlockProperty property:propertyMap.values()) {
 			BindingType bindingType = property.getBindingType();
 			if( bindingType.equals(BindingType.TAG_MONITOR) ||
-				bindingType.equals(BindingType.TAG_READ)    ||
-				bindingType.equals(BindingType.TAG_WRITE)   ||
-				bindingType.equals(BindingType.TAG_READWRITE) ) {
-				
+					bindingType.equals(BindingType.TAG_READ)    ||
+					bindingType.equals(BindingType.TAG_WRITE)   ||
+					bindingType.equals(BindingType.TAG_READWRITE) ) {
+
+
 				String tagPath = property.getBinding();
-				String reason = controller.validateTag(getParentId(),tagPath);
-				if( reason!=null ) {
-					summary.append(String.format("%s: tag (%s) %s\t",property.getName(),tagPath,reason));
+				if( tagPath==null || tagPath.length()==0 || tagPath.endsWith("]") ) {
+					summary.append(String.format("%s: binding is not configured\t",property.getName()));
 				}
-				else if( !bindingType.equals(BindingType.TAG_WRITE) && !controller.hasActiveSubscription(this, property,tagPath)) {
-					summary.append(String.format("%s: has no subscription for tag %s\t",property.getName(),tagPath));
+				else {
+					String reason = controller.validateTag(getParentId(),tagPath);
+					if( reason!=null ) {
+						summary.append(String.format("%s: tag (%s) %s\t",property.getName(),tagPath,reason));
+					}
+					if( !bindingType.equals(BindingType.TAG_WRITE) && !controller.hasActiveSubscription(this, property,tagPath)) {
+						summary.append(String.format("%s: has no subscription for tag %s\t",property.getName(),tagPath));
+					}
 				}
 			}
 		}

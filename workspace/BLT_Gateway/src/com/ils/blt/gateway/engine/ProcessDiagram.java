@@ -625,7 +625,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 		}
 	}
 	
-	private String replaceProviderInPath(String path,String providerName) {
+	public String replaceProviderInPath(String path,String providerName) {
 		if( !path.isEmpty() ) {
 			int pos = path.indexOf("]");
 			if( pos>0 ) path = path.substring(pos+1);
