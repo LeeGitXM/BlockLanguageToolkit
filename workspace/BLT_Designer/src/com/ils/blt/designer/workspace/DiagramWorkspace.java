@@ -23,10 +23,12 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
+import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JMenu;
@@ -45,11 +47,12 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
+import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.ResourceUpdateManager;
@@ -91,6 +94,8 @@ import com.inductiveautomation.ignition.designer.model.EditActionHandler;
 import com.inductiveautomation.ignition.designer.model.ResourceWorkspace;
 import com.inductiveautomation.ignition.designer.model.ResourceWorkspaceFrame;
 import com.inductiveautomation.ignition.designer.model.menu.MenuBarMerge;
+import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
+import com.inductiveautomation.ignition.designer.navtree.model.ProjectBrowserRoot;
 import com.jidesoft.action.CommandBar;
 import com.jidesoft.action.DockableBarManager;
 import com.jidesoft.docking.DockContext;
@@ -230,7 +235,35 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						menu.add(changeTypeMenu);
 					}
 				}
-				
+				if( pbv.getClassName().contains("SinkConnection")) {
+					logger.infof("%s.getSelectionPopupMenu: SINK",TAG);
+					JMenu linkSinkMenu = new JMenu(BundleUtil.get().getString(PREFIX+".FollowConnection.Name"));
+					linkSinkMenu.setToolTipText(BundleUtil.get().getString(PREFIX+".FollowConnection.Desc"));
+					String diagramId = getActiveDiagram().getId().toString();
+					List<SerializableBlockStateDescriptor> descriptors = handler.listSourcesForSink(diagramId, pbv.getName());
+					for(SerializableBlockStateDescriptor desc:descriptors) {
+						SerializableResourceDescriptor rd = handler.getDiagramForBlock(desc.getIdString());
+						if( rd==null ) continue;
+						ShowDiagramAction action = new ShowDiagramAction(rd,desc.getName());
+						linkSinkMenu.add(action);
+					}
+					menu.add(linkSinkMenu);
+				}
+				else if( pbv.getClassName().contains("SourceConnection") )  {
+					logger.infof("%s.getSelectionPopupMenu: SOURCE",TAG);
+					JMenu linkSourceMenu = new JMenu(BundleUtil.get().getString(PREFIX+".FollowConnection.Name"));
+					linkSourceMenu.setToolTipText(BundleUtil.get().getString(PREFIX+".FollowConnection.Desc"));
+					
+					String diagramId = getActiveDiagram().getId().toString();
+					List<SerializableBlockStateDescriptor> descriptors = handler.listSinksForSource(diagramId, pbv.getName());
+					for(SerializableBlockStateDescriptor desc:descriptors) {
+						SerializableResourceDescriptor rd = handler.getDiagramForBlock(desc.getIdString());
+						if( rd==null ) continue;
+						ShowDiagramAction action = new ShowDiagramAction(rd,desc.getName());
+						linkSourceMenu.add(action);
+					}
+					menu.add(linkSourceMenu);
+				}
 				logger.debugf("%s.getSelectionPopupMenu: Selection editor class = %s",TAG,pbv.getEditorClass());
 				if( selection instanceof BlockComponent && pbv.getEditorClass() !=null && pbv.getEditorClass().length()>0 ) {
 					CustomEditAction cea = new CustomEditAction(pbv);
@@ -761,6 +794,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
 		}
 	}
+
 	/**
 	 * Post a custom editor for the block. This action is expected to
 	 * apply to only a few block types. The action should be invoked only
@@ -973,6 +1007,86 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		}
 	}
 	/**
+	 * Display sub-menus listing the diagrams connected to the subject source
+	 * or sink 
+	 */
+	private class ShowDiagramAction extends AbstractAction {
+		private static final long serialVersionUID = 1L;
+		private final SerializableResourceDescriptor diagram;
+		private final String bname;
+		
+		public ShowDiagramAction(SerializableResourceDescriptor desc,String blockName)  {
+			super(desc.getName());
+			this.diagram = desc;
+			this.bname = blockName;
+		}
+		
+		// List paths to all connected diagrams
+		public void actionPerformed(ActionEvent e) {
+			String path = handler.pathForBlock(diagram.getId(), bname);
+			int pos = path.lastIndexOf(":");    // Strip off block name
+			if( pos>0 ) path = path.substring(0, pos);
+			ProjectBrowserRoot project = context.getProjectBrowserRoot();
+        	AbstractNavTreeNode root = null;
+        	AbstractNavTreeNode node = null;
+        	root = project.findChild("Project");
+        	if(root!=null) node = findChildInTree(root,"ROOT");
+        	// The specified path is colon-delimited.
+			String[] pathArray = path.toString().split(":");
+
+			int index = 1;  // Skip the leading colon
+			while( index<pathArray.length ) {
+				node = findChildInTree(node,pathArray[index]);
+				if( node!=null ) {
+					node.expand();
+					try {
+						Thread.sleep(100); 
+					}
+					catch(InterruptedException ignore) {}
+				}
+				else{
+					logger.warnf("%s.receiveNotification: Unable to find node (%s) on browser path",TAG,pathArray[index]);
+					break;
+				}
+				index++;
+			}
+
+			if( node!=null ) {
+				node.onDoubleClick();    // Opens the diagram
+			}
+			else {
+				logger.warnf("%s.receiveNotification: Unable to open browser path (%s)",TAG,path.toString());
+			}
+			// Repaint the workspace
+			SwingUtilities.invokeLater(new WorkspaceRepainter());
+		}
+
+		/**
+		 * We have not been successful with the findChild method .. so we've taken it on ourselves.
+		 * @param root
+		 * @param name
+		 * @return
+		 */
+		private AbstractNavTreeNode findChildInTree(AbstractNavTreeNode root,String name) {
+			AbstractNavTreeNode match = null;
+			if( root!=null ) {
+				@SuppressWarnings("unchecked")
+				Enumeration<AbstractNavTreeNode> nodeWalker = root.children();
+				AbstractNavTreeNode child = null;
+				
+				while( nodeWalker.hasMoreElements() ) {
+					child = nodeWalker.nextElement();
+					logger.infof("%s.findChildInTree: testing %s vs %s",TAG,name,child.getName());
+					if( child.getName().equalsIgnoreCase(name)) {
+						match = child;
+						break;
+					}
+				}
+			}
+			return match;
+		}
+	}
+	/**
 	 * Configure the block to show the generic signal connection stub.
 	 */
 	private class ShowSignalAction extends BaseAction {
@@ -1032,7 +1146,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		private final ProcessDiagramView diagram;
 		private final ProcessBlockView block;
 		public ViewInternalsAction(ProcessDiagramView dia,ProcessBlockView blk)  {
-			super(PREFIX+".ViewInternals");
+			super(PREFIX+".ViewInternals",IconUtil.getIcon("sun"));
 			this.diagram = dia;
 			this.block = blk;
 		}

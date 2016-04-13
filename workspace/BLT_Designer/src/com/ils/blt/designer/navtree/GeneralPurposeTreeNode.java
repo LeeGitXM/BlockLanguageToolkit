@@ -374,6 +374,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			ToolkitConfigureAction configureAction = new ToolkitConfigureAction(menu.getRootPane());
 			ClearAction clearAction = new ClearAction();
 			DebugAction debugAction = new DebugAction();
+			RefreshAction refreshAction = new RefreshAction(this);
 			SaveAllAction saveAllAction = new SaveAllAction(this);
 			if( handler.isControllerRunning() ) {
 				startAction.setEnabled(false);
@@ -386,6 +387,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			menu.add(applicationCreateAction);
 			menu.add(applicationImportAction);
 			menu.add(configureAction);
+			menu.add(refreshAction);
 			menu.add(saveAllAction);
 			menu.add(startAction);
 			menu.add(stopAction);
@@ -1440,7 +1442,27 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			}
 		}
 	}
-	
+	// Re-compute the nav tree.
+	private class RefreshAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final AbstractResourceNavTreeNode node;
+
+		public RefreshAction(AbstractResourceNavTreeNode treeNode)  {
+			super(PREFIX+".Refresh",IconUtil.getIcon("refresh")); 
+			this.node = treeNode;
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			// 
+			if( !isRootFolder() ) return;
+			node.setBold(true);
+			threadCounter.reset();
+			statusManager.cleanAll();
+			node.reload();
+			ThreadCompletionDetector detector = new ThreadCompletionDetector(node);
+			new Thread(detector).start();
+		}
+	}
 	// Launch a dialog that recursively saves auxiliary data from the application
 	// into the current database.
 	private class RestoreAuxiliaryDataAction extends BaseAction {
