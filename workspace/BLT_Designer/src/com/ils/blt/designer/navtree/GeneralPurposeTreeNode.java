@@ -117,7 +117,12 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		workspace = ((BLTDesignerHook)ctx.getModule(BLTProperties.MODULE_ID)).getWorkspace();
 		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
 		setText(BundleUtil.get().getString(PREFIX+".RootFolderName"));
-		closedIcon = IconUtil.getIcon("folder_closed");
+		if( context.getProject().isEnabled() ) {
+			closedIcon = IconUtil.getIcon("folder_closed");
+		}
+		else {
+			closedIcon = iconFromPath("Block/icons/navtree/disabled_folder.png");  // Project is disabled
+		}
 		setIcon(closedIcon);
 		openIcon = IconUtil.getIcon("folder");
 	}
@@ -156,7 +161,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		}
 		setIcon(closedIcon);
 	}
-	
 	@Override
 	public boolean confirmDelete(List<? extends AbstractNavTreeNode> selections) {
 		// We only care about the first
@@ -315,6 +319,9 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	 */
 	@Override
 	protected AbstractNavTreeNode createChildNode(ProjectResource res) {
+		// If the project is disabled, then don't do anything
+		if( !context.getProject().isEnabled()) return null;
+		
 		logger.debugf("%s.createChildNode: %s(%d) type:%s, depth=%d", TAG,getName(),resourceId,res.getResourceType(),getDepth());
 		AbstractResourceNavTreeNode node = statusManager.findNode(res.getResourceId());
 		if( node==null ) {
@@ -369,31 +376,33 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		}
 		context.addProjectChangeListener(this);
 		if (isRootFolder()) { 
-			ApplicationCreateAction applicationCreateAction = new ApplicationCreateAction(this);
-			ApplicationImportAction applicationImportAction = new ApplicationImportAction(context.getFrame(),this);
-			ToolkitConfigureAction configureAction = new ToolkitConfigureAction(menu.getRootPane());
-			ClearAction clearAction = new ClearAction();
-			DebugAction debugAction = new DebugAction();
-			RefreshAction refreshAction = new RefreshAction(this);
-			SaveAllAction saveAllAction = new SaveAllAction(this);
-			if( handler.isControllerRunning() ) {
-				startAction.setEnabled(false);
-				clearAction.setEnabled(false);
+			if( context.getProject().isEnabled()) {
+				ApplicationCreateAction applicationCreateAction = new ApplicationCreateAction(this);
+				ApplicationImportAction applicationImportAction = new ApplicationImportAction(context.getFrame(),this);
+				ToolkitConfigureAction configureAction = new ToolkitConfigureAction(menu.getRootPane());
+				ClearAction clearAction = new ClearAction();
+				DebugAction debugAction = new DebugAction();
+				RefreshAction refreshAction = new RefreshAction(this);
+				SaveAllAction saveAllAction = new SaveAllAction(this);
+				if( handler.isControllerRunning() ) {
+					startAction.setEnabled(false);
+					clearAction.setEnabled(false);
+				}
+				else {
+					stopAction.setEnabled(false);
+					clearAction.setEnabled(true);
+				}
+				menu.add(applicationCreateAction);
+				menu.add(applicationImportAction);
+				menu.add(configureAction);
+				menu.add(refreshAction);
+				menu.add(saveAllAction);
+				menu.add(startAction);
+				menu.add(stopAction);
+				menu.addSeparator();
+				menu.add(clearAction);
+				menu.add(debugAction);
 			}
-			else {
-				stopAction.setEnabled(false);
-				clearAction.setEnabled(true);
-			}
-			menu.add(applicationCreateAction);
-			menu.add(applicationImportAction);
-			menu.add(configureAction);
-			menu.add(refreshAction);
-			menu.add(saveAllAction);
-			menu.add(startAction);
-			menu.add(stopAction);
-			menu.addSeparator();
-			menu.add(clearAction);
-			menu.add(debugAction);
 		}
 		else if( getProjectResource()==null ) {
 			logger.warnf("%s.initPopupMenu: ERROR: node %s(%d) has no project resource",TAG,this.getName(),resourceId);

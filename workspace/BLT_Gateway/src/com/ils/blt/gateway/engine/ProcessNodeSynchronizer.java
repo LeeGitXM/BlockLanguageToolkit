@@ -1,4 +1,4 @@
-package com.ils.blt.gateway.wicket;
+package com.ils.blt.gateway.engine;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -7,11 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.gateway.engine.BlockExecutionController;
-import com.ils.blt.gateway.engine.ModelManager;
-import com.ils.blt.gateway.engine.ProcessNode;
-import com.ils.blt.gateway.engine.ProjectResourceKey;
-import com.ils.blt.gateway.engine.RootNode;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
@@ -23,9 +18,9 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 /**
  * Reconcile any differences between the ModelManager and the ProjectManager.
  * Consider the project manager to be "correct". Edit the models to match.
+ * This is used on the wicket status page.
  */
 public class ProcessNodeSynchronizer {
-    private static final long serialVersionUID = 1L;
     private final static String TAG = "ProcessNodeSynchronizer";
     private final LoggerEx log;
     private final ModelManager modelManager;

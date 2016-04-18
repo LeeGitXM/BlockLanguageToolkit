@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2015  ILS Automation. All rights reserved. 
+ *   (c) 2014-2016  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.gateway.engine;
 
@@ -25,6 +25,7 @@ import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.gateway.GatewayScriptExtensionManager;
+import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.project.ProjectVersion;
@@ -454,6 +455,9 @@ public class ModelManager implements ProjectListener  {
 	}
 	/**
 	 * Assume that the project resources are already gone. This is a cleanup step.
+	 * We have confirmed that push notifications are already closed to any open designer/client.
+	 * Ignition does not automatically close these when user deletes project in gateway,
+	 * but we have no way of relaying that fact.
 	 */
 	@Override
 	public void projectDeleted(long projectId) {
@@ -462,7 +466,8 @@ public class ModelManager implements ProjectListener  {
 		
 	}
 	/**
-	 * Handle project resource updates of type model.
+	 * Handle project resource updates of type model. NOTE: The Ignition gateway interface does not
+	 * allow the designer to be open if manually enabling/disabling project.
 	 * @param diff represents differences to the updated project. That is any updated, dirty or deleted resources.
 	 * @param vers a value of "Staging" means is a result of a "Save". A value of "Published" occurs when a 
 	 *        project is published. For our purposes both actions are equivalent(??).
@@ -485,19 +490,31 @@ public class ModelManager implements ProjectListener  {
 		}
 		
 		if( diff.isEnabled() ) {
+			int countOfInteresting = 0;
 			List<ProjectResource> resources = diff.getResources();
+			Long pid = new Long(projectId);
 			for( ProjectResource res:resources ) {
 				//if( res.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)) continue;
 				log.infof("%s.projectUpdated: add/update resource %s (%d),type %s (%s)", TAG,res.getName(),
 						res.getResourceId(),res.getResourceType(),(diff.isResourceDirty(res)?"dirty":"clean"));
-				analyzeResource(new Long(projectId),res);
+				analyzeResource(pid,res);
+				if( isBLTResource(res.getResourceType()) ) countOfInteresting++;
 			}
-			
+
 			Set<Long> deleted = diff.getDeletedResources();
 			for (Long  rid : deleted) {
 				long resid = rid.longValue();
 				log.infof("%s.projectUpdated: delete resource %d:%d", TAG,projectId,resid);
 				deleteResource(projectId,resid);
+			}
+			
+			// If there haven't been any interesting resources, then we've probably
+			// just changed the enabled status of the project. Synchronize resources.
+			if( countOfInteresting==0) {
+				Project project = context.getProjectManager().getProject(projectId, ApplicationScope.ALL,ProjectVersion.Staging);
+				for( ProjectResource res: project.getResources() ) {
+					analyzeResource(pid,res);
+				}
 			}
 		}
 		else {     // Delete projects that are disabled
@@ -948,6 +965,16 @@ public class ModelManager implements ProjectListener  {
 		return family;
 	}
 
+	private boolean isBLTResource(String type) {
+		boolean isBLTType = false;
+		if( type.equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE) ||
+			type.equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE) ||
+			type.equalsIgnoreCase(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
+			 isBLTType = true;
+		}
+		return isBLTType;
+	}
+	
 	/**
 	 * Call this method after each node is defined. It has already been 
 	 * added to the nodesByUUID and, if appropriate, the orphan list.

@@ -677,7 +677,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		}
 		catch(Exception ex) {
 			// Probably no receiver registered. This is to be expected if the designer is not running.
-			log.debugf("%s.sendConnectionNotification: Error transmitting %s (%s)",TAG,key,ex.getMessage());
+			log.debugf("%s.sendConnectionNotification: No notification receiver for %s (%s)",TAG,key,ex.getMessage());
 		}
 	}
 	/**
@@ -694,7 +694,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		}
 		catch(Exception ex) {
 			// Probably no receiver registered. This is to be expected if the designer is not running.
-			log.debugf("%s.sendDiagramNotification: Error transmitting %s (%s)",TAG,key,ex.getMessage());
+			log.debugf("%s.sendStateNotification: No notification receiver for %s (%s)",TAG,key,ex.getMessage());
 		}
 	}
 	/**

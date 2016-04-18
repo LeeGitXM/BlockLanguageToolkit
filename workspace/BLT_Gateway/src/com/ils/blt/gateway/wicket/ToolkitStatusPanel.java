@@ -32,6 +32,7 @@ import org.apache.wicket.model.Model;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.gateway.engine.ProcessDiagram;
 import com.ils.blt.gateway.engine.ProcessNode;
+import com.ils.blt.gateway.engine.ProcessNodeSynchronizer;
 import com.ils.blt.gateway.engine.ProjectResourceKey;
 import com.ils.blt.gateway.wicket.content.Content;
 import com.ils.blt.gateway.wicket.content.EditableFolderContent;
