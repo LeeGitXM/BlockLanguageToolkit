@@ -37,6 +37,7 @@ public interface ExecutionController  {
 	public String getSubscribedPath(ProcessBlock block,BlockProperty property);
 	public boolean hasActiveSubscription(ProcessBlock block,BlockProperty property,String tagPath);
 	public QualifiedValue getTagValue(UUID diagramId,String path);
+	public void sendAlertNotification(long resid, String val);
 	public void sendConnectionNotification(String blockid, String port, QualifiedValue val);
 	public void sendPropertyBindingNotification(String id, String propertyName, String val);
 	public void sendPropertyNotification(String id, String propertyName, QualifiedValue val);

@@ -631,6 +631,8 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	}
 	
 	// =========================================== Change Listener ===================================
+	@Override
+	public void diagramAlertChange(long resId, String state) {}
 	// We get this when another entity changes a property. We just need to re-display.
 	@Override
 	public void stateChanged(ChangeEvent e) {
@@ -639,4 +641,5 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	}
 	@Override
 	public void watermarkChange(String mark) {}
+	
 }

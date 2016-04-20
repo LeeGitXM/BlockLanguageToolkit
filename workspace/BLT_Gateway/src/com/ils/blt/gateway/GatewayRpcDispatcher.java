@@ -298,6 +298,12 @@ public class GatewayRpcDispatcher   {
 	public List<SerializableBlockStateDescriptor> listBlocksForTag(String tagpath) {
 		return requestHandler.listBlocksForTag(tagpath);
 	}
+	public List<SerializableBlockStateDescriptor> listBlocksGloballyDownstreamOf(String diagramId, String blockName) {
+		return requestHandler.listBlocksGloballyDownstreamOf(diagramId, blockName);
+	}
+	public List<SerializableBlockStateDescriptor> listBlocksGloballyUpstreamOf(String diagramId, String blockName) {
+		return requestHandler.listBlocksGloballyUpstreamOf(diagramId, blockName);
+	}
 	public List<SerializableBlockStateDescriptor> listBlocksInDiagram(String diagramId) {
 		return requestHandler.listBlocksInDiagram(diagramId);
 	}

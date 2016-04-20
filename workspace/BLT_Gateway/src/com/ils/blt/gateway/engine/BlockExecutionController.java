@@ -353,11 +353,11 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public List<SerializableResourceDescriptor> getDiagramDescriptors(String projectName) {
 		return modelManager.getDiagramDescriptors(projectName);
 	}
-	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(UUID diagramId,UUID blockId) {
-		return modelManager.listBlocksDownstreamOf(diagramId, blockId);
+	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(UUID diagramId,UUID blockId,boolean spanDiagrams) {
+		return modelManager.listBlocksDownstreamOf(diagramId, blockId,spanDiagrams);
 	}
-	public List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(UUID diagramId,UUID blockId) {
-		return modelManager.listBlocksUpstreamOf(diagramId, blockId);
+	public List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(UUID diagramId,UUID blockId,boolean spanDiagrams) {
+		return modelManager.listBlocksUpstreamOf(diagramId, blockId,spanDiagrams);
 	}
 	/**
 	 * The node must be an element of the nav-tree, that is an application,
@@ -627,6 +627,24 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		}
 	}
 
+	/**
+	 * Notify any listeners in the Client or Designer scopes that a diagram has changed its alert state,
+	 * presumably triggered due to a block state change on the diagram.
+	 * @param diagramid unique Id of the diagram
+	 * @param val new state (true=>alerting).
+	 */
+	@Override
+	public void sendAlertNotification(long resid, String val) {
+		String key = NotificationKey.keyForAlert(resid);
+		try {
+			sessionManager.sendNotification(ApplicationScope.DESIGNER, BLTProperties.MODULE_ID, key, val);
+		}
+		catch(Exception ex) {
+			// Probably no receiver registered. This is to be expected if the designer is not running.
+			log.debugf("%s.sendStateNotification: No notification receiver for %s (%s)",TAG,key,ex.getMessage());
+		}
+	}
+	
 	/**
 	 * Notify any notification listeners of changes to a block property. This is usually triggered by the 
 	 * block itself. The ultimate receiver is typically a block property in the UI in a ProcessBlockView.

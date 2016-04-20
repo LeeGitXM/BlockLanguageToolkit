@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
+ *   (c) 2014-2016  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.common.notification;
 
@@ -10,6 +10,13 @@ package com.ils.blt.common.notification;
  */
 public class NotificationKey
 {
+	/**
+	 * @return  a push-notification key for a diagram alert status. 
+	 * 			The Id is simply the resource Id.
+	 */
+	public static String keyForAlert(long resid) {
+		return String.format("A:%d",resid);
+	}
 	/**
 	 * @return  a push-notification key for a block.
 	 */
@@ -44,6 +51,13 @@ public class NotificationKey
 	 */
 	public static String keyForPropertyBinding(String blkid,String pname) {
 		return String.format("B:%s:%s",blkid,pname);
+	}
+	/**
+	 * Test a key for type. 
+	 * @return  true if this is a binding key.
+	 */
+	public static boolean isDiagramAlertKey(String key) {
+		return key.startsWith("A");
 	}
 	/**
 	 * Test a key for type. 

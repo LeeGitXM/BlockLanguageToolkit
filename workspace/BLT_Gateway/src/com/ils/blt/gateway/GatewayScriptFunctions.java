@@ -185,6 +185,12 @@ public class GatewayScriptFunctions   {
 	public static List<SerializableBlockStateDescriptor> listBlocksForTag(String tagpath) {
 		return handler.listBlocksForTag(tagpath);
 	}
+	public static List<SerializableBlockStateDescriptor> listBlocksGloballyDownstreamOf(String diagramId, String blockName) {
+		return handler.listBlocksGloballyDownstreamOf(diagramId, blockName);
+	}
+	public static List<SerializableBlockStateDescriptor> listBlocksGloballyUpstreamOf(String diagramId, String blockName) {
+		return handler.listBlocksGloballyUpstreamOf(diagramId, blockName);
+	}
 	/**
 	 * Query a diagram in the gateway for list of its blocks. 
 	 * @param diagramId of the parent diagram

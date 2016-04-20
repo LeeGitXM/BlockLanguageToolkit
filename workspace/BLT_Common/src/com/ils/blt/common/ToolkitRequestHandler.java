@@ -147,6 +147,10 @@ public interface ToolkitRequestHandler  {
 	 * @return the value of the specified property.
 	 */
 	public String getToolkitProperty(String propertyName) ;
+	/**
+	 * @return the alert state of the specified diagram;
+	 */
+	public boolean isAlerting(Long projectId, Long resourceId) ;
 	
 	/**
 	 * Determine whether or not the engine is running.
@@ -157,7 +161,7 @@ public interface ToolkitRequestHandler  {
 	 * of the specified block. 
 	 * @param diagramId of the parent diagram
 	 * @param blockName name of the block within the diagram
-	 * @return a list of blocks belonging to the diagram.
+	 * @return a list of blocks downstream of the specified block.
 	 */
 	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(String diagramId,String blockName);
 	/**
@@ -173,16 +177,32 @@ public interface ToolkitRequestHandler  {
 	 * @return a list of blocks belonging to the diagram.
 	 */
 	public List<SerializableBlockStateDescriptor> listBlocksInDiagram(String diagramId) ;
-	
+	/**
+	 * Query a diagram in the gateway for list of its blocks that are downstream
+	 * of the specified block. If any of those blocks are sinks, then continue
+	 * the search on the diagrams they are connected to.
+	 * @param diagramId of the parent diagram
+	 * @param blockName name of the block within the diagram
+	 * @return a list of blocks downstream of the specified block.
+	 */
+	public List<SerializableBlockStateDescriptor> listBlocksGloballyDownstreamOf(String diagramId,String blockName); 
+	/**
+	 * Query a diagram in the gateway for list of its blocks that are upstream
+	 * of the specified block. If any of those blocks are sources, then continue
+	 * the search on the diagrams they are connected to.
+	 * @param diagramId of the parent diagram
+	 * @param blockName name of the block within the diagram
+	 * @return a list of blocks upstream of the specified block.
+	 */
+	public List<SerializableBlockStateDescriptor> listBlocksGloballyUpstreamOf(String diagramId,String blockName); 
 	/**
 	 * Query a diagram in the gateway for list of its blocks that are upstream
 	 * of the specified block. 
 	 * @param diagramId of the parent diagram
 	 * @param blockName name of the block within the diagram
-	 * @return a list of blocks belonging to the diagram.
+	 * @return a list of blocks upstream of the specified block..
 	 */
 	public List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(String diagramId,String blockName); 
-	
 	/**
 	 * The result is a list of SerializableBlockState descriptors for those 
 	 * blocks in any project that have configuration issues. Descriptor attributes
@@ -262,7 +282,7 @@ public interface ToolkitRequestHandler  {
 	/**
 	 * Determine whether or not the indicated resource is known to the controller.
 	 */
-	public boolean resourceExists(long projectId,long resid) ;
+	public boolean resourceExists(Long projectId,Long resid) ;
 	/**
 	 * Send a signal to all blocks of a particular class on a specified diagram.
 	 * This is a "local" transmission. The diagram is specified by a tree-path.

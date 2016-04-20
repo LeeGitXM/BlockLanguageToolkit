@@ -1,5 +1,5 @@
 /**
- *   (c) 2013-2014  ILS Automation. All rights reserved.
+ *   (c) 2013-2016  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.designer;
@@ -19,6 +19,7 @@ import com.inductiveautomation.ignition.common.gateway.messages.PushNotification
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.inductiveautomation.ignition.designer.navtree.model.ProjectBrowserRoot;
 
 
 /**
@@ -90,12 +91,27 @@ public class NotificationHandler implements PushNotificationListener {
 				payloadMap.put(key, payload);
 				Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
 				if( listeners != null ) {
+
 					for(NotificationChangeListener listener:listeners.values()) {
 						log.tracef("%s.receiveNotification: key=%s - notifying %s",TAG,key,listener.getClass().getName());
 						listener.valueChange((QualifiedValue)payload);
 					}
 					// Repaint the workspace
 					SwingUtilities.invokeLater(new WorkspaceRepainter());
+				}
+				else {
+					log.debugf("%s.receiveNotification: no receiver for key=%s,value=%s",TAG,key,payload.toString());
+				}
+			}
+			else if(NotificationKey.isDiagramAlertKey(key)) {
+				Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
+				if( listeners != null ) {
+					for(NotificationChangeListener listener:listeners.values()) {
+						log.tracef("%s.receiveNotification: key=%s - notifying %s",TAG,key,listener.getClass().getName());
+						// Listener is the node status manager - // Refresh the Nav tree
+						long resourceId = Long.parseLong(key.substring(2));
+						listener.diagramAlertChange(resourceId, payload.toString());
+					}
 				}
 				else {
 					log.debugf("%s.receiveNotification: no receiver for key=%s,value=%s",TAG,key,payload.toString());

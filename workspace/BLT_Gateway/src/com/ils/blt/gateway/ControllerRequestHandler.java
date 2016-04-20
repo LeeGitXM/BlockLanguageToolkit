@@ -560,6 +560,11 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	public boolean isControllerRunning() {
 		return getExecutionState().equalsIgnoreCase("running");
 	}
+	@Override
+	public boolean isAlerting(Long projectId, Long resid) {
+		ProcessDiagram diagram = controller.getDiagram(projectId.longValue(), resid.longValue());
+		return pyHandler.isAlerting(diagram);
+	}
 	
 	@Override
 	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(String diagramId,String blockName) {
@@ -568,7 +573,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		ProcessDiagram diagram = controller.getDiagram(diauuid);
 		if( diagram!=null ) {
 			ProcessBlock blk = diagram.getBlockByName(blockName);
-			if(blk!=null) descriptors = controller.listBlocksDownstreamOf(diauuid,blk.getBlockId());
+			if(blk!=null) descriptors = controller.listBlocksDownstreamOf(diauuid,blk.getBlockId(),false);
 		}
 		return descriptors;
 	}
@@ -594,6 +599,26 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 		return results;
+	}
+	public List<SerializableBlockStateDescriptor> listBlocksGloballyDownstreamOf(String diagramId, String blockName) {
+		List<SerializableBlockStateDescriptor> descriptors = new ArrayList<>();
+		UUID diauuid = makeUUID(diagramId);
+		ProcessDiagram diagram = controller.getDiagram(diauuid);
+		if( diagram!=null ) {
+			ProcessBlock blk = diagram.getBlockByName(blockName);
+			if(blk!=null) descriptors = controller.listBlocksDownstreamOf(diauuid,blk.getBlockId(),true);
+		}
+		return descriptors;
+	}
+	public List<SerializableBlockStateDescriptor> listBlocksGloballyUpstreamOf(String diagramId, String blockName) {
+		List<SerializableBlockStateDescriptor> descriptors = new ArrayList<>();
+		UUID diauuid = makeUUID(diagramId);
+		ProcessDiagram diagram = controller.getDiagram(diauuid);
+		if( diagram!=null ) {
+			ProcessBlock blk = diagram.getBlockByName(blockName);
+			if(blk!=null) descriptors = controller.listBlocksUpstreamOf(diauuid,blk.getBlockId(),true);
+		}
+		return descriptors;
 	}
 	
 	/**
@@ -629,7 +654,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		ProcessDiagram diagram = controller.getDiagram(diauuid);
 		if( diagram!=null ) {
 			ProcessBlock blk = diagram.getBlockByName(blockName);
-			if(blk!=null) descriptors = controller.listBlocksUpstreamOf(diauuid,blk.getBlockId());
+			if(blk!=null) descriptors = controller.listBlocksUpstreamOf(diauuid,blk.getBlockId(),false);
 		}
 		return descriptors;
 	}
@@ -716,7 +741,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				UUID diaguuid = makeUUID(desc.getId());
 				diagram = controller.getDiagram(diaguuid);
 				for(ProcessBlock sink:diagram.getProcessBlocks()) {
-					if( sink.getClassName().equalsIgnoreCase("com.ils.block.SinkConnection") ) {
+					if( sink.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SINK) ) {
 						BlockProperty prop = sink.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 						if( prop!=null && tagPath.equals(prop.getBinding())  ) {
 							results.add(sink.toDescriptor());
@@ -758,7 +783,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				UUID diaguuid = makeUUID(descriptor.getId());
 				diagram = controller.getDiagram(diaguuid);
 				for(ProcessBlock source:diagram.getProcessBlocks()) {
-					if( source.getClassName().equalsIgnoreCase("com.ils.block.SourceConnection") ) {
+					if( source.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SOURCE) ) {
 						BlockProperty prop = source.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 						if( prop!=null && tagPath.equals(prop.getBinding())  ) {
 							results.add(source.toDescriptor());
@@ -869,8 +894,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	}
 			
 	@Override
-	public boolean resourceExists(long projectId, long resid) {
-		ProcessDiagram diagram = controller.getDiagram(projectId, resid);
+	public boolean resourceExists(Long projectId, Long resid) {
+		ProcessDiagram diagram = controller.getDiagram(projectId.longValue(), resid.longValue());
 		return diagram!=null;
 	}
 

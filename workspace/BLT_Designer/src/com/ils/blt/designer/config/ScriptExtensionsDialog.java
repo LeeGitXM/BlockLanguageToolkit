@@ -106,7 +106,7 @@ public class ScriptExtensionsDialog extends ConfigurationDialog  {
 	}
 
 	private void updateScriptPanel() {
-		// Update each panel with values from the HSQLdb database
+		// Update each panel with values from the SQLite database
 		String key = "";
 		String value;
 		for( String clss:classPanels.keySet()) {

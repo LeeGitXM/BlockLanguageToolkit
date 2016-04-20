@@ -1,5 +1,5 @@
 /**
- *   (c) 2013-2015  ILS Automation. All rights reserved.
+ *   (c) 2013-2016  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer;
 
@@ -9,11 +9,15 @@ import java.util.Map;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
+import com.ils.blt.common.notification.NotificationChangeListener;
+import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.designer.navtree.NavTreeNodeInterface;
+import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
+import com.inductiveautomation.ignition.designer.navtree.model.ProjectBrowserRoot;
 
 
 /**
@@ -25,12 +29,13 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
  *  The nodes themselves have no dirty state. "dirtiness" refers to
  *  the presence of unsaved diagrams among their descendants.
  *  
- *  The resourceId is known both the the view code and the nav tree.
+ *  The resourceId is known to both the view code and the nav tree.
  */
-public class NodeStatusManager  {
+public class NodeStatusManager implements NotificationChangeListener   {
 	private static String TAG = "NodeStatusManager";
 	private final LoggerEx log;
 	private final ApplicationRequestHandler handler;
+	private final NotificationHandler notificationHandler;
 	private final Long projectId;
 	private final Map<Long,StatusEntry> statusByResourceId;
 	
@@ -41,6 +46,7 @@ public class NodeStatusManager  {
 	public NodeStatusManager(ApplicationRequestHandler h,long projId) {
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.handler = h;
+		this.notificationHandler = NotificationHandler.getInstance();
 		this.projectId = new Long(projId);
 		statusByResourceId = new HashMap<>();
 	}
@@ -106,6 +112,8 @@ public class NodeStatusManager  {
 		if( se == null ) {
 			DiagramState s = handler.getDiagramState(projectId, key);
 			se = new StatusEntry(node,parentResourceId,s);
+			se.setAlerting(handler.isAlerting(projectId, key));
+			notificationHandler.addNotificationChangeListener(NotificationKey.keyForAlert(resourceId), TAG, this);
 			statusByResourceId.put(key,se);
 		}
 		// We had a "provisional" entry 
@@ -162,7 +170,21 @@ public class NodeStatusManager  {
 		}
 		log.tracef("%s.getResourceState: %s(%d) = %s",TAG,(se==null?"null":se.getName()),resourceId,result.name());
 		return result;
-	}	
+	}
+	
+	/**
+	 * @param resourceId
+	 * @return a cached diagram state.
+	 */
+	public boolean getAlertState(long resourceId) {
+		boolean result = false;
+		StatusEntry se = statusByResourceId.get(resourceId);
+		if( se!=null ) {
+			result = se.isAlerting();
+		}
+		log.tracef("%s.getAlertState: %s(%d) = %s",TAG,(se==null?"null":se.getName()),resourceId,(result?"TRUE":"FALSE"));
+		return result;
+	}
 	/**
 	 * Get the node. Null if not found.
 	 * @param resourceId
@@ -361,6 +383,7 @@ public class NodeStatusManager  {
 	 * @author chuckc
 	 */
 	private class StatusEntry {
+		private boolean alerting = false;
 		private boolean dirty = false;
 		private int dirtyChildren = 0;
 		private long parentId;           // A resourceId
@@ -391,6 +414,8 @@ public class NodeStatusManager  {
 			this.node = antn;
 		}
 		
+		public boolean isAlerting() { return alerting; }
+		public void setAlerting(boolean flag) { alerting = flag; }
 		public void clearDirtyChildCount() {dirtyChildren=0;}
 		public void decrementDirtyChildCount() {dirtyChildren-=1;}
 		public int getDirtyChildCount() {return dirtyChildren;}
@@ -427,5 +452,22 @@ public class NodeStatusManager  {
 			return dump;
 		}
 	}
+
+// ================================ Notification Change Listener =========================================
+@Override
+public void diagramAlertChange(long resId, String state) {
+	StatusEntry se = statusByResourceId.get(new Long(resId));
+	se.setAlerting(state.equalsIgnoreCase("true"));
+	se.getNode().select();    // Cause a re-paint
+}
+
+@Override
+public void bindingChange(String binding) {}
+
+@Override
+public void valueChange(QualifiedValue value) {}
+
+@Override
+public void watermarkChange(String newWatermark) {}
 	
 }

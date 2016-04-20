@@ -334,7 +334,6 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 
 	@Override
 	public UUID getConnectedSetRoot() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -496,7 +495,8 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	 */
 	@Override
 	public void bindingChange(String binding) {}
-	
+	@Override
+	public void diagramAlertChange(long resId, String alerting) {}
 	/**
 	 * The value that we expect is a state change
 	 */
@@ -515,4 +515,6 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	public void watermarkChange(String mark) {
 		setWatermark(mark);
 	}
+
+
 }

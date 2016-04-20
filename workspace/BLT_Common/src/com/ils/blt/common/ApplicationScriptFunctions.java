@@ -151,6 +151,12 @@ public class ApplicationScriptFunctions   {
 		return handler.getToolkitProperty(propertyName);
 	}
 	/**
+	 * @return the alert state of the specified diagram;
+	 */
+	public static boolean isAlerting(Long projectId, Long resourceId) {
+		return handler.isAlerting(projectId, resourceId);
+	}
+	/**
 	 * Query a diagram in the gateway for list of its blocks that are downstream
 	 * of the specified block. 
 	 * @param diagramId identifier of the diagram owning the block, a String
@@ -168,6 +174,28 @@ public class ApplicationScriptFunctions   {
 		return handler.listBlocksForTag(tagpath);
 	}
 	/**
+	 * Query a diagram in the gateway for list of its blocks that are downstream
+	 * of the specified block. If any of those blocks are sinks, then continue
+	 * the search on the diagrams they are connected to.
+	 * @param diagramId of the parent diagram
+	 * @param blockName name of the block within the diagram
+	 * @return a list of blocks downstream of the specified block.
+	 */
+	public static List<SerializableBlockStateDescriptor> listBlocksGloballyDownstreamOf(String diagramId,String blockName) {
+		return handler.listBlocksGloballyDownstreamOf(diagramId, blockName);
+	}
+	/**
+	 * Query a diagram in the gateway for list of its blocks that are upstream
+	 * of the specified block. If any of those blocks are sources, then continue
+	 * the search on the diagrams they are connected to.
+	 * @param diagramId of the parent diagram
+	 * @param blockName name of the block within the diagram
+	 * @return a list of blocks upstream of the specified block.
+	 */
+	public static List<SerializableBlockStateDescriptor> listBlocksGloballyUpstreamOf(String diagramId,String blockName) {
+		return handler.listBlocksGloballyUpstreamOf(diagramId, blockName);
+	}
+	/**
 	 * Query a diagram in the gateway for list of its blocks. 
 	 * @param diagramId identifier of the diagram owning the blocks, a String 
 	 * @return a list of blocks belonging to the diagram.
@@ -175,6 +203,7 @@ public class ApplicationScriptFunctions   {
 	public static List<SerializableBlockStateDescriptor> listBlocksInDiagram(String diagramId) {
 		return handler.listBlocksInDiagram(diagramId);
 	}
+	
 	/**
 	 * Query a diagram in the gateway for list of its blocks that are upstream
 	 * of the specified block. 

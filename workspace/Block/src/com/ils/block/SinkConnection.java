@@ -7,6 +7,7 @@ import java.awt.Color;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
@@ -38,6 +39,9 @@ public class SinkConnection extends Output implements ProcessBlock {
 		super(ec,parent,block);
 		initialize();
 	}
+	
+	@Override
+	public String getClassName() {return BLTProperties.CLASS_NAME_SINK;}
 	
 	/**
 	 * Add properties that are new for this class.

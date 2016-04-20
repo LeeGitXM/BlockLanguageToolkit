@@ -185,7 +185,8 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 	 */
 	@Override
 	public void bindingChange(String value) {}
-
+	@Override
+	public void diagramAlertChange(long resId, String alerting) {}
 	/**
 	 * Receive an event from the Gateway. Use the information to color
 	 * the connection. By convention we use the Origin as it is already

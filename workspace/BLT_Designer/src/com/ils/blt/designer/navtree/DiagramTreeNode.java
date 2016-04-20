@@ -1,5 +1,5 @@
 /**
- *   (c) 2013-2015  ILS Automation. All rights reserved.
+ *   (c) 2013-2016  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.navtree;
 
@@ -44,8 +44,6 @@ import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngi
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectChangeListener;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.UndoManager;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
@@ -74,6 +72,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	protected final DiagramWorkspace workspace;
 	private SaveDiagramAction saveAction = null;
 	protected final NodeStatusManager statusManager;
+	protected final ImageIcon alertBadge;
 	protected final ImageIcon defaultIcon;
 	protected final ImageIcon openIcon;
 	protected final ImageIcon closedIcon;
@@ -99,6 +98,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		setName(resource.getName());
 		setText(resource.getName());
 		
+		alertBadge =iconFromPath("Block/icons/badges/bell.png");
 		defaultIcon = IconUtil.getIcon("unknown");
 		openIcon = iconFromPath("Block/icons/navtree/diagram.png");
 		// We have just defined the default (expanded) variant. Here are some more.
@@ -246,6 +246,9 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		else {
 			if( ds.equals(DiagramState.DISABLED))      icon = closedDisabledIcon;
 			else if( ds.equals(DiagramState.ISOLATED)) icon = closedRestrictedIcon;
+		}
+		if(statusManager.getAlertState(resourceId)) {
+			icon = IconUtil.applyBadge(icon, alertBadge);
 		}
 		return icon;
 	}

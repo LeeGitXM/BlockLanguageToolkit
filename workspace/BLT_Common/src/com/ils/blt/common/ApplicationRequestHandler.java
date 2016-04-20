@@ -452,6 +452,24 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		if( state.equalsIgnoreCase("running")) isRunning = true;
 		return isRunning;
 	}
+	/**
+	 * Determine whether or not the engine is running.
+	 */
+	@Override
+	public boolean isAlerting(Long projectId,Long resid) {
+		Boolean result = null;
+		try {
+			result = (Boolean)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "isAlerting",projectId,resid);
+			log.debugf("%s.isAlerting ...%d:%d = %s",TAG,projectId,resid,result);
+		}
+		catch(Exception ge) {
+			log.infof("%s.isAlerting: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		if( result==null ) return false;
+		return result.booleanValue();
+	}
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(String diagramId, String blockName) {
@@ -497,6 +515,47 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 		return result;
 	}
+	/**
+	 * Query a diagram in the gateway for list of its blocks that are downstream
+	 * of the specified block. If any of those blocks are sinks, then continue
+	 * the search on the diagrams they are connected to.
+	 * @param diagramId of the parent diagram
+	 * @param blockName name of the block within the diagram
+	 * @return a list of blocks downstream of the specified block.
+	 */
+	@SuppressWarnings("unchecked")
+	public List<SerializableBlockStateDescriptor> listBlocksGloballyDownstreamOf(String diagramId,String blockId) {
+		List<SerializableBlockStateDescriptor> result = null;
+		try {
+			result = (List<SerializableBlockStateDescriptor> )GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "listBlocksGloballyDownstreamOf",diagramId,blockId);
+		}
+		catch(Exception ge) {
+			log.infof("%s.listBlocksGloballyDownstreamOf: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		return result;
+	}
+	/**
+	 * Query a diagram in the gateway for list of its blocks that are upstream
+	 * of the specified block. If any of those blocks are sources, then continue
+	 * the search on the diagrams they are connected to.
+	 * @param diagramId of the parent diagram
+	 * @param blockName name of the block within the diagram
+	 * @return a list of blocks upstream of the specified block.
+	 */
+	@SuppressWarnings("unchecked")
+	public List<SerializableBlockStateDescriptor> listBlocksGloballyUpstreamOf(String diagramId,String blockId) {
+		List<SerializableBlockStateDescriptor> result = null;
+		try {
+			result = (List<SerializableBlockStateDescriptor> )GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "listBlocksGloballyUpstreamOf",diagramId,blockId);
+		}
+		catch(Exception ge) {
+			log.infof("%s.listBlocksGloballyUpstreamOf: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		return result;
+	}
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(String diagramId, String blockId) {
@@ -692,11 +751,11 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * Determine whether or not the indicated resource is known to the controller.
 	 */
 	@Override
-	public boolean resourceExists(long projectId,long resid) {
+	public boolean resourceExists(Long projectId,Long resid) {
 		Boolean result = null;
 		try {
 			result = (Boolean)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "resourceExists",new Long(projectId),new Long(resid));
+					BLTProperties.MODULE_ID, "resourceExists",projectId,resid);
 			log.debugf("%s.resourceExists ...%d:%d = %s",TAG,projectId,resid,result);
 		}
 		catch(Exception ge) {

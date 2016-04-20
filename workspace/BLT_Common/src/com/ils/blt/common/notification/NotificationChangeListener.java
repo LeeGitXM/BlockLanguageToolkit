@@ -16,6 +16,11 @@ public interface NotificationChangeListener extends EventListener  {
 
 	//============================= NotificationChangeListener ===========================
 	/**
+	 * A diagram alert state has changed
+	 */
+	public void diagramAlertChange(long resourceId,String state);
+	
+	/**
 	 * A property binding has changed
 	 */
 	public void bindingChange(String binding);

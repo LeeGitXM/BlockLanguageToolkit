@@ -192,6 +192,9 @@ public class BlockProperty implements NotificationChangeListener {
 			return String.format("%s (%s)=%s",getName(),getBindingType().name(),(binding==null?"null":binding));
 		}
 	}
+	// ===================================== Notification Change Listener =======================================
+	@Override
+	public void diagramAlertChange(long resId, String state) {}
 	/**
 	 * Update a binding based on a push notification. Note that this
 	 * does NOT trigger change listeners.
@@ -229,4 +232,6 @@ public class BlockProperty implements NotificationChangeListener {
 	}
 	@Override
 	public void watermarkChange(String val) {}
+
+
 }

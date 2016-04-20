@@ -1,5 +1,5 @@
 /**
-e *   (c) 2013-2015  ILS Automation. All rights reserved.
+e *   (c) 2013-2016  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.gateway;
@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.ProcessBlock;
+import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.gateway.engine.BlockExecutionController;
 import com.ils.blt.gateway.engine.ProcessApplication;
 import com.ils.blt.gateway.engine.ProcessDiagram;
@@ -30,6 +31,7 @@ public class PythonRequestHandler   {
 	private static final String TAG = "PythonRequestHandler";
 	private static LoggerEx log = LogUtil.getLogger(PythonRequestHandler.class.getPackage().getName());
 	private final BlockExecutionController controller = BlockExecutionController.getInstance();
+	private String alerterClassName = null;
 	
 	public PythonRequestHandler() {}
 	/**
@@ -172,7 +174,7 @@ public class PythonRequestHandler   {
 			UUID diagramuuid = UUID.fromString(diagramId);
 			ProcessNode node = controller.getProcessNode(diagramuuid);
 			if( node instanceof ProcessDiagram ) {
-					diag = (ProcessDiagram)node;
+				diag = (ProcessDiagram)node;
 			}
 		}
 		catch(IllegalArgumentException iae) {
@@ -208,6 +210,9 @@ public class PythonRequestHandler   {
 		return fam;
 	}
 
+	public boolean isAlerting(ProcessDiagram diagram) {
+		return getAlertStatus(diagram);
+	}
 	/**
 	 * Handle the block placing a new value on its output. The input may be PyObjects.
 	 * This method is not "test-time" aware.
@@ -232,6 +237,12 @@ public class PythonRequestHandler   {
 						new BasicQualifiedValue(value,
 								new BasicQuality(quality,(quality.equalsIgnoreCase("good")?Quality.Level.Good:Quality.Level.Bad)),
 								new Date(time)));
+				ProcessBlock block = diagram.getBlock(uuid);
+				if( block.getClassName().equalsIgnoreCase(alerterClassName) ) {
+					boolean alerting = getAlertStatus(diagram);
+					controller.sendAlertNotification(diagram.getResourceId(), (alerting?"true":"false"));
+				}
+				
 			}
 		}
 		catch(IllegalArgumentException iae) {
@@ -281,6 +292,15 @@ public class PythonRequestHandler   {
 		
 	}
 	/**
+	 * Specify a class of block that, when it has a true state, gives the entire diagram
+	 * an "alerting" state. For now there is only a single class defined. This could easily
+	 * be a list.
+	 * @param cname
+	 */
+	public void setAlerterClass(String cname) {
+		alerterClassName = cname;
+	}
+	/**
 	 * Write a value to the named tag. The provider is the provider appropriate to
 	 * the referenced diagram
 	 * 
@@ -299,5 +319,24 @@ public class PythonRequestHandler   {
 		if(!quality.equalsIgnoreCase("good")) q = new BasicQuality(quality,Quality.Level.Bad);
 		QualifiedValue qv = new BasicQualifiedValue(data,q,new Date(time));
 		controller.updateTag(diagId, tagPath, qv);
+	}
+	
+	/*
+	 * This method is only called on a state change of one of the Python blocks under the
+	 * assumption that hard-coded blocks do not impact the diagram's alert status.
+	 */
+	private boolean getAlertStatus(ProcessDiagram diagram) {
+		boolean result = false;
+		if( alerterClassName!=null ) {
+			for(ProcessBlock blk:diagram.getProcessBlocks()){
+				if(blk.getClassName().equalsIgnoreCase(alerterClassName)) {
+					if(blk.getState().equals(TruthValue.TRUE)) {
+						result = true;
+						break;
+					}
+				}
+			}
+		}
+		return result;
 	}
 }

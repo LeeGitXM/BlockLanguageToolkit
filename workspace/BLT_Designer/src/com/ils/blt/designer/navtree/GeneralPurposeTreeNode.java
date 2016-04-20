@@ -52,7 +52,7 @@ import com.ils.blt.designer.ResourceDeleteManager;
 import com.ils.blt.designer.ResourceSaveManager;
 import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.blt.designer.ThreadCounter;
-import com.ils.blt.designer.applicationConfiguration.ApplicationConfigurationDialog;
+import com.ils.blt.designer.config.ApplicationConfigurationDialog;
 import com.ils.blt.designer.config.FamilyConfigurationDialog;
 import com.ils.blt.designer.config.ScriptExtensionsDialog;
 import com.ils.blt.designer.workspace.DiagramWorkspace;

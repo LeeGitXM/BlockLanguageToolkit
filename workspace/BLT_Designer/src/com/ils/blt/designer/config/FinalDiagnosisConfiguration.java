@@ -34,7 +34,7 @@ import net.miginfocom.swing.MigLayout;
 public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 	private static final long serialVersionUID = 7211480530910862375L;
 	private static final String TAG = "FinalDiagnosisConfiguration";
-	private final int DIALOG_HEIGHT = 520;
+	private final int DIALOG_HEIGHT = 600;
 	private final int DIALOG_WIDTH = 600;
 	private final ProcessDiagramView diagram;
 	private final ProcessBlockView block;
@@ -48,6 +48,7 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 	protected JTextField priorityField;
 	protected JTextField refreshRateField;
 	protected JTextField recommendationCallbackField;
+	protected JCheckBox  constantCheckBox;
 	protected JCheckBox  trapBox;
 	
 	public FinalDiagnosisConfiguration(DesignerContext ctx,ProcessDiagramView diag,ProcessBlockView view) {
@@ -166,6 +167,12 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 		uuidField.setEditable(false);
 		panel.add(uuidField,"span,growx,wrap");
 		
+		panel.add(createLabel("FinalDiagnosis.Constant"),"");
+		String constantValue = properties.get("Constant");
+		if( constantValue==null) constantValue="0";
+		constantCheckBox = createCheckBox("FinalDiagnosis.Constant.Desc",(constantValue.equalsIgnoreCase("1")));
+		panel.add(constantCheckBox,"span,growx,wrap");
+		
 		panel.add(createLabel("FinalDiagnosis.CalcMethod"),"");
 		String method = properties.get("CalculationMethod");
 		if( method==null) method="";
@@ -214,6 +221,7 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 	
 	// Copy the FinalDiagnosis auxiliary data back into the database
 	private void save(){
+		model.getProperties().put("Constant", (constantCheckBox.isSelected()?"1":"0"));
 		model.getProperties().put("CalculationMethod",calculationMethodField.getText());
 		model.getProperties().put("TextRecommendation", textRecommendationArea.getText());
 		model.getProperties().put("PostTextRecommendation", (postTextRecommendationBox.isSelected()?"1":"0"));

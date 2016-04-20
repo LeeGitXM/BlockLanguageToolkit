@@ -1,4 +1,4 @@
-package com.ils.blt.designer.applicationConfiguration;
+package com.ils.blt.designer.config;
 
 import java.util.HashMap;
 import java.util.List;

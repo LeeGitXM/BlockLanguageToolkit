@@ -78,6 +78,9 @@ public class BasicExecutionController implements ExecutionController  {
 		log.warnf("%s.hasActiveSubscription: WARNING: Executed from stub class",TAG);
 		return false;
 	}
+	public void sendAlertNotification(long resid, String val) {
+		log.warnf("%s.sendAlertNotification: WARNING: Executed from stub class",TAG);
+	}
 	public void sendConnectionNotification(String blockid, String port, QualifiedValue val) {
 		log.warnf("%s.sendConnectionNotification: WARNING: Executed from stub class",TAG);
 	}

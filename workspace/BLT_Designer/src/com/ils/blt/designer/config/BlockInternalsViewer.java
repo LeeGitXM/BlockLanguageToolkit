@@ -131,7 +131,7 @@ public class BlockInternalsViewer extends JDialog {
 		addSeparator(internalPanel,"Properties");
 		internalPanel.add(createPropertiesPanel(),"wrap");
 		
-		if( !activities.isEmpty() ) {
+		if( activities!=null && !activities.isEmpty() ) {
 			addSeparator(internalPanel,"Activities");
 			internalPanel.add(createActivitiesPanel(),"wrap");
 		}

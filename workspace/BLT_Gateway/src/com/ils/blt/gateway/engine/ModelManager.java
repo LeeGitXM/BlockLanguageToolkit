@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.ProcessBlock;
+import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.connection.Connection;
 import com.ils.blt.common.script.ScriptConstants;
@@ -281,11 +282,11 @@ public class ModelManager implements ProjectListener  {
 	 */
 	public RootNode getRootNode() { return root; }
 	
-	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(UUID diagramId,UUID blockId) {
+	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(UUID diagramId,UUID blockId,boolean spanDiagrams) {
 		List<ProcessBlock> blocks = new ArrayList<>();
 		ProcessDiagram diagram = getDiagram(diagramId);
 		ProcessBlock start = getBlock(diagram,blockId);
-		traverseDownstream(diagram,start,blocks);
+		traverseDownstream(diagram,start,blocks,spanDiagrams);
 		List<SerializableBlockStateDescriptor> results = new ArrayList<>();
 		int index = 0;
 		for( ProcessBlock block:blocks ) {
@@ -297,19 +298,39 @@ public class ModelManager implements ProjectListener  {
 		return results;
 	}
 	
-	private void traverseDownstream(ProcessDiagram diagram,ProcessBlock block,List<ProcessBlock> blocks) {
+	private void traverseDownstream(ProcessDiagram diagram,ProcessBlock block,List<ProcessBlock> blocks,boolean spanDiagrams) {
 		if( block!=null && !blocks.contains(block)) {
 			blocks.add(block);
 			for(ProcessBlock blk:diagram.getDownstreamBlocks(block)) {
-				traverseDownstream(diagram,blk,blocks);
+				traverseDownstream(diagram,blk,blocks,spanDiagrams);
+				// Do an exhaustive search for all sink blocks that have the same binding
+				// as the specified block. We cover all diagrams in the system.
+				if( spanDiagrams && blk.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SINK) ) {
+					BlockProperty prop = blk.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+					if( prop!=null ) {
+						String tagPath = prop.getBinding();
+						if( tagPath!=null && !tagPath.isEmpty()) {
+							for( ProcessDiagram diag:getDiagrams()) {
+								for(ProcessBlock source:diagram.getProcessBlocks()) {
+									if( source.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SOURCE) ) {
+										BlockProperty bp = source.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+										if( bp!=null && tagPath.equals(prop.getBinding())  ) {
+											traverseDownstream(diag,source,blocks,true);
+										}
+									}
+								}
+							}
+						}
+					}
+				}
 			}
 		}
 	}
-	public List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(UUID diagramId,UUID blockId) {
+	public List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(UUID diagramId,UUID blockId,boolean spanDiagrams) {
 		List<ProcessBlock> blocks = new ArrayList<>();
 		ProcessDiagram diagram = getDiagram(diagramId);
 		ProcessBlock start = getBlock(diagram,blockId);
-		traverseUpstream(diagram,start,blocks);
+		traverseUpstream(diagram,start,blocks,spanDiagrams);
 		List<SerializableBlockStateDescriptor> results = new ArrayList<>();
 		int index = 0;
 		for( ProcessBlock block:blocks ) {
@@ -319,11 +340,31 @@ public class ModelManager implements ProjectListener  {
 		}
 		return results;
 	}
-	private void traverseUpstream(ProcessDiagram diagram,ProcessBlock block,List<ProcessBlock> blocks) {
+	private void traverseUpstream(ProcessDiagram diagram,ProcessBlock block,List<ProcessBlock> blocks,boolean spanDiagrams) {
 		if( block!=null && !blocks.contains(block)) {
 			blocks.add(block);
 			for(ProcessBlock blk:diagram.getUpstreamBlocks(block)) {
-				traverseUpstream(diagram,blk,blocks);
+				traverseUpstream(diagram,blk,blocks,spanDiagrams);
+				// Do an exhaustive search for all sink blocks that have the same binding
+				// as the specified block. We cover all diagrams in the system.
+				if( spanDiagrams && blk.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SOURCE) ) {
+					BlockProperty prop = blk.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+					if( prop!=null ) {
+						String tagPath = prop.getBinding();
+						if( tagPath!=null && !tagPath.isEmpty()) {
+							for( ProcessDiagram diag:getDiagrams()) {
+								for(ProcessBlock sink:diagram.getProcessBlocks()) {
+									if( sink.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SINK) ) {
+										BlockProperty bp = sink.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+										if( bp!=null && tagPath.equals(prop.getBinding())  ) {
+											traverseDownstream(diag,sink,blocks,true);
+										}
+									}
+								}
+							}
+						}
+					}
+				}
 			}
 		}
 	}

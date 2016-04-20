@@ -7,6 +7,7 @@ import java.awt.Color;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
@@ -37,7 +38,8 @@ public class SourceConnection extends Input implements ProcessBlock {
 	public SourceConnection(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
 	}
-	
+	@Override
+	public String getClassName() {return BLTProperties.CLASS_NAME_SOURCE;}
 	/**
 	 * Add properties that are new for this class.
 	 * Populate them with default values.
