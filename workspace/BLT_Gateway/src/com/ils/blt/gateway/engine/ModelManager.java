@@ -50,8 +50,8 @@ import com.inductiveautomation.ignition.gateway.project.ProjectListener;
  *
  */
 public class ModelManager implements ProjectListener  {
-	
-	private static String TAG = "ModelManager";
+	private static final String TAG = "ModelManager";
+	private static final boolean DEBUG = true;
 	private final GatewayContext context;
 	private final LoggerEx log;
 	/** Access nodes by either UUID or tree path */
@@ -552,6 +552,7 @@ public class ModelManager implements ProjectListener  {
 			// If there haven't been any interesting resources, then we've probably
 			// just changed the enabled status of the project. Synchronize resources.
 			if( countOfInteresting==0) {
+				if(DEBUG) log.infof("%s.projectUpdated: ASSUME CHANGE-OF-ENABLED", TAG);
 				Project project = context.getProjectManager().getProject(projectId, ApplicationScope.ALL,ProjectVersion.Staging);
 				for( ProjectResource res: project.getResources() ) {
 					analyzeResource(pid,res);
@@ -634,6 +635,7 @@ public class ModelManager implements ProjectListener  {
 			ProcessDiagram diagram = (ProcessDiagram)nodesByUUID.get(sd.getId());
 			if( diagram==null) {
 				// Create a new diagram
+				if(DEBUG) log.infof("%s.addModifyDiagramResource: Creating diagram %s(%s)", TAG,res.getName(),sd.getId().toString());
 				diagram = new ProcessDiagram(sd,res.getParentUuid(),projectId);
 				diagram.setResourceId(res.getResourceId());
 				diagram.setProjectId(projectId);
@@ -654,6 +656,7 @@ public class ModelManager implements ProjectListener  {
 				// The same UUID, but a different project, is a different resource
 				// Check the node and parent UUIDs:
 				//     if they haven't already been migrated, do it here.
+				if(DEBUG) log.infof("%s.addModifyDiagramResource: Replicating diagram %s in new project", TAG,res.getName());
 				ProjectUUIDKey pukey = new ProjectUUIDKey(projectId,sd.getId());
 				UUID newId = uuidMigrationMap.get(pukey); 
 				if( newId==null ) {
@@ -683,6 +686,7 @@ public class ModelManager implements ProjectListener  {
 			// Carefully update the diagram with new features/properties.
 			// Leave existing blocks/subscriptions "as-is". 
 			else {
+				if(DEBUG) log.infof("%s.addModifyDiagramResource: Updating diagram %s", TAG,res.getName());
 				diagram.setName(sd.getName());
 				// Delete all the old connections
 				diagram.clearConnections();

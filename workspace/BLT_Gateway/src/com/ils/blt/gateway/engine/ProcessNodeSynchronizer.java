@@ -41,7 +41,7 @@ public class ProcessNodeSynchronizer {
      * are not backed up in the model.
      */
     public void createMissingResources() {
-    	log.infof("%s.createMissingResources ========================== Searching Resources ==================================", TAG);
+    	log.infof("%s.createMissingResources ========================== Create Missing Resources ==================================", TAG);
     	Map<ProjectResourceKey,ProcessNode> nodeMap = modelManager.getNodesByKey();
     	for(ProjectResourceKey key:resourceMap.keySet()) {
     		if( nodeMap.get(key)==null) {
@@ -58,7 +58,7 @@ public class ProcessNodeSynchronizer {
      * Delete any that are not backed up by actual process resources.
      */
     public void removeExcessNodes() {
-    	log.infof("%s.removeExcessNodes ======================== Searching Process Nodes ================================", TAG);
+    	log.infof("%s.removeExcessNodes ======================== Remove Excess Nodes ================================", TAG);
     	nodesToDelete.clear();
     	Map<ProjectResourceKey,ProcessNode> nodeMap = modelManager.getNodesByKey();
     	for(ProjectResourceKey key:nodeMap.keySet()) {
@@ -80,7 +80,7 @@ public class ProcessNodeSynchronizer {
      * to a legacy issue and will never happen again.
      */
     public void removeOrphans() {
-    	log.infof("%s.removeOrphans ======================== Searching Process Nodes ================================", TAG);
+    	log.infof("%s.removeOrphans ======================== Removing Orphans ================================", TAG);
     	nodesToDelete.clear();
     	Map<ProjectResourceKey,ProcessNode> nodesByKey = modelManager.getNodesByKey();
     	Collection<ProcessNode> nodes = nodesByKey.values();
