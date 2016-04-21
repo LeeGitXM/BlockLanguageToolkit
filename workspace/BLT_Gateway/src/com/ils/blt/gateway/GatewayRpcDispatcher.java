@@ -291,6 +291,10 @@ public class GatewayRpcDispatcher   {
 		return requestHandler.getToolkitProperty(propertyName);
 	}
 
+    public Boolean isAlerting(Long projectId,Long resourceId) {
+    	boolean result = requestHandler.isAlerting(projectId, resourceId);
+    	return new Boolean(result);
+    }
 	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(String diagramId, String blockName) {
 		return requestHandler.listBlocksDownstreamOf(diagramId, blockName);
 	}
