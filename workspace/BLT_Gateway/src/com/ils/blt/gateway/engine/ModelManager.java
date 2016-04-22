@@ -51,7 +51,7 @@ import com.inductiveautomation.ignition.gateway.project.ProjectListener;
  */
 public class ModelManager implements ProjectListener  {
 	private static final String TAG = "ModelManager";
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 	private final GatewayContext context;
 	private final LoggerEx log;
 	/** Access nodes by either UUID or tree path */
@@ -484,11 +484,10 @@ public class ModelManager implements ProjectListener  {
 			if( staging.isEnabled() && staging.getId()!=-1 ) {
 				long projectId = staging.getId();
 				uuidByProjectId.put(new Long(projectId), staging.getUuid());
-				log.infof("%s.projectAdded: %s (%d),staging",TAG,staging.getName(),projectId);
 				List<ProjectResource> resources = staging.getResources();
 				for( ProjectResource res:resources ) {
-					log.infof("%s.projectAdded: resource %s (%d),type %s", TAG,res.getName(),
-							res.getResourceId(),res.getResourceType());
+					log.infof("%s.projectAdded: resource %d.%d %s (%s)", TAG,projectId,res.getResourceId(),res.getName(),
+							res.getResourceType());
 					analyzeResource(projectId,res);
 				}
 			}
@@ -518,7 +517,9 @@ public class ModelManager implements ProjectListener  {
 	 */
 	@Override
 	public void projectUpdated(Project diff, ProjectVersion vers) { 
+		
 		log.infof("%s.projectUpdated: %s (%d)  %s",TAG,diff.getName(),diff.getId(),vers.toString());
+		
 		if( vers!=ProjectVersion.Staging ) return;  // Consider only the "Staging" version
 		long projectId = diff.getId();
 		UUID olduuid = uuidByProjectId.get(new Long(projectId));
@@ -531,13 +532,14 @@ public class ModelManager implements ProjectListener  {
 		}
 		
 		if( diff.isEnabled() ) {
+			
 			int countOfInteresting = 0;
 			List<ProjectResource> resources = diff.getResources();
 			Long pid = new Long(projectId);
 			for( ProjectResource res:resources ) {
 				//if( res.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)) continue;
-				log.infof("%s.projectUpdated: add/update resource %s (%d),type %s (%s)", TAG,res.getName(),
-						res.getResourceId(),res.getResourceType(),(diff.isResourceDirty(res)?"dirty":"clean"));
+				log.infof("%s.projectUpdated: add/update resource %d.%d %s (%s) %s", TAG,projectId,res.getResourceId(),res.getName(),
+						res.getResourceType(),(diff.isResourceDirty(res)?"dirty":"clean"));
 				analyzeResource(pid,res);
 				if( isBLTResource(res.getResourceType()) ) countOfInteresting++;
 			}
@@ -552,18 +554,27 @@ public class ModelManager implements ProjectListener  {
 			// If there haven't been any interesting resources, then we've probably
 			// just changed the enabled status of the project. Synchronize resources.
 			if( countOfInteresting==0) {
-				if(DEBUG) log.infof("%s.projectUpdated: ASSUME CHANGE-OF-ENABLED", TAG);
-				Project project = context.getProjectManager().getProject(projectId, ApplicationScope.ALL,ProjectVersion.Staging);
+				Project project = context.getProjectManager().getProject(projectId, ApplicationScope.GATEWAY,ProjectVersion.Staging);
+				log.info("============================== ENABLED =================================");
+				for( ProjectResource res: project.getResources() ) {
+					log.infof("%s.projectUpdated: re-instating %d:%d %s",TAG,projectId,res.getResourceId(),res.getName());
+				}
+				
 				for( ProjectResource res: project.getResources() ) {
 					analyzeResource(pid,res);
 				}
 			}
 		}
-		else {     // Delete projects that are disabled
+		// Delete the BLT resources of projects that are disabled. There is nothing displayable in the Designer
+		else {     
 			deleteProjectResources(projectId);
+			
+			log.info("============================== DISABLED =================================");
+			Project project = context.getProjectManager().getProject(projectId, ApplicationScope.GATEWAY,ProjectVersion.Staging);
+			for( ProjectResource res: project.getResources() ) {
+				log.infof("%s.projectUpdated: removing  %d:%d %s",TAG,projectId,res.getResourceId(),res.getName());
+			}
 		}
-		
-
 	}
 	
 	// ===================================== Private Methods ==========================================
@@ -902,6 +913,7 @@ public class ModelManager implements ProjectListener  {
 			}
 		}
 	}
+	
 	// Delete all process nodes for a given project.
 	private void deleteProjectResources(long projectId) {
 		log.infof("%s.deleteProjectResources: proj = %d",TAG,projectId);

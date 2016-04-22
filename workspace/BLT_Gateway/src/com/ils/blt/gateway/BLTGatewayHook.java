@@ -102,13 +102,12 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	    	for(String clss: sem.getClassNames() ) {
 	    		String key = AbstractScriptExtensionManager.makeKey(clss, flavor);
 		    	String pythonPath = requestHandler.getToolkitProperty(key);
-		    	if( pythonPath!=null && !pythonPath.isEmpty() ) {
+		    	if( pythonPath!=null ) {
 		    		sem.setModulePath(key, pythonPath);
 		    		sem.addScript(clss,flavor, pythonPath);
 		    	}
 		    }
 	    }
-
 	    
 	    // Load existing projects - skip the global project and any that are disabled.
 	    List<Project> projects = context.getProjectManager().getProjectsFull(ProjectVersion.Staging);
