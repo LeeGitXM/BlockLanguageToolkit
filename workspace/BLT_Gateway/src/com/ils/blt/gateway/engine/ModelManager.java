@@ -502,6 +502,7 @@ public class ModelManager implements ProjectListener  {
 	@Override
 	public void projectDeleted(long projectId) {
 		log.infof("%s.projectDeleted: (id=%d)",TAG,projectId);
+		if( projectId<0 ) return;
 		deleteProjectResources(projectId);
 		
 	}
@@ -522,6 +523,8 @@ public class ModelManager implements ProjectListener  {
 		
 		if( vers!=ProjectVersion.Staging ) return;  // Consider only the "Staging" version
 		long projectId = diff.getId();
+		if( projectId<0 ) return;                   // Ignore global project
+		
 		UUID olduuid = uuidByProjectId.get(new Long(projectId));
 		if( olduuid==null ) {
 			log.warnf("%s.projectUpdated: No existing project (%d) found",TAG,projectId);
