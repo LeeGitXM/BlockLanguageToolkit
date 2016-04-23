@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved.
+ *   (c) 2014-2016  ILS Automation. All rights reserved.
  */
 package com.ils.blt.migration;
 
@@ -361,20 +361,6 @@ public class Migrator {
 		else if( g2Block.getClassName().equalsIgnoreCase("GDL-INFERENCE-PATH-CONNECTION-POST") ) {
 			for( SerializableAnchor anchor:block.getAnchors()) {
 				anchor.setConnectionType(ConnectionType.TRUTHVALUE);
-			}
-		}
-		// PersistenceGate - convert minutes to seconds
-		else if( block.getClassName().startsWith("com.ils.block.PersistenceGate")) { 
-			for(BlockProperty prop:block.getProperties()) {
-				if( prop.getName().equalsIgnoreCase("TimeWindow" )) {
-					try {
-						double val = Double.parseDouble(prop.getValue().toString());
-						prop.setValue(new Double(val*60));
-					} 
-					catch(NumberFormatException nfe) {
-						System.err.println(String.format("%s: PersistenceGate delay is not a number (%s)",TAG,nfe.getMessage()));
-					}
-				}
 			}
 		}
 		// Timer and Sub-Diagnosis - if they are "named", then set tag path
