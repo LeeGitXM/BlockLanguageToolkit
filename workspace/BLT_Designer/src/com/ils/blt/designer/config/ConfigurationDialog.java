@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved.
+ *   (c) 2014-2016  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.designer.config;
@@ -47,7 +47,7 @@ public class ConfigurationDialog extends JDialog {
 	protected final ResourceBundle rb;
 	protected static final Dimension BUTTON_SIZE  = new Dimension(90,28);
 	protected static final Dimension COMBO_SIZE  = new Dimension(120,24);
-	protected static final Dimension DESCRIPTION_BOX_SIZE  = new Dimension(280,80);
+	protected static final Dimension DESCRIPTION_AREA_SIZE  = new Dimension(280,160);
 	protected static final Dimension NAME_BOX_SIZE  = new Dimension(280,24);
 	protected static final Dimension NUMBER_BOX_SIZE  = new Dimension(50,24);
 	protected final LoggerEx log;
@@ -125,13 +125,14 @@ public class ConfigurationDialog extends JDialog {
 	}
 
 	/*
-	 * Create a text area for editing the description
+	 * Create a text area for editing the description. This should be placed inside a
+	 * scroll pane.
 	 */
 	protected JTextArea createTextArea(String bundle,String text) {	
 		final JTextArea area = new JTextArea(text);
-		area.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));     // Thickness
-		area.setPreferredSize(DESCRIPTION_BOX_SIZE);
 		area.setEditable(true);
+		area.setLineWrap(true);
+		area.setWrapStyleWord(false);
 		area.setToolTipText(rb.getString(bundle));
 		return area;
 	}

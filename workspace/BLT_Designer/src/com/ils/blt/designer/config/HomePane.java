@@ -76,6 +76,8 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 		if( description==null) description="";
 		descriptionTextArea.setText(description);
 		descriptionTextArea.setEditable(true);
+		descriptionTextArea.setLineWrap(true);
+		descriptionTextArea.setWrapStyleWord(true);
 		descriptionTextArea.setToolTipText("Optional description of this application");
 
 		JScrollPane scrollPane = new JScrollPane(descriptionTextArea);

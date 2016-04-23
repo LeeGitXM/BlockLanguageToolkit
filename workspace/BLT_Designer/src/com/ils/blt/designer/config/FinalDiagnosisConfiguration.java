@@ -14,6 +14,7 @@ import java.util.Map;
 
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.WindowConstants;
@@ -34,7 +35,7 @@ import net.miginfocom.swing.MigLayout;
 public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 	private static final long serialVersionUID = 7211480530910862375L;
 	private static final String TAG = "FinalDiagnosisConfiguration";
-	private final int DIALOG_HEIGHT = 600;
+	private final int DIALOG_HEIGHT = 660;
 	private final int DIALOG_WIDTH = 600;
 	private final ProcessDiagramView diagram;
 	private final ProcessBlockView block;
@@ -84,7 +85,7 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 		// - one for the dual list box, the other for the remaining attributes
 		//setLayout(new BorderLayout());
 		mainPanel = new JPanel();
-		mainPanel.setLayout(new MigLayout("ins 2,fill","[][]","[][200:1000:2000][]"));
+		mainPanel.setLayout(new MigLayout("ins 2,fill","[][]","[][growprio 50,200:1000:2000][]"));
 		
 		
 		addSeparator(mainPanel,"FinalDiagnosis.QuantOutputs");
@@ -153,69 +154,71 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 		Map<String,String> properties = model.getProperties();
 		JPanel panel = new JPanel();
 		final String columnConstraints = "para[][][][]";
-		final String layoutConstraints = "ins 10,gapy 3,gapx 5,fillx";
-		final String rowConstraints = "para[][][][][][][][][]";
+		final String layoutConstraints = "ins 2,gapy 1,gapx 5,fillx,filly";
+		final String rowConstraints = "para [][][][][growprio 100,48:72:96][][][][][]";
 		panel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
 
 		panel.add(createLabel("FinalDiagnosis.Name"),"");
 		nameField = createTextField("FinalDiagnosis.Name.Desc",block.getName());
 		nameField.setEditable(false);
-		panel.add(nameField,"span,growx,wrap");
+		panel.add(nameField,"spanx 3,growx,wrap");
 
 		panel.add(createLabel("FinalDiagnosis.UUID"),"gaptop 2,aligny top");
 		JTextField uuidField = createTextField("FinalDiagnosis.UUID.Desc",block.getId().toString());
 		uuidField.setEditable(false);
-		panel.add(uuidField,"span,growx,wrap");
+		panel.add(uuidField,"spanx 3,growx,wrap");
 		
-		panel.add(createLabel("FinalDiagnosis.Constant"),"");
+		panel.add(createLabel("FinalDiagnosis.Constant"),"gaptop 2,aligny top");
 		String constantValue = properties.get("Constant");
 		if( constantValue==null) constantValue="0";
 		constantCheckBox = createCheckBox("FinalDiagnosis.Constant.Desc",(constantValue.equalsIgnoreCase("1")));
-		panel.add(constantCheckBox,"span,growx,wrap");
+		panel.add(constantCheckBox,"alignx left,wrap");
 		
-		panel.add(createLabel("FinalDiagnosis.CalcMethod"),"");
+		panel.add(createLabel("FinalDiagnosis.CalcMethod"),"gaptop 2,aligny top");
 		String method = properties.get("CalculationMethod");
 		if( method==null) method="";
 		calculationMethodField = createTextField("FinalDiagnosis.CalcMethod.Desc",method);
-		panel.add(calculationMethodField,"span,growx,wrap");
+		panel.add(calculationMethodField,"spanx 3,growx,wrap");
 		
 		panel.add(createLabel("FinalDiagnosis.TextRecommendation"),"gaptop 2,aligny top");
 		String recommendation = (String)properties.get("TextRecommendation");
 		if( recommendation==null) recommendation="";
 		textRecommendationArea = createTextArea("FinalDiagnosis.TextRecommendation.Desc",recommendation);
-		panel.add(textRecommendationArea,"gaptop 2,aligny top,span,growx,wrap");
+		textRecommendationArea.setWrapStyleWord(false);
+		JScrollPane scrollPane = new JScrollPane(textRecommendationArea);
+		panel.add(scrollPane,"spanx 3,growx,growy,wrap");
 		
 		panel.add(createLabel("FinalDiagnosis.PostTextRecommendation"),"gaptop 2,aligny top");
 		String postTextRec = (String)properties.get("PostTextRecommendation");
 		if( postTextRec==null) postTextRec="0";
 		postTextRecommendationBox = createCheckBox("FinalDiagnosis.PostTextRecommendation.Desc",(postTextRec.equals("0")?false:true));
-		panel.add(postTextRecommendationBox,"gaptop 2,aligny top,span,growx,wrap");
+		panel.add(postTextRecommendationBox,"alignx left,wrap");
 
-		panel.add(createLabel("FinalDiagnosis.Priority"),"");
+		panel.add(createLabel("FinalDiagnosis.Priority"),"gaptop 2,aligny top");
 		String priority = (String)properties.get("Priority");
 		if( priority==null) priority="";
 		priorityField = createTextField("FinalDiagnosis.Priority.Desc",priority);
 		priorityField.setPreferredSize(NUMBER_BOX_SIZE);
-		panel.add(priorityField,"span,wrap");
+		panel.add(priorityField,"span 2,wrap");
 		
-		panel.add(createLabel("FinalDiagnosis.RefreshRate"),"");
+		panel.add(createLabel("FinalDiagnosis.RefreshRate"),"gaptop 2,aligny top");
 		String rate = (String)properties.get("RefreshRate");
 		if( rate==null) rate="";
 		refreshRateField = createTextField("FinalDiagnosis.RefreshRate.Desc",rate);
 		refreshRateField.setPreferredSize(NUMBER_BOX_SIZE);
-		panel.add(refreshRateField,"span,wrap");
+		panel.add(refreshRateField,"span 2,alignx left,wrap");
 		
-		panel.add(createLabel("FinalDiagnosis.RecommendationCallback"),"");
+		panel.add(createLabel("FinalDiagnosis.RecommendationCallback"),"gaptop 2,aligny top");
 		method = (String)properties.get("TextRecommendationCallback");
 		if( method==null) method="";
 		recommendationCallbackField = createTextField("FinalDiagnosis.RecommendationCallback.Desc",method);
-		panel.add(recommendationCallbackField,"span,growx,wrap");
+		panel.add(recommendationCallbackField,"span 3,growx,wrap");
 		
-		panel.add(createLabel("FinalDiagnosis.TrapInsignificant"),"");
+		panel.add(createLabel("FinalDiagnosis.TrapInsignificant"),"gaptop 2,aligny top");
 		String tf = (String)properties.get("TrapInsignificantRecommendations");
 		if( tf==null) tf="0";
 		trapBox = createCheckBox("FinalDiagnosis.TrapInsignificant.Desc",(tf.equals("0")?false:true));
-		panel.add(trapBox,"span,wrap");
+		panel.add(trapBox,"alignx left");
 		return panel;
 	}
 	

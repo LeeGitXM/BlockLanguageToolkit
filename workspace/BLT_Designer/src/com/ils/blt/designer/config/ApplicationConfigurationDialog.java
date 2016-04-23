@@ -19,7 +19,6 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
  * Display a dialog to configure an Application node
  */
 public class ApplicationConfigurationDialog extends JDialog { 
-	private static String KEY = "ILS Application Editor";
 	private static String TITLE = "Application Editor";
 
 	protected final DesignerContext context;

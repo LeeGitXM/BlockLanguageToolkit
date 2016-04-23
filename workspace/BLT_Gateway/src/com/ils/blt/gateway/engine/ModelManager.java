@@ -713,7 +713,7 @@ public class ModelManager implements ProjectListener  {
 				diagram.setState(sd.getState());// Handle state change, if any
 			}
 			//	Invoke extension script on diagram save
-			if( diagram!=null ) {
+			if( diagram!=null && !diagram.getState().equals(DiagramState.DISABLED) ) {
 				extensionManager.runScript(context.getScriptManager(), ScriptConstants.DIAGRAM_CLASS_NAME, 
 						ScriptConstants.NODE_SAVE_SCRIPT, diagram.getSelf().toString());
 			}

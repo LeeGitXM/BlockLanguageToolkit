@@ -15,6 +15,7 @@ import java.util.HashMap;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
@@ -84,32 +85,35 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 	private JPanel createMainPanel() {
 		JPanel panel = new JPanel();
 		final String columnConstraints = "para[][][][]";
-		final String layoutConstraints = "ins 10,gapy 3,gapx 5,fillx";
-		final String rowConstraints = "para[][][][][][][][][]";
+		final String layoutConstraints = "ins 10,gapy 3,gapx 5,fill";
+		final String rowConstraints = "para[][][][][][][][]";
 		panel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
 
 		panel.add(createLabel("Family.Name"),"");
 		nameField = createTextField("Family.Name.Desc",family.getName());
 		nameField.setEditable(false);
-		panel.add(nameField,"span,wrap");
+		panel.add(nameField,"span,growx,wrap");
 
 		panel.add(createLabel("Family.UUID"),"gaptop 2,aligny top");
 		JTextField uuidField = createTextField("Family.UUID.Desc",family.getId().toString());
 		uuidField.setEditable(false);
-		panel.add(uuidField,"span,wrap");
+		panel.add(uuidField,"span,growx,wrap");
 		
 		panel.add(createLabel("Family.Description"),"gaptop 2,aligny top");
 		String description = model.getProperties().get("Description");
 		if( description==null) description="";
 		descriptionArea = createTextArea("Family.Description.Desc",description);
-		panel.add(descriptionArea,"gaptop 2,aligny top,span,wrap");
+		JScrollPane scrollPane = new JScrollPane(descriptionArea);
+		scrollPane.setPreferredSize(DESCRIPTION_AREA_SIZE);
+		panel.add(scrollPane,"gaptop 2,aligny top,spanx,growx,growy,wrap");
 
-		panel.add(createLabel("Family.Priority"),"");
+		panel.add(createLabel("Family.Priority"),"gaptop 2,aligny top");
 		String priority = model.getProperties().get("Priority");
 		if( priority==null) priority="0.0";
 		priorityField = createDoubleField("Family.Priority.Desc",priority);
 		priorityField.setPreferredSize(NUMBER_BOX_SIZE);
 		panel.add(priorityField,"");
+		
 		panel.add(createLabel("Family.State"),"gapleft 20");
 		stateBox = createActiveStateCombo("Family.State",family.getState());
 		panel.add(stateBox,"wrap 20");
