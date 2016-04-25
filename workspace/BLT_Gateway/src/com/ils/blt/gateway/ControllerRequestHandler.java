@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2015  ILS Automation. All rights reserved.
+ *   (c) 2014-2016  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.gateway;
@@ -717,6 +717,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	/**
 	 * Do an exhaustive search for all sink blocks that have the same binding
 	 * as the specified block. We cover all diagrams in the system.
+	 * 
 	 * @param blockId
 	 * @return
 	 */
@@ -729,12 +730,13 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		if(diagram!=null) {
 			source = diagram.getBlockByName(blockName);
 		}
+	
 		String tagPath = null;
-		if( source!=null ) {
+		if( source!=null && source.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SOURCE) ) {
 			BlockProperty prop = source.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 			if( prop!=null ) tagPath = prop.getBinding();
 		}
-		
+
 		if( tagPath!=null && tagPath.length()>0 ) {
 			List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
 			for(SerializableResourceDescriptor desc:descriptors) {
@@ -751,9 +753,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 		else {
-			log.warnf("%s.listSinksForSource: Block %s not found or not bound",TAG,blockName);
+			log.warnf("%s.listSinksForSource: Block %s not found, not a source or not bound",TAG,blockName);
 		}
-		
 		return results;
 	}
 	/**
@@ -771,8 +772,9 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		if(diagram!=null) {
 			sink = diagram.getBlockByName(blockName);
 		}
+
 		String tagPath = null;
-		if( sink!=null ) {
+		if( sink!=null && sink.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SINK)) {
 			BlockProperty prop = sink.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 			if( prop!=null ) tagPath = prop.getBinding();
 		}
@@ -793,7 +795,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 		else {
-			log.warnf("%s.listSourcesForSink: Block %s not found or not bound",TAG,blockName);
+			log.warnf("%s.listSourcesForSink: Block %s not found, not a sink or not bound",TAG,blockName);
 		}
 		return results;
 	}

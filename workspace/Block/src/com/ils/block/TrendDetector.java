@@ -257,6 +257,7 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 		else if( port.equals(PORT_TARGET)  ) {
 			qv = incoming.getValue();
 			if( qv==null || qv.getValue()==null) return;
+			if( buffer.isEmpty() ) return;
 			try {
 				mean = Double.parseDouble(qv.getValue().toString());
 				// Need to test for last buffer value significant

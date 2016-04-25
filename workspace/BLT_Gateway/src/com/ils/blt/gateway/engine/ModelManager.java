@@ -544,7 +544,7 @@ public class ModelManager implements ProjectListener  {
 				log.infof("%s.projectUpdated: add/update resource %d.%d %s (%s) %s", TAG,projectId,res.getResourceId(),res.getName(),
 						res.getResourceType(),(diff.isResourceDirty(res)?"dirty":"clean"));
 				analyzeResource(pid,res);
-				if( isBLTResource(res.getResourceType()) ) countOfInteresting++;
+				if( isBLTResource(res.getResourceType()) || res.getResourceType().equalsIgnoreCase("Window") ) countOfInteresting++;
 			}
 
 			Set<Long> deleted = diff.getDeletedResources();

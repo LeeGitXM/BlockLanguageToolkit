@@ -497,7 +497,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 			if( ((Boolean)value).booleanValue() ) result = TruthValue.TRUE;
 			else result = TruthValue.FALSE;
 		}
-		else if(value instanceof String) {
+		else if(value instanceof String && !value.toString().isEmpty() ) {
 			try {
 				result = TruthValue.valueOf(value.toString().toUpperCase());
 			}

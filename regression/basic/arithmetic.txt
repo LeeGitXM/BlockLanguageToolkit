@@ -16,8 +16,8 @@ tagset: DualInput     MemoryTags/DoubleInput1 MemoryTags/DoubleInput2
 Test: Action and Math Function blocks
 Step: BooleanFeed
 Tagset: SingleBoolean
-09:58 True
-09:59 false
+09:59:30 true
+09:59:45 false
 10:00 true
 10:00:10 Assert: ActionOut = TRUE "Pass thru is true"
 10:01 false

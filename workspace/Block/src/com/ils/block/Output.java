@@ -65,7 +65,6 @@ public class Output extends AbstractProcessBlock implements ProcessBlock {
 				log.tracef("%s.acceptValue: writing to path %s",getName(),pathProperty.getBinding().toString());
 				controller.updateTag(getParentId(),pathProperty.getBinding().toString(), qv);
 			}
-			
 		}
 		valueProperty.setValue(qv.getValue());
 		notifyOfStatus(qv);

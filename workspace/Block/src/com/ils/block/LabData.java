@@ -1,5 +1,5 @@
 /**
- *   (c) 2015  ILS Automation. All rights reserved. 
+ *   (c) 2015-2016  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -134,26 +134,29 @@ public class LabData extends Input implements ProcessBlock {
 			return;
 		}
 			
-		if( port.equalsIgnoreCase(timePathProperty.getName()) && incoming.getValue().getValue()!=null ) {
-			// The input can be either a date or string 
-			Date timestamp = null;
-			if( incoming.getValue().getValue() instanceof Date ) {
-				timestamp = (Date)incoming.getValue().getValue();
-			}
-			else {
-				try {
-					timestamp = customFormatter.parse(incoming.getValue().getValue().toString());
+		if( port.equalsIgnoreCase(timePathProperty.getName())  ) {
+			// Ignore empty strings or nulls
+			if( incoming.getValue().getValue()!=null && !incoming.getValue().getValue().toString().isEmpty()) {
+				// The input can be either a date or string 
+				Date timestamp = null;
+				if( incoming.getValue().getValue() instanceof Date ) {
+					timestamp = (Date)incoming.getValue().getValue();
 				}
-				catch(NumberFormatException nfe) {
-					log.errorf("%s.acceptValue: Exception formatting time %s as %s (%s)",getName(),incoming.getValue().getValue().toString(),
-							dateFormatter.toString(),nfe.getLocalizedMessage());
+				else {
+					try {
+						timestamp = customFormatter.parse(incoming.getValue().getValue().toString());
+					}
+					catch(NumberFormatException nfe) {
+						log.errorf("%s.acceptValue: Exception formatting time %s as %s (%s)",getName(),incoming.getValue().getValue().toString(),
+								dateFormatter.toString(),nfe.getLocalizedMessage());
+					}
+					catch(ParseException pe) {
+						log.errorf("%s.acceptValue: Exception formatting time %s as %s (%s)",getName(),incoming.getValue().getValue().toString(),
+								dateFormatter.toString(),pe.getLocalizedMessage());
+					} 
 				}
-				catch(ParseException pe) {
-					log.errorf("%s.acceptValue: Exception formatting time %s as %s (%s)",getName(),incoming.getValue().getValue().toString(),
-							dateFormatter.toString(),pe.getLocalizedMessage());
-				} 
+				currentTime = timestamp;
 			}
-			currentTime = timestamp;
 		}
 		else if( port.equalsIgnoreCase(valuePathProperty.getName() )) {
 			currentValue = incoming.getValue();
