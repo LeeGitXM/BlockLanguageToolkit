@@ -311,7 +311,7 @@ public class ModelManager implements ProjectListener  {
 						String tagPath = prop.getBinding();
 						if( tagPath!=null && !tagPath.isEmpty()) {
 							for( ProcessDiagram diag:getDiagrams()) {
-								for(ProcessBlock source:diagram.getProcessBlocks()) {
+								for(ProcessBlock source:diag.getProcessBlocks()) {
 									if( source.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SOURCE) ) {
 										BlockProperty bp = source.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 										if( bp!=null && tagPath.equals(prop.getBinding())  ) {
@@ -335,7 +335,7 @@ public class ModelManager implements ProjectListener  {
 		int index = 0;
 		for( ProcessBlock block:blocks ) {
 			index++;
-			if( index<2 ) continue;  // skil start block
+			if( index<2 ) continue;  // skip start block
  			results.add(block.toDescriptor());
 		}
 		return results;
@@ -353,11 +353,11 @@ public class ModelManager implements ProjectListener  {
 						String tagPath = prop.getBinding();
 						if( tagPath!=null && !tagPath.isEmpty()) {
 							for( ProcessDiagram diag:getDiagrams()) {
-								for(ProcessBlock sink:diagram.getProcessBlocks()) {
+								for(ProcessBlock sink:diag.getProcessBlocks()) {
 									if( sink.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SINK) ) {
 										BlockProperty bp = sink.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 										if( bp!=null && tagPath.equals(prop.getBinding())  ) {
-											traverseDownstream(diag,sink,blocks,true);
+											traverseUpstream(diag,sink,blocks,true);
 										}
 									}
 								}
