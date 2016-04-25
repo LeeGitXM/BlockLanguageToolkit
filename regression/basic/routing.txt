@@ -37,7 +37,7 @@ assert: getDiagramNameForBlock($DIAGRAM,$DATAPUMP) = "routing" "Obtain diagram n
 Step: Blocks in Diagram
 assert: blocksInDiagram($DIAGRAM) contains "INHIBITOR-551" "Inhibitor-551 is in diagram"
 assert: blocksInDiagram($DIAGRAM) contains "RoutingParameter" "RountingParameter is in diagram"
-assert: count of blocksInDiagram($DIAGRAM) = 21 "21 blocks in diagram"
+assert: count of blocksInDiagram($DIAGRAM) = 22 "22 blocks in diagram"
 
 Step: Blocks of Class
 assert: blocksOfClass($DIAGRAM,"com.ils.block.Inhibitor") contains "INHIBITOR-551" "Inhibitor-551 is an Inhibitor"
@@ -61,9 +61,10 @@ assert: blocksGloballyDownstream($DIAGRAM,"DATAPUMP-4") contains "RoutingParamet
 assert: count of blocksGloballyDownstream($DIAGRAM,"DATAPUMP-4") = 4  "4 blocks downstream of datapump 4"
 assert: blocksGloballyDownstream($DIAGRAM,"COMMAND-225") contains "INHIBITOR-380" "Inhibitor 380 is downstream of command 225"
 assert: ! blocksGloballyDownstream($DIAGRAM,"COMMAND-225") contains "RoutingParameter" "RoutingParameter is not downstream of command 225"
-assert: count of blocksGloballyDownstream($DIAGRAM,"COMMAND-225") = 6  "6 blocks downstream of command 225"
-assert: count of blocksGloballyDownstream($DIAGRAM,"SINKCONNECTION-538") = 12 "12 blocks downstream of SINKCONNECTION-538"
-assert: blocksGloballyDownstream($DIAGRAM,"SINKCONNECTION-538") contains "JUNCTION-605" "Junction-605 is downupstream of SINKCONNECTION-538"
+assert: count of blocksGloballyDownstream($DIAGRAM,"COMMAND-225") = 21  "21 blocks downstream of command 225 (multiplediagrams)"
+assert: count of blocksGloballyDownstream($DIAGRAM,"SINKCONNECTION-538") = 15 "15 blocks downstream of SINKCONNECTION-538"
+assert: blocksGloballyDownstream($DIAGRAM,"SINKCONNECTION-538") contains "PARAMETER-682" "Parameter-682 is downupstream of SINKCONNECTION-538"
+assert: blocksGloballyDownstream($DIAGRAM,"SINKCONNECTION-538") contains "QUALVALUE-905" "QualValue-905 is downupstream of SINKCONNECTION-538"
 
 Step: Upstream of Block 
 assert: blocksUpstream($DIAGRAM,"OUTPUT-817") contains "COMMAND-225" "Command-225 is upstream of OUTPUT-817"
@@ -71,6 +72,7 @@ assert: blocksUpstream($DIAGRAM,"OUTPUT-817") contains "JUNCTION-605" "Junction-
 assert: !blocksUpstream($DIAGRAM,"OUTPUT-817") contains "OUTPUT-514" "Output 514 is not upstream of OUTPUT-817"
 assert: count of blocksUpstream($DIAGRAM,"OUTPUT-817") = 12 "12 blocks upstream of OUTPUT-817"
 assert: count of blocksUpstream($DIAGRAM,"DATAPUMP-4") = 0 "0 blocks upstream of data pump"
+assert: ! blocksUpstream($DIAGRAM,"QUALVALUE-905") contains "JUNCTION-605" "Junction-605 is not upstream of QUALVALUE-905"
 
 Step: Globally Upstream of Block
 assert: blocksGloballyUpstream($DIAGRAM,"OUTPUT-817") contains "COMMAND-225" "Command-225 is upstream of OUTPUT-817"
@@ -79,7 +81,7 @@ assert: !blocksGloballyUpstream($DIAGRAM,"OUTPUT-817") contains "OUTPUT-514" "Ou
 assert: count of blocksGloballyUpstream($DIAGRAM,"OUTPUT-817") = 12 "12 blocks upstream of OUTPUT-817"
 assert: count of blocksGloballyUpstream($DIAGRAM,"DATAPUMP-4") = 0 "0 blocks upstream of data pump"
 assert: count of blocksGloballyUpstream($DIAGRAM,"QUALVALUE-905") = 12 "12 blocks upstream of QUALVALUE-905"
-assert: blocksGloballyUpstream($DIAGRAM,"QUALVALUE-905") contains "JUNCTION-605" "Junction-605 is upstream of QUALVALUE-905"
+assert: blocksGloballyUpstream($DIAGRAM,"QUALVALUE-905") contains "JUNCTION-605" "Junction-605 is globally upstream of QUALVALUE-905"
 
 Step: Sources for Sink
 assert: sourcesForSink($DIAGRAM,"SINKCONNECTION-538") contains "SOURCECONNECTION-761" "Source 761 (Readwrite) is connected"

@@ -287,13 +287,15 @@ public class ModelManager implements ProjectListener  {
 		ProcessDiagram diagram = getDiagram(diagramId);
 		ProcessBlock start = getBlock(diagram,blockId);
 		traverseDownstream(diagram,start,blocks,spanDiagrams);
+		if(spanDiagrams && start.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SINK)) {
+			followDownstreamConnections(start,blocks);
+		}
 		List<SerializableBlockStateDescriptor> results = new ArrayList<>();
 		int index = 0;
 		for( ProcessBlock block:blocks ) {
 			index++;
 			if( index<2 ) continue;   // Skip the start block
 			results.add(block.toDescriptor());
-			
 		}
 		return results;
 	}
@@ -306,18 +308,24 @@ public class ModelManager implements ProjectListener  {
 				// Do an exhaustive search for all sink blocks that have the same binding
 				// as the specified block. We cover all diagrams in the system.
 				if( spanDiagrams && blk.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SINK) ) {
-					BlockProperty prop = blk.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
-					if( prop!=null ) {
-						String tagPath = prop.getBinding();
-						if( tagPath!=null && !tagPath.isEmpty()) {
-							for( ProcessDiagram diag:getDiagrams()) {
-								for(ProcessBlock source:diag.getProcessBlocks()) {
-									if( source.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SOURCE) ) {
-										BlockProperty bp = source.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
-										if( bp!=null && tagPath.equals(prop.getBinding())  ) {
-											traverseDownstream(diag,source,blocks,true);
-										}
-									}
+					followDownstreamConnections(blk,blocks);
+				}
+			}
+		}
+	}
+	
+	private void followDownstreamConnections(ProcessBlock sink,List<ProcessBlock> blocks) {
+		if( sink.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SINK) ) {
+			BlockProperty prop = sink.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+			if( prop!=null ) {
+				String tagPath = prop.getBinding();
+				if( tagPath!=null && !tagPath.isEmpty()) {
+					for( ProcessDiagram diag:getDiagrams()) {
+						for(ProcessBlock source:diag.getProcessBlocks()) {
+							if( source.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SOURCE) ) {
+								BlockProperty bp = source.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+								if( bp!=null && tagPath.equals(prop.getBinding())  ) {
+									traverseDownstream(diag,source,blocks,true);
 								}
 							}
 						}
@@ -331,6 +339,9 @@ public class ModelManager implements ProjectListener  {
 		ProcessDiagram diagram = getDiagram(diagramId);
 		ProcessBlock start = getBlock(diagram,blockId);
 		traverseUpstream(diagram,start,blocks,spanDiagrams);
+		if(spanDiagrams && start.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SOURCE)) {
+			followUpstreamConnections(start,blocks);
+		}
 		List<SerializableBlockStateDescriptor> results = new ArrayList<>();
 		int index = 0;
 		for( ProcessBlock block:blocks ) {
@@ -367,6 +378,27 @@ public class ModelManager implements ProjectListener  {
 				}
 			}
 		}
+	}
+	private void followUpstreamConnections(ProcessBlock source,List<ProcessBlock> blocks) {
+		if( source.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SOURCE) ) {
+			BlockProperty prop = source.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+			if( prop!=null ) {
+				String tagPath = prop.getBinding();
+				if( tagPath!=null && !tagPath.isEmpty()) {
+					for( ProcessDiagram diag:getDiagrams()) {
+						for(ProcessBlock sink:diag.getProcessBlocks()) {
+							if( sink.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SINK) ) {
+								BlockProperty bp = sink.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+								if( bp!=null && tagPath.equals(prop.getBinding())  ) {
+									traverseDownstream(diag,source,blocks,true);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		
 	}
 	// Node must be in the nav-tree. Include project name.
 	public String pathForNode(UUID nodeId) {
