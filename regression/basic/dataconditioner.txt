@@ -2,7 +2,7 @@
 # Test of a data conditioner with qualified value
 #
 DIAGRAM="app75/family75/dataconditioner"
-C="DATACONDITIONER-341"
+C="DATA-CONDITIONER"
 Show: diagram $DIAGRAM
 
 tagset: DataConditioner MemoryTags/MJKFeed1 MemoryTags/Quality MemoryTags/DataState
@@ -36,7 +36,6 @@ Step: Bad conditioner
 10:06:60 Assert: ConditionerQuality = true "Quality problem"
 
 Step: Both bad
-10:07 88.1 bad false
 10:08 88.8 bad true
 10:08:10 Assert: ConditionerData = 42  "No passthru both indicators bad"
 10:08:50 Assert: getState($DIAGRAM,$C) = TRUE  "block state indicates problem"

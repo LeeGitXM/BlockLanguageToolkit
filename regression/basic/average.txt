@@ -20,28 +20,30 @@ Tagset: AverageFeed
 10:01 20
 10:01:55 Assert: Average1 = $PRIOR1 "No result until buffer fills"
 10:02 30
-10:03:30 Assert: Average1 = 15 "Average when buffer fills"
-10:03 40
-10:03:30 Assert: Average1 = 25 "Average with next reading"
+10:02:30 Assert: Average1 = 15 "Average when buffer fills"
+10:03:00 40
+10:03:20 Assert: Average1 = 25 "Average with next reading"
 
 Step: "Average Time Window"
 # Time window is 2 minutes, scan is 30 seconds, 4 values held.
 # NOTE: Reset causes input blocks to emit their last value
-10:03:45 8 -1 -1 -1
+10:03:30 8 
 10:03:55 PRIOR2 = Average2
-10:04:00 resetDiagram ($DIAGRAM)
+10:03:45 resetDiagram ($DIAGRAM)
 10:04:15 Assert: Average2 = $PRIOR2  "No result after reset until buffer fills"
-10:04:20 PRIOR2 = Average2
-10:04:30 128
-10:04:45 Assert: Average2 > $PRIOR2 "Average increasing in time"
-10:05:00 PRIOR2 = Average2
-10:05:15 Assert: Average2 > $PRIOR2 "Average increasing in time"
-10:06:55 Assert: Average2 = 128 "Ave is 128 at end of time window"
+10:06:10 Assert: Average2 = 8 "Average reaches steady state after reset"
+10:06:20 PRIOR2 = Average2
+10:06:30 128
+10:06:55 Assert: Average2 > $PRIOR2 "Average increasing in time"
+10:07:00 PRIOR2 = Average2
+10:07:30 Assert: Average2 > $PRIOR2 "Average increasing in time"
+10:08:45 Assert: Average2 = 128 "Ave is 128 at end of time window"
 
 Step: Average Over All Time
-10:07:20 10 -1 -1 -1
+10:09:00 10 -1 -1 -1
 resetDiagram ($DIAGRAM)
-10:07:30 Assert: Average3 = 10 "First value is the value"
-10:08:00 20
-10:08:20 30
-10:08:55 Assert: Average3 = 20 "Values independent of arrival time"
+10:09:30 Assert: Average3 = 10 "First value is the value"
+10:10:00 20
+10:10:20 30
+10:10:25 Assert: Average3 = 20 "Values independent of arrival time"
+10:10:30

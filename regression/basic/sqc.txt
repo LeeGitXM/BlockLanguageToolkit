@@ -31,8 +31,10 @@ Tagset: SQC
 Test: SQC Block
 Step: In-Range Values
 09:58:15 0.0 0.0 0.0
+halt:
 09:58:30 resetDiagram ($DIAGRAM)
 09:59 .9 1.0 0.01
+halt:
 09:59:45 resetBlock($DIAGRAM,$S3)
 10:00 Assert: getState($DIAGRAM,$S3) = UNSET    "3 state  UNSET after block reset"
 10:00:10 Assert: SQC3                = UNKNOWN  "3 output UNKNOWN after reset"
@@ -41,6 +43,7 @@ Step: In-Range Values
 10:00:52 Assert: SQC3                   = UNKNOWN "3 output UNKNOWN at first value"
 10:00:53 Assert: getState($DIAGRAM,$S4) = UNKNOWN  "4 state  UNKNOWN before threshold"
 10:00:55 Assert: SQC4                   = UNKNOWN  "4 output UNKNOWN before threshold"
+halt:
 10:00:57 Assert: getState($DIAGRAM,$S1) = UNKNOWN  "1 state  UNKNOWN before threshold"
 10:00:58 Assert: SQC1                   = UNKNOWN  "1 output UNKNOWN before threshold"
 10:01 0.1 

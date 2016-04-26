@@ -159,7 +159,7 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 		log.tracef("%s(%d).evaluate %d of %d points",getName(),hashCode(),buffer.size(),maxPoints);
 		if( buffer.size() >= maxPoints) {
 			double result = computeAverage();
-			log.tracef("%s(%d).evaluate avg=%f",getName(),hashCode(),result);
+			log.tracef("%s.evaluate avg=%f",getName(),result);
 			if( !isLocked() ) {
 				// Give it a new timestamp
 				QualifiedValue outval = new TestAwareQualifiedValue(timer,result);

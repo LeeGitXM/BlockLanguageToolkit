@@ -63,8 +63,8 @@ assert: blocksGloballyDownstream($DIAGRAM,"COMMAND-225") contains "INHIBITOR-380
 assert: ! blocksGloballyDownstream($DIAGRAM,"COMMAND-225") contains "RoutingParameter" "RoutingParameter is not downstream of command 225"
 assert: count of blocksGloballyDownstream($DIAGRAM,"COMMAND-225") = 21  "21 blocks downstream of command 225 (multiplediagrams)"
 assert: count of blocksGloballyDownstream($DIAGRAM,"SINKCONNECTION-538") = 15 "15 blocks downstream of SINKCONNECTION-538"
-assert: blocksGloballyDownstream($DIAGRAM,"SINKCONNECTION-538") contains "PARAMETER-682" "Parameter-682 is downupstream of SINKCONNECTION-538"
-assert: blocksGloballyDownstream($DIAGRAM,"SINKCONNECTION-538") contains "QUALVALUE-905" "QualValue-905 is downupstream of SINKCONNECTION-538"
+assert: blocksGloballyDownstream($DIAGRAM,"SINKCONNECTION-538") contains "PARAMETER-682" "Parameter-682 is downstream of SINKCONNECTION-538"
+assert: blocksGloballyDownstream($DIAGRAM,"SINKCONNECTION-538") contains "QUALVALUE-905" "QualValue-905 is downstream of SINKCONNECTION-538"
 
 Step: Upstream of Block 
 assert: blocksUpstream($DIAGRAM,"OUTPUT-817") contains "COMMAND-225" "Command-225 is upstream of OUTPUT-817"

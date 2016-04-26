@@ -5,8 +5,8 @@
 # We need to specify the date on all commands, else time goes backwards
 #
 DIAGRAM="app75/family75/inhibitor"
-INHIBIT1="INHIBITOR-285"
-INHIBIT2="INHIBITOR-650"
+INHIBIT1="INHIBITOR1"
+INHIBIT2="INHIBITOR2"
 tag: InhibitorOutput1 MemoryTags/InhibitorOutput1
 tag: InhibitorOutput2 MemoryTags/InhibitorOutput2
 tagset: InhibitInput MemoryTags/InhibitorFeed1 MemoryTags/InhibitorFeed2 MemoryTags/InhibitorFinalDiagnosis MemoryTags/StringDateInput MemoryTags/DateInput
