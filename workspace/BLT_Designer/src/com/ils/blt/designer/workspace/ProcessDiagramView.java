@@ -436,7 +436,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			}
 		}
 		// Finally, register self for state and watermark changes
-		String key = NotificationKey.keyForDiagram(getId().toString());
+		String key = NotificationKey.keyForDiagram(getResourceId());
 		handler.addNotificationChangeListener(key,TAG,this);
 		key = NotificationKey.watermarkKeyForDiagram(getId().toString());
 		handler.addNotificationChangeListener(key,TAG,this);
@@ -466,7 +466,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			}
 		}
 		// Finally, deregister self
-		handler.removeNotificationChangeListener(NotificationKey.keyForDiagram(getId().toString()),TAG);
+		handler.removeNotificationChangeListener(NotificationKey.keyForDiagram(getResourceId()),TAG);
 	}
 	
 	/**

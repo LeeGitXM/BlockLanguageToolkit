@@ -641,7 +641,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		}
 		catch(Exception ex) {
 			// Probably no receiver registered. This is to be expected if the designer is not running.
-			log.debugf("%s.sendStateNotification: No notification receiver for %s (%s)",TAG,key,ex.getMessage());
+			log.debugf("%s.sendAlertNotification: No notification receiver for %s (%s)",TAG,key,ex.getMessage());
 		}
 	}
 	
@@ -705,8 +705,8 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 * @param val new state
 	 */
 	@Override
-	public void sendStateNotification(String diagramid, String val) {
-		String key = NotificationKey.keyForDiagram(diagramid);
+	public void sendStateNotification(long resourceId, String val) {
+		String key = NotificationKey.keyForDiagram(resourceId);
 		try {
 			sessionManager.sendNotification(ApplicationScope.DESIGNER, BLTProperties.MODULE_ID, key, new BasicQualifiedValue(val));
 		}

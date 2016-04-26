@@ -45,6 +45,7 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
  */
 @ExecutableBlock
 public class SQC extends AbstractProcessBlock implements ProcessBlock {
+	private final static boolean DEBUG = false;
 	protected static final String BLOCK_PROPERTY_MINIMUM_OUT_OF_RANGE = "MinimumOutOfRange";
 	protected static final String BLOCK_PROPERTY_SQC_LIMIT = "NumberOfStandardDeviations";
 	protected static final String BLOCK_PROPERTY_TEST_LABEL = "TestLabel";
@@ -420,7 +421,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		for( Double dbl:queue) {
 			double val = dbl.doubleValue();
 			
-			log.tracef("%s.getRuleState: val = %f (%f,%f,%f)",getName(),val,lowLimit,mean,highLimit);
+			if( DEBUG )log.infof("%s.getRuleState: val = %f (%f,%f,%f)",getName(),val,lowLimit,mean,highLimit);
 			if( val < lowLimit) {
 				low++;
 			}
@@ -470,7 +471,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 			else if( total+minOut-outside>sampleSize ) result = TruthValue.FALSE;
 		}
 		
-		log.tracef("%s.getRuleState: %d of %d results,  %d high, %d low, %d outside, (cons %d,%d) => %s (%s)",getName(),total,sampleSize,high,low,outside,maxlowside,maxhighside,result.toString(),limitType.toString());
+		if( DEBUG ) log.infof("%s.getRuleState: %d of %d results,  %d high, %d low, %d outside, (cons %d,%d) => %s (%s)",getName(),total,sampleSize,high,low,outside,maxlowside,maxhighside,result.toString(),limitType.toString());
 		return result;	
 	}
 }

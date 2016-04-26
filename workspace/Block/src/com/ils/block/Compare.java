@@ -201,7 +201,7 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 			if( currentValue==null ) {     // Success!
 				if( x.getQuality().isGood() && y.getQuality().isGood() ) {
 					state = TruthValue.FALSE;
-					if( xx > yy+offset)state = TruthValue.TRUE;
+					if( xx >= yy+offset)state = TruthValue.TRUE;
 					currentValue = new TestAwareQualifiedValue(timer,state);
 				}
 				else {

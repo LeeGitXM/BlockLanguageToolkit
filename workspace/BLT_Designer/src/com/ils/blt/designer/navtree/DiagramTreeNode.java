@@ -25,10 +25,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
+import com.ils.blt.common.notification.NotificationChangeListener;
+import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
+import com.ils.blt.designer.NotificationHandler;
 import com.ils.blt.designer.ResourceDeleteManager;
 import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
@@ -41,6 +44,7 @@ import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.execution.ExecutionManager;
 import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngine;
+import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectChangeListener;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
@@ -62,7 +66,7 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
  * The frame is responsible for rendering the diagram based on the model resource.
  * The model can exist without the frame, but not vice-versa.
  */
-public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavTreeNodeInterface, ProjectChangeListener  {
+public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavTreeNodeInterface,NotificationChangeListener,ProjectChangeListener  {
 	private static final String TAG = "DiagramTreeNode";
 	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
 	protected DesignerContext context;
@@ -110,6 +114,9 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		setIcon( closedIcon);
 		setItalic(statusManager.isResourceDirtyOrHasDirtyChidren(resourceId));
 		context.addProjectChangeListener(this);
+		
+		NotificationHandler notificationHandler = NotificationHandler.getInstance();
+		notificationHandler.addNotificationChangeListener(NotificationKey.keyForDiagram(resourceId), TAG, this);
 	}
 	@Override
 	public void uninstall() {
@@ -679,12 +686,34 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 
 	/**
 	 * This method allows us to have children. Children are always EncapsulatedDiagramNodes.
-	 * TODO: 
+	 * As of yet we do not support encapsulated diagrams. 
 	 * @param arg0
 	 * @return
 	 */
 	protected AbstractNavTreeNode createChildNode(ProjectResource arg0) {
-		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	//============================================ Notification Change Listener =====================================
+	@Override
+	public void diagramAlertChange(long resId, String state) {
+	}
+	@Override
+	public void bindingChange(String binding) {
+	}
+	// The value is in response to a diagram state change.
+	@Override
+	public void valueChange(QualifiedValue value) {
+		try {
+			DiagramState ds = DiagramState.valueOf(value.getValue().toString());
+			statusManager.setResourceState(resourceId, ds);
+			refresh();   // Force a repaint
+		}
+		catch(IllegalArgumentException iae) {
+			log.warnf("%s.valueChange(%d): Illegal diagram state (%s)", TAG,resourceId,value.getValue().getClass());
+		}
+	}
+	@Override
+	public void watermarkChange(String newWatermark) {
 	}
 }

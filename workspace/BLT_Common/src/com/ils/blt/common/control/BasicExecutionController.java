@@ -90,7 +90,7 @@ public class BasicExecutionController implements ExecutionController  {
 	public void sendPropertyNotification(String id, String propertyName, QualifiedValue val){
 		log.warnf("%s.sendPropertyNotification: WARNING: Executed from stub class",TAG);
 	}
-	public void sendStateNotification(String id, String val){
+	public void sendStateNotification(long resourceid, String val){
 		log.warnf("%s.sendStateNotification: WARNING: Executed from stub class",TAG);
 	}
 	public void sendWatermarkNotification(String diagramid, String val) {

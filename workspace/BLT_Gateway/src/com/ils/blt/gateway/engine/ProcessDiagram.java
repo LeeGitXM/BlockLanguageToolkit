@@ -491,7 +491,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 				restartSubscriptions();
 			}
 			// Fire diagram notification change
-			controller.sendStateNotification(this.self.toString(), s.name());
+			controller.sendStateNotification(resourceId, s.name());
 		}
 	}
 	/**

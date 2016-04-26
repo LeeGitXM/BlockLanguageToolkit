@@ -34,8 +34,8 @@ Step: Input is negative
 10:03:30 Assert: ComparisonOut3 = False "abs x>y"
 Step: Input is zero
 10:04  0.0
-10:04:20 Assert: ComparisonOut1 = False "x=y"
-10:04:30 Assert: ComparisonOut3 = False "abs x=y"
+10:04:20 Assert: ComparisonOut1 = True "x=y"
+10:04:30 Assert: ComparisonOut3 = True "abs x=y"
 10:04:40 Assert: ComparisonOut2 = True "Max greater than limit"
 10:04:50 Assert: getState($DIAGRAM,$C2) = TRUE "Max greater than limit"
 

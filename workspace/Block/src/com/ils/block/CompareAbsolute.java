@@ -113,7 +113,7 @@ public class CompareAbsolute extends Compare implements ProcessBlock {
 					state = TruthValue.FALSE;
 					if( xx<0.0) xx = -xx;
 					if( yy<0.0) yy = -yy;
-					if( xx > yy+offset) state = TruthValue.TRUE;
+					if( xx >= yy+offset) state = TruthValue.TRUE;
 					currentValue = new TestAwareQualifiedValue(timer,state);
 				}
 				else {

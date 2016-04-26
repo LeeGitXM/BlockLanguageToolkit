@@ -33,10 +33,10 @@ public class NotificationKey
 	}
 	/**
 	 * @return  a push-notification key for a diagram. The Id is
-	 *         simply the diagram Id.
+	 *         the diagram's resource Id.
 	 */
-	public static String keyForDiagram(String did) {
-		return String.format("D:%s",did);
+	public static String keyForDiagram(long resourceId) {
+		return String.format("D:%d",resourceId);
 	}
 	/**
 	 * @return  a push-notification key for a block property. The Id is
