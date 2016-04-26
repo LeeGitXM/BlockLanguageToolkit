@@ -17,7 +17,6 @@ import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
-import com.inductiveautomation.ignition.designer.navtree.model.ProjectBrowserRoot;
 
 
 /**

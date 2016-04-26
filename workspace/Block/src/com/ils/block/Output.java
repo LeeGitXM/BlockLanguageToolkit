@@ -105,6 +105,20 @@ public class Output extends AbstractProcessBlock implements ProcessBlock {
 	}
 	
 	/**
+	 * In addition to the standard validation, do not allow the tag path property
+	 * to have an empty binding.
+	 * @return a validation summary. Null if everything checks out.
+	 */
+	@Override
+	public String validate() {
+		String summary = super.validate();
+		String tagPath = pathProperty.getBinding();
+		if( summary==null && (tagPath==null || tagPath.length()==0 || tagPath.endsWith("]") )) {
+			summary = String.format("%s: binding is not configured\t",pathProperty.getName());
+		}
+		return summary;
+	}
+	/**
 	 * Augment the palette prototype for this block class.
 	 */
 	protected void initializePrototype() {

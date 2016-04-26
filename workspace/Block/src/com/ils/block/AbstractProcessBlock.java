@@ -638,12 +638,10 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 					bindingType.equals(BindingType.TAG_WRITE)   ||
 					bindingType.equals(BindingType.TAG_READWRITE) ) {
 
-
 				String tagPath = property.getBinding();
-				if( tagPath==null || tagPath.length()==0 || tagPath.endsWith("]") ) {
-					summary.append(String.format("%s: binding is not configured\t",property.getName()));
-				}
-				else {
+				// In general, we allow un-configured bindings. Some classes may enforce
+				// a more restrictive policy.
+				if( tagPath!=null && tagPath.length()>0 && !tagPath.endsWith("]") ) {
 					String reason = controller.validateTag(getParentId(),tagPath);
 					if( reason!=null ) {
 						summary.append(String.format("%s: tag (%s) %s\t",property.getName(),tagPath,reason));

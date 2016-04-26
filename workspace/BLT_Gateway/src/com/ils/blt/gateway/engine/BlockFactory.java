@@ -175,5 +175,4 @@ public class BlockFactory  {
 			log.errorf("%s.updateBlockFromSerializable: No properties found in process block",TAG);
 		}
 	}
-	
 }

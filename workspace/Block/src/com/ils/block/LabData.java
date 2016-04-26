@@ -220,6 +220,29 @@ public class LabData extends Input implements ProcessBlock {
 	}
 	
 	/**
+	 * In addition to the standard validation, do not allow the tag path property
+	 * to have an empty binding.
+	 * @return a validation summary. Null if everything checks out.
+	 */
+	@Override
+	public String validate() {
+		String summary = super.validate();
+		if( summary==null ) {
+			StringBuffer sumBuffer = new StringBuffer();
+			String tagPath = timePathProperty.getBinding();
+			if( tagPath==null || tagPath.length()==0 || tagPath.endsWith("]") ) {
+				sumBuffer.append(String.format("%s: binding is not configured\t",timePathProperty.getName()));
+			}
+			tagPath = valuePathProperty.getBinding();
+			if( tagPath==null || tagPath.length()==0 || tagPath.endsWith("]") ) {
+				sumBuffer.append(String.format("%s: binding is not configured\t",valuePathProperty.getName()));
+			}
+			if( sumBuffer.length()>0 ) summary = sumBuffer.toString();
+		}
+		return summary;
+	}
+	
+	/**
 	 * Augment the palette prototype for this block class.
 	 */
 	protected void initializePrototype() {
