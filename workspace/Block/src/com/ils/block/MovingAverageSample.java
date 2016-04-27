@@ -110,7 +110,7 @@ public class MovingAverageSample extends AbstractProcessBlock implements Process
 		String port = vcn.getConnection().getDownstreamPortName();
 		if( port.equals(BlockConstants.IN_PORT_NAME) ) {
 			QualifiedValue qv = vcn.getValue();
-			log.infof("%s.acceptValue: Received %s",TAG,qv.getValue().toString());
+			log.debugf("%s.acceptValue: Received %s",TAG,qv.getValue().toString());
 			if( qv.getQuality().isGood() ) {
 				queue.add(qv);
 				if( queue.size() >= sampleSize) {
@@ -163,7 +163,6 @@ public class MovingAverageSample extends AbstractProcessBlock implements Process
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
-		log.infof("%s.propertyChange: %s = %s",TAG,propertyName,event.getNewValue().toString());
 		if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET)) {
 			clearOnReset = (new UtilityFunctions()).coerceToBoolean(event.getNewValue().toString());
 		}

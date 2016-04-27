@@ -73,7 +73,6 @@ public class GatewayRpcDispatcher   {
 	 * @return True if we've discovered the specified block.
 	 */
 	public Boolean diagramExists(String uuidString) {
-		log.infof("%s.diagramExists ...",TAG);
 		return new Boolean(requestHandler.diagramExists(uuidString));
 	}
 
@@ -83,7 +82,6 @@ public class GatewayRpcDispatcher   {
 	 * @param blockIdString
 	 */
 	public void evaluateBlock(String diagramIdString,String blockIdString) {
-		log.infof("%s.evaluateBlock ...",TAG);
 		requestHandler.evaluateBlock(diagramIdString,blockIdString);
 	}
 	
@@ -137,13 +135,11 @@ public class GatewayRpcDispatcher   {
 	 *  @return
 	 */
 	public List<String> getBlockPrototypes() {
-		log.infof("%s.getBlockPrototypes ...",TAG);
 		List<String> results = new ArrayList<String>();
 		List<PalettePrototype> prototypes = requestHandler.getBlockPrototypes();
 		for(PalettePrototype pp:prototypes) {
 			results.add(pp.toJson());
 		}
-		log.infof("%s.getBlockPrototypes: returning %d palette prototypes",TAG,results.size());
 		return results;
 	}
 	
@@ -214,7 +210,6 @@ public class GatewayRpcDispatcher   {
 	}
 
 	public List<String> getDiagramDescriptors(String projectName) {
-		log.infof("%s.getDiagramDescriptors ...",TAG);
 		List<String> results = new ArrayList<String>();
 		List<SerializableResourceDescriptor> descriptors = requestHandler.listDiagramDescriptors(projectName);
 		ObjectMapper mapper = new ObjectMapper();
@@ -266,7 +261,6 @@ public class GatewayRpcDispatcher   {
 	 * @return a JSON-serialized SerializableBlockStateDescriptor
 	 */
 	public String getInternalState(String diagramId,String blockId) {
-		log.infof("%s.getInternalState: (%s:%s)",TAG,diagramId,blockId);
 		SerializableBlockStateDescriptor desc = requestHandler.getInternalState(diagramId,blockId);
 		ObjectMapper mapper = new ObjectMapper();
 		String json = "";
@@ -287,7 +281,6 @@ public class GatewayRpcDispatcher   {
 	}
 	
 	public String getToolkitProperty(String propertyName) {
-		//log.infof("%s.getToolkitProperty: %s", TAG,propertyName);
 		return requestHandler.getToolkitProperty(propertyName);
 	}
 
@@ -366,7 +359,6 @@ public class GatewayRpcDispatcher   {
 	 *  @return
 	 */
 	public List<SerializableResourceDescriptor> queryControllerResources() {
-		log.infof("%s.queryControllerResources ...",TAG);
 		return  requestHandler.listResourceNodes();
 	}
 	/** 
@@ -374,7 +366,6 @@ public class GatewayRpcDispatcher   {
 	 *  @return
 	 */
 	public List<SerializableBlockStateDescriptor> queryDiagram(String diagId) {
-		log.infof("%s.queryDiagram ... %s",TAG,diagId);
 		return  requestHandler.listBlocksInDiagram(diagId);
 	}
 	/**
@@ -383,14 +374,12 @@ public class GatewayRpcDispatcher   {
 	 * @param blockName
 	 */
 	public void resetBlock(String diagramIdString,String blockName) {
-		log.infof("%s.resetBlock ...",TAG);
 		requestHandler.resetBlock(diagramIdString,blockName);
 	}
 	/** 
 	 *  Reset every block in a diagram specified by id.
 	 */
 	public void resetDiagram(String uuidString) {
-		log.infof("%s: resetDiagram ...",TAG);
 		requestHandler.resetDiagram(uuidString);
 	}
 
@@ -406,7 +395,7 @@ public class GatewayRpcDispatcher   {
 	 * @return
 	 */
 	public Boolean sendLocalSignal(String uuidString, String command,String message,String arg) {
-		log.infof("%s.sendLocalSignal: %s %s %s %s",TAG,uuidString,command,message,arg);
+		log.tracef("%s.sendLocalSignal: %s %s %s %s",TAG,uuidString,command,message,arg);
 		return new Boolean(requestHandler.sendLocalSignal(uuidString,command,message,arg));
 	}
 	public boolean sendSignal(String diagramId,String blockName,String command,String message) {
@@ -441,7 +430,7 @@ public class GatewayRpcDispatcher   {
 	 * @param json JSON representation of the complete property list for the block.
 	 */
 	public void setBlockProperties(String diagramId,String blockId, String json) {
-		log.infof("%s.setBlockProperties: %s %s: %s", TAG, diagramId, blockId, json);
+		log.debugf("%s.setBlockProperties: %s %s: %s", TAG, diagramId, blockId, json);
 		// Deserialize the JSON
 		ObjectMapper mapper = new ObjectMapper();
 		try {
@@ -472,7 +461,7 @@ public class GatewayRpcDispatcher   {
 	 * @param json JSON representation of the property
 	 */
 	public void setBlockProperty(String diagramId,String blockId, String json) {
-		log.infof("%s.setBlockProperty: %s %s: %s", TAG, diagramId, blockId, json);
+		log.debugf("%s.setBlockProperty: %s %s: %s", TAG, diagramId, blockId, json);
 		// Deserialize the JSON
 		ObjectMapper mapper = new ObjectMapper();
 		try {
@@ -525,12 +514,10 @@ public class GatewayRpcDispatcher   {
 	}
 
 	public void setTimeFactor(Double factor) {
-		log.infof("%s.setTimeFactor: %s", TAG, String.valueOf(factor.doubleValue()));
 		requestHandler.setTimeFactor(factor);
 	}
 
 	public void setToolkitProperty(String propertyName,String value) {
-		//log.infof("%s.setToolkitProperty: %s: %s", TAG, propertyName, value);
 		requestHandler.setToolkitProperty(propertyName,value);
 	}
 	
@@ -569,7 +556,7 @@ public class GatewayRpcDispatcher   {
 	 * @param json JSON representation of the complete anchor list for the block.
 	 */
 	public void updateBlockAnchors(String diagramId,String blockId, String json) {
-		log.infof("%s.updateBlockAnchors: %s %s: %s", TAG, diagramId, blockId, json);
+		//log.infof("%s.updateBlockAnchors: %s %s: %s", TAG, diagramId, blockId, json);
 		// Deserialize the JSON
 		ObjectMapper mapper = new ObjectMapper();
 		try {

@@ -174,7 +174,6 @@ public class HighLimitSampleCount extends AbstractProcessBlock implements Proces
 			qvMap.put("Timestamp", qv.getTimestamp().toString());
 			buffer.add(qvMap);
 		}
-		log.infof("%s.getInternalStatus:Buffer size is %d",getName(),queue.size());
 		return descriptor;
 	}
 	

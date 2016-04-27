@@ -518,7 +518,7 @@ public class ModelManager implements ProjectListener  {
 				uuidByProjectId.put(new Long(projectId), staging.getUuid());
 				List<ProjectResource> resources = staging.getResources();
 				for( ProjectResource res:resources ) {
-					log.infof("%s.projectAdded: resource %d.%d %s (%s)", TAG,projectId,res.getResourceId(),res.getName(),
+					log.debugf("%s.projectAdded: resource %d.%d %s (%s)", TAG,projectId,res.getResourceId(),res.getName(),
 							res.getResourceType());
 					analyzeResource(projectId,res);
 				}
@@ -533,7 +533,7 @@ public class ModelManager implements ProjectListener  {
 	 */
 	@Override
 	public void projectDeleted(long projectId) {
-		log.infof("%s.projectDeleted: (id=%d)",TAG,projectId);
+		log.debugf("%s.projectDeleted: (id=%d)",TAG,projectId);
 		if( projectId<0 ) return;
 		deleteProjectResources(projectId);
 		
@@ -951,7 +951,7 @@ public class ModelManager implements ProjectListener  {
 	
 	// Delete all process nodes for a given project.
 	private void deleteProjectResources(long projectId) {
-		log.infof("%s.deleteProjectResources: proj = %d",TAG,projectId);
+		log.debugf("%s.deleteProjectResources: proj = %d",TAG,projectId);
 		List<ProcessNode> nodes = root.allNodesForProject(projectId);
 		for(ProcessNode node:nodes) {
 			deleteResource(projectId,node.getResourceId());

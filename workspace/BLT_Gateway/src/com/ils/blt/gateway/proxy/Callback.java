@@ -69,7 +69,7 @@ public class Callback {
 	public boolean compileScript() {
 		if( code !=null ) return true;   // Already compiled               
 		String script = String.format("import %s;%s.%s(%s)",pythonPackage,pythonPackage,module,localVariableList);
-		log.infof("%s.compileScript: Compiling ... %s",TAG,script);
+		log.debugf("%s.compileScript: Compiling ... %s",TAG,script);
 		try {
 			code = Py.compile_flags(script,pythonPackage,CompileMode.exec,CompilerFlags.getCompilerFlags());
 	     }

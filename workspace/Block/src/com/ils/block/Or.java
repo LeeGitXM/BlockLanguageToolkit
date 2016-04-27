@@ -197,7 +197,6 @@ public class Or extends AbstractProcessBlock implements ProcessBlock {
 		if(propertyName.equals(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL)) {
 			try {
 				synchInterval = Double.parseDouble(event.getNewValue().toString());
-				log.infof("%s.propertyChange Synch interval now %s secs",TAG,event.getNewValue().toString());
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.propertyChange Unable to convert synch interval to a double (%s)",TAG,nfe.getLocalizedMessage());

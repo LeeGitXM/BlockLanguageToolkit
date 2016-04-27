@@ -94,7 +94,7 @@ public class Script {
 		if( module.length()==0 ) return;   // Do nothing
 		if( localsMap == null ) throw new IllegalArgumentException("Attempt to execute with uninitialized locals map.");
 		String script = pythonPackage+"."+module;
-		log.infof("%s.execute: Running callback script (%s)",TAG,script);
+		log.debugf("%s.execute: Running callback script (%s)",TAG,script);
 		try {
 			scriptManager.runCode(code,localsMap);
 		}

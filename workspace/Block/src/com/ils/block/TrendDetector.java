@@ -297,7 +297,6 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 	 */
 	@Override
 	public void evaluate() {
-		log.infof("%s.evaluate",TAG);
 		if( Double.isNaN(mean) )              return;
 		if( Double.isNaN(standardDeviation) ) return;
 
@@ -488,7 +487,7 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 				result=TruthValue.FALSE;
 			}
 		}
-		log.infof("%s.getTrendState: %d upward, %d downward => %s (%s)",TAG,upwardCount,downwardCount,result.toString(),trendDirection.toString());
+		log.tracef("%s.getTrendState: %d upward, %d downward => %s (%s)",TAG,upwardCount,downwardCount,result.toString(),trendDirection.toString());
 		return result;	
 	}
 	/**

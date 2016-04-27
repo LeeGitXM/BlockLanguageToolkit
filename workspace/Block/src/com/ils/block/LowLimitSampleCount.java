@@ -114,7 +114,7 @@ public class LowLimitSampleCount extends AbstractProcessBlock implements Process
 		String port = vcn.getConnection().getDownstreamPortName();
 		if( port.equals(BlockConstants.IN_PORT_NAME) ) {
 			QualifiedValue qv = vcn.getValue();
-			log.infof("%s.acceptValue: Received %s",TAG,qv.getValue().toString());
+			log.debugf("%s.acceptValue: Received %s",TAG,qv.getValue().toString());
 			if( qv.getQuality().isGood() ) {
 				queue.add(qv);
 				TruthValue result = checkPassConditions(state);

@@ -105,7 +105,6 @@ public class Reset extends AbstractProcessBlock implements ProcessBlock {
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
-		log.infof("%s.propertyChange: Received %s = %s",TAG,propertyName,event.getNewValue().toString());
 		if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_COMMAND)) {
 			signal = new Signal(event.getNewValue().toString(),"","");
 		}
@@ -136,7 +135,6 @@ public class Reset extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public synchronized void evaluate() {
-		log.infof("%s.evaluate ... %f secs",TAG,interval);
 		if( !isLocked() ) {
 			QualifiedValue result = new TestAwareQualifiedValue(timer,signal);
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);

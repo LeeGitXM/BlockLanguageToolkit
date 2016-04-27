@@ -241,7 +241,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		if( queue.size()==0 ) return;         // No value yet
 
 		// Evaluate the buffer and report
-		log.infof("%s.evaluate %d of %d",getName(),queue.size(),sampleSize);
+		log.debugf("%s.evaluate %d of %d",getName(),queue.size(),sampleSize);
 		TruthValue newState = getRuleState();
 		if( !isLocked() && !newState.equals(state) ) {
 			// Give it a new timestamp

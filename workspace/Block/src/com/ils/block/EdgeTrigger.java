@@ -110,7 +110,7 @@ public class EdgeTrigger extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void evaluate() {
-		log.infof("%s.evaluate trigger is (%s)",TAG,trigger.name());
+		log.debugf("%s.evaluate trigger is (%s)",TAG,trigger.name());
 		if( !isLocked() ) {
 			if( trigger.equals(TruthValue.FALSE)) {
 				state = TruthValue.TRUE;

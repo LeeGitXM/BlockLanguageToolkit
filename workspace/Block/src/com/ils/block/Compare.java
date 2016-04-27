@@ -208,7 +208,7 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 					Quality q = x.getQuality();
 					if( q.isGood()) q = y.getQuality();
 					currentValue = new TestAwareQualifiedValue(timer,state,q);
-					log.infof("%s.evaluate: UNKNOWN x=%s, y=%s",getName(),x.toString(),y.toString());
+					log.debugf("%s.evaluate: UNKNOWN x=%s, y=%s",getName(),x.toString(),y.toString());
 				}
 				
 			}

@@ -97,7 +97,7 @@ public class TagListener implements TagChangeListener   {
 	 */
 	public synchronized void defineSubscription(ProcessBlock block,BlockProperty property,String tagPath) {
 		
-		log.infof("%s.defineSubscription: %s:%s=%s",TAG,block.getName(),property.getName(),tagPath);
+		log.tracef("%s.defineSubscription: %s:%s=%s",TAG,block.getName(),property.getName(),tagPath);
 		if( tagPath!=null && tagPath.length() >0  ) {
 			boolean needToStartSubscription = false;
 			BlockPropertyPair key = new BlockPropertyPair(block,property);

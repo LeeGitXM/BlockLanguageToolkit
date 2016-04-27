@@ -113,7 +113,6 @@ public class TruthValuePulse extends AbstractProcessBlock implements ProcessBloc
 	 */
 	@Override
 	public void evaluate() {
-		log.infof("%s.evaluate",getName());
 		if( !isLocked() ) {
 			if( pulse.equals(TruthValue.TRUE)) {
 				setState(TruthValue.FALSE);

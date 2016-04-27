@@ -217,7 +217,7 @@ public class InRangeTimeWindow extends AbstractProcessBlock implements ProcessBl
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
-		log.infof("%s.propertyChange: %s = %s",getName(),propertyName,event.getNewValue().toString());
+		log.debugf("%s.propertyChange: %s = %s",getName(),propertyName,event.getNewValue().toString());
 		if(propertyName.equals(BLOCK_PROPERTY_LOWER_LIMIT)) {
 			try {
 				lowerLimit = Double.parseDouble(event.getNewValue().toString());
@@ -353,7 +353,7 @@ public class InRangeTimeWindow extends AbstractProcessBlock implements ProcessBl
 			Double dbl = walker.next();
 			val = dbl.doubleValue();
 			if( val<lowerThreshold || val>upperThreshold ) count++;
-			log.infof("%s.checkPassConditions: %f>%f>%f",getName(),upperThreshold,val,lowerThreshold);
+			log.debugf("%s.checkPassConditions: %f>%f>%f",getName(),upperThreshold,val,lowerThreshold);
 		}
 		if( count>=triggerCount ) result = TruthValue.TRUE;
 		else result = TruthValue.FALSE;

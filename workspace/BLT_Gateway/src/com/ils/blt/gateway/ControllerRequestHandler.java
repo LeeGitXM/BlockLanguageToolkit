@@ -302,7 +302,6 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		catch (Exception ex) {
 			log.warnf("%s.getBlockPrototypes: Runtime exception (%s)",TAG,ex.getMessage(),ex);
 		}
-		log.infof("%s.getBlockPrototypes: returning %d palette prototypes",TAG,results.size());
 		return results;
 	}
 	
@@ -1185,7 +1184,6 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	}
 	
 	public void setTimeFactor(Double factor) {
-		log.infof("%s.setTimeFactor: %s", TAG, String.valueOf(factor));
 		AcceleratedWatchdogTimer timer = controller.getSecondaryTimer();
 		timer.setFactor(factor.doubleValue());
 	}

@@ -115,7 +115,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 				controller.removeSubscription(oldBlock, prop);
 			}
 			oldBlock.stop();
-			log.infof("%s.removeBlocksFromList: decommissioned %s (%d)",TAG,oldBlock.getName(),oldBlock.hashCode());
+			log.debugf("%s.removeBlocksFromList: decommissioned %s (%d)",TAG,oldBlock.getName(),oldBlock.hashCode());
 		}
 	}
 	
@@ -578,7 +578,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	 * Stop all subscriptions for properties in blocks in this diagram
 	 */
 	public void stopSubscriptions() {
-		log.infof("%s.stopSubscriptions: project %d:%s",TAG,projectId,getName());
+		log.debugf("%s.stopSubscriptions: project %d:%s",TAG,projectId,getName());
 		for( ProcessBlock pb:getProcessBlocks()) {
 			for(BlockProperty bp:pb.getProperties()) {
 				controller.removeSubscription(pb,bp);

@@ -32,7 +32,7 @@ public class ToolkitRecordListener extends BasicToolkitRecordListener implements
 
 	@Override
 	public void recordUpdated(ToolkitRecord rec) {
-		log.infof("%s.recordUpdated: %s = %s",TAG,rec.getName(),rec.getValue());
+		log.debugf("%s.recordUpdated: %s = %s",TAG,rec.getName(),rec.getValue());
 		if( ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER.equalsIgnoreCase(rec.getName())) productionProviderUpdated(rec.getValue());
 		else if( ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER.equalsIgnoreCase(rec.getName())) isolationProviderUpdated(rec.getValue());
 		

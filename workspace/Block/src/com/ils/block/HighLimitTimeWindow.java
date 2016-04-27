@@ -156,7 +156,6 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 	 */
 	@Override
 	public void evaluate() {
-		log.infof("HighLimit.evaluate EVALUATING");
 		if( Double.isNaN(currentValue) ) return;
 
 		// Evaluate the buffer and report
@@ -167,7 +166,7 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 		while(buffer.size() > maxPoints ) {
 			buffer.removeFirst();
 		}
-		log.infof("%s.evaluate %d of %d points",getName(),buffer.size(),maxPoints);
+		log.debugf("%s.evaluate %d of %d points",getName(),buffer.size(),maxPoints);
 		TruthValue result = checkPassConditions(state);
 		if( buffer.size()<maxPoints && fillRequired && result.equals(TruthValue.FALSE) ) result = TruthValue.UNKNOWN;
 		if( !result.equals(state) && !isLocked() ) {
@@ -343,7 +342,7 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 		if( count>=triggerCount ) result = TruthValue.TRUE;
 		else result = TruthValue.FALSE;
 		int size = (int)((timeWindow+0.99*scanInterval)/scanInterval);
-		log.infof("%s:checkPassConditions count %d of %d (%f<%f) %s (was %s)",getName(),count,size,threshold,val,result.name(),current.name());
+		log.tracef("%s:checkPassConditions count %d of %d (%f<%f) %s (was %s)",getName(),count,size,threshold,val,result.name(),current.name());
 		return result;
 	}
 }

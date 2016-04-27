@@ -155,7 +155,7 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 	public void evaluate() {
 		if( !isLocked() ) {
 			TruthValue newState = getAggregateState();
-			log.infof("%s.evaluate: new = %s, old =%s",TAG,newState.name(),state.name());
+			log.tracef("%s.evaluate: new = %s, old =%s",TAG,newState.name(),state.name());
 			if(newState!=state ) {
 				state = newState;
 				QualifiedValue result = new TestAwareQualifiedValue(timer,state.name(),

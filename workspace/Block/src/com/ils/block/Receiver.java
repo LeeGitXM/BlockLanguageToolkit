@@ -74,12 +74,11 @@ public class Receiver extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	public void acceptValue(SignalNotification sn) {
 		Signal signal = sn.getSignal();
-		log.infof("%s.setValue: signal = %s",TAG,signal.getCommand());
+		log.tracef("%s.setValue: signal = %s",TAG,signal.getCommand());
 		if( patternProperty==null || signal.getPattern()==null || patternProperty.getValue()==null ||
 					patternProperty.getValue().toString().equalsIgnoreCase("*")                        ||
 					patternProperty.getValue().toString().equalsIgnoreCase(signal.getPattern())) {
 			// Passed the filtering. Send to the output.
-			log.infof("%s.setValue: passing signal to output ",TAG);
 			QualifiedValue sig = new TestAwareQualifiedValue(timer,signal);
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.CONTROL_PORT_NAME,sig);
 			controller.acceptCompletionNotification(nvn);

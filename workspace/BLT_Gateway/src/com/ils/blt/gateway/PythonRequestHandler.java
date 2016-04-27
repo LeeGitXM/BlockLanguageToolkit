@@ -129,7 +129,7 @@ public class PythonRequestHandler   {
 		catch(IllegalArgumentException iae) {
 			log.warnf("%s.getDefaultDatabase: %s is an illegal UUID (%s)",TAG,uuidString,iae.getMessage());
 		}
-		if( !dbName.isEmpty() ) log.infof("%s.getDefaultDatabase: %s ",TAG,dbName);
+		if( !dbName.isEmpty() ) log.debugf("%s.getDefaultDatabase: %s ",TAG,dbName);
 		else                   log.warnf("%s.getDefaultDatabase: Database for diagram %s not found,",TAG,uuidString);
 		return dbName;
 	}

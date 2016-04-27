@@ -88,9 +88,7 @@ public class Unknown extends AbstractProcessBlock implements ProcessBlock {
 		if( tv.equals(TruthValue.UNKNOWN)) state = TruthValue.TRUE;
 		else if( tv.equals(TruthValue.TRUE)) state = TruthValue.FALSE;
 		else if( tv.equals(TruthValue.FALSE)) state = TruthValue.FALSE;
-		log.infof("UNKNOWN.acceptValue SENDING %s",state.name());
 		QualifiedValue result = new BasicQualifiedValue(state.name(),qv.getQuality(),qv.getTimestamp());
-		
 		
 		if( !isLocked()) {
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);

@@ -80,7 +80,6 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 		error = 0.0;
 		integral = 0.0;
 		pv = initialValue;
-		log.infof("%s.reset",TAG);
 	}
 	/**
 	 * Disconnect from the timer thread.

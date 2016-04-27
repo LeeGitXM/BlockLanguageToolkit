@@ -91,7 +91,7 @@ public abstract class AbstractScriptExtensionManager {
 		}
 		scriptMap.put(key,createMap(entry,arglist));
 		setModulePath(key,modulePath);
-		log.infof("%s.addScript: %s is %s",TAG,key,modulePath);
+		log.debugf("%s.addScript: %s is %s",TAG,key,modulePath);
 	}
 	
 	public List<String> getFlavors() {
