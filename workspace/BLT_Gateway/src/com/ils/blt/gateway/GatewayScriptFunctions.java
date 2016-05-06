@@ -333,6 +333,20 @@ public class GatewayScriptFunctions   {
 	public static boolean sendLocalSignal(String diagramId,String command,String message,String arg) {
 		return handler.sendLocalSignal(diagramId,command,message,arg);
 	}
+	
+	/**
+	 * Send a signal directly to a specified block.
+	 * This is a "local" transmission. The signal timestamp is "now".
+	 * 
+	 * @param diagramId diagram identifier
+	 * @param command string of the signal.
+	 * @param message command payload
+	 * @return true on success
+	 */
+	public static boolean sendSignal(String diagramId,String blockName,String command,String message) {
+		return handler.sendSignal(diagramId,blockName,command,message);
+	}
+	
 	/**
 	 * Send a signal to all blocks of a particular class on a specified diagram.
 	 * This is a "local" transmission. The timestamp is supplied in the call.
