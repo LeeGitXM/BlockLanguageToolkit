@@ -39,13 +39,21 @@ public class RecommendationDelegate implements TextDelegate {
     public String getBodyText(VisualItem item,Properties properties) {
         StringBuilder sb = new StringBuilder();
         String auto = "0.0";
+        String manual = "0.0";
 		if( properties!=null && properties.getProperty(RecMapConstants.AUTO)!=null ) {
 			auto = properties.getProperty(RecMapConstants.AUTO);
 		}
+		if( properties!=null && properties.getProperty(RecMapConstants.MANUAL)!=null ) {
+			manual = properties.getProperty(RecMapConstants.MANUAL);
+		}
+		sb.append(RecMapConstants.MANUAL);
+		sb.append(": ");
+		sb.append(manual);
+		sb.append(" (");
 		sb.append(RecMapConstants.AUTO);
 		sb.append(": ");
 		sb.append(auto);
-        sb.append("\n");
+        sb.append(")\n");
         return sb.toString();
     }
 
@@ -56,9 +64,14 @@ public class RecommendationDelegate implements TextDelegate {
 	
 	private String getHtml(VisualItem item,Properties properties) {
 		String name = "Recommendation";  // There is no name in the dataset
-		String auto = "0.0";             // Whatever this means
+		String auto = "0.0";             
+		String manual = "0.0";             // Whatever this means
 		if( properties!=null && properties.getProperty(RecMapConstants.AUTO)!=null ) {
 			String prop = properties.getProperty(RecMapConstants.AUTO);
+			if( prop!=null) auto = String.valueOf(prop);
+		}
+		if( properties!=null && properties.getProperty(RecMapConstants.MANUAL)!=null ) {
+			String prop = properties.getProperty(RecMapConstants.MANUAL);
 			if( prop!=null) auto = String.valueOf(prop);
 		}
 		String html = 
@@ -69,6 +82,7 @@ public class RecommendationDelegate implements TextDelegate {
 				"<div>" +
 				"<table>" +
 				"<tr>" +
+				"<td>Manual:</td><td>"+manual+"</td>"+
 				"<td>Auto:</td><td>"+auto+"</td>"+
 				"</tr>" +
 				"</table>" +

@@ -31,10 +31,11 @@ public interface RecMapConstants   {
 	public static final String AUTO       = "Auto";          // Recomendation - double
 	public static final String CURRENT    = "CurrentSetpoint"; // Output    - double
 	public static final String FINAL      = "FinalSetpoint"; // Output      - double
+	public static final String MANUAL     = "Manual";          // Recomendation - double
 	public static final String MULTIPLIER = "Multiplier";    // Diagnosis   - double
 	public static final String PROBLEM    = "Problem";       // Diagnosis   - string
 	public static final String RECOMMENDATION = "Recommendation"; // Output - double
-	public static final String TARGET     = "Target";        // Output      - double
+	public static final String TARGET     = "Target";        // Output      - string
 	
 	// "kinds" of nodes
 	public static final int SOURCE_KIND      = 0;

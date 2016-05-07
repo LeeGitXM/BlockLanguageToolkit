@@ -165,6 +165,7 @@ public class RecMapDataModel {
 				attributes = new Properties();
 				attributesByRow.put(new Integer(row), attributes);
 			}
+			addAttribute(attributes,recommendations,datasetRow,RecMapConstants.MANUAL);
 			addAttribute(attributes,recommendations,datasetRow,RecMapConstants.AUTO);
 
 			datasetRow++;

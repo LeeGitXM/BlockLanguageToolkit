@@ -134,6 +134,18 @@ public class PythonRequestHandler   {
 		return dbName;
 	}
 	/**
+	 * @return the name of the isolation datasource
+	 */
+	public String getIsolationDatabase() {
+		return controller.getIsolationDatabase();
+	}
+	/**
+	 * @return the name of the production datasource
+	 */
+	public String getProductionDatabase() {
+		return controller.getProductionDatabase();
+	}
+	/**
 	 * @param parent identifier for the diagram, a string version of a UUID
 	 * @return the default tag provider for the project associated with 
 	 *         the specified diagram
