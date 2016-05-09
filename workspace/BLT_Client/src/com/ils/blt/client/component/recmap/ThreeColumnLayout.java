@@ -13,7 +13,6 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 import prefuse.action.layout.Layout;
 import prefuse.data.Node;
 import prefuse.data.tuple.TupleSet;
-import prefuse.util.GraphicsLib;
 import prefuse.visual.VisualItem;
 
 
@@ -21,8 +20,9 @@ import prefuse.visual.VisualItem;
  * Based on GridLayout. This layout is specific to a grid containing:
  *    1) Source column
  *    2) Target column
- *    3) Center column - middle column displays blocks, but they are unconnected. 
- *  
+ *    3) Center column 
+ *  Bold connections go from source to center to target.
+ *  Direct connections between source and target are faint.
  */
 public class ThreeColumnLayout extends Layout {
 	private static final String TAG = "ThreeColumnLayout";
@@ -30,6 +30,7 @@ public class ThreeColumnLayout extends Layout {
 
 	private double maxItemHeight = 0.0;
 	private double maxItemWidth  = 0.0;
+	protected int verticalPad = 2;
 	protected  int nrows;
     protected  int ncols = 3;
     protected  int nrows1;
@@ -63,7 +64,6 @@ public class ThreeColumnLayout extends Layout {
         columnColumn = col;
         sourceRefColumn = sourceCol;
         targetRefColumn = targetCol;
-        setMargin(10,10,10,10);   // top,left,bottom.right
         log.infof("%s.constructor group %s is %dx%d nodes (%s)",TAG,m_group,ncols,nrows,(isEnabled()?"ENABLED":"DISABLED"));
     }
     @Override
@@ -79,6 +79,7 @@ public class ThreeColumnLayout extends Layout {
     	if( nrows2>maxrows) maxrows = nrows2;
     	if( nrows3>maxrows) maxrows = nrows3;
     	double h = b.getHeight()*0.75;
+    	h+=verticalPad;
     	maxItemHeight = h/maxrows;
     }
     /**
@@ -116,12 +117,14 @@ public class ThreeColumnLayout extends Layout {
         		//log.infof("%s.run column type = %d",TAG,coltype);
         		if( coltype==RecMapConstants.SOURCE_KIND) {
                 	x = bx + w*((coltype)/2.0);
-                	y = by + h*((sources)/(double)(nrows-1));
+                	y = by + h*((sources)/(double)(nrows-1)) - h;
+                	y += verticalPad*sources;
                 	sources++;
                 }
                 else if( coltype==RecMapConstants.TARGET_KIND) {
                 	x = bx + w*((coltype)/2.0);
-                	y = by + h*((targets)/(double)(nrows-1));
+                	y = by + h*((targets)/(double)(nrows-1)) - h;
+                	y += verticalPad*targets;
                 	targets++;
                 }
                 else {
@@ -151,7 +154,8 @@ public class ThreeColumnLayout extends Layout {
                 	}
                 	linkSlots[row] = true;
                 	log.debugf("%s.run recommendation = %d:%d->%d",TAG,src,tar,row);
-                	y = by + h*((row)/(double)(nrows-1));
+                	y = by + h*((row)/(double)(nrows-1)) - h;
+                	y += verticalPad*row;
                 }
                 item.setVisible(true);
                 

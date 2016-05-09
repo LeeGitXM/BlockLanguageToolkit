@@ -907,7 +907,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	}
 	
 	/**
-	 * We wrap a signal into a Qualified value and send it on.
+	 * We wrap a signal into a Qualified value and send it to a particular block.
 	 * @param diagramId
 	 * @param blockName
 	 * @param command

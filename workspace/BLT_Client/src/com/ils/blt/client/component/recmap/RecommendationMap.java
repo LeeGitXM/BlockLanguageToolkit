@@ -44,13 +44,14 @@ public class RecommendationMap extends PrefuseViewerComponent {
 		if( isConfigured() ) {
 			removeAll();
 			invalidate();
-			log.infof("%s.update: Creating RecommendationMapView ..%d x %d.",TAG,getWidth(),getHeight());
+			log.infof("%s.updateChartView: Creating RecommendationMapView ..%d x %d.",TAG,getWidth(),getHeight());
 			RecMapView view = createMapView();
 			view.setSize(getWidth(), getHeight());
 			add(view,BorderLayout.CENTER);
 			validate();
 			repaint();
-			log.infof("%s.update: Created RecommendationMapView ...",TAG);
+			// Resize and center
+			view.zoomToFit();
 		}
 	}
 	

@@ -19,6 +19,7 @@ import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
+import com.ils.common.persistence.ToolkitProperties;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -386,6 +387,18 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		return result;
 	}
 	/**
+	 * @return the name of the Isolation-mode datasource
+	 */
+	public String getIsolationDatabase() {
+		return getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE);
+	}
+	/**
+	 * @return the name of the Production-mode datasource
+	 */
+	public String getProductionDatabase() {
+		return getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE);
+	}
+	/**
 	 * @param diagramId identifier of the diagram owning the block, a String
 	 * @param blockId identifier of the block within the diagram, a String
 	 * @param propertyName name of the property for which a value is to be returned
@@ -424,7 +437,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	}
 	
 	/**
-	 * Acquire a value from the HSQL database table associated with the toolkit. A
+	 * Acquire a value from the SQLite database table associated with the toolkit. A
 	 * empty string is returned if the string is not found, null if an exception is thrown.
 	 * @param propertyName name of the property for which a value is to be returned
 	 * @return the value of the specified property.

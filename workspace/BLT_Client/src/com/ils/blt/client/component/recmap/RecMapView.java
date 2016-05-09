@@ -68,6 +68,9 @@ public class RecMapView extends Display {
 	private static final String TAG = "RecMapView";
 	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	private static final int DISMISS_DELAY = 10000;  // ~ msecs
+	
+	// Controls
+	ZoomToFitControl zoomToFitControl = new ZoomToFitControl();
     
 	// Groups
     private static final String GROUP_ALL = "map";
@@ -83,7 +86,7 @@ public class RecMapView extends Display {
         
         Dimension sz = recmap.getSize();
         RecMapDataModel model = recmap.getModel();
-        
+        this.
         // NOTE: Returns a VisualGraph, node/edge tables are VisualTables
         //                             node items are TableNodeItems
         m_vis.addGraph(GROUP_ALL, model.getGraph());
@@ -187,7 +190,7 @@ public class RecMapView extends Display {
         setSize(getWidth(),getHeight());
         // initialize the display
         addControlListener(new RecMapSelector(recmap,model.getAttributeMap(),2));    // Double-click
-        addControlListener(new ZoomToFitControl());          // Control right-mouse
+        addControlListener(zoomToFitControl);          // Control right-mouse
         addControlListener(new ZoomControl());
         addControlListener(new WheelZoomControl());
         addControlListener(new PanControl());                // Drag
@@ -227,7 +230,11 @@ public class RecMapView extends Display {
             edgeRenderer.setVerticalAlignment2(Constants.CENTER);
     }
 
-    
+    public void zoomToFit() {
+    	Rectangle2D bounds = columnLayout.getLayoutBounds();
+    	Point2D midPoint = new Point2D.Double(bounds.getCenterX(),-bounds.getCenterY());
+    	animatePanAndZoomTo(midPoint,1.0,1000);     // Location,scale,duration~msecs
+    }
     // ------------------------------------------------------------------------
    
     // ------------------------------------------------------------------------
@@ -264,7 +271,6 @@ public class RecMapView extends Display {
     }
     
     public static class NodeColorAction extends ColorAction {
-    	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
         public NodeColorAction(String group) {
             super(group, VisualItem.FILLCOLOR);
         }
