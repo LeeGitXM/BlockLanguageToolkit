@@ -1,0 +1,53 @@
+<Tags>
+   <Tag name="Sandbox" path="" type="Folder"/>
+   <Tag name="Diagnostic" path="Sandbox" type="Folder"/>
+   <Tag name="Diagrams" path="Sandbox/Diagnostic" type="Folder"/>
+   <Tag name="Lab_Data" path="Sandbox/Diagnostic/Diagrams" type="UDT_INST">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Property name="UDTParentType">Lab Data/Lab Value</Property>
+      <Parameters>
+      </Parameters>
+      <Tag name="value" path="" type="EXTENSION">
+         <Property name="Value">7.9</Property>
+      </Tag>
+      <Tag name="sampleTime" path="" type="EXTENSION">
+         <Property name="Value">1462552201000</Property>
+      </Tag>
+      <Tag name="rawSampleTime" path="" type="EXTENSION">
+         <Property name="Value">1483228801000</Property>
+      </Tag>
+   </Tag>
+   <Tag name="T1_Sigma" path="Sandbox/Diagnostic/Diagrams" type="DB">
+      <Property name="Value">0.0</Property>
+      <Property name="DataType">4</Property>
+   </Tag>
+   <Tag name="T1_Target" path="Sandbox/Diagnostic/Diagrams" type="DB">
+      <Property name="Value">0.0</Property>
+      <Property name="DataType">4</Property>
+   </Tag>
+   <Tag name="T1_Value" path="Sandbox/Diagnostic/Diagrams" type="DB">
+      <Property name="Value">0.0</Property>
+      <Property name="DataType">4</Property>
+   </Tag>
+   <Tag name="T1" path="Sandbox" type="DB">
+      <Property name="Value">0.0</Property>
+      <Property name="DataType">4</Property>
+   </Tag>
+   <Tag name="T2" path="Sandbox" type="DB">
+      <Property name="Value">12.0</Property>
+      <Property name="DataType">4</Property>
+   </Tag>
+   <Tag name="T3" path="Sandbox" type="DB">
+      <Property name="Value">0.0</Property>
+      <Property name="DataType">4</Property>
+   </Tag>
+   <Tag name="T4" path="Sandbox" type="DB">
+      <Property name="Value">0.0</Property>
+      <Property name="DataType">4</Property>
+   </Tag>
+   <Tag name="T5" path="Sandbox" type="DB">
+      <Property name="Value">0.0</Property>
+      <Property name="DataType">4</Property>
+   </Tag>
+</Tags>

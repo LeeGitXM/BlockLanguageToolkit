@@ -3,6 +3,8 @@
  */
 package com.ils.blt.client.component.recmap;
 
+import prefuse.util.ColorLib;
+
 /**
  *  These are constants used for the RecommendationMap
  */
@@ -31,7 +33,10 @@ public interface RecMapConstants   {
 	public static final String AUTO       = "Auto";          // Recomendation - double
 	public static final String CURRENT    = "CurrentSetpoint"; // Output    - double
 	public static final String FINAL      = "FinalSetpoint"; // Output      - double
-	public static final String MANUAL     = "Manual";          // Recomendation - double
+	public static final String HAS_SQC    = "HasSQC";        // Diagnosis/Output - boolean
+	public static final String IS_AUTO    = "AutoOrManual";  // Recommendation   - string (auto/manual)
+	public static final String IS_HIDDEN  = "Hidden";        // Diagnosis/Output - boolean
+	public static final String MANUAL     = "Manual";        // Recomendation - double
 	public static final String MULTIPLIER = "Multiplier";    // Diagnosis   - double
 	public static final String PROBLEM    = "Problem";       // Diagnosis   - string
 	public static final String RECOMMENDATION = "Recommendation"; // Output - double
@@ -41,4 +46,10 @@ public interface RecMapConstants   {
 	public static final int SOURCE_KIND      = 0;
 	public static final int INFO_KIND        = 1;
 	public static final int TARGET_KIND      = 2;
+	
+	// Header colors of nodes
+	public static final int SOURCE_HEADER_COLOR = ColorLib.rgb(151,230,250);
+	public static final int INFO_HEADER_COLOR   = ColorLib.rgb(153,235,118);
+	public static final int TARGET_HEADER_COLOR = ColorLib.rgb(242,241,213);
+	
 }

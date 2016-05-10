@@ -7,20 +7,23 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
 
+import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
-import net.miginfocom.swing.MigLayout;
-
+import com.ils.blt.common.DiagramState;
 import com.ils.common.GeneralPurposeDataContainer;
+
+import net.miginfocom.swing.MigLayout;
 
 public class HomePane extends JPanel implements ApplicationConfigurationController.EditorPane {
 	private final ApplicationConfigurationController controller;
@@ -28,16 +31,18 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 	private static final long serialVersionUID = 2882399376824334427L;
 	
 	protected static final Dimension AREA_SIZE  = new Dimension(300,80);
-	
 
-	final JPanel buttonPanel;
-	final JPanel mainPanel;
+	private final JPanel buttonPanel;
+	private final JPanel mainPanel;
 	
-	final JTextField nameField = new JTextField();
-	final JTextArea descriptionTextArea = new JTextArea();
-	final JComboBox<String> queueComboBox = new JComboBox<String>();
-	final JComboBox<String> groupRampMethodComboBox = new JComboBox<String>();
-	final JComboBox<String> unitComboBox = new JComboBox<String>();
+	private final JTextField nameField = new JTextField();
+	private final JTextArea descriptionTextArea = new JTextArea();
+	private final JComboBox<String> queueComboBox = new JComboBox<String>();
+	private final JComboBox<String> groupRampMethodComboBox = new JComboBox<String>();
+	private final JComboBox<String> unitComboBox = new JComboBox<String>();
+	protected final JRadioButton isolationButton;
+	protected final JRadioButton productionButton;
+	protected final ButtonGroup databaseGroup;
 	
 	private static Icon nextIcon = new ImageIcon(HomePane.class.getResource("/images/arrow_right_green.png"));
 	final JButton nextButton = new JButton("Outputs", nextIcon);
@@ -144,6 +149,19 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 			public void actionPerformed(ActionEvent e) {doNext();}			
 		});
 		
+		productionButton = new JRadioButton("Production");
+		productionButton.setActionCommand("production");
+		mainPanel.add(productionButton, "cell 1 10,split");
+		isolationButton = new JRadioButton("Isolation");
+		mainPanel.add(isolationButton, "cell 1 10");     // Share the cell
+		isolationButton.setActionCommand("isolation");
+		databaseGroup = new ButtonGroup();
+		databaseGroup.add(productionButton);
+		databaseGroup.add(isolationButton);
+		DiagramState state = controller.getNode().getState();
+		if( state.equals(DiagramState.ACTIVE)) productionButton.setSelected(true);
+		else isolationButton.setSelected(true);
+		
 		// Add buttons to the button panel
 		buttonPanel.add(okButton);
 		okButton.addActionListener(new ActionListener() {
@@ -159,6 +177,12 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 
 	protected void doOk() {
 		save();
+		if( databaseGroup.getSelection().getActionCommand().equals("isolation") ) {
+			controller.getNode().setState(DiagramState.ISOLATED);
+		}
+		else {
+			controller.getNode().setState(DiagramState.ACTIVE);
+		}
 		controller.doOK();
 	}
 	
@@ -172,6 +196,8 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 		model.getProperties().put("MessageQueue",(String) queueComboBox.getSelectedItem());
 		model.getProperties().put("GroupRampMethod",(String) groupRampMethodComboBox.getSelectedItem());
 		model.getProperties().put("Unit",(String) unitComboBox.getSelectedItem());
+		
+
 	}
 
 	protected void doCancel() {

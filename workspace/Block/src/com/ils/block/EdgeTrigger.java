@@ -177,7 +177,7 @@ public class EdgeTrigger extends AbstractProcessBlock implements ProcessBlock {
 		setName("EdgeTrigger");
 		BlockProperty constant = new BlockProperty(BLOCK_PROPERTY_INTERVAL,new Double(holdInterval),PropertyType.DOUBLE,true);
 		setProperty(BLOCK_PROPERTY_INTERVAL, constant);
-		BlockProperty trigProp = new BlockProperty(BLOCK_PROPERTY_TRIGGER,trigger.name(),PropertyType.STRING,true);
+		BlockProperty trigProp = new BlockProperty(BLOCK_PROPERTY_TRIGGER,trigger.name(),PropertyType.BOOLEAN,true);
 		setProperty(BLOCK_PROPERTY_TRIGGER, trigProp);
 		
 		// Define a single input

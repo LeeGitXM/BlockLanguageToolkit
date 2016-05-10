@@ -6,6 +6,8 @@ package com.ils.blt.client.component.recmap;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 
+import javax.swing.border.Border;
+
 import com.ils.blt.client.component.PrefuseViewerComponent;
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.common.BasicDataset;
@@ -28,6 +30,7 @@ public class RecommendationMap extends PrefuseViewerComponent {
 	private static final Dimension MIN_SIZE = new Dimension(40,40);
 	private static String PREFIX = BLTProperties.CUSTOM_PREFIX;              // For bundle identification
 	private RecMapDataModel model = null;
+	private RecMapView view = null;
 	private BasicDataset connections = null;
 	private BasicDataset outputs = null;
 	private BasicDataset recommendations = null;
@@ -36,7 +39,6 @@ public class RecommendationMap extends PrefuseViewerComponent {
 	public RecommendationMap() {
 		setName(BundleUtil.get().getString(PREFIX+".RecommendationMap.Name"));
 		this.setOpaque(true);
-		this.setBorder(border);
 		updateChartView();
 	}
 
@@ -45,7 +47,7 @@ public class RecommendationMap extends PrefuseViewerComponent {
 			removeAll();
 			invalidate();
 			log.infof("%s.updateChartView: Creating RecommendationMapView ..%d x %d.",TAG,getWidth(),getHeight());
-			RecMapView view = createMapView();
+			view = createMapView();
 			view.setSize(getWidth(), getHeight());
 			add(view,BorderLayout.CENTER);
 			validate();
@@ -92,7 +94,9 @@ public class RecommendationMap extends PrefuseViewerComponent {
 	
 	@Override
 	public Dimension getSize() {
+		
 		Dimension dim = super.getSize();
+		if( view!=null ) dim = view.getSize();
 		if(dim==null || dim.getWidth()<MIN_SIZE.getWidth()) {
 			dim = MIN_SIZE;
 		}
@@ -110,6 +114,10 @@ public class RecommendationMap extends PrefuseViewerComponent {
 		}
 		return valid;
 	}
+
+	public Border getBorder() { return (view==null? null:view.getBorder()); } 
+	public void setBorder(Border bdr) { if( view!=null ) view.setBorder(bdr); } 
+	public void setSize(Dimension sz) { if( view!=null ) view.setSize(sz); }
 
 	public void updateDiagnosis(int row,String value) {
 		int col = diagnoses.getColumnIndex(RecMapConstants.MULTIPLIER);

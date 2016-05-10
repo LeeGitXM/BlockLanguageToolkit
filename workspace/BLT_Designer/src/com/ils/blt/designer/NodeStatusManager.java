@@ -244,8 +244,8 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	 * A state change, is of necessity, accompanied by a save. Clear the dirty count.
 	 * We explicitly synchronize with the gateway, but cache the result.
 	 */
-	public void setResourceState(long resourceId,DiagramState bs) {
-		handler.setDiagramState(projectId, new Long(resourceId), bs.name());
+	public void setResourceState(long resourceId,DiagramState bs,boolean informGateway) {
+		if( informGateway ) handler.setDiagramState(projectId, new Long(resourceId), bs.name());
 		StatusEntry se = statusByResourceId.get(resourceId);
 		if( se!=null ) {
 			se.setState(bs);

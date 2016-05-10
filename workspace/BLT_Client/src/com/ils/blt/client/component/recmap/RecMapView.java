@@ -12,11 +12,12 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
-import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
 import javax.swing.plaf.ColorUIResource;
 
@@ -68,6 +69,7 @@ public class RecMapView extends Display {
 	private static final String TAG = "RecMapView";
 	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	private static final int DISMISS_DELAY = 10000;  // ~ msecs
+	private final Map<Integer,TextDelegate> delegateMap;
 	
 	// Controls
 	ZoomToFitControl zoomToFitControl = new ZoomToFitControl();
@@ -84,29 +86,28 @@ public class RecMapView extends Display {
     public RecMapView(RecommendationMap recmap) {
         super(new Visualization());
         
+        
         Dimension sz = recmap.getSize();
         RecMapDataModel model = recmap.getModel();
-        this.
+        
+        // Define text/menu delegates for each node type
+        this.delegateMap = new HashMap<>();
+        delegateMap.put(RecMapConstants.SOURCE_KIND, new DiagnosisDelegate(model.getAttributeMap()));
+        delegateMap.put(RecMapConstants.INFO_KIND, new RecommendationDelegate(model.getAttributeMap()));
+        delegateMap.put(RecMapConstants.TARGET_KIND, new OutputDelegate(model.getAttributeMap()));
         // NOTE: Returns a VisualGraph, node/edge tables are VisualTables
         //                             node items are TableNodeItems
         m_vis.addGraph(GROUP_ALL, model.getGraph());
     
         setSize(sz);
         setBackground(new Color(230,228,227));
-        setBorder(BorderFactory.createCompoundBorder(
-                                BorderFactory.createBevelBorder(BevelBorder.RAISED), 
-                                BorderFactory.createBevelBorder(BevelBorder.LOWERED)));
         
         // NOTE: No images to render.
-        nodeRenderer = new TableLabelRenderer(recmap.getModel());
+        nodeRenderer = new TableLabelRenderer(recmap.getModel(),delegateMap);
         nodeRenderer.setRenderType(AbstractShapeRenderer.RENDER_TYPE_DRAW_AND_FILL);
         nodeRenderer.setRoundedCorner(1,1);
         nodeRenderer.setVerticalPadding(3);
         nodeRenderer.setHorizontalPadding(4);
-        nodeRenderer.setDelegate(RecMapConstants.SOURCE_KIND, new DiagnosisDelegate());
-        nodeRenderer.setDelegate(RecMapConstants.INFO_KIND, new RecommendationDelegate());
-        nodeRenderer.setDelegate(RecMapConstants.TARGET_KIND, new OutputDelegate());
-
         edgeRenderer = new RecMapEdgeRenderer(Constants.EDGE_TYPE_LINE);
  
         DefaultRendererFactory rf = new DefaultRendererFactory(nodeRenderer);
@@ -156,10 +157,7 @@ public class RecMapView extends Display {
         Border border = BorderFactory.createLineBorder(new Color(20,20,20)); 
         UIManager.put("ToolTip.border", border);
         
-        RecMapTooltipControl tooltipControl = new RecMapTooltipControl(recmap.getModel());
-        tooltipControl.setDelegate(RecMapConstants.SOURCE_KIND, new DiagnosisDelegate());
-        tooltipControl.setDelegate(RecMapConstants.INFO_KIND, new RecommendationDelegate());
-        tooltipControl.setDelegate(RecMapConstants.TARGET_KIND, new OutputDelegate());
+        RecMapTooltipControl tooltipControl = new RecMapTooltipControl(recmap.getModel(),delegateMap);
         addControlListener(tooltipControl);
         
         // create the filtering and layout
@@ -189,7 +187,7 @@ public class RecMapView extends Display {
         // ------------------------------------------------
         setSize(getWidth(),getHeight());
         // initialize the display
-        addControlListener(new RecMapSelector(recmap,model.getAttributeMap(),2));    // Double-click
+        addControlListener(new RecMapSelector(recmap,delegateMap));    // Mouse press
         addControlListener(zoomToFitControl);          // Control right-mouse
         addControlListener(new ZoomControl());
         addControlListener(new WheelZoomControl());
@@ -279,9 +277,9 @@ public class RecMapView extends Display {
         	int color = ColorLib.rgba(220,220,220,100);  // Gray
             if ( item instanceof TableNodeItem ) {
             	int kind = item.getInt(RecMapConstants.KIND);
-            	if( kind==RecMapConstants.SOURCE_KIND )      color= ColorLib.rgb(204,215,235);
-            	else if( kind==RecMapConstants.TARGET_KIND ) color= ColorLib.rgb(195,207,235);
-            	else                                         color= ColorLib.rgb(172,185,190);
+            	if( kind==RecMapConstants.SOURCE_KIND )      color= RecMapConstants.SOURCE_HEADER_COLOR;
+            	else if( kind==RecMapConstants.TARGET_KIND ) color= RecMapConstants.TARGET_HEADER_COLOR;
+            	else                                         color= RecMapConstants.INFO_HEADER_COLOR;
             }
             return color;
         }

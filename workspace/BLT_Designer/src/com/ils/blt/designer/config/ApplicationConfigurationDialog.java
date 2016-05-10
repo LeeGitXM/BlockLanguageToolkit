@@ -11,6 +11,7 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 
 import com.ils.blt.common.serializable.SerializableApplication;
+import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
 import com.inductiveautomation.ignition.client.util.gui.SlidingPane;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -31,12 +32,12 @@ public class ApplicationConfigurationDialog extends JDialog {
 	// Getters
 	public LoggerEx getLog() { return log; }
 
-	public ApplicationConfigurationDialog(Frame frame,DesignerContext ctx,SerializableApplication app) {
+	public ApplicationConfigurationDialog(Frame frame,DesignerContext ctx,SerializableApplication app,GeneralPurposeTreeNode node) {
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		setTitle(TITLE);
 		this.context = ctx;
 		this.setPreferredSize(new Dimension(ApplicationConfigurationConstants.DIALOG_WIDTH,ApplicationConfigurationConstants.DIALOG_HEIGHT));
-		controller = new ApplicationConfigurationController(context,this,app);
+		controller = new ApplicationConfigurationController(context,this,app,node);
 		
 		slidingPane = new SlidingPane();
 		initialize();

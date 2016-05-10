@@ -59,7 +59,6 @@ public abstract class AbstractScriptExtensionManager {
 		flavors.add(ScriptConstants.PROPERTY_GET_SCRIPT);
 		flavors.add(ScriptConstants.PROPERTY_RENAME_SCRIPT);
 		flavors.add(ScriptConstants.PROPERTY_SET_SCRIPT);
-		
 	}
 	
 	/**
@@ -75,11 +74,11 @@ public abstract class AbstractScriptExtensionManager {
 		String arglist = "";
 		if( flavor.equals(ScriptConstants.PROPERTY_GET_SCRIPT))  {
 			entry = "getAux";
-			arglist = "uuid,properties";
+			arglist = "uuid,properties,db";
 		}
 		else if( flavor.equals(ScriptConstants.PROPERTY_SET_SCRIPT))  {
 			entry = "setAux";
-			arglist = "uuid,properties";
+			arglist = "uuid,properties,db";
 		}
 		else if( flavor.equals(ScriptConstants.PROPERTY_RENAME_SCRIPT))  {
 			entry = "rename";

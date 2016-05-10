@@ -5,8 +5,11 @@ import java.util.List;
 import java.util.Map;
 
 import com.ils.blt.client.ClientScriptExtensionManager;
+import com.ils.blt.common.ApplicationRequestHandler;
+import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.serializable.SerializableApplication;
+import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.SortedListModel;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -19,7 +22,9 @@ public class ApplicationConfigurationController {
 	private final SerializableApplication application;       // The application that we update
 	protected final DesignerContext context;
 	private final ApplicationConfigurationDialog dialog;
+	private final ApplicationRequestHandler requestHandler;
 	private final ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
+	private final GeneralPurposeTreeNode node;
 	private final SortedListModel<String> outputListModel;
 	protected final LoggerEx log;
 	
@@ -31,12 +36,15 @@ public class ApplicationConfigurationController {
 	
 	
 	// The constructor
-	public ApplicationConfigurationController(DesignerContext ctx,ApplicationConfigurationDialog dlg,SerializableApplication app) {
+	public ApplicationConfigurationController(DesignerContext ctx,ApplicationConfigurationDialog dlg,SerializableApplication app,
+																									 GeneralPurposeTreeNode navTreeNode) {
 		this.context = ctx;
 		this.dialog = dlg;
 		this.log = dlg.getLog();
 		this.application = app;    // The real thing
+		this.requestHandler = new ApplicationRequestHandler();
 		this.model = new GeneralPurposeDataContainer();
+		this.node  = navTreeNode;
 		this.outputListModel = new SortedListModel<>();
 		
 		initializeModel();
@@ -53,8 +61,10 @@ public class ApplicationConfigurationController {
 		model.setMapLists(new HashMap<>());
 		model.getProperties().put("Name", application.getName());   // Use as a key when fetching
 		try {
+			String database = requestHandler.getProductionDatabase();
+			if( node.getState().equals(DiagramState.ISOLATED)) database = requestHandler.getIsolationDatabase();
 			extensionManager.runScript(context.getScriptManager(),ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.PROPERTY_GET_SCRIPT, 
-				this.application.getId().toString(),model);
+				this.application.getId().toString(),model,database);
 		
 		// If trace is enabled, then dump contents of the database query.
 		if( log.isTraceEnabled() ) model.dump();
@@ -70,6 +80,7 @@ public class ApplicationConfigurationController {
 	
 	public SerializableApplication getApplication() { return this.application; }
 	public GeneralPurposeDataContainer getModel() { return this.model; }
+	public GeneralPurposeTreeNode getNode()       { return this.node; }
 	public SortedListModel<String> getOutputListModel() { return this.outputListModel; }
 	
 	public void doOK(){
@@ -112,9 +123,11 @@ public class ApplicationConfigurationController {
 	// Copy the Application auxiliary data back into the database
 	private void save(){
 		try {
+			String database = requestHandler.getProductionDatabase();
+			if( node.getState().equals(DiagramState.ISOLATED)) database = requestHandler.getIsolationDatabase();
 			// Save values back to the database
 			extensionManager.runScript(context.getScriptManager(), ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.PROPERTY_SET_SCRIPT, 
-					this.application.getId().toString(),model);
+					this.application.getId().toString(),model,database);
 			// Replace the aux data structure in our serializable application
 			// NOTE: The Nav tree node that calls the dialog saves the application resource.
 			application.setAuxiliaryData(model);

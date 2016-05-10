@@ -4,7 +4,6 @@
 package com.ils.blt.client.component.recmap;
 
 import java.awt.event.MouseEvent;
-import java.util.HashMap;
 import java.util.Map;
 
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -26,14 +25,10 @@ public class RecMapTooltipControl extends ControlAdapter {
 	private final RecMapDataModel model;
 	private final LoggerEx log;
 
-	public RecMapTooltipControl(RecMapDataModel mdl) {
-		this.delegates = new HashMap<>();
+	public RecMapTooltipControl(RecMapDataModel mdl,Map<Integer,TextDelegate> textDelegates) {
+		this.delegates = textDelegates;
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.model = mdl;
-	}
-	
-	public void setDelegate(int kind,TextDelegate delegate) {
-		delegates.put(new Integer(kind),delegate);
 	}
 	
 	/**
@@ -55,7 +50,7 @@ public class RecMapTooltipControl extends ControlAdapter {
 			TextDelegate delegate = delegates.get(new Integer(kind));
 			if( delegate!=null) {
 				Display display = (Display)event.getSource();
-				String tooltip = delegate.getTooltipText(item,model.getAttributes(row));
+				String tooltip = delegate.getTooltipText(item);
 				display.setToolTipText(tooltip);
 			}
 		}

@@ -4,12 +4,15 @@ import java.util.Enumeration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.client.ClientScriptExtensionManager;
+import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
+import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -29,11 +32,13 @@ public class AuxiliaryDataSaveManager implements Runnable {
 	private static final String TAG = "AuxiliaryDataSaveManager";
 	private static final LoggerEx log = LogUtil.getLogger(AuxiliaryDataSaveManager.class.getPackage().getName());
 	private static DesignerContext context = null;
-	private final AbstractResourceNavTreeNode root;	      // Root of our save.
+	protected final ApplicationRequestHandler requestHandler;
+	private final GeneralPurposeTreeNode root;	      // Root of our save.
 	private final ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
 	
-	public AuxiliaryDataSaveManager(AbstractResourceNavTreeNode node) {
+	public AuxiliaryDataSaveManager(GeneralPurposeTreeNode node) {
 		this.root = node;
+		this.requestHandler = new ApplicationRequestHandler();
 	}
 	
 	/**
@@ -54,6 +59,8 @@ public class AuxiliaryDataSaveManager implements Runnable {
 	private void recursivelySave(AbstractResourceNavTreeNode node) {
 		ProjectResource res = node.getProjectResource();
 		if( res!=null ) {
+			String database = requestHandler.getProductionDatabase();
+			if( root.getState().equals(DiagramState.ISOLATED)) database = requestHandler.getIsolationDatabase();
 			if(res.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE) ) {
 				SerializableApplication sa = null;
 				try{
@@ -63,7 +70,7 @@ public class AuxiliaryDataSaveManager implements Runnable {
 					if( sa.getAuxiliaryData()!=null ) {
 						// Save values back to the database
 						extensionManager.runScript(context.getScriptManager(), ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.PROPERTY_SET_SCRIPT, 
-								sa.getId().toString(),sa.getAuxiliaryData());
+								sa.getId().toString(),sa.getAuxiliaryData(),database);
 					}
 				}
 				catch(Exception ex) {
@@ -79,7 +86,7 @@ public class AuxiliaryDataSaveManager implements Runnable {
 					if( sf.getAuxiliaryData()!=null ) {
 						// Save values back to the database
 						extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.PROPERTY_SET_SCRIPT, 
-								sf.getId().toString(),sf.getAuxiliaryData());
+								sf.getId().toString(),sf.getAuxiliaryData(),database);
 					}
 				}
 				catch(Exception ex) {
@@ -98,7 +105,7 @@ public class AuxiliaryDataSaveManager implements Runnable {
 					for( SerializableBlock sb: sd.getBlocks()) {
 						if( sb.getAuxiliaryData()!=null ) {
 							extensionManager.runScript(context.getScriptManager(), sb.getClassName(), ScriptConstants.PROPERTY_SET_SCRIPT, 
-									sd.getId().toString(),sb.getAuxiliaryData());
+									sd.getId().toString(),sb.getAuxiliaryData(),database);
 						}
 					}
 				}
@@ -122,8 +129,10 @@ public class AuxiliaryDataSaveManager implements Runnable {
 	 */
 	private void saveNode(ProcessBlockView block, String className) {
 		try {
+			String database = requestHandler.getProductionDatabase();
+			if( root.getState().equals(DiagramState.ISOLATED)) database = requestHandler.getIsolationDatabase();
 			extensionManager.runScript(context.getScriptManager(),className, ScriptConstants.PROPERTY_SET_SCRIPT, 
-				block.getId().toString(),block.getAuxiliaryData());
+				block.getId().toString(),block.getAuxiliaryData(),database);
 		}
 		catch( Exception ex ) {
 			log.errorf(TAG+".saveNode: Exception ("+ex.getMessage()+")",ex); // Throw stack trace

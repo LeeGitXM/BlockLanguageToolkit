@@ -3,10 +3,17 @@
  */
 package com.ils.blt.client.component.recmap.delegate;
 
+import java.awt.event.ActionEvent;
+import java.util.Map;
 import java.util.Properties;
 
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+
+import com.ils.blt.client.BLTClientHook;
 import com.ils.blt.client.component.recmap.RecMapConstants;
 import com.ils.blt.client.component.recmap.TextDelegate;
+import com.inductiveautomation.ignition.common.script.ScriptManager;
 
 import prefuse.visual.VisualItem;
 
@@ -14,11 +21,12 @@ import prefuse.visual.VisualItem;
  * Render the block that holds Quant Output attributes.
  */
 public class OutputDelegate implements TextDelegate {
-	
+	private final Map<Integer,Properties> propertyMap;
+	private final ScriptManager scriptManager;
 
-    /**
-     */
-    public OutputDelegate() {
+    public OutputDelegate(Map<Integer,Properties> propMap) {
+    	this.propertyMap = propMap;
+    	scriptManager = BLTClientHook.getScriptManager();
     }
     /**
      * Returns the text to draw. multiple properties separated
@@ -27,15 +35,47 @@ public class OutputDelegate implements TextDelegate {
      * @return a <code>String</code> to draw
      */
     @Override
-    public String getBodyText(VisualItem item,Properties properties) {
+    public String getBodyText(VisualItem item) {
+    	int row = item.getInt(RecMapConstants.ROW);
+		Properties properties = propertyMap.get(new Integer(row));
+		
         StringBuilder sb = new StringBuilder();
-        String currentSetpoint = "0.0";
+		String currentSetpoint = "0.0";
 		if( properties!=null && properties.getProperty(RecMapConstants.CURRENT)!=null ) {
-			currentSetpoint = properties.getProperty(RecMapConstants.CURRENT);
+			String prop = properties.getProperty(RecMapConstants.CURRENT);
+			if( prop!=null) currentSetpoint = String.valueOf(prop);
 		}
+		String finalSetpoint = "0.0";
+		if( properties!=null && properties.getProperty(RecMapConstants.FINAL)!=null ) {
+			String prop = properties.getProperty(RecMapConstants.FINAL);
+			if( prop!=null) finalSetpoint = String.valueOf(prop);
+		}
+		String target = "0.0";
+		if( properties!=null && properties.getProperty(RecMapConstants.TARGET)!=null ) {
+			String prop = properties.getProperty(RecMapConstants.TARGET);
+			if( prop!=null) target = String.valueOf(prop);
+		}
+		String recommendation = "0.0";
+		if( properties!=null && properties.getProperty(RecMapConstants.RECOMMENDATION)!=null ) {
+			String prop = properties.getProperty(RecMapConstants.RECOMMENDATION);
+			if( prop!=null) recommendation = String.valueOf(prop);
+		}
+		
 		sb.append(RecMapConstants.CURRENT);
 		sb.append(": ");
 		sb.append(currentSetpoint);
+        sb.append("\n");
+		sb.append(RecMapConstants.FINAL);
+		sb.append(": ");
+		sb.append(finalSetpoint);
+        sb.append("\n");
+		sb.append(RecMapConstants.TARGET);
+		sb.append(": ");
+		sb.append(target);
+        sb.append("\n");
+		sb.append(RecMapConstants.RECOMMENDATION);
+		sb.append(": ");
+		sb.append(recommendation);
         sb.append("\n");
         return sb.toString();
     }
@@ -45,14 +85,16 @@ public class OutputDelegate implements TextDelegate {
      * @return a <code>String</code> to draw
      */
     @Override
-    public String getHeaderText(VisualItem item,Properties properties) {
+    public String getHeaderText(VisualItem item) {
         StringBuilder sb = new StringBuilder();
         sb.append(item.getString(RecMapConstants.NAME)); 
         return sb.toString();
     }
     
 	@Override
-	public String getTooltipText(VisualItem item,Properties properties) {
+	public String getTooltipText(VisualItem item) {
+    	int row = item.getInt(RecMapConstants.ROW);
+		Properties properties = propertyMap.get(new Integer(row));
 		return getHtml(item,properties);
 	}
 	
@@ -105,5 +147,20 @@ public class OutputDelegate implements TextDelegate {
 				"</div>" +
 			"</html>";
 		return html;
+	}
+	
+	@Override
+	public void addMenuItems(VisualItem item,JPopupMenu menu) {
+		JMenuItem menuItem;
+		menuItem = new JMenuItem("Output");
+	    menuItem.addActionListener(this);
+	    menu.add(menuItem);
+	}
+	
+	// ========================================== Action Listener ============================================
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		// TODO Auto-generated method stub
+		
 	}
 } 

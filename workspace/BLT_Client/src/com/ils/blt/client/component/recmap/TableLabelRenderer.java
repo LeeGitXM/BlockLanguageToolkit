@@ -7,8 +7,8 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Shape;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RectangularShape;
 import java.awt.geom.RoundRectangle2D;
@@ -19,12 +19,10 @@ import java.util.Properties;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 
-import prefuse.Constants;
 import prefuse.render.LabelRenderer;
 import prefuse.util.ColorLib;
 import prefuse.util.FontLib;
 import prefuse.util.GraphicsLib;
-import prefuse.util.StringLib;
 import prefuse.visual.VisualItem;
 import prefuse.visual.tuple.TableNodeItem;
 
@@ -38,9 +36,9 @@ import prefuse.visual.tuple.TableNodeItem;
  */
 public class TableLabelRenderer extends LabelRenderer {
 	private static final String CLSS = "TableLabelRenderer";
-	private final static Color BACKGROUND = new Color(250,250,250);   // Cream
-	private final LoggerEx log;
+	private final static Color BACKGROUND = new Color(240,240,240);   // Light Gray
 	private final Map<Integer,TextDelegate> delegates;
+	private Image badge = null;
 	private final RecMapDataModel model;
 	private double itemHeight = 1.;
 	private double itemWidth = 1.;
@@ -48,9 +46,8 @@ public class TableLabelRenderer extends LabelRenderer {
 	
     /**
      */
-    public TableLabelRenderer(RecMapDataModel mdl) {
-    	this.log = LogUtil.getLogger(getClass().getPackage().getName());
-    	this.delegates = new HashMap<>();
+    public TableLabelRenderer(RecMapDataModel mdl,Map<Integer,TextDelegate>delegateMap) {
+    	this.delegates = delegateMap;
     	this.model = mdl;
     	m_imageMargin = 2;
     	m_horizBorder = 2;
@@ -58,11 +55,9 @@ public class TableLabelRenderer extends LabelRenderer {
     	setRenderType(RENDER_TYPE_DRAW_AND_FILL);
     	setManageBounds(true);   // False doesn't work
     }
-    
-    public void setDelegate(int kind,TextDelegate delegate) {
-		delegates.put(new Integer(kind),delegate);
-	}
-	
+    // Use null for no badge
+    public void setBadge(Image image) { this.badge = image; }
+
     /**
      * @see prefuse.render.Renderer#render(java.awt.Graphics2D, prefuse.visual.VisualItem)
      */
@@ -77,7 +72,7 @@ public class TableLabelRenderer extends LabelRenderer {
 		         // fill the header shape (1/2 height), if requested
 		         int type = getRenderType(item);
 		         if ( type==RENDER_TYPE_FILL || type==RENDER_TYPE_DRAW_AND_FILL ) {
-		        	 // First paint the entire block ivory
+		        	 // First paint the entire block light gray
 		        	 int saveColor = item.getFillColor();
 		        	 item.setFillColor(BACKGROUND.getRGB());
 		        	 GraphicsLib.paint(g, item, shape, getStroke(item), RENDER_TYPE_DRAW_AND_FILL);
@@ -97,7 +92,7 @@ public class TableLabelRenderer extends LabelRenderer {
 		         double y = shape.getMinY() + m_vertBorder;
 		  
 		         // First render the header. Header is 1/2 the height, centered
-		         String text = delegate.getHeaderText(item, properties);
+		         String text = delegate.getHeaderText(item);
 		         m_font = item.getFont();
 		         m_font = scaleFontForText(m_font,text,itemWidth,itemHeight/2);
 		         int textColor = item.getTextColor();
@@ -118,7 +113,7 @@ public class TableLabelRenderer extends LabelRenderer {
 
 			
 		         // render body text - we're counting on one line, but this has code to handle multiple.
-		         text = delegate.getBodyText(item, properties);
+		         text = delegate.getBodyText(item);
 		         m_font = item.getFont();
 		         m_font = scaleFontForText(m_font,text,itemWidth,itemHeight/2);
 		         if ( text != null && ColorLib.alpha(textColor) > 0 ) {

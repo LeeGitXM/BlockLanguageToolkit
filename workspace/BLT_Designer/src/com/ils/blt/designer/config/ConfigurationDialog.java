@@ -15,7 +15,6 @@ import java.text.NumberFormat;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -28,6 +27,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 
+import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.ActiveState;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -51,6 +51,7 @@ public class ConfigurationDialog extends JDialog {
 	protected static final Dimension NAME_BOX_SIZE  = new Dimension(280,24);
 	protected static final Dimension NUMBER_BOX_SIZE  = new Dimension(50,24);
 	protected final LoggerEx log;
+	protected final ApplicationRequestHandler requestHandler;
 	private final UtilityFunctions fcns = new UtilityFunctions();
 	protected JPanel contentPanel = null;
 	protected JPanel buttonPanel = null;
@@ -63,6 +64,7 @@ public class ConfigurationDialog extends JDialog {
 		super(ctx.getFrame());
 		this.context = ctx;
 		this.rb = ResourceBundle.getBundle("com.ils.blt.designer.designer");  // designer.properties
+		this.requestHandler = new ApplicationRequestHandler();
 		setModal(true);
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
         this.log = LogUtil.getLogger(getClass().getPackage().getName());

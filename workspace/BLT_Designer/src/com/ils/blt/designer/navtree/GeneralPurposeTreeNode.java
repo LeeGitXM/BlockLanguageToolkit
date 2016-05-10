@@ -88,6 +88,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
 	private final LoggerEx logger = LogUtil.getLogger(getClass().getPackage().getName());
 	private boolean dirty = false;
+	private DiagramState state = DiagramState.ACTIVE;  // Used for Applications and Families
 	private final DeleteNodeAction deleteNodeAction;
 	private final StartAction startAction = new StartAction();
 	private final StopAction stopAction = new StopAction();
@@ -189,6 +190,10 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	// Dirtiness refers to internal state, independent of children.
 	public boolean isDirty() { return this.dirty; }
 	public void setDirty(boolean flag) { this.dirty = flag; }
+	// Use the state for Applications and Families to remember whether to 
+	// configure production or isolation datbases
+	public DiagramState getState() { return this.state; }
+	public void setState(DiagramState ds) { this.state = ds; }
 	/**
 	 * Query the block controller in the Gateway. The resources that it knows
 	 * about may, or may not, coincide with those in the Designer. 
@@ -509,7 +514,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
 			sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
 			sd.setName(res.getName());   // Sync the SerializableApplication name w/ res
-			statusManager.setResourceState(resourceId, sd.getState());
+			statusManager.setResourceState(resourceId, sd.getState(),false);
 		}
 		catch(Exception ex) {
 			logger.warnf("%s.SerializableDiagram: Deserialization exception (%s)",TAG,ex.getMessage());
@@ -574,6 +579,9 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	private boolean isRootFolder() {
 		return getFolderId().equals(BLTProperties.ROOT_FOLDER_UUID);
 	}
+/*
+ *   WARNING: The logic here is flawed. Deserializing the application already takes care of
+ *            deserializing nested nodes. They should not have to be deserialized separately.
 	// Recursively descend the node tree, gathering up associated resources.
 	// Deserialize them and add as proper children of the parent
 	// @param node a tree node corresponding to an application.
@@ -689,7 +697,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		return sfold;
 	}
 
-
+*/
 
 	/**
 	 *  Serialize an Application into JSON.
@@ -770,7 +778,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 						// Unmarshall the resource
 						SerializableApplication sa = deserializeApplication(res);
 						if( sa!=null ) {
-							ApplicationConfigurationDialog dialog = new ApplicationConfigurationDialog(context.getFrame(),context,sa);
+							ApplicationConfigurationDialog dialog = new ApplicationConfigurationDialog(context.getFrame(),context,sa,
+																									  GeneralPurposeTreeNode.this);
 							dialog.setLocationRelativeTo(anchor);
 							Point p = dialog.getLocation();
 	    					dialog.setLocation((int)(p.getX()-OFFSET),(int)(p.getY()-OFFSET));
@@ -873,7 +882,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 									if(logger.isDebugEnabled()) logger.debugf("%s.actionPerformed: creating json ... %s",TAG,(mapper.canSerialize(SerializableApplication.class)?"true":"false"));
 									try{ 
 										// Convert the view into a serializable object
-										SerializableApplication sap = recursivelyDeserializeApplication(node);
+										//SerializableApplication sap = recursivelyDeserializeApplication(node);
+										SerializableApplication sap = deserializeApplication(node.getProjectResource());
 										String json = mapper.writeValueAsString(sap);
 										FileWriter fw = new FileWriter(output,false);  // Do not append
 										try {
@@ -962,7 +972,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 											root.selectChild(new long[] {newId} );
 											// Now import families
 											for(SerializableFamily fam:sa.getFamilies()) {
-												importFamily(sa.getId(),fam);
+												// importFamily(sa.getId(),fam);
 											}
 										}
 										else {
@@ -1014,7 +1024,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 						BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
 						sd.getName(), ApplicationScope.GATEWAY, json.getBytes());
 				resource.setParentUuid(parentId);
-				statusManager.setResourceState(newId, sd.getState());
+				statusManager.setResourceState(newId, sd.getState(),false);
 				executionEngine.executeOnce(new ResourceCreateManager(resource));
 			} 
 			catch (Exception ex) {
@@ -1274,7 +1284,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 						logger.infof("%s.actionPerformed: deserializing ...%d",TAG,resourceId);
 						SerializableFamily sf = deserializeFamily(res);
 						if( sf!=null ) {
-							FamilyConfigurationDialog dialog = new FamilyConfigurationDialog(context.getFrame(),context,sf);
+							FamilyConfigurationDialog dialog = new FamilyConfigurationDialog(context.getFrame(),context,sf,GeneralPurposeTreeNode.this);
 							dialog.setLocationRelativeTo(anchor);
 							Point p = dialog.getLocation();
 	    					dialog.setLocation((int)(p.getX()-OFFSET),(int)(p.getY()-OFFSET));
@@ -1415,7 +1425,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 											resource.setParentUuid(getFolderId());
 											new ResourceCreateManager(resource).run();	
 											parentNode.selectChild(new long[] {newId} );
-											statusManager.setResourceState(newId, sd.getState());
+											statusManager.setResourceState(newId, sd.getState(),false);
 											setDirty(true);
 										}
 										else {
@@ -1476,9 +1486,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	// into the current database.
 	private class RestoreAuxiliaryDataAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
-		private final AbstractResourceNavTreeNode node;
-
-		public RestoreAuxiliaryDataAction(AbstractResourceNavTreeNode treeNode)  {
+		private final GeneralPurposeTreeNode node;
+		public RestoreAuxiliaryDataAction(GeneralPurposeTreeNode treeNode)  {
 			super(PREFIX+".RestoreAuxiliaryData",IconUtil.getIcon("data_replace"));  // preferences
 			node = treeNode;
 		}
@@ -1514,9 +1523,9 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	// into the current database.
 	private class SaveAuxiliaryDataAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
-		private final AbstractResourceNavTreeNode node;
+		private final GeneralPurposeTreeNode node;
 
-		public SaveAuxiliaryDataAction(AbstractResourceNavTreeNode treeNode)  {
+		public SaveAuxiliaryDataAction(GeneralPurposeTreeNode treeNode)  {
 			super(PREFIX+".SaveAuxiliaryData",IconUtil.getIcon("data_out"));  // preferences
 			node = treeNode;
 		}
@@ -1534,12 +1543,11 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	 */
 	private class SetApplicationStateAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
-		private final AbstractResourceNavTreeNode app;
-		private final DiagramState state;
-		public SetApplicationStateAction(AbstractResourceNavTreeNode applicationNode,DiagramState s)  {
+		private final GeneralPurposeTreeNode app;
+		public SetApplicationStateAction(GeneralPurposeTreeNode applicationNode,DiagramState s)  {
 			super(PREFIX+".SetApplicationState."+s.name());
 			this.app = applicationNode;
-			this.state = s;
+			app.setState(s);
 		}
 
 		// We need to set the state both locally and in the gateway

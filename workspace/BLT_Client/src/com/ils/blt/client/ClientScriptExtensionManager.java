@@ -5,25 +5,13 @@
 package com.ils.blt.client;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import org.python.core.PyDictionary;
-import org.python.core.PyList;
-import org.python.core.PyObject;
 
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.script.AbstractScriptExtensionManager;
-import com.ils.blt.common.script.Script;
 import com.ils.blt.common.script.ScriptConstants;
-import com.ils.common.GeneralPurposeDataContainer;
-import com.ils.common.JavaToPython;
-import com.ils.common.PythonToJava;
-import com.inductiveautomation.ignition.common.script.ScriptManager;
-import com.inductiveautomation.ignition.common.util.LogUtil;
 
 
 /**

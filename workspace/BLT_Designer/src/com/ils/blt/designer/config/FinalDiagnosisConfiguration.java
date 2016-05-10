@@ -122,8 +122,9 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 		model.setMapLists(new HashMap<>());
 		model.getProperties().put("Name", block.getName());   // Use as a key when fetching
 		try {
+			String db = requestHandler.getDatabaseForUUID(diagram.getId().toString());
 			extensionManager.runScript(context.getScriptManager(),block.getClassName(), ScriptConstants.PROPERTY_GET_SCRIPT, 
-					diagram.getId().toString(),model);
+					diagram.getId().toString(),model,db);
 		}
 		catch( Exception ex ) {
 			log.errorf(TAG+".retrieveAuxiliaryData: Exception ("+ex.getMessage()+")",ex); // Throw stack trace

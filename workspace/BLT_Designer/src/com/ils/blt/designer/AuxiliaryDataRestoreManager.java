@@ -4,12 +4,15 @@ import java.util.Enumeration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.client.ClientScriptExtensionManager;
+import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
+import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.common.GeneralPurposeDataContainer;
@@ -31,12 +34,14 @@ public class AuxiliaryDataRestoreManager implements Runnable {
 	private static final String TAG = "AuxiliaryDataRestoreManager";
 	private static final LoggerEx log = LogUtil.getLogger(AuxiliaryDataRestoreManager.class.getPackage().getName());
 	private static DesignerContext context = null;
-	private final AbstractResourceNavTreeNode root;	      // Root of our save.
+	protected final ApplicationRequestHandler requestHandler;
+	private final GeneralPurposeTreeNode root;	      // Root of our save.
 	private final DiagramWorkspace workspace;
 	private final ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
 	
-	public AuxiliaryDataRestoreManager(DiagramWorkspace wksp,AbstractResourceNavTreeNode node) {
+	public AuxiliaryDataRestoreManager(DiagramWorkspace wksp,GeneralPurposeTreeNode node) {
 		this.root = node;
+		this.requestHandler = new ApplicationRequestHandler();
 		this.workspace = wksp;
 	}
 	
@@ -59,17 +64,20 @@ public class AuxiliaryDataRestoreManager implements Runnable {
 		ProjectResource res = node.getProjectResource();
 		
 		if( res!=null ) {
+			String database = requestHandler.getProductionDatabase();
+			if( root.getState().equals(DiagramState.ISOLATED)) database = requestHandler.getIsolationDatabase();
 			if(res.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE) ) {
 				SerializableApplication sa = null;
-				ResourceUpdateManager upmgr = new ResourceUpdateManager(workspace,res);
+				ResourceUpdateManager upmgr = new ResourceUpdateManager(workspace,res);	
 				try{
 					byte[] bytes = res.getData();
 					ObjectMapper mapper = new ObjectMapper();
 					sa = mapper.readValue(new String(bytes), SerializableApplication.class);
 					GeneralPurposeDataContainer auxData = new GeneralPurposeDataContainer();
 					// Update from database, then save the resource
+					
 					extensionManager.runScript(context.getScriptManager(), ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.PROPERTY_GET_SCRIPT, 
-							sa.getId().toString(),auxData);
+							sa.getId().toString(),auxData,database);
 					if( !auxData.containsData()) {
 						sa.setAuxiliaryData(auxData);
 						upmgr.run();
@@ -90,7 +98,7 @@ public class AuxiliaryDataRestoreManager implements Runnable {
 					GeneralPurposeDataContainer auxData = new GeneralPurposeDataContainer();
 					// Save values back to the database
 					extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.PROPERTY_GET_SCRIPT, 
-							sf.getId().toString(),auxData);
+							sf.getId().toString(),auxData,database);
 					if( !auxData.containsData()) {
 						sf.setAuxiliaryData(auxData);
 						upmgr.run();
@@ -114,7 +122,7 @@ public class AuxiliaryDataRestoreManager implements Runnable {
 					for( SerializableBlock sb: sd.getBlocks()) {
 						GeneralPurposeDataContainer auxData = new GeneralPurposeDataContainer();
 						extensionManager.runScript(context.getScriptManager(), sb.getClassName(), ScriptConstants.PROPERTY_GET_SCRIPT, 
-								sd.getId().toString(),auxData);
+								sd.getId().toString(),auxData,database);
 						if( !auxData.containsData()) {
 							sb.setAuxiliaryData(auxData);
 							hasUpdate = true;
@@ -142,8 +150,10 @@ public class AuxiliaryDataRestoreManager implements Runnable {
 	private void restoreApplication(SerializableApplication app) {
 		try {
 			if(app.getAuxiliaryData()==null) app.setAuxiliaryData(new GeneralPurposeDataContainer());
+			String database = requestHandler.getProductionDatabase();
+			if( root.getState().equals(DiagramState.ISOLATED)) database = requestHandler.getIsolationDatabase();
 			extensionManager.runScript(context.getScriptManager(),ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.PROPERTY_GET_SCRIPT, 
-				app.getId().toString(),app.getAuxiliaryData());
+				app.getId().toString(),app.getAuxiliaryData(),database);
 		}
 		catch( Exception ex ) {
 			log.errorf(TAG+".restoreNode: Exception ("+ex.getMessage()+")",ex); // Throw stack trace
@@ -157,8 +167,10 @@ public class AuxiliaryDataRestoreManager implements Runnable {
 	 */
 	private void restoreNode(ProcessBlockView block, String className) {
 		try {
+			String database = requestHandler.getProductionDatabase();
+			if( root.getState().equals(DiagramState.ISOLATED)) database = requestHandler.getIsolationDatabase();
 			extensionManager.runScript(context.getScriptManager(),className, ScriptConstants.PROPERTY_GET_SCRIPT, 
-				block.getId().toString(),block.getAuxiliaryData());
+				block.getId().toString(),block.getAuxiliaryData(),database);
 		}
 		catch( Exception ex ) {
 			log.errorf(TAG+".restoreNode: Exception ("+ex.getMessage()+")",ex); // Throw stack trace

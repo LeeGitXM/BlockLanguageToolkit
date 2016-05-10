@@ -601,7 +601,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	private void updateState(ProjectResource res,DiagramState state) {
 		if( res!=null ) {
 			new ResourceUpdateManager(workspace,res).run();
-			statusManager.setResourceState(resourceId,state);
+			statusManager.setResourceState(resourceId,state,true);
 			setDirty(false);
 		}
 	}
@@ -702,11 +702,12 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	public void bindingChange(String binding) {
 	}
 	// The value is in response to a diagram state change.
+	// Do not re-inform the Gateway, since that's where this notification originated
 	@Override
 	public void valueChange(QualifiedValue value) {
 		try {
 			DiagramState ds = DiagramState.valueOf(value.getValue().toString());
-			statusManager.setResourceState(resourceId, ds);
+			statusManager.setResourceState(resourceId, ds,false);
 			refresh();   // Force a repaint
 		}
 		catch(IllegalArgumentException iae) {

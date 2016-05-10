@@ -3,10 +3,17 @@
  */
 package com.ils.blt.client.component.recmap.delegate;
 
+import java.awt.event.ActionEvent;
+import java.util.Map;
 import java.util.Properties;
 
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+
+import com.ils.blt.client.BLTClientHook;
 import com.ils.blt.client.component.recmap.RecMapConstants;
 import com.ils.blt.client.component.recmap.TextDelegate;
+import com.inductiveautomation.ignition.common.script.ScriptManager;
 
 import prefuse.visual.VisualItem;
 
@@ -16,9 +23,12 @@ import prefuse.visual.VisualItem;
 //public class DiagnosisRenderer extends TableLabelRenderer {
 	
 public class DiagnosisDelegate implements TextDelegate {
-    /**
-     */
-    public DiagnosisDelegate() {
+	private final Map<Integer,Properties> propertyMap;
+	private final ScriptManager scriptManager;
+
+    public DiagnosisDelegate(Map<Integer,Properties> propMap) {
+    	this.propertyMap = propMap;
+    	scriptManager = BLTClientHook.getScriptManager();
     }
     
     /**
@@ -28,12 +38,22 @@ public class DiagnosisDelegate implements TextDelegate {
      * @return a <code>String</code> to draw
      */
     @Override
-    public String getBodyText(VisualItem item,Properties properties) {
+    public String getBodyText(VisualItem item) {
+    	int row = item.getInt(RecMapConstants.ROW);
+		Properties properties = propertyMap.get(new Integer(row));
         StringBuilder sb = new StringBuilder();
+        String problem = "";
+		if( properties!=null && properties.getProperty(RecMapConstants.PROBLEM)!=null ) {
+			problem = properties.getProperty(RecMapConstants.PROBLEM);
+		}
         String multiplier = "0.0";
 		if( properties!=null && properties.getProperty(RecMapConstants.MULTIPLIER)!=null ) {
 			multiplier = properties.getProperty(RecMapConstants.MULTIPLIER);
 		}
+		sb.append(RecMapConstants.PROBLEM);
+		sb.append(": ");
+		sb.append(problem);
+        sb.append("\n");
 		sb.append(RecMapConstants.MULTIPLIER);
 		sb.append(": ");
 		sb.append(multiplier);
@@ -46,14 +66,16 @@ public class DiagnosisDelegate implements TextDelegate {
      * @return a <code>String</code> to draw
      */
     @Override
-    public String getHeaderText(VisualItem item,Properties properties) {
+    public String getHeaderText(VisualItem item) {
         StringBuilder sb = new StringBuilder();
         sb.append(item.getString(RecMapConstants.NAME)); 
         return sb.toString();
     }
 
 	@Override
-	public String getTooltipText(VisualItem item,Properties properties) {
+	public String getTooltipText(VisualItem item) {
+		int row = item.getInt(RecMapConstants.ROW);
+		Properties properties = propertyMap.get(new Integer(row));
 		return getHtml(item,properties);
 	}
 	
@@ -88,5 +110,21 @@ public class DiagnosisDelegate implements TextDelegate {
 				"</div>" +
 			"</html>";
 		return html;
+	}
+	
+	@Override
+	public void addMenuItems(VisualItem item,JPopupMenu menu) {
+		int row = item.getInt(RecMapConstants.ROW);
+		Properties properties = propertyMap.get(new Integer(row));
+		JMenuItem menuItem;
+		menuItem = new JMenuItem("Output");
+	    menuItem.addActionListener(this);
+	    menu.add(menuItem);
+	}
+	// ========================================== Action Listener ============================================
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		// TODO Auto-generated method stub
+		
 	}
 } 

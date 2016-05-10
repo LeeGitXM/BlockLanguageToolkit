@@ -12,16 +12,20 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 
+import javax.swing.ButtonGroup;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import com.ils.blt.client.ClientScriptExtensionManager;
+import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.serializable.SerializableFamily;
+import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
@@ -38,15 +42,20 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 	private final ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
 	private final SerializableFamily family;
 	private final GeneralPurposeDataContainer model;           // Data container operated on by panels
+	private final GeneralPurposeTreeNode node;
 	private JPanel mainPanel = null;
 	protected JTextArea descriptionArea;
 	protected JComboBox<String> stateBox;
 	protected JFormattedTextField priorityField;
+	protected JRadioButton isolationButton;
+	protected JRadioButton productionButton;
+	protected ButtonGroup databaseGroup;
 	
-	public FamilyConfigurationDialog(Frame frame,DesignerContext ctx,SerializableFamily fam) {
+	public FamilyConfigurationDialog(Frame frame,DesignerContext ctx,SerializableFamily fam,GeneralPurposeTreeNode treeNode) {
 		super(ctx);
 		this.family = fam;
 		this.model = new GeneralPurposeDataContainer();
+		this.node  = treeNode;
 		this.setTitle(rb.getString("Family.Title"));
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));
         initialize();
@@ -65,8 +74,10 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 		model.setMapLists(new HashMap<>());
 		model.getProperties().put("Name", family.getName());   // Use as a key when fetching
 		try {
+			String database = requestHandler.getProductionDatabase();
+			if( node.getState().equals(DiagramState.ISOLATED)) database = requestHandler.getIsolationDatabase();
 			extensionManager.runScript(context.getScriptManager(),ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.PROPERTY_GET_SCRIPT, 
-					this.family.getId().toString(),model);
+					this.family.getId().toString(),model,database);
 		}
 		catch( Exception ex ) {
 			log.errorf("FamilyConfigurationController.initialize: Exception ("+ex.getMessage()+")",ex); // Throw stack trace
@@ -117,6 +128,19 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 		panel.add(createLabel("Family.State"),"gapleft 20");
 		stateBox = createActiveStateCombo("Family.State",family.getState());
 		panel.add(stateBox,"wrap 20");
+		
+		productionButton = new JRadioButton(rb.getString("Production"));
+		productionButton.setActionCommand("production");
+		panel.add(productionButton, "skip");
+		isolationButton = new JRadioButton(rb.getString("Isolation"));
+		panel.add(isolationButton, "wrap");
+		isolationButton.setActionCommand("isolation");
+		databaseGroup = new ButtonGroup();
+		databaseGroup.add(productionButton);
+		databaseGroup.add(isolationButton);
+		DiagramState state = node.getState();
+		if( state.equals(DiagramState.ACTIVE)) productionButton.setSelected(true);
+		else isolationButton.setSelected(true);
 		return panel;
 	}
 
@@ -143,10 +167,18 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 		log.infof("%s.save()",TAG);
 		model.getProperties().put("Description",descriptionArea.getText());
 		model.getProperties().put("Priority", priorityField.getText());
+		String database = requestHandler.getProductionDatabase();
+		if( databaseGroup.getSelection().getActionCommand().equals("isolation") ) {
+			node.setState(DiagramState.ISOLATED);
+			database = requestHandler.getIsolationDatabase();
+		}
+		else {
+			node.setState(DiagramState.ACTIVE);
+		}
 		try {
 			// Save values back to the database
 			extensionManager.runScript(context.getScriptManager(),ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.PROPERTY_SET_SCRIPT,
-								       family.getId().toString(),model);
+								       family.getId().toString(),model,database);
 			// Replace the aux data structure in our serializable application
 			// NOTE: The Nav tree node that calls the dialog saves the application resource.
 			family.setAuxiliaryData(model);

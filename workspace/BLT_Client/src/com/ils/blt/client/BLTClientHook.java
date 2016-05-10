@@ -1,5 +1,5 @@
 /**
- *   (c) 2013  ILS Automation. All rights reserved. 
+ *   (c) 2013-2016  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.client;
 
@@ -16,6 +16,7 @@ import com.inductiveautomation.vision.api.client.ClientModuleHook;
 
 public class BLTClientHook implements ClientModuleHook {
 	public static String HOOK_BUNDLE_NAME   = "client";      // Properties file is client.properties
+	private static ScriptManager scriptManager = null;
 	// Register separate properties files for designer things and block things
 	static {
 		BundleUtil.get().addBundle(BLTProperties.CUSTOM_PREFIX,ClientModuleHook.class,HOOK_BUNDLE_NAME);
@@ -26,7 +27,10 @@ public class BLTClientHook implements ClientModuleHook {
 	@Override
 	public void initializeScriptManager(ScriptManager mgr) {
 		mgr.addScriptModule(BLTProperties.DIAGRAM_SCRIPT_PACKAGE,ApplicationScriptFunctions.class);
+		scriptManager = mgr;
 	}
+	
+	public static ScriptManager getScriptManager() { return scriptManager; }
 
 	@Override
 	public void configureDeserializer(XMLDeserializer arg0) {

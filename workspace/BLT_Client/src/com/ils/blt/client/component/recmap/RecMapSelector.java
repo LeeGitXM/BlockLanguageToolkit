@@ -2,14 +2,8 @@ package com.ils.blt.client.component.recmap;
 
 import java.awt.event.MouseEvent;
 import java.util.Map;
-import java.util.Properties;
-import java.util.Timer;
-import java.util.TimerTask;
 
-import javax.swing.JOptionPane;
-
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
+import javax.swing.JPopupMenu;
 
 import prefuse.controls.Control;
 import prefuse.controls.ControlAdapter;
@@ -22,24 +16,20 @@ import prefuse.visual.tuple.TableNodeItem;
  */
 public class RecMapSelector extends ControlAdapter implements Control {
 	private final static String CLSS = "RecMapSelector";
-	private final LoggerEx log;
 	private final RecommendationMap map;
-	private final Map<Integer,Properties> propertyMap;
-	private final int clickCount;
-	private int clicks;
+	private final Map<Integer,TextDelegate> delegates;
 	
-	public RecMapSelector(RecommendationMap rm,Map<Integer,Properties> properties,int c) {
+	public RecMapSelector(RecommendationMap rm,Map<Integer,TextDelegate> textDelegates) {
 		this.map = rm;
-		this.clickCount = c;
-		this.propertyMap = properties;
-		this.log = LogUtil.getLogger(getClass().getPackage().getName());
-		clicks = 0;
+		this.delegates = textDelegates;
 	}
    
+	
+	
     /**
      * On a double-click of a diagnosis block, display a dialog requesting the multiplier.
      * @see prefuse.controls.Control#itemClicked(prefuse.visual.VisualItem, java.awt.event.MouseEvent)
-     */
+	@Override
 	public void itemClicked(final VisualItem item, final MouseEvent e) {
 		//if( !e.isControlDown() ) return;
 		if( item instanceof TableNodeItem ) {
@@ -85,5 +75,20 @@ public class RecMapSelector extends ControlAdapter implements Control {
 				clicks++;
 			}
 		}
-	} 
+	}
+	*/
+	
+	/**
+	 * On a mouse-pressed display a pop-up menu
+	 */
+	@Override
+	public void itemPressed(final VisualItem item, final MouseEvent e) {
+		if( item instanceof TableNodeItem ) {
+			int nodeType = item.getInt(RecMapConstants.KIND);
+			JPopupMenu menu = new JPopupMenu();
+			TextDelegate delegate = delegates.get(nodeType);
+			delegate.addMenuItems(item,menu);
+			menu.show(e.getComponent(),e.getX(), e.getY());
+		}
+	}
 } 

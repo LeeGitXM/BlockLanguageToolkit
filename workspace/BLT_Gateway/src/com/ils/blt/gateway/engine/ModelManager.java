@@ -518,7 +518,7 @@ public class ModelManager implements ProjectListener  {
 				uuidByProjectId.put(new Long(projectId), staging.getUuid());
 				List<ProjectResource> resources = staging.getResources();
 				for( ProjectResource res:resources ) {
-					log.debugf("%s.projectAdded: resource %d.%d %s (%s)", TAG,projectId,res.getResourceId(),res.getName(),
+					log.infof("%s.projectAdded: resource %d.%d %s (%s)", TAG,projectId,res.getResourceId(),res.getName(),
 							res.getResourceType());
 					analyzeResource(projectId,res);
 				}
