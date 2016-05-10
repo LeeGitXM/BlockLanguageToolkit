@@ -580,8 +580,9 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		return getFolderId().equals(BLTProperties.ROOT_FOLDER_UUID);
 	}
 /*
- *   WARNING: The logic here is flawed. Deserializing the application already takes care of
- *            deserializing nested nodes. They should not have to be deserialized separately.
+ *   WARNING: When an application is serialized, all resources are nested and serialized as such.
+ *            A project is saved differently. All resources are saved separately in a flat namespace.
+ */            
 	// Recursively descend the node tree, gathering up associated resources.
 	// Deserialize them and add as proper children of the parent
 	// @param node a tree node corresponding to an application.
@@ -591,6 +592,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		if( res!=null ) {
 			logger.infof("%s.recursivelyDeserializeApplication: %s (%d)",TAG,res.getName(),res.getResourceId());
 			sa = deserializeApplication(res);
+			sa.setFamilies(new SerializableFamily[0]);
+			sa.setFolders(new SerializableFolder[0]);
 
 			@SuppressWarnings("rawtypes")
 			Enumeration walker = node.children();
@@ -635,6 +638,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		if( res!=null ) {
 			logger.infof("%s.recursivelyDeserializeFamily: %s (%d)",TAG,res.getName(),res.getResourceId());
 			sfam = deserializeFamily(res);
+			sfam.setFolders(new SerializableFolder[0]);
+			sfam.setDiagrams(new SerializableDiagram[0]);
 
 			@SuppressWarnings("rawtypes")
 			Enumeration walker = node.children();
@@ -670,6 +675,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			sfold.setId(res.getDataAsUUID());
 			sfold.setName(res.getName());
 			sfold.setParentId(res.getParentUuid());
+			sfold.setFolders(new SerializableFolder[0]);
+			sfold.setDiagrams(new SerializableDiagram[0]);
 
 			@SuppressWarnings("rawtypes")
 			Enumeration walker = node.children();
@@ -696,8 +703,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		}
 		return sfold;
 	}
-
-*/
 
 	/**
 	 *  Serialize an Application into JSON.
@@ -881,9 +886,9 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 									ObjectMapper mapper = new ObjectMapper();
 									if(logger.isDebugEnabled()) logger.debugf("%s.actionPerformed: creating json ... %s",TAG,(mapper.canSerialize(SerializableApplication.class)?"true":"false"));
 									try{ 
-										// Convert the view into a serializable object
-										//SerializableApplication sap = recursivelyDeserializeApplication(node);
-										SerializableApplication sap = deserializeApplication(node.getProjectResource());
+										// Convert the view into a serializable object. Here we reject any nesting that might
+										// have been saved in the project resource, and substitute what we know from the nav tree.
+										SerializableApplication sap = recursivelyDeserializeApplication(node);
 										String json = mapper.writeValueAsString(sap);
 										FileWriter fw = new FileWriter(output,false);  // Do not append
 										try {
@@ -972,7 +977,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 											root.selectChild(new long[] {newId} );
 											// Now import families
 											for(SerializableFamily fam:sa.getFamilies()) {
-												// importFamily(sa.getId(),fam);
+												importFamily(sa.getId(),fam);
 											}
 										}
 										else {

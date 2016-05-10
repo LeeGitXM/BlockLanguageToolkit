@@ -963,7 +963,8 @@ public class ModelManager implements ProjectListener  {
 	
 	/**
 	 * We've discovered a changed model resource. Deserialize and convert into a ProcessApplication.
-	 * Note that the name is wholly contained in the resource, not its contents.
+	 * Note that the name is wholly contained in the resource, not its contents. Clear out any nested
+	 * resources as these are only used when serializing the application outside of a project.
 	 * @param projId the identifier of the project
 	 * @param res
 	 */ 
