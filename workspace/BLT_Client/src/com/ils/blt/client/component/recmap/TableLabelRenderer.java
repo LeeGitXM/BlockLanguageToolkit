@@ -12,12 +12,8 @@ import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RectangularShape;
 import java.awt.geom.RoundRectangle2D;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 import prefuse.render.LabelRenderer;
 import prefuse.util.ColorLib;
@@ -126,8 +122,11 @@ public class TableLabelRenderer extends LabelRenderer {
 		             if(dy<0.) dy = 0.;
 		   
 		             y+=itemHeight/2;  // Center in the lower half
-
-		             drawString(g, text, useInt, x, y+dy);
+		             String[] lines = text.split("\n");
+		             for( String line:lines) {
+		            	 drawString(g, line, useInt, x, y+dy);
+		            	 y+=fm.getHeight();
+		             }
 		         }
 			}
 		}
@@ -180,6 +179,7 @@ public class TableLabelRenderer extends LabelRenderer {
         throw new IllegalArgumentException("getText not applicable to this class");
     }
 
+    // These are set by the layout manager
     public void setMaximumHeight(double h) { this.itemHeight = h; }
     public void setMaximumWidth(double w) { this.itemWidth = w; }
     

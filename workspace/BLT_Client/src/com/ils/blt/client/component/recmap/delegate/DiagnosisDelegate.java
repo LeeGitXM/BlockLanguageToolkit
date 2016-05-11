@@ -3,17 +3,15 @@
  */
 package com.ils.blt.client.component.recmap.delegate;
 
-import java.awt.event.ActionEvent;
 import java.util.Map;
 import java.util.Properties;
 
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
-import com.ils.blt.client.BLTClientHook;
 import com.ils.blt.client.component.recmap.RecMapConstants;
+import com.ils.blt.client.component.recmap.RecommendationMap;
 import com.ils.blt.client.component.recmap.TextDelegate;
-import com.inductiveautomation.ignition.common.script.ScriptManager;
 
 import prefuse.visual.VisualItem;
 
@@ -23,12 +21,12 @@ import prefuse.visual.VisualItem;
 //public class DiagnosisRenderer extends TableLabelRenderer {
 	
 public class DiagnosisDelegate implements TextDelegate {
+	private final RecommendationMap recmap;
 	private final Map<Integer,Properties> propertyMap;
-	private final ScriptManager scriptManager;
 
-    public DiagnosisDelegate(Map<Integer,Properties> propMap) {
+    public DiagnosisDelegate(RecommendationMap rm,Map<Integer,Properties> propMap) {
+    	this.recmap = rm;
     	this.propertyMap = propMap;
-    	scriptManager = BLTClientHook.getScriptManager();
     }
     
     /**
@@ -50,10 +48,12 @@ public class DiagnosisDelegate implements TextDelegate {
 		if( properties!=null && properties.getProperty(RecMapConstants.MULTIPLIER)!=null ) {
 			multiplier = properties.getProperty(RecMapConstants.MULTIPLIER);
 		}
+		/*
 		sb.append(RecMapConstants.PROBLEM);
 		sb.append(": ");
 		sb.append(problem);
         sb.append("\n");
+        */
 		sb.append(RecMapConstants.MULTIPLIER);
 		sb.append(": ");
 		sb.append(multiplier);
@@ -116,15 +116,23 @@ public class DiagnosisDelegate implements TextDelegate {
 	public void addMenuItems(VisualItem item,JPopupMenu menu) {
 		int row = item.getInt(RecMapConstants.ROW);
 		Properties properties = propertyMap.get(new Integer(row));
+		boolean hidden = false;
+		if( properties!=null && properties.getProperty(RecMapConstants.IS_HIDDEN)!=null ) {
+			if( properties.getProperty(RecMapConstants.IS_HIDDEN).equalsIgnoreCase("TRUE") ) hidden = true;
+		}
 		JMenuItem menuItem;
-		menuItem = new JMenuItem("Output");
-	    menuItem.addActionListener(this);
+		if( hidden ) menuItem = new JMenuItem(new ScriptAction(recmap,"expand","expandFinalDiagnosis",row));
+		else         menuItem = new JMenuItem(new ScriptAction(recmap,"hide","hideFinalDiagnosis",row));
 	    menu.add(menuItem);
-	}
-	// ========================================== Action Listener ============================================
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		// TODO Auto-generated method stub
-		
+	    
+	    menuItem = new JMenuItem(new ScriptAction(recmap,"change multiplier","changeMultiplier",row));
+	    menu.add(menuItem);
+	    
+		if( properties!=null && properties.getProperty(RecMapConstants.HAS_SQC)!=null ) {
+			if( properties.getProperty(RecMapConstants.HAS_SQC).equalsIgnoreCase("TRUE") ) {
+				menuItem = new JMenuItem(new ScriptAction(recmap,"plot sqc","sqcPlot",row));
+			    menu.add(menuItem);
+			}
+		}
 	}
 } 

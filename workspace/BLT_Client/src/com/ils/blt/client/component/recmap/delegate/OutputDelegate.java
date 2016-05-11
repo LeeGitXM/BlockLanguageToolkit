@@ -3,17 +3,15 @@
  */
 package com.ils.blt.client.component.recmap.delegate;
 
-import java.awt.event.ActionEvent;
 import java.util.Map;
 import java.util.Properties;
 
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
-import com.ils.blt.client.BLTClientHook;
 import com.ils.blt.client.component.recmap.RecMapConstants;
+import com.ils.blt.client.component.recmap.RecommendationMap;
 import com.ils.blt.client.component.recmap.TextDelegate;
-import com.inductiveautomation.ignition.common.script.ScriptManager;
 
 import prefuse.visual.VisualItem;
 
@@ -21,12 +19,13 @@ import prefuse.visual.VisualItem;
  * Render the block that holds Quant Output attributes.
  */
 public class OutputDelegate implements TextDelegate {
+	private final RecommendationMap recmap;
 	private final Map<Integer,Properties> propertyMap;
-	private final ScriptManager scriptManager;
 
-    public OutputDelegate(Map<Integer,Properties> propMap) {
+
+    public OutputDelegate(RecommendationMap rm,Map<Integer,Properties> propMap) {
+    	this.recmap = rm;
     	this.propertyMap = propMap;
-    	scriptManager = BLTClientHook.getScriptManager();
     }
     /**
      * Returns the text to draw. multiple properties separated
@@ -65,6 +64,7 @@ public class OutputDelegate implements TextDelegate {
 		sb.append(": ");
 		sb.append(currentSetpoint);
         sb.append("\n");
+        /*
 		sb.append(RecMapConstants.FINAL);
 		sb.append(": ");
 		sb.append(finalSetpoint);
@@ -77,7 +77,9 @@ public class OutputDelegate implements TextDelegate {
 		sb.append(": ");
 		sb.append(recommendation);
         sb.append("\n");
+        */
         return sb.toString();
+
     }
     /**
      * Returns the text that appears in the block header. 
@@ -151,16 +153,15 @@ public class OutputDelegate implements TextDelegate {
 	
 	@Override
 	public void addMenuItems(VisualItem item,JPopupMenu menu) {
+		int row = item.getInt(RecMapConstants.ROW);
+		Properties properties = propertyMap.get(new Integer(row));
+		boolean hidden = false;
+		if( properties!=null && properties.getProperty(RecMapConstants.IS_HIDDEN)!=null ) {
+			if( properties.getProperty(RecMapConstants.IS_HIDDEN).equalsIgnoreCase("TRUE") ) hidden = true;
+		}
 		JMenuItem menuItem;
-		menuItem = new JMenuItem("Output");
-	    menuItem.addActionListener(this);
+		if( hidden ) menuItem = new JMenuItem(new ScriptAction(recmap,"expand","expandOutput",row));
+		else         menuItem = new JMenuItem(new ScriptAction(recmap,"hide","hideOutput",row));
 	    menu.add(menuItem);
-	}
-	
-	// ========================================== Action Listener ============================================
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		// TODO Auto-generated method stub
-		
 	}
 } 

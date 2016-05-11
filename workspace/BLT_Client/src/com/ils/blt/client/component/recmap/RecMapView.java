@@ -92,9 +92,9 @@ public class RecMapView extends Display {
         
         // Define text/menu delegates for each node type
         this.delegateMap = new HashMap<>();
-        delegateMap.put(RecMapConstants.SOURCE_KIND, new DiagnosisDelegate(model.getAttributeMap()));
-        delegateMap.put(RecMapConstants.INFO_KIND, new RecommendationDelegate(model.getAttributeMap()));
-        delegateMap.put(RecMapConstants.TARGET_KIND, new OutputDelegate(model.getAttributeMap()));
+        delegateMap.put(RecMapConstants.SOURCE_KIND, new DiagnosisDelegate(recmap,model.getAttributeMap()));
+        delegateMap.put(RecMapConstants.INFO_KIND, new RecommendationDelegate(recmap,model.getAttributeMap()));
+        delegateMap.put(RecMapConstants.TARGET_KIND, new OutputDelegate(recmap,model.getAttributeMap()));
         // NOTE: Returns a VisualGraph, node/edge tables are VisualTables
         //                             node items are TableNodeItems
         m_vis.addGraph(GROUP_ALL, model.getGraph());
@@ -207,9 +207,9 @@ public class RecMapView extends Display {
                 bounds.getX(),
                 bounds.getY()
                 );
-        int margin = (int)(bounds.getWidth()/10);
-        GraphicsLib.expand(bounds, margin * (int)(1/this.getScale()));
-        DisplayLib.fitViewToBounds(this, bounds, RecMapConstants.ZOOM_DURATION);
+        //int margin = (int)(bounds.getWidth()/10);
+        //GraphicsLib.expand(bounds, margin * (int)(1/this.getScale()));
+        //DisplayLib.fitViewToBounds(this, bounds, RecMapConstants.ZOOM_DURATION);
         log.infof("%s.constructor: controls complete",TAG);
     }
     
@@ -228,10 +228,11 @@ public class RecMapView extends Display {
             edgeRenderer.setVerticalAlignment2(Constants.CENTER);
     }
 
+    // NOTE: Do not understand the fudging in vertical.
     public void zoomToFit() {
     	Rectangle2D bounds = columnLayout.getLayoutBounds();
-    	Point2D midPoint = new Point2D.Double(bounds.getCenterX(),-bounds.getCenterY());
-    	animatePanAndZoomTo(midPoint,1.0,1000);     // Location,scale,duration~msecs
+    	Point2D midPoint = new Point2D.Double(bounds.getCenterX(),-bounds.getCenterY()+2*bounds.getHeight()/5);
+    	animatePanAndZoomTo(midPoint,0.9,1000);     // Location,scale,duration~msecs
     }
     // ------------------------------------------------------------------------
    

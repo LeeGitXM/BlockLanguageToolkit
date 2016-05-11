@@ -3,8 +3,6 @@
  */
 package com.ils.blt.client.component.recmap;
 
-import java.awt.event.ActionListener;
-
 import javax.swing.JPopupMenu;
 
 import prefuse.visual.VisualItem;
@@ -14,7 +12,7 @@ import prefuse.visual.VisualItem;
  * specific node types. The delegate also handles the popup menu
  * choices. A property map is supplied to the delegate in its constructor.
  */
-public interface TextDelegate extends ActionListener {
+public interface TextDelegate  {
 	/**
      * @return delimited text for the body of the block
      */

@@ -13,6 +13,7 @@ import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.common.BasicDataset;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.Dataset;
+import com.inductiveautomation.ignition.common.script.ScriptManager;
 
 /**
  *  Use Prefuse to display a map of Diagnoses to Outputs and intervening Recommendations.
@@ -29,6 +30,7 @@ public class RecommendationMap extends PrefuseViewerComponent {
 	private static final String TAG = "RecommendationMap";
 	private static final Dimension MIN_SIZE = new Dimension(40,40);
 	private static String PREFIX = BLTProperties.CUSTOM_PREFIX;              // For bundle identification
+	private static ScriptManager scriptManager = null;
 	private RecMapDataModel model = null;
 	private RecMapView view = null;
 	private BasicDataset connections = null;
@@ -48,12 +50,12 @@ public class RecommendationMap extends PrefuseViewerComponent {
 			invalidate();
 			log.infof("%s.updateChartView: Creating RecommendationMapView ..%d x %d.",TAG,getWidth(),getHeight());
 			view = createMapView();
-			view.setSize(getWidth(), getHeight());
 			add(view,BorderLayout.CENTER);
-			validate();
-			repaint();
+			view.setSize(getWidth(), getHeight());
 			// Resize and center
 			view.zoomToFit();
+			//validate();
+			//repaint();
 		}
 	}
 	
@@ -91,6 +93,10 @@ public class RecommendationMap extends PrefuseViewerComponent {
 		this.recommendations = new BasicDataset(newRecommendations);
 		updateChartView();
 	}
+	
+	// We rely on the hook classes to set the script manager
+	public ScriptManager getScriptManager() { return scriptManager; }
+	public static void setScriptManager(ScriptManager mgr) { scriptManager = mgr; }
 	
 	@Override
 	public Dimension getSize() {

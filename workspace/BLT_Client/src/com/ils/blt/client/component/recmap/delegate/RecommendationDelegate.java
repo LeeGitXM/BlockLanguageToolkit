@@ -3,17 +3,14 @@
  */
 package com.ils.blt.client.component.recmap.delegate;
 
-import java.awt.event.ActionEvent;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
-import com.ils.blt.client.BLTClientHook;
 import com.ils.blt.client.component.recmap.RecMapConstants;
+import com.ils.blt.client.component.recmap.RecommendationMap;
 import com.ils.blt.client.component.recmap.TextDelegate;
-import com.inductiveautomation.ignition.common.script.ScriptManager;
 
 import prefuse.visual.VisualItem;
 
@@ -21,12 +18,12 @@ import prefuse.visual.VisualItem;
  * Render the block that holds recommendations.
  */
 public class RecommendationDelegate implements TextDelegate {
+	private final RecommendationMap recmap;
 	private final Map<Integer,Properties> propertyMap;
-	private final ScriptManager scriptManager;
 
-    public RecommendationDelegate(Map<Integer,Properties> propMap) {
+    public RecommendationDelegate(RecommendationMap rm,Map<Integer,Properties> propMap) {
+    	this.recmap = rm;
     	this.propertyMap = propMap;
-    	scriptManager = BLTClientHook.getScriptManager();
     }
     /**
      * Returns the text to draw in the block header.
@@ -125,18 +122,10 @@ public class RecommendationDelegate implements TextDelegate {
 		return html;
 	}
 	
+	/**
+	 * There are currently no pop-up menu selections on the recommendation boxes.
+	 */
 	@Override
 	public void addMenuItems(VisualItem item,JPopupMenu menu) {
-		JMenuItem menuItem;
-		menuItem = new JMenuItem("Output");
-	    menuItem.addActionListener(this);
-	    menu.add(menuItem);
-	}
-	
-	// ========================================== Action Listener ============================================
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		// TODO Auto-generated method stub
-		
 	}
 } 
