@@ -6,6 +6,7 @@ package com.ils.block;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
@@ -23,6 +24,7 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -196,6 +198,22 @@ public class LabData extends Input implements ProcessBlock {
 		}
 	}
 
+	/**
+	 * @return a block-specific description of internal statue
+	 */
+	@Override
+	public SerializableBlockStateDescriptor getInternalStatus() {
+		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
+		Map<String,String> attributes = descriptor.getAttributes();
+		if( qv!=null && qv.getValue()!=null ) attributes.put("Value", qv.getValue().toString());
+		if( qv!=null && qv.getQuality()!=null )attributes.put("Quality", qv.getQuality().toString());
+		if(qv!=null && qv.getTimestamp()!=null) attributes.put("Timestamp",dateFormatter.format(new Date(qv.getTimestamp().getTime())));
+		String path = controller.getSubscribedPath(this, timePathProperty);
+		attributes.put("CurrentTimeSubscription",path);
+		path = controller.getSubscribedPath(this, valuePathProperty);
+		attributes.put("CurrentValueSubscription",path);
+		return descriptor;
+	}
 	/**
 	 * Handle a change to the coalescing interval.
 	 */
