@@ -203,15 +203,13 @@ public class LabData extends Input implements ProcessBlock {
 	 */
 	@Override
 	public SerializableBlockStateDescriptor getInternalStatus() {
-		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
+		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();  // From Input
 		Map<String,String> attributes = descriptor.getAttributes();
-		if( qv!=null && qv.getValue()!=null ) attributes.put("Value", qv.getValue().toString());
-		if( qv!=null && qv.getQuality()!=null )attributes.put("Quality", qv.getQuality().toString());
-		if(qv!=null && qv.getTimestamp()!=null) attributes.put("Timestamp",dateFormatter.format(new Date(qv.getTimestamp().getTime())));
 		String path = controller.getSubscribedPath(this, timePathProperty);
 		attributes.put("CurrentTimeSubscription",path);
 		path = controller.getSubscribedPath(this, valuePathProperty);
 		attributes.put("CurrentValueSubscription",path);
+		attributes.remove("CurrentSubscription");
 		return descriptor;
 	}
 	/**
