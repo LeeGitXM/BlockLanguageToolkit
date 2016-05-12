@@ -6,6 +6,7 @@ package com.ils.blt.client.component.recmap.delegate;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
@@ -27,6 +28,8 @@ public class OutputDelegate implements TextDelegate {
     	this.recmap = rm;
     	this.propertyMap = propMap;
     }
+    
+    public ImageIcon getBadge(VisualItem item) { return null; }
     /**
      * Returns the text to draw. multiple properties separated
      * by a blank lines.
@@ -154,14 +157,11 @@ public class OutputDelegate implements TextDelegate {
 	@Override
 	public void addMenuItems(VisualItem item,JPopupMenu menu) {
 		int row = item.getInt(RecMapConstants.ROW);
-		Properties properties = propertyMap.get(new Integer(row));
-		boolean hidden = false;
-		if( properties!=null && properties.getProperty(RecMapConstants.IS_HIDDEN)!=null ) {
-			if( properties.getProperty(RecMapConstants.IS_HIDDEN).equalsIgnoreCase("TRUE") ) hidden = true;
-		}
+		
 		JMenuItem menuItem;
-		if( hidden ) menuItem = new JMenuItem(new ScriptAction(recmap,"expand","expandOutput",row));
-		else         menuItem = new JMenuItem(new ScriptAction(recmap,"hide","hideOutput",row));
+		menuItem = new JMenuItem(new ScriptAction(recmap,"expand","expandOutput",row));
+		menu.add(menuItem);
+		menuItem = new JMenuItem(new ScriptAction(recmap,"hide","hideOutput",row));
 	    menu.add(menuItem);
 	}
 } 

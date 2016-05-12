@@ -35,7 +35,6 @@ public interface RecMapConstants   {
 	public static final String FINAL      = "FinalSetpoint"; // Output      - double
 	public static final String HAS_SQC    = "HasSQC";        // Diagnosis/Output - boolean
 	public static final String IS_AUTO    = "AutoOrManual";  // Recommendation   - string (auto/manual)
-	public static final String IS_HIDDEN  = "Hidden";        // Diagnosis/Output - boolean
 	public static final String MANUAL     = "Manual";        // Recomendation - double
 	public static final String MULTIPLIER = "Multiplier";    // Diagnosis   - double
 	public static final String PROBLEM    = "Problem";       // Diagnosis   - string

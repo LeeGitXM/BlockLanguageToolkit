@@ -2,7 +2,7 @@
 
 	<import file="${basedir}/BLT_Build/build.xml"/>
 
-	<property name="version.build" value="0" />	
+	<property name="version.build" value="1" />	
 	<!-- Change version.beta value to "" for release builds -->
 	<property name="version.beta" value="-development" />		
 	<property name="BLTModule.version" value="1.6.16.${version.build}" />
@@ -219,6 +219,7 @@
 		<pack200 src="${basedir}/../../external/lib/jackson-annotations-2.2.3.jar" destfile="${basedir}/BLT_Build/temp_modl/jackson-annotations-2.2.3.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		<pack200 src="${basedir}/../../external/lib/lucene-1.4.3.jar" destfile="${basedir}/BLT_Build/temp_modl/lucene-1.4.3.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		<pack200 src="${basedir}/../../external/lib/prefuse-1.0.1.jar" destfile="${basedir}/BLT_Build/temp_modl/prefuse-1.0.1.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
+		<pack200 src="${basedir}/../../external/lib/commons-math3-3.1.1.jar" destfile="${basedir}/BLT_Build/temp_modl/commons-math3-3.1.1.jar.pack.gz" gzipoutput="true" configfile="${p200props}" />
 		
 		<!-- Copy gateway jar -->
 		<copy file="${basedir}/BLT_Build/bin/${BLTModule.name}_Gateway/dist/blt-gateway.jar" todir="${basedir}/BLT_Build/temp_modl/" />
@@ -268,12 +269,12 @@
 				<include name="ils-common.jar" />
 				<include name="blt-common.jar" />
 				<include name="jackson*.gz" />
+				<include name="commons-math*.gz" />
 			</fileset>
 		</copy>
 		<copy todir="${ignition.py.lib}/../../lib/core/common">
 			<fileset dir="${jar.dir}">
 				<include name="jackson*.jar" />
-				<include name="jackson*.gz" />
 			</fileset>
 		</copy>
 		<copy todir="${ignition.py.lib}/../../lib/core/gateway">

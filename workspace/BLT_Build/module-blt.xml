@@ -22,7 +22,7 @@
 		<jar scope="CD">ils-common.jar.pack.gz</jar>
 		<jar scope="CD">lucene-1.4.3.jar.pack.gz</jar>
 		<jar scope="CD">prefuse-1.0.1.jar.pack.gz</jar>
-
+		
 		<export scope="D">block-definition.jar.pack.gz</export>
 		<export scope="D">jackson-core-2.2.3.jar.pack.gz</export>
 		<export scope="D">jackson-databind-2.2.3.jar.pack.gz</export>

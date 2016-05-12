@@ -6,6 +6,7 @@ package com.ils.blt.client.component.recmap.delegate;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
@@ -29,6 +30,10 @@ public class DiagnosisDelegate implements TextDelegate {
     	this.propertyMap = propMap;
     }
     
+    public ImageIcon getBadge(VisualItem item) { 
+    	int row = item.getInt(RecMapConstants.ROW);
+		Properties properties = propertyMap.get(new Integer(row));
+    }
     /**
      * Returns the text to draw. multiple properties separated
      * by a blank lines.
@@ -116,13 +121,11 @@ public class DiagnosisDelegate implements TextDelegate {
 	public void addMenuItems(VisualItem item,JPopupMenu menu) {
 		int row = item.getInt(RecMapConstants.ROW);
 		Properties properties = propertyMap.get(new Integer(row));
-		boolean hidden = false;
-		if( properties!=null && properties.getProperty(RecMapConstants.IS_HIDDEN)!=null ) {
-			if( properties.getProperty(RecMapConstants.IS_HIDDEN).equalsIgnoreCase("TRUE") ) hidden = true;
-		}
+
 		JMenuItem menuItem;
-		if( hidden ) menuItem = new JMenuItem(new ScriptAction(recmap,"expand","expandFinalDiagnosis",row));
-		else         menuItem = new JMenuItem(new ScriptAction(recmap,"hide","hideFinalDiagnosis",row));
+		menuItem = new JMenuItem(new ScriptAction(recmap,"expand","expandFinalDiagnosis",row));
+		menu.add(menuItem);
+		menuItem = new JMenuItem(new ScriptAction(recmap,"hide","hideFinalDiagnosis",row));
 	    menu.add(menuItem);
 	    
 	    menuItem = new JMenuItem(new ScriptAction(recmap,"change multiplier","changeMultiplier",row));

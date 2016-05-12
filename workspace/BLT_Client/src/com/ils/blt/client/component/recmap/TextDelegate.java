@@ -3,6 +3,7 @@
  */
 package com.ils.blt.client.component.recmap;
 
+import javax.swing.ImageIcon;
 import javax.swing.JPopupMenu;
 
 import prefuse.visual.VisualItem;
@@ -13,6 +14,11 @@ import prefuse.visual.VisualItem;
  * choices. A property map is supplied to the delegate in its constructor.
  */
 public interface TextDelegate  {
+	/**
+	 * @return a badge to be displayed in the header section of the block
+	 *         or NULL if there is none.
+	 */
+	public ImageIcon getBadge(VisualItem item);
 	/**
      * @return delimited text for the body of the block
      */

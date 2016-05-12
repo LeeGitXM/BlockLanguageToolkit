@@ -7,13 +7,14 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RectangularShape;
 import java.awt.geom.RoundRectangle2D;
 import java.util.Map;
 import java.util.Properties;
+
+import javax.swing.ImageIcon;
 
 import prefuse.render.LabelRenderer;
 import prefuse.util.ColorLib;
@@ -34,7 +35,6 @@ public class TableLabelRenderer extends LabelRenderer {
 	private static final String CLSS = "TableLabelRenderer";
 	private final static Color BACKGROUND = new Color(240,240,240);   // Light Gray
 	private final Map<Integer,TextDelegate> delegates;
-	private Image badge = null;
 	private final RecMapDataModel model;
 	private double itemHeight = 1.;
 	private double itemWidth = 1.;
@@ -51,8 +51,6 @@ public class TableLabelRenderer extends LabelRenderer {
     	setRenderType(RENDER_TYPE_DRAW_AND_FILL);
     	setManageBounds(true);   // False doesn't work
     }
-    // Use null for no badge
-    public void setBadge(Image image) { this.badge = image; }
 
     /**
      * @see prefuse.render.Renderer#render(java.awt.Graphics2D, prefuse.visual.VisualItem)
@@ -106,8 +104,6 @@ public class TableLabelRenderer extends LabelRenderer {
 		             drawString(g, text, useInt, x+dx, y+dy);
 		         }
 		     
-
-			
 		         // render body text - we're counting on one line, but this has code to handle multiple.
 		         text = delegate.getBodyText(item);
 		         m_font = item.getFont();
@@ -127,6 +123,13 @@ public class TableLabelRenderer extends LabelRenderer {
 		            	 drawString(g, line, useInt, x, y+dy);
 		            	 y+=fm.getHeight();
 		             }
+		         }
+		         
+		         // Add a badge if appropriate
+		         ImageIcon badge = delegate.getBadge(item);
+		         if( badge!=null ) {
+		        	 badge.paintIcon(null, g, 
+		        			 (int)(shape.getMaxX()-1.5*badge.getIconWidth()), (int)(shape.getMinY()+badge.getIconHeight()/4));
 		         }
 			}
 		}

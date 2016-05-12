@@ -107,7 +107,6 @@ public class RecMapDataModel {
 					attributesByRow.put(new Integer(row), attributes);
 				}
 				addAttribute(attributes,diagnoses,datasetRow,RecMapConstants.HAS_SQC);
-				addAttribute(attributes,diagnoses,datasetRow,RecMapConstants.IS_HIDDEN);
 				addAttribute(attributes,diagnoses,datasetRow,RecMapConstants.PROBLEM);
 				addAttribute(attributes,diagnoses,datasetRow,RecMapConstants.MULTIPLIER);
 			}
@@ -137,7 +136,6 @@ public class RecMapDataModel {
 				}
 				addAttribute(attributes,outputs,datasetRow,RecMapConstants.CURRENT);
 				addAttribute(attributes,outputs,datasetRow,RecMapConstants.FINAL);
-				addAttribute(attributes,diagnoses,datasetRow,RecMapConstants.IS_HIDDEN);
 				addAttribute(attributes,outputs,datasetRow,RecMapConstants.RECOMMENDATION);
 				addAttribute(attributes,outputs,datasetRow,RecMapConstants.TARGET);
 			}
