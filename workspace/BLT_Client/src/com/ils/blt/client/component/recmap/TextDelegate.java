@@ -3,7 +3,8 @@
  */
 package com.ils.blt.client.component.recmap;
 
-import javax.swing.ImageIcon;
+import java.awt.Image;
+
 import javax.swing.JPopupMenu;
 
 import prefuse.visual.VisualItem;
@@ -18,7 +19,7 @@ public interface TextDelegate  {
 	 * @return a badge to be displayed in the header section of the block
 	 *         or NULL if there is none.
 	 */
-	public ImageIcon getBadge(VisualItem item);
+	public Image getBadge(VisualItem item);
 	/**
      * @return delimited text for the body of the block
      */

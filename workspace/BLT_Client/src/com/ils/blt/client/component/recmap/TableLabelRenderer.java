@@ -7,14 +7,13 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RectangularShape;
 import java.awt.geom.RoundRectangle2D;
 import java.util.Map;
 import java.util.Properties;
-
-import javax.swing.ImageIcon;
 
 import prefuse.render.LabelRenderer;
 import prefuse.util.ColorLib;
@@ -34,6 +33,8 @@ import prefuse.visual.tuple.TableNodeItem;
 public class TableLabelRenderer extends LabelRenderer {
 	private static final String CLSS = "TableLabelRenderer";
 	private final static Color BACKGROUND = new Color(240,240,240);   // Light Gray
+	private final static int TOP_BADGE_MARGIN = 5;
+	private final static int RIGHT_BADGE_MARGIN = 10;
 	private final Map<Integer,TextDelegate> delegates;
 	private final RecMapDataModel model;
 	private double itemHeight = 1.;
@@ -126,10 +127,10 @@ public class TableLabelRenderer extends LabelRenderer {
 		         }
 		         
 		         // Add a badge if appropriate
-		         ImageIcon badge = delegate.getBadge(item);
+		         Image badge = delegate.getBadge(item);
 		         if( badge!=null ) {
-		        	 badge.paintIcon(null, g, 
-		        			 (int)(shape.getMaxX()-1.5*badge.getIconWidth()), (int)(shape.getMinY()+badge.getIconHeight()/4));
+		        	 g.drawImage(badge,(int)(shape.getMaxX()-RecMapConstants.BADGE_SIZE.getWidth()-RIGHT_BADGE_MARGIN), 
+		        			            (int)(shape.getMinY()+TOP_BADGE_MARGIN),null);
 		         }
 			}
 		}

@@ -3,6 +3,8 @@
  */
 package com.ils.blt.client.component.recmap;
 
+import java.awt.Dimension;
+
 import prefuse.util.ColorLib;
 
 /**
@@ -45,6 +47,8 @@ public interface RecMapConstants   {
 	public static final int SOURCE_KIND      = 0;
 	public static final int INFO_KIND        = 1;
 	public static final int TARGET_KIND      = 2;
+	
+	public static final Dimension BADGE_SIZE = new Dimension(20,40);
 	
 	// Header colors of nodes
 	public static final int SOURCE_HEADER_COLOR = ColorLib.rgb(151,230,250);

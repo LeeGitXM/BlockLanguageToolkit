@@ -1549,10 +1549,11 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	private class SetApplicationStateAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
 		private final GeneralPurposeTreeNode app;
+		private final DiagramState treeState;
 		public SetApplicationStateAction(GeneralPurposeTreeNode applicationNode,DiagramState s)  {
 			super(PREFIX+".SetApplicationState."+s.name());
 			this.app = applicationNode;
-			app.setState(s);
+			this.treeState = s;
 		}
 
 		// We need to set the state both locally and in the gateway
@@ -1561,10 +1562,10 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			// Save off the aux data before we change state.
 			executionEngine.executeOnce(new AuxiliaryDataSaveManager(app));
 			// Tell the gateway to set the state of all diagrams under the application
-			handler.setApplicationState(app.getName(), state.name());
+			handler.setApplicationState(app.getName(), treeState.name());
 			
 			// Set the nodes in the navtree.
-			recursivelyUpdateNodeState(app,state);
+			recursivelyUpdateNodeState(app,treeState);
 		}
 		// Set the state locally to match and save changes to disk. It's redundant to inform the Gateway.
 		public void recursivelyUpdateNodeState(AbstractNavTreeNode node,DiagramState diagramState) {

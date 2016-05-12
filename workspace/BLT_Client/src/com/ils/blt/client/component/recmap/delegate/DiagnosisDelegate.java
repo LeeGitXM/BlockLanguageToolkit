@@ -3,16 +3,17 @@
  */
 package com.ils.blt.client.component.recmap.delegate;
 
+import java.awt.Image;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
 import com.ils.blt.client.component.recmap.RecMapConstants;
 import com.ils.blt.client.component.recmap.RecommendationMap;
 import com.ils.blt.client.component.recmap.TextDelegate;
+import com.inductiveautomation.ignition.client.images.ImageLoader;
 
 import prefuse.visual.VisualItem;
 
@@ -22,6 +23,7 @@ import prefuse.visual.VisualItem;
 //public class DiagnosisRenderer extends TableLabelRenderer {
 	
 public class DiagnosisDelegate implements TextDelegate {
+	String badgePath = "Block/icons/badges/SQC.png";
 	private final RecommendationMap recmap;
 	private final Map<Integer,Properties> propertyMap;
 
@@ -30,9 +32,19 @@ public class DiagnosisDelegate implements TextDelegate {
     	this.propertyMap = propMap;
     }
     
-    public ImageIcon getBadge(VisualItem item) { 
+    public Image getBadge(VisualItem item) { 
     	int row = item.getInt(RecMapConstants.ROW);
 		Properties properties = propertyMap.get(new Integer(row));
+		boolean hasSQC = false;
+        
+		if( properties!=null && properties.getProperty(RecMapConstants.HAS_SQC)!=null ) {
+			hasSQC = properties.getProperty(RecMapConstants.HAS_SQC).equalsIgnoreCase("TRUE");
+		}
+		Image image = null;
+		if( hasSQC ) {
+			image = ImageLoader.getInstance().loadImage(badgePath,RecMapConstants.BADGE_SIZE);
+		}
+		return image;
     }
     /**
      * Returns the text to draw. multiple properties separated

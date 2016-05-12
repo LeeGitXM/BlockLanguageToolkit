@@ -3,10 +3,10 @@
  */
 package com.ils.blt.client.component.recmap.delegate;
 
+import java.awt.Image;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.swing.ImageIcon;
 import javax.swing.JPopupMenu;
 
 import com.ils.blt.client.component.recmap.RecMapConstants;
@@ -36,7 +36,7 @@ public class RecommendationDelegate implements TextDelegate {
     public String getHeaderText(VisualItem item) {
         return "Recommendation";
     }
-    public ImageIcon getBadge(VisualItem item) { return null; }
+    public Image getBadge(VisualItem item) { return null; }
     /**
      * Returns the text to draw. multiple properties separated
      * by a blank lines.
