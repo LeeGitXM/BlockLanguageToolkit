@@ -234,9 +234,11 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public String validate() {
 		String summary = super.validate();
-		String tagPath = tagPathProperty.getBinding();
-		if( summary==null && (tagPath==null || tagPath.length()==0 || tagPath.endsWith("]") )) {
-			summary = String.format("%s: binding is not configured\t",tagPathProperty.getName());
+		if( tagPathProperty!=null ) {
+			String tagPath = tagPathProperty.getBinding();
+			if( summary==null && (tagPath==null || tagPath.length()==0 || tagPath.endsWith("]") )) {
+				summary = String.format("%s: binding is not configured\t",tagPathProperty.getName());
+			}
 		}
 		return summary;
 	}
