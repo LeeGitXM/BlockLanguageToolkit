@@ -621,7 +621,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param res the project resource containing the diagram
 	 */
 	private void addModifyApplicationResource(long projectId,ProjectResource res) {
-		log.infof("%s.addModifyApplicationResource: %s(%d)",TAG,res.getName(),res.getResourceId());
+		log.debugf("%s.addModifyApplicationResource: %s(%d)",TAG,res.getName(),res.getResourceId());
 		ProcessApplication application = deserializeApplicationResource(projectId,res);
 		if( application!=null ) {
 			UUID self = application.getSelf();
@@ -675,7 +675,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param res the project resource containing the diagram
 	 */
 	private void addModifyDiagramResource(long projectId,ProjectResource res) {
-		log.infof("%s.addModifyDiagramResource: %s(%d)",TAG,res.getName(),res.getResourceId());
+		log.debugf("%s.addModifyDiagramResource: %s(%d)",TAG,res.getName(),res.getResourceId());
 		SerializableDiagram sd = deserializeDiagramResource(projectId,res);
 		if( sd!=null ) {
 			ProcessDiagram diagram = (ProcessDiagram)nodesByUUID.get(sd.getId());

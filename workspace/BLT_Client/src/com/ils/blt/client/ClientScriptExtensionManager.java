@@ -18,7 +18,7 @@ import com.ils.blt.common.script.ScriptConstants;
  *  The manger is a singleton used to compile and execute Python scripts. The
  *  scripts come in 4 flavors (PROPERTY_GET_SCRIPT, PROPERTY_RENAME_SCRIPT,
  *  PROPERTY_SET_SCRIPT and NODE_CREATE_SCRIPT). The standard signatures are:
- *  	get/set(uuid,properties).
+ *  	get/set(uuid,properties,db).
  *  	rename(uuid,oldName,newName)
  *  	create(uuid)
  *  This group of scripts must be defined 
@@ -28,7 +28,6 @@ import com.ils.blt.common.script.ScriptConstants;
  *  local variables are updated on each invocation.
  */
 public class ClientScriptExtensionManager extends AbstractScriptExtensionManager  {
-	private static String TAG = "ClientScriptExtensionManager";
 	private final ApplicationRequestHandler handler;
 	private static ClientScriptExtensionManager instance = null;
 

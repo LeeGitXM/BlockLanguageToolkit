@@ -133,14 +133,17 @@ public class DiagnosisDelegate implements TextDelegate {
 	public void addMenuItems(VisualItem item,JPopupMenu menu) {
 		int row = item.getInt(RecMapConstants.ROW);
 		Properties properties = propertyMap.get(new Integer(row));
+		
+		// Original dataset row
+		int dsrow = item.getInt(RecMapConstants.DSROW);
 
 		JMenuItem menuItem;
-		menuItem = new JMenuItem(new ScriptAction(recmap,"expand","expandFinalDiagnosis",row));
+		menuItem = new JMenuItem(new ScriptAction(recmap,"expand","expandFinalDiagnosis",dsrow));
 		menu.add(menuItem);
-		menuItem = new JMenuItem(new ScriptAction(recmap,"hide","hideFinalDiagnosis",row));
+		menuItem = new JMenuItem(new ScriptAction(recmap,"hide","hideFinalDiagnosis",dsrow));
 	    menu.add(menuItem);
 	    
-	    menuItem = new JMenuItem(new ScriptAction(recmap,"change multiplier","changeMultiplier",row));
+	    menuItem = new JMenuItem(new ScriptAction(recmap,"change multiplier","changeMultiplier",dsrow));
 	    menu.add(menuItem);
 	    
 		if( properties!=null && properties.getProperty(RecMapConstants.HAS_SQC)!=null ) {

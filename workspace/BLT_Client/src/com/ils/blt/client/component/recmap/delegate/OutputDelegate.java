@@ -156,12 +156,13 @@ public class OutputDelegate implements TextDelegate {
 	
 	@Override
 	public void addMenuItems(VisualItem item,JPopupMenu menu) {
-		int row = item.getInt(RecMapConstants.ROW);
-		
+		// Original dataset row
+		int dsrow = item.getInt(RecMapConstants.DSROW);
+
 		JMenuItem menuItem;
-		menuItem = new JMenuItem(new ScriptAction(recmap,"expand","expandOutput",row));
+		menuItem = new JMenuItem(new ScriptAction(recmap,"expand","expandOutput",dsrow));
 		menu.add(menuItem);
-		menuItem = new JMenuItem(new ScriptAction(recmap,"hide","hideOutput",row));
+		menuItem = new JMenuItem(new ScriptAction(recmap,"hide","hideOutput",dsrow));
 	    menu.add(menuItem);
 	}
 } 
