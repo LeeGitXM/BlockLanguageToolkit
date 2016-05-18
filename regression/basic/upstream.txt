@@ -1,0 +1,44 @@
+#
+# Test of the scripting interface
+#
+DIAGRAM = "app75/family75/upstream"
+DATAPUMP="DATAPUMP-3"
+QUALVALUE="QUALVALUE-805"
+Show: diagram $DIAGRAM
+resetDiagram ($DIAGRAM)
+
+# Script aliases used for this test
+script: getDiagramNameForBlock blockProxy.getDiagramForBlock(dpath,name)
+script: blocksDownstream interfaces.listBlocksDownstreamOf(dpath,bname)
+script: blocksGloballyDownstream interfaces.listBlocksGloballyDownstreamOf(dpath,bname)
+script: blocksUpstream interfaces.listBlocksUpstreamOf(dpath,bname)
+script: blocksGloballyUpstream interfaces.listBlocksGloballyUpstreamOf(dpath,bname)
+
+Test: Finding Blocks Upstream of a Sink
+Step: Upstream of Sink 
+assert: blocksUpstream($DIAGRAM,"CaSqcToCrx") contains "CaLow9Of9" "CaLow9Of9 is upstream of CaSqcToCrx"
+assert: blocksUpstream($DIAGRAM,"CaSqcToCrx") contains "CaSqc" "CaSqc is upstream of CaSqcToCrx"
+assert: !blocksUpstream($DIAGRAM,"CaSqcToCrx") contains "CatIsInPath" "CatIsInPath is not upstream of CaSqcToCrx"
+assert: count of blocksUpstream($DIAGRAM,"CaSqcToCrx") = 18 "18 blocks upstream of CaSqcToCrx"
+assert: count of blocksUpstream($DIAGRAM,"IlsExportName1338") = 26 "26 blocks upstream of And 1338"
+assert: count of blocksUpstream($DIAGRAM,"CstrRxInUse") = 3 "3 blocks upstream of CstrRxInUse"
+assert: count of blocksUpstream($DIAGRAM,"IlsExportName1335") = 2 "2 blocks upstream of LogicLatch 1335"
+assert: count of blocksUpstream($DIAGRAM,"CaSqc") = 17 "17 blocks upstream of SQC Diagnosis"
+assert: count of blocksUpstream($DIAGRAM,"IlsExportName1345") = 0 "0 blocks upstream of lab data"
+assert: ! blocksUpstream($DIAGRAM,"CaSqcToCrx") contains "CaProblemForCstr" "CaProblemForCstr FD is not upstream of CaSqcToCrx"
+
+Step: Globally Upstream of Sink
+assert: blocksGloballyUpstream($DIAGRAM,"CaSqcToCrx") contains "CaLow9Of9" "CaLow9Of9 is upstream of CaSqcToCrx-817"
+assert: blocksGloballyUpstream($DIAGRAM,"CaSqcToCrx") contains "CaSqc" "CaSqc is upstream of CaSqcToCrx"
+assert: !blocksGloballyUpstream($DIAGRAM,"CaSqcToCrx") contains "CatIsInPath" "CatIsInPath is not upstream of CaSqcToCrx-817"
+assert: count of blocksGloballyUpstream($DIAGRAM,"CaSqcToCrx") = 18 "18 blocks upstream of CaSqcToCrx"
+assert: count of blocksGloballyUpstream($DIAGRAM,"IlsExportName1345") = 0 "0 blocks upstream of lab data"
+assert: count of blocksGloballyUpstream($DIAGRAM,"IlsExportName1338") = 26 "26 blocks upstream of And 1338"
+assert: count of blocksGloballyUpstream($DIAGRAM,"CstrRxInUse") = 3 "3 blocks upstream of CstrRxInUse"
+assert: count of blocksGloballyUpstream($DIAGRAM,"IlsExportName1335") = 2 "2 blocks upstream of LogicLatch 1335"
+assert: count of blocksGloballyUpstream($DIAGRAM,"CaSqc") = 17 "17 blocks upstream of SQC Diagnosis"
+assert: count of blocksGloballyUpstream($DIAGRAM,"IlsExportName1335") = 2 "2 blocks upstream of LogicLatch 1335"
+assert: count of blocksGloballyUpstream($DIAGRAM,"CatIsInPath") = 0 "0 blocks upstream of CatIsInPath"
+assert: count of blocksGloballyUpstream($DIAGRAM,"IlsExportName1338") = 26 "26 blocks upstream of And 1338"
+assert: blocksGloballyUpstream($DIAGRAM,"IlsExportName1338") contains "CatIsInPath" "CatIsInPath is globally upstream of And 1338"
+
