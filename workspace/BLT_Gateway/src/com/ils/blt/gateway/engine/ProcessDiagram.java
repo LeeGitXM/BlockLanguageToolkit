@@ -14,6 +14,7 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagnosticDiagram;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.ProcessBlock;
+import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
@@ -746,5 +747,4 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 			return this.sourceBlock.hashCode()+this.sourcePort.hashCode()-this.targetBlock.hashCode()-this.targetPort.hashCode();
 		}
 	}
-	
 }

@@ -194,11 +194,24 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 	 * @param vcn incoming new value.
 	 */
 	@Override
-	public void acceptValue(IncomingNotification vcn) {
-		super.acceptValue(vcn);
-		String port = vcn.getConnection().getDownstreamPortName();
+	public void acceptValue(IncomingNotification incoming) {
+		super.acceptValue(incoming);
+		String port = null;
+		
+		// There may be no input connection
+		if( incoming.getConnection()!=null  ) {
+			port = incoming.getConnection().getDownstreamPortName();
+		}
+		else if(incoming.getPropertyName()!=null) {
+			port = incoming.getPropertyName();
+		}
+		else {
+			log.warnf("%s.acceptValue: received a value with no port designation, ignoring",getName());
+			return;
+		}
+
 		if( port.equals(BlockConstants.IN_PORT_NAME)  ) {
-			QualifiedValue qv = vcn.getValue();
+			QualifiedValue qv = incoming.getValue();
 			if( qv.getValue().toString().length()>0 ) {
 				log.tracef("%s.acceptValue: port %s value = %s ",TAG,port,qv.getValue().toString());
 				try {
@@ -210,7 +223,7 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 			}
 		}
 		else if( port.equals(SETPOINT_PORT)  ) {
-			QualifiedValue qv = vcn.getValue();
+			QualifiedValue qv = incoming.getValue();
 			if( qv.getValue().toString().length()>0 ) {
 				try {
 					setPoint = Double.parseDouble(qv.getValue().toString());

@@ -1,5 +1,5 @@
 /**
- *   (c) 2013  ILS Automation. All rights reserved.
+ *   (c) 2013-2016  ILS Automation. All rights reserved.
  */
 package com.ils.blt.common;
 
@@ -166,8 +166,18 @@ public class UtilityFunctions  {
 		}
 		return result; 
 	}
-	
-	
+	/**
+	 * Strip a tagpath of its provider name. 
+	 * @param tagPath
+	 * @return
+	 */
+	public String providerlessPath(String tagPath) {
+		String path = tagPath;
+		if( path==null ) path="";
+		int pos = tagPath.indexOf("]");
+		if( pos>0 ) path = tagPath.substring(pos+1);
+		return path;
+	}
 	/**
 	 * Convert the value to a qualified value. If null, generate
 	 * a qualified value of BAD quality.

@@ -733,7 +733,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		String tagPath = null;
 		if( source!=null && source.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SOURCE) ) {
 			BlockProperty prop = source.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
-			if( prop!=null ) tagPath = prop.getBinding();
+			if( prop!=null ) tagPath = fcns.providerlessPath(prop.getBinding());
 		}
 
 		if( tagPath!=null && tagPath.length()>0 ) {
@@ -744,7 +744,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				for(ProcessBlock sink:diagram.getProcessBlocks()) {
 					if( sink.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SINK) ) {
 						BlockProperty prop = sink.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
-						if( prop!=null && tagPath.equals(prop.getBinding())  ) {
+						if( prop!=null && tagPath.equalsIgnoreCase(fcns.providerlessPath(prop.getBinding()))  ) {
 							results.add(sink.toDescriptor());
 						}
 					}
@@ -775,7 +775,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		String tagPath = null;
 		if( sink!=null && sink.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SINK)) {
 			BlockProperty prop = sink.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
-			if( prop!=null ) tagPath = prop.getBinding();
+			if( prop!=null ) tagPath = fcns.providerlessPath(prop.getBinding());
 		}
 		
 		if( tagPath!=null && tagPath.length()>0 ) {
@@ -786,7 +786,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				for(ProcessBlock source:diagram.getProcessBlocks()) {
 					if( source.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SOURCE) ) {
 						BlockProperty prop = source.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
-						if( prop!=null && tagPath.equals(prop.getBinding())  ) {
+						if( prop!=null && tagPath.equalsIgnoreCase(fcns.providerlessPath(prop.getBinding()))  ) {
 							results.add(source.toDescriptor());
 						}
 					}

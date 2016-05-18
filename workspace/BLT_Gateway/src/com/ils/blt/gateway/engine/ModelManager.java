@@ -376,7 +376,7 @@ public class ModelManager implements ProjectListener  {
 							if( sink.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SINK) ) {
 								BlockProperty bp = sink.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 								if( bp!=null && tagPath.equals(bp.getBinding())  ) {
-									traverseUpstream(diag,source,blocks,true);
+									traverseUpstream(diag,sink,blocks,true);
 								}
 							}
 						}
