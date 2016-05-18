@@ -199,25 +199,29 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 		String port = vcn.getConnection().getDownstreamPortName();
 		if( port.equals(BlockConstants.IN_PORT_NAME)  ) {
 			QualifiedValue qv = vcn.getValue();
-			log.tracef("%s.acceptValue: port %s value = %s ",TAG,port,qv.getValue().toString());
-			try {
-				pv = Double.parseDouble(qv.getValue().toString());
-			}
-			catch(NumberFormatException nfe) {
-				log.warnf("%s.acceptValue: Unable to convert incoming data to double (%s)",TAG,nfe.getLocalizedMessage());
+			if( qv.getValue().toString().length()>0 ) {
+				log.tracef("%s.acceptValue: port %s value = %s ",TAG,port,qv.getValue().toString());
+				try {
+					pv = Double.parseDouble(qv.getValue().toString());
+				}
+				catch(NumberFormatException nfe) {
+					log.warnf("%s.acceptValue: Unable to convert incoming data to double (%s)",TAG,nfe.getLocalizedMessage());
+				}
 			}
 		}
 		else if( port.equals(SETPOINT_PORT)  ) {
 			QualifiedValue qv = vcn.getValue();
-			try {
-				setPoint = Double.parseDouble(qv.getValue().toString());
-				if( !dog.isActive() ) {
-					dog.setSecondsDelay(interval);
-					timer.updateWatchdog(dog);  // pet dog
+			if( qv.getValue().toString().length()>0 ) {
+				try {
+					setPoint = Double.parseDouble(qv.getValue().toString());
+					if( !dog.isActive() ) {
+						dog.setSecondsDelay(interval);
+						timer.updateWatchdog(dog);  // pet dog
+					}
 				}
-			}
-			catch(NumberFormatException nfe) {
-				log.warnf("%s.acceptValue: Unable to convert incoming data to double (%s)",TAG,nfe.getLocalizedMessage());
+				catch(NumberFormatException nfe) {
+					log.warnf("%s.acceptValue: Unable to convert incoming data to double (%s)",TAG,nfe.getLocalizedMessage());
+				}
 			}
 		}
 	}

@@ -149,22 +149,24 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 					controller.acceptCompletionNotification(nvn);
 					// Convert the value according to the data type specified by the format.
 					String value = "";
-					try {
-						if( type==PropertyType.DOUBLE) {
-							value = String.format(format, fncs.coerceToDouble(qv.getValue()));
+					if( qv.getValue().toString().length()>0) {
+						try {
+							if( type==PropertyType.DOUBLE) {
+								value = String.format(format, fncs.coerceToDouble(qv.getValue()));
+							}
+							else if( type==PropertyType.INTEGER) {
+								value = String.format(format, fncs.coerceToInteger(qv.getValue()));
+							}
+							else if(qv.getValue() instanceof Date) {
+								value = dateFormatter.format(qv.getValue());
+							}
+							else {
+								value = String.format(format,fncs.coerceToString(qv.getValue()));
+							}
 						}
-						else if( type==PropertyType.INTEGER) {
-							value = String.format(format, fncs.coerceToInteger(qv.getValue()));
+						catch(Exception ex) {
+							log.warn(getName()+".acceptValue: error formatting "+qv.getValue()+" with "+format+" as "+type.name(),ex);  // Print stack trace
 						}
-						else if(qv.getValue() instanceof Date) {
-							value = dateFormatter.format(qv.getValue());
-						}
-						else {
-							value = String.format(format,fncs.coerceToString(qv.getValue()));
-						}
-					}
-					catch(Exception ex) {
-						log.warn(getName()+".acceptValue: error formatting "+qv.getValue()+" with "+format+" as "+type.name(),ex);  // Print stack trace
 					}
 					updateStateForNewValue(qv);
 					qv = new BasicQualifiedValue(value,qv.getQuality(),qv.getTimestamp()); 

@@ -592,6 +592,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		descriptor.setIdString(getBlockId().toString());
 		Map<String,String> attributes = descriptor.getAttributes();
 		attributes.put(BLTProperties.BLOCK_ATTRIBUTE_CLASS,getClassName());
+		attributes.put(BLTProperties.BLOCK_ATTRIBUTE_PARENT,getParentId().toString());
 		return descriptor;
 	}
 	/**

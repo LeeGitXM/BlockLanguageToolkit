@@ -313,6 +313,7 @@ public class ModelManager implements ProjectListener  {
 			}
 		}
 	}
+
 	
 	private void followDownstreamConnections(ProcessBlock sink,List<ProcessBlock> blocks) {
 		if( sink.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SINK) ) {
@@ -324,7 +325,7 @@ public class ModelManager implements ProjectListener  {
 						for(ProcessBlock source:diag.getProcessBlocks()) {
 							if( source.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SOURCE) ) {
 								BlockProperty bp = source.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
-								if( bp!=null && tagPath.equals(prop.getBinding())  ) {
+								if( bp!=null && tagPath.equals(bp.getBinding())  ) {
 									traverseDownstream(diag,source,blocks,true);
 								}
 							}
@@ -359,22 +360,7 @@ public class ModelManager implements ProjectListener  {
 				// Do an exhaustive search for all sink blocks that have the same binding
 				// as the specified block. We cover all diagrams in the system.
 				if( spanDiagrams && blk.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SOURCE) ) {
-					BlockProperty prop = blk.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
-					if( prop!=null ) {
-						String tagPath = prop.getBinding();
-						if( tagPath!=null && !tagPath.isEmpty()) {
-							for( ProcessDiagram diag:getDiagrams()) {
-								for(ProcessBlock sink:diag.getProcessBlocks()) {
-									if( sink.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SINK) ) {
-										BlockProperty bp = sink.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
-										if( bp!=null && tagPath.equals(prop.getBinding())  ) {
-											traverseUpstream(diag,sink,blocks,true);
-										}
-									}
-								}
-							}
-						}
-					}
+					followUpstreamConnections(blk,blocks);
 				}
 			}
 		}
@@ -389,8 +375,8 @@ public class ModelManager implements ProjectListener  {
 						for(ProcessBlock sink:diag.getProcessBlocks()) {
 							if( sink.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SINK) ) {
 								BlockProperty bp = sink.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
-								if( bp!=null && tagPath.equals(prop.getBinding())  ) {
-									traverseDownstream(diag,source,blocks,true);
+								if( bp!=null && tagPath.equals(bp.getBinding())  ) {
+									traverseUpstream(diag,source,blocks,true);
 								}
 							}
 						}
