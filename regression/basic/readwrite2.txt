@@ -1,0 +1,23 @@
+#
+# Simple test of an input and readout
+#
+DIAGRAM="app75/family75/readwrite"
+Show: diagram $DIAGRAM
+
+LabDataDate="MemoryTags/LabDataTime"
+LabDataStringDate="MemoryTags/LabDataStringTime"
+tag: LabDataOutput1 MemoryTags/LabDataOutput1
+tag: LabDataOutput2 MemoryTags/LabDataOutput2
+
+tagset: LabDataInput MemoryTags/LabDataData $LabDataDate $LabDataStringDate
+
+Test: Driving LabData
+Step: Tagset with Strings
+Tagset: LabDataInput
+10:00:00 0. "2016/07/04 13:00:00" "2000/12/25 01:00:00"
+10:00:20 12. "2016/07/04 13:01:00" "2000/12/25 01:10:00"
+10:00:40 33. "2016/07/04 13:02:00" "2000/12/25 01:20:00"
+10:01:00 44. "2016/07/04 13:03:00" "2000/12/25 01:30:00"
+10:01:20 assert: LabDataOutput1 = 44 "Output1 is 44"
+10:01:40 assert: LabDataOutput2 = 44 "Output2 is 44"
+#10:02:00 55. "2016/07/04 13:04:00" "2000/12/25 01:40:00"
