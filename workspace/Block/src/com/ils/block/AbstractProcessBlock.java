@@ -208,10 +208,11 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	@Override
 	public String getExplanation(DiagnosticDiagram parent) {
 		String explanation = "";
-		if( state.equals(TruthValue.TRUE) || state.equals(TruthValue.FALSE)) {
+		TruthValue blockState = getState();
+		if( blockState.equals(TruthValue.TRUE) || blockState.equals(TruthValue.FALSE)) {
 			List<ProcessBlock>predecessors = parent.getUpstreamBlocks(this);
 			for( ProcessBlock predecessor:predecessors ) {
-				if( state.equals(predecessor.getState())) {
+				if( blockState.equals(predecessor.getState())) {
 					if(!explanation.isEmpty()) explanation = explanation + ", ";
 					explanation = explanation + predecessor.getExplanation(parent);
 				}
