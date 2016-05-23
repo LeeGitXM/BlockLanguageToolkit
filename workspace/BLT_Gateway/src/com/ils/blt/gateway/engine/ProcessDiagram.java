@@ -14,7 +14,6 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagnosticDiagram;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.ProcessBlock;
-import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
@@ -73,6 +72,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	}
 
 	public ProcessBlock getBlock(UUID id) { return blocks.get(id); }
+	
 	// For now we just do a linear search
 	public ProcessBlock getBlockByName(String name) { 
 		ProcessBlock result = null;
@@ -324,6 +324,31 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 		}
 		
 		return notifications;
+	}
+	/**
+	 * @param root the subject block
+	 * @return a list of blocks connected to the output(s) of the specified block.
+	 */
+	public List<ProcessBlock> getConnectedBlocksAtPort(ProcessBlock root,String port) {
+		List<ProcessBlock> connectedBlocks = new ArrayList<>();
+		BlockPort key = new BlockPort(root,port);
+		List<ProcessConnection> cxns = incomingConnections.get(key);
+		if( cxns!=null ) {
+			for(ProcessConnection cxn:cxns) {
+				UUID blockId = cxn.getSource();
+				connectedBlocks.add(blocks.get(blockId));		
+			}
+		}
+		else {
+			cxns = outgoingConnections.get(key);
+			if( cxns!=null ) {
+				for(ProcessConnection cxn:cxns) {
+					UUID blockId = cxn.getTarget();
+					connectedBlocks.add(blocks.get(blockId));		
+				}
+			}
+		}
+		return connectedBlocks;
 	}
 	/**
 	 * @param root the subject block

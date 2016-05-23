@@ -6,6 +6,7 @@
  */
 package com.ils.blt.common.control;
 
+import java.util.List;
 import java.util.UUID;
 
 import com.ils.blt.common.ProcessBlock;
@@ -13,6 +14,7 @@ import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.notification.BroadcastNotification;
 import com.ils.blt.common.notification.ConnectionPostNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 
@@ -36,6 +38,7 @@ public interface ExecutionController  {
 	public double getIsolationTimeFactor();
 	public String getSubscribedPath(ProcessBlock block,BlockProperty property);
 	public boolean hasActiveSubscription(ProcessBlock block,BlockProperty property,String tagPath);
+	public List<SerializableBlockStateDescriptor> listBlocksConnectedAtPort(String diagramId,String blockId,String portName);
 	public QualifiedValue getTagValue(UUID diagramId,String path);
 	public void sendAlertNotification(long resid, String val);
 	public void sendConnectionNotification(String blockid, String port, QualifiedValue val);

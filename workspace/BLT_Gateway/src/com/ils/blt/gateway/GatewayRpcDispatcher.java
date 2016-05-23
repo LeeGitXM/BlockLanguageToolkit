@@ -90,7 +90,14 @@ public class GatewayRpcDispatcher   {
 		return requestHandler.getApplicationName(uuid);
 	}
 	
-
+	/**
+	 * @param diagramId string representation of the diagram's unique id
+	 * @param blockName name of the block within the diagram
+	 * @return the id of the specified block.
+	 */
+	public String getBlockId(String diagramId, String blockName) {
+		return requestHandler.getBlockId(diagramId,blockName);
+	}
 	/**
 	 * Query the specified block for its properties. If the block does not exist, create it, given the
 	 * specified class name. In the case of a new block, its diagram may also need to be created. 
@@ -288,6 +295,10 @@ public class GatewayRpcDispatcher   {
     	boolean result = requestHandler.isAlerting(projectId, resourceId);
     	return new Boolean(result);
     }
+
+	public List<SerializableBlockStateDescriptor> listBlocksConnectedAtPort(String diagramId,String blockId,String portName) {
+		return requestHandler.listBlocksConnectedAtPort(diagramId,blockId,portName);
+	}
 	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(String diagramId, String blockName) {
 		return requestHandler.listBlocksDownstreamOf(diagramId, blockName);
 	}
@@ -382,7 +393,12 @@ public class GatewayRpcDispatcher   {
 	public void resetDiagram(String uuidString) {
 		requestHandler.resetDiagram(uuidString);
 	}
-
+	/**
+	 * Execute stop() then start() on the specified block
+	 */
+	public void restartBlock(String diagramId,String blockId) {
+		requestHandler.restartBlock(diagramId,blockId);
+	}
 	public Boolean resourceExists(Long projectId,Long resourceId) {
 		return new Boolean(requestHandler.resourceExists(projectId.longValue(), resourceId.longValue()));
 	}

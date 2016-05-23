@@ -4,11 +4,11 @@
 package com.ils.block;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
@@ -36,7 +36,7 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
 @ExecutableBlock
 public class Sum extends AbstractProcessBlock implements ProcessBlock {
 	// Keep map of values by originating block id
-	protected final Map<String,QualifiedValue> valueMap;
+	protected Map<String,QualifiedValue> valueMap = null;
 	private final Watchdog dog;
 	private double synchInterval = 0.5; // 1/2 sec synchronization by default
 	
@@ -45,7 +45,6 @@ public class Sum extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	public Sum() {
 		initialize();
-		valueMap = new HashMap<String,QualifiedValue>();
 		initializePrototype();
 		dog = new Watchdog(getName(),this);
 	}
@@ -60,7 +59,6 @@ public class Sum extends AbstractProcessBlock implements ProcessBlock {
 	public Sum(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
-		valueMap = new HashMap<String,QualifiedValue>();
 		dog = new Watchdog(getName(),this);
 	}
 	
@@ -89,6 +87,14 @@ public class Sum extends AbstractProcessBlock implements ProcessBlock {
 		super.reset();
 	}
 	/**
+	 * Initialize the qualified value map.
+	 */
+	@Override
+	public void start() {
+		super.start();
+		valueMap = initializeQualifiedValueMap(BlockConstants.IN_PORT_NAME);
+	}
+	/**
 	 * Disconnect from the timer thread.
 	 */
 	@Override
@@ -109,8 +115,7 @@ public class Sum extends AbstractProcessBlock implements ProcessBlock {
 		
 		QualifiedValue qv = incoming.getValue();
 		if( qv!=null && qv.getValue()!=null ) {
-			String key = String.format("%s:%s",incoming.getConnection().getSource().toString(),
-					                           incoming.getConnection().getUpstreamPortName());
+			String key = incoming.getConnection().getSource().toString();
 			try {
 				Double dbl = Double.parseDouble(qv.getValue().toString());
 				qv = new BasicQualifiedValue(dbl,qv.getQuality(),qv.getTimestamp());
@@ -195,14 +200,14 @@ public class Sum extends AbstractProcessBlock implements ProcessBlock {
 		double result = Double.NaN;
 		result = 0.;
 		for(QualifiedValue qv:values) {
-			if( qv.getQuality().isGood() ) {
+			if( qv.getQuality().isGood() && qv.getValue()!=null && !qv.getValue().equals(BLTProperties.UNDEFINED) ) {
+				log.tracef("%s.aggregating ... value = %sf",getName(),qv.getValue().toString());
 				result = result+((Double)qv.getValue()).doubleValue();
 			}
 			else {
 				return Double.NaN;
 			}
 		}
-
 		return result;	
 	}
 	/**

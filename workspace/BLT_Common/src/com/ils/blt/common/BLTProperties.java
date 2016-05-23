@@ -104,6 +104,9 @@ public interface BLTProperties   {
 	public static final String PALETTE_VIEW_LABEL  = "viewLabel";
 	public static final String PALETTE_VIEW_WIDTH  = "viewWidth";
 	
+	// Marker for a null qualified value
+	public static final String UNDEFINED = "UNDEFINED";
+	
 	// Name to use for "Good" Quality
 	public static final String QUALITY_GOOD        = "Good";
 	// Preferences keys

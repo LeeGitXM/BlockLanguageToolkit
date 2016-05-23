@@ -203,7 +203,25 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		ProcessApplication app = pyHandler.getApplication(uuid);
 		return app.getName();
 	}
-	
+	@Override
+	public String getBlockId(String diagramId, String blockName) {
+		String id = "UNKNOWN";
+		UUID diagramUUID = null;
+		try {
+			diagramUUID = UUID.fromString(diagramId);
+			ProcessDiagram diagram = controller.getDiagram(diagramUUID);
+			for(ProcessBlock block:diagram.getProcessBlocks()) {
+				if( block.getName().equalsIgnoreCase(blockName)) {
+					id = block.getBlockId().toString();
+					break;
+				}
+			}
+		}
+		catch(IllegalArgumentException iae) {
+			log.warnf("%s.getBlockId: Diagram UUID string is illegal (%s)",TAG,diagramId);
+		}
+		return id;
+	}
 	/**
 	 * Query the block controller for a block specified by the block id. If the block
 	 * does not exist, create it.
@@ -564,6 +582,22 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		ProcessDiagram diagram = controller.getDiagram(projectId.longValue(), resid.longValue());
 		return pyHandler.isAlerting(diagram);
 	}
+	@Override
+	public List<SerializableBlockStateDescriptor> listBlocksConnectedAtPort(String diagramId,String blockId,String portName) {
+		List<SerializableBlockStateDescriptor> descriptors = new ArrayList<>();
+		UUID diauuid = makeUUID(diagramId);
+		ProcessDiagram diagram = controller.getDiagram(diauuid);
+		if( diagram!=null ) {
+			ProcessBlock blk = diagram.getBlock(UUID.fromString(blockId));
+			if(blk!=null) {
+				List<ProcessBlock>connectedBlocks =  diagram.getConnectedBlocksAtPort(blk,portName);
+				for( ProcessBlock pb:connectedBlocks ) {
+					descriptors.add(pb.toDescriptor());
+				}
+			}
+		}
+		return descriptors;
+	}
 	
 	@Override
 	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(String diagramId,String blockName) {
@@ -872,13 +906,12 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		ProcessDiagram diagram = controller.getDiagram(diagramUUID);
 		if( diagram!=null) {
 			ProcessBlock block = diagram.getBlockByName(blockName);
-			if( block!=null ) controller.resetBlock(diagramUUID, block.getBlockId());
+			if( block!=null ) block.reset();
 			else log.warnf("%s.resetBlock: block %s not found on diagram %s",TAG,blockName,diagram.getName());
 		}
 		else {
 			log.warnf("%s.resetBlock: no diagram found for %s",TAG,diagramId);
 		}
-		
 	}
 	@Override
 	public void resetDiagram(String diagramId) {
@@ -890,10 +923,24 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			log.warnf("%s.resetDiagram: Diagram UUID string is illegal (%s), creating new",TAG,diagramId);
 			diagramUUID = UUID.nameUUIDFromBytes(diagramId.getBytes());
 		}
-		BlockExecutionController.getInstance().resetDiagram(diagramUUID);
-		
+		BlockExecutionController.getInstance().resetDiagram(diagramUUID);	
 	}
-			
+	@Override
+	public void restartBlock(String diagramId, String blockName) {
+		UUID diagramUUID = makeUUID(diagramId);
+		ProcessDiagram diagram = controller.getDiagram(diagramUUID);
+		if( diagram!=null) {
+			ProcessBlock block = diagram.getBlockByName(blockName);
+			if( block!=null ) {
+				block.stop();
+				block.start();
+			}
+			else log.warnf("%s.restartBlock: block %s not found on diagram %s",TAG,blockName,diagram.getName());
+		}
+		else {
+			log.warnf("%s.restartBlock: no diagram found for %s",TAG,diagramId);
+		}
+	}
 	@Override
 	public boolean resourceExists(Long projectId, Long resid) {
 		ProcessDiagram diagram = controller.getDiagram(projectId.longValue(), resid.longValue());

@@ -48,7 +48,6 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 
 	@Override
 	public List<SerializableResourceDescriptor> childNodes(String nodeId) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -125,7 +124,22 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 		return name;
 	}
-	
+
+	/**
+	 * @return the id of the name block.
+	 */
+	@Override
+	public String getBlockId(String diagramId, String blockName) {
+		String id = "UNKNOWN";
+		try {
+			id = (String)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "getBlockId",diagramId,blockName);
+		}
+		catch(Exception ge) {
+			log.infof("%s.getBlockId: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		return id;
+	}
 	/**
 	 * Obtain a list of BlockProperty objects for the specified block. If the block is not known to the gateway
 	 * it will be created.
@@ -483,6 +497,27 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		return result.booleanValue();
 	}
 	
+	/**
+	 * Query a block in the gateway for list of the blocks connected to the named port. 
+	 * @param diagramId of the parent diagram
+	 * @param blockId identifier of the block
+	 * @param port name of the anchor of interest
+	 * @return a list of blocks connected to the named port.
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<SerializableBlockStateDescriptor> listBlocksConnectedAtPort(String diagramId,String blockId,String portName) {
+		List<SerializableBlockStateDescriptor> result = null;
+		try {
+			result = (List<SerializableBlockStateDescriptor> )GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "listBlocksConnectedAtPort",diagramId,blockId,portName);
+		}
+		catch(Exception ge) {
+			log.infof("%s.listBlocksConnectedAtPort: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		return result;
+	}
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(String diagramId, String blockName) {
@@ -759,7 +794,21 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 			log.infof("%s.resetDiagram: GatewayException (%s)",TAG,ge.getMessage());
 		}
 	}
-	
+	/**
+	 * Execute reset() on a specified block
+	 */
+	@Override
+	public void restartBlock(String diagramId,String blockName) {
+		log.debugf("%s.restartBlock ...",TAG);
+
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "restartBlock",diagramId,blockName);
+		}
+		catch(Exception ge) {
+			log.infof("%s.restartBlock: GatewayException (%s)",TAG,ge.getMessage());
+		}
+	}
 	/**
 	 * Determine whether or not the indicated resource is known to the controller.
 	 */

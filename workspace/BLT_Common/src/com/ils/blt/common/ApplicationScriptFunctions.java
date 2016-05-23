@@ -44,6 +44,7 @@ public class ApplicationScriptFunctions   {
 	public static String getApplicationName(String uuid) {
 		return handler.getApplicationName(uuid);
 	}
+	
 	/**
 	 * Query the gateway for a list of prototypes for the defined blocks. 
 	 */
@@ -51,6 +52,14 @@ public class ApplicationScriptFunctions   {
 	public static List getBlockPrototypes() {
 		List<PalettePrototype> result = handler.getBlockPrototypes();
 		return result;
+	}
+	/**
+	 * @param diagramId string representation of the diagram's unique id
+	 * @param blockName name of the block within the diagram
+	 * @return the id of the specified block.
+	 */
+	public static String getBlockId(String diagramId, String blockName) {
+		return handler.getBlockId(diagramId,blockName);
 	}
 	/**
 	 * @return the current state of the controller.
@@ -155,6 +164,16 @@ public class ApplicationScriptFunctions   {
 	 */
 	public static boolean isAlerting(Long projectId, Long resourceId) {
 		return handler.isAlerting(projectId, resourceId);
+	}
+	/**
+	 * Query a block in the gateway for list of the blocks connected to the named port. 
+	 * @param diagramId of the parent diagram
+	 * @param blockId identifier of the block
+	 * @param port name of the anchor of interest
+	 * @return a list of blocks connected to the named port.
+	 */
+	public static List<SerializableBlockStateDescriptor> listBlocksConnectedAtPort(String diagramId,String blockId,String portName) {
+		return handler.listBlocksConnectedAtPort(diagramId,blockId,portName);
 	}
 	/**
 	 * Query a diagram in the gateway for list of its blocks that are downstream
@@ -322,6 +341,12 @@ public class ApplicationScriptFunctions   {
 	 */
 	public static void resetDiagram(String diagramId) {
 		handler.resetDiagram(diagramId);
+	}
+	/**
+	 * Execute stop() then start() on the specified block
+	 */
+	public static void restartBlock(String diagramId,String blockId) {
+		handler.restartBlock(diagramId,blockId);
 	}
 	/**
 	 * Send a signal to all blocks of a particular class on a specified diagram.

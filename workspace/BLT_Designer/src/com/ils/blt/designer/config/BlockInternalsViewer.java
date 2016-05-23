@@ -135,7 +135,7 @@ public class BlockInternalsViewer extends JDialog {
 			addSeparator(internalPanel,"Activities");
 			internalPanel.add(createActivitiesPanel(),"wrap");
 		}
-		if( !buffer.isEmpty() ) {
+		if( buffer!=null && !buffer.isEmpty() ) {
 			addSeparator(internalPanel,"History Buffer");
 			internalPanel.add(createHistoryBufferPanel(),"wrap");
 		}

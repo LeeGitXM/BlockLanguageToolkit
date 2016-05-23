@@ -6,6 +6,8 @@
  */
 package com.ils.blt.common.control;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import com.ils.blt.common.ProcessBlock;
@@ -13,6 +15,7 @@ import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.notification.BroadcastNotification;
 import com.ils.blt.common.notification.ConnectionPostNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -77,6 +80,10 @@ public class BasicExecutionController implements ExecutionController  {
 	public boolean hasActiveSubscription(ProcessBlock block,BlockProperty property,String tagPath) {
 		log.warnf("%s.hasActiveSubscription: WARNING: Executed from stub class",TAG);
 		return false;
+	}
+	public List<SerializableBlockStateDescriptor> listBlocksConnectedAtPort(String diagramId,String blockId,String portName) {
+		log.warnf("%s.listBlocksConnectedAtPort: WARNING: Executed from stub class",TAG);
+		return new ArrayList<>();
 	}
 	public void sendAlertNotification(long resid, String val) {
 		log.warnf("%s.sendAlertNotification: WARNING: Executed from stub class",TAG);

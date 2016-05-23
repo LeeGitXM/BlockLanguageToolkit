@@ -353,6 +353,10 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public List<SerializableResourceDescriptor> getDiagramDescriptors(String projectName) {
 		return modelManager.getDiagramDescriptors(projectName);
 	}
+	public List<SerializableBlockStateDescriptor> listBlocksConnectedAtPort(String diagramId,String blockId,String portName) {
+		ControllerRequestHandler handler = ControllerRequestHandler.getInstance();
+		return handler.listBlocksConnectedAtPort(diagramId, blockId,portName);
+	}
 	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(UUID diagramId,UUID blockId,boolean spanDiagrams) {
 		return modelManager.listBlocksDownstreamOf(diagramId, blockId,spanDiagrams);
 	}

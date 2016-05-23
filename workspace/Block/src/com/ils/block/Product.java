@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
@@ -37,7 +38,7 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
 public class Product extends AbstractProcessBlock implements ProcessBlock {
 	private final String TAG = "Product";
 	// Keep map of values by originating block id
-	protected final Map<String,QualifiedValue> valueMap;
+	protected Map<String,QualifiedValue> valueMap = null;
 	private final Watchdog dog;
 	private double synchInterval = 0.5; // 1/2 sec synchronization by default
 	
@@ -46,7 +47,6 @@ public class Product extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	public Product() {
 		dog = new Watchdog(TAG,this);
-		valueMap = new HashMap<String,QualifiedValue>();
 		initialize();
 		initializePrototype();
 	}
@@ -61,7 +61,6 @@ public class Product extends AbstractProcessBlock implements ProcessBlock {
 	public Product(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
 		dog = new Watchdog(TAG,this);
-		valueMap = new HashMap<String,QualifiedValue>();
 		initialize();
 	}
 	
@@ -86,6 +85,14 @@ public class Product extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void reset() {
 		super.reset();
+	}
+	/**
+	 * Initialize the qualified value map.
+	 */
+	@Override
+	public void start() {
+		super.start();
+		valueMap = initializeQualifiedValueMap(BlockConstants.IN_PORT_NAME);
 	}
 	/**
 	 * Disconnect from the timer thread.
@@ -124,8 +131,7 @@ public class Product extends AbstractProcessBlock implements ProcessBlock {
 		super.acceptValue(incoming);
 		QualifiedValue qv = incoming.getValue();
 		if( qv!=null && qv.getValue()!=null ) {
-			String key = String.format("%s:%s",incoming.getConnection().getSource().toString(),
-					   incoming.getConnection().getUpstreamPortName());
+			String key = incoming.getConnection().getSource().toString();
 			try {
 				Double dbl = Double.parseDouble(qv.getValue().toString());
 				qv = new BasicQualifiedValue(dbl,qv.getQuality(),qv.getTimestamp());
@@ -151,8 +157,10 @@ public class Product extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void evaluate() {
+		//log.infof("%s.evaluate ...", getName());
 		if( !isLocked() && !valueMap.isEmpty()) {
 			double value = getAggregateResult();
+			log.debugf("%s.evaluate ... value = %3.2f", getName(),value);
 			QualifiedValue result = new TestAwareQualifiedValue(timer,new Double(value),getAggregateQuality());
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
 			controller.acceptCompletionNotification(nvn);
@@ -195,7 +203,8 @@ public class Product extends AbstractProcessBlock implements ProcessBlock {
 		if(!values.isEmpty()) {
 			result = 1.;
 			for(QualifiedValue qv:values) {
-				if( qv.getQuality().isGood() ) {
+				if( qv.getQuality().isGood() && qv.getValue()!=null && !qv.getValue().equals(BLTProperties.UNDEFINED) ) {
+					log.tracef("%s.aggregating ... value = %sf",getName(),qv.getValue().toString());
 					result = result*((Double)qv.getValue()).doubleValue();
 				}
 				else {

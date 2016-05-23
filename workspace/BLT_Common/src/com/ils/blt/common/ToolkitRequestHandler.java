@@ -69,6 +69,13 @@ public interface ToolkitRequestHandler  {
 	/**
 	 * @param diagramId string representation of the diagram's unique id
 	 * @param blockName name of the block within the diagram
+	 * @return the id of the specified block.
+	 */
+	public String getBlockId(String diagramId, String blockName) ;
+	
+	/**
+	 * @param diagramId string representation of the diagram's unique id
+	 * @param blockName name of the block within the diagram
 	 * @return the current state of the specified block.
 	 */
 	public String getBlockState(String diagramId, String blockName) ;
@@ -170,7 +177,15 @@ public interface ToolkitRequestHandler  {
 	 * @return a list of blocks associated with the tag.
 	 */
 	public List<SerializableBlockStateDescriptor> listBlocksForTag(String tagpath) ;
-	
+
+	/**
+	 * Query a block in the gateway for list of the blocks connected to the named port. 
+	 * @param diagramId of the parent diagram
+	 * @param blockId identifier of the block
+	 * @param port name of the anchor of interest
+	 * @return a list of blocks connected to the named port.
+	 */
+	public List<SerializableBlockStateDescriptor> listBlocksConnectedAtPort(String diagramId,String blockId,String portName) ;
 	/**
 	 * Query a diagram in the gateway for list of its blocks. 
 	 * @param diagramId of the parent diagram
@@ -283,6 +298,12 @@ public interface ToolkitRequestHandler  {
 	 * Determine whether or not the indicated resource is known to the controller.
 	 */
 	public boolean resourceExists(Long projectId,Long resid) ;
+	/**
+	 * Execute stop() then start() on a specified block
+	 * @param diagramId of the parent diagram
+	 * @param blockName name of the block within the diagram 
+	 */
+	public void restartBlock(String diagramId,String blockName) ;
 	/**
 	 * Send a signal to all blocks of a particular class on a specified diagram.
 	 * This is a "local" transmission. The diagram is specified by a tree-path.

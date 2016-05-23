@@ -41,7 +41,7 @@ import com.inductiveautomation.ignition.common.sqltags.model.types.DataQuality;
 public class Or extends AbstractProcessBlock implements ProcessBlock {
 	private final String TAG = "Or";
 	// Keep map of values by originating block id
-	protected final Map<String,QualifiedValue> qualifiedValueMap;
+	protected Map<String,QualifiedValue> qualifiedValueMap = null;
 	private final Watchdog dog;
 	private double synchInterval = 0.5; // 1/2 sec synchronization by default
 	
@@ -50,7 +50,6 @@ public class Or extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	public Or() {
 		dog = new Watchdog(TAG,this);
-		qualifiedValueMap = new HashMap<String,QualifiedValue>();
 		initialize();
 		initializePrototype();
 	}
@@ -65,7 +64,6 @@ public class Or extends AbstractProcessBlock implements ProcessBlock {
 	public Or(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
 		dog = new Watchdog(TAG,this);
-		qualifiedValueMap = new HashMap<String,QualifiedValue>();
 		initialize();
 	}
 	
@@ -95,6 +93,14 @@ public class Or extends AbstractProcessBlock implements ProcessBlock {
 		state = TruthValue.UNKNOWN;
 	}
 	/**
+	 * Initialize the qualified value map.
+	 */
+	@Override
+	public void start() {
+		super.start();
+		qualifiedValueMap = initializeQualifiedValueMap(BlockConstants.IN_PORT_NAME);
+	}
+	/**
 	 * Disconnect from the timer thread.
 	 */
 	@Override
@@ -112,8 +118,7 @@ public class Or extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void acceptValue(IncomingNotification incoming) {
 		super.acceptValue(incoming);
-		String key = String.format("%s:%s",incoming.getConnection().getSource().toString(),
-				                           incoming.getConnection().getUpstreamPortName());
+		String key = incoming.getConnection().getSource().toString();
 		QualifiedValue qv = incoming.getValue();
 		qualifiedValueMap.put(key, qv);
 		dog.setSecondsDelay(synchInterval);

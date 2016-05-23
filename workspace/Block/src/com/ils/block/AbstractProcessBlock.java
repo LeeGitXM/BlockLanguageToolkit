@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagnosticDiagram;
 import com.ils.blt.common.ProcessBlock;
@@ -40,6 +41,7 @@ import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.WatchdogObserver;
 import com.ils.common.watchdog.WatchdogTimer;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -123,6 +125,22 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		setProperty(BlockConstants.BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE, bufferSize);
 	}
 	
+	/**
+	 * Create a qualified value map with an entry for every block attached to the port
+	 * and with a NULL value. This map is used for blocks that need to keep track
+	 * of the blocks attached on input.
+	 * @param port
+	 * @return the map with empty entries.
+	 */
+	protected Map<String,QualifiedValue> initializeQualifiedValueMap(String port) {
+		List<SerializableBlockStateDescriptor> descriptors = controller.listBlocksConnectedAtPort(parentId.toString(), 
+																		blockId.toString(), port);
+		Map<String,QualifiedValue> qvmap = new HashMap<>();
+		for(SerializableBlockStateDescriptor desc:descriptors) {
+			qvmap.put(desc.getIdString(), new BasicQualifiedValue(BLTProperties.UNDEFINED));
+		}
+		return qvmap;
+	}
 	/**
 	 * Fill a prototype object with defaults - as much as is reasonable.
 	 */
@@ -248,7 +266,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 * @return a block-specific description of internal statue
 	 */
 	@Override
-	public SerializableBlockStateDescriptor getInternalStatus() {
+	public synchronized SerializableBlockStateDescriptor getInternalStatus() {
 		SerializableBlockStateDescriptor descriptor = new SerializableBlockStateDescriptor();
 		Map<String,String> attributes = descriptor.getAttributes();
 		attributes.put("Name", getName());
@@ -322,7 +340,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 *        Presumably this comes from a controlled vocabulary
 	 * @param value a new value associated with the activity, if any.
 	 */
-	public void recordActivity(String desc,String value) {
+	public synchronized void recordActivity(String desc,String value) {
 		if( activities.getBufferSize()>0) {
 			if(value==null) value="";
 			Activity activity = new Activity(desc,value);
@@ -487,22 +505,25 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	public void evaluate() {}
 	
 	// =================================  Convenience Methods   ================================
+	// A null is equivalent to UNSET
 	protected TruthValue qualifiedValueAsTruthValue(QualifiedValue qv) {
-		TruthValue result = TruthValue.UNSET;
+		TruthValue result = TruthValue.UNSET;  
 		Object value = qv.getValue();
-		if( value instanceof TruthValue ) {
-			result = (TruthValue) value;
-		}
-		else if(value instanceof Boolean) {
-			if( ((Boolean)value).booleanValue() ) result = TruthValue.TRUE;
-			else result = TruthValue.FALSE;
-		}
-		else if(value instanceof String && !value.toString().isEmpty() ) {
-			try {
-				result = TruthValue.valueOf(value.toString().toUpperCase());
+		if( value!= null && !value.equals(BLTProperties.UNDEFINED) ) {
+			if( value instanceof TruthValue ) {
+				result = (TruthValue) value;
 			}
-			catch( IllegalArgumentException iae) {
-				log.warnf("%s.qualifiedValueAsTruthValue: Exception converting %s (%s)", getName(),value.toString(),iae.getLocalizedMessage());
+			else if(value instanceof Boolean) {
+				if( ((Boolean)value).booleanValue() ) result = TruthValue.TRUE;
+				else result = TruthValue.FALSE;
+			}
+			else if(value instanceof String && !value.toString().isEmpty() ) {
+				try {
+					result = TruthValue.valueOf(value.toString().toUpperCase());
+				}
+				catch( IllegalArgumentException iae) {
+					log.warnf("%s.qualifiedValueAsTruthValue: Exception converting %s (%s)", getName(),value.toString(),iae.getLocalizedMessage());
+				}
 			}
 		}
 		return result;

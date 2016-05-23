@@ -88,6 +88,9 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void start() {
 		super.start();
+		if( tagPathProperty!=null && tagPathProperty.getBinding() != null && !tagPathProperty.getBinding().isEmpty() ) {
+			qv = controller.getTagValue(getParentId(), tagPathProperty.getBinding());
+		}
 		if( qv!=null &&  qv.getValue() != null && !isLocked()  ) {
 			log.debugf("%s.start: %s (%s)",getName(),qv.getValue().toString(),qv.getQuality().getName());
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);

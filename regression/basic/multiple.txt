@@ -1,0 +1,62 @@
+#
+# Exercise blocks that have arbitrary nunmbers of inputs
+#
+DIAGRAM="app75/family75/multiple"
+script: blocksConnectedAtPort interfaces.listBlocksConnectedAtPort(dpath,blockName,port)
+Show: diagram $DIAGRAM
+resetDiagram($DIAGRAM)
+
+A="MemoryTags/BooleanInputA"
+B="MemoryTags/BooleanInputB"
+C="MemoryTags/DoubleInputA"
+D="MemoryTags/DoubleInputB"
+tag: A $A
+tag: B $B
+tag: C $C
+tag: D $D
+tag: AndOut MemoryTags/AndOut
+tag: OrOut MemoryTags/OrOut
+tag: ProductOut MemoryTags/ProductOut
+tag: SumOut MemoryTags/SumOut
+
+tagset: LogicalFeed A B
+tagset: DoubleFeed  C D
+
+Test: Blocks with Multiple Inputs
+Step: Logicals
+Tagset: LogicalFeed
+10:00:00 "UNKNOWN" "UNKNOWN"
+10:00:10 restartBlock($DIAGRAM,"MULTIPLE-AND")
+10:00:10 restartBlock($DIAGRAM,"MULTIPLE-OR")
+10:00:20 "TRUE"
+10:00:30 Assert: AndOut = UNKNOWN "TRUE and UNSET is UNKNOWN"
+10:00:35 Assert: OrOut = TRUE "TRUE or UNSET is TRUE"
+10:00:45 "TRUE" "FALSE"
+10:00:55 Assert: AndOut = FALSE "TRUE and FALSE is FALSE"
+
+10:01:00 restartBlock($DIAGRAM,"MULTIPLE-AND")
+10:01:10 restartBlock($DIAGRAM,"MULTIPLE-OR")
+10:01:20 "FALSE"
+10:01:30 Assert: AndOut = FALSE "FALSE and UNSET is FALSE"
+10:01:35 Assert: OrOut = UNKNOWN "FALSE or UNSET is UNKNOWN"
+10:01:45 "TRUE" "FALSE"
+10:01:55 Assert: OrOut = TRUE "TRUE or FALSE is TRUE"
+
+
+Step: Numeric blocks
+Tagset: DoubleFeed
+10:02:00 restartBlock($DIAGRAM,"MULTIPLE-SUM")
+10:02:10 restartBlock($DIAGRAM,"MULTIPLE-PRODUCT")
+10:02:20  1
+10:02:30 Assert: SumOut = TAG_EXEC_ERROR "Sum is undefined"
+10:02:30 Assert: ProductOut = TAG_EXEC_ERROR "Product is undefined"
+10:02:40  2 4
+10:02:50 Assert: SumOut = 6 "Sum is 6"
+10:02:50 Assert: ProductOut = 8 "Product is 8"
+10:03:10 0. 0.
+
+Step: Scripting
+assert: count of blocksConnectedAtPort($DIAGRAM,"MULTIPLE-SUM","in") = 2 "2 blocks connected to SUM"
+assert: count of blocksConnectedAtPort($DIAGRAM,"MULTIPLE-OR","in") = 2 "2 blocks connected to OR"
+assert: blocksConnectedAtPort($DIAGRAM,"MULTIPLE-AND","in") contains MultiInputA "MultiInput A is connected at the input of MULTIPLE-AND"
+assert: ! blocksConnectedAtPort($DIAGRAM,"MULTIPLE-AND","in") contains MultiInputC "MultiInput C is not connected at the input of MULTIPLE-AND"

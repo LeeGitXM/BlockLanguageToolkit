@@ -4,7 +4,6 @@
 package com.ils.block;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -39,7 +38,7 @@ import com.inductiveautomation.ignition.common.sqltags.model.types.DataQuality;
 @ExecutableBlock
 public class And extends AbstractProcessBlock implements ProcessBlock {
 	// Keep map of values by originating block id
-	protected final Map<String,QualifiedValue> qualifiedValueMap;
+	protected Map<String,QualifiedValue> qualifiedValueMap = null;
 	private final Watchdog dog;
 	private BlockProperty valueProperty = null;
 	private double synchInterval = 0.5; // 1/2 sec synchronization by default
@@ -49,7 +48,6 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	public And() {
 		initialize();
-		qualifiedValueMap = new HashMap<String,QualifiedValue>();
 		initializePrototype();
 		dog = new Watchdog(getName(),this);
 	}
@@ -64,7 +62,6 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 	public And(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
-		qualifiedValueMap = new HashMap<String,QualifiedValue>();
 		dog = new Watchdog(getName(),this);
 	}
 	
@@ -95,14 +92,22 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 		super.reset();
 		state = TruthValue.UNKNOWN;
 	}
-	
+	/**
+	 * Initialize the qualified value map.
+	 */
+	@Override
+	public void start() {
+		super.start();
+		qualifiedValueMap = initializeQualifiedValueMap(BlockConstants.IN_PORT_NAME);
+		log.debugf("%s.start: initialized %d inputs",getName(),qualifiedValueMap.size());
+	}
 	/**
 	 * Disconnect from the timer thread.
 	 */
 	@Override
 	public void stop() {
 		super.stop();
-		timer.removeWatchdog(dog);
+		timer.removeWatchdog(dog);	
 	}
 	
 	/**
@@ -115,10 +120,9 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void acceptValue(IncomingNotification incoming) {
 		super.acceptValue(incoming);
-		String key = String.format("%s:%s",incoming.getConnection().getSource().toString(),
-                                           incoming.getConnection().getUpstreamPortName());
+		String key = incoming.getConnection().getSource().toString();
 		QualifiedValue qv = incoming.getValue();
-		log.tracef("%s.acceptValue %s quality (%s) is good %s",getName(),qv.getValue().toString(),qv.getQuality().getName(),(qv.getQuality().isGood()?"GOOD":"BAD"));
+		log.debugf("%s.acceptValue %s from %s",getName(),qv.getValue().toString(),key);
 		qualifiedValueMap.put(key, qv);
 		dog.setSecondsDelay(synchInterval);
 		timer.updateWatchdog(dog);  // pet dog
