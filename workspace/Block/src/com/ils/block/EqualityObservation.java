@@ -125,11 +125,11 @@ public class EqualityObservation extends AbstractProcessBlock implements Process
 	public String getExplanation(DiagnosticDiagram parent) {
 		String explanation = "";
 		if( observation!=null && state.equals(TruthValue.TRUE) ) {
-			explanation = String.format("At %s, %s is not within tolerance the nominal (%3.2f)",getName(),
+			explanation = String.format("At %s, %s is within tolerance the nominal (%3.2f)",getName(),
 														observation.getValue().toString(),nominal);
 		}
 		else if( observation!=null && state.equals(TruthValue.FALSE)) {
-			explanation = String.format("At %s, %s is within tolerance of the nominal (%3.2f)",getName(),
+			explanation = String.format("At %s, %s is not within tolerance of the nominal (%3.2f)",getName(),
 														observation.getValue().toString(),nominal);
 		}
 		return explanation;

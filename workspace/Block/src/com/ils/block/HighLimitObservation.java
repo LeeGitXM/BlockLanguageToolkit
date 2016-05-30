@@ -124,11 +124,11 @@ public class HighLimitObservation extends AbstractProcessBlock implements Proces
 	@Override
 	public String getExplanation(DiagnosticDiagram parent) {
 		String explanation = "";
-		if( observation!=null && state.equals(TruthValue.TRUE) ) {
+		if( observation!=null && state.equals(TruthValue.FALSE) ) {
 			explanation = String.format("At %s, %s exceeds the high limit (%3.2f)",getName(),
 														observation.getValue().toString(),limit);
 		}
-		else if( observation!=null && state.equals(TruthValue.FALSE)) {
+		else if( observation!=null && state.equals(TruthValue.TRUE)) {
 			explanation = String.format("At %s, %s does not exceed the high limit (%3.2f)",getName(),
 					observation.getValue().toString(),limit);
 		}

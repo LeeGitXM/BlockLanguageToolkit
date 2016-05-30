@@ -127,11 +127,10 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	 * 
 	 * @param diagram the serializable template of this object.
 	 */
-	public void createBlocks(SerializableDiagram diagram) {
+	public void createBlocks(SerializableBlock[] sblks ) {
 		BlockFactory blockFactory = BlockFactory.getInstance();
 
 		// Update the blocks - we've already deleted any not present in the new
-		SerializableBlock[] sblks = diagram.getBlocks();
 		for( SerializableBlock sb:sblks ) {
 			UUID id = sb.getId();
 			ProcessBlock pb = blocks.get(id);
@@ -146,12 +145,12 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 					log.debugf("%s.analyze: New block %s(%d)",TAG,pb.getName(),pb.hashCode());
 					// If we create a block, then start any appropriate subscriptions
 					for(BlockProperty bp:pb.getProperties()) {
-						controller.startSubscription(pb,bp);
+						controller.startSubscription(getState(),pb,bp);
 					}
 					pb.start();
 				}
 				else {
-					log.errorf("%s.analyze: ERROR, diagram %s failed to instantiate block of type %s",TAG,diagram.getName(),sb.getClassName());
+					log.errorf("%s.analyze: ERROR, diagram %s failed to instantiate block of type %s",TAG,getName(),sb.getClassName());
 				}
 			}
 		}
@@ -163,10 +162,9 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	 * 
 	 * @param diagram the serializable template of this object.
 	 */
-	public void updateConnections(SerializableDiagram diagram) {
+	public void updateConnections(SerializableConnection[] scxns) {
 		ConnectionFactory connectionFactory = ConnectionFactory.getInstance();
 		// Update the connections
-		SerializableConnection[] scxns = diagram.getConnections();
 		for( SerializableConnection sc:scxns ) {
 			if( validConnection(sc) ) {
 				ConnectionKey cxnkey = new ConnectionKey(sc.getBeginBlock().toString(),sc.getBeginAnchor().getId().toString(),
@@ -208,7 +206,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 				}
 			}
 			else {
-				log.warnf("%s.updateConnections: %s has invalid serialized connection (%s)",TAG,diagram.getName(),invalidConnectionReason(sc));
+				log.warnf("%s.updateConnections: %s has invalid serialized connection (%s)",TAG,getName(),invalidConnectionReason(sc));
 			}
 
 		}
@@ -248,7 +246,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 							   prop.getBindingType().equals(BindingType.TAG_READ)    ||
 							   prop.getBindingType().equals(BindingType.TAG_READWRITE) ||
 							   prop.getBindingType().equals(BindingType.TAG_WRITE)) {
-								controller.startSubscription(pb,prop);
+								controller.startSubscription(getState(),pb,prop);
 								// If the new binding is a tag write - do the write.
 								if( !pb.isLocked() && 
 									(prop.getBindingType().equals(BindingType.TAG_READWRITE) ||
@@ -265,7 +263,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 							pb.stop();
 							if( !prop.getBindingType().equals(BindingType.TAG_WRITE) ) {
 								controller.removeSubscription(pb, prop);
-								controller.startSubscription(pb,newProp);
+								controller.startSubscription(getState(),pb,newProp);
 							}
 				
 							// If the new binding is a tag write - do the write.
@@ -581,7 +579,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 		//log.infof("%s.startSubscriptions: ...%d:%s",TAG,projectId,getName());
 		for( ProcessBlock pb:getProcessBlocks()) {
 			for(BlockProperty bp:pb.getProperties()) {
-				controller.startSubscription(pb,bp);
+				controller.startSubscription(getState(),pb,bp);
 			}
 		}
 	}
@@ -690,7 +688,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 														path,provider);
 						controller.removeSubscription(pb, bp);
 						bp.setBinding(properPath);
-						controller.startSubscription(pb, bp);
+						controller.startSubscription(getState(),pb, bp);
 						controller.sendPropertyBindingNotification(pb.getBlockId().toString(), bp.getName(), properPath);
 					}
 				}	

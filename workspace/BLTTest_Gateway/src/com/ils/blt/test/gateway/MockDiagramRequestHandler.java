@@ -326,7 +326,7 @@ public class MockDiagramRequestHandler implements MockDiagramScriptingInterface 
 			for(ProcessBlock block:mock.getProcessBlocks()) {
 				block.start();
 				for(BlockProperty prop:block.getProperties()) {
-					controller.startSubscription(block, prop);
+					controller.startSubscription(mock.getState(),block, prop);
 				}
 			}
 		}

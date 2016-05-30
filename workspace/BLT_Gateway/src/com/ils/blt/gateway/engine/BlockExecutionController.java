@@ -176,7 +176,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 				BlockProperty bp = block.getProperty(propertyName);
 				if( bp!=null ) {
 					tagListener.removeSubscription(block,bp);
-					startSubscription(block,bp);
+					startSubscription(diagram.getState(),block,bp);
 				}
 			}
 		}
@@ -478,12 +478,13 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	/**
 	 * Start a subscription for a block attribute associated with a tag.
 	 */
-	public void startSubscription(ProcessBlock block,BlockProperty property) {
+	public void startSubscription(DiagramState ds,ProcessBlock block,BlockProperty property) {
 		if( block==null || property==null || 
 				!(property.getBindingType().equals(BindingType.TAG_READ) || 
 				  property.getBindingType().equals(BindingType.TAG_READWRITE) ||
 				  property.getBindingType().equals(BindingType.TAG_MONITOR) )   ) return;
 		
+		guaranteeBindingHasProvider(ds,property);
 		String tagPath = property.getBinding();
 		tagListener.defineSubscription(block,property,tagPath);
 	}
@@ -499,6 +500,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 				  property.getBindingType().equals(BindingType.TAG_READWRITE) ||
 				  property.getBindingType().equals(BindingType.TAG_MONITOR) )   ) return;
 		
+		guaranteeBindingHasProvider(diagram.getState(),property);
 		String tagPath = property.getBinding();
 		tagListener.defineSubscription(block,property,tagPath);
 	}
@@ -737,5 +739,21 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		}
 	}
 	
+	// This should be called only on properties with bindings
+	private void guaranteeBindingHasProvider(DiagramState ds,BlockProperty bp) {
+		String binding = bp.getBinding();
+		if( binding!=null && binding.length()>0 && 
+			!binding.startsWith("[") &&  !DiagramState.DISABLED.equals(ds) ) {
+			// Add a provider
+			String provider = null;
+			if( DiagramState.ISOLATED.equals(ds)) {
+				provider = ControllerRequestHandler.getInstance().getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER);
+			}
+			else {
+				provider = ControllerRequestHandler.getInstance().getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
+			}
+			bp.setBinding(String.format("[%s]%s", provider,binding));
+		}		
+	}
 
 }

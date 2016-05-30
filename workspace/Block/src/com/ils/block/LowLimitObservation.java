@@ -124,11 +124,11 @@ public class LowLimitObservation extends AbstractProcessBlock implements Process
 	@Override
 	public String getExplanation(DiagnosticDiagram parent) {
 		String explanation = "";
-		if( observation!=null && state.equals(TruthValue.TRUE) ) {
+		if( observation!=null && state.equals(TruthValue.FALSE) ) {
 			explanation = String.format("At %s, %s is below the low limit (%3.2f)",getName(),
 														observation.getValue().toString(),limit);
 		}
-		else if( observation!=null && state.equals(TruthValue.FALSE)) {
+		else if( observation!=null && state.equals(TruthValue.TRUE)) {
 			explanation = String.format("At %s, %s is not below the low limit (%3.2f)",getName(),
 					observation.getValue().toString(),limit);
 		}

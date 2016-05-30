@@ -52,6 +52,7 @@ import com.inductiveautomation.ignition.gateway.sqltags.SQLTagsManager;
 public class TagListener implements TagChangeListener   {
 	private static final String TAG = "TagListener";
 	private static int THREAD_POOL_SIZE = 10;   // Notification threads
+	private static final boolean DEBUG = true;
 	private final LoggerEx log;
 	private GatewayContext context = null;
 	private final Map<String,List<BlockPropertyPair>> blockMap;  // Blocks-Properties keyed by tag path (case-insensitive)
@@ -97,7 +98,7 @@ public class TagListener implements TagChangeListener   {
 	 */
 	public synchronized void defineSubscription(ProcessBlock block,BlockProperty property,String tagPath) {
 		
-		log.tracef("%s.defineSubscription: %s:%s=%s",TAG,block.getName(),property.getName(),tagPath);
+		if( DEBUG ) log.infof("%s.defineSubscription: %s:%s=%s",TAG,block.getName(),property.getName(),tagPath);
 		if( tagPath!=null && tagPath.length() >0  ) {
 			boolean needToStartSubscription = false;
 			BlockPropertyPair key = new BlockPropertyPair(block,property);
@@ -111,13 +112,13 @@ public class TagListener implements TagChangeListener   {
 			}
 			if( list.contains(key))  {   
 				// Duplicate request, nothing to do
-				log.debugf("%s.defineSubscription: %s:%s already subscribes to: %s",TAG,block.getName(),property.getName(),tagPath);
+				if( DEBUG) log.infof("%s.defineSubscription: %s:%s already subscribes to: %s",TAG,block.getName(),property.getName(),tagPath);
 				return;
 			}
 			
 			list.add(key);
 			tagMap.put(key,tagPath);
-			log.debugf("%s.defineSubscription: %s:%s now subscribes to: %s (%s)",TAG,block.getName(),property.getName(),
+			if( DEBUG ) log.infof("%s.defineSubscription: %s:%s now subscribes to: %s (%s)",TAG,block.getName(),property.getName(),
 					tagPath,(needToStartSubscription?"START":"PIGGY-BACK"));
 			if(!stopped ) {
 				if(needToStartSubscription) startSubscriptionForTag(tagPath);
@@ -183,7 +184,7 @@ public class TagListener implements TagChangeListener   {
 		list.remove(key);
 		// Once the list is empty, we cancel the subscription
 		if(list.isEmpty()) {
-			log.debugf("%s.removeSubscription: cancelled %s:%s=%s",TAG,block.getName(),property.getName(),tagPath);
+			if( DEBUG ) log.infof("%s.removeSubscription: cancelled %s:%s=%s",TAG,block.getName(),property.getName(),tagPath);
 			blockMap.remove(tagPath.toUpperCase());
 			if(!stopped) {
 				// If we're running unsubscribe
@@ -191,7 +192,7 @@ public class TagListener implements TagChangeListener   {
 				try {
 					TagPath tp = TagPathParser.parse(tagPath);
 					tmgr.unsubscribe(tp, this);
-					log.debugf("%s.removeSubscription: unsubscribed to %s",TAG,tagPath);
+					if( DEBUG ) log.infof("%s.removeSubscription: unsubscribed to %s",TAG,tagPath);
 				}
 				catch(IOException ioe) {
 					log.errorf("%s.removeSubscription (%s)",TAG,ioe.getMessage());
@@ -211,7 +212,7 @@ public class TagListener implements TagChangeListener   {
 		SQLTagsManager tmgr = context.getTagManager();
 		try {
 			TagPath tp = TagPathParser.parse(tagPath);
-			log.debugf("%s.stopSubscription: %s",TAG,tagPath);
+			if( DEBUG ) log.infof("%s.stopSubscription: %s",TAG,tagPath);
 			tmgr.unsubscribe(tp, this);
 		}
 		catch(IOException ioe) {
@@ -251,6 +252,9 @@ public class TagListener implements TagChangeListener   {
 			String providerName = providerNameFromPath(tagPath);
 			if( providerName.length()==0) {
 				providerName = context.getProjectManager().getProps(typicalBlock.getProjectId(), ProjectVersion.Staging).getDefaultSQLTagsProviderName();
+				if(providerName==null || providerName.length()==0 ) {
+					log.warnf("%s.startSubscriptionForTag: %s - NO PROVIDER",TAG,tagPath);
+				}
 				int pos = tagPath.indexOf("]");
 				if(pos>0) tagPath = tagPath.substring(pos+1);
 				tagPath = String.format("[%s]%s",providerName,tagPath);
@@ -260,7 +264,7 @@ public class TagListener implements TagChangeListener   {
 			Tag tag = tmgr.getTag(tp);
 			if( tag!=null ) {
 				QualifiedValue value = tag.getValue();
-				log.debugf("%s.startSubscriptionForTag: %s = %s (%s at %s)",TAG,
+				if( DEBUG ) log.infof("%s.startSubscriptionForTag: %s = %s (%s at %s)",TAG,
 						tp.toStringFull(),value.getValue(),
 						(value.getQuality().isGood()?"GOOD":"BAD"),
 						dateFormatter.format(value.getTimestamp()));
@@ -327,7 +331,7 @@ public class TagListener implements TagChangeListener   {
 		Tag tag = event.getTag();
 		if( tag!=null && tag.getValue()!=null && tp!=null ) {
 			try {
-				log.debugf("%s.tagChanged: %s received %s (%s at %s)",TAG,tp.toStringFull(),
+				if( DEBUG || log.isTraceEnabled() ) log.infof("%s.tagChanged: %s received %s (%s at %s)",TAG,tp.toStringFull(),
 						tag.getValue().getValue(),
 						(tag.getValue().getQuality().isGood()?"GOOD":"BAD"),
 						dateFormatter.format(tag.getValue().getTimestamp()));
@@ -385,7 +389,7 @@ public class TagListener implements TagChangeListener   {
 		try {
 			// Treat the notification differently depending on the binding
 			if( property.getBindingType().equals(BindingType.TAG_MONITOR)) {
-				log.debugf("%s.updateProperty: property change for %s:%s",TAG,block.getName(),property.getName());
+				if( DEBUG ) log.infof("%s.updateProperty: property change for %s:%s",TAG,block.getName(),property.getName());
 				PropertyChangeEvaluationTask task = new PropertyChangeEvaluationTask(block,
 								new BlockPropertyChangeEvent(block.getBlockId().toString(),property.getName(),property.getValue(),value.getValue()));
 				Thread propertyChangeThread = new Thread(task, "PropertyChange");

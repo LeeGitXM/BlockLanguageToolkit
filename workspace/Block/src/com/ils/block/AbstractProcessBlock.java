@@ -400,24 +400,22 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 * The base implementation simply logs the value.
 	 * 
 	 * Note: there can be several connections attached to a given port.
-	 * @param vcn notification of the new value.
+	 * @param incoming notification of the new value.
 	 */
 	@Override
-	public void acceptValue(IncomingNotification vcn) {
-		checkIncomingValue(vcn );
-		if( log.isDebugEnabled()) {
-			// An input from a TAG_READ bound property does not have a source
-			if( vcn.getConnection()!=null ) {
-				QualifiedValue qvalue = vcn.getValue();
-				if( qvalue!=null && qvalue.getValue()!=null ) {
-					log.debugf("%s.acceptValue: %s (%s) port: %s",getName(),
-							qvalue.getValue().toString(),
-							qvalue.getQuality().getName(),
-							vcn.getConnection().getDownstreamPortName());
-
-				}
+	public void acceptValue(IncomingNotification incoming) {
+		checkIncomingValue(incoming );
+		// Check to see if the notification applies to a bound property.
+		if(incoming.getPropertyName()!=null) {
+			String port = incoming.getPropertyName();
+			QualifiedValue qv = incoming.getValue();
+			if( qv.getValue()!=null ) {
+				// Trigger the property change in the block
+				BlockPropertyChangeEvent e = new BlockPropertyChangeEvent(getName(),port,getProperty(port).getValue(),qv.getValue());
+				propertyChange(e);
 			}
 		}
+			
 	}
 	/**
 	 * The block is notified that signal has been sent to it.

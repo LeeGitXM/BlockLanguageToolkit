@@ -52,6 +52,7 @@ import com.inductiveautomation.ignition.gateway.project.ProjectListener;
 public class ModelManager implements ProjectListener  {
 	private static final String TAG = "ModelManager";
 	private static final boolean DEBUG = false;
+	private static final String NEWLY_ENABLED = "NewlyEnabled";
 	private final GatewayContext context;
 	private final LoggerEx log;
 	/** Access nodes by either UUID or tree path */
@@ -109,6 +110,16 @@ public class ModelManager implements ProjectListener  {
 	 * @param res the model resource
 	 */
 	public void analyzeResource(long projectId,ProjectResource res) {
+		 analyzeResource(projectId,res,false);
+	 }
+	/**
+	 * Analyze a project resource for its embedded object. If, appropriate, add
+	 * to the engine. Handle both additions and updates.
+	 * @param projectId the identity of a project
+	 * @param res the model resource
+	 * @param disable if true then create the resource in a disabled state
+	 */
+	public void analyzeResource(long projectId,ProjectResource res,boolean disable) {
 		if( res.getModuleId()!=null && res.getModuleId().equalsIgnoreCase(BLTProperties.MODULE_ID)) {
 			String type = res.getResourceType();
 			
@@ -119,7 +130,7 @@ public class ModelManager implements ProjectListener  {
 				addModifyFamilyResource(projectId,res);
 			}
 			else if( type.equalsIgnoreCase(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
-				addModifyDiagramResource(projectId,res);
+				addModifyDiagramResource(projectId,res,disable);
 			}
 			else if( type.equalsIgnoreCase(BLTProperties.FOLDER_RESOURCE_TYPE) ) {
 				addModifyFolderResource(projectId,res);
@@ -582,7 +593,7 @@ public class ModelManager implements ProjectListener  {
 				}
 				
 				for( ProjectResource res: project.getResources() ) {
-					analyzeResource(pid,res);
+					analyzeResource(pid,res,true);
 				}
 			}
 		}
@@ -659,10 +670,12 @@ public class ModelManager implements ProjectListener  {
 	 * between a model-project and diagram.
 	 * @param projectId the identity of a project
 	 * @param res the project resource containing the diagram
+	 * @param disable if true, change the diagram state to disabled
 	 */
-	private void addModifyDiagramResource(long projectId,ProjectResource res) {
+	private void addModifyDiagramResource(long projectId,ProjectResource res,boolean disable) {
 		log.debugf("%s.addModifyDiagramResource: %s(%d)",TAG,res.getName(),res.getResourceId());
 		SerializableDiagram sd = deserializeDiagramResource(projectId,res);
+		if( disable ) sd.setState(DiagramState.DISABLED);
 		if( sd!=null ) {
 			ProcessDiagram diagram = (ProcessDiagram)nodesByUUID.get(sd.getId());
 			if( diagram==null) {
@@ -675,8 +688,8 @@ public class ModelManager implements ProjectListener  {
 				ProjectResourceKey key = new ProjectResourceKey(projectId,res.getResourceId());
 				nodesByKey.put(key,diagram);
 				addToHierarchy(projectId,diagram);
-				diagram.createBlocks(sd);
-				diagram.updateConnections(sd);
+				diagram.createBlocks(sd.getBlocks());
+				diagram.updateConnections(sd.getConnections());
 				if(!diagram.getState().equals(sd.getState()) ) {
 					diagram.setState(sd.getState()); 
 				}
@@ -710,8 +723,8 @@ public class ModelManager implements ProjectListener  {
 				nodesByKey.put(key,diagram);
 				addToHierarchy(projectId,diagram);
 				// New Diagrams are always disabled
-				diagram.createBlocks(sd);
-				diagram.updateConnections(sd);
+				diagram.createBlocks(sd.getBlocks());
+				diagram.updateConnections(sd.getConnections());
 				diagram.setState(DiagramState.DISABLED);
 				
 			}
@@ -725,8 +738,8 @@ public class ModelManager implements ProjectListener  {
 				// Delete blocks in the old that are not present in the new.
 				// Stop subscriptions associated with those blocks.
 				diagram.removeUnusedBlocks(sd.getBlocks());
-				diagram.createBlocks(sd);       // Adds blocks that are new in update
-				diagram.updateConnections(sd);  // Adds connections that are new in update
+				diagram.createBlocks(sd.getBlocks());       // Adds blocks that are new in update
+				diagram.updateConnections(sd.getConnections());  // Adds connections that are new in update
 				diagram.updateProperties(sd);
 				diagram.setState(sd.getState());// Handle state change, if any
 			}

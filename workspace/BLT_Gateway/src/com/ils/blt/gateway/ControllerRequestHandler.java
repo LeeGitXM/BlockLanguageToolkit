@@ -1056,7 +1056,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				BlockProperty existingProperty = block.getProperty(property.getName());
 				if( existingProperty!=null ) {
 					// Update the property
-					updateProperty(block,existingProperty,property);
+					updateProperty(diagram.getState(),block,existingProperty,property);
 				}
 				else {
 					// Need to add a new one.
@@ -1092,7 +1092,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			BlockProperty existingProperty = block.getProperty(property.getName());
 			if( existingProperty!=null ) {
 				// Update the property
-				updateProperty(block,existingProperty,property);
+				updateProperty(diagram.getState(),block,existingProperty,property);
 			}
 			else {
 				// Need to add a new one.
@@ -1357,7 +1357,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 
 
 	// Handle all the intricasies of a property change
-	private void updateProperty(ProcessBlock block,BlockProperty existingProperty,BlockProperty newProperty) {
+	private void updateProperty(DiagramState ds,ProcessBlock block,BlockProperty existingProperty,BlockProperty newProperty) {
 		if( !existingProperty.isEditable() )  return;
 		
 		log.debugf("%s.updateProperty old: %s, new:%s",TAG,existingProperty.toString(),newProperty.toString());
@@ -1366,7 +1366,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			controller.removeSubscription(block, existingProperty);
 			existingProperty.setBindingType(newProperty.getBindingType());
 			existingProperty.setBinding(newProperty.getBinding());
-			controller.startSubscription(block,newProperty);
+			controller.startSubscription(ds,block,newProperty);
 			// If the new binding is a tag write - do the write.
 			if( !block.isLocked() && 
 				(newProperty.getBindingType().equals(BindingType.TAG_READWRITE) ||
@@ -1378,7 +1378,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			// Same type, new binding target.
 			controller.removeSubscription(block, existingProperty);
 			existingProperty.setBinding(newProperty.getBinding());
-			controller.startSubscription(block,newProperty);
+			controller.startSubscription(ds,block,newProperty);
 			// If the new binding is a tag write - do the write.
 			if( !block.isLocked() && 
 					(newProperty.getBindingType().equals(BindingType.TAG_READWRITE) ||
@@ -1396,6 +1396,5 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 	}
-
 }
 

@@ -1,10 +1,11 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
+ *   (c) 2014-2016  ILS Automation. All rights reserved. 
  *   Code based on sample code at: 
  *        http://www.codeproject.com/Articles/36459/PID-process-control-a-Cruise-Control-example
  */
 package com.ils.block;
 
+import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
@@ -24,6 +25,7 @@ import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.notification.Signal;
 import com.ils.blt.common.notification.SignalNotification;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -52,6 +54,12 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 	private double interval = 10.0;  // secs
 	private double pv = Double.NaN;
 	private double setPoint = Double.NaN;
+	
+	private double derivative = Double.NaN;
+	private double proportionalContribution = Double.NaN;
+	private double integralContribution = Double.NaN;
+	private double derivativeContribution = Double.NaN;
+	
 	private final Watchdog dog;
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -222,21 +230,6 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 				}
 			}
 		}
-		else if( port.equals(SETPOINT_PORT)  ) {
-			QualifiedValue qv = incoming.getValue();
-			if( qv.getValue().toString().length()>0 ) {
-				try {
-					setPoint = Double.parseDouble(qv.getValue().toString());
-					if( !dog.isActive() ) {
-						dog.setSecondsDelay(interval);
-						timer.updateWatchdog(dog);  // pet dog
-					}
-				}
-				catch(NumberFormatException nfe) {
-					log.warnf("%s.acceptValue: Unable to convert incoming data to double (%s)",TAG,nfe.getLocalizedMessage());
-				}
-			}
-		}
 	}
 	
 	/**
@@ -269,6 +262,10 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public synchronized void evaluate() {
+		if( Double.isNaN(pv) ) {
+			log.infof("%s.evaluate PID is not initialized",getName());
+			return;
+		}
 		dog.setSecondsDelay(interval);
 		timer.updateWatchdog(dog);  // pet dog
 		if( !isValid() ) return;
@@ -277,13 +274,13 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 		double dt = interval;        // In seconds
 		error = setPoint - pv;
 		integral += error*dt;
-		double derivative = (error - previousError)/dt;
-		double proportionalContribution = kp*error;
-		double integralContribution = ki*integral;
-		double derivativeContribution = kd*derivative;
+		derivative = (error - previousError)/dt;
+		proportionalContribution = kp*error;
+		integralContribution = ki*integral;
+		derivativeContribution = kd*derivative;
 		double result = proportionalContribution + integralContribution + derivativeContribution;
 		if( log.isTraceEnabled() ) {
-			log.infof("%s.evaluate setpoint= %f, pv = %f, error = %f, previous error = %f",TAG,setPoint,pv,error,previousError);
+			log.infof("%s.evaluate setpoint= %f, pv = %f, error = %f, previous error = %f",getName(),setPoint,pv,error,previousError);
 			log.infof("%s.evaluate Kp = %f",TAG,proportionalContribution);
 			log.infof("%s.evaluate Ki = %f",TAG,integralContribution);
 			log.infof("%s.evaluate Kd = %f",TAG,derivativeContribution);
@@ -307,15 +304,33 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 	}
 	
 	/**
+	 * @return a block-specific description of internal statue
+	 */
+	@Override
+	public SerializableBlockStateDescriptor getInternalStatus() {
+		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
+		Map<String,String> attributes = descriptor.getAttributes();
+		attributes.put("Setpoint", String.valueOf(setPoint));
+		attributes.put("PV", String.valueOf(pv));
+		attributes.put("Error", String.valueOf(error));
+		attributes.put("Integral", String.valueOf(integral));
+		attributes.put("Derivative", String.valueOf(derivative));
+		attributes.put("ProportionalContribution", String.valueOf(proportionalContribution));
+		attributes.put("IntegralContribution", String.valueOf(integralContribution));
+		attributes.put("DerivativeContribution", String.valueOf(derivativeContribution));
+		return descriptor;
+	}
+	
+	/**
 	 * Send status update notification for our last latest state.
 	 */
 	@Override
 	public void notifyOfStatus() {}
-	private void notifyOfStatus(QualifiedValue qv,QualifiedValue prop,QualifiedValue integ,QualifiedValue derivative) {
+	private void notifyOfStatus(QualifiedValue qv,QualifiedValue prop,QualifiedValue integ,QualifiedValue deriv) {
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 		controller.sendConnectionNotification(getBlockId().toString(), PROPORTIONAL_PORT, prop);
 		controller.sendConnectionNotification(getBlockId().toString(), INTEGRAL_PORT, integ);
-		controller.sendConnectionNotification(getBlockId().toString(), DERIVATIVE_PORT, derivative);
+		controller.sendConnectionNotification(getBlockId().toString(), DERIVATIVE_PORT, deriv);
 	}
 	
 	/**
@@ -349,7 +364,7 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 				(Double.isNaN(kd)?"kd":
 				(Double.isNaN(ki)?"ki":
 				(Double.isNaN(kp)?"kp":
-				(Double.isNaN(pv)?"pv":"setpoint"))))),getBlockId().toString());
+				(Double.isNaN(pv)?"pv":"setpoint"))))),getName());
 		return result;
 	}
 }
