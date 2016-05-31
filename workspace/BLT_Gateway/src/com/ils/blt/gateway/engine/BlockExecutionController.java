@@ -489,23 +489,6 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		tagListener.defineSubscription(block,property,tagPath);
 	}
 	
-	/**
-	 * Restart a subscription for a block attribute associated with a tag.
-	 * This is probably due to a diagram state change. If so, the diagram is 
-	 * temporarily disabled in order to suppress tag change updates.
-	 */
-	public void restartSubscription(ProcessDiagram diagram,ProcessBlock block,BlockProperty property,DiagramState state) {
-		if( block==null || property==null || 
-				!(property.getBindingType().equals(BindingType.TAG_READ) || 
-				  property.getBindingType().equals(BindingType.TAG_READWRITE) ||
-				  property.getBindingType().equals(BindingType.TAG_MONITOR) )   ) return;
-		
-		guaranteeBindingHasProvider(diagram.getState(),property);
-		String tagPath = property.getBinding();
-		tagListener.defineSubscription(block,property,tagPath);
-	}
-
-	
 	// ======================= Delegated to TagWriter ======================
 	/**
 	 * Write a value to a tag. If the diagram referenced diagram is disabled
@@ -670,7 +653,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	}
 	/**
 	 * Notify any notification listeners of changes to the binding of a block property. The most
-	 * common case where this is used is when a tag provider is changed.
+	 * common case where this is used is when a tag provider is changed via a diagram state change.
 	 */
 	@Override
 	public void sendPropertyBindingNotification(String blkid, String propertyName,String binding) {

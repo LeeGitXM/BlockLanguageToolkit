@@ -512,7 +512,8 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 						blk.setLocked(lock);
 					}
 				}
-				restartSubscriptions();
+				// Restart subscriptions for the new state
+				startSubscriptions();
 			}
 			// Fire diagram notification change
 			controller.sendStateNotification(resourceId, s.name());
@@ -584,20 +585,6 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 		}
 	}
 	
-	// This is only called on a diagram state change. Here we temporarily set the
-	// diagram to DISABLED in order to suppress tag updates due to new bindings.
-	private void restartSubscriptions() {
-		//log.infof("%s.restartSubscriptions: ...%d:%s",TAG,projectId,getName());
-		DiagramState current = this.state;
-		this.state = DiagramState.DISABLED;
-		for( ProcessBlock pb:getProcessBlocks()) {
-			for(BlockProperty bp:pb.getProperties()) {
-				controller.restartSubscription(this,pb,bp,current);
-			}
-		}
-		//log.infof("%s.restartSubscriptions: ... %s complete",TAG,getName());
-		this.state = current;
-	}
 	/**
 	 * Stop all subscriptions for properties in blocks in this diagram
 	 */
@@ -609,27 +596,14 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 			}
 		}
 	}
-	/**
-	 * For every property in this diagram that has a binding, alter its
-	 * path to the new provider. This involves stopping and restarting subscriptions.
-	 * We do this by first disabling the diagram, then re-enabling.
-	 * 
-	 * @param provider the new provider
-	 */
-	public void updateTagProvider(String provider) {
-		DiagramState originalState = getState();
-		if( originalState.equals(DiagramState.DISABLED)) return;
-		setState(DiagramState.DISABLED);
-		updatePropertyProviders(provider);
-		setState(originalState);
-	}
-	
+
 	/**
 	 * For every property that is bound to a tag, update its provider. 
+	 * NOTE: This does NOT change subscriptions.
 	 * @param provider
 	 * @return true if there were any changes.
 	 */
-	private void updatePropertyProviders(String provider) {
+	public void updatePropertyProviders(String provider) {
 		for( ProcessBlock pb:getProcessBlocks()) {
 			for(BlockProperty bp:pb.getProperties()) {
 				BindingType bindingType = bp.getBindingType();

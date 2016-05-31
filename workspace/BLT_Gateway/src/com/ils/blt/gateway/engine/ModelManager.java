@@ -564,7 +564,6 @@ public class ModelManager implements ProjectListener  {
 		}
 		
 		if( diff.isEnabled() ) {
-			
 			int countOfInteresting = 0;
 			List<ProjectResource> resources = diff.getResources();
 			Long pid = new Long(projectId);

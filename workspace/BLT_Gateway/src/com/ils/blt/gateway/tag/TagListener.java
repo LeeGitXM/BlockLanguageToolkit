@@ -1,5 +1,5 @@
 /**
- *   (c) 2013-2015  ILS Automation. All rights reserved.
+ *   (c) 2013-2016  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.gateway.tag;
@@ -52,7 +52,7 @@ import com.inductiveautomation.ignition.gateway.sqltags.SQLTagsManager;
 public class TagListener implements TagChangeListener   {
 	private static final String TAG = "TagListener";
 	private static int THREAD_POOL_SIZE = 10;   // Notification threads
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 	private final LoggerEx log;
 	private GatewayContext context = null;
 	private final Map<String,List<BlockPropertyPair>> blockMap;  // Blocks-Properties keyed by tag path (case-insensitive)

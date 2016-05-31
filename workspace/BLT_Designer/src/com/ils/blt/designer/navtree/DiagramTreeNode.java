@@ -589,7 +589,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		catch (Exception ex) {
 			log.warn(String.format("%s.setStateAction: ERROR: %s",TAG,ex.getMessage()),ex);
 			ErrorUtil.showError(TAG+" Exception setting state",ex);
-			
 		}
 	}
 	
@@ -605,7 +604,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			setDirty(false);
 		}
 	}
-
 	
 	@Override
 	protected DesignerProjectContext projectCtx() {

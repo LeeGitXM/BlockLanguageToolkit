@@ -1,5 +1,5 @@
 /**
- *   (c) 2015  ILS Automation. All rights reserved. 
+ *   (c) 2015-2016  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.gateway.persistence;
 
@@ -52,7 +52,9 @@ public class ToolkitRecordListener extends BasicToolkitRecordListener implements
 		ModelManager mm = BlockExecutionController.getInstance().getDelegate();
 		List<ProcessDiagram> diagrams = mm.getDiagrams();
 		for(ProcessDiagram diagram:diagrams) {
-			diagram.updateTagProvider(name);
+			diagram.stopSubscriptions();
+			diagram.updatePropertyProviders(name);
+			diagram.startSubscriptions();
 		}
 	}
 	

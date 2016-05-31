@@ -23,10 +23,10 @@
 		<jar scope="CD">lucene-1.4.3.jar.pack.gz</jar>
 		<jar scope="CD">prefuse-1.0.1.jar.pack.gz</jar>
 		
-		<export scope="D">block-definition.jar.pack.gz</export>
-		<export scope="D">jackson-core-2.2.3.jar.pack.gz</export>
-		<export scope="D">jackson-databind-2.2.3.jar.pack.gz</export>
-		<export scope="D">jackson-annotations-2.2.3.jar.pack.gz</export>
+		<jar scope="D">block-definition.jar.pack.gz</jar>
+		<jar scope="D">jackson-core-2.2.3.jar.pack.gz</jar>
+		<jar scope="D">jackson-databind-2.2.3.jar.pack.gz</jar>
+		<jar scope="D">jackson-annotations-2.2.3.jar.pack.gz</jar>
 		<export scope="G">blt-gateway.jar</export>
 		<export scope="G">blt-common.jar</export>
 		<export scope="G">commons-math3-3.1.1.jar</export>

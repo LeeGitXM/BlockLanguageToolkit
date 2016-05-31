@@ -192,7 +192,10 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 		}
 		else {
 			log.warnf("%s.propertyChange:Unrecognized property (%s)",TAG,propertyName);
+			return;
 		}
+		dog.setSecondsDelay(interval);
+		timer.updateWatchdog(dog);  // pet dog
 	}
 	/**
 	 * Notify the block that a new value has appeared on one of its input anchors.
@@ -210,11 +213,8 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 		if( incoming.getConnection()!=null  ) {
 			port = incoming.getConnection().getDownstreamPortName();
 		}
-		else if(incoming.getPropertyName()!=null) {
-			port = incoming.getPropertyName();
-		}
 		else {
-			log.warnf("%s.acceptValue: received a value with no port designation, ignoring",getName());
+			// Bound properties taken care of by super class
 			return;
 		}
 
@@ -224,9 +224,24 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 				log.tracef("%s.acceptValue: port %s value = %s ",TAG,port,qv.getValue().toString());
 				try {
 					pv = Double.parseDouble(qv.getValue().toString());
+					dog.setSecondsDelay(interval);
+					timer.updateWatchdog(dog);  // pet dog
 				}
 				catch(NumberFormatException nfe) {
 					log.warnf("%s.acceptValue: Unable to convert incoming data to double (%s)",TAG,nfe.getLocalizedMessage());
+				}
+			}
+		}
+		else if( port.equals(SETPOINT_PORT)  ) {
+			QualifiedValue qv = incoming.getValue();
+			if( qv.getValue().toString().length()>0 ) {
+				log.tracef("%s.acceptValue: port %s value = %s ",TAG,port,qv.getValue().toString());
+				try {
+					setPoint = Double.parseDouble(qv.getValue().toString());
+					evaluate();
+				}
+				catch(NumberFormatException nfe) {
+					log.warnf("%s.acceptValue: Unable to convert incoming setpoint to double (%s)",TAG,nfe.getLocalizedMessage());
 				}
 			}
 		}
@@ -262,13 +277,15 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public synchronized void evaluate() {
-		if( Double.isNaN(pv) ) {
+		if( Double.isNaN(pv) || Double.isNaN(setPoint) ) {
 			log.infof("%s.evaluate PID is not initialized",getName());
 			return;
 		}
+		else if( !isValid() ) return;
+		
 		dog.setSecondsDelay(interval);
 		timer.updateWatchdog(dog);  // pet dog
-		if( !isValid() ) return;
+		
 		// Compute PID
 		double previousError = error;
 		double dt = interval;        // In seconds
