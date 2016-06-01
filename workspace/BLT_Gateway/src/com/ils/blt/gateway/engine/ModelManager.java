@@ -52,7 +52,6 @@ import com.inductiveautomation.ignition.gateway.project.ProjectListener;
 public class ModelManager implements ProjectListener  {
 	private static final String TAG = "ModelManager";
 	private static final boolean DEBUG = false;
-	private static final String NEWLY_ENABLED = "NewlyEnabled";
 	private final GatewayContext context;
 	private final LoggerEx log;
 	/** Access nodes by either UUID or tree path */

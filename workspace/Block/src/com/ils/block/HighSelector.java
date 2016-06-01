@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.AnchorDirection;
@@ -27,7 +28,10 @@ import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
+import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.model.values.Quality;
 
 /**
  * This class identifies the maximum among the current inputs.
@@ -35,7 +39,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 @ExecutableBlock
 public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 	// Keep map of values by originating block id
-	protected final Map<String,QualifiedValue> qualifiedValueMap;
+	protected Map<String,QualifiedValue> qualifiedValueMap;
 	private final Watchdog dog;
 	double currentValue = Double.NaN;
 	private BlockProperty valueProperty = null;
@@ -92,7 +96,15 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 		super.reset();
 		timer.removeWatchdog(dog);
 	}
-	
+	/**
+	 * Initialize the qualified value map.
+	 */
+	@Override
+	public void start() {
+		super.start();
+		qualifiedValueMap = initializeQualifiedValueMap(BlockConstants.IN_PORT_NAME);
+		log.debugf("%s.start: initialized %d inputs",getName(),qualifiedValueMap.size());
+	}
 	/**
 	 * Disconnect from the timer thread.
 	 */
@@ -112,13 +124,25 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void acceptValue(IncomingNotification incoming) {
 		super.acceptValue(incoming);
-		String key = String.format("%s:%s",incoming.getConnection().getSource().toString(),
-		incoming.getConnection().getUpstreamPortName());
 		QualifiedValue qv = incoming.getValue();
-		log.tracef("%s.acceptValue %s quality (%s) is good %s",getName(),qv.getValue().toString(),qv.getQuality().getName(),(qv.getQuality().isGood()?"GOOD":"BAD"));
-		qualifiedValueMap.put(key, qv);
-		dog.setSecondsDelay(synchInterval);
-		timer.updateWatchdog(dog);  // pet dog
+		if( qv!=null && qv.getValue()!=null ) {
+			String key = incoming.getConnection().getSource().toString();
+			try {
+				Double dbl = Double.parseDouble(qv.getValue().toString());
+				qv = new BasicQualifiedValue(dbl,qv.getQuality(),qv.getTimestamp());
+				dog.setSecondsDelay(synchInterval);
+				log.tracef("%s.acceptValue got %s for %s", getName(),dbl.toString(),key);
+				timer.updateWatchdog(dog);  // pet dog
+			}
+			catch(NumberFormatException nfe) {
+				log.warnf("%s.acceptValue: Unable to convert incoming value to a double (%s)",getName(),nfe.getLocalizedMessage());
+				qv = new BasicQualifiedValue(Double.NaN,new BasicQuality(nfe.getLocalizedMessage(),Quality.Level.Bad),qv.getTimestamp());
+			}
+			qualifiedValueMap.put(key, qv);
+		}
+		else {
+			log.warnf("%s.acceptValue: received null value",getName());
+		}
 	}
 	
 	/**
@@ -213,12 +237,15 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 		QualifiedValue result = null;
 		
 		for(QualifiedValue qv:values) {
-			if(qv.getQuality().isGood() && qv.getValue()!=null && !qv.getValue().toString().isEmpty()) {
+			if(qv.getQuality().isGood() && qv.getValue()!=null && !qv.getValue().toString().isEmpty() && !qv.getValue().equals(BLTProperties.UNDEFINED)) {
 				double val = func.coerceToDouble(qv.getValue().toString());
 				if(val>max ) {
 					max = val;
 					result = qv;
 				}
+			}
+			else {
+				return new BasicQualifiedValue(Double.NaN,new BasicQuality("Missing input",Quality.Level.Bad),qv.getTimestamp());
 			}
 		}
 		return result;	

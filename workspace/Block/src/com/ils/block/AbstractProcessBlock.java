@@ -6,13 +6,13 @@ package com.ils.block;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagnosticDiagram;
 import com.ils.blt.common.ProcessBlock;
@@ -73,6 +73,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	protected boolean isTransmitter = false;
 	protected boolean running = false;
 	protected TruthValue state = TruthValue.UNSET;
+	protected Date stateChangeTimestamp = null;
 	protected WatchdogTimer timer = null;
 
 	protected LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
@@ -210,6 +211,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		String explanation = "";
 		TruthValue blockState = getState();
 		if( blockState.equals(TruthValue.TRUE) || blockState.equals(TruthValue.FALSE)) {
+			// List<ProcessBlock>predecessors = parent.getUpstreamBlocksCrossingConnections(this);
 			List<ProcessBlock>predecessors = parent.getUpstreamBlocks(this);
 			for( ProcessBlock predecessor:predecessors ) {
 				if( blockState.equals(predecessor.getState())) {
@@ -233,6 +235,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		if(state!=null && !this.state.equals(state)) {
 			this.state = state; 
 			recordActivity(Activity.ACTIVITY_STATE,state.name());
+			this.stateChangeTimestamp = new Date(timer.getTestTime());
 		}
 	}
 	@Override
@@ -273,6 +276,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		attributes.put("Name", getName());
 		attributes.put("UUID", getBlockId().toString());
 		attributes.put("State", getState().toString());
+		attributes.put("StateChangeTimestamp",dateFormatter.format(stateChangeTimestamp));
 		if( activities.size()>0 ) {
 			List<Activity> buffer = descriptor.getActivities();
 			for( Activity act:activities) {
@@ -306,6 +310,8 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	public Set<String> getPropertyNames() {
 		return propertyMap.keySet();
 	}
+	@Override
+	public Date getTimeOfLastStateChange() { return stateChangeTimestamp; }
 	
 	protected void setProperty(String nam,BlockProperty prop) { propertyMap.put(nam, prop); }
 	
@@ -349,7 +355,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		}
 	}
 	/**
-	 * The default method sets the state to INITIALIZED.
+	 * The default method sets the state to UNSET.
 	 * It also sends notifications to block outputs setting them to empty or
 	 * unknown. NOTE: This has no effect on Python blocks. They must do this
 	 * for themselves.
@@ -409,7 +415,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		if(incoming.getPropertyName()!=null) {
 			String port = incoming.getPropertyName();
 			QualifiedValue qv = incoming.getValue();
-			if( qv.getValue()!=null ) {
+			if( qv!=null && qv.getValue()!=null ) {
 				// Trigger the property change in the block
 				BlockPropertyChangeEvent e = new BlockPropertyChangeEvent(getName(),port,getProperty(port).getValue(),qv.getValue());
 				propertyChange(e);
@@ -482,6 +488,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	public void start() { 
 		this.running = true;
 		recordActivity(Activity.ACTIVITY_START,"");
+		this.stateChangeTimestamp = new Date(timer.getTestTime());
 	}
 	/**
 	 * Terminate any active operations within the block.
@@ -626,6 +633,12 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		else if(qv.getValue() instanceof Boolean ) {
 			if( ((Boolean)qv.getValue()).booleanValue()) setState(TruthValue.TRUE);
 			else setState(TruthValue.FALSE);
+		}
+		else if(qv.getValue().toString().equalsIgnoreCase("false") ) {
+			setState(TruthValue.FALSE);
+		}
+		else if(qv.getValue().toString().equalsIgnoreCase("true") ) {
+			setState(TruthValue.TRUE);
 		}
 		else setState(TruthValue.UNSET);
 	}

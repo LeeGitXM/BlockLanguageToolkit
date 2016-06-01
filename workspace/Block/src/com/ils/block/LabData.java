@@ -74,7 +74,7 @@ public class LabData extends Input implements ProcessBlock {
 	@Override
 	protected void initialize() {	
 		setName("LabData");
-		delayStart = true;
+		delayStart = false;
 		
 		// This property causes the engine to start a subscription.
 		timePathProperty = new BlockProperty(BLOCK_PROPERTY_TIME_PATH,"",PropertyType.OBJECT,true);

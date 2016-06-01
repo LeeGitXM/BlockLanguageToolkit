@@ -12,13 +12,20 @@ import java.util.List;
 public interface DiagnosticDiagram  {
 	/**
 	 * @param root the subject block
-	 * @return a list of blocks connected to the output(s) of the specified block.
+	 * @return a list of blocks connected directly to the output(s) of the specified block.
 	 */
 	public List<ProcessBlock> getDownstreamBlocks(ProcessBlock root);
 	
 	/**
 	 * @param root the subject block
-	 * @return a list of blocks connected to the input(s) of the specified block.
+	 * @return a list of blocks connected directly to the input(s) of the specified block.
 	 */
 	public List<ProcessBlock> getUpstreamBlocks(ProcessBlock root);
+	/**
+	 * @param root the subject block
+	 * @return a list of blocks connected to the input(s) of the specified block.
+	 *         If the block is a "Source", then the list includes blocks
+	 *         attached to all its linked "Sinks"
+	 */
+	public List<ProcessBlock> getUpstreamBlocksCrossingConnections(ProcessBlock root);
 }

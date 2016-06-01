@@ -71,6 +71,7 @@ public interface BLTProperties   {
 	public static final String BLOCK_ATTRIBUTE_VALUE      = "value";
 	
 	// Class names for some specific blocks
+	public static final String CLASS_NAME_INPUT      = "com.ils.Input";
 	public static final String CLASS_NAME_SINK       = "com.ils.SinkConnection";
 	public static final String CLASS_NAME_SOURCE     = "com.ils.SourceConnection";
 	

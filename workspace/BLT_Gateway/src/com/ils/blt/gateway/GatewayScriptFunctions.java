@@ -4,6 +4,7 @@
  */
 package com.ils.blt.gateway;
 
+import java.util.Date;
 import java.util.List;
 
 import com.ils.blt.common.DiagramState;
@@ -166,6 +167,14 @@ public class GatewayScriptFunctions   {
 	 */
 	public static ControllerRequestHandler getRequestHandler() {
 		return handler;
+	}
+	/**
+	 * @param diagramId string representation of the diagram's unique id
+	 * @param blockName name of the block within the diagram
+	 * @return the time at which the block last changed its state
+	 */
+	public static Date getTimeOfLastBlockStateChange(String diagramId, String blockName) {
+		return handler.getTimeOfLastBlockStateChange(diagramId,blockName);
 	}
 	/**
 	 * Acquire a value from the HSQL database table associated with the toolkit. A

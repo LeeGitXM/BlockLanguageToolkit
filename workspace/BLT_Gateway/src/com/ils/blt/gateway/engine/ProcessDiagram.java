@@ -14,9 +14,11 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagnosticDiagram;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.ProcessBlock;
+import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
+import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.TransmissionScope;
 import com.ils.blt.common.connection.Connection;
@@ -53,7 +55,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	protected final Map<BlockPort,List<ProcessConnection>> outgoingConnections;  // Key by upstream block:port
 	private DiagramState state = DiagramState.UNSET;                             // So that new state will be a change
 	private final BlockExecutionController controller = BlockExecutionController.getInstance();
-	
+
 	/**
 	 * Constructor: Create a model that encapsulates the structure of the blocks and connections
 	 *              of a diagram.
@@ -370,6 +372,63 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 		return downstream;
 	}
 	/**
+	 * Loop detection is pretty primitive. We stop if we ever hit the start block,
+	 * but it is possible to have undetected sub-loops.
+	 * 
+	 * @param root the subject block
+	 * @return a list of blocks connected to the input(s) of the specified block.
+	 *         In the special case where the block is a source block, include
+	 *         blocks connected to its associated sinks.
+	 */
+	public List<ProcessBlock> getUpstreamBlocksCrossingConnections(ProcessBlock root) {
+		List<ProcessBlock> upstream = new ArrayList<>();
+		UtilityFunctions fcns = new UtilityFunctions();
+		for( AnchorPrototype ap:root.getAnchors() ) {
+			if( ap.getAnchorDirection().equals(AnchorDirection.INCOMING)) {
+				String port = ap.getName();
+				BlockPort key = new BlockPort(root,port);
+				List<ProcessConnection> cxns = incomingConnections.get(key);
+				if( cxns!=null ) {
+					for(ProcessConnection cxn:cxns) {
+						UUID blockId = cxn.getSource();
+						if( blockId.equals(root.getBlockId())) break;  // A loop
+						ProcessBlock blk = blocks.get(blockId);
+						if( blk.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SOURCE)) {
+							BlockProperty tagProperty = blk.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+							if( tagProperty!=null ) {
+								String tagPath = fcns.providerlessPath(tagProperty.getBinding());
+								if( tagPath!=null && tagPath.length()>0 ) {
+									List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
+									for(SerializableResourceDescriptor desc:descriptors) {
+										UUID diaguuid = makeUUID(desc.getId());
+										ProcessDiagram diagram = controller.getDiagram(diaguuid);
+										for(ProcessBlock sink:diagram.getProcessBlocks()) {
+											if( sink.getBlockId().equals(root.getBlockId())) continue;  // Skip the root
+											if( sink.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SINK) ) {
+												BlockProperty prop = sink.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
+												if( prop!=null && tagPath.equalsIgnoreCase(fcns.providerlessPath(prop.getBinding()))  ) {
+													List<ProcessBlock> sinkPredecessors = diagram.getUpstreamBlocks(sink);
+													for(ProcessBlock sinkPredecessor:sinkPredecessors) {
+														if( sinkPredecessor.getBlockId().equals(root.getBlockId())) continue;  // Skip the root
+														upstream.add(sinkPredecessor);
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+						else if( !blk.getBlockId().equals(root.getBlockId())) {
+							upstream.add(blk);
+						}
+					}
+				}		
+			}
+		}
+		return upstream;
+	}
+	/**
 	 * @param root the subject block
 	 * @return a list of blocks connected to the input(s) of the specified block.
 	 */
@@ -514,6 +573,10 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 				}
 				// Restart subscriptions for the new state
 				startSubscriptions();
+				// The blocks that delay start are those that propagate tag values.
+				for(ProcessBlock block:getProcessBlocks() ) {
+					if( block.delayBlockStart() ) block.evaluate();
+				}
 			}
 			// Fire diagram notification change
 			controller.sendStateNotification(resourceId, s.name());
@@ -668,6 +731,17 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 				}	
 			}
 		}
+	}
+	
+	private UUID makeUUID(String name) {
+		UUID uuid = null;
+		try {
+			uuid = UUID.fromString(name);
+		}
+		catch(IllegalArgumentException iae) {
+			uuid = UUID.nameUUIDFromBytes(name.getBytes());
+		}
+		return uuid;
 	}
 	
 	/**

@@ -47,6 +47,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	private static LoggerEx log = LogUtil.getLogger(ProcessDiagramView.class.getPackage().getName());
 	// Use TAG as the "source" identifier when registering for notifications from Gateway
 	private static final String TAG = "ProcessDiagramView";
+	private ApplicationRequestHandler appRequestHandler = null;
 	private final Map<UUID,ProcessBlockView> blockMap = new HashMap<UUID,ProcessBlockView>();
 	private List<Connection> connections = new ArrayList<Connection>();
 	private static final int MIN_WIDTH = 800;
@@ -70,6 +71,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	 */
 	public ProcessDiagramView (long resid,SerializableDiagram diagram, DesignerContext context) {
 		this(resid,diagram.getId(),diagram.getName());
+		this.appRequestHandler= ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
 		this.state = diagram.getState();
 		this.watermark = diagram.getWatermark();
 		this.context = context;
@@ -127,6 +129,12 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		this.setDiagramSize(diagramSize);
 	}
 	
+	/**
+	 * Constructor with no context ...
+	 * @param resId
+	 * @param uuid
+	 * @param nam
+	 */
 	public ProcessDiagramView(long resId,UUID uuid, String nam) {
 		this.id = uuid;
 		this.resourceId = resId;
@@ -143,10 +151,11 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	public void initBlockProperties(ProcessBlockView block) {
 		Collection<BlockProperty> propertyList;
 		propertyList = new ArrayList<BlockProperty>();
-		ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
-		List<BlockProperty> properties = handler.getBlockProperties(block.getClassName(),context.getProject().getId(),resourceId,block.getId());
-		for(BlockProperty property:properties) {
-			propertyList.add(property);
+		if( appRequestHandler!=null ) {
+			List<BlockProperty> properties = appRequestHandler.getBlockProperties(block.getClassName(),context.getProject().getId(),resourceId,block.getId());
+			for(BlockProperty property:properties) {
+				propertyList.add(property);
+			}
 		}
 		log.tracef("%s.initBlockProperties - initialize property list for %s (%d properties)",TAG,block.getId().toString(),propertyList.size());
 		block.setProperties(propertyList);
@@ -435,11 +444,15 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 				}
 			}
 		}
-		// Finally, register self for state and watermark changes
+		// Register self for state and watermark changes
 		String key = NotificationKey.keyForDiagram(getResourceId());
 		handler.addNotificationChangeListener(key,TAG,this);
 		key = NotificationKey.watermarkKeyForDiagram(getId().toString());
 		handler.addNotificationChangeListener(key,TAG,this);
+		
+		// Finally tell the Gateway to report status - on everything
+		// Theoretically this is overkill because the notification handler should know about all of this.
+		if( appRequestHandler!=null) appRequestHandler.triggerStatusNotifications();
 	}
 	
 	/**

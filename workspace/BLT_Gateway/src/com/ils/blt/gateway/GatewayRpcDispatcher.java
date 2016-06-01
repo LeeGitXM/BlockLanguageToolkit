@@ -1,11 +1,12 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved.
+ *   (c) 2014-2016  ILS Automation. All rights reserved.
  */
 package com.ils.blt.gateway;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.UUID;
@@ -286,7 +287,9 @@ public class GatewayRpcDispatcher   {
 	public Object getPropertyValue(String diagramId,String blockId,String propertyName) {
 		return requestHandler.getPropertyValue(diagramId, blockId, propertyName);
 	}
-	
+	public Date getTimeOfLastBlockStateChange(String diagramId, String blockName) {
+		return requestHandler.getTimeOfLastBlockStateChange(diagramId,blockName);
+	}
 	public String getToolkitProperty(String propertyName) {
 		return requestHandler.getToolkitProperty(propertyName);
 	}

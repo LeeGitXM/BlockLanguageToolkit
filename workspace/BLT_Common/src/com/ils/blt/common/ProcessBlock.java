@@ -3,6 +3,7 @@
  */
 package com.ils.blt.common;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -135,6 +136,10 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 * @return the current state of the block
 	 */
 	public TruthValue getState();
+	/**
+	 * @return the current state of the block
+	 */
+	public Date getTimeOfLastStateChange();
 	/**
 	 * @return a string describing the status of the block. This 
 	 * 		string is used for the dynamic block display.

@@ -80,7 +80,7 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
 		anchors.add(output);
 	}
-	
+
 	/**
 	 * We may have received a premature value due to creation of a subscription 
 	 * before we're actually started. Pass that value on now.
@@ -110,6 +110,7 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void acceptValue(IncomingNotification vcn) {
+		if( qv==null ) return;
 		baseAcceptValue(vcn);
 		qv = vcn.getValue();
 		if( !isLocked() && running ) {

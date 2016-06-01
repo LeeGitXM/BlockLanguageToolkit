@@ -4,7 +4,6 @@
 package com.ils.block;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -36,7 +35,6 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
  */
 @ExecutableBlock
 public class Product extends AbstractProcessBlock implements ProcessBlock {
-	private final String TAG = "Product";
 	// Keep map of values by originating block id
 	protected Map<String,QualifiedValue> valueMap = null;
 	private final Watchdog dog;
@@ -46,9 +44,9 @@ public class Product extends AbstractProcessBlock implements ProcessBlock {
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
 	public Product() {
-		dog = new Watchdog(TAG,this);
 		initialize();
 		initializePrototype();
+		dog = new Watchdog(getName(),this);
 	}
 	
 	/**
@@ -60,8 +58,8 @@ public class Product extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	public Product(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
-		dog = new Watchdog(TAG,this);
 		initialize();
+		dog = new Watchdog(getName(),this);
 	}
 	
 	/**
@@ -114,7 +112,7 @@ public class Product extends AbstractProcessBlock implements ProcessBlock {
 				synchInterval = Double.parseDouble(event.getNewValue().toString());
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert synch interval to a double (%s)",TAG,nfe.getLocalizedMessage());
+				log.warnf("%s: propertyChange Unable to convert synch interval to a double (%s)",getName(),nfe.getLocalizedMessage());
 			}
 		}
 	}
@@ -136,17 +134,17 @@ public class Product extends AbstractProcessBlock implements ProcessBlock {
 				Double dbl = Double.parseDouble(qv.getValue().toString());
 				qv = new BasicQualifiedValue(dbl,qv.getQuality(),qv.getTimestamp());
 				dog.setSecondsDelay(synchInterval);
-				log.tracef("%s.acceptValue got %s for %s", TAG,dbl.toString(),key);
+				log.tracef("%s.acceptValue got %s for %s",getName(),dbl.toString(),key);
 				timer.updateWatchdog(dog);  // pet dog
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s.acceptValue: Unable to convert incoming value to a double (%s)",TAG,nfe.getLocalizedMessage());
+				log.warnf("%s.acceptValue: Unable to convert incoming value to a double (%s)",getName(),nfe.getLocalizedMessage());
 				qv = new BasicQualifiedValue(Double.NaN,new BasicQuality(nfe.getLocalizedMessage(),Quality.Level.Bad),qv.getTimestamp());
 			}
 			valueMap.put(key, qv);
 		}
 		else {
-			log.warnf("%s.acceptValue: received null value",TAG);
+			log.warnf("%s.acceptValue: received null value",getName());
 		}
 	}
 	

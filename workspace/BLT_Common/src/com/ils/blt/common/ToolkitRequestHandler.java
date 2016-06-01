@@ -5,6 +5,7 @@
 package com.ils.blt.common;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -146,7 +147,12 @@ public interface ToolkitRequestHandler  {
 	 * @return the value of a specified block property.
 	 */
 	public Object getPropertyValue(String diagramId,String blockId,String propertyName) ;
-	
+	/**
+	 * @param diagramId string representation of the diagram's unique id
+	 * @param blockName name of the block within the diagram
+	 * @return the time at which the block last changed its state
+	 */
+	public Date getTimeOfLastBlockStateChange(String diagramId, String blockName) ;
 	/**
 	 * Acquire a value from the HSQL database table associated with the toolkit. A
 	 * null is returned if the string is not found.

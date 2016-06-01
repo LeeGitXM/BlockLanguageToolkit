@@ -565,7 +565,30 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		return val;
 
 	}
-	
+	/**
+	 * @param diagramId string representation of the diagram's unique id
+	 * @param blockName name of the block within the diagram
+	 * @return the time at which the block last changed its state
+	 */
+	@Override
+	public Date getTimeOfLastBlockStateChange(String diagramId, String blockName) {
+		Date date = null;
+		UUID diagramUUID = null;
+		try {
+			diagramUUID = UUID.fromString(diagramId);
+			ProcessDiagram diagram = controller.getDiagram(diagramUUID);
+			for(ProcessBlock block:diagram.getProcessBlocks()) {
+				if( block.getName().equalsIgnoreCase(blockName)) {
+					date = block.getTimeOfLastStateChange();
+					break;
+				}
+			}
+		}
+		catch(IllegalArgumentException iae) {
+			log.warnf("%s.getTimeOfLastBlockStateChange: Diagram UUID string is illegal (%s)",TAG,diagramId);
+		}
+		return date;
+	}
 	/**
 	 * On a failure to find the property, an empty string is returned.
 	 */

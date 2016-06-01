@@ -7,6 +7,7 @@ package com.ils.blt.common;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -449,7 +450,17 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 		return result;
 	}
-	
+	public Date getTimeOfLastBlockStateChange(String diagramId, String blockName) {
+		Date result = null;
+		try {
+			result = (Date)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "getTimeOfLastBlockStateChange",diagramId,blockName);
+		}
+		catch(Exception ge) {
+			log.infof("%s.getTimeOfLastBlockStateChange: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		return result;
+	}
 	/**
 	 * Acquire a value from the SQLite database table associated with the toolkit. A
 	 * empty string is returned if the string is not found, null if an exception is thrown.
@@ -639,7 +650,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * @return a list of ids for blocks owned by a specified diagram that are of a
 	 *         specified class.
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings({ "unchecked" })
 	@Override
 	public List<SerializableBlockStateDescriptor> listDiagramBlocksOfClass(String diagramId,String className) {
 		log.debugf("%s.getDiagramBlocksOfClass: for diagram %s (%s)",TAG,diagramId,className);

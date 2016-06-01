@@ -102,10 +102,6 @@ public class InputMedian extends AbstractProcessBlock implements ProcessBlock {
 		}
 	}
 	
-	@Override
-	public void reset() {
-		super.reset();
-	}
 
 	/**
 	 * Notify the block that a new value has appeared on one of its input anchors.

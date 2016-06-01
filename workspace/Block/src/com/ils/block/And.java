@@ -140,7 +140,7 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 		if( state.equals(TruthValue.TRUE) ) {
 			List<ProcessBlock>predecessors = parent.getUpstreamBlocks(this);
 			for( ProcessBlock predecessor:predecessors ) {
-				if( state.equals(TruthValue.TRUE)) {
+				if( predecessor.getState().equals(TruthValue.TRUE)) {
 					count ++;
 					if(sb.length()>1) sb.append(" and ");
 					sb.append(predecessor.getExplanation(parent));
@@ -150,7 +150,7 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 		else if( state.equals(TruthValue.FALSE) ) {
 			List<ProcessBlock>predecessors = parent.getUpstreamBlocks(this);
 			for( ProcessBlock predecessor:predecessors ) {
-				if( state.equals(TruthValue.FALSE)) {
+				if( predecessor.getState().equals(TruthValue.FALSE)) {
 					count++;
 					if(sb.length()>1) sb.append(" or ");
 					sb.append(predecessor.getExplanation(parent));

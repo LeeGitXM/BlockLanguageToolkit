@@ -4,6 +4,7 @@
  */
 package com.ils.blt.common;
 
+import java.util.Date;
 import java.util.List;
 
 import com.ils.blt.common.block.PalettePrototype;
@@ -149,6 +150,14 @@ public class ApplicationScriptFunctions   {
 	 */
 	public static Object getPropertyValue(String diagramId,String blockId,String propertyName) {
 		return handler.getPropertyValue(diagramId,blockId,propertyName);
+	}
+	/**
+	 * @param diagramId string representation of the diagram's unique id
+	 * @param blockName name of the block within the diagram
+	 * @return the time at which the block last changed its state
+	 */
+	public static Date getTimeOfLastBlockStateChange(String diagramId, String blockName) {
+		return handler.getTimeOfLastBlockStateChange(diagramId,blockName);
 	}
 	/**
 	 * Acquire a value from the HSQL database table associated with the toolkit. A

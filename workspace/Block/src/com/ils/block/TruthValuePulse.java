@@ -1,8 +1,9 @@
 /**
- *   (c) 2014-2015  ILS Automation. All rights reserved. 
+ *   (c) 2014-2016  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
+import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
@@ -20,6 +21,7 @@ import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -131,6 +133,20 @@ public class TruthValuePulse extends AbstractProcessBlock implements ProcessBloc
 	}
 	
 	/**
+	 * @return a block-specific description of internal statue
+	 */
+	@Override
+	public SerializableBlockStateDescriptor getInternalStatus() {
+		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
+		if( dog.isActive() ) {
+			Map<String,String> attributes = descriptor.getAttributes();
+			long now = System.nanoTime()/1000000;   // Work in milliseconds
+			long waitTime = (long)(dog.getExpiration()-now);
+			attributes.put("MSecsToStateChange",String.valueOf(waitTime));
+		}
+		return descriptor;
+	}
+	/**
 	 * Handle a changes to the various attributes.
 	 */
 	@Override
@@ -177,6 +193,7 @@ public class TruthValuePulse extends AbstractProcessBlock implements ProcessBloc
 	private void notifyOfStatus(QualifiedValue qv) {
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
+
 	
 	/**
 	 * Augment the palette prototype for this block class.
