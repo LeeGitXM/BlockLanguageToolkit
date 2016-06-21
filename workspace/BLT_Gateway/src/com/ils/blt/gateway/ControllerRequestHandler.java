@@ -603,6 +603,11 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	@Override
 	public boolean isAlerting(Long projectId, Long resid) {
 		ProcessDiagram diagram = controller.getDiagram(projectId.longValue(), resid.longValue());
+		if( diagram==null ) {
+			// Node is most likely an application or family
+			log.debugf("%s.isAlerting: No diagram found in project %d with id = %d",TAG,projectId.longValue(),resid.longValue());
+			return false;
+		}
 		return pyHandler.isAlerting(diagram);
 	}
 	@Override

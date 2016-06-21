@@ -457,7 +457,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 public void diagramAlertChange(long resId, String state) {
 	StatusEntry se = statusByResourceId.get(new Long(resId));
 	se.setAlerting(state.equalsIgnoreCase("true"));
-	se.getNode().select();    // Cause a re-paint
+	se.getNode().reload();
 }
 
 @Override

@@ -12,7 +12,10 @@ import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.notification.IncomingNotification;
+import com.ils.blt.gateway.PythonRequestHandler;
 import com.ils.blt.gateway.engine.BlockExecutionController;
+import com.ils.blt.gateway.engine.ProcessDiagram;
+import com.ils.blt.gateway.engine.ProcessNode;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
 
 
@@ -27,6 +30,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	private final String className;
 	private PyObject pythonBlock = null;
 	private final ProxyHandler delegate = ProxyHandler.getInstance();
+	private final PythonRequestHandler requestHandler;
 	private final ScriptManager scriptManager;
 	
 
@@ -40,7 +44,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	public ProxyBlock(String clss,UUID parent,UUID block,ScriptManager mgr) {
 		super(null,parent,block);
 		this.className = clss;
-		this.controller = BlockExecutionController.getInstance();
+		this.requestHandler = new PythonRequestHandler();
 		this.scriptManager = mgr;
 	}
 
@@ -154,10 +158,12 @@ public class ProxyBlock extends AbstractProcessBlock  {
 		delegate.evaluate(scriptManager,getPythonBlock()); 
 	}
 	/**
-	 * Reset the block.
+	 * Reset the block. Resetting  python block may change the diagram alert
+	 * status.
 	 */
 	@Override
 	public void reset() { 
 		delegate.reset(scriptManager,getPythonBlock()); 
+		requestHandler.postAlertingStatus(this);
 	}
 }

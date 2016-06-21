@@ -31,7 +31,7 @@ public class PythonRequestHandler   {
 	private static final String TAG = "PythonRequestHandler";
 	private static LoggerEx log = LogUtil.getLogger(PythonRequestHandler.class.getPackage().getName());
 	private final BlockExecutionController controller = BlockExecutionController.getInstance();
-	private String alerterClassName = null;
+	private static String alerterClassName = null;
 	
 	public PythonRequestHandler() {}
 	/**
@@ -226,6 +226,23 @@ public class PythonRequestHandler   {
 		return getAlertStatus(diagram);
 	}
 	/**
+	 * Inform anyone who will listen about the diagram alerting status.
+	 * 
+	 * @param resId resourceId of the parent diagram
+	 * @param block the block that is responsible for a status change
+	 */
+	public void postAlertingStatus(ProcessBlock block)  {
+		// It only matters if this is an alerter
+		if( block.getClassName().equalsIgnoreCase(alerterClassName) ) {
+			ProcessNode node = controller.getProcessNode(block.getParentId());
+			if( node instanceof ProcessDiagram ) {
+				ProcessDiagram diagram = (ProcessDiagram)node;
+				boolean alerting = getAlertStatus(diagram);
+				controller.sendAlertNotification(diagram.getResourceId(), (alerting?"true":"false"));
+			}	
+		}
+	}
+	/**
 	 * Handle the block placing a new value on its output. The input may be PyObjects.
 	 * This method is not "test-time" aware.
 	 * 
@@ -250,10 +267,7 @@ public class PythonRequestHandler   {
 								new BasicQuality(quality,(quality.equalsIgnoreCase("good")?Quality.Level.Good:Quality.Level.Bad)),
 								new Date(time)));
 				ProcessBlock block = diagram.getBlock(uuid);
-				if( block.getClassName().equalsIgnoreCase(alerterClassName) ) {
-					boolean alerting = getAlertStatus(diagram);
-					controller.sendAlertNotification(diagram.getResourceId(), (alerting?"true":"false"));
-				}
+				postAlertingStatus(block);
 				
 			}
 		}
@@ -306,7 +320,7 @@ public class PythonRequestHandler   {
 	/**
 	 * Specify a class of block that, when it has a true state, gives the entire diagram
 	 * an "alerting" state. For now there is only a single class defined. This could easily
-	 * be a list.
+	 * be a list. This is global.
 	 * @param cname
 	 */
 	public void setAlerterClass(String cname) {

@@ -38,6 +38,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 public class LabData extends Input implements ProcessBlock {
 	private final static String BLOCK_PROPERTY_TIME_PATH = "TimeTagPath";
 	private final static String BLOCK_PROPERTY_VALUE_PATH = "ValueTagPath";
+	private Date MINIMUM_DATE = null;
 	private SimpleDateFormat customFormatter = new SimpleDateFormat(DEFAULT_FORMAT);
 	private BlockProperty timePathProperty = null;
 	private BlockProperty valuePathProperty = null;
@@ -53,6 +54,12 @@ public class LabData extends Input implements ProcessBlock {
 		initialize();
 		initializePrototype();
 		dog = new Watchdog(getName(),this);
+		try {
+			MINIMUM_DATE = customFormatter.parse("2000/01/01 00:00:00");
+		}
+		catch(ParseException pe) {
+			log.errorf("%s.constructor: Unable to create minimum date",getName(),pe.getMessage());
+		}
 	}
 	
 	/**
@@ -66,6 +73,12 @@ public class LabData extends Input implements ProcessBlock {
 		super(ec,parent,block);
 		initialize();
 		dog = new Watchdog(getName(),this);
+		try {
+			MINIMUM_DATE = customFormatter.parse("2000/01/01 00:00:00");
+		}
+		catch(ParseException pe) {
+			log.errorf("%s.constructor: Unable to create minimum date",getName(),pe.getMessage());
+		}
 	}
 	
 	/**
@@ -182,7 +195,8 @@ public class LabData extends Input implements ProcessBlock {
 	}
 
 	/**
-	 * The coalescing time has expired. Place the composite value on the output.
+	 * The coalescing time has expired. Place the composite value on the output,
+	 * but only if the date is "reasonable"
 	 * Evaluation is triggered by a new entry either of the input tags. The values
 	 * are in the tag path properties.
 	 */
@@ -190,6 +204,10 @@ public class LabData extends Input implements ProcessBlock {
 	public void evaluate() {
 		if( qv == null ) return; // Shouldn't happen
 		if( !isLocked() ) {
+			if( qv.getTimestamp().before(MINIMUM_DATE) ) {
+				recordActivity("Rejected value from previous millenium",String.valueOf(qv.getValue())); 
+				return;
+			}
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus(qv);

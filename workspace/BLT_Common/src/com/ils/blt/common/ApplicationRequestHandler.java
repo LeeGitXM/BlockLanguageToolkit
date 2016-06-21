@@ -491,7 +491,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		return isRunning;
 	}
 	/**
-	 * Determine whether or not the engine is running.
+	 * Determine whether or not the diagram is alerting.
 	 */
 	@Override
 	public boolean isAlerting(Long projectId,Long resid) {
@@ -502,7 +502,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 			log.debugf("%s.isAlerting ...%d:%d = %s",TAG,projectId,resid,result);
 		}
 		catch(Exception ge) {
-			log.infof("%s.isAlerting: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.isAlerting: GatewayException (%s) for project %d, resource %d",TAG,ge.getMessage(),projectId.longValue(),resid.longValue());
 		}
 		if( result==null ) return false;
 		return result.booleanValue();

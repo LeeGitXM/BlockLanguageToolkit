@@ -239,8 +239,9 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 		
 		// Save values back to the database
 		try {
+			String db = requestHandler.getDatabaseForUUID(diagram.getId().toString());
 			extensionManager.runScript(context.getScriptManager(),block.getClassName(), ScriptConstants.PROPERTY_SET_SCRIPT, 
-					diagram.getId().toString(),model);
+					diagram.getId().toString(),model,db);
 			// Replace the aux data structure in our serializable application
 			// NOTE: The Nav tree node that calls the dialog saves the application resource.
 			block.setAuxiliaryData(model);

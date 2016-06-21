@@ -29,6 +29,7 @@ import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
+import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.NotificationHandler;
@@ -510,7 +511,15 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	    
 		public void actionPerformed(ActionEvent e) {
 			ApplicationRequestHandler handler = new ApplicationRequestHandler();
-			handler.resetDiagram(workspace.getActiveDiagram().getId().toString());
+			// Get the diagramId from the resource. We have to search the list of diagrams for a resource match.
+			String projectName = context.getProject().getName();
+			List<SerializableResourceDescriptor> diagramDescriptors = handler.listDiagramDescriptors(projectName);
+			for(SerializableResourceDescriptor srd:diagramDescriptors ) {
+				if( srd.getResourceId()==resourceId ) {
+					handler.resetDiagram(srd.getId());
+					break;
+				}
+			}
 		}
 	}
 	private class SaveDiagramAction extends BaseAction {

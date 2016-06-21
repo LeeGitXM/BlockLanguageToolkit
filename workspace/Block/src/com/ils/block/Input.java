@@ -147,10 +147,13 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 	public void evaluate() {
 		String path = tagPathProperty.getBinding().toString();
 		QualifiedValue val = controller.getTagValue(getParentId(),path);
-		if( val!=null ) {
+		if( val!=null && val.getValue()!=null && path!=null ) {
 			log.debugf("%s.evaluate: Read %s = %s",getName(),path,val.getValue().toString());
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,val);
 			controller.acceptCompletionNotification(nvn);
+		}
+		else {
+			log.infof("%s.evaluate: Null value on %s (diagram state change?)",getName(),path);
 		}
 	}
 	@Override

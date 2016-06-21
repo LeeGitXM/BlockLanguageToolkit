@@ -47,6 +47,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
@@ -265,7 +266,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					menu.add(linkSourceMenu);
 				}
 				logger.debugf("%s.getSelectionPopupMenu: Selection editor class = %s",TAG,pbv.getEditorClass());
-				if( selection instanceof BlockComponent && pbv.getEditorClass() !=null && pbv.getEditorClass().length()>0 ) {
+				// Do not allow editing when the diagram is disabled
+				if( selection instanceof BlockComponent && pbv.getEditorClass() !=null && pbv.getEditorClass().length()>0 &&
+						!getActiveDiagram().getState().equals(DiagramState.DISABLED)) {
 					CustomEditAction cea = new CustomEditAction(pbv);
 					menu.add(cea);
 				}
@@ -517,7 +520,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 
 	/**
-	 * @return the currently active diagram, else null
+	 * @return the currently active (open) diagram, else null
 	 */
 	public ProcessDiagramView getActiveDiagram() {
 		ProcessDiagramView view =null;
