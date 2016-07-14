@@ -32,7 +32,7 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
 public class ResourceSaveManager implements Runnable {
 	private static final String CLSS = "ResourceSaveManager";
 	private static final LoggerEx log = LogUtil.getLogger(ResourceSaveManager.class.getPackage().getName());
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 	private static DesignerContext context = null;
 	private static NodeStatusManager statusManager = null;
 	private final AbstractResourceNavTreeNode root;	      // Root of our save.
@@ -81,8 +81,9 @@ public class ResourceSaveManager implements Runnable {
 	private void saveDirtyDiagrams(AbstractResourceNavTreeNode node) {
 		ProjectResource res = node.getProjectResource();
 		if( res!=null ) {
-			log.infof("%s.saveDirtyDiagrams: %s (%d)",CLSS,res.getName(),res.getResourceId());
 			if(res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
+				log.infof("%s.saveDirtyDiagrams (if open): %s (%d) %s",CLSS,res.getName(),res.getResourceId(),
+						  statusManager.getResourceState(res.getResourceId()));
 				// If the resource is open, we need to save it
 				workspace.saveOpenDiagram(res.getResourceId());
 			}
@@ -107,7 +108,7 @@ public class ResourceSaveManager implements Runnable {
 			if( node instanceof DiagramTreeNode && 
 				( ((NavTreeNodeInterface)node).isDirty() || statusManager.isResourceDirty(resid)  )  ) {
 				if( DEBUG ) log.infof("%s.accumulateDirtyNodeResources: diagram %s (%d) %s",CLSS,res.getName(),resid,
-						statusManager.getResourceState(resid).name());
+						     statusManager.getResourceState(resid).name());
 				diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
 				workspace.saveOpenDiagram(res.getResourceId());   // Close if open
 				dirtyCount++;
@@ -116,7 +117,7 @@ public class ResourceSaveManager implements Runnable {
 			// For other nodes include only "dirty"
 			else if( node instanceof NavTreeNodeInterface && ( ((NavTreeNodeInterface)node).isDirty()  )  ) {
 					if( DEBUG ) log.infof("%s.accumulateDirtyNodeResources: %s (%d) %s",CLSS,res.getName(),resid,
-							statusManager.getResourceState(resid).name());
+							     statusManager.getResourceState(resid).name());
 					diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
 					dirtyCount++;
 			}
