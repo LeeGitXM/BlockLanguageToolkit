@@ -384,6 +384,7 @@ public class Migrator {
 				if( newValue!=null) prop.setValue(newValue);
 			}
 		}
+		
 		// Add anchors, if needed. The migration doesn't add anchors if there is no connection.
 		anchorMapper.augmentAnchors(block);
 		
