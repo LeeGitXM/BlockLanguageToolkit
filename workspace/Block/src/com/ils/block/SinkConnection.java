@@ -4,6 +4,7 @@
 package com.ils.block;
 
 import java.awt.Color;
+import java.util.List;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
@@ -13,6 +14,7 @@ import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.control.ExecutionController;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 
 /**
  * A Sink Connection is a class that propagates values directly
@@ -72,5 +74,22 @@ public class SinkConnection extends Output implements ProcessBlock {
 		desc.setNameDisplayed(true);
 		desc.setNameOffsetX(25);
 		desc.setNameOffsetY(45);
+	}
+	
+	/**
+	 * In addition to the standard validation, make sure that there
+	 * is something that will receive the output.
+	 * @return a validation summary. Null if everything checks out.
+	 */
+	@Override
+	public String validate() {
+		String summary = super.validate();
+		if( summary==null ) {
+			List<SerializableBlockStateDescriptor> links = controller.listSourcesForSink(getParentId().toString(),getName());
+			if( links.isEmpty() ) {
+				summary = String.format("There are no sources linked to this sink block\t");
+			}
+		}
+		return summary;
 	}
 }

@@ -363,6 +363,14 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(UUID diagramId,UUID blockId,boolean spanDiagrams) {
 		return modelManager.listBlocksUpstreamOf(diagramId, blockId,spanDiagrams);
 	}
+	public List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId,String blockName) {
+		ControllerRequestHandler handler = ControllerRequestHandler.getInstance();
+		return handler.listSinksForSource(diagramId, blockName);
+	}
+	public List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId,String blockName) {
+		ControllerRequestHandler handler = ControllerRequestHandler.getInstance();
+		return handler.listSourcesForSink(diagramId, blockName);
+	}
 	/**
 	 * The node must be an element of the nav-tree, that is an application,
 	 * family, folder or diagram. 

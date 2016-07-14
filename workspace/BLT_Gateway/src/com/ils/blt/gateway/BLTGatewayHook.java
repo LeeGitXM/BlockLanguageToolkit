@@ -64,6 +64,8 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		requestHandler = ControllerRequestHandler.getInstance();
 	}
 		
+	// @Override // 7.8.3
+	public boolean isFreeModule() { return true; }
 	
 	// NOTE: During this period, the module status is LOADED, not RUNNING
 	//       This comes before startup().

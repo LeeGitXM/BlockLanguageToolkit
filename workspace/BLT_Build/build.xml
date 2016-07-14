@@ -47,7 +47,7 @@
 		 <fileset dir="${basedir}/../../external/lib" includes="sqlite-jdbc*.jar" />
 	</path>
 	
-	<!-- Generic Buildfile: Reference Via Antcalls -->
+	<!-- Generic Buildfile (reference via Antcalls) -->
 	<target name="MakeProject">
 		<echo message="Compiling ${modName}" />
 		<mkdir dir="${basedir}/BLT_Build/bin/${modName}/bin" />
@@ -95,6 +95,19 @@
 		</jar>
 	</target>
 
+	<!-- Generic SignModule (reference via Antcalls) -->
+	<target name="SignModule">
+		<echo message="Signing ${moduleName}" />
+		<java jar="${basedir}/../../external/lib/module-signer.jar"  fork="true">
+			<arg value="-keystore=${basedir}/../../tools/keys/ILSA-keystore"/>
+			<arg value="-keystore-pwd=ILS-Automation"/>
+			<arg value="-alias=ILSAutomationKey"/>
+			<arg value="-alias-pwd=chromsmart" />
+			<arg value="-chain=${basedir}/../../tools/keys/ilsautomationcertificate.p7b"/>
+			<arg value="-module-in=${modulein}"/>
+			<arg value="-module-out=${moduleout}"/>
+		</java>
+	</target>
 	<!-- Uses some property magic to get passed parameters and replace properties in a .properties file  -->
 	<target name="MakeProject-ReplaceProps">
 

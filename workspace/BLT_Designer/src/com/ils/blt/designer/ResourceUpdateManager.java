@@ -1,3 +1,6 @@
+/**
+ *   (c) 2014-2016  ILS Automation. All rights reserved.
+ */
 package com.ils.blt.designer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -25,7 +28,7 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
  *
  */
 public class ResourceUpdateManager implements Runnable {
-	private static final String TAG = "ResourceUpdateManager";
+	private static final String CLSS = "ResourceUpdateManager";
 	private static final LoggerEx log = LogUtil.getLogger(ResourceUpdateManager.class.getPackage().getName());
 	private static DesignerContext context = null;
 	private static NodeStatusManager statusManager = null;
@@ -64,17 +67,17 @@ public class ResourceUpdateManager implements Runnable {
 					// The diagram may not have been dirty in a structural sense, but update the resource
 					// anyway as block properties may have changed.
 					ProcessDiagramView view = (ProcessDiagramView)tab.getModel();
-					log.infof("%s.run: updating ... %s(%d) ",TAG,tab.getName(),resourceId);
 					SerializableDiagram sd = view.createSerializableRepresentation();
+					log.infof("%s.run: updating ... %s(%d) %s",CLSS,tab.getName(),resourceId,sd.getState().name());
 					sd.setName(tab.getName());
 					ObjectMapper mapper = new ObjectMapper();
 					try{
 						byte[] bytes = mapper.writeValueAsBytes(sd);
-						log.tracef("%s.run JSON = %s",TAG,new String(bytes));
+						log.tracef("%s.run JSON = %s",CLSS,new String(bytes));
 						res.setData(bytes);
 					}
 					catch(JsonProcessingException jpe) {
-						log.warnf("%s.run: Exception serializing diagram, resource %d (%s)",TAG,resourceId,jpe.getMessage());
+						log.warnf("%s.run: Exception serializing diagram, resource %d (%s)",CLSS,resourceId,jpe.getMessage());
 					}
 					view.setDirty(false);
 					view.registerChangeListeners();
@@ -85,7 +88,7 @@ public class ResourceUpdateManager implements Runnable {
 				diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
 				DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ...");  // Don't publish
 				for(ProjectResource pr:diff.getResources()) {
-					log.infof("%s.run: Saved %s (%d)",TAG,pr.getName(),pr.getResourceId());
+					log.infof("%s.run: Saved %s (%d)",CLSS,pr.getName(),pr.getResourceId());
 				}
 				// Make every thing clean again.
 				statusManager.clearDirtyChildCount(res.getResourceId());
@@ -93,11 +96,11 @@ public class ResourceUpdateManager implements Runnable {
 				project.applyDiff(diff,false);
 			}
 			catch(IllegalArgumentException iae) {
-				log.warnf("%s.run: Updating resource %d, it has been deleted (%s)",TAG,res.getResourceId(),iae.getMessage());
+				log.warnf("%s.run: Updating resource %d, it has been deleted (%s)",CLSS,res.getResourceId(),iae.getMessage());
 				statusManager.deleteResource(res.getResourceId());
 			}
 			catch(GatewayException ge) {
-				log.warnf("%s.run: Exception saving project resource %d (%s)",TAG,res.getResourceId(),ge.getMessage());
+				log.warnf("%s.run: Exception saving project resource %d (%s)",CLSS,res.getResourceId(),ge.getMessage());
 			}
 			((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler().triggerStatusNotifications();
 		}

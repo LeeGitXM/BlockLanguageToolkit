@@ -242,10 +242,17 @@
 		</copy>
 		<!-- Echo the version into .version in the bundle and to be saved -->
 		<echo message="${BLTModule.name}-${BLTModule.version}" file="${basedir}/BLT_Build/temp_modl/.version" append="false"/>
-		<echo message="${BLTModule.name}-${BLTModule.name}:${BLTModule.release}" file="${basedir}/BLT_Build/.version" append="false"/>
+		<echo message="${BLTModule.name}-${BLTModule.version}:${BLTModule.release}" file="${basedir}/BLT_Build/.version" append="false"/>
 		
 		<!-- Zip it all up -->
 		<zip zipfile="${basedir}/BLT_Build/modules/${BLTModule.name}-module-unsigned.modl" basedir="${basedir}/BLT_Build/temp_modl" />
+		
+		<!-- Sign the module jar -->
+		<antcall target="SignModule">
+			<param name="moduleName" value="${BLTModule.name}-${BLTModule.version}" />
+			<param name="modulein"   value="${basedir}/BLT_Build/modules/${BLTModule.name}-module-unsigned.modl" />
+			<param name="moduleout"  value="${basedir}/BLT_Build/modules/${BLTModule.name}-module-signed.modl"/>
+		</antcall>
 	</target>
 	<!-- Install the Python source files -->
 	<target name="python" >
@@ -289,7 +296,7 @@
 	<!-- Installs BLT module in local Ignition gateway. Note that the gateway must be running in developer mode for this to succeed. -->
 	<target name="deploy" depends="build,python,python.jars" >
 		<echo message="Installing ${BLTModule.name} on Ignition Gateway." />
-		<postmodule posturl="${local.gateway.url}" modulefile="${basedir}/BLT_Build/modules/${BLTModule.name}-module-unsigned.modl" />
+		<postmodule posturl="${local.gateway.url}" modulefile="${basedir}/BLT_Build/modules/${BLTModule.name}-module-signed.modl" />
 	</target>	
 
 </project>

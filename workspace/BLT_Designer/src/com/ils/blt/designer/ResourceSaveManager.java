@@ -1,3 +1,6 @@
+/**
+ *   (c) 2014-2016  ILS Automation. All rights reserved.
+ */
 package com.ils.blt.designer;
 
 import java.util.Enumeration;
@@ -27,8 +30,9 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
  *
  */
 public class ResourceSaveManager implements Runnable {
-	private static final String TAG = "ResourceSaveManager";
+	private static final String CLSS = "ResourceSaveManager";
 	private static final LoggerEx log = LogUtil.getLogger(ResourceSaveManager.class.getPackage().getName());
+	private static final boolean DEBUG = true;
 	private static DesignerContext context = null;
 	private static NodeStatusManager statusManager = null;
 	private final AbstractResourceNavTreeNode root;	      // Root of our save.
@@ -77,7 +81,7 @@ public class ResourceSaveManager implements Runnable {
 	private void saveDirtyDiagrams(AbstractResourceNavTreeNode node) {
 		ProjectResource res = node.getProjectResource();
 		if( res!=null ) {
-			log.infof("%s.saveDirtyDiagrams: %s (%d)",TAG,res.getName(),res.getResourceId());
+			log.infof("%s.saveDirtyDiagrams: %s (%d)",CLSS,res.getName(),res.getResourceId());
 			if(res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
 				// If the resource is open, we need to save it
 				workspace.saveOpenDiagram(res.getResourceId());
@@ -101,18 +105,18 @@ public class ResourceSaveManager implements Runnable {
 			long resid = res.getResourceId();
 			// For a diagram include either dirty or "dirty children"
 			if( node instanceof DiagramTreeNode && 
-				( ((NavTreeNodeInterface)node).isDirty() ||
-				  statusManager.isResourceDirty(resid)      )  ) {
-				log.debugf("%s.accumulateDirtyNodeResources: diagram %s (%d)",TAG,res.getName(),resid);
+				( ((NavTreeNodeInterface)node).isDirty() || statusManager.isResourceDirty(resid)  )  ) {
+				if( DEBUG ) log.infof("%s.accumulateDirtyNodeResources: diagram %s (%d) %s",CLSS,res.getName(),resid,
+						statusManager.getResourceState(resid).name());
 				diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
 				workspace.saveOpenDiagram(res.getResourceId());   // Close if open
 				dirtyCount++;
 				
 			}
 			// For other nodes include only "dirty"
-			else if( node instanceof NavTreeNodeInterface && 
-					( ((NavTreeNodeInterface)node).isDirty()  )  ) {
-					log.debugf("%s.accumulateDirtyNodeResources: %s (%d)",TAG,res.getName(),resid);
+			else if( node instanceof NavTreeNodeInterface && ( ((NavTreeNodeInterface)node).isDirty()  )  ) {
+					if( DEBUG ) log.infof("%s.accumulateDirtyNodeResources: %s (%d) %s",CLSS,res.getName(),resid,
+							statusManager.getResourceState(resid).name());
 					diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
 					dirtyCount++;
 			}
@@ -145,12 +149,12 @@ public class ResourceSaveManager implements Runnable {
 		try {
 			DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ...");  // Do not publish
 			for(ProjectResource res:diff.getResources()) {
-				log.infof("%s.saveNodeAndDescendants: Saved %s (%d)",TAG,res.getName(),res.getResourceId());
+				log.infof("%s.saveNodeAndDescendants: Saved %s (%d)",CLSS,res.getName(),res.getResourceId());
 			}
 			
 		}
 		catch(GatewayException ge) {
-			log.warnf("%s.saveNodeAndDescendants: Exception saving project resource %d (%s)",TAG,root.getProjectResource().getResourceId(),ge.getMessage());
+			log.warnf("%s.saveNodeAndDescendants: Exception saving project resource %d (%s)",CLSS,root.getProjectResource().getResourceId(),ge.getMessage());
 		}
 		
 		// Mark these as "clean" in the current project so that we don't save again.

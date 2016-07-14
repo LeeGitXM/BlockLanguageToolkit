@@ -39,6 +39,8 @@ public interface ExecutionController  {
 	public String getSubscribedPath(ProcessBlock block,BlockProperty property);
 	public boolean hasActiveSubscription(ProcessBlock block,BlockProperty property,String tagPath);
 	public List<SerializableBlockStateDescriptor> listBlocksConnectedAtPort(String diagramId,String blockId,String portName);
+	public List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId,String blockName);
+	public List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId,String blockName);
 	public QualifiedValue getTagValue(UUID diagramId,String path);
 	public void sendAlertNotification(long resid, String val);
 	public void sendConnectionNotification(String blockid, String port, QualifiedValue val);
