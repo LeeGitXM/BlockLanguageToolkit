@@ -210,8 +210,8 @@ public class Parameter extends AbstractProcessBlock implements ProcessBlock {
 		desc.setEmbeddedIcon("Block/icons/embedded/parameter.png");
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setStyle(BlockStyle.SQUARE);
-		desc.setPreferredHeight(60);
-		desc.setPreferredWidth(60);
+		desc.setPreferredHeight(50);
+		desc.setPreferredWidth(50);
 		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_LIGHT_GRAY);  
 		desc.setCtypeEditable(true);
 	}
