@@ -277,7 +277,11 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	public String getExplanation(DiagnosticDiagram parent) {
 		String explanation = "";
 		if( state.equals(TruthValue.TRUE) || state.equals(TruthValue.FALSE)) {
-			explanation = String.format("At %s (type %s), %d of the last %d are outside limits (%d allowed)",getName(),limitType.name(),
+			explanation = String.format("SQC %s (limit %s), %d of the last %d are outside limits (%d allowed)",getName(),limitType.name(),
+					total,queue.size(),minOut);		
+		}
+		else if( state.equals(TruthValue.TRUE) || state.equals(TruthValue.FALSE)) {
+			explanation = String.format("SQC %s (limit %s), %d of the last %d are within limits (%d allowed)",getName(),limitType.name(),
 					total,queue.size(),minOut);		
 		}
 		return explanation;

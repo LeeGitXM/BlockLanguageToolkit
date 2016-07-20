@@ -207,12 +207,12 @@ public class Parameter extends AbstractProcessBlock implements ProcessBlock {
 		prototype.setTabName(BlockConstants.PALETTE_TAB_CONNECTIVITY);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
-		desc.setEmbeddedIcon("Block/icons/embedded/information.png");
+		desc.setEmbeddedIcon("Block/icons/embedded/parameter.png");
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setStyle(BlockStyle.SQUARE);
 		desc.setPreferredHeight(60);
 		desc.setPreferredWidth(60);
-		desc.setBackground(new Color(125,125,125).getRGB());   // Dark gray
+		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_LIGHT_GRAY);  
 		desc.setCtypeEditable(true);
 	}
 }
