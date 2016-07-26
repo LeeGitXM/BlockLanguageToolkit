@@ -4,6 +4,7 @@
 package com.ils.blt.common.notification;
 
 import com.ils.blt.common.ProcessBlock;
+import com.ils.blt.common.block.Activity;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
@@ -36,7 +37,7 @@ public class OutgoingNotification {
 		this.block = blk;
 		this.port = prt;
 		this.value = val;
-		block.recordActivity(prt, val.getValue().toString());
+		block.recordActivity(Activity.ACTIVITY_SEND,prt, val.getValue().toString());
 	}
 	
 	public ProcessBlock getBlock()      { return block; }

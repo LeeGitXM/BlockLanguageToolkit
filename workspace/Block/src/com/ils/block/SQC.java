@@ -3,6 +3,7 @@
  */
 package com.ils.block;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +13,7 @@ import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagnosticDiagram;
 import com.ils.blt.common.ProcessBlock;
+import com.ils.blt.common.block.Activity;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
@@ -379,6 +381,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		return descriptor;
 	}
 
+	
 	/**
 	 * Add the value of the target input to the standard descriptor.
 	 * @return the descriptor

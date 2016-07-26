@@ -543,7 +543,6 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 				blk.stop();
 			}
 
-			this.state = s;
 			updateBlockTimers();
 
 			if(!DiagramState.DISABLED.equals(getState()) ) {
@@ -563,6 +562,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 					if( !blk.delayBlockStart() ) blk.start();
 				}
 				// Make sure that the Inputs don't propagate an old value.
+				// If the prior version was DISABLED, the starts should not propagate anything.
 				for(ProcessBlock blk:blocks.values()) {
 					if( blk.delayBlockStart() ) {
 						boolean lock = blk.isLocked();
@@ -572,13 +572,21 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 					}
 				}
 				// Restart subscriptions for the new state
-				startSubscriptions();
+				startSubscriptions(s);
 				// The blocks that delay start are those that propagate tag values.
 				for(ProcessBlock block:getProcessBlocks() ) {
 					if( block.delayBlockStart() ) block.evaluate();
 				}
 			}
+			else {
+				// When we disable the diagram, reset blocks to clear histories.
+				for(ProcessBlock block:getProcessBlocks() ) {
+					block.reset();
+				}
+			}
+
 			// Fire diagram notification change
+			this.state = s;
 			controller.sendStateNotification(resourceId, s.name());
 		}
 	}
@@ -639,11 +647,11 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	// This should only be called on a new diagram, or on new blocks for an existing
 	// diagram. Note that "starting" a subscription on an existing property *should* 
 	// do nothing.
-	public void startSubscriptions() {
+	public void startSubscriptions(DiagramState s) {
 		//log.infof("%s.startSubscriptions: ...%d:%s",TAG,projectId,getName());
 		for( ProcessBlock pb:getProcessBlocks()) {
 			for(BlockProperty bp:pb.getProperties()) {
-				controller.startSubscription(getState(),pb,bp);
+				controller.startSubscription(s,pb,bp);
 			}
 		}
 	}

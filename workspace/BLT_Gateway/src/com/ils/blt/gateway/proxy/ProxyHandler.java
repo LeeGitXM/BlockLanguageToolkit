@@ -29,7 +29,6 @@ import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
-import com.ils.blt.gateway.PythonRequestHandler;
 import com.ils.common.JavaToPython;
 import com.ils.common.PythonToJava;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
@@ -228,7 +227,7 @@ public class ProxyHandler   {
 					if( obj instanceof Map ) {
 						@SuppressWarnings("unchecked")
 						Map<String,?> tbl = (Map<String,?>)obj;
-						log.debug(TAG+": getProperties property = "+ tbl);  
+						log.debug(TAG+".getBlockProperties property = "+ tbl);  
 						BlockProperty prop = new BlockProperty();
 						prop.setName(nullCheck(tbl.get(BLTProperties.BLOCK_ATTRIBUTE_NAME),"unnamed"));
 						prop.setBinding(nullCheck(tbl.get(BLTProperties.BLOCK_ATTRIBUTE_BINDING),""));
@@ -238,10 +237,10 @@ public class ProxyHandler   {
 								prop.setBindingType(BindingType.valueOf(val.toString().toUpperCase()));
 							}
 							catch(IllegalArgumentException iae ) {
-								log.warnf("%s: getProperties: Illegal binding type (%s) (%s)" , TAG,val,iae.getMessage());
+								log.warnf("%s.getBlockProperties: Illegal binding type (%s) (%s)" , TAG,val,iae.getMessage());
 							}
 							catch(Exception ex ) {
-								log.warnf("%s: getProperties: Illegal binding type (%s) (%s)" , TAG,val,ex.getMessage());
+								log.warnf("%s.getBlockProperties: Illegal binding type (%s) (%s)" , TAG,val,ex.getMessage());
 							}
 						}
 						val = tbl.get(BLTProperties.BLOCK_ATTRIBUTE_EDITABLE);
@@ -252,10 +251,10 @@ public class ProxyHandler   {
 								prop.setType(PropertyType.valueOf(val.toString().toUpperCase()));
 							}
 							catch(IllegalArgumentException iae ) {
-								log.warnf("%s: getProperties: Illegal data type (%s) (%s)" , TAG,val,iae.getMessage());
+								log.warnf("%s.getBlockProperties: Illegal data type (%s) (%s)" , TAG,val,iae.getMessage());
 							}
 							catch(Exception ex ) {
-								log.warnf("%s: getProperties: Illegal data type (%s) (%s)" , TAG,val,ex.getMessage());
+								log.warnf("%s.getBlockProperties: Illegal data type (%s) (%s)" , TAG,val,ex.getMessage());
 							}
 						}
 						val = tbl.get(BLTProperties.BLOCK_ATTRIBUTE_VALUE);
@@ -267,7 +266,7 @@ public class ProxyHandler   {
 					
 				}
 				catch( Exception ex ) {
-					log.warnf("%s: getProperties: Exception processing prototype (%s)" , TAG,ex.getMessage());
+					log.warnf("%s.getBlockProperties: Exception processing prototype (%s)" , TAG,ex.getMessage());
 				}
 				index++;
 			}
@@ -308,7 +307,8 @@ public class ProxyHandler   {
 					state = TruthValue.valueOf(obj.toString().toUpperCase());	
 				}
 				catch( Exception ex ) {
-					log.warnf("%s: getProperties: Exception converting %s into a state (%s)" , TAG,obj.toString(),ex.getMessage());	
+					log.warnf("%s.getBlockProperties: Exception converting %s into a state (%s)" , TAG,obj.toString(),ex.getMessage());	
+					state = TruthValue.UNKNOWN;
 				}
 			}
 		}
@@ -471,8 +471,6 @@ public class ProxyHandler   {
 			setBlockPropertyCallback.setLocalVariable(0,block.getPythonBlock());
 			setBlockPropertyCallback.setLocalVariable(1,pyDictionary);
 			setBlockPropertyCallback.execute(mgr);
-			
-			QualifiedValue qv = new BasicQualifiedValue(prop.getValue());
 		}
 	}
 	

@@ -54,7 +54,7 @@ public class ToolkitRecordListener extends BasicToolkitRecordListener implements
 		for(ProcessDiagram diagram:diagrams) {
 			diagram.stopSubscriptions();
 			diagram.updatePropertyProviders(name);
-			diagram.startSubscriptions();
+			diagram.startSubscriptions(state);
 		}
 	}
 	

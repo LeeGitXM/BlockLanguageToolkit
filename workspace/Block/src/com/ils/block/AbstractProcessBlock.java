@@ -355,6 +355,22 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		}
 	}
 	/**
+	 * Add a time-stamped entry to the block's activity log.
+	 * The log is viewable as part of the internal status.
+	 * @param desc description of the activity being recorded. 
+	 *        Presumably this comes from a controlled vocabulary
+	 * @param name property receiving the new value, if any.
+	 * @param value a new value associated with the activity, if any.
+	 */
+	public synchronized void recordActivity(String desc,String prop,String value) {
+		if( activities.getBufferSize()>0) {
+			if(prop==null)  prop="";
+			if(value==null) value="";
+			Activity activity = new Activity(desc,String.format("%s=%s", prop,value));
+			activities.add(activity);
+		}
+	}
+	/**
 	 * The default method sets the state to UNSET.
 	 * It also sends notifications to block outputs setting them to empty or
 	 * unknown. NOTE: This has no effect on Python blocks. They must do this
@@ -398,6 +414,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	public void setProperty(String name,Object value) {
 		BlockProperty prop = getProperty(name);
 		if( prop!=null && value!=null ) {
+			recordActivity(Activity.ACTIVITY_PROPERTY,name,value.toString());
 			prop.setValue(value);
 		}
 	}
@@ -411,18 +428,22 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	@Override
 	public void acceptValue(IncomingNotification incoming) {
 		checkIncomingValue(incoming );
+		QualifiedValue qv = incoming.getValue();
+		String port = incoming.getPropertyName();
 		// Check to see if the notification applies to a bound property.
-		if(incoming.getPropertyName()!=null) {
-			String port = incoming.getPropertyName();
-			QualifiedValue qv = incoming.getValue();
+		if(port!=null) {
 			if( qv!=null && qv.getValue()!=null ) {
-				// Trigger the property change in the block
+				// Trigger a property change in the block
 				BlockPropertyChangeEvent e = new BlockPropertyChangeEvent(getName(),port,getProperty(port).getValue(),qv.getValue());
 				propertyChange(e);
 			}
 		}
-			
-
+		else {
+			port = incoming.getConnection().getDownstreamPortName();
+			String value ="NULL";
+			if( qv!=null && qv.getValue()!=null ) value = qv.getValue().toString();
+			recordActivity(Activity.ACTIVITY_RECEIVE,port,value);
+		}
 	}
 	/**
 	 * The block is notified that signal has been sent to it.
@@ -460,7 +481,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		else if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_UNLOCK) ) {
 			setLocked(false);
 		}
-
+		recordActivity(Activity.ACTIVITY_RECEIVE,sig.getCommand());
 	}
 	/**
 	 * Send status update notifications for any properties

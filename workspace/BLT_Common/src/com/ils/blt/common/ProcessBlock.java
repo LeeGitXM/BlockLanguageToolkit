@@ -174,6 +174,7 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 * @param value a new value associated with the activity, if any.
 	 */
 	public void recordActivity(String desc,String value);
+	public void recordActivity(String desc,String name,String value);
 	/**
 	 * Reset the internal state of the block.
 	 */
