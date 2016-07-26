@@ -578,12 +578,6 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 					if( block.delayBlockStart() ) block.evaluate();
 				}
 			}
-			else {
-				// When we disable the diagram, reset blocks to clear histories.
-				for(ProcessBlock block:getProcessBlocks() ) {
-					block.reset();
-				}
-			}
 
 			// Fire diagram notification change
 			this.state = s;
