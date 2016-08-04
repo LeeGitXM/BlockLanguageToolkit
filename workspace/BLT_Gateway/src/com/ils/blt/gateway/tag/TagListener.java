@@ -98,7 +98,7 @@ public class TagListener implements TagChangeListener   {
 	 */
 	public synchronized void defineSubscription(ProcessBlock block,BlockProperty property,String tagPath) {
 		
-		if( DEBUG ) log.infof("%s.defineSubscription: %s:%s=%s",TAG,block.getName(),property.getName(),tagPath);
+		if( DEBUG || log.isTraceEnabled()  ) log.infof("%s.defineSubscription: %s:%s=%s",TAG,block.getName(),property.getName(),tagPath);
 		if( tagPath!=null && tagPath.length() >0  ) {
 			boolean needToStartSubscription = false;
 			BlockPropertyPair key = new BlockPropertyPair(block,property);
@@ -112,13 +112,13 @@ public class TagListener implements TagChangeListener   {
 			}
 			if( list.contains(key))  {   
 				// Duplicate request, nothing to do
-				if( DEBUG) log.infof("%s.defineSubscription: %s:%s already subscribes to: %s",TAG,block.getName(),property.getName(),tagPath);
+				if( DEBUG || log.isTraceEnabled() ) log.infof("%s.defineSubscription: %s:%s already subscribes to: %s",TAG,block.getName(),property.getName(),tagPath);
 				return;
 			}
 			
 			list.add(key);
 			tagMap.put(key,tagPath);
-			if( DEBUG ) log.infof("%s.defineSubscription: %s:%s now subscribes to: %s (%s)",TAG,block.getName(),property.getName(),
+			if( DEBUG || log.isTraceEnabled()  ) log.infof("%s.defineSubscription: %s:%s now subscribes to: %s (%s)",TAG,block.getName(),property.getName(),
 					tagPath,(needToStartSubscription?"START":"PIGGY-BACK"));
 			if(!stopped ) {
 				if(needToStartSubscription) startSubscriptionForTag(tagPath);
@@ -184,7 +184,7 @@ public class TagListener implements TagChangeListener   {
 		list.remove(key);
 		// Once the list is empty, we cancel the subscription
 		if(list.isEmpty()) {
-			if( DEBUG ) log.infof("%s.removeSubscription: cancelled %s:%s=%s",TAG,block.getName(),property.getName(),tagPath);
+			if( DEBUG || log.isTraceEnabled()  ) log.infof("%s.removeSubscription: cancelled %s:%s=%s",TAG,block.getName(),property.getName(),tagPath);
 			blockMap.remove(tagPath.toUpperCase());
 			if(!stopped) {
 				// If we're running unsubscribe
@@ -192,7 +192,7 @@ public class TagListener implements TagChangeListener   {
 				try {
 					TagPath tp = TagPathParser.parse(tagPath);
 					tmgr.unsubscribe(tp, this);
-					if( DEBUG ) log.infof("%s.removeSubscription: unsubscribed to %s",TAG,tagPath);
+					if( DEBUG || log.isTraceEnabled()  ) log.infof("%s.removeSubscription: unsubscribed to %s",TAG,tagPath);
 				}
 				catch(IOException ioe) {
 					log.errorf("%s.removeSubscription (%s)",TAG,ioe.getMessage());
@@ -212,7 +212,7 @@ public class TagListener implements TagChangeListener   {
 		SQLTagsManager tmgr = context.getTagManager();
 		try {
 			TagPath tp = TagPathParser.parse(tagPath);
-			if( DEBUG ) log.infof("%s.stopSubscription: %s",TAG,tagPath);
+			if( DEBUG || log.isTraceEnabled()  ) log.infof("%s.stopSubscription: %s",TAG,tagPath);
 			tmgr.unsubscribe(tp, this);
 		}
 		catch(IOException ioe) {
@@ -264,7 +264,7 @@ public class TagListener implements TagChangeListener   {
 			Tag tag = tmgr.getTag(tp);
 			if( tag!=null ) {
 				QualifiedValue value = tag.getValue();
-				if( DEBUG ) log.infof("%s.startSubscriptionForTag: %s = %s (%s at %s)",TAG,
+				if( DEBUG || log.isTraceEnabled() ) log.infof("%s.startSubscriptionForTag: %s = %s (%s at %s)",TAG,
 						tp.toStringFull(),value.getValue(),
 						(value.getQuality().isGood()?"GOOD":"BAD"),
 						dateFormatter.format(value.getTimestamp()));
@@ -389,7 +389,7 @@ public class TagListener implements TagChangeListener   {
 		try {
 			// Treat the notification differently depending on the binding
 			if( property.getBindingType().equals(BindingType.TAG_MONITOR)) {
-				if( DEBUG ) log.infof("%s.updateProperty: property change for %s:%s",TAG,block.getName(),property.getName());
+				if( DEBUG || log.isTraceEnabled()  ) log.infof("%s.updateProperty: property change for %s:%s",TAG,block.getName(),property.getName());
 				PropertyChangeEvaluationTask task = new PropertyChangeEvaluationTask(block,
 								new BlockPropertyChangeEvent(block.getBlockId().toString(),property.getName(),property.getValue(),value.getValue()));
 				Thread propertyChangeThread = new Thread(task, "PropertyChange");
