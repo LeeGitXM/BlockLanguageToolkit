@@ -189,7 +189,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 				notifyOfStatus(result);
 			}
 		}
-		// Set up the next poll, if we're not homegeneous.
+		// Set up the next poll, if we're not homogeneous.
 		if( ratio>0.0 || ratio<1.0) {
 			dog.setSecondsDelay(scanInterval);
 			timer.updateWatchdog(dog);  // pet dog
