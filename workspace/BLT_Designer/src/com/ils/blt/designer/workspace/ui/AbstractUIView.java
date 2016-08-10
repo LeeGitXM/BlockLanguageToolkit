@@ -142,7 +142,8 @@ public abstract class AbstractUIView extends JComponent
 				desc.setHint(PlacementHint.T);
 				topCount++;
 			}
-			else if(desc.getConnectionType()==ConnectionType.TEXT &&
+			else if((desc.getConnectionType()==ConnectionType.TEXT ||
+					 desc.getConnectionType()==ConnectionType.SIGNAL    ) &&
 			        desc.getType().equals(AnchorType.Origin) ) {
 				desc.setHint(PlacementHint.B);
 				bottomCount++;

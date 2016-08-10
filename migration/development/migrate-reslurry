@@ -1,0 +1,11 @@
+#!/bin/sh
+#  Migrate the problemmatic file - vfuReslurry
+#
+BLT=${GIT_REPO}/blt
+FIL=vfuReslurry
+INDIR=$BLT/migration/json/g2
+OUTDIR=$BLT/migration/json/ignition
+cp ${BLT}/migration/development/${FIL}.json ${INDIR}
+mkdir -p $OUTDIR
+$BLT/migration/migrate $INDIR/$FIL.json $OUTDIR/$FIL.json
+#$BLT/migration/migrate-debug $INDIR/$FIL.json $OUTDIR/$FIL.json

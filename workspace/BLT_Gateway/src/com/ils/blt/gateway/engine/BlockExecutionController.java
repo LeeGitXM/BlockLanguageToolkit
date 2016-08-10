@@ -260,11 +260,6 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		log.infof("%s: STARTED",TAG);
 		if(!stopped) return;  
 		stopped = false;
-		this.tagReader = new TagReader(context);
-		tagListener.start(context);
-		this.tagValidator = new TagValidator(context);
-		this.tagWriter = new TagWriter(context,new ProviderRegistry());
-		//tagWriter.initialize(context);
 		this.notificationThread = new Thread(this, "BlockExecutionController");
 		log.debugf("%s START - notification thread %d ",TAG,notificationThread.hashCode());
 		notificationThread.setDaemon(true);
@@ -274,6 +269,11 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		secondaryWatchdogTimer.setFactor(getIsolationTimeFactor());
 		secondaryWatchdogTimer.start();
 		sessionManager = context.getGatewaySessionManager();
+		// Prepare tag readers/writers
+		this.tagReader = new TagReader(context);
+		tagListener.start(context);
+		this.tagValidator = new TagValidator(context);
+		this.tagWriter = new TagWriter(context,new ProviderRegistry());
 		// Activate all of the blocks in the diagram.
 		modelManager.startBlocks();
 	}

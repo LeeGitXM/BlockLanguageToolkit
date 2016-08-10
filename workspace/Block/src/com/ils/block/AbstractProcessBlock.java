@@ -56,6 +56,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  * available executable block types.
  */
 public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropertyChangeListener, WatchdogObserver {
+	protected final static int DEFAULT_ACTIVITY_BUFFER_SIZE = 10; 
 	protected final static String DEFAULT_FORMAT = "yyyy/MM/dd HH:mm:ss";
 	protected final static SimpleDateFormat dateFormatter = new SimpleDateFormat(DEFAULT_FORMAT);
 	protected final FixedSizeQueue<Activity> activities;
@@ -92,7 +93,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	public AbstractProcessBlock() {
 		propertyMap = new HashMap<>();
 		anchors = new ArrayList<AnchorPrototype>();
-		activities = new FixedSizeQueue<Activity>(0);
+		activities = new FixedSizeQueue<Activity>(DEFAULT_ACTIVITY_BUFFER_SIZE);
 		initializePrototype();
 		initialize();
 	}
@@ -122,7 +123,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		anchors.add(sig);
 		
 		// Define a property that holds the size of the activity buffer. This applies to all blocks.
-		BlockProperty bufferSize = new BlockProperty(BlockConstants.BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE,new Integer(activities.size()),PropertyType.INTEGER,true);
+		BlockProperty bufferSize = new BlockProperty(BlockConstants.BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE,new Integer(activities.getBufferSize()),PropertyType.INTEGER,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE, bufferSize);
 	}
 	
@@ -276,7 +277,9 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		attributes.put("Name", getName());
 		attributes.put("UUID", getBlockId().toString());
 		attributes.put("State", getState().toString());
-		attributes.put("StateChangeTimestamp",dateFormatter.format(stateChangeTimestamp));
+		if( stateChangeTimestamp!=null ) {     // On start we'never had a state change
+			attributes.put("StateChangeTimestamp",dateFormatter.format(stateChangeTimestamp));
+		}
 		if( activities.size()>0 ) {
 			List<Activity> buffer = descriptor.getActivities();
 			for( Activity act:activities) {

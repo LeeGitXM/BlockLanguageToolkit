@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
+ *   (c) 2014-2016  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -26,13 +26,14 @@ import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
- * This class emits a specified signal.
+ * This class emits a specified signal. It is a generalization of the Reset
+ * which emits a fixed command, "Reset". The default command for this block is
+ * "Evaluate".
  */
 @ExecutableBlock
-public class Command extends AbstractProcessBlock implements ProcessBlock {
+public class Command extends Reset implements ProcessBlock {
 	private static String TAG = "Command";
-	private Signal command = new Signal();
-	private TruthValue trigger = TruthValue.TRUE;
+
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -40,6 +41,7 @@ public class Command extends AbstractProcessBlock implements ProcessBlock {
 	public Command() {
 		initialize();
 		initializePrototype();
+		command = new Signal(BlockConstants.COMMAND_EVALUATE,"","");
 	}
 	
 	/**
@@ -52,6 +54,7 @@ public class Command extends AbstractProcessBlock implements ProcessBlock {
 	public Command(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
+		command = new Signal(BlockConstants.COMMAND_EVALUATE,"","");
 	}
 
 	
@@ -76,37 +79,7 @@ public class Command extends AbstractProcessBlock implements ProcessBlock {
 	}
 	
 
-	/**
-	 * When a fresh value arrives that matches the trigger, send the output signal.
-	 * @param vcn incoming new value.
-	 */
-	@Override
-	public void acceptValue(IncomingNotification vcn) {
-		super.acceptValue(vcn);
-		QualifiedValue qv = vcn.getValue();
-		
-		if( qv.getQuality().isGood() && !isLocked() && qv.getValue().toString().equalsIgnoreCase(trigger.name()))  {
-			QualifiedValue result = new BasicQualifiedValue(command,qv.getQuality(),qv.getTimestamp());
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
-			controller.acceptCompletionNotification(nvn);
-			notifyOfStatus(result);
-		}
-	}
-	/**
-	 * When a fresh value arrives that matches the trigger, send the output signal.
-	 * @param vcn incoming new value.
-	 */
-	@Override
-	public void acceptValue(SignalNotification sn) {
-		Signal sig = sn.getSignal();
 
-		if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_START))  {
-			QualifiedValue result = new BasicQualifiedValue(command);
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
-			controller.acceptCompletionNotification(nvn);
-			notifyOfStatus(result);
-		}
-	}
 	/**
 	 * Handle a changes to the various attributes.
 	 */
@@ -130,14 +103,7 @@ public class Command extends AbstractProcessBlock implements ProcessBlock {
 			log.warnf("%s.propertyChange:Unrecognized property (%s)",TAG,propertyName);
 		}
 	}
-	/**
-	 * Send status update notification for our last latest state.
-	 */
-	@Override
-	public void notifyOfStatus() {}
-	private void notifyOfStatus(QualifiedValue qv) {
-		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
-	}
+
 	/**
 	 * Augment the palette prototype for this block class.
 	 */

@@ -1,7 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
- *   Code based on sample code at: 
- *        http://www.codeproject.com/Articles/36459/PID-process-control-a-Cruise-Control-example
+ *   (c) 2014-2016  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -17,33 +15,32 @@ import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.PlacementHint;
 import com.ils.blt.common.block.PropertyType;
+import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
-import com.ils.blt.common.notification.BlockPropertyChangeEvent;
+import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.notification.Signal;
-import com.ils.common.watchdog.TestAwareQualifiedValue;
-import com.ils.common.watchdog.Watchdog;
+import com.ils.blt.common.notification.SignalNotification;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
- * Emit a "reset" signal on a configured interval
+ * Emit a "reset" signal when the input matches the trigger value.
  */
 @ExecutableBlock
 public class Reset extends AbstractProcessBlock implements ProcessBlock {
 	private final String TAG = "Reset";
-	private final static double MIN_RESET_INTERVAL = 0.05;  // Do not spin faster than this.
-	private Signal signal = new Signal(BlockConstants.COMMAND_RESET,"","");
-	private double interval = Double.MAX_VALUE;             // ~secs (essentially never)
-	private final Watchdog dog;
+	protected Signal command = new Signal();
+	protected TruthValue trigger = TruthValue.TRUE;
+
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
 	public Reset() {
-		dog = new Watchdog(TAG,this);
 		initialize();
 		initializePrototype();
-		
+		command = new Signal(BlockConstants.COMMAND_RESET,"","");
 	}
 	
 	/**
@@ -55,8 +52,8 @@ public class Reset extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	public Reset(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
-		dog = new Watchdog(TAG,this);
 		initialize();
+		command = new Signal(BlockConstants.COMMAND_RESET,"","");
 	}
 	
 	
@@ -67,85 +64,52 @@ public class Reset extends AbstractProcessBlock implements ProcessBlock {
 	private void initialize() {	
 		setName("Reset");
 
-		BlockProperty commandProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_COMMAND,signal.getCommand(),PropertyType.STRING,true);
-		setProperty(BlockConstants.BLOCK_PROPERTY_COMMAND, commandProperty);
-		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL,new Double(interval),PropertyType.TIME,true);
-		setProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL, intervalProperty);
-
+		BlockProperty triggerProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER,trigger,PropertyType.BOOLEAN,true);
+		setProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER, triggerProperty);
+		
+		// Define a single input
+		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
+		anchors.add(input);
+		
 		// Define a single output
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.SIGNAL);
-		output.setHint(PlacementHint.R);  // Got wierd behavior if Top
+		output.setHint(PlacementHint.B);  // Got wierd behavior if Top
 		anchors.add(output);
 	}
 	
-	@Override
-	public void reset() {
-		dog.setSecondsDelay(interval);
-		if( interval>MIN_RESET_INTERVAL) timer.updateWatchdog(dog);  // pet dog
-	}
-	@Override
-	public void start() {
-		if( !running ) {
-			log.debugf("%s.start",TAG);
-			dog.setSecondsDelay(interval);
-			if( interval>MIN_RESET_INTERVAL) timer.updateWatchdog(dog);  // pet dog
-		}
-		super.start();
-	}
-	@Override
-	public void stop() {
-		timer.removeWatchdog(dog);
-		log.debugf("%s.stop",TAG);
-	}
-
 	/**
-	 * Handle a changes to the various attributes.
+	 * When a fresh value arrives that matches the trigger, send the output signal.
+	 * It works just fine sending the signal down a connection.
+	 * @param vcn incoming new value.
 	 */
 	@Override
-	public void propertyChange(BlockPropertyChangeEvent event) {
-		super.propertyChange(event);
-		String propertyName = event.getPropertyName();
-		if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_COMMAND)) {
-			signal = new Signal(event.getNewValue().toString(),"","");
-		}
-		else if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_INTERVAL)) {
-			try {
-				interval = Double.parseDouble(event.getNewValue().toString());
-				if( interval>MIN_RESET_INTERVAL) {
-					dog.setSecondsDelay(interval);
-					timer.updateWatchdog(dog);  // pet dog
-				}
-				else {
-					timer.removeWatchdog(dog);
-				}
-				
-			}
-			catch(NumberFormatException nfe) {
-				log.warnf("%s.propertyChange: Unable to convert interval to a double (%s)",TAG,nfe.getLocalizedMessage());
-			}
-		}
-		else {
-			log.warnf("%s.propertyChange:Unrecognized property (%s)",TAG,propertyName);
-		}
-	}
-	
-	/**
-	 * The interval has expired. Reset interval, then compute output.
-	 * Do not compute anything until all parameters have been set.
-	 */
-	@Override
-	public synchronized void evaluate() {
-		if( !isLocked() ) {
-			QualifiedValue result = new TestAwareQualifiedValue(timer,signal);
+	public void acceptValue(IncomingNotification vcn) {
+		super.acceptValue(vcn);
+		QualifiedValue qv = vcn.getValue();
+		
+		if( qv.getQuality().isGood() && !isLocked() && qv.getValue().toString().equalsIgnoreCase(trigger.name()))  {
+			QualifiedValue result = new BasicQualifiedValue(command,qv.getQuality(),qv.getTimestamp());
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus(result);
 		}
-		if( interval>MIN_RESET_INTERVAL ) {
-			dog.setSecondsDelay(interval);
-			timer.updateWatchdog(dog);  // pet dog
+	}
+	/**
+	 * When a fresh value arrives that matches the trigger, send the output signal.
+	 * @param vcn incoming new value.
+	 */
+	@Override
+	public void acceptValue(SignalNotification sn) {
+		Signal sig = sn.getSignal();
+
+		if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_START))  {
+			QualifiedValue result = new BasicQualifiedValue(command);
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
+			controller.acceptCompletionNotification(nvn);
+			notifyOfStatus(result);
 		}
 	}
+	
 	/**
 	 * Send status update notification for our last latest state.
 	 */

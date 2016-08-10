@@ -50,10 +50,10 @@ public class G2Anchor {
 			}
 			else if( type.equalsIgnoreCase("GDL-ACTION-LINK") ||
 					 type.equalsIgnoreCase("GDL-ACTION-PATH")) {
-				result = ConnectionType.TEXT;
+				result = ConnectionType.SIGNAL;
 			}
 			else if( type.equalsIgnoreCase("GDL-CONTROL-PATH")   ) {
-				result = ConnectionType.SIGNAL;
+				result = ConnectionType.TRUTHVALUE;
 			}
 			else if( type.equalsIgnoreCase("GDL-INFERENCE-PATH")) {
 				result = ConnectionType.TRUTHVALUE;

@@ -64,7 +64,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		requestHandler = ControllerRequestHandler.getInstance();
 	}
 		
-	// @Override // 7.8.3
+	@Override
 	public boolean isFreeModule() { return true; }
 	
 	// NOTE: During this period, the module status is LOADED, not RUNNING
@@ -97,7 +97,6 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		BlockExecutionController controller = BlockExecutionController.getInstance();
 	    mmgr = new ModelManager(context);
 	    controller.setDelegate(mmgr);
-	    controller.start(context);
 	    // Initialize all the script modules from parameters stored in the ORM
 	    GatewayScriptExtensionManager sem = GatewayScriptExtensionManager.getInstance();
 	    for( String flavor: sem.getFlavors() ) {
@@ -127,6 +126,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	    // Register for changes to our permanent settings
 	    ToolkitRecord.META.addRecordListener(recordListener);
 	    context.getProjectManager().addProjectListener(mmgr);
+	    controller.start(context);     // Lastly, start the controller
 	    log.infof("%s: Startup complete.",TAG);
 	}
 

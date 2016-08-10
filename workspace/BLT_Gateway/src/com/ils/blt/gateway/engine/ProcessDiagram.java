@@ -145,11 +145,14 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 					pb.setProjectId(projectId);
 					blocks.put(pb.getBlockId(), pb);
 					log.debugf("%s.analyze: New block %s(%d)",TAG,pb.getName(),pb.hashCode());
-					// If we create a block, then start any appropriate subscriptions
-					for(BlockProperty bp:pb.getProperties()) {
-						controller.startSubscription(getState(),pb,bp);
+					if( BlockExecutionController.CONTROLLER_RUNNING_STATE.equalsIgnoreCase(BlockExecutionController.getExecutionState()) && 
+							!DiagramState.DISABLED.equals(state) ) {
+						// If we create a block, then start any appropriate subscriptions
+						for(BlockProperty bp:pb.getProperties()) {
+							controller.startSubscription(getState(),pb,bp);
+						}
+						pb.start();
 					}
-					pb.start();
 				}
 				else {
 					log.errorf("%s.analyze: ERROR, diagram %s failed to instantiate block of type %s",TAG,getName(),sb.getClassName());

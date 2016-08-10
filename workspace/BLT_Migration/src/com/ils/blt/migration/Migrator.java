@@ -32,6 +32,7 @@ import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
+import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableApplication;
@@ -301,6 +302,8 @@ public class Migrator {
 		
 		// Finally we analyze the diagram as a whole to deduce connections and partial connections
 		connectionMapper.createConnectionSegments(g2d, sd);
+		// Handle some special-purpose re-routing
+		connectionMapper.customizeConnections(sd);
 		return sd;
 	}
 
@@ -347,15 +350,23 @@ public class Migrator {
 			}
 		}
 		// 3)  Input and output blocks are typed in G2
-		else if( g2Block.getClassName().equalsIgnoreCase("GDL-NUMERIC-ENTRY-POINT") ||
-				g2Block.getClassName().equalsIgnoreCase("GDL-DATA-PATH-CONNECTION-POST") ) {
+		else if( g2Block.getClassName().equalsIgnoreCase("GDL-NUMERIC-ENTRY-POINT")  ) {
+			for( SerializableAnchor anchor:block.getAnchors()) {
+				if( anchor.getDirection().equals(AnchorDirection.OUTGOING) ) {
+					anchor.setConnectionType(ConnectionType.DATA);
+				}
+			}
+		}
+		else if( g2Block.getClassName().equalsIgnoreCase("GDL-DATA-PATH-CONNECTION-POST") ) {
 			for( SerializableAnchor anchor:block.getAnchors()) {
 				anchor.setConnectionType(ConnectionType.DATA);
 			}
 		}
 		else if( g2Block.getClassName().equalsIgnoreCase("GDL-SYMBOLIC-ENTRY-POINT") ) {
 			for( SerializableAnchor anchor:block.getAnchors()) {
-				anchor.setConnectionType(ConnectionType.TEXT);
+				if( anchor.getDirection().equals(AnchorDirection.OUTGOING) ) {
+					anchor.setConnectionType(ConnectionType.TEXT);
+				}
 			}
 		}
 		else if( g2Block.getClassName().equalsIgnoreCase("GDL-INFERENCE-PATH-CONNECTION-POST") ) {
@@ -373,6 +384,15 @@ public class Migrator {
 					if( prop.getName().equalsIgnoreCase("TagPath" )) {
 						prop.setBinding("[]DiagnosticToolkit/Connections/"+block.getName());
 					}
+				}
+			}
+		}
+		// Change the sense of the pulse.
+		else if( block.getClassName().startsWith("com.ils.block.TruthValuePulse") ) { 
+			// Ignore blocks with the default name
+			for(BlockProperty prop:block.getProperties()) {
+				if( prop.getName().equalsIgnoreCase("PulseValue" )) {
+					prop.setValue(TruthValue.FALSE);
 				}
 			}
 		}
@@ -399,7 +419,8 @@ public class Migrator {
 		for( SerializableBlock block:sdiag.getBlocks()) {
 			if(block.getClassName().startsWith("com.ils.block.Junction")) {
 				SerializableAnchor[] anchors = block.getAnchors();
-				if( anchors.length==2 && 
+				// The signal anchor is guaranteed to be last.
+				if( anchors.length==3 && 
 				    !anchors[0].getDirection().equals(anchors[1].getDirection()) ) {
 					
 					List<SerializableConnection> inConnections = new ArrayList<>();

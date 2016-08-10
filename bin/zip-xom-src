@@ -14,9 +14,6 @@ cd ${GIT_REPO}
 rm -rf external/cachedir
 rm -rf ils-common/bin/*
 rm -rf ils-common/workspace/doc/*
-rm -rf blt/workspace/*/doc/*
-rm -rf blt/workspace/*/bin/*
-rm -rf blt/workspace/*/temp_modl
 mkdir $TMP
 
 mkdir $TMP/blt
@@ -33,6 +30,10 @@ rm -rf blt/.metadata
 rm -rf blt/.recommenders
 rm -rf ils-common/.metadata
 rm -rf ils-common/.recommenders
+rm -rf blt/workspace/*/doc/*
+rm -rf blt/workspace/*/bin/*
+rm -rf blt/workspace/*/temp_modl
+rm -rf blt/workspace/*/modules
 
 # Now zip and copy to subversion
 cd ${GIT_REPO}/$VERS

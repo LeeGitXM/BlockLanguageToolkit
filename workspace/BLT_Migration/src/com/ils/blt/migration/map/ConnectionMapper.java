@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.ils.blt.common.block.AnchorDirection;
+import com.ils.blt.common.block.AnchorPrototype;
+import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableAnchorPoint;
@@ -69,6 +71,7 @@ public class ConnectionMapper {
 		G2Anchor[] g2cxns = g2block.getConnections();
 		List<SerializableAnchor> anchorList = new ArrayList<SerializableAnchor>();
 		for( G2Anchor g2cxn:g2cxns ) {
+			if( g2cxn.getPort().equalsIgnoreCase(BlockConstants.SIGNAL_PORT_NAME) ) continue; // Add later
 			SerializableAnchor anchor = new SerializableAnchor();
 			anchor.setConnectionType(g2cxn.getConnectionType());
 			anchor.setDirection(g2cxn.getAnchorDirection());
@@ -83,6 +86,21 @@ public class ConnectionMapper {
 				anchorList.add(anchor);
 			}
 		}
+		// Every block has a signal stub. Add it here.
+		SerializableAnchor sig = new SerializableAnchor();
+		sig.setConnectionType(ConnectionType.SIGNAL);
+		sig.setDirection(AnchorDirection.INCOMING);
+		sig.setDisplay(BlockConstants.SIGNAL_PORT_NAME);
+		sig.setId(UUID.randomUUID()); 
+		sig.setParentId(iblock.getId());
+		sig.setHidden(true);
+		String key = makeAnchorMapKey(iblock.getId(),sig.getDisplay());
+		if( anchorMap.get(key)==null ) {   // Weed out duplicates
+			anchorMap.put(key, sig);	
+			log.tracef("%s.setAnchors: anchorMap key = %s",TAG,key);
+			anchorList.add(sig);
+		}
+		
 		SerializableAnchor[] anchors = anchorList.toArray(new SerializableAnchor[anchorList.size()]);
 		iblock.setAnchors(anchors);
 		blockMap.put(iblock.getId().toString(), iblock);
@@ -124,7 +142,7 @@ public class ConnectionMapper {
 					cxn.setEndBlock(UUID.nameUUIDFromBytes(g2anchor.getUuid().getBytes()));
 					setBeginAnchorPoint(cxn,cxn.getBeginBlock(),port);
 				}	
-				log.debugf("%s.createConnectionSegments: connection=%s",TAG,cxn.toString());
+				log.debugf("%s.createConnectionSegments: connection=%s",TAG,displayString(diagram,cxn));
 			}
 		}
 		// Walk the diagram and create a lookup of diagram by blockId
@@ -148,14 +166,14 @@ public class ConnectionMapper {
 				UUID beginBlockId = cxn.getBeginBlock();
 				if(beginBlockId!=null ) {
 					beginBlock = blockMap.get(beginBlockId.toString());
-					if(beginBlock==null) log.debugf("%s.createConnections: beginBlock (%s) lookup failed",TAG,beginBlockId);
+					if(beginBlock==null) log.infof("%s.createConnections: beginBlock (%s) lookup failed",TAG,beginBlockId);
 				}
 				
 				SerializableBlock endBlock = null;
 				UUID endBlockId = cxn.getEndBlock();
 				if(endBlockId!=null ) {
 					endBlock = blockMap.get(endBlockId.toString());
-					if(endBlock==null) log.debugf("%s.createConnections: endBlock (%s) lookup failed",TAG,endBlockId);
+					if(endBlock==null) log.infof("%s.createConnections: endBlock (%s) lookup failed",TAG,endBlockId);
 				}
 
 				// Handle the case of a normal connection
@@ -163,7 +181,8 @@ public class ConnectionMapper {
 					// Normal complete connection - both blocks on same diagram
 					SerializableDiagram sd = diagramForBlockId.get(beginBlock.getId());
 					sd.addConnection(cxn);
-					log.debugf("%s.createConnections: NORMAL::%s (%s has %d)",TAG,cxn.toString(),sd.getName(),sd.getConnections().length);
+					customizeConnection(sd,cxn);
+					log.debugf("%s.createConnections: created %s",TAG,displayString(sd,cxn));
 				}
 				// There are 4 special cases relating to connection posts.
 				// NOTE: The block lookup on the "through" end (null anchor) will have failed
@@ -177,8 +196,8 @@ public class ConnectionMapper {
 										endAnchor.getDirection()));
 					}
 					else {
-						log.debugf("%s.createConnections: anchorPointForSource: %s (%s)",TAG,endBlock.getId().toString(),endBlock.getName());
-							anchorPointForSourceBlock.put(endBlock.getId(),new AnchorPointEntry(endAnchor,cxn.getType()));
+						//log.debugf("%s.createConnections: anchorPointForSource: %s (%s)",TAG,endBlock.getId().toString(),endBlock.getName());
+						anchorPointForSourceBlock.put(endBlock.getId(),new AnchorPointEntry(endAnchor,cxn.getType()));
 					}
 				}
 				else if(beginAnchor!=null && beginBlock!=null ){
@@ -190,7 +209,7 @@ public class ConnectionMapper {
 										beginAnchor.getDirection()));
 					}
 					else {
-						log.debugf("%s.createConnections: anchorPointForSink: %s (%s)",TAG,beginBlock.getId().toString(),beginBlock.getName());
+						//log.debugf("%s.createConnections: anchorPointForSink: %s (%s)",TAG,beginBlock.getId().toString(),beginBlock.getName());
 						anchorPointForSinkBlock.put(beginBlock.getId(),new AnchorPointEntry(beginAnchor,cxn.getType()));
 					}
 				}
@@ -200,6 +219,50 @@ public class ConnectionMapper {
 				}
 			}
 		}
+	}
+	
+	// Handle some custom re-routings for an entire diagram
+	public void customizeConnections(SerializableDiagram sd) {
+		for( SerializableConnection cxn:sd.getConnections() ) {
+			customizeConnection(sd,cxn);
+		}
+	}
+		
+	// Handle some custom re-routings
+	private void customizeConnection(SerializableDiagram sd,SerializableConnection cxn) {
+		// Any connections that start from a Reset or Command block go to the signal port of the end block.
+		SerializableBlock beginBlock = getBeginBlock(sd,cxn);
+		if( beginBlock.getClassName().equals("com.ils.block.Reset") ||
+				beginBlock.getClassName().equals("com.ils.block.Command")  ) {
+
+			if( cxn.getEndAnchor().getId().toString().equalsIgnoreCase("signal")) {
+				SerializableBlock endBlock = getEndBlock(sd,cxn);
+				setEndAnchorPoint(cxn, endBlock.getId(), "signal");
+				log.debugf("%s.customizeConnections: modified %s",TAG,displayString(sd,cxn));
+			}
+		}
+
+	}
+	
+	private SerializableBlock getBeginBlock(SerializableDiagram sd,SerializableConnection cxn) {
+		if( cxn.getBeginAnchor() !=null ) {
+			UUID blockId = cxn.getBeginAnchor().getParentId();
+			SerializableBlock[] blks = sd.getBlocks();
+			for( SerializableBlock blk:blks) {
+				if(blk.getId().equals(blockId)) return blk;
+			}
+		}
+		return null;
+	}
+	private SerializableBlock getEndBlock(SerializableDiagram sd,SerializableConnection cxn) {
+		if( cxn.getEndAnchor() !=null ) {
+			UUID blockId = cxn.getEndAnchor().getParentId();
+			SerializableBlock[] blks = sd.getBlocks();
+			for( SerializableBlock blk:blks) {
+				if(blk.getId().equals(blockId)) return blk;
+			}
+		}
+		return null;
 	}
 	
 	// Set anchor point at origin
@@ -396,6 +459,28 @@ public class ConnectionMapper {
 						TAG,source.getParent().getName(),source.getTarget().getName(),source.getPost().getName());
 			}
 		}
+	}
+	/**
+	 * Create a easily recognizable string for a connection. For debugging.
+	 */
+	private String displayString(SerializableDiagram sd,SerializableConnection cxn) {
+		SerializableBlock begin = getBeginBlock(sd,cxn);
+		String beginName = "NONE";
+		String beginPort = "";
+		if( begin!=null ) {
+			beginName = begin.getName();
+			beginPort = cxn.getBeginAnchor().getId().toString();
+		}
+		
+		SerializableBlock end   = getEndBlock(sd,cxn);
+		String endName = "NONE";
+		String endPort = "";
+		if( end!=null ) {
+			endName = end.getName();
+			endPort = cxn.getEndAnchor().getId().toString();
+		}
+		
+		return String.format("%s(%s)->%s(%s)",beginName,beginPort,endName,endPort);
 	}
 	
 	/**

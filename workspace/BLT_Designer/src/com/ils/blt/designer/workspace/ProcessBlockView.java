@@ -160,7 +160,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		this.anchors = new HashMap<>();
 		if(sb.getAnchors()!=null ) {
 			for( SerializableAnchor sa:sb.getAnchors() ) {
-				log.debugf("%s: Creating serializable anchor %s (%s)", TAG,sa.getDisplay(),sa.getConnectionType().name());
+				log.debugf("%s: %s creating serializable anchor %s (%s)", TAG,sb.getName(),sa.getDisplay(),sa.getConnectionType().name());
 				ProcessAnchorDescriptor pad = new ProcessAnchorDescriptor((sa.getDirection()==AnchorDirection.INCOMING?AnchorType.Terminus:AnchorType.Origin),
 						sa.getConnectionType(),sa.getId(),sa.getDisplay(),sa.getAnnotation(),sa.getHint(),sa.isMultiple());
 				pad.setHidden(sa.isHidden());
@@ -170,12 +170,12 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		this.properties = new ArrayList<BlockProperty>();
 		if(sb.getProperties()!=null ) {
 			for(BlockProperty bp:sb.getProperties()) {
-				log.debugf("%s: Creating property %s", TAG,bp.getName());
+				log.debugf("%s: %s creating property %s", TAG,sb.getName(),bp.getName());
 				properties.add(bp);
 			} 
 		}
 		this.location = new Point(sb.getX(),sb.getY());
-		log.debugf("%s: Created %s %s (%s) view from serializable block", TAG, className, sb.getId().toString(),style.toString());
+		log.debugf("%s: %s created %s %s (%s) view from serializable block", TAG, sb.getName(),className, sb.getId().toString(),style.toString());
 	}
 	
 	// NOTE: The most recent values on each port are stored in the connection anchor point
