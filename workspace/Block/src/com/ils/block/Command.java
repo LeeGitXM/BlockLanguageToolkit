@@ -18,12 +18,7 @@ import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
-import com.ils.blt.common.notification.IncomingNotification;
-import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.notification.Signal;
-import com.ils.blt.common.notification.SignalNotification;
-import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
  * This class emits a specified signal. It is a generalization of the Reset
@@ -39,9 +34,9 @@ public class Command extends Reset implements ProcessBlock {
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
 	public Command() {
+		command = new Signal(BlockConstants.COMMAND_EVALUATE,"","");
 		initialize();
 		initializePrototype();
-		command = new Signal(BlockConstants.COMMAND_EVALUATE,"","");
 	}
 	
 	/**
@@ -53,8 +48,8 @@ public class Command extends Reset implements ProcessBlock {
 	 */
 	public Command(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
-		initialize();
 		command = new Signal(BlockConstants.COMMAND_EVALUATE,"","");
+		initialize();
 	}
 
 	

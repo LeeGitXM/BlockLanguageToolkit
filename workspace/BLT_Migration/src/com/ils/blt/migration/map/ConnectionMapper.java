@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.ils.blt.common.block.AnchorDirection;
-import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.serializable.SerializableAnchor;
@@ -141,6 +140,11 @@ public class ConnectionMapper {
 					cxn.setBeginBlock(UUID.nameUUIDFromBytes(g2block.getUuid().getBytes()));
 					cxn.setEndBlock(UUID.nameUUIDFromBytes(g2anchor.getUuid().getBytes()));
 					setBeginAnchorPoint(cxn,cxn.getBeginBlock(),port);
+					
+					// If this is a signal, there can only be one receiving port. Make sure it exists.
+					if(g2anchor.getType()!=null && g2anchor.getType().equalsIgnoreCase("GDL-ACTION-PATH")) {
+						setEndAnchorPoint(cxn,cxn.getEndBlock(),BlockConstants.SIGNAL_PORT_NAME);
+					}
 				}	
 				log.debugf("%s.createConnectionSegments: connection=%s",TAG,displayString(diagram,cxn));
 			}
