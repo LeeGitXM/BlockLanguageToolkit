@@ -545,12 +545,13 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 			for(ProcessBlock blk:blocks.values()) {
 				blk.stop();
 			}
+			// Set correct timer for new state
+			updateBlockTimers(s);
 
-			updateBlockTimers();
-
-			if(!DiagramState.DISABLED.equals(getState()) ) {
+			// If the new state is active or isolated, start subscriptions
+			if(!DiagramState.DISABLED.equals(s) ) {
 				String provider = null;
-				if( DiagramState.ISOLATED.equals(getState())) {
+				if( DiagramState.ISOLATED.equals(s)) {
 					provider = ControllerRequestHandler.getInstance().getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER);
 				}
 				else {
@@ -601,10 +602,10 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	 * Loop through the diagram's blocks setting the timer appropriate
 	 * to the diagram's state.
 	 */
-	public void updateBlockTimers() {
+	public void updateBlockTimers(DiagramState s) {
 		// Set the proper timer
 		WatchdogTimer timer = controller.getTimer();
-		if( DiagramState.ISOLATED.equals(getState())) timer = controller.getSecondaryTimer();
+		if( DiagramState.ISOLATED.equals(s) )  timer = controller.getSecondaryTimer();
 		for(ProcessBlock blk:blocks.values()) {
 			blk.setTimer(timer);
 		}

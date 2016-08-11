@@ -1,5 +1,5 @@
 /**
-r *   (c) 2014  ILS Automation. All rights reserved. 
+r *   (c) 2014-2016  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -29,7 +29,7 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
 @ExecutableBlock
 public class CompareDeadband extends Compare implements ProcessBlock {
 	private final String TAG = "CompareDeadband";
-	private double deadband = Double.NaN;
+	private double deadband = 0.0;
 	private TruthValue truthValue = TruthValue.UNSET;
 	
 	/**

@@ -52,9 +52,11 @@ public class ToolkitRecordListener extends BasicToolkitRecordListener implements
 		ModelManager mm = BlockExecutionController.getInstance().getDelegate();
 		List<ProcessDiagram> diagrams = mm.getDiagrams();
 		for(ProcessDiagram diagram:diagrams) {
-			diagram.stopSubscriptions();
-			diagram.updatePropertyProviders(name);
-			diagram.startSubscriptions(state);
+			if(diagram.getState().equals(state)) {
+				diagram.stopSubscriptions();
+				diagram.updatePropertyProviders(name);
+				diagram.startSubscriptions(state);
+			}
 		}
 	}
 	
