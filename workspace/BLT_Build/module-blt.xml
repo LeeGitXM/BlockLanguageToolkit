@@ -5,7 +5,7 @@
 		<name>@NAME@</name>
 		<description>@DESCRIPTION@</description>
 		<version>@VERSION@</version>
-		<license>license.html</license>
+		<license></license>
 		<requiredignitionversion>7.8.0</requiredignitionversion>
 		<requiredframeworkversion>7</requiredframeworkversion>
 		<freemodule>true</freemodule>
