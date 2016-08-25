@@ -535,6 +535,46 @@ public class Migrator {
 				}
 			}
 		}
+
+		// Delete any connections between a FinalDiagnosis block and a Reset. 
+		// Logic between them will be taken care of programmatically.
+		for( SerializableBlock block:sdiag.getBlocks()) {
+			if(block.getClassName().startsWith("com.ils.block.Reset")) {
+				SerializableConnection connectionToDelete = null;
+				for(SerializableConnection scxn:sdiag.getConnections()) {
+					if( scxn==null ) {
+						continue;
+					}
+					if(scxn.getEndBlock()==null ) continue;   // Dangling connection
+					if(scxn.getEndBlock()==null )   continue;
+					if(scxn.getEndBlock().equals(block.getId())) {
+						UUID upstream = scxn.getBeginBlock();
+						for( SerializableBlock upstreamblock:sdiag.getBlocks()) {
+							if( upstream.equals(upstreamblock.getId()) ) {
+								if( upstreamblock.getClassName().endsWith("FinalDiagnosis") ) {
+									connectionToDelete = scxn;
+									//System.err.println(String.format("%s: Deleting connection between Reset/Final Diagnosis",TAG)); 
+								}
+								break;
+							}
+						}
+					}
+				}
+				if(connectionToDelete!=null ) {
+					SerializableConnection[] connections = new SerializableConnection[sdiag.getConnections().length-1];
+					int index = 0;
+					for(SerializableConnection scxn:sdiag.getConnections()) {
+						if( scxn.equals(connectionToDelete) ) {
+							//System.err.println(String.format("%s: Skipped deleted connection",TAG)); 
+							continue;
+						}
+						connections[index] = scxn;
+						index++;
+					}
+					sdiag.setConnections(connections);
+				}
+			}
+		}
 	}
 	/**
 	 * Perform any special processing after application is created.

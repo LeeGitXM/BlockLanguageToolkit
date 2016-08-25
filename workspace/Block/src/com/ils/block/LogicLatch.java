@@ -21,7 +21,7 @@ import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
- * Hold the first truth-value that arrives.
+ *  Explicitly thwart a reset. over a reset, retain previous state.
  */
 @ExecutableBlock
 public class LogicLatch extends AbstractProcessBlock implements ProcessBlock {

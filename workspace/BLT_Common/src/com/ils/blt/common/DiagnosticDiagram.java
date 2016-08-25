@@ -4,6 +4,7 @@
 package com.ils.blt.common;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * A diagram is the parent container for related blocks. Currently this interface
@@ -15,6 +16,9 @@ public interface DiagnosticDiagram  {
 	 * @return a list of blocks connected directly to the output(s) of the specified block.
 	 */
 	public List<ProcessBlock> getDownstreamBlocks(ProcessBlock root);
+	
+	public UUID getSelf();
+	public DiagramState getState();
 	
 	/**
 	 * @param root the subject block

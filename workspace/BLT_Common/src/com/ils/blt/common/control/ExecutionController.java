@@ -9,6 +9,7 @@ package com.ils.blt.common.control;
 import java.util.List;
 import java.util.UUID;
 
+import com.ils.blt.common.DiagnosticDiagram;
 import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.notification.BroadcastNotification;
@@ -31,9 +32,11 @@ public interface ExecutionController  {
 	public void alterSubscription(UUID diagramId,UUID id,String propertyName);
 	public void clearCache();
 	public void clearSubscriptions();
+	public DiagnosticDiagram getDiagram(String diagramId);
 	public String getIsolationDatabase();
 	public String getIsolationProvider();
 	public String getProductionDatabase();
+	public ProcessBlock getProcessBlock(String diagramId,String blockId);
 	public String getProductionProvider();
 	public double getIsolationTimeFactor();
 	public String getSubscribedPath(ProcessBlock block,BlockProperty property);

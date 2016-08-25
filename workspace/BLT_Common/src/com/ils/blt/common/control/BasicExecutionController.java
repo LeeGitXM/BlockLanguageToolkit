@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.ils.blt.common.DiagnosticDiagram;
 import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.notification.BroadcastNotification;
@@ -46,6 +47,10 @@ public class BasicExecutionController implements ExecutionController  {
 	public void clearCache() {
 		log.warnf("%s.clearCache: WARNING: Executed from stub class",TAG);
 	}
+	public DiagnosticDiagram getDiagram(String diagramId) {
+		log.warnf("%s.getDiagram: WARNING: Executed from stub class",TAG);
+		return null;
+	}
 	public void clearSubscriptions(){
 		log.warnf("%s.clearSubscriptions: WARNING: Executed from stub class",TAG);
 	}
@@ -68,6 +73,10 @@ public class BasicExecutionController implements ExecutionController  {
 	public double getIsolationTimeFactor() {
 		log.warnf("%s.getIsolationTimeFactor: WARNING: Executed from stub class",TAG);
 		return 0;
+	}
+	public ProcessBlock getProcessBlock(String diagramId,String blockId) {
+		log.warnf("%s.getProcessBlock: WARNING: Executed from stub class",TAG);
+		return null;
 	}
 	public String getSubscribedPath(ProcessBlock block,BlockProperty property) {
 		log.warnf("%s.getSubscribedPath: WARNING: Executed from stub class",TAG);

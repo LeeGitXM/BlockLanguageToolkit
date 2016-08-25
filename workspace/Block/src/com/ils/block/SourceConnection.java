@@ -4,15 +4,18 @@
 package com.ils.block;
 
 import java.awt.Color;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.DiagnosticDiagram;
 import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockStyle;
+import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 
@@ -42,6 +45,58 @@ public class SourceConnection extends Input implements ProcessBlock {
 	}
 	@Override
 	public String getClassName() {return BLTProperties.CLASS_NAME_SOURCE;}
+	/**
+	 * A source block has has a special form of the explanation method in that
+	 * the explanation is derived from the most recent block to write to its
+	 * input. We have no direct way of knowing which of the potential inputs 
+	 * wrote to the tag. Consequently, we search the potential sources and
+	 * choose the one that has the latest timestamp. 
+	 * 
+	 * @return an explanation for the current state of the block.
+	 *         By default it is the concatenated explanations of all 
+	 *         upstream blocks with the same state.
+	 *         If this is a block that has no relevant state, return
+	 *         an empty string.
+	 */
+	@Override
+	public String getExplanation(DiagnosticDiagram diagram) {
+		String explanation = "";
+		TruthValue blockState = getState();
+		if( blockState.equals(TruthValue.TRUE) || blockState.equals(TruthValue.FALSE)) {
+			ProcessBlock upstream = getMostRecentlyChangedPredecessor(diagram);
+			if( upstream!=null ) {
+				DiagnosticDiagram connectedDiagram = controller.getDiagram(upstream.getParentId().toString());
+				if(!explanation.isEmpty()) explanation = explanation + ", ";
+				explanation = explanation + upstream.getExplanation(connectedDiagram);
+			}
+		}
+		return explanation;
+	}
+	
+	/**
+	 * Search the upstream blocks to find the one most recently changed
+	 * and that matches the current state of this block.
+	 * @return
+	 */
+	private ProcessBlock getMostRecentlyChangedPredecessor(DiagnosticDiagram diagram) {
+		ProcessBlock result = null;
+		Date latestTime = null;
+		List<SerializableBlockStateDescriptor>predecessors = controller.listSinksForSource(diagram.getSelf().toString(), getName());
+		for( SerializableBlockStateDescriptor predecessor:predecessors ) {
+			String connectedDiagramId = predecessor.getAttributes().get(BLTProperties.BLOCK_ATTRIBUTE_PARENT);
+			String connectedBlockId = predecessor.getIdString();
+			ProcessBlock block = controller.getProcessBlock(connectedDiagramId,connectedBlockId);
+			if( getState().equals(block.getState())) {
+				if( latestTime==null ||
+					(block.getTimeOfLastStateChange()!=null &&
+					 latestTime.getTime() < block.getTimeOfLastStateChange().getTime())       ) {
+					result = block;
+					latestTime = block.getTimeOfLastStateChange();
+				}
+			}
+		}
+		return result;
+	}
 	/**
 	 * Add properties that are new for this class.
 	 * Populate them with default values.

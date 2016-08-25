@@ -48,13 +48,14 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 	protected JCheckBox postTextRecommendationBox;
 	protected JTextField priorityField;
 	protected JTextField refreshRateField;
-	protected JTextField recommendationCallbackField;
+	protected JTextField postProcessingCallbackField;
 	protected JCheckBox  constantCheckBox;
 	protected JCheckBox  trapBox;
 	
 	public FinalDiagnosisConfiguration(DesignerContext ctx,ProcessDiagramView diag,ProcessBlockView view) {
 		super(ctx);
 		this.model = new GeneralPurposeDataContainer();
+		this.setLocationRelativeTo(null);    // Should center on screen
 		this.diagram = diag;
 		this.block = view;
 		this.setTitle(rb.getString("FinalDiagnosisEditor.Title"));
@@ -209,11 +210,11 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 		refreshRateField.setPreferredSize(NUMBER_BOX_SIZE);
 		panel.add(refreshRateField,"span 2,alignx left,wrap");
 		
-		panel.add(createLabel("FinalDiagnosis.RecommendationCallback"),"gaptop 2,aligny top");
-		method = (String)properties.get("TextRecommendationCallback");
+		panel.add(createLabel("FinalDiagnosis.PostProcessingCallback"),"gaptop 2,aligny top");
+		method = (String)properties.get("PostProcessingCallback");
 		if( method==null) method="";
-		recommendationCallbackField = createTextField("FinalDiagnosis.RecommendationCallback.Desc",method);
-		panel.add(recommendationCallbackField,"span 3,growx,wrap");
+		postProcessingCallbackField = createTextField("FinalDiagnosis.PostProcessingCallback.Desc",method);
+		panel.add(postProcessingCallbackField,"span 3,growx,wrap");
 		
 		panel.add(createLabel("FinalDiagnosis.TrapInsignificant"),"gaptop 2,aligny top");
 		String tf = (String)properties.get("TrapInsignificantRecommendations");
@@ -231,7 +232,7 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 		model.getProperties().put("PostTextRecommendation", (postTextRecommendationBox.isSelected()?"1":"0"));
 		model.getProperties().put("Priority", priorityField.getText());
 		model.getProperties().put("RefreshRate", refreshRateField.getText());
-		model.getProperties().put("TextRecommendationCallback", recommendationCallbackField.getText());
+		model.getProperties().put("PostProcessingCallback", postProcessingCallbackField.getText());
 		model.getProperties().put("TrapInsignificantRecommendations", (trapBox.isSelected()?"1":"0"));
 		
 		List<String> inUseList = dual.getDestinations();

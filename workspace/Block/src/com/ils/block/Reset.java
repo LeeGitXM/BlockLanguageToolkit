@@ -22,8 +22,10 @@ import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.notification.Signal;
 import com.ils.blt.common.notification.SignalNotification;
+import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.sqltags.model.types.DataQuality;
 
 /**
  * Emit a "reset" signal when the input matches the trigger value.
@@ -108,6 +110,17 @@ public class Reset extends AbstractProcessBlock implements ProcessBlock {
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus(result);
 		}
+	}
+	/**
+	 * This is not called during normal operation. If explicitly called,
+	 * we simpl propagate the command.
+	 */
+	@Override
+	public void evaluate() {
+		QualifiedValue result = new BasicQualifiedValue(command);
+		OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
+		controller.acceptCompletionNotification(nvn);
+		notifyOfStatus(result);
 	}
 	
 	/**

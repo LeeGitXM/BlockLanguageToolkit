@@ -208,16 +208,15 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 *         an empty string.
 	 */
 	@Override
-	public String getExplanation(DiagnosticDiagram parent) {
+	public String getExplanation(DiagnosticDiagram diagram) {
 		String explanation = "";
 		TruthValue blockState = getState();
 		if( blockState.equals(TruthValue.TRUE) || blockState.equals(TruthValue.FALSE)) {
-			// List<ProcessBlock>predecessors = parent.getUpstreamBlocksCrossingConnections(this);
-			List<ProcessBlock>predecessors = parent.getUpstreamBlocks(this);
+			List<ProcessBlock>predecessors = diagram.getUpstreamBlocks(this);
 			for( ProcessBlock predecessor:predecessors ) {
 				if( blockState.equals(predecessor.getState())) {
 					if(!explanation.isEmpty()) explanation = explanation + ", ";
-					explanation = explanation + predecessor.getExplanation(parent);
+					explanation = explanation + predecessor.getExplanation(diagram);
 				}
 			}
 		}
@@ -461,6 +460,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	@Override
 	public void acceptValue(SignalNotification sn) {
 		Signal sig = sn.getSignal();
+		recordActivity(Activity.ACTIVITY_RECEIVE,sig.getCommand());
 		if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_CONFIGURE) ) {
 			String propertyName = sig.getArgument();
 			BlockProperty bp = getProperty(propertyName);
@@ -484,7 +484,6 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		else if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_UNLOCK) ) {
 			setLocked(false);
 		}
-		recordActivity(Activity.ACTIVITY_RECEIVE,sig.getCommand());
 	}
 	/**
 	 * Send status update notifications for any properties

@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.Activity;
 
 
@@ -17,12 +18,15 @@ import com.ils.blt.common.block.Activity;
  * in the Gateway and a status screen in the Designer. We assume that
  * this is a one-way communication. It is the responsibility of the editor
  * make sense of the data transmitted.
+ * 
+ * Note that the diagramId is guaranted to be in the attributes
+ *      keyed by: BLTProperties.BLOCK_ATTRIBUTE_PARENT
  */
 public class SerializableBlockStateDescriptor implements Serializable {
 	private static final long serialVersionUID = 5499297358912286066L;
 	private String className;
 	private String name;
-	private String idString = null;     // Block Id
+	private String idString = null;           // Block Id
 	private Map<String,String> attributes;
 	private List<Map<String,String>> buffer;
 	private List<Activity> activities;

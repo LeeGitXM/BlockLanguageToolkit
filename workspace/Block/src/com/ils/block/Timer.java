@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.ProcessBlock;
+import com.ils.blt.common.block.Activity;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
@@ -23,6 +24,8 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.blt.common.notification.Signal;
+import com.ils.blt.common.notification.SignalNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
@@ -98,12 +101,19 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 	}
 	
 	/**
-	 * On reset clear the counter.
+	 * Do not call the super method. We emit a zero instead of a NaN.
 	 */
 	@Override
 	public void reset() {
-		super.reset();
-		duration = 0;
+		this.state = TruthValue.UNSET;
+		this.duration = 0.;
+		recordActivity(Activity.ACTIVITY_RESET,"");
+		if( controller!=null ) {
+			// Send notifications on all outputs to indicate empty connections.
+			qv = new TestAwareQualifiedValue(timer,new Integer((int)duration));
+			triggerReceiptTime = qv.getTimestamp();
+			evaluate();
+		}
 	}
 
 	/**
@@ -142,6 +152,27 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 				}
 			}
 		}
+	}
+	/**
+	 * This method implements special handling of a reset() signal that
+	 * allows it to retain its current state.
+	 * 
+	 * @param sn notification of a signal.
+	 */
+	@Override
+	public void acceptValue(SignalNotification sn) {
+		Signal sig = sn.getSignal();
+		if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_RESET) ) {
+			recordActivity(Activity.ACTIVITY_RECEIVE,sig.getCommand());
+			duration = 0.0;
+			qv = new TestAwareQualifiedValue(timer,new Integer((int)duration));
+			triggerReceiptTime = qv.getTimestamp();
+			evaluate();
+		}
+		else  {
+			super.acceptValue(sn);
+		}
+		
 	}
 	/**
 	 * The interval has expired. Update the duration, then emit a value. 

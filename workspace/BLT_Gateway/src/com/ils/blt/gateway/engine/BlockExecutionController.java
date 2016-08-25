@@ -13,6 +13,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.DiagnosticDiagram;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.BindingType;
@@ -341,9 +342,26 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public ProcessDiagram getDiagram(long projectId,long resourceId) {
 		return modelManager.getDiagram(projectId,resourceId);
 	}
+	@Override
+	public ProcessDiagram getDiagram(String diagramIdString) {
+		UUID uuid = UUID.fromString(diagramIdString);
+		return getDiagram(uuid); 
+	}
+
 	public ProcessDiagram getDiagram(UUID id) {
 		return modelManager.getDiagram(id);
 	}
+
+	@Override
+	public ProcessBlock getProcessBlock(String diagramId, String blockId) {
+		ProcessBlock result = null;
+		ProcessDiagram diagram = getDiagram(diagramId);
+		if( diagram!=null ) {
+			result = diagram.getBlock(UUID.fromString(blockId));
+		}
+		return result;
+	}
+	
 	public ProcessNode getProcessNode(UUID id) {
 		return modelManager.getProcessNode(id);
 	}
