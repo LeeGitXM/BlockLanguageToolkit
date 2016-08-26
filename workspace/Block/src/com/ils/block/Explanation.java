@@ -3,6 +3,7 @@
  */
 package com.ils.block;
 
+import java.util.List;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
@@ -123,7 +124,7 @@ public class Explanation extends AbstractProcessBlock implements ProcessBlock {
 	 *         Look at upstream blocks with the opposite state.
 	 */
 	@Override
-	public String getExplanation(DiagnosticDiagram parent) {
+	public String getExplanation(DiagnosticDiagram parent,List<UUID> members) {
 		String explanation = "";
 		if( state.equals(TruthValue.TRUE) && !explanationTrueProperty.getValue().toString().isEmpty() ) {
 			explanation = explanationTrueProperty.getValue().toString();
@@ -132,7 +133,8 @@ public class Explanation extends AbstractProcessBlock implements ProcessBlock {
 			explanation = explanationFalseProperty.getValue().toString();
 		}
 		else {
-			explanation = super.getExplanation(parent);
+			members.add(getBlockId());
+			explanation = super.getExplanation(parent,members);
 		}
 		return explanation;
 	}

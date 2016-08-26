@@ -93,11 +93,12 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 * then the explanation accounts for upstream explanations.
 	 * 
 	 * @param diagram the diagram on which this block is placed.
+	 * @param members blocks that have been visited.
 	 * @return an explanation for the current state of the block.
 	 *         If this is a block that has no relevant state, return
 	 *         an empty string.
 	 */
-	public String getExplanation(DiagnosticDiagram parent);
+	public String getExplanation(DiagnosticDiagram parent,List<UUID> members);
 	/**
 	 * @return information related to the workings of the block.
 	 *        The information returned varies depending on the 

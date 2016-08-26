@@ -3,6 +3,7 @@
  */
 package com.ils.block;
 
+import java.util.List;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
@@ -131,7 +132,7 @@ public class RangeObservation extends AbstractProcessBlock implements ProcessBlo
 	 * @return an explanation for the current state of the block.
 	 */
 	@Override
-	public String getExplanation(DiagnosticDiagram parent) {
+	public String getExplanation(DiagnosticDiagram parent,List<UUID> members) {
 		String explanation = "";
 		if( observation!=null && state.equals(TruthValue.TRUE) ) {
 			explanation = String.format("At %s, %s is not within limits (%3.2f,%3.2f)",getName(),

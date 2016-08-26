@@ -5,6 +5,7 @@ package com.ils.block;
 
 import java.awt.Color;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -157,7 +158,7 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 		}
 	}
 	@Override
-	public String getExplanation(DiagnosticDiagram parent) { 
+	public String getExplanation(DiagnosticDiagram parent,List<UUID> members) { 
 		String explanation = "";
 		String tagPath = tagPathProperty.getBinding().toString();
 		if( tagPath!=null && !tagPath.isEmpty()) {

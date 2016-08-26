@@ -208,15 +208,19 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 *         an empty string.
 	 */
 	@Override
-	public String getExplanation(DiagnosticDiagram diagram) {
+	public String getExplanation(DiagnosticDiagram diagram,List<UUID> members) {
 		String explanation = "";
+		members.add(blockId);
 		TruthValue blockState = getState();
 		if( blockState.equals(TruthValue.TRUE) || blockState.equals(TruthValue.FALSE)) {
 			List<ProcessBlock>predecessors = diagram.getUpstreamBlocks(this);
 			for( ProcessBlock predecessor:predecessors ) {
-				if( blockState.equals(predecessor.getState())) {
-					if(!explanation.isEmpty()) explanation = explanation + ", ";
-					explanation = explanation + predecessor.getExplanation(diagram);
+				if( members.contains(predecessor.getBlockId())) {
+					explanation = explanation + "-- truncated (circular reasoning)";
+				}
+				else if( blockState.equals(predecessor.getState())) {
+						if(!explanation.isEmpty()) explanation = explanation + ", ";
+						explanation = explanation + predecessor.getExplanation(diagram,members);
 				}
 			}
 		}

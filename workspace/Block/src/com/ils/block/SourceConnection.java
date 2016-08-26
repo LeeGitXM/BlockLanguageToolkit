@@ -59,15 +59,21 @@ public class SourceConnection extends Input implements ProcessBlock {
 	 *         an empty string.
 	 */
 	@Override
-	public String getExplanation(DiagnosticDiagram diagram) {
+	public String getExplanation(DiagnosticDiagram diagram,List<UUID> members) {
 		String explanation = "";
+		members.add(getBlockId());
 		TruthValue blockState = getState();
 		if( blockState.equals(TruthValue.TRUE) || blockState.equals(TruthValue.FALSE)) {
 			ProcessBlock upstream = getMostRecentlyChangedPredecessor(diagram);
 			if( upstream!=null ) {
-				DiagnosticDiagram connectedDiagram = controller.getDiagram(upstream.getParentId().toString());
-				if(!explanation.isEmpty()) explanation = explanation + ", ";
-				explanation = explanation + upstream.getExplanation(connectedDiagram);
+				if(members.contains(upstream.getBlockId())) {
+					explanation = explanation + "-- truncated (circular reasoning)";
+				}
+				else {
+					DiagnosticDiagram connectedDiagram = controller.getDiagram(upstream.getParentId().toString());
+					if(!explanation.isEmpty()) explanation = explanation + ", ";
+					explanation = explanation + upstream.getExplanation(connectedDiagram,members);
+				}
 			}
 		}
 		return explanation;

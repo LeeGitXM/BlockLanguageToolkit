@@ -4,6 +4,7 @@
 package com.ils.block;
 
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
@@ -136,7 +137,7 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 	 * @return an explanation for the current state of the block.
 	 */
 	@Override
-	public String getExplanation(DiagnosticDiagram parent) {
+	public String getExplanation(DiagnosticDiagram parent,List<UUID> members) {
 		String explanation = "";
 		if( state.equals(TruthValue.TRUE) ) {
 			explanation = String.format("At %s, input %s > %s plus offset of %3.2f",getName(),

@@ -3,6 +3,7 @@
  */
 package com.ils.block;
 
+import java.util.List;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
@@ -122,7 +123,7 @@ public class LowLimitObservation extends AbstractProcessBlock implements Process
 	 * @return an explanation for the current state of the block.
 	 */
 	@Override
-	public String getExplanation(DiagnosticDiagram parent) {
+	public String getExplanation(DiagnosticDiagram parent,List<UUID> members) {
 		String explanation = "";
 		if( observation!=null && state.equals(TruthValue.FALSE) ) {
 			explanation = String.format("At %s, %s is below the low limit (%3.2f)",getName(),

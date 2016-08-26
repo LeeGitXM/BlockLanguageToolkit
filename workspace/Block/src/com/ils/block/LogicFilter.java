@@ -201,7 +201,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	 * @return an explanation for the current state of the block.
 	 */
 	@Override
-	public String getExplanation(DiagnosticDiagram parent) {
+	public String getExplanation(DiagnosticDiagram parent,List<UUID> members) {
 		String explanation = "";
 		if( state.equals(TruthValue.TRUE) ) {
 			explanation = String.format("At %s, True ratio %s > %3.2f",getName(),String.valueOf(ratio),limit);

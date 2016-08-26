@@ -487,6 +487,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		return fam.getName();
 	}
 	/**
+	 * Use the UUID of this block to signify that this is the source.
 	 * @param diagramId
 	 * @param blockId
 	 * @return an explanation for the block's current state
@@ -496,8 +497,11 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		String explanation = "";
 		ProcessDiagram diagram = controller.getDiagram(UUID.fromString(diagramId));
 		if(diagram!=null) {
-			ProcessBlock block = controller.getBlock(diagram, UUID.fromString(blockId));
-			if( block!=null ) explanation = block.getExplanation(diagram);
+			UUID uuid = UUID.fromString(blockId);
+			ProcessBlock block = controller.getBlock(diagram,uuid );
+			List<UUID> members = new ArrayList<>();
+			members.add(uuid);
+			if( block!=null ) explanation = block.getExplanation(diagram,members); 
 		}
 		return explanation;
 	}

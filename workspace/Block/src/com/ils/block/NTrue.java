@@ -5,6 +5,7 @@ package com.ils.block;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -129,7 +130,7 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 	 *         an empty string.
 	 */
 	@Override
-	public String getExplanation(DiagnosticDiagram parent) {
+	public String getExplanation(DiagnosticDiagram parent,List<UUID> members) {
 		String explanation = "";
 		if( state.equals(TruthValue.TRUE) || state.equals(TruthValue.FALSE)) {
 			Collection<QualifiedValue> values = qualifiedValueMap.values();

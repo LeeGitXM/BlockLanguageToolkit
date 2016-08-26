@@ -22,17 +22,14 @@ import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.notification.Signal;
 import com.ils.blt.common.notification.SignalNotification;
-import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.sqltags.model.types.DataQuality;
 
 /**
  * Emit a "reset" signal when the input matches the trigger value.
  */
 @ExecutableBlock
 public class Reset extends AbstractProcessBlock implements ProcessBlock {
-	private final String TAG = "Reset";
 	protected Signal command = new Signal();
 	protected TruthValue trigger = TruthValue.TRUE;
 

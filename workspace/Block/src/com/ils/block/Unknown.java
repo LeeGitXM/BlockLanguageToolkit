@@ -105,7 +105,7 @@ public class Unknown extends AbstractProcessBlock implements ProcessBlock {
 	 * @return an explanation for the current state of the block.
 	 */
 	@Override
-	public String getExplanation(DiagnosticDiagram parent) {
+	public String getExplanation(DiagnosticDiagram parent,List<UUID> members) {
 		String explanation = "";
 		if( state.equals(TruthValue.TRUE) || state.equals(TruthValue.FALSE)) {
 			List<ProcessBlock>predecessors = parent.getUpstreamBlocks(this);

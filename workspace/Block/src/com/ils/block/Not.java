@@ -113,20 +113,27 @@ public class Not extends AbstractProcessBlock implements ProcessBlock {
 	 *         Look at upstream blocks with the opposite state.
 	 */
 	@Override
-	public String getExplanation(DiagnosticDiagram parent) {
+	public String getExplanation(DiagnosticDiagram parent,List<UUID> members ) {
 		String explanation = "";
+		members.add(getBlockId());
 		List<ProcessBlock>predecessors = parent.getUpstreamBlocks(this);
 		if( state.equals(TruthValue.TRUE) ) {
 			for( ProcessBlock predecessor:predecessors ) {
-				if( TruthValue.FALSE.equals(predecessor.getState())) {
-					explanation = predecessor.getExplanation(parent);
+				if( members.contains(predecessor.getBlockId())) {
+					explanation = explanation + "-- truncated (circular reasoning)";
+				}
+				else if( TruthValue.FALSE.equals(predecessor.getState())) {
+					explanation = predecessor.getExplanation(parent,members);
 				}
 			}
 		}
 		else if( state.equals(TruthValue.FALSE) ) {
 			for( ProcessBlock predecessor:predecessors ) {
-				if( TruthValue.TRUE.equals(predecessor.getState())) {
-					explanation = predecessor.getExplanation(parent);
+				if( members.contains(predecessor.getBlockId())) {
+					explanation = explanation + "-- truncated (circular reasoning)";
+				}
+				else if( TruthValue.TRUE.equals(predecessor.getState())) {
+					explanation = predecessor.getExplanation(parent,members);
 				}
 			}
 		}

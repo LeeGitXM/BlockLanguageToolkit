@@ -133,27 +133,34 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 	 * @return an explanation for the current state of the block.
 	 */
 	@Override
-	public String getExplanation(DiagnosticDiagram parent) {
+	public String getExplanation(DiagnosticDiagram parent,List<UUID> members) {
 		String explanation = "";
+		members.add(getBlockId());
 		StringBuffer sb = new StringBuffer("(");
 		int count = 0;
 		if( state.equals(TruthValue.TRUE) ) {
 			List<ProcessBlock>predecessors = parent.getUpstreamBlocks(this);
 			for( ProcessBlock predecessor:predecessors ) {
-				if( predecessor.getState().equals(TruthValue.TRUE)) {
+				if( members.contains(predecessor.getBlockId())) {
+					explanation = explanation + "-- truncated (circular reasoning)";
+				}
+				else if( predecessor.getState().equals(TruthValue.TRUE)) {
 					count ++;
 					if(sb.length()>1) sb.append(" and ");
-					sb.append(predecessor.getExplanation(parent));
+					sb.append(predecessor.getExplanation(parent,members));
 				}
 			}
 		}
 		else if( state.equals(TruthValue.FALSE) ) {
 			List<ProcessBlock>predecessors = parent.getUpstreamBlocks(this);
 			for( ProcessBlock predecessor:predecessors ) {
-				if( predecessor.getState().equals(TruthValue.FALSE)) {
+				if( members.contains(predecessor.getBlockId())) {
+					explanation = explanation + "-- truncated (circular reasoning)";
+				}
+				else if( predecessor.getState().equals(TruthValue.FALSE)) {
 					count++;
 					if(sb.length()>1) sb.append(" or ");
-					sb.append(predecessor.getExplanation(parent));
+					sb.append(predecessor.getExplanation(parent,members));
 				}
 			}
 		}
