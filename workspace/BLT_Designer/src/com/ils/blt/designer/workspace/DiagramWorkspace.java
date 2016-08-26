@@ -292,6 +292,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				menu.addSeparator();
 				EvaluateAction ea = new EvaluateAction(pbv);
 				menu.add(ea);
+				EvaluateUpstreamAction eaup = new EvaluateUpstreamAction(pbv);
+				menu.add(eaup);
 				ForceAction fa = new ForceAction(getActiveDiagram(),pbv);
 				menu.add(fa);
 				ResetAction ra = new ResetAction(pbv);
@@ -855,6 +857,22 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		private final ProcessBlockView block;
 		public EvaluateAction(ProcessBlockView blk)  {
 			super(PREFIX+".EvaluateBlock",IconUtil.getIcon("window_play"));  // preferences
+			this.block = blk;
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			ProcessDiagramView pdv = getActiveDiagram();
+			handler.evaluateBlock(pdv.getId().toString(),block.getId().toString());
+		}
+	}
+	/**
+	 * Trigger the evaluation method of the currently selected block.
+	 */
+	private class EvaluateUpstreamAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final ProcessBlockView block;
+		public EvaluateUpstreamAction(ProcessBlockView blk)  {
+			super(PREFIX+".EvaluateUpstreamBlocks",IconUtil.getIcon("window_play"));  // preferences
 			this.block = blk;
 		}
 
