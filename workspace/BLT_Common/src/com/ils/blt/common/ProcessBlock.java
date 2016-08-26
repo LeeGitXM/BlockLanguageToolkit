@@ -58,6 +58,12 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 */
 	public void evaluate();
 	/**
+	 * Evaluate blocks connected upstream of the current block to
+	 * force propagation of the most recent value. This is used
+	 * for updating a chart when a new block is added.
+	 */
+	public void evaluateUpstreamBlocks();
+	/**
 	 * Place a value on a named output port of a block. 
 	 * This action does not change the internal state of the block.
 	 * It's intended use is to debug a diagram.

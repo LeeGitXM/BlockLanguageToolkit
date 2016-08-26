@@ -72,6 +72,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	protected boolean locked     = false;
 	protected boolean isReceiver = false;
 	protected boolean isTransmitter = false;
+	protected QualifiedValue qv = null;
 	protected boolean running = false;
 	protected TruthValue state = TruthValue.UNSET;
 	protected Date stateChangeTimestamp = null;
@@ -535,7 +536,21 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 * 
 	 * The default implementation does nothing.
 	 */
+	@Override
 	public void evaluate() {}
+	
+	/**
+	 * Find all blocks upstream of the current and evaluate them,
+	 * forcing to update their output.
+	 */
+	@Override
+	public void evaluateUpstreamBlocks() {
+		DiagnosticDiagram diagram = controller.getDiagram(getParentId().toString());
+		List<ProcessBlock>blks = diagram.getUpstreamBlocks(this);
+		for(ProcessBlock blk:blks) {
+			blk.evaluate();
+		}
+	}
 	
 	// =================================  Convenience Methods   ================================
 	// A null is equivalent to UNSET
