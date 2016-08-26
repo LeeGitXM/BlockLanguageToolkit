@@ -529,12 +529,11 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	}
 	
 	/**
-	 * In the case where the block has specified a coalescing time, this method
-	 * will be called by the engine after receipt of input once the coalescing 
-	 * "quiet" time has passed without further input.
+	 * The expectation is that the block will output its current value.
+	 * This is an external interface and will not necessarily duplicate
+	 * what the block will do on a value change.
 	 * 
-	 * The default implementation is appropriate for blocks that trigger calculation
-	 * on every update of the inputs. It does nothing.
+	 * The default implementation does nothing.
 	 */
 	public void evaluate() {}
 	
