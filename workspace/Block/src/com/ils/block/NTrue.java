@@ -158,11 +158,11 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 			log.tracef("%s.evaluate: new = %s, old =%s",TAG,newState.name(),state.name());
 			if(newState!=state ) {
 				state = newState;
-				QualifiedValue result = new TestAwareQualifiedValue(timer,state.name(),
+				lastValue = new TestAwareQualifiedValue(timer,state.name(),
 			            (state.equals(TruthValue.UNKNOWN)?getAggregateQuality():DataQuality.GOOD_DATA));
-				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
+				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(nvn);
-				notifyOfStatus(result);
+				notifyOfStatus(lastValue);
 			}
 		}
 	}

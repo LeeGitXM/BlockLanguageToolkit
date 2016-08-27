@@ -171,10 +171,10 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 		if( buffer.size()<maxPoints && fillRequired && result.equals(TruthValue.FALSE) ) result = TruthValue.UNKNOWN;
 		if( !result.equals(state) && !isLocked() ) {
 			// Give it a new timestamp
-			QualifiedValue outval = new TestAwareQualifiedValue(timer,result);
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
+			lastValue = new TestAwareQualifiedValue(timer,result);
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
-			notifyOfStatus(outval);
+			notifyOfStatus(lastValue);
 		}
 		state = result;  // State updates when locked,
 		dog.setSecondsDelay(scanInterval);
@@ -192,6 +192,8 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 	private void notifyOfStatus(QualifiedValue qv) {
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
+	
+	
 	/**
 	 * @return a block-specific description of internal statue
 	 */

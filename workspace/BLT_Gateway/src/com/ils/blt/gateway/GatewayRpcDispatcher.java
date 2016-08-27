@@ -77,14 +77,7 @@ public class GatewayRpcDispatcher   {
 		return new Boolean(requestHandler.diagramExists(uuidString));
 	}
 
-	/**
-	 * Execute the evaluate method on a block
-	 * @param diagramIdString
-	 * @param blockIdString
-	 */
-	public void evaluateBlock(String diagramIdString,String blockIdString) {
-		requestHandler.evaluateBlock(diagramIdString,blockIdString);
-	}
+
 	
 
 	public String getApplicationName(String uuid) {
@@ -368,7 +361,14 @@ public class GatewayRpcDispatcher   {
 	public void postResult(String diagramId,String blockId,String port,String value) {
 		requestHandler.postValue(diagramId,blockId, port, value);
 	}
-
+	/**
+	 * Execute the propagate method on a block
+	 * @param diagramIdString
+	 * @param blockIdString
+	 */
+	public void propagateBlockState(String diagramIdString,String blockIdString) {
+		requestHandler.propagateBlockState(diagramIdString,blockIdString);
+	}
 	/** 
 	 *  @return
 	 */

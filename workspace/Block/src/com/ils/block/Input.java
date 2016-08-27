@@ -40,7 +40,7 @@ import com.inductiveautomation.ignition.common.util.LogUtil;
 public class Input extends AbstractProcessBlock implements ProcessBlock {
 	private BlockProperty tagPathProperty = null;
 	protected BlockProperty valueProperty = null;
-	protected QualifiedValue qv = null;    // Most recent output value
+
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
@@ -90,11 +90,11 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 	public void start() {
 		super.start();
 		if( tagPathProperty!=null && tagPathProperty.getBinding() != null && !tagPathProperty.getBinding().isEmpty() ) {
-			qv = controller.getTagValue(getParentId(), tagPathProperty.getBinding());
+			lastValue = controller.getTagValue(getParentId(), tagPathProperty.getBinding());
 		}
-		if( qv!=null &&  qv.getValue() != null && !isLocked()  ) {
-			log.debugf("%s.start: %s (%s)",getName(),qv.getValue().toString(),qv.getQuality().getName());
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+		if( lastValue!=null &&  lastValue.getValue() != null && !isLocked()  ) {
+			log.debugf("%s.start: %s (%s)",getName(),lastValue.getValue().toString(),lastValue.getQuality().getName());
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
 		}
 	}
@@ -111,14 +111,14 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void acceptValue(IncomingNotification vcn) {
-		if( qv==null ) return;
+		if( lastValue==null ) return;     // Binding is not configured
 		baseAcceptValue(vcn);
-		qv = vcn.getValue();
+		lastValue = vcn.getValue();
 		if( !isLocked() && running ) {
-			if( qv.getValue() != null ) {
-				log.debugf("%s.acceptValue: propagating %s (%s at %s)",getName(),qv.getValue().toString(),qv.getQuality().getName(),
-						qv.getTimestamp().toString());
-				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+			if( lastValue.getValue() != null ) {
+				log.debugf("%s.acceptValue: propagating %s (%s at %s)",getName(),lastValue.getValue().toString(),lastValue.getQuality().getName(),
+						lastValue.getTimestamp().toString());
+				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(nvn);
 			}
 			else {
@@ -126,9 +126,9 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 			}
 		}
 		// Even if locked, we update the current state
-		if( qv.getValue()!=null) {
-			valueProperty.setValue(qv.getValue());
-			notifyOfStatus(qv);
+		if( lastValue.getValue()!=null) {
+			valueProperty.setValue(lastValue.getValue());
+			notifyOfStatus(lastValue);
 		}
 	}
 	
@@ -180,9 +180,9 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 	public SerializableBlockStateDescriptor getInternalStatus() {
 		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
 		Map<String,String> attributes = descriptor.getAttributes();
-		if( qv!=null && qv.getValue()!=null ) attributes.put("Value", qv.getValue().toString());
-		if( qv!=null && qv.getQuality()!=null )attributes.put("Quality", qv.getQuality().toString());
-		if(qv!=null && qv.getTimestamp()!=null) attributes.put("Timestamp",dateFormatter.format(new Date(qv.getTimestamp().getTime())));
+		if( lastValue!=null && lastValue.getValue()!=null ) attributes.put("Value", lastValue.getValue().toString());
+		if( lastValue!=null && lastValue.getQuality()!=null )attributes.put("Quality", lastValue.getQuality().toString());
+		if(lastValue!=null && lastValue.getTimestamp()!=null) attributes.put("Timestamp",dateFormatter.format(new Date(lastValue.getTimestamp().getTime())));
 		String path = controller.getSubscribedPath(this, tagPathProperty);
 		attributes.put("CurrentSubscription",path);
 		return descriptor;
@@ -206,8 +206,8 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void notifyOfStatus() {
-		if( qv!=null && qv.getValue()!=null) {
-			notifyOfStatus(qv);
+		if( lastValue!=null && lastValue.getValue()!=null) {
+			notifyOfStatus(lastValue);
 		}	
 	}
 	protected void notifyOfStatus(QualifiedValue qval) {
@@ -215,6 +215,8 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qval);
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qval);
 	}
+	@Override
+	public void propagate() { evaluate(); }
 
 	/**
 	 * Augment the palette prototype for this block class.

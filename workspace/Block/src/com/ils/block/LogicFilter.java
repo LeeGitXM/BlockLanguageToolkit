@@ -183,10 +183,10 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		if( !isLocked() ) {
 			if(newState!=state) {
 				state = newState;
-				QualifiedValue result = new TestAwareQualifiedValue(timer,state);
-				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
+				lastValue = new TestAwareQualifiedValue(timer,state);
+				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(nvn);
-				notifyOfStatus(result);
+				notifyOfStatus(lastValue);
 			}
 		}
 		// Set up the next poll, if we're not homogeneous.

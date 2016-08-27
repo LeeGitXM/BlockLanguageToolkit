@@ -33,10 +33,8 @@ public class EdgeTrigger extends AbstractProcessBlock implements ProcessBlock {
 	private static final String TAG = "EdgeTrigger";
 	protected static String BLOCK_PROPERTY_INTERVAL = "HoldInterval";
 	protected static String BLOCK_PROPERTY_TRIGGER  = "Trigger";
-
 	private double holdInterval = 0.0;    // ~ secs (pulse)
 	private TruthValue trigger = TruthValue.UNSET;
-	protected QualifiedValue status = new BasicQualifiedValue(TruthValue.UNSET.name());
 	private final Watchdog dog;
 	
 	/**
@@ -64,6 +62,7 @@ public class EdgeTrigger extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void reset() {
 		timer.removeWatchdog(dog);
+		lastValue = new BasicQualifiedValue(TruthValue.UNSET.name());
 	}
 	/**
 	 * Disconnect from the timer thread.
@@ -114,17 +113,17 @@ public class EdgeTrigger extends AbstractProcessBlock implements ProcessBlock {
 		if( !isLocked() ) {
 			if( trigger.equals(TruthValue.FALSE)) {
 				state = TruthValue.TRUE;
-				status = new TestAwareQualifiedValue(timer,state.name());
-				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,status);
+				lastValue = new TestAwareQualifiedValue(timer,state.name());
+				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(nvn);
-				notifyOfStatus(status);
+				notifyOfStatus(lastValue);
 			}
 			else if( trigger.equals(TruthValue.TRUE)) {
 				state = TruthValue.FALSE;
-				status = new TestAwareQualifiedValue(timer,state.name());
-				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,status);
+				lastValue = new TestAwareQualifiedValue(timer,state.name());
+				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(nvn);
-				notifyOfStatus(status);
+				notifyOfStatus(lastValue);
 			}
 			else {
 				state = TruthValue.UNKNOWN;
@@ -163,12 +162,12 @@ public class EdgeTrigger extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void notifyOfStatus() {
-		notifyOfStatus(status);	
+		notifyOfStatus(lastValue);	
 	}
 	private void notifyOfStatus(QualifiedValue qv) {
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
-	
+
 	/**
 	 * Add properties that are new for this class.
 	 * Populate them with default values.

@@ -175,11 +175,11 @@ public class QualValue extends AbstractProcessBlock implements ProcessBlock {
 			if( q.isGood() && value.getQuality()!=null ) q = value.getQuality();
 			Date ts = value.getTimestamp();
 			if(timestamp!=null ) ts = timestamp;
-			QualifiedValue result = new BasicQualifiedValue(value.getValue(),q,ts);
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
+			lastValue = new BasicQualifiedValue(value.getValue(),q,ts);
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
-			notifyOfStatus(result);
-			value = result;
+			notifyOfStatus(lastValue);
+			value = lastValue;
 			log.tracef("%s.evaluate: %s %s %s",getName(),value.getValue().toString(),
 					value.getQuality().getName(),customFormatter.format(value.getTimestamp()));
 		}

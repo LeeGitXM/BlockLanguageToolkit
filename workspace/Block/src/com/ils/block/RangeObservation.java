@@ -114,10 +114,10 @@ public class RangeObservation extends AbstractProcessBlock implements ProcessBlo
 			if( !newValue.equals(state)) {
 				state = newValue;
 				if( !isLocked() ) {
-					QualifiedValue nqv = new BasicQualifiedValue(state,observation.getQuality(),observation.getTimestamp());
-					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,nqv);
+					lastValue = new BasicQualifiedValue(state,observation.getQuality(),observation.getTimestamp());
+					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 					controller.acceptCompletionNotification(nvn);
-					notifyOfStatus(nqv);
+					notifyOfStatus(lastValue);
 				}
 			}
 		}
@@ -198,7 +198,6 @@ public class RangeObservation extends AbstractProcessBlock implements ProcessBlo
 	private void notifyOfStatus(QualifiedValue qv) {
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
-	
 	/**
 	 * Augment the palette prototype for this block class.
 	 */

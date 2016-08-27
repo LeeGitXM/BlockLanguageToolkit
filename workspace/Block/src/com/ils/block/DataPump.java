@@ -76,9 +76,10 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 		super.start();
 		value = valueProperty.getValue();
 		String liveOnStart = liveProperty.getValue().toString();
+		lastValue = new TestAwareQualifiedValue(timer,value);
 		if( liveOnStart!=null && value!=null && liveOnStart.equalsIgnoreCase("true") ) {
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME
-					,new TestAwareQualifiedValue(timer,value));
+					,lastValue);
 			controller.acceptCompletionNotification(nvn);
 		}
 	}
@@ -163,10 +164,10 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 			log.infof("%s.evaluate: proto type = %s",TAG,ap.getConnectionType());
 		}
 		value = coerceToMatchOutput(BlockConstants.OUT_PORT_NAME,value);
-		QualifiedValue qv = new TestAwareQualifiedValue(timer,value);
-		OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+		lastValue = new TestAwareQualifiedValue(timer,value);
+		OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 		controller.acceptCompletionNotification(nvn);
-		notifyOfStatus(qv);
+		notifyOfStatus(lastValue);
 	}
 	
 	/**

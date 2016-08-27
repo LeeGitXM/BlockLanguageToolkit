@@ -83,6 +83,8 @@ public class Output extends AbstractProcessBlock implements ProcessBlock {
 		updateStateForNewValue(qvalue);
 		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qvalue);
 	}
+	@Override
+	public void propagate() {}
 	
 	/**
 	 * Add properties that are new for this class.

@@ -143,26 +143,25 @@ public class NoiseGenerator extends AbstractProcessBlock implements ProcessBlock
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
 		if( !isLocked() ) {
-			String port = vcn.getConnection().getDownstreamPortName();
 			QualifiedValue qv = vcn.getValue();
-			if( port.equals(BlockConstants.IN_PORT_NAME) && qv.getQuality().isGood() ) {
+			if( qv.getQuality().isGood() ) {
 				try {
 					value = Double.parseDouble(qv.getValue().toString());
 					if( distribution!=null) value += distribution.sample();
-					qv = new BasicQualifiedValue(value,qv.getQuality(),qv.getTimestamp());
-					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+					lastValue = new BasicQualifiedValue(value,qv.getQuality(),qv.getTimestamp());
+					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 					controller.acceptCompletionNotification(nvn);
-					notifyOfStatus(qv);
+					notifyOfStatus(lastValue);
 				}
 				catch(NumberFormatException nfe) {
 					log.warnf("%s.acceptValue: Unable to convert incoming value to a double (%s)",TAG,nfe.getLocalizedMessage());
 				}
 			}
 			else {
-				qv = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
-				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+				lastValue = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
+				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(nvn);
-				notifyOfStatus(qv);
+				notifyOfStatus(lastValue);
 			}
 		}
 	}

@@ -66,13 +66,13 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	private long projectId = -1;    // This is the global project
 	private GeneralPurposeDataContainer auxiliaryData = null;
 	private String name = ".";
+	protected QualifiedValue lastValue = null;  // Most recently propagated value.
 	protected String statusText;
 	protected PalettePrototype prototype = null;
 	protected boolean delayStart = false;
 	protected boolean locked     = false;
 	protected boolean isReceiver = false;
 	protected boolean isTransmitter = false;
-	protected QualifiedValue qv = null;
 	protected boolean running = false;
 	protected TruthValue state = TruthValue.UNSET;
 	protected Date stateChangeTimestamp = null;
@@ -386,6 +386,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	@Override
 	public void reset() {
 		this.state = TruthValue.UNSET;
+		this.lastValue = null;
 		recordActivity(Activity.ACTIVITY_RESET,"");
 		if( controller!=null ) {
 			// Send notifications on all outputs to indicate empty connections.
@@ -528,27 +529,25 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		state = TruthValue.UNSET;
 		recordActivity(Activity.ACTIVITY_STOP,"");
 	}
-	
+	/**
+	 * This method is called by the WatchdogTimer subsystem on
+	 * a WatchdogObserver to indicate a timeout.
+	 */
+	public void evaluate() {}
 	/**
 	 * The expectation is that the block will output its current value.
 	 * This is an external interface and will not necessarily duplicate
 	 * what the block will do on a value change.
 	 * 
-	 * The default implementation does nothing.
+	 * This is never called internally. This implementation handles
+	 * the most common configuration.
 	 */
 	@Override
-	public void evaluate() {}
-	
-	/**
-	 * Find all blocks upstream of the current and evaluate them,
-	 * forcing to update their output.
-	 */
-	@Override
-	public void evaluateUpstreamBlocks() {
-		DiagnosticDiagram diagram = controller.getDiagram(getParentId().toString());
-		List<ProcessBlock>blks = diagram.getUpstreamBlocks(this);
-		for(ProcessBlock blk:blks) {
-			blk.evaluate();
+	public void propagate() {
+		if( lastValue!=null ) {
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
+			controller.acceptCompletionNotification(nvn);
+			notifyOfStatus();
 		}
 	}
 	

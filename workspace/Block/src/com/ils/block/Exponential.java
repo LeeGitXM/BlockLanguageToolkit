@@ -88,10 +88,10 @@ public class Exponential extends AbstractProcessBlock implements ProcessBlock {
 					if( vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(BlockConstants.IN_PORT_NAME)) {
 						value = dbl.doubleValue();
 						value = exp.value(value);
-						qv = new BasicQualifiedValue(new Double(value),qv.getQuality(),qv.getTimestamp());
-						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+						lastValue = new BasicQualifiedValue(new Double(value),qv.getQuality(),qv.getTimestamp());
+						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 						controller.acceptCompletionNotification(nvn);
-						notifyOfStatus(qv);
+						notifyOfStatus(lastValue);
 					}
 					else {
 						log.warnf("%s.acceptValue: Unexpected port designation (%s)",TAG,vcn.getConnection().getDownstreamPortName());
@@ -103,10 +103,10 @@ public class Exponential extends AbstractProcessBlock implements ProcessBlock {
 			}
 			else {
 				if( qv!=null ) {
-					qv = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
-					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+					lastValue = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
+					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 					controller.acceptCompletionNotification(nvn);
-					notifyOfStatus(qv);
+					notifyOfStatus(lastValue);
 				}
 			}
 		}

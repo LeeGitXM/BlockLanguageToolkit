@@ -79,10 +79,10 @@ public class Receiver extends AbstractProcessBlock implements ProcessBlock {
 					patternProperty.getValue().toString().equalsIgnoreCase("*")                        ||
 					patternProperty.getValue().toString().equalsIgnoreCase(signal.getPattern())) {
 			// Passed the filtering. Send to the output.
-			QualifiedValue sig = new TestAwareQualifiedValue(timer,signal);
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.CONTROL_PORT_NAME,sig);
+			lastValue = new TestAwareQualifiedValue(timer,signal);
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.CONTROL_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
-			notifyOfStatus(sig);
+			notifyOfStatus(lastValue);
 		}
 	}
 	/**
@@ -92,6 +92,18 @@ public class Receiver extends AbstractProcessBlock implements ProcessBlock {
 	public void notifyOfStatus() {}
 	private void notifyOfStatus(QualifiedValue qv) {
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.CONTROL_PORT_NAME, qv);
+	}
+	/**
+	 * We overwrite the standard implementation because we are using
+	 * an output port that is different from the usual
+	 */
+	@Override
+	public void propagate() {
+		if( lastValue!=null ) {
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.CONTROL_PORT_NAME,lastValue);
+			controller.acceptCompletionNotification(nvn);
+			notifyOfStatus();
+		}
 	}
 	/**
 	 * Augment the palette prototype for this block class.

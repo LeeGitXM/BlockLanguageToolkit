@@ -40,7 +40,7 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
 public class MovingAverageTime extends AbstractProcessBlock implements ProcessBlock {
 	private final LinkedList<QualifiedValue> buffer;
 	private boolean clearOnReset = false;
-	private QualifiedValue currentValue = null;
+	QualifiedValue currentValue = null;
 	private double scanInterval = 15.0;    // ~secs
 	private double timeWindow = 60;        // ~ secs
 	private final Watchdog dog;
@@ -162,10 +162,10 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 			log.tracef("%s.evaluate avg=%f",getName(),result);
 			if( !isLocked() ) {
 				// Give it a new timestamp
-				QualifiedValue outval = new TestAwareQualifiedValue(timer,result);
-				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
+				lastValue = new TestAwareQualifiedValue(timer,result);
+				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(nvn);
-				notifyOfStatus(outval);
+				notifyOfStatus(lastValue);
 			}
 			// Even if locked, we update the current state
 			valueProperty.setValue(result);
@@ -188,6 +188,7 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
+
 	/**
 	 * Handle a changes to the various attributes.
 	 */

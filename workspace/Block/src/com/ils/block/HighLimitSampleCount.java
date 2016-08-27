@@ -127,10 +127,10 @@ public class HighLimitSampleCount extends AbstractProcessBlock implements Proces
 				//log.infof("%s.acceptValue: Calculated %s (%d of %d) hyst=%s",TAG,result.name(),queue.size(),sampleSize,hysteresis.name());
 				if( !isLocked() ) {
 					// Give it a new timestamp
-					QualifiedValue outval = new TestAwareQualifiedValue(timer,result);
-					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
+					lastValue = new TestAwareQualifiedValue(timer,result);
+					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 					controller.acceptCompletionNotification(nvn);
-					notifyOfStatus(outval);
+					notifyOfStatus(lastValue);
 				}
 				// Even if locked, we update the current state
 				state = result;
@@ -139,10 +139,10 @@ public class HighLimitSampleCount extends AbstractProcessBlock implements Proces
 				// Post bad value on output, clear queue
 				if( !isLocked() ) {
 					state = TruthValue.UNKNOWN;
-					QualifiedValue outval = new BasicQualifiedValue(state.name(),qv.getQuality(),qv.getTimestamp());
-					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
+					lastValue = new BasicQualifiedValue(state.name(),qv.getQuality(),qv.getTimestamp());
+					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 					controller.acceptCompletionNotification(nvn);
-					notifyOfStatus(outval);
+					notifyOfStatus(lastValue);
 				}
 				queue.clear();
 			}

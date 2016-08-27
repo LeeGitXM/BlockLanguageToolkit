@@ -72,8 +72,8 @@ public class TruthValuePulse extends AbstractProcessBlock implements ProcessBloc
 		recordActivity(Activity.ACTIVITY_RESET,"");
 		setState(pulse);
 		if( !isLocked()  ) {
-			QualifiedValue qv = new TestAwareQualifiedValue(timer,state);
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+			lastValue = new TestAwareQualifiedValue(timer,state);
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
 		}
 		dog.setSecondsDelay(interval);
@@ -122,13 +122,10 @@ public class TruthValuePulse extends AbstractProcessBlock implements ProcessBloc
 			else {
 				setState(TruthValue.TRUE);
 			}
-			
-			if( !isLocked()  ) {
-				QualifiedValue qv = new TestAwareQualifiedValue(timer,state);
-				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
-				controller.acceptCompletionNotification(nvn);
-				notifyOfStatus(qv);
-			}
+			lastValue = new TestAwareQualifiedValue(timer,state);
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
+			controller.acceptCompletionNotification(nvn);
+			notifyOfStatus(lastValue);
 		}
 	}
 	

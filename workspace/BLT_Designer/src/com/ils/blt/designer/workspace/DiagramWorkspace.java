@@ -290,9 +290,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				ViewInternalsAction via = new ViewInternalsAction(getActiveDiagram(),pbv);
 				menu.add(via);
 				menu.addSeparator();
-				EvaluateAction ea = new EvaluateAction(pbv);
+				PropagateAction ea = new PropagateAction(pbv);
 				menu.add(ea);
-				EvaluateUpstreamAction eaup = new EvaluateUpstreamAction(pbv);
+				TriggerUpstreamPropagationAction eaup = new TriggerUpstreamPropagationAction(pbv);
 				menu.add(eaup);
 				ForceAction fa = new ForceAction(getActiveDiagram(),pbv);
 				menu.add(fa);
@@ -850,35 +850,37 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		}
 	}
 	/**
-	 * Trigger the evaluation method of the currently selected block.
+	 * Trigger the propagation method of the currently selected block. 
+	 * NOTE: We call it "evaluate", but we really call propagate().
 	 */
-	private class EvaluateAction extends BaseAction {
+	private class PropagateAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
 		private final ProcessBlockView block;
-		public EvaluateAction(ProcessBlockView blk)  {
-			super(PREFIX+".EvaluateBlock",IconUtil.getIcon("window_play"));  // preferences
+		public PropagateAction(ProcessBlockView blk)  {
+			super(PREFIX+".Propagate",IconUtil.getIcon("window_play"));  // preferences
 			this.block = blk;
 		}
 
 		public void actionPerformed(ActionEvent e) {
 			ProcessDiagramView pdv = getActiveDiagram();
-			handler.evaluateBlock(pdv.getId().toString(),block.getId().toString());
+			handler.propagateBlockState(pdv.getId().toString(),block.getId().toString());
 		}
 	}
 	/**
-	 * Trigger the evaluation method of the currently selected block.
+	 * Trigger the propagation method of blocks connected to the input of the currently
+	 * selected block.
 	 */
-	private class EvaluateUpstreamAction extends BaseAction {
+	private class TriggerUpstreamPropagationAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
 		private final ProcessBlockView block;
-		public EvaluateUpstreamAction(ProcessBlockView blk)  {
-			super(PREFIX+".EvaluateUpstreamBlocks",IconUtil.getIcon("window_play"));  // preferences
+		public TriggerUpstreamPropagationAction(ProcessBlockView blk)  {
+			super(PREFIX+".PropagateUpstreamBlocks",IconUtil.getIcon("window_play"));  // preferences
 			this.block = blk;
 		}
 
 		public void actionPerformed(ActionEvent e) {
 			ProcessDiagramView pdv = getActiveDiagram();
-			handler.evaluateBlock(pdv.getId().toString(),block.getId().toString());
+			handler.propagateBlockState(pdv.getId().toString(),block.getId().toString());
 		}
 	}
 	/**

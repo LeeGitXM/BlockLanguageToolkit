@@ -39,9 +39,7 @@ public class ApplicationScriptFunctions   {
 	public static void clearWatermark(String diagramId) {
 		handler.clearWatermark(diagramId);
 	}
-	public static void evaluateBlock(String diagramId,String blockId) {
-		handler.evaluateBlock(diagramId,blockId);
-	}
+
 	public static String getApplicationName(String uuid) {
 		return handler.getApplicationName(uuid);
 	}
@@ -327,6 +325,9 @@ public class ApplicationScriptFunctions   {
 	 */
 	public static void postResult(String diagramId,String blockId,String port,String value) {
 		handler.postResult(diagramId,blockId, port, value);
+	}
+	public static void propagateBlockState(String diagramId,String blockId) {
+		handler.propagateBlockState(diagramId,blockId);
 	}
 	/**
 	 * Query the gateway for list of resources that it knows about. This is

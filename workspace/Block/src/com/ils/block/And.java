@@ -183,15 +183,16 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 			log.debugf("%s.evaluate new: %s, old: %s",getName(),newState.name(),state.name());
 			if(newState!=state) {
 				state = newState;
-				QualifiedValue result = new TestAwareQualifiedValue(timer,state.name(),
+				lastValue = new TestAwareQualifiedValue(timer,state.name(),
 						               (state.equals(TruthValue.UNKNOWN)?getAggregateQuality():DataQuality.GOOD_DATA));
-				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
+				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(nvn);
 				valueProperty.setValue(state);
-				notifyOfStatus(result);
+				notifyOfStatus(lastValue);
 			}
 		}
 	}
+	
 	/**
 	 * Handle a change to the coalescing interval.
 	 */

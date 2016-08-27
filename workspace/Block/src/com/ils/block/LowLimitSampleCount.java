@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
+ *   (c) 2014-2016  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -121,10 +121,10 @@ public class LowLimitSampleCount extends AbstractProcessBlock implements Process
 				if( queue.size()<sampleSize && fillRequired && result.equals(TruthValue.FALSE) ) result = TruthValue.UNKNOWN;
 				if( !isLocked() ) {
 					// Give it a new timestamp
-					QualifiedValue outval = new BasicQualifiedValue(result,qv.getQuality(),qv.getTimestamp());
-					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
+					lastValue = new BasicQualifiedValue(result,qv.getQuality(),qv.getTimestamp());
+					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 					controller.acceptCompletionNotification(nvn);
-					notifyOfStatus(outval);
+					notifyOfStatus(lastValue);
 				}
 				// Even if locked, we update the current state
 				state = result;
@@ -132,10 +132,10 @@ public class LowLimitSampleCount extends AbstractProcessBlock implements Process
 			else {
 				// Post bad value on output, clear queue
 				if( !isLocked() ) {
-					QualifiedValue outval = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
-					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
+					lastValue = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
+					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 					controller.acceptCompletionNotification(nvn);
-					notifyOfStatus(outval);
+					notifyOfStatus(lastValue);
 				}
 				queue.clear();
 			}

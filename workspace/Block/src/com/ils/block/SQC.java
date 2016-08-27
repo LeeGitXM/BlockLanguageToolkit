@@ -213,8 +213,8 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 			log.tracef("%s.acceptValue: signal = %s ",getName(),signal.getCommand());
 			if( state.equals(TruthValue.TRUE)) {
 				state = TruthValue.FALSE; 
-				QualifiedValue outval = new TestAwareQualifiedValue(timer,state);
-				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
+				lastValue = new TestAwareQualifiedValue(timer,state);
+				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(nvn);
 			}
 		}
@@ -222,8 +222,8 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 			log.tracef("%s.acceptValue: signal = %s ",getName(),signal.getCommand());
 			if( state.equals(TruthValue.TRUE)) {
 				state = TruthValue.FALSE; 
-				QualifiedValue outval = new TestAwareQualifiedValue(timer,state);
-				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
+				lastValue = new TestAwareQualifiedValue(timer,state);
+				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(nvn);
 			}
 		}
@@ -246,10 +246,10 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		if( !isLocked() && !newState.equals(state) ) {
 			// Give it a new timestamp
 			state = newState;
-			QualifiedValue outval = new TestAwareQualifiedValue(timer,state);
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
+			lastValue = new TestAwareQualifiedValue(timer,state);
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
-			notifyOfStatus(outval);
+			notifyOfStatus(lastValue);
 
 			// Notify other blocks to suppress alternate results
 			if( state.equals(TruthValue.TRUE)) {

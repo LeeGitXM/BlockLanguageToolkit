@@ -96,15 +96,15 @@ public class Not extends AbstractProcessBlock implements ProcessBlock {
 		else if( tv.equals(TruthValue.TRUE)) state = TruthValue.FALSE;
 		else if(tv.equals(TruthValue.UNKNOWN)) state = TruthValue.UNKNOWN;
 		else return;  // Ignore an UNSET
-		QualifiedValue result = new BasicQualifiedValue(state.name(),qv.getQuality(),qv.getTimestamp());
+		lastValue = new BasicQualifiedValue(state.name(),qv.getQuality(),qv.getTimestamp());
 		if( !isLocked()) {
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
-			notifyOfStatus(result);
+			notifyOfStatus(lastValue);
 		}
 		// Set the internal property locked or not
-		valueProperty.setValue(result.getValue());
-		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,result);
+		valueProperty.setValue(lastValue.getValue());
+		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,lastValue);
 	}
 	/**
 	 * Describe the reason for either a TRUE or FALSE state. .
@@ -152,6 +152,7 @@ public class Not extends AbstractProcessBlock implements ProcessBlock {
 		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
+	
 	/**
 	 * Augment the palette prototype for this block class.
 	 */

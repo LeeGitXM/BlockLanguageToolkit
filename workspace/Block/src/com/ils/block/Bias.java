@@ -19,6 +19,7 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
@@ -83,9 +84,8 @@ public class Bias extends AbstractProcessBlock implements ProcessBlock {
 					if( vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(BlockConstants.IN_PORT_NAME)) {
 						double value = dbl.doubleValue();
 						value = value+bias;
-						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,
-								new BasicQualifiedValue(new Double(value),
-									qv.getQuality(),qv.getTimestamp()));
+						lastValue = new BasicQualifiedValue(new Double(value),qv.getQuality(),qv.getTimestamp());
+						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 						controller.acceptCompletionNotification(nvn);
 					}
 					else {
@@ -98,13 +98,12 @@ public class Bias extends AbstractProcessBlock implements ProcessBlock {
 			}
 			else {
 				if( qv!=null) {
-					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,
-							new BasicQualifiedValue(new Double(Double.NaN),
-							qv.getQuality(),qv.getTimestamp()));
+					lastValue = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
+					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 					controller.acceptCompletionNotification(nvn);
 				}	
 			}
-			notifyOfStatus(qv);
+			notifyOfStatus(lastValue);
 		}
 	}
 	/**

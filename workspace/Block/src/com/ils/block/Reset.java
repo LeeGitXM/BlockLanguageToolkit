@@ -87,10 +87,10 @@ public class Reset extends AbstractProcessBlock implements ProcessBlock {
 		QualifiedValue qv = vcn.getValue();
 		
 		if( qv.getQuality().isGood() && !isLocked() && qv.getValue().toString().equalsIgnoreCase(trigger.name()))  {
-			QualifiedValue result = new BasicQualifiedValue(command,qv.getQuality(),qv.getTimestamp());
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
+			lastValue = new BasicQualifiedValue(command,qv.getQuality(),qv.getTimestamp());
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
-			notifyOfStatus(result);
+			notifyOfStatus(lastValue);
 		}
 	}
 	/**
@@ -102,22 +102,22 @@ public class Reset extends AbstractProcessBlock implements ProcessBlock {
 		Signal sig = sn.getSignal();
 
 		if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_START))  {
-			QualifiedValue result = new BasicQualifiedValue(command);
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
+			lastValue = new BasicQualifiedValue(command);
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
-			notifyOfStatus(result);
+			notifyOfStatus(lastValue);
 		}
 	}
 	/**
 	 * This is not called during normal operation. If explicitly called,
-	 * we simpl propagate the command.
+	 * we simply propagate the command.
 	 */
 	@Override
 	public void evaluate() {
-		QualifiedValue result = new BasicQualifiedValue(command);
-		OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
+		lastValue = new BasicQualifiedValue(command);
+		OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 		controller.acceptCompletionNotification(nvn);
-		notifyOfStatus(result);
+		notifyOfStatus(lastValue);
 	}
 	
 	/**

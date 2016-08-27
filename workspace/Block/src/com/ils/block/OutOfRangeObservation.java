@@ -113,10 +113,10 @@ public class OutOfRangeObservation extends AbstractProcessBlock implements Proce
 			if( !newValue.equals(state)) {
 				state = newValue;
 				if( !isLocked() ) {
-					QualifiedValue nqv = new BasicQualifiedValue(state,observation.getQuality(),observation.getTimestamp());
-					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,nqv);
+					lastValue = new BasicQualifiedValue(state,observation.getQuality(),observation.getTimestamp());
+					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 					controller.acceptCompletionNotification(nvn);
-					notifyOfStatus(nqv);
+					notifyOfStatus(lastValue);
 				}
 			}
 		}
@@ -154,6 +154,7 @@ public class OutOfRangeObservation extends AbstractProcessBlock implements Proce
 	private void notifyOfStatus(QualifiedValue qv) {
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
+
 	/**
 	 * Handle a limit or limit type change.
 	 */

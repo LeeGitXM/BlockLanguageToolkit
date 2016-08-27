@@ -40,10 +40,6 @@ public interface ToolkitRequestHandler  {
 	public boolean diagramExists(String diagramId) ;
 
 	/**
-	 * Execute evaluate() on a specified block
-	 */
-	public void evaluateBlock(String diagramId,String blockId) ;
-	/**
 	 * @param uuid string representation of the application's unique id
 	 * @return the name of the application that is equal to or
 	 *         superior to the node with the specified UUID
@@ -289,6 +285,11 @@ public interface ToolkitRequestHandler  {
 	 *         root is a slash representing the top node of the navigation tree.
 	 */
 	public String pathForNode(String nodeId);
+	/**
+	 * Execute propagate() on a specified block. Send its current state
+	 * to the outputs.
+	 */
+	public void propagateBlockState(String diagramId,String blockId) ;
 	/**
 	 * Execute reset() on a specified block
 	 * @param diagramId of the parent diagram

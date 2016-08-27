@@ -182,21 +182,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		ProcessDiagram diagram = controller.getDiagram(diagramUUID);
 		return diagram!=null;
 	}
-	@Override
-	public void evaluateBlock(String diagramId, String blockId) {
-		UUID diagramUUID = null;
-		UUID blockUUID = null;
-		try {
-			diagramUUID = UUID.fromString(diagramId);
-			blockUUID = UUID.fromString(blockId);
-		}
-		catch(IllegalArgumentException iae) {
-			log.warnf("%s.evaluateBlock: Diagram or block UUID string is illegal (%s, %s), creating new",TAG,diagramId,blockId);
-			diagramUUID = UUID.nameUUIDFromBytes(diagramId.getBytes());
-			blockUUID = UUID.nameUUIDFromBytes(blockId.getBytes());
-		}
-		controller.evaluateBlock(diagramUUID, blockUUID);
-	}
+
 	
 	@Override
 	public String getApplicationName(String uuid) {
@@ -931,6 +917,24 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		catch(IllegalArgumentException iae) {
 			log.warnf("%s.postValue: one of %s or %s illegal UUID (%s)",TAG,parentuuid,blockId,iae.getMessage());
 		}
+	}
+	/**
+	 * Tell the block to send its current value on the outputs.
+	 */
+	@Override
+	public void propagateBlockState(String diagramId, String blockId) {
+		UUID diagramUUID = null;
+		UUID blockUUID = null;
+		try {
+			diagramUUID = UUID.fromString(diagramId);
+			blockUUID = UUID.fromString(blockId);
+		}
+		catch(IllegalArgumentException iae) {
+			log.warnf("%s.propagateBlockState: Diagram or block UUID string is illegal (%s, %s), creating new",TAG,diagramId,blockId);
+			diagramUUID = UUID.nameUUIDFromBytes(diagramId.getBytes());
+			blockUUID = UUID.nameUUIDFromBytes(blockId.getBytes());
+		}
+		controller.propagateBlockState(diagramUUID, blockUUID);
 	}
 	@Override
 	public void resetBlock(String diagramId, String blockName) {

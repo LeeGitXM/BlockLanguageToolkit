@@ -153,46 +153,45 @@ public class Quotient extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void evaluate() {
 		if( !isLocked() ) {
-			QualifiedValue result = null;
 			if( a==null ) {
-				result = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("dividend is unset",Quality.Level.Bad));
+				lastValue = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("dividend is unset",Quality.Level.Bad));
 			}
 			else if( b==null ) {
-				result = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("divisor is unset",Quality.Level.Bad));
+				lastValue = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("divisor is unset",Quality.Level.Bad));
 			}
 			else if( !a.getQuality().isGood()) {
-				result = new TestAwareQualifiedValue(timer,new Double(Double.NaN),a.getQuality());
+				lastValue = new TestAwareQualifiedValue(timer,new Double(Double.NaN),a.getQuality());
 			}
 			else if( !b.getQuality().isGood()) {
-				result = new TestAwareQualifiedValue(timer,new Double(Double.NaN),b.getQuality());
+				lastValue = new TestAwareQualifiedValue(timer,new Double(Double.NaN),b.getQuality());
 			}
 			double aa = Double.NaN;
 			double bb = Double.NaN;
-			if( result == null ) {
+			if( lastValue == null ) {
 				try {
 					aa = Double.parseDouble(a.getValue().toString());
 					try {
 						bb = Double.parseDouble(b.getValue().toString());
 						if( bb==0.0) {
-							result = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("divide by zero",Quality.Level.Bad));
+							lastValue = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("divide by zero",Quality.Level.Bad));
 						}
 					}
 					catch(NumberFormatException nfe) {
-						result = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("divisor is not a valid double",Quality.Level.Bad));
+						lastValue = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("divisor is not a valid double",Quality.Level.Bad));
 					}
 				}
 				catch(NumberFormatException nfe) {
-					result = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("dividend is not a valid double",Quality.Level.Bad));
+					lastValue = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("dividend is not a valid double",Quality.Level.Bad));
 				}
 			}
 			
-			if( result==null ) {     // Success!
+			if( lastValue==null ) {     // Success!
 				
-				result = new TestAwareQualifiedValue(timer,new Double(aa/bb));
+				lastValue = new TestAwareQualifiedValue(timer,new Double(aa/bb));
 			}
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
-			notifyOfStatus(result);
+			notifyOfStatus(lastValue);
 		}
 	}
 	/**

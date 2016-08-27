@@ -132,11 +132,11 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 		if(buffer.isEmpty()) return;     // Could happen on race between clearing buffer and removing watch-dog on a reset.
 		TimestampedData data = buffer.removeFirst();
 		if( !isLocked() ) {
-			log.tracef("%s.evaluate: %s",TAG,data.qv.getValue().toString());
-			QualifiedValue qv = new BasicQualifiedValue(coerceToMatchOutput(BlockConstants.OUT_PORT_NAME,data.qv.getValue()),data.qv.getQuality(),data.qv.getTimestamp()); 
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+			log.tracef("%s.evaluate: %s",TAG,data.qualValue.getValue().toString());
+			lastValue = new BasicQualifiedValue(coerceToMatchOutput(BlockConstants.OUT_PORT_NAME,data.qualValue.getValue()),data.qualValue.getQuality(),data.qualValue.getTimestamp()); 
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
-			notifyOfStatus(data.qv);
+			notifyOfStatus();
 		}
 		// Even if we're locked, we process things as normal
 		if( !buffer.isEmpty() ) {
@@ -153,10 +153,11 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 	 * Send status update notification for our last latest state.
 	 */
 	@Override
-	public void notifyOfStatus() {}
-	private void notifyOfStatus(QualifiedValue qv) {
-		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	public void notifyOfStatus() {
+		if(lastValue!=null)
+			controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, lastValue);
 	}
+
 	/**
 	 * Add properties that are new for this class.
 	 * Populate them with default values.
@@ -184,7 +185,7 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 		List<Map<String,String>> outbuffer = descriptor.getBuffer();
 		for( TimestampedData td:buffer) {
 			Map<String,String> qvMap = new HashMap<>();
-			qvMap.put("Value", td.qv.getValue().toString());
+			qvMap.put("Value", td.qualValue.getValue().toString());
 			qvMap.put("Expiration", dateFormatter.format(new Date(td.timestamp)));
 			outbuffer.add(qvMap);
 		}
@@ -213,10 +214,10 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	private class TimestampedData {
 		public final long timestamp;
-		public final QualifiedValue qv;
+		public final QualifiedValue qualValue;
 		
 		public TimestampedData(QualifiedValue data,long time) {
-			this.qv = data;
+			this.qualValue = data;
 			this.timestamp = time;
 			
 		}

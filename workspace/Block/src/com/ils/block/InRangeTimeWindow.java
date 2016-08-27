@@ -174,10 +174,10 @@ public class InRangeTimeWindow extends AbstractProcessBlock implements ProcessBl
 		if( buffer.size()<maxPoints && fillRequired && result.equals(TruthValue.FALSE) ) result = TruthValue.UNKNOWN;
 		if( !result.equals(state) && !isLocked() ) {
 			// Give it a new timestamp
-			QualifiedValue outval = new TestAwareQualifiedValue(timer,result);
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
+			lastValue = new TestAwareQualifiedValue(timer,result);
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
-			notifyOfStatus(outval);
+			notifyOfStatus(lastValue);
 		}
 		state = result;
 		dog.setSecondsDelay(scanInterval);

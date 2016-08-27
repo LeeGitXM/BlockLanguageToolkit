@@ -93,6 +93,12 @@ public class Transmitter extends AbstractProcessBlock implements ProcessBlock {
 
 	@Override
 	public void notifyOfStatus() {}
+	
+	/**
+	 * There are no output ports, so this does nothing.
+	 */
+	@Override
+	public void propagate() {}
 	/**
 	 * Augment the palette prototype for this block class.
 	 */

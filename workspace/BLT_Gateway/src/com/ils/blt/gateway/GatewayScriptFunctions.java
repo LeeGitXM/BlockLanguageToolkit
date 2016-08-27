@@ -41,9 +41,6 @@ public class GatewayScriptFunctions   {
 	public static void clearController() {
 		handler.clearController();
 	}
-	public static void evaluateBlock(String diagramId,String blockId) {
-		handler.evaluateBlock(diagramId,blockId);
-	}
 	public static String getApplicationName(String uuid) {
 		return handler.getApplicationName(uuid);
 	}
@@ -324,6 +321,9 @@ public class GatewayScriptFunctions   {
 	 */
 	public static void postResult(String diagramId,String blockId,String port,String value) {
 		handler.postValue(diagramId,blockId, port, value);
+	}
+	public static void propagateBlockState(String diagramId,String blockId) {
+		handler.propagateBlockState(diagramId,blockId);
 	}
 	/**
 	 * Query the gateway for list of resources that it knows about. This is

@@ -182,7 +182,7 @@ public class LabData extends Input implements ProcessBlock {
 		}
 		
 		if( currentValue!=null && currentTime!=null) {
-			qv = new BasicQualifiedValue(currentValue.getValue(),currentValue.getQuality(),currentTime);
+			lastValue = new BasicQualifiedValue(currentValue.getValue(),currentValue.getQuality(),currentTime);
 		}
 
 		if( synchInterval>0 ) {
@@ -202,17 +202,17 @@ public class LabData extends Input implements ProcessBlock {
 	 */
 	@Override
 	public void evaluate() {
-		if( qv == null ) return; // Shouldn't happen
+		if( lastValue == null ) return; // Shouldn't happen
 		if( !isLocked() ) {
-			if( qv.getTimestamp().before(MINIMUM_DATE) ) {
-				recordActivity("Rejected value from previous millenium",String.valueOf(qv.getValue())); 
+			if( lastValue.getTimestamp().before(MINIMUM_DATE) ) {
+				recordActivity("Rejected value from previous millenium",String.valueOf(lastValue.getValue())); 
 				return;
 			}
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
-			notifyOfStatus(qv);
-			log.tracef("%s.evaluate: %s %s %s",getName(),qv.getValue().toString(),
-					qv.getQuality().getName(),dateFormatter.format(qv.getTimestamp()));
+			notifyOfStatus(lastValue);
+			log.tracef("%s.evaluate: %s %s %s",getName(),lastValue.getValue().toString(),
+					lastValue.getQuality().getName(),dateFormatter.format(lastValue.getTimestamp()));
 		}
 	}
 

@@ -12,6 +12,7 @@ import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
+import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
@@ -305,8 +306,8 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 		
 		
 		log.tracef("%s: evaluate - pid out is %f",TAG,result);
-		QualifiedValue ans = new TestAwareQualifiedValue(timer,result);
-		OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,ans);
+		lastValue = new TestAwareQualifiedValue(timer,result);
+		OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 		controller.acceptCompletionNotification(nvn);
 		QualifiedValue prop = new TestAwareQualifiedValue(timer,proportionalContribution);
 		nvn = new OutgoingNotification(this,PROPORTIONAL_PORT,prop);
@@ -317,7 +318,7 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 		QualifiedValue deriv = new TestAwareQualifiedValue(timer,derivativeContribution);
 		nvn = new OutgoingNotification(this,DERIVATIVE_PORT,deriv);
 		controller.acceptCompletionNotification(nvn);
-		notifyOfStatus(ans,prop,integ,deriv);		
+		notifyOfStatus(lastValue,prop,integ,deriv);		
 	}
 	
 	/**
@@ -350,6 +351,29 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 		controller.sendConnectionNotification(getBlockId().toString(), DERIVATIVE_PORT, deriv);
 	}
 	
+	/**
+	 * Special implementation, since we feed to 4 ports.
+	 */
+	@Override
+	public void propagate() {
+		super.propagate();     // Handles port OUT
+		if( Double.isNaN(proportionalContribution)) {
+			QualifiedValue prop = new TestAwareQualifiedValue(timer,proportionalContribution);
+			OutgoingNotification nvn = new OutgoingNotification(this,PROPORTIONAL_PORT,prop);
+			controller.acceptCompletionNotification(nvn);
+		}
+		if( Double.isNaN(integralContribution)) {
+			QualifiedValue integ = new TestAwareQualifiedValue(timer,integralContribution);
+			OutgoingNotification nvn = new OutgoingNotification(this,INTEGRAL_PORT,integ);
+			controller.acceptCompletionNotification(nvn);
+		}
+		
+		if( Double.isNaN(derivativeContribution)) {
+			QualifiedValue deriv = new TestAwareQualifiedValue(timer,derivativeContribution);
+			OutgoingNotification nvn = new OutgoingNotification(this,DERIVATIVE_PORT,deriv);
+			controller.acceptCompletionNotification(nvn);
+		}
+	}
 	/**
 	 * Augment the palette prototype for this block class.
 	 */

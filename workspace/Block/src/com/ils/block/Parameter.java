@@ -3,7 +3,6 @@
  */
 package com.ils.block;
 
-import java.awt.Color;
 import java.util.Map;
 import java.util.UUID;
 
@@ -34,7 +33,6 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 public class Parameter extends AbstractProcessBlock implements ProcessBlock {
 	private BlockProperty tagProperty = null;
 	private BlockProperty valueProperty = null;
-	private QualifiedValue qv = null;    // Most recent output value
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
@@ -88,9 +86,9 @@ public class Parameter extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void start() {
 		super.start();
-		if( qv!=null &&  qv.getValue() != null && !isLocked()  ) {
-			log.debugf("%s.start: %s (%s)",getName(),qv.getValue().toString(),qv.getQuality().getName());
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+		if( lastValue!=null &&  lastValue.getValue() != null && !isLocked()  ) {
+			log.debugf("%s.start: %s (%s)",getName(),lastValue.getValue().toString(),lastValue.getQuality().getName());
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
 		}
 	}
@@ -110,22 +108,22 @@ public class Parameter extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
-		qv = vcn.getValue();
+		lastValue = vcn.getValue();
 		if( !isLocked() && running ) {
 			if( vcn.getConnection()!=null && vcn.getConnection().getDownstreamPortName().equals(BlockConstants.IN_PORT_NAME) ) {
 				// Arrival through the input connection
 				String path = tagProperty.getBinding().toString();
-				controller.updateTag(getParentId(),path, qv);
-				log.debugf("%s.acceptValue: Updated tag %s = %s",getName(),path,qv.getValue().toString());
+				controller.updateTag(getParentId(),path, lastValue);
+				log.debugf("%s.acceptValue: Updated tag %s = %s",getName(),path,lastValue.getValue().toString());
 			}
 			// In either mode of update, we propagate the value on the output.
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
 		}
 		// Even if locked, we update the current state
-		if( qv.getValue()!=null) {
-			valueProperty.setValue(qv.getValue());
-			notifyOfStatus(qv);
+		if( lastValue.getValue()!=null) {
+			valueProperty.setValue(lastValue.getValue());
+			notifyOfStatus(lastValue);
 		}
 	}
 	
@@ -172,8 +170,8 @@ public class Parameter extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void notifyOfStatus() {
-		if( qv!=null && qv.getValue()!=null) {
-			notifyOfStatus(qv);
+		if( lastValue!=null && lastValue.getValue()!=null) {
+			notifyOfStatus(lastValue);
 		}	
 	}
 	private void notifyOfStatus(QualifiedValue qval) {

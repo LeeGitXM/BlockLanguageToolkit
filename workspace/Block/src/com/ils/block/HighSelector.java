@@ -153,12 +153,12 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 	public void evaluate() {
 		log.tracef("%s.evaluate",getName());
 		if( !isLocked() ) {
-			QualifiedValue max = getMaxValue();
-			if( max!=null ) {
-				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,max);
+			lastValue = getMaxValue();
+			if( lastValue!=null ) {
+				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(nvn);
-				valueProperty.setValue(max.getValue());
-				notifyOfStatus(max);
+				valueProperty.setValue(lastValue.getValue());
+				notifyOfStatus(lastValue);
 			}
 		}
 	}
@@ -196,7 +196,7 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
-	
+
 	/**
 	 * @return a block-specific description of internal statue
 	 */

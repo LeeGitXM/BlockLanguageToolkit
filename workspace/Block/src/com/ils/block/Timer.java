@@ -43,7 +43,6 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 	private double interval = 60;  // ~secs
 	private boolean accumulateValues = false;
 	private double duration = 0.;  //Elapsed time ~ secs at the triggering state.
-	private QualifiedValue qv = null;    // Most recent output value
 	private BlockProperty tagProperty = null;
 	private TruthValue stopOn = TruthValue.FALSE;
 	private TruthValue trigger = TruthValue.TRUE;
@@ -110,8 +109,8 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 		recordActivity(Activity.ACTIVITY_RESET,"");
 		if( controller!=null ) {
 			// Send notifications on all outputs to indicate empty connections.
-			qv = new TestAwareQualifiedValue(timer,new Integer((int)duration));
-			triggerReceiptTime = qv.getTimestamp();
+			lastValue = new TestAwareQualifiedValue(timer,new Integer((int)duration));
+			triggerReceiptTime = lastValue.getTimestamp();
 			evaluate();
 		}
 	}
@@ -141,8 +140,8 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 					// This represents a state change
 					if( trigger.equals(tv)  ) {
 						if( !accumulateValues) duration = 0.0;
-						qv = new TestAwareQualifiedValue(timer,new Integer((int)duration));
-						triggerReceiptTime = qv.getTimestamp();
+						lastValue = new TestAwareQualifiedValue(timer,new Integer((int)duration));
+						triggerReceiptTime = lastValue.getTimestamp();
 						evaluate();
 					}
 					else if(stopOn.equals(tv)) {
@@ -165,8 +164,8 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 		if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_RESET) ) {
 			recordActivity(Activity.ACTIVITY_RECEIVE,sig.getCommand());
 			duration = 0.0;
-			qv = new TestAwareQualifiedValue(timer,new Integer((int)duration));
-			triggerReceiptTime = qv.getTimestamp();
+			lastValue = new TestAwareQualifiedValue(timer,new Integer((int)duration));
+			triggerReceiptTime = lastValue.getTimestamp();
 			evaluate();
 		}
 		else  {
@@ -183,18 +182,18 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 	public synchronized void evaluate() {
 		//log.infof("%s.evaluate ... %f secs",TAG,interval);
 		//if we're in the triggering state, then update duration, re-set the timer
-		if( qv!=null ) {
+		if( lastValue!=null ) {
 			long testtime = timer.getTestTime();
-			long qvtime = qv.getTimestamp().getTime();
+			long qvtime = lastValue.getTimestamp().getTime();
 			duration += ((testtime - qvtime) * timer.getFactor())/1000.;
 			if( !isLocked() ) {
-				qv = new TestAwareQualifiedValue(timer,new Integer((int)duration));
-				OutgoingNotification sig = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+				lastValue = new TestAwareQualifiedValue(timer,new Integer((int)duration));
+				OutgoingNotification sig = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(sig);
 	
 				String path = tagProperty.getBinding().toString();
-				if( !path.isEmpty() ) controller.updateTag(getParentId(),path, qv);
-				notifyOfStatus(qv);
+				if( !path.isEmpty() ) controller.updateTag(getParentId(),path, lastValue);
+				notifyOfStatus(lastValue);
 			}
 		}
 		if(state.equals(trigger) ) {
@@ -212,7 +211,7 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void notifyOfStatus() {
-		notifyOfStatus(qv);
+		notifyOfStatus(lastValue);
 	}
 	private void notifyOfStatus(QualifiedValue qualValue) {
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qualValue);
@@ -239,7 +238,7 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 				interval = Double.parseDouble(val);
 				if( dog.isActive() && interval>0.0 && state.equals(trigger) ) {
 					// Update duration for "time served". 
-					double elapsed = (timer.getTestTime() - qv.getTimestamp().getTime())/1000;
+					double elapsed = (timer.getTestTime() - lastValue.getTimestamp().getTime())/1000;
 					duration+=elapsed;
 					dog.setSecondsDelay(interval);
 					timer.updateWatchdog(dog);  // pet dog

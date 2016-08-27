@@ -308,22 +308,22 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 			if( !isLocked() && !newState.equals(state) ) {
 				// Give it a new timestamp
 				state = newState;
-				QualifiedValue outval = new TestAwareQualifiedValue(timer,state);
-				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
+				lastValue = new TestAwareQualifiedValue(timer,state);
+				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(nvn);
 				
 				if( state.equals(TruthValue.TRUE) || state.equals(TruthValue.FALSE)) {
 					// Propagate the other values
-					outval = new TestAwareQualifiedValue(timer,slope);
-					nvn = new OutgoingNotification(this,PORT_SLOPE,outval);
+					QualifiedValue qv = new TestAwareQualifiedValue(timer,slope);
+					nvn = new OutgoingNotification(this,PORT_SLOPE,qv);
 					controller.acceptCompletionNotification(nvn);
 					// output the standardDeviation, not variance
 					double stddev = Math.sqrt(variance);
-					outval = new TestAwareQualifiedValue(timer,stddev);
-					nvn = new OutgoingNotification(this,PORT_VARIANCE,outval);
+					qv = new TestAwareQualifiedValue(timer,stddev);
+					nvn = new OutgoingNotification(this,PORT_VARIANCE,qv);
 					controller.acceptCompletionNotification(nvn);
-					outval = new TestAwareQualifiedValue(timer,projection);
-					nvn = new OutgoingNotification(this,PORT_PROJECTION,outval);
+					qv = new TestAwareQualifiedValue(timer,projection);
+					nvn = new OutgoingNotification(this,PORT_PROJECTION,qv);
 					controller.acceptCompletionNotification(nvn);
 					// Write the auxilliary values to block parameters
 					controller.sendPropertyNotification(getBlockId().toString(),BLOCK_PROPERTY_SLOPE,

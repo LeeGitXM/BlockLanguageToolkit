@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
+ *   (c) 2014-2016  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -65,7 +65,6 @@ public class InputMedian extends AbstractProcessBlock implements ProcessBlock {
 		valueMap = new HashMap<String,QualifiedValue>();
 		initialize();
 	}
-	
 	/**
 	 * Add properties that are new for this class.
 	 * Populate them with default values.
@@ -114,20 +113,20 @@ public class InputMedian extends AbstractProcessBlock implements ProcessBlock {
 	public void acceptValue(IncomingNotification incoming) {
 		super.acceptValue(incoming);
 		String blockId = incoming.getConnection().getSource().toString();
-		QualifiedValue qv = incoming.getValue();
-		if( qv!=null && qv.getValue()!=null ) {
+		QualifiedValue qval = incoming.getValue();
+		if( qval!=null && qval.getValue()!=null ) {
 			try {
-				Double dbl = Double.parseDouble(qv.getValue().toString());
-				qv = new BasicQualifiedValue(dbl,qv.getQuality(),qv.getTimestamp());
+				Double dbl = Double.parseDouble(qval.getValue().toString());
+				qval = new BasicQualifiedValue(dbl,qval.getQuality(),qval.getTimestamp());
 				dog.setSecondsDelay(synchInterval);
 				log.tracef("%s.acceptValue got %s for %s", TAG,dbl.toString(),blockId);
 				timer.updateWatchdog(dog);  // pet dog
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.acceptValue: Unable to convert incoming value to a double (%s)",TAG,nfe.getLocalizedMessage());
-				qv = new BasicQualifiedValue(Double.NaN,new BasicQuality(nfe.getLocalizedMessage(),Quality.Level.Bad),qv.getTimestamp());
+				qval = new BasicQualifiedValue(Double.NaN,new BasicQuality(nfe.getLocalizedMessage(),Quality.Level.Bad),qval.getTimestamp());
 			}
-			valueMap.put(blockId, qv);
+			valueMap.put(blockId, qval);
 		}
 	}
 	
@@ -138,10 +137,10 @@ public class InputMedian extends AbstractProcessBlock implements ProcessBlock {
 	public void evaluate() {
 		if( !isLocked() && !valueMap.isEmpty()) {
 			double value = getAggregateResult();
-			QualifiedValue result = new TestAwareQualifiedValue(timer,new Double(value),getAggregateQuality());
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
+			lastValue = new TestAwareQualifiedValue(timer,new Double(value),getAggregateQuality());
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
-			notifyOfStatus(result);
+			notifyOfStatus(lastValue);
 		}
 	}
 	/**
@@ -149,9 +148,10 @@ public class InputMedian extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void notifyOfStatus() {}
-	private void notifyOfStatus(QualifiedValue qv) {
-		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	private void notifyOfStatus(QualifiedValue qualval) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qualval);
 	}
+	
 	/**
 	 * Define the palette prototype for this block class.
 	 */
@@ -179,9 +179,9 @@ public class InputMedian extends AbstractProcessBlock implements ProcessBlock {
 		double result = Double.NaN;
 		int count = 0;
 		result = 0.;
-		for(QualifiedValue qv:values) {
-			if( qv.getQuality().isGood() ) {
-				result = result+((Double)qv.getValue()).doubleValue();
+		for(QualifiedValue qval:values) {
+			if( qval.getQuality().isGood() ) {
+				result = result+((Double)qval.getValue()).doubleValue();
 				count++;
 			}
 			else {
@@ -199,8 +199,8 @@ public class InputMedian extends AbstractProcessBlock implements ProcessBlock {
 	private Quality getAggregateQuality() {
 		Collection<QualifiedValue> values = valueMap.values();
 		Quality result = null;
-		for(QualifiedValue qv:values) {
-			result = qv.getQuality();
+		for(QualifiedValue qval:values) {
+			result = qval.getQuality();
 			if( !result.isGood() ) break;
 		}
 		return result;	

@@ -29,7 +29,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 @ExecutableBlock
 public class ZeroCrossing extends AbstractProcessBlock implements ProcessBlock {
 	private final static String TAG = "ZeroCrossing";
-	private double lastValue = Double.NaN;
+	private double value = Double.NaN;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -55,6 +55,7 @@ public class ZeroCrossing extends AbstractProcessBlock implements ProcessBlock {
 	public void reset() {
 		super.reset();
 		state = TruthValue.UNKNOWN;
+		value = Double.NaN;
 	}
 	
 	/**
@@ -91,31 +92,31 @@ public class ZeroCrossing extends AbstractProcessBlock implements ProcessBlock {
 				double dbl = Double.parseDouble(val);
 				TruthValue result = TruthValue.UNKNOWN;
 				if( qv.getQuality().isGood() )  {
-					if (Double.isNaN(lastValue) ) {
+					if (Double.isNaN(value) ) {
 						result = TruthValue.FALSE;
 					}
-					else if( dbl * lastValue >= 0.0 ) {
+					else if( dbl * value >= 0.0 ) {
 						result = TruthValue.FALSE;
 					}
 					else {
 						result = TruthValue.TRUE;
 					}
 					
-					if( dbl!= 0.0 ) lastValue = dbl;
+					if( dbl!= 0.0 ) value = dbl;
 				}
 				
 				
 				if( !result.equals(state)) {
 					state = result;
 					if( !isLocked() ) {
-						qv = new BasicQualifiedValue(state,qv.getQuality(),qv.getTimestamp());
-						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+						lastValue = new BasicQualifiedValue(state,qv.getQuality(),qv.getTimestamp());
+						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 						controller.acceptCompletionNotification(nvn);
-						notifyOfStatus(qv);
+						notifyOfStatus(lastValue);
 					}
 				}
 				if (dbl != 0){
-					lastValue = dbl;
+					value = dbl;
 				}
 			}
 			catch(NumberFormatException nfe) {

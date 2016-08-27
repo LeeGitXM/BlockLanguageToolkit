@@ -106,10 +106,10 @@ public class EqualityObservation extends AbstractProcessBlock implements Process
 			if( !newState.equals(state)) {
 				state = newState;
 				if( !isLocked() ) {
-					QualifiedValue nqv = new BasicQualifiedValue(state,observation.getQuality(),observation.getTimestamp());
-					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,nqv);
+					lastValue = new BasicQualifiedValue(state,observation.getQuality(),observation.getTimestamp());
+					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 					controller.acceptCompletionNotification(nvn);
-					notifyOfStatus(nqv);
+					notifyOfStatus(lastValue);
 				}
 			}
 		}

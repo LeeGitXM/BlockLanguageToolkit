@@ -19,6 +19,7 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
@@ -83,10 +84,10 @@ public class Gain extends AbstractProcessBlock implements ProcessBlock {
 					if( vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(BlockConstants.IN_PORT_NAME)) {
 						double value = dbl.doubleValue();
 						value = value*gain;
-						qv = new BasicQualifiedValue(new Double(value),qv.getQuality(),qv.getTimestamp());
-						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+						lastValue = new BasicQualifiedValue(new Double(value),qv.getQuality(),qv.getTimestamp());
+						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 						controller.acceptCompletionNotification(nvn);
-						notifyOfStatus(qv);
+						notifyOfStatus(lastValue);
 					}
 					else {
 						log.warnf("%s.acceptValue: Unexpected port designation (%s)",TAG,vcn.getConnection().getDownstreamPortName());
@@ -98,8 +99,8 @@ public class Gain extends AbstractProcessBlock implements ProcessBlock {
 			}
 			else {
 				if( qv!=null ) {
-					qv = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
-					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+					lastValue = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
+					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 					controller.acceptCompletionNotification(nvn);
 					notifyOfStatus(qv);
 				}
@@ -114,7 +115,6 @@ public class Gain extends AbstractProcessBlock implements ProcessBlock {
 	private void notifyOfStatus(QualifiedValue qv) {
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
-	
 	/**
 	 * Add properties that are new for this class.
 	 * Populate them with default values.

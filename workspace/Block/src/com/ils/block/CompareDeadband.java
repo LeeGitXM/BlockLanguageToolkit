@@ -135,7 +135,7 @@ public class CompareDeadband extends Compare implements ProcessBlock {
 				else if( xx<yy+offset-db) newValue = TruthValue.FALSE;
 				if( !newValue.equals(truthValue)) {
 					truthValue = newValue;
-					result = new TestAwareQualifiedValue(timer,truthValue);
+					lastValue = new TestAwareQualifiedValue(timer,truthValue);
 				}
 				else {
 					// No change, do nothing
@@ -146,16 +146,16 @@ public class CompareDeadband extends Compare implements ProcessBlock {
 			else {
 				Quality q = x.getQuality();
 				if( q.isGood()) q = y.getQuality();
-				result = new TestAwareQualifiedValue(timer,state,q);
+				lastValue = new TestAwareQualifiedValue(timer,state,q);
 			}
 
 		}
 		
 		if( !isLocked() ) {
 			log.debugf("%s.evaluate: wrote %s",getName(),result.getValue().toString());
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);	
-			notifyOfStatus(result);
+			notifyOfStatus(lastValue);
 		}
 	}
 	/**

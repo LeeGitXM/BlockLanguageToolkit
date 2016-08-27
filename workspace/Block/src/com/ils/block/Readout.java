@@ -142,34 +142,34 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 		super.acceptValue(incoming);
 		if( type.equals(PropertyType.BOOLEAN) || type.equals(PropertyType.DOUBLE) ||
 				type.equals(PropertyType.INTEGER) || type.equals(PropertyType.STRING)     ) {
-			QualifiedValue qv = incoming.getValue();
-			if( qv!=null && qv.getValue()!=null ) {
+			lastValue = incoming.getValue();
+			if( lastValue!=null && lastValue.getValue()!=null ) {
 				if( !isLocked()  ) {
-					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 					controller.acceptCompletionNotification(nvn);
 					// Convert the value according to the data type specified by the format.
 					String value = "";
-					if( qv.getValue().toString().length()>0) {
+					if( lastValue.getValue().toString().length()>0) {
 						try {
 							if( type==PropertyType.DOUBLE) {
-								value = String.format(format, fncs.coerceToDouble(qv.getValue()));
+								value = String.format(format, fncs.coerceToDouble(lastValue.getValue()));
 							}
 							else if( type==PropertyType.INTEGER) {
-								value = String.format(format, fncs.coerceToInteger(qv.getValue()));
+								value = String.format(format, fncs.coerceToInteger(lastValue.getValue()));
 							}
-							else if(qv.getValue() instanceof Date) {
-								value = dateFormatter.format(qv.getValue());
+							else if(lastValue.getValue() instanceof Date) {
+								value = dateFormatter.format(lastValue.getValue());
 							}
 							else {
-								value = String.format(format,fncs.coerceToString(qv.getValue()));
+								value = String.format(format,fncs.coerceToString(lastValue.getValue()));
 							}
 						}
 						catch(Exception ex) {
-							log.warn(getName()+".acceptValue: error formatting "+qv.getValue()+" with "+format+" as "+type.name(),ex);  // Print stack trace
+							log.warn(getName()+".acceptValue: error formatting "+lastValue.getValue()+" with "+format+" as "+type.name(),ex);  // Print stack trace
 						}
 					}
-					updateStateForNewValue(qv);
-					qv = new BasicQualifiedValue(value,qv.getQuality(),qv.getTimestamp()); 
+					updateStateForNewValue(lastValue);
+					QualifiedValue qv = new BasicQualifiedValue(value,lastValue.getQuality(),lastValue.getTimestamp()); 
 					valueProperty.setValue(value);
 					log.tracef("%s.acceptValue: port %s formatted value =  %s.",getName(),incoming.getConnection().getUpstreamPortName(),value);
 					notifyOfStatus(qv);

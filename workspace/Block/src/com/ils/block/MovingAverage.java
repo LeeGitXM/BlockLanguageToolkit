@@ -102,18 +102,18 @@ public class MovingAverage extends AbstractProcessBlock implements ProcessBlock 
 				this.sum += dbl;
 				this.count++;
 				result = sum/count;
-				qv = new BasicQualifiedValue(result,qv.getQuality(),qv.getTimestamp());
+				lastValue = new BasicQualifiedValue(result,qv.getQuality(),qv.getTimestamp());
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.acceptValue: Unable to convert incoming value to a double (%s)",TAG,nfe.getLocalizedMessage());
-				qv = new BasicQualifiedValue(Double.NaN,new BasicQuality(nfe.getLocalizedMessage(),Quality.Level.Bad),qv.getTimestamp());
+				lastValue = new BasicQualifiedValue(Double.NaN,new BasicQuality(nfe.getLocalizedMessage(),Quality.Level.Bad),qv.getTimestamp());
 			}
 		}
 		else {
-			qv = new BasicQualifiedValue(Double.NaN,qual,qv.getTimestamp());
+			lastValue = new BasicQualifiedValue(Double.NaN,qual,qv.getTimestamp());
 		}
 		if( !isLocked() ) {
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus(qv);
 		}
@@ -140,8 +140,8 @@ public class MovingAverage extends AbstractProcessBlock implements ProcessBlock 
 	 */
 	@Override
 	public void notifyOfStatus() {}
-	private void notifyOfStatus(QualifiedValue qv) {
-		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	private void notifyOfStatus(QualifiedValue qval) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qval);
 	}
 	/**
 	 * @return a block-specific description of internal statue

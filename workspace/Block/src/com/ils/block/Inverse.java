@@ -84,7 +84,7 @@ public class Inverse extends AbstractProcessBlock implements ProcessBlock {
 					double value = dbl.doubleValue();
 					if( value!=0.0) {
 						value = 1/value;
-						qv = new BasicQualifiedValue(new Double(value),qv.getQuality(),qv.getTimestamp());
+						lastValue = new BasicQualifiedValue(new Double(value),qv.getQuality(),qv.getTimestamp());
 						statusText = "";
 					}
 					else {
@@ -94,15 +94,15 @@ public class Inverse extends AbstractProcessBlock implements ProcessBlock {
 				}
 				catch(NumberFormatException nfe) {
 					log.warnf("%s.acceptValue: Unable to convert incoming value to a double (%s)",TAG,nfe.getLocalizedMessage());
-					qv = new BasicQualifiedValue(new Double(Double.NaN),new BasicQuality(nfe.getLocalizedMessage(),Quality.Level.Bad),qv.getTimestamp());
+					lastValue = new BasicQualifiedValue(new Double(Double.NaN),new BasicQuality(nfe.getLocalizedMessage(),Quality.Level.Bad),qv.getTimestamp());
 				}
 			}
 			else {
-				qv = new BasicQualifiedValue(new Double(Double.NaN),new BasicQuality("null value",Quality.Level.Bad),qv.getTimestamp());
+				lastValue = new BasicQualifiedValue(new Double(Double.NaN),new BasicQuality("null value",Quality.Level.Bad),qv.getTimestamp());
 			}
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
-			notifyOfStatus(qv);
+			notifyOfStatus(lastValue);
 		}
 	}
 	/**
@@ -113,6 +113,7 @@ public class Inverse extends AbstractProcessBlock implements ProcessBlock {
 	private void notifyOfStatus(QualifiedValue qv) {
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
+
 	/**
 	 * Augment the palette prototype for this block class.
 	 */

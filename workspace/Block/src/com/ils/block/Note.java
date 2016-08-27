@@ -59,6 +59,8 @@ public class Note extends AbstractProcessBlock implements ProcessBlock {
 	}
 	@Override
 	public void notifyOfStatus() {}
+	@Override
+	public void propagate() {}
 	/**
 	 * Add properties that are new for this class.
 	 * Populate them with default values.

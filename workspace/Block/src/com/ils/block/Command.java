@@ -98,6 +98,8 @@ public class Command extends Reset implements ProcessBlock {
 			log.warnf("%s.propertyChange:Unrecognized property (%s)",TAG,propertyName);
 		}
 	}
+	
+
 
 	/**
 	 * Augment the palette prototype for this block class.

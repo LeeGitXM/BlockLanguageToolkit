@@ -117,20 +117,20 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
 		
-		QualifiedValue qv = vcn.getValue();
+		lastValue = vcn.getValue();
 		//log.infof("%s.acceptValue: Received %s, trigger is %s",TAG,qv.getValue().toString(),trigger);
 		// A different value than the trigger, or a bad value aborts the countdown
-		if( !qv.getQuality().isGood() || !qv.getValue().toString().equalsIgnoreCase(trigger) ) {
+		if( !lastValue.getQuality().isGood() || !lastValue.getValue().toString().equalsIgnoreCase(trigger) ) {
 			count = 0;
 			valueProperty.setValue("");
 			if( dog.isActive() ) timer.removeWatchdog(dog);
 			if( !isLocked() ) {
 				// Propagate value immediately and reset the block
-				log.tracef("%s.acceptValue: No match, sent immediate %s",TAG,qv.getValue().toString());
-				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+				log.tracef("%s.acceptValue: No match, sent immediate %s",TAG,lastValue.getValue().toString());
+				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(nvn);
-				state = qualifiedValueAsTruthValue(qv);
-				notifyOfStatus(qv);
+				state = qualifiedValueAsTruthValue(lastValue);
+				notifyOfStatus(lastValue);
 			}
 		}
 		// Only execute if the block state is not at the trigger
@@ -169,12 +169,12 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		}
 		else if( !isLocked()) {
 			// Finally propagate the held value
-			QualifiedValue outval = new TestAwareQualifiedValue(timer,trigger);
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
+			lastValue = new TestAwareQualifiedValue(timer,trigger);
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
 			valueProperty.setValue("---");
-			state = qualifiedValueAsTruthValue(outval);
-			notifyOfStatus(outval);
+			state = qualifiedValueAsTruthValue(lastValue);
+			notifyOfStatus(lastValue);
 		}
 		count--;
 	}

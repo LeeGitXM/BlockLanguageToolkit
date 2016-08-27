@@ -105,10 +105,10 @@ public class LowLimitObservation extends AbstractProcessBlock implements Process
 				if( !newValue.equals(state)) {
 					state = newValue;
 					if( !isLocked() ) {
-						QualifiedValue nqv = new BasicQualifiedValue(state,observation.getQuality(),observation.getTimestamp());
-						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,nqv);
+						lastValue = new BasicQualifiedValue(state,observation.getQuality(),observation.getTimestamp());
+						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 						controller.acceptCompletionNotification(nvn);
-						notifyOfStatus(nqv);
+						notifyOfStatus(lastValue);
 					}
 				}
 			}
@@ -172,6 +172,7 @@ public class LowLimitObservation extends AbstractProcessBlock implements Process
 	private void notifyOfStatus(QualifiedValue qv) {
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
+
 	/**
 	 *  When unlocking, set the remembered state as "UNSET". This will allow
 	 *  the next value to generate output, no matter what.

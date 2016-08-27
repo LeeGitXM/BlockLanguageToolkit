@@ -88,15 +88,15 @@ public class Unknown extends AbstractProcessBlock implements ProcessBlock {
 		if( tv.equals(TruthValue.UNKNOWN)) state = TruthValue.TRUE;
 		else if( tv.equals(TruthValue.TRUE)) state = TruthValue.FALSE;
 		else if( tv.equals(TruthValue.FALSE)) state = TruthValue.FALSE;
-		QualifiedValue result = new BasicQualifiedValue(state.name(),qv.getQuality(),qv.getTimestamp());
+		lastValue = new BasicQualifiedValue(state.name(),qv.getQuality(),qv.getTimestamp());
 		
 		if( !isLocked()) {
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
 		}
 		// Set the internal property locked or not
 		valueProperty.setValue(state);
-		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,result);
+		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,lastValue);
 	}
 	/**
 	 * The predecessor state is the reason (I guess). Assume only a single 

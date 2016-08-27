@@ -52,17 +52,13 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 */
 	public boolean delayBlockStart();
 	/**
+	 * Calculate the block state. This may or may not result in any output.
+	 * 
 	 * In the case where the block has specified a coalescing time,
 	 * this method will be called by the engine after receipt of input
 	 * once the coalescing "quiet" time has passed without further input.
 	 */
 	public void evaluate();
-	/**
-	 * Evaluate blocks connected upstream of the current block to
-	 * force propagation of the most recent value. This is used
-	 * for updating a chart when a new block is added.
-	 */
-	public void evaluateUpstreamBlocks();
 	/**
 	 * Place a value on a named output port of a block. 
 	 * This action does not change the internal state of the block.
@@ -173,6 +169,12 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 * notification for animation that is most necessary.
 	 */
 	public void notifyOfStatus();
+	/**
+	 * Artificially place the current block state on its
+	 * outputs. This method is never called in the normal
+	 * course of block operation.
+	 */
+	public void propagate();
 	/**
 	 * Add a time-stamped entry to the block's activity log.
 	 * The log is viewable as part of the internal status.

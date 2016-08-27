@@ -89,24 +89,24 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 		if( !isLocked() ) {
 			String port = vcn.getConnection().getDownstreamPortName();
 			if( port.equals(BlockConstants.IN_PORT_NAME)  ) {
-				QualifiedValue qv = vcn.getValue();
-				if( qv != null && qv.getValue()!=null ) {
-					log.tracef("%s.acceptValue: Received value %s (%s)",getName(),qv.getValue().toString(),
-							dateFormatter.format(qv.getTimestamp()));
+				lastValue = vcn.getValue();
+				if( lastValue != null && lastValue.getValue()!=null ) {
+					log.tracef("%s.acceptValue: Received value %s (%s)",getName(),lastValue.getValue().toString(),
+							dateFormatter.format(lastValue.getTimestamp()));
 					long expirationTime = ((Long)expirationProperty.getValue()).longValue();
-					if( qv.getQuality().isGood() && 
-							(expirationTime==0 || qv.getTimestamp().getTime()>=expirationTime)) {
-						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+					if( lastValue.getQuality().isGood() && 
+							(expirationTime==0 || lastValue.getTimestamp().getTime()>=expirationTime)) {
+						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 						controller.acceptCompletionNotification(nvn);
 						notifyOfStatus(vcn.getValue());
 					}
 					else {
-						recordActivity(Activity.ACTIVITY_BLOCKED,qv.getValue().toString());
-						log.infof("%s.acceptValue: Ignoring inhibited or BAD input ... (%s)",getName(),qv.getValue().toString());
+						recordActivity(Activity.ACTIVITY_BLOCKED,lastValue.getValue().toString());
+						log.infof("%s.acceptValue: Ignoring inhibited or BAD input ... (%s)",getName(),lastValue.getValue().toString());
 					}
 				}
 				else {
-					log.infof("%s.acceptValue: Received null %s (IGNORED)",getName(),(qv==null?"":"value"));
+					log.infof("%s.acceptValue: Received null %s (IGNORED)",getName(),(lastValue==null?"":"value"));
 				}
 			}
 		}
@@ -171,7 +171,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 		inhibiting = false;
 		log.tracef("%s.evaluate: Set inhibit flag false",getName());
 	}
-	
+
 	/**
 	 * Add properties that are new for this class.
 	 * Populate them with default values.
@@ -217,8 +217,8 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void notifyOfStatus() {}
-	private void notifyOfStatus(QualifiedValue qv) {
-		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	private void notifyOfStatus(QualifiedValue qvalue) {
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qvalue);
 	}
 	/**
 	 * Augment the palette prototype for this block class.

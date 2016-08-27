@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
+ *   (c) 2014-2016  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -118,23 +118,23 @@ public class ExponentialFilter extends AbstractProcessBlock implements ProcessBl
 					value = newValue;
 				}
 				lastUpdateTime = System.currentTimeMillis();
-				qv = new BasicQualifiedValue(value,qv.getQuality(),qv.getTimestamp());
+				lastValue = new BasicQualifiedValue(value,qv.getQuality(),qv.getTimestamp());
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.acceptValue: Unable to convert incoming value to a double (%s)",TAG,nfe.getLocalizedMessage());
-				qv = new BasicQualifiedValue(Double.NaN,new BasicQuality(nfe.getLocalizedMessage(),Quality.Level.Bad),qv.getTimestamp());
+				lastValue = new BasicQualifiedValue(Double.NaN,new BasicQuality(nfe.getLocalizedMessage(),Quality.Level.Bad),qv.getTimestamp());
 			}
 		}
 		else if( window<= 0.0 ){
-			qv = new BasicQualifiedValue(Double.NaN,new BasicQuality(String.format("Illegal time window %f",window),Quality.Level.Bad),qv.getTimestamp());
+			lastValue = new BasicQualifiedValue(Double.NaN,new BasicQuality(String.format("Illegal time window %f",window),Quality.Level.Bad),qv.getTimestamp());
 		}
 		else {
-			qv = new BasicQualifiedValue(Double.NaN,qual,qv.getTimestamp());
+			lastValue = new BasicQualifiedValue(Double.NaN,qual,qv.getTimestamp());
 		}
 		if( !isLocked() ) {
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
-			notifyOfStatus(qv);
+			notifyOfStatus(lastValue);
 		}
 	}
 	

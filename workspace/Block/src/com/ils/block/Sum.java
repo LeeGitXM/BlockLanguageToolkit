@@ -141,10 +141,10 @@ public class Sum extends AbstractProcessBlock implements ProcessBlock {
 			//synchronized(this) {
 				double value = getAggregateResult();
 				log.debugf("%s.evaluate ... value = %3.2f", getName(),value);
-				QualifiedValue result = new TestAwareQualifiedValue(timer,new Double(value),getAggregateQuality());
-				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,result);
+				lastValue = new TestAwareQualifiedValue(timer,new Double(value),getAggregateQuality());
+				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(nvn);
-				notifyOfStatus(result);
+				notifyOfStatus(lastValue);
 			//}	
 		}
 	}

@@ -77,7 +77,7 @@ public class CompareAbsolute extends Compare implements ProcessBlock {
 	@Override
 	public void evaluate() {
 		if( !isLocked() ) {
-			currentValue = null;
+			QualifiedValue currentValue = null;
 			state = TruthValue.UNKNOWN;
 			if( x==null ) {
 				currentValue = new TestAwareQualifiedValue(timer,state,new BasicQuality("'x' is unset",Quality.Level.Bad));
@@ -114,19 +114,19 @@ public class CompareAbsolute extends Compare implements ProcessBlock {
 					if( xx<0.0) xx = -xx;
 					if( yy<0.0) yy = -yy;
 					if( xx >= yy+offset) state = TruthValue.TRUE;
-					currentValue = new TestAwareQualifiedValue(timer,state);
+					lastValue = new TestAwareQualifiedValue(timer,state);
 				}
 				else {
 					Quality q = x.getQuality();
 					if( q.isGood()) q = y.getQuality();
-					currentValue = new TestAwareQualifiedValue(timer,state,q);
+					lastValue = new TestAwareQualifiedValue(timer,state,q);
 					log.debugf("%s.evaluate: UNKNOWN x=%s, y=%s",getName(),x.toString(),y.toString());
 				}
 				
 			}
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,currentValue);
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
-			notifyOfStatus(currentValue);
+			notifyOfStatus(lastValue);
 		}
 	}
 	
@@ -135,7 +135,7 @@ public class CompareAbsolute extends Compare implements ProcessBlock {
 	 */
 	@Override
 	public void notifyOfStatus() {
-		notifyOfStatus(currentValue);
+		notifyOfStatus(lastValue);
 	}
 
 	private void notifyOfStatus(QualifiedValue qv) {

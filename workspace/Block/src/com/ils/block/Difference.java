@@ -39,7 +39,6 @@ public class Difference extends AbstractProcessBlock implements ProcessBlock {
 	private double synchInterval = 0.5; // 1/2 sec synchronization by default
 	private QualifiedValue a = null;
 	private QualifiedValue b = null;
-	QualifiedValue difference = null;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -141,26 +140,26 @@ public class Difference extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void evaluate() {
 		if( !isLocked() ) {
-			difference = null;
+			lastValue = null;
 			if( a==null ) {
-				difference = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("'a' is unset",Quality.Level.Bad));
+				lastValue = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("'a' is unset",Quality.Level.Bad));
 			}
 			else if( b==null ) {
-				difference = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("'b' is unset",Quality.Level.Bad));
+				lastValue = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("'b' is unset",Quality.Level.Bad));
 			}
 			else if( !a.getQuality().isGood()) {
-				difference = new TestAwareQualifiedValue(timer,new Double(Double.NaN),a.getQuality());
+				lastValue = new TestAwareQualifiedValue(timer,new Double(Double.NaN),a.getQuality());
 			}
 			else if( !b.getQuality().isGood()) {
-				difference = new TestAwareQualifiedValue(timer,new Double(Double.NaN),b.getQuality());
+				lastValue = new TestAwareQualifiedValue(timer,new Double(Double.NaN),b.getQuality());
 			}
 			double aa = Double.NaN;
 			double bb = Double.NaN;
-			if( difference == null ) {
+			if( lastValue == null ) {
 				// Handle dates
 				if( a.getValue() instanceof Date || b.getValue() instanceof Date ) {
 					if( !(a.getValue() instanceof Date) || !(b.getValue() instanceof Date)  ) {
-						difference = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("If one input is a Date, then both must be",Quality.Level.Bad));
+						lastValue = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("If one input is a Date, then both must be",Quality.Level.Bad));
 					}
 					else {
 						aa = ((Date)(a.getValue())).getTime();
@@ -176,21 +175,21 @@ public class Difference extends AbstractProcessBlock implements ProcessBlock {
 							bb = Double.parseDouble(b.getValue().toString());
 						}
 						catch(NumberFormatException nfe) {
-							difference = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("'b' is not a valid double",Quality.Level.Bad));
+							lastValue = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("'b' is not a valid double",Quality.Level.Bad));
 						}
 					}
 					catch(NumberFormatException nfe) {
-						difference = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("'a' is not a valid double",Quality.Level.Bad));
+						lastValue = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("'a' is not a valid double",Quality.Level.Bad));
 					}
 				}
 			}
 			
-			if( difference==null ) {     // Success!
-				difference = new TestAwareQualifiedValue(timer,new Double(aa-bb));
+			if( lastValue==null ) {     // Success!
+				lastValue = new TestAwareQualifiedValue(timer,new Double(aa-bb));
 			}
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,difference);
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
-			notifyOfStatus(difference);
+			notifyOfStatus(lastValue);
 		}
 	}
 	
@@ -216,7 +215,7 @@ public class Difference extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void notifyOfStatus() {
-		notifyOfStatus(difference);
+		notifyOfStatus(lastValue);
 		
 	}
 	private void notifyOfStatus(QualifiedValue qv) {

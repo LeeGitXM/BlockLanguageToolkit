@@ -95,21 +95,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 		return result;
 	}
-	/**
-	 * Execute evaluate() on a specified block
-	 */
-	@Override
-	public void evaluateBlock(String diagramId,String blockId) {
-		log.debugf("%s.evaluateBlock ...",TAG);
 
-		try {
-			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
-					BLTProperties.MODULE_ID, "evaluateBlock",diagramId,blockId);
-		}
-		catch(Exception ge) {
-			log.infof("%s.evaluateBlock: GatewayException (%s)",TAG,ge.getMessage());
-		}
-	}
 	@Override
 	public String getApplicationName(String uuid) {
 		String name = "NULL UUID";
@@ -771,6 +757,22 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 		catch(Exception ge) {
 			log.infof("%s.postResult: GatewayException (%s)",TAG,ge.getMessage());
+		}
+	}
+	/**
+	 * Execute propagate() on a specified block. This sends its current value to
+	 * the output connections.
+	 */
+	@Override
+	public void propagateBlockState(String diagramId,String blockId) {
+		log.debugf("%s.propagateBlockState ...",TAG);
+
+		try {
+			GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "propagateBlockState",diagramId,blockId);
+		}
+		catch(Exception ge) {
+			log.infof("%s.propagateBlockState: GatewayException (%s)",TAG,ge.getMessage());
 		}
 	}
 	

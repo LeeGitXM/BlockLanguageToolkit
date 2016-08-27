@@ -117,10 +117,10 @@ public class MovingAverageSample extends AbstractProcessBlock implements Process
 					double result = computeAverage();
 					if( !isLocked() ) {
 						// Give it a new timestamp
-						QualifiedValue outval = new BasicQualifiedValue(result,qv.getQuality(),qv.getTimestamp());
-						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
+						lastValue = new BasicQualifiedValue(result,qv.getQuality(),qv.getTimestamp());
+						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 						controller.acceptCompletionNotification(nvn);
-						notifyOfStatus(outval);
+						notifyOfStatus(lastValue);
 					}
 					else {
 						// Even if locked, we update the current state
@@ -132,10 +132,10 @@ public class MovingAverageSample extends AbstractProcessBlock implements Process
 			else {
 				// Post bad value on output, clear queue
 				if( !isLocked() ) {
-					QualifiedValue outval = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
-					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
+					lastValue = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
+					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 					controller.acceptCompletionNotification(nvn);
-					notifyOfStatus(outval);
+					notifyOfStatus(lastValue);
 				}
 				queue.clear();
 			}
@@ -155,7 +155,7 @@ public class MovingAverageSample extends AbstractProcessBlock implements Process
 		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
-	
+
 	/**
 	 * Handle a changes to the various attributes.
 	 */

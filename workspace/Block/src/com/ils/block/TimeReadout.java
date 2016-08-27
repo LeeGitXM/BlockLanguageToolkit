@@ -98,26 +98,26 @@ public class TimeReadout extends Readout implements ProcessBlock {
 	@Override
 	public void acceptValue(IncomingNotification incoming) {
 		super.acceptValue(incoming);
-		QualifiedValue qv = incoming.getValue();
-		if( qv!=null && qv.getValue()!=null ) {
+		lastValue = incoming.getValue();
+		if( lastValue!=null && lastValue.getValue()!=null ) {
 			if( !isLocked()  ) {
-				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(nvn);
 				try {
 					String value = "";
 					// Convert the value according to the data type specified by the format.
-					if( qv.getValue() instanceof java.util.Date ) {
-						value = customFormatter.format((java.util.Date)(qv.getValue()));
+					if( lastValue.getValue() instanceof java.util.Date ) {
+						value = customFormatter.format((java.util.Date)(lastValue.getValue()));
 					}
 					else {
-						value = customFormatter.format(qv.getTimestamp());
+						value = customFormatter.format(lastValue.getTimestamp());
 					}
 			
 					
 					valueProperty.setValue(value);
 					log.tracef("%s.acceptValue: port %s formatted value =  %s.",getName(),incoming.getConnection().getUpstreamPortName(),value);
 					
-					qv = new BasicQualifiedValue(value,qv.getQuality(),qv.getTimestamp()); 
+					QualifiedValue qv = new BasicQualifiedValue(value,lastValue.getQuality(),lastValue.getTimestamp()); 
 					valueProperty.setValue(value);
 					log.tracef("%s.acceptValue: port %s formatted value =  %s.",getName(),incoming.getConnection().getUpstreamPortName(),value);
 					notifyOfStatus(qv);

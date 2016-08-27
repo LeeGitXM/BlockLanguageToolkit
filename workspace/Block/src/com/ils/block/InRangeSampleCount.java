@@ -70,7 +70,7 @@ public class InRangeSampleCount extends AbstractProcessBlock implements ProcessB
 		queue = new FixedSizeQueue<QualifiedValue>(DEFAULT_BUFFER_SIZE);
 		initialize();
 	}
-	
+
 	/**
 	 * Define the synchronization property and ports.
 	 */
@@ -125,10 +125,10 @@ public class InRangeSampleCount extends AbstractProcessBlock implements ProcessB
 				if( queue.size()<sampleSize && fillRequired && result.equals(TruthValue.FALSE) ) result = TruthValue.UNKNOWN;
 				if( !isLocked() ) {
 					// Give it a new timestamp
-					QualifiedValue outval = new TestAwareQualifiedValue(timer,result);
-					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
+					lastValue = new TestAwareQualifiedValue(timer,result);
+					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 					controller.acceptCompletionNotification(nvn);
-					notifyOfStatus(outval);
+					notifyOfStatus(lastValue);
 				}
 				// Even if locked, we update the current state
 				state = result;
@@ -137,10 +137,10 @@ public class InRangeSampleCount extends AbstractProcessBlock implements ProcessB
 				// Post bad value on output, clear queue
 				if( !isLocked() ) {
 					state = TruthValue.UNKNOWN;
-					QualifiedValue outval = new BasicQualifiedValue(state.name(),qv.getQuality(),qv.getTimestamp());
-					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
+					lastValue = new BasicQualifiedValue(state.name(),qv.getQuality(),qv.getTimestamp());
+					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 					controller.acceptCompletionNotification(nvn);
-					notifyOfStatus(outval);
+					notifyOfStatus(lastValue);
 				}
 				queue.clear();
 			}

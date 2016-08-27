@@ -13,7 +13,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.common.DiagnosticDiagram;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.BindingType;
@@ -315,18 +314,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public void addTemporaryDiagram(ProcessDiagram diagram) {
 		modelManager.addTemporaryDiagram(diagram);
 	}
-	/**
-	 * Execute a block's evaluate method.
-	 * @param diagramId the block or diagram identifier.
-	 * @param blockId the block or diagram identifier.
-	 */
-	public void evaluateBlock(UUID diagramId,UUID blockId) {
-		ProcessDiagram diagram = modelManager.getDiagram(diagramId);
-		if( diagram!=null) {
-			ProcessBlock block = modelManager.getBlock(diagram, blockId);
-			if( block!=null) block.evaluate();
-		}
-	}
+
 	public ProcessBlock getBlock(ProcessDiagram diagram,UUID blockId) {
 		return modelManager.getBlock(diagram,blockId);
 	}
@@ -397,6 +385,19 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 */
 	public String pathForNode(UUID nodeId) {
 		return modelManager.pathForNode(nodeId);
+	}
+	/**
+	 * Execute a block's propagate method. This places the last-computed
+	 * value on the output(s).
+	 * @param diagramId the block or diagram identifier.
+	 * @param blockId the block or diagram identifier.
+	 */
+	public void propagateBlockState(UUID diagramId,UUID blockId) {
+		ProcessDiagram diagram = modelManager.getDiagram(diagramId);
+		if( diagram!=null) {
+			ProcessBlock block = modelManager.getBlock(diagram, blockId);
+			if( block!=null) block.propagate();
+		}
 	}
 	/**
 	 * Reset a block.

@@ -54,10 +54,10 @@ public class LogicLatch extends AbstractProcessBlock implements ProcessBlock {
 	public void reset() {
 		if( state.equals(TruthValue.TRUE) || 
 			state.equals(TruthValue.FALSE)   ) {
-			QualifiedValue qv = new TestAwareQualifiedValue(timer,state.name());
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+			lastValue = new TestAwareQualifiedValue(timer,state.name());
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
-			notifyOfStatus(qv);
+			notifyOfStatus(lastValue);
 		}
 	}
 	
@@ -69,15 +69,15 @@ public class LogicLatch extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
-		QualifiedValue qv = vcn.getValue();
-		if(qv.getQuality().isGood()) {
-			TruthValue incoming = qualifiedValueAsTruthValue(qv);
+		lastValue = vcn.getValue();
+		if(lastValue.getQuality().isGood()) {
+			TruthValue incoming = qualifiedValueAsTruthValue(lastValue);
 			if( incoming.equals(TruthValue.TRUE) || incoming.equals(TruthValue.FALSE)) {
 				state = incoming;
 				if( !isLocked() ) {
-					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 					controller.acceptCompletionNotification(nvn);
-					notifyOfStatus(qv);
+					notifyOfStatus(lastValue);
 				}
 			}	
 		}

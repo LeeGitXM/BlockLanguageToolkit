@@ -1,5 +1,5 @@
 /**
- *   (c) 2015  ILS Automation. All rights reserved. 
+ *   (c) 2015-2016  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -73,10 +73,10 @@ public class TimeFork extends AbstractProcessBlock implements ProcessBlock {
 		if( !isLocked() ) {
 			QualifiedValue qv = vcn.getValue();
 			if( qv!=null && qv.getValue()!=null ) {
-				qv = new BasicQualifiedValue(qv.getTimestamp(),qv.getQuality(),qv.getTimestamp());
-				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
+				lastValue = new BasicQualifiedValue(qv.getTimestamp(),qv.getQuality(),qv.getTimestamp());
+				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(nvn);
-				notifyOfStatus(qv);
+				notifyOfStatus(lastValue);
 			}
 		}
 	}

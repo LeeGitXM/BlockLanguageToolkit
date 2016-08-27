@@ -36,7 +36,6 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
 @ExecutableBlock
 public class Compare extends AbstractProcessBlock implements ProcessBlock {
 	private final String TAG = "Compare";
-	protected QualifiedValue currentValue = null;
 	
 	protected static String X_PORT_NAME = "x";
 	protected static String Y_PORT_NAME = "y";
@@ -157,7 +156,7 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 	public void evaluate() {
 		if( !isLocked() ) {
 			state = TruthValue.UNKNOWN;
-			currentValue = null;
+			QualifiedValue currentValue = null;
 			if( x==null ) {
 				currentValue = new TestAwareQualifiedValue(timer,state,new BasicQuality("'x' is unset",Quality.Level.Bad));
 			}
@@ -203,19 +202,19 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 				if( x.getQuality().isGood() && y.getQuality().isGood() ) {
 					state = TruthValue.FALSE;
 					if( xx >= yy+offset)state = TruthValue.TRUE;
-					currentValue = new TestAwareQualifiedValue(timer,state);
+					lastValue = new TestAwareQualifiedValue(timer,state);
 				}
 				else {
 					Quality q = x.getQuality();
 					if( q.isGood()) q = y.getQuality();
-					currentValue = new TestAwareQualifiedValue(timer,state,q);
+					lastValue = new TestAwareQualifiedValue(timer,state,q);
 					log.debugf("%s.evaluate: UNKNOWN x=%s, y=%s",getName(),x.toString(),y.toString());
 				}
 				
 			}
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,currentValue);
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
-			notifyOfStatus(currentValue);
+			notifyOfStatus(lastValue);
 		}
 	}
 	/**
@@ -223,12 +222,13 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void notifyOfStatus() {
-		notifyOfStatus(currentValue);
+		notifyOfStatus(lastValue);
 	}
 
 	private void notifyOfStatus(QualifiedValue qv) {
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
+	
 	/**
 	 * Handle a change to the coalescing interval.
 	 */

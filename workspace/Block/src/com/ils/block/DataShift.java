@@ -33,7 +33,6 @@ public class DataShift extends AbstractProcessBlock implements ProcessBlock {
 
 	private int sampleSize = 0;  
 	private final LinkedList<QualifiedValue> buffer;
-	private QualifiedValue lastValue = null;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -80,20 +79,20 @@ public class DataShift extends AbstractProcessBlock implements ProcessBlock {
 				log.debugf("%s.acceptValue: Popped %s",TAG,lastValue.getValue().toString());
 				if( !isLocked() ) {
 					// Give it a new timestamp
-					QualifiedValue outval = new TestAwareQualifiedValue(timer,lastValue.getValue(),qv.getQuality());
-					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
+					lastValue = new TestAwareQualifiedValue(timer,lastValue.getValue(),qv.getQuality());
+					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 					controller.acceptCompletionNotification(nvn);
-					notifyOfStatus(outval);
+					notifyOfStatus(lastValue);
 				}
 			}
 		}
 		else {
-			if( lastValue!=null && !isLocked()) {
+			if( qv!=null && !isLocked()) {
 				// Propagate a bad value result
-				QualifiedValue outval = new BasicQualifiedValue(lastValue.getValue(),qv.getQuality(),qv.getTimestamp());
-				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
+				lastValue = new BasicQualifiedValue(lastValue.getValue(),qv.getQuality(),qv.getTimestamp());
+				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(nvn);
-				notifyOfStatus(outval);
+				notifyOfStatus(lastValue);
 			}
 		}
 	}
@@ -139,6 +138,7 @@ public class DataShift extends AbstractProcessBlock implements ProcessBlock {
 		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
+	
 	/**
 	 * Add properties that are new for this class.
 	 * Populate them with default values.
