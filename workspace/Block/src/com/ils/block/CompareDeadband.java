@@ -150,9 +150,12 @@ public class CompareDeadband extends Compare implements ProcessBlock {
 			}
 
 		}
+		else {
+			lastValue = result;
+		}
 		
 		if( !isLocked() ) {
-			log.debugf("%s.evaluate: wrote %s",getName(),result.getValue().toString());
+			log.debugf("%s.evaluate: wrote %s",getName(),lastValue.getValue().toString());
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);	
 			notifyOfStatus(lastValue);

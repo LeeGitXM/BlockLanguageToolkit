@@ -358,6 +358,9 @@ public class TagListener implements TagChangeListener   {
 						if( !parent.getState().equals(DiagramState.DISABLED)) {
 							updateProperty(block,property,tag.getValue());
 						}
+						else {
+							log.warnf("%s.tagChanged: %s - block %s in disabled diagram, ignored",TAG,tp.toStringFull(),block.getName(),parent.getName());
+						}
 					}
 					else {
 						log.warnf("%s.tagChanged: %s, subscriber %s has no parent diagram",TAG,tp.toStringFull(),block.getName());

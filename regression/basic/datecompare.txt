@@ -23,8 +23,8 @@ Tagset: DualDouble
 Step: Date from Text
 tagset: ComparisonDateDriver MemoryTags/DateCompare1 MemoryTags/DateCompare2
 tagset: ComparisonDateDriver
-10:01:30   "2000/01/02 11:22:33" "2002/01/02 11:22:33"
-10:01:20 Assert: ComparisonOut4 = False "Compare year in dates"
+10:01:20   "2000/01/02 11:22:33" "2002/01/02 11:22:33"
+10:01:30 Assert: ComparisonOut4 = False "Compare year in dates"
 10:01:40   "2002/02/02 11:22:33" "2002/01/02 11:22:33"
 10:02:00 Assert: ComparisonOut4 = True "Compare month in dates"
 10:02:20   "2000/01/22 11:22:33" "2000/01/23 11:22:33"
@@ -36,4 +36,4 @@ tagset: ComparisonDateDriver
 10:04:00   "2010/06/02 11:22:33" "2010/06/02 11:22:30"
 10:04:20 Assert: ComparisonOut4 = True "Compare second in dates"
 10:04:30   "2002/01/02 11:22:33" "2002/01/02 11:22:33"
-10:04:40 Assert: ComparisonOut4 = False "Compare equality in dates"
+10:04:40 Assert: ComparisonOut4 = True  "Compare equality in dates"

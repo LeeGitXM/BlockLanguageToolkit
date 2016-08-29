@@ -59,8 +59,6 @@ resetDiagram ($DIAGRAM)
 10:06:30 Assert: getState($DIAGRAM,$F1) = UNKNOWN "1 state  UNKNOWN after reset"
 10:06:35 Assert: LogicFilterNever       = UNKNOWN "4 output UNKNOWN after reset"
 10:06:40 Assert: getState($DIAGRAM,$F4) = UNKNOWN "4 state  UNKNOWN after reset"
-halt:
-
 10:09:30 Assert: LogicFilterTrue        = False "1 output False half-way"
 10:09:35 Assert: getState($DIAGRAM,$F1) = False "1 state  False half-way"
 10:09:40 Assert: LogicFilterFalse       = False "2 output False half-way"

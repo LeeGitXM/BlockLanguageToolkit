@@ -30,7 +30,7 @@ import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
- * Use an auxiliary text input to override quality data on the main input.
+ * Use an auxiliary truth-value input to override quality data on the main input.
  * For this block, "state" applies to the quality input.
  */
 @ExecutableBlock
@@ -42,7 +42,7 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 	private final Watchdog dog;
 	private double synchInterval = 0.5; // 1/2 sec synchronization by default
 	private BlockProperty valueProperty = null;
-	private QualifiedValue lastQuality = null;
+	private TruthValue lastQuality = null;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -145,8 +145,9 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 			//log.infof("%s.acceptValue got VALUE =  %s", TAG,qv.getValue().toString());
 		}
 		else if (vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(QUALITY_PORT_NAME)) {
+			lastQuality = qualifiedValueAsTruthValue(qv);
+
 			if( qv.getQuality().isGood()) {
-				state = qualifiedValueAsTruthValue(qv);
 				// Update the timestamp of the data value
 				if( lastValue!=null ) {
 					lastValue = new TestAwareQualifiedValue(timer,lastValue.getValue(),lastValue.getQuality());
@@ -167,18 +168,20 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 	 */
 	@Override
 	public void evaluate() {
-		if( lastValue != null &&  !locked  ) {
-			if( !state.equals(TruthValue.TRUE) && !lastValue.getQuality().isGood()) state = TruthValue.TRUE;
-			log.tracef("%s.evaluate value %s(%s)", getName(),lastValue.getValue().toString(),state.name());
-			
+		if( lastValue != null && lastQuality!=null &&  !locked  ) {
+			state = TruthValue.FALSE;
+			if( lastQuality.equals(TruthValue.TRUE))   state = TruthValue.TRUE;
+			else if(!lastValue.getQuality().isGood())  state = TruthValue.TRUE;
+
+		    // If the state is not TRUE, then propagate the output.	
 			if( !state.equals(TruthValue.TRUE) ) {
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(nvn);
 				//log.tracef("%s.evaluate: propagating %s %s",getName(),value.getValue().toString(),value.getQuality().getName());
 			}
-			
-			lastQuality = new TestAwareQualifiedValue(timer,state);
-			OutgoingNotification nvn = new OutgoingNotification(this,STATUS_PORT_NAME,lastQuality);
+
+			QualifiedValue qv = new TestAwareQualifiedValue(timer,state);
+			OutgoingNotification nvn = new OutgoingNotification(this,STATUS_PORT_NAME,qv);
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus();
 		}
@@ -201,14 +204,20 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 	}
 	
 	/**
-	 * We have a custom version as there are two ports.
+	 * We have a custom version as there are two ports. lastQuality is the last
+	 * time we received input on the quality port. The state reflects the AND
+	 * of the quality port and the value.
 	 */
 	@Override
 	public void propagate() {
 		super.propagate();
 		
-		if( lastQuality!=null ) {
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastQuality);
+		if( lastQuality!=null && lastValue!=null ) {
+			TruthValue temp = TruthValue.FALSE;
+			if(lastQuality.equals(TruthValue.TRUE) )  temp = TruthValue.TRUE;
+			else if(!lastValue.getQuality().isGood()) temp = TruthValue.TRUE;
+			QualifiedValue qv = new BasicQualifiedValue(temp);
+			OutgoingNotification nvn = new OutgoingNotification(this,STATUS_PORT_NAME,qv);
 			controller.acceptCompletionNotification(nvn);
 		}
 	}

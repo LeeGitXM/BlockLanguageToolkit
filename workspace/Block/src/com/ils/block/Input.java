@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
+ *   (c) 2014-2016  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -111,7 +111,6 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void acceptValue(IncomingNotification vcn) {
-		if( lastValue==null ) return;     // Binding is not configured
 		baseAcceptValue(vcn);
 		lastValue = vcn.getValue();
 		if( !isLocked() && running ) {

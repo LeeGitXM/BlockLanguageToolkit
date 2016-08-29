@@ -1,5 +1,5 @@
 /**
- *   (c) 2013-2015  ILS Automation. All rights reserved. 
+ *   (c) 2013-2016  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -136,7 +136,6 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	private void clear() {
 		log.debugf("%s.clear: reset data buffer",getName());
 		queue.clear();
-		state = TruthValue.UNSET;
 	}
 	
 	/**
@@ -167,8 +166,8 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 				if( !state.equals(TruthValue.UNKNOWN) ) {
 					state = TruthValue.UNKNOWN;
 					if( !isLocked() ) {
-						QualifiedValue outval = new BasicQualifiedValue(state,qual,qv.getTimestamp());
-						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
+						lastValue = new BasicQualifiedValue(state,qual,qv.getTimestamp());
+						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 						controller.acceptCompletionNotification(nvn);
 					}
 				}

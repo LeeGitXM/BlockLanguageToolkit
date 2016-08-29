@@ -37,7 +37,7 @@ public class OutgoingNotification {
 		this.block = blk;
 		this.port = prt;
 		this.value = val;
-		block.recordActivity(Activity.ACTIVITY_SEND,prt, val.getValue().toString());
+		block.recordActivity(Activity.ACTIVITY_SEND,port,(value==null?"NULL":(value.getValue()==null?"NULL VALUE":val.getValue().toString())));
 	}
 	
 	public ProcessBlock getBlock()      { return block; }

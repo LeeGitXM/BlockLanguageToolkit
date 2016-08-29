@@ -1,5 +1,6 @@
 #
 # Test of a data conditioner with qualified value
+# NOTE: Quality line - TRUE implies a problem.
 #
 DIAGRAM="app75/family75/dataconditioner"
 C="DATA-CONDITIONER"
@@ -11,6 +12,7 @@ tag: ConditionerQuality MemoryTags/ConditionerQuality
 
 Tagset: DataConditioner
 09:59:30 22.3 "not good" true
+09:59:45 23.4 "not good" false
 resetDiagram ($DIAGRAM)
 Test: Data Conditioner and QualifiedValue
 Step: All good
@@ -29,21 +31,22 @@ Step: Bad qualified value
 10:04:40 Assert: ConditionerData = 42  "No passthru with main input bad"
 10:04:50 Assert: getState($DIAGRAM,$C) = TRUE  "block state indicates problem"
 10:04:55 Assert: ConditionerQuality = true "Quality problem"
+
 Step: Bad conditioner
-10:05 78.1 good true
-10:06 78.8 good true
-10:06:50 Assert: ConditionerData = 42  "No passthru condition line bad"
-10:06:60 Assert: ConditionerQuality = true "Quality problem"
+10:05:00 78.1 good true
+10:05:15 78.8 good true
+10:05:30 Assert: ConditionerData = 42  "No passthru condition line bad"
+10:05:45 Assert: ConditionerQuality = true "Quality problem"
 
 Step: Both bad
-10:08 88.8 bad true
-10:08:10 Assert: ConditionerData = 42  "No passthru both indicators bad"
-10:08:50 Assert: getState($DIAGRAM,$C) = TRUE  "block state indicates problem"
-10:08:20 Assert: ConditionerQuality = true "Quality problem"
+10:06 88.8 bad true
+10:06:10 Assert: ConditionerData = 42  "No passthru both indicators bad"
+10:06:20 Assert: getState($DIAGRAM,$C) = TRUE  "block state indicates problem"
+10:06:50 Assert: ConditionerQuality = true "Quality problem"
 
 Step: Resumption of good
-10:09 78.1 bad false
-10:10 58.8 good false
-10:10:40 Assert: ConditionerData = 58.8  "Passthru when both are good"
-10:10:45 Assert: getState($DIAGRAM,$C) = FALSE  "block state is false"
-10:10:50 Assert: ConditionerQuality = false "Good quality"
+10:07 78.1 bad false
+10:07:15 58.8 good false
+10:07:30 Assert: ConditionerData = 58.8  "Passthru when both are good"
+10:07:45 Assert: getState($DIAGRAM,$C) = FALSE  "block state is false"
+10:08:00 Assert: ConditionerQuality = false "Good quality"

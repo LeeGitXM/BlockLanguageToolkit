@@ -122,7 +122,9 @@ public class CompareAbsolute extends Compare implements ProcessBlock {
 					lastValue = new TestAwareQualifiedValue(timer,state,q);
 					log.debugf("%s.evaluate: UNKNOWN x=%s, y=%s",getName(),x.toString(),y.toString());
 				}
-				
+			}
+			else {
+				lastValue = currentValue;
 			}
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
