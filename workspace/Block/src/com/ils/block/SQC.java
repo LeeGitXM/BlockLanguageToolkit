@@ -61,7 +61,8 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	private FixedSizeQueue<Double> queue;
 	private int sampleSize = DEFAULT_BUFFER_SIZE;
 	private int minOut = sampleSize;  // Min out-of-range to conclude TRUE
-	private int total  = 0; // current number of observations out of limits.
+	private int outside  = 0; // current number of observations out of limits.
+	private int total  = 0;  // current number of observations in buffer.
 	private double standardDeviation = Double.NaN;
 	private double mean = Double.NaN;
 
@@ -275,13 +276,13 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public String getExplanation(DiagnosticDiagram parent,List<UUID> members) {
 		String explanation = "";
-		if( state.equals(TruthValue.TRUE) || state.equals(TruthValue.FALSE)) {
-			explanation = String.format("SQC %s (limit %s), %d of the last %d are outside limits (%d allowed)",getName(),limitType.name(),
-					total,queue.size(),minOut);		
+		if( state.equals(TruthValue.TRUE) ) {
+			explanation = String.format("SQC %s (limit %s), %d of %d outside limits meets threshold of %d",getName(),limitType.name(),
+					outside,total,minOut);		
 		}
-		else if( state.equals(TruthValue.TRUE) || state.equals(TruthValue.FALSE)) {
-			explanation = String.format("SQC %s (limit %s), %d of the last %d are within limits (%d allowed)",getName(),limitType.name(),
-					total,queue.size(),minOut);		
+		else if( state.equals(TruthValue.FALSE) ) {
+			explanation = String.format("SQC %s (limit %s), %d of %d within limits (%d required)",getName(),limitType.name(),
+					total-outside,total,total-minOut);		
 		}
 		return explanation;
 	}
@@ -365,9 +366,9 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		attributes.put("Limit type", limitType.name());
 		attributes.put("Limit ~ std deviations", String.valueOf(limit));
 		attributes.put("Minimum Out of Range", String.valueOf(minOut));
-		attributes.put("Current Out of Range", String.valueOf(total));
+		attributes.put("Current Out of Range", String.valueOf(outside));
 		attributes.put("SampleSize", String.valueOf(sampleSize));
-		attributes.put("Current QueueSize", String.valueOf(queue.size()));
+		attributes.put("Current QueueSize", String.valueOf(total));
 		attributes.put("State", state.name());
 		List<Map<String,String>> descBuffer = descriptor.getBuffer();
 		for( Double dbl:queue) {
@@ -418,7 +419,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		int lowside   = 0;
 		int maxhighside  = 0;   // Consecutive
 		int maxlowside   = 0;
-		int outside = 0;
+		this.outside = 0;
 		double highLimit = mean+(standardDeviation*limit);
 		double lowLimit  = mean-(standardDeviation*limit);
 		// Got a concurrent modification exception here.l

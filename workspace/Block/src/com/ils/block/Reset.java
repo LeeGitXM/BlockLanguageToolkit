@@ -119,6 +119,8 @@ public class Reset extends AbstractProcessBlock implements ProcessBlock {
 		controller.acceptCompletionNotification(nvn);
 		notifyOfStatus(lastValue);
 	}
+	@Override
+	public void propagate() { evaluate(); }
 	
 	/**
 	 * Send status update notification for our last latest state.
