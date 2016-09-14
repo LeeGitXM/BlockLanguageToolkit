@@ -1,5 +1,6 @@
 #!/bin/sh
-# Process all of the json files in the repository "g2" area.
+# Clear existing artifacts, copy latest G2 exports from svn area,
+# then process all of the json files in the repository "g2" area.
 # Save the results in the json storate area for ignition.
 #
 BLT=${GIT_REPO}/blt
