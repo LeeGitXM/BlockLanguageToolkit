@@ -170,6 +170,17 @@ public class PythonPropertyMapper {
 				long editable = rs.getLong("Editable"); 
 				if(rs.wasNull()) editable = 0;
 				property.setEditable(editable>0);
+
+				String text = rs.getString("Value");
+				if( text!=null && !text.equalsIgnoreCase("NONE")) {
+					if(pt.equals(PropertyType.BOOLEAN)) {
+						property.setValue(new Boolean(text.equalsIgnoreCase("true")));
+					}
+					else {
+						property.setValue(text);
+					}
+				}
+				
 				pl.add(property);
 			}
 			rs.close();
