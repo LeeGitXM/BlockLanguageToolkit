@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.omg.CORBA.portable.Delegate;
+
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
@@ -732,6 +734,52 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		catch(Exception ex) {
 			log.info(TAG+".listConfigurationErrors: Exception ("+ex.getMessage()+")",ex);
 		}
+		return result;
+	}
+	
+	/**
+	 * Query an application in the gateway for list of descendants down to the level of a diagram. 
+	 * The list does not include the application itself.
+	 * @param appName of the parent application
+	 * @return a list of nodes under the named application
+	 */
+	public List<SerializableResourceDescriptor> listDescriptorsForApplication(String appName) {
+		List<SerializableResourceDescriptor> result = new ArrayList<>();
+		ProcessApplication app = controller.getDelegate().getApplication(appName);
+		if(app!=null) {
+			List<ProcessNode> descendants = new ArrayList<>();
+			app.collectDescendants(descendants);
+			for( ProcessNode child:descendants) {
+				if( child instanceof ProcessApplication ) continue;
+				SerializableResourceDescriptor desc = child.toResourceDescriptor();
+				if( child instanceof ProcessDiagram )     desc.setType(BLTProperties.DIAGRAM_RESOURCE_TYPE);
+				else if( child instanceof ProcessFamily ) desc.setType(BLTProperties.FAMILY_RESOURCE_TYPE);
+				result.add(desc);
+			}
+		}
+		
+		return result;
+		
+	}
+	/**
+	 * Query a family in the gateway for list of descendants down to the level of a diagram. 
+	 * @param appName of the parent application
+	 * @return a list of nodes under the named application
+	 */
+	public List<SerializableResourceDescriptor> listDescriptorsForFamily(String appName,String famName) {
+		List<SerializableResourceDescriptor> result = new ArrayList<>();
+		ProcessFamily fam = controller.getDelegate().getFamily(appName,famName);
+		if(fam!=null) {
+			List<ProcessNode> descendants = new ArrayList<>();
+			fam.collectDescendants(descendants);
+			for( ProcessNode child:descendants) {
+				if( child instanceof ProcessFamily ) continue;
+				SerializableResourceDescriptor desc = child.toResourceDescriptor();
+				if( child instanceof ProcessDiagram ) desc.setType(BLTProperties.DIAGRAM_RESOURCE_TYPE);
+				result.add(desc);
+			}
+		}
+		
 		return result;
 	}
 	

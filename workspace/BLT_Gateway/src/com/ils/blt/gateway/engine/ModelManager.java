@@ -141,6 +141,17 @@ public class ModelManager implements ProjectListener  {
 		}
 	}
 	/**
+	 * @return a list of all known diagrams 
+	 */
+	public List<ProcessDiagram> getDiagrams() {
+		List<ProcessDiagram> diagrams = new ArrayList<>();
+		for(ProcessNode node:nodesByKey.values()) {
+			if( node instanceof ProcessDiagram ) diagrams.add((ProcessDiagram)node);
+		}
+		return diagrams;
+	}
+	
+	/**
 	 * Get a block from an existing diagram. 
 	 * @param projectId
 	 * @param resourceId
@@ -223,14 +234,18 @@ public class ModelManager implements ProjectListener  {
 	}
 	
 	/**
-	 * @return a list of all known diagrams 
+	 * @return the named application
 	 */
-	public List<ProcessDiagram> getDiagrams() {
-		List<ProcessDiagram> diagrams = new ArrayList<>();
+	public ProcessApplication getApplication(String name) {
+		ProcessApplication app = null;
 		for(ProcessNode node:nodesByKey.values()) {
-			if( node instanceof ProcessDiagram ) diagrams.add((ProcessDiagram)node);
+			if( node instanceof ProcessApplication && 
+				node.getName().equals(name)) {
+				app = (ProcessApplication)node;
+				break;
+			}
 		}
-		return diagrams;
+		return app;
 	}
 	
 
@@ -254,6 +269,7 @@ public class ModelManager implements ProjectListener  {
 					descriptor.setProjectId(projectId);
 					descriptor.setResourceId(node.getResourceId());
 					descriptor.setPath(node.getTreePath(nodesByUUID));
+					descriptor.setType(BLTProperties.DIAGRAM_RESOURCE_TYPE);
 					result.add(descriptor);
 				}
 			}
@@ -281,11 +297,36 @@ public class ModelManager implements ProjectListener  {
 					descriptor.setProjectId(projectId);
 					descriptor.setResourceId(node.getResourceId());
 					descriptor.setPath(node.getTreePath(nodesByUUID));
+					descriptor.setType(BLTProperties.DIAGRAM_RESOURCE_TYPE);
 					result.add(descriptor);
 				}
 			}
 		}
 		return result;	
+	}
+	/**
+	 * @return the named family 
+	 */
+	public ProcessFamily getFamily(String appName,String famName) {
+		ProcessFamily fam = null;
+		ProcessApplication app = getApplication(appName);
+		if( app!=null ) {
+			for(ProcessNode node:nodesByKey.values()) {
+				if( node instanceof ProcessFamily &&
+					node.getName().equals(famName) ) {
+					UUID parentId = node.getParent();
+					while(parentId!=null) {
+						ProcessNode parent = nodesByUUID.get(parentId);
+						if( parent.getClass().equals(app.getClass()) &&
+							parent.getName().equals(node.getName())      ) {
+							fam = (ProcessFamily)parent;
+							break;
+						}
+					}
+				}
+			}
+		}
+		return fam;
 	}
 	/**
 	 * @return the root node of the diagram tree
