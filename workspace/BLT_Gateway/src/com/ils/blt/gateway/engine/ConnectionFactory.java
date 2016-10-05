@@ -39,7 +39,7 @@ public class ConnectionFactory  {
 	
 	/**
 	 * Create a concrete instance of a Process connection represented by the serializable connection.
-	 * @param sb
+	 * @param sc serializable connection
 	 * @return
 	 */
 	public ProcessConnection connectionFromSerializable(SerializableConnection sc) {

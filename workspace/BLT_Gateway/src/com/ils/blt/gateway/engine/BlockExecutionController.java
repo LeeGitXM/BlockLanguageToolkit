@@ -254,7 +254,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 
 	/**
 	 * Start the controller, watchdogTimer, tagListener and TagWriter.
-	 * @param ctxt the gateway context
+	 * @param context the gateway context
 	 */
 	public synchronized void start(GatewayContext context) {
 		log.infof("%s: STARTED",TAG);
@@ -646,8 +646,8 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	/**
 	 * Notify any listeners in the Client or Designer scopes that a diagram has changed its alert state,
 	 * presumably triggered due to a block state change on the diagram.
-	 * @param diagramid unique Id of the diagram
-	 * @param val new state (true=>alerting).
+	 * @param resid resourceId of the diagram
+	 * @param val new state (true implies alerting).
 	 */
 	@Override
 	public void sendAlertNotification(long resid, String val) {
@@ -717,7 +717,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	/**
 	 * Notify any listeners in the Client or Designer scopes that a diagram has changed state,
 	 * presumably triggered from an external source.
-	 * @param diagramid unique Id of the diagram
+	 * @param resourceId Id of the diagram
 	 * @param val new state
 	 */
 	@Override

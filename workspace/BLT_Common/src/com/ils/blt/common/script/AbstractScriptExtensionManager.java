@@ -64,9 +64,9 @@ public abstract class AbstractScriptExtensionManager {
 	/**
 	 * Adding a script has an advantage over an ad-hoc execution in that
 	 * the compilation is cached.
-	 * @param className
-	 * @param flavor
-	 * @param modulePath
+	 * @param className class to which the script applies
+	 * @param flavor script category
+	 * @param modulePath path to module. we append the method
 	 */
 	public void addScript(String className,String flavor,String modulePath) {
 		String key = makeKey(className,flavor);
@@ -122,9 +122,9 @@ public abstract class AbstractScriptExtensionManager {
 	 * Execute the specified script with a new set of arguments.
 	 * 
 	 * @param mgr a script manager with proper context
-	 * @param key to a pre-configured script. The configuration includes
-	 *            module path, entry point and argument prototype.
-	 * @param args
+	 * @param className class to which the script applies
+	 * @param flavor script category
+	 * @param args flavor-specific arguments
 	 */
 	@SuppressWarnings("unchecked")
 	public void runScript(ScriptManager mgr,String className,String flavor,Object...args) {

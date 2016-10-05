@@ -34,7 +34,7 @@ public class ProcessNode implements Serializable {
 	
 	/**
 	 * Constructor: 
-	 * @param name of the node
+	 * @param nam of the node
 	 * @param parent UUID of the parent of this node.
 	 * @param me UUID of this node 
 	 */

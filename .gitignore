@@ -1,7 +1,12 @@
 .metadata
 bin/
+doc/
+json/
 lib/
+logs/
 modules/
+procs/
+tags/
 temp_modl/
 *.db
 .DS_Store

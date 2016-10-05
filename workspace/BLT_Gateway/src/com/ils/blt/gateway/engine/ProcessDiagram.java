@@ -127,7 +127,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	 * In order to make this applicable for updates, we skip any blocks that currently
 	 * exist. Newly created blocks are started.
 	 * 
-	 * @param diagram the serializable template of this object.
+	 * @param sblks an array of newly created blocks to be added to the diagram
 	 */
 	public void createBlocks(SerializableBlock[] sblks ) {
 		BlockFactory blockFactory = BlockFactory.getInstance();
@@ -165,7 +165,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	 * In order to make this applicable for updates, we skip any connections that currently
 	 * exist.
 	 * 
-	 * @param diagram the serializable template of this object.
+	 * @param scxns tan array of connection to be added
 	 */
 	public void updateConnections(SerializableConnection[] scxns) {
 		ConnectionFactory connectionFactory = ConnectionFactory.getInstance();
@@ -301,7 +301,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	 * We have just received a request to broadcast a signal. Determine which blocks are to be notified,
 	 * and create notifications for each. In/Out are from the point of view of a block, so are backwards here.
 	 * An empty return indicates no appropriate blocks were found.
-	 * @param new notification to broadcast
+	 * @param incoming notification to broadcast
 	 * @return a new value notification for the receiving block(s)
 	 */
 	public Collection<SignalNotification> getBroadcastNotifications(BroadcastNotification incoming) {
@@ -456,7 +456,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	 * The controller is processing notifications of block output values. Determine which blocks are connected downstream,
 	 * and create notifications for each. In/Out are from the point of view of a block, so are backwards here.
 	 * An empty return indicates no downstream connection.
-	 * @param new value notification of an incoming change
+	 * @param  incoming new value notification of change
 	 * @return a new value notification for the downstream block(s)
 	 */
 	public Collection<IncomingNotification> getOutgoingNotifications(OutgoingNotification incoming) {
@@ -490,8 +490,8 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	 * The controller is processing notifications of a block output signal. Determine which blocks are connected downstream,
 	 * and create signal notifications for each. In/Out are from the point of view of a block, so are backwards here.
 	 * An empty return indicates no downstream connection.
-	 * @param new signal notification of an incoming change
-	 * @return a new signal notification for the downstream block(s)
+	 * @param incoming new signal notification of an incoming change
+	 * @return a collection of  new signal notification for the downstream block(s)
 	 */
 	public Collection<SignalNotification> getOutgoingSignalNotifications(OutgoingNotification incoming) {
 		ProcessBlock block = incoming.getBlock();
@@ -669,8 +669,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	/**
 	 * For every property that is bound to a tag, update its provider. 
 	 * NOTE: This does NOT change subscriptions.
-	 * @param provider
-	 * @return true if there were any changes.
+	 * @param provider current tag provider
 	 */
 	public void updatePropertyProviders(String provider) {
 		for( ProcessBlock pb:getProcessBlocks()) {
@@ -703,7 +702,6 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	
 	/**
 	 * For every property that is bound to a tag, make sure that it is subscribed to the proper provider. 
-	 * @param provider appropriate to diagram state.
 	 */
 	public void validateSubscriptions() {
 		if(DiagramState.DISABLED.equals(getState())) return;

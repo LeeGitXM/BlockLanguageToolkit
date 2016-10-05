@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 public class TimeUtility
 {
 	/**
+	 * @param unit the time unit
 	 * @return a short-form abbreviation for the specified unit.
 	 */
 	public static String abbreviationForUnit(TimeUnit unit) {
@@ -36,6 +37,8 @@ public class TimeUtility
 		return result;
 	}
 	/**
+	 * @param val time interval expressed in the units provided
+	 * @param unit the time unit
 	 * @return a value ~ secs for a time value in the specified time unit
 	 */
 	public static double canonicalValueForValue(double val,TimeUnit unit) {
@@ -61,6 +64,8 @@ public class TimeUtility
 
 	}
 	/**
+	 * @param val time interval expressed in seconds
+	 * @param unit the time unit
 	 * @return the a time value in the specified units for an original value ~seconds
 	 */
 	public static double valueForCanonicalValue(double val,TimeUnit unit) {
@@ -85,6 +90,7 @@ public class TimeUtility
 		return result;
 	}
 	/**
+	 * @param time the interval (in seconds) for which we want an appropriate unit
 	 * @return  the time unit appropriate to the value.
 	 * 			The value is in seconds.
 	 */

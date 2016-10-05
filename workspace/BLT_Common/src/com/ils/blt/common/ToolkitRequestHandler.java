@@ -26,6 +26,7 @@ import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 public interface ToolkitRequestHandler  {
 	
 	/**
+	 * @param nodeId identifier of the parent node.
 	 * @return a list of resources that are children of the specified resource
 	 */
 	public List<SerializableResourceDescriptor> childNodes(String nodeId);
@@ -36,6 +37,7 @@ public interface ToolkitRequestHandler  {
 	/**
 	 * Determine whether or not the indicated diagram is known to the controller.
 	 * @param diagramId string representation of the diagram's unique id
+	 * @return true if the referenced diagram exists in the gateway
 	 */
 	public boolean diagramExists(String diagramId) ;
 
@@ -411,6 +413,7 @@ public interface ToolkitRequestHandler  {
 	 * may undergo a type conversion.  
 	 * @param duuid diagram unique Id
 	 * @param buuid block unique Id
+	 * @param anchors  a pre-provided list of anchors that will be augmented by this call
 	 */
 	public void updateBlockAnchors(UUID duuid,UUID buuid, Collection<SerializableAnchor> anchors ) ;
 

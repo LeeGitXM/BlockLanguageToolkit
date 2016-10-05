@@ -22,7 +22,7 @@ public class ProcessFamily extends ProcessNode {
 	 *
 	 * @param name of the node
 	 * @param parent UUID of the parent of this node.
-	 * @param me UUID of this node 
+	 * @param self UUID of this node 
 	 */
 	public ProcessFamily(String name,UUID parent,UUID self) { 
 		super(name,parent,self);

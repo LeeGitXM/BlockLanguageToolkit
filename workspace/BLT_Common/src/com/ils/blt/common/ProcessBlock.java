@@ -33,14 +33,14 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 * Notify the block that a new value has appeared on one of its
 	 * input anchors. The notification contains the upstream source
 	 * block, the port and value.
-	 * @param vcn 
+	 * @param incoming notification 
 	 */
-	public void acceptValue(IncomingNotification vcn);
+	public void acceptValue(IncomingNotification incoming);
 	/**
 	 * Notify the block that it is the recipient of a signal from
 	 * "the ether". This signal is not associated with a connection.
 	 * This method is meaningful only for blocks that are "receivers".
-	 * @param sn 
+	 * @param sn incoming signal 
 	 */
 	public void acceptValue(SignalNotification sn);
 	/**
@@ -100,7 +100,7 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 *         If this is a block that has no relevant state, return
 	 *         an empty string.
 	 */
-	public String getExplanation(DiagnosticDiagram parent,List<UUID> members);
+	public String getExplanation(DiagnosticDiagram diagram,List<UUID> members);
 	/**
 	 * @return information related to the workings of the block.
 	 *        The information returned varies depending on the 
@@ -127,6 +127,7 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 */
 	public BlockProperty[] getProperties();
 	/**
+	 * @param name property name
 	 * @return a particular property by name.
 	 */
 	public BlockProperty getProperty(String name);
@@ -190,7 +191,7 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	public void reset();
 	/**
 	 * Set the anchor descriptors.
-	 * @param prototypes
+	 * @param prototypes descriptions of anchors
 	 */
 	public void setAnchors(List<AnchorPrototype> prototypes);
 	/**
@@ -218,7 +219,7 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	public void setProperty(String name,Object value);
 	/**
 	 * Set the current state of the block.
-	 * @param state
+	 * @param state new block state
 	 */
 	public void setState(TruthValue state);
 	/**
@@ -229,7 +230,7 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 * Specify the timer to be used for all block-
 	 * internal timings. 
 	 * 
-	 * @param timer
+	 * @param timer watchdog timer for production mode
 	 */
 	public void setTimer(WatchdogTimer timer);
 	/**
@@ -249,7 +250,7 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	public SerializableBlockStateDescriptor toDescriptor();
 	
 	/**
-	 * @param tagpath
+	 * @param tagpath of the tag to be considered
 	 * @return true if any property of the block is bound to
 	 *         the supplied tagpath. The comparison does not
 	 *         consider the provider portion of the path.

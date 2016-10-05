@@ -130,7 +130,7 @@ public class LabData extends Input implements ProcessBlock {
 	 * ports - either the value or time path property. Wait for the synchronization
 	 * interval to emit the value. The name of the "port" is the name of the
 	 * property.
-	 * @param vcn notification of the new value.
+	 * @param incoming notification of the new value.
 	 */
 	@Override
 	public void acceptValue(IncomingNotification incoming) {

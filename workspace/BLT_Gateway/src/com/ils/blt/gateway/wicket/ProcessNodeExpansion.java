@@ -15,8 +15,8 @@ import com.ils.blt.gateway.engine.ProcessNode;
 /**
  * Custom expansion state:
  * <ul>
- * <li>expanded {@link ProcessNode}s are identified by their UUID</li>
- * <li>efficient expansion of all {@link ProcessNode}</li>
+ * <li>expanded ProcessNode models are identified by their UUID</li>
+ * <li>efficient expansion of all ProcessNode</li>
  * <li>state is stored in the session</li>
  * </ul>
  * 

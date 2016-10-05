@@ -19,17 +19,23 @@ import com.ils.blt.common.serializable.SerializableResourceDescriptor;
  * available in Client/Designer scope.  All requests are delegated to the 
  * same request handler as the GatewayRpcDispatcher.
  * 
- * These calls are available from any Ignition scope.
+ * These calls are available from the Gateway Ignition scope. The 
+ * python package name is: system.ils.blt.diagram.
  */
 public class GatewayScriptFunctions   {
 	private static ControllerRequestHandler handler = ControllerRequestHandler.getInstance();
 	private static PythonRequestHandler pyhandler = new PythonRequestHandler();
 	
+	/**
+	 * @param nodeId identifier of a node in the Designer NavTree
+	 * @return a list of the node's children
+	 */
 	public static List<SerializableResourceDescriptor> childNodes(String nodeId) {
 		return handler.childNodes(nodeId);
 	}
 	/**
-	 * Clear any watermark on a diagram. 
+	 * Clear any watermark on a diagram.
+	 * @param diagramId string representation of the diagram's unique id 
 	 */
 	public static void clearWatermark(String diagramId) {
 		handler.clearWatermark(diagramId);
@@ -186,7 +192,7 @@ public class GatewayScriptFunctions   {
 	 * Query a block in the gateway for list of the blocks connected to the named port. 
 	 * @param diagramId of the parent diagram
 	 * @param blockId identifier of the block
-	 * @param port name of the anchor of interest
+	 * @param portName of the anchor of interest
 	 * @return a list of blocks connected to the named port.
 	 */
 	public static List<SerializableBlockStateDescriptor> listBlocksConnectedAtPort(String diagramId,String blockId,String portName) {
@@ -218,7 +224,6 @@ public class GatewayScriptFunctions   {
 	/**
 	 * Query a diagram in the gateway for list of its blocks. 
 	 * @param diagramId of the parent diagram
-	 * @param blockName name of the block within the diagram
 	 * @return a list of blocks belonging to the diagram.
 	 */
 	public static List<SerializableBlockStateDescriptor> listBlocksInDiagram(String diagramId) {
@@ -359,8 +364,9 @@ public class GatewayScriptFunctions   {
 	 * This is a "local" transmission.
 	 * 
 	 * @param diagramId diagram identifier
-	 * @param className filter of the receiver blocks to be targeted.
 	 * @param command string of the signal.
+	 * @param message command payload
+	 * @param arg argument
 	 * @return true on success
 	 */
 	public static boolean sendLocalSignal(String diagramId,String command,String message,String arg) {
@@ -385,8 +391,10 @@ public class GatewayScriptFunctions   {
 	 * This is a "local" transmission. The timestamp is supplied in the call.
 	 * 
 	 * @param diagramId diagram identifier
-	 * @param className filter of the receiver blocks to be targeted.
 	 * @param command string of the signal.
+	 * @param message text of the signal
+	 * @param arg argument
+	 * @param time test-aware time stamp assigned to the signal qualified value
 	 * @return true on success
 	 */
 	public static boolean sendTimestampedSignal(String diagramId,String command,String message,String arg,long time) {
@@ -446,7 +454,7 @@ public class GatewayScriptFunctions   {
 	 * Save a value into the HSQL database table associated with the toolkit. The 
 	 * table contains name-value pairs, so any name is allowable.
 	 * @param propertyName name of the property for which a value is to be set
-	 * @param the new value of the property.
+	 * @param value the new value of the property.
 	 */
 	public static void setToolkitProperty(String propertyName,String value) {
 		handler.setToolkitProperty(propertyName,value);

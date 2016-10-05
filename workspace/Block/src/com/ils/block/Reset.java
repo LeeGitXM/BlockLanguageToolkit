@@ -95,7 +95,7 @@ public class Reset extends AbstractProcessBlock implements ProcessBlock {
 	}
 	/**
 	 * When a fresh value arrives that matches the trigger, send the output signal.
-	 * @param vcn incoming new value.
+	 * @param sn incoming signal.
 	 */
 	@Override
 	public void acceptValue(SignalNotification sn) {

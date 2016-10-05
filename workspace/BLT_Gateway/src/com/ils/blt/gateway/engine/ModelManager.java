@@ -69,7 +69,7 @@ public class ModelManager implements ProjectListener  {
 	 * we rely on notifications of project resource updates. After discovering block resources
 	 * we deserialize and inform the BlockExecutionController.
 	 * 
-	 * @param cntx the gateway context. 
+	 * @param ctx the gateway context. 
 	 */
 	public ModelManager(GatewayContext ctx) { 
 		this.context = ctx;
@@ -197,8 +197,8 @@ public class ModelManager implements ProjectListener  {
 	public Map<ProjectResourceKey,ProcessNode> getNodesByKey() { return nodesByKey; }
 	
 	/**
-	 * Get a specified diagram by its Id. 
-	 * @param id
+	 * Get a specified node by its Id. 
+	 * @param nodeId identifier of interest
 
 	 * @return the specified diagram. If not found, return null. 
 	 */

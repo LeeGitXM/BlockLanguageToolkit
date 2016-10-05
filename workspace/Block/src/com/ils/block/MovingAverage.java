@@ -88,7 +88,7 @@ public class MovingAverage extends AbstractProcessBlock implements ProcessBlock 
 
 	/**
 	 * A new value has arrived. Add it to the total (if good).
-	 * @param vcn incoming new value.
+	 * @param incoming incoming new value.
 	 */
 	@Override
 	public void acceptValue(IncomingNotification incoming) {

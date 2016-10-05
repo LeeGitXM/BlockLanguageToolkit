@@ -131,8 +131,9 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 
 	/**
 	 * Create an instance of a named class. If the class is not found in the JVM, try Python 
-	 * @param key
-	 * @param className
+	 * @param className class to create
+	 * @param parentId diagram identifier
+	 * @param blockId identifier to assign to the newly created block
 	 * @return the instance created, else null
 	 */
 	public ProcessBlock createInstance(String className,UUID parentId,UUID blockId) {
@@ -354,7 +355,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * Find the parent application or diagram of the entity referenced by
 	 * the supplied id. Test the state and return the name of the appropriate
 	 * database.  
-	 * @param uuid
+	 * @param nodeId identifier for node
 	 * @return database name
 	 */
 	public String getDatabaseForUUID(String nodeId) {
@@ -450,7 +451,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		return state;
 	}
 	/**
-	 * @param resourceId
+	 * @param diagramId diagram identifier
 	 * @return the current state of the specified diagram as a DiagramState.
 	 */
 	@Override
@@ -769,7 +770,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * Do an exhaustive search for all sink blocks that have the same binding
 	 * as the specified block. We cover all diagrams in the system.
 	 * 
-	 * @param blockId
+	 * @param diagramId identifier for the diagram
+	 * @param blockName name of the source
 	 * @return
 	 */
 	@Override
@@ -811,7 +813,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	/**
 	 * Do an exhaustive search for all source blocks that have the same binding
 	 * as the specified block. We cover all diagrams in the system.
-	 * @param blockId
+	 * @param diagramId identifier for the diagram
+	 * @param blockName name of the sink
 	 * @return
 	 */
 	@Override
@@ -876,7 +879,6 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @param blockId identifier for the block
 	 * @param port the output port on which to insert the result
 	 * @param value the result of the block's computation
-	 * @param quality of the reported output
 	 */
 	public void postValue(String parentId,String blockId,String port,String value)  {
 		log.tracef("%s.postValue - %s = %s on %s",TAG,blockId,value,port);
@@ -1345,8 +1347,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 
 
 	/** Change the properties of anchors for a block. 
-	 * @param diagramId the uniqueId of the parent diagram
-	 * @param blockId the uniqueId of the block
+	 * @param diagramUUID the uniqueId of the parent diagram
+	 * @param blockUUID the uniqueId of the block
 	 * @param anchorUpdates the complete anchor list for the block.
 	 */
 	@Override

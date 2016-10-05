@@ -70,7 +70,7 @@ public class Receiver extends AbstractProcessBlock implements ProcessBlock {
 	/**
 	 * We've received a transmitted signal. If it is appropriate 
 	 * based on our configured filters, forward the signal on to our output.
-	 * @param sn 
+	 * @param sn incoming signal
 	 */
 	public void acceptValue(SignalNotification sn) {
 		Signal signal = sn.getSignal();

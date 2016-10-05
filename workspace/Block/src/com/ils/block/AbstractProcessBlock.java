@@ -132,7 +132,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 * Create a qualified value map with an entry for every block attached to the port
 	 * and with a NULL value. This map is used for blocks that need to keep track
 	 * of the blocks attached on input.
-	 * @param port
+	 * @param port name of the anchor point
 	 * @return the map with empty entries.
 	 */
 	protected Map<String,QualifiedValue> initializeQualifiedValueMap(String port) {
@@ -258,7 +258,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	}
 
 	/**
-	 * @param name the property (attribute) name.
+	 * @param nam the property (attribute) name.
 	 * @return a particular property given its name.
 	 */
 	@Override
@@ -366,7 +366,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 * The log is viewable as part of the internal status.
 	 * @param desc description of the activity being recorded. 
 	 *        Presumably this comes from a controlled vocabulary
-	 * @param name property receiving the new value, if any.
+	 * @param prop property receiving the new value, if any.
 	 * @param value a new value associated with the activity, if any.
 	 */
 	public synchronized void recordActivity(String desc,String prop,String value) {
@@ -666,7 +666,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	/**
 	 * This is useful for blocks that have no real interest in the state. It's merely
 	 * a bookkeeping step that denotes pass-thru of a truth-value.
-	 * @param qv
+	 * @param qv new qualified value
 	 */
 	protected void updateStateForNewValue(QualifiedValue qv) {
 		if(qv.getValue() instanceof TruthValue ) setState((TruthValue)qv.getValue());
@@ -683,7 +683,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		else setState(TruthValue.UNSET);
 	}
 	/**
-	 * @param tagpath
+	 * @param tagpath provider-free tag path
 	 * @return true if any property of the block is bound to
 	 *         the supplied tagpath. The comparison does not
 	 *         consider the provider portion of the path.

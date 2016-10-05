@@ -67,7 +67,8 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 	}
 	/**
-	 * Clear any watermark on a diagram. 
+	 * Clear any watermark on a diagram.
+	 * @param diagramId unique identifier of he diagram as a string 
 	 */
 	public void clearWatermark(String diagramId) {
 		try {
@@ -80,6 +81,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	}
 	/**
 	 * Determine whether or not the indicated diagram is known to the controller.
+	 * @param uuidString unique identifier of he diagram as a string
 	 */
 	@Override
 	public boolean diagramExists(String uuidString) {
@@ -95,7 +97,9 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 		return result;
 	}
-
+	/**
+	 * @param uuid unique identifier of he application as a string
+	 */
 	@Override
 	public String getApplicationName(String uuid) {
 		String name = "NULL UUID";
@@ -113,7 +117,9 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	}
 
 	/**
-	 * @return the id of the name block.
+	 * @param diagramId unique identifier of the diagram as a string 
+	 * @param blockName name of the block 
+	 * @return the id of the named block.
 	 */
 	@Override
 	public String getBlockId(String diagramId, String blockName) {
@@ -131,10 +137,11 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * Obtain a list of BlockProperty objects for the specified block. If the block is not known to the gateway
 	 * it will be created.
 	 * 
-	 * @param projectId
-	 * @param resourceId
-	 * @param blockId
-	 * @param className
+	 * @param className class of the block
+	 * @param projectId id of the project
+	 * @param resourceId corresponding to the diagram
+	 * @param blockId UUID of the block
+
 	 * @return an array of block properties for the subject block
 	 */
 	@SuppressWarnings("unchecked")
@@ -188,6 +195,8 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 
 
 	/**
+	 * @param diagramId unique identifier of the diagram as a string 
+	 * @param blockName name of the block 
 	 * @return the current state of the specified block.
 	 */
 	@Override
@@ -227,7 +236,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * Find the parent application or diagram of the entity referenced by
 	 * the supplied id. Test the state and return the name of the appropriate
 	 * database.  
-	 * @param uuid
+	 * @param uuid identifier of an application or diagram
 	 * @return database name
 	 */
 	@Override
@@ -275,6 +284,9 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 		return names;
 	}
+	/**
+	 * @param blockId unique identifier of the block as a string 
+	 */
 	@Override
 	public SerializableResourceDescriptor getDiagramForBlock(String blockId) {
 		SerializableResourceDescriptor result = null;
@@ -353,6 +365,8 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		return reason;
 	}
 	/**
+	 * @param diagramId identifier of the diagram owning the block, a String
+	 * @param blockId identifier of the block within the diagram, a String
 	 * @return internal details of a block for debugging purposes.
 	 */
 	@Override
@@ -498,7 +512,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * Query a block in the gateway for list of the blocks connected to the named port. 
 	 * @param diagramId of the parent diagram
 	 * @param blockId identifier of the block
-	 * @param port name of the anchor of interest
+	 * @param portName of the anchor of interest
 	 * @return a list of blocks connected to the named port.
 	 */
 	@SuppressWarnings("unchecked")
@@ -565,7 +579,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * of the specified block. If any of those blocks are sinks, then continue
 	 * the search on the diagrams they are connected to.
 	 * @param diagramId of the parent diagram
-	 * @param blockName name of the block within the diagram
+	 * @param blockId id of the block within the diagram
 	 * @return a list of blocks downstream of the specified block.
 	 */
 	@SuppressWarnings("unchecked")
@@ -585,7 +599,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * of the specified block. If any of those blocks are sources, then continue
 	 * the search on the diagrams they are connected to.
 	 * @param diagramId of the parent diagram
-	 * @param blockName name of the block within the diagram
+	 * @param blockId id of the block within the diagram
 	 * @return a list of blocks upstream of the specified block.
 	 */
 	@SuppressWarnings("unchecked")
@@ -746,9 +760,9 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	/**
 	 * Post a (simulated) block result on its output.
 	 * @param diagramId the parent diagram
-	 * @param blockId
-	 * @param port
-	 * @param value
+	 * @param blockId the block
+	 * @param port anchor for the incoming connection
+	 * @param value new value
 	 */
 	public void postResult(String diagramId,String blockId,String port,String value) {
 		try {
@@ -845,9 +859,10 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * This is a "local" transmission. The diagram is specified by a tree-path.
 	 * There may be no successful recipients.
 	 * 
-	 * @param diagramId
-	 * @param className filter of the receiver blocks to be targeted.
+	 * @param diagramId diagram identifier
 	 * @param command string of the signal.
+	 * @param message command payload
+	 * @param arg an argument.
 	 */
 	@Override
 	public boolean sendLocalSignal(String diagramId, String command,String message,String arg) {
@@ -1095,7 +1110,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * this method on behalf of the SFC-module in case there are any side-effects
 	 * of saving particular parameters.
 	 * @param propertyName name of the property for which a value is to be set
-	 * @param the new value of the property.
+	 * @param value the new value of the property.
 	 */
 	@Override
 	public void setToolkitProperty(String propertyName,String value) {

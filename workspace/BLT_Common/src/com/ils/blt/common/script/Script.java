@@ -72,7 +72,6 @@ public class Script {
 	 * Compile a simple script that does nothing but call the specified script. 
 	 * We assume that the script name includes a module, plus script name, plus method.
 	 * We want the module for our import statement.
-	 * @param callbackIndex index of the script we wish to execute.
 	 * @return true if the script compiled
 	 */
 	public boolean compileScript() {

@@ -197,7 +197,7 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 	
 	/**
 	 * A new value has arrived. Add it to the queue. Reset the timeout timer.
-	 * @param vcn incoming new value.
+	 * @param incoming new value.
 	 */
 	@Override
 	public void acceptValue(IncomingNotification incoming) {

@@ -15,6 +15,7 @@ public interface BlockPropertyChangeListener extends EventListener {
 	//============================= PropertyChangeListener ===========================
 	/**
 	 * This is a stricter implementation that enforces QualifiedValue data
+	 * @param event contains the new change infofrmation
 	 */
 	public void propertyChange(BlockPropertyChangeEvent event);
 }

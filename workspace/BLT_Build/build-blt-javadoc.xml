@@ -1,38 +1,53 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project default="javadoc">
+<project default="javadoc" basedir="../">
+	<property name="root.dir" value="${basedir}/../.." />
     <target name="javadoc">
         <javadoc access="protected" author="true" 
-        	classpath="/Users/chuckc/Development/ils/src/ignition-77/lib/designer-api.jar:
-        			   /Users/chuckc/Development/ils/src/ignition-77/lib/vision-designer-api.jar:
-        			   /Users/chuckc/Development/ils/src/ignition-77/lib/client-api.jar:
-        			   /Users/chuckc/Development/ils/src/ignition-77/lib/vision-client-api.jar:
-        	           /Users/chuckc/Development/ils/src/ignition-77/lib/ignition-common.jar:
-        	           /Users/chuckc/Development/ils/src/common/workspace/ILS_Common/bin:
-        	           /Users/chuckc/Development/ils/src/ignition-77/lib/client-api.jar:
-        	           /Users/chuckc/Development/ils/src/external/lib/ils-common.jar:
-        	           /Users/chuckc/Development/ils/src/external/lib/log4j-1.2.16.jar:
-        	           /Users/chuckc/Development/ils/src/external/lib/jackson-core-2.2.3.jar:
-        			   /Users/chuckc/Development/ils/src/external/lib/jackson-annotations-2.2.3.jar:
-        	           /Users/chuckc/Development/ils/src/external/lib/jackson-databind-2.2.3.jar:
-        	           /Users/chuckc/Development/ils/src/external/lib/commons-math3-3.1.1.jar:
-        	           /Users/chuckc/Development/ils/src/ignition-77/lib/gateway-api.jar:
-        	           /Users/chuckc/Development/ils/src/blt/workspace/BLT_Common/bin" 
+        	classpath=" ${root.dir}/ignition-78/lib/designer-api.jar:
+        				${root.dir}/ignition-78/lib/vision-designer-api.jar:
+        			   	${root.dir}/ignition-78/lib/client-api.jar:
+        				${root.dir}/ignition-78/lib/vision-client-api.jar:
+        				${root.dir}/ignition-78/lib/ignition-common.jar:
+        				${root.dir}/ignition-78/lib/client-api.jar:
+        				${root.dir}/ignition-78/lib/wicket-core.jar:
+        				${root.dir}/ignition-78/lib/wicket-datetime.jar:
+        				${root.dir}/ignition-78/lib/wicket-extensions.jar:
+        				${root.dir}/ignition-78/lib/wicket-request.jar:
+        				${root.dir}/ignition-78/lib/wicket-util.jar:
+        				${root.dir}/external/lib/wicket-jquery-ui-6.7.0.jar:
+        				${root.dir}/external/lib/ils-common.jar:
+        				${root.dir}/external/lib/log4j-1.2.16.jar:
+        				${root.dir}/external/lib/jackson-core-2.2.3.jar:
+        				${root.dir}/external/lib/jackson-annotations-2.2.3.jar:
+        				${root.dir}/external/lib/jackson-databind-2.2.3.jar:
+        				${root.dir}/external/lib/commons-math3-3.1.1.jar:
+        				${root.dir}/external/lib/jython-2.5.3.jar:
+        				${root.dir}/external/lib/lucene-1.4.3-1.0.1.jar:
+        				${root.dir}/external/lib/prefuse-1.0.1.jar:
+        				${root.dir}/external/lib/jide-action-3.5.13.jar:	
+        				${root.dir}/external/lib/jide-common-3.5.13.jar:
+        				${root.dir}/external/lib/jide-components-3.5.13.jar:
+        				${root.dir}/external/lib/jide-dock-3.5.13.jar:
+        				${root.dir}/external/lib/miglayout-4.0-swing.jar:	
+        				${root.dir}/ignition-78/lib/gateway-api.jar:
+        	            ${basedir}/BLT_Common/bin" 
         	destdir="doc" nodeprecated="false" nodeprecatedlist="true" noindex="false" nonavbar="false" notree="false" 
-        	packagenames="com.ils.block,com.ils.block.annotation,com.ils.block.common,
+        	packagenames="com.ils.block,com.ils.block.annotation,
         				  com.ils.com.ils.blt.gateway,com.ils.com.ils.blt.gateway.engine,com.ils.com.ils.blt.gateway.proxy,
-        	              com.ils.blt.client,
+        	              com.ils.blt.client,com.ils.blt.client.component,com.ils.blt.client.component.diagview,com.ils.blt.client.component.recmap,com.ils.blt.client.component.recmap.delegate,
         	              com.ils.blt.common,com.ils.blt.common.block,com.ils.blt.common.connection,
-        	              com.ils.blt.common.control,com.ils.blt.common.notification,com.ils.blt.common.serializable,
-        	              com.ils.blt.designer,com,com.ils.blt.designer.component.beaninfo,com.ils.blt.designer.editor,
-        	              com.ils.blt.designer.navtree,com.ils.blt.designer.workspace,com.ils.blt.designer.workspace.ui,
-        	              com.ils.blt.gateway,com.ils.blt.gateway.engine,com.ils.blt.gateway.proxy,
+        	              com.ils.blt.common.control,com.ils.blt.common.notification,com.ils.blt.common.script,com.ils.blt.common.serializable,
+        	              com.ils.blt.designer,com,com.ils.blt.designer.component.beaninfo,com.ils.blt.designer.config,com.ils.blt.designer.editor,
+        	              com.ils.blt.designer.navtree,com.ils.blt.designer.search,com.ils.blt.designer.workspace,com.ils.blt.designer.workspace.ui,
+        	              com.ils.blt.gateway,com.ils.blt.gateway.engine,com.ils.blt.gateway.persistence,com.ils.blt.gateway.proxy,com.ils.blt.gateway.tag,
+        				  com.ils.blt.gateway.wicket,com.ils.blt.gateway.wicket.content,
         	              com.ils.common,com.ils.common.watchdog" 
-        	source="1.7" 
-        	sourcepath="/Users/chuckc/Development/ils/src/block/workspace/Block/src:
-        				/Users/chuckc/Development/ils/src/blt/workspace/BLT_Common/src:
-        	            /Users/chuckc/Development/ils/src/blt/workspace/BLT_Gateway/src:
-        	            /Users/chuckc/Development/ils/src/blt/workspace/BLT_Client/src:
-        	            /Users/chuckc/Development/ils/src/blt/workspace/BLT_Designer/src" 
+        	source="1.8" 
+        	sourcepath="${basedir}/Block/src:
+        				${basedir}/BLT_Common/src:
+        				${basedir}/BLT_Gateway/src:
+        	            ${basedir}/BLT_Client/src:
+        				${basedir}/BLT_Designer/src" 
         	splitindex="false" use="true" version="true"/>
     </target>
 </project>

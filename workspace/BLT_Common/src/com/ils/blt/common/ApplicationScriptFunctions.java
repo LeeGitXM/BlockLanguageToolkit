@@ -18,7 +18,8 @@ import com.ils.blt.common.serializable.SerializableResourceDescriptor;
  * functions of the engine itself. All requests are delegated to the 
  * ApplicationRequestManager.
  * 
- * These calls are available from any Ignition scope.
+ * These calls are available from Designer or Client Ignition scopes. The 
+ * python package name is: system.ils.blt.diagram.
  */
 public class ApplicationScriptFunctions   {
 	private static ApplicationRequestHandler handler = new ApplicationRequestHandler();
@@ -34,18 +35,25 @@ public class ApplicationScriptFunctions   {
 		handler.clearController();
 	}
 	/**
-	 * Clear any watermark currently on a diagram. 
+	 * Clear any watermark currently on a diagram.
+	 * @param diagramId the diagram identifier as a string
 	 */
 	public static void clearWatermark(String diagramId) {
 		handler.clearWatermark(diagramId);
 	}
 
+	/**
+	 * @param uuid id of the application
+	 * @return the application name
+	 */
 	public static String getApplicationName(String uuid) {
 		return handler.getApplicationName(uuid);
 	}
 	
 	/**
-	 * Query the gateway for a list of prototypes for the defined blocks. 
+	 * Query the gateway for a list of prototypes for the defined blocks.
+	 * The prototypes are used for populating the palette.
+	 * @return a list of prototypes or descriptions for defined blocks. 
 	 */
 	@SuppressWarnings("rawtypes")
 	public static List getBlockPrototypes() {

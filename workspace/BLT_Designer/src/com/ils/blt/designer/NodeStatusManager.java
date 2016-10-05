@@ -87,7 +87,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 	/**
 	 * Define status for the root of the resource tree. 
 	 * WARNING: The root node has no associated project resources.
-	 * @param resourceId
+	 * @param node of resource tree
 	 */
 	public void createRootResourceStatus(AbstractResourceNavTreeNode node) {
 		log.tracef("%s.newRootResource",TAG);

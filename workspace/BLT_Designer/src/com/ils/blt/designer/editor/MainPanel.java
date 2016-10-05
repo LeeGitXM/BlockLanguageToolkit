@@ -77,7 +77,7 @@ public class MainPanel extends BasicEditPanel {
 	}
 	/**
 	 * This is the property summary on the main panel.
-	 * @param prop
+	 * @param pbv block view
 	 */
 	public void updatePanelForBlock(ProcessBlockView pbv) {
 		 corePanel.updatePanelForBlock(pbv);

@@ -25,7 +25,8 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 /**
  * This class exposes python-callable requests directed at the execution engine. 
- * The class is accessed in Python via direct import 
+ * An instance of this class is exposed as the "handler" member of each block
+ * implemented in python.
  */
 public class PythonRequestHandler   {
 	private static final String TAG = "PythonRequestHandler";
@@ -146,7 +147,7 @@ public class PythonRequestHandler   {
 		return controller.getProductionDatabase();
 	}
 	/**
-	 * @param parent identifier for the diagram, a string version of a UUID
+	 * @param uuidString identifier for the diagram, a string version of a UUID
 	 * @return the default tag provider for the project associated with 
 	 *         the specified diagram
 	 */
@@ -176,7 +177,6 @@ public class PythonRequestHandler   {
 	 * Given an identifier string, return the associated diagram. 
 	 * The parent of a block should be a diagram.
 	 * 
-	 * @param parent identifier for the block, a string version of a UUID
 	 * @return the diagram
 	 */
 	public ProcessDiagram getDiagram(String diagramId)  {
@@ -228,7 +228,6 @@ public class PythonRequestHandler   {
 	/**
 	 * Inform anyone who will listen about the diagram alerting status.
 	 * 
-	 * @param resId resourceId of the parent diagram
 	 * @param block the block that is responsible for a status change
 	 */
 	public void postAlertingStatus(ProcessBlock block)  {
@@ -279,7 +278,6 @@ public class PythonRequestHandler   {
 	/**
 	 * Handle the block placing a new value on its output. The input may be PyObjects.
 	 * 
-	 * @param parent identifier for the parent, a string version of a UUID
 	 * @param id block identifier a string version of the UUID
 	 * @param port the output port on which to insert the result
 	 * @param value the result of the block's computation
@@ -292,13 +290,11 @@ public class PythonRequestHandler   {
 				new Date(time)));
 	}
 	/**
-	 * Handle the block setting a new property value.
+	 * Handle a block setting a new property value.
 	 * 
-	 * @param parent identifier for the parent, a string version of a UUID
 	 * @param id block identifier a string version of the UUID
 	 * @param port the output port on which to insert the result
 	 * @param value the result of the block's computation
-	 * @param quality of the reported output
 	 */
 	public void sendPropertyNotification(String id, String port, String value)  {
 		log.tracef("%s.sendConnectionNotification - %s = %s on %s",TAG,id,value.toString(),port);
@@ -308,8 +304,9 @@ public class PythonRequestHandler   {
 	 * Broadcast a result to blocks in the diagram
 	 * 
 	 * @param parent identifier for the diagram, a string version of a UUID
-	 * @param className name of the class of blocks to be signaled
 	 * @param command the value of the signal
+	 * @param message text of the signal
+	 * @param arg an argument
 	 * @param time the time associated with this signal
 	 */
 	public void sendTimestampedSignal(String parent,String command,String message,String arg,long time)  {

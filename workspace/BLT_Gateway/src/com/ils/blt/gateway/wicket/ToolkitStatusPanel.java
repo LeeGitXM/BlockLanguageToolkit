@@ -1,9 +1,7 @@
 package com.ils.blt.gateway.wicket;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.wicket.Component;
@@ -29,20 +27,15 @@ import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 
-import com.ils.blt.common.BLTProperties;
 import com.ils.blt.gateway.engine.ProcessDiagram;
 import com.ils.blt.gateway.engine.ProcessNode;
 import com.ils.blt.gateway.engine.ProcessNodeSynchronizer;
-import com.ils.blt.gateway.engine.ProjectResourceKey;
 import com.ils.blt.gateway.wicket.content.Content;
 import com.ils.blt.gateway.wicket.content.EditableFolderContent;
 import com.ils.blt.gateway.wicket.content.ProcessTreeBehavior;
-import com.inductiveautomation.ignition.common.project.Project;
-import com.inductiveautomation.ignition.common.project.ProjectResource;
-import com.inductiveautomation.ignition.common.project.ProjectVersion;
 
 /**
- * @see http://www.wicket-library.com/wicket-examples/nested/wicket/bookmarkable/org.apache.wicket.examples.ajax.builtin.tree.TreeTablePage?0
+ * See http://www.wicket-library.com/wicket-examples/nested/wicket/bookmarkable/org.apache.wicket.examples.ajax.builtin.tree.TreeTablePage?0
  */
 public class ToolkitStatusPanel extends Panel {
 	public static final long serialVersionUID = 4204748023293522204L;

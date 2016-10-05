@@ -40,7 +40,7 @@ public interface Connection {
 	 */
 	public UUID getSource();
 	/**
-	 * @param the block id of the upstream block to which we are connected
+	 * @param id the block id of the upstream block to which we are connected
 	 */
 	public void setSource(UUID id);
 	/**
@@ -48,7 +48,7 @@ public interface Connection {
 	 */
 	public UUID getTarget();
 	/**
-	 * @param the block id of the downstream block to which we are connected
+	 * @param id the block id of the downstream block to which we are connected
 	 */
 	public void setTarget(UUID id);
 	

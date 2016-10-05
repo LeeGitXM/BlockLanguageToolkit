@@ -37,9 +37,9 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	/**
 	 * Constructor
 	 * @param clss the Python module to instantiate
-	 * @param proj ID of the project to which the diagram belongs
-	 * @param diag ID of the diagram of which the block is a part
+	 * @param parent ID of the diagram of which the block is a part
 	 * @param block identifier
+	 * @param mgr script manager appropriate to scope where this is used
 	 */
 	public ProxyBlock(String clss,UUID parent,UUID block,ScriptManager mgr) {
 		super(null,parent,block);
@@ -135,9 +135,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	/**
 	 * Notify the block that a new value has appeared on one of its input anchors. If the block has
 	 * an embedded tag, it is possible that there is no port.
-	 * @param port name of the incoming anchor point
-	 * @param value to accept. A qualified value has a timestamp, quality,
-	 *        and simple value.
+	 * @param vcn incoming notification
 	 */
 	@Override
 	public void acceptValue(IncomingNotification vcn) {

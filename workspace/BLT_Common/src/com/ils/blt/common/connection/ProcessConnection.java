@@ -49,7 +49,7 @@ public class ProcessConnection implements Connection {
 	 */
 	public String getUpstreamPortName() { return upstreamPort; }
 	/**
-	 * @param the name of output port on the upstream block to which we are connected.
+	 * @param name of output port on the upstream block to which we are connected.
 	 */
 	public void setUpstreamPortName(String port) { this.upstreamPort = port; }
 	/**
@@ -57,7 +57,7 @@ public class ProcessConnection implements Connection {
 	 */
 	public String getDownstreamPortName() { return downstreamPort; }
 	/**
-	 * @param the name of input port on the downstream block to which we are connected
+	 * @param name of input port on the downstream block to which we are connected
 	 */
 	public void setDownstreamPortName(String port) { this.downstreamPort = port; }
 	/**

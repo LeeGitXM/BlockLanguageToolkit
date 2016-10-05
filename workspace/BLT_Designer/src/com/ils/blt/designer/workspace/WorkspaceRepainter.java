@@ -18,7 +18,7 @@ public class WorkspaceRepainter implements Runnable {
 	/**
 	 * Call this method from the hook as soon as the context is established.
 	 * Note: this is called before the workspace is created.
-	 * @param context
+	 * @param ctx designer context
 	 */
 	public static void setContext(DesignerContext ctx) {
 		context = ctx;

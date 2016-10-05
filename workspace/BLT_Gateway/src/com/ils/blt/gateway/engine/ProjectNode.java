@@ -20,9 +20,9 @@ public class ProjectNode extends ProcessNode {
 	
 	/**
 	 * Constructor: 
-	 * @param name of the node
-	 * @param parent UUID of the parent of this node.
+	 * @param rootNode the root node
 	 * @param me UUID of this node 
+	 * @param projId the project
 	 */
 	public ProjectNode(RootNode rootNode, UUID me, long projId) { 
 		super("",rootNode.self,me);

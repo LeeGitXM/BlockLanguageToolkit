@@ -167,7 +167,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	 * properties from its gateway counterpart. A newly imported block should already
 	 * have properties.
 	 * 
-	 * @param context 
+	 * @param blk block to be added
 	 */
 	@Override
 	public void addBlock(Block blk) {

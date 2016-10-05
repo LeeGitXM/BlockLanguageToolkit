@@ -203,7 +203,7 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 	 * We record the value and start the watchdog timer.
 	 * 
 	 * Note: there can be several connections attached to a given port.
-	 * @param vcn incoming new value.
+	 * @param incoming new value.
 	 */
 	@Override
 	public void acceptValue(IncomingNotification incoming) {
