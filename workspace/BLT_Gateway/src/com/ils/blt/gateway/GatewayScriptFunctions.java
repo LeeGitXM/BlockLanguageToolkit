@@ -250,6 +250,22 @@ public class GatewayScriptFunctions   {
 		return handler.listConfigurationErrors();
 	}
 	/**
+	 * Query an application in the gateway for list of descendants down to the level of a diagram. 
+	 * @param appName of the parent application
+	 * @return a list of nodes under the named application
+	 */
+	public static List<SerializableResourceDescriptor> listDescriptorsForApplication(String appName) {
+		return handler.listDescriptorsForApplication(appName);
+	}
+	/**
+	 * Query a family in the gateway for list of descendants down to the level of a diagram. 
+	 * @param appName of the parent application
+	 * @return a list of nodes under the named application
+	 */
+	public static List<SerializableResourceDescriptor> listDescriptorsForFamily(String appName,String famName) {
+		return handler.listDescriptorsForFamily(appName,famName);
+	}
+	/**
 	 * @param diagramId identifier of the diagram to be queried, a String
 	 * @param className fully qualified class name of blocks to be listed
 	 * @return a list of ids for blocks owned by a specified diagram that are of a
