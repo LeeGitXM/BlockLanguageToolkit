@@ -178,8 +178,8 @@ public abstract class AbstractScriptExtensionManager {
 	 * 
 	 * @param mgr a script manager with proper context
 	 * @param pythonPath the Python path to the module package, not including the entry point.
-	 * @param key to a pre-configured script type (but not an individual script. The 
-	 *            configuration includes entry point and argument prototype.
+	 * @param className class to which the script applies
+	 * @param flavor script category
 	 * @param args actual arguments to the script
 	 */
 	public void runOneTimeScript(ScriptManager mgr,String pythonPath,String className,String flavor,Object...args) {

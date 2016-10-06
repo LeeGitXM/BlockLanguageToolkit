@@ -31,7 +31,7 @@
         				${root.dir}/external/lib/miglayout-4.0-swing.jar:	
         				${root.dir}/ignition-78/lib/gateway-api.jar:
         	            ${basedir}/BLT_Common/bin" 
-        	destdir="doc" nodeprecated="false" nodeprecatedlist="true" noindex="false" nonavbar="false" notree="false" 
+        	destdir="BLT_Build/doc" nodeprecated="false" nodeprecatedlist="true" noindex="false" nonavbar="false" notree="false" 
         	packagenames="com.ils.block,com.ils.block.annotation,
         				  com.ils.com.ils.blt.gateway,com.ils.com.ils.blt.gateway.engine,com.ils.com.ils.blt.gateway.proxy,
         	              com.ils.blt.client,com.ils.blt.client.component,com.ils.blt.client.component.diagview,com.ils.blt.client.component.recmap,com.ils.blt.client.component.recmap.delegate,

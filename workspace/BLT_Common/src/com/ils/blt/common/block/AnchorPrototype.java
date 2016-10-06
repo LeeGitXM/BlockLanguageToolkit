@@ -28,8 +28,8 @@ public class AnchorPrototype {
 	private boolean multiple = true;  // Allow multiple by default
 	
 	/**
-	 * Deserialize from a Json 
-	 * @param json
+	 * Deserialize from a Json string 
+	 * @param json the anchor as a JSON string
 	 * @return the prototype object created from the string
 	 */
 	public static AnchorPrototype createAnchorDescription(String json) {
@@ -62,6 +62,9 @@ public class AnchorPrototype {
 
 	/**
 	 * This is a convenience constructor that sets almost everything.
+	 * @param nam port name
+	 * @param direction incoming or outgoing
+	 * @param ct connection type
 	 */
 	public AnchorPrototype(String nam,AnchorDirection direction,ConnectionType ct) {
 		this.name = nam;

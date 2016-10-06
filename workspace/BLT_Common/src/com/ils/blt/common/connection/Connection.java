@@ -24,7 +24,7 @@ public interface Connection {
 	 */
 	public String getUpstreamPortName();
 	/**
-	 * @param the name of output port on the upstream block to which we are connected.
+	 * @param port name of the output port on the upstream block to which we are connected.
 	 */
 	public void setUpstreamPortName(String port);
 	/**
@@ -32,7 +32,7 @@ public interface Connection {
 	 */
 	public String getDownstreamPortName();
 	/**
-	 * @param the name of input port on the downstream block to which we are connected
+	 * @param port name of the input port on the downstream block to which we are connected
 	 */
 	public void setDownstreamPortName(String port);
 	/**

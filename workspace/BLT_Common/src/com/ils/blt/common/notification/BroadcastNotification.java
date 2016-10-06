@@ -23,9 +23,9 @@ public class BroadcastNotification {
 	/**
 	 * Constructor. Use this constructor to define a broadcast to multiple blocks in a diagram.
 	 *              Note that the qualified value is guaranteed to hold a signal.
-	 * @param diagramId
-	 * @param scope
-	 * @param qualified value containing the signal to be transmitted.
+	 * @param diagId id of the parent diagram
+	 * @param tscope transmission scope
+	 * @param qv qualified value containing the signal to be transmitted.
 	 */
 	public BroadcastNotification(UUID diagId,TransmissionScope tscope,QualifiedValue qv)  {
 		this.diagramId = diagId;
@@ -37,9 +37,9 @@ public class BroadcastNotification {
 	/**
 	 * Constructor. Use this constructor to send a signal to a specific block.
 	 *              Note that the qualified value is guaranteed to hold a signal.
-	 * @param diagramId
+	 * @param diagId id of the parent diagram
 	 * @param block name of the target block
-	 * @param qualified value containing the signal to be transmitted.
+	 * @param qv qualified value containing the signal to be transmitted.
 	 */
 	public BroadcastNotification(UUID diagId,String block,QualifiedValue qv)  {
 		this.diagramId = diagId;

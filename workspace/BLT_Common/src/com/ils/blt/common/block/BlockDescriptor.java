@@ -120,6 +120,7 @@ public class BlockDescriptor {
 
 	/**
 	 * Serialize into a JSON string
+	 * @return the descriptor expressed as JSON
 	 */
 	public String toJson() {
 		ObjectMapper mapper = new ObjectMapper();
