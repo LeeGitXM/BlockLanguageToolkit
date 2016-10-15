@@ -5,8 +5,8 @@ import java.io.Serializable;
 
 /**
  * Use this class to describe the resources known to
- * the Gateway block controller. This is a debugging aid to
- * display engine resources in the Designer.
+ * the Gateway block controller. This class allows the
+ * display of engine resources in Designer or Client scope.
  * 
  * This is used for both project resources and blocks.
  */
