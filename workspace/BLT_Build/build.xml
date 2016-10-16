@@ -28,7 +28,7 @@
 
 	<!-- SDK jar classpath. This classpath includes all the jars needed to build a module against the SDK. -->
 	<path id="ignition-sdk.classpath">
-		<fileset dir="${basedir}/../../ignition-78/lib" includes="*.jar" />
+		<fileset dir="${basedir}/../../ignition-79/lib" includes="*.jar" />
 	</path>
 	
 	<!-- External jar classpath. This classpath includes all the jars needed to build a module against the SDK. -->

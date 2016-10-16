@@ -72,6 +72,7 @@ import com.inductiveautomation.ignition.common.execution.ExecutionManager;
 import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngine;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
+import com.inductiveautomation.ignition.common.project.ProjectScope;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.common.xmlserialization.SerializationException;
@@ -132,6 +133,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 * Constructor:
 	 */
 	public DiagramWorkspace(DesignerContext ctx) {
+		super(ProjectScope.PROJECT);
 		this.context = ctx;
 		this.editActionHandler = new BlockActionHandler(this,context);
 		this.executionEngine = new BasicExecutionEngine(1,TAG);
