@@ -951,7 +951,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	    					dialog.setLocation((int)(p.getX()-OFFSET),(int)(p.getY()-OFFSET));
 							dialog.pack();
 							root.setBold(true);
-							threadCounter.reset();
+							root.reload();      // Closes applications
+							root.refresh();
 							dialog.setVisible(true);   // Returns when dialog is closed
 							File input = dialog.getFilePath();
 							if( input!=null ) {
@@ -994,16 +995,26 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 									catch(Exception ex) {
 										ErrorUtil.showError(String.format("ApplicationImportAction: Deserialization exception (%s)",ex.getMessage()),POPUP_TITLE,ex,true);
 									}
-
 								}
 								else {
 									ErrorUtil.showWarning(String.format("ApplicationImportAction: Selected file does not exist or is not readable: %s",input.getAbsolutePath()),POPUP_TITLE);
 								}
 								
-							}  // Cancel
-							ThreadCompletionDetector detector = new ThreadCompletionDetector(root);
-							new Thread(detector).start();
-							
+							}  
+							// No thread - we should just be done at this point
+							SwingUtilities.invokeLater(new Runnable() {
+								public void run() {
+									root.setBold(false);
+									Enumeration<AbstractNavTreeNode> kids = root.children(); // Applications
+									while( kids.hasMoreElements() ) {
+										AbstractNavTreeNode kid = kids.nextElement();
+										kid.reload();
+										kid.refresh();
+									}
+									
+									root.refresh();
+								}
+							});
 						} 
 						catch (Exception ex) {
 							ErrorUtil.showError(String.format("ApplicationImportAction: Unhandled Exception (%s)",ex.getMessage()),POPUP_TITLE,ex,true);
@@ -1016,8 +1027,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				ErrorUtil.showError(TAG+" Exception importing application",err);
 			}
 		}
-
-		private void importDiagram(UUID parentId,SerializableDiagram sd) {
+		// Run in foreground to avoid synchronization issues with display.
+		private synchronized void importDiagram(UUID parentId,SerializableDiagram sd) {
 			ObjectMapper mapper = new ObjectMapper();
 			try{
 				sd.setState(DiagramState.DISABLED);
@@ -1029,14 +1040,16 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 						BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
 						sd.getName(), ApplicationScope.GATEWAY, json.getBytes());
 				resource.setParentUuid(parentId);
+				logger.infof("%s:ApplicationImportAction importing diagram %s(%d) (%s)", TAG,sd.getName(),newId,sd.getId().toString());
 				statusManager.setResourceState(newId, sd.getState(),false);
-				executionEngine.executeOnce(new ResourceCreateManager(resource));
+				new ResourceCreateManager(resource).run();
 			} 
 			catch (Exception ex) {
 				ErrorUtil.showError(String.format("ApplicationImportAction: importing diagrm, unhandled Exception (%s)",ex.getMessage()),POPUP_TITLE,ex,true);
 			}
 		}
-		private void importFamily(UUID parentId,SerializableFamily sf) {
+		// Run in foreground to avoid synchronization issues with display.
+		private synchronized void importFamily(UUID parentId,SerializableFamily sf) {
 			ObjectMapper mapper = new ObjectMapper();
 			try{
 				long newId = context.newResourceId();
@@ -1047,7 +1060,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 						sf.getName(), ApplicationScope.GATEWAY, json.getBytes());
 				resource.setParentUuid(parentId);
 				logger.infof("%s:ApplicationImportAction importing family %s(%s) (%s/%s)", TAG,sf.getName(),newId,parentId.toString(),sf.getId().toString());
-				executionEngine.executeOnce(new ResourceCreateManager(resource));	
+				new ResourceCreateManager(resource).run();
 				// Now import the diagrams
 				for(SerializableDiagram diagram:sf.getDiagrams()) {
 					importDiagram(sf.getId(),diagram);

@@ -291,7 +291,8 @@ public class ApplicationScriptFunctions   {
 	 * Query the gateway for list of its sink blocks associated with the
 	 * specified source. The blocks that are returned are not constrained
 	 * to be part of the same diagram, family or application.
-	 * @param blockId identifier for the source block, a String 
+	 * @param diagramId id of the enclosing diagram, a String
+	 * @param blockName name of the source block, a String 
 	 * @return a list of blocks logically connected to the source.
 	 */
 	public static List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId,String blockName) {
@@ -301,7 +302,8 @@ public class ApplicationScriptFunctions   {
 	 * Query the gateway for list of its source blocks associated with the
 	 * specified sink. The blocks that are returned all belong to the same
 	 * application as the sink.
-	 * @param blockId identifier for the sink block, a String 
+	 * @param diagramId id of the enclosing diagram, a String
+	 * @param blockName name of the sink block, a String 
 	 * @return a list of blocks logically connected to the sink.
 	 */
 	public static List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId,String blockName) {
@@ -327,13 +329,17 @@ public class ApplicationScriptFunctions   {
 	/**
 	 * Post a (simulated) block result on its output.
 	 * @param diagramId the parent diagram
-	 * @param blockId
+	 * @param blockId of the subject block
 	 * @param port
 	 * @param value
 	 */
 	public static void postResult(String diagramId,String blockId,String port,String value) {
 		handler.postResult(diagramId,blockId, port, value);
 	}
+	/**
+	 * @param diagramId the parent diagram
+	 * @param blockId of the block within the diagram
+	 */
 	public static void propagateBlockState(String diagramId,String blockId) {
 		handler.propagateBlockState(diagramId,blockId);
 	}

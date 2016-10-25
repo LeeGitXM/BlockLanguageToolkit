@@ -53,7 +53,20 @@ public class ResourceSaveManager implements Runnable {
 		context = ctx;
 		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
 	}
-	
+	/**
+	 * Save all application, family or diagram nodes.
+	 */
+	public void saveAll() {
+		Project diff = context.getProject().getEmptyCopy();
+		accumulateNodeResources(root,diff);
+		
+		try {
+			DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, true, "Committing/Publishing ...");  // publish		
+		}
+		catch(GatewayException ge) {
+			log.warnf("%s.saveAll: Exception saving project resource %d (%s)",CLSS,root.getProjectResource().getResourceId(),ge.getMessage());
+		}
+	}
 	/**
 	 * Traverse the entire node hierarchy looking for diagrams that need saving.
 	 * When found, serialize into the project resource. This is in anticipation
@@ -152,15 +165,33 @@ public class ResourceSaveManager implements Runnable {
 			for(ProjectResource res:diff.getResources()) {
 				log.infof("%s.saveNodeAndDescendants: Saved %s (%d)",CLSS,res.getName(),res.getResourceId());
 			}
-			
+
 		}
 		catch(GatewayException ge) {
 			log.warnf("%s.saveNodeAndDescendants: Exception saving project resource %d (%s)",CLSS,root.getProjectResource().getResourceId(),ge.getMessage());
 		}
-		
+
 		// Mark these as "clean" in the current project so that we don't save again.
 		Project project = context.getProject();
 		project.applyDiff(diff,false);      // Apply diff, not dirty
 		return dirtyCount;
 	}
+	
+	// Recursively descend the node tree, gathering all nested resources. Mark all as dirty.
+	private void accumulateNodeResources(AbstractResourceNavTreeNode node,Project diff) {
+		ProjectResource res = node.getProjectResource();
+		if( res!=null ) {
+			if( node instanceof DiagramTreeNode   ) {
+				workspace.saveOpenDiagram(res.getResourceId());   // Close if open
+			}
+			diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
+		}
+
+		@SuppressWarnings("rawtypes")
+		Enumeration walker = node.children();
+		while(walker.hasMoreElements()) {
+			Object child = walker.nextElement();
+			accumulateNodeResources((AbstractResourceNavTreeNode)child,diff);
+		}
+	}	
 }

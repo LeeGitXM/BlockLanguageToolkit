@@ -45,7 +45,7 @@ public class LabData extends Input implements ProcessBlock {
 	protected QualifiedValue currentValue = null;   // Most recent output value
 	protected Date currentTime = null;              // Most recent output value
 	private final Watchdog dog;
-	private double synchInterval = 0.5; // 1/2 sec synchronization by default
+	private double synchInterval = 10.0; // 10 sec synchronization by default
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.

@@ -228,6 +228,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public double getIsolationTimeFactor() {
 		if(Double.isNaN(isolationTimeFactor) ) {
 			String factor = ControllerRequestHandler.getInstance().getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_TIME);
+			if( factor.isEmpty() ) factor = "1.0";
 			try {
 				isolationTimeFactor = Double.parseDouble(factor);
 			}
