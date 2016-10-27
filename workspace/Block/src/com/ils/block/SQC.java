@@ -3,6 +3,7 @@
  */
 package com.ils.block;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,8 +54,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	protected static final String PORT_TARGET = "target";
 	protected static final String PORT_VALUE = "value";
 	private final static int DEFAULT_BUFFER_SIZE = 10;
-	
-	
+		
 	private boolean clearOnReset = true;
 	private double limit = 3.0;
 	private LimitType limitType = LimitType.HIGH;
@@ -66,7 +66,6 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	private double standardDeviation = Double.NaN;
 	private double mean = Double.NaN;
 
-	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
@@ -251,19 +250,19 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus(lastValue);
 
-			// Notify other blocks to suppress alternate results
+			// Notify other blocks to suppress alternate results.
+			// We only notify blocks in our same group, exclusive of ourself
 			if( state.equals(TruthValue.TRUE)) {
 				if( limitType.equals(LimitType.HIGH )) {
 					Signal sig = new Signal(BlockConstants.COMMAND_CLEAR_LOW,"","");
 					QualifiedValue qv = new TestAwareQualifiedValue(timer,sig);
-					BroadcastNotification broadcast = new BroadcastNotification(getParentId(),TransmissionScope.LOCAL,qv);
-					controller.acceptBroadcastNotification(broadcast);
+					notifyGroupMembers(qv);
+					
 				}
 				else if( limitType.equals(LimitType.LOW )) {
 					Signal sig = new Signal(BlockConstants.COMMAND_CLEAR_HIGH,"","");
 					QualifiedValue qv = new TestAwareQualifiedValue(timer,sig);
-					BroadcastNotification broadcast = new BroadcastNotification(getParentId(),TransmissionScope.LOCAL,qv);
-					controller.acceptBroadcastNotification(broadcast);
+					notifyGroupMembers(qv);
 				}
 			}
 		}
@@ -478,5 +477,56 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		
 		if( DEBUG ) log.infof("%s.getRuleState: %d of %d results,  %d high, %d low, %d outside, (cons %d,%d) => %s (%s)",getName(),total,sampleSize,high,low,outside,maxlowside,maxhighside,result.toString(),limitType.toString());
 		return result;	
+	}
+	
+	/**
+	 * Send a signal to SQC blocks that share the same input and are not this block.
+	 * We bypass the controller routing.
+	 * @param qv the signal
+	 */
+	private void notifyGroupMembers(QualifiedValue qv) {
+		String masterInput = getInputForBlock(getParentId(),getBlockId(),PORT_VALUE);
+		if( masterInput!=null) {
+			// Now compare all SQC blocks on the chart.
+			DiagnosticDiagram diagram = controller.getDiagram(getParentId().toString());
+			Collection<ProcessBlock> blocks = diagram.getProcessBlocks();
+			for( ProcessBlock block:blocks) {
+				if( !block.getClassName().equalsIgnoreCase("com.ils.block.SQC") ) continue;
+				if( block.getBlockId().equals(getBlockId())) continue;
+				String inputId = getInputForBlock(getParentId(),block.getBlockId(),PORT_VALUE);
+				if( inputId==null) continue;
+				if( inputId.equalsIgnoreCase(masterInput)) {
+					SignalNotification sn = new SignalNotification(block,qv);
+					block.acceptValue(sn);
+				}
+			}
+		}
+	}
+	
+	// Given a block state descriptor and port, return the id of the input block connected upstream.
+	// The input must be on the same diagram.
+	private String getInputForBlock(UUID diagramId,UUID blockId,String port) {
+		String inputId = null;
+		List<SerializableBlockStateDescriptor> immediateDescriptors = controller.listBlocksConnectedAtPort(diagramId.toString(), blockId.toString(), port);
+		for(SerializableBlockStateDescriptor upstream:immediateDescriptors) {
+			if(upstream.getClassName().equalsIgnoreCase("com.ils.block.Input") ||
+			   upstream.getClassName().equalsIgnoreCase("com.ils.block.LabData") 	) {
+				return upstream.getIdString();
+			}
+		}
+		// The upstream block is not, itself, an input. Search further.
+		for(SerializableBlockStateDescriptor upstream:immediateDescriptors) {
+			if(upstream.getClassName().equalsIgnoreCase("com.ils.block.Input") ||
+			   upstream.getClassName().equalsIgnoreCase("com.ils.block.LabData") 	) {
+				List<SerializableBlockStateDescriptor> upstreamBlocks = controller.listBlocksUpstreamOf(diagramId, UUID.fromString(upstream.getIdString()), false);
+				for(SerializableBlockStateDescriptor ancestor:upstreamBlocks) {
+					if(ancestor.getClassName().equalsIgnoreCase("com.ils.block.Input") ||
+							ancestor.getClassName().equalsIgnoreCase("com.ils.block.LabData") 	) {
+						return ancestor.getIdString();
+					}
+				}
+			}
+		}
+		return inputId;
 	}
 }

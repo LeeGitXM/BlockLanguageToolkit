@@ -94,6 +94,14 @@ public class BasicExecutionController implements ExecutionController  {
 		log.warnf("%s.listBlocksConnectedAtPort: WARNING: Executed from stub class",TAG);
 		return new ArrayList<>();
 	}
+	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(UUID diagramId,UUID blockId,boolean spanDiagrams) {
+		log.warnf("%s.listBlocksDownstreamOf: WARNING: Executed from stub class",TAG);
+		return new ArrayList<>();
+	}
+	public List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(UUID diagramId,UUID blockId,boolean spanDiagrams) {
+		log.warnf("%s.listBlocksUpstreamOf: WARNING: Executed from stub class",TAG);
+		return new ArrayList<>();
+	}
 	public List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId,String blockName) {
 		log.warnf("%s.listSinksForSource: WARNING: Executed from stub class",TAG);
 		return new ArrayList<>();
