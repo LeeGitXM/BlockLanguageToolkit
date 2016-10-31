@@ -570,14 +570,14 @@ public class ModelManager implements ProjectListener  {
 	 */
 	@Override
 	public void projectDeleted(long projectId) {
-		log.debugf("%s.projectDeleted: (id=%d)",TAG,projectId);
+		log.infof("%s.projectDeleted: (id=%d)",TAG,projectId);
 		if( projectId<0 ) return;
 		deleteProjectResources(projectId);
 		
 	}
 	/**
 	 * Handle project resource updates of type model. NOTE: The Ignition gateway interface does not
-	 * allow the designer to be open if manually enabling/disabling project.
+	 * allow the designer to be open if enabling/disabling project from Gateway page.
 	 * @param diff represents differences to the updated project. That is any updated, dirty or deleted resources.
 	 * @param vers a value of "Staging" means is a result of a "Save". A value of "Published" occurs when a 
 	 *        project is published. For our purposes both actions are equivalent(??).
@@ -587,10 +587,8 @@ public class ModelManager implements ProjectListener  {
 	 */
 	@Override
 	public void projectUpdated(Project diff, ProjectVersion vers) { 
-		
-		log.infof("%s.projectUpdated: %s (%d)  %s",TAG,diff.getName(),diff.getId(),vers.toString());
-		
 		if( vers!=ProjectVersion.Staging ) return;  // Consider only the "Staging" version
+		log.infof("%s.projectUpdated: %s (%d)  %s",TAG,diff.getName(),diff.getId(),vers.toString());
 		long projectId = diff.getId();
 		if( projectId<0 ) return;                   // Ignore global project
 		
@@ -619,6 +617,7 @@ public class ModelManager implements ProjectListener  {
 			for (Long  rid : deleted) {
 				long resid = rid.longValue();
 				log.infof("%s.projectUpdated: delete resource %d:%d", TAG,projectId,resid);
+				countOfInteresting++;
 				deleteResource(projectId,resid);
 			}
 			

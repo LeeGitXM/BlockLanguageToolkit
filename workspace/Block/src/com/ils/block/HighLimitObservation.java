@@ -99,7 +99,7 @@ public class HighLimitObservation extends AbstractProcessBlock implements Proces
 			try {
 				double dbl = Double.parseDouble(val);
 				TruthValue newValue = state;
-				if( dbl > limit   ) newValue = TruthValue.TRUE;
+				if( dbl >= limit   ) newValue = TruthValue.TRUE;
 				if( dbl < limit - deadband ) newValue = TruthValue.FALSE;
 				if( !observation.getQuality().isGood()) newValue = TruthValue.UNKNOWN;
 				if( !newValue.equals(state)) {
@@ -171,7 +171,6 @@ public class HighLimitObservation extends AbstractProcessBlock implements Proces
 				log.warnf("%s: propertyChange Unable to convert limit to a double (%s)",TAG,nfe.getLocalizedMessage());
 			}
 		}
-		
 	}
 	/**
 	 *  When unlocking, set the remembered state as "UNSET". This will allow

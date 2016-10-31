@@ -9,6 +9,7 @@ procs/
 tags/
 temp_modl/
 *.db
+*.log
 .DS_Store
 .recommenders/
 .version

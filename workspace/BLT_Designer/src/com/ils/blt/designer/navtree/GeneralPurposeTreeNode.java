@@ -952,7 +952,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 							dialog.pack();
 							root.setBold(true);
 							root.reload();      // Closes applications
-							root.refresh();
 							dialog.setVisible(true);   // Returns when dialog is closed
 							File input = dialog.getFilePath();
 							if( input!=null ) {
@@ -974,12 +973,13 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 													BLTProperties.MODULE_ID, BLTProperties.APPLICATION_RESOURCE_TYPE,
 													sa.getName(), ApplicationScope.GATEWAY, json.getBytes());
 											resource.setParentUuid(getFolderId());
-											new ResourceCreateManager(resource).run();
-											root.selectChild(new long[] {newId} );
 											// Now import families
 											for(SerializableFamily fam:sa.getFamilies()) {
 												importFamily(sa.getId(),fam);
 											}
+											// Create after the children -- else sometimes folders are not populated.
+											new ResourceCreateManager(resource).run();   // In-line
+											root.selectChild(new long[] {newId} );
 										}
 										else {
 											ErrorUtil.showWarning(String.format("ApplicationImportAction: Failed to deserialize file (%s)",input.getAbsolutePath()),POPUP_TITLE);
@@ -1005,13 +1005,14 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 							SwingUtilities.invokeLater(new Runnable() {
 								public void run() {
 									root.setBold(false);
+									@SuppressWarnings("unchecked")
 									Enumeration<AbstractNavTreeNode> kids = root.children(); // Applications
 									while( kids.hasMoreElements() ) {
 										AbstractNavTreeNode kid = kids.nextElement();
 										kid.reload();
 										kid.refresh();
+										logger.infof("%s:ApplicationImportAction reloading (%s)", TAG,kid.getName());
 									}
-									
 									root.refresh();
 								}
 							});
@@ -1060,7 +1061,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 						sf.getName(), ApplicationScope.GATEWAY, json.getBytes());
 				resource.setParentUuid(parentId);
 				logger.infof("%s:ApplicationImportAction importing family %s(%s) (%s/%s)", TAG,sf.getName(),newId,parentId.toString(),sf.getId().toString());
-				new ResourceCreateManager(resource).run();
+				new ResourceCreateManager(resource).run();   // in-line
 				// Now import the diagrams
 				for(SerializableDiagram diagram:sf.getDiagrams()) {
 					importDiagram(sf.getId(),diagram);

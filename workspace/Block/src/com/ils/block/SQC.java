@@ -280,8 +280,10 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 					outside,total,minOut);		
 		}
 		else if( state.equals(TruthValue.FALSE) ) {
-			explanation = String.format("SQC %s (limit %s), %d of %d within limits (%d required)",getName(),limitType.name(),
-					total-outside,total,total-minOut);		
+			int expected = sampleSize-minOut;
+			if( expected>total ) expected = total;
+			explanation = String.format("SQC %s (limit %s), %d of %d within limits (%d expected)",getName(),limitType.name(),
+					total-outside,total,expected);		
 		}
 		return explanation;
 	}

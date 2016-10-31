@@ -99,7 +99,7 @@ public class LowLimitObservation extends AbstractProcessBlock implements Process
 			try {
 				double dbl = Double.parseDouble(val);
 				TruthValue newValue = state;
-				if( dbl< limit   ) newValue = TruthValue.TRUE;
+				if( dbl<= limit   ) newValue = TruthValue.TRUE;
 				if( dbl> limit + deadband ) newValue = TruthValue.FALSE;
 				if( !observation.getQuality().isGood()) newValue = TruthValue.UNKNOWN;
 				if( !newValue.equals(state)) {
