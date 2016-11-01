@@ -1,0 +1,29 @@
+#
+# Simple test of an input and readout
+#
+DIAGRAM="app75/family75/pythonblocks"
+Show: diagram $DIAGRAM
+
+tag: SQCDiagnosisOutput MemoryTags/SQCDiagnosisOutput
+tag: SubDiagnosisOutput MemoryTags/SubDiagnosisOutput
+tagset: SQCDiagnosis MemoryTags/SQCDiagnosisInput
+tagset: SubDiagnosis MemoryTags/SubDiagnosisInput
+
+Test: Blocks Written in Python
+Step: SQCDiagnosis
+Tagset: SQCDiagnosis
+10:00 true
+10:00:10 Assert: SQCDiagnosisOutput = True "Output is true"
+10:00:20 false
+10:00:30 Assert: SQCDiagnosisOutput = False "Output is false"
+10:00:40 true
+10:00:50 Assert: SQCDiagnosisOutput = True "Output is true"
+
+Step: SubDiagnosis
+Tagset: SubDiagnosis
+10:01 false
+10:01:10 Assert: SubDiagnosisOutput = False "Output is false"
+10:01:20 true
+10:01:30 Assert: SubDiagnosisOutput = True "Output is true"
+10:01:40 false
+10:01:50 Assert: SubDiagnosisOutput = False "Output is false"

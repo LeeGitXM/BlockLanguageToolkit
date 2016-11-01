@@ -1,0 +1,5 @@
+log: Block Language Toolkit run command
+#
+# Test nesting of the run commmand
+#
+run: bin/suite_runner.txt

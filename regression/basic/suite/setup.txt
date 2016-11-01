@@ -1,0 +1,35 @@
+# Copyright 2015 ILS Automation
+# General-purpose setup activities.
+# NOTE: The tag here must match that set for the application.
+#
+log: [DATE] [TIME] Start Testing ... 
+# Script aliases - module is with respect to script directory
+# -- these are scripts of general interest
+script: getExplanation blockProxy.getExplanation(dpath,name)
+script: getInternalAttribute blockProxy.internalAttribute(dpath,name,att)
+script: getInternalBufferSize blockProxy.internalBufferSize(dpath,name)
+script: getInternalBufferValue blockProxy.internalBufferValue(dpath,name,att,row)
+script: getIsolationProvider diagramProxy.getIsolationProvider()
+script: getProductionProvider diagramProxy.getProductionProvider()
+script: getProperty blockProxy.getBlockProperty(dpath,bname,pname)
+script: getState blockProxy.getBlockState(dpath,name)
+script: getTagTime timeFactor.getTagTime(tpath,provider)
+script: resetBlock blockProxy.reset(dpath,name)
+script: restartBlock blockProxy.restart(dpath,name)
+script: resetDiagram diagramProxy.reset(name)
+script: setDateValue tag.setDateValue(provider,tagpath,text)
+script: setProperty blockProxy.setBlockProperty(dpath,bname,pname,value)
+script: sendTimestampedSignal interfaces.sendTimestampedSignal(dpath,command,yr,mon,day,hr,min,sec)
+script: setStateForApplication applicationProxy.setState(name,state)
+script: setStringValue tag.setStringValue(provider,tagpath,text)
+script: setTestTimeOffset timeFactor.setTestTimeOffset(year,month,day,hour,minute,second)
+script: setTimeFactor timeFactor.setTimeFactor(factor)
+# We need to set the test framework and internal clocks the same
+timefactor: 15
+setTimeFactor (15)
+
+# Specify the provider that corresponds to the application configuration
+PROVIDER = getIsolationProvider()
+tagprovider: $PROVIDER
+setStateForApplication("app75","ISOLATED")
+status: setup complete.

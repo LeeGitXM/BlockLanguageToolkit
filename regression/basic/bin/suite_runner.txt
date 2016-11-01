@@ -1,0 +1,7 @@
+log: Block Language Toolkit run command
+#
+# Test nesting of the run commmand
+#
+run: "../suite/setup.txt"
+run: "../suite/pythonblocks.txt"
+run: "../suite/teardown.txt"
