@@ -254,21 +254,7 @@
 			<param name="moduleout"  value="${basedir}/BLT_Build/modules/${BLTModule.name}-module-signed.modl"/>
 		</antcall>
 	</target>
-	<!-- Install the Python source files -->
-	<target name="python" >
-		<echo message="Deploying python scripts to ${ignition.py.lib}" />
-		<copy todir="${ignition.py.lib}">
-			<fileset dir="${xom.python.src.dir}">
-				<include name="xom/**/*.py" />
-			</fileset>
-		</copy>
-		<copy todir="${ignition.py.lib}">
-			<fileset dir="${ils.python.src.dir}">
-				<include name="ils/**/*.py" />
-			</fileset>
-		</copy>
-	</target>
-	<!-- Install jar files that are necessary for the Python scripts -->
+	<!-- Install jar files that are necessary for Python scripts -->
 	<target name="python.jars" >
 		<echo message="Copying jar files from ${basedir}/BLT_Build/temp_modl" />
 		<copy todir="${ignition.py.lib}/../../lib/core/common">
@@ -293,8 +279,8 @@
 		</copy>
 	</target>
 
-	<!-- Installs BLT module in local Ignition gateway. Note that the gateway must be running in developer mode for this to succeed. -->
-	<target name="deploy" depends="build,python,python.jars" >
+	<!-- Installs BLT module in local Ignition gateway. Note that the gateway must be running for this to succeed. -->
+	<target name="deploy" depends="build,python.jars" >
 		<echo message="Installing ${BLTModule.name} on Ignition Gateway." />
 		<postmodule posturl="${local.gateway.url}" modulefile="${basedir}/BLT_Build/modules/${BLTModule.name}-module-signed.modl" />
 	</target>	
