@@ -40,14 +40,12 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 public class GatewayRpcDispatcher   {
 	private static String TAG = "GatewayRpcDispatcher";
 	private final LoggerEx log;
-	private final GatewayContext context;
 	private final ControllerRequestHandler requestHandler;
 
 	/**
 	 * Constructor. There is a separate dispatcher for each project.
 	 */
 	public GatewayRpcDispatcher(GatewayContext ctx) {
-		this.context = ctx;
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.requestHandler = ControllerRequestHandler.getInstance();
 	}
@@ -133,7 +131,8 @@ public class GatewayRpcDispatcher   {
 	/** The blocks implemented in Java are expected to reside in a jar named "block-definition.jar".
 	 *  We add the blocks implemented in Python to this list. We consider only classes that are in
 	 *  a "com/ils/block" package.
-	 *  @return
+	 *  @param projectId project identifier
+	 *  @return a list of prototypes suitable for constructing a palette
 	 */
 	public List<String> getBlockPrototypes() {
 		List<String> results = new ArrayList<String>();

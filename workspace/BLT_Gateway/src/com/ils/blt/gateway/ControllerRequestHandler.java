@@ -14,8 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.omg.CORBA.portable.Delegate;
-
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
@@ -54,7 +52,6 @@ import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
-import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.gateway.datasource.Datasource;
@@ -300,8 +297,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		//       not yet exist in a diagram (or project).
 		ProxyHandler phandler = ProxyHandler.getInstance();
 		try {
-			ScriptManager mgr = context.getScriptManager();
-			List<PalettePrototype> prototypes = phandler.getPalettePrototypes(mgr);
+			List<PalettePrototype> prototypes = phandler.getPalettePrototypes();
 			for( PalettePrototype pp:prototypes) {
 				results.add(pp);
 			}

@@ -30,7 +30,6 @@ public class RecommendationMap extends PrefuseViewerComponent {
 	private static final String TAG = "RecommendationMap";
 	private static final Dimension MIN_SIZE = new Dimension(40,40);
 	private static String PREFIX = BLTProperties.CUSTOM_PREFIX;              // For bundle identification
-	private static ScriptManager scriptManager = null;
 	private RecMapDataModel model = null;
 	private RecMapView view = null;
 	private BasicDataset connections = null;
@@ -94,9 +93,8 @@ public class RecommendationMap extends PrefuseViewerComponent {
 		updateChartView();
 	}
 	
-	// We rely on the hook classes to set the script manager
-	public ScriptManager getScriptManager() { return scriptManager; }
-	public static void setScriptManager(ScriptManager mgr) { scriptManager = mgr; }
+	// It is important not to save the script manager, but to get it from the context each time.
+	public ScriptManager getScriptManager() { return context.getScriptManager(); }
 	
 	@Override
 	public Dimension getSize() {

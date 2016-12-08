@@ -3,7 +3,6 @@
  */
 package com.ils.blt.client;
 
-import com.ils.blt.client.component.recmap.RecommendationMap;
 import com.ils.blt.common.ApplicationScriptFunctions;
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
@@ -28,7 +27,6 @@ public class BLTClientHook implements ClientModuleHook {
 	@Override
 	public void initializeScriptManager(ScriptManager mgr) {
 		mgr.addScriptModule(BLTProperties.DIAGRAM_SCRIPT_PACKAGE,ApplicationScriptFunctions.class);
-		RecommendationMap.setScriptManager(mgr);
 	}
 
 	@Override
