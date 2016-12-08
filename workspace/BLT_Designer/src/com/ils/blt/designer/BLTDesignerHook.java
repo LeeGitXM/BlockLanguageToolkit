@@ -79,7 +79,6 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	public void initializeScriptManager(ScriptManager mgr) {
 		super.initializeScriptManager(mgr);
 		mgr.addScriptModule(BLTProperties.DIAGRAM_SCRIPT_PACKAGE,ApplicationScriptFunctions.class);
-		RecommendationMap.setScriptManager(mgr);
 	}
 	
 	// Insert a menu to allow control of database and tag provider.

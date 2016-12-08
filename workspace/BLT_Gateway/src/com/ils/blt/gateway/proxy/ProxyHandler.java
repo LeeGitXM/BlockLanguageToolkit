@@ -138,45 +138,38 @@ public class ProxyHandler   {
 	}
 
 	public ProxyBlock createBlockInstance(String className,UUID parentId,UUID blockId,long projectId) {
-		ProxyBlock block = null;
-		ScriptManager mgr = context.getProjectManager().getProjectScriptManager(projectId);
-		if( mgr!=null) {
+		ProxyBlock block = new ProxyBlock(context,className,parentId,blockId);
+		log.debugf("%s.createBlockInstance --- python proxy for %s, project %d",TAG,className,projectId); 
+		if( createBlockCallback.compileScript() ) {
+			synchronized(createBlockCallback) {
+				PyDictionary pyDictionary = new PyDictionary();  // Empty
+				createBlockCallback.initializeLocalsMap(context.getScriptManager());
+				createBlockCallback.setLocalVariable(0,new PyString(className));
+				createBlockCallback.setLocalVariable(1,new PyString(parentId.toString()));
+				createBlockCallback.setLocalVariable(2,new PyString(blockId.toString()));
+				createBlockCallback.setLocalVariable(3,pyDictionary);
+				log.debugf("%s.createBlockInstance --- executing create script for %s",TAG,className); 
+				createBlockCallback.execute(context.getScriptManager());
 
-			block = new ProxyBlock(className,parentId,blockId,mgr);
-			log.debugf("%s.createBlockInstance --- python proxy for %s, project %d",TAG,className,projectId); 
-			if( createBlockCallback.compileScript() ) {
-				synchronized(createBlockCallback) {
-					PyDictionary pyDictionary = new PyDictionary();  // Empty
-					createBlockCallback.initializeLocalsMap(mgr);
-					createBlockCallback.setLocalVariable(0,new PyString(className));
-					createBlockCallback.setLocalVariable(1,new PyString(parentId.toString()));
-					createBlockCallback.setLocalVariable(2,new PyString(blockId.toString()));
-					createBlockCallback.setLocalVariable(3,pyDictionary);
-					log.debugf("%s.createBlockInstance --- executing create script for %s",TAG,className); 
-					createBlockCallback.execute(mgr);
-
-					// Contents of list are Hashtable<String,?>
-					PyObject pyBlock = (PyObject)pyDictionary.get("instance");
-					if( pyBlock!=null ) {
-						block.setPythonBlock(pyBlock);
-						BlockProperty[] props = getBlockProperties(mgr,pyBlock);
-						for(BlockProperty prop:props) {
-							if(prop!=null) block.addProperty(prop);
-						}
-					}
-					else {
-						log.warnf("%s.createBlockInstance: Failed to create instance of %s",TAG,className);
-						block = null;
+				// Contents of list are Hashtable<String,?>
+				PyObject pyBlock = (PyObject)pyDictionary.get("instance");
+				if( pyBlock!=null ) {
+					block.setPythonBlock(pyBlock);
+					BlockProperty[] props = getBlockProperties(context.getScriptManager(),pyBlock);
+					for(BlockProperty prop:props) {
+						if(prop!=null) block.addProperty(prop);
 					}
 				}
-			}
-			else {
-				log.warnf("%s.createBlockInstance --- failed to compile create script %s",TAG,className);
+				else {
+					log.warnf("%s.createBlockInstance: Failed to create instance of %s",TAG,className);
+					block = null;
+				}
 			}
 		}
 		else {
-			log.warnf("%s.createBlockInstance: No script manager for project %d",TAG,projectId);
+			log.warnf("%s.createBlockInstance --- failed to compile create script %s",TAG,className);
 		}
+
 		return block;
 	}
 	
@@ -323,7 +316,7 @@ public class ProxyHandler   {
 	 * @param mgr the appropriate project-specific script manager
 	 * @return
 	 */
-	public synchronized List<PalettePrototype> getPalettePrototypes(ScriptManager mgr) {
+	public synchronized List<PalettePrototype> getPalettePrototypes() {
 		List<PalettePrototype> prototypes = new ArrayList<PalettePrototype>();
 		log.debugf("%s.getPalettePrototypes (python) ... ",TAG);
 		if( getBlockPrototypesCallback.compileScript())  {
@@ -331,9 +324,9 @@ public class ProxyHandler   {
 			UtilityFunctions fns = new UtilityFunctions();
 			PyList pyList = new PyList();  // Empty
 			List<?> list = null;
-			getBlockPrototypesCallback.initializeLocalsMap(mgr);
+			getBlockPrototypesCallback.initializeLocalsMap(context.getScriptManager());
 			getBlockPrototypesCallback.setLocalVariable(0,pyList);
-			getBlockPrototypesCallback.execute(mgr);
+			getBlockPrototypesCallback.execute(context.getScriptManager());
 			log.debug(TAG+".getPalettePrototypes: returned "+ pyList);   // Should now be updated
 			// Contents of list are Hashtable<String,?>
 			list = toJavaTranslator.pyListToArrayList(pyList);

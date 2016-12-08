@@ -13,10 +13,7 @@ import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.gateway.PythonRequestHandler;
-import com.ils.blt.gateway.engine.BlockExecutionController;
-import com.ils.blt.gateway.engine.ProcessDiagram;
-import com.ils.blt.gateway.engine.ProcessNode;
-import com.inductiveautomation.ignition.common.script.ScriptManager;
+import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
 
 /**
@@ -31,7 +28,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	private PyObject pythonBlock = null;
 	private final ProxyHandler delegate = ProxyHandler.getInstance();
 	private final PythonRequestHandler requestHandler;
-	private final ScriptManager scriptManager;
+	private final GatewayContext context;
 	
 
 	/**
@@ -39,13 +36,12 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 * @param clss the Python module to instantiate
 	 * @param parent ID of the diagram of which the block is a part
 	 * @param block identifier
-	 * @param mgr script manager appropriate to scope where this is used
 	 */
-	public ProxyBlock(String clss,UUID parent,UUID block,ScriptManager mgr) {
+	public ProxyBlock(GatewayContext ctx,String clss,UUID parent,UUID block) {
 		super(null,parent,block);
+		this.context = ctx;
 		this.className = clss;
 		this.requestHandler = new PythonRequestHandler();
-		this.scriptManager = mgr;
 	}
 
 	/**
@@ -102,7 +98,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 */
 	@Override
 	public TruthValue getState() {
-		return delegate.getBlockState(scriptManager, pythonBlock);
+		return delegate.getBlockState(context.getScriptManager(), pythonBlock);
 	}
 	/**
 	 * Send status update notifications for any properties
@@ -113,7 +109,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 */
 	@Override
 	public void notifyOfStatus() {
-		delegate.notifyOfStatus(scriptManager,getPythonBlock());
+		delegate.notifyOfStatus(context.getScriptManager(),getPythonBlock());
 	}
 	/**
 	 * Accept a new value for a block property. Push through to the
@@ -127,7 +123,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 		BlockProperty prop = getProperty(name);
 		if( prop!=null ) {
 			prop.setValue(obj);
-			delegate.setBlockProperty(scriptManager,this,prop);
+			delegate.setBlockProperty(context.getScriptManager(),this,prop);
 		}
 	}
 
@@ -143,7 +139,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 		if(vcn.getConnection()!=null  ) {
 			port = vcn.getConnection().getDownstreamPortName();
 		}
-		delegate.acceptValue( scriptManager,getPythonBlock(),port,vcn.getValue());
+		delegate.acceptValue( context.getScriptManager(),getPythonBlock(),port,vcn.getValue());
 	}
 	
 	/**
@@ -153,7 +149,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 */
 	@Override
 	public void evaluate() { 
-		delegate.evaluate(scriptManager,getPythonBlock()); 
+		delegate.evaluate(context.getScriptManager(),getPythonBlock()); 
 	}
 	/**
 	 * Reset the block. Resetting  python block may change the diagram alert
@@ -161,7 +157,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 */
 	@Override
 	public void reset() { 
-		delegate.reset(scriptManager,getPythonBlock()); 
+		delegate.reset(context.getScriptManager(),getPythonBlock()); 
 		requestHandler.postAlertingStatus(this);
 	}
 }
