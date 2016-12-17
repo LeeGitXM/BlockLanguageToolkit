@@ -481,7 +481,7 @@ public class Migrator {
 			sdiag.removeBlock(block);
 		}
 		
-		// Look for input blocks connected to Inhibit blocks. Convert to LabData
+		// Look for input blocks connected to Inhibit blocks or the Value port of a SQC. Convert to LabData
 		for( SerializableBlock block:sdiag.getBlocks()) {
 			if(block.getClassName().startsWith("com.ils.block.Input")) {
 				for(SerializableConnection scxn:sdiag.getConnections()) {
@@ -495,6 +495,43 @@ public class Migrator {
 						for( SerializableBlock downstreamblock:sdiag.getBlocks()) {
 							if( downstreamblock.getClassName().startsWith("com.ils.block.Inhibitor") &&
 									downstream.equals(downstreamblock.getId() ) ) {
+								// Found it!
+								block.setClassName("com.ils.block.LabData");
+								block.setEmbeddedLabel("Lab Data");
+								block.setEmbeddedFontSize(16);
+								block.setStyle(BlockStyle.ARROW);
+								block.setPreferredHeight(50);
+								block.setPreferredWidth(70);
+								block.setBackground(BlockConstants.BLOCK_BACKGROUND_LIGHT_ROSE);
+								
+								BlockProperty[] properties = block.getProperties();
+								BlockProperty[] newProperties = new BlockProperty[properties.length+1];
+								int i = 0;
+								for(BlockProperty bp:properties) {
+									if( bp.getName().equalsIgnoreCase("TagPath")) {
+										bp.setName("ValueTagPath");
+										BlockProperty newProp = new BlockProperty();
+										newProp.setName("TimeTagPath");
+										String path = bp.getBinding();
+										int pos = path.lastIndexOf("/");
+										if(pos>0) {
+											path = path.substring(0,pos+1);
+											path = path + "sampleTime";
+										}
+										newProp.setBinding(path);
+										newProp.setBindingType(bp.getBindingType());
+										newProp.setEditable(bp.isEditable());
+										newProp.setType(bp.getType());
+										newProperties[properties.length] = newProp;
+									}
+									newProperties[i] = bp;
+									i++;
+								}
+								block.setProperties(newProperties);
+							}
+							else if( downstreamblock.getClassName().startsWith("com.ils.block.SQC") &&
+									 downstream.equals(downstreamblock.getId()) &&
+									 scxn.getEndAnchor().getId().equals("value") ) {
 								// Found it!
 								block.setClassName("com.ils.block.LabData");
 								block.setEmbeddedLabel("Lab Data");
