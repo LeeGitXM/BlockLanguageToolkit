@@ -127,6 +127,7 @@ public class BlockFactory  {
 		BlockProperty[] properties = sb.getProperties();
 		if( properties!=null ) {
 			for( BlockProperty bp:properties) {
+				if( bp.getName()==null) continue;
 				BlockProperty property = pb.getProperty(bp.getName());
 				if( property!=null ) {
 					// Use the property change interface so as to properly trigger
