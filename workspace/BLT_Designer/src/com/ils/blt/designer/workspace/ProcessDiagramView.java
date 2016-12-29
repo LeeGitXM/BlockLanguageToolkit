@@ -179,11 +179,27 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 			fireStateChanged();
 		}
 	}
-	
+	/**
+	 * This is called from the super-class addConnection() method when a new connection
+	 * is drawn. In this case, the anchor points don't necessarily have the most current  
+	 * data type. We have to interrogate the current block.
+	 */
 	@Override
 	public void addConnection(AnchorPoint begin, AnchorPoint end) {
 		if( begin!=null && end!=null ) {
-			connections.add(new LookupConnection(this,begin,end));
+			// Update the datatype from the current beginning anchor point
+			if( begin.getBlock() instanceof ProcessBlockView && begin instanceof BasicAnchorPoint ) {
+				ProcessBlockView origin = (ProcessBlockView)begin.getBlock();
+				BasicAnchorPoint bap = (BasicAnchorPoint)begin;
+				for(ProcessAnchorDescriptor pad:origin.getAnchors()) {
+					if( pad.getDisplay().equals(bap.getId())) {
+						bap.setConnectionType(pad.getConnectionType());
+						break;
+					}
+				}
+			}
+			Connection cxn = new LookupConnection(this,begin,end);
+			connections.add(cxn);
 			fireStateChanged();
 		}
 		else {

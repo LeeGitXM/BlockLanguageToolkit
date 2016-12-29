@@ -124,10 +124,11 @@ public class BlockFactory  {
 			// A "Note" has no anchors. Others initialize anchor points themselves.
 			log.infof("%s.updateBlockFromSerializable: No anchors found in process block",TAG);
 		}
+		
 		BlockProperty[] properties = sb.getProperties();
 		if( properties!=null ) {
 			for( BlockProperty bp:properties) {
-				if( bp.getName()==null) continue;
+				if( bp==null || bp.getName()==null) continue;
 				BlockProperty property = pb.getProperty(bp.getName());
 				if( property!=null ) {
 					// Use the property change interface so as to properly trigger
