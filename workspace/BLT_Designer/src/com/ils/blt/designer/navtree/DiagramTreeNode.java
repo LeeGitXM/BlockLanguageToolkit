@@ -113,7 +113,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		openRestrictedIcon = iconFromPath("Block/icons/navtree/diagram_isolated.png");
 		closedRestrictedIcon = iconFromPath("Block/icons/navtree/diagram_closed_isolated.png");
 		setIcon( closedIcon);
-		setItalic(statusManager.isResourceDirtyOrHasDirtyChidren(resourceId));
+		setItalic(context.getProject().isResourceDirty(resource));
 		context.addProjectChangeListener(this);
 		
 		NotificationHandler notificationHandler = NotificationHandler.getInstance();
@@ -329,12 +329,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			setName(diff.getResource(resourceId).getName());
 			refresh();
 		}
-		if( context.getProject().isResourceDirty(resourceId)) {
-			statusManager.incrementDirtyNodeCount(resourceId);
-		}
-		else {
-			statusManager.clearDirtyChildCount(resourceId);
-		}
 	}
 	
 	/**
@@ -462,7 +456,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 
 	    	List<AbstractResourceNavTreeNode>selected = new ArrayList<>();
 	    	selected.add(node);
-	    	boolean wasDirty = node.isDirty();
 	    	if(confirmDelete(selected)) {
 	    		deleter.acquireResourcesToDelete();
 	    		if( execute() ) {
@@ -473,7 +466,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	    				GeneralPurposeTreeNode parentNode = (GeneralPurposeTreeNode)p;
 	    				parentNode.recreate();
 	    				parentNode.expand();
-	    				if( wasDirty ) statusManager.decrementDirtyNodeCount(parentNode.getResourceId());
 	    			}
 	    			deleter.deleteInProject();
 	    		}
@@ -534,10 +526,6 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			ProjectResource pr = node.getProjectResource();
 			if( pr!=null ) {
 				new ResourceUpdateManager(workspace,pr).run();
-				statusManager.clearDirtyChildCount(pr.getResourceId());
-			}
-			else {
-				statusManager.clearDirtyChildCount(BLTProperties.ROOT_RESOURCE_ID);
 			}
 		}
 		

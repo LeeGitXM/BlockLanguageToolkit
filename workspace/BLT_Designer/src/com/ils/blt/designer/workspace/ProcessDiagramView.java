@@ -23,7 +23,6 @@ import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableConnection;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.designer.BLTDesignerHook;
-import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.NotificationHandler;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
@@ -420,8 +419,6 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	@Override
 	public void fireStateChanged() {
 		if( !suppressStateChangeNotification ) {
-			NodeStatusManager statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
-			statusManager.incrementDirtyNodeCount(getResourceId());
 			setDirty(true); // Fires super method which informs the listeners.
 		}
 	}

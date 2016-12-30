@@ -21,23 +21,20 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
-
-import net.miginfocom.swing.MigLayout;
 
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.designer.BLTDesignerHook;
-import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.inductiveautomation.ignition.common.BundleUtil;
-import com.inductiveautomation.ignition.common.util.LogUtil;
-import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
+
+import net.miginfocom.swing.MigLayout;
 
 /**
  * This is a read-only viewer for blocks for blocks that return internal state
@@ -45,33 +42,26 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
  */
 
 public class NoteTextEditor extends JDialog {
-	private static String TAG = "NoteTextEditor";
-	private final LoggerEx log;
 	// A panel is designed to edit properties that are lists of strings.
 	private static final String PREFIX = BLTProperties.BLOCK_PREFIX;  // Required for text strings
 	private static final long serialVersionUID = 2002388376824434427L;
 	private final int DIALOG_HEIGHT = 320;
 	private final int DIALOG_WIDTH = 500;
 	private static final Dimension PANEL_SIZE  = new Dimension(480,120);
-	private final NodeStatusManager statusManager;
 	private final UpdateTask updateTask;
 	private final ScheduledExecutorService executor;
-	private final ProcessDiagramView diagram;
 	private final ProcessBlockView block;
 	private JLabel textLabel;    // Use a label to display the results
 	private JTextArea textArea;
 	
 	public NoteTextEditor(DesignerContext context,ProcessDiagramView diag,ProcessBlockView view) {
 		super(context.getFrame());
-		this.diagram = diag;
 		this.block = view;
 		this.setTitle(BundleUtil.get().getString(PREFIX+".NoteTextEdit.Title"));
 		setModal(false);
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
-        this.log = LogUtil.getLogger(getClass().getPackage().getName());
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));
         initialize();
-        this.statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
         this.updateTask = new UpdateTask(textLabel,textArea);
         this.executor = Executors.newSingleThreadScheduledExecutor();
         executor.scheduleAtFixedRate(updateTask, 3, 10, TimeUnit.SECONDS);
@@ -112,7 +102,6 @@ public class NoteTextEditor extends JDialog {
 					}
 				}
 				block.setDirty(true);
-				statusManager.clearDirtyChildCount(diagram.getResourceId());
 				SwingUtilities.invokeLater(new WorkspaceRepainter());
 				dispose();
 			}
@@ -148,8 +137,7 @@ public class NoteTextEditor extends JDialog {
 			}
 		}
 		JScrollPane areaScrollPane = new JScrollPane(area);
-		areaScrollPane.setVerticalScrollBarPolicy(
-		                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		areaScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		areaScrollPane.setPreferredSize(PANEL_SIZE);
         outerPanel.add(areaScrollPane, "wrap");
 		return area;

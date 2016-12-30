@@ -19,8 +19,6 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
 /**
  * Update the single project resource belonging to the specified node.
  * 
- * 
- * @author chuckc
  *
  */
 public class ResourceDeleteManager {
@@ -50,13 +48,6 @@ public class ResourceDeleteManager {
 	
 	
 	public void deleteInProject() {
-		// Before we delete everything, update the status in the parent node
-		ProjectResource pres = root.getProjectResource();
-		if( pres!=null ) {
-			long pid = statusManager.parentResourceId(pres.getResourceId());
-			statusManager.decrementDirtyNodeCount(pid);
-		}
-		
 		// Delete the current node and all its children. 
 		Project diff = context.getProject().getEmptyCopy();
 		for( ProjectResource pr:resources) {

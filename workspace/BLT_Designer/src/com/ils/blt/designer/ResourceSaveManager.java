@@ -96,7 +96,7 @@ public class ResourceSaveManager implements Runnable {
 		if( res!=null ) {
 			if(res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
 				log.infof("%s.saveDirtyDiagrams (if open): %s (%d) %s",CLSS,res.getName(),res.getResourceId(),
-						  statusManager.getResourceState(res.getResourceId()));
+						  (context.getProject().isResourceDirty(res.getResourceId())?"DIRTY":"CLEAN"));
 				// If the resource is open, we need to save it
 				workspace.saveOpenDiagram(res.getResourceId());
 			}
@@ -119,9 +119,9 @@ public class ResourceSaveManager implements Runnable {
 			long resid = res.getResourceId();
 			// For a diagram include either dirty or "dirty children"
 			if( node instanceof DiagramTreeNode && 
-				( ((NavTreeNodeInterface)node).isDirty() || statusManager.isResourceDirty(resid)  )  ) {
+				( ((NavTreeNodeInterface)node).isDirty() || context.getProject().isResourceDirty(resid)  )  ) {
 				if( DEBUG ) log.infof("%s.accumulateDirtyNodeResources: diagram %s (%d) %s",CLSS,res.getName(),resid,
-						     statusManager.getResourceState(resid).name());
+						    (context.getProject().isResourceDirty(res.getResourceId())?"DIRTY":"CLEAN"));
 				diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
 				workspace.saveOpenDiagram(res.getResourceId());   // Close if open
 				dirtyCount++;
@@ -130,14 +130,10 @@ public class ResourceSaveManager implements Runnable {
 			// For other nodes include only "dirty"
 			else if( node instanceof NavTreeNodeInterface && ( ((NavTreeNodeInterface)node).isDirty()  )  ) {
 					if( DEBUG ) log.infof("%s.accumulateDirtyNodeResources: %s (%d) %s",CLSS,res.getName(),resid,
-							     statusManager.getResourceState(resid).name());
+							(context.getProject().isResourceDirty(res.getResourceId())?"DIRTY":"CLEAN"));
 					diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
 					dirtyCount++;
 			}
-			statusManager.clearDirtyChildCount(resid);
-		}
-		else {
-			statusManager.clearDirtyChildCount(BLTProperties.ROOT_RESOURCE_ID);
 		}
 		
 		

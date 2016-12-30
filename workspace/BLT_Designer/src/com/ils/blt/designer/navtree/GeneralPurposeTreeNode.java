@@ -99,6 +99,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	private final ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
 	private final ExecutionManager executionEngine;
 	private final ThreadCounter threadCounter = ThreadCounter.getInstance();
+	protected final ImageIcon alertBadge;
 	private final ImageIcon defaultIcon = IconUtil.getIcon("folder_closed");
 	private final ImageIcon openIcon;
 	private final ImageIcon closedIcon;
@@ -118,6 +119,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		workspace = ((BLTDesignerHook)ctx.getModule(BLTProperties.MODULE_ID)).getWorkspace();
 		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
 		setText(BundleUtil.get().getString(PREFIX+".RootFolderName"));
+		alertBadge =iconFromPath("Block/icons/badges/bell.png");
 		if( context.getProject().isEnabled() ) {
 			closedIcon = IconUtil.getIcon("folder_closed");
 		}
@@ -146,7 +148,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		folderCreateAction = new FolderCreateAction(this);
 		workspace = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getWorkspace();
 		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
-
+		alertBadge =iconFromPath("Block/icons/badges/bell.png");
 		if(resource.getResourceType().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
 			closedIcon = iconFromPath("Block/icons/navtree/application_folder_closed.png");
 			openIcon = iconFromPath("Block/icons/navtree/application_folder.png");
@@ -174,11 +176,20 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	}
 	@Override
 	public Icon getExpandedIcon() { 
-		return openIcon;
+		Icon ike  = openIcon;
+		if(statusManager.getAlertState(resourceId)) {
+			ike = IconUtil.applyBadge(ike, alertBadge);
+		}
+		return ike;
 	}
+	
 	@Override
 	public Icon getIcon() {
-		return closedIcon;
+		Icon ike  = closedIcon;
+		if(statusManager.getAlertState(resourceId)) {
+			ike = IconUtil.applyBadge(ike, alertBadge);
+		}
+		return ike;
 	}
 	@Override
 	public long getResourceId() { return this.resourceId; }
@@ -364,7 +375,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		if( node.getParent()==null) {
 			logger.errorf("%s.createChildNode: ERROR parent is null %s(%d)",TAG,node.getName(),res.getResourceId());
 		}
-		node.setItalic(statusManager.isResourceDirtyOrHasDirtyChidren(res.getResourceId()));
+		node.setItalic(context.getProject().isResourceDirty(res.getResourceId()));
 		return node;
 	}
 	// For DiagramNode.delete
@@ -1186,7 +1197,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			AbstractNavTreeNode p = node.getParent();
 			ProjectResource res = node.getProjectResource();
 			resid = res.getResourceId();
-			boolean wasDirty = statusManager.isResourceDirty(resid);
 			logger.infof("%s.DeleteNodeAction: %s, resource %d.",TAG,node.getName(),resid);
 			List<AbstractResourceNavTreeNode>selected = new ArrayList<>();
 			selected.add(node);
@@ -1208,7 +1218,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 						GeneralPurposeTreeNode parentNode = (GeneralPurposeTreeNode)p;
 						parentNode.recreate();
 						parentNode.expand();
-						if( wasDirty ) statusManager.decrementDirtyNodeCount(parentNode.resourceId);
 					}
 					deleter.deleteInProject();
 				}
@@ -1383,7 +1392,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 						newId.toString(),getFolderId().toString());
 				//recreate();
 				currentNode.selectChild(new long[] {newResId} );
-				statusManager.incrementDirtyNodeCount(resourceId);
 			} 
 			catch (Exception err) {
 				ErrorUtil.showError(TAG+" Exception creating folder",err);
@@ -1495,7 +1503,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			if( !isRootFolder() ) return;
 			node.setBold(true);
 			threadCounter.reset();
-			statusManager.cleanAll();
+			statusManager.updateAll();
 			node.reload();
 			ThreadCompletionDetector detector = new ThreadCompletionDetector(node);
 			new Thread(detector).start();
@@ -1531,7 +1539,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			if( !isRootFolder() ) return;
 			node.setBold(true);
 			threadCounter.reset();
-			statusManager.cleanAll();
+			statusManager.updateAll();
 			executionEngine.executeOnce(new ResourceSaveManager(workspace,node));
 			ThreadCompletionDetector detector = new ThreadCompletionDetector(node);
 			new Thread(detector).start();
@@ -1702,11 +1710,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 
 		public void actionPerformed(ActionEvent e) {
 			executionEngine.executeOnce(new ResourceSaveManager(workspace,node));
-			ProjectResource pr = node.getProjectResource();
-			if( pr!=null )
-				statusManager.clearDirtyChildCount(pr.getResourceId());
-			else
-				statusManager.clearDirtyChildCount(BLTProperties.ROOT_RESOURCE_ID);
 		}
 	}
 }

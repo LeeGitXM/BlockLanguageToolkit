@@ -624,8 +624,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			else {
 				// Mark diagram as clean, since we reverted changes
 				diagram.setDirty(false);
-				statusManager.clearDirtyChildCount(diagram.getResourceId());
-				//context.releaseLock(container.getResourceId());
 			}
 		}
 		DiagramTreeNode node = (DiagramTreeNode)statusManager.findNode(container.getResourceId());
@@ -1028,7 +1026,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			ProcessDiagramView pdv = getActiveDiagram();
 			handler.setBlockProperties(pdv.getId(),block.getId(), block.getProperties());
 			block.setDirty(false);
-			statusManager.clearDirtyChildCount(pdv.getResourceId());
 		}
 	}
 	/**

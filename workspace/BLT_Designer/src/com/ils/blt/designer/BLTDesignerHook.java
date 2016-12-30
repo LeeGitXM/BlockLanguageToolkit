@@ -115,7 +115,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	public void startup(DesignerContext ctx, LicenseState activationState) throws Exception {
 		this.context = ctx;
 		appRequestHandler = new ApplicationRequestHandler();
-		nodeStatusManager = new NodeStatusManager(appRequestHandler,context.getProject().getId());
+		nodeStatusManager = new NodeStatusManager(context,appRequestHandler);
 		AuxiliaryDataRestoreManager.setContext(ctx);
 		AuxiliaryDataSaveManager.setContext(ctx);
 		ResourceCreateManager.setContext(ctx);
@@ -205,7 +205,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		log.infof("%s: NotifyProjectSaveStart",TAG);
 		ResourceSaveManager saver = new ResourceSaveManager(getWorkspace(),rootNode);
 		saver.saveSynchronously();
-		nodeStatusManager.cleanAll();
+		nodeStatusManager.updateAll();
 	}
 	
 	
