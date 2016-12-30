@@ -134,11 +134,11 @@ public class RangeObservation extends AbstractProcessBlock implements ProcessBlo
 	@Override
 	public String getExplanation(DiagnosticDiagram parent,List<UUID> members) {
 		String explanation = "";
-		if( observation!=null && state.equals(TruthValue.TRUE) ) {
+		if( observation!=null && state.equals(TruthValue.FALSE) ) {
 			explanation = String.format("At %s, %s is not within limits (%3.2f,%3.2f)",getName(),
 														observation.getValue().toString(),lowerlimit,upperlimit);
 		}
-		else if( observation!=null && state.equals(TruthValue.FALSE)) {
+		else if( observation!=null && state.equals(TruthValue.TRUE)) {
 			explanation = String.format("At %s, %s is within limits (%3.2f,%3.2f)",getName(),
 														observation.getValue().toString(),lowerlimit,upperlimit);
 		}
