@@ -463,25 +463,27 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 		ProcessBlock block = incoming.getBlock();
 		String port = incoming.getPort();
 		QualifiedValue value = incoming.getValue();
-		
+
 		Collection<IncomingNotification>notifications = new ArrayList<IncomingNotification>();
 		BlockPort key = new BlockPort(block,port);
-		if( outgoingConnections.get(key)!=null ) {
-			List<ProcessConnection> cxns = new ArrayList<>(outgoingConnections.get(key));
-			for(ProcessConnection cxn:cxns) {
-				UUID blockId = cxn.getTarget();
-				ProcessBlock blk = blocks.get(blockId);
-				if( blk!=null ) {
-					IncomingNotification vcn = new IncomingNotification(cxn,value);
-					notifications.add(vcn);
-				}
-				else {
-					log.warnf("%s.getOutgoingNotifications: Target block %s not found for connection",TAG,blockId.toString());
+		synchronized(outgoingConnections) {
+			if( outgoingConnections.get(key)!=null ) {
+				List<ProcessConnection> cxns = outgoingConnections.get(key);
+				for(ProcessConnection cxn:cxns) {
+					UUID blockId = cxn.getTarget();
+					ProcessBlock blk = blocks.get(blockId);
+					if( blk!=null ) {
+						IncomingNotification vcn = new IncomingNotification(cxn,value);
+						notifications.add(vcn);
+					}
+					else {
+						log.warnf("%s.getOutgoingNotifications: Target block %s not found for connection",TAG,blockId.toString());
+					}
 				}
 			}
-		}
-		else {
-			log.debugf("%s.getOutgoingNotifications: no connections found for %s:%s",TAG,block.getBlockId().toString(),port);
+			else {
+				log.debugf("%s.getOutgoingNotifications: no connections found for %s:%s",TAG,block.getBlockId().toString(),port);
+			}
 		}
 		return notifications;
 	}
