@@ -126,7 +126,16 @@ public class ProxyBlock extends AbstractProcessBlock  {
 			delegate.setBlockProperty(context.getScriptManager(),this,prop);
 		}
 	}
-
+	/**
+	 * Set the state of a block directly. Notify of alerting status.
+	 * @param name the name of one of the block's properties.
+	 * @param obj the new value.
+	 */
+	@Override
+	public void setState(TruthValue newState) {
+		delegate.setBlockState(context.getScriptManager(),this,newState);
+		requestHandler.postAlertingStatus(this);
+	}
 	
 	/**
 	 * Notify the block that a new value has appeared on one of its input anchors. If the block has

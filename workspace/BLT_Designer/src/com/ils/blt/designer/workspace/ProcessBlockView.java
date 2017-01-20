@@ -170,6 +170,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		this.properties = new ArrayList<BlockProperty>();
 		if(sb.getProperties()!=null ) {
 			for(BlockProperty bp:sb.getProperties()) {
+				if(bp==null) continue;
 				log.debugf("%s: %s creating property %s", TAG,sb.getName(),bp.getName());
 				properties.add(bp);
 			} 

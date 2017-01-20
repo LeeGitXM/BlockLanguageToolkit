@@ -19,7 +19,6 @@ import com.inductiveautomation.ignition.common.gateway.messages.PushNotification
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
-import com.inductiveautomation.ignition.designer.navtree.model.ProjectBrowserRoot;
 
 
 /**

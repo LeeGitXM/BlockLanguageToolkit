@@ -26,7 +26,6 @@ import com.ils.blt.common.script.ScriptConstants;
  *  local variables are updated on each invocation.
  */
 public class GatewayScriptExtensionManager extends AbstractScriptExtensionManager {
-	private static String TAG = "GatewayScriptExtensionManager";
 	private static GatewayScriptExtensionManager instance = null;
 	
 	/**

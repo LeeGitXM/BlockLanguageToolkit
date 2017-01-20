@@ -67,6 +67,7 @@ public class ProxyHandler   {
 	private final Callback notifyOfStatusCallback;
 	private final Callback resetCallback;
 	private final Callback setBlockPropertyCallback;
+	private final Callback setBlockStateCallback;
 
 	/**
 	 * Initialize with instances of the classes to be controlled.
@@ -85,6 +86,7 @@ public class ProxyHandler   {
 		notifyOfStatusCallback = new NotifyOfStatus();
 		resetCallback = new Reset();
 		setBlockPropertyCallback = new SetBlockProperty();
+		setBlockStateCallback = new SetBlockState();
 	}
 
 	/**
@@ -290,7 +292,7 @@ public class ProxyHandler   {
 			getBlockStateCallback.setLocalVariable(0,block);
 			getBlockStateCallback.setLocalVariable(1,pyList);
 			getBlockStateCallback.execute(mgr);
-			log.debug(TAG+".getBlockProperties returned "+ pyList);   // Should now be updated
+			log.debug(TAG+".getBlockState returned "+ pyList);   // Should now be updated
 			// Contents of list are Hashtable<String,?>
 			// We're looking for a single string entry in the list
 			List<?> list = toJavaTranslator.pyListToArrayList(pyList);
@@ -300,7 +302,7 @@ public class ProxyHandler   {
 					state = TruthValue.valueOf(obj.toString().toUpperCase());	
 				}
 				catch( Exception ex ) {
-					log.warnf("%s.getBlockProperties: Exception converting %s into a state (%s)" , TAG,obj.toString(),ex.getMessage());	
+					log.warnf("%s.getBlockState: Exception converting %s into a state (%s)" , TAG,obj.toString(),ex.getMessage());	
 					state = TruthValue.UNKNOWN;
 				}
 			}
@@ -467,7 +469,16 @@ public class ProxyHandler   {
 		}
 	}
 	
-	
+	public synchronized void setBlockState(ScriptManager mgr,ProxyBlock block,TruthValue newState) {
+		if( block==null || newState==null ) return;
+		log.debugf("%s.setBlockState --- %s:%s",TAG,block.getClass(),newState.name()); 
+		if( setBlockStateCallback.compileScript() ) {
+			setBlockStateCallback.initializeLocalsMap(mgr);
+			setBlockStateCallback.setLocalVariable(0,block.getPythonBlock());
+			setBlockStateCallback.setLocalVariable(1,new PyString(newState.name()));
+			setBlockStateCallback.execute(mgr);
+		}
+	}
 	
 	//========================================= Helper Methods ============================================
 	/**
