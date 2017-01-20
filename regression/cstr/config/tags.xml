@@ -1,958 +1,1264 @@
 <Tags>
-   <Tag name="Connections" path="" type="Folder"/>
-   <Tag name="ConnectionPost568-b" path="Connections" type="DB">
-      <Property name="Value"></Property>
+   <Tag name="Basic IO" path="_types_" type="Folder"/>
+   <Tag name="OPC Conditional Output" path="_types_/Basic IO" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Property name="UDTParentType">Basic IO/OPC Output</Property>
+      <Parameters>
+         <Property name="pythonClass" type="String">OPCConditionalOutput</Property>
+         <Property name="permissiveItemId" type="String"></Property>
+      </Parameters>
+      <Tag name="permissive" path="" type="OPC">
+         <Property name="Value"/>
+         <Property name="DataType">7</Property>
+         <Property name="OPCServer">{serverName}</Property>
+         <Property name="OPCItemPath">{permissiveItemId}</Property>
+         <Property name="ScanClass">{scanClassName}</Property>
+      </Tag>
+      <Tag name="permissiveAsFound" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="permissiveConfirmation" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">6</Property>
+      </Tag>
+      <Tag name="permissiveValue" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+   </Tag>
+   <Tag name="OPC Output" path="_types_/Basic IO" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Property name="UDTParentType">Basic IO/OPC Tag Bad Flag</Property>
+      <Parameters>
+         <Property name="alternateNames" type="String"></Property>
+         <Property name="pythonClass" type="String">OPCOutput</Property>
+      </Parameters>
+      <Tag name="command" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">7</Property>
+         <EventScripts>
+            <Event id="valueChanged" enabled="true">	#-----------------------
+	def longProcess(tagPath = tagPath, val = currentValue.value):
+		import ils.io.wrapper as wrapper
+		wrapper.write(tagPath, val)
+	#-----------------------
+	
+	if currentValue.value != &quot;&quot;:
+		system.util.invokeAsynchronous(longProcess)</Event>
+         </EventScripts>
+      </Tag>
+      <Tag name="writeConfirmed" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">6</Property>
+      </Tag>
+      <Tag name="writeErrorMessage" path="" type="DB">
+         <Property name="Value"></Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="writeStatus" path="" type="DB">
+         <Property name="Value"></Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="writeValue" path="" type="DB">
+         <Property name="Value">0.0</Property>
+         <Property name="DataType">5</Property>
+      </Tag>
+   </Tag>
+   <Tag name="OPC Tag" path="_types_/Basic IO" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Parameters>
+         <Property name="itemId" type="String"></Property>
+         <Property name="pythonClass" type="String">OPCTag</Property>
+         <Property name="serverName" type="String"></Property>
+         <Property name="scanClassName" type="String"></Property>
+      </Parameters>
+      <Tag name="pythonClass" path="" type="DB">
+         <Property name="Value">{pythonClass}</Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="value" path="" type="OPC">
+         <Property name="Value"/>
+         <Property name="DataType">5</Property>
+         <Property name="OPCServer">{serverName}</Property>
+         <Property name="OPCItemPath">{itemId}</Property>
+         <Property name="ScanClass">{scanClassName}</Property>
+      </Tag>
+   </Tag>
+   <Tag name="OPC Tag Bad Flag" path="_types_/Basic IO" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Property name="UDTParentType">Basic IO/OPC Tag</Property>
+      <Parameters>
+      </Parameters>
+      <Tag name="badValue" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">6</Property>
+      </Tag>
+   </Tag>
+   <Tag name="Controllers" path="_types_" type="Folder"/>
+   <Tag name="Controller" path="_types_/Controllers" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Property name="UDTParentType">Basic IO/OPC Tag Bad Flag</Property>
+      <Parameters>
+         <Property name="alternateNames" type="String"></Property>
+         <Property name="pythonClass" type="String">Controller</Property>
+         <Property name="opItemId" type="String"></Property>
+         <Property name="highClampItemId" type="String"></Property>
+         <Property name="modeItemId" type="String"></Property>
+         <Property name="spItemId" type="String"></Property>
+         <Property name="windupItemId" type="String"></Property>
+         <Property name="lowClampItemId" type="String"></Property>
+      </Parameters>
+      <Tag name="value" path="" type="EXTENSION">
+         <Property name="OPCItemPath">{itemId}</Property>
+      </Tag>
+      <Tag name="value" path="mode" type="EXTENSION">
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="writeValue" path="mode" type="EXTENSION">
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="command" path="" type="DB">
+         <Property name="Value"></Property>
+         <Property name="DataType">7</Property>
+         <EventScripts>
+            <Event id="valueChanged" enabled="true">	#-----------------------
+	def longProcess(tagPath = tagPath, val = currentValue.value):
+		import ils.io.wrapper as wrapper
+		wrapper.write(tagPath, val)
+	#-----------------------
+	
+	if currentValue.value != &quot;&quot;:
+		system.util.invokeAsynchronous(longProcess)</Event>
+         </EventScripts>
+      </Tag>
+      <Tag name="highClamp" path="" type="UDT_INST">
+         <Property name="Value"/>
+         <Property name="DataType">2</Property>
+         <Property name="UDTParentType">Basic IO/OPC Tag</Property>
+         <Parameters>
+            <Property name="itemId" type="String">{highClampItemId}</Property>
+            <Property name="serverName" type="String">{serverName}</Property>
+            <Property name="scanClassName" type="String">{scanClassName}</Property>
+         </Parameters>
+      </Tag>
+      <Tag name="lowClamp" path="" type="UDT_INST">
+         <Property name="Value"/>
+         <Property name="DataType">2</Property>
+         <Property name="UDTParentType">Basic IO/OPC Tag</Property>
+         <Parameters>
+            <Property name="itemId" type="String">{lowClampItemId}</Property>
+            <Property name="serverName" type="String">{serverName}</Property>
+            <Property name="scanClassName" type="String">{scanClassName}</Property>
+         </Parameters>
+      </Tag>
+      <Tag name="mode" path="" type="UDT_INST">
+         <Property name="Value"/>
+         <Property name="DataType">2</Property>
+         <Property name="UDTParentType">Basic IO/OPC Output</Property>
+         <Parameters>
+            <Property name="itemId" type="String">{modeItemId}</Property>
+            <Property name="serverName" type="String">{serverName}</Property>
+            <Property name="scanClassName" type="String">{scanClassName}</Property>
+         </Parameters>
+      </Tag>
+      <Tag name="payload" path="" type="DB">
+         <Property name="Value"></Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="windup" path="" type="UDT_INST">
+         <Property name="Value"/>
+         <Property name="DataType">2</Property>
+         <Property name="UDTParentType">Basic IO/OPC Tag</Property>
+         <Parameters>
+            <Property name="itemId" type="String">{windupItemId}</Property>
+            <Property name="serverName" type="String">{serverName}</Property>
+            <Property name="scanClassName" type="String">{scanClassName}</Property>
+         </Parameters>
+      </Tag>
+      <Tag name="writeConfirmed" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">6</Property>
+      </Tag>
+      <Tag name="writeErrorMessage" path="" type="DB">
+         <Property name="Value"></Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="writeStatus" path="" type="DB">
+         <Property name="Value"></Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+   </Tag>
+   <Tag name="PKS ACE Controller" path="_types_/Controllers" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Property name="UDTParentType">Controllers/PKS Controller</Property>
+      <Parameters>
+         <Property name="processingCommandItemId" type="String"></Property>
+         <Property name="modeItemId" type="String"></Property>
+         <Property name="spItemId" type="String"></Property>
+         <Property name="alternateNames" type="String"></Property>
+         <Property name="itemId" type="String"></Property>
+         <Property name="pythonClass" type="String">PKSACEController</Property>
+         <Property name="opItemId" type="String"></Property>
+         <Property name="highClampItemId" type="String"></Property>
+         <Property name="serverName" type="String"></Property>
+         <Property name="scanClassName" type="String"></Property>
+         <Property name="windupItemId" type="String"></Property>
+         <Property name="lowClampItemId" type="String"></Property>
+      </Parameters>
+      <Tag name="value" path="" type="EXTENSION">
+         <Property name="OPCItemPath">{itemId}</Property>
+      </Tag>
+      <Tag name="value" path="mode" type="EXTENSION">
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="writeValue" path="mode" type="EXTENSION">
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="processingCommand" path="" type="UDT_INST">
+         <Property name="Value"/>
+         <Property name="DataType">2</Property>
+         <Property name="UDTParentType">Basic IO/OPC Tag</Property>
+         <Parameters>
+            <Property name="itemId" type="String">{processingCommandItemId}</Property>
+            <Property name="serverName" type="String">{serverName}</Property>
+            <Property name="scanClassName" type="String">{scanClassName}</Property>
+         </Parameters>
+      </Tag>
+      <Tag name="processingCommandWait" path="" type="DB">
+         <Property name="Value">0.0</Property>
+         <Property name="DataType">5</Property>
+      </Tag>
+   </Tag>
+   <Tag name="PKS Controller" path="_types_/Controllers" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Property name="UDTParentType">Controllers/Controller</Property>
+      <Parameters>
+         <Property name="pythonClass" type="String">PKSController</Property>
+         <Property name="permissiveItemId" type="String"></Property>
+         <Property name="windupItemId" type="String"></Property>
+      </Parameters>
+      <Tag name="value" path="" type="EXTENSION">
+         <Property name="OPCItemPath">{itemId}</Property>
+      </Tag>
+      <Tag name="value" path="mode" type="EXTENSION">
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="writeValue" path="mode" type="EXTENSION">
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="op" path="" type="UDT_INST">
+         <Property name="Value"/>
+         <Property name="DataType">2</Property>
+         <Property name="UDTParentType">Basic IO/OPC Output</Property>
+         <Parameters>
+            <Property name="itemId" type="String">{opitemId}</Property>
+            <Property name="serverName" type="String">{serverName}</Property>
+            <Property name="scanClassName" type="String">{scanClassName}</Property>
+         </Parameters>
+      </Tag>
+      <Tag name="permissive" path="" type="OPC">
+         <Property name="Value"/>
+         <Property name="DataType">7</Property>
+         <Property name="OPCServer">{serverName}</Property>
+         <Property name="OPCItemPath">{permissiveItemId}</Property>
+      </Tag>
+      <Tag name="permissiveAsFound" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="permissiveConfirmation" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">6</Property>
+      </Tag>
+      <Tag name="permissiveValue" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="sp" path="" type="UDT_INST">
+         <Property name="Value"/>
+         <Property name="DataType">2</Property>
+         <Property name="UDTParentType">Basic IO/OPC Output</Property>
+         <Parameters>
+            <Property name="itemId" type="String">{spItemId}</Property>
+            <Property name="serverName" type="String">{serverName}</Property>
+            <Property name="scanClassName" type="String">{scanClassName}</Property>
+         </Parameters>
+      </Tag>
+   </Tag>
+   <Tag name="TDC Controller" path="_types_/Controllers" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Property name="UDTParentType">Controllers/Controller</Property>
+      <Parameters>
+         <Property name="pythonClass" type="String">TDCController</Property>
+      </Parameters>
+      <Tag name="value" path="" type="EXTENSION">
+         <Property name="OPCItemPath">{itemId}</Property>
+      </Tag>
+      <Tag name="value" path="mode" type="EXTENSION">
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="writeValue" path="mode" type="EXTENSION">
+         <Property name="DataType">7</Property>
+      </Tag>
+   </Tag>
+   <Tag name="Lab Data" path="_types_" type="Folder"/>
+   <Tag name="Lab Baler Service Data" path="_types_/Lab Data" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Parameters>
+         <Property name="Secondary Name" type="String"></Property>
+      </Parameters>
+      <Tag name="balerRate" path="" type="OPC">
+         <Property name="Value"/>
+         <Property name="DataType">5</Property>
+      </Tag>
+      <Tag name="lowLimit" path="" type="OPC">
+         <Property name="Value"/>
+         <Property name="DataType">5</Property>
+      </Tag>
+   </Tag>
+   <Tag name="Lab Limit" path="_types_/Lab Data" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Parameters>
+      </Parameters>
+   </Tag>
+   <Tag name="Lab Limit Release" path="_types_/Lab Data" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Property name="UDTParentType">Lab Data/Lab Limit</Property>
+      <Parameters>
+      </Parameters>
+      <Tag name="lowerReleaseLimit" path="" type="DB">
+         <Property name="Value">0.0</Property>
+         <Property name="DataType">5</Property>
+      </Tag>
+      <Tag name="upperReleaseLimit" path="" type="DB">
+         <Property name="Value">0.0</Property>
+         <Property name="DataType">5</Property>
+      </Tag>
+   </Tag>
+   <Tag name="Lab Limit SQC" path="_types_/Lab Data" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Property name="UDTParentType">Lab Data/Lab Limit</Property>
+      <Parameters>
+      </Parameters>
+      <Tag name="lowerSQCLimit" path="" type="DB">
+         <Property name="Value">0.0</Property>
+         <Property name="DataType">5</Property>
+      </Tag>
+      <Tag name="lowerValidityLimit" path="" type="DB">
+         <Property name="Value">0.0</Property>
+         <Property name="DataType">5</Property>
+      </Tag>
+      <Tag name="standardDeviation" path="" type="DB">
+         <Property name="Value">0.0</Property>
+         <Property name="DataType">5</Property>
+      </Tag>
+      <Tag name="target" path="" type="DB">
+         <Property name="Value">0.0</Property>
+         <Property name="DataType">5</Property>
+      </Tag>
+      <Tag name="upperSQCLimit" path="" type="DB">
+         <Property name="Value">0.0</Property>
+         <Property name="DataType">5</Property>
+      </Tag>
+      <Tag name="upperValidityLimit" path="" type="DB">
+         <Property name="Value">0.0</Property>
+         <Property name="DataType">5</Property>
+      </Tag>
+   </Tag>
+   <Tag name="Lab Limit Validity" path="_types_/Lab Data" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Property name="UDTParentType">Lab Data/Lab Limit</Property>
+      <Parameters>
+      </Parameters>
+      <Tag name="lowerValidityLimit" path="" type="DB">
+         <Property name="Value">0.0</Property>
+         <Property name="DataType">5</Property>
+      </Tag>
+      <Tag name="upperValidityLimit" path="" type="DB">
+         <Property name="Value">0.0</Property>
+         <Property name="DataType">5</Property>
+      </Tag>
+   </Tag>
+   <Tag name="Lab Selector Limit" path="_types_/Lab Data" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Parameters>
+      </Parameters>
+   </Tag>
+   <Tag name="Lab Selector Limit Release" path="_types_/Lab Data" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Property name="UDTParentType">Lab Data/Lab Selector Limit</Property>
+      <Parameters>
+         <Property name="lowerReleaseLimitTag" type="String"></Property>
+         <Property name="upperReleaseLimitTag" type="String"></Property>
+      </Parameters>
+      <Tag name="lowerReleaseLimit" path="" type="DB">
+         <Property name="Value"/>
+         <Property name="DataType">5</Property>
+         <Property name="ExpressionType">1</Property>
+      </Tag>
+      <Tag name="upperReleaseLimit" path="" type="DB">
+         <Property name="Value"/>
+         <Property name="DataType">5</Property>
+         <Property name="ExpressionType">1</Property>
+      </Tag>
+   </Tag>
+   <Tag name="Lab Selector Limit SQC" path="_types_/Lab Data" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Property name="UDTParentType">Lab Data/Lab Selector Limit</Property>
+      <Parameters>
+         <Property name="lowerValidityLimitTag" type="String"></Property>
+         <Property name="targetTag" type="String"></Property>
+         <Property name="upperSQCLimitTag" type="String"></Property>
+         <Property name="upperValidityLimitTag" type="String"></Property>
+         <Property name="standardDeviationTag" type="String"></Property>
+         <Property name="lowerSQCLimitTag" type="String"></Property>
+      </Parameters>
+      <Tag name="lowerSQCLimit" path="" type="DB">
+         <Property name="Value"/>
+         <Property name="DataType">5</Property>
+         <Property name="ExpressionType">1</Property>
+         <Property name="Expression">{lowerSQCLimitTag}</Property>
+      </Tag>
+      <Tag name="lowerValidityLimit" path="" type="DB">
+         <Property name="Value"/>
+         <Property name="DataType">5</Property>
+         <Property name="FormatString">#,##0.####</Property>
+         <Property name="ExpressionType">1</Property>
+         <Property name="Expression">{lowerValidityLimitTag}</Property>
+      </Tag>
+      <Tag name="standardDeviation" path="" type="DB">
+         <Property name="Value"/>
+         <Property name="DataType">5</Property>
+         <Property name="FormatString">#,##0.######</Property>
+         <Property name="ExpressionType">1</Property>
+         <Property name="Expression">{standardDeviationTag}</Property>
+      </Tag>
+      <Tag name="target" path="" type="DB">
+         <Property name="Value"/>
+         <Property name="DataType">5</Property>
+         <Property name="ExpressionType">1</Property>
+         <Property name="Expression">{targetTag}</Property>
+      </Tag>
+      <Tag name="upperSQCLimit" path="" type="DB">
+         <Property name="Value"/>
+         <Property name="DataType">5</Property>
+         <Property name="FormatString">#,##0.####</Property>
+         <Property name="ExpressionType">1</Property>
+         <Property name="Expression">{upperSQCLimitTag}</Property>
+      </Tag>
+      <Tag name="upperValidityLimit" path="" type="DB">
+         <Property name="Value"/>
+         <Property name="DataType">5</Property>
+         <Property name="FormatString">#,##0.####</Property>
+         <Property name="ExpressionType">1</Property>
+         <Property name="Expression">{upperValidityLimitTag}</Property>
+      </Tag>
+   </Tag>
+   <Tag name="Lab Selector Limit Validity" path="_types_/Lab Data" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Property name="UDTParentType">Lab Data/Lab Selector Limit</Property>
+      <Parameters>
+         <Property name="lowerValidityLimitTag" type="String"></Property>
+         <Property name="upperValidityLimitTag" type="String"></Property>
+      </Parameters>
+      <Tag name="lowerValidityLimit" path="" type="DB">
+         <Property name="Value"/>
+         <Property name="DataType">5</Property>
+         <Property name="ExpressionType">1</Property>
+         <Property name="Expression">{lowerValidityLimitTag}</Property>
+      </Tag>
+      <Tag name="upperValidityLimit" path="" type="DB">
+         <Property name="Value"/>
+         <Property name="DataType">5</Property>
+         <Property name="ExpressionType">1</Property>
+         <Property name="Expression">{upperValidityLimitTag}</Property>
+      </Tag>
+   </Tag>
+   <Tag name="Lab Selector Value" path="_types_/Lab Data" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Parameters>
+         <Property name="badValueTag" type="String"></Property>
+         <Property name="sampleTimeTag" type="String"></Property>
+         <Property name="statusTag" type="String"></Property>
+         <Property name="rawSampleTimeTag" type="String"></Property>
+         <Property name="valueTag" type="String"></Property>
+         <Property name="rawValueTag" type="String"></Property>
+      </Parameters>
+      <Tag name="badValue" path="" type="DB">
+         <Property name="Value"/>
+         <Property name="DataType">6</Property>
+         <Property name="ExpressionType">1</Property>
+         <Property name="Expression">{badValueTag}</Property>
+      </Tag>
+      <Tag name="processingEnabled" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">6</Property>
+      </Tag>
+      <Tag name="rawSampleTime" path="" type="DB">
+         <Property name="Value"/>
+         <Property name="DataType">8</Property>
+         <Property name="FormatString">yyyy-MM-dd h:mm:ss aa</Property>
+         <Property name="ExpressionType">1</Property>
+         <Property name="Expression">{rawSampleTimeTag}</Property>
+      </Tag>
+      <Tag name="rawValue" path="" type="DB">
+         <Property name="Value"/>
+         <Property name="DataType">5</Property>
+         <Property name="ExpressionType">1</Property>
+         <Property name="Expression">{rawValueTag}</Property>
+      </Tag>
+      <Tag name="sampleTime" path="" type="DB">
+         <Property name="Value"/>
+         <Property name="DataType">8</Property>
+         <Property name="FormatString">yyyy-MM-dd h:mm:ss aa</Property>
+         <Property name="ExpressionType">1</Property>
+         <Property name="Expression">{sampleTimeTag}</Property>
+         <EventScripts>
+            <Event id="valueChanged" enabled="true">	&quot;&quot;&quot;
+
+
+
+
+
+
+
+
+
+
+
+
+&quot;&quot;&quot;
+	system.tag.write(&quot;[.]trigger&quot;,True)</Event>
+         </EventScripts>
+      </Tag>
+      <Tag name="status" path="" type="DB">
+         <Property name="Value"/>
+         <Property name="DataType">7</Property>
+         <Property name="ExpressionType">1</Property>
+         <Property name="Expression">{statusTag}</Property>
+      </Tag>
+      <Tag name="trigger" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">6</Property>
+         <EventScripts>
+            <Event id="valueChanged" enabled="true">	&quot;&quot;&quot;
+
+
+
+
+
+
+
+
+
+
+
+
+&quot;&quot;&quot;
+	
+	# Only process the value on the rising edge, the falling edge is the reset
+	if currentValue.value == True:
+		from ils.labData.selector import valueChanged
+		valueChanged(tagPath)</Event>
+         </EventScripts>
+      </Tag>
+      <Tag name="value" path="" type="DB">
+         <Property name="Value"/>
+         <Property name="DataType">5</Property>
+         <Property name="ExpressionType">1</Property>
+         <Property name="Expression">{valueTag}</Property>
+         <EventScripts>
+            <Event id="valueChanged" enabled="true">	&quot;&quot;&quot;
+
+
+
+
+
+
+
+
+
+
+
+
+&quot;&quot;&quot;
+	system.tag.write(&quot;[.]trigger&quot;,True)</Event>
+         </EventScripts>
+      </Tag>
+   </Tag>
+   <Tag name="Lab Value" path="_types_/Lab Data" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Parameters>
+      </Parameters>
+      <Tag name="badValue" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">6</Property>
+      </Tag>
+      <Tag name="rawSampleTime" path="" type="DB">
+         <Property name="Value">1969-12-31 17:00:01</Property>
+         <Property name="DataType">8</Property>
+         <Property name="FormatString">yyyy-MM-dd h:mm:ss aa</Property>
+      </Tag>
+      <Tag name="rawValue" path="" type="DB">
+         <Property name="Value">0.0</Property>
+         <Property name="DataType">5</Property>
+      </Tag>
+      <Tag name="sampleTime" path="" type="DB">
+         <Property name="Value">1969-12-31 17:00:01</Property>
+         <Property name="DataType">8</Property>
+         <Property name="FormatString">yyyy-MM-dd h:mm:ss aa</Property>
+      </Tag>
+      <Tag name="status" path="" type="DB">
+         <Property name="Value"></Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="value" path="" type="DB">
+         <Property name="Value">0.0</Property>
+         <Property name="DataType">5</Property>
+      </Tag>
+   </Tag>
+   <Tag name="Unit Parameter" path="_types_/Lab Data" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Parameters>
+      </Parameters>
+      <Tag name="bufferIndex" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">2</Property>
+      </Tag>
+      <Tag name="filteredValue" path="" type="DB">
+         <Property name="Value">0.0</Property>
+         <Property name="DataType">5</Property>
+      </Tag>
+      <Tag name="manualRawValue" path="" type="DB">
+         <Property name="Value">0.0</Property>
+         <Property name="DataType">5</Property>
+         <EventScripts>
+            <Event id="valueChanged" enabled="true">	from ils.labData.unitParameter import valueChanged
+	valueChanged(tagPath, currentValue, initialChange)</Event>
+         </EventScripts>
+      </Tag>
+      <Tag name="numberOfPoints" path="" type="DB">
+         <Property name="Value">2</Property>
+         <Property name="DataType">2</Property>
+         <EventScripts>
+            <Event id="valueChanged" enabled="true">	from ils.labData.unitParameter import bufferSizeChanged
+	bufferSizeChanged(tagPath, currentValue, initialChange)</Event>
+         </EventScripts>
+      </Tag>
+      <Tag name="rawValue" path="" type="DB">
+         <Property name="Value"/>
+         <Property name="DataType">5</Property>
+         <Property name="ExpressionType">1</Property>
+         <Property name="Expression">None</Property>
+         <EventScripts>
+            <Event id="valueChanged" enabled="true">	from ils.labData.unitParameter import valueChanged
+	valueChanged(tagPath, currentValue, initialChange)</Event>
+         </EventScripts>
+      </Tag>
+   </Tag>
+   <Tag name="Recipe Data" path="_types_" type="Folder"/>
+   <Tag name="Download Trigger" path="_types_/Recipe Data" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Parameters>
+      </Parameters>
+      <Tag name="automatedDownload" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">6</Property>
+         <Property name="Tooltip">True means fully automatic, False means display recipe screen</Property>
+      </Tag>
+      <Tag name="database" path="" type="DB">
+         <Property name="Value">XOM</Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="grade" path="" type="OPC">
+         <Property name="Value"/>
+         <Property name="DataType">7</Property>
+         <EventScripts>
+            <Event id="valueChanged" enabled="true">	
+	#-----------------------
+	def longProcess(tagPath = tagPath, val = currentValue.value):
+		from ils.recipeToolkit.download import automatedDownloadHandler
+		automatedDownloadHandler(tagPath, val)
+	#-----------------------
+
+	# I&apos;m not sure if it is a characteristic of my development system, or of OPC, or 
+	# of my Kepware OPC server, but whenever I restart my gateway this trigger fires as 
+	# if the OPC tag received a new value.  Since it is highly unlikely for an 
+	# automated download to be requested at the same time as the gateway restarts this will 
+	# check to see that the system has been running for at least 30 seconds before 
+	# honoring any automated download requests.
+	runningSeconds = system.tag.read(&quot;[~]Recipe/Constants/runningSeconds&quot;).value
+	if runningSeconds != None and currentValue.value != &quot;&quot; and runningSeconds &gt; 30:
+		system.util.invokeAsynchronous(longProcess)</Event>
+         </EventScripts>
+      </Tag>
+      <Tag name="post" path="" type="DB">
+         <Property name="Value"></Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="project" path="" type="DB">
+         <Property name="Value">XOM</Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="recipeKey" path="" type="DB">
+         <Property name="Value"></Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+   </Tag>
+   <Tag name="Recipe Details" path="_types_/Recipe Data" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Parameters>
+      </Parameters>
+      <Tag name="command" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">7</Property>
+         <EventScripts>
+            <Event id="valueChanged" enabled="true">	
+	#-----------------------
+	def longProcess(tagPath = tagPath, val = currentValue.value):
+		import ils.io.wrapper as wrapper
+		wrapper.writeRecipeDetail(tagPath, val)
+	#-----------------------
+	
+	if currentValue.value != &quot;&quot;:
+		system.util.invokeAsynchronous(longProcess)	</Event>
+         </EventScripts>
+      </Tag>
+      <Tag name="highLimitTagName" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="lowLimitTagName" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="valueTagName" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+   </Tag>
+   <Tag name="SFC" path="_types_" type="Folder"/>
+   <Tag name="Array" path="_types_/SFC" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Property name="UDTParentType">SFC/DataWithUnits</Property>
+      <Parameters>
+      </Parameters>
+      <Tag name="value" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+   </Tag>
+   <Tag name="Data" path="_types_/SFC" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Parameters>
+      </Parameters>
+      <Tag name="advice" path="" type="DB">
+         <Property name="Value"></Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="chartPath" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="class" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="dataId" path="" type="DB">
+         <Property name="Value"></Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="description" path="" type="DB">
+         <Property name="Value"></Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="help" path="" type="DB">
+         <Property name="Value"></Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="key" path="" type="DB">
+         <Property name="Value"></Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="label" path="" type="DB">
+         <Property name="Value"></Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+   </Tag>
+   <Tag name="DataWithUnits" path="_types_/SFC" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Property name="UDTParentType">SFC/Data</Property>
+      <Parameters>
+      </Parameters>
+      <Tag name="units" path="" type="DB">
+         <Property name="Value"></Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+   </Tag>
+   <Tag name="Download Trigger" path="_types_/SFC" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Parameters>
+      </Parameters>
+      <Tag name="automatedDownload" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">6</Property>
+         <Property name="Tooltip">True means fully automatic, False means display recipe screen</Property>
+      </Tag>
+      <Tag name="database" path="" type="DB">
+         <Property name="Value">XOM</Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="grade" path="" type="OPC">
+         <Property name="Value"/>
+         <Property name="DataType">7</Property>
+         <EventScripts>
+            <Event id="valueChanged" enabled="true">	
+	#-----------------------
+	def longProcess(tagPath = tagPath, val = currentValue.value):
+		from ils.recipeToolkit.download import automatedDownloadHandler
+		automatedDownloadHandler(tagPath, val)
+	#-----------------------
+
+	# I&apos;m not sure if it is a characteristic of my development system, or of OPC, or 
+	# of my Kepware OPC server, but whenever I restart my gateway this trigger fires as 
+	# if the OPC tag received a new value.  Since it is highly unlikely for an 
+	# automated download to be requested at the same time as the gateway restarts this will 
+	# check to see that the system has been running for at least 30 seconds before 
+	# honoring any automated download requests.
+	runningSeconds = system.tag.read(&quot;[~]Recipe/Constants/runningSeconds&quot;).value
+	if runningSeconds != None and currentValue.value != &quot;&quot; and runningSeconds &gt; 30:
+		system.util.invokeAsynchronous(longProcess)</Event>
+         </EventScripts>
+      </Tag>
+      <Tag name="post" path="" type="DB">
+         <Property name="Value"></Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="project" path="" type="DB">
+         <Property name="Value">XOM</Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="recipeKey" path="" type="DB">
+         <Property name="Value"></Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+   </Tag>
+   <Tag name="Input" path="_types_/SFC" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Property name="UDTParentType">SFC/IO</Property>
+      <Parameters>
+      </Parameters>
+   </Tag>
+   <Tag name="IO" path="_types_/SFC" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Property name="UDTParentType">SFC/DataWithUnits</Property>
+      <Parameters>
+      </Parameters>
+      <Tag name="errorCode" path="" type="DB">
+         <Property name="Value"></Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="errorText" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="guiLabel" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">2</Property>
+      </Tag>
+      <Tag name="guiUnits" path="" type="DB">
+         <Property name="Value"></Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="pvMonitorActive" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">6</Property>
+      </Tag>
+      <Tag name="pvMonitorStatus" path="" type="DB">
+         <Property name="Value"></Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="pvValue" path="" type="DB">
+         <Property name="Value">0.0</Property>
+         <Property name="DataType">5</Property>
+      </Tag>
+      <Tag name="setpointStatus" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="tagPath" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="targetValue" path="" type="DB">
+         <Property name="Value">0.0</Property>
+         <Property name="DataType">5</Property>
+      </Tag>
+      <Tag name="value" path="" type="DB">
+         <Property name="Value">0.0</Property>
+         <Property name="DataType">5</Property>
+      </Tag>
+   </Tag>
+   <Tag name="Matrix" path="_types_/SFC" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Property name="UDTParentType">SFC/DataWithUnits</Property>
+      <Parameters>
+      </Parameters>
+      <Tag name="value" path="" type="DB">
+         <Property name="Value"></Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+   </Tag>
+   <Tag name="Output" path="_types_/SFC" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Property name="UDTParentType">SFC/IO</Property>
+      <Parameters>
+      </Parameters>
+      <Tag name="download" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">6</Property>
+      </Tag>
+      <Tag name="downloadStatus" path="" type="DB">
+         <Property name="Value"></Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="maxTiming" path="" type="DB">
+         <Property name="Value">0.0</Property>
+         <Property name="DataType">5</Property>
+      </Tag>
+      <Tag name="stepTime" path="" type="DB">
+         <Property name="Value">0.0</Property>
+         <Property name="DataType">5</Property>
+      </Tag>
+      <Tag name="stepTimestamp" path="" type="DB">
+         <Property name="Value"></Property>
+         <Property name="DataType">7</Property>
+         <Property name="FormatString">yyyy-MM-dd h:mm:ss aa</Property>
+      </Tag>
+      <Tag name="timing" path="" type="DB">
+         <Property name="Value">0.0</Property>
+         <Property name="DataType">5</Property>
+      </Tag>
+      <Tag name="type" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="valueType" path="" type="DB">
+         <Property name="Value"></Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="writeConfirm" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">6</Property>
+      </Tag>
+      <Tag name="writeConfirmed" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">6</Property>
+      </Tag>
+   </Tag>
+   <Tag name="OutputRamp" path="_types_/SFC" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Property name="UDTParentType">SFC/Output</Property>
+      <Parameters>
+      </Parameters>
+      <Tag name="rampTime" path="" type="DB">
+         <Property name="Value">0.0</Property>
+         <Property name="DataType">5</Property>
+      </Tag>
+      <Tag name="updateFrequency" path="" type="DB">
+         <Property name="Value">0.0</Property>
+         <Property name="DataType">5</Property>
+      </Tag>
+   </Tag>
+   <Tag name="Recipe Details" path="_types_/SFC" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Parameters>
+      </Parameters>
+      <Tag name="command" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">7</Property>
+         <EventScripts>
+            <Event id="valueChanged" enabled="true">	
+	#-----------------------
+	def longProcess(tagPath = tagPath, val = currentValue.value):
+		import ils.io.wrapper as wrapper
+		wrapper.writeRecipeDetail(tagPath, val)
+	#-----------------------
+	
+	if currentValue.value != &quot;&quot;:
+		system.util.invokeAsynchronous(longProcess)	</Event>
+         </EventScripts>
+      </Tag>
+      <Tag name="highLimitTagName" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="lowLimitTagName" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="valueTagName" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+   </Tag>
+   <Tag name="SQC" path="_types_/SFC" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Property name="UDTParentType">SFC/DataWithUnits</Property>
+      <Parameters>
+      </Parameters>
+      <Tag name="highLimit" path="" type="DB">
+         <Property name="Value">0.0</Property>
+         <Property name="DataType">5</Property>
+      </Tag>
+      <Tag name="lowLimit" path="" type="DB">
+         <Property name="Value">0.0</Property>
+         <Property name="DataType">5</Property>
+      </Tag>
+      <Tag name="targetValue" path="" type="DB">
+         <Property name="Value">0.0</Property>
+         <Property name="DataType">5</Property>
+      </Tag>
+   </Tag>
+   <Tag name="Structure" path="_types_/SFC" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Property name="UDTParentType">SFC/Data</Property>
+      <Parameters>
+      </Parameters>
+      <Tag name="value" path="" type="DB">
+         <Property name="Value"></Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+   </Tag>
+   <Tag name="Value" path="_types_/SFC" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Property name="UDTParentType">SFC/DataWithUnits</Property>
+      <Parameters>
+      </Parameters>
+      <Tag name="category" path="" type="DB">
+         <Property name="Value">Operator Input</Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="highLimit" path="" type="DB">
+         <Property name="Value">0.0</Property>
+         <Property name="DataType">5</Property>
+      </Tag>
+      <Tag name="lowLimit" path="" type="DB">
+         <Property name="Value">0.0</Property>
+         <Property name="DataType">5</Property>
+      </Tag>
+      <Tag name="type" path="" type="DB">
+         <Property name="Value">float</Property>
+         <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="value" path="" type="DB">
+         <Property name="Value">0.0</Property>
+         <Property name="DataType">5</Property>
+      </Tag>
+   </Tag>
+   <Tag name="Drier" path="_types_" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Parameters>
+         <Property name="serverName" type="String"></Property>
+         <Property name="scanClassName" type="String"></Property>
+      </Parameters>
+      <Tag name="estimatedWaterLoad" path="" type="OPC">
+         <Property name="Value"/>
+         <Property name="DataType">5</Property>
+         <Property name="OPCServer">{serverName}</Property>
+         <Property name="ScanClass">{scanClassName}</Property>
+      </Tag>
+      <Tag name="inletTemp" path="" type="OPC">
+         <Property name="Value"/>
+         <Property name="DataType">5</Property>
+         <Property name="OPCServer">{serverName}</Property>
+         <Property name="ScanClass">{scanClassName}</Property>
+      </Tag>
+      <Tag name="liquidDrierRemHours" path="" type="OPC">
+         <Property name="Value"/>
+         <Property name="DataType">5</Property>
+         <Property name="OPCServer">{serverName}</Property>
+         <Property name="ScanClass">{scanClassName}</Property>
+      </Tag>
+      <Tag name="midTemp" path="" type="OPC">
+         <Property name="Value"/>
+         <Property name="DataType">5</Property>
+         <Property name="OPCServer">{serverName}</Property>
+         <Property name="ScanClass">{scanClassName}</Property>
+      </Tag>
+      <Tag name="outletPsig" path="" type="OPC">
+         <Property name="Value"/>
+         <Property name="DataType">5</Property>
+         <Property name="OPCServer">{serverName}</Property>
+         <Property name="ScanClass">{scanClassName}</Property>
+      </Tag>
+      <Tag name="outletTemp" path="" type="OPC">
+         <Property name="Value"/>
+         <Property name="DataType">5</Property>
+         <Property name="OPCServer">{serverName}</Property>
+         <Property name="ScanClass">{scanClassName}</Property>
+      </Tag>
+      <Tag name="processingCmd" path="" type="OPC">
+         <Property name="Value"/>
+         <Property name="DataType">3</Property>
+         <Property name="OPCServer">{serverName}</Property>
+         <Property name="ScanClass">{scanClassName}</Property>
+      </Tag>
+      <Tag name="rawLastLoad" path="" type="OPC">
+         <Property name="Value"/>
+         <Property name="DataType">5</Property>
+         <Property name="OPCServer">{serverName}</Property>
+         <Property name="ScanClass">{scanClassName}</Property>
+      </Tag>
+      <Tag name="rawLastRun" path="" type="OPC">
+         <Property name="Value"/>
+         <Property name="DataType">5</Property>
+         <Property name="OPCServer">{serverName}</Property>
+         <Property name="ScanClass">{scanClassName}</Property>
+      </Tag>
+      <Tag name="rawLastService" path="" type="OPC">
+         <Property name="Value"/>
+         <Property name="DataType">5</Property>
+         <Property name="OPCServer">{serverName}</Property>
+         <Property name="ScanClass">{scanClassName}</Property>
+      </Tag>
+      <Tag name="runLengthHours" path="" type="OPC">
+         <Property name="Value"/>
+         <Property name="DataType">5</Property>
+         <Property name="OPCServer">{serverName}</Property>
+         <Property name="ScanClass">{scanClassName}</Property>
+      </Tag>
+      <Tag name="stat" path="" type="OPC">
+         <Property name="Value"/>
+         <Property name="DataType">3</Property>
+         <Property name="OPCServer">{serverName}</Property>
+         <Property name="ScanClass">{scanClassName}</Property>
+      </Tag>
+      <Tag name="vaporDrierRemHours" path="" type="OPC">
+         <Property name="Value"/>
+         <Property name="DataType">5</Property>
+         <Property name="OPCServer">{serverName}</Property>
+         <Property name="ScanClass">{scanClassName}</Property>
+      </Tag>
+   </Tag>
+   <Tag name="Grade" path="_types_" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">2</Property>
+      <Parameters>
+      </Parameters>
+      <Tag name="catInHours" path="" type="DB">
+         <Property name="Value">0.0</Property>
+         <Property name="DataType">5</Property>
+      </Tag>
+      <Tag name="currentProduction" path="" type="DB">
+         <Property name="Value">0.0</Property>
+         <Property name="DataType">5</Property>
+      </Tag>
+      <Tag name="grade" path="" type="OPC">
+         <Property name="Value"/>
+         <Property name="DataType">2</Property>
+         <Property name="OPCServer">PKS-ASYNC</Property>
+      </Tag>
+      <Tag name="timeOfMostRecentGradeChange" path="" type="DB">
+         <Property name="Value">1969-12-31 17:00:01</Property>
+         <Property name="DataType">8</Property>
+         <Property name="FormatString">yyyy-MM-dd h:mm:ss aa</Property>
+      </Tag>
+   </Tag>
+   <Tag name="OPC Derived Value" path="_types_" type="UDT_DEF">
+      <Property name="Value"/>
+      <Property name="DataType">5</Property>
+      <Parameters>
+      </Parameters>
+      <Tag name="badValue" path="" type="DB">
+         <Property name="Value">0</Property>
+         <Property name="DataType">6</Property>
+      </Tag>
+      <Tag name="value" path="" type="DB">
+         <Property name="Value">0.0</Property>
+         <Property name="DataType">5</Property>
+      </Tag>
+   </Tag>
+   <Tag name="DiagnosticToolkit" path="" type="Folder"/>
+   <Tag name="Connections" path="DiagnosticToolkit" type="Folder"/>
+   <Tag name="C2SqcToC2Cstr" path="DiagnosticToolkit/Connections" type="DB">
+      <Property name="Value">UNKNOWN</Property>
       <Property name="DataType">7</Property>
    </Tag>
-   <Tag name="ConnectionPost568-a" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="CDBalerVolLab" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="FrntAvgC2NotHigh" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="ConnectionPost490" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="ConnectionPost491" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="ConnectionPost492" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="CatIsOut" path="Connections" type="DB">
+   <Tag name="CatIsIn" path="DiagnosticToolkit/Connections" type="DB">
       <Property name="Value">TRUE</Property>
       <Property name="DataType">7</Property>
    </Tag>
-   <Tag name="RateChangeOutput" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="SplitFlyingSwitchOutput" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="SingleRateChangeOutput" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="EBalerVolLab" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="SeriesRateChangeOutput" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="CDEBalerTemp" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="RxMlOk" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="FrntLngthAboveSP" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="PremixTempLessThanMax" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="SeriesFlyingSwitchOutput" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="ABBalerVolFtnir" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="MlHigh" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="PremixLineFresh" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="CaSqcToCrx" path="Connections" type="DB">
+   <Tag name="CatIsOut" path="DiagnosticToolkit/Connections" type="DB">
       <Property name="Value">FALSE</Property>
       <Property name="DataType">7</Property>
    </Tag>
-   <Tag name="MlLow" path="Connections" type="DB">
-      <Property name="Value"></Property>
+   <Tag name="CDEBailerTemp" path="DiagnosticToolkit/Connections" type="DB">
+      <Property name="Value">TRUE</Property>
       <Property name="DataType">7</Property>
    </Tag>
-   <Tag name="StabSqcToCrx" path="Connections" type="DB">
+   <Tag name="CRxGrd" path="DiagnosticToolkit/Connections" type="DB">
+      <Property name="Value">CoalTar</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="RateChangeOutput" path="DiagnosticToolkit/Connections" type="DB">
       <Property name="Value">FALSE</Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="CFlyingSwitchOutput" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="CDBalerVolFtnir" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="EBalerVolFtnir" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="MooneySqcToCstrMooney" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="SdstrmC3C2Ratio" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="ConnectionPost488" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="ConnectionPost489" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="CatIsIn-b" path="Connections" type="DB">
-      <Property name="Value">FALSE</Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="UniformCntrTprTips" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="CatIsIn-a" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="SplitRateChangeOutput" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="FrntLngthBelowSetpointSF4" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="C2SqcToC2Cstr" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="SingleFlyingSwitchOutput" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="MyConnectionPost" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="PremixTempChgPermitted" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="FrntLngthShortToMooneyLogic" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="PremixTempAvail" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="ABBalerVolLab" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="CRxGrd" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="PolyRateChangeOutput" path="Connections" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="ConnectionPost569" path="Connections" type="DB">
-      <Property name="Value"></Property>
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="LabData" path="" type="Folder"/>
-   <Tag name="AB-BALER-TEMP" path="LabData" type="Folder"/>
-   <Tag name="rawValue" path="LabData/AB-BALER-TEMP" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="ML-LAB-DATA-SQC" path="LabData" type="Folder"/>
-   <Tag name="standardDeviation" path="LabData/ML-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="target" path="LabData/ML-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="AB-BALER-TEMP-LAB-DATA-SQC" path="LabData" type="Folder"/>
-   <Tag name="target" path="LabData/AB-BALER-TEMP-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="C9-LAB-DATA-SQC" path="LabData" type="Folder"/>
-   <Tag name="standardDeviation" path="LabData/C9-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="target" path="LabData/C9-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="POLYSPLIT-DATA-SQC" path="LabData" type="Folder"/>
-   <Tag name="standardDeviation" path="LabData/POLYSPLIT-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="target" path="LabData/POLYSPLIT-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="C-BALER-TEMP" path="LabData" type="Folder"/>
-   <Tag name="rawValue" path="LabData/C-BALER-TEMP" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="CA-LAB-DATA" path="LabData" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="DML-LAB-DATA" path="LabData" type="Folder"/>
-   <Tag name="rawValue" path="LabData/DML-LAB-DATA" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="PROD-ML-LAB-DATA-SQC" path="LabData" type="Folder"/>
-   <Tag name="target" path="LabData/PROD-ML-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="B-BALER-TEMP-LAB-DATA-SQC" path="LabData" type="Folder"/>
-   <Tag name="standardDeviation" path="LabData/B-BALER-TEMP-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="target" path="LabData/B-BALER-TEMP-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="CD-BALER-VOL-LAB-DATA" path="LabData" type="Folder"/>
-   <Tag name="target" path="LabData/CD-BALER-VOL-LAB-DATA" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="DC2-LAB-DATA-SQC" path="LabData" type="Folder"/>
-   <Tag name="standardDeviation" path="LabData/DC2-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="target" path="LabData/DC2-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="C9_SPEC_LIMIT_IN_FEED" path="LabData" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="DML-LAB-DATA-SQC" path="LabData" type="Folder"/>
-   <Tag name="standardDeviation" path="LabData/DML-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="target" path="LabData/DML-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="MOONEY" path="LabData" type="Folder"/>
-   <Tag name="sampleTime" path="LabData/MOONEY" type="DB">
+   <Tag name="RLA3" path="LabData" type="Folder"/>
+   <Tag name="C2-LAB-DATA" path="LabData/RLA3" type="Folder"/>
+   <Tag name="sampleTime" path="LabData/RLA3/C2-LAB-DATA" type="DB">
       <Property name="Value">0</Property>
-      <Property name="DataType">2</Property>
-   </Tag>
-   <Tag name="A-BALER-TEMP" path="LabData" type="Folder"/>
-   <Tag name="rawValue" path="LabData/A-BALER-TEMP" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="E-BALER-VOL-FTNIR" path="LabData" type="Folder"/>
-   <Tag name="rawValue" path="LabData/E-BALER-VOL-FTNIR" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="DC2-LAB-DATA" path="LabData" type="Folder"/>
-   <Tag name="rawValue" path="LabData/DC2-LAB-DATA" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="C2-LAB-DATA" path="LabData" type="Folder"/>
-   <Tag name="rawValue" path="LabData/C2-LAB-DATA" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="CD-BALER-VOL-LAB-DATA-SQC" path="LabData" type="Folder"/>
-   <Tag name="standardDeviation" path="LabData/CD-BALER-VOL-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="target" path="LabData/CD-BALER-VOL-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="DC9-LAB-DATA-SQC" path="LabData" type="Folder"/>
-   <Tag name="standardDeviation" path="LabData/DC9-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="target" path="LabData/DC9-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="D-BALER-TEMP-LAB-DATA-SQC" path="LabData" type="Folder"/>
-   <Tag name="standardDeviation" path="LabData/D-BALER-TEMP-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="target" path="LabData/D-BALER-TEMP-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="MLR-LAB-DATA" path="LabData" type="Folder"/>
-   <Tag name="rawValue" path="LabData/MLR-LAB-DATA" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="C2-LAB-DATA-SQC" path="LabData" type="Folder"/>
-   <Tag name="standardDeviation" path="LabData/C2-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="target" path="LabData/C2-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="STAB-LAB-DATA-SQC" path="LabData" type="Folder"/>
-   <Tag name="standardDeviation" path="LabData/STAB-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="target" path="LabData/STAB-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="CA-LAB-DATA-SQC" path="LabData" type="Folder"/>
-   <Tag name="standardDeviation" path="LabData/CA-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="target" path="LabData/CA-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="E-BALER-VOL-FTNIR-SQC" path="LabData" type="Folder"/>
-   <Tag name="standardDeviation" path="LabData/E-BALER-VOL-FTNIR-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="E-BALER-TEMP" path="LabData" type="Folder"/>
-   <Tag name="rawValue" path="LabData/E-BALER-TEMP" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="C2-R1-NLC" path="LabData" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="A-BALER-TEMP-LAB-DATA-SQC" path="LabData" type="Folder"/>
-   <Tag name="standardDeviation" path="LabData/A-BALER-TEMP-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="target" path="LabData/A-BALER-TEMP-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="C9-LAB-DATA" path="LabData" type="Folder"/>
-   <Tag name="rawValue" path="LabData/C9-LAB-DATA" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="STAB-LAB-DATA" path="LabData" type="Folder"/>
-   <Tag name="rawValue" path="LabData/STAB-LAB-DATA" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="AB-BALER-VOL-FTNIR" path="LabData" type="Folder"/>
-   <Tag name="rawValue" path="LabData/AB-BALER-VOL-FTNIR" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="CD_BALER_VOL_LAB_DATA" path="LabData" type="Folder"/>
-   <Tag name="standardDeviation" path="LabData/CD_BALER_VOL_LAB_DATA" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="CD-BALER-VOL" path="LabData" type="Folder"/>
-   <Tag name="rawValue" path="LabData/CD-BALER-VOL" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="ML-LAB-DATA" path="LabData" type="Folder"/>
-   <Tag name="rawValue" path="LabData/ML-LAB-DATA" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="OIL-LAB-DATA-SQC" path="LabData" type="Folder"/>
-   <Tag name="standardDeviation" path="LabData/OIL-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="target" path="LabData/OIL-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="B-BALER-TEMP" path="LabData" type="Folder"/>
-   <Tag name="rawValue" path="LabData/B-BALER-TEMP" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="D-BALER-TEMP" path="LabData" type="Folder"/>
-   <Tag name="rawValue" path="LabData/D-BALER-TEMP" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="E-BALER-VOL-LAB-DATA-SQC" path="LabData" type="Folder"/>
-   <Tag name="standardDeviation" path="LabData/E-BALER-VOL-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="target" path="LabData/E-BALER-VOL-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="ALKYL_FLOW" path="LabData" type="Folder"/>
-   <Tag name="rawValue" path="LabData/ALKYL_FLOW" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="badValue" path="LabData/ALKYL_FLOW" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="POLYSPLIT_DATA" path="LabData" type="Folder"/>
-   <Tag name="highLimit" path="LabData/POLYSPLIT_DATA" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="AB-BALER-VOL-LAB-DATA-SQC" path="LabData" type="Folder"/>
-   <Tag name="standardDeviation" path="LabData/AB-BALER-VOL-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="target" path="LabData/AB-BALER-VOL-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="E-BALER-VOL" path="LabData" type="Folder"/>
-   <Tag name="rawValue" path="LabData/E-BALER-VOL" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="DC9-LAB-DATA" path="LabData" type="Folder"/>
-   <Tag name="rawValue" path="LabData/DC9-LAB-DATA" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="CD-BALER-VOL-FTNIR" path="LabData" type="Folder"/>
-   <Tag name="rawValue" path="LabData/CD-BALER-VOL-FTNIR" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="C-BALER-TEMP-LAB-DATA-SQC" path="LabData" type="Folder"/>
-   <Tag name="standardDeviation" path="LabData/C-BALER-TEMP-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="target" path="LabData/C-BALER-TEMP-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="CD-BALER-VOL-FTNIR-SQC" path="LabData" type="Folder"/>
-   <Tag name="standardDeviation" path="LabData/CD-BALER-VOL-FTNIR-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="target" path="LabData/CD-BALER-VOL-FTNIR-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="CD-BALER-TEMP" path="LabData" type="Folder"/>
-   <Tag name="rawValue" path="LabData/CD-BALER-TEMP" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="AB-BALER-VOL-FTNIR-SQC" path="LabData" type="Folder"/>
-   <Tag name="standardDeviation" path="LabData/AB-BALER-VOL-FTNIR-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="target" path="LabData/AB-BALER-VOL-FTNIR-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="OIL-LAB-DATA" path="LabData" type="Folder"/>
-   <Tag name="rawValue" path="LabData/OIL-LAB-DATA" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="E-BALER-TEMP-LAB-DATA-SQC" path="LabData" type="Folder"/>
-   <Tag name="standardDeviation" path="LabData/E-BALER-TEMP-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="target" path="LabData/E-BALER-TEMP-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="AB-BALER-VOL" path="LabData" type="Folder"/>
-   <Tag name="rawValue" path="LabData/AB-BALER-VOL" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="MLR-LAB-DATA-SQC" path="LabData" type="Folder"/>
-   <Tag name="standardDeviation" path="LabData/MLR-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="target" path="LabData/MLR-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="PROD-LAB-DATA-SQC" path="LabData" type="Folder"/>
-   <Tag name="standardDeviation" path="LabData/PROD-LAB-DATA-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="C2_FLOW" path="LabData" type="Folder"/>
-   <Tag name="rawValue" path="LabData/C2_FLOW" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="badValue" path="LabData/C2_FLOW" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="PROD-ML-LAB-DATA" path="LabData" type="Folder"/>
-   <Tag name="highLimit" path="LabData/PROD-ML-LAB-DATA" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="site" path="" type="Folder"/>
-   <Tag name="SINGLE-PERMISSIVES" path="site" type="Folder"/>
-   <Tag name="RX_CONFIGURATION" path="site/SINGLE-PERMISSIVES" type="Folder"/>
-   <Tag name="rawValue" path="site/SINGLE-PERMISSIVES/RX_CONFIGURATION" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="badValue" path="site/SINGLE-PERMISSIVES/RX_CONFIGURATION" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="OIL_GRADE_FLAG" path="site/SINGLE-PERMISSIVES" type="Folder"/>
-   <Tag name="badValue" path="site/SINGLE-PERMISSIVES/OIL_GRADE_FLAG" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="MLR-GRADE-FLAG" path="site/SINGLE-PERMISSIVES" type="Folder"/>
-   <Tag name="rawValue" path="site/SINGLE-PERMISSIVES/MLR-GRADE-FLAG" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="DML_SQC_FLAG" path="site/SINGLE-PERMISSIVES" type="Folder"/>
-   <Tag name="rawValue" path="site/SINGLE-PERMISSIVES/DML_SQC_FLAG" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="OIL-GRADE-FLAG" path="site/SINGLE-PERMISSIVES" type="Folder"/>
-   <Tag name="rawValue" path="site/SINGLE-PERMISSIVES/OIL-GRADE-FLAG" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="RLA3-CURRENT-GRADE" path="site/SINGLE-PERMISSIVES" type="Folder"/>
-   <Tag name="rawValue" path="site/SINGLE-PERMISSIVES/RLA3-CURRENT-GRADE" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="RLA3_CURRENT_GRADE" path="site/SINGLE-PERMISSIVES" type="Folder"/>
-   <Tag name="badValue" path="site/SINGLE-PERMISSIVES/RLA3_CURRENT_GRADE" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="C9_GRADE_FLAG" path="site/SINGLE-PERMISSIVES" type="Folder"/>
-   <Tag name="rawValue" path="site/SINGLE-PERMISSIVES/C9_GRADE_FLAG" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="badValue" path="site/SINGLE-PERMISSIVES/C9_GRADE_FLAG" type="DB">
-      <Property name="Value"></Property>
       <Property name="DataType">7</Property>
    </Tag>
-   <Tag name="Parameters" path="site" type="Folder"/>
-   <Tag name="SingleRateChangeInput" path="site/Parameters" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="SymbolicVariable291" path="site/Parameters" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="SymbolicVariable292" path="site/Parameters" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="SymbolicVariable4651" path="site/Parameters" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="CatinCounter" path="site/Parameters" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="CatinProdMlActive" path="site/Parameters" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="SplitFlyingSwitchInput" path="site/Parameters" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="LogicalVariable293" path="site/Parameters" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="SeriesRateChangeInput" path="site/Parameters" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="SymbolicVariable429" path="site/Parameters" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="FreezerSampleSwitch" path="site/Parameters" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="SingleFlyingSwitchInput" path="site/Parameters" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="SeriesFlyingSwitchInput" path="site/Parameters" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="LogicalVariable2" path="site/Parameters" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="C-Rx" path="site" type="Folder"/>
-   <Tag name="FRNT-TPR-TIP-HT" path="site/C-Rx" type="Folder"/>
-   <Tag name="highLimit" path="site/C-Rx/FRNT-TPR-TIP-HT" type="DB">
+   <Tag name="value" path="LabData/RLA3/C2-LAB-DATA" type="DB">
       <Property name="Value">0.0</Property>
       <Property name="DataType">5</Property>
    </Tag>
-   <Tag name="maxDeviation" path="site/C-Rx/FRNT-TPR-TIP-HT" type="DB">
-      <Property name="Value">0.0</Property>
+   <Tag name="C2-LAB-DATA-SQC" path="LabData/RLA3" type="Folder"/>
+   <Tag name="standardDeviation" path="LabData/RLA3/C2-LAB-DATA-SQC" type="DB">
+      <Property name="Value">0.3</Property>
       <Property name="DataType">5</Property>
    </Tag>
-   <Tag name="SDSTRM_C2_FLOW" path="site/C-Rx" type="Folder"/>
-   <Tag name="rawValue" path="site/C-Rx/SDSTRM_C2_FLOW" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="badValue" path="site/C-Rx/SDSTRM_C2_FLOW" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="SDSTRM-C3-TO-C2-RATIO" path="site/C-Rx" type="Folder"/>
-   <Tag name="lowLimit" path="site/C-Rx/SDSTRM-C3-TO-C2-RATIO" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="highLimit" path="site/C-Rx/SDSTRM-C3-TO-C2-RATIO" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="PREMIX-TEMP" path="site/C-Rx" type="Folder"/>
-   <Tag name="highLimit" path="site/C-Rx/PREMIX-TEMP" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="CRX-HB-3" path="site/C-Rx" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="FRNT_TPR_TIP_HT" path="site/C-Rx" type="Folder"/>
-   <Tag name="diff" path="site/C-Rx/FRNT_TPR_TIP_HT" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="FRNT-AVG-C2" path="site/C-Rx" type="Folder"/>
-   <Tag name="highLimit" path="site/C-Rx/FRNT-AVG-C2" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="FRNT-LNGTH" path="site/C-Rx" type="Folder"/>
-   <Tag name="lowLimit" path="site/C-Rx/FRNT-LNGTH" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="rawValue" path="site/C-Rx/FRNT-LNGTH" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="highLimit" path="site/C-Rx/FRNT-LNGTH" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="target" path="site/C-Rx/FRNT-LNGTH" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="SS2_TAPER_TIP_HEIGHT" path="site/C-Rx" type="Folder"/>
-   <Tag name="rawValue" path="site/C-Rx/SS2_TAPER_TIP_HEIGHT" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="badValue" path="site/C-Rx/SS2_TAPER_TIP_HEIGHT" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="C3-CONVERSION" path="site/C-Rx" type="Folder"/>
-   <Tag name="lowLimit" path="site/C-Rx/C3-CONVERSION" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="CAT_EFFICIENCY" path="site/C-Rx" type="Folder"/>
-   <Tag name="rawValue" path="site/C-Rx/CAT_EFFICIENCY" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="badValue" path="site/C-Rx/CAT_EFFICIENCY" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="FRNT_AVG_C2" path="site/C-Rx" type="Folder"/>
-   <Tag name="rawValue" path="site/C-Rx/FRNT_AVG_C2" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="badValue" path="site/C-Rx/FRNT_AVG_C2" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="MOONEY_RESET_TIME_FOR_SF_3" path="site/C-Rx" type="Folder"/>
-   <Tag name="rawValue" path="site/C-Rx/MOONEY_RESET_TIME_FOR_SF_3" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="badValue" path="site/C-Rx/MOONEY_RESET_TIME_FOR_SF_3" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="SDSTRM_C3C2_RATIO" path="site/C-Rx" type="Folder"/>
-   <Tag name="rawValue" path="site/C-Rx/SDSTRM_C3C2_RATIO" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="badValue" path="site/C-Rx/SDSTRM_C3C2_RATIO" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="CNTR-AVG-TPR-TIP-HT" path="site/C-Rx" type="Folder"/>
-   <Tag name="maxDeviation" path="site/C-Rx/CNTR-AVG-TPR-TIP-HT" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="target" path="site/C-Rx/CNTR-AVG-TPR-TIP-HT" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="CAT_PREMIX_TEMP" path="site/C-Rx" type="Folder"/>
-   <Tag name="rawValue" path="site/C-Rx/CAT_PREMIX_TEMP" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="badValue" path="site/C-Rx/CAT_PREMIX_TEMP" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="CAT-EFFICIENCY" path="site/C-Rx" type="Folder"/>
-   <Tag name="highLimit" path="site/C-Rx/CAT-EFFICIENCY" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="FrontLength" path="site/C-Rx" type="Folder"/>
-   <Tag name="badValue" path="site/C-Rx/FrontLength" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="MIXTEE_IN_USE_0_EAST_1_WEST" path="site/C-Rx" type="Folder"/>
-   <Tag name="rawValue" path="site/C-Rx/MIXTEE_IN_USE_0_EAST_1_WEST" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="badValue" path="site/C-Rx/MIXTEE_IN_USE_0_EAST_1_WEST" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="SS1_TAPER_TIP_HEIGHT" path="site/C-Rx" type="Folder"/>
-   <Tag name="rawValue" path="site/C-Rx/SS1_TAPER_TIP_HEIGHT" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="badValue" path="site/C-Rx/SS1_TAPER_TIP_HEIGHT" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="MAX_CNTR_TPR_TIP_DELTA_FM_AVG" path="site/C-Rx" type="Folder"/>
-   <Tag name="rawValue" path="site/C-Rx/MAX_CNTR_TPR_TIP_DELTA_FM_AVG" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="badValue" path="site/C-Rx/MAX_CNTR_TPR_TIP_DELTA_FM_AVG" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="C3_CONVERSION" path="site/C-Rx" type="Folder"/>
-   <Tag name="rawValue" path="site/C-Rx/C3_CONVERSION" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="badValue" path="site/C-Rx/C3_CONVERSION" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="CNTR_AVG_TPR_TIP_HT" path="site/C-Rx" type="Folder"/>
-   <Tag name="rawValue" path="site/C-Rx/CNTR_AVG_TPR_TIP_HT" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="badValue" path="site/C-Rx/CNTR_AVG_TPR_TIP_HT" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="PREMIX-LINE-FRESH" path="site/C-Rx" type="DB">
-      <Property name="Value">false</Property>
-      <Property name="DataType">6</Property>
-   </Tag>
-   <Tag name="FRNT_FEED_DIFF" path="site/C-Rx" type="Folder"/>
-   <Tag name="rawValue" path="site/C-Rx/FRNT_FEED_DIFF" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="badValue" path="site/C-Rx/FRNT_FEED_DIFF" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="FRNT-SDSTRM" path="site/C-Rx" type="Folder"/>
-   <Tag name="maxDeviation" path="site/C-Rx/FRNT-SDSTRM" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="FRNT_TPR_TIP_HT_DIFF" path="site/C-Rx" type="Folder"/>
-   <Tag name="badValue" path="site/C-Rx/FRNT_TPR_TIP_HT_DIFF" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="CRX_BLOCK_POLYMER_FLAG" path="site/C-Rx" type="Folder"/>
-   <Tag name="rawValue" path="site/C-Rx/CRX_BLOCK_POLYMER_FLAG" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="badValue" path="site/C-Rx/CRX_BLOCK_POLYMER_FLAG" type="DB">
-      <Property name="Value"></Property>
-      <Property name="DataType">7</Property>
-   </Tag>
-   <Tag name="PREMIX-LINE-DATA-OK" path="site/C-Rx" type="DB">
-      <Property name="Value">false</Property>
-      <Property name="DataType">6</Property>
-   </Tag>
-   <Tag name="Tags" path="" type="Folder"/>
-   <Tag name="C6_RX_IN_FEED" path="Tags" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="PROD_CA_SQC_FLAG" path="Tags" type="Folder"/>
-   <Tag name="highLimit" path="Tags/PROD_CA_SQC_FLAG" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="E-BALER-VOL-FTNIR-SQC" path="Tags" type="Folder"/>
-   <Tag name="target" path="Tags/E-BALER-VOL-FTNIR-SQC" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="POLYSPLIT_SQC_FLAG" path="Tags" type="Folder"/>
-   <Tag name="highLimit" path="Tags/POLYSPLIT_SQC_FLAG" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="RLA3_RUN_HOURS" path="Tags" type="Folder"/>
-   <Tag name="gradeChangeTime" path="Tags/RLA3_RUN_HOURS" type="DB">
-      <Property name="Value">0</Property>
-      <Property name="DataType">2</Property>
-   </Tag>
-   <Tag name="PROD_ML_VFU_OK" path="Tags" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="VFU_BALER_TEMP_CHK" path="Tags" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="C9_IN_CRUMB" path="Tags" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="SPLIT_RATE_CHANGE" path="Tags" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="FRNT_SHORT_USE_TEMP_GDA" path="Tags" type="Folder"/>
-   <Tag name="implementationTime" path="Tags/FRNT_SHORT_USE_TEMP_GDA" type="DB">
-      <Property name="Value">0</Property>
-      <Property name="DataType">2</Property>
-   </Tag>
-   <Tag name="POLY_RATE_CHANGE" path="Tags" type="Folder"/>
-   <Tag name="gdaInput" path="Tags/POLY_RATE_CHANGE" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="C_FLYING_SWITCH" path="Tags" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="VFU_FTNIR_GRADE" path="Tags" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="C3_PURITY_HI" path="Tags" type="DB">
-      <Property name="Value">0.0</Property>
-      <Property name="DataType">5</Property>
-   </Tag>
-   <Tag name="C101_ETHYLENE" path="Tags" type="DB">
+   <Tag name="target" path="LabData/RLA3/C2-LAB-DATA-SQC" type="DB">
       <Property name="Value">0.0</Property>
       <Property name="DataType">5</Property>
    </Tag>

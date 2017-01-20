@@ -1,7 +1,0 @@
-log: Block Language Toolkit Regression Suite
-#
-# Run the collection of tests 
-#
-run: setinitialstate.txt
-run: setsteadystate.txt
-run: mlr.txt

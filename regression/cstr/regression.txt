@@ -1,5 +1,6 @@
 log: Block Language Toolkit Regression Suite
 #
-# Run the collection of tests for the "simple" diagrams
+# Run the collection of tests for the "crx/cstr" diagrams
 #
-run: mlr.txt
+run: scripting.txt
+run: ethylene.txt

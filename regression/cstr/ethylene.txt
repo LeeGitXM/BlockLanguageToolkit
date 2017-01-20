@@ -1,0 +1,53 @@
+#
+# Test of a set of SQC blocks. 
+# Block attributes: 
+#  SampleSize    = 4
+#  MaxOutOfRange = 1
+#  ClearOnReset  = TRUE,FALSE,TRUE
+#  LimitType     = HIGH,LOW,BOTH, CONSECUTIVE
+#  Min required  = 1,2,3,3
+#  NumberOfStandardDeviations = 1.5
+#  Block is TRUE if a rule has been violated
+#
+DIAGRAM = "CrxProductQuality/EthyleneProblem/EthyleneProblem"
+DIAGRAM2 = "CstrProductQuality/CstrC2Problem/CstrC2Problem"
+Show: diagram $DIAGRAM
+
+# SQC Blocks have custom names
+S1="C2Low1Of1"
+S2="C2Low3Of4"
+S3="C2Low9Of9"
+S4="C2High9Of9"
+S5="C2High3Of4"
+S6="C2High1Of1"
+FD2="C2Problem"
+FD2="C2ProblemForCstr"
+SQCDIAGNOSIS="EthyleneSqc"
+
+tag: GRADE DiagnosticToolkit/Connections/CRxGrade
+tag: ToC2  DiagnosticToolkit/Connections/C2SqcToC2Cstr
+
+# Tags are: Feed Date Target StdDev
+tagset: SQC LabData/RLA3/C2-LAB-DATA/value LabData/RLA3/C2-LAB-DATA/sampleTime LabData/RLA3/C2-LAB-DATA-SQC/target LabData/RLA3/C2-LAB-DATA-SQC/standardDeviation
+Tagset: SQC
+
+# NOTE: 
+Test: SQC Block
+Step: In-Range Values
+09:58:15 0.0 0.0 0.0 0.0
+09:58:30 resetDiagram ($DIAGRAM)
+10:00:00 0.1 "2017/01/20 10:00:00" 0.0 1.0
+10:01:00 -0.1 "2017/01/20 10:01:00" 
+10:02:00 -0.1 "2017/01/20 10:02:00"
+10:03:00 0.0 "2017/01/20 10:03:00"
+10:04:00 0.15 "2017/01/20 10:04:00"
+10:05:00 -0.1 "2017/01/20 10:05:00"
+10:06:00 -0.03 "2017/01/20 10:06:00"
+10:07:00 0.04 "2017/01/20 10:07:00"
+10:08:00 0.08 "2017/01/20 10:08:00"
+10:09:00 -0.07 "2017/01/20 10:09:00"
+10:10:00 -0.12 "2017/01/20 10:10:00"
+
+Step: Out-Of-Range Values
+Show: diagram $DIAGRAM2
+10:15:00 -1.12 "2017/01/20 10:15:00"

@@ -1,4 +1,4 @@
-# Copyright 2015 ILS Automation
+# Copyright 2017 ILS Automation
 # General-purpose setup activities.
 # NOTE: The tag here must match that set for the application.
 #
@@ -22,13 +22,30 @@ script: setStateForApplication applicationProxy.setState(name,state)
 script: setStringValue tag.setStringValue(provider,tagpath,text)
 script: setTestTimeOffset timeFactor.setTestTimeOffset(year,month,day,hour,minute,second)
 script: setTimeFactor timeFactor.setTimeFactor(factor)
+script: getDiagramNameForBlock blockProxy.getDiagramForBlock(dpath,name)
+script: blocksDownstream interfaces.listBlocksDownstreamOf(dpath,bname)
+script: blocksGloballyDownstream interfaces.listBlocksGloballyDownstreamOf(dpath,bname)
+script: blocksForTag interfaces.listBlocksForTag(tagpath)
+script: blocksInDiagram interfaces.listBlocksInDiagram(dpath)
+script: blocksOfClass interfaces.listBlocksOfClass(dpath,clss)
+script: blocksOfClassDownstream interfaces.listBlocksOfClassDownstream(dpath,name,clss)
+script: blocksOfClassUpstream interfaces.listBlocksOfClassUpstream(dpath,name,clss)
+script: blocksUpstream interfaces.listBlocksUpstreamOf(dpath,bname)
+script: blocksGloballyUpstream interfaces.listBlocksGloballyUpstreamOf(dpath,bname)
+script: getBlockProperty blockProxy.getBlockProperty(dpath,block,property)
+script: pathForBlock   interfaces.pathForBlock(dpath,bname)
+script: setBlockProperty blockProxy.setBlockProperty(dpath,block,property,value)
+script: sinksForSource interfaces.listSinksForSource(dpath,bname)
+script: sourcesForSink interfaces.listSourcesForSink(dpath,bname)
+
 # We need to set the test framework and internal clocks the same
-timefactor: 5
-setTimeFactor (15)
+timefactor: 30
+setTimeFactor (30)
 
 # Specify the provider that corresponds to the application configuration
 PROVIDER = getIsolationProvider()
 tagprovider: $PROVIDER
 setStateForApplication("CstrProductQuality","ISOLATED")
+setStateForApplication("CrxProductQuality","ISOLATED")
 
 status: setup complete.

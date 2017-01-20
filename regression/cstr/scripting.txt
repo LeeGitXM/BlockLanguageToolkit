@@ -1,0 +1,45 @@
+#
+# Test of the scripting interface
+#
+DIAGRAM = "CrxProductQuality/EthyleneProblem/EthyleneProblem"
+DIAGRAM2 = "CstrProductQuality/CstrC2Problem/CstrC2Problem"
+SQC="C2High9Of9"
+FD="C2ProblemForCstr"
+SQCDIAGNOSIS="EthyleneSqc"
+Show: diagram $DIAGRAM
+resetDiagram ($DIAGRAM)
+
+Test: Static Configuration
+Step: Diagram Name from Block
+assert: getDiagramNameForBlock($DIAGRAM,$SQCDIAGNOSIS) = "EthyleneProblem" "Obtain diagram name from blockId"
+
+Step: Blocks in Diagram
+assert: blocksInDiagram($DIAGRAM) contains "C2Low3Of4" "C2Low3Of4 is in diagram"
+assert: blocksInDiagram($DIAGRAM) contains "C2High1Of1" "C2High1Of1 is in diagram"
+assert: count of blocksInDiagram($DIAGRAM) = 20 "20 blocks in diagram"
+
+Step: Blocks of Class
+assert: blocksOfClass($DIAGRAM,"com.ils.block.SQC") contains "C2Low9Of9" "C2Low9Of9 is an SQC"
+assert: blocksOfClass($DIAGRAM,"com.ils.block.SQC") contains "C2High9Of9" "C2High9Of9 is an SQC"
+assert: count of blocksOfClass($DIAGRAM,"com.ils.block.SQC") = 6 "6 SQC blocks"
+assert: blocksOfClassUpstream($DIAGRAM,$SQCDIAGNOSIS,"com.ils.block.SQC") contains "C2Low9Of9" "C2Low9Of9 is upstream of SQC Diagnosis"
+
+Step: Downstream of Block
+assert: blocksDownstream($DIAGRAM,$SQCDIAGNOSIS) contains "C2Problem" "Final diagnosis is downstream of diagnosis"
+assert: count of blocksDownstream($DIAGRAM,$SQCDIAGNOSIS) = 3  "3 blocks downstream of command SQC Diagnosis"
+
+Step: Upstream of Block 
+assert: blocksUpstream($DIAGRAM,$SQCDIAGNOSIS) contains "C2High9Of9" "C2High9Of9 is upstream of SQC Diagnosis"
+assert: blocksUpstream($DIAGRAM,$SQCDIAGNOSIS) contains "C2Low9Of9" "C2Low9Of9 is upstream of SQC Diagnosis"
+assert: blocksUpstream($DIAGRAM,$SQCDIAGNOSIS) contains "IlsExportName1225" "IlsExportName1225 (LabData) is upstream of SQC Diagnosis"
+assert: count of blocksUpstream($DIAGRAM,$SQCDIAGNOSIS) = 11 "11 blocks upstream of SQC Diagnosis"
+
+Step: Globally Downstream of Block
+assert: blocksGloballyDownstream($DIAGRAM,$SQCDIAGNOSIS) contains "C2ProblemForCstr" "Final diagnosis is globally downstream of diagnosis"
+assert: count of blocksGloballyDownstream($DIAGRAM,$SQCDIAGNOSIS) = 5  "5 blocks globally downstream of command SQC Diagnosis"
+
+Step: Globally Upstream of Block 
+assert: blocksGloballyUpstream($DIAGRAM2,$FD) contains "C2High9Of9" "C2High9Of9 is globally upstream of Final Diagnosis"
+assert: blocksGloballyUpstream($DIAGRAM2,$FD) contains "C2Low9Of9" "C2Low9Of9 is globally upstream of Final Diagnosis"
+assert: blocksGloballyUpstream($DIAGRAM2,$FD) contains "IlsExportName1225" "IlsExportName1225 (LabData) is globally upstream of Final Diagnosis"
+assert: count of blocksGloballyUpstream($DIAGRAM2,$FD) = 14 "14 blocks upstream of Final Diagnosis"
