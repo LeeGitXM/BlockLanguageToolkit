@@ -1250,7 +1250,7 @@
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="value" path="LabData/RLA3/C2-LAB-DATA" type="DB">
-      <Property name="Value">0.0</Property>
+      <Property name="Value">3.0</Property>
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="C2-LAB-DATA-SQC" path="LabData/RLA3" type="Folder"/>

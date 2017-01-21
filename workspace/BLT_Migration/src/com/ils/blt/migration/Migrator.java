@@ -323,13 +323,15 @@ public class Migrator {
 			for(SerializableAnchor anc:anchors) {
 				if( anc.getDirection().equals(AnchorDirection.OUTGOING)) {
 					block.setClassName("com.ils.block.SourceConnection");
-					for(BlockProperty prop:block.getProperties() ) {
-						if( prop.getName().equals(BlockConstants.BLOCK_PROPERTY_TAG_PATH)) {
-							prop.setBindingType(BindingType.TAG_READ);
-							break;
+					if( block.getProperties()!=null) {
+						for(BlockProperty prop:block.getProperties() ) {
+							if( prop.getName().equals(BlockConstants.BLOCK_PROPERTY_TAG_PATH)) {
+								prop.setBindingType(BindingType.TAG_READ);
+								break;
+							}
 						}
+						break;
 					}
-					break;
 				}
 			}
 		}	
@@ -350,7 +352,7 @@ public class Migrator {
 			}
 		}
 		// 3)  Input and output blocks are typed in G2
-		else if( g2Block.getClassName().equalsIgnoreCase("GDL-NUMERIC-ENTRY-POINT")  ) {
+		if( g2Block.getClassName().equalsIgnoreCase("GDL-NUMERIC-ENTRY-POINT")  ) {
 			for( SerializableAnchor anchor:block.getAnchors()) {
 				if( anchor.getDirection().equals(AnchorDirection.OUTGOING) ) {
 					anchor.setConnectionType(ConnectionType.DATA);

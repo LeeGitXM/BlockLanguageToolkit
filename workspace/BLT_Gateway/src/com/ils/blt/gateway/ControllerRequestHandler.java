@@ -1477,6 +1477,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				block.propertyChange(event);
 			}
 		}
+		// Inform the designer of the change
+		controller.sendPropertyNotification(block.getBlockId().toString(), newProperty.getName(), new BasicQualifiedValue(newProperty.getValue()));
 	}
 }
 

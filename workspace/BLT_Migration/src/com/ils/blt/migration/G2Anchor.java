@@ -50,7 +50,7 @@ public class G2Anchor {
 			}
 			else if( type.equalsIgnoreCase("GDL-ACTION-LINK") ||
 					 type.equalsIgnoreCase("GDL-ACTION-PATH")) {
-				result = ConnectionType.SIGNAL;
+				result = ConnectionType.TEXT;   // Assume the action is a String command
 			}
 			else if( type.equalsIgnoreCase("GDL-CONTROL-PATH")   ) {
 				result = ConnectionType.TRUTHVALUE;
@@ -63,6 +63,7 @@ public class G2Anchor {
 			}
 		}
 		else {
+			//System.err.println(String.format("%s.getConnectionType: No connection type found - using ANY",TAG));
 			result = ConnectionType.ANY;      // Connection posts have null connector types.
 		}
 		return result;
