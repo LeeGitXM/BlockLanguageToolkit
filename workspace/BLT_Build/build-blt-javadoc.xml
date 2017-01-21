@@ -3,17 +3,17 @@
 	<property name="root.dir" value="${basedir}/../.." />
     <target name="javadoc">
         <javadoc access="protected" author="true" 
-        	classpath=" ${root.dir}/ignition-78/lib/designer-api.jar:
-        				${root.dir}/ignition-78/lib/vision-designer-api.jar:
-        			   	${root.dir}/ignition-78/lib/client-api.jar:
-        				${root.dir}/ignition-78/lib/vision-client-api.jar:
-        				${root.dir}/ignition-78/lib/ignition-common.jar:
-        				${root.dir}/ignition-78/lib/client-api.jar:
-        				${root.dir}/ignition-78/lib/wicket-core.jar:
-        				${root.dir}/ignition-78/lib/wicket-datetime.jar:
-        				${root.dir}/ignition-78/lib/wicket-extensions.jar:
-        				${root.dir}/ignition-78/lib/wicket-request.jar:
-        				${root.dir}/ignition-78/lib/wicket-util.jar:
+        	classpath=" ${root.dir}/ignition-79/lib/designer-api.jar:
+        				${root.dir}/ignition-79/lib/vision-designer-api.jar:
+        			   	${root.dir}/ignition-79/lib/client-api.jar:
+        				${root.dir}/ignition-79/lib/vision-client-api.jar:
+        				${root.dir}/ignition-79/lib/ignition-common.jar:
+        				${root.dir}/ignition-79/lib/client-api.jar:
+        				${root.dir}/ignition-79/lib/wicket-core.jar:
+        				${root.dir}/ignition-79/lib/wicket-datetime.jar:
+        				${root.dir}/ignition-79/lib/wicket-extensions.jar:
+        				${root.dir}/ignition-79/lib/wicket-request.jar:
+        				${root.dir}/ignition-79/lib/wicket-util.jar:
         				${root.dir}/external/lib/wicket-jquery-ui-6.7.0.jar:
         				${root.dir}/external/lib/ils-common.jar:
         				${root.dir}/external/lib/log4j-1.2.16.jar:
@@ -29,7 +29,7 @@
         				${root.dir}/external/lib/jide-components-3.5.13.jar:
         				${root.dir}/external/lib/jide-dock-3.5.13.jar:
         				${root.dir}/external/lib/miglayout-4.0-swing.jar:	
-        				${root.dir}/ignition-78/lib/gateway-api.jar:
+        				${root.dir}/ignition-79/lib/gateway-api.jar:
         	            ${basedir}/BLT_Common/bin" 
         	destdir="BLT_Build/doc" nodeprecated="false" nodeprecatedlist="true" noindex="false" nonavbar="false" notree="false" 
         	packagenames="com.ils.block,com.ils.block.annotation,

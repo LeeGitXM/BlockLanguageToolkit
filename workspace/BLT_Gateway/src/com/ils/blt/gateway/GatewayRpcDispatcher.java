@@ -131,7 +131,7 @@ public class GatewayRpcDispatcher   {
 	/** The blocks implemented in Java are expected to reside in a jar named "block-definition.jar".
 	 *  We add the blocks implemented in Python to this list. We consider only classes that are in
 	 *  a "com/ils/block" package.
-	 *  @param projectId project identifier
+	 *  
 	 *  @return a list of prototypes suitable for constructing a palette
 	 */
 	public List<String> getBlockPrototypes() {

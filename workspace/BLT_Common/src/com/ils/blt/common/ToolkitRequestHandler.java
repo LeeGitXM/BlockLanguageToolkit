@@ -164,7 +164,7 @@ public interface ToolkitRequestHandler  {
 	public boolean isAlerting(Long projectId, Long resourceId) ;
 	
 	/**
-	 * Determine whether or not the engine is running.
+	 * @return whether or not the engine is running
 	 */
 	public boolean isControllerRunning() ;
 	/**
@@ -186,7 +186,7 @@ public interface ToolkitRequestHandler  {
 	 * Query a block in the gateway for list of the blocks connected to the named port. 
 	 * @param diagramId of the parent diagram
 	 * @param blockId identifier of the block
-	 * @param port name of the anchor of interest
+	 * @param portName port of the anchor of interest
 	 * @return a list of blocks connected to the named port.
 	 */
 	public List<SerializableBlockStateDescriptor> listBlocksConnectedAtPort(String diagramId,String blockId,String portName) ;

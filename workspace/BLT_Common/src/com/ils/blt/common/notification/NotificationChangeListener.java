@@ -17,6 +17,8 @@ public interface NotificationChangeListener extends EventListener  {
 	//============================= NotificationChangeListener ===========================
 	/**
 	 * A diagram alert state has changed
+	 * @param resourceId the resource Id of the affected diagram
+	 * @param state the state of the reporting block
 	 */
 	public void diagramAlertChange(long resourceId,String state);
 	

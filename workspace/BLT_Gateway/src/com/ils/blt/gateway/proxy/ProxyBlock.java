@@ -128,8 +128,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	}
 	/**
 	 * Set the state of a block directly. Notify of alerting status.
-	 * @param name the name of one of the block's properties.
-	 * @param obj the new value.
+	 * @param newState the new state.
 	 */
 	@Override
 	public void setState(TruthValue newState) {

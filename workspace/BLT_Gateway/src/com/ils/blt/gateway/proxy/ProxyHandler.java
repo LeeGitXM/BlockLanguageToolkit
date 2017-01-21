@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved.
+ *   (c) 2014-2017  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.gateway.proxy;
@@ -31,7 +31,6 @@ import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.common.JavaToPython;
 import com.ils.common.PythonToJava;
-import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.script.ScriptManager;
 import com.inductiveautomation.ignition.common.util.LogUtil;
@@ -315,7 +314,6 @@ public class ProxyHandler   {
 	 * each block definition. The prototypes are returned as a list of dictionaries
 	 * and converted to PalettePrototype object here.
 	 * 
-	 * @param mgr the appropriate project-specific script manager
 	 * @return
 	 */
 	public synchronized List<PalettePrototype> getPalettePrototypes() {

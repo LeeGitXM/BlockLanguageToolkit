@@ -75,7 +75,7 @@ public class BlockProperty implements NotificationChangeListener {
 	}
 	/**
 	 * Deserialize from a Json string 
-	 * @param json
+	 * @param json the JSON representation of a block property
 	 * @return the BlockProperty created from the input JSON string
 	 */
 	public static BlockProperty createProperty(String json) {
@@ -131,6 +131,8 @@ public class BlockProperty implements NotificationChangeListener {
 	/**
 	 * Helper methods for dealing with list data types. The list is stored as a single
 	 * comma-delimited string. Clearly the delimiter must not be present in the strings.
+	 * @param list the list of strings to analyze
+	 * @return the list as a comma-delimited string
 	 */
 	public static String assembleList(List<String> list) {
 		StringBuffer s = new StringBuffer();
@@ -153,6 +155,7 @@ public class BlockProperty implements NotificationChangeListener {
 	
 	/**
 	 * Serialize into a JSON string
+	 * @return the JSON equivalent of this property
 	 */
 	public String toJson() {
 		ObjectMapper mapper = new ObjectMapper();
