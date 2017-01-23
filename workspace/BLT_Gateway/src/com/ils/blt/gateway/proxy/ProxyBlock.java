@@ -77,7 +77,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	/**
 	 * On a get, we return the locally cached property.
 	 * @param name the property (attribute) name.
-	 * @return a particular property given its name.
+	 * @return a particular property given its name
 	 */
 	@Override
 	public BlockProperty getProperty(String name) {
@@ -98,7 +98,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 */
 	@Override
 	public TruthValue getState() {
-		return delegate.getBlockState(context.getScriptManager(), pythonBlock);
+		return delegate.getBlockState(context.getProjectManager().getProjectScriptManager(getProjectId()), pythonBlock);
 	}
 	/**
 	 * Send status update notifications for any properties
@@ -109,7 +109,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 */
 	@Override
 	public void notifyOfStatus() {
-		delegate.notifyOfStatus(context.getScriptManager(),getPythonBlock());
+		delegate.notifyOfStatus(context.getProjectManager().getProjectScriptManager(getProjectId()),getPythonBlock());
 	}
 	/**
 	 * Accept a new value for a block property. Push through to the
@@ -123,7 +123,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 		BlockProperty prop = getProperty(name);
 		if( prop!=null ) {
 			prop.setValue(obj);
-			delegate.setBlockProperty(context.getScriptManager(),this,prop);
+			delegate.setBlockProperty(context.getProjectManager().getProjectScriptManager(getProjectId()),this,prop);
 		}
 	}
 	/**
@@ -132,7 +132,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 */
 	@Override
 	public void setState(TruthValue newState) {
-		delegate.setBlockState(context.getScriptManager(),this,newState);
+		delegate.setBlockState(context.getProjectManager().getProjectScriptManager(getProjectId()),this,newState);
 		requestHandler.postAlertingStatus(this);
 	}
 	
@@ -147,7 +147,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 		if(vcn.getConnection()!=null  ) {
 			port = vcn.getConnection().getDownstreamPortName();
 		}
-		delegate.acceptValue( context.getScriptManager(),getPythonBlock(),port,vcn.getValue());
+		delegate.acceptValue( context.getProjectManager().getProjectScriptManager(getProjectId()),getPythonBlock(),port,vcn.getValue());
 	}
 	
 	/**
@@ -157,7 +157,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 */
 	@Override
 	public void evaluate() { 
-		delegate.evaluate(context.getScriptManager(),getPythonBlock()); 
+		delegate.evaluate(context.getProjectManager().getProjectScriptManager(getProjectId()),getPythonBlock()); 
 	}
 	/**
 	 * Reset the block. Resetting  python block may change the diagram alert
@@ -165,7 +165,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 */
 	@Override
 	public void reset() { 
-		delegate.reset(context.getScriptManager(),getPythonBlock()); 
+		delegate.reset(context.getProjectManager().getProjectScriptManager(getProjectId()),getPythonBlock()); 
 		requestHandler.postAlertingStatus(this);
 	}
 }

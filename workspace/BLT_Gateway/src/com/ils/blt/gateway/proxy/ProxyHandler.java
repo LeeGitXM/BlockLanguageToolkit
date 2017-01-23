@@ -144,19 +144,19 @@ public class ProxyHandler   {
 		if( createBlockCallback.compileScript() ) {
 			synchronized(createBlockCallback) {
 				PyDictionary pyDictionary = new PyDictionary();  // Empty
-				createBlockCallback.initializeLocalsMap(context.getScriptManager());
+				createBlockCallback.initializeLocalsMap(context.getProjectManager().getProjectScriptManager(projectId));
 				createBlockCallback.setLocalVariable(0,new PyString(className));
 				createBlockCallback.setLocalVariable(1,new PyString(parentId.toString()));
 				createBlockCallback.setLocalVariable(2,new PyString(blockId.toString()));
 				createBlockCallback.setLocalVariable(3,pyDictionary);
 				log.debugf("%s.createBlockInstance --- executing create script for %s",TAG,className); 
-				createBlockCallback.execute(context.getScriptManager());
+				createBlockCallback.execute(context.getProjectManager().getProjectScriptManager(projectId));
 
 				// Contents of list are Hashtable<String,?>
 				PyObject pyBlock = (PyObject)pyDictionary.get("instance");
 				if( pyBlock!=null ) {
 					block.setPythonBlock(pyBlock);
-					BlockProperty[] props = getBlockProperties(context.getScriptManager(),pyBlock);
+					BlockProperty[] props = getBlockProperties(context.getProjectManager().getProjectScriptManager(projectId),pyBlock);
 					for(BlockProperty prop:props) {
 						if(prop!=null) block.addProperty(prop);
 					}
@@ -312,7 +312,7 @@ public class ProxyHandler   {
 	/**
 	 * Query the python layer for a list of palette prototypes, one for
 	 * each block definition. The prototypes are returned as a list of dictionaries
-	 * and converted to PalettePrototype object here.
+	 * and converted to PalettePrototype object here. We use the generic script manager.
 	 * 
 	 * @return
 	 */

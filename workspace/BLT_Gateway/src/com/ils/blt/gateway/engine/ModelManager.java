@@ -785,8 +785,9 @@ public class ModelManager implements ProjectListener  {
 			}
 			//	Invoke extension script on diagram save
 			if( diagram!=null && !diagram.getState().equals(DiagramState.DISABLED) ) {
-				extensionManager.runScript(context.getScriptManager(), ScriptConstants.DIAGRAM_CLASS_NAME, 
-						ScriptConstants.NODE_SAVE_SCRIPT, diagram.getSelf().toString());
+				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(diagram.getProjectId()), 
+											ScriptConstants.DIAGRAM_CLASS_NAME, 
+											ScriptConstants.NODE_SAVE_SCRIPT, diagram.getSelf().toString());
 			}
 		}
 		else {
