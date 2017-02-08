@@ -1,5 +1,5 @@
 /**
- *   (c) 2013-2016  ILS Automation. All rights reserved.
+ *   (c) 2013-2017  ILS Automation. All rights reserved.
  */
 package com.ils.blt.common;
 
@@ -34,11 +34,13 @@ public class UtilityFunctions  {
 	 */
 	public double parseDouble(String val) {
 		double result = Double.NaN;
-		try{
-			result = Double.parseDouble(val);
-		}
-		catch(NumberFormatException nfe) {
-			log.error(TAG+"parseDouble: Format exception "+nfe.getLocalizedMessage(),nfe);    // Prints stack trace
+		if( !val.isEmpty()) {
+			try{
+				result = Double.parseDouble(val);
+			}
+			catch(NumberFormatException nfe) {
+				log.error(TAG+"parseDouble: Format exception "+nfe.getLocalizedMessage(),nfe);    // Prints stack trace
+			}
 		}
 		return result;
 	}
@@ -49,12 +51,14 @@ public class UtilityFunctions  {
 	 */
 	public int parseInteger(String val) {
 		int result = 0;
-		try{
-			result = Integer.decode(val);    // Works with hex
-		}
-		catch(NumberFormatException nfe) {
-			double dbl = parseDouble(val);
-			if( !Double.isNaN(dbl)) result = (int)dbl;
+		if( !val.isEmpty()) {
+			try{
+				result = Integer.decode(val);    // Works with hex
+			}
+			catch(NumberFormatException nfe) {
+				double dbl = parseDouble(val);
+				if( !Double.isNaN(dbl)) result = (int)dbl;
+			}
 		}
 		return result;
 	}
@@ -66,12 +70,14 @@ public class UtilityFunctions  {
 	 */
 	public long parseLong(String val) {
 		long result = 0;
-		try{
-			result = Long.decode(val);    // Works with hex
-		}
-		catch(NumberFormatException nfe) {
-			double dbl = parseDouble(val);
-			if( !Double.isNaN(dbl)) result = (long)dbl;
+		if( !val.isEmpty()) {
+			try{
+				result = Long.decode(val);    // Works with hex
+			}
+			catch(NumberFormatException nfe) {
+				double dbl = parseDouble(val);
+				if( !Double.isNaN(dbl)) result = (long)dbl;
+			}
 		}
 		return result;
 	}

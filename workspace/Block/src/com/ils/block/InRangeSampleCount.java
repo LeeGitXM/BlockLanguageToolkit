@@ -105,7 +105,6 @@ public class InRangeSampleCount extends AbstractProcessBlock implements ProcessB
 	public void reset() {
 		super.reset();
 		queue.clear();
-		state = TruthValue.UNKNOWN;
 	}
 	
 	/**

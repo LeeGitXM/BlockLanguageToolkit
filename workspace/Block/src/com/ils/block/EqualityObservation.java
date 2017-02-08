@@ -61,7 +61,6 @@ public class EqualityObservation extends AbstractProcessBlock implements Process
 	@Override
 	public void reset() {
 		super.reset();
-		state = TruthValue.UNKNOWN;
 		observation = null;
 	}
 	

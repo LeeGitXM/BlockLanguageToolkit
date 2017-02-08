@@ -89,7 +89,6 @@ public class Explanation extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void reset() {
 		super.reset();
-		state = TruthValue.UNKNOWN;
 	}
 
 	/**

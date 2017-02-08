@@ -86,10 +86,6 @@ public class Difference extends AbstractProcessBlock implements ProcessBlock {
 		anchors.add(output);
 	}
 	
-	@Override
-	public void reset() {
-		super.reset();
-	}
 	/**
 	 * Disconnect from the timer thread.
 	 */

@@ -86,11 +86,6 @@ public class Or extends AbstractProcessBlock implements ProcessBlock {
 		anchors.add(output);
 	}
 	
-	@Override
-	public void reset() {
-		super.reset();
-		state = TruthValue.UNKNOWN;
-	}
 	/**
 	 * Initialize the qualified value map.
 	 */

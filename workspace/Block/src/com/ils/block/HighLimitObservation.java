@@ -59,7 +59,6 @@ public class HighLimitObservation extends AbstractProcessBlock implements Proces
 	@Override
 	public void reset() {
 		super.reset();
-		state = TruthValue.UNKNOWN;
 		observation = null;
 	}
 	

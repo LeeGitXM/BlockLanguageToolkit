@@ -394,14 +394,14 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 			for(AnchorPrototype ap:getAnchors()) {
 				if( ap.getAnchorDirection().equals(AnchorDirection.OUTGOING) ) {
 					if( ap.getConnectionType().equals(ConnectionType.TRUTHVALUE) ) {
-						QualifiedValue UNKNOWN_TRUTH_VALUE = new TestAwareQualifiedValue(timer,TruthValue.UNKNOWN);
-						controller.sendConnectionNotification(getBlockId().toString(), ap.getName(),UNKNOWN_TRUTH_VALUE);
-						OutgoingNotification nvn = new OutgoingNotification(this,ap.getName(),UNKNOWN_TRUTH_VALUE);
+						QualifiedValue UNSET_TRUTH_VALUE = new TestAwareQualifiedValue(timer,TruthValue.UNSET);
+						controller.sendConnectionNotification(getBlockId().toString(), ap.getName(),UNSET_TRUTH_VALUE);
+						OutgoingNotification nvn = new OutgoingNotification(this,ap.getName(),UNSET_TRUTH_VALUE);
 						controller.acceptCompletionNotification(nvn);
 					}
 					else if( ap.getConnectionType().equals(ConnectionType.DATA)) {
-						QualifiedValue NAN_DATA_VALUE = new TestAwareQualifiedValue(timer,new Double(Double.NaN));
-						controller.sendConnectionNotification(getBlockId().toString(), ap.getName(),NAN_DATA_VALUE);
+						QualifiedValue EMPTY_DATA_VALUE = new TestAwareQualifiedValue(timer,"");
+						controller.sendConnectionNotification(getBlockId().toString(), ap.getName(),EMPTY_DATA_VALUE);
 					}
 					else {
 						QualifiedValue EMPTY_STRING_VALUE = new TestAwareQualifiedValue(timer,"");

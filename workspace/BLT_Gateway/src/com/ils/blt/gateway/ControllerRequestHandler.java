@@ -609,6 +609,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			if(blk!=null) {
 				List<ProcessBlock>connectedBlocks =  diagram.getConnectedBlocksAtPort(blk,portName);
 				for( ProcessBlock pb:connectedBlocks ) {
+					if(pb==null) continue; 
 					descriptors.add(pb.toDescriptor());
 				}
 			}

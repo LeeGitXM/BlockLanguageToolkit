@@ -31,6 +31,7 @@ public interface WorkspaceConstants   {
 	public static final Color CONNECTION_FILL_DATA            = Color.LIGHT_GRAY;
 	public static final Color CONNECTION_FILL_EMPTY           = new Color(230,230,230);   // Mercury
 	public static final Color CONNECTION_FILL_FALSE           = new Color(175,0,0);       // Dark red
+	public static final Color CONNECTION_FILL_NAN             = Color.RED;
 	public static final Color CONNECTION_FILL_SIGNAL          = Color.BLACK;
 	public static final Color CONNECTION_FILL_TRUE            = new Color(0,128,0);       // Clover
 	public static final Color CONNECTION_FILL_TEXT            = new Color(230,200,55);    // Mustard

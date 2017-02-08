@@ -79,11 +79,7 @@ public class Product extends AbstractProcessBlock implements ProcessBlock {
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
 		anchors.add(output);
 	}
-	
-	@Override
-	public void reset() {
-		super.reset();
-	}
+
 	/**
 	 * Initialize the qualified value map.
 	 */

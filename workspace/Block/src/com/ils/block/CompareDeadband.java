@@ -52,12 +52,6 @@ public class CompareDeadband extends Compare implements ProcessBlock {
 		initialize();
 	}
 	
-	@Override
-	public void reset() {
-		super.reset();
-		truthValue = TruthValue.UNSET;
-	}
-	
 	/**
 	 * The super-class method has already been run. Its anchors work for us as-is.
 	 */

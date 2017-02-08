@@ -54,7 +54,6 @@ public class ZeroCrossing extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void reset() {
 		super.reset();
-		state = TruthValue.UNKNOWN;
 		value = Double.NaN;
 	}
 	

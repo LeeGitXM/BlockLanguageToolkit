@@ -59,7 +59,6 @@ public class LowLimitObservation extends AbstractProcessBlock implements Process
 	@Override
 	public void reset() {
 		super.reset();
-		state = TruthValue.UNKNOWN;
 		observation = null;
 	}
 	

@@ -99,7 +99,6 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 	@Override
 	public void reset() {
 		super.reset();
-		state = TruthValue.UNKNOWN;
 		lastQuality = null;
 	}
 	/**

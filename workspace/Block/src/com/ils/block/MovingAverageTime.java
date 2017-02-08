@@ -102,7 +102,6 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 	public void reset() {
 		super.reset();
 		timer.removeWatchdog(dog);    // Stop evaluation
-		state = TruthValue.UNSET;
 		if( clearOnReset ) {
 			buffer.clear();
 			currentValue = null;

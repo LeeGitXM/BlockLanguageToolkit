@@ -94,12 +94,6 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 		anchors.add(output);
 	}
 	
-	@Override
-	public void reset() {
-		super.reset();
-		state = TruthValue.UNKNOWN;
-	}
-	
 	
 	/**
 	 * Notify the block that a new value has appeared on one of its input anchors.

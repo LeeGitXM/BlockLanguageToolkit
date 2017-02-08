@@ -92,11 +92,6 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.TRUTHVALUE);
 		anchors.add(output);
 	}
-	@Override
-	public void reset() {
-		super.reset();
-		state = TruthValue.UNKNOWN;
-	}
 	
 	
 

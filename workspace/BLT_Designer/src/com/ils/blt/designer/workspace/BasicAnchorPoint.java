@@ -61,6 +61,7 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 	private final String annotation;
 	private boolean isEmpty = true;
 	private boolean isGood = true;
+	private boolean isNan = false;
 	private boolean allowMultiple = true;
 	private TruthValue theTruth = TruthValue.UNSET;
 	private QualifiedValue lastValue = null;
@@ -109,21 +110,25 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 	 *         This should never be called for a signal.
 	 */
 	public Stroke getCoreStroke() {
-		if( cxnType.equals(ConnectionType.DATA))
-			if( isGood )
-				return dataCoreStroke;
-			else
-				return dataBadStroke;
-		else if( cxnType.equals(ConnectionType.TRUTHVALUE))
-			if( isGood )
+		if( cxnType.equals(ConnectionType.DATA)) {
+			if( isGood ) {
+				if( isNan || isEmpty ) return dataBadStroke;
+				else return dataCoreStroke;
+			}
+			else return dataBadStroke;
+		}
+		else if( cxnType.equals(ConnectionType.TRUTHVALUE)) {
+			if( isEmpty )
+				return truthvalueBadStroke;
+			else if( isGood )
 				return truthvalueCoreStroke;
 			else
 				return truthvalueBadStroke;
-		else  // TEXT
-			if( isGood )
-				return textCoreStroke;
-			else
-				return textBadStroke;
+		}
+		else   // TEXT
+			if( isEmpty ) return textBadStroke;
+			if( isGood )  return textCoreStroke;
+			else return textBadStroke;
 	}
 	/**
 	 * @return the color that covers the middle of the connection.
@@ -131,11 +136,13 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 	 */
 	public Color getCoreColor() {
 		if( isEmpty ) 
-			return WorkspaceConstants.CONNECTION_FILL_EMPTY;
+			return WorkspaceConstants.CONNECTION_FILL_DATA; // Dashed
 		else if( !isGood )
 			return WorkspaceConstants.CONNECTION_FILL_BAD;  // Dashed
-		else if( cxnType.equals(ConnectionType.DATA))
-			return WorkspaceConstants.CONNECTION_FILL_DATA;
+		else if( cxnType.equals(ConnectionType.DATA)) {
+			if( isNan ) return WorkspaceConstants.CONNECTION_FILL_NAN;
+			else return WorkspaceConstants.CONNECTION_FILL_DATA;
+		}
 		else if( cxnType.equals(ConnectionType.TRUTHVALUE))
 			if( theTruth.equals(TruthValue.TRUE))
 				return WorkspaceConstants.CONNECTION_FILL_TRUE;
@@ -177,7 +184,9 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 	public void reset() {
 		isGood = true;
 		isEmpty = true;
+		isNan   = false;
 		theTruth = TruthValue.UNSET;
+		lastValue = null;
 	}
 
 	/**
@@ -198,11 +207,18 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 		//  This is the most recent value to pass into the connection.
 		// Use it to determine the fill color
 		if(value.getValue()==null) return;
+		
 		log.tracef("BasicAnchorPoint.valueChange: received %s.",value.getValue().toString());
-		isEmpty = false;
+		isEmpty = value.getValue().toString().isEmpty();
 		isGood = value.getQuality().isGood();
-		if( cxnType.equals(ConnectionType.TRUTHVALUE)) {
-			theTruth = fncs.qualifiedValueAsTruthValue(value);
+		if( !isEmpty ) {
+			if( cxnType.equals(ConnectionType.TRUTHVALUE)) {
+				theTruth = fncs.qualifiedValueAsTruthValue(value);
+				if( theTruth.equals(TruthValue.UNSET)) isEmpty=true;
+			}
+			else if( cxnType.equals(ConnectionType.DATA)) {
+				isNan = Double.isNaN(fncs.coerceToDouble(value.getValue()));
+			}
 		}
 		lastValue = value;
 		((ProcessBlockView)getBlock()).recordLatestValue(id.toString(),value);

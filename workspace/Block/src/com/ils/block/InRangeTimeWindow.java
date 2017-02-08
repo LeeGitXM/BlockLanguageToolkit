@@ -112,7 +112,6 @@ public class InRangeTimeWindow extends AbstractProcessBlock implements ProcessBl
 		super.reset();
 		buffer.clear();
 		timer.removeWatchdog(dog);    // Stop evaluation
-		state = TruthValue.UNSET;
 	}
 
 	@Override

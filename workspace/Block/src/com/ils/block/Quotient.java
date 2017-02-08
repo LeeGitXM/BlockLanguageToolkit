@@ -84,11 +84,7 @@ public class Quotient extends AbstractProcessBlock implements ProcessBlock {
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
 		anchors.add(output);
 	}
-	
-	@Override
-	public void reset() {
-		super.reset();
-	}
+
 	/**
 	 * Disconnect from the timer thread.
 	 */

@@ -108,7 +108,6 @@ public class LowLimitTimeWindow extends AbstractProcessBlock implements ProcessB
 		super.reset();
 		buffer.clear();
 		timer.removeWatchdog(dog);    // Stop evaluation
-		state = TruthValue.UNSET;
 	}
 
 	@Override

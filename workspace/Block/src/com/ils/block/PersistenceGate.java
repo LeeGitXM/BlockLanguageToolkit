@@ -96,7 +96,6 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		super.reset();
 		if( dog.isActive() ) timer.removeWatchdog(dog);
 		count = 0;
-		state = TruthValue.UNKNOWN;
 		valueProperty.setValue("");
 		notifyOfStatus();
 	}

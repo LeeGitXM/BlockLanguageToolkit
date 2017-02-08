@@ -102,7 +102,6 @@ public class HighLimitSampleCount extends AbstractProcessBlock implements Proces
 	public void reset() {
 		super.reset();
 		queue.clear();
-		state = TruthValue.UNKNOWN;
 	}
 	
 	

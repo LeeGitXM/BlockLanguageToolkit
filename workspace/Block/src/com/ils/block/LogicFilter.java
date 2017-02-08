@@ -115,7 +115,6 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		super.reset();
 		timer.removeWatchdog(dog);
 		buffer.clear();
-		state = TruthValue.UNSET;
 		currentValue = TruthValue.UNSET;
 		ratio = Double.NaN;
 		log.debugf("%s.reset ...",getName());

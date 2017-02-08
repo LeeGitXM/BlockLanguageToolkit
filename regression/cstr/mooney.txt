@@ -1,0 +1,54 @@
+#
+# Drive a Final Diagnosis to True, then study the effects of controlling blocks externally.
+# Block attributes: 
+#  SampleSize    = 4
+#  MaxOutOfRange = 1
+#  ClearOnReset  = TRUE,FALSE,TRUE
+#  LimitType     = HIGH,LOW,BOTH, CONSECUTIVE
+#  Min required  = 1,2,3,3
+#  NumberOfStandardDeviations = 1.5
+#  Block is TRUE if a rule has been violated
+#
+DIAGRAM = "CrxProductQuality/MooneyProblems/MooneySubset"
+Show: diagram $DIAGRAM
+
+# SQC Blocks have custom names
+S1="MILow9Of9"
+S2="MILow3Of4"
+S3="MILow1Of1"
+S4="MIHigh9Of9"
+S5="MIHigh3Of4"
+S6="MIHigh1Of1"
+FD="DoLine"
+
+SQCDIAGNOSIS="EthyleneSqc"
+
+tag: TOP1  Site/CRX/Limits-Targets-and-Gains/Limits/PREMIX-TEMP-HIGH-LIMIT
+tag: TOP2  DiagnosticToolkit/CRX/VCT205X/value
+tag: TOPQ  DiagnosticToolkit/CRX/VCT205X-2/badValue
+tagset: UPPER $TOP1 $TOP2 $TOPQ
+
+# Tags are: Feed Date Target StdDev
+#tagset: SQC LabData/RLA3/C2-LAB-DATA/value LabData/RLA3/C2-LAB-DATA/sampleTime LabData/RLA3/C2-LAB-DATA-SQC/target LabData/RLA3/C2-LAB-DATA-SQC/standardDeviation
+
+# NOTE: 
+tagset: UPPER
+Test: DoCat Final Diagnosis
+Step: Set TopSide True
+09:58:15 0.0 0.0 true
+09:58:30 resetDiagram ($DIAGRAM)
+09:59:00 10. 12. false
+
+
+10:00:00 halt:
+10:00:00 0.1 "2017/01/20 10:00:00" 0.0 1.0
+10:01:00 -0.1 "2017/01/20 10:01:00" 
+10:02:00 -0.1 "2017/01/20 10:02:00"
+10:03:00 0.0 "2017/01/20 10:03:00"
+10:04:00 0.15 "2017/01/20 10:04:00"
+10:05:00 -0.1 "2017/01/20 10:05:00"
+10:06:00 -0.03 "2017/01/20 10:06:00"
+10:07:00 0.04 "2017/01/20 10:07:00"
+10:08:00 0.08 "2017/01/20 10:08:00"
+10:09:00 -0.07 "2017/01/20 10:09:00"
+10:10:00 -0.12 "2017/01/20 10:10:00"

@@ -108,7 +108,6 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 		super.reset();
 		buffer.clear();
 		timer.removeWatchdog(dog);    // Stop evaluation
-		state = TruthValue.UNSET;
 	}
 
 	@Override

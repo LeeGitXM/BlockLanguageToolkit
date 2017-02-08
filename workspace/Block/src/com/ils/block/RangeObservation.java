@@ -64,12 +64,6 @@ public class RangeObservation extends AbstractProcessBlock implements ProcessBlo
 		initialize();
 	}
 	
-	@Override
-	public void reset() {
-		super.reset();
-		state = TruthValue.UNKNOWN;
-	}
-	
 	/**
 	 * Add properties that are new for this class.
 	 * Populate them with default values.
