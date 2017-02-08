@@ -236,9 +236,9 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	@Override
 	public TruthValue getState() {return state;}
 	@Override
-	public void setState(TruthValue state) { 
-		if(state!=null && !this.state.equals(state)) {
-			this.state = state; 
+	public void setState(TruthValue newState) { 
+		if(newState!=null && !this.state.equals(newState)) {
+			this.state = newState; 
 			recordActivity(Activity.ACTIVITY_STATE,state.name());
 			this.stateChangeTimestamp = new Date(timer.getTestTime());
 		}

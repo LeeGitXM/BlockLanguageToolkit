@@ -118,54 +118,51 @@ public class ProxyHandler   {
 	 * @param stub the input port of the block on which the new value has arrived
 	 * @param value one of a QualifiedValue, Signal, Truth-value or String
 	 */
-	public void acceptValue(ScriptManager mgr,PyObject block,String stub,QualifiedValue value) {
-		
+	public synchronized void acceptValue(ScriptManager mgr,PyObject block,String stub,QualifiedValue value) {
+
 		if(block==null || stub==null || value==null || value.getValue()==null ) return;
 		String qualityName = BLTProperties.QUALITY_GOOD;
 		if(!value.getQuality().isGood() ) qualityName = value.getQuality().getName();
 		log.debugf("%s.acceptValue --- %s %s (%s) on %s",TAG,block.toString(),value.getValue().toString(),qualityName,stub); 
 		if( acceptValueCallback.compileScript() ) {
-			synchronized(acceptValueCallback) {
 			// There are 4 values to be specified - block,port,value,quality.
-				acceptValueCallback.initializeLocalsMap(mgr);
-				acceptValueCallback.setLocalVariable(0,block);
-				acceptValueCallback.setLocalVariable(1,new PyString(stub));
-				acceptValueCallback.setLocalVariable(2,new PyString(value.getValue().toString()));
-				acceptValueCallback.setLocalVariable(3,new PyString(qualityName));
-				acceptValueCallback.setLocalVariable(4,new PyLong(value.getTimestamp().getTime()));
-				acceptValueCallback.execute(mgr);
-			}
+			acceptValueCallback.initializeLocalsMap(mgr);
+			acceptValueCallback.setLocalVariable(0,block);
+			acceptValueCallback.setLocalVariable(1,new PyString(stub));
+			acceptValueCallback.setLocalVariable(2,new PyString(value.getValue().toString()));
+			acceptValueCallback.setLocalVariable(3,new PyString(qualityName));
+			acceptValueCallback.setLocalVariable(4,new PyLong(value.getTimestamp().getTime()));
+			acceptValueCallback.execute(mgr);
 		}
 	}
 
-	public ProxyBlock createBlockInstance(String className,UUID parentId,UUID blockId,long projectId) {
+	public synchronized ProxyBlock createBlockInstance(String className,UUID parentId,UUID blockId,long projectId) {
 		ProxyBlock block = new ProxyBlock(context,className,parentId,blockId);
 		log.debugf("%s.createBlockInstance --- python proxy for %s, project %d",TAG,className,projectId); 
 		if( createBlockCallback.compileScript() ) {
-			synchronized(createBlockCallback) {
-				PyDictionary pyDictionary = new PyDictionary();  // Empty
-				createBlockCallback.initializeLocalsMap(context.getProjectManager().getProjectScriptManager(projectId));
-				createBlockCallback.setLocalVariable(0,new PyString(className));
-				createBlockCallback.setLocalVariable(1,new PyString(parentId.toString()));
-				createBlockCallback.setLocalVariable(2,new PyString(blockId.toString()));
-				createBlockCallback.setLocalVariable(3,pyDictionary);
-				log.debugf("%s.createBlockInstance --- executing create script for %s",TAG,className); 
-				createBlockCallback.execute(context.getProjectManager().getProjectScriptManager(projectId));
+			PyDictionary pyDictionary = new PyDictionary();  // Empty
+			createBlockCallback.initializeLocalsMap(context.getProjectManager().getProjectScriptManager(projectId));
+			createBlockCallback.setLocalVariable(0,new PyString(className));
+			createBlockCallback.setLocalVariable(1,new PyString(parentId.toString()));
+			createBlockCallback.setLocalVariable(2,new PyString(blockId.toString()));
+			createBlockCallback.setLocalVariable(3,pyDictionary);
+			log.debugf("%s.createBlockInstance --- executing create script for %s",TAG,className); 
+			createBlockCallback.execute(context.getProjectManager().getProjectScriptManager(projectId));
 
-				// Contents of list are Hashtable<String,?>
-				PyObject pyBlock = (PyObject)pyDictionary.get("instance");
-				if( pyBlock!=null ) {
-					block.setPythonBlock(pyBlock);
-					BlockProperty[] props = getBlockProperties(context.getProjectManager().getProjectScriptManager(projectId),pyBlock);
-					for(BlockProperty prop:props) {
-						if(prop!=null) block.addProperty(prop);
-					}
-				}
-				else {
-					log.warnf("%s.createBlockInstance: Failed to create instance of %s",TAG,className);
-					block = null;
+			// Contents of list are Hashtable<String,?>
+			PyObject pyBlock = (PyObject)pyDictionary.get("instance");
+			if( pyBlock!=null ) {
+				block.setPythonBlock(pyBlock);
+				BlockProperty[] props = getBlockProperties(context.getProjectManager().getProjectScriptManager(projectId),pyBlock);
+				for(BlockProperty prop:props) {
+					if(prop!=null) block.addProperty(prop);
 				}
 			}
+			else {
+				log.warnf("%s.createBlockInstance: Failed to create instance of %s",TAG,className);
+				block = null;
+			}
+
 		}
 		else {
 			log.warnf("%s.createBlockInstance --- failed to compile create script %s",TAG,className);
