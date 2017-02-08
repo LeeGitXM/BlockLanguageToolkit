@@ -1,0 +1,17 @@
+#
+# Simple test of a sum block
+#
+DIAGRAM="app75/family75/logic"
+Show: diagram $DIAGRAM
+resetDiagram ($DIAGRAM)
+
+tag: A MemoryTags/BooleanInputA
+tag: B MemoryTags/BooleanInputB
+tag: OUT MemoryTags/BooleanOutputB
+tagset: Logic  A B
+
+Test: Logic Blocks
+Step: Unknown
+Tagset: Logic
+10:00 True 
+10:01:55 Assert: OUT = True "Single input is true"

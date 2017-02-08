@@ -8,6 +8,7 @@ import java.util.UUID;
 import org.python.core.PyObject;
 
 import com.ils.block.AbstractProcessBlock;
+import com.ils.blt.common.block.Activity;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.block.TruthValue;
@@ -119,7 +120,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 * @param obj the new value.
 	 */
 	@Override
-	public void setProperty(String name,Object obj) {
+	public synchronized void setProperty(String name,Object obj) {
 		BlockProperty prop = getProperty(name);
 		if( prop!=null ) {
 			prop.setValue(obj);
@@ -131,7 +132,8 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 * @param newState the new state.
 	 */
 	@Override
-	public void setState(TruthValue newState) {
+	public synchronized void setState(TruthValue newState) {
+		super.setState(newState);   // Records activity
 		delegate.setBlockState(context.getProjectManager().getProjectScriptManager(getProjectId()),this,newState);
 		requestHandler.postAlertingStatus(this);
 	}
@@ -142,11 +144,12 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 * @param vcn incoming notification
 	 */
 	@Override
-	public void acceptValue(IncomingNotification vcn) {
+	public synchronized void acceptValue(IncomingNotification vcn) {
 		String port = null;
 		if(vcn.getConnection()!=null  ) {
 			port = vcn.getConnection().getDownstreamPortName();
 		}
+		recordActivity(Activity.ACTIVITY_RECEIVE,port,vcn.getValue().toString());
 		delegate.acceptValue( context.getProjectManager().getProjectScriptManager(getProjectId()),getPythonBlock(),port,vcn.getValue());
 	}
 	
@@ -156,7 +159,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 * "quiet" time has passed without further input.
 	 */
 	@Override
-	public void evaluate() { 
+	public synchronized void evaluate() { 
 		delegate.evaluate(context.getProjectManager().getProjectScriptManager(getProjectId()),getPythonBlock()); 
 	}
 	/**
@@ -164,8 +167,9 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 * status.
 	 */
 	@Override
-	public void reset() { 
+	public synchronized void reset() { 
 		delegate.reset(context.getProjectManager().getProjectScriptManager(getProjectId()),getPythonBlock()); 
 		requestHandler.postAlertingStatus(this);
+		recordActivity(Activity.ACTIVITY_RESET,"");
 	}
 }
