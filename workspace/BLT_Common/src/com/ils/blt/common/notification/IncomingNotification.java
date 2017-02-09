@@ -70,14 +70,14 @@ public class IncomingNotification {
 		return result; 
 	}
 	/**
-	 * Convert the value to a truth value. If null, return
-	 * a UNKNOWN state.
+	 * Convert the value to a truth value. If null or empty, return
+	 * an UNSET state.
 	 * @return the value cast to a TruthValue
 	 */
 	public TruthValue getValueAsTruthValue() {
-		TruthValue result = TruthValue.UNKNOWN;
+		TruthValue result = TruthValue.UNSET;
 		Object obj = value.getValue();
-		if( obj!=null) {
+		if( obj!=null && !obj.toString().isEmpty()) {
 			if( obj instanceof TruthValue ) result = (TruthValue)obj;
 			else {
 				String tv = obj.toString().toUpperCase();

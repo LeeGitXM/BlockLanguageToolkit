@@ -17,6 +17,7 @@ import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
+import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.Connection;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BroadcastNotification;
@@ -582,8 +583,12 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 					sendConnectionNotification(pb.getBlockId().toString(),inNote.getPort(),inNote.getValue());
 					ProcessDiagram dm = modelManager.getDiagram(pb.getParentId());
 					if( dm!=null) {
+						// Do not propagate UNSET
+						if(inNote.getValue().getValue() instanceof TruthValue && inNote.getValue().getValue().equals(TruthValue.UNSET) )  {
+							;
+						}
 						// Values that are signals are processed separately
-						if( inNote.getValue().getValue() instanceof Signal ) {
+						else if( inNote.getValue().getValue() instanceof Signal ) {
 							Collection<SignalNotification> outgoing = dm.getOutgoingSignalNotifications(inNote);
 							// It is common for display blocks, for example, to be left unconnected.
 							// Don't get too worried about this.

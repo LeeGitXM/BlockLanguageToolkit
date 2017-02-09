@@ -390,14 +390,14 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		recordActivity(Activity.ACTIVITY_RESET,"");
 		if( controller!=null ) {
 			// Send notifications on all outputs to indicate empty connections.
-			// For truth-values, actually propagate UNKNOWN.
+			// For truth-values, actually propagate UNSET.
 			for(AnchorPrototype ap:getAnchors()) {
 				if( ap.getAnchorDirection().equals(AnchorDirection.OUTGOING) ) {
 					if( ap.getConnectionType().equals(ConnectionType.TRUTHVALUE) ) {
 						QualifiedValue UNSET_TRUTH_VALUE = new TestAwareQualifiedValue(timer,TruthValue.UNSET);
 						controller.sendConnectionNotification(getBlockId().toString(), ap.getName(),UNSET_TRUTH_VALUE);
-						OutgoingNotification nvn = new OutgoingNotification(this,ap.getName(),UNSET_TRUTH_VALUE);
-						controller.acceptCompletionNotification(nvn);
+						//OutgoingNotification nvn = new OutgoingNotification(this,ap.getName(),UNSET_TRUTH_VALUE);
+						//controller.acceptCompletionNotification(nvn);
 					}
 					else if( ap.getConnectionType().equals(ConnectionType.DATA)) {
 						QualifiedValue EMPTY_DATA_VALUE = new TestAwareQualifiedValue(timer,"");
@@ -556,7 +556,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	protected TruthValue qualifiedValueAsTruthValue(QualifiedValue qv) {
 		TruthValue result = TruthValue.UNSET;  
 		Object value = qv.getValue();
-		if( value!= null && !value.equals(BLTProperties.UNDEFINED) ) {
+		if( value!= null && !value.toString().isEmpty() && !value.equals(BLTProperties.UNDEFINED) ) {
 			if( value instanceof TruthValue ) {
 				result = (TruthValue) value;
 			}
