@@ -81,6 +81,7 @@ public interface ToolkitRequestHandler  {
 
 	/**
 	 * Determine whether or not the engine is running.
+	 * @return the current controller state as a String
 	 */
 	public String getControllerState() ;
 	/**
@@ -391,7 +392,7 @@ public interface ToolkitRequestHandler  {
 	 * Save a value into the HSQL database table associated with the toolkit. The 
 	 * table contains name-value pairs, so any name is allowable.
 	 * @param propertyName name of the property for which a value is to be set
-	 * @param the new value of the property.
+	 * @param value the new value of the property.
 	 */
 	public void setToolkitProperty(String propertyName,String value) ;
 

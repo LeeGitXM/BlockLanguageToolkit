@@ -45,6 +45,10 @@ public class BlockProperty implements NotificationChangeListener {
 
 	/** 
 	 * Constructor: Sets all attributes.
+	 * @param name of the property
+	 * @param val value of the property, a simple data value
+	 * @param type of property
+	 * @param canEdit true if editable by the end user
 	 */
 	public BlockProperty(String name,Object val,PropertyType type,boolean canEdit) {
 		if(val==null) throw new IllegalArgumentException("null property not allowed");

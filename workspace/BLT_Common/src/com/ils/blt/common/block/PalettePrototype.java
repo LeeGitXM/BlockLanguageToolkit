@@ -33,7 +33,7 @@ public class PalettePrototype implements Serializable {
 	
 	/**
 	 * Deserialize from a Json string
-	 * @param json
+	 * @param json the prototype as a JSON string
 	 * @return the prototype created from the string
 	 */
 	public static PalettePrototype createPrototype(String json) {

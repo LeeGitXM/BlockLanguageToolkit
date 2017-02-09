@@ -184,7 +184,7 @@ public class ApplicationScriptFunctions   {
 	 * Query a block in the gateway for list of the blocks connected to the named port. 
 	 * @param diagramId of the parent diagram
 	 * @param blockId identifier of the block
-	 * @param port name of the anchor of interest
+	 * @param portName of the anchor of interest
 	 * @return a list of blocks connected to the named port.
 	 */
 	public static List<SerializableBlockStateDescriptor> listBlocksConnectedAtPort(String diagramId,String blockId,String portName) {
