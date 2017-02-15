@@ -38,15 +38,15 @@ import net.miginfocom.swing.MigLayout;
 
 /**
  * This is a read-only viewer for blocks for blocks that return internal state
- * (theoretically all of them). 
+ * (theoretically all of them). rties.BLOCK_PREFIX;  // Required for text strings
+	private static final long serialVersionUID = 2002388376824434427L;
+	private final int DIALOG_HEIGHT = 320;
+	private final int DIALOG_WIDTH = 500;
  */
 
 public class NoteTextEditor extends JDialog {
 	// A panel is designed to edit properties that are lists of strings.
-	private static final String PREFIX = BLTProperties.BLOCK_PREFIX;  // Required for text strings
-	private static final long serialVersionUID = 2002388376824434427L;
-	private final int DIALOG_HEIGHT = 320;
-	private final int DIALOG_WIDTH = 500;
+	private static final String PREFIX = BLTPrope
 	private static final Dimension PANEL_SIZE  = new Dimension(480,120);
 	private final UpdateTask updateTask;
 	private final ScheduledExecutorService executor;
