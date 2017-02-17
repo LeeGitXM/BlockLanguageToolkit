@@ -1,5 +1,5 @@
 /**
- *   (c) 2013-2015  ILS Automation. All rights reserved. 
+ *   (c) 2013-2017  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -679,6 +679,9 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		}
 		else if(qv.getValue().toString().equalsIgnoreCase("true") ) {
 			setState(TruthValue.TRUE);
+		}
+		else if(qv.getValue().toString().equalsIgnoreCase("unknown") ) {
+			setState(TruthValue.UNKNOWN);
 		}
 		else setState(TruthValue.UNSET);
 	}

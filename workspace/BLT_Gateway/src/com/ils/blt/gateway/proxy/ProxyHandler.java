@@ -118,7 +118,7 @@ public class ProxyHandler   {
 	 * @param stub the input port of the block on which the new value has arrived
 	 * @param value one of a QualifiedValue, Signal, Truth-value or String
 	 */
-	public synchronized void acceptValue(ScriptManager mgr,PyObject block,String stub,QualifiedValue value) {
+	public void acceptValue(ScriptManager mgr,PyObject block,String stub,QualifiedValue value) {
 
 		if(block==null || stub==null || value==null || value.getValue()==null ) return;
 		String qualityName = BLTProperties.QUALITY_GOOD;
@@ -126,43 +126,46 @@ public class ProxyHandler   {
 		log.debugf("%s.acceptValue --- %s %s (%s) on %s",TAG,block.toString(),value.getValue().toString(),qualityName,stub); 
 		if( acceptValueCallback.compileScript() ) {
 			// There are 4 values to be specified - block,port,value,quality.
-			acceptValueCallback.initializeLocalsMap(mgr);
-			acceptValueCallback.setLocalVariable(0,block);
-			acceptValueCallback.setLocalVariable(1,new PyString(stub));
-			acceptValueCallback.setLocalVariable(2,new PyString(value.getValue().toString()));
-			acceptValueCallback.setLocalVariable(3,new PyString(qualityName));
-			acceptValueCallback.setLocalVariable(4,new PyLong(value.getTimestamp().getTime()));
-			acceptValueCallback.execute(mgr);
+			synchronized(acceptValueCallback) {
+				acceptValueCallback.initializeLocalsMap(mgr);
+				acceptValueCallback.setLocalVariable(0,block);
+				acceptValueCallback.setLocalVariable(1,new PyString(stub));
+				acceptValueCallback.setLocalVariable(2,new PyString(value.getValue().toString()));
+				acceptValueCallback.setLocalVariable(3,new PyString(qualityName));
+				acceptValueCallback.setLocalVariable(4,new PyLong(value.getTimestamp().getTime()));
+				acceptValueCallback.execute(mgr);
+			}
 		}
 	}
 
-	public synchronized ProxyBlock createBlockInstance(String className,UUID parentId,UUID blockId,long projectId) {
+	public ProxyBlock createBlockInstance(String className,UUID parentId,UUID blockId,long projectId) {
 		ProxyBlock block = new ProxyBlock(context,className,parentId,blockId);
 		log.debugf("%s.createBlockInstance --- python proxy for %s, project %d",TAG,className,projectId); 
 		if( createBlockCallback.compileScript() ) {
-			PyDictionary pyDictionary = new PyDictionary();  // Empty
-			createBlockCallback.initializeLocalsMap(context.getProjectManager().getProjectScriptManager(projectId));
-			createBlockCallback.setLocalVariable(0,new PyString(className));
-			createBlockCallback.setLocalVariable(1,new PyString(parentId.toString()));
-			createBlockCallback.setLocalVariable(2,new PyString(blockId.toString()));
-			createBlockCallback.setLocalVariable(3,pyDictionary);
-			log.debugf("%s.createBlockInstance --- executing create script for %s",TAG,className); 
-			createBlockCallback.execute(context.getProjectManager().getProjectScriptManager(projectId));
+			synchronized(createBlockCallback) {
+				PyDictionary pyDictionary = new PyDictionary();  // Empty
+				createBlockCallback.initializeLocalsMap(context.getProjectManager().getProjectScriptManager(projectId));
+				createBlockCallback.setLocalVariable(0,new PyString(className));
+				createBlockCallback.setLocalVariable(1,new PyString(parentId.toString()));
+				createBlockCallback.setLocalVariable(2,new PyString(blockId.toString()));
+				createBlockCallback.setLocalVariable(3,pyDictionary);
+				log.debugf("%s.createBlockInstance --- executing create script for %s",TAG,className); 
+				createBlockCallback.execute(context.getProjectManager().getProjectScriptManager(projectId));
 
-			// Contents of list are Hashtable<String,?>
-			PyObject pyBlock = (PyObject)pyDictionary.get("instance");
-			if( pyBlock!=null ) {
-				block.setPythonBlock(pyBlock);
-				BlockProperty[] props = getBlockProperties(context.getProjectManager().getProjectScriptManager(projectId),pyBlock);
-				for(BlockProperty prop:props) {
-					if(prop!=null) block.addProperty(prop);
+				// Contents of list are Hashtable<String,?>
+				PyObject pyBlock = (PyObject)pyDictionary.get("instance");
+				if( pyBlock!=null ) {
+					block.setPythonBlock(pyBlock);
+					BlockProperty[] props = getBlockProperties(context.getProjectManager().getProjectScriptManager(projectId),pyBlock);
+					for(BlockProperty prop:props) {
+						if(prop!=null) block.addProperty(prop);
+					}
+				}
+				else {
+					log.warnf("%s.createBlockInstance: Failed to create instance of %s",TAG,className);
+					block = null;
 				}
 			}
-			else {
-				log.warnf("%s.createBlockInstance: Failed to create instance of %s",TAG,className);
-				block = null;
-			}
-
 		}
 		else {
 			log.warnf("%s.createBlockInstance --- failed to compile create script %s",TAG,className);
@@ -178,7 +181,7 @@ public class ProxyHandler   {
 	 * @param mgr the appropriate project-specific script manager
 	 * @param block the saved Py block
 	 */
-	public synchronized void evaluate(ScriptManager mgr,PyObject block) {
+	public void evaluate(ScriptManager mgr,PyObject block) {
 		log.debugf("%s.evaluate --- %s",TAG,block.toString());
 		if( evaluateCallback.compileScript() ) {
 			evaluateCallback.initializeLocalsMap(mgr);
@@ -196,70 +199,72 @@ public class ProxyHandler   {
 	 * @param block the python block
 	 * @return a new array of block properties.
 	 */
-	public synchronized BlockProperty[] getBlockProperties(ScriptManager mgr,PyObject block) {
+	public  BlockProperty[] getBlockProperties(ScriptManager mgr,PyObject block) {
 		BlockProperty[] properties = null;
 		log.debugf("%s.getBlockProperties ... ",TAG);
 		if( getBlockPropertiesCallback.compileScript() ) {
 			Object val = null;
 			UtilityFunctions fns = new UtilityFunctions();
-			PyList pyList = new PyList();  // Empty
-			getBlockPropertiesCallback.initializeLocalsMap(mgr);
-			getBlockPropertiesCallback.setLocalVariable(0,block);
-			getBlockPropertiesCallback.setLocalVariable(1,pyList);
-			getBlockPropertiesCallback.execute(mgr);
-			log.debug(TAG+".getBlockProperties returned "+ pyList);   // Should now be updated
-			// Contents of list are Map<String,?>
-			List<?> list = toJavaTranslator.pyListToArrayList(pyList);
-			
-			int index = 0;
-			properties = new BlockProperty[list.size()];
-			for( Object obj:list ) { 
-				try {
-					if( obj instanceof Map ) {
-						@SuppressWarnings("unchecked")
-						Map<String,?> tbl = (Map<String,?>)obj;
-						log.debug(TAG+".getBlockProperties property = "+ tbl);  
-						BlockProperty prop = new BlockProperty();
-						prop.setName(nullCheck(tbl.get(BLTProperties.BLOCK_ATTRIBUTE_NAME),"unnamed"));
-						prop.setBinding(nullCheck(tbl.get(BLTProperties.BLOCK_ATTRIBUTE_BINDING),""));
-						val = tbl.get(BLTProperties.BLOCK_ATTRIBUTE_BINDING_TYPE);
-						if( val!=null) {
-							try {
-								prop.setBindingType(BindingType.valueOf(val.toString().toUpperCase()));
+			synchronized(getBlockPropertiesCallback) {
+				PyList pyList = new PyList();  // Empty
+				getBlockPropertiesCallback.initializeLocalsMap(mgr);
+				getBlockPropertiesCallback.setLocalVariable(0,block);
+				getBlockPropertiesCallback.setLocalVariable(1,pyList);
+				getBlockPropertiesCallback.execute(mgr);
+				log.debug(TAG+".getBlockProperties returned "+ pyList);   // Should now be updated
+				// Contents of list are Map<String,?>
+				List<?> list = toJavaTranslator.pyListToArrayList(pyList);
+
+				int index = 0;
+				properties = new BlockProperty[list.size()];
+				for( Object obj:list ) { 
+					try {
+						if( obj instanceof Map ) {
+							@SuppressWarnings("unchecked")
+							Map<String,?> tbl = (Map<String,?>)obj;
+							log.debug(TAG+".getBlockProperties property = "+ tbl);  
+							BlockProperty prop = new BlockProperty();
+							prop.setName(nullCheck(tbl.get(BLTProperties.BLOCK_ATTRIBUTE_NAME),"unnamed"));
+							prop.setBinding(nullCheck(tbl.get(BLTProperties.BLOCK_ATTRIBUTE_BINDING),""));
+							val = tbl.get(BLTProperties.BLOCK_ATTRIBUTE_BINDING_TYPE);
+							if( val!=null) {
+								try {
+									prop.setBindingType(BindingType.valueOf(val.toString().toUpperCase()));
+								}
+								catch(IllegalArgumentException iae ) {
+									log.warnf("%s.getBlockProperties: Illegal binding type (%s) (%s)" , TAG,val,iae.getMessage());
+								}
+								catch(Exception ex ) {
+									log.warnf("%s.getBlockProperties: Illegal binding type (%s) (%s)" , TAG,val,ex.getMessage());
+								}
 							}
-							catch(IllegalArgumentException iae ) {
-								log.warnf("%s.getBlockProperties: Illegal binding type (%s) (%s)" , TAG,val,iae.getMessage());
+							val = tbl.get(BLTProperties.BLOCK_ATTRIBUTE_EDITABLE);
+							if( val!=null) prop.setEditable(fns.coerceToBoolean(val));
+							val = tbl.get(BLTProperties.BLOCK_ATTRIBUTE_DATA_TYPE);
+							if( val!=null) {
+								try {
+									prop.setType(PropertyType.valueOf(val.toString().toUpperCase()));
+								}
+								catch(IllegalArgumentException iae ) {
+									log.warnf("%s.getBlockProperties: Illegal data type (%s) (%s)" , TAG,val,iae.getMessage());
+								}
+								catch(Exception ex ) {
+									log.warnf("%s.getBlockProperties: Illegal data type (%s) (%s)" , TAG,val,ex.getMessage());
+								}
 							}
-							catch(Exception ex ) {
-								log.warnf("%s.getBlockProperties: Illegal binding type (%s) (%s)" , TAG,val,ex.getMessage());
+							val = tbl.get(BLTProperties.BLOCK_ATTRIBUTE_VALUE);
+							if( val!=null ) {
+								prop.setValue(val);
 							}
+							properties[index] = prop;
 						}
-						val = tbl.get(BLTProperties.BLOCK_ATTRIBUTE_EDITABLE);
-						if( val!=null) prop.setEditable(fns.coerceToBoolean(val));
-						val = tbl.get(BLTProperties.BLOCK_ATTRIBUTE_DATA_TYPE);
-						if( val!=null) {
-							try {
-								prop.setType(PropertyType.valueOf(val.toString().toUpperCase()));
-							}
-							catch(IllegalArgumentException iae ) {
-								log.warnf("%s.getBlockProperties: Illegal data type (%s) (%s)" , TAG,val,iae.getMessage());
-							}
-							catch(Exception ex ) {
-								log.warnf("%s.getBlockProperties: Illegal data type (%s) (%s)" , TAG,val,ex.getMessage());
-							}
-						}
-						val = tbl.get(BLTProperties.BLOCK_ATTRIBUTE_VALUE);
-						if( val!=null ) {
-							prop.setValue(val);
-						}
-						properties[index] = prop;
+
 					}
-					
+					catch( Exception ex ) {
+						log.warnf("%s.getBlockProperties: Exception processing prototype (%s)" , TAG,ex.getMessage());
+					}
+					index++;
 				}
-				catch( Exception ex ) {
-					log.warnf("%s.getBlockProperties: Exception processing prototype (%s)" , TAG,ex.getMessage());
-				}
-				index++;
 			}
 		}
 		else {
@@ -279,27 +284,29 @@ public class ProxyHandler   {
 	 * @param block the python block
 	 * @return a new array of block properties.
 	 */
-	public synchronized TruthValue getBlockState(ScriptManager mgr,PyObject block) {
+	public TruthValue getBlockState(ScriptManager mgr,PyObject block) {
 		TruthValue state = TruthValue.UNSET;
 		log.debugf("%s.getBlockState ... ",TAG);
 		if( getBlockStateCallback.compileScript() ) {
-			PyList pyList = new PyList();  // Empty
-			getBlockStateCallback.initializeLocalsMap(mgr);
-			getBlockStateCallback.setLocalVariable(0,block);
-			getBlockStateCallback.setLocalVariable(1,pyList);
-			getBlockStateCallback.execute(mgr);
-			log.debug(TAG+".getBlockState returned "+ pyList);   // Should now be updated
-			// Contents of list are Hashtable<String,?>
-			// We're looking for a single string entry in the list
-			List<?> list = toJavaTranslator.pyListToArrayList(pyList);
-			
-			for( Object obj:list ) { 
-				try {
-					state = TruthValue.valueOf(obj.toString().toUpperCase());	
-				}
-				catch( Exception ex ) {
-					log.warnf("%s.getBlockState: Exception converting %s into a state (%s)" , TAG,obj.toString(),ex.getMessage());	
-					state = TruthValue.UNKNOWN;
+			synchronized(getBlockStateCallback) {
+				PyList pyList = new PyList();  // Empty
+				getBlockStateCallback.initializeLocalsMap(mgr);
+				getBlockStateCallback.setLocalVariable(0,block);
+				getBlockStateCallback.setLocalVariable(1,pyList);
+				getBlockStateCallback.execute(mgr);
+				log.debug(TAG+".getBlockState returned "+ pyList);   // Should now be updated
+				// Contents of list are Hashtable<String,?>
+				// We're looking for a single string entry in the list
+				List<?> list = toJavaTranslator.pyListToArrayList(pyList);
+
+				for( Object obj:list ) { 
+					try {
+						state = TruthValue.valueOf(obj.toString().toUpperCase());	
+					}
+					catch( Exception ex ) {
+						log.warnf("%s.getBlockState: Exception converting %s into a state (%s)" , TAG,obj.toString(),ex.getMessage());	
+						state = TruthValue.UNKNOWN;
+					}
 				}
 			}
 		}
@@ -313,7 +320,7 @@ public class ProxyHandler   {
 	 * 
 	 * @return
 	 */
-	public synchronized List<PalettePrototype> getPalettePrototypes() {
+	public List<PalettePrototype> getPalettePrototypes() {
 		List<PalettePrototype> prototypes = new ArrayList<PalettePrototype>();
 		log.debugf("%s.getPalettePrototypes (python) ... ",TAG);
 		if( getBlockPrototypesCallback.compileScript())  {
@@ -413,7 +420,7 @@ public class ProxyHandler   {
 	 * @param mgr the appropriate project-specific script manager
 	 * @param block the saved Py block
 	 */
-	public synchronized void notifyOfStatus(ScriptManager mgr,PyObject block) {
+	public void notifyOfStatus(ScriptManager mgr,PyObject block) {
 		log.debugf("%s.notifyOfStatus --- %s",TAG,block.toString());
 		if( notifyOfStatusCallback.compileScript() ) {
 			notifyOfStatusCallback.initializeLocalsMap(mgr);
@@ -429,7 +436,7 @@ public class ProxyHandler   {
 	 * @param mgr the appropriate project-specific script manager
 	 * @param block the saved Py block
 	 */
-	public synchronized void reset(ScriptManager mgr,PyObject block) {
+	public void reset(ScriptManager mgr,PyObject block) {
 		log.debugf("%s.reset --- %s",TAG,block.toString());
 		if( resetCallback.compileScript() ) {
 			resetCallback.initializeLocalsMap(mgr);
@@ -437,7 +444,7 @@ public class ProxyHandler   {
 			resetCallback.execute(mgr);
 		}
 	}
-	public synchronized void setBlockProperty(ScriptManager mgr,ProxyBlock block,BlockProperty prop) {
+	public void setBlockProperty(ScriptManager mgr,ProxyBlock block,BlockProperty prop) {
 		if( block==null || prop==null ) return;
 		log.debugf("%s.setBlockProperty --- %s:%s",TAG,block.getClass(),prop.getName()); 
 		if( setBlockPropertyCallback.compileScript() ) {
@@ -468,10 +475,12 @@ public class ProxyHandler   {
 		if( block==null || newState==null ) return;
 		log.debugf("%s.setBlockState --- %s:%s",TAG,block.getClass(),newState.name()); 
 		if( setBlockStateCallback.compileScript() ) {
-			setBlockStateCallback.initializeLocalsMap(mgr);
-			setBlockStateCallback.setLocalVariable(0,block.getPythonBlock());
-			setBlockStateCallback.setLocalVariable(1,new PyString(newState.name()));
-			setBlockStateCallback.execute(mgr);
+			synchronized(setBlockStateCallback) {
+				setBlockStateCallback.initializeLocalsMap(mgr);
+				setBlockStateCallback.setLocalVariable(0,block.getPythonBlock());
+				setBlockStateCallback.setLocalVariable(1,new PyString(newState.name()));
+				setBlockStateCallback.execute(mgr);
+			}
 		}
 	}
 	

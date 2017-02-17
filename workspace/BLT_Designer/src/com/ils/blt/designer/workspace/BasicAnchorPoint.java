@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2015  ILS Automation. All rights reserved.
+ *   (c) 2014-2017  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.workspace;
 
@@ -8,6 +8,7 @@ import java.awt.Color;
 import java.awt.Point;
 import java.awt.Shape;
 import java.awt.Stroke;
+import java.util.Date;
 import java.util.EnumSet;
 
 import com.ils.blt.common.UtilityFunctions;
@@ -217,7 +218,10 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 				if( theTruth.equals(TruthValue.UNSET)) isEmpty=true;
 			}
 			else if( cxnType.equals(ConnectionType.DATA)) {
-				isNan = Double.isNaN(fncs.coerceToDouble(value.getValue()));
+				// Dates in a data path are OK
+				if( ! (value.getValue() instanceof Date ) ) {
+					isNan = Double.isNaN(fncs.coerceToDouble(value.getValue()));
+				}
 			}
 		}
 		lastValue = value;
