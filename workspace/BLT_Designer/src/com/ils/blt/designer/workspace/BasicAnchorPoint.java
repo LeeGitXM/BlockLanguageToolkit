@@ -8,6 +8,8 @@ import java.awt.Color;
 import java.awt.Point;
 import java.awt.Shape;
 import java.awt.Stroke;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.EnumSet;
 
@@ -35,6 +37,8 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
  */
 public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeListener {
 	private static LoggerEx log = LogUtil.getLogger(AnchorPoint.class.getPackage().getName());
+	protected final static String DEFAULT_FORMAT = "yyyy/MM/dd HH:mm:ss";
+	protected final static SimpleDateFormat dateFormatter = new SimpleDateFormat(DEFAULT_FORMAT);
 	// Here is our repertoire of strokes and colors ...
 	// The outline strokes are black and are laid down first.
 	private final Stroke signalOutlineStroke = new BasicStroke(WorkspaceConstants.CONNECTION_WIDTH_SIGNAL);
@@ -220,7 +224,14 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 			else if( cxnType.equals(ConnectionType.DATA)) {
 				// Dates in a data path are OK
 				if( ! (value.getValue() instanceof Date ) ) {
-					isNan = Double.isNaN(fncs.coerceToDouble(value.getValue()));
+					if( value.getValue() instanceof String ) {
+						try {
+							dateFormatter.parse(value.getValue().toString());
+						}
+						catch(ParseException pe) {
+							isNan = Double.isNaN(fncs.coerceToDouble(value.getValue()));
+						}
+					}
 				}
 			}
 		}

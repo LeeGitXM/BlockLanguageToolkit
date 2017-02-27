@@ -669,7 +669,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 * We've made a major change on the currently active diagram. Set its background accordingly.
 	 * The diagram should have set its own state.
 	 */
-	private void updatBackgroundForDirty() {
+	private void updateBackgroundForDirty() {
 		BlockDesignableContainer container = getSelectedContainer();
 		if( container!=null ) {
 			ProcessDiagramView view = (ProcessDiagramView)(container.getModel());
@@ -720,7 +720,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 */
 	@Override
 	public void stateChanged(ChangeEvent event) {
-		updatBackgroundForDirty();
+		updateBackgroundForDirty();
 	}
 	
 	/**
