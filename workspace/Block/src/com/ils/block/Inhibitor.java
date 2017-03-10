@@ -213,7 +213,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 		}
 	}
 	/**
-	 * Send status update notification for our last latest state.
+	 * Send connection update notification for our last value (not the block state)
 	 */
 	@Override
 	public void notifyOfStatus() {}

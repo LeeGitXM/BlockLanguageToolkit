@@ -114,14 +114,14 @@
          <Property name="windupItemId" type="String"></Property>
          <Property name="lowClampItemId" type="String"></Property>
       </Parameters>
-      <Tag name="writeValue" path="mode" type="EXTENSION">
-         <Property name="DataType">7</Property>
+      <Tag name="value" path="" type="EXTENSION">
+         <Property name="OPCItemPath">{itemId}</Property>
       </Tag>
       <Tag name="value" path="mode" type="EXTENSION">
          <Property name="DataType">7</Property>
       </Tag>
-      <Tag name="value" path="" type="EXTENSION">
-         <Property name="OPCItemPath">{itemId}</Property>
+      <Tag name="writeValue" path="mode" type="EXTENSION">
+         <Property name="DataType">7</Property>
       </Tag>
       <Tag name="command" path="" type="DB">
          <Property name="Value"></Property>
@@ -212,14 +212,14 @@
          <Property name="windupItemId" type="String"></Property>
          <Property name="lowClampItemId" type="String"></Property>
       </Parameters>
-      <Tag name="writeValue" path="mode" type="EXTENSION">
-         <Property name="DataType">7</Property>
+      <Tag name="value" path="" type="EXTENSION">
+         <Property name="OPCItemPath">{itemId}</Property>
       </Tag>
       <Tag name="value" path="mode" type="EXTENSION">
          <Property name="DataType">7</Property>
       </Tag>
-      <Tag name="value" path="" type="EXTENSION">
-         <Property name="OPCItemPath">{itemId}</Property>
+      <Tag name="writeValue" path="mode" type="EXTENSION">
+         <Property name="DataType">7</Property>
       </Tag>
       <Tag name="processingCommand" path="" type="UDT_INST">
          <Property name="Value"></Property>
@@ -245,11 +245,11 @@
          <Property name="permissiveItemId" type="String"></Property>
          <Property name="windupItemId" type="String"></Property>
       </Parameters>
-      <Tag name="value" path="mode" type="EXTENSION">
-         <Property name="DataType">7</Property>
-      </Tag>
       <Tag name="value" path="" type="EXTENSION">
          <Property name="OPCItemPath">{itemId}</Property>
+      </Tag>
+      <Tag name="value" path="mode" type="EXTENSION">
+         <Property name="DataType">7</Property>
       </Tag>
       <Tag name="writeValue" path="mode" type="EXTENSION">
          <Property name="DataType">7</Property>
@@ -300,14 +300,14 @@
       <Parameters>
          <Property name="pythonClass" type="String">TDCController</Property>
       </Parameters>
-      <Tag name="writeValue" path="mode" type="EXTENSION">
-         <Property name="DataType">7</Property>
+      <Tag name="value" path="" type="EXTENSION">
+         <Property name="OPCItemPath">{itemId}</Property>
       </Tag>
       <Tag name="value" path="mode" type="EXTENSION">
          <Property name="DataType">7</Property>
       </Tag>
-      <Tag name="value" path="" type="EXTENSION">
-         <Property name="OPCItemPath">{itemId}</Property>
+      <Tag name="writeValue" path="mode" type="EXTENSION">
+         <Property name="DataType">7</Property>
       </Tag>
    </Tag>
    <Tag name="Lab Data" path="_types_" type="Folder"/>
@@ -1239,6 +1239,10 @@
    </Tag>
    <Tag name="ArithmeticOut4" path="MemoryTags" type="DB">
       <Property name="Value">1.60033451214</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
+   <Tag name="ArithmeticOut5" path="MemoryTags" type="DB">
+      <Property name="Value">0.0</Property>
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="AverageFeed" path="MemoryTags" type="DB">

@@ -10,6 +10,7 @@ tag: Arithmetic1    MemoryTags/ArithmeticOut1
 tag: Arithmetic2    MemoryTags/ArithmeticOut2
 tag: Arithmetic3    MemoryTags/ArithmeticOut3
 tag: Arithmetic4    MemoryTags/ArithmeticOut4
+tag: Arithmetic5    MemoryTags/ArithmeticOut5
 tagset: SingleBoolean MemoryTags/BooleanFeed
 tagset: DualInput     MemoryTags/DoubleInput1 MemoryTags/DoubleInput2
 
@@ -53,3 +54,9 @@ Step: 90
 10:06:20 Assert: .99 < Arithmetic2 < 1.01   "sine = 1"
 10:06:30 Assert: -.001 < Arithmetic3 < .001 "cosine = 0"
 10:06:40 Assert: Arithmetic4 > 10000000.   "tan = inf"
+Step: Round
+10:07 33.33333
+10:07:10 Assert: Arithmetic5 = 33  "Round 33.333"
+10:07:20 66.6666
+10:07:30 Assert: Arithmetic5 = 67  "Round 66.6666"
+
