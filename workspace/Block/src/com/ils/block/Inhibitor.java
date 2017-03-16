@@ -89,13 +89,14 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 		if( !isLocked() ) {
 			String port = vcn.getConnection().getDownstreamPortName();
 			if( port.equals(BlockConstants.IN_PORT_NAME)  ) {
-				lastValue = vcn.getValue();
-				if( lastValue != null && lastValue.getValue()!=null ) {
-					log.tracef("%s.acceptValue: Received value %s (%s)",getName(),lastValue.getValue().toString(),
-							dateFormatter.format(lastValue.getTimestamp()));
+				QualifiedValue qv = vcn.getValue();
+				if( qv != null && qv.getValue()!=null ) {
+					log.tracef("%s.acceptValue: Received value %s (%s)",getName(),qv.getValue().toString(),
+							dateFormatter.format(qv.getTimestamp()));
 					long expirationTime = ((Long)expirationProperty.getValue()).longValue();
-					if( lastValue.getQuality().isGood() && 
-							(expirationTime==0 || lastValue.getTimestamp().getTime()>=expirationTime)) {
+					if( qv.getQuality().isGood() && 
+							(expirationTime==0 || qv.getTimestamp().getTime()>=expirationTime)) {
+						lastValue = qv;  // Save the last value transmitted
 						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 						controller.acceptCompletionNotification(nvn);
 						notifyOfStatus(vcn.getValue());
@@ -170,6 +171,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	public void evaluate() {
 		inhibiting = false;
 		log.tracef("%s.evaluate: Set inhibit flag false",getName());
+		recordActivity(Activity.ACTIVITY_UNBLOCKED,"");
 	}
 
 	/**

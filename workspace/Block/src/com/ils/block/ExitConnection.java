@@ -70,6 +70,7 @@ public class ExitConnection extends AbstractProcessBlock implements ProcessBlock
 		super.acceptValue(incoming);
 		QualifiedValue qv = incoming.getValue();
 		if( qv!=null ) {
+			lastValue = qv;
 			ConnectionPostNotification notification = new ConnectionPostNotification(getParentId(),getName(),qv);
 			controller.acceptConnectionPostNotification(notification);
 		}

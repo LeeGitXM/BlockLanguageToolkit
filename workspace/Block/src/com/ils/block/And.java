@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2016  ILS Automation. All rights reserved. 
+ *   (c) 2014-2017  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -166,6 +166,8 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 		}
 		return explanation;
 	}
+	
+	
 	/**
 	 * The coalescing time has expired. Place the current state on the output,
 	 * if it has changed.

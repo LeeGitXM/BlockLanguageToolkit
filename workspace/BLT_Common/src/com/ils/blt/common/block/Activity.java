@@ -11,6 +11,8 @@ public class Activity implements Cloneable,Serializable  {
 	private static final long serialVersionUID = -6862986291141763186L;
 	// These are some standard actions
 	public final static String ACTIVITY_BLOCKED = "BLOCKED";
+	public final static String ACTIVITY_EVALUATE = "EVALUATE";
+	public final static String ACTIVITY_PROPAGATE = "PROPAGATE";
 	public final static String ACTIVITY_PROPERTY = "PROPERTY";
 	public final static String ACTIVITY_RECEIVE  = "RECV";
 	public final static String ACTIVITY_RESET = "RESET";
@@ -19,6 +21,7 @@ public class Activity implements Cloneable,Serializable  {
 	public final static String ACTIVITY_STATE = "STATE";
 	public final static String ACTIVITY_START = "START";
 	public final static String ACTIVITY_STOP  = "STOP";
+	public final static String ACTIVITY_UNBLOCKED = "UNBLOCKED";
 	private Date timestamp;
 	private String action;   // Name of the activity (from a controlled vocabulary)
 	private String value;

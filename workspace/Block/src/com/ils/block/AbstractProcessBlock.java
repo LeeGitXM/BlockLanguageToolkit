@@ -241,6 +241,8 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 			this.state = newState; 
 			recordActivity(Activity.ACTIVITY_STATE,state.name());
 			this.stateChangeTimestamp = new Date(timer.getTestTime());
+			// Pretend that the last value is the new State
+			lastValue = new TestAwareQualifiedValue(timer,state.name());
 		}
 	}
 	@Override
@@ -380,7 +382,10 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	/**
 	 * The default method sets the state to UNSET.
 	 * It also sends notifications to block outputs setting them to empty or
-	 * unknown. NOTE: This has no effect on Python blocks. They must do this
+	 * UNSET. This does NOT clear the lastValue, thus allowing it to be used
+	 * for propagate().
+	 * 
+	 * NOTE: This has no effect on Python blocks. They must do this
 	 * for themselves.
 	 */
 	@Override
@@ -449,8 +454,12 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		else {
 			port = incoming.getConnection().getDownstreamPortName();
 			String value ="NULL";
-			if( qv!=null && qv.getValue()!=null ) value = qv.getValue().toString();
-			recordActivity(Activity.ACTIVITY_RECEIVE,port,value);
+			if( qv!=null && qv.getValue()!=null ) {
+				value = qv.getValue().toString();
+				lastValue = qv;
+				recordActivity(Activity.ACTIVITY_RECEIVE,port,value);
+			}
+			
 		}
 	}
 	/**
@@ -540,11 +549,13 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 * what the block will do on a value change.
 	 * 
 	 * This is never called internally. This implementation handles
-	 * the most common configuration.
+	 * the most common configurations.
 	 */
 	@Override
 	public void propagate() {
+		// lastValue is used for blocks that send data
 		if( lastValue!=null ) {
+			recordActivity(Activity.ACTIVITY_PROPAGATE,lastValue.toString());
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus();
