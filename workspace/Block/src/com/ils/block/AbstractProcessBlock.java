@@ -282,19 +282,22 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		Map<String,String> attributes = descriptor.getAttributes();
 		attributes.put("Name", getName());
 		attributes.put("UUID", getBlockId().toString());
-		attributes.put("State", getState().toString());
-		if( stateChangeTimestamp!=null ) {     // On start we'never had a state change
-			attributes.put("StateChangeTimestamp",dateFormatter.format(stateChangeTimestamp));
+		if( stateIsMeaningful() ) {
+			attributes.put("State", getState().toString());
+			if( stateChangeTimestamp!=null ) {     // On start we'never had a state change
+				attributes.put("StateChangeTimestamp",dateFormatter.format(stateChangeTimestamp));
+			}
 		}
+
 		if( activities.size()>0 ) {
 			List<Activity> buffer = descriptor.getActivities();
 			for( Activity act:activities) {
 				buffer.add(act.clone());
 			}
 		}
-
 		return descriptor;
 	}
+
 	/**
 	 * @return all properties. The returned array is a copy of the internal.
 	 * Thus although the attributes of an individual property can be modified,
@@ -401,8 +404,8 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 					if( ap.getConnectionType().equals(ConnectionType.TRUTHVALUE) ) {
 						QualifiedValue UNSET_TRUTH_VALUE = new TestAwareQualifiedValue(timer,TruthValue.UNSET);
 						controller.sendConnectionNotification(getBlockId().toString(), ap.getName(),UNSET_TRUTH_VALUE);
-						//OutgoingNotification nvn = new OutgoingNotification(this,ap.getName(),UNSET_TRUTH_VALUE);
-						//controller.acceptCompletionNotification(nvn);
+						OutgoingNotification nvn = new OutgoingNotification(this,ap.getName(),UNSET_TRUTH_VALUE);
+						controller.acceptCompletionNotification(nvn);
 					}
 					else if( ap.getConnectionType().equals(ConnectionType.DATA)) {
 						QualifiedValue EMPTY_DATA_VALUE = new TestAwareQualifiedValue(timer,"");
@@ -745,6 +748,24 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		else return summary.toString();
 	}
 	
+	/**
+	 * Determine if the state should be displayed when viewing internal status.
+	 * If state is an output, then it is important.
+	 * @return true if the block is stateful in a truth-value sense.
+	 */
+	private boolean stateIsMeaningful() {
+		
+		boolean meaningful = false;
+		for(AnchorPrototype ap:getAnchors()) {
+			if( ap.getAnchorDirection().equals(AnchorDirection.OUTGOING) ) {
+				if( ap.getConnectionType().equals(ConnectionType.TRUTHVALUE) ) {
+					meaningful = true;
+					break;
+				}
+			}
+		}
+		return meaningful;
+	}
 	/**
 	 * Convert a value received on an input connection 
 	 * into a string. Used for debugging purposes.

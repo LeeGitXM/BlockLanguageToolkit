@@ -65,11 +65,14 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 		dog = new Watchdog(getName(),this);
 	}
 	
+	// On a reset, set the time to the start of the Unix epoch
 	@Override
 	public void reset() {
 		super.reset();
-		expirationProperty.setValue(0L);
+		expirationProperty.setValue(new Long(0L));
 		inhibiting = false;
+		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_EXPIRATION_TIME,
+				new BasicQualifiedValue(expirationProperty.getValue()));
 		timer.removeWatchdog(dog);
 	}
 	
@@ -126,6 +129,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 		Signal signal = sn.getSignal();
 		if( signal.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_INHIBIT)) {
 			expirationProperty.setValue(new Long(sn.getValue().getTimestamp().getTime()+(long)(interval*1000)));
+			inhibiting = true;
 			controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_EXPIRATION_TIME,
 					new BasicQualifiedValue(expirationProperty.getValue(),sn.getValue().getQuality(),sn.getValue().getTimestamp()));
 			long time = ((Long)expirationProperty.getValue()).longValue();
@@ -139,7 +143,6 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 				}
 			}
 			recordActivity(Activity.ACTIVITY_SET_EXPIRATION,dateFormatter.format(expiration));
-			inhibiting = true;
 			dog.setSecondsDelay(interval);
 			timer.updateWatchdog(dog);  // pet dog
 		}

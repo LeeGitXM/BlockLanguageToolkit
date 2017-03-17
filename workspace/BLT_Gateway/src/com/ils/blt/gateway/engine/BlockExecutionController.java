@@ -583,8 +583,9 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 					sendConnectionNotification(pb.getBlockId().toString(),inNote.getPort(),inNote.getValue());
 					ProcessDiagram dm = modelManager.getDiagram(pb.getParentId());
 					if( dm!=null) {
-						// Do not propagate UNSET
-						if(inNote.getValue().getValue() instanceof TruthValue && inNote.getValue().getValue().equals(TruthValue.UNSET) )  {
+						// Do not propagate UNSET (even a String value)
+						if( (inNote.getValue().getValue() instanceof TruthValue && inNote.getValue().getValue().equals(TruthValue.UNSET)) ||
+							(inNote.getValue().getValue() instanceof String && inNote.getValue().getValue().equals(TruthValue.UNSET.name()) )	)  {
 							;
 						}
 						// Values that are signals are processed separately

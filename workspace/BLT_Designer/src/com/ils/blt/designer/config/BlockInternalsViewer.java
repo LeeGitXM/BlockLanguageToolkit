@@ -32,6 +32,7 @@ import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.Activity;
 import com.ils.blt.common.block.BlockConstants;
+import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.designer.workspace.ProcessAnchorDescriptor;
 import com.ils.blt.designer.workspace.ProcessBlockView;
@@ -171,17 +172,17 @@ public class BlockInternalsViewer extends JDialog {
 			}
 		}
 		
+		// Add anchors to the list of attributes
 		for( ProcessAnchorDescriptor pad: block.getAnchors() ) {
 			if(pad.getType().equals(AnchorType.Origin)) {
 				QualifiedValue qv = pad.getLastValue();
 				String [] row = new String[2];
 				row[0] = "port: "+ pad.getDisplay();
 				String text = "";
-				if( qv!=null ) text = String.format("%s  %s  %s", 
-						(qv.getValue()==null?"null":qv.getValue().toString()),
-						(qv.getQuality() ==null?"null":qv.getQuality().toString()),
-						                   dateFormatter.format(qv.getTimestamp()));
-				row[1] = (qv==null?"":qv.getValue().toString());
+				if( qv!=null && !qv.getValue().toString().equalsIgnoreCase(TruthValue.UNSET.name())) {
+					text = qv.getValue().toString();
+				}
+				row[1] = text;
 				dataModel.addRow(row);
 			}
 		}

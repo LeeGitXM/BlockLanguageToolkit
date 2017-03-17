@@ -7,11 +7,13 @@ resetDiagram ($DIAGRAM)
 
 tag: A MemoryTags/BooleanInputA
 tag: B MemoryTags/BooleanInputB
-tag: OUT MemoryTags/BooleanOutputB
+tag: OUTA MemoryTags/BooleanOutputA
+tag: OUTB MemoryTags/BooleanOutputB
 tagset: Logic  A B
 
 Test: Logic Blocks
 Step: Unknown
 Tagset: Logic
 10:00 True 
-10:01:55 Assert: OUT = True "Single input is true"
+10:00:20 Assert: OUTA = True "Single AND input is true"
+10:00:30 Assert: OUTB = True "Single OR input is true"
