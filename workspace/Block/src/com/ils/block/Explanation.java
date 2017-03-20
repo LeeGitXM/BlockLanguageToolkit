@@ -150,6 +150,12 @@ public class Explanation extends AbstractProcessBlock implements ProcessBlock {
 		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
+	
+	@Override
+	public void setState(TruthValue newState) { 
+		super.setState(newState);
+		valueProperty.setValue(newState);
+	}
 
 	/**
 	 * Augment the palette prototype for this block class.

@@ -219,6 +219,12 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 	
+	@Override
+	public void setState(TruthValue newState) { 
+		super.setState(newState);
+		valueProperty.setValue(newState);
+	}
+	
 	/**
 	 * Augment the palette prototype for this block class.
 	 */

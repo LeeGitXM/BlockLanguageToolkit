@@ -19,7 +19,6 @@ import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.PropertyType;
-import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
@@ -77,7 +76,7 @@ public class MovingAverageSample extends AbstractProcessBlock implements Process
 		setProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET, clearProperty);
 		BlockProperty sizeProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE,new Integer(sampleSize),PropertyType.INTEGER,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE, sizeProperty);
-		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,TruthValue.UNSET,PropertyType.TRUTHVALUE,false);
+		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,new Double(Double.NaN),PropertyType.DOUBLE,false);
 		valueProperty.setBindingType(BindingType.ENGINE);
 		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 		

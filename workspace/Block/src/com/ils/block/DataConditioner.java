@@ -202,6 +202,7 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 		}
 	}
 	
+	
 	/**
 	 * We have a custom version as there are two ports. lastQuality is the last
 	 * time we received input on the quality port. The state reflects the AND

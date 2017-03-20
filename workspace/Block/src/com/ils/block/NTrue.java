@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
+ *   (c) 2014-2017  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -46,6 +46,7 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 	private final Watchdog dog;
 	private double synchInterval = 0.5; // 1/2 sec synchronization by default
 	protected int nTrue = 0;
+	private BlockProperty valueProperty = null;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -81,7 +82,7 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 		setProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL, synch);
 		BlockProperty Nvalue = new BlockProperty(BLOCK_PROPERTY_N_VALUE, new Integer(nTrue),PropertyType.INTEGER, true);
 		setProperty(BLOCK_PROPERTY_N_VALUE, Nvalue);
-		BlockProperty valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,TruthValue.UNSET,PropertyType.TRUTHVALUE,false);
+		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,TruthValue.UNSET,PropertyType.TRUTHVALUE,false);
 		valueProperty.setBindingType(BindingType.ENGINE);
 		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 		
@@ -156,6 +157,7 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 			            (state.equals(TruthValue.UNKNOWN)?getAggregateQuality():DataQuality.GOOD_DATA));
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(nvn);
+				valueProperty.setValue(state);
 				notifyOfStatus(lastValue);
 			}
 		}
@@ -211,6 +213,12 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 
+	@Override
+	public void setState(TruthValue newState) { 
+		super.setState(newState);
+		valueProperty.setValue(newState);
+	}
+	
 	/**
 	 * Augment the palette prototype for this block class.
 	 */

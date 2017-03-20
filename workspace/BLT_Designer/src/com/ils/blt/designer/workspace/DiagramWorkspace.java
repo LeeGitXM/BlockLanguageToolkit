@@ -81,6 +81,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.BlockActionHa
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.blockandconnector.blockui.AnchorDescriptor;
+import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorPoint;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.BlockDiagramModel;
@@ -880,7 +881,13 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
 		public void actionPerformed(ActionEvent e) {
 			ProcessDiagramView pdv = getActiveDiagram();
-			handler.propagateBlockState(pdv.getId().toString(),block.getId().toString());
+			for(Connection cxn : pdv.getConnections()) {
+				AnchorPoint ap = cxn.getTerminus();
+				if( ap.getBlock().getId().equals(block.getId())) {
+					Block origin = cxn.getOrigin().getBlock();
+					handler.propagateBlockState(pdv.getId().toString(),origin.getId().toString());
+				}
+			}
 		}
 	}
 	/**

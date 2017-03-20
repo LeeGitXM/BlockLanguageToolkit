@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
+ *   (c) 2014-2017  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -127,6 +127,11 @@ public class Unknown extends AbstractProcessBlock implements ProcessBlock {
 	private void notifyOfStatus(QualifiedValue qv) {
 		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
+	@Override
+	public void setState(TruthValue newState) { 
+		super.setState(newState);
+		valueProperty.setValue(newState);
 	}
 	/**
 	 * Augment the palette prototype for this block class.

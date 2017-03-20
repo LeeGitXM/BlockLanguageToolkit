@@ -1,5 +1,5 @@
 /**
- *   (c) 2013-2016  ILS Automation. All rights reserved. 
+ *   (c) 2013-2017  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -43,6 +43,7 @@ public class Or extends AbstractProcessBlock implements ProcessBlock {
 	protected Map<String,QualifiedValue> qualifiedValueMap = null;
 	private final Watchdog dog;
 	private double synchInterval = 0.5; // 1/2 sec synchronization by default
+	private BlockProperty valueProperty = null;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -73,7 +74,7 @@ public class Or extends AbstractProcessBlock implements ProcessBlock {
 		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,new Double(synchInterval),PropertyType.TIME,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL, synch);
 		
-		BlockProperty valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,TruthValue.UNSET,PropertyType.TRUTHVALUE,false);
+		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,TruthValue.UNSET,PropertyType.TRUTHVALUE,false);
 		valueProperty.setBindingType(BindingType.ENGINE);
 		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 		
@@ -178,6 +179,7 @@ public class Or extends AbstractProcessBlock implements ProcessBlock {
                         (state.equals(TruthValue.UNKNOWN)?getAggregateQuality():DataQuality.GOOD_DATA));
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(nvn);
+				valueProperty.setValue(state);
 				notifyOfStatus(lastValue);
 			}
 		}
@@ -224,6 +226,11 @@ public class Or extends AbstractProcessBlock implements ProcessBlock {
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 	
+	@Override
+	public void setState(TruthValue newState) { 
+		super.setState(newState);
+		valueProperty.setValue(newState);
+	}
 	/**
 	 * Augment the palette prototype for this block class.
 	 */
