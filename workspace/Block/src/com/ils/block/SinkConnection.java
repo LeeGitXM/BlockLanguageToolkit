@@ -10,11 +10,13 @@ import java.util.UUID;
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.ProcessBlock;
+import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 
 /**
  * A Sink Connection is a class that propagates values directly
@@ -45,6 +47,17 @@ public class SinkConnection extends Output implements ProcessBlock {
 	@Override
 	public String getClassName() {return BLTProperties.CLASS_NAME_SINK;}
 	
+	/**
+	 * On reset, set the value of the backing tag to "UNSET". This prevents
+	 * a refresh of the block to re-propagate the last value.
+	 */
+	@Override
+	public void reset() {
+		super.reset();
+		if( pathProperty.getBindingType().equals(BindingType.TAG_WRITE)) {
+			controller.updateTag(getParentId(),pathProperty.getBinding().toString(), new BasicQualifiedValue("UNSET"));
+		}
+	}
 	/**
 	 * Add properties that are new for this class.
 	 * Populate them with default values.

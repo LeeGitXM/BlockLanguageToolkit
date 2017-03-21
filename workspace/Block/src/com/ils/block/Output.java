@@ -27,8 +27,8 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  */
 @ExecutableBlock
 public class Output extends AbstractProcessBlock implements ProcessBlock {
-	private BlockProperty pathProperty = null;
-	private BlockProperty valueProperty = null;
+	protected BlockProperty pathProperty = null;
+	protected BlockProperty valueProperty = null;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.

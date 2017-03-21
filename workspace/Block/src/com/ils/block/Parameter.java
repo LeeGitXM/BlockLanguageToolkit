@@ -23,6 +23,7 @@ import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
@@ -78,7 +79,17 @@ public class Parameter extends AbstractProcessBlock implements ProcessBlock {
 		output.setHint(PlacementHint.R);
 		anchors.add(output);
 	}
-	
+	/**
+	 * On reset, set the value of the backing tag to "UNSET". This prevents
+	 * a refresh of the block to re-propagate the last value.
+	 */
+	@Override
+	public void reset() {
+		super.reset();
+		if( tagProperty.getBindingType().equals(BindingType.TAG_READWRITE)) {
+			controller.updateTag(getParentId(),tagProperty.getBinding().toString(), new BasicQualifiedValue("UNSET"));
+		}
+	}
 	/**
 	 * We may have received a premature value due to creation of a subscription 
 	 * before we're actually started. Pass that value on now.
