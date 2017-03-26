@@ -560,7 +560,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		if( lastValue!=null ) {
 			recordActivity(Activity.ACTIVITY_PROPAGATE,lastValue.toString());
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
-			controller.acceptCompletionNotification(nvn);
+			if(controller!=null) controller.acceptCompletionNotification(nvn);
 			notifyOfStatus();
 		}
 	}
