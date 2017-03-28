@@ -11,6 +11,7 @@ package com.ils.blt.common.notification;
 public class NotificationKey
 {
 	/**
+	 * @param resid resourceId corresponding to the diagram
 	 * @return  a push-notification key for a diagram alert status. 
 	 * 			The Id is simply the resource Id.
 	 */
@@ -18,12 +19,15 @@ public class NotificationKey
 		return String.format("A:%d",resid);
 	}
 	/**
+	 * @param blkid string version of the block's UUID
 	 * @return  a push-notification key for a block.
 	 */
 	public static String keyForBlock(String blkid) {
 		return String.format("B:%s",blkid);
 	}
 	/**
+	 * @param blockid string version of the block's UUID
+	 * @param port name of the anchor where the connection attaches
 	 * @return  a push-notification key for a connection. The block and port
 	 *          uniquely identify the connection. The listener is (usually)
 	 *          a BasicAnchorPoint.
@@ -32,6 +36,7 @@ public class NotificationKey
 		return String.format("C:%s:%s",blockid,port);
 	}
 	/**
+	 * @param resourceId corresponding to the diagram
 	 * @return  a push-notification key for a diagram. The Id is
 	 *         the diagram's resource Id.
 	 */
@@ -39,6 +44,8 @@ public class NotificationKey
 		return String.format("D:%d",resourceId);
 	}
 	/**
+	 * @param blkid string version of the block's UUID
+	 * @param pname name of the property
 	 * @return  a push-notification key for a block property. The Id is
 	 *         the block Id followed by the property name.
 	 */
@@ -46,6 +53,8 @@ public class NotificationKey
 		return String.format("P:%s:%s",blkid,pname);
 	}
 	/**
+	 * @param blkid string version of the block's UUID
+	 * @param pname name of the property
 	 * @return  a push-notification key for a block property. The Id is
 	 *         the block Id followed by the property name.
 	 */
@@ -53,7 +62,8 @@ public class NotificationKey
 		return String.format("B:%s:%s",blkid,pname);
 	}
 	/**
-	 * Test a key for type. 
+	 * Test a key for type.
+	 * @param key the key value 
 	 * @return  true if this is a binding key.
 	 */
 	public static boolean isDiagramAlertKey(String key) {
@@ -61,6 +71,7 @@ public class NotificationKey
 	}
 	/**
 	 * Test a key for type. 
+	 * @param key the key value 
 	 * @return  true if this is a binding key.
 	 */
 	public static boolean isPropertyBindingKey(String key) {
@@ -68,19 +79,22 @@ public class NotificationKey
 	}
 	/**
 	 * Test a key for type. 
+	 * @param key the key to test 
 	 * @return  true if this is a value key.
 	 */
 	public static boolean isPropertyValueKey(String key) {
 		return key.startsWith("P");
 	}
 	/**
-	 * Test a key for type. 
+	 * Test if a key changes a watermark.
+	 * @param key the key to test  
 	 * @return  true if this is a watermark key.
 	 */
 	public static boolean isWatermarkKey(String key) {
 		return key.startsWith("W");
 	}
 	/**
+	 * @param did diagramId
 	 * @return  a push-notification key for a diagram's watermark. The Id is
 	 *         simply the diagram Id.
 	 */

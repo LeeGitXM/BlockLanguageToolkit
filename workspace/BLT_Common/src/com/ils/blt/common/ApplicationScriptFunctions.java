@@ -368,6 +368,8 @@ public class ApplicationScriptFunctions   {
 	}
 	/**
 	 * Execute stop() then start() on the specified block
+	 * @param diagramId diagram identifier, a string
+	 * @param blockId block identifier, a string
 	 */
 	public static void restartBlock(String diagramId,String blockId) {
 		handler.restartBlock(diagramId,blockId);
@@ -390,6 +392,7 @@ public class ApplicationScriptFunctions   {
 	 * This is a "local" transmission. The signal timestamp is "now".
 	 * 
 	 * @param diagramId diagram identifier
+	 * @param blockName name of the block
 	 * @param command string of the signal.
 	 * @param message command payload
 	 * @return true on success
@@ -402,8 +405,9 @@ public class ApplicationScriptFunctions   {
 	 * This is a "local" transmission.
 	 * 
 	 * @param diagramId diagram identifier
-	 * @param className filter of the receiver blocks to be targeted.
 	 * @param command string of the signal.
+	 * @param message text to accompany the command.
+	 * @param arg an optional command argument.
 	 * @param time the timestamp associated with the signal
 	 * @return true on success
 	 */
@@ -472,7 +476,7 @@ public class ApplicationScriptFunctions   {
 	 * Save a value into the HSQL database table associated with the toolkit. The 
 	 * table contains name-value pairs, so any name is allowable.
 	 * @param propertyName name of the property for which a value is to be set
-	 * @param the new value of the property.
+	 * @param value the new value of the property.
 	 */
 	public static void setToolkitProperty(String propertyName,String value) {
 		handler.setToolkitProperty(propertyName,value);
