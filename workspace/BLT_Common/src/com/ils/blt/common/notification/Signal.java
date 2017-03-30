@@ -29,9 +29,9 @@ public class Signal implements Serializable {
 	/**
 	 * Constructor. 
 	 * 
-	 * @param command
-	 * @param argument
-	 * @param payload
+	 * @param command a name
+	 * @param argument optional string for filtering
+	 * @param payload optional string containing the contents of the message
 	 */
 	public Signal(String command,String argument,String payload)  {	
 		this.command = command;

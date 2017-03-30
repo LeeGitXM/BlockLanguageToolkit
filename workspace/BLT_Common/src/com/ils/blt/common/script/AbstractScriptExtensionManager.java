@@ -100,7 +100,7 @@ public abstract class AbstractScriptExtensionManager {
 	/**
 	 * Query the blocks and return a list of classes that require
 	 * external interface scripts. We re-query each time we're asked.
-	 * @return
+	 * @return a list of class names
 	 */
 	public List<String> getClassNames() {
 		List<String> classNames = new ArrayList<>();
@@ -115,6 +115,7 @@ public abstract class AbstractScriptExtensionManager {
 	/**
 	 * This method is abstract for the sole reason that interfaces 
 	 * to get the class list differ in Client and Gateway scopes.
+	 * @return a list of descriptors for this class
 	 */
 	public abstract  List<BlockDescriptor> getClassDescriptors();
 	
@@ -192,7 +193,7 @@ public abstract class AbstractScriptExtensionManager {
 	 * Define the code that corresponds to the well-known key.
 	 * Ignore keys that are not in ScriptConstants.
 	 * @param key as found in ScriptConstants.
-	 * @param pythonPath
+	 * @param pythonPath to module
 	 */
 	public void setModulePath(String key,String pythonPath) {
 		Map<String,Object> map = scriptMap.get(key);
