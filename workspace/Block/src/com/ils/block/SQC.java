@@ -248,6 +248,8 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus(lastValue);
+			// Clear any watermark
+			controller.sendWatermarkNotification(getParentId().toString(), "");
 
 			// Notify other blocks to suppress alternate results.
 			// We only notify blocks in our same group, exclusive of ourself
