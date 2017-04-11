@@ -99,7 +99,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 					long expirationTime = ((Long)expirationProperty.getValue()).longValue();
 					if( qv.getQuality().isGood() && 
 							(expirationTime==0 || qv.getTimestamp().getTime()>=expirationTime)) {
-						lastValue = qv;  // Save the last value transmitted
+						lastValue = new BasicQualifiedValue(coerceToMatchOutput(BlockConstants.OUT_PORT_NAME,qv.getValue()),qv.getQuality(),qv.getTimestamp());
 						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 						controller.acceptCompletionNotification(nvn);
 						notifyOfStatus(vcn.getValue());

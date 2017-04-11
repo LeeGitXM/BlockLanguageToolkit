@@ -1,7 +1,7 @@
 <Tags>
    <Tag name="Basic IO" path="_types_" type="Folder"/>
    <Tag name="OPC Conditional Output" path="_types_/Basic IO" type="UDT_DEF">
-      <Property name="Value"></Property>
+      <Property name="Value"/>
       <Property name="DataType">2</Property>
       <Property name="UDTParentType">Basic IO/OPC Output</Property>
       <Parameters>
@@ -9,7 +9,7 @@
          <Property name="permissiveItemId" type="String"></Property>
       </Parameters>
       <Tag name="permissive" path="" type="OPC">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">7</Property>
          <Property name="OPCServer">{serverName}</Property>
          <Property name="OPCItemPath">{permissiveItemId}</Property>
@@ -29,7 +29,7 @@
       </Tag>
    </Tag>
    <Tag name="OPC Output" path="_types_/Basic IO" type="UDT_DEF">
-      <Property name="Value"></Property>
+      <Property name="Value"/>
       <Property name="DataType">2</Property>
       <Property name="UDTParentType">Basic IO/OPC Tag Bad Flag</Property>
       <Parameters>
@@ -68,7 +68,7 @@
       </Tag>
    </Tag>
    <Tag name="OPC Tag" path="_types_/Basic IO" type="UDT_DEF">
-      <Property name="Value"></Property>
+      <Property name="Value"/>
       <Property name="DataType">2</Property>
       <Parameters>
          <Property name="itemId" type="String"></Property>
@@ -81,7 +81,7 @@
          <Property name="DataType">7</Property>
       </Tag>
       <Tag name="value" path="" type="OPC">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">5</Property>
          <Property name="OPCServer">{serverName}</Property>
          <Property name="OPCItemPath">{itemId}</Property>
@@ -89,7 +89,7 @@
       </Tag>
    </Tag>
    <Tag name="OPC Tag Bad Flag" path="_types_/Basic IO" type="UDT_DEF">
-      <Property name="Value"></Property>
+      <Property name="Value"/>
       <Property name="DataType">2</Property>
       <Property name="UDTParentType">Basic IO/OPC Tag</Property>
       <Parameters>
@@ -101,7 +101,7 @@
    </Tag>
    <Tag name="Controllers" path="_types_" type="Folder"/>
    <Tag name="Controller" path="_types_/Controllers" type="UDT_DEF">
-      <Property name="Value"></Property>
+      <Property name="Value"/>
       <Property name="DataType">2</Property>
       <Property name="UDTParentType">Basic IO/OPC Tag Bad Flag</Property>
       <Parameters>
@@ -114,11 +114,11 @@
          <Property name="windupItemId" type="String"></Property>
          <Property name="lowClampItemId" type="String"></Property>
       </Parameters>
-      <Tag name="value" path="" type="EXTENSION">
-         <Property name="OPCItemPath">{itemId}</Property>
-      </Tag>
       <Tag name="value" path="mode" type="EXTENSION">
          <Property name="DataType">7</Property>
+      </Tag>
+      <Tag name="value" path="" type="EXTENSION">
+         <Property name="OPCItemPath">{itemId}</Property>
       </Tag>
       <Tag name="writeValue" path="mode" type="EXTENSION">
          <Property name="DataType">7</Property>
@@ -138,7 +138,7 @@
          </EventScripts>
       </Tag>
       <Tag name="highClamp" path="" type="UDT_INST">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">2</Property>
          <Property name="UDTParentType">Basic IO/OPC Tag</Property>
          <Parameters>
@@ -148,7 +148,7 @@
          </Parameters>
       </Tag>
       <Tag name="lowClamp" path="" type="UDT_INST">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">2</Property>
          <Property name="UDTParentType">Basic IO/OPC Tag</Property>
          <Parameters>
@@ -158,7 +158,7 @@
          </Parameters>
       </Tag>
       <Tag name="mode" path="" type="UDT_INST">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">2</Property>
          <Property name="UDTParentType">Basic IO/OPC Output</Property>
          <Parameters>
@@ -172,7 +172,7 @@
          <Property name="DataType">7</Property>
       </Tag>
       <Tag name="windup" path="" type="UDT_INST">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">2</Property>
          <Property name="UDTParentType">Basic IO/OPC Tag</Property>
          <Parameters>
@@ -195,7 +195,7 @@
       </Tag>
    </Tag>
    <Tag name="PKS ACE Controller" path="_types_/Controllers" type="UDT_DEF">
-      <Property name="Value"></Property>
+      <Property name="Value"/>
       <Property name="DataType">2</Property>
       <Property name="UDTParentType">Controllers/PKS Controller</Property>
       <Parameters>
@@ -212,17 +212,17 @@
          <Property name="windupItemId" type="String"></Property>
          <Property name="lowClampItemId" type="String"></Property>
       </Parameters>
-      <Tag name="value" path="" type="EXTENSION">
-         <Property name="OPCItemPath">{itemId}</Property>
+      <Tag name="writeValue" path="mode" type="EXTENSION">
+         <Property name="DataType">7</Property>
       </Tag>
       <Tag name="value" path="mode" type="EXTENSION">
          <Property name="DataType">7</Property>
       </Tag>
-      <Tag name="writeValue" path="mode" type="EXTENSION">
-         <Property name="DataType">7</Property>
+      <Tag name="value" path="" type="EXTENSION">
+         <Property name="OPCItemPath">{itemId}</Property>
       </Tag>
       <Tag name="processingCommand" path="" type="UDT_INST">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">2</Property>
          <Property name="UDTParentType">Basic IO/OPC Tag</Property>
          <Parameters>
@@ -237,7 +237,7 @@
       </Tag>
    </Tag>
    <Tag name="PKS Controller" path="_types_/Controllers" type="UDT_DEF">
-      <Property name="Value"></Property>
+      <Property name="Value"/>
       <Property name="DataType">2</Property>
       <Property name="UDTParentType">Controllers/Controller</Property>
       <Parameters>
@@ -245,17 +245,17 @@
          <Property name="permissiveItemId" type="String"></Property>
          <Property name="windupItemId" type="String"></Property>
       </Parameters>
-      <Tag name="value" path="" type="EXTENSION">
-         <Property name="OPCItemPath">{itemId}</Property>
+      <Tag name="writeValue" path="mode" type="EXTENSION">
+         <Property name="DataType">7</Property>
       </Tag>
       <Tag name="value" path="mode" type="EXTENSION">
          <Property name="DataType">7</Property>
       </Tag>
-      <Tag name="writeValue" path="mode" type="EXTENSION">
-         <Property name="DataType">7</Property>
+      <Tag name="value" path="" type="EXTENSION">
+         <Property name="OPCItemPath">{itemId}</Property>
       </Tag>
       <Tag name="op" path="" type="UDT_INST">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">2</Property>
          <Property name="UDTParentType">Basic IO/OPC Output</Property>
          <Parameters>
@@ -265,7 +265,7 @@
          </Parameters>
       </Tag>
       <Tag name="permissive" path="" type="OPC">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">7</Property>
          <Property name="OPCServer">{serverName}</Property>
          <Property name="OPCItemPath">{permissiveItemId}</Property>
@@ -283,7 +283,7 @@
          <Property name="DataType">7</Property>
       </Tag>
       <Tag name="sp" path="" type="UDT_INST">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">2</Property>
          <Property name="UDTParentType">Basic IO/OPC Output</Property>
          <Parameters>
@@ -294,46 +294,46 @@
       </Tag>
    </Tag>
    <Tag name="TDC Controller" path="_types_/Controllers" type="UDT_DEF">
-      <Property name="Value"></Property>
+      <Property name="Value"/>
       <Property name="DataType">2</Property>
       <Property name="UDTParentType">Controllers/Controller</Property>
       <Parameters>
          <Property name="pythonClass" type="String">TDCController</Property>
       </Parameters>
-      <Tag name="value" path="" type="EXTENSION">
-         <Property name="OPCItemPath">{itemId}</Property>
+      <Tag name="writeValue" path="mode" type="EXTENSION">
+         <Property name="DataType">7</Property>
       </Tag>
       <Tag name="value" path="mode" type="EXTENSION">
          <Property name="DataType">7</Property>
       </Tag>
-      <Tag name="writeValue" path="mode" type="EXTENSION">
-         <Property name="DataType">7</Property>
+      <Tag name="value" path="" type="EXTENSION">
+         <Property name="OPCItemPath">{itemId}</Property>
       </Tag>
    </Tag>
    <Tag name="Lab Data" path="_types_" type="Folder"/>
    <Tag name="Lab Baler Service Data" path="_types_/Lab Data" type="UDT_DEF">
-      <Property name="Value"></Property>
+      <Property name="Value"/>
       <Property name="DataType">2</Property>
       <Parameters>
          <Property name="Secondary Name" type="String"></Property>
       </Parameters>
       <Tag name="balerRate" path="" type="OPC">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">5</Property>
       </Tag>
       <Tag name="lowLimit" path="" type="OPC">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">5</Property>
       </Tag>
    </Tag>
    <Tag name="Lab Limit" path="_types_/Lab Data" type="UDT_DEF">
-      <Property name="Value"></Property>
+      <Property name="Value"/>
       <Property name="DataType">2</Property>
       <Parameters>
       </Parameters>
    </Tag>
    <Tag name="Lab Limit Release" path="_types_/Lab Data" type="UDT_DEF">
-      <Property name="Value"></Property>
+      <Property name="Value"/>
       <Property name="DataType">2</Property>
       <Property name="UDTParentType">Lab Data/Lab Limit</Property>
       <Parameters>
@@ -348,7 +348,7 @@
       </Tag>
    </Tag>
    <Tag name="Lab Limit SQC" path="_types_/Lab Data" type="UDT_DEF">
-      <Property name="Value"></Property>
+      <Property name="Value"/>
       <Property name="DataType">2</Property>
       <Property name="UDTParentType">Lab Data/Lab Limit</Property>
       <Parameters>
@@ -379,7 +379,7 @@
       </Tag>
    </Tag>
    <Tag name="Lab Limit Validity" path="_types_/Lab Data" type="UDT_DEF">
-      <Property name="Value"></Property>
+      <Property name="Value"/>
       <Property name="DataType">2</Property>
       <Property name="UDTParentType">Lab Data/Lab Limit</Property>
       <Parameters>
@@ -394,13 +394,13 @@
       </Tag>
    </Tag>
    <Tag name="Lab Selector Limit" path="_types_/Lab Data" type="UDT_DEF">
-      <Property name="Value"></Property>
+      <Property name="Value"/>
       <Property name="DataType">2</Property>
       <Parameters>
       </Parameters>
    </Tag>
    <Tag name="Lab Selector Limit Release" path="_types_/Lab Data" type="UDT_DEF">
-      <Property name="Value"></Property>
+      <Property name="Value"/>
       <Property name="DataType">2</Property>
       <Property name="UDTParentType">Lab Data/Lab Selector Limit</Property>
       <Parameters>
@@ -408,18 +408,18 @@
          <Property name="upperReleaseLimitTag" type="String"></Property>
       </Parameters>
       <Tag name="lowerReleaseLimit" path="" type="DB">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">5</Property>
          <Property name="ExpressionType">1</Property>
       </Tag>
       <Tag name="upperReleaseLimit" path="" type="DB">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">5</Property>
          <Property name="ExpressionType">1</Property>
       </Tag>
    </Tag>
    <Tag name="Lab Selector Limit SQC" path="_types_/Lab Data" type="UDT_DEF">
-      <Property name="Value"></Property>
+      <Property name="Value"/>
       <Property name="DataType">2</Property>
       <Property name="UDTParentType">Lab Data/Lab Selector Limit</Property>
       <Parameters>
@@ -431,40 +431,40 @@
          <Property name="lowerSQCLimitTag" type="String"></Property>
       </Parameters>
       <Tag name="lowerSQCLimit" path="" type="DB">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">5</Property>
          <Property name="ExpressionType">1</Property>
          <Property name="Expression">{lowerSQCLimitTag}</Property>
       </Tag>
       <Tag name="lowerValidityLimit" path="" type="DB">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">5</Property>
          <Property name="FormatString">#,##0.####</Property>
          <Property name="ExpressionType">1</Property>
          <Property name="Expression">{lowerValidityLimitTag}</Property>
       </Tag>
       <Tag name="standardDeviation" path="" type="DB">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">5</Property>
          <Property name="FormatString">#,##0.######</Property>
          <Property name="ExpressionType">1</Property>
          <Property name="Expression">{standardDeviationTag}</Property>
       </Tag>
       <Tag name="target" path="" type="DB">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">5</Property>
          <Property name="ExpressionType">1</Property>
          <Property name="Expression">{targetTag}</Property>
       </Tag>
       <Tag name="upperSQCLimit" path="" type="DB">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">5</Property>
          <Property name="FormatString">#,##0.####</Property>
          <Property name="ExpressionType">1</Property>
          <Property name="Expression">{upperSQCLimitTag}</Property>
       </Tag>
       <Tag name="upperValidityLimit" path="" type="DB">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">5</Property>
          <Property name="FormatString">#,##0.####</Property>
          <Property name="ExpressionType">1</Property>
@@ -472,7 +472,7 @@
       </Tag>
    </Tag>
    <Tag name="Lab Selector Limit Validity" path="_types_/Lab Data" type="UDT_DEF">
-      <Property name="Value"></Property>
+      <Property name="Value"/>
       <Property name="DataType">2</Property>
       <Property name="UDTParentType">Lab Data/Lab Selector Limit</Property>
       <Parameters>
@@ -480,20 +480,20 @@
          <Property name="upperValidityLimitTag" type="String"></Property>
       </Parameters>
       <Tag name="lowerValidityLimit" path="" type="DB">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">5</Property>
          <Property name="ExpressionType">1</Property>
          <Property name="Expression">{lowerValidityLimitTag}</Property>
       </Tag>
       <Tag name="upperValidityLimit" path="" type="DB">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">5</Property>
          <Property name="ExpressionType">1</Property>
          <Property name="Expression">{upperValidityLimitTag}</Property>
       </Tag>
    </Tag>
    <Tag name="Lab Selector Value" path="_types_/Lab Data" type="UDT_DEF">
-      <Property name="Value"></Property>
+      <Property name="Value"/>
       <Property name="DataType">2</Property>
       <Parameters>
          <Property name="badValueTag" type="String"></Property>
@@ -504,7 +504,7 @@
          <Property name="rawValueTag" type="String"></Property>
       </Parameters>
       <Tag name="badValue" path="" type="DB">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">6</Property>
          <Property name="ExpressionType">1</Property>
          <Property name="Expression">{badValueTag}</Property>
@@ -514,20 +514,20 @@
          <Property name="DataType">6</Property>
       </Tag>
       <Tag name="rawSampleTime" path="" type="DB">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">8</Property>
          <Property name="FormatString">yyyy-MM-dd h:mm:ss aa</Property>
          <Property name="ExpressionType">1</Property>
          <Property name="Expression">{rawSampleTimeTag}</Property>
       </Tag>
       <Tag name="rawValue" path="" type="DB">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">5</Property>
          <Property name="ExpressionType">1</Property>
          <Property name="Expression">{rawValueTag}</Property>
       </Tag>
       <Tag name="sampleTime" path="" type="DB">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">8</Property>
          <Property name="FormatString">yyyy-MM-dd h:mm:ss aa</Property>
          <Property name="ExpressionType">1</Property>
@@ -551,7 +551,7 @@
          </EventScripts>
       </Tag>
       <Tag name="status" path="" type="DB">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">7</Property>
          <Property name="ExpressionType">1</Property>
          <Property name="Expression">{statusTag}</Property>
@@ -582,7 +582,7 @@
          </EventScripts>
       </Tag>
       <Tag name="value" path="" type="DB">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">5</Property>
          <Property name="ExpressionType">1</Property>
          <Property name="Expression">{valueTag}</Property>
@@ -606,7 +606,7 @@
       </Tag>
    </Tag>
    <Tag name="Lab Value" path="_types_/Lab Data" type="UDT_DEF">
-      <Property name="Value"></Property>
+      <Property name="Value"/>
       <Property name="DataType">2</Property>
       <Parameters>
       </Parameters>
@@ -638,7 +638,7 @@
       </Tag>
    </Tag>
    <Tag name="Unit Parameter" path="_types_/Lab Data" type="UDT_DEF">
-      <Property name="Value"></Property>
+      <Property name="Value"/>
       <Property name="DataType">2</Property>
       <Parameters>
       </Parameters>
@@ -667,7 +667,7 @@
          </EventScripts>
       </Tag>
       <Tag name="rawValue" path="" type="DB">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">5</Property>
          <Property name="ExpressionType">1</Property>
          <Property name="Expression">None</Property>
@@ -679,7 +679,7 @@
    </Tag>
    <Tag name="Recipe Data" path="_types_" type="Folder"/>
    <Tag name="Download Trigger" path="_types_/Recipe Data" type="UDT_DEF">
-      <Property name="Value"></Property>
+      <Property name="Value"/>
       <Property name="DataType">2</Property>
       <Parameters>
       </Parameters>
@@ -693,7 +693,7 @@
          <Property name="DataType">7</Property>
       </Tag>
       <Tag name="grade" path="" type="OPC">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">7</Property>
          <EventScripts>
             <Event id="valueChanged" enabled="true">	
@@ -728,7 +728,7 @@
       </Tag>
    </Tag>
    <Tag name="Recipe Details" path="_types_/Recipe Data" type="UDT_DEF">
-      <Property name="Value"></Property>
+      <Property name="Value"/>
       <Property name="DataType">2</Property>
       <Parameters>
       </Parameters>
@@ -762,7 +762,7 @@
    </Tag>
    <Tag name="SFC" path="_types_" type="Folder"/>
    <Tag name="Array" path="_types_/SFC" type="UDT_DEF">
-      <Property name="Value"></Property>
+      <Property name="Value"/>
       <Property name="DataType">2</Property>
       <Property name="UDTParentType">SFC/DataWithUnits</Property>
       <Parameters>
@@ -773,7 +773,7 @@
       </Tag>
    </Tag>
    <Tag name="Data" path="_types_/SFC" type="UDT_DEF">
-      <Property name="Value"></Property>
+      <Property name="Value"/>
       <Property name="DataType">2</Property>
       <Parameters>
       </Parameters>
@@ -811,7 +811,7 @@
       </Tag>
    </Tag>
    <Tag name="DataWithUnits" path="_types_/SFC" type="UDT_DEF">
-      <Property name="Value"></Property>
+      <Property name="Value"/>
       <Property name="DataType">2</Property>
       <Property name="UDTParentType">SFC/Data</Property>
       <Parameters>
@@ -822,7 +822,7 @@
       </Tag>
    </Tag>
    <Tag name="Download Trigger" path="_types_/SFC" type="UDT_DEF">
-      <Property name="Value"></Property>
+      <Property name="Value"/>
       <Property name="DataType">2</Property>
       <Parameters>
       </Parameters>
@@ -836,7 +836,7 @@
          <Property name="DataType">7</Property>
       </Tag>
       <Tag name="grade" path="" type="OPC">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">7</Property>
          <EventScripts>
             <Event id="valueChanged" enabled="true">	
@@ -871,14 +871,14 @@
       </Tag>
    </Tag>
    <Tag name="Input" path="_types_/SFC" type="UDT_DEF">
-      <Property name="Value"></Property>
+      <Property name="Value"/>
       <Property name="DataType">2</Property>
       <Property name="UDTParentType">SFC/IO</Property>
       <Parameters>
       </Parameters>
    </Tag>
    <Tag name="IO" path="_types_/SFC" type="UDT_DEF">
-      <Property name="Value"></Property>
+      <Property name="Value"/>
       <Property name="DataType">2</Property>
       <Property name="UDTParentType">SFC/DataWithUnits</Property>
       <Parameters>
@@ -929,7 +929,7 @@
       </Tag>
    </Tag>
    <Tag name="Matrix" path="_types_/SFC" type="UDT_DEF">
-      <Property name="Value"></Property>
+      <Property name="Value"/>
       <Property name="DataType">2</Property>
       <Property name="UDTParentType">SFC/DataWithUnits</Property>
       <Parameters>
@@ -940,7 +940,7 @@
       </Tag>
    </Tag>
    <Tag name="Output" path="_types_/SFC" type="UDT_DEF">
-      <Property name="Value"></Property>
+      <Property name="Value"/>
       <Property name="DataType">2</Property>
       <Property name="UDTParentType">SFC/IO</Property>
       <Parameters>
@@ -988,7 +988,7 @@
       </Tag>
    </Tag>
    <Tag name="OutputRamp" path="_types_/SFC" type="UDT_DEF">
-      <Property name="Value"></Property>
+      <Property name="Value"/>
       <Property name="DataType">2</Property>
       <Property name="UDTParentType">SFC/Output</Property>
       <Parameters>
@@ -1003,7 +1003,7 @@
       </Tag>
    </Tag>
    <Tag name="Recipe Details" path="_types_/SFC" type="UDT_DEF">
-      <Property name="Value"></Property>
+      <Property name="Value"/>
       <Property name="DataType">2</Property>
       <Parameters>
       </Parameters>
@@ -1036,7 +1036,7 @@
       </Tag>
    </Tag>
    <Tag name="SQC" path="_types_/SFC" type="UDT_DEF">
-      <Property name="Value"></Property>
+      <Property name="Value"/>
       <Property name="DataType">2</Property>
       <Property name="UDTParentType">SFC/DataWithUnits</Property>
       <Parameters>
@@ -1055,7 +1055,7 @@
       </Tag>
    </Tag>
    <Tag name="Structure" path="_types_/SFC" type="UDT_DEF">
-      <Property name="Value"></Property>
+      <Property name="Value"/>
       <Property name="DataType">2</Property>
       <Property name="UDTParentType">SFC/Data</Property>
       <Parameters>
@@ -1066,7 +1066,7 @@
       </Tag>
    </Tag>
    <Tag name="Value" path="_types_/SFC" type="UDT_DEF">
-      <Property name="Value"></Property>
+      <Property name="Value"/>
       <Property name="DataType">2</Property>
       <Property name="UDTParentType">SFC/DataWithUnits</Property>
       <Parameters>
@@ -1093,93 +1093,93 @@
       </Tag>
    </Tag>
    <Tag name="Drier" path="_types_" type="UDT_DEF">
-      <Property name="Value"></Property>
+      <Property name="Value"/>
       <Property name="DataType">2</Property>
       <Parameters>
          <Property name="serverName" type="String"></Property>
          <Property name="scanClassName" type="String"></Property>
       </Parameters>
       <Tag name="estimatedWaterLoad" path="" type="OPC">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">5</Property>
          <Property name="OPCServer">{serverName}</Property>
          <Property name="ScanClass">{scanClassName}</Property>
       </Tag>
       <Tag name="inletTemp" path="" type="OPC">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">5</Property>
          <Property name="OPCServer">{serverName}</Property>
          <Property name="ScanClass">{scanClassName}</Property>
       </Tag>
       <Tag name="liquidDrierRemHours" path="" type="OPC">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">5</Property>
          <Property name="OPCServer">{serverName}</Property>
          <Property name="ScanClass">{scanClassName}</Property>
       </Tag>
       <Tag name="midTemp" path="" type="OPC">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">5</Property>
          <Property name="OPCServer">{serverName}</Property>
          <Property name="ScanClass">{scanClassName}</Property>
       </Tag>
       <Tag name="outletPsig" path="" type="OPC">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">5</Property>
          <Property name="OPCServer">{serverName}</Property>
          <Property name="ScanClass">{scanClassName}</Property>
       </Tag>
       <Tag name="outletTemp" path="" type="OPC">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">5</Property>
          <Property name="OPCServer">{serverName}</Property>
          <Property name="ScanClass">{scanClassName}</Property>
       </Tag>
       <Tag name="processingCmd" path="" type="OPC">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">3</Property>
          <Property name="OPCServer">{serverName}</Property>
          <Property name="ScanClass">{scanClassName}</Property>
       </Tag>
       <Tag name="rawLastLoad" path="" type="OPC">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">5</Property>
          <Property name="OPCServer">{serverName}</Property>
          <Property name="ScanClass">{scanClassName}</Property>
       </Tag>
       <Tag name="rawLastRun" path="" type="OPC">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">5</Property>
          <Property name="OPCServer">{serverName}</Property>
          <Property name="ScanClass">{scanClassName}</Property>
       </Tag>
       <Tag name="rawLastService" path="" type="OPC">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">5</Property>
          <Property name="OPCServer">{serverName}</Property>
          <Property name="ScanClass">{scanClassName}</Property>
       </Tag>
       <Tag name="runLengthHours" path="" type="OPC">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">5</Property>
          <Property name="OPCServer">{serverName}</Property>
          <Property name="ScanClass">{scanClassName}</Property>
       </Tag>
       <Tag name="stat" path="" type="OPC">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">3</Property>
          <Property name="OPCServer">{serverName}</Property>
          <Property name="ScanClass">{scanClassName}</Property>
       </Tag>
       <Tag name="vaporDrierRemHours" path="" type="OPC">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">5</Property>
          <Property name="OPCServer">{serverName}</Property>
          <Property name="ScanClass">{scanClassName}</Property>
       </Tag>
    </Tag>
    <Tag name="Grade" path="_types_" type="UDT_DEF">
-      <Property name="Value"></Property>
+      <Property name="Value"/>
       <Property name="DataType">2</Property>
       <Parameters>
       </Parameters>
@@ -1192,7 +1192,7 @@
          <Property name="DataType">5</Property>
       </Tag>
       <Tag name="grade" path="" type="OPC">
-         <Property name="Value"></Property>
+         <Property name="Value"/>
          <Property name="DataType">2</Property>
          <Property name="OPCServer">PKS-ASYNC</Property>
       </Tag>
@@ -1203,7 +1203,7 @@
       </Tag>
    </Tag>
    <Tag name="OPC Derived Value" path="_types_" type="UDT_DEF">
-      <Property name="Value"></Property>
+      <Property name="Value"/>
       <Property name="DataType">5</Property>
       <Parameters>
       </Parameters>
@@ -1277,6 +1277,14 @@
       <Property name="Value">true</Property>
       <Property name="DataType">6</Property>
    </Tag>
+   <Tag name="BooleanOutputA" path="MemoryTags" type="DB">
+      <Property name="Value">false</Property>
+      <Property name="DataType">6</Property>
+   </Tag>
+   <Tag name="BooleanOutputB" path="MemoryTags" type="DB">
+      <Property name="Value">false</Property>
+      <Property name="DataType">6</Property>
+   </Tag>
    <Tag name="ComparisonFeed" path="MemoryTags" type="DB">
       <Property name="Value">0.0</Property>
       <Property name="DataType">5</Property>
@@ -1294,11 +1302,11 @@
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="ComparisonOut4" path="MemoryTags" type="DB">
-      <Property name="Value">false</Property>
+      <Property name="Value">true</Property>
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="ComparisonOut5" path="MemoryTags" type="DB">
-      <Property name="Value">false</Property>
+      <Property name="Value">true</Property>
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="ConditionerData" path="MemoryTags" type="DB">
@@ -1314,7 +1322,7 @@
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="Connection-B" path="MemoryTags" type="DB">
-      <Property name="Value">95</Property>
+      <Property name="Value"></Property>
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="Connection-C" path="MemoryTags" type="DB">
@@ -1433,7 +1441,7 @@
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="LabDataOutput1" path="MemoryTags" type="DB">
-      <Property name="Value">33.0</Property>
+      <Property name="Value">44.0</Property>
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="LabdataOutput2" path="MemoryTags" type="DB">
@@ -1530,7 +1538,7 @@
       <Property name="DataType">4</Property>
    </Tag>
    <Tag name="ObservationOutput1" path="MemoryTags" type="DB">
-      <Property name="Value">false</Property>
+      <Property name="Value">true</Property>
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="ObservationOutput2" path="MemoryTags" type="DB">
@@ -1582,7 +1590,7 @@
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="SQCOut1" path="MemoryTags" type="DB">
-      <Property name="Value">UNKNOWN</Property>
+      <Property name="Value">TRUE</Property>
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="SQCOut2" path="MemoryTags" type="DB">
@@ -1606,7 +1614,7 @@
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="StringParameter" path="MemoryTags" type="DB">
-      <Property name="Value"></Property>
+      <Property name="Value">UNSET</Property>
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="SubDiagnosisInput" path="MemoryTags" type="DB">
@@ -1630,7 +1638,7 @@
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="TimerCount" path="MemoryTags" type="DB">
-      <Property name="Value">262</Property>
+      <Property name="Value">0</Property>
       <Property name="DataType">2</Property>
    </Tag>
    <Tag name="TimerInput" path="MemoryTags" type="DB">

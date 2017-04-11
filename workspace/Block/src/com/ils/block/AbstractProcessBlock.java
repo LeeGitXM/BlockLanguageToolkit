@@ -3,6 +3,7 @@
  */
 package com.ils.block;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -241,7 +242,8 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 			this.state = newState; 
 			recordActivity(Activity.ACTIVITY_STATE,state.name());
 			this.stateChangeTimestamp = new Date(timer.getTestTime());
-			// Pretend that the last value is the new State
+			// We assume that the only blocks where state is set are logical,
+			// so setting the last value makes sense ...
 			lastValue = new TestAwareQualifiedValue(timer,state.name());
 		}
 	}
@@ -597,7 +599,20 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 				if(ap.getName().equals(port)) {
 					log.debugf("%s.coerceToMatchOutput: %s %s type = %s",getName(),ap.getName(),(val==null?"null":val.toString()),ap.getConnectionType());
 					if( ConnectionType.DATA.equals(ap.getConnectionType()))  {
-						val = new Double(fcns.coerceToDouble(val));
+						// Either dates or doubles are legal
+						if( val instanceof String ) {
+							try {
+								val = dateFormatter.parse(val.toString());
+							}
+							catch(ParseException pe) {
+								try {
+									val = new Double(fcns.coerceToDouble(val));
+								}
+								catch(NumberFormatException nfe) {
+									val = Double.NaN;
+								}
+							}
+						}
 					}
 					else if( ConnectionType.TRUTHVALUE.equals(ap.getConnectionType())) {
 						boolean flag = fcns.coerceToBoolean(val);

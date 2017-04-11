@@ -8,6 +8,7 @@ import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.ProcessBlock;
+import com.ils.blt.common.block.Activity;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
@@ -131,19 +132,21 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 	 * For now we simply record the change in the map and start the watchdog.
 	 * 
 	 * Note: there can be several connections attached to a given port.
+	 * Note: we are not calling the super as it sets lastValue for either port
 	 * @param vcn incoming new value.
 	 */
 	@Override
 	public void acceptValue(IncomingNotification vcn) {
-		super.acceptValue(vcn);
 		String blockId = vcn.getConnection().getSource().toString();
 		QualifiedValue qv = vcn.getValue();
+		String port = vcn.getConnection().getDownstreamPortName();
+		recordActivity(Activity.ACTIVITY_RECEIVE,port,qv.getValue().toString());
 
-		if( vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(VALUE_PORT_NAME)) {
+		if( port.equalsIgnoreCase(VALUE_PORT_NAME)) {
 			lastValue = qv;
 			//log.infof("%s.acceptValue got VALUE =  %s", TAG,qv.getValue().toString());
 		}
-		else if (vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(QUALITY_PORT_NAME)) {
+		else if (port.equalsIgnoreCase(QUALITY_PORT_NAME)) {
 			lastQuality = qualifiedValueAsTruthValue(qv);
 
 			if( qv.getQuality().isGood()) {

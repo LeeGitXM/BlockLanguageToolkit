@@ -410,7 +410,7 @@ public class ModelManager implements ProjectListener  {
 				traverseUpstream(diagram,blk,blocks,spanDiagrams);
 				// Do an exhaustive search for all sink blocks that have the same binding
 				// as the specified block. We cover all diagrams in the system.
-				if( spanDiagrams && blk.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SOURCE) ) {
+				if( spanDiagrams && blk.getClassName()!=null && blk.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SOURCE) ) {
 					followUpstreamConnections(blk,blocks);
 				}
 			}

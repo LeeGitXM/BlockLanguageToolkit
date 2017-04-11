@@ -8,9 +8,9 @@ import java.awt.Color;
 import java.awt.Point;
 import java.awt.Shape;
 import java.awt.Stroke;
+import java.lang.NumberFormatException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.EnumSet;
 
 import com.ils.blt.common.UtilityFunctions;
@@ -141,12 +141,13 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 	 */
 	public Color getCoreColor() {
 		if( isEmpty ) 
-			return WorkspaceConstants.CONNECTION_FILL_DATA; // Dashed
+			return WorkspaceConstants.CONNECTION_FILL_EMPTY; // Dashed
 		else if( !isGood )
 			return WorkspaceConstants.CONNECTION_FILL_BAD;  // Dashed
+		else if( isNan )
+			return WorkspaceConstants.CONNECTION_FILL_NAN;
 		else if( cxnType.equals(ConnectionType.DATA)) {
-			if( isNan ) return WorkspaceConstants.CONNECTION_FILL_NAN;
-			else return WorkspaceConstants.CONNECTION_FILL_DATA;
+			return WorkspaceConstants.CONNECTION_FILL_DATA;
 		}
 		else if( cxnType.equals(ConnectionType.TRUTHVALUE))
 			if( theTruth.equals(TruthValue.TRUE))
@@ -214,25 +215,38 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 		if(value.getValue()==null) return;
 		
 		log.tracef("BasicAnchorPoint.valueChange: received %s.",value.getValue().toString());
-		isEmpty = value.getValue().toString().isEmpty();
 		isGood = value.getQuality().isGood();
-		if( !isEmpty ) {
+		isEmpty = false;
+		isNan = false;
+		if(value.getValue().toString().equalsIgnoreCase("UNSET")) {
+			isEmpty=true;
+			theTruth = TruthValue.UNSET;
+		}
+		
+		if( !isEmpty && isGood ) {
 			if( cxnType.equals(ConnectionType.TRUTHVALUE)) {
 				theTruth = fncs.qualifiedValueAsTruthValue(value);
-				if( theTruth.equals(TruthValue.UNSET)) isEmpty=true;
 			}
 			else if( cxnType.equals(ConnectionType.DATA)) {
-				// Dates in a data path are OK
-				if( ! (value.getValue() instanceof Date ) ) {
-					if( value.getValue() instanceof String ) {
+				// Dates, doubles in a data path are automatically OK
+				// If we have a string, check its format
+				if( value.getValue() instanceof String ) {
+					try {
+						dateFormatter.parse(value.getValue().toString());
+					}
+					catch(ParseException pe) {
 						try {
-							dateFormatter.parse(value.getValue().toString());
-						}
-						catch(ParseException pe) {
 							isNan = Double.isNaN(fncs.coerceToDouble(value.getValue()));
+						}
+						catch(NumberFormatException nfe) {
+							isNan = true;
 						}
 					}
 				}
+			}
+			// Any, signal, text
+			else {
+				isEmpty = false;   // Even an empty string is OK
 			}
 		}
 		lastValue = value;
