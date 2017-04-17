@@ -279,7 +279,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 * @return a block-specific description of internal statue
 	 */
 	@Override
-	public synchronized SerializableBlockStateDescriptor getInternalStatus() {
+	public SerializableBlockStateDescriptor getInternalStatus() {
 		SerializableBlockStateDescriptor descriptor = new SerializableBlockStateDescriptor();
 		Map<String,String> attributes = descriptor.getAttributes();
 		attributes.put("Name", getName());
@@ -361,7 +361,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 *        Presumably this comes from a controlled vocabulary
 	 * @param value a new value associated with the activity, if any.
 	 */
-	public synchronized void recordActivity(String desc,String value) {
+	public void recordActivity(String desc,String value) {
 		if( activities.getBufferSize()>0) {
 			if(value==null) value="";
 			Activity activity = new Activity(desc,value);
@@ -376,7 +376,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 * @param prop property receiving the new value, if any.
 	 * @param value a new value associated with the activity, if any.
 	 */
-	public synchronized void recordActivity(String desc,String prop,String value) {
+	public void recordActivity(String desc,String prop,String value) {
 		if( activities.getBufferSize()>0) {
 			if(prop==null)  prop="";
 			if(value==null) value="";
