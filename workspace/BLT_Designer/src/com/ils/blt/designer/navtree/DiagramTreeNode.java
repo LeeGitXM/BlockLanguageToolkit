@@ -526,6 +526,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			ProjectResource pr = node.getProjectResource();
 			if( pr!=null ) {
 				new ResourceUpdateManager(workspace,pr).run();
+				node.setItalic(false);
 			}
 		}
 		

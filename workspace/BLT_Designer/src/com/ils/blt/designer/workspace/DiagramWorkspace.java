@@ -8,6 +8,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.dnd.DnDConstants;
@@ -381,19 +382,23 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					Point dropPoint = SwingUtilities.convertPoint(
 							event.getDropTargetContext().getComponent(),
 							panel.unzoom(event.getLocation()), bdc);
- 
-					block.setLocation(dropPoint);
-					this.getActiveDiagram().addBlock(block);
-					// Null doesn't work here ...
 					this.setCurrentTool(getSelectionTool());   // So the next select on workspace does not result in another block
-					logger.infof("%s.handleDrop: dropped %s",TAG,event.getTransferable().getTransferData(BlockDataFlavor).getClass().getName());
+					if( isInBounds(dropPoint,bdc) ) {
+						block.setLocation(dropPoint);
+						this.getActiveDiagram().addBlock(block);
+						// Null doesn't work here ...
+						
+						logger.infof("%s.handleDrop: dropped %s",TAG,event.getTransferable().getTransferData(BlockDataFlavor).getClass().getName());
+						return true;
+					}
+					else {
+						logger.infof("%s.handleDrop: drop of %s out-of-bounds",TAG,event.getTransferable().getTransferData(BlockDataFlavor).getClass().getName());
+					}
 				}
 				else {
 					logger.infof("%s.handlerDrop: Unexpected class (%s),  rejected",
 							event.getTransferable().getTransferData(BlockDataFlavor).getClass().getName());
 				}
-				
-
 			} 
 			catch (Exception e) {
 				ErrorUtil.showError(TAG+" Exception handling drop",e);
@@ -712,6 +717,17 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		else {
 			logger.debugf("%s: DiagramActionHandler: deselected",TAG);
 		}
+	}
+	
+	private boolean isInBounds(Point dropPoint,BlockDesignableContainer bdc) {
+		Rectangle bounds = bdc.getBounds();
+		boolean inBounds = true;
+		if( dropPoint.x<bounds.x      ||
+			dropPoint.y<bounds.y	  ||
+			dropPoint.x>bounds.x+bounds.width ||
+			dropPoint.y>bounds.y+bounds.height   )  inBounds = false;
+		//logger.infof("%s.handlerDrop: drop x,y = (%d,%d), bounds %d,%d,%d,%d",TAG,dropPoint.x,dropPoint.y,bounds.x,bounds.y,bounds.width,bounds.height );
+		return inBounds;
 	}
 	// ============================== Change Listener ================================
 	/**

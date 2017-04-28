@@ -34,7 +34,6 @@ public class ResourceSaveManager implements Runnable {
 	private static final LoggerEx log = LogUtil.getLogger(ResourceSaveManager.class.getPackage().getName());
 	private static final boolean DEBUG = false;
 	private static DesignerContext context = null;
-	private static NodeStatusManager statusManager = null;
 	private final AbstractResourceNavTreeNode root;	      // Root of our save.
 	private final DiagramWorkspace workspace;
 	private final ThreadCounter counter = ThreadCounter.getInstance();
@@ -51,7 +50,6 @@ public class ResourceSaveManager implements Runnable {
 	 */
 	public static void setContext(DesignerContext ctx) {
 		context = ctx;
-		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
 	}
 	/**
 	 * Save all application, family or diagram nodes.
@@ -93,6 +91,7 @@ public class ResourceSaveManager implements Runnable {
 	// When found update the project resource.
 	private void saveDirtyDiagrams(AbstractResourceNavTreeNode node) {
 		ProjectResource res = node.getProjectResource();
+		node.setItalic(false);
 		if( res!=null ) {
 			if(res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE) ) {
 				log.infof("%s.saveDirtyDiagrams (if open): %s (%d) %s",CLSS,res.getName(),res.getResourceId(),
@@ -134,6 +133,8 @@ public class ResourceSaveManager implements Runnable {
 					diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
 					dirtyCount++;
 			}
+			// No matter what we're going to save it.
+			node.setItalic(false);
 		}
 		
 		
@@ -174,6 +175,7 @@ public class ResourceSaveManager implements Runnable {
 	}
 	
 	// Recursively descend the node tree, gathering all nested resources. Mark all as dirty.
+	// Turn off italics.
 	private void accumulateNodeResources(AbstractResourceNavTreeNode node,Project diff) {
 		ProjectResource res = node.getProjectResource();
 		if( res!=null ) {
@@ -189,5 +191,5 @@ public class ResourceSaveManager implements Runnable {
 			Object child = walker.nextElement();
 			accumulateNodeResources((AbstractResourceNavTreeNode)child,diff);
 		}
-	}	
+	}
 }

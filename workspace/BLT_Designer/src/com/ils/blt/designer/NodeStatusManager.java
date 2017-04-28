@@ -13,6 +13,7 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.common.notification.NotificationKey;
+import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
 import com.ils.blt.designer.navtree.NavTreeNodeInterface;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
@@ -216,7 +217,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		log.tracef("%s.setResourceState: %s(%d) = %s",TAG,se.getName(),resourceId,bs.name());
 	}
 	/**
-	 * We're being saved from the main menu. Update the status
+	 * Called aftrer a save from the main menu. Update the status
 	 * of the nav-tree nodes.
 	 */
 	public void updateAll() {
@@ -224,6 +225,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		for(Long key:statusByResourceId.keySet()) {
 			StatusEntry se = statusByResourceId.get(key);
 			if( se!=null ) {
+				se.setClean();
 				se.reportDirtyState();
 			}
 		}
@@ -306,6 +308,11 @@ public class NodeStatusManager implements NotificationChangeListener   {
 				((NavTreeNodeInterface)this.node).updateUI(isDirty());
 			}
 		}
+		public void setClean() {
+			if( node instanceof GeneralPurposeTreeNode) {
+				((GeneralPurposeTreeNode)node).setDirty(false);
+			}
+		};
 		public void setState(DiagramState s) { this.state = s; }
 		@Override
 		public String toString() {

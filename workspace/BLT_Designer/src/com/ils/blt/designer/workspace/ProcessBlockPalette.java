@@ -164,13 +164,30 @@ public class ProcessBlockPalette extends DockableFrame implements ResourceWorksp
 			return Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR);
 		}
 		
+		// Reject the transfer if the block is out-of-bounds
 		@Override
 		public void onPress(Point p, int modifiers) {
 			BlockDesignableContainer c = (BlockDesignableContainer)findDropContainer(p);
-			BlockDiagramModel model = c.getModel();
-			block.setLocation(p);
-			model.addBlock(block);
+			if( isInBounds(p,c) ) {
+				BlockDiagramModel model = c.getModel();
+				block.setLocation(p);
+				model.addBlock(block);
+			}
+			else {
+				log.infof("%s.InsertBlockTool: press rejected - out-of-bounds",TAG);
+			}
 			workspace.setCurrentTool(workspace.getSelectionTool());
+		}
+		
+		private boolean isInBounds(Point dropPoint,BlockDesignableContainer bdc) {
+			Rectangle bounds = bdc.getBounds();
+			boolean inBounds = true;
+			if( dropPoint.x<bounds.x      ||
+				dropPoint.y<bounds.y	  ||
+				dropPoint.x>bounds.x+bounds.width ||
+				dropPoint.y>bounds.y+bounds.height   )  inBounds = false;
+			log.infof("%s.InsertBlockTool: drop x,y = (%d,%d), bounds %d,%d,%d,%d",TAG,dropPoint.x,dropPoint.y,bounds.x,bounds.y,bounds.width,bounds.height );
+			return inBounds;
 		}
 	}
 }

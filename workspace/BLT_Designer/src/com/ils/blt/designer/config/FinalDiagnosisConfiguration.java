@@ -186,7 +186,6 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 		String recommendation = (String)properties.get("TextRecommendation");
 		if( recommendation==null) recommendation="";
 		textRecommendationArea = createTextArea("FinalDiagnosis.TextRecommendation.Desc",recommendation);
-		textRecommendationArea.setWrapStyleWord(false);
 		JScrollPane scrollPane = new JScrollPane(textRecommendationArea);
 		panel.add(scrollPane,"spanx 3,growx,growy,wrap");
 		

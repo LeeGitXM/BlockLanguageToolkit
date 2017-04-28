@@ -614,6 +614,9 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				}
 			}
 		}
+		else {
+			log.warnf("%s.listBlocksConnectedAtPort: no diagram found for %s",TAG,diauuid.toString());
+		}
 		return descriptors;
 	}
 	
@@ -625,6 +628,9 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		if( diagram!=null ) {
 			ProcessBlock blk = diagram.getBlockByName(blockName);
 			if(blk!=null) descriptors = controller.listBlocksDownstreamOf(diauuid,blk.getBlockId(),false);
+		}
+		else {
+			log.warnf("%s.listBlocksDownstreamOf: no diagram found for id %s",TAG,diagramId);
 		}
 		return descriptors;
 	}
@@ -646,7 +652,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				}
 			}
 			else {
-				log.warnf("%s.queryDiagramForBlocks: no diagram found for descriptor %s",TAG,descriptor.getId());
+				log.warnf("%s.listBlocksForTag: no diagram found for id %s",TAG,diagId.toString());
 			}
 		}
 		return results;
@@ -659,6 +665,9 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			ProcessBlock blk = diagram.getBlockByName(blockName);
 			if(blk!=null) descriptors = controller.listBlocksDownstreamOf(diauuid,blk.getBlockId(),true);
 		}
+		else {
+			log.warnf("%s.listBlocksGloballyDownstreamOf: no diagram found for %s",TAG,diagramId);
+		}
 		return descriptors;
 	}
 	public List<SerializableBlockStateDescriptor> listBlocksGloballyUpstreamOf(String diagramId, String blockName) {
@@ -668,6 +677,9 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		if( diagram!=null ) {
 			ProcessBlock blk = diagram.getBlockByName(blockName);
 			if(blk!=null) descriptors = controller.listBlocksUpstreamOf(diauuid,blk.getBlockId(),true);
+		}
+		else {
+			log.warnf("%s.listBlocksGloballyUpstreamOf: no diagram found for %s",TAG,diagramId);
 		}
 		return descriptors;
 	}
@@ -693,7 +705,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 		else {
-			log.warnf("%s.queryDiagramForBlocks: no diagram found for %s",TAG,diagramId);
+			log.warnf("%s.listBlocksInDiagram: no diagram found for %s",TAG,diagramId);
 		}
 		return descriptors;
 	}
@@ -706,6 +718,9 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		if( diagram!=null ) {
 			ProcessBlock blk = diagram.getBlockByName(blockName);
 			if(blk!=null) descriptors = controller.listBlocksUpstreamOf(diauuid,blk.getBlockId(),false);
+		}
+		else {
+			log.warnf("%s.listBlocksUpstreamOf: no diagram found for %s",TAG,diagramId);
 		}
 		return descriptors;
 	}

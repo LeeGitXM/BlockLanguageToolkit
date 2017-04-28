@@ -55,6 +55,7 @@ public class SerializableDiagram {
 	/**
 	 * This is a linear search. We are assured (not guaranteed) that the
 	 * blocks will have unique names.
+	 * @param nam block name
 	 * @return the block in the diagram with the specified name, else null
 	 */
 	public SerializableBlock getNamedBlock(String nam) {
@@ -65,6 +66,7 @@ public class SerializableDiagram {
 	}
 	/**
 	 * Add a connection to this diagram. Woe to any entity holding on to the old array.
+	 * @param newConnection the connection to add
 	 */
 	public void addConnection(SerializableConnection newConnection) {
 		if( newConnection==null ) throw new IllegalArgumentException("Attempt to add a null connection to "+getName());

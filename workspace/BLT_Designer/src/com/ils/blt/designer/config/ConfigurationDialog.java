@@ -134,7 +134,7 @@ public class ConfigurationDialog extends JDialog {
 		final JTextArea area = new JTextArea(text);
 		area.setEditable(true);
 		area.setLineWrap(true);
-		area.setWrapStyleWord(false);
+		area.setWrapStyleWord(true);
 		area.setToolTipText(rb.getString(bundle));
 		return area;
 	}

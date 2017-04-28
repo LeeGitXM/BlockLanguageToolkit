@@ -3,6 +3,8 @@
  */
 package com.ils.blt.designer;
 
+import java.util.Enumeration;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.BLTProperties;
@@ -18,6 +20,7 @@ import com.inductiveautomation.ignition.designer.IgnitionDesigner;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
 import com.inductiveautomation.ignition.designer.gateway.DTGatewayInterface;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
+import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
 
 
 /**
@@ -94,6 +97,7 @@ public class ResourceUpdateManager implements Runnable {
 				// Make every thing clean again.
 				Project project = context.getProject();
 				project.applyDiff(diff,false);
+				project.clearAllFlags();
 			}
 			catch(IllegalArgumentException iae) {
 				log.warnf("%s.run: Updating resource %d, it has been deleted (%s)",CLSS,res.getResourceId(),iae.getMessage());

@@ -334,8 +334,14 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	}
 	@Override
 	public ProcessDiagram getDiagram(String diagramIdString) {
-		UUID uuid = UUID.fromString(diagramIdString);
-		return getDiagram(uuid); 
+		ProcessDiagram pd = null;
+		if( diagramIdString!=null ) {
+			UUID uuid = UUID.fromString(diagramIdString);
+			if( uuid!=null ) {
+				pd = getDiagram(uuid);
+			} 
+		}
+		return pd;
 	}
 
 	public ProcessDiagram getDiagram(UUID id) {

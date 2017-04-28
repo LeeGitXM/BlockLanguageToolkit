@@ -47,7 +47,7 @@ public class Script {
 	/**
 	 * Create a new executable script
 	 * @param ep nominal entry point into script (unused)
-	 * @param args
+	 * @param args the script arguments
 	 */
 	public Script(String ep,String args) {
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
@@ -88,6 +88,7 @@ public class Script {
 	}
 	/**
 	 *  Run the script in line. On completion return the contents of the shared variable.
+	 *  @param scriptManager the current script manager. This should be refreshed with every use
 	 */
 	public void execute(ScriptManager scriptManager) {
 		if( module.length()==0 ) return;   // Do nothing
