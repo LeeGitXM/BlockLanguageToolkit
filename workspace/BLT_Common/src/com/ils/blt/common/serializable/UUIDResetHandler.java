@@ -29,6 +29,7 @@ public class UUIDResetHandler   {
 	
 	/**
 	 * Initialize with instances of the classes to be controlled.
+	 * @param sd the diagram
 	 */
 	public UUIDResetHandler(SerializableDiagram sd) {
 		log = LogUtil.getLogger(getClass().getPackage().getName());
@@ -38,6 +39,7 @@ public class UUIDResetHandler   {
 
 	/**
 	 * Do it.  (Note this will fix missing UUIDs).
+	 * @return true if the conversion was a success
 	 */
 	public boolean convertUUIDs() {
 		boolean success = true;

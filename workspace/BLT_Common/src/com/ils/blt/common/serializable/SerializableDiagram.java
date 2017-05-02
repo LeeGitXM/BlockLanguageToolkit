@@ -84,6 +84,7 @@ public class SerializableDiagram {
 	 * Remove a block from the block list. The caller is responsible for calling this
 	 * method with a block that is currently in the diagram. If no match is found
 	 * expect an IndexOutOfRangeException.
+	 * @param block the serializable block
 	 */
 	public void removeBlock(SerializableBlock block) {
 		int index = 0;
@@ -100,6 +101,7 @@ public class SerializableDiagram {
 	 * Remove a connection from the block list. The caller is responsible for calling this
 	 * method with a connection that is currently in the diagram. If no match is found
 	 * expect an IndexOutOfRangeException.
+	 * @param connection the serializable connection
 	 */
 	public void removeConnection(SerializableConnection connection) {
 		int index = 0;

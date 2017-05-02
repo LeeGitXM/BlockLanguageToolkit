@@ -21,6 +21,7 @@ public class ApplicationUUIDResetHandler   {
 	private final Map<UUID,UUID> idLookup;      // Get new UUID from original
 	/**
 	 * Initialize with instances of the classes to be controlled.
+	 * @param sa the serializable application
 	 */
 	public ApplicationUUIDResetHandler(SerializableApplication sa) {
 		this.application = sa;
@@ -29,6 +30,7 @@ public class ApplicationUUIDResetHandler   {
 
 	/**
 	 * Do it.
+	 * @return true on success
 	 */
 	public boolean convertUUIDs() {
 		boolean success = true;
