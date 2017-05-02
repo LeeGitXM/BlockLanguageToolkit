@@ -302,6 +302,15 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 	/**
+	 * Normally propagate re-sends the lastValue on its output. For most blocks, the last value is calculated
+	 * immediately on receipt of input. Here we have to make sure we are propagating the state.
+	 */
+	@Override
+	public void propagate() {
+		lastValue = new TestAwareQualifiedValue(timer,state);
+		super.propagate();
+	}
+	/**
 	 * Handle a changes to the various attributes.
 	 */
 	@Override
