@@ -214,7 +214,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			List <SerializableResourceDescriptor> descriptors = handler.listResourceNodes();
 			for( SerializableResourceDescriptor descriptor : descriptors ) {
 				logger.info("Res: "+descriptor.getProjectId()+":"+descriptor.getResourceId()+" "+
-						descriptor.getType()+" ("+descriptor.getName()+")");
+						descriptor.getType()+" ("+descriptor.getName()+":"+descriptor.getId()+")");
 			}
 		} 
 		catch (Exception ex) {

@@ -671,16 +671,23 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		return descriptors;
 	}
 	public List<SerializableBlockStateDescriptor> listBlocksGloballyUpstreamOf(String diagramId, String blockName) {
+		log.infof("%s.listBlocksGloballyUpstreamOf: diagramId %s:%s",TAG,diagramId,blockName);
 		List<SerializableBlockStateDescriptor> descriptors = new ArrayList<>();
 		UUID diauuid = makeUUID(diagramId);
 		ProcessDiagram diagram = controller.getDiagram(diauuid);
 		if( diagram!=null ) {
 			ProcessBlock blk = diagram.getBlockByName(blockName);
-			if(blk!=null) descriptors = controller.listBlocksUpstreamOf(diauuid,blk.getBlockId(),true);
+			if(blk!=null) {
+				descriptors = controller.listBlocksUpstreamOf(diauuid,blk.getBlockId(),true);
+			}
+			else {
+				log.warnf("%s.listBlocksGloballyUpstreamOf: block %s not found on diagram %s",TAG,blockName,diagramId);
+			}
 		}
 		else {
 			log.warnf("%s.listBlocksGloballyUpstreamOf: no diagram found for %s",TAG,diagramId);
 		}
+		log.infof("%s.listBlocksGloballyUpstreamOf: diagramId %s returning %d descriptors",TAG,diagramId,descriptors.size());
 		return descriptors;
 	}
 	
@@ -691,6 +698,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 */
 	@Override
 	public List<SerializableBlockStateDescriptor> listBlocksInDiagram(String diagramId) {
+		log.infof("%s.listBlocksInDiagram: diagramId %s",TAG,diagramId);
 		List<SerializableBlockStateDescriptor> descriptors = new ArrayList<>();
 		UUID diauuid = makeUUID(diagramId);
 		ProcessDiagram diagram = controller.getDiagram(diauuid);
@@ -707,6 +715,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		else {
 			log.warnf("%s.listBlocksInDiagram: no diagram found for %s",TAG,diagramId);
 		}
+		log.infof("%s.listBlocksInDiagram: diagramId %s returning %d descriptors",TAG,diagramId,descriptors.size());
 		return descriptors;
 	}
 	

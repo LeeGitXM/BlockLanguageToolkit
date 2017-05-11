@@ -617,6 +617,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			// If the diagram is open on a tab, call the workspace method to update the project resource
 			// from the diagram view. This method handles re-paint of the background.
 			ProcessDiagramView view = (ProcessDiagramView)tab.getModel();
+			log.info("Diagram: "+view.getDiagramName()+" ("+view.getId().toString()+")");
 			for( Block blk:view.getBlocks()) {
 				ProcessBlockView pbv = (ProcessBlockView)blk;
 				log.info("Block: "+pbv.getName()+"\t"+pbv.getClassName()+"\t("+pbv.getId().toString()+")");
@@ -637,6 +638,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			// If the diagram is open on a tab, call the workspace method to update the project resource
 			// from the diagram view. This method handles re-paint of the background.
 			ProcessDiagramView view = (ProcessDiagramView)tab.getModel();
+			log.info("Diagram: "+view.getDiagramName()+" ("+view.getId().toString()+")");
 			ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
 			try {
 				List <SerializableBlockStateDescriptor> descriptors = handler.listBlocksInDiagram(view.getId().toString());

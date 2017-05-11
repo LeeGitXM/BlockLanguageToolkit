@@ -334,19 +334,30 @@ public class ModelManager implements ProjectListener  {
 	public RootNode getRootNode() { return root; }
 	
 	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(UUID diagramId,UUID blockId,boolean spanDiagrams) {
+		List<SerializableBlockStateDescriptor> results = new ArrayList<>();
 		List<ProcessBlock> blocks = new ArrayList<>();
 		ProcessDiagram diagram = getDiagram(diagramId);
-		ProcessBlock start = getBlock(diagram,blockId);
-		traverseDownstream(diagram,start,blocks,spanDiagrams);
-		if(spanDiagrams && start.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SINK)) {
-			followDownstreamConnections(start,blocks);
+		if( diagram!=null ) {
+			ProcessBlock start = getBlock(diagram,blockId);
+			if( start!=null ) {
+				traverseDownstream(diagram,start,blocks,spanDiagrams);
+				if(spanDiagrams && start.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SINK)) {
+					followDownstreamConnections(start,blocks);
+				}
+
+				int index = 0;
+				for( ProcessBlock block:blocks ) {
+					index++;
+					if( index<2 ) continue;   // Skip the start block
+					results.add(block.toDescriptor());
+				}
+			}
+			else {
+				log.warnf("%s.listBlocksDownstreamOf: block %s not found on diagram %s", TAG,blockId.toString(),diagramId.toString());
+			}
 		}
-		List<SerializableBlockStateDescriptor> results = new ArrayList<>();
-		int index = 0;
-		for( ProcessBlock block:blocks ) {
-			index++;
-			if( index<2 ) continue;   // Skip the start block
-			results.add(block.toDescriptor());
+		else {
+			log.warnf("%s.listBlocksDownstreamOf: diagram %s not found", TAG,diagramId.toString());
 		}
 		return results;
 	}
@@ -387,19 +398,29 @@ public class ModelManager implements ProjectListener  {
 		}
 	}
 	public List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(UUID diagramId,UUID blockId,boolean spanDiagrams) {
+		List<SerializableBlockStateDescriptor> results = new ArrayList<>();
 		List<ProcessBlock> blocks = new ArrayList<>();
 		ProcessDiagram diagram = getDiagram(diagramId);
-		ProcessBlock start = getBlock(diagram,blockId);
-		traverseUpstream(diagram,start,blocks,spanDiagrams);
-		if(spanDiagrams && start.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SOURCE)) {
-			followUpstreamConnections(start,blocks);
+		if( diagram!=null ) {
+			ProcessBlock start = getBlock(diagram,blockId);
+			if( start!=null ) {
+				traverseUpstream(diagram,start,blocks,spanDiagrams);
+				if(spanDiagrams && start.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SOURCE)) {
+					followUpstreamConnections(start,blocks);
+				}
+				int index = 0;
+				for( ProcessBlock block:blocks ) {
+					index++;
+					if( index<2 ) continue;  // skip start block
+					results.add(block.toDescriptor());
+				}
+			}
+			else {
+				log.warnf("%s.listBlocksUpstreamOf: block %s not found on diagram %s", TAG,blockId.toString(),diagramId.toString());
+			}
 		}
-		List<SerializableBlockStateDescriptor> results = new ArrayList<>();
-		int index = 0;
-		for( ProcessBlock block:blocks ) {
-			index++;
-			if( index<2 ) continue;  // skip start block
- 			results.add(block.toDescriptor());
+		else {
+			log.warnf("%s.listBlocksUpstreamOf: diagram %s not found", TAG,diagramId.toString());
 		}
 		return results;
 	}

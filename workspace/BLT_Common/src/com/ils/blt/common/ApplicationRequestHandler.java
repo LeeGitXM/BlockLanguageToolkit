@@ -570,7 +570,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 					BLTProperties.MODULE_ID, "queryDiagram",diagramId);
 		}
 		catch(Exception ge) {
-			log.infof("%s.queryDiagram: GatewayException (%s)",TAG,ge.getMessage());
+			log.infof("%s.listBlocksInDiagram: GatewayException (%s)",TAG,ge.getMessage());
 		}
 		return result;
 	}
