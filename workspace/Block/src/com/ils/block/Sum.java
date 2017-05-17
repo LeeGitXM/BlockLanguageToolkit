@@ -10,6 +10,7 @@ import java.util.UUID;
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.ProcessBlock;
+import com.ils.blt.common.block.Activity;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
@@ -122,12 +123,14 @@ public class Sum extends AbstractProcessBlock implements ProcessBlock {
 				dog.setSecondsDelay(synchInterval);
 				log.tracef("%s.acceptValue got %s for %s", getName(),dbl.toString(),key);
 				timer.updateWatchdog(dog);  // pet dog
+				
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.acceptValue: Unable to convert incoming value to a double (%s)",getName(),nfe.getLocalizedMessage());
 				qv = new BasicQualifiedValue(Double.NaN,new BasicQuality(nfe.getLocalizedMessage(),Quality.Level.Bad),qv.getTimestamp());
 			}
 			valueMap.put(key, qv);
+			recordActivity(Activity.ACTIVITY_RECEIVE,key,qv.getValue().toString());
 		}
 	}
 	

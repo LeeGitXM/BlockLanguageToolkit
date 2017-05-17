@@ -10,6 +10,7 @@ import java.util.UUID;
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.ProcessBlock;
+import com.ils.blt.common.block.Activity;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
@@ -138,6 +139,7 @@ public class Product extends AbstractProcessBlock implements ProcessBlock {
 				qv = new BasicQualifiedValue(Double.NaN,new BasicQuality(nfe.getLocalizedMessage(),Quality.Level.Bad),qv.getTimestamp());
 			}
 			valueMap.put(key, qv);
+			recordActivity(Activity.ACTIVITY_RECEIVE,key,qv.getValue().toString());
 		}
 		else {
 			log.warnf("%s.acceptValue: received null value",getName());

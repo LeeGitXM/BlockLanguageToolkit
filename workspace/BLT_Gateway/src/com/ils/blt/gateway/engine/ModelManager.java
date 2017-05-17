@@ -254,7 +254,7 @@ public class ModelManager implements ProjectListener  {
 	 * @param projectName 
 	 * @return a list of diagram tree paths. If none found, return null. 
 	 */
-	public List<SerializableResourceDescriptor> getDiagramDescriptors(String projectName) {
+	public synchronized List<SerializableResourceDescriptor> getDiagramDescriptors(String projectName) {
 		List<SerializableResourceDescriptor> result = new ArrayList<>();
 		// First obtain a list of diagrams by recursively descending the tree
 		Long projectId = context.getProjectManager().getProjectId(projectName);
@@ -284,7 +284,7 @@ public class ModelManager implements ProjectListener  {
 	 * Get a list of all diagram tree paths
 	 * @return a list of diagram tree paths. If none found, return null. 
 	 */
-	public List<SerializableResourceDescriptor> getDiagramDescriptors() {
+	public synchronized List<SerializableResourceDescriptor> getDiagramDescriptors() {
 		List<SerializableResourceDescriptor> result = new ArrayList<>();
 		for( Long projectId: root.allProjects() ) {
 			List<ProcessNode> nodes = root.allNodesForProject(projectId);
@@ -333,7 +333,7 @@ public class ModelManager implements ProjectListener  {
 	 */
 	public RootNode getRootNode() { return root; }
 	
-	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(UUID diagramId,UUID blockId,boolean spanDiagrams) {
+	public synchronized List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(UUID diagramId,UUID blockId,boolean spanDiagrams) {
 		List<SerializableBlockStateDescriptor> results = new ArrayList<>();
 		List<ProcessBlock> blocks = new ArrayList<>();
 		ProcessDiagram diagram = getDiagram(diagramId);
@@ -397,7 +397,7 @@ public class ModelManager implements ProjectListener  {
 			}
 		}
 	}
-	public List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(UUID diagramId,UUID blockId,boolean spanDiagrams) {
+	public synchronized List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(UUID diagramId,UUID blockId,boolean spanDiagrams) {
 		List<SerializableBlockStateDescriptor> results = new ArrayList<>();
 		List<ProcessBlock> blocks = new ArrayList<>();
 		ProcessDiagram diagram = getDiagram(diagramId);

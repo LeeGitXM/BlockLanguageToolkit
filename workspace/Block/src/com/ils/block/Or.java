@@ -11,6 +11,7 @@ import java.util.UUID;
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.DiagnosticDiagram;
 import com.ils.blt.common.ProcessBlock;
+import com.ils.blt.common.block.Activity;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
@@ -118,6 +119,7 @@ public class Or extends AbstractProcessBlock implements ProcessBlock {
 		qualifiedValueMap.put(key, qv);
 		dog.setSecondsDelay(synchInterval);
 		timer.updateWatchdog(dog);  // pet dog
+		recordActivity(Activity.ACTIVITY_RECEIVE,key,qv.getValue().toString());
 	}
 	
 	/**
@@ -254,7 +256,7 @@ public class Or extends AbstractProcessBlock implements ProcessBlock {
 	 * Compute the overall state, presumably because of a new input.
 	 * This is a "or"
 	 */
-	private TruthValue getAggregateState() {
+	private synchronized TruthValue getAggregateState() {
 		Collection<QualifiedValue> values = qualifiedValueMap.values();
 		TruthValue result = TruthValue.UNSET;
 
@@ -279,7 +281,7 @@ public class Or extends AbstractProcessBlock implements ProcessBlock {
 				result = TruthValue.UNKNOWN;
 			}
 		}
-		if(result.equals(TruthValue.UNSET)) result = TruthValue.UNKNOWN;
+		// Formerly an UNSET was converted to UNKNOWN. No longer.
 		return result;	
 	}
 	/**

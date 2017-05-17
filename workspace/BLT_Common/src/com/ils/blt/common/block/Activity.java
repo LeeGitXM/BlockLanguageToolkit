@@ -12,6 +12,7 @@ public class Activity implements Cloneable,Serializable  {
 	// These are some standard actions
 	public final static String ACTIVITY_BLOCKED = "BLOCKED";
 	public final static String ACTIVITY_EVALUATE = "EVALUATE";
+	public final static String ACTIVITY_INITIALIZE = "INITIALIZE";
 	public final static String ACTIVITY_PROPAGATE = "PROPAGATE";
 	public final static String ACTIVITY_PROPERTY = "PROPERTY";
 	public final static String ACTIVITY_RECEIVE  = "RECV";

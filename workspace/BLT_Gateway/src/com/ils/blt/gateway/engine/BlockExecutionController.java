@@ -344,7 +344,12 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		return pd;
 	}
 
+	// Tag change scripts fire before the modules are loaded ...
 	public ProcessDiagram getDiagram(UUID id) {
+		if( modelManager==null) {
+			log.infof("%s.getDiagram: ERROR called before controller has been initialized",TAG);
+			return null;
+		}
 		return modelManager.getDiagram(id);
 	}
 

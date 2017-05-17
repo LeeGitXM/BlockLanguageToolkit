@@ -600,7 +600,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		return pyHandler.isAlerting(diagram);
 	}
 	@Override
-	public List<SerializableBlockStateDescriptor> listBlocksConnectedAtPort(String diagramId,String blockId,String portName) {
+	public synchronized List<SerializableBlockStateDescriptor> listBlocksConnectedAtPort(String diagramId,String blockId,String portName) {
 		List<SerializableBlockStateDescriptor> descriptors = new ArrayList<>();
 		UUID diauuid = makeUUID(diagramId);
 		ProcessDiagram diagram = controller.getDiagram(diauuid);
@@ -621,7 +621,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	}
 	
 	@Override
-	public List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(String diagramId,String blockName) {
+	public synchronized List<SerializableBlockStateDescriptor> listBlocksDownstreamOf(String diagramId,String blockName) {
 		List<SerializableBlockStateDescriptor> descriptors = new ArrayList<>();
 		UUID diauuid = makeUUID(diagramId);
 		ProcessDiagram diagram = controller.getDiagram(diauuid);
@@ -636,7 +636,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	}
 	
 	@Override
-	public List<SerializableBlockStateDescriptor> listBlocksForTag(String tagpath) {
+	public synchronized List<SerializableBlockStateDescriptor> listBlocksForTag(String tagpath) {
 		List<SerializableBlockStateDescriptor> results = new ArrayList<>();
 		List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
 		for(SerializableResourceDescriptor descriptor:descriptors) {
@@ -697,7 +697,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @return
 	 */
 	@Override
-	public List<SerializableBlockStateDescriptor> listBlocksInDiagram(String diagramId) {
+	public synchronized List<SerializableBlockStateDescriptor> listBlocksInDiagram(String diagramId) {
 		log.infof("%s.listBlocksInDiagram: diagramId %s",TAG,diagramId);
 		List<SerializableBlockStateDescriptor> descriptors = new ArrayList<>();
 		UUID diauuid = makeUUID(diagramId);
@@ -735,7 +735,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	}
 
 	@Override
-	public List<SerializableBlockStateDescriptor> listConfigurationErrors() {
+	public synchronized List<SerializableBlockStateDescriptor> listConfigurationErrors() {
 		List<SerializableBlockStateDescriptor> result = new ArrayList<>();
 		List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
 		try {
@@ -765,7 +765,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @param appName of the parent application
 	 * @return a list of nodes under the named application
 	 */
-	public List<SerializableResourceDescriptor> listDescriptorsForApplication(String appName) {
+	public synchronized List<SerializableResourceDescriptor> listDescriptorsForApplication(String appName) {
 		List<SerializableResourceDescriptor> result = new ArrayList<>();
 		ProcessApplication app = controller.getDelegate().getApplication(appName);
 		if(app!=null) {
@@ -788,7 +788,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @param appName of the parent application
 	 * @return a list of nodes under the named application
 	 */
-	public List<SerializableResourceDescriptor> listDescriptorsForFamily(String appName,String famName) {
+	public synchronized List<SerializableResourceDescriptor> listDescriptorsForFamily(String appName,String famName) {
 		List<SerializableResourceDescriptor> result = new ArrayList<>();
 		ProcessFamily fam = controller.getDelegate().getFamily(appName,famName);
 		if(fam!=null) {
@@ -806,7 +806,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	}
 	
 	@Override
-	public List<SerializableBlockStateDescriptor> listDiagramBlocksOfClass(String diagramId, String className) {
+	public synchronized List<SerializableBlockStateDescriptor> listDiagramBlocksOfClass(String diagramId, String className) {
 		UUID diagramuuid = makeUUID(diagramId);
 		ProcessDiagram diagram = controller.getDiagram(diagramuuid);
 		List<SerializableBlockStateDescriptor> result = new ArrayList<>();
@@ -844,7 +844,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @return
 	 */
 	@Override
-	public List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId,String blockName) {
+	public synchronized List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId,String blockName) {
 		List<SerializableBlockStateDescriptor> results = new ArrayList<>();
 		UUID diagramuuid = makeUUID(diagramId);
 		ProcessDiagram diagram = controller.getDiagram(diagramuuid);
@@ -887,7 +887,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @return
 	 */
 	@Override
-	public List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId,String blockName) {
+	public synchronized List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId,String blockName) {
 		List<SerializableBlockStateDescriptor> results = new ArrayList<>();
 		UUID diagramuuid = makeUUID(diagramId);
 		ProcessDiagram diagram = controller.getDiagram(diagramuuid);

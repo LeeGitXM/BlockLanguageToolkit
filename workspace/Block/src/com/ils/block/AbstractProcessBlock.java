@@ -139,11 +139,14 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	protected Map<String,QualifiedValue> initializeQualifiedValueMap(String port) {
 		List<SerializableBlockStateDescriptor> descriptors = controller.listBlocksConnectedAtPort(parentId.toString(), 
 																		blockId.toString(), port);
-		Map<String,QualifiedValue> qvmap = new HashMap<>();
-		for(SerializableBlockStateDescriptor desc:descriptors) {
-			qvmap.put(desc.getIdString(), new BasicQualifiedValue(BLTProperties.UNDEFINED));
+		recordActivity(Activity.ACTIVITY_INITIALIZE,"clear entry map",String.format("%d inputs", descriptors.size()));
+		synchronized(this) {
+			Map<String,QualifiedValue> qvmap = new HashMap<>();
+			for(SerializableBlockStateDescriptor desc:descriptors) {
+				qvmap.put(desc.getIdString(), new BasicQualifiedValue(BLTProperties.UNDEFINED));
+			}
+			return qvmap;
 		}
-		return qvmap;
 	}
 	/**
 	 * Fill a prototype object with defaults - as much as is reasonable.

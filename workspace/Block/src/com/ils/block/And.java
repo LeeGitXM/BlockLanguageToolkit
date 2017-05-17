@@ -11,6 +11,7 @@ import java.util.UUID;
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.DiagnosticDiagram;
 import com.ils.blt.common.ProcessBlock;
+import com.ils.blt.common.block.Activity;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
@@ -117,10 +118,10 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 		super.acceptValue(incoming);
 		String key = incoming.getConnection().getSource().toString();
 		QualifiedValue qv = incoming.getValue();
-		log.debugf("%s.acceptValue %s from %s",getName(),qv.getValue().toString(),key);
 		qualifiedValueMap.put(key, qv);
 		dog.setSecondsDelay(synchInterval);
 		timer.updateWatchdog(dog);  // pet dog
+		recordActivity(Activity.ACTIVITY_RECEIVE,key,qv.getValue().toString());
 	}
 	/**
 	 * On a TRUE or FALSE, concatenate the upstream reasons.
@@ -260,7 +261,7 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 	 * Compute the overall state, presumably because of a new input.
 	 * This is an "and"
 	 */
-	private TruthValue getAggregateState() {
+	private synchronized TruthValue getAggregateState() {
 		Collection<QualifiedValue> values = qualifiedValueMap.values();
 		TruthValue result = TruthValue.UNSET;
 		
@@ -284,7 +285,7 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 				continue;
 			}
 		}
-		if(result.equals(TruthValue.UNSET)) result = TruthValue.UNKNOWN;
+		// Previously we had set the state to UNKNOWN if UNSET. Now we let it be.
 		return result;	
 	}
 }

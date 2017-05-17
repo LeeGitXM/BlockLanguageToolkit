@@ -27,9 +27,12 @@ Tagset: SingleBoolean
 10:00:20 Assert: ReadWriteBooleanOutput = True "Output is true"
 10:00:30 false
 10:00:40 Assert: ReadWriteBooleanOutput = False "Output is false"
+Require: ReadWriteBooleanOutput=False  "Test aborts if this fails"
+
 10:01 true
 10:01:30 true
 10:01:40 Assert: ReadWriteBooleanOutput = True "Output is true"
+Require: ReadWriteBooleanOutput=False  "Test aborts here"
 
 Step: Numeric tag reader
 Tagset: DualInput
