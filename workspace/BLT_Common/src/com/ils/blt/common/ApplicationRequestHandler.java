@@ -909,7 +909,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * There may be no successful recipients. The signals are timestamped with
 	 * the specified time
 	 * 
-	 * @param diagramId
+	 * @param diagramId identifier of the diagram as a String
 	 * @param arg filter of the receiver blocks to be targeted.
 	 * @param command string of the signal.
 	 */
@@ -1006,7 +1006,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * are notified of the change.
 	 *  
 	 * @param diagramId diagram's unique Id as a String
-	 * @param bname 
+	 * @param bname the name of the block
 	 * @param pname the changed property
 	 * @param value the new value of the property. The value will be coerced into the correct data type in the gateway 
 	 */
@@ -1025,7 +1025,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 	 * Drive a block to the specified state. 
 	 *  
 	 * @param diagramId diagram's unique Id as a String
-	 * @param bname 
+	 * @param bname name of the block
 	 * @param state the new state of the block. The value will be coerced into a truth-value in the gateway 
 	 */
 	@Override
@@ -1131,6 +1131,8 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 
 	/**
 	 * Define a watermark for a diagram. This is shown only in the designer. 
+	 * @param diagramId identifier of diagram to get the watermark
+	 * @param text to be displayed
 	 */
 	public void setWatermark(String diagramId,String text) {
 		try {
