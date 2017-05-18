@@ -2,6 +2,7 @@ log: Block Language Toolkit Regression Suite
 #
 # Run the collection of tests for the "simple" diagrams
 #
+run: readwrite.txt
 run: arithmetic.txt
 run: average.txt
 run: comparisons.txt
@@ -14,7 +15,6 @@ run: logic.txt
 run: logicfilter.txt
 run: persistence.txt
 run: pythonblocks.txt
-run: readwrite.txt
 run: readwrite2.txt
 run: routing.txt
 run: setproperty.txt

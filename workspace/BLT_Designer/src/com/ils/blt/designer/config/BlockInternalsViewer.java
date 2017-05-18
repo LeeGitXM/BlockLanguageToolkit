@@ -55,7 +55,9 @@ public class BlockInternalsViewer extends JDialog {
 	private static final String PREFIX = BLTProperties.BLOCK_PREFIX;  // Required for text strings
 	private static final long serialVersionUID = 4004388376825535527L;
 	private final int DIALOG_HEIGHT = 400;
-	private final int DIALOG_WIDTH = 500;
+	private final int DIALOG_WIDTH = 600;
+	private final int TABLE_HEIGHT = 200;
+	private final int TABLE_WIDTH = 800;
 	private static SimpleDateFormat dateFormatter = new SimpleDateFormat(BlockConstants.TIMESTAMP_FORMAT);
 	private final ProcessDiagramView diagram;
 	private final ProcessBlockView block;
@@ -86,7 +88,7 @@ public class BlockInternalsViewer extends JDialog {
 		// and the other for any internal buffer
 		setLayout(new BorderLayout());
 		internalPanel = new JPanel();
-		internalPanel.setLayout(new MigLayout("ins 2","",""));
+		internalPanel.setLayout(new MigLayout("ins 2,fillx","",""));
 		//Create the internal panel - it has two panes
 		add(internalPanel,BorderLayout.CENTER);
 		
@@ -190,11 +192,13 @@ public class BlockInternalsViewer extends JDialog {
         table = new JTable(dataModel);
         table.setRowSelectionAllowed(true);
         table.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+        table.setPreferredScrollableViewportSize(new Dimension(TABLE_WIDTH,TABLE_HEIGHT));
 
         
         JScrollPane tablePane = new JScrollPane(table);
         table.setFillsViewportHeight(true);
-        outerPanel.add(tablePane, "wrap");
+        outerPanel.add(tablePane, "pushx,wrap");
 		return outerPanel;
 	}
 	
@@ -207,7 +211,7 @@ public class BlockInternalsViewer extends JDialog {
 		table = new JTable();
 		String[] columnNames = {"Timestamp","Activity","Value"};
 		int nColumns = columnNames.length;
-		//outerPanel.setLayout(new MigLayout("ins 2,filly","para[:480:]","[120]"));
+		//outerPanel.setLayout(new MigLayout("ins 2,filly","para[:600:]","[120]"));
 		outerPanel.setLayout(new MigLayout("ins 2,fillx,filly","",""));
 		DefaultTableModel dataModel = new DefaultTableModel(columnNames,0); 
 		for( Activity activity:activities) {
@@ -220,11 +224,13 @@ public class BlockInternalsViewer extends JDialog {
         table = new JTable(dataModel);
         table.setRowSelectionAllowed(true);
         table.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+        table.setPreferredScrollableViewportSize(new Dimension(TABLE_WIDTH,TABLE_HEIGHT));
 
         
         JScrollPane tablePane = new JScrollPane(table);
         table.setFillsViewportHeight(true);
-        outerPanel.add(tablePane, "wrap");
+        outerPanel.add(tablePane, "pushx,wrap");
 		return outerPanel;
 	}
 	
@@ -239,7 +245,7 @@ public class BlockInternalsViewer extends JDialog {
 		Map<String,String> prototype = buffer.get(0);
 		String[] columnNames = prototype.keySet().toArray(new String[prototype.keySet().size()]);
 		int nColumns = columnNames.length;
-		//outerPanel.setLayout(new MigLayout("ins 2,filly","para[:480:]","[120]"));
+		//outerPanel.setLayout(new MigLayout("ins 2,fillx,filly","para[:480:]","[120]"));
 		outerPanel.setLayout(new MigLayout("ins 2,fillx,filly","",""));
 		DefaultTableModel dataModel = new DefaultTableModel(columnNames,0); 
 		for( Map<String,String> entity:buffer) {
@@ -249,11 +255,12 @@ public class BlockInternalsViewer extends JDialog {
         table = new JTable(dataModel);
         table.setRowSelectionAllowed(true);
         table.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+        table.setPreferredScrollableViewportSize(new Dimension(TABLE_WIDTH,TABLE_HEIGHT));
         
         JScrollPane tablePane = new JScrollPane(table);
         table.setFillsViewportHeight(true);
-        outerPanel.add(tablePane, "wrap");
+        outerPanel.add(tablePane, "pushx,wrap");
 		return outerPanel;
 	}
 	

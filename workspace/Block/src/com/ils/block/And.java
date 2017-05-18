@@ -121,7 +121,6 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 		qualifiedValueMap.put(key, qv);
 		dog.setSecondsDelay(synchInterval);
 		timer.updateWatchdog(dog);  // pet dog
-		recordActivity(Activity.ACTIVITY_RECEIVE,key,qv.getValue().toString());
 	}
 	/**
 	 * On a TRUE or FALSE, concatenate the upstream reasons.

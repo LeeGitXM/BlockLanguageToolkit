@@ -287,6 +287,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		Map<String,String> attributes = descriptor.getAttributes();
 		attributes.put("Name", getName());
 		attributes.put("UUID", getBlockId().toString());
+		attributes.put("Parent", getParentId().toString());
 		if( stateIsMeaningful() ) {
 			attributes.put("State", getState().toString());
 			if( stateChangeTimestamp!=null ) {     // On start we'never had a state change
@@ -388,6 +389,21 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		}
 	}
 	/**
+	 * This variant accepts a key argument that is probably a UUID
+	 * @param desc description of the activity being recorded. 
+	 *        Presumably this comes from a controlled vocabulary
+	 * @param prop property receiving the new value, if any.
+	 * @param value a new value associated with the activity, if any.
+	 */
+	public void recordActivity(String desc,String prop,String value,String key) {
+		if( activities.getBufferSize()>0) {
+			if(prop==null)  prop="";
+			if(value==null) value="";
+			Activity activity = new Activity(desc,String.format("%s=%s (%s)", prop,value,key));
+			activities.add(activity);
+		}
+	}
+	/**
 	 * The default method sets the state to UNSET.
 	 * It also sends notifications to block outputs setting them to empty or
 	 * UNSET. This does NOT clear the lastValue, thus allowing it to be used
@@ -465,7 +481,8 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 			if( qv!=null && qv.getValue()!=null ) {
 				value = qv.getValue().toString();
 				lastValue = qv;
-				recordActivity(Activity.ACTIVITY_RECEIVE,port,value);
+				String key = incoming.getConnection().getSource().toString();
+				recordActivity(Activity.ACTIVITY_RECEIVE,port,value,key);
 			}
 			
 		}
