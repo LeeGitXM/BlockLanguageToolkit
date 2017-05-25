@@ -79,7 +79,7 @@ public class TagListener implements TagChangeListener   {
 	 * when the listener is re-started. This method is only valid when the listener
 	 * is stopped.
 	 */
-	public void clearSubscriptions() {
+	public synchronized void clearSubscriptions() {
 		if( stopped ) {
 			blockMap.clear();
 			tagMap.clear();
@@ -223,7 +223,7 @@ public class TagListener implements TagChangeListener   {
 	 * Re-start. Create subscriptions for everything in the tag map.
 	 * @param ctxt
 	 */
-	public void start(GatewayContext ctxt) {
+	public synchronized void start(GatewayContext ctxt) {
 		this.context = ctxt;
 		log.infof("%s: start tagListener ...",TAG);
 		for( String tagPath:blockMap.keySet()) {
@@ -326,7 +326,7 @@ public class TagListener implements TagChangeListener   {
 	 * @param event
 	 */
 	@Override
-	public void tagChanged(TagChangeEvent event) {
+	public synchronized void tagChanged(TagChangeEvent event) {
 		TagPath tp = event.getTagPath();
 		Tag tag = event.getTag();
 		if( tag!=null && tag.getValue()!=null && tp!=null ) {
