@@ -484,7 +484,6 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 				String key = incoming.getConnection().getSource().toString();
 				recordActivity(Activity.ACTIVITY_RECEIVE,port,value,key);
 			}
-			
 		}
 	}
 	/**

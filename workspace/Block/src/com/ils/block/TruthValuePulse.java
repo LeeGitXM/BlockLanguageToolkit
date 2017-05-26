@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2016  ILS Automation. All rights reserved. 
+ *   (c) 2014-2017  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -27,7 +27,7 @@ import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
- *  When the block is rest, then the block emits a configured truth-value,
+ *  When the block is reset, then the block emits a configured truth-value,
  *  waits for the interval to expire and emits the opposite.
  *
  */
@@ -70,17 +70,19 @@ public class TruthValuePulse extends AbstractProcessBlock implements ProcessBloc
 	@Override
 	public void reset() {
 		recordActivity(Activity.ACTIVITY_RESET,"");
-		setState(pulse);
-		if( !isLocked()  ) {
-			lastValue = new TestAwareQualifiedValue(timer,state);
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
-			controller.acceptCompletionNotification(nvn);
-		}
-		dog.setSecondsDelay(interval);
-		timer.updateWatchdog(dog);
+		pulse();
 	}
 
-	
+	/**
+	 * Start any active monitoring or processing within the block.
+	 * This default method does nothing. In general, a start does
+	 * NOT reset state in a block that is already running.
+	 */
+	@Override
+	public void start() {
+		super.start();
+		pulse();
+	}
 	/**
 	 * Disconnect from the timer thread.
 	 */
@@ -90,6 +92,16 @@ public class TruthValuePulse extends AbstractProcessBlock implements ProcessBloc
 		timer.removeWatchdog(dog);
 	}
 	
+	private void pulse() {
+		setState(pulse);
+		if( !isLocked()  ) {
+			lastValue = new TestAwareQualifiedValue(timer,state);
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
+			controller.acceptCompletionNotification(nvn);
+		}
+		dog.setSecondsDelay(interval);
+		timer.updateWatchdog(dog);
+	}
 	/**
 	 * Define the interval and trigger properties and ports.
 	 */

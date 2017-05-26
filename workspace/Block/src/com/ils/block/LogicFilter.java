@@ -1,7 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
- *   Code based on sample code at: 
- *        http://www.codeproject.com/Articles/36459/PID-process-control-a-Cruise-Control-example
+ *   (c) 2014,2017  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -110,14 +108,14 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		anchors.add(output);
 	}
 	
+	// Retain the current value and restart sampling
 	@Override
 	public void reset() {
 		super.reset();
-		timer.removeWatchdog(dog);
+		dog.setSecondsDelay(scanInterval);
+		timer.updateWatchdog(dog);  // pet dog
 		buffer.clear();
-		currentValue = TruthValue.UNSET;
 		ratio = Double.NaN;
-		log.debugf("%s.reset ...",getName());
 	}
 
 	@Override
@@ -315,7 +313,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void notifyOfStatus() {
-		QualifiedValue qv = new TestAwareQualifiedValue(timer,new Double(ratio));
+		QualifiedValue qv = new TestAwareQualifiedValue(timer,state);
 		notifyOfStatus(qv);
 	}
 	private void notifyOfStatus(QualifiedValue qv) {
