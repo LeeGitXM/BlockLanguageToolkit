@@ -25,7 +25,7 @@ import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 /**
- * Display a dialog thst defines the file save path.
+ * Display a dialog that defines the file save path.
  *    ExportDialog ed = new ExportDialog("Attribute Editor");
  *    bad.pack();
  *    bad.setVisible(true);   // Terminates when dialog closed.

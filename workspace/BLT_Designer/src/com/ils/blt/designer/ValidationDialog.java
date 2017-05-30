@@ -5,6 +5,7 @@ package com.ils.blt.designer;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -52,6 +53,7 @@ public class ValidationDialog extends JDialog implements ListSelectionListener {
 	private static String TAG = "ValidationDialog";
 	private final LoggerEx log;
 	private static final long serialVersionUID = 2002388376824434427L;
+	private static final String TABLE_NAME = "Table";
 	private final int DIALOG_HEIGHT = 300;
 	private final int DIALOG_WIDTH = 600;
 	private final int TABLE_HEIGHT = 500;
@@ -61,7 +63,7 @@ public class ValidationDialog extends JDialog implements ListSelectionListener {
 	private final ApplicationRequestHandler requestHandler;
 	private final DesignerContext context;
 	private final ResourceBundle rb;
-	private JTable table = null;
+	private JTabbedPane tabbedPane;
 	private JPanel configurationPanel = null;
 
 	public ValidationDialog(DesignerContext ctx) {
@@ -82,7 +84,7 @@ public class ValidationDialog extends JDialog implements ListSelectionListener {
 
 	private void initialize() {
 		setLayout(new BorderLayout());
-		JTabbedPane tabbedPane = new JTabbedPane();
+		tabbedPane = new JTabbedPane();
 		add(tabbedPane,BorderLayout.CENTER);
 		configurationPanel = createConfigurationPanel();
 		tabbedPane.addTab(rb.getString("Validation.Tab.Configuration"), configurationPanel);
@@ -93,12 +95,7 @@ public class ValidationDialog extends JDialog implements ListSelectionListener {
 		JPanel unresponsivePanel = createUnresponsiveInputsPanel();
 		tabbedPane.addTab(rb.getString("Validation.Tab.UnresponsiveInputs"), unresponsivePanel);
 		tabbedPane.setSelectedIndex(0);
-	}
-
-	private JPanel createConfigurationPanel() {
-		JPanel panel = new JPanel();
-		panel.setLayout(new MigLayout("ins 10","",""));
-
+		
 		JPanel buttonPanel = new JPanel();
 		add(buttonPanel, BorderLayout.SOUTH);
 		// The OK button simply closes the dialog
@@ -110,7 +107,8 @@ public class ValidationDialog extends JDialog implements ListSelectionListener {
 			}
 		});
 
-		// The Export button posts a file-choose dialog
+		// The Export button posts a file-choose dialog.
+		// Export from the selected tab
 		JButton exportButton = new JButton("Export");
 		buttonPanel.add(exportButton, "");
 		exportButton.addActionListener(new ActionListener() {
@@ -124,6 +122,9 @@ public class ValidationDialog extends JDialog implements ListSelectionListener {
 					try {
 						@SuppressWarnings("resource")
 						BufferedWriter writer = new BufferedWriter(new FileWriter(output));
+
+						JPanel panel = (JPanel)tabbedPane.getSelectedComponent();
+						JTable table = tableForContainer(panel);
 						if( table!=null) {
 							TableModel dataModel = table.getModel();
 							int rows = dataModel.getRowCount();
@@ -149,6 +150,11 @@ public class ValidationDialog extends JDialog implements ListSelectionListener {
 				}
 			}
 		});
+	}
+
+	private JPanel createConfigurationPanel() {
+		JPanel panel = new JPanel();
+		panel.setLayout(new MigLayout("ins 10","",""));
 		return panel;
 	}
 	private JPanel createInactiveBlockPanel() {
@@ -161,7 +167,8 @@ public class ValidationDialog extends JDialog implements ListSelectionListener {
 		JPanel panel = new JPanel();
 		panel.setLayout(new MigLayout("ins 10","",""));
 		return panel;
-	}	
+	}
+	
 	// Query the controller for a list of "issues" with block configurations.
 	private void queryController() {
 		issues  = requestHandler.listConfigurationErrors();
@@ -190,7 +197,8 @@ public class ValidationDialog extends JDialog implements ListSelectionListener {
 	 */
 	private JPanel createListPanel()  {
 		JPanel outerPanel = new JPanel();
-		table = new JTable();
+		JTable table = new JTable();
+		table.setName(TABLE_NAME);
 		int nColumns = columnNames.length;
 		outerPanel.setLayout(new MigLayout("ins 2,fillx,filly","",""));
 		DefaultTableModel dataModel = new DefaultTableModel(columnNames,0); 
@@ -265,8 +273,10 @@ public class ValidationDialog extends JDialog implements ListSelectionListener {
 	
 	// ========================= List Selection Listener =============================
 	public void valueChanged(ListSelectionEvent event) {
+		log.info("ListSelectionListener.valuechange: SOURCE:"+event.getSource().getClass().getCanonicalName());
 		// On a click we get the nav tree path and display the diagram.
 		// Get proper row even if sorted. First column is the nav tree path.
+		JTable table = (JTable)event.getSource();
 		int baseRow = table.convertRowIndexToModel(table.getSelectedRow());
 		String path = table.getModel().getValueAt(baseRow, 0).toString();
 		// Lop off the block name to get the diagram path
@@ -303,5 +313,14 @@ public class ValidationDialog extends JDialog implements ListSelectionListener {
 		else {
 			log.warnf("%s.receiveNotification: Unable to open browser path (%s)",TAG,path.toString());
 		}
+	}
+	private JTable tableForContainer(JPanel panel) {
+		Component[] components =panel.getComponents();
+		for(Component c:components) {
+			if( c.getName().equals(TABLE_NAME)) {
+				return (JTable) c;
+			}
+		}
+		return null;
 	}
 }
