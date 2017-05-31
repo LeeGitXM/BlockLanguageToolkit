@@ -250,6 +250,29 @@ public class GatewayScriptFunctions   {
 		return handler.listConfigurationErrors();
 	}
 	/**
+	 * The result is a list of SerializableBlockState descriptors that correspond 
+	 * to blocks in any project that contain properties bound to tags where those property
+	 * values do not match the current tag values. The descriptor 
+	 * contains a textual description of the property that is not responding.
+	 * @return a list of blocks that have subscription errors.
+	 */
+	public static List<SerializableBlockStateDescriptor> listSubscriptionErrors() {
+		return handler.listSubscriptionErrors();
+	}
+	/**
+	 * The result is a list of SerializableBlockState descriptors corresponding 
+	 * to blocks in any project that have not changed values within the specified 
+	 * time. 
+	 * @param hours the number of hours that the block must have remained unchanged
+	 *        in order to report an issue
+	 * @param className the category of blocks for which the request is to apply. 
+	 *        Null or empty implies all classes.
+	 * @return a list of blocks that have incomplete or incorrect configuration.
+	 */
+	public static List<SerializableBlockStateDescriptor> listUnresponsiveBlocks(double hours, String className) {
+		return handler.listUnresponsiveBlocks(hours,className);
+	}
+	/**
 	 * Query an application in the gateway for list of descendants down to the level of a diagram. 
 	 * @param appName of the parent application
 	 * @return a list of nodes under the named application

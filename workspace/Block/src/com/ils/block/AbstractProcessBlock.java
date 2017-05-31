@@ -303,6 +303,8 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		}
 		return descriptor;
 	}
+	@Override
+	public QualifiedValue getLastValue() { return this.lastValue; }
 
 	/**
 	 * @return all properties. The returned array is a copy of the internal.
@@ -329,7 +331,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		return propertyMap.keySet();
 	}
 	@Override
-	public Date getTimeOfLastStateChange() { return stateChangeTimestamp; }
+	public Date getTimeOfLastStateChange() { return this.stateChangeTimestamp; }
 	
 	protected void setProperty(String nam,BlockProperty prop) { propertyMap.put(nam, prop); }
 	
@@ -774,6 +776,41 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 					}
 					if( !bindingType.equals(BindingType.TAG_WRITE) && !controller.hasActiveSubscription(this, property,tagPath)) {
 						summary.append(String.format("%s: has no subscription for tag %s\t",property.getName(),tagPath));
+					}
+				}
+			}
+		}
+		if( summary.length()==0 ) return null;
+		else return summary.toString();
+	}
+	
+	/**
+	 * Check any properties that are bound to tags. Verify that the
+	 * property matches the current value of the tag.
+	 * @return a validation summary. Null if everything checks out.
+	 */
+	public String validateSubscription() {
+		StringBuffer summary = new StringBuffer();
+		for(BlockProperty property:propertyMap.values()) {
+			BindingType bindingType = property.getBindingType();
+			if( bindingType.equals(BindingType.TAG_MONITOR) ||
+					bindingType.equals(BindingType.TAG_READ)    ||
+					bindingType.equals(BindingType.TAG_READWRITE) ) {
+
+				String tagPath = property.getBinding();
+				// In general, we allow un-configured bindings. Some classes may enforce
+				// a more restrictive policy.
+				if( tagPath!=null && tagPath.length()>0 && !tagPath.endsWith("]") ) {
+					String reason = controller.validateTag(getParentId(),tagPath);
+					if( reason!=null ) {
+						summary.append(String.format("%s: tag (%s) %s\t",property.getName(),tagPath,reason));
+					}
+					else {
+						QualifiedValue tagValue = controller.getTagValue(getParentId(), tagPath);
+						if(!tagValue.getValue().equals(property.getValue())) {
+							summary.append(String.format("%s = %s,but tag (%s) = %s\t",property.getName(),property.getValue().toString(),
+									tagPath,tagValue.getValue().toString()));
+						}
 					}
 				}
 			}

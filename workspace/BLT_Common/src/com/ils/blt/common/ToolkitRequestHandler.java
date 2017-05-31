@@ -231,7 +231,25 @@ public interface ToolkitRequestHandler  {
 	 * @return a list of blocks that have incomplete or incorrect configuration.
 	 */
 	public List<SerializableBlockStateDescriptor> listConfigurationErrors() ;
-	
+	/**
+	 * The result is a list of SerializableBlockState descriptors that correspond 
+	 * to blocks in any project that contain properties bound to tags where those property
+	 * values do not match the current tag values. The descriptor 
+	 * contains a textual description of the property that is not responding.
+	 * @return a list of blocks that have subscription errors.
+	 */
+	public List<SerializableBlockStateDescriptor> listSubscriptionErrors() ;
+	/**
+	 * The result is a list of SerializableBlockState descriptors corresponding 
+	 * to blocks in any project that have not changed values within the specified 
+	 * time. 
+	 * @param hours the number of hours that the block must have remained unchanged
+	 *        in order to report an issue
+	 * @param className the category of blocks for which the request is to apply. 
+	 *        Null or empty implies all classes.
+	 * @return a list of blocks that have incomplete or incorrect configuration.
+	 */
+	public List<SerializableBlockStateDescriptor> listUnresponsiveBlocks(double hours, String className) ;
 	/**
 	 * @param diagramId identifier of the diagram to be queried, a String
 	 * @param className fully qualified class name of blocks to be listed

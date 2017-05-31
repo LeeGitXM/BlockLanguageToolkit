@@ -318,12 +318,15 @@ public class GatewayRpcDispatcher   {
 	public List<SerializableBlockStateDescriptor> listConfigurationErrors() {
 		return requestHandler.listConfigurationErrors();
 	}
-	
+	public List<SerializableBlockStateDescriptor> listSubscriptionErrors() {
+		return requestHandler.listSubscriptionErrors();
+	}
+	public List<SerializableBlockStateDescriptor> listUnresponsiveBlocks(Double hours, String clss) {
+		return requestHandler.listUnresponsiveBlocks(hours.doubleValue(),clss);
+	}
 	public List<SerializableBlockStateDescriptor> listDiagramBlocksOfClass(String diagramId, String className) {
 		return requestHandler.listDiagramBlocksOfClass(diagramId, className);
 	}
-	
-	
 	public List<SerializableResourceDescriptor> listDiagramDescriptors(String projectName) {
 		return requestHandler.listDiagramDescriptors(projectName);
 	}

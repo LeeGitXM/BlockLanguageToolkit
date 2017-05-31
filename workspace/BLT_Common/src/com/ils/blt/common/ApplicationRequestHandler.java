@@ -642,7 +642,32 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 		return result;
 	}
-
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<SerializableBlockStateDescriptor> listSubscriptionErrors() {
+		List<SerializableBlockStateDescriptor> result = null;
+		try {
+			result = (List<SerializableBlockStateDescriptor> )GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "listSubscriptionErrors");
+		}
+		catch(Exception ge) {
+			log.infof("%s.listSubscriptionErrors: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		return result;
+	}	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<SerializableBlockStateDescriptor> listUnresponsiveBlocks(double hours, String className) {
+		List<SerializableBlockStateDescriptor> result = null;
+		try {
+			result = (List<SerializableBlockStateDescriptor>)GatewayConnectionManager.getInstance().getGatewayInterface().moduleInvoke(
+					BLTProperties.MODULE_ID, "listUnresponsiveBlocks",new Double(hours),className);
+		}
+		catch(Exception ge) {
+			log.infof("%s.listUnresponsiveBlocks: GatewayException (%s)",TAG,ge.getMessage());
+		}
+		return result;
+	}
 	
 	/**
 	 * @param diagramId identifier of the diagram to be queried, a String

@@ -18,6 +18,7 @@ import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.SignalNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.WatchdogTimer;
+import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 
 /**
@@ -108,6 +109,10 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 *        block UUID and class. The data is read-only.
 	 */
 	public SerializableBlockStateDescriptor getInternalStatus();
+	/**
+	 * @return the block's most recent internal value
+	 */
+	public QualifiedValue getLastValue();
 	/**
 	 * @return the block's label
 	 */
@@ -262,6 +267,12 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 * @return a validation summary. Null if everything checks out.
 	 */
 	public String validate();
+	/**
+	 * Check any properties that are bound to tags. Verify that the
+	 * property matches the current value of the tag.
+	 * @return a validation summary. Null if everything checks out.
+	 */
+	public String validateSubscription();
 	
 	//===================== PropertyChangeListener ======================
 	/**

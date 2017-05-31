@@ -114,4 +114,6 @@ public interface BLTProperties   {
 	public static final String PREFERENCES_NAME     = "BLTPreferences";    // Preferences collection name
 	public static final String PREF_EXIM_DIRECTORY  = "ExImDirectory";     // Export/import directory
 	public static final String PREF_CONFIG_DIRECTORY= "ConfigDirectory";   // Project properties configuration
+	public static final String PREF_RESPONSE_CLASS    = "ResponseClass";       // Class of block we're concerned about
+	public static final String PREF_RESPONSE_INTERVAL = "ResponseInterval";    // Hours to declare block "unresponsive"
 }

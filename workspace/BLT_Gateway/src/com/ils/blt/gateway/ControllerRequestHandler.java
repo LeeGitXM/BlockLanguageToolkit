@@ -922,6 +922,64 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 		return results;
 	}
+	@Override
+	public synchronized List<SerializableBlockStateDescriptor> listSubscriptionErrors() {
+		List<SerializableBlockStateDescriptor> result = new ArrayList<>();
+		List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
+		try {
+			for(SerializableResourceDescriptor res:descriptors) {
+				UUID diagramId = makeUUID(res.getId());
+				ProcessDiagram diagram = controller.getDiagram(diagramId);
+				if( !diagram.getState().equals(DiagramState.DISABLED)) {
+					for( ProcessBlock block:diagram.getProcessBlocks() ) {
+						String problem = block.validateSubscription();
+						if( problem!=null) {
+							SerializableBlockStateDescriptor descriptor = block.toDescriptor();
+							descriptor.getAttributes().put(BLTProperties.BLOCK_ATTRIBUTE_PATH, pathForBlock(diagramId.toString(),block.getName()));
+							descriptor.getAttributes().put(BLTProperties.BLOCK_ATTRIBUTE_ISSUE, problem);
+							result.add(descriptor);
+						}
+					}
+				}
+			}
+		}
+		catch(Exception ex) {
+			log.info(TAG+".listConfigurationErrors: Exception ("+ex.getMessage()+")",ex);
+		}
+		return result;
+	}
+	
+	@Override
+	public synchronized List<SerializableBlockStateDescriptor> listUnresponsiveBlocks(double hours,String className) {
+		List<SerializableBlockStateDescriptor> result = new ArrayList<>();
+		List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
+		long interval = (long)(hours*3600*1000);  // mses
+		long now = System.currentTimeMillis();
+		try {
+			for(SerializableResourceDescriptor res:descriptors) {
+				UUID diagramId = makeUUID(res.getId());
+				ProcessDiagram diagram = controller.getDiagram(diagramId);
+				if( !diagram.getState().equals(DiagramState.DISABLED)) {
+					for( ProcessBlock block:diagram.getProcessBlocks() ) {
+						if( className==null || className.isEmpty() || block.getClassName().equals(className)) {
+							QualifiedValue qv = block.getLastValue();
+							if( qv!=null && now-qv.getTimestamp().getTime()>interval ) {
+								double hrs = ((double)(now-qv.getTimestamp().getTime()))/(3600*1000);
+								SerializableBlockStateDescriptor descriptor = block.toDescriptor();
+								descriptor.getAttributes().put(BLTProperties.BLOCK_ATTRIBUTE_PATH, pathForBlock(diagramId.toString(),block.getName()));
+								descriptor.getAttributes().put(BLTProperties.BLOCK_ATTRIBUTE_ISSUE, String.format("Unchanged for %.2f hrs", hrs));
+								result.add(descriptor);
+							}
+						}
+					}
+				}
+			}
+		}
+		catch(Exception ex) {
+			log.info(TAG+".listConfigurationErrors: Exception ("+ex.getMessage()+")",ex);
+		}
+		return result;
+	}
 	
 	@Override
 	public String pathForBlock(String diagramId,String blockName) {
