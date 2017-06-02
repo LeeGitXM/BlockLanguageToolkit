@@ -807,9 +807,12 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 					}
 					else {
 						QualifiedValue tagValue = controller.getTagValue(getParentId(), tagPath);
-						if(!tagValue.getValue().equals(property.getValue())) {
+						if(tagValue.getValue()!=null && property.getValue()!=null && !tagValue.getValue().equals(property.getValue())) {
 							summary.append(String.format("%s = %s,but tag (%s) = %s\t",property.getName(),property.getValue().toString(),
 									tagPath,tagValue.getValue().toString()));
+						}
+						else if( (tagValue.getValue()==null && property.getValue()!=null) || (tagValue.getValue()!=null && property.getValue()==null)) {
+							summary.append(String.format("For property %s using tag (%s), one but not both values is null\t",property.getName(),tagPath));
 						}
 					}
 				}

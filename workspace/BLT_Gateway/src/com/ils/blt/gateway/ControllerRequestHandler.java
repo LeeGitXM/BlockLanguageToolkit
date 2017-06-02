@@ -736,6 +736,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 
 	@Override
 	public synchronized List<SerializableBlockStateDescriptor> listConfigurationErrors() {
+		log.infof("%s.listConfigurationErrors:",TAG);
 		List<SerializableBlockStateDescriptor> result = new ArrayList<>();
 		List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
 		try {
@@ -924,6 +925,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	}
 	@Override
 	public synchronized List<SerializableBlockStateDescriptor> listSubscriptionErrors() {
+		log.infof("%s.listSubscriptionErrors:",TAG);
 		List<SerializableBlockStateDescriptor> result = new ArrayList<>();
 		List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
 		try {
@@ -951,6 +953,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	
 	@Override
 	public synchronized List<SerializableBlockStateDescriptor> listUnresponsiveBlocks(double hours,String className) {
+		log.infof("%s.listUnresponsiveBlocks: Hrs %f, class %s,",TAG,hours,className);
 		List<SerializableBlockStateDescriptor> result = new ArrayList<>();
 		List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
 		long interval = (long)(hours*3600*1000);  // mses
