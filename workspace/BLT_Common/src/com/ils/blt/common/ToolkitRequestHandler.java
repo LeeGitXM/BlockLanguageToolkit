@@ -55,7 +55,7 @@ public interface ToolkitRequestHandler  {
 	 *          This method is for internal use in the designer.
 	 * 
 	 * @param className class name of the block
-	 * @param projectId
+	 * @param projectId id of the project
 	 * @param resourceId
 	 * @param blockId
 	 *
@@ -160,6 +160,8 @@ public interface ToolkitRequestHandler  {
 	 */
 	public String getToolkitProperty(String propertyName) ;
 	/**
+	 * @param projectId id of the project
+	 * @param resourceId the diagram expressed as a resource
 	 * @return the alert state of the specified diagram;
 	 */
 	public boolean isAlerting(Long projectId, Long resourceId) ;
@@ -261,7 +263,7 @@ public interface ToolkitRequestHandler  {
 	/**
 	 * Query the gateway for list of diagrams belonging to a project. 
 	 * 
-	 * @param projectName
+	 * @param projectName name of the project containing the diagrams
 	 * @return a list of tree-paths to the diagrams saved (ie. known to the Gateway).
 	 */
 	public List<SerializableResourceDescriptor> listDiagramDescriptors(String projectName) ;
@@ -309,6 +311,8 @@ public interface ToolkitRequestHandler  {
 	/**
 	 * Execute propagate() on a specified block. Send its current state
 	 * to the outputs.
+	 * @param diagramId id of the parent diagram
+	 * @param blockId id of the subject block as a string
 	 */
 	public void propagateBlockState(String diagramId,String blockId) ;
 	/**
@@ -320,6 +324,7 @@ public interface ToolkitRequestHandler  {
 
 	/**
 	 * Execute reset() on every block on the diagram
+	 * 	 * @param diagramId id of the parent diagram
 	 */
 	public void resetDiagram(String diagramId) ;
 	/**
@@ -328,7 +333,7 @@ public interface ToolkitRequestHandler  {
 	public boolean resourceExists(Long projectId,Long resid) ;
 	/**
 	 * Execute stop() then start() on a specified block
-	 * @param diagramId of the parent diagram
+	 * @param diagramId id of the parent diagram
 	 * @param blockName name of the block within the diagram 
 	 */
 	public void restartBlock(String diagramId,String blockName) ;
@@ -337,7 +342,7 @@ public interface ToolkitRequestHandler  {
 	 * This is a "local" transmission. The diagram is specified by a tree-path.
 	 * There may be no successful recipients.
 	 * 
-	 * @param diagramId
+	 * @param diagramId id of the parent diagram
 	 * @param command string of the signal
 	 * @param message embedded in the transmitted signal
 	 * @param arg also a component of the transmitted signal

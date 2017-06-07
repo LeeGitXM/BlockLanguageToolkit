@@ -89,6 +89,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 
 	/**
 	 * Static method to create and/or fetch the single instance.
+	 * @return the static instance of the handler
 	 */
 	public static ControllerRequestHandler getInstance() {
 		if( instance==null) {
@@ -123,6 +124,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	
 	/**
 	 * Clear any watermark on a diagram. 
+	 * @param diagramId UUID of the diagram as a string
 	 */
 	public void clearWatermark(String diagramId) {
 		controller.sendWatermarkNotification(diagramId,"");
@@ -212,10 +214,10 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * Query the block controller for a block specified by the block id. If the block
 	 * does not exist, create it.
 	 * 
-	 * @param className
-	 * @param projectId
-	 * @param resourceId
-	 * @param blockId
+	 * @param className class of the block
+	 * @param projectId id of the project containing the diagram
+	 * @param resourceId id of the diagram as a project resource
+	 * @param blockId UUID of the block
 	 * @return the properties of an existing or new block.
 	 */
 	@Override
@@ -332,10 +334,11 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * of permissible port names. If the connection instance already exists in the Gateway model,
 	 * then return the actual port connections.
 	 * 
-	 * @param projectId
-	 * @param resourceId
-	 * @param attributes
-	 * @return
+	 * @param projectId id of the project containing the diagram
+	 * @param resourceId id of the diagram expressed as a project resource
+	 * @param connectionId identifier of the connection of interest
+	 * @param attributes the table to fill and return
+	 * @return a table of attributes for the connection
 	 */
 	public Hashtable<String,Hashtable<String,String>> getConnectionAttributes(long projectId,long resourceId,String connectionId,Hashtable<String,Hashtable<String,String>> attributes) {
 		// Find the connection object
@@ -694,7 +697,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	/**
 	 * Query the ModelManager for a list of the project resources that it is currently
 	 * managing. This is a debugging service.
-	 * @return
+	 * @return a list of descriptors containing all blocks in the diagram
 	 */
 	@Override
 	public synchronized List<SerializableBlockStateDescriptor> listBlocksInDiagram(String diagramId) {
@@ -787,6 +790,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	/**
 	 * Query a family in the gateway for list of descendants down to the level of a diagram. 
 	 * @param appName of the parent application
+	 * @param famName name of the target family
 	 * @return a list of nodes under the named application
 	 */
 	public synchronized List<SerializableResourceDescriptor> listDescriptorsForFamily(String appName,String famName) {
@@ -829,7 +833,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	/**
 	 * Query the ModelManager for a list of the project resources that it is currently
 	 * managing. This is a debugging service.
-	 * @return
+	 * @return the node list
 	 */
 	@Override
 	public List<SerializableResourceDescriptor> listResourceNodes() {
@@ -842,7 +846,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * 
 	 * @param diagramId identifier for the diagram
 	 * @param blockName name of the source
-	 * @return
+	 * @return a list of block descriptors for the sinks that were found
 	 */
 	@Override
 	public synchronized List<SerializableBlockStateDescriptor> listSinksForSource(String diagramId,String blockName) {
@@ -885,7 +889,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * as the specified block. We cover all diagrams in the system.
 	 * @param diagramId identifier for the diagram
 	 * @param blockName name of the sink
-	 * @return
+	 * @return a list of descriptors for the sources that were found
 	 */
 	@Override
 	public synchronized List<SerializableBlockStateDescriptor> listSourcesForSink(String diagramId,String blockName) {

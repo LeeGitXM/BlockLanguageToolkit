@@ -396,6 +396,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 *        Presumably this comes from a controlled vocabulary
 	 * @param prop property receiving the new value, if any.
 	 * @param value a new value associated with the activity, if any.
+	 * @param key block identifier describing the activity
 	 */
 	public void recordActivity(String desc,String prop,String value,String key) {
 		if( activities.getBufferSize()>0) {
