@@ -411,6 +411,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				menu.add(applicationCreateAction);
 				menu.add(applicationImportAction);
 				menu.add(configureAction);
+				menu.add(folderCreateAction);
 				menu.add(refreshAction);
 				menu.add(saveAllAction);
 				menu.add(startAction);
@@ -467,8 +468,22 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 
 		}
 		else if(getProjectResource().getResourceType().equalsIgnoreCase(BLTProperties.FOLDER_RESOURCE_TYPE)) {
-
-			if( hasFamily() ) {
+			if( hasApplication() ) {
+				if( hasFamily() ) {
+					DiagramCreateAction diagramAction = new DiagramCreateAction(this);
+					menu.add(diagramAction);
+					ImportDiagramAction importAction = new ImportDiagramAction(menu.getRootPane(),this);
+					CloneDiagramAction cloneAction = new CloneDiagramAction(menu.getRootPane(),this);
+					menu.add(importAction);
+					menu.add(cloneAction);
+				}
+				else {
+					FamilyCreateAction familyAction = new FamilyCreateAction(this);
+					menu.add(familyAction);
+				}
+			}
+			// Unaffiliated 
+			else {
 				DiagramCreateAction diagramAction = new DiagramCreateAction(this);
 				menu.add(diagramAction);
 				ImportDiagramAction importAction = new ImportDiagramAction(menu.getRootPane(),this);
@@ -476,10 +491,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				menu.add(importAction);
 				menu.add(cloneAction);
 			}
-			else {
-				FamilyCreateAction familyAction = new FamilyCreateAction(this);
-				menu.add(familyAction);
-			}
+			
 			menu.add(folderCreateAction);
 			treeSaveAction = new TreeSaveAction(this,PREFIX+".SaveFolder");
 			menu.add(treeSaveAction);
@@ -551,7 +563,26 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		}
 		return sf;
 	}
+	// Return true if there is a "application" in the ancestral hierarchy of this folder node
+	private boolean hasApplication() {
+		boolean answer = false;
 
+		AbstractNavTreeNode parentNode = getParent();
+		while( parentNode!=null ) {
+			if( parentNode instanceof GeneralPurposeTreeNode ) {
+				GeneralPurposeTreeNode node = (GeneralPurposeTreeNode)parentNode;
+				if( node.getProjectResource()==null ) {
+					;  // Folder node
+				}
+				else if( node.getProjectResource().getResourceType().equalsIgnoreCase(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
+					answer = true;
+					break;
+				}
+				parentNode = parentNode.getParent();
+			}
+		}
+		return answer;
+	}
 	// Return true if there is a "family" in the ancestral hierarchy of this folder node
 	private boolean hasFamily() {
 		boolean answer = false;

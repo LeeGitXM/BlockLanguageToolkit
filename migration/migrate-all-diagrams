@@ -1,0 +1,20 @@
+#!/bin/sh
+# Process "unaffiliated" diagrams. These are not associated
+# with problems or applications.
+# At this juncture the only diagrams are related to Escorez
+#
+BLT=${GIT_REPO}/blt
+APP=$BLT/migration/migrate-folder
+INDIR=$BLT/migration/json/g2/escorez/diagrams
+OUTDIR=$BLT/migration/json/ignition/escorez/diagrams
+mkdir -p $INDIR
+mkdir -p $OUTDIR
+cd $BLT/migration
+#./clear-json
+#./copy-json
+cd $INDIR
+for fil in *.json
+do
+	echo "Processing $fil ..."
+    $APP $INDIR/$fil $OUTDIR/$fil
+done

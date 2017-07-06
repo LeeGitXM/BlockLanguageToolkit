@@ -60,6 +60,7 @@ public class Migrator {
 	private final RootClass root;
 	private boolean ok = true;                     // Allows us to short circuit processing
 	private G2Application g2application = null;    // G2 Application read from JSON
+	private G2Folder g2folder = null;              // G2 Folder read from JSON
 	private G2Diagram g2diagram = null;            // G2 Diagram read from JSON
 	private SerializableApplication application = null;   // The result
 	private SerializableDiagram diagram = null;           // An alternate result (obsolete)
@@ -171,6 +172,13 @@ public class Migrator {
 					ok = false;
 				}
 			}
+			else if( root==RootClass.FOLDER){
+				g2folder = mapper.readValue(new String(bytes), G2Folder.class);
+				if( g2folder==null ) {
+					System.err.println(TAG+": Failed to deserialize input folder");
+					ok = false;
+				}
+			}
 			else {
 				g2diagram = mapper.readValue(new String(bytes), G2Diagram.class);
 				if( g2diagram==null ) {
@@ -200,6 +208,13 @@ public class Migrator {
 		postProcess(application);
 		
 	}
+	public void migrateFolder() {
+		if( !ok ) return;
+		
+		diagram = createSerializableDiagramFromFolder(g2folder);
+		performSpecialHandlingOnDiagram(diagram);
+		
+	}
 	/**
 	 * The root is a diagram. Convert from G2 objects into
 	 * Convert from G2 objects into a BLTView diagram
@@ -208,6 +223,7 @@ public class Migrator {
 		if( !ok ) return;
 		
 		diagram = createSerializableDiagram(g2diagram);
+		performSpecialHandlingOnDiagram(diagram);
 	}
 	
 	private SerializableApplication createSerializableApplication(G2Application g2a) {
@@ -249,6 +265,11 @@ public class Migrator {
 		}
 		sf.setDiagrams(diagrams);
 		return sf;
+	}
+	
+	private SerializableDiagram createSerializableDiagramFromFolder(G2Folder g2f) {
+		G2Diagram[] diagrams = g2f.getProblems();
+		return createSerializableDiagram(diagrams[0]);
 	}
 	
 	private SerializableDiagram createSerializableDiagram(G2Diagram g2d) {
@@ -642,6 +663,10 @@ public class Migrator {
 			if( root==RootClass.APPLICATION) {
 				json = mapper.writeValueAsString(application);
 			}
+			// Just export the first diagram in the folder
+			else if( root==RootClass.FOLDER) {
+				json = mapper.writeValueAsString(diagram);
+			}
 			// diagram
 			else {
 				json = mapper.writeValueAsString(diagram);
@@ -680,7 +705,7 @@ public class Migrator {
         Logger.getRootLogger().setLevel(level); //set log level
         
         RootClass root = RootClass.APPLICATION;
-        String rootClass = System.getProperty("root.class");   // Application, Problem
+        String rootClass = System.getProperty("root.class");   // Application, Folder, Problem
 		if( rootClass!=null) {
 			try {
 				root = RootClass.valueOf(rootClass);
@@ -708,6 +733,9 @@ public class Migrator {
 			}
 			if(root.equals(RootClass.APPLICATION) ) {
 				m.migrateApplication();
+			}
+			else if(root.equals(RootClass.FOLDER)) {
+				m.migrateFolder();
 			}
 			// NOTE: This is obsolete (and probably buggy).
 			else if(root.equals(RootClass.DIAGRAM)) {

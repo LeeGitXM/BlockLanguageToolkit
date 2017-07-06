@@ -1,0 +1,19 @@
+#!/bin/sh
+#  Data migration conversion script
+# -- options for root.class: APPLICATION, DIAGRAM
+# -- options for log.level:  INFO,DEBUG,TRACE
+#
+if [ $# -lt 2 ]
+then
+    echo "USAGE: migrate <inpath> <outpath>"
+	exit 2
+fi
+cd ${GIT_REPO}/blt
+BLT=`pwd`
+SFC=${GIT_REPO}/sfc
+LIB=${GIT_REPO}/external/lib
+JAR=${LIB}/blt-migration.jar
+DB=${SFC}/migration/mdb/conversion.db
+# Use for debugging - ruins output file however.
+#cat $1 | java -cp ${JAR} -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000 -Dlog.level=INFO -Droot.class=APPLICATION com.ils.blt.migration.Migrator ${DB}
+cat $1 | java -cp ${JAR} -Dlog.level=WARN -Droot.class=FOLDER com.ils.blt.migration.Migrator ${DB} > $2

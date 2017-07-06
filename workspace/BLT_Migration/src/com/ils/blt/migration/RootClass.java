@@ -11,6 +11,7 @@ package com.ils.blt.migration;
 public enum RootClass
 {
             APPLICATION,
+            FOLDER,
             DIAGRAM
             ;
            
