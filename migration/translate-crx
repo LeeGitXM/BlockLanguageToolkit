@@ -31,7 +31,7 @@ FIL="$FIL CALC-CRX_CA_PROBLEM-OUTPUT-GDA.txt"
 FIL="$FIL CALC-SDSTRM_C3-OUTPUTS-GDA.txt"
 FIL="$FIL CALC-SWAP_CNTR_FEEDS-OUTPUTS-GDA.txt"
 DIR=${MIGRATION}/procs/g2/vistalon/calculation
-OUTDIR=${MIGRATION}/procs/ignition
+OUTDIR=${MIGRATION}/procs/ignition/vistalon/calculation
 cd $DIR
 for file in $FIL
 do

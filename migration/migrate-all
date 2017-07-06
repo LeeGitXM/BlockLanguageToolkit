@@ -12,9 +12,17 @@ mkdir -p $OUTDIR
 cd $BLT/migration
 ./clear-json
 ./copy-json
-cd $INDIR
+echo "======================== Escorez ================================"
+cd $INDIR/escorez
 for fil in *.json
 do
 	echo "Processing $fil ..."
-    $APP $INDIR/$fil $OUTDIR/$fil
+    $APP $INDIR/escorez/$fil $OUTDIR/escorez/$fil
+done
+echo "======================== Vistalon ================================"
+cd $INDIR/vistalon
+for fil in *.json
+do
+	echo "Processing $fil ..."
+    $APP $INDIR/vistalon/$fil $OUTDIR/vistalon/$fil
 done

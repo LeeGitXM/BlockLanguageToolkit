@@ -1,0 +1,57 @@
+#!/bin/sh
+# Translate methods used in the CSTR calc methods
+# Process the .txt files in the process repository "g2" area.
+# If the argument is "all", then all the files are processed.
+# If the argument is "next" then the current file is processed
+# and deleted. Then the next file is processed.
+#
+# We start with raw G2 exports. Convert, then save the
+# results in the procedure storage area for ignition.
+#
+OPT="one"
+if [ $# -gt 0 ]
+then
+    OPT=$1
+fi
+MIGRATION=${GIT_REPO}/blt/migration
+
+FIL="CALC-CAT_STR_PROBLEM-OUTPUT-GDA.txt"
+FIL="$FIL CALC-CSTR_CL_PROBLEM-OUTPUT-GDA.txt"
+FIL="$FIL CALC-CSTR_COLOR_PROBLEM-OUTPUT-GDA.txt	"
+FIL="$FIL CALC-CSTR_MZ_PROBLEM-OUTPUT-GDA.txt"
+FIL="$FIL CALC-RHU_AROM_PROBLEM-OUTPUT-GDA.txt"
+FIL="$FIL CALC-RHU_COLOR_PROBLEM-OUTPUT-GDA.txt"
+FIL="$FIL CALC-SP_PROBLEM-OUTPUT-GDA.txt"
+FIL="$FIL CALC-TPU_IRX_SP_PROBLEM-OUTPUT-GDA.txt"
+FIL="$FIL CALC-TPU_JRX_SP_PROBLEM-OUTPUT-GDA.txt"
+FIL="$FIL HCD-GT02-NEW-SAMPLE-MSG.txt"
+FIL="$FIL TK1775-NEW-SAMPLE-MSG.txt"
+
+DIR=${MIGRATION}/procs/g2/escorez/calculation
+OUTDIR=${MIGRATION}/procs/ignition/escorez/calculation
+cd $DIR
+for file in $FIL
+do
+	if [ -f $DIR/$file ]
+	then
+	    echo "Processing $fil..."
+		if [[ $fil == CALC* ]]
+		then
+	    	${MIGRATION}/translate.calc $DIR/$file $OUTDIR
+		else
+	    	${MIGRATION}/translate $DIR/$file $OUTDIR
+		fi
+	else 
+		continue
+	fi
+	if [ $OPT == "all" ]
+	then
+		continue
+	elif [ $OPT == "one" ]
+	then
+		exit
+	else
+		rm $DIR/$file
+		OPT="one"
+	fi
+done

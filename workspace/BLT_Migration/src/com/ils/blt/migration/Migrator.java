@@ -568,6 +568,7 @@ public class Migrator {
 								BlockProperty[] newProperties = new BlockProperty[properties.length+1];
 								int i = 0;
 								for(BlockProperty bp:properties) {
+									if( bp==null || bp.getName()==null ) continue;
 									if( bp.getName().equalsIgnoreCase("TagPath")) {
 										bp.setName("ValueTagPath");
 										BlockProperty newProp = new BlockProperty();

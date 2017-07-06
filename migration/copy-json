@@ -4,6 +4,10 @@
 #
 SVN=${SVN_REPO}/EMChemicals/Migration/
 JSON=${GIT_REPO}/blt/migration/json
-mkdir -p $JSON/g2
-mkdir -p $JSON/ignition
-cp ${SVN}/Vistalon/Exports\ From\ G2/DiagnosticToolkit/json/*.json $JSON/g2
+mkdir -p $JSON/g2/escorez/diagrams
+mkdir -p $JSON/g2/vistalon
+mkdir -p $JSON/ignition/escorez/diagrams
+mkdir -p $JSON/ignition/vistalon
+cp ${SVN}/Escorez/Exports\ From\ G2/diagToolkit/json/*.json $JSON/g2/escorez
+cp ${SVN}/Escorez/Exports\ From\ G2/diagToolkit/standAloneDiagrams/json/*.json $JSON/g2/escorez/diagrams
+cp ${SVN}/Vistalon/Exports\ From\ G2/DiagnosticToolkit/json/*.json $JSON/g2/vistalon

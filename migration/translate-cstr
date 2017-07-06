@@ -29,7 +29,7 @@ FIL="$FIL CALC-CSTR_MLR_PROBLEM-OUTPUT-GDA.txt"
 FIL="$FIL PROD-MOONEY-GDA.txt"
 
 DIR=${MIGRATION}/procs/g2/vistalon/calculation
-OUTDIR=${MIGRATION}/procs/ignition
+OUTDIR=${MIGRATION}/procs/ignition/vistalon/calculation
 cd $DIR
 for file in $FIL
 do

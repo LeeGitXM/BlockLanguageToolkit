@@ -3,5 +3,5 @@
 # leaving only those checked into git.
 #
 JSON=${GIT_REPO}/blt/migration/json
-rm -f ${JSON}/g2/*.json
-rm -f ${JSON}/ignition/*.json
+rm -rf ${JSON}/g2/*
+rm -rf ${JSON}/ignition/*
