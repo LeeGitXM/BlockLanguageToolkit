@@ -26,13 +26,13 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
  *  Input and output are data values.
  */
 @ExecutableBlock
-public class Inverse extends AbstractProcessBlock implements ProcessBlock {
+public class ChangeSign extends AbstractProcessBlock implements ProcessBlock {
 	private final String TAG = "Inverse";
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
-	public Inverse() {
+	public ChangeSign() {
 		initialize();
 		initializePrototype();
 	}
@@ -44,7 +44,7 @@ public class Inverse extends AbstractProcessBlock implements ProcessBlock {
 	 * @param parent universally unique Id identifying the parent of this block
 	 * @param block universally unique Id for the block
 	 */
-	public Inverse(ExecutionController ec,UUID parent,UUID block) {
+	public ChangeSign(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
 	}
@@ -53,7 +53,7 @@ public class Inverse extends AbstractProcessBlock implements ProcessBlock {
 	 * Define the synchronization property and ports.
 	 */
 	private void initialize() {	
-		setName("ChangeSign");
+		setName("Inverse");
 
 		// Define an input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);

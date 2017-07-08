@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2016  ILS Automation. All rights reserved. 
+ *   (c) 20174  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -21,107 +21,77 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
-import com.ils.blt.common.notification.Signal;
-import com.ils.blt.common.notification.SignalNotification;
-import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
- * Emit a "reset" signal when the input matches the trigger value.
+ * This class is a no-op. It simply passes its input onto the output.
  */
 @ExecutableBlock
-public class Reset extends AbstractProcessBlock implements ProcessBlock {
-	protected Signal command = new Signal();
+public class InferenceCounter extends AbstractProcessBlock implements ProcessBlock {
+	private boolean clearOnReset = true;
 	protected TruthValue trigger = TruthValue.TRUE;
-
+	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
-	public Reset() {
+	public InferenceCounter() {
 		initialize();
 		initializePrototype();
-		command = new Signal(BlockConstants.COMMAND_RESET,"","");
 	}
 	
 	/**
-	 * Constructor. Custom properties are limit, standardDeviation
+	 * Constructor. 
 	 * 
 	 * @param ec execution controller for handling block output
 	 * @param parent universally unique Id identifying the parent of this block
 	 * @param block universally unique Id for the block
 	 */
-	public Reset(ExecutionController ec,UUID parent,UUID block) {
+	public InferenceCounter(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
-		command = new Signal(BlockConstants.COMMAND_RESET,"","");
 	}
 	
-	
 	/**
-	 * Add properties that are new for this class.
-	 * Populate them with default values.
+	 * Define the synchronization property and ports.
 	 */
 	private void initialize() {	
-		setName("Reset");
+		setName("InferenceCounter");
 
+		BlockProperty resetProperty =  new BlockProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET,new Boolean(clearOnReset),PropertyType.BOOLEAN,true);
+		setProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET, resetProperty);
 		BlockProperty triggerProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER,trigger,PropertyType.BOOLEAN,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER, triggerProperty);
 		
-		// Define a single input
-		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
-		anchors.add(input);
 		
+		// Define an input
+		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
+		input.setHint(PlacementHint.L);
+		anchors.add(input);
+
 		// Define a single output
-		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.SIGNAL);
-		output.setHint(PlacementHint.B);  // Got wierd behavior if Top
+		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
+		output.setHint(PlacementHint.R);
 		anchors.add(output);
 	}
 	
+
 	/**
-	 * When a fresh value arrives that matches the trigger, send the output signal.
-	 * It works just fine sending the signal down a connection.
+	 * A new value has appeared on our input.  Pass it on.
+	 * 
+	 * Note: there can be several connections attached to a given port.
 	 * @param vcn incoming new value.
 	 */
 	@Override
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
-		QualifiedValue qv = vcn.getValue();
-		
-		if( qv.getQuality().isGood() && !isLocked() && qv.getValue().toString().equalsIgnoreCase(trigger.name()))  {
-			lastValue = new BasicQualifiedValue(command,qv.getQuality(),qv.getTimestamp());
+		if(!isLocked() ) {
+			lastValue = vcn.getValue();
+			//log.infof("%s.acceptValue: %s", getName(),qv.getValue().toString());
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus(lastValue);
 		}
 	}
-	/**
-	 * When a fresh value arrives that matches the trigger, send the output signal.
-	 * @param sn incoming signal.
-	 */
-	@Override
-	public void acceptValue(SignalNotification sn) {
-		Signal sig = sn.getSignal();
-
-		if( sig.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_START))  {
-			lastValue = new BasicQualifiedValue(command);
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
-			controller.acceptCompletionNotification(nvn);
-			notifyOfStatus(lastValue);
-		}
-	}
-	/**
-	 * This is not called during normal operation. If explicitly called,
-	 * we simply propagate the command.
-	 */
-	@Override
-	public void evaluate() {
-		lastValue = new BasicQualifiedValue(command);
-		OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
-		controller.acceptCompletionNotification(nvn);
-		notifyOfStatus(lastValue);
-	}
-	@Override
-	public void propagate() { evaluate(); }
 	/**
 	 * Handle a changes to the various attributes.
 	 */
@@ -130,6 +100,14 @@ public class Reset extends AbstractProcessBlock implements ProcessBlock {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
 		if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET)) {
+			try {
+				clearOnReset = Boolean.parseBoolean(event.getNewValue().toString());
+			}
+			catch(NumberFormatException nfe) {
+				log.warnf("%s: propertyChange Unable to convert clear flag to a boolean (%s)",getName(),nfe.getLocalizedMessage());
+			}
+		}
+		else if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET)) {
 			try {
 				TruthValue tv = TruthValue.valueOf(event.getNewValue().toString().toUpperCase());
 				// Only allow TRUE/FALSE
@@ -145,30 +123,30 @@ public class Reset extends AbstractProcessBlock implements ProcessBlock {
 			}
 		}	
 	}
-	
 	/**
 	 * Send status update notification for our last latest state.
 	 */
 	@Override
 	public void notifyOfStatus() {}
 	private void notifyOfStatus(QualifiedValue qv) {
+		updateStateForNewValue(qv);
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 	/**
 	 * Augment the palette prototype for this block class.
 	 */
 	private void initializePrototype() {
-		prototype.setPaletteIconPath("Block/icons/palette/reset.png");
-		prototype.setPaletteLabel("Reset");
-		prototype.setTooltipText("Send a \"reset\" signal to connected blocks");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_CONTROL);
+		prototype.setPaletteIconPath("Block/icons/palette/junction.png");
+		prototype.setPaletteLabel("Junction");
+		prototype.setTooltipText("Pass through");
+		prototype.setTabName(BlockConstants.PALETTE_TAB_INFERENCE);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
-		desc.setEmbeddedIcon("Block/icons/embedded/reset.png");
 		desc.setBlockClass(getClass().getCanonicalName());
-		desc.setPreferredHeight(60);
-		desc.setPreferredWidth(60);
-		desc.setStyle(BlockStyle.SQUARE);
-		desc.setReceiveEnabled(true);
+		desc.setStyle(BlockStyle.JUNCTION);
+		desc.setPreferredHeight(32);
+		desc.setPreferredWidth(32);
+		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_LIGHT_GRAY);
+		desc.setCtypeEditable(true);
 	}
 }

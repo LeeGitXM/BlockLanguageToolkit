@@ -9,10 +9,12 @@ OUTDIR=${PROCS}/ignition/xom/vistalon
 cd $BLT/migration
 ./clear-procs
 ./copy-procs
+echo "Processing G-Line Calculation Methods"
+./translate-gline all
+echo "Processingscorez Calculation Methods"
+./translate-escorez all
 echo "Processing Vistalon Calculation Methods"
 mkdir -p $OUTDIR
 ./translate-cstr all
 ./translate-crx all
-echo "Processing Escorez Calculation Methods"
-./translate-escorez all
 # No longer copy into the Git repository

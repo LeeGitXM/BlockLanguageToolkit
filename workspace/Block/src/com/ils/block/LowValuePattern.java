@@ -1,5 +1,5 @@
 /**
- *   (c) 2017  ILS Automation. All rights reserved. 
+ *   (c) 2014  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -26,29 +26,24 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  * This class is a no-op. It simply passes its input onto the output.
  */
 @ExecutableBlock
-public class DiscreteRateOfChange extends AbstractProcessBlock implements ProcessBlock {
-	
-	private final static String BLOCK_PROPERTY_LINEAR_INTERPOLATION = "LinearInterpolation";
-	private final static String BLOCK_PROPERTY_POLYNOMIAL_ORDER = "PolynomialOrder";
+public class LowValuePattern extends AbstractProcessBlock implements ProcessBlock {
+
 	private final static String BLOCK_PROPERTY_SAMPLE_TYPE  = "SampleType";
-	private final static String BLOCK_PROPERTY_SCALE_FACTOR = "ScaleFactor";
+	private final static String BLOCK_PROPERTY_THRESHOLD    = "Threshold";
 	private final static String BLOCK_PROPERTY_UPDATE_SIZE  = "UpdateSize";
 	private final static String BLOCK_PROPERTY_UPDATE_TYPE  = "UpdateType";
 	
 	private boolean clearOnReset = true;
-	private boolean fillRequired = true;
-	private boolean linearInterpolation = true;
-	private int polynomialOrder = 2;
 	private int sampleSize = 1;
 	private String sampleType = "";
-	private double scaleFactor = 1.0;
+	private double threshold = 1.0;
+	private int triggerCount = 0;
 	private int updateSize = 1;
 	private String updateType = "";
-	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
-	public DiscreteRateOfChange() {
+	public LowValuePattern() {
 		initialize();
 		initializePrototype();
 	}
@@ -60,7 +55,7 @@ public class DiscreteRateOfChange extends AbstractProcessBlock implements Proces
 	 * @param parent universally unique Id identifying the parent of this block
 	 * @param block universally unique Id for the block
 	 */
-	public DiscreteRateOfChange(ExecutionController ec,UUID parent,UUID block) {
+	public LowValuePattern(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
 	}
@@ -69,23 +64,18 @@ public class DiscreteRateOfChange extends AbstractProcessBlock implements Proces
 	 * Define the synchronization property and ports.
 	 */
 	private void initialize() {	
-		setName("DiscreteRateOfChange");
-		
+		setName("LowValuePattern");
+
 		BlockProperty clearProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET,Boolean.TRUE,PropertyType.BOOLEAN,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET, clearProperty);
-		BlockProperty fillProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_FILL_REQUIRED,Boolean.TRUE,PropertyType.BOOLEAN,true);
-		setProperty(BlockConstants.BLOCK_PROPERTY_FILL_REQUIRED, fillProperty);
-		BlockProperty liProperty = new BlockProperty(BLOCK_PROPERTY_LINEAR_INTERPOLATION,new Boolean(linearInterpolation),PropertyType.BOOLEAN,true);
-		setProperty(BLOCK_PROPERTY_LINEAR_INTERPOLATION, liProperty);
-		BlockProperty poProperty = new BlockProperty(BLOCK_PROPERTY_POLYNOMIAL_ORDER,new Integer(polynomialOrder),PropertyType.INTEGER,true);
-		setProperty(BLOCK_PROPERTY_POLYNOMIAL_ORDER, poProperty);
-		
 		BlockProperty sampleSizeProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE,new Integer(sampleSize),PropertyType.INTEGER,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE, sampleSizeProperty);
 		BlockProperty sampleTypeProperty = new BlockProperty(BLOCK_PROPERTY_SAMPLE_TYPE,"",PropertyType.STRING,true);
 		setProperty(BLOCK_PROPERTY_SAMPLE_TYPE, sampleTypeProperty);
-		BlockProperty sfProperty = new BlockProperty(BLOCK_PROPERTY_SCALE_FACTOR,new Double(scaleFactor),PropertyType.DOUBLE,true);
-		setProperty(BLOCK_PROPERTY_SCALE_FACTOR, sfProperty);
+		BlockProperty thresholdProperty = new BlockProperty(BLOCK_PROPERTY_THRESHOLD,new Double(threshold),PropertyType.DOUBLE,true);
+		setProperty(BLOCK_PROPERTY_THRESHOLD, thresholdProperty);
+		BlockProperty tcProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER_COUNT,new Integer(triggerCount),PropertyType.INTEGER,true);
+		setProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER_COUNT, tcProperty);
 		BlockProperty updateSizeProperty = new BlockProperty(BLOCK_PROPERTY_UPDATE_SIZE,new Integer(updateSize),PropertyType.INTEGER,true);
 		setProperty(BLOCK_PROPERTY_UPDATE_SIZE, updateSizeProperty);
 		BlockProperty updateTypeProperty = new BlockProperty(BLOCK_PROPERTY_UPDATE_TYPE,"",PropertyType.STRING,true);
@@ -134,31 +124,7 @@ public class DiscreteRateOfChange extends AbstractProcessBlock implements Proces
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert clear flag to a boolean (%s)",getName(),nfe.getLocalizedMessage());
 			}
-		}	
-		else if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_FILL_REQUIRED)) {
-			try {
-				fillRequired = Boolean.parseBoolean(event.getNewValue().toString());
-			}
-			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert fill flag to a boolean (%s)",getName(),nfe.getLocalizedMessage());
-			}
-		}	
-		else if( propertyName.equalsIgnoreCase(BLOCK_PROPERTY_LINEAR_INTERPOLATION)) {
-			try {
-				linearInterpolation = Boolean.parseBoolean(event.getNewValue().toString());
-			}
-			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert linear interpolation flag to a boolean (%s)",getName(),nfe.getLocalizedMessage());
-			}
-		}	
-		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_POLYNOMIAL_ORDER)) {
-			try {
-				polynomialOrder = Integer.parseInt(event.getNewValue().toString());
-			}
-			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert order number to an integer (%s)",getName(),nfe.getLocalizedMessage());
-			}
-		}
+		}		
 		else if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE)) {
 			try {
 				sampleSize = Integer.parseInt(event.getNewValue().toString());
@@ -170,12 +136,20 @@ public class DiscreteRateOfChange extends AbstractProcessBlock implements Proces
 		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_SAMPLE_TYPE)) {
 			sampleType = event.getNewValue().toString();
 		}
-		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_SCALE_FACTOR)) {
+		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_THRESHOLD)) {
 			try {
-				scaleFactor = Double.parseDouble(event.getNewValue().toString());
+				threshold = Double.parseDouble(event.getNewValue().toString());
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert scale factor to an number (%s)",getName(),nfe.getLocalizedMessage());
+			}
+		}
+		else if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_TRIGGER_COUNT)) {
+			try {
+				triggerCount = Integer.parseInt(event.getNewValue().toString());
+			}
+			catch(NumberFormatException nfe) {
+				log.warnf("%s: propertyChange Unable to convert trigger count to an integer (%s)",getName(),nfe.getLocalizedMessage());
 			}
 		}
 		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_UPDATE_SIZE)) {
@@ -206,7 +180,7 @@ public class DiscreteRateOfChange extends AbstractProcessBlock implements Proces
 		prototype.setPaletteIconPath("Block/icons/palette/junction.png");
 		prototype.setPaletteLabel("Junction");
 		prototype.setTooltipText("Pass through");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_OBSERVATION);
+		prototype.setTabName(BlockConstants.PALETTE_TAB_CONNECTIVITY);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());

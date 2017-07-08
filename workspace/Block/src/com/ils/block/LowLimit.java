@@ -1,5 +1,5 @@
 /**
- *   (c) 2013  ILS Automation. All rights reserved. 
+ *   (c) 2014  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -11,28 +11,28 @@ import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
+import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
+import com.ils.blt.common.block.PlacementHint;
+import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
+import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
-import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.Quality;
 
 /**
- * This class emits the inverse of its input. There is no synchronization required.
- *  Input and output are data values.
+ * This class is a no-op. It simply passes its input onto the output.
  */
 @ExecutableBlock
-public class Inverse extends AbstractProcessBlock implements ProcessBlock {
-	private final String TAG = "Inverse";
+public class LowLimit extends AbstractProcessBlock implements ProcessBlock {
+	private double limit   = 0.;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
-	public Inverse() {
+	public LowLimit() {
 		initialize();
 		initializePrototype();
 	}
@@ -44,7 +44,7 @@ public class Inverse extends AbstractProcessBlock implements ProcessBlock {
 	 * @param parent universally unique Id identifying the parent of this block
 	 * @param block universally unique Id for the block
 	 */
-	public Inverse(ExecutionController ec,UUID parent,UUID block) {
+	public LowLimit(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
 	}
@@ -53,22 +53,25 @@ public class Inverse extends AbstractProcessBlock implements ProcessBlock {
 	 * Define the synchronization property and ports.
 	 */
 	private void initialize() {	
-		setName("ChangeSign");
+		setName("LowLimit");
+		
+		BlockProperty bp = new BlockProperty(BlockConstants.BLOCK_PROPERTY_LIMIT,new Double(limit),PropertyType.DOUBLE,true);
+		setProperty(BlockConstants.BLOCK_PROPERTY_LIMIT, bp);
 
 		// Define an input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
-		input.setIsMultiple(false);
+		input.setHint(PlacementHint.L);
 		anchors.add(input);
 
 		// Define a single output
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
+		output.setHint(PlacementHint.R);
 		anchors.add(output);
 	}
 	
 
 	/**
-	 * A new value has appeared on our input. Manipulate it and send it on its way.
-	 * Retain the timestamp.
+	 * A new value has appeared on our input.  Pass it on.
 	 * 
 	 * Note: there can be several connections attached to a given port.
 	 * @param vcn incoming new value.
@@ -76,33 +79,28 @@ public class Inverse extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
-		if( !isLocked() ) {
-			QualifiedValue qv = vcn.getValue();
-			if( qv!=null && qv.getValue()!=null ) {
-				try {
-					Double dbl = Double.parseDouble(qv.getValue().toString());
-					double value = dbl.doubleValue();
-					if( value!=0.0) {
-						value = 1/value;
-						lastValue = new BasicQualifiedValue(new Double(value),qv.getQuality(),qv.getTimestamp());
-						statusText = "";
-					}
-					else {
-						statusText = "Value is equal to zero";
-						qv = new BasicQualifiedValue(new Double(Double.POSITIVE_INFINITY),new BasicQuality("divide by zero",Quality.Level.Bad),qv.getTimestamp());
-					}
-				}
-				catch(NumberFormatException nfe) {
-					log.warnf("%s.acceptValue: Unable to convert incoming value to a double (%s)",TAG,nfe.getLocalizedMessage());
-					lastValue = new BasicQualifiedValue(new Double(Double.NaN),new BasicQuality(nfe.getLocalizedMessage(),Quality.Level.Bad),qv.getTimestamp());
-				}
-			}
-			else {
-				lastValue = new BasicQualifiedValue(new Double(Double.NaN),new BasicQuality("null value",Quality.Level.Bad),qv.getTimestamp());
-			}
+		if(!isLocked() ) {
+			lastValue = vcn.getValue();
+			//log.infof("%s.acceptValue: %s", getName(),qv.getValue().toString());
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus(lastValue);
+		}
+	}
+	/**
+	 * Handle a limit change.
+	 */
+	@Override
+	public void propertyChange(BlockPropertyChangeEvent event) {
+		super.propertyChange(event);
+		String propertyName = event.getPropertyName();
+		if(propertyName.equals(BlockConstants.BLOCK_PROPERTY_LIMIT)) {
+			try {
+				limit = Double.parseDouble(event.getNewValue().toString());
+			}
+			catch(NumberFormatException nfe) {
+				log.warnf("%s: propertyChange Unable to convert limit to a double (%s)",getName(),nfe.getLocalizedMessage());
+			}
 		}
 	}
 	/**
@@ -111,24 +109,24 @@ public class Inverse extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void notifyOfStatus() {}
 	private void notifyOfStatus(QualifiedValue qv) {
+		updateStateForNewValue(qv);
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
-
 	/**
 	 * Augment the palette prototype for this block class.
 	 */
 	private void initializePrototype() {
-		prototype.setPaletteIconPath("Block/icons/palette/inverse.png");
-		prototype.setPaletteLabel("Inverse");
-		prototype.setTooltipText("Divide one by the value and place result on the output");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_ARITHMETIC);
+		prototype.setPaletteIconPath("Block/icons/palette/junction.png");
+		prototype.setPaletteLabel("Junction");
+		prototype.setTooltipText("Pass through");
+		prototype.setTabName(BlockConstants.PALETTE_TAB_CONNECTIVITY);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
-		desc.setEmbeddedIcon("Block/icons/embedded/one_over_x.png");
 		desc.setBlockClass(getClass().getCanonicalName());
-		desc.setStyle(BlockStyle.DIAMOND);
-		desc.setPreferredHeight(70);
-		desc.setPreferredWidth(70);
+		desc.setStyle(BlockStyle.JUNCTION);
+		desc.setPreferredHeight(32);
+		desc.setPreferredWidth(32);
 		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_LIGHT_GRAY);
+		desc.setCtypeEditable(true);
 	}
 }

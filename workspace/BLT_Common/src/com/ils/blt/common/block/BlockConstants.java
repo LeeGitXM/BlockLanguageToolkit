@@ -76,6 +76,7 @@ public interface BlockConstants   {
 	public static final String PALETTE_TAB_ANALYSIS           = "Analysis";
 	public static final String PALETTE_TAB_CONNECTIVITY       = "Connectivity";
 	public static final String PALETTE_TAB_CONTROL            = "Control";
+	public static final String PALETTE_TAB_INFERENCE          = "Inference";
 	public static final String PALETTE_TAB_LOGIC              = "Logic";
 	public static final String PALETTE_TAB_OBSERVATION        = "Observation";
 	public static final String PALETTE_TAB_STATISTICS         = "Statistics";

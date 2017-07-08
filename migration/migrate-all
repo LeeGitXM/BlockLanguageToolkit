@@ -3,15 +3,24 @@
 # then process all of the json files in the repository "g2" area.
 # Save the results in the json storate area for ignition.
 #
+./clear-json
 BLT=${GIT_REPO}/blt
 APP=$BLT/migration/migrate
 INDIR=$BLT/migration/json/g2
 OUTDIR=$BLT/migration/json/ignition
 mkdir -p $INDIR
-mkdir -p $OUTDIR
+mkdir -p $OUTDIR/gline
+mkdir -p $OUTDIR/escorez
+mkdir -p $OUTDIR/vistalon
 cd $BLT/migration
-./clear-json
 ./copy-json
+echo "======================== G Line ================================"
+cd $INDIR/gline
+for fil in *.json
+do
+	echo "Processing $fil ..."
+    $APP ${INDIR}/gline/$fil ${OUTDIR}/gline/$fil
+done
 echo "======================== Escorez ================================"
 cd $INDIR/escorez
 for fil in *.json

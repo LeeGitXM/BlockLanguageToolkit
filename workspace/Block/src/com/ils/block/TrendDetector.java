@@ -205,7 +205,7 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 		QualifiedValue qv = incoming.getValue();
 		Quality qual = qv.getQuality();
 		String port = incoming.getConnection().getDownstreamPortName();
-		if( port.equals(PORT_VALUE)  ) {
+		if( port.equals(PORT_VALUE) && !relativeToTarget ) {
 			if( qual.isGood() && qv!=null && qv.getValue()!=null ) {
 				if( !buffer.isEmpty() ) {
 					QualifiedValue lastPoint = buffer.getLast();
@@ -213,7 +213,7 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 					try {
 						double previous = ((Double)(lastPoint.getValue())).doubleValue();
 						double current = Double.parseDouble(qv.getValue().toString());
-						if( isSignificantlyDifferent(current) ) {
+						if( !isOutlier(current) ) {
 							if(current>previous) {
 								upwardCount++;
 								downwardCount = 0;
@@ -254,7 +254,7 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 				clear();   // Reset the current buffer
 			}
 		}
-		else if( port.equals(PORT_TARGET)  ) {
+		else if( port.equals(PORT_TARGET) && relativeToTarget  ) {
 			qv = incoming.getValue();
 			if( qv==null || qv.getValue()==null) return;
 			if( buffer.isEmpty() ) return;
@@ -263,7 +263,7 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 				// Need to test for last buffer value significant
 				QualifiedValue lastPoint = buffer.getLast();
 				double last = (Double)(lastPoint.getValue());
-				if( isSignificantlyDifferent(last) ) {
+				if( !isOutlier(last) ) {
 					evaluate();
 				}
 			}
@@ -281,7 +281,7 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 				// Need to test for last buffer value significant
 				QualifiedValue lastPoint = buffer.getLast();
 				double last = (Double)(lastPoint.getValue());
-				if( isSignificantlyDifferent(last) ) {
+				if( !isOutlier(last) ) {
 					evaluate();
 				}
 			}
@@ -339,10 +339,10 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 	}
 	
 	/**
-	 * Test to see if the most recent point is significantly different from the last
+	 * Test to see if the most recent point is too far different from the last
 	 * @return
 	 */
-	private boolean isSignificantlyDifferent(double newval) {
+	private boolean isOutlier(double newval) {
 		boolean result = false;
 		if( !Double.isNaN(lastSignificantValue) ) {
 			double lowLimit = lastSignificantValue - standardDeviation*multiplier;

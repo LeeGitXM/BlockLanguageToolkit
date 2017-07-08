@@ -26,8 +26,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  * This class is a no-op. It simply passes its input onto the output.
  */
 @ExecutableBlock
-public class DiscreteRateOfChange extends AbstractProcessBlock implements ProcessBlock {
-	
+public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
 	private final static String BLOCK_PROPERTY_LINEAR_INTERPOLATION = "LinearInterpolation";
 	private final static String BLOCK_PROPERTY_POLYNOMIAL_ORDER = "PolynomialOrder";
 	private final static String BLOCK_PROPERTY_SAMPLE_TYPE  = "SampleType";
@@ -48,7 +47,7 @@ public class DiscreteRateOfChange extends AbstractProcessBlock implements Proces
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
-	public DiscreteRateOfChange() {
+	public LinearFit() {
 		initialize();
 		initializePrototype();
 	}
@@ -60,7 +59,7 @@ public class DiscreteRateOfChange extends AbstractProcessBlock implements Proces
 	 * @param parent universally unique Id identifying the parent of this block
 	 * @param block universally unique Id for the block
 	 */
-	public DiscreteRateOfChange(ExecutionController ec,UUID parent,UUID block) {
+	public LinearFit(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
 	}
@@ -69,8 +68,8 @@ public class DiscreteRateOfChange extends AbstractProcessBlock implements Proces
 	 * Define the synchronization property and ports.
 	 */
 	private void initialize() {	
-		setName("DiscreteRateOfChange");
-		
+		setName("LinearFit");
+
 		BlockProperty clearProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET,Boolean.TRUE,PropertyType.BOOLEAN,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET, clearProperty);
 		BlockProperty fillProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_FILL_REQUIRED,Boolean.TRUE,PropertyType.BOOLEAN,true);
@@ -206,7 +205,7 @@ public class DiscreteRateOfChange extends AbstractProcessBlock implements Proces
 		prototype.setPaletteIconPath("Block/icons/palette/junction.png");
 		prototype.setPaletteLabel("Junction");
 		prototype.setTooltipText("Pass through");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_OBSERVATION);
+		prototype.setTabName(BlockConstants.PALETTE_TAB_CONNECTIVITY);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());
