@@ -151,17 +151,17 @@ public class TripleOptionControl extends AbstractProcessBlock implements Process
 	 * Augment the palette prototype for this block class.
 	 */
 	private void initializePrototype() {
-		prototype.setPaletteIconPath("Block/icons/palette/junction.png");
-		prototype.setPaletteLabel("Junction");
+		prototype.setPaletteIconPath("Block/icons/palette/todo.png");
+		prototype.setPaletteLabel("TripleOption");
 		prototype.setTooltipText("Pass through");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_OBSERVATION);
+		prototype.setTabName(BlockConstants.PALETTE_TAB_CONTROL);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setStyle(BlockStyle.JUNCTION);
 		desc.setPreferredHeight(32);
 		desc.setPreferredWidth(32);
-		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_LIGHT_GRAY);
+		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_MUSTARD);
 		desc.setCtypeEditable(true);
 	}
 }

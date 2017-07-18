@@ -81,8 +81,4 @@ public class G2Anchor {
 	public void setType(String connectionType) {this.type = connectionType;}
 	public void setUuid(String uuid) {this.uuid = uuid;};
 
-
-	
-
-
 }

@@ -151,8 +151,8 @@ public class DualOptionQueryControl extends AbstractProcessBlock implements Proc
 	 * Augment the palette prototype for this block class.
 	 */
 	private void initializePrototype() {
-		prototype.setPaletteIconPath("Block/icons/palette/junction.png");
-		prototype.setPaletteLabel("Junction");
+		prototype.setPaletteIconPath("Block/icons/palette/todo.png");
+		prototype.setPaletteLabel("DualOption");
 		prototype.setTooltipText("Pass through");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_OBSERVATION);
 		
@@ -161,7 +161,7 @@ public class DualOptionQueryControl extends AbstractProcessBlock implements Proc
 		desc.setStyle(BlockStyle.JUNCTION);
 		desc.setPreferredHeight(32);
 		desc.setPreferredWidth(32);
-		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_LIGHT_GRAY);
+		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_MUSTARD);
 		desc.setCtypeEditable(true);
 	}
 }

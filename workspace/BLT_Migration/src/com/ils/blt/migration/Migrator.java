@@ -212,6 +212,8 @@ public class Migrator {
 		if( !ok ) return;
 		
 		diagram = createSerializableDiagramFromFolder(g2folder);
+		connectionMapper.createConnections();
+		connectionMapper.reconcileUnresolvedConnections();
 		performSpecialHandlingOnDiagram(diagram);
 		
 	}
@@ -223,6 +225,8 @@ public class Migrator {
 		if( !ok ) return;
 		
 		diagram = createSerializableDiagram(g2diagram);
+		connectionMapper.createConnections();
+		connectionMapper.reconcileUnresolvedConnections();
 		performSpecialHandlingOnDiagram(diagram);
 	}
 	

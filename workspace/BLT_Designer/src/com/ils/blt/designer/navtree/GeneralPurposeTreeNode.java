@@ -578,8 +578,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 					answer = true;
 					break;
 				}
-				parentNode = parentNode.getParent();
 			}
+			parentNode = parentNode.getParent();
 		}
 		return answer;
 	}

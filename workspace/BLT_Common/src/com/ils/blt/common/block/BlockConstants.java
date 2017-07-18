@@ -89,6 +89,7 @@ public interface BlockConstants   {
 	public static final int BLOCK_BACKGROUND_GRAYISH        = (new Color(208,215,220)).getRGB();
 	public static final int BLOCK_BACKGROUND_LIGHT_ROSE     = (new Color(220,208,200)).getRGB();
 	public static final int BLOCK_BACKGROUND_LIGHT_GRAY     = (new Color(240,240,240)).getRGB();
+	public static final int BLOCK_BACKGROUND_MUSTARD     	= (new Color(248,229,34)).getRGB();
 	
 	// These are well-known commands
 	public static final String COMMAND_CLEAR_LOW               	= "CLEAR_LOWER_SQC";

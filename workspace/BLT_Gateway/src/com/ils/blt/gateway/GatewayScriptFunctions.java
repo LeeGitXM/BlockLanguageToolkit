@@ -93,7 +93,20 @@ public class GatewayScriptFunctions   {
 		return handler.getDiagram(diagramId);
 	}
 	/**
-	 * Query the gateway for list of diagrams. 
+	 * Query the gateway for list of all diagrams. This method takes
+	 * the name of a project which is unused. Its purpose is to provide
+	 * method signature compatibility with the Designer/Client scope.
+	 * 
+	 * @param dummyProject is unused
+	 * @return a list of tree-paths to the diagrams saved 
+	 *         (ie. known to the Gateway).
+	 */
+	@SuppressWarnings("rawtypes")
+	public static List getDiagramDescriptors(String dummyProject) {
+		return handler.getDiagramDescriptors();
+	}
+	/**
+	 * Query the gateway for list of all diagrams. 
 	 * 
 	 * @return a list of tree-paths to the diagrams saved 
 	 *         (ie. known to the Gateway).

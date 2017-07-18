@@ -33,7 +33,6 @@
         	            ${basedir}/BLT_Common/bin" 
         	destdir="BLT_Build/doc" nodeprecated="false" nodeprecatedlist="true" noindex="false" nonavbar="false" notree="false" 
         	packagenames="com.ils.block,com.ils.block.annotation,
-        				  com.ils.com.ils.blt.gateway,com.ils.com.ils.blt.gateway.engine,com.ils.com.ils.blt.gateway.proxy,
         	              com.ils.blt.client,com.ils.blt.client.component,com.ils.blt.client.component.diagview,com.ils.blt.client.component.recmap,com.ils.blt.client.component.recmap.delegate,
         	              com.ils.blt.common,com.ils.blt.common.block,com.ils.blt.common.connection,
         	              com.ils.blt.common.control,com.ils.blt.common.notification,com.ils.blt.common.script,com.ils.blt.common.serializable,
