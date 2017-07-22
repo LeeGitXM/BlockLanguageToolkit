@@ -106,7 +106,7 @@ public class ApplicationScriptFunctions   {
 		return handler.listDiagramDescriptors(projectName);
 	}
 	/**
-	 * blockId String representation of the block's internal Id.
+	 * @param blockId String representation of the block's internal Id.
 	 * @return the diagram that is a parent of the specified block.
 	 */
 	public static SerializableResourceDescriptor getDiagramForBlock(String blockId) {
@@ -223,7 +223,7 @@ public class ApplicationScriptFunctions   {
 	 * of the specified block. If any of those blocks are sources, then continue
 	 * the search on the diagrams they are connected to.
 	 * @param diagramId of the parent diagram
-	 * @param blockName name of the block within the diagram
+	 * @param blockName name of the block within the diagram that is the starting point
 	 * @return a list of blocks upstream of the specified block.
 	 */
 	public static List<SerializableBlockStateDescriptor> listBlocksGloballyUpstreamOf(String diagramId,String blockName) {
@@ -242,6 +242,7 @@ public class ApplicationScriptFunctions   {
 	 * Query a diagram in the gateway for list of its blocks that are upstream
 	 * of the specified block. 
 	 * @param diagramId identifier of the diagram owning the block, a String
+	 * @param blockName name of the block within the diagram that is the starting point
 	 * @return a list of blocks upstream of the block specified, in the diagram.
 	 */
 	public static List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(String diagramId,String blockName){
@@ -293,7 +294,7 @@ public class ApplicationScriptFunctions   {
 	/**
 	 * Query the gateway for list of diagrams belonging to a project. 
 	 * 
-	 * @param projectName
+	 * @param projectName name of the project containing the diagrams
 	 * @return a list of tree-paths to the diagrams saved (ie. known to the Gateway).
 	 */
 	public static List<SerializableResourceDescriptor> listDiagramDescriptors(String projectName) {
@@ -352,8 +353,8 @@ public class ApplicationScriptFunctions   {
 	 * Post a (simulated) block result on its output.
 	 * @param diagramId the parent diagram
 	 * @param blockId of the subject block
-	 * @param port
-	 * @param value
+	 * @param port connection on which to receive the output
+	 * @param value to be propagated
 	 */
 	public static void postResult(String diagramId,String blockId,String port,String value) {
 		handler.postResult(diagramId,blockId, port, value);
@@ -378,12 +379,15 @@ public class ApplicationScriptFunctions   {
 	}
 	/**
 	 * Execute reset() on the specified block
+	 * @param diagramId the parent diagram
+	 * @param blockId of the block to be reset
 	 */
 	public static void resetBlock(String diagramId,String blockId) {
 		handler.resetBlock(diagramId,blockId);
 	}
 	/**
 	 * Execute reset() on every block inside the controller
+	 * @param diagramId diagram identifier, a string
 	 */
 	public static void resetDiagram(String diagramId) {
 		handler.resetDiagram(diagramId);
@@ -450,7 +454,7 @@ public class ApplicationScriptFunctions   {
 	 * no other side effects. 
 	 *  
 	 * @param diagramId diagram's unique Id as a String
-	 * @param bname 
+	 * @param bname block name
 	 * @param value the new state of the block. The value will be coerced into a truth-value in the gateway 
 	 */
 	public static void setBlockState(String diagramId,String bname,String value ) {
@@ -460,7 +464,7 @@ public class ApplicationScriptFunctions   {
 	 * are notified of the change.
 	 *  
 	 * @param diagramId diagram's unique Id as a String
-	 * @param bname 
+	 * @param bname block name
 	 * @param pname the changed property
 	 * @param value the new value of the property. The value will be coerced into the correct data type in the gateway 
 	 */
@@ -469,8 +473,8 @@ public class ApplicationScriptFunctions   {
 	}
 	/**
 	 * Specify the new state of a diagram
-	 * @param diagramId
-	 * @param state
+	 * @param diagramId diagram's unique Id as a String
+	 * @param state the new state
 	 */
 	public static void setDiagramState(String diagramId, String state)  {
 		handler.setDiagramState(diagramId,state);

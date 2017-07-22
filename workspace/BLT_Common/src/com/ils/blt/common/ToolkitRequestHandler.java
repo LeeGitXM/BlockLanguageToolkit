@@ -56,8 +56,8 @@ public interface ToolkitRequestHandler  {
 	 * 
 	 * @param className class name of the block
 	 * @param projectId id of the project
-	 * @param resourceId
-	 * @param blockId
+	 * @param resourceId identifier of the resource that is the diagram holding the block
+	 * @param blockId UUID of the block
 	 *
 	 * @return an array of block properties for the subject block
 	 */
@@ -112,6 +112,8 @@ public interface ToolkitRequestHandler  {
 	 */
 	public SerializableResourceDescriptor getDiagramForBlock(String blockId) ;
 	/**
+	 * @param projectId id of the project, a Long
+	 * @param resourceId identifier of the resource that is the diagram holding the block, a Long
 	 * @return the current state of the specified diagram.
 	 */
 	public DiagramState getDiagramState(Long projectId, Long resourceId) ;
@@ -128,6 +130,8 @@ public interface ToolkitRequestHandler  {
 	public String getExplanation(String diagramId,String blockId);
 	
 	/**
+	 * @param diagramId identifier of the diagram owning the block, a String
+	 * @param blockId identifier of the block within the diagram, a String
 	 * @return internal details of a block for debugging purposes.
 	 */
 	public SerializableBlockStateDescriptor getInternalState(String diagramId,String blockId) ;
@@ -160,7 +164,7 @@ public interface ToolkitRequestHandler  {
 	 */
 	public String getToolkitProperty(String propertyName) ;
 	/**
-	 * @param projectId id of the project
+	 * @param projectId id of the project, a Long
 	 * @param resourceId the diagram expressed as a resource
 	 * @return the alert state of the specified diagram;
 	 */

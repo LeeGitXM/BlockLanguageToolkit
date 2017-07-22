@@ -1,5 +1,5 @@
 /**
- *   (c) 2013  ILS Automation. All rights reserved. 
+ *   (c) 2017  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -53,7 +53,7 @@ public class ChangeSign extends AbstractProcessBlock implements ProcessBlock {
 	 * Define the synchronization property and ports.
 	 */
 	private void initialize() {	
-		setName("Inverse");
+		setName("ChangeSign");
 
 		// Define an input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
@@ -82,15 +82,9 @@ public class ChangeSign extends AbstractProcessBlock implements ProcessBlock {
 				try {
 					Double dbl = Double.parseDouble(qv.getValue().toString());
 					double value = dbl.doubleValue();
-					if( value!=0.0) {
-						value = 1/value;
-						lastValue = new BasicQualifiedValue(new Double(value),qv.getQuality(),qv.getTimestamp());
-						statusText = "";
-					}
-					else {
-						statusText = "Value is equal to zero";
-						qv = new BasicQualifiedValue(new Double(Double.POSITIVE_INFINITY),new BasicQuality("divide by zero",Quality.Level.Bad),qv.getTimestamp());
-					}
+					value = -1*value;
+					lastValue = new BasicQualifiedValue(new Double(value),qv.getQuality(),qv.getTimestamp());
+					statusText = "";
 				}
 				catch(NumberFormatException nfe) {
 					log.warnf("%s.acceptValue: Unable to convert incoming value to a double (%s)",TAG,nfe.getLocalizedMessage());
@@ -118,13 +112,13 @@ public class ChangeSign extends AbstractProcessBlock implements ProcessBlock {
 	 * Augment the palette prototype for this block class.
 	 */
 	private void initializePrototype() {
-		prototype.setPaletteIconPath("Block/icons/palette/inverse.png");
-		prototype.setPaletteLabel("Inverse");
-		prototype.setTooltipText("Divide one by the value and place result on the output");
+		prototype.setPaletteIconPath("Block/icons/palette/changesign.png");
+		prototype.setPaletteLabel("ChangeSign");
+		prototype.setTooltipText("Multuiply the value by minus one and place result on the output");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_ARITHMETIC);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
-		desc.setEmbeddedIcon("Block/icons/embedded/one_over_x.png");
+		desc.setEmbeddedIcon("Block/icons/embedded/change_sign.png");
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setStyle(BlockStyle.DIAMOND);
 		desc.setPreferredHeight(70);
