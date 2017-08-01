@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2105  ILS Automation. All rights reserved. 
+ *   (c) 2014-2107  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -97,12 +97,11 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 					log.tracef("%s.acceptValue: Received value %s (%s)",getName(),qv.getValue().toString(),
 							dateFormatter.format(qv.getTimestamp()));
 					long expirationTime = ((Long)expirationProperty.getValue()).longValue();
-					if( qv.getQuality().isGood() && 
-							(expirationTime==0 || qv.getTimestamp().getTime()>=expirationTime)) {
+					if( qv.getQuality().isGood() && (expirationTime==0 || qv.getTimestamp().getTime()>=expirationTime)) {
 						lastValue = new BasicQualifiedValue(coerceToMatchOutput(BlockConstants.OUT_PORT_NAME,qv.getValue()),qv.getQuality(),qv.getTimestamp());
 						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 						controller.acceptCompletionNotification(nvn);
-						notifyOfStatus(vcn.getValue());
+						notifyOfStatus();
 					}
 					else {
 						recordActivity(Activity.ACTIVITY_BLOCKED,lastValue.getValue().toString());
@@ -174,7 +173,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	public void evaluate() {
 		inhibiting = false;
 		log.tracef("%s.evaluate: Set inhibit flag false",getName());
-		recordActivity(Activity.ACTIVITY_UNBLOCKED,"");
+		recordActivity(Activity.ACTIVITY_UNBLOCKED,"resume pass-thru");
 	}
 
 	/**
@@ -218,13 +217,20 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 		}
 	}
 	/**
-	 * Send connection update notification for our last value (not the block state)
+	 * Send status update notification for our last transmitted value. If we've 
+	 * never transmitted one, lastValue will be null.
 	 */
 	@Override
-	public void notifyOfStatus() {}
-	private void notifyOfStatus(QualifiedValue qvalue) {
-		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qvalue);
+	public void notifyOfStatus() {
+		if(lastValue!=null) {
+			controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, lastValue);
+		}
+		else {
+			QualifiedValue lv = new BasicQualifiedValue(coerceToMatchOutput(BlockConstants.OUT_PORT_NAME,null));
+			controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, lv);
+		}
 	}
+
 	/**
 	 * Augment the palette prototype for this block class.
 	 */
@@ -240,5 +246,6 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setStyle(BlockStyle.CLAMP);
 		desc.setReceiveEnabled(true);
+		desc.setCtypeEditable(true);
 	}
 }

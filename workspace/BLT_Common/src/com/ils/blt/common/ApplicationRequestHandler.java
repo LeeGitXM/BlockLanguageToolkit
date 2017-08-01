@@ -26,7 +26,6 @@ import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 
-
 /**
  *  This class is a common point for managing requests to the gateway dealing with the
  *  execution engine and block status. It is designed for use by Java code in the designer 
@@ -231,7 +230,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 		return state;
 	}
-	
+
 	/**
 	 * Find the parent application or diagram of the entity referenced by
 	 * the supplied id. Test the state and return the name of the appropriate
@@ -402,17 +401,39 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		return result;
 	}
 	/**
-	 * @return the name of the Isolation-mode datasource
+	 * Find the name of the isolation datasource from the internal SQLite database. 
+	 * @return isolation database name
 	 */
+	@Override
 	public String getIsolationDatabase() {
 		return getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE);
 	}
+
 	/**
-	 * @return the name of the Production-mode datasource
+	 * Find the name of the isolation tag provider from the internal SQLite database. 
+	 * @return isolation tag provider name
 	 */
+	@Override
+	public String getIsolationTagProvider() {
+		return getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER);
+	}
+	/**
+	 * Find the name of the production datasource from the internal SQLite database. 
+	 * @return production database name
+	 */
+	@Override
 	public String getProductionDatabase() {
 		return getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE);
 	}
+	/**
+	 * Find the name of the isolation tag provider from the internal SQLite database. 
+	 * @return production tag provider name
+	 */
+	@Override
+	public String getProductionTagProvider() {
+		return getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
+	}
+	
 	/**
 	 * @param diagramId identifier of the diagram owning the block, a String
 	 * @param blockId identifier of the block within the diagram, a String

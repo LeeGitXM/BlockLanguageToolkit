@@ -1,12 +1,14 @@
 /**
- *   (c) 2014-2015  ILS Automation. All rights reserved. 
+ *   (c) 2014-2017  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
+import java.util.Date;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.ProcessBlock;
+import com.ils.blt.common.block.Activity;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
@@ -43,22 +45,33 @@ public class LogicLatch extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	public LogicLatch(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
+		state = TruthValue.UNKNOWN;
 		initialize();
 	}
 	
+	/** Start any active monitoring or processing within the block.
+	 * Here we propagate an UNKNOWN.
+	 */
+	@Override
+	public void start() { 
+		super.start();
+		// Initially propagate an UNKNOWN which will have to suffice until we get a TRUE or FALSE
+		lastValue = new TestAwareQualifiedValue(timer,state.name());
+		OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
+		controller.acceptCompletionNotification(nvn);
+		notifyOfStatus(lastValue);
+	}
 	/**
 	 * Do not call the base-class reset() as this sets outgoing
-	 * connection states to UNKNOWN.
+	 * connection states to UNSET. Here we simply propagate the current value.
 	 */
 	@Override
 	public void reset() {
-		if( state.equals(TruthValue.TRUE) || 
-			state.equals(TruthValue.FALSE)   ) {
-			lastValue = new TestAwareQualifiedValue(timer,state.name());
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
-			controller.acceptCompletionNotification(nvn);
-			notifyOfStatus(lastValue);
-		}
+		recordActivity(Activity.ACTIVITY_RESET,"(does not change value)");
+		lastValue = new TestAwareQualifiedValue(timer,state.name());
+		OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
+		controller.acceptCompletionNotification(nvn);
+		notifyOfStatus(lastValue);
 	}
 	
 	/**

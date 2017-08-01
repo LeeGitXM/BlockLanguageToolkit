@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2015  ILS Automation. All rights reserved. 
+ *   (c) 2014-2017  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -33,16 +33,15 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  * a configured interval. An input of the opposing state is processed immediately and
  * resets the counter.
  * 
- * Note taht an "active" watchdog is one that is waiting for its time to expire.
+ * Note that an "active" watchdog is one that is waiting for its time to expire.
  */
 @ExecutableBlock
 public class PersistenceGate extends AbstractProcessBlock implements ProcessBlock {
-	private final String TAG = "PersistenceGate";
 	private int count = 0;     // Countdown - number of intervals to go ...
 	private double scanInterval = 10.;  // ~secs
 	private double timeWindow = 0.;  // ~secs
 	private String trigger = "";     // Nothing will trigger until this is set
-	private BlockProperty valueProperty = null;;
+	private BlockProperty valueProperty = null;
 	private final Watchdog dog;
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -124,7 +123,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 			if( dog.isActive() ) timer.removeWatchdog(dog);
 			if( !isLocked() ) {
 				// Propagate value immediately and reset the block
-				log.tracef("%s.acceptValue: No match, sent immediate %s",TAG,lastValue.getValue().toString());
+				log.tracef("%s.acceptValue: No match, sent immediate %s",getName(),lastValue.getValue().toString());
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(nvn);
 				state = qualifiedValueAsTruthValue(lastValue);
@@ -138,7 +137,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 			if( !dog.isActive() ) {
 				// Start the countdown
 				count = (int)(timeWindow/scanInterval+0.5);
-				log.debugf("%s.acceptValue: Start countdown %d cycles (%f in %f)",TAG,count,scanInterval,timeWindow);
+				log.debugf("%s.acceptValue: Start countdown %d cycles (%f in %f)",getName(),count,scanInterval,timeWindow);
 				if( count> 0 ) {
 					dog.setSecondsDelay(scanInterval);
 					timer.updateWatchdog(dog);  // pet dog
@@ -153,7 +152,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 	 */
 	@Override
 	public synchronized void evaluate() {
-		log.tracef("%s.evaluate: cycle %d (%s).",TAG,count,timer.getName());
+		log.tracef("%s.evaluate: cycle %d (%s).",getName(),count,timer.getName());
 		if( count> 0 ) {
 			dog.setSecondsDelay(scanInterval);
 			timer.updateWatchdog(dog);  // pet dog
@@ -161,7 +160,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 			double timeRemaining = count*scanInterval;
 			TimeUnit tu = TimeUtility.unitForValue(timeRemaining);
 			String formattedTime = String.format("%.1f %s", TimeUtility.valueForCanonicalValue(timeRemaining, tu),TimeUtility.abbreviationForUnit(tu));
-			log.debugf("%s.evaluate: cycle %d property value =  %s.",TAG,count,formattedTime);
+			log.debugf("%s.evaluate: cycle %d property value =  %s.",getName(),count,formattedTime);
 			valueProperty.setValue(formattedTime);
 			notifyOfStatus();
 		}
@@ -184,7 +183,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
-		log.debugf("%s.propertyChange: Received %s = %s",TAG,propertyName,event.getNewValue().toString());
+		log.debugf("%s.propertyChange: Received %s = %s",getName(),propertyName,event.getNewValue().toString());
 		if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_TRIGGER)) {
 			trigger = event.getNewValue().toString();
 			
@@ -194,7 +193,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 				timeWindow = Double.parseDouble(event.getNewValue().toString());
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s.propertyChange: Unable to convert scan interval to a double (%s)",TAG,nfe.getLocalizedMessage());
+				log.warnf("%s.propertyChange: Unable to convert scan interval to a double (%s)",getName(),nfe.getLocalizedMessage());
 			}
 		}
 		else if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL)) {
@@ -203,11 +202,11 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 				if( scanInterval < 0.1 ) scanInterval = 0.1;
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s.propertyChange: Unable to convert scan interval to a double (%s)",TAG,nfe.getLocalizedMessage());
+				log.warnf("%s.propertyChange: Unable to convert scan interval to a double (%s)",getName(),nfe.getLocalizedMessage());
 			}
 		}
 		else {
-			log.warnf("%s.propertyChange:Unrecognized property (%s)",TAG,propertyName);
+			log.warnf("%s.propertyChange:Unrecognized property (%s)",getName(),propertyName);
 		}
 	}
 	/**
@@ -237,7 +236,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		Object val = valueProperty.getValue();
 		if( val!=null ) {
 			QualifiedValue displayQV = new TestAwareQualifiedValue(timer,val.toString());
-			log.tracef("%s.notifyOfStatus display = %s",TAG,val.toString());
+			log.tracef("%s.notifyOfStatus display = %s",getName(),val.toString());
 			controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,displayQV);
 		}
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
@@ -249,7 +248,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		prototype.setPaletteIconPath("Block/icons/palette/PMIDigitalDisplay32.png");
 		prototype.setPaletteLabel("PersistGate");
 		prototype.setTooltipText("Monitor the incoming value for change over a specified period");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_CONTROL);
+		prototype.setTabName(BlockConstants.PALETTE_TAB_OBSERVATION);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());

@@ -135,9 +135,11 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	 */
 	@Override
 	public void acceptCompletionNotification(OutgoingNotification note) {
-		log.tracef("%s:acceptCompletionNotification: %s:%s = %s %s", TAG,note.getBlock().getBlockId().toString(),note.getPort(),
+		if( log.isTraceEnabled() && note!=null && note.getValue()!=null ) {
+			log.tracef("%s:acceptCompletionNotification: %s:%s = %s %s", TAG,note.getBlock().getBlockId().toString(),note.getPort(),
 				note.getValue().toString(),
 				(stopped?"REJECTED, controller stopped":""));
+		}
 		ProcessDiagram diagram = getDiagram(note.getBlock().getParentId());
 		if( diagram!=null && !diagram.getState().equals(DiagramState.DISABLED)) {
 			try {
@@ -589,7 +591,9 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 					OutgoingNotification inNote = (OutgoingNotification)work;
 					// Query the diagram to find out what's next
 					ProcessBlock pb = inNote.getBlock();
-					log.tracef("%s.run: processing incoming note from %s:%s = %s", TAG,pb.toString(),inNote.getPort(),inNote.getValue().toString());
+					if( log.isTraceEnabled() ) {
+						log.tracef("%s.run: processing incoming note from %s:%s = %s", TAG,pb.toString(),inNote.getPort(),inNote.getValue().toString());
+					}
 					// Send the push notification
 					sendConnectionNotification(pb.getBlockId().toString(),inNote.getPort(),inNote.getValue());
 					ProcessDiagram dm = modelManager.getDiagram(pb.getParentId());

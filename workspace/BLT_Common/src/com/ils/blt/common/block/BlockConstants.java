@@ -1,5 +1,5 @@
 /**
- *   (c) 2013-2014  ILS Automation. All rights reserved.
+ *   (c) 2013-2017  ILS Automation. All rights reserved.
  */
 package com.ils.blt.common.block;
 
@@ -34,6 +34,7 @@ public interface BlockConstants   {
 	public static final String BLOCK_PROPERTY_HEIGHT        = "Height";
 	public static final String BLOCK_PROPERTY_HYSTERESIS    = "Hysteresis";
 	public static final String BLOCK_PROPERTY_INHIBIT_INTERVAL = "InhibitInterval";  // Inhibit period ~ sec
+	public static final String BLOCK_PROPERTY_INITIAL_VALUE = "InitialValue";
 	public static final String BLOCK_PROPERTY_INSTANCE      = "Instance"; 
 	public static final String BLOCK_PROPERTY_INTERVAL      = "Interval";
 	public static final String BLOCK_PROPERTY_LABEL         = "Label";

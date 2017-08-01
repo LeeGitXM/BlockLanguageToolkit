@@ -136,6 +136,26 @@ public interface ToolkitRequestHandler  {
 	 */
 	public SerializableBlockStateDescriptor getInternalState(String diagramId,String blockId) ;
 	/**
+	 * Find the name of the isolation datasource from the internal SQLite database. 
+	 * @return isolation database name
+	 */
+	public String getIsolationDatabase();
+	/**
+	 * Find the name of the isolation tag provider from the internal SQLite database. 
+	 * @return isolation tag provider name
+	 */
+	public String getIsolationTagProvider();
+	/**
+	 * Find the name of the production datasource from the internal SQLite database. 
+	 * @return production database name
+	 */
+	public String getProductionDatabase();
+	/**
+	 * Find the name of the isolation tag provider from the internal SQLite database. 
+	 * @return production tag provider name
+	 */
+	public String getProductionTagProvider();
+	/**
 	 * @param diagramId identifier of the diagram owning the block, a String
 	 * @param blockId identifier of the block within the diagram, a String
 	 * @param propertyName name of the property for which a value is to be returned

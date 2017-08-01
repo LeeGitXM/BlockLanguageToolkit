@@ -351,7 +351,6 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	}
 	
 
-	
 	/**
 	 * Find the parent application or diagram of the entity referenced by
 	 * the supplied id. Test the state and return the name of the appropriate
@@ -510,6 +509,39 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			if( block!=null ) descriptor = block.getInternalStatus();
 		}
 		return descriptor;
+	}
+	/**
+	 * Find the name of the isolation datasource from the internal SQLite database. 
+	 * @return isolation database name
+	 */
+	@Override
+	public String getIsolationDatabase() {
+		return getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_DATABASE);
+	}
+
+	/**
+	 * Find the name of the isolation tag provider from the internal SQLite database. 
+	 * @return isolation tag provider name
+	 */
+	@Override
+	public String getIsolationTagProvider() {
+		return getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_ISOLATION_PROVIDER);
+	}
+	/**
+	 * Find the name of the production datasource from the internal SQLite database. 
+	 * @return production database name
+	 */
+	@Override
+	public String getProductionDatabase() {
+		return getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_DATABASE);
+	}
+	/**
+	 * Find the name of the isolation tag provider from the internal SQLite database. 
+	 * @return production tag provider name
+	 */
+	@Override
+	public String getProductionTagProvider() {
+		return getToolkitProperty(ToolkitProperties.TOOLKIT_PROPERTY_PROVIDER);
 	}
 	@Override
 	public Object getPropertyBinding(String diagramId, String blockId,String propertyName) {

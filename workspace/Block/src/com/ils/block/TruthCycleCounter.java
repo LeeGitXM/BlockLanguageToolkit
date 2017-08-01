@@ -1,22 +1,30 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
+ *   (c) 2017  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
+import java.awt.Color;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.ProcessBlock;
+import com.ils.blt.common.block.Activity;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
+import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
+import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.PlacementHint;
+import com.ils.blt.common.block.PropertyType;
+import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
+import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
@@ -24,7 +32,9 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  */
 @ExecutableBlock
 public class TruthCycleCounter extends AbstractProcessBlock implements ProcessBlock {
-	
+	private int initialValue = 0;
+	private TruthValue trigger = TruthValue.TRUE; 
+	private BlockProperty valueProperty = null;
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
@@ -46,13 +56,57 @@ public class TruthCycleCounter extends AbstractProcessBlock implements ProcessBl
 	}
 	
 	/**
+	 * On a reset, propagate our initial value
+	 * 
+	 * NOTE: This has no effect on Python blocks. They must do this
+	 * for themselves.
+	 */
+	@Override
+	public void reset() {
+		this.state = TruthValue.UNSET;
+		this.lastValue = new TestAwareQualifiedValue(timer,new Integer(initialValue));
+		recordActivity(Activity.ACTIVITY_RESET,"propagates initial value");
+		valueProperty.setValue(new Integer(initialValue));
+		OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
+		controller.acceptCompletionNotification(nvn);
+		notifyOfStatus();
+	}
+	
+	/**
+	 * Initially transmit our initial value.
+	 */
+	@Override
+	public void start() {
+		super.start();
+		if( valueProperty!=null  ) {
+			lastValue = new TestAwareQualifiedValue(timer,new Integer(initialValue));
+			log.debugf("%s.start: %s (%s)",getName(),lastValue.getValue().toString(),lastValue.getQuality().getName());
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
+			controller.acceptCompletionNotification(nvn);
+			notifyOfStatus();
+		}
+	}
+
+	
+	/**
 	 * Define the synchronization property and ports.
 	 */
 	private void initialize() {	
 		setName("TruthCycleCounter");
-
+		state = TruthValue.UNSET;
+		delayStart = true;    // We transmit our initial value
+		
+		BlockProperty initialValueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_INITIAL_VALUE,new Integer(initialValue),PropertyType.INTEGER,true);
+		setProperty(BlockConstants.BLOCK_PROPERTY_INITIAL_VALUE, initialValueProperty);
+		BlockProperty triggerProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER,trigger,PropertyType.TRUTHVALUE,true);
+		setProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER, triggerProperty);
+		// The value is the count-down shown in the UI
+		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,new Integer(initialValue),PropertyType.INTEGER,false);
+		valueProperty.setBindingType(BindingType.ENGINE);
+		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
+		
 		// Define an input
-		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
+		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
 		input.setHint(PlacementHint.L);
 		anchors.add(input);
 
@@ -71,40 +125,68 @@ public class TruthCycleCounter extends AbstractProcessBlock implements ProcessBl
 	 */
 	@Override
 	public void acceptValue(IncomingNotification vcn) {
-		super.acceptValue(vcn);
-		if(!isLocked() ) {
-			lastValue = vcn.getValue();
-			//log.infof("%s.acceptValue: %s", getName(),qv.getValue().toString());
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
-			controller.acceptCompletionNotification(nvn);
-			notifyOfStatus(lastValue);
+		String port = vcn.getConnection().getDownstreamPortName();
+		QualifiedValue qv = vcn.getValue();
+		if( qv!=null && qv.getValue()!=null ) {
+			String key = vcn.getConnection().getSource().toString();
+			recordActivity(Activity.ACTIVITY_RECEIVE,port,qv.getValue().toString(),key);
+			if(!isLocked() ) {
+				TruthValue incoming = qualifiedValueAsTruthValue(vcn.getValue());
+				if( !this.state.equals(incoming) ) {
+					this.state = incoming;
+					if( this.state.equals(trigger) ) {
+						int count = ((Integer)(valueProperty.getValue())).intValue();
+						valueProperty.setValue(new Integer(count+1));
+						//log.infof("%s.acceptValue: %s", getName(),qv.getValue().toString());
+						lastValue = new TestAwareQualifiedValue(timer,new Integer(count+1));
+						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
+						controller.acceptCompletionNotification(nvn);
+						notifyOfStatus();
+					}
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Handle a changes to the various attributes.
+	 */
+	@Override
+	public void propertyChange(BlockPropertyChangeEvent event) {
+		super.propertyChange(event);
+		String propertyName = event.getPropertyName();
+		log.debugf("%s.propertyChange: Received %s = %s",getName(),propertyName,event.getNewValue().toString());
+		if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_TRIGGER)) {
+			trigger = TruthValue.valueOf(event.getNewValue().toString().toUpperCase());	
+		}
+		else if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_INITIAL_VALUE)) {
+			try {
+				initialValue = Integer.parseInt(event.getNewValue().toString());
+			}
+			catch(NumberFormatException nfe) {
+				log.warnf("%s.propertyChange: Unable to convert initial value to an integer (%s)",getName(),nfe.getLocalizedMessage());
+			}
+		}
+		else {
+			log.warnf("%s.propertyChange:Unrecognized property (%s)",getName(),propertyName);
 		}
 	}
 
-	/**
-	 * Send status update notification for our last latest state.
-	 */
-	@Override
-	public void notifyOfStatus() {}
-	private void notifyOfStatus(QualifiedValue qv) {
-		updateStateForNewValue(qv);
-		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
-	}
+
 	/**
 	 * Augment the palette prototype for this block class.
 	 */
 	private void initializePrototype() {
-		prototype.setPaletteIconPath("Block/icons/palette/todo.png");
+		prototype.setPaletteIconPath("Block/icons/palette/PMIDigitalDisplay32.png");
 		prototype.setPaletteLabel("TruthCounter");
-		prototype.setTooltipText("Pass through");
+		prototype.setTooltipText("Count the number of times that the trigger value has arrived");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_LOGIC);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());
-		desc.setStyle(BlockStyle.JUNCTION);
-		desc.setPreferredHeight(32);
-		desc.setPreferredWidth(32);
-		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_MUSTARD);
-		desc.setCtypeEditable(true);
+		desc.setPreferredHeight(40);
+		desc.setPreferredWidth(80);
+		desc.setStyle(BlockStyle.READOUT);
+		desc.setBackground(Color.cyan.getRGB());
 	}
 }

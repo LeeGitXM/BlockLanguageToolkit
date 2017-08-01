@@ -80,6 +80,7 @@ public class ApplicationScriptFunctions   {
 	public static String getControllerState() {
 		return handler.getControllerState();
 	}
+
 	public static String getDatabaseForUUID(String uuid) {
 		return handler.getDatabaseForUUID(uuid);
 	}
@@ -138,6 +139,34 @@ public class ApplicationScriptFunctions   {
 	 */
 	public static SerializableBlockStateDescriptor getInternalState(String diagramId,String blockId) {
 		return handler.getInternalState(diagramId,blockId);
+	}
+	/**
+	 * Find the name of the isolation datasource from the internal SQLite database. 
+	 * @return isolation database name
+	 */
+	public static String getIsolationDatabase() {
+		return handler.getIsolationDatabase();
+	}
+	/**
+	 * Find the name of the isolation tag provider from the internal SQLite database. 
+	 * @return isolation tag provider name
+	 */
+	public static String getIsolationTagProvider() {
+		return handler.getIsolationTagProvider();
+	}
+	/**
+	 * Find the name of the production datasource from the internal SQLite database. 
+	 * @return production database name
+	 */
+	public static String getProductionDatabase() {
+		return handler.getProductionDatabase();
+	}
+	/**
+	 * Find the name of the isolation tag provider from the internal SQLite database. 
+	 * @return production tag provider name
+	 */
+	public static String getProductionTagProvider() {
+		return handler.getProductionTagProvider();
 	}
 	/**
 	 * @param diagramId identifier of the diagram owning the block, a String

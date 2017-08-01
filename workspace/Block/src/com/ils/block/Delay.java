@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
+ *   (c) 2014-2017  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -12,6 +12,7 @@ import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.ProcessBlock;
+import com.ils.blt.common.block.Activity;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
@@ -34,7 +35,6 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  */
 @ExecutableBlock
 public class Delay extends AbstractProcessBlock implements ProcessBlock {
-	private static final String TAG = "Delay";
 	protected static String BLOCK_PROPERTY_DELAY = "SampleDelay";
 
 	private double delayInterval = 1;    // ~ secs
@@ -45,7 +45,7 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
 	public Delay() {
-		dog = new Watchdog(TAG,this);
+		dog = new Watchdog(getName(),this);
 		initialize();
 		buffer = new LinkedList<TimestampedData>();
 		initializePrototype();
@@ -60,13 +60,14 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	public Delay(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
-		dog = new Watchdog(TAG,this);
+		dog = new Watchdog(getName(),this);
 		buffer = new LinkedList<TimestampedData>();
 		initialize();
 	}
-	
+
 	@Override
 	public void reset() {
+		super.reset();
 		timer.removeWatchdog(dog);
 		buffer.clear();
 	}
@@ -90,22 +91,25 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 				delayInterval = Double.parseDouble(event.getNewValue().toString());
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert interval value to a double (%s)",TAG,nfe.getLocalizedMessage());
+				log.warnf("%s: propertyChange Unable to convert interval value to a double (%s)",getName(),nfe.getLocalizedMessage());
 			}
 		}
 	}
 	/**
 	 * A new value has appeared on an input anchor. Add it to the list and trigger the delay timer.
+	 * The superior method set "lastValue", 
 	 * @param vcn change notification.
 	 */
 	@Override
 	public void acceptValue(IncomingNotification vcn) {
-		super.acceptValue(vcn);
 		String port = vcn.getConnection().getDownstreamPortName();
-		if( port.equals(BlockConstants.IN_PORT_NAME) ) {
+		if( port.equals(BlockConstants.IN_PORT_NAME) && vcn.getValue()!=null ) {
+			String key = vcn.getConnection().getSource().toString();
+			recordActivity(Activity.ACTIVITY_RECEIVE,port,vcn.getValue().toString(),key);
+			
 			long expirationTime = System.currentTimeMillis()+(int)(delayInterval*1000);
 			TimestampedData data = new TimestampedData(vcn.getValue(),expirationTime);
-			log.tracef("%s.acceptValue: %s",TAG,vcn.getValue().toString());
+			log.debugf("%s.acceptValue: %s",getName(),vcn.getValue().toString());
 			synchronized(this) {
 				if( buffer.isEmpty() ) {
 					dog.setSecondsDelay(delayInterval);
@@ -132,7 +136,7 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 		if(buffer.isEmpty()) return;     // Could happen on race between clearing buffer and removing watch-dog on a reset.
 		TimestampedData data = buffer.removeFirst();
 		if( !isLocked() ) {
-			log.tracef("%s.evaluate: %s",TAG,data.qualValue.getValue().toString());
+			log.debugf("%s.evaluate: %s",getName(),data.qualValue.getValue().toString());
 			lastValue = new BasicQualifiedValue(coerceToMatchOutput(BlockConstants.OUT_PORT_NAME,data.qualValue.getValue()),data.qualValue.getQuality(),data.qualValue.getTimestamp()); 
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
@@ -150,12 +154,18 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 		}
 	}
 	/**
-	 * Send status update notification for our last latest state.
+	 * Send status update notification for our last transmitted value. If we've 
+	 * never transmitted one, lastValue will be null.
 	 */
 	@Override
 	public void notifyOfStatus() {
-		if(lastValue!=null)
+		if(lastValue!=null) {
 			controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, lastValue);
+		}
+		else {
+			QualifiedValue lv = new BasicQualifiedValue(coerceToMatchOutput(BlockConstants.OUT_PORT_NAME,null));
+			controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, lv);
+		}
 	}
 
 	/**
@@ -164,6 +174,7 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	private void initialize() {
 		setName("Delay");
+		
 		BlockProperty constant = new BlockProperty(BLOCK_PROPERTY_DELAY,new Double(delayInterval),PropertyType.TIME,true);
 		setProperty(BLOCK_PROPERTY_DELAY, constant);
 		
@@ -182,6 +193,12 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public SerializableBlockStateDescriptor getInternalStatus() {
 		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
+		if( dog.isActive() ) {
+			Map<String,String> attributes = descriptor.getAttributes();
+			long now = System.nanoTime()/1000000;   // Work in milliseconds
+			long waitTime = (long)(dog.getExpiration()-now);
+			attributes.put("MSecsToNextOutput",String.valueOf(waitTime));
+		}
 		List<Map<String,String>> outbuffer = descriptor.getBuffer();
 		for( TimestampedData td:buffer) {
 			Map<String,String> qvMap = new HashMap<>();
@@ -206,6 +223,7 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 		view.setStyle(BlockStyle.SQUARE);
 		view.setPreferredHeight(60);
 		view.setPreferredWidth(60);
+		view.setCtypeEditable(true);
 	}
 	
 	/**

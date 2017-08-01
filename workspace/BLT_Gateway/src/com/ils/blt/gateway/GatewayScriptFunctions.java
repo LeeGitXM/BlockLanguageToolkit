@@ -158,6 +158,34 @@ public class GatewayScriptFunctions   {
 		return handler.getInternalState(diagramId,blockId);
 	}
 	/**
+	 * Find the name of the isolation datasource from the internal SQLite database. 
+	 * @return isolation database name
+	 */
+	public static String getIsolationDatabase() {
+		return handler.getIsolationDatabase();
+	}
+	/**
+	 * Find the name of the isolation tag provider from the internal SQLite database. 
+	 * @return isolation tag provider name
+	 */
+	public static String getIsolationTagProvider() {
+		return handler.getIsolationTagProvider();
+	}
+	/**
+	 * Find the name of the production datasource from the internal SQLite database. 
+	 * @return production database name
+	 */
+	public static String getProductionDatabase() {
+		return handler.getProductionDatabase();
+	}
+	/**
+	 * Find the name of the production tag provider from the internal SQLite database. 
+	 * @return production tag provider name
+	 */
+	public static String getProductionTagProvider() {
+		return handler.getProductionTagProvider();
+	}
+	/**
 	 * @param diagramId identifier of the diagram owning the block, a String
 	 * @param blockId identifier of the block within the diagram, a String
 	 * @param propertyName name of the property for which a value is to be returned

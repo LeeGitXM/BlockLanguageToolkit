@@ -649,6 +649,24 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 				}
 			}
 		}
+		// Coerce a null value
+		else if( !anchors.isEmpty() ) {
+			for(AnchorPrototype ap: anchors) {
+				if(ap.getName().equals(port)) {
+					log.debugf("%s.coerceToMatchOutput: %s %s type = %s",getName(),ap.getName(),"null",ap.getConnectionType());
+					if( ConnectionType.DATA.equals(ap.getConnectionType()))  {
+						val = Double.NaN;
+					}
+					else if( ConnectionType.TRUTHVALUE.equals(ap.getConnectionType())) {
+						val = TruthValue.UNSET;
+					}
+					else  {
+						val = "";
+					}
+					break;
+				}
+			}
+		}
 		return val;
 	}
 	// ================================= PropertyChangeListener ================================

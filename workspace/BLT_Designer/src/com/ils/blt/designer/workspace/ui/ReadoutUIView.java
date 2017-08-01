@@ -108,7 +108,7 @@ public class ReadoutUIView extends AbstractUIView implements BlockViewUI {
 		fi = new Polygon(xvertices,yvertices,4);
 		int rgb = block.getBackground();
 		if( block.isDirty() && rgb > BLOCK_DIRTY_SHADING ) rgb -= BLOCK_DIRTY_SHADING;
-		g.setColor(new Color(rgb));
+		g.setBackground(new Color(rgb));
 		g.fillPolygon(fi);
 		// Outline the inner square
 		g.setPaint(INSET_COLOR);
