@@ -187,6 +187,6 @@ public class TruthCycleCounter extends AbstractProcessBlock implements ProcessBl
 		desc.setPreferredHeight(40);
 		desc.setPreferredWidth(80);
 		desc.setStyle(BlockStyle.READOUT);
-		desc.setBackground(Color.cyan.getRGB());
+		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_BLUE_GRAY);
 	}
 }

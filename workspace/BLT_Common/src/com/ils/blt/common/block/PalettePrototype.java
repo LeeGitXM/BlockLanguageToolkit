@@ -65,7 +65,7 @@ public class PalettePrototype implements Serializable {
 	}
 	public String getTooltipText() {return tooltipText;}
 	public void setTooltipText(String tooltipText) {this.tooltipText = tooltipText;}
-	public BlockDescriptor getBlockDescriptor() { return blockDescriptor; }
+	public BlockDescriptor getBlockDescriptor() { return this.blockDescriptor; }
 	public void setBlockDescriptor(BlockDescriptor desc) { this.blockDescriptor = desc; }
 	public String getTabName() {return tabName;}
 	public void setTabName(String tabName) {this.tabName = tabName;}

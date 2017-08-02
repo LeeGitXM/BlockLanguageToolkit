@@ -22,7 +22,7 @@ public class BlockDescriptor {
 	private static LoggerEx log = LogUtil.getLogger(BlockDescriptor.class.getPackage().getName());
 	private static final String TAG = "BlockDescription";
 	private List<AnchorPrototype> anchors;
-	private int background = Color.white.getRGB();  // Transmit color as an int for serialization.
+	private int background = Color.WHITE.getRGB();  // Transmit color as an int for serialization.
 	private String blockClass = null;               // Class of the block in the Gateway (xom. ... implies Python)
 	private int    embeddedFontSize = 24;
 	private String embeddedIcon="";       // 32x32 icon to place in block in designer

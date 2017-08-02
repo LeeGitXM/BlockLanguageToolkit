@@ -107,8 +107,9 @@ public class ReadoutUIView extends AbstractUIView implements BlockViewUI {
 		int[] yvertices = new int[] {ifb.y, ifb.y,ifb.y+ifb.height,ifb.y+ifb.height};
 		fi = new Polygon(xvertices,yvertices,4);
 		int rgb = block.getBackground();
-		if( block.isDirty() && rgb > BLOCK_DIRTY_SHADING ) rgb -= BLOCK_DIRTY_SHADING;
-		g.setBackground(new Color(rgb));
+		Color background = new Color(rgb);
+		if(block.isDirty()) background = background.darker();
+		g.setColor(background); 
 		g.fillPolygon(fi);
 		// Outline the inner square
 		g.setPaint(INSET_COLOR);
@@ -134,5 +135,6 @@ public class ReadoutUIView extends AbstractUIView implements BlockViewUI {
 		block.setEmbeddedFontSize(fontSize);
 		block.setEmbeddedLabel(value);
 		drawEmbeddedText(g,0,0);
+
 	}
 }

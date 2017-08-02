@@ -110,7 +110,6 @@ public class ProcessBlockPalette extends DockableFrame implements ResourceWorksp
 		public PaletteEntry(PalettePrototype proto) {
 			super(TAG);
 			prototype = proto;
-			log.debugf("%s: PaletteEntry %s",TAG,proto.getPaletteIconPath());
 			Image img = ImageLoader.getInstance().loadImage(proto.getPaletteIconPath(),IMAGE_SIZE);
 			ImageIcon icon = null;
 			if( img !=null) icon = new ImageIcon(img);
@@ -142,7 +141,6 @@ public class ProcessBlockPalette extends DockableFrame implements ResourceWorksp
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if( workspace.getSelectedContainer()!=null ) {
-				log.debugf("%s: PaletteEntry creating process view block",TAG);
 				ProcessBlockView blk = new ProcessBlockView(prototype.getBlockDescriptor());  
 				workspace.setCurrentTool(new InsertBlockTool(blk));
 			}

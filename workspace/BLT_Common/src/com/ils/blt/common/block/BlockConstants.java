@@ -87,6 +87,7 @@ public interface BlockConstants   {
 	public static final int DEFAULT_ATTRIBUTE_OFFSET_X     = 30;
 	public static final int DEFAULT_ATTRIBUTE_OFFSET_Y     = 75;
 	// Block filler colors
+	public static final int BLOCK_BACKGROUND_BLUE_GRAY      = (new Color(143,172,183)).getRGB();
 	public static final int BLOCK_BACKGROUND_GRAYISH        = (new Color(208,215,220)).getRGB();
 	public static final int BLOCK_BACKGROUND_LIGHT_ROSE     = (new Color(220,208,200)).getRGB();
 	public static final int BLOCK_BACKGROUND_LIGHT_GRAY     = (new Color(240,240,240)).getRGB();
