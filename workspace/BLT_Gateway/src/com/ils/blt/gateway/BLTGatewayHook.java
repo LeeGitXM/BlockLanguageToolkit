@@ -117,7 +117,7 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	    	List<ProjectResource> resources = project.getResources();
 	    	for( ProjectResource res:resources ) {
 	    		// Model manager ignores resources that are not of interest to it.
-	    		log.infof("%s.startup - found %s resource, %d = %s", TAG,res.getResourceType(),
+	    		log.tracef("%s.startup - found %s resource, %d = %s", TAG,res.getResourceType(),
 	    				res.getResourceId(),res.getName());
 	    		mmgr.analyzeResource(project.getId(),res);
 	    	}

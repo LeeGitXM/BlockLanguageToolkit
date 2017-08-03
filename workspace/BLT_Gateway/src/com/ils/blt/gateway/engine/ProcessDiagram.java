@@ -234,6 +234,11 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 				// Stop old subscriptions ONLY if the property changed, or no longer exists
 				// NOTE: The blockFactory update will take care of values. We're just worried about subscriptions
 				for( BlockProperty newProp:sb.getProperties() ) {
+					if( newProp==null ) continue;  // Is this even possible?
+					if( newProp.getName()==null ) {
+						log.warnf("%s.updateProperties: Found a no-name property updating block %s:%s",TAG,pb.getClassName(),pb.getName());
+						continue;
+					}
 					BlockProperty prop = pb.getProperty(newProp.getName());
 					if( prop!=null ) {
 						// See if the binding changed.
@@ -727,8 +732,8 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 					String properPath = replaceProviderInPath(tagPath,provider);
 					String path = controller.getSubscribedPath(pb, bp);
 					if( !properPath.equals(path)) {
-						log.infof("%s.validatePropertyProviders: WRONG provider for %s:%s (%s will use %s)",TAG,pb.getName(),bp.getName(),
-														path,provider);
+						log.infof("%s.validateSubscriptions: Auto-correcting binding for %s:%s (%s to %s)",TAG,pb.getName(),
+											bp.getName(),path,properPath);
 						controller.removeSubscription(pb, bp);
 						bp.setBinding(properPath);
 						controller.startSubscription(getState(),pb, bp);
