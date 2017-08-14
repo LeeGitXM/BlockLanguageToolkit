@@ -68,7 +68,7 @@ public class GatewayRpcDispatcher   {
 	/**
 	 * This should always succeed because we create a block in the gateway whenever we 
 	 * create one from the palette.
-	 * @param uuidString
+	 * @param uuidString diagram id as a string
 	 * @return True if we've discovered the specified block.
 	 */
 	public Boolean diagramExists(String uuidString) {
@@ -94,10 +94,10 @@ public class GatewayRpcDispatcher   {
 	 * Query the specified block for its properties. If the block does not exist, create it, given the
 	 * specified class name. In the case of a new block, its diagram may also need to be created. 
 	 * 
-	 * @param projectId
-	 * @param resourceId
-	 * @param blockId
-	 * @param className
+	 * @param projectId project identifier
+	 * @param resourceId resource identifier
+	 * @param blockId block UUID as a string
+	 * @param className of the block
 	 * @return properties for the block
 	 */
 	public List<String> getBlockProperties(String className,Long projectId,Long resourceId,String blockId) {
@@ -148,11 +148,11 @@ public class GatewayRpcDispatcher   {
 	}
 	/**
 	 * Deserialize the incoming defaults, add/update from model, re-serialize.
-	 * @param proj
-	 * @param res
-	 * @param connectionId
-	 * @param json
-	 * @return
+	 * @param proj project identifier
+	 * @param res resource identifier
+	 * @param connectionId id of the connection
+	 * @param json connection attributes as JSON
+	 * @return the JSON string
 	 */
 	public String getConnectionAttributes(Long proj, Long res,String connectionId,String json) {
 		long projectId = proj.longValue();
@@ -189,7 +189,7 @@ public class GatewayRpcDispatcher   {
 	 * Find the parent application or diagram of the entity referenced by
 	 * the supplied id. Test the state and return the name of the appropriate
 	 * database.  
-	 * @param uuid
+	 * @param uuid id of the subject node as a String
 	 * @return database name
 	 */
 	public String getDatabaseForUUID(String uuid) {
@@ -208,7 +208,10 @@ public class GatewayRpcDispatcher   {
 	public SerializableResourceDescriptor getDiagram(String diagramId) {
 		return requestHandler.getDiagram(diagramId);
 	}
-
+	/**
+	 * @param projectName name of the project
+	 * @return a list of descriptors for the diagrams in the project.
+	 */
 	public List<String> getDiagramDescriptors(String projectName) {
 		List<String> results = new ArrayList<String>();
 		List<SerializableResourceDescriptor> descriptors = requestHandler.listDiagramDescriptors(projectName);
@@ -379,21 +382,22 @@ public class GatewayRpcDispatcher   {
 	}
 	/** 
 	 * @param diagId the identifier of the diagram of interest
-	 *  @return
+	 * @return a list of descriptors for blocks in the diagram
 	 */
 	public List<SerializableBlockStateDescriptor> queryDiagram(String diagId) {
 		return  requestHandler.listBlocksInDiagram(diagId);
 	}
 	/**
 	 * Reset a block in a diagram given string forms of their UUID
-	 * @param diagramIdString
-	 * @param blockName
+	 * @param diagramIdString id of the block's parent diagram
+	 * @param blockName name of the block
 	 */
 	public void resetBlock(String diagramIdString,String blockName) {
 		requestHandler.resetBlock(diagramIdString,blockName);
 	}
 	/** 
 	 *  Reset every block in a diagram specified by id.
+	 * @param uuidString id of the diagram as a string
 	 */
 	public void resetDiagram(String uuidString) {
 		requestHandler.resetDiagram(uuidString);
@@ -413,7 +417,7 @@ public class GatewayRpcDispatcher   {
 	 * @param command
 	 * @param message
 	 * @param arg
-	 * @return
+	 * @return true if the signal was sent successfully
 	 */
 	public Boolean sendLocalSignal(String uuidString, String command,String message,String arg) {
 		log.tracef("%s.sendLocalSignal: %s %s %s %s",TAG,uuidString,command,message,arg);
@@ -429,7 +433,7 @@ public class GatewayRpcDispatcher   {
 	 * @param message
 	 * @param arg
 	 * @param time the time to be assigned to the signal
-	 * @return
+	 * @return true if the signal was sent successfully
 	 */
 	public Boolean sendTimestampedSignal(String uuidString, String command,String message,String arg,Long time) {
 		return new Boolean(requestHandler.sendTimestampedSignal(uuidString,command,message,arg,time.longValue()));
@@ -439,7 +443,7 @@ public class GatewayRpcDispatcher   {
 	/**
 	 * Set the state of every diagram in an application to the specified value.
 	 * @param appname
-	 * @param state
+	 * @param state new state as a String
 	 */
 	public void setApplicationState(String appname, String state) {
 		requestHandler.setApplicationState(appname,state);
@@ -504,7 +508,7 @@ public class GatewayRpcDispatcher   {
 	 * are notified of the change.
 	 *  
 	 * @param diagramId diagram's unique Id as a String
-	 * @param bname 
+	 * @param bname name of the block
 	 * @param pname the changed property
 	 * @param value the new value of the property. The value will be coerced into the correct data type in the gateway 
 	 */
