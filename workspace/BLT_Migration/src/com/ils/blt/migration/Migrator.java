@@ -346,6 +346,7 @@ public class Migrator {
 			block.setNameOffsetY(45);
 			SerializableAnchor[] anchors = block.getAnchors();
 			for(SerializableAnchor anc:anchors) {
+				//System.err.println(String.format("%s: Perform specialhandling. Sink %s %s",TAG,block.getName(),anc.getDisplay()));
 				if( anc.getDirection().equals(AnchorDirection.OUTGOING)) {
 					block.setClassName("com.ils.block.SourceConnection");
 					if( block.getProperties()!=null) {
@@ -386,11 +387,13 @@ public class Migrator {
 		}
 		else if( g2Block.getClassName().equalsIgnoreCase("GDL-DATA-PATH-CONNECTION-POST") ) {
 			for( SerializableAnchor anchor:block.getAnchors()) {
+				if( anchor.getDisplay().equals("signal")) continue;
 				anchor.setConnectionType(ConnectionType.DATA);
 			}
 		}
 		else if( g2Block.getClassName().equalsIgnoreCase("GDL-SYMBOLIC-ENTRY-POINT") ) {
 			for( SerializableAnchor anchor:block.getAnchors()) {
+				if( anchor.getDisplay().equals("signal")) continue;
 				if( anchor.getDirection().equals(AnchorDirection.OUTGOING) ) {
 					anchor.setConnectionType(ConnectionType.TEXT);
 				}
@@ -398,6 +401,7 @@ public class Migrator {
 		}
 		else if( g2Block.getClassName().equalsIgnoreCase("GDL-INFERENCE-PATH-CONNECTION-POST") ) {
 			for( SerializableAnchor anchor:block.getAnchors()) {
+				if( anchor.getDisplay().equals("signal")) continue;
 				anchor.setConnectionType(ConnectionType.TRUTHVALUE);
 			}
 		}

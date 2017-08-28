@@ -12,6 +12,7 @@ mkdir -p $INDIR
 mkdir -p $OUTDIR/gline
 mkdir -p $OUTDIR/escorez
 mkdir -p $OUTDIR/vistalon
+OUTFIL=migration.out
 cd $BLT/migration
 ./copy-json
 echo "======================== G Line ================================"
@@ -33,5 +34,5 @@ cd $INDIR/vistalon
 for fil in *.json
 do
 	echo "Processing $fil ..."
-    $APP $INDIR/vistalon/$fil $OUTDIR/vistalon/$fil
+    $APP $INDIR/vistalon/$fil $OUTDIR/vistalon/$fil 
 done
