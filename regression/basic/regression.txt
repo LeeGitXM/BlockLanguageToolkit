@@ -17,6 +17,7 @@ run: persistence.txt
 run: pythonblocks.txt
 run: readwrite2.txt
 run: routing.txt
+run: selector.txt
 run: setproperty.txt
 run: sqc.txt
 run: sqclogic.txt

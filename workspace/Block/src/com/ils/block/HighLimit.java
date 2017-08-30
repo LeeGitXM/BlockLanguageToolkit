@@ -19,6 +19,7 @@ import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
+import com.ils.blt.common.block.PlacementHint;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
@@ -26,7 +27,6 @@ import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
-import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
@@ -34,10 +34,11 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
 
 /**
- * This class identifies the maximum among the current inputs.
+ * This class is a no-op. It simply passes its input onto the output.
  */
 @ExecutableBlock
-public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
+public class HighLimit extends AbstractProcessBlock implements ProcessBlock {
+	private double limit   = 0.;
 	// Keep map of values by originating block id
 	protected Map<String,QualifiedValue> qualifiedValueMap;
 	private final Watchdog dog;
@@ -49,7 +50,7 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
-	public HighSelector() {
+	public HighLimit() {
 		qualifiedValueMap = new HashMap<String,QualifiedValue>();
 		initialize();
 		initializePrototype();
@@ -63,7 +64,7 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 	 * @param parent universally unique Id identifying the parent of this block
 	 * @param block universally unique Id for the block
 	 */
-	public HighSelector(ExecutionController ec,UUID parent,UUID block) {
+	public HighLimit(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
 		qualifiedValueMap = new HashMap<String,QualifiedValue>();
 		initialize();
@@ -71,11 +72,14 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 	}
 	
 	/**
-	 * Add properties that are new for this class.
-	 * Populate them with default values.
+	 * Define the synchronization property and ports.
 	 */
-	private void initialize() {
-		setName("HighSelector");
+	private void initialize() {	
+		setName("HighLimit");
+		
+		BlockProperty bp = new BlockProperty(BlockConstants.BLOCK_PROPERTY_LIMIT,new Double(limit),PropertyType.DOUBLE,true);
+		setProperty(BlockConstants.BLOCK_PROPERTY_LIMIT, bp);
+
 		// Define the time for "coalescing" inputs ~ msec
 		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,new Double(synchInterval),PropertyType.TIME,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL, synch);
@@ -91,6 +95,7 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
 		anchors.add(output);
 	}
+	
 	@Override
 	public void reset() {
 		super.reset();
@@ -113,7 +118,7 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 		super.stop();
 		timer.removeWatchdog(dog);
 	}
-	
+
 	/**
 	 * Notify the block that a new value has appeared on one of its input anchors.
 	 * For now we simply record the change in the map and start the watchdog. 
@@ -144,7 +149,6 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 			log.warnf("%s.acceptValue: received null value",getName());
 		}
 	}
-	
 	/**
 	 * The coalescing time has expired. Place the current state on the output,
 	 * if it has changed.
@@ -162,15 +166,32 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 			}
 		}
 	}
-	
 	/**
-	 * Handle a change to the coalescing interval.
+	 * @return a block-specific description of internal statue
+	 */
+	@Override
+	public SerializableBlockStateDescriptor getInternalStatus() {
+		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
+		Map<String,String> attributes = descriptor.getAttributes();
+		attributes.put("CurrentMaximum", valueProperty.getValue().toString());
+		return descriptor;
+	}
+	/**
+	 * Handle a change to the limit or coalescing interval.
 	 */
 	@Override
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
-		if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL)) {
+		if(propertyName.equals(BlockConstants.BLOCK_PROPERTY_LIMIT)) {
+			try {
+				limit = Double.parseDouble(event.getNewValue().toString());
+			}
+			catch(NumberFormatException nfe) {
+				log.warnf("%s: propertyChange Unable to convert limit to a double (%s)",getName(),nfe.getLocalizedMessage());
+			}
+		}
+		else if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL)) {
 			try {
 				Double interval = Double.parseDouble(event.getNewValue().toString());
 				if( interval > 0.0 ) synchInterval = interval;
@@ -183,68 +204,57 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 			}
 		}
 	}
-	
 	/**
 	 * Send status update notification for our last latest state.
 	 */
 	@Override
-	public void notifyOfStatus() {
-		QualifiedValue qv = new TestAwareQualifiedValue(timer,valueProperty.getValue().toString());
-		notifyOfStatus(qv);
-	}
+	public void notifyOfStatus() {}
 	private void notifyOfStatus(QualifiedValue qv) {
-		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
+		updateStateForNewValue(qv);
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
-
-	/**
-	 * @return a block-specific description of internal statue
-	 */
-	@Override
-	public SerializableBlockStateDescriptor getInternalStatus() {
-		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
-		Map<String,String> attributes = descriptor.getAttributes();
-		attributes.put("CurrentMaximum", valueProperty.getValue().toString());
-		return descriptor;
-	}
-
-	
 	/**
 	 * Augment the palette prototype for this block class.
 	 */
 	private void initializePrototype() {
-		prototype.setPaletteIconPath("Block/icons/palette/max.png");
-		prototype.setPaletteLabel("HighSelector");
-		prototype.setTooltipText("Determine the maximum value among inputs");
+		prototype.setPaletteIconPath("Block/icons/palette/maxlimit.png");
+		prototype.setPaletteLabel("HighLimit");
+		prototype.setTooltipText("Determine the maximim value among inputs subject to an entered maximum");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_ANALYSIS);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
-		desc.setEmbeddedIcon("Block/icons/embedded/max.png");
 		desc.setBlockClass(getClass().getCanonicalName());
+		desc.setEmbeddedIcon("Block/icons/embedded/max.png");
 		desc.setStyle(BlockStyle.DIAMOND);
 		desc.setPreferredHeight(70);
 		desc.setPreferredWidth(70);
-		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_LIGHT_GRAY);
+		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_BLUE_GRAY);
 	}
-
+	
 	/**
 	 * Compute the maximum, presumably because of a new input.
 	 */
 	private QualifiedValue getMaxValue() {
 		Collection<QualifiedValue> values = qualifiedValueMap.values();
 		double max = -Double.MAX_VALUE;
-		QualifiedValue result = null;
+		QualifiedValue result = new BasicQualifiedValue(new Double(max));
 		
 		for(QualifiedValue qv:values) {
 			if(qv.getQuality().isGood() && qv.getValue()!=null && !qv.getValue().toString().isEmpty() && !qv.getValue().equals(BLTProperties.UNDEFINED)) {
 				double val = func.coerceToDouble(qv.getValue().toString());
 				if(val>max ) {
 					max = val;
-					result = qv;
+					if( val>limit ) {
+						result = new BasicQualifiedValue(new Double(limit));
+					}
+					else {
+						result = qv;
+					}
+					
 				}
 			}
 			else {
-				return new BasicQualifiedValue(Double.NaN,new BasicQuality("One or more bad inputs",Quality.Level.Bad),qv.getTimestamp());
+				return new BasicQualifiedValue(Double.NaN,new BasicQuality("Bad input",Quality.Level.Bad),qv.getTimestamp());
 			}
 		}
 		return result;	

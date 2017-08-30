@@ -182,8 +182,9 @@ public class MovingAverageSample extends AbstractProcessBlock implements Process
 				log.warnf("%s: propertyChange Unable to convert sample size to an integer (%s)",TAG,nfe.getLocalizedMessage());
 			}
 		}
-		else {
-			log.warnf("%s.propertyChange:Unrecognized property (%s)",TAG,propertyName);
+		// Buffer size handled in superior method
+		else if( !propertyName.equals(BlockConstants.BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE) ){
+			log.warnf("%s.propertyChange:Unrecognized property (%s)",getName(),propertyName);
 		}
 	}
 

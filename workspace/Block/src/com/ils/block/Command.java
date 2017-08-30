@@ -94,8 +94,9 @@ public class Command extends Reset implements ProcessBlock {
 				log.warnf("%s.propertyChange: Trigger must be a TruthValue (%s)",TAG,iae.getMessage());
 			}
 		}
-		else {
-			log.warnf("%s.propertyChange:Unrecognized property (%s)",TAG,propertyName);
+		// Buffer size handled in superior method
+		else if( !propertyName.equals(BlockConstants.BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE) ){
+			log.warnf("%s.propertyChange:Unrecognized property (%s)",getName(),propertyName);
 		}
 	}
 	

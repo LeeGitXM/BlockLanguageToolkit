@@ -1,8 +1,9 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
+ *   (c) 2017  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
+import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
@@ -13,10 +14,12 @@ import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.PlacementHint;
+import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
@@ -24,6 +27,8 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  */
 @ExecutableBlock
 public class DataSelector extends AbstractProcessBlock implements ProcessBlock {
+	private static final String IN_PORT1_NAME = "in1";
+	private static final String IN_PORT2_NAME = "in2";
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -50,17 +55,23 @@ public class DataSelector extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	private void initialize() {	
 		setName("DataSelector");
-
+		this.state = TruthValue.UNSET;
+		
 		// Define two data inputs
-		AnchorPrototype inputa = new AnchorPrototype("a",AnchorDirection.INCOMING,ConnectionType.DATA);
-		inputa.setHint(PlacementHint.L);
-		anchors.add(inputa);
-		AnchorPrototype inputb = new AnchorPrototype("b",AnchorDirection.INCOMING,ConnectionType.DATA);
-		inputb.setHint(PlacementHint.L);
-		anchors.add(inputb);
+		AnchorPrototype input1 = new AnchorPrototype(IN_PORT1_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
+		input1.setHint(PlacementHint.L);
+		input1.setAnnotation("1");
+		anchors.add(input1);
+		AnchorPrototype input2 = new AnchorPrototype(IN_PORT2_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
+		input2.setHint(PlacementHint.L);
+		input2.setAnnotation("2");
+		anchors.add(input2);
+		AnchorPrototype control = new AnchorPrototype(BlockConstants.CONTROL_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
+		control.setHint(PlacementHint.T);
+		anchors.add(control);
 
 		// Define a single output
-		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
+		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.ANY);
 		output.setHint(PlacementHint.R);
 		anchors.add(output);
 	}
@@ -76,12 +87,40 @@ public class DataSelector extends AbstractProcessBlock implements ProcessBlock {
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
 		if(!isLocked() ) {
-			lastValue = vcn.getValue();
-			//log.infof("%s.acceptValue: %s", getName(),qv.getValue().toString());
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
-			controller.acceptCompletionNotification(nvn);
-			notifyOfStatus(lastValue);
+			if( vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(BlockConstants.CONTROL_PORT_NAME)) {
+				this.state = qualifiedValueAsTruthValue(vcn.getValue());
+			}
+			else if( vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(IN_PORT1_NAME)) {
+				if( state.equals(TruthValue.TRUE)) {
+					lastValue = vcn.getValue();
+					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
+					controller.acceptCompletionNotification(nvn);
+					notifyOfStatus(lastValue);
+				}
+			}
+			else if( vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(IN_PORT2_NAME)) {
+				if( state.equals(TruthValue.FALSE)) {
+					lastValue = vcn.getValue();
+					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
+					controller.acceptCompletionNotification(nvn);
+					notifyOfStatus(lastValue);
+				}
+			}
 		}
+	}
+	
+	/**
+	 * @return a block-specific description of internal statue
+	 */
+	@Override
+	public SerializableBlockStateDescriptor getInternalStatus() {
+		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
+		Map<String,String> attributes = descriptor.getAttributes();
+		attributes.put("State", getState().toString());
+		if( state.equals(TruthValue.TRUE)) attributes.put("Propagating Input","1");
+		if( state.equals(TruthValue.FALSE)) attributes.put("Propagating Input","2");
+		
+		return descriptor;
 	}
 
 	/**
@@ -90,24 +129,24 @@ public class DataSelector extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void notifyOfStatus() {}
 	private void notifyOfStatus(QualifiedValue qv) {
-		updateStateForNewValue(qv);
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 	/**
 	 * Augment the palette prototype for this block class.
 	 */
 	private void initializePrototype() {
-		prototype.setPaletteIconPath("Block/icons/palette/todo.png");
+		prototype.setPaletteIconPath("Block/icons/palette/dataselector.png");
 		prototype.setPaletteLabel("DataSelector");
-		prototype.setTooltipText("Pass through");
+		prototype.setTooltipText("Select which of 2 inputs to pass based on a control line");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_CONTROL);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
+		desc.setEmbeddedIcon("Block/icons/embedded/data_selector.png");
 		desc.setBlockClass(getClass().getCanonicalName());
-		desc.setStyle(BlockStyle.JUNCTION);
-		desc.setPreferredHeight(32);
-		desc.setPreferredWidth(32);
-		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_MUSTARD);
+		desc.setStyle(BlockStyle.SQUARE);
+		desc.setPreferredHeight(70);
+		desc.setPreferredWidth(70);
+		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_LIGHT_GRAY);
 		desc.setCtypeEditable(true);
 	}
 }

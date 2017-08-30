@@ -37,7 +37,7 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
  * This class identifies the maximum among the current inputs.
  */
 @ExecutableBlock
-public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
+public class LowSelector extends AbstractProcessBlock implements ProcessBlock {
 	// Keep map of values by originating block id
 	protected Map<String,QualifiedValue> qualifiedValueMap;
 	private final Watchdog dog;
@@ -49,7 +49,7 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
-	public HighSelector() {
+	public LowSelector() {
 		qualifiedValueMap = new HashMap<String,QualifiedValue>();
 		initialize();
 		initializePrototype();
@@ -63,7 +63,7 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 	 * @param parent universally unique Id identifying the parent of this block
 	 * @param block universally unique Id for the block
 	 */
-	public HighSelector(ExecutionController ec,UUID parent,UUID block) {
+	public LowSelector(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
 		qualifiedValueMap = new HashMap<String,QualifiedValue>();
 		initialize();
@@ -75,7 +75,7 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 	 * Populate them with default values.
 	 */
 	private void initialize() {
-		setName("HighSelector");
+		setName("LowSelector");
 		// Define the time for "coalescing" inputs ~ msec
 		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,new Double(synchInterval),PropertyType.TIME,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL, synch);
@@ -153,7 +153,7 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 	public void evaluate() {
 		log.tracef("%s.evaluate",getName());
 		if( !isLocked() ) {
-			lastValue = getMaxValue();
+			lastValue = getMinValue();
 			if( lastValue!=null ) {
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(nvn);
@@ -204,7 +204,7 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 	public SerializableBlockStateDescriptor getInternalStatus() {
 		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
 		Map<String,String> attributes = descriptor.getAttributes();
-		attributes.put("CurrentMaximum", valueProperty.getValue().toString());
+		attributes.put("CurrentMinimum", valueProperty.getValue().toString());
 		return descriptor;
 	}
 
@@ -213,13 +213,13 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 	 * Augment the palette prototype for this block class.
 	 */
 	private void initializePrototype() {
-		prototype.setPaletteIconPath("Block/icons/palette/max.png");
-		prototype.setPaletteLabel("HighSelector");
-		prototype.setTooltipText("Determine the maximum value among inputs");
+		prototype.setPaletteIconPath("Block/icons/palette/min.png");
+		prototype.setPaletteLabel("LowSelector");
+		prototype.setTooltipText("Determine the minimim value among inputs");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_ANALYSIS);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
-		desc.setEmbeddedIcon("Block/icons/embedded/max.png");
+		desc.setEmbeddedIcon("Block/icons/embedded/min.png");
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setStyle(BlockStyle.DIAMOND);
 		desc.setPreferredHeight(70);
@@ -228,18 +228,18 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 	}
 
 	/**
-	 * Compute the maximum, presumably because of a new input.
+	 * Compute the minimum, presumably because of a new input.
 	 */
-	private QualifiedValue getMaxValue() {
+	private QualifiedValue getMinValue() {
 		Collection<QualifiedValue> values = qualifiedValueMap.values();
-		double max = -Double.MAX_VALUE;
+		double min = Double.MAX_VALUE;
 		QualifiedValue result = null;
 		
 		for(QualifiedValue qv:values) {
 			if(qv.getQuality().isGood() && qv.getValue()!=null && !qv.getValue().toString().isEmpty() && !qv.getValue().equals(BLTProperties.UNDEFINED)) {
 				double val = func.coerceToDouble(qv.getValue().toString());
-				if(val>max ) {
-					max = val;
+				if(val<min ) {
+					min = val;
 					result = qv;
 				}
 			}

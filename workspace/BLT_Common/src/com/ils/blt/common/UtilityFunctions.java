@@ -153,6 +153,29 @@ public class UtilityFunctions  {
 		}
 		return result;
 	}
+	/**
+	 * Force a Boolean, Double, Integer or String to a TruthValue.
+	 * We wind up with a TRUE/FALSE, except for a String which can be UNKNOWN.
+	 */
+	public TruthValue coerceToTruthValue(Object val) {
+		TruthValue result = TruthValue.UNSET;
+		if( val instanceof TruthValue ) {
+			result = (TruthValue)val;
+		}
+		else if(val instanceof String) {
+			try {
+				result = TruthValue.valueOf(val.toString().toUpperCase());
+			}
+			catch( IllegalArgumentException iae) {
+				log.warnf("%s.qualifiedValueAsTruthValue: Exception converting %s (%s)", TAG,val.toString(),iae.getLocalizedMessage());
+			}	
+		}
+		else if( val!=null ) {
+			boolean flag = coerceToBoolean(val);
+			result = (flag?TruthValue.TRUE:TruthValue.FALSE);
+		}
+		return result;
+	}
 	
 	/**
 	 * Determine the object type of the incoming value. If a qualified value,

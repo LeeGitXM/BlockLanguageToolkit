@@ -1262,7 +1262,7 @@
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="BooleanFeed" path="MemoryTags" type="DB">
-      <Property name="Value">true</Property>
+      <Property name="Value">false</Property>
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="BooleanInputA" path="MemoryTags" type="DB">
@@ -1274,7 +1274,7 @@
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="BooleanOutput" path="MemoryTags" type="DB">
-      <Property name="Value">true</Property>
+      <Property name="Value">false</Property>
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="BooleanOutputA" path="MemoryTags" type="DB">
@@ -1286,7 +1286,7 @@
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="BooleanParameter" path="MemoryTags" type="DB">
-      <Property name="Value">true</Property>
+      <Property name="Value">false</Property>
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="ComparisonFeed" path="MemoryTags" type="DB">
@@ -1298,7 +1298,7 @@
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="ComparisonOut2" path="MemoryTags" type="DB">
-      <Property name="Value">true</Property>
+      <Property name="Value">false</Property>
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="ComparisonOut3" path="MemoryTags" type="DB">
@@ -1310,7 +1310,7 @@
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="ComparisonOut5" path="MemoryTags" type="DB">
-      <Property name="Value">true</Property>
+      <Property name="Value">false</Property>
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="ConditionerData" path="MemoryTags" type="DB">
@@ -1506,11 +1506,11 @@
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="LogicFilterAlways" path="MemoryTags" type="DB">
-      <Property name="Value">FALSE</Property>
+      <Property name="Value">UNKNOWN</Property>
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="LogicFilterFalse" path="MemoryTags" type="DB">
-      <Property name="Value">FALSE</Property>
+      <Property name="Value">UNKNOWN</Property>
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="LogicFilterFeed" path="MemoryTags" type="DB">
@@ -1518,11 +1518,11 @@
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="LogicFilterNever" path="MemoryTags" type="DB">
-      <Property name="Value">FALSE</Property>
+      <Property name="Value">UNKNOWN</Property>
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="LogicFilterTrue" path="MemoryTags" type="DB">
-      <Property name="Value">FALSE</Property>
+      <Property name="Value">UNKNOWN</Property>
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="MJKFeed1" path="MemoryTags" type="DB">
@@ -1602,7 +1602,7 @@
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="ReadWriteBooleanOutput" path="MemoryTags" type="DB">
-      <Property name="Value">true</Property>
+      <Property name="Value">false</Property>
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="ReadWriteNumericOutput" path="MemoryTags" type="DB">
@@ -1617,6 +1617,22 @@
       <Property name="Value"></Property>
       <Property name="DataType">7</Property>
    </Tag>
+   <Tag name="SelectLimitForHigh" path="MemoryTags" type="DB">
+      <Property name="Value">UNSET</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="SelectLimitForLow" path="MemoryTags" type="DB">
+      <Property name="Value">UNSET</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="SelectMinimum" path="MemoryTags" type="DB">
+      <Property name="Value">UNSET</Property>
+      <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="SelectorOutput" path="MemoryTags" type="DB">
+      <Property name="Value">0.0</Property>
+      <Property name="DataType">5</Property>
+   </Tag>
    <Tag name="SQCDiagnosisInput" path="MemoryTags" type="DB">
       <Property name="Value">true</Property>
       <Property name="DataType">6</Property>
@@ -1630,15 +1646,15 @@
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="SQCOut2" path="MemoryTags" type="DB">
-      <Property name="Value">UNKNOWN</Property>
+      <Property name="Value">FALSE</Property>
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="SQCOut3" path="MemoryTags" type="DB">
-      <Property name="Value">UNKNOWN</Property>
+      <Property name="Value">TRUE</Property>
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="SQCOut4" path="MemoryTags" type="DB">
-      <Property name="Value">UNKNOWN</Property>
+      <Property name="Value">TRUE</Property>
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="StringDateInput" path="MemoryTags" type="DB">

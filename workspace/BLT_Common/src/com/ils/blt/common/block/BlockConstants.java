@@ -16,6 +16,7 @@ public interface BlockConstants   {
 	public static final long UNKNOWN = -1;
 	
 	// Use these when there is only a single input and/or output
+	// Note that send and receive ports are not affected by type change actions
 	public static final String IN_PORT_NAME    = "in";
 	public static final String OUT_PORT_NAME = "out";
 	public static final String CONTROL_PORT_NAME   = "recv";     // Receive

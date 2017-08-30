@@ -361,7 +361,8 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_TEST_LABEL)) {
 			;   // Default handling is sufficient
 		}
-		else {
+		// Buffer size handled in superior method
+		else if( !propertyName.equals(BlockConstants.BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE) ){
 			log.warnf("%s.propertyChange:Unrecognized property (%s)",getName(),propertyName);
 		}
 	}
