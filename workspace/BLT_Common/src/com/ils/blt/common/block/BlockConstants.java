@@ -47,6 +47,7 @@ public interface BlockConstants   {
 	public static final String BLOCK_PROPERTY_SAMPLE_SIZE   = "SampleSize";
 	public static final String BLOCK_PROPERTY_SCOPE         = "Scope";	
 	public static final String BLOCK_PROPERTY_SCAN_INTERVAL    = "ScanInterval";     // Compute interval ~ sec
+	public static final String BLOCK_PROPERTY_SCALE_FACTOR     = "ScaleFactor";	
 	public static final String BLOCK_PROPERTY_STANDARD_DEVIATION = "StandardDeviation";
 	public static final String BLOCK_PROPERTY_SYNC_INTERVAL    = "SyncInterval";     // Time to coalesce inputs ~ sec
 	public static final String BLOCK_PROPERTY_TAG_PATH         = "TagPath";

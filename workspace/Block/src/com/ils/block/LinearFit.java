@@ -9,6 +9,7 @@ import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
+import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
@@ -20,6 +21,9 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.common.FixedSizeQueue;
+import com.ils.common.watchdog.TestAwareQualifiedValue;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
@@ -27,30 +31,30 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  */
 @ExecutableBlock
 public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
-	private final static String BLOCK_PROPERTY_LINEAR_INTERPOLATION = "LinearInterpolation";
-	private final static String BLOCK_PROPERTY_POLYNOMIAL_ORDER = "PolynomialOrder";
-	private final static String BLOCK_PROPERTY_SAMPLE_TYPE  = "SampleType";
 	private final static String BLOCK_PROPERTY_SCALE_FACTOR = "ScaleFactor";
-	private final static String BLOCK_PROPERTY_UPDATE_SIZE  = "UpdateSize";
-	private final static String BLOCK_PROPERTY_UPDATE_TYPE  = "UpdateType";
+	private final static int MIN_SAMPLE_SIZE = 2;
+	private final static String SLOPE_PORT_NAME = "slope";
+
 	
 	private boolean clearOnReset = true;
 	private boolean fillRequired = true;
-	private boolean linearInterpolation = true;
-	private int polynomialOrder = 2;
-	private int sampleSize = 1;
-	private String sampleType = "";
+	private final FixedSizeQueue<QualifiedValue> queue;
+	private int sampleSize = 2;
 	private double scaleFactor = 1.0;
-	private int updateSize = 1;
-	private String updateType = "";
+	private double slope = Double.NaN;
+	private BlockProperty valueProperty = null;
+
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
 	public LinearFit() {
+		queue = new FixedSizeQueue<QualifiedValue>(sampleSize);
 		initialize();
 		initializePrototype();
 	}
+	
+	
 	
 	/**
 	 * Constructor. 
@@ -61,7 +65,17 @@ public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	public LinearFit(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
+		queue = new FixedSizeQueue<QualifiedValue>(sampleSize);
 		initialize();
+	}
+	
+	@Override
+	public void reset() {
+		super.reset();
+		if( clearOnReset ) {
+			queue.clear();
+			valueProperty.setValue(new Double(Double.NaN));
+		}
 	}
 	
 	/**
@@ -74,50 +88,76 @@ public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
 		setProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET, clearProperty);
 		BlockProperty fillProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_FILL_REQUIRED,Boolean.TRUE,PropertyType.BOOLEAN,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_FILL_REQUIRED, fillProperty);
-		BlockProperty liProperty = new BlockProperty(BLOCK_PROPERTY_LINEAR_INTERPOLATION,new Boolean(linearInterpolation),PropertyType.BOOLEAN,true);
-		setProperty(BLOCK_PROPERTY_LINEAR_INTERPOLATION, liProperty);
-		BlockProperty poProperty = new BlockProperty(BLOCK_PROPERTY_POLYNOMIAL_ORDER,new Integer(polynomialOrder),PropertyType.INTEGER,true);
-		setProperty(BLOCK_PROPERTY_POLYNOMIAL_ORDER, poProperty);
 		
 		BlockProperty sampleSizeProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE,new Integer(sampleSize),PropertyType.INTEGER,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE, sampleSizeProperty);
-		BlockProperty sampleTypeProperty = new BlockProperty(BLOCK_PROPERTY_SAMPLE_TYPE,"",PropertyType.STRING,true);
-		setProperty(BLOCK_PROPERTY_SAMPLE_TYPE, sampleTypeProperty);
 		BlockProperty sfProperty = new BlockProperty(BLOCK_PROPERTY_SCALE_FACTOR,new Double(scaleFactor),PropertyType.DOUBLE,true);
 		setProperty(BLOCK_PROPERTY_SCALE_FACTOR, sfProperty);
-		BlockProperty updateSizeProperty = new BlockProperty(BLOCK_PROPERTY_UPDATE_SIZE,new Integer(updateSize),PropertyType.INTEGER,true);
-		setProperty(BLOCK_PROPERTY_UPDATE_SIZE, updateSizeProperty);
-		BlockProperty updateTypeProperty = new BlockProperty(BLOCK_PROPERTY_UPDATE_TYPE,"",PropertyType.STRING,true);
-		setProperty(BLOCK_PROPERTY_UPDATE_TYPE, updateTypeProperty);
-		
+		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,new Double(Double.NaN),PropertyType.DOUBLE,false);
+		valueProperty.setBindingType(BindingType.ENGINE);
+		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
+
 		// Define an input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setHint(PlacementHint.L);
 		anchors.add(input);
 
-		// Define a single output
+		// Define a two outputs
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
 		output.setHint(PlacementHint.R);
 		anchors.add(output);
+		
+		AnchorPrototype slopePort = new AnchorPrototype(SLOPE_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
+		slopePort = new AnchorPrototype(SLOPE_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
+		slopePort.setHint(PlacementHint.B);
+		slopePort.setAnnotation("S");
+		anchors.add(slopePort);
 	}
 	
 
 	/**
-	 * A new value has appeared on our input.  Pass it on.
-	 * 
-	 * Note: there can be several connections attached to a given port.
+	 * A new value has arrived. Add it to the queue and compute statistics, if appropriate.
 	 * @param vcn incoming new value.
 	 */
 	@Override
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
-		if(!isLocked() ) {
-			lastValue = vcn.getValue();
-			//log.infof("%s.acceptValue: %s", getName(),qv.getValue().toString());
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
-			controller.acceptCompletionNotification(nvn);
-			notifyOfStatus(lastValue);
-		}
+		
+			QualifiedValue qv = vcn.getValue();
+			log.debugf("%s.acceptValue: Received %s",getName(),qv.getValue().toString());
+			if( qv.getQuality().isGood() ) {
+				queue.add(qv);
+				if( queue.size() >= sampleSize || (!fillRequired && queue.size()>=MIN_SAMPLE_SIZE)  ) {
+					computeFit();     // Updates alueProperty
+					if( !isLocked() ) {
+						// Give it a new timestamp
+						lastValue = new BasicQualifiedValue(valueProperty.getValue(),qv.getQuality(),qv.getTimestamp());
+						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
+						controller.acceptCompletionNotification(nvn);
+						notifyOfStatus(lastValue);
+						
+						// Propagate the slope scaled
+						qv = new BasicQualifiedValue(new Double(slope*scaleFactor),qv.getQuality(),qv.getTimestamp());
+						nvn = new OutgoingNotification(this,SLOPE_PORT_NAME,qv);
+						controller.acceptCompletionNotification(nvn);
+					}	
+				}
+			}
+			else {
+				// Post bad value on output, clear queue
+				if( !isLocked() ) {
+					lastValue = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
+					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
+					controller.acceptCompletionNotification(nvn);
+					notifyOfStatus(lastValue);
+					
+					// The slope is also bad. Re-use lastValue.
+					slope = Double.NaN;
+					nvn = new OutgoingNotification(this,SLOPE_PORT_NAME,lastValue);
+					controller.acceptCompletionNotification(nvn);
+				}
+				queue.clear();
+			}
 	}
 	/**
 	 * Handle a change to one of our custom properties.
@@ -141,33 +181,24 @@ public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert fill flag to a boolean (%s)",getName(),nfe.getLocalizedMessage());
 			}
-		}	
-		else if( propertyName.equalsIgnoreCase(BLOCK_PROPERTY_LINEAR_INTERPOLATION)) {
+		}		
+		else if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE) ) {
+			// Trigger an evaluation
 			try {
-				linearInterpolation = Boolean.parseBoolean(event.getNewValue().toString());
-			}
-			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert linear interpolation flag to a boolean (%s)",getName(),nfe.getLocalizedMessage());
-			}
-		}	
-		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_POLYNOMIAL_ORDER)) {
-			try {
-				polynomialOrder = Integer.parseInt(event.getNewValue().toString());
-			}
-			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert order number to an integer (%s)",getName(),nfe.getLocalizedMessage());
-			}
-		}
-		else if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE)) {
-			try {
-				sampleSize = Integer.parseInt(event.getNewValue().toString());
+				int val = Integer.parseInt(event.getNewValue().toString());
+				if( val>0 ) {
+					sampleSize = val;
+					if( sampleSize< MIN_SAMPLE_SIZE ) sampleSize = MIN_SAMPLE_SIZE;
+					queue.setBufferSize(sampleSize);
+					// Even if locked, we update the current state
+					valueProperty.setValue(Double.NaN);
+					controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,
+							new TestAwareQualifiedValue(timer,0.0));
+				}
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert sample size to an integer (%s)",getName(),nfe.getLocalizedMessage());
 			}
-		}
-		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_SAMPLE_TYPE)) {
-			sampleType = event.getNewValue().toString();
 		}
 		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_SCALE_FACTOR)) {
 			try {
@@ -176,17 +207,6 @@ public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert scale factor to an number (%s)",getName(),nfe.getLocalizedMessage());
 			}
-		}
-		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_UPDATE_SIZE)) {
-			try {
-				updateSize = Integer.parseInt(event.getNewValue().toString());
-			}
-			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert update size to an integer (%s)",getName(),nfe.getLocalizedMessage());
-			}
-		}
-		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_UPDATE_SIZE)) {
-			updateType = event.getNewValue().toString();
 		}
 	}
 	/**
@@ -202,17 +222,59 @@ public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
 	 * Augment the palette prototype for this block class.
 	 */
 	private void initializePrototype() {
-		prototype.setPaletteIconPath("Block/icons/palette/todo.png");
+		prototype.setPaletteIconPath("Block/icons/palette/linear_fit.png");
 		prototype.setPaletteLabel("LinearFit");
-		prototype.setTooltipText("Pass through");
+		prototype.setTooltipText("Calculate linear (or cubic) fit on recent history");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_ANALYSIS);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());
-		desc.setStyle(BlockStyle.JUNCTION);
+		desc.setEmbeddedIcon("Block/icons/embedded/linear_fit_noframe.png");
+		desc.setStyle(BlockStyle.SQUARE);
 		desc.setPreferredHeight(32);
 		desc.setPreferredWidth(32);
-		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_MUSTARD);
-		desc.setCtypeEditable(true);
+		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_LIGHT_GRAY);
+	}
+	
+	/**
+	 * Compute a linear or cubic fit. Updates valueProperty with the best fit for the
+	 * last data point. Also sets the slope.  The x value is simply the current point
+	 * count.
+	 */
+	private void computeFit() {
+		valueProperty.setValue(new Double(Double.NaN));
+		slope = Double.NaN;
+		if( queue.size() >= 2)  {
+			double sumx = 0.0;
+			double sumy = 0.0;
+			double sumxy= 0.0;
+			double sumxx= 0.0;
+			int n = 0;
+			
+			for( QualifiedValue qv:queue) {
+				if( qv.getValue()==null ) continue;  // Shouldn't happen
+				n++;
+				double val = Double.NaN;
+				try {
+					val = Double.parseDouble(qv.getValue().toString());
+				}
+				catch(NumberFormatException nfe) {
+					log.warnf("%s:computeLinearFit detected not-a-number in queue (%s), ignored",getName(),nfe.getLocalizedMessage());
+					continue;
+				}
+				sumx = sumx + n;
+				sumxx = sumxx + (n+n);
+				sumy  = sumy + val;
+				sumxy = sumxy +(n*val);
+			}	
+			 
+			if( sumxx > 0 ) {
+				slope = (n*sumxy - sumy*sumx) / (n*sumxx - sumx*sumx);
+				// Best fit for n
+				double intercept = (sumy = slope*sumx)/n;
+				valueProperty.setValue(new Double(slope*n+intercept));
+			}
+		}
+	
 	}
 }
