@@ -73,6 +73,7 @@ public class PalettePrototype implements Serializable {
 	
 	/**
 	 * Serialize into a JSON string
+	 * @return the JSON string corresponding to the PalettePrototype object
 	 */
 	public String toJson() {
 		ObjectMapper mapper = new ObjectMapper();
