@@ -12,7 +12,7 @@
 	<property name="block.jar.name" value="block-definition.jar" />
 	<property name="migration.jar.name" value="blt-migration.jar" />
 	<property name="migration.bin.dir" value="${root.dir}/blt/workspace/BLT_Migration/bin" />
-	<property name="migration.src.dir" value="${root.dir}/blt/workspa78ce/BLT_Migration/src" />
+	<property name="migration.src.dir" value="${root.dir}/blt/workspace/BLT_Migration/src" />
 	<property name="ant.build.javac.source" value="1.7"/>
 	<property name="ant.build.javac.target" value="1.7"/>
 	
