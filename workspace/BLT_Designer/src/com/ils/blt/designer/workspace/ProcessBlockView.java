@@ -243,7 +243,8 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
      * Change the connection type of all anchors to a new specified
      * type. This has an effect only if ctypeEditable is true. This
      * flag is always negative on restore from serialization. Additionally
-     * the first signal input is not disturbed.
+     * the first signal input is not disturbed. Additionally control lines and 
+     * broadcast ports are not changed.
      * @param newType
      */
     public void changeConnectorType(ConnectionType newType) {
@@ -252,6 +253,10 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
     		for( ProcessAnchorDescriptor anchor:getAnchors()) {
     			if( !foundSignal && anchor.getConnectionType().equals(ConnectionType.SIGNAL)) {
     				foundSignal = true;
+    			}
+    			else if(anchor.getDisplay().equals(BlockConstants.CONTROL_PORT_NAME) ||
+    					anchor.getDisplay().equals(BlockConstants.BROADCAST_PORT_NAME) ) {
+    				continue;
     			}
     			else {
     				anchor.setConnectionType(newType);

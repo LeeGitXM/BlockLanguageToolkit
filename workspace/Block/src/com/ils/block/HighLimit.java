@@ -36,7 +36,7 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
  * This class is a no-op. It simply passes its input onto the output.
  */
 @ExecutableBlock
-public class LowLimit extends AbstractProcessBlock implements ProcessBlock {
+public class HighLimit extends AbstractProcessBlock implements ProcessBlock {
 	private double limit   = 0.;
 	// Keep map of values by originating block id
 	protected Map<String,QualifiedValue> qualifiedValueMap;
@@ -49,7 +49,7 @@ public class LowLimit extends AbstractProcessBlock implements ProcessBlock {
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
-	public LowLimit() {
+	public HighLimit() {
 		qualifiedValueMap = new HashMap<String,QualifiedValue>();
 		initialize();
 		initializePrototype();
@@ -63,7 +63,7 @@ public class LowLimit extends AbstractProcessBlock implements ProcessBlock {
 	 * @param parent universally unique Id identifying the parent of this block
 	 * @param block universally unique Id for the block
 	 */
-	public LowLimit(ExecutionController ec,UUID parent,UUID block) {
+	public HighLimit(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
 		qualifiedValueMap = new HashMap<String,QualifiedValue>();
 		initialize();
@@ -74,10 +74,11 @@ public class LowLimit extends AbstractProcessBlock implements ProcessBlock {
 	 * Define the synchronization property and ports.
 	 */
 	private void initialize() {	
-		setName("LowLimit");
+		setName("HighLimit");
 		
 		BlockProperty bp = new BlockProperty(BlockConstants.BLOCK_PROPERTY_LIMIT,new Double(limit),PropertyType.DOUBLE,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_LIMIT, bp);
+
 		// Define the time for "coalescing" inputs ~ msec
 		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,new Double(synchInterval),PropertyType.TIME,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL, synch);
@@ -155,7 +156,7 @@ public class LowLimit extends AbstractProcessBlock implements ProcessBlock {
 	public void evaluate() {
 		log.tracef("%s.evaluate",getName());
 		if( !isLocked() ) {
-			lastValue = getMinValue();
+			lastValue = getMaxValue();
 			if( lastValue!=null ) {
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(nvn);
@@ -163,6 +164,16 @@ public class LowLimit extends AbstractProcessBlock implements ProcessBlock {
 				notifyOfStatus(lastValue);
 			}
 		}
+	}
+	/**
+	 * @return a block-specific description of internal statue
+	 */
+	@Override
+	public SerializableBlockStateDescriptor getInternalStatus() {
+		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
+		Map<String,String> attributes = descriptor.getAttributes();
+		attributes.put("CurrentMaximum", valueProperty.getValue().toString());
+		return descriptor;
 	}
 	/**
 	 * Handle a change to the limit or coalescing interval.
@@ -201,60 +212,48 @@ public class LowLimit extends AbstractProcessBlock implements ProcessBlock {
 		updateStateForNewValue(qv);
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
-	
-	/**
-	 * @return a block-specific description of internal statue
-	 */
-	@Override
-	public SerializableBlockStateDescriptor getInternalStatus() {
-		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
-		Map<String,String> attributes = descriptor.getAttributes();
-		attributes.put("CurrentMinimum", valueProperty.getValue().toString());
-		return descriptor;
-	}
-	
 	/**
 	 * Augment the palette prototype for this block class.
 	 */
 	private void initializePrototype() {
-		prototype.setPaletteIconPath("Block/icons/palette/minlimit.png");
-		prototype.setPaletteLabel("LowLimit");
-		prototype.setTooltipText("Determine the minimim value among inputs subject to an entered minimum");
+		prototype.setPaletteIconPath("Block/icons/palette/maxlimit.png");
+		prototype.setPaletteLabel("HighLimit");
+		prototype.setTooltipText("Determine the maximim value among inputs subject to an entered maximum");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_ANALYSIS);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());
-		desc.setEmbeddedIcon("Block/icons/embedded/min.png");
+		desc.setEmbeddedIcon("Block/icons/embedded/max.png");
 		desc.setStyle(BlockStyle.DIAMOND);
 		desc.setPreferredHeight(70);
 		desc.setPreferredWidth(70);
 		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_BLUE_GRAY);
 	}
+	
 	/**
-	 * Compute the minimum, presumably because of a new input.
-	 * The minimum cannot be less than the limit.
+	 * Compute the maximum, presumably because of a new input.
 	 */
-	private QualifiedValue getMinValue() {
+	private QualifiedValue getMaxValue() {
 		Collection<QualifiedValue> values = qualifiedValueMap.values();
-		double min = Double.MAX_VALUE;
-		QualifiedValue result = new BasicQualifiedValue(new Double(min));
+		double max = -Double.MAX_VALUE;
+		QualifiedValue result = new BasicQualifiedValue(new Double(max));
 		
 		for(QualifiedValue qv:values) {
 			if(qv.getQuality().isGood() && qv.getValue()!=null && !qv.getValue().toString().isEmpty() && !qv.getValue().equals(BLTProperties.UNDEFINED)) {
 				double val = func.coerceToDouble(qv.getValue().toString());
-				if(val<min ) {
-					min = val;
-					if( val<limit ) {
+				if(val>max ) {
+					max = val;
+					if( val>limit ) {
 						result = new BasicQualifiedValue(new Double(limit));
 					}
 					else {
 						result = qv;
 					}
-
+					
 				}
 			}
 			else {
-				return new BasicQualifiedValue(Double.NaN,new BasicQuality("Bad input",Quality.Level.Bad));
+				return new BasicQualifiedValue(Double.NaN,new BasicQuality("Bad input",Quality.Level.Bad),qv.getTimestamp());
 			}
 		}
 		return result;	

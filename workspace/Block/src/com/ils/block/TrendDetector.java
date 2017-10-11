@@ -426,8 +426,9 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 				log.warnf("%s: propertyChange Unable to convert number of points required to an integer (%s)",TAG,nfe.getLocalizedMessage());
 			}
 		}
-		else {
-			log.warnf("%s.propertyChange:Unrecognized property (%s)",TAG,propertyName);
+		// Buffer size handled in superior method
+		else if( !propertyName.equals(BlockConstants.BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE) ){
+			log.warnf("%s.propertyChange:Unrecognized property (%s)",getName(),propertyName);
 		}
 	}
 	/**

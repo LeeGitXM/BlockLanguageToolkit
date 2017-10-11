@@ -26,6 +26,7 @@ import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
+import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
@@ -33,11 +34,10 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
 
 /**
- * This class is a no-op. It simply passes its input onto the output.
+ * This class identifies the maximum among the current inputs.
  */
 @ExecutableBlock
-public class LowLimit extends AbstractProcessBlock implements ProcessBlock {
-	private double limit   = 0.;
+public class LowSelector extends AbstractProcessBlock implements ProcessBlock {
 	// Keep map of values by originating block id
 	protected Map<String,QualifiedValue> qualifiedValueMap;
 	private final Watchdog dog;
@@ -49,7 +49,7 @@ public class LowLimit extends AbstractProcessBlock implements ProcessBlock {
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
-	public LowLimit() {
+	public LowSelector() {
 		qualifiedValueMap = new HashMap<String,QualifiedValue>();
 		initialize();
 		initializePrototype();
@@ -63,7 +63,7 @@ public class LowLimit extends AbstractProcessBlock implements ProcessBlock {
 	 * @param parent universally unique Id identifying the parent of this block
 	 * @param block universally unique Id for the block
 	 */
-	public LowLimit(ExecutionController ec,UUID parent,UUID block) {
+	public LowSelector(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
 		qualifiedValueMap = new HashMap<String,QualifiedValue>();
 		initialize();
@@ -71,13 +71,11 @@ public class LowLimit extends AbstractProcessBlock implements ProcessBlock {
 	}
 	
 	/**
-	 * Define the synchronization property and ports.
+	 * Add properties that are new for this class.
+	 * Populate them with default values.
 	 */
-	private void initialize() {	
-		setName("LowLimit");
-		
-		BlockProperty bp = new BlockProperty(BlockConstants.BLOCK_PROPERTY_LIMIT,new Double(limit),PropertyType.DOUBLE,true);
-		setProperty(BlockConstants.BLOCK_PROPERTY_LIMIT, bp);
+	private void initialize() {
+		setName("LowSelector");
 		// Define the time for "coalescing" inputs ~ msec
 		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,new Double(synchInterval),PropertyType.TIME,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL, synch);
@@ -93,7 +91,6 @@ public class LowLimit extends AbstractProcessBlock implements ProcessBlock {
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
 		anchors.add(output);
 	}
-	
 	@Override
 	public void reset() {
 		super.reset();
@@ -116,7 +113,7 @@ public class LowLimit extends AbstractProcessBlock implements ProcessBlock {
 		super.stop();
 		timer.removeWatchdog(dog);
 	}
-
+	
 	/**
 	 * Notify the block that a new value has appeared on one of its input anchors.
 	 * For now we simply record the change in the map and start the watchdog. 
@@ -147,6 +144,7 @@ public class LowLimit extends AbstractProcessBlock implements ProcessBlock {
 			log.warnf("%s.acceptValue: received null value",getName());
 		}
 	}
+	
 	/**
 	 * The coalescing time has expired. Place the current state on the output,
 	 * if it has changed.
@@ -164,22 +162,15 @@ public class LowLimit extends AbstractProcessBlock implements ProcessBlock {
 			}
 		}
 	}
+	
 	/**
-	 * Handle a change to the limit or coalescing interval.
+	 * Handle a change to the coalescing interval.
 	 */
 	@Override
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
-		if(propertyName.equals(BlockConstants.BLOCK_PROPERTY_LIMIT)) {
-			try {
-				limit = Double.parseDouble(event.getNewValue().toString());
-			}
-			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert limit to a double (%s)",getName(),nfe.getLocalizedMessage());
-			}
-		}
-		else if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL)) {
+		if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL)) {
 			try {
 				Double interval = Double.parseDouble(event.getNewValue().toString());
 				if( interval > 0.0 ) synchInterval = interval;
@@ -192,16 +183,20 @@ public class LowLimit extends AbstractProcessBlock implements ProcessBlock {
 			}
 		}
 	}
+	
 	/**
 	 * Send status update notification for our last latest state.
 	 */
 	@Override
-	public void notifyOfStatus() {}
+	public void notifyOfStatus() {
+		QualifiedValue qv = new TestAwareQualifiedValue(timer,valueProperty.getValue().toString());
+		notifyOfStatus(qv);
+	}
 	private void notifyOfStatus(QualifiedValue qv) {
-		updateStateForNewValue(qv);
+		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
-	
+
 	/**
 	 * @return a block-specific description of internal statue
 	 */
@@ -212,49 +207,44 @@ public class LowLimit extends AbstractProcessBlock implements ProcessBlock {
 		attributes.put("CurrentMinimum", valueProperty.getValue().toString());
 		return descriptor;
 	}
+
 	
 	/**
 	 * Augment the palette prototype for this block class.
 	 */
 	private void initializePrototype() {
-		prototype.setPaletteIconPath("Block/icons/palette/minlimit.png");
-		prototype.setPaletteLabel("LowLimit");
-		prototype.setTooltipText("Determine the minimim value among inputs subject to an entered minimum");
+		prototype.setPaletteIconPath("Block/icons/palette/min.png");
+		prototype.setPaletteLabel("LowSelector");
+		prototype.setTooltipText("Determine the minimim value among inputs");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_ANALYSIS);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
-		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setEmbeddedIcon("Block/icons/embedded/min.png");
+		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setStyle(BlockStyle.DIAMOND);
 		desc.setPreferredHeight(70);
 		desc.setPreferredWidth(70);
-		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_BLUE_GRAY);
+		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_LIGHT_GRAY);
 	}
+
 	/**
 	 * Compute the minimum, presumably because of a new input.
-	 * The minimum cannot be less than the limit.
 	 */
 	private QualifiedValue getMinValue() {
 		Collection<QualifiedValue> values = qualifiedValueMap.values();
 		double min = Double.MAX_VALUE;
-		QualifiedValue result = new BasicQualifiedValue(new Double(min));
+		QualifiedValue result = null;
 		
 		for(QualifiedValue qv:values) {
 			if(qv.getQuality().isGood() && qv.getValue()!=null && !qv.getValue().toString().isEmpty() && !qv.getValue().equals(BLTProperties.UNDEFINED)) {
 				double val = func.coerceToDouble(qv.getValue().toString());
 				if(val<min ) {
 					min = val;
-					if( val<limit ) {
-						result = new BasicQualifiedValue(new Double(limit));
-					}
-					else {
-						result = qv;
-					}
-
+					result = qv;
 				}
 			}
 			else {
-				return new BasicQualifiedValue(Double.NaN,new BasicQuality("Bad input",Quality.Level.Bad));
+				return new BasicQualifiedValue(Double.NaN,new BasicQuality("One or more bad inputs",Quality.Level.Bad),qv.getTimestamp());
 			}
 		}
 		return result;	

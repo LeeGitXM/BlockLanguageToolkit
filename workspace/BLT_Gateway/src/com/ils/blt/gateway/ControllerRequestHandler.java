@@ -437,8 +437,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	}
 	
 	/**
-	 * @param projectId
-	 * @param resourceId
+	 * @param projectId parent project for the diagram
+	 * @param resourceId resource Id for the diagram
 	 * @return the current state of the specified diagram as a DiagramState.
 	 */
 	@Override
@@ -1159,10 +1159,10 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	
 	/**
 	 * We wrap a signal into a Qualified value and send it to a particular block.
-	 * @param diagramId
-	 * @param blockName
-	 * @param command
-	 * @param message
+	 * @param diagramId diagram identifier
+	 * @param blockName name of the subject block
+	 * @param command parameter of the signal
+	 * @param message parameter of the signal (optional)
 	 * @return
 	 */
 	@Override
@@ -1216,8 +1216,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	}
 	/**
 	 * Set the state of every diagram in an application to the specified value.
-	 * @param appname
-	 * @param state
+	 * @param appname name of the toolkit application
+	 * @param state to which the application and all its descendants will be set
 	 */
 	@Override
 	public void setApplicationState(String appname, String state) {
@@ -1247,8 +1247,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * type for the property, but if not, it can be expected to be coerced into the proper data type 
  	 * upon receipt by the block. The quality is assumed to be Good.
 	 * 
-	 * @param parentId
-	 * @param blockId
+	 * @param parentId diagram identifier
+	 * @param blockId id of the target block
 	 * @param properties a collection of properties that may have changed
 	 */
 	public void setBlockProperties(UUID parentId, UUID blockId, Collection<BlockProperty> properties) {
@@ -1283,8 +1283,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * type for the property, but if not, it can be expected to be coerced into the proper data type 
  	 * upon receipt by the block. The quality is assumed to be Good.
 	 * 
-	 * @param parentId
-	 * @param blockId
+	 * @param parentId diagram Id
+	 * @param blockId Id of the target block
 	 * @param property the newly changed or added block property
 	 */
 	public void setBlockProperty(UUID parentId, UUID blockId, BlockProperty property) {
@@ -1315,7 +1315,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * are notified of the change.
 	 *  
 	 * @param diagramId diagram's unique Id as a String
-	 * @param bname 
+	 * @param bname block name
 	 * @param pname the changed property
 	 * @param value the new value of the property. The value will be coerced into the correct data type in the gateway 
 	 */
@@ -1385,9 +1385,9 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 
 	/**
 	 * Set the state of the specified diagram. 
-	 * @param projectId
-	 * @param resourceId
-	 * @param state
+	 * @param projectId project to which this diagram belongs
+	 * @param resourceId resource Id for the diagram
+	 * @param state new state for the diagram
 	 */
 	public void setDiagramState(Long projectId,Long resourceId,String state) {
 		ProcessDiagram diagram = controller.getDiagram(projectId, resourceId);
@@ -1406,7 +1406,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	/**
 	 * Set the state of the specified diagram. 
 	 * @param diagramId UUID of the diagram
-	 * @param state
+	 * @param state to which the diagram is to be set
 	 */
 	public void setDiagramState(String diagramId,String state) {
 		UUID diagramUUID = UUID.fromString(diagramId);

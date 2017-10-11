@@ -29,7 +29,6 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  */
 @ExecutableBlock
 public class DataShift extends AbstractProcessBlock implements ProcessBlock {
-	private static final String TAG = "DataShift";
 
 	private int sampleSize = 0;  
 	private final LinkedList<QualifiedValue> buffer;
@@ -71,12 +70,12 @@ public class DataShift extends AbstractProcessBlock implements ProcessBlock {
 		super.acceptValue(vcn);
 
 		QualifiedValue qv = vcn.getValue();
-		log.debugf("%s.acceptValue: Received %s (%d of %d)",TAG,qv.getValue().toString(),buffer.size(),sampleSize);
+		log.debugf("%s.acceptValue: Received %s (%d of %d)",getName(),qv.getValue().toString(),buffer.size(),sampleSize);
 		if( qv.getQuality().isGood() ) {
 			buffer.add(qv);
 			if( buffer.size() > sampleSize) {
 				lastValue = buffer.removeFirst();
-				log.debugf("%s.acceptValue: Popped %s",TAG,lastValue.getValue().toString());
+				log.debugf("%s.acceptValue: Popped %s",getName(),lastValue.getValue().toString());
 				if( !isLocked() ) {
 					// Give it a new timestamp
 					lastValue = new TestAwareQualifiedValue(timer,lastValue.getValue(),qv.getQuality());
@@ -103,7 +102,7 @@ public class DataShift extends AbstractProcessBlock implements ProcessBlock {
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
-		log.debugf("%s.propertyChange: Received %s = %s",TAG,propertyName,event.getNewValue().toString());
+		log.debugf("%s.propertyChange: Received %s = %s",getName(),propertyName,event.getNewValue().toString());
 		if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE) ) {
 			try {
 				sampleSize = Integer.parseInt(event.getNewValue().toString());
@@ -120,11 +119,11 @@ public class DataShift extends AbstractProcessBlock implements ProcessBlock {
 				}
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert sample size value to a integer (%s)",TAG,nfe.getLocalizedMessage());
+				log.warnf("%s: propertyChange Unable to convert sample size value to a integer (%s)",getName(),nfe.getLocalizedMessage());
 			}
 		}
 		else {
-			log.warnf("%s.propertyChange:Unrecognized property (%s)",TAG,propertyName);
+			log.warnf("%s.propertyChange:Unrecognized property (%s)",getName(),propertyName);
 		}
 	}
 	/**

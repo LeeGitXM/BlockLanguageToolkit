@@ -144,8 +144,9 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 				if( dog.isActive()) timer.removeWatchdog(dog);
 			}
 		}
-		else {
-			log.warnf("%s.propertyChange:Unrecognized property (%s)",TAG,propertyName);
+		// Buffer size handled in superior method
+		else if( !propertyName.equals(BlockConstants.BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE) ){
+			log.warnf("%s.propertyChange:Unrecognized property (%s)",getName(),propertyName);
 		}
 	}
 	

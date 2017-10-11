@@ -35,7 +35,6 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  */
 @ExecutableBlock
 public class MovingAverageSample extends AbstractProcessBlock implements ProcessBlock {
-	private final String TAG = "MovingAverageSample";
 	private final static int DEFAULT_BUFFER_SIZE = 1;
 	
 	private final FixedSizeQueue<QualifiedValue> queue;
@@ -109,7 +108,7 @@ public class MovingAverageSample extends AbstractProcessBlock implements Process
 		String port = vcn.getConnection().getDownstreamPortName();
 		if( port.equals(BlockConstants.IN_PORT_NAME) ) {
 			QualifiedValue qv = vcn.getValue();
-			log.debugf("%s.acceptValue: Received %s",TAG,qv.getValue().toString());
+			log.debugf("%s.acceptValue: Received %s",getName(),qv.getValue().toString());
 			if( qv.getQuality().isGood() ) {
 				queue.add(qv);
 				if( queue.size() >= sampleSize) {
@@ -179,11 +178,12 @@ public class MovingAverageSample extends AbstractProcessBlock implements Process
 				}
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert sample size to an integer (%s)",TAG,nfe.getLocalizedMessage());
+				log.warnf("%s: propertyChange Unable to convert sample size to an integer (%s)",getName(),nfe.getLocalizedMessage());
 			}
 		}
-		else {
-			log.warnf("%s.propertyChange:Unrecognized property (%s)",TAG,propertyName);
+		// Buffer size handled in superior method
+		else if( !propertyName.equals(BlockConstants.BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE) ){
+			log.warnf("%s.propertyChange:Unrecognized property (%s)",getName(),propertyName);
 		}
 	}
 
@@ -237,7 +237,7 @@ public class MovingAverageSample extends AbstractProcessBlock implements Process
 				val = Double.parseDouble(qv.getValue().toString());
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s:computeAverage detected not-a-number in queue (%s), ignored",TAG,nfe.getLocalizedMessage());
+				log.warnf("%s:computeAverage detected not-a-number in queue (%s), ignored",getName(),nfe.getLocalizedMessage());
 				continue;
 			}
 			sum = sum + val;

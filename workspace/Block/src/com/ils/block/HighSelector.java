@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
+ *   (c) 2017  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -213,7 +213,7 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 	 * Augment the palette prototype for this block class.
 	 */
 	private void initializePrototype() {
-		prototype.setPaletteIconPath("Block/icons/palette/high_selector.png");
+		prototype.setPaletteIconPath("Block/icons/palette/max.png");
 		prototype.setPaletteLabel("HighSelector");
 		prototype.setTooltipText("Determine the maximum value among inputs");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_ANALYSIS);
@@ -228,12 +228,11 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 	}
 
 	/**
-	 * Compute the overall state, presumably because of a new input.
-	 * This is an "and"
+	 * Compute the maximum, presumably because of a new input.
 	 */
 	private QualifiedValue getMaxValue() {
 		Collection<QualifiedValue> values = qualifiedValueMap.values();
-		double max = Double.MIN_VALUE;
+		double max = -Double.MAX_VALUE;
 		QualifiedValue result = null;
 		
 		for(QualifiedValue qv:values) {
@@ -245,7 +244,7 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 				}
 			}
 			else {
-				return new BasicQualifiedValue(Double.NaN,new BasicQuality("Missing input",Quality.Level.Bad),qv.getTimestamp());
+				return new BasicQualifiedValue(Double.NaN,new BasicQuality("One or more bad inputs",Quality.Level.Bad),qv.getTimestamp());
 			}
 		}
 		return result;	

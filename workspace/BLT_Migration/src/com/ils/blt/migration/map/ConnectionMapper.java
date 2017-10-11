@@ -102,12 +102,15 @@ public class ConnectionMapper {
 		
 		SerializableAnchor[] anchors = anchorList.toArray(new SerializableAnchor[anchorList.size()]);
 		iblock.setAnchors(anchors);
+		//for(SerializableAnchor anchor:anchors) {
+		//	System.err.println(String.format("%s.setAnchors: name = %s:%s",TAG,iblock.getName(),anchor.getDisplay()));
+		//}
 		blockMap.put(iblock.getId().toString(), iblock);
-		log.debugf("%s.setAnchors: blockMap key = %s",TAG,iblock.getId().toString());
+		
 	}
 
 	/**
-	 * Analyze the blocks in the G2Diagram and deduce connections based on block Ids.
+	 * Analyze the blocks in the G2Diagram and deduces connections based on block Ids.
 	 * Turn the resulting map into Ignition connections. Add to the Ignition diagram.
 	 * Rely on maps already created by "setAnchors" method.
 	 */
@@ -157,7 +160,7 @@ public class ConnectionMapper {
 
 	/**
 	 *  Now that we have filled all the various lookup tables, walk the map and add connections to the diagrams.
-	 *   Before doing this cull out any that are incomplete. They will be incomplete because the anchor points do not have stubs.
+	 *  Before doing this cull out any that are incomplete. They will be incomplete because the anchor points do not have stubs.
 	 * NOTE: G2 connection posts don't have stubs.
 	 */ 
 	public void createConnections() {	
@@ -198,6 +201,7 @@ public class ConnectionMapper {
 										diagramForBlockId.get(endBlock.getId()),
 										beginBlock,
 										endAnchor.getDirection()));
+							//System.err.println(String.format("%s.createConnections:Add connection post: %s (%s)",TAG,endBlock.getName(),endAnchor.getId()));
 					}
 					else {
 						//log.debugf("%s.createConnections: anchorPointForSource: %s (%s)",TAG,endBlock.getId().toString(),endBlock.getName());
@@ -213,7 +217,7 @@ public class ConnectionMapper {
 										beginAnchor.getDirection()));
 					}
 					else {
-						//log.debugf("%s.createConnections: anchorPointForSink: %s (%s)",TAG,beginBlock.getId().toString(),beginBlock.getName());
+						//System.err.println(String.format("%s.createConnections: anchorPointForSink: %s (%s)",TAG,beginBlock.getId().toString(),beginAnchor.getId()));
 						anchorPointForSinkBlock.put(beginBlock.getId(),new AnchorPointEntry(beginAnchor,cxn.getType()));
 					}
 				}

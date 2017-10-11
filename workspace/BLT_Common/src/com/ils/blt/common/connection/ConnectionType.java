@@ -20,6 +20,7 @@ public enum ConnectionType
 	;
 
 	/**
+	 * @param propertyType the property type for which a corresponding connection type is desired
 	 * @return  a ConnectionType appropriate for the given property type.
 	 */
 	public static ConnectionType connectionTypeForPropertyType(PropertyType propertyType) {

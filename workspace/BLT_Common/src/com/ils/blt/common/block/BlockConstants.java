@@ -16,6 +16,7 @@ public interface BlockConstants   {
 	public static final long UNKNOWN = -1;
 	
 	// Use these when there is only a single input and/or output
+	// Note that send and receive ports are not affected by type change actions
 	public static final String IN_PORT_NAME    = "in";
 	public static final String OUT_PORT_NAME = "out";
 	public static final String CONTROL_PORT_NAME   = "recv";     // Receive
@@ -46,6 +47,7 @@ public interface BlockConstants   {
 	public static final String BLOCK_PROPERTY_SAMPLE_SIZE   = "SampleSize";
 	public static final String BLOCK_PROPERTY_SCOPE         = "Scope";	
 	public static final String BLOCK_PROPERTY_SCAN_INTERVAL    = "ScanInterval";     // Compute interval ~ sec
+	public static final String BLOCK_PROPERTY_SCALE_FACTOR     = "ScaleFactor";	
 	public static final String BLOCK_PROPERTY_STANDARD_DEVIATION = "StandardDeviation";
 	public static final String BLOCK_PROPERTY_SYNC_INTERVAL    = "SyncInterval";     // Time to coalesce inputs ~ sec
 	public static final String BLOCK_PROPERTY_TAG_PATH         = "TagPath";

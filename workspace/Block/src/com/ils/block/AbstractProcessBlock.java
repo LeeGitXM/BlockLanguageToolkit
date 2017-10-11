@@ -595,21 +595,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		TruthValue result = TruthValue.UNSET;  
 		Object value = qv.getValue();
 		if( value!= null && !value.toString().isEmpty() && !value.equals(BLTProperties.UNDEFINED) ) {
-			if( value instanceof TruthValue ) {
-				result = (TruthValue) value;
-			}
-			else if(value instanceof Boolean) {
-				if( ((Boolean)value).booleanValue() ) result = TruthValue.TRUE;
-				else result = TruthValue.FALSE;
-			}
-			else if(value instanceof String && !value.toString().isEmpty() ) {
-				try {
-					result = TruthValue.valueOf(value.toString().toUpperCase());
-				}
-				catch( IllegalArgumentException iae) {
-					log.warnf("%s.qualifiedValueAsTruthValue: Exception converting %s (%s)", getName(),value.toString(),iae.getLocalizedMessage());
-				}
-			}
+			result = fcns.coerceToTruthValue(value);
 		}
 		return result;
 	}
@@ -637,9 +623,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 						}
 					}
 					else if( ConnectionType.TRUTHVALUE.equals(ap.getConnectionType())) {
-						boolean flag = fcns.coerceToBoolean(val);
-						if( flag ) val = TruthValue.TRUE;
-						else val = TruthValue.FALSE;
+						val = fcns.coerceToTruthValue(val);
 					}
 					else if( ConnectionType.TEXT.equals(ap.getConnectionType())) {
 						val = val.toString();

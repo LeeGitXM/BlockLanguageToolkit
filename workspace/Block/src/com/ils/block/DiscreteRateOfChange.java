@@ -5,10 +5,15 @@ package com.ils.block;
 
 import java.util.UUID;
 
+import org.apache.commons.math3.analysis.function.Pow;
+import org.apache.commons.math3.fitting.PolynomialCurveFitter;
+import org.apache.commons.math3.fitting.WeightedObservedPoints;
+
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
+import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
@@ -20,6 +25,9 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.common.FixedSizeQueue;
+import com.ils.common.watchdog.TestAwareQualifiedValue;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
@@ -27,28 +35,24 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  */
 @ExecutableBlock
 public class DiscreteRateOfChange extends AbstractProcessBlock implements ProcessBlock {
-	
-	private final static String BLOCK_PROPERTY_LINEAR_INTERPOLATION = "LinearInterpolation";
+	private final static String BLOCK_PROPERTY_NUMBER_OF_POINTS = "NumberOfPoints";
 	private final static String BLOCK_PROPERTY_POLYNOMIAL_ORDER = "PolynomialOrder";
-	private final static String BLOCK_PROPERTY_SAMPLE_TYPE  = "SampleType";
 	private final static String BLOCK_PROPERTY_SCALE_FACTOR = "ScaleFactor";
-	private final static String BLOCK_PROPERTY_UPDATE_SIZE  = "UpdateSize";
-	private final static String BLOCK_PROPERTY_UPDATE_TYPE  = "UpdateType";
+
 	
 	private boolean clearOnReset = true;
-	private boolean fillRequired = true;
-	private boolean linearInterpolation = true;
+	private final FixedSizeQueue<QualifiedValue> queue;
 	private int polynomialOrder = 2;
-	private int sampleSize = 1;
-	private String sampleType = "";
+	private int sampleSize = 5;
 	private double scaleFactor = 1.0;
-	private int updateSize = 1;
-	private String updateType = "";
+	private BlockProperty valueProperty = null;
+
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
 	public DiscreteRateOfChange() {
+		queue = new FixedSizeQueue<QualifiedValue>(sampleSize);
 		initialize();
 		initializePrototype();
 	}
@@ -62,7 +66,17 @@ public class DiscreteRateOfChange extends AbstractProcessBlock implements Proces
 	 */
 	public DiscreteRateOfChange(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
+		queue = new FixedSizeQueue<QualifiedValue>(sampleSize);
 		initialize();
+	}
+	
+	@Override
+	public void reset() {
+		super.reset();
+		if( clearOnReset ) {
+			queue.clear();
+			valueProperty.setValue(new Double(Double.NaN));
+		}
 	}
 	
 	/**
@@ -73,23 +87,15 @@ public class DiscreteRateOfChange extends AbstractProcessBlock implements Proces
 		
 		BlockProperty clearProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET,Boolean.TRUE,PropertyType.BOOLEAN,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET, clearProperty);
-		BlockProperty fillProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_FILL_REQUIRED,Boolean.TRUE,PropertyType.BOOLEAN,true);
-		setProperty(BlockConstants.BLOCK_PROPERTY_FILL_REQUIRED, fillProperty);
-		BlockProperty liProperty = new BlockProperty(BLOCK_PROPERTY_LINEAR_INTERPOLATION,new Boolean(linearInterpolation),PropertyType.BOOLEAN,true);
-		setProperty(BLOCK_PROPERTY_LINEAR_INTERPOLATION, liProperty);
 		BlockProperty poProperty = new BlockProperty(BLOCK_PROPERTY_POLYNOMIAL_ORDER,new Integer(polynomialOrder),PropertyType.INTEGER,true);
 		setProperty(BLOCK_PROPERTY_POLYNOMIAL_ORDER, poProperty);
-		
-		BlockProperty sampleSizeProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE,new Integer(sampleSize),PropertyType.INTEGER,true);
-		setProperty(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE, sampleSizeProperty);
-		BlockProperty sampleTypeProperty = new BlockProperty(BLOCK_PROPERTY_SAMPLE_TYPE,"",PropertyType.STRING,true);
-		setProperty(BLOCK_PROPERTY_SAMPLE_TYPE, sampleTypeProperty);
+		BlockProperty sampleSizeProperty = new BlockProperty(BLOCK_PROPERTY_NUMBER_OF_POINTS,new Integer(sampleSize),PropertyType.INTEGER,true);
+		setProperty(BLOCK_PROPERTY_NUMBER_OF_POINTS, sampleSizeProperty);
 		BlockProperty sfProperty = new BlockProperty(BLOCK_PROPERTY_SCALE_FACTOR,new Double(scaleFactor),PropertyType.DOUBLE,true);
 		setProperty(BLOCK_PROPERTY_SCALE_FACTOR, sfProperty);
-		BlockProperty updateSizeProperty = new BlockProperty(BLOCK_PROPERTY_UPDATE_SIZE,new Integer(updateSize),PropertyType.INTEGER,true);
-		setProperty(BLOCK_PROPERTY_UPDATE_SIZE, updateSizeProperty);
-		BlockProperty updateTypeProperty = new BlockProperty(BLOCK_PROPERTY_UPDATE_TYPE,"",PropertyType.STRING,true);
-		setProperty(BLOCK_PROPERTY_UPDATE_TYPE, updateTypeProperty);
+		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,new Double(Double.NaN),PropertyType.DOUBLE,false);
+		valueProperty.setBindingType(BindingType.ENGINE);
+		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 		
 		// Define an input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
@@ -104,21 +110,44 @@ public class DiscreteRateOfChange extends AbstractProcessBlock implements Proces
 	
 
 	/**
-	 * A new value has appeared on our input.  Pass it on.
-	 * 
-	 * Note: there can be several connections attached to a given port.
+	 * A new value has arrived. Add it to the queue and compute statistics, if appropriate.
+	 * The queue must be full to trigger a computation.
 	 * @param vcn incoming new value.
 	 */
 	@Override
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
-		if(!isLocked() ) {
-			lastValue = vcn.getValue();
-			//log.infof("%s.acceptValue: %s", getName(),qv.getValue().toString());
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
-			controller.acceptCompletionNotification(nvn);
-			notifyOfStatus(lastValue);
-		}
+		QualifiedValue qv = vcn.getValue();
+		log.debugf("%s.acceptValue: Received %s",getName(),qv.getValue().toString());
+			if( qv.getQuality().isGood() ) {
+				queue.add(qv);
+				if( queue.size() >= sampleSize) {
+					double result = computeRateOfChange();
+					if( !isLocked() ) {
+						// Give it a new timestamp
+						lastValue = new BasicQualifiedValue(result,qv.getQuality(),qv.getTimestamp());
+						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
+						controller.acceptCompletionNotification(nvn);
+						notifyOfStatus(lastValue);
+					}
+					else {
+						// Even if locked, we update the current state
+						valueProperty.setValue(result);
+						controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
+					}	
+				}
+			}
+			else {
+				// Post bad value on output, clear queue
+				if( !isLocked() ) {
+					lastValue = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
+					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
+					controller.acceptCompletionNotification(nvn);
+					notifyOfStatus(lastValue);
+				}
+				queue.clear();
+			}
+		
 	}
 	/**
 	 * Handle a change to one of our custom properties.
@@ -134,23 +163,7 @@ public class DiscreteRateOfChange extends AbstractProcessBlock implements Proces
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert clear flag to a boolean (%s)",getName(),nfe.getLocalizedMessage());
 			}
-		}	
-		else if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_FILL_REQUIRED)) {
-			try {
-				fillRequired = Boolean.parseBoolean(event.getNewValue().toString());
-			}
-			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert fill flag to a boolean (%s)",getName(),nfe.getLocalizedMessage());
-			}
-		}	
-		else if( propertyName.equalsIgnoreCase(BLOCK_PROPERTY_LINEAR_INTERPOLATION)) {
-			try {
-				linearInterpolation = Boolean.parseBoolean(event.getNewValue().toString());
-			}
-			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert linear interpolation flag to a boolean (%s)",getName(),nfe.getLocalizedMessage());
-			}
-		}	
+		}			
 		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_POLYNOMIAL_ORDER)) {
 			try {
 				polynomialOrder = Integer.parseInt(event.getNewValue().toString());
@@ -158,17 +171,28 @@ public class DiscreteRateOfChange extends AbstractProcessBlock implements Proces
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert order number to an integer (%s)",getName(),nfe.getLocalizedMessage());
 			}
+			if( polynomialOrder!=2 && polynomialOrder!=3 ) {
+				log.warnf("%s: propertyChange Polynomial order must be 2 or 3. Defaulting to 2",getName());
+				polynomialOrder = 2;
+			}
 		}
-		else if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE)) {
+		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_NUMBER_OF_POINTS) ) {
+			// Trigger an evaluation
 			try {
-				sampleSize = Integer.parseInt(event.getNewValue().toString());
+				int val = Integer.parseInt(event.getNewValue().toString());
+				if( val>0 ) {
+					sampleSize = val;
+					if( sampleSize!=5 && sampleSize!=7) sampleSize = 5;
+					queue.setBufferSize(sampleSize);
+					// Even if locked, we update the current state
+					valueProperty.setValue(Double.NaN);
+					controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,
+							new TestAwareQualifiedValue(timer,0.0));
+				}
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert sample size to an integer (%s)",getName(),nfe.getLocalizedMessage());
+				log.warnf("%s: propertyChange Unable to convert number of points to an integer (%s)",getName(),nfe.getLocalizedMessage());
 			}
-		}
-		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_SAMPLE_TYPE)) {
-			sampleType = event.getNewValue().toString();
 		}
 		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_SCALE_FACTOR)) {
 			try {
@@ -177,17 +201,6 @@ public class DiscreteRateOfChange extends AbstractProcessBlock implements Proces
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert scale factor to an number (%s)",getName(),nfe.getLocalizedMessage());
 			}
-		}
-		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_UPDATE_SIZE)) {
-			try {
-				updateSize = Integer.parseInt(event.getNewValue().toString());
-			}
-			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert update size to an integer (%s)",getName(),nfe.getLocalizedMessage());
-			}
-		}
-		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_UPDATE_SIZE)) {
-			updateType = event.getNewValue().toString();
 		}
 	}
 	/**
@@ -203,17 +216,57 @@ public class DiscreteRateOfChange extends AbstractProcessBlock implements Proces
 	 * Augment the palette prototype for this block class.
 	 */
 	private void initializePrototype() {
-		prototype.setPaletteIconPath("Block/icons/palette/todo.png");
+		prototype.setPaletteIconPath("Block/icons/palette/rate_of_change.png");
 		prototype.setPaletteLabel("DiscreteChange");
-		prototype.setTooltipText("Pass through");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_OBSERVATION);
+		prototype.setTooltipText("Compute the instantaneous rate of change based on a quadratic or cubic fit over recent history");
+		prototype.setTabName(BlockConstants.PALETTE_TAB_ANALYSIS);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());
-		desc.setStyle(BlockStyle.JUNCTION);
+		desc.setEmbeddedIcon("Block/icons/embedded/discrete_rate_of_change.png");
+		desc.setStyle(BlockStyle.SQUARE);
 		desc.setPreferredHeight(32);
 		desc.setPreferredWidth(32);
-		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_MUSTARD);
-		desc.setCtypeEditable(true);
+		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_LIGHT_GRAY);
+	}
+	
+	/**
+	 * Compute a quadratic or cubic fit. \Use the commons math library curve fitter.
+	 * @return the best fit slope evaluated at the last data point.
+	 */
+	private double computeRateOfChange() {
+		final WeightedObservedPoints obs = new WeightedObservedPoints();
+		
+		double roc = Double.NaN;
+		Pow pow = new Pow();
+		int n = 0;
+		for(QualifiedValue qv:queue) {
+			n++;
+			double val = Double.NaN;
+			try {
+				val = Double.parseDouble(qv.getValue().toString());
+			}
+			catch(NumberFormatException nfe) {
+				log.warnf("%computeRateOfChange detected not-a-number in queue (%s), ignored",getName(),nfe.getLocalizedMessage());
+				continue;
+			}
+			obs.add(n,val);
+			
+			// Instantiate a polynomial fitter of the proper degree.
+			final PolynomialCurveFitter fitter = PolynomialCurveFitter.create(polynomialOrder);
+			// Retrieve fitted parameters (coefficients of the polynomial function).
+			final double[] coefficients = fitter.fit(obs.toList());
+			// Our answer is the derivative at "n". We assume the coefficients are in decreasing order.
+			int index = polynomialOrder;
+			double derivative = 0.0;
+			for( double coeff:coefficients) {
+				if( index>0 ) {
+					derivative = derivative + index * coeff * pow.value(n,index-1);
+					index--;
+				}
+			}
+			roc = derivative;
+		}
+		return roc;
 	}
 }

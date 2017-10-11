@@ -13,6 +13,8 @@ cd $BLT/migration
 #./clear-json
 #./copy-json
 cd $INDIR
+# TEMPORARY +++++++++++++++++++++++++++++++++++++++++++++++++++++
+cp ${BLT}/migration/editeddiagramsescorez/* .
 for fil in *.json
 do
 	echo "Processing $fil ..."

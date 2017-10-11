@@ -37,6 +37,7 @@ public class GatewayScriptExtensionManager extends AbstractScriptExtensionManage
 	
 	/**
 	 * Static method to create and/or fetch the single instance.
+	 * @return the singleton instance
 	 */
 	public static GatewayScriptExtensionManager getInstance() {
 		if( instance==null) {
@@ -49,7 +50,7 @@ public class GatewayScriptExtensionManager extends AbstractScriptExtensionManage
 	
 	/**
 	 * In the gateway, the only class of interest is a diagram (for the time being).
-	 * @return
+	 * @return a list containing a BlockDescriptor with the diagram class name
 	 */
 	public List<BlockDescriptor> getClassDescriptors() {
 		List<BlockDescriptor> descriptors = new ArrayList<>();

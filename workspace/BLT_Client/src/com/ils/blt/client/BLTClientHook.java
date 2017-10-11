@@ -3,6 +3,9 @@
  */
 package com.ils.blt.client;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.ils.blt.common.ApplicationScriptFunctions;
 import com.ils.blt.common.BLTProperties;
 import com.inductiveautomation.ignition.client.gateway_interface.GatewayConnectionManager;
@@ -32,6 +35,12 @@ public class BLTClientHook implements ClientModuleHook {
 	@Override
 	public void configureDeserializer(XMLDeserializer arg0) {
 		// TODO Auto-generated method stub
+	}
+	
+	@Override
+	public Map<String,String> createPermissionKeys() {
+		// TODO Auto-generated method stub	
+		return new HashMap<>();
 	}
 	
 	@Override
