@@ -3,6 +3,10 @@
  */
 package com.ils.block;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.math3.analysis.function.Pow;
@@ -25,6 +29,7 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.FixedSizeQueue;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
@@ -41,12 +46,12 @@ public class DiscreteRateOfChange extends AbstractProcessBlock implements Proces
 
 	
 	private boolean clearOnReset = true;
+	private double[] coefficients = null;
 	private final FixedSizeQueue<QualifiedValue> queue;
 	private int polynomialOrder = 2;
 	private int sampleSize = 5;
 	private double scaleFactor = 1.0;
 	private BlockProperty valueProperty = null;
-
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -115,10 +120,10 @@ public class DiscreteRateOfChange extends AbstractProcessBlock implements Proces
 	 * @param vcn incoming new value.
 	 */
 	@Override
-	public void acceptValue(IncomingNotification vcn) {
+	public synchronized void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
 		QualifiedValue qv = vcn.getValue();
-		log.debugf("%s.acceptValue: Received %s",getName(),qv.getValue().toString());
+		log.tracef("%s.acceptValue: Received %s",getName(),qv.getValue().toString());
 			if( qv.getQuality().isGood() ) {
 				queue.add(qv);
 				if( queue.size() >= sampleSize) {
@@ -149,6 +154,36 @@ public class DiscreteRateOfChange extends AbstractProcessBlock implements Proces
 			}
 		
 	}
+	
+	/**
+	 * @return a block-specific description of internal statue
+	 */
+	@Override
+	public SerializableBlockStateDescriptor getInternalStatus() {
+		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
+		Map<String,String> attributes = descriptor.getAttributes();
+		attributes.put("Value", String.valueOf(valueProperty.getValue()));
+		if( coefficients!=null) {
+			attributes.put("C0", String.valueOf(coefficients[0]));
+			attributes.put("C1", String.valueOf(coefficients[1]));
+			attributes.put("C2", String.valueOf(coefficients[2]));
+			if( polynomialOrder>2 ) {
+				attributes.put("C3", String.valueOf(coefficients[3]));
+			}
+		}
+		List<Map<String,String>> descBuffer = descriptor.getBuffer();
+		Iterator<QualifiedValue> walker = queue.iterator();
+		while( walker.hasNext() ) {
+			Map<String,String> qvMap = new HashMap<>();
+			QualifiedValue qv = walker.next();
+			qvMap.put("Value", qv.getValue().toString());
+			qvMap.put("Quality", qv.getQuality().toString());
+			qvMap.put("Timestamp", qv.getTimestamp().toString());
+			descBuffer.add(qvMap);
+		}
+		return descriptor;
+	}
+	
 	/**
 	 * Handle a change to one of our custom properties.
 	 */
@@ -225,8 +260,8 @@ public class DiscreteRateOfChange extends AbstractProcessBlock implements Proces
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setEmbeddedIcon("Block/icons/embedded/discrete_rate_of_change.png");
 		desc.setStyle(BlockStyle.SQUARE);
-		desc.setPreferredHeight(32);
-		desc.setPreferredWidth(32);
+		desc.setPreferredHeight(60);
+		desc.setPreferredWidth(60);
 		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_LIGHT_GRAY);
 	}
 	
@@ -238,7 +273,6 @@ public class DiscreteRateOfChange extends AbstractProcessBlock implements Proces
 		final WeightedObservedPoints obs = new WeightedObservedPoints();
 		
 		double roc = Double.NaN;
-		Pow pow = new Pow();
 		int n = 0;
 		for(QualifiedValue qv:queue) {
 			n++;
@@ -255,17 +289,18 @@ public class DiscreteRateOfChange extends AbstractProcessBlock implements Proces
 			// Instantiate a polynomial fitter of the proper degree.
 			final PolynomialCurveFitter fitter = PolynomialCurveFitter.create(polynomialOrder);
 			// Retrieve fitted parameters (coefficients of the polynomial function).
-			final double[] coefficients = fitter.fit(obs.toList());
-			// Our answer is the derivative at "n". We assume the coefficients are in decreasing order.
-			int index = polynomialOrder;
-			double derivative = 0.0;
-			for( double coeff:coefficients) {
-				if( index>0 ) {
-					derivative = derivative + index * coeff * pow.value(n,index-1);
-					index--;
-				}
+			coefficients = fitter.fit(obs.toList());
+			// Our answer is the derivative at "n". We assume the coefficient[n] is the nth order coefficient
+			if( polynomialOrder == 3 ) {
+				log.infof("%s.computeRateOfChange: Coefficients are: %s %s %s %s",getName(),String.valueOf(coefficients[0]),String.valueOf(coefficients[1]),
+																							String.valueOf(coefficients[2]),String.valueOf(coefficients[3]));
+				roc = coefficients[1] + 2*coefficients[2]*n + 3*coefficients[2]*n*n;
 			}
-			roc = derivative;
+			else {
+				log.infof("%s.computeRateOfChange: Coefficients are: %s %s %s",getName(),String.valueOf(coefficients[0]),String.valueOf(coefficients[1]),
+																							String.valueOf(coefficients[2]));
+				roc = coefficients[1] + 2*coefficients[2]*n;
+			}
 		}
 		return roc;
 	}

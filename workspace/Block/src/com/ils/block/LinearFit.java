@@ -3,7 +3,15 @@
  */
 package com.ils.block;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+
+import org.apache.commons.math3.analysis.function.Pow;
+import org.apache.commons.math3.fitting.PolynomialCurveFitter;
+import org.apache.commons.math3.fitting.WeightedObservedPoints;
 
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.ProcessBlock;
@@ -21,6 +29,7 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.FixedSizeQueue;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
@@ -38,13 +47,13 @@ public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
 	
 	private boolean clearOnReset = true;
 	private boolean fillRequired = true;
+	double[] coefficients = null;
+	private int n = 0;
 	private final FixedSizeQueue<QualifiedValue> queue;
 	private int sampleSize = 2;
 	private double scaleFactor = 1.0;
-	private double slope = Double.NaN;
 	private BlockProperty valueProperty = null;
 
-	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
@@ -120,7 +129,7 @@ public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
 	 * @param vcn incoming new value.
 	 */
 	@Override
-	public void acceptValue(IncomingNotification vcn) {
+	public synchronized void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
 		
 			QualifiedValue qv = vcn.getValue();
@@ -137,7 +146,7 @@ public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
 						notifyOfStatus(lastValue);
 						
 						// Propagate the slope scaled
-						qv = new BasicQualifiedValue(new Double(slope*scaleFactor),qv.getQuality(),qv.getTimestamp());
+						qv = new BasicQualifiedValue(new Double(coefficients[1]*scaleFactor),qv.getQuality(),qv.getTimestamp());
 						nvn = new OutgoingNotification(this,SLOPE_PORT_NAME,qv);
 						controller.acceptCompletionNotification(nvn);
 					}	
@@ -152,13 +161,40 @@ public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
 					notifyOfStatus(lastValue);
 					
 					// The slope is also bad. Re-use lastValue.
-					slope = Double.NaN;
+					coefficients = null;
 					nvn = new OutgoingNotification(this,SLOPE_PORT_NAME,lastValue);
 					controller.acceptCompletionNotification(nvn);
 				}
 				queue.clear();
 			}
 	}
+	
+	/**
+	 * @return a block-specific description of internal statue
+	 */
+	@Override
+	public SerializableBlockStateDescriptor getInternalStatus() {
+		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
+		Map<String,String> attributes = descriptor.getAttributes();
+		attributes.put("BestFit", String.valueOf(valueProperty.getValue()));
+		attributes.put("n", String.valueOf(n));
+		if( coefficients!=null) {
+			attributes.put("Intercept", String.valueOf(coefficients[0]));
+			attributes.put("Slope", String.valueOf(coefficients[1]));
+		}
+		List<Map<String,String>> descBuffer = descriptor.getBuffer();
+		Iterator<QualifiedValue> walker = queue.iterator();
+		while( walker.hasNext() ) {
+			Map<String,String> qvMap = new HashMap<>();
+			QualifiedValue qv = walker.next();
+			qvMap.put("Value", qv.getValue().toString());
+			qvMap.put("Quality", qv.getQuality().toString());
+			qvMap.put("Timestamp", qv.getTimestamp().toString());
+			descBuffer.add(qvMap);
+		}
+		return descriptor;
+	}
+	
 	/**
 	 * Handle a change to one of our custom properties.
 	 */
@@ -231,8 +267,8 @@ public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setEmbeddedIcon("Block/icons/embedded/linear_fit_noframe.png");
 		desc.setStyle(BlockStyle.SQUARE);
-		desc.setPreferredHeight(32);
-		desc.setPreferredWidth(32);
+		desc.setPreferredHeight(60);
+		desc.setPreferredWidth(60);
 		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_LIGHT_GRAY);
 	}
 	
@@ -242,39 +278,28 @@ public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
 	 * count.
 	 */
 	private void computeFit() {
-		valueProperty.setValue(new Double(Double.NaN));
-		slope = Double.NaN;
-		if( queue.size() >= 2)  {
-			double sumx = 0.0;
-			double sumy = 0.0;
-			double sumxy= 0.0;
-			double sumxx= 0.0;
-			int n = 0;
-			
-			for( QualifiedValue qv:queue) {
-				if( qv.getValue()==null ) continue;  // Shouldn't happen
-				n++;
-				double val = Double.NaN;
-				try {
-					val = Double.parseDouble(qv.getValue().toString());
-				}
-				catch(NumberFormatException nfe) {
-					log.warnf("%s:computeLinearFit detected not-a-number in queue (%s), ignored",getName(),nfe.getLocalizedMessage());
-					continue;
-				}
-				sumx = sumx + n;
-				sumxx = sumxx + (n+n);
-				sumy  = sumy + val;
-				sumxy = sumxy +(n*val);
-			}	
-			 
-			if( sumxx > 0 ) {
-				slope = (n*sumxy - sumy*sumx) / (n*sumxx - sumx*sumx);
-				// Best fit for n
-				double intercept = (sumy = slope*sumx)/n;
-				valueProperty.setValue(new Double(slope*n+intercept));
+		final WeightedObservedPoints obs = new WeightedObservedPoints();
+		
+		n = 0;
+		for(QualifiedValue qv:queue) {
+			n++;
+			double val = Double.NaN;
+			try {
+				val = Double.parseDouble(qv.getValue().toString());
 			}
+			catch(NumberFormatException nfe) {
+				log.warnf("%computeRateOfChange detected not-a-number in queue (%s), ignored",getName(),nfe.getLocalizedMessage());
+				continue;
+			}
+			obs.add(n,val);
+			
+			// Instantiate a linear fitter
+			final PolynomialCurveFitter fitter = PolynomialCurveFitter.create(1);
+			// Retrieve fitted parameters (coefficients of the polynomial function).
+			coefficients = fitter.fit(obs.toList());
+			log.infof("%s.computeFit: Coefficients are: %s %s",getName(),String.valueOf(coefficients[0]),String.valueOf(coefficients[1]));
+			// Value = mx + b
+			valueProperty.setValue(coefficients[1]*n+coefficients[0]);
 		}
-	
 	}
 }

@@ -6,6 +6,7 @@ run: readwrite.txt
 run: arithmetic.txt
 run: average.txt
 run: comparisons.txt
+run: curvefit.txt
 run: dataconditioner.txt
 run: datecompare.txt
 run: gain.txt

@@ -1,0 +1,43 @@
+#
+# Test of the linearfit and discrete rate of change blocks
+#
+DIAGRAM="app75/family75/curvefits"
+tag: LinearFitOut MemoryTags/PatternOut1
+tag: SlopeOut MemoryTags/SlopeOutput
+tag: ROC1 MemoryTags/RateOfChangeOut1
+tag: ROC2 MemoryTags/RateOfChangeOut2
+tagset: PatternInput MemoryTags/PatternInput
+
+Tagset: PatternInput
+Show: diagram $DIAGRAM
+
+# Note the InputBlock will re-transmit its value after a RESET.
+# Make use of this.
+2000/01/01 09:59:30 0.0
+resetDiagram ($DIAGRAM)
+
+Test: Linear Fit
+Step: Straight Line
+
+2000/01/01 10:00 1.0
+2000/01/01 10:00:30 2.0
+2000/01/01 10:00:40 Assert: SlopeOut = 1.0 "Slope is 1"
+2000/01/01 10:00:50 Assert: LinearFitOut = 2 "Best value is 2"
+2000/01/01 10:01:00 3.0
+2000/01/01 10:01:10 Assert: SlopeOut = 1.0 "Slope is 1"
+2000/01/01 10:01:30 Assert: LinearFitOut = 3 "Best value is 3"
+2000/01/01 10:01:30 4.0
+2000/01/01 10:01:40 Assert: SlopeOut = 1.0 "Slope is 1"
+2000/01/01 10:01:50 Assert: LinearFitOut = 4 "Best value is 4"
+2000/01/01 10:02:00 5.0
+2000/01/01 10:02:10 Assert: SlopeOut = 1.0 "Slope is 1"
+2000/01/01 10:02:20 Assert: LinearFitOut = 5 "Best value is 5"
+2000/01/01 10:02:30 Assert: ROC1 = 1 "Rate of Change = 1.0"
+2000/01/01 10:02:40 6.0
+2000/01/01 10:02:50 Assert: SlopeOut = 1.0 "Slope is 1"
+2000/01/01 10:03:00 Assert: LinearFitOut = 6 "Best value is 6"
+2000/01/01 10:03:10 Assert: ROC2 = 1 "Rate of Change = 1.0"
+
+# Teardown sets the diagram ACTIVE, and we get another tag
+# value propagation. Delay it.
+2000/01/01 10:30:00 42.0
