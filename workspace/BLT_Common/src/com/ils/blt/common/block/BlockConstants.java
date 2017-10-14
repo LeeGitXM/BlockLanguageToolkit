@@ -52,6 +52,7 @@ public interface BlockConstants   {
 	public static final String BLOCK_PROPERTY_SYNC_INTERVAL    = "SyncInterval";     // Time to coalesce inputs ~ sec
 	public static final String BLOCK_PROPERTY_TAG_PATH         = "TagPath";
 	public static final String BLOCK_PROPERTY_TEXT             = "Text";
+	public final static String BLOCK_PROPERTY_THRESHOLD    	   = "Threshold";
 	public static final String BLOCK_PROPERTY_TIME_WINDOW      = "TimeWindow";
 	public static final String BLOCK_PROPERTY_TRIGGER          = "Trigger";
 	public static final String BLOCK_PROPERTY_TRIGGER_COUNT    = "TriggerCount";

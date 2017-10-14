@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.apache.commons.math3.analysis.function.Pow;
 import org.apache.commons.math3.fitting.PolynomialCurveFitter;
 import org.apache.commons.math3.fitting.WeightedObservedPoints;
 
@@ -137,7 +136,7 @@ public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
 			if( qv.getQuality().isGood() ) {
 				queue.add(qv);
 				if( queue.size() >= sampleSize || (!fillRequired && queue.size()>=MIN_SAMPLE_SIZE)  ) {
-					computeFit();     // Updates alueProperty
+					computeFit();     // Updates valueProperty
 					if( !isLocked() ) {
 						// Give it a new timestamp
 						lastValue = new BasicQualifiedValue(valueProperty.getValue(),qv.getQuality(),qv.getTimestamp());
@@ -292,14 +291,13 @@ public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
 				continue;
 			}
 			obs.add(n,val);
-			
-			// Instantiate a linear fitter
-			final PolynomialCurveFitter fitter = PolynomialCurveFitter.create(1);
-			// Retrieve fitted parameters (coefficients of the polynomial function).
-			coefficients = fitter.fit(obs.toList());
-			log.infof("%s.computeFit: Coefficients are: %s %s",getName(),String.valueOf(coefficients[0]),String.valueOf(coefficients[1]));
-			// Value = mx + b
-			valueProperty.setValue(coefficients[1]*n+coefficients[0]);
 		}
+		// Instantiate a linear fitter
+		final PolynomialCurveFitter fitter = PolynomialCurveFitter.create(1);
+		// Retrieve fitted parameters (coefficients of the polynomial function).
+		coefficients = fitter.fit(obs.toList());
+		log.infof("%s.computeFit: Coefficients are: %s %s",getName(),String.valueOf(coefficients[0]),String.valueOf(coefficients[1]));
+		// Value = mx + b
+		valueProperty.setValue(coefficients[1]*n+coefficients[0]);
 	}
 }

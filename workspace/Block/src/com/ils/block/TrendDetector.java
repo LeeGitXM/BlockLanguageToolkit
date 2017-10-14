@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.commons.math3.fitting.PolynomialCurveFitter;
+import org.apache.commons.math3.fitting.WeightedObservedPoints;
+
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.AnchorDirection;
@@ -42,7 +45,6 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
  */
 @ExecutableBlock
 public class TrendDetector extends AbstractProcessBlock implements ProcessBlock {
-	private final String TAG = "TrendDetector";
 	protected static final String BLOCK_PROPERTY_CALCULATION_OPTION = "SlopeCalculationOption";
 	protected static final String BLOCK_PROPERTY_PROJECTION = "ProjectedValue";
 	protected static final String BLOCK_PROPERTY_RELATIVE_TO_TARGET = "RelativeToTarget";
@@ -61,12 +63,11 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 	protected static final String PORT_VALUE = "value";
 	// Output ports
 	protected static final String PORT_SLOPE = "slope";
-	protected static final String PORT_VARIANCE = "var";
+	protected static final String PORT_SLOPE_VARIANCE = "var";
 	protected static final String PORT_PROJECTION = "projection";
 	private final static int DEFAULT_BUFFER_SIZE = 10;
 	
 	
-	private boolean clearOnReset = false;
 	private SlopeCalculationOption calculationOption = SlopeCalculationOption.AVERAGE;
 	private int countThreshold = 2;
 	private double multiplier = 1.0;
@@ -76,19 +77,18 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 	
 	
 	private FixedSizeQueue<QualifiedValue> buffer;
-
+	private double previous = Double.NaN;
 	private double standardDeviation = Double.NaN;
-	private double mean = Double.NaN;
+	private double target = Double.NaN;
 	// Calculated parameters
-	private double lastSignificantValue = Double.NaN;
 	private double slope = Double.NaN;
-	private double variance = Double.NaN;
+	private double slopeVariance = Double.NaN;
 	private double intercept = Double.NaN;
 	private double interceptVariance = Double.NaN;
 	private double projection = Double.NaN;
 	// Counts
-	int downwardCount = 0;
-	int upwardCount   = 0;
+	private int downwardCount = 0;
+	private int upwardCount   = 0;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -97,6 +97,7 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 		buffer = new FixedSizeQueue<QualifiedValue>(DEFAULT_BUFFER_SIZE);
 		initialize();
 		initializePrototype();
+		clear();
 	}
 	
 	/**
@@ -122,8 +123,6 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 		this.isTransmitter = false;
 		BlockProperty calculationOptionProperty = new BlockProperty(BLOCK_PROPERTY_CALCULATION_OPTION,calculationOption,PropertyType.SLOPEOPTION,true);
 		setProperty(BLOCK_PROPERTY_CALCULATION_OPTION, calculationOptionProperty);
-		BlockProperty clearProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET,new Boolean(clearOnReset),PropertyType.BOOLEAN,true);
-		setProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET, clearProperty);
 		BlockProperty labelProperty = new BlockProperty(BLOCK_PROPERTY_TEST_LABEL,"",PropertyType.STRING,true);
 		setProperty(BLOCK_PROPERTY_TEST_LABEL, labelProperty);
 		BlockProperty thresholdProperty = new BlockProperty(BLOCK_PROPERTY_TREND_COUNT_THRESHOLD,new Integer(countThreshold),PropertyType.INTEGER,true);
@@ -168,7 +167,7 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 		output.setAnnotation("S");
 		output.setHint(PlacementHint.B);
 		anchors.add(output);
-		output = new AnchorPrototype(PORT_VARIANCE,AnchorDirection.OUTGOING,ConnectionType.DATA);
+		output = new AnchorPrototype(PORT_SLOPE_VARIANCE,AnchorDirection.OUTGOING,ConnectionType.DATA);
 		output.setAnnotation("V");
 		output.setHint(PlacementHint.B);
 		anchors.add(output);
@@ -181,18 +180,14 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 	@Override
 	public void reset() {
 		super.reset();
-		if( clearOnReset ) {
-			clear();
-
-		}
+		clear();
 	}
 	
 	private void clear() {
 		buffer.clear();
-		state = TruthValue.UNKNOWN;
+		state = TruthValue.FALSE;
 		downwardCount = 0;
 		upwardCount   = 0;
-		lastSignificantValue = Double.NaN;
 	}
 	
 	/**
@@ -204,16 +199,17 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 		super.acceptValue(incoming);
 		QualifiedValue qv = incoming.getValue();
 		Quality qual = qv.getQuality();
+		QualifiedValue lastPoint = buffer.getLast();
+		previous = ((Double)(lastPoint.getValue())).doubleValue();
 		String port = incoming.getConnection().getDownstreamPortName();
 		if( port.equals(PORT_VALUE) && !relativeToTarget ) {
 			if( qual.isGood() && qv!=null && qv.getValue()!=null ) {
 				if( !buffer.isEmpty() ) {
-					QualifiedValue lastPoint = buffer.getLast();
-					// Preserve the last value if we're within std deviation .... 
+					
+					// Preserve the last value if we're within a std deviation .... 
 					try {
-						double previous = ((Double)(lastPoint.getValue())).doubleValue();
 						double current = Double.parseDouble(qv.getValue().toString());
-						if( !isOutlier(current) ) {
+						if( !isOutlier(previous,current) ) {
 							if(current>previous) {
 								upwardCount++;
 								downwardCount = 0;
@@ -227,17 +223,17 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 						buffer.add(new TestAwareQualifiedValue(timer,new Double(current)));
 					}
 					catch(NumberFormatException nfe) {
-						log.warnf("%s.acceptValue Unable to convert number of points required to an integer (%s)",TAG,nfe.getLocalizedMessage());
+						log.warnf("%s.acceptValue Unable to convert number of points required to an integer (%s)",getName(),nfe.getLocalizedMessage());
 					}
 				}
+				// Buffer was empty, add the point
 				else {
 					buffer.add(qv);
 					try {
 						double current = Double.parseDouble(qv.getValue().toString());
-						lastSignificantValue = current;  // First value in buffer is significant
 					}
 					catch(NumberFormatException nfe) {
-						log.warnf("%s.acceptValue Unable to convert current value to a double (%s)",TAG,nfe.getLocalizedMessage());
+						log.warnf("%s.acceptValue Unable to convert current value to a double (%s)",getName(),nfe.getLocalizedMessage());
 					}
 				}
 			}
@@ -259,16 +255,11 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 			if( qv==null || qv.getValue()==null) return;
 			if( buffer.isEmpty() ) return;
 			try {
-				mean = Double.parseDouble(qv.getValue().toString());
-				// Need to test for last buffer value significant
-				QualifiedValue lastPoint = buffer.getLast();
-				double last = (Double)(lastPoint.getValue());
-				if( !isOutlier(last) ) {
-					evaluate();
-				}
+				target = Double.parseDouble(qv.getValue().toString());
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert target value to a float (%s)",TAG,nfe.getLocalizedMessage());
+				log.warnf("%s: propertyChange Unable to convert target value to a float (%s)",getName(),nfe.getLocalizedMessage());
 			}
 			
 		}
@@ -278,37 +269,35 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 			if( buffer.isEmpty() ) return;
 			try {
 				standardDeviation = Double.parseDouble(qv.getValue().toString());
-				// Need to test for last buffer value significant
-				QualifiedValue lastPoint = buffer.getLast();
-				double last = (Double)(lastPoint.getValue());
-				if( !isOutlier(last) ) {
-					evaluate();
-				}
+				evaluate();
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert standard deviation value to a float (%s)",TAG,nfe.getLocalizedMessage());
+				log.warnf("%s: propertyChange Unable to convert standard deviation value to a float (%s)",getName(),nfe.getLocalizedMessage());
 			}
 		}
 	}
 
 	/**
 	 * Unlike most blocks, this method is not associated with a timer expiration.
-	 * We simply use this to do the calculation.
+	 * We simply use this to do the calculation. Make sure that all inputs are defined.
 	 */
 	@Override
 	public void evaluate() {
-		if( Double.isNaN(mean) )              return;
-		if( Double.isNaN(standardDeviation) ) return;
+		if( buffer.isEmpty() ) {
+			setState(TruthValue.UNKNOWN);
+			return;
+		}
+		if( relativeToTarget && Double.isNaN(target) )  return;
+		if( Double.isNaN(previous) )			        return;
+		if( Double.isNaN(standardDeviation) )			return;
 
 		// Evaluate the buffer and report
-		log.debugf("%s.evaluate %d of %d",TAG,buffer.size(),pointsRequired);
+		log.debugf("%s.evaluate %d of %d",getName(),buffer.size(),pointsRequired);
 		if( buffer.size() >= pointsRequired) {
 			//Calculate the slope of the data
 			TruthValue newState = getTrendState();
 			if( !isLocked() && !newState.equals(state) ) {
-				// Give it a new timestamp
-				state = newState;
-				lastValue = new TestAwareQualifiedValue(timer,state);
+				setState(newState);    // Sets lastValue, updates activity buffer
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(nvn);
 				
@@ -318,9 +307,9 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 					nvn = new OutgoingNotification(this,PORT_SLOPE,qv);
 					controller.acceptCompletionNotification(nvn);
 					// output the standardDeviation, not variance
-					double stddev = Math.sqrt(variance);
+					double stddev = Math.sqrt(slopeVariance);
 					qv = new TestAwareQualifiedValue(timer,stddev);
-					nvn = new OutgoingNotification(this,PORT_VARIANCE,qv);
+					nvn = new OutgoingNotification(this,PORT_SLOPE_VARIANCE,qv);
 					controller.acceptCompletionNotification(nvn);
 					qv = new TestAwareQualifiedValue(timer,projection);
 					nvn = new OutgoingNotification(this,PORT_PROJECTION,qv);
@@ -340,13 +329,13 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 	
 	/**
 	 * Test to see if the most recent point is too far different from the last
-	 * @return
+	 * @return true if the point is OK to use
 	 */
-	private boolean isOutlier(double newval) {
+	private boolean isOutlier(double priorval,double newval) {
 		boolean result = false;
-		if( !Double.isNaN(lastSignificantValue) ) {
-			double lowLimit = lastSignificantValue - standardDeviation*multiplier;
-			double highLimit = lastSignificantValue + standardDeviation*multiplier;
+		if( !Double.isNaN(priorval) ) {
+			double lowLimit =   priorval - standardDeviation*multiplier;
+			double highLimit = priorval + standardDeviation*multiplier;
 			if( newval<lowLimit || newval>=highLimit) {
 				result = true;
 			}
@@ -372,18 +361,10 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
-		log.debugf("%s.propertyChange: %s = %s",TAG,propertyName,event.getNewValue().toString());
+		log.debugf("%s.propertyChange: %s = %s",getName(),propertyName,event.getNewValue().toString());
 		if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_CALCULATION_OPTION)) {
 			String type = event.getNewValue().toString().toUpperCase();
 			calculationOption = SlopeCalculationOption.valueOf(type);
-		}
-		else if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET)) {
-			try {
-				clearOnReset = Boolean.parseBoolean(event.getNewValue().toString());
-			}
-			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert clear flag to a boolean (%s)",getName(),nfe.getLocalizedMessage());
-			}
 		}
 		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_RELATIVE_TO_TARGET)) {
 			try {
@@ -398,7 +379,7 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 				multiplier = Double.parseDouble(event.getNewValue().toString());
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert multiplier value to a double (%s)",TAG,nfe.getLocalizedMessage());
+				log.warnf("%s: propertyChange Unable to convert multiplier value to a double (%s)",getName(),nfe.getLocalizedMessage());
 			}
 		}
 		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_TEST_LABEL)) {
@@ -414,7 +395,7 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 				if( countThreshold<2 ) countThreshold = 2;
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert number of count thresholdto an integer (%s)",TAG,nfe.getLocalizedMessage());
+				log.warnf("%s: propertyChange Unable to convert number of count thresholdto an integer (%s)",getName(),nfe.getLocalizedMessage());
 			}
 		}
 		else if(propertyName.equalsIgnoreCase(BLOCK_PROPERTY_TREND_POINTS_REQUIRED)) {
@@ -423,7 +404,7 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 				if( pointsRequired<2 ) pointsRequired = 2;
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s: propertyChange Unable to convert number of points required to an integer (%s)",TAG,nfe.getLocalizedMessage());
+				log.warnf("%s: propertyChange Unable to convert number of points required to an integer (%s)",getName(),nfe.getLocalizedMessage());
 			}
 		}
 		// Buffer size handled in superior method
@@ -438,8 +419,10 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 	public SerializableBlockStateDescriptor getInternalStatus() {
 		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
 		Map<String,String> attributes = descriptor.getAttributes();
-		attributes.put("Mean (target)", String.valueOf(mean));
+		attributes.put("Mean (target)", String.valueOf(target));
 		attributes.put("StandardDeviation", String.valueOf(standardDeviation));
+		attributes.put("Downward Count", String.valueOf(downwardCount));
+		attributes.put("UpwardCount", String.valueOf(upwardCount));
 		List<Map<String,String>> descBuffer = descriptor.getBuffer();
 		for( QualifiedValue qv:buffer) {
 			Map<String,String> qvMap = new HashMap<>();
@@ -467,33 +450,46 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 	}
 	/**
 	 * Compute the trend detection state, presumably because of a new input.
-	 * We are guaranteed that the buffer is full. 
+	 * We are guaranteed that the buffer is full and values are good. Only those 
+	 * points that are within a std deviation of the previous are in the history.
+	 * 
+	 * This code is a direct translation of the G2:
+	 * 			 EM-GDA-SIMPLE-TREND-OBSERVATION.EM-GDA-EVALUATOR
 	 */
 	private TruthValue getTrendState() {
-		TruthValue result = TruthValue.UNKNOWN;
+		TruthValue result = TruthValue.FALSE;     // No trend detected
+		
 		// Calculate the slope of the data
 		if( estimateSlope() ) {
 			double current = ((Double)buffer.getLast().getValue()).doubleValue();
+			if( current>previous) {
+				upwardCount++;
+				downwardCount = 0;
+			}
+			else {
+				downwardCount++;
+				upwardCount = 0;
+			}
 			if( upwardCount>countThreshold && !trendDirection.equals(TrendDirection.DOWNWARD)) {
-				if( relativeToTarget && current<mean ) result=TruthValue.TRUE;
-				else if( relativeToTarget && current>=mean ) result=TruthValue.UNKNOWN;
+				if( relativeToTarget && current>target ) result=TruthValue.TRUE;
+				else if( relativeToTarget && current<=target ) result=TruthValue.UNKNOWN;
 				else result=TruthValue.TRUE;
 			}
 			else if( downwardCount>countThreshold && !trendDirection.equals(TrendDirection.UPWARD)) {
-				if( relativeToTarget && current<mean ) result=TruthValue.TRUE;
-				else if( relativeToTarget && current>=mean ) result=TruthValue.UNKNOWN;
+				if( relativeToTarget && current<target ) result=TruthValue.TRUE;
+				else if( relativeToTarget && current>=target ) result=TruthValue.UNKNOWN;
 				else result=TruthValue.TRUE;
 			}
 			else {
 				result=TruthValue.FALSE;
 			}
 		}
-		log.tracef("%s.getTrendState: %d upward, %d downward => %s (%s)",TAG,upwardCount,downwardCount,result.toString(),trendDirection.toString());
+		log.tracef("%s.getTrendState: %d upward, %d downward => %s (%s)",getName(),upwardCount,downwardCount,result.toString(),trendDirection.toString());
 		return result;	
 	}
 	/**
 	 * Compute the slope and projected value. This function is only called if the required
-	 * point threshold is met.
+	 * point threshold is met. It is a direct translation of em-gda-calc-slope-estimate
 	 */
 	private boolean estimateSlope() {
 		boolean success = true;
@@ -507,56 +503,24 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 			// To calculate the projected value, we need the average time interval represented by the points
 			// and then take the last point to project forward in time.
 			projection = slope*averageInterval + ((Double)(end.getValue())).doubleValue();
-			variance = 0.0;
+			slopeVariance = 0.0;
 		}
+		// Least squares fit
 		else {
-			// Linear fit
-			if( leastSquareRegression() ) {
-				projection = slope * (averageInterval + end.getTimestamp().getTime()) + intercept;
+			final WeightedObservedPoints obs = new WeightedObservedPoints();
+			for(QualifiedValue qv:buffer) {
+				obs.add(qv.getTimestamp().getTime(),((Double)(qv.getValue())).doubleValue());
 			}
-			else {
-				success =  false;
-			}
+			// Instantiate a linear fitter
+			final PolynomialCurveFitter fitter = PolynomialCurveFitter.create(1);
+			// Retrieve fitted parameters (coefficients of the polynomial function).
+			double[] coefficients = fitter.fit(obs.toList());
+			log.infof("%s.computeFit: Coefficients are: %s %s",getName(),String.valueOf(coefficients[0]),String.valueOf(coefficients[1]));
+			// Value = mx + b
+			slope = coefficients[1];
+			projection = coefficients[1]*end.getTimestamp().getTime()+coefficients[0];
 		}
 		return success;
 	}
-	/**
-	 * Calculate the coefficients for the equation of the line (y = Mx + B) that best fits 
-	 * the supplied points using a least squares regression.  Note that this method is only
-	 * called if there are sufficient points in the buffer
-	 * @return true if a slope could be calculated
-	 */
-	private boolean leastSquareRegression() {
-		if( standardDeviation<=0.0 ) return false;
-		
-		slope = 0.0;
-		variance = 0.0;
-		projection = 0.0;
 
-		double S = 0.0; 
-		double Sx = 0.0; 
-		double Sy = 0.0; 
-		double Sxx = 0.0; 
-		double Sxy = 0.0;
-		for(QualifiedValue qv:buffer) {
-			double x = qv.getTimestamp().getTime();     // msecs
-			double y = ((Double)(qv.getValue())).doubleValue();
-			S = S + 1/(standardDeviation*standardDeviation);
-			Sx = Sx + x/(standardDeviation*standardDeviation);
-			Sy = Sy + y/(standardDeviation*standardDeviation);
-			Sxx = Sxx + x*x/(standardDeviation*standardDeviation);
-			Sxy = Sxy + x*y/(standardDeviation*standardDeviation);
-		}
-		// Denominator
-		double DEN = S * Sxx - Sx*Sx;
-		// Calculate slope and intercept.  Make sure DEN is not 0! 
-		if( DEN == 0.0 ) return false;
-
-		slope = (S * Sxy - Sx * Sy)/DEN;
-		variance = S / DEN;
-		intercept = (Sxx * Sy - Sx * Sxy)/DEN;
-		interceptVariance = Sxx / DEN;
-
-		return true;
-	}
 }

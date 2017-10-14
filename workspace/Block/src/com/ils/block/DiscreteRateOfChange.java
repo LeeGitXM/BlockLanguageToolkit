@@ -285,22 +285,21 @@ public class DiscreteRateOfChange extends AbstractProcessBlock implements Proces
 				continue;
 			}
 			obs.add(n,val);
-			
-			// Instantiate a polynomial fitter of the proper degree.
-			final PolynomialCurveFitter fitter = PolynomialCurveFitter.create(polynomialOrder);
-			// Retrieve fitted parameters (coefficients of the polynomial function).
-			coefficients = fitter.fit(obs.toList());
-			// Our answer is the derivative at "n". We assume the coefficient[n] is the nth order coefficient
-			if( polynomialOrder == 3 ) {
-				log.infof("%s.computeRateOfChange: Coefficients are: %s %s %s %s",getName(),String.valueOf(coefficients[0]),String.valueOf(coefficients[1]),
+		}
+		// Instantiate a polynomial fitter of the proper degree.
+		final PolynomialCurveFitter fitter = PolynomialCurveFitter.create(polynomialOrder);
+		// Retrieve fitted parameters (coefficients of the polynomial function).
+		coefficients = fitter.fit(obs.toList());
+		// Our answer is the derivative at "n". We assume the coefficient[n] is the nth order coefficient
+		if( polynomialOrder == 3 ) {
+			log.infof("%s.computeRateOfChange: Coefficients are: %s %s %s %s",getName(),String.valueOf(coefficients[0]),String.valueOf(coefficients[1]),
 																							String.valueOf(coefficients[2]),String.valueOf(coefficients[3]));
-				roc = coefficients[1] + 2*coefficients[2]*n + 3*coefficients[2]*n*n;
-			}
-			else {
-				log.infof("%s.computeRateOfChange: Coefficients are: %s %s %s",getName(),String.valueOf(coefficients[0]),String.valueOf(coefficients[1]),
+			roc = coefficients[1] + 2*coefficients[2]*n + 3*coefficients[2]*n*n;
+		}
+		else {
+			log.infof("%s.computeRateOfChange: Coefficients are: %s %s %s",getName(),String.valueOf(coefficients[0]),String.valueOf(coefficients[1]),
 																							String.valueOf(coefficients[2]));
-				roc = coefficients[1] + 2*coefficients[2]*n;
-			}
+			roc = coefficients[1] + 2*coefficients[2]*n;
 		}
 		return roc;
 	}

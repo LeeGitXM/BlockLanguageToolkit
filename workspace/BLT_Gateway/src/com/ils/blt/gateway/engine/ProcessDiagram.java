@@ -228,7 +228,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 		for( SerializableBlock sb:sblks ) {
 			UUID id = sb.getId();
 			ProcessBlock pb = blocks.get(id);
-			if( pb!=null ) {
+			if( pb!=null && sb.getProperties()!=null ) {
 				log.debugf("%s.updateProperties: Update block %s",TAG,pb.getName());
 				boolean hasChanged = false;
 				// Stop old subscriptions ONLY if the property changed, or no longer exists

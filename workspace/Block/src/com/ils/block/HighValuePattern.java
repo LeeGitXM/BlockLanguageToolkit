@@ -31,7 +31,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  * This class is a no-op. It simply passes its input onto the output.
  */
 @ExecutableBlock
-public class LowValuePattern extends AbstractProcessBlock implements ProcessBlock {
+public class HighValuePattern extends AbstractProcessBlock implements ProcessBlock {
 	private final static int MIN_SAMPLE_SIZE = 1;
 	
 	private boolean clearOnReset = true;
@@ -43,7 +43,7 @@ public class LowValuePattern extends AbstractProcessBlock implements ProcessBloc
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
-	public LowValuePattern() {
+	public HighValuePattern() {
 		queue = new FixedSizeQueue<QualifiedValue>(sampleSize);
 		initialize();
 		initializePrototype();
@@ -56,7 +56,7 @@ public class LowValuePattern extends AbstractProcessBlock implements ProcessBloc
 	 * @param parent universally unique Id identifying the parent of this block
 	 * @param block universally unique Id for the block
 	 */
-	public LowValuePattern(ExecutionController ec,UUID parent,UUID block) {
+	public HighValuePattern(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
 		queue = new FixedSizeQueue<QualifiedValue>(sampleSize);
 		initialize();
@@ -75,7 +75,7 @@ public class LowValuePattern extends AbstractProcessBlock implements ProcessBloc
 	 * Define the synchronization property and ports.
 	 */
 	private void initialize() {	
-		setName("LowValuePattern");
+		setName("HighValuePattern");
 
 		BlockProperty clearProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET,Boolean.TRUE,PropertyType.BOOLEAN,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET, clearProperty);
@@ -186,14 +186,14 @@ public class LowValuePattern extends AbstractProcessBlock implements ProcessBloc
 	 * Augment the palette prototype for this block class.
 	 */
 	private void initializePrototype() {
-		prototype.setPaletteIconPath("Block/icons/palette/low_pattern.png");
-		prototype.setPaletteLabel("LowValPattern");
-		prototype.setTooltipText("Return TRUE if TriggerCount values are below the threshold");
+		prototype.setPaletteIconPath("Block/icons/palette/high_pattern.png");
+		prototype.setPaletteLabel("HighValPattern");
+		prototype.setTooltipText("Return TRUE if TriggerCount values are above the threshold");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_ANALYSIS);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());
-		desc.setEmbeddedIcon("Block/icons/embedded/n_less_equal.png");
+		desc.setEmbeddedIcon("Block/icons/embedded/n_greater_equal.png");
 		desc.setStyle(BlockStyle.SQUARE);
 		desc.setPreferredHeight(60);
 		desc.setPreferredWidth(60);
@@ -215,7 +215,7 @@ public class LowValuePattern extends AbstractProcessBlock implements ProcessBloc
 				double val = Double.NaN;
 				try {
 					val = Double.parseDouble(qv.getValue().toString());
-					if( val<threshold) patternCount++;
+					if( val>threshold) patternCount++;
 					else otherCount++;
 				}
 				catch(NumberFormatException nfe) {
