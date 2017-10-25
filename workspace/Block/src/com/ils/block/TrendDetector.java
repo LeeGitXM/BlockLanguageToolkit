@@ -199,13 +199,14 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 		super.acceptValue(incoming);
 		QualifiedValue qv = incoming.getValue();
 		Quality qual = qv.getQuality();
-		QualifiedValue lastPoint = buffer.getLast();
-		previous = ((Double)(lastPoint.getValue())).doubleValue();
+		
+
 		String port = incoming.getConnection().getDownstreamPortName();
 		if( port.equals(PORT_VALUE) && !relativeToTarget ) {
 			if( qual.isGood() && qv!=null && qv.getValue()!=null ) {
 				if( !buffer.isEmpty() ) {
-					
+					QualifiedValue lastPoint = buffer.getLast();
+					previous = ((Double)(lastPoint.getValue())).doubleValue();
 					// Preserve the last value if we're within a std deviation .... 
 					try {
 						double current = Double.parseDouble(qv.getValue().toString());

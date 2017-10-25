@@ -1,0 +1,27 @@
+#
+# Test of data-switch block
+#
+DIAGRAM="app75/family75/switch"
+Show: diagram $DIAGRAM
+resetDiagram ($DIAGRAM)
+
+Tag: OUTPUT_TAG MemoryTags/GainOutput
+Tag: CONTROL_TAG  MemoryTags/BooleanInputA
+TAG: IN MemoryTags/DoubleInput1
+
+tagset: SwitchData CONTROL_TAG IN
+Tagset: SwitchData
+
+Test: Switch All Outputs
+Step: All States
+
+09:59:40 CONTROL_TAG = "UNKNOWN"
+09:59:50 OUTPUT_TAG = 42.
+10:00:00 "TRUE",55.0
+10:00:10 Assert: OUTPUT_TAG = 65.0 "Output reflects true bias"
+10:00:30 "UNKNOWN",56
+10:00:40 Assert: OUTPUT_TAG = 56 "Output reflects unknown bias"
+10:00:50 "FALSE"
+10:01:50 Assert: OUTPUT_TAG = 56 "Output not changed because no new value"
+10:02:00 "FALSE",45
+10:02:50 Assert: OUTPUT_TAG = 35 "Output reflects false bias"

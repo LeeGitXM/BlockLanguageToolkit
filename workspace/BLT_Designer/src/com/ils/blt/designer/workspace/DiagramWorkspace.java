@@ -49,6 +49,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
+import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
@@ -802,12 +803,14 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		}
 		
 		// Change all stubs and downstream connections to the selected type.
-		// This does NOT make the block dirty, since the changes are automatically
+		// This does NOT make the block dirty, since the changes are automatically.
+		// Special case: ignore change to an incoming control port.
 		// synched with the gateway.
 		public void actionPerformed(ActionEvent e) {
 			block.changeConnectorType(connectionType);
 			List<SerializableAnchor> anchors = new ArrayList<SerializableAnchor>();
 			for( AnchorDescriptor anchor:block.getAnchors()) {
+				if( anchor.getDisplay().equalsIgnoreCase(BlockConstants.CONTROL_PORT_NAME)) continue;
 				anchors.add(block.convertAnchorToSerializable((ProcessAnchorDescriptor)anchor));
 			}
 			handler.updateBlockAnchors(diagram.getId(),block.getId(),anchors);

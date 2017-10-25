@@ -23,6 +23,7 @@ run: setproperty.txt
 run: sqc.txt
 run: sqclogic.txt
 run: sum.txt
+run: switch.txt
 run: timedlimits.txt
 run: truthpulse.txt
 run: upstream.txt
