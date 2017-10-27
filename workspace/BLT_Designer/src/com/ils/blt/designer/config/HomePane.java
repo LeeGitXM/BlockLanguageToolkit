@@ -11,6 +11,7 @@ import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -21,7 +22,9 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
 import com.ils.blt.common.DiagramState;
+import com.ils.blt.common.UtilityFunctions;
 import com.ils.common.GeneralPurposeDataContainer;
+import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -42,12 +45,15 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 	private final JComboBox<String> unitComboBox = new JComboBox<String>();
 	protected final JRadioButton isolationButton;
 	protected final JRadioButton productionButton;
+	final JCheckBox managedCheckBox = new JCheckBox();
 	protected final ButtonGroup databaseGroup;
 	
 	private static Icon nextIcon = new ImageIcon(HomePane.class.getResource("/images/arrow_right_green.png"));
 	final JButton nextButton = new JButton("Outputs", nextIcon);
 	final JButton cancelButton = new JButton("Cancel");
 	final JButton okButton = new JButton("OK");
+	private final UtilityFunctions fcns = new UtilityFunctions();
+	protected final LoggerEx log;
 
 	// Don't add an Apply button because then I need to manage getting the id's of any quant outputs they create 
 	// back from the extension manager.
@@ -57,6 +63,9 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 		super(new BorderLayout());
 		this.controller = controller;
 		this.model = controller.getModel();
+		this.log = controller.log;
+		
+		log.infof("In the HomePane constructor");
 		
 		okButton.setPreferredSize(ApplicationConfigurationConstants.BUTTON_SIZE);
 		cancelButton.setPreferredSize(ApplicationConfigurationConstants.BUTTON_SIZE);
@@ -88,6 +97,12 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 		JScrollPane scrollPane = new JScrollPane(descriptionTextArea);
 		scrollPane.setPreferredSize(AREA_SIZE);
 		mainPanel.add(scrollPane,"gaptop 2,aligny top,span,wrap");
+		
+		// Add the Managed check box
+		log.infof("Managed: %s", model.getProperties().get("Managed"));
+		mainPanel.add(new JLabel("Managed:"), "gap 10");
+		mainPanel.add(managedCheckBox, "wrap, align left");
+		managedCheckBox.setSelected(fcns.coerceToBoolean( model.getProperties().get("Managed")));
 
 		// Set up the Message Queue Combo Box
 		mainPanel.add(new JLabel("Queue:"), "align right");
@@ -143,12 +158,7 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 		unitComboBox.setPreferredSize(ApplicationConfigurationConstants.COMBO_SIZE);
 		mainPanel.add(unitComboBox, "wrap");
 
-		mainPanel.add(nextButton,"cell 1 9,right");
-		nextButton.setHorizontalTextPosition(SwingConstants.LEFT);
-		nextButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {doNext();}			
-		});
-		
+		// Add the Production - Isolation Radio Buttons
 		productionButton = new JRadioButton("Production");
 		productionButton.setActionCommand("production");
 		mainPanel.add(productionButton, "cell 1 10,split");
@@ -161,6 +171,12 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 		DiagramState state = controller.getNode().getState();
 		if( state.equals(DiagramState.ACTIVE)) productionButton.setSelected(true);
 		else isolationButton.setSelected(true);
+		
+		mainPanel.add(nextButton,"cell 1 13,right");
+		nextButton.setHorizontalTextPosition(SwingConstants.LEFT);
+		nextButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {doNext();}			
+		});
 		
 		// Add buttons to the button panel
 		buttonPanel.add(okButton);
@@ -197,7 +213,7 @@ public class HomePane extends JPanel implements ApplicationConfigurationControll
 		model.getProperties().put("GroupRampMethod",(String) groupRampMethodComboBox.getSelectedItem());
 		model.getProperties().put("Unit",(String) unitComboBox.getSelectedItem());
 		
-
+		model.getProperties().put("Managed",(managedCheckBox.isSelected()?"1":"0"));
 	}
 
 	protected void doCancel() {
