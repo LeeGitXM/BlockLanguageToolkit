@@ -115,10 +115,11 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 		baseAcceptValue(vcn);
 		lastValue = vcn.getValue();
 		if( !isLocked() && running ) {
-			if( lastValue.getValue() != null ) {
-				String quality = (lastValue.getQuality()==null?"NO QUALITY":lastValue.getQuality().getName());
-				String timestamp = (lastValue.getTimestamp()==null?"NO TIME":dateFormatter.format(lastValue.getTimestamp()));
-				log.debugf("%s.acceptValue: propagating %s (%s at %s)",getName(),lastValue.getValue().toString(),quality,timestamp);
+			if( lastValue!=null &&  lastValue.getValue() != null ) {
+				String valueString = lastValue.getValue().toString();
+				String qualityString = (lastValue.getQuality()==null?"NO QUALITY":lastValue.getQuality().getName());
+				String timestampString = (lastValue.getTimestamp()==null?"NO TIME":dateFormatter.format(lastValue.getTimestamp()));
+				log.debugf("%s.acceptValue: propagating %s (%s at %s)",getName(),valueString,qualityString,timestampString);
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(nvn);
 			}

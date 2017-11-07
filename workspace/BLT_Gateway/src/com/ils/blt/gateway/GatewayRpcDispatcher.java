@@ -44,6 +44,7 @@ public class GatewayRpcDispatcher   {
 
 	/**
 	 * Constructor. There is a separate dispatcher for each project.
+	 * @param ctx Gateway context
 	 */
 	public GatewayRpcDispatcher(GatewayContext ctx) {
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());

@@ -120,13 +120,13 @@ public class ForceValueSettingsDialog extends JDialog {
 				addSeparator(outerPanel,pad.getDisplay());
 				if( pad.getConnectionType().equals(ConnectionType.TRUTHVALUE) ) {
 					JComboBox<String> box = createTruthValueCombo();
-					outerPanel.add(box,"gaptop 0,gapbottom 0,wrap");
+					outerPanel.add(box,"gapleft 0,gaptop 0,gapbottom 0,wrap");
 					componentMap.put(pad.getDisplay(), box);
 				}
 				// For most types, just a text box
 				else {
 					JTextField field = createTextField();
-					outerPanel.add(field,"gaptop 0,gapbottom 0,wrap");
+					outerPanel.add(field,"gapleft 0,gaptop 0,gapbottom 0,wrap");
 					componentMap.put(pad.getDisplay(), field);
 				}
 			}
@@ -142,7 +142,7 @@ public class ForceValueSettingsDialog extends JDialog {
 		JLabel label = new JLabel(text);
 		label.setFont(new Font("Tahoma", Font.PLAIN, 11));
 		label.setForeground(Color.BLUE);
-		panel.add(label, "split 2,span");
+		panel.add(label, "gapleft 0,split 2,span");
 		panel.add(separator, "growx,wrap");
 		return label;
 	}
