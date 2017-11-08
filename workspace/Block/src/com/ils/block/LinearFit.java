@@ -137,9 +137,9 @@ public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
 				queue.add(qv);
 				if( queue.size() >= sampleSize || (!fillRequired && queue.size()>=MIN_SAMPLE_SIZE)  ) {
 					computeFit();     // Updates valueProperty
+					// Give it a new timestamp
+					lastValue = new BasicQualifiedValue(valueProperty.getValue(),qv.getQuality(),qv.getTimestamp());
 					if( !isLocked() ) {
-						// Give it a new timestamp
-						lastValue = new BasicQualifiedValue(valueProperty.getValue(),qv.getQuality(),qv.getTimestamp());
 						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 						controller.acceptCompletionNotification(nvn);
 						notifyOfStatus(lastValue);
@@ -153,8 +153,8 @@ public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
 			}
 			else {
 				// Post bad value on output, clear queue
+				lastValue = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
 				if( !isLocked() ) {
-					lastValue = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 					controller.acceptCompletionNotification(nvn);
 					notifyOfStatus(lastValue);

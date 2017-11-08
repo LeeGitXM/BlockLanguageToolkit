@@ -356,18 +356,18 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void propagate() {
 		super.propagate();     // Handles port OUT
-		if( Double.isNaN(proportionalContribution)) {
+		if( !Double.isNaN(proportionalContribution)) {
 			QualifiedValue prop = new TestAwareQualifiedValue(timer,proportionalContribution);
 			OutgoingNotification nvn = new OutgoingNotification(this,PROPORTIONAL_PORT,prop);
 			controller.acceptCompletionNotification(nvn);
 		}
-		if( Double.isNaN(integralContribution)) {
+		if( !Double.isNaN(integralContribution)) {
 			QualifiedValue integ = new TestAwareQualifiedValue(timer,integralContribution);
 			OutgoingNotification nvn = new OutgoingNotification(this,INTEGRAL_PORT,integ);
 			controller.acceptCompletionNotification(nvn);
 		}
 		
-		if( Double.isNaN(derivativeContribution)) {
+		if( !Double.isNaN(derivativeContribution)) {
 			QualifiedValue deriv = new TestAwareQualifiedValue(timer,derivativeContribution);
 			OutgoingNotification nvn = new OutgoingNotification(this,DERIVATIVE_PORT,deriv);
 			controller.acceptCompletionNotification(nvn);

@@ -9,10 +9,12 @@ import org.python.core.PyObject;
 
 import com.ils.block.AbstractProcessBlock;
 import com.ils.blt.common.block.Activity;
+import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.notification.IncomingNotification;
+import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.gateway.PythonRequestHandler;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 
@@ -111,6 +113,13 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	@Override
 	public void notifyOfStatus() {
 		delegate.notifyOfStatus(context.getProjectManager().getProjectScriptManager(getProjectId()),getPythonBlock());
+	}
+	/**
+	 * Notify the python instance that it needs to propagate a value.
+	 */
+	@Override
+	public void propagate() {
+		delegate.propagate(context.getProjectManager().getProjectScriptManager(getProjectId()), pythonBlock);
 	}
 	/**
 	 * Accept a new value for a block property. Push through to the

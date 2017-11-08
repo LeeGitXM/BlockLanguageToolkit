@@ -355,6 +355,36 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 	private void notifyOfStatus(QualifiedValue qv) {
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
+	
+	/**
+	 * Special implementation, since we feed to 4 ports.
+	 */
+	@Override
+	public void propagate() {
+		super.propagate();     // Handles port OUT
+		if( Double.isNaN(slope)) {
+			QualifiedValue qv = new TestAwareQualifiedValue(timer,slope);
+			OutgoingNotification nvn = new OutgoingNotification(this,PORT_SLOPE,qv);
+			controller.acceptCompletionNotification(nvn);
+		}
+		if( Double.isNaN(slopeVariance)) {
+			// output the standardDeviation, not variance
+			double stddev = Math.sqrt(slopeVariance);
+			QualifiedValue qv = new TestAwareQualifiedValue(timer,stddev);
+			OutgoingNotification nvn = new OutgoingNotification(this,PORT_SLOPE_VARIANCE,qv);
+			controller.acceptCompletionNotification(nvn);
+		}
+		if( Double.isNaN(projection)) {
+			QualifiedValue qv = new TestAwareQualifiedValue(timer,projection);
+			OutgoingNotification nvn = new OutgoingNotification(this,PORT_PROJECTION,qv);
+			controller.acceptCompletionNotification(nvn);
+		}
+		
+		
+		
+
+	}
+	
 	/**
 	 * Handle a changes to the various attributes.
 	 */

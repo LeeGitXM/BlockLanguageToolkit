@@ -155,7 +155,13 @@ public class DataSwitch extends AbstractProcessBlock implements ProcessBlock {
 			}
 		}
 	}
-	
+	/**
+	 * Propogate does the same as evaluate
+	 */
+	@Override
+	public void propagate() {
+		evaluate();
+	}
 	/**
 	 * Send status update notification for our last latest state.
 	 */

@@ -163,8 +163,8 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 				// Bad quality, emit the result immediately
 				if( !state.equals(TruthValue.UNKNOWN) ) {
 					state = TruthValue.UNKNOWN;
+					lastValue = new BasicQualifiedValue(state,qual,qv.getTimestamp());
 					if( !isLocked() ) {
-						lastValue = new BasicQualifiedValue(state,qual,qv.getTimestamp());
 						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 						controller.acceptCompletionNotification(nvn);
 					}
