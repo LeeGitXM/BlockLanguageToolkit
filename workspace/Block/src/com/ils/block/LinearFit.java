@@ -23,6 +23,7 @@ import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.PlacementHint;
 import com.ils.blt.common.block.PropertyType;
+import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
@@ -193,7 +194,19 @@ public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
 		}
 		return descriptor;
 	}
-	
+	/**
+	 * We have a custom version as there are two ports, the normal output and slope.
+	 */
+	@Override
+	public void propagate() {
+		super.propagate();
+		if( coefficients!=null && lastValue!=null ) {
+			// Propagate the slope scaled
+			QualifiedValue qv = new BasicQualifiedValue(new Double(coefficients[1]*scaleFactor),lastValue.getQuality(),lastValue.getTimestamp());
+			OutgoingNotification nvn = new OutgoingNotification(this,SLOPE_PORT_NAME,qv);
+			controller.acceptCompletionNotification(nvn);
+		}
+	}
 	/**
 	 * Handle a change to one of our custom properties.
 	 */

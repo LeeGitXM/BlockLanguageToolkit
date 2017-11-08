@@ -128,9 +128,9 @@ public class DiscreteRateOfChange extends AbstractProcessBlock implements Proces
 				queue.add(qv);
 				if( queue.size() >= sampleSize) {
 					double result = computeRateOfChange();
+					// Give it a new timestamp
+					lastValue = new BasicQualifiedValue(result,qv.getQuality(),qv.getTimestamp());
 					if( !isLocked() ) {
-						// Give it a new timestamp
-						lastValue = new BasicQualifiedValue(result,qv.getQuality(),qv.getTimestamp());
 						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 						controller.acceptCompletionNotification(nvn);
 						notifyOfStatus(lastValue);
@@ -143,9 +143,9 @@ public class DiscreteRateOfChange extends AbstractProcessBlock implements Proces
 				}
 			}
 			else {
+				lastValue = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
 				// Post bad value on output, clear queue
 				if( !isLocked() ) {
-					lastValue = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 					controller.acceptCompletionNotification(nvn);
 					notifyOfStatus(lastValue);

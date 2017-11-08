@@ -103,8 +103,8 @@ public class LowLimitObservation extends AbstractProcessBlock implements Process
 				if( !observation.getQuality().isGood()) newValue = TruthValue.UNKNOWN;
 				if( !newValue.equals(state)) {
 					state = newValue;
+					lastValue = new BasicQualifiedValue(state,observation.getQuality(),observation.getTimestamp());
 					if( !isLocked() ) {
-						lastValue = new BasicQualifiedValue(state,observation.getQuality(),observation.getTimestamp());
 						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 						controller.acceptCompletionNotification(nvn);
 						notifyOfStatus(lastValue);

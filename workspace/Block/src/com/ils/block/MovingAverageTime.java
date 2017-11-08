@@ -158,9 +158,9 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 		if( buffer.size() >= maxPoints) {
 			double result = computeAverage();
 			log.tracef("%s.evaluate avg=%f",getName(),result);
+			// Give it a new timestamp
+			lastValue = new TestAwareQualifiedValue(timer,result);
 			if( !isLocked() ) {
-				// Give it a new timestamp
-				lastValue = new TestAwareQualifiedValue(timer,result);
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(nvn);
 				notifyOfStatus(lastValue);

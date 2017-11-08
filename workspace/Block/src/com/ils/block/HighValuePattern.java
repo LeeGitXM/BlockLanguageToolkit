@@ -3,7 +3,6 @@
  */
 package com.ils.block;
 
-import java.util.Collection;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
@@ -23,7 +22,6 @@ import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.common.FixedSizeQueue;
-import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 

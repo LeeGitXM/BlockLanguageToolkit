@@ -58,16 +58,16 @@ public class Output extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
-		QualifiedValue qv = vcn.getValue();
+		lastValue = vcn.getValue();
 		if( !isLocked() ) {
-			log.debugf("%s.acceptValue: received %s",getName(),qv.toString());
+			log.debugf("%s.acceptValue: received %s",getName(),lastValue.toString());
 			if( pathProperty.getBindingType().equals(BindingType.TAG_WRITE)) {
 				log.tracef("%s.acceptValue: writing to path %s",getName(),pathProperty.getBinding().toString());
-				controller.updateTag(getParentId(),pathProperty.getBinding().toString(), qv);
+				controller.updateTag(getParentId(),pathProperty.getBinding().toString(), lastValue);
 			}
 		}
-		valueProperty.setValue(qv.getValue());
-		notifyOfStatus(qv);
+		valueProperty.setValue(lastValue.getValue());
+		notifyOfStatus(lastValue);
 	}
 	
 	/**
@@ -83,8 +83,18 @@ public class Output extends AbstractProcessBlock implements ProcessBlock {
 		updateStateForNewValue(qvalue);
 		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qvalue);
 	}
+	/**
+	 * Re-write to the tag.
+	 */
 	@Override
-	public void propagate() {}
+	public void propagate() {
+		if( lastValue!=null ) {
+			if( pathProperty.getBindingType().equals(BindingType.TAG_WRITE)) {
+				log.tracef("%s.propagate: writing to path %s",getName(),pathProperty.getBinding().toString());
+				controller.updateTag(getParentId(),pathProperty.getBinding().toString(), lastValue);
+			}
+		}
+	}
 	
 	/**
 	 * Add properties that are new for this class.

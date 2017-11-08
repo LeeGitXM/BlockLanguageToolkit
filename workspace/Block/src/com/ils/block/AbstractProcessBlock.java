@@ -483,7 +483,6 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 			String value ="NULL";
 			if( qv!=null && qv.getValue()!=null ) {
 				value = qv.getValue().toString();
-				lastValue = qv;
 				String key = incoming.getConnection().getSource().toString();
 				recordActivity(Activity.ACTIVITY_RECEIVE,port,value,key);
 			}
