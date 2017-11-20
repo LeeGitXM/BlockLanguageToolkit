@@ -14,6 +14,7 @@ run: highlimit.txt
 run: inhibit.txt
 run: logic.txt
 run: logicfilter.txt
+run: pattern.txt
 run: persistence.txt
 run: pythonblocks.txt
 run: readwrite2.txt

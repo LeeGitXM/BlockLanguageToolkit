@@ -1,0 +1,54 @@
+#
+# Test of high and low value patterns.
+#
+DIAGRAM="app75/family75/pattern"
+tag: HighPatternOut MemoryTags/HighPatternOut
+tag: LowPatternOut MemoryTags/LowPatternOut
+tagset: PatternInput MemoryTags/PatternInput
+
+Tagset: PatternInput
+Show: diagram $DIAGRAM
+
+# Note the InputBlock will re-transmit its value after a RESET.
+# Make use of this.
+2000/01/01 09:59:30 0.0
+resetDiagram ($DIAGRAM)
+
+Test: Pattern Detection
+Step: Increasing Values
+
+2000/01/01 10:00 1.0
+2000/01/01 10:00:30 2.0
+2000/01/01 10:00:40 Assert: HighPatternOut = "UNKNOWN"  "UNKNOWN before buffer full"
+2000/01/01 10:00:50 Assert: LowPatternOut = "UNKNOWN"  "UNKNOWN before buffer full"
+2000/01/01 10:01:00 3.0
+2000/01/01 10:01:10 Assert: HighPatternOut = "UNKNOWN" "UNKNOWN before buffer full"
+2000/01/01 10:01:30 Assert: LowPatternOut = "UNKNOWN" "UNKNOWN before buffer full"
+2000/01/01 10:01:30 4.0
+2000/01/01 10:01:40 Assert: HighPatternOut = "UNKNOWN" "UNKNOWN before buffer full"
+2000/01/01 10:01:50 Assert: LowPatternOut = "UNKNOWN" "UNKNOWN before buffer full"
+2000/01/01 10:02:00 5.0
+2000/01/01 10:02:10 Assert: HighPatternOut = "TRUE" "5 positive entries is true"
+2000/01/01 10:02:20 Assert: LowPatternOut = "UNKNOWN" "UNKNOWN before buffer full"
+2000/01/01 10:02:40 6.0
+2000/01/01 10:02:50 Assert: HighPatternOut = "TRUE" "Detected high pattern"
+2000/01/01 10:03:00 Assert: LowPatternOut = "FALSE" "Not a low pattern"
+
+Step: Decreasing Values
+resetDiagram ($DIAGRAM)
+2000/01/01 10:04 -1.0
+2000/01/01 10:04:30 -2.0
+2000/01/01 10:04:40 Assert: HighPatternOut = "UNKNOWN"  "UNKNOWN before buffer full"
+2000/01/01 10:04:50 Assert: LowPatternOut = "UNKNOWN"  "UNKNOWN before buffer full"
+2000/01/01 10:05:00 -3.0
+2000/01/01 10:05:10 Assert: HighPatternOut = "UNKNOWN" "UNKNOWN before buffer full"
+2000/01/01 10:05:30 Assert: LowPatternOut = "UNKNOWN" "UNKNOWN before buffer full"
+2000/01/01 10:05:30 -4.0
+2000/01/01 10:05:40 Assert: HighPatternOut = "UNKNOWN" "UNKNOWN before buffer full"
+2000/01/01 10:05:50 Assert: LowPatternOut = "UNKNOWN" "UNKNOWN before buffer full"
+2000/01/01 10:06:00 -5.0
+2000/01/01 10:06:10 Assert: HighPatternOut = "UNKNOWN" "UNKNOWN before buffer full"
+2000/01/01 10:06:20 Assert: LowPatternOut = "TRUE" "5 negative entries is true"
+2000/01/01 10:06:40 -6.0
+2000/01/01 10:06:50 Assert: LowPatternOut = "TRUE" "Detected low pattern"
+2000/01/01 10:07:00 Assert: HighPatternOut = "FALSE" "Not a high pattern"

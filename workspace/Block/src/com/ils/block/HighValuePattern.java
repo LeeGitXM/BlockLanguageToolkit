@@ -3,6 +3,10 @@
  */
 package com.ils.block;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
@@ -21,6 +25,7 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.FixedSizeQueue;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -34,8 +39,8 @@ public class HighValuePattern extends AbstractProcessBlock implements ProcessBlo
 	
 	private boolean clearOnReset = true;
 	private int sampleSize = 1;
-	private double threshold = 1.0;
-	private int triggerCount = 0;
+	private double threshold = 0.0;
+	private int triggerCount = 1;
 	private final FixedSizeQueue<QualifiedValue> queue;
 
 	/**
@@ -128,6 +133,24 @@ public class HighValuePattern extends AbstractProcessBlock implements ProcessBlo
 			}
 	}
 	/**
+	 * @return a block-specific description of internal statue
+	 */
+	@Override
+	public SerializableBlockStateDescriptor getInternalStatus() {
+		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
+		List<Map<String,String>> descBuffer = descriptor.getBuffer();
+		Iterator<QualifiedValue> walker = queue.iterator();
+		while( walker.hasNext() ) {
+			Map<String,String> qvMap = new HashMap<>();
+			QualifiedValue qv = walker.next();
+			qvMap.put("Value", qv.getValue().toString());
+			qvMap.put("Quality", qv.getQuality().toString());
+			qvMap.put("Timestamp", qv.getTimestamp().toString());
+			descBuffer.add(qvMap);
+		}
+		return descriptor;
+	}
+	/**
 	 * Handle a change to one of our custom properties.
 	 */
 	@Override
@@ -217,7 +240,7 @@ public class HighValuePattern extends AbstractProcessBlock implements ProcessBlo
 					else otherCount++;
 				}
 				catch(NumberFormatException nfe) {
-					log.warnf("%computeState detected not-a-number in queue (%s), ignored",getName(),nfe.getLocalizedMessage());
+					log.warnf("%s.computeState detected not-a-number in queue (%s), ignored",getName(),nfe.getLocalizedMessage());
 					continue;
 				}
 			}
