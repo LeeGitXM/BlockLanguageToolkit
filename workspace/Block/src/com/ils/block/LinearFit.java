@@ -300,7 +300,7 @@ public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
 				val = Double.parseDouble(qv.getValue().toString());
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%computeRateOfChange detected not-a-number in queue (%s), ignored",getName(),nfe.getLocalizedMessage());
+				log.warnf("%s.computeRateOfChange detected not-a-number in queue (%s), ignored",getName(),nfe.getLocalizedMessage());
 				continue;
 			}
 			obs.add(n,val);
