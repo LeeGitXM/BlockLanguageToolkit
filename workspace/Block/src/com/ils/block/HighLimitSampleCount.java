@@ -124,9 +124,9 @@ public class HighLimitSampleCount extends AbstractProcessBlock implements Proces
 				}
 				if( queue.size()<sampleSize && fillRequired && result.equals(TruthValue.FALSE) ) result = TruthValue.UNKNOWN;
 				//log.infof("%s.acceptValue: Calculated %s (%d of %d) hyst=%s",TAG,result.name(),queue.size(),sampleSize,hysteresis.name());
+				// Give it a new timestamp
+				lastValue = new TestAwareQualifiedValue(timer,result);
 				if( !isLocked() ) {
-					// Give it a new timestamp
-					lastValue = new TestAwareQualifiedValue(timer,result);
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 					controller.acceptCompletionNotification(nvn);
 					notifyOfStatus(lastValue);

@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.apache.commons.math3.analysis.function.Pow;
 import org.apache.commons.math3.fitting.PolynomialCurveFitter;
 import org.apache.commons.math3.fitting.WeightedObservedPoints;
 
@@ -128,9 +127,9 @@ public class DiscreteRateOfChange extends AbstractProcessBlock implements Proces
 				queue.add(qv);
 				if( queue.size() >= sampleSize) {
 					double result = computeRateOfChange();
+					// Give it a new timestamp
+					lastValue = new BasicQualifiedValue(result,qv.getQuality(),qv.getTimestamp());
 					if( !isLocked() ) {
-						// Give it a new timestamp
-						lastValue = new BasicQualifiedValue(result,qv.getQuality(),qv.getTimestamp());
 						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 						controller.acceptCompletionNotification(nvn);
 						notifyOfStatus(lastValue);
@@ -143,9 +142,9 @@ public class DiscreteRateOfChange extends AbstractProcessBlock implements Proces
 				}
 			}
 			else {
+				lastValue = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
 				// Post bad value on output, clear queue
 				if( !isLocked() ) {
-					lastValue = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 					controller.acceptCompletionNotification(nvn);
 					notifyOfStatus(lastValue);
@@ -281,7 +280,7 @@ public class DiscreteRateOfChange extends AbstractProcessBlock implements Proces
 				val = Double.parseDouble(qv.getValue().toString());
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%computeRateOfChange detected not-a-number in queue (%s), ignored",getName(),nfe.getLocalizedMessage());
+				log.warnf("%s.computeRateOfChange detected not-a-number in queue (%s), ignored",getName(),nfe.getLocalizedMessage());
 				continue;
 			}
 			obs.add(n,val);

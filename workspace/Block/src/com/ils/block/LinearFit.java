@@ -23,6 +23,7 @@ import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.PlacementHint;
 import com.ils.blt.common.block.PropertyType;
+import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
@@ -137,9 +138,9 @@ public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
 				queue.add(qv);
 				if( queue.size() >= sampleSize || (!fillRequired && queue.size()>=MIN_SAMPLE_SIZE)  ) {
 					computeFit();     // Updates valueProperty
+					// Give it a new timestamp
+					lastValue = new BasicQualifiedValue(valueProperty.getValue(),qv.getQuality(),qv.getTimestamp());
 					if( !isLocked() ) {
-						// Give it a new timestamp
-						lastValue = new BasicQualifiedValue(valueProperty.getValue(),qv.getQuality(),qv.getTimestamp());
 						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 						controller.acceptCompletionNotification(nvn);
 						notifyOfStatus(lastValue);
@@ -153,8 +154,8 @@ public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
 			}
 			else {
 				// Post bad value on output, clear queue
+				lastValue = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
 				if( !isLocked() ) {
-					lastValue = new BasicQualifiedValue(new Double(Double.NaN),qv.getQuality(),qv.getTimestamp());
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 					controller.acceptCompletionNotification(nvn);
 					notifyOfStatus(lastValue);
@@ -193,7 +194,19 @@ public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
 		}
 		return descriptor;
 	}
-	
+	/**
+	 * We have a custom version as there are two ports, the normal output and slope.
+	 */
+	@Override
+	public void propagate() {
+		super.propagate();
+		if( coefficients!=null && lastValue!=null ) {
+			// Propagate the slope scaled
+			QualifiedValue qv = new BasicQualifiedValue(new Double(coefficients[1]*scaleFactor),lastValue.getQuality(),lastValue.getTimestamp());
+			OutgoingNotification nvn = new OutgoingNotification(this,SLOPE_PORT_NAME,qv);
+			controller.acceptCompletionNotification(nvn);
+		}
+	}
 	/**
 	 * Handle a change to one of our custom properties.
 	 */
@@ -287,7 +300,7 @@ public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
 				val = Double.parseDouble(qv.getValue().toString());
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%computeRateOfChange detected not-a-number in queue (%s), ignored",getName(),nfe.getLocalizedMessage());
+				log.warnf("%s.computeRateOfChange detected not-a-number in queue (%s), ignored",getName(),nfe.getLocalizedMessage());
 				continue;
 			}
 			obs.add(n,val);

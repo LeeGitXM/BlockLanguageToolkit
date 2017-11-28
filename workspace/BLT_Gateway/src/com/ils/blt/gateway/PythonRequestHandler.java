@@ -250,6 +250,7 @@ public class PythonRequestHandler   {
 	 * @param port the output port on which to insert the result
 	 * @param value the result of the block's computation
 	 * @param quality of the reported output
+	 * @param time timestamp of the notification
 	 */
 	public void postValue(String parent,String id,String port,String value,String quality,long time)  {
 		log.debugf("%s.postValue - %s = %s (%s) on %s",TAG,id,value.toString(),quality.toString(),port);
@@ -282,6 +283,7 @@ public class PythonRequestHandler   {
 	 * @param port the output port on which to insert the result
 	 * @param value the result of the block's computation
 	 * @param quality of the reported output
+	 * @param time timestamp of the notification
 	 */
 	public void sendConnectionNotification(String id, String port, String value,String quality,long time)  {
 		log.tracef("%s.sendConnectionNotification - %s = %s on %s",TAG,id,value.toString(),port);

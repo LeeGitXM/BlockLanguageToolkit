@@ -11,8 +11,8 @@ mkdir -p ${PROCS}/g2/vistalon/calculation
 mkdir -p ${PROCS}/ignition/api
 mkdir -p ${PROCS}/ignition/escorez/calculation
 mkdir -p ${PROCS}/ignition/vistalon/calculation
-cd ${SVN}/Migration/BRPP_G-Line/Exports\ from\ G2/diagToolkit/calculationMethods
-cp *.txt ${PROCS}/g2/gline/calculation
+#cd ${SVN}/Migration/BRPP_G-Line/Exports\ from\ G2/diagToolkit/calculationMethods
+#cp *.txt ${PROCS}/g2/gline/calculation
 cd ${SVN}/Migration/Escorez/Exports\ from\ G2/diagToolkit/calculationMethods
 cp *.txt ${PROCS}/g2/escorez/calculation
 cp ${SVN}/G2Artifacts/Source\ code/vist-monitoring/procedures/CALC*.txt ${PROCS}/g2/vistalon/calculation

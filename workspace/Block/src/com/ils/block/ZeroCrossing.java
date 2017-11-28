@@ -107,8 +107,8 @@ public class ZeroCrossing extends AbstractProcessBlock implements ProcessBlock {
 				
 				if( !result.equals(state)) {
 					state = result;
+					lastValue = new BasicQualifiedValue(state,qv.getQuality(),qv.getTimestamp());
 					if( !isLocked() ) {
-						lastValue = new BasicQualifiedValue(state,qv.getQuality(),qv.getTimestamp());
 						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 						controller.acceptCompletionNotification(nvn);
 						notifyOfStatus(lastValue);

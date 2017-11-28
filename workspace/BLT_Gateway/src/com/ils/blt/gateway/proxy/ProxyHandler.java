@@ -64,6 +64,7 @@ public class ProxyHandler   {
 	private final Callback getBlockStateCallback;
 	private final Callback getBlockPrototypesCallback;
 	private final Callback notifyOfStatusCallback;
+	private final Callback propagateCallback;
 	private final Callback resetCallback;
 	private final Callback setBlockPropertyCallback;
 	private final Callback setBlockStateCallback;
@@ -83,6 +84,7 @@ public class ProxyHandler   {
 		getBlockStateCallback = new GetBlockState();
 		getBlockPrototypesCallback = new GetBlockPrototypes();
 		notifyOfStatusCallback = new NotifyOfStatus();
+		propagateCallback = new Propagate();
 		resetCallback = new Reset();
 		setBlockPropertyCallback = new SetBlockProperty();
 		setBlockStateCallback = new SetBlockState();
@@ -426,6 +428,20 @@ public class ProxyHandler   {
 			notifyOfStatusCallback.initializeLocalsMap(mgr);
 			notifyOfStatusCallback.setLocalVariable(0,block);
 			notifyOfStatusCallback.execute(mgr);
+		}
+	}
+	/**
+	 * Tell the block to propagate its last state and/or value as appropriate.
+	 *
+	 * @param mgr the appropriate project-specific script manager
+	 * @param block the saved Py block
+	 */
+	public void propagate(ScriptManager mgr,PyObject block) {
+		log.debugf("%s.propagate --- %s",TAG,block.toString());
+		if( propagateCallback.compileScript() ) {
+			propagateCallback.initializeLocalsMap(mgr);
+			propagateCallback.setLocalVariable(0,block);
+			propagateCallback.execute(mgr);
 		}
 	}
 	/**

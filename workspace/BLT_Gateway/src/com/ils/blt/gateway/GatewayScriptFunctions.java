@@ -47,11 +47,16 @@ public class GatewayScriptFunctions   {
 	public static void clearController() {
 		handler.clearController();
 	}
+	/**
+	 * @param uuid string value of application's UUID
+	 * @return name of the application
+	 */
 	public static String getApplicationName(String uuid) {
 		return handler.getApplicationName(uuid);
 	}
 	/**
-	 * Query the gateway for a list of prototypes for the defined blocks. 
+	 * Query the gateway for a list of prototypes for the defined blocks.
+	 * @return a list containing prototypes for all existing blocks 
 	 */
 	@SuppressWarnings("rawtypes")
 	public static List getBlockPrototypes() {
@@ -67,6 +72,8 @@ public class GatewayScriptFunctions   {
 		return handler.getBlockId(diagramId,blockName);
 	}
 	/**
+	 * @param diagramId diagram identifier
+	 * @param blockName name of the target block
 	 * @return the current state of the controller.
 	 */
 	public static String getBlockState(String diagramId,String blockName) {
@@ -78,10 +85,16 @@ public class GatewayScriptFunctions   {
 	public static String getControllerState() {
 		return handler.getControllerState();
 	}
+	/**
+	 * @param uuid string value of node's UUID
+	 * @return name of the database connection appropriate to the node's state
+	 */
 	public static String getDatabaseForUUID(String uuid) {
 		return handler.getDatabaseForUUID(uuid);
 	}
-	
+	/**
+	 * @return a list of datasource names
+	 */
 	public static List<String> getDatasourceNames() {
 		return handler.getDatasourceNames();
 	}
@@ -116,18 +129,23 @@ public class GatewayScriptFunctions   {
 		return handler.getDiagramDescriptors();
 	}
 	/**
-	 * blockId String representation of the block's internal Id.
+	 * @param blockId String representation of the block's internal Id.
 	 * @return the diagram that is a parent of the specified block.
 	 */
 	public static SerializableResourceDescriptor getDiagramForBlock(String blockId) {
 		return handler.getDiagramForBlock(blockId);
 	}
 	/**
+	 * @param diagramId the id of the diagram as a String
 	 * @return the current state of the specified diagram.
 	 */
 	public static DiagramState getDiagramState(String diagramId)  {
 		return handler.getDiagramState(diagramId);
 	}
+	/**
+	 * @param uuid string value of family's UUID
+	 * @return name of the family
+	 */
 	public static String getFamilyName(String uuid) {
 		return handler.getFamilyName(uuid);
 	}
@@ -146,12 +164,16 @@ public class GatewayScriptFunctions   {
 		return pyhandler;
 	}
 	/**
+	 * @param diagramId diagram identifier as a string
+	 * @param blockId block's identifier as a string
 	 * @return an explanation for the state of a block.
 	 */
 	public static String getExplanation(String diagramId,String blockId) {
 		return handler.getExplanation(diagramId,blockId);
 	}
 	/**
+	 * @param diagramId identifier of the diagram owning the block, a String
+	 * @param blockId identifier of the block
 	 * @return the the internal state of a block.
 	 */
 	public static SerializableBlockStateDescriptor getInternalState(String diagramId,String blockId) {
@@ -324,7 +346,8 @@ public class GatewayScriptFunctions   {
 	/**
 	 * Query a family in the gateway for list of descendants down to the level of a diagram. 
 	 * @param appName of the parent application
-	 * @return a list of nodes under the named application
+	 * @param famName of the parent family
+	 * @return a list of nodes under the named family
 	 */
 	public static List<SerializableResourceDescriptor> listDescriptorsForFamily(String appName,String famName) {
 		return handler.listDescriptorsForFamily(appName,famName);
@@ -342,7 +365,7 @@ public class GatewayScriptFunctions   {
 	/**
 	 * Query the gateway for list of diagrams belonging to a project. 
 	 * 
-	 * @param projectName
+	 * @param projectName name of the project
 	 * @return a list of tree-paths to the diagrams saved (ie. known to the Gateway).
 	 */
 	public static List<SerializableResourceDescriptor> listDiagramDescriptors(String projectName) {
@@ -400,9 +423,9 @@ public class GatewayScriptFunctions   {
 	/**
 	 * Post a (simulated) block result on its output.
 	 * @param diagramId the parent diagram
-	 * @param blockId
-	 * @param port
-	 * @param value
+	 * @param blockId identified of the target block
+	 * @param port name of the target port
+	 * @param value to be propagated
 	 */
 	public static void postResult(String diagramId,String blockId,String port,String value) {
 		handler.postValue(diagramId,blockId, port, value);
@@ -423,18 +446,23 @@ public class GatewayScriptFunctions   {
 	}
 	/**
 	 * Execute reset() on the specified block
+	 * @param diagramId the parent diagram
+	 * @param blockId identifier of the target block
 	 */
 	public static void resetBlock(String diagramId,String blockId) {
 		handler.resetBlock(diagramId,blockId);
 	}
 	/**
-	 * Execute reset() on every block inside the controller
+	 * Execute reset() on every block inside the diagram
+	 * @param diagramId the parent diagram
 	 */
 	public static void resetDiagram(String diagramId) {
 		handler.resetDiagram(diagramId);
 	}
 	/**
 	 * Execute stop() then start() on the specified block
+	 * @param diagramId the parent diagram
+	 * @param blockId identifier of the target block
 	 */
 	public static void restartBlock(String diagramId,String blockId) {
 		handler.restartBlock(diagramId,blockId);
@@ -458,6 +486,7 @@ public class GatewayScriptFunctions   {
 	 * This is a "local" transmission. The signal timestamp is "now".
 	 * 
 	 * @param diagramId diagram identifier
+	 * @param blockName name of the target block
 	 * @param command string of the signal.
 	 * @param message command payload
 	 * @return true on success
@@ -492,22 +521,27 @@ public class GatewayScriptFunctions   {
 	 * are notified of the change.
 	 *  
 	 * @param diagramId diagram's unique Id as a String
-	 * @param bname 
+	 * @param bname name of the block
 	 * @param pname the changed property
 	 * @param value the new value of the property. The value will be coerced into the correct data type in the gateway 
 	 */
 	public static void setBlockPropertyValue(String diagramId,String bname,String pname,String value )  {
 		handler.setBlockPropertyValue(diagramId, bname, pname, value);
 	}
-	
+	/**
+	 * Specify the new state of a block
+	 * @param diagramId diagram's unique Id as a String
+	 * @param bname name of the block
+	 * @param state new state for the diagram
+	 */
 	public static void setBlockState(String diagramId,String bname,String state ) {
 		handler.setBlockState(diagramId,bname,state);
 	}
 	
 	/**
 	 * Specify the new state of a diagram
-	 * @param diagramId
-	 * @param state
+	 * @param diagramId diagram's unique Id as a String
+	 * @param state new state for the diagram
 	 */
 	public static void setDiagramState(String diagramId, String state)  {
 		handler.setDiagramState(diagramId,state);
@@ -540,7 +574,10 @@ public class GatewayScriptFunctions   {
 		handler.setToolkitProperty(propertyName,value);
 	}
 	/**
-	 * Define a watermark for a diagram. 
+	 * Define a watermark for a diagram. Setting an empty string is equivalent to
+	 * deleting the watermark.
+	 *  @param diagramId diagram's unique Id as a String
+	 *  @param text to be displayed
 	 */
 	public static void setWatermark(String diagramId,String text) {
 		handler.setWatermark(diagramId,text);

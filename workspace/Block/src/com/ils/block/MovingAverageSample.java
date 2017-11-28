@@ -113,9 +113,9 @@ public class MovingAverageSample extends AbstractProcessBlock implements Process
 				queue.add(qv);
 				if( queue.size() >= sampleSize) {
 					double result = computeAverage();
+					// Give it a new timestamp
+					lastValue = new BasicQualifiedValue(result,qv.getQuality(),qv.getTimestamp());
 					if( !isLocked() ) {
-						// Give it a new timestamp
-						lastValue = new BasicQualifiedValue(result,qv.getQuality(),qv.getTimestamp());
 						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 						controller.acceptCompletionNotification(nvn);
 						notifyOfStatus(lastValue);

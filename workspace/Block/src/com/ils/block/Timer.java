@@ -186,8 +186,8 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 			long testtime = timer.getTestTime();
 			long qvtime = lastValue.getTimestamp().getTime();
 			duration += ((testtime - qvtime) * timer.getFactor())/1000.;
-			if( !isLocked() ) {
-				lastValue = new TestAwareQualifiedValue(timer,new Integer((int)duration));
+			lastValue = new TestAwareQualifiedValue(timer,new Integer((int)duration));
+			if( !isLocked() ) {	
 				OutgoingNotification sig = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(sig);
 	

@@ -82,8 +82,8 @@ public class ControlCounter extends AbstractProcessBlock implements ProcessBlock
 	@Override
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
+		lastValue = vcn.getValue();
 		if(!isLocked() ) {
-			lastValue = vcn.getValue();
 			//log.infof("%s.acceptValue: %s", getName(),qv.getValue().toString());
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);

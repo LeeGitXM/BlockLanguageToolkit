@@ -7,6 +7,7 @@ package com.ils.blt.designer.config;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
@@ -15,6 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -25,8 +27,6 @@ import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 
-import net.miginfocom.swing.MigLayout;
-
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
@@ -34,6 +34,8 @@ import com.ils.blt.designer.workspace.ProcessAnchorDescriptor;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
+
+import net.miginfocom.swing.MigLayout;
 
 /**
  * Allow the user to set a value to be propagated on each block output. 
@@ -113,23 +115,26 @@ public class ForceValueSettingsDialog extends JDialog {
 	 */
 	private JPanel createOutputsPane()  {
 		JPanel outerPanel = new JPanel();		
-		outerPanel.setLayout(new MigLayout("top,flowy,ins 2,gapy 0:10:15","","[top]0[]"));
+		outerPanel.setLayout(new BoxLayout(outerPanel,BoxLayout.Y_AXIS));
 		
 		for( ProcessAnchorDescriptor pad:block.getAnchors()) {
+			JPanel innerPanel = new JPanel();
+			innerPanel.setLayout(new MigLayout("top,flowy,ins 2,gapy 0:10:15","","[top]0[]"));
 			if( pad.getType().equals(AnchorType.Origin) ) {
-				addSeparator(outerPanel,pad.getDisplay());
+				addSeparator(innerPanel,pad.getDisplay());
 				if( pad.getConnectionType().equals(ConnectionType.TRUTHVALUE) ) {
 					JComboBox<String> box = createTruthValueCombo();
-					outerPanel.add(box,"gaptop 0,gapbottom 0,wrap");
+					innerPanel.add(box,"gapleft 0,gaptop 0,gapbottom 0,wrap");
 					componentMap.put(pad.getDisplay(), box);
 				}
 				// For most types, just a text box
 				else {
 					JTextField field = createTextField();
-					outerPanel.add(field,"gaptop 0,gapbottom 0,wrap");
+					innerPanel.add(field,"gapleft 0,gaptop 0,gapbottom 0,wrap");
 					componentMap.put(pad.getDisplay(), field);
 				}
 			}
+			outerPanel.add(innerPanel);
 		}
 		return outerPanel;
 	}
@@ -142,7 +147,7 @@ public class ForceValueSettingsDialog extends JDialog {
 		JLabel label = new JLabel(text);
 		label.setFont(new Font("Tahoma", Font.PLAIN, 11));
 		label.setForeground(Color.BLUE);
-		panel.add(label, "split 2,span");
+		panel.add(label, "gapleft 0,split 2,span");
 		panel.add(separator, "growx,wrap");
 		return label;
 	}
