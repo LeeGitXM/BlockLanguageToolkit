@@ -38,6 +38,7 @@ public class NotificationHandler implements PushNotificationListener {
 	private final Map<String,Map<String,NotificationChangeListener>> changeListenerMap;
 	private final Map<String,Object> payloadMap;        // Keyed by the message type.
 	private static NotificationHandler instance = null;
+	private BLTDesignerHook hook = null;
 	
 	/**
 	 * The handler, make this private per Singleton pattern ...
@@ -64,6 +65,8 @@ public class NotificationHandler implements PushNotificationListener {
 		return instance;
 	}
 	
+	public void setHook(BLTDesignerHook h) { this.hook = h; }
+	
 	/**
 	 * Receive notification from the gateway. The messages contain a key which must match an entry
 	 * in our map of listeners. In addition, we must match the moduleId. There is only one listener 
@@ -86,7 +89,25 @@ public class NotificationHandler implements PushNotificationListener {
 			log.tracef("%s.receiveNotification: key=%s,value=%s",TAG,key,(payload==null?"null":payload.toString()));
 			if( payload==null ) return; // Ignore
 			
-			if( payload instanceof QualifiedValue ) {
+			// Process alert change notifications independent of "attached" status
+			if(NotificationKey.isDiagramAlertKey(key)) {
+				Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
+				if( listeners != null ) {
+					for(NotificationChangeListener listener:listeners.values()) {
+						log.tracef("%s.receiveNotification: key=%s - notifying %s",TAG,key,listener.getClass().getName());
+						// Listener is the node status manager - // Refresh the Nav tree
+						long resourceId = Long.parseLong(key.substring(2));
+						listener.diagramAlertChange(resourceId, payload.toString());
+					}
+				}
+				else {
+					log.debugf("%s.receiveNotification: no receiver for key=%s,value=%s",TAG,key,payload.toString());
+				}
+			}
+			else if(!hook.attachDiagrams()) {
+				;  // Ignore UI updates if the diagrams are "detached" 
+			}
+			else if( payload instanceof QualifiedValue ) {
 				payloadMap.put(key, payload);
 				Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
 				if( listeners != null ) {
@@ -97,20 +118,6 @@ public class NotificationHandler implements PushNotificationListener {
 					}
 					// Repaint the workspace
 					SwingUtilities.invokeLater(new WorkspaceRepainter());
-				}
-				else {
-					log.debugf("%s.receiveNotification: no receiver for key=%s,value=%s",TAG,key,payload.toString());
-				}
-			}
-			else if(NotificationKey.isDiagramAlertKey(key)) {
-				Map<String,NotificationChangeListener> listeners = changeListenerMap.get(key);
-				if( listeners != null ) {
-					for(NotificationChangeListener listener:listeners.values()) {
-						log.tracef("%s.receiveNotification: key=%s - notifying %s",TAG,key,listener.getClass().getName());
-						// Listener is the node status manager - // Refresh the Nav tree
-						long resourceId = Long.parseLong(key.substring(2));
-						listener.diagramAlertChange(resourceId, payload.toString());
-					}
 				}
 				else {
 					log.debugf("%s.receiveNotification: no receiver for key=%s,value=%s",TAG,key,payload.toString());

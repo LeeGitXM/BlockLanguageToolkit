@@ -7,6 +7,7 @@ package com.ils.blt.designer;
 import java.awt.Component;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -28,6 +29,7 @@ import com.ils.blt.designer.search.BLTSearchProvider;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.inductiveautomation.factorypmi.designer.palette.model.DefaultPaletteItemGroup;
+import com.inductiveautomation.ignition.client.util.action.StateChangeAction;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.common.project.Project;
@@ -63,6 +65,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	private ApplicationRequestHandler appRequestHandler = null;
 	private NodeStatusManager nodeStatusManager = null;
 	private BLTSearchProvider searchProvider = null;
+	private boolean diagramsAttached = true;
 	
 	// Register separate properties files for designer things and block things
 	static {
@@ -84,33 +87,47 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	// Insert a menu to allow control of database and tag provider.
     @Override
     public MenuBarMerge getModuleMenu() {
- 	
-        MenuBarMerge merge = new MenuBarMerge(BLTProperties.MODULE_ID);  // as suggested in javadocs
-        merge.addSeparator();
 
-        Action setupAction = new AbstractAction(INTERFACE_MENU_TITLE) {
-            private static final long serialVersionUID = 5374667367733312464L;
-            public void actionPerformed(ActionEvent ae) {
-                SwingUtilities.invokeLater(new SetupDialogRunner());
-            }
-        };
-        
-        Action validateAction = new AbstractAction(VALIDATION_MENU_TITLE) {
-            private static final long serialVersionUID = 5374667367733312464L;
-            public void actionPerformed(ActionEvent ae) {
-                SwingUtilities.invokeLater(new ValidationDialogRunner());
-            }
-        };
+    	log.infof("DesignerHook in Menu merge %s",(diagramsAttached?"TRUE":"FALSE"));
+    	MenuBarMerge merge = new MenuBarMerge(BLTProperties.MODULE_ID);  // as suggested in javadocs
+    	merge.addSeparator();
+    	merge.addSeparator();
 
-        JMenuMerge controlMenu = new JMenuMerge(WellKnownMenuConstants.VIEW_MENU_NAME);
-        if( !menuExists(context.getFrame(),INTERFACE_MENU_TITLE) ) {
-        	controlMenu.add(setupAction);
-        }
-        controlMenu.add(validateAction);
-        merge.add(WellKnownMenuConstants.VIEW_MENU_LOCATION, controlMenu);
-        return merge;
+    	JMenuMerge toolsMenu = new JMenuMerge(WellKnownMenuConstants.TOOLS_MENU_NAME);
+    	Action setupAction = new AbstractAction(INTERFACE_MENU_TITLE) {
+    		private static final long serialVersionUID = 5374667367733312464L;
+    		public void actionPerformed(ActionEvent ae) {
+    			SwingUtilities.invokeLater(new SetupDialogRunner());
+    		}
+    	};
+    	if( !menuExists(context.getFrame(),INTERFACE_MENU_TITLE) ) {
+    		toolsMenu.add(setupAction);
+    	}
+
+    	StateChangeAction attachAction = new StateChangeAction(BLTProperties.BUNDLE_PREFIX+".Menu.Tools.Attach") {
+    		private static final long serialVersionUID = 5374556367733312464L; 
+    		public void itemStateChanged(ItemEvent event) {
+    			diagramsAttached = (event.getStateChange()==ItemEvent.SELECTED);
+    		}
+    	};
+    	attachAction.setSelected(true);
+    	toolsMenu.addCheckBox(attachAction);
+
+    	Action validateAction = new AbstractAction(VALIDATION_MENU_TITLE) {
+    		private static final long serialVersionUID = 5374667367733312464L;
+    		public void actionPerformed(ActionEvent ae) {
+    			SwingUtilities.invokeLater(new ValidationDialogRunner());
+    		}
+    	};
+
+    	toolsMenu.add(validateAction);
+
+    	merge.add(WellKnownMenuConstants.TOOLS_MENU_LOCATION, toolsMenu);
+    	merge.addSeparator();
+    	merge.addSeparator();
+    	return merge;
     }
-	
+
 	@Override
 	public void startup(DesignerContext ctx, LicenseState activationState) throws Exception {
 		this.context = ctx;
@@ -189,7 +206,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		nodeStatusManager.createRootResourceStatus(rootNode);
 		// Instantiate the notification handler so that we have notifications
 		// ready when diagrams are displayed. The constructor is sufficient.
-		NotificationHandler.getInstance();
+		NotificationHandler.getInstance().setHook(this);
 		// Query the gateway for latest notifications from all blocks
 		appRequestHandler.triggerStatusNotifications();
 	}
@@ -234,7 +251,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		// There is only 1 child of the workspace - the workspace mananger
 	}
 
-	
+	public boolean attachDiagrams() { return diagramsAttached; }
 	public ApplicationRequestHandler getApplicationRequestHandler() { return appRequestHandler; }
 	@Override
 	public String getResourceCategoryKey(Project project,ProjectResource resource) {
@@ -269,7 +286,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
     				int index = 0;
     				while( index<count) {
     					JMenu menu = bar.getMenu(index);
-    					if( menu.getName().equalsIgnoreCase(WellKnownMenuConstants.VIEW_MENU_NAME)) {
+    					if( menu.getName().equalsIgnoreCase(WellKnownMenuConstants.TOOLS_MENU_NAME)) {
     						int nitems = menu.getItemCount();
     						int jndex = 0;
     						log.tracef("%s: found VIEW menu",TAG);
