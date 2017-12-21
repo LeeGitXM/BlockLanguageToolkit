@@ -100,7 +100,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		return instance;
 	}
 	@Override
-	public List<SerializableResourceDescriptor> childNodes(String nodeId) {
+	public synchronized List<SerializableResourceDescriptor> childNodes(String nodeId) {
 		UUID uuid = makeUUID(nodeId);
 		ProcessNode node = controller.getProcessNode(uuid);
 		List<SerializableResourceDescriptor> result = new ArrayList<>();
@@ -221,7 +221,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @return the properties of an existing or new block.
 	 */
 	@Override
-	public List<BlockProperty> getBlockProperties(String className,long projectId,long resourceId, UUID blockId) {
+	public synchronized List<BlockProperty> getBlockProperties(String className,long projectId,long resourceId, UUID blockId) {
 		// If the instance doesn't exist, create one
 		log.debugf("%s.getBlockProperties of %s (%s)",TAG,className,blockId.toString());
 		List<BlockProperty> results = new ArrayList<>();
@@ -254,7 +254,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @param propertyName name of the property
 	 * @return the properties of an existing or new block.
 	 */
-	public BlockProperty getBlockProperty(UUID parentId,UUID blockId,String propertyName) {
+	public synchronized BlockProperty getBlockProperty(UUID parentId,UUID blockId,String propertyName) {
 		ProcessDiagram diagram = controller.getDiagram(parentId);
 		ProcessBlock block = null;
 		if( diagram!=null ) block = diagram.getBlock(blockId);
@@ -268,7 +268,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		return property;
 	}
 	@Override
-	public List<PalettePrototype> getBlockPrototypes() {
+	public synchronized List<PalettePrototype> getBlockPrototypes() {
 		List<PalettePrototype> results = new ArrayList<>();
 		ClassList cl = new ClassList();
 		List<Class<?>> classes = cl.getAnnotatedClasses(BLTProperties.BLOCK_JAR_NAME, ExecutableBlock.class,"com/ils/block/");
@@ -311,7 +311,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	}
 	
 	@Override
-	public String getBlockState(String diagramId, String blockName) {
+	public synchronized String getBlockState(String diagramId, String blockName) {
 		String state = "UNKNOWN";
 		UUID diagramUUID = null;
 		try {
@@ -394,7 +394,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	}
 	
 	@Override
-	public List<String> getDatasourceNames() {
+	public synchronized List<String> getDatasourceNames() {
 		List<Datasource> sources = context.getDatasourceManager().getDatasources();
 		List<String> result = new ArrayList<>();
 		for( Datasource source:sources) {
@@ -421,7 +421,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	/**
 	 * When called from the gateway, we have no project. Get them all.
 	 */
-	public List<SerializableResourceDescriptor> getDiagramDescriptors() {
+	public synchronized List<SerializableResourceDescriptor> getDiagramDescriptors() {
 		List<SerializableResourceDescriptor> descriptors = controller.getDiagramDescriptors();
 		return descriptors;
 	}
@@ -442,7 +442,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @return the current state of the specified diagram as a DiagramState.
 	 */
 	@Override
-	public DiagramState getDiagramState(Long projectId,Long resourceId) {
+	public synchronized DiagramState getDiagramState(Long projectId,Long resourceId) {
 		DiagramState state = DiagramState.ACTIVE;
 		ProcessDiagram diagram = controller.getDiagram(projectId, resourceId);
 		if( diagram!=null ) {
@@ -455,7 +455,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @return the current state of the specified diagram as a DiagramState.
 	 */
 	@Override
-	public DiagramState getDiagramState(String diagramId) {
+	public synchronized DiagramState getDiagramState(String diagramId) {
 		DiagramState state = DiagramState.ACTIVE;
 		UUID diagramuuid=makeUUID(diagramId);
 		ProcessDiagram diagram = controller.getDiagram(diagramuuid);
@@ -480,7 +480,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	 * @return an explanation for the block's current state
 	 */
 	@Override
-	public String getExplanation(String diagramId,String blockId) {
+	public synchronized String getExplanation(String diagramId,String blockId) {
 		String explanation = "";
 		ProcessDiagram diagram = controller.getDiagram(UUID.fromString(diagramId));
 		if(diagram!=null) {
@@ -692,7 +692,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 		return results;
 	}
-	public List<SerializableBlockStateDescriptor> listBlocksGloballyDownstreamOf(String diagramId, String blockName) {
+	public synchronized List<SerializableBlockStateDescriptor> listBlocksGloballyDownstreamOf(String diagramId, String blockName) {
 		List<SerializableBlockStateDescriptor> descriptors = new ArrayList<>();
 		UUID diauuid = makeUUID(diagramId);
 		ProcessDiagram diagram = controller.getDiagram(diauuid);
@@ -705,7 +705,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 		return descriptors;
 	}
-	public List<SerializableBlockStateDescriptor> listBlocksGloballyUpstreamOf(String diagramId, String blockName) {
+	public synchronized List<SerializableBlockStateDescriptor> listBlocksGloballyUpstreamOf(String diagramId, String blockName) {
 		log.infof("%s.listBlocksGloballyUpstreamOf: diagramId %s:%s",TAG,diagramId,blockName);
 		List<SerializableBlockStateDescriptor> descriptors = new ArrayList<>();
 		UUID diauuid = makeUUID(diagramId);
@@ -755,7 +755,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 	}
 	
 	@Override
-	public List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(String diagramId, String blockName) {
+	public synchronized List<SerializableBlockStateDescriptor> listBlocksUpstreamOf(String diagramId, String blockName) {
 		List<SerializableBlockStateDescriptor> descriptors = new ArrayList<>();
 		UUID diauuid = makeUUID(diagramId);
 		ProcessDiagram diagram = controller.getDiagram(diauuid);
