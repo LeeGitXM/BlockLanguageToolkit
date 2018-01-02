@@ -9,7 +9,7 @@ mkdir -p $JSON/g2/gline
 mkdir -p $JSON/g2/vistalon
 mkdir -p $JSON/ignition/escorez/diagrams
 mkdir -p $JSON/ignition/vistalon
-cp ${SVN}/BRPP_G-Line/Exports\ From\ G2/diagToolkit/json/*.json $JSON/g2/gline
+cp ${SVN}/G-Line/Exports\ From\ G2/diagToolkit/json/*.json $JSON/g2/gline
 cp ${SVN}/Escorez/Exports\ From\ G2/diagToolkit/json/*.json $JSON/g2/escorez
 cp ${SVN}/Escorez/Exports\ From\ G2/diagToolkit/standAloneDiagrams/json/*.json $JSON/g2/escorez/diagrams
 cp ${SVN}/Vistalon/Exports\ From\ G2/DiagnosticToolkit/json/*.json $JSON/g2/vistalon
