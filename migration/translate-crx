@@ -37,7 +37,7 @@ for file in $FIL
 do
 	if [ -f $DIR/$file ]
 	then
-	    echo "Processing $fil..."
+	    echo "Processing $file..."
 	    ${MIGRATION}/translate.calc $DIR/$file $OUTDIR
 	else 
 		continue

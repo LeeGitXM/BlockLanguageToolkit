@@ -173,14 +173,14 @@ public class ConnectionMapper {
 				UUID beginBlockId = cxn.getBeginBlock();
 				if(beginBlockId!=null ) {
 					beginBlock = blockMap.get(beginBlockId.toString());
-					if(beginBlock==null) log.infof("%s.createConnections: beginBlock (%s) lookup failed",TAG,beginBlockId);
+					if(beginBlock==null) log.debugf("%s.createConnections: beginBlock (%s) lookup failed",TAG,beginBlockId);
 				}
 				
 				SerializableBlock endBlock = null;
 				UUID endBlockId = cxn.getEndBlock();
 				if(endBlockId!=null ) {
 					endBlock = blockMap.get(endBlockId.toString());
-					if(endBlock==null) log.infof("%s.createConnections: endBlock (%s) lookup failed",TAG,endBlockId);
+					if(endBlock==null) log.debugf("%s.createConnections: endBlock (%s) lookup failed",TAG,endBlockId);
 				}
 
 				// Handle the case of a normal connection
@@ -440,7 +440,7 @@ public class ConnectionMapper {
 				sinkConnection.setEndBlock(sink.getPost().getId());
 				setEndAnchorPoint(sinkConnection,sink.getPost().getId(),"in");
 				sink.getParent().addConnection(sinkConnection);
-				log.infof("%s.reconcileUnresolvedConnections: SINK::%s",TAG,sinkConnection);
+				log.debugf("%s.reconcileUnresolvedConnections: SINK::%s",TAG,sinkConnection);
 			}
 			else {
 				log.warnf("%s.reconcileUnresolvedConnections: %s - block %s to sink %s (ignored)",
@@ -460,7 +460,7 @@ public class ConnectionMapper {
 				sourceConnection.setEndBlock(source.getTarget().getId());
 				sourceConnection.setEndAnchor(ape.getPoint());
 				source.getParent().addConnection(sourceConnection);
-				log.infof("%s.reconcileUnresolvedConnections: SOURCE::%s",TAG,sourceConnection);
+				log.debugf("%s.reconcileUnresolvedConnections: SOURCE::%s",TAG,sourceConnection);
 			}
 			else {
 				log.warnf("%s.reconcileUnresolvedConnections: %s - block %s to source %s (ignored)",

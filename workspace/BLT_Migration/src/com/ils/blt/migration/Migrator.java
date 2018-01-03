@@ -370,6 +370,7 @@ public class Migrator {
 					String val = g2prop.getValue().toString();
 					if( val.equalsIgnoreCase("fixed" )) block.setClassName("com.ils.block.MovingAverage");
 					else if( val.equalsIgnoreCase("point" )) block.setClassName("com.ils.block.MovingAverageSample");
+					else if( val.equalsIgnoreCase("points" )) block.setClassName("com.ils.block.MovingAverageSample");
 					else if( val.equalsIgnoreCase("time" )) block.setClassName("com.ils.block.MovingAverageTime");
 					else {
 						System.err.println(String.format("%s: Perform specialhandling. MovingAverage sample type %s not recognized",TAG,val));
