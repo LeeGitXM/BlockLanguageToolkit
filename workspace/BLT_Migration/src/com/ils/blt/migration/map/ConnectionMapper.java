@@ -204,7 +204,7 @@ public class ConnectionMapper {
 							//System.err.println(String.format("%s.createConnections:Add connection post: %s (%s)",TAG,endBlock.getName(),endAnchor.getId()));
 					}
 					else {
-						//log.debugf("%s.createConnections: anchorPointForSource: %s (%s)",TAG,endBlock.getId().toString(),endBlock.getName());
+						log.debugf("%s.createConnections: anchorPointForSource: %s (%s)",TAG,endBlock.getId().toString(),endAnchor.getId());
 						anchorPointForSourceBlock.put(endBlock.getId(),new AnchorPointEntry(endAnchor,cxn.getType()));
 					}
 				}
@@ -217,7 +217,7 @@ public class ConnectionMapper {
 										beginAnchor.getDirection()));
 					}
 					else {
-						//System.err.println(String.format("%s.createConnections: anchorPointForSink: %s (%s)",TAG,beginBlock.getId().toString(),beginAnchor.getId()));
+						log.debugf("%s.createConnections: anchorPointForSink: %s (%s)",TAG,beginBlock.getId().toString(),beginAnchor.getId());
 						anchorPointForSinkBlock.put(beginBlock.getId(),new AnchorPointEntry(beginAnchor,cxn.getType()));
 					}
 				}
@@ -273,8 +273,15 @@ public class ConnectionMapper {
 		return null;
 	}
 	
-	// Set anchor point at origin
-	private void setBeginAnchorPoint(SerializableConnection cxn,UUID blockId,String port) {
+	/**
+	 *  Set anchor point at origin for the supplied connection.
+	 *  @param cxn the connection
+	 *  @param blockId the UUID of the upstream block
+	 *  @param port name of the port.
+	 *  @return success if upstream block has the required port 
+	 */
+	private boolean setBeginAnchorPoint(SerializableConnection cxn,UUID blockId,String port) {
+		boolean success = true;
 		String key = makeAnchorMapKey(blockId,port);
 		SerializableAnchor anchor = anchorMap.get(key);
 		if( anchor!=null ) {
@@ -286,7 +293,7 @@ public class ConnectionMapper {
 				// Look for the specific anchorPoint - in our usage, the id is the port name
 				AnchorPoint pt = null;
 				for( AnchorPoint ap:anchorPoints ) {
-					if( ap.getId().toString().equals(port)) {
+					if( ap.getId().toString().equalsIgnoreCase(port)) {
 						pt = ap;
 						break;
 					}
@@ -297,19 +304,30 @@ public class ConnectionMapper {
 				}
 				else {
 					System.err.println(TAG+".setBeginAnchorPoint: Port lookup failed for "+blockId+" ("+port+")");
+					success = false;
 				}
 			}
 			else {
 				System.err.println(TAG+".setBeginAnchorPoint: Block lookup failed for "+blockId);
+				success = false;
 			}
 		}
 		else {
 			System.err.println(TAG+".setBeginAnchorPoint: Anchor lookup failed for "+key);
+			success = false;
 		}
+		return success;
 	}
 
-	// Set anchor point at terminus
-	private void setEndAnchorPoint(SerializableConnection cxn,UUID blockId,String port) {
+	/**
+	 *  Set anchor point at terminus for the supplied connection.
+	 *  @param cxn the connection
+	 *  @param blockId the UUID of the downstream block
+	 *  @param port name of the port.
+	 *  @return success if downstream block has the required port 
+	 */
+	private boolean setEndAnchorPoint(SerializableConnection cxn,UUID blockId,String port) {
+		boolean success = true;
 		String key = makeAnchorMapKey(blockId,port);
 		SerializableAnchor anchor = anchorMap.get(key);
 		if( anchor!=null ) {
@@ -322,15 +340,11 @@ public class ConnectionMapper {
 				AnchorPoint pt = null;
 				for( AnchorPoint ap:anchorPoints ) {
 					if( ap.getId() !=null ) {
-						if( ap.getId().toString().equals(port)) {
+						if( ap.getId().toString().equalsIgnoreCase(port)) {
 							pt = ap;
 							break;
 						}
 					}
-					else {
-						System.err.println(TAG+".setEndAnchorPoint: No port name  ("+ap.toString()+")");
-					}
-					
 				}
 				if( pt!=null ) {
 					SerializableAnchorPoint sap = createSerializableAnchorPoint(pt);
@@ -338,15 +352,19 @@ public class ConnectionMapper {
 				}
 				else {
 					System.err.println(TAG+".setEndAnchorPoint: Port lookup failed for "+blockId+" ("+port+")");
+					success = false;
 				}
 			}
 			else {
 				System.err.println(TAG+".setEndAnchorPoint: Block lookup failed for "+blockId);
+				success = false;
 			}
 		}
 		else {
 			System.err.println(TAG+".setEndAnchorPoint: Anchor lookup failed for "+key);
+			success = false;
 		}
+		return success;
 	}
 	
 	/**
@@ -443,8 +461,23 @@ public class ConnectionMapper {
 				log.debugf("%s.reconcileUnresolvedConnections: SINK::%s",TAG,sinkConnection);
 			}
 			else {
-				log.warnf("%s.reconcileUnresolvedConnections: %s - block %s to sink %s (ignored)",
-						TAG,sink.getParent().getName(),sink.getTarget().getName(),sink.getPost().getName());
+				// Force-create
+				SerializableConnection sinkConnection = new SerializableConnection();
+				sinkConnection.setBeginBlock(sink.getTarget().getId());
+				sinkConnection.setType(getConnectionType(sink.getTarget(),"out"));
+				if( setBeginAnchorPoint(sinkConnection,sink.getTarget().getId(),"out")) {
+					sinkConnection.setEndBlock(sink.getPost().getId());
+					if( setEndAnchorPoint(sinkConnection,sink.getPost().getId(),"in") ) {
+						log.infof("%s.reconcileUnresolvedConnections: connection = %s",TAG,sinkConnection.toString());
+						sink.getParent().addConnection(sinkConnection);
+					}
+					else {
+						log.warnf("%s.reconcileUnresolvedConnections: sink %s lacks anchor %s",TAG,sink.getPost().getName(),"in");
+					}
+				}
+				else {
+					log.warnf("%s.reconcileUnresolvedConnections: upstream block %s lacks anchor %s",TAG,sink.getTarget().getName(),"out");
+				}
 			}
 		}
 		// Loop over all the source posts
@@ -463,8 +496,23 @@ public class ConnectionMapper {
 				log.debugf("%s.reconcileUnresolvedConnections: SOURCE::%s",TAG,sourceConnection);
 			}
 			else {
-				log.warnf("%s.reconcileUnresolvedConnections: %s - block %s to source %s (ignored)",
-						TAG,source.getParent().getName(),source.getTarget().getName(),source.getPost().getName());
+				// Force-create
+				SerializableConnection sourceConnection = new SerializableConnection();
+				sourceConnection.setBeginBlock(source.getPost().getId());
+				sourceConnection.setType(getConnectionType(source.getTarget(),"in"));
+				if( setBeginAnchorPoint(sourceConnection,source.getPost().getId(),"out")) {
+					sourceConnection.setEndBlock(source.getTarget().getId());
+					if( setEndAnchorPoint(sourceConnection,source.getTarget().getId(),"in") ) {
+						log.infof("%s.reconcileUnresolvedConnections: connection = %s",TAG,sourceConnection.toString());
+						source.getParent().addConnection(sourceConnection);
+					}
+					else {
+						log.warnf("%s.reconcileUnresolvedConnections: source %s lacks anchor %s",TAG,source.getPost().getName(),"out");
+					}
+				}
+				else {
+					log.warnf("%s.reconcileUnresolvedConnections: downstream block %s lacks anchor %s",TAG,source.getTarget().getName(),"in");
+				}
 			}
 		}
 	}
@@ -489,6 +537,17 @@ public class ConnectionMapper {
 		}
 		
 		return String.format("%s(%s)->%s(%s)",beginName,beginPort,endName,endPort);
+	}
+	
+	private ConnectionType getConnectionType(SerializableBlock block,String port) {
+		ConnectionType type = ConnectionType.ANY;
+		SerializableAnchor[] anchors = block.getAnchors();
+		for( SerializableAnchor anchor:anchors) {
+			if( anchor.getDisplay().equalsIgnoreCase(port)) {
+				return anchor.getConnectionType();
+			}
+		}
+		return type;
 	}
 	
 	/**
