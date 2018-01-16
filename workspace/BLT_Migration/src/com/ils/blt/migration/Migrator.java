@@ -428,6 +428,34 @@ public class Migrator {
 				}
 			}
 		}
+		// Convert G2 properties into a list. We expect exactly 2 elements.
+		else if( block.getClassName().startsWith("com.ils.block.StateLookup") ) { 
+			String state0 = "";
+			String state1 = "";
+			String val0   = "UNKNOWN";
+			String val1   = "UNKNOWN";
+			for(G2Property g2prop:g2Block.getProperties()) {
+				if( g2prop.getName().equalsIgnoreCase("category0" )) {
+					state0 = g2prop.getValue().toString().toUpperCase();
+				}
+				else if( g2prop.getName().equalsIgnoreCase("category1" )) {
+					state1 = g2prop.getValue().toString().toUpperCase();
+				}
+				else if( g2prop.getName().equalsIgnoreCase("explanation0" )) {
+					val0 = g2prop.getValue().toString().toUpperCase();
+				}
+				else if( g2prop.getName().equalsIgnoreCase("explanation1" )) {
+					val1 = g2prop.getValue().toString().toUpperCase();
+				}
+			}
+			String namevals = String.format("%s:%s,%s:%s", state0,val0,state1,val1);
+			for(BlockProperty prop:block.getProperties()) {
+				if( prop.getName().equals(BlockConstants.BLOCK_PROPERTY_NAME_VALUES)) {
+					prop.setValue(namevals);
+					break;
+				}
+			};
+		}
 		
 		// Modify property values if appropriate
 		if( block.getProperties()!=null ) {

@@ -26,7 +26,6 @@
 	<!-- Migration jar classpath -->
 	<path id="BLT_Migration.classpath">
 		<path refid="BLT_Common.classpath" />
-		<path refid="ExternalJar.classpath" />
 		<fileset dir="${basedir}/BLT_Build/bin/BLT_Common/dist/" includes="*.jar" />
 		<fileset dir="${basedir}/BLT_Build/bin/BLT_Designer/dist/" includes="*.jar" />
 		<fileset dir="${jar.dir}" includes="${block.jar.name}" />
@@ -57,9 +56,9 @@
 	</target>
 	<!-- Build the migration jar with all necessary embedded jars -->
 	<target name ="build" depends="migration.build" description="Create a jar for the Migration tool">
-		<jar destfile="${jar.dir}/${migration.jar.name}" includes="**/*.class" basedir="${migration.bin.dir}">
+		<jar destfile="${jar.dir}/${migration.jar.name}" includes="**/*.class" basedir="${migration.bin.dir}" >
 		    <zipgroupfileset dir="${jar.dir}" includes="sqlite-jdbc*.jar"/>
-			<zipgroupfileset dir="${jar.dir}" includes="${block.jar.name}"/>
+			<zipgroupfileset dir="${jar.dir}" includes="${block.jar.name}" />
 			<zipgroupfileset dir="${jar.dir}" includes="jackson-*.jar"/>
 			<zipgroupfileset dir="${jar.dir}" includes="commons-lang3*.jar"/>
 			<zipgroupfileset dir="${jar.dir}" includes="commons-math*.jar"/>
@@ -71,7 +70,13 @@
 			<zipgroupfileset dir="${jar.dir}" includes="slf4j*.jar"/>
 			<zipgroupfileset dir="${basedir}/BLT_Build/bin/BLT_Common/dist/" includes="*.jar"/>
 			<zipgroupfileset dir="${basedir}/BLT_Build/bin/BLT_Designer/dist/" includes="*.jar"/>
+			<zipgroupfileset dir="${sdk.dir}" includes="gateway-api.jar"/>
 		</jar>
+		<!-- NOTE: We leave out the SQL block since it has issues and doesn't need to be migrated anyway-->
+		<zip destfile="tmp.jar" >
+		  <zipfileset src="${jar.dir}/${migration.jar.name}" excludes="**/SQL.class" />
+		</zip>
+		<move file="tmp.jar" tofile="${jar.dir}/${migration.jar.name}"/>
 	</target>
 
 </project>

@@ -160,7 +160,7 @@ public class ListEditPanel extends BasicEditPanel {
 	}
 	
 	/**
-	 * Create a button that deletes the nth entry
+	 * Create a button that adds a new entry
 	 */
 	private JButton createAddButton(final JTable tbl) {
 		JButton btn = new JButton();

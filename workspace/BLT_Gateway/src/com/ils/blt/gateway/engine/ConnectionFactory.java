@@ -27,6 +27,7 @@ public class ConnectionFactory  {
 
 	/**
 	 * Static method to create and/or fetch the single instance.
+	 * @return the static instance
 	 */
 	public static ConnectionFactory getInstance() {
 		if( instance==null) {
@@ -40,7 +41,7 @@ public class ConnectionFactory  {
 	/**
 	 * Create a concrete instance of a Process connection represented by the serializable connection.
 	 * @param sc serializable connection
-	 * @return
+	 * @return a connection instance
 	 */
 	public ProcessConnection connectionFromSerializable(SerializableConnection sc) {
 		ProcessConnection pc = null;
@@ -52,8 +53,8 @@ public class ConnectionFactory  {
 	/**
 	 * Update the concrete instance of a ProcessConnection from a serializable connection.
 	 *
-	 * @param pc
-	 * @param sc
+	 * @param pc concrete connection
+	 * @param sc serializable connection
 	 */
 	public void updateConnectionFromSerializable(ProcessConnection pc,SerializableConnection sc) {
 		pc.setSource(sc.getBeginBlock());

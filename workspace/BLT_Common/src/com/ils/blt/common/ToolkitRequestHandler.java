@@ -63,6 +63,11 @@ public interface ToolkitRequestHandler  {
 	 */
 	public List<BlockProperty> getBlockProperties(String className,long projectId,long resourceId,UUID blockId) ;
 	
+	/**
+	 * Obtain a list of prototypes suitable for display on the block palette
+	 *
+	 * @return an array of PalleteProtypes
+	 */
 	public List<PalettePrototype> getBlockPrototypes() ;
 	
 	/**
@@ -107,7 +112,7 @@ public interface ToolkitRequestHandler  {
 	public SerializableResourceDescriptor getDiagram(String diagramId) ;
 	
 	/**
-	 * blockId String representation of the block's internal Id.
+	 * @param blockId String representation of the block's internal Id.
 	 * @return the diagram that is a parent of the specified block.
 	 */
 	public SerializableResourceDescriptor getDiagramForBlock(String blockId) ;
@@ -117,14 +122,21 @@ public interface ToolkitRequestHandler  {
 	 * @return the current state of the specified diagram.
 	 */
 	public DiagramState getDiagramState(Long projectId, Long resourceId) ;
+	/**
+	 * @param diagramId String representation of the diagram's internal Id.
+	 * @return the current state of that diagram.
+	 */
 	public DiagramState getDiagramState(String diagramId);
 	
 	/**
+	 * @param uuid identifier of any node as a string
 	 * @return the name of the family that is equal to or
 	 *         superior to the node with the specified UUID
 	 */
 	public String getFamilyName(String uuid);
 	/**
+	 * @param diagramId string representation of the diagram's unique id
+	 * @param blockId identifier of the block within the diagram
 	 * @return an explanation for the state of a block.
 	 */
 	public String getExplanation(String diagramId,String blockId);
@@ -348,11 +360,14 @@ public interface ToolkitRequestHandler  {
 
 	/**
 	 * Execute reset() on every block on the diagram
-	 * 	 * @param diagramId id of the parent diagram
+	 *  @param diagramId id of the parent diagram
 	 */
 	public void resetDiagram(String diagramId) ;
 	/**
 	 * Determine whether or not the indicated resource is known to the controller.
+	 * @param projectId id of the project, a Long
+	 * @param resid identifier of the resource that is the diagram holding the block, a Long
+	 * @return true if the resource is found
 	 */
 	public boolean resourceExists(Long projectId,Long resid) ;
 	/**
@@ -370,6 +385,7 @@ public interface ToolkitRequestHandler  {
 	 * @param command string of the signal
 	 * @param message embedded in the transmitted signal
 	 * @param arg also a component of the transmitted signal
+	 * @return true if the signal was sent
 	 */
 	public boolean sendLocalSignal(String diagramId,String command,String message,String arg) ;
 	/**
@@ -377,6 +393,7 @@ public interface ToolkitRequestHandler  {
 	 * This is a "local" transmission. The signal timestamp is "now".
 	 * 
 	 * @param diagramId diagram identifier
+	 * @param blockName name of the target block
 	 * @param command string of the signal.
 	 * @param message command payload
 	 * @return true on success
@@ -387,25 +404,27 @@ public interface ToolkitRequestHandler  {
 	 * This is a "local" transmission. The diagram is specified by a tree-path.
 	 * There may be no successful recipients. This version time-stamps the signal sent
 	 * 
-	 * @param diagramId
+	 * @param diagramId diagram identifier as a string
 	 * @param command string of the signal
 	 * @param message embedded in the transmitted signal
 	 * @param arg also a component of the transmitted signal
 	 * @param time unix time, milli-seconds since the start of the epoch
+	 * @return true if the signal was sent 
 	 */
 	public boolean sendTimestampedSignal(String diagramId,String command,String message,String arg,long time) ;
 	
 	/**
 	 * Set the state of every diagram that is a member of the application to
 	 * the specified value.
-	 * @param appname
-	 * @param state
+	 * @param appname name of the application
+	 * @param state new state for all diagrams in application
 	 */
 	public void setApplicationState(String appname, String state);
 
 	/** Update all changed properties for a block 
 	 * @param duuid diagram unique Id
 	 * @param buuid block unique Id
+	 * @param props a collection of properties with changes
 	 */
 	public void setBlockProperties(UUID duuid,UUID buuid, Collection<BlockProperty> props ) ;
 	/** Update a single property for a block 
@@ -419,7 +438,7 @@ public interface ToolkitRequestHandler  {
 	 * are notified of the change.
 	 *  
 	 * @param diagramId diagram's unique Id as a String
-	 * @param bname 
+	 * @param bname name of the block
 	 * @param pname the changed property
 	 * @param value the new value of the property. The value will be coerced into the correct data type in the gateway 
 	 */
@@ -429,7 +448,7 @@ public interface ToolkitRequestHandler  {
 	 * Drive a block to the specified state. 
 	 *  
 	 * @param diagramId diagram's unique Id as a String
-	 * @param bname 
+	 * @param bname block name
 	 * @param state the new state of the block. The value will be coerced into a truth-value in the gateway 
 	 */
 	public void setBlockState(String diagramId,String bname,String state );

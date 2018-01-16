@@ -28,8 +28,9 @@
         				${root.dir}/external/lib/jide-common-3.5.13.jar:
         				${root.dir}/external/lib/jide-components-3.5.13.jar:
         				${root.dir}/external/lib/jide-dock-3.5.13.jar:
-        				${root.dir}/external/lib/miglayout-4.0-swing.jar:	
+        				${root.dir}/external/lib/miglayout-4.0-swing.jar:
         				${root.dir}/ignition-79/lib/gateway-api.jar:
+        				${root.dir}/ignition-79/lib/gateway.jar:
         	            ${basedir}/BLT_Common/bin" 
         	destdir="BLT_Build/doc" nodeprecated="false" nodeprecatedlist="true" noindex="false" nonavbar="false" notree="false" 
         	packagenames="com.ils.block,com.ils.block.annotation,

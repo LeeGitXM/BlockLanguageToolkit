@@ -49,6 +49,7 @@ public interface BlockConstants   {
 	public static final String BLOCK_PROPERTY_SCAN_INTERVAL    = "ScanInterval";     // Compute interval ~ sec
 	public static final String BLOCK_PROPERTY_SCALE_FACTOR     = "ScaleFactor";	
 	public static final String BLOCK_PROPERTY_STANDARD_DEVIATION = "StandardDeviation";
+	public static final String BLOCK_PROPERTY_NAME_VALUES     = "Name:Values";     // List of name:value pairs
 	public static final String BLOCK_PROPERTY_SYNC_INTERVAL    = "SyncInterval";     // Time to coalesce inputs ~ sec
 	public static final String BLOCK_PROPERTY_TAG_PATH         = "TagPath";
 	public static final String BLOCK_PROPERTY_TEXT             = "Text";
