@@ -95,17 +95,16 @@ public class StateLookup extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
-		if(!isLocked() ) {
-			String lookupString = vcn.getValue().toString().trim().toUpperCase();
+		if(!isLocked() &&  vcn.getValue()!=null && vcn.getValue().getValue()!=null ) {
+			String lookupString = vcn.getValue().getValue().toString().trim().toUpperCase();
 			TruthValue tv = lookupMap.get(lookupString);
 			if( tv==null ) tv = lookupMap.get(STATE_OTHER);
 			log.infof("%s.acceptValue: %s => %s", getName(),lookupString,tv.name());
 			
-			state = tv;
-			lastValue = new TestAwareQualifiedValue(timer,state.name());
+			lastValue = new TestAwareQualifiedValue(timer,tv);
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
-			valueProperty.setValue(state);
+			valueProperty.setValue(tv);
 			notifyOfStatus(lastValue);
 		}
 	}
@@ -157,6 +156,7 @@ public class StateLookup extends AbstractProcessBlock implements ProcessBlock {
 	public void notifyOfStatus() {}
 	private void notifyOfStatus(QualifiedValue qv) {
 		updateStateForNewValue(qv);
+		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 	/**
@@ -176,6 +176,5 @@ public class StateLookup extends AbstractProcessBlock implements ProcessBlock {
 		desc.setPreferredWidth(70);
 		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_LIGHT_GRAY);
 		desc.setEditorClass("com.ils.blt.designer.config.StateLookupEditor");
-		desc.setCtypeEditable(true);
 	}
 }

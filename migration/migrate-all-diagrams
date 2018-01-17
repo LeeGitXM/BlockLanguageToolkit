@@ -19,4 +19,5 @@ for fil in *.json
 do
 	echo "Processing $fil ..."
     $APP $INDIR/$fil $OUTDIR/$fil
+    exit
 done

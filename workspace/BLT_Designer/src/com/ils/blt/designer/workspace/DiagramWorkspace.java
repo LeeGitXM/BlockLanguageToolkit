@@ -183,7 +183,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		return frames;
 	}
 
-
+	public DesignerContext getContext() { return this.context; }
+	
 	@Override
 	public String getKey() {
 		return key;
@@ -274,7 +275,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				// Do not allow editing when the diagram is disabled
 				if( selection instanceof BlockComponent && pbv.getEditorClass() !=null && pbv.getEditorClass().length()>0 &&
 						!getActiveDiagram().getState().equals(DiagramState.DISABLED)) {
-					CustomEditAction cea = new CustomEditAction(pbv);
+					CustomEditAction cea = new CustomEditAction(this,pbv);
 					menu.add(cea);
 				}
 				if(pbv.isSignalAnchorDisplayed()) {
@@ -828,8 +829,10 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	private class CustomEditAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
 		private final ProcessBlockView block;
-		public CustomEditAction(ProcessBlockView blk)  {
+		private final DiagramWorkspace workspace;
+		public CustomEditAction(DiagramWorkspace wksp,ProcessBlockView blk)  {
 			super(PREFIX+".ConfigureProperties");
+			this.workspace = wksp;
 			this.block = blk;
 		}
 		
@@ -838,9 +841,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			// Apparently this only works if the class is in the same package (??)
 			try{
 				Class<?> clss = Class.forName(block.getEditorClass());
-				Constructor<?> ctor = clss.getDeclaredConstructor(new Class[] {DesignerContext.class,ProcessDiagramView.class,ProcessBlockView.class});
+				Constructor<?> ctor = clss.getDeclaredConstructor(new Class[] {DiagramWorkspace.class,ProcessDiagramView.class,ProcessBlockView.class});
 				ProcessDiagramView pdv = getActiveDiagram();
-				final JDialog edtr = (JDialog)ctor.newInstance(context,pdv,block); 
+				final JDialog edtr = (JDialog)ctor.newInstance(workspace,pdv,block); 
 				Object source = e.getSource();
 				if( source instanceof Component) {
 					edtr.setLocationRelativeTo((Component)source);

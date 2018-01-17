@@ -542,6 +542,7 @@ public class Migrator {
 		}
 		
 		// Look for input blocks connected to Inhibit blocks or the Value port of a SQC. Convert to LabData
+		// Also fix connections to StateLayout: input shoud be TEXT
 		for( SerializableBlock block:sdiag.getBlocks()) {
 			if(block.getClassName().startsWith("com.ils.block.Input")) {
 				for(SerializableConnection scxn:sdiag.getConnections()) {
@@ -629,7 +630,6 @@ public class Migrator {
 							}
 						}
 					}
-					
 				}
 			}
 		}
@@ -643,7 +643,7 @@ public class Migrator {
 					if( scxn==null ) {
 						continue;
 					}
-					if(scxn.getEndBlock()==null ) continue;   // Dangling connection
+					if(scxn.getBeginBlock()==null ) continue;   // Dangling connection
 					if(scxn.getEndBlock()==null )   continue;
 					if(scxn.getEndBlock().equals(block.getId())) {
 						UUID upstream = scxn.getBeginBlock();
@@ -670,6 +670,32 @@ public class Migrator {
 						index++;
 					}
 					sdiag.setConnections(connections);
+				}
+			}
+		}
+		// Guarantee that the connection type into a StateLookup is type TEXT.
+		for( SerializableBlock block:sdiag.getBlocks()) {
+			if(block.getClassName().startsWith("com.ils.block.StateLookup")) {
+				for(SerializableConnection scxn:sdiag.getConnections()) {
+					if( scxn==null ) {
+						continue;
+					}
+					if(scxn.getBeginBlock()==null ) continue;   // Dangling connection
+					if(scxn.getEndBlock()==null )   continue;
+					if(scxn.getEndBlock().equals(block.getId())) {
+						for( SerializableBlock beginBlock:sdiag.getBlocks()) {
+							if( beginBlock.getId().equals(scxn.getBeginBlock()) ) {
+								for(SerializableAnchor anchor:beginBlock.getAnchors()) {
+									if( anchor.getDirection().equals(AnchorDirection.OUTGOING)) {
+										anchor.setConnectionType(ConnectionType.TEXT);
+									}
+								}
+								break;
+							}
+						}
+						//System.err.println(String.format("%s: %s - setting text connection as input to StateLookup %s",TAG,sdiag.getName(),block.getName()));
+						scxn.setType(ConnectionType.TEXT);
+					}
 				}
 			}
 		}

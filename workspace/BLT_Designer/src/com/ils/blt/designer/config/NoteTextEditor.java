@@ -28,6 +28,7 @@ import javax.swing.WindowConstants;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
+import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.ils.blt.designer.workspace.WorkspaceRepainter;
@@ -54,8 +55,8 @@ public class NoteTextEditor extends JDialog {
 	private JLabel textLabel;    // Use a label to display the results
 	private JTextArea textArea;
 	
-	public NoteTextEditor(DesignerContext context,ProcessDiagramView diag,ProcessBlockView view) {
-		super(context.getFrame());
+	public NoteTextEditor(DiagramWorkspace wksp,ProcessDiagramView diag,ProcessBlockView view) {
+		super(wksp.getContext().getFrame());
 		this.block = view;
 		this.setTitle(BundleUtil.get().getString(PREFIX+".NoteTextEdit.Title"));
 		setModal(false);

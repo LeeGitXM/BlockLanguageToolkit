@@ -7,7 +7,7 @@ package com.ils.blt.designer.config;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
+import java.awt.FlowLayout;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -22,28 +22,32 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
 
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.designer.editor.BlockEditConstants;
+import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
+import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.common.BundleUtil;
+import com.inductiveautomation.ignition.common.execution.ExecutionManager;
+import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngine;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
-import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -53,24 +57,31 @@ import net.miginfocom.swing.MigLayout;
  */
 
 public class StateLookupEditor extends JDialog {
-	private static String TAG = "BlockInternalsViewer";
+	private static String CLSS = "StateLookupEditor";
 	private final LoggerEx log;
 	// A panel is designed to edit properties that are lists of strings.
 	private static final String PREFIX = BLTProperties.BLOCK_PREFIX;  // Required for text strings
 	private static final long serialVersionUID = 4004388376825535527L;
 	private final int DIALOG_HEIGHT = 400;
 	private final int DIALOG_WIDTH = 600;
-	private final int TABLE_HEIGHT = 200;
-	private final int TABLE_WIDTH = 800;
+	private final int TABLE_HEIGHT = 250;
+	private final int TABLE_WIDTH = 550;
 	private final ProcessBlockView block;
+	private final ProcessDiagramView diagram;
+	private final DiagramWorkspace workspace;
+	private final ExecutionManager executionEngine;
 	private final Map<String,TruthValue> lookupMap;
-	private JTable table = null;
+	private final JTable table;
 	JPanel internalPanel = null;
-	
-	public StateLookupEditor(DesignerContext context,ProcessDiagramView dia,ProcessBlockView view) {
-		super(context.getFrame());
+
+	public StateLookupEditor(DiagramWorkspace wksp,ProcessDiagramView dia,ProcessBlockView view) {
+		super(wksp.getContext().getFrame());
 		this.block = view;
+		this.diagram = dia;
+		this.workspace = wksp;
 		this.lookupMap = new HashMap<>();
+		this.table = new JTable();
+		this.executionEngine = new BasicExecutionEngine(1,CLSS);
 		this.setTitle(String.format(BundleUtil.get().getString(PREFIX+".StateLookupEdit.Title",view.getName())));
 		setAlwaysOnTop(true);
 		setModal(false);
@@ -84,37 +95,62 @@ public class StateLookupEditor extends JDialog {
 	
 	private void initialize() {
 		
-		// The internal panel has three panes - one for properties, one for an activity history
-		// and the other for any internal buffer
+		// The internal panel has a pane with the state list, plus a pane at the bottom 
+		// with add and delete buttons.
 		setLayout(new BorderLayout());
+		JPanel mainPanel = new JPanel();
 		internalPanel = new JPanel();
 		internalPanel.setLayout(new MigLayout("ins 2,fillx","",""));
+		mainPanel.add(internalPanel,BorderLayout.CENTER);
 		//Create the internal panel - it has a single pane with buttons at the botton
-		add(internalPanel,BorderLayout.CENTER);
+		JPanel internalButtonPanel = new JPanel();
+		internalButtonPanel.setLayout(new FlowLayout());
+		mainPanel.add(internalButtonPanel,BorderLayout.SOUTH);
 		
-		// The add button creates a new row
-		JPanel buttonPanel = new JPanel();
-		JButton addButton = createAddButton(table);
-		buttonPanel.add(addButton, "");
+		add(mainPanel,BorderLayout.CENTER);
 		
 		// The delete button removes an existing row
 		JButton deleteButton = createDeleteButton(table);
-		buttonPanel.add(deleteButton, "");
-
-		// The OK button simply closes the dialog
-		JButton okButton = new JButton("Dismiss");
-		buttonPanel.add(okButton, "");
-		okButton.addActionListener(new ActionListener() {
+		internalButtonPanel.add(deleteButton, FlowLayout.LEFT);
+		// The add button creates a new row
+		JPanel buttonPanel = new JPanel();
+		JButton addButton = createAddButton(table);
+		internalButtonPanel.add(addButton,FlowLayout.LEFT);
+		
+		// The Save button saves the new values
+		JButton saveButton = new JButton("Save");
+		buttonPanel.add(saveButton, "");
+		saveButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				StringBuffer nameValues = new StringBuffer();
+				TableModel model = table.getModel();
+				int count = model.getRowCount();
+				int row=0;
+				while( row<count ) {
+					if( row>0 )nameValues.append(",");
+					nameValues.append(model.getValueAt(row, 0));
+					nameValues.append(":");
+					nameValues.append(model.getValueAt(row, 1).toString());
+					row++;
+				}
+				for(BlockProperty prop:block.getProperties()) {
+					if( prop.getName().equals(BlockConstants.BLOCK_PROPERTY_NAME_VALUES)) {
+						prop.setValue(nameValues.toString());
+						diagram.setDirty(true);
+						SwingUtilities.invokeLater(new WorkspaceRepainter());
+						break;
+					}
+				}
+				log.warnf("%s.savebutton: set %s=%s",CLSS,BlockConstants.BLOCK_PROPERTY_NAME_VALUES,nameValues.toString());
 				dispose();
 			}
 		});
-		// The Refresh button acquires more data
-		JButton refreshButton = new JButton("Refresh");
-		buttonPanel.add(refreshButton, "");
-		refreshButton.addActionListener(new ActionListener() {
+		// The Dismiss button simply closes the dialog
+		JButton cancelButton = new JButton("Dismiss");
+		buttonPanel.add(cancelButton, "");
+		cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				refresh();
+				dispose();
 			}
 		});
 		add(buttonPanel, BorderLayout.SOUTH);
@@ -137,8 +173,11 @@ public class StateLookupEditor extends JDialog {
 						try {
 							tv = TruthValue.valueOf(text);
 						}
-						catch(IllegalStateException ise) {}
+						catch(IllegalStateException ise) {
+							log.warnf("%s.queryBlock: Illegal state %s",CLSS,text);
+						}
 					}
+					log.infof("%s.queryBlock: Received %s=%s",CLSS,name,tv.name());
 					lookupMap.put(name,tv);
 				}
 				break;
@@ -149,21 +188,14 @@ public class StateLookupEditor extends JDialog {
 	 * Update the UI per most current information from the block
 	 */
 	private void updateInformation() {
-		internalPanel.removeAll();
-		
+
 		if( lookupMap.size()>0 ) {
 			internalPanel.add(createStatesPanel(),"wrap");
 		}
 		internalPanel.revalidate();
 		internalPanel.repaint();
 	}
-	
-	private void refresh() {
-		queryBlock();
-		updateInformation();
-	}
-	
-	
+
 	
 	/**
 	 * Create a panel for displaying the name:values.
@@ -171,26 +203,28 @@ public class StateLookupEditor extends JDialog {
 	 */
 	private JPanel createStatesPanel()  {
 		JPanel outerPanel = new JPanel();
-		table = new JTable();
-		String[] columnNames = {"Name", "Value"};
-		int nColumns = columnNames.length;
-		//outerPanel.setLayout(new MigLayout("ins 2,fillx,filly","para[:480:]","[120]"));
+
 		outerPanel.setLayout(new MigLayout("ins 2,fillx,filly","",""));
-		DefaultTableModel dataModel = new DefaultTableModel(columnNames,0); 
+		String[] columnNames = {"Name", "Value"};
+		DefaultTableModel dataModel = new DefaultTableModel(columnNames,0);
+		table.setModel(dataModel);
 		for( String key:lookupMap.keySet()) {
-			String[] row = {key,lookupMap.get(key).name()};
+			String[] row = new String[2];
+			row[0] = key;
+			row[1] = lookupMap.get(key).name();
 			dataModel.addRow(row);
+			log.infof("%s.createStatesPanel: row %s : %s",CLSS,row[0],row[1]);
 		}
-        table = new JTable(dataModel);
         table.setRowSelectionAllowed(true);
         table.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
         table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
         table.setPreferredScrollableViewportSize(new Dimension(TABLE_WIDTH,TABLE_HEIGHT));
+        
         TableColumn tvColumn = table.getColumnModel().getColumn(1);
         JComboBox<String> comboBox = new JComboBox<>();
-        comboBox.addItem("True");
-        comboBox.addItem("False");
-        comboBox.addItem("Unknown");
+        comboBox.addItem("TRUE");
+        comboBox.addItem("FALSE");
+        comboBox.addItem("UNKNOWN");
         tvColumn.setCellEditor(new DefaultCellEditor(comboBox));
         
         JScrollPane tablePane = new JScrollPane(table);
@@ -218,18 +252,19 @@ public class StateLookupEditor extends JDialog {
 				btn.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e){
 						DefaultTableModel dtm = (DefaultTableModel)tbl.getModel();
-						String[] row = new String[1];
+						String[] row = new String[2];
 						row[0] = "";   // Add an empty row
+						row[1] = "UNKNOWN";
 						dtm.addRow(row);
 					}
 				});
 			}
 			else {
-				log.warnf("%s.createAddButton icon not found(%s)",TAG,ICON_PATH);
+				log.warnf("%s.createAddButton icon not found(%s)",CLSS,ICON_PATH);
 			}
 		}
 		catch(Exception ex) {
-			log.warnf("%s.createDeleteButton icon not found(%s) (%s)",TAG,ICON_PATH, ex.getMessage());
+			log.warnf("%s.createDeleteButton icon not found(%s) (%s)",CLSS,ICON_PATH, ex.getMessage());
 		}
 		return btn;
 	}
@@ -260,7 +295,7 @@ public class StateLookupEditor extends JDialog {
 						int index = 0;
 						for( int i:selected ) {
 							selected[index] = tbl.convertRowIndexToModel(i);
-							log.debugf("%s.createDeleteButton: Selected row %d converted to %d",TAG,i,selected[index]);
+							log.debugf("%s.createDeleteButton: Selected row %d converted to %d",CLSS,i,selected[index]);
 							if( selected[index] > maxIndex ) maxIndex = selected[index];
 							if( selected[index] < minIndex ) minIndex = selected[index];
 							index++;
@@ -275,27 +310,13 @@ public class StateLookupEditor extends JDialog {
 				});
 			}
 			else {
-				log.warnf("%s.createDeleteButton icon not found(%s)",TAG,ICON_PATH);
+				log.warnf("%s.createDeleteButton icon not found(%s)",CLSS,ICON_PATH);
 			}
 		}
 		catch(Exception ex) {
-			log.warnf("%s.createDeleteButton icon not found(%s) (%s)",TAG,ICON_PATH, ex.getMessage());
+			log.warnf("%s.createDeleteButton icon not found(%s) (%s)",CLSS,ICON_PATH, ex.getMessage());
 		}
 		return btn;
 	}
-	
-	/**
-	 * Add a separator to a panel using Mig layout
-	 */
-	private JLabel addSeparator(JPanel panel,String text) {
-		JSeparator separator = new JSeparator();
-		JLabel label = new JLabel(text);
-		label.setFont(new Font("Tahoma", Font.PLAIN, 11));
-		label.setForeground(Color.BLUE);
-		panel.add(label, "split 2,span");
-		panel.add(separator, "growx,wrap");
-		return label;
-	}
-
 }
 	
