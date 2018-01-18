@@ -2,7 +2,7 @@
 
 	<import file="${basedir}/BLT_Build/build.xml"/>
 
-	<property name="version.build" value="7" />	
+	<property name="version.build" value="8" />	
 	<!-- Change version.beta value to "" for release builds -->
 	<property name="version.beta" value="-development" />		
 	<property name="BLTModule.version" value="1.6.28.${version.build}" />
@@ -263,6 +263,7 @@
 				<include name="blt-common.jar" />
 				<include name="jackson*.gz" />
 				<include name="commons-math*.gz" />
+				<include name="commons-math*.jar" />
 			</fileset>
 		</copy>
 		<copy todir="${ignition.py.lib}/../../lib/core/common">
@@ -272,7 +273,7 @@
 		</copy>
 		<copy todir="${ignition.py.lib}/../../lib/core/gateway">
 			<fileset dir="${basedir}/BLT_Build/temp_modl">
-				<include name="commons-math3-3.1.1.jar" />
+				<include name="commons-math3-3.1.6.jar" />
 				<include name="blt-gateway.jar" />
 				<include name="block-definition.jar" />
 			</fileset>
