@@ -490,8 +490,8 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	}
 	@Override
 	public QualifiedValue getTagValue(UUID diagramId,String path) {
-		if( tagReader==null || path==null) {
-			log.warnf("%s.getTagValue: tagReader %s and tagPath %s",TAG,(tagReader==null?"NULL":"NOT NULL"),(path==null?"NULL":path));
+		if( tagReader==null ) {
+			log.warnf("%s.getTagValue: tagReader is null. Received read request for %s before controller was ready. Ignored.",TAG,(path==null?"NULL":path));
 			return null;
 		}
 		return tagReader.readTag(path);

@@ -99,7 +99,7 @@ public class StateLookup extends AbstractProcessBlock implements ProcessBlock {
 			String lookupString = vcn.getValue().getValue().toString().trim().toUpperCase();
 			TruthValue tv = lookupMap.get(lookupString);
 			if( tv==null ) tv = lookupMap.get(STATE_OTHER);
-			log.infof("%s.acceptValue: %s => %s", getName(),lookupString,tv.name());
+			log.debugf("%s.acceptValue: %s => %s", getName(),lookupString,tv.name());
 			
 			lastValue = new TestAwareQualifiedValue(timer,tv);
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
@@ -119,7 +119,7 @@ public class StateLookup extends AbstractProcessBlock implements ProcessBlock {
 		String propertyName = event.getPropertyName();
 		if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_NAME_VALUES)) {
 			String nameValues = event.getNewValue().toString();
-			log.infof("%s.propertyChange: %s => %s", getName(),BlockConstants.BLOCK_PROPERTY_NAME_VALUES,nameValues);
+			log.debugf("%s.propertyChange: %s => %s", getName(),BlockConstants.BLOCK_PROPERTY_NAME_VALUES,nameValues);
 			lookupMap.clear();
 			String[] keyvalues = nameValues.split(",");
 			for(String key:keyvalues ) {
