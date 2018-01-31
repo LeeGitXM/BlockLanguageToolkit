@@ -15,5 +15,5 @@ Test: Logic Blocks
 Step: Unknown
 Tagset: Logic
 10:00 True 
-10:00:20 Assert: OUTA = True "Single AND input is true"
+10:00:20 Assert: OUTA = False "Single AND input is false"
 10:00:30 Assert: OUTB = True "Single OR input is true"

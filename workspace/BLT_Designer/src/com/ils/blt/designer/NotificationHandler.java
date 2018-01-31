@@ -104,7 +104,7 @@ public class NotificationHandler implements PushNotificationListener {
 					log.debugf("%s.receiveNotification: no receiver for key=%s,value=%s",TAG,key,payload.toString());
 				}
 			}
-			else if(!hook.attachDiagrams()) {
+			else if(hook==null || !hook.attachDiagrams()) {
 				;  // Ignore UI updates if the diagrams are "detached" 
 			}
 			else if( payload instanceof QualifiedValue ) {
