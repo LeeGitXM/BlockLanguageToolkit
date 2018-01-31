@@ -6,8 +6,8 @@
   <rev>5</rev>
   <build>2017111615</build>
 </version>
-<timestamp>2018-01-30 14:44:17</timestamp>
-<id>8</id>
+<timestamp>2018-01-31 12:10:24</timestamp>
+<id>4</id>
 <name>BasicDiagrams</name>
 <source></source>
 <title>Basic Diagrams</title>
@@ -16,12 +16,12 @@
 Version 47&#13;
 Jan 16, 2018 -- Block Language Toolkit - 1.6.28.7</description>
 <enabled>true</enabled>
-<lastModified>1517348583755</lastModified>
+<lastModified>1517421409214</lastModified>
 <lastModifiedBy>chuckc</lastModifiedBy>
-<editCount>54</editCount>
-<uuid>040184c9-41aa-c56b-9d01-72e577018540</uuid>
+<editCount>0</editCount>
+<uuid>94758657-8892-deb0-212f-8a73bea6a461</uuid>
 <resources>
-	<resource id='1803' name='latch' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='44' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='902' name='latch' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiJhZWFk
 MDJlYy02ZDljLTRkNTUtOWU1Yi0zMTViMGNiNTlkNzAiLCJkaXNwbGF5IjoiaW4iLCJwYXJlbnRJ
@@ -449,7 +449,7 @@ aXR5IjpudWxsfSwidHlwZSI6IlRSVVRIVkFMVUUifV0sImlkIjoiMjBjMDNlNDktYTRjZS00OTc0
 LThhZGYtMWQxZWI1ZmI3YmFlIiwibmFtZSI6ImxhdGNoIiwicmVzb3VyY2VJZCI6MTgwMywic3Rh
 dGUiOiJBQ1RJVkUiLCJ3YXRlcm1hcmsiOiIiLCJkaXJ0eSI6ZmFsc2UsImVuY2Fwc3VsYXRpb25C
 bG9ja0lkIjpudWxsfQ==]]></bytes></resource>
-	<resource id='1804' name='truthcycle' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='903' name='truthcycle' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiI4Y2Rl
 OGYxOS05NjJkLTRlMDgtOTgyYy1iOTYzZDBhZjVmZGQiLCJkaXNwbGF5IjoiaW4iLCJwYXJlbnRJ
@@ -559,7 +559,7 @@ IjpudWxsLCJsYXN0UXVhbGl0eSI6bnVsbH0sInR5cGUiOiJEQVRBIn1dLCJpZCI6ImY1YTJjZjFj
 LTEzYjItNDUxYi04M2IyLTdmMTBmMDFhYzc3YyIsIm5hbWUiOiJ0cnV0aGN5Y2xlIiwicmVzb3Vy
 Y2VJZCI6MTk2NTgsInN0YXRlIjoiRElTQUJMRUQiLCJ3YXRlcm1hcmsiOiIiLCJkaXJ0eSI6ZmFs
 c2UsImVuY2Fwc3VsYXRpb25CbG9ja0lkIjpudWxsfQ==]]></bytes></resource>
-	<resource id='1805' name='memory' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='904' name='memory' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiJmOGE3
 ZTk3ZS0yYTc1LTQ5MDgtYjMzYy0wNzE4Mzc3YjYxNzIiLCJkaXNwbGF5Ijoic2lnbmFsIiwicGFy
@@ -766,7 +766,7 @@ YWxpdHkiOm51bGx9LCJ0eXBlIjoiVFJVVEhWQUxVRSJ9XSwiaWQiOiIwNTA0MjYyZS1lOTY1LTQz
 YzktODU3YS1mZjY2MjY5MWU1ZmMiLCJuYW1lIjoibWVtb3J5IiwicmVzb3VyY2VJZCI6MTk2NTks
 InN0YXRlIjoiRElTQUJMRUQiLCJ3YXRlcm1hcmsiOiIiLCJkaXJ0eSI6ZmFsc2UsImVuY2Fwc3Vs
 YXRpb25CbG9ja0lkIjpudWxsfQ==]]></bytes></resource>
-	<resource id='1806' name='persistence' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='45' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='905' name='persistence' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiI2MTNh
 OWYzMy02YmZmLTQ2ZGMtOGE3OC03YzAwYWUxODVlYjAiLCJkaXNwbGF5IjoiaW4iLCJwYXJlbnRJ
@@ -937,7 +937,7 @@ UXVhbGl0eSI6bnVsbH0sInR5cGUiOiJUUlVUSFZBTFVFIn1dLCJpZCI6IjIyODE4NmRjLTJmMzct
 NDExMi1hN2Y1LTUxYjdlNzcxMjlmMyIsIm5hbWUiOiJwZXJzaXN0ZW5jZSIsInJlc291cmNlSWQi
 OjE4MDYsInN0YXRlIjoiRElTQUJMRUQiLCJ3YXRlcm1hcmsiOiIiLCJkaXJ0eSI6ZmFsc2UsImVu
 Y2Fwc3VsYXRpb25CbG9ja0lkIjpudWxsfQ==]]></bytes></resource>
-	<resource id='1807' name='highlimit' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='906' name='highlimit' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiIzM2Q4
 NGE1ZC02MGFkLTRmZmYtYjY0Mi1jOTA0YTM5ZjM0MzgiLCJkaXNwbGF5IjoiaW4iLCJwYXJlbnRJ
@@ -1059,7 +1059,7 @@ aXR5IjpudWxsfSwidHlwZSI6IkRBVEEifV0sImlkIjoiZDZjMDFiYTgtY2FiYS00ZDgwLWE2ZTUt
 NWI3OGI3MzMxMzY4IiwibmFtZSI6ImhpZ2hsaW1pdCIsInJlc291cmNlSWQiOjM2MjUsInN0YXRl
 IjoiRElTQUJMRUQiLCJ3YXRlcm1hcmsiOiIiLCJkaXJ0eSI6ZmFsc2UsImVuY2Fwc3VsYXRpb25C
 bG9ja0lkIjpudWxsfQ==]]></bytes></resource>
-	<resource id='1808' name='' module='fpmi' modver='' type='client_tags' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='4' protected='false'>
+	<resource id='907' name='' module='fpmi' modver='' type='client_tags' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='4' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[H4sIAAAAAAAAAG1QwUoDMRCdWOtuW2vrSREPe/USdpeVssVbS5GCerA/ENO0RjebdZNW/AjxJn6D
 F8G/0B/y6oQoeDAQ5mXy3uPNvBw9vY6+phfvj58np89vHwCwAUCmewWM4f/Tx7sNEBhhz5kS+Gqj
@@ -1067,7 +1067,7 @@ gntlf0AHNKFpnGRxnqZx7jWBvroR3BqEDVQvKiXpWtRG6hJbm2jxq8tSbIRI44Vjd9BaOQOsGusO
 /hhbI+pixzEIwO6ixiD3ur79Y9pD31pri3AL4HB2vYrGgkdxFiXHwzQfpkl0djmLXFKktAAmXCsq
 y/mKW7kWbGW1Yha96IJxq+sHl5lVVSG5b5u7wrKloaNCitLO2HKii7lw0ZroZ6USxjJV7YMfGkjo
 VwSN0M8MzdCHA+JIAXGTt3wYIAd+amg7SSf0S4dum/gtAIl+gHPqfQNtWM2uyAEAAA==]]></bytes></resource>
-	<resource id='1809' name='selector' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='48' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='908' name='selector' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiJmOWI3
 YjM5ZS00Njk4LTRlNjktYWJhZS1kMTllODQ3Mjc2ZmMiLCJkaXNwbGF5IjoiaW4iLCJwYXJlbnRJ
@@ -1875,7 +1875,7 @@ MTgsImxhc3RWYWx1ZSI6bnVsbCwibGFzdFF1YWxpdHkiOm51bGx9LCJ0eXBlIjoiREFUQSJ9XSwi
 aWQiOiI4Nzc2NzA5OS1kZjE5LTRhMTgtOTgxOS05NmJiOTE5OWE3OTQiLCJuYW1lIjoic2VsZWN0
 b3IiLCJyZXNvdXJjZUlkIjoxODA5LCJzdGF0ZSI6IkFDVElWRSIsIndhdGVybWFyayI6IiIsImRp
 cnR5IjpmYWxzZSwiZW5jYXBzdWxhdGlvbkJsb2NrSWQiOm51bGx9]]></bytes></resource>
-	<resource id='1810' name='timer' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='909' name='timer' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiIzZDA3
 ZjU4NC02ZDk0LTRlOTMtODlkYi02NjlkNmQ1ZWQ1MDUiLCJkaXNwbGF5IjoiaW4iLCJwYXJlbnRJ
@@ -2104,7 +2104,7 @@ aCI6MTgsImxhc3RWYWx1ZSI6bnVsbCwibGFzdFF1YWxpdHkiOm51bGx9LCJ0eXBlIjoiVFJVVEhW
 QUxVRSJ9XSwiaWQiOiIyNjg3YzQ4Ni0wNWViLTQyODgtOTFmYi1mZGJkMzJmMTI4ZDEiLCJuYW1l
 IjoidGltZXIiLCJyZXNvdXJjZUlkIjoyOTA2LCJzdGF0ZSI6IkRJU0FCTEVEIiwid2F0ZXJtYXJr
 IjoiIiwiZGlydHkiOmZhbHNlLCJlbmNhcHN1bGF0aW9uQmxvY2tJZCI6bnVsbH0=]]></bytes></resource>
-	<resource id='1811' name='routing' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='47' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='910' name='routing' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiJlNjhi
 YjNiYi1iMDNhLTRjZjctYmQ2OC0wNDZiMTgyN2Q5ZGUiLCJkaXNwbGF5IjoiaW4iLCJwYXJlbnRJ
@@ -2998,15 +2998,15 @@ YWx1ZSI6bnVsbCwibGFzdFF1YWxpdHkiOm51bGx9LCJ0eXBlIjoiREFUQSJ9XSwiaWQiOiJmMDIw
 YzIyNi01ZTRlLTRiNWYtODJkZC00ODdkNzFkNzRkMDQiLCJuYW1lIjoicm91dGluZyIsInJlc291
 cmNlSWQiOjE4MTEsInN0YXRlIjoiRElTQUJMRUQiLCJ3YXRlcm1hcmsiOiIiLCJkaXJ0eSI6ZmFs
 c2UsImVuY2Fwc3VsYXRpb25CbG9ja0lkIjpudWxsfQ==]]></bytes></resource>
-	<resource id='1812' name='diagrams' module='block' modver='' type='__folder' ver='0' dirty='false' editcount='0' parent='7bbbd6b9-3140-4328-a844-51817eb47574' oemlocked='false' scope='1' protected='false'>
+	<resource id='911' name='diagrams' module='block' modver='' type='__folder' ver='0' dirty='false' editcount='0' parent='7bbbd6b9-3140-4328-a844-51817eb47574' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[vE2vKKsaOrohRnycUb9FlQ==]]></bytes></resource>
-	<resource id='1814' name='app75' module='block' modver='' type='blt.application' ver='0' dirty='false' editcount='0' parent='7bbbd6b9-3140-4328-a844-51817eb47574' oemlocked='false' scope='1' protected='false'>
+	<resource id='912' name='app75' module='block' modver='' type='blt.application' ver='0' dirty='false' editcount='0' parent='7bbbd6b9-3140-4328-a844-51817eb47574' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJmYW1pbGllcyI6W10sImZvbGRlcnMiOm51bGwsImF1eGlsaWFyeURhdGEiOnsicHJvcGVydGll
 cyI6e30sImxpc3RzIjp7fSwibWFwTGlzdHMiOnt9fSwiaWQiOiJkZTUwY2Q3Yy0yZjg5LTQ2NzMt
 OTViZC00NWM0Yjc4YmI2ZjAiLCJuYW1lIjoiYXBwNzUiLCJzdGF0ZSI6IkFDVElWRSJ9]]></bytes></resource>
-	<resource id='1815' name='DesignerScopeTests' module='fpmi' modver='' type='window' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='4' protected='false'>
+	<resource id='913' name='DesignerScopeTests' module='fpmi' modver='' type='window' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='4' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[H4sIAAAAAAAAAGy4A5CtwdIl2rZt27Zt2zht23b3adu2ddq2bdu2X9+58/73ImZ27Iqqnd/KzJUr
 K2J/kWmUsRXCL1LyDdHjPBIptWMAAABAAACABp/qjzcA//cP+u9CAQBAdjJx1rCxFrNztDF0VjNx
@@ -3381,13 +3381,13 @@ Hx68RBaqWX+Gej65W7ikaLiZAWZrWAPH6Lf/9KozwcDcYChB6lPIK3JEcdLLiI09xy7moB3gOGwf
 DZktVdBn4e7+p2uL47tCeUEGkrwZMIMvVCCJNBGEq9NKNqATKfgM9uMW8Y8qdh9t+P+7XO+/avT+
 10T/VWsa7XobGslS7P488dn8o4eP2gut51WKVu//H2X0SLBTOwAAGgAAAAcAAAAKAgAAAAsIAAAA
 FAAAAA0KAQAAABUAAAABIAAAABYAAAAF/wAAAAGkmKzCilMAAA==]]></bytes></resource>
-	<resource id='1816' name='family75' module='block' modver='' type='blt.family' ver='0' dirty='false' editcount='0' parent='de50cd7c-2f89-4673-95bd-45c4b78bb6f0' oemlocked='false' scope='1' protected='false'>
+	<resource id='914' name='family75' module='block' modver='' type='blt.family' ver='0' dirty='false' editcount='0' parent='de50cd7c-2f89-4673-95bd-45c4b78bb6f0' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJkaWFncmFtcyI6W10sImZvbGRlcnMiOltdLCJpZCI6ImVjNTM1N2IyLTY5MGQtNDJjMC1iYzI2
 LTQwMzRjZjI2ODZkMyIsImF1eGlsaWFyeURhdGEiOnsicHJvcGVydGllcyI6eyJEZXNjcmlwdGlv
 biI6IiIsIlByaW9yaXR5IjoiMCIsIk5hbWUiOiJmYW1pbHk3NSJ9LCJsaXN0cyI6e30sIm1hcExp
 c3RzIjp7fX0sIm5hbWUiOiJmYW1pbHk3NSIsInN0YXRlIjoiQUNUSVZFIn0=]]></bytes></resource>
-	<resource id='1817' name='readwrite' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='46' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='915' name='readwrite' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiJjZGI3
 Njg2Ni03NmMyLTQ4M2UtODk0Mi0xNjU0ZjZiZDg5YzAiLCJkaXNwbGF5IjoiaW4iLCJwYXJlbnRJ
@@ -4452,7 +4452,7 @@ dWxsLCJsYXN0UXVhbGl0eSI6bnVsbH0sInR5cGUiOiJUUlVUSFZBTFVFIn1dLCJpZCI6IjFmYmM5
 NTg1LTg3ZDktNDViOC1hY2RmLTNjN2QwMmRiOThkYyIsIm5hbWUiOiJyZWFkd3JpdGUiLCJyZXNv
 dXJjZUlkIjoxODE3LCJzdGF0ZSI6IkRJU0FCTEVEIiwid2F0ZXJtYXJrIjoiSEVMUCIsImRpcnR5
 IjpmYWxzZSwiZW5jYXBzdWxhdGlvbkJsb2NrSWQiOm51bGx9]]></bytes></resource>
-	<resource id='1818' name='' module='' modver='7.9.4.2017082911' type='sr.global.props' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='7' protected='false'>
+	<resource id='916' name='' module='' modver='7.9.4.2017082911' type='sr.global.props' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='7' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[H4sIAAAAAAAAAJVRS0oDQRCtSWL+X1dBEFyI4GYuoBtNQBGjET2AnZlO0jIzHWa6cwtxJ57BjeAt
 9EJuXPjKTpQQNzYzU49Xr+tV1TztPzz3Ps4uX+/fD08fX96IKEfk3X7u+RX6+2zirRJ1M2n6cixs
@@ -4461,7 +4461,7 @@ oEMu2EAt+K2SOCU9YnEGmCc6+K/XSaRHIoLjjCt0iIoDkVgRuS3kg4jpIkaG95E1UyjHKlpOuYEp
 Y8QWBpaJZdgGlSB6eDRiGVUykwJhm6XQrYv7Rp5r15CXMa+qTrT9u9Hrq/MbMcngN1ehTNmwvVi/
 1+WPxy1W3NhU2HKWVMhxW2XXNJWqnmuBvN0FIPdzqLJ+o7p6Y2cBWF1bV9dX1QxoXdX4UTU5x1Qr
 t+ycqTZTnS+aficvhQIAAA==]]></bytes></resource>
-	<resource id='1819' name='average' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='917' name='average' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiI0NmQw
 ZjU2Ni0zM2QzLTRhYWQtOGY2MS1mN2JkMmIzOGUxNWIiLCJkaXNwbGF5IjoiaW4iLCJwYXJlbnRJ
@@ -4845,7 +4845,7 @@ c3RWYWx1ZSI6bnVsbCwibGFzdFF1YWxpdHkiOm51bGx9LCJ0eXBlIjoiREFUQSJ9XSwiaWQiOiI4
 NjNlOTA0YS1iMjQzLTRhN2EtYTAwNi05ZDA5OTFmNTcxOGUiLCJuYW1lIjoiYXZlcmFnZSIsInJl
 c291cmNlSWQiOjM2MzQsInN0YXRlIjoiRElTQUJMRUQiLCJ3YXRlcm1hcmsiOiIiLCJkaXJ0eSI6
 ZmFsc2UsImVuY2Fwc3VsYXRpb25CbG9ja0lkIjpudWxsfQ==]]></bytes></resource>
-	<resource id='1820' name='sqclogic' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='918' name='sqclogic' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiIzMWUy
 MDIwYS1lODNjLTQ0ZDEtOGYzZi0wZjczNDNhMmJiZTIiLCJkaXNwbGF5Ijoic2lnbmFsIiwicGFy
@@ -5097,7 +5097,7 @@ bHVlIjpudWxsLCJsYXN0UXVhbGl0eSI6bnVsbH0sInR5cGUiOiJUUlVUSFZBTFVFIn1dLCJpZCI6
 Ijg1MjcxODk1LTRmOTEtNDE1MS1hZDE0LTk1NmY5YjdiMTUwZCIsIm5hbWUiOiJzcWNsb2dpYyIs
 InJlc291cmNlSWQiOjUwNzMsInN0YXRlIjoiRElTQUJMRUQiLCJ3YXRlcm1hcmsiOiIiLCJkaXJ0
 eSI6ZmFsc2UsImVuY2Fwc3VsYXRpb25CbG9ja0lkIjpudWxsfQ==]]></bytes></resource>
-	<resource id='1821' name='newt' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='919' name='newt' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiI4ZmU1
 ODBjOS1hOWRhLTQxNWEtYWExOS1kOTNhZGJmZmJhNWQiLCJkaXNwbGF5IjoiaW4iLCJwYXJlbnRJ
@@ -5203,7 +5203,7 @@ MiwibGFzdFZhbHVlIjpudWxsLCJsYXN0UXVhbGl0eSI6bnVsbH0sInR5cGUiOiJEQVRBIn1dLCJp
 ZCI6ImU3NWZlN2I3LTFlOGItNDVmOS05OTgwLWQ3NmVlMzdlMzUwZiIsIm5hbWUiOiJuZXd0Iiwi
 cmVzb3VyY2VJZCI6Mzk3Niwic3RhdGUiOiJESVNBQkxFRCIsIndhdGVybWFyayI6IiIsImRpcnR5
 IjpmYWxzZSwiZW5jYXBzdWxhdGlvbkJsb2NrSWQiOm51bGx9]]></bytes></resource>
-	<resource id='1822' name='finaldiagnosis' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='920' name='finaldiagnosis' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiI1M2M3
 YmU4ZS01YzdiLTRmZjMtOThiMy0yYmU3ZmFhODk3ZmMiLCJkaXNwbGF5Ijoic2lnbmFsIiwicGFy
@@ -5312,7 +5312,7 @@ bGwsImxhc3RRdWFsaXR5IjpudWxsfSwidHlwZSI6IlRSVVRIVkFMVUUifV0sImlkIjoiZWE3OTMw
 YjQtMTQ3ZC00M2QyLTk0MzItNzM4YWE2ZDNiNTAzIiwibmFtZSI6ImZpbmFsZGlhZ25vc2lzIiwi
 cmVzb3VyY2VJZCI6NjEyLCJzdGF0ZSI6IkRJU0FCTEVEIiwid2F0ZXJtYXJrIjoiIiwiZGlydHki
 OmZhbHNlLCJlbmNhcHN1bGF0aW9uQmxvY2tJZCI6bnVsbH0=]]></bytes></resource>
-	<resource id='1823' name='sum' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='921' name='sum' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiI3ZTUw
 ODNhZi1iYTZmLTQzMGItYjJkNi1mNTUyNGRmODM4MjQiLCJkaXNwbGF5IjoiaW4iLCJwYXJlbnRJ
@@ -5624,7 +5624,7 @@ b3RXaWR0aCI6MTIsImxhc3RWYWx1ZSI6bnVsbCwibGFzdFF1YWxpdHkiOm51bGx9LCJ0eXBlIjoi
 REFUQSJ9XSwiaWQiOiI4ZWZiOTZhZC00ZDE3LTQ3MGEtODVkYS1iOTIwNWQ1Y2RkYzMiLCJuYW1l
 Ijoic3VtIiwicmVzb3VyY2VJZCI6MTk2OTAsInN0YXRlIjoiRElTQUJMRUQiLCJ3YXRlcm1hcmsi
 OiIiLCJkaXJ0eSI6ZmFsc2UsImVuY2Fwc3VsYXRpb25CbG9ja0lkIjpudWxsfQ==]]></bytes></resource>
-	<resource id='1824' name='switch' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='50' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='922' name='switch' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiJmODVl
 MjYyMi01NWEzLTQ0MjUtYjM3Mi03NDc5ODA5YzA3YjEiLCJkaXNwbGF5IjoiaW4iLCJwYXJlbnRJ
@@ -6092,7 +6092,7 @@ aWR0aCI6MTgsImxhc3RWYWx1ZSI6bnVsbCwibGFzdFF1YWxpdHkiOm51bGx9LCJ0eXBlIjoiVEVY
 VCJ9XSwiaWQiOiIzZWY3YTM3NC04ZDdkLTQ4MTItYmFkZC1kODQxN2Q0MDU5M2YiLCJuYW1lIjoi
 c3dpdGNoIiwicmVzb3VyY2VJZCI6MTgyNCwic3RhdGUiOiJBQ1RJVkUiLCJ3YXRlcm1hcmsiOiIi
 LCJkaXJ0eSI6ZmFsc2UsImVuY2Fwc3VsYXRpb25CbG9ja0lkIjpudWxsfQ==]]></bytes></resource>
-	<resource id='1825' name='trend' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='51' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='923' name='trend' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiI4MWQw
 Y2RjYy1hOGM2LTQxY2ItODk4Yi0yY2E0ODJmODVkNGYiLCJkaXNwbGF5IjoiaW4iLCJwYXJlbnRJ
@@ -6502,7 +6502,7 @@ LCJob3RTcG90V2lkdGgiOjE4LCJsYXN0VmFsdWUiOm51bGwsImxhc3RRdWFsaXR5IjpudWxsfSwi
 dHlwZSI6IkRBVEEifV0sImlkIjoiMjAwZjc2M2MtODJiNi00MGIwLWE2YjAtZTM5MjM3YWUxZTg4
 IiwibmFtZSI6InRyZW5kIiwicmVzb3VyY2VJZCI6MTgyNSwic3RhdGUiOiJBQ1RJVkUiLCJ3YXRl
 cm1hcmsiOiIiLCJkaXJ0eSI6ZmFsc2UsImVuY2Fwc3VsYXRpb25CbG9ja0lkIjpudWxsfQ==]]></bytes></resource>
-	<resource id='1826' name='limitcheck' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='924' name='limitcheck' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiI0MWQ3
 OGE0MC02ODU1LTQ4YjktYTVlMi1iZDA5MmRmODg2NTAiLCJkaXNwbGF5IjoiaW4iLCJwYXJlbnRJ
@@ -6871,7 +6871,7 @@ YXN0UXVhbGl0eSI6bnVsbH0sInR5cGUiOiJUUlVUSFZBTFVFIn1dLCJpZCI6IjM3MDVhYWMxLWFk
 NjUtNDYyMy1iYmI3LTIzODk1MTNhZjczMSIsIm5hbWUiOiJsaW1pdGNoZWNrIiwicmVzb3VyY2VJ
 ZCI6NTA3OCwic3RhdGUiOiJESVNBQkxFRCIsIndhdGVybWFyayI6IiIsImRpcnR5IjpmYWxzZSwi
 ZW5jYXBzdWxhdGlvbkJsb2NrSWQiOm51bGx9]]></bytes></resource>
-	<resource id='1827' name='sqc' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='49' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='925' name='sqc' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiI3ZjBk
 NWI3OC00OGQ4LTQ1OWQtODYyOC04YWJmYWVkMWU0ZGQiLCJkaXNwbGF5Ijoic2lnbmFsIiwicGFy
@@ -7634,7 +7634,7 @@ bGFzdFZhbHVlIjpudWxsLCJsYXN0UXVhbGl0eSI6bnVsbH0sInR5cGUiOiJUUlVUSFZBTFVFIn1d
 LCJpZCI6IjRlODg0NzA5LTQwN2ItNDJkNS05OTBmLTkyNDNhYTQwNGJlZSIsIm5hbWUiOiJzcWMi
 LCJyZXNvdXJjZUlkIjoxODI3LCJzdGF0ZSI6IkRJU0FCTEVEIiwid2F0ZXJtYXJrIjoiIiwiZGly
 dHkiOmZhbHNlLCJlbmNhcHN1bGF0aW9uQmxvY2tJZCI6bnVsbH0=]]></bytes></resource>
-	<resource id='1828' name='logic' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='32' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='926' name='logic' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiIyZGUw
 NDg4OC02ZTU3LTQwOGYtOGNiOS00Zjc0MjBhYzUwOTYiLCJkaXNwbGF5IjoiaW4iLCJwYXJlbnRJ
@@ -7976,7 +7976,7 @@ bnVsbH0sInR5cGUiOiJUUlVUSFZBTFVFIn1dLCJpZCI6IjFiODkyMTJkLTE2NzQtNDQ5YS1iYjNk
 LWRjZWI5ZGQ1YTNiZCIsIm5hbWUiOiJsb2dpYyIsInJlc291cmNlSWQiOjE4MjgsInN0YXRlIjoi
 QUNUSVZFIiwid2F0ZXJtYXJrIjoiIiwiZGlydHkiOmZhbHNlLCJlbmNhcHN1bGF0aW9uQmxvY2tJ
 ZCI6bnVsbH0=]]></bytes></resource>
-	<resource id='1829' name='gain' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='927' name='gain' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6Ik9VVEdPSU5HIiwiaWQiOiI1OGRm
 NWJhMC1hYjA4LTRhNzEtYTMzMy1jY2EyMzg1OTBkNjciLCJkaXNwbGF5Ijoib3V0IiwicGFyZW50
@@ -8327,7 +8327,7 @@ dWFsaXR5IjpudWxsfSwidHlwZSI6IkRBVEEifV0sImlkIjoiNGYyM2E5YTgtNmNmZS00OTQ4LTk2
 MzEtNTE0Mzk4YzgxY2ZhIiwibmFtZSI6ImdhaW4iLCJyZXNvdXJjZUlkIjozNjAxLCJzdGF0ZSI6
 IkRJU0FCTEVEIiwid2F0ZXJtYXJrIjoiIiwiZGlydHkiOmZhbHNlLCJlbmNhcHN1bGF0aW9uQmxv
 Y2tJZCI6bnVsbH0=]]></bytes></resource>
-	<resource id='1830' name='' module='' modver='' type='designer.general.props' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='2' protected='false'>
+	<resource id='928' name='' module='' modver='' type='designer.general.props' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='2' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[H4sIAAAAAAAAAG1Qy0oDMRQ9sdZOX1pdibiYrZswHTuUFnctVApFQX8gTlOJNpMyk7b0I8SduPAL
 3Aiu/QFd+y8u9Y5RcGEguTc359ybc+4Pbh97H8OT55u3o+O7p1cAawAbvnTfH/D/atCuECZ22Eab
@@ -8336,7 +8336,7 @@ yCT+UCR+EPnNqHsYdqOOPzo792loRJAtIqnE5lOJZCjWgJ1M2oGwcilWPaP1yIwlPdQJkHdnwPYk
 FVouTXr952NFoGyVlpkVekb3MtCPjeYqGc9jqxZSzK3RwhKaq8tEfSdjmVEuU65pyJT3f64DSYeY
 nqZmlu3CGQHmOdtQ8JwPKHpOJVgOKrHchbIbDbbnRKGSU6qek4Z6hTnPwHynH8XPvOcX3ybUDM8B
 AAA=]]></bytes></resource>
-	<resource id='1831' name='explanation' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='929' name='explanation' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiJkZTkz
 ZDEyMS1iM2IyLTRlOTEtOTZkZC0wODc4Y2NhZWU5OGMiLCJkaXNwbGF5IjoiaW4iLCJwYXJlbnRJ
@@ -9051,7 +9051,7 @@ dGgiOjE4LCJsYXN0VmFsdWUiOm51bGwsImxhc3RRdWFsaXR5IjpudWxsfSwidHlwZSI6IlRSVVRI
 VkFMVUUifV0sImlkIjoiMmRmZjU5NmEtMTVmYS00YzIzLTk3YzYtYjRkZjJiNTY3ZjhmIiwibmFt
 ZSI6ImV4cGxhbmF0aW9uIiwicmVzb3VyY2VJZCI6NjIwLCJzdGF0ZSI6IkRJU0FCTEVEIiwid2F0
 ZXJtYXJrIjoiIiwiZGlydHkiOmZhbHNlLCJlbmNhcHN1bGF0aW9uQmxvY2tJZCI6bnVsbH0=]]></bytes></resource>
-	<resource id='1832' name='pythonblocks' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='930' name='pythonblocks' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiIyMDIw
 Zjc5NC05MjI2LTQ0ZTctYTU0Ni1mODA0NjYyMDA0MWIiLCJkaXNwbGF5IjoiaW4iLCJwYXJlbnRJ
@@ -9295,7 +9295,7 @@ dHlwZSI6IlRSVVRIVkFMVUUifV0sImlkIjoiMzJkYTI5ZDktYzJkOS00ODhiLTg5NzgtZDZhNjc2
 OTQzY2QyIiwibmFtZSI6InB5dGhvbmJsb2NrcyIsInJlc291cmNlSWQiOjE5Njk4LCJzdGF0ZSI6
 IkRJU0FCTEVEIiwid2F0ZXJtYXJrIjoiIiwiZGlydHkiOmZhbHNlLCJlbmNhcHN1bGF0aW9uQmxv
 Y2tJZCI6bnVsbH0=]]></bytes></resource>
-	<resource id='1833' name='truthpulse' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='52' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='931' name='truthpulse' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiIzNmEw
 NzY3Ni03ZTE0LTRjN2YtYWNjZS0wMWRiNDg2NWY4ODciLCJkaXNwbGF5IjoiaW4iLCJwYXJlbnRJ
@@ -9573,7 +9573,7 @@ bGwsImxhc3RRdWFsaXR5IjpudWxsfSwidHlwZSI6IlRSVVRIVkFMVUUifV0sImlkIjoiZjZiNWZh
 OTMtNWViOS00N2ZjLThhYzQtZGJiNmEwMGI1OTA2IiwibmFtZSI6InRydXRocHVsc2UiLCJyZXNv
 dXJjZUlkIjoxODMzLCJzdGF0ZSI6IkRJU0FCTEVEIiwid2F0ZXJtYXJrIjoiIiwiZGlydHkiOmZh
 bHNlLCJlbmNhcHN1bGF0aW9uQmxvY2tJZCI6bnVsbH0=]]></bytes></resource>
-	<resource id='1834' name='setproperty' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='932' name='setproperty' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiI5YjI0
 YTZiNS1iNWRkLTRlY2UtYWQ2YS1mN2VlNmUxY2U2MzIiLCJkaXNwbGF5IjoiaW4iLCJwYXJlbnRJ
@@ -9771,7 +9771,7 @@ dFdpZHRoIjoxOCwibGFzdFZhbHVlIjpudWxsLCJsYXN0UXVhbGl0eSI6bnVsbH0sInR5cGUiOiJT
 SUdOQUwifV0sImlkIjoiNzNiNGI1ODctNDUzYS00Mjg5LTg0ZGYtNTMyZjdlMDA3ZjIyIiwibmFt
 ZSI6InNldHByb3BlcnR5IiwicmVzb3VyY2VJZCI6MzYwNiwic3RhdGUiOiJESVNBQkxFRCIsIndh
 dGVybWFyayI6IiIsImRpcnR5IjpmYWxzZSwiZW5jYXBzdWxhdGlvbkJsb2NrSWQiOm51bGx9]]></bytes></resource>
-	<resource id='1835' name='fam2' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='686734b2-820c-4a4b-9187-226296c977f6' oemlocked='false' scope='1' protected='false'>
+	<resource id='933' name='fam2' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='686734b2-820c-4a4b-9187-226296c977f6' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiIyZjY4
 YjMxZS05NDAzLTQ4ODMtYTQzNi1lZjllMzUxOGIxZTgiLCJkaXNwbGF5Ijoic2lnbmFsIiwicGFy
@@ -9967,7 +9967,7 @@ b3RXaWR0aCI6MTgsImxhc3RWYWx1ZSI6bnVsbCwibGFzdFF1YWxpdHkiOm51bGx9LCJ0eXBlIjoi
 VFJVVEhWQUxVRSJ9XSwiaWQiOiI5ODExZmI3Ni03NGM1LTQ5N2MtYjUwNy0yMzc3NDc4NTNlZGMi
 LCJuYW1lIjoiZmFtMiIsInJlc291cmNlSWQiOjI1MTQsInN0YXRlIjoiRElTQUJMRUQiLCJ3YXRl
 cm1hcmsiOiIiLCJkaXJ0eSI6ZmFsc2UsImVuY2Fwc3VsYXRpb25CbG9ja0lkIjpudWxsfQ==]]></bytes></resource>
-	<resource id='1836' name='timedlimits' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='934' name='timedlimits' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiJmNGM3
 YzJhNy1kMTgzLTQ1YTMtODk2Mi0yMWIyNzhlYjQ0ODYiLCJkaXNwbGF5IjoiaW4iLCJwYXJlbnRJ
@@ -10205,7 +10205,7 @@ dWxsfSwidHlwZSI6IlRSVVRIVkFMVUUifV0sImlkIjoiNTgxMDEwOWItYjZlMi00OTVkLTk3ZWMt
 ODJkNjNiZGExOTM5IiwibmFtZSI6InRpbWVkbGltaXRzIiwicmVzb3VyY2VJZCI6MzYwOCwic3Rh
 dGUiOiJESVNBQkxFRCIsIndhdGVybWFyayI6IiIsImRpcnR5IjpmYWxzZSwiZW5jYXBzdWxhdGlv
 bkJsb2NrSWQiOm51bGx9]]></bytes></resource>
-	<resource id='1837' name='observations' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='935' name='observations' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiJlZjA5
 ZThjMy0zOTEzLTQ0NWEtYTQ5Ny1jMTFmZWNlNzJhYzQiLCJkaXNwbGF5IjoiaW4iLCJwYXJlbnRJ
@@ -10426,7 +10426,7 @@ bGx9LCJ0eXBlIjoiVFJVVEhWQUxVRSJ9XSwiaWQiOiJjYzc1NTI2Ny1jNjQwLTRmMzItOGRhNS05
 MGU4MzJiZWUwNDUiLCJuYW1lIjoib2JzZXJ2YXRpb25zIiwicmVzb3VyY2VJZCI6MzYwOSwic3Rh
 dGUiOiJESVNBQkxFRCIsIndhdGVybWFyayI6IiIsImRpcnR5IjpmYWxzZSwiZW5jYXBzdWxhdGlv
 bkJsb2NrSWQiOm51bGx9]]></bytes></resource>
-	<resource id='1838' name='upstream' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='53' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='936' name='upstream' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6Ik9VVEdPSU5HIiwiaWQiOiJhMzg2
 YTViMy0wODkxLTRlOTItOTE3ZS1lNGZiNjA0MTIwYjQiLCJkaXNwbGF5Ijoib3V0IiwicGFyZW50
@@ -11780,7 +11780,7 @@ eSI6bnVsbH0sInR5cGUiOiJBTlkifV0sImlkIjoiOGYyNGE0NGItZDZiZi00MWM2LTgwMDQtZjQy
 NmE5NDVmY2EzIiwibmFtZSI6InVwc3RyZWFtIiwicmVzb3VyY2VJZCI6MTgzOCwic3RhdGUiOiJE
 SVNBQkxFRCIsIndhdGVybWFyayI6IiIsImRpcnR5IjpmYWxzZSwiZW5jYXBzdWxhdGlvbkJsb2Nr
 SWQiOm51bGx9]]></bytes></resource>
-	<resource id='1839' name='arithmetic' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='937' name='arithmetic' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiI5MmQx
 YzgwZi1lMWQwLTQ2MDktODIwYS00N2JlODA3ODQ3NjUiLCJkaXNwbGF5Ijoic2lnbmFsIiwicGFy
@@ -12498,14 +12498,14 @@ InR5cGUiOiJEQVRBIn1dLCJpZCI6IjgyYTAwZTEzLTA3M2YtNGNhMi1hMTkwLTA5YzhiN2Q2MGU4
 YyIsIm5hbWUiOiJhcml0aG1ldGljIiwicmVzb3VyY2VJZCI6MTMwODAsInN0YXRlIjoiRElTQUJM
 RUQiLCJ3YXRlcm1hcmsiOiIiLCJkaXJ0eSI6ZmFsc2UsImVuY2Fwc3VsYXRpb25CbG9ja0lkIjpu
 dWxsfQ==]]></bytes></resource>
-	<resource id='1840' name='' module='' modver='' type='event.scripts' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='1' protected='false'>
+	<resource id='938' name='' module='' modver='' type='event.scripts' ver='0' dirty='false' editcount='0' parent='' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[H4sIAAAAAAAAAJuh2b/K+buX/6beUzYe09afZGBgYGJgYIzT1FZZyoAdcEHUCJjrWeoZ6xkZGJob
 mBkYGRoAhVkYGNgtwcIgHhsDg4xvfp6CY2m6gpGFgoGFlYG5lZGZgq9LiAJIG1AJJwODdXJ+rl5m
 XkppcklmWWpiaUl+bmJJZn6eXmZ6XiaYAVSQC6SKk4syC0r0gsGUc35eWmY60ARGBgbBtKLE3NTy
 /KJsvbLUomKgFohD2fOTslKTS4qBTGYGBp60gtxMJAUcQNHkHJAkK9AdJZm5qcUlibkFIH1AU/Ml
 GCDaGBg5IP5lYOaA+JCBlQPiOYgUOyPIME6QZwB37Pq8TQEAAA==]]></bytes></resource>
-	<resource id='1841' name='curvefits' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='939' name='curvefits' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiI0YmMz
 Y2I0MC05ZWQzLTQzNDYtYmM3My0zOGI4ZjIzNGY0YWQiLCJkaXNwbGF5IjoiaW4iLCJwYXJlbnRJ
@@ -13006,7 +13006,7 @@ OCwibGFzdFZhbHVlIjpudWxsLCJsYXN0UXVhbGl0eSI6bnVsbH0sInR5cGUiOiJEQVRBIn1dLCJp
 ZCI6IjA2NWY4Zjk4LWZjYmMtNDlmMS04NGU3LWZkYWM0NjgyYzdmOSIsIm5hbWUiOiJjdXJ2ZWZp
 dHMiLCJyZXNvdXJjZUlkIjoyNzA1Miwic3RhdGUiOiJBQ1RJVkUiLCJ3YXRlcm1hcmsiOiIiLCJk
 aXJ0eSI6ZmFsc2UsImVuY2Fwc3VsYXRpb25CbG9ja0lkIjpudWxsfQ==]]></bytes></resource>
-	<resource id='1842' name='pattern' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='940' name='pattern' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiJlYjEz
 Y2NiYy02MDk0LTQyMWEtOTRjOC1jMDE1YjIzMTA4MTYiLCJkaXNwbGF5Ijoic2lnbmFsIiwicGFy
@@ -13290,7 +13290,7 @@ OjE4LCJsYXN0VmFsdWUiOm51bGwsImxhc3RRdWFsaXR5IjpudWxsfSwidHlwZSI6IkRBVEEifV0s
 ImlkIjoiZGY4ZTIzNzctMWU1NC00NzlkLTlhMjUtMmMwMjJiOTg0OTc5IiwibmFtZSI6InBhdHRl
 cm4iLCJyZXNvdXJjZUlkIjoyNzA1Mywic3RhdGUiOiJBQ1RJVkUiLCJ3YXRlcm1hcmsiOiIiLCJk
 aXJ0eSI6ZmFsc2UsImVuY2Fwc3VsYXRpb25CbG9ja0lkIjpudWxsfQ==]]></bytes></resource>
-	<resource id='1843' name='logicfilter' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='941' name='logicfilter' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiIwOThi
 MGZhZi0xZjk0LTQ4OGMtYmQzOS0zZTA0YWI5NDhhZmMiLCJkaXNwbGF5IjoiaW4iLCJwYXJlbnRJ
@@ -13861,7 +13861,7 @@ Om51bGx9LCJ0eXBlIjoiVFJVVEhWQUxVRSJ9XSwiaWQiOiIxMjJlM2NiYi0wYTY0LTQ5ZGItOWUx
 MC01YjFjZWJiODY2OTciLCJuYW1lIjoibG9naWNmaWx0ZXIiLCJyZXNvdXJjZUlkIjo1MDkzLCJz
 dGF0ZSI6IkRJU0FCTEVEIiwid2F0ZXJtYXJrIjoiIiwiZGlydHkiOmZhbHNlLCJlbmNhcHN1bGF0
 aW9uQmxvY2tJZCI6bnVsbH0=]]></bytes></resource>
-	<resource id='1844' name='comparisons' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='942' name='comparisons' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiI1NjY2
 YmRiYS1kYzBiLTQzOWItYjJlYS0yYzU4MzZhNWY4OWEiLCJkaXNwbGF5IjoieCIsInBhcmVudElk
@@ -14744,7 +14744,7 @@ dFF1YWxpdHkiOm51bGx9LCJ0eXBlIjoiREFUQSJ9XSwiaWQiOiI4MjQzNGRmMS02N2FmLTRkMDgt
 YWU0My0xMTQ2ZmI2NjIyMmMiLCJuYW1lIjoiY29tcGFyaXNvbnMiLCJyZXNvdXJjZUlkIjo2MzEs
 InN0YXRlIjoiRElTQUJMRUQiLCJ3YXRlcm1hcmsiOiIiLCJkaXJ0eSI6ZmFsc2UsImVuY2Fwc3Vs
 YXRpb25CbG9ja0lkIjpudWxsfQ==]]></bytes></resource>
-	<resource id='1845' name='datecompare' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='943' name='datecompare' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiI3NTZh
 MTVmOC1lNzNlLTRlNDItYjE5Ny0zOTJkOGM2N2Q0MDkiLCJkaXNwbGF5IjoiaW4iLCJwYXJlbnRJ
@@ -15670,7 +15670,7 @@ dFF1YWxpdHkiOm51bGx9LCJ0eXBlIjoiQU5ZIn1dLCJpZCI6IjNiMjRlNzJlLTIyZTItNDc1Yi1h
 M2YzLTg4YTU0MTViZDIwYiIsIm5hbWUiOiJkYXRlY29tcGFyZSIsInJlc291cmNlSWQiOjM2MTUs
 InN0YXRlIjoiRElTQUJMRUQiLCJ3YXRlcm1hcmsiOiIiLCJkaXJ0eSI6ZmFsc2UsImVuY2Fwc3Vs
 YXRpb25CbG9ja0lkIjpudWxsfQ==]]></bytes></resource>
-	<resource id='1846' name='dataconditioner' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='33' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='944' name='dataconditioner' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiJhZDRh
 NzEyMC1hNzdmLTRhZDMtODM3ZS02ODU5OTkzNWRmNDYiLCJkaXNwbGF5Ijoic2lnbmFsIiwicGFy
@@ -15993,15 +15993,15 @@ LCJsYXN0UXVhbGl0eSI6bnVsbH0sInR5cGUiOiJUUlVUSFZBTFVFIn1dLCJpZCI6IjA5NDcyMGU3
 LTIyNzktNDgxYS1iOTYwLTQ1OTUyZmE1NjI1YiIsIm5hbWUiOiJkYXRhY29uZGl0aW9uZXIiLCJy
 ZXNvdXJjZUlkIjoxODQ2LCJzdGF0ZSI6IkFDVElWRSIsIndhdGVybWFyayI6IiIsImRpcnR5Ijpm
 YWxzZSwiZW5jYXBzdWxhdGlvbkJsb2NrSWQiOm51bGx9]]></bytes></resource>
-	<resource id='1847' name='reslurry' module='block' modver='' type='blt.family' ver='0' dirty='false' editcount='0' parent='de50cd7c-2f89-4673-95bd-45c4b78bb6f0' oemlocked='false' scope='1' protected='false'>
+	<resource id='945' name='reslurry' module='block' modver='' type='blt.family' ver='0' dirty='false' editcount='0' parent='de50cd7c-2f89-4673-95bd-45c4b78bb6f0' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJkaWFncmFtcyI6W10sImZvbGRlcnMiOltdLCJpZCI6ImVmZWQ3MGJiLTNmMGEtNDMzNi1iM2Rl
 LWE2Mzc0NTY1MzA3OSIsIm5hbWUiOiJmZGZhbTEiLCJzdGF0ZSI6IkFDVElWRSJ9]]></bytes></resource>
-	<resource id='1848' name='fdfam2' module='block' modver='' type='blt.family' ver='0' dirty='false' editcount='0' parent='de50cd7c-2f89-4673-95bd-45c4b78bb6f0' oemlocked='false' scope='1' protected='false'>
+	<resource id='946' name='fdfam2' module='block' modver='' type='blt.family' ver='0' dirty='false' editcount='0' parent='de50cd7c-2f89-4673-95bd-45c4b78bb6f0' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJkaWFncmFtcyI6W10sImZvbGRlcnMiOltdLCJpZCI6IjY4NjczNGIyLTgyMGMtNGE0Yi05MTg3
 LTIyNjI5NmM5NzdmNiIsIm5hbWUiOiJmZGZhbTIiLCJzdGF0ZSI6IkFDVElWRSJ9]]></bytes></resource>
-	<resource id='1849' name='loop' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='efed70bb-3f0a-4336-b3de-a63745653079' oemlocked='false' scope='1' protected='false'>
+	<resource id='947' name='loop' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='efed70bb-3f0a-4336-b3de-a63745653079' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiJhZGE0
 N2M4MS1kZjkwLTRmZjgtYjQwYy0yNTlkYWY2N2ZiYjEiLCJkaXNwbGF5Ijoic2lnbmFsIiwicGFy
@@ -16242,7 +16242,7 @@ Imxhc3RRdWFsaXR5IjpudWxsfSwidHlwZSI6IlRSVVRIVkFMVUUifV0sImlkIjoiMGE5MzAwNTct
 ZTFmZC00NTllLWI1NDUtNjJjZWEyMjVhMWM3IiwibmFtZSI6Imxvb3AiLCJyZXNvdXJjZUlkIjox
 OTY3MCwic3RhdGUiOiJJU09MQVRFRCIsIndhdGVybWFyayI6IiIsImRpcnR5IjpmYWxzZSwiZW5j
 YXBzdWxhdGlvbkJsb2NrSWQiOm51bGx9]]></bytes></resource>
-	<resource id='1850' name='multiple' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='948' name='multiple' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiI1YTRh
 YzIyMS1lMGU4LTRjNDAtYWQyMS1iNTY4MGE2Njg3ODAiLCJkaXNwbGF5IjoiaW4iLCJwYXJlbnRJ
@@ -16875,7 +16875,7 @@ fSwidHlwZSI6IlRSVVRIVkFMVUUifV0sImlkIjoiMzE1YTZjOTEtODFkNi00ZjY2LWI4YmYtN2Fh
 MDZhNGNhZWU5IiwibmFtZSI6Im11bHRpcGxlIiwicmVzb3VyY2VJZCI6NTEwMCwic3RhdGUiOiJE
 SVNBQkxFRCIsIndhdGVybWFyayI6IiIsImRpcnR5IjpmYWxzZSwiZW5jYXBzdWxhdGlvbkJsb2Nr
 SWQiOm51bGx9]]></bytes></resource>
-	<resource id='1851' name='inhibitor' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
+	<resource id='949' name='inhibitor' module='block' modver='' type='blt.diagram' ver='0' dirty='false' editcount='0' parent='ec5357b2-690d-42c0-bc26-4034cf2686d3' oemlocked='false' scope='1' protected='false'>
 		<doc></doc>
 		<bytes><![CDATA[eyJibG9ja3MiOlt7ImFuY2hvcnMiOlt7ImRpcmVjdGlvbiI6IklOQ09NSU5HIiwiaWQiOiJhYjEx
 MGE0Yy1jZjhlLTQ0Y2UtYTcxNy1jYmZiMjNhZTE3YTAiLCJkaXNwbGF5Ijoic2lnbmFsIiwicGFy
