@@ -21,6 +21,7 @@ import javax.swing.WindowConstants;
 
 import com.ils.blt.client.ClientScriptExtensionManager;
 import com.ils.blt.common.script.ScriptConstants;
+import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.ils.common.GeneralPurposeDataContainer;
@@ -52,8 +53,8 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 	protected JCheckBox  constantCheckBox;
 	protected JCheckBox  trapBox;
 	
-	public FinalDiagnosisConfiguration(DesignerContext ctx,ProcessDiagramView diag,ProcessBlockView view) {
-		super(ctx);
+	public FinalDiagnosisConfiguration(DiagramWorkspace wksp,ProcessDiagramView diag,ProcessBlockView view) {
+		super(wksp.getContext());
 		this.model = new GeneralPurposeDataContainer();
 		this.setLocationRelativeTo(null);    // Should center on screen
 		this.diagram = diag;
