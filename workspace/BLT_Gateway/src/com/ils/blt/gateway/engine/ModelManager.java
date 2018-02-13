@@ -153,8 +153,8 @@ public class ModelManager implements ProjectListener  {
 	
 	/**
 	 * Get a block from an existing diagram. 
-	 * @param projectId
-	 * @param resourceId
+	 * @param projectId project identifier
+	 * @param resourceId resource identifier
 	 * @param blockId identifier of the block.
 	 * @return the specified ProcessBlock. If not found, return null. 
 	 */
@@ -168,7 +168,7 @@ public class ModelManager implements ProjectListener  {
 	}
 	/**
 	 * Get a specified block by its Id within a diagram. 
-	 * @param blockId
+	 * @param blockId block identifier
 	 * @return the specified block. If not found, return null. 
 	 */
 	public ProcessBlock getBlock(ProcessDiagram diagram,UUID blockId) {

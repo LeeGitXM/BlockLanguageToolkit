@@ -584,9 +584,8 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 				}
 				// Restart subscriptions for the new state
 				startSubscriptions(s);
-				// The blocks that delay start are those that propagate tag values.
 				for(ProcessBlock block:getProcessBlocks() ) {
-					if( block.delayBlockStart() ) block.evaluate();
+					if( block.delayBlockStart() ) block.propagate();
 				}
 			}
 

@@ -111,7 +111,7 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 	 * @param vcn notification of the new value.
 	 */
 	@Override
-	public void acceptValue(IncomingNotification vcn) {
+	public synchronized void acceptValue(IncomingNotification vcn) {
 		baseAcceptValue(vcn);
 		lastValue = vcn.getValue();
 		if( !isLocked() && running ) {
@@ -144,10 +144,11 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 
 	/**
 	 * This method is not called during normal operation of the block.
-	 * It is called externally to propagate a tag value.
+	 * Except during diagram state change.
+	 * It may be called externally to propagate a tag value.
 	 */
 	@Override
-	public void evaluate() {
+	public synchronized void evaluate() {
 		String path = tagPathProperty.getBinding().toString();
 		QualifiedValue val = controller.getTagValue(getParentId(),path);
 		if( val!=null && val.getValue()!=null && path!=null ) {
@@ -195,7 +196,7 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 	 * tag subscription, if necessary. 
 	 */
 	@Override
-	public void propertyChange(BlockPropertyChangeEvent event) {
+	public synchronized void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
 		if(propertyName.equals(BlockConstants.BLOCK_PROPERTY_TAG_PATH)) {

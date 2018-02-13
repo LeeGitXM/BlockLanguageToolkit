@@ -44,6 +44,7 @@ public class BlockFactory  {
 
 	/**
 	 * Static method to create and/or fetch the single instance.
+	 * @return the static singleton instance
 	 */
 	public static BlockFactory getInstance() {
 		if( instance==null) {
@@ -56,7 +57,7 @@ public class BlockFactory  {
 	
 	/**
 	 * Create a concrete instance of a Process block represented by the serializable block.
-	 * @param parentId
+	 * @param parentId identifier of parent, the diagram
 	 * @param sb the block to be deserialized
 	 * @param projectId needed to find the correct script manager in the event of a block created from Python
 	 * @return the ProcessBlock created from the specified SerializableBlock
@@ -100,8 +101,8 @@ public class BlockFactory  {
 	 * Update the concrete instance of a Process block from a serializable block. Properties may be null for an
 	 * uninitialized new block.
 	 *
-	 * @param pb
-	 * @param sb
+	 * @param pb process block, the result
+	 * @param sb serializable block, the source
 	 */
 	public void updateBlockFromSerializable(ProcessBlock pb,SerializableBlock sb) {
 		pb.setName(sb.getName());
