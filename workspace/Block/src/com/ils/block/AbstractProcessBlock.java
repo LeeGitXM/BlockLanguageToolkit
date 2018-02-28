@@ -384,8 +384,8 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 */
 	public void recordActivity(String desc,String prop,String value) {
 		if( activities.getBufferSize()>0) {
-			if(prop==null)  prop="";
-			if(value==null) value="";
+			if(prop==null)  prop="null";
+			if(value==null) value="null";
 			Activity activity = new Activity(desc,String.format("%s=%s", prop,value));
 			activities.add(activity);
 		}
@@ -664,9 +664,9 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		Object newValue = event.getNewValue();
 		setProperty(propertyName,event.getNewValue());
 
-		if( log.isTraceEnabled() ) {
+		if( log.isInfoEnabled() ) {
 			Object oldValue = event.getOldValue();
-			log.debugf("%s.propertyChange: %s from %s to %s",this.getName(),propertyName,
+			log.infof("%s.propertyChange: %s from %s to %s",this.getName(),propertyName,
 					(oldValue==null?"null":oldValue.toString()),newValue.toString());
 		}
 		// Handle the one property that is global

@@ -576,10 +576,10 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 				// If the prior version was DISABLED, the starts should not propagate anything.
 				for(ProcessBlock blk:blocks.values()) {
 					if( blk.delayBlockStart() ) {
-						boolean lock = blk.isLocked();
-						blk.setLocked(true);
+						//boolean lock = blk.isLocked();
+						//blk.setLocked(true);
 						blk.start();
-						blk.setLocked(lock);
+						//blk.setLocked(lock);
 					}
 				}
 				// Restart subscriptions for the new state
