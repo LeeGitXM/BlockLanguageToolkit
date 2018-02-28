@@ -664,9 +664,9 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		Object newValue = event.getNewValue();
 		setProperty(propertyName,event.getNewValue());
 
-		if( log.isInfoEnabled() ) {
+		if( log.isTraceEnabled() ) {
 			Object oldValue = event.getOldValue();
-			log.infof("%s.propertyChange: %s from %s to %s",this.getName(),propertyName,
+			log.debugf("%s.propertyChange: %s from %s to %s",this.getName(),propertyName,
 					(oldValue==null?"null":oldValue.toString()),newValue.toString());
 		}
 		// Handle the one property that is global

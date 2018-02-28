@@ -133,12 +133,9 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 
 	@Override
 	public void shutdown() {
-		log.infof("%s.shutdown: starting ...",TAG);
 		ToolkitRecord.META.removeRecordListener(recordListener);
 		context.getProjectManager().removeProjectListener(mmgr);
-		log.infof("%s.shutdown: progressing ...",TAG);
 		BlockExecutionController.getInstance().stop();
-		log.infof("%s.shutdown: complete",TAG);
 	}
 
 	@Override

@@ -119,7 +119,7 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 				String valueString = lastValue.getValue().toString();
 				String qualityString = (lastValue.getQuality()==null?"NO QUALITY":lastValue.getQuality().getName());
 				String timestampString = (lastValue.getTimestamp()==null?"NO TIME":dateFormatter.format(lastValue.getTimestamp()));
-				log.infof("%s.acceptValue: propagating %s (%s at %s)",getName(),valueString,qualityString,timestampString);
+				log.debugf("%s.acceptValue: propagating %s (%s at %s)",getName(),valueString,qualityString,timestampString);
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(nvn);
 			}
@@ -200,7 +200,7 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
 		if(propertyName.equals(BlockConstants.BLOCK_PROPERTY_TAG_PATH)) {
-			log.infof("%s.propertyChange path now %s",getName(),event.getNewValue().toString());
+			log.debugf("%s.propertyChange path now %s",getName(),event.getNewValue().toString());
 		}
 	}
 	
