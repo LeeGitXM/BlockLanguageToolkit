@@ -1,5 +1,6 @@
 #
 # Simple test of an input and readout
+# Note: "Require" may cause test to abort.
 #
 DIAGRAM="app75/family75/readwrite"
 Show: diagram $DIAGRAM
@@ -32,7 +33,7 @@ Require: ReadWriteBooleanOutput=False  "Test aborts if this fails"
 10:01 true
 10:01:30 true
 10:01:40 Assert: ReadWriteBooleanOutput = True "Output is true"
-Require: ReadWriteBooleanOutput=False  "Test aborts here"
+#Require: ReadWriteBooleanOutput=False  "Test aborts here"
 
 Step: Numeric tag reader
 Tagset: DualInput
