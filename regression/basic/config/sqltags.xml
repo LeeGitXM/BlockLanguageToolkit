@@ -41,7 +41,7 @@
       <Property name="DataType">2</Property>
    </Tag>
    <Tag name="AverageOut3" path="MemoryTags" type="DB">
-      <Property name="Value">133.04347826086956</Property>
+      <Property name="Value">230.0</Property>
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="BooleanFeed" path="MemoryTags" type="DB">
@@ -77,7 +77,7 @@
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="ComparisonOut1" path="MemoryTags" type="DB">
-      <Property name="Value">false</Property>
+      <Property name="Value">true</Property>
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="ComparisonOut2" path="MemoryTags" type="DB">
@@ -85,7 +85,7 @@
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="ComparisonOut3" path="MemoryTags" type="DB">
-      <Property name="Value">false</Property>
+      <Property name="Value">true</Property>
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="ComparisonOut4" path="MemoryTags" type="DB">
@@ -213,6 +213,10 @@
       <Property name="EngLow">-1000.0</Property>
       <Property name="EngHigh">1000.0</Property>
    </Tag>
+   <Tag name="HighPatternOut" path="MemoryTags" type="DB">
+      <Property name="Value">false</Property>
+      <Property name="DataType">6</Property>
+   </Tag>
    <Tag name="InferenceReset" path="MemoryTags" type="DB">
       <Property name="Value">false</Property>
       <Property name="DataType">6</Property>
@@ -266,7 +270,7 @@
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="LabDataOutput1" path="MemoryTags" type="DB">
-      <Property name="Value">44.0</Property>
+      <Property name="Value">33.0</Property>
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="LabdataOutput2" path="MemoryTags" type="DB">
@@ -307,12 +311,16 @@
       <Property name="DataType">6</Property>
    </Tag>
    <Tag name="LogicFilterNever" path="MemoryTags" type="DB">
-      <Property name="Value">FALSE</Property>
+      <Property name="Value">UNKNOWN</Property>
       <Property name="DataType">7</Property>
    </Tag>
    <Tag name="LogicFilterTrue" path="MemoryTags" type="DB">
-      <Property name="Value">FALSE</Property>
+      <Property name="Value">UNKNOWN</Property>
       <Property name="DataType">7</Property>
+   </Tag>
+   <Tag name="LowPatternOut" path="MemoryTags" type="DB">
+      <Property name="Value">false</Property>
+      <Property name="DataType">6</Property>
    </Tag>
    <Tag name="MJKFeed1" path="MemoryTags" type="DB">
       <Property name="Value">7.42</Property>
@@ -379,7 +387,7 @@
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="PatternOut1" path="MemoryTags" type="DB">
-      <Property name="Value">1.2000000000000002</Property>
+      <Property name="Value">1.200000000000002</Property>
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="PatternOut2" path="MemoryTags" type="DB">
@@ -407,7 +415,7 @@
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="RateOfChangeOut2" path="MemoryTags" type="DB">
-      <Property name="Value">294.59523809523836</Property>
+      <Property name="Value">365.0515873015869</Property>
       <Property name="DataType">5</Property>
    </Tag>
    <Tag name="ReadWriteBooleanOutput" path="MemoryTags" type="DB">

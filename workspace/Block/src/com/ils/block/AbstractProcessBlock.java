@@ -239,7 +239,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	public void setProjectId(long projectId) {this.projectId = projectId;}
 	@Override
 	public TruthValue getState() {
-		log.infof("%s.getState: %s",name,this.state.name());
+		//log.infof("%s.getState: %s",name,this.state.name());
 		return this.state;
 	}
 	@Override
@@ -251,7 +251,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 			// We assume that the only blocks where state is set are logical,
 			// so setting the last value makes sense ...
 			lastValue = new TestAwareQualifiedValue(timer,state.name());
-			log.infof("%s.setState: %s",name,this.state.name());
+			//log.infof("%s.setState: %s",name,this.state.name());
 		}
 	}
 	@Override
