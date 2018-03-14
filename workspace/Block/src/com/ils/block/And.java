@@ -177,8 +177,8 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 		if( !isLocked() ) {
 			TruthValue newState = getAggregateState();
 			log.debugf("%s.evaluate new: %s, old: %s",getName(),newState.name(),state.name());
-			if(newState!=state) {
-				state = newState;
+			if(!newState.equals(state)) {
+				setState(newState);  // Sets last value as side effect
 				lastValue = new TestAwareQualifiedValue(timer,state.name(),
 						               (state.equals(TruthValue.UNKNOWN)?getAggregateQuality():DataQuality.GOOD_DATA));
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);

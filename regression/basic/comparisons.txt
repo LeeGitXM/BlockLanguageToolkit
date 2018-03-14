@@ -12,7 +12,10 @@ tag: ComparisonOut1 MemoryTags/ComparisonOut1
 tag: ComparisonOut2 MemoryTags/ComparisonOut2
 tag: ComparisonOut3 MemoryTags/ComparisonOut3
 tag: ComparisonOut4 MemoryTags/ComparisonOut4
+tag: ComparisonOut5 MemoryTags/ComparisonOut5
 tagset: ComparisonDriver MemoryTags/ComparisonFeed
+tagset: IndirectTags MemoryTags/DoubleInput2
+tagset: DateCompare MemoryTags/DateCompare1 MemoryTags/DateCompare2
 
 Test: Comparison blocks
 Step: Input is positive
@@ -28,7 +31,7 @@ Tagset: ComparisonDriver
 Step: Input is negative
 10:02 -14
 10:03 -15
-10:03:10 Assert: ComparisonOut2 = True "Max greater than limit"
+10:03:10 Assert: ComparisonOut2 = False "Max less than limit"
 10:03:20 Assert: ComparisonOut1 = True "x<y"
 10:03:25 Assert: getState($DIAGRAM,$C1) = TRUE "x<y"
 10:03:30 Assert: ComparisonOut3 = False "abs x>y"
@@ -36,6 +39,21 @@ Step: Input is zero
 10:04  0.0
 10:04:20 Assert: ComparisonOut1 = True "x=y"
 10:04:30 Assert: ComparisonOut3 = True "abs x=y"
-10:04:40 Assert: ComparisonOut2 = True "Max greater than limit"
-10:04:50 Assert: getState($DIAGRAM,$C2) = TRUE "Max greater than limit"
-
+10:04:40 Assert: ComparisonOut2 = False "Max less than limit"
+10:04:50 Assert: getState($DIAGRAM,$C2) = FALSE "Max less than limit"
+Step: Indirect Reference
+Tagset: IndirectTags
+10:05:00 -25.
+10:05:10 Assert: ComparisonOut4 = True "Equality compare"
+10:05:20 Assert: ComparisonOut5 = True "Equality compare with deadband"
+10:05:30 42.
+10:05:40 Assert: ComparisonOut4 = True "Equality compare"
+10:05:55 Assert: ComparisonOut5 = False "Equality not compare with deadband"
+Step: Date Comparison
+Tagset: DateCompare
+10:06:00 "2017/07/04 13:00:00" "2017/07/04 01:00:00"
+10:06:10 Assert: ComparisonOut5 = True "Date1 after Date2"
+10:06:20 "2017/07/04 00:00:00"
+10:06:30 Assert: ComparisonOut5 = False "Date1 before Date2"
+10:06:40 "2017/07/04 01:00:00" 
+10:06:50 Assert: ComparisonOut5 = True "Date1 equals Date2"

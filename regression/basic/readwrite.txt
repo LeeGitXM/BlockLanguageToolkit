@@ -71,32 +71,3 @@ Tagset: ReadWriteSource
 10:09:30 95
 10:09:40 Assert: Sink = 95 "Sink is 95"
 10:09:45 Assert: ReadWriteStringOutput = 95 "Output is 95"
-10:09:50 resetBlock($DIAGRAM,"LABDATA-DATE")
-10:09:50 resetBlock($DIAGRAM,"LABDATA-STRINGDATE")
-
-Step: LabData Block
-Tagset: LabDataInput
-# Note: Need to wait for the coalescing time for new output
-10:10:00 33
-10:10:00 setDateValue($PROVIDER,$LabDataDate,"2010/07/04 10:00:00")
-10:10:05 setStringValue($PROVIDER,$LabDataStringDate,"2000/07/04 12:00:00")
-10:10:20 Assert: getInternalBufferSize($DIAGRAM,"MOVING-AVERAGE-SAMPLE-OF-DATE") = 1 "Verify one value has propagated"
-10:10:25 setDateValue($PROVIDER,$LabDataDate,"2010/07/04 12:00:00")
-10:10:30 Assert: LabDataOutput1 = 33 "LabData1 out=33"
-10:10:30 Assert: LabDataOutput2 = 33 "LabData2 out=33"
-# The time readout block's format is a date only
-10:10:50 Assert: getProperty($DIAGRAM,"LABDATA-DATE-READOUT","Value")  = "2010/07/04 12:00:00"  "LabData1 time is its initial time"
-10:10:50 Assert: getProperty($DIAGRAM,"LABDATA-STRINGDATE-READOUT","Value")  = "2000/07/04"  "LabData2 time is its initial time"
-10:10:55 Assert: getInternalBufferSize($DIAGRAM,"MOVING-AVERAGE-SAMPLE-OF-DATE") = 2 "Verify now 2 values have propagated"
-10:11:00 44
-10:11:30 Assert: LabDataOutput1 = 44 "LabData1 out=44"
-10:11:30 Assert: LabDataOutput2 = 44 "LabData2 out=44"
-10:11:50 Assert: getProperty($DIAGRAM,"LABDATA-DATE-READOUT","Value")  = "2010/07/04 12:00:00"  "LabData1 time unchanged"
-10:11:50 Assert: getProperty($DIAGRAM,"LABDATA-STRINGDATE-READOUT","Value")  = "2000/07/04"  "LabData2 time unchanged"
-10:11:55 Assert: getInternalBufferSize($DIAGRAM,"MOVING-AVERAGE-SAMPLE-OF-DATE") = 3 "Verify 2 values have propagated"
-10:12:00 setDateValue($PROVIDER,$LabDataDate,"2015/07/04 12:00:00")
-10:12:05 setStringValue($PROVIDER,$LabDataStringDate,"2016/07/04 12:00:00")
-10:12:30 Assert: LabDataOutput1 = 44 "LabData1 out is unchanged"
-10:12:30 Assert: LabDataOutput2 = 44 "LabData2 out is unchanged"
-10:12:50 Assert: getProperty($DIAGRAM,"LABDATA-DATE-READOUT","Value")  = "2015/07/04 12:00:00"  "LabData1 time updated"
-10:12:50 Assert: getProperty($DIAGRAM,"LABDATA-STRINGDATE-READOUT","Value")  = "2016/07/04"  "LabData2 time updated"

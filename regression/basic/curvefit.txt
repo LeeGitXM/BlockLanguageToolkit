@@ -40,4 +40,4 @@ Step: Straight Line
 
 # Teardown sets the diagram ACTIVE, and we get another tag
 # value propagation. Delay it.
-2000/01/01 10:30:00 42.0
+2000/01/01 10:04:00 42.0

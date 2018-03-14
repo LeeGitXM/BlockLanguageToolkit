@@ -236,7 +236,7 @@ public class HighValuePattern extends AbstractProcessBlock implements ProcessBlo
 				double val = Double.NaN;
 				try {
 					val = Double.parseDouble(qv.getValue().toString());
-					if( val>threshold) patternCount++;
+					if( val>=threshold) patternCount++;
 					else otherCount++;
 				}
 				catch(NumberFormatException nfe) {

@@ -45,8 +45,9 @@ Step: Inhibit via Script Interface
 2000/01/01 10:05:30 Assert: getInternalAttribute($DIAGRAM,$INHIBIT2,"Inhibiting") = true  "Inhibitor 2 is now inhibiting"
 2000/01/01 10:05:40 42. 21. false
 2000/01/01 10:06:15 Assert: InhibitorOutput1 = 74 "Output 1 is inhibited"
-# Inhibit of #2 will fail unless tag provider is a "simple" provider
+# Inhibit of #2 will fail unless tag provider is a "simple" provider (because we don't set the lastChange time on a normal tag)
 2000/01/01 10:06:15 Assert: InhibitorOutput2 = 17 "Output 2 is inhibited"
+halt:
 2000/01/01 10:06:15 Assert: getState($DIAGRAM,$INHIBIT1) = UNSET "Inhibitor 1 state is UNSET"
 2000/01/01 10:06:15 Assert: getState($DIAGRAM,$INHIBIT2) = UNSET "Inhibitor 2 state is UNSET"
 

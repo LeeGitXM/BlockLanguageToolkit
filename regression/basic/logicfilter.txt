@@ -24,14 +24,16 @@ Step: All true
 resetDiagram ($DIAGRAM)
 10:00 true
 # When the buffer fills enough to assert FALSE, we make the conclusion
-10:00:20 Assert: LogicFilterTrue        = UNKNOWN "1 output UNKNOWN before time window"
-10:00:25 Assert: getState($DIAGRAM,$F1) = UNKNOWN "1 state  UNKNOWN before time window"
-10:00:30 Assert: LogicFilterNever       = UNKNOWN "4 output UNKNOWN before time window"
-10:00:35 Assert: getState($DIAGRAM,$F4) = UNKNOWN "4 state  UNKNOWN before time window"
-10:00:40 Assert: LogicFilterFalse       = UNKNOWN "2 output UNKNOWN before time window"
-10:00:45 Assert: getState($DIAGRAM,$F2) = UNKNOWN "2 state  UNKNOWN before time window"
-10:00:50 Assert: LogicFilterAlways      = UNKNOWN "3 output UNKNOWN before time window"
-10:00:55 Assert: getState($DIAGRAM,$F3) = UNKNOWN "3 state  UNKNOWN before time window"
+# The scan interval is a minute, so there is no computation before that.
+10:00:25 Assert: getState($DIAGRAM,$F1) = UNSET "1 state  UNSET before first scan"
+10:00:55 Assert: getState($DIAGRAM,$F1) = UNKNOWN "1 state  UNKNOWN after first scan"
+10:00:55 Assert: LogicFilterTrue        = UNKNOWN "1 output UNKNOWN after first scan"
+10:01:30 Assert: LogicFilterNever       = UNKNOWN "4 output UNKNOWN before time window"
+10:01:35 Assert: getState($DIAGRAM,$F4) = UNKNOWN "4 state  UNKNOWN before time window"
+10:01:40 Assert: LogicFilterFalse       = UNKNOWN "2 output UNKNOWN before time window"
+10:01:45 Assert: getState($DIAGRAM,$F2) = UNKNOWN "2 state  UNKNOWN before time window"
+10:01:50 Assert: LogicFilterAlways      = UNKNOWN "3 output UNKNOWN before time window"
+10:01:55 Assert: getState($DIAGRAM,$F3) = UNKNOWN "3 state  UNKNOWN before time window"
 10:03:20 Assert: LogicFilterTrue        = False "1 output False far enough into window"
 10:03:25 Assert: getState($DIAGRAM,$F1) = False "1 state  False far enough into window"
 10:03:30 Assert: LogicFilterNever       = False "4 output False far enough into window"

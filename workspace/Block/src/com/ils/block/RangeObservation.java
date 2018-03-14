@@ -106,7 +106,7 @@ public class RangeObservation extends AbstractProcessBlock implements ProcessBlo
 			if( dbl> upperlimit|| dbl<lowerlimit ) newValue = TruthValue.FALSE;
 			if( !observation.getQuality().isGood()) newValue = TruthValue.UNKNOWN;
 			if( !newValue.equals(state)) {
-				state = newValue;
+				setState(newValue);
 				lastValue = new BasicQualifiedValue(state,observation.getQuality(),observation.getTimestamp());
 				if( !isLocked() ) {
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);

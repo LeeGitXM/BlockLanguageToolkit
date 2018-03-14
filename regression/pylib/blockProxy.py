@@ -91,11 +91,10 @@ def getBlockState(common,dpath,blockName):
 		if block.getName() == blockName:
 			result = block.getState()
 			break
-
 	common['result'] = result
 
 #
-# Return the state of a block
+# Return an explanation of the state of a block
 def getExplanation(common,dpath,blockName):
 	diagram = getDiagram(dpath)
 	diagId = getDiagram(dpath).getSelf().toString()
@@ -105,8 +104,8 @@ def getExplanation(common,dpath,blockName):
 			blockId = block.getBlockId().toString()
 			result = script.getExplanation(diagId,blockId)
 			break
-
 	common['result'] = result
+
 # Reset an individual block
 def reset(common,dpath,blockName):
 	diagid = getDiagram(dpath).getSelf().toString()

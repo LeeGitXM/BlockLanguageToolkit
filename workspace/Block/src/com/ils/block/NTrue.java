@@ -151,8 +151,8 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 		if( !isLocked() ) {
 			TruthValue newState = getAggregateState();
 			log.tracef("%s.evaluate: new = %s, old =%s",TAG,newState.name(),state.name());
-			if(newState!=state ) {
-				state = newState;
+			if(!newState.equals(state)) {
+				setState(newState); 
 				lastValue = new TestAwareQualifiedValue(timer,state.name(),
 			            (state.equals(TruthValue.UNKNOWN)?getAggregateQuality():DataQuality.GOOD_DATA));
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);

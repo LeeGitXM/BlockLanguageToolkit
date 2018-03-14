@@ -4,6 +4,7 @@
 package com.ils.block;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
@@ -22,6 +23,7 @@ import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -102,7 +104,7 @@ public class HighLimitObservation extends AbstractProcessBlock implements Proces
 				if( dbl < limit - deadband ) newValue = TruthValue.FALSE;
 				if( !observation.getQuality().isGood()) newValue = TruthValue.UNKNOWN;
 				if( !newValue.equals(state)) {
-					state = newValue;
+					setState(newValue);
 					lastValue = new BasicQualifiedValue(state,observation.getQuality(),observation.getTimestamp());
 					if( !isLocked() ) {
 						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
@@ -134,6 +136,18 @@ public class HighLimitObservation extends AbstractProcessBlock implements Proces
 		}
 		return explanation;
 	}
+	
+	/**
+	 * @return a block-specific description of internal statue
+	 */
+	@Override
+	public SerializableBlockStateDescriptor getInternalStatus() {
+		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
+		Map<String,String> attributes = descriptor.getAttributes();
+		attributes.put("LastObservation", observation.getValue().toString());
+		return descriptor;
+	}
+	
 	/**
 	 * Send status update notification for our last latest state.
 	 */

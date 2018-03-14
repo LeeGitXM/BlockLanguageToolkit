@@ -116,6 +116,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		timer.updateWatchdog(dog);  // pet dog
 		buffer.clear();
 		ratio = Double.NaN;
+		currentValue = TruthValue.UNSET;
 	}
 
 	@Override
@@ -156,7 +157,6 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		}
 		if( currentValue.equals(TruthValue.UNSET) ) return;   // Nothing on input yet
 		
-		
 		// Add the currentValue to the queue
 		buffer.addLast(currentValue);
 		
@@ -166,7 +166,6 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		
 		//log.tracef("%s.evaluate buffer %d of %d, current value=%s, state=%s (%s)",
 		//		getName(),buffer.size(),bufferSize,currentValue.name(),state.name(),timer.getName());
-		
 		TruthValue newState = TruthValue.UNKNOWN;
 		if( buffer.size() >= 1 ) {
 			ratio = computeTrueRatio(bufferSize);
@@ -174,13 +173,13 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 			controller.sendPropertyNotification(getBlockId().toString(),BLOCK_PROPERTY_RATIO,
 						new TestAwareQualifiedValue(timer,new Double(ratio)));
 			newState = computeState(state,ratio,computeFalseRatio(bufferSize));
-			//log.tracef("%s.evaluate ... ratio %f (%s was %s)",getName(),ratio,newState.name(),state.name());
+			log.infof("%s.evaluate ... ratio %f (%s was %s)",getName(),ratio,newState.name(),state.name());
 		}
 		
 		if( !isLocked() ) {
-			if(newState!=state) {
-				state = newState;
-				lastValue = new TestAwareQualifiedValue(timer,state);
+			if(!newState.equals(state)) {
+				setState(newState);  // Sets last value as side effect
+				log.infof("%s.evaluate ... new state is %s",getName(),state.name());
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(nvn);
 				notifyOfStatus(lastValue);

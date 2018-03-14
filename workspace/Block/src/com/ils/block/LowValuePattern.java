@@ -236,7 +236,7 @@ public class LowValuePattern extends AbstractProcessBlock implements ProcessBloc
 				double val = Double.NaN;
 				try {
 					val = Double.parseDouble(qv.getValue().toString());
-					if( val<threshold) patternCount++;
+					if( val<=threshold) patternCount++;
 					else otherCount++;
 				}
 				catch(NumberFormatException nfe) {
