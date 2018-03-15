@@ -62,4 +62,3 @@ Tagset: LabDataInput
 10:12:30 Assert: LabDataOutput2 = 44 "LabData2 out is unchanged"
 10:12:50 Assert: getProperty($DIAGRAM,"LABDATA-DATE-READOUT","Value")  = "2016/07/04 01:04:00"  "LabData1 time updated"
 10:12:50 Assert: getProperty($DIAGRAM,"LABDATA-STRINGDATE-READOUT","Value")  = "2000/12/25"  "LabData2 time updated"
-halt:
