@@ -1,5 +1,5 @@
 /**
- *   (c) 2017  ILS Automation. All rights reserved. 
+ *   (c) 2017-2018  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -31,7 +31,7 @@ import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
- * This class is a no-op. It simply passes its input onto the output.
+ * Detect if the last m of n samples are below a specified threshold value..
  */
 @ExecutableBlock
 public class LowValuePattern extends AbstractProcessBlock implements ProcessBlock {
@@ -71,6 +71,7 @@ public class LowValuePattern extends AbstractProcessBlock implements ProcessBloc
 		if( clearOnReset ) {
 			queue.clear();
 			setState(TruthValue.UNSET);  // Updates activity and lastValue
+			log.infof("%s.RESET cleared",getName());
 		}
 	}
 	
@@ -111,7 +112,7 @@ public class LowValuePattern extends AbstractProcessBlock implements ProcessBloc
 		super.acceptValue(vcn);
 		
 			QualifiedValue qv = vcn.getValue();
-			log.debugf("%s.acceptValue: Received %s",getName(),qv.getValue().toString());
+			log.infof("%s.acceptValue: Received %s",getName(),qv.getValue().toString());
 			if( qv.getQuality().isGood() ) {
 				queue.add(qv);
 				setState(computeState());   // Sets lastValue
@@ -236,7 +237,9 @@ public class LowValuePattern extends AbstractProcessBlock implements ProcessBloc
 				double val = Double.NaN;
 				try {
 					val = Double.parseDouble(qv.getValue().toString());
-					if( val<=threshold) patternCount++;
+					if( val<=threshold) {
+						patternCount++;
+					}
 					else otherCount++;
 				}
 				catch(NumberFormatException nfe) {

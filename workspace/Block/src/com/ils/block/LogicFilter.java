@@ -179,7 +179,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		if( !isLocked() ) {
 			if(!newState.equals(state)) {
 				setState(newState);  // Sets last value as side effect
-				log.infof("%s.evaluate ... new state is %s",getName(),state.name());
+				//log.infof("%s.evaluate ... new state is %s",getName(),state.name());
 				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(nvn);
 				notifyOfStatus(lastValue);
