@@ -71,7 +71,6 @@ public class LowValuePattern extends AbstractProcessBlock implements ProcessBloc
 		if( clearOnReset ) {
 			queue.clear();
 			setState(TruthValue.UNSET);  // Updates activity and lastValue
-			log.infof("%s.RESET cleared",getName());
 		}
 	}
 	
@@ -112,7 +111,7 @@ public class LowValuePattern extends AbstractProcessBlock implements ProcessBloc
 		super.acceptValue(vcn);
 		
 			QualifiedValue qv = vcn.getValue();
-			log.infof("%s.acceptValue: Received %s",getName(),qv.getValue().toString());
+			//log.infof("%s.acceptValue: Received %s",getName(),qv.getValue().toString());
 			if( qv.getQuality().isGood() ) {
 				queue.add(qv);
 				setState(computeState());   // Sets lastValue
@@ -252,7 +251,7 @@ public class LowValuePattern extends AbstractProcessBlock implements ProcessBloc
 		else if( sampleSize - otherCount < triggerCount ) result = TruthValue.FALSE;
 		else 								    		  result = TruthValue.UNKNOWN;
 		
-		log.infof("%s.computeState Pattern=%d,Other=%d of %d, need %d => %s",getName(),patternCount,otherCount,queue.size(),triggerCount,result.name());
+		//log.infof("%s.computeState Pattern=%d,Other=%d of %d, need %d => %s",getName(),patternCount,otherCount,queue.size(),triggerCount,result.name());
 		return result;	
 	}
 }

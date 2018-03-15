@@ -291,13 +291,13 @@ public class DiscreteRateOfChange extends AbstractProcessBlock implements Proces
 		coefficients = fitter.fit(obs.toList());
 		// Our answer is the derivative at "n". We assume the coefficient[n] is the nth order coefficient
 		if( polynomialOrder == 3 ) {
-			log.infof("%s.computeRateOfChange: Coefficients are: %s %s %s %s",getName(),String.valueOf(coefficients[0]),String.valueOf(coefficients[1]),
-																							String.valueOf(coefficients[2]),String.valueOf(coefficients[3]));
+			//log.infof("%s.computeRateOfChange: Coefficients are: %s %s %s %s",getName(),String.valueOf(coefficients[0]),String.valueOf(coefficients[1]),
+			//																				String.valueOf(coefficients[2]),String.valueOf(coefficients[3]));
 			roc = coefficients[1] + 2*coefficients[2]*n + 3*coefficients[2]*n*n;
 		}
 		else {
-			log.infof("%s.computeRateOfChange: Coefficients are: %s %s %s",getName(),String.valueOf(coefficients[0]),String.valueOf(coefficients[1]),
-																							String.valueOf(coefficients[2]));
+			//log.infof("%s.computeRateOfChange: Coefficients are: %s %s %s",getName(),String.valueOf(coefficients[0]),String.valueOf(coefficients[1]),
+			//																				String.valueOf(coefficients[2]));
 			roc = coefficients[1] + 2*coefficients[2]*n;
 		}
 		return roc;

@@ -19,8 +19,8 @@ Test: Pattern Detection
 Step: Increasing Values
 
 2000/01/01 10:00 1.0
-2000/01/01 10:00:20 Assert: HighPatternOut = "UNKNOWN"  "UNKNOWN 1 of 4"
-halt:
+# We receive a zero from the reset, then 1.
+2000/01/01 10:00:20 Assert: HighPatternOut = "TRUE"  "TRUE 2 of 4"
 2000/01/01 10:00:30 2.0
 2000/01/01 10:00:50 Assert: LowPatternOut = "UNKNOWN"  "UNKNOWN 2 of 4"
 2000/01/01 10:01:00 3.0
@@ -41,15 +41,15 @@ resetDiagram ($DIAGRAM)
 2000/01/01 10:04 -1.0
 2000/01/01 10:04:30 -2.0
 2000/01/01 10:04:40 Assert: HighPatternOut = "UNKNOWN"  "UNKNOWN before buffer full"
-2000/01/01 10:04:50 Assert: LowPatternOut = "UNKNOWN"  "UNKNOWN before buffer full"
+2000/01/01 10:04:50 Assert: LowPatternOut = "TRUE"  "TRUE 2 of 4"
 2000/01/01 10:05:00 -3.0
-2000/01/01 10:05:10 Assert: HighPatternOut = "UNKNOWN" "UNKNOWN before buffer full"
-2000/01/01 10:05:30 Assert: LowPatternOut = "UNKNOWN" "UNKNOWN before buffer full"
+2000/01/01 10:05:10 Assert: HighPatternOut = "FALSE" "FALSE 3 of 4"
+2000/01/01 10:05:30 Assert: LowPatternOut = "TRUE" "TRUE 3 of 4"
 2000/01/01 10:05:30 -4.0
-2000/01/01 10:05:40 Assert: HighPatternOut = "UNKNOWN" "UNKNOWN before buffer full"
-2000/01/01 10:05:50 Assert: LowPatternOut = "UNKNOWN" "UNKNOWN before buffer full"
+2000/01/01 10:05:40 Assert: HighPatternOut = "FALSE" "FALSE 4 of 4"
+2000/01/01 10:05:50 Assert: LowPatternOut = "TRUE" "TRUE 4 of 4"
 2000/01/01 10:06:00 -5.0
-2000/01/01 10:06:10 Assert: HighPatternOut = "UNKNOWN" "UNKNOWN before buffer full"
+2000/01/01 10:06:10 Assert: HighPatternOut = "FALSE" "5 negative entries is false"
 2000/01/01 10:06:20 Assert: LowPatternOut = "TRUE" "5 negative entries is true"
 2000/01/01 10:06:40 -6.0
 2000/01/01 10:06:50 Assert: LowPatternOut = "TRUE" "Detected low pattern"
