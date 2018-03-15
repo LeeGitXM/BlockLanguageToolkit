@@ -471,22 +471,21 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 
 		Collection<IncomingNotification>notifications = new ArrayList<IncomingNotification>();
 		BlockPort key = new BlockPort(block,port);
-
 		if( outgoingConnections.get(key)!=null ) {
-			List<ProcessConnection> cxns = outgoingConnections.get(key);
-			synchronized(cxns) {
-				for(ProcessConnection cxn:cxns) {
-					UUID blockId = cxn.getTarget();
-					ProcessBlock blk = blocks.get(blockId);
-					if( blk!=null ) {
-						IncomingNotification vcn = new IncomingNotification(cxn,value);
-						notifications.add(vcn);
-					}
-					else {
-						log.warnf("%s.getOutgoingNotifications: Target block %s not found for connection",TAG,blockId.toString());
-					}
+			// Avoid concurrent modification exceptions by creating new collection
+			List<ProcessConnection> cxns = new ArrayList<>(outgoingConnections.get(key));
+			for(ProcessConnection cxn:cxns) {
+				UUID blockId = cxn.getTarget();
+				ProcessBlock blk = blocks.get(blockId);
+				if( blk!=null ) {
+					IncomingNotification vcn = new IncomingNotification(cxn,value);
+					notifications.add(vcn);
+				}
+				else {
+					log.warnf("%s.getOutgoingNotifications: Target block %s not found for connection",TAG,blockId.toString());
 				}
 			}
+
 		}
 		else {
 			log.debugf("%s.getOutgoingNotifications: no connections found for %s:%s",TAG,block.getBlockId().toString(),port);

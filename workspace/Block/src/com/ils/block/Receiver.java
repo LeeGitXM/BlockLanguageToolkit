@@ -63,7 +63,7 @@ public class Receiver extends AbstractProcessBlock implements ProcessBlock {
 		setProperty(BLOCK_PROPERTY_PATTERN, patternProperty);
 		
 		// Define a single output. We receive a value from the "ether" and send it on our output connection
-		AnchorPrototype output = new AnchorPrototype(BlockConstants.CONTROL_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.SIGNAL);
+		AnchorPrototype output = new AnchorPrototype(BlockConstants.RECEIVER_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.SIGNAL);
 		anchors.add(output);
 	}
 	
@@ -80,7 +80,7 @@ public class Receiver extends AbstractProcessBlock implements ProcessBlock {
 					patternProperty.getValue().toString().equalsIgnoreCase(signal.getPattern())) {
 			// Passed the filtering. Send to the output.
 			lastValue = new TestAwareQualifiedValue(timer,signal);
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.CONTROL_PORT_NAME,lastValue);
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.RECEIVER_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus(lastValue);
 		}
@@ -91,7 +91,7 @@ public class Receiver extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void notifyOfStatus() {}
 	private void notifyOfStatus(QualifiedValue qv) {
-		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.CONTROL_PORT_NAME, qv);
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.RECEIVER_PORT_NAME, qv);
 	}
 	/**
 	 * We overwrite the standard implementation because we are using
@@ -100,7 +100,7 @@ public class Receiver extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void propagate() {
 		if( lastValue!=null ) {
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.CONTROL_PORT_NAME,lastValue);
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.RECEIVER_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus();
 		}

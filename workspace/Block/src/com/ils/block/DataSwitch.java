@@ -84,7 +84,7 @@ public class DataSwitch extends AbstractProcessBlock implements ProcessBlock {
 		anchors.add(input);
 		
 		// Define a control port
-		AnchorPrototype control = new AnchorPrototype(BlockConstants.CONTROL_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
+		AnchorPrototype control = new AnchorPrototype(BlockConstants.RECEIVER_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
 		control.setHint(PlacementHint.T);
 		anchors.add(control);
 
@@ -116,7 +116,7 @@ public class DataSwitch extends AbstractProcessBlock implements ProcessBlock {
 		dog.setSecondsDelay(synchInterval);
 		timer.updateWatchdog(dog);  // pet dog
 		
-		if( vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(BlockConstants.CONTROL_PORT_NAME)) {
+		if( vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(BlockConstants.RECEIVER_PORT_NAME)) {
 			setState(qualifiedValueAsTruthValue(vcn.getValue()));
 		}
 		else if(!isLocked() ) {

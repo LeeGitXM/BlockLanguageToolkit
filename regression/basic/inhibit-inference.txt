@@ -1,0 +1,38 @@
+#
+# Test of the inference inhibit block.
+# The test uses the inhibitor diagram.
+#
+INHIBIT="INFERENCEINHIBITOR-115"
+DIAGRAM="app75/family75/inhibitor"
+tag: InhibitorOutput3 MemoryTags/InhibitorOutput3
+tagset: InhibitInput MemoryTags/InhibitorFeed3 MemoryTags/InhibitorControl
+
+Tagset: InhibitInput
+Show: diagram $DIAGRAM
+resetDiagram ($DIAGRAM)
+
+Test: Inference Inhibit Block
+Step: Passthrough
+
+2000/01/01 10:00:00 Assert: getState($DIAGRAM,$INHIBIT) = UNSET  "Propagate intitial value"
+2000/01/01 10:00:10 False False
+2000/01/01 10:00:10 True
+2000/01/01 10:00:20 Assert: InhibitorOutput3 = 	True "Passthrough is True"
+2000/01/01 10:00:30 False
+2000/01/01 10:00:50 Assert: InhibitorOutput3 = 	False "Passthrough is False"
+2000/01/01 10:01:45 Assert: getState($DIAGRAM,$INHIBIT) = FALSE  "Inhibitor state is FALSE"
+2000/01/01 10:01:50 Assert: getInternalAttribute($DIAGRAM,$INHIBIT,"Inhibiting") = false  "Inhibitor is not inhibiting"
+
+Step: Inhibit
+2000/01/01 10:02:00 False True
+2000/01/01 10:02:20 True
+2000/01/01 10:02:30 Assert: InhibitorOutput3 = FALSE "Output is inhibited"
+2000/01/01 10:02:45 Assert: getState($DIAGRAM,$INHIBIT) = FALSE  "Inhibitor state is FALSE"
+2000/01/01 10:02:50 Assert: getInternalAttribute($DIAGRAM,$INHIBIT,"Inhibiting") = true  "Inhibitor is now inhibiting"
+
+Step: Passthrough
+2000/01/01 10:03:00 False False
+2000/01/01 10:03:10 True
+2000/01/01 10:03:30 Assert: InhibitorOutput3 = TRUE "Output is not inhibited"
+2000/01/01 10:03:45 Assert: getState($DIAGRAM,$INHIBIT) = TRUE  "Inhibitor state is TRUE"
+2000/01/01 10:03:50 Assert: getInternalAttribute($DIAGRAM,$INHIBIT,"Inhibiting") = false  "Inhibitor is not inhibiting"

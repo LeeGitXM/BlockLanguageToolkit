@@ -12,6 +12,7 @@ run: datecompare.txt
 run: gain.txt
 run: highlimit.txt
 run: inhibit.txt
+run: inhibit-inference.txt
 run: logic.txt
 run: logicfilter.txt
 run: pattern.txt

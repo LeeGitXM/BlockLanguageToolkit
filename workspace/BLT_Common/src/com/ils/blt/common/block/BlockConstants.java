@@ -19,8 +19,9 @@ public interface BlockConstants   {
 	// Note that send and receive ports are not affected by type change actions
 	public static final String IN_PORT_NAME    = "in";
 	public static final String OUT_PORT_NAME = "out";
-	public static final String CONTROL_PORT_NAME   = "recv";     // Receive
 	public static final String BROADCAST_PORT_NAME = "send";     // Send
+	public static final String CONTROL_PORT_NAME   = "control";  // Control line
+	public static final String RECEIVER_PORT_NAME   = "recv";     // Receive
 	public static final String SIGNAL_PORT_NAME    = "signal";   // Signal (every block has one)
 		
 	// These are block property names that used in multiple block definitions

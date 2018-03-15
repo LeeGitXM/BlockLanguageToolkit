@@ -254,7 +254,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
     			if( !foundSignal && anchor.getConnectionType().equals(ConnectionType.SIGNAL)) {
     				foundSignal = true;
     			}
-    			else if(anchor.getDisplay().equals(BlockConstants.CONTROL_PORT_NAME) ||
+    			else if(anchor.getDisplay().equals(BlockConstants.RECEIVER_PORT_NAME) ||
     					anchor.getDisplay().equals(BlockConstants.BROADCAST_PORT_NAME) ) {
     				continue;
     			}

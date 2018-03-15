@@ -35,8 +35,6 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  */
 @ExecutableBlock
 public class InferenceInhibitor extends AbstractProcessBlock implements ProcessBlock {
-	private final static String CONTROL_PORT_NAME = "control";
-	
 	private boolean inhibiting = false;
 	private TruthValue controlValue = TruthValue.UNSET;
 	private TruthValue initialValue = TruthValue.UNSET;
@@ -67,12 +65,12 @@ public class InferenceInhibitor extends AbstractProcessBlock implements ProcessB
 	public void reset() {
 		super.reset();
 		inhibiting = controlValue.equals(trigger);
+		setState(initialValue);
 		if(!locked && !inhibiting && !initialValue.equals(TruthValue.UNSET)) {
 			lastValue = new TestAwareQualifiedValue(timer,initialValue);
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus();
-			state = initialValue;
 		}
 
 	}
@@ -182,7 +180,7 @@ public class InferenceInhibitor extends AbstractProcessBlock implements ProcessB
 		anchors.add(input);
 		
 		// Define the control input
-		AnchorPrototype triggerIn = new AnchorPrototype(CONTROL_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
+		AnchorPrototype triggerIn = new AnchorPrototype(BlockConstants.CONTROL_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
 		triggerIn.setHint(PlacementHint.T);
 		triggerIn.setAnnotation("T");
 		anchors.add(triggerIn);

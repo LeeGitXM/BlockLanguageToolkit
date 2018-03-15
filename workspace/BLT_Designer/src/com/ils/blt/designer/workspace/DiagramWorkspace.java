@@ -811,7 +811,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			block.changeConnectorType(connectionType);
 			List<SerializableAnchor> anchors = new ArrayList<SerializableAnchor>();
 			for( AnchorDescriptor anchor:block.getAnchors()) {
-				if( anchor.getDisplay().equalsIgnoreCase(BlockConstants.CONTROL_PORT_NAME)) continue;
+				if( anchor.getDisplay().equalsIgnoreCase(BlockConstants.RECEIVER_PORT_NAME)) continue;
 				anchors.add(block.convertAnchorToSerializable((ProcessAnchorDescriptor)anchor));
 			}
 			handler.updateBlockAnchors(diagram.getId(),block.getId(),anchors);

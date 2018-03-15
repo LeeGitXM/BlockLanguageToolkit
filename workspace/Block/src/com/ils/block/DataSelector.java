@@ -66,7 +66,7 @@ public class DataSelector extends AbstractProcessBlock implements ProcessBlock {
 		input2.setHint(PlacementHint.L);
 		input2.setAnnotation("2");
 		anchors.add(input2);
-		AnchorPrototype control = new AnchorPrototype(BlockConstants.CONTROL_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
+		AnchorPrototype control = new AnchorPrototype(BlockConstants.RECEIVER_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
 		control.setHint(PlacementHint.T);
 		anchors.add(control);
 
@@ -87,7 +87,7 @@ public class DataSelector extends AbstractProcessBlock implements ProcessBlock {
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
 		if(!isLocked() ) {
-			if( vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(BlockConstants.CONTROL_PORT_NAME)) {
+			if( vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(BlockConstants.RECEIVER_PORT_NAME)) {
 				this.state = qualifiedValueAsTruthValue(vcn.getValue());
 			}
 			else if( vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(IN_PORT1_NAME)) {
