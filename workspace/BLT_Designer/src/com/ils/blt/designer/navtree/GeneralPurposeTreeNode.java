@@ -279,7 +279,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				if( res.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
 					try {
 						SerializableApplication sa = deserializeApplication(res);
-						extensionManager.runScript(context.getScriptManager(), ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.PROPERTY_RENAME_SCRIPT, 
+						extensionManager.runScript(context.getScriptManager(), ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.NODE_RENAME_SCRIPT, 
 								sa.getId().toString(),getName(),res.getName());
 					}
 					catch( Exception ex ) {
@@ -289,7 +289,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				else if( res.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE)) {
 					try {
 						SerializableFamily sf = deserializeFamily(res);
-						extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.PROPERTY_RENAME_SCRIPT, 
+						extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.NODE_RENAME_SCRIPT, 
 								sf.getId().toString(),getName(),res.getName());
 					}
 					catch( Exception ex ) {

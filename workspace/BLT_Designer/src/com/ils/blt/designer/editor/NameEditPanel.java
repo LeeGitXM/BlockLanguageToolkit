@@ -84,7 +84,7 @@ public class NameEditPanel extends BasicEditPanel {
 					if( sem.getClassNames().contains(block.getClassName()) ) {
 						try {
 							DesignerContext context = editor.getContext();
-							sem.runScript(context.getScriptManager(),block.getClassName(), ScriptConstants.PROPERTY_RENAME_SCRIPT, 
+							sem.runScript(context.getScriptManager(),block.getClassName(), ScriptConstants.NODE_RENAME_SCRIPT, 
 									editor.getDiagram().getId().toString(),block.getName(),nameField.getText());     // Old name, new name
 						}
 						catch( Exception ex ) {

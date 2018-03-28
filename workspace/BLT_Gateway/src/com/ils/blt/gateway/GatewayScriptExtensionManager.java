@@ -14,7 +14,7 @@ import com.ils.blt.common.script.ScriptConstants;
 
 /**
  *  The manger is a singleton used to compile and execute Python scripts. The
- *  scripts come in 4 flavors (PROPERTY_GET_SCRIPT, PROPERTY_RENAME_SCRIPT,
+ *  scripts come in 4 flavors (PROPERTY_GET_SCRIPT, NODE_RENAME_SCRIPT,
  *  PROPERTY_SET_SCRIPT and NODE_SAVE_SCRIPT). The standard signatures are:
  *  	get/set(uuid,properties).
  *  	rename(uuid,oldName,newName)

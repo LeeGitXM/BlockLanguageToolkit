@@ -1,5 +1,5 @@
 /**
- *   (c) 2015 ILS Automation. All rights reserved.
+ *   (c) 2015,2018 ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.common.script;
@@ -14,10 +14,11 @@ public interface ScriptConstants   {
 	public final static String APPLICATION_CLASS_NAME  = "com.ils.application";
 	public final static String FAMILY_CLASS_NAME       = "com.ils.family";
 	public final static String DIAGRAM_CLASS_NAME      = "com.ils.diagram";
-	// There are a pair of scripts for each class with extensions. 
+	// There are these scripts for each class with extensions. 
+	public final static String NODE_DELETE_SCRIPT      = "node-delete-script";
+	public final static String NODE_RENAME_SCRIPT      = "node-rename-script";
 	public final static String NODE_SAVE_SCRIPT        = "node-save-script";
 	public final static String PROPERTY_GET_SCRIPT     = "property-get-script";
-	public final static String PROPERTY_RENAME_SCRIPT  = "property-rename-script";
 	public final static String PROPERTY_SET_SCRIPT     = "property-set-script";
 
 	// These are the keys for individual sub-dictionaries

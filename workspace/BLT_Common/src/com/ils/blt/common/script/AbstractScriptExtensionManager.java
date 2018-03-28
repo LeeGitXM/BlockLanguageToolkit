@@ -24,9 +24,10 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
 
 /**
  *  The manger is an abstract base class used to compile and execute Python scripts.
- *  The scripts come in 4 flavors (PROPERTY_GET_SCRIPT, PROPERTY_RENAME_SCRIPT,
- *  PROPERTY_SET_SCRIPT and NODE_SAVE_SCRIPT). The standard signatures are:
- *  	get/set(uuid,properties).
+ *  The scripts come in 4 flavors (PROPERTY_GET_SCRIPT,PROPERTY_SET_SCRIPT and 
+ *  NODE_DELETE_SCRIPT, NODE_RENAME_SCRIPT, NODE_SAVE_SCRIPT). The standard signatures are:
+ *  	get/set(uuid,properties,db)
+ *  	delete(uuid)
  *  	rename(uuid,oldName,newName)
  *  	save(uuid)
  *  This group of scripts must be defined 
@@ -55,9 +56,10 @@ public abstract class AbstractScriptExtensionManager {
 		j2p = new JavaToPython();
 		p2j = new PythonToJava();
 		flavors = new ArrayList<>();
+		flavors.add(ScriptConstants.NODE_DELETE_SCRIPT);
+		flavors.add(ScriptConstants.NODE_RENAME_SCRIPT);
 		flavors.add(ScriptConstants.NODE_SAVE_SCRIPT);
 		flavors.add(ScriptConstants.PROPERTY_GET_SCRIPT);
-		flavors.add(ScriptConstants.PROPERTY_RENAME_SCRIPT);
 		flavors.add(ScriptConstants.PROPERTY_SET_SCRIPT);
 	}
 	
@@ -80,7 +82,11 @@ public abstract class AbstractScriptExtensionManager {
 			entry = "setAux";
 			arglist = "uuid,properties,db";
 		}
-		else if( flavor.equals(ScriptConstants.PROPERTY_RENAME_SCRIPT))  {
+		else if( flavor.equals(ScriptConstants.NODE_DELETE_SCRIPT))  {
+			entry = "delete";
+			arglist = "uuid";
+		}
+		else if( flavor.equals(ScriptConstants.NODE_RENAME_SCRIPT))  {
 			entry = "rename";
 			arglist = "uuid,oldname,newname";
 		}

@@ -94,10 +94,10 @@ public class ScriptExtensionsDialog extends ConfigurationDialog  {
 			log.tracef("%s.createScriptPanel: block class = %s",TAG,desc.getBlockClass());
 			addSeparator(panel,desc.getEmbeddedLabel());
 			if(desc.getBlockClass().equalsIgnoreCase(ScriptConstants.DIAGRAM_CLASS_NAME) ) {
-				interfacePanel = new AuxInterfacePanel("");  // Has create script only
+				interfacePanel = new AuxInterfacePanel("","");  // Has create/delete scripts only
 			}
 			else {
-				interfacePanel = new AuxInterfacePanel("","","");
+				interfacePanel = new AuxInterfacePanel("","","","","");
 			}
 			panel.add(interfacePanel, "skip,growx,push");
 			classPanels.put(desc.getBlockClass(), interfacePanel);
@@ -118,7 +118,10 @@ public class ScriptExtensionsDialog extends ConfigurationDialog  {
 			key = AbstractScriptExtensionManager.makeKey(clss,ScriptConstants.PROPERTY_SET_SCRIPT);
 			value = handler.getToolkitProperty(key);
 			if (value!=null ) panel.updateSetField(value);
-			key = AbstractScriptExtensionManager.makeKey(clss,ScriptConstants.PROPERTY_RENAME_SCRIPT);
+			key = AbstractScriptExtensionManager.makeKey(clss,ScriptConstants.NODE_DELETE_SCRIPT);
+			value = handler.getToolkitProperty(key);
+			if (value!=null ) panel.updateDeleteField(value);
+			key = AbstractScriptExtensionManager.makeKey(clss,ScriptConstants.NODE_RENAME_SCRIPT);
 			value = handler.getToolkitProperty(key);
 			if (value!=null ) panel.updateRenameField(value);
 			key = AbstractScriptExtensionManager.makeKey(clss,ScriptConstants.NODE_SAVE_SCRIPT);
@@ -146,8 +149,11 @@ public class ScriptExtensionsDialog extends ConfigurationDialog  {
 					key = AbstractScriptExtensionManager.makeKey(clss,ScriptConstants.PROPERTY_SET_SCRIPT);
 					sem.addScript(clss, ScriptConstants.PROPERTY_SET_SCRIPT, panel.getSetFieldValue());
 					handler.setToolkitProperty(key,panel.getSetFieldValue());
-					key = AbstractScriptExtensionManager.makeKey(clss,ScriptConstants.PROPERTY_RENAME_SCRIPT);
-					sem.addScript(clss, ScriptConstants.PROPERTY_RENAME_SCRIPT, panel.getRenameFieldValue());
+					key = AbstractScriptExtensionManager.makeKey(clss,ScriptConstants.NODE_DELETE_SCRIPT);
+					sem.addScript(clss, ScriptConstants.NODE_DELETE_SCRIPT, panel.getDeleteFieldValue());
+					handler.setToolkitProperty(key,panel.getDeleteFieldValue());
+					key = AbstractScriptExtensionManager.makeKey(clss,ScriptConstants.NODE_RENAME_SCRIPT);
+					sem.addScript(clss, ScriptConstants.NODE_RENAME_SCRIPT, panel.getRenameFieldValue());
 					handler.setToolkitProperty(key,panel.getRenameFieldValue());
 					key = AbstractScriptExtensionManager.makeKey(clss,ScriptConstants.NODE_SAVE_SCRIPT);
 					sem.addScript(clss, ScriptConstants.NODE_SAVE_SCRIPT, panel.getSaveFieldValue());
@@ -266,12 +272,13 @@ public class ScriptExtensionsDialog extends ConfigurationDialog  {
 		private static final String layoutConstraints = "ins 2";
 		private static final String rowConstraints = "";
 		private final JTextField createScriptField;
+		private final JTextField deleteScriptField;
 		private final JTextField getScriptField;
 		private final JTextField setScriptField;
 		private final JTextField renameScriptField;
 		
 		
-		public AuxInterfacePanel(String getPath,String setPath, String renamePath) {
+		public AuxInterfacePanel(String getPath,String setPath,String deletePath,String renamePath,String savePath) {
 			setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));     // 3 cells across
 			
 			JLabel getLabel = new JLabel("GetAuxData");
@@ -279,27 +286,47 @@ public class ScriptExtensionsDialog extends ConfigurationDialog  {
 			getScriptField = new JTextField(getPath);
 			getScriptField.setPreferredSize(NAME_BOX_SIZE);
 			add(getScriptField,"skip,growx,wrap");
+			
 			JLabel setLabel = new JLabel("SetAuxData");
 			add(setLabel,"");
 			setScriptField = new JTextField(getPath);
 			setScriptField.setPreferredSize(NAME_BOX_SIZE);
 			add(setScriptField,"skip,growx,wrap");
+			
+			JLabel deleteLabel = new JLabel("Delete");
+			add(deleteLabel,"");
+			deleteScriptField = new JTextField("deletePath");
+			deleteScriptField.setPreferredSize(NAME_BOX_SIZE);
+			add(deleteScriptField,"skip,growx,wrap");
+			
 			JLabel renameLabel = new JLabel("Rename");
 			add(renameLabel,"");
 			renameScriptField = new JTextField( renamePath);
 			renameScriptField.setPreferredSize(NAME_BOX_SIZE);
 			add(renameScriptField,"skip,growx,wrap");
-			createScriptField = new JTextField("");
+			
+			JLabel saveLabel = new JLabel("Save");
+			add(saveLabel,"");
+			createScriptField = new JTextField(savePath);
+			createScriptField.setPreferredSize(NAME_BOX_SIZE);
+			add(createScriptField,"skip,growx,wrap");
 		}
-		// Short version for a diagram. It only has a "create" field.
-		public AuxInterfacePanel(String createPath) {
+		// Short version for a diagram. It only has a "create" and delete fields.
+		public AuxInterfacePanel(String deletePath,String createPath) {
 			setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));     // 3 cells across
 			
-			JLabel getLabel = new JLabel("Save");
-			add(getLabel,"");
+			JLabel deleteLabel = new JLabel("Delete");
+			add(deleteLabel,"");
+			deleteScriptField = new JTextField(deletePath);
+			deleteScriptField.setPreferredSize(NAME_BOX_SIZE);
+			add(deleteScriptField,"skip,growx,wrap");
+			
+			JLabel saveLabel = new JLabel("Save");
+			add(saveLabel,"");
 			createScriptField = new JTextField(createPath);
 			createScriptField.setPreferredSize(NAME_BOX_SIZE);
 			add(createScriptField,"skip,growx,wrap");
+			
 			getScriptField = new JTextField("");
 			setScriptField = new JTextField("");
 			renameScriptField = new JTextField("");
@@ -308,9 +335,11 @@ public class ScriptExtensionsDialog extends ConfigurationDialog  {
 		public String getSetFieldValue() { return setScriptField.getText(); }
 		public String getSaveFieldValue() { return createScriptField.getText(); }
 		public String getRenameFieldValue() { return renameScriptField.getText(); }
+		public String getDeleteFieldValue() { return deleteScriptField.getText(); }
 		public void updateGetField(String val) { getScriptField.setText(val); }
 		public void updateSetField(String val) { setScriptField.setText(val); }
 		public void updateSaveField(String val) { createScriptField.setText(val); }
 		public void updateRenameField(String val) { renameScriptField.setText(val); }
+		public void updateDeleteField(String val) { deleteScriptField.setText(val); }
 	}
 }
