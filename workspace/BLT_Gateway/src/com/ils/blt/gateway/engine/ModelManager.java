@@ -718,6 +718,12 @@ public class ModelManager implements ProjectListener  {
 					processApp.setState(application.getState());
 				}
 			}
+			// Invoke extension script on family save
+			if( node!=null ) {
+				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), 
+						ScriptConstants.APPLICATION_CLASS_NAME, 
+						ScriptConstants.NODE_SAVE_SCRIPT, node.getSelf().toString());
+			}
 		}
 		else {
 			log.warnf("%s.addModifyApplicationResource: failed to deserialize %s(%d)",TAG,res.getName(),res.getResourceId());
@@ -807,8 +813,17 @@ public class ModelManager implements ProjectListener  {
 			//	Invoke extension script on diagram save
 			if( diagram!=null && !diagram.getState().equals(DiagramState.DISABLED) ) {
 				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(diagram.getProjectId()), 
-											ScriptConstants.DIAGRAM_CLASS_NAME, 
-											ScriptConstants.NODE_SAVE_SCRIPT, diagram.getSelf().toString());
+						ScriptConstants.DIAGRAM_CLASS_NAME, 
+						ScriptConstants.NODE_SAVE_SCRIPT, diagram.getSelf().toString());
+				
+				for(ProcessBlock block:diagram.getProcessBlocks()) {
+					// If this is a final diagnosis, call its save extension
+					if( block.getClassName().equals("xom.block.finaldiagnosis.FinalDiagnosis")) {
+						extensionManager.runScript(context.getProjectManager().getProjectScriptManager(diagram.getProjectId()), 
+							block.getClassName(), 
+							ScriptConstants.NODE_SAVE_SCRIPT, block.getBlockId().toString());
+					}
+				}
 			}
 		}
 		else {
@@ -867,6 +882,12 @@ public class ModelManager implements ProjectListener  {
 					ProcessFamily processFam = (ProcessFamily)node;
 					processFam.setState(family.getState());
 				}
+			}
+			// Invoke extension script on family save
+			if( node!=null ) {
+				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), 
+						ScriptConstants.FAMILY_CLASS_NAME, 
+						ScriptConstants.NODE_SAVE_SCRIPT, node.getSelf().toString());
 			}
 		}
 		else {
@@ -990,6 +1011,12 @@ public class ModelManager implements ProjectListener  {
 						for(BlockProperty prop:block.getProperties()) {
 							controller.removeSubscription(block, prop);
 						}
+						// If this is a final diagnosis, call its delete extension
+						if( block.getClassName().equals("xom.block.finaldiagnosis.FinalDiagnosis")) {
+							extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), 
+								block.getClassName(), 
+								ScriptConstants.NODE_DELETE_SCRIPT, block.getBlockId().toString());
+						}
 					}
 				}
 				ProjectResourceKey nodekey = new ProjectResourceKey(projectId,node.getResourceId());
@@ -1006,6 +1033,10 @@ public class ModelManager implements ProjectListener  {
 				}
 				// Finally remove from the node maps
 				nodesByUUID.remove(node.getSelf());
+				// Invoke the proper extension function on a delete
+				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), 
+							node.getClass().getCanonicalName(), 
+							ScriptConstants.NODE_DELETE_SCRIPT, node.getSelf().toString());
 			}
 		}
 	}
