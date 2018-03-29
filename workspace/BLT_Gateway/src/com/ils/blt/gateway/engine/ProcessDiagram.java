@@ -27,6 +27,7 @@ import com.ils.blt.common.notification.BroadcastNotification;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.notification.SignalNotification;
+import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableConnection;
 import com.ils.blt.common.serializable.SerializableDiagram;
@@ -102,8 +103,10 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	/**
 	 * Remove blocks in this diagram that are NOT in the 
 	 * supplied list. Kill any tag subscriptions associated with those blocks.
+	 * This is called on a diagram save.
+	 * @return a list of deleted blocks
 	 */
-	public void removeUnusedBlocks(SerializableBlock[] newBlocks) {
+	public List<ProcessBlock> removeUnusedBlocks(SerializableBlock[] newBlocks) {
 		List<UUID> uuids = new ArrayList<>();
 		for(SerializableBlock sb:newBlocks) {
 			uuids.add(sb.getId());
@@ -120,6 +123,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 			oldBlock.stop();
 			log.debugf("%s.removeBlocksFromList: decommissioned %s (%d)",TAG,oldBlock.getName(),oldBlock.hashCode());
 		}
+		return blocksToRemove;
 	}
 	
 	/**

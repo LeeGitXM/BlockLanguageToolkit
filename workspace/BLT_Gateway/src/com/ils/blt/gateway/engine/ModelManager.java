@@ -804,21 +804,29 @@ public class ModelManager implements ProjectListener  {
 				diagram.clearConnections();
 				// Delete blocks in the old that are not present in the new.
 				// Stop subscriptions associated with those blocks.
-				diagram.removeUnusedBlocks(sd.getBlocks());
+				// Execute "delete" extension function for removed blocks
+				List<ProcessBlock> deletedBlocks = diagram.removeUnusedBlocks(sd.getBlocks());
+				for(ProcessBlock deletedBlock:deletedBlocks) {
+					if( deletedBlock.getClassName().equals(BLTProperties.CLASS_NAME_FINAL_DIAGNOSIS)) {
+						extensionManager.runScript(context.getProjectManager().getProjectScriptManager(diagram.getProjectId()), 
+							deletedBlock.getClassName(), 
+							ScriptConstants.NODE_DELETE_SCRIPT, deletedBlock.getBlockId().toString());
+					}
+				}
 				diagram.createBlocks(sd.getBlocks());       // Adds blocks that are new in update
 				diagram.updateConnections(sd.getConnections());  // Adds connections that are new in update
 				diagram.updateProperties(sd);
 				diagram.setState(sd.getState());// Handle state change, if any
 			}
 			//	Invoke extension script on diagram save
-			if( diagram!=null && !diagram.getState().equals(DiagramState.DISABLED) ) {
+			if( diagram!=null )  {
 				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(diagram.getProjectId()), 
 						ScriptConstants.DIAGRAM_CLASS_NAME, 
 						ScriptConstants.NODE_SAVE_SCRIPT, diagram.getSelf().toString());
 				
 				for(ProcessBlock block:diagram.getProcessBlocks()) {
 					// If this is a final diagnosis, call its save extension
-					if( block.getClassName().equals("xom.block.finaldiagnosis.FinalDiagnosis")) {
+					if( block.getClassName().equals(BLTProperties.CLASS_NAME_FINAL_DIAGNOSIS)) {
 						extensionManager.runScript(context.getProjectManager().getProjectScriptManager(diagram.getProjectId()), 
 							block.getClassName(), 
 							ScriptConstants.NODE_SAVE_SCRIPT, block.getBlockId().toString());

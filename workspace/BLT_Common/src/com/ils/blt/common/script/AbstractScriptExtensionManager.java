@@ -1,5 +1,5 @@
 /**
- *   (c) 2015-2016  ILS Automation. All rights reserved.
+ *   (c) 2015-2018  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.common.script;
@@ -39,7 +39,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  *  Concrete versions exist in both gateway and client/designer scopes.
  */
 public abstract class AbstractScriptExtensionManager {
-	private static String TAG = "AbstractScriptExtensionManager";
+	private static String CLSS = "AbstractScriptExtensionManager";
 	protected final LoggerEx log;
 	protected final JavaToPython j2p;
 	protected final PythonToJava p2j;
@@ -96,7 +96,7 @@ public abstract class AbstractScriptExtensionManager {
 		}
 		scriptMap.put(key,createMap(entry,arglist));
 		setModulePath(key,modulePath);
-		log.debugf("%s.addScript: %s is %s",TAG,key,modulePath);
+		log.debugf("%s.addScript: %s is %s",CLSS,key,modulePath);
 	}
 	
 	public List<String> getFlavors() {
@@ -150,6 +150,7 @@ public abstract class AbstractScriptExtensionManager {
 						pyargs.add(pyarg);
 						index++;
 					}
+					log.infof("%s.runScript: %s",CLSS,script.toString());
 					script.execute(mgr);
 					// For "complex" arguments, we update contents
 					// as a mechanism to return info from the script
@@ -158,23 +159,23 @@ public abstract class AbstractScriptExtensionManager {
 						if( arg instanceof Map) {
 							PyObject pyarg = pyargs.get(index);
 							p2j.updateMapFromDictionary((Map<String,Object>)arg,(PyDictionary)pyarg);
-							log.debugf("%s.runScript: Updating map on return: %s",TAG,pyarg.toString());
+							log.debugf("%s.runScript: Updating map on return: %s",CLSS,pyarg.toString());
 						}
 						else if( arg instanceof GeneralPurposeDataContainer) {
 							PyObject pyarg = pyargs.get(index);
 							p2j.updateDataContainerFromPython((GeneralPurposeDataContainer)arg,(PyList)pyarg);
-							log.debugf("%s.runScript: Updating container on return: %s",TAG,pyarg.toString());
+							log.debugf("%s.runScript: Updating container on return: %s",CLSS,pyarg.toString());
 						}
 						index++;
 					}
 				}
 				catch(Exception ex) {
-					log.warnf("%s.runScript: Exception (%s)",TAG,ex.getMessage(),ex);
+					log.warnf("%s.runScript: Exception (%s)",CLSS,ex.getMessage(),ex);
 				}
 			}
 		}
 		else {
-			log.warnf("%s.runScript: Unknown python script type (%s)",TAG,key);
+			log.warnf("%s.runScript: Unknown python script type (%s)",CLSS,key);
 		}
 	}
 	
@@ -208,7 +209,7 @@ public abstract class AbstractScriptExtensionManager {
 			script.resetModulePath(pythonPath);
 		}
 		else {
-			log.tracef("%s.setModulePath: Unknown python script type (%s)",TAG,key);
+			log.tracef("%s.setModulePath: Unknown python script type (%s)",CLSS,key);
 		}
 	}
 	

@@ -7,10 +7,13 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Image;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +24,7 @@ import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 import javax.swing.tree.TreePath;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
@@ -30,9 +34,11 @@ import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
+import com.ils.blt.common.serializable.UUIDResetHandler;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.NotificationHandler;
+import com.ils.blt.designer.ResourceCreateManager;
 import com.ils.blt.designer.ResourceDeleteManager;
 import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
@@ -45,6 +51,7 @@ import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.execution.ExecutionManager;
 import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngine;
+import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectChangeListener;
@@ -140,6 +147,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		ExportDiagramAction exportAction = new ExportDiagramAction(menu.getRootPane(),resourceId);
 		exportAction.setEnabled(cleanView);
 		menu.add(exportAction);
+		CloneDiagramAction cloneAction = new CloneDiagramAction(this);
 		DeleteDiagramAction diagramDeleteAction = new DeleteDiagramAction(this);
 		DebugDiagramAction debugAction = new DebugDiagramAction();
 		ResetDiagramAction resetAction = new ResetDiagramAction();
@@ -163,6 +171,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		menu.add(setStateMenu);
 		menu.add(saveAction);
 		menu.addSeparator();
+		menu.add(cloneAction);
 		menu.add(renameAction);
         menu.add(diagramDeleteAction);
         menu.addSeparator();
@@ -345,6 +354,64 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			}
 		}
 	}
+	private class CloneDiagramAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final AbstractResourceNavTreeNode parentNode;
+		public CloneDiagramAction(AbstractResourceNavTreeNode pNode)  {
+			super(PREFIX+".CloneNode",IconUtil.getIcon("copy"));  // preferences
+			this.parentNode = pNode;
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			try {
+				EventQueue.invokeLater(new Runnable() {
+					public void run() {
+						long newId;
+
+						try {	
+							newId = context.newResourceId();
+							ProjectResource res = parentNode.getProjectResource();
+							byte[] bytes = res.getData();
+							// It would be nice to simply use the clone constructor, but
+							// unfortunately, we have to replace all UUIDs with new ones
+							ObjectMapper mapper = new ObjectMapper();
+							mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
+							SerializableDiagram sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
+							if( sd!=null ) {
+								UUIDResetHandler uuidHandler = new UUIDResetHandler(sd);
+								uuidHandler.convertUUIDs();
+								sd.setDirty(true);    // Dirty because gateway doesn't know about it yet
+								sd.setState(DiagramState.DISABLED);
+								String json = mapper.writeValueAsString(sd);
+								GeneralPurposeTreeNode grandparent = (GeneralPurposeTreeNode)parentNode.getParent();
+								ProjectResource resource = new ProjectResource(newId,
+										BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
+										grandparent.nextFreeName(grandparent,sd.getName()), ApplicationScope.GATEWAY, json.getBytes());
+								
+								resource.setParentUuid(grandparent.getUUID());
+								new ResourceCreateManager(resource).run();	
+								grandparent.selectChild(new long[] {newId} );
+								statusManager.setResourceState(newId, sd.getState(),false);
+							}
+							else {
+								ErrorUtil.showWarning(String.format("Failed to deserialize diagram (%s)",res.getName()),"Clone Diagram");
+							}
+						}
+						catch( IOException ioe) {
+							// Should never happen, we just picked this off a chooser
+							log.warnf("%s: actionPerformed, IOException(%s)",TAG,ioe.getLocalizedMessage()); 
+						}
+						catch (Exception ex) {
+							log.errorf("%s: actionPerformed: Unhandled Exception (%s)",TAG,ex.getMessage());
+						}
+					}
+				});
+			} 
+			catch (Exception err) {
+				ErrorUtil.showError(TAG+" Exception cloning diagram",err);
+			}
+		}
+	} 
 	// From the root node, recursively log the contents of the tree
 	private class DebugDiagramAction extends BaseAction {
 		private static final long serialVersionUID = 1L;

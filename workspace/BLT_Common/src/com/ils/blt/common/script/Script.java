@@ -1,5 +1,5 @@
 /**
- *   (c) 2015  ILS Automation. All rights reserved.
+ *   (c) 2015,2018  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.common.script;
@@ -34,7 +34,7 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  * Individual subclasses simply define the execution entry point and arg list. 
  */
 public class Script {
-	private final static String TAG = "Script";
+	private final static String CLSS = "Script";
 	private final LoggerEx log;
 	private PyCode code;
 	private final String entry; 
@@ -82,29 +82,30 @@ public class Script {
 			code = Py.compile_flags(script,pythonPackage,CompileMode.exec,CompilerFlags.getCompilerFlags());
 	     }
 		catch(Exception ex) {
-			log.errorf("%s.compileScript: Failed to compile script \n%s",TAG,script,ex);
+			log.errorf("%s.compileScript: Failed to compile script \n%s",CLSS,script,ex);
 		}
 		return code!=null;
 	}
 	/**
 	 *  Run the script in line. On completion return the contents of the shared variable.
+	 *  Note: A stacktrace in the exception clause is not helpful as it simply goes back to the script manager.
 	 *  @param scriptManager the current script manager. This should be refreshed with every use
 	 */
 	public void execute(ScriptManager scriptManager) {
 		if( module.length()==0 ) return;   // Do nothing
 		if( localsMap == null ) throw new IllegalArgumentException("Attempt to execute with uninitialized locals map.");
 		String script = pythonPackage+"."+module;
-		log.debugf("%s.execute: Running callback script (%s)",TAG,script);
+		log.debugf("%s.execute: Running callback script (%s)",CLSS,script);
 		try {
 			scriptManager.runCode(code,localsMap);
 		}
 		catch( JythonExecException jee) {
-			log.error(String.format("%s.execute: JythonException executing python %s (%s) ",TAG,script,jee.getMessage()),jee);
+			log.error(String.format("%s.execute: JythonException executing python %s (%s) ",CLSS,script,jee.getMessage()));
 		}
 		catch(Exception ex) {
-			log.error(String.format("%s.execute: Error executing python %s (%s)",TAG,script,ex.getMessage()+")"),ex);
+			log.error(String.format("%s.execute: Error executing python %s (%s)",CLSS,script,ex.getMessage()+")"),ex);
 		}
-		log.tracef("%s: Completed callback script.",TAG);
+		log.tracef("%s: Completed callback script.",CLSS);
 		localsMap = null;
 	}
 
@@ -131,7 +132,7 @@ public class Script {
 										String.format("%s.setLocalVariable %d, but defined list is: %s",entry,index,localVariableList));
 
 		localsMap.__setitem__(localVariables[index],value);
-		log.debugf("%s.setLocalVariable: %s to %s",TAG,localVariables[index],value.toString());
+		log.debugf("%s.setLocalVariable: %s to %s",CLSS,localVariables[index],value.toString());
 	}
 	
 	// Strip off the last segment and return the rest.
@@ -146,6 +147,11 @@ public class Script {
 		int index = path.lastIndexOf(".");
 		if( index>0 ) path = path.substring(index+1);
 		return path;
+	}
+	
+	@Override
+	public String toString() {
+		return this.pythonPackage+"."+this.module;
 	}
 }
 

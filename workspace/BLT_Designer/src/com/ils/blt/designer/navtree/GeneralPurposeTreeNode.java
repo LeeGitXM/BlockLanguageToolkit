@@ -1,5 +1,5 @@
 /**
- *   (c) 2013  ILS Automation. All rights reserved.
+ *   (c) 2013-2018  ILS Automation. All rights reserved.
  *  
  *  Based on sample code provided by Inductive Automation.
  */
@@ -37,6 +37,7 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.serializable.ApplicationUUIDResetHandler;
+import com.ils.blt.common.serializable.FamilyUUIDResetHandler;
 import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
@@ -89,6 +90,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	private final LoggerEx logger = LogUtil.getLogger(getClass().getPackage().getName());
 	private boolean dirty = false;
 	private DiagramState state = DiagramState.ACTIVE;  // Used for Applications and Families
+	private final CloneNodeAction cloneAction;
 	private final DeleteNodeAction deleteNodeAction;
 	private final StartAction startAction = new StartAction();
 	private final StopAction stopAction = new StopAction();
@@ -114,6 +116,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		this.setName(BLTProperties.ROOT_FOLDER_NAME);
 		this.resourceId = BLTProperties.ROOT_RESOURCE_ID;
 		this.executionEngine = new BasicExecutionEngine(1,TAG);
+		cloneAction = new CloneNodeAction(this);
 		deleteNodeAction = null;
 		folderCreateAction = new FolderCreateAction(this);
 		workspace = ((BLTDesignerHook)ctx.getModule(BLTProperties.MODULE_ID)).getWorkspace();
@@ -143,7 +146,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		this.resourceId = resource.getResourceId();
 		this.executionEngine = new BasicExecutionEngine(1,TAG);
 		setName(resource.getName());      // Also sets text for tree
-		
+		cloneAction = new CloneNodeAction(this);
 		deleteNodeAction = new DeleteNodeAction(this);
 		folderCreateAction = new FolderCreateAction(this);
 		workspace = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getWorkspace();
@@ -182,6 +185,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		}
 		return ike;
 	}
+	
+	public UUID getUUID() { return this.folderId; }
 	
 	@Override
 	public Icon getIcon() {
@@ -235,6 +240,30 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			logger.info("Res: "+res.getResourceId()+" "+res.getResourceType()+" "+res.getModuleId()+" ("+res.getName()+
 					":"+res.getParentUuid()+")");
 		}
+	}
+	public String nextFreeName(AbstractResourceNavTreeNode node,String root) {
+		
+		int childCount = node.getChildCount();
+		if( childCount==0 ) return root;
+		
+		String newName = root;
+		boolean foundMatch = true;
+		int index = 0;
+		while(foundMatch) {
+			index = index+1;
+			newName = String.format("%s-%d", root,index);
+			foundMatch = false;
+			Enumeration walker = node.children();
+			while(walker.hasMoreElements()) {
+				AbstractResourceNavTreeNode child = (AbstractResourceNavTreeNode)walker.nextElement();
+				ProjectResource cres = child.getProjectResource();
+				if( cres.getName().equals(newName)) {
+					foundMatch=true;
+					break;
+				}
+			}
+		}
+		return newName;
 	}
 	/**
 	 *  Note: We ignore locking.Previous attempts to use the superior version of this method
@@ -446,6 +475,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			menu.addSeparator();
 			menu.add(saveAuxDataAction);
 			menu.add(restoreAuxDataAction);
+			menu.add(cloneAction);
 			menu.add(applicationConfigureAction);
 			menu.add(applicationExportAction);
 			menu.add(treeSaveAction);
@@ -462,6 +492,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			menu.add(importAction);
 			menu.add(folderCreateAction);
 			menu.addSeparator();
+			menu.add(cloneAction);
 			menu.add(familyConfigureAction);
 			menu.add(treeSaveAction);
 			addEditActions(menu);
@@ -473,9 +504,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 					DiagramCreateAction diagramAction = new DiagramCreateAction(this);
 					menu.add(diagramAction);
 					ImportDiagramAction importAction = new ImportDiagramAction(menu.getRootPane(),this);
-					CloneDiagramAction cloneAction = new CloneDiagramAction(menu.getRootPane(),this);
 					menu.add(importAction);
-					menu.add(cloneAction);
 				}
 				else {
 					FamilyCreateAction familyAction = new FamilyCreateAction(this);
@@ -487,9 +516,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				DiagramCreateAction diagramAction = new DiagramCreateAction(this);
 				menu.add(diagramAction);
 				ImportDiagramAction importAction = new ImportDiagramAction(menu.getRootPane(),this);
-				CloneDiagramAction cloneAction = new CloneDiagramAction(menu.getRootPane(),this);
 				menu.add(importAction);
-				menu.add(cloneAction);
 			}
 			
 			menu.add(folderCreateAction);
@@ -1125,13 +1152,12 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			handler.clearController();
 		}
 	}
-	private class CloneDiagramAction extends BaseAction {
+	// The resource type can be Application or Family
+	private class CloneNodeAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
 		private final AbstractResourceNavTreeNode parentNode;
-		private final Component anchor;
-		public CloneDiagramAction(Component c,AbstractResourceNavTreeNode pNode)  {
-			super(PREFIX+".CloneDiagram",IconUtil.getIcon("copy"));  // preferences
-			this.anchor = c;
+		public CloneNodeAction(AbstractResourceNavTreeNode pNode)  {
+			super(PREFIX+".CloneNode",IconUtil.getIcon("copy"));  // preferences
 			this.parentNode = pNode;
 		}
 
@@ -1139,49 +1165,57 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			try {
 				EventQueue.invokeLater(new Runnable() {
 					public void run() {
-						long newId;
-
 						try {	
-							newId = context.newResourceId();
-
-							workspace.open(newId);
-							String title = BundleUtil.get().getString(PREFIX+".Import.Diagram.DialogTitle");
-							String label = BundleUtil.get().getString(PREFIX+".Import.Diagram.NameLabel");
-							ImportDialog dialog = new ImportDialog(context.getFrame(),label,title);
-							dialog.setLocationRelativeTo(anchor);
-							Point p = dialog.getLocation();
-	    					dialog.setLocation((int)(p.getX()-OFFSET),(int)(p.getY()-OFFSET));
-							dialog.pack();
-							dialog.setVisible(true);   // Returns when dialog is closed
-							File input = dialog.getFilePath();
-							if( input!=null ) {
-								if( input.exists() && input.canRead()) {
-									try {
-										// Note: Requires Java 1.7
-										byte[] bytes = Files.readAllBytes(input.toPath());
-										ProjectResource resource = new ProjectResource(newId,
-												BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
-												"CLONE", ApplicationScope.GATEWAY, bytes);
-										resource.setParentUuid(getFolderId());
-										new ResourceCreateManager(resource).run();	
-										parentNode.selectChild(new long[] {newId} );
-
-									}
-									catch( FileNotFoundException fnfe) {
-										// Should never happen, we just picked this off a chooser
-										logger.warnf("%s: actionPerformed, File not found %s (%s)",TAG,input.getAbsolutePath(),fnfe.getLocalizedMessage()); 
-									}
-									catch( IOException ioe) {
-										// Should never happen, we just picked this off a chooser
-										logger.warnf("%s: actionPerformed, IOException %s (%s)",TAG,input.getAbsolutePath(),ioe.getLocalizedMessage()); 
-									}
-
+							long newId = context.newResourceId();
+							ProjectResource res = parentNode.getProjectResource();
+							byte[] bytes = res.getData();
+							String json = "";
+							// It would be nice to simply convert to a resource.
+							// Unfortunately we have to replace all UUIDs with new ones
+							ObjectMapper mapper = new ObjectMapper();
+							mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
+							if( res.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
+								SerializableApplication sa = mapper.readValue(new String(bytes), SerializableApplication.class);
+								if( sa!=null ) {
+									ApplicationUUIDResetHandler uuidHandler = new ApplicationUUIDResetHandler(sa);
+									uuidHandler.convertUUIDs();
+									json = mapper.writeValueAsString(sa);
 								}
 								else {
-									logger.warnf("%s: actionPerformed, selected file does not exist of is not readable: %s",TAG,input.getAbsolutePath());
+									ErrorUtil.showWarning(String.format("Failed to deserialize application (%s)",res.getName()),"Clone Diagram");
+									return;
 								}
-							}  // Cancel
-						} 
+							}
+							else if( res.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE)) {
+								SerializableFamily sf = mapper.readValue(new String(bytes), SerializableFamily.class);
+								if( sf!=null ) {
+									FamilyUUIDResetHandler uuidHandler = new FamilyUUIDResetHandler(sf);
+									uuidHandler.convertUUIDs();
+									json = mapper.writeValueAsString(sf);
+								}
+								else {
+									ErrorUtil.showWarning(String.format("Failed to deserialize application (%s)",res.getName()),"Clone Diagram");
+									return;
+								}
+							}
+							else {
+								ErrorUtil.showWarning(String.format("Unexpected resource type(%s)",res.getResourceType()),"Clone Diagram");
+								return;
+							}
+							GeneralPurposeTreeNode grandparent = (GeneralPurposeTreeNode)parentNode.getParent();
+							ProjectResource resource = new ProjectResource(newId,
+									BLTProperties.MODULE_ID, res.getResourceType(),
+									nextFreeName(grandparent,res.getName()), ApplicationScope.GATEWAY, json.getBytes());
+							
+							resource.setParentUuid(grandparent.getUUID());
+							new ResourceCreateManager(resource).run();
+							GeneralPurposeTreeNode grandparent = (GeneralPurposeTreeNode)parentNode.getParent();
+							grandparent.selectChild(new long[] {newId} );	
+						}
+						catch( IOException ioe) {
+							// Should never happen, we just picked this off a chooser
+							logger.warnf("%s: actionPerformed, IOException(%s)",TAG,ioe.getLocalizedMessage()); 
+						}
 						catch (Exception ex) {
 							logger.errorf("%s: actionPerformed: Unhandled Exception (%s)",TAG,ex.getMessage());
 						}
@@ -1191,6 +1225,10 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			catch (Exception err) {
 				ErrorUtil.showError(TAG+" Exception cloning diagram",err);
 			}
+		}
+		// Recursively clone the selected node.
+		private void cloneNode(ProjectResource res) {
+			
 		}
 	} 
 	// From the root node, recursively log the contents of the tree
