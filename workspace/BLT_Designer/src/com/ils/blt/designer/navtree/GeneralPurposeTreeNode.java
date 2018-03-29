@@ -1257,6 +1257,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 					if( sd!=null ) {
 						UUIDResetHandler uuidHandler = new UUIDResetHandler(sd);
 						uuidHandler.convertUUIDs();
+						sd.setDirty(true);    // Dirty because gateway doesn't know about it yet
+						sd.setState(DiagramState.DISABLED);
 						newResourceUUID = sd.getId();
 						json = mapper.writeValueAsString(sd);
 					}
