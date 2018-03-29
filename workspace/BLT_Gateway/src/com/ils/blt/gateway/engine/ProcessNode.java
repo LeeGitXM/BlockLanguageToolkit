@@ -12,6 +12,7 @@ import java.util.UUID;
 
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
+import com.ils.common.GeneralPurposeDataContainer;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 
@@ -31,6 +32,7 @@ public class ProcessNode implements Serializable {
 	protected long resourceId = -1;   // Resource set when serialized.
 	protected final UUID self;
 	private final String TAG = "ProcessNode";
+	private GeneralPurposeDataContainer auxiliaryData;
 	
 	/**
 	 * Constructor: 
@@ -42,6 +44,7 @@ public class ProcessNode implements Serializable {
 		this.self = me;
 		this.parent = parent;
 		this.name = nam;
+		this.auxiliaryData = null;
 		this.children = new HashMap<Long,ProcessNode>();
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 	}
@@ -127,5 +130,6 @@ public class ProcessNode implements Serializable {
 		descriptor.setType(BLTProperties.FOLDER_RESOURCE_TYPE);
 		return descriptor;
 	}
-	
+	public GeneralPurposeDataContainer getAuxiliaryData() {return auxiliaryData;}
+	public void setAuxiliaryData(GeneralPurposeDataContainer auxiliaryData) {this.auxiliaryData = auxiliaryData;}
 }

@@ -177,5 +177,7 @@ public class BlockFactory  {
 		else {
 			log.errorf("%s.updateBlockFromSerializable: No properties found in process block",TAG);
 		}
+		// Update Aux data
+		pb.setAuxiliaryData(sb.getAuxiliaryData());
 	}
 }

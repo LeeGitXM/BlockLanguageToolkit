@@ -72,6 +72,7 @@ public abstract class AbstractScriptExtensionManager {
 	 */
 	public void addScript(String className,String flavor,String modulePath) {
 		String key = makeKey(className,flavor);
+		//log.infof("%s.addScript: %s, %s", CLSS,className,flavor);
 		String entry = "execute";
 		String arglist = "";
 		if( flavor.equals(ScriptConstants.PROPERTY_GET_SCRIPT))  {
@@ -92,7 +93,7 @@ public abstract class AbstractScriptExtensionManager {
 		}
 		else if( flavor.equals(ScriptConstants.NODE_SAVE_SCRIPT))  {
 			entry = "save";
-			arglist = "uuid";
+			arglist = "uuid,properties";
 		}
 		scriptMap.put(key,createMap(entry,arglist));
 		setModulePath(key,modulePath);
@@ -223,5 +224,15 @@ public abstract class AbstractScriptExtensionManager {
 	
 	public static String makeKey(String className,String flavor) {
 		return String.format("%s(%s)",className,flavor);
+	}
+	/**
+	 * Test for existence of a external key
+	 * @param className name of the node class
+	 * @param flavor type of script
+	 * @return true if the className/flavor combination points to a module
+	 */
+	public boolean hasKey(String className,String flavor) {
+		String key = makeKey(className,flavor);
+		return scriptMap.containsKey(key);
 	}
 }

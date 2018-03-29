@@ -74,8 +74,6 @@ public interface BLTProperties   {
 	public static final String CLASS_NAME_INPUT      = "com.ils.Input";
 	public static final String CLASS_NAME_SINK       = "com.ils.SinkConnection";
 	public static final String CLASS_NAME_SOURCE     = "com.ils.SourceConnection";
-	// Names of classes using block-level extension functions
-	public static final String CLASS_NAME_FINAL_DIAGNOSIS = "xom.block.finaldiagnosis.FinalDiagnosis";
 	
 	// Arguments for Color constructor are: R G B
 	public static final Color DIAGRAM_ACTIVE_BACKGROUND          = new Color(0.9f,0.9f,0.9f);    // Light gray

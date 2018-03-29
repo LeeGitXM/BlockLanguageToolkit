@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2016  ILS Automation. All rights reserved. 
+ *   (c) 2014-2018  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.gateway.engine;
 
@@ -722,7 +722,7 @@ public class ModelManager implements ProjectListener  {
 			if( node!=null ) {
 				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), 
 						ScriptConstants.APPLICATION_CLASS_NAME, 
-						ScriptConstants.NODE_SAVE_SCRIPT, node.getSelf().toString());
+						ScriptConstants.NODE_SAVE_SCRIPT, node.getSelf().toString(),node.getAuxiliaryData());
 			}
 		}
 		else {
@@ -807,7 +807,7 @@ public class ModelManager implements ProjectListener  {
 				// Execute "delete" extension function for removed blocks
 				List<ProcessBlock> deletedBlocks = diagram.removeUnusedBlocks(sd.getBlocks());
 				for(ProcessBlock deletedBlock:deletedBlocks) {
-					if( deletedBlock.getClassName().equals(BLTProperties.CLASS_NAME_FINAL_DIAGNOSIS)) {
+					if( extensionManager.hasKey(deletedBlock.getClassName(),ScriptConstants.NODE_DELETE_SCRIPT)) {
 						extensionManager.runScript(context.getProjectManager().getProjectScriptManager(diagram.getProjectId()), 
 							deletedBlock.getClassName(), 
 							ScriptConstants.NODE_DELETE_SCRIPT, deletedBlock.getBlockId().toString());
@@ -822,14 +822,14 @@ public class ModelManager implements ProjectListener  {
 			if( diagram!=null )  {
 				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(diagram.getProjectId()), 
 						ScriptConstants.DIAGRAM_CLASS_NAME, 
-						ScriptConstants.NODE_SAVE_SCRIPT, diagram.getSelf().toString());
+						ScriptConstants.NODE_SAVE_SCRIPT, diagram.getSelf().toString(),diagram.getAuxiliaryData());
 				
 				for(ProcessBlock block:diagram.getProcessBlocks()) {
 					// If this is a final diagnosis, call its save extension
-					if( block.getClassName().equals(BLTProperties.CLASS_NAME_FINAL_DIAGNOSIS)) {
+					if( extensionManager.hasKey(block.getClassName(),ScriptConstants.NODE_SAVE_SCRIPT) ) {
 						extensionManager.runScript(context.getProjectManager().getProjectScriptManager(diagram.getProjectId()), 
 							block.getClassName(), 
-							ScriptConstants.NODE_SAVE_SCRIPT, block.getBlockId().toString());
+							ScriptConstants.NODE_SAVE_SCRIPT, block.getBlockId().toString(),block.getAuxiliaryData());
 					}
 				}
 			}
@@ -895,7 +895,7 @@ public class ModelManager implements ProjectListener  {
 			if( node!=null ) {
 				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), 
 						ScriptConstants.FAMILY_CLASS_NAME, 
-						ScriptConstants.NODE_SAVE_SCRIPT, node.getSelf().toString());
+						ScriptConstants.NODE_SAVE_SCRIPT, node.getSelf().toString(),node.getAuxiliaryData());
 			}
 		}
 		else {
@@ -1082,6 +1082,7 @@ public class ModelManager implements ProjectListener  {
 				application = new ProcessApplication(sa,res.getParentUuid());
 				application.setResourceId(res.getResourceId());
 				application.setProjectId(projId);
+				application.setAuxiliaryData(sa.getAuxiliaryData());
 			}
 			else {
 				log.warnf("%s.deserializeApplicationResource: deserialization failed",TAG);
@@ -1146,6 +1147,7 @@ public class ModelManager implements ProjectListener  {
 				family = new ProcessFamily(sf,res.getParentUuid());
 				family.setResourceId(res.getResourceId());
 				family.setProjectId(projId);
+				family.setAuxiliaryData(sf.getAuxiliaryData());
 			}
 			else {
 				log.warnf("%s: deserializeFamilyResource: deserialization failed",TAG);

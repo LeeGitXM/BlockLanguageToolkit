@@ -17,6 +17,7 @@ import com.ils.blt.common.notification.BlockPropertyChangeListener;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.SignalNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
+import com.ils.common.GeneralPurposeDataContainer;
 import com.ils.common.watchdog.WatchdogTimer;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
@@ -74,7 +75,11 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 * @return a list of anchor prototypes for the block.
 	 */
 	public List<AnchorPrototype> getAnchors();
-
+	/**
+	 * Get data in the block that is not of interest within the diagram
+	 * @return auxiliaryData list of properties, lists, lists-of-maps 
+	 */
+	public GeneralPurposeDataContainer getAuxiliaryData();
 	/**
 	 * @return the universally unique Id of the block.
 	 */
@@ -199,6 +204,11 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 * @param prototypes descriptions of anchors
 	 */
 	public void setAnchors(List<AnchorPrototype> prototypes);
+	/**
+	 * Set data in the block that is not of interest within the diagram
+	 * @param auxiliaryData list of properties, lists, lists-of-maps 
+	 */
+	public void setAuxiliaryData(GeneralPurposeDataContainer auxiliaryData);
 	/**
 	 * Set or clear the locked state of a block.
 	 * @param flag True to lock the block.

@@ -1,5 +1,5 @@
 /**
- *   (c) 2013-2016  ILS Automation. All rights reserved.
+ *   (c) 2013-2018  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.navtree;
 
@@ -7,13 +7,10 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Image;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -147,7 +144,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		ExportDiagramAction exportAction = new ExportDiagramAction(menu.getRootPane(),resourceId);
 		exportAction.setEnabled(cleanView);
 		menu.add(exportAction);
-		CloneDiagramAction cloneAction = new CloneDiagramAction(this);
+		DuplicateDiagramAction duplicateAction = new DuplicateDiagramAction(this);
 		DeleteDiagramAction diagramDeleteAction = new DeleteDiagramAction(this);
 		DebugDiagramAction debugAction = new DebugDiagramAction();
 		ResetDiagramAction resetAction = new ResetDiagramAction();
@@ -171,7 +168,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		menu.add(setStateMenu);
 		menu.add(saveAction);
 		menu.addSeparator();
-		menu.add(cloneAction);
+		menu.add(duplicateAction);
 		menu.add(renameAction);
         menu.add(diagramDeleteAction);
         menu.addSeparator();
@@ -354,11 +351,11 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			}
 		}
 	}
-	private class CloneDiagramAction extends BaseAction {
+	private class DuplicateDiagramAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
 		private final AbstractResourceNavTreeNode parentNode;
-		public CloneDiagramAction(AbstractResourceNavTreeNode pNode)  {
-			super(PREFIX+".CloneNode",IconUtil.getIcon("copy"));  // preferences
+		public DuplicateDiagramAction(AbstractResourceNavTreeNode pNode)  {
+			super(PREFIX+".DuplicateNode",IconUtil.getIcon("copy"));  // preferences
 			this.parentNode = pNode;
 		}
 
