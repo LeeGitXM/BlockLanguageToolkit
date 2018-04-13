@@ -1,0 +1,17 @@
+com.ils.application,node-delete-script,ils.blt.extensions.appProperties.delete
+com.ils.application,node-rename-script,ils.blt.extensions.appProperties.rename
+com.ils.application,node-save-script,ils.blt.extensions.appProperties.save
+com.ils.application,property-get-script,ils.blt.extensions.appProperties.getAux
+com.ils.application,property-set-script,ils.blt.extensions.appProperties.setAux
+com.ils.family,node-delete-script,ils.blt.extensions.famProperties.delete
+com.ils.family,node-rename-script,ils.blt.extensions.famProperties.rename
+com.ils.family,node-save-script,ils.blt.extensions.famProperties.save
+com.ils.family,property-get-script,ils.blt.extensions.famProperties.getAux
+com.ils.family,property-set-script,ils.blt.extensions.famProperties.setAux
+com.ils.diagram,node-delete-script,ils.blt.extensions.diaSave.delete
+com.ils.diagram,node-save-script,ils.blt.extensions.diaSave.save
+xom.block.finaldiagnosis.FinalDiagnosis,property-get-script,ils.blt.extensions.fdProperties.getAux
+xom.block.finaldiagnosis.FinalDiagnosis,property-set-script,ils.blt.extensions.fdProperties.setAux
+xom.block.finaldiagnosis.FinalDiagnosis,node-delete-script,ils.blt.extensions.fdProperties.delete
+xom.block.finaldiagnosis.FinalDiagnosis,node-rename-script,ils.blt.extensions.fdProperties.rename
+xom.block.finaldiagnosis.FinalDiagnosis,node-save-script,ils.blt.extensions.fdProperties.save
