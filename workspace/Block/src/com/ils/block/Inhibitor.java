@@ -104,12 +104,12 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 						notifyOfStatus();
 					}
 					else {
-						recordActivity(Activity.ACTIVITY_BLOCKED,lastValue.getValue().toString());
-						log.infof("%s.acceptValue: Ignoring inhibited or BAD input ... (%s)",getName(),lastValue.getValue().toString());
+						recordActivity(Activity.ACTIVITY_BLOCKED,qv.getValue().toString());
+						log.infof("%s.acceptValue: Ignoring inhibited or BAD input ... (%s)",getName(),qv.getValue().toString());
 					}
 				}
 				else {
-					log.infof("%s.acceptValue: Received null %s (IGNORED)",getName(),(lastValue==null?"":"value"));
+					log.infof("%s.acceptValue: Received null %s (IGNORED)",getName(),(qv==null?"":"value"));
 				}
 			}
 		}

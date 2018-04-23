@@ -144,7 +144,7 @@ public class HighLimitObservation extends AbstractProcessBlock implements Proces
 	public SerializableBlockStateDescriptor getInternalStatus() {
 		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
 		Map<String,String> attributes = descriptor.getAttributes();
-		attributes.put("LastObservation", observation.getValue().toString());
+		if( observation!=null ) attributes.put("LastObservation", observation.getValue().toString());
 		return descriptor;
 	}
 	
