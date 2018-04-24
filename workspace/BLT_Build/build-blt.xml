@@ -2,7 +2,7 @@
 
 	<import file="${basedir}/BLT_Build/build.xml"/>
 
-	<property name="version.build" value="4" />	
+	<property name="version.build" value="5" />	
 	<!-- Change version.beta value to "" for release builds -->
 	<property name="version.beta" value="-development" />		
 	<property name="BLTModule.version" value="1.6.29.${version.build}" />
@@ -240,6 +240,7 @@
 		<copy todir="${basedir}/BLT_Build/temp_modl/doc">
 		    <fileset dir="${basedir}/BLT_Build/doc"/>
 		</copy>
+		
 		<!-- Echo the version into .version in the bundle and to be saved -->
 		<echo message="${BLTModule.name}-${BLTModule.version}" file="${basedir}/BLT_Build/temp_modl/.version" append="false"/>
 		<echo message="${BLTModule.name}-${BLTModule.version}:${BLTModule.release}" file="${basedir}/BLT_Build/.version" append="false"/>
@@ -276,6 +277,13 @@
 				<include name="commons-math3-3.1.6.jar" />
 				<include name="blt-gateway.jar" />
 				<include name="block-definition.jar" />
+			</fileset>
+		</copy>
+		<!-- Copy test extension functions -->
+		<mkdir dir="${ignition.py.lib}/ils/blt/extensions" />
+		<copy todir="${ignition.py.lib}/ils/blt/extensions">
+			<fileset dir="${root.dir}/blt/extensions/test">
+				<include name="*.py" />
 			</fileset>
 		</copy>
 	</target>

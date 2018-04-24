@@ -1,11 +1,13 @@
 /**
- *   (c) 2015  ILS Automation. All rights reserved.
+ *   (c) 2015=2018  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.designer.config;
 
 import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.JDialog;
 import javax.swing.JPanel;
@@ -42,8 +44,6 @@ public class ApplicationConfigurationDialog extends JDialog {
 		slidingPane = new SlidingPane();
 		initialize();
        	setContentPane(slidingPane);
-        
-        log.infof("   ...leaving ApplicationConfigurationDialog constructor!");
 	}
 	
 	// Add all the tabs to the sliding pane. The controller holds the model data.
@@ -61,6 +61,7 @@ public class ApplicationConfigurationDialog extends JDialog {
 	public void slideTo(int tab) {
 		slidingPane.setSelectedPane(tab);
 	}
+	
 	
 	public void setCancelled(boolean flag) { this.cancelled = flag; }
 	/*

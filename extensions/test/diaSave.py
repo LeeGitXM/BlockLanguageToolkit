@@ -9,5 +9,5 @@ import system
 def delete(diagramId):
     print "diaSave.delete: "+diagramId
 
-def save(diagramId):
+def save(diagramId,aux):
     print "diaSave.save: "+diagramId

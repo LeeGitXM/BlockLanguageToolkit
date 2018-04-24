@@ -1,5 +1,5 @@
 /**
- *   (c) 2015-2016  ILS Automation. All rights reserved.
+ *   (c) 2015-2018  ILS Automation. All rights reserved.
  */
 package com.ils.blt.designer.config;
 

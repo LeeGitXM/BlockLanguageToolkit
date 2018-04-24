@@ -1,5 +1,5 @@
 /**
- *   (c) 2015-2106  ILS Automation. All rights reserved.
+ *   (c) 2015-2108  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.designer.config;
@@ -179,8 +179,8 @@ public class FamilyConfigurationDialog extends ConfigurationDialog  {
 			// Save values back to the database
 			extensionManager.runScript(context.getScriptManager(),ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.PROPERTY_SET_SCRIPT,
 								       family.getId().toString(),model,database);
-			// Replace the aux data structure in our serializable application
-			// NOTE: The Nav tree node that calls the dialog saves the application resource.
+			// Replace the aux data structure in our serializable family
+			// NOTE: The Nav tree node that calls the dialog saves the family resource.
 			family.setAuxiliaryData(model);
 		}
 		catch( Exception ex ) {

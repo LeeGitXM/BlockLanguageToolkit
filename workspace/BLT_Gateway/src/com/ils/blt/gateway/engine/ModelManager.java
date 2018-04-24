@@ -718,7 +718,7 @@ public class ModelManager implements ProjectListener  {
 					processApp.setState(application.getState());
 				}
 			}
-			// Invoke extension script on family save
+			// Invoke extension script on application save
 			if( node!=null ) {
 				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), 
 						ScriptConstants.APPLICATION_CLASS_NAME, 
@@ -1042,8 +1042,12 @@ public class ModelManager implements ProjectListener  {
 				// Finally remove from the node maps
 				nodesByUUID.remove(node.getSelf());
 				// Invoke the proper extension function on a delete
-				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), 
-							node.getClass().getCanonicalName(), 
+				// NOTE: Need to use keys for class names
+				String classKey = ScriptConstants.DIAGRAM_CLASS_NAME;
+				if( node instanceof ProcessApplication ) classKey = ScriptConstants.APPLICATION_CLASS_NAME;
+				else if( node instanceof ProcessFamily ) classKey = ScriptConstants.FAMILY_CLASS_NAME;
+				
+				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), classKey,
 							ScriptConstants.NODE_DELETE_SCRIPT, node.getSelf().toString());
 			}
 		}
