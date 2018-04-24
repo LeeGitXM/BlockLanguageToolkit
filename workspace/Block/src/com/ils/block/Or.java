@@ -254,34 +254,29 @@ public class Or extends AbstractProcessBlock implements ProcessBlock {
 	
 	/**
 	 * Compute the overall state, presumably because of a new input.
-	 * This is a "or"
+	 * This is an "or".
 	 */
 	private synchronized TruthValue getAggregateState() {
 		Collection<QualifiedValue> values = qualifiedValueMap.values();
-		TruthValue result = TruthValue.UNSET;
-
+		
+		boolean allUnset = true;
+		boolean allFalse  = true;
 		for(QualifiedValue qv:values) {
-			//log.tracef("%s.getAggregateState quality (%s) is good %s",TAG,qv.getQuality().getName(),(qv.getQuality().isGood()?"GOOD":"BAD"));
-			
-			if(!qv.getQuality().isGood() ) {
-				result = TruthValue.UNKNOWN;
-				continue;
-			}
-			// As soon as we find one TRUE, it's over.
-			TruthValue tv = qualifiedValueAsTruthValue(qv);
-			if( tv.equals(TruthValue.TRUE) ) {
-				result = tv;
-				break;
-			}
-			else if( tv.equals(TruthValue.FALSE) ) {
-				if( !result.equals(TruthValue.UNKNOWN))  result = TruthValue.FALSE;
-				continue;
-			}
-			else {
-				result = TruthValue.UNKNOWN;
+			TruthValue ts = qualifiedValueAsTruthValue(qv);
+			if(qv.getQuality().isGood() && !ts.equals(TruthValue.UNSET) ) {
+				allUnset = false;
+				// Once we get a valid TRUE, it's all over
+				if( ts.equals(TruthValue.TRUE) ) {
+					return ts;
+				}
+				else if(!ts.equals(TruthValue.FALSE)) {
+					allFalse = false;
+				}	
 			}
 		}
-		// Formerly an UNSET was converted to UNKNOWN. No longer.
+		TruthValue result = TruthValue.UNKNOWN;
+		if( allUnset ) result = TruthValue.UNSET;
+		else if(allFalse) result = TruthValue.FALSE;
 		return result;	
 	}
 	/**

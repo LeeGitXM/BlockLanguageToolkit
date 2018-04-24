@@ -374,6 +374,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 	public List<SerializableResourceDescriptor> getDiagramDescriptors(String projectName) {
 		return modelManager.getDiagramDescriptors(projectName);
 	}
+	@Override
 	public List<SerializableBlockStateDescriptor> listBlocksConnectedAtPort(String diagramId,String blockId,String portName) {
 		ControllerRequestHandler handler = ControllerRequestHandler.getInstance();
 		return handler.listBlocksConnectedAtPort(diagramId, blockId,portName);
@@ -392,6 +393,7 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		ControllerRequestHandler handler = ControllerRequestHandler.getInstance();
 		return handler.listSourcesForSink(diagramId, blockName);
 	}
+	
 	/**
 	 * The node must be an element of the nav-tree, that is an application,
 	 * family, folder or diagram. 

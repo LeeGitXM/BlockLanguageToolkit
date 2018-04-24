@@ -257,33 +257,29 @@ public class And extends AbstractProcessBlock implements ProcessBlock {
 	
 	/**
 	 * Compute the overall state, presumably because of a new input.
-	 * This is an "and"
+	 * This is an "and".
 	 */
 	private synchronized TruthValue getAggregateState() {
 		Collection<QualifiedValue> values = qualifiedValueMap.values();
-		TruthValue result = TruthValue.UNSET;
 		
+		boolean allUnset = true;
+		boolean allTrue  = true;
 		for(QualifiedValue qv:values) {
-			if(!qv.getQuality().isGood() ) {
-				if(!result.equals(TruthValue.FALSE) ) result = TruthValue.UNKNOWN;
-				continue;
-			}
-			// Once we get a valid FALSE, it's all over
 			TruthValue ts = qualifiedValueAsTruthValue(qv);
-			if( ts==TruthValue.FALSE ) {
-				result = ts;
-				break;
-			}
-			else if( ts.equals(TruthValue.TRUE) ) {
-				if( !result.equals(TruthValue.UNKNOWN))  result = TruthValue.TRUE;
-				continue;
-			}
-			else  {
-				result = TruthValue.UNKNOWN;
-				continue;
+			if(qv.getQuality().isGood() && !ts.equals(TruthValue.UNSET) ) {
+				allUnset = false;
+				// Once we get a valid FALSE, it's all over
+				if( ts.equals(TruthValue.FALSE) ) {
+					return ts;
+				}
+				else if(!ts.equals(TruthValue.TRUE)) {
+					allTrue = false;
+				}	
 			}
 		}
-		// Previously we had set the state to UNKNOWN if UNSET. Now we let it be.
+		TruthValue result = TruthValue.UNKNOWN;
+		if( allUnset ) result = TruthValue.UNSET;
+		else if(allTrue) result = TruthValue.TRUE;
 		return result;	
 	}
 }
