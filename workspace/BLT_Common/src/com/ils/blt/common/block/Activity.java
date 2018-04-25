@@ -17,6 +17,7 @@ public class Activity implements Cloneable,Serializable  {
 	public final static String ACTIVITY_PROPAGATE = "PROPAGATE";
 	public final static String ACTIVITY_PROPERTY = "PROPERTY";
 	public final static String ACTIVITY_RECEIVE  = "RECV";
+	public final static String ACTIVITY_RECEIVE_NULL  = "RECV NULL";
 	public final static String ACTIVITY_RESET = "RESET";
 	public final static String ACTIVITY_SEND  = "SEND";
 	public final static String ACTIVITY_SET_EXPIRATION = "SET EXPIRATION";

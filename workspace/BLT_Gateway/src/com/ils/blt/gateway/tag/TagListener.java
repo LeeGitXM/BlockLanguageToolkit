@@ -371,9 +371,13 @@ public class TagListener implements TagChangeListener   {
 				log.error(TAG+".tagChanged exception ("+ex.getMessage()+")",ex);
 			}
 		}
+		else if(tag!=null && tag.getValue()==null) {
+			// Missing value
+			log.warnf("%s.tagChanged: Tag (%s) has no value (ignored)",TAG,(tp==null?"null":tp.toStringFull()));
+		}
 		else {
 			// Tag or path is null
-			log.warnf("%s.tagChanged: Unknown tag %s (%s)",TAG,(tag==null?"null":tag.getName()),(tp==null?"null":tp.toStringFull()));
+			log.warnf("%s.tagChanged: Unknown tag (%s) or tag path (%s)",TAG,(tag==null?"null":tag.getName()),(tp==null?"null":tp.toStringFull()));
 		}
 	}
 	
