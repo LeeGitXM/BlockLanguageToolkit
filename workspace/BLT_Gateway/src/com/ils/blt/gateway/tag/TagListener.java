@@ -1,5 +1,5 @@
 /**
- *   (c) 2013-2016  ILS Automation. All rights reserved.
+ *   (c) 2013-2018  ILS Automation. All rights reserved.
  *  
  */
 package com.ils.blt.gateway.tag;
@@ -27,8 +27,9 @@ import com.ils.blt.gateway.engine.IncomingValueChangeTask;
 import com.ils.blt.gateway.engine.ProcessDiagram;
 import com.ils.blt.gateway.engine.PropertyChangeEvaluationTask;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
+import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.project.ProjectVersion;
+import com.inductiveautomation.ignition.common.model.values.Quality;
 import com.inductiveautomation.ignition.common.sqltags.model.Tag;
 import com.inductiveautomation.ignition.common.sqltags.model.TagPath;
 import com.inductiveautomation.ignition.common.sqltags.model.TagProp;
@@ -245,58 +246,56 @@ public class TagListener implements TagChangeListener   {
 			log.warnf("%s.startSubscriptionForTag: %s - found no block/properties",TAG,tagPath);
 			return;
 		}
-		ProcessBlock typicalBlock = list.get(0).getBlock();
-		try {
-			// If tag path isn't in canonical form, make it that way by prepending provider
-			// We assume that all tags in the list have the same default provider
-			String providerName = providerNameFromPath(tagPath);
-			if( providerName.length()==0) {
-				providerName = context.getProjectManager().getProps(typicalBlock.getProjectId(), ProjectVersion.Staging).getDefaultSQLTagsProviderName();
-				if(providerName==null || providerName.length()==0 ) {
-					log.warnf("%s.startSubscriptionForTag: %s - NO PROVIDER",TAG,tagPath);
-				}
-				int pos = tagPath.indexOf("]");
-				if(pos>0) tagPath = tagPath.substring(pos+1);
-				tagPath = String.format("[%s]%s",providerName,tagPath);
-			}
-
-			TagPath tp = TagPathParser.parse(tagPath);
-			Tag tag = tmgr.getTag(tp);
-			if( tag!=null ) {
-				QualifiedValue value = tag.getValue();
-				if( DEBUG || log.isTraceEnabled() ) log.infof("%s.startSubscriptionForTag: %s = %s (%s at %s)",TAG,
-						tp.toStringFull(),value.getValue(),
-						(value.getQuality().isGood()?"GOOD":"BAD"),
-						dateFormatter.format(value.getTimestamp()));
-				// Do not pass along nulls -- tag was never set
-				if(value.getValue()!=null ) {
-					// Update all properties with new value
-					for(BlockPropertyPair key:list ) {
-						ProcessBlock block = key.getBlock();
-						BlockProperty property = key.getProperty();
-						updateProperty(block,property,value);
+		// The tag path must be in canonical form which includes the provider name in brackets.
+		String providerName = providerNameFromPath(tagPath);
+		if( providerName.length()>0) {
+			try {
+				TagPath tp = TagPathParser.parse(tagPath);
+				Tag tag = tmgr.getTag(tp);
+				if( tag!=null ) {
+					QualifiedValue value = tag.getValue();
+					if( DEBUG || log.isTraceEnabled() ) log.infof("%s.startSubscriptionForTag: %s = %s (%s at %s)",TAG,
+							tp.toStringFull(),value.getValue(),
+							(value.getQuality().isGood()?"GOOD":"BAD"),
+							dateFormatter.format(value.getTimestamp()));
+					// Do not pass along nulls -- tag was never set
+					if(value.getValue()!=null ) {
+						// Update all properties with new value
+						for(BlockPropertyPair key:list ) {
+							ProcessBlock block = key.getBlock();
+							BlockProperty property = key.getProperty();
+							updateProperty(block,property,value);
+						}
 					}
+					else {
+						setPropertiesForNullTag(list);
+					}
+					tmgr.subscribe(tp, this);
 				}
-				tmgr.subscribe(tp, this);
+				else {
+					log.errorf("%s.startSubscriptionForTag: Failed. (%s unknown to provider %s)",TAG,tp.toStringFull(),providerName);
+					setPropertiesForBadTag(list,"Unknown to provider");
+				}
 			}
-			else {
-				log.errorf("%s.startSubscriptionForTag: Failed. (%s unknown to provider %s)",TAG,tp.toStringFull(),providerName);
-				setPropertiesForBadTag(list);
+			catch(IOException ioe) {
+				log.errorf("%s.startSubscriptionForTag (%s)",TAG,ioe.getMessage());
+				setPropertiesForBadTag(list,"IOException:"+ioe.getMessage());
+			}
+			catch(IllegalArgumentException iae) {
+				log.errorf("%s.startSubscriptionForTag - illegal argument for %s (%s)",TAG,tagPath,iae.getMessage());
+				setPropertiesForBadTag(list,"IllegalArgument:"+iae.getMessage());
+			}
+			catch(Exception ex) {
+				log.errorf("%s.startSubscriptionForTag - Exception %s (%s)",TAG,ex.getMessage(),tagPath);
+				setPropertiesForBadTag(list,"ExceptionSubscribing:"+tagPath);
 			}
 		}
-		catch(IOException ioe) {
-			log.errorf("%s.startSubscriptionForTag (%s)",TAG,ioe.getMessage());
-			setPropertiesForBadTag(list);
-		}
-		catch(IllegalArgumentException iae) {
-			log.errorf("%s.startSubscriptionForTag - illegal argument for %s (%s)",TAG,tagPath,iae.getMessage());
-			setPropertiesForBadTag(list);
-		}
-		catch(Exception ex) {
-			log.errorf("%s.startSubscriptionForTag - Exception %s (%s)",TAG,ex.getMessage(),tagPath);
-			setPropertiesForBadTag(list);
+		else {
+			log.errorf("%s.startSubscriptionForTag: Provider name is not provided in tag path (%s)",TAG,tagPath);
+			setPropertiesForBadTag(list,"No provider");
 		}
 	}
+	
 	/**
 	 * Shutdown completely.
 	 */
@@ -394,19 +393,28 @@ public class TagListener implements TagChangeListener   {
 	
 	private void updateProperty(ProcessBlock block,BlockProperty property,QualifiedValue value) {
 		try {
+			// This is the value for the property.
+			Object val = value.getValue();
+			if( val==null ) {
+				if( property.getType().equals(PropertyType.BOOLEAN) ) val = TruthValue.UNKNOWN;
+				else if( property.getType().equals(PropertyType.DOUBLE) ) val = new Double(Double.NaN);
+				else val = "";
+			}
+			
 			// Treat the notification differently depending on the binding
 			if( property.getBindingType().equals(BindingType.TAG_MONITOR)) {
 				if( DEBUG || log.isTraceEnabled()  ) log.infof("%s.updateProperty: property change for %s:%s",TAG,block.getName(),property.getName());
+				
 				PropertyChangeEvaluationTask task = new PropertyChangeEvaluationTask(block,
-								new BlockPropertyChangeEvent(block.getBlockId().toString(),property.getName(),property.getValue(),value.getValue()));
+								new BlockPropertyChangeEvent(block.getBlockId().toString(),property.getName(),property.getValue(),val));
 				Thread propertyChangeThread = new Thread(task, "PropertyChange");
 				propertyChangeThread.start();
 			}
 			else if( property.getBindingType().equals(BindingType.TAG_READ) ||
 					 property.getBindingType().equals(BindingType.TAG_READWRITE)) {
 					// Set property with no notifications
-					property.setValue(value.getValue());
-					// The tag subscription acts as a pseudo input
+					property.setValue(val);
+					// The tag subscription acts as a pseudo input. Use the QualifiedValue
 					IncomingNotification notice = new IncomingNotification(property.getName(),value);
 					threadPool.execute(new IncomingValueChangeTask(block,notice));	
 			}
@@ -419,28 +427,46 @@ public class TagListener implements TagChangeListener   {
 		}
 	}
 	
+	/**
+	 * We've started a subscription, but we're not the first. Get our initial value from the original subscriber.
+	 * @param key
+	 * @param list of subscribers
+	 */
 	private void updatePropertyValueFromLinkedProperty(BlockPropertyPair key,List<BlockPropertyPair>list) {
 		if( list.size()>1 ) {
 			// Set the value of the new property from an old one.
 			// We've just appended the key to the end of the list, so the first value ought to be a good one.
 			BlockProperty property = key.getProperty();
 			BlockProperty typicalProperty = list.get(0).getProperty();
+			// We want the bound value. 
 			QualifiedValue value = new BasicQualifiedValue(typicalProperty.getValue());
 			updateProperty(key.getBlock(),property,value);
 		}
 	}
 	
-	// The tag doesn't exist, or is in error
-	private void setPropertiesForBadTag(List<BlockPropertyPair> list) {
+	// The tag returns a null value
+	private void setPropertiesForNullTag(List<BlockPropertyPair> list) {
 		for(BlockPropertyPair key:list) {
 			ProcessBlock block = key.getBlock();
 			BlockProperty property = key.getProperty();
 			// Reject blocks that are in a disabled diagram
 			ProcessDiagram parent = controller.getDiagram(block.getParentId());
 			if( parent!=null ) {
-				if( property.getType().equals(PropertyType.BOOLEAN) ) updateProperty(block,property,new BasicQualifiedValue(TruthValue.UNKNOWN));
-				else if( property.getType().equals(PropertyType.DOUBLE) ) updateProperty(block,property,new BasicQualifiedValue(new Double(Double.NaN)));
-				else updateProperty(block,property,new BasicQualifiedValue(""));
+				Quality q = new BasicQuality("Tag returned a null",Quality.Level.Bad);
+				updateProperty(block,property,new BasicQualifiedValue(null,q));	
+			}
+		}		
+	}
+	// Encountered an error subscribing to the tag
+	private void setPropertiesForBadTag(List<BlockPropertyPair> list, String errMessage) {
+		for(BlockPropertyPair key:list) {
+			ProcessBlock block = key.getBlock();
+			BlockProperty property = key.getProperty();
+			// Reject blocks that are in a disabled diagram
+			ProcessDiagram parent = controller.getDiagram(block.getParentId());
+			if( parent!=null ) {
+				Quality q = new BasicQuality(errMessage,Quality.Level.Bad);
+				updateProperty(block,property,new BasicQualifiedValue(null,q));	
 			}
 		}		
 	}

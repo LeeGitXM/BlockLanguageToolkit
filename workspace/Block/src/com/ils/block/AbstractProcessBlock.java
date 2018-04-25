@@ -96,6 +96,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		propertyMap = new HashMap<>();
 		anchors = new ArrayList<AnchorPrototype>();
 		activities = new FixedSizeQueue<Activity>(DEFAULT_ACTIVITY_BUFFER_SIZE);
+		lastValue = null;
 		initializePrototype();
 		initialize();
 	}
@@ -481,6 +482,9 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 				BlockPropertyChangeEvent e = new BlockPropertyChangeEvent(getName(),port,getProperty(port).getValue(),qv.getValue());
 				propertyChange(e);
 			}
+			else {
+				recordActivity(Activity.ACTIVITY_RECEIVE_NULL,port);
+			}
 		}
 		else {
 			port = incoming.getConnection().getDownstreamPortName();
@@ -558,6 +562,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	@Override
 	public void start() { 
 		this.running = true;
+		this.lastValue = null;
 		recordActivity(Activity.ACTIVITY_START,"");
 		this.stateChangeTimestamp = new Date(timer.getTestTime());
 	}

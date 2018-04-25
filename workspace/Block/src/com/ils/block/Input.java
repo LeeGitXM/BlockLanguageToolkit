@@ -132,6 +132,9 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 			valueProperty.setValue(lastValue.getValue());
 			notifyOfStatus(lastValue);
 		}
+		else {
+			valueProperty.setValue("null");
+		}
 	}
 	
 	/*
@@ -200,7 +203,7 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
 		if(propertyName.equals(BlockConstants.BLOCK_PROPERTY_TAG_PATH)) {
-			log.debugf("%s.propertyChange path now %s",getName(),event.getNewValue().toString());
+			log.infof("%s.propertyChange tag path now %s",getName(),event.getNewValue().toString());
 		}
 	}
 	
@@ -218,6 +221,7 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qval);
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qval);
 	}
+	
 	@Override
 	public void propagate() {
 		recordActivity(Activity.ACTIVITY_PROPAGATE,"");
