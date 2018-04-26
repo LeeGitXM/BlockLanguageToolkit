@@ -94,8 +94,7 @@ public class TagListener implements TagChangeListener   {
 	 * Define a tag subscription based on a block attribute. The subject attribute must be
 	 * one associated with a tag. If we are running and
 	 *     a) This is a new tag, then update the property from the subscription
-	 *     b) We are sharing the tag, then update the property from the current value
-	 *                                of a shared property.
+	 *     b) We are sharing the tag, then update the property by reading the tag.
 	 */
 	public synchronized void defineSubscription(ProcessBlock block,BlockProperty property,String tagPath) {
 		
@@ -123,7 +122,7 @@ public class TagListener implements TagChangeListener   {
 					tagPath,(needToStartSubscription?"START":"PIGGY-BACK"));
 			if(!stopped ) {
 				if(needToStartSubscription) startSubscriptionForTag(tagPath);
-				else updatePropertyValueFromLinkedProperty(key,list);   // Get the value from another block's property
+				else updatePropertyValueDirectlyFromTag(block,property,tagPath);   // Read the tag to get the value
 			}
 		}
 	}
@@ -428,20 +427,38 @@ public class TagListener implements TagChangeListener   {
 	}
 	
 	/**
-	 * We've started a subscription, but we're not the first. Get our initial value from the original subscriber.
+	 * We've started a subscription, but we're not the first. Get our initial value by reading the tag.
+	 * We've previously vetted the path.
 	 * @param key
 	 * @param list of subscribers
 	 */
-	private void updatePropertyValueFromLinkedProperty(BlockPropertyPair key,List<BlockPropertyPair>list) {
-		if( list.size()>1 ) {
-			// Set the value of the new property from an old one.
-			// We've just appended the key to the end of the list, so the first value ought to be a good one.
-			BlockProperty property = key.getProperty();
-			BlockProperty typicalProperty = list.get(0).getProperty();
-			// We want the bound value. 
-			QualifiedValue value = new BasicQualifiedValue(typicalProperty.getValue());
-			updateProperty(key.getBlock(),property,value);
+	private void updatePropertyValueDirectlyFromTag(ProcessBlock block,BlockProperty property,String tagPath) {
+		SQLTagsManager tmgr = context.getTagManager();
+		QualifiedValue value = null;
+		try {
+			TagPath tp = TagPathParser.parse(tagPath);
+			Tag tag = tmgr.getTag(tp);
+			if( tag!=null ) {
+				value = tag.getValue();
+				if( DEBUG || log.isTraceEnabled() ) log.infof("%s.updatePropertyValueDirectlyFromTag: %s = %s (%s at %s)",TAG,
+						tp.toStringFull(),value.getValue(),
+						(value.getQuality().isGood()?"GOOD":"BAD"),
+						dateFormatter.format(value.getTimestamp()));
+
+				if(value.getValue()==null ) {
+					Quality q = new BasicQuality("Tag returned a null",Quality.Level.Bad);
+					value = new BasicQualifiedValue(null,q);
+				}
+			}
+			else {
+				log.errorf("%s.updatePropertyValueDirectlyFromTag: Failed. (%s unknown to provider)",TAG,tp.toStringFull());
+			}
 		}
+		catch(IOException ioe ) {
+			Quality q = new BasicQuality("Tag returned a null",Quality.Level.Bad);
+			value = new BasicQualifiedValue(null,q);
+		}
+		updateProperty(block,property,value);
 	}
 	
 	// The tag returns a null value

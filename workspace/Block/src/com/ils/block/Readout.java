@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
+ *   (c) 2014-2018  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -63,6 +63,15 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void reset() {
 		super.reset();
+		valueProperty.setValue("");
+		notifyOfStatus();
+	}
+	/**
+	 * Clear the display on start of the block.
+	 */
+	@Override
+	public void start() { 
+		super.start();
 		valueProperty.setValue("");
 		notifyOfStatus();
 	}

@@ -589,6 +589,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 				}
 				// Restart subscriptions for the new state
 				startSubscriptions(s);
+				// This happens too soon to do anything ...
 				for(ProcessBlock block:getProcessBlocks() ) {
 					if( block.delayBlockStart() ) block.propagate();
 				}
@@ -653,9 +654,10 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 		else if(sc.getEndAnchor().getId()==null )      reason = "End anchor has no Id";
 		return reason;
 	}
+	
 	// This should only be called on a new diagram, or on new blocks for an existing
-	// diagram. Note that "starting" a subscription on an existing property *should* 
-	// do nothing.
+	// diagram or an a change of state for an existing diagram. Note that "starting" 
+	// a subscription on an existing property *should* do nothing.
 	public void startSubscriptions(DiagramState s) {
 		//log.infof("%s.startSubscriptions: ...%d:%s",TAG,projectId,getName());
 		for( ProcessBlock pb:getProcessBlocks()) {
