@@ -142,7 +142,8 @@ public class TagListener implements TagChangeListener   {
 	}
 	
 	/**
-	 * Check and see if the current block/property has a subscription.
+	 * Check and see if the current block/property has a subscription. Note that tag
+	 * paths are case-insensitive.
 	 * @param block
 	 * @param property
 	 * @return
@@ -402,8 +403,6 @@ public class TagListener implements TagChangeListener   {
 			
 			// Treat the notification differently depending on the binding
 			if( property.getBindingType().equals(BindingType.TAG_MONITOR)) {
-				if( DEBUG || log.isTraceEnabled()  ) log.infof("%s.updateProperty: property change for %s:%s",TAG,block.getName(),property.getName());
-				
 				PropertyChangeEvaluationTask task = new PropertyChangeEvaluationTask(block,
 								new BlockPropertyChangeEvent(block.getBlockId().toString(),property.getName(),property.getValue(),val));
 				Thread propertyChangeThread = new Thread(task, "PropertyChange");
@@ -414,6 +413,7 @@ public class TagListener implements TagChangeListener   {
 					// Set property with no notifications
 					property.setValue(val);
 					// The tag subscription acts as a pseudo input. Use the QualifiedValue
+					if( DEBUG || log.isTraceEnabled()  ) log.infof("%s.updateProperty: inout change for %s:%s = %s",TAG,block.getName(),property.getName(),val.toString());
 					IncomingNotification notice = new IncomingNotification(property.getName(),value);
 					threadPool.execute(new IncomingValueChangeTask(block,notice));	
 			}
