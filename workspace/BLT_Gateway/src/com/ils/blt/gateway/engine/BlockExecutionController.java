@@ -275,11 +275,12 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 		sessionManager = context.getGatewaySessionManager();
 		// Prepare tag readers/writers
 		this.tagReader = new TagReader(context);
-		tagListener.start(context);
 		this.tagValidator = new TagValidator(context);
 		this.tagWriter = new TagWriter(context,new ProviderRegistry());
 		// Activate all of the blocks in the diagram.
 		modelManager.startBlocks();
+		// Once blocks are started, start tag subscriptions
+		tagListener.start(context);
 	}
 	
 	/**

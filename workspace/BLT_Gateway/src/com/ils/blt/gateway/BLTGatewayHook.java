@@ -97,7 +97,6 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 		BlockExecutionController controller = BlockExecutionController.getInstance();
 	    mmgr = new ModelManager(context);
 	    controller.setDelegate(mmgr);
-	    controller.start(context);     // Lastly, start the controller
 	    // Initialize all the script modules from parameters stored in the ORM
 	    GatewayScriptExtensionManager sem = GatewayScriptExtensionManager.getInstance();
 	    for( String flavor: sem.getFlavors() ) {
@@ -123,6 +122,8 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	    		mmgr.analyzeResource(project.getId(),res);
 	    	}
 	    }
+	    
+	    controller.start(context);     // Lastly, start the controller
 
 	    // Register for changes to our permanent settings
 	    ToolkitRecord.META.addRecordListener(recordListener);

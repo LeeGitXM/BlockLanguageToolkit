@@ -85,7 +85,7 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 
 	/**
 	 * We may have received a premature value due to creation of a subscription 
-	 * before we're actually started. Pass that value on now.
+	 * before we're actually started. Pass that value on now. (May be unnecessary)
 	 */
 	@Override
 	public void start() {

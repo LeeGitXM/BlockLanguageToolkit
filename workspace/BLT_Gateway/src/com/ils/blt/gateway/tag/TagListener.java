@@ -98,7 +98,7 @@ public class TagListener implements TagChangeListener   {
 	 */
 	public synchronized void defineSubscription(ProcessBlock block,BlockProperty property,String tagPath) {
 		
-		if( DEBUG || log.isTraceEnabled()  ) log.infof("%s.defineSubscription: %s:%s=%s",TAG,block.getName(),property.getName(),tagPath);
+		if( log.isTraceEnabled() || DEBUG  ) log.infof("%s.defineSubscription: %s:%s=%s",TAG,block.getName(),property.getName(),tagPath);
 		if( tagPath!=null && tagPath.length() >0  ) {
 			boolean needToStartSubscription = false;
 			BlockPropertyPair key = new BlockPropertyPair(block,property);
@@ -112,13 +112,13 @@ public class TagListener implements TagChangeListener   {
 			}
 			if( list.contains(key))  {   
 				// Duplicate request, nothing to do
-				if( DEBUG || log.isTraceEnabled() ) log.infof("%s.defineSubscription: %s:%s already subscribes to: %s",TAG,block.getName(),property.getName(),tagPath);
+				if( log.isTraceEnabled() || DEBUG) log.infof("%s.defineSubscription: %s:%s already subscribes to: %s",TAG,block.getName(),property.getName(),tagPath);
 				return;
 			}
 			
 			list.add(key);
 			tagMap.put(key,tagPath);
-			if( DEBUG || log.isTraceEnabled()  ) log.infof("%s.defineSubscription: %s:%s now subscribes to: %s (%s)",TAG,block.getName(),property.getName(),
+			if( log.isTraceEnabled() || DEBUG ) log.infof("%s.defineSubscription: %s:%s now subscribes to: %s (%s)",TAG,block.getName(),property.getName(),
 					tagPath,(needToStartSubscription?"START":"PIGGY-BACK"));
 			if(!stopped ) {
 				if(needToStartSubscription) startSubscriptionForTag(tagPath);
@@ -185,7 +185,7 @@ public class TagListener implements TagChangeListener   {
 		list.remove(key);
 		// Once the list is empty, we cancel the subscription
 		if(list.isEmpty()) {
-			if( DEBUG || log.isTraceEnabled()  ) log.infof("%s.removeSubscription: cancelled %s:%s=%s",TAG,block.getName(),property.getName(),tagPath);
+			if( log.isTraceEnabled() || DEBUG  ) log.infof("%s.removeSubscription: cancelled %s:%s=%s",TAG,block.getName(),property.getName(),tagPath);
 			blockMap.remove(tagPath.toUpperCase());
 			if(!stopped) {
 				// If we're running unsubscribe
@@ -193,7 +193,7 @@ public class TagListener implements TagChangeListener   {
 				try {
 					TagPath tp = TagPathParser.parse(tagPath);
 					tmgr.unsubscribe(tp, this);
-					if( DEBUG || log.isTraceEnabled()  ) log.infof("%s.removeSubscription: unsubscribed to %s",TAG,tagPath);
+					if( log.isTraceEnabled() || DEBUG  ) log.infof("%s.removeSubscription: unsubscribed to %s",TAG,tagPath);
 				}
 				catch(IOException ioe) {
 					log.errorf("%s.removeSubscription (%s)",TAG,ioe.getMessage());
@@ -213,7 +213,7 @@ public class TagListener implements TagChangeListener   {
 		SQLTagsManager tmgr = context.getTagManager();
 		try {
 			TagPath tp = TagPathParser.parse(tagPath);
-			if( DEBUG || log.isTraceEnabled()  ) log.infof("%s.stopSubscription: %s",TAG,tagPath);
+			if( log.isTraceEnabled() || DEBUG  ) log.infof("%s.stopSubscription: %s",TAG,tagPath);
 			tmgr.unsubscribe(tp, this);
 		}
 		catch(IOException ioe) {
@@ -254,7 +254,7 @@ public class TagListener implements TagChangeListener   {
 				Tag tag = tmgr.getTag(tp);
 				if( tag!=null ) {
 					QualifiedValue value = tag.getValue();
-					if( DEBUG || log.isTraceEnabled() ) log.infof("%s.startSubscriptionForTag: %s = %s (%s at %s)",TAG,
+					if( log.isTraceEnabled() || DEBUG ) log.infof("%s.startSubscriptionForTag: %s = %s (%s at %s)",TAG,
 							tp.toStringFull(),value.getValue(),
 							(value.getQuality().isGood()?"GOOD":"BAD"),
 							dateFormatter.format(value.getTimestamp()));
@@ -330,22 +330,16 @@ public class TagListener implements TagChangeListener   {
 		Tag tag = event.getTag();
 		if( tag!=null && tag.getValue()!=null && tp!=null ) {
 			try {
-				if( DEBUG || log.isTraceEnabled() ) log.infof("%s.tagChanged: %s received %s (%s at %s)",TAG,tp.toStringFull(),
+				if( log.isTraceEnabled() || DEBUG ) log.infof("%s.tagChanged: %s received %s (%s at %s)",TAG,tp.toStringFull(),
 						tag.getValue().getValue(),
 						(tag.getValue().getQuality().isGood()?"GOOD":"BAD"),
 						dateFormatter.format(tag.getValue().getTimestamp()));
 				// The subscription may be to the fully qualified tag path
-				// and/or the path assuming the default provider
-				List<BlockPropertyPair> list1 = blockMap.get(tp.toStringFull().toUpperCase());
-				List<BlockPropertyPair> list2 = blockMap.get(tp.toStringPartial().toUpperCase());
-				List<BlockPropertyPair> list = new ArrayList<>();
-				if( list1!=null ) list.addAll(list1);
-				if( list2!=null ) list.addAll(list2);
+				List<BlockPropertyPair> list = blockMap.get(tp.toStringFull().toUpperCase());
 				if( list.size()==0 ) {
 					log.warnf("%s.tagChanged: %s - found no subscriber, unsubscribing",TAG,tp.toStringFull());
 					stopSubscription(tp.toStringFull().toUpperCase());
 					blockMap.remove(tp.toStringFull().toUpperCase());
-					blockMap.remove(tp.toStringPartial());
 					return;
 				}
 				for(BlockPropertyPair key:list) {

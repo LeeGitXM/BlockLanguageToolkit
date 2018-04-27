@@ -542,6 +542,7 @@ public class ModelManager implements ProjectListener  {
 				for( ProcessBlock pb:diagram.getProcessBlocks()) {
 					if( !pb.delayBlockStart() ) pb.start();
 				}
+
 				for( ProcessBlock pb:diagram.getProcessBlocks()) {
 					if( pb.delayBlockStart() ) pb.start();
 				}

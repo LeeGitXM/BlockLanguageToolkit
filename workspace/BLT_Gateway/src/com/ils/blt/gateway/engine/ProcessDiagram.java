@@ -557,6 +557,10 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 			for(ProcessBlock blk:blocks.values()) {
 				blk.stop();
 			}
+			
+			// Set new state
+			this.state = s;
+			
 			// Set correct timer for new state
 			updateBlockTimers(s);
 
@@ -596,7 +600,6 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 			}
 
 			// Fire diagram notification change
-			this.state = s;
 			controller.sendStateNotification(resourceId, s.name());
 		}
 	}
