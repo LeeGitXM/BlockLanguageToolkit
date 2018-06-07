@@ -1,0 +1,85 @@
+#
+# Test of high and low value patterns.
+# Both blocks require 2 of 4.
+#
+DIAGRAM="app75/family75/trend"
+tag: AverageOut MemoryTags/TrendOut1
+tag: FitBothOut MemoryTags/TrendOut2
+tag: FitUpOut MemoryTags/TrendOut3
+tag: FitDownOut MemoryTags/TrendOut4
+tagset: TrendInput MemoryTags/MJKFeed2 MemoryTags/MJKSQCStdDev MemoryTags/MJKSQCTarget
+
+Tagset: TrendInput
+Show: diagram $DIAGRAM
+
+# Note the InputBlock will re-transmit its value after a RESET.
+# Make use of this.
+2000/01/01 09:59:30 0.0 0.0 0.0
+resetDiagram ($DIAGRAM)
+
+# Blocks are configured to require 10 data points
+Test: Trend Detection
+Step: Almost FlatLine 
+
+2000/01/01 10:00:00 0.15 0.3 0.
+2000/01/01 10:00:05 0.11 0.3 0.
+2000/01/01 10:00:10 0.05 0.3 0.
+2000/01/01 10:00:15 0.00 0.3 0.
+2000/01/01 10:00:20 -0.08 0.3 0.
+2000/01/01 10:00:25 -0.15 0.3 0.
+2000/01/01 10:00:30 -0.07 0.3 0.
+2000/01/01 10:00:35 -0.22 0.3 0.
+2000/01/01 10:00:40 -0.05 0.3 0.
+2000/01/01 10:00:45 -0.02 0.3 0.
+2000/01/01 10:00:50 -0.05 0.3 0.
+2000/01/01 10:00:55 0.15 0.3 0.
+2000/01/01 10:01:00 0.35 0.3 0.
+# After 10 entries we have no trend.
+2000/01/01 10:01:05 Assert: AverageOut = "FALSE"  "False with no trend"
+2000/01/01 10:01:10 Assert: FitBothOut = "FALSE"  "False with no trend"
+2000/01/01 10:01:15 Assert: FitUpOut = "FALSE"  "False with no trend"
+2000/01/01 10:01:20 Assert: FitDownOut = "FALSE"  "False with no trend"
+
+Test: Trend Detection
+Step: Upward Trend
+
+2000/01/01 10:02:00 0.15 0.3 0.
+2000/01/01 10:02:05 0.11 0.3 0.
+2000/01/01 10:02:10 0.35 0.3 0.
+2000/01/01 10:02:15 0.30 0.3 0.
+2000/01/01 10:02:20 0.44 0.3 0.
+2000/01/01 10:02:25 0.45 0.3 0.
+2000/01/01 10:02:30 0.45 0.3 0.
+2000/01/01 10:02:35 0.55 0.3 0.
+2000/01/01 10:02:40 0.51 0.3 0.
+2000/01/01 10:02:45 0.50 0.3 0.
+2000/01/01 10:02:50 0.60 0.3 0.
+2000/01/01 10:02:55 0.63 0.3 0.
+2000/01/01 10:03:00 0.68 0.3 0.
+# After 10 entries we trend up
+2000/01/01 10:03:05 Assert: AverageOut = "TRUE"  "True trending up"
+2000/01/01 10:03:10 Assert: FitBothOut = "TRUE"  "True trending either way"
+2000/01/01 10:03:15 Assert: FitUpOut = "TRUE"  "True trending up"
+2000/01/01 10:03:20 Assert: FitDownOut = "FALSE"  "False trending down"
+
+Test: Trend Detection
+Step: Downward Trend
+
+2000/01/01 10:04:00 -0.15 0.3 0.
+2000/01/01 10:04:05 -0.11 0.3 0.
+2000/01/01 10:04:10 -0.35 0.3 0.
+2000/01/01 10:04:15 -0.30 0.3 0.
+2000/01/01 10:04:20 -0.44 0.3 0.
+2000/01/01 10:04:25 -0.45 0.3 0.
+2000/01/01 10:04:30 -0.45 0.3 0.
+2000/01/01 10:04:35 -0.55 0.3 0.
+2000/01/01 10:04:40 -0.51 0.3 0.
+2000/01/01 10:04:45 -0.50 0.3 0.
+2000/01/01 10:04:50 -0.60 0.3 0.
+2000/01/01 10:04:55 -0.63 0.3 0.
+2000/01/01 10:05:00 -0.65 0.3 0.
+# After 10 entries we trend down
+2000/01/01 10:05:05 Assert: AverageOut = "TRUE"  "True trending down"
+2000/01/01 10:05:10 Assert: FitBothOut = "TRUE"  "True trending either way"
+2000/01/01 10:05:15 Assert: FitUpOut = "FALSE"  "False trending up"
+2000/01/01 10:05:20 Assert: FitDownOut = "TRUE"  "True trending down"

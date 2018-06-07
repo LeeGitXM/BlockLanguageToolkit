@@ -27,5 +27,6 @@ run: sqclogic.txt
 run: sum.txt
 run: switch.txt
 run: timedlimits.txt
+run: trend.txt
 run: truthpulse.txt
 run: upstream.txt

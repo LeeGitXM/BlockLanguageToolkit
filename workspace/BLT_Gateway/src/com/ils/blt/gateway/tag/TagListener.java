@@ -394,6 +394,10 @@ public class TagListener implements TagChangeListener   {
 				else if( property.getType().equals(PropertyType.DOUBLE) ) val = new Double(Double.NaN);
 				else val = "";
 			}
+			// Convert any floats to doubles
+			else if( val instanceof Float ) {
+				val = new Double((Float)val);
+			}
 			
 			// Treat the notification differently depending on the binding
 			if( property.getBindingType().equals(BindingType.TAG_MONITOR)) {

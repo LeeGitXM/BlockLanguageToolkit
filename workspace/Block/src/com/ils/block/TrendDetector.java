@@ -72,12 +72,13 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 	private int countThreshold = 2;
 	private double multiplier = 1.0;
 	private int pointsRequired = DEFAULT_BUFFER_SIZE;
-	private boolean relativeToTarget = false;
+	private boolean relativeToTarget = false;   // When false compare to actual mean
 	private TrendDirection trendDirection = TrendDirection.BOTH;
 	
 	
 	private FixedSizeQueue<QualifiedValue> buffer;
 	private double previous = Double.NaN;
+	private double current  = Double.NaN;
 	private double standardDeviation = Double.NaN;
 	private double target = Double.NaN;
 	// Calculated parameters
@@ -202,14 +203,14 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 		
 
 		String port = incoming.getConnection().getDownstreamPortName();
-		if( port.equals(PORT_VALUE) && !relativeToTarget ) {
+		if( port.equals(PORT_VALUE)  ) {
 			if( qual.isGood() && qv!=null && qv.getValue()!=null ) {
 				if( !buffer.isEmpty() ) {
 					QualifiedValue lastPoint = buffer.getLast();
-					previous = ((Double)(lastPoint.getValue())).doubleValue();
 					// Preserve the last value if we're within a std deviation .... 
 					try {
-						double current = Double.parseDouble(qv.getValue().toString());
+						previous = Double.parseDouble(lastPoint.getValue().toString());
+						current = Double.parseDouble(qv.getValue().toString());
 						if( !isOutlier(previous,current) ) {
 							if(current>previous) {
 								upwardCount++;
@@ -230,12 +231,6 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 				// Buffer was empty, add the point
 				else {
 					buffer.add(qv);
-					try {
-						double current = Double.parseDouble(qv.getValue().toString());
-					}
-					catch(NumberFormatException nfe) {
-						log.warnf("%s.acceptValue Unable to convert current value to a double (%s)",getName(),nfe.getLocalizedMessage());
-					}
 				}
 			}
 			else {
@@ -251,13 +246,11 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 				clear();   // Reset the current buffer
 			}
 		}
-		else if( port.equals(PORT_TARGET) && relativeToTarget  ) {
+		else if( port.equals(PORT_TARGET)  ) {
 			qv = incoming.getValue();
 			if( qv==null || qv.getValue()==null) return;
-			if( buffer.isEmpty() ) return;
 			try {
 				target = Double.parseDouble(qv.getValue().toString());
-				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert target value to a float (%s)",getName(),nfe.getLocalizedMessage());
@@ -267,10 +260,8 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 		else if( port.equals(PORT_STANDARD_DEVIATION)  ) {
 			qv = incoming.getValue();
 			if( qv==null || qv.getValue()==null) return;
-			if( buffer.isEmpty() ) return;
 			try {
 				standardDeviation = Double.parseDouble(qv.getValue().toString());
-				evaluate();
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert standard deviation value to a float (%s)",getName(),nfe.getLocalizedMessage());
@@ -281,20 +272,18 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 	/**
 	 * Unlike most blocks, this method is not associated with a timer expiration.
 	 * We simply use this to do the calculation. Make sure that all inputs are defined.
+	 * If the buffer is empty or inputs are not set, return UNKNOWN.
 	 */
 	@Override
 	public void evaluate() {
-		if( buffer.isEmpty() ) {
-			setState(TruthValue.UNKNOWN);
-			return;
-		}
-		if( relativeToTarget && Double.isNaN(target) )  return;
-		if( Double.isNaN(previous) )			        return;
-		if( Double.isNaN(standardDeviation) )			return;
-
-		// Evaluate the buffer and report
-		log.debugf("%s.evaluate %d of %d",getName(),buffer.size(),pointsRequired);
-		if( buffer.size() >= pointsRequired) {
+		setState(TruthValue.UNKNOWN);
+		if( buffer.size() >= pointsRequired             && 
+			!(relativeToTarget && Double.isNaN(target)) &&
+			!Double.isNaN(current)                     &&	
+			!Double.isNaN(previous)                     &&
+		    !Double.isNaN(standardDeviation)            ) {
+			// Evaluate the buffer and report
+			log.debugf("%s.evaluate %d of %d",getName(),buffer.size(),pointsRequired);
 			//Calculate the slope of the data
 			TruthValue newState = getTrendState();
 			if( !isLocked() && !newState.equals(state) ) {
@@ -323,9 +312,10 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 					controller.sendPropertyNotification(getBlockId().toString(),BLOCK_PROPERTY_PROJECTION,
 							new TestAwareQualifiedValue(timer,new Double(projection)));
 				}	
-				notifyOfStatus();
+				
 			}
 		}
+		notifyOfStatus();
 	}
 	
 	/**
@@ -454,6 +444,9 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 		attributes.put("StandardDeviation", String.valueOf(standardDeviation));
 		attributes.put("Downward Count", String.valueOf(downwardCount));
 		attributes.put("UpwardCount", String.valueOf(upwardCount));
+		attributes.put("CountThreshold", String.valueOf(countThreshold));
+		attributes.put("TrendDirection", String.valueOf(trendDirection.name()));
+		attributes.put("RelativeToTarget", (relativeToTarget?"TRUE":"FALSE"));
 		List<Map<String,String>> descBuffer = descriptor.getBuffer();
 		for( QualifiedValue qv:buffer) {
 			Map<String,String> qvMap = new HashMap<>();
@@ -489,18 +482,8 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 	 */
 	private TruthValue getTrendState() {
 		TruthValue result = TruthValue.FALSE;     // No trend detected
-		
 		// Calculate the slope of the data
 		if( estimateSlope() ) {
-			double current = ((Double)buffer.getLast().getValue()).doubleValue();
-			if( current>previous) {
-				upwardCount++;
-				downwardCount = 0;
-			}
-			else {
-				downwardCount++;
-				upwardCount = 0;
-			}
 			if( upwardCount>countThreshold && !trendDirection.equals(TrendDirection.DOWNWARD)) {
 				if( relativeToTarget && current>target ) result=TruthValue.TRUE;
 				else if( relativeToTarget && current<=target ) result=TruthValue.UNKNOWN;

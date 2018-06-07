@@ -242,6 +242,10 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 							isNan = true;
 						}
 					}
+					catch(NumberFormatException nfe) {
+						log.warnf("BasicAnchorPoint.valueChange: received %s - could not format as double or date",value.getValue().toString());
+						isNan = true;
+					}
 				}
 			}
 			// Any, signal, text
