@@ -501,6 +501,16 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 
 		}
 		else if(getProjectResource().getResourceType().equalsIgnoreCase(BLTProperties.FOLDER_RESOURCE_TYPE)) {
+			
+			SetApplicationStateAction ssaActive = new SetApplicationStateAction(this,DiagramState.ACTIVE);
+			SetApplicationStateAction ssaDisable = new SetApplicationStateAction(this,DiagramState.DISABLED);
+			SetApplicationStateAction ssaIsolated = new SetApplicationStateAction(this,DiagramState.ISOLATED);
+			JMenu setStateMenu = new JMenu(BundleUtil.get().getString(PREFIX+".SetApplicationState"));
+			setStateMenu.add(ssaActive);
+			setStateMenu.add(ssaDisable);
+			setStateMenu.add(ssaIsolated);
+			menu.add(setStateMenu);
+			
 			if( hasApplication() ) {
 				if( hasFamily() ) {
 					DiagramCreateAction diagramAction = new DiagramCreateAction(this);

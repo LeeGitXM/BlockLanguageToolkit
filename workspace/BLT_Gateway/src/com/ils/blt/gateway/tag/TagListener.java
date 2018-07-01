@@ -336,8 +336,8 @@ public class TagListener implements TagChangeListener   {
 						dateFormatter.format(tag.getValue().getTimestamp()));
 				// The subscription may be to the fully qualified tag path
 				List<BlockPropertyPair> list = blockMap.get(tp.toStringFull().toUpperCase());
-				if( list.size()==0 ) {
-					log.warnf("%s.tagChanged: %s - found no subscriber, unsubscribing",TAG,tp.toStringFull());
+				if( list==null || list.size()==0 ) {
+					log.warnf("%s.tagChanged: %s - no current user for tag, unsubscribing",TAG,tp.toStringFull());
 					stopSubscription(tp.toStringFull().toUpperCase());
 					blockMap.remove(tp.toStringFull().toUpperCase());
 					return;
