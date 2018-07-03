@@ -146,17 +146,20 @@ public abstract class AbstractScriptExtensionManager {
 					script.initializeLocalsMap(mgr);
 					List<PyObject> pyargs = new ArrayList<>();
 					int index = 0;
-					for(Object arg:args) {
-						if( arg==null ) {
-							log.infof("%s.runScript: null argument in %s",CLSS,script.toString());
-							pyargs.add(new PyString(""));
+					
+					if( args!=null ) {
+						for(Object arg:args) {
+							if( arg==null ) {
+								log.infof("%s.runScript: null argument in %s",CLSS,script.toString());
+								pyargs.add(new PyString(""));
+							}
+							else {
+								PyObject pyarg = j2p.objectToPy(arg);
+								script.setLocalVariable(index, pyarg);
+								pyargs.add(pyarg);
+							}
+							index++;
 						}
-						else {
-							PyObject pyarg = j2p.objectToPy(arg);
-							script.setLocalVariable(index, pyarg);
-							pyargs.add(pyarg);
-						}
-						index++;
 					}
 					log.infof("%s.runScript: %s",CLSS,script.toString());
 					script.execute(mgr);
