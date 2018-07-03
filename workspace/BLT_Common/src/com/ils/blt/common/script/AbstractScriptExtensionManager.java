@@ -161,6 +161,9 @@ public abstract class AbstractScriptExtensionManager {
 							index++;
 						}
 					}
+					else {
+						log.warnf("%s.runScript: WARNING: null arguments in %s",CLSS,script.toString());
+					}
 					log.infof("%s.runScript: %s",CLSS,script.toString());
 					script.execute(mgr);
 					// For "complex" arguments, we update contents
