@@ -20,7 +20,7 @@ import com.ils.blt.gateway.proxy.ProxyHandler;
  *  PROPERTY_SET_SCRIPT and NODE_SAVE_SCRIPT). The standard signatures are:
  *  	get/set(uuid,properties).
  *  	rename(uuid,oldName,newName)
- *  	save(uuid)
+ *  	save(uuid,properties)
  *  This group of scripts must be defined 
  *  for every class that wants interact with external data.
  *  

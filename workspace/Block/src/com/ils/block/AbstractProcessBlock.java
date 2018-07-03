@@ -1,5 +1,5 @@
 /**
- *   (c) 2013-2017  ILS Automation. All rights reserved. 
+ *   (c) 2013-2018  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -65,7 +65,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	private UUID blockId;
 	private UUID parentId;
 	private long projectId = -1;    // This is the global project
-	private GeneralPurposeDataContainer auxiliaryData = null;
+	private GeneralPurposeDataContainer auxiliaryData = new GeneralPurposeDataContainer();
 	private String name = ".";
 	protected QualifiedValue lastValue = null;  // Most recently propagated value.
 	protected String statusText;

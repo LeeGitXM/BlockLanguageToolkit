@@ -9,12 +9,10 @@ import org.python.core.PyObject;
 
 import com.ils.block.AbstractProcessBlock;
 import com.ils.blt.common.block.Activity;
-import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.notification.IncomingNotification;
-import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.gateway.PythonRequestHandler;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 

@@ -94,7 +94,7 @@ public abstract class AbstractScriptExtensionManager {
 		}
 		else if( flavor.equals(ScriptConstants.NODE_SAVE_SCRIPT))  {
 			entry = "save";
-			arglist = "uuid,properties";
+			arglist = "uuid,aux";
 		}
 		scriptMap.put(key,createMap(entry,arglist));
 		setModulePath(key,modulePath);

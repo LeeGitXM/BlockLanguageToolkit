@@ -1,5 +1,5 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
+ *   (c) 2014-2018  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.gateway.engine;
 
@@ -44,7 +44,7 @@ public class ProcessNode implements Serializable {
 		this.self = me;
 		this.parent = parent;
 		this.name = nam;
-		this.auxiliaryData = null;
+		this.auxiliaryData = new GeneralPurposeDataContainer();
 		this.children = new HashMap<Long,ProcessNode>();
 		this.log = LogUtil.getLogger(getClass().getPackage().getName());
 	}
