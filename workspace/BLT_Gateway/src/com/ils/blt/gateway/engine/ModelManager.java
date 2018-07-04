@@ -26,6 +26,7 @@ import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.gateway.GatewayScriptExtensionManager;
+import com.ils.common.GeneralPurposeDataContainer;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
@@ -827,7 +828,9 @@ public class ModelManager implements ProjectListener  {
 				
 				for(ProcessBlock block:diagram.getProcessBlocks()) {
 					// If this is a final diagnosis, call its save extension
+					// Force the auxiliary data to be non-null. This may be true for some existing blocks.
 					if( extensionManager.hasKey(block.getClassName(),ScriptConstants.NODE_SAVE_SCRIPT) ) {
+						if(block.getAuxiliaryData() ==null ) block.setAuxiliaryData(new GeneralPurposeDataContainer());
 						extensionManager.runScript(context.getProjectManager().getProjectScriptManager(diagram.getProjectId()), 
 							block.getClassName(), 
 							ScriptConstants.NODE_SAVE_SCRIPT, block.getBlockId().toString(),block.getAuxiliaryData());
