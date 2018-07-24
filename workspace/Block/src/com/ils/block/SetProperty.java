@@ -31,15 +31,15 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  * downstream block.
  */
 @ExecutableBlock
-public class PropertySetter extends AbstractProcessBlock implements ProcessBlock {
-	private static String TAG = "PropertySetter";
+public class SetProperty extends AbstractProcessBlock implements ProcessBlock {
+	private static String TAG = "SetProperty";
 	private Signal signal = null;   // Last signal sent
 	private String propertyName = "";
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
-	public PropertySetter() {
+	public SetProperty() {
 		initialize();
 		initializePrototype();
 	}
@@ -51,7 +51,7 @@ public class PropertySetter extends AbstractProcessBlock implements ProcessBlock
 	 * @param parent universally unique Id identifying the parent of this block
 	 * @param block universally unique Id for the block
 	 */
-	public PropertySetter(ExecutionController ec,UUID parent,UUID block) {
+	public SetProperty(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
 	}
@@ -61,7 +61,7 @@ public class PropertySetter extends AbstractProcessBlock implements ProcessBlock
 	 * Define the synchronization property and ports.
 	 */
 	private void initialize() {	
-		setName("PropertySetter");
+		setName("SetProperty");
 		
 		BlockProperty propertyProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_PROPERTY,propertyName,PropertyType.STRING,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_PROPERTY, propertyProperty);
@@ -147,7 +147,7 @@ public class PropertySetter extends AbstractProcessBlock implements ProcessBlock
 		prototype.setPaletteIconPath("Block/icons/palette/property_edit.png");
 		prototype.setPaletteLabel("SetProperty");
 		prototype.setTooltipText("Transmit a signal to set properties of the downstream block");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_MISC);
+		prototype.setTabName(BlockConstants.PALETTE_TAB_CONTROL);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setEmbeddedIcon("Block/icons/embedded/edit.png");

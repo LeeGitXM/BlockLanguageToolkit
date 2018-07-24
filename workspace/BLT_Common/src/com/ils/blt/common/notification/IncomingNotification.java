@@ -12,7 +12,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  * This class is used to hold value change information coming from the "engine" representing 
  * a new value arriving at an input port. Depending on the type of connector, the class of the
  * value object is one of the following:
- *    - Signal
+ *    - Signal   (command)
  *    - TruthValue
  *    - Double
  *    - String
