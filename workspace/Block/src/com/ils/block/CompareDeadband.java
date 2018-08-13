@@ -99,7 +99,7 @@ public class CompareDeadband extends Compare implements ProcessBlock {
 	@Override
 	public void evaluate() {
 		if( !isLocked() ) {
-			log.warnf("%s.evaluate: %s,  x=%s, y=%s",getName(),truthValue.name(),(x==null?"null":x.toString()),(y==null?"null":y.toString()));
+			log.infof("%s.evaluate: %s,  x=%s, y=%s",getName(),truthValue.name(),(x==null?"null":x.toString()),(y==null?"null":y.toString()));
 			state = TruthValue.UNKNOWN;
 			QualifiedValue result = null;
 			if( x==null ) {
@@ -116,9 +116,7 @@ public class CompareDeadband extends Compare implements ProcessBlock {
 			}
 			double xx = Double.NaN;
 			double yy = Double.NaN;
-			log.warnf("result %s ",result);
 			if( result == null ) {
-				log.warnf("Null set ");
 				try {
 					xx = Double.parseDouble(x.getValue().toString());
 					try {
@@ -133,7 +131,6 @@ public class CompareDeadband extends Compare implements ProcessBlock {
 				}
 			}
 	
-			log.warnf("result 2 %s ",result);
 			if( result==null ) {     // Success!
 				if( x.getQuality().isGood() && y.getQuality().isGood() ) {
 					double db = deadband;
@@ -148,13 +145,11 @@ public class CompareDeadband extends Compare implements ProcessBlock {
 						if( xx < yy + offset - db) 
 							newValue = TruthValue.FALSE;
 					if( !newValue.equals(truthValue)) {
-						log.warnf("changing to  %s ",truthValue);
 						truthValue = newValue;
 						lastValue = new TestAwareQualifiedValue(timer,truthValue);
 					}
 					else {
 						// No change, do nothing
-						log.warnf("%s.evaluate: NO CHANGE (%s)",getName(),newValue.name());
 						return;
 					}
 				}
@@ -170,7 +165,7 @@ public class CompareDeadband extends Compare implements ProcessBlock {
 				lastValue = result;
 			}
 			
-			log.warnf("%s.evaluate: wrote %s",getName(),lastValue.getValue().toString());
+			log.infof("%s.evaluate: wrote %s",getName(),lastValue.getValue().toString());
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);	
 			notifyOfStatus(lastValue);
