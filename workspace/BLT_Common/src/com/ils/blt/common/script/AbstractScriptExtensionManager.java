@@ -12,6 +12,7 @@ import java.util.Map;
 import org.python.core.PyDictionary;
 import org.python.core.PyList;
 import org.python.core.PyObject;
+import org.python.core.PyString;
 
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.common.GeneralPurposeDataContainer;
@@ -93,7 +94,7 @@ public abstract class AbstractScriptExtensionManager {
 		}
 		else if( flavor.equals(ScriptConstants.NODE_SAVE_SCRIPT))  {
 			entry = "save";
-			arglist = "uuid,properties";
+			arglist = "uuid,aux";
 		}
 		scriptMap.put(key,createMap(entry,arglist));
 		setModulePath(key,modulePath);
@@ -145,11 +146,23 @@ public abstract class AbstractScriptExtensionManager {
 					script.initializeLocalsMap(mgr);
 					List<PyObject> pyargs = new ArrayList<>();
 					int index = 0;
-					for(Object arg:args) {
-						PyObject pyarg = j2p.objectToPy(arg);
-						script.setLocalVariable(index, pyarg);
-						pyargs.add(pyarg);
-						index++;
+					
+					if( args!=null ) {
+						for(Object arg:args) {
+							if( arg==null ) {
+								log.infof("%s.runScript: null argument in %s",CLSS,script.toString());
+								pyargs.add(new PyString(""));
+							}
+							else {
+								PyObject pyarg = j2p.objectToPy(arg);
+								script.setLocalVariable(index, pyarg);
+								pyargs.add(pyarg);
+							}
+							index++;
+						}
+					}
+					else {
+						log.warnf("%s.runScript: WARNING: null arguments in %s",CLSS,script.toString());
 					}
 					log.infof("%s.runScript: %s",CLSS,script.toString());
 					script.execute(mgr);

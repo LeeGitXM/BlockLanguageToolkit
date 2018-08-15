@@ -3,6 +3,7 @@
  */
 package com.ils.block;
 
+import java.util.Date;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
@@ -19,8 +20,12 @@ import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
+import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
+import com.ils.blt.common.notification.SignalNotification;
+import com.ils.common.watchdog.TestAwareQualifiedValue;
+import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
@@ -29,6 +34,9 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 @ExecutableBlock
 public class ControlCounter extends AbstractProcessBlock implements ProcessBlock {
 	private BlockProperty valueProperty = null;
+	private int counter = 0;
+	private String format = "%s";
+	protected PropertyType type = PropertyType.STRING;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -47,6 +55,7 @@ public class ControlCounter extends AbstractProcessBlock implements ProcessBlock
 	 */
 	public ControlCounter(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
+		counter = 0;
 		initialize();
 	}
 	
@@ -55,8 +64,12 @@ public class ControlCounter extends AbstractProcessBlock implements ProcessBlock
 	 */
 	private void initialize() {	
 		setName("ControlCounter");
-		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,TruthValue.UNSET,PropertyType.TRUTHVALUE,false);
+		counter = 0;
+		
+		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"0",PropertyType.STRING,false);
 		valueProperty.setBindingType(BindingType.ENGINE);
+		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
+
 		
 		// Define an input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
@@ -67,54 +80,87 @@ public class ControlCounter extends AbstractProcessBlock implements ProcessBlock
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
 		output.setHint(PlacementHint.R);
 		anchors.add(output);
-		AnchorPrototype output2 = new AnchorPrototype("out2",AnchorDirection.OUTGOING,ConnectionType.DATA);
-		output2.setHint(PlacementHint.R);
-		anchors.add(output2);
+	}
+	
+	/**
+	 * On a reset, zero the display.
+	 */
+	@Override
+	public void reset() {
+		super.reset();
+		counter = 0;
+		valueProperty.setValue("0");
+		notifyOfStatus();
+	}
+	/**
+	 * Zero the display on start of the block.
+	 */
+	@Override
+	public void start() { 
+		super.start();
+		counter = 0;
+		valueProperty.setValue("0");
+		notifyOfStatus();
+	}
+
+	/**
+	 * A new value has appeared on the input. Post a notification, then pass it on.
+	 * Ignore types that are not explicitly handled by this class.
+	 * @param incoming incoming new value.
+	 */
+	@Override
+	public void acceptValue(IncomingNotification incoming) {
+		super.acceptValue(incoming);
+		lastValue = incoming.getValue();
+		counter++;
+		log.errorf("%s.acceptValue: port %s formatted value =  %s.",getName(),incoming.getConnection().getUpstreamPortName(),""+counter);
+		if( lastValue!=null && lastValue.getValue()!=null ) {
+			if( !isLocked()  ) {
+				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
+				controller.acceptCompletionNotification(nvn);
+				// Convert the value according to the data type specified by the format.
+				String value = "" + counter;
+
+				updateStateForNewValue(lastValue);
+				QualifiedValue qv = new BasicQualifiedValue(value,lastValue.getQuality(),lastValue.getTimestamp()); 
+				valueProperty.setValue(value);
+				log.tracef("%s.acceptValue: port %s formatted value =  %s.",getName(),incoming.getConnection().getUpstreamPortName(),value);
+				notifyOfStatus(qv);
+			}
+		}
 	}
 	
 
-	/**
-	 * A new value has appeared on our input.  Pass it on.
-	 * 
-	 * Note: there can be several connections attached to a given port.
-	 * @param vcn incoming new value.
-	 */
-	@Override
-	public void acceptValue(IncomingNotification vcn) {
-		super.acceptValue(vcn);
-		lastValue = vcn.getValue();
-		if(!isLocked() ) {
-			//log.infof("%s.acceptValue: %s", getName(),qv.getValue().toString());
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
-			controller.acceptCompletionNotification(nvn);
-			notifyOfStatus(lastValue);
-		}
-	}
-
+	
 	/**
 	 * Send status update notification for our last latest state.
 	 */
 	@Override
-	public void notifyOfStatus() {}
+	public void notifyOfStatus() {
+		QualifiedValue qv = new TestAwareQualifiedValue(timer,valueProperty.getValue());
+		notifyOfStatus(qv);
+	}
+
 	private void notifyOfStatus(QualifiedValue qv) {
 		updateStateForNewValue(qv);
+		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,qv);
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 	/**
 	 * Augment the palette prototype for this block class.
 	 */
 	private void initializePrototype() {
-		prototype.setPaletteIconPath("Block/icons/palette/todo.png");
+		prototype.setPaletteIconPath("Block/icons/palette/counter.png");
 		prototype.setPaletteLabel("ControlCounter");
-		prototype.setTooltipText("Pass through");
+		prototype.setTooltipText("Show count of data passing through");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_CONTROL);
 		
-		BlockDescriptor desc = prototype.getBlockDescriptor();
-		desc.setBlockClass(getClass().getCanonicalName());
-		desc.setStyle(BlockStyle.JUNCTION);
-		desc.setPreferredHeight(32);
-		desc.setPreferredWidth(32);
-		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_MUSTARD);
-		desc.setCtypeEditable(true);
+		BlockDescriptor view = prototype.getBlockDescriptor();
+		view.setBlockClass(getClass().getCanonicalName());
+		view.setStyle(BlockStyle.READOUT);
+		view.setPreferredHeight(40);
+		view.setPreferredWidth(100);
+		view.setCtypeEditable(true);
+
 	}
 }

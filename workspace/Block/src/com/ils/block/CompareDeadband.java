@@ -66,6 +66,16 @@ public class CompareDeadband extends Compare implements ProcessBlock {
 	 * Augment the superclass method to include the deadband interval
 	 */
 	@Override
+	public void reset() {
+		super.reset();
+		truthValue = TruthValue.UNSET;
+	}
+
+	
+	/**
+	 * Augment the superclass method to include the deadband interval
+	 */
+	@Override
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
@@ -88,68 +98,74 @@ public class CompareDeadband extends Compare implements ProcessBlock {
 	 */
 	@Override
 	public void evaluate() {
-		log.tracef("%s.evaluate: %s,  x=%s, y=%s",getName(),truthValue.name(),(x==null?"null":x.toString()),(y==null?"null":y.toString()));
-		state = TruthValue.UNKNOWN;
-		QualifiedValue result = null;
-		if( x==null ) {
-			result = new TestAwareQualifiedValue(timer,state,new BasicQuality("'x' is unset",Quality.Level.Bad));
-		}
-		else if( y==null ) {
-			result = new TestAwareQualifiedValue(timer,state,new BasicQuality("'y' is unset",Quality.Level.Bad));
-		}
-		else if( !x.getQuality().isGood()) {
-			result = new TestAwareQualifiedValue(timer,state,x.getQuality());
-		}
-		else if( !y.getQuality().isGood()) {
-			result = new TestAwareQualifiedValue(timer,state,y.getQuality());
-		}
-		double xx = Double.NaN;
-		double yy = Double.NaN;
-		if( result == null ) {
-			try {
-				xx = Double.parseDouble(x.getValue().toString());
+		if( !isLocked() ) {
+			log.infof("%s.evaluate: %s,  x=%s, y=%s",getName(),truthValue.name(),(x==null?"null":x.toString()),(y==null?"null":y.toString()));
+			state = TruthValue.UNKNOWN;
+			QualifiedValue result = null;
+			if( x==null ) {
+				result = new TestAwareQualifiedValue(timer,state,new BasicQuality("'x' is unset",Quality.Level.Bad));
+			}
+			else if( y==null ) {
+				result = new TestAwareQualifiedValue(timer,state,new BasicQuality("'y' is unset",Quality.Level.Bad));
+			}
+			else if( !x.getQuality().isGood()) {
+				result = new TestAwareQualifiedValue(timer,state,x.getQuality());
+			}
+			else if( !y.getQuality().isGood()) {
+				result = new TestAwareQualifiedValue(timer,state,y.getQuality());
+			}
+			double xx = Double.NaN;
+			double yy = Double.NaN;
+			if( result == null ) {
 				try {
-					yy = Double.parseDouble(y.getValue().toString());
+					xx = Double.parseDouble(x.getValue().toString());
+					try {
+						yy = Double.parseDouble(y.getValue().toString());
+					}
+					catch(NumberFormatException nfe) {
+						result = new TestAwareQualifiedValue(timer,TruthValue.UNKNOWN,new BasicQuality("'y' is not a valid double",Quality.Level.Bad));
+					}
 				}
 				catch(NumberFormatException nfe) {
-					result = new TestAwareQualifiedValue(timer,TruthValue.UNKNOWN,new BasicQuality("'y' is not a valid double",Quality.Level.Bad));
+					result = new TestAwareQualifiedValue(timer,TruthValue.UNKNOWN,new BasicQuality("'x' is not a valid double",Quality.Level.Bad));
 				}
 			}
-			catch(NumberFormatException nfe) {
-				result = new TestAwareQualifiedValue(timer,TruthValue.UNKNOWN,new BasicQuality("'x' is not a valid double",Quality.Level.Bad));
-			}
-		}
-
-		if( result==null ) {     // Success!
-			if( x.getQuality().isGood() && y.getQuality().isGood() ) {
-				double db = deadband;
-				if( db<0) db = -db;   // Abs value
-				TruthValue newValue = TruthValue.UNKNOWN;
-				if( xx>=yy+offset ) newValue = TruthValue.TRUE;
-				else if( xx<yy+offset-db) newValue = TruthValue.FALSE;
-				if( !newValue.equals(truthValue)) {
-					truthValue = newValue;
-					lastValue = new TestAwareQualifiedValue(timer,truthValue);
+	
+			if( result==null ) {     // Success!
+				if( x.getQuality().isGood() && y.getQuality().isGood() ) {
+					double db = deadband;
+					if( db < 0) 
+						db = -db;   // Abs value
+					if (truthValue == TruthValue.UNKNOWN || truthValue == TruthValue.UNSET)  // If previously unknown or unset, ignore deadband 
+						db = 0;
+					TruthValue newValue = truthValue;  // set to previous value, so it will be unchanged if in deadband
+					if( xx >= yy + offset)
+						newValue = TruthValue.TRUE;
+					else 
+						if( xx < yy + offset - db) 
+							newValue = TruthValue.FALSE;
+					if( !newValue.equals(truthValue)) {
+						truthValue = newValue;
+						lastValue = new TestAwareQualifiedValue(timer,truthValue);
+					}
+					else {
+						// No change, do nothing
+						return;
+					}
 				}
 				else {
-					// No change, do nothing
-					log.debugf("%s.evaluate: NO CHANGE (%s)",getName(),newValue.name());
-					return;
+					Quality q = x.getQuality();
+					if( q.isGood()) 
+						q = y.getQuality();
+					lastValue = new TestAwareQualifiedValue(timer,state,q);
 				}
+	
 			}
 			else {
-				Quality q = x.getQuality();
-				if( q.isGood()) q = y.getQuality();
-				lastValue = new TestAwareQualifiedValue(timer,state,q);
+				lastValue = result;
 			}
-
-		}
-		else {
-			lastValue = result;
-		}
-		
-		if( !isLocked() ) {
-			log.debugf("%s.evaluate: wrote %s",getName(),lastValue.getValue().toString());
+			
+			log.infof("%s.evaluate: wrote %s",getName(),lastValue.getValue().toString());
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);	
 			notifyOfStatus(lastValue);

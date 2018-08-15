@@ -2,7 +2,7 @@
 
 	<import file="${basedir}/BLT_Build/build.xml"/>
 
-	<property name="version.build" value="11" />	
+	<property name="version.build" value="15" />	
 	<!-- Change version.beta value to "" for release builds -->
 	<property name="version.beta" value="-development" />		
 	<property name="BLTModule.version" value="1.6.29.${version.build}" />
@@ -258,6 +258,24 @@
 	<target name="python.jars" >
 		<echo message="Copying jar files from ${basedir}/BLT_Build/temp_modl" />
 		
+		<copy todir="${brpo.py.lib}/../../lib/core/common">
+			<fileset dir="${basedir}/BLT_Build/temp_modl">
+				<include name="ils-common.jar" />
+				<include name="blt-common.jar" />
+				<include name="jackson*.gz" />
+				<include name="commons-math*.gz" />
+				<include name="commons-math*.jar" />
+			</fileset>
+		</copy>
+		<copy todir="${demo.py.lib}/../../lib/core/common">
+			<fileset dir="${basedir}/BLT_Build/temp_modl">
+				<include name="ils-common.jar" />
+				<include name="blt-common.jar" />
+				<include name="jackson*.gz" />
+				<include name="commons-math*.gz" />
+				<include name="commons-math*.jar" />
+			</fileset>
+		</copy>
 		<copy todir="${escorez.py.lib}/../../lib/core/common">
 			<fileset dir="${basedir}/BLT_Build/temp_modl">
 				<include name="ils-common.jar" />
@@ -275,6 +293,24 @@
 				<include name="commons-math*.gz" />
 				<include name="commons-math*.jar" />
 			</fileset>
+		</copy>		
+		<copy todir="${halobutyl.py.lib}/../../lib/core/common">
+			<fileset dir="${basedir}/BLT_Build/temp_modl">
+				<include name="ils-common.jar" />
+				<include name="blt-common.jar" />
+				<include name="jackson*.gz" />
+				<include name="commons-math*.gz" />
+				<include name="commons-math*.jar" />
+			</fileset>
+		</copy>
+		<copy todir="${test.py.lib}/../../lib/core/common">
+			<fileset dir="${basedir}/BLT_Build/temp_modl">
+				<include name="ils-common.jar" />
+				<include name="blt-common.jar" />
+				<include name="jackson*.gz" />
+				<include name="commons-math*.gz" />
+				<include name="commons-math*.jar" />
+			</fileset>
 		</copy>
 		<copy todir="${vistalon.py.lib}/../../lib/core/common">
 			<fileset dir="${basedir}/BLT_Build/temp_modl">
@@ -285,7 +321,17 @@
 				<include name="commons-math*.jar" />
 			</fileset>
 		</copy>
-		
+
+		<copy todir="${brpo.py.lib}/../../lib/core/common">
+			<fileset dir="${jar.dir}">
+				<include name="jackson*.jar" />
+			</fileset>
+		</copy>
+		<copy todir="${demo.py.lib}/../../lib/core/common">
+			<fileset dir="${jar.dir}">
+				<include name="jackson*.jar" />
+			</fileset>
+		</copy>
 		<copy todir="${escorez.py.lib}/../../lib/core/common">
 			<fileset dir="${jar.dir}">
 				<include name="jackson*.jar" />
@@ -296,12 +342,36 @@
 				<include name="jackson*.jar" />
 			</fileset>
 		</copy>
+		<copy todir="${halobutyl.py.lib}/../../lib/core/common">
+			<fileset dir="${jar.dir}">
+				<include name="jackson*.jar" />
+			</fileset>
+		</copy>
+		<copy todir="${test.py.lib}/../../lib/core/common">
+			<fileset dir="${jar.dir}">
+				<include name="jackson*.jar" />
+			</fileset>
+		</copy>
 		<copy todir="${vistalon.py.lib}/../../lib/core/common">
 			<fileset dir="${jar.dir}">
 				<include name="jackson*.jar" />
 			</fileset>
 		</copy>
 		
+		<copy todir="${brpo.py.lib}/../../lib/core/gateway">
+			<fileset dir="${basedir}/BLT_Build/temp_modl">
+				<include name="commons-math3-3.1.6.jar" />
+				<include name="blt-gateway.jar" />
+				<include name="block-definition.jar" />
+			</fileset>
+		</copy>
+		<copy todir="${demo.py.lib}/../../lib/core/gateway">
+			<fileset dir="${basedir}/BLT_Build/temp_modl">
+				<include name="commons-math3-3.1.6.jar" />
+				<include name="blt-gateway.jar" />
+				<include name="block-definition.jar" />
+			</fileset>
+		</copy>
 		<copy todir="${escorez.py.lib}/../../lib/core/gateway">
 			<fileset dir="${basedir}/BLT_Build/temp_modl">
 				<include name="commons-math3-3.1.6.jar" />
@@ -316,6 +386,20 @@
 				<include name="block-definition.jar" />
 			</fileset>
 		</copy>
+		<copy todir="${halobutyl.py.lib}/../../lib/core/gateway">
+			<fileset dir="${basedir}/BLT_Build/temp_modl">
+				<include name="commons-math3-3.1.6.jar" />
+				<include name="blt-gateway.jar" />
+				<include name="block-definition.jar" />
+			</fileset>
+		</copy>
+			<copy todir="${test.py.lib}/../../lib/core/gateway">
+				<fileset dir="${basedir}/BLT_Build/temp_modl">
+					<include name="commons-math3-3.1.6.jar" />
+					<include name="blt-gateway.jar" />
+					<include name="block-definition.jar" />
+				</fileset>
+			</copy>
 		<copy todir="${vistalon.py.lib}/../../lib/core/gateway">
 			<fileset dir="${basedir}/BLT_Build/temp_modl">
 				<include name="commons-math3-3.1.6.jar" />
