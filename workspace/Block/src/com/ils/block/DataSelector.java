@@ -58,14 +58,14 @@ public class DataSelector extends AbstractProcessBlock implements ProcessBlock {
 		this.state = TruthValue.UNSET;
 		
 		// Define two data inputs
-		AnchorPrototype input1 = new AnchorPrototype(IN_PORT1_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
-		input1.setHint(PlacementHint.L);
-		input1.setAnnotation("1");
-		anchors.add(input1);
 		AnchorPrototype input2 = new AnchorPrototype(IN_PORT2_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
 		input2.setHint(PlacementHint.L);
 		input2.setAnnotation("2");
 		anchors.add(input2);
+		AnchorPrototype input1 = new AnchorPrototype(IN_PORT1_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
+		input1.setHint(PlacementHint.L);
+		input1.setAnnotation("1");
+		anchors.add(input1);
 		AnchorPrototype control = new AnchorPrototype(BlockConstants.RECEIVER_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
 		control.setHint(PlacementHint.T);
 		anchors.add(control);
