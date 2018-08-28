@@ -117,11 +117,14 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		this.transmitEnabled= descriptor.isTransmitEnabled();
 
 		this.anchors = new HashMap<>();
+		int order = 0;
 		for( AnchorPrototype ap:descriptor.getAnchors() ) {
 			log.debugf("%s: Creating anchor descriptor %s", TAG,ap.getName());
+			ap.setSortOrder(order);  // let's preserve the order these were in.
 			ProcessAnchorDescriptor pad = new ProcessAnchorDescriptor((ap.getAnchorDirection()==AnchorDirection.INCOMING?AnchorType.Terminus:AnchorType.Origin),
-					ap.getConnectionType(),UUID.randomUUID(),ap.getName(),ap.getAnnotation(),ap.getHint(),ap.isMultiple());
+					ap.getConnectionType(),UUID.randomUUID(),ap.getName(),ap.getAnnotation(),ap.getHint(),ap.isMultiple(), ap.getSortOrder());
 			pad.setHidden(ap.isHidden());
+			order++;
 			anchors.put(ap.getName(), pad);
 		}
 		this.properties = new ArrayList<BlockProperty>();
@@ -162,7 +165,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 			for( SerializableAnchor sa:sb.getAnchors() ) {
 				log.debugf("%s: %s creating serializable anchor %s (%s)", TAG,sb.getName(),sa.getDisplay(),sa.getConnectionType().name());
 				ProcessAnchorDescriptor pad = new ProcessAnchorDescriptor((sa.getDirection()==AnchorDirection.INCOMING?AnchorType.Terminus:AnchorType.Origin),
-						sa.getConnectionType(),sa.getId(),sa.getDisplay(),sa.getAnnotation(),sa.getHint(),sa.isMultiple());
+						sa.getConnectionType(),sa.getId(),sa.getDisplay(),sa.getAnnotation(),sa.getHint(),sa.isMultiple(), sa.getSortOrder());
 				pad.setHidden(sa.isHidden());
 				anchors.put(sa.getDisplay(),pad);
 			}

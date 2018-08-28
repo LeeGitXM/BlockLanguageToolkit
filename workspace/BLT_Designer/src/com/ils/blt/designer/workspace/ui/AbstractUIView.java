@@ -17,6 +17,8 @@ import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.swing.ImageIcon;
@@ -128,7 +130,16 @@ public abstract class AbstractUIView extends JComponent
 		int index = 0;        // Count of descriptors
 		hiddenIndex = -1;     // Unless set, nothing is hidden
 		// Create counts for each side. There are both defaults and placement hints.
-		for(ProcessAnchorDescriptor desc:block.getAnchors()) {
+		// Anchors come back unsorted, which may result in undesirable display behavior (y before x, etc) so sort them first
+		ArrayList<ProcessAnchorDescriptor> anchs = new ArrayList(block.getAnchors());
+		Collections.sort(anchs, Comparator.comparing(ProcessAnchorDescriptor::getSortOrder));
+		
+		for(ProcessAnchorDescriptor desc:anchs) {
+			
+			
+			log.errorf("EREIAM JH - initAnchorPoints counts(tblr)" + desc.getAnnotation() + " " + desc.getSortOrder() + " " + desc.getConnectionType().name());
+			
+			
 			if( desc.isHidden()) hiddenIndex = index;
 			PlacementHint hint = desc.getHint();
 			if(hint==null) hint = PlacementHint.UNSPECIFIED;
@@ -182,7 +193,7 @@ public abstract class AbstractUIView extends JComponent
 		
 		// Re-iterate using the same criteria as above
 		// NOTE: The anchor point should be on the component boundary. Stubs are drawn inward.
-		for(ProcessAnchorDescriptor desc:block.getAnchors()) {
+		for(ProcessAnchorDescriptor desc:anchs) {
 			// Top
 			if(desc.getHint().equals(PlacementHint.T) ) {
 				topIndex++;

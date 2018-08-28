@@ -246,7 +246,7 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 		prototype.setPaletteIconPath("Block/icons/palette/data_conditioner.png");
 		prototype.setPaletteLabel("Conditioner");
 		prototype.setTooltipText("Apply additional quality constraints to the input.");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_MISC);
+		prototype.setTabName(BlockConstants.PALETTE_TAB_CONNECTIVITY);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setEmbeddedLabel("Data\nConditioner");

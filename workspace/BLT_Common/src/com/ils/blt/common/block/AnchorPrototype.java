@@ -26,6 +26,7 @@ public class AnchorPrototype {
 	private PlacementHint hint = PlacementHint.UNSPECIFIED;
 	private boolean hidden = false;
 	private boolean multiple = true;  // Allow multiple by default
+	private int sortOrder = 0;
 	
 	/**
 	 * Deserialize from a Json string 
@@ -78,6 +79,7 @@ public class AnchorPrototype {
 	public PlacementHint getHint() {return hint;}
 	public boolean isHidden() {return hidden;}
 	public boolean isMultiple() { return multiple; }
+	public int getSortOrder() { return sortOrder; }
 	
 	public String getName() {return name;	}
 	public void setAnchorDirection(AnchorDirection anchorDirection) {this.anchorDirection = anchorDirection;}
@@ -87,6 +89,7 @@ public class AnchorPrototype {
 	public void setHint(PlacementHint hint) {this.hint = hint;}
 	public void setIsMultiple(boolean multi){this.multiple = multi; }
 	public void setName(String name) {this.name = name;}
+	public void setSortOrder(int sortOrder) { this.sortOrder = sortOrder; }
 	
 	/**
 	 * Serialize into a JSON string
@@ -103,4 +106,6 @@ public class AnchorPrototype {
 		}
 		return json;
 	}
+
+
 }

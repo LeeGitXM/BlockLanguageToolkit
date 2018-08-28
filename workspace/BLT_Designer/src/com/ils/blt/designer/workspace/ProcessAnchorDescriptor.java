@@ -18,15 +18,17 @@ public class ProcessAnchorDescriptor extends AnchorDescriptor {
 	private PlacementHint hint;
 	private final boolean multiple;
 	private QualifiedValue lastValue = null;
+	private int sortOrder = 0;
 
 	
-	public ProcessAnchorDescriptor(AnchorType type,ConnectionType ctype, Object id,String display,String note,PlacementHint placementHint,boolean supportsMultiple) {
+	public ProcessAnchorDescriptor(AnchorType type,ConnectionType ctype, Object id,String display,String note,PlacementHint placementHint,boolean supportsMultiple, int order) {
 		super(type,id,display);
 		this.connectionType = ctype;
 		this.annotation = note;
 		this.hint = placementHint;
 		this.hidden = false;
 		this.multiple = supportsMultiple;
+		this.setSortOrder(order);
 	}
 
 
@@ -36,6 +38,7 @@ public class ProcessAnchorDescriptor extends AnchorDescriptor {
 	public QualifiedValue getLastValue() { return lastValue; }
 	public boolean isHidden() { return hidden; }
 	public boolean isMultiple() { return multiple; }
+	public int getSortOrder() { return sortOrder; }
 	/**
 	 * Allow changes to the connection type for the rare instances where the
 	 * user wishes to customize a block before it has ever been saved.
@@ -52,4 +55,6 @@ public class ProcessAnchorDescriptor extends AnchorDescriptor {
 	 * @param qv
 	 */
 	public void setLastValue(QualifiedValue qv) { this.lastValue = qv; }
+	public void setSortOrder(int sortOrder) { this.sortOrder = sortOrder; }
+	
 }

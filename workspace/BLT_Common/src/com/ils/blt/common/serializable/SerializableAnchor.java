@@ -30,6 +30,7 @@ public class SerializableAnchor {
 	private PlacementHint hint = PlacementHint.UNSPECIFIED;
 	private boolean hidden = false;
 	private boolean multiple = true;
+	private int sortOrder = 0;
 
 	public SerializableAnchor() {
 	}
@@ -43,6 +44,7 @@ public class SerializableAnchor {
 	public UUID getParentId() { return parentId; }
 	public boolean isHidden() {return hidden;}
 	public boolean isMultiple() {return multiple;}
+	public int getSortOrder() { return sortOrder; }
 
 	public void setId(Object identifier) { id=identifier; }
 	public void setAnnotation(String note) { this.annotation = note; }
@@ -53,6 +55,7 @@ public class SerializableAnchor {
 	public void setHint(PlacementHint hint) {this.hint = hint;}
 	public void setMultiple(boolean multiple) {this.multiple = multiple;}
 	public void setParentId(UUID id) { parentId = id; };
+	public void setSortOrder(int sortOrder) { this.sortOrder = sortOrder; }
 
 	// So that class may be used as a map key
 	// Same name and parent is sufficient to prove equality
@@ -68,6 +71,7 @@ public class SerializableAnchor {
 		newAnchor.setHint(hint);
 		newAnchor.setMultiple(multiple);
 		newAnchor.setParentId(parentId);
+		newAnchor.setSortOrder(sortOrder);
 		return newAnchor;
 	}
 	// So that class may be used as a map key
@@ -97,4 +101,5 @@ public class SerializableAnchor {
 	public String toString() {
 		return String.format("%s: %s (%s)",TAG,id.toString(),(direction==AnchorDirection.INCOMING?"Incoming":"Outgoing"));
 	}
+
 }
