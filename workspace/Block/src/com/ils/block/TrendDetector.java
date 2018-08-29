@@ -150,14 +150,14 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 		
 		
 		// Define a 3 inputs.
-		AnchorPrototype input = new AnchorPrototype(PORT_STANDARD_DEVIATION,AnchorDirection.INCOMING,ConnectionType.DATA);
-		input.setAnnotation("S");
-		anchors.add(input);
-		input = new AnchorPrototype(PORT_TARGET,AnchorDirection.INCOMING,ConnectionType.DATA);
+		AnchorPrototype input = new AnchorPrototype(PORT_TARGET,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setAnnotation("T");
 		anchors.add(input);
 		input = new AnchorPrototype(PORT_VALUE,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setAnnotation("V");
+		anchors.add(input);
+		input = new AnchorPrototype(PORT_STANDARD_DEVIATION,AnchorDirection.INCOMING,ConnectionType.DATA);
+		input.setAnnotation("S");
 		anchors.add(input);
 
 		// Define the main output, a truth value.
