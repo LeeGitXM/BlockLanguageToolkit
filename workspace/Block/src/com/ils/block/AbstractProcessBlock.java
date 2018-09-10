@@ -302,8 +302,10 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 
 		if( activities.size()>0 ) {
 			List<Activity> buffer = descriptor.getActivities();
-			for( Activity act:activities) {
-				buffer.add(act.clone());
+			synchronized(activities) {
+				for( Activity act:activities) {
+					buffer.add(act.clone());
+				}
 			}
 		}
 		return descriptor;
@@ -376,7 +378,9 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		if( activities.getBufferSize()>0) {
 			if(value==null) value="";
 			Activity activity = new Activity(desc,value);
-			activities.add(activity);
+			synchronized(activities) {
+				activities.add(activity);
+			}
 		}
 	}
 	/**
@@ -392,7 +396,9 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 			if(prop==null)  prop="null";
 			if(value==null) value="null";
 			Activity activity = new Activity(desc,String.format("%s=%s", prop,value));
-			activities.add(activity);
+			synchronized(activities) {
+				activities.add(activity);
+			}
 		}
 	}
 	/**
@@ -408,7 +414,9 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 			if(prop==null)  prop="";
 			if(value==null) value="";
 			Activity activity = new Activity(desc,String.format("%s=%s (%s)", prop,value,key));
-			activities.add(activity);
+			synchronized(activities) {
+				activities.add(activity);
+			}
 		}
 	}
 	/**
@@ -685,7 +693,9 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE)) {
 			try {
 				int bufferSize = Integer.parseInt(event.getNewValue().toString());
-				activities.setBufferSize(bufferSize);
+				synchronized(activities) {
+					activities.setBufferSize(bufferSize);
+				}
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert buffer size to an integer (%s)",getName(),nfe.getLocalizedMessage());
