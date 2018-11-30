@@ -137,7 +137,7 @@ public abstract class AbstractUIView extends JComponent
 		for(ProcessAnchorDescriptor desc:anchs) {
 			
 			
-			log.errorf("EREIAM JH - initAnchorPoints counts(tblr)" + desc.getAnnotation() + " " + desc.getSortOrder() + " " + desc.getConnectionType().name());
+//			log.tracef("EREIAM JH - initAnchorPoints counts(tblr)" + desc.getAnnotation() + " " + desc.getSortOrder() + " " + desc.getConnectionType().name());
 			
 			
 			if( desc.isHidden()) hiddenIndex = index;
@@ -170,7 +170,7 @@ public abstract class AbstractUIView extends JComponent
 			}
 			index++;
 		}
-		//log.infof("%s.initAnchorPoints counts(tblr) %d,%d,%d,%d ...",TAG,topCount,bottomCount,leftCount,rightCount);
+//		log.tracef("%s.initAnchorPoints counts(tblr) %d,%d,%d,%d ...",TAG,topCount,bottomCount,leftCount,rightCount);
 		
 		// Calculate side segments for the interior block (sans borders)
 		int inset = INSET+BORDER_WIDTH;   // Align the connections with the un-bordered block

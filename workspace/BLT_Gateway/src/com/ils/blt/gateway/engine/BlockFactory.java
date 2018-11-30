@@ -117,6 +117,7 @@ public class BlockFactory  {
 				proto.setHint(sa.getHint());
 				proto.setHidden(sa.isHidden());
 				proto.setIsMultiple(sa.isMultiple());
+				proto.setSortOrder(sa.getSortOrder());
 				descriptors.add(proto);
 			}
 			pb.setAnchors(descriptors);

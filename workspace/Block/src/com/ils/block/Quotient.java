@@ -163,7 +163,7 @@ public class Quotient extends AbstractProcessBlock implements ProcessBlock {
 			}
 			double aa = Double.NaN;
 			double bb = Double.NaN;
-			if( lastValue == null ) {
+			if( lastValue == null || lastValue.getQuality().isGood()) {
 				try {
 					aa = Double.parseDouble(a.getValue().toString());
 					try {
@@ -181,7 +181,7 @@ public class Quotient extends AbstractProcessBlock implements ProcessBlock {
 				}
 			}
 			
-			if( lastValue==null ) {     // Success!
+			if( lastValue==null  || lastValue.getQuality().isGood()) {     // Success!
 				
 				lastValue = new TestAwareQualifiedValue(timer,new Double(aa/bb));
 			}

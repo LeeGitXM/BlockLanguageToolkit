@@ -29,6 +29,8 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 public class DataSelector extends AbstractProcessBlock implements ProcessBlock {
 	private static final String IN_PORT1_NAME = "in1";
 	private static final String IN_PORT2_NAME = "in2";
+	private QualifiedValue in1 = null;  // save most recent inputs in case switch is thrown
+	private QualifiedValue in2 = null;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -76,7 +78,7 @@ public class DataSelector extends AbstractProcessBlock implements ProcessBlock {
 		anchors.add(output);
 		
 		for(AnchorPrototype desc:getAnchors()) {
-			log.errorf("EREIAM JH - initAnchorPoints counts(tblr)" + desc.getAnnotation() + " " + desc.getConnectionType().name());
+			log.tracef("EREIAM JH - initAnchorPoints counts(tblr)" + desc.getAnnotation() + " " + desc.getConnectionType().name());
 		}
 			
 
@@ -96,8 +98,19 @@ public class DataSelector extends AbstractProcessBlock implements ProcessBlock {
 		if(!isLocked() ) {
 			if( vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(BlockConstants.RECEIVER_PORT_NAME)) {
 				this.state = qualifiedValueAsTruthValue(vcn.getValue());
+
+				QualifiedValue out = null;
+				if( state.equals(TruthValue.TRUE)) { out = in1;	}
+				if( state.equals(TruthValue.FALSE)) { out = in2; }
+				if (out != null) {
+					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,out);
+					controller.acceptCompletionNotification(nvn);
+					notifyOfStatus(lastValue);
+				}
+				
 			}
 			else if( vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(IN_PORT1_NAME)) {
+				in1 = vcn.getValue();
 				if( state.equals(TruthValue.TRUE)) {
 					lastValue = vcn.getValue();
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
@@ -106,6 +119,7 @@ public class DataSelector extends AbstractProcessBlock implements ProcessBlock {
 				}
 			}
 			else if( vcn.getConnection().getDownstreamPortName().equalsIgnoreCase(IN_PORT2_NAME)) {
+				in2 = vcn.getValue();
 				if( state.equals(TruthValue.FALSE)) {
 					lastValue = vcn.getValue();
 					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);

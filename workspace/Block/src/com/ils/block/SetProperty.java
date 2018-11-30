@@ -90,6 +90,10 @@ public class SetProperty extends AbstractProcessBlock implements ProcessBlock {
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
 		QualifiedValue qv = vcn.getValue();
+
+		log.errorf("EREIAM JH - SetProperty accepting value - @@@@@@@@@@@@@@@@@@@@@@@@@*********************************************");
+		log.errorf("EREIAM JH - SetProperty - lastValue " + lastValue);
+		log.errorf("EREIAM JH - SetProperty - qv" + qv);
 		
 		if( qv.getQuality().isGood() && !isLocked() && qv.getValue() != null )  {
 			signal = new Signal(BlockConstants.COMMAND_CONFIGURE,propertyName,qv.getValue().toString());
@@ -116,6 +120,7 @@ public class SetProperty extends AbstractProcessBlock implements ProcessBlock {
 			log.warnf("%s.propertyChange:Unrecognized property (%s)",TAG,propertyName);
 		}
 	}
+	
 	/**
 	 * @return a block-specific description of internal statue
 	 */
@@ -139,6 +144,7 @@ public class SetProperty extends AbstractProcessBlock implements ProcessBlock {
 	private void notifyOfStatus(QualifiedValue qv) {
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
+	
 	/**
 	 * Augment the palette prototype for this block class.
 	 */
