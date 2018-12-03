@@ -17,6 +17,7 @@ import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
+import com.ils.blt.common.block.PlacementHint;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
@@ -84,12 +85,15 @@ public class QualValue extends AbstractProcessBlock implements ProcessBlock {
 		// Define an input for each of the three components
 		AnchorPrototype tim = new AnchorPrototype(TIME_PORT,AnchorDirection.INCOMING,ConnectionType.ANY);
 		tim.setAnnotation("T");
+		tim.setHint(PlacementHint.LT);
 		anchors.add(tim);
 		AnchorPrototype input = new AnchorPrototype(VALUE_PORT,AnchorDirection.INCOMING,ConnectionType.ANY);
 		input.setAnnotation("V");
+		input.setHint(PlacementHint.L);
 		anchors.add(input);
 		AnchorPrototype qual = new AnchorPrototype(QUALITY_PORT,AnchorDirection.INCOMING,ConnectionType.TEXT);
 		qual.setAnnotation("Q");
+		qual.setHint(PlacementHint.LB);
 		anchors.add(qual);
 
 		// Define a single output

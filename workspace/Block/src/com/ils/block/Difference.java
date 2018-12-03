@@ -14,6 +14,7 @@ import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
+import com.ils.blt.common.block.PlacementHint;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
@@ -75,10 +76,12 @@ public class Difference extends AbstractProcessBlock implements ProcessBlock {
 		AnchorPrototype input = new AnchorPrototype(A_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setIsMultiple(false);
 		input.setAnnotation("a");
+		input.setHint(PlacementHint.LT);
 		anchors.add(input);
 		input = new AnchorPrototype(B_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setIsMultiple(false);
 		input.setAnnotation("b");
+		input.setHint(PlacementHint.LB);
 		anchors.add(input);
 
 		// Define a single output

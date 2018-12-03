@@ -121,6 +121,9 @@ public abstract class AbstractUIView extends JComponent
 		int rightCount = 0;
 		int rightIndex = 0;
 		int leftCount= 0;
+		boolean leftTopOrBottomExists = false;  // in this case, PlacementHint.L should only go in the middle
+		boolean rightTopOrBottomExists = false;  // in this case, PlacementHint.R should only go in the middle
+		boolean bottomLeftOrRightExists = false;  // in this case, PlacementHint.B should only go in the middle
 		int leftIndex= 0;
 		int topCount = 0;
 		int topIndex = 0;
@@ -132,20 +135,26 @@ public abstract class AbstractUIView extends JComponent
 		// Create counts for each side. There are both defaults and placement hints.
 		// Anchors come back unsorted, which may result in undesirable display behavior (y before x, etc) so sort them first
 		ArrayList<ProcessAnchorDescriptor> anchs = new ArrayList(block.getAnchors());
-		Collections.sort(anchs, Comparator.comparing(ProcessAnchorDescriptor::getSortOrder));
+		Collections.sort(anchs, Comparator.comparing(ProcessAnchorDescriptor::getSortOrder));  // I don't think sortOrder is actually used - CJL
 		
 		for(ProcessAnchorDescriptor desc:anchs) {
 			
 			
-//			log.tracef("EREIAM JH - initAnchorPoints counts(tblr)" + desc.getAnnotation() + " " + desc.getSortOrder() + " " + desc.getConnectionType().name());
+			log.tracef("EREIAM JH - initAnchorPoints counts(tblr)" + desc.getAnnotation() + " " + desc.getSortOrder() + " " + desc.getConnectionType().name());
 			
 			
 			if( desc.isHidden()) hiddenIndex = index;
 			PlacementHint hint = desc.getHint();
 			if(hint==null) hint = PlacementHint.UNSPECIFIED;
 			if( hint.equals(PlacementHint.L)) leftCount++;
+			else if(hint.equals(PlacementHint.LT)) { leftCount++; leftTopOrBottomExists = true; }
+			else if(hint.equals(PlacementHint.LB)) { leftCount++; leftTopOrBottomExists = true; }
 			else if(hint.equals(PlacementHint.R)) rightCount++;
+			else if(hint.equals(PlacementHint.RT)) { rightCount++; rightTopOrBottomExists = true; }
+			else if(hint.equals(PlacementHint.RB)) { rightCount++; rightTopOrBottomExists = true; }
 			else if(hint.equals(PlacementHint.B)) bottomCount++;
+			else if(hint.equals(PlacementHint.BL)) { bottomCount++; bottomLeftOrRightExists = true; }
+			else if(hint.equals(PlacementHint.BR)) { bottomCount++; bottomLeftOrRightExists = true; }
 			else if(hint.equals(PlacementHint.T)) topCount++;
 			// Now consider the defaults by type and direction
 			else if(desc.getConnectionType()==ConnectionType.SIGNAL &&
@@ -213,33 +222,44 @@ public abstract class AbstractUIView extends JComponent
 				getAnchorPoints().add(ap);
 			}
 			// Bottom
-			else if(desc.getHint().equals(PlacementHint.B) ) {
+			else if( desc.getHint().equals(PlacementHint.B) || desc.getHint().equals(PlacementHint.BL) || desc.getHint().equals(PlacementHint.BR) ) {
 				bottomIndex++;  
 				if(bottomCount==1) {
 					if(desc.getType().equals(AnchorType.Terminus)) bottomIndex=1;
 					else bottomIndex=3;
 				}
+				if(bottomCount==2 && bottomIndex==2) bottomIndex++;
+				// Check if there is an BL or BR as that will change the B locations
+				int useIndex = bottomIndex;
+				if (desc.getHint().equals(PlacementHint.BL)) useIndex = 1;
+				else if (desc.getHint().equals(PlacementHint.BR)) useIndex = 3;
+				if (bottomLeftOrRightExists) useIndex = 2;  // if left or right is specified on any input, put B in the middle
 				else if(bottomCount==2 && bottomIndex==2) bottomIndex++;
 			
 				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Origin,
 						desc.getConnectionType(),
-						new Point(inset+(bottomIndex*interiorWidth)/bottomSegments,sz.height),
-						new Point(inset+(bottomIndex*interiorWidth)/bottomSegments,sz.height+LEADER_LENGTH),
-						new Rectangle((bottomIndex*interiorWidth)/bottomSegments,sz.height-2*inset,2*inset,2*inset),
+						new Point(inset+(useIndex*interiorWidth)/bottomSegments,sz.height),
+						new Point(inset+(useIndex*interiorWidth)/bottomSegments,sz.height+LEADER_LENGTH),
+						new Rectangle((useIndex*interiorWidth)/bottomSegments,sz.height-2*inset,2*inset,2*inset),
 						desc.isMultiple(),
 						desc.getAnnotation());   // Hotspot shape.
 				ap.setSide(AnchorSide.BOTTOM);
 				getAnchorPoints().add(ap);
 			}
 			// Left side
-			else if( desc.getHint().equals(PlacementHint.L)  ) {
+			else if( desc.getHint().equals(PlacementHint.L) || desc.getHint().equals(PlacementHint.LT) || desc.getHint().equals(PlacementHint.LB) ) {
 				leftIndex++;
 				if(leftCount==2 && leftIndex==2) leftIndex++;
+				// Check if there is an LT or LB as that will change the L locations
+				int useIndex = leftIndex;
+				if (desc.getHint().equals(PlacementHint.LT)) useIndex = 1;
+				else if (desc.getHint().equals(PlacementHint.LB)) useIndex = 3;
+				if (leftTopOrBottomExists) useIndex = 2;  // if top or bottom is specified on any input, put L in the middle
 				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Terminus,
 						desc.getConnectionType(),
-						new Point(0,inset+leftIndex*interiorHeight/leftSegments),
-						new Point(-LEADER_LENGTH,inset+leftIndex*interiorHeight/leftSegments),
-						new Rectangle(0,leftIndex*interiorHeight/leftSegments,2*inset,2*inset),
+						new Point(0,inset+useIndex*interiorHeight/leftSegments),
+						new Point(-LEADER_LENGTH,inset+useIndex*interiorHeight/leftSegments),
+						new Rectangle(0,useIndex*interiorHeight/leftSegments,2*inset,2*inset),
 						desc.isMultiple(),
 						desc.getAnnotation());   // Hotspot shape.
 				getAnchorPoints().add(ap);
@@ -249,11 +269,16 @@ public abstract class AbstractUIView extends JComponent
 			else {
 				rightIndex++;
 				if(rightCount==2 && rightIndex==2) rightIndex++;
+				// Check if there is an RT or RB as that will change the R locations
+				int useIndex = rightIndex;
+				if (desc.getHint().equals(PlacementHint.RT)) useIndex = 1;
+				else if (desc.getHint().equals(PlacementHint.RB)) useIndex = 3;
+				if (rightTopOrBottomExists) useIndex = 2;  // if top or bottom is specified on any input, put R in the middle
 				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Origin,
 						desc.getConnectionType(),
-						new Point(sz.width,inset+rightIndex*interiorHeight/rightSegments-1),
-						new Point(sz.width+LEADER_LENGTH,inset+rightIndex*interiorHeight/rightSegments-1),
-						new Rectangle(sz.width-2*inset,rightIndex*interiorHeight/rightSegments,2*inset,2*inset-1),
+						new Point(sz.width,inset+useIndex*interiorHeight/rightSegments-1),
+						new Point(sz.width+LEADER_LENGTH,inset+useIndex*interiorHeight/rightSegments-1),
+						new Rectangle(sz.width-2*inset,useIndex*interiorHeight/rightSegments,2*inset,2*inset-1),
 						desc.isMultiple(),
 						desc.getAnnotation());
 				getAnchorPoints().add(ap);

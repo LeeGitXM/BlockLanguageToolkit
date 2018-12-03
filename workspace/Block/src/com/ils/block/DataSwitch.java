@@ -91,7 +91,7 @@ public class DataSwitch extends AbstractProcessBlock implements ProcessBlock {
 		// Define a three outputs
 		AnchorPrototype outputTrue = new AnchorPrototype(TRUE_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.ANY);
 		outputTrue.setAnnotation("T");
-		outputTrue.setHint(PlacementHint.R);
+		outputTrue.setHint(PlacementHint.RT);
 		anchors.add(outputTrue);
 		AnchorPrototype outputUnknown = new AnchorPrototype(UNKNOWN_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.ANY);
 		outputUnknown.setAnnotation("U");
@@ -99,7 +99,7 @@ public class DataSwitch extends AbstractProcessBlock implements ProcessBlock {
 		anchors.add(outputUnknown);
 		AnchorPrototype outputFalse = new AnchorPrototype(FALSE_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.ANY);
 		outputFalse.setAnnotation("F");
-		outputFalse.setHint(PlacementHint.R);
+		outputFalse.setHint(PlacementHint.RB);
 		anchors.add(outputFalse);
 	}
 	

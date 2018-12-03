@@ -16,6 +16,7 @@ import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
+import com.ils.blt.common.block.PlacementHint;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
@@ -83,9 +84,11 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 		// Define two inputs 
 		AnchorPrototype input = new AnchorPrototype(X_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
 		input.setAnnotation("x");
+		input.setHint(PlacementHint.LT);
 		anchors.add(input);
 		input = new AnchorPrototype(Y_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
 		input.setAnnotation("y");
+		input.setHint(PlacementHint.LB);
 		anchors.add(input);
 
 		// Define a single output

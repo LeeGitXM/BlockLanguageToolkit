@@ -20,6 +20,7 @@ import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.LimitType;
+import com.ils.blt.common.block.PlacementHint;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
@@ -110,12 +111,15 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		// Define a 3 inputs.
 		AnchorPrototype input = new AnchorPrototype(PORT_TARGET,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setAnnotation("T");
+		input.setHint(PlacementHint.LT);
 		anchors.add(input);
 		input = new AnchorPrototype(PORT_VALUE,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setAnnotation("V");
+		input.setHint(PlacementHint.L);
 		anchors.add(input);
 		input = new AnchorPrototype(PORT_STANDARD_DEVIATION,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setAnnotation("S");
+		input.setHint(PlacementHint.LB);
 		anchors.add(input);
 
 		// Define the main output, a truth value.

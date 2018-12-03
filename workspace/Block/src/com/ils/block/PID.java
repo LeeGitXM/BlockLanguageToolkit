@@ -119,10 +119,12 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 		// Define a two inputs -- feedback and setpoint
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setAnnotation("V");
+		input.setHint(PlacementHint.LT);
 		anchors.add(input);
 		
 		AnchorPrototype setpoint = new AnchorPrototype(SETPOINT_PORT,AnchorDirection.INCOMING,ConnectionType.DATA);
 		setpoint.setAnnotation("S");
+		input.setHint(PlacementHint.LB);
 		anchors.add(setpoint);
 
 		// Define outputs for the result, plus components of the error
@@ -131,12 +133,15 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 		anchors.add(output);
 		output = new AnchorPrototype(PROPORTIONAL_PORT,AnchorDirection.OUTGOING,ConnectionType.DATA);
 		output.setAnnotation("P");
+		output.setHint(PlacementHint.RT);
 		anchors.add(output);
 		output = new AnchorPrototype(INTEGRAL_PORT,AnchorDirection.OUTGOING,ConnectionType.DATA);
 		output.setAnnotation("I");
+		output.setHint(PlacementHint.R);
 		anchors.add(output);
 		output = new AnchorPrototype(DERIVATIVE_PORT,AnchorDirection.OUTGOING,ConnectionType.DATA);
 		output.setAnnotation("D");
+		output.setHint(PlacementHint.RB);
 		anchors.add(output);
 	}
 

@@ -84,11 +84,11 @@ public class InferenceMemory extends AbstractProcessBlock implements ProcessBloc
 		delayStart = true;
 		// Define set and reset inputs
 		AnchorPrototype setInput = new AnchorPrototype(SET_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
-		setInput.setHint(PlacementHint.L);
+		setInput.setHint(PlacementHint.LT);
 		setInput.setAnnotation("S");
 		anchors.add(setInput);
 		AnchorPrototype resetInput = new AnchorPrototype(RESET_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
-		resetInput.setHint(PlacementHint.L);
+		resetInput.setHint(PlacementHint.LB);
 		resetInput.setAnnotation("R");
 		anchors.add(resetInput);
 

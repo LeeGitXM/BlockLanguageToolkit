@@ -14,6 +14,12 @@ public enum PlacementHint
             L,
             T,
             B,
+            LT,
+            LB,
+            RT,
+            RB,
+            BL,
+            BR,
             UNSPECIFIED
             ;
            

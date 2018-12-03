@@ -152,12 +152,15 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 		// Define a 3 inputs.
 		AnchorPrototype input = new AnchorPrototype(PORT_TARGET,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setAnnotation("T");
+		input.setHint(PlacementHint.LT);
 		anchors.add(input);
 		input = new AnchorPrototype(PORT_VALUE,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setAnnotation("V");
+		input.setHint(PlacementHint.L);
 		anchors.add(input);
 		input = new AnchorPrototype(PORT_STANDARD_DEVIATION,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setAnnotation("S");
+		input.setHint(PlacementHint.LB);
 		anchors.add(input);
 
 		// Define the main output, a truth value.
@@ -166,7 +169,7 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 		// Auxiliary outputs contain trend calculations
 		output = new AnchorPrototype(PORT_SLOPE,AnchorDirection.OUTGOING,ConnectionType.DATA);
 		output.setAnnotation("S");
-		output.setHint(PlacementHint.B);
+		output.setHint(PlacementHint.BL);
 		anchors.add(output);
 		output = new AnchorPrototype(PORT_SLOPE_VARIANCE,AnchorDirection.OUTGOING,ConnectionType.DATA);
 		output.setAnnotation("V");
@@ -174,7 +177,7 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 		anchors.add(output);
 		output = new AnchorPrototype(PORT_PROJECTION,AnchorDirection.OUTGOING,ConnectionType.DATA);
 		output.setAnnotation("P");
-		output.setHint(PlacementHint.B);
+		output.setHint(PlacementHint.BR);
 		anchors.add(output);
 	}
 	

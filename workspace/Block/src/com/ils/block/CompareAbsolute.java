@@ -12,6 +12,7 @@ import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockStyle;
+import com.ils.blt.common.block.PlacementHint;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
@@ -60,9 +61,11 @@ public class CompareAbsolute extends Compare implements ProcessBlock {
 		// Define a two inputs
 		AnchorPrototype input = new AnchorPrototype(X_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setAnnotation("|x|");
+		input.setHint(PlacementHint.LT);
 		anchors.add(input);
 		input = new AnchorPrototype(Y_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setAnnotation("|y|");
+		input.setHint(PlacementHint.LB);
 		anchors.add(input);
 
 		// Define a single output

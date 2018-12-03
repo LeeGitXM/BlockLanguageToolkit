@@ -84,10 +84,11 @@ public class DataConditioner extends AbstractProcessBlock implements ProcessBloc
 		// Define a two inputs -- one for the data, one for the quality
 		AnchorPrototype input = new AnchorPrototype(VALUE_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setAnnotation("V");
+		input.setHint(PlacementHint.LT);
 		anchors.add(input);
 		input = new AnchorPrototype(QUALITY_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
 		input.setAnnotation("Q");
-		input.setHint(PlacementHint.L);
+		input.setHint(PlacementHint.LB);
 		anchors.add(input);
 
 		// Define two outputs
