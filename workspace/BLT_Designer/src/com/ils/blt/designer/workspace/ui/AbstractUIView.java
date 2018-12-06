@@ -231,10 +231,15 @@ public abstract class AbstractUIView extends JComponent
 				if(bottomCount==2 && bottomIndex==2) bottomIndex++;
 				// Check if there is an BL or BR as that will change the B locations
 				int useIndex = bottomIndex;
-				if (desc.getHint().equals(PlacementHint.BL)) useIndex = 1;
-				else if (desc.getHint().equals(PlacementHint.BR)) useIndex = 3;
-				if (bottomLeftOrRightExists) useIndex = 2;  // if left or right is specified on any input, put B in the middle
-				else if(bottomCount==2 && bottomIndex==2) bottomIndex++;
+				if (desc.getHint().equals(PlacementHint.BL)) {
+					useIndex = 1;
+				} else if (desc.getHint().equals(PlacementHint.BR)) {
+					useIndex = 3;
+				} else {
+					if (bottomLeftOrRightExists) { 
+						useIndex = 2; 
+					}
+				}
 			
 				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Origin,
 						desc.getConnectionType(),
@@ -252,9 +257,15 @@ public abstract class AbstractUIView extends JComponent
 				if(leftCount==2 && leftIndex==2) leftIndex++;
 				// Check if there is an LT or LB as that will change the L locations
 				int useIndex = leftIndex;
-				if (desc.getHint().equals(PlacementHint.LT)) useIndex = 1;
-				else if (desc.getHint().equals(PlacementHint.LB)) useIndex = 3;
-				if (leftTopOrBottomExists) useIndex = 2;  // if top or bottom is specified on any input, put L in the middle
+				if (desc.getHint().equals(PlacementHint.LT)) {
+					useIndex = 1;
+				} else if (desc.getHint().equals(PlacementHint.LB)) {
+					useIndex = 3;
+				} else {
+					if (leftTopOrBottomExists) {
+						useIndex = 2;  // if top or bottom is specified on any input, put L in the middle
+					}
+				}
 				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Terminus,
 						desc.getConnectionType(),
 						new Point(0,inset+useIndex*interiorHeight/leftSegments),
@@ -266,14 +277,20 @@ public abstract class AbstractUIView extends JComponent
 				
 			}
 			// Right-side
-			else {
+			else if( desc.getHint().equals(PlacementHint.R) || desc.getHint().equals(PlacementHint.RT) || desc.getHint().equals(PlacementHint.RB) ) {
 				rightIndex++;
 				if(rightCount==2 && rightIndex==2) rightIndex++;
 				// Check if there is an RT or RB as that will change the R locations
 				int useIndex = rightIndex;
-				if (desc.getHint().equals(PlacementHint.RT)) useIndex = 1;
-				else if (desc.getHint().equals(PlacementHint.RB)) useIndex = 3;
-				if (rightTopOrBottomExists) useIndex = 2;  // if top or bottom is specified on any input, put R in the middle
+				if (desc.getHint().equals(PlacementHint.RT)) {
+					useIndex = 1;
+				} else if (desc.getHint().equals(PlacementHint.RB)) {
+					useIndex = 3;
+				} else {
+					if (rightTopOrBottomExists) {
+						useIndex = 2;  // if top or bottom is specified on any input, put R in the middle
+					}
+				}
 				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Origin,
 						desc.getConnectionType(),
 						new Point(sz.width,inset+useIndex*interiorHeight/rightSegments-1),
