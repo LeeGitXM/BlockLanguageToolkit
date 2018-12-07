@@ -136,6 +136,7 @@ public class DataSwitch extends AbstractProcessBlock implements ProcessBlock {
 	public void evaluate() {
 		log.debugf("%s.evaluate",getName());
 		if( !isLocked() ) {
+			lastValue = null;
 			if( state.equals(TruthValue.TRUE)) {
 				OutgoingNotification nvn = new OutgoingNotification(this,TRUE_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(nvn);
