@@ -165,7 +165,10 @@ public class DataSwitch extends AbstractProcessBlock implements ProcessBlock {
 	 * Send status update notification for our last latest state.
 	 */
 	@Override
-	public void notifyOfStatus() {}
+	public void notifyOfStatus() {
+		notifyOfStatus(lastValue);
+	}
+
 	private void notifyOfStatus(QualifiedValue qv) {
 		updateStateForNewValue(qv);
 	}
