@@ -155,19 +155,15 @@ public class Quotient extends AbstractProcessBlock implements ProcessBlock {
 			lastValue = null;
 			if( a==null ) {
 				lastValue = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("dividend is unset",Quality.Level.Bad));
-				log.error("EREIAM JH - Last Value 1 is bad");
 			}
 			else if( b==null ) {
 				lastValue = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("divisor is unset",Quality.Level.Bad));
-				log.error("EREIAM JH - Last Value 2 is bad");
 			}
 			else if( !a.getQuality().isGood()) {
 				lastValue = new TestAwareQualifiedValue(timer,new Double(Double.NaN),a.getQuality());
-				log.error("EREIAM JH - Last Value 3 is bad");
 			}
 			else if( !b.getQuality().isGood()) {
 				lastValue = new TestAwareQualifiedValue(timer,new Double(Double.NaN),b.getQuality());
-				log.error("EREIAM JH - Last Value 4 is bad");
 			}
 			double aa = Double.NaN;
 			double bb = Double.NaN;
@@ -178,17 +174,14 @@ public class Quotient extends AbstractProcessBlock implements ProcessBlock {
 						bb = Double.parseDouble(b.getValue().toString());
 						if( bb==0.0) {
 							lastValue = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("divide by zero",Quality.Level.Bad));
-							log.error("EREIAM JH - Last Value 11 is bad");
 						}
 					}
 					catch(NumberFormatException nfe) {
 						lastValue = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("divisor is not a valid double",Quality.Level.Bad));
-						log.error("EREIAM JH - Last Value 12 is bad");
 					}
 				}
 				catch(NumberFormatException nfe) {
 					lastValue = new TestAwareQualifiedValue(timer,new Double(Double.NaN),new BasicQuality("dividend is not a valid double",Quality.Level.Bad));
-					log.error("EREIAM JH - Last Value 13 is bad");
 				}
 			}
 			
