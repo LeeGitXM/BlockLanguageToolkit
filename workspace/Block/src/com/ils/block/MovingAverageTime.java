@@ -5,10 +5,10 @@ package com.ils.block;
 
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.ProcessBlock;
@@ -37,7 +37,7 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
  */
 @ExecutableBlock
 public class MovingAverageTime extends AbstractProcessBlock implements ProcessBlock {
-	private final LinkedList<QualifiedValue> buffer;
+	private final ConcurrentLinkedQueue<QualifiedValue> buffer;
 	private boolean clearOnReset = false;
 	QualifiedValue currentValue = null;
 	private double scanInterval = 15.0;    // ~secs
@@ -51,7 +51,7 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 	 */
 	public MovingAverageTime() {
 		initialize();
-		buffer = new LinkedList<>();
+		buffer = new ConcurrentLinkedQueue<>();
 		dog = new Watchdog(getName(),this);
 		initializePrototype();
 	}
@@ -67,7 +67,7 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 		super(ec,parent,block);
 		initialize();
 		dog = new Watchdog(getName(),this);
-		buffer = new LinkedList<>();
+		buffer = new ConcurrentLinkedQueue<>();
 		
 	}
 	
@@ -149,10 +149,10 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 		if( currentValue==null) return;
 		// Evaluate the buffer and report
 		// Add the currentValue to the queue
-		buffer.addLast(currentValue);
+		buffer.add(currentValue);
 		int maxPoints = (int)((timeWindow+0.99*scanInterval)/scanInterval);
-		while(buffer.size() > maxPoints ) {
-			buffer.removeFirst();
+		while(buffer.size() > maxPoints ) {  
+			buffer.remove();
 		}
 		log.tracef("%s(%d).evaluate %d of %d points",getName(),hashCode(),buffer.size(),maxPoints);
 		if( buffer.size() >= maxPoints) {
