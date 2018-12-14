@@ -4,10 +4,10 @@
 package com.ils.block;
 
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.DiagnosticDiagram;
@@ -45,7 +45,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	private TruthValue currentValue = TruthValue.UNSET;
 	private double deadband = 0.0;
 	private double ratio = Double.NaN;
-	private final LinkedList<TruthValue> buffer;
+	private final ConcurrentLinkedQueue<TruthValue> buffer;
 	private double limit = 0.0;
 	private double scanInterval = 1.0;    // ~secs
 	private double timeWindow = 60; // ~ secs
@@ -58,7 +58,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	public LogicFilter() {
 		initialize();
-		buffer = new LinkedList<TruthValue>();
+		buffer = new ConcurrentLinkedQueue<TruthValue>();
 		bufferSize = (int)(0.5+timeWindow/scanInterval);
 		dog = new Watchdog(getName(),this);
 		initializePrototype();	
@@ -74,7 +74,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	public LogicFilter(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
 		initialize();
-		buffer = new LinkedList<TruthValue>();
+		buffer = new ConcurrentLinkedQueue<TruthValue>();
 		dog = new Watchdog(getName(),this);
 	}
 	
@@ -158,10 +158,10 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		if( currentValue.equals(TruthValue.UNSET) ) return;   // Nothing on input yet
 		
 		// Add the currentValue to the queue
-		buffer.addLast(currentValue);
+		buffer.add(currentValue);
 		
 		while(buffer.size() > bufferSize ) {
-			buffer.removeFirst();
+			buffer.remove();
 		}
 		
 		//log.tracef("%s.evaluate buffer %d of %d, current value=%s, state=%s (%s)",

@@ -5,10 +5,10 @@ package com.ils.block;
 
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.ProcessBlock;
@@ -38,7 +38,7 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 	protected static String BLOCK_PROPERTY_DELAY = "SampleDelay";
 
 	private double delayInterval = 1;    // ~ secs
-	private final LinkedList<TimestampedData> buffer;
+	private final ConcurrentLinkedQueue<TimestampedData> buffer;
 	private final Watchdog dog;
 	
 	/**
@@ -47,7 +47,7 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 	public Delay() {
 		dog = new Watchdog(getName(),this);
 		initialize();
-		buffer = new LinkedList<TimestampedData>();
+		buffer = new ConcurrentLinkedQueue<TimestampedData>();
 		initializePrototype();
 	}
 	
@@ -61,7 +61,7 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 	public Delay(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
 		dog = new Watchdog(getName(),this);
-		buffer = new LinkedList<TimestampedData>();
+		buffer = new ConcurrentLinkedQueue<TimestampedData>();
 		initialize();
 	}
 
@@ -122,7 +122,7 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 						timer.updateWatchdog(dog);  // pet dog
 					}
 				}
-				buffer.addLast(data);
+				buffer.add(data);
 			}
 		}
 	}
@@ -133,8 +133,10 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void evaluate() {
+		// This next line doesn't really prevent the problem, so I changed the buffer LinkedList to ConcurrentLinkedQueue - CJL 12/14/18
 		if(buffer.isEmpty()) return;     // Could happen on race between clearing buffer and removing watch-dog on a reset.
-		TimestampedData data = buffer.removeFirst();
+								
+		TimestampedData data = buffer.peek();
 		if( !isLocked() ) {
 			log.debugf("%s.evaluate: %s",getName(),data.qualValue.getValue().toString());
 			lastValue = new BasicQualifiedValue(coerceToMatchOutput(BlockConstants.OUT_PORT_NAME,data.qualValue.getValue()),data.qualValue.getQuality(),data.qualValue.getTimestamp()); 
@@ -146,7 +148,7 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 		if( !buffer.isEmpty() ) {
 			// New delay is the difference between the value we just popped off
 			// and the current head.
-			TimestampedData head = buffer.getFirst();
+			TimestampedData head = buffer.remove();
 			long delay = head.timestamp - data.timestamp;
 			if( delay <= 0 ) delay = 1;  // Should never happen
 			dog.setDelay(delay);

@@ -3,8 +3,9 @@
  */
 package com.ils.block;
 
-import java.util.LinkedList;
+
 import java.util.UUID;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.ProcessBlock;
@@ -31,14 +32,14 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 public class DataShift extends AbstractProcessBlock implements ProcessBlock {
 
 	private int sampleSize = 0;  
-	private final LinkedList<QualifiedValue> buffer;
+	private final ConcurrentLinkedQueue<QualifiedValue> buffer;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
 	public DataShift() {
 		initialize();
-		buffer = new LinkedList<QualifiedValue>();
+		buffer = new ConcurrentLinkedQueue<QualifiedValue>();
 	}
 	
 	/**
@@ -50,7 +51,7 @@ public class DataShift extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	public DataShift(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
-		buffer = new LinkedList<QualifiedValue>();
+		buffer = new ConcurrentLinkedQueue<QualifiedValue>();
 		initialize();
 	}
 	
@@ -74,7 +75,7 @@ public class DataShift extends AbstractProcessBlock implements ProcessBlock {
 		if( qv.getQuality().isGood() ) {
 			buffer.add(qv);
 			if( buffer.size() > sampleSize) {
-				lastValue = buffer.removeFirst();
+				lastValue = buffer.remove();
 				log.debugf("%s.acceptValue: Popped %s",getName(),lastValue.getValue().toString());
 				if( !isLocked() ) {
 					// Give it a new timestamp
@@ -108,7 +109,7 @@ public class DataShift extends AbstractProcessBlock implements ProcessBlock {
 				sampleSize = Integer.parseInt(event.getNewValue().toString());
 				// If we've made the buffer smaller, report the excess
 				while( buffer.size()>sampleSize ) {
-					QualifiedValue qv = buffer.removeFirst();
+					QualifiedValue qv = buffer.remove();
 					if( !isLocked() ) {
 						// Give it a new timestamp
 						QualifiedValue outval = new TestAwareQualifiedValue(timer,qv.getValue());

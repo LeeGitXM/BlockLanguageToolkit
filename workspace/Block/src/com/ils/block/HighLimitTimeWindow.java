@@ -5,10 +5,10 @@ package com.ils.block;
 
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.ProcessBlock;
@@ -37,7 +37,7 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
  */
 @ExecutableBlock
 public class HighLimitTimeWindow extends AbstractProcessBlock implements ProcessBlock {
-	private final LinkedList<Double> buffer;
+	private final ConcurrentLinkedQueue<Double> buffer;
 	private double currentValue = Double.NaN;
 	private double scanInterval = 1.0;    // ~secs
 	private double timeWindow = 60;     // ~ secs
@@ -54,7 +54,7 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 	public HighLimitTimeWindow() {
 		initialize();
 		dog = new Watchdog(getName(),this);
-		buffer = new LinkedList<Double>();
+		buffer = new ConcurrentLinkedQueue<Double>();
 		initializePrototype();
 	}
 	
@@ -69,7 +69,7 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 		super(ec,parent,block);
 		initialize();
 		dog = new Watchdog(getName(),this);
-		buffer = new LinkedList<Double>();
+		buffer = new ConcurrentLinkedQueue<Double>();
 	}
 	
 	/**
@@ -160,10 +160,10 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 		// Evaluate the buffer and report
 		// Add the currentValue to the queue
 		Double val = new Double(currentValue);
-		buffer.addLast(val);
+		buffer.add(val);
 		int maxPoints = (int)((timeWindow+0.99*scanInterval)/scanInterval);
 		while(buffer.size() > maxPoints ) {
-			buffer.removeFirst();
+			buffer.remove();
 		}
 		log.debugf("%s.evaluate %d of %d points",getName(),buffer.size(),maxPoints);
 		TruthValue result = checkPassConditions(state);
