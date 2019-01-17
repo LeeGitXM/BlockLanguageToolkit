@@ -76,7 +76,7 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
         
 		//Point newLocation = new Point(-100, -100);
 		//this.setLocation(newLocation);
-		setLocation(-500,-500);
+		this.setLocation(-500,-500);
         
 	}
 	/**
@@ -218,7 +218,7 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 		panel.add(createLabel("FinalDiagnosis.ManualMoveAllowed"),"gaptop 2,aligny top");
 		String manualMoveAllowed = properties.get("ManualMoveAllowed");
 		if( manualMoveAllowed==null) manualMoveAllowed="0";
-		manualMoveAllowedCheckBox = createCheckBox("FinalDiagnosis.ManualMoveAllowed.Desc",(constantValue.equalsIgnoreCase("1")));
+		manualMoveAllowedCheckBox = createCheckBox("FinalDiagnosis.ManualMoveAllowed.Desc",(manualMoveAllowed.equalsIgnoreCase("1")));
 		panel.add(manualMoveAllowedCheckBox,"alignx left,wrap");
 
 		panel.add(createLabel("FinalDiagnosis.Priority"),"gaptop 2,aligny top");
