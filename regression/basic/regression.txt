@@ -11,6 +11,7 @@ run: dataconditioner.txt
 run: datecompare.txt
 run: gain.txt
 run: highlimit.txt
+run: inference-memory.txt
 run: inhibit.txt
 run: inhibit-inference.txt
 run: logic.txt

@@ -193,7 +193,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 					if( connections==null ) {
 						connections = new ArrayList<ProcessConnection>();
 						outgoingConnections.put(key, connections);
-						log.tracef("%s.updateConnections: mapping connection from %s:%s",TAG,upstreamBlock.getBlockId().toString(),pc.getUpstreamPortName());
+						//log.tracef("%s.updateConnections: mapping connection from %s:%s",TAG,upstreamBlock.getBlockId().toString(),pc.getUpstreamPortName());
 					}
 					if( !connections.contains(pc) ) connections.add(pc);
 				}
