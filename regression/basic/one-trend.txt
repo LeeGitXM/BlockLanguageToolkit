@@ -1,0 +1,71 @@
+#
+# Test of high and low value patterns.
+# Both blocks require 2 of 4.
+#
+DIAGRAM="app75/family75/onetrend"
+tag: TrendOut MemoryTags/TrendOut1
+tag: ProjectionOut MemoryTags/TrendProjection
+tag: VarianceOut MemoryTags/TrendVariance
+tag: SlopeOut MemoryTags/TrendSlope
+tagset: TrendInput MemoryTags/TrendInput MemoryTags/MJKSQCStdDev MemoryTags/MJKSQCTarget
+
+Tagset: TrendInput
+Show: diagram $DIAGRAM
+
+# Note the InputBlock will re-transmit its value after a RESET.
+# Make use of this.
+2000/01/01 09:59:30 0.0 0.0 0.0
+resetDiagram ($DIAGRAM)
+
+# Blocks are configured to require 10 data points
+Test: Trend Detection
+Step: Pete Test 1
+
+2000/01/01 10:00:00 10.0 1.0 10.
+2000/01/01 10:00:15 10.1
+2000/01/01 10:00:40 Assert: TrendOut = "UNKNOWN"  "UNKNOWN with one point"
+2000/01/01 10:00:45 9.9
+2000/01/01 10:00:25 9.8
+2000/01/01 10:00:30 10.1
+2000/01/01 10:00:35 10.2
+2000/01/01 10:00:40 10.
+2000/01/01 10:00:45 9.7
+2000/01/01 10:00:50 9.8
+2000/01/01 10:00:55 9.9
+# After 10 entries we have no trend.
+2000/01/01 10:01:00 9.9
+2000/01/01 10:01:05 9.8
+2000/01/01 10:01:10 10.
+2000/01/01 10:01:15 10.1
+2000/01/01 10:01:20 10.3
+2000/01/01 10:01:25 10.1
+2000/01/01 10:01:30 10.2
+2000/01/01 10:01:35 10.2
+2000/01/01 10:01:40 10.
+2000/01/01 10:01:45 10.1
+2000/01/01 10:01:55 Assert: TrendOut = "FALSE"  "False with no trend"
+
+Step: Pete Test 2
+
+resetDiagram ($DIAGRAM)
+2000/01/01 10:02:00 10.0 1.0 10.
+2000/01/01 10:02:05 10.1
+2000/01/01 10:02:10 9.9
+2000/01/01 10:02:15 9.8
+2000/01/01 10:02:20 10.1
+2000/01/01 10:02:25 10.2
+2000/01/01 10:02:30 10.0
+2000/01/01 10:02:35 9.7
+2000/01/01 10:02:40 9.8
+2000/01/01 10:02:45 9.9
+2000/01/01 10:02:50 10.1
+2000/01/01 10:02:55 10.2
+2000/01/01 10:03:00 10.3
+2000/01/01 10:03:05 10.4
+2000/01/01 10:03:10 10.5
+2000/01/01 10:03:15 10.6
+2000/01/01 10:03:20 10.7
+2000/01/01 10:03:25 Assert: TrendOut = "TRUE"  "True with rising trend"
+2000/01/01 10:03:30 10.0
+2000/01/01 10:03:35 10.01
+2000/01/01 10:03:45 9.99

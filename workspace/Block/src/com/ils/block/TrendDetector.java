@@ -189,7 +189,6 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 	
 	private void clear() {
 		buffer.clear();
-		state = TruthValue.FALSE;
 		downwardCount = 0;
 		upwardCount   = 0;
 	}
@@ -228,7 +227,7 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 						buffer.add(new TestAwareQualifiedValue(timer,new Double(current)));
 					}
 					catch(NumberFormatException nfe) {
-						log.warnf("%s.acceptValue Unable to convert number of points required to an integer (%s)",getName(),nfe.getLocalizedMessage());
+						log.warnf("%s.acceptValue Unable to convert input value to an double (%s)",getName(),nfe.getLocalizedMessage());
 					}
 				}
 				// Buffer was empty, add the point
@@ -245,6 +244,7 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,outval);
 						controller.acceptCompletionNotification(nvn);
 					}
+					notifyOfStatus();
 				}
 				clear();   // Reset the current buffer
 			}
@@ -279,7 +279,6 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 	 */
 	@Override
 	public void evaluate() {
-		setState(TruthValue.UNKNOWN);
 		if( buffer.size() >= pointsRequired             && 
 			!(relativeToTarget && Double.isNaN(target)) &&
 			!Double.isNaN(current)                     &&	
@@ -291,22 +290,20 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 			TruthValue newState = getTrendState();
 			if( !isLocked() && !newState.equals(state) ) {
 				setState(newState);    // Sets lastValue, updates activity buffer
-				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
-				controller.acceptCompletionNotification(nvn);
 				
 				if( state.equals(TruthValue.TRUE) || state.equals(TruthValue.FALSE)) {
 					// Propagate the other values
 					QualifiedValue qv = new TestAwareQualifiedValue(timer,slope);
-					nvn = new OutgoingNotification(this,PORT_SLOPE,qv);
-					controller.acceptCompletionNotification(nvn);
+					OutgoingNotification notification = new OutgoingNotification(this,PORT_SLOPE,qv);
+					controller.acceptCompletionNotification(notification);
 					// output the standardDeviation, not variance
 					double stddev = Math.sqrt(slopeVariance);
 					qv = new TestAwareQualifiedValue(timer,stddev);
-					nvn = new OutgoingNotification(this,PORT_SLOPE_VARIANCE,qv);
-					controller.acceptCompletionNotification(nvn);
+					notification = new OutgoingNotification(this,PORT_SLOPE_VARIANCE,qv);
+					controller.acceptCompletionNotification(notification);
 					qv = new TestAwareQualifiedValue(timer,projection);
-					nvn = new OutgoingNotification(this,PORT_PROJECTION,qv);
-					controller.acceptCompletionNotification(nvn);
+					notification = new OutgoingNotification(this,PORT_PROJECTION,qv);
+					controller.acceptCompletionNotification(notification);
 					// Write the auxilliary values to block parameters
 					controller.sendPropertyNotification(getBlockId().toString(),BLOCK_PROPERTY_SLOPE,
 							new TestAwareQualifiedValue(timer,new Double(slope)));
@@ -317,8 +314,17 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 				}	
 				
 			}
+			
+		}
+		// Not enough points
+		else {
+			setState(TruthValue.UNKNOWN);
 		}
 		notifyOfStatus();
+		OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
+		controller.acceptCompletionNotification(nvn);
+		
+		//log.infof("%s.evaluate lastValue = %s",getName(),lastValue.getValue().toString());
 	}
 	
 	/**
@@ -346,6 +352,8 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 		
 	}
 	private void notifyOfStatus(QualifiedValue qv) {
+		//log.infof("%s.notifyOfStatus %s",getName(),qv.getValue().toString());
+		lastValue = qv;
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 	
@@ -372,10 +380,6 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 			OutgoingNotification nvn = new OutgoingNotification(this,PORT_PROJECTION,qv);
 			controller.acceptCompletionNotification(nvn);
 		}
-		
-		
-		
-
 	}
 	
 	/**
@@ -501,7 +505,7 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 				result=TruthValue.FALSE;
 			}
 		}
-		log.tracef("%s.getTrendState: %d upward, %d downward => %s (%s)",getName(),upwardCount,downwardCount,result.toString(),trendDirection.toString());
+		//log.infof("%s.getTrendState: %d upward, %d downward => %s (%s)",getName(),upwardCount,downwardCount,result.toString(),trendDirection.toString());
 		return result;	
 	}
 	/**
@@ -532,7 +536,7 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 			final PolynomialCurveFitter fitter = PolynomialCurveFitter.create(1);
 			// Retrieve fitted parameters (coefficients of the polynomial function).
 			double[] coefficients = fitter.fit(obs.toList());
-			log.infof("%s.computeFit: Coefficients are: %s %s",getName(),String.valueOf(coefficients[0]),String.valueOf(coefficients[1]));
+			//log.infof("%s.computeFit: Coefficients are: %s %s",getName(),String.valueOf(coefficients[0]),String.valueOf(coefficients[1]));
 			// Value = mx + b
 			slope = coefficients[1];
 			projection = coefficients[1]*end.getTimestamp().getTime()+coefficients[0];
