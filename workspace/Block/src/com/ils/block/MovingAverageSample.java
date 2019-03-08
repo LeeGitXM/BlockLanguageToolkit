@@ -162,7 +162,7 @@ public class MovingAverageSample extends AbstractProcessBlock implements Process
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
 		if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET)) {
-			clearOnReset = (new UtilityFunctions()).coerceToBoolean(event.getNewValue().toString());
+			clearOnReset = fcns.coerceToBoolean(event.getNewValue().toString());
 		}
 		else if(propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_SAMPLE_SIZE) ) {
 			// Trigger an evaluation

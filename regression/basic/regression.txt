@@ -16,6 +16,7 @@ run: inhibit.txt
 run: inhibit-inference.txt
 run: logic.txt
 run: logicfilter.txt
+run: one-trend.txt
 run: pattern.txt
 run: persistence.txt
 run: pythonblocks.txt

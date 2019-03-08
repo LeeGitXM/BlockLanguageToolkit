@@ -519,18 +519,18 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 		double averageInterval = ((double)(end.getTimestamp().getTime() - begin.getTimestamp().getTime()))/(pointsRequired-1);
 		if( calculationOption.equals(SlopeCalculationOption.AVERAGE)) {
 			
-			slope = (((Double)(end.getValue())).doubleValue() - ((Double)(begin.getValue())).doubleValue() ) /
+			slope = (fcns.coerceToDouble(end.getValue()) - fcns.coerceToDouble(begin.getValue()) ) /
 					(end.getTimestamp().getTime() - begin.getTimestamp().getTime() );
 			// To calculate the projected value, we need the average time interval represented by the points
 			// and then take the last point to project forward in time.
-			projection = slope*averageInterval + ((Double)(end.getValue())).doubleValue();
+			projection = slope*averageInterval + fcns.coerceToDouble(end.getValue());
 			slopeVariance = 0.0;
 		}
 		// Least squares fit
 		else {
 			final WeightedObservedPoints obs = new WeightedObservedPoints();
 			for(QualifiedValue qv:buffer) {
-				obs.add(qv.getTimestamp().getTime(),((Double)(qv.getValue())).doubleValue());
+				obs.add(qv.getTimestamp().getTime(),fcns.coerceToDouble(qv.getValue()));
 			}
 			// Instantiate a linear fitter
 			final PolynomialCurveFitter fitter = PolynomialCurveFitter.create(1);

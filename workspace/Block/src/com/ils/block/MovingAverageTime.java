@@ -12,7 +12,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.ProcessBlock;
-import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
@@ -44,7 +43,6 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 	private double timeWindow = 60;        // ~ secs
 	private final Watchdog dog;
 	private BlockProperty valueProperty = null;
-	private final UtilityFunctions fncs = new UtilityFunctions();
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -276,7 +274,7 @@ public class MovingAverageTime extends AbstractProcessBlock implements ProcessBl
 		
 		for( QualifiedValue qv:buffer) {
 			if( qv==null ) continue;  // Shouldn't happen
-			double val = fncs.coerceToDouble(qv.getValue());
+			double val = fcns.coerceToDouble(qv.getValue());
 			sum = sum + val;
 			count++;
 		}

@@ -31,7 +31,6 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  */
 @ExecutableBlock
 public class Readout extends AbstractProcessBlock implements ProcessBlock {
-	protected final UtilityFunctions fncs;
 	private String format = "%s";
 	protected PropertyType type = PropertyType.STRING;
 	protected BlockProperty valueProperty = null;
@@ -40,7 +39,6 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
 	public Readout() {
-		this.fncs = new UtilityFunctions();
 		initialize();
 		initializePrototype();
 	}
@@ -54,7 +52,6 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	public Readout(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
-		this.fncs = new UtilityFunctions();
 		initialize();
 	}
 	/**
@@ -161,16 +158,16 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 					if( lastValue.getValue().toString().length()>0) {
 						try {
 							if( type==PropertyType.DOUBLE) {
-								value = String.format(format, fncs.coerceToDouble(lastValue.getValue()));
+								value = String.format(format, fcns.coerceToDouble(lastValue.getValue()));
 							}
 							else if( type==PropertyType.INTEGER) {
-								value = String.format(format, fncs.coerceToInteger(lastValue.getValue()));
+								value = String.format(format, fcns.coerceToInteger(lastValue.getValue()));
 							}
 							else if(lastValue.getValue() instanceof Date) {
 								value = dateFormatter.format(lastValue.getValue());
 							}
 							else {
-								value = String.format(format,fncs.coerceToString(lastValue.getValue()));
+								value = String.format(format,fcns.coerceToString(lastValue.getValue()));
 							}
 						}
 						catch(Exception ex) {

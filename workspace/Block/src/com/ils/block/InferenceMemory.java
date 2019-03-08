@@ -132,7 +132,7 @@ public class InferenceMemory extends AbstractProcessBlock implements ProcessBloc
 		}
 	}
 	private TruthValue determineOutput() {
-		TruthValue output = TruthValue.UNSET;
+		TruthValue output = state;
 		// NOTE: For inputs UNSET is equivalent to UNKNOWN. Junk on inputs can cause them to be UNSET as well.
 		if( resetValue.equals(TruthValue.UNSET)) resetValue = TruthValue.UNKNOWN;
 		if( setValue.equals(TruthValue.UNSET))   setValue = TruthValue.UNKNOWN;
@@ -141,13 +141,12 @@ public class InferenceMemory extends AbstractProcessBlock implements ProcessBloc
 		else if( resetValue.equals(TruthValue.TRUE)  )                                { output = TruthValue.FALSE; }
 		else if( resetValue.equals(TruthValue.UNKNOWN)  )                             { output = TruthValue.UNKNOWN; }
 		else if( setValue.equals(TruthValue.TRUE)  )                                  { output = TruthValue.TRUE; }
-		else if( setValue.equals(TruthValue.FALSE) && resetValue.equals(TruthValue.FALSE)) { output = TruthValue.FALSE; }
 		else if( state.equals(TruthValue.TRUE) )                                      { output = TruthValue.TRUE; }
 		else if( setValue.equals(TruthValue.UNKNOWN)  )                               { output = TruthValue.UNKNOWN; }
 		else {
 			log.warnf("%s.determineOutput UNSET S=%s, R=%s",getName(),setValue.name(),resetValue.name());
 		}
-		//log.infof("%s.determineOutput R=%s, S=%s: %s",getName(),resetValue.name(),setValue.name(),output.name());
+		//log.infof("%s.determineOutput State=%s R=%s, S=%s: %s",getName(),state.name(),resetValue.name(),setValue.name(),output.name());
 		return output;
 	}
 	
