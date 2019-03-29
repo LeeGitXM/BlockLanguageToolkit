@@ -1,5 +1,5 @@
 /**
- *   (c) 2017  ILS Automation. All rights reserved. 
+ *   (c) 2017-2019  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -22,14 +22,13 @@ import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
- * This class is a no-op. It simply passes its input onto the output.
+ * The Inference Memory block remembers whether the top input (marked “S”) has ever been TRUE since the block was started or reset
  */
 @ExecutableBlock
 public class InferenceMemory extends AbstractProcessBlock implements ProcessBlock {
 	protected static String RESET_PORT_NAME = "reset";
 	protected static String SET_PORT_NAME   = "set";
 
-	private TruthValue priorValue = TruthValue.UNSET;
 	private TruthValue resetValue = TruthValue.UNSET;
 	private TruthValue setValue = TruthValue.UNSET; 
 	/**
@@ -56,9 +55,11 @@ public class InferenceMemory extends AbstractProcessBlock implements ProcessBloc
 	@Override
 	public void reset() {
 		super.reset();
-		state = TruthValue.UNKNOWN;
+		resetValue = TruthValue.UNSET;
+		setValue = TruthValue.UNSET; 
+		setState(TruthValue.UNKNOWN);
 		if(!locked) {
-			lastValue = new TestAwareQualifiedValue(timer,state);
+			//log.infof("%s.reset lastValue = %s",getName(),lastValue.getValue().toString());
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus();
@@ -68,8 +69,8 @@ public class InferenceMemory extends AbstractProcessBlock implements ProcessBloc
 	@Override
 	public void start() {
 		super.start();
-		state = TruthValue.UNKNOWN;
-		lastValue = new TestAwareQualifiedValue(timer,state);
+		setState(TruthValue.UNKNOWN);  // Sets lastValue
+		//log.infof("%s.start lastValue = %s",getName(),lastValue.getValue().toString());
 		OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 		controller.acceptCompletionNotification(nvn);
 		notifyOfStatus();
@@ -81,7 +82,7 @@ public class InferenceMemory extends AbstractProcessBlock implements ProcessBloc
 	 */
 	private void initialize() {	
 		setName("InferenceMemory");
-		delayStart = true;
+		delayStart = false;
 		// Define set and reset inputs
 		AnchorPrototype setInput = new AnchorPrototype(SET_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
 		setInput.setHint(PlacementHint.LT);
@@ -110,8 +111,7 @@ public class InferenceMemory extends AbstractProcessBlock implements ProcessBloc
 		if( port.equals(SET_PORT_NAME)  ) {
 			QualifiedValue qv = vcn.getValue();
 			if( qv != null && qv.getValue()!=null && qv.getQuality().isGood() ) {
-				lastValue = qv;
-				setValue = qualifiedValueAsTruthValue(lastValue);
+				setValue = qualifiedValueAsTruthValue(qv);
 			}
 		}
 		else if( port.equals(RESET_PORT_NAME)  ) {
@@ -123,15 +123,19 @@ public class InferenceMemory extends AbstractProcessBlock implements ProcessBloc
 		if( !isLocked() ) {
 			TruthValue output = determineOutput();
 			if( !output.equals(state) ) {
-				state = output;
-				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,new TestAwareQualifiedValue(timer,state));
+				setState(output);
+				QualifiedValue qv = new TestAwareQualifiedValue(timer,output);
+				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
 				controller.acceptCompletionNotification(nvn);
-				notifyOfStatus();
+				notifyOfStatus(qv);   // 
 			}
 		}
 	}
 	private TruthValue determineOutput() {
-		TruthValue output = TruthValue.UNSET;
+		TruthValue output = state;
+		// NOTE: For inputs UNSET is equivalent to UNKNOWN. Junk on inputs can cause them to be UNSET as well.
+		if( resetValue.equals(TruthValue.UNSET)) resetValue = TruthValue.UNKNOWN;
+		if( setValue.equals(TruthValue.UNSET))   setValue = TruthValue.UNKNOWN;
 		
 		if( setValue.equals(TruthValue.TRUE) && resetValue.equals(TruthValue.FALSE) ) { output = TruthValue.TRUE; }
 		else if( resetValue.equals(TruthValue.TRUE)  )                                { output = TruthValue.FALSE; }
@@ -139,6 +143,10 @@ public class InferenceMemory extends AbstractProcessBlock implements ProcessBloc
 		else if( setValue.equals(TruthValue.TRUE)  )                                  { output = TruthValue.TRUE; }
 		else if( state.equals(TruthValue.TRUE) )                                      { output = TruthValue.TRUE; }
 		else if( setValue.equals(TruthValue.UNKNOWN)  )                               { output = TruthValue.UNKNOWN; }
+		else {
+			log.warnf("%s.determineOutput UNSET S=%s, R=%s",getName(),setValue.name(),resetValue.name());
+		}
+		//log.infof("%s.determineOutput State=%s R=%s, S=%s: %s",getName(),state.name(),resetValue.name(),setValue.name(),output.name());
 		return output;
 	}
 	
@@ -146,10 +154,13 @@ public class InferenceMemory extends AbstractProcessBlock implements ProcessBloc
 	 * Send status update notification for our last latest state.
 	 */
 	@Override
-	public void notifyOfStatus() {}
+	public void notifyOfStatus() {
+		QualifiedValue qv = new TestAwareQualifiedValue(timer,state);
+		notifyOfStatus(qv);
+	}
 	private void notifyOfStatus(QualifiedValue qv) {
-		updateStateForNewValue(qv);
-		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+		//log.infof("%s.notifyOfStatus lastValue = %s",getName(),lastValue.getValue().toString());
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, lastValue);
 	}
 	/**
 	 * Augment the palette prototype for this block class.

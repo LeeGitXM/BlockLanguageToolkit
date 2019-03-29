@@ -744,7 +744,9 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 */
 	protected void updateStateForNewValue(QualifiedValue qv) {
 		if( qv==null || qv.getValue()==null ) return;  // Do nothing
-		if(qv.getValue() instanceof TruthValue ) setState((TruthValue)qv.getValue());
+		if(qv.getValue() instanceof TruthValue ) { 
+			setState((TruthValue)qv.getValue());
+		}
 		else if(qv.getValue() instanceof Boolean ) {
 			if( ((Boolean)qv.getValue()).booleanValue()) setState(TruthValue.TRUE);
 			else setState(TruthValue.FALSE);

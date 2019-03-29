@@ -44,7 +44,6 @@ public class HighLimit extends AbstractProcessBlock implements ProcessBlock {
 	double currentValue = Double.NaN;
 	private BlockProperty valueProperty = null;
 	private double synchInterval = 0.5; // 1/2 sec synchronization by default
-	UtilityFunctions func = new UtilityFunctions();
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -240,7 +239,7 @@ public class HighLimit extends AbstractProcessBlock implements ProcessBlock {
 		
 		for(QualifiedValue qv:values) {
 			if(qv.getQuality().isGood() && qv.getValue()!=null && !qv.getValue().toString().isEmpty() && !qv.getValue().equals(BLTProperties.UNDEFINED)) {
-				double val = func.coerceToDouble(qv.getValue().toString());
+				double val = fcns.coerceToDouble(qv.getValue().toString());
 				if(val>max ) {
 					max = val;
 					if( val>limit ) {

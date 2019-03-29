@@ -1,0 +1,56 @@
+#
+# Test of the InferenceMemory block
+#
+DIAGRAM="app75/family75/memory"
+tag: Out MemoryTags/InferenceResult
+tag: IMSet MemoryTags/InferenceSet
+tag: IMReset MemoryTags/InferenceReset
+tagset: IM IMReset IMSet
+
+Tagset: IM
+Show: diagram $DIAGRAM
+
+# Note the InputBlock will re-transmit its value after a RESET.
+# Make use of this.
+2000/01/01 09:59:30 0.0 0.0 0.0
+resetDiagram ($DIAGRAM)
+
+# Some of these tests take only a single input
+Test: Reset and Set Combinations
+Step: Reset Line TRUE
+
+2000/01/01 10:00:00 TRUE UNKNOWN
+2000/01/01 10:00:15 Assert: Out = "FALSE"  "FALSE with R/S=TRUE/UNKNOWN"
+2000/01/01 10:00:20 TRUE TRUE
+2000/01/01 10:00:30 Assert: Out = "FALSE"  "FALSE with R/S=TRUE/TRUE"
+2000/01/01 10:00:35 TRUE FALSE
+2000/01/01 10:00:45 Assert: Out = "FALSE"  "FALSE with R/S=TRUE/FALSE"
+2000/01/01 10:00:50 FALSE FALSE
+2000/01/01 10:00:55 Assert: Out = "FALSE"  "FALSE with R/S=FALSE/FALSE"
+
+resetDiagram ($DIAGRAM)
+
+Step: Petes Test
+2000/01/01 10:01:00 FALSE TRUE
+2000/01/01 10:01:15 Assert: Out = "TRUE"  "FALSE with R/S=FALSE,TRUE"
+2000/01/01 10:01:20 TRUE TRUE
+2000/01/01 10:01:30 Assert: Out = "FALSE" "FALSE with R/S=FALSE/FALSE"
+2000/01/01 10:01:35 TRUE FALSE
+2000/01/01 10:01:45 Assert: Out = "FALSE" "FALSE with R/S=TRUE/FALSE"
+2000/01/01 10:01:50 FALSE FALSE
+2000/01/01 10:02:00 Assert: Out = "FALSE" "FALSE with R/S=FALSE/FALSE"
+
+Step: False-False from G2
+2000/01/01 10:02:05 UNKNOWN UNKNOWN
+2000/01/01 10:02:15 resetBlock ($DIAGRAM,"INFERENCEMEMORY-829")
+2000/01/01 10:02:30 Assert: Out = "UNKNOWN"  "UNKNOWN after reset"
+2000/01/01 10:02:40 IMReset = FALSE
+2000/01/01 10:02:45 Assert: Out = "UNKNOWN"  "UNKNOWN with R/S=FALSE/UNKNOWN"
+2000/01/01 10:02:55 IMSet = TRUE
+2000/01/01 10:03:10 Assert: Out = TRUE "TRUE with R/S=FALSE/TRUE"
+2000/01/01 10:03:20 IMSet = "FALSE"
+2000/01/01 10:03:30 Assert: Out = "TRUE"  "TRUE with R/S=FALSE/FALSE"
+2000/01/01 10:03:40 IMReset = "TRUE"
+2000/01/01 10:03:50 Assert: Out = "FALSE" "FALSE with R/S=TRUE/FALSE"
+2000/01/01 10:04:00 IMReset = "FALSE"
+2000/01/01 10:04:10 Assert: Out = "FALSE" "FALSE with R/S=FALSE/FALSE"

@@ -5,6 +5,7 @@ package com.ils.blt.designer.config;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -32,6 +33,7 @@ import net.miginfocom.swing.MigLayout;
 
 /**
  * Display a dialog to configure the outputs available for a Final Diagnosis.
+ * The constants contained herein are defined in designer.properties (I'm not sure how it knows that...)
  */
 public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 	private static final long serialVersionUID = 7211480530910862375L;
@@ -50,21 +52,32 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 	protected JTextField priorityField;
 	protected JTextField refreshRateField;
 	protected JTextField postProcessingCallbackField;
-	protected JCheckBox  constantCheckBox;
-	protected JCheckBox  trapBox;
-	
+	protected JCheckBox constantCheckBox;
+	protected JCheckBox trapBox;
+	protected JCheckBox manualMoveAllowedCheckBox;
+	protected JTextArea explanationArea;
+	protected static final Dimension EXPLANATIION_AREA_SIZE  = new Dimension(280,300);
+	protected static final Dimension TEXT_RECOMMENDATION_AREA_SIZE  = new Dimension(280,300);
+
 	public FinalDiagnosisConfiguration(DiagramWorkspace wksp,ProcessDiagramView diag,ProcessBlockView view) {
 		super(wksp.getContext());
 		this.model = new GeneralPurposeDataContainer();
-		this.setLocationRelativeTo(null);    // Should center on screen
+
 		this.diagram = diag;
 		this.block = view;
 		this.setTitle(rb.getString("FinalDiagnosisEditor.Title"));
+		
 		setAlwaysOnTop(true);
 		setModal(false);
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));
         initialize();
+		// this.setLocationRelativeTo(null);    // Should center on screen *** BUT IT DOESN'T ***
+        
+		//Point newLocation = new Point(-100, -100);
+		//this.setLocation(newLocation);
+		this.setLocation(-500,-500);
+        
 	}
 	/**
 	 * The super class takes care of making a central tabbed pane --- but
@@ -81,14 +94,11 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 	}
 	
 	private JPanel createMainPanel() {	
-
-		
 		// The internal panel has two panes
 		// - one for the dual list box, the other for the remaining attributes
 		//setLayout(new BorderLayout());
 		mainPanel = new JPanel();
 		mainPanel.setLayout(new MigLayout("ins 2,fill","[][]","[][growprio 50,200:1000:2000][]"));
-		
 		
 		addSeparator(mainPanel,"FinalDiagnosis.QuantOutputs");
 		
@@ -158,7 +168,7 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 		JPanel panel = new JPanel();
 		final String columnConstraints = "para[][][][]";
 		final String layoutConstraints = "ins 2,gapy 1,gapx 5,fillx,filly";
-		final String rowConstraints = "para [][][][][growprio 100,48:72:96][][][][][]";
+		final String rowConstraints = "para [][][growprio 100,48:72:96][growprio 100,48:72:96][][][][][][]";
 		panel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
 
 		panel.add(createLabel("FinalDiagnosis.Name"),"");
@@ -171,30 +181,45 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 		uuidField.setEditable(false);
 		panel.add(uuidField,"spanx 3,growx,wrap");
 		
-		panel.add(createLabel("FinalDiagnosis.Constant"),"gaptop 2,aligny top");
-		String constantValue = properties.get("Constant");
-		if( constantValue==null) constantValue="0";
-		constantCheckBox = createCheckBox("FinalDiagnosis.Constant.Desc",(constantValue.equalsIgnoreCase("1")));
-		panel.add(constantCheckBox,"alignx left,wrap");
+		panel.add(createLabel("FinalDiagnosis.Explanation"),"gaptop 2,aligny top");
+		String explanation = (String)properties.get("Explanation");
+		if( explanation==null) explanation="";
+		explanationArea = createTextArea("FinalDiagnosis.Explanation.Desc",explanation);
+		JScrollPane explanationScrollPane = new JScrollPane(explanationArea);
+		explanationScrollPane.setPreferredSize(EXPLANATIION_AREA_SIZE);
+		panel.add(explanationScrollPane,"spanx 3,growx,growy,wrap");
+		
+		panel.add(createLabel("FinalDiagnosis.TextRecommendation"),"gaptop 2,aligny top");
+		String recommendation = (String)properties.get("TextRecommendation");
+		if( recommendation==null) recommendation="";
+		textRecommendationArea = createTextArea("FinalDiagnosis.TextRecommendation.Desc",recommendation);
+		JScrollPane textRecommendationScrollPane = new JScrollPane(textRecommendationArea);
+		textRecommendationScrollPane.setPreferredSize(TEXT_RECOMMENDATION_AREA_SIZE);
+		panel.add(textRecommendationScrollPane,"spanx 3,growx,growy,wrap");
 		
 		panel.add(createLabel("FinalDiagnosis.CalcMethod"),"gaptop 2,aligny top");
 		String method = properties.get("CalculationMethod");
 		if( method==null) method="";
 		calculationMethodField = createTextField("FinalDiagnosis.CalcMethod.Desc",method);
 		panel.add(calculationMethodField,"spanx 3,growx,wrap");
-		
-		panel.add(createLabel("FinalDiagnosis.TextRecommendation"),"gaptop 2,aligny top");
-		String recommendation = (String)properties.get("TextRecommendation");
-		if( recommendation==null) recommendation="";
-		textRecommendationArea = createTextArea("FinalDiagnosis.TextRecommendation.Desc",recommendation);
-		JScrollPane scrollPane = new JScrollPane(textRecommendationArea);
-		panel.add(scrollPane,"spanx 3,growx,growy,wrap");
+
+		panel.add(createLabel("FinalDiagnosis.Constant"),"gaptop 2,aligny top");
+		String constantValue = properties.get("Constant");
+		if( constantValue==null) constantValue="0";
+		constantCheckBox = createCheckBox("FinalDiagnosis.Constant.Desc",(constantValue.equalsIgnoreCase("1")));
+		panel.add(constantCheckBox,"alignx left,wrap");
 		
 		panel.add(createLabel("FinalDiagnosis.PostTextRecommendation"),"gaptop 2,aligny top");
 		String postTextRec = (String)properties.get("PostTextRecommendation");
 		if( postTextRec==null) postTextRec="0";
 		postTextRecommendationBox = createCheckBox("FinalDiagnosis.PostTextRecommendation.Desc",(postTextRec.equals("0")?false:true));
 		panel.add(postTextRecommendationBox,"alignx left,wrap");
+		
+		panel.add(createLabel("FinalDiagnosis.ManualMoveAllowed"),"gaptop 2,aligny top");
+		String manualMoveAllowed = properties.get("ManualMoveAllowed");
+		if( manualMoveAllowed==null) manualMoveAllowed="0";
+		manualMoveAllowedCheckBox = createCheckBox("FinalDiagnosis.ManualMoveAllowed.Desc",(manualMoveAllowed.equalsIgnoreCase("1")));
+		panel.add(manualMoveAllowedCheckBox,"alignx left,wrap");
 
 		panel.add(createLabel("FinalDiagnosis.Priority"),"gaptop 2,aligny top");
 		String priority = (String)properties.get("Priority");
@@ -227,8 +252,10 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 	// Copy the FinalDiagnosis auxiliary data back into the database
 	private void save(){
 		model.getProperties().put("Constant", (constantCheckBox.isSelected()?"1":"0"));
+		model.getProperties().put("ManualMoveAllowed", (manualMoveAllowedCheckBox.isSelected()?"1":"0"));
 		model.getProperties().put("CalculationMethod",calculationMethodField.getText());
 		model.getProperties().put("TextRecommendation", textRecommendationArea.getText());
+		model.getProperties().put("Explanation", explanationArea.getText());
 		model.getProperties().put("PostTextRecommendation", (postTextRecommendationBox.isSelected()?"1":"0"));
 		model.getProperties().put("Priority", priorityField.getText());
 		model.getProperties().put("RefreshRate", refreshRateField.getText());
