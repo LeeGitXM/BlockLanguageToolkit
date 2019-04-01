@@ -276,6 +276,15 @@
 				<include name="commons-math*.jar" />
 			</fileset>
 		</copy>
+		<copy todir="${dev.py.lib}/../../lib/core/common">
+			<fileset dir="${basedir}/BLT_Build/temp_modl">
+				<include name="ils-common.jar" />
+				<include name="blt-common.jar" />
+				<include name="jackson*.gz" />
+				<include name="commons-math*.gz" />
+				<include name="commons-math*.jar" />
+			</fileset>
+		</copy>
 		<copy todir="${escorez.py.lib}/../../lib/core/common">
 			<fileset dir="${basedir}/BLT_Build/temp_modl">
 				<include name="ils-common.jar" />
@@ -332,6 +341,11 @@
 				<include name="jackson*.jar" />
 			</fileset>
 		</copy>
+		<copy todir="${dev.py.lib}/../../lib/core/common">
+			<fileset dir="${jar.dir}">
+				<include name="jackson*.jar" />
+			</fileset>
+		</copy>
 		<copy todir="${escorez.py.lib}/../../lib/core/common">
 			<fileset dir="${jar.dir}">
 				<include name="jackson*.jar" />
@@ -366,6 +380,13 @@
 			</fileset>
 		</copy>
 		<copy todir="${demo.py.lib}/../../lib/core/gateway">
+			<fileset dir="${basedir}/BLT_Build/temp_modl">
+				<include name="commons-math3-3.1.6.jar" />
+				<include name="blt-gateway.jar" />
+				<include name="block-definition.jar" />
+			</fileset>
+		</copy>
+		<copy todir="${dev.py.lib}/../../lib/core/gateway">
 			<fileset dir="${basedir}/BLT_Build/temp_modl">
 				<include name="commons-math3-3.1.6.jar" />
 				<include name="blt-gateway.jar" />
