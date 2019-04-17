@@ -1,9 +1,10 @@
 /**
- *   (c) 2014  ILS Automation. All rights reserved. 
+ *   (c) 2015-2019  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -18,6 +19,7 @@ import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.PropertyType;
+import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
@@ -37,7 +39,7 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
 @ExecutableBlock
 public class Sum extends AbstractProcessBlock implements ProcessBlock {
 	// Keep map of values by originating block id
-	protected Map<String,QualifiedValue> valueMap = null;
+	protected final Map<String,QualifiedValue> valueMap;
 	private final Watchdog dog;
 	private double synchInterval = 0.5; // 1/2 sec synchronization by default
 	
@@ -48,6 +50,7 @@ public class Sum extends AbstractProcessBlock implements ProcessBlock {
 		initialize();
 		initializePrototype();
 		dog = new Watchdog(getName(),this);
+		valueMap = new HashMap<>();
 	}
 	
 	/**
@@ -61,6 +64,7 @@ public class Sum extends AbstractProcessBlock implements ProcessBlock {
 		super(ec,parent,block);
 		initialize();
 		dog = new Watchdog(getName(),this);
+		valueMap = new HashMap<>();
 	}
 	
 	/**
@@ -93,7 +97,7 @@ public class Sum extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void start() {
 		super.start();
-		valueMap = initializeQualifiedValueMap(BlockConstants.IN_PORT_NAME);
+		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,valueMap,BLTProperties.UNDEFINED);
 	}
 	/**
 	 * Disconnect from the timer thread.
@@ -175,7 +179,14 @@ public class Sum extends AbstractProcessBlock implements ProcessBlock {
 			}
 		}
 	}
-	
+	/**
+	 * On a save, make sure that our map of connections is proper. 
+	 * We only care about the in port which allows multiple connections.
+	 */
+	@Override
+	public void validateConnections() {
+		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,valueMap,BLTProperties.UNDEFINED);
+	}
 	/**
 	 * Define the palette prototype for this block class.
 	 */

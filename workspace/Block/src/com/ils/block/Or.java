@@ -1,9 +1,10 @@
 /**
- *   (c) 2013-2017  ILS Automation. All rights reserved. 
+ *   (c) 2013-2019  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -41,7 +42,7 @@ import com.inductiveautomation.ignition.common.sqltags.model.types.DataQuality;
 public class Or extends AbstractProcessBlock implements ProcessBlock {
 	private final String TAG = "Or";
 	// Keep map of values by originating block id
-	protected Map<String,QualifiedValue> qualifiedValueMap = null;
+	protected final Map<String,QualifiedValue> qualifiedValueMap;
 	private final Watchdog dog;
 	private double synchInterval = 0.5; // 1/2 sec synchronization by default
 	private BlockProperty valueProperty = null;
@@ -53,6 +54,7 @@ public class Or extends AbstractProcessBlock implements ProcessBlock {
 		dog = new Watchdog(TAG,this);
 		initialize();
 		initializePrototype();
+		qualifiedValueMap = new HashMap<>();
 	}
 	
 	/**
@@ -66,6 +68,7 @@ public class Or extends AbstractProcessBlock implements ProcessBlock {
 		super(ec,parent,block);
 		dog = new Watchdog(TAG,this);
 		initialize();
+		qualifiedValueMap = new HashMap<>();
 	}
 	
 	private void initialize() {	
@@ -94,7 +97,7 @@ public class Or extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void start() {
 		super.start();
-		qualifiedValueMap = initializeQualifiedValueMap(BlockConstants.IN_PORT_NAME);
+		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,qualifiedValueMap,TruthValue.UNSET);
 	}
 	/**
 	 * Disconnect from the timer thread.
@@ -232,6 +235,15 @@ public class Or extends AbstractProcessBlock implements ProcessBlock {
 	public void setState(TruthValue newState) { 
 		super.setState(newState);
 		valueProperty.setValue(newState);
+	}
+	/**
+	 * On a save, make sure that our map of connections is proper. 
+	 * We are only concerned with the in port as it allows multiple connections
+	 */
+	@Override
+	public void validateConnections() {
+		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,qualifiedValueMap,TruthValue.UNKNOWN);
+		evaluate();
 	}
 	/**
 	 * Augment the palette prototype for this block class.

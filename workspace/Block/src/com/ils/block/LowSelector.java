@@ -1,5 +1,5 @@
 /**
- *   (c) 2017  ILS Automation. All rights reserved. 
+ *   (c) 2017-2019  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -11,7 +11,6 @@ import java.util.UUID;
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.ProcessBlock;
-import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
@@ -39,7 +38,7 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
 @ExecutableBlock
 public class LowSelector extends AbstractProcessBlock implements ProcessBlock {
 	// Keep map of values by originating block id
-	protected Map<String,QualifiedValue> qualifiedValueMap;
+	protected final Map<String,QualifiedValue> qualifiedValueMap;
 	private final Watchdog dog;
 	double currentValue = Double.NaN;
 	private BlockProperty valueProperty = null;
@@ -49,7 +48,7 @@ public class LowSelector extends AbstractProcessBlock implements ProcessBlock {
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
 	public LowSelector() {
-		qualifiedValueMap = new HashMap<String,QualifiedValue>();
+		qualifiedValueMap = new HashMap<>();
 		initialize();
 		initializePrototype();
 		dog = new Watchdog(getName(),this);
@@ -64,7 +63,7 @@ public class LowSelector extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	public LowSelector(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
-		qualifiedValueMap = new HashMap<String,QualifiedValue>();
+		qualifiedValueMap = new HashMap<>();
 		initialize();
 		dog = new Watchdog(getName(),this);
 	}
@@ -101,7 +100,7 @@ public class LowSelector extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void start() {
 		super.start();
-		qualifiedValueMap = initializeQualifiedValueMap(BlockConstants.IN_PORT_NAME);
+		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,qualifiedValueMap,BLTProperties.UNDEFINED);
 		log.debugf("%s.start: initialized %d inputs",getName(),qualifiedValueMap.size());
 	}
 	/**
@@ -207,6 +206,14 @@ public class LowSelector extends AbstractProcessBlock implements ProcessBlock {
 		return descriptor;
 	}
 
+	/**
+	 * On a save, make sure that our map of connections is proper. 
+	 * We are only concerned with the in port as it allows multiple connections
+	 */
+	@Override
+	public void validateConnections() {
+		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,qualifiedValueMap,BLTProperties.UNDEFINED);
+	}
 	
 	/**
 	 * Augment the palette prototype for this block class.

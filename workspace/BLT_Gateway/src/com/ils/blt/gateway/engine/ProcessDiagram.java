@@ -169,7 +169,7 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	 * In order to make this applicable for updates, we skip any connections that currently
 	 * exist.
 	 * 
-	 * @param scxns tan array of connection to be added
+	 * @param scxns an array of connection to be added
 	 */
 	public void updateConnections(SerializableConnection[] scxns) {
 		ConnectionFactory connectionFactory = ConnectionFactory.getInstance();
@@ -217,8 +217,15 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 			else {
 				log.warnf("%s.updateConnections: %s has invalid serialized connection (%s)",TAG,getName(),invalidConnectionReason(sc));
 			}
-
 		}
+		// Now that the connection maps have been created/updated, allow the blocks to update their information.
+		// Currently we only do this for the incoming connections.
+		log.debugf("%s.updateConnections: updating connections ...",TAG);
+		for(BlockPort key:incomingConnections.keySet() ) {
+			key.getBlock().validateConnections();
+			
+		}
+		
 	}
 	
 	/**
