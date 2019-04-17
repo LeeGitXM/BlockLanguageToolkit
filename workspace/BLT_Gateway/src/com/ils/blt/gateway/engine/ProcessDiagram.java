@@ -27,7 +27,6 @@ import com.ils.blt.common.notification.BroadcastNotification;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.notification.SignalNotification;
-import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableConnection;
 import com.ils.blt.common.serializable.SerializableDiagram;
