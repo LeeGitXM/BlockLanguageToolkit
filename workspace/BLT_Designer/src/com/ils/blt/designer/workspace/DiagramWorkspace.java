@@ -851,6 +851,11 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				edtr.pack();
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
+						if( source instanceof Component) {
+							edtr.setLocationRelativeTo((Component)source);
+						} else {
+							edtr.setLocation(100,100);
+						}
 						edtr.setVisible(true);
 					}
 				}); 
