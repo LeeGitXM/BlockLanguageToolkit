@@ -1,5 +1,5 @@
 /**
- *   (c) 2013-2018  ILS Automation. All rights reserved. 
+ *   (c) 2013-2019  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -29,6 +29,7 @@ import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
+import com.ils.blt.common.connection.ProcessConnection;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.BlockPropertyChangeListener;
@@ -130,25 +131,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		setProperty(BlockConstants.BLOCK_PROPERTY_ACTIVITY_BUFFER_SIZE, bufferSize);
 	}
 	
-	/**
-	 * Create a qualified value map with an entry for every block attached to the port
-	 * and with a NULL value. This map is used for blocks that need to keep track
-	 * of the blocks attached on input.
-	 * @param port name of the anchor point
-	 * @return the map with empty entries.
-	 */
-	protected Map<String,QualifiedValue> initializeQualifiedValueMap(String port) {
-		List<SerializableBlockStateDescriptor> descriptors = controller.listBlocksConnectedAtPort(parentId.toString(), 
-																		blockId.toString(), port);
-		recordActivity(Activity.ACTIVITY_INITIALIZE,"clear entry map",String.format("%d inputs", descriptors.size()));
-		synchronized(this) {
-			Map<String,QualifiedValue> qvmap = new HashMap<>();
-			for(SerializableBlockStateDescriptor desc:descriptors) {
-				qvmap.put(desc.getIdString(), new BasicQualifiedValue(BLTProperties.UNDEFINED));
-			}
-			return qvmap;
-		}
-	}
+
 	/**
 	 * Fill a prototype object with defaults - as much as is reasonable.
 	 */
@@ -810,7 +793,51 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		if( summary.length()==0 ) return null;
 		else return summary.toString();
 	}
-	
+	/**
+	 * In some circumstances, e.g. the user has edited the diagram,
+	 * the connections to a port that accepts multiples may have changed.
+	 * The default version of this method does nothing.  
+	 * @param portName name of the port
+	 * @param cxns incoming connections attached at the port.
+	 */
+	public void validateConnections() {}
+	/**
+	 * Used by a handful of logic blocks that allow variable number of connections at a
+	 * particular input port. 
+	 * @param uuids UUIDS of connected blocks as strings
+	 * @param qualifiedValueMap map of last values keyed by uuid of upstream block.
+	 * @param unset the object to be used for the initial value of a new connection
+	 */
+	protected void reconcileQualifiedValueMap(String port,Map<String,QualifiedValue> qualifiedValueMap,Object unset) {
+		List<SerializableBlockStateDescriptor> descriptors = controller.listBlocksConnectedAtPort(parentId.toString(), 
+				blockId.toString(), port);
+		
+		recordActivity(Activity.ACTIVITY_INITIALIZE,"reconcile entry map",String.format("%d inputs", descriptors.size()));
+		log.debugf("%s.reconcileQualifiedValueMap: checking ------------- -",getName());
+		List<String> toBeAdded = new ArrayList<>();
+		List<String> toBeDeleted = new ArrayList<>();
+		List<String> toBeRetained = new ArrayList<>();
+		for( SerializableBlockStateDescriptor desc:descriptors ) {
+			String idString = desc.getIdString();
+			if(qualifiedValueMap.get(idString)==null ) toBeAdded.add(idString);
+			else if( qualifiedValueMap.keySet().contains(idString) ) {
+				toBeRetained.add(idString);
+			}
+		}
+		for(String idString:qualifiedValueMap.keySet() ) {
+			if( !toBeRetained.contains(idString) ) {
+				toBeDeleted.add(idString);
+			}
+		}
+		for( String key:toBeDeleted ) {
+			log.debugf("%s.reconcileQualifiedValueMap: removing connection from %s",getName(),key);
+			qualifiedValueMap.remove(key);
+		}
+		for( String key:toBeAdded ) {
+			log.debugf("%s.reconcileQualifiedValueMap: adding connection to %s",getName(),key);
+			qualifiedValueMap.put(key,new BasicQualifiedValue(unset));
+		}	
+	}
 	/**
 	 * Check any properties that are bound to tags. Verify that the
 	 * property matches the current value of the tag.

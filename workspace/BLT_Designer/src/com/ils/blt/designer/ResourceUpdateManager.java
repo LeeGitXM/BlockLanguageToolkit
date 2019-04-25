@@ -88,11 +88,13 @@ public class ResourceUpdateManager implements Runnable {
 			}
 			try {
 				context.updateResource(res.getResourceId(),res.getData());   // Force an update
+
 				diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
 				DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ...");  // Don't publish
 				for(ProjectResource pr:diff.getResources()) {
-					log.infof("%s.run: Saved %s (%d) %s",CLSS,pr.getName(),pr.getResourceId(),
-							  (context.getProject().isResourceDirty(pr)?"DIRTY":"CLEAN"));
+					log.infof("%s.run: Saved %s (%d) %s %s",CLSS,pr.getName(),pr.getResourceId(),
+							  (context.getProject().isResourceDirty(pr)?"DIRTY":"CLEAN"),(pr.isLocked()?"LOCKED":"UNLOCKED"));
+					if( pr.isLocked()) pr.setLocked(false);
 				}
 				// Make every thing clean again.
 				Project project = context.getProject();

@@ -1,5 +1,5 @@
 /**
- *   (c) 2013-2014  ILS Automation. All rights reserved. 
+ *   (c) 2013-2019  ILS Automation. All rights reserved. 
  */
 package com.ils.blt.common;
 
@@ -12,6 +12,7 @@ import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PalettePrototype;
 import com.ils.blt.common.block.TruthValue;
+import com.ils.blt.common.connection.ProcessConnection;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.BlockPropertyChangeListener;
 import com.ils.blt.common.notification.IncomingNotification;
@@ -277,6 +278,12 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 * @return a validation summary. Null if everything checks out.
 	 */
 	public String validate();
+	/**
+	 * In some circumstances, e.g. the user has edited the diagram,
+	 * the connections to a port that accepts multiples may have changed.
+	 * This method prompts the block to correct its internal list accordingly.  
+	 */
+	public void validateConnections();
 	/**
 	 * Check any properties that are bound to tags. Verify that the
 	 * property matches the current value of the tag.
