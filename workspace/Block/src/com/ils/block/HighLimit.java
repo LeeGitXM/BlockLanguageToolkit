@@ -5,13 +5,13 @@ package com.ils.block;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.ProcessBlock;
-import com.ils.blt.common.UtilityFunctions;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BindingType;
@@ -21,6 +21,7 @@ import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.connection.ConnectionType;
+import com.ils.blt.common.connection.ProcessConnection;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
@@ -39,7 +40,7 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
 public class HighLimit extends AbstractProcessBlock implements ProcessBlock {
 	private double limit   = 0.;
 	// Keep map of values by originating block id
-	protected Map<String,QualifiedValue> qualifiedValueMap;
+	protected final Map<String,QualifiedValue> qualifiedValueMap;
 	private final Watchdog dog;
 	double currentValue = Double.NaN;
 	private BlockProperty valueProperty = null;
@@ -49,7 +50,7 @@ public class HighLimit extends AbstractProcessBlock implements ProcessBlock {
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
 	public HighLimit() {
-		qualifiedValueMap = new HashMap<String,QualifiedValue>();
+		qualifiedValueMap = new HashMap<>();
 		initialize();
 		initializePrototype();
 		dog = new Watchdog(getName(),this);
@@ -64,7 +65,7 @@ public class HighLimit extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	public HighLimit(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
-		qualifiedValueMap = new HashMap<String,QualifiedValue>();
+		qualifiedValueMap = new HashMap<>();
 		initialize();
 		dog = new Watchdog(getName(),this);
 	}
@@ -105,7 +106,7 @@ public class HighLimit extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void start() {
 		super.start();
-		qualifiedValueMap = initializeQualifiedValueMap(BlockConstants.IN_PORT_NAME);
+		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,qualifiedValueMap,BLTProperties.UNDEFINED);
 		log.debugf("%s.start: initialized %d inputs",getName(),qualifiedValueMap.size());
 	}
 	/**
@@ -211,6 +212,15 @@ public class HighLimit extends AbstractProcessBlock implements ProcessBlock {
 		updateStateForNewValue(qv);
 		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
+	/**
+	 * On a save, make sure that our map of connections is proper. 
+	 * We are only concerned with the in port as it allows multiple connections
+	 */
+	@Override
+	public void validateConnections() {
+		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,qualifiedValueMap,BLTProperties.UNDEFINED);
+	}
+	
 	/**
 	 * Augment the palette prototype for this block class.
 	 */

@@ -1,5 +1,5 @@
 /**
- *   (c) 2014-2017  ILS Automation. All rights reserved. 
+ *   (c) 2014-2019  ILS Automation. All rights reserved. 
  */
 package com.ils.block;
 
@@ -22,6 +22,7 @@ import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
+import com.ils.blt.common.connection.ProcessConnection;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
@@ -53,7 +54,7 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	public NTrue() {
 		dog = new Watchdog(TAG,this);
-		qualifiedValueMap = new HashMap<String,QualifiedValue>();
+		qualifiedValueMap = new HashMap<>();
 		initialize();
 		initializePrototype();
 	}
@@ -68,7 +69,7 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 	public NTrue(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
 		dog = new Watchdog(TAG,this);
-		qualifiedValueMap = new HashMap<String,QualifiedValue>();
+		qualifiedValueMap = new HashMap<>();
 		initialize();
 	}
 	
@@ -218,7 +219,15 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 		super.setState(newState);
 		valueProperty.setValue(newState);
 	}
-	
+	/**
+	 * On a save, make sure that our map of connections is proper. 
+	 * We are only concerned with the in port that allows multiple connections.
+	 */
+	@Override
+	public void validateConnections() {
+		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,qualifiedValueMap,TruthValue.UNKNOWN);
+		evaluate();
+	}
 	/**
 	 * Augment the palette prototype for this block class.
 	 */

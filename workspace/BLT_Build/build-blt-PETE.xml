@@ -2,10 +2,10 @@
 
 	<import file="${basedir}/BLT_Build/build.xml"/>
 
-	<property name="version.build" value="18" />	
+	<property name="version.build" value="0" />	
 	<!-- Change version.beta value to "" for release builds -->
 	<property name="version.beta" value="-development" />		
-	<property name="BLTModule.version" value="1.6.29.${version.build}" />
+	<property name="BLTModule.version" value="1.6.30.${version.build}" />
 	<property name="BLTModule.name" value="BLT" />
 	<property name="BLTModule.release" value="0.5" />
 	<property name="BLTModule.description" value="Block Language Toolkit" />
@@ -13,8 +13,8 @@
 	<property name="jar.dir" value="${root.dir}/external/lib" />
 	<property name="sdk.dir" value="${root.dir}/ignition-79/lib" />
 	<property name="common.jar.name" value="ils-common.jar" />
-	<property name="common.bin.dir" value="${root.dir}/ils-common/bin" />
-	<property name="common.src.dir" value="${root.dir}/ils-common/ILS_Common/src" />
+	<property name="common.bin.dir" value="${root.dir}/ils_common/bin" />
+	<property name="common.src.dir" value="${root.dir}/ils_common/ILS_Common/src" />
 	<property name="block.jar.name" value="block-definition.jar" />
 	<property name="block.bin.dir" value="${root.dir}/blt/workspace/Block/bin" />
 	<property name="block.src.dir" value="${root.dir}/blt/workspace/Block/src" />
@@ -261,6 +261,7 @@
 		<copy todir="${brpo.py.lib}/../../lib/core/common">
 			<fileset dir="${basedir}/BLT_Build/temp_modl">
 				<include name="ils-common.jar" />
+				<include name="ils-common.jar.pack.gz" />
 				<include name="blt-common.jar" />
 				<include name="jackson*.gz" />
 				<include name="commons-math*.gz" />
@@ -270,6 +271,7 @@
 		<copy todir="${demo.py.lib}/../../lib/core/common">
 			<fileset dir="${basedir}/BLT_Build/temp_modl">
 				<include name="ils-common.jar" />
+				<include name="ils-common.jar.pack.gz" />
 				<include name="blt-common.jar" />
 				<include name="jackson*.gz" />
 				<include name="commons-math*.gz" />
@@ -288,6 +290,7 @@
 		<copy todir="${escorez.py.lib}/../../lib/core/common">
 			<fileset dir="${basedir}/BLT_Build/temp_modl">
 				<include name="ils-common.jar" />
+				<include name="ils-common.jar.pack.gz" />
 				<include name="blt-common.jar" />
 				<include name="jackson*.gz" />
 				<include name="commons-math*.gz" />
@@ -297,6 +300,7 @@
 		<copy todir="${gline.py.lib}/../../lib/core/common">
 			<fileset dir="${basedir}/BLT_Build/temp_modl">
 				<include name="ils-common.jar" />
+				<include name="ils-common.jar.pack.gz" />
 				<include name="blt-common.jar" />
 				<include name="jackson*.gz" />
 				<include name="commons-math*.gz" />
@@ -306,6 +310,7 @@
 		<copy todir="${halobutyl.py.lib}/../../lib/core/common">
 			<fileset dir="${basedir}/BLT_Build/temp_modl">
 				<include name="ils-common.jar" />
+				<include name="ils-common.jar.pack.gz" />
 				<include name="blt-common.jar" />
 				<include name="jackson*.gz" />
 				<include name="commons-math*.gz" />
@@ -315,6 +320,7 @@
 		<copy todir="${test.py.lib}/../../lib/core/common">
 			<fileset dir="${basedir}/BLT_Build/temp_modl">
 				<include name="ils-common.jar" />
+				<include name="ils-common.jar.pack.gz" />
 				<include name="blt-common.jar" />
 				<include name="jackson*.gz" />
 				<include name="commons-math*.gz" />
@@ -324,6 +330,7 @@
 		<copy todir="${vistalon.py.lib}/../../lib/core/common">
 			<fileset dir="${basedir}/BLT_Build/temp_modl">
 				<include name="ils-common.jar" />
+				<include name="ils-common.jar.pack.gz" />
 				<include name="blt-common.jar" />
 				<include name="jackson*.gz" />
 				<include name="commons-math*.gz" />

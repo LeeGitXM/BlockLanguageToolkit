@@ -72,11 +72,9 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 		this.setPreferredSize(new Dimension(DIALOG_WIDTH,DIALOG_HEIGHT));
         initialize();
-		// this.setLocationRelativeTo(null);    // Should center on screen *** BUT IT DOESN'T ***
         
-		//Point newLocation = new Point(-100, -100);
-		//this.setLocation(newLocation);
-		this.setLocation(-500,-500);
+        // This isn't the right place to set the location.  See DiagramWorkspace
+//		this.setLocation(-500,-500);
         
 	}
 	/**
