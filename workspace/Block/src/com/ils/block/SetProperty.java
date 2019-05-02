@@ -91,10 +91,6 @@ public class SetProperty extends AbstractProcessBlock implements ProcessBlock {
 		super.acceptValue(vcn);
 		QualifiedValue qv = vcn.getValue();
 
-		log.errorf("EREIAM JH - SetProperty accepting value - @@@@@@@@@@@@@@@@@@@@@@@@@*********************************************");
-		log.errorf("EREIAM JH - SetProperty - lastValue " + lastValue);
-		log.errorf("EREIAM JH - SetProperty - qv" + qv);
-		
 		if( qv.getQuality().isGood() && !isLocked() && qv.getValue() != null )  {
 			signal = new Signal(BlockConstants.COMMAND_CONFIGURE,propertyName,qv.getValue().toString());
 			lastValue = new BasicQualifiedValue(signal,qv.getQuality(),qv.getTimestamp());
