@@ -38,7 +38,7 @@ import net.miginfocom.swing.MigLayout;
 public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 	private static final long serialVersionUID = 7211480530910862375L;
 	private static final String TAG = "FinalDiagnosisConfiguration";
-	private final int DIALOG_HEIGHT = 660;
+	private final int DIALOG_HEIGHT = 700;
 	private final int DIALOG_WIDTH = 600;
 	private final ProcessDiagramView diagram;
 	private final ProcessBlockView block;
@@ -48,7 +48,8 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 	protected DualListBox dual;
 	protected JTextField calculationMethodField;
 	protected JTextArea textRecommendationArea;
-	protected JCheckBox postTextRecommendationBox;
+	protected JCheckBox postTextRecommendationCheckBox;
+	protected JCheckBox showExplanationWithRecommendationCheckBox;
 	protected JTextField priorityField;
 	protected JTextField refreshRateField;
 	protected JTextField postProcessingCallbackField;
@@ -56,8 +57,10 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 	protected JCheckBox trapBox;
 	protected JCheckBox manualMoveAllowedCheckBox;
 	protected JTextArea explanationArea;
+	protected JTextArea commentArea;
 	protected static final Dimension EXPLANATIION_AREA_SIZE  = new Dimension(280,300);
 	protected static final Dimension TEXT_RECOMMENDATION_AREA_SIZE  = new Dimension(280,300);
+	protected static final Dimension COMMENT_AREA_SIZE  = new Dimension(280,300);
 
 	public FinalDiagnosisConfiguration(DiagramWorkspace wksp,ProcessDiagramView diag,ProcessBlockView view) {
 		super(wksp.getContext());
@@ -166,7 +169,7 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 		JPanel panel = new JPanel();
 		final String columnConstraints = "para[][][][]";
 		final String layoutConstraints = "ins 2,gapy 1,gapx 5,fillx,filly";
-		final String rowConstraints = "para [][][growprio 100,48:72:96][growprio 100,48:72:96][][][][][][]";
+		final String rowConstraints = "para [][][growprio 100,48:72:96][growprio 100,48:72:96][growprio 100,48:72:96][][][][][][]";
 		panel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
 
 		panel.add(createLabel("FinalDiagnosis.Name"),"");
@@ -178,6 +181,14 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 		JTextField uuidField = createTextField("FinalDiagnosis.UUID.Desc",block.getId().toString());
 		uuidField.setEditable(false);
 		panel.add(uuidField,"spanx 3,growx,wrap");
+		
+		panel.add(createLabel("FinalDiagnosis.Comment"),"gaptop 2,aligny top");
+		String comment = (String)properties.get("Comment");
+		if( comment==null) comment="";
+		commentArea = createTextArea("FinalDiagnosis.Comment.Desc",comment);
+		JScrollPane commentScrollPane = new JScrollPane(commentArea);
+		commentScrollPane.setPreferredSize(COMMENT_AREA_SIZE);
+		panel.add(commentScrollPane,"spanx 3,growx,growy,wrap");
 		
 		panel.add(createLabel("FinalDiagnosis.Explanation"),"gaptop 2,aligny top");
 		String explanation = (String)properties.get("Explanation");
@@ -201,24 +212,6 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 		calculationMethodField = createTextField("FinalDiagnosis.CalcMethod.Desc",method);
 		panel.add(calculationMethodField,"spanx 3,growx,wrap");
 
-		panel.add(createLabel("FinalDiagnosis.Constant"),"gaptop 2,aligny top");
-		String constantValue = properties.get("Constant");
-		if( constantValue==null) constantValue="0";
-		constantCheckBox = createCheckBox("FinalDiagnosis.Constant.Desc",(constantValue.equalsIgnoreCase("1")));
-		panel.add(constantCheckBox,"alignx left,wrap");
-		
-		panel.add(createLabel("FinalDiagnosis.PostTextRecommendation"),"gaptop 2,aligny top");
-		String postTextRec = (String)properties.get("PostTextRecommendation");
-		if( postTextRec==null) postTextRec="0";
-		postTextRecommendationBox = createCheckBox("FinalDiagnosis.PostTextRecommendation.Desc",(postTextRec.equals("0")?false:true));
-		panel.add(postTextRecommendationBox,"alignx left,wrap");
-		
-		panel.add(createLabel("FinalDiagnosis.ManualMoveAllowed"),"gaptop 2,aligny top");
-		String manualMoveAllowed = properties.get("ManualMoveAllowed");
-		if( manualMoveAllowed==null) manualMoveAllowed="0";
-		manualMoveAllowedCheckBox = createCheckBox("FinalDiagnosis.ManualMoveAllowed.Desc",(manualMoveAllowed.equalsIgnoreCase("1")));
-		panel.add(manualMoveAllowedCheckBox,"alignx left,wrap");
-
 		panel.add(createLabel("FinalDiagnosis.Priority"),"gaptop 2,aligny top");
 		String priority = (String)properties.get("Priority");
 		if( priority==null) priority="";
@@ -239,6 +232,33 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 		postProcessingCallbackField = createTextField("FinalDiagnosis.PostProcessingCallback.Desc",method);
 		panel.add(postProcessingCallbackField,"span 3,growx,wrap");
 		
+		panel.add(createLabel("FinalDiagnosis.Constant"),"gaptop 2,aligny top");
+		String constantValue = properties.get("Constant");
+		if( constantValue==null) constantValue="0";
+		constantCheckBox = createCheckBox("FinalDiagnosis.Constant.Desc",(constantValue.equalsIgnoreCase("1")));
+		//panel.add(constantCheckBox,"alignx left,wrap");
+		panel.add(constantCheckBox,"alignx left");
+		
+		//panel.add(createLabel("FinalDiagnosis.PostTextRecommendation"),"gaptop 2,aligny top");
+		panel.add(createLabel("FinalDiagnosis.PostTextRecommendation"),"alignx left");
+		String postTextRec = (String)properties.get("PostTextRecommendation");
+		if( postTextRec==null) postTextRec="0";
+		postTextRecommendationCheckBox = createCheckBox("FinalDiagnosis.PostTextRecommendation.Desc",(postTextRec.equals("0")?false:true));
+		panel.add(postTextRecommendationCheckBox,"alignx left,wrap");
+		
+		panel.add(createLabel("FinalDiagnosis.ShowExplanationWithRecommendation"),"gaptop 2,aligny top");
+		String showExplanation = (String)properties.get("ShowExplanationWithRecommendation");
+		log.errorf("showExplanation: "+showExplanation);
+		if( showExplanation==null) showExplanation="0";
+		showExplanationWithRecommendationCheckBox = createCheckBox("FinalDiagnosis.ShowExplanationWithRecommendation.Desc",(showExplanation.equals("0")?false:true));
+		panel.add(showExplanationWithRecommendationCheckBox,"alignx left");
+		
+		panel.add(createLabel("FinalDiagnosis.ManualMoveAllowed"),"gaptop 2,aligny top");
+		String manualMoveAllowed = properties.get("ManualMoveAllowed");
+		if( manualMoveAllowed==null) manualMoveAllowed="0";
+		manualMoveAllowedCheckBox = createCheckBox("FinalDiagnosis.ManualMoveAllowed.Desc",(manualMoveAllowed.equalsIgnoreCase("1")));
+		panel.add(manualMoveAllowedCheckBox,"alignx left,wrap");
+		
 		panel.add(createLabel("FinalDiagnosis.TrapInsignificant"),"gaptop 2,aligny top");
 		String tf = (String)properties.get("TrapInsignificantRecommendations");
 		if( tf==null) tf="0";
@@ -253,8 +273,10 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 		model.getProperties().put("ManualMoveAllowed", (manualMoveAllowedCheckBox.isSelected()?"1":"0"));
 		model.getProperties().put("CalculationMethod",calculationMethodField.getText());
 		model.getProperties().put("TextRecommendation", textRecommendationArea.getText());
+		model.getProperties().put("Comment", commentArea.getText());
 		model.getProperties().put("Explanation", explanationArea.getText());
-		model.getProperties().put("PostTextRecommendation", (postTextRecommendationBox.isSelected()?"1":"0"));
+		model.getProperties().put("PostTextRecommendation", (postTextRecommendationCheckBox.isSelected()?"1":"0"));
+		model.getProperties().put("ShowExplanationWithRecommendation", (showExplanationWithRecommendationCheckBox.isSelected()?"1":"0"));
 		model.getProperties().put("Priority", priorityField.getText());
 		model.getProperties().put("RefreshRate", refreshRateField.getText());
 		model.getProperties().put("PostProcessingCallback", postProcessingCallbackField.getText());

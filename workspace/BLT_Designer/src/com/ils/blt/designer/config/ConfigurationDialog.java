@@ -118,13 +118,17 @@ public class ConfigurationDialog extends JDialog {
 		box.setText("");     // Don't use the standard label, it's on the wrong side.
 		return box;
 	}
+	
 	/**
 	 * Create a new label. The text is the bundle key.
 	 */
 	protected JLabel createLabel(String bundle) {
-		JLabel label = new JLabel(rb.getString(bundle)+": ");
+		// I'd like to right justify the labels, but this doesn't seem to do anything.
+		JLabel label = new JLabel(rb.getString(bundle)+": ", JLabel.RIGHT);
 		return label;
 	}
+	
+	
 
 	/*
 	 * Create a text area for editing the description. This should be placed inside a
