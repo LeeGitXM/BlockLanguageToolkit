@@ -91,13 +91,14 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		this.parent = main;
 		this.block = blk;
 		this.property = prop;
-		this.currentTimeUnit = TimeUnit.SECONDS;   // The "canonical" unit
+//		this.currentTimeUnit = TimeUnit.SECONDS;   // The "canonical" unit
+		this.currentTimeUnit = TimeUnit.MINUTES;   // Force all to be in minutes, to avoid confusing behavior in UI
 		property.addChangeListener(this);
 	
 		setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));     // 3 cells across
 		if( property.getType().equals(PropertyType.TIME) ) {
-			double propValue = fncs.coerceToDouble(prop.getValue());
-			currentTimeUnit = TimeUtility.unitForValue(propValue);
+//			double propValue = fncs.coerceToDouble(prop.getValue());
+//			currentTimeUnit = TimeUtility.unitForValue(propValue);
 			main.addSeparator(this,property.getName()+" ~ "+currentTimeUnit.name().toLowerCase());
 		}
 		else {
