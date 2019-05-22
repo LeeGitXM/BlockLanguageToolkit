@@ -46,6 +46,7 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 	private JPanel mainPanel = null;
 	private final GeneralPurposeDataContainer model;           // Data container operated on by panels
 	protected DualListBox dual;
+	protected JTextField finalDiagnosisLabelField;
 	protected JTextField calculationMethodField;
 	protected JTextArea textRecommendationArea;
 	protected JCheckBox postTextRecommendationCheckBox;
@@ -169,7 +170,7 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 		JPanel panel = new JPanel();
 		final String columnConstraints = "para[][][][]";
 		final String layoutConstraints = "ins 2,gapy 1,gapx 5,fillx,filly";
-		final String rowConstraints = "para [][][growprio 100,48:72:96][growprio 100,48:72:96][growprio 100,48:72:96][][][][][][]";
+		final String rowConstraints = "para [][][][growprio 100,48:72:96][growprio 100,48:72:96][growprio 100,48:72:96][][][][][][]";
 		panel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
 
 		panel.add(createLabel("FinalDiagnosis.Name"),"");
@@ -181,6 +182,12 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 		JTextField uuidField = createTextField("FinalDiagnosis.UUID.Desc",block.getId().toString());
 		uuidField.setEditable(false);
 		panel.add(uuidField,"spanx 3,growx,wrap");
+		
+		panel.add(createLabel("FinalDiagnosis.Label"),"gaptop 2,aligny top");
+		String method = properties.get("FinalDiagnosisLabel");
+		if( method==null) method="";
+		finalDiagnosisLabelField = createTextField("FinalDiagnosis.Label.Desc",method);
+		panel.add(finalDiagnosisLabelField,"spanx 3,growx,wrap");
 		
 		panel.add(createLabel("FinalDiagnosis.Comment"),"gaptop 2,aligny top");
 		String comment = (String)properties.get("Comment");
@@ -207,9 +214,9 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 		panel.add(textRecommendationScrollPane,"spanx 3,growx,growy,wrap");
 		
 		panel.add(createLabel("FinalDiagnosis.CalcMethod"),"gaptop 2,aligny top");
-		String method = properties.get("CalculationMethod");
-		if( method==null) method="";
-		calculationMethodField = createTextField("FinalDiagnosis.CalcMethod.Desc",method);
+		String calculationMethod = properties.get("CalculationMethod");
+		if( calculationMethod==null) calculationMethod="";
+		calculationMethodField = createTextField("FinalDiagnosis.CalcMethod.Desc",calculationMethod);
 		panel.add(calculationMethodField,"spanx 3,growx,wrap");
 
 		panel.add(createLabel("FinalDiagnosis.Priority"),"gaptop 2,aligny top");
@@ -272,6 +279,7 @@ public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 		model.getProperties().put("Constant", (constantCheckBox.isSelected()?"1":"0"));
 		model.getProperties().put("ManualMoveAllowed", (manualMoveAllowedCheckBox.isSelected()?"1":"0"));
 		model.getProperties().put("CalculationMethod",calculationMethodField.getText());
+		model.getProperties().put("FinalDiagnosisLabel",finalDiagnosisLabelField.getText());
 		model.getProperties().put("TextRecommendation", textRecommendationArea.getText());
 		model.getProperties().put("Comment", commentArea.getText());
 		model.getProperties().put("Explanation", explanationArea.getText());

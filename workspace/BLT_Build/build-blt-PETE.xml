@@ -281,6 +281,7 @@
 		<copy todir="${dev.py.lib}/../../lib/core/common">
 			<fileset dir="${basedir}/BLT_Build/temp_modl">
 				<include name="ils-common.jar" />
+				<include name="ils-common.jar.pack.gz" />
 				<include name="blt-common.jar" />
 				<include name="jackson*.gz" />
 				<include name="commons-math*.gz" />
