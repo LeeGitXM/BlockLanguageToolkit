@@ -96,10 +96,11 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		property.addChangeListener(this);
 	
 		setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));     // 3 cells across
-		if( property.getType().equals(PropertyType.TIMER) ) {
-			double propValue = fncs.coerceToDouble(prop.getValue());
-			currentTimeUnit = TimeUtility.unitForValue(propValue);
-			main.addSeparator(this,property.getName()+" ~ "+currentTimeUnit.name().toLowerCase());
+		if( property.getType().equals(PropertyType.TIME) ) {
+//			double propValue = fncs.coerceToDouble(prop.getValue());
+//			currentTimeUnit = TimeUtility.unitForValue(propValue);
+//			main.addSeparator(this,property.getName()+" ~ "+currentTimeUnit.name().toLowerCase());
+			main.addSeparator(this,property.getName()+" ~ "+TimeUnit.MINUTES.name().toLowerCase());
 		} else if( property.getType().equals(PropertyType.TIME_SECONDS) ) {
 			main.addSeparator(this,property.getName()+" ~ "+TimeUnit.SECONDS.name().toLowerCase());
 		} else if( property.getType().equals(PropertyType.TIME_MINUTES) ) {
@@ -242,7 +243,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	public void update() {
 		String text = "";
 		// For TIME we scale the value
-		if( property.getType().equals(PropertyType.TIMER) || property.getType().equals(PropertyType.TIME_SECONDS) || property.getType().equals(PropertyType.TIME_MINUTES) ) {
+		if( property.getType().equals(PropertyType.TIME) || property.getType().equals(PropertyType.TIME_SECONDS) || property.getType().equals(PropertyType.TIME_MINUTES) ) {
 			double propValue = fncs.coerceToDouble(property.getValue());
 			text = fncs.coerceToString(TimeUtility.valueForCanonicalValue(propValue,currentTimeUnit));
 			log.debugf("%s.update: property %s,value= %s, display= %s (%s)",TAG,property.getName(),property.getValue().toString(),
@@ -427,7 +428,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		Object val = fncs.coerceToString(prop.getValue());
 		if(val==null) val = "";
 		JTextField field = null;
-		if( prop.getType().equals(PropertyType.TIMER) || prop.getType().equals(PropertyType.TIME_SECONDS) || prop.getType().equals(PropertyType.TIME_MINUTES) ) {
+		if( prop.getType().equals(PropertyType.TIME) || prop.getType().equals(PropertyType.TIME_SECONDS) || prop.getType().equals(PropertyType.TIME_MINUTES) ) {
 			// Scale value for time unit.
 			double interval = fncs.coerceToDouble(property.getValue());
 			val = fncs.coerceToString(TimeUtility.valueForCanonicalValue(interval,currentTimeUnit));
@@ -540,7 +541,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 				else if( prop.getType().equals(PropertyType.DOUBLE )) fieldValue = new Double(fncs.coerceToDouble(fieldValue));
 				else if( prop.getType().equals(PropertyType.INTEGER ))fieldValue = new Integer(fncs.coerceToInteger(fieldValue));
 				else if( prop.getType().equals(PropertyType.DATE ))   fieldValue = dateFormatter.format(new Date(fncs.coerceToLong(fieldValue)));
-				if( prop.getType().equals(PropertyType.TIMER) || prop.getType().equals(PropertyType.TIME_SECONDS) || prop.getType().equals(PropertyType.TIME_MINUTES) ) {
+				if( prop.getType().equals(PropertyType.TIME) || prop.getType().equals(PropertyType.TIME_SECONDS) || prop.getType().equals(PropertyType.TIME_MINUTES) ) {
 					// Scale field value for time unit. Get back to seconds.
 					double interval = fncs.coerceToDouble(fieldValue);
 					fieldValue = new Double(TimeUtility.canonicalValueForValue(interval,currentTimeUnit));
@@ -585,7 +586,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		SwingUtilities.invokeLater( new Runnable() {
 			public void run() {
 				String text = value.getValue().toString();
-				if(property.getType().equals(PropertyType.TIMER)) {
+				if(property.getType().equals(PropertyType.TIME)) {
 					// Scale value for time unit.
 					double interval = fncs.coerceToDouble(text);
 					text = fncs.coerceToString(TimeUtility.valueForCanonicalValue(interval,currentTimeUnit));

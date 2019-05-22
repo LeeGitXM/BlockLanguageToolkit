@@ -165,7 +165,7 @@ public class ConfigurationPanel extends BasicEditPanel {
 					!pt.equals(PropertyType.STRING) &&
 					!pt.equals(PropertyType.TIME_MINUTES) &&
 					!pt.equals(PropertyType.TIME_SECONDS) &&
-					!pt.equals(PropertyType.TIMER) 		)     continue;
+					!pt.equals(PropertyType.TIME) 		)     continue;
 			}
 			else {                   // NONE
 				if( BindingType.ENGINE.equals(prop.getBindingType()) ) continue;

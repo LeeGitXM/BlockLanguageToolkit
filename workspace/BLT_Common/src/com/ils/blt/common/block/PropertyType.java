@@ -22,7 +22,7 @@ public enum PropertyType
             SLOPEOPTION,         // Slope calculation option
             TIME_SECONDS,        // Time in seconds.
             TIME_MINUTES,        // Time in minutes.
-            TIMER,                // seconds, editor auto-scales display unit.
+            TIME,                // seconds, editor auto-scales display unit.
             TRENDDIRECTION,
             TRUTHVALUE,
             LIST,                // List of comma-separated strings
