@@ -183,7 +183,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	private void initialize() {
 		setName("Inhibitor");
 		this.isReceiver = true;
-		BlockProperty constant = new BlockProperty(BlockConstants.BLOCK_PROPERTY_INHIBIT_INTERVAL,new Double(interval),PropertyType.TIME,true);
+		BlockProperty constant = new BlockProperty(BlockConstants.BLOCK_PROPERTY_INHIBIT_INTERVAL,new Double(interval),PropertyType.TIME_MINUTES,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_INHIBIT_INTERVAL, constant);
 		expirationProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_EXPIRATION_TIME,new Long(0L),PropertyType.DATE,true);
 		expirationProperty.setBindingType(BindingType.ENGINE);   // Is not editable outside this class

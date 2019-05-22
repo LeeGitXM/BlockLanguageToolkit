@@ -69,7 +69,7 @@ public class Difference extends AbstractProcessBlock implements ProcessBlock {
 	private void initialize() {	
 		setName("Difference");
 		// Define the time for "coalescing" inputs ~ msec
-		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,new Double(synchInterval),PropertyType.TIME,true);
+		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,new Double(synchInterval),PropertyType.TIME_SECONDS,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL, synch);
 		
 		// Define a two inputs -- one for the divisor, one for the dividend

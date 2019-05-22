@@ -190,7 +190,7 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	private void initialize() {
 		setName("DataPump");
-		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL,new Double(interval),PropertyType.TIME,true);
+		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL,new Double(interval),PropertyType.TIME_MINUTES,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL, intervalProperty);
 		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,new Double(0.0),PropertyType.OBJECT,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);

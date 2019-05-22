@@ -78,7 +78,7 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 		// Define the time for "coalescing" inputs ~ msec
 		BlockProperty oprop = new BlockProperty(BlockConstants.BLOCK_PROPERTY_OFFSET,new Double(offset),PropertyType.DOUBLE,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_OFFSET, oprop);
-		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,new Double(synchInterval),PropertyType.TIME,true);
+		BlockProperty synch = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL,new Double(synchInterval),PropertyType.TIME_SECONDS,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SYNC_INTERVAL, synch);
 		
 		// Define two inputs 

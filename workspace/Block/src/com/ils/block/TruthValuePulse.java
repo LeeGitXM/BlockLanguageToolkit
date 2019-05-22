@@ -109,7 +109,7 @@ public class TruthValuePulse extends AbstractProcessBlock implements ProcessBloc
 		setName("TruthValuePulse");
 		delayStart = false;
 		
-		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL,new Double(interval),PropertyType.TIME,true);
+		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL,new Double(interval),PropertyType.TIME_MINUTES,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL, intervalProperty);
 		BlockProperty pulseProperty = new BlockProperty(BLOCK_PROPERTY_PULSE_VALUE,pulse,PropertyType.BOOLEAN,true);
 		setProperty(BLOCK_PROPERTY_PULSE_VALUE, pulseProperty);
