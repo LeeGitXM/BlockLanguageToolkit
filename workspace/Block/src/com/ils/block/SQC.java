@@ -85,6 +85,9 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		super(ec,parent,block);
 		queue = new FixedSizeQueue<Double>(DEFAULT_BUFFER_SIZE);
 		initialize();
+		
+		BlockDescriptor desc = prototype.getBlockDescriptor();
+		desc.setEditorClass("com.ils.blt.designer.config.SQCDiagnosisConfiguration");
 	}
 	
 	/**

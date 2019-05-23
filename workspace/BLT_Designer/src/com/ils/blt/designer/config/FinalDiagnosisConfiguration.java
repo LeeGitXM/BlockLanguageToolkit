@@ -34,6 +34,7 @@ import net.miginfocom.swing.MigLayout;
 /**
  * Display a dialog to configure the outputs available for a Final Diagnosis.
  * The constants contained herein are defined in designer.properties (I'm not sure how it knows that...)
+ *                                                                  (*It's defined in ConfigurationDialog*)
  */
 public class FinalDiagnosisConfiguration extends ConfigurationDialog {
 	private static final long serialVersionUID = 7211480530910862375L;
