@@ -106,6 +106,9 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	private final ImageIcon defaultIcon = IconUtil.getIcon("folder_closed");
 	private final ImageIcon openIcon;
 	private final ImageIcon closedIcon;
+	private final ImageIcon familyIcon;
+	private final ImageIcon diagramIcon;
+
 
 	/** 
 	 * Create a new folder node representing the root folder. The root folder does
@@ -130,6 +133,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		else {
 			closedIcon = iconFromPath("Block/icons/navtree/disabled_folder.png");  // Project is disabled
 		}
+		familyIcon = iconFromPath("Block/icons/navtree/family_folder.png");  // Project is disabled
+		diagramIcon = iconFromPath("Block/icons/navtree/diagram.png");  // Project is disabled
 		setIcon(closedIcon);
 		openIcon = IconUtil.getIcon("folder");
 	}
@@ -166,6 +171,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			closedIcon = IconUtil.getIcon("folder_closed");
 			openIcon = IconUtil.getIcon("folder");
 		}
+		familyIcon = iconFromPath("Block/icons/navtree/family_folder.png"); 
+		diagramIcon = iconFromPath("Block/icons/navtree/diagram.png"); 
 		setIcon(closedIcon);
 	}
 	@Override
@@ -1418,7 +1425,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		private static final long serialVersionUID = 1L;
 		private final AbstractResourceNavTreeNode currentNode;
 		public DiagramCreateAction(AbstractResourceNavTreeNode parentNode)  {
-			super(PREFIX+".NewDiagram",IconUtil.getIcon("folder_new"));  // preferences
+			super(PREFIX+".NewDiagram",diagramIcon);  // preferences
 			this.currentNode = parentNode;
 		}
 
@@ -1509,7 +1516,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		private static final long serialVersionUID = 1L;
 		private final AbstractResourceNavTreeNode currentNode;
 		public FamilyCreateAction(AbstractResourceNavTreeNode parentNode)  {
-			super(PREFIX+".NewFamily",IconUtil.getIcon("folder_new"));
+			super(PREFIX+".NewFamily",familyIcon);
 			this.currentNode = parentNode;
 		}
 

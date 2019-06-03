@@ -29,7 +29,7 @@ import net.miginfocom.swing.MigLayout;
 public class SQCDiagnosisConfiguration  extends ConfigurationDialog  {
 
 	private static final long serialVersionUID = 2002388376824434423L;
-	private final int DIALOG_HEIGHT = 220;
+	private final int DIALOG_HEIGHT = 120;
 	private final int DIALOG_WIDTH = 500;
 	private final GeneralPurposeDataContainer model;           // Data container operated on by controls
 	private final ProcessDiagramView diagram;
