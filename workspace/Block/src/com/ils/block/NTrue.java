@@ -293,7 +293,7 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 		if (trues >= nTrue) {
 			result = TruthValue.TRUE;
 		} else {
-			if( nTrue <= trues + unknowns ) {
+			if((nTrue <= trues + unknowns) && (trues > 0 || unknowns == inputs)) {
 				result = TruthValue.UNKNOWN;
 			} else {
 				result = TruthValue.FALSE;
