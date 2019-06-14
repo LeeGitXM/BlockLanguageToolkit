@@ -801,6 +801,37 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 * @param cxns incoming connections attached at the port.
 	 */
 	public void validateConnections() {}
+	
+	/**
+	 * Used by a handful of logic blocks that allow variable number of connections at a
+	 * particular input port.
+	 * 
+	 *  Effectively removes duplicate entries that have no port specified (initial values) if  
+	 *  a new value has been added with a port value
+	 *  
+	 * @param qualifiedValueMap map of last values keyed by uuid of upstream block.
+	 */
+	protected void pruneInitialConnections(Map<String,QualifiedValue> qualifiedValueMap) {
+		ArrayList<String> initializedValues = new ArrayList<String>();
+		ArrayList<String> removeList = new ArrayList<String>();
+		for(String idString:qualifiedValueMap.keySet() ) {
+			if (idString.contains(":")) {
+//				log.errorf("EREIAM JH - initializedValues.add :%s: trimmed to :%s:",idString,idString.substring(0,idString.indexOf(':')));
+				initializedValues.add(idString.substring(0,idString.indexOf(':')));
+			}
+		}
+		for(String idString:qualifiedValueMap.keySet() ) {
+			if (initializedValues.contains(idString)) {
+//				log.errorf("EREIAM JH - found :%s:, removing",idString);
+				// Duplicate found, remove it
+				removeList.add(idString);
+			}
+		}
+		for(String idString:removeList ) {
+			qualifiedValueMap.remove(idString);
+		}
+	}
+
 	/**
 	 * Used by a handful of logic blocks that allow variable number of connections at a
 	 * particular input port. 

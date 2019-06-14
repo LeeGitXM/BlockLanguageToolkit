@@ -102,9 +102,15 @@ public class RangeObservation extends AbstractProcessBlock implements ProcessBlo
 		try {
 			double dbl = Double.parseDouble(val);
 			TruthValue newValue = state;
-			if( dbl< upperlimit - upperdeadband && dbl>lowerlimit+lowerdeadband  ) newValue = TruthValue.TRUE;
-			if( dbl> upperlimit|| dbl<lowerlimit ) newValue = TruthValue.FALSE;
-			if( !observation.getQuality().isGood()) newValue = TruthValue.UNKNOWN;
+			if( dbl <= upperlimit - upperdeadband && dbl >= lowerlimit + lowerdeadband  ) {
+				newValue = TruthValue.TRUE;
+			}
+			if( dbl > upperlimit || dbl < lowerlimit ) {
+				newValue = TruthValue.FALSE;
+			}
+			if( !observation.getQuality().isGood()) {
+				newValue = TruthValue.UNKNOWN;
+			}
 			if( !newValue.equals(state)) {
 				setState(newValue);
 				lastValue = new BasicQualifiedValue(state,observation.getQuality(),observation.getTimestamp());
