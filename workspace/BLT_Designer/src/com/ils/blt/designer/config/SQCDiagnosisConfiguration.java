@@ -29,7 +29,7 @@ import net.miginfocom.swing.MigLayout;
 public class SQCDiagnosisConfiguration  extends ConfigurationDialog  {
 
 	private static final long serialVersionUID = 2002388376824434423L;
-	private final int DIALOG_HEIGHT = 120;
+	private final int DIALOG_HEIGHT = 220;
 	private final int DIALOG_WIDTH = 500;
 	private final GeneralPurposeDataContainer model;           // Data container operated on by controls
 	private final ProcessDiagramView diagram;
@@ -70,7 +70,8 @@ public class SQCDiagnosisConfiguration  extends ConfigurationDialog  {
 //		setLayout(new BorderLayout());
 		JPanel internalPanel = new JPanel();
 		internalPanel.setLayout(new MigLayout());
-		sQCLabelField = createTextField(internalPanel);
+		internalPanel.add(createPropertiesPanel(),"growx,wrap");
+
 		return internalPanel;
 	}
 	
@@ -80,16 +81,40 @@ public class SQCDiagnosisConfiguration  extends ConfigurationDialog  {
 	 * Initialize it with the block text property.
 	 * @return
 	 */
-	private JTextField createTextField(JPanel outerPanel)  {
+	private JPanel createPropertiesPanel()  {
+		JPanel panel = new JPanel();
+		final String columnConstraints = "para[][][][]";
+		final String layoutConstraints = "ins 2,gapy 1,gapx 5,fillx,filly";
+		final String rowConstraints = "para [][][][growprio 100,48:72:96][growprio 100,48:72:96][growprio 100,48:72:96][][][][][][]";
+		panel.setLayout(new MigLayout(layoutConstraints,columnConstraints,rowConstraints));
+
+		
+		
+		
+		
 		Map<String,String> properties = model.getProperties();
 		
-		outerPanel.add(createLabel("SQCDiagnosis.Label"),"gaptop 2,aligny top");
+		
+		panel.add(createLabel("SQCDiagnosis.Name"),"");
+		nameField = createTextField("SQCDiagnosis.Name.Desc",block.getName());
+		nameField.setEditable(false);
+		panel.add(nameField,"spanx 3,growx,wrap");
+
+		panel.add(createLabel("SQCDiagnosis.UUID"),"gaptop 2,aligny top");
+		JTextField uuidField = createTextField("SQCDiagnosis.UUID.Desc",block.getId().toString());
+		uuidField.setEditable(false);
+		panel.add(uuidField,"spanx 3,growx,wrap");
+		
+		panel.add(createLabel("SQCDiagnosis.Label"),"gaptop 2,aligny top");
 		String method = properties.get("SQCDiagnosisLabel");
 		if( method==null) method="";
 		sQCLabelField = createTextField("SQCDiagnosis.Label.Desc",method);
-		outerPanel.add(sQCLabelField,"spanx 3,growx,wrap");
-				
-		return sQCLabelField;
+		panel.add(sQCLabelField,"spanx 3,growx,wrap");
+
+
+		
+		
+		return panel;
 	}
 	
 	/**
@@ -122,7 +147,7 @@ public class SQCDiagnosisConfiguration  extends ConfigurationDialog  {
 				dispose();
 			}
 		});
-	} 
+	}
 	
 	// Copy the SQC auxiliary data back into the database
 	private void save(){
