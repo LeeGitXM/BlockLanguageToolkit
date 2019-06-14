@@ -273,7 +273,7 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 //		Collection<String> keys = qualifiedValueMap.keySet();
 //		for(String str:keys ) {
 //			log.errorf("%s.evaluate EREIAM JH - Key spinner: %s",TAG,str);
-//		}
+//		} 
 		
 		for(QualifiedValue qv:values) {
 			if(qv.getQuality().isGood()) {
