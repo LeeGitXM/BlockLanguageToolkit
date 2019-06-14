@@ -122,7 +122,7 @@ public class SQCDiagnosisConfiguration  extends ConfigurationDialog  {
 				dispose();
 			}
 		});
-	}
+	} 
 	
 	// Copy the SQC auxiliary data back into the database
 	private void save(){
