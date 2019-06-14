@@ -433,8 +433,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			if( context.getProject().isEnabled()) {
 				ApplicationCreateAction applicationCreateAction = new ApplicationCreateAction(this);
 				ApplicationImportAction applicationImportAction = new ApplicationImportAction(context.getFrame(),this);
-// todo - removed for now.  hard code values represented here later?  EREIAM JH
-//				ToolkitConfigureAction configureAction = new ToolkitConfigureAction(menu.getRootPane());
+				ToolkitConfigureAction configureAction = new ToolkitConfigureAction(menu.getRootPane());
 				ClearAction clearAction = new ClearAction();
 				DebugAction debugAction = new DebugAction();
 				RefreshAction refreshAction = new RefreshAction(this);
@@ -449,7 +448,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				}
 				menu.add(applicationCreateAction);
 				menu.add(applicationImportAction);
-//				menu.add(configureAction);
+				menu.add(configureAction);
 				menu.add(folderCreateAction);
 				menu.add(refreshAction);
 				menu.add(saveAllAction);
@@ -1817,8 +1816,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		}
 	}
 	// Launch a dialog to configure toolkit-wide attributes.
-// todo - removed for now EREIAM JH
-/*
+
 	private class ToolkitConfigureAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
 		private final Component anchor;
@@ -1848,7 +1846,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		}
 	}
 
-*/
 
 	// Wait until the background threads are quiescent
 	private class ThreadCompletionDetector implements Runnable {
