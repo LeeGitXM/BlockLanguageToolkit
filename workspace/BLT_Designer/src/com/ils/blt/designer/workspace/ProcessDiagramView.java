@@ -49,8 +49,8 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	private ApplicationRequestHandler appRequestHandler = null;
 	private final Map<UUID,ProcessBlockView> blockMap = new HashMap<UUID,ProcessBlockView>();
 	private List<Connection> connections = new ArrayList<Connection>();
-	private static final int MIN_WIDTH = 800;
-	private static final int MIN_HEIGHT = 800;
+	private static final int MIN_WIDTH = 200;
+	private static final int MIN_HEIGHT = 200;
 	private Dimension diagramSize = new Dimension(MIN_WIDTH,MIN_HEIGHT);
 	private final UUID id;
 	private String name = "UNSET";
@@ -117,6 +117,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		this.dirty = diagram.isDirty();
 		// Compute diagram size to include all blocks
 		// We do this initially. From then on it's whatever the user leaves it at.
+		//   EREIAM JH -  But not really, do we?  Only if it's BIGGER than the MIN
 		double maxX = MIN_WIDTH;
 		double maxY = MIN_HEIGHT;
 		for(ProcessBlockView blk:blockMap.values()) {
