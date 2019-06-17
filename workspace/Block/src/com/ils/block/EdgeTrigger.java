@@ -23,7 +23,9 @@ import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
+import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.model.values.Quality;
 
 /**
  * Delay before passing the input onto the output.
@@ -31,8 +33,6 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 @ExecutableBlock
 public class EdgeTrigger extends AbstractProcessBlock implements ProcessBlock {
 	private static final String TAG = "EdgeTrigger";
-	protected static String BLOCK_PROPERTY_INTERVAL = "HoldInterval";
-	protected static String BLOCK_PROPERTY_TRIGGER  = "Trigger";
 	private double holdInterval = 0.0;    // ~ secs (pulse)
 	private TruthValue trigger = TruthValue.UNSET;
 	private final Watchdog dog;
@@ -81,20 +81,20 @@ public class EdgeTrigger extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
+
 		String port = vcn.getConnection().getDownstreamPortName();
 		if( port.equals(BlockConstants.IN_PORT_NAME) ) {
 
 			QualifiedValue qv = vcn.getValue();
-			// Ignore values arrriving during a hold period
+			// Ignore values arriving during a hold period
 			if( !dog.isActive() ) {
-				if( !isLocked() ) {
-					OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,qv);
-					controller.acceptCompletionNotification(nvn);
-				}
 
 				if( trigger.equals(TruthValue.FALSE) || trigger.equals(TruthValue.TRUE) ) {
 					TruthValue tv = vcn.getValueAsTruthValue();
 					if( tv.equals(trigger)) {	
+						QualifiedValue nqv = new BasicQualifiedValue(new Boolean(true),qv.getQuality(),qv.getTimestamp());
+						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,nqv);
+						controller.acceptCompletionNotification(nvn);
 						dog.setSecondsDelay(holdInterval);
 						timer.updateWatchdog(dog);  // pet dog
 					}
@@ -111,19 +111,12 @@ public class EdgeTrigger extends AbstractProcessBlock implements ProcessBlock {
 	public void evaluate() {
 		log.debugf("%s.evaluate trigger is (%s)",TAG,trigger.name());
 		if( !isLocked() ) {
-			if( trigger.equals(TruthValue.FALSE)) {
-				state = TruthValue.TRUE;
-				lastValue = new TestAwareQualifiedValue(timer,state.name());
-				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
-				controller.acceptCompletionNotification(nvn);
-				notifyOfStatus(lastValue);
-			}
-			else if( trigger.equals(TruthValue.TRUE)) {
+			if( trigger.equals(TruthValue.TRUE) || trigger.equals(TruthValue.FALSE)) {
 				state = TruthValue.FALSE;
-				lastValue = new TestAwareQualifiedValue(timer,state.name());
-				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
+				QualifiedValue nqv = new BasicQualifiedValue(new Boolean(false),new BasicQuality("GOOD", Quality.Level.Good));
+				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,nqv);
 				controller.acceptCompletionNotification(nvn);
-				notifyOfStatus(lastValue);
+				notifyOfStatus(nqv);
 			}
 			else {
 				state = TruthValue.UNKNOWN;
@@ -138,7 +131,7 @@ public class EdgeTrigger extends AbstractProcessBlock implements ProcessBlock {
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
 		String propertyName = event.getPropertyName();
-		if( propertyName.equals(BLOCK_PROPERTY_INTERVAL) ) {
+		if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_HOLD_INTERVAL) ) {
 			try {
 				holdInterval = Double.parseDouble(event.getNewValue().toString());
 				if( holdInterval<0 ) holdInterval = -holdInterval;
@@ -147,7 +140,7 @@ public class EdgeTrigger extends AbstractProcessBlock implements ProcessBlock {
 				log.warnf("%s: propertyChange Unable to convert interval value to a double (%s)",TAG,nfe.getLocalizedMessage());
 			}
 		}
-		else if( propertyName.equals(BLOCK_PROPERTY_TRIGGER) ) {
+		else if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_TRIGGER) ) {
 			String val = event.getNewValue().toString();
 			try {
 				trigger = TruthValue.valueOf(val.toUpperCase());
@@ -174,17 +167,17 @@ public class EdgeTrigger extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	private void initialize() {
 		setName("EdgeTrigger");
-		BlockProperty constant = new BlockProperty(BLOCK_PROPERTY_INTERVAL,new Double(holdInterval),PropertyType.DOUBLE,true);
-		setProperty(BLOCK_PROPERTY_INTERVAL, constant);
-		BlockProperty trigProp = new BlockProperty(BLOCK_PROPERTY_TRIGGER,trigger.name(),PropertyType.BOOLEAN,true);
-		setProperty(BLOCK_PROPERTY_TRIGGER, trigProp);
+		BlockProperty constant = new BlockProperty(BlockConstants.BLOCK_PROPERTY_HOLD_INTERVAL,new Double(holdInterval),PropertyType.TIME_SECONDS,true);
+		setProperty(BlockConstants.BLOCK_PROPERTY_HOLD_INTERVAL, constant);
+		BlockProperty trigProp = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER,trigger.name(),PropertyType.BOOLEAN,true);
+		setProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER, trigProp);
 		
 		// Define a single input
-		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
+		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
 		anchors.add(input);
 		
 		// Define a single output
-		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
+		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.TRUTHVALUE);
 		anchors.add(output);
 	}
 	
