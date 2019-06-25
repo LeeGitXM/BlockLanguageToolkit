@@ -171,6 +171,7 @@ public class InferenceInhibitor extends AbstractProcessBlock implements ProcessB
 		state = TruthValue.UNSET;
 		BlockProperty initialValueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_INITIAL_VALUE,initialValue,PropertyType.TRUTHVALUE,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_INITIAL_VALUE, initialValueProperty);
+		
 		BlockProperty triggerProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER,trigger,PropertyType.TRUTHVALUE,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER, triggerProperty);
 		

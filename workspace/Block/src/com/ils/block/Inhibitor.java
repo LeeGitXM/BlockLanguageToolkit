@@ -17,7 +17,9 @@ import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
+import com.ils.blt.common.block.PlacementHint;
 import com.ils.blt.common.block.PropertyType;
+import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
@@ -40,8 +42,11 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	private BlockProperty expirationProperty = null;
 	private double interval = 0.0;   // ~secs
-	private boolean inhibiting = false;
+	private boolean signalPortInhibiting = false;
+	private boolean controlPortInhibiting = false;
 	private final Watchdog dog;
+	private TruthValue trigger = TruthValue.TRUE; 
+	private TruthValue controlValue = TruthValue.FALSE;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -70,7 +75,8 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	public void reset() {
 		super.reset();
 		expirationProperty.setValue(new Long(0L));
-		inhibiting = false;
+		signalPortInhibiting = false;
+		controlPortInhibiting = controlValue.equals(trigger);
 		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_EXPIRATION_TIME,
 				new BasicQualifiedValue(expirationProperty.getValue()));
 		timer.removeWatchdog(dog);
@@ -97,7 +103,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 					log.tracef("%s.acceptValue: Received value %s (%s)",getName(),qv.getValue().toString(),
 							dateFormatter.format(qv.getTimestamp()));
 					long expirationTime = ((Long)expirationProperty.getValue()).longValue();
-					if( qv.getQuality().isGood() && (expirationTime==0 || qv.getTimestamp().getTime()>=expirationTime)) {
+					if( controlPortInhibiting == false && qv.getQuality().isGood() && (expirationTime==0 || qv.getTimestamp().getTime()>=expirationTime)) {
 						lastValue = new BasicQualifiedValue(coerceToMatchOutput(BlockConstants.OUT_PORT_NAME,qv.getValue()),qv.getQuality(),qv.getTimestamp());
 						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 						controller.acceptCompletionNotification(nvn);
@@ -112,6 +118,28 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 					log.infof("%s.acceptValue: Received null %s (IGNORED)",getName(),(qv==null?"":"value"));
 				}
 			}
+			else if( port.equals(BlockConstants.CONTROL_PORT_NAME)  ) {
+				QualifiedValue qv = vcn.getValue();
+				if( qv != null && qv.getValue()!=null ) {
+					if( qv.getQuality().isGood() ) {
+						TruthValue cv = qualifiedValueAsTruthValue(qv);
+						// If this leads to a new mismatch, then we propagate the last value
+//						if( inhibiting && !cv.equals(trigger) or remote triggered) {
+							OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
+							controller.acceptCompletionNotification(nvn);
+							notifyOfStatus();
+							state = qualifiedValueAsTruthValue(lastValue);
+//						}
+						controlValue = cv;
+						controlPortInhibiting = controlValue.equals(trigger);
+						recordActivity((controlPortInhibiting?Activity.ACTIVITY_BLOCKING:Activity.ACTIVITY_UNBLOCKED),controlValue.toString());
+					}
+				}
+				else {
+					log.infof("%s.acceptValue: Received null %s (IGNORED)",getName(),(lastValue==null?"":"value"));
+				}
+			}
+
 		}
 	}
 	
@@ -128,7 +156,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 		Signal signal = sn.getSignal();
 		if( signal.getCommand().equalsIgnoreCase(BlockConstants.COMMAND_INHIBIT)) {
 			expirationProperty.setValue(new Long(sn.getValue().getTimestamp().getTime()+(long)(interval*1000)));
-			inhibiting = true;
+			signalPortInhibiting = true;
 			controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_EXPIRATION_TIME,
 					new BasicQualifiedValue(expirationProperty.getValue(),sn.getValue().getQuality(),sn.getValue().getTimestamp()));
 			long time = ((Long)expirationProperty.getValue()).longValue();
@@ -156,7 +184,8 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 		Map<String,String> attributes = descriptor.getAttributes();
 		
 		attributes.put("Interval~secs", String.valueOf(interval));
-		attributes.put("Inhibiting", (inhibiting?"true":"false"));
+		attributes.put("ControlPortInhibiting", (controlPortInhibiting?"true":"false"));
+		attributes.put("SignalPortInhibiting", (controlPortInhibiting?"true":"false"));
 		long time = ((Long)expirationProperty.getValue()).longValue();
 		if( time>0 ) {
 			Date expiration = new Date(time);
@@ -171,7 +200,8 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void evaluate() {
-		inhibiting = false;
+		signalPortInhibiting = false;
+		controlPortInhibiting = false;
 		log.tracef("%s.evaluate: Set inhibit flag false",getName());
 		recordActivity(Activity.ACTIVITY_UNBLOCKED,"resume pass-thru");
 	}
@@ -188,10 +218,18 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 		expirationProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_EXPIRATION_TIME,new Long(0L),PropertyType.DATE,true);
 		expirationProperty.setBindingType(BindingType.ENGINE);   // Is not editable outside this class
 		setProperty(BlockConstants.BLOCK_PROPERTY_EXPIRATION_TIME, expirationProperty);
+		BlockProperty triggerProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER,trigger,PropertyType.TRUTHVALUE,true);
+		setProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER, triggerProperty);
 		
 		// Define a data input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
 		anchors.add(input);
+		
+		// Define the control input
+		AnchorPrototype triggerIn = new AnchorPrototype(BlockConstants.CONTROL_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
+		triggerIn.setHint(PlacementHint.T);
+		triggerIn.setAnnotation("T");
+		anchors.add(triggerIn);
 		
 		// Define a single output
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.ANY);
@@ -207,12 +245,16 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 		super.propertyChange(event);
 		this.isReceiver = true;
 		String propertyName = event.getPropertyName();
-		if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_INHIBIT_INTERVAL) ) {
-			try {
-				interval = Double.parseDouble(event.getNewValue().toString());
-			}
-			catch(NumberFormatException nfe) {
-				log.warnf("%s.propertyChange Unable to convert interval value to an double (%s)",getName(),nfe.getLocalizedMessage());
+		if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_TRIGGER)) {
+			trigger = TruthValue.valueOf(event.getNewValue().toString().toUpperCase());	
+		} else {
+			if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_INHIBIT_INTERVAL) ) {
+				try {
+					interval = Double.parseDouble(event.getNewValue().toString());
+				}
+				catch(NumberFormatException nfe) {
+					log.warnf("%s.propertyChange Unable to convert interval value to an double (%s)",getName(),nfe.getLocalizedMessage());
+				}
 			}
 		}
 	}
@@ -231,6 +273,8 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 		}
 	}
 
+	
+	
 	/**
 	 * Augment the palette prototype for this block class.
 	 */
