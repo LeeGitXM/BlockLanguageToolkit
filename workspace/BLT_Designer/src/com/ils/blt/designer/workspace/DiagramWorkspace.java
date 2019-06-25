@@ -468,10 +468,14 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		JavaType type = mapper.getTypeFactory().constructCollectionType(ArrayList.class, SerializableBlock.class);
 		try {
 			List<SerializableBlock>list = mapper.readValue(json, type);
+			Point offset = CalculatePasteOffset(this.getMousePosition(), list);
 			for(SerializableBlock sb:list) {
 				ProcessBlockView pbv = new ProcessBlockView(sb);
 				pbv.createPseudoRandomName();
 				pbv.createRandomId();
+				Point dropLoc = new Point(pbv.getLocation().x+offset.x, pbv.getLocation().y+offset.y);
+				pbv.setLocation(dropLoc);
+				
 				results.add(pbv);
 				// Special handling for an encapsulation block - create its sub-workspace
 				if(pbv.isEncapsulation()) {
@@ -517,6 +521,24 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			logger.warnf("%s: pasteBlocks IO exception (%s)",TAG,ioe.getLocalizedMessage());
 		}; 
 		return results;
+	}
+
+
+	private Point CalculatePasteOffset(Point mousePos, List<SerializableBlock> list) {
+		int leftPos = 100000;  //just initialize high for simplicity
+		int topPos = 100000;
+
+		for(SerializableBlock sb:list) {
+			ProcessBlockView pbv = new ProcessBlockView(sb);
+			if (pbv.getLocation().x < leftPos) {
+				leftPos = pbv.getLocation().x;
+			}
+			if (pbv.getLocation().y < topPos) {
+				topPos = pbv.getLocation().y;
+			}
+		}
+		Point offset = new Point(mousePos.x - leftPos, mousePos.y - topPos);
+		return offset;
 	}
 
 
