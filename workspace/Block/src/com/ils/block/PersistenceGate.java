@@ -94,7 +94,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		super.reset();
 		if( dog.isActive() ) timer.removeWatchdog(dog);
 		count = 0;
-		valueProperty.setValue("");
+		valueProperty.setValue("---");
 		notifyOfStatus();
 	}
 	/**
@@ -119,7 +119,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		// A different value than the trigger, or a bad value aborts the countdown
 		if( !lastValue.getQuality().isGood() || !lastValue.getValue().toString().equalsIgnoreCase(trigger) ) {
 			count = 0;
-			valueProperty.setValue("");
+			valueProperty.setValue("---");
 			if( dog.isActive() ) timer.removeWatchdog(dog);
 			if( !isLocked() ) {
 				// Propagate value immediately and reset the block
