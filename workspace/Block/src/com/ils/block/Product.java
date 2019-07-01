@@ -78,6 +78,7 @@ public class Product extends AbstractProcessBlock implements ProcessBlock {
 		
 		// Define a single input -- but allow multiple connections
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
+		input.setIsMultiple(true);
 		anchors.add(input);
 
 		// Define a single output

@@ -191,6 +191,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 		
 		// Define a data input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
+		input.setIsMultiple(false);
 		anchors.add(input);
 		
 		// Define a single output

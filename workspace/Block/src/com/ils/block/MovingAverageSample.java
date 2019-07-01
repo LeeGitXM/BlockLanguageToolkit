@@ -82,6 +82,7 @@ public class MovingAverageSample extends AbstractProcessBlock implements Process
 		
 		// Define a single input.
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
+		input.setIsMultiple(false);
 		anchors.add(input);
 
 		// Define the main output, a truth value.

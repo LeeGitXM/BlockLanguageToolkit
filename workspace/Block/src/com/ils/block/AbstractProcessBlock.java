@@ -177,7 +177,10 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	@Override
 	public boolean delayBlockStart() { return this.delayStart; }
 	@Override
-	public List<AnchorPrototype>getAnchors() { return anchors; }
+	public List<AnchorPrototype>getAnchors() { 
+		log.error("EREIAM jh - abstract get anchors");
+		return anchors; 
+		}
 	public GeneralPurposeDataContainer getAuxiliaryData() {return auxiliaryData;}
 	public void setAuxiliaryData(GeneralPurposeDataContainer auxiliaryData) {this.auxiliaryData = auxiliaryData;}
 	@Override

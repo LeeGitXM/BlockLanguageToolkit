@@ -115,14 +115,17 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		AnchorPrototype input = new AnchorPrototype(PORT_TARGET,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setAnnotation("T");
 		input.setHint(PlacementHint.LT);
+		input.setIsMultiple(false);
 		anchors.add(input);
 		input = new AnchorPrototype(PORT_VALUE,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setAnnotation("V");
 		input.setHint(PlacementHint.L);
+		input.setIsMultiple(false);
 		anchors.add(input);
 		input = new AnchorPrototype(PORT_STANDARD_DEVIATION,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setAnnotation("S");
 		input.setHint(PlacementHint.LB);
+		input.setIsMultiple(false);
 		anchors.add(input);
 
 		// Define the main output, a truth value.

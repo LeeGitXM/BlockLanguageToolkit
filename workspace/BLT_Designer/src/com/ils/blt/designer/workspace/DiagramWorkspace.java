@@ -19,12 +19,14 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Path2D;
+import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
@@ -78,6 +80,7 @@ import com.inductiveautomation.ignition.common.project.ProjectScope;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.common.xmlserialization.SerializationException;
+import com.inductiveautomation.ignition.designer.UndoManager;
 import com.inductiveautomation.ignition.designer.blockandconnector.AbstractBlockWorkspace;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockActionHandler;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
@@ -91,6 +94,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.Connect
 import com.inductiveautomation.ignition.designer.blockandconnector.model.ConnectionPainter;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.ArrowConnectionPainter;
 import com.inductiveautomation.ignition.designer.blockandconnector.routing.EdgeRouter;
+import com.inductiveautomation.ignition.designer.blockandconnector.undo.UndoMoveBlocks;
 import com.inductiveautomation.ignition.designer.designable.DesignPanel;
 import com.inductiveautomation.ignition.designer.designable.DesignableWorkspaceListener;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
@@ -319,6 +323,13 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				menu.add(context.getCopyAction());
 				menu.add(context.getPasteAction());
 				menu.add(context.getDeleteAction());
+				if  (selections.size() > 1) {
+					AlignLeftAction al = new AlignLeftAction(this,getActiveDiagram(),pbv, selections);
+					menu.add(al);
+					AlignTopAction at = new AlignTopAction(this,getActiveDiagram(),pbv, selections);
+					menu.add(at);
+				}
+				
 				return menu;
 			}
 			else if( DiagramWorkspace.this.getSelectedContainer().getSelectedConnection()!=null ) {
@@ -468,10 +479,15 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		JavaType type = mapper.getTypeFactory().constructCollectionType(ArrayList.class, SerializableBlock.class);
 		try {
 			List<SerializableBlock>list = mapper.readValue(json, type);
+
+			Point offset = calculatePasteOffset(this.getMousePosition(), list);
 			for(SerializableBlock sb:list) {
 				ProcessBlockView pbv = new ProcessBlockView(sb);
 				pbv.createPseudoRandomName();
 				pbv.createRandomId();
+				Point dropLoc = new Point(pbv.getLocation().x+offset.x, pbv.getLocation().y+offset.y);
+				pbv.setLocation(dropLoc);
+			
 				results.add(pbv);
 				// Special handling for an encapsulation block - create its sub-workspace
 				if(pbv.isEncapsulation()) {
@@ -520,6 +536,88 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 
 
+	private Point calculatePasteOffset(Point mousePos, List<SerializableBlock> list) {
+		int leftPos = 100000;  //just initialize high for simplicity
+		int topPos = 100000;
+
+		for(SerializableBlock sb:list) {
+			ProcessBlockView pbv = new ProcessBlockView(sb);
+			if (pbv.getLocation().x < leftPos) {
+				leftPos = pbv.getLocation().x;
+			}
+			if (pbv.getLocation().y < topPos) {
+				topPos = pbv.getLocation().y;
+			}
+		}
+		Point offset = new Point(mousePos.x - leftPos, mousePos.y - topPos);
+		return offset;
+	}
+
+	// Return the upper corner and max size of the selected objects
+	//    Size is handy for centering
+	private Rectangle findTopLeft(Collection<BlockComponent> list) {
+		int leftPos = 100000;  //just initialize high for simplicity
+		int topPos = 100000;
+		int height = 0;
+		int width = 0;
+
+		for(BlockComponent sb:list) {
+//			ProcessBlockView pbv = new ProcessBlockView(sb);
+			if (sb.getLocation().x < leftPos) {
+				leftPos = sb.getLocation().x;
+			}
+			if (sb.getLocation().y < topPos) {
+				topPos = sb.getLocation().y;
+			}
+			if (sb.getHeight() > height) {
+				height = sb.getHeight();
+			}
+			if (sb.getWidth() > width) {
+				width = sb.getWidth();
+			}
+		}
+		Rectangle r = new Rectangle(leftPos, topPos, width, height);
+		return r;
+	}
+
+	private Rectangle findBottomRight(Collection<BlockComponent> list) {
+		int rightPos = 0;  
+		int bottomPos = 0;
+		int height = 0;
+		int width = 0;
+
+		for(BlockComponent sb:list) {
+//			ProcessBlockView pbv = new ProcessBlockView(sb);
+			if (sb.getLocation().x > rightPos) {
+				rightPos = sb.getLocation().x;
+			}
+			if (sb.getLocation().y > bottomPos) {
+				bottomPos = sb.getLocation().y;
+			}
+			if (sb.getHeight() > height) {
+				height = sb.getHeight();
+			}
+			if (sb.getWidth() > width) {
+				width = sb.getWidth();
+			}
+		}
+		Rectangle r = new Rectangle(rightPos, bottomPos, height, width);
+		return r;
+	}
+	
+	private Collection<BlockComponent> getSelectedBlocks() {
+		Collection<BlockComponent> results = new ArrayList<BlockComponent>();
+		List<JComponent> components = this.getSelectedItems();
+		
+		for (JComponent block:components) {
+			if (block instanceof BlockComponent) {
+				results.add((BlockComponent)block);
+			}
+		}
+		return results;
+	}
+	
+	
 	@Override
 	protected String getTabToolTip(DesignableContainer ttt) {
 		// TODO Auto-generated method stub
@@ -1006,7 +1104,71 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		}
 	}
 	/**
-	 * Plce the currently selected block in lock mode.
+	 * Left align selected blocks.
+	 */
+	private class AlignLeftAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+//		private final ProcessBlockView block;
+//		private final ProcessDiagramView diagram;
+//		private final DiagramWorkspace workspace;
+//		private final List<JComponent> selections;
+		public AlignLeftAction(DiagramWorkspace wksp,ProcessDiagramView diag,ProcessBlockView blk, List<JComponent> selections)  {
+			super(PREFIX+".AlignBlocksLeft",null);  // preferences
+//			this.workspace = wksp;
+//			this.diagram = diag;
+//			this.block = blk;
+//			this.selections = selections;
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			Collection<BlockComponent> selections = getSelectedBlocks();
+			Rectangle topLeft = findTopLeft(selections);
+			// Let's make sure we can undo this :-)
+			HashMap<JComponent, Rectangle2D> undoMap = new HashMap<>();
+			for(BlockComponent block:selections) {
+				Point loc = block.getBlock().getLocation();
+				undoMap.put(block,  block.getBounds());
+				block.getBlock().setLocation(new Point(topLeft.x, loc.y));
+			}
+			SwingUtilities.invokeLater(new WorkspaceRepainter());
+		}
+	}
+	/**
+	 * Top align selected blocks.
+	 */
+	private class AlignTopAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final ProcessBlockView block;
+		private final ProcessDiagramView diagram;
+		private final DiagramWorkspace workspace;
+		public AlignTopAction(DiagramWorkspace wksp,ProcessDiagramView diag,ProcessBlockView blk, List<JComponent> selections)  {
+			super(PREFIX+".AlignBlocksTop",null);  // preferences
+			this.workspace = wksp;
+			this.diagram = diag;
+			this.block = blk;
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			Collection<BlockComponent> selections = getSelectedBlocks();
+			Rectangle topLeft = findTopLeft(selections);
+			// Let's make sure we can undo this :-)
+			HashMap<JComponent, Rectangle2D> undoMap = new HashMap<>();
+			for(BlockComponent block:selections) {
+				Point loc = block.getBlock().getLocation();
+				// align centered so the lines look good
+				int adjust = (topLeft.height - block.getHeight()) / 2; 
+				undoMap.put(block,  block.getBounds());
+				block.getBlock().setLocation(new Point(loc.x, topLeft.y + adjust));
+			}
+			UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
+			SwingUtilities.invokeLater(new WorkspaceRepainter());
+		}
+	}
+	
+	
+	
+	/**
+	 * Place the currently selected block in lock mode.
 	 */
 	private class LockAction extends BaseAction {
 		private static final long serialVersionUID = 1L;

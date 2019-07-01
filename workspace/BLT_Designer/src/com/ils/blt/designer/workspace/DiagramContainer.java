@@ -30,6 +30,20 @@ public class DiagramContainer extends BlockDesignableContainer {
 		
 	}
 	
+	
+	
+	
+	
+	//  EREIAM JH - Can we override drag and drop functions here?  Bock multiple input connections for a single input block?
+	
+	
+	
+	public void ssadfetName (String newName) {
+	
+	}
+	
+	
+	
 	/**
 	 * In addition to immediately setting the tab name, we set in the model in case the
 	 * component gets re-painted.

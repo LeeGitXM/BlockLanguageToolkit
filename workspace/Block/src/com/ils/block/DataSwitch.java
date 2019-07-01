@@ -81,6 +81,7 @@ public class DataSwitch extends AbstractProcessBlock implements ProcessBlock {
 		// Define a data input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
 		input.setHint(PlacementHint.L);
+		input.setIsMultiple(false);
 		anchors.add(input);
 		
 		// Define a control port
