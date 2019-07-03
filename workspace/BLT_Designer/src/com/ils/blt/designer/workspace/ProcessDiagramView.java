@@ -540,9 +540,13 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	 * Do nothing for a binding change - it just doesn't apply
 	 */
 	@Override
-	public void bindingChange(String binding) {}
+	public void bindingChange(String binding) {
+		log.debugf("%s.bindingChange: %s binding = %s",TAG,getName(),binding);
+	}
 	@Override
-	public void diagramAlertChange(long resId, String alerting) {}
+	public void diagramAlertChange(long resId, String alerting) {
+		log.debugf("%s.alertingChange: %s alerting = %s",TAG,getName(),alerting);
+	}
 	/**
 	 * The value that we expect is a state change
 	 */
