@@ -25,6 +25,7 @@ public interface WorkspaceConstants   {
 	
 	public static final Color CONNECTION_BACKGROUND           = Color.BLACK;
 	public static final Color CONNECTION_HOVER                = new Color(255,255,40);   // Yellow
+//	public static final Color CONNECTION_SELECTED             = Color.YELLOW;
 	public static final Color CONNECTION_SELECTED             = Color.MAGENTA;
 	public static final Color CONNECTION_FILL_ANY             = new Color(96,105,101);    // Green-gray
 	public static final Color CONNECTION_FILL_BAD             = Color.YELLOW;

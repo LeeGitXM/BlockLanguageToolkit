@@ -2,7 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
-	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/ILS_Common"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/ils-common"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/External"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/BLT_Common"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Ignition-79"/>

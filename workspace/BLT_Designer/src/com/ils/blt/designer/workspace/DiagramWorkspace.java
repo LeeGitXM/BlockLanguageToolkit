@@ -183,7 +183,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		return frames;
 	}
 
-	public DesignerContext getContext() { return this.context; }
+	public DesignerContext getContext() { 
+		return this.context; 
+	}
 	
 	@Override
 	public String getKey() {
@@ -728,9 +730,10 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			dropPoint.y<bounds.y	  ||
 			dropPoint.x>bounds.x+bounds.width ||
 			dropPoint.y>bounds.y+bounds.height   )  inBounds = false;
-		//logger.infof("%s.handlerDrop: drop x,y = (%d,%d), bounds %d,%d,%d,%d",TAG,dropPoint.x,dropPoint.y,bounds.x,bounds.y,bounds.width,bounds.height );
+		logger.infof("%s.handlerDrop: drop x,y = (%d,%d), bounds %d,%d,%d,%d",TAG,dropPoint.x,dropPoint.y,bounds.x,bounds.y,bounds.width,bounds.height );
 		return inBounds;
 	}
+	
 	// ============================== Change Listener ================================
 	/**
 	 * If the current diagram changes state, then paint the background accordingly.
