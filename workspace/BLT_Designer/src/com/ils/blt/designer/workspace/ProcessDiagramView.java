@@ -82,7 +82,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 				log.debugf("%s.createDiagramView: Added %s to map",TAG,sb.getId().toString());
 				this.addBlock(pbv);
 			}
-
+			
 			for( SerializableConnection scxn:diagram.getConnections() ) {
 				SerializableAnchorPoint a = scxn.getBeginAnchor();
 				SerializableAnchorPoint b = scxn.getEndAnchor();
@@ -186,21 +186,40 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	 */
 	@Override
 	public void addConnection(AnchorPoint begin, AnchorPoint end) {
-		if( begin!=null && end!=null ) {
-			// Update the datatype from the current beginning anchor point
-			if( begin.getBlock() instanceof ProcessBlockView && begin instanceof BasicAnchorPoint ) {
-				ProcessBlockView origin = (ProcessBlockView)begin.getBlock();
-				BasicAnchorPoint bap = (BasicAnchorPoint)begin;
-				for(ProcessAnchorDescriptor pad:origin.getAnchors()) {
-					if( pad.getDisplay().equals(bap.getId())) {
-						bap.setConnectionType(pad.getConnectionType());
-						break;
+		if( begin!=null && end!=null) {
+
+			boolean disallow = false;
+			// check if any input connections
+			if( end instanceof BasicAnchorPoint ) {
+				BasicAnchorPoint bapp = (BasicAnchorPoint)end;
+				
+				 // only 1 input allowed, check to make sure it isn't already used and don't block if initializing
+				if (!bapp.allowMultipleConnections() && !suppressStateChangeNotification) { 
+					for(Connection cxn:connections) {
+						if(cxn.getTerminus().equals(end)) {
+							disallow = true;
+							break;
+						}
 					}
 				}
 			}
-			Connection cxn = new LookupConnection(this,begin,end);
-			connections.add(cxn);
-			fireStateChanged();
+
+			if (!disallow) { 
+				// Update the datatype from the current beginning anchor point
+				if( begin.getBlock() instanceof ProcessBlockView && begin instanceof BasicAnchorPoint ) {
+					ProcessBlockView origin = (ProcessBlockView)begin.getBlock();
+					BasicAnchorPoint bap = (BasicAnchorPoint)begin;
+					for(ProcessAnchorDescriptor pad:origin.getAnchors()) {
+						if( pad.getDisplay().equals(bap.getId())) {
+							bap.setConnectionType(pad.getConnectionType());
+							break;
+						}
+					}
+				}
+				Connection cxn = new LookupConnection(this,begin,end);
+				connections.add(cxn);
+				fireStateChanged();
+			}
 		}
 		else {
 			log.warnf("%s.addConnection - rejected attempt to add a connection with null anchor",TAG);
@@ -521,9 +540,13 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	 * Do nothing for a binding change - it just doesn't apply
 	 */
 	@Override
-	public void bindingChange(String binding) {}
+	public void bindingChange(String binding) {
+		log.debugf("%s.bindingChange: %s binding = %s",TAG,getName(),binding);
+	}
 	@Override
-	public void diagramAlertChange(long resId, String alerting) {}
+	public void diagramAlertChange(long resId, String alerting) {
+		log.debugf("%s.alertingChange: %s alerting = %s",TAG,getName(),alerting);
+	}
 	/**
 	 * The value that we expect is a state change
 	 */

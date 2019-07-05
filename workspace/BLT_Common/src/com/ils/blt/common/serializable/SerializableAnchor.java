@@ -43,7 +43,10 @@ public class SerializableAnchor {
 	public PlacementHint getHint() {return hint;}
 	public UUID getParentId() { return parentId; }
 	public boolean isHidden() {return hidden;}
-	public boolean isMultiple() {return multiple;}
+	public boolean isMultiple() {
+		System.out.println("EREIAM jh - serializable is multiple");
+		return multiple;
+	}
 	public int getSortOrder() { return sortOrder; }
 
 	public void setId(Object identifier) { id=identifier; }

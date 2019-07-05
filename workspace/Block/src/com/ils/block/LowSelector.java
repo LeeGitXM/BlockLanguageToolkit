@@ -83,6 +83,7 @@ public class LowSelector extends AbstractProcessBlock implements ProcessBlock {
 
 		// We allow multiple connections on the input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
+		input.setIsMultiple(true);
 		anchors.add(input);
 		
 		// Define a single output

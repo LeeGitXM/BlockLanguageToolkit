@@ -177,6 +177,7 @@ public class InferenceInhibitor extends AbstractProcessBlock implements ProcessB
 		// Define a data input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
 		input.setHint(PlacementHint.L);
+		input.setIsMultiple(false);
 		anchors.add(input);
 		
 		// Define the control input

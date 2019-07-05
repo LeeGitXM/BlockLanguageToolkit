@@ -86,14 +86,17 @@ public class QualValue extends AbstractProcessBlock implements ProcessBlock {
 		AnchorPrototype tim = new AnchorPrototype(TIME_PORT,AnchorDirection.INCOMING,ConnectionType.ANY);
 		tim.setAnnotation("T");
 		tim.setHint(PlacementHint.LT);
+		tim.setIsMultiple(false);
 		anchors.add(tim);
 		AnchorPrototype input = new AnchorPrototype(VALUE_PORT,AnchorDirection.INCOMING,ConnectionType.ANY);
 		input.setAnnotation("V");
 		input.setHint(PlacementHint.L);
+		input.setIsMultiple(false);
 		anchors.add(input);
 		AnchorPrototype qual = new AnchorPrototype(QUALITY_PORT,AnchorDirection.INCOMING,ConnectionType.TEXT);
 		qual.setAnnotation("Q");
 		qual.setHint(PlacementHint.LB);
+		qual.setIsMultiple(false);
 		anchors.add(qual);
 
 		// Define a single output

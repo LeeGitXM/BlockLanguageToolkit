@@ -25,7 +25,7 @@ public class AnchorPrototype {
 	private String name;
 	private PlacementHint hint = PlacementHint.UNSPECIFIED;
 	private boolean hidden = false;
-	private boolean multiple = true;  // Allow multiple by default
+	private boolean multiple = true;  // Allow multiple input connections by default
 	private int sortOrder = 0;
 	
 	/**
@@ -78,7 +78,10 @@ public class AnchorPrototype {
 	public String getAnnotation() {return annotation;}
 	public PlacementHint getHint() {return hint;}
 	public boolean isHidden() {return hidden;}
-	public boolean isMultiple() { return multiple; }
+	public boolean isMultiple() {
+		System.out.println("EREIAM jh - anchor proto is multiple");
+		return multiple; 
+	}
 	public int getSortOrder() { return sortOrder; }
 	
 	public String getName() {return name;	}

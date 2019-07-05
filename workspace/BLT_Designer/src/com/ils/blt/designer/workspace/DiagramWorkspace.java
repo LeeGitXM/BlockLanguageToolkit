@@ -6,6 +6,7 @@ package com.ils.blt.designer.workspace;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Frame;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -19,23 +20,29 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Path2D;
+import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
 import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -78,6 +85,7 @@ import com.inductiveautomation.ignition.common.project.ProjectScope;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.common.xmlserialization.SerializationException;
+import com.inductiveautomation.ignition.designer.UndoManager;
 import com.inductiveautomation.ignition.designer.blockandconnector.AbstractBlockWorkspace;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockActionHandler;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
@@ -91,14 +99,18 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.Connect
 import com.inductiveautomation.ignition.designer.blockandconnector.model.ConnectionPainter;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.ArrowConnectionPainter;
 import com.inductiveautomation.ignition.designer.blockandconnector.routing.EdgeRouter;
+import com.inductiveautomation.ignition.designer.blockandconnector.undo.UndoMoveBlocks;
 import com.inductiveautomation.ignition.designer.designable.DesignPanel;
 import com.inductiveautomation.ignition.designer.designable.DesignableWorkspaceListener;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
+import com.inductiveautomation.ignition.designer.gui.StatusBar;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.model.EditActionHandler;
 import com.inductiveautomation.ignition.designer.model.ResourceWorkspace;
 import com.inductiveautomation.ignition.designer.model.ResourceWorkspaceFrame;
+import com.inductiveautomation.ignition.designer.model.menu.JMenuMerge;
 import com.inductiveautomation.ignition.designer.model.menu.MenuBarMerge;
+import com.inductiveautomation.ignition.designer.model.menu.WellKnownMenuConstants;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
 import com.inductiveautomation.ignition.designer.navtree.model.ProjectBrowserRoot;
 import com.jidesoft.action.CommandBar;
@@ -116,6 +128,7 @@ import com.jidesoft.docking.DockingManager;
 public class DiagramWorkspace extends AbstractBlockWorkspace 
 							  implements ResourceWorkspace, DesignableWorkspaceListener,
 							  			ChangeListener                                   {
+	private static final String ALIGN_MENU_TEXT = "Align Blocks";
 	private static final String TAG = "DiagramWorkspace";
 	private static final long serialVersionUID = 4627016159409031941L;
 	private static final DataFlavor BlockDataFlavor = LocalObjectTransferable.flavorForClass(ObservablePropertySet.class);
@@ -131,6 +144,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	private LoggerEx logger = LogUtil.getLogger(getClass().getPackage().getName());
 	private PopupListener rightClickHandler;
 	private JPopupMenu zoomPopup;
+	private JComboBox<String> zoomCombo;
 
 	/**
 	 * Constructor:
@@ -171,6 +185,11 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		pef.setInitIndex(10);
 		pef.putClientProperty("menu.text", "Diagram Property Editor");
 		frames.add(pef);
+		
+		StatusBar bar = context.getStatusBar();
+		zoomCombo = createZoomDropDown();
+		bar.addDisplay(zoomCombo);
+		zoomCombo.hide();
 	}
 
 	@Override
@@ -319,6 +338,21 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				menu.add(context.getCopyAction());
 				menu.add(context.getPasteAction());
 				menu.add(context.getDeleteAction());
+				if  (selections.size() > 1) {
+					AlignLeftAction al = new AlignLeftAction(this,getActiveDiagram(),pbv, selections);
+					menu.add(al);
+					AlignRightAction ar = new AlignRightAction(this,getActiveDiagram(),pbv, selections);
+					menu.add(ar);
+					AlignWidthCenterAction aw = new AlignWidthCenterAction(this,getActiveDiagram(),pbv, selections);
+					menu.add(aw);
+					AlignTopAction at = new AlignTopAction(this,getActiveDiagram(),pbv, selections);
+					menu.add(at);
+					AlignBottomAction ab = new AlignBottomAction(this,getActiveDiagram(),pbv, selections);
+					menu.add(ab);
+					AlignHeightCenterAction ah = new AlignHeightCenterAction(this,getActiveDiagram(),pbv, selections);
+					menu.add(ah);
+				}
+				
 				return menu;
 			}
 			else if( DiagramWorkspace.this.getSelectedContainer().getSelectedConnection()!=null ) {
@@ -352,12 +386,121 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	
 	@Override
 	public MenuBarMerge getMenu() {
-		return null;
+
+    	logger.errorf("EREIAM JH - GetMenu, context: %s",""+getContext());
+
+    	MenuBarMerge merge = null;     	
+    	if (this.isVisible()) {
+    		if (!menuExists(context.getFrame(),ALIGN_MENU_TEXT)) {
+
+    			JMenuItem la = new JMenuItem(new AbstractAction("Left Align") {
+		    		public void actionPerformed(ActionEvent e) {
+		    			alignLeft();
+		    		}
+	        	});
+    			JMenuItem ra = new JMenuItem(new AbstractAction("Right Align") {
+		    		public void actionPerformed(ActionEvent e) {
+		    			alignRight();
+		    		}
+	        	});
+    			JMenuItem ha = new JMenuItem(new AbstractAction("Horizontal Center Align") {
+		    		public void actionPerformed(ActionEvent e) {
+		    			alignWidthCenter();
+		    		}
+	        	});
+    			JMenuItem ta = new JMenuItem(new AbstractAction("Top Align") {
+		    		public void actionPerformed(ActionEvent e) {
+		    			alignTop();
+		    		}
+	        	});
+    			JMenuItem ba = new JMenuItem(new AbstractAction("Bottom Align") {
+		    		public void actionPerformed(ActionEvent e) {
+		    			alignBottom();
+		    		}
+	        	});
+    			JMenuItem va = new JMenuItem(new AbstractAction("Vertical Center Align") {
+		    		public void actionPerformed(ActionEvent e) {
+		    			alignHeightCenter();
+		    		}
+	        	});
+    			
+    			merge = new MenuBarMerge(BLTProperties.MODULE_ID);  // as suggested in javadocs
+		    	JMenuMerge alignmentMenu = new JMenuMerge("Align Blocks","AlignBlocks");
+		    	alignmentMenu.add(ra);
+		    	alignmentMenu.add(la);
+		    	alignmentMenu.add(ha);
+		    	alignmentMenu.add(ta);
+		    	alignmentMenu.add(ba);
+		    	alignmentMenu.add(va);
+		    	merge.add(alignmentMenu);
+    		}
+    	} else {
+    		removeTopLevelMenu(context.getFrame(),ALIGN_MENU_TEXT);
+    	}
+    	
+    	return merge;
 	}
+	
+	
+	// Search the menu tree and remove the selected item
+	private void removeTopLevelMenu(Frame frame,String title) {
+		for(Component c:context.getFrame().getComponents() ) {
+    		if( c instanceof JRootPane ) {
+    			JRootPane root = (JRootPane)c;
+    			JMenuBar bar = root.getJMenuBar();
+    			if( bar!=null ) {
+    				int count = bar.getMenuCount();
+    				int index = 0;
+    				while( index<count) {
+    					JMenu menu = bar.getMenu(index);
+    					if( menu.getName().equalsIgnoreCase(title)) {
+    						bar.remove(menu);
+    						break;
+    					}
+    					index++;
+    				}
+    			}
+    		}
+    	}
+		return;
+	}
+
+	// Search the menu tree to see if the same top level menu has been added already
+	private boolean menuExists(Frame frame,String title) {
+		boolean ret = false;
+		for(Component c:context.getFrame().getComponents() ) {
+    		if( c instanceof JRootPane ) {
+    			JRootPane root = (JRootPane)c;
+    			JMenuBar bar = root.getJMenuBar();
+    			if( bar!=null ) {
+    				int count = bar.getMenuCount();
+    				int index = 0;
+    				while( index<count) {
+    					JMenu menu = bar.getMenu(index);
+    					if( menu.getName().equalsIgnoreCase(title)) {
+    						ret = true;
+    						break;
+    					}
+    					index++;
+    				}
+    			}
+    		}
+    	}
+		
+		return ret;
+	}
+
+
+	
 
 	// List of toolbars to add
 	@Override
 	public List<CommandBar> getToolbars() {
+
+//		ArrayList<CommandBar> bars = new ArrayList<>();
+//		CommandBar bar = new CommandBar();
+//		bar.add(new JLabel("FART"));
+//		return bars;
 		return null;
 	}
 
@@ -413,6 +556,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
 	@Override
 	public void onActivation() {
+		zoomCombo.show();
 		logger.infof("%s: onActivation",TAG);
 		
 	}
@@ -420,6 +564,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
 	@Override
 	public void onDeactivation() {
+		zoomCombo.hide();
 		logger.infof("%s: onDeactivation",TAG);
 	}
 
@@ -468,10 +613,15 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		JavaType type = mapper.getTypeFactory().constructCollectionType(ArrayList.class, SerializableBlock.class);
 		try {
 			List<SerializableBlock>list = mapper.readValue(json, type);
+
+			Point offset = calculatePasteOffset(this.getMousePosition(), list);
 			for(SerializableBlock sb:list) {
 				ProcessBlockView pbv = new ProcessBlockView(sb);
 				pbv.createPseudoRandomName();
 				pbv.createRandomId();
+				Point dropLoc = new Point(pbv.getLocation().x+offset.x, pbv.getLocation().y+offset.y);
+				pbv.setLocation(dropLoc);
+			
 				results.add(pbv);
 				// Special handling for an encapsulation block - create its sub-workspace
 				if(pbv.isEncapsulation()) {
@@ -520,6 +670,88 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 
 
+	private Point calculatePasteOffset(Point mousePos, List<SerializableBlock> list) {
+		int leftPos = 100000;  //just initialize high for simplicity
+		int topPos = 100000;
+
+		for(SerializableBlock sb:list) {
+			ProcessBlockView pbv = new ProcessBlockView(sb);
+			if (pbv.getLocation().x < leftPos) {
+				leftPos = pbv.getLocation().x;
+			}
+			if (pbv.getLocation().y < topPos) {
+				topPos = pbv.getLocation().y;
+			}
+		}
+		Point offset = new Point(mousePos.x - leftPos, mousePos.y - topPos);
+		return offset;
+	}
+
+	// Return the upper corner and max size of the selected objects
+	//    Size is handy for centering
+	private Rectangle findTopLeft(Collection<BlockComponent> list) {
+		int leftPos = 100000;  //just initialize high for simplicity
+		int topPos = 100000;
+		int height = 0;
+		int width = 0;
+
+		for(BlockComponent sb:list) {
+//			ProcessBlockView pbv = new ProcessBlockView(sb);
+			if (sb.getLocation().x < leftPos) {
+				leftPos = sb.getLocation().x;
+			}
+			if (sb.getLocation().y < topPos) {
+				topPos = sb.getLocation().y;
+			}
+			if (sb.getHeight() > height) {
+				height = sb.getHeight();
+			}
+			if (sb.getWidth() > width) {
+				width = sb.getWidth();
+			}
+		}
+		Rectangle r = new Rectangle(leftPos, topPos, width, height);
+		return r;
+	}
+
+	private Rectangle findBottomRight(Collection<BlockComponent> list) {
+		int rightPos = 0;  
+		int bottomPos = 0;
+		int height = 0;
+		int width = 0;
+
+		for(BlockComponent sb:list) {
+//			ProcessBlockView pbv = new ProcessBlockView(sb);
+			if (sb.getLocation().x > rightPos) {
+				rightPos = sb.getLocation().x;
+			}
+			if (sb.getLocation().y > bottomPos) {
+				bottomPos = sb.getLocation().y;
+			}
+			if (sb.getHeight() > height) {
+				height = sb.getHeight();
+			}
+			if (sb.getWidth() > width) {
+				width = sb.getWidth();
+			}
+		}
+		Rectangle r = new Rectangle(rightPos, bottomPos, height, width);
+		return r;
+	}
+	
+	private Collection<BlockComponent> getSelectedBlocks() {
+		Collection<BlockComponent> results = new ArrayList<BlockComponent>();
+		List<JComponent> components = this.getSelectedItems();
+		
+		for (JComponent block:components) {
+			if (block instanceof BlockComponent) {
+				results.add((BlockComponent)block);
+			}
+		}
+		return results;
+	}
+	
+	
 	@Override
 	protected String getTabToolTip(DesignableContainer ttt) {
 		// TODO Auto-generated method stub
@@ -880,6 +1112,95 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			}
 		}
 	}
+
+	public void alignLeft() {
+		Collection<BlockComponent> selections = getSelectedBlocks();
+		Rectangle topLeft = findTopLeft(selections);
+		// Let's make sure we can undo this :-)
+		HashMap<JComponent, Rectangle2D> undoMap = new HashMap<>();
+		for(BlockComponent block:selections) {
+			Point loc = block.getBlock().getLocation();
+			undoMap.put(block,  block.getBounds());
+			block.getBlock().setLocation(new Point(topLeft.x, loc.y));
+		}
+		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
+		SwingUtilities.invokeLater(new WorkspaceRepainter());
+	}
+	public void alignRight() {
+		Collection<BlockComponent> selections = getSelectedBlocks();
+		Rectangle bottomRight = findBottomRight(selections);
+		// Let's make sure we can undo this :-)
+		HashMap<JComponent, Rectangle2D> undoMap = new HashMap<>();
+		for(BlockComponent block:selections) {
+			Point loc = block.getBlock().getLocation();
+			undoMap.put(block,  block.getBounds());
+			block.getBlock().setLocation(new Point(bottomRight.x-block.getWidth(), loc.y));
+		}
+		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
+		SwingUtilities.invokeLater(new WorkspaceRepainter());
+	}
+
+	public void alignWidthCenter() {
+		Collection<BlockComponent> selections = getSelectedBlocks();
+		Rectangle bottomRight = findBottomRight(selections);
+		// Let's make sure we can undo this :-)
+		HashMap<JComponent, Rectangle2D> undoMap = new HashMap<>();
+		// align centered so the lines look good
+		for(BlockComponent block:selections) {
+			Point loc = block.getBlock().getLocation();
+			undoMap.put(block,  block.getBounds());
+			int adjust = (bottomRight.width - block.getWidth()) / 2; 
+			block.getBlock().setLocation(new Point(bottomRight.x-block.getWidth()-adjust, loc.y));
+		}
+		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
+		SwingUtilities.invokeLater(new WorkspaceRepainter());
+	}
+
+	public void alignHeightCenter() {
+		Collection<BlockComponent> selections = getSelectedBlocks();
+		Rectangle topLeft = findTopLeft(selections);
+		// Let's make sure we can undo this :-)
+		HashMap<JComponent, Rectangle2D> undoMap = new HashMap<>();
+		for(BlockComponent block:selections) {
+			Point loc = block.getBlock().getLocation();
+			// align centered so the lines look good
+			int adjust = (topLeft.height - block.getHeight()) / 2; 
+			undoMap.put(block,  block.getBounds());
+			block.getBlock().setLocation(new Point(loc.x, topLeft.y + adjust));
+		}
+		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
+		SwingUtilities.invokeLater(new WorkspaceRepainter());
+	}
+
+	public void alignTop() {
+		Collection<BlockComponent> selections = getSelectedBlocks();
+		Rectangle topLeft = findTopLeft(selections);
+		// Let's make sure we can undo this :-)
+		HashMap<JComponent, Rectangle2D> undoMap = new HashMap<>();
+		for(BlockComponent block:selections) {
+			Point loc = block.getBlock().getLocation();
+			undoMap.put(block,  block.getBounds());
+			block.getBlock().setLocation(new Point(loc.x, topLeft.y));
+		}
+		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
+		SwingUtilities.invokeLater(new WorkspaceRepainter());
+	}
+
+	public void alignBottom() {
+		Collection<BlockComponent> selections = getSelectedBlocks();
+		Rectangle bottomRight = findBottomRight(selections);
+		// Let's make sure we can undo this :-)
+		HashMap<JComponent, Rectangle2D> undoMap = new HashMap<>();
+		for(BlockComponent block:selections) {
+			Point loc = block.getBlock().getLocation();
+			undoMap.put(block,  block.getBounds());
+			block.getBlock().setLocation(new Point(loc.x, bottomRight.y-block.getHeight()));
+		}
+		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
+		SwingUtilities.invokeLater(new WorkspaceRepainter());
+	}
+	
+	
 	/**
 	 * Trigger the propagation method of the currently selected block. 
 	 * NOTE: We call it "evaluate", but we really call propagate().
@@ -1005,8 +1326,111 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
 		}
 	}
+
 	/**
-	 * Plce the currently selected block in lock mode.
+	 * Left align selected blocks.
+	 */
+	private class AlignLeftAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		public AlignLeftAction(DiagramWorkspace wksp,ProcessDiagramView diag,ProcessBlockView blk, List<JComponent> selections)  {
+			super(PREFIX+".AlignBlocksLeft",null);  // preferences
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			alignLeft();
+		}
+	}
+	
+	/**
+	 * Right align selected blocks.
+	 */
+	private class AlignRightAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		public AlignRightAction(DiagramWorkspace wksp,ProcessDiagramView diag,ProcessBlockView blk, List<JComponent> selections)  {
+			super(PREFIX+".AlignBlocksRight",null);  // preferences
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			alignRight();
+		}
+	}
+	
+	/**
+	 * Center Width align selected blocks.
+	 */
+	private class AlignWidthCenterAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		public AlignWidthCenterAction(DiagramWorkspace wksp,ProcessDiagramView diag,ProcessBlockView blk, List<JComponent> selections)  {
+			super(PREFIX+".AlignBlocksWidthCenter",null);  // preferences
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			alignWidthCenter();
+		}
+	}
+	
+	/**
+	 * center height align selected blocks.
+	 */
+	private class AlignHeightCenterAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final ProcessBlockView block;
+		private final ProcessDiagramView diagram;
+		private final DiagramWorkspace workspace;
+		public AlignHeightCenterAction(DiagramWorkspace wksp,ProcessDiagramView diag,ProcessBlockView blk, List<JComponent> selections)  {
+			super(PREFIX+".AlignBlocksHeightCenter",null);  // preferences
+			this.workspace = wksp;
+			this.diagram = diag;
+			this.block = blk;
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			alignHeightCenter();
+		}
+	}
+	
+	/**
+	 * Top align selected blocks.
+	 */
+	private class AlignTopAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final ProcessBlockView block;
+		private final ProcessDiagramView diagram;
+		private final DiagramWorkspace workspace;
+		public AlignTopAction(DiagramWorkspace wksp,ProcessDiagramView diag,ProcessBlockView blk, List<JComponent> selections)  {
+			super(PREFIX+".AlignBlocksTop",null);  // preferences
+			this.workspace = wksp;
+			this.diagram = diag;
+			this.block = blk;
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			alignTop();
+		}
+	}
+	
+	/**
+	 * Bottom align selected blocks.
+	 */
+	private class AlignBottomAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final ProcessBlockView block;
+		private final ProcessDiagramView diagram;
+		private final DiagramWorkspace workspace;
+		public AlignBottomAction(DiagramWorkspace wksp,ProcessDiagramView diag,ProcessBlockView blk, List<JComponent> selections)  {
+			super(PREFIX+".AlignBlocksBottom",null);  // preferences
+			this.workspace = wksp;
+			this.diagram = diag;
+			this.block = blk;
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			alignBottom();
+		}
+	}
+	
+	/**
+	 * Place the currently selected block in lock mode.
 	 */
 	private class LockAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
@@ -1226,6 +1650,20 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
 		}
 	}
+
+	private JComboBox<String> createZoomDropDown() {
+        JComboBox<String> combo = new JComboBox<String>();
+        combo.addItem("25%");
+        combo.addItem("50%");
+        combo.addItem("75%");
+        combo.addItem("100%");
+        combo.addItem("200%");
+        combo.setSelectedIndex(3);
+        return combo;
+    }
+ 
+	
+	
 	// ===================================== Right-click for popup on tab =======================================
 	private JPopupMenu createZoomPopup() {
         JPopupMenu popup = new JPopupMenu("Zoom");

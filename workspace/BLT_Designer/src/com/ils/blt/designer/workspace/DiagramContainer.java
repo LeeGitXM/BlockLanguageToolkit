@@ -30,6 +30,7 @@ public class DiagramContainer extends BlockDesignableContainer {
 		
 	}
 	
+	
 	/**
 	 * In addition to immediately setting the tab name, we set in the model in case the
 	 * component gets re-painted.

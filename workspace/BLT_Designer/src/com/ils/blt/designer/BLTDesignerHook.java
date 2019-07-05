@@ -8,9 +8,12 @@ import java.awt.Component;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -48,6 +51,7 @@ import com.inductiveautomation.vision.api.designer.VisionDesignerInterface;
 import com.inductiveautomation.vision.api.designer.palette.JavaBeanPaletteItem;
 import com.inductiveautomation.vision.api.designer.palette.Palette;
 import com.inductiveautomation.vision.api.designer.palette.PaletteItemGroup;
+import com.jidesoft.action.CommandBar;
 import com.jidesoft.docking.DockingManager;
 
 public class BLTDesignerHook extends AbstractDesignerModuleHook  {
@@ -84,6 +88,16 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		mgr.addScriptModule(BLTProperties.DIAGRAM_SCRIPT_PACKAGE,ApplicationScriptFunctions.class);
 	}
 	
+	// Insert a
+    @Override
+    public List<CommandBar> getModuleToolbars() {
+		ArrayList<CommandBar> bars = new ArrayList<>();
+		CommandBar bar = new CommandBar();
+		bar.add(new JLabel("FART"));
+		return bars;
+    	
+    }
+
 	// Insert a menu to allow control of database and tag provider.
     @Override
     public MenuBarMerge getModuleMenu() {
@@ -276,6 +290,9 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		super.shutdown();
 	}
 	// Search the menu tree to see if the same menu has been added by another module
+	//
+	//	TODO EREIAM JH - Why does this alwys return false?????????????
+	//
 	private boolean menuExists(Frame frame,String title) {
 		for(Component c:context.getFrame().getComponents() ) {
     		if( c instanceof JRootPane ) {

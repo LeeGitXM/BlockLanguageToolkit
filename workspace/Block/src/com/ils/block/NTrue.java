@@ -89,6 +89,7 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 		
 		// Define a single input -- but allow multiple connections
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
+		input.setIsMultiple(true);
 		anchors.add(input);
 
 		// Define a single output
@@ -268,14 +269,23 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 		int trues = 0;
 		int falses = 0;
 		
+		pruneInitialConnections(qualifiedValueMap);
+
+//		Collection<String> keys = qualifiedValueMap.keySet();
+//		for(String str:keys ) {
+//			log.errorf("%s.evaluate EREIAM JH - Key spinner: %s",TAG,str);
+//		}
+		
 		for(QualifiedValue qv:values) {
 			if(qv.getQuality().isGood()) {
 				TruthValue tv = qualifiedValueAsTruthValue(qv);
+//				log.errorf("%s.evaluate EREIAM JH - Truth spinner: %s",TAG,tv.name());
 				if( tv.equals(TruthValue.TRUE) ) {
 					trues ++;
-				}
-				else if(tv.equals(TruthValue.FALSE)) {
-					falses++;
+				} else {
+					if(tv.equals(TruthValue.FALSE)) {
+						falses++;
+					}
 				}
 			}
 		}
@@ -284,12 +294,13 @@ public class NTrue extends AbstractProcessBlock implements ProcessBlock {
 		if (trues >= nTrue) {
 			result = TruthValue.TRUE;
 		} else {
-			if( falses > inputs - (nTrue + unknowns) ) {
-				result = TruthValue.FALSE;
-			} else {
+			if((nTrue <= trues + unknowns) && (trues > 0 || unknowns == inputs)) {
 				result = TruthValue.UNKNOWN;
+			} else {
+				result = TruthValue.FALSE;
 			}
 		}
+//		log.errorf("%s.evaluate EREIAM JH - T=%d,F=%d,U=%d of %d, need %d => %s",TAG,trues,falses,unknowns,values.size(),nTrue,result.name());
 		
 		log.debugf("%s.evaluate T=%d,F=%d of %d, need %d => %s",TAG,trues,falses,values.size(),nTrue,result.name());
 		return result;	

@@ -293,9 +293,9 @@ public abstract class AbstractUIView extends JComponent
 				}
 				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Origin,
 						desc.getConnectionType(),
-						new Point(sz.width,inset+useIndex*interiorHeight/rightSegments-1),
-						new Point(sz.width+LEADER_LENGTH,inset+useIndex*interiorHeight/rightSegments-1),
-						new Rectangle(sz.width-2*inset,useIndex*interiorHeight/rightSegments,2*inset,2*inset-1),
+						new Point(sz.width,inset+useIndex*interiorHeight/rightSegments),
+						new Point(sz.width+LEADER_LENGTH,inset+useIndex*interiorHeight/rightSegments),
+						new Rectangle(sz.width-2*inset,useIndex*interiorHeight/rightSegments,2*inset,2*inset),
 						desc.isMultiple(),
 						desc.getAnnotation());
 				getAnchorPoints().add(ap);

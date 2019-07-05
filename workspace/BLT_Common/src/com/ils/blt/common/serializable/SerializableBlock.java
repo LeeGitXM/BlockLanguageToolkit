@@ -50,7 +50,10 @@ public class SerializableBlock {
 	public SerializableBlock() {
 		this.anchors = new SerializableAnchor[0];
 	}
-	public SerializableAnchor[] getAnchors() { return anchors; }
+	public SerializableAnchor[] getAnchors() { 
+		System.out.println("EREIAM jh - serializable get anchors");
+		return anchors; 
+		}
 	public GeneralPurposeDataContainer getAuxiliaryData() {return auxiliaryData;}
 	public int getBackground() {return background;}
 	public String getClassName() {return className;}
