@@ -103,4 +103,27 @@ public class TimeUtility
 		
 		return result;
 	}
+	/**
+	 * @param val time interval expressed in seconds
+	 * @param unit the time unit
+	 * @return the a time value in the specified units for an original value ~seconds
+	 */
+	public static int remainderValue(double val,TimeUnit unit) {
+		int result = (int)val;
+		switch(unit) {
+			case SECONDS:
+				result = (int)val % 60;
+				break;
+			case MINUTES:
+				result = ((int)val  % 3600) / 60;
+			break;
+			case HOURS:
+				result = (int)val / 3600;
+				break;
+			default:
+			
+		}
+		return result;
+	}
+
 }

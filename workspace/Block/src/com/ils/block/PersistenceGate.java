@@ -160,7 +160,8 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 			
 			double timeRemaining = count*scanInterval;
 			TimeUnit tu = TimeUtility.unitForValue(timeRemaining);
-			String formattedTime = String.format("%.1f %s", TimeUtility.valueForCanonicalValue(timeRemaining, tu),TimeUtility.abbreviationForUnit(tu));
+			String formattedTime = String.format("%02d:%02d:%02d", TimeUtility.remainderValue(timeRemaining, TimeUnit.HOURS),
+					TimeUtility.remainderValue(timeRemaining, TimeUnit.MINUTES),TimeUtility.remainderValue(timeRemaining, TimeUnit.SECONDS));
 			log.debugf("%s.evaluate: cycle %d property value =  %s.",getName(),count,formattedTime);
 			valueProperty.setValue(formattedTime);
 			notifyOfStatus();
@@ -254,7 +255,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setPreferredHeight(40);
-		desc.setPreferredWidth(80);
+		desc.setPreferredWidth(90);
 		desc.setStyle(BlockStyle.READOUT);
 		desc.setReceiveEnabled(true);
 	}
