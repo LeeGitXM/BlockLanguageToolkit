@@ -1263,6 +1263,7 @@ public class ApplicationRequestHandler implements ToolkitRequestHandler {
 		}
 		catch(Exception ge) {
 			log.infof("%s.setBlockProperties: GatewayException (%s)",TAG,ge.getMessage());
-		}		
+		}
+		
 	}
 }

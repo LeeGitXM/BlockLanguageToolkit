@@ -1112,10 +1112,10 @@ public class ModelManager implements ProjectListener  {
 	 */ 
 	private SerializableDiagram deserializeDiagramResource(long projId,ProjectResource res) {
 		byte[] serializedObj = res.getData();
-		String json = new String(serializedObj);
-		log.debugf("%s.deserializeDiagramResource: json = %s",TAG,json);
 		SerializableDiagram sd = null;
 		try{
+			String json = new String(serializedObj);
+			log.debugf("%s.deserializeDiagramResource: json = %s",TAG,json);
 			ObjectMapper mapper = new ObjectMapper();
 			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 			mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);

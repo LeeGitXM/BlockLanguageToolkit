@@ -13,7 +13,6 @@ import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -53,6 +52,7 @@ import com.inductiveautomation.vision.api.designer.palette.Palette;
 import com.inductiveautomation.vision.api.designer.palette.PaletteItemGroup;
 import com.jidesoft.action.CommandBar;
 import com.jidesoft.docking.DockingManager;
+import com.jidesoft.swing.JideButton;
 
 public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	private static final String TAG = "BLTDesignerHook";
@@ -88,12 +88,12 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		mgr.addScriptModule(BLTProperties.DIAGRAM_SCRIPT_PACKAGE,ApplicationScriptFunctions.class);
 	}
 	
-	// Insert a
+	// Insert toolbar items - EREIAM JH - This is never called.
     @Override
     public List<CommandBar> getModuleToolbars() {
 		ArrayList<CommandBar> bars = new ArrayList<>();
 		CommandBar bar = new CommandBar();
-		bar.add(new JLabel("FART"));
+		bar.add(new JideButton("FRT"));
 		return bars;
     	
     }

@@ -75,7 +75,7 @@ public class BlockDescriptor {
 
 	public void addAnchor(AnchorPrototype anchor) { anchors.add(anchor); }
 	public List<AnchorPrototype> getAnchors() { 
-		log.error("EREIAM jh - block descriptor get anchors");
+//		log.error("EREIAM jh - block descriptor get anchors");
 		return anchors; 
 		}
 	public int getBackground() {return background;}

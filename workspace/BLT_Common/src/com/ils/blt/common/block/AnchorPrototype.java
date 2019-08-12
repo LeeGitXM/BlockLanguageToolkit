@@ -79,7 +79,6 @@ public class AnchorPrototype {
 	public PlacementHint getHint() {return hint;}
 	public boolean isHidden() {return hidden;}
 	public boolean isMultiple() {
-		System.out.println("EREIAM jh - anchor proto is multiple");
 		return multiple; 
 	}
 	public int getSortOrder() { return sortOrder; }

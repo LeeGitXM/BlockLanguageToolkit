@@ -38,7 +38,7 @@ public class ProcessAnchorDescriptor extends AnchorDescriptor {
 	public QualifiedValue getLastValue() { return lastValue; }
 	public boolean isHidden() { return hidden; }
 	public boolean isMultiple() { 
-		System.out.println("EREIAM jh - process is multiple");
+//		System.out.println("EREIAM jh - process is multiple");
 		return multiple; 
 	}
 	public int getSortOrder() { return sortOrder; }

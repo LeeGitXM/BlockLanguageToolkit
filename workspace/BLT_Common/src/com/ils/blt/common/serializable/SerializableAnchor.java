@@ -44,7 +44,7 @@ public class SerializableAnchor {
 	public UUID getParentId() { return parentId; }
 	public boolean isHidden() {return hidden;}
 	public boolean isMultiple() {
-		System.out.println("EREIAM jh - serializable is multiple");
+//		System.out.println("EREIAM jh - serializable is multiple");
 		return multiple;
 	}
 	public int getSortOrder() { return sortOrder; }

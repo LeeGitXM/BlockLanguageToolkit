@@ -7,6 +7,10 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileWriter;
@@ -89,6 +93,8 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	protected final ImageIcon closedDisabledIcon;
 	protected final ImageIcon openRestrictedIcon;
 	protected final ImageIcon closedRestrictedIcon;
+//	private CutAction cutDiagramAction = null;
+	private CopyAction copyDiagramAction = null;
 
 	/**
 	 * Constructor. A DiagramTreeNode is created initially without child resources.
@@ -144,7 +150,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		ExportDiagramAction exportAction = new ExportDiagramAction(menu.getRootPane(),resourceId);
 		exportAction.setEnabled(cleanView);
 		menu.add(exportAction);
-		DuplicateDiagramAction duplicateAction = new DuplicateDiagramAction(this);
+//		DuplicateDiagramAction duplicateAction = new DuplicateDiagramAction(this);
 		DeleteDiagramAction diagramDeleteAction = new DeleteDiagramAction(this);
 		DebugDiagramAction debugAction = new DebugDiagramAction();
 		ResetDiagramAction resetAction = new ResetDiagramAction();
@@ -154,6 +160,8 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		// States are: ACTIVE, DISABLED, ISOLATED
 		DiagramState state = statusManager.getResourceState(resourceId);
 		saveAction = new SaveDiagramAction(this);
+		copyDiagramAction = new CopyAction(this);
+//		cutDiagramAction = new CutAction(this);
 		SetStateAction ssaActive = new SetStateAction(DiagramState.ACTIVE);
 		ssaActive.setEnabled(!state.equals(DiagramState.ACTIVE));
 		SetStateAction ssaDisable = new SetStateAction(DiagramState.DISABLED);
@@ -168,7 +176,9 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		menu.add(setStateMenu);
 		menu.add(saveAction);
 		menu.addSeparator();
-		menu.add(duplicateAction);
+		menu.add(copyDiagramAction);
+//		menu.add(cutDiagramAction);
+//		menu.add(duplicateAction);
 		menu.add(renameAction);
         menu.add(diagramDeleteAction);
         menu.addSeparator();
@@ -351,64 +361,126 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 			}
 		}
 	}
-	private class DuplicateDiagramAction extends BaseAction {
+
+	
+	
+	// copy the currently selected node UUID to the clipboard
+	private class CopyAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
 		private final AbstractResourceNavTreeNode parentNode;
-		public DuplicateDiagramAction(AbstractResourceNavTreeNode pNode)  {
-			super(PREFIX+".DuplicateNode",IconUtil.getIcon("copy"));  // preferences
+
+		public CopyAction(AbstractResourceNavTreeNode pNode)  {
+			super(PREFIX+".CopyNode",IconUtil.getIcon("copy"));
 			this.parentNode = pNode;
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			try {
-				EventQueue.invokeLater(new Runnable() {
-					public void run() {
-						long newId;
+           final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 
-						try {	
-							newId = context.newResourceId();
-							ProjectResource res = parentNode.getProjectResource();
-							byte[] bytes = res.getData();
-							// It would be nice to simply use the clone constructor, but
-							// unfortunately, we have to replace all UUIDs with new ones
-							ObjectMapper mapper = new ObjectMapper();
-							mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
-							SerializableDiagram sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
-							if( sd!=null ) {
-								UUIDResetHandler uuidHandler = new UUIDResetHandler(sd);
-								uuidHandler.convertUUIDs();
-								sd.setDirty(true);    // Dirty because gateway doesn't know about it yet
-								sd.setState(DiagramState.DISABLED);
-								String json = mapper.writeValueAsString(sd);
-								GeneralPurposeTreeNode grandparent = (GeneralPurposeTreeNode)parentNode.getParent();
-								ProjectResource resource = new ProjectResource(newId,
-										BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
-										grandparent.nextFreeName(grandparent,sd.getName()), ApplicationScope.GATEWAY, json.getBytes());
-								
-								resource.setParentUuid(grandparent.getUUID());
-								new ResourceCreateManager(resource).run();	
-								grandparent.selectChild(new long[] {newId} );
-								statusManager.setResourceState(newId, sd.getState(),false);
-							}
-							else {
-								ErrorUtil.showWarning(String.format("Failed to deserialize diagram (%s)",res.getName()),"Clone Diagram");
-							}
-						}
-						catch( IOException ioe) {
-							// Should never happen, we just picked this off a chooser
-							log.warnf("%s: actionPerformed, IOException(%s)",TAG,ioe.getLocalizedMessage()); 
-						}
-						catch (Exception ex) {
-							log.errorf("%s: actionPerformed: Unhandled Exception (%s)",TAG,ex.getMessage());
-						}
-					}
-				});
-			} 
-			catch (Exception err) {
-				ErrorUtil.showError(TAG+" Exception cloning diagram",err);
-			}
+           ProjectResource res = parentNode.getProjectResource();
+           String data = ""+res.getResourceId();
+           Transferable t =  new StringSelection(GeneralPurposeTreeNode.BLT_COPY_OPERATION + data);
+				   
+		   if (t != null) {
+			   try { 
+				   clipboard.setContents(t, null); 
+			   } catch (Exception ex) {
+				   ErrorUtil.showError(String.format("actionPerformed: Unhandled Exception (%s)",ex.getMessage()), "Copy Diagram");
+			   }
+		   }
+				   
 		}
-	} 
+	}
+
+//	// copy the currently selected node UUID to the clipboard
+//	private class CutAction extends BaseAction {
+//		private static final long serialVersionUID = 1L;
+//		private final AbstractResourceNavTreeNode parentNode;
+//
+//		public CutAction(AbstractResourceNavTreeNode pNode)  {
+//			super(PREFIX+".CutNode",IconUtil.getIcon("cut"));
+//			this.parentNode = pNode;
+//		}
+//
+//		public void actionPerformed(ActionEvent e) {
+//	       final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+//
+//	       ProjectResource res = parentNode.getProjectResource();
+//           String data = ""+res.getResourceId();
+//           
+//           Transferable t =  new StringSelection(GeneralPurposeTreeNode.BLT_CUT_OPERATION + data);
+//				   
+//		   if (t != null) {
+//			   try { 
+//				   clipboard.setContents(t, null); 
+//			   } catch (Exception ex) {
+//				   ErrorUtil.showError(String.format("actionPerformed: Unhandled Exception (%s)",ex.getMessage()), "Cut Diagram");
+//			   }
+//		   }
+//				   
+//		}
+//	}
+
+	
+	
+//	private class DuplicateDiagramAction extends BaseAction {
+//		private static final long serialVersionUID = 1L;
+//		private final AbstractResourceNavTreeNode parentNode;
+//		public DuplicateDiagramAction(AbstractResourceNavTreeNode pNode)  {
+//			super(PREFIX+".DuplicateNode",IconUtil.getIcon("copy"));  // preferences
+//			this.parentNode = pNode;
+//		}
+//
+//		public void actionPerformed(ActionEvent e) {
+//			try {
+//				EventQueue.invokeLater(new Runnable() {
+//					public void run() {
+//						long newId;
+//
+//						try {	
+//							newId = context.newResourceId();
+//							ProjectResource res = parentNode.getProjectResource();
+//							byte[] bytes = res.getData();
+//							// It would be nice to simply use the clone constructor, but
+//							// unfortunately, we have to replace all UUIDs with new ones
+//							ObjectMapper mapper = new ObjectMapper();
+//							mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
+//							SerializableDiagram sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
+//							if( sd!=null ) {
+//								UUIDResetHandler uuidHandler = new UUIDResetHandler(sd);
+//								uuidHandler.convertUUIDs();
+//								sd.setDirty(true);    // Dirty because gateway doesn't know about it yet
+//								sd.setState(DiagramState.DISABLED);
+//								String json = mapper.writeValueAsString(sd);
+//								GeneralPurposeTreeNode grandparent = (GeneralPurposeTreeNode)parentNode.getParent();
+//								ProjectResource resource = new ProjectResource(newId,
+//										BLTProperties.MODULE_ID, BLTProperties.DIAGRAM_RESOURCE_TYPE,
+//										grandparent.nextFreeName(grandparent,sd.getName()), ApplicationScope.GATEWAY, json.getBytes());
+//								
+//								resource.setParentUuid(grandparent.getUUID());
+//								new ResourceCreateManager(resource).run();	
+//								grandparent.selectChild(new long[] {newId} );
+//								statusManager.setResourceState(newId, sd.getState(),false);
+//							}
+//							else {
+//								ErrorUtil.showWarning(String.format("Failed to deserialize diagram (%s)",res.getName()),"Clone Diagram");
+//							}
+//						}
+//						catch( IOException ioe) {
+//							// Should never happen, we just picked this off a chooser
+//							log.warnf("%s: actionPerformed, IOException(%s)",TAG,ioe.getLocalizedMessage()); 
+//						}
+//						catch (Exception ex) {
+//							log.errorf("%s: actionPerformed: Unhandled Exception (%s)",TAG,ex.getMessage());
+//						}
+//					}
+//				});
+//			} 
+//			catch (Exception err) {
+//				ErrorUtil.showError(TAG+" Exception cloning diagram",err);
+//			}
+//		}
+//	} 
 	// From the root node, recursively log the contents of the tree
 	private class DebugDiagramAction extends BaseAction {
 		private static final long serialVersionUID = 1L;

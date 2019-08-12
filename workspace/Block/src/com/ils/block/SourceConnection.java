@@ -116,21 +116,21 @@ public class SourceConnection extends Input implements ProcessBlock {
 	 * Augment the palette prototype for this block class.
 	 */
 	protected void initializePrototype() {
-		prototype.setPaletteIconPath("Block/icons/palette/in_connection.png");
-		prototype.setPaletteLabel("Source");
-		prototype.setTooltipText("Receive data from a sink of the same name");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_CONNECTIVITY);
-		
-		BlockDescriptor desc = prototype.getBlockDescriptor();
-		desc.setPreferredHeight(40);
-		desc.setPreferredWidth(50);
-		desc.setBlockClass(getClass().getCanonicalName());
-		desc.setBackground(new Color(127,127,127).getRGB()); // Dark gray
-		desc.setStyle(BlockStyle.ARROW);
-		desc.setCtypeEditable(true);
-		desc.setNameDisplayed(true);
-		desc.setNameOffsetX(25);
-		desc.setNameOffsetY(45);
+//		prototype.setPaletteIconPath("Block/icons/palette/in_connection.png");
+//		prototype.setPaletteLabel("Source");
+//		prototype.setTooltipText("Receive data from a sink of the same name");
+//		prototype.setTabName(BlockConstants.PALETTE_TAB_CONNECTIVITY);
+//		
+//		BlockDescriptor desc = prototype.getBlockDescriptor();
+//		desc.setPreferredHeight(40);
+//		desc.setPreferredWidth(50);
+//		desc.setBlockClass(getClass().getCanonicalName());
+//		desc.setBackground(new Color(127,127,127).getRGB()); // Dark gray
+//		desc.setStyle(BlockStyle.ARROW);
+//		desc.setCtypeEditable(true);
+//		desc.setNameDisplayed(true);
+//		desc.setNameOffsetX(25);
+//		desc.setNameOffsetY(45);
 	}
 	
 	/**

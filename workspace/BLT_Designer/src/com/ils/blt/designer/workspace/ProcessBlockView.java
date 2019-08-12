@@ -17,6 +17,7 @@ import javax.swing.event.EventListenerList;
 
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
+import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
@@ -29,6 +30,7 @@ import com.ils.blt.designer.workspace.ui.AbstractUIView;
 import com.ils.blt.designer.workspace.ui.UIFactory;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
@@ -498,4 +500,38 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		}
 		
 	}
+
+	/**
+	 *  Notify this block of a tag property change.
+	 *  Change the anchor data type to match the tag
+	 */
+	public void notifyOfPropertyChange(BlockProperty property, DataType type) {
+		
+		BindingType bob = property.getBindingType();
+		
+		if (type != null && (bob == BindingType.TAG_READ || bob == BindingType.TAG_READWRITE || bob == BindingType.TAG_MONITOR)) {
+			ConnectionType conType = ConnectionType.ANY;
+			if (type == DataType.Int1 || 
+				type == DataType.Int2 ||
+				type == DataType.Int4 ||
+				type == DataType.Int8 ||
+				type == DataType.Float4 ||
+				type == DataType.Float8 ) {
+				conType = ConnectionType.DATA; 
+			} else  if (type == DataType.String || 
+				type == DataType.Text ) {
+				conType = ConnectionType.TEXT; 
+			} else  if (type == DataType.Boolean) { 
+				conType = ConnectionType.TRUTHVALUE; 
+			}
+			ctypeEditable = true;
+			changeConnectorType(conType);
+			ctypeEditable = false;  // don't allow changes to anchor data type once bound to tag
+			
+			//and now we should check if there was a connection and it's now bad.
+		}
+		
+	}
+
+
 }

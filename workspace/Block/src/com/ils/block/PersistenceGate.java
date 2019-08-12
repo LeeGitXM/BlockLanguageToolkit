@@ -86,6 +86,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
 		input.setIsMultiple(false);
 		anchors.add(input);
+		
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.TRUTHVALUE);
 		anchors.add(output);
 	}
@@ -192,10 +193,12 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		}
 		else if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW)) {
 			try {
-				timeWindow = Double.parseDouble(event.getNewValue().toString());
+				timeWindow = Double.parseDouble(event.getNewValue().toString()) * 60.0;  //it's in minutes, so convert
+				log.errorf("%s.propertyChange: EREIAM JH - time Received %s ",getName(),""+timeWindow);
+				// Make sure this isn't called if block properties are changed
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s.propertyChange: Unable to convert scan interval to a double (%s)",getName(),nfe.getLocalizedMessage());
+				log.warnf("%s.propertyChange: Unable to time window to a double (%s)",getName(),nfe.getLocalizedMessage());
 			}
 		}
 		else if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL)) {

@@ -285,7 +285,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		}
 		else if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW)) {
 			try {
-				timeWindow = Double.parseDouble(event.getNewValue().toString());
+				timeWindow = Double.parseDouble(event.getNewValue().toString()) * 60.0;
 				if( timeWindow>0.0) {
 					if( scanInterval > timeWindow ) scanInterval = timeWindow;
 					dog.setSecondsDelay(scanInterval);

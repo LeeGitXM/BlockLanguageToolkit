@@ -10,6 +10,11 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.Point;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -17,12 +22,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.UUID;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
@@ -31,6 +38,9 @@ import javax.swing.tree.TreePath;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 import com.ils.blt.client.ClientScriptExtensionManager;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
@@ -55,8 +65,8 @@ import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.blt.designer.ThreadCounter;
 import com.ils.blt.designer.config.ApplicationConfigurationDialog;
 import com.ils.blt.designer.config.FamilyConfigurationDialog;
-import com.ils.blt.designer.config.ScriptExtensionsDialog;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
+import com.inductiveautomation.factorysql.common.config.serialization.elements.AbstractProjectElement;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
@@ -69,13 +79,15 @@ import com.inductiveautomation.ignition.common.project.ProjectChangeListener;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.inductiveautomation.ignition.common.xmlserialization.SerializationException;
 import com.inductiveautomation.ignition.designer.UndoManager;
+import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
+import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
 import com.inductiveautomation.ignition.designer.navtree.model.FolderNode;
-import com.inductiveautomation.ignition.designer.sqltags.action.RefreshAction;
 /**
  * A folder in the designer scope to support the diagnostics toolkit diagram
  * layout. In addition to standard folders, folders can be of type "Application" or
@@ -86,18 +98,24 @@ import com.inductiveautomation.ignition.designer.sqltags.action.RefreshAction;
  */
 public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInterface, ProjectChangeListener {
 	private static final String CLSS = "GeneralPurposeTreeNode";
+	public static final String BLT_CUT_OPERATION = "BLTCUT";
+	public static final String BLT_COPY_OPERATION = "BLTCOPY";
 	private static final int OFFSET = 100;
 	private static final String PREFIX = BLTProperties.BUNDLE_PREFIX;  // Required for some defaults
 	private final LoggerEx logger = LogUtil.getLogger(getClass().getPackage().getName());
 	private boolean dirty = false;
 	private DiagramState state = DiagramState.ACTIVE;  // Used for Applications and Families
-	private final DuplicateNodeAction duplicateAction;
+//	private final DuplicateNodeAction duplicateAction;
 	private final DeleteNodeAction deleteNodeAction;
+//	private final CutAction cutBranchAction;
+	private final CopyAction copyBranchAction;
+	private final PasteAction pasteBranchAction;
 	private final StartAction startAction = new StartAction();
 	private final StopAction stopAction = new StopAction();
 	private final DiagramWorkspace workspace;
 	private final NodeStatusManager statusManager;
 	private final FolderCreateAction folderCreateAction;
+//	private final FamilyFolderCreateAction familyFolderCreateAction;
 	private TreeSaveAction treeSaveAction = null;
 	private final ApplicationRequestHandler handler = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler();
 	private final ExecutionManager executionEngine;
@@ -120,8 +138,11 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		this.setName(BLTProperties.ROOT_FOLDER_NAME);
 		this.resourceId = BLTProperties.ROOT_RESOURCE_ID;
 		this.executionEngine = new BasicExecutionEngine(1,CLSS);
-		duplicateAction = new DuplicateNodeAction(this);
+//		duplicateAction = new DuplicateNodeAction(this);
 		deleteNodeAction = null;
+//		cutBranchAction = new CutAction(this);
+		copyBranchAction = new CopyAction(this);
+		pasteBranchAction = new PasteAction(this);
 		folderCreateAction = new FolderCreateAction(this);
 		workspace = ((BLTDesignerHook)ctx.getModule(BLTProperties.MODULE_ID)).getWorkspace();
 		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
@@ -133,8 +154,9 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		else {
 			closedIcon = iconFromPath("Block/icons/navtree/disabled_folder.png");  // Project is disabled
 		}
-		familyIcon = iconFromPath("Block/icons/navtree/family_folder.png");  // Project is disabled
-		diagramIcon = iconFromPath("Block/icons/navtree/diagram.png");  // Project is disabled
+//		familyIcon = iconFromPath("Block/icons/navtree/family_folder.png");  
+		familyIcon = iconFromPath("Block/icons/navtree/family24.png");  
+		diagramIcon = iconFromPath("Block/icons/navtree/diagram.png");  
 		setIcon(closedIcon);
 		openIcon = IconUtil.getIcon("folder");
 	}
@@ -152,8 +174,12 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		this.resourceId = resource.getResourceId();
 		this.executionEngine = new BasicExecutionEngine(1,CLSS);
 		setName(resource.getName());      // Also sets text for tree
-		duplicateAction = new DuplicateNodeAction(this);
+//		duplicateAction = new DuplicateNodeAction(this);
 		deleteNodeAction = new DeleteNodeAction(this);
+//		cutBranchAction = new CutAction(this);
+		copyBranchAction = new CopyAction(this);
+		pasteBranchAction = new PasteAction(this);
+
 		folderCreateAction = new FolderCreateAction(this);
 		workspace = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getWorkspace();
 		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
@@ -162,19 +188,49 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			closedIcon = iconFromPath("Block/icons/navtree/application_folder_closed.png");
 			openIcon = iconFromPath("Block/icons/navtree/application_folder.png");
 		} 
-		else if(resource.getResourceType().equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE)) {
-			closedIcon = iconFromPath("Block/icons/navtree/family_folder_closed.png");
-			openIcon = iconFromPath("Block/icons/navtree/family_folder.png");
+		else if(resource.getResourceType().equalsIgnoreCase(BLTProperties.FAMILY_RESOURCE_TYPE)) { 
+			closedIcon = iconFromPath("Block/icons/navtree/family24.png");
+			openIcon = iconFromPath("Block/icons/navtree/family24.png");
+		}
+		else if(parentIsApplication()) {  //this is a folder containing families 
+			closedIcon = iconFromPath("Block/icons/navtree/family_closed.png");
+			openIcon = iconFromPath("Block/icons/navtree/family_.png");
 		}
 		else {
 			// Simple folder
 			closedIcon = IconUtil.getIcon("folder_closed");
 			openIcon = IconUtil.getIcon("folder");
 		}
-		familyIcon = iconFromPath("Block/icons/navtree/family_folder.png"); 
+		familyIcon = iconFromPath("Block/icons/navtree/family24.png"); 
 		diagramIcon = iconFromPath("Block/icons/navtree/diagram.png"); 
 		setIcon(closedIcon);
 	}
+
+	// walk up the tree and see if there is a 
+	public boolean parentIsApplication() {
+		boolean ret = false;
+		GeneralPurposeTreeNode theNode = this;
+
+		AbstractResourceNavTreeNode node = nearestNonFolderNode(theNode);
+		if (node != null && node.getProjectResource() != null && node.getProjectResource().getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
+			ret = true;
+		}
+		return ret;				
+	}
+	
+	protected AbstractResourceNavTreeNode nearestNonFolderNode(GeneralPurposeTreeNode node) {
+		AbstractResourceNavTreeNode ret = node;
+		while (ret != null && ret.getProjectResource() != null && ret.getProjectResource().getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)) { // generic folder, go up
+			if (ret != null && ret.getParent() instanceof AbstractResourceNavTreeNode) {
+				ret = (AbstractResourceNavTreeNode)ret.getParent();
+			} else {
+				ret = null;
+			}
+		}
+		return ret;
+	}
+		
+	
 	@Override
 	public boolean confirmDelete(List<? extends AbstractNavTreeNode> selections) {
 		// We only care about the first
@@ -258,8 +314,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		boolean foundMatch = true;
 		int index = 0;
 		while(foundMatch) {
-			index = index+1;
-			newName = String.format("%s-%d", root,index);
 			foundMatch = false;
 			@SuppressWarnings("rawtypes")
 			Enumeration walker = node.children();
@@ -270,6 +324,10 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 					foundMatch=true;
 					break;
 				}
+			}
+			if (foundMatch) {
+				index = index+1;
+				newName = String.format("%s-%d", root,index);
 			}
 		}
 		return newName;
@@ -442,8 +500,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				if( handler.isControllerRunning() ) {
 					startAction.setEnabled(false);
 					clearAction.setEnabled(false);
-				}
-				else {
+				} else {
 					stopAction.setEnabled(false);
 					clearAction.setEnabled(true);
 				}
@@ -455,6 +512,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				menu.add(saveAllAction);
 				menu.add(startAction);
 				menu.add(stopAction);
+				menu.add(pasteBranchAction);
 				menu.addSeparator();
 				menu.add(clearAction);
 				menu.add(debugAction);
@@ -474,6 +532,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 
 			menu.add(familyAction);
 			menu.add(folderCreateAction);
+//			menu.add(familyFolderCreateAction);
 			SetApplicationStateAction ssaActive = new SetApplicationStateAction(this,DiagramState.ACTIVE);
 			SetApplicationStateAction ssaDisable = new SetApplicationStateAction(this,DiagramState.DISABLED);
 			SetApplicationStateAction ssaIsolated = new SetApplicationStateAction(this,DiagramState.ISOLATED);
@@ -485,7 +544,10 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			menu.addSeparator();
 			menu.add(saveAuxDataAction);
 			menu.add(restoreAuxDataAction);
-			menu.add(duplicateAction);
+//			menu.add(duplicateAction);
+//			menu.add(cutBranchAction);
+			menu.add(copyBranchAction);
+			menu.add(pasteBranchAction);
 			menu.add(applicationConfigureAction);
 			menu.add(applicationExportAction);
 			menu.add(treeSaveAction);
@@ -502,7 +564,10 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			menu.add(importAction);
 			menu.add(folderCreateAction);
 			menu.addSeparator();
-			menu.add(duplicateAction);
+//			menu.add(duplicateAction);
+//			menu.add(cutBranchAction);
+			menu.add(copyBranchAction);
+			menu.add(pasteBranchAction);
 			menu.add(familyConfigureAction);
 			menu.add(treeSaveAction);
 			addEditActions(menu);
@@ -543,12 +608,31 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			treeSaveAction = new TreeSaveAction(this,PREFIX+".SaveFolder");
 			menu.add(treeSaveAction);
 			menu.addSeparator();
+
+			if( true /*something is selected*/ ) {
+				copyBranchAction.setEnabled(true);
+//				cutBranchAction.setEnabled(true);
+			} else {
+				copyBranchAction.setEnabled(false);
+//				cutBranchAction.setEnabled(false);
+			}
+			if( true /*something is in the clipboard*/ ) {
+				pasteBranchAction.setEnabled(true);
+			} else {
+				pasteBranchAction.setEnabled(false);
+			}
+//			menu.add(cutBranchAction);
+			menu.add(copyBranchAction);
+			menu.add(pasteBranchAction);
+			
 			addEditActions(menu);	
 		}
 		else {   
 			FamilyCreateAction familyAction = new FamilyCreateAction(this);
 			menu.add(familyAction);
 			menu.addSeparator();
+//			menu.add(cutBranchAction);
+
 			addEditActions(menu);
 		}
 	}
@@ -1162,90 +1246,95 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		}
 	}
 	// The resource type can be Application or Family
-	private class DuplicateNodeAction extends BaseAction {
-		private static final long serialVersionUID = 1L;
-		private final AbstractResourceNavTreeNode parentNode;
-		public DuplicateNodeAction(AbstractResourceNavTreeNode pNode)  {
-			super(PREFIX+".DuplicateNode",IconUtil.getIcon("copy"));  // preferences
-			this.parentNode = pNode;
-		}
-
-		public void actionPerformed(ActionEvent e) {
-			try {
-				EventQueue.invokeLater(new Runnable() {
-					public void run() {
-						try {	
-							ObjectMapper mapper = new ObjectMapper();
-							mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
-
-							ProjectResource res = parentNode.getProjectResource();
-							long newId = context.newResourceId();
-							UUID newResourceUUID = null;
-							String json = "";
-							if( res.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
-								SerializableApplication sa = mapper.readValue(new String(res.getData()), SerializableApplication.class);
-								if( sa!=null ) {
-									ApplicationUUIDResetHandler uuidHandler = new ApplicationUUIDResetHandler(sa);
-									uuidHandler.convertUUIDs();
-									newResourceUUID = sa.getId();
-									json = mapper.writeValueAsString(sa);
-								}
-								else {
-									ErrorUtil.showWarning(String.format("Failed to deserialize application (%s)",res.getName()),"Duplicate Application");
-									return;
-								}
-							}
-							else if( res.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE)) {
-								SerializableFamily sf = mapper.readValue(new String(res.getData()), SerializableFamily.class);
-								if( sf!=null ) {
-									FamilyUUIDResetHandler uuidHandler = new FamilyUUIDResetHandler(sf);
-									uuidHandler.convertUUIDs();
-									newResourceUUID = sf.getId();
-									json = mapper.writeValueAsString(sf);
-								}
-								else {
-									ErrorUtil.showWarning(String.format("Failed to deserialize family (%s)",res.getName()),"Duplicate Family");
-									return;
-								}
-							}
-							else {
-								ErrorUtil.showWarning(String.format("Unexpected resource type(%s)",res.getResourceType()),"Duplicate Node");
-								return;
-							}
-							GeneralPurposeTreeNode grandparent = (GeneralPurposeTreeNode)parentNode.getParent();
-							ProjectResource resource = new ProjectResource(newId,BLTProperties.MODULE_ID, res.getResourceType(),
-									nextFreeName(grandparent,res.getName()), ApplicationScope.GATEWAY, json.getBytes());
-
-							resource.setParentUuid(grandparent.getUUID());
-							
-							copyChildren(parentNode,newResourceUUID);
-							
-							// Finally display the parent node
-							new ResourceCreateManager(resource).run();
-							grandparent.selectChild(new long[] {newId} );	
-						}
-						catch( IOException ioe) {
-							// Should never happen, we just picked this off a chooser
-							logger.warnf("%s: actionPerformed, IOException(%s)",CLSS,ioe.getLocalizedMessage()); 
-						}
-						catch (Exception ex) {
-							logger.errorf("%s: actionPerformed: Unhandled Exception (%s)",CLSS,ex.getMessage());
-						}
-					}
-				});
-			} 
-			catch (Exception err) {
-				ErrorUtil.showError(CLSS+" Exception cloning diagram",err);
-			}
-		}
+//	private class DuplicateNodeAction extends BaseAction {
+//		private static final long serialVersionUID = 1L;
+//		private final AbstractResourceNavTreeNode parentNode;
+//		public DuplicateNodeAction(AbstractResourceNavTreeNode pNode)  {
+//			super(PREFIX+".DuplicateNode",IconUtil.getIcon("copy"));  // preferences
+//			this.parentNode = pNode;
+//		}
+//
+//		public void actionPerformed(ActionEvent e) {
+//			try {
+//				EventQueue.invokeLater(new Runnable() {
+//					public void run() {
+//						try {	
+//							ObjectMapper mapper = new ObjectMapper();
+//							mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
+//
+//							ProjectResource res = parentNode.getProjectResource();
+//							long newId = context.newResourceId();
+//							UUID newResourceUUID = null;
+//							String json = "";
+//							if( res.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
+//								SerializableApplication sa = mapper.readValue(new String(res.getData()), SerializableApplication.class);
+//								if( sa!=null ) {
+//									ApplicationUUIDResetHandler uuidHandler = new ApplicationUUIDResetHandler(sa);
+//									uuidHandler.convertUUIDs();
+//									newResourceUUID = sa.getId();
+//									json = mapper.writeValueAsString(sa);
+//								}
+//								else {
+//									ErrorUtil.showWarning(String.format("Failed to deserialize application (%s)",res.getName()),"Duplicate Application");
+//									return;
+//								}
+//							}
+//							else if( res.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE)) {
+//								SerializableFamily sf = mapper.readValue(new String(res.getData()), SerializableFamily.class);
+//								if( sf!=null ) {
+//									FamilyUUIDResetHandler uuidHandler = new FamilyUUIDResetHandler(sf);
+//									uuidHandler.convertUUIDs();
+//									newResourceUUID = sf.getId();
+//									json = mapper.writeValueAsString(sf);
+//								}
+//								else {
+//									ErrorUtil.showWarning(String.format("Failed to deserialize family (%s)",res.getName()),"Duplicate Family");
+//									return;
+//								}
+//							}
+//							else {
+//								ErrorUtil.showWarning(String.format("Unexpected resource type(%s)",res.getResourceType()),"Duplicate Node");
+//								return;
+//							}
+//							GeneralPurposeTreeNode grandparent = (GeneralPurposeTreeNode)parentNode.getParent();
+//							ProjectResource resource = new ProjectResource(newId,BLTProperties.MODULE_ID, res.getResourceType(),
+//									nextFreeName(grandparent,res.getName()), ApplicationScope.GATEWAY, json.getBytes());
+//
+//							resource.setParentUuid(grandparent.getUUID());
+//							
+//							copyChildren(parentNode,newResourceUUID);
+//							
+//							// Finally display the parent node
+//							new ResourceCreateManager(resource).run();
+//							grandparent.selectChild(new long[] {newId} );	
+//						}
+//						catch( IOException ioe) {
+//							// Should never happen, we just picked this off a chooser
+//							logger.warnf("%s: actionPerformed, IOException(%s)",CLSS,ioe.getLocalizedMessage()); 
+//						}
+//						catch (Exception ex) {
+//							logger.errorf("%s: actionPerformed: Unhandled Exception (%s)",CLSS,ex.getMessage());
+//						}
+//					}
+//				});
+//			} 
+//			catch (Exception err) {
+//				ErrorUtil.showError(CLSS+" Exception cloning diagram",err);
+//			}
+//		}
+//	}
 		// Recursively clone children of the parent node onto the new tree
 		// It would be nice to simply convert to a resource, but
 		// unfortunately, we have to replace all UUIDs with new ones
-		private void copyChildren(AbstractResourceNavTreeNode fromNode, UUID toUUID) throws Exception {
-			
+		protected boolean copyChildren(AbstractResourceNavTreeNode fromNode, UUID toUUID) throws Exception {
+//			boolean ret = true;
 			ObjectMapper mapper = new ObjectMapper();
 			mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
 			
+			if (fromNode == null) {
+				ErrorUtil.showWarning("copy children with NULL node!");
+				return false;
+			}
 			// Iterate over the children of the original node
 			@SuppressWarnings("rawtypes")
 			Enumeration walker = fromNode.children();
@@ -1266,8 +1355,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 						json = mapper.writeValueAsString(sa);
 					}
 					else {
-						ErrorUtil.showWarning(String.format("Failed to deserialize child application (%s)",res.getName()),"Duplicate Application");
-						return;
+						ErrorUtil.showWarning(String.format("Failed to deserialize child application (%s)",res.getName()),"Copy Application");
+						return false;
 					}
 				}
 				else if( res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
@@ -1281,8 +1370,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 						json = mapper.writeValueAsString(sd);
 					}
 					else {
-						ErrorUtil.showWarning(String.format("Failed to deserialize child diagram (%s)",res.getName()),"Duplicate Diagram");
-						return;
+						ErrorUtil.showWarning(String.format("Failed to deserialize child diagram (%s)",res.getName()),"Copy Diagram");
+						return false;
 					}
 				}
 				else if( res.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE)) {
@@ -1294,11 +1383,12 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 						json = mapper.writeValueAsString(sf);
 					}
 					else {
-						ErrorUtil.showWarning(String.format("Failed to deserialize child family (%s)",res.getName()),"Duplicate Family");
-						return;
+						ErrorUtil.showWarning(String.format("Failed to deserialize child family (%s)",res.getName()),"Copy Family");
+						return false;
 					}
 				}
 				else if( res.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)) {
+					System.out.println("EREIAM JH - :" + new String(bytes) + ":");
 					SerializableFolder sf = mapper.readValue(new String(bytes), SerializableFolder.class);
 					if( sf!=null ) {
 						sf.setId(UUID.randomUUID());
@@ -1306,13 +1396,13 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 						json = mapper.writeValueAsString(sf);
 					}
 					else {
-						ErrorUtil.showWarning(String.format("Failed to deserialize child folder (%s)",res.getName()),"Duplicate Folder");
-						return;
+						ErrorUtil.showWarning(String.format("Failed to deserialize child folder (%s)",res.getName()),"Copy Folder");
+						return false;
 					}
 				}
 				else {
-					ErrorUtil.showWarning(String.format("Unexpected child resource type(%s)",res.getResourceType()),"Duplicate Node");
-					return;
+					ErrorUtil.showWarning(String.format("Unexpected child resource type(%s)",res.getResourceType()),"Copy Node");
+					return false;
 				}
 
 				ProjectResource resource = new ProjectResource(newId,BLTProperties.MODULE_ID, res.getResourceType(),
@@ -1320,10 +1410,13 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 
 				resource.setParentUuid(toUUID);
 				new ResourceCreateManager(resource).run();
-				copyChildren(child,newResourceUUID);
+				if (!copyChildren(child,newResourceUUID)) {
+					return false;
+				}
 			}
+			return true;
 		} 
-	}
+	
 	// From the root node, tell the gateway controller to clear all resources
 	private class ClearAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
@@ -1335,6 +1428,248 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			handler.clearController();
 		}
 	}
+
+	
+	// copy the currently selected node UUID to the clipboard
+	private class CopyAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final AbstractResourceNavTreeNode parentNode;
+
+		public CopyAction(AbstractResourceNavTreeNode pNode)  {
+			super(PREFIX+".CopyNode",IconUtil.getIcon("copy"));
+			this.parentNode = pNode;
+		}
+
+		public void actionPerformed(ActionEvent e) {
+           final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+
+           ProjectResource res = parentNode.getProjectResource();
+           String data = ""+res.getResourceId();
+           Transferable t =  new StringSelection(BLT_COPY_OPERATION + data);
+				   
+		   if (t != null) {
+			   try { 
+				   clipboard.setContents(t, null); 
+			   } catch (Exception ex) {
+					logger.errorf("%s: actionPerformed: Unhandled Exception (%s)",CLSS,ex.getMessage());
+			   }
+		   }
+				   
+		}
+	}
+
+//	// copy the currently selected node UUID to the clipboard
+//	private class CutAction extends BaseAction {
+//		private static final long serialVersionUID = 1L;
+//		private final AbstractResourceNavTreeNode parentNode;
+//
+//		public CutAction(GeneralPurposeTreeNode pNode)  {
+//			super(PREFIX+".CutNode",IconUtil.getIcon("cut"));
+//			this.parentNode = pNode;
+//		}
+//
+//		public void actionPerformed(ActionEvent e) {
+//	       final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+//
+//	       ProjectResource res = parentNode.getProjectResource();
+//           String data = ""+res.getResourceId();
+//           Transferable t =  new StringSelection(BLT_CUT_OPERATION + data);
+//				   
+//		   if (t != null) {
+//			   try { 
+//				   clipboard.setContents(t, null); 
+//			   } catch (Exception ex) {
+//					logger.errorf("%s: actionPerformed: Unhandled Exception (%s)",CLSS,ex.getMessage());
+//			   }
+//		   }
+//				   
+//		}
+//	}
+
+	// paste the nodes form the clipboard into the tree at the selected location
+	private class PasteAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final GeneralPurposeTreeNode parentNode;  // Bad naming, it isn't really a parent node, it's this one
+
+		public PasteAction(GeneralPurposeTreeNode pNode)  {
+			super(PREFIX+".PasteNode",IconUtil.getIcon("paste"));
+			this.parentNode = pNode;
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+
+	        Transferable t = clipboard.getContents(null);
+     		if (t.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+     			try { 
+     				String clipData = (String)t.getTransferData(DataFlavor.stringFlavor);
+     				if (clipData.startsWith(BLT_CUT_OPERATION)) {
+     					String data = clipData.substring(BLT_CUT_OPERATION.length());
+    			        pastey(data, true);
+     				}
+     				if (clipData.startsWith(BLT_COPY_OPERATION)) {
+     					String data = clipData.substring(BLT_COPY_OPERATION.length());
+    					pastey(data, false);
+     				}
+     			} catch (Exception ex) {
+					logger.errorf("%s: actionPerformed: Unhandled Exception in PASTE (%s)",CLSS,ex.getMessage());
+					ex.printStackTrace();
+     			}
+     		}
+		}
+
+//		private AbstractResourceNavTreeNode nearestNonFolderNode(GeneralPurposeTreeNode node) {
+//			AbstractResourceNavTreeNode ret = node;
+//			while (ret != null && ret.getProjectResource() != null && ret.getProjectResource().getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)) { // generic folder, go up
+//				if (ret != null && ret.getParent() instanceof AbstractResourceNavTreeNode) {
+//					ret = (AbstractResourceNavTreeNode)ret.getParent();
+//				} else {
+//					ret = null;
+//				}
+//			}
+//			return ret;
+//		}
+		
+		public void pastey(String data, boolean deleteOriginal) {
+			long clipId = Long.parseLong(data);
+			ProjectResource res = context.getProject().getResource(clipId);
+			
+//			Up to here it works.  You can now cut or copy a resource, paste is able to find the original resource
+//				delete old one (cut only)
+	        
+	        ProjectResource dst = parentNode.getProjectResource();
+			try {
+				EventQueue.invokeLater(new Runnable() {
+					public void run() {
+						try {	
+							ObjectMapper mapper = new ObjectMapper();
+							mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
+
+							long newId = context.newResourceId();
+							UUID newResourceUUID = null;
+							String json = "";
+							
+							if( res.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
+								 AbstractResourceNavTreeNode closest = nearestNonFolderNode(parentNode);
+								if (closest instanceof GeneralPurposeTreeNode && ((GeneralPurposeTreeNode)closest).isRootFolder()) {
+									SerializableApplication sa = mapper.readValue(new String(res.getData()), SerializableApplication.class);
+									if( sa!=null ) {
+										ApplicationUUIDResetHandler uuidHandler = new ApplicationUUIDResetHandler(sa);
+										uuidHandler.convertUUIDs();
+										newResourceUUID = sa.getId();
+										json = mapper.writeValueAsString(sa);
+									} else {
+										ErrorUtil.showWarning(String.format("Failed to deserialize application (%s)",res.getName()),"Paste Application");
+										return;
+									}
+								
+								} else {
+									ErrorUtil.showWarning("Tried to paste an application into an invalid location","Paste Application");
+									return;
+								}
+							} else if(res.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE)) {
+								AbstractResourceNavTreeNode node = nearestNonFolderNode(parentNode);
+								if (node.getProjectResource() != null && node.getProjectResource().getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
+									SerializableFamily sf = mapper.readValue(new String(res.getData()), SerializableFamily.class);
+									if( sf!=null ) {
+										FamilyUUIDResetHandler uuidHandler = new FamilyUUIDResetHandler(sf);
+										uuidHandler.convertUUIDs();
+										newResourceUUID = sf.getId();
+										json = mapper.writeValueAsString(sf);
+									}
+									else {
+										ErrorUtil.showWarning(String.format("Failed to deserialize family (%s)",res.getName()),"Paste Family");
+										return;
+									}
+								} else {
+									ErrorUtil.showWarning("Tried to paste a family into an invalid location","Paste Application");
+									return;
+								}
+							} else if( res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
+								AbstractResourceNavTreeNode node = nearestNonFolderNode(parentNode);
+								if (node.getProjectResource() != null && node.getProjectResource().getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE)) {
+									SerializableDiagram sd = mapper.readValue(new String(res.getData()), SerializableDiagram.class);
+									if( sd!=null ) {
+										UUIDResetHandler rhandler = new UUIDResetHandler(sd);
+										rhandler.convertUUIDs();
+	
+										sd.setDirty(true);    // Dirty because gateway doesn't know about it yet
+										sd.setState(DiagramState.DISABLED);
+										json = mapper.writeValueAsString(sd);
+										
+										statusManager.setResourceState(newId, sd.getState(),false);
+	
+										
+									}
+									else {
+										ErrorUtil.showWarning(String.format("Failed to deserialize diagram (%s)",res.getName()),"Paste Diagram");
+										return;
+									}
+								} else {
+									ErrorUtil.showWarning("Tried to paste a diagram into an invalid location","Paste Application");
+									return;
+								}
+
+							} else {
+								ErrorUtil.showWarning(String.format("Unexpected resource type(%s)",res.getResourceType()),"Paste Node");
+								return;
+							}
+							
+//							GeneralPurposeTreeNode grandparent = (GeneralPurposeTreeNode)parentNode.getParent();
+							ProjectResource resource = new ProjectResource(newId,BLTProperties.MODULE_ID, res.getResourceType(),
+									nextFreeName((GeneralPurposeTreeNode)parentNode,res.getName()), ApplicationScope.GATEWAY, json.getBytes());
+
+							resource.setParentUuid(((GeneralPurposeTreeNode)parentNode).getUUID());
+							
+							AbstractResourceNavTreeNode node = statusManager.findNode(res.getResourceId());
+
+							if (copyChildren(node,newResourceUUID) && deleteOriginal) {
+		    					ResourceDeleteManager deleter;
+		    					deleter = new ResourceDeleteManager(node);
+		    					deleter.acquireResourcesToDelete();
+		    					if( deleter.deleteResources() ) {
+	//	    						UndoManager.getInstance().add(this,GeneralPurposeTreeNode.class);
+	//	    						
+	//	    						if( p instanceof GeneralPurposeTreeNode )  {
+	//	    							GeneralPurposeTreeNode parentNode = (GeneralPurposeTreeNode)p;
+	//	    							parentNode.recreate();
+	//	    							parentNode.expand();
+	//	    						}
+		    						deleter.deleteInProject();
+		    					}
+		    					else {
+		    						ErrorUtil.showError("Node locked, delete failed");
+		    					}
+							}
+
+	    					// EREIAM JH - deleteOldTree();
+
+							
+							// Finally display the parent node
+							new ResourceCreateManager(resource).run();
+							((GeneralPurposeTreeNode)parentNode).selectChild(new long[] {newId} );
+						}
+						catch( IOException ioe) {
+							// Should never happen, we just picked this off a chooser
+							logger.warnf("%s: actionPerformed, IOException(%s)",CLSS,ioe.getLocalizedMessage()); 
+							ioe.printStackTrace();
+						}
+						catch (Exception ex) {
+							logger.errorf("%s: actionPerformed: Unhandled Exception (%s)",CLSS,ex.getMessage());
+							ex.printStackTrace();
+						}
+					}
+				});
+			} 
+			catch (Exception err) {
+				ErrorUtil.showError(CLSS+" Exception cloning diagram",err);
+			}
+			
+		}
+		
+	}
+	
+
 	// From the root node, recursively log the contents of the tree
 	private class DebugAction extends BaseAction {
 
@@ -1356,7 +1691,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	// Note: On a "save" action, the descendants are removed also.
 	private class DeleteNodeAction extends BaseAction implements UndoManager.UndoAction {
 		private static final long serialVersionUID = 1L;
-		private final AbstractResourceNavTreeNode node;
+		private final AbstractResourceNavTreeNode node; 
 		ResourceDeleteManager deleter;
 		private String bundleString;
 		private long resid = -1;    // for the root
@@ -1574,6 +1909,35 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 
 		}
 	}
+
+	// TODO EREIAM JH - This seems like a lot of work just to make it have a custom icon.
+	
+	// From an application node, create a folder for families
+//	private class FamilyFolderCreateAction extends BaseAction {
+//		private static final long serialVersionUID = 1L;
+//		private final AbstractResourceNavTreeNode currentNode;
+//		public FamilyFolderCreateAction(AbstractResourceNavTreeNode parentNode)  {
+//			super(PREFIX+".NewFolder",IconUtil.getIcon("folder_new"));
+//			currentNode = parentNode;
+//		}
+//
+//		public void actionPerformed(ActionEvent e) {
+//			try {
+//				final long newResId = context.newResourceId();
+//				String newName = BundleUtil.get().getString(PREFIX+".NewFolder.Default.Name");
+//				if( newName==null) newName = "New Folks";  // Missing Resource
+//				UUID newId = context.addFolder(newResId, BLTProperties.MODULE_ID, ApplicationScope.GATEWAY, newName, getFolderId());
+//				logger.infof("%s.FolderCreateAction. create new %s(%d), %s (%s, parent %s)",CLSS,BLTProperties.FAMILY_FOLDER_TYPE,newResId,newName,
+//						newId.toString(),getFolderId().toString());
+//				//recreate();
+//				currentNode.selectChild(new long[] {newResId} );
+//			} 
+//			catch (Exception err) {
+//				ErrorUtil.showError(CLSS+" Exception creating folder",err);
+//			}
+//
+//		}
+//	}
 	private class ImportDiagramAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
 		private final AbstractResourceNavTreeNode parentNode;

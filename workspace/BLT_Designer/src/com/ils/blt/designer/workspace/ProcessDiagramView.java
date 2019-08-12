@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.swing.JOptionPane;
+
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
@@ -190,6 +192,32 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 
 			boolean disallow = false;
 			// check if any input connections
+			if( end instanceof BasicAnchorPoint && begin instanceof BasicAnchorPoint ) {
+				BasicAnchorPoint eapp = (BasicAnchorPoint)end;
+				ConnectionType originType = null;
+
+				
+				ProcessBlockView origin = (ProcessBlockView)begin.getBlock();
+				BasicAnchorPoint bap = (BasicAnchorPoint)begin;
+				for(ProcessAnchorDescriptor pad:origin.getAnchors()) {
+					if( pad.getDisplay().equals(bap.getId())) {
+						originType = pad.getConnectionType();
+						break;
+					}
+				}
+				
+				
+				 // only 1 input allowed, check to make sure it isn't already used and don't block if initializing
+				if (!eapp.allowConnectionType(originType) && !suppressStateChangeNotification) { 
+					disallow = true;
+					String msg = String.format("Rejected connection.  Cannot connect %s to %s",TAG,originType.name(),eapp.getConnectionType().name());
+			        JOptionPane.showMessageDialog(null, msg, "Warning", JOptionPane.INFORMATION_MESSAGE);
+					msg = String.format("%s.addConnection - rejected connection.  Cannot connect %s to %s",TAG,originType.name(),eapp.getConnectionType().name());
+					log.warnf(msg);
+				}
+			}
+
+			// check if input connection is of the correct type
 			if( end instanceof BasicAnchorPoint ) {
 				BasicAnchorPoint bapp = (BasicAnchorPoint)end;
 				
@@ -198,6 +226,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 					for(Connection cxn:connections) {
 						if(cxn.getTerminus().equals(end)) {
 							disallow = true;
+							log.warnf("%s.addConnection - rejected attempt to add a second connection to a single connection endpoint",TAG);
 							break;
 						}
 					}

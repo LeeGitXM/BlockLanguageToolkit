@@ -7,6 +7,7 @@ import java.awt.Color;
 import java.util.UUID;
 
 import com.ils.block.annotation.ExecutableBlock;
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
@@ -95,6 +96,9 @@ public class Output extends AbstractProcessBlock implements ProcessBlock {
 			}
 		}
 	}
+	
+	@Override 
+	public String getClassName() {return BLTProperties.CLASS_NAME_OUTPUT;}
 	
 	/**
 	 * Add properties that are new for this class.

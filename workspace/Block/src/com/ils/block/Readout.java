@@ -85,7 +85,7 @@ public class Readout extends AbstractProcessBlock implements ProcessBlock {
 		valueProperty.setBindingType(BindingType.ENGINE);
 		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 		
-		// Define a single input -- but allow multiple connections
+		// Define a single input 
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
 		input.setIsMultiple(false);
 		anchors.add(input);

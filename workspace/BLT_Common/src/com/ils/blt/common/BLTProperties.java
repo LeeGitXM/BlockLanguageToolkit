@@ -22,6 +22,7 @@ public interface BLTProperties   {
 	public final static String APPLICATION_RESOURCE_TYPE   = "blt.application";
 	public final static String DIAGRAM_RESOURCE_TYPE       = "blt.diagram";
 	public final static String FAMILY_RESOURCE_TYPE        = "blt.family";
+//	public final static String FAMILY_FOLDER_TYPE          = "blt.familyFolder";
 	public final static String FOLDER_RESOURCE_TYPE        = "__folder";
 	
 	public final static String DIAGRAM_SCRIPT_PACKAGE      = "system.ils.blt.diagram";
@@ -71,7 +72,8 @@ public interface BLTProperties   {
 	public static final String BLOCK_ATTRIBUTE_VALUE      = "value";
 	
 	// Class names for some specific blocks
-	public static final String CLASS_NAME_INPUT      = "com.ils.Input";
+	public static final String CLASS_NAME_INPUT      = "com.ils.block.Input";
+	public static final String CLASS_NAME_OUTPUT     = "com.ils.block.Output";
 	public static final String CLASS_NAME_SINK       = "com.ils.SinkConnection";
 	public static final String CLASS_NAME_SOURCE     = "com.ils.SourceConnection";
 	

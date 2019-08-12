@@ -51,7 +51,7 @@ public class SerializableBlock {
 		this.anchors = new SerializableAnchor[0];
 	}
 	public SerializableAnchor[] getAnchors() { 
-		System.out.println("EREIAM jh - serializable get anchors");
+//		System.out.println("EREIAM jh - serializable get anchors");
 		return anchors; 
 		}
 	public GeneralPurposeDataContainer getAuxiliaryData() {return auxiliaryData;}

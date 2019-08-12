@@ -17,6 +17,8 @@ import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Path2D;
@@ -43,6 +45,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JRootPane;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -110,13 +113,13 @@ import com.inductiveautomation.ignition.designer.model.ResourceWorkspace;
 import com.inductiveautomation.ignition.designer.model.ResourceWorkspaceFrame;
 import com.inductiveautomation.ignition.designer.model.menu.JMenuMerge;
 import com.inductiveautomation.ignition.designer.model.menu.MenuBarMerge;
-import com.inductiveautomation.ignition.designer.model.menu.WellKnownMenuConstants;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
 import com.inductiveautomation.ignition.designer.navtree.model.ProjectBrowserRoot;
 import com.jidesoft.action.CommandBar;
 import com.jidesoft.action.DockableBarManager;
 import com.jidesoft.docking.DockContext;
 import com.jidesoft.docking.DockingManager;
+import com.jidesoft.swing.JideButton;
 
 /**
  * A Diagram workspace is a container that occupies the DockManager workspace
@@ -143,6 +146,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	protected SaveAction saveAction = null;  // Save properties of a block
 	private LoggerEx logger = LogUtil.getLogger(getClass().getPackage().getName());
 	private PopupListener rightClickHandler;
+//	private KeyListener keyHandler;
 	private JPopupMenu zoomPopup;
 	private JComboBox<String> zoomCombo;
 
@@ -158,6 +162,33 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		this.zoomPopup = createZoomPopup();
 		this.rightClickHandler = new PopupListener();
 		this.addMouseListener(rightClickHandler);
+//		this.keyHandler = new KeystrokeListener();
+//		this.addKeyListener(keyHandler);
+
+		// none of this keystroke stuff works
+	    KeyStroke ltA = KeyStroke.getKeyStroke("a");
+	    Action lt_A_Action = new AbstractAction(){
+	      public void actionPerformed(ActionEvent e){
+	    	  logger.errorf("DiagramWorkspace keyReleased A");
+	    	  selectAllBlocks();
+	      }
+	    };
+//	    this.getInputMap().put(ltA, "LT_A");
+	    this.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(ltA, "LT_A"); 
+	    this.getActionMap().put("LT_A", lt_A_Action);
+
+
+	    
+	    KeyStroke altA = KeyStroke.getKeyStroke(KeyEvent.VK_A,java.awt.event.InputEvent.ALT_DOWN_MASK,false);
+	    Action alt_A_Action = new AbstractAction(){
+	      public void actionPerformed(ActionEvent e){
+	    	  selectAllBlocks();
+	      }
+	    };
+	    this.getInputMap().put(altA, "ALT_A");
+//	    this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(altA, "ALT_A");
+	    this.getActionMap().put("ALT_A", alt_A_Action);
+
 		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
 		initialize();
 		setBackground(Color.red);
@@ -196,7 +227,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	public EditActionHandler getEditActionHandler() {
 		return editActionHandler;
 	}
-	
+
 	@Override
 	public Collection<ResourceWorkspaceFrame> getFrames() {
 		return frames;
@@ -229,8 +260,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				// NOTE: There is always a corresponding block in the gateway. One is created when we drop block from the palette.
 				saveAction.setEnabled(pbv.isDirty());
 				menu.add(saveAction);
-				// NOTE: ctypeEditable gets turned off once a block has been serialized.
-				if( selection instanceof BlockComponent && pbv.isCtypeEditable() ) {
+				// NOTE: ctypeEditable gets turned off once a block has been serialized.  Exclude Input and Output blocks
+				if( selection instanceof BlockComponent && pbv.isCtypeEditable() && 
+						!pbv.getClassName().contains("block.Output") && !pbv.getClassName().contains("block.Input") ) {
 					
 					// Types are: ANY, DATA, TEXT, TRUTH-VALUE
 					// Assume the type from the terminus anchor
@@ -242,6 +274,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 							break;
 						}
 					}
+					
 					if( anch!=null ) {
 						ConnectionType ct = anch.getConnectionType();
 						logger.debugf("%s.getSelectionPopupMenu: Connection type is: %s",TAG,ct.name());
@@ -263,7 +296,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						menu.add(changeTypeMenu);
 					}
 				}
-				if( pbv.getClassName().contains("SinkConnection")) {
+				if( pbv.getClassName().contains("SinkConnection") || pbv.getClassName().contains("block.Output")) {
 					logger.infof("%s.getSelectionPopupMenu: SINK",TAG);
 					JMenu linkSinkMenu = new JMenu(BundleUtil.get().getString(PREFIX+".FollowConnection.Name"));
 					linkSinkMenu.setToolTipText(BundleUtil.get().getString(PREFIX+".FollowConnection.Desc"));
@@ -277,7 +310,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					}
 					menu.add(linkSinkMenu);
 				}
-				else if( pbv.getClassName().contains("SourceConnection") )  {
+				else if( pbv.getClassName().contains("SourceConnection") || pbv.getClassName().contains("block.Input"))  {
 					logger.infof("%s.getSelectionPopupMenu: SOURCE",TAG);
 					JMenu linkSourceMenu = new JMenu(BundleUtil.get().getString(PREFIX+".FollowConnection.Name"));
 					linkSourceMenu.setToolTipText(BundleUtil.get().getString(PREFIX+".FollowConnection.Desc"));
@@ -338,6 +371,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				menu.add(context.getCopyAction());
 				menu.add(context.getPasteAction());
 				menu.add(context.getDeleteAction());
+				menu.add(new SelectAllBlocksAction(this,getActiveDiagram(),pbv));
 				if  (selections.size() > 1) {
 					AlignLeftAction al = new AlignLeftAction(this,getActiveDiagram(),pbv, selections);
 					menu.add(al);
@@ -394,31 +428,37 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
     		if (!menuExists(context.getFrame(),ALIGN_MENU_TEXT)) {
 
     			JMenuItem la = new JMenuItem(new AbstractAction("Left Align") {
+    				private static final long serialVersionUID = 1L;
 		    		public void actionPerformed(ActionEvent e) {
 		    			alignLeft();
 		    		}
 	        	});
     			JMenuItem ra = new JMenuItem(new AbstractAction("Right Align") {
+    				private static final long serialVersionUID = 1L;
 		    		public void actionPerformed(ActionEvent e) {
 		    			alignRight();
 		    		}
 	        	});
     			JMenuItem ha = new JMenuItem(new AbstractAction("Horizontal Center Align") {
+    				private static final long serialVersionUID = 1L;
 		    		public void actionPerformed(ActionEvent e) {
 		    			alignWidthCenter();
 		    		}
 	        	});
     			JMenuItem ta = new JMenuItem(new AbstractAction("Top Align") {
+    				private static final long serialVersionUID = 1L;
 		    		public void actionPerformed(ActionEvent e) {
 		    			alignTop();
 		    		}
 	        	});
     			JMenuItem ba = new JMenuItem(new AbstractAction("Bottom Align") {
+    				private static final long serialVersionUID = 1L;
 		    		public void actionPerformed(ActionEvent e) {
 		    			alignBottom();
 		    		}
 	        	});
     			JMenuItem va = new JMenuItem(new AbstractAction("Vertical Center Align") {
+    				private static final long serialVersionUID = 1L;
 		    		public void actionPerformed(ActionEvent e) {
 		    			alignHeightCenter();
 		    		}
@@ -493,15 +533,15 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
 	
 
-	// List of toolbars to add
+	// List of toolbars to add - EREIAM JH - This is called when exiting the diagram workspace, but not seemingly when it is enetered.  weird
 	@Override
 	public List<CommandBar> getToolbars() {
 
-//		ArrayList<CommandBar> bars = new ArrayList<>();
-//		CommandBar bar = new CommandBar();
-//		bar.add(new JLabel("FART"));
-//		return bars;
-		return null;
+		ArrayList<CommandBar> bars = new ArrayList<>();
+		CommandBar bar = new CommandBar();
+		bar.add(new JideButton("FRT"));
+		return bars;
+//		return null;
 	}
 
 
@@ -749,6 +789,45 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			}
 		}
 		return results;
+	}
+	
+	private void selectAllBlocks() {
+
+		
+	    BlockDesignableContainer container = getSelectedContainer();
+	    Component[] blocks = container.getComponents();
+
+
+		
+		
+//		ProcessDiagramView diagram = this.getActiveDiagram();
+//
+//		for( Block block:diagram.getBlocks()) {
+//			ProcessBlockView pbv = (ProcessBlockView)block;
+
+		for (Component block:blocks) {
+			if (block instanceof BlockComponent) {
+				logger.errorf("Selected all blocks!  bf is selected :%s:",((BlockComponent) block).isSelected());
+			}
+		}
+		for( Component block:blocks) {
+			
+			if (block instanceof BlockComponent) {
+				logger.errorf("Select all blocks!  Ima slecting the stuff :%s:",block.getLocation());
+				((BlockComponent) block).setSelected(true);
+				
+				this.selectedItems.add((BlockComponent)block);
+			}
+		}
+
+
+		for (Component block:blocks) {
+			if (block instanceof BlockComponent) {
+				logger.errorf("Selected all blocks!  Is selected :%s:",((BlockComponent) block).isSelected());
+			}
+		}
+		SwingUtilities.invokeLater(new WorkspaceRepainter());
+		return;
 	}
 	
 	
@@ -1049,10 +1128,11 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				if( anchor.getDisplay().equalsIgnoreCase(BlockConstants.RECEIVER_PORT_NAME)) continue;
 				anchors.add(block.convertAnchorToSerializable((ProcessAnchorDescriptor)anchor));
 			}
-			handler.updateBlockAnchors(diagram.getId(),block.getId(),anchors);
+			handler.updateBlockAnchors(diagram.getId(),block.getId(),anchors); // update gateway. 
 			diagram.updateConnectionTypes(block,connectionType);
 			// Repaint the workspace
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
+			
 		}
 	}
 
@@ -1328,6 +1408,20 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 
 	/**
+	 * Select All blocks.
+	 */
+	private class SelectAllBlocksAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		public SelectAllBlocksAction(DiagramWorkspace wksp,ProcessDiagramView diag,ProcessBlockView blk)  {
+			super(PREFIX+".SelectAllBlocks",null);  // preferences
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			selectAllBlocks();
+		}
+	}
+	
+	/**
 	 * Left align selected blocks.
 	 */
 	private class AlignLeftAction extends BaseAction {
@@ -1374,14 +1468,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 */
 	private class AlignHeightCenterAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
-		private final ProcessBlockView block;
-		private final ProcessDiagramView diagram;
-		private final DiagramWorkspace workspace;
 		public AlignHeightCenterAction(DiagramWorkspace wksp,ProcessDiagramView diag,ProcessBlockView blk, List<JComponent> selections)  {
 			super(PREFIX+".AlignBlocksHeightCenter",null);  // preferences
-			this.workspace = wksp;
-			this.diagram = diag;
-			this.block = blk;
 		}
 
 		public void actionPerformed(ActionEvent e) {
@@ -1394,14 +1482,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 */
 	private class AlignTopAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
-		private final ProcessBlockView block;
-		private final ProcessDiagramView diagram;
-		private final DiagramWorkspace workspace;
 		public AlignTopAction(DiagramWorkspace wksp,ProcessDiagramView diag,ProcessBlockView blk, List<JComponent> selections)  {
 			super(PREFIX+".AlignBlocksTop",null);  // preferences
-			this.workspace = wksp;
-			this.diagram = diag;
-			this.block = blk;
 		}
 
 		public void actionPerformed(ActionEvent e) {
@@ -1414,14 +1496,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	 */
 	private class AlignBottomAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
-		private final ProcessBlockView block;
-		private final ProcessDiagramView diagram;
-		private final DiagramWorkspace workspace;
 		public AlignBottomAction(DiagramWorkspace wksp,ProcessDiagramView diag,ProcessBlockView blk, List<JComponent> selections)  {
 			super(PREFIX+".AlignBlocksBottom",null);  // preferences
-			this.workspace = wksp;
-			this.diagram = diag;
-			this.block = blk;
 		}
 
 		public void actionPerformed(ActionEvent e) {
@@ -1723,4 +1799,29 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
             }
         }
     }
+    
+    private class KeystrokeListener implements KeyListener {
+
+        @Override
+        public void keyTyped(KeyEvent e) {
+			logger.errorf("DiagramWorkspace keyTyped :%s: Modifiers :%s:",e.getKeyChar(), e.getModifiers());
+			System.out.println("EREIAM J = 1");
+        }
+
+        @Override
+        public void keyPressed(KeyEvent e) {
+			System.out.println("EREIAM J = 2");
+			logger.errorf("DiagramWorkspace keyPressed :%s: Modifiers :%s:",e.getKeyChar(), e.getModifiers());
+            if ((e.getKeyCode() == KeyEvent.VK_A) && ((e.getModifiers() & KeyEvent.CTRL_MASK) != 0)) {
+                selectAllBlocks();
+            }
+        }
+
+        @Override
+        public void keyReleased(KeyEvent e) {
+			System.out.println("EREIAM J = 3");
+			logger.errorf("DiagramWorkspace keyReleased :%s: Modifiers :%s:",e.getKeyChar(), e.getModifiers());
+        }
+    }
+    
 }

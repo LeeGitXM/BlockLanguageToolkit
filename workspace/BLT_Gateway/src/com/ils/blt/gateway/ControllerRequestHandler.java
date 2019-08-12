@@ -891,7 +891,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 	
 		String tagPath = null;
-		if( source!=null && source.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SOURCE) ) {
+		if( source!=null && (source.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SOURCE) ||
+				source.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_INPUT))) {
 			BlockProperty prop = source.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 			if( prop!=null ) tagPath = fcns.providerlessPath(prop.getBinding());
 		}
@@ -902,7 +903,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				UUID diaguuid = makeUUID(desc.getId());
 				diagram = controller.getDiagram(diaguuid);
 				for(ProcessBlock sink:diagram.getProcessBlocks()) {
-					if( sink.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SINK) ) {
+					if( sink.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SINK) ||
+							sink.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_OUTPUT) ) {
 						BlockProperty prop = sink.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 						if( prop!=null && tagPath.equalsIgnoreCase(fcns.providerlessPath(prop.getBinding()))  ) {
 							results.add(sink.toDescriptor());
@@ -912,7 +914,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 		else {
-			log.warnf("%s.listSinksForSource: Block %s not found, not a source or not bound",TAG,blockName);
+			log.warnf("%s.listSinksForSource: Block %s not found, not a source/input or not bound",TAG,blockName);
 		}
 		return results;
 	}
@@ -934,7 +936,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		}
 
 		String tagPath = null;
-		if( sink!=null && sink.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SINK)) {
+		if( sink!=null && (sink.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SINK) ||
+				sink.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_OUTPUT))) {
 			BlockProperty prop = sink.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 			if( prop!=null ) tagPath = fcns.providerlessPath(prop.getBinding());
 		}
@@ -945,7 +948,8 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 				UUID diaguuid = makeUUID(descriptor.getId());
 				diagram = controller.getDiagram(diaguuid);
 				for(ProcessBlock source:diagram.getProcessBlocks()) {
-					if( source.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SOURCE) ) {
+					if( source.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_SOURCE) ||
+							source.getClassName().equalsIgnoreCase(BLTProperties.CLASS_NAME_INPUT) ) {
 						BlockProperty prop = source.getProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH);
 						if( prop!=null && tagPath.equalsIgnoreCase(fcns.providerlessPath(prop.getBinding()))  ) {
 							results.add(source.toDescriptor());
@@ -955,7 +959,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 			}
 		}
 		else {
-			log.warnf("%s.listSourcesForSink: Block %s not found, not a sink or not bound",TAG,blockName);
+			log.warnf("%s.listSourcesForSink: Block %s not found, not a sink/output or not bound",TAG,blockName);
 		}
 		return results;
 	}

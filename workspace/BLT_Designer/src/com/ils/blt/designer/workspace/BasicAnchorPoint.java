@@ -258,4 +258,12 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 	}
 	@Override
 	public void watermarkChange(String watermark) {}
+
+	public boolean allowConnectionType(ConnectionType connectionType) {
+		boolean ret = false;
+		if ((getConnectionType() == ConnectionType.ANY) || (getConnectionType() == connectionType)) {
+			ret = true;
+		}
+		return ret;
+	}
 }

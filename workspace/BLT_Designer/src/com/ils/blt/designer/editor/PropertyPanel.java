@@ -45,6 +45,7 @@ import com.inductiveautomation.ignition.common.sqltags.model.TagPath;
 import com.inductiveautomation.ignition.common.sqltags.model.TagProp;
 import com.inductiveautomation.ignition.common.sqltags.model.event.TagChangeEvent;
 import com.inductiveautomation.ignition.common.sqltags.model.event.TagChangeListener;
+import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.sqltags.parser.TagPathParser;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -212,17 +213,21 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	}
 	// Subscribe to a tag. This will fail if the tag path is unset or illegal.
 	// The provider has been set in the panel constructor.
-	private void subscribeToTagPath(String path) {
-		if( path==null || path.length()==0 ) return;  // Fail silently for path not set
+	private DataType subscribeToTagPath(String path) {
+		DataType type = null;
+		if( path==null || path.length()==0 ) return null;  // Fail silently for path not set
 		log.tracef("%s.subscribeToTagPath: - %s (%s)",TAG,property.getName(),path);
 		ClientTagManager tmgr = context.getTagManager();
 		try {
 			TagPath tp = TagPathParser.parse(path);
+			Tag tag = tmgr.getTag(tp);
+			type = tag.getDataType();
 			tmgr.subscribe(tp, this);
 		}
 		catch(IOException ioe) {
 			log.errorf("%s.subscribeToTagPath tag path parse error for %s (%s)",TAG,path,ioe.getMessage());
 		}
+		return type;
 	}
 	
 	// Unsubscribe to a tag
@@ -267,11 +272,13 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 			
 			String tagPath = fncs.coerceToString(property.getBinding());
 			bindingDisplayField.setText(tagPath);
-			subscribeToTagPath(tagPath);
+			
+			DataType type = subscribeToTagPath(tagPath);
 			editButton.setVisible(true);
 			bindingDisplayField.setVisible(true);
 			valueDisplayField.setEnabled(false);
 			valueDisplayField.setEditable(false);
+ 			block.notifyOfPropertyChange(property, type);
 		}
 		else {
 			bindingDisplayField.setVisible(false);
