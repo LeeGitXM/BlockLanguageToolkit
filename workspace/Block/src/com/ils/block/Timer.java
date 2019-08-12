@@ -235,7 +235,7 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 		}
 		else if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_INTERVAL)) {
 			try {
-				interval = Double.parseDouble(val);
+				interval = Double.parseDouble(val) * 60.0;
 				if( dog.isActive() && interval>0.0 && state.equals(trigger) ) {
 					// Update duration for "time served". 
 					double elapsed = (timer.getTestTime() - lastValue.getTimestamp().getTime())/1000;

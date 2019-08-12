@@ -88,7 +88,7 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 		String propertyName = event.getPropertyName();
 		if( propertyName.equals(BLOCK_PROPERTY_DELAY) ) {
 			try {
-				delayInterval = Double.parseDouble(event.getNewValue().toString());
+				delayInterval = Double.parseDouble(event.getNewValue().toString()) * 60.0;
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert interval value to a double (%s)",getName(),nfe.getLocalizedMessage());

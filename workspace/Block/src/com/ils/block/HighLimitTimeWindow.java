@@ -133,7 +133,7 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 		if( qual.isGood() && qv.getValue()!=null ) {
 			currentValue = Double.NaN;
 			try {
-				currentValue = Double.parseDouble(qv.getValue().toString());
+				currentValue = Double.parseDouble(qv.getValue().toString()) * 60.0;
 				log.debugf("%s.acceptValue: %s",getName(),qv.getValue().toString());
 				if(!dog.isActive() && scanInterval>0.0 ) {
 					dog.setSecondsDelay(scanInterval);

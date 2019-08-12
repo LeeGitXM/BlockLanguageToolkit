@@ -190,7 +190,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		}
 		else if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW)) {
 			try {
-				timeWindow = Double.parseDouble(event.getNewValue().toString());
+				timeWindow = Double.parseDouble(event.getNewValue().toString()) * 60.0;
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.propertyChange: Unable to convert scan interval to a double (%s)",getName(),nfe.getLocalizedMessage());
