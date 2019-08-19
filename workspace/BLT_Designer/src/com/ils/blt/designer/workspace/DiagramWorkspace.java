@@ -12,6 +12,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
@@ -59,7 +60,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
+import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
+import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
@@ -72,9 +75,12 @@ import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.blt.designer.config.BlockExplanationViewer;
 import com.ils.blt.designer.config.BlockInternalsViewer;
 import com.ils.blt.designer.config.ForceValueSettingsDialog;
+import com.ils.blt.designer.editor.BlockEditConstants;
 import com.ils.blt.designer.editor.PropertyEditorFrame;
 import com.ils.blt.designer.navtree.DiagramTreeNode;
 import com.inductiveautomation.ignition.client.designable.DesignableContainer;
+import com.inductiveautomation.ignition.client.sqltags.ClientTagManager;
+import com.inductiveautomation.ignition.client.sqltags.tree.TagTreeNode;
 import com.inductiveautomation.ignition.client.util.LocalObjectTransferable;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
@@ -85,6 +91,8 @@ import com.inductiveautomation.ignition.common.execution.impl.BasicExecutionEngi
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.project.ProjectScope;
+import com.inductiveautomation.ignition.common.sqltags.model.Tag;
+import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.common.xmlserialization.SerializationException;
@@ -115,6 +123,7 @@ import com.inductiveautomation.ignition.designer.model.menu.JMenuMerge;
 import com.inductiveautomation.ignition.designer.model.menu.MenuBarMerge;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
 import com.inductiveautomation.ignition.designer.navtree.model.ProjectBrowserRoot;
+import com.inductiveautomation.ignition.designer.sqltags.tree.dnd.NodeListTransferable;
 import com.jidesoft.action.CommandBar;
 import com.jidesoft.action.DockableBarManager;
 import com.jidesoft.docking.DockContext;
@@ -143,7 +152,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	private final ExecutionManager executionEngine;
 	private final NodeStatusManager statusManager;
 	private Collection<ResourceWorkspaceFrame> frames;
-	protected SaveAction saveAction = null;  // Save properties of a block
+//	protected SaveAction saveAction = null;  // Save properties of a block
 	private LoggerEx logger = LogUtil.getLogger(getClass().getPackage().getName());
 	private PopupListener rightClickHandler;
 //	private KeyListener keyHandler;
@@ -220,7 +229,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		StatusBar bar = context.getStatusBar();
 		zoomCombo = createZoomDropDown();
 		bar.addDisplay(zoomCombo);
-		zoomCombo.hide();
+		zoomCombo.setVisible(false);
 	}
 
 	@Override
@@ -255,11 +264,11 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				JPopupMenu menu = new JPopupMenu();
 				
 				ProcessBlockView pbv = (ProcessBlockView)((BlockComponent)selection).getBlock();
-				saveAction = new SaveAction(pbv); 
-				// As long as the block is dirty, we can save it. 
-				// NOTE: There is always a corresponding block in the gateway. One is created when we drop block from the palette.
-				saveAction.setEnabled(pbv.isDirty());
-				menu.add(saveAction);
+//				saveAction = new SaveAction(pbv); 
+//				// As long as the block is dirty, we can save it. 
+//				// NOTE: There is always a corresponding block in the gateway. One is created when we drop block from the palette.
+//				saveAction.setEnabled(pbv.isDirty());
+//				menu.add(saveAction);
 				// NOTE: ctypeEditable gets turned off once a block has been serialized.  Exclude Input and Output blocks
 				if( selection instanceof BlockComponent && pbv.isCtypeEditable() && 
 						!pbv.getClassName().contains("block.Output") && !pbv.getClassName().contains("block.Input") ) {
@@ -556,10 +565,25 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 	@Override
 	public JComponent findDropTarget(List<JComponent> itemsUnderDrop,DropTargetDragEvent event) {
-		return this;
+		JComponent ret = this;
+		for (JComponent thingy:itemsUnderDrop) {
+			if (thingy instanceof BlockComponent) {
+				ret = thingy;
+				break;
+			}
+		}
+		return ret;
 	}
+	
+	// EREIAM JH - TODO finish
 	@Override
 	public boolean handleDrop(Object droppedOn,DropTargetDropEvent event) {
+		if (droppedOn instanceof BlockComponent) {
+			blockDropHandler(droppedOn, event);
+		}
+		if (droppedOn instanceof DiagramWorkspace) {
+			diagramDropHandler(droppedOn, event);
+		}
 		if (event.isDataFlavorSupported(BlockDataFlavor)) {
 			try {
 				if( event.getTransferable().getTransferData(BlockDataFlavor) instanceof ProcessBlockView) {
@@ -594,9 +618,76 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		return false;
 	}
 
+
+	// check to see if this is a tag dropped on the workspace.  Make it an Input block if it's on the left, Output on the right half
+	private void diagramDropHandler(Object droppedOn, DropTargetDropEvent event) {
+		DataFlavor flava = NodeListTransferable.FLAVOR_NODELIST;
+		if (event.isDataFlavorSupported(flava)) {
+
+			get location
+			make an Input block on the left, output on the right
+				
+		}
+		
+	}
+
+
+	// check to see if this is a tag dropped on a block.  Change the tag binding if applicable
+	public void blockDropHandler(Object droppedOn, DropTargetDropEvent event) {
+		try {
+			DataFlavor flava = NodeListTransferable.FLAVOR_NODELIST;
+			if (event.isDataFlavorSupported(flava)) {
+				Object node = event.getTransferable().getTransferData(flava);
+				if (node instanceof ArrayList && ((ArrayList) node).size() == 1) {
+					ArrayList<?> tagNodeArr = (ArrayList<?>)node;
+					if (tagNodeArr.get(0) instanceof TagTreeNode) {  // That's the thing we want!
+						BlockDesignableContainer container = getSelectedContainer();
+						ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
+						TagTreeNode tnode = (TagTreeNode) tagNodeArr.get(0);
+						logger.infof("%s.handleDrop: tag data: %s",TAG,tnode.getName());
+						Block block = ((BlockComponent)droppedOn).getBlock();
+						if (block instanceof ProcessBlockView) {
+							ProcessBlockView pblock = (ProcessBlockView)block;
+		
+							DataType type = null;
+							ClientTagManager tmgr = context.getTagManager();
+							Tag tag = tmgr.getTag(tnode.getTagPath());
+							type = tag.getDataType();
+							Collection<BlockProperty> props = pblock.getProperties();
+							for (BlockProperty property:props) {
+								if( property.getBindingType().equals(BindingType.TAG_MONITOR) ||
+									property.getBindingType().equals(BindingType.TAG_READ) ||
+									property.getBindingType().equals(BindingType.TAG_READWRITE) ||
+									property.getBindingType().equals(BindingType.TAG_WRITE)	) {
+									if (diagram.isValidBindingChange(pblock, type)) {
+										property.setBinding(tnode.getTagPath().toStringFull());
+										logger.infof("%s.handleDrop: EREIAM JH - tag path: %s",TAG,tnode.getTagPath().toStringFull());
+										diagram.setDirty(true);
+										diagram.fireStateChanged();
+										setSelectedItems((JComponent)null);  // this is a bit of a hack to get the property panel to refresh
+										setSelectedItems((JComponent)droppedOn);
+										
+										pblock.notifyOfPropertyChange(property, type);
+									} else {
+										String msg = String.format("Tag change failed.  Tag data invalid for connected block");
+								        JOptionPane.showMessageDialog(null, msg, "Warning", JOptionPane.INFORMATION_MESSAGE);
+									}
+								}
+							}
+							
+						}
+						
+					}
+				}
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();// ignore
+		}
+	}
+
 	@Override
 	public void onActivation() {
-		zoomCombo.show();
+		zoomCombo.setVisible(true);
 		logger.infof("%s: onActivation",TAG);
 		
 	}
@@ -604,7 +695,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
 	@Override
 	public void onDeactivation() {
-		zoomCombo.hide();
+		zoomCombo.setVisible(false);
 		logger.infof("%s: onDeactivation",TAG);
 	}
 

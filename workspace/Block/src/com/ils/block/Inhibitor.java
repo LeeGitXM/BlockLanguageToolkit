@@ -39,7 +39,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 @ExecutableBlock
 public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	private BlockProperty expirationProperty = null;
-	private double interval = 0.0;   // ~secs
+	private double interval = 0.0;   // ~minutes
 	private boolean inhibiting = false;
 	private final Watchdog dog;
 	
@@ -210,7 +210,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 		String propertyName = event.getPropertyName();
 		if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_INHIBIT_INTERVAL) ) {
 			try {
-				interval = Double.parseDouble(event.getNewValue().toString()) * 60.0;
+				interval = Double.parseDouble(event.getNewValue().toString());
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.propertyChange Unable to convert interval value to an double (%s)",getName(),nfe.getLocalizedMessage());

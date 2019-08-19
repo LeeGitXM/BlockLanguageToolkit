@@ -148,7 +148,7 @@ public class ExponentialFilter extends AbstractProcessBlock implements ProcessBl
 		String propertyName = event.getPropertyName();
 		if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW) ) {
 			try {
-				window = Double.parseDouble(event.getNewValue().toString()) * 60.0;  // adapt for minutes
+				window = Double.parseDouble(event.getNewValue().toString());  // adapt for minutes
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert filter value to a double (%s)",TAG,nfe.getLocalizedMessage());

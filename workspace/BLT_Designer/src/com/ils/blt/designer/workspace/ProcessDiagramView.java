@@ -30,9 +30,11 @@ import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.BasicQuality;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.Quality;
+import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.util.AbstractChangeable;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.inductiveautomation.ignition.designer.DesignerContextImpl;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorPoint;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
@@ -40,6 +42,7 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.BlockDi
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Connection;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.LookupConnection;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
+import com.sun.management.VMOption.Origin;
 
 /**
  * This class represents a diagram in the designer.
@@ -210,7 +213,7 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 				 // only 1 input allowed, check to make sure it isn't already used and don't block if initializing
 				if (!eapp.allowConnectionType(originType) && !suppressStateChangeNotification) { 
 					disallow = true;
-					String msg = String.format("Rejected connection.  Cannot connect %s to %s",TAG,originType.name(),eapp.getConnectionType().name());
+					String msg = String.format("Rejected connection.  Cannot connect %s to %s",originType.name(),eapp.getConnectionType().name());
 			        JOptionPane.showMessageDialog(null, msg, "Warning", JOptionPane.INFORMATION_MESSAGE);
 					msg = String.format("%s.addConnection - rejected connection.  Cannot connect %s to %s",TAG,originType.name(),eapp.getConnectionType().name());
 					log.warnf(msg);
@@ -593,6 +596,42 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 	@Override
 	public void watermarkChange(String mark) {
 		setWatermark(mark);
+	}
+
+	public boolean isValidBindingChange(ProcessBlockView pblock, DataType type) {
+		boolean ret = true;
+
+		Collection<ProcessAnchorDescriptor> bconns = pblock.getAnchors();
+//		ProcessAnchorDescriptor origin = null;
+//		ProcessAnchorDescriptor terminus = null;
+//		for (ProcessAnchorDescriptor bconn:bconns) {
+//			if (bconn.getType() == AnchorType.Origin) {
+//				origin = bconn;
+//			}
+//			if (bconn.getType() == AnchorType.Terminus) {
+//				terminus = bconn;
+//			}
+//		}
+		
+		ConnectionType conType = pblock.determineDataTypeFromTagType(type);
+
+		Collection<Connection> connections = getConnections();
+		for (Connection connection:connections) {
+			BasicAnchorPoint intended = null;
+			if (connection.getOrigin().getBlock() == pblock) {
+				intended = (BasicAnchorPoint)connection.getTerminus();
+			}
+			if (connection.getTerminus().getBlock() == pblock) {
+				intended = (BasicAnchorPoint)connection.getOrigin();
+			}
+			
+			if (!intended.allowConnectionType(conType)) {
+				ret = false;
+			}
+			
+		}
+
+		return ret;  // this could return an error message
 	}
 
 

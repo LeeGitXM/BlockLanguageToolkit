@@ -266,6 +266,10 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 				property.getBindingType().equals(BindingType.TAG_READ) ||
 				property.getBindingType().equals(BindingType.TAG_READWRITE) ||
 				property.getBindingType().equals(BindingType.TAG_WRITE)	) {
+			
+			DesignerContext cxt = context;
+			// TODO - EREIAM JH Needs ProcessDiagramView (which implements BlockDiagramModel) for connections
+			
 			// The display field has the old binding - use it to unsubscribe
 			String oldPath = bindingDisplayField.getText();
 			unsubscribeToTagPath(oldPath);

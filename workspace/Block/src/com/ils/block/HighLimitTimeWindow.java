@@ -268,7 +268,7 @@ public class HighLimitTimeWindow extends AbstractProcessBlock implements Process
 		}
 		else if( propertyName.equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW)) {
 			try {
-				timeWindow = Double.parseDouble(event.getNewValue().toString()) * 60.0;
+				timeWindow = Double.parseDouble(event.getNewValue().toString());
 				if( timeWindow<=0.0) timeWindow = scanInterval;
 			}
 			catch(NumberFormatException nfe) {

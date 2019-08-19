@@ -22,14 +22,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.UUID;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
@@ -38,9 +36,6 @@ import javax.swing.tree.TreePath;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
 import com.ils.blt.client.ClientScriptExtensionManager;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
@@ -65,8 +60,8 @@ import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.blt.designer.ThreadCounter;
 import com.ils.blt.designer.config.ApplicationConfigurationDialog;
 import com.ils.blt.designer.config.FamilyConfigurationDialog;
+import com.ils.blt.designer.config.ScriptExtensionsDialog;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
-import com.inductiveautomation.factorysql.common.config.serialization.elements.AbstractProjectElement;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
@@ -79,10 +74,7 @@ import com.inductiveautomation.ignition.common.project.ProjectChangeListener;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
-import com.inductiveautomation.ignition.common.xmlserialization.SerializationException;
 import com.inductiveautomation.ignition.designer.UndoManager;
-import com.inductiveautomation.ignition.designer.blockandconnector.BlockComponent;
-import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
@@ -492,7 +484,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				ApplicationCreateAction applicationCreateAction = new ApplicationCreateAction(this);
 				ApplicationImportAction applicationImportAction = new ApplicationImportAction(context.getFrame(),this);
 // todo - removed for now.  hard code values represented here later?  EREIAM JH
-//				ToolkitConfigureAction configureAction = new ToolkitConfigureAction(menu.getRootPane());
+				ToolkitConfigureAction configureAction = new ToolkitConfigureAction(menu.getRootPane());
 				ClearAction clearAction = new ClearAction();
 				DebugAction debugAction = new DebugAction();
 				RefreshAction refreshAction = new RefreshAction(this);
@@ -506,7 +498,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				}
 				menu.add(applicationCreateAction);
 				menu.add(applicationImportAction);
-//				menu.add(configureAction);
+				menu.add(configureAction);
 				menu.add(folderCreateAction);
 				menu.add(refreshAction);
 				menu.add(saveAllAction);
@@ -2182,7 +2174,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	}
 	// Launch a dialog to configure toolkit-wide attributes.
 // todo - removed for now EREIAM JH
-/*
+
 	private class ToolkitConfigureAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
 		private final Component anchor;
@@ -2212,7 +2204,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		}
 	}
 
-*/
+
 
 	// Wait until the background threads are quiescent
 	private class ThreadCompletionDetector implements Runnable {

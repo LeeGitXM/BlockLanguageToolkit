@@ -508,29 +508,38 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	public void notifyOfPropertyChange(BlockProperty property, DataType type) {
 		
 		BindingType bob = property.getBindingType();
-		
 		if (type != null && (bob == BindingType.TAG_READ || bob == BindingType.TAG_READWRITE || bob == BindingType.TAG_MONITOR)) {
-			ConnectionType conType = ConnectionType.ANY;
-			if (type == DataType.Int1 || 
-				type == DataType.Int2 ||
-				type == DataType.Int4 ||
-				type == DataType.Int8 ||
-				type == DataType.Float4 ||
-				type == DataType.Float8 ) {
-				conType = ConnectionType.DATA; 
-			} else  if (type == DataType.String || 
-				type == DataType.Text ) {
-				conType = ConnectionType.TEXT; 
-			} else  if (type == DataType.Boolean) { 
-				conType = ConnectionType.TRUTHVALUE; 
-			}
-			ctypeEditable = true;
-			changeConnectorType(conType);
-			ctypeEditable = false;  // don't allow changes to anchor data type once bound to tag
+			ConnectionType conType= determineDataTypeFromTagType(type);
+//			ProcessAnchorDescriptor anchor = anchors.values().iterator().next();
+//			if (isConnectionValid(startingAnchor, endAnchor)) {
+				ctypeEditable = true;
+				changeConnectorType(conType);
+				ctypeEditable = false;  // don't allow changes to anchor data type once bound to tag
+//			}  else {
+//				messageDialog();
+//			}
 			
 			//and now we should check if there was a connection and it's now bad.
 		}
 		
+	}
+
+	public ConnectionType determineDataTypeFromTagType(DataType type) {
+		ConnectionType conType = ConnectionType.ANY;
+		if (type == DataType.Int1 || 
+			type == DataType.Int2 ||
+			type == DataType.Int4 ||
+			type == DataType.Int8 ||
+			type == DataType.Float4 ||
+			type == DataType.Float8 ) {
+			conType = ConnectionType.DATA; 
+		} else  if (type == DataType.String || 
+			type == DataType.Text ) {
+			conType = ConnectionType.TEXT; 
+		} else  if (type == DataType.Boolean) { 
+			conType = ConnectionType.TRUTHVALUE; 
+		}
+		return conType;
 	}
 
 

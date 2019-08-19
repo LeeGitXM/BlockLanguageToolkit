@@ -193,7 +193,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		}
 		else if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW)) {
 			try {
-				timeWindow = Double.parseDouble(event.getNewValue().toString()) * 60.0;  //it's in minutes, so convert
+				timeWindow = Double.parseDouble(event.getNewValue().toString());
 				log.errorf("%s.propertyChange: EREIAM JH - time Received %s ",getName(),""+timeWindow);
 				// Make sure this isn't called if block properties are changed
 			}
