@@ -165,7 +165,7 @@ public class TruthValuePulse extends AbstractProcessBlock implements ProcessBloc
 		log.debugf("%s.propertyChange: Received %s = %s",TAG,propertyName,event.getNewValue().toString());
 		if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_INTERVAL)) {
 			try {
-				interval = Double.parseDouble(event.getNewValue().toString()) * 60.0;
+				interval = Double.parseDouble(event.getNewValue().toString());
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert interval to a double (%s)",getName(),nfe.getLocalizedMessage());

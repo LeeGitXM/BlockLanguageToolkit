@@ -215,7 +215,7 @@ public class LowLimitTimeWindow extends AbstractProcessBlock implements ProcessB
 		log.debugf("%s.propertyChange: %s = %s",getName(),propertyName,event.getNewValue().toString());
 		if(propertyName.equals(BlockConstants.BLOCK_PROPERTY_LIMIT)) {
 			try {
-				limit = Double.parseDouble(event.getNewValue().toString()) * 60.0;
+				limit = Double.parseDouble(event.getNewValue().toString());
 			}
 			catch(NumberFormatException nfe) {
 				log.warnf("%s: propertyChange Unable to convert limit to a double (%s)",getName(),nfe.getLocalizedMessage());

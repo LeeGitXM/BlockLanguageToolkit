@@ -116,7 +116,7 @@ public class DataPump extends AbstractProcessBlock implements ProcessBlock {
 		}
 		else if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_INTERVAL)) {
 			try {
-				interval = Double.parseDouble(event.getNewValue().toString()) * 60.0;
+				interval = Double.parseDouble(event.getNewValue().toString());
 				// Start the pump
 				if( interval > 0.0 ) {
 					dog.setSecondsDelay(interval);
