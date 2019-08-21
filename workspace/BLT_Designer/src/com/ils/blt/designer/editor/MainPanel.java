@@ -22,6 +22,7 @@ import net.miginfocom.swing.MigLayout;
 import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.PropertyType;
+import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
@@ -39,7 +40,7 @@ public class MainPanel extends BasicEditPanel {
 	private final Map<String,PropertyPanel> panelMap;
 	private final CorePropertyPanel corePanel;
 
-	public MainPanel(DesignerContext context,BlockPropertyEditor editor,ProcessBlockView blk) {
+	public MainPanel(DesignerContext context,BlockPropertyEditor editor,ProcessBlockView blk, DiagramWorkspace wrkspc) {
 		super(editor);
 		this.block = blk;
 		this.panelMap = new HashMap<String,PropertyPanel>();
@@ -55,7 +56,7 @@ public class MainPanel extends BasicEditPanel {
 			// We have gotten null from serialization problems ...
 			if( property==null || property.getName()==null) continue;
 			log.debugf("%s.init: - creating panel for property %s",TAG,property.getName());
-			propertyPanel = new PropertyPanel(context,this,blk,property);
+			propertyPanel = new PropertyPanel(context,this,blk,property,wrkspc);
 			add(propertyPanel,"skip,growx,push,gaptop 0,gapbottom 0");
 			panelMap.put(property.getName(), propertyPanel);
 

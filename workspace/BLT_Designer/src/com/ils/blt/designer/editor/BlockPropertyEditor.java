@@ -57,7 +57,7 @@ public class BlockPropertyEditor extends SlidingPane   {
 		this.workspace = wksp;
 		this.diagram = wksp.getActiveDiagram();
 		this.block = view;
-        this.mainPanel = new MainPanel(context,this,block);
+        this.mainPanel = new MainPanel(context,this,block, wksp);
         this.configPanel = new ConfigurationPanel(this);
         this.listEditPanel = new ListEditPanel(this);
         this.nameEditPanel = new NameEditPanel(this);

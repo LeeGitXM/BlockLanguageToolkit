@@ -57,6 +57,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ils.block.Input;
+import com.ils.block.Output;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
@@ -75,7 +77,6 @@ import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.blt.designer.config.BlockExplanationViewer;
 import com.ils.blt.designer.config.BlockInternalsViewer;
 import com.ils.blt.designer.config.ForceValueSettingsDialog;
-import com.ils.blt.designer.editor.BlockEditConstants;
 import com.ils.blt.designer.editor.PropertyEditorFrame;
 import com.ils.blt.designer.navtree.DiagramTreeNode;
 import com.inductiveautomation.ignition.client.designable.DesignableContainer;
@@ -158,6 +159,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 //	private KeyListener keyHandler;
 	private JPopupMenu zoomPopup;
 	private JComboBox<String> zoomCombo;
+//	private ProcessBlockPalette tabbedPalette = null;
 
 	/**
 	 * Constructor:
@@ -623,11 +625,67 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	private void diagramDropHandler(Object droppedOn, DropTargetDropEvent event) {
 		DataFlavor flava = NodeListTransferable.FLAVOR_NODELIST;
 		if (event.isDataFlavorSupported(flava)) {
+			try {
+				Object node = event.getTransferable().getTransferData(flava);
+				if (node instanceof ArrayList && ((ArrayList) node).size() == 1) {
+					ArrayList<?> tagNodeArr = (ArrayList<?>)node;
+					if (tagNodeArr.get(0) instanceof TagTreeNode) {  // That's the thing we want!
+						BlockDesignableContainer container = getSelectedContainer();
+						ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
+						TagTreeNode tnode = (TagTreeNode) tagNodeArr.get(0);
+						int dropx = event.getLocation().x;
+						int thewidth = getActiveDiagram().getDiagramSize().width;
+						
+						Input input = new Input();
+						Output output = new Output();
+			
+							
+						if( getSelectedContainer()!=null ) {
+							ProcessBlockView block = null;
+							if (dropx > thewidth / 2) {
+								block = new ProcessBlockView(output.getBlockPrototype().getBlockDescriptor());
+							} else {
+								block = new ProcessBlockView(input.getBlockPrototype().getBlockDescriptor());
+							}
+							
+							DesignPanel panel = getSelectedDesignPanel();
+							BlockDesignableContainer bdc = (BlockDesignableContainer) panel.getDesignable();
+							Point dropPoint = SwingUtilities.convertPoint(
+									event.getDropTargetContext().getComponent(),
+									panel.unzoom(event.getLocation()), bdc);
+							this.setCurrentTool(getSelectionTool());   // So the next select on workspace does not result in another block
+							
+							if( isInBounds(dropPoint,bdc) ) {
+								block.setLocation(dropPoint);
+								this.getActiveDiagram().addBlock(block);
+								DataType type = null;
+								ClientTagManager tmgr = context.getTagManager();
+								Tag tag = tmgr.getTag(tnode.getTagPath());
+								type = tag.getDataType();
+								Collection<BlockProperty> props = block.getProperties();
+								for (BlockProperty property:props) {
+									if( "TagPath".equalsIgnoreCase(property.getName())) {
+										property.setBinding(tnode.getTagPath().toStringFull());}
+										block.notifyOfPropertyChange(property, type);
+								}
+								
+								logger.infof("%s.handleDrop: dropped %s",TAG,block.getClass().getName());
+							}
+							else {
+								logger.infof("%s.handleDrop: drop of %s out-of-bounds",TAG,block.getClass().getName());
+							}
+						}
 
-			get location
-			make an Input block on the left, output on the right
+					}
+				}
+			
 				
+		} catch (UnsupportedFlavorException e) {
+			//ignore
+		} catch (IOException e) {
+			// ignore
 		}
+	}
 		
 	}
 
@@ -655,10 +713,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 							type = tag.getDataType();
 							Collection<BlockProperty> props = pblock.getProperties();
 							for (BlockProperty property:props) {
-								if( property.getBindingType().equals(BindingType.TAG_MONITOR) ||
-									property.getBindingType().equals(BindingType.TAG_READ) ||
-									property.getBindingType().equals(BindingType.TAG_READWRITE) ||
-									property.getBindingType().equals(BindingType.TAG_WRITE)	) {
+								if("TagPath".equalsIgnoreCase(property.getName())) {  // only update the tagpath property
 									if (diagram.isValidBindingChange(pblock, type)) {
 										property.setBinding(tnode.getTagPath().toStringFull());
 										logger.infof("%s.handleDrop: EREIAM JH - tag path: %s",TAG,tnode.getTagPath().toStringFull());

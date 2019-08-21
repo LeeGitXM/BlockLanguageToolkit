@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
@@ -37,7 +38,9 @@ import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.designer.NotificationHandler;
+import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
+import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.client.sqltags.ClientTagManager;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.sqltags.model.Tag;
@@ -85,13 +88,17 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	private final ProcessBlockView block;
 	private final BlockProperty property;
 	private TimeUnit currentTimeUnit;
+	private final DiagramWorkspace workspace;
+
 	
-	public PropertyPanel(DesignerContext ctx, MainPanel main,ProcessBlockView blk,BlockProperty prop) {
+	public PropertyPanel(DesignerContext ctx, MainPanel main,ProcessBlockView blk,BlockProperty prop, DiagramWorkspace workspace) {
 		log.debugf("%s.PropertyPanel: property %s (%s:%s) = %s",TAG,prop.getName(),prop.getType().toString(),prop.getBindingType().toString(),prop.getValue().toString());
 		this.context = ctx;
 		this.parent = main;
 		this.block = blk;
 		this.property = prop;
+		this.workspace = workspace;
+
 //		this.currentTimeUnit = TimeUnit.SECONDS;   // The "canonical" unit
 		this.currentTimeUnit = TimeUnit.MINUTES;   // Force all to be in minutes, to avoid confusing behavior in UI
 		property.addChangeListener(this);
@@ -269,22 +276,47 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 			
 			DesignerContext cxt = context;
 			// TODO - EREIAM JH Needs ProcessDiagramView (which implements BlockDiagramModel) for connections
-			
-			// The display field has the old binding - use it to unsubscribe
-			String oldPath = bindingDisplayField.getText();
-			unsubscribeToTagPath(oldPath);
-			
+
+			boolean allow = true;
+			String msg = "";
 			String tagPath = fncs.coerceToString(property.getBinding());
-			bindingDisplayField.setText(tagPath);
-			
-			DataType type = subscribeToTagPath(tagPath);
-			editButton.setVisible(true);
-			bindingDisplayField.setVisible(true);
-			valueDisplayField.setEnabled(false);
-			valueDisplayField.setEditable(false);
- 			block.notifyOfPropertyChange(property, type);
-		}
-		else {
+			// we should only do  this check if it affects the connection type
+			if ("tagPath".equalsIgnoreCase(property.getName())) {
+				ProcessDiagramView dview = workspace.getActiveDiagram();
+				ClientTagManager tmgr = context.getTagManager();
+				DataType typ = null;
+				try {
+					TagPath tp = TagPathParser.parse(tagPath);
+					Tag tag = tmgr.getTag(tp);
+					typ = tag.getDataType();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				allow = dview.isValidBindingChange(block, typ);
+				msg = "Invalid data type for tag binding";
+			}
+			if (allow) {
+				// The display field has the old binding - use it to unsubscribe
+				String oldPath = bindingDisplayField.getText();
+				unsubscribeToTagPath(oldPath);
+				
+				bindingDisplayField.setText(tagPath);
+				
+				DataType type = subscribeToTagPath(tagPath);
+				editButton.setVisible(true);
+				bindingDisplayField.setVisible(true);
+				valueDisplayField.setEnabled(false);
+				valueDisplayField.setEditable(false);
+				// we should only do  this check if it affects the connection type.  Maybe check if the change is to TagPath?
+				if ("tagPath".equalsIgnoreCase(property.getName())) {
+					block.notifyOfPropertyChange(property, type);
+				}
+			} else {
+		        JOptionPane.showMessageDialog(null, msg, "Warning", JOptionPane.INFORMATION_MESSAGE);
+			}
+				
+		} else {
 			bindingDisplayField.setVisible(false);
 			// List is the only type with a custom editor
 			if( property.getType().equals(PropertyType.LIST) ) {

@@ -508,6 +508,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	public void notifyOfPropertyChange(BlockProperty property, DataType type) {
 		
 		BindingType bob = property.getBindingType();
+		// EREIAM JH - should  this only be done if the field changed is 'TagPath'?
 		if (type != null && (bob == BindingType.TAG_READ || bob == BindingType.TAG_READWRITE || bob == BindingType.TAG_MONITOR)) {
 			ConnectionType conType= determineDataTypeFromTagType(type);
 //			ProcessAnchorDescriptor anchor = anchors.values().iterator().next();

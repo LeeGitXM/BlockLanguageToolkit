@@ -246,17 +246,17 @@ public class InferenceInhibitor extends AbstractProcessBlock implements ProcessB
 	 * Augment the palette prototype for this block class.
 	 */
 	private void initializePrototype() {
-		prototype.setPaletteIconPath("Block/icons/palette/inference_inhibit.png");
-		prototype.setPaletteLabel("InferenceInhibitor");
-		prototype.setTooltipText("Discard incoming values that arrive while the inhibit control does not match the trigger value");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_CONTROL);
+//		prototype.setPaletteIconPath("Block/icons/palette/inference_inhibit.png");
+//		prototype.setPaletteLabel("InferenceInhibitor");
+//		prototype.setTooltipText("Discard incoming values that arrive while the inhibit control does not match the trigger value");
+//		prototype.setTabName(BlockConstants.PALETTE_TAB_CONTROL);
 		
-		BlockDescriptor desc = prototype.getBlockDescriptor();
-		desc.setPreferredHeight(60);
-		desc.setPreferredWidth(80);
-		desc.setBlockClass(getClass().getCanonicalName());
-		desc.setStyle(BlockStyle.CLAMP);
-		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_BLUE_GRAY);
+//		BlockDescriptor desc = prototype.getBlockDescriptor();
+//		desc.setPreferredHeight(60);
+//		desc.setPreferredWidth(80);
+//		desc.setBlockClass(getClass().getCanonicalName());
+//		desc.setStyle(BlockStyle.CLAMP);
+//		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_BLUE_GRAY);
 
 	}
 }
