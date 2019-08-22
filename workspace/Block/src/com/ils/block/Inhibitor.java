@@ -29,6 +29,7 @@ import com.ils.blt.common.notification.Signal;
 import com.ils.blt.common.notification.SignalNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.common.watchdog.AcceleratedWatchdogTimer;
+import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -76,12 +77,34 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	public void reset() {
 		super.reset();
 		expirationProperty.setValue(new Long(0L));
-		inhibiting = false;
+		inhibiting = controlValue.equals(trigger);
+		setState(initialValue);
+		if(!locked && !inhibiting && !initialValue.equals(TruthValue.UNSET)) {
+			lastValue = new TestAwareQualifiedValue(timer,initialValue);
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
+			controller.acceptCompletionNotification(nvn);
+			notifyOfStatus();
+		}
+		timer.removeWatchdog(dog);
 		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_EXPIRATION_TIME,
 				new BasicQualifiedValue(expirationProperty.getValue()));
-		timer.removeWatchdog(dog);
+	}
+
+	/**
+	 * Under the right circumstances we propagate the initial value.
+	 */
+	@Override
+	public void start() {
+		super.start();
+		if(propagateOnStart()) {
+			lastValue = new TestAwareQualifiedValue(timer,initialValue);
+			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
+			controller.acceptCompletionNotification(nvn);
+			state = initialValue;
+		}
 	}
 	
+
 	/**
 	 * A new value has appeared on an input anchor. If we are in an "inhibit" state, then 
 	 * send this value to the bit-bucket.
@@ -118,6 +141,28 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 					log.infof("%s.acceptValue: Received null %s (IGNORED)",getName(),(qv==null?"":"value"));
 				}
 			}
+			else if( port.equals(BlockConstants.CONTROL_PORT_NAME)  ) {
+				QualifiedValue qv = vcn.getValue();
+				if( qv != null && qv.getValue()!=null ) {
+					if( qv.getQuality().isGood() ) {
+						TruthValue cv = qualifiedValueAsTruthValue(qv);
+						// If this leads to a new mismatch, then we propagate the last value
+						if( inhibiting && !cv.equals(trigger)) {
+							OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
+							controller.acceptCompletionNotification(nvn);
+							notifyOfStatus();
+							state = qualifiedValueAsTruthValue(lastValue);
+						}
+						controlValue = cv;
+						inhibiting = controlValue.equals(trigger);
+						recordActivity((inhibiting?Activity.ACTIVITY_BLOCKING:Activity.ACTIVITY_UNBLOCKED),controlValue.toString());
+					}
+				}
+				else {
+					log.infof("%s.acceptValue: Received null %s (IGNORED)",getName(),(lastValue==null?"":"value"));
+				}
+			}
+
 		}
 	}
 	
@@ -228,7 +273,15 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 			catch(NumberFormatException nfe) {
 				log.warnf("%s.propertyChange Unable to convert interval value to an double (%s)",getName(),nfe.getLocalizedMessage());
 			}
+		} else	if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_TRIGGER)) {
+			trigger = TruthValue.valueOf(event.getNewValue().toString().toUpperCase());	
 		}
+		else if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_INITIAL_VALUE)) {
+			initialValue = TruthValue.valueOf(event.getNewValue().toString());
+		} else {
+			log.warnf("%s.propertyChange:Unrecognized property (%s)",getName(),propertyName);
+		}
+
 	}
 	/**
 	 * Send status update notification for our last transmitted value. If we've 

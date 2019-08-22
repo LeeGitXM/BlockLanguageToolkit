@@ -75,20 +75,6 @@ public class InferenceInhibitor extends AbstractProcessBlock implements ProcessB
 
 	}
 	/**
-	 * Under the right circumstances we propagate the initial value.
-	 */
-	@Override
-	public void start() {
-		super.start();
-		if(propagateOnStart()) {
-			lastValue = new TestAwareQualifiedValue(timer,initialValue);
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
-			controller.acceptCompletionNotification(nvn);
-			state = initialValue;
-		}
-	}
-	
-	/**
 	 * A new value has appeared on an input anchor. If we are in an "inhibit" state, then 
 	 * retain this value until we are un-inhibited.
 	 * @param vcn change notification.
@@ -243,17 +229,17 @@ public class InferenceInhibitor extends AbstractProcessBlock implements ProcessB
 	 * Augment the palette prototype for this block class.
 	 */
 	private void initializePrototype() {
-		prototype.setPaletteIconPath("Block/icons/palette/inference_inhibit.png");
-		prototype.setPaletteLabel("InferenceInhibitor");
-		prototype.setTooltipText("Discard incoming values that arrive while the inhibit control does not match the trigger value");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_CONTROL);
-		
-		BlockDescriptor desc = prototype.getBlockDescriptor();
-		desc.setPreferredHeight(60);
-		desc.setPreferredWidth(80);
-		desc.setBlockClass(getClass().getCanonicalName());
-		desc.setStyle(BlockStyle.CLAMP);
-		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_BLUE_GRAY);
+//		prototype.setPaletteIconPath("Block/icons/palette/inference_inhibit.png");
+//		prototype.setPaletteLabel("InferenceInhibitor");
+//		prototype.setTooltipText("Discard incoming values that arrive while the inhibit control does not match the trigger value");
+//		prototype.setTabName(BlockConstants.PALETTE_TAB_CONTROL);
+//		
+//		BlockDescriptor desc = prototype.getBlockDescriptor();
+//		desc.setPreferredHeight(60);
+//		desc.setPreferredWidth(80);
+//		desc.setBlockClass(getClass().getCanonicalName());
+//		desc.setStyle(BlockStyle.CLAMP);
+//		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_BLUE_GRAY);
 
 	}
 }
