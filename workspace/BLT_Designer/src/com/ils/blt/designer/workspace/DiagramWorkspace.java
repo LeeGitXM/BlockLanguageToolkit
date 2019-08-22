@@ -714,7 +714,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 							Collection<BlockProperty> props = pblock.getProperties();
 							for (BlockProperty property:props) {
 								if("TagPath".equalsIgnoreCase(property.getName())) {  // only update the tagpath property
-									if (diagram.isValidBindingChange(pblock, type)) {
+									String result = diagram.isValidBindingChange(pblock, type);
+									if (result == null) {
 										property.setBinding(tnode.getTagPath().toStringFull());
 										logger.infof("%s.handleDrop: EREIAM JH - tag path: %s",TAG,tnode.getTagPath().toStringFull());
 										diagram.setDirty(true);
@@ -724,8 +725,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 										
 										pblock.notifyOfPropertyChange(property, type);
 									} else {
-										String msg = String.format("Tag change failed.  Tag data invalid for connected block");
-								        JOptionPane.showMessageDialog(null, msg, "Warning", JOptionPane.INFORMATION_MESSAGE);
+								        JOptionPane.showMessageDialog(null, result, "Warning", JOptionPane.INFORMATION_MESSAGE);
 									}
 								}
 							}
@@ -1526,32 +1526,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			}); 
 		}
 	}
-	/**
-	 * Configure the block to show the generic signal connection stub.
-	 */
-	private class HideSignalAction extends BaseAction {
-		private static final long serialVersionUID = 1L;
-		private final ProcessBlockView block;
-		private final ProcessDiagramView diagram;
-		private final DiagramWorkspace workspace;
-		public HideSignalAction(DiagramWorkspace wksp,ProcessDiagramView diag,ProcessBlockView blk)  {
-			super(PREFIX+".HideSignal",IconUtil.getIcon("trafficlight_red"));  // preferences
-			this.workspace = wksp;
-			this.diagram = diag;
-			this.block = blk;
-		}
-
-		public void actionPerformed(ActionEvent e) {
-			block.setSignalAnchorDisplayed(false);
-			if( !diagram.isDirty()) {
-				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(diagram.getResourceId());
-				if( tab!=null ) workspace.saveDiagramResource(tab);
-			}
-			block.fireStateChanged();
-			// Repaint to update the stub
-			SwingUtilities.invokeLater(new WorkspaceRepainter());
-		}
-	}
 
 	/**
 	 * Select All blocks.
@@ -1791,6 +1765,34 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			return match;
 		}
 	}
+
+	/**
+	 * Configure the block to show the generic signal connection stub.
+	 */
+	private class HideSignalAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final ProcessBlockView block;
+		private final ProcessDiagramView diagram;
+		private final DiagramWorkspace workspace;
+		public HideSignalAction(DiagramWorkspace wksp,ProcessDiagramView diag,ProcessBlockView blk)  {
+			super(PREFIX+".HideSignal",IconUtil.getIcon("trafficlight_red"));  // preferences
+			this.workspace = wksp;
+			this.diagram = diag;
+			this.block = blk;
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			block.setSignalAnchorDisplayed(false);
+			if( !diagram.isDirty()) {
+				BlockDesignableContainer tab = (BlockDesignableContainer)workspace.findDesignableContainer(diagram.getResourceId());
+				if( tab!=null ) workspace.saveDiagramResource(tab);
+			}
+			block.fireStateChanged();
+			// Repaint to update the stub
+			SwingUtilities.invokeLater(new WorkspaceRepainter());
+		}
+	}
+
 	/**
 	 * Configure the block to show the generic signal connection stub.
 	 */

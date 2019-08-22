@@ -261,7 +261,7 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 
 	public boolean allowConnectionType(ConnectionType connectionType) {
 		boolean ret = false;
-		if ((getConnectionType() == ConnectionType.ANY) || (getConnectionType() == connectionType)) {
+		if ((connectionType == ConnectionType.ANY) || (getConnectionType() == ConnectionType.ANY) || (getConnectionType() == connectionType)) {
 			ret = true;
 		}
 		return ret;

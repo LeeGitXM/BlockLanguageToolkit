@@ -34,7 +34,6 @@ import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.util.AbstractChangeable;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
-import com.inductiveautomation.ignition.designer.DesignerContextImpl;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorPoint;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
@@ -42,7 +41,6 @@ import com.inductiveautomation.ignition.designer.blockandconnector.model.BlockDi
 import com.inductiveautomation.ignition.designer.blockandconnector.model.Connection;
 import com.inductiveautomation.ignition.designer.blockandconnector.model.impl.LookupConnection;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
-import com.sun.management.VMOption.Origin;
 
 /**
  * This class represents a diagram in the designer.
@@ -598,8 +596,8 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 		setWatermark(mark);
 	}
 
-	public boolean isValidBindingChange(ProcessBlockView pblock, DataType type) {
-		boolean ret = true;
+	public String isValidBindingChange(ProcessBlockView pblock, DataType type) {
+		String ret = null;
 
 		Collection<ProcessAnchorDescriptor> bconns = pblock.getAnchors();
 //		ProcessAnchorDescriptor origin = null;
@@ -625,8 +623,8 @@ public class ProcessDiagramView extends AbstractChangeable implements BlockDiagr
 				intended = (BasicAnchorPoint)connection.getOrigin();
 			}
 			
-			if (!intended.allowConnectionType(conType)) {
-				ret = false;
+			if (intended != null && !intended.allowConnectionType(conType)) {
+				ret = String.format("Tag change error, cannot connect %s to %s", intended.getConnectionType().name(), conType.name());
 			}
 			
 		}

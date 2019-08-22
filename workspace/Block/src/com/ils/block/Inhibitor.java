@@ -17,7 +17,9 @@ import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
+import com.ils.blt.common.block.PlacementHint;
 import com.ils.blt.common.block.PropertyType;
+import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
@@ -41,6 +43,10 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	private BlockProperty expirationProperty = null;
 	private double interval = 0.0;   // ~minutes
 	private boolean inhibiting = false;
+	private TruthValue controlValue = TruthValue.UNSET;
+	private TruthValue initialValue = TruthValue.UNSET;
+	private TruthValue trigger = TruthValue.UNSET; 
+
 	private final Watchdog dog;
 	
 	/**
@@ -182,12 +188,19 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	private void initialize() {
 		setName("Inhibitor");
-		this.isReceiver = true;
+		delayStart = propagateOnStart();
+		this.setReceiver(true);
 		BlockProperty constant = new BlockProperty(BlockConstants.BLOCK_PROPERTY_INHIBIT_INTERVAL,new Double(interval),PropertyType.TIME_MINUTES,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_INHIBIT_INTERVAL, constant);
 		expirationProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_EXPIRATION_TIME,new Long(0L),PropertyType.DATE,true);
 		expirationProperty.setBindingType(BindingType.ENGINE);   // Is not editable outside this class
 		setProperty(BlockConstants.BLOCK_PROPERTY_EXPIRATION_TIME, expirationProperty);
+
+		// Define the control input
+		AnchorPrototype triggerIn = new AnchorPrototype(BlockConstants.CONTROL_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
+		triggerIn.setHint(PlacementHint.T);
+//		triggerIn.setAnnotation("T");
+		anchors.add(triggerIn);
 		
 		// Define a data input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
@@ -206,7 +219,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
-		this.isReceiver = true;
+		this.setReceiver(true);
 		String propertyName = event.getPropertyName();
 		if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_INHIBIT_INTERVAL) ) {
 			try {
@@ -230,6 +243,23 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 			QualifiedValue lv = new BasicQualifiedValue(coerceToMatchOutput(BlockConstants.OUT_PORT_NAME,null));
 			controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, lv);
 		}
+	}
+
+	/**
+	 * If the trigger condition and initial value match, then
+	 * we propagate a value on startup and on reset.
+	 * @return
+	 */
+	private boolean propagateOnStart() {
+		boolean result = false;
+		if( controlValue.equals(TruthValue.UNSET) && !initialValue.equals(TruthValue.UNSET)) {
+			result = true;
+		}
+		else if( !controlValue.equals(TruthValue.UNSET) && !initialValue.equals(TruthValue.UNSET) &&
+				!trigger.equals(TruthValue.UNSET) && !controlValue.equals(trigger) ) {
+			result = true;
+		}
+		return result;
 	}
 
 	/**

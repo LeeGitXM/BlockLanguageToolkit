@@ -196,7 +196,6 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		result.setHidden(anchor.isHidden());
 		result.setHint(anchor.getHint());
 		result.setMultiple(anchor.isMultiple());
-		result.setHidden(anchor.isHidden());
 		result.setSortOrder(anchor.getSortOrder());
 		return result;
 	}

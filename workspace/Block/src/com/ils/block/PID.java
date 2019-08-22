@@ -103,7 +103,7 @@ public class PID extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	private void initialize() {	
 		setName("PID");
-		this.isReceiver = true;
+		this.setReceiver(true);
 		BlockProperty pvProperty = new BlockProperty(BLOCK_PROPERTY_INITIAL_VALUE,new Double(pv),PropertyType.DOUBLE,true);
 		setProperty(BLOCK_PROPERTY_INITIAL_VALUE, pvProperty);
 		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL,new Double(interval),PropertyType.TIME_SECONDS,true);

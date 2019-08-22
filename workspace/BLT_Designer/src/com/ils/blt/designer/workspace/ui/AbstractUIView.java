@@ -208,9 +208,9 @@ public abstract class AbstractUIView extends JComponent
 				topIndex++;
 				if(topCount==1) {
 					if(desc.getType().equals(AnchorType.Terminus)) topIndex=1;
-					else topIndex=3;
+					else topIndex=2;
 				}
-				else if(topCount==2 && topIndex==2) topIndex++;
+//				else if(topCount==2 && topIndex==2) topIndex++;
 				BasicAnchorPoint ap = new BasicAnchorPoint(desc.getDisplay(),block,AnchorType.Terminus,
 						desc.getConnectionType(),
 						new Point(inset+(topIndex*interiorWidth)/topSegments,0),
@@ -347,7 +347,9 @@ public abstract class AbstractUIView extends JComponent
 		hiddenIndex = -1;     // Unless set, nothing is hidden
 		// Create counts for each side. There are both defaults and placement hints.
 		for(ProcessAnchorDescriptor desc:block.getAnchors()) {
-			if( desc.isHidden()) hiddenIndex = index;
+			if( desc.isHidden()) {
+				hiddenIndex = index;
+			}
 			index++;
 		}
 		log.debugf("%s.stateChanged %s ...hidden = %d",TAG,getBlock().getName(),hiddenIndex);
@@ -366,6 +368,9 @@ public abstract class AbstractUIView extends JComponent
 		g.translate(xoffset,yoffset);
 		// Loop through the anchor points and draw squares for ports
 		// We assume that the anchor points are in the same order as the anchor descriptions
+		//*** *assume*   AND THERE'S THE RUB.  They aren't coming back in the same order, so see below.
+		//**   So, for now assume that if anything is marked hidden, it's the signal connection
+		//     If you want to make this more robust ass ordering or a unique ID of some sort.
 		int index = 0;
 		for( AnchorPoint ap:anchorPoints) {
 			BasicAnchorPoint bap = (BasicAnchorPoint)ap;
@@ -374,9 +379,16 @@ public abstract class AbstractUIView extends JComponent
 			int anchorLength= INSET+BORDER_WIDTH;       // Draw edge to the boundary
 			Point loc = bap.getAnchor();                // Center of the anchor point
 			// Paint the rectangle
-			if( bap.getConnectionType()==ConnectionType.DATA) g.setColor(getBackground());
-			else if( index==hiddenIndex)                      g.setColor(getBackground());
-			else     g.setColor(fillColorForConnectionType(bap.getConnectionType()));
+			if( bap.getConnectionType()==ConnectionType.DATA) {
+				g.setColor(getBackground());
+//			} else if( index==hiddenIndex) {
+				// OK, this seems really bad, but since the only connection capable of being hidden
+				// is the signal connection, we can assume we should hide it.
+			} else if( hiddenIndex >= 0 && bap.getConnectionType()==ConnectionType.SIGNAL) {
+				g.setColor(getBackground());
+			} else {
+				g.setColor(fillColorForConnectionType(bap.getConnectionType()));
+			}
 			//log.infof("%s.drawAnchors index %d (hide %d)",TAG,index,hiddenIndex);
 			int x = 0;
 			int y = 0;
@@ -407,6 +419,8 @@ public abstract class AbstractUIView extends JComponent
 					g.drawLine(x,y+1, x+anchorLength+1, y+1);     
 					g.drawLine(x,y+anchorWidth, x+anchorLength, y+anchorWidth);
 				}
+			} else {
+				
 			}
 			
 			// Finally draw the annotation, if defined

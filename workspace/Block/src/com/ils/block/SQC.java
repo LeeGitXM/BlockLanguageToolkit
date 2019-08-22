@@ -96,8 +96,8 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	private void initialize() {	
 		setName("SQC");
-		this.isReceiver = true;
-		this.isTransmitter = true;
+		this.setReceiver(true);
+		this.setTransmitter(true);
 		BlockProperty clearProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET,new Boolean(clearOnReset),PropertyType.BOOLEAN,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_CLEAR_ON_RESET, clearProperty);
 		BlockProperty limitProperty = new BlockProperty(BLOCK_PROPERTY_SQC_LIMIT,new Double(limit),PropertyType.DOUBLE,true);

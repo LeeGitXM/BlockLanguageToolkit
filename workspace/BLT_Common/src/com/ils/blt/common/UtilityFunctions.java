@@ -99,7 +99,7 @@ public class UtilityFunctions  {
 	 * Force a Double, Integer or String to a double. Reports NumberFormatException
 	 * for bad input - and sets result to 0.0.
 	 */
-	public double coerceToDouble(Object val)  {
+	public double coerceToDouble(Object val)  throws NumberFormatException {
 		double result = 0.0;
 		if( val!=null ) {
 			if( val instanceof Double)       result = ((Double)val).doubleValue();
@@ -113,7 +113,7 @@ public class UtilityFunctions  {
 	 * Force a Double, Integer or String to an int. Reports NumberFormatException
 	 * for bad input - and sets result to 0.
 	 */
-	public int coerceToInteger(Object val) {
+	public int coerceToInteger(Object val) throws NumberFormatException {
 		int result = 0;
 		if( val !=null ) {
 			if( val instanceof Integer)      result = ((Integer)val).intValue();
@@ -127,7 +127,7 @@ public class UtilityFunctions  {
 	 * Force a Double, Integer or String to an int. Reports NumberFormatException
 	 * for bad input - and sets result to 0.
 	 */
-	public long coerceToLong(Object val) {
+	public long coerceToLong(Object val) throws NumberFormatException {
 		long result = 0;
 		if( val !=null ) {
 			if( val instanceof Long)         result = ((Long)val).longValue();

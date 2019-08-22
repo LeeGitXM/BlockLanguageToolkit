@@ -73,8 +73,8 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	protected PalettePrototype prototype = null;
 	protected boolean delayStart = false;
 	protected boolean locked     = false;
-	protected boolean isReceiver = false;
-	protected boolean isTransmitter = false;
+	private boolean isReceiver = false;
+	private boolean isTransmitter = false;
 	protected boolean running = false;
 	protected TruthValue state = TruthValue.UNSET;
 	protected Date stateChangeTimestamp = null;
@@ -139,8 +139,8 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		prototype = new PalettePrototype();
 		BlockDescriptor blockDescriptor = prototype.getBlockDescriptor();
 		blockDescriptor.setAnchors(anchors);
-		blockDescriptor.setReceiveEnabled(isReceiver);
-		blockDescriptor.setTransmitEnabled(isTransmitter);
+		blockDescriptor.setReceiveEnabled(isReceiver());
+		blockDescriptor.setTransmitEnabled(isTransmitter());
 		
 		// Currently this refers to a path in /images of the BLT_Designer source area.
 		prototype.setPaletteIconPath("unknown.png");
@@ -976,5 +976,13 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 */
 	@Override
 	public String toString() { return getName(); }
+
+	public void setTransmitter(boolean isTransmitter) {
+		this.isTransmitter = isTransmitter;
+	}
+
+	public void setReceiver(boolean isReceiver) {
+		this.isReceiver = isReceiver;
+	}
 
 }

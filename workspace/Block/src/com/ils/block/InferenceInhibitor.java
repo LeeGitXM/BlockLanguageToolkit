@@ -143,8 +143,6 @@ public class InferenceInhibitor extends AbstractProcessBlock implements ProcessB
 			}
 		}
 	}
-	
-
 
 	/**
 	 * @return a block-specific description of internal statue
@@ -158,7 +156,6 @@ public class InferenceInhibitor extends AbstractProcessBlock implements ProcessB
 		
 		return descriptor;
 	}
-
 
 	/**
 	 * Add properties that are new for this class.
@@ -183,7 +180,7 @@ public class InferenceInhibitor extends AbstractProcessBlock implements ProcessB
 		// Define the control input
 		AnchorPrototype triggerIn = new AnchorPrototype(BlockConstants.CONTROL_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
 		triggerIn.setHint(PlacementHint.T);
-		triggerIn.setAnnotation("T");
+//		triggerIn.setAnnotation("T");
 		anchors.add(triggerIn);
 		
 		// Define a single output
@@ -198,7 +195,7 @@ public class InferenceInhibitor extends AbstractProcessBlock implements ProcessB
 	@Override
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
-		this.isReceiver = true;
+		this.setReceiver(true);
 		String propertyName = event.getPropertyName();
 		if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_TRIGGER)) {
 			trigger = TruthValue.valueOf(event.getNewValue().toString().toUpperCase());	
@@ -246,17 +243,17 @@ public class InferenceInhibitor extends AbstractProcessBlock implements ProcessB
 	 * Augment the palette prototype for this block class.
 	 */
 	private void initializePrototype() {
-//		prototype.setPaletteIconPath("Block/icons/palette/inference_inhibit.png");
-//		prototype.setPaletteLabel("InferenceInhibitor");
-//		prototype.setTooltipText("Discard incoming values that arrive while the inhibit control does not match the trigger value");
-//		prototype.setTabName(BlockConstants.PALETTE_TAB_CONTROL);
+		prototype.setPaletteIconPath("Block/icons/palette/inference_inhibit.png");
+		prototype.setPaletteLabel("InferenceInhibitor");
+		prototype.setTooltipText("Discard incoming values that arrive while the inhibit control does not match the trigger value");
+		prototype.setTabName(BlockConstants.PALETTE_TAB_CONTROL);
 		
-//		BlockDescriptor desc = prototype.getBlockDescriptor();
-//		desc.setPreferredHeight(60);
-//		desc.setPreferredWidth(80);
-//		desc.setBlockClass(getClass().getCanonicalName());
-//		desc.setStyle(BlockStyle.CLAMP);
-//		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_BLUE_GRAY);
+		BlockDescriptor desc = prototype.getBlockDescriptor();
+		desc.setPreferredHeight(60);
+		desc.setPreferredWidth(80);
+		desc.setBlockClass(getClass().getCanonicalName());
+		desc.setStyle(BlockStyle.CLAMP);
+		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_BLUE_GRAY);
 
 	}
 }

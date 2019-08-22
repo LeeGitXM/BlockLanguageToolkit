@@ -277,8 +277,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 			DesignerContext cxt = context;
 			// TODO - EREIAM JH Needs ProcessDiagramView (which implements BlockDiagramModel) for connections
 
-			boolean allow = true;
-			String msg = "";
+			String msg = null;
 			String tagPath = fncs.coerceToString(property.getBinding());
 			// we should only do  this check if it affects the connection type
 			if ("tagPath".equalsIgnoreCase(property.getName())) {
@@ -293,10 +292,9 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				allow = dview.isValidBindingChange(block, typ);
-				msg = "Invalid data type for tag binding";
+				msg = dview.isValidBindingChange(block, typ);
 			}
-			if (allow) {
+			if (msg == null) {
 				// The display field has the old binding - use it to unsubscribe
 				String oldPath = bindingDisplayField.getText();
 				unsubscribeToTagPath(oldPath);
