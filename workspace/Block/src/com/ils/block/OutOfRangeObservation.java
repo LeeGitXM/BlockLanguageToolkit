@@ -102,9 +102,15 @@ public class OutOfRangeObservation extends AbstractProcessBlock implements Proce
 		try {
 			double dbl = Double.parseDouble(val);
 			TruthValue newValue = state;
-			if( dbl <= upperlimit - upperdeadband && dbl >= lowerlimit+lowerdeadband  ) newValue = TruthValue.FALSE;
-			if( dbl > upperlimit || dbl < lowerlimit ) newValue = TruthValue.TRUE;
-			if( !observation.getQuality().isGood()) newValue = TruthValue.UNKNOWN;
+			if( dbl <= upperlimit - upperdeadband && dbl >= lowerlimit+lowerdeadband  ) {
+				newValue = TruthValue.FALSE;
+			}
+			if( dbl > upperlimit || dbl < lowerlimit ) {
+				newValue = TruthValue.TRUE;
+			}
+			if( !observation.getQuality().isGood()) {
+				newValue = TruthValue.UNKNOWN;
+			}
 			if( !newValue.equals(state)) {
 				setState(newValue);
 				lastValue = new BasicQualifiedValue(state,observation.getQuality(),observation.getTimestamp());

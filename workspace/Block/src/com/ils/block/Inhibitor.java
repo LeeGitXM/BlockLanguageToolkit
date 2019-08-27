@@ -234,7 +234,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	private void initialize() {
 		setName("Inhibitor");
 		delayStart = propagateOnStart();
-		this.setReceiver(true);
+//		this.setReceiver(true);
 		BlockProperty constant = new BlockProperty(BlockConstants.BLOCK_PROPERTY_INHIBIT_INTERVAL,new Double(interval),PropertyType.TIME_MINUTES,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_INHIBIT_INTERVAL, constant);
 		expirationProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_EXPIRATION_TIME,new Long(0L),PropertyType.DATE,true);
@@ -264,7 +264,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
-		this.setReceiver(true);
+//		this.setReceiver(true);
 		String propertyName = event.getPropertyName();
 		if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_INHIBIT_INTERVAL) ) {
 			try {
@@ -329,7 +329,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 		desc.setPreferredWidth(80);
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setStyle(BlockStyle.CLAMP);
-		desc.setReceiveEnabled(true);
+//		desc.setReceiveEnabled(true);
 		desc.setCtypeEditable(true);
 	}
 }

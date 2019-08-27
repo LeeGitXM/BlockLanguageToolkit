@@ -62,7 +62,6 @@ import com.ils.block.Output;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
-import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.connection.ConnectionType;
@@ -93,7 +92,10 @@ import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.project.ProjectScope;
 import com.inductiveautomation.ignition.common.sqltags.model.Tag;
+import com.inductiveautomation.ignition.common.sqltags.model.TagProp;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
+import com.inductiveautomation.ignition.common.sqltags.model.types.ExpressionType;
+import com.inductiveautomation.ignition.common.sqltags.model.types.TagValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.common.xmlserialization.SerializationException;
@@ -703,9 +705,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
 						TagTreeNode tnode = (TagTreeNode) tagNodeArr.get(0);
 						logger.infof("%s.handleDrop: tag data: %s",TAG,tnode.getName());
-						Block block = ((BlockComponent)droppedOn).getBlock();
-						if (block instanceof ProcessBlockView) {
-							ProcessBlockView pblock = (ProcessBlockView)block;
+						Block targetBlock = ((BlockComponent)droppedOn).getBlock();
+						if (targetBlock instanceof ProcessBlockView) {
+							ProcessBlockView pblock = (ProcessBlockView)targetBlock;
 		
 							DataType type = null;
 							ClientTagManager tmgr = context.getTagManager();
@@ -713,7 +715,10 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 							type = tag.getDataType();
 							Collection<BlockProperty> props = pblock.getProperties();
 							for (BlockProperty property:props) {
-								if("TagPath".equalsIgnoreCase(property.getName())) {  // only update the tagpath property
+								Integer tagProp = (Integer)tag.getAttribute(TagProp.ExpressionType).getValue();
+								// Oh ick.   Hard coding special cases like input/output tagpath
+								if("TagPath".equalsIgnoreCase(property.getName()) && 
+										(!((ProcessBlockView) targetBlock).getClassName().endsWith(".Output") || tagProp == ExpressionType.None.getIntValue())) {  // only update the tagpath property
 									String result = diagram.isValidBindingChange(pblock, type);
 									if (result == null) {
 										property.setBinding(tnode.getTagPath().toStringFull());

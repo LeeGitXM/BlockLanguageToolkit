@@ -38,12 +38,12 @@ public class SerializableBlock {
 	private int preferredHeight = 0;
 	private int preferredWidth  = 0;
 	private BlockProperty[] properties = null;
-	private boolean receiveEnabled = false;
+//	private boolean receiveEnabled = false;
 	private TruthValue state = TruthValue.UNSET;
 	private String statusText;
 	private BlockStyle style = BlockStyle.SQUARE;
 	private UUID subworkspaceId = null;     // Non-null only for encapsulation blocks. Subworkspace is a diagram.
-	private boolean transmitEnabled= false;
+//	private boolean transmitEnabled= false;
 	private UUID uuid = null;
 	private int x = 0;
 	private int y = 0;
@@ -80,8 +80,8 @@ public class SerializableBlock {
 	public boolean isDirty() {return dirty;}
 	public boolean isLocked() {return locked;}
 	public boolean isNameDisplayed() {return nameDisplayed;}
-	public boolean isReceiveEnabled() {return receiveEnabled;}
-	public boolean isTransmitEnabled() {return transmitEnabled;}
+//	public boolean isReceiveEnabled() {return receiveEnabled;}
+//	public boolean isTransmitEnabled() {return transmitEnabled;}
 	public void setAnchors(SerializableAnchor[] array) {
 		anchors = array;
 		for(SerializableAnchor sa:anchors) {
@@ -107,12 +107,12 @@ public class SerializableBlock {
 	public void setPreferredHeight(int preferredHeight) {this.preferredHeight = preferredHeight;}
 	public void setPreferredWidth(int preferredWidth) {this.preferredWidth = preferredWidth;}
 	public void setProperties(BlockProperty[] array) { this.properties = array; }
-	public void setReceiveEnabled(boolean receiveEnabled) {this.receiveEnabled = receiveEnabled;}
+//	public void setReceiveEnabled(boolean receiveEnabled) {this.receiveEnabled = receiveEnabled;}
 	public void setState(TruthValue state) {if(state!=null) this.state = state;}
 	public void setStatusText(String statusText) { this.statusText = statusText; }
 	public void setSubworkspaceId(UUID subworkspace) {this.subworkspaceId = subworkspace;}
 	public void setStyle(BlockStyle style) { this.style = style; }
-	public void setTransmitEnabled(boolean transmitEnabled) {this.transmitEnabled = transmitEnabled;}
+//	public void setTransmitEnabled(boolean transmitEnabled) {this.transmitEnabled = transmitEnabled;}
 	public void setX(int xx) { this.x=xx; }
 	public void setY(int yy) { this.y=yy; }
 }

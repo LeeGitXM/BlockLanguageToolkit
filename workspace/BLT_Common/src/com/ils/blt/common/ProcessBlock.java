@@ -165,13 +165,13 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 */
 	public boolean isLocked();
 	/**
-	 * @return true if this block is a candidate for signal messages.
-	 */
-	public boolean isReceiver();
-	/**
-	 * @return true if this block publishes signal messages.
-	 */
-	public boolean isTransmitter();
+//	 * @return true if this block is a candidate for signal messages.
+//	 */
+//	public boolean isReceiver();
+//	/**
+//	 * @return true if this block publishes signal messages.
+//	 */
+//	public boolean isTransmitter();
 	/**
 	 * Send status update notifications for any properties
 	 * or output connections known to the designer. 

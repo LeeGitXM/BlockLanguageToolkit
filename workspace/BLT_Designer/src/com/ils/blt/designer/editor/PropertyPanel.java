@@ -49,6 +49,7 @@ import com.inductiveautomation.ignition.common.sqltags.model.TagProp;
 import com.inductiveautomation.ignition.common.sqltags.model.event.TagChangeEvent;
 import com.inductiveautomation.ignition.common.sqltags.model.event.TagChangeListener;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
+import com.inductiveautomation.ignition.common.sqltags.model.types.ExpressionType;
 import com.inductiveautomation.ignition.common.sqltags.parser.TagPathParser;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
@@ -280,19 +281,27 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 			String msg = null;
 			String tagPath = fncs.coerceToString(property.getBinding());
 			// we should only do  this check if it affects the connection type
+			Tag tag = null;
+			Integer tagProp = null;
 			if ("tagPath".equalsIgnoreCase(property.getName())) {
 				ProcessDiagramView dview = workspace.getActiveDiagram();
 				ClientTagManager tmgr = context.getTagManager();
 				DataType typ = null;
 				try {
 					TagPath tp = TagPathParser.parse(tagPath);
-					Tag tag = tmgr.getTag(tp);
+					tag = tmgr.getTag(tp);
+					tagProp = (Integer)tag.getAttribute(TagProp.ExpressionType).getValue();
 					typ = tag.getDataType();
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				msg = dview.isValidBindingChange(block, typ);
+				// block binding to expressions for output
+				if (block.getClassName().endsWith(".Output") && tagProp != ExpressionType.None.getIntValue()) {  // only update the tagpath property
+					msg = "Unable to bind expression tag to output";
+				} else {
+					msg = dview.isValidBindingChange(block, typ);
+				}
 			}
 			if (msg == null) {
 				// The display field has the old binding - use it to unsubscribe

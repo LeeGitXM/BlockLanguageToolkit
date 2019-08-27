@@ -81,12 +81,12 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	private int preferredHeight = 0;              // Size the view to "natural" size
 	private int preferredWidth  = 0;              // Size the view to "natural" size
 	private Collection<BlockProperty> properties;
-	private boolean receiveEnabled = false;
+//	private boolean receiveEnabled = false;
 	private TruthValue state = TruthValue.UNSET;
 	private String statusText;                    // Auxiliary text to display
 	private UUID subworkspaceId = null;           // Encapsulated diagram if encapsulation block
 	private BlockStyle style = BlockStyle.SQUARE;
-	private boolean transmitEnabled = false;
+//	private boolean transmitEnabled = false;
 	private AbstractUIView ui = null;
 	private UUID uuid = null;
 	
@@ -115,8 +115,8 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		this.nameDisplayed  = descriptor.isNameDisplayed();
 		this.nameOffsetX    = descriptor.getNameOffsetX();
 		this.nameOffsetY    = descriptor.getNameOffsetY();
-		this.receiveEnabled = descriptor.isReceiveEnabled();
-		this.transmitEnabled= descriptor.isTransmitEnabled();
+//		this.receiveEnabled = descriptor.isReceiveEnabled();
+//		this.transmitEnabled= descriptor.isTransmitEnabled();
 
 		this.anchors = new HashMap<>();
 		int order = 0;
@@ -159,8 +159,8 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		this.nameOffsetY   = sb.getNameOffsetY();
 		this.state = sb.getState();
 		this.statusText = sb.getStatusText();
-		this.receiveEnabled  = sb.isReceiveEnabled();
-		this.transmitEnabled = sb.isTransmitEnabled();
+//		this.receiveEnabled  = sb.isReceiveEnabled();
+//		this.transmitEnabled = sb.isTransmitEnabled();
 		this.subworkspaceId = sb.getSubworkspaceId();
 		this.anchors = new HashMap<>();
 		if(sb.getAnchors()!=null ) {
@@ -222,8 +222,8 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		result.setStatusText(getStatusText());
 		result.setStyle(getStyle());
 		result.setSubworkspaceId(subworkspaceId);
-		result.setReceiveEnabled(isReceiveEnabled());
-		result.setTransmitEnabled(isTransmitEnabled());
+//		result.setReceiveEnabled(isReceiveEnabled());
+//		result.setTransmitEnabled(isTransmitEnabled());
 		result.setX(getLocation().x);
 		result.setY(getLocation().y);
 		
@@ -274,18 +274,41 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 
 	@Override
 	public Block copy(Map<UUID, UUID> arg0) {
-		log.infof("%s: copy ...", TAG);
-		return null;
+		
+		//		This doesn't make a lot of sense.  Why does ignition pass
+		//      in a list of blocks selected when this only returns a single
+		//      block?  Very odd.  Not sure what to do with the rest of them
+		
+		ProcessBlockView newBlock = null;
+		for (UUID me:arg0.values()) {  
+			newBlock = new ProcessBlockView(this.convertToSerializable());
+			newBlock.uuid = me;
+		}
+		
+		return newBlock;
 	}
+	
 	@Override
 	public Collection<AnchorPoint> getAnchorPoints() {
 		if( ui==null ) ui = factory.getUI(style, this);
 		return ui.getAnchorPoints();	
 	}
-	public Collection<ProcessAnchorDescriptor> getAnchors() { return anchors.values(); }
-	public GeneralPurposeDataContainer getAuxiliaryData() {return auxiliaryData;}
-	public int getBackground() { return background;}
-	public String getClassName() { return className; }
+	
+	public Collection<ProcessAnchorDescriptor> getAnchors() { 
+		return anchors.values(); 
+	}
+	
+	public GeneralPurposeDataContainer getAuxiliaryData() {
+		return auxiliaryData;
+	}
+	
+	public int getBackground() { 
+		return background;
+	}
+	
+	public String getClassName() { 
+		return className; 
+	}
 
 	/** 
 	 * Define a default drop target based on the connector's anchor point 
@@ -350,7 +373,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	public boolean isEncapsulation() {return encapsulation;}
 	public boolean isLocked() {return locked;}
 	public boolean isNameDisplayed() { return nameDisplayed; }
-	public boolean isReceiveEnabled() {return receiveEnabled;}
+//	public boolean isReceiveEnabled() {return receiveEnabled;}
 	public boolean isSignalAnchorDisplayed() {
 		for(ProcessAnchorDescriptor pad:anchors.values()) {
 			if(pad.getDisplay().equals(BlockConstants.SIGNAL_PORT_NAME)) {
@@ -359,7 +382,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		}
 		return false;
 	}
-	public boolean isTransmitEnabled() {return transmitEnabled;}
+//	public boolean isTransmitEnabled() {return transmitEnabled;}
 	public void recordLatestValue(String port,QualifiedValue qv) {
 		if( qv==null || qv.getValue()==null) return;
 		log.tracef("%s.recordLatestValue: %s (%s) port %s (%s)",TAG,getName(),getId().toString(),port,qv.getValue().toString());
@@ -393,7 +416,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	public void setPreferredHeight(int preferredHeight) {this.preferredHeight = preferredHeight;}
 	public void setPreferredWidth(int preferredWidth) {this.preferredWidth = preferredWidth;}
 	public void setProperties(Collection<BlockProperty> props) { this.properties = props; }
-	public void setReceiveEnabled(boolean receiveEnabled) {this.receiveEnabled = receiveEnabled;}
+//	public void setReceiveEnabled(boolean receiveEnabled) {this.receiveEnabled = receiveEnabled;}
 	public void setBackground(int b)  { this.background = b; }
 	// Find the generic signal anchor and set its "hidden" property
 	public void setSignalAnchorDisplayed(boolean flag) {
@@ -408,7 +431,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	public void setStatusText(String statusText) { this.statusText = statusText; }
 	public void setStyle(BlockStyle s) { if( style!=null )this.style = s; }
 	public void setSubworkspaceId(UUID subworkspaceId) {this.subworkspaceId = subworkspaceId;}
-	public void setTransmitEnabled(boolean transmitEnabled) {this.transmitEnabled = transmitEnabled;}
+//	public void setTransmitEnabled(boolean transmitEnabled) {this.transmitEnabled = transmitEnabled;}
 	
 	
 	

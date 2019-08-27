@@ -332,14 +332,14 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 				log.warnf("%s.getBroadcastNotifications: Target block %s not found in %s",TAG,incoming.getBlockName(),getName());
 			}
 		}
-		else {
-			// This is really TransmissionScope.LOCAL
-			for( ProcessBlock block:getProcessBlocks()) {
-				if( !block.isReceiver() ) continue;
-				SignalNotification sn = new SignalNotification(block,incoming.getValue());
-				notifications.add(sn);
-			}
-		}
+//		else {
+//			// This is really TransmissionScope.LOCAL
+//			for( ProcessBlock block:getProcessBlocks()) {
+//				if( !block.isReceiver() ) continue;
+//				SignalNotification sn = new SignalNotification(block,incoming.getValue());
+//				notifications.add(sn);
+//			}
+//		}
 		
 		return notifications;
 	}

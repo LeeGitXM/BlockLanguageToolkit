@@ -353,13 +353,15 @@ public class ProxyHandler   {
 						// as well as the PalettePrototype
 						BlockDescriptor desc = proto.getBlockDescriptor();
 						val = tbl.get(BLTProperties.PALETTE_AUX_DATA);
-						if( val!=null ) desc.setExternallyAugmented(fns.coerceToBoolean(val.toString()));
-						val = tbl.get(BLTProperties.PALETTE_RECEIVE_ENABLED);
-						if( val!=null ) desc.setReceiveEnabled(fns.coerceToBoolean(val.toString()));
-						val = tbl.get(BLTProperties.PALETTE_TRANSMIT_ENABLED);
-						if( val!=null ) desc.setTransmitEnabled(fns.coerceToBoolean(val.toString()));
+						if( val!=null ) 
+							desc.setExternallyAugmented(fns.coerceToBoolean(val.toString()));
+//						val = tbl.get(BLTProperties.PALETTE_RECEIVE_ENABLED);
+//						if( val!=null ) desc.setReceiveEnabled(fns.coerceToBoolean(val.toString()));
+//						val = tbl.get(BLTProperties.PALETTE_TRANSMIT_ENABLED);
+//						if( val!=null ) desc.setTransmitEnabled(fns.coerceToBoolean(val.toString()));
 						val = tbl.get(BLTProperties.PALETTE_VIEW_LABEL);
-						if( val!=null ) desc.setEmbeddedLabel(val.toString());
+						if( val!=null ) 
+							desc.setEmbeddedLabel(val.toString());
 						val = tbl.get(BLTProperties.PALETTE_VIEW_BACKGROUND);
 						if( val!=null ) {
 							int background = 0xffffff; // White
@@ -372,18 +374,24 @@ public class ProxyHandler   {
 							desc.setBackground(background);
 						}
 						val = tbl.get(BLTProperties.PALETTE_VIEW_ICON);
-						if( val!=null ) desc.setEmbeddedIcon(val.toString());
+						if( val!=null ) 
+							desc.setEmbeddedIcon(val.toString());
 						val = tbl.get(BLTProperties.PALETTE_VIEW_BLOCK_ICON);
-						if( val!=null ) desc.setIconPath(val.toString());
+						if( val!=null ) 
+							desc.setIconPath(val.toString());
 						val = tbl.get(BLTProperties.PALETTE_VIEW_FONT_SIZE);
-						if( val!=null ) desc.setEmbeddedFontSize(fns.coerceToInteger(val));
+						if( val!=null ) 
+							desc.setEmbeddedFontSize(fns.coerceToInteger(val));
 						val = tbl.get(BLTProperties.PALETTE_VIEW_HEIGHT);
-						if( val!=null ) desc.setPreferredHeight(fns.coerceToInteger(val));
+						if( val!=null ) 
+							desc.setPreferredHeight(fns.coerceToInteger(val));
 						val = tbl.get(BLTProperties.PALETTE_VIEW_WIDTH);
-						if( val!=null ) desc.setPreferredWidth(fns.coerceToInteger(val));
+						if( val!=null ) 
+							desc.setPreferredWidth(fns.coerceToInteger(val));
 						desc.setBlockClass(nullCheck(tbl.get(BLTProperties.PALETTE_BLOCK_CLASS),"project.block.BasicBlock.BasicBlock"));
 						val = tbl.get(BLTProperties.PALETTE_EDITOR_CLASS);
-						if( val!=null ) desc.setEditorClass(val.toString());
+						if( val!=null ) 
+							desc.setEditorClass(val.toString());
 						val = tbl.get(BLTProperties.PALETTE_BLOCK_STYLE);
 						if( val!=null) {
 							try {
@@ -398,9 +406,11 @@ public class ProxyHandler   {
 						}
 						// Now handle the anchors
 						val = tbl.get(BLTProperties.PALETTE_ANCHOR_IN);
-						if( val!=null ) addAnchorsToDescriptor(desc,val,AnchorDirection.INCOMING);
+						if( val!=null ) 
+							addAnchorsToDescriptor(desc,val,AnchorDirection.INCOMING);
 						val = tbl.get(BLTProperties.PALETTE_ANCHOR_OUT);
-						if( val!=null ) addAnchorsToDescriptor(desc,val,AnchorDirection.OUTGOING);
+						if( val!=null ) 
+							addAnchorsToDescriptor(desc,val,AnchorDirection.OUTGOING);
 						prototypes.add(proto); 
 					}
 				}

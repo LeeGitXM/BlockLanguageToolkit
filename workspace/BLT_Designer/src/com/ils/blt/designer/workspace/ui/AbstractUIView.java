@@ -140,9 +140,6 @@ public abstract class AbstractUIView extends JComponent
 		for(ProcessAnchorDescriptor desc:anchs) {
 			
 			
-			log.tracef("EREIAM JH - initAnchorPoints counts(tblr)" + desc.getAnnotation() + " " + desc.getSortOrder() + " " + desc.getConnectionType().name());
-			
-			
 			if( desc.isHidden()) hiddenIndex = index;
 			PlacementHint hint = desc.getHint();
 			if(hint==null) hint = PlacementHint.UNSPECIFIED;
@@ -215,7 +212,7 @@ public abstract class AbstractUIView extends JComponent
 						desc.getConnectionType(),
 						new Point(inset+(topIndex*interiorWidth)/topSegments,0),
 						new Point(inset+(topIndex*interiorWidth)/topSegments,-SIGNAL_LEADER_LENGTH),
-						new Rectangle((topIndex*interiorWidth)/topSegments,0,2*inset,2*inset),
+						new Rectangle((topIndex*interiorWidth)/topSegments,0,(int)(1.5*inset),(int)(1.5*inset)),
 						desc.isMultiple(),
 						desc.getAnnotation()); 
 				ap.setSide(AnchorSide.TOP);
@@ -468,19 +465,19 @@ public abstract class AbstractUIView extends JComponent
 	protected void drawBadges(Graphics2D g) {
 		Dimension sz = getPreferredSize();
 
-		// Receive
-		if(block.isReceiveEnabled()) {
-			// x,y,width,height
-			Rectangle bounds = new Rectangle((sz.width-2*INSET)/4-INSET,0,BADGE_WIDTH,BADGE_HEIGHT);
-			String path = "Block/icons/badges/receiver.png";
-			paintBadge(g,path,bounds);
-		}
-		// Transmit
-		if(block.isTransmitEnabled()) {
-			Rectangle bounds = new Rectangle(3*(sz.width-2*INSET)/4,0,BADGE_WIDTH,BADGE_HEIGHT);
-			String path = "Block/icons/badges/transmitter.png";
-			paintBadge(g,path,bounds);
-		}
+//		// Receive
+//		if(block.isReceiveEnabled()) {
+//			// x,y,width,height
+//			Rectangle bounds = new Rectangle((sz.width-2*INSET)/4-INSET,0,BADGE_WIDTH,BADGE_HEIGHT);
+//			String path = "Block/icons/badges/receiver.png";
+//			paintBadge(g,path,bounds);
+//		}
+//		// Transmit
+//		if(block.isTransmitEnabled()) {
+//			Rectangle bounds = new Rectangle(3*(sz.width-2*INSET)/4,0,BADGE_WIDTH,BADGE_HEIGHT);
+//			String path = "Block/icons/badges/transmitter.png";
+//			paintBadge(g,path,bounds);
+//		}
 		// Locked
 		if(block.isLocked()) {
 			Rectangle bounds = new Rectangle(3*(sz.width-2*INSET)/4,3*(sz.height-2*INSET)/4,BADGE_WIDTH,BADGE_HEIGHT);

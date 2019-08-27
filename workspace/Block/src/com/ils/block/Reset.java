@@ -170,6 +170,6 @@ public class Reset extends AbstractProcessBlock implements ProcessBlock {
 		desc.setPreferredHeight(60);
 		desc.setPreferredWidth(60);
 		desc.setStyle(BlockStyle.SQUARE);
-		desc.setReceiveEnabled(true);
+//		desc.setReceiveEnabled(true);
 	}
 }

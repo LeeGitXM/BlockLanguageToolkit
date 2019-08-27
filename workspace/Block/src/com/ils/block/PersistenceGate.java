@@ -18,6 +18,7 @@ import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
 import com.ils.blt.common.block.PropertyType;
+import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.control.ExecutionController;
 import com.ils.blt.common.notification.BlockPropertyChangeEvent;
@@ -40,7 +41,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 	private int count = 0;     // Countdown - number of intervals to go ...
 	private double scanInterval = 10.;  // ~secs
 	private double timeWindow = 0.;  // ~secs
-	private String trigger = "";     // Nothing will trigger until this is set
+	private TruthValue trigger = TruthValue.TRUE;     // Nothing will trigger until this is set * 08/22/19 Pete wants this to default to TRUE
 	private BlockProperty valueProperty = null;
 	private final Watchdog dog;
 	/**
@@ -75,7 +76,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		setProperty(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW, windowProperty);
 		BlockProperty scanIntervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL,new Double(scanInterval),PropertyType.TIME_SECONDS,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL, scanIntervalProperty);
-		BlockProperty triggerProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER,trigger,PropertyType.STRING,true);
+		BlockProperty triggerProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER,trigger,PropertyType.TRUTHVALUE,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER, triggerProperty);
 		// The value is the count-down shown in the UI
 		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.STRING,false);
@@ -86,7 +87,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
 		input.setIsMultiple(false);
 		anchors.add(input);
-		
+
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.TRUTHVALUE);
 		anchors.add(output);
 	}
@@ -119,7 +120,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		lastValue = vcn.getValue();
 		//log.infof("%s.acceptValue: Received %s, trigger is %s",TAG,qv.getValue().toString(),trigger);
 		// A different value than the trigger, or a bad value aborts the countdown
-		if( !lastValue.getQuality().isGood() || !lastValue.getValue().toString().equalsIgnoreCase(trigger) ) {
+		if( !lastValue.getQuality().isGood() || !lastValue.getValue().toString().equalsIgnoreCase(trigger.toString()) ) {
 			count = 0;
 			valueProperty.setValue("");
 			if( dog.isActive() ) timer.removeWatchdog(dog);
@@ -133,7 +134,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 			}
 		}
 		// Only execute if the block state is not at the trigger
-		else if( !trigger.equalsIgnoreCase(state.name()) ) {
+		else if( !trigger.toString().equalsIgnoreCase(state.name()) ) {
 			//log.infof("%s.acceptValue: Matched trigger %s",TAG,qv.getValue().toString());
 			// Good quality and equal to the trigger.
 			if( !dog.isActive() ) {
@@ -188,17 +189,15 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		String propertyName = event.getPropertyName();
 		log.debugf("%s.propertyChange: Received %s = %s",getName(),propertyName,event.getNewValue().toString());
 		if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_TRIGGER)) {
-			trigger = event.getNewValue().toString();
+			trigger = TruthValue.valueOf(event.getNewValue().toString().toUpperCase());
 			
 		}
 		else if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW)) {
 			try {
 				timeWindow = Double.parseDouble(event.getNewValue().toString());
-				log.errorf("%s.propertyChange: EREIAM JH - time Received %s ",getName(),""+timeWindow);
-				// Make sure this isn't called if block properties are changed
 			}
 			catch(NumberFormatException nfe) {
-				log.warnf("%s.propertyChange: Unable to time window to a double (%s)",getName(),nfe.getLocalizedMessage());
+				log.warnf("%s.propertyChange: Unable to convert scan interval to a double (%s)",getName(),nfe.getLocalizedMessage());
 			}
 		}
 		else if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_SCAN_INTERVAL)) {
@@ -260,6 +259,6 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		desc.setPreferredHeight(40);
 		desc.setPreferredWidth(90);
 		desc.setStyle(BlockStyle.READOUT);
-		desc.setReceiveEnabled(true);
+//		desc.setReceiveEnabled(true);
 	}
 }

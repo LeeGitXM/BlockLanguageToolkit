@@ -181,7 +181,7 @@ public class InferenceInhibitor extends AbstractProcessBlock implements ProcessB
 	@Override
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
-		this.setReceiver(true);
+//		this.setReceiver(true);
 		String propertyName = event.getPropertyName();
 		if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_TRIGGER)) {
 			trigger = TruthValue.valueOf(event.getNewValue().toString().toUpperCase());	
