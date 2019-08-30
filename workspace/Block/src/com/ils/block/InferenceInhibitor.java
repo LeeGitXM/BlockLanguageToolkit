@@ -6,7 +6,6 @@ package com.ils.block;
 import java.util.Map;
 import java.util.UUID;
 
-import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.Activity;
 import com.ils.blt.common.block.AnchorDirection;
@@ -33,7 +32,6 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
  * Values that arrive during the inhibit period are discarded. Otherwise
  * values are propagated without change.
  */
-@ExecutableBlock
 public class InferenceInhibitor extends AbstractProcessBlock implements ProcessBlock {
 	private boolean inhibiting = false;
 	private TruthValue controlValue = TruthValue.UNSET;
@@ -229,17 +227,17 @@ public class InferenceInhibitor extends AbstractProcessBlock implements ProcessB
 	 * Augment the palette prototype for this block class.
 	 */
 	private void initializePrototype() {
-//		prototype.setPaletteIconPath("Block/icons/palette/inference_inhibit.png");
-//		prototype.setPaletteLabel("InferenceInhibitor");
-//		prototype.setTooltipText("Discard incoming values that arrive while the inhibit control does not match the trigger value");
-//		prototype.setTabName(BlockConstants.PALETTE_TAB_CONTROL);
-//		
-//		BlockDescriptor desc = prototype.getBlockDescriptor();
-//		desc.setPreferredHeight(60);
-//		desc.setPreferredWidth(80);
-//		desc.setBlockClass(getClass().getCanonicalName());
-//		desc.setStyle(BlockStyle.CLAMP);
-//		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_BLUE_GRAY);
+		prototype.setPaletteIconPath("Block/icons/palette/inference_inhibit.png");
+		prototype.setPaletteLabel("InferenceInhibitor");
+		prototype.setTooltipText("Discard incoming values that arrive while the inhibit control does not match the trigger value");
+		prototype.setTabName(BlockConstants.PALETTE_TAB_CONTROL);
+		
+		BlockDescriptor desc = prototype.getBlockDescriptor();
+		desc.setPreferredHeight(60);
+		desc.setPreferredWidth(80);
+		desc.setBlockClass(getClass().getCanonicalName());
+		desc.setStyle(BlockStyle.CLAMP);
+		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_BLUE_GRAY);
 
 	}
 }

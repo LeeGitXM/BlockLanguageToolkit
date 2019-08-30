@@ -37,7 +37,7 @@ import com.inductiveautomation.ignition.common.sqltags.model.types.DataQuality;
  * is available. Inputs and outputs are truth-values.
  */
 @ExecutableBlock
-public class And extends AbstractProcessBlock implements ProcessBlock {
+public class And extends AbstractProcessBlock {
 	// Keep map of values by originating block id
 	protected final Map<String,QualifiedValue> qualifiedValueMap;
 	private final Watchdog dog;

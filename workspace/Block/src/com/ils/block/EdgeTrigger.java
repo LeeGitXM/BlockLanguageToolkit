@@ -197,6 +197,7 @@ public class EdgeTrigger extends AbstractProcessBlock implements ProcessBlock {
 		prototype.setPaletteLabel("EdgeTrigger");
 		prototype.setTooltipText("Hold targeted value for a specified delay before reverting  (~secs)");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_CONTROL);
+		
 		BlockDescriptor view = prototype.getBlockDescriptor();
 		view.setEmbeddedIcon("Block/icons/embedded/edge_trigger.png");
 		view.setBlockClass(getClass().getCanonicalName());

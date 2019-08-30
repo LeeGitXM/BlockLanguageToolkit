@@ -130,6 +130,7 @@ public class LogicLatch extends AbstractProcessBlock implements ProcessBlock {
 		prototype.setPaletteLabel("LogicLatch");
 		prototype.setTooltipText("Retain first value received until reset");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_LOGIC);
+		
 		BlockDescriptor view = prototype.getBlockDescriptor();
 		view.setEmbeddedIcon("Block/icons/embedded/latch.png");
 		view.setBlockClass(getClass().getCanonicalName());

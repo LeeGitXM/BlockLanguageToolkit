@@ -8,7 +8,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagnosticDiagram;
 import com.ils.blt.common.ProcessBlock;
@@ -24,7 +23,6 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
  * from a tag that is meant to be logically connected to a SinkConnection. 
  * Connected sources and sinks should share common names.
  */
-@ExecutableBlock
 public class SourceConnection extends Input implements ProcessBlock {
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -116,21 +114,21 @@ public class SourceConnection extends Input implements ProcessBlock {
 	 * Augment the palette prototype for this block class.
 	 */
 	protected void initializePrototype() {
-//		prototype.setPaletteIconPath("Block/icons/palette/in_connection.png");
-//		prototype.setPaletteLabel("Source");
-//		prototype.setTooltipText("Receive data from a sink of the same name");
-//		prototype.setTabName(BlockConstants.PALETTE_TAB_CONNECTIVITY);
-//		
-//		BlockDescriptor desc = prototype.getBlockDescriptor();
-//		desc.setPreferredHeight(40);
-//		desc.setPreferredWidth(50);
-//		desc.setBlockClass(getClass().getCanonicalName());
-//		desc.setBackground(new Color(127,127,127).getRGB()); // Dark gray
-//		desc.setStyle(BlockStyle.ARROW);
-//		desc.setCtypeEditable(true);
-//		desc.setNameDisplayed(true);
-//		desc.setNameOffsetX(25);
-//		desc.setNameOffsetY(45);
+		prototype.setPaletteIconPath("Block/icons/palette/in_connection.png");
+		prototype.setPaletteLabel("Source");
+		prototype.setTooltipText("Receive data from a sink of the same name");
+		prototype.setTabName(BlockConstants.PALETTE_TAB_CONNECTIVITY);
+		
+		BlockDescriptor desc = prototype.getBlockDescriptor();
+		desc.setPreferredHeight(40);
+		desc.setPreferredWidth(50);
+		desc.setBlockClass(getClass().getCanonicalName());
+		desc.setBackground(new Color(127,127,127).getRGB()); // Dark gray
+		desc.setStyle(BlockStyle.ARROW);
+		desc.setCtypeEditable(true);
+		desc.setNameDisplayed(true);
+		desc.setNameOffsetX(25);
+		desc.setNameOffsetY(45);
 	}
 	
 	/**

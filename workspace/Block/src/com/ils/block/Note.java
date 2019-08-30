@@ -83,6 +83,7 @@ public class Note extends AbstractProcessBlock implements ProcessBlock {
 		prototype.setPaletteLabel("Note");
 		prototype.setTooltipText("Any notes you would care to enter.");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_MISC);
+		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setStyle(BlockStyle.NOTE);

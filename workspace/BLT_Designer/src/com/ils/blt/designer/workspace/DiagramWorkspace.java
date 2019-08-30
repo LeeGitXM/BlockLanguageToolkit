@@ -637,16 +637,14 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 						TagTreeNode tnode = (TagTreeNode) tagNodeArr.get(0);
 						int dropx = event.getLocation().x;
 						int thewidth = getActiveDiagram().getDiagramSize().width;
-						
-						Input input = new Input();
-						Output output = new Output();
-			
 							
 						if( getSelectedContainer()!=null ) {
 							ProcessBlockView block = null;
 							if (dropx > thewidth / 2) {
+								Output output = new Output();
 								block = new ProcessBlockView(output.getBlockPrototype().getBlockDescriptor());
 							} else {
+								Input input = new Input();
 								block = new ProcessBlockView(input.getBlockPrototype().getBlockDescriptor());
 							}
 							

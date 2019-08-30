@@ -208,6 +208,7 @@ public class OutOfRangeObservation extends AbstractProcessBlock implements Proce
 		prototype.setPaletteLabel("OutOfRange");
 		prototype.setTooltipText("Test incoming value against configured high and low limits and deadbands");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_OBSERVATION);
+		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setEmbeddedIcon("Block/icons/embedded/out_of_range_limit.png");

@@ -138,6 +138,7 @@ public class TimeReadout extends Readout implements ProcessBlock {
 		prototype.setPaletteLabel("TimeReadout");
 		prototype.setTooltipText("Show the time the most recent value. Use SimpleDateFormat to configure the output.");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_MISC);
+		
 		BlockDescriptor view = prototype.getBlockDescriptor();
 		view.setBlockClass(getClass().getCanonicalName());
 		view.setStyle(BlockStyle.READOUT);

@@ -161,7 +161,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 			timer.updateWatchdog(dog);  // pet dog
 			
 			double timeRemaining = count*scanInterval;
-			TimeUnit tu = TimeUtility.unitForValue(timeRemaining);
+//			TimeUnit tu = TimeUtility.unitForValue(timeRemaining);
 			String formattedTime = String.format("%02d:%02d:%02d", TimeUtility.remainderValue(timeRemaining, TimeUnit.HOURS),
 					TimeUtility.remainderValue(timeRemaining, TimeUnit.MINUTES),TimeUtility.remainderValue(timeRemaining, TimeUnit.SECONDS));
 			log.debugf("%s.evaluate: cycle %d property value =  %s.",getName(),count,formattedTime);

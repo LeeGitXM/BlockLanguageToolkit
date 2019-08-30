@@ -220,6 +220,7 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 		prototype.setPaletteLabel("Delay");
 		prototype.setTooltipText("Delay incoming values by a specified interval (~secs)");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_CONTROL);
+		
 		BlockDescriptor view = prototype.getBlockDescriptor();
 		view.setEmbeddedIcon("Block/icons/embedded/clock.png");
 		view.setBlockClass(getClass().getCanonicalName());

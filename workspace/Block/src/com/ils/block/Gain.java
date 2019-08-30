@@ -141,6 +141,7 @@ public class Gain extends AbstractProcessBlock implements ProcessBlock {
 		prototype.setPaletteLabel("Gain");
 		prototype.setTooltipText("Multiply the incoming value by a specified constant");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_ARITHMETIC);
+		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setEmbeddedLabel("K");

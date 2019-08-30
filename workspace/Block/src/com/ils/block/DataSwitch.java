@@ -180,6 +180,7 @@ public class DataSwitch extends AbstractProcessBlock implements ProcessBlock {
 		prototype.setPaletteLabel("DataSwitch");
 		prototype.setTooltipText("Divert incoming values to an output determined by the control value");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_CONTROL);
+		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setEmbeddedIcon("Block/icons/embedded/3_way_switch.png");
 		desc.setBlockClass(getClass().getCanonicalName());
