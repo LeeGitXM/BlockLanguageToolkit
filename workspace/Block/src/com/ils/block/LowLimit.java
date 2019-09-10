@@ -226,7 +226,7 @@ public class LowLimit extends AbstractProcessBlock implements ProcessBlock {
 		prototype.setPaletteIconPath("Block/icons/palette/minlimit.png");
 		prototype.setPaletteLabel("LowLimit");
 		prototype.setTooltipText("Determine the minimim value among inputs subject to an entered minimum");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_ANALYSIS);
+		prototype.setTabName(BlockConstants.PALETTE_TAB_STATISTICS);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());

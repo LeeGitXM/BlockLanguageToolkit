@@ -164,7 +164,7 @@ public class Explanation extends AbstractProcessBlock implements ProcessBlock {
 		prototype.setPaletteIconPath("Block/icons/palette/explanation.png");
 		prototype.setPaletteLabel("Explanation");
 		prototype.setTooltipText("Provide custom explanations for downstream blocks");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_ANALYSIS);
+		prototype.setTabName(BlockConstants.PALETTE_TAB_CONCLUSION);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setEmbeddedIcon("Block/icons/embedded/information.png");

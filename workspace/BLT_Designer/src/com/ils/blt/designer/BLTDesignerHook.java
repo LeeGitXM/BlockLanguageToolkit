@@ -4,15 +4,21 @@
 package com.ils.blt.designer;
 
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Frame;
+import java.awt.Image;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -26,11 +32,13 @@ import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.ApplicationScriptFunctions;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.script.AbstractScriptExtensionManager;
+import com.ils.blt.designer.editor.BlockEditConstants;
 import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
 import com.ils.blt.designer.search.BLTSearchProvider;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.WorkspaceRepainter;
 import com.inductiveautomation.factorypmi.designer.palette.model.DefaultPaletteItemGroup;
+import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.util.action.StateChangeAction;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
@@ -88,14 +96,108 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		mgr.addScriptModule(BLTProperties.DIAGRAM_SCRIPT_PACKAGE,ApplicationScriptFunctions.class);
 	}
 	
-	// Insert toolbar items - EREIAM JH - This is never called.
+	// Insert toolbar items 
     @Override
     public List<CommandBar> getModuleToolbars() {
-		ArrayList<CommandBar> bars = new ArrayList<>();
-		CommandBar bar = new CommandBar();
-		bar.add(new JideButton("FRT"));
-		return bars;
-    	
+    	return null;
+//		ArrayList<CommandBar> bars = new ArrayList<>();
+//		alignBar = new CommandBar();
+//		alignBar.setKey("bltAlign");
+//
+//		
+//		JideButton btn = new JideButton();
+//		String ICON_PATH  = "Block/icons/editor/align_left.png";
+//		Image img = ImageLoader.getInstance().loadImage(ICON_PATH ,BlockEditConstants.BUTTON_SIZE);
+//		if( img !=null) {
+//			Icon icon = new ImageIcon(img);
+//			btn.setIcon(icon);
+//			btn.setToolTipText("This does a thing");
+//			btn.addActionListener(new ActionListener() {
+//				public void actionPerformed(ActionEvent e){
+//					workspace.alignLeft();
+//				}
+//			});
+//		}
+//		alignBar.add(btn);
+//		
+//		btn = new JideButton();
+//		ICON_PATH  = "Block/icons/editor/align_right.png";
+//		img = ImageLoader.getInstance().loadImage(ICON_PATH ,BlockEditConstants.BUTTON_SIZE);
+//		if( img !=null) {
+//			Icon icon = new ImageIcon(img);
+//			btn.setIcon(icon);
+//			btn.setToolTipText("This does a thing");
+//			btn.addActionListener(new ActionListener() {
+//				public void actionPerformed(ActionEvent e){
+//					workspace.alignRight();
+//				}
+//			});
+//		}
+//		alignBar.add(btn);
+//
+//		btn = new JideButton();
+//		ICON_PATH  = "Block/icons/editor/align_top.png";
+//		img = ImageLoader.getInstance().loadImage(ICON_PATH ,BlockEditConstants.BUTTON_SIZE);
+//		if( img !=null) {
+//			Icon icon = new ImageIcon(img);
+//			btn.setIcon(icon);
+//			btn.setToolTipText("This does a thing");
+//			btn.addActionListener(new ActionListener() {
+//				public void actionPerformed(ActionEvent e){
+//					workspace.alignTop();
+//				}
+//			});
+//		}
+//		alignBar.add(btn);
+//		
+//		btn = new JideButton();
+//		ICON_PATH  = "Block/icons/editor/align_bottom.png";
+//		img = ImageLoader.getInstance().loadImage(ICON_PATH ,BlockEditConstants.BUTTON_SIZE);
+//		if( img !=null) {
+//			Icon icon = new ImageIcon(img);
+//			btn.setIcon(icon);
+//			btn.setToolTipText("This does a thing");
+//			btn.addActionListener(new ActionListener() {
+//				public void actionPerformed(ActionEvent e){
+//					workspace.alignBottom();
+//				}
+//			});
+//		}
+//		alignBar.add(btn);
+//
+//		btn = new JideButton();
+//		ICON_PATH  = "Block/icons/editor/align_horizontal.png";
+//		img = ImageLoader.getInstance().loadImage(ICON_PATH ,BlockEditConstants.BUTTON_SIZE);
+//		if( img !=null) {
+//			Icon icon = new ImageIcon(img);
+//			btn.setIcon(icon);
+//			btn.setToolTipText("This does a thing");
+//			btn.addActionListener(new ActionListener() {
+//				public void actionPerformed(ActionEvent e){
+//					workspace.alignHeightCenter();
+//				}
+//			});
+//		}
+//		alignBar.add(btn);
+//
+//		btn = new JideButton();
+//		ICON_PATH  = "Block/icons/editor/align_vertical.png";
+//		img = ImageLoader.getInstance().loadImage(ICON_PATH ,BlockEditConstants.BUTTON_SIZE);
+//		if( img !=null) {
+//			Icon icon = new ImageIcon(img);
+//			btn.setIcon(icon);
+//			btn.setToolTipText("This does a thing");
+//			btn.addActionListener(new ActionListener() {
+//				public void actionPerformed(ActionEvent e){
+//					workspace.alignWidthCenter();
+//				}
+//			});
+//		}
+//		alignBar.add(btn);
+//
+//		bars.add(alignBar);
+//		return bars;
+//    	
     }
 
 	// Insert a menu to allow control of database and tag provider.
@@ -291,7 +393,7 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 	}
 	// Search the menu tree to see if the same menu has been added by another module
 	//
-	//	TODO EREIAM JH - Why does this alwys return false?????????????
+	//	TODO EREIAM JH - Why does this always return false?????????????
 	//
 	private boolean menuExists(Frame frame,String title) {
 		for(Component c:context.getFrame().getComponents() ) {
@@ -326,7 +428,9 @@ public class BLTDesignerHook extends AbstractDesignerModuleHook  {
 		
 		return false;
 	}
-	 /**
+
+
+	/**
      * Display a popup dialog for configuration of dialog execution parameters.
      * Run in a separate thread, as a modal dialog in-line here will freeze the UI.
      */

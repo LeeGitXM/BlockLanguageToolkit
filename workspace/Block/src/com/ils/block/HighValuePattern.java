@@ -211,7 +211,7 @@ public class HighValuePattern extends AbstractProcessBlock implements ProcessBlo
 		prototype.setPaletteIconPath("Block/icons/palette/high_pattern.png");
 		prototype.setPaletteLabel("HighValPattern");
 		prototype.setTooltipText("Return TRUE if TriggerCount values are above the threshold");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_ANALYSIS);
+		prototype.setTabName(BlockConstants.PALETTE_TAB_OBSERVATION);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());

@@ -222,7 +222,7 @@ public class HighSelector extends AbstractProcessBlock implements ProcessBlock {
 		prototype.setPaletteIconPath("Block/icons/palette/max.png");
 		prototype.setPaletteLabel("HighSelector");
 		prototype.setTooltipText("Determine the maximum value among inputs");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_ANALYSIS);
+		prototype.setTabName(BlockConstants.PALETTE_TAB_STATISTICS);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setEmbeddedIcon("Block/icons/embedded/max.png");

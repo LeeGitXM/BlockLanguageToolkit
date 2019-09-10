@@ -227,7 +227,7 @@ public class HighLimit extends AbstractProcessBlock implements ProcessBlock {
 		prototype.setPaletteIconPath("Block/icons/palette/maxlimit.png");
 		prototype.setPaletteLabel("HighLimit");
 		prototype.setTooltipText("Determine the maximim value among inputs subject to an entered maximum");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_ANALYSIS);
+		prototype.setTabName(BlockConstants.PALETTE_TAB_STATISTICS);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());

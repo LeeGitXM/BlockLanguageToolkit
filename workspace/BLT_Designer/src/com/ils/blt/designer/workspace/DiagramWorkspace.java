@@ -8,6 +8,8 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Frame;
 import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Stroke;
@@ -37,6 +39,9 @@ import java.util.UUID;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -64,6 +69,7 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
+import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
@@ -76,9 +82,11 @@ import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.blt.designer.config.BlockExplanationViewer;
 import com.ils.blt.designer.config.BlockInternalsViewer;
 import com.ils.blt.designer.config.ForceValueSettingsDialog;
+import com.ils.blt.designer.editor.BlockEditConstants;
 import com.ils.blt.designer.editor.PropertyEditorFrame;
 import com.ils.blt.designer.navtree.DiagramTreeNode;
 import com.inductiveautomation.ignition.client.designable.DesignableContainer;
+import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.sqltags.ClientTagManager;
 import com.inductiveautomation.ignition.client.sqltags.tree.TagTreeNode;
 import com.inductiveautomation.ignition.client.util.LocalObjectTransferable;
@@ -95,7 +103,6 @@ import com.inductiveautomation.ignition.common.sqltags.model.Tag;
 import com.inductiveautomation.ignition.common.sqltags.model.TagProp;
 import com.inductiveautomation.ignition.common.sqltags.model.types.DataType;
 import com.inductiveautomation.ignition.common.sqltags.model.types.ExpressionType;
-import com.inductiveautomation.ignition.common.sqltags.model.types.TagValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.common.xmlserialization.SerializationException;
@@ -162,6 +169,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	private JPopupMenu zoomPopup;
 	private JComboBox<String> zoomCombo;
 //	private ProcessBlockPalette tabbedPalette = null;
+	private CommandBar alignBar = null;
 
 	/**
 	 * Constructor:
@@ -216,9 +224,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		tabbedPalette.setInitSide(DockContext.DOCK_SIDE_NORTH);
 		tabbedPalette.setInitIndex(0);
 		tabbedPalette.setTitle(BundleUtil.get().getString(PREFIX+".Palette.Title"));
-		tabbedPalette.setTabTitle(PREFIX+".Palette.Tab.Title");
+		tabbedPalette.setTabTitle(BundleUtil.get().getString(PREFIX+".Palette.Tab.Title"));
 		tabbedPalette.setSideTitle("SideTitle");
-		tabbedPalette.putClientProperty("menu.text", PREFIX+".Palette.Title");
+		tabbedPalette.putClientProperty("menu.text", BundleUtil.get().getString(PREFIX+".Palette.Title"));
 		
 		frames = new ArrayList<ResourceWorkspaceFrame>();
 		frames.add(tabbedPalette);
@@ -434,7 +442,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	@Override
 	public MenuBarMerge getMenu() {
 
-    	logger.errorf("EREIAM JH - GetMenu, context: %s",""+getContext());
+    	logger.tracef("EREIAM JH - GetMenu, context: %s",""+getContext());
+    	BundleUtil.get();
 
     	MenuBarMerge merge = null;     	
     	if (this.isVisible()) {
@@ -478,7 +487,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	        	});
     			
     			merge = new MenuBarMerge(BLTProperties.MODULE_ID);  // as suggested in javadocs
-		    	JMenuMerge alignmentMenu = new JMenuMerge("Align Blocks","AlignBlocks");
+		    	JMenuMerge alignmentMenu = new JMenuMerge("Align Blocks",BLTProperties.BUNDLE_PREFIX+".Menu.AlignBlocks");
+		    	// "alignblocks" needs to be in the resource bundle or else it gets ? added to it.
 		    	alignmentMenu.add(ra);
 		    	alignmentMenu.add(la);
 		    	alignmentMenu.add(ha);
@@ -544,17 +554,44 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 
 
+
+	public JideButton makeAlignButton(String imgName, String toolTip, ActionListener action) {
+		JideButton btn = new JideButton();
+		String iconPath  = "Block/icons/editor/" + imgName;
+		Image img = ImageLoader.getInstance().loadImage(iconPath ,BlockEditConstants.BUTTON_SIZE);
+		if( img !=null) {
+			Icon icon = new ImageIcon(img);
+			btn.setIcon(icon);
+			btn.setToolTipText(toolTip);
+			btn.addActionListener(action);
+		}
+		return btn;
+	}
 	
 
-	// List of toolbars to add - EREIAM JH - This is called when exiting the diagram workspace, but not seemingly when it is enetered.  weird
+	// List of toolbars to add - EREIAM JH - This is called when exiting the diagram workspace, but not seemingly when it is entered.  weird
+	//  Nothing seems to show up anyway...
 	@Override
 	public List<CommandBar> getToolbars() {
-
 		ArrayList<CommandBar> bars = new ArrayList<>();
-		CommandBar bar = new CommandBar();
-		bar.add(new JideButton("FRT"));
+		alignBar = new CommandBar();
+		alignBar.setKey("bltAlign");
+
+		ActionListener align = new ActionListener() { public void actionPerformed(ActionEvent e){ alignLeft();	} };
+		alignBar.add(makeAlignButton("align_left.png", "Align blocks by their left edge", align));
+		align = new ActionListener() { public void actionPerformed(ActionEvent e){ alignRight();} };
+		alignBar.add(makeAlignButton("align_right.png", "Align blocks by their right edge", align));
+		align = new ActionListener() { public void actionPerformed(ActionEvent e){ alignTop();} };
+		alignBar.add(makeAlignButton("align_top.png", "Align blocks by their top edge", align));
+		align = new ActionListener() { public void actionPerformed(ActionEvent e){ alignBottom();} };
+		alignBar.add(makeAlignButton("align_bottom.png", "Align blocks by their bottom edge", align));
+		align = new ActionListener() { public void actionPerformed(ActionEvent e){ alignHeightCenter();} };
+		alignBar.add(makeAlignButton("align_horizontal.png", "Align blocks by their horizontal centerpoint", align));
+		align = new ActionListener() { public void actionPerformed(ActionEvent e){ alignWidthCenter();} };
+		alignBar.add(makeAlignButton("align_vertical.png", "Align blocks by their vertical centerpoint", align));
+
+		bars.add(alignBar);
 		return bars;
-//		return null;
 	}
 
 
@@ -723,7 +760,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 										logger.infof("%s.handleDrop: EREIAM JH - tag path: %s",TAG,tnode.getTagPath().toStringFull());
 										diagram.setDirty(true);
 										diagram.fireStateChanged();
-										setSelectedItems((JComponent)null);  // this is a bit of a hack to get the property panel to refresh
+										setSelectedItems((JComponent)null);  // EREIAM JH - this is a bit of a hack to get the property panel to refresh
 										setSelectedItems((JComponent)droppedOn);
 										
 										pblock.notifyOfPropertyChange(property, type);
@@ -911,11 +948,11 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 
 		for(BlockComponent sb:list) {
 //			ProcessBlockView pbv = new ProcessBlockView(sb);
-			if (sb.getLocation().x > rightPos) {
-				rightPos = sb.getLocation().x;
+			if (sb.getLocation().x+sb.getWidth() > rightPos) {
+				rightPos = sb.getLocation().x+sb.getWidth();
 			}
-			if (sb.getLocation().y > bottomPos) {
-				bottomPos = sb.getLocation().y;
+			if (sb.getLocation().y+sb.getHeight() > bottomPos) {
+				bottomPos = sb.getLocation().y+sb.getHeight();
 			}
 			if (sb.getHeight() > height) {
 				height = sb.getHeight();
@@ -942,39 +979,19 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	
 	private void selectAllBlocks() {
 
-		
 	    BlockDesignableContainer container = getSelectedContainer();
 	    Component[] blocks = container.getComponents();
 
-
-		
-		
-//		ProcessDiagramView diagram = this.getActiveDiagram();
-//
-//		for( Block block:diagram.getBlocks()) {
-//			ProcessBlockView pbv = (ProcessBlockView)block;
-
-		for (Component block:blocks) {
-			if (block instanceof BlockComponent) {
-				logger.errorf("Selected all blocks!  bf is selected :%s:",((BlockComponent) block).isSelected());
-			}
-		}
+		ArrayList<JComponent> blockList = new ArrayList<>();
 		for( Component block:blocks) {
 			
 			if (block instanceof BlockComponent) {
-				logger.errorf("Select all blocks!  Ima slecting the stuff :%s:",block.getLocation());
 				((BlockComponent) block).setSelected(true);
-				
-				this.selectedItems.add((BlockComponent)block);
+				blockList.add((BlockComponent)block);
+				this.setSelectedItems(blockList);
 			}
 		}
 
-
-		for (Component block:blocks) {
-			if (block instanceof BlockComponent) {
-				logger.errorf("Selected all blocks!  Is selected :%s:",((BlockComponent) block).isSelected());
-			}
-		}
 		SwingUtilities.invokeLater(new WorkspaceRepainter());
 		return;
 	}
@@ -1172,17 +1189,41 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		if( container==null ) logger.infof("%s.containerSelected is null",TAG);
 		else logger.debugf("%s.containerSelected: %s",TAG,container.getName());
 	}
+	public CommandBar getAlignBar() {
+		return alignBar;
+	}
 	@Override
 	public void itemSelectionChanged(List<JComponent> selections) {
-		if( selections!=null && selections.size()==1 ) {
-			JComponent selection = selections.get(0);
-			logger.debugf("%s.itemSelectionChanged: selected a %s",TAG,selection.getClass().getName());
+		boolean enableAlign = false;
+		if( selections!=null ) {
+			if (selections.size()==1 ) {
+				JComponent selection = selections.get(0);
+				logger.debugf("%s.itemSelectionChanged: selected a %s",TAG,selection.getClass().getName());
+			} else {
+				int count = 0;
+				for (JComponent cp:selections) {
+					if (cp instanceof BlockComponent) {
+						count += 1;
+					}
+				}
+				if (count > 1) {
+					enableAlign = true;
+				}
+			}
 		}
-		else {
-			logger.debugf("%s: DiagramActionHandler: deselected",TAG);
-		}
+		updateBlockAlignMenus(enableAlign);
 	}
 	
+	private void updateBlockAlignMenus(boolean enableAlign) {
+//		BLTDesignerHook dh = (BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID);
+//		CommandBar cb = dh.getAlignBar();
+		CommandBar cb = getAlignBar();
+		for (Component cp:cb.getComponents()) {
+			cp.setEnabled(enableAlign);
+		}
+	}
+
+
 	private boolean isInBounds(Point dropPoint,BlockDesignableContainer bdc) {
 		Rectangle bounds = bdc.getBounds();
 		boolean inBounds = true;
@@ -1355,6 +1396,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
 		SwingUtilities.invokeLater(new WorkspaceRepainter());
 	}
+	
 	public void alignRight() {
 		Collection<BlockComponent> selections = getSelectedBlocks();
 		Rectangle bottomRight = findBottomRight(selections);

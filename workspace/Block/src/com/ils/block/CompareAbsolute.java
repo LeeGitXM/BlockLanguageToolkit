@@ -156,7 +156,7 @@ public class CompareAbsolute extends Compare implements ProcessBlock {
 		prototype.setPaletteIconPath("Block/icons/palette/compare_absolute.png");
 		prototype.setPaletteLabel("CompareAbs");
 		prototype.setTooltipText("Compare the absolute value of two inputs. Report true if the first is greater than or equal to the second.");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_ANALYSIS);
+		prototype.setTabName(BlockConstants.PALETTE_TAB_OBSERVATION);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setEmbeddedIcon("Block/icons/embedded/greater_equal.png");

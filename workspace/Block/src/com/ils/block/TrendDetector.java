@@ -472,7 +472,7 @@ public class TrendDetector extends AbstractProcessBlock implements ProcessBlock 
 		prototype.setPaletteIconPath("Block/icons/palette/trend_observation.png");
 		prototype.setPaletteLabel("TrendDetection");
 		prototype.setTooltipText("Perform an analysis on the input to detect trends");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_ANALYSIS);
+		prototype.setTabName(BlockConstants.PALETTE_TAB_STATISTICS);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setEmbeddedLabel("Trend");

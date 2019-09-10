@@ -223,7 +223,7 @@ public class LowSelector extends AbstractProcessBlock implements ProcessBlock {
 		prototype.setPaletteIconPath("Block/icons/palette/min.png");
 		prototype.setPaletteLabel("LowSelector");
 		prototype.setTooltipText("Determine the minimim value among inputs");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_ANALYSIS);
+		prototype.setTabName(BlockConstants.PALETTE_TAB_STATISTICS);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setEmbeddedIcon("Block/icons/embedded/min.png");

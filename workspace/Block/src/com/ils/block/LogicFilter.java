@@ -330,7 +330,7 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		prototype.setPaletteIconPath("Block/icons/palette/logic_filter.png");
 		prototype.setPaletteLabel("LogicFilter");
 		prototype.setTooltipText("Monitor the incoming value for change over a specified period");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_ANALYSIS);
+		prototype.setTabName(BlockConstants.PALETTE_TAB_LOGIC);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());

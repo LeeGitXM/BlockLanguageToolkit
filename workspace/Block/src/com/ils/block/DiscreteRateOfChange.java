@@ -255,7 +255,7 @@ public class DiscreteRateOfChange extends AbstractProcessBlock implements Proces
 		prototype.setPaletteIconPath("Block/icons/palette/rate_of_change.png");
 		prototype.setPaletteLabel("DiscreteChange");
 		prototype.setTooltipText("Compute the instantaneous rate of change based on a quadratic or cubic fit over recent history");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_ANALYSIS);
+		prototype.setTabName(BlockConstants.PALETTE_TAB_ARITHMETIC);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());

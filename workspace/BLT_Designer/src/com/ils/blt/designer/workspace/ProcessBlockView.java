@@ -267,7 +267,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
     				anchor.setConnectionType(newType);
     			}
     		}
-    		ui.reconfigure();
+    		getUi().reconfigure();
     		fireStateChanged();
     	}
     }
@@ -290,8 +290,10 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	
 	@Override
 	public Collection<AnchorPoint> getAnchorPoints() {
-		if( ui==null ) ui = factory.getUI(style, this);
-		return ui.getAnchorPoints();	
+		if( getUi()==null ) {
+			ui = factory.getUI(style, this);
+		}
+		return getUi().getAnchorPoints();	
 	}
 	
 	public Collection<ProcessAnchorDescriptor> getAnchors() { 
@@ -366,7 +368,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	@Override
 	public void initUI(BlockComponent blk) {
 		ui = factory.getUI(style, this);
-		ui.install(blk);
+		getUi().install(blk);
 	}
 	public boolean isCtypeEditable() {return ctypeEditable;}
 	public boolean isDirty() {return dirty;}
@@ -415,7 +417,9 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	}
 	public void setPreferredHeight(int preferredHeight) {this.preferredHeight = preferredHeight;}
 	public void setPreferredWidth(int preferredWidth) {this.preferredWidth = preferredWidth;}
-	public void setProperties(Collection<BlockProperty> props) { this.properties = props; }
+	public void setProperties(Collection<BlockProperty> props) { 
+		this.properties = props; 
+		}
 //	public void setReceiveEnabled(boolean receiveEnabled) {this.receiveEnabled = receiveEnabled;}
 	public void setBackground(int b)  { this.background = b; }
 	// Find the generic signal anchor and set its "hidden" property
@@ -513,10 +517,10 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	  */
 	@Override
 	public void stateChanged(ChangeEvent e) {
-		if( ui != null ) {
+		if( getUi() != null ) {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					ui.update();
+					getUi().update();
 				}
 			});
 		}
@@ -563,6 +567,10 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 			conType = ConnectionType.TRUTHVALUE; 
 		}
 		return conType;
+	}
+
+	public AbstractUIView getUi() {
+		return ui;
 	}
 
 

@@ -293,7 +293,7 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 		prototype.setPaletteIconPath("Block/icons/palette/clock.png");
 		prototype.setPaletteLabel("Timer");
 		prototype.setTooltipText("Record time in the configured state ~ secs");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_CONTROL);
+		prototype.setTabName(BlockConstants.PALETTE_TAB_TIMERS_COUNTERS);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setEmbeddedIcon("Block/icons/embedded/alarm_clock.png");

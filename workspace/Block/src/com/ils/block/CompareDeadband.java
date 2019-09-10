@@ -204,7 +204,7 @@ public class CompareDeadband extends Compare implements ProcessBlock {
 		prototype.setPaletteIconPath("Block/icons/palette/compare_deadband.png");
 		prototype.setPaletteLabel("CompareDb");
 		prototype.setTooltipText("Compare two inputs considering a deadband zone below the second.");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_ANALYSIS);
+		prototype.setTabName(BlockConstants.PALETTE_TAB_OBSERVATION);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setEmbeddedIcon("Block/icons/embedded/greater_equal_deadband.png");

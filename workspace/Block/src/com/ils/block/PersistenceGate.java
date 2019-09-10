@@ -252,7 +252,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		prototype.setPaletteIconPath("Block/icons/palette/PMIDigitalDisplay32.png");
 		prototype.setPaletteLabel("PersistGate");
 		prototype.setTooltipText("Monitor the incoming value for change over a specified period");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_OBSERVATION);
+		prototype.setTabName(BlockConstants.PALETTE_TAB_TIMERS_COUNTERS);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());

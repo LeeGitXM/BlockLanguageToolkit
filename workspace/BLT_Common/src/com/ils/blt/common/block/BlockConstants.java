@@ -82,11 +82,13 @@ public interface BlockConstants   {
 	public static final String PALETTE_TAB_ANALYSIS           = "Analysis";
 	public static final String PALETTE_TAB_CONNECTIVITY       = "Connectivity";
 	public static final String PALETTE_TAB_CONTROL            = "Control";
+	public static final String PALETTE_TAB_CONCLUSION         = "Conclusion";
 	public static final String PALETTE_TAB_INFERENCE          = "Inference";
 	public static final String PALETTE_TAB_LOGIC              = "Logic";
 	public static final String PALETTE_TAB_OBSERVATION        = "Observation";
 	public static final String PALETTE_TAB_STATISTICS         = "Statistics";
-	public static final String PALETTE_TAB_MISC         = "Misc";
+	public static final String PALETTE_TAB_TIMERS_COUNTERS    = "Timers & Counters";
+	public static final String PALETTE_TAB_MISC               = "Misc";
 	
 	// Default attribute offsets
 	public static final int DEFAULT_ATTRIBUTE_OFFSET_X     = 30;

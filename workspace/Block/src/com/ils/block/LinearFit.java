@@ -273,7 +273,7 @@ public class LinearFit extends AbstractProcessBlock implements ProcessBlock {
 		prototype.setPaletteIconPath("Block/icons/palette/linear_fit.png");
 		prototype.setPaletteLabel("LinearFit");
 		prototype.setTooltipText("Calculate linear (or cubic) fit on recent history");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_ANALYSIS);
+		prototype.setTabName(BlockConstants.PALETTE_TAB_ARITHMETIC);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());

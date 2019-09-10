@@ -419,7 +419,7 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 		prototype.setPaletteIconPath("Block/icons/palette/SQC.png");
 		prototype.setPaletteLabel("SQC");
 		prototype.setTooltipText("Perform an SPC analysis on the input and place results on output");
-		prototype.setTabName(BlockConstants.PALETTE_TAB_ANALYSIS);
+		prototype.setTabName(BlockConstants.PALETTE_TAB_STATISTICS);
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setEmbeddedLabel("SQC");
