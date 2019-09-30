@@ -116,7 +116,7 @@ public class Output extends AbstractProcessBlock implements ProcessBlock {
 		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 		
 		// Define a single input
-		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
+		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
 		input.setIsMultiple(false);
 		anchors.add(input);
 	}
@@ -147,7 +147,7 @@ public class Output extends AbstractProcessBlock implements ProcessBlock {
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setStyle(BlockStyle.ARROW);
-		desc.setPreferredHeight(45);
+		desc.setPreferredHeight(46);
 		desc.setPreferredWidth(60);
 		desc.setBackground(new Color(125,110,230).getRGB());   // Purple
 		desc.setCtypeEditable(true);

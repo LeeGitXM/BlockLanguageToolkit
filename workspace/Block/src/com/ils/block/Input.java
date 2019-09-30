@@ -246,7 +246,7 @@ public class Input extends AbstractProcessBlock {
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setStyle(BlockStyle.ARROW);
-		desc.setPreferredHeight(45);
+		desc.setPreferredHeight(46);
 		desc.setPreferredWidth(60);
 		desc.setBackground(Color.cyan.getRGB());
 		desc.setCtypeEditable(true);
