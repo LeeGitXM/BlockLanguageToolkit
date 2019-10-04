@@ -189,7 +189,22 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		String propertyName = event.getPropertyName();
 		log.debugf("%s.propertyChange: Received %s = %s",getName(),propertyName,event.getNewValue().toString());
 		if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_TRIGGER)) {
-			trigger = TruthValue.valueOf(event.getNewValue().toString().toUpperCase());
+
+//			if the string is blank  make it unset, if it blows up make it undefined
+			String eval = event.getNewValue().toString().toUpperCase(); 
+			try {
+				
+				if (eval == null || eval.isEmpty()) {
+					trigger = TruthValue.UNSET;
+				} else {
+					trigger = TruthValue.valueOf(eval);
+				}
+				
+			} catch(IllegalArgumentException nfe) {
+				trigger = TruthValue.UNKNOWN;
+				log.warnf("%s.propertyChange: Unable to convert string to TruthValue (%s)",getName(),nfe.getLocalizedMessage());
+			}
+			
 			
 		}
 		else if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW)) {
