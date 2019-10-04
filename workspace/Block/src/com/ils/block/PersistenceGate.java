@@ -187,7 +187,7 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		String propertyName = event.getPropertyName();
 		log.debugf("%s.propertyChange: Received %s = %s",getName(),propertyName,event.getNewValue().toString());
 		if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_TRIGGER)) {
-//			if the string is blank  make it unset, ifit blows up make it undefined
+//			if the string is blank  make it unset, if it blows up make it undefined
 			String eval = event.getNewValue().toString().toUpperCase(); 
 			try {
 				
