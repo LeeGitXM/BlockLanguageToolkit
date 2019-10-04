@@ -1025,7 +1025,9 @@ public class ModelManager implements ProjectListener  {
 							controller.removeSubscription(block, prop);
 						}
 						// If this is a final diagnosis, call its delete extension
-						if( block.getClassName().equals("xom.block.finaldiagnosis.FinalDiagnosis")) {
+						//EREIAM JH - CHANGED WITH MOVE
+//						if( block.getClassName().equals("xom.block.finaldiagnosis.FinalDiagnosis")) {
+						if( block.getClassName().equals("ils.block.finaldiagnosis.FinalDiagnosis")) {
 							extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), 
 								block.getClassName(), 
 								ScriptConstants.NODE_DELETE_SCRIPT, block.getBlockId().toString());
