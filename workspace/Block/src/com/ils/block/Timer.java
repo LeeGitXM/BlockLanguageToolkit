@@ -6,9 +6,11 @@ package com.ils.block;
 import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.ProcessBlock;
+import com.ils.blt.common.TimeUtility;
 import com.ils.blt.common.block.Activity;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
@@ -40,13 +42,14 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 	private final String TAG = "Timer";
 	private final static String BLOCK_PROPERTY_ACCUMULATE_VALUES = "AccumulateValues";
 	private final static String BLOCK_PROPERTY_STOP_ON = "StopOn";
-	private double interval = 60;  // ~secs
+	private double interval = 10;  // ~secs
 	private boolean accumulateValues = false;
 	private double duration = 0.;  //Elapsed time ~ secs at the triggering state.
-	private BlockProperty tagProperty = null;
+//	private BlockProperty tagProperty = null;
 	private TruthValue stopOn = TruthValue.FALSE;
 	private TruthValue trigger = TruthValue.TRUE;
 	private Date triggerReceiptTime = null;
+	private BlockProperty valueProperty = null;
 	private final Watchdog dog;
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -79,16 +82,21 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 //		this.setReceiver(true);
 		BlockProperty accumulateProperty = new BlockProperty(BLOCK_PROPERTY_ACCUMULATE_VALUES,new Boolean(accumulateValues),PropertyType.BOOLEAN,true);
 		setProperty(BLOCK_PROPERTY_ACCUMULATE_VALUES, accumulateProperty);
-		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL,new Double(interval),PropertyType.TIME_MINUTES,true);
+		BlockProperty intervalProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL,new Double(interval),PropertyType.TIME_SECONDS,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_INTERVAL, intervalProperty);
-		tagProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH,"",PropertyType.STRING,true);
-		tagProperty.setBinding("");
-		tagProperty.setBindingType(BindingType.TAG_WRITE);
-		setProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH, tagProperty);
+//		tagProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH,"",PropertyType.STRING,true);
+//		tagProperty.setBinding("");
+//		tagProperty.setBindingType(BindingType.TAG_WRITE);
+//		setProperty(BlockConstants.BLOCK_PROPERTY_TAG_PATH, tagProperty);
 		BlockProperty commandProperty = new BlockProperty(BLOCK_PROPERTY_STOP_ON,stopOn,PropertyType.TRUTHVALUE,true);
 		setProperty(BLOCK_PROPERTY_STOP_ON, commandProperty);
 		BlockProperty triggerProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER,trigger,PropertyType.TRUTHVALUE,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_TRIGGER, triggerProperty);
+		
+		// The value is the count-down shown in the UI
+		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.STRING,false);
+		valueProperty.setBindingType(BindingType.ENGINE);
+		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
 		
 		// Define a single input
 		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.TRUTHVALUE);
@@ -107,6 +115,7 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 	public void reset() {
 		this.state = TruthValue.UNSET;
 		this.duration = 0.;
+		valueProperty.setValue("");
 		recordActivity(Activity.ACTIVITY_RESET,"");
 		if( controller!=null ) {
 			// Send notifications on all outputs to indicate empty connections.
@@ -133,6 +142,7 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 	public void acceptValue(IncomingNotification vcn) {
 		super.acceptValue(vcn);
 		if( vcn.getConnection()!=null ) {
+			valueProperty.setValue("");
 			String port = vcn.getConnection().getDownstreamPortName();
 			if( port.equals(BlockConstants.IN_PORT_NAME) ) {
 				TruthValue tv = vcn.getValueAsTruthValue();
@@ -192,8 +202,12 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 				OutgoingNotification sig = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 				controller.acceptCompletionNotification(sig);
 	
-				String path = tagProperty.getBinding().toString();
-				if( !path.isEmpty() ) controller.updateTag(getParentId(),path, lastValue);
+				double timer = Double.parseDouble(lastValue.getValue().toString());
+				String formattedTime = String.format("%02d:%02d:%02d", TimeUtility.remainderValue(timer, TimeUnit.HOURS),
+						TimeUtility.remainderValue(timer, TimeUnit.MINUTES),TimeUtility.remainderValue(timer, TimeUnit.SECONDS));
+				valueProperty.setValue(formattedTime);
+//				String path = tagProperty.getBinding().toString();
+//				if( !path.isEmpty() ) controller.updateTag(getParentId(),path, lastValue);
 				notifyOfStatus(lastValue);
 			}
 		}
@@ -205,6 +219,7 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 		else {
 			timer.removeWatchdog(dog);
 		}
+		
 	}
 	
 	/**
@@ -214,9 +229,18 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 	public void notifyOfStatus() {
 		notifyOfStatus(lastValue);
 	}
-	private void notifyOfStatus(QualifiedValue qualValue) {
-		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qualValue);
+
+	// NOTE: The "value" property is what we want to display (the countdown)
+	private void notifyOfStatus(QualifiedValue qv) {
+		Object val = valueProperty.getValue();
+		if( val!=null ) {
+			QualifiedValue displayQV = new TestAwareQualifiedValue(timer,val.toString());
+			log.tracef("%s.notifyOfStatus display = %s",getName(),val.toString());
+			controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,displayQV);
+		}
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
+	
 	/**
 	 * Note, an interval change resets the timeout period.
 	 */
@@ -290,7 +314,8 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 	 * Augment the palette prototype for this block class.
 	 */
 	private void initializePrototype() {
-		prototype.setPaletteIconPath("Block/icons/palette/clock.png");
+		prototype.setPaletteIconPath("Block/icons/palette/PMIDigitalDisplay32.png");
+//		prototype.setPaletteIconPath("Block/icons/palette/clock.png");
 		prototype.setPaletteLabel("Timer");
 		prototype.setTooltipText("Record time in the configured state ~ secs");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_TIMERS_COUNTERS);
@@ -298,8 +323,10 @@ public class Timer extends AbstractProcessBlock implements ProcessBlock {
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setEmbeddedIcon("Block/icons/embedded/alarm_clock.png");
 		desc.setBlockClass(getClass().getCanonicalName());
-		desc.setPreferredHeight(60);
-		desc.setPreferredWidth(60);
-		desc.setStyle(BlockStyle.SQUARE);
+
+		desc.setPreferredHeight(46);
+		desc.setPreferredWidth(90);
+		desc.setBadgeCharacter("t");
+		desc.setStyle(BlockStyle.READOUT);
 	}
 }

@@ -27,7 +27,7 @@ import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 /**
  * This class is a no-op. It simply passes its input onto the output.
  */
-@ExecutableBlock
+
 public class ControlCounter extends AbstractProcessBlock implements ProcessBlock {
 	private BlockProperty valueProperty = null;
 	private int counter = 0;

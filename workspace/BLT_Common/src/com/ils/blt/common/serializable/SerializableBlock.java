@@ -39,6 +39,7 @@ public class SerializableBlock {
 	private int preferredWidth  = 0;
 	private BlockProperty[] properties = null;
 //	private boolean receiveEnabled = false;
+	private String badgeChar = null;
 	private TruthValue state = TruthValue.UNSET;
 	private String statusText;
 	private BlockStyle style = BlockStyle.SQUARE;
@@ -82,6 +83,7 @@ public class SerializableBlock {
 	public boolean isNameDisplayed() {return nameDisplayed;}
 //	public boolean isReceiveEnabled() {return receiveEnabled;}
 //	public boolean isTransmitEnabled() {return transmitEnabled;}
+	public String getBadgeChar() {return badgeChar;}
 	public void setAnchors(SerializableAnchor[] array) {
 		anchors = array;
 		for(SerializableAnchor sa:anchors) {
@@ -112,6 +114,7 @@ public class SerializableBlock {
 	public void setStatusText(String statusText) { this.statusText = statusText; }
 	public void setSubworkspaceId(UUID subworkspace) {this.subworkspaceId = subworkspace;}
 	public void setStyle(BlockStyle style) { this.style = style; }
+	public void setBadgeChar(String ch) { this.badgeChar = ch; }
 //	public void setTransmitEnabled(boolean transmitEnabled) {this.transmitEnabled = transmitEnabled;}
 	public void setX(int xx) { this.x=xx; }
 	public void setY(int yy) { this.y=yy; }

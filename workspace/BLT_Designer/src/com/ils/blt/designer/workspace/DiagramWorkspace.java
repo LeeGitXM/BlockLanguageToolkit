@@ -9,7 +9,6 @@ import java.awt.Component;
 import java.awt.Frame;
 import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Stroke;
@@ -41,7 +40,6 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -69,7 +67,6 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
-import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
@@ -81,6 +78,7 @@ import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.ResourceUpdateManager;
 import com.ils.blt.designer.config.BlockExplanationViewer;
 import com.ils.blt.designer.config.BlockInternalsViewer;
+import com.ils.blt.designer.config.BlockPropertiesSelector;
 import com.ils.blt.designer.config.ForceValueSettingsDialog;
 import com.ils.blt.designer.editor.BlockEditConstants;
 import com.ils.blt.designer.editor.PropertyEditorFrame;
@@ -348,9 +346,13 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				}
 				logger.debugf("%s.getSelectionPopupMenu: Selection editor class = %s",TAG,pbv.getEditorClass());
 				// Do not allow editing when the diagram is disabled
-				if( selection instanceof BlockComponent && pbv.getEditorClass() !=null && pbv.getEditorClass().length()>0 &&
+				if(pbv.getEditorClass() !=null && pbv.getEditorClass().length() > 0 &&
 						!getActiveDiagram().getState().equals(DiagramState.DISABLED)) {
 					CustomEditAction cea = new CustomEditAction(this,pbv);
+					menu.add(cea);
+				}
+				if(!getActiveDiagram().getState().equals(DiagramState.DISABLED)) {
+					PropertyDisplayAction cea = new PropertyDisplayAction(getActiveDiagram(),pbv);
 					menu.add(cea);
 				}
 				if(pbv.isSignalAnchorDisplayed()) {
@@ -504,7 +506,40 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
     	return merge;
 	}
 	
-	
+	/**
+	 * Post an internals viewer for the block. The default shows
+	 * only name, class and UUID. Blocks may transmit additional
+	 * parameters as is useful. 
+	 */
+	private class PropertyDisplayAction extends BaseAction {
+		private static final long serialVersionUID = 1L;
+		private final ProcessDiagramView diagram;
+		private final ProcessBlockView block;
+		public PropertyDisplayAction(ProcessDiagramView dia,ProcessBlockView blk)  {
+			super(PREFIX+".DisplayProperties",IconUtil.getIcon("sun"));
+			this.diagram = dia;
+			this.block = blk;
+		}
+		
+		// Display the internals viewer
+		public void actionPerformed(final ActionEvent e) {
+			final JDialog viewer = (JDialog)new BlockPropertiesSelector(context.getFrame(),diagram,block);
+			
+			Object source = e.getSource();
+			if( source instanceof Component) {
+				viewer.setLocationRelativeTo((Component)source);
+			}
+			viewer.pack();
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					viewer.setVisible(true);
+				}
+			}); 
+
+		}
+	}
+
+
 	// Search the menu tree and remove the selected item
 	private void removeTopLevelMenu(Frame frame,String title) {
 		for(Component c:context.getFrame().getComponents() ) {

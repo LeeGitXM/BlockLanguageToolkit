@@ -15,6 +15,7 @@ public enum PropertyType
             DOUBLE,
             INTEGER,
             BOOLEAN,
+            COLOR,               // Gets a color chooser
             HTML,                // Gets an html editor
             HYSTERESIS,          // Hysteresis (TRUE,FALSE,ALWAYS,NEVER)
             LIMIT,               // Limit type (UPPER,LOWER,BOTH)

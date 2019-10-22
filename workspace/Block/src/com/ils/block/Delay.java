@@ -3,18 +3,22 @@
  */
 package com.ils.block;
 
+import java.sql.Time;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
 
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.ProcessBlock;
+import com.ils.blt.common.TimeUtility;
 import com.ils.blt.common.block.Activity;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
+import com.ils.blt.common.block.BindingType;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
@@ -26,6 +30,7 @@ import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
+import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.ils.common.watchdog.Watchdog;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
@@ -40,6 +45,7 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 	private double delayInterval = 1;    // ~ secs
 	private final ConcurrentLinkedQueue<TimestampedData> buffer;
 	private final Watchdog dog;
+	private BlockProperty valueProperty = null;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -70,6 +76,7 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 		super.reset();
 		timer.removeWatchdog(dog);
 		buffer.clear();
+		valueProperty.setValue("");
 	}
 	/**
 	 * Disconnect from the timer thread.
@@ -95,6 +102,8 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 			}
 		}
 	}
+
+	
 	/**
 	 * A new value has appeared on an input anchor. Add it to the list and trigger the delay timer.
 	 * The superior method set "lastValue", 
@@ -104,6 +113,7 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 	public void acceptValue(IncomingNotification vcn) {
 		String port = vcn.getConnection().getDownstreamPortName();
 		if( port.equals(BlockConstants.IN_PORT_NAME) && vcn.getValue()!=null ) {
+			valueProperty.setValue("");
 			String key = vcn.getConnection().getSource().toString();
 			recordActivity(Activity.ACTIVITY_RECEIVE,port,vcn.getValue().toString(),key);
 			
@@ -154,6 +164,13 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 			dog.setDelay(delay);
 			timer.updateWatchdog(dog);  // pet dog
 		}
+
+		long now = System.nanoTime()/1000000;   // Work in milliseconds
+		double timer = (dog.getExpiration()-now) / 1000;
+		String formattedTime = String.format("%02d:%02d:%02d", TimeUtility.remainderValue(timer, TimeUnit.HOURS),
+				TimeUtility.remainderValue(timer, TimeUnit.MINUTES),TimeUtility.remainderValue(timer, TimeUnit.SECONDS));
+		valueProperty.setValue(formattedTime);
+	
 	}
 	/**
 	 * Send status update notification for our last transmitted value. If we've 
@@ -168,7 +185,20 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 			QualifiedValue lv = new BasicQualifiedValue(coerceToMatchOutput(BlockConstants.OUT_PORT_NAME,null));
 			controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, lv);
 		}
+		notifyOfStatus(lastValue);
 	}
+
+	// NOTE: The "value" property is what we want to display (the countdown)
+	private void notifyOfStatus(QualifiedValue qv) {
+		Object val = valueProperty.getValue();
+		if( val!=null ) {
+			QualifiedValue displayQV = new TestAwareQualifiedValue(timer,val.toString());
+			log.tracef("%s.notifyOfStatus display = %s",getName(),val.toString());
+			controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,displayQV);
+		}
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
+	}
+	
 
 	/**
 	 * Add properties that are new for this class.
@@ -181,13 +211,19 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 		setProperty(BLOCK_PROPERTY_DELAY, constant);
 		
 		// Define a single input
-		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
+		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
 		input.setIsMultiple(false);
 		anchors.add(input);
-		
+
 		// Define a single output
-		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
+		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.ANY);
 		anchors.add(output);
+
+		// The value is the count-down shown in the UI
+		valueProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_VALUE,"",PropertyType.STRING,false);
+		valueProperty.setBindingType(BindingType.ENGINE);
+		setProperty(BlockConstants.BLOCK_PROPERTY_VALUE, valueProperty);
+		
 	}
 	
 	/**
@@ -216,7 +252,8 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 	 * Augment the palette prototype for this block class.
 	 */
 	private void initializePrototype() {
-		prototype.setPaletteIconPath("Block/icons/palette/delay.png");
+		prototype.setPaletteIconPath("Block/icons/palette/PMIDigitalDisplay32.png");
+//		prototype.setPaletteIconPath("Block/icons/palette/delay.png");
 		prototype.setPaletteLabel("Delay");
 		prototype.setTooltipText("Delay incoming values by a specified interval (~secs)");
 		prototype.setTabName(BlockConstants.PALETTE_TAB_TIMERS_COUNTERS);
@@ -224,9 +261,12 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 		BlockDescriptor view = prototype.getBlockDescriptor();
 		view.setEmbeddedIcon("Block/icons/embedded/clock.png");
 		view.setBlockClass(getClass().getCanonicalName());
-		view.setStyle(BlockStyle.SQUARE);
-		view.setPreferredHeight(60);
-		view.setPreferredWidth(60);
+		view.setStyle(BlockStyle.READOUT);
+		
+//		need to adjust everything else and add countdown like presistGate
+		view.setPreferredHeight(46);
+		view.setPreferredWidth(90);
+		view.setBadgeCharacter("d");
 		view.setCtypeEditable(true);
 	}
 	

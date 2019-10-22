@@ -161,7 +161,6 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 			timer.updateWatchdog(dog);  // pet dog
 			
 			double timeRemaining = count*scanInterval;
-//			TimeUnit tu = TimeUtility.unitForValue(timeRemaining);
 			String formattedTime = String.format("%02d:%02d:%02d", TimeUtility.remainderValue(timeRemaining, TimeUnit.HOURS),
 					TimeUtility.remainderValue(timeRemaining, TimeUnit.MINUTES),TimeUtility.remainderValue(timeRemaining, TimeUnit.SECONDS));
 			log.debugf("%s.evaluate: cycle %d property value =  %s.",getName(),count,formattedTime);
@@ -189,7 +188,6 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		String propertyName = event.getPropertyName();
 		log.debugf("%s.propertyChange: Received %s = %s",getName(),propertyName,event.getNewValue().toString());
 		if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_TRIGGER)) {
-
 //			if the string is blank  make it unset, if it blows up make it undefined
 			String eval = event.getNewValue().toString().toUpperCase(); 
 			try {
@@ -199,13 +197,10 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 				} else {
 					trigger = TruthValue.valueOf(eval);
 				}
-				
 			} catch(IllegalArgumentException nfe) {
 				trigger = TruthValue.UNKNOWN;
 				log.warnf("%s.propertyChange: Unable to convert string to TruthValue (%s)",getName(),nfe.getLocalizedMessage());
 			}
-			
-			
 		}
 		else if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_TIME_WINDOW)) {
 			try {
@@ -271,9 +266,10 @@ public class PersistenceGate extends AbstractProcessBlock implements ProcessBloc
 		
 		BlockDescriptor desc = prototype.getBlockDescriptor();
 		desc.setBlockClass(getClass().getCanonicalName());
-		desc.setPreferredHeight(40);
+		desc.setPreferredHeight(46);
 		desc.setPreferredWidth(90);
 		desc.setStyle(BlockStyle.READOUT);
+		desc.setBadgeCharacter("p");
 //		desc.setReceiveEnabled(true);
 	}
 }

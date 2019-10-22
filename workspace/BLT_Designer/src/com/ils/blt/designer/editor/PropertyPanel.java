@@ -54,6 +54,7 @@ import com.inductiveautomation.ignition.common.sqltags.parser.TagPathParser;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
+import com.sun.prism.paint.Color;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -364,6 +365,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		final JComboBox<String> valueCombo = new JComboBox<String>();
 		if(prop.getBindingType().equals(BindingType.OPTION))      setOptionCombo(valueCombo,prop);
 		else if( prop.getType().equals(PropertyType.BOOLEAN))     setBooleanCombo(valueCombo);
+		else if( prop.getType().equals(PropertyType.COLOR))       setColorCombo(valueCombo);
 		else if(prop.getType().equals(PropertyType.HYSTERESIS))   setHysteresisTypeCombo(valueCombo);
 		else if(prop.getType().equals(PropertyType.LIMIT))        setLimitTypeCombo(valueCombo);
 		else if(prop.getType().equals(PropertyType.SCOPE))	      setTransmissionScopeCombo(valueCombo);
@@ -403,6 +405,26 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		box.removeAllItems();
 		box.addItem(Boolean.TRUE.toString().toUpperCase());
 		box.addItem(Boolean.FALSE.toString().toUpperCase());
+	}
+
+	/**
+	 * Populate a combo box for true/false 
+	 */
+	private void setColorCombo(JComboBox<String> box) {
+		box.removeAllItems();
+		box.addItem("TRANSPARENT");
+		box.addItem("RED");
+		box.addItem("GREEN");
+		box.addItem("BLUE");
+		box.addItem("WHITE");
+		box.addItem("YELLOW");
+		box.addItem("GRAY");
+		box.addItem("LIGHT_GRAY");
+		box.addItem("DARK_GRAY");
+		box.addItem("ORANGE");
+		box.addItem("MAGENTA");
+		box.addItem("PINK");
+		box.addItem("CYAN");
 	}
 	
 	/**
@@ -512,6 +534,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 				    prop.getType().equals(PropertyType.HYSTERESIS)     ||   
 				    prop.getType().equals(PropertyType.LIMIT)          ||        
 				    prop.getType().equals(PropertyType.SCOPE)          ||
+				    prop.getType().equals(PropertyType.COLOR)          ||
 				    prop.getType().equals(PropertyType.SLOPEOPTION)    ||
 				    prop.getType().equals(PropertyType.TRENDDIRECTION) ||
 				    prop.getType().equals(PropertyType.TRUTHVALUE)          ); 

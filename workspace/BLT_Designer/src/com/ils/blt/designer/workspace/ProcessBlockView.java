@@ -80,9 +80,11 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	private final LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	private int preferredHeight = 0;              // Size the view to "natural" size
 	private int preferredWidth  = 0;              // Size the view to "natural" size
+	private String backgroundColor  = "GREY";
 	private Collection<BlockProperty> properties;
 //	private boolean receiveEnabled = false;
 	private TruthValue state = TruthValue.UNSET;
+	private String badgeChar = null;
 	private String statusText;                    // Auxiliary text to display
 	private UUID subworkspaceId = null;           // Encapsulated diagram if encapsulation block
 	private BlockStyle style = BlockStyle.SQUARE;
@@ -115,6 +117,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		this.nameDisplayed  = descriptor.isNameDisplayed();
 		this.nameOffsetX    = descriptor.getNameOffsetX();
 		this.nameOffsetY    = descriptor.getNameOffsetY();
+		this.badgeChar      = descriptor.getBadgeChar();
 //		this.receiveEnabled = descriptor.isReceiveEnabled();
 //		this.transmitEnabled= descriptor.isTransmitEnabled();
 
@@ -159,6 +162,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		this.nameOffsetY   = sb.getNameOffsetY();
 		this.state = sb.getState();
 		this.statusText = sb.getStatusText();
+		this.badgeChar      = sb.getBadgeChar();
 //		this.receiveEnabled  = sb.isReceiveEnabled();
 //		this.transmitEnabled = sb.isTransmitEnabled();
 		this.subworkspaceId = sb.getSubworkspaceId();
@@ -224,6 +228,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		result.setSubworkspaceId(subworkspaceId);
 //		result.setReceiveEnabled(isReceiveEnabled());
 //		result.setTransmitEnabled(isTransmitEnabled());
+		result.setBadgeChar(getBadgeChar());
 		result.setX(getLocation().x);
 		result.setY(getLocation().y);
 		
@@ -359,10 +364,12 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	public int getNameOffsetY() { return nameOffsetY; }
 	public int getPreferredHeight() {return preferredHeight;}
 	public int getPreferredWidth() {return preferredWidth;}
+	public String getBackgroundColor() {return backgroundColor;}
 	public Collection<BlockProperty> getProperties() { return properties; }
 	public TruthValue getState() {return state;}
 	public String getStatusText() { return statusText; }
 	public BlockStyle getStyle() { return style; }
+	public String getBadgeChar() { return badgeChar; }
 	public UUID getSubworkspaceId() {return subworkspaceId;}
 	
 	@Override
@@ -417,6 +424,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	}
 	public void setPreferredHeight(int preferredHeight) {this.preferredHeight = preferredHeight;}
 	public void setPreferredWidth(int preferredWidth) {this.preferredWidth = preferredWidth;}
+	public void setPreferredWidth(String backgroundColor) {this.backgroundColor = backgroundColor;}
 	public void setProperties(Collection<BlockProperty> props) { 
 		this.properties = props; 
 		}

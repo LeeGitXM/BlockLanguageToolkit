@@ -2,6 +2,7 @@ package com.ils.blt.designer.workspace.ui;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
@@ -52,6 +53,21 @@ public class ReadoutUIView extends AbstractUIView implements BlockViewUI {
 		return vp;
 	}
 		
+	/**
+	 *  Draw "badge" icons on bottom of the main rendering to indicate various block properties.
+	 */
+	protected void drawBadges(Graphics2D g) {
+		super.drawBadges(g);
+		if(block.getBadgeChar() != null) {
+			Dimension sz = getPreferredSize();
+			String badgeChar = block.getBadgeChar();
+			Rectangle bounds = new Rectangle(INSET,3*(sz.height-3*INSET)/4,BADGE_WIDTH,BADGE_HEIGHT);
+			String path = "Block/icons/badges/" + badgeChar + ".png";
+			paintBadge(g,path,bounds);
+		}
+	}
+	
+	
 	@Override
 	protected void paintComponent(Graphics _g) {
 		// Calling the super method effects an "erase".
@@ -134,6 +150,8 @@ public class ReadoutUIView extends AbstractUIView implements BlockViewUI {
 		
 		block.setEmbeddedFontSize(fontSize);
 		block.setEmbeddedLabel(value);
+
+		drawBadges(g);
 		drawEmbeddedText(g,0,0);
 
 	}

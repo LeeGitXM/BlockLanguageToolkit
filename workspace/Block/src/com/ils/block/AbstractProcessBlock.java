@@ -293,6 +293,29 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 				}
 			}
 		}
+
+		Map<String,String> properties = descriptor.getProperties();
+		if( propertyMap.size()>0 ) {
+			properties.put("Name", getName());
+		}
+		attributes.put("UUID", getBlockId().toString());
+		attributes.put("Parent", getParentId().toString());
+		if( stateIsMeaningful() ) {
+			attributes.put("State", getState().toString());
+			if( stateChangeTimestamp!=null ) {     // On start we'never had a state change
+				attributes.put("StateChangeTimestamp",dateFormatter.format(stateChangeTimestamp));
+			}
+		}
+
+		if( activities.size()>0 ) {
+			List<Activity> buffer = descriptor.getActivities();
+			synchronized(activities) {
+				for( Activity act:activities) {
+					buffer.add(act.clone());
+				}
+			}
+		}
+		
 		return descriptor;
 	}
 	@Override
