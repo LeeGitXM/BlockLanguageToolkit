@@ -51,7 +51,7 @@ public class BlockNameSearchObject implements SearchObject {
 
 	@Override
 	public String getText() {
-		return block.getName();
+		return block.getClassName() + " " + block.getName();
 	}
 
 	// We navigate to the diagram.
