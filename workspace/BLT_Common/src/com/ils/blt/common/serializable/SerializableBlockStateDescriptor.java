@@ -9,8 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.block.Activity;
+import com.ils.blt.common.block.BlockProperty;
 
 
 /**
@@ -28,7 +28,7 @@ public class SerializableBlockStateDescriptor implements Serializable {
 	private String name;
 	private String idString = null;           // Block Id
 	private Map<String,String> attributes;
-	private Map<String,String> properties;
+	private Map<String,BlockProperty> properties;
 	private List<Map<String,String>> buffer;
 	private List<Activity> activities;
 	
@@ -46,7 +46,7 @@ public class SerializableBlockStateDescriptor implements Serializable {
 	public String getIdString() {return idString;}
 	public void setIdString(String idString) {this.idString = idString;}
 	public Map<String, String> getAttributes() {return attributes;}
-	public Map<String, String> getProperties() {return properties;}
+	public Map<String, BlockProperty> getProperties() {return properties;}
 	public List<Map<String, String>> getBuffer() {return buffer;}
 	public List<Activity> getActivities() {return activities;}
 }

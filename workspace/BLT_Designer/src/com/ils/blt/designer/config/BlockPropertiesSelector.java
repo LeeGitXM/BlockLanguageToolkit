@@ -55,11 +55,9 @@ public class BlockPropertiesSelector extends JDialog {
 	private final int DIALOG_WIDTH = 600;
 	private final int TABLE_HEIGHT = 200;
 	private final int TABLE_WIDTH = 800;
-	private static SimpleDateFormat dateFormatter = new SimpleDateFormat(BlockConstants.TIMESTAMP_FORMAT);
 	private final ProcessDiagramView diagram;
 	private final ProcessBlockView block;
-	private Map<String, String> blockProperties = null;
-	private List<Map<String,String>> buffer = null;
+	private Map<String, BlockProperty> blockProperties = null;
 	private JTable table = null;
 	JPanel internalPanel = null;
 	
@@ -116,8 +114,7 @@ public class BlockPropertiesSelector extends JDialog {
 		SerializableBlockStateDescriptor descriptor = handler.getInternalState(diagram.getId().toString(), block.getId().toString());
 		if( descriptor!=null ) {
 			blockProperties = descriptor.getProperties();
-			buffer = descriptor.getBuffer();
-			log.infof("%s.queryBlock %s: %d properties, %d history entries",TAG, block.getName(),blockProperties.size(),buffer.size());
+			log.infof("%s.queryBlock %s: %d properties",TAG, block.getName(),blockProperties.size());
 		}
 		else {
 			log.infof("%s.queryBlock %s: no information returned",TAG,block.getName());
