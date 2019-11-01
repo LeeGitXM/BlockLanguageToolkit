@@ -35,6 +35,8 @@ public interface BlockConstants   {
 	public static final String BLOCK_PROPERTY_FILL_REQUIRED 		= "FillRequired";
 	public static final String BLOCK_PROPERTY_FORMAT        		= "Format";
 	public static final String BLOCK_PROPERTY_HEIGHT        		= "Height";
+	public static final String BLOCK_PROPERTY_PREFIX        		= "Prefix";
+	public static final String BLOCK_PROPERTY_SUFFIX        		= "Suffix";
 	public static final String BLOCK_PROPERTY_HYSTERESIS    		= "Hysteresis";
 	public static final String BLOCK_PROPERTY_INHIBIT_INTERVAL 		= "InhibitInterval";  // Inhibit period ~ sec
 	public static final String BLOCK_PROPERTY_INITIAL_VALUE 		= "InitialValue";

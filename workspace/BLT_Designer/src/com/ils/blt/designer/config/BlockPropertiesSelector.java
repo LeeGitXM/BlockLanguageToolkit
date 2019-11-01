@@ -9,14 +9,13 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.text.SimpleDateFormat;
-import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -24,13 +23,17 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 
+import com.ils.block.AbstractProcessBlock;
+import com.ils.block.BlockPropertyDisplay;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
-import com.ils.blt.common.block.Activity;
-import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.designer.workspace.ProcessBlockView;
@@ -38,7 +41,6 @@ import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
-import com.inductiveautomation.ignition.designer.blockandconnector.model.AnchorType;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -46,7 +48,7 @@ import net.miginfocom.swing.MigLayout;
  * This is a properties list viewer to allow users to select what block properties to display on the workspace 
  */
 
-public class BlockPropertiesSelector extends JDialog {
+public class BlockPropertiesSelector extends JDialog implements TableModelListener {
 	private static String TAG = "BlockPropertiesSelector";
 	private final LoggerEx log;
 	private static final String PREFIX = BLTProperties.BLOCK_PREFIX;  // Required for text strings
@@ -137,6 +139,53 @@ public class BlockPropertiesSelector extends JDialog {
 		updateInformation();
 	}
 	
+	public void tableChanged(TableModelEvent e)
+	{
+	    if (e.getType() == TableModelEvent.UPDATE)
+	    {
+	        int row = e.getFirstRow();
+	        int column = e.getColumn();
+
+	        if (column == 0)
+	        {
+	            TableModel model = (TableModel)e.getSource();
+	            boolean newValue = ((Boolean)model.getValueAt(row, column)).booleanValue();
+
+	            String propName = (String) model.getValueAt(row, 1);
+	    		for( String pad: blockProperties.keySet() ) {
+	    			BlockProperty prop = blockProperties.get(pad);
+	    			if (prop.getName().equalsIgnoreCase(propName)) {
+	    				if (newValue != prop.isDisplayed()) {  // make sure it's a real change
+	    					if (newValue == true) {
+	    						log.trace("Adding a dispay block");
+	    						
+    							AbstractProcessBlock apBlock = new BlockPropertyDisplay();
+    							ProcessBlockView newBlock = new ProcessBlockView (apBlock.getBlockPrototype().getBlockDescriptor());
+    							Point parentLoc = block.getLocation();
+    							Point loc = new Point((int)parentLoc.getX() + 50, (int)parentLoc.getY() + 50);
+    							newBlock.setLocation(loc);
+    						
+								newBlock.setLocation(loc);
+   								diagram.addBlock(newBlock);
+
+//   								gateway.block.linkDisplay(newBlock)
+	    								
+   								log.infof("%s.Drop: dropped",TAG);
+
+//	    						add a display block and connect it to the current block
+	    					} else {
+	    						log.warn("EREIAM JH - REMOVE A DISpLAY!");
+//	    						This needs a call to the gateway
+//								block.unLinkDisplay(prop.getName());
+//	    						delete a display block and disconnect from current block
+	    					}
+	    				}
+	    			}
+	            }
+	    		refresh();
+	        }
+	    }
+	}
 	/**
 	 * A list add panel is a panel appending a string element in the list. It contains:-
 	 *        Scroll pane with the table, two buttons at the bottom.
@@ -146,16 +195,24 @@ public class BlockPropertiesSelector extends JDialog {
 		table = new JTable();		
 		outerPanel.setLayout(new MigLayout("ins 2,fillx,filly","",""));
 		String PRE = PREFIX+".ViewInternals.Col.";
-		String[] columnNames = { BundleUtil.get().getString(PRE+"Name"),
+		String[] columnNames = { "Shown", BundleUtil.get().getString(PRE+"Name"),
 				                 BundleUtil.get().getString(PRE+"Value") };
-		DefaultTableModel dataModel = new DefaultTableModel(columnNames,0);
+		DefaultTableModel dataModel = new DefaultTableModel(columnNames,0)                
+		{
+	        public Class<?> getColumnClass(int colIndex) {
+                return getValueAt(0, colIndex).getClass();
+            }
+		};
+		dataModel.addTableModelListener(this);
 		
 		// Add anchors to the list of attributes
 		for( String pad: blockProperties.keySet() ) {
-				String [] row = new String[2];
-				row[0] = pad;
-				String text = "" + blockProperties.get(pad);
-				row[1] = text;
+			JCheckBox box = new JCheckBox(""+pad);
+			Object[] row = new Object[3];
+			row[0] = new Boolean(blockProperties.get(pad).isDisplayed());
+				row[1] = pad;
+				String text = "" + blockProperties.get(pad).getValue();
+				row[2] = text;
 				dataModel.addRow(row);
 		}
 		

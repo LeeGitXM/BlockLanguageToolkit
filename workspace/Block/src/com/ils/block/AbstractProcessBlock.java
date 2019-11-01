@@ -44,6 +44,7 @@ import com.ils.common.watchdog.WatchdogObserver;
 import com.ils.common.watchdog.WatchdogTimer;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
+import com.inductiveautomation.ignition.common.model.values.Quality;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 
@@ -82,6 +83,9 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	protected LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	/** Properties are a dictionary of attributes keyed by property name */
 	protected final Map<String,BlockProperty> propertyMap;
+	/** PropertyBlocks is a dictionary of block properties displayed in the workspace */
+	/** It's here so that they can be efficiently notified of changes, and managed by the parent block (this) */
+	protected final Map<String,ProcessBlock> displayedPropertyBlocks;
 	/** Describe ports/stubs where connections join the block */
 	protected List<AnchorPrototype> anchors;
 	protected final UtilityFunctions fcns = new UtilityFunctions();
@@ -94,6 +98,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 */
 	public AbstractProcessBlock() {
 		propertyMap = new HashMap<>();
+		displayedPropertyBlocks = new HashMap<>();
 		anchors = new ArrayList<AnchorPrototype>();
 		activities = new FixedSizeQueue<Activity>(DEFAULT_ACTIVITY_BUFFER_SIZE);
 		lastValue = null;
@@ -263,6 +268,15 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		return propertyMap.get(nam);
 	}
 	
+	/**
+	 * @param nam the property (attribute) name.
+	 * @return a particular property block given its name.
+	 */
+//	@Override
+//	public ProcessBlock getPropertyBlock(String nam) {
+//		return propertyBlocks.get(nam);
+//	}
+	
 	@Override
 	public UUID getParentId() { return parentId; }
 	@Override
@@ -290,6 +304,15 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 			synchronized(activities) {
 				for( Activity act:activities) {
 					buffer.add(act.clone());
+				}
+			}
+		}
+
+		if( displayedPropertyBlocks.size()>0 ) {
+			List<String> buffer = descriptor.getDisplayedProperties();
+			synchronized(displayedPropertyBlocks) {
+				for( String act:displayedPropertyBlocks.keySet()) {
+					buffer.add(new String(act));
 				}
 			}
 		}
@@ -463,6 +486,29 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		if( prop!=null && value!=null ) {
 			recordActivity(Activity.ACTIVITY_PROPERTY,name,value.toString());
 			prop.setValue(value);
+			for (String key:displayedPropertyBlocks.keySet()) {
+				if (key.equalsIgnoreCase(name)) {
+					AbstractProcessBlock block = (AbstractProcessBlock)displayedPropertyBlocks.get(key);
+					block.setProperty(BlockConstants.BLOCK_PROPERTY_TEXT, value);
+					
+					
+					
+//					controller.sendPropertyNotification(id, propertyName, val);
+//					
+//					setBlockPropertyValue()
+//
+////					make an event for the change??
+//
+//							
+//					block.propertyChange(bpe);
+//					controller.sendPropertyNotification(block.getBlockId().toString(),pname,new BasicQualifiedValue(prop.getValue()));
+					
+					
+							
+					
+				}
+				
+			}
 		}
 	}
 	/**

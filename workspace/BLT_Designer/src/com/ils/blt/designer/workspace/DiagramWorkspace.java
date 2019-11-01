@@ -651,7 +651,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		return ret;
 	}
 	
-	// EREIAM JH - TODO finish
+	
 	@Override
 	public boolean handleDrop(Object droppedOn,DropTargetDropEvent event) {
 		if (droppedOn instanceof BlockComponent) {

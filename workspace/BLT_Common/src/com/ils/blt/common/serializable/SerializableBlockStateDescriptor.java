@@ -1,5 +1,5 @@
 /**
- *   (c) 2015  ILS Automation. All rights reserved. 
+ *   (c) 2015-1029  ILS Automation. All rights reserved. 
  */
  package com.ils.blt.common.serializable;
 
@@ -31,11 +31,13 @@ public class SerializableBlockStateDescriptor implements Serializable {
 	private Map<String,BlockProperty> properties;
 	private List<Map<String,String>> buffer;
 	private List<Activity> activities;
+	private List<String> displayedProperties;
 	
 	public SerializableBlockStateDescriptor() {	
 		name="UNSET";
 		properties = new HashMap<>();
 		attributes = new HashMap<>();
+		displayedProperties = new ArrayList<>();  //  the list of blocks attached
 		activities = new ArrayList<>();
 		buffer = new ArrayList<>();
 	}
@@ -49,4 +51,5 @@ public class SerializableBlockStateDescriptor implements Serializable {
 	public Map<String, BlockProperty> getProperties() {return properties;}
 	public List<Map<String, String>> getBuffer() {return buffer;}
 	public List<Activity> getActivities() {return activities;}
+	public List<String> getDisplayedProperties() {return displayedProperties;}
 }
