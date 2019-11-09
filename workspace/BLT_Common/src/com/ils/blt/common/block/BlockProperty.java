@@ -36,6 +36,7 @@ public class BlockProperty implements NotificationChangeListener {
 	private String binding = "";
 	private BindingType bindingType = BindingType.NONE;
 	private boolean displayed   = false;
+	private String displayedBlockUUID = "";  // parent is used if this property is displayed.  This way we know what block to update
 	private int displayOffsetX = BlockConstants.DEFAULT_ATTRIBUTE_OFFSET_X;
 	private int displayOffsetY = BlockConstants.DEFAULT_ATTRIBUTE_OFFSET_Y;
 
@@ -182,6 +183,7 @@ public class BlockProperty implements NotificationChangeListener {
 		BlockProperty clone = new BlockProperty(getName(),getValue(),getType(),isEditable());
 		clone.setBinding(getBinding());
 		clone.setDisplayed(isDisplayed());
+		clone.setDisplayedBlockId(getDisplayedBlockId());
 		clone.setDisplayOffsetX(getDisplayOffsetX());
 		clone.setDisplayOffsetY(getDisplayOffsetY());
 		clone.setBindingType(getBindingType());
@@ -239,6 +241,14 @@ public class BlockProperty implements NotificationChangeListener {
 	}
 	@Override
 	public void watermarkChange(String val) {}
+
+	public String getDisplayedBlockId() {
+		return displayedBlockUUID;
+	}
+
+	public void setDisplayedBlockId(String displayedBlockUUID) {
+		this.displayedBlockUUID = displayedBlockUUID;
+	}
 
 
 }

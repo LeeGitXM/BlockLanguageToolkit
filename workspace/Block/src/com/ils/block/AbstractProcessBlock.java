@@ -44,7 +44,6 @@ import com.ils.common.watchdog.WatchdogObserver;
 import com.ils.common.watchdog.WatchdogTimer;
 import com.inductiveautomation.ignition.common.model.values.BasicQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
-import com.inductiveautomation.ignition.common.model.values.Quality;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 
@@ -85,7 +84,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	protected final Map<String,BlockProperty> propertyMap;
 	/** PropertyBlocks is a dictionary of block properties displayed in the workspace */
 	/** It's here so that they can be efficiently notified of changes, and managed by the parent block (this) */
-	protected final Map<String,ProcessBlock> displayedPropertyBlocks;
+//	protected final Map<String,ProcessBlock> displayedPropertyBlocks;
 	/** Describe ports/stubs where connections join the block */
 	protected List<AnchorPrototype> anchors;
 	protected final UtilityFunctions fcns = new UtilityFunctions();
@@ -98,7 +97,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 */
 	public AbstractProcessBlock() {
 		propertyMap = new HashMap<>();
-		displayedPropertyBlocks = new HashMap<>();
+//		displayedPropertyBlocks = new HashMap<>();
 		anchors = new ArrayList<AnchorPrototype>();
 		activities = new FixedSizeQueue<Activity>(DEFAULT_ACTIVITY_BUFFER_SIZE);
 		lastValue = null;
@@ -308,15 +307,15 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 			}
 		}
 
-		if( displayedPropertyBlocks.size()>0 ) {
-			List<String> buffer = descriptor.getDisplayedProperties();
-			synchronized(displayedPropertyBlocks) {
-				for( String act:displayedPropertyBlocks.keySet()) {
-					buffer.add(new String(act));
-				}
-			}
-		}
-
+//		if( displayedPropertyBlocks.size()>0 ) {
+//			List<String> buffer = descriptor.getDisplayedProperties();
+//			synchronized(displayedPropertyBlocks) {
+//				for( String act:displayedPropertyBlocks.keySet()) {
+//					buffer.add(new String(act));
+//				}
+//			}
+//		}
+//
 		Map<String,BlockProperty> properties = descriptor.getProperties();
 		if( propertyMap.size()>0 ) {
 			for (String key:propertyMap.keySet()) {
@@ -486,27 +485,19 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		if( prop!=null && value!=null ) {
 			recordActivity(Activity.ACTIVITY_PROPERTY,name,value.toString());
 			prop.setValue(value);
-			for (String key:displayedPropertyBlocks.keySet()) {
-				if (key.equalsIgnoreCase(name)) {
-					AbstractProcessBlock block = (AbstractProcessBlock)displayedPropertyBlocks.get(key);
-					block.setProperty(BlockConstants.BLOCK_PROPERTY_TEXT, value);
-					
-					
-					
-//					controller.sendPropertyNotification(id, propertyName, val);
-//					
-//					setBlockPropertyValue()
-//
-////					make an event for the change??
-//
-//							
-//					block.propertyChange(bpe);
-//					controller.sendPropertyNotification(block.getBlockId().toString(),pname,new BasicQualifiedValue(prop.getValue()));
-					
-					
-							
-					
-				}
+			
+			// check if this property is displayed in a DisplayPropertyBlock and update it.
+			if (prop.isDisplayed() && prop.getDisplayedBlockId() != null && prop.getDisplayedBlockId().length() > 1) {  // so, there is a small chance that this could result in an infinite update loop
+
+				// need to have a way to inject this into the notification buffer of the execution controller.  Add a signal connection if none exist
+				// the destination block won't have an input defined, so no line will be drawn
+
+				Signal siggy = new Signal(BlockConstants.COMMAND_CONFIGURE, BlockConstants.BLOCK_PROPERTY_TEXT, value.toString());  // this should always be a string anyway.
+				QualifiedValue qv = new TestAwareQualifiedValue(timer,siggy);
+				
+				OutgoingNotification note = new OutgoingNotification(this,BlockConstants.SIGNAL_PORT_NAME, qv);
+				
+				controller.sendPropertyUpdateNotification(note, prop.getDisplayedBlockId());
 				
 			}
 		}
@@ -602,6 +593,28 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 			}
 		}
 	}
+
+	
+	private void updatePropertyDisplays() {
+		for (BlockProperty prop:propertyMap.values()) {
+			if (prop.isDisplayed() && prop.getDisplayedBlockId() != null && prop.getDisplayedBlockId().length() > 1) {  // so, there is a small chance that this could result in an infinite update loop
+		
+				// need to have a way to inject this into the notification buffer of the execution controller.  Add a signal connection if none exist
+				// the destination block won't have an input defined, so no line will be drawn
+		
+				Signal siggy = new Signal(BlockConstants.COMMAND_CONFIGURE, BlockConstants.BLOCK_PROPERTY_TEXT, prop.getValue().toString());  // this should always be a string anyway.
+				QualifiedValue qv = new TestAwareQualifiedValue(timer,siggy);
+				
+				OutgoingNotification note = new OutgoingNotification(this,BlockConstants.SIGNAL_PORT_NAME, qv);
+				
+				controller.sendPropertyUpdateNotification(note, prop.getDisplayedBlockId());
+				
+			}
+		}
+	}
+	
+	
+	
 	/**
 	 * Start any active monitoring or processing within the block.
 	 * This default method does nothing. In general, a start does
@@ -613,6 +626,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		this.lastValue = null;
 		recordActivity(Activity.ACTIVITY_START,"");
 		this.stateChangeTimestamp = new Date(timer.getTestTime());
+		updatePropertyDisplays();
 	}
 	/**
 	 * Terminate any active operations within the block.

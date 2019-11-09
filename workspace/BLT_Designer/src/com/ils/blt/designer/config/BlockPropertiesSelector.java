@@ -12,7 +12,9 @@ import java.awt.Frame;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collection;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -23,7 +25,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -34,13 +35,17 @@ import com.ils.block.AbstractProcessBlock;
 import com.ils.block.BlockPropertyDisplay;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
+import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
+import com.ils.blt.designer.workspace.DiagramWorkspace;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.inductiveautomation.ignition.designer.blockandconnector.BlockDesignableContainer;
+import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -59,12 +64,15 @@ public class BlockPropertiesSelector extends JDialog implements TableModelListen
 	private final int TABLE_WIDTH = 800;
 	private final ProcessDiagramView diagram;
 	private final ProcessBlockView block;
-	private Map<String, BlockProperty> blockProperties = null;
+//	private Map<String, BlockProperty> blockProperties = null;
+	private Collection<BlockProperty> blockProperties = null;
 	private JTable table = null;
 	JPanel internalPanel = null;
+	private final DiagramWorkspace workspace;
 	
-	public BlockPropertiesSelector(Frame frame,ProcessDiagramView dia,ProcessBlockView view) {
+	public BlockPropertiesSelector(Frame frame,ProcessDiagramView dia,ProcessBlockView view, DiagramWorkspace wkspc) {
 		super(frame);
+		this.workspace = wkspc;
 		this.diagram = dia;
 		this.block = view;
 		this.setTitle(String.format(BundleUtil.get().getString(PREFIX+".ViewInternals.Title",view.getName())));
@@ -80,8 +88,6 @@ public class BlockPropertiesSelector extends JDialog implements TableModelListen
 	
 	private void initialize() {
 		
-		// The internal panel has three panes - one for properties, one for an activity history
-		// and the other for any internal buffer
 		setLayout(new BorderLayout());
 		internalPanel = new JPanel();
 		internalPanel.setLayout(new MigLayout("ins 2,fillx","",""));
@@ -111,16 +117,16 @@ public class BlockPropertiesSelector extends JDialog implements TableModelListen
 
 	private void queryBlock() {
 		
-		
-		ApplicationRequestHandler handler = new ApplicationRequestHandler();
-		SerializableBlockStateDescriptor descriptor = handler.getInternalState(diagram.getId().toString(), block.getId().toString());
-		if( descriptor!=null ) {
-			blockProperties = descriptor.getProperties();
-			log.infof("%s.queryBlock %s: %d properties",TAG, block.getName(),blockProperties.size());
-		}
-		else {
-			log.infof("%s.queryBlock %s: no information returned",TAG,block.getName());
-		}
+		blockProperties = block.getProperties();
+//		ApplicationRequestHandler handler = new ApplicationRequestHandler();
+//		SerializableBlockStateDescriptor descriptor = handler.getInternalState(diagram.getId().toString(), block.getId().toString());
+//		if( descriptor!=null ) {
+//			blockProperties = descriptor.getProperties();
+//			log.infof("%s.queryBlock %s: %d properties",TAG, block.getName(),blockProperties.size());
+//		}
+//		else {
+//			log.infof("%s.queryBlock %s: no information returned",TAG,block.getName());
+//		}
 	}
 	/**
 	 * Update the UI per most current information from the block
@@ -152,37 +158,67 @@ public class BlockPropertiesSelector extends JDialog implements TableModelListen
 	            boolean newValue = ((Boolean)model.getValueAt(row, column)).booleanValue();
 
 	            String propName = (String) model.getValueAt(row, 1);
-	    		for( String pad: blockProperties.keySet() ) {
-	    			BlockProperty prop = blockProperties.get(pad);
-	    			if (prop.getName().equalsIgnoreCase(propName)) {
+//	    		for( String pad: blockProperties.keySet() ) {  // property names
+//	    			BlockProperty prop = blockProperties.get(pad);
+	    		for(BlockProperty prop: blockProperties) {  // properties
+	    			if (prop.getName().equalsIgnoreCase(propName)) {  // found name of changed property
 	    				if (newValue != prop.isDisplayed()) {  // make sure it's a real change
 	    					if (newValue == true) {
-	    						log.trace("Adding a dispay block");
+	    						log.warn("EREIAM JH - Adding a display block");
 	    						
     							AbstractProcessBlock apBlock = new BlockPropertyDisplay();
     							ProcessBlockView newBlock = new ProcessBlockView (apBlock.getBlockPrototype().getBlockDescriptor());
     							Point parentLoc = block.getLocation();
-    							Point loc = new Point((int)parentLoc.getX() + 50, (int)parentLoc.getY() + 50);
-    							newBlock.setLocation(loc);
-    						
+    							Point loc = new Point((int)parentLoc.getX() + 5, (int)parentLoc.getY() + 50);
+    							
+    							
+//    							newBlock..addSignalConnection(listener);
+    							
 								newBlock.setLocation(loc);
    								diagram.addBlock(newBlock);
+//    							Collection<BlockProperty> blocks = newBlock.getProperties();
+    							for (BlockProperty bp: newBlock.getProperties()) {
+    								if (bp.getName().equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_TEXT)) {
+    									bp.setValue(prop.getValue().toString());
+    								}
+    								if (bp.getName().equalsIgnoreCase(BlockConstants.BLOCK_PROPERTY_PREFIX)) {
+    									bp.setValue(prop.getName());
+    								}
+    							}
+    						
 
-//   								gateway.block.linkDisplay(newBlock)
-	    								
-   								log.infof("%s.Drop: dropped",TAG);
+//	    						connect it to the current block
+   								prop.setDisplayed(true);
+   								prop.setDisplayedBlockId(newBlock.getId().toString());
+   							//	diagram.
 
-//	    						add a display block and connect it to the current block
+//   								ApplicationRequestHandler handler = new ApplicationRequestHandler();
+//   								handler.setBlockProperties(diagram.getId(), block.getId(), blockProperties.values());
+   								
+   								
+   								//It's not getting to the gateway
+   								
+   								newBlock.setDirty(true);  // These didn't help
+   								block.setDirty(true);
+
 	    					} else {
-	    						log.warn("EREIAM JH - REMOVE A DISpLAY!");
-//	    						This needs a call to the gateway
-//								block.unLinkDisplay(prop.getName());
-//	    						delete a display block and disconnect from current block
+	    						log.warn("EREIAM JH - REMOVE A DISPLAY!");
+   								String linkedIdStr = prop.getDisplayedBlockId();
+   								UUID linkedId = UUID.fromString(linkedIdStr);
+   								prop.setDisplayed(false);
+   								prop.setDisplayedBlockId("");
+   								
+//								now delete the linked block
+   								Block foundBlock = diagram.getBlock(linkedId);
+								diagram.deleteBlock(foundBlock);
+   								
+
 	    					}
+	    					diagram.setDirty(true);
 	    				}
 	    			}
 	            }
-	    		refresh();
+//	    		refresh();
 	        }
 	    }
 	}
@@ -199,21 +235,23 @@ public class BlockPropertiesSelector extends JDialog implements TableModelListen
 				                 BundleUtil.get().getString(PRE+"Value") };
 		DefaultTableModel dataModel = new DefaultTableModel(columnNames,0)                
 		{
-	        public Class<?> getColumnClass(int colIndex) {
+			private static final long serialVersionUID = 1L;
+
+			public Class<?> getColumnClass(int colIndex) {
                 return getValueAt(0, colIndex).getClass();
             }
 		};
 		dataModel.addTableModelListener(this);
 		
-		// Add anchors to the list of attributes
-		for( String pad: blockProperties.keySet() ) {
-			JCheckBox box = new JCheckBox(""+pad);
+//		for( String pad: blockProperties.keySet() ) {
+		for(BlockProperty prop: blockProperties) {
+//			JCheckBox box = new JCheckBox(""+pad);
 			Object[] row = new Object[3];
-			row[0] = new Boolean(blockProperties.get(pad).isDisplayed());
-				row[1] = pad;
-				String text = "" + blockProperties.get(pad).getValue();
-				row[2] = text;
-				dataModel.addRow(row);
+			row[0] = new Boolean(prop.isDisplayed());
+			row[1] = prop.getName();
+			String text = "" + prop.getValue();
+			row[2] = text;
+			dataModel.addRow(row);
 		}
 		
         table = new JTable(dataModel);

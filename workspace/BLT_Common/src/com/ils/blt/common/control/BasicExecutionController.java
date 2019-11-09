@@ -135,5 +135,8 @@ public class BasicExecutionController implements ExecutionController  {
 		log.warnf("%s.validateTag: WARNING: Executed from stub class",TAG);
 		return null;
 	}
+	public void sendPropertyUpdateNotification(OutgoingNotification note, String blockId) {
+		log.warnf("%s.sendPropertyUpdateNotification: WARNING: Executed from stub class",TAG);
+	}
 
 }

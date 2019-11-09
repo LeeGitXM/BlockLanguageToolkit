@@ -78,12 +78,12 @@ public class DiagramContainer extends BlockDesignableContainer {
 				paintTextAt(g,pbv.getName(),xpos+pbv.getNameOffsetX(),ypos+pbv.getNameOffsetY(),Color.DARK_GRAY,12);
 			}
 			
-			for(BlockProperty bp:pbv.getProperties()) {
-				if(bp.isDisplayed() && bp.getValue()!=null) {
-					String val = fncs.coerceToString(bp.getValue());
-					paintTextAt(g,val,xpos+bp.getDisplayOffsetX(),ypos+bp.getDisplayOffsetY(),Color.DARK_GRAY,12);
-				}
-			}
+//			for(BlockProperty bp:pbv.getProperties()) {
+//				if(bp.isDisplayed() && bp.getValue()!=null) {
+//					String val = fncs.coerceToString(bp.getValue());
+//					paintTextAt(g,val,xpos+bp.getDisplayOffsetX(),ypos+bp.getDisplayOffsetY(),Color.DARK_GRAY,12);
+//				}
+//			}
 		}
 	}
 	

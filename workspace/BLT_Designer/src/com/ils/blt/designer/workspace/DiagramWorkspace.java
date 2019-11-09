@@ -352,7 +352,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					menu.add(cea);
 				}
 				if(!getActiveDiagram().getState().equals(DiagramState.DISABLED)) {
-					PropertyDisplayAction cea = new PropertyDisplayAction(getActiveDiagram(),pbv);
+					PropertyDisplayAction cea = new PropertyDisplayAction(getActiveDiagram(),pbv, this);
 					menu.add(cea);
 				}
 				if(pbv.isSignalAnchorDisplayed()) {
@@ -515,15 +515,17 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		private static final long serialVersionUID = 1L;
 		private final ProcessDiagramView diagram;
 		private final ProcessBlockView block;
-		public PropertyDisplayAction(ProcessDiagramView dia,ProcessBlockView blk)  {
+		private final DiagramWorkspace workspace;
+		public PropertyDisplayAction(ProcessDiagramView dia,ProcessBlockView blk, DiagramWorkspace wkspc)  {
 			super(PREFIX+".DisplayProperties",IconUtil.getIcon("sun"));
+			this.workspace = wkspc;
 			this.diagram = dia;
 			this.block = blk;
 		}
 		
 		// Display the internals viewer
 		public void actionPerformed(final ActionEvent e) {
-			final JDialog viewer = (JDialog)new BlockPropertiesSelector(context.getFrame(),diagram,block);
+			final JDialog viewer = (JDialog)new BlockPropertiesSelector(context.getFrame(),diagram,block, workspace);
 			
 			Object source = e.getSource();
 			if( source instanceof Component) {

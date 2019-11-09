@@ -56,6 +56,7 @@ public class PropertyDisplayUIView extends AbstractUIView implements BlockViewUI
 		boolean hasHeight= false;
 		boolean hasPrefix= false;
 		boolean hasSuffix= false;
+//		boolean hasProperty= false;
 		boolean hasBackgroundColor= false;
 		for(BlockProperty property: properties ) {
 			if(property.getName().equals(BlockConstants.BLOCK_PROPERTY_TEXT))        hasText = true;
@@ -63,8 +64,10 @@ public class PropertyDisplayUIView extends AbstractUIView implements BlockViewUI
 			else if(property.getName().equals(BlockConstants.BLOCK_PROPERTY_HEIGHT)) hasHeight=true;
 			else if(property.getName().equals(BlockConstants.BLOCK_PROPERTY_PREFIX)) hasPrefix=true;
 			else if(property.getName().equals(BlockConstants.BLOCK_PROPERTY_SUFFIX)) hasSuffix=true;
+//			else if(property.getName().equals(BlockConstants.BLOCK_PROPERTY_PROPERTY)) hasProperty=true;
 			else if(property.getName().equals(BlockConstants.BLOCK_PROPERTY_BACKGROUND_COLOR))  hasBackgroundColor= true;
 		}
+//		if(!hasProperty) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_PROPERTY,new BasicQualifiedValue(""),PropertyType.STRING,true));
 		if(!hasText) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_TEXT,new BasicQualifiedValue(""),PropertyType.STRING,true));
 		if(!hasWidth) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_WIDTH,new BasicQualifiedValue(new Integer(block.getPreferredWidth())),PropertyType.INTEGER,true));
 		if(!hasHeight) properties.add(new BlockProperty(BlockConstants.BLOCK_PROPERTY_HEIGHT,new BasicQualifiedValue(new Integer(block.getPreferredHeight())),PropertyType.INTEGER,true));
@@ -133,7 +136,7 @@ public class PropertyDisplayUIView extends AbstractUIView implements BlockViewUI
 			opaque = true;
 		}
 		
-		final String finText = "<html>" + prefix + text + suffix + "</html>";
+		final String finText = "<html>" + prefix + " " + text + " " + suffix + "</html>";
 		
 		// Display using the block properties:
 		label.setForeground(foreground);

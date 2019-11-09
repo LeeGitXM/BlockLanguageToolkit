@@ -6,6 +6,7 @@
  */
 package com.ils.blt.gateway.engine;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -126,6 +127,27 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 			}
 			catch( InterruptedException ie ) {}
 		}
+	}
+	
+	@Override
+	public void sendPropertyUpdateNotification(OutgoingNotification inNote, String destId) {  // this bypasses the normal execution buffer
+		
+		ProcessBlock pb = inNote.getBlock();
+		if( log.isTraceEnabled() ) {
+			log.tracef("%s.run: processing incoming note from %s:%s = %s", TAG,pb.toString(),inNote.getPort(),inNote.getValue().toString());
+		}
+		// Send the push notification
+		sendConnectionNotification(pb.getBlockId().toString(),inNote.getPort(),inNote.getValue());
+		ProcessDiagram dm = modelManager.getDiagram(pb.getParentId());
+		if( dm!=null && inNote!=null && inNote.getValue()!=null) {
+			ProcessBlock destBlock = dm.getBlock(UUID.fromString(destId));
+
+			SignalNotification vcn = new SignalNotification(destBlock,inNote.getValue());
+			
+			threadPool.execute(new IncomingBroadcastTask(vcn.getBlock(),vcn));
+		}
+		
+		
 	}
 	
 	/**

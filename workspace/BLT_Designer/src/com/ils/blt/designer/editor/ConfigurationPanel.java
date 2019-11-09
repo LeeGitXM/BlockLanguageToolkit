@@ -43,6 +43,8 @@ public class ConfigurationPanel extends BasicEditPanel {
 	private final JCheckBox annotationCheckBox;
 	private final JTextField xfield;
 	private final JTextField yfield;
+	private final JLabel connectedId;
+
 
 	public ConfigurationPanel(final BlockPropertyEditor editor) {
 		super(editor);
@@ -79,6 +81,9 @@ public class ConfigurationPanel extends BasicEditPanel {
 		yfield = createOffsetTextField("0");
 		displayPanel.add(yfield,"wrap");
 		interiorPanel.add(displayPanel,"");
+		addSeparator(displayPanel,"Connected Block Info");
+		connectedId = createLabel("Hi");
+		displayPanel.add(connectedId, "");
 
 		// The OK button copies data from the components and sets the property properties.
 		// It then returns to the main tab. 
@@ -125,9 +130,14 @@ public class ConfigurationPanel extends BasicEditPanel {
 		bindingTypeCombo.setEnabled(prop.getBindingType().equals(BindingType.NONE)||
 				                    prop.getBindingType().equals(BindingType.TAG_MONITOR));
 		propertyTypeCombo.setSelectedItem(prop.getType().toString());
-		annotationCheckBox.setSelected(prop.isDisplayed());
-		xfield.setText(String.valueOf(prop.getDisplayOffsetX()));
-		yfield.setText(String.valueOf(prop.getDisplayOffsetY()));
+//		annotationCheckBox.setSelected(prop.isDisplayed());
+//		xfield.setText(String.valueOf(prop.getDisplayOffsetX()));
+//		yfield.setText(String.valueOf(prop.getDisplayOffsetY()));
+		if (prop.isDisplayed()) {
+			connectedId.setText("display block UUID:" + prop.getDisplayedBlockId().toString());
+		} else {
+			connectedId.setText("No connected display block");
+		}
 	}
 
 	/**
