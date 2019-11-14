@@ -11,6 +11,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
@@ -35,10 +36,12 @@ import com.ils.blt.common.block.SlopeCalculationOption;
 import com.ils.blt.common.block.TransmissionScope;
 import com.ils.blt.common.block.TrendDirection;
 import com.ils.blt.common.block.TruthValue;
+import com.ils.blt.common.connection.ConnectionType;
 import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.common.notification.NotificationKey;
 import com.ils.blt.designer.NotificationHandler;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
+import com.ils.blt.designer.workspace.ProcessAnchorDescriptor;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.client.sqltags.ClientTagManager;
@@ -53,8 +56,9 @@ import com.inductiveautomation.ignition.common.sqltags.model.types.ExpressionTyp
 import com.inductiveautomation.ignition.common.sqltags.parser.TagPathParser;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
+import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
+import com.inductiveautomation.ignition.designer.blockandconnector.model.Connection;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
-import com.sun.prism.paint.Color;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -366,6 +370,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		if(prop.getBindingType().equals(BindingType.OPTION))      setOptionCombo(valueCombo,prop);
 		else if( prop.getType().equals(PropertyType.BOOLEAN))     setBooleanCombo(valueCombo);
 		else if( prop.getType().equals(PropertyType.COLOR))       setColorCombo(valueCombo);
+		else if( prop.getType().equals(PropertyType.PROPERTY))    setPropertyCombo(valueCombo, getSignalDownStreamBlock());
 		else if(prop.getType().equals(PropertyType.HYSTERESIS))   setHysteresisTypeCombo(valueCombo);
 		else if(prop.getType().equals(PropertyType.LIMIT))        setLimitTypeCombo(valueCombo);
 		else if(prop.getType().equals(PropertyType.SCOPE))	      setTransmissionScopeCombo(valueCombo);
@@ -408,7 +413,7 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	}
 
 	/**
-	 * Populate a combo box for true/false 
+	 * Populate a combo box for colors 
 	 */
 	private void setColorCombo(JComboBox<String> box) {
 		box.removeAllItems();
@@ -425,6 +430,47 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 		box.addItem("MAGENTA");
 		box.addItem("PINK");
 		box.addItem("CYAN");
+	}
+	
+	/**
+	 * Follow the signal connection and get the downstream block
+	 */
+	private ProcessBlockView getSignalDownStreamBlock() {
+		ProcessBlockView ret = null;
+		ProcessDiagramView pdv = workspace.getActiveDiagram();
+		Collection<Connection> connections = pdv.getConnections();
+		for (Connection connection:connections) {
+			Block origin = connection.getOrigin().getBlock();
+			Block terminus = connection.getTerminus().getBlock();
+			if (origin.equals(block) && origin instanceof ProcessBlockView ) {
+				ProcessBlockView found = (ProcessBlockView) terminus;
+				for (ProcessAnchorDescriptor pad:found.getAnchors()) {
+					if (pad.getConnectionType().equals(ConnectionType.SIGNAL)) {
+						ret = found;
+						break;
+					}
+				}
+			}
+			if (ret != null) {  // Got it.  Stop looking
+				break;
+			}
+		}
+		return ret;
+	}
+
+	/**
+	 * Populate a combo box of property name from the downstream block (signal connected)
+	 */
+	private void setPropertyCombo(JComboBox<String> box, ProcessBlockView downstream) {
+		box.removeAllItems();
+		if (downstream != null) {
+			for (BlockProperty prop: downstream.getProperties()) {
+				box.addItem(prop.getName());
+			}
+			
+		} else {
+			box.addItem("Not available - Block not connected or diagram unsaved");
+		}
 	}
 	
 	/**
@@ -529,12 +575,13 @@ public class PropertyPanel extends JPanel implements ChangeListener, FocusListen
 	}
 	// Enumerated types use a combo box instead of a text field
 	private boolean isPropertyEnumerated(BlockProperty prop) {
-			return (prop.getBindingType().equals(BindingType.OPTION)  ||
-				    prop.getType().equals(PropertyType.BOOLEAN)       ||          
+			return (prop.getBindingType().equals(BindingType.OPTION)   ||
+				    prop.getType().equals(PropertyType.BOOLEAN)        ||          
 				    prop.getType().equals(PropertyType.HYSTERESIS)     ||   
 				    prop.getType().equals(PropertyType.LIMIT)          ||        
 				    prop.getType().equals(PropertyType.SCOPE)          ||
 				    prop.getType().equals(PropertyType.COLOR)          ||
+				    prop.getType().equals(PropertyType.PROPERTY)       ||
 				    prop.getType().equals(PropertyType.SLOPEOPTION)    ||
 				    prop.getType().equals(PropertyType.TRENDDIRECTION) ||
 				    prop.getType().equals(PropertyType.TRUTHVALUE)          ); 

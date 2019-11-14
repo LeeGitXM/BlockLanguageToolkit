@@ -26,7 +26,7 @@ import com.inductiveautomation.ignition.common.model.values.Quality;
 @ExecutableBlock
 public class BlockPropertyDisplay extends AbstractProcessBlock implements ProcessBlock {
 	private static final String TAG = "PropertyDisplay";
-	public static final int DEFAULT_WIDTH = 100;
+	public static final int DEFAULT_WIDTH = 120;
 	public static final int DEFAULT_HEIGHT = 15;
 	protected BlockProperty text = null;
 	/**
@@ -53,37 +53,6 @@ public class BlockPropertyDisplay extends AbstractProcessBlock implements Proces
 		desc.setEditorClass("com.ils.blt.designer.config.BlockPropertyEditor");
 	}
 
-	/**
-	 * Handle a change to the text
-	 */
-	@Override
-	public void propertyChange(BlockPropertyChangeEvent event) {
-		super.propertyChange(event);
-
-//		String text = getProperty(BlockConstants.BLOCK_PROPERTY_TEXT).getValue().toString();
-//		QualifiedValue qv = new BasicQualifiedValue(text); 
-//		controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_TEXT,qv);
-
-	}
-	
-//	@Override
-//	public void reset() {
-//		super.reset();
-//	}
-//	@Override
-//	public void start() { 
-//		super.start();
-//		
-//		so, this is called
-//	}
-//	@Override
-//	public void notifyOfStatus() {
-//		is this a place to reach in for the property value?
-//		
-//	}
-//	protected void notifyOfStatus(QualifiedValue qv) {
-//	}
-	
 
 	@Override
 	public void propagate() {}
@@ -94,8 +63,8 @@ public class BlockPropertyDisplay extends AbstractProcessBlock implements Proces
 	private void initialize() {
 		setName(TAG);
 		// Property property is to designate what property of the connected block this shows
-		BlockProperty property = new BlockProperty(BlockConstants.BLOCK_PROPERTY_PROPERTY,"", PropertyType.STRING, true);
-		setProperty(BlockConstants.BLOCK_PROPERTY_PROPERTY, property);		
+//		BlockProperty property = new BlockProperty(BlockConstants.BLOCK_PROPERTY_PROPERTY,"", PropertyType.STRING, true);
+//		setProperty(BlockConstants.BLOCK_PROPERTY_PROPERTY, property);		
 
 		text = new BlockProperty(BlockConstants.BLOCK_PROPERTY_TEXT,"",PropertyType.STRING,false);
 		text.setBindingType(BindingType.ENGINE);

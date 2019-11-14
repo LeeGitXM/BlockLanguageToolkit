@@ -169,7 +169,7 @@ public class BlockPropertiesSelector extends JDialog implements TableModelListen
     							AbstractProcessBlock apBlock = new BlockPropertyDisplay();
     							ProcessBlockView newBlock = new ProcessBlockView (apBlock.getBlockPrototype().getBlockDescriptor());
     							Point parentLoc = block.getLocation();
-    							Point loc = new Point((int)parentLoc.getX() + 5, (int)parentLoc.getY() + 50);
+    							Point loc = new Point((int)parentLoc.getX() + 5, (int)parentLoc.getY() + 55);
     							
     							
 //    							newBlock..addSignalConnection(listener);
@@ -245,13 +245,14 @@ public class BlockPropertiesSelector extends JDialog implements TableModelListen
 		
 //		for( String pad: blockProperties.keySet() ) {
 		for(BlockProperty prop: blockProperties) {
-//			JCheckBox box = new JCheckBox(""+pad);
-			Object[] row = new Object[3];
-			row[0] = new Boolean(prop.isDisplayed());
-			row[1] = prop.getName();
-			String text = "" + prop.getValue();
-			row[2] = text;
-			dataModel.addRow(row);
+			if (prop.isEditable()) {
+				Object[] row = new Object[3];
+				row[0] = new Boolean(prop.isDisplayed());
+				row[1] = prop.getName();
+				String text = "" + prop.getValue();
+				row[2] = text;
+				dataModel.addRow(row);
+			}
 		}
 		
         table = new JTable(dataModel);

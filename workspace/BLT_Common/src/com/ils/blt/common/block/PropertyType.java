@@ -16,6 +16,7 @@ public enum PropertyType
             INTEGER,
             BOOLEAN,
             COLOR,               // Gets a color chooser
+            PROPERTY,            // a property chooser, populated from downstream block
             HTML,                // Gets an html editor
             HYSTERESIS,          // Hysteresis (TRUE,FALSE,ALWAYS,NEVER)
             LIMIT,               // Limit type (UPPER,LOWER,BOTH)

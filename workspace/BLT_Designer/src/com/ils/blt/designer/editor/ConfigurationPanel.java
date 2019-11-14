@@ -40,9 +40,6 @@ public class ConfigurationPanel extends BasicEditPanel {
 	private final JLabel headingLabel;
 	private final JComboBox<String> bindingTypeCombo;
 	private final JComboBox<String> propertyTypeCombo;
-	private final JCheckBox annotationCheckBox;
-	private final JTextField xfield;
-	private final JTextField yfield;
 	private final JLabel connectedId;
 
 
@@ -71,19 +68,10 @@ public class ConfigurationPanel extends BasicEditPanel {
 
 		JPanel displayPanel = new JPanel();
 		displayPanel.setLayout(new MigLayout("ins 2","[para]0[]0[]0[]0[]","[]10[]2"));
-		addSeparator(displayPanel,"Attribute Display");
-		annotationCheckBox = new JCheckBox("Display ?");
-		displayPanel.add(annotationCheckBox,"skip,gapafter 15");
-		displayPanel.add(createLabel("X offset"),"");
-		xfield = createOffsetTextField("0");
-		displayPanel.add(xfield,"");
-		displayPanel.add(createLabel("Y offset"),"gapbefore 15");
-		yfield = createOffsetTextField("0");
-		displayPanel.add(yfield,"wrap");
-		interiorPanel.add(displayPanel,"");
-		addSeparator(displayPanel,"Connected Block Info");
-		connectedId = createLabel("Hi");
+		addSeparator(displayPanel,"Connected Property Display Block Info");
+		connectedId = createLabel("Not Set");
 		displayPanel.add(connectedId, "");
+		interiorPanel.add(displayPanel,"");
 
 		// The OK button copies data from the components and sets the property properties.
 		// It then returns to the main tab. 
@@ -94,15 +82,6 @@ public class ConfigurationPanel extends BasicEditPanel {
 			public void actionPerformed(ActionEvent e) {
 				if(property!=null) {
 					property.setBindingType(BindingType.valueOf(bindingTypeCombo.getSelectedItem().toString()));
-					property.setDisplayed(annotationCheckBox.isSelected());
-					try {
-						property.setDisplayOffsetX(Integer.parseInt(xfield.getText()));
-						property.setDisplayOffsetY(Integer.parseInt(yfield.getText()));
-					}
-					catch(NumberFormatException nfe) {
-						JOptionPane.showMessageDialog(ConfigurationPanel.this, String.format("ConfigurationPanel: Bad entry for display offset (%s)",nfe.getLocalizedMessage()));
-						property.setDisplayed(false);
-					}
 				}
 				editor.handlePropertyChange(property);   // Mark the nav tree node as dirty
 				updatePanelForProperty(BlockEditConstants.HOME_PANEL,property);
@@ -130,9 +109,6 @@ public class ConfigurationPanel extends BasicEditPanel {
 		bindingTypeCombo.setEnabled(prop.getBindingType().equals(BindingType.NONE)||
 				                    prop.getBindingType().equals(BindingType.TAG_MONITOR));
 		propertyTypeCombo.setSelectedItem(prop.getType().toString());
-//		annotationCheckBox.setSelected(prop.isDisplayed());
-//		xfield.setText(String.valueOf(prop.getDisplayOffsetX()));
-//		yfield.setText(String.valueOf(prop.getDisplayOffsetY()));
 		if (prop.isDisplayed()) {
 			connectedId.setText("display block UUID:" + prop.getDisplayedBlockId().toString());
 		} else {

@@ -63,7 +63,7 @@ public class SetProperty extends AbstractProcessBlock implements ProcessBlock {
 	private void initialize() {	
 		setName("SetProperty");
 		
-		BlockProperty propertyProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_PROPERTY,propertyName,PropertyType.STRING,true);
+		BlockProperty propertyProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_PROPERTY,propertyName,PropertyType.PROPERTY,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_PROPERTY, propertyProperty);
 		
 		// Define a single input
