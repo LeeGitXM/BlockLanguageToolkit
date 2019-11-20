@@ -274,4 +274,5 @@ public class Compare extends AbstractProcessBlock implements ProcessBlock {
 		desc.setStyle(BlockStyle.SQUARE);
 		desc.setBackground(BlockConstants.BLOCK_BACKGROUND_LIGHT_GRAY);
 	}
+
 }

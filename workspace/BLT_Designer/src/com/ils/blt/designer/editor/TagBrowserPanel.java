@@ -31,11 +31,12 @@ import com.inductiveautomation.ignition.designer.model.DesignerContext;
 public class TagBrowserPanel extends BasicEditPanel {
 	private static final long serialVersionUID = 1L;
 	private final DesignerContext context;
-	private String selectedPath = "";
+	private static String selectedPath = "";
 	private BlockProperty property = null;
 	private final JTree tagTree;
 	private final TagRenderer cellRenderer;
 	private final TreeSelectionModel tagTreeSelectionModel;
+	private static TreePath lastSelected = null;
 	
 	public TagBrowserPanel(DesignerContext ctx,final BlockPropertyEditor editor) {
 		super(editor);
@@ -55,6 +56,9 @@ public class TagBrowserPanel extends BasicEditPanel {
 		treePane.setPreferredSize(BlockEditConstants.TREE_SIZE);
 		add(treePane,BorderLayout.CENTER);
 		JPanel buttonPanel = new JPanel();
+		if (lastSelected != null) {
+			tagTreeSelectionModel.setSelectionPath(lastSelected);  // open to last selected path
+		}
 		
 		JButton okButton = new JButton("OK");
 		buttonPanel.add(okButton);
@@ -65,6 +69,7 @@ public class TagBrowserPanel extends BasicEditPanel {
 					// It's possible to select something that's not a node.
 					if(selectedPaths[0].getLastPathComponent() instanceof TagTreeNode ) {
 						TagTreeNode node = (TagTreeNode)(selectedPaths[0].getLastPathComponent());
+						lastSelected = selectedPaths[0];
 						selectedPath = node.getTagPath().toString();
 						selectedPath = editor.modifyPathForProvider(selectedPath);
 						if(property!=null) {

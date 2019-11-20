@@ -35,7 +35,8 @@ public class BlockProperty implements NotificationChangeListener {
 	private PropertyType type = PropertyType.STRING;
 	private String binding = "";
 	private BindingType bindingType = BindingType.NONE;
-	private boolean displayed   = false;
+	private boolean showProperty  = false;
+	private boolean displayed  = false;
 	private String displayedBlockUUID = "";  // parent is used if this property is displayed.  This way we know what block to update
 	private int displayOffsetX = BlockConstants.DEFAULT_ATTRIBUTE_OFFSET_X;
 	private int displayOffsetY = BlockConstants.DEFAULT_ATTRIBUTE_OFFSET_Y;
@@ -111,6 +112,8 @@ public class BlockProperty implements NotificationChangeListener {
 	public void setBinding(String lnk) {this.binding = lnk;}
 	public String getName() {return name;}
 	public void setName(String name) {this.name = name;}
+	public boolean isPropertyShown() {return showProperty;}
+	public void setShowProperty(boolean shown) {this.showProperty = shown;}
 	public boolean isDisplayed() {return displayed;}
 	public void setDisplayed(boolean shown) {this.displayed = shown;}
 	public int getDisplayOffsetX() {return displayOffsetX;}
@@ -183,6 +186,7 @@ public class BlockProperty implements NotificationChangeListener {
 		BlockProperty clone = new BlockProperty(getName(),getValue(),getType(),isEditable());
 		clone.setBinding(getBinding());
 		clone.setDisplayed(isDisplayed());
+		clone.setShowProperty(isPropertyShown());
 		clone.setDisplayedBlockId(getDisplayedBlockId());
 		clone.setDisplayOffsetX(getDisplayOffsetX());
 		clone.setDisplayOffsetY(getDisplayOffsetY());

@@ -483,8 +483,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			if( context.getProject().isEnabled()) {
 				ApplicationCreateAction applicationCreateAction = new ApplicationCreateAction(this);
 				ApplicationImportAction applicationImportAction = new ApplicationImportAction(context.getFrame(),this);
-// todo - removed for now.  hard code values represented here later?  EREIAM JH
-				ToolkitConfigureAction configureAction = new ToolkitConfigureAction(menu.getRootPane());
 				ClearAction clearAction = new ClearAction();
 				DebugAction debugAction = new DebugAction();
 				RefreshAction refreshAction = new RefreshAction(this);
@@ -498,7 +496,11 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				}
 				menu.add(applicationCreateAction);
 				menu.add(applicationImportAction);
-				menu.add(configureAction);
+// todo - removed.  Configure values now set during installation.  Left on for debug mode just in case someone cares   EREIAM JH
+				if (logger.isDebugEnabled()) {
+					ToolkitConfigureAction configureAction = new ToolkitConfigureAction(menu.getRootPane());
+					menu.add(configureAction);
+				}
 				menu.add(folderCreateAction);
 				menu.add(refreshAction);
 				menu.add(saveAllAction);

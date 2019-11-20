@@ -16,8 +16,8 @@ public enum BindingType
 {
             NONE,
             ENGINE,
-            OPTION,
-            SCRIPT,
+            OPTION,   // I only see this used in the noise generator, but appears as an option in the list
+//            SCRIPT, // I don't see this used anywhere, so commented out.
             TAG_READ,
             TAG_READWRITE,
             TAG_WRITE,

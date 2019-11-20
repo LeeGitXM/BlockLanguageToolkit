@@ -76,6 +76,9 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 		initialize();
 		buffer = new ConcurrentLinkedQueue<TruthValue>();
 		dog = new Watchdog(getName(),this);
+
+
+	
 	}
 	
 	/**
@@ -124,7 +127,10 @@ public class LogicFilter extends AbstractProcessBlock implements ProcessBlock {
 	public void start() {
 		super.start();
 		reset();
+
 	}
+
+	
 	@Override
 	public void stop() {
 		timer.removeWatchdog(dog);

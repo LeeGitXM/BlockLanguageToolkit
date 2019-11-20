@@ -170,8 +170,16 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 */
 	public boolean isLocked();
 	/**
-//	 * @return true if this block is a candidate for signal messages.
-//	 */
+	 * @return the version of this block.  Used to manage block upgrades.
+	 */
+	public int getBlockVersion();
+	/**
+	 * @return Set the version number of this block type.  Set this after updating an existing block.
+	 */
+	public void setBlockVersion(int version);
+	/**
+	 * @return true if this block is a candidate for signal messages.
+	 */
 //	public boolean isReceiver();
 //	/**
 //	 * @return true if this block publishes signal messages.
@@ -300,5 +308,4 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	/**
 	 * This is a stricter implementation that enforces QualifiedValue data.
 	 */
-	public void propertyChange(BlockPropertyChangeEvent event);
 }

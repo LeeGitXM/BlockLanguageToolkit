@@ -88,6 +88,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	/** Describe ports/stubs where connections join the block */
 	protected List<AnchorPrototype> anchors;
 	protected final UtilityFunctions fcns = new UtilityFunctions();
+	private int instanceVersion = 0;
 
 	
 	/**
@@ -487,7 +488,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 			prop.setValue(value);
 			
 			// check if this property is displayed in a DisplayPropertyBlock and update it.
-			if (prop.isDisplayed() && prop.getDisplayedBlockId() != null && prop.getDisplayedBlockId().length() > 1) {  // so, there is a small chance that this could result in an infinite update loop
+			if (prop.isPropertyShown() && prop.getDisplayedBlockId() != null && prop.getDisplayedBlockId().length() > 1) {  // so, there is a small chance that this could result in an infinite update loop
 
 				// need to have a way to inject this into the notification buffer of the execution controller.  Add a signal connection if none exist
 				// the destination block won't have an input defined, so no line will be drawn
@@ -597,7 +598,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	
 	private void updatePropertyDisplays() {
 		for (BlockProperty prop:propertyMap.values()) {
-			if (prop.isDisplayed() && prop.getDisplayedBlockId() != null && prop.getDisplayedBlockId().length() > 1) {  // so, there is a small chance that this could result in an infinite update loop
+			if (prop.isPropertyShown() && prop.getDisplayedBlockId() != null && prop.getDisplayedBlockId().length() > 1) {  // so, there is a small chance that this could result in an infinite update loop
 		
 				// need to have a way to inject this into the notification buffer of the execution controller.  Add a signal connection if none exist
 				// the destination block won't have an input defined, so no line will be drawn
@@ -1053,4 +1054,23 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 //		this.isReceiver = isReceiver;
 //	}
 //
+
+	// Useful when updating blocks, check current version against serialized version
+	public int getBlockVersion() {
+		return instanceVersion;
+	}
+
+	public void setBlockVersion(int version) {
+		this.instanceVersion = version;
+	}
+
+	// This should be overridden to return the derived class block version.  See And block for example
+	public int getBlockversion() {
+		return 0;
+	}
+	
+	// check to see if this block type has been updated since this instance was constructed.  
+	public boolean versionUpdateRequired() {
+		return (getBlockVersion() > instanceVersion);
+	}
 }

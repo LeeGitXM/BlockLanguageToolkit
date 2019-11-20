@@ -155,6 +155,7 @@ public class BlockFactory  {
 						}
 					}
 					property.setDisplayed(bp.isDisplayed());
+					property.setShowProperty(bp.isPropertyShown());
 					property.setDisplayedBlockId(bp.getDisplayedBlockId());
 					property.setEditable(bp.isEditable());
 					property.setBinding(bp.getBinding());

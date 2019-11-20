@@ -43,7 +43,8 @@ public class And extends AbstractProcessBlock {
 	private final Watchdog dog;
 	private BlockProperty valueProperty = null;
 	private double synchInterval = 0.5; // 1/2 sec synchronization by default
-	
+	private static final int blockVersion = 0;  // update this when making attribute changes.  Check against instanceVersion for deserialized blocks to see if they require updating
+
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
@@ -88,6 +89,7 @@ public class And extends AbstractProcessBlock {
 		// Define a single output
 		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.TRUTHVALUE);
 		anchors.add(output);
+		
 	}
 	
 	/**
@@ -98,6 +100,13 @@ public class And extends AbstractProcessBlock {
 		super.start();
 		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,qualifiedValueMap,TruthValue.UNSET);
 		log.debugf("%s.start: initialized %d inputs",getName(),qualifiedValueMap.size());
+
+		//check if version update required
+		if (this.versionUpdateRequired()) {
+			// update this that have changed.  For the first round make sure to check for displayed properties, since that mechanism has changed.
+			// don't forget to push updates back to the gateway.  Not sure how or why this is required.
+		}
+		
 	}
 	/**
 	 * Disconnect from the timer thread.
@@ -292,5 +301,10 @@ public class And extends AbstractProcessBlock {
 		if( allUnset ) result = TruthValue.UNSET;
 		else if(allTrue) result = TruthValue.TRUE;
 		return result;	
+	}
+
+	@Override
+	public int getBlockversion() {
+		return blockVersion;
 	}
 }
