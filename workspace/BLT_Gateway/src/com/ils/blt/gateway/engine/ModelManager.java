@@ -25,7 +25,9 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
+import com.ils.blt.gateway.ControllerRequestHandler;
 import com.ils.blt.gateway.GatewayScriptExtensionManager;
+import com.ils.blt.gateway.GatewayScriptFunctions;
 import com.ils.common.GeneralPurposeDataContainer;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.Project;
@@ -813,7 +815,7 @@ public class ModelManager implements ProjectListener  {
 					if( extensionManager.hasKey(deletedBlock.getClassName(),ScriptConstants.NODE_DELETE_SCRIPT)) {
 						extensionManager.runScript(context.getProjectManager().getProjectScriptManager(diagram.getProjectId()), 
 							deletedBlock.getClassName(), 
-							ScriptConstants.NODE_DELETE_SCRIPT, deletedBlock.getBlockId().toString());
+							ScriptConstants.NODE_DELETE_SCRIPT, deletedBlock.getBlockId().toString(), deletedBlock.getAuxiliaryData());
 					}
 				}
 				diagram.createBlocks(sd.getBlocks());       // Adds blocks that are new in update
@@ -1025,12 +1027,12 @@ public class ModelManager implements ProjectListener  {
 							controller.removeSubscription(block, prop);
 						}
 						// If this is a final diagnosis, call its delete extension
-						//EREIAM JH - CHANGED WITH MOVE
 //						if( block.getClassName().equals("xom.block.finaldiagnosis.FinalDiagnosis")) {
 						if( block.getClassName().equals("ils.block.finaldiagnosis.FinalDiagnosis")) {
+							String uuidStr = block.getBlockId().toString();
 							extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), 
 								block.getClassName(), 
-								ScriptConstants.NODE_DELETE_SCRIPT, block.getBlockId().toString());
+								ScriptConstants.NODE_DELETE_SCRIPT, uuidStr, block.getAuxiliaryData());
 						}
 					}
 				}
@@ -1055,7 +1057,7 @@ public class ModelManager implements ProjectListener  {
 				else if( node instanceof ProcessFamily ) classKey = ScriptConstants.FAMILY_CLASS_NAME;
 				
 				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), classKey,
-							ScriptConstants.NODE_DELETE_SCRIPT, node.getSelf().toString());
+							ScriptConstants.NODE_DELETE_SCRIPT, node.getSelf().toString(), node.getAuxiliaryData());
 			}
 		}
 	}
