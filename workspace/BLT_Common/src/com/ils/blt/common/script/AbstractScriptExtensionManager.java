@@ -86,7 +86,7 @@ public abstract class AbstractScriptExtensionManager {
 		}
 		else if( flavor.equals(ScriptConstants.NODE_DELETE_SCRIPT))  {
 			entry = "delete";
-			arglist = "uuid";
+			arglist = "uuid,aux";
 		}
 		else if( flavor.equals(ScriptConstants.NODE_RENAME_SCRIPT))  {
 			entry = "rename";

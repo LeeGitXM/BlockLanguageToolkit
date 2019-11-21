@@ -813,7 +813,7 @@ public class ModelManager implements ProjectListener  {
 					if( extensionManager.hasKey(deletedBlock.getClassName(),ScriptConstants.NODE_DELETE_SCRIPT)) {
 						extensionManager.runScript(context.getProjectManager().getProjectScriptManager(diagram.getProjectId()), 
 							deletedBlock.getClassName(), 
-							ScriptConstants.NODE_DELETE_SCRIPT, deletedBlock.getBlockId().toString());
+							ScriptConstants.NODE_DELETE_SCRIPT, deletedBlock.getBlockId().toString(), deletedBlock.getAuxiliaryData());
 					}
 				}
 				diagram.createBlocks(sd.getBlocks());       // Adds blocks that are new in update
@@ -1028,7 +1028,7 @@ public class ModelManager implements ProjectListener  {
 						if( block.getClassName().equals("xom.block.finaldiagnosis.FinalDiagnosis")) {
 							extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), 
 								block.getClassName(), 
-								ScriptConstants.NODE_DELETE_SCRIPT, block.getBlockId().toString());
+								ScriptConstants.NODE_DELETE_SCRIPT, block.getBlockId().toString(), block.getAuxiliaryData());
 						}
 					}
 				}
@@ -1053,7 +1053,7 @@ public class ModelManager implements ProjectListener  {
 				else if( node instanceof ProcessFamily ) classKey = ScriptConstants.FAMILY_CLASS_NAME;
 				
 				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), classKey,
-							ScriptConstants.NODE_DELETE_SCRIPT, node.getSelf().toString());
+							ScriptConstants.NODE_DELETE_SCRIPT, node.getSelf().toString(), node.getAuxiliaryData());
 			}
 		}
 	}
