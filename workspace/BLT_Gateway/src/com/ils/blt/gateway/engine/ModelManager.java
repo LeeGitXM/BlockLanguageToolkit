@@ -1025,7 +1025,9 @@ public class ModelManager implements ProjectListener  {
 							controller.removeSubscription(block, prop);
 						}
 						// If this is a final diagnosis, call its delete extension
-						if( block.getClassName().equals("xom.block.finaldiagnosis.FinalDiagnosis")) {
+						log.tracef("%s.deleteResource, entire diagram, block is a %s",TAG,block.getClassName());
+						if( block.getClassName().contains("block.finaldiagnosis.FinalDiagnosis")) {
+							log.tracef("%s.deleteResource, entire diagram, block identified as finaldiagnosis.  Aux data is %s",TAG,block.getAuxiliaryData());
 							extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), 
 								block.getClassName(), 
 								ScriptConstants.NODE_DELETE_SCRIPT, block.getBlockId().toString(), block.getAuxiliaryData());
@@ -1052,6 +1054,9 @@ public class ModelManager implements ProjectListener  {
 				if( node instanceof ProcessApplication ) classKey = ScriptConstants.APPLICATION_CLASS_NAME;
 				else if( node instanceof ProcessFamily ) classKey = ScriptConstants.FAMILY_CLASS_NAME;
 				
+				log.tracef("%s.deleteResource node is a %s",TAG,node.getClass().getName());
+				log.tracef("%s.deleteResource node key is %s",TAG,classKey);
+				log.tracef("%s.deleteResource, node Aux data is %s",TAG,node.getAuxiliaryData());
 				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), classKey,
 							ScriptConstants.NODE_DELETE_SCRIPT, node.getSelf().toString(), node.getAuxiliaryData());
 			}
