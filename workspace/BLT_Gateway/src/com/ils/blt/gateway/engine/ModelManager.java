@@ -1021,14 +1021,16 @@ public class ModelManager implements ProjectListener  {
 				if( node instanceof ProcessDiagram ) {
 					ProcessDiagram diagram = (ProcessDiagram)node;
 
-					for(ProcessBlock block:diagram.getProcessBlocks()) {
+					for(ProcessBlock block:diagram.getProcessBlocks()) {  WTF????
 						block.stop();
 						for(BlockProperty prop:block.getProperties()) {
 							controller.removeSubscription(block, prop);
 						}
 						// If this is a final diagnosis, call its delete extension
 //						if( block.getClassName().equals("xom.block.finaldiagnosis.FinalDiagnosis")) {
+						log.tracef("%s.deleteResource, entire diagram, block is a %s",TAG,block.getClassName());
 						if( block.getClassName().equals("ils.block.finaldiagnosis.FinalDiagnosis")) {
+							log.tracef("%s.deleteResource, entire diagram, block identified as finaldiagnosis.  Aux data is %s",TAG,block.getAuxiliaryData());
 							String uuidStr = block.getBlockId().toString();
 							extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), 
 								block.getClassName(), 
@@ -1053,9 +1055,13 @@ public class ModelManager implements ProjectListener  {
 				// Invoke the proper extension function on a delete
 				// NOTE: Need to use keys for class names
 				String classKey = ScriptConstants.DIAGRAM_CLASS_NAME;
-				if( node instanceof ProcessApplication ) classKey = ScriptConstants.APPLICATION_CLASS_NAME;
-				else if( node instanceof ProcessFamily ) classKey = ScriptConstants.FAMILY_CLASS_NAME;
+				if( node instanceof ProcessApplication ) 
+					classKey = ScriptConstants.APPLICATION_CLASS_NAME;
+				else if( node instanceof ProcessFamily ) 
+					classKey = ScriptConstants.FAMILY_CLASS_NAME;
 				
+				log.tracef("%s.deleteResource, node is a %s",TAG,node.getClass().getName());
+				log.tracef("%s.deleteResource.  Aux data is %s",TAG,node.getAuxiliaryData());
 				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), classKey,
 							ScriptConstants.NODE_DELETE_SCRIPT, node.getSelf().toString(), node.getAuxiliaryData());
 			}
