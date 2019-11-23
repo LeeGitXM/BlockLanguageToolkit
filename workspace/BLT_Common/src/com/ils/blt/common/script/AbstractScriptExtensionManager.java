@@ -86,7 +86,8 @@ public abstract class AbstractScriptExtensionManager {
 		}
 		else if( flavor.equals(ScriptConstants.NODE_DELETE_SCRIPT))  {
 			entry = "delete";
-			arglist = "uuid,aux";
+			arglist = "uuid";
+//			arglist = "uuid,aux";  // EREIAM JH - added aux data, but only blocks seemed to get it, others empty
 		}
 		else if( flavor.equals(ScriptConstants.NODE_RENAME_SCRIPT))  {
 			entry = "rename";

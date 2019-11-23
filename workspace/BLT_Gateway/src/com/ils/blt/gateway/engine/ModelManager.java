@@ -813,7 +813,9 @@ public class ModelManager implements ProjectListener  {
 					if( extensionManager.hasKey(deletedBlock.getClassName(),ScriptConstants.NODE_DELETE_SCRIPT)) {
 						extensionManager.runScript(context.getProjectManager().getProjectScriptManager(diagram.getProjectId()), 
 							deletedBlock.getClassName(), 
-							ScriptConstants.NODE_DELETE_SCRIPT, deletedBlock.getBlockId().toString(), deletedBlock.getAuxiliaryData());
+							ScriptConstants.NODE_DELETE_SCRIPT, deletedBlock.getBlockId().toString());
+						// removed aux data because only blocks seem to work.  others are empty
+//						ScriptConstants.NODE_DELETE_SCRIPT, deletedBlock.getBlockId().toString(), deletedBlock.getAuxiliaryData());
 					}
 				}
 				diagram.createBlocks(sd.getBlocks());       // Adds blocks that are new in update
@@ -1030,7 +1032,8 @@ public class ModelManager implements ProjectListener  {
 							log.tracef("%s.deleteResource, entire diagram, block identified as finaldiagnosis.  Aux data is %s",TAG,block.getAuxiliaryData());
 							extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), 
 								block.getClassName(), 
-								ScriptConstants.NODE_DELETE_SCRIPT, block.getBlockId().toString(), block.getAuxiliaryData());
+								ScriptConstants.NODE_DELETE_SCRIPT, block.getBlockId().toString());
+//								ScriptConstants.NODE_DELETE_SCRIPT, block.getBlockId().toString(), block.getAuxiliaryData());
 						}
 					}
 				}
@@ -1058,7 +1061,8 @@ public class ModelManager implements ProjectListener  {
 				log.tracef("%s.deleteResource node key is %s",TAG,classKey);
 				log.tracef("%s.deleteResource, node Aux data is %s",TAG,node.getAuxiliaryData());
 				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), classKey,
-							ScriptConstants.NODE_DELETE_SCRIPT, node.getSelf().toString(), node.getAuxiliaryData());
+						ScriptConstants.NODE_DELETE_SCRIPT, node.getSelf().toString());
+//						ScriptConstants.NODE_DELETE_SCRIPT, node.getSelf().toString(), node.getAuxiliaryData());
 			}
 		}
 	}
