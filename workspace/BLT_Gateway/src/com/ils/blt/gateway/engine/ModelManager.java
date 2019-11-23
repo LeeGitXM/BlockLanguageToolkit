@@ -812,10 +812,16 @@ public class ModelManager implements ProjectListener  {
 				// Execute "delete" extension function for removed blocks
 				List<ProcessBlock> deletedBlocks = diagram.removeUnusedBlocks(sd.getBlocks());
 				for(ProcessBlock deletedBlock:deletedBlocks) {
+					
+					
 					if( extensionManager.hasKey(deletedBlock.getClassName(),ScriptConstants.NODE_DELETE_SCRIPT)) {
+						GeneralPurposeDataContainer auxData = deletedBlock.getAuxiliaryData();
+						log.infof("%s.addModifyDiagramResource.  Aux data lists %s    ************************#######################  EREIAM JH ####################",TAG,auxData.getLists());
+						log.infof("%s.addModifyDiagramResource.  Aux data maplists %s    ************************#######################  EREIAM JH ####################",TAG,auxData.getMapLists());
+						log.infof("%s.addModifyDiagramResource.  Aux data properties %s    ************************#######################  EREIAM JH ####################",TAG,auxData.getProperties());
 						extensionManager.runScript(context.getProjectManager().getProjectScriptManager(diagram.getProjectId()), 
 							deletedBlock.getClassName(), 
-							ScriptConstants.NODE_DELETE_SCRIPT, deletedBlock.getBlockId().toString(), deletedBlock.getAuxiliaryData());
+							ScriptConstants.NODE_DELETE_SCRIPT, deletedBlock.getBlockId().toString(), auxData);
 					}
 				}
 				diagram.createBlocks(sd.getBlocks());       // Adds blocks that are new in update
@@ -1021,16 +1027,16 @@ public class ModelManager implements ProjectListener  {
 				if( node instanceof ProcessDiagram ) {
 					ProcessDiagram diagram = (ProcessDiagram)node;
 
-					for(ProcessBlock block:diagram.getProcessBlocks()) {  WTF????
+					for(ProcessBlock block:diagram.getProcessBlocks()) {
 						block.stop();
 						for(BlockProperty prop:block.getProperties()) {
 							controller.removeSubscription(block, prop);
 						}
 						// If this is a final diagnosis, call its delete extension
 //						if( block.getClassName().equals("xom.block.finaldiagnosis.FinalDiagnosis")) {
-						log.tracef("%s.deleteResource, entire diagram, block is a %s",TAG,block.getClassName());
-						if( block.getClassName().equals("ils.block.finaldiagnosis.FinalDiagnosis")) {
-							log.tracef("%s.deleteResource, entire diagram, block identified as finaldiagnosis.  Aux data is %s",TAG,block.getAuxiliaryData());
+						log.infof("%s.deleteResource, entire diagram, block is a %s    ************************#######################  EREIAM JH ####################",TAG,block.getClassName());
+						if( block.getClassName().contains("block.finaldiagnosis.FinalDiagnosis")) {
+							log.infof("%s.deleteResource, entire diagram, block identified as finaldiagnosis.  Aux data is %s    ************************#######################  EREIAM JH ####################",TAG,block.getAuxiliaryData().toString());
 							String uuidStr = block.getBlockId().toString();
 							extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), 
 								block.getClassName(), 
@@ -1060,8 +1066,11 @@ public class ModelManager implements ProjectListener  {
 				else if( node instanceof ProcessFamily ) 
 					classKey = ScriptConstants.FAMILY_CLASS_NAME;
 				
-				log.tracef("%s.deleteResource, node is a %s",TAG,node.getClass().getName());
-				log.tracef("%s.deleteResource.  Aux data is %s",TAG,node.getAuxiliaryData());
+				log.infof("%s.deleteResource, node is a %s    ************************#######################  EREIAM JH ####################",TAG,node.getClass());
+				GeneralPurposeDataContainer auxData = node.getAuxiliaryData();
+				log.infof("%s.deleteResource.  Aux data lists %s    ************************#######################  EREIAM JH ####################",TAG,auxData.getLists());
+				log.infof("%s.deleteResource.  Aux data maplists %s    ************************#######################  EREIAM JH ####################",TAG,auxData.getMapLists());
+				log.infof("%s.deleteResource.  Aux data properties %s    ************************#######################  EREIAM JH ####################",TAG,auxData.getProperties());
 				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), classKey,
 							ScriptConstants.NODE_DELETE_SCRIPT, node.getSelf().toString(), node.getAuxiliaryData());
 			}

@@ -49,7 +49,7 @@ public class ResourceDeleteManager {
 	
 	public void deleteInProject() {
 		// Delete the current node and all its children. 
-		Project diff = context.getProject().getEmptyCopy();
+		Project diff = context.getProject().getEmptyCopy();   // ereiam jh  Called upon save after delete
 		for( ProjectResource pr:resources) {
 			if( pr.getResourceId()==BLTProperties.ROOT_RESOURCE_ID) continue; 
 			log.tracef("%s.deleteInProject: Adding %d to delete list",TAG,pr.getResourceId());
@@ -84,7 +84,7 @@ public class ResourceDeleteManager {
 	// initially locked by some entity, not us. For now we give up an simply ignore the locks.
 	public boolean deleteResources() {
 		// First get all the locks
-		boolean success = true;
+		boolean success = true;    // ereiam jh  Called upon save after delete
 	
 //		for(ProjectResource pr:resources) {
 //			rid = pr.getResourceId();
@@ -151,7 +151,7 @@ public class ResourceDeleteManager {
 	// Recursively descend the node tree, gathering up descendants.
 	// While we're at it, prepare the nodes for deletion.
 	private void accumulateDescendantResources(AbstractResourceNavTreeNode node,List<ProjectResource> rlist) {
-		if( node.getProjectResource()!=null ) {
+		if( node.getProjectResource()!=null ) {  // ereiam jh  Called upon save after delete.  Should this be pushing aux data down if necessary?
 			rlist.add(node.getProjectResource());
 		}
 
