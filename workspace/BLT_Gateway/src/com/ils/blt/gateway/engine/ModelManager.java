@@ -1057,9 +1057,6 @@ public class ModelManager implements ProjectListener  {
 				if( node instanceof ProcessApplication ) classKey = ScriptConstants.APPLICATION_CLASS_NAME;
 				else if( node instanceof ProcessFamily ) classKey = ScriptConstants.FAMILY_CLASS_NAME;
 				
-				log.tracef("%s.deleteResource node is a %s",TAG,node.getClass().getName());
-				log.tracef("%s.deleteResource node key is %s",TAG,classKey);
-				log.tracef("%s.deleteResource, node Aux data is %s",TAG,node.getAuxiliaryData());
 				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), classKey,
 						ScriptConstants.NODE_DELETE_SCRIPT, node.getSelf().toString());
 //						ScriptConstants.NODE_DELETE_SCRIPT, node.getSelf().toString(), node.getAuxiliaryData());
