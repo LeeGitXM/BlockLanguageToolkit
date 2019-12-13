@@ -87,6 +87,7 @@ public class RecMapDataModel {
 	
 	/**
 	 * Respond to changes in the dataset configuration by re-computing the graph.
+	 * 
 	 */
 	public void update() {
 		// First make sure that all are defined

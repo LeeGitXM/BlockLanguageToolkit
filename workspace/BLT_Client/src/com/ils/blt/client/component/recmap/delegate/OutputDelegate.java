@@ -67,7 +67,7 @@ public class OutputDelegate implements TextDelegate {
 		sb.append(": ");
 		sb.append(currentSetpoint);
         sb.append("\n");
-        /*
+        
 		sb.append(RecMapConstants.FINAL);
 		sb.append(": ");
 		sb.append(finalSetpoint);
@@ -76,11 +76,10 @@ public class OutputDelegate implements TextDelegate {
 		sb.append(": ");
 		sb.append(target);
         sb.append("\n");
-		sb.append(RecMapConstants.RECOMMENDATION);
-		sb.append(": ");
-		sb.append(recommendation);
-        sb.append("\n");
-        */
+//		sb.append(RecMapConstants.RECOMMENDATION);
+//		sb.append(": ");
+//		sb.append(recommendation);
+//        sb.append("\n");
         return sb.toString();
 
     }
@@ -92,6 +91,7 @@ public class OutputDelegate implements TextDelegate {
     @Override
     public String getHeaderText(VisualItem item) {
         StringBuilder sb = new StringBuilder();
+        sb.append("Quant Output\n");
         sb.append(item.getString(RecMapConstants.NAME)); 
         return sb.toString();
     }

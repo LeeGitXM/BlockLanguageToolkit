@@ -276,9 +276,12 @@ public class RecMapView extends Display {
         	int color = ColorLib.rgba(220,220,220,100);  // Gray
             if ( item instanceof TableNodeItem ) {
             	int kind = item.getInt(RecMapConstants.KIND);
-            	if( kind==RecMapConstants.SOURCE_KIND )      color= RecMapConstants.SOURCE_HEADER_COLOR;
-            	else if( kind==RecMapConstants.TARGET_KIND ) color= RecMapConstants.TARGET_HEADER_COLOR;
-            	else                                         color= RecMapConstants.INFO_HEADER_COLOR;
+            	if( kind==RecMapConstants.SOURCE_KIND )      
+            		color= RecMapConstants.SOURCE_HEADER_COLOR;
+            	else if( kind==RecMapConstants.TARGET_KIND ) 
+            		color= RecMapConstants.TARGET_HEADER_COLOR;
+            	else                                         
+            		color= RecMapConstants.INFO_HEADER_COLOR;
             }
             return color;
         }

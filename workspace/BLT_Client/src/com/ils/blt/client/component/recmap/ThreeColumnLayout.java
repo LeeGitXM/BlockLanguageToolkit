@@ -95,11 +95,11 @@ public class ThreeColumnLayout extends Layout {
         log.infof("%s.run group %s has %d nodes (%3.1f x %3.1f)",TAG,m_group,ts.getTupleCount(),w,h);
         
         // Attempt to center the nodes in the middle
-        int sources = (nrows - nrows1)/2;
-        int targets = (nrows - nrows3)/2;
-        boolean linkSlots[] = new boolean[nrows];
+        int sources = (nrows*2 - nrows1*2)/2;
+        int targets = (nrows*2 - nrows3*2)/2;
+        boolean linkSlots[] = new boolean[nrows*2];  // leave some room for empty spaces
         int row=0;
-        while(row<nrows) {
+        while(row<nrows*2) {
         	linkSlots[row] = false;
         	row++;
         }
@@ -119,20 +119,22 @@ public class ThreeColumnLayout extends Layout {
                 	x = bx + w*((coltype)/2.0);
                 	y = by + h*((sources)/(double)(nrows-1)) - h;
                 	y += verticalPad*sources;
-                	sources++;
+                	sources += 2;  // leave a space
                 }
                 else if( coltype==RecMapConstants.TARGET_KIND) {
                 	x = bx + w*((coltype)/2.0);
                 	y = by + h*((targets)/(double)(nrows-1)) - h;
                 	y += verticalPad*targets;
-                	targets++;
+                	targets += 2;  // leave a space
                 }
                 else {
                 	// link - try to place midway between source and target
                 	x = bx + w*((coltype)/2.0);
                 	int src = item.getInt(sourceRefColumn);
                 	int tar = item.getInt(targetRefColumn);
-                	int preference = (src+tar-1)/2;
+                	int actualLeft = (nrows*2 - nrows1*2)/2 + src*2; 
+                	int actualRight = (nrows*2 - nrows2*2)/2 + tar*2; 
+                	int preference = (actualLeft+actualRight)/2 +1;
                 	if( preference<0 ) preference=0;
                 	int span = 0;
                 	row = preference;

@@ -84,7 +84,7 @@ public class TableLabelRenderer extends LabelRenderer {
 		                                         g.getTransform().getScaleY());
 		         
 		         double x = shape.getMinX() + m_horizBorder;
-		         double y = shape.getMinY() + m_vertBorder;
+		         double y = shape.getMinY() + m_vertBorder*5.;
 		  
 		         // First render the header. Header is 1/2 the height, centered
 		         String text = delegate.getHeaderText(item);
@@ -96,14 +96,25 @@ public class TableLabelRenderer extends LabelRenderer {
 		             g.setFont(m_font);
 		             FontMetrics fm = DEFAULT_GRAPHICS.getFontMetrics(m_font);
 
-		             double dx = (itemWidth-fm.stringWidth(text))/2.;
-		             if(dx<0.) dx = 0.;
-		             double dy = (itemHeight-fm.getHeight())/4.;
+		   
+		             String[] lines = text.split("\n");
+		             int numLines = lines.length;
+		             double textHeight = fm.getHeight()*numLines; 
+		             double leftOver = itemHeight/2. - textHeight; 
+
+		             double dx = 0.;
+		             double dy = leftOver;
 		             if(dy<0.) dy = 0.;
 		   
-		             y+=itemHeight/4;  // Center in the upper half
-		             drawString(g, text, useInt, x+dx, y+dy);
+		             for( String line:lines) {
+			             dx = (itemWidth-fm.stringWidth(line))/2.;
+			             if(dx<0.) dx = 0.;
+		            	 drawString(g, line, useInt, x+dx, y+dy);
+		            	 dy+=fm.getHeight();
+		             }
 		         }
+		         
+		         y = shape.getMinY() + m_vertBorder*5. + itemHeight/2. ;
 		     
 		         // render body text - we're counting on one line, but this has code to handle multiple.
 		         text = delegate.getBodyText(item);
@@ -114,15 +125,17 @@ public class TableLabelRenderer extends LabelRenderer {
 		             g.setFont(m_font);
 		             FontMetrics fm = DEFAULT_GRAPHICS.getFontMetrics(m_font);
 
-		             // left align
-		             double dy = (itemHeight-fm.getHeight())/4.;
+		             String[] lines = text.split("\n");
+		             int numLines = lines.length;
+		             double textHeight = fm.getHeight()*numLines; 
+		             double leftOver = itemHeight/2. - textHeight; 
+
+		             double dy = leftOver;
 		             if(dy<0.) dy = 0.;
 		   
-		             y+=itemHeight/2;  // Center in the lower half
-		             String[] lines = text.split("\n");
 		             for( String line:lines) {
 		            	 drawString(g, line, useInt, x, y+dy);
-		            	 y+=fm.getHeight();
+		            	 dy+=fm.getHeight();
 		             }
 		         }
 		         
@@ -138,7 +151,7 @@ public class TableLabelRenderer extends LabelRenderer {
     
 
     /**
-     * The parent method returns a variable size that depends on the lenght of the text.
+     * The parent method returns a variable size that depends on the length of the text.
      * This version returns a fixed size box and then relies on modification of the
      * font to fit the text into the box.
      */

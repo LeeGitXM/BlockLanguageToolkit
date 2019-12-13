@@ -65,12 +65,10 @@ public class DiagnosisDelegate implements TextDelegate {
 		if( properties!=null && properties.getProperty(RecMapConstants.MULTIPLIER)!=null ) {
 			multiplier = properties.getProperty(RecMapConstants.MULTIPLIER);
 		}
-		/*
 		sb.append(RecMapConstants.PROBLEM);
 		sb.append(": ");
 		sb.append(problem);
         sb.append("\n");
-        */
 		sb.append(RecMapConstants.MULTIPLIER);
 		sb.append(": ");
 		sb.append(multiplier);
@@ -85,6 +83,7 @@ public class DiagnosisDelegate implements TextDelegate {
     @Override
     public String getHeaderText(VisualItem item) {
         StringBuilder sb = new StringBuilder();
+		sb.append("Diagnosis\n");
         sb.append(item.getString(RecMapConstants.NAME)); 
         return sb.toString();
     }
