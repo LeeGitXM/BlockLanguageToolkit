@@ -25,7 +25,7 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext;
  */
 public class ProxyBlock extends AbstractProcessBlock  {
 	private static final String TAG = "ProxyBlock";
-	private final String className;
+	private String className;
 	private PyObject pythonBlock = null;
 	private final ProxyHandler delegate = ProxyHandler.getInstance();
 	private final PythonRequestHandler requestHandler;
@@ -54,7 +54,11 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	}
 	
 	@Override
-	public String getClassName() { return className; }
+	public String getClassName() {
+		log.warnf("%s.getClassName: className is %s",TAG,className);
+		removeXomFromClassname();
+		return className; 
+		}
 	
 	/**
 	 * @return the Python object for which this class is a proxy
@@ -152,6 +156,8 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 */
 	@Override
 	public synchronized void acceptValue(IncomingNotification vcn) {
+		log.warnf("%s.evaluate: EREIAM JH - class name next ",TAG);
+		log.warnf("%s.evaluate: EREIAM JH - object class %s",TAG,getPythonBlock().getClass().getName());
 		String port = null;
 		if(vcn.getConnection()!=null  ) {
 			port = vcn.getConnection().getDownstreamPortName();
@@ -169,6 +175,22 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	public synchronized void evaluate() { 
 		delegate.evaluate(context.getProjectManager().getProjectScriptManager(getProjectId()),getPythonBlock()); 
 	}
+	
+	/**
+	 * Start the block. 
+	 * This is a handy place to do updates.
+	 */
+	@Override
+	public synchronized void start() {
+	}
+
+	public synchronized void removeXomFromClassname() {
+		// This first section updates old blocks that start with "xom.block" to "ils.block" since that code was moved.
+		if (className.toLowerCase().startsWith("xom.block.")) {
+			className = "ils" + className.substring(3);
+		}
+	}
+	
 	/**
 	 * Reset the block. Resetting  python block may change the diagram alert
 	 * status.

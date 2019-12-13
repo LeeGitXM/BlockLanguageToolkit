@@ -125,14 +125,15 @@ public class ApplicationScriptFunctions   {
 	public static DiagramState getDiagramState(String diagramId)  {
 		return handler.getDiagramState(diagramId);
 	}
-	public static String getFamilyName(String uuid) {
-		return handler.getFamilyName(uuid);
-	}
 	/**
 	 * @return an explanation for the state of a block.
 	 */
 	public static String getExplanation(String diagramId,String blockId) {
 		return handler.getExplanation(diagramId,blockId);
+	}
+
+	public static String getFamilyName(String uuid) {
+		return handler.getFamilyName(uuid);
 	}
 	/**
 	 * @return the the internal state of a block.

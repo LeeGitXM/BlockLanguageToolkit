@@ -130,10 +130,15 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 	 * In order to make this applicable for updates, we skip any blocks that currently
 	 * exist. Newly created blocks are started.
 	 * 
+	 * Blocks with an updated version are updated and replaced in the serializablediagram
+	 *    A save is required after they are replaced.
+	 * 
 	 * @param sblks an array of newly created blocks to be added to the diagram
 	 */
-	public void createBlocks(SerializableBlock[] sblks ) {
+	public boolean createBlocks(SerializableBlock[] sblks ) {
 		BlockFactory blockFactory = BlockFactory.getInstance();
+		boolean saveRequired = false;
+//		HashMap<SerializableBlock,ProcessBlock> removeChildList = new HashMap<>();
 
 		// Update the blocks - we've already deleted any not present in the new
 		for( SerializableBlock sb:sblks ) {
@@ -142,6 +147,11 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 			if( pb==null ) {
 				pb = blockFactory.blockFromSerializable(getSelf(),sb,getProjectId());
 				if( pb!=null ) {
+//					if (pb.versionUpdateRequired()) {
+//						saveRequired = true;
+//						pb.update();
+//						removeChildList.put(sb, pb);
+//					}
 					// Set the proper timer
 					if(DiagramState.ACTIVE.equals(state)) pb.setTimer(controller.getTimer());
 					else if(DiagramState.ISOLATED.equals(state)) pb.setTimer(controller.getSecondaryTimer());
@@ -162,6 +172,11 @@ public class ProcessDiagram extends ProcessNode implements DiagnosticDiagram {
 				}
 			}
 		}
+//		for (SerializableBlock sb: removeChildList.keySet()) {
+//			sd.removeBlock(sb);
+//			sd.setBlocks(list);this.addChild(pb);
+//		}
+		return saveRequired;
 	}
 	/**
 	 * Clone connections from the subject serializable diagram and add them to the current.

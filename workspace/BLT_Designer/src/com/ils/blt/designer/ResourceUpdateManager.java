@@ -25,6 +25,9 @@ import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceN
 
 /**
  * Update or add the single project resource belonging to the specified node.
+ * 
+ * Note that a diagram is equivalent to a project resource
+ * 
  * Use ExecutionManager.executeOnce() to invoke this in the background.
  * 
  * @author chuckc

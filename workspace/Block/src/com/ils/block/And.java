@@ -19,6 +19,7 @@ import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockDescriptor;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.block.BlockStyle;
+import com.ils.blt.common.block.PlacementHint;
 import com.ils.blt.common.block.PropertyType;
 import com.ils.blt.common.block.TruthValue;
 import com.ils.blt.common.connection.ConnectionType;
@@ -43,7 +44,7 @@ public class And extends AbstractProcessBlock {
 	private final Watchdog dog;
 	private BlockProperty valueProperty = null;
 	private double synchInterval = 0.5; // 1/2 sec synchronization by default
-	private static final int blockVersion = 0;  // update this when making attribute changes.  Check against instanceVersion for deserialized blocks to see if they require updating
+	private static final int blockVersion = 1;  // update this when making attribute changes.  Check against instanceVersion for deserialized blocks to see if they require updating
 
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -101,12 +102,6 @@ public class And extends AbstractProcessBlock {
 		reconcileQualifiedValueMap(BlockConstants.IN_PORT_NAME,qualifiedValueMap,TruthValue.UNSET);
 		log.debugf("%s.start: initialized %d inputs",getName(),qualifiedValueMap.size());
 
-		//check if version update required
-		if (this.versionUpdateRequired()) {
-			// update this that have changed.  For the first round make sure to check for displayed properties, since that mechanism has changed.
-			// don't forget to push updates back to the gateway.  Not sure how or why this is required.
-		}
-		
 	}
 	/**
 	 * Disconnect from the timer thread.
@@ -304,7 +299,20 @@ public class And extends AbstractProcessBlock {
 	}
 
 	@Override
-	public int getBlockversion() {
+	public int getBlockVersion() {
 		return blockVersion;
 	}
+	
+	@Override
+	public boolean update() {
+		boolean success = false;
+
+		this.setName("FartNugget"+this.getName());
+		for (AnchorPrototype anc:anchors) {
+			anc.setHint(PlacementHint.BL);
+		}
+
+		return success;
+	}
+
 }

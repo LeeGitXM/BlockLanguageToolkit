@@ -12,6 +12,7 @@ import java.util.UUID;
 import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagnosticDiagram;
+import com.ils.blt.common.ProcessBlock;
 import com.ils.blt.common.block.Activity;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
@@ -38,7 +39,7 @@ import com.inductiveautomation.ignition.common.util.LogUtil;
  * Annotate the constructor.
  */
 @ExecutableBlock
-public class Input extends AbstractProcessBlock {
+public class Input extends AbstractProcessBlock implements ProcessBlock {
 	private BlockProperty tagPathProperty = null;
 	protected BlockProperty valueProperty = null;
 

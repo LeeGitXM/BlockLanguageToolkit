@@ -82,13 +82,10 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	protected LoggerEx log = LogUtil.getLogger(getClass().getPackage().getName());
 	/** Properties are a dictionary of attributes keyed by property name */
 	protected final Map<String,BlockProperty> propertyMap;
-	/** PropertyBlocks is a dictionary of block properties displayed in the workspace */
-	/** It's here so that they can be efficiently notified of changes, and managed by the parent block (this) */
-//	protected final Map<String,ProcessBlock> displayedPropertyBlocks;
 	/** Describe ports/stubs where connections join the block */
 	protected List<AnchorPrototype> anchors;
 	protected final UtilityFunctions fcns = new UtilityFunctions();
-	private int instanceVersion = 0;
+	private int instanceVersion = 0;  // version for this specific instance of a block. Used in upgrades  
 
 	
 	/**
@@ -98,7 +95,6 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 */
 	public AbstractProcessBlock() {
 		propertyMap = new HashMap<>();
-//		displayedPropertyBlocks = new HashMap<>();
 		anchors = new ArrayList<AnchorPrototype>();
 		activities = new FixedSizeQueue<Activity>(DEFAULT_ACTIVITY_BUFFER_SIZE);
 		lastValue = null;
@@ -123,6 +119,8 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	 * Create an initial list of properties. There are none for the base class.
 	 * We also add a stub for signals. Every block has this connection, but,
 	 * by default, it is hidden.
+	 * 
+	 * If you update any of these block properties, make sure to add version check and update code into the start() method. 
 	 */
 	private void initialize() {
 		this.state = TruthValue.UNSET;
@@ -182,7 +180,6 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	public boolean delayBlockStart() { return this.delayStart; }
 	@Override
 	public List<AnchorPrototype>getAnchors() { 
-//		log.error("EREIAM jh - abstract get anchors");
 		return anchors; 
 		}
 	public GeneralPurposeDataContainer getAuxiliaryData() {return auxiliaryData;}
@@ -268,15 +265,6 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 		return propertyMap.get(nam);
 	}
 	
-	/**
-	 * @param nam the property (attribute) name.
-	 * @return a particular property block given its name.
-	 */
-//	@Override
-//	public ProcessBlock getPropertyBlock(String nam) {
-//		return propertyBlocks.get(nam);
-//	}
-	
 	@Override
 	public UUID getParentId() { return parentId; }
 	@Override
@@ -308,22 +296,16 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 			}
 		}
 
-//		if( displayedPropertyBlocks.size()>0 ) {
-//			List<String> buffer = descriptor.getDisplayedProperties();
-//			synchronized(displayedPropertyBlocks) {
-//				for( String act:displayedPropertyBlocks.keySet()) {
-//					buffer.add(new String(act));
-//				}
+		// NOT SURE WHY THIS DOESN"T WORK.  
+		// ALL BlockProperties fail with NotSerializableException, only on Input and Output blocks for getSroucesForSink call
+		// MAYBE its isn't needed?  wth?
+//		Map<String,BlockProperty> properties = descriptor.getProperties();
+//		if( propertyMap.size()>0 ) {
+//			for (String key:propertyMap.keySet()) {
+//				BlockProperty thingy = propertyMap.get(key);
+//				properties.put(key, thingy);
 //			}
 //		}
-//
-		Map<String,BlockProperty> properties = descriptor.getProperties();
-		if( propertyMap.size()>0 ) {
-			for (String key:propertyMap.keySet()) {
-				BlockProperty thingy = propertyMap.get(key);
-				properties.put(key, thingy);
-			}
-		}
 		
 		return descriptor;
 	}
@@ -488,7 +470,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 			prop.setValue(value);
 			
 			// check if this property is displayed in a DisplayPropertyBlock and update it.
-			if (prop.isPropertyShown() && prop.getDisplayedBlockId() != null && prop.getDisplayedBlockId().length() > 1) {  // so, there is a small chance that this could result in an infinite update loop
+			if (prop.isShowProperty() && prop.getDisplayedBlockUUID() != null && prop.getDisplayedBlockUUID().length() > 1) {  // so, there is a small chance that this could result in an infinite update loop
 
 				// need to have a way to inject this into the notification buffer of the execution controller.  Add a signal connection if none exist
 				// the destination block won't have an input defined, so no line will be drawn
@@ -498,7 +480,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 				
 				OutgoingNotification note = new OutgoingNotification(this,BlockConstants.SIGNAL_PORT_NAME, qv);
 				
-				controller.sendPropertyUpdateNotification(note, prop.getDisplayedBlockId());
+				controller.sendPropertyUpdateNotification(note, prop.getDisplayedBlockUUID());
 				
 			}
 		}
@@ -598,7 +580,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 	
 	private void updatePropertyDisplays() {
 		for (BlockProperty prop:propertyMap.values()) {
-			if (prop.isPropertyShown() && prop.getDisplayedBlockId() != null && prop.getDisplayedBlockId().length() > 1) {  // so, there is a small chance that this could result in an infinite update loop
+			if (prop.isShowProperty() && prop.getDisplayedBlockUUID() != null && prop.getDisplayedBlockUUID().length() > 1) {  // so, there is a small chance that this could result in an infinite update loop
 		
 				// need to have a way to inject this into the notification buffer of the execution controller.  Add a signal connection if none exist
 				// the destination block won't have an input defined, so no line will be drawn
@@ -608,7 +590,7 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 				
 				OutgoingNotification note = new OutgoingNotification(this,BlockConstants.SIGNAL_PORT_NAME, qv);
 				
-				controller.sendPropertyUpdateNotification(note, prop.getDisplayedBlockId());
+				controller.sendPropertyUpdateNotification(note, prop.getDisplayedBlockUUID());
 				
 			}
 		}
@@ -1055,21 +1037,22 @@ public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropert
 //	}
 //
 
-	// Useful when updating blocks, check current version against serialized version
-	public int getBlockVersion() {
-		return instanceVersion;
-	}
-
-	public void setBlockVersion(int version) {
+	public void setBlockInstanceVersion(int version) {
 		this.instanceVersion = version;
 	}
 
 	// This should be overridden to return the derived class block version.  See And block for example
-	public int getBlockversion() {
+	public int getBlockVersion() {
 		return 0;
 	}
 	
+	// used to update blocks in case of anchor or default property changes
+	public boolean update() {
+		return false;
+	}
+
 	// check to see if this block type has been updated since this instance was constructed.  
+	// Useful when updating blocks, check current version against serialized version
 	public boolean versionUpdateRequired() {
 		return (getBlockVersion() > instanceVersion);
 	}

@@ -138,8 +138,8 @@ public class ConfigurationPanel extends BasicEditPanel {
 		bindingTypeCombo.setEnabled(prop.getBindingType().equals(BindingType.NONE)||
 				                    prop.getBindingType().equals(BindingType.TAG_MONITOR));
 		propertyTypeCombo.setSelectedItem(prop.getType().toString());
-		if (prop.isPropertyShown()) {
-			connectedId.setText("display block UUID:" + prop.getDisplayedBlockId().toString());
+		if (prop.isShowProperty()) {
+			connectedId.setText("display block UUID:" + prop.getDisplayedBlockUUID().toString());
 		} else {
 			connectedId.setText("No connected display block");
 		}

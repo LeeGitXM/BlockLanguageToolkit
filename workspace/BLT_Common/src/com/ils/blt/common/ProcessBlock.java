@@ -170,13 +170,21 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	 */
 	public boolean isLocked();
 	/**
+	 * @return true if the block required an update.  This lets the model know it's dirty
+	 */
+	public boolean update();
+	/**
+	 * @return true if the block required an update.  This lets the model know it's dirty
+	 */
+	public boolean versionUpdateRequired();
+	/**
 	 * @return the version of this block.  Used to manage block upgrades.
 	 */
 	public int getBlockVersion();
 	/**
 	 * @return Set the version number of this block type.  Set this after updating an existing block.
 	 */
-	public void setBlockVersion(int version);
+	public void setBlockInstanceVersion(int version);
 	/**
 	 * @return true if this block is a candidate for signal messages.
 	 */

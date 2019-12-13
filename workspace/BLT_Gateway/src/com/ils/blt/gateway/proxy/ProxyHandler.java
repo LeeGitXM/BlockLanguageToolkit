@@ -140,7 +140,8 @@ public class ProxyHandler   {
 		}
 	}
 
-	public ProxyBlock createBlockInstance(String className,UUID parentId,UUID blockId,long projectId) {
+	public ProxyBlock createBlockInstance(String classNm,UUID parentId,UUID blockId,long projectId) {
+		String className = removeXomFromClassName(classNm);  // EREIAM JH - temporary fix for existing XOM projects.
 		ProxyBlock block = new ProxyBlock(context,className,parentId,blockId);
 		log.debugf("%s.createBlockInstance --- python proxy for %s, project %d",TAG,className,projectId); 
 		if( createBlockCallback.compileScript() ) {
@@ -176,6 +177,14 @@ public class ProxyHandler   {
 		return block;
 	}
 	
+	private String removeXomFromClassName(String classNm) {
+		String ret = classNm;
+		if (classNm.toLowerCase().startsWith("xom.block.")) {
+			ret = "ils" + classNm.substring(3);
+		}
+		return ret;
+	}
+
 	/**
 	 * Tell the block to do whatever it is supposed to do. The block is the only
 	 * argument passed.

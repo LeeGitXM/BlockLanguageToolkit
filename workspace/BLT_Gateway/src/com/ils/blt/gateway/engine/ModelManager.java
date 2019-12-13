@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 
@@ -25,10 +26,9 @@ import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
-import com.ils.blt.gateway.ControllerRequestHandler;
 import com.ils.blt.gateway.GatewayScriptExtensionManager;
-import com.ils.blt.gateway.GatewayScriptFunctions;
 import com.ils.common.GeneralPurposeDataContainer;
+import com.ils.common.persistence.InternalDatabaseHandler;
 import com.inductiveautomation.ignition.common.model.ApplicationScope;
 import com.inductiveautomation.ignition.common.project.Project;
 import com.inductiveautomation.ignition.common.project.ProjectResource;
@@ -748,7 +748,7 @@ public class ModelManager implements ProjectListener  {
 
 		if( sd!=null ) {
 			ProcessDiagram diagram = (ProcessDiagram)nodesByUUID.get(sd.getId());
-			if( diagram==null) {
+			if( diagram==null) {   // this is usually run during gateway start up.
 				// Create a new diagram
 				if(DEBUG) log.infof("%s.addModifyDiagramResource: Creating diagram %s(%s)", TAG,res.getName(),sd.getId().toString());
 				if( disable ) sd.setState(DiagramState.DISABLED);
@@ -760,7 +760,57 @@ public class ModelManager implements ProjectListener  {
 				ProjectResourceKey key = new ProjectResourceKey(projectId,res.getResourceId());
 				nodesByKey.put(key,diagram);
 				addToHierarchy(projectId,diagram);
-				diagram.createBlocks(sd.getBlocks());
+				boolean saveRequired = diagram.createBlocks(sd.getBlocks());
+//				diagram.
+//				
+//				diagram.serialize();
+//				
+//				
+//				//EREIAM JH - FIXIT TODO
+//				// OK, so I finally have it saving the project
+//				// it now seems like maybe 'res' isn't getting the updates to the blocks.?  Still has the old data in the ProjectResource??
+//				String dataa = new String(res.getData());
+//				log.errorf("%s.addModifyDiagramResource: %s(%d data is %s)",TAG,res.getName(),res.getResourceId(), dataa);
+//				
+//				
+//				
+//				The RES Object has the original serialized Object. Need to serialize the new version and update
+//				
+//				So sd (serializablediagram) needs to be updated.
+//				
+//				
+//				if (saveRequired) {  // one or more blocks on this diagram had a version update that requires gateway persistence
+//					try {
+//
+//						InternalDatabaseHandler hdlr = new InternalDatabaseHandler();
+//						Properties admin = hdlr.getAdministrativeUser();
+//						if(newRes.isLocked()) newRes.setLocked(false);
+//						
+//						Project project = context.getProjectManager().getProject(projectId, ApplicationScope.GATEWAY, ProjectVersion.Staging);
+//						Project diff = project.getEmptyCopy();
+//						
+//						ProjectResource newRes = 
+//
+//						diff.putResource(newRes, true);    // Mark as dirty for our controller as resource listener
+//						
+//
+//						ProjectManager pmgr = context.getProjectManager();
+//						GlobalProps props = pmgr.getProps(project.getId(), ProjectVersion.Published);
+//
+//
+//						AuthenticatedUser user = new BasicAuthenticatedUser(props.getAuthProfileName(),admin.getProperty("ProfileId"),
+//								admin.getProperty("Name", "admin"),props.getRequiredRoles());
+//
+//						
+//						pmgr.saveProject(diff, user, "na", "ILS block update", true);  
+//						// Make every thing clean again.  necessary?
+//						project.clearAllFlags();
+//					}
+//					catch(Exception iae) {
+//						log.warnf("%s.addMOdify: Exception updating resource %d, (%s)",TAG,res.getResourceId(),iae.getMessage());
+//					}
+//				}
+				
 				diagram.updateConnections(sd.getConnections());
 				if(!diagram.getState().equals(sd.getState()) ) {
 					diagram.setState(sd.getState()); 
@@ -768,6 +818,9 @@ public class ModelManager implements ProjectListener  {
 				else {
 					diagram.validateSubscriptions();
 				}
+				
+				
+				
 			}
 			else if(diagram.getProjectId() != projectId) {
 				// The same UUID, but a different project, is a different resource
@@ -816,12 +869,13 @@ public class ModelManager implements ProjectListener  {
 					
 					if( extensionManager.hasKey(deletedBlock.getClassName(),ScriptConstants.NODE_DELETE_SCRIPT)) {
 						GeneralPurposeDataContainer auxData = deletedBlock.getAuxiliaryData();
-						log.infof("%s.addModifyDiagramResource.  Aux data lists %s    ************************#######################  EREIAM JH ####################",TAG,auxData.getLists());
-						log.infof("%s.addModifyDiagramResource.  Aux data maplists %s    ************************#######################  EREIAM JH ####################",TAG,auxData.getMapLists());
-						log.infof("%s.addModifyDiagramResource.  Aux data properties %s    ************************#######################  EREIAM JH ####################",TAG,auxData.getProperties());
+//						log.infof("%s.addModifyDiagramResource.  Aux data lists %s    ************************#######################  EREIAM JH ####################",TAG,auxData.getLists());
+//						log.infof("%s.addModifyDiagramResource.  Aux data maplists %s    ************************#######################  EREIAM JH ####################",TAG,auxData.getMapLists());
+//						log.infof("%s.addModifyDiagramResource.  Aux data properties %s    ************************#######################  EREIAM JH ####################",TAG,auxData.getProperties());
 						extensionManager.runScript(context.getProjectManager().getProjectScriptManager(diagram.getProjectId()), 
 							deletedBlock.getClassName(), 
-							ScriptConstants.NODE_DELETE_SCRIPT, deletedBlock.getBlockId().toString(), auxData);
+							ScriptConstants.NODE_DELETE_SCRIPT, deletedBlock.getBlockId().toString());
+//							ScriptConstants.NODE_DELETE_SCRIPT, deletedBlock.getBlockId().toString(), auxData);
 					}
 				}
 				diagram.createBlocks(sd.getBlocks());       // Adds blocks that are new in update
@@ -851,6 +905,60 @@ public class ModelManager implements ProjectListener  {
 			log.warnf("%s.addModifyDiagramResource - Failed to create diagram from resource (%s)",TAG,res.getName());
 		}
 	}
+	
+//	/**
+//	 * Create a POJO object from this model suitable for JSON serialization.
+//	 * @return an equivalent serializable diagram.
+//	 */
+//	public SerializableDiagram createSerializableRepresentation() {
+//		SerializableDiagram diagram = new SerializableDiagram();
+//		diagram.setName(name);
+//		diagram.setResourceId(resourceId);
+//		diagram.setId(getId());
+//		diagram.setState(state);
+//		diagram.setDirty(dirty);
+//		diagram.setWatermark(watermark);
+//		List<SerializableBlock> sblocks = new ArrayList<SerializableBlock>();
+//		for( ProcessBlockView blk:blockMap.values()) {
+//			SerializableBlock sb = blk.convertToSerializable();
+//			sblocks.add(sb);
+//		}
+//		diagram.setBlocks(sblocks.toArray(new SerializableBlock[sblocks.size()]));
+//			
+//		// As we iterate the connections, update SerializableAnchors with connection types
+//		List<SerializableConnection> scxns = new ArrayList<SerializableConnection>();
+//		for( Connection cxn:connections) {
+//			SerializableConnection scxn = convertConnectionToSerializable(cxn);
+//			// Set the connection type to the begin block type
+//			ProcessBlockView beginBlock = blockMap.get(scxn.getBeginBlock());
+//			if( beginBlock!=null ) {
+//				String port = scxn.getBeginAnchor().getId().toString();
+//				SerializableAnchorPoint sap = scxn.getBeginAnchor();
+//				boolean found = false;
+//				for(ProcessAnchorDescriptor desc:beginBlock.getAnchors()) {
+//					if( desc.getDisplay().equalsIgnoreCase(port) ) {
+//						found = true;
+//						scxn.setType(desc.getConnectionType());
+//						QualifiedValue qv = desc.getLastValue();
+//						if( qv!=null ) {
+//							sap.setLastQuality(qv.getQuality().getName());
+//							sap.setLastValue(qv.getValue());
+//						}
+//					}
+//				}
+//				if( !found ) log.warnf("%s.createSerializableRepresentation: unable to find %s port in begin block",TAG,port);
+//			}
+//			else {
+//				log.warnf("%s.createSerializableRepresentation: begin block lookup failed",TAG);
+//			}
+//			scxns.add(scxn);
+//		}
+//		diagram.setConnections(scxns.toArray(new SerializableConnection[scxns.size()]));
+//		return diagram;
+//	}
+//	
+//	
+	
 	/**
 	 * Add or update an application in the model from a ProjectResource.
 	 * This is essentially just a tree node.
@@ -1034,13 +1142,13 @@ public class ModelManager implements ProjectListener  {
 						}
 						// If this is a final diagnosis, call its delete extension
 //						if( block.getClassName().equals("xom.block.finaldiagnosis.FinalDiagnosis")) {
-						log.infof("%s.deleteResource, entire diagram, block is a %s    ************************#######################  EREIAM JH ####################",TAG,block.getClassName());
+//						log.infof("%s.deleteResource, entire diagram, block is a %s    ************************#######################  EREIAM JH ####################",TAG,block.getClassName());
 						if( block.getClassName().contains("block.finaldiagnosis.FinalDiagnosis")) {
-							log.infof("%s.deleteResource, entire diagram, block identified as finaldiagnosis.  Aux data is %s    ************************#######################  EREIAM JH ####################",TAG,block.getAuxiliaryData().toString());
+//							log.infof("%s.deleteResource, entire diagram, block identified as finaldiagnosis.  Aux data is %s    ************************#######################  EREIAM JH ####################",TAG,block.getAuxiliaryData().toString());
 							String uuidStr = block.getBlockId().toString();
 							extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), 
-								block.getClassName(), 
-								ScriptConstants.NODE_DELETE_SCRIPT, uuidStr, block.getAuxiliaryData());
+								block.getClassName(), ScriptConstants.NODE_DELETE_SCRIPT, uuidStr); 
+//								block.getClassName(), ScriptConstants.NODE_DELETE_SCRIPT, uuidStr, block.getAuxiliaryData());
 						}
 					}
 				}
@@ -1066,13 +1174,14 @@ public class ModelManager implements ProjectListener  {
 				else if( node instanceof ProcessFamily ) 
 					classKey = ScriptConstants.FAMILY_CLASS_NAME;
 				
-				log.infof("%s.deleteResource, node is a %s    ************************#######################  EREIAM JH ####################",TAG,node.getClass());
+//				log.infof("%s.deleteResource, node is a %s    ************************#######################  EREIAM JH ####################",TAG,node.getClass());
 				GeneralPurposeDataContainer auxData = node.getAuxiliaryData();
-				log.infof("%s.deleteResource.  Aux data lists %s    ************************#######################  EREIAM JH ####################",TAG,auxData.getLists());
-				log.infof("%s.deleteResource.  Aux data maplists %s    ************************#######################  EREIAM JH ####################",TAG,auxData.getMapLists());
-				log.infof("%s.deleteResource.  Aux data properties %s    ************************#######################  EREIAM JH ####################",TAG,auxData.getProperties());
+//				log.infof("%s.deleteResource.  Aux data lists %s    ************************#######################  EREIAM JH ####################",TAG,auxData.getLists());
+//				log.infof("%s.deleteResource.  Aux data maplists %s    ************************#######################  EREIAM JH ####################",TAG,auxData.getMapLists());
+//				log.infof("%s.deleteResource.  Aux data properties %s    ************************#######################  EREIAM JH ####################",TAG,auxData.getProperties());
 				extensionManager.runScript(context.getProjectManager().getProjectScriptManager(node.getProjectId()), classKey,
-							ScriptConstants.NODE_DELETE_SCRIPT, node.getSelf().toString(), node.getAuxiliaryData());
+						ScriptConstants.NODE_DELETE_SCRIPT, node.getSelf().toString());
+//						ScriptConstants.NODE_DELETE_SCRIPT, node.getSelf().toString(), node.getAuxiliaryData());
 			}
 		}
 	}

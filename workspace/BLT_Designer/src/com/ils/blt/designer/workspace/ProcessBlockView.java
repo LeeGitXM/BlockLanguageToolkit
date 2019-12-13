@@ -61,7 +61,7 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	private GeneralPurposeDataContainer auxiliaryData = null;
 	private final ChangeEvent changeEvent;
 	private int background = Color.white.getRGB();
-	private final String className;
+	private String className;
 	private boolean dirty = false;   // A newly created block is clean because we initially sync with the gateway
 	private String editorClass = null; // Class name of custom editor for this block
 	private boolean encapsulation = false; // Is this an encapsulation block
@@ -314,7 +314,18 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	}
 	
 	public String getClassName() { 
+		removeXomFromBlockName();
 		return className; 
+	}
+
+	// TODO - remove eventually.  this is a temporary hack to switch old blocks from xom.block to ils.block - CJL 
+	// The change is local, to be permanent the user must save the diagram.
+	private void removeXomFromBlockName() {
+		if(className.toLowerCase().startsWith("xom.block.")) {
+			className = "ils." + className.substring(4);
+			setDirty(true);
+		}
+		
 	}
 
 	/** 

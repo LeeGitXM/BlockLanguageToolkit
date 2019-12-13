@@ -162,7 +162,7 @@ public class BlockPropertiesSelector extends JDialog implements TableModelListen
 //	    			BlockProperty prop = blockProperties.get(pad);
 	    		for(BlockProperty prop: blockProperties) {  // properties
 	    			if (prop.getName().equalsIgnoreCase(propName)) {  // found name of changed property
-	    				if (newValue != prop.isPropertyShown()) {  // make sure it's a real change
+	    				if (newValue != prop.isShowProperty()) {  // make sure it's a real change
 	    					if (newValue == true) {
 	    						log.warn("EREIAM JH - Adding a display block");
 	    						
@@ -189,7 +189,7 @@ public class BlockPropertiesSelector extends JDialog implements TableModelListen
 
 //	    						connect it to the current block
    								prop.setShowProperty(true);
-   								prop.setDisplayedBlockId(newBlock.getId().toString());
+   								prop.setDisplayedBlockUUID(newBlock.getId().toString());
    							//	diagram.
 
 //   								ApplicationRequestHandler handler = new ApplicationRequestHandler();
@@ -203,10 +203,10 @@ public class BlockPropertiesSelector extends JDialog implements TableModelListen
 
 	    					} else {
 	    						log.warn("EREIAM JH - REMOVE A DISPLAY!");
-   								String linkedIdStr = prop.getDisplayedBlockId();
+   								String linkedIdStr = prop.getDisplayedBlockUUID();
    								UUID linkedId = UUID.fromString(linkedIdStr);
    								prop.setShowProperty(false);
-   								prop.setDisplayedBlockId("");
+   								prop.setDisplayedBlockUUID("");
    								
 //								now delete the linked block
    								Block foundBlock = diagram.getBlock(linkedId);
@@ -247,7 +247,7 @@ public class BlockPropertiesSelector extends JDialog implements TableModelListen
 		for(BlockProperty prop: blockProperties) {
 			if (prop.isEditable()) {
 				Object[] row = new Object[3];
-				row[0] = new Boolean(prop.isPropertyShown());
+				row[0] = new Boolean(prop.isShowProperty());
 				row[1] = prop.getName();
 				String text = "" + prop.getValue();
 				row[2] = text;
