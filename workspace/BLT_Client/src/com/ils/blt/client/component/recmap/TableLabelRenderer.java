@@ -61,7 +61,7 @@ public class TableLabelRenderer extends LabelRenderer {
     	//log.infof("%s.render ....",CLSS);
     	TextDelegate delegate = delegateFromItem(item);
         if( delegate!=null ) {
-        	Properties properties = propertiesFromItem(item);
+//        	Properties properties = propertiesFromItem(item);
         	RectangularShape shape = (RectangularShape)getShape(item);
 		    if (shape != null) {
 		         // fill the header shape (1/2 height), if requested

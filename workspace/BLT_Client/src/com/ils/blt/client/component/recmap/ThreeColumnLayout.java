@@ -134,7 +134,7 @@ public class ThreeColumnLayout extends Layout {
                 	int tar = item.getInt(targetRefColumn);
                 	int actualLeft = (nrows*2 - nrows1*2)/2 + src*2; 
                 	int actualRight = (nrows*2 - nrows2*2)/2 + tar*2; 
-                	int preference = (actualLeft+actualRight)/2 +1;
+                	int preference = (actualLeft+actualRight)/2;
                 	if( preference<0 ) preference=0;
                 	int span = 0;
                 	row = preference;

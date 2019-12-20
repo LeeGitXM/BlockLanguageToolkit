@@ -236,7 +236,7 @@ public class RecMapView extends Display {
    
     // ------------------------------------------------------------------------
    
-    // This appears to never execute
+    // This appears to never execute - Yes it does!
     public class AutoCenterAction extends Action {
         private Point2D m_start = new Point2D.Double();
         private Point2D m_end   = new Point2D.Double();

@@ -34,11 +34,12 @@ public class BlockPropertyEditor extends SlidingPane   {
 	private final ApplicationRequestHandler requestHandler;
 	private static final List<String> coreAttributeNames;
 	
-	private final MainPanel          mainPanel;       // display the properties for a block
-	private final ConfigurationPanel configPanel;     // configure a single block property
-	private final ListEditPanel      listEditPanel;   // configure a property that is a list of strings
-	private final NameEditPanel      nameEditPanel;   // configure a block's name
-	private final TagBrowserPanel    tagPanel;        // configure tag for a bound value
+	private final MainPanel          mainPanel;       		// display the properties for a block
+	private final ConfigurationPanel configPanel;     		// configure a single block property
+	private final ListEditPanel      listEditPanel;   		// configure a property that is a list of strings
+	private final NameEditPanel      nameEditPanel;   		// configure a block's name
+	private final TagBrowserPanel    tagPanel;        		// configure tag for a bound value
+	private final FinalDiagnosisPanel finalDiagnosisPanel;	// Special case editor for FinalDiagnosis 
 	
 	
 	
@@ -62,6 +63,7 @@ public class BlockPropertyEditor extends SlidingPane   {
         this.listEditPanel = new ListEditPanel(this);
         this.nameEditPanel = new NameEditPanel(this);
         this.tagPanel = new TagBrowserPanel(context,this);
+        this.finalDiagnosisPanel = new FinalDiagnosisPanel(context,this,block, wksp);
         init();    
 	}
 
@@ -70,12 +72,16 @@ public class BlockPropertyEditor extends SlidingPane   {
 	 * Create the various panels. We keep one of each type.
 	 */
 	private void init() {
-		add(mainPanel);                       // HOME_PANEL
+		if (block.getClassName().toLowerCase().contains(".finaldiagnosis")) {
+			add(finalDiagnosisPanel);            // HOME_PANEL
+		} else {
+			add(mainPanel);                       // HOME_PANEL
+		}
 		add(configPanel);                     // CONFIGURATION_PANEL
 		add(listEditPanel);                   // LIST_EDIT_PANEL
 		add(nameEditPanel);                   // NAME_EDIT_PANEL
 		add(tagPanel);                        // TAG_BROWSER_PANEL
-		setSelectedPane(BlockEditConstants.HOME_PANEL);   
+		setSelectedPane(BlockEditConstants.HOME_PANEL);
 	}
 	public ProcessBlockView getBlock() { return this.block; }
 	public ProcessDiagramView getDiagram() { return this.diagram; }
