@@ -1160,7 +1160,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	}
 	/**
 	 * This is called as a result of a user "Save" selection on
-	 * the main menu. If the diagram indicated by the resouceId
+	 * the main menu. If the diagram indicated by the resourceId
 	 * is open, then save it.
 	 */
 	public void saveOpenDiagram(long resourceId) {

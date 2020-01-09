@@ -22,7 +22,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,8 +35,10 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.blt.client.ClientScriptExtensionManager;
 import com.ils.blt.common.ApplicationRequestHandler;
@@ -62,6 +66,8 @@ import com.ils.blt.designer.config.ApplicationConfigurationDialog;
 import com.ils.blt.designer.config.FamilyConfigurationDialog;
 import com.ils.blt.designer.config.ScriptExtensionsDialog;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
+import com.ils.blt.designer.workspace.ProcessBlockView;
+import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
@@ -75,6 +81,7 @@ import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.UndoManager;
+import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
@@ -1584,15 +1591,25 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 								if (node.getProjectResource() != null && node.getProjectResource().getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE)) {
 									SerializableDiagram sd = mapper.readValue(new String(res.getData()), SerializableDiagram.class);
 									if( sd!=null ) {
+										ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd, context);
+										boolean diagnosis = false;
+										for( Block blk:diagram.getBlocks()) {
+											ProcessBlockView pbv = (ProcessBlockView)blk;
+											if (pbv.isDiagnosis()) {
+												diagnosis = true;
+												continue;
+											}
+										}
 										UUIDResetHandler rhandler = new UUIDResetHandler(sd);
 										rhandler.convertUUIDs();
-	
 										sd.setDirty(true);    // Dirty because gateway doesn't know about it yet
 										sd.setState(DiagramState.DISABLED);
 										json = mapper.writeValueAsString(sd);
 										
 										statusManager.setResourceState(newId, sd.getState(),false);
-	
+										if (diagnosis) {
+											ErrorUtil.showWarning("Diagram contains diagnosis blocks that must be renamed before saving");
+										}
 										
 									}
 									else {
@@ -2249,5 +2266,84 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		public void actionPerformed(ActionEvent e) {
 			executionEngine.executeOnce(new ResourceSaveManager(workspace,node));
 		}
+	}
+	
+	// This feels like it doesn't belong here.  The Node shouldn't know about the tree structure
+	public String scanForNameConflicts(AbstractResourceNavTreeNode node) {
+		String ret = "";
+		
+		// check if root node is a Application
+		if (node.getProjectResource() != null && node.getProjectResource().getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE)) {
+			ret = ((GeneralPurposeTreeNode)node).scanApplicationForDuplicateDiagnosisNames();  // ereiam jh todo come back
+		} else {
+			Enumeration<AbstractResourceNavTreeNode> enumer = node.children();
+			while(enumer.hasMoreElements()) {
+				AbstractResourceNavTreeNode theNode = enumer.nextElement();
+				ret += scanForNameConflicts(theNode);
+			}
+		}
+		return ret;
+	}
+
+	public String scanApplicationForDuplicateDiagnosisNames() {
+		String ret = "";
+		HashMap<String,String> names = new HashMap<String,String>();
+		
+		Enumeration<AbstractResourceNavTreeNode> enumer = children();
+		while(enumer.hasMoreElements()) {
+			AbstractResourceNavTreeNode theNode = enumer.nextElement();
+			ret += parseChildForConflicts(names, theNode); 
+		}
+		return ret;
+	}
+
+	public String parseChildForConflicts(HashMap<String, String> names, AbstractResourceNavTreeNode theNode) {
+		String ret = "";
+		if (theNode.getProjectResource().getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
+
+			ProjectResource res = context.getProject().getResource(theNode.getProjectResource().getResourceId());	
+			String json = new String(res.getData());
+			SerializableDiagram sd = null;
+			ObjectMapper mapper = new ObjectMapper();
+			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+			mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
+			try {
+				sd = mapper.readValue(json,SerializableDiagram.class);
+				// Synchronize names as the resource may have been re-named and/or
+				// state changed since it was serialized
+				sd.setName(res.getName());
+				sd.setState(statusManager.getResourceState(resourceId));
+			} 
+			catch (JsonParseException jpe) {
+				logger.warnf("%s: open parse exception (%s)",CLSS,jpe.getLocalizedMessage());
+			} 
+			catch (JsonMappingException jme) {
+				logger.warnf("%s: open mapping exception (%s)",CLSS,jme.getLocalizedMessage());
+			} 
+			catch (IOException ioe) {
+				logger.warnf("%s: open io exception (%s)",CLSS,ioe.getLocalizedMessage());
+			}
+			ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd, context);
+			for( Block blk:diagram.getBlocks()) {
+				ProcessBlockView pbv = (ProcessBlockView)blk;
+				if (pbv.isDiagnosis()) {
+					String key = (pbv.getClassName() + pbv.getName()).toLowerCase();
+					if (names.containsKey(key)) {
+						String diagramName = names.get(key);
+						ret += "Duplicate " + pbv.getClassName() + " block named " + pbv.getName() + " found in diagram " + diagramName + "\r\n";
+					} else {
+						names.put(key, diagram.getDiagramName());
+					}
+				}
+			
+			}
+		} else {
+			Enumeration<AbstractResourceNavTreeNode> enumer = theNode.children();
+			while(enumer.hasMoreElements()) {
+				AbstractResourceNavTreeNode aNode = enumer.nextElement();
+				ret += parseChildForConflicts(names, aNode);
+			}
+		}
+		return ret;
 	}
 }

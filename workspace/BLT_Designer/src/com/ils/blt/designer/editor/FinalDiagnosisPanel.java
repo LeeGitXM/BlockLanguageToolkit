@@ -54,7 +54,7 @@ import net.miginfocom.swing.MigLayout;
  */
 public class FinalDiagnosisPanel extends BasicEditPanel implements ActionListener,FocusListener, PropertyChangeListener {
 	private static final long serialVersionUID = 7211480530910862375L;
-	private static final String TAG = "FinalDiagnosisConfiguration";
+	private static final String TAG = "FinalDiagnosisPanel";
 	private final int DIALOG_HEIGHT = 700;
 	private final int DIALOG_WIDTH = 300;
 	private final ProcessDiagramView diagram;
@@ -385,6 +385,9 @@ public class FinalDiagnosisPanel extends BasicEditPanel implements ActionListene
 		
 		// Save values back to the database
 		try {
+			
+			// EREIAM JH - TODo - look for duplicate names first.
+			
 			String db = requestHandler.getDatabaseForUUID(diagram.getId().toString());
 			extensionManager.runScript(context.getScriptManager(),block.getClassName(), ScriptConstants.PROPERTY_SET_SCRIPT, 
 					diagram.getId().toString(),model,db);

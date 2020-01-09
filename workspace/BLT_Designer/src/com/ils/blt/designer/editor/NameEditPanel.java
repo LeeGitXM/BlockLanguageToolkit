@@ -6,6 +6,7 @@ package com.ils.blt.designer.editor;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collection;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -17,10 +18,16 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
 import com.ils.blt.client.ClientScriptExtensionManager;
+import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.script.ScriptConstants;
+import com.ils.blt.designer.BLTDesignerHook;
+import com.ils.blt.designer.NodeStatusManager;
 import com.ils.blt.designer.workspace.ProcessBlockView;
+import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.ils.blt.designer.workspace.WorkspaceRepainter;
+import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
+import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -79,11 +86,26 @@ public class NameEditPanel extends BasicEditPanel {
 		buttonPanel.add(okButton,"");
 		okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				boolean nameError = false;
 				if( !nameField.getText().isEmpty()) {
+					
+					DesignerContext context = editor.getContext();
+					// only check if name has changed.
+					if (block.isDiagnosis() && nameField.getText().equalsIgnoreCase(block.getName()) == false) {
+						ProcessDiagramView diagram = editor.getDiagram();
+						
+						BLTDesignerHook hook = (BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID);
+						String msg = hook.scanForDiagnosisNameConflicts(diagram, nameField.getText());// send name and block
+						if (msg != null && msg.length() > 1) {
+							log.infof("Naming error: " + msg);
+							ErrorUtil.showError("Naming error, duplicate diagnosis name: " + msg);
+							return;  // abort save
+							
+						}
+					}
 					ClientScriptExtensionManager sem = ClientScriptExtensionManager.getInstance();
 					if( sem.getClassNames().contains(block.getClassName()) ) {
 						try {
-							DesignerContext context = editor.getContext();
 							sem.runScript(context.getScriptManager(),block.getClassName(), ScriptConstants.NODE_RENAME_SCRIPT, 
 									editor.getDiagram().getId().toString(),block.getName(),nameField.getText());     // Old name, new name
 						}

@@ -592,5 +592,14 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		return ui;
 	}
 
+	public boolean isDiagnosis() {
+		boolean ret = false;
+		if (getClassName().toLowerCase().contains("finaldiagnosis") ||
+			getClassName().toLowerCase().contains("sqcdiagnosis")) {
+			ret = true;
+		}
+		return ret;
+	}
+
 
 }
