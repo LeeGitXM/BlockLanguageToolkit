@@ -123,7 +123,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		openRestrictedIcon = iconFromPath("Block/icons/navtree/diagram_isolated.png");
 		closedRestrictedIcon = iconFromPath("Block/icons/navtree/diagram_closed_isolated.png");
 		setIcon( closedIcon);
-		setItalic(context.getProject().isResourceDirty(resource));
+//		setItalic(context.getProject().isResourceDirty(resource));  // EREIAM JH - Disabled until italic system fixed
 		context.addProjectChangeListener(this);
 		
 		NotificationHandler notificationHandler = NotificationHandler.getInstance();
@@ -813,7 +813,7 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	 */
 	public void updateUI(boolean drty) {
 		log.debugf("%s.setDirty: dirty = %s",TAG,(drty?"true":"false"));
-		setItalic(drty);
+//		setItalic(drty);     // EREIAM JH - Disabled until italic system fixed
 		if( saveAction!=null ) saveAction.setEnabled(drty);
 		refresh();
 	}

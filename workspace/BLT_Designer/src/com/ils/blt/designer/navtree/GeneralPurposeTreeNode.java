@@ -410,7 +410,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 	 */
 	public void updateUI(boolean dty) {
 		logger.debugf("%s.updateUI: %d dirty = %s",CLSS,resourceId,(dty?"true":"false"));
-		setItalic(dty);
+//		setItalic(dty);    // EREIAM JH - Disabled until italic system fixed
 		if( treeSaveAction!=null ) treeSaveAction.setEnabled(dty);
 		refresh();  // Update the UI
 	}
@@ -470,7 +470,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		if( node.getParent()==null) {
 			logger.errorf("%s.createChildNode: ERROR parent is null %s(%d)",CLSS,node.getName(),res.getResourceId());
 		}
-		node.setItalic(context.getProject().isResourceDirty(res.getResourceId()));
+//		node.setItalic(context.getProject().isResourceDirty(res.getResourceId()));    // EREIAM JH - Disabled until italic system fixed
 		return node;
 	}
 	// For DiagramNode.delete

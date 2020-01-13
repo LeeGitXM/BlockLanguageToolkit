@@ -217,7 +217,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		log.tracef("%s.setResourceState: %s(%d) = %s",TAG,se.getName(),resourceId,bs.name());
 	}
 	/**
-	 * Called aftrer a save from the main menu. Update the status
+	 * Called after a save from the main menu. Update the status
 	 * of the nav-tree nodes.
 	 */
 	public void updateAll() {
@@ -226,6 +226,7 @@ public class NodeStatusManager implements NotificationChangeListener   {
 			StatusEntry se = statusByResourceId.get(key);
 			if( se!=null ) {
 				se.setClean();
+//				context.getProject().clearAllFlags();  // EREIAM JH - is this premature?
 				se.reportDirtyState();
 			}
 		}
@@ -296,7 +297,8 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		public void setParent(long pid) { this.parentId=pid; }
 		public DiagramState getState() { return state; }
 		// Note: isDirty refers to the node of interest alone, excluding children
-		public boolean isDirty() {return context.getProject().isResourceDirty(resourceId);}
+		public boolean isDirty() {return context.getProject().isResourceDirty(resourceId);}   //  This still shows dirty AFTER save just long enough to mess up the node italics system
+//		public boolean isDirty() {return se.node.isResourceDirty(resourceId);}  // EREIAM JH - didn't have time to work this out
 
 		public void prepareToBeDeleted() {
 			if( node instanceof NavTreeNodeInterface && resourceId!=BLTProperties.ROOT_RESOURCE_ID) {
