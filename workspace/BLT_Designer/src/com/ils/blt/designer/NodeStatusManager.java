@@ -176,6 +176,20 @@ public class NodeStatusManager implements NotificationChangeListener   {
 		return node;
 	}
 	
+//	/**
+//	 * Improved version of findNode.  Some newly created nodes don't seem to make it into here
+//	 * @param resourceId
+//	 * @return the AbstractResourceNavTreeNode associated with the specified resourceId.
+//	 */
+//	public AbstractResourceNavTreeNode findNodeSlower(long resourceId) {
+//		log.debugf("%s.findNodeSlower(%d)",TAG,resourceId);
+//		Long key = new Long(resourceId);
+//		AbstractResourceNavTreeNode node = null;
+//		StatusEntry se = childrenByResourceId.get(key);
+//		if( se!=null ) node=se.getNode();
+//		return node;
+//	}
+//	
 	private void recursivelyDeleteChildren(Set<Long> children) {
 		if( children==null ) return;
 		for(Long child:children) {
