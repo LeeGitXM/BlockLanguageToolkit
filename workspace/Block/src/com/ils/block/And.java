@@ -307,7 +307,6 @@ public class And extends AbstractProcessBlock {
 	public boolean update() {
 		boolean success = false;
 
-		this.setName("FartNugget"+this.getName());
 		for (AnchorPrototype anc:anchors) {
 			anc.setHint(PlacementHint.BL);
 		}
