@@ -1487,17 +1487,36 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 //		}
 //	}
 
-	// paste the nodes form the clipboard into the tree at the selected location
-	private class PasteAction extends BaseAction {
+	// paste the nodes from the clipboard into the tree at the selected location
+	private class PasteAction extends BaseAction  implements UndoManager.UndoAction{
 		private static final long serialVersionUID = 1L;
 		private final GeneralPurposeTreeNode parentNode;  // Bad naming, it isn't really a parent node, it's this one
+		private String bundleString;
+		private ProjectResource pasted = null;
 
 		public PasteAction(GeneralPurposeTreeNode pNode)  {
 			super(PREFIX+".PasteNode",IconUtil.getIcon("paste"));
+			this.bundleString = PREFIX+".PasteNode";
 			this.parentNode = pNode;
 		}
 
-		public void actionPerformed(ActionEvent e) {
+		@Override
+		public boolean isGroupSequenceIndependent() {return false;}
+
+		@Override
+		public boolean undo() {
+			
+			context.deleteResource(pasted.getResourceId());
+
+			return true;
+		}
+		
+		@Override
+		public String getDescription() { return " paste"; }  // This could be made more descriptive
+
+		@Override
+		public boolean execute() {
+			boolean result = true;
 			final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 
 	        Transferable t = clipboard.getContents(null);
@@ -1506,17 +1525,25 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
      				String clipData = (String)t.getTransferData(DataFlavor.stringFlavor);
      				if (clipData.startsWith(BLT_CUT_OPERATION)) {
      					String data = clipData.substring(BLT_CUT_OPERATION.length());
-    			        pastey(data, true);
+    			        paste(data, true);
      				}
      				if (clipData.startsWith(BLT_COPY_OPERATION)) {
      					String data = clipData.substring(BLT_COPY_OPERATION.length());
-    					pastey(data, false);
+    					paste(data, false);
      				}
      			} catch (Exception ex) {
+     				result = false;
 					logger.errorf("%s: actionPerformed: Unhandled Exception in PASTE (%s)",CLSS,ex.getMessage());
 					ex.printStackTrace();
      			}
      		}
+     		return result;
+		}
+
+
+
+		public void actionPerformed(ActionEvent e) {
+			execute();
 		}
 
 //		private AbstractResourceNavTreeNode nearestNonFolderNode(GeneralPurposeTreeNode node) {
@@ -1531,12 +1558,15 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 //			return ret;
 //		}
 		
-		public void pastey(String data, boolean deleteOriginal) {
+		public void paste(String data, boolean deleteOriginal) {
 			long clipId = Long.parseLong(data);
 			ProjectResource res = context.getProject().getResource(clipId);
 			
 //			Up to here it works.  You can now cut or copy a resource, paste is able to find the original resource
 //				delete old one (cut only)
+//			
+//				*Note cut disabled for now.  Just copy & delete	
+			PasteAction foo = this;
 	        
 	        ProjectResource dst = parentNode.getProjectResource();
 			try {
@@ -1632,8 +1662,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 
 							resource.setParentUuid(((GeneralPurposeTreeNode)parentNode).getUUID());
 							
-							AbstractResourceNavTreeNode node = statusManager.findNode(res.getResourceId());
 
+							AbstractResourceNavTreeNode node = statusManager.findNode(res.getResourceId());
 							if (copyChildren(node,newResourceUUID) && deleteOriginal) {
 		    					ResourceDeleteManager deleter;
 		    					deleter = new ResourceDeleteManager(node);
@@ -1653,12 +1683,14 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		    					}
 							}
 
-	    					// EREIAM JH - deleteOldTree();
-
 							
 							// Finally display the parent node
 							new ResourceCreateManager(resource).run();
+							UndoManager.getInstance().add(foo,GeneralPurposeTreeNode.class);
+							pasted = resource;
 							((GeneralPurposeTreeNode)parentNode).selectChild(new long[] {newId} );
+							
+							
 						}
 						catch( IOException ioe) {
 							// Should never happen, we just picked this off a chooser
@@ -1763,7 +1795,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 		}
 
 		@Override
-		public String getDescription() { return BundleUtil.get().getStringLenient(bundleString); }
+		public String getDescription() { return new String(BundleUtil.get().getStringLenient(bundleString) + " delete"); }
 
 	}
 
