@@ -3,11 +3,11 @@
  */
 package com.ils.block;
 
-import java.sql.Time;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
@@ -43,15 +43,15 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 	protected static String BLOCK_PROPERTY_DELAY = "SampleDelay";
 
 	private double delayInterval = 1;    // ~ secs
-	private final ConcurrentLinkedQueue<TimestampedData> buffer;
-	private final Watchdog dog;
+	private final ConcurrentLinkedQueue<TimestampedData> buffer;  // should this be tuples of data and watchdog?
+//	private final Watchdog topDog;  //  dog for each queued data item, but this is the most recent
 	private BlockProperty valueProperty = null;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
 	 */
 	public Delay() {
-		dog = new Watchdog(getName(),this);
+//		topDog = new Watchdog(getName(),this);
 		initialize();
 		buffer = new ConcurrentLinkedQueue<TimestampedData>();
 		initializePrototype();
@@ -66,7 +66,7 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	public Delay(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
-		dog = new Watchdog(getName(),this);
+//		topDog = new Watchdog(getName(),this);
 		buffer = new ConcurrentLinkedQueue<TimestampedData>();
 		initialize();
 	}
@@ -74,7 +74,7 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void reset() {
 		super.reset();
-		timer.removeWatchdog(dog);
+		timer.reset();
 		buffer.clear();
 		valueProperty.setValue("");
 	}
@@ -84,7 +84,7 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void stop() {
 		super.stop();
-		timer.removeWatchdog(dog);
+		timer.stop();
 	}
 	/**
 	 * Handle a change to the delay interval or buffer size
@@ -121,17 +121,9 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 			TimestampedData data = new TimestampedData(vcn.getValue(),expirationTime);
 			log.debugf("%s.acceptValue: %s",getName(),vcn.getValue().toString());
 			synchronized(this) {
-				if( buffer.isEmpty() ) {
-					dog.setSecondsDelay(delayInterval);
-					timer.updateWatchdog(dog);  // pet dog
-				}
-				else {
-					// Possible if we've changed the expiration time.
-					if( dog.isActive() && dog.getExpiration()>expirationTime ) {
-						dog.setSecondsDelay(delayInterval);
-						timer.updateWatchdog(dog);  // pet dog
-					}
-				}
+				Watchdog newDog = new Watchdog(getName(),this);
+				newDog.setSecondsDelay(delayInterval);
+				timer.addWatchdog(newDog);  // add a timer to go with the new data   
 				buffer.add(data);
 			}
 		}
@@ -161,14 +153,14 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 			TimestampedData head = buffer.remove();
 			long delay = head.timestamp - data.timestamp;
 			if( delay <= 0 ) delay = 1;  // Should never happen
-			dog.setDelay(delay);
-			timer.updateWatchdog(dog);  // pet dog
+//			dog.setDelay(delay);
+//			timer.updateWatchdog(dog);  // pet dog
 		}
 
 		long now = System.nanoTime()/1000000;   // Work in milliseconds
-		double timer = (dog.getExpiration()-now) / 1000;
-		String formattedTime = String.format("%02d:%02d:%02d", TimeUtility.remainderValue(timer, TimeUnit.HOURS),
-				TimeUtility.remainderValue(timer, TimeUnit.MINUTES),TimeUtility.remainderValue(timer, TimeUnit.SECONDS));
+		double timerVal = (timer.getTopDog().getExpiration()-now) / 1000;
+		String formattedTime = String.format("%02d:%02d:%02d", TimeUtility.remainderValue(timerVal, TimeUnit.HOURS),
+				TimeUtility.remainderValue(timerVal, TimeUnit.MINUTES),TimeUtility.remainderValue(timerVal, TimeUnit.SECONDS));
 		valueProperty.setValue(formattedTime);
 	
 	}
@@ -232,10 +224,10 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public SerializableBlockStateDescriptor getInternalStatus() {
 		SerializableBlockStateDescriptor descriptor = super.getInternalStatus();
-		if( dog.isActive() ) {
+		if( timer.getTopDog().isActive() ) {
 			Map<String,String> attributes = descriptor.getAttributes();
 			long now = System.nanoTime()/1000000;   // Work in milliseconds
-			long waitTime = (long)(dog.getExpiration()-now);
+			long waitTime = (long)(timer.getTopDog().getExpiration()-now);
 			attributes.put("MSecsToNextOutput",String.valueOf(waitTime));
 		}
 		List<Map<String,String>> outbuffer = descriptor.getBuffer();
