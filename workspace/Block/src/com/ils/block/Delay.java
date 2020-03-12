@@ -136,10 +136,10 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 		// This next line doesn't really prevent the problem, so I changed the buffer LinkedList to ConcurrentLinkedQueue - CJL 12/14/18
 		if(buffer.isEmpty()) return;     // Could happen on race between clearing buffer and removing watch-dog on a reset.
 								
-		TimestampedData data = buffer.peek();
 		if( !isLocked() ) {
-			log.debugf("%s.evaluate: %s",getName(),data.qualValue.getValue().toString());
-			lastValue = new BasicQualifiedValue(coerceToMatchOutput(BlockConstants.OUT_PORT_NAME,data.qualValue.getValue()),data.qualValue.getQuality(),data.qualValue.getTimestamp()); 
+			TimestampedData dataThing = buffer.peek();
+			log.debugf("%s.evaluate: %s",getName(),dataThing.qualValue.getValue().toString());
+			lastValue = new BasicQualifiedValue(coerceToMatchOutput(BlockConstants.OUT_PORT_NAME,dataThing.qualValue.getValue()),dataThing.qualValue.getQuality(),dataThing.qualValue.getTimestamp()); 
 			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
 			controller.acceptCompletionNotification(nvn);
 			notifyOfStatus();
@@ -149,8 +149,13 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 			// New delay is the difference between the value we just popped off
 			// and the current head.
 			TimestampedData head = buffer.remove();
-			long delay = head.timestamp - data.timestamp;
-			if( delay <= 0 ) delay = 1;  // Should never happen
+			TimestampedData dataNext = buffer.peek();
+			long next = 0;
+			if (dataNext != null) {
+				next = dataNext.timestamp;
+			}
+			long delay = next - head.timestamp;
+			if( delay <= 0 ) delay = 1;  // happens if no buffer empty
 			dog.setDelay(delay);
 			timer.updateWatchdog(dog);  // pet dog
 		}
@@ -158,9 +163,9 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 	/**
 	 * Send status update notification for our last transmitted value. If we've 
 	 * never transmitted one, lastValue will be null.
-	 */
+	 */ 
 	@Override
-	public void notifyOfStatus() {
+	public void notifyOfStatus() { 
 		if(lastValue!=null) {
 			controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, lastValue);
 		}

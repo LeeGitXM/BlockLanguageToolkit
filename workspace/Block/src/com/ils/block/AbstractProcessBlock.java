@@ -56,6 +56,9 @@ import com.inductiveautomation.ignition.common.util.LoggerEx;
  * The subclasses depend on the "ExecutableBlock" class annotation
  * as the signal to group a particular subclass into the list of 
  * available executable block types.
+ * 
+ * PLEASE NOTE --  BUILD & INSTALL - These are not transmitted via the module to the gateway, you need the full installer or copy jars dircetly
+ * 
  */
 public abstract class AbstractProcessBlock implements ProcessBlock, BlockPropertyChangeListener, WatchdogObserver {
 	protected final static int DEFAULT_ACTIVITY_BUFFER_SIZE = 10; 
