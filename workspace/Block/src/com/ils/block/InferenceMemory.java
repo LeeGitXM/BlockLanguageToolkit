@@ -22,7 +22,7 @@ import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 
 /**
- * The Inference Memory block remembers whether the top input (marked “S”) has ever been TRUE since the block was started or reset
+ * The Inference Memory block remembers whether the top input (marked ) has ever been TRUE since the block was started or reset
  */
 @ExecutableBlock
 public class InferenceMemory extends AbstractProcessBlock implements ProcessBlock {
