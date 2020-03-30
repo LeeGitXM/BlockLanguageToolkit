@@ -73,7 +73,12 @@ public class ResourceSaveManager implements Runnable {
 	public void saveSynchronously() {
 		saveDirtyDiagrams(root);
 		// Update UI
-		((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler().triggerStatusNotifications();
+		
+		/**
+		 * TODO:  I'm not sure exactly what the next line does.  It causes an error message to pop up saying it
+		 * 			can't get a resource lock on any open diagram.
+		 */
+//		((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getApplicationRequestHandler().triggerStatusNotifications();
 	}
 	
 	@Override
@@ -98,9 +103,9 @@ public class ResourceSaveManager implements Runnable {
 						  (context.getProject().isResourceDirty(res.getResourceId())?"DIRTY":"CLEAN"));
 				// If the resource is open, we need to save it
 				workspace.saveOpenDiagram(res.getResourceId());
+//				res.setLocked(false);  // doesn't help
 			}
 		}
-		
 		@SuppressWarnings("rawtypes")
 		Enumeration walker = node.children();
 		while(walker.hasMoreElements()) {

@@ -661,7 +661,9 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 		public void actionPerformed(ActionEvent e) {
 			ProjectResource pr = node.getProjectResource();
 			if( pr!=null ) {
+				log.infof("%s.actionPerformed: EREIAM JH saving diagram tree node  %s",TAG,pr.getName());
 				new ResourceUpdateManager(workspace,pr).run();
+//				pr.setLocked(false);  // doesn't help
 				node.setItalic(false);
 			}
 		}
