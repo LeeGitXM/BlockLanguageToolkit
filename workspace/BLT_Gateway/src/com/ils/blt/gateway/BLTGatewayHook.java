@@ -129,6 +129,11 @@ public class BLTGatewayHook extends AbstractGatewayModuleHook  {
 	    ToolkitRecord.META.addRecordListener(recordListener);
 	    
 	    context.getProjectManager().addProjectListener(mmgr);
+
+	    // EREIAM JH - TODO This didn't help with the dashed line problem from an OPC tag to block to readout, but maybe it will help with initial propagation
+	    mmgr.startTriggerInputBlocks();
+
+	    
 	    log.infof("%s: Startup complete.",TAG);
 	}
 
