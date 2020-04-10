@@ -4,7 +4,7 @@
 #
 DIAGRAM="app75/family75/comparisons"
 Show: diagram $DIAGRAM
-resetDiagram ($DIAGRAM)
+#resetDiagram ($DIAGRAM)
 C1="COMPARE-173"
 C2="HIGHLIMITOBSERVATION-429"
 C3="COMPAREABSOLUTE-236"

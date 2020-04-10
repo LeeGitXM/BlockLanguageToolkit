@@ -46,7 +46,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	private boolean inhibiting = false;
 	private TruthValue controlValue = TruthValue.UNSET;
 	private TruthValue initialValue = TruthValue.UNSET;
-	private TruthValue trigger = TruthValue.UNSET; 
+	private TruthValue trigger = TruthValue.TRUE;  // why was this set to UNSET previously?  Shouldn't the default be TRUE? 
 
 	private final Watchdog dog;
 	
@@ -77,7 +77,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	public void reset() {
 		super.reset();
 		expirationProperty.setValue(new Long(0L));
-		inhibiting = controlValue.equals(trigger);
+		inhibiting = controlValue.equals(trigger) && trigger != TruthValue.UNSET;  // don't inhibit if unset
 		setState(initialValue);
 		if(!locked && !inhibiting && !initialValue.equals(TruthValue.UNSET)) {
 			lastValue = new TestAwareQualifiedValue(timer,initialValue);
