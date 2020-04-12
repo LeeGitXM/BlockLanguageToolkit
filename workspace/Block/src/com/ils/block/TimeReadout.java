@@ -114,12 +114,14 @@ public class TimeReadout extends Readout implements ProcessBlock {
 						value = customFormatter.format(lastValue.getTimestamp());
 					}
 			
+					Why does the value display instead of the time????
+					
 					
 					valueProperty.setValue(value);
 					log.tracef("%s.acceptValue: port %s formatted value =  %s.",getName(),incoming.getConnection().getUpstreamPortName(),value);
 					
-					QualifiedValue qv = new BasicQualifiedValue(value,lastValue.getQuality(),lastValue.getTimestamp()); 
 					valueProperty.setValue(value);
+					QualifiedValue qv = new BasicQualifiedValue(lastValue.getValue(),lastValue.getQuality(),lastValue.getTimestamp()); 
 					log.tracef("%s.acceptValue: port %s formatted value =  %s.",getName(),incoming.getConnection().getUpstreamPortName(),value);
 					notifyOfStatus(qv);
 				}
