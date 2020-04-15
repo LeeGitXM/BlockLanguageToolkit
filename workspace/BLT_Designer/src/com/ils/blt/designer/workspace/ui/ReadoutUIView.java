@@ -142,9 +142,10 @@ public class ReadoutUIView extends AbstractUIView implements BlockViewUI {
 			value = fncs.coerceToString(valueProperty.getValue());   // Just to be safe
 		}
 		
+		// NOTE* No longer assume 100px width.  TimeReadout is wider.  The old setting of 8 for small was unreadable
 		// Set the font size based on the string length.
 		// Assumes 100px block width
-		int fontSize = 8;  // Small
+		int fontSize = 12;  // Small
 		if( value.length()<7 ) fontSize = 14;
 		else if( value.length()<13 ) fontSize = 12;
 		
