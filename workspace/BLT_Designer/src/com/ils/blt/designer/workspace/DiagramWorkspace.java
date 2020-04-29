@@ -794,7 +794,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									String result = diagram.isValidBindingChange(pblock, type);
 									if (result == null) {
 										property.setBinding(tnode.getTagPath().toStringFull());
-										logger.infof("%s.handleDrop: EREIAM JH - tag path: %s",TAG,tnode.getTagPath().toStringFull());
 										diagram.setDirty(true);
 										diagram.fireStateChanged();
 										setSelectedItems((JComponent)null);  // EREIAM JH - this is a bit of a hack to get the property panel to refresh

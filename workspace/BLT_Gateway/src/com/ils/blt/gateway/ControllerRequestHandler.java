@@ -1207,6 +1207,7 @@ public class ControllerRequestHandler implements ToolkitRequestHandler  {
 		ProcessDiagram diagram = BlockExecutionController.getInstance().getDiagram(diagramUUID);
 		if( diagram!=null ) {
 			// Create a broadcast notification
+			log.warnf("%s.sendTimestampedSignal: Sending a signal to diagram %s for %s command",TAG,diagramId,command);
 			Signal sig = new Signal(command,message,argument);
 			BroadcastNotification broadcast = new BroadcastNotification(diagram.getSelf(),TransmissionScope.LOCAL,
 					                              new BasicQualifiedValue(sig,new BasicQuality(),new Date(time)));

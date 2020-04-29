@@ -156,8 +156,6 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	 */
 	@Override
 	public synchronized void acceptValue(IncomingNotification vcn) {
-		log.warnf("%s.evaluate: EREIAM JH - class name next ",TAG);
-		log.warnf("%s.evaluate: EREIAM JH - object class %s",TAG,getPythonBlock().getClass().getName());
 		String port = null;
 		if(vcn.getConnection()!=null  ) {
 			port = vcn.getConnection().getDownstreamPortName();

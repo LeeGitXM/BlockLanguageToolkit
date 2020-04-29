@@ -38,7 +38,7 @@ public class BlockDescriptor {
 	private int nameOffsetY = 0;     // When displayed as an attribute
 	private int preferredHeight = 0;      // Size block to its "natural" size
 	private int preferredWidth  = 0;
-//	private boolean receiveEnabled  = false;       // Whether or not this block can receive signals
+	private boolean receiveEnabled  = false;       // Whether or not this block can receive signals
 	private BlockStyle style = BlockStyle.SQUARE;
 	private String badgeChar = null;
 //	private boolean transmitEnabled = false;       // Whether or not this block transmits signals
@@ -100,7 +100,7 @@ public class BlockDescriptor {
 	public boolean isEncapsulation() {return encapsulation;}
 	public boolean isNameDisplayed() {return nameDisplayed;}
 	public String getBadgeChar() {return badgeChar;}
-//	public boolean isReceiveEnabled() {return receiveEnabled;}
+	public boolean isReceiveEnabled() {return receiveEnabled;}
 //	public boolean isTransmitEnabled() {return transmitEnabled;}
 	
 	public void setAnchors(List<AnchorPrototype> anchors) { this.anchors = anchors; }
@@ -119,7 +119,7 @@ public class BlockDescriptor {
 	public void setNameOffsetY(int nameOffsetY) {this.nameOffsetY = nameOffsetY;}
 	public void setPreferredHeight(int preferredHeight) {this.preferredHeight = preferredHeight;}
 	public void setPreferredWidth(int preferredWidth) {this.preferredWidth = preferredWidth;}
-//	public void setReceiveEnabled(boolean receiveEnabled) {this.receiveEnabled = receiveEnabled;}
+	public void setReceiveEnabled(boolean receiveEnabled) {this.receiveEnabled = receiveEnabled;}
 	public void setStyle(BlockStyle style) { this.style = style; }
 	public void setBadgeCharacter(String ch) { this.badgeChar = ch; }
 //	public void setTransmitEnabled(boolean transmitEnabled) {this.transmitEnabled = transmitEnabled;}
