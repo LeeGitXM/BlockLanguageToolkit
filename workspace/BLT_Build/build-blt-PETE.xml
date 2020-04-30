@@ -1,13 +1,20 @@
 <project name="BLTModuleBuilder" basedir="../" default="BuildAndInstallModule">
 
 	<import file="${basedir}/BLT_Build/build.xml"/>
+	
+	<!-- run the ant timestamp task -->
+	<tstamp/>
+	
+	<property name="version.build" value="${DSTAMP}" />
 
-	<property name="version.build" value="1" />	
+	<!-- Change version.beta value to "" for release builds -->
+	<property name="version.beta" value="-development" />
+	
 	<!-- Change version.beta value to "" for release builds -->
 	<property name="version.beta" value="-development" />		
-	<property name="BLTModule.version" value="1.6.30.${version.build}" />
+	<property name="BLTModule.version" value="1.1.1.${version.build}" />
 	<property name="BLTModule.name" value="BLT" />
-	<property name="BLTModule.release" value="0.5" />
+	<property name="BLTModule.release" value="0.0" />
 	<property name="BLTModule.description" value="Block Language Toolkit" />
 	<property name="root.dir" value="${basedir}/../.." />
 	<property name="jar.dir" value="${root.dir}/external/lib" />
@@ -258,6 +265,16 @@
 	<target name="python.jars" >
 		<echo message="Copying jar files from ${basedir}/BLT_Build/temp_modl" />
 		
+		<copy todir="${blt20.py.lib}/../../lib/core/common">
+			<fileset dir="${basedir}/BLT_Build/temp_modl">
+				<include name="ils-common.jar" />
+				<include name="ils-common.jar.pack.gz" />
+				<include name="blt-common.jar" />
+				<include name="jackson*.gz" />
+				<include name="commons-math*.gz" />
+				<include name="commons-math*.jar" />
+			</fileset>
+		</copy>
 		<copy todir="${brpo.py.lib}/../../lib/core/common">
 			<fileset dir="${basedir}/BLT_Build/temp_modl">
 				<include name="ils-common.jar" />
@@ -339,6 +356,11 @@
 			</fileset>
 		</copy>
 
+		<copy todir="${blt20.py.lib}/../../lib/core/common">
+			<fileset dir="${jar.dir}">
+				<include name="jackson*.jar" />
+			</fileset>
+		</copy>
 		<copy todir="${brpo.py.lib}/../../lib/core/common">
 			<fileset dir="${jar.dir}">
 				<include name="jackson*.jar" />
@@ -380,6 +402,13 @@
 			</fileset>
 		</copy>
 		
+		<copy todir="${blt20.py.lib}/../../lib/core/gateway">
+			<fileset dir="${basedir}/BLT_Build/temp_modl">
+				<include name="commons-math3-3.1.6.jar" />
+				<include name="blt-gateway.jar" />
+				<include name="block-definition.jar" />
+			</fileset>
+		</copy>
 		<copy todir="${brpo.py.lib}/../../lib/core/gateway">
 			<fileset dir="${basedir}/BLT_Build/temp_modl">
 				<include name="commons-math3-3.1.6.jar" />
