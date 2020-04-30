@@ -29,7 +29,6 @@ import com.ils.blt.common.notification.BlockPropertyChangeEvent;
 import com.ils.blt.common.notification.IncomingNotification;
 import com.ils.blt.common.notification.OutgoingNotification;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
-import com.ils.common.watchdog.TestAwareQualifiedValue;
 import com.inductiveautomation.ignition.common.model.values.QualifiedValue;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 
@@ -150,28 +149,6 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 		super.acceptValue(vcn);
 	}
 
-
-	/**
-	 * 
-	 * Special reset for Input blocks.  If a diagram is reset it should propagate it's last value
-	 * 
-	 */
-	@Override
-	public synchronized void reset() {
-		this.state = TruthValue.UNSET;
-		this.lastValue = null;
-		recordActivity(Activity.ACTIVITY_RESET,"");
-		if( controller!=null ) {
-			// Send notifications on all outputs to indicate empty connections.
-			// For truth-values, actually propagate UNSET.
-			
-			//  trigger evaluation so it propagates last value
-			evaluate();
-			
-		}
-		
-	}
-	
 	/**
 	 * This method is not called during normal operation of the block.
 	 * Except during diagram state change.
@@ -190,7 +167,6 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 			log.infof("%s.evaluate: Null value on %s (diagram state change?)",getName(),path);
 		}
 	}
-	
 	@Override
 	public String getExplanation(DiagnosticDiagram parent,List<UUID> members) { 
 		String explanation = "";
