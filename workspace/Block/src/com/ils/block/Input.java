@@ -145,6 +145,23 @@ public class Input extends AbstractProcessBlock implements ProcessBlock {
 		super.acceptValue(vcn);
 	}
 
+	@Override
+	public synchronized void reset() {
+		this.state = TruthValue.UNSET;
+		this.lastValue = null;
+		recordActivity(Activity.ACTIVITY_RESET,"");
+		if( controller!=null ) {
+			// Send notifications on all outputs to indicate empty connections.
+			// For truth-values, actually propagate UNSET.
+			
+			//  trigger evaluation so it propagates last value
+			evaluate();
+			
+		}
+		
+	}
+	
+
 	/**
 	 * This method is not called during normal operation of the block.
 	 * Except during diagram state change.
