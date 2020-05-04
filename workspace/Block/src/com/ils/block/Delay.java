@@ -102,6 +102,7 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 	 */
 	@Override
 	public void acceptValue(IncomingNotification vcn) {
+		
 		String port = vcn.getConnection().getDownstreamPortName();
 		if( port.equals(BlockConstants.IN_PORT_NAME) && vcn.getValue()!=null ) {
 			String key = vcn.getConnection().getSource().toString();
@@ -135,7 +136,7 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 	public void evaluate() {
 		// This next line doesn't really prevent the problem, so I changed the buffer LinkedList to ConcurrentLinkedQueue - CJL 12/14/18
 		if(buffer.isEmpty()) return;     // Could happen on race between clearing buffer and removing watch-dog on a reset.
-								
+						
 		if( !isLocked() ) {
 			TimestampedData dataThing = buffer.peek();
 			log.debugf("%s.evaluate: %s",getName(),dataThing.qualValue.getValue().toString());
@@ -186,11 +187,11 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 		setProperty(BLOCK_PROPERTY_DELAY, constant);
 		
 		// Define a single input
-		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.DATA);
+		AnchorPrototype input = new AnchorPrototype(BlockConstants.IN_PORT_NAME,AnchorDirection.INCOMING,ConnectionType.ANY);
 		anchors.add(input);
 		
 		// Define a single output
-		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.DATA);
+		AnchorPrototype output = new AnchorPrototype(BlockConstants.OUT_PORT_NAME,AnchorDirection.OUTGOING,ConnectionType.ANY);
 		anchors.add(output);
 	}
 	
