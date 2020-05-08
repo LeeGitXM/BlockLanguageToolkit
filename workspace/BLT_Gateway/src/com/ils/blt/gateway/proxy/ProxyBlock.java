@@ -55,7 +55,7 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	
 	@Override
 	public String getClassName() {
-		log.warnf("%s.getClassName: className is %s",TAG,className);
+		log.debugf("%s.getClassName: className is %s",TAG,className);
 		removeXomFromClassname();
 		return className; 
 		}

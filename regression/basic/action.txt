@@ -1,0 +1,19 @@
+#
+# Test of action and arithmetic blocks
+#
+DIAGRAM="app75/family75/arithmetic"
+Show: diagram $DIAGRAM
+resetDiagram ($DIAGRAM)
+
+tag: ActionOut      MemoryTags/ActionOut
+tagset: SingleBoolean MemoryTags/BooleanFeed
+
+Test: Action and Math Function blocks
+Step: BooleanFeed
+Tagset: SingleBoolean
+09:59:30 true
+09:59:45 false
+10:00 true
+10:00:10 Assert: ActionOut = TRUE "Pass thru is true"
+10:01 false
+10:01:10 Assert: ActionOut = FALSE "Pass thru is false"

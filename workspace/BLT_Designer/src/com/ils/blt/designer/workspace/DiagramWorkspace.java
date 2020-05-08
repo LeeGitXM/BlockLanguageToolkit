@@ -1293,34 +1293,42 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		 */
 		@Override
 		public void paintConnection(Graphics2D g, Connection cxn,Path2D route, boolean selected, boolean hover) {
-			BasicAnchorPoint origin = (BasicAnchorPoint)cxn.getOrigin();
-			ConnectionType ctype = origin.getConnectionType();
+			BasicAnchorPoint original = (BasicAnchorPoint)cxn.getOrigin();
+			BasicAnchorPoint terminus = (BasicAnchorPoint)cxn.getTerminus();
+			BasicAnchorPoint dominantAnchor = original;
+			ConnectionType ctype = original.getConnectionType();
+			if( ctype==ConnectionType.ANY ) {  // Use the the other end if it has a more specific data type
+				//  try the other end
+				ctype = terminus.getConnectionType();
+				dominantAnchor = terminus;
+			}
+			
 			super.hoverColor = WorkspaceConstants.CONNECTION_HOVER;
 			super.selectedColor = WorkspaceConstants.CONNECTION_SELECTED;
 			// Signal is different in that it has no fill
 			if( ctype==ConnectionType.SIGNAL ) {    
-				super.stroke = origin.getOutlineStroke();
+				super.stroke = dominantAnchor.getOutlineStroke();
 				super.standardColor=WorkspaceConstants.CONNECTION_FILL_SIGNAL;
 				super.paintConnection(g, cxn, route, selected, hover);
 			}
 			// Text is different in that it has a centerline
 			else if( ctype==ConnectionType.TEXT ) {
-				super.stroke = origin.getOutlineStroke();
-				super.standardColor=origin.getOutlineColor();
+				super.stroke = dominantAnchor.getOutlineStroke();
+				super.standardColor=dominantAnchor.getOutlineColor();
 				super.paintConnection(g, cxn, route, selected, hover);
-				super.stroke = origin.getCoreStroke();
-				super.standardColor=origin.getCoreColor();
+				super.stroke = dominantAnchor.getCoreStroke();
+				super.standardColor=dominantAnchor.getCoreColor();
 				super.paintConnection(g, cxn, route, selected, hover);
 				super.stroke = centerlineStroke;
 				super.standardColor=WorkspaceConstants.CONNECTION_BACKGROUND;
 				super.paintConnection(g, cxn, route, selected, hover);
 			}
 			else {
-				super.stroke = origin.getOutlineStroke();
-				super.standardColor= origin.getOutlineColor();
+				super.stroke = dominantAnchor.getOutlineStroke();
+				super.standardColor= dominantAnchor.getOutlineColor();
 				super.paintConnection(g, cxn, route, selected, hover);
-				super.stroke = origin.getCoreStroke();
-				super.standardColor=origin.getCoreColor();
+				super.stroke = original.getCoreStroke(dominantAnchor.getConnectionType());
+				super.standardColor=original.getCoreColor(dominantAnchor.getConnectionType());
 				super.paintConnection(g, cxn, route, selected, hover);
 			}
 		}

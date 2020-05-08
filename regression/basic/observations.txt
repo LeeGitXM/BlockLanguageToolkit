@@ -5,13 +5,16 @@ DIAGRAM="app75/family75/observations"
 Show: diagram $DIAGRAM
 resetDiagram ($DIAGRAM)
 
+tag: ObservationOutput1 MemoryTags/ObservationOutput1
+tag: ObservationOutput2 MemoryTags/ObservationOutput2
+tagset: SingleBoolean MemoryTags/ObservationInput
+
 Tagset: SingleBoolean
 Test: Observations
-Step: Target is TRUE
-10:00 true
-10:01 false
-10:01:10 Assert: persistence = FALSE "Interrupted target"
-10:02 true
-10:03 true
-10:04:10 Assert: persistence = FALSE "false before expiration time"
-10:08:20 Assert: persistence = TRUE  "True after expiration time"
+Step: Test high and low limits with bias
+10:00 5.0
+10:00:40 Assert: ObservationOutput1 = true   "Highlimit = true"
+10:00:40 Assert: ObservationOutput2 = false  "Lowlimit = false"
+10:01 -21.0
+10:01:40 Assert: ObservationOutput2 = true   "Lowlimit = true"
+10:01:40 Assert: ObservationOutput1 = false  "Highlimit = false"
