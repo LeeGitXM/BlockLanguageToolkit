@@ -28,7 +28,7 @@ Tagset: LogicalFeed
 10:00:00 "UNKNOWN" "UNKNOWN"
 10:00:10 restartBlock($DIAGRAM,"MULTIPLE-AND")
 10:00:10 restartBlock($DIAGRAM,"MULTIPLE-OR")
-10:00:20 "TRUE"
+10:00:20 "UNKNOWN" "TRUE"
 10:00:30 Assert: AndOut = UNKNOWN "TRUE and UNSET is UNKNOWN"
 10:00:35 Assert: OrOut = TRUE "TRUE or UNSET is TRUE"
 10:00:45 "TRUE" "FALSE"
@@ -36,7 +36,7 @@ Tagset: LogicalFeed
 
 10:01:00 restartBlock($DIAGRAM,"MULTIPLE-AND")
 10:01:10 restartBlock($DIAGRAM,"MULTIPLE-OR")
-10:01:20 "FALSE"
+10:01:20 "UNKNOWN" "FALSE"
 10:01:30 Assert: AndOut = FALSE "FALSE and UNSET is FALSE"
 10:01:35 Assert: OrOut = UNKNOWN "FALSE or UNSET is UNKNOWN"
 10:01:45 "TRUE" "FALSE"
@@ -48,8 +48,11 @@ Tagset: DoubleFeed
 10:02:00 restartBlock($DIAGRAM,"MULTIPLE-SUM")
 10:02:10 restartBlock($DIAGRAM,"MULTIPLE-PRODUCT")
 10:02:20  1
-10:02:30 Assert: SumOut = TAG_EXEC_ERROR "Sum is undefined"
-10:02:30 Assert: ProductOut = TAG_EXEC_ERROR "Product is undefined"
+#  next lines obsolete??
+# x 10:02:30 Assert: SumOut = TAG_EXEC_ERROR "Sum is undefined"
+# x 10:02:30 Assert: ProductOut = TAG_EXEC_ERROR "Product is undefined"
+10:02:30 Assert: SumOut = 1.0 "Sum is 1.0"
+10:02:30 Assert: ProductOut = 0.0 "Product 0.0"
 10:02:40  2 4
 10:02:50 Assert: SumOut = 6 "Sum is 6"
 10:02:50 Assert: ProductOut = 8 "Product is 8"

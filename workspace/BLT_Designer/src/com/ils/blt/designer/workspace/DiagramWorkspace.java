@@ -794,7 +794,6 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 									String result = diagram.isValidBindingChange(pblock, type);
 									if (result == null) {
 										property.setBinding(tnode.getTagPath().toStringFull());
-										logger.infof("%s.handleDrop: EREIAM JH - tag path: %s",TAG,tnode.getTagPath().toStringFull());
 										diagram.setDirty(true);
 										diagram.fireStateChanged();
 										setSelectedItems((JComponent)null);  // EREIAM JH - this is a bit of a hack to get the property panel to refresh
@@ -1182,9 +1181,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		ProcessDiagramView diagram = (ProcessDiagramView)c.getModel();
 		logger.debugf("%s.saveDiagramResource - %s ...",TAG,diagram.getDiagramName());
 		diagram.registerChangeListeners();     // The diagram may include new components
-		diagram.setDirty(false);
 		long resid = diagram.getResourceId();
 		executionEngine.executeOnce(new ResourceUpdateManager(this,context.getProject().getResource(resid)));
+		diagram.setDirty(false);
 		c.setBackground(diagram.getBackgroundColorForState());
 		SwingUtilities.invokeLater(new WorkspaceRepainter());
 	}
@@ -1294,34 +1293,42 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		 */
 		@Override
 		public void paintConnection(Graphics2D g, Connection cxn,Path2D route, boolean selected, boolean hover) {
-			BasicAnchorPoint origin = (BasicAnchorPoint)cxn.getOrigin();
-			ConnectionType ctype = origin.getConnectionType();
+			BasicAnchorPoint original = (BasicAnchorPoint)cxn.getOrigin();
+			BasicAnchorPoint terminus = (BasicAnchorPoint)cxn.getTerminus();
+			BasicAnchorPoint dominantAnchor = original;
+			ConnectionType ctype = original.getConnectionType();
+			if( ctype==ConnectionType.ANY ) {  // Use the the other end if it has a more specific data type
+				//  try the other end
+				ctype = terminus.getConnectionType();
+				dominantAnchor = terminus;
+			}
+			
 			super.hoverColor = WorkspaceConstants.CONNECTION_HOVER;
 			super.selectedColor = WorkspaceConstants.CONNECTION_SELECTED;
 			// Signal is different in that it has no fill
 			if( ctype==ConnectionType.SIGNAL ) {    
-				super.stroke = origin.getOutlineStroke();
+				super.stroke = dominantAnchor.getOutlineStroke();
 				super.standardColor=WorkspaceConstants.CONNECTION_FILL_SIGNAL;
 				super.paintConnection(g, cxn, route, selected, hover);
 			}
 			// Text is different in that it has a centerline
 			else if( ctype==ConnectionType.TEXT ) {
-				super.stroke = origin.getOutlineStroke();
-				super.standardColor=origin.getOutlineColor();
+				super.stroke = dominantAnchor.getOutlineStroke();
+				super.standardColor=dominantAnchor.getOutlineColor();
 				super.paintConnection(g, cxn, route, selected, hover);
-				super.stroke = origin.getCoreStroke();
-				super.standardColor=origin.getCoreColor();
+				super.stroke = dominantAnchor.getCoreStroke();
+				super.standardColor=dominantAnchor.getCoreColor();
 				super.paintConnection(g, cxn, route, selected, hover);
 				super.stroke = centerlineStroke;
 				super.standardColor=WorkspaceConstants.CONNECTION_BACKGROUND;
 				super.paintConnection(g, cxn, route, selected, hover);
 			}
 			else {
-				super.stroke = origin.getOutlineStroke();
-				super.standardColor= origin.getOutlineColor();
+				super.stroke = dominantAnchor.getOutlineStroke();
+				super.standardColor= dominantAnchor.getOutlineColor();
 				super.paintConnection(g, cxn, route, selected, hover);
-				super.stroke = origin.getCoreStroke();
-				super.standardColor=origin.getCoreColor();
+				super.stroke = original.getCoreStroke(dominantAnchor.getConnectionType());
+				super.standardColor=original.getCoreColor(dominantAnchor.getConnectionType());
 				super.paintConnection(g, cxn, route, selected, hover);
 			}
 		}
@@ -1359,6 +1366,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			diagram.updateConnectionTypes(block,connectionType);
 			// Repaint the workspace
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
+			setDirty();
 			
 		}
 	}
@@ -1430,8 +1438,21 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			undoMap.put(block,  block.getBounds());
 			block.getBlock().setLocation(new Point(topLeft.x, loc.y));
 		}
+		setDirty();
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
 		SwingUtilities.invokeLater(new WorkspaceRepainter());
+
+	}
+
+
+	private void setDirty() {
+		BlockDesignableContainer container = getSelectedContainer();
+		if (container != null) {
+			ProcessDiagramView diagram = (ProcessDiagramView)container.getModel();
+			if (diagram != null) {
+				diagram.setDirty(true);
+			}
+		}
 	}
 	
 	public void alignRight() {
@@ -1444,6 +1465,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			undoMap.put(block,  block.getBounds());
 			block.getBlock().setLocation(new Point(bottomRight.x-block.getWidth(), loc.y));
 		}
+		setDirty();
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
 		SwingUtilities.invokeLater(new WorkspaceRepainter());
 	}
@@ -1460,6 +1482,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			int adjust = (bottomRight.width - block.getWidth()) / 2; 
 			block.getBlock().setLocation(new Point(bottomRight.x-block.getWidth()-adjust, loc.y));
 		}
+		setDirty();
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
 		SwingUtilities.invokeLater(new WorkspaceRepainter());
 	}
@@ -1476,6 +1499,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			undoMap.put(block,  block.getBounds());
 			block.getBlock().setLocation(new Point(loc.x, topLeft.y + adjust));
 		}
+		setDirty();
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
 		SwingUtilities.invokeLater(new WorkspaceRepainter());
 	}
@@ -1490,6 +1514,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			undoMap.put(block,  block.getBounds());
 			block.getBlock().setLocation(new Point(loc.x, topLeft.y));
 		}
+		setDirty();
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
 		SwingUtilities.invokeLater(new WorkspaceRepainter());
 	}
@@ -1504,6 +1529,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			undoMap.put(block,  block.getBounds());
 			block.getBlock().setLocation(new Point(loc.x, bottomRight.y-block.getHeight()));
 		}
+		setDirty();
 		UndoManager.getInstance().add(new UndoMoveBlocks(undoMap));
 		SwingUtilities.invokeLater(new WorkspaceRepainter());
 	}

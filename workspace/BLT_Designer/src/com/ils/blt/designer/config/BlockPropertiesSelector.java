@@ -164,7 +164,6 @@ public class BlockPropertiesSelector extends JDialog implements TableModelListen
 	    			if (prop.getName().equalsIgnoreCase(propName)) {  // found name of changed property
 	    				if (newValue != prop.isShowProperty()) {  // make sure it's a real change
 	    					if (newValue == true) {
-	    						log.warn("EREIAM JH - Adding a display block");
 	    						
     							AbstractProcessBlock apBlock = new BlockPropertyDisplay();
     							ProcessBlockView newBlock = new ProcessBlockView (apBlock.getBlockPrototype().getBlockDescriptor());
@@ -202,7 +201,6 @@ public class BlockPropertiesSelector extends JDialog implements TableModelListen
    								block.setDirty(true);
 
 	    					} else {
-	    						log.warn("EREIAM JH - REMOVE A DISPLAY!");
    								String linkedIdStr = prop.getDisplayedBlockUUID();
    								UUID linkedId = UUID.fromString(linkedIdStr);
    								prop.setShowProperty(false);

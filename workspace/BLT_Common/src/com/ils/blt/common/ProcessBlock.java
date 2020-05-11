@@ -188,7 +188,7 @@ public interface ProcessBlock extends BlockPropertyChangeListener {
 	/**
 	 * @return true if this block is a candidate for signal messages.
 	 */
-//	public boolean isReceiver();
+	public boolean isReceiver();
 //	/**
 //	 * @return true if this block publishes signal messages.
 //	 */

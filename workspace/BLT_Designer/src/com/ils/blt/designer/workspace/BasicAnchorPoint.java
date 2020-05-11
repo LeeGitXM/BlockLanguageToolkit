@@ -115,14 +115,17 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 	 *         This should never be called for a signal.
 	 */
 	public Stroke getCoreStroke() {
-		if( cxnType.equals(ConnectionType.DATA)) {
+		return getCoreStroke(cxnType);
+	}
+	public Stroke getCoreStroke(ConnectionType ctype) {
+		if( ctype.equals(ConnectionType.DATA)) {
 			if( isGood ) {
 				if( isNan || isEmpty ) return dataBadStroke;
 				else return dataCoreStroke;
 			}
 			else return dataBadStroke;
 		}
-		else if( cxnType.equals(ConnectionType.TRUTHVALUE)) {
+		else if( ctype.equals(ConnectionType.TRUTHVALUE)) {
 			if( isEmpty )
 				return truthvalueBadStroke;
 			else if( isGood )
@@ -140,23 +143,27 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 	 *         The stroke varies by data type, quality and value.
 	 */
 	public Color getCoreColor() {
+		return getCoreColor(cxnType);
+	}
+
+	public Color getCoreColor(ConnectionType cType) {
 		if( isEmpty ) 
 			return WorkspaceConstants.CONNECTION_FILL_EMPTY; // Dashed
 		else if( !isGood )
 			return WorkspaceConstants.CONNECTION_FILL_BAD;  // Dashed
 		else if( isNan )
 			return WorkspaceConstants.CONNECTION_FILL_NAN;
-		else if( cxnType.equals(ConnectionType.DATA)) {
+		else if( cType.equals(ConnectionType.DATA)) {
 			return WorkspaceConstants.CONNECTION_FILL_DATA;
 		}
-		else if( cxnType.equals(ConnectionType.TRUTHVALUE))
+		else if( cType.equals(ConnectionType.TRUTHVALUE))
 			if( theTruth.equals(TruthValue.TRUE))
 				return WorkspaceConstants.CONNECTION_FILL_TRUE;
 			else if( theTruth.equals(TruthValue.FALSE))
 				return WorkspaceConstants.CONNECTION_FILL_FALSE;
 			else
 				return WorkspaceConstants.CONNECTION_FILL_UNKNOWN;
-		else if( cxnType.equals(ConnectionType.ANY))
+		else if( cType.equals(ConnectionType.ANY))
 			return WorkspaceConstants.CONNECTION_FILL_ANY;
 		else
 			return WorkspaceConstants.CONNECTION_FILL_TEXT;
@@ -224,10 +231,11 @@ public class BasicAnchorPoint extends AnchorPoint implements NotificationChangeL
 		}
 		
 		if( !isEmpty && isGood ) {
-			if( cxnType.equals(ConnectionType.TRUTHVALUE)) {
-				theTruth = fncs.qualifiedValueAsTruthValue(value);
-			}
-			else if( cxnType.equals(ConnectionType.DATA)) {
+//			if( cxnType.equals(ConnectionType.TRUTHVALUE)) {  
+				theTruth = fncs.qualifiedValueAsTruthValue(value);   // set this anyway, just in case the data type is 'any'
+//			}
+//				else if( cxnType.equals(ConnectionType.DATA)) {
+				if( cxnType.equals(ConnectionType.DATA)) {
 				// Dates, doubles in a data path are automatically OK
 				// If we have a string, check its format
 				if( value.getValue() instanceof String ) {

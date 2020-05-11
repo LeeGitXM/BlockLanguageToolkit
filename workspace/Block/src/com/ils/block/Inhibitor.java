@@ -46,7 +46,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	private boolean inhibiting = false;
 	private TruthValue controlValue = TruthValue.UNSET;
 	private TruthValue initialValue = TruthValue.UNSET;
-	private TruthValue trigger = TruthValue.UNSET; 
+	private TruthValue trigger = TruthValue.TRUE;  // why was this set to UNSET previously?  Shouldn't the default be TRUE? 
 
 	private final Watchdog dog;
 	
@@ -77,7 +77,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	public void reset() {
 		super.reset();
 		expirationProperty.setValue(new Long(0L));
-		inhibiting = controlValue.equals(trigger);
+		inhibiting = controlValue.equals(trigger) && trigger != TruthValue.UNSET;  // don't inhibit if unset
 		setState(initialValue);
 		if(!locked && !inhibiting && !initialValue.equals(TruthValue.UNSET)) {
 			lastValue = new TestAwareQualifiedValue(timer,initialValue);
@@ -120,17 +120,21 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 		super.acceptValue(vcn);
 		if( !isLocked() ) {
 			String port = vcn.getConnection().getDownstreamPortName();
-			if( port.equals(BlockConstants.IN_PORT_NAME)  ) {
+			if( port.equals(BlockConstants.IN_PORT_NAME)) {
 				QualifiedValue qv = vcn.getValue();
 				if( qv != null && qv.getValue()!=null ) {
 					log.tracef("%s.acceptValue: Received value %s (%s)",getName(),qv.getValue().toString(),
 							dateFormatter.format(qv.getTimestamp()));
 					long expirationTime = ((Long)expirationProperty.getValue()).longValue();
+					
 					if( qv.getQuality().isGood() && (expirationTime==0 || qv.getTimestamp().getTime()>=expirationTime)) {
 						lastValue = new BasicQualifiedValue(coerceToMatchOutput(BlockConstants.OUT_PORT_NAME,qv.getValue()),qv.getQuality(),qv.getTimestamp());
-						OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
-						controller.acceptCompletionNotification(nvn);
-						notifyOfStatus();
+						if (!inhibiting) {
+							OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
+							controller.acceptCompletionNotification(nvn);
+							notifyOfStatus();
+							state = qualifiedValueAsTruthValue(lastValue);
+						}
 					}
 					else {
 						recordActivity(Activity.ACTIVITY_BLOCKED,qv.getValue().toString());
@@ -148,10 +152,12 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 						TruthValue cv = qualifiedValueAsTruthValue(qv);
 						// If this leads to a new mismatch, then we propagate the last value
 						if( inhibiting && !cv.equals(trigger)) {
-							OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
-							controller.acceptCompletionNotification(nvn);
-							notifyOfStatus();
-							state = qualifiedValueAsTruthValue(lastValue);
+							if (lastValue != null) {
+								OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
+								controller.acceptCompletionNotification(nvn);
+								notifyOfStatus();
+								state = qualifiedValueAsTruthValue(lastValue);
+							}
 						}
 						controlValue = cv;
 						inhibiting = controlValue.equals(trigger);
@@ -234,7 +240,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	private void initialize() {
 		setName("Inhibitor");
 		delayStart = propagateOnStart();
-//		this.setReceiver(true);
+		this.setReceiver(true);
 		BlockProperty constant = new BlockProperty(BlockConstants.BLOCK_PROPERTY_INHIBIT_INTERVAL,new Double(interval),PropertyType.TIME_MINUTES,true);
 		setProperty(BlockConstants.BLOCK_PROPERTY_INHIBIT_INTERVAL, constant);
 		expirationProperty = new BlockProperty(BlockConstants.BLOCK_PROPERTY_EXPIRATION_TIME,new Long(0L),PropertyType.DATE,true);
@@ -264,7 +270,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 	@Override
 	public void propertyChange(BlockPropertyChangeEvent event) {
 		super.propertyChange(event);
-//		this.setReceiver(true);
+		this.setReceiver(true);
 		String propertyName = event.getPropertyName();
 		if( propertyName.equals(BlockConstants.BLOCK_PROPERTY_INHIBIT_INTERVAL) ) {
 			try {
@@ -329,7 +335,7 @@ public class Inhibitor extends AbstractProcessBlock implements ProcessBlock {
 		desc.setPreferredWidth(80);
 		desc.setBlockClass(getClass().getCanonicalName());
 		desc.setStyle(BlockStyle.CLAMP);
-//		desc.setReceiveEnabled(true);
+		desc.setReceiveEnabled(true);
 		desc.setCtypeEditable(true);
 	}
 }

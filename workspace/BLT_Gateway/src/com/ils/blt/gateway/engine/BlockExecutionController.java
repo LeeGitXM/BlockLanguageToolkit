@@ -125,7 +125,10 @@ public class BlockExecutionController implements ExecutionController, Runnable {
 			try {
 				if(!stopped) buffer.put(note);
 			}
-			catch( InterruptedException ie ) {}
+			catch( InterruptedException ie ) {
+				log.error("ERROR INJECTING SIGNAL MESSAGE ", ie);
+				
+			}
 		}
 	}
 	

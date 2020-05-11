@@ -23,7 +23,9 @@ Step: Pete Test 1
 
 2000/01/01 10:00:00 10.0 1.0 10.
 2000/01/01 10:00:15 10.1
-2000/01/01 10:00:40 Assert: TrendOut = "UNKNOWN"  "UNKNOWN with one point"
+# Next line is invalid since a boolean tag can only be true or false, so added the one after
+# 2000/01/01 10:00:40 Assert: TrendOut = "UNKNOWN"  "UNKNOWN with one point"
+2000/01/01 10:00:40 Assert: TrendOut = "FALSE"  "FALSE with one point"
 2000/01/01 10:00:45 9.9
 2000/01/01 10:00:25 9.8
 2000/01/01 10:00:30 10.1

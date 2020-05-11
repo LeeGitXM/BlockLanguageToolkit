@@ -13,6 +13,7 @@ import com.ils.block.annotation.ExecutableBlock;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagnosticDiagram;
 import com.ils.blt.common.ProcessBlock;
+import com.ils.blt.common.block.Activity;
 import com.ils.blt.common.block.AnchorDirection;
 import com.ils.blt.common.block.AnchorPrototype;
 import com.ils.blt.common.block.BlockConstants;
@@ -135,7 +136,26 @@ public class SQC extends AbstractProcessBlock implements ProcessBlock {
 	
 	@Override
 	public void reset() {
-		super.reset();
+//		super.reset();  // this block needs to propagate UNKNOWN
+		
+		this.state = TruthValue.UNKNOWN;
+		this.lastValue = null;
+		recordActivity(Activity.ACTIVITY_RESET,"");
+		if( controller!=null ) {
+			// Send notifications on all outputs to indicate empty connections.
+			// For truth-values, actually propagate UNKNWON since UNSET doesn't get propagated
+			for(AnchorPrototype ap:getAnchors()) {
+				if( ap.getAnchorDirection().equals(AnchorDirection.OUTGOING) ) {
+					if( ap.getConnectionType().equals(ConnectionType.TRUTHVALUE) ) {
+						QualifiedValue UNKNOWN_TRUTH_VALUE = new TestAwareQualifiedValue(timer,TruthValue.UNKNOWN);
+						controller.sendConnectionNotification(getBlockId().toString(), ap.getName(),UNKNOWN_TRUTH_VALUE);
+						OutgoingNotification nvn = new OutgoingNotification(this,ap.getName(),UNKNOWN_TRUTH_VALUE);
+						controller.acceptCompletionNotification(nvn);
+					}
+				}
+			}
+		}
+
 		if( clearOnReset ) {
 			clear();
 		}

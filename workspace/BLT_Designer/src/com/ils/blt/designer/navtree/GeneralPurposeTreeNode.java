@@ -1389,7 +1389,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 					}
 				}
 				else if( res.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE)) {
-					System.out.println("EREIAM JH - :" + new String(bytes) + ":");
 					SerializableFolder sf = mapper.readValue(new String(bytes), SerializableFolder.class);
 					if( sf!=null ) {
 						sf.setId(UUID.randomUUID());

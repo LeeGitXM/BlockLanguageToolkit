@@ -3,7 +3,6 @@
  */
 package com.ils.block;
 
-import java.sql.Time;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -45,7 +44,10 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 	private double delayInterval = 1;    // ~ secs
 	private final ConcurrentLinkedQueue<TimestampedData> buffer;
 	private final Watchdog dog;
+	private UiUpdateTimer updateTimer;
 	private BlockProperty valueProperty = null;
+
+	private Thread updater = null;
 	
 	/**
 	 * Constructor: The no-arg constructor is used when creating a prototype for use in the palette.
@@ -53,6 +55,7 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 	public Delay() {
 		dog = new Watchdog(getName(),this);
 		initialize();
+		updateTimer = null;
 		buffer = new ConcurrentLinkedQueue<TimestampedData>();
 		initializePrototype();
 	}
@@ -67,14 +70,26 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 	public Delay(ExecutionController ec,UUID parent,UUID block) {
 		super(ec,parent,block);
 		dog = new Watchdog(getName(),this);
+
+//		startUpdateTimer();  no, don't do this until a value comes in
+
+		
 		buffer = new ConcurrentLinkedQueue<TimestampedData>();
 		initialize();
+//		updateTimer.start();
 	}
 
 	@Override
 	public void reset() {
 		super.reset();
 		timer.removeWatchdog(dog);
+		log.infof("%s: Delay block reset: ",getName());
+
+		if (updateTimer != null) {
+			updateTimer.stop();
+		}
+		startUpdateTimer();
+		
 		buffer.clear();
 		valueProperty.setValue("");
 	}
@@ -85,7 +100,38 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 	public void stop() {
 		super.stop();
 		timer.removeWatchdog(dog);
+		log.infof("%s: Delay block stop: ",getName());
+		updateTimer.stop();
 	}
+	/**
+	 * reconnect the timer thread.
+	 */
+	@Override
+	public void start() {
+		super.start();
+		timer.updateWatchdog(dog);
+		log.infof("%s: Delay block start: ",getName());
+
+		if (updateTimer != null) { // should already be stopped
+			updateTimer.stop();
+		}
+		startUpdateTimer();
+		
+		
+	}
+
+	
+	/**
+	 * Starts the ui Update thread.  Ideally this would only be used if the chart this is on was open in the client.
+	 * As of now, it just goes all the time - CJL  
+	 */
+	private void startUpdateTimer() {
+		updateTimer = new UiUpdateTimer();
+		updater = new Thread(updateTimer, "UI Timer");
+		updater.setDaemon(true);
+		updater.start();
+	}
+	
 	/**
 	 * Handle a change to the delay interval or buffer size
 	 */
@@ -133,6 +179,12 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 					}
 				}
 				buffer.add(data);
+				if (buffer.size() == 1) {  // only update if it was empty.
+					if (updateTimer.stopped) {
+						startUpdateTimer();
+					}
+					notifyOfStatus();
+				}
 			}
 		}
 	}
@@ -147,30 +199,34 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 		if(buffer.isEmpty()) return;     // Could happen on race between clearing buffer and removing watch-dog on a reset.
 								
 		TimestampedData data = buffer.peek();
-		if( !isLocked() ) {
-			log.debugf("%s.evaluate: %s",getName(),data.qualValue.getValue().toString());
-			lastValue = new BasicQualifiedValue(coerceToMatchOutput(BlockConstants.OUT_PORT_NAME,data.qualValue.getValue()),data.qualValue.getQuality(),data.qualValue.getTimestamp()); 
-			OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
-			controller.acceptCompletionNotification(nvn);
-			notifyOfStatus();
+		
+		if (dog.getExpiration() <= System.nanoTime()/1000000) {
+			if( !isLocked() ) {
+				log.debugf("%s.evaluate: %s",getName(),data.qualValue.getValue().toString());
+				lastValue = new BasicQualifiedValue(coerceToMatchOutput(BlockConstants.OUT_PORT_NAME,data.qualValue.getValue()),data.qualValue.getQuality(),data.qualValue.getTimestamp()); 
+				OutgoingNotification nvn = new OutgoingNotification(this,BlockConstants.OUT_PORT_NAME,lastValue);
+				controller.acceptCompletionNotification(nvn);
+				notifyOfStatus();
+			}
+			// Even if we're locked, we process things as normal
+			if( !buffer.isEmpty() ) {
+				// New delay is the difference between the value we just popped off
+				// and the current head.
+				TimestampedData head = buffer.remove();
+				TimestampedData dataNext = buffer.peek();
+				long next = 0;
+				if (dataNext != null) {
+					next = dataNext.timestamp;
+					updateTimer.stop();
+				}
+				long delay = next - head.timestamp;
+				if( delay <= 0 ) delay = 1;  // happens if no buffer empty
+				dog.setDelay(delay);
+				timer.updateWatchdog(dog);  // pet dog
+			}
+			controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, lastValue);
 		}
-		// Even if we're locked, we process things as normal
-		if( !buffer.isEmpty() ) {
-			// New delay is the difference between the value we just popped off
-			// and the current head.
-			TimestampedData head = buffer.remove();
-			long delay = head.timestamp - data.timestamp;
-			if( delay <= 0 ) delay = 1;  // Should never happen
-			dog.setDelay(delay);
-			timer.updateWatchdog(dog);  // pet dog
-		}
-
-		long now = System.nanoTime()/1000000;   // Work in milliseconds
-		double timer = (dog.getExpiration()-now) / 1000;
-		String formattedTime = String.format("%02d:%02d:%02d", TimeUtility.remainderValue(timer, TimeUnit.HOURS),
-				TimeUtility.remainderValue(timer, TimeUnit.MINUTES),TimeUtility.remainderValue(timer, TimeUnit.SECONDS));
-		valueProperty.setValue(formattedTime);
-	
+		updateDisplay();
 	}
 	/**
 	 * Send status update notification for our last transmitted value. If we've 
@@ -185,18 +241,30 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 			QualifiedValue lv = new BasicQualifiedValue(coerceToMatchOutput(BlockConstants.OUT_PORT_NAME,null));
 			controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, lv);
 		}
-		notifyOfStatus(lastValue);
+		updateDisplay();
+		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, lastValue);
 	}
 
-	// NOTE: The "value" property is what we want to display (the countdown)
-	private void notifyOfStatus(QualifiedValue qv) {
-		Object val = valueProperty.getValue();
-		if( val!=null ) {
-			QualifiedValue displayQV = new TestAwareQualifiedValue(timer,val.toString());
-			log.tracef("%s.notifyOfStatus display = %s",getName(),val.toString());
-			controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,displayQV);
+
+	private void updateDisplay() {
+		if (valueProperty != null) {
+			long now = System.nanoTime()/1000000;   // Work in milliseconds
+			double timerr = (dog.getExpiration()-now) / 1000;
+			if (timerr < 0) {
+				timerr = 0;
+				updateTimer.stop(); // No need to keep updating the UI until we get a new value
+			}
+			String formattedTime = String.format("%02d:%02d:%02d", TimeUtility.remainderValue(timerr, TimeUnit.HOURS),
+					TimeUtility.remainderValue(timerr, TimeUnit.MINUTES),TimeUtility.remainderValue(timerr, TimeUnit.SECONDS));
+			valueProperty.setValue(formattedTime);
+			
+			Object val = valueProperty.getValue();
+			if( val!=null ) {
+				QualifiedValue displayQV = new TestAwareQualifiedValue(timer,val.toString());
+				log.tracef("%s.notifyOfStatus display = %s",getName(),val.toString());
+				controller.sendPropertyNotification(getBlockId().toString(), BlockConstants.BLOCK_PROPERTY_VALUE,displayQV);
+			}
 		}
-		controller.sendConnectionNotification(getBlockId().toString(), BlockConstants.OUT_PORT_NAME, qv);
 	}
 	
 
@@ -284,4 +352,59 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 			
 		}
 	}
+	
+	public class UiUpdateTimer implements Runnable   {
+		protected final static int IDLE_DELAY = 5000;    // 5 seconds
+		protected boolean stopped = true;
+
+		/**
+		 * Constructor: Creates a timeout timer. The timer thread is started and
+		 *              runs continuously until a stop is issued.
+		 */
+		public UiUpdateTimer()  {
+			stopped = false;
+//			start();
+			log.debug("START UiUpdateTimer thread ");
+		}
+
+
+//		/**
+//		 * This is for a restart. Use a new thread.
+//		 */
+//		public synchronized void start() {
+//			if( stopped ) {
+//				stopped = false;
+//				log.info("RESTART UI Update Thread");
+//			}
+//		}
+//
+		/**
+		 * On stop, set all the dogs to inactive.
+		 */
+		public synchronized void stop() {
+			if( !stopped ) {
+				log.debug(getName()+":STOPPED");
+				stopped = true;
+			}
+		}
+		
+		/**
+		 * A timeout causes the head to be notified, then pops up the next dog. 
+		 */
+		public synchronized void run() {
+			while( !stopped  ) {
+				try {
+					log.trace(getName()+" Delay UI Update BEEP stopped = " + (stopped?"stopped":"running") + " in " + getName()); 
+					wait(IDLE_DELAY);
+					if (!stopped) { 
+						updateDisplay();
+					}
+				} 
+				catch( Exception ex ) {
+					log.errorf(getName()+".Exception during ui update processing ("+ex.getLocalizedMessage()+")",ex);  // Prints stack trace
+				} 
+			}
+		}
+	}
+
 }
