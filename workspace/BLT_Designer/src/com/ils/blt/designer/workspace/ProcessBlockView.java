@@ -313,14 +313,21 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		return background;
 	}
 	
-	public String getClassName() { 
-		removeXomFromBlockName();
-		return className; 
+	public synchronized String getClassName() { 
+//		removeXomFromBlockName();
+		String ret = new String(className);
+		if(ret.toLowerCase().startsWith("xom.block.")) {
+			ret = "ils." + ret.substring(4);
+		}
+		return ret; 
 	}
 
 	// TODO - remove eventually.  this is a temporary hack to switch old blocks from xom.block to ils.block - CJL 
 	// The change is local, to be permanent the user must save the diagram.
-	private void removeXomFromBlockName() {
+	//
+	//   ** DANGER - This causes a thread deadlock situation when opening a folder from the nav tree
+	//
+	private synchronized void removeXomFromBlockName() {
 		if(className.toLowerCase().startsWith("xom.block.")) {
 			className = "ils." + className.substring(4);
 			setDirty(true);
@@ -468,6 +475,15 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		int pos = className.lastIndexOf(".");
 		if( pos>=0 )  root = className.substring(pos+1);
 		name = String.format("%s-%d", root.toUpperCase(),random.nextInt(1000));
+	}
+	
+	/**
+	 * Create a name that is highly likely to be unique within the diagram.
+	 * The name can be user-modified at any time. If we really need a uniqueness,
+	 * use the block's UUID.
+	 */
+	public void createPseudoRandomNameExtension() {
+		name = String.format("%s-%d",name,random.nextInt(1000));
 	}
 	
 	/**

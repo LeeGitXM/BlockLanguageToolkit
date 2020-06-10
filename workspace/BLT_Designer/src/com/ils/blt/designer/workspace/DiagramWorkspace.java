@@ -4,6 +4,7 @@
 package com.ils.blt.designer.workspace;
 
 import java.awt.BasicStroke;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Frame;
@@ -49,6 +50,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JRootPane;
+import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -81,6 +83,7 @@ import com.ils.blt.designer.config.BlockInternalsViewer;
 import com.ils.blt.designer.config.BlockPropertiesSelector;
 import com.ils.blt.designer.config.ForceValueSettingsDialog;
 import com.ils.blt.designer.editor.BlockEditConstants;
+import com.ils.blt.designer.editor.BlockPropertyEditor;
 import com.ils.blt.designer.editor.PropertyEditorFrame;
 import com.ils.blt.designer.navtree.DiagramTreeNode;
 import com.inductiveautomation.ignition.client.designable.DesignableContainer;
@@ -883,6 +886,10 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 				pbv.createRandomId();
 				Point dropLoc = new Point(pbv.getLocation().x+offset.x, pbv.getLocation().y+offset.y);
 				pbv.setLocation(dropLoc);
+				
+				
+//				if it's a diagnosis it gets renamed, but it doesn't get the aux data from the original saved.
+//				Should this read in the aux data from the source block and copy it ?
 			
 				results.add(pbv);
 				// Special handling for an encapsulation block - create its sub-workspace
@@ -1196,6 +1203,25 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		BlockDesignableContainer container = getSelectedContainer();
 		if( container!=null ) {
 			ProcessDiagramView view = (ProcessDiagramView)(container.getModel());
+			
+			
+			//fire item selection changed??
+			
+			// update any open property panels
+			for (ResourceWorkspaceFrame frame: frames) {
+				if (frame instanceof PropertyEditorFrame) {
+					BlockPropertyEditor eddy = ((PropertyEditorFrame)frame).getEditor();
+					if (eddy != null) {
+						ProcessBlockView pbv = eddy.getBlock();
+						if (pbv.getClassName().toLowerCase().contains("finaldiagnosis")) {  // horrible hack, but it needs a refresh
+							((PropertyEditorFrame)frame).updateForFinalDiagnosis();
+						}
+						
+					}
+					
+					
+				}
+			}
 			container.setBackground(view.getBackgroundColorForState());
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
 		}

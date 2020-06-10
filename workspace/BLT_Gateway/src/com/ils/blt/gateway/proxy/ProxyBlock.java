@@ -56,9 +56,14 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	@Override
 	public String getClassName() {
 		log.debugf("%s.getClassName: className is %s",TAG,className);
-		removeXomFromClassname();
-		return className; 
+		String ret = new String(className);  // changing className causes a deadlock
+		if (ret.toLowerCase().startsWith("xom.block.")) {
+			ret = "ils" + className.substring(3);
 		}
+
+//		ret = removeXomFromClassname(ret);
+		return ret; 
+	}
 	
 	/**
 	 * @return the Python object for which this class is a proxy
@@ -182,11 +187,17 @@ public class ProxyBlock extends AbstractProcessBlock  {
 	public synchronized void start() {
 	}
 
-	public synchronized void removeXomFromClassname() {
+	/**
+	 * 
+	 * Removed references to this because it causes a deadlock
+	 * 
+	 */
+	public synchronized String removeXomFromClassname(String ret) {
 		// This first section updates old blocks that start with "xom.block" to "ils.block" since that code was moved.
-		if (className.toLowerCase().startsWith("xom.block.")) {
-			className = "ils" + className.substring(3);
+		if (ret.toLowerCase().startsWith("xom.block.")) {
+			ret = "ils" + className.substring(3);
 		}
+		return ret;
 	}
 	
 	/**

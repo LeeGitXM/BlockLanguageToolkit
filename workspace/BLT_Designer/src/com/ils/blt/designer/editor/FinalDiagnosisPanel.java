@@ -102,7 +102,7 @@ public class FinalDiagnosisPanel extends BasicEditPanel implements ActionListene
 
 
 	
-	
+//	Now figure out how to get this to refresh when the diagram state (active/disabled) changes
 	
 	
 	
@@ -144,8 +144,12 @@ public class FinalDiagnosisPanel extends BasicEditPanel implements ActionListene
 		add(corePanel,"grow,push");
         
 
-		retrieveAuxiliaryData();
-		mainPanel = createMainPanel();
+		boolean goodData = retrieveAuxiliaryData();
+		if (goodData) {
+			mainPanel = createMainPanel();
+		} else {
+			mainPanel = createMainPanelNoData();
+		}
 		add(mainPanel,"grow,push");
 //		setOKActions();
 	}
@@ -181,24 +185,43 @@ public class FinalDiagnosisPanel extends BasicEditPanel implements ActionListene
 		return mainPanel;
 	}
 	
+	private JPanel createMainPanelNoData() {	
+		//setLayout(new BorderLayout());
+		mainPanel = new JPanel();
+		mainPanel.setLayout(new MigLayout("ins 1,fill","[]","[growprio 60,150:150:2000][]"));
+		
+		addSeparator(mainPanel,"Editing restricted - Diagram disabled or no database");
+		
+		return mainPanel;
+	}
+	
 	/**
 	 * Read the database and fill the model
 	 */
-	private void retrieveAuxiliaryData() {
+	private boolean retrieveAuxiliaryData() {
+		boolean ret = true;
 		// Fetch properties of the diagnosis associated with the database and not serialized.
 		// Fetch from the database and store in the model
 		model.setProperties(new HashMap<String,String>());
 		model.setLists(new HashMap<>());
 		model.setMapLists(new HashMap<>());
 		model.getProperties().put("Name", block.getName());   // Use as a key when fetching
+		
 		try {
 			String db = requestHandler.getDatabaseForUUID(diagram.getId().toString());
-			extensionManager.runScript(context.getScriptManager(),block.getClassName(), ScriptConstants.PROPERTY_GET_SCRIPT, 
-					diagram.getId().toString(),model,db);
+			if (db != null && !db.equalsIgnoreCase("NONE")) {
+				extensionManager.runScript(context.getScriptManager(),block.getClassName(), ScriptConstants.PROPERTY_GET_SCRIPT, 
+						diagram.getId().toString(),model,db);
+			} else {
+				model.getProperties().put("Comment", "Configuration data is not editable when diagram is disabled or database is unavailable.");
+				ret = false;
+			}
 		}
 		catch( Exception ex ) {
 			log.errorf(TAG+".retrieveAuxiliaryData: Exception ("+ex.getMessage()+")",ex); // Throw stack trace
+			ret = false;
 		}
+		return ret;
 	}
 	
 //	private void setOKActions() {
