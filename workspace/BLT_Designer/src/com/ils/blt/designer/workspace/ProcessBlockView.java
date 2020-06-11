@@ -428,6 +428,15 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 	 * The name can be user-modified at any time. If we really need a uniqueness,
 	 * use the block's UUID.
 	 */
+	public void createPseudoRandomNameExtension() {
+		name = String.format("%s-%d",name,random.nextInt(1000));
+	}
+	
+	/**
+	 * Create a name that is highly likely to be unique within the diagram.
+	 * The name can be user-modified at any time. If we really need a uniqueness,
+	 * use the block's UUID.
+	 */
 	public void createRandomId() {
 		this.uuid = UUID.randomUUID();
 	}
@@ -498,4 +507,14 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		}
 		
 	}
+
+	public boolean isDiagnosis() {
+		boolean ret = false;
+		if (getClassName().toLowerCase().contains("finaldiagnosis") ||
+				getClassName().toLowerCase().contains("sqcdiagnosis")) {
+			ret = true;
+		}
+		return ret;
+	}
 }
+
