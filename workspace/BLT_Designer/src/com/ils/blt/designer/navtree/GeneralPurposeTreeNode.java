@@ -39,6 +39,7 @@ import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.serializable.ApplicationUUIDResetHandler;
 import com.ils.blt.common.serializable.FamilyUUIDResetHandler;
 import com.ils.blt.common.serializable.SerializableApplication;
+import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.common.serializable.SerializableFolder;
@@ -57,6 +58,8 @@ import com.ils.blt.designer.config.ApplicationConfigurationDialog;
 import com.ils.blt.designer.config.FamilyConfigurationDialog;
 import com.ils.blt.designer.config.ScriptExtensionsDialog;
 import com.ils.blt.designer.workspace.DiagramWorkspace;
+import com.ils.blt.designer.workspace.ProcessBlockView;
+import com.ils.blt.designer.workspace.ProcessDiagramView;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
 import com.inductiveautomation.ignition.client.util.gui.ErrorUtil;
@@ -70,12 +73,12 @@ import com.inductiveautomation.ignition.common.project.ProjectResource;
 import com.inductiveautomation.ignition.common.util.LogUtil;
 import com.inductiveautomation.ignition.common.util.LoggerEx;
 import com.inductiveautomation.ignition.designer.UndoManager;
+import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.gui.IconUtil;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractNavTreeNode;
 import com.inductiveautomation.ignition.designer.navtree.model.AbstractResourceNavTreeNode;
 import com.inductiveautomation.ignition.designer.navtree.model.FolderNode;
-import com.inductiveautomation.ignition.designer.sqltags.action.RefreshAction;
 /**
  * A folder in the designer scope to support the diagnostics toolkit diagram
  * layout. In addition to standard folders, folders can be of type "Application" or
@@ -1270,6 +1273,7 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 					}
 				}
 				else if( res.getResourceType().equals(BLTProperties.DIAGRAM_RESOURCE_TYPE)) {
+					
 					SerializableDiagram sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
 					if( sd!=null ) {
 						UUIDResetHandler uuidHandler = new UUIDResetHandler(sd);
@@ -1351,75 +1355,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			logger.infof("================================ (proj = %d )==============================",context.getProject().getId());
 		}
 	}
-	// Delete the this node and all its descendants. 
-	// Note: On a "save" action, the descendants are removed also.
-	private class DeleteNodeAction extends BaseAction implements UndoManager.UndoAction {
-		private static final long serialVersionUID = 1L;
-		private final AbstractResourceNavTreeNode node;
-		ResourceDeleteManager deleter;
-		private String bundleString;
-		private long resid = -1;    // for the root
-
-		public DeleteNodeAction(AbstractResourceNavTreeNode resourceNode)  {
-			super(PREFIX+".DeleteNode",IconUtil.getIcon("delete"));
-			this.node = resourceNode;
-			this.bundleString = PREFIX+".NodeNoun";
-			this.deleter = new ResourceDeleteManager(node);
-		}
-
-		public void actionPerformed(ActionEvent e) {
-			AbstractNavTreeNode p = node.getParent();
-			ProjectResource res = node.getProjectResource();
-			resid = res.getResourceId();
-			logger.infof("%s.DeleteNodeAction: %s, resource %d.",CLSS,node.getName(),resid);
-			List<AbstractResourceNavTreeNode>selected = new ArrayList<>();
-			selected.add(node);
-			if(confirmDelete(selected)) {
-				if( res.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE) ) {
-					bundleString = PREFIX+".ApplicationNoun";
-				}
-				else if( res.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE) ) {
-					bundleString = PREFIX+".FamilyNoun";
-				}
-				else if( res.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE) ) {
-					bundleString = PREFIX+".FolderNoun";
-				}
-				deleter.acquireResourcesToDelete();
-				if( execute() ) {
-					UndoManager.getInstance().add(this,GeneralPurposeTreeNode.class);
-					
-					if( p instanceof GeneralPurposeTreeNode )  {
-						GeneralPurposeTreeNode parentNode = (GeneralPurposeTreeNode)p;
-						parentNode.recreate();
-						parentNode.expand();
-					}
-					deleter.deleteInProject();
-				}
-				else {
-					ErrorUtil.showError("Node locked, delete failed");
-				}
-			}
-		}
-
-		// Marks the project resources for deletion.
-		@Override
-		public boolean execute() {
-			return deleter.deleteResources();
-		}
-
-		@Override
-		public boolean isGroupSequenceIndependent() {return false;}
-
-		@Override
-		public boolean undo() {
-			return deleter.undo();
-		}
-
-		@Override
-		public String getDescription() { return BundleUtil.get().getStringLenient(bundleString); }
-
-	}
-
 	// Create a new diagram
 	private class DiagramCreateAction extends BaseAction {
 		private static final long serialVersionUID = 1L;
@@ -1546,6 +1481,74 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 				ErrorUtil.showError(CLSS+" Exception creating family",err);
 			}
 		}
+	}
+	// Delete the this node and all its descendants. 
+	// Note: On a "save" action, the descendants are removed also.
+	private class DeleteNodeAction extends BaseAction implements UndoManager.UndoAction {
+		private static final long serialVersionUID = 1L;
+		private final AbstractResourceNavTreeNode node;
+		ResourceDeleteManager deleter;
+		private String bundleString;
+		private long resid = -1;    // for the root
+	
+		public DeleteNodeAction(AbstractResourceNavTreeNode resourceNode)  {
+			super(PREFIX+".DeleteNode",IconUtil.getIcon("delete"));
+			this.node = resourceNode;
+			this.bundleString = PREFIX+".NodeNoun";
+			this.deleter = new ResourceDeleteManager(node);
+		}
+	
+		public void actionPerformed(ActionEvent e) {
+			AbstractNavTreeNode p = node.getParent();
+			ProjectResource res = node.getProjectResource();
+			resid = res.getResourceId();
+			logger.infof("%s.DeleteNodeAction: %s, resource %d.",CLSS,node.getName(),resid);
+			List<AbstractResourceNavTreeNode>selected = new ArrayList<>();
+			selected.add(node);
+			if(confirmDelete(selected)) {
+				if( res.getResourceType().equals(BLTProperties.APPLICATION_RESOURCE_TYPE) ) {
+					bundleString = PREFIX+".ApplicationNoun";
+				}
+				else if( res.getResourceType().equals(BLTProperties.FAMILY_RESOURCE_TYPE) ) {
+					bundleString = PREFIX+".FamilyNoun";
+				}
+				else if( res.getResourceType().equals(BLTProperties.FOLDER_RESOURCE_TYPE) ) {
+					bundleString = PREFIX+".FolderNoun";
+				}
+				deleter.acquireResourcesToDelete();
+				if( execute() ) {
+					UndoManager.getInstance().add(this,GeneralPurposeTreeNode.class);
+					
+					if( p instanceof GeneralPurposeTreeNode )  {
+						GeneralPurposeTreeNode parentNode = (GeneralPurposeTreeNode)p;
+						parentNode.recreate();
+						parentNode.expand();
+					}
+					deleter.deleteInProject();
+				}
+				else {
+					ErrorUtil.showError("Node locked, delete failed");
+				}
+			}
+		}
+	
+		// Marks the project resources for deletion.
+		@Override
+		public boolean execute() {
+			return deleter.deleteResources();
+		}
+	
+		@Override
+		public boolean isGroupSequenceIndependent() {return false;}
+	
+		@Override
+		public boolean undo() {
+			return deleter.undo();
+		}
+	
+		@Override
+		public String getDescription() { return BundleUtil.get().getStringLenient(bundleString); }
+	
 	}
 	// From the root node, create a folder for diagrams belonging to a family
 	private class FolderCreateAction extends BaseAction {
@@ -1889,4 +1892,6 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 			executionEngine.executeOnce(new ResourceSaveManager(workspace,node));
 		}
 	}
+
+
 }

@@ -516,5 +516,6 @@ public class ProcessBlockView extends AbstractBlock implements ChangeListener {
 		}
 		return ret;
 	}
+
 }
 

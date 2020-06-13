@@ -28,6 +28,7 @@ import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.notification.NotificationChangeListener;
 import com.ils.blt.common.notification.NotificationKey;
+import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
@@ -375,6 +376,24 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 							mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,true);
 							SerializableDiagram sd = mapper.readValue(new String(bytes), SerializableDiagram.class);
 							if( sd!=null ) {
+
+								
+								ProcessDiagramView diagram = new ProcessDiagramView(res.getResourceId(),sd, context);
+//								boolean diagnosis = false;
+								for( Block blk:diagram.getBlocks()) {
+									ProcessBlockView pbv = (ProcessBlockView)blk;
+									if (pbv.isDiagnosis()) {
+//										diagnosis = true;
+										String originalName = pbv.getName();
+										renameDiagnosis(sd, pbv);
+										workspace.copyAuxData(pbv, originalName);
+								//  TODO - EREIAM JH figure out a way to call 		Saveauxdata from here
+										continue;
+									}
+								}
+								
+								
+
 								UUIDResetHandler uuidHandler = new UUIDResetHandler(sd);
 								uuidHandler.convertUUIDs();
 								sd.setDirty(true);    // Dirty because gateway doesn't know about it yet
@@ -779,4 +798,29 @@ public class DiagramTreeNode extends AbstractResourceNavTreeNode implements NavT
 	@Override
 	public void watermarkChange(String newWatermark) {
 	}
+
+
+	
+	/**
+	 * Do it.  (Note this will change diagnosis names to avoid collisions).
+	 * @return true if the conversion was a success
+	 */
+	public boolean renameDiagnosis(SerializableDiagram sd, ProcessBlockView pbv) {
+		boolean success = true;
+		
+		// As we traverse the blocks, find the matching entry
+		// so that we can look them up when we update the name 
+		for( SerializableBlock sb:sd.getBlocks()) {
+			if (sb.getName().equals(pbv.getName())) {
+				pbv.createPseudoRandomNameExtension();
+				sb.setName(pbv.getName());
+			}
+		}
+		//  update the name now so it doens't cause duplicate name problems on save
+		return success;
+	}
+	
+
+
+
 }

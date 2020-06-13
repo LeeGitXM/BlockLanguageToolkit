@@ -25,6 +25,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
@@ -46,11 +47,13 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ils.blt.client.ClientScriptExtensionManager;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.connection.ConnectionType;
+import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.serializable.SerializableAnchor;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
@@ -64,6 +67,8 @@ import com.ils.blt.designer.config.BlockInternalsViewer;
 import com.ils.blt.designer.config.ForceValueSettingsDialog;
 import com.ils.blt.designer.editor.PropertyEditorFrame;
 import com.ils.blt.designer.navtree.DiagramTreeNode;
+import com.ils.blt.designer.navtree.GeneralPurposeTreeNode;
+import com.ils.common.GeneralPurposeDataContainer;
 import com.inductiveautomation.ignition.client.designable.DesignableContainer;
 import com.inductiveautomation.ignition.client.util.LocalObjectTransferable;
 import com.inductiveautomation.ignition.client.util.action.BaseAction;
@@ -131,7 +136,9 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	private LoggerEx logger = LogUtil.getLogger(getClass().getPackage().getName());
 	private PopupListener rightClickHandler;
 	private JPopupMenu zoomPopup;
-
+	
+	protected final ApplicationRequestHandler requestHandler;
+	
 	/**
 	 * Constructor:
 	 */
@@ -147,6 +154,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		statusManager = ((BLTDesignerHook)context.getModule(BLTProperties.MODULE_ID)).getNavTreeStatusManager();
 		initialize();
 		setBackground(Color.red);
+		this.requestHandler = new ApplicationRequestHandler();
 	}
 
 
@@ -471,7 +479,13 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			Point offset = CalculatePasteOffset(this.getMousePosition(), list);
 			for(SerializableBlock sb:list) {
 				ProcessBlockView pbv = new ProcessBlockView(sb);
-				pbv.createPseudoRandomName();
+				pbv.createRandomId();
+				if (pbv.isDiagnosis()) {
+					pbv.createPseudoRandomNameExtension();
+					copyAuxData(pbv, sb.getName());
+				}
+				
+				
 				pbv.createRandomId();
 				Point dropLoc = new Point(pbv.getLocation().x+offset.x, pbv.getLocation().y+offset.y);
 				pbv.setLocation(dropLoc);
@@ -521,6 +535,52 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			logger.warnf("%s: pasteBlocks IO exception (%s)",TAG,ioe.getLocalizedMessage());
 		}; 
 		return results;
+	}
+
+
+	public void copyAuxData(ProcessBlockView pbv, String oldName) {
+		
+		String prodDb = requestHandler.getProductionDatabase();
+		String isoDb = requestHandler.getIsolationDatabase();
+		ProcessDiagramView diagram = getActiveDiagram();
+		GeneralPurposeDataContainer auxData = new GeneralPurposeDataContainer();
+		auxData.setProperties(new HashMap<String,String>());
+		auxData.setLists(new HashMap<>());
+		auxData.setMapLists(new HashMap<>());
+		auxData.getProperties().put("Name", oldName);   // Use as a key when fetching
+		
+		ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
+		extensionManager.runScript(context.getScriptManager(), pbv.getClassName(), ScriptConstants.PROPERTY_GET_SCRIPT, 
+				diagram.getId().toString(),auxData,prodDb);
+
+		auxData.getProperties().put("Name", pbv.getName());   // Set new key
+		
+		extensionManager.runScript(context.getScriptManager(), pbv.getClassName(), ScriptConstants.PROPERTY_SET_SCRIPT, 
+				diagram.getId().toString().toString(),auxData,prodDb);
+
+		auxData.setProperties(new HashMap<String,String>());
+		auxData.setLists(new HashMap<>());
+		auxData.setMapLists(new HashMap<>());
+		auxData.getProperties().put("Name", oldName);   // Use as a key when fetching
+	
+		extensionManager.runScript(context.getScriptManager(), pbv.getClassName(), ScriptConstants.PROPERTY_GET_SCRIPT, 
+				diagram.getId().toString(),auxData,isoDb);
+
+		auxData.getProperties().put("Name", pbv.getName());   // Set new key
+
+		extensionManager.runScript(context.getScriptManager(), pbv.getClassName(), ScriptConstants.PROPERTY_SET_SCRIPT, 
+				diagram.getId().toString(),auxData,isoDb);
+		
+		// set it to the right data if not isolated
+		if( diagram.getState().equals(DiagramState.ACTIVE)) { 
+			extensionManager.runScript(context.getScriptManager(), pbv.getClassName(), ScriptConstants.PROPERTY_GET_SCRIPT, 
+					diagram.getId().toString(),auxData,prodDb);
+		}
+		
+		if( auxData.containsData()) {
+			pbv.setAuxiliaryData(auxData);
+		}
+		
 	}
 
 

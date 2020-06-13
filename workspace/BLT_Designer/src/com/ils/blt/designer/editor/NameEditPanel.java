@@ -20,6 +20,7 @@ import com.ils.blt.client.ClientScriptExtensionManager;
 import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.designer.workspace.ProcessBlockView;
 import com.ils.blt.designer.workspace.WorkspaceRepainter;
+import com.inductiveautomation.ignition.designer.blockandconnector.model.Block;
 import com.inductiveautomation.ignition.designer.model.DesignerContext;
 
 import net.miginfocom.swing.MigLayout;
@@ -81,30 +82,48 @@ public class NameEditPanel extends BasicEditPanel {
 			public void actionPerformed(ActionEvent e) {
 				if( !nameField.getText().isEmpty()) {
 					ClientScriptExtensionManager sem = ClientScriptExtensionManager.getInstance();
-					if( sem.getClassNames().contains(block.getClassName()) ) {
-						try {
-							DesignerContext context = editor.getContext();
-							sem.runScript(context.getScriptManager(),block.getClassName(), ScriptConstants.NODE_RENAME_SCRIPT, 
-									editor.getDiagram().getId().toString(),block.getName(),nameField.getText());     // Old name, new name
-						}
-						catch( Exception ex ) {
-							log.errorf("NameEditPanel.constructor: Exception ("+ex.getMessage()+")",ex); // Throw stack trace
+					boolean nameCollision = false;
+					for (Block blk: editor.getDiagram().getBlocks()) {
+						if (((ProcessBlockView)blk).getName().equalsIgnoreCase(nameField.getText())) {
+							if (((ProcessBlockView)blk).getClassName().toLowerCase().contains("finaldiagnosis") ||
+								((ProcessBlockView)blk).getClassName().toLowerCase().contains("sqcdiagnosis")) {
+								nameCollision = true;
+							}
 						}
 					}
-					block.setName(nameField.getText());
-				}
-				try {
-					block.setNameDisplayed(annotationCheckBox.isSelected());
-					block.setNameOffsetX(Integer.parseInt(xfield.getText()));
-					block.setNameOffsetY(Integer.parseInt(yfield.getText()));
-					setSelectedPane(BlockEditConstants.HOME_PANEL);
-					editor.updatePanelForBlock(BlockEditConstants.HOME_PANEL, block);
-					editor.saveDiagram();
-				}
-				catch(NumberFormatException nfe) {
-					JOptionPane.showMessageDialog(NameEditPanel.this, String.format("Illegal value for offset--please re-enter (%s)",nfe.getLocalizedMessage()),
-							"Display Parameter Entry Error",JOptionPane.ERROR_MESSAGE);
-					block.setNameDisplayed(false);
+					if (!nameCollision) {
+						if( sem.getClassNames().contains(block.getClassName()) ) {
+							try {
+								
+								DesignerContext context = editor.getContext();
+										
+								sem.runScript(context.getScriptManager(),block.getClassName(), ScriptConstants.NODE_RENAME_SCRIPT, 
+										editor.getDiagram().getId().toString(),block.getName(),nameField.getText());     // Old name, new name
+							}
+							catch( Exception ex ) {
+								log.errorf("NameEditPanel.constructor: Exception ("+ex.getMessage()+")",ex); // Throw stack trace
+							}
+						}
+						block.setName(nameField.getText());
+					} else {
+						JOptionPane.showMessageDialog(editor,
+								"A block by that name already exists, please choose a different name",
+								"Name Collision warning",
+								JOptionPane.WARNING_MESSAGE);
+					}
+					try {
+						block.setNameDisplayed(annotationCheckBox.isSelected());
+						block.setNameOffsetX(Integer.parseInt(xfield.getText()));
+						block.setNameOffsetY(Integer.parseInt(yfield.getText()));
+						setSelectedPane(BlockEditConstants.HOME_PANEL);
+						editor.updatePanelForBlock(BlockEditConstants.HOME_PANEL, block);
+						editor.saveDiagram();
+					}
+					catch(NumberFormatException nfe) {
+						JOptionPane.showMessageDialog(NameEditPanel.this, String.format("Illegal value for offset--please re-enter (%s)",nfe.getLocalizedMessage()),
+								"Display Parameter Entry Error",JOptionPane.ERROR_MESSAGE);
+						block.setNameDisplayed(false);
+					}
 				}
 			}
 		});
