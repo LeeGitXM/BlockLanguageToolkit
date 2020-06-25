@@ -3,8 +3,11 @@
  */
 package com.ils.blt.designer.editor;
 
+import java.awt.BorderLayout;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.JScrollPane;
 
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.DiagramState;
@@ -149,6 +152,8 @@ public class BlockPropertyEditor extends SlidingPane   {
 			break;
 		}
 	}
+	
+	
 	/**
 	 * Modify a tag path to account for global production/isolation providers
 	 * as well as the current state of the diagram.

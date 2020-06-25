@@ -152,7 +152,7 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 	
 	/**
 	 * A new value has appeared on an input anchor. Add it to the list and trigger the delay timer.
-	 * The superior method set "lastValue", 
+	 * The superior method sets "lastValue", 
 	 * @param vcn change notification.
 	 */
 	@Override
@@ -177,6 +177,14 @@ public class Delay extends AbstractProcessBlock implements ProcessBlock {
 						dog.setSecondsDelay(delayInterval);
 						timer.updateWatchdog(dog);  // pet dog
 					}
+				}
+				if (buffer.size() > 0 & dog.isActive() == false) {  // dog stuck, reset it.
+					log.errorf("%s.acceptValue.  Dog is stuck, resetting!",getName());
+					if (updateTimer != null) {
+						updateTimer.stop();
+					}
+					startUpdateTimer();
+					buffer.clear();
 				}
 				buffer.add(data);
 				if (buffer.size() == 1) {  // only update if it was empty.

@@ -22,7 +22,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -48,6 +47,7 @@ import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.serializable.ApplicationUUIDResetHandler;
 import com.ils.blt.common.serializable.FamilyUUIDResetHandler;
 import com.ils.blt.common.serializable.SerializableApplication;
+import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableDiagram;
 import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.common.serializable.SerializableFolder;
@@ -1557,6 +1557,28 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 //			return ret;
 //		}
 		
+		
+		/**
+		 * Do it.  (Note this will diagnosis names to avoid collisions).
+		 * @return true if the conversion was a success
+		 */
+		public boolean renameDiagnosis(SerializableDiagram sd, ProcessBlockView pbv) {
+			boolean success = true;
+			
+			// As we traverse the blocks, find the matching entry
+			// so that we can look them up when we update the name 
+			for( SerializableBlock sb:sd.getBlocks()) {
+				if (sb.getName().equals(pbv.getName())) {
+					pbv.createPseudoRandomNameExtension();
+					sb.setName(pbv.getName());
+				}
+			}
+			//  update the name now so it doens't cause duplicate name problems on save
+			return success;
+		}
+		
+
+		
 		public void paste(String data, boolean deleteOriginal) {
 			long clipId = Long.parseLong(data);
 			ProjectResource res = context.getProject().getResource(clipId);
@@ -1626,6 +1648,8 @@ public class GeneralPurposeTreeNode extends FolderNode implements NavTreeNodeInt
 											ProcessBlockView pbv = (ProcessBlockView)blk;
 											if (pbv.isDiagnosis()) {
 												diagnosis = true;
+												renameDiagnosis(sd, pbv);
+										//  TODO - EREIAM JH figure out a way to call 		Saveauxdata from here
 												continue;
 											}
 										}

@@ -91,6 +91,8 @@ public class ResourceUpdateManager implements Runnable {
 			}
 			try {
 				context.updateResource(res.getResourceId(),res.getData());   // Force an update
+				
+//				EREIAM JH - can we force a property panel update from here?
 
 				diff.putResource(res, true);    // Mark as dirty for our controller as resource listener
 				DTGatewayInterface.getInstance().saveProject(IgnitionDesigner.getFrame(), diff, false, "Committing ...");  // Don't publish
