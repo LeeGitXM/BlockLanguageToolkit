@@ -4,7 +4,6 @@
 package com.ils.blt.designer.workspace;
 
 import java.awt.BasicStroke;
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Frame;
@@ -50,7 +49,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JRootPane;
-import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -64,16 +62,20 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ils.block.Input;
 import com.ils.block.Output;
+import com.ils.blt.client.ClientScriptExtensionManager;
 import com.ils.blt.common.ApplicationRequestHandler;
 import com.ils.blt.common.BLTProperties;
 import com.ils.blt.common.DiagramState;
 import com.ils.blt.common.block.BlockConstants;
 import com.ils.blt.common.block.BlockProperty;
 import com.ils.blt.common.connection.ConnectionType;
+import com.ils.blt.common.script.ScriptConstants;
 import com.ils.blt.common.serializable.SerializableAnchor;
+import com.ils.blt.common.serializable.SerializableApplication;
 import com.ils.blt.common.serializable.SerializableBlock;
 import com.ils.blt.common.serializable.SerializableBlockStateDescriptor;
 import com.ils.blt.common.serializable.SerializableDiagram;
+import com.ils.blt.common.serializable.SerializableFamily;
 import com.ils.blt.common.serializable.SerializableResourceDescriptor;
 import com.ils.blt.designer.BLTDesignerHook;
 import com.ils.blt.designer.NodeStatusManager;
@@ -86,6 +88,7 @@ import com.ils.blt.designer.editor.BlockEditConstants;
 import com.ils.blt.designer.editor.BlockPropertyEditor;
 import com.ils.blt.designer.editor.PropertyEditorFrame;
 import com.ils.blt.designer.navtree.DiagramTreeNode;
+import com.ils.common.GeneralPurposeDataContainer;
 import com.inductiveautomation.ignition.client.designable.DesignableContainer;
 import com.inductiveautomation.ignition.client.images.ImageLoader;
 import com.inductiveautomation.ignition.client.sqltags.ClientTagManager;
@@ -171,6 +174,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 	private JComboBox<String> zoomCombo;
 //	private ProcessBlockPalette tabbedPalette = null;
 	private CommandBar alignBar = null;
+	private ApplicationRequestHandler  requestHandler;
 
 	/**
 	 * Constructor:
@@ -184,7 +188,8 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		this.zoomPopup = createZoomPopup();
 		this.rightClickHandler = new PopupListener();
 		this.addMouseListener(rightClickHandler);
-//		this.keyHandler = new KeystrokeListener();
+		requestHandler = new ApplicationRequestHandler();
+		 //		this.keyHandler = new KeystrokeListener();
 //		this.addKeyListener(keyHandler);
 
 		// none of this keystroke stuff works
@@ -880,12 +885,25 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			List<SerializableBlock>list = mapper.readValue(json, type);
 
 			Point offset = calculatePasteOffset(this.getMousePosition(), list);
+			ProcessDiagramView theDiagram = getActiveDiagram();
 			for(SerializableBlock sb:list) {
 				ProcessBlockView pbv = new ProcessBlockView(sb);
-				pbv.createPseudoRandomName();
+				
+//				if it's a diagnosis rename with similar and then copy aux
+				if (pbv.isDiagnosis()) {
+//					diagnosis = true;
+//					String oldName = new String(pbv.getName());
+					pbv.createPseudoRandomNameExtension();
+					pbv.getAuxiliaryData().getProperties().put("Name", pbv.getName());   // Use as a key when fetching
+					saveAuxDataProduction(pbv, theDiagram.getId().toString());
+				} else {
+					pbv.createPseudoRandomName();
+				}
 				pbv.createRandomId();
 				Point dropLoc = new Point(pbv.getLocation().x+offset.x, pbv.getLocation().y+offset.y);
 				pbv.setLocation(dropLoc);
+				if (pbv.isDiagnosis()) {
+				}
 				
 				
 //				if it's a diagnosis it gets renamed, but it doesn't get the aux data from the original saved.
@@ -938,6 +956,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 		return results;
 	}
 
+	
 
 	private Point calculatePasteOffset(Point mousePos, List<SerializableBlock> list) {
 		int leftPos = 100000;  //just initialize high for simplicity
@@ -1222,6 +1241,7 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 					
 				}
 			}
+
 			container.setBackground(view.getBackgroundColorForState());
 			SwingUtilities.invokeLater(new WorkspaceRepainter());
 		}
@@ -2105,5 +2125,154 @@ public class DiagramWorkspace extends AbstractBlockWorkspace
 			logger.errorf("DiagramWorkspace keyReleased :%s: Modifiers :%s:",e.getKeyChar(), e.getModifiers());
         }
     }
+    
+
+	public void copyAuxData(ProcessBlockView pbv, String oldName, String newParentId, String oldParentId) {
+		
+		String prodDb = requestHandler.getProductionDatabase();
+		String isoDb = requestHandler.getIsolationDatabase();
+//		ProcessDiagramView diagram = getActiveDiagram();
+		GeneralPurposeDataContainer auxData = new GeneralPurposeDataContainer();
+		auxData.setProperties(new HashMap<String,String>());
+		auxData.setLists(new HashMap<>());
+		auxData.setMapLists(new HashMap<>());
+		auxData.getProperties().put("Name", oldName);   // Use as a key when fetching
+		
+		ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
+		extensionManager.runScript(context.getScriptManager(), pbv.getClassName(), ScriptConstants.PROPERTY_GET_SCRIPT, 
+				oldParentId,auxData,prodDb);
+
+		auxData.getProperties().put("Name", pbv.getName());   // Set new key
+		
+		extensionManager.runScript(context.getScriptManager(), pbv.getClassName(), ScriptConstants.PROPERTY_SET_SCRIPT, 
+				pbv.getId().toString(),auxData,prodDb);
+
+		auxData.setProperties(new HashMap<String,String>());
+		auxData.setLists(new HashMap<>());
+		auxData.setMapLists(new HashMap<>());
+		auxData.getProperties().put("Name", oldName);   // Use as a key when fetching
+	
+		extensionManager.runScript(context.getScriptManager(), pbv.getClassName(), ScriptConstants.PROPERTY_GET_SCRIPT, 
+				oldParentId,auxData,isoDb);
+
+		auxData.getProperties().put("Name", pbv.getName());   // Set new key
+
+		extensionManager.runScript(context.getScriptManager(), pbv.getClassName(), ScriptConstants.PROPERTY_SET_SCRIPT, 
+				pbv.getId().toString(),auxData,isoDb);
+		
+		// set it to the right data if not isolated  
+		if( pbv.getState().equals(DiagramState.ACTIVE)) { 
+			extensionManager.runScript(context.getScriptManager(), pbv.getClassName(), ScriptConstants.PROPERTY_GET_SCRIPT, 
+					newParentId,auxData,prodDb);
+		}
+		
+		if( auxData.containsData()) {
+			pbv.setAuxiliaryData(auxData);
+		}
+		
+	}
+
+	public void saveAuxDataProduction(ProcessBlockView pbv, String parentId) {
+		
+		String prodDb = requestHandler.getProductionDatabase();
+		ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
+		
+		extensionManager.runScript(context.getScriptManager(), pbv.getClassName(), ScriptConstants.PROPERTY_SET_SCRIPT, 
+				parentId,pbv.getAuxiliaryData(),prodDb);
+	}
+
+	public void saveAuxDataSbProduction(SerializableBlock sb, String parentId) {
+		
+		String prodDb = requestHandler.getProductionDatabase();
+		ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
+		
+		extensionManager.runScript(context.getScriptManager(), sb.getClassName(), ScriptConstants.PROPERTY_SET_SCRIPT, 
+				parentId,sb.getAuxiliaryData(),prodDb);
+	}
+
+	public void copyApplicationAuxData(SerializableApplication sa, String newName, String oldName) {
+		
+		String prodDb = requestHandler.getProductionDatabase();
+		String isoDb = requestHandler.getIsolationDatabase();
+//		ProcessDiagramView diagram = getActiveDiagram();
+		GeneralPurposeDataContainer auxData = new GeneralPurposeDataContainer();
+
+		
+//		So, the big question is how to get the right UUID for the getapplication function to find it.
+		
+
+		auxData.setProperties(new HashMap<String,String>());
+		auxData.setLists(new HashMap<>());
+		auxData.setMapLists(new HashMap<>());
+		auxData.getProperties().put("Name", oldName);   // Use as a key when fetching
+	
+		ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
+		
+		extensionManager.runScript(context.getScriptManager(), ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.PROPERTY_GET_SCRIPT, 
+				sa.getId().toString(),auxData,isoDb);
+
+		auxData.getProperties().put("Name", newName);   // Set new key
+
+		extensionManager.runScript(context.getScriptManager(), ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.PROPERTY_SET_SCRIPT, 
+				sa.getId().toString(),auxData,isoDb);
+		
+		
+		auxData = new GeneralPurposeDataContainer();
+		
+		auxData.setProperties(new HashMap<String,String>());
+		auxData.setLists(new HashMap<>());
+		auxData.setMapLists(new HashMap<>());
+		auxData.getProperties().put("Name", oldName);   // Use as a key when fetching
+		
+		extensionManager.runScript(context.getScriptManager(), ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.PROPERTY_GET_SCRIPT, 
+				sa.getId().toString(),auxData,prodDb);
+
+		auxData.getProperties().put("Name", newName);   // Set new key
+		
+		extensionManager.runScript(context.getScriptManager(), ScriptConstants.APPLICATION_CLASS_NAME, ScriptConstants.PROPERTY_SET_SCRIPT, 
+				sa.getId().toString().toString(),auxData,prodDb);
+	}
+
+	public void copyFamilyAuxData(SerializableFamily sf, String newName, String oldName) {
+		
+		String prodDb = requestHandler.getProductionDatabase();
+		String isoDb = requestHandler.getIsolationDatabase();
+//		ProcessDiagramView diagram = getActiveDiagram();
+		GeneralPurposeDataContainer auxData = new GeneralPurposeDataContainer();
+
+
+		
+		ClientScriptExtensionManager extensionManager = ClientScriptExtensionManager.getInstance();
+		auxData.setProperties(new HashMap<String,String>());
+		auxData.setLists(new HashMap<>());
+		auxData.setMapLists(new HashMap<>());
+		auxData.getProperties().put("Name", oldName);   // Use as a key when fetching
+	
+		extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.PROPERTY_GET_SCRIPT, 
+				sf.getId(),auxData,isoDb);
+
+		auxData.getProperties().put("Name", newName);   // Set new key
+
+		extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.PROPERTY_SET_SCRIPT, 
+				sf.getId().toString(),auxData,isoDb);
+		
+		auxData = new GeneralPurposeDataContainer();
+		
+		auxData.setProperties(new HashMap<String,String>());
+		auxData.setLists(new HashMap<>());
+		auxData.setMapLists(new HashMap<>());
+		auxData.getProperties().put("Name", oldName);   // Use as a key when fetching
+		
+		extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.PROPERTY_GET_SCRIPT, 
+				sf.getId().toString(),auxData,prodDb);
+
+		auxData.getProperties().put("Name", newName);   // Set new key
+		
+		extensionManager.runScript(context.getScriptManager(), ScriptConstants.FAMILY_CLASS_NAME, ScriptConstants.PROPERTY_SET_SCRIPT, 
+				sf.getId().toString().toString(),auxData,prodDb);
+
+	}
+
+
     
 }

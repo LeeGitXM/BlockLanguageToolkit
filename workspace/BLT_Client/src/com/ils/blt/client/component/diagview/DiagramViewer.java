@@ -9,7 +9,7 @@ import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.Dataset;
 
 /**
- *  Use Prefuse to display a diagnostic toolkit diagram. The core data structure
+ *  Use Prefuse to display a symbolic ai diagram. The core data structure
  *  is two datasets:
  *   blocks: a row for each block and with columns: UUID,class,x,y,
  *   connections: a row for each connection and with columns: UUID from, port from, UUID to, port to, connectionType
